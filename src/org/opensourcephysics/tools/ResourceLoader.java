@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -36,6 +37,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 import javax.swing.ImageIcon;
@@ -67,7 +69,7 @@ public class ResourceLoader {
   protected static int maxPaths = 20;                                                              // max number of paths in history
   protected static Hashtable<String, Resource> resources = new Hashtable<String, Resource>();      // cached resources
   protected static boolean cacheEnabled=false, canceled=false;
-  protected static Map<String, URLClassLoader> zipLoaders = new TreeMap<String, URLClassLoader>(); // maps zip to zipLoader
+  protected static Map<String, URLClassLoader> zipLoaders = new TreeMap<String, URLClassLoader>(); // maps path to zipLoader
   protected static URLClassLoader xsetZipLoader; // zipLoader of current xset
   protected static Set<String> extractExtensions = new TreeSet<String>();
   protected static ArrayList<String> pathsNotFound = new ArrayList<String>();
@@ -1381,7 +1383,6 @@ public class ResourceLoader {
 				&& !path.startsWith("jar:")  //$NON-NLS-1$
 				&& !path.startsWith("file:/")) { //$NON-NLS-1$
 			String protocol = OSPRuntime.isWindows()? "file:/": "file://"; //$NON-NLS-1$ //$NON-NLS-2$
-//			protocol = "file://"; //$NON-NLS-1$ // pig testing for SXD01 email 10/08
 			path = protocol+path;
 		}
   	return path;
@@ -1592,7 +1593,6 @@ public class ResourceLoader {
       	path = base+"!/"+fileName; //$NON-NLS-1$
       }
   		
-  		
 //  		
 //  		
 //  		File zipDir = null;
@@ -1617,34 +1617,55 @@ public class ResourceLoader {
 //      	path = base+"!/"+fileName; //$NON-NLS-1$
 //      }
     }
-  	 	
+  	
     URLClassLoader zipLoader = null;
     URL url = null;
-    if(base!=null) {
-      // use existing zip loader, if any
-      zipLoader = zipLoaders.get(base);
-      if(zipLoader!=null) {
-        url = zipLoader.findResource(fileName);
-      } else {
-        try {
-          // create new zip loader
-          URL[] urls = new URL[] {new URL("file", null, base)};  //$NON-NLS-1$
-          zipLoader = new URLClassLoader(urls);
-          url = zipLoader.findResource(fileName);
-          if(url==null) {                                        // workaround works in IE?
-            URL classURL = Resource.class.getResource("/"+base); //$NON-NLS-1$
-            if(classURL!=null) {
-              urls = new URL[] {classURL};
-              zipLoader = new URLClassLoader(urls);
-              url = zipLoader.findResource(fileName);
-            }
-          }
-          if(url!=null) {
-            zipLoaders.put(base, zipLoader);
-          }
-        } catch(Exception ex) {
-          /** empty block */
-        }
+    
+    
+    if (base!=null) {
+    	// following ZipFile code added by D Brown 12 Sep 2013
+    	// look through ZipFile entries for requested fileName
+    	try {
+    		ZipFile zipFile = new ZipFile(base);
+	      Enumeration<? extends ZipEntry> entries = zipFile.entries();
+	      while (entries.hasMoreElements()) {
+	        ZipEntry entry = (ZipEntry) entries.nextElement();
+	        if (entry.getName().equals(fileName) && entry.getSize()>0) {
+	        	url = new URL("file", null, path); //$NON-NLS-1$
+	        	// URL constructor takes "jar" for any ZIP-based file (per Wikipedia)
+	        	url = new URL("jar", null, url.toExternalForm()); //$NON-NLS-1$
+	        }
+	      }
+			} catch (IOException ex) {
+			}
+    	// end code added 12 Sep 2013
+    	
+      if (url==null) {
+	      // use existing zip loader, if any
+	      zipLoader = zipLoaders.get(base);
+	      if(zipLoader!=null) {
+	        url = zipLoader.findResource(fileName);
+	      } else {
+	        try {
+	          // create new zip loader
+	          URL[] urls = new URL[] {new URL("file", null, base)};  //$NON-NLS-1$
+	          zipLoader = new URLClassLoader(urls);
+	          url = zipLoader.findResource(fileName);
+	          if(url==null) {                                        // workaround works in IE?
+	            URL classURL = Resource.class.getResource("/"+base); //$NON-NLS-1$
+	            if(classURL!=null) {
+	              urls = new URL[] {classURL};
+	              zipLoader = new URLClassLoader(urls);
+	              url = zipLoader.findResource(fileName);
+	            }
+	          }
+	          if(url!=null) {
+	            zipLoaders.put(base, zipLoader);
+	          }
+	        } catch(Exception ex) {
+	          /** empty block */
+	        }
+	      }
       }
     }
     // if not found, use xset zip loader, if any
@@ -1692,15 +1713,16 @@ public class ResourceLoader {
         base = launchJarPath;
       }
     }
-    if(url!=null) {     // successfully found url
+    
+    if (url!=null) {     // successfully found url
       // extract file if extension is flagged for extraction
       Iterator<String> it = extractExtensions.iterator();
       while(it.hasNext()) {
         String ext = it.next();
         if(url.getFile().endsWith(ext)) {
-          File zipFile = new File(base);
+          File zip = new File(base);
         	String targetPath = fileName;
-        	String parent = zipFile.getParent();
+        	String parent = zip.getParent();
         	// if target path is relative, resolve wrt parent folder of zip file
         	if(parent!=null && !targetPath.startsWith("/") //$NON-NLS-1$
         			&& fileName.indexOf(":/")==-1) { //$NON-NLS-1$
@@ -1708,7 +1730,7 @@ public class ResourceLoader {
         	}
           File target = new File(targetPath);
           if(!target.exists()) {
-            target = JarTool.extract(zipFile, fileName, targetPath);
+            target = JarTool.extract(zip, fileName, targetPath);
             if (deleteOnExit)
             	target.deleteOnExit();
           }
