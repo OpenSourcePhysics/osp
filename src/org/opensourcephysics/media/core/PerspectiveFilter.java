@@ -614,6 +614,9 @@ public class PerspectiveFilter extends Filter {
   }
 
   private void refreshCorners(int frameNumber) {
+  	// gIn can be null if memory limit was exceeded when trying to instantiate with large images
+  	if (gIn==null) return;
+
   	int key = getKeyFrame(frameNumber, inKeyFrames);
   	for (int i=0; i<4; i++) {
 			quad.inCorners[i].setLocation(inCornerPoints[key][i]);

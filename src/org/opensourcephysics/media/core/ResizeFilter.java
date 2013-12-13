@@ -93,7 +93,8 @@ public class ResizeFilter extends Filter {
   public void setWidthFactor(double factor) {
     source = null; // forces reinitialization
     Double prev = new Double(widthFactor);
-    widthFactor = Math.min(Math.abs(factor), 2);
+    widthFactor = Math.min(Math.abs(factor), 10);
+    widthFactor = Math.max(widthFactor, 0.01);
     support.firePropertyChange("width", prev, new Double(widthFactor)); //$NON-NLS-1$
   }
 
@@ -105,7 +106,8 @@ public class ResizeFilter extends Filter {
   public void setHeightFactor(double factor) {
     source = null; // forces reinitialization
     Double prev = new Double(heightFactor);
-    heightFactor = Math.min(Math.abs(factor), 2);
+    heightFactor = Math.min(Math.abs(factor), 10);
+    heightFactor = Math.max(heightFactor, 0.01);
     support.firePropertyChange("height", prev, new Double(heightFactor)); //$NON-NLS-1$
   }
 
@@ -261,9 +263,11 @@ public class ResizeFilter extends Filter {
       widthLabel = new JLabel();
       widthInField = new IntegerField(4);
       widthInField.setEditable(false);
+      widthInField.format.applyPattern("0"); //$NON-NLS-1$
       widthOutField = new IntegerField(4);
-      widthOutField.setMaxValue(2000);
-      widthOutField.setMinValue(10);
+      widthOutField.format.applyPattern("0"); //$NON-NLS-1$
+//      widthOutField.setMaxValue(2000);
+//      widthOutField.setMinValue(10);
       widthOutField.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           setWidthFactor(1.0*widthOutField.getIntValue()/wIn);
@@ -285,9 +289,11 @@ public class ResizeFilter extends Filter {
       heightLabel = new JLabel();
       heightInField = new IntegerField(4);
       heightInField.setEditable(false);
+      heightInField.format.applyPattern("0"); //$NON-NLS-1$
       heightOutField = new IntegerField(4);
-      heightOutField.setMaxValue(1000);
-      heightOutField.setMinValue(100);
+      heightOutField.format.applyPattern("0"); //$NON-NLS-1$
+//      heightOutField.setMaxValue(1000);
+//      heightOutField.setMinValue(100);
       heightOutField.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           setHeightFactor(1.0*heightOutField.getIntValue()/hIn);
