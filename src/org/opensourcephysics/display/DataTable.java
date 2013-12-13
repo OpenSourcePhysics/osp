@@ -1065,7 +1065,7 @@ public class DataTable extends JTable implements ActionListener {
     String[] displayedNames;
     Map<String, String> realNames = new HashMap<String, String>();
     Map<String, String> prevPatterns = new HashMap<String, String>();
-    JList<?> columnList;
+    JList columnList;
     JScrollPane columnScroller;
 
     NumberFormatDialog() {

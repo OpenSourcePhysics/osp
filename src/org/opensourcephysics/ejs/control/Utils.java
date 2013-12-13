@@ -74,10 +74,12 @@ public class Utils {
         }
         if(je.getName().equals(_filename)) {
           jis.close();
+          inputStream.close();
           return true;
         }
       }
       jis.close();
+      inputStream.close();
     } catch(Exception exc) {
       return false;
     }
