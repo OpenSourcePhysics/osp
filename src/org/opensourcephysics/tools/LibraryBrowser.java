@@ -65,8 +65,7 @@ public class LibraryBrowser extends JPanel {
 	protected static final String MY_LIBRARY_NAME = "my_library.xml"; //$NON-NLS-1$
 	protected static final String MY_COLLECTION_NAME = "my_collection.xml"; //$NON-NLS-1$
 	protected static final String LIBRARY_HELP_NAME = "library_browser_help.html"; //$NON-NLS-1$
-	protected static final String LIBRARY_HELP_BASE = "http://www.cabrillo.edu/~dbrown/OSP/html/"; //$NON-NLS-1$
-//  protected static final String LIBRARY_HELP_BASE = "http://www.opensourcephysics.org/online_help/tools/"; //$NON-NLS-1$
+	protected static final String LIBRARY_HELP_BASE = "http://www.opensourcephysics.org/online_help/tools/"; //$NON-NLS-1$
 	protected static final String WINDOWS_OSP_DIRECTORY = "/My Documents/OSP/"; //$NON-NLS-1$
 	protected static final String OSP_DIRECTORY = "/Documents/OSP/"; //$NON-NLS-1$
 	  
