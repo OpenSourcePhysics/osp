@@ -486,6 +486,11 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
             }
             tab.tabChanged(false);
           }
+          try {
+			in.close();
+		  } catch (IOException e) {
+			//e.printStackTrace();
+		   }
           return fileName;
         }
       }
