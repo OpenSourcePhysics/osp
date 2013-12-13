@@ -1202,6 +1202,7 @@ public class DatasetCurveFitter extends JPanel {
 
       });
       field = new NumberField(10);
+      field.applyPattern("0.000E0"); //$NON-NLS-1$
       field.setBorder(BorderFactory.createEmptyBorder(1, 1, 0, 0));
       spinner.setBorder(BorderFactory.createEmptyBorder(0, 1, 1, 0));
       spinner.setEditor(field);
