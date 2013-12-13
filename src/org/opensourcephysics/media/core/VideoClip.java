@@ -356,7 +356,7 @@ public class VideoClip {
    * @return true if the end frame number was changed
    */
   public boolean setEndFrameNumber(int end) {
-  	return setEndFrameNumber(end, 10000, true);
+  	return setEndFrameNumber(end, maxFrameCount-1-frameShift, true);
   }
 
   /**
