@@ -335,6 +335,23 @@ public class TemplateMatcher {
   /**
    * Gets the template location at which the best match occurs in a rectangle. 
    * May return null.
+   * 
+   *  Template matching process:
+   *  1. At each test position in the search area, find the RGB square deviation ("RGBSqD": sum 
+   *  			of squares of rgb differences of all pixels) between the template and video image.
+   *  			Note that the RGBSqD is zero for a perfect match and larger for poorer matches.
+   * 	2. Determine the average RGBSqD for all test positions.
+   *  3. Define the position for which the RGBSqD is minimum as the "working" best match. 
+   *  			Define the peak height ("PH") of this match to be PH = (avgRGBSqD/matchRGBSqD)-1.
+   *  			Note that the PH may vary from zero to infinity.
+   *  4. If the PH exceeds the "Automark" setting, the match is deemed to be a good one
+   *  			(i.e., significantly better than average).
+   *  5. For sub-pixel accuracy, fit a Gaussian curve to the PHs of the working best match
+   *  			and its immediate vertical and horizontal neighbors. Note that the 3-point Gaussian 
+   *  			fits should be exact.
+   *  6. The final best match (sub-pixel) is the position of the peak of the Gaussian fit.
+   *  7. Note that the width of the Gaussian fit is probably correlated with the uncertainty of 
+   *  			the match position, but it is not used to explicitly estimate this uncertainty.
    *
    * @param target the image to search
    * @param searchRect the rectangle to search within the target image
@@ -447,7 +464,7 @@ public class TemplateMatcher {
 	  		for (int k = 0; k < 3; k++) {
 	  			double c = k==0? wy: k==1? wy/3: wy*3;
 		  		f.setParameterValue(0, peakHeight);
-		  		f.setParameterValue(1, dx);
+		  		f.setParameterValue(1, dy);
 		  		f.setParameterValue(2, c);
 	    		rmsDev = fitter.fit(f);
 		      if (rmsDev < 0.01) { // fitter succeeded (3-point fit should be exact)	      	
@@ -476,8 +493,12 @@ public class TemplateMatcher {
   private void refreshMatchImage(BufferedImage target, int x, int y) {
     target.getRaster().getDataElements(x+1, y+1, wTemplate, hTemplate, matchPixels);
     for (int i = 0; i< matchPixels.length; i++) {
-    	if (!isPixelTransparent[i])
-    		matchPixels[i] = getValue(255, matchPixels[i]);
+  		matchPixels[i] = getValue(isPixelTransparent[i]? 0: 255, matchPixels[i]);
+//    	if (!isPixelTransparent[i])
+//    		matchPixels[i] = getValue(255, matchPixels[i]);
+//    	else {
+//    		matchPixels[i] = getValue(0, matchPixels[i]);
+//    	}
     }
     if (match==null || match.getWidth()!=wTemplate || match.getHeight()!=hTemplate) {
     	match = new BufferedImage(wTemplate, hTemplate, BufferedImage.TYPE_INT_ARGB);
@@ -648,12 +669,14 @@ public class TemplateMatcher {
    * Method to get the color value
    * 
    * @param a 0-255 alpha
-   * @param rgb 0-255 color
+   * @param argb current color value
    * @return the integer value
    */
-  public static int getValue(int a, int rgb) {
-  	 int value = (a << 24) + rgb;
-     return value;
+  public static int getValue(int a, int argb) {
+  	int r = getRed(argb);
+  	int g = getGreen(argb);
+   	int b = getBlue(argb);
+   	return getValue(a, r, g, b);
   }
   
   /**
