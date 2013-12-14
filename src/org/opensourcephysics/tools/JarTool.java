@@ -434,6 +434,7 @@ public class JarTool implements Tool, Runnable {
       }
       output.close();
       input.close();
+      in.close();
       return target;
     } catch(Exception ex) {
       ex.printStackTrace();
