@@ -1629,7 +1629,7 @@ public class ResourceLoader {
     		ZipFile zipFile = new ZipFile(base);
 	      Enumeration<? extends ZipEntry> entries = zipFile.entries();
 	      while (entries.hasMoreElements()) {
-	        ZipEntry entry = (ZipEntry) entries.nextElement();
+	        ZipEntry entry = entries.nextElement();
 	        if (entry.getName().equals(fileName) && entry.getSize()>0) {
 	        	url = new URL("file", null, path); //$NON-NLS-1$
 	        	// URL constructor takes "jar" for any ZIP-based file (per Wikipedia)
