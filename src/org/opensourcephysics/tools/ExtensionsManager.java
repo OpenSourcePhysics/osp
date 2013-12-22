@@ -31,21 +31,43 @@ public class ExtensionsManager {
 
 	private static final ExtensionsManager MANAGER = new ExtensionsManager();
 	private static boolean isReady = false;
+	private static Set<File> allJavaExtensionDirectories = new TreeSet<File>();
+	private static int vmsFound = 0;
+	private static Timer timer;
 	
 	String xuggleHome;
 	ExtensionsFilter extFilter;	
-	Set<File> allJavaExtensionDirectories;
-	int vmsFound = 0;
 	
 	/**
 	 * Main method when used as a stand-alone application.
 	 * @param args ignored
 	 */
 	public static void main(String[] args) {
-		
+    // set up timer to allow the user to cancel searching every 30 seconds
+    timer = new Timer(30000, new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        int selected = JOptionPane.showConfirmDialog(null,
+        		ToolsRes.getString("ExtensionsManager.Dialog.SlowSearch.Message1")+"\n"+ //$NON-NLS-1$ //$NON-NLS-2$
+        		ToolsRes.getString("ExtensionsManager.Dialog.SlowSearch.Message2")+" "+vmsFound+".\n"+  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        		ToolsRes.getString("ExtensionsManager.Dialog.SlowSearch.Message3"),  //$NON-NLS-1$
+        		ToolsRes.getString("ExtensionsManager.Dialog.SlowSearch.Title"), //$NON-NLS-1$
+              JOptionPane.YES_NO_OPTION);
+          if(selected==JOptionPane.NO_OPTION) {
+          	// print whatever has been found
+          	synchronized(allJavaExtensionDirectories) {
+          		printExtensionDirectoriesForBitrock(allJavaExtensionDirectories);
+          	}
+  	        System.exit(0);
+          }
+          else timer.restart();
+      }
+    });
+    timer.setRepeats(true);
+    timer.start();
+    
 		// print list of extensions to stdout for use by Bitrock installers
 		Set<File> extDirs = getManager().findJavaExtensionDirectories();
-		getManager().printExtensionDirectoriesForBitrock(extDirs);
+		printExtensionDirectoriesForBitrock(extDirs);
 		System.exit(0);
 	}
 	
@@ -73,7 +95,7 @@ public class ExtensionsManager {
    * Finds extension directories and prints a space-delimited list to System.out. 
    * A single space delimiter is parsable by Bitrock installers.
    */
-	private void printExtensionDirectoriesForBitrock(Set<File> extDirs) {
+	private static void printExtensionDirectoriesForBitrock(Set<File> extDirs) {
 		String separator = " "; //$NON-NLS-1$
 		StringBuffer buf = new StringBuffer(2);
 		for (File next: extDirs) {
@@ -205,33 +227,12 @@ public class ExtensionsManager {
    */
 	private Set<File> findAllJavaExtensionDirectories() {
 		if (!isReady) {
-			allJavaExtensionDirectories = new TreeSet<File>();
+			vmsFound = 0;
 	    // set of extension directories used by the running Java VM 
 	    Set<String> vmExtDirs = new TreeSet<String>();
 	    // set of "Java level" directories to search
 	    Set<File> searchPaths = new TreeSet<File>();
 	    
-	    // set up timer to allow the user to cancel searching every 30 seconds
-	    final Timer timer = new Timer(30000, new ActionListener() {
-	      public void actionPerformed(ActionEvent e) {
-	        int selected = JOptionPane.showConfirmDialog(null,
-	        		ToolsRes.getString("ExtensionsManager.Dialog.SlowSearch.Message1")+"\n"+ //$NON-NLS-1$ //$NON-NLS-2$
-	        		ToolsRes.getString("ExtensionsManager.Dialog.SlowSearch.Message2")+" "+vmsFound+".\n"+  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-	        		ToolsRes.getString("ExtensionsManager.Dialog.SlowSearch.Message3"),  //$NON-NLS-1$
-	        		ToolsRes.getString("ExtensionsManager.Dialog.SlowSearch.Title"), //$NON-NLS-1$
-	              JOptionPane.YES_NO_OPTION);
-	          if(selected==JOptionPane.NO_OPTION) {
-	          	// print whatever has been found
-	          	synchronized(allJavaExtensionDirectories) {
-	          		printExtensionDirectoriesForBitrock(allJavaExtensionDirectories);
-	          	}
-	  	        System.exit(0);
-	          }
-	      }
-	    });
-	    timer.setRepeats(true);
-	    timer.start();
-			
 			try {
 				// get and parse system extension directories property into vmExtDirs
 				String paths = XML.forwardSlash(System.getProperty("java.ext.dirs")); //$NON-NLS-1$   
