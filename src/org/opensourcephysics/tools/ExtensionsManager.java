@@ -1,5 +1,7 @@
 package org.opensourcephysics.tools;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -10,6 +12,9 @@ import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+
+import javax.swing.JOptionPane;
+import javax.swing.Timer;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
@@ -30,14 +35,18 @@ public class ExtensionsManager {
 	String xuggleHome;
 	ExtensionsFilter extFilter;	
 	Set<File> allJavaExtensionDirectories;
+	int vmsFound = 0;
 	
 	/**
 	 * Main method when used as a stand-alone application.
 	 * @param args ignored
 	 */
 	public static void main(String[] args) {
+		
 		// print list of extensions to stdout for use by Bitrock installers
-		getManager().printExtensionDirectoriesForBitrock();	
+		Set<File> extDirs = getManager().findJavaExtensionDirectories();
+		getManager().printExtensionDirectoriesForBitrock(extDirs);
+		System.exit(0);
 	}
 	
 	/**
@@ -64,9 +73,8 @@ public class ExtensionsManager {
    * Finds extension directories and prints a space-delimited list to System.out. 
    * A single space delimiter is parsable by Bitrock installers.
    */
-	private void printExtensionDirectoriesForBitrock() {
+	private void printExtensionDirectoriesForBitrock(Set<File> extDirs) {
 		String separator = " "; //$NON-NLS-1$
-		Set<File> extDirs = findJavaExtensionDirectories();
 		StringBuffer buf = new StringBuffer(2);
 		for (File next: extDirs) {
 			String fileName = XML.forwardSlash(next.getPath());
@@ -202,7 +210,28 @@ public class ExtensionsManager {
 	    Set<String> vmExtDirs = new TreeSet<String>();
 	    // set of "Java level" directories to search
 	    Set<File> searchPaths = new TreeSet<File>();
-	
+	    
+	    // set up timer to allow the user to cancel searching every 30 seconds
+	    final Timer timer = new Timer(30000, new ActionListener() {
+	      public void actionPerformed(ActionEvent e) {
+	        int selected = JOptionPane.showConfirmDialog(null,
+	        		ToolsRes.getString("ExtensionsManager.Dialog.SlowSearch.Message1")+"\n"+ //$NON-NLS-1$ //$NON-NLS-2$
+	        		ToolsRes.getString("ExtensionsManager.Dialog.SlowSearch.Message2")+" "+vmsFound+".\n"+  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	        		ToolsRes.getString("ExtensionsManager.Dialog.SlowSearch.Message3"),  //$NON-NLS-1$
+	        		ToolsRes.getString("ExtensionsManager.Dialog.SlowSearch.Title"), //$NON-NLS-1$
+	              JOptionPane.YES_NO_OPTION);
+	          if(selected==JOptionPane.NO_OPTION) {
+	          	// print whatever has been found
+	          	synchronized(allJavaExtensionDirectories) {
+	          		printExtensionDirectoriesForBitrock(allJavaExtensionDirectories);
+	          	}
+	  	        System.exit(0);
+	          }
+	      }
+	    });
+	    timer.setRepeats(true);
+	    timer.start();
+			
 			try {
 				// get and parse system extension directories property into vmExtDirs
 				String paths = XML.forwardSlash(System.getProperty("java.ext.dirs")); //$NON-NLS-1$   
@@ -220,7 +249,10 @@ public class ExtensionsManager {
 				for (String next: vmExtDirs) {
 					File dir = new File(next);
 					if (!dir.exists()) continue;
-					allJavaExtensionDirectories.add(dir);
+					synchronized(allJavaExtensionDirectories) {
+						allJavaExtensionDirectories.add(dir);
+						vmsFound++;
+					}
 					
 				  if (OSPRuntime.isMac()) {
 						// search path: /JavaVirtualMachines
@@ -287,22 +319,24 @@ public class ExtensionsManager {
     Set<File> extDirs = findAllJavaExtensionDirectories();
     // set of extension directories to remove 
     Set<File> toExclude = new TreeSet<File>();
-    for (File next: extDirs) {
-    	File javaFile = next.getParentFile().getParentFile();
-    	int n = javaFile.getPath().indexOf("jdk"); //$NON-NLS-1$
-    	n = Math.max(n, javaFile.getPath().indexOf("jre")); //$NON-NLS-1$   	
-    	int oldVersion = javaFile.getPath().indexOf("1.5."); //$NON-NLS-1$
-    	oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("-5-")); //$NON-NLS-1$   	
-    	oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("1.4.")); //$NON-NLS-1$   	
-    	oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("1.3.")); //$NON-NLS-1$   	
-    	oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("1.2.")); //$NON-NLS-1$   	
-    	oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("1.3.")); //$NON-NLS-1$   	
-    	oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("1.2.")); //$NON-NLS-1$   	
-  		if (n>-1 && oldVersion>-1) {
-  			toExclude.add(next);
-  		}
+    synchronized(extDirs) {
+	    for (File next: extDirs) {
+	    	File javaFile = next.getParentFile().getParentFile();
+	    	int n = javaFile.getPath().indexOf("jdk"); //$NON-NLS-1$
+	    	n = Math.max(n, javaFile.getPath().indexOf("jre")); //$NON-NLS-1$   	
+	    	int oldVersion = javaFile.getPath().indexOf("1.5."); //$NON-NLS-1$
+	    	oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("-5-")); //$NON-NLS-1$   	
+	    	oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("1.4.")); //$NON-NLS-1$   	
+	    	oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("1.3.")); //$NON-NLS-1$   	
+	    	oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("1.2.")); //$NON-NLS-1$   	
+	    	oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("1.3.")); //$NON-NLS-1$   	
+	    	oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("1.2.")); //$NON-NLS-1$   	
+	  		if (n>-1 && oldVersion>-1) {
+	  			toExclude.add(next);
+	  		}
+	    }
+	    extDirs.removeAll(toExclude);
     }
-    extDirs.removeAll(toExclude);
     return extDirs;
 	}
 	
@@ -329,7 +363,10 @@ public class ExtensionsManager {
 				File subDir = new File(dir, next);
 				// if subdirectory is an extensions folder, add it
 				if (extFilter.accept(subDir, subDir.getName())) {
-					extDirs.add(subDir);
+					synchronized(extDirs) {
+						extDirs.add(subDir);
+						vmsFound++;
+					}
 				}
 				// else search the next level down
 				else {
