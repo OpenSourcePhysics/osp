@@ -203,7 +203,7 @@ public class ExtensionsManager {
    *
    * @return a collection of java extension directory files
    */
-	private synchronized Set<File> findAllJavaExtensionDirectories() {
+	private Set<File> findAllJavaExtensionDirectories() {
 		if (!isReady) {
 			allJavaExtensionDirectories = new TreeSet<File>();
 	    // set of extension directories used by the running Java VM 
@@ -256,7 +256,7 @@ public class ExtensionsManager {
 					
 				  if (OSPRuntime.isMac()) {
 						// search path: /JavaVirtualMachines
-						while (dir.getPath().indexOf("/JavaVirtualMachines")>-1) { //$NON-NLS-1$
+						while (dir!=null && dir.getPath().indexOf("/JavaVirtualMachines")>-1) { //$NON-NLS-1$
 							if (dir.getName().equals("JavaVirtualMachines")) { //$NON-NLS-1$
 								searchPaths.add(dir);
 								break;
@@ -266,7 +266,7 @@ public class ExtensionsManager {
 				  }
 				  else if (OSPRuntime.isLinux()) {
 					  // search path: /jvm
-						while (dir.getPath().indexOf("/jvm")>-1) { //$NON-NLS-1$
+						while (dir!=null && dir.getPath().indexOf("/jvm")>-1) { //$NON-NLS-1$
 							if (dir.getName().equals("jvm")) { //$NON-NLS-1$
 								searchPaths.add(dir);
 								break;
@@ -321,6 +321,7 @@ public class ExtensionsManager {
     Set<File> toExclude = new TreeSet<File>();
     synchronized(extDirs) {
 	    for (File next: extDirs) {
+	    	if (next.getParentFile()==null || next.getParentFile().getParentFile()==null) continue; 
 	    	File javaFile = next.getParentFile().getParentFile();
 	    	int n = javaFile.getPath().indexOf("jdk"); //$NON-NLS-1$
 	    	n = Math.max(n, javaFile.getPath().indexOf("jre")); //$NON-NLS-1$   	
@@ -336,6 +337,7 @@ public class ExtensionsManager {
 	  		}
 	    }
 	    extDirs.removeAll(toExclude);
+	    vmsFound -= toExclude.size()+1;
     }
     return extDirs;
 	}
@@ -350,6 +352,7 @@ public class ExtensionsManager {
    * @return the collection
    */
 	private Set<File> findJavaExtensionDirectories(File dir, Set<File> extDirs) {
+		if (dir==null) return extDirs;
 		try { // don't search symlinks
 			if (!dir.getCanonicalPath().equals(dir.getAbsolutePath()))
 				return extDirs;
