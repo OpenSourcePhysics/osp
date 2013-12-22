@@ -646,13 +646,30 @@ public class DataTable extends JTable implements ActionListener {
     }
 
     /**
-     *  Method setValueAt
+     * Method setValueAt modified by Doug Brown 12/19/2013
      *
      * @param  value
      * @param  rowIndex
      * @param  columnIndex
      */
-    public void setValueAt(Object value, int rowIndex, int columnIndex) {}
+    public void setValueAt(Object value, int rowIndex, int columnIndex) {
+      if(dataTableElements.size()==0) {
+        return;
+      }
+      if(rowNumberVisible) {
+        if(columnIndex==0) {
+          return;
+        }
+      }
+      ModelFilterResult mfr = ModelFilterResult.find(rowNumberVisible, dataTableElements, columnIndex);
+      DataTableElement dte = mfr.tableElement;
+      int stride = dte.getStride();
+      rowIndex = rowIndex*stride;
+      if(rowIndex>=dte.getRowCount()) {
+        return;
+      }
+      dte.tableModel.setValueAt(value, rowIndex, mfr.column);
+    }
 
     /**
      *  Method isRowNumberVisible
@@ -861,6 +878,7 @@ public class DataTable extends JTable implements ActionListener {
       int totalColumns = 0;
       for(int i = 0; i<dataTableElements.size(); i++) {
         DataTableElement dte = dataTableElements.get(i);
+        dte.ensureCapacity(tableColumnIndex);
         int columnCount = dte.getColumnCount();
         totalColumns += columnCount;
         if(totalColumns>tableColumnIndex) {
