@@ -36,6 +36,7 @@ public class SortDecorator implements TableModel, TableModelListener {
   }
 
   public Object getValueAt(int row, int column) {
+  	if (column>=getColumnCount()) { return null; }
     if(indexes.length<=row) {
       allocate();
     }
@@ -128,14 +129,17 @@ public class SortDecorator implements TableModel, TableModelListener {
   }
 
   public String getColumnName(int columnIndex) {
+  	if (columnIndex>=getColumnCount()) { return "unknown"; } //$NON-NLS-1$
     return realModel.getColumnName(columnIndex);
   }
 
   public Class<?> getColumnClass(int columnIndex) {
+  	if (columnIndex>=getColumnCount()) { return Object.class; }
     return realModel.getColumnClass(columnIndex);
   }
 
   public boolean isCellEditable(int rowIndex, int columnIndex) {
+  	if (columnIndex>=getColumnCount()) { return false; }
     return realModel.isCellEditable(rowIndex, columnIndex);
   }
 
