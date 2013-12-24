@@ -2,6 +2,8 @@ package org.opensourcephysics.tools;
 
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.JDialog;
@@ -52,6 +54,12 @@ public class DiagnosticsForThreads extends JPanel {
 	    DiagnosticsForThreads viewer = new DiagnosticsForThreads();
 	    dialog.setContentPane(viewer);
 	    dialog.setSize(500, 300);
+      // center on screen
+      Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+      int x = (dim.width - dialog.getBounds().width) / 2;
+      int y = (dim.height - dialog.getBounds().height) / 2;
+      dialog.setLocation(x, y);
+      dialog.setTitle("Threads"); //$NON-NLS-1$
 	    dialog.setVisible(true);	  
   }
 
