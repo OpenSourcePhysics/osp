@@ -680,14 +680,18 @@ public class OSPRuntime {
                 Locale next = Locale.CHINA;
                 languages.put(getDisplayLanguage(next).toLowerCase(), next);
               } 
-             else if(loc.equals("en_US")) {           //$NON-NLS-1$
+              else if(loc.equals("en_US")) {           //$NON-NLS-1$
               	continue;
-//                Locale next = Locale.US;
-//                languages.put(getDisplayLanguage(next).toLowerCase(), next);
               } 
               else {
-                Locale next = new Locale(loc);
-                if(!next.equals(Locale.ENGLISH)) {
+              	Locale next;
+              	if (!loc.contains("_")) next = new Locale(loc); //$NON-NLS-1$
+              	else {
+              		String lang = loc.substring(0, 2);
+              		String country = loc.substring(3);
+              		next = new Locale(lang, country, ""); //$NON-NLS-1$
+              	}
+                if (!next.equals(Locale.ENGLISH)) {
                   languages.put(getDisplayLanguage(next).toLowerCase(), next);
                 }
               }
