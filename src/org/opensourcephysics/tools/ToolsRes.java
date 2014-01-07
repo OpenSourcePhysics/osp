@@ -8,15 +8,17 @@
 package org.opensourcephysics.tools;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.reflect.Method;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+
 import javax.swing.event.SwingPropertyChangeSupport;
+
 import org.opensourcephysics.controls.ControlsRes;
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.dialogs.DialogsRes;
-import org.opensourcephysics.ejs.EjsRes;
 
 /**
  * ToolsRes provides access to string resources for OSPControls and fires a property change event
@@ -90,8 +92,15 @@ public class ToolsRes {
     res = ResourceBundle.getBundle("org.opensourcephysics.resources.tools.tools", resourceLocale); //$NON-NLS-1$
     ControlsRes.setLocale(resourceLocale);
     DisplayRes.setLocale(resourceLocale);
-    EjsRes.setLocale(resourceLocale);
     DialogsRes.setLocale(resourceLocale);
+    // use reflection for EjsRes
+    String className = "org.opensourcephysics.ejs.EjsRes"; //$NON-NLS-1$
+    try {
+			Class<?> resClass = Class.forName(className);
+			Method method = resClass.getMethod("setLocale", new Class[] {Locale.class});  //$NON-NLS-1$
+			method.invoke(null, new Object[] {resourceLocale});
+		} catch (Exception ex) {
+		}
     support.firePropertyChange("locale", prev, resourceLocale); //$NON-NLS-1$
   }
 
