@@ -31,11 +31,13 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -52,7 +54,6 @@ import org.opensourcephysics.display.axes.CoordinateStringBuilder;
 import org.opensourcephysics.display.dialogs.DrawingPanelInspector;
 import org.opensourcephysics.display.dialogs.ScaleInspector;
 import org.opensourcephysics.display.dialogs.XMLDrawingPanelInspector;
-import org.opensourcephysics.frames.ImageFrame;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ToolsRes;
 import org.opensourcephysics.tools.VideoTool;
@@ -1327,7 +1328,25 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
     render(image);
     MeasuredImage mi = new MeasuredImage(image, pixToX(0), pixToX(w), pixToY(h), pixToY(0));
-    ImageFrame frame = new ImageFrame(mi);
+    
+    // create ImageFrame using reflection--code change by D Brown 1/6/14
+    OSPFrame frame = null;
+    try {
+			Class<?> c = Class.forName("org.opensourcephysics.frames.ImageFrame"); //$NON-NLS-1$
+			Constructor<?>[] constructors = c.getConstructors();
+			for(int i = 0; i<constructors.length; i++) {
+			  Class<?>[] parameters = constructors[i].getParameterTypes();
+			  if(parameters.length==1 && parameters[0]==MeasuredImage.class) {
+			    frame = (OSPFrame) constructors[i].newInstance(new Object[] {mi});
+			    break;
+			  }
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+    if (frame==null) return;
+    
+//    OSPFrame frame = new ImageFrame(mi);
     frame.setTitle(DisplayRes.getString("Snapshot.Title")); //$NON-NLS-1$
     frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
     frame.setKeepHidden(false);    
