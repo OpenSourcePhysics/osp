@@ -40,6 +40,7 @@ import java.util.Iterator;
 
 import javax.swing.JOptionPane;
 import javax.swing.event.SwingPropertyChangeSupport;
+
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
@@ -755,25 +756,35 @@ public class VideoClip {
      */
     public Object loadObject(XMLControl control, Object obj) {
       VideoClip clip = (VideoClip) obj;
+      // set total frame count first so start frame will not be limited
+      int start = control.getInt("startframe"); //$NON-NLS-1$
+      int stepSize = control.getInt("stepsize"); //$NON-NLS-1$
+      int stepCount = control.getInt("stepcount"); //$NON-NLS-1$
+      int frameCount = clip.getFrameCount();
+      if (control.getPropertyNames().contains("video_framecount")) { //$NON-NLS-1$
+      	frameCount = control.getInt("video_framecount"); //$NON-NLS-1$
+      }
+      else if (start!=Integer.MIN_VALUE && stepSize!=Integer.MIN_VALUE && stepCount!=Integer.MIN_VALUE) {
+      	frameCount = start + stepCount*stepSize;
+      }
+      clip.setStepCount(frameCount); // this should equal or exceed the actual frameCount
+
       // set frame shift
-      int n = control.getInt("frameshift"); //$NON-NLS-1$
-      if(n!=Integer.MIN_VALUE) {
-        clip.setFrameShift(n);
+      int shift = control.getInt("frameshift"); //$NON-NLS-1$
+      if(shift!=Integer.MIN_VALUE) {
+        clip.setFrameShift(shift);
       }
       // set start frame
-      n = control.getInt("startframe"); //$NON-NLS-1$
-      if(n!=Integer.MIN_VALUE) {
-        clip.setStartFrameNumber(n);
+      if(start!=Integer.MIN_VALUE) {
+        clip.setStartFrameNumber(start);
       }
       // set step size
-      n = control.getInt("stepsize"); //$NON-NLS-1$
-      if(n!=Integer.MIN_VALUE) {
-        clip.setStepSize(n);
+      if(stepSize!=Integer.MIN_VALUE) {
+        clip.setStepSize(stepSize);
       }
       // set step count
-      n = control.getInt("stepcount"); //$NON-NLS-1$
-      if(n!=Integer.MIN_VALUE) {
-        clip.setStepCount(n);
+      if(stepCount!=Integer.MIN_VALUE) {
+        clip.setStepCount(stepCount);
       }
       // set start time
       double t = control.getDouble("starttime"); //$NON-NLS-1$
