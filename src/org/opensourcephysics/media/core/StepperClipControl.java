@@ -83,6 +83,8 @@ public class StepperClipControl extends ClipControl {
 
     });
     timer.setRepeats(false);
+    // set coalesce to false to avoid combining events when trying to go too fast
+    timer.setCoalesce(false);
   }
 
   /**
