@@ -166,7 +166,7 @@ public class XMLPropertyElement implements XMLProperty {
     }
     try {
       return Class.forName(className);
-    } catch(ClassNotFoundException ex) {
+    } catch(Exception ex) {
       return null;
     }
   }
