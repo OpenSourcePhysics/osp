@@ -19,6 +19,7 @@ import javax.swing.Timer;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.media.core.MediaRes;
 
 	/**
 	 * ExtensionsManager manages Java extensions directories.
@@ -173,9 +174,30 @@ public class ExtensionsManager {
 	  if (qtSource==null)	return false;
     File extFile = new File(dir, qtSource.getName());
   	long modified = qtSource.lastModified();
+
     // copy qtSource to directory if newer
     if (!extFile.exists() || extFile.lastModified()<modified) {
-	    if (!copyFile(qtSource, extFile))	return false;
+	    if (!copyFile(qtSource, extFile))	{
+	    	if (!extFile.exists()) {
+	    		// QTJava source is available but not in target directory
+	    		// but the attempt to copy it failed,
+	    		// so inform user that an administrator action is required
+	        String msg = ToolsRes.getString("ExtensionsManager.Dialog.CopyFiles.Message1"); //$NON-NLS-1$
+	        msg += "\n\n"+ToolsRes.getString("ExtensionsManager.Dialog.CopyFiles.Message2") //$NON-NLS-1$ //$NON-NLS-2$
+	        		+" "+MediaRes.getString("QTVideoType.Description"); //$NON-NLS-1$ //$NON-NLS-2$
+	        msg += "\n"+ToolsRes.getString("ExtensionsManager.Dialog.CopyFiles.Message3") //$NON-NLS-1$ //$NON-NLS-2$
+	        		+" QTJava.zip"; //$NON-NLS-1$
+	        msg += "\n"+ToolsRes.getString("ExtensionsManager.Dialog.CopyFiles.Message4") //$NON-NLS-1$ //$NON-NLS-2$
+	        		+" "+qtSource.getParent(); //$NON-NLS-1$
+	        msg += "\n"+ToolsRes.getString("ExtensionsManager.Dialog.CopyFiles.Message5") //$NON-NLS-1$ //$NON-NLS-2$
+	        		+" "+dir.getPath(); //$NON-NLS-1$
+	        JOptionPane.showMessageDialog(null, 
+	        		msg, 
+	        		ToolsRes.getString("ExtensionsManager.Dialog.CopyFiles.Title"),                                                          //$NON-NLS-1$
+	            JOptionPane.WARNING_MESSAGE);
+	    	}
+	    	return false;
+	    }
       return true;
     }
 		return false;
