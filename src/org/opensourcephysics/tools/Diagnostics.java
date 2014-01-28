@@ -120,6 +120,8 @@ public class Diagnostics {
     if(!qtJavaFile.exists())
     	qtJavaFile = null;
     
+    String trackerStarterWarning = System.getenv("QTJAVA_WARNING"); //$NON-NLS-1$
+    
     // assemble message
     String path = qtJavaFile==null?
     		ToolsRes.getString("Diagnostics.About.Unknown"): //$NON-NLS-1$
@@ -182,8 +184,11 @@ public class Diagnostics {
           return;
       	}
         String aboutString = ToolsRes.getString("Diagnostics.QTJava.Error.Message"); //$NON-NLS-1$
-        aboutString += NEWLINE+ToolsRes.getString("Diagnostics.QTJava.About.JarPath"); //$NON-NLS-1$
-        aboutString += " "+path; //$NON-NLS-1$
+        if (trackerStarterWarning==null) {
+	        aboutString += NEWLINE+ToolsRes.getString("Diagnostics.QTJava.About.JarPath"); //$NON-NLS-1$
+	        aboutString += " "+path; //$NON-NLS-1$
+        }
+        else aboutString += "\n\nError: "+trackerStarterWarning; //$NON-NLS-1$
         JOptionPane.showMessageDialog(null, 
         		aboutString, 
         		ToolsRes.getString("Diagnostics.QTJava.About.Title"),                                                          //$NON-NLS-1$

@@ -205,8 +205,18 @@ public class DiagnosticsForXuggle {
 		}
 		return jarFiles;
 	}
-	
-	
+		
+	/**
+	 * Gets the xuggle jar names.
+	 * @return an array of jar names
+	 */
+	public static String[] getXuggleJarNames() {
+		// return cloned array
+		String[] names = new String[xuggleJarNames.length];
+		System.arraycopy(xuggleJarNames, 0, names, 0, xuggleJarNames.length);
+		return names;
+	}
+
 	/**
 	 * Gets the xuggle jar files (named in xuggleJarNames) found in the current Java extension directory.
 	 * Always returns the array, but individual elements may be null.
