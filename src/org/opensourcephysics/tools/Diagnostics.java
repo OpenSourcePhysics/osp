@@ -79,6 +79,7 @@ public class Diagnostics {
   	// try to load QT objects and get version strings
     String qtJavaVersion = null;
     String qtVersion = null;
+    File qtJavaFile = null;
     try {
       Class<?> type = Class.forName("quicktime.util.QTBuild"); //$NON-NLS-1$
       Method method = type.getMethod("info", (Class[]) null);  //$NON-NLS-1$
@@ -91,34 +92,40 @@ public class Diagnostics {
       qtVersion = ""+method.invoke(null, (Object[]) null); //$NON-NLS-1$
       method = type.getMethod("getMinorVersion", (Class[]) null); //$NON-NLS-1$
       qtVersion += "."+method.invoke(null, (Object[]) null); //$NON-NLS-1$
+      qtJavaFile = getJarFile(type);
     } catch(Exception ex) {
     } catch(Error err) {
     }
-  	
-    // get a list of java extension paths
-    String extdirs = System.getProperty("java.ext.dirs"); //$NON-NLS-1$
-    String separator = System.getProperty("path.separator"); //$NON-NLS-1$
-    ArrayList<String> pathList = new ArrayList<String>();
-    int n = extdirs.indexOf(separator);
-    while (n>-1) {
-    	pathList.add(extdirs.substring(0, n));
-    	extdirs = extdirs.substring(n+1);
-      n = extdirs.indexOf(separator);
-    }
-    if (!"".equals(extdirs)) {//$NON-NLS-1$
-    	pathList.add(extdirs);
+    
+    if (qtJavaFile==null) {
+    	qtJavaFile = ExtensionsManager.getManager().getQTJavaZip();
     }
     
-    // look for QTJava.zip in extensions paths
-    String slash = System.getProperty("file.separator", "/"); //$NON-NLS-1$ //$NON-NLS-2$
-    File qtJavaFile = null;
-    for (String path: pathList) {
-    	qtJavaFile = new File(path+slash+"QTJava.zip");       //$NON-NLS-1$
-      if(qtJavaFile.exists())
-      	break;
+    if (qtJavaFile==null) {
+	    // get a list of java extension paths
+	    String extdirs = System.getProperty("java.ext.dirs"); //$NON-NLS-1$
+	    String separator = System.getProperty("path.separator"); //$NON-NLS-1$
+	    ArrayList<String> pathList = new ArrayList<String>();
+	    int n = extdirs.indexOf(separator);
+	    while (n>-1) {
+	    	pathList.add(extdirs.substring(0, n));
+	    	extdirs = extdirs.substring(n+1);
+	      n = extdirs.indexOf(separator);
+	    }
+	    if (!"".equals(extdirs)) {//$NON-NLS-1$
+	    	pathList.add(extdirs);
+	    }
+	    
+	    // look for QTJava.zip in extensions paths
+	    String slash = System.getProperty("file.separator", "/"); //$NON-NLS-1$ //$NON-NLS-2$
+	    for (String path: pathList) {
+	    	qtJavaFile = new File(path+slash+"QTJava.zip");       //$NON-NLS-1$
+	      if(qtJavaFile.exists())
+	      	break;
+	    }
+	    if(!qtJavaFile.exists())
+	    	qtJavaFile = null;
     }
-    if(!qtJavaFile.exists())
-    	qtJavaFile = null;
     
     String trackerStarterWarning = System.getenv("QTJAVA_WARNING"); //$NON-NLS-1$
     
@@ -202,6 +209,21 @@ public class Diagnostics {
             JOptionPane.WARNING_MESSAGE);
       }
     }
+  }
+  
+  public static File getJarFile(Class classInJar) throws Exception {
+    java.security.CodeSource codeSource = classInJar.getProtectionDomain().getCodeSource();
+    File jarFile = null;
+    if (codeSource.getLocation() != null) {
+      jarFile = new File(codeSource.getLocation().toURI());
+    }
+    else {
+      String path = classInJar.getResource(classInJar.getSimpleName() + ".class").getPath(); //$NON-NLS-1$
+      String jarFilePath = path.substring(path.indexOf(":") + 1, path.indexOf("!")); //$NON-NLS-1$ //$NON-NLS-2$
+      jarFilePath = java.net.URLDecoder.decode(jarFilePath, "UTF-8"); //$NON-NLS-1$
+      jarFile = new File(jarFilePath);
+    }
+    return jarFile;
   }
 
   public static void aboutJava3D() {
