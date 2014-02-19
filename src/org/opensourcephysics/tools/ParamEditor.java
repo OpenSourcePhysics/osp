@@ -8,7 +8,7 @@
 package org.opensourcephysics.tools;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.BorderFactory;
+
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.DatasetManager;
 
@@ -294,7 +294,7 @@ public class ParamEditor extends FunctionEditor {
   protected void refreshGUI() {
     super.refreshGUI();
     newButton.setToolTipText(ToolsRes.getString("ParamEditor.Button.New.Tooltip"));              //$NON-NLS-1$
-    setBorder(BorderFactory.createTitledBorder(ToolsRes.getString("ParamEditor.Border.Title"))); //$NON-NLS-1$
+    titledBorder.setTitle(ToolsRes.getString("ParamEditor.Border.Title")); //$NON-NLS-1$
   }
 
   /**

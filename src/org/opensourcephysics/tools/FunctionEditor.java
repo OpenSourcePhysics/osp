@@ -9,6 +9,7 @@ package org.opensourcephysics.tools;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -46,6 +47,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.AbstractCellEditor;
@@ -56,6 +58,7 @@ import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
@@ -68,6 +71,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
@@ -79,6 +83,7 @@ import javax.swing.text.StyledDocument;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
+
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
@@ -110,6 +115,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
   // static fields
   static NumberFormat decimalFormat;
   static DecimalFormat sciFormat;
+  protected static boolean undoEditsEnabled = true;
   protected static String[] editTypes = {"add row", //$NON-NLS-1$
     	"delete row", "edit name", "edit expression"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
   static FontRenderContext frc
@@ -137,6 +143,8 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
   protected JButton copyButton;
   protected JButton pasteButton;
   protected JPanel buttonPanel;
+  protected JLabel dragLabel;
+  protected TitledBorder titledBorder;
   protected FunctionPanel functionPanel;
   protected AbstractButton[] customButtons;
   protected boolean anglesInDegrees;
@@ -144,11 +152,11 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 
   static {
     decimalFormat = NumberFormat.getInstance();
-    decimalFormat.setMaximumFractionDigits(6);
-    decimalFormat.setMinimumFractionDigits(1);
+    decimalFormat.setMaximumFractionDigits(4);
+    decimalFormat.setMinimumFractionDigits(0);
     decimalFormat.setMaximumIntegerDigits(3);
     decimalFormat.setMinimumIntegerDigits(1);
-    sciFormat = new DecimalFormat("0.000000E0"); //$NON-NLS-1$
+    sciFormat = new DecimalFormat("0.0000E0"); //$NON-NLS-1$
   }
 
   /**
@@ -298,7 +306,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
         }
         // inform and pass undoable edit to listeners
         UndoableEdit edit = null;
-        if(postEdit) {
+        if(postEdit && undoEditsEnabled) {
           edit = getUndoableEdit(EXPRESSION_EDIT, expression, row, 1, prev, row, 1, getName(obj));
         }
         firePropertyChange("edit", getName(obj), edit); //$NON-NLS-1$
@@ -355,7 +363,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
     table.requestFocusInWindow();
     // inform and pass undoable edit to listeners
     UndoableEdit edit = null;
-    if(postEdit) {
+    if(postEdit && undoEditsEnabled) {
       edit = getUndoableEdit(ADD_EDIT, obj, row, 0, obj, undoRow, undoCol, getName(obj));
     }
     if(firePropertyChange) {
@@ -649,6 +657,8 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
    * Creates the GUI.
    */
   protected void createGUI() {
+  	titledBorder = BorderFactory.createTitledBorder(""); //$NON-NLS-1$
+  	setBorder(titledBorder);
     // create table and scroller
     table = new Table(tableModel);
     tableScroller = new JScrollPane(table);
@@ -732,8 +742,15 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
     copyButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Copy.Tooltip"));   //$NON-NLS-1$
     pasteButton.setText(ToolsRes.getString("FunctionEditor.Button.Paste"));                //$NON-NLS-1$
     pasteButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Paste.Tooltip")); //$NON-NLS-1$
-    setBorder(BorderFactory.createTitledBorder(ToolsRes.getString("FunctionEditor.Border.Title"))); //$NON-NLS-1$     
+    titledBorder.setTitle(ToolsRes.getString("FunctionEditor.Border.Title")); //$NON-NLS-1$
     refreshButtons();
+  }
+  
+  /**
+   * Sets the border title.
+   */
+  public void setBorderTitle(String title) {
+    titledBorder.setTitle(title);	
   }
 
   /**
@@ -976,6 +993,11 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
         }
       }
     }
+    try {
+			Double.parseDouble(name);
+			return true;
+		} catch (NumberFormatException e) {
+		}
     return false;
   }
 
@@ -1013,6 +1035,17 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
       name = input.toString();
       invalid = getInvalidTokens(name);
     }
+  	// warn users and don't accept names that start with a number
+  	try {
+  		String test = name.substring(0, Math.min(1, name.length()));
+			Double.parseDouble(test);
+    	JOptionPane.showMessageDialog(FunctionEditor.this, 
+    			ToolsRes.getString("FunctionEditor.Dialog.InvalidNumberInName.Text"), //$NON-NLS-1$
+    			ToolsRes.getString("FunctionEditor.Dialog.InvalidName.Title"), //$NON-NLS-1$
+    			JOptionPane.WARNING_MESSAGE);
+			return ""; //$NON-NLS-1$
+		} catch (NumberFormatException e) {
+		}
     return name;
   }
 
@@ -1048,7 +1081,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
   protected Object createUniqueObject(Object obj, String proposedName, boolean confirmChanges) {
     // construct a unique name from that proposed if nec
     proposedName = getValidName(proposedName);
-    if(proposedName.trim().equals("")) { //$NON-NLS-1$   
+    if(proposedName==null || proposedName.trim().equals("")) { //$NON-NLS-1$   
       return null;
     }
     String name = proposedName;
@@ -1287,9 +1320,11 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
           settingValue = true;
           if(!val.equals(prev)) {
             obj = createUniqueObject(obj, val, true);
+            // name may have changed
+            val = getName(obj);
           }
           settingValue = false;
-          if((obj==null)||val.equals(prev)) {
+          if (obj==null || val.equals(prev)) {
             functionPanel.refreshInstructions(FunctionEditor.this, false, 0);
             return;
           }
@@ -1297,7 +1332,6 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
           objects.add(row, obj);
         } 
         else {  // expression
-//          prev = getExpression(obj);
           prev = getValueAt(row, col).toString();
           type = EXPRESSION_EDIT;
           if(val.equals(prev)) {
@@ -1322,9 +1356,13 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
         }
         evaluateAll();
         table.repaint();
-     // inform and pass undoable edit to listeners
-        UndoableEdit edit = getUndoableEdit(type, val, row, col, prev, row, col, getName(obj));
-        firePropertyChange("edit", getName(obj), edit); //$NON-NLS-1$
+        UndoableEdit edit = null;
+        if (undoEditsEnabled) {
+	        // create undoable edit
+	        edit = getUndoableEdit(type, val, row, col, prev, row, col, getName(obj));
+        }
+	      // inform listeners
+	      firePropertyChange("edit", getName(obj), edit); //$NON-NLS-1$
         functionPanel.refreshInstructions(FunctionEditor.this, false, col);
       }
     }
@@ -1344,10 +1382,14 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
     boolean mouseClicked = false;
     JDialog popupEditor;
     JPanel editorPane;
+    JPanel dragPane;
     JTextField popupField = new JTextField();
     JTextPane variablesPane;
+    JButton revertButton;
+    ValueMouseControl valueMouseController;
     int minPopupWidth, varBegin, varEnd;
-    String prevExpression;
+    Object prevObject;
+    String prevName, prevExpression;
 
     // Constructor.
     CellEditor() {
@@ -1372,6 +1414,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
         public void focusGained(FocusEvent e) {
         	if (usePopupEditor) {
             stopCellEditing();
+            undoEditsEnabled = true;
         	}
           mouseClicked = false;
           table.clearSelection();
@@ -1393,18 +1436,36 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
     public Component getTableCellEditorComponent(JTable atable, Object value, boolean isSelected, int row, int column) {
       table.rowToSelect = row;
       table.columnToSelect = column;
-      field.setText(value.toString());
       if (usePopupEditor) {
+      	undoEditsEnabled = false;
       	JDialog popup = getPopupEditor();
+        if (functionPanel.functionTool!=null) {
+        	// set font level of popup editor
+	      	int level = functionPanel.functionTool.getFontLevel();
+	      	FontSizer.setFonts(popup, level);
+        }      	
+        dragLabel.setText(ToolsRes.getString("FunctionEditor.DragLabel.Text")); //$NON-NLS-1$
 	      popupField.setText(value.toString());
-	      prevExpression = value.toString();
+	      popupField.requestFocusInWindow();
+	  		try {
+					String s = popupField.getText();
+					setInitialValue(s);
+				} catch (NumberFormatException ex) {
+				}
+
+	      prevObject = objects.get(row);
+	      if (prevObject!=null) {
+	      	prevName = getName(prevObject);
+	      	prevExpression = getExpression(prevObject);
+	      }
+
 	      popupField.selectAll();
 	      if (column==1) {
 		      variablesPane.setText(getVariablesString(":\n")); //$NON-NLS-1$
 	        StyledDocument doc = variablesPane.getStyledDocument();
 	        Style blue = doc.getStyle("blue"); //$NON-NLS-1$
 	        doc.setCharacterAttributes(0, variablesPane.getText().length(), blue, false);
-	        popup.getContentPane().add(variablesPane, BorderLayout.SOUTH);
+	        popup.getContentPane().add(variablesPane, BorderLayout.CENTER);
 	      }
 	      else {
 	        popup.getContentPane().remove(variablesPane);
@@ -1418,10 +1479,47 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	      popup.setVisible(true);
       }
       else {
+      	field.setText(value.toString());
         functionPanel.refreshInstructions(FunctionEditor.this, true, column);
         functionPanel.tableEditorField = field;
       }
       return panel;
+    }
+    
+    void setInitialValue(final String stringValue) {
+    	Runnable runner = new Runnable() {
+    		public void run() {
+		    	JDialog editor = getPopupEditor();
+    			try {
+    				String val=stringValue.replaceAll(",","."); //$NON-NLS-1$ //$NON-NLS-2$
+    				double value = Double.parseDouble(val);
+    				valueMouseController.prevValue = value;
+    				popupField.setToolTipText(ToolsRes.getString("FunctionEditor.PopupField.Tooltip")); //$NON-NLS-1$
+    				revertButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Revert.Tooltip")); //$NON-NLS-1$
+    				variablesPane.setToolTipText(ToolsRes.getString("FunctionEditor.VariablesPane.Tooltip")); //$NON-NLS-1$
+    	  		int row = table.getSelectedRow();
+    	  		String name = (String)table.getValueAt(row, 0);
+    	  		String tooltip = ToolsRes.getString("FunctionEditor.DragLabel.Tooltip1"); //$NON-NLS-1$
+    	  		tooltip += " "+name; //$NON-NLS-1$
+    	  		tooltip += ", "+ToolsRes.getString("FunctionEditor.DragLabel.Tooltip2"); //$NON-NLS-1$ //$NON-NLS-2$
+            dragLabel.setToolTipText(tooltip);
+    	  		if (!name.equals("t")) { //$NON-NLS-1$
+    	      	editor.getContentPane().add(dragPane, BorderLayout.SOUTH);
+    	  		}
+    	      else {
+    	      	editor.getContentPane().remove(dragPane);
+    	      }
+    			} catch (NumberFormatException e) {
+          	editor.getContentPane().remove(dragPane);
+    			}
+        	editor.pack();
+    		}
+    	};
+      if(SwingUtilities.isEventDispatchThread()) {
+      	runner.run();
+      } else {
+        SwingUtilities.invokeLater(runner);
+      }
     }
 
     // Determines when editing starts.
@@ -1475,25 +1573,49 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
       dim.width = popupEditor.getWidth();
       return dim;
     }
-
+    
     // Gets the popup editor
     private JDialog getPopupEditor() {
     	if (popupEditor==null) {
         popupField.setEditable(true);
-        popupField.setFont(popupField.getFont().deriveFont(24f));
+        Font font = popupField.getFont().deriveFont(24f);
+      	int level = functionPanel.functionTool.getFontLevel();
+        font = FontSizer.getResizedFont(font, level);
+        popupField.setFont(font);
         popupField.addKeyListener(new KeyAdapter() {
           public void keyPressed(KeyEvent e) {
             if(e.getKeyCode()==KeyEvent.VK_ENTER) {
+            	String text = popupField.getText();
+            	// restore previous name and expression for undoable edit
+            	// in case they were changed with mouse
+	          	int row = table.getSelectedRow();
+	            objects.remove(row);
+	            objects.add(row, prevObject);
+	            if (table.getSelectedColumn()==1) {
+	          		setExpression(prevName, prevExpression, false);
+	            }
+	            // be sure editor field (like popup field) has correct text
+              field.setText(text);
+
+            	undoEditsEnabled = true;
               keyPressed = true;
             	popupEditor.setVisible(false);
-              field.setText(popupField.getText());
-              field.requestFocusInWindow();
+	            if (table.getSelectedColumn()==1) {
+	            	// explicitly set value in case focus listener not triggered!
+	              table.setValueAt(text, row, 1);
+	            }
+              field.requestFocusInWindow(); // triggers call to stopCellEditing()
               field.selectAll();
-              stopCellEditing();
-            } else {
+            } 
+            else {
             	popupField.setBackground(Color.yellow);
             	resizePopupEditor();
             }
+          }
+          public void keyReleased(KeyEvent e) {
+            if(e.getKeyCode()==KeyEvent.VK_ENTER)
+            	return;
+          	setInitialValue(popupField.getText());
           }
         });
         
@@ -1511,10 +1633,11 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 
         };
         variablesPane.setEditable(false);
-//        variablesPane.setOpaque(false);
         variablesPane.setFocusable(false);
         variablesPane.setBorder(popupField.getBorder());
-        variablesPane.setFont(popupField.getFont().deriveFont(14f));
+        font = popupField.getFont().deriveFont(14f);
+        font = FontSizer.getResizedFont(font, level);
+        variablesPane.setFont(font);
         StyledDocument doc = variablesPane.getStyledDocument();
         Style def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
         StyleConstants.setFontFamily(def, "SansSerif"); //$NON-NLS-1$
@@ -1534,6 +1657,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
             variablesPane.moveCaretPosition(varEnd);
             popupField.replaceSelection(variablesPane.getSelectedText());
             popupField.setBackground(Color.yellow);
+          	setInitialValue(popupField.getText());
           }
           public void mouseExited(MouseEvent e) {
             StyledDocument doc = variablesPane.getStyledDocument();
@@ -1583,20 +1707,51 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
             doc.setCharacterAttributes(varEnd, text.length()-varEnd, blue, false);
           }
         });
-        // make close button
+
+        // create drag pane
+        dragPane = new JPanel(new BorderLayout());
+        dragPane.setBackground(Color.white);
+        dragLabel = new JLabel();
+        dragLabel.setHorizontalAlignment(JLabel.CENTER);
+        Border line = BorderFactory.createLineBorder(LIGHT_BLUE);
+        Border space = BorderFactory.createEmptyBorder(2, 3, 2, 3);        
+        dragLabel.setBorder(BorderFactory.createCompoundBorder(line, space));
+        font = popupField.getFont().deriveFont(12f);
+        font = FontSizer.getResizedFont(font, level);
+        dragLabel.setFont(font);
+        dragLabel.setForeground(Color.green.darker().darker());
+        dragPane.add(dragLabel, BorderLayout.CENTER);
+        
+        valueMouseController = new ValueMouseControl(tableCellEditor);
+        dragLabel.addMouseListener(valueMouseController);
+        dragLabel.addMouseMotionListener(valueMouseController);
+        
+        // make revert button
         String imageFile = "/org/opensourcephysics/resources/tools/images/close.gif"; //$NON-NLS-1$
         Icon icon = ResourceLoader.getIcon(imageFile);
-        JButton closeButton = new JButton(icon);
-        Border line = BorderFactory.createLineBorder(Color.LIGHT_GRAY);
-        Border space = BorderFactory.createEmptyBorder(0,2,0,2);
-        closeButton.setBorder(BorderFactory.createCompoundBorder(line, space));
-        closeButton.addActionListener(new ActionListener() {
+        revertButton = new JButton(icon);
+        line = BorderFactory.createLineBorder(Color.LIGHT_GRAY);
+        space = BorderFactory.createEmptyBorder(0,2,0,2);
+        revertButton.setBorder(BorderFactory.createCompoundBorder(line, space));
+        revertButton.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent e) {
-            keyPressed = true;
+          	if (prevObject!=null) {
+	          	// restore original value object
+	          	int row = table.getSelectedRow();
+	            objects.remove(row);
+	            objects.add(row, prevObject);
+	            if (table.getSelectedColumn()==1) {
+	          		setExpression(prevName, prevExpression, false);
+	          		field.setText(prevExpression);
+	            }
+	            else {
+	          		field.setText(prevName);
+	            	
+	            }
+          		stopCellEditing();
+          	}
           	popupField.setBackground(Color.WHITE);
-          	popupField.setText(prevExpression);
           	popupEditor.setVisible(false);
-            stopCellEditing();
           }
         });
         // assemble components
@@ -1609,9 +1764,9 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	      editorPane = new JPanel(new BorderLayout());
 	      editorPane.setBackground(Color.WHITE);
 	      editorPane.add(popupField, BorderLayout.CENTER);
-	      editorPane.add(closeButton, BorderLayout.EAST);
+	      editorPane.add(revertButton, BorderLayout.EAST);
 	      contentPane.add(editorPane, BorderLayout.NORTH);
-	      contentPane.add(variablesPane, BorderLayout.SOUTH);
+	      // variablesPane and dragPane are added/removed from contentPane as needed
     	}
     	return popupEditor;
     }
@@ -1620,8 +1775,6 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 
   private class CellRenderer extends DefaultTableCellRenderer {
     Font font = new JTextField().getFont();
-
-    // Constructor
 
     /**
      * Constructor CellRenderer
@@ -1678,6 +1831,164 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
     }
 
   }
+  
+  /**
+   * A MouseAdapter to change numerical values in a CellEditor by dragging a mouse.
+   */
+  private class ValueMouseControl extends MouseAdapter {
+  	
+  	CellEditor cellEditor;
+  	double prevValue, newValue;
+  	Point startingPoint;
+  	int logDelta; // log (base 10) of step size delta
+  	
+    /**
+     * Constructor.
+     * @param editor the CellEditor
+     */
+  	private ValueMouseControl(CellEditor editor) {
+  		cellEditor = editor;
+  	}
+  	
+    /**
+     * Determines logDelta from a String value and relative level.
+     * Relative level is a number from 0 to 1 (eg relative mouse position within a component).
+     * Strings may be in decimal (eg 0.00) or scientific (eg 0.000E0) format.
+     * 
+     * @param val the value string
+     * @param relativeX number from 0-1 (higher relativeX ==> farther right in string digits)
+     * @return the log base 10 of the step size delta
+     */
+  	int getLogDelta(String val, double relativeX) {
+  		int digits = val.length();
+  		int powerOfTen = 0;
+  		// handle decimal point
+  		int decimal = val.replaceAll(",",".").indexOf("."); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+  		if (decimal>-1) {
+  			digits--;
+  		}
+  		// handle minus sign
+  		int minus = val.indexOf("-"); //$NON-NLS-1$
+  		if (minus>-1) {
+  			digits--;
+  			decimal--;
+  		}
+  		// handle sci format
+  		int exp = val.indexOf("E"); //$NON-NLS-1$
+  		if (exp>-1) {
+  			String exponent = val.substring(exp+1);
+  			digits -= exponent.length()+1;
+  			powerOfTen = Integer.parseInt(exponent);
+  		}
+  		// determine power of ten
+  		int selectableDigits = exp>-1? digits-1: digits;
+  		int selectedDigit = (int)Math.floor(relativeX*selectableDigits)+1;
+  		int integerDigits = decimal>-1? decimal: digits;
+  		powerOfTen += integerDigits-selectedDigit-1;
+  		return powerOfTen;
+  	}
+  	
+    /**
+     * Determines the text selection start index for a String.
+     * Strings may be in decimal (eg 0.00) or scientific (eg 0.000E0) format.
+     * 
+     * @param val the value string
+     * @return the text selection start index
+     */
+  	int getSelectionIndex(String val) {
+  		int powerOfTen = logDelta;
+  		int digits = val.length();
+  		int offset = 0;
+  		// handle decimal point
+  		int decimal = val.replaceAll(",",".").indexOf("."); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+  		if (decimal>-1) {
+  			digits--;
+  		}
+  		// handle minus sign
+  		int minus = val.indexOf("-"); //$NON-NLS-1$
+  		if (minus>-1) {
+  			digits--;
+  			offset = 1;
+  			decimal--;
+  		}
+  		// handle sci format
+  		int exp = val.indexOf("E"); //$NON-NLS-1$
+  		if (exp>-1) {
+  			String exponent = val.substring(exp+1);
+  			digits -= exponent.length()+1;
+  			powerOfTen -= Integer.parseInt(exponent);
+  		}
+  		int integerDigits = decimal>-1? decimal: digits;
+  		int selectedDigit = integerDigits-powerOfTen-1;
+  		offset += decimal>-1 && selectedDigit>=decimal? 1: 0;
+  		int selectionIndex = selectedDigit+offset;
+  		return selectionIndex;
+  	}
+  	
+  	@Override
+  	public void mousePressed(MouseEvent e) {
+  		int row = table.getSelectedRow();
+  		String name = (String)table.getValueAt(row, 0);
+  		// return if this control is not suitable for a variable (eg time)
+  		if (name.equals("t")) { //$NON-NLS-1$
+  			startingPoint = null;
+  			return;
+  		}
+  		startingPoint = e.getPoint();
+  		newValue = prevValue;
+  		double level = 1.0*startingPoint.x/cellEditor.dragPane.getWidth();
+  		logDelta = getLogDelta(cellEditor.popupField.getText(), level);
+  	}
+  	
+  	@Override
+  	public void mouseReleased(MouseEvent e) {
+  		if (startingPoint==null) return;
+  		prevValue = newValue;
+  		startingPoint = null;
+  		// deselect text
+  		String val = cellEditor.popupField.getText();
+  		cellEditor.popupField.select(val.length(), val.length());   
+  	}
+  	
+  	@Override
+  	public void mouseDragged(MouseEvent e) {
+  		if (startingPoint==null || Double.isNaN(prevValue)) return;
+  		// use shift key accelerator
+  		int pixelsPerStep = e.isShiftDown()? 1: 10;
+			int d = (e.getPoint().x-startingPoint.x)/pixelsPerStep;
+			// change value in steps of delta
+			double delta = Math.pow(10, logDelta);
+			newValue = prevValue+d*delta;
+			String s = format(newValue, 0);
+  		int row = table.getSelectedRow();
+  		table.setValueAt(s, row, 1);
+  		cellEditor.popupField.setText(s);
+  		cellEditor.popupField.setBackground(Color.yellow);
+      cellEditor.popupField.requestFocusInWindow();
+  		String val = cellEditor.popupField.getText();
+  		int index = getSelectionIndex(val);
+  		cellEditor.popupField.select(index, index+1);     
+  	}
+  	
+  	@Override
+  	public void mouseMoved(MouseEvent e) {
+  		double level = 1.0*e.getPoint().x/cellEditor.dragPane.getWidth();
+  		String val = cellEditor.popupField.getText();
+  		logDelta = getLogDelta(val, level);
+  		int index = getSelectionIndex(val);
+  		cellEditor.popupField.select(index, index+1);
+  	}
+  	
+  	@Override
+  	public void mouseEntered(MouseEvent e) {
+  		cellEditor.dragPane.setCursor(Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR)); 
+  	}
+  	
+  	@Override
+  	public void mouseExited(MouseEvent e) {
+  		cellEditor.dragPane.setCursor(Cursor.getDefaultCursor()); 
+  	}
+  }
 
   /**
    * A class to undo/redo edits.
@@ -1716,6 +2027,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
     // undoes the change
     public void undo() throws CannotUndoException {
       super.undo();
+      undoEditsEnabled = false;
       switch(editType) {
          case ADD_EDIT : {
            removeObject(undoObj, false);
@@ -1740,13 +2052,6 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
          case EXPRESSION_EDIT : {
            Object obj = objects.get(undoRow);
            Object[] undoArray = (Object[]) undoObj;    // array is {expression, buttons}
-//           ArrayList<?> buttons = (ArrayList<?>) undoArray[1];
-//           for(Object next : buttons) {
-//             AbstractButton b = (AbstractButton) next;
-//             if(!b.isSelected()) {
-//               b.doClick(0);
-//             }
-//           }
            obj = createObject(name, undoArray[0].toString(), obj);
            objects.remove(undoRow);
            objects.add(undoRow, obj);
@@ -1760,11 +2065,13 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
       getTable().selectOnFocus = true;
       getTable().requestFocusInWindow();
       refreshGUI();
+      undoEditsEnabled = true;
     }
 
     // redoes the change
     public void redo() throws CannotUndoException {
       super.redo();
+      undoEditsEnabled = false;
       switch(editType) {
          case ADD_EDIT : {
            addObject(redoObj, redoRow, false, true);
@@ -1809,6 +2116,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
       getTable().selectOnFocus = true;
       getTable().requestFocusInWindow();
       refreshGUI();
+      undoEditsEnabled = true;
     }
 
     // returns the presentation name
@@ -1837,7 +2145,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
       value = rounded;
     }
     double absVal = Math.abs(value);
-    boolean scientific = ((absVal<0.1)&&(value!=0))||(absVal>=1000);
+    boolean scientific = ((absVal<0.01)&&(value!=0))||(absVal>=1000);
     String s = scientific ? sciFormat.format(value) : decimalFormat.format(value);
     // eliminate trailing "0000x" and "9999x"
     int n = s.indexOf("E");                     // exponential symbol //$NON-NLS-1$
@@ -1862,6 +2170,32 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
       }
     }
     return s+tail;
+  }
+  
+  /**
+   * Rounds a number.
+   *
+   * @param value the number
+   * @param sigfigs the number of significant figures in the rounded value
+   * @return the rounded value
+   */
+  public static double round(double value, int sigfigs) {
+  	if (value==0) return value;
+  	int multiplier = value<0? -1: +1;
+  	value = Math.abs(value);
+  	// increase or decrease value by factors of 10 to get sigfigs
+  	double limit = Math.pow(10, sigfigs-1);
+  	int power = 0;
+  	while (value<limit) {
+  		value *= 10;
+  		power++;
+  	}
+  	while (value>10*limit) {
+  		value /= 10;
+  		power--;
+  	}
+  	value = Math.round(value);
+  	return multiplier*value/Math.pow(10, power);
   }
 
 }
