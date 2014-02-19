@@ -1497,7 +1497,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
     				popupField.setToolTipText(ToolsRes.getString("FunctionEditor.PopupField.Tooltip")); //$NON-NLS-1$
     				revertButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Revert.Tooltip")); //$NON-NLS-1$
     				variablesPane.setToolTipText(ToolsRes.getString("FunctionEditor.VariablesPane.Tooltip")); //$NON-NLS-1$
-    	  		int row = table.getSelectedRow();
+    	  		int row = table.rowToSelect;
     	  		String name = (String)table.getValueAt(row, 0);
     	  		String tooltip = ToolsRes.getString("FunctionEditor.DragLabel.Tooltip1"); //$NON-NLS-1$
     	  		tooltip += " "+name; //$NON-NLS-1$
@@ -1588,7 +1588,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
             	String text = popupField.getText();
             	// restore previous name and expression for undoable edit
             	// in case they were changed with mouse
-	          	int row = table.getSelectedRow();
+          		int row = table.rowToSelect;
 	            objects.remove(row);
 	            objects.add(row, prevObject);
 	            if (table.getSelectedColumn()==1) {
@@ -1737,7 +1737,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
           public void actionPerformed(ActionEvent e) {
           	if (prevObject!=null) {
 	          	// restore original value object
-	          	int row = table.getSelectedRow();
+          		int row = table.rowToSelect;
 	            objects.remove(row);
 	            objects.add(row, prevObject);
 	            if (table.getSelectedColumn()==1) {
@@ -1927,7 +1927,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
   	
   	@Override
   	public void mousePressed(MouseEvent e) {
-  		int row = table.getSelectedRow();
+  		int row = table.rowToSelect;
   		String name = (String)table.getValueAt(row, 0);
   		// return if this control is not suitable for a variable (eg time)
   		if (name.equals("t")) { //$NON-NLS-1$
@@ -1960,7 +1960,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 			double delta = Math.pow(10, logDelta);
 			newValue = prevValue+d*delta;
 			String s = format(newValue, 0);
-  		int row = table.getSelectedRow();
+  		int row = table.rowToSelect;
   		table.setValueAt(s, row, 1);
   		cellEditor.popupField.setText(s);
   		cellEditor.popupField.setBackground(Color.yellow);
