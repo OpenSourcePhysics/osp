@@ -40,11 +40,14 @@ import java.io.Writer;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -63,6 +66,7 @@ import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
 import org.opensourcephysics.controls.ControlsRes;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
@@ -145,6 +149,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   protected JMenuItem[] languageItems;
   protected JMenu fontSizeMenu;
   protected JMenuItem defaultFontSizeItem;
+  protected ButtonGroup fontSizeGroup;
   protected JMenu helpMenu;
   protected JMenuItem helpItem;
   protected JMenuItem logItem;
@@ -1717,6 +1722,16 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     if(dataBuilder!=null) {
       dataBuilder.setFontLevel(fontLevel);
     }
+    if (fontSizeGroup!=null) {
+	    Enumeration<AbstractButton> e = fontSizeGroup.getElements();
+	    for (; e.hasMoreElements();) {
+	      AbstractButton button = e.nextElement();
+	      int i = Integer.parseInt(button.getActionCommand());
+	      if(i==FontSizer.getLevel()) {
+	        button.setSelected(true);
+	      }
+	    }
+    }
   }
 
   /**
@@ -2680,7 +2695,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     displayMenu.add(languageMenu);
     fontSizeMenu = new JMenu();
     displayMenu.add(fontSizeMenu);
-    ButtonGroup group = new ButtonGroup();
+    fontSizeGroup = new ButtonGroup();
     Action fontSizeAction = new AbstractAction() {
       public void actionPerformed(ActionEvent e) {
         int i = Integer.parseInt(e.getActionCommand());
@@ -2692,11 +2707,12 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
       JMenuItem item = new JRadioButtonMenuItem("+"+i); //$NON-NLS-1$
       if(i==0) {
         defaultFontSizeItem = item;
+        item.setText(ToolsRes.getString("Tool.MenuItem.DefaultFontSize")); //$NON-NLS-1$
       }
       item.addActionListener(fontSizeAction);
       item.setActionCommand(""+i);                      //$NON-NLS-1$
       fontSizeMenu.add(item);
-      group.add(item);
+      fontSizeGroup.add(item);
       if(i==FontSizer.getLevel()) {
         item.setSelected(true);
       }

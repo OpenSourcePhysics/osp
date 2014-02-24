@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -343,6 +344,7 @@ public class FunctionTool extends JDialog {
     FontSizer.setFonts(this, level);
     FontSizer.setFonts(contentPane, level);
     FontSizer.setFonts(popup, level);
+    FontSizer.setFonts(fontButton, level);
     for(Iterator<FunctionPanel> it = panels.values().iterator(); it.hasNext(); ) {
       FunctionPanel next = it.next();
       if(next==getSelectedPanel()) {

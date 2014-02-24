@@ -11,8 +11,10 @@ import java.awt.Container;
 import java.awt.Font;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.swing.JMenu;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
@@ -82,6 +84,18 @@ public class FontSizer {
    * @param level the level
    */
   public static void setFonts(Object obj, int level) {
+  	if (obj instanceof Object[]) {
+  		for (Object next: ((Object[])obj)) {
+  			setFonts(next, level);
+  		}
+  		return;
+  	}
+  	if (obj instanceof Collection) {
+  		for (Object next: ((Collection)obj)) {
+  			setFonts(next, level);
+  		}
+  		return;
+  	}
     double factor = getFactor(level);
     if(obj instanceof Container) {
       setFontFactor((Container) obj, factor);
