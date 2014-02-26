@@ -83,6 +83,7 @@ import javax.swing.text.Document;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -282,6 +283,31 @@ public class LibraryTreePanel extends JPanel {
     }
   }
 
+  /**
+   * Sets the font level.
+   *
+   * @param level the desired font level
+   */
+  protected void setFontLevel(int level) {
+		
+		Object[] toSize = new Object[] {
+				splitPane, editorPanel, editorbar, authorField, contactField, keywordsField,
+				authorLabel, contactLabel, keywordsLabel, metadataLabel, metadataDropdown};
+		FontSizer.setFonts(toSize, level);
+		EntryField.font = authorField.getFont();
+		
+		// refresh the tree structure
+		TreeModel model = tree.getModel();
+		if (model instanceof DefaultTreeModel) {
+			LibraryTreeNode selectedNode = getSelectedNode();
+			DefaultTreeModel treeModel = (DefaultTreeModel)model;
+			treeModel.nodeStructureChanged(rootNode);
+			setSelectedNode(selectedNode);
+		}
+		refreshGUI();
+
+  }
+  
   /**
    * Sets the editing state.
    *
@@ -1200,14 +1226,16 @@ public class LibraryTreePanel extends JPanel {
     else browser.refreshButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Tooltip.Refresh")); //$NON-NLS-1$
 
 		// adjust size of labels so they right-align
-    int w = 0;
+    int w = 0, h = 0;
     Font font = nameLabel.getFont();
     FontRenderContext frc = new FontRenderContext(null, false, false); 
     for(JLabel next: labels) {
       Rectangle2D rect = font.getStringBounds(next.getText()+" ", frc); //$NON-NLS-1$
       w = Math.max(w, (int) rect.getWidth()+4);
+      h = Math.max(h, (int) rect.getHeight()+4);
     }
-    Dimension labelSize = new Dimension(w, 20);
+    h = Math.max(h, 20);
+    Dimension labelSize = new Dimension(w, h);
     for(JLabel next: labels) {
       next.setPreferredSize(labelSize);
       next.setMinimumSize(labelSize);
@@ -1332,6 +1360,7 @@ public class LibraryTreePanel extends JPanel {
           }
         });
 	  	}
+	    FontSizer.setFonts(popup, FontSizer.getLevel());
       return popup;
   	}
   	boolean isCollection = node.record instanceof LibraryCollection;
@@ -1377,6 +1406,7 @@ public class LibraryTreePanel extends JPanel {
 	      item.addActionListener(moveDownAction);
       }
     }
+    FontSizer.setFonts(popup, FontSizer.getLevel());
     return popup;
   }
 
@@ -1786,10 +1816,10 @@ public class LibraryTreePanel extends JPanel {
     			return metadata==emptyMetadata? ToolsRes.getString("LibraryTreePanel.Metadata.Name"): null; //$NON-NLS-1$
     		}
       	protected Font getEmptyFont() {
-      		return getFont().deriveFont(Font.BOLD+Font.ITALIC);
+      		return font.deriveFont(Font.BOLD+Font.ITALIC);
       	}     	
       	protected Font getDefaultFont() {
-      		return getFont().deriveFont(Font.BOLD);
+      		return font.deriveFont(Font.BOLD);
       	}      	
     	};
       entryFields.add(keyEditField);
@@ -1802,10 +1832,10 @@ public class LibraryTreePanel extends JPanel {
     			return metadata==emptyMetadata? ToolsRes.getString("LibraryTreePanel.Metadata.Value"): null; //$NON-NLS-1$
     		}
       	protected Font getEmptyFont() {
-      		return getFont().deriveFont(Font.ITALIC);
+      		return font.deriveFont(Font.ITALIC);
       	}     	
       	protected Font getDefaultFont() {
-      		return getFont().deriveFont(Font.PLAIN);
+      		return font.deriveFont(Font.PLAIN);
       	}      	
     	};
       entryFields.add(valueEditField);
@@ -2150,6 +2180,8 @@ public class LibraryTreePanel extends JPanel {
    * A JTextField for editing LibraryTreeNode data.
    */
   protected static class EntryField extends JTextField {
+  	
+		static Font font = new JTextField().getFont();
   	
   	EntryField() {
   		getDocument().putProperty("parent", this); //$NON-NLS-1$

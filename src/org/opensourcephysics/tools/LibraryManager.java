@@ -21,6 +21,7 @@ import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.util.ArrayList;
+
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -75,6 +76,7 @@ public class LibraryManager extends JDialog {
 	TitledBorder collectionsTitleBorder, importsTitleBorder, searchTitleBorder, cacheTitleBorder;
 	ArrayList<SearchCheckBox> checkboxes = new ArrayList<SearchCheckBox>();
 	Dimension defaultSize = new Dimension(500, 300);
+	Border listButtonBorder;
 	
 	/**
 	 * Constructor for a frame
@@ -88,7 +90,11 @@ public class LibraryManager extends JDialog {
 		library = browser.library;
     setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
     createGUI();
-    setSize(defaultSize);  		
+    Dimension dim = new Dimension(defaultSize);
+    double factor = 1+FontSizer.getLevel()*0.25;
+    dim.width = (int)(dim.width*factor);
+    dim.height = (int)(dim.height*factor);
+    setSize(dim); 
 	}
 	
 	/**
@@ -103,7 +109,11 @@ public class LibraryManager extends JDialog {
 		library = browser.library;
     setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
     createGUI();
-    setSize(defaultSize);  		
+    Dimension dim = new Dimension(defaultSize);
+    double factor = 1+FontSizer.getLevel()*0.25;
+    dim.width = (int)(dim.width*factor);
+    dim.height = (int)(dim.height*factor);
+    setSize(dim); 
 	}
 	
 	@Override
@@ -295,8 +305,10 @@ public class LibraryManager extends JDialog {
         String title = imported? 
           	ToolsRes.getString("LibraryBrowser.Dialog.AddLibrary.Title"): //$NON-NLS-1$
           	ToolsRes.getString("LibraryBrowser.Dialog.AddCollection.Title"); //$NON-NLS-1$
+        
         Object input = JOptionPane.showInputDialog(browser, 
         		message, title, JOptionPane.QUESTION_MESSAGE, null, null, null);
+        
         if(input==null || input.equals("")) {                            //$NON-NLS-1$
           return;
         }
@@ -532,7 +544,10 @@ public class LibraryManager extends JDialog {
       }
     });
 		
-		// assemble content pane
+    Border space = BorderFactory.createEmptyBorder(0,2,0,2);
+    listButtonBorder = BorderFactory.createCompoundBorder(etched, space);
+
+    // assemble content pane
 		JPanel contentPane = new JPanel(new BorderLayout());
 		setContentPane(contentPane);  		
 		contentPane.add(tabbedPane, BorderLayout.CENTER);
@@ -593,20 +608,7 @@ public class LibraryManager extends JDialog {
   		tabbedPane.setToolTipTextAt(k, ToolsRes.getString("LibraryManager.Tab.Cache.Tooltip")); //$NON-NLS-1$
   	}
 		
-		// adjust size of labels so they right-align
-    int w = 0;
-    Font font = nameLabel.getFont();
-    FontRenderContext frc = new FontRenderContext(null, false, false); 
-    Rectangle2D rect = font.getStringBounds(nameLabel.getText()+" ", frc); //$NON-NLS-1$
-    w = Math.max(w, (int) rect.getWidth()+4);
-    rect = font.getStringBounds(pathLabel.getText()+" ", frc); //$NON-NLS-1$
-    w = Math.max(w, (int) rect.getWidth()+4);
-
-    Dimension labelSize = new Dimension(w, 20);
-    nameLabel.setPreferredSize(labelSize);
-    nameLabel.setMinimumSize(labelSize);
-    pathLabel.setPreferredSize(labelSize);
-    pathLabel.setMinimumSize(labelSize);
+		resizeLabels();
 
   	pathField.setForeground(LibraryTreePanel.defaultForeground);
   	if (tabbedPane.getSelectedComponent()==collectionsPanel) {
@@ -691,6 +693,7 @@ public class LibraryManager extends JDialog {
       bar.add(Box.createHorizontalGlue());
       
       searchBox.add(bar);
+  		FontSizer.setFonts(searchBox, FontSizer.getLevel());
 		}
 		if (labels.isEmpty()) return;
 		
@@ -749,6 +752,7 @@ public class LibraryManager extends JDialog {
       bar.add(Box.createHorizontalGlue());
       
       cacheBox.add(bar);
+  		FontSizer.setFonts(cacheBox, FontSizer.getLevel());
 		}
 		
     // set label sizes
@@ -766,6 +770,38 @@ public class LibraryManager extends JDialog {
     }
 	}
 
+  /**
+   * Sets the font level.
+   *
+   * @param level the desired font level
+   */
+  protected void setFontLevel(int level) {
+		FontSizer.setFonts(this, level);
+		// set cell height of collectionList
+		Font font = collectionList.getFont();
+		font = FontSizer.getResizedFont(font, level);
+		int space = 8+level;
+		collectionList.setFixedCellHeight(font.getSize()+space);
+		resizeLabels();
+  }
+  
+  private void resizeLabels() {
+		// adjust size of labels so they right-align
+    int w = 0;
+    Font font = nameLabel.getFont();
+    FontRenderContext frc = new FontRenderContext(null, false, false); 
+    Rectangle2D rect = font.getStringBounds(nameLabel.getText()+" ", frc); //$NON-NLS-1$
+    w = Math.max(w, (int) rect.getWidth()+4);
+    rect = font.getStringBounds(pathLabel.getText()+" ", frc); //$NON-NLS-1$
+    w = Math.max(w, (int) rect.getWidth()+4);
+
+    Dimension labelSize = new Dimension(w, 20);
+    nameLabel.setPreferredSize(labelSize);
+    nameLabel.setMinimumSize(labelSize);
+    pathLabel.setPreferredSize(labelSize);
+    pathLabel.setMinimumSize(labelSize);  	
+  }
+  
   /**
    * Gets the total size of a folder.
    * 
@@ -806,9 +842,8 @@ public class LibraryManager extends JDialog {
     	setFont(sharedFont);
       setSelected(!library.noSearchSet.contains(path));
       setOpaque(false);
-      Border border = this.getBorder();
-      Border empty = BorderFactory.createEmptyBorder(0, 0, 0, 20);
-      setBorder(BorderFactory.createCompoundBorder(empty, border));
+      int space = 20 + FontSizer.getLevel()*5;
+      setBorder(BorderFactory.createEmptyBorder(0, 0, 0, space));
     }
     
     public Dimension getMaximumSize() {
@@ -825,7 +860,7 @@ public class LibraryManager extends JDialog {
   	String urlPath;
   	
     /**
-     * Constructs a RemoveButton.
+     * Constructs a DeleteButton.
      * @param path 
      */
     public DeleteButton(String path) {
@@ -833,7 +868,7 @@ public class LibraryManager extends JDialog {
     	setText(ToolsRes.getString("LibraryManager.Button.Delete")); //$NON-NLS-1$
     	setToolTipText(ToolsRes.getString("LibraryManager.Button.Delete.Tooltip")); //$NON-NLS-1$
   		setOpaque(false);
-  		setBorder(LibraryBrowser.buttonBorder);
+  		setBorder(listButtonBorder);
   		setBorderPainted(false);
   		setContentAreaFilled(false);
       addMouseListener(new MouseAdapter() {
@@ -878,7 +913,7 @@ public class LibraryManager extends JDialog {
     	setText(ToolsRes.getString("LibraryManager.Button.Clear")); //$NON-NLS-1$
     	setToolTipText(ToolsRes.getString("LibraryManager.Button.Clear.Tooltip")); //$NON-NLS-1$
   		setOpaque(false);
-  		setBorder(LibraryBrowser.buttonBorder);
+  		setBorder(listButtonBorder);
   		setBorderPainted(false);
   		setContentAreaFilled(false);
       addMouseListener(new MouseAdapter() {

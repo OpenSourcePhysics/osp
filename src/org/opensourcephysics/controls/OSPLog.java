@@ -35,6 +35,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.logging.XMLFormatter;
+
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -57,7 +58,9 @@ import javax.swing.text.Document;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
+
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.tools.FontSizer;
 
 /**
  * This is a viewable file-based message log for a java package.
@@ -718,6 +721,7 @@ public class OSPLog extends JFrame {
           if(OSPRuntime.isPopupTrigger(e)) {
             // show popup menu
             if(popup!=null) {
+            	FontSizer.setFonts(popup, FontSizer.getLevel());
               popup.show(textPane, e.getX(), e.getY()+8);
             }
           }
