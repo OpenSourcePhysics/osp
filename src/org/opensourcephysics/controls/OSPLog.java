@@ -917,6 +917,7 @@ public class OSPLog extends JFrame {
     if(chooser==null) {
       chooser = new JFileChooser(new File(OSPRuntime.chooserDir));
     }
+  	FontSizer.setFonts(chooser, FontSizer.getLevel());
     return chooser;
   }
 

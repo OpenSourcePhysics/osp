@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+
 import javax.swing.JApplet;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -31,6 +32,7 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
+import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ResourceLoader;
 import org.opensourcephysics.tools.Translator;
 
@@ -753,6 +755,7 @@ public class OSPRuntime {
    */
   public static JFileChooser getChooser() {
     if(chooser!=null) {
+    	FontSizer.setFonts(chooser, FontSizer.getLevel());
       return chooser;
     }
     try {
@@ -817,6 +820,7 @@ public class OSPRuntime {
     chooser.addChoosableFileFilter(xmlFilter);
     chooser.addChoosableFileFilter(txtFilter);
     chooser.setFileFilter(defaultFilter);
+  	FontSizer.setFonts(chooser, FontSizer.getLevel());
     return chooser;
   }
 
@@ -923,6 +927,7 @@ public class OSPRuntime {
       });
     }
     chooser.setFileFilter(filter);
+  	FontSizer.setFonts(chooser, FontSizer.getLevel());
     return chooser;
   }
 

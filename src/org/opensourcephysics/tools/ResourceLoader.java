@@ -687,6 +687,7 @@ public class ResourceLoader {
     chooser.addChoosableFileFilter(folderFilter);
     String text = ToolsRes.getString("ResourceLoader.FileChooser.Cache"); //$NON-NLS-1$
     chooser.setDialogTitle(text);
+  	FontSizer.setFonts(chooser, FontSizer.getLevel());
 	  int result = chooser.showDialog(parent, text);
     if (result==JFileChooser.APPROVE_OPTION) {
       return chooser.getSelectedFile();

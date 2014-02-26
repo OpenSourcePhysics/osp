@@ -47,6 +47,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+
 import org.opensourcephysics.display.CellBorder;
 import org.opensourcephysics.display.Dataset;
 import org.opensourcephysics.display.DrawingPanel;
@@ -493,8 +494,7 @@ public class DataToolPropsTable extends JTable {
       buttonPanel.add(closeButton);
       box.add(buttonPanel);
       styleDialog.setContentPane(contentPane);
-      int fontLevel = dataTable.dataToolTab.fontLevel;
-      FontSizer.setFonts(styleDialog, fontLevel);
+      FontSizer.setFonts(styleDialog, FontSizer.getLevel());
       styleDialog.pack();
       Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
       int x = (dim.width-styleDialog.getWidth())/2;

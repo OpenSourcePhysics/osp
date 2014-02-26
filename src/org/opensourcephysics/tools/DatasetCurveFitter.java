@@ -12,6 +12,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
@@ -709,6 +710,15 @@ public class DatasetCurveFitter extends JPanel {
     FontSizer.setFonts(this, fontLevel);
     fitBuilder.setFontLevel(level);
     splitPane.setDividerLocation(splitPane.getMaximumDividerLocation());
+    
+		int n = fitDropDown.getSelectedIndex();
+		Object[] items = new Object[fitDropDown.getItemCount()];
+		for (int i=0; i<items.length; i++) {
+			items[i] = fitDropDown.getItemAt(i);
+		}
+		DefaultComboBoxModel model = new DefaultComboBoxModel(items);
+		fitDropDown.setModel(model);
+		fitDropDown.setSelectedItem(n);
   }
 
   /**
@@ -1044,7 +1054,13 @@ public class DatasetCurveFitter extends JPanel {
         cellRenderer.fieldFont = aFont;
         spinCellEditor.field.setFont(aFont);
       }
+      getTableHeader().setFont(font);
       setRowHeight(font.getSize()+4);
+      TableModel model = getModel();
+      if (model instanceof DefaultTableModel) {
+      	DefaultTableModel tm = (DefaultTableModel)model;
+      	tm.fireTableDataChanged();
+      }
     }
 
   }

@@ -16,11 +16,14 @@ import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.Enumeration;
 import java.util.Properties;
+
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TextFrame;
+import org.opensourcephysics.tools.FontSizer;
 
 public class ControlUtils {
   static DecimalFormat format2 = new DecimalFormat("#0.00");      //$NON-NLS-1$
@@ -124,6 +127,7 @@ public class ControlUtils {
    */
   public static void loadParameters(Control control, Component parent) {
     JFileChooser chooser = new JFileChooser(new File(OSPRuntime.chooserDir));
+  	FontSizer.setFonts(chooser, FontSizer.getLevel());
     int result = chooser.showOpenDialog(parent);
     if(result==JFileChooser.APPROVE_OPTION) {
       try {
@@ -145,6 +149,7 @@ public class ControlUtils {
    */
   public static void saveToFile(Object object, Component parent) {
     JFileChooser fileChooser = new JFileChooser(new File(OSPRuntime.chooserDir));
+  	FontSizer.setFonts(chooser, FontSizer.getLevel());
     int result = fileChooser.showSaveDialog(parent);
     if(result!=JFileChooser.APPROVE_OPTION) {
       return;
@@ -203,6 +208,7 @@ public class ControlUtils {
    */
   public static JFileChooser getXMLFileChooser() {
     if(chooser!=null) {
+    	FontSizer.setFonts(chooser, FontSizer.getLevel());
       return chooser;
     }
     chooser = new JFileChooser(new File(OSPRuntime.chooserDir));
@@ -233,6 +239,7 @@ public class ControlUtils {
 
     };
     chooser.addChoosableFileFilter(filter);
+  	FontSizer.setFonts(chooser, FontSizer.getLevel());
     return chooser;
   }
 

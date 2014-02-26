@@ -2345,6 +2345,7 @@ public class LibraryTreePanel extends JPanel {
         } 	     	
       };
   	}
+  	FontSizer.setFonts(chooser, FontSizer.getLevel());
   	return chooser;
   }
 

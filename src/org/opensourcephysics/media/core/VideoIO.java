@@ -62,6 +62,7 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ResourceLoader;
 import org.opensourcephysics.tools.ExtensionsManager;
 
@@ -172,6 +173,7 @@ public class VideoIO {
       chooser = new JFileChooser(dir);
       chooser.addPropertyChangeListener(videoEnginePanel);
     }
+  	FontSizer.setFonts(chooser, FontSizer.getLevel());
     return chooser;
   }
 

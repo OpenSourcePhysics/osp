@@ -66,6 +66,7 @@ import javax.swing.LookAndFeel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
@@ -149,7 +150,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
   protected UndoableEditSupport undoSupport;
   protected UndoManager undoManager;
   protected FunctionTool dataBuilder;
-  protected int fontLevel = FontSizer.getLevel();
   protected JobManager jobManager = new JobManager(this);
   protected JLabel statusLabel, editableLabel;
   protected CartesianInteractive plotAxes;
@@ -540,7 +540,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
   	  		setTitle(ToolsRes.getString("DataTool.DataBuilder.Title")); //$NON-NLS-1$
   		  }  			
       };
-      dataBuilder.setFontLevel(fontLevel);
+      dataBuilder.setFontLevel(FontSizer.getLevel());
       dataBuilder.setHelpPath("data_builder_help.html");                      //$NON-NLS-1$
       dataBuilder.addPropertyChangeListener("function", this);                //$NON-NLS-1$
     }
@@ -686,14 +686,14 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
    * @param level the level
    */
   protected void setFontLevel(int level) {
-    if(fontLevel==level) {
-      return;
-    }
-    fontLevel = level;
+    FontSizer.setFonts(this, level);
     plot.setFontLevel(level);
+    
     FontSizer.setFonts(statsTable, level);
     FontSizer.setFonts(propsTable, level);
+    
     curveFitter.setFontLevel(level);
+    
     double factor = FontSizer.getFactor(level);
     plot.getAxes().resizeFonts(factor, plot);
     FontSizer.setFonts(plot.getPopupMenu(), level);
@@ -702,18 +702,20 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       propsTable.styleDialog.pack();
     }
     if(dataBuilder!=null) {
-      dataBuilder.setFontLevel(fontLevel);
+      dataBuilder.setFontLevel(level);
     }
-    Runnable runner = new Runnable() {
-      public void run() {
-        fitterAction.actionPerformed(null);
+    fitterAction.actionPerformed(null);
+    propsTable.refreshTable();
+		refreshStatusBar();
+		// kludge to display tables correctly: do propsAndStatsAction now, again after a millisecond!
+    propsAndStatsAction.actionPerformed(null);
+    Timer timer = new Timer(1, new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
         propsAndStatsAction.actionPerformed(null);
-        propsTable.refreshTable();
-		    refreshStatusBar();
       }
-
-    };
-    SwingUtilities.invokeLater(runner);
+    });
+		timer.setRepeats(false);
+		timer.start();
   }
 
   /**
@@ -953,6 +955,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     OSPLog.finest("saving tabe data from "+tabName); //$NON-NLS-1$
     JFileChooser chooser = OSPRuntime.getChooser();
     chooser.setSelectedFile(new File(tabName+".txt")); //$NON-NLS-1$
+  	FontSizer.setFonts(chooser, FontSizer.getLevel());
     int result = chooser.showSaveDialog(this);
     if(result==JFileChooser.APPROVE_OPTION) {
       OSPRuntime.chooserDir = chooser.getCurrentDirectory().toString();
@@ -1062,12 +1065,18 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     		if (scrollbar.isVisible()) {
     			dim.width += scrollbar.getWidth();
     		}
-    		dim.height = 10;
+    		dim.height = 1;
     		return dim;
     	}
     };
     splitPanes[2].setDividerSize(0);
     splitPanes[2].setEnabled(false);
+
+    // pig
+    splitPanes[2].setDividerSize(10);
+    splitPanes[2].setEnabled(true);
+    // end  pig
+    
     // add ancestor listener to initialize
     this.addAncestorListener(new AncestorListener() {
       public void ancestorAdded(AncestorEvent e) {
@@ -1303,6 +1312,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		    popup.add(valueCheckbox);
 		    popup.add(slopeCheckbox);
 		    popup.add(areaCheckbox);
+		    FontSizer.setFonts(popup, FontSizer.getLevel());
 		    popup.show(measureButton, 0, measureButton.getHeight());       		
       }
     });
@@ -1315,6 +1325,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		    popup.add(statsCheckbox);
 		    popup.add(fitterCheckbox);
 		    popup.add(fourierCheckbox);
+		    FontSizer.setFonts(popup, FontSizer.getLevel());
 		    popup.show(analyzeButton, 0, analyzeButton.getHeight());       		
       }
     });
@@ -1322,6 +1333,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     // create propsAndStatsAction
     propsAndStatsAction = new AbstractAction() {
       public void actionPerformed(ActionEvent e) {
+      	// lay out the table bar split panes
         boolean statsVis = statsCheckbox.isSelected();
         boolean propsVis = propsCheckbox.isSelected();
         if(statsVis) {
@@ -1348,6 +1360,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         } else {
           splitPanes[2].setDividerLocation(0);
         }
+        
       }
 
     };
@@ -2246,7 +2259,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         buildVarPopup();
       }
       isHorzVarPopup = true;
-      FontSizer.setFonts(varPopup, fontLevel);
+      FontSizer.setFonts(varPopup, FontSizer.getLevel());
       for(Component c : varPopup.getComponents()) {
         JMenuItem item = (JMenuItem) c;
         if(xLine.getText().equals(item.getActionCommand())) {
@@ -2277,7 +2290,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         buildVarPopup();
       }
       isHorzVarPopup = false;
-      FontSizer.setFonts(varPopup, fontLevel);
+      FontSizer.setFonts(varPopup, FontSizer.getLevel());
       for(Component c : varPopup.getComponents()) {
         JMenuItem item = (JMenuItem) c;
         if(yLine.getText().equals(item.getActionCommand())) {

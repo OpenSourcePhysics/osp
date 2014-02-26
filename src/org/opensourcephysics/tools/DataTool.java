@@ -155,7 +155,6 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   protected JMenuItem logItem;
   protected JMenuItem aboutItem;
   protected FunctionTool dataBuilder;
-  protected int fontLevel = FontSizer.getLevel();
   protected boolean exitOnClose = false;
   protected boolean saveChangesOnClose = false;
   protected FitBuilder fitBuilder;
@@ -1631,6 +1630,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
         removeTab(0, false);
       }
     }
+    tab.setFontLevel(FontSizer.getLevel());
     tab.dataTool = this;
     // assign a unique name (also traps for null name)
     tab.setName(getUniqueTabName(tab.getName()));
@@ -1640,7 +1640,6 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     //    validate();
     refreshTabTitles();
     refreshMenubar();
-    tab.setFontLevel(fontLevel);
   }
 
   /**
@@ -1710,17 +1709,17 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    * @param level the level
    */
   public void setFontLevel(int level) {
-    fontLevel = Math.max(level, 0);
-    super.setFontLevel(fontLevel);
-    double factor = FontSizer.getFactor(fontLevel);
+    super.setFontLevel(level);
+		FontSizer.setFonts(emptyMenubar, level);
+    double factor = FontSizer.getFactor(level);
     buttonHeight = (int) (factor*defaultButtonHeight);
     if(tabbedPane!=null) {
       for(int i = 0; i<getTabCount(); i++) {
-        getTab(i).setFontLevel(fontLevel);
+        getTab(i).setFontLevel(level);
       }
     }
     if(dataBuilder!=null) {
-      dataBuilder.setFontLevel(fontLevel);
+      dataBuilder.setFontLevel(level);
     }
     if (fontSizeGroup!=null) {
 	    Enumeration<AbstractButton> e = fontSizeGroup.getElements();
@@ -1732,6 +1731,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	      }
 	    }
     }
+
+		FontSizer.setFonts(OSPLog.getOSPLog(), level);
   }
 
   /**
@@ -1741,7 +1742,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   public FitBuilder getFitBuilder() {
     if(fitBuilder==null) {
       fitBuilder = new FitBuilder(this);
-      fitBuilder.setFontLevel(fontLevel);
+      fitBuilder.setFontLevel(FontSizer.getLevel());
       fitBuilder.setHelpPath("fit_builder_help.html"); //$NON-NLS-1$
     }
     return fitBuilder;
@@ -2047,7 +2048,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   	  		setTitle(ToolsRes.getString("DataTool.DataBuilder.Title")); //$NON-NLS-1$
   		  }  			
       };
-      dataBuilder.setFontLevel(fontLevel);
+      dataBuilder.setFontLevel(FontSizer.getLevel());
       dataBuilder.setHelpPath("data_builder_help.html");                      //$NON-NLS-1$
       dataBuilder.addPropertyChangeListener("function", this);                //$NON-NLS-1$
     }
@@ -2180,7 +2181,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
           return;
         }
         if(!tab.propsCheckbox.isSelected()&&!tab.statsCheckbox.isSelected()) {
-          tab.splitPanes[2].setDividerLocation(0);
+//          tab.splitPanes[2].setDividerLocation(0);
         }
       }
 
@@ -2308,7 +2309,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
             }
 
           });
-          FontSizer.setFonts(popup, fontLevel);
+          FontSizer.setFonts(popup, FontSizer.getLevel());
           popup.show(tabbedPane, e.getX(), e.getY()+8);
         }
       }
@@ -2491,7 +2492,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
           }
         }
         copyMenu.add(copyImageItem);
-        FontSizer.setFonts(copyMenu, fontLevel);
+        FontSizer.setFonts(copyMenu, FontSizer.getLevel());
       }
 
     };
@@ -2563,7 +2564,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
           addableData = null;
           pasteMenu.remove(pasteColumnsItem);
         }
-        FontSizer.setFonts(pasteMenu, fontLevel);
+        FontSizer.setFonts(pasteMenu, FontSizer.getLevel());
       }
 
     };
@@ -2699,7 +2700,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     Action fontSizeAction = new AbstractAction() {
       public void actionPerformed(ActionEvent e) {
         int i = Integer.parseInt(e.getActionCommand());
-        setFontLevel(i);
+        FontSizer.setLevel(i);
+//        setFontLevel(i);
       }
 
     };

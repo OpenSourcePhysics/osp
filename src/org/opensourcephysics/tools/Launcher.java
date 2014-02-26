@@ -3539,6 +3539,7 @@ public class Launcher {
    */
   protected static JFileChooser getXMLChooser() {
     if(chooser!=null) {
+    	FontSizer.setFonts(chooser, FontSizer.getLevel());
       return chooser;
     }
     chooser = new JFileChooser(new File(OSPRuntime.chooserDir));
@@ -3599,6 +3600,7 @@ public class Launcher {
     chooser.addChoosableFileFilter(getXMLFilter());
     chooser.addChoosableFileFilter(xsetFileFilter);
     chooser.addChoosableFileFilter(launcherFileFilter);
+  	FontSizer.setFonts(chooser, FontSizer.getLevel());
     return chooser;
   }
   

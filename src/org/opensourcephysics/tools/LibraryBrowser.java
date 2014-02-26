@@ -242,12 +242,6 @@ public class LibraryBrowser extends JPanel {
 		if (libraryManager!=null) {
 			libraryManager.setFontLevel(level);
 		}
-		font = FontSizer.getResizedFont(searchField.getFont(), level);		
-    javax.swing.UIManager.put("OptionPane.messageFont", font); //$NON-NLS-1$
-    javax.swing.UIManager.put("TextField.font", font); //$NON-NLS-1$
-
-    font = FontSizer.getResizedFont(commandButton.getFont(), level);    
-    javax.swing.UIManager.put("OptionPane.buttonFont", font); //$NON-NLS-1$
     
 		FontSizer.setFonts(OSPLog.getOSPLog(), level);
   }
