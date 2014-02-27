@@ -835,6 +835,10 @@ public class LibraryBrowser extends JPanel {
 		boolean changed = getTreePanel(n).isChanged();
   	tabbedPane.setTitleAt(n, changed? title+"*": title);  //$NON-NLS-1$
   	library.getNameMap().put(path, title);
+  	if (n==tabbedPane.getSelectedIndex()) {
+	    String tabname = " '"+title+"'"; //$NON-NLS-1$ //$NON-NLS-2$
+	    closeItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.CloseTab")+tabname); //$NON-NLS-1$
+  	}
   }
 
   /**
@@ -1555,6 +1559,13 @@ public class LibraryBrowser extends JPanel {
 		  	openRecentAction = new AbstractAction() {
 		  		public void actionPerformed(ActionEvent e) {
 		  			String path = e.getActionCommand();
+		  			library.addRecent(path, false);
+		  	    // select tab if path is already loaded
+		  	    int i = getTabIndexFromPath(path);
+		  	    if (i>-1) {
+		  	    	tabbedPane.setSelectedIndex(i);
+		  	    	return;
+		  	    }
 	    			TabLoader tabAdder = addTab(path, null);
 	    			if (tabAdder!=null) {
 	    	    	tabAdder.addPropertyChangeListener(new PropertyChangeListener() {  
