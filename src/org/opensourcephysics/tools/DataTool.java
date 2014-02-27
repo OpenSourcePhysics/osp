@@ -19,8 +19,6 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -1711,6 +1709,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   public void setFontLevel(int level) {
     super.setFontLevel(level);
 		FontSizer.setFonts(emptyMenubar, level);
+		FontSizer.setFonts(fileMenu, level);
+ 		FontSizer.setFonts(editMenu, level);
     double factor = FontSizer.getFactor(level);
     buttonHeight = (int) (factor*defaultButtonHeight);
     if(tabbedPane!=null) {
@@ -1733,6 +1733,27 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     }
 
 		FontSizer.setFonts(OSPLog.getOSPLog(), level);
+  }
+
+  @Override
+  public void setVisible(boolean vis) {
+  	// set preferred size the first time shown
+  	if (contentPane.getPreferredSize().equals(dim)) {
+	  	double f = 1+(0.2*FontSizer.getLevel());
+	    Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+	    int w = Math.min(screen.width-40, (int)(dim.width*f));
+	    int h = Math.min(screen.height-100, (int)(dim.height*f));
+	    // add one pixel to width so no longer equals dim
+	  	contentPane.setPreferredSize(new Dimension(w, h+1));
+	  	pack();
+	    // center this on the screen
+	    Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+	    int x = (dim.width-getBounds().width)/2;
+	    int y = (dim.height-getBounds().height)/2;
+	    setLocation(x, y);
+  	}
+
+  	super.setVisible(vis);
   }
 
   /**
@@ -2162,8 +2183,13 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    */
   protected void createGUI() {
     // configure the frame
-    contentPane.setPreferredSize(dim);
+  	
+  	// set preferred size
+  	double f = 1+0.25*FontSizer.getLevel();
+  	Dimension used = new Dimension((int)(dim.width*f), (int)(dim.height*f));
+    contentPane.setPreferredSize(used);
     setContentPane(contentPane);
+    
     JPanel centerPanel = new JPanel(new BorderLayout());
     contentPane.add(centerPanel, BorderLayout.CENTER);
     setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -2174,18 +2200,18 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
       }
 
     });
-    this.addComponentListener(new ComponentAdapter() {
-      public void componentResized(ComponentEvent e) {
-        DataToolTab tab = getSelectedTab();
-        if(tab==null) {
-          return;
-        }
-        if(!tab.propsCheckbox.isSelected()&&!tab.statsCheckbox.isSelected()) {
+//    this.addComponentListener(new ComponentAdapter() {
+//      public void componentResized(ComponentEvent e) {
+//        DataToolTab tab = getSelectedTab();
+//        if(tab==null) {
+//          return;
+//        }
+//        if(!tab.propsCheckbox.isSelected()&&!tab.statsCheckbox.isSelected()) {
 //          tab.splitPanes[2].setDividerLocation(0);
-        }
-      }
-
-    });
+//        }
+//      }
+//
+//    });
     // create tabbed pane
     tabbedPane = new JTabbedPane(SwingConstants.TOP);
     centerPanel.add(tabbedPane, BorderLayout.CENTER);

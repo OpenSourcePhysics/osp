@@ -28,6 +28,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -357,6 +358,16 @@ public class FunctionTool extends JDialog {
       JRadioButtonMenuItem item = (JRadioButtonMenuItem) e[level];
       item.setSelected(true);
     }
+    
+		int n = dropdown.getSelectedIndex();
+		Object[] items = new Object[dropdown.getItemCount()];
+		for (int i=0; i<items.length; i++) {
+			items[i] = dropdown.getItemAt(i);
+		}
+		DefaultComboBoxModel model = new DefaultComboBoxModel(items);
+		dropdown.setModel(model);
+		dropdown.setSelectedItem(n);
+		
     java.awt.Container c = contentPane.getTopLevelAncestor();
     Dimension dim = c.getSize();
     dim.width = c.getMinimumSize().width;

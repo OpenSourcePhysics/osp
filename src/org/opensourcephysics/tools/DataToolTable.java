@@ -2075,6 +2075,7 @@ public class DataToolTable extends DataTable {
       JComponent comp = (JComponent) c;
       java.awt.Dimension dim = comp.getPreferredSize();
       dim.height += 1;
+      dim.height = Math.max(getRowHeight()+2, dim.height);
       panel.setPreferredSize(dim);
       javax.swing.border.Border border = comp.getBorder();
       if(border instanceof javax.swing.border.EmptyBorder) {

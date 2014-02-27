@@ -405,8 +405,8 @@ public class DatasetCurveFitter extends JPanel {
   protected void createGUI() {
     setLayout(new BorderLayout());
     splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-    splitPane.setResizeWeight(1);
-    splitPane.setDividerSize(4);
+    splitPane.setResizeWeight(0.8);
+    splitPane.setDividerSize(6);
     // create autofit checkbox
     autofitCheckBox = new JCheckBox("", true); //$NON-NLS-1$
     autofitCheckBox.setSelected(true);

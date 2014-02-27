@@ -1050,7 +1050,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     splitPanes = new JSplitPane[3];
     // splitPanes[0] is plot/fitter on left, tables on right
     splitPanes[0] = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-    splitPanes[0].setResizeWeight(1);
+    splitPanes[0].setResizeWeight(0.7);
     splitPanes[0].setOneTouchExpandable(true);
     // splitPanes[1] is plot on top, fitter on bottom
     splitPanes[1] = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -1072,11 +1072,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     splitPanes[2].setDividerSize(0);
     splitPanes[2].setEnabled(false);
 
-    // pig
-    splitPanes[2].setDividerSize(10);
-    splitPanes[2].setEnabled(true);
-    // end  pig
-    
     // add ancestor listener to initialize
     this.addAncestorListener(new AncestorListener() {
       public void ancestorAdded(AncestorEvent e) {
@@ -1668,7 +1663,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     splitPanes[1].setTopComponent(plot);
     splitPanes[1].setBottomComponent(curveFitter);
     splitPanes[2].setBottomComponent(dataScroller);
-    splitPanes[0].setDividerLocation(0);
+//    splitPanes[0].setDividerLocation(0.7);
     curveFitter.splitPane.setDividerLocation(0);
     // set up the undo system
     undoManager = new UndoManager();
@@ -1749,10 +1744,10 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     if(isInitialized) {
       return;
     }
-    if(splitPanes[0].getDividerLocation()<10) {
-      splitPanes[0].setDividerLocation(0.7);
-      curveFitter.splitPane.setDividerLocation(1.0);
-    }
+//    if(splitPanes[0].getDividerLocation()<10) {
+//      splitPanes[0].setDividerLocation(0.7);
+//      curveFitter.splitPane.setDividerLocation(1.0);
+//    }
     splitPanes[1].setDividerLocation(1.0);
     propsAndStatsAction.actionPerformed(null);
     for(int i = 0; i<dataTable.getColumnCount(); i++) {

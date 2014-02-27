@@ -1346,10 +1346,11 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		}
     if (frame==null) return;
     
-//    OSPFrame frame = new ImageFrame(mi);
     frame.setTitle(DisplayRes.getString("Snapshot.Title")); //$NON-NLS-1$
     frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
     frame.setKeepHidden(false);    
+    FontSizer.setFonts(frame, FontSizer.getLevel());
+    frame.pack();
     frame.setVisible(true);
   }
 
@@ -2660,6 +2661,8 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
         ScaleInspector plotInspector = new ScaleInspector(DrawingPanel.this);
         plotInspector.setLocationRelativeTo(DrawingPanel.this);
         plotInspector.updateDisplay();
+        FontSizer.setFonts(plotInspector, FontSizer.getLevel()); 
+        plotInspector.pack();
         plotInspector.setVisible(true);
       }
     }
