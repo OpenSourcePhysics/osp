@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -431,7 +432,7 @@ public class DataTable extends JTable implements ActionListener {
     } else {
       Runnable doRefreshTable = new Runnable() {
         public synchronized void run() {
-          tableChanged(new TableModelEvent(dataTableModel, TableModelEvent.HEADER_ROW));
+          actionPerformed(null);
         }
 
       };
@@ -444,12 +445,39 @@ public class DataTable extends JTable implements ActionListener {
   }
 
   /**
-   *  Performs the action for the refresh timer by refreshing the data in the DataTable.
+   *  Performs the action for the refresh timer and refreshTable() method 
+   *  by refreshing the data in the DataTable.
    *
    * @param  evt
    */
   public void actionPerformed(ActionEvent evt) {
+  	// code added by D Brown to retain column order and size 02/28/2014
+		TableColumnModel model = DataTable.this.getColumnModel();
+		Integer[] modelIndex = new Integer[model.getColumnCount()];
+		Integer[] columnWidth = new Integer[model.getColumnCount()];
+		// save current order and sizes
+  	for (int i=0; i<modelIndex.length; i++) {
+  		modelIndex[i] = model.getColumn(i).getModelIndex();
+  		columnWidth[i] = model.getColumn(i).getWidth();
+  	}
+  	// refresh table--sets default order and sizes
     tableChanged(new TableModelEvent(dataTableModel, TableModelEvent.HEADER_ROW));
+    
+    // reset column order
+    outer: for (int targetIndex=0; targetIndex<modelIndex.length; targetIndex++) {
+    	// find column with modelIndex and move to targetIndex
+    	for (int i=0; i<modelIndex.length; i++) {
+    		if (model.getColumn(i).getModelIndex()==modelIndex[targetIndex]) {
+        	model.moveColumn(i, targetIndex);
+    			continue outer;
+    		}
+    	}
+    }
+    // reset column sizes
+  	for (int i=0; i<columnWidth.length; i++) {
+  		model.getColumn(i).setPreferredWidth(columnWidth[i]);
+  		model.getColumn(i).setWidth(columnWidth[i]);
+  	}
   }
 
   /**
