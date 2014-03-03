@@ -61,7 +61,8 @@ public class FontSizer {
     Font font = getResizedFont(TEXT_FONT, level);    
     javax.swing.UIManager.put("OptionPane.messageFont", font); //$NON-NLS-1$
     javax.swing.UIManager.put("TextField.font", font); //$NON-NLS-1$
-    
+    javax.swing.UIManager.put("ToolTip.font", font);     //$NON-NLS-1$
+        
   	font= getResizedFont(BUTTON_FONT, level);    
     javax.swing.UIManager.put("OptionPane.buttonFont", font); //$NON-NLS-1$
     
