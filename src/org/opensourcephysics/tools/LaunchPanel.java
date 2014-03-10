@@ -10,9 +10,13 @@ import java.io.*;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
+
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.event.*;
+import javax.swing.text.html.HTMLDocument;
 import javax.swing.tree.*;
+
 import org.opensourcephysics.controls.*;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.LaunchNode.DisplayTab;
@@ -38,6 +42,7 @@ public class LaunchPanel extends JPanel {
   protected Map<LaunchNode, VisibleNode> visibleNodeMap = new HashMap<LaunchNode, VisibleNode>();
   protected Launcher launcher;
   protected boolean rebuildingTabs;
+  protected Map<String, String> htmlSubstitutions = new TreeMap<String, String>();
 
   /**
    * Constructor.
@@ -172,6 +177,16 @@ public class LaunchPanel extends JPanel {
     return(LaunchNode) treeModel.getRoot();
   }
 
+  /**
+   * Gets the HTML substitution map. This maps target to replacement Strings to be
+   * substituted in HTML documents.
+   *
+   * @return the HTML substitution map
+   */
+  public Map<String, String> getHTMLSubstitutionMap() {
+  	return htmlSubstitutions;
+  }
+
   // ______________________________ protected methods _____________________________
 
   /**
@@ -256,16 +271,46 @@ public class LaunchPanel extends JPanel {
                                           ? url
                                           : displayTab.url;
               final boolean nodeEnabled = node.enabled;
-//              final String nodeName = node.getName();
               Runnable runner = new Runnable() {
                 public void run() {
                   try {
-                    html.editorPane.setPage(theURL);
-//                    OSPLog.info("displaying page: node "+nodeName +", tab "+html.hashCode()+", url " //$NON-NLS-1$
-//                        +" "+theURL);  //$NON-NLS-1$
-                  } catch(IOException e) {}
+                  	if (htmlSubstitutions.isEmpty()) {
+                  		// the traditional method
+                  		html.editorPane.setPage(theURL);                  	                  	
+                  	}
+                  	else {
+                    	// read url into a string
+                    	Scanner scanner = new Scanner(theURL.openStream(), "UTF-8"); //$NON-NLS-1$
+                    	String text = scanner.useDelimiter("\\A").next(); //$NON-NLS-1$
+                    	scanner.close();
+                    	// make html substitutions
+                    	for (String target: htmlSubstitutions.keySet()) {
+                    		String newValue = htmlSubstitutions.get(target);
+                    		text = text.replaceAll(target, newValue);
+                    	}
+                    	// set document base for relative paths
+                    	HTMLDocument doc = (HTMLDocument)html.editorPane.getDocument();
+	                    doc.setBase(theURL);
+	                    // set editorPane text
+                    	html.editorPane.setText(text);
+                    	// scroll to top
+                    	html.editorPane.setCaretPosition(0);
+                  	}
+                  } catch(IOException e) {
+                  }
+                  
                   if(theURL.getRef()!=null) {
                     html.editorPane.scrollToReference(theURL.getRef());
+                  	if (FontSizer.getLevel()>0) {
+	                  	// invoke scrollToReference again later at high font levels
+	                    Timer timer = new Timer(100, new ActionListener() {
+	                      public void actionPerformed(ActionEvent e) {
+	                      	html.editorPane.scrollToReference(theURL.getRef());
+	                      }
+	                    });
+	                		timer.setRepeats(false);
+	                		timer.start();
+                  	}
                   }
                   launcher.setLinksEnabled(html.editorPane, displayTab.hyperlinksEnabled && nodeEnabled);
                 }

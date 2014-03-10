@@ -90,6 +90,7 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 import javax.swing.undo.UndoableEdit;
@@ -720,6 +721,15 @@ public class Launcher {
     return htmlTabList.get(i);
   }
 
+  /**
+   * Gets the html tab count.
+   *
+   * @return the html tab count
+   */
+  public int getHTMLTabCount() {
+    return htmlTabList.size();
+  }
+  
   /**
    * Opens an xml document and selects a tab and/or node specified by name.
    * args[0] may be a relative path, absolute path, or self-contained xml string.
@@ -3607,7 +3617,7 @@ public class Launcher {
   /**
    * Refreshes the selected tab.
    */
-  protected void refreshSelectedTab() {
+  public void refreshSelectedTab() {
     LaunchNode root = getRootNode();
     if((root!=null)&&root.isButtonView()&&(Launcher.this.getClass()==Launcher.class)) {
       showButtonView(root);
@@ -3892,6 +3902,8 @@ public class Launcher {
         }
 
       });
+      HTMLEditorKit editorKit = new HTMLEditorKit();
+      editorPane.setEditorKit(editorKit);
       scroller = new JScrollPane(editorPane);
     }
 
