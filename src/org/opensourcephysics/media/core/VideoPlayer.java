@@ -1439,6 +1439,10 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     rateSpinner.setValue(getRate());
     // update stepSizeButton
     stepSizeButton.setText(""+getVideoClip().getStepSize()); //$NON-NLS-1$
+    // set font sizes
+    FontSizer.setFonts(readout, FontSizer.getLevel());
+    FontSizer.setFonts(rateSpinner, FontSizer.getLevel());
+    FontSizer.setFonts(stepSizeButton, FontSizer.getLevel());
     // update tooltips
     stepSizeButton.setToolTipText(MediaRes.getString("VideoPlayer.Button.StepSize.ToolTip")); //$NON-NLS-1$
     rateSpinner.setToolTipText(MediaRes.getString("VideoPlayer.Spinner.Rate.ToolTip")); //$NON-NLS-1$
