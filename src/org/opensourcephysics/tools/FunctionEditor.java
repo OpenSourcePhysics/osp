@@ -46,6 +46,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.AbstractCellEditor;
@@ -68,6 +69,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
@@ -79,6 +81,7 @@ import javax.swing.text.StyledDocument;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
+
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
@@ -96,7 +99,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	@SuppressWarnings("javadoc")
 	public final static String THETA = TeXParser.parseTeX("$\\theta$"); //$NON-NLS-1$
 	public final static String OMEGA = TeXParser.parseTeX("$\\omega$"); //$NON-NLS-1$
-	public final static String DEGREES = "º"; //$NON-NLS-1$
+	public final static String DEGREES = "ï¿½"; //$NON-NLS-1$
   public final static int ADD_EDIT = 0;
   public final static int REMOVE_EDIT = 1;
   public final static int NAME_EDIT = 2;
@@ -734,6 +737,12 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
     pasteButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Paste.Tooltip")); //$NON-NLS-1$
     setBorder(BorderFactory.createTitledBorder(ToolsRes.getString("FunctionEditor.Border.Title"))); //$NON-NLS-1$     
     refreshButtons();
+  }
+  
+  public void setBorderTitle(String title) {
+	  if(getBorder() instanceof TitledBorder) {
+		  ((TitledBorder)getBorder()).setTitle(title);
+	  }
   }
 
   /**

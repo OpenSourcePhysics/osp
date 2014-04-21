@@ -20,13 +20,13 @@ import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.display.OSPRuntime;
 
-	/**
-	 * ExtensionsManager manages Java extensions directories.
-	 * Its primary use is to copy Xuggle jars and QTJava.zip into appropriate ext directories.
-	 * 
-	 * @author Douglas Brown
-	 * @version 1.0
-	 */
+/**
+ * ExtensionsManager manages Java extensions directories.
+ * Its primary use is to copy Xuggle jars, FFMPeg jars and QTJava.zip into appropriate ext directories.
+ * 
+ * @author Douglas Brown
+ * @version 1.0
+ */
 public class ExtensionsManager {
 
 	private static final ExtensionsManager MANAGER = new ExtensionsManager();
@@ -34,7 +34,8 @@ public class ExtensionsManager {
 	private static Set<File> allJavaExtensionDirectories = new TreeSet<File>();
 	private static int vmsFound = 0;
 	private static Timer timer;
-	
+
+	String ffmpegHome;
 	String xuggleHome;
 	ExtensionsFilter extFilter;	
 	
@@ -87,6 +88,7 @@ public class ExtensionsManager {
 	 * Private constructor.
 	 */
 	private ExtensionsManager() {
+		ffmpegHome = System.getenv("FFMPEG_HOME"); //$NON-NLS-1$
 		xuggleHome = System.getenv("XUGGLE_HOME"); //$NON-NLS-1$
 		extFilter = new ExtensionsFilter();				
 	}
@@ -109,32 +111,33 @@ public class ExtensionsManager {
 		}
 		System.out.print(s);
 	}
-	
-  /**
-   * Copies Xuggle jar files to a target directory. Does nothing if the directory
-   * already contains a xuggle-xuggler.jar of the same size.
-   *
-   * @param dir the directory
-   * @return true if jars are copied
-   */
-	public boolean copyXuggleJarsTo(File dir) {
-		if (xuggleHome==null || dir==null) {
+
+	/**
+	 * Copies FFMPeg jar file to a target directory. Does nothing if the
+	 * directory already contains a ffmpeg.jar of the same size.
+	 * 
+	 * @param dir
+	 *            the directory
+	 * @return true if jars are copied
+	 */
+	public boolean copyFFMPegJarsTo(File dir) {
+		if (ffmpegHome==null || dir==null) {
 			return false;
 		}
-	  if (!new File(xuggleHome+"/share/java/jars/xuggle-xuggler.jar").exists()) { //$NON-NLS-1$
+	  if (!new File(ffmpegHome+"/ffmpeg.jar").exists()) { //$NON-NLS-1$
 	  	return false;
 	  }
-    File xuggleJarDir = new File(xuggleHome+"/share/java/jars"); //$NON-NLS-1$
-    String[] jarNames = DiagnosticsForXuggle.xuggleJarNames;
-	  File xuggleFile = new File(xuggleJarDir, jarNames[0]);
-    long fileLength = xuggleFile.length();
+    File ffmpegJarDir = new File(ffmpegHome); //$NON-NLS-1$
+    String[] jarNames = DiagnosticsForFFMPeg.ffmpegJarNames;
+	  File ffmpegFile = new File(ffmpegJarDir, jarNames[0]);
+    long fileLength = ffmpegFile.length();
     File extFile = new File(dir, jarNames[0]);
     // copy xuggle jars
     if (!extFile.exists() || extFile.length()!=fileLength) {
 	    for (String next: jarNames) {
-	      xuggleFile = new File(xuggleJarDir, next);
+	      ffmpegFile = new File(ffmpegJarDir, next);
 	      extFile = new File(dir, next);
-	      if (!copyFile(xuggleFile, extFile)) {
+	      if (!copyFile(ffmpegFile, extFile)) {
 	      	return false;
 	      }
 	    }
@@ -142,6 +145,55 @@ public class ExtensionsManager {
       return true;
     }
 		return false;
+	}
+
+	  /**
+	   * Copies Xuggle jar files to a target directory. Does nothing if the directory
+	   * already contains a xuggle-xuggler.jar of the same size.
+	   *
+	   * @param dir the directory
+	   * @return true if jars are copied
+	   */
+		public boolean copyXuggleJarsTo(File dir) {
+			if (xuggleHome==null || dir==null) {
+				return false;
+			}
+		  if (!new File(xuggleHome+"/share/java/jars/xuggle-xuggler.jar").exists()) { //$NON-NLS-1$
+		  	return false;
+		  }
+	    File xuggleJarDir = new File(xuggleHome+"/share/java/jars"); //$NON-NLS-1$
+	    String[] jarNames = DiagnosticsForXuggle.xuggleJarNames;
+		  File xuggleFile = new File(xuggleJarDir, jarNames[0]);
+	    long fileLength = xuggleFile.length();
+	    File extFile = new File(dir, jarNames[0]);
+	    // copy xuggle jars
+	    if (!extFile.exists() || extFile.length()!=fileLength) {
+		    for (String next: jarNames) {
+		      xuggleFile = new File(xuggleJarDir, next);
+		      extFile = new File(dir, next);
+		      if (!copyFile(xuggleFile, extFile)) {
+		      	return false;
+		      }
+		    }
+		    // all jars were copied
+	      return true;
+	    }
+			return false;
+		}
+		
+	/**
+	 * Gets the ffmpeg.jar from the standard directory, if it exists.
+	 * 
+	 * @return ffmpeg.jar
+	 */
+	public File getFFMPegJar() {
+		if (ffmpegHome == null)
+			return null;
+		File ffmpegJar = new File(ffmpegHome + "/ffmpeg.jar"); //$NON-NLS-1$
+		if (ffmpegJar.exists()) {
+			return ffmpegJar;
+		}
+		return null;
 	}
 	
   /**
@@ -160,8 +212,8 @@ public class ExtensionsManager {
 	  return null;
 	}
 
-	
-  /**
+		
+ /**
    * Copies QTJava.zip to a target directory. Does not overwrite a later version.
    *
    * @param dir the directory

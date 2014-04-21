@@ -685,6 +685,10 @@ public class Launcher {
     return getSelectedTab().getRootNode();
   }
 
+  public int getHTMLTabCount() {
+	  return tabbedPane.getTabCount();
+  }
+  
   /**
    * Gets the current number of tabs (LaunchPanels)
    *
@@ -3605,7 +3609,7 @@ public class Launcher {
   /**
    * Refreshes the selected tab.
    */
-  protected void refreshSelectedTab() {
+  public void refreshSelectedTab() {
     LaunchNode root = getRootNode();
     if((root!=null)&&root.isButtonView()&&(Launcher.this.getClass()==Launcher.class)) {
       showButtonView(root);

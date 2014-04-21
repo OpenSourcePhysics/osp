@@ -38,6 +38,7 @@ public class LaunchPanel extends JPanel {
   protected Map<LaunchNode, VisibleNode> visibleNodeMap = new HashMap<LaunchNode, VisibleNode>();
   protected Launcher launcher;
   protected boolean rebuildingTabs;
+  protected Map<String,String> htmlSubstitutionMap;
 
   /**
    * Constructor.
@@ -48,11 +49,16 @@ public class LaunchPanel extends JPanel {
   public LaunchPanel(LaunchNode rootNode, Launcher launcher) {
     showAllNodes = launcher instanceof LaunchBuilder;
     this.launcher = launcher;
+    htmlSubstitutionMap = new HashMap<String,String>();
     createGUI();
     createTree(rootNode);
     setSelectedNode(rootNode);
   }
 
+  public Map<String,String> getHTMLSubstitutionMap() {
+	  return htmlSubstitutionMap;
+  }
+  
   /**
    * Sets the selected node.
    *

@@ -709,9 +709,9 @@ public class FunctionTool extends JDialog {
   /**
    * Custom renderer to show name and icon in dropdown list items
    */
-  class DropdownRenderer extends JLabel implements ListCellRenderer {
+  public class DropdownRenderer extends JLabel implements ListCellRenderer {
 
-  	DropdownRenderer() {
+  	public DropdownRenderer() {
       setOpaque(true);
       setHorizontalAlignment(LEFT);
       setVerticalAlignment(CENTER);

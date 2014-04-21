@@ -659,6 +659,10 @@ public class VideoClip {
 	        ArrayList<VideoType> otherEngines = new ArrayList<VideoType>();
 	        String engine = VideoIO.getEngine();
 	        String ext = XML.getExtension(path);        
+	        if (!engine.equals(VideoIO.ENGINE_FFMPEG)) {
+	        	VideoType ffmpegType = VideoIO.getVideoType("FFMPeg", ext); //$NON-NLS-1$
+	        	if (ffmpegType!=null) otherEngines.add(ffmpegType);
+	        }
 	        if (!engine.equals(VideoIO.ENGINE_XUGGLE)) {
 	        	VideoType xuggleType = VideoIO.getVideoType("Xuggle", ext); //$NON-NLS-1$
 	        	if (xuggleType!=null) otherEngines.add(xuggleType);
@@ -676,6 +680,7 @@ public class VideoClip {
 	        else {
 	      		// provide immediate way to open with other engines
 	        	engine = VideoIO.ENGINE_NONE.equals(engine)? MediaRes.getString("VideoIO.Engine.None"): //$NON-NLS-1$
+	        			VideoIO.ENGINE_FFMPEG.equals(engine)? MediaRes.getString("FFMPegVideoType.Description"): //$NON-NLS-1$
 	        			VideoIO.ENGINE_XUGGLE.equals(engine)? MediaRes.getString("XuggleVideoType.Description"): //$NON-NLS-1$
 	        			MediaRes.getString("QTVideoType.Description"); //$NON-NLS-1$
           	String message = MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Message1")+" ("+engine+")."; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -683,7 +688,9 @@ public class VideoClip {
           	message += "\n"+MediaRes.getString("VideoIO.Dialog.Label.Path")+": "+path; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	        	ArrayList<String> optionList = new ArrayList<String>();
 	        	for (VideoType next: otherEngines) {
-	        		if (next.getClass().getSimpleName().equals("XuggleVideoType"))  //$NON-NLS-1$
+	        		if (next.getClass().getSimpleName().equals("FFMPegVideoType"))  //$NON-NLS-1$
+	        			optionList.add(MediaRes.getString("FFMPegVideoType.Description")); //$NON-NLS-1$
+	        		else if (next.getClass().getSimpleName().equals("XuggleVideoType"))  //$NON-NLS-1$
 	        			optionList.add(MediaRes.getString("XuggleVideoType.Description")); //$NON-NLS-1$
 	        		else if (next.getClass().getSimpleName().equals("QTVideoType"))  //$NON-NLS-1$
 	        			optionList.add(MediaRes.getString("QTVideoType.Description")); //$NON-NLS-1$
