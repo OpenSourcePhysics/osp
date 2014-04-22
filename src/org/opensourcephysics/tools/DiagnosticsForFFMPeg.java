@@ -27,9 +27,10 @@ public class DiagnosticsForFFMPeg {
 	@SuppressWarnings("javadoc")
 	public static final String FFMPEG_URL = "http://www.compadre.org/osp/items/detail.cfm?ID=11606"; //$NON-NLS-1$
 	public static final String BRIDJVERSION = "0.7-SNAPSHOT";
+	public static final String FFMPEG_VERSION = "2.2";
 	static String newline = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
 	static String[] ffmpegJarNames = new String[] {
-			"ffmpeg.jar", "bridj-" + BRIDJVERSION + "-unix-only.jar" }; //$NON-NLS-1$ //$NON-NLS-2$
+			"ffmpeg-"+FFMPEG_VERSION+".jar", "bridj-" + BRIDJVERSION + "-unix-only.jar" }; //$NON-NLS-1$ //$NON-NLS-2$
 	static int vmBitness;
 	static String javaExtDirectory;
 	static String pathEnvironment, pathValue, ffmpegHome;
@@ -251,7 +252,7 @@ public class DiagnosticsForFFMPeg {
 	 * home 4 FFMPEG_HOME complete, but incorrect "PATH", "DYLD_LIBRARY_PATH",
 	 * or "LD_LIBRARY_PATH" 5 FFMPEG_HOME complete, but missing ffmpeg jars in
 	 * current java extensions directory 6 FFMPEG_HOME complete, but mismatched
-	 * ffmpeg.jar in current java extensions directory 7 FFMPEG_HOME complete,
+	 * ffmpeg-FFMPEG_VERSION.jar in current java extensions directory 7 FFMPEG_HOME complete,
 	 * but wrong Java VM bitness -1 none of the above
 	 * 
 	 * @return status code

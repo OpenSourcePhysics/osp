@@ -114,7 +114,7 @@ public class ExtensionsManager {
 
 	/**
 	 * Copies FFMPeg jar file to a target directory. Does nothing if the
-	 * directory already contains a ffmpeg.jar of the same size.
+	 * directory already contains a ffmpeg-FFMPEG_VERSION.jar of the same size.
 	 * 
 	 * @param dir
 	 *            the directory
@@ -124,7 +124,7 @@ public class ExtensionsManager {
 		if (ffmpegHome==null || dir==null) {
 			return false;
 		}
-	  if (!new File(ffmpegHome+"/ffmpeg.jar").exists()) { //$NON-NLS-1$
+	  if (!new File(ffmpegHome+"/"+DiagnosticsForFFMPeg.ffmpegJarNames[0]).exists()) { //$NON-NLS-1$
 	  	return false;
 	  }
     File ffmpegJarDir = new File(ffmpegHome); //$NON-NLS-1$
@@ -182,14 +182,14 @@ public class ExtensionsManager {
 		}
 		
 	/**
-	 * Gets the ffmpeg.jar from the standard directory, if it exists.
+	 * Gets the ffmpeg-FFMPEG_VERSION.jar from the standard directory, if it exists.
 	 * 
-	 * @return ffmpeg.jar
+	 * @return ffmpeg-FFMPEG_VERSION.jar
 	 */
 	public File getFFMPegJar() {
 		if (ffmpegHome == null)
 			return null;
-		File ffmpegJar = new File(ffmpegHome + "/ffmpeg.jar"); //$NON-NLS-1$
+		File ffmpegJar = new File(ffmpegHome + "/"+DiagnosticsForFFMPeg.ffmpegJarNames[0]); //$NON-NLS-1$
 		if (ffmpegJar.exists()) {
 			return ffmpegJar;
 		}
