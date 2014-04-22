@@ -1492,17 +1492,16 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		    	JDialog editor = getPopupEditor();
     			try {
     				String val=stringValue.replaceAll(",","."); //$NON-NLS-1$ //$NON-NLS-2$
+    				if ("".equals(val)) val = "0"; //$NON-NLS-1$ //$NON-NLS-2$
     				double value = Double.parseDouble(val);
     				valueMouseController.prevValue = value;
     				popupField.setToolTipText(ToolsRes.getString("FunctionEditor.PopupField.Tooltip")); //$NON-NLS-1$
     				revertButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Revert.Tooltip")); //$NON-NLS-1$
     				variablesPane.setToolTipText(ToolsRes.getString("FunctionEditor.VariablesPane.Tooltip")); //$NON-NLS-1$
     	  		int row = table.rowToSelect;
-    	  		String name = (String)table.getValueAt(row, 0);
-    	  		String tooltip = ToolsRes.getString("FunctionEditor.DragLabel.Tooltip1"); //$NON-NLS-1$
-    	  		tooltip += " "+name; //$NON-NLS-1$
-    	  		tooltip += ", "+ToolsRes.getString("FunctionEditor.DragLabel.Tooltip2"); //$NON-NLS-1$ //$NON-NLS-2$
+    	  		String tooltip = ToolsRes.getString("FunctionEditor.DragLabel.Tooltip"); //$NON-NLS-1$
             dragLabel.setToolTipText(tooltip);
+    	  		String name = (String)table.getValueAt(row, 0);
     	  		if (!name.equals("t")) { //$NON-NLS-1$
     	      	editor.getContentPane().add(dragPane, BorderLayout.SOUTH);
     	  		}
@@ -1510,7 +1509,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
     	      	editor.getContentPane().remove(dragPane);
     	      }
     			} catch (NumberFormatException e) {
-          	editor.getContentPane().remove(dragPane);
+    				editor.getContentPane().remove(dragPane);
     			}
         	editor.pack();
     		}
@@ -1710,7 +1709,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 
         // create drag pane
         dragPane = new JPanel(new BorderLayout());
-        dragPane.setBackground(Color.white);
+        dragPane.setBackground(new Color(240, 255, 240)); // very light green
         dragLabel = new JLabel();
         dragLabel.setHorizontalAlignment(JLabel.CENTER);
         Border line = BorderFactory.createLineBorder(LIGHT_BLUE);
@@ -1860,6 +1859,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
      * @return the log base 10 of the step size delta
      */
   	int getLogDelta(String val, double relativeX) {
+  		if ("".equals(val)) return 0; //$NON-NLS-1$
   		int digits = val.length();
   		int powerOfTen = 0;
   		// handle decimal point
@@ -1881,8 +1881,8 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
   			powerOfTen = Integer.parseInt(exponent);
   		}
   		// determine power of ten
-  		int selectableDigits = exp>-1? digits-1: digits;
-  		int selectedDigit = (int)Math.floor(relativeX*selectableDigits)+1;
+  		int selectableDigits = exp>-1? digits: digits+1;
+  		int selectedDigit = (int)Math.floor(relativeX*selectableDigits);
   		int integerDigits = decimal>-1? decimal: digits;
   		powerOfTen += integerDigits-selectedDigit-1;
   		return powerOfTen;
