@@ -30,7 +30,7 @@ public class DiagnosticsForFFMPeg {
 	public static final String FFMPEG_VERSION = "2.2";
 	static String newline = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
 	static String[] ffmpegJarNames = new String[] {
-			"ffmpeg-"+FFMPEG_VERSION+".jar", "bridj-" + BRIDJVERSION + "-unix-only.jar" }; //$NON-NLS-1$ //$NON-NLS-2$
+			"ffmpeg-"+FFMPEG_VERSION+".jar", "bridj-" + BRIDJVERSION + ".jar" }; //$NON-NLS-1$ //$NON-NLS-2$
 	static int vmBitness;
 	static String javaExtDirectory;
 	static String pathEnvironment, pathValue, ffmpegHome;
