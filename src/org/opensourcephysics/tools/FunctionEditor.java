@@ -1590,16 +1590,17 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
           		int row = table.rowToSelect;
 	            objects.remove(row);
 	            objects.add(row, prevObject);
-	            if (table.getSelectedColumn()==1) {
-	          		setExpression(prevName, prevExpression, false);
+	            if (table.columnToSelect==1) {
+//	          		setExpression(prevName, prevExpression, false);
+	              table.setValueAt(prevExpression, row, 1);
 	            }
-	            // be sure editor field (like popup field) has correct text
+	            // be sure editor field has correct text
               field.setText(text);
 
             	undoEditsEnabled = true;
               keyPressed = true;
             	popupEditor.setVisible(false);
-	            if (table.getSelectedColumn()==1) {
+	            if (table.columnToSelect==1) {
 	            	// explicitly set value in case focus listener not triggered!
 	              table.setValueAt(text, row, 1);
 	            }
@@ -1735,19 +1736,24 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
         revertButton.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent e) {
           	if (prevObject!=null) {
-	          	// restore original value object
-          		int row = table.rowToSelect;
-	            objects.remove(row);
-	            objects.add(row, prevObject);
-	            if (table.getSelectedColumn()==1) {
-	          		setExpression(prevName, prevExpression, false);
-	          		field.setText(prevExpression);
-	            }
+	          	// restore original value
+          		if (table.columnToSelect==1) {
+          			table.setValueAt(prevExpression, table.rowToSelect, 1);
+          			field.setText(prevExpression);
+          		}
 	            else {
-	          		field.setText(prevName);
-	            	
+          			table.setValueAt(prevName, table.rowToSelect, 0);
+          			field.setText(prevName);
 	            }
+          		
+//	            objects.remove(row);
+//	            objects.add(row, prevObject);
+//	            if (table.getSelectedColumn()==1) {
+//	          		setExpression(prevName, prevExpression, false);
+//	          		field.setText(prevExpression);
+//	            }
           		stopCellEditing();
+              undoEditsEnabled = true;
           	}
           	popupField.setBackground(Color.WHITE);
           	popupEditor.setVisible(false);
