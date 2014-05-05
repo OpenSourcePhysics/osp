@@ -314,7 +314,7 @@ public class OSPRuntime {
         boolean tryIt=true;
         String home = System.getProperty("java.home");//$NON-NLS-1$
         String version = System.getProperty("java.version"); //$NON-NLS-1$
-        if (version.indexOf("1.7")<0) tryIt = true; //$NON-NLS-1$
+        if (version.indexOf("1.7")<0  && version.indexOf("1.8")<0) tryIt = true; //$NON-NLS-1$ //$NON-NLS-2$
         else tryIt = (new java.io.File(home+"/lib/ext/j3dcore.jar")).exists(); //$NON-NLS-1$
         if (!tryIt) return false;
       }
