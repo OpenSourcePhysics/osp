@@ -1456,7 +1456,11 @@ public class DatasetCurveFitter extends JPanel {
     
     public void applyPattern(String pattern) {
       if(format instanceof DecimalFormat) {
-        ((DecimalFormat) format).applyPattern(pattern);
+        try {
+        	// catch occasional exceptions thrown when opening a trk file...
+					((DecimalFormat) format).applyPattern(pattern);
+				} catch (Exception e) {
+				}
       }
     }
 
