@@ -9,7 +9,7 @@
  * The org.opensourcephysics.media.gif package provides GIF services
  * including implementations of the Video and VideoRecorder interfaces.
  *
- * Copyright (c) 2004  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2014  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
