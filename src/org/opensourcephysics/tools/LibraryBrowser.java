@@ -2406,6 +2406,8 @@ public class LibraryBrowser extends JPanel {
 		    			s+":\n"+path, //$NON-NLS-1$
 		  				ToolsRes.getString("LibraryBrowser.Dialog.CollectionNotFound.Title"), //$NON-NLS-1$
 		  				JOptionPane.WARNING_MESSAGE);  
+		  		library.removeRecent(path);
+		  		refreshRecentMenu();		    	
 		    	setProgress(-1);
 	    	}
       } catch (Exception ignore) {
