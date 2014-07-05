@@ -651,6 +651,7 @@ public class LibraryBrowser extends JPanel {
    * @return a LibraryResource that describes and targets the file
    */
 	protected LibraryResource createResource(File targetFile, File baseDir, FileFilter filter) {
+		if (targetFile==null || !targetFile.exists()) return null;
 		if (!filter.accept(targetFile)) return null;
 		
 		String fileName = targetFile.getName();
