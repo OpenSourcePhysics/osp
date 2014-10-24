@@ -82,13 +82,9 @@ public class VideoIO {
 	@SuppressWarnings("javadoc")
 	public static final String ENGINE_FFMPEG = "FFMPeg"; //$NON-NLS-1$
 	@SuppressWarnings("javadoc")
-	public static final String ENGINE_XUGGLE = "Xuggle"; //$NON-NLS-1$
-	@SuppressWarnings("javadoc")
 	public static final String ENGINE_NONE = "none"; //$NON-NLS-1$
 	@SuppressWarnings("javadoc")
 	public static final String DEFAULT_PREFERRED_EXPORT_EXTENSION = "mp4"; //$NON-NLS-1$
-	@SuppressWarnings("javadoc")
-	public static final long XUGGLE_54_FILE_LENGTH = 1000000; // smaller than ver 5.4 (38MB) but bigger than 3.4 (.35MB)
 	
 	// static fields
   protected static JFileChooser chooser;
@@ -244,16 +240,13 @@ public class VideoIO {
    * Determines if a video engine is installed on the current computer.
    * Note that accessing an installed engine may require switching Java VM.
    *
-   * @param engine ENGINE_QUICKTIME, ENGINE_FFMPEG, ENGINE_XUGGLE or ENGINE_NONE
+   * @param engine ENGINE_QUICKTIME, ENGINE_FFMPEG or ENGINE_NONE
    * @return true if installed
    */
   public static boolean isEngineInstalled(String engine) {
 	if (engine.equals(ENGINE_FFMPEG)) {
 		return ExtensionsManager.getManager().getFFMPegJar()!=null;
 	}
-	else if (engine.equals(ENGINE_XUGGLE)) {
-  		return ExtensionsManager.getManager().getXuggleJar()!=null;
-  	}
   	else if (engine.equals(ENGINE_QUICKTIME)) {
   		if (OSPRuntime.isMac()) return true;
   		if (OSPRuntime.isLinux()) return false;
@@ -265,7 +258,7 @@ public class VideoIO {
   /**
    * Gets the name of the current video engine.
    *
-   * @return ENGINE_QUICKTIME, ENGINE_FFMPEG, ENGINE_XUGGLE or ENGINE_NONE
+   * @return ENGINE_QUICKTIME, ENGINE_FFMPEG or ENGINE_NONE
    */
   public static String getEngine() {
   	if (videoEngine==null) {
@@ -277,12 +270,11 @@ public class VideoIO {
   /**
    * Sets the current video engine by name.
    *
-   * @param engine ENGINE_QUICKTIME, ENGINE_FFMPEG, ENGINE_XUGGLE or ENGINE_NONE
+   * @param engine ENGINE_QUICKTIME, ENGINE_FFMPEG or ENGINE_NONE
    */
   public static void setEngine(String engine) {
   	if (engine==null || (!engine.equals(ENGINE_QUICKTIME)	
   			&& !engine.equals(ENGINE_FFMPEG)
-  			&& !engine.equals(ENGINE_XUGGLE)
   			&& !engine.equals(ENGINE_NONE)))
   		return;
   	videoEngine = engine;
@@ -291,38 +283,31 @@ public class VideoIO {
   /**
    * Gets the name of the default video engine.
    *
-   * @return ENGINE_QUICKTIME, ENGINE_FFMPEG, ENGINE_XUGGLE or ENGINE_NONE
+   * @return ENGINE_QUICKTIME, ENGINE_FFMPEG or ENGINE_NONE
    */
   public static String getDefaultEngine() {
   	String engine = ENGINE_NONE;
-		double xuggleVersion = 0;
 		boolean hasQT = false;
 		boolean hasFFMPEG = false;
     for (VideoType next: videoEngines) {
     	if (next.getClass().getSimpleName().contains(ENGINE_FFMPEG)) {
     		hasFFMPEG = true;
     	}
-    	else if (next.getClass().getSimpleName().contains(ENGINE_XUGGLE)) {
-    		xuggleVersion = guessXuggleVersion();
-    	}
     	else if (next.getClass().getSimpleName().contains(ENGINE_QUICKTIME)) {
     		hasQT = true;
     	}
     }
+	    // ffmpeg is first choice  		
 		if (hasFFMPEG) engine = ENGINE_FFMPEG;
-		// Xuggle 3.4 is first choice  		
-		else if (xuggleVersion==3.4) engine = ENGINE_XUGGLE;
 		// QuickTime is second choice
 		else if (hasQT) engine = ENGINE_QUICKTIME;
-		// Xuggle 5.4 is last choice--buggy
-		else if (xuggleVersion==5.4) engine = ENGINE_XUGGLE;
   	return engine;
   }
 
   /**
    * Updates a video engine by copying files or creating symlinks if needed.
    *
-   * @param engine ENGINE_QUICKTIME, ENGINE_FFMPEG, ENGINE_XUGGLE or ENGINE_NONE
+   * @param engine ENGINE_QUICKTIME, ENGINE_FFMPEG or ENGINE_NONE
    * @return true if updated
    */
   public static boolean updateEngine(String engine) {
@@ -345,14 +330,6 @@ public class VideoIO {
   		for (File extDir: extDirs) {
   			if (!extDir.exists()) continue;
   			copied = manager.copyFFMPegJarsTo(extDir) || copied;
-  		}
-  		return copied;
-  	}
-  	else if (engine.equals(ENGINE_XUGGLE)) {
-  		boolean copied = false;
-  		for (File extDir: extDirs) {
-  			if (!extDir.exists()) continue;
-  			copied = manager.copyXuggleJarsTo(extDir) || copied;
   		}
   		return copied;
   	}
@@ -381,15 +358,6 @@ public class VideoIO {
 //    	extFolder = extFolder.substring(0, extFolder.indexOf(sep));
 //    }
 //    extFolder = extFolder+"/"; //$NON-NLS-1$
-//    // get xuggle folder and jar names
-//    String xuggleHome = System.getenv("XUGGLE_HOME"); //$NON-NLS-1$
-//  	String xuggleFolder = XML.forwardSlash(xuggleHome)+"/share/java/jars/"; //$NON-NLS-1$
-//    String[] jarNames = {"xuggle-xuggler.jar","slf4j-api.jar", //$NON-NLS-1$ //$NON-NLS-2$
-//    		"logback-core.jar","logback-classic.jar"}; //$NON-NLS-1$ //$NON-NLS-2$
-//  	String shellCmd = "#!/bin/bash\nsudo cp "+xuggleFolder+"xuggle-xuggler.jar "+extFolder+"xuggle-copy.jar";        
-//  	shellCmd = "#!/bin/bash\ncp "+xuggleFolder+"xuggle-xuggler.jar ~/junk.jar";        
-//  	String home = System.getProperty("user.home");
-//  	String fileName = home+"/copyXuggle.sh";
 //    try {
 //      File file = new File(fileName);
 //      FileOutputStream stream = new FileOutputStream(file);
@@ -649,22 +617,19 @@ public class VideoIO {
   /**
    * Gets an array of video types available to a specified video engine.
    * Always returns image and gif types in addition to the engine types.
-   * @param engine ENGINE_QUICKTIME, ENGINE_FFMPEG, ENGINE_XUGGLE or ENGINE_NONE
+   * @param engine ENGINE_QUICKTIME, ENGINE_FFMPEG or ENGINE_NONE
    * @return the available video types
    */
   public static VideoType[] getVideoTypesForEngine(String engine) {
   	ArrayList<VideoType> available = new ArrayList<VideoType>();
     boolean skipFFMPeg = VideoIO.getEngine().equals(ENGINE_QUICKTIME) 
-    		|| VideoIO.getEngine().equals(ENGINE_XUGGLE) || VideoIO.getEngine().equals(ENGINE_NONE);
+    		|| VideoIO.getEngine().equals(ENGINE_NONE);
     boolean skipQT = VideoIO.getEngine().equals(ENGINE_FFMPEG) 
-    		|| VideoIO.getEngine().equals(ENGINE_XUGGLE) || VideoIO.getEngine().equals(ENGINE_NONE);
-    boolean skipXuggle = VideoIO.getEngine().equals(ENGINE_QUICKTIME) 
-    		|| VideoIO.getEngine().equals(ENGINE_FFMPEG) || VideoIO.getEngine().equals(ENGINE_NONE);
+    		|| VideoIO.getEngine().equals(ENGINE_NONE);
     for (VideoType next: videoTypes) {
     	String typeName = next.getClass().getSimpleName();
     	if (skipQT && typeName.contains(ENGINE_QUICKTIME)) continue;
     	if (skipFFMPeg && typeName.contains(ENGINE_FFMPEG)) continue;
-    	if (skipXuggle && typeName.contains(ENGINE_XUGGLE)) continue;
   		available.add(next);
     }
     return available.toArray(new VideoType[0]);
@@ -715,16 +680,13 @@ public class VideoIO {
     VideoType[] allTypes = getVideoTypesForExtension(extension);
     ArrayList<VideoType> allowedTypes = new ArrayList<VideoType>();
     boolean skipFFMPeg = VideoIO.getEngine().equals(ENGINE_QUICKTIME) 
-    		|| VideoIO.getEngine().equals(ENGINE_XUGGLE) || VideoIO.getEngine().equals(ENGINE_NONE);
+    		|| VideoIO.getEngine().equals(ENGINE_NONE);
     boolean skipQT = VideoIO.getEngine().equals(ENGINE_FFMPEG) 
-    		|| VideoIO.getEngine().equals(ENGINE_XUGGLE) || VideoIO.getEngine().equals(ENGINE_NONE);
-    boolean skipXuggle = VideoIO.getEngine().equals(ENGINE_QUICKTIME) 
-    		|| VideoIO.getEngine().equals(ENGINE_FFMPEG) || VideoIO.getEngine().equals(ENGINE_NONE);
+    		|| VideoIO.getEngine().equals(ENGINE_NONE);
     for(int i = 0; i<allTypes.length; i++) {
     	String typeName = allTypes[i].getClass().getSimpleName();
     	if (skipQT && typeName.contains(ENGINE_QUICKTIME)) continue;
     	if (skipFFMPeg && typeName.contains(ENGINE_FFMPEG)) continue;
-    	if (skipXuggle && typeName.contains(ENGINE_XUGGLE)) continue;
     	allowedTypes.add(allTypes[i]);
     }
     for (VideoType next: allowedTypes) {
@@ -988,19 +950,6 @@ public class VideoIO {
 	  return null;
 	}
 	 
-	/**
-	 * Returns the best guess Xuggle version as a double based on file size.
-	 * For an exact version number, use DiagnosticsForXuggle (requires Xuggle to be running).
-	 * @return 3.4 or 5.4 if xuggle installed, otherwise 0.0
-   */
-  public static double guessXuggleVersion() {
-		File xuggleJar = ExtensionsManager.getManager().getXuggleJar();
-		if (xuggleJar!=null) {
-			return xuggleJar.length()<XUGGLE_54_FILE_LENGTH? 3.4: 5.4;
-		}
-		return 0;
-  }
-
   /**
    * A JPanel for setting a preferred video engine when opening a video.
    */  

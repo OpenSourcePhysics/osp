@@ -2468,14 +2468,6 @@ public class LibraryBrowser extends JPanel {
 	      method.invoke(null, (Object[]) null);
 			} catch (Exception ex) {
 			}
-		// if Xuggle is available, register with VideoIO
-		className = "org.opensourcephysics.media.xuggle.XuggleIO"; //$NON-NLS-1$
-    try {
-				Class<?> xuggleIOClass = Class.forName(className);
-	      Method method = xuggleIOClass.getMethod("registerWithVideoIO", (Class[]) null);  //$NON-NLS-1$
-	      method.invoke(null, (Object[]) null);
-			} catch (Exception ex) {
-			}
   	}
   	
     public boolean accept(File file) {

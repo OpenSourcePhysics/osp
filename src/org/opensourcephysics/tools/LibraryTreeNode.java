@@ -780,35 +780,19 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 				}							
 			}
 			
-			// video files: use FFMPeg thumbnail tool first, if available, Xuggle else
+			// video files: use FFMPeg thumbnail tool, if available
 			else {
 	      String className = "org.opensourcephysics.media.ffmpeg.FFMPegThumbnailTool"; //$NON-NLS-1$
 	      Class<?>[] types = new Class<?>[] {Dimension.class, String.class, String.class};
 	      Object[] values = new Object[] {defaultThumbnailDimension, sourcePath, thumbPath};
-	      boolean failed = false;
 		    try {
 		      Class<?> ffmpegClass = Class.forName(className);
 		      Method method=ffmpegClass.getMethod("createThumbnailFile", types); //$NON-NLS-1$
 		      thumbFile = (File)method.invoke(null, values);
 				} catch(Exception ex) {
 					OSPLog.fine("failed to create thumbnail: "+ex.toString()); //$NON-NLS-1$
-					failed = true;
 				} catch(Error err) {
-					failed = true;
 				}
-
-			if (failed) {
-			    try {
-				      className = "org.opensourcephysics.media.xuggle.XuggleThumbnailTool"; //$NON-NLS-1$
-				      Class<?> xuggleClass = Class.forName(className);
-				      Method method=xuggleClass.getMethod("createThumbnailFile", types); //$NON-NLS-1$
-				      thumbFile = (File)method.invoke(null, values);
-						} catch(Exception ex) {
-							OSPLog.fine("failed to create thumbnail: "+ex.toString()); //$NON-NLS-1$
-						} catch(Error err) {
-						}
-					 }
-				
 			}
 			return thumbFile;
     }

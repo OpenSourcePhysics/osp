@@ -27,7 +27,7 @@ public class DiagnosticsForFFMPeg {
 	@SuppressWarnings("javadoc")
 	public static final String FFMPEG_URL = "http://www.compadre.org/osp/items/detail.cfm?ID=11606"; //$NON-NLS-1$
 	public static final String BRIDJVERSION = "0.7-SNAPSHOT";
-	public static final String FFMPEG_VERSION = "2.2";
+	public static final String FFMPEG_VERSION = "2.3";
 	static String newline = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
 	static String[] ffmpegJarNames = new String[] {
 			"ffmpeg-"+FFMPEG_VERSION+".jar", "bridj-" + BRIDJVERSION + ".jar" }; //$NON-NLS-1$ //$NON-NLS-2$
@@ -66,7 +66,7 @@ public class DiagnosticsForFFMPeg {
 		int status = getStatusCode();
 
 		if (OSPLog.getLevelValue() <= Level.CONFIG.intValue()) {
-			String ffmpegHome = System.getenv("XUGGLE_HOME"); //$NON-NLS-1$
+			String ffmpegHome = System.getenv("FFMPEG_HOME"); //$NON-NLS-1$
 			OSPLog.config("FFMPEG_HOME = " + ffmpegHome); //$NON-NLS-1$
 			OSPLog.config(pathEnvironment + " = " + pathValue); //$NON-NLS-1$
 
@@ -85,7 +85,7 @@ public class DiagnosticsForFFMPeg {
 			for (int i = 0; i < jarSizes.length; i++) {
 				jarSizes[i] = ffmpegJars[i] == null ? "" : " (file size " + (ffmpegJars[i].length() / 1024) + "kB) "; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			}
-			String fileData = "XUGGLE_HOME FFMPeg files: "; //$NON-NLS-1$
+			String fileData = "FFMPEG_HOME FFMPeg files: "; //$NON-NLS-1$
 			for (int i = 0; i < jarSizes.length; i++) {
 				if (i > 0)
 					fileData += ", "; //$NON-NLS-1$
@@ -183,6 +183,10 @@ public class DiagnosticsForFFMPeg {
 		aboutFFMPeg();
 	}
 
+	public static String[] getFFMPegJarNames() {
+		return ffmpegJarNames;
+	}
+	
 	/**
 	 * Gets the ffmpeg jar file (named in ffmpegJarName) found in a given
 	 * directory. Always returns the file but may be null.
@@ -313,7 +317,7 @@ public class DiagnosticsForFFMPeg {
 
 		ArrayList<String> message = new ArrayList<String>();
 		switch (status) {
-		case 1: // not installed (XUGGLE_HOME==null, incomplete ffmpeg jars in
+		case 1: // not installed (FFMPEG_HOME==null, incomplete ffmpeg jars in
 				// current java extensions directory)
 			message.add(FFMPegRes.getString("FFMPeg.Dialog.NoFFMPeg.Message1")); //$NON-NLS-1$
 			message.add(" "); //$NON-NLS-1$
@@ -322,7 +326,7 @@ public class DiagnosticsForFFMPeg {
 			message.add(FFMPEG_URL);
 			break;
 
-		case 2: // needs reboot/login? (XUGGLE_HOME==null, complete ffmpeg jars
+		case 2: // needs reboot/login? (FFMPEG_HOME==null, complete ffmpeg jars
 				// in current java extensions directory)
 			message.add(FFMPegRes.getString("FFMPeg.Dialog.BadFFMPeg.Message")); //$NON-NLS-1$
 			message.add(FFMPegRes
@@ -335,7 +339,7 @@ public class DiagnosticsForFFMPeg {
 			message.add(FFMPEG_URL);
 			break;
 
-		case 3: // XUGGLE_HOME defined but incomplete ffmpeg jars in ffmpeg home
+		case 3: // FFMPEG_HOME defined but incomplete ffmpeg jars in ffmpeg home
 			message.add(FFMPegRes.getString("FFMPeg.Dialog.BadFFMPeg.Message")); //$NON-NLS-1$
 			message.add(FFMPegRes
 					.getString("FFMPeg.Dialog.IncompleteFFMPeg.Message1")); //$NON-NLS-1$

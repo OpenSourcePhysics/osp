@@ -156,12 +156,6 @@ public class Diagnostics {
 				    	message.add(ToolsRes.getString("Diagnostics.QTJava.About.No32BitVM.Message1")); //$NON-NLS-1$
 				    	message.add(ToolsRes.getString("Diagnostics.QTJava.About.No32BitVM.Message2")); //$NON-NLS-1$							
 						}
-						else {
-				    	message.add(XuggleRes.getString("Xuggle.Dialog.NoVM.Message1")); //$NON-NLS-1$
-				    	message.add(XuggleRes.getString("Xuggle.Dialog.NoVM.Message2")); //$NON-NLS-1$
-				    	message.add(XuggleRes.getString("Xuggle.Dialog.NoVM.Message3")); //$NON-NLS-1$
-				    	message.add(XuggleRes.getString("Xuggle.Dialog.NoVM.Message4")); //$NON-NLS-1$
-						}
 					}
 					else { // 32-bit VM available
 						if (requester.equals("Tracker")) { //$NON-NLS-1$
