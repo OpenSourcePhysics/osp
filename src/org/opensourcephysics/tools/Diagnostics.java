@@ -67,6 +67,7 @@ public class Diagnostics {
   }
   
   public static void aboutQTJava() {
+  	// check for Linux
     if (org.opensourcephysics.display.OSPRuntime.isLinux()) {
       JOptionPane.showMessageDialog(
           null,
@@ -75,6 +76,32 @@ public class Diagnostics {
           JOptionPane.INFORMATION_MESSAGE);
   		return;
   	}
+		// check for OSX version 10.10 or later
+		if (OSPRuntime.isMac()) {
+			String version = System.getProperty("os.version"); //$NON-NLS-1$
+			if (version!=null) {
+				int n = version.indexOf("."); //$NON-NLS-1$
+				if (n>-1) {
+					String shortVersion = version.substring(n+1);
+					if (shortVersion.length()>1) {
+						try {
+							int vers = Integer.parseInt(shortVersion.substring(0, 2));
+							if (vers>=10) {
+								String message = ToolsRes.getString("Diagnostics.QTJava.OSX64bit")+" "+version+"."; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+					      JOptionPane.showMessageDialog(
+					          null,
+					          message,
+					          ToolsRes.getString("Diagnostics.QTJava.About.Title"), //$NON-NLS-1$
+					          JOptionPane.INFORMATION_MESSAGE);
+					  		return;
+							}
+						} catch (NumberFormatException e) {
+						}							
+					}
+				}
+			}
+		}
+
 
   	// try to load QT objects and get version strings
     String qtJavaVersion = null;
