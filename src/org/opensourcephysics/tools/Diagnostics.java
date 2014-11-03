@@ -34,6 +34,8 @@ import org.opensourcephysics.display.OSPRuntime;
  */
 public class Diagnostics {
 	
+	public static final String TRACKER_INSTALLER_URL ="http://www.compadre.org/osp/items/detail.cfm?ID=7365"; //$NON-NLS-1$
+	
 	final static String JAVA_3D_URL = "http://java3d.java.net/binary-builds.html"; //$NON-NLS-1$
   final static String NEWLINE = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -61,6 +63,10 @@ public class Diagnostics {
     		JOptionPane.INFORMATION_MESSAGE);
   }
 
+	/**
+	 * Displays the About QuickTime dialog for Tracker or other requester.
+	 * @param request currently only "Tracker" is supported
+	 */
   public static void aboutQTJava(String request) {
   	requester = request;
   	aboutQTJava();
@@ -76,31 +82,34 @@ public class Diagnostics {
           JOptionPane.INFORMATION_MESSAGE);
   		return;
   	}
-		// check for OSX version 10.10 or later
-		if (OSPRuntime.isMac()) {
-			String version = System.getProperty("os.version"); //$NON-NLS-1$
-			if (version!=null) {
-				int n = version.indexOf("."); //$NON-NLS-1$
-				if (n>-1) {
-					String shortVersion = version.substring(n+1);
-					if (shortVersion.length()>1) {
-						try {
-							int vers = Integer.parseInt(shortVersion.substring(0, 2));
-							if (vers>=10) {
-								String message = ToolsRes.getString("Diagnostics.QTJava.OSX64bit")+" "+version+"."; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-					      JOptionPane.showMessageDialog(
-					          null,
-					          message,
-					          ToolsRes.getString("Diagnostics.QTJava.About.Title"), //$NON-NLS-1$
-					          JOptionPane.INFORMATION_MESSAGE);
-					  		return;
-							}
-						} catch (NumberFormatException e) {
-						}							
-					}
-				}
-			}
-		}
+    
+//		// check for OSX version 10.10 or later
+//    String osxVersion = null;
+//		if (OSPRuntime.isMac()) {
+//			String version = System.getProperty("os.version"); //$NON-NLS-1$
+//			if (version!=null) {
+//				int n = version.indexOf("."); //$NON-NLS-1$
+//				if (n>-1) {
+//					String shortVersion = version.substring(n+1);
+//					if (shortVersion.length()>1) {
+//						try {
+//							int vers = Integer.parseInt(shortVersion.substring(0, 2));
+//							if (vers>=10) {
+//								osxVersion = version;
+////								String message = ToolsRes.getString("Diagnostics.QTJava.OSX64bit")+" "+version+"."; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+////					      JOptionPane.showMessageDialog(
+////					          null,
+////					          message,
+////					          ToolsRes.getString("Diagnostics.QTJava.About.Title"), //$NON-NLS-1$
+////					          JOptionPane.INFORMATION_MESSAGE);
+////					  		return;
+//							}
+//						} catch (NumberFormatException e) {
+//						}							
+//					}
+//				}
+//			}
+//		}
 
 
   	// try to load QT objects and get version strings
@@ -229,11 +238,23 @@ public class Diagnostics {
             JOptionPane.WARNING_MESSAGE);
       }    	
       else { // no QTJava file found
-        JOptionPane.showMessageDialog(null, 
-        		ToolsRes.getString("Diagnostics.QTJava.NotFound.Message1") //$NON-NLS-1$
-        		+NEWLINE+ToolsRes.getString("Diagnostics.QTJava.NotFound.Message2"), //$NON-NLS-1$
-            ToolsRes.getString("Diagnostics.QTJava.About.Title"),     //$NON-NLS-1$
-            JOptionPane.WARNING_MESSAGE);
+				if (requester.equals("Tracker") && OSPRuntime.isMac()) { //$NON-NLS-1$
+					// reinstall Tracker on OSX
+	        JOptionPane.showMessageDialog(null, 
+	        		ToolsRes.getString("Diagnostics.QTJava.NotFound.OSX.Message1") //$NON-NLS-1$
+	        		+NEWLINE+ToolsRes.getString("Diagnostics.QTJava.NotFound.OSX.Message2") //$NON-NLS-1$
+	        		+NEWLINE+NEWLINE+ToolsRes.getString("Diagnostics.DownloadTrackerInstaller.Message") //$NON-NLS-1$
+	        		+NEWLINE+TRACKER_INSTALLER_URL,
+	            ToolsRes.getString("Diagnostics.QTJava.About.Title"),     //$NON-NLS-1$
+	            JOptionPane.WARNING_MESSAGE);
+				}
+				else {
+	        JOptionPane.showMessageDialog(null, 
+	        		ToolsRes.getString("Diagnostics.QTJava.NotFound.Message1") //$NON-NLS-1$
+	        		+NEWLINE+ToolsRes.getString("Diagnostics.QTJava.NotFound.Message2"), //$NON-NLS-1$
+	            ToolsRes.getString("Diagnostics.QTJava.About.Title"),     //$NON-NLS-1$
+	            JOptionPane.WARNING_MESSAGE);
+				}
       }
     }
   }
