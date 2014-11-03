@@ -65,10 +65,14 @@ public class ExtensionsManager {
     timer.setRepeats(true);
     timer.start();
     
-		// print list of extensions to stdout for use by Bitrock installers
-		Set<File> extDirs = getManager().findJavaExtensionDirectories();
-		printExtensionDirectoriesForBitrock(extDirs);
-		System.exit(0);
+//    File qtJava = getManager().getQTJavaZip();
+//    System.out.println(qtJava);
+    System.exit(0);
+    
+//		// print list of extensions to stdout for use by Bitrock installers
+//		Set<File> extDirs = getManager().findJavaExtensionDirectories();
+//		printExtensionDirectoriesForBitrock(extDirs);
+//		System.exit(0);
 	}
 	
 	/**
@@ -190,18 +194,26 @@ public class ExtensionsManager {
    */
 	public File getQTJavaZip() {
   	String qtJarName = "QTJava.zip"; //$NON-NLS-1$
+  	String currentDir = OSPRuntime.getLaunchJarPath();
+  	if (currentDir!=null) {
+  		currentDir = XML.getDirectoryPath(currentDir);
+  	}
+  	else {
+  		currentDir = "."; //$NON-NLS-1$
+  	}
     String[] folderNames = {
-    		"C:/Program Files/QuickTime/QTSystem/", //$NON-NLS-1$
-    		"C:/Program Files (x86)/QuickTime/QTSystem/", //$NON-NLS-1$
-    		"C:/windows/system32/", //$NON-NLS-1$
-    		"C:/windows/system/", //$NON-NLS-1$
-    		"C:/winNT/system32/", //$NON-NLS-1$
-    		"system/library/java/extensions/"}; //$NON-NLS-1$
+    		currentDir,
+    		"C:/Program Files/QuickTime/QTSystem", //$NON-NLS-1$
+    		"C:/Program Files (x86)/QuickTime/QTSystem", //$NON-NLS-1$
+    		"C:/windows/system32", //$NON-NLS-1$
+    		"C:/windows/system", //$NON-NLS-1$
+    		"C:/winNT/system32", //$NON-NLS-1$
+    		"system/library/java/extensions"}; //$NON-NLS-1$
     // look for most recent QTJava.zip in system folders
     long modified = 0;
     File qtSource = null; // file to be returned
     for (String next: folderNames) {
-      File qtFile = new File(next+qtJarName);
+      File qtFile = new File(next, qtJarName);
     	if (!qtFile.exists()) continue;
     	long date = qtFile.lastModified();
     	if (date>modified) {
@@ -436,6 +448,7 @@ public class ExtensionsManager {
    * @return a Set of java JRE directory paths
    */
 	public TreeSet<String> getAllJREs(int vmBitness) {
+		// first look at extension directories
     Set<File> extDirs = findJavaExtensionDirectories();
     TreeSet<String> jreDirs = new TreeSet<String>();
 		try {
@@ -456,6 +469,13 @@ public class ExtensionsManager {
 
 					javaFile = new File(javaFile, "bin/java.exe"); //$NON-NLS-1$
 					if (!javaFile.exists()) continue;
+					// ignore symlink files
+					try {
+						if (!javaFile.getCanonicalPath().equals(javaFile.getAbsolutePath()))
+							continue;
+					} catch (IOException e) {
+					}
+
 					String jrePath = OSPRuntime.getJREPath(javaFile);
 					jreDirs.add(jrePath);
 				}
@@ -463,18 +483,106 @@ public class ExtensionsManager {
 					javaFile = new File(javaFile, "bin/java"); //$NON-NLS-1$
 					if (!javaFile.exists()) continue;
 					String jrePath = OSPRuntime.getJREPath(javaFile);
+					// only Apple-installed VMs (in /System/Library) support 32-bit operation
+					if (vmBitness==32 && !jrePath.startsWith("/System/Library")) //$NON-NLS-1$
+						continue;
+					
 					jreDirs.add(jrePath);
 			  }
 			}
 		} catch (Exception e) {
 		}
+		
+		// OSX: search for jres in /Library and /System/Library
+		// typical:  /Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home
+		// typical:  /System/Library/Java/JavaVirtualMachines/1.6.0jdk/Contents/Home
+		if (OSPRuntime.isMac()) {
+			Set<File> homeDirs = new TreeSet<File>();
+			
+			String[] libraries = new String[] {"/System/Library", "/Library"};  //$NON-NLS-1$//$NON-NLS-2$
+			for (int i=0; i<libraries.length; i++) {
+				File library = new File(libraries[i]);
+				if (library.exists()) {
+					// search children
+					String[] subDirs = library.list();
+					if (subDirs!=null && subDirs.length>0) {
+						for (String next: subDirs) {
+							File nextFile = new File(library, next);
+							if (next.contains("Java")) { //$NON-NLS-1$
+								findJREHomes(nextFile, homeDirs);
+							}
+							// if subdirectory is an extensions folder, add it
+							else if (nextFile.getName().contains("Internet Plug-Ins")) { //$NON-NLS-1$
+								String[] children = nextFile.list();
+								if (children!=null && children.length>0) {
+									for (String childName: children) {
+										if (childName.contains("Java")) { //$NON-NLS-1$
+											findJREHomes(new File(nextFile, childName), homeDirs);
+										}
+									}
+								}
+							}
+						}
+					}				
+				} // end library search
+			}
+			for (File home: homeDirs) {
+				// only Apple-installed VMs (in /System/Library) support 32-bit operation
+				if (vmBitness==32 && !home.getAbsolutePath().startsWith("/System/Library")) //$NON-NLS-1$
+					continue;
+				
+				jreDirs.add(home.getAbsolutePath());													
+			}
+		} // end OSX search
+			
 		// log results for trouble-shooting
 		StringBuffer buf =new StringBuffer(vmBitness+"-bit JREs: "); //$NON-NLS-1$
 		for (String next: jreDirs) {
 			buf.append(next+", "); //$NON-NLS-1$
 		}
-		OSPLog.config(buf.toString());
+		OSPLog.fine(buf.toString());
     return jreDirs;
+	}
+	
+  /**
+   * Finds java jre (home directory) files (recursively) in a directory.
+   * JRE homes are added to a collection of Files and returned.
+   * Does not search symbolic links.
+   *
+   * @param parent the directory
+   * @param jreHomes the collection to add to
+   * @return the collection
+   */
+	private void findJREHomes(File parent, Set<File> jreHomes) {
+		if (parent==null || !parent.exists() || !parent.isDirectory() || jreHomes==null) return;
+		try { // don't search symlinks
+			if (!parent.getCanonicalPath().equals(parent.getAbsolutePath()))
+				return;
+		} catch (IOException e) {
+		}
+		// check this (parent) file
+		File javaFile = new File(parent, "bin/java"); //$NON-NLS-1$
+		if (javaFile.exists()) {
+			jreHomes.add(parent);
+			return;
+		}
+		
+		// look for Contents if parent is plugin
+		if (parent.getName().contains(".plugin")) { //$NON-NLS-1$
+			File child = new File(parent, "Contents"); //$NON-NLS-1$
+			if (child.exists()) {
+				findJREHomes(new File(child, "Home"), jreHomes); //$NON-NLS-1$
+			}
+			return;
+		}
+		
+		// search children
+		String[] children = parent.list();
+		if (children!=null) {
+			for (String childName: children) {
+				findJREHomes(new File(parent, childName), jreHomes);
+			}
+		}
 	}
 	
   /**

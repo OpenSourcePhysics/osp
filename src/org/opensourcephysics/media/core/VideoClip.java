@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
+import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.event.SwingPropertyChangeSupport;
 
@@ -675,28 +676,15 @@ public class VideoClip {
 	        }
 	        else {
 	      		// provide immediate way to open with other engines
-	        	engine = VideoIO.ENGINE_NONE.equals(engine)? MediaRes.getString("VideoIO.Engine.None"): //$NON-NLS-1$
-	        			VideoIO.ENGINE_XUGGLE.equals(engine)? MediaRes.getString("XuggleVideoType.Description"): //$NON-NLS-1$
-	        			MediaRes.getString("QTVideoType.Description"); //$NON-NLS-1$
-          	String message = MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Message1")+" ("+engine+")."; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-          	message += "\n"+MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Message2"); //$NON-NLS-1$ //$NON-NLS-2$
-          	message += "\n"+MediaRes.getString("VideoIO.Dialog.Label.Path")+": "+path; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-	        	ArrayList<String> optionList = new ArrayList<String>();
-	        	for (VideoType next: otherEngines) {
-	        		if (next.getClass().getSimpleName().equals("XuggleVideoType"))  //$NON-NLS-1$
-	        			optionList.add(MediaRes.getString("XuggleVideoType.Description")); //$NON-NLS-1$
-	        		else if (next.getClass().getSimpleName().equals("QTVideoType"))  //$NON-NLS-1$
-	        			optionList.add(MediaRes.getString("QTVideoType.Description")); //$NON-NLS-1$
-	        	}
-	        	optionList.add(MediaRes.getString("Dialog.Button.Cancel")); //$NON-NLS-1$
-	    			Object[] options = optionList.toArray(new String[optionList.size()]);
-	    			int response = JOptionPane.showOptionDialog(null, message,
-	    					MediaRes.getString("VideoClip.Dialog.BadVideo.Title"), //$NON-NLS-1$
-	              JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
-	    			if (response>=0 && response<options.length-1) {
-	    				VideoType desiredType = otherEngines.get(response);
-	    	    	video = VideoIO.getVideo(path, desiredType);
-	    			}        	
+	    			JCheckBox setAsDefaultBox = new JCheckBox(MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Checkbox")); //$NON-NLS-1$
+	        	video = VideoIO.getVideo(path, otherEngines, setAsDefaultBox, null);
+			    	if (video!=null && VideoIO.ENGINE_NONE.equals(VideoIO.getEngine()) && setAsDefaultBox.isSelected()) {
+			    		String typeName = video.getClass().getSimpleName();
+			    		String newEngine = typeName.indexOf("Xuggle")>-1? VideoIO.ENGINE_XUGGLE: //$NON-NLS-1$
+			    			typeName.indexOf("QT")>-1? VideoIO.ENGINE_QUICKTIME: //$NON-NLS-1$
+			    				VideoIO.ENGINE_NONE;
+			    		VideoIO.setEngine(newEngine);
+			    	}	        	
 	        }
       	}
       	else {

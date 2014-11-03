@@ -30,6 +30,7 @@
  * please see <http://www.opensourcephysics.org/>.
  */
 package org.opensourcephysics.media.core;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
@@ -50,10 +51,13 @@ import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JTextArea;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileFilter;
 
@@ -709,6 +713,64 @@ public class VideoIO {
     }
 
     return null;
+  }
+
+  /**
+   * Returns a video from a specified path using a video engine chosen by user. May return null.
+   *
+   * @param path the path
+   * @param engines array of available video types
+   * @param component a JComponent to display with the text (may be null)
+   * @param frame owner of the dialogs (may be null)
+   * @return the video
+   */
+  public static Video getVideo(String path, ArrayList<VideoType> engines, JComponent component, JFrame frame) {
+		// provide immediate way to open with other engines
+    String engine = VideoIO.getEngine();
+  	engine = VideoIO.ENGINE_NONE.equals(engine)? MediaRes.getString("VideoIO.Engine.None"): //$NON-NLS-1$
+  			VideoIO.ENGINE_XUGGLE.equals(engine)? MediaRes.getString("XuggleVideoType.Description"): //$NON-NLS-1$
+  			MediaRes.getString("QTVideoType.Description"); //$NON-NLS-1$
+  	String message = MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Message1")+" ("+engine+")."; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+  	message += "\n"+MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Message2"); //$NON-NLS-1$ //$NON-NLS-2$
+  	message += "\n\n"+MediaRes.getString("VideoIO.Dialog.Label.Path")+": "+path; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+  	ArrayList<String> optionList = new ArrayList<String>();
+  	for (VideoType next: engines) {
+  		if (next.getClass().getSimpleName().equals("XuggleVideoType")) { //$NON-NLS-1$
+  			optionList.add(MediaRes.getString("XuggleVideoType.Description")); //$NON-NLS-1$
+  		}
+  		else if (next.getClass().getSimpleName().equals("QTVideoType")) { //$NON-NLS-1$
+  			optionList.add(MediaRes.getString("QTVideoType.Description")); //$NON-NLS-1$
+  		}
+  	}
+  	optionList.add(MediaRes.getString("Dialog.Button.Cancel")); //$NON-NLS-1$
+		Object[] options = optionList.toArray(new String[optionList.size()]);
+		// assemble message panel with text and checkbox
+		JPanel messagePanel = new JPanel(new BorderLayout());
+		JTextArea textArea = new JTextArea();
+		textArea.setText(message);
+		textArea.setOpaque(false);
+		textArea.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 4));
+		messagePanel.add(textArea, BorderLayout.NORTH);
+		if (component!=null) {
+			component.setBorder(BorderFactory.createEmptyBorder(12, 0, 12, 0));
+			messagePanel.add(component, BorderLayout.SOUTH);			
+		}
+		int response = JOptionPane.showOptionDialog(frame, messagePanel,
+				MediaRes.getString("VideoClip.Dialog.BadVideo.Title"), //$NON-NLS-1$
+        JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+		if (response>=0 && response<options.length-1) {
+			VideoType desiredType = engines.get(response);
+    	Video video = getVideo(path, desiredType);
+    	if (video==null && !VideoIO.isCanceled()) {
+    		// failed again
+    		JOptionPane.showMessageDialog(frame, 
+        		MediaRes.getString("VideoIO.Dialog.BadVideo.Message")+"\n\n"+path, //$NON-NLS-1$ //$NON-NLS-2$
+        		MediaRes.getString("VideoClip.Dialog.BadVideo.Title"), //$NON-NLS-1$
+            JOptionPane.WARNING_MESSAGE); 
+    	}
+    	return video;
+		}
+		return null;
   }
 
   /**
