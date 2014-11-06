@@ -133,9 +133,9 @@ public class Diagnostics {
     } catch(Error err) {
     }
     
-    if (qtJavaFile==null) {
-    	qtJavaFile = ExtensionsManager.getManager().getQTJavaZip();
-    }
+//    if (qtJavaFile==null) {
+//    	qtJavaFile = ExtensionsManager.getManager().getQTJavaZip();
+//    }
     
     if (qtJavaFile==null) {
 	    // get a list of java extension paths
@@ -259,7 +259,7 @@ public class Diagnostics {
     }
   }
   
-  public static File getJarFile(Class classInJar) throws Exception {
+  public static File getJarFile(Class<?> classInJar) throws Exception {
     java.security.CodeSource codeSource = classInJar.getProtectionDomain().getCodeSource();
     File jarFile = null;
     if (codeSource.getLocation() != null) {
