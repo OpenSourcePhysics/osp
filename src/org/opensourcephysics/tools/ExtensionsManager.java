@@ -320,6 +320,12 @@ public class ExtensionsManager {
 				isReady = true;
 			} catch (Exception e) {
 			}
+			// log results for trouble-shooting
+			StringBuffer buf =new StringBuffer("Java extension directories: "); //$NON-NLS-1$
+			for (File next: allJavaExtensionDirectories) {
+				buf.append(next.getAbsolutePath()+", "); //$NON-NLS-1$
+			}
+			OSPLog.fine(buf.toString());
 		}
 		return new TreeSet<File>(allJavaExtensionDirectories);
 	}

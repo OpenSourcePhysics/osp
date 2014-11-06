@@ -109,7 +109,7 @@ public class FontSizer {
   		return;
   	}
   	if (obj instanceof Collection) {
-  		for (Object next: ((Collection)obj)) {
+  		for (Object next: ((Collection<?>)obj)) {
   			setFonts(next, level);
   		}
   		return;
