@@ -6,6 +6,7 @@
  */
 
 package org.opensourcephysics.tools;
+import java.awt.Component;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -40,6 +41,7 @@ public class Diagnostics {
   final static String NEWLINE = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
 
   static String requester;
+  static Component dialogOwner;
 
   public static void aboutJava() {
     String version = System.getProperty("java.version", "unknown version");   //$NON-NLS-1$ //$NON-NLS-2$
@@ -57,12 +59,20 @@ public class Diagnostics {
                          +"Available Processors: "+Runtime.getRuntime().availableProcessors()+NEWLINE  //$NON-NLS-1$
                          +"Total Memory: "+Runtime.getRuntime().totalMemory()/1000000+" MB"+NEWLINE  //$NON-NLS-1$ //$NON-NLS-2$
                          +"Free Memory: "+Runtime.getRuntime().freeMemory()/1000000+" MB"+NEWLINE;  //$NON-NLS-1$ //$NON-NLS-2$
-    JOptionPane.showMessageDialog(null, 
+    JOptionPane.showMessageDialog(dialogOwner, 
     		aboutString, 
     		ToolsRes.getString("Diagnostics.Java.About.Title"), //$NON-NLS-1$
     		JOptionPane.INFORMATION_MESSAGE);
   }
 
+	/**
+	 * Sets the owner for JOptionPane dialogs.
+	 * @param owner a JComponent (may be null)
+	 */
+  public static void setDialogOwner(Component owner) {
+  	dialogOwner = owner;
+  }
+  
 	/**
 	 * Displays the About QuickTime dialog for Tracker or other requester.
 	 * @param request currently only "Tracker" is supported
@@ -76,7 +86,7 @@ public class Diagnostics {
   	// check for Linux
     if (org.opensourcephysics.display.OSPRuntime.isLinux()) {
       JOptionPane.showMessageDialog(
-          null,
+          dialogOwner,
           ToolsRes.getString("Diagnostics.QTJava.Linux"), //$NON-NLS-1$
           ToolsRes.getString("Diagnostics.QTJava.About.Title"), //$NON-NLS-1$
           JOptionPane.INFORMATION_MESSAGE);
@@ -181,7 +191,7 @@ public class Diagnostics {
       }    	
       aboutString += NEWLINE+ToolsRes.getString("Diagnostics.QTJava.About.JarPath"); //$NON-NLS-1$
       aboutString += " "+path; //$NON-NLS-1$
-      JOptionPane.showMessageDialog(null, 
+      JOptionPane.showMessageDialog(dialogOwner, 
       		aboutString, 
       		ToolsRes.getString("Diagnostics.QTJava.About.Title"), //$NON-NLS-1$
       		JOptionPane.INFORMATION_MESSAGE);
@@ -194,8 +204,9 @@ public class Diagnostics {
 		    	message.add(ToolsRes.getString("Diagnostics.QTJava.About.WrongBitness.Message1")); //$NON-NLS-1$
 		    	message.add(ToolsRes.getString("Diagnostics.QTJava.About.WrongBitness.Message2")+"\n"); //$NON-NLS-1$ //$NON-NLS-2$							
 		    	message.add(" "); //$NON-NLS-1$
+		    	boolean showPrefsQuestionForTracker = false;
 					if (OSPRuntime.isWindows() && jreDirs.isEmpty()) { // no 32-bit VM installed
-						if (requester.equals("Tracker")) { //$NON-NLS-1$
+						if ("Tracker".equals(requester)) { //$NON-NLS-1$
 				    	message.add(ToolsRes.getString("Diagnostics.QTJava.About.No32BitVM.Message1")); //$NON-NLS-1$
 				    	message.add(ToolsRes.getString("Diagnostics.QTJava.About.No32BitVM.Message2")); //$NON-NLS-1$							
 						}
@@ -207,8 +218,9 @@ public class Diagnostics {
 						}
 					}
 					else { // 32-bit VM available
-						if (requester.equals("Tracker")) { //$NON-NLS-1$
-				    	message.add(ToolsRes.getString("Diagnostics.QTJava.About.SwitchVM.Message1")); //$NON-NLS-1$
+						if ("Tracker".equals(requester)) { //$NON-NLS-1$
+							showPrefsQuestionForTracker = true;
+							message.add(ToolsRes.getString("Diagnostics.QTJava.About.SwitchVM.Message1")); //$NON-NLS-1$
 				    	message.add(ToolsRes.getString("Diagnostics.QTJava.About.SwitchVM.Message2")); //$NON-NLS-1$
 						}
 						else {
@@ -221,9 +233,32 @@ public class Diagnostics {
 		    	for (String line: message) {    			
 		  			box.add(new JLabel(line));
 		  		}      	
-		    	JOptionPane.showMessageDialog(null, box,
-		    			ToolsRes.getString("Diagnostics.QTJava.About.Title"),  //$NON-NLS-1$
-		    			JOptionPane.WARNING_MESSAGE);
+		    	if (dialogOwner!=null && showPrefsQuestionForTracker) {
+		    		box.add(new JLabel("  ")); //$NON-NLS-1$
+		    		String question = ToolsRes.getString("Diagnostics.QTJava.About.ShowPrefs.Question"); //$NON-NLS-1$
+		    		box.add(new JLabel(question));
+		    		
+		    		int response = JOptionPane.showConfirmDialog(dialogOwner, box, 
+			    			ToolsRes.getString("Diagnostics.QTJava.About.Title"),  //$NON-NLS-1$
+		    				JOptionPane.YES_NO_OPTION, 
+		    				JOptionPane.INFORMATION_MESSAGE);
+		    		if (response==JOptionPane.YES_OPTION) {
+		    			// call Tracker method by reflection
+		    			try {
+								Class<?> trackerClass = Class.forName("org.opensourcephysics.cabrillo.tracker.TFrame"); //$NON-NLS-1$
+								if (dialogOwner.getClass().equals(trackerClass)) {									
+									Method m = trackerClass.getMethod("showPrefsDialog", String.class); //$NON-NLS-1$
+									m.invoke(dialogOwner, "runtime"); //$NON-NLS-1$
+								}
+							} catch (Exception e) {
+							}
+		    		}
+		    	}
+		    	else {
+		    		JOptionPane.showMessageDialog(dialogOwner, box,
+		    				ToolsRes.getString("Diagnostics.QTJava.About.Title"),  //$NON-NLS-1$
+		    				JOptionPane.WARNING_MESSAGE);
+		    	}
           return;
       	}
         String aboutString = ToolsRes.getString("Diagnostics.QTJava.Error.Message"); //$NON-NLS-1$
@@ -232,15 +267,15 @@ public class Diagnostics {
 	        aboutString += " "+path; //$NON-NLS-1$
         }
         else aboutString += "\n\nError: "+trackerStarterWarning; //$NON-NLS-1$
-        JOptionPane.showMessageDialog(null, 
+        JOptionPane.showMessageDialog(dialogOwner, 
         		aboutString, 
         		ToolsRes.getString("Diagnostics.QTJava.About.Title"),                                                          //$NON-NLS-1$
             JOptionPane.WARNING_MESSAGE);
       }    	
       else { // no QTJava file found
-				if (requester.equals("Tracker") && OSPRuntime.isMac()) { //$NON-NLS-1$
+				if ("Tracker".equals(requester) && OSPRuntime.isMac()) { //$NON-NLS-1$
 					// reinstall Tracker on OSX
-	        JOptionPane.showMessageDialog(null, 
+	        JOptionPane.showMessageDialog(dialogOwner, 
 	        		ToolsRes.getString("Diagnostics.QTJava.NotFound.OSX.Message1") //$NON-NLS-1$
 	        		+NEWLINE+ToolsRes.getString("Diagnostics.QTJava.NotFound.OSX.Message2") //$NON-NLS-1$
 	        		+NEWLINE+NEWLINE+ToolsRes.getString("Diagnostics.DownloadTrackerInstaller.Message") //$NON-NLS-1$
@@ -249,7 +284,7 @@ public class Diagnostics {
 	            JOptionPane.WARNING_MESSAGE);
 				}
 				else {
-	        JOptionPane.showMessageDialog(null, 
+	        JOptionPane.showMessageDialog(dialogOwner, 
 	        		ToolsRes.getString("Diagnostics.QTJava.NotFound.Message1") //$NON-NLS-1$
 	        		+NEWLINE+ToolsRes.getString("Diagnostics.QTJava.NotFound.Message2"), //$NON-NLS-1$
 	            ToolsRes.getString("Diagnostics.QTJava.About.Title"),     //$NON-NLS-1$
@@ -321,19 +356,19 @@ public class Diagnostics {
       String aboutString = ToolsRes.getString("Diagnostics.Java3D.About.Version") //$NON-NLS-1$
           +" "+version+NEWLINE+vendor+NEWLINE //$NON-NLS-1$
           +ToolsRes.getString("Diagnostics.Java3D.About.JarPath")+" "+jarPath; //$NON-NLS-1$ //$NON-NLS-2$
-      JOptionPane.showMessageDialog(null, 
+      JOptionPane.showMessageDialog(dialogOwner, 
       		aboutString, 
       		ToolsRes.getString("Diagnostics.Java3D.About.Title"), //$NON-NLS-1$
       		JOptionPane.INFORMATION_MESSAGE);    	
     }
     else if (j3djar!=null) { // not working but jar exists
-      JOptionPane.showMessageDialog(null, 
+      JOptionPane.showMessageDialog(dialogOwner, 
       		ToolsRes.getString("Diagnostics.Java3D.Error.Message"), //$NON-NLS-1$
       		ToolsRes.getString("Diagnostics.Java3D.About.Title"), //$NON-NLS-1$
           JOptionPane.WARNING_MESSAGE);    	
     }
     else { // not working and jar not found
-	    JOptionPane.showMessageDialog(null, 
+	    JOptionPane.showMessageDialog(dialogOwner, 
 	    		ToolsRes.getString("Diagnostics.Java3D.NotFound.Message1") //$NON-NLS-1$
 	    		+NEWLINE
 	        +ToolsRes.getString("Diagnostics.Download.Message") //$NON-NLS-1$
@@ -385,7 +420,7 @@ public class Diagnostics {
       		+" "+version+NEWLINE //$NON-NLS-1$
       		+ToolsRes.getString("Diagnostics.JOGL.About.JarPath") //$NON-NLS-1$
       		+" "+jarPath; //$NON-NLS-1$
-      JOptionPane.showMessageDialog(null, 
+      JOptionPane.showMessageDialog(dialogOwner, 
       		aboutString, 
       		ToolsRes.getString("Diagnostics.JOGL.About.Title"), //$NON-NLS-1$
       		JOptionPane.INFORMATION_MESSAGE);    	
@@ -394,13 +429,13 @@ public class Diagnostics {
       String aboutString = ToolsRes.getString("Diagnostics.JOGL.Error.Message") //$NON-NLS-1$
   		+NEWLINE+ToolsRes.getString("Diagnostics.JOGL.About.JarPath") //$NON-NLS-1$
   		+" "+jarPath; //$NON-NLS-1$
-     JOptionPane.showMessageDialog(null, 
+     JOptionPane.showMessageDialog(dialogOwner, 
       		aboutString,
       		ToolsRes.getString("Diagnostics.JOGL.About.Title"), //$NON-NLS-1$
           JOptionPane.WARNING_MESSAGE);    	
     }
     else { // not working and jar not found
-	    JOptionPane.showMessageDialog(null, 
+	    JOptionPane.showMessageDialog(dialogOwner, 
 	    		ToolsRes.getString("Diagnostics.JOGL.NotFound.Message1") //$NON-NLS-1$
 	    		+NEWLINE
 	        +ToolsRes.getString("Diagnostics.JOGL.NotFound.Message2"), //$NON-NLS-1$
@@ -423,20 +458,20 @@ public class Diagnostics {
             String name = entry.getName().toLowerCase();
             if(name.endsWith(".dsa")&&name.startsWith("meta-inf")) {                                              //$NON-NLS-1$ //$NON-NLS-2$
               aboutString += ToolsRes.getString("Diagnostics.Jar.About.Message.Signed");                          //$NON-NLS-1$
-              JOptionPane.showMessageDialog(null, aboutString, ToolsRes.getString("Diagnostics.Jar.About.Title"), //$NON-NLS-1$
+              JOptionPane.showMessageDialog(dialogOwner, aboutString, ToolsRes.getString("Diagnostics.Jar.About.Title"), //$NON-NLS-1$
                 JOptionPane.INFORMATION_MESSAGE);
               return;
             }
           }
           aboutString += ToolsRes.getString("Diagnostics.Jar.About.Message.NotSigned");                       //$NON-NLS-1$
-          JOptionPane.showMessageDialog(null, aboutString, ToolsRes.getString("Diagnostics.Jar.About.Title"), //$NON-NLS-1$
+          JOptionPane.showMessageDialog(dialogOwner, aboutString, ToolsRes.getString("Diagnostics.Jar.About.Title"), //$NON-NLS-1$
             JOptionPane.INFORMATION_MESSAGE);
         }
       } catch(Exception ex) {
         ex.printStackTrace();
       }
     } else {
-      JOptionPane.showMessageDialog(null, ToolsRes.getString("Diagnostics.Jar.About.Message.NoJarFile"), //$NON-NLS-1$
+      JOptionPane.showMessageDialog(dialogOwner, ToolsRes.getString("Diagnostics.Jar.About.Message.NoJarFile"), //$NON-NLS-1$
         ToolsRes.getString("Diagnostics.Jar.About.Title"),                                               //$NON-NLS-1$
           JOptionPane.INFORMATION_MESSAGE);
     }
@@ -459,7 +494,7 @@ public class Diagnostics {
         }
       }
     }
-    JOptionPane.showMessageDialog(null, aboutString, ToolsRes.getString("Diagnostics.OS.About.Title"), //$NON-NLS-1$
+    JOptionPane.showMessageDialog(dialogOwner, aboutString, ToolsRes.getString("Diagnostics.OS.About.Title"), //$NON-NLS-1$
       JOptionPane.INFORMATION_MESSAGE);
   }
   

@@ -1,5 +1,6 @@
 package org.opensourcephysics.tools;
 
+import java.awt.Component;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
@@ -38,6 +39,7 @@ public class DiagnosticsForXuggle {
 	static File[] codeBaseJars, xuggleHomeJars, javaExtensionJars;
 	static String pathEnvironment, pathValue;
 	static String requester;
+  static Component dialogOwner;
 	
 	static{  // added by W. Christian
     try {
@@ -69,6 +71,14 @@ public class DiagnosticsForXuggle {
 	private DiagnosticsForXuggle() {
 	}
 	
+	/**
+	 * Sets the owner for JOptionPane dialogs.
+	 * @param owner a JComponent (may be null)
+	 */
+  public static void setDialogOwner(Component owner) {
+  	dialogOwner = owner;
+  }
+  
 	/**
 	 * Displays the About Xuggle dialog. If working correctly, shows version, etc.
 	 * If not working, shows a diagnostic message.
@@ -169,12 +179,11 @@ public class DiagnosticsForXuggle {
 			if (VideoIO.guessXuggleVersion()==5.4) {
 				String recommended = XuggleRes.getString("Xuggle.Dialog.ReplaceXuggle.Message1"); //$NON-NLS-1$
 				if (requester.equals("Tracker")) { //$NON-NLS-1$
-					recommended += "\n"+XuggleRes.getString("Xuggle.Dialog.ReplaceXuggle.Message3")+"\n"+ //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-							XuggleRes.getString("Xuggle.Dialog.ReplaceXuggle.Message4"); //$NON-NLS-1$
+					recommended += "\n"+XuggleRes.getString("Xuggle.Dialog.ReplaceXuggle.Message3"); //$NON-NLS-1$ //$NON-NLS-2$
 				}
 				message = message+"\n\n"+recommended; //$NON-NLS-1$
 			}
-			JOptionPane.showMessageDialog(null,
+			JOptionPane.showMessageDialog(dialogOwner,
 					message,
 					XuggleRes.getString("Xuggle.Dialog.AboutXuggle.Title"), //$NON-NLS-1$
 					JOptionPane.INFORMATION_MESSAGE);
@@ -186,10 +195,44 @@ public class DiagnosticsForXuggle {
     	box.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
     	for (String line: diagnostic) {    			
   			box.add(new JLabel(line));
-  		}      	
-    	JOptionPane.showMessageDialog(null, box,
-    			XuggleRes.getString("Xuggle.Dialog.BadXuggle.Title"),  //$NON-NLS-1$
-    			JOptionPane.WARNING_MESSAGE);
+  		}  
+    	boolean showPrefsQuestionForTracker = false;
+    	if (status==7 && "Tracker".equals(requester) && dialogOwner!=null) { //$NON-NLS-1$
+    		// wrong VM bitness: show Preferences dialog for Tracker if appropriate
+    		if (OSPRuntime.isWindows()) {
+		    	Collection<String> jreDirs = ExtensionsManager.getManager().getPublicJREs(32);
+		    	showPrefsQuestionForTracker = !jreDirs.isEmpty();
+    		}
+    		else if (OSPRuntime.isMac()) {
+    			showPrefsQuestionForTracker = true;
+    		}
+    	}
+  		if (showPrefsQuestionForTracker) {
+    		box.add(new JLabel("  ")); //$NON-NLS-1$
+    		String question = XuggleRes.getString("Xuggle.Dialog.AboutXuggle.ShowPrefs.Question"); //$NON-NLS-1$
+    		box.add(new JLabel(question));
+    		
+    		int response = JOptionPane.showConfirmDialog(dialogOwner, box, 
+    				XuggleRes.getString("Xuggle.Dialog.BadXuggle.Title"),  //$NON-NLS-1$
+    				JOptionPane.YES_NO_OPTION, 
+    				JOptionPane.INFORMATION_MESSAGE);
+    		if (response==JOptionPane.YES_OPTION) {
+    			// call Tracker method by reflection
+    			try {
+						Class<?> trackerClass = Class.forName("org.opensourcephysics.cabrillo.tracker.TFrame"); //$NON-NLS-1$
+						if (dialogOwner.getClass().equals(trackerClass)) {									
+							Method m = trackerClass.getMethod("showPrefsDialog", String.class); //$NON-NLS-1$
+							m.invoke(dialogOwner, "runtime"); //$NON-NLS-1$
+						}
+					} catch (Exception e) {
+					}
+    		}  			
+  		}
+  		else {
+	    	JOptionPane.showMessageDialog(dialogOwner, box,
+	    			XuggleRes.getString("Xuggle.Dialog.BadXuggle.Title"),  //$NON-NLS-1$
+	    			JOptionPane.WARNING_MESSAGE);
+  		}
 		}
 
 	}
@@ -362,7 +405,6 @@ public class DiagnosticsForXuggle {
 	    	message.add(" "); //$NON-NLS-1$
 	    	if (REQUEST_TRACKER.equals(requester)) {
 		    	message.add(XuggleRes.getString("Xuggle.Dialog.ReplaceXuggle.Message3")); //$NON-NLS-1$
-		    	message.add(XuggleRes.getString("Xuggle.Dialog.ReplaceXuggle.Message4")); //$NON-NLS-1$
 		    	message.add(" "); //$NON-NLS-1$
 		    	message.add(XuggleRes.getString("Xuggle.Dialog.AboutXuggle.TrackerInstallerPath.Message")); //$NON-NLS-1$
 		    	message.add(Diagnostics.TRACKER_INSTALLER_URL);
@@ -378,7 +420,6 @@ public class DiagnosticsForXuggle {
 				message.add(XuggleRes.getString("Xuggle.Dialog.NoXuggleHome.Message1")); //$NON-NLS-1$
 	    	if (REQUEST_TRACKER.equals(requester)) {
 		    	message.add(XuggleRes.getString("Xuggle.Dialog.ReplaceXuggle.Message3")); //$NON-NLS-1$
-		    	message.add(XuggleRes.getString("Xuggle.Dialog.ReplaceXuggle.Message4")); //$NON-NLS-1$
 		    	message.add(" "); //$NON-NLS-1$
 		    	message.add(XuggleRes.getString("Xuggle.Dialog.AboutXuggle.TrackerInstallerPath.Message")); //$NON-NLS-1$
 		    	message.add(Diagnostics.TRACKER_INSTALLER_URL);
@@ -396,7 +437,6 @@ public class DiagnosticsForXuggle {
 				message.add(XuggleRes.getString("Xuggle.Dialog.IncompleteXuggle.Message1")); //$NON-NLS-1$
 	    	if (REQUEST_TRACKER.equals(requester)) {
 		    	message.add(XuggleRes.getString("Xuggle.Dialog.ReplaceXuggle.Message3")); //$NON-NLS-1$
-		    	message.add(XuggleRes.getString("Xuggle.Dialog.ReplaceXuggle.Message4")); //$NON-NLS-1$
 		    	message.add(" "); //$NON-NLS-1$
 		    	message.add(XuggleRes.getString("Xuggle.Dialog.AboutXuggle.TrackerInstallerPath.Message")); //$NON-NLS-1$
 		    	message.add(Diagnostics.TRACKER_INSTALLER_URL);
@@ -461,7 +501,7 @@ public class DiagnosticsForXuggle {
 					// wrong VM on Mac: should be 64-bit
 		    	message.add(XuggleRes.getString("Xuggle.Dialog.WrongVMMac.Message1")); //$NON-NLS-1$
 		    	message.add(XuggleRes.getString("Xuggle.Dialog.WrongVMMac.Message2")); //$NON-NLS-1$
-					if (requester.equals("Tracker")) { //$NON-NLS-1$
+					if (REQUEST_TRACKER.equals(requester)) { 
 			    	message.add(" "); //$NON-NLS-1$
 			    	message.add(XuggleRes.getString("Xuggle.Dialog.WrongVMMac.Message3")); //$NON-NLS-1$
 			    	message.add(XuggleRes.getString("Xuggle.Dialog.WrongVMMac.Message4")); //$NON-NLS-1$
@@ -475,7 +515,7 @@ public class DiagnosticsForXuggle {
 		    	
 		    	Collection<String> jreDirs = ExtensionsManager.getManager().getPublicJREs(32);
 					if (jreDirs.isEmpty()) {
-						if (requester.equals("Tracker")) { //$NON-NLS-1$
+						if (REQUEST_TRACKER.equals(requester)) {
 				    	message.add(XuggleRes.getString("Xuggle.Dialog.NoVMTracker.Message1")); //$NON-NLS-1$
 				    	message.add(XuggleRes.getString("Xuggle.Dialog.NoVMTracker.Message2")); //$NON-NLS-1$							
 						}
@@ -486,7 +526,7 @@ public class DiagnosticsForXuggle {
 				    	message.add(XuggleRes.getString("Xuggle.Dialog.NoVM.Message4")); //$NON-NLS-1$
 						}
 					}
-					else if (requester.equals("Tracker")) { //$NON-NLS-1$
+					else if (REQUEST_TRACKER.equals(requester)) { 
 			    	message.add(XuggleRes.getString("Xuggle.Dialog.SetVM.Message1")); //$NON-NLS-1$
 			    	message.add(XuggleRes.getString("Xuggle.Dialog.SetVM.Message2")); //$NON-NLS-1$
 					}
@@ -498,7 +538,6 @@ public class DiagnosticsForXuggle {
 				message.add(XuggleRes.getString("Xuggle.Dialog.UnknownProblem.Message")); //$NON-NLS-1$
 	    	if (REQUEST_TRACKER.equals(requester)) {
 		    	message.add(XuggleRes.getString("Xuggle.Dialog.ReplaceXuggle.Message3")); //$NON-NLS-1$
-		    	message.add(XuggleRes.getString("Xuggle.Dialog.ReplaceXuggle.Message4")); //$NON-NLS-1$
 		    	message.add(" "); //$NON-NLS-1$
 		    	message.add(XuggleRes.getString("Xuggle.Dialog.AboutXuggle.TrackerInstallerPath.Message")); //$NON-NLS-1$
 		    	message.add(Diagnostics.TRACKER_INSTALLER_URL);
