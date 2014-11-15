@@ -24,6 +24,7 @@ import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeSet;
+
 import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
 import javax.swing.Action;
@@ -49,6 +50,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
+
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.DataFunction;
 import org.opensourcephysics.display.DataTable;
@@ -456,7 +458,7 @@ public class DataToolTable extends DataTable {
 
           });
           popup.add(numberFormatItem);
-          FontSizer.setFonts(popup, dataToolTab.fontLevel);
+          FontSizer.setFonts(popup, FontSizer.getLevel());
           popup.show(getTableHeader(), e.getX(), e.getY()+8);
         }
         // double-click: select column and all rows (or select table if label column)
@@ -808,7 +810,7 @@ public class DataToolTable extends DataTable {
               }
             }
           }
-          FontSizer.setFonts(popup, dataToolTab.fontLevel);
+          FontSizer.setFonts(popup, FontSizer.getLevel());
           popup.show(DataToolTable.this, e.getX(), e.getY()+8);
           return;
         }
@@ -2073,6 +2075,7 @@ public class DataToolTable extends DataTable {
       JComponent comp = (JComponent) c;
       java.awt.Dimension dim = comp.getPreferredSize();
       dim.height += 1;
+      dim.height = Math.max(getRowHeight()+2, dim.height);
       panel.setPreferredSize(dim);
       javax.swing.border.Border border = comp.getBorder();
       if(border instanceof javax.swing.border.EmptyBorder) {

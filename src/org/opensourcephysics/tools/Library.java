@@ -349,6 +349,19 @@ public class Library {
   }
 	
   /**
+   * Removes a path from the list of recently opened tabs.
+   * 
+   * @param filename the path to remove.
+   */
+  protected void removeRecent(String filename) {
+  	if (filename==null) return;
+  	synchronized(recentTabs) {
+	  	while (recentTabs.contains(filename))
+	  		recentTabs.remove(filename);
+  	}
+  }
+	
+  /**
    * Returns an ObjectLoader to save and load data for this class.
    *
    * @return the object loader

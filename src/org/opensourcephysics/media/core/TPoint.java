@@ -9,7 +9,7 @@
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2004  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2014  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,7 +40,9 @@ import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+
 import javax.swing.event.SwingPropertyChangeSupport;
+
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.Interactive;
 
@@ -273,6 +275,28 @@ public class TPoint extends Point2D.Double implements Interactive, Trackable {
       worldPt = new Point2D.Double();
     }
     return at.transform(this, worldPt);
+  }
+
+  /**
+   * Sets the world position of this TPoint on the specified VideoPanel.
+   *
+   * @param x the world x coordinate
+   * @param y the world y coordinate
+   * @param vidPanel the video panel
+   */
+  public void setWorldPosition(double x, double y, VideoPanel vidPanel) {
+    int n = getFrameNumber(vidPanel);
+    AffineTransform at = vidPanel.getCoords().getToWorldTransform(n);
+    if(worldPt==null) {
+      worldPt = new Point2D.Double();
+    }
+    worldPt.setLocation(x, y);
+    try {
+      at.inverseTransform(worldPt, worldPt);
+    } catch(NoninvertibleTransformException ex) {
+      ex.printStackTrace();
+    }
+    setXY(worldPt.getX(), worldPt.getY());
   }
 
   /**

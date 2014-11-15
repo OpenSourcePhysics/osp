@@ -9,7 +9,7 @@
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2004  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2014  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,9 +77,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
+
 import java.awt.event.MouseMotionListener;
 
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ResourceLoader;
 
 /**
@@ -595,7 +597,6 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
   	disabled = !enabled;
   }
 
-
   //_________________ private methods and inner classes __________________
 
   /**
@@ -670,8 +671,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
       }
       public Dimension getMinimumSize() {
         Dimension dim = super.getMinimumSize();
-        dim.height = playButton.getPreferredSize().height;
-	      dim.width = 52;
+        dim.height = Math.max(playButton.getPreferredSize().height, dim.height);
+        dim.width = 5*getFont().getSize()-10*FontSizer.getLevel();
         return dim;
       }
       public Dimension getMaximumSize() {
@@ -1107,17 +1108,17 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
       // override size methods so has same height as other buttons
       public Dimension getPreferredSize() {
         Dimension dim = super.getPreferredSize();
-        dim.height = playButton.getPreferredSize().height;
+        dim.height = rateSpinner.getPreferredSize().height;
         return dim;
       }
       public Dimension getMinimumSize() {
         Dimension dim = super.getMinimumSize();
-        dim.height = playButton.getPreferredSize().height;
+        dim.height = rateSpinner.getPreferredSize().height;
         return dim;
       }
       public Dimension getMaximumSize() {
         Dimension dim = super.getMaximumSize();
-        dim.height = playButton.getPreferredSize().height;
+        dim.height = rateSpinner.getPreferredSize().height;
         return dim;
       }
 
@@ -1222,17 +1223,17 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
       // override size methods so has same height as other buttons
       public Dimension getPreferredSize() {
         Dimension dim = super.getPreferredSize();
-        dim.height = playButton.getPreferredSize().height;
+        dim.height = rateSpinner.getPreferredSize().height;
         return dim;
       }
       public Dimension getMinimumSize() {
         Dimension dim = super.getMinimumSize();
-        dim.height = playButton.getPreferredSize().height;
+        dim.height = rateSpinner.getPreferredSize().height;
         return dim;
       }
       public Dimension getMaximumSize() {
         Dimension dim = super.getMaximumSize();
-        dim.height = playButton.getPreferredSize().height;
+        dim.height = rateSpinner.getPreferredSize().height;
         return dim;
       }
 
@@ -1438,6 +1439,10 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     rateSpinner.setValue(getRate());
     // update stepSizeButton
     stepSizeButton.setText(""+getVideoClip().getStepSize()); //$NON-NLS-1$
+    // set font sizes
+    FontSizer.setFonts(readout, FontSizer.getLevel());
+    FontSizer.setFonts(rateSpinner, FontSizer.getLevel());
+    FontSizer.setFonts(stepSizeButton, FontSizer.getLevel());
     // update tooltips
     stepSizeButton.setToolTipText(MediaRes.getString("VideoPlayer.Button.StepSize.ToolTip")); //$NON-NLS-1$
     rateSpinner.setToolTipText(MediaRes.getString("VideoPlayer.Spinner.Rate.ToolTip")); //$NON-NLS-1$

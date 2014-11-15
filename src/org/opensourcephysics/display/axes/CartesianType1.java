@@ -140,7 +140,7 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
     measureFonts(panel);
     panel.setAxes(this);
     panel.setCoordinateStringBuilder(CoordinateStringBuilder.createCartesian());
-    // need to resize fonts in order to adjust gutters
+    // resize fonts in order to adjust gutters
     resizeFonts(FontSizer.getFactor(FontSizer.getLevel()), panel);
   }
 
@@ -322,10 +322,14 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
   public void setTitle(String title, String font_name) {
     titleLine.setText(title);
     if((font_name==null)||font_name.equals("")) { //$NON-NLS-1$
+      // resize fonts in order to adjust gutters
+      resizeFonts(FontSizer.getFactor(FontSizer.getLevel()), drawingPanel);
       return;
     }
     titleLine.setFont(Font.decode(font_name));
     setTitleFont(font_name);
+    // resize fonts in order to adjust gutters
+    resizeFonts(FontSizer.getFactor(FontSizer.getLevel()), drawingPanel);
   }
 
   /**
@@ -455,10 +459,15 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
     yLine.setFont(labelFont);
     int left = (int) (defaultLeftGutter*factor);
     int bottom = (int) (defaultBottomGutter*factor);
-    // the following 3 lines changed by Doug Brown 2009-03-19
+    
+    // the following 6 lines changed by Doug Brown to make space for titles
     int top = (int) (defaultTopGutter*(1+factor)/2);
+    if (getTitle()!=null && !getTitle().equals("")) { //$NON-NLS-1$
+	    top = (int) (defaultTopGutter*factor);    	
+    }
     int right = (int) (defaultRightGutter*(1+factor)/2);
     panel.setPreferredGutters(left, top, right, bottom);
+    
     //     int top = (int) (defaultTopGutter*factor);
     //     int right = (int) (defaultRightGutter*factor);
     //     panel.setGutters(left, top, right, bottom);

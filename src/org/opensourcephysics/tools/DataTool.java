@@ -19,8 +19,6 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -40,11 +38,14 @@ import java.io.Writer;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -63,6 +64,7 @@ import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
 import org.opensourcephysics.controls.ControlsRes;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
@@ -145,12 +147,12 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   protected JMenuItem[] languageItems;
   protected JMenu fontSizeMenu;
   protected JMenuItem defaultFontSizeItem;
+  protected ButtonGroup fontSizeGroup;
   protected JMenu helpMenu;
   protected JMenuItem helpItem;
   protected JMenuItem logItem;
   protected JMenuItem aboutItem;
   protected FunctionTool dataBuilder;
-  protected int fontLevel = FontSizer.getLevel();
   protected boolean exitOnClose = false;
   protected boolean saveChangesOnClose = false;
   protected FitBuilder fitBuilder;
@@ -1626,6 +1628,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
         removeTab(0, false);
       }
     }
+    tab.setFontLevel(FontSizer.getLevel());
     tab.dataTool = this;
     // assign a unique name (also traps for null name)
     tab.setName(getUniqueTabName(tab.getName()));
@@ -1635,7 +1638,6 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     //    validate();
     refreshTabTitles();
     refreshMenubar();
-    tab.setFontLevel(fontLevel);
   }
 
   /**
@@ -1705,18 +1707,53 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    * @param level the level
    */
   public void setFontLevel(int level) {
-    fontLevel = Math.max(level, 0);
-    super.setFontLevel(fontLevel);
-    double factor = FontSizer.getFactor(fontLevel);
+    super.setFontLevel(level);
+		FontSizer.setFonts(emptyMenubar, level);
+		FontSizer.setFonts(fileMenu, level);
+ 		FontSizer.setFonts(editMenu, level);
+    double factor = FontSizer.getFactor(level);
     buttonHeight = (int) (factor*defaultButtonHeight);
     if(tabbedPane!=null) {
       for(int i = 0; i<getTabCount(); i++) {
-        getTab(i).setFontLevel(fontLevel);
+        getTab(i).setFontLevel(level);
       }
     }
     if(dataBuilder!=null) {
-      dataBuilder.setFontLevel(fontLevel);
+      dataBuilder.setFontLevel(level);
     }
+    if (fontSizeGroup!=null) {
+	    Enumeration<AbstractButton> e = fontSizeGroup.getElements();
+	    for (; e.hasMoreElements();) {
+	      AbstractButton button = e.nextElement();
+	      int i = Integer.parseInt(button.getActionCommand());
+	      if(i==FontSizer.getLevel()) {
+	        button.setSelected(true);
+	      }
+	    }
+    }
+
+		FontSizer.setFonts(OSPLog.getOSPLog(), level);
+  }
+
+  @Override
+  public void setVisible(boolean vis) {
+  	// set preferred size the first time shown
+  	if (contentPane.getPreferredSize().equals(dim)) {
+	  	double f = 1+(0.2*FontSizer.getLevel());
+	    Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+	    int w = Math.min(screen.width-40, (int)(dim.width*f));
+	    int h = Math.min(screen.height-100, (int)(dim.height*f));
+	    // add one pixel to width so no longer equals dim
+	  	contentPane.setPreferredSize(new Dimension(w, h+1));
+	  	pack();
+	    // center this on the screen
+	    Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+	    int x = (dim.width-getBounds().width)/2;
+	    int y = (dim.height-getBounds().height)/2;
+	    setLocation(x, y);
+  	}
+
+  	super.setVisible(vis);
   }
 
   /**
@@ -1726,7 +1763,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   public FitBuilder getFitBuilder() {
     if(fitBuilder==null) {
       fitBuilder = new FitBuilder(this);
-      fitBuilder.setFontLevel(fontLevel);
+      fitBuilder.setFontLevel(FontSizer.getLevel());
       fitBuilder.setHelpPath("fit_builder_help.html"); //$NON-NLS-1$
     }
     return fitBuilder;
@@ -2032,7 +2069,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   	  		setTitle(ToolsRes.getString("DataTool.DataBuilder.Title")); //$NON-NLS-1$
   		  }  			
       };
-      dataBuilder.setFontLevel(fontLevel);
+      dataBuilder.setFontLevel(FontSizer.getLevel());
       dataBuilder.setHelpPath("data_builder_help.html");                      //$NON-NLS-1$
       dataBuilder.addPropertyChangeListener("function", this);                //$NON-NLS-1$
     }
@@ -2146,8 +2183,13 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    */
   protected void createGUI() {
     // configure the frame
-    contentPane.setPreferredSize(dim);
+  	
+  	// set preferred size
+  	double f = 1+0.25*FontSizer.getLevel();
+  	Dimension used = new Dimension((int)(dim.width*f), (int)(dim.height*f));
+    contentPane.setPreferredSize(used);
     setContentPane(contentPane);
+    
     JPanel centerPanel = new JPanel(new BorderLayout());
     contentPane.add(centerPanel, BorderLayout.CENTER);
     setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -2158,18 +2200,18 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
       }
 
     });
-    this.addComponentListener(new ComponentAdapter() {
-      public void componentResized(ComponentEvent e) {
-        DataToolTab tab = getSelectedTab();
-        if(tab==null) {
-          return;
-        }
-        if(!tab.propsCheckbox.isSelected()&&!tab.statsCheckbox.isSelected()) {
-          tab.splitPanes[2].setDividerLocation(0);
-        }
-      }
-
-    });
+//    this.addComponentListener(new ComponentAdapter() {
+//      public void componentResized(ComponentEvent e) {
+//        DataToolTab tab = getSelectedTab();
+//        if(tab==null) {
+//          return;
+//        }
+//        if(!tab.propsCheckbox.isSelected()&&!tab.statsCheckbox.isSelected()) {
+//          tab.splitPanes[2].setDividerLocation(0);
+//        }
+//      }
+//
+//    });
     // create tabbed pane
     tabbedPane = new JTabbedPane(SwingConstants.TOP);
     centerPanel.add(tabbedPane, BorderLayout.CENTER);
@@ -2293,7 +2335,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
             }
 
           });
-          FontSizer.setFonts(popup, fontLevel);
+          FontSizer.setFonts(popup, FontSizer.getLevel());
           popup.show(tabbedPane, e.getX(), e.getY()+8);
         }
       }
@@ -2476,7 +2518,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
           }
         }
         copyMenu.add(copyImageItem);
-        FontSizer.setFonts(copyMenu, fontLevel);
+        FontSizer.setFonts(copyMenu, FontSizer.getLevel());
       }
 
     };
@@ -2548,7 +2590,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
           addableData = null;
           pasteMenu.remove(pasteColumnsItem);
         }
-        FontSizer.setFonts(pasteMenu, fontLevel);
+        FontSizer.setFonts(pasteMenu, FontSizer.getLevel());
       }
 
     };
@@ -2680,11 +2722,12 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     displayMenu.add(languageMenu);
     fontSizeMenu = new JMenu();
     displayMenu.add(fontSizeMenu);
-    ButtonGroup group = new ButtonGroup();
+    fontSizeGroup = new ButtonGroup();
     Action fontSizeAction = new AbstractAction() {
       public void actionPerformed(ActionEvent e) {
         int i = Integer.parseInt(e.getActionCommand());
-        setFontLevel(i);
+        FontSizer.setLevel(i);
+//        setFontLevel(i);
       }
 
     };
@@ -2692,11 +2735,12 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
       JMenuItem item = new JRadioButtonMenuItem("+"+i); //$NON-NLS-1$
       if(i==0) {
         defaultFontSizeItem = item;
+        item.setText(ToolsRes.getString("Tool.MenuItem.DefaultFontSize")); //$NON-NLS-1$
       }
       item.addActionListener(fontSizeAction);
       item.setActionCommand(""+i);                      //$NON-NLS-1$
       fontSizeMenu.add(item);
-      group.add(item);
+      fontSizeGroup.add(item);
       if(i==FontSizer.getLevel()) {
         item.setSelected(true);
       }

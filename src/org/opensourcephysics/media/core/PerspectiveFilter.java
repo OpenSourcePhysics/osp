@@ -9,7 +9,7 @@
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2004  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2014  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -615,7 +615,7 @@ public class PerspectiveFilter extends Filter {
 
   private void refreshCorners(int frameNumber) {
   	// gIn can be null if memory limit was exceeded when trying to instantiate with large images
-  	if (gIn==null) return;
+  	if (gIn==null && source!=null && input!=source) return;
 
   	int key = getKeyFrame(frameNumber, inKeyFrames);
   	for (int i=0; i<4; i++) {

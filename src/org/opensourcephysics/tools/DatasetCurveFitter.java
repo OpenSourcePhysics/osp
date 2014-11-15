@@ -12,6 +12,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
@@ -404,8 +405,8 @@ public class DatasetCurveFitter extends JPanel {
   protected void createGUI() {
     setLayout(new BorderLayout());
     splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-    splitPane.setResizeWeight(1);
-    splitPane.setDividerSize(4);
+    splitPane.setResizeWeight(0.8);
+    splitPane.setDividerSize(6);
     // create autofit checkbox
     autofitCheckBox = new JCheckBox("", true); //$NON-NLS-1$
     autofitCheckBox.setSelected(true);
@@ -709,6 +710,15 @@ public class DatasetCurveFitter extends JPanel {
     FontSizer.setFonts(this, fontLevel);
     fitBuilder.setFontLevel(level);
     splitPane.setDividerLocation(splitPane.getMaximumDividerLocation());
+    
+		int n = fitDropDown.getSelectedIndex();
+		Object[] items = new Object[fitDropDown.getItemCount()];
+		for (int i=0; i<items.length; i++) {
+			items[i] = fitDropDown.getItemAt(i);
+		}
+		DefaultComboBoxModel model = new DefaultComboBoxModel(items);
+		fitDropDown.setModel(model);
+		fitDropDown.setSelectedItem(n);
   }
 
   /**
@@ -1044,7 +1054,13 @@ public class DatasetCurveFitter extends JPanel {
         cellRenderer.fieldFont = aFont;
         spinCellEditor.field.setFont(aFont);
       }
+      getTableHeader().setFont(font);
       setRowHeight(font.getSize()+4);
+      TableModel model = getModel();
+      if (model instanceof DefaultTableModel) {
+      	DefaultTableModel tm = (DefaultTableModel)model;
+      	tm.fireTableDataChanged();
+      }
     }
 
   }
@@ -1440,7 +1456,11 @@ public class DatasetCurveFitter extends JPanel {
     
     public void applyPattern(String pattern) {
       if(format instanceof DecimalFormat) {
-        ((DecimalFormat) format).applyPattern(pattern);
+        try {
+        	// catch occasional exceptions thrown when opening a trk file...
+					((DecimalFormat) format).applyPattern(pattern);
+				} catch (Exception e) {
+				}
       }
     }
 

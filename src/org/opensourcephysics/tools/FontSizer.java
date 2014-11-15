@@ -11,9 +11,13 @@ import java.awt.Container;
 import java.awt.Font;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.swing.JButton;
 import javax.swing.JMenu;
+import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.SwingPropertyChangeSupport;
@@ -25,6 +29,13 @@ import javax.swing.event.SwingPropertyChangeSupport;
  * @version 1.0
  */
 public class FontSizer {
+	
+  /** Base font for text fields */
+  public static final Font TEXT_FONT = new JTextField().getFont();
+
+  /** Base font for buttons */
+  public static final Font BUTTON_FONT = new JButton().getFont();
+
   // static fields
   static Object levelObj = new FontSizer();
   static PropertyChangeSupport support = new SwingPropertyChangeSupport(levelObj);
@@ -45,7 +56,16 @@ public class FontSizer {
    * @param n a non-negative integer level
    */
   public static void setLevel(int n) {
-    level = Math.abs(n);
+    level = Math.max(n, 0);
+    
+    Font font = getResizedFont(TEXT_FONT, level);    
+    javax.swing.UIManager.put("OptionPane.messageFont", font); //$NON-NLS-1$
+    javax.swing.UIManager.put("TextField.font", font); //$NON-NLS-1$
+    javax.swing.UIManager.put("ToolTip.font", font);     //$NON-NLS-1$
+        
+  	font= getResizedFont(BUTTON_FONT, level);    
+    javax.swing.UIManager.put("OptionPane.buttonFont", font); //$NON-NLS-1$
+    
     support.firePropertyChange("level", null, new Integer(level)); //$NON-NLS-1$
   }
 
@@ -82,6 +102,18 @@ public class FontSizer {
    * @param level the level
    */
   public static void setFonts(Object obj, int level) {
+  	if (obj instanceof Object[]) {
+  		for (Object next: ((Object[])obj)) {
+  			setFonts(next, level);
+  		}
+  		return;
+  	}
+  	if (obj instanceof Collection) {
+  		for (Object next: ((Collection<?>)obj)) {
+  			setFonts(next, level);
+  		}
+  		return;
+  	}
     double factor = getFactor(level);
     if(obj instanceof Container) {
       setFontFactor((Container) obj, factor);

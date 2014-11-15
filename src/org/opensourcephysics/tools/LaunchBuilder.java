@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -2869,6 +2870,7 @@ public class LaunchBuilder extends Launcher {
     fileChooser.removeChoosableFileFilter(jarFileFilter);
     fileChooser.removeChoosableFileFilter(htmlFileFilter);
     fileChooser.setFileFilter(allFileFilter);
+  	FontSizer.setFonts(fileChooser, FontSizer.getLevel());
     return fileChooser;
   }
 

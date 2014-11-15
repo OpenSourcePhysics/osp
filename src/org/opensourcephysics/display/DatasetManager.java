@@ -546,6 +546,7 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
     int columnCount = 0;
     for(int i = 0; i<datasets.size(); i++) {
       Dataset d = datasets.get(i);
+      if (d==null) continue; // added by DB to prevent occasional null pointer exception here
       columnCount += d.getColumnCount();
     }
     return columnCount;

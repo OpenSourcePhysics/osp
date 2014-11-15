@@ -28,6 +28,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeSet;
+
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -431,7 +433,7 @@ public class DataTable extends JTable implements ActionListener {
     } else {
       Runnable doRefreshTable = new Runnable() {
         public synchronized void run() {
-          tableChanged(new TableModelEvent(dataTableModel, TableModelEvent.HEADER_ROW));
+          actionPerformed(null);
         }
 
       };
@@ -444,12 +446,108 @@ public class DataTable extends JTable implements ActionListener {
   }
 
   /**
-   *  Performs the action for the refresh timer by refreshing the data in the DataTable.
+   *  Performs the action for the refresh timer and refreshTable() method 
+   *  by refreshing the data in the DataTable.
    *
    * @param  evt
    */
   public void actionPerformed(ActionEvent evt) {
+  	// code added by D Brown to maintain column order and widths (Mar 2014)
+		TableColumnModel model = this.getColumnModel();
+		int colCount = model.getColumnCount();
+		int[] modelIndexes = new int[colCount];
+		int[] columnWidths = new int[colCount];
+		ArrayList<Object> columnNames = new ArrayList<Object>();
+		// save current order, widths and column names
+  	for (int i=0; i<colCount; i++) {
+  		TableColumn column = model.getColumn(i);
+  		modelIndexes[i] = column.getModelIndex();
+  		columnWidths[i] = column.getWidth();
+  		columnNames.add(column.getHeaderValue());
+  	}
+  	// refresh table--this lays out columns in default order and widths
     tableChanged(new TableModelEvent(dataTableModel, TableModelEvent.HEADER_ROW));
+    
+    // deal with added and/or removed columns
+    int newCount = model.getColumnCount();    
+  	// create list of new column names
+		ArrayList<Object> newColumnNames = new ArrayList<Object>();
+  	for (int i=0; i<newCount; i++) {
+  		TableColumn column = model.getColumn(i);
+  		newColumnNames.add(column.getHeaderValue());
+  	}
+  	// determine which column(s) were removed
+  	TreeSet<Integer> removedIndexes = new TreeSet<Integer>(); 
+  	for (int i=0; i<colCount; i++) {
+  		if (!newColumnNames.contains(columnNames.get(i))) {
+  			removedIndexes.add(modelIndexes[i]);
+  		}
+  	}
+  	// determine which column(s) were added
+  	TreeSet<Integer> addedIndexes = new TreeSet<Integer>(); 
+  	for (int i=0; i<newCount; i++) {
+  		if (!columnNames.contains(newColumnNames.get(i))) {
+  			addedIndexes.add(i);
+  		}
+  	}
+  	// rebuild modelIndex and columnWidth arrays
+  	while (!removedIndexes.isEmpty()) {
+    	int n = removedIndexes.last();
+    	removedIndexes.remove(n);
+  		int[] newModelIndexes = new int[colCount-1];
+  		int[] newColumnWidths = new int[colCount-1];
+  		int k = 0;
+  		for (int i=0; i<colCount; i++) {
+  			if (modelIndexes[i]==n) continue;
+  			if (modelIndexes[i]>n) {
+  				newModelIndexes[k] = modelIndexes[i]-1;
+  			}
+  			else {
+  				newModelIndexes[k] = modelIndexes[i];	  				
+  			}
+				newColumnWidths[k] = columnWidths[i];
+				k++;
+  		}
+  		modelIndexes = newModelIndexes;
+  		columnWidths = newColumnWidths;
+  		colCount = modelIndexes.length;
+  	}
+  	while (!addedIndexes.isEmpty()) {
+    	int n = addedIndexes.first();
+    	addedIndexes.remove(n);
+  		int[] newModelIndexes = new int[colCount+1];
+  		int[] newColumnWidths = new int[colCount+1];
+  		for (int i=0; i<colCount; i++) {
+  			if (modelIndexes[i]>=n) {
+  				newModelIndexes[i] = modelIndexes[i]+1;
+  			}
+  			else {
+  				newModelIndexes[i] = modelIndexes[i];	  				
+  			}
+				newColumnWidths[i] = columnWidths[i];
+  		}
+  		// add new columns at end and assign them the default width
+  		newModelIndexes[colCount] = n;
+  		newColumnWidths[colCount] = model.getColumn(n).getWidth();
+  		modelIndexes = newModelIndexes;
+  		columnWidths = newColumnWidths;
+  		colCount = modelIndexes.length;
+  	}
+    // restore column order
+    outer: for (int targetIndex=0; targetIndex<colCount; targetIndex++) {
+    	// find column with modelIndex and move to targetIndex
+    	for (int i=0; i<colCount; i++) {
+    		if (model.getColumn(i).getModelIndex()==modelIndexes[targetIndex]) {
+        	model.moveColumn(i, targetIndex);
+    			continue outer;
+    		}
+    	}
+    }
+    // restore column widths
+  	for (int i=0; i<columnWidths.length; i++) {
+  		model.getColumn(i).setPreferredWidth(columnWidths[i]);
+  		model.getColumn(i).setWidth(columnWidths[i]);
+  	}
   }
 
   /**

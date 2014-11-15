@@ -90,6 +90,7 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 import javax.swing.undo.UndoableEdit;
@@ -724,6 +725,15 @@ public class Launcher {
     return htmlTabList.get(i);
   }
 
+  /**
+   * Gets the html tab count.
+   *
+   * @return the html tab count
+   */
+  public int getHTMLTabCount() {
+    return htmlTabList.size();
+  }
+  
   /**
    * Opens an xml document and selects a tab and/or node specified by name.
    * args[0] may be a relative path, absolute path, or self-contained xml string.
@@ -3543,6 +3553,7 @@ public class Launcher {
    */
   protected static JFileChooser getXMLChooser() {
     if(chooser!=null) {
+    	FontSizer.setFonts(chooser, FontSizer.getLevel());
       return chooser;
     }
     chooser = new JFileChooser(new File(OSPRuntime.chooserDir));
@@ -3603,6 +3614,7 @@ public class Launcher {
     chooser.addChoosableFileFilter(getXMLFilter());
     chooser.addChoosableFileFilter(xsetFileFilter);
     chooser.addChoosableFileFilter(launcherFileFilter);
+  	FontSizer.setFonts(chooser, FontSizer.getLevel());
     return chooser;
   }
   
@@ -3894,6 +3906,8 @@ public class Launcher {
         }
 
       });
+      HTMLEditorKit editorKit = new HTMLEditorKit();
+      editorPane.setEditorKit(editorKit);
       scroller = new JScrollPane(editorPane);
     }
 

@@ -9,7 +9,7 @@
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2004 Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2014 Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -40,14 +40,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ResourceLoader;
 
 /**
@@ -111,6 +114,7 @@ public class BaselineFilter extends Filter {
       chooser = new JFileChooser(new File(OSPRuntime.chooserDir));
     }
     chooser.setDialogTitle("Open"); //$NON-NLS-1$
+  	FontSizer.setFonts(chooser, FontSizer.getLevel());
     int result = chooser.showOpenDialog(null);
     if(result==JFileChooser.APPROVE_OPTION) {
       File file = chooser.getSelectedFile();

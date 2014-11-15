@@ -40,6 +40,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+
 import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -53,6 +54,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileSystemView;
+
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.OSPRuntime;
 
@@ -68,6 +70,8 @@ public class JarTool implements Tool, Runnable {
   static public final int NO = 1;
   static public final int YES_TO_ALL = 2;
   static public final int NO_TO_ALL = 3;
+  static public final int CANCEL = 4;
+  
   // ---- Localization
   static private final String BUNDLE_NAME = "org.opensourcephysics.resources.tools.tools"; //$NON-NLS-1$
   static private ResourceBundle res = ResourceBundle.getBundle(BUNDLE_NAME);
@@ -434,7 +438,6 @@ public class JarTool implements Tool, Runnable {
       }
       output.close();
       input.close();
-      in.close();
       return target;
     } catch(Exception ex) {
       ex.printStackTrace();
@@ -567,6 +570,7 @@ public class JarTool implements Tool, Runnable {
                 case NO_TO_ALL :
                 case NO :
                   continue;
+//                case CANCEL : return false;
                 default :                                                                                                                                   // Do nothing, i.e., will overwrite the file
              }
         }
@@ -832,12 +836,16 @@ public class JarTool implements Tool, Runnable {
   //        Private methods
   // -----------------------------------
 
+  static public int confirmOverwrite(String filename) {
+    return confirmOverwrite(filename, false);
+  }
+
   /**
    * Whether to overwrite an existing file.
    * @param file File
    * @return boolean
    */
-  static public int confirmOverwrite(String filename) {
+  static public int confirmOverwrite(String filename, boolean canCancel) {
     final JDialog dialog = new JDialog();
     final OverwriteValue returnValue = new OverwriteValue(NO);
     java.awt.event.MouseAdapter mouseListener = new java.awt.event.MouseAdapter() {
@@ -852,6 +860,8 @@ public class JarTool implements Tool, Runnable {
           returnValue.value = YES_TO_ALL;
         } else if(aCmd.equals("noToAll")) {  //$NON-NLS-1$   
           returnValue.value = NO_TO_ALL;
+        } else if(aCmd.equals("cancel")) {  //$NON-NLS-1$   
+          returnValue.value = CANCEL;
         }
         dialog.setVisible(false);
       }
@@ -869,11 +879,15 @@ public class JarTool implements Tool, Runnable {
     JButton noToAllButton = new JButton(res.getString("JarTool.NoToAll")); //$NON-NLS-1$
     noToAllButton.setActionCommand("noToAll"); //$NON-NLS-1$
     noToAllButton.addMouseListener(mouseListener);
+    JButton cancelButton = new JButton(res.getString("JarTreeDialog.Button.Cancel")); //$NON-NLS-1$
+    cancelButton.setActionCommand("cancel"); //$NON-NLS-1$
+    cancelButton.addMouseListener(mouseListener);
     JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
     buttonPanel.add(yesButton);
     buttonPanel.add(yesToAllButton);
     buttonPanel.add(noButton);
     buttonPanel.add(noToAllButton);
+    if (canCancel) buttonPanel.add(cancelButton);
     JLabel label = new JLabel(DisplayRes.getString("DrawingFrame.ReplaceExisting_message")+" "+ //$NON-NLS-1$ //$NON-NLS-2$
       filename+DisplayRes.getString("DrawingFrame.QuestionMark")); //$NON-NLS-1$
     label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -928,6 +942,7 @@ public class JarTool implements Tool, Runnable {
                   case NO_TO_ALL :
                   case NO :
                     continue;
+//                  case CANCEL : return false;
                   default : // Do nothing, i.e., will overwrite the file
                }
           }
@@ -947,6 +962,62 @@ public class JarTool implements Tool, Runnable {
       return false;
     }
     return true;
+  }
+
+  /**
+   * Uncompresses a ZIP or JAR file into a given directory.
+   * policy.value indicates what to do on duplicated files.
+   * @param zipStream The InputStream to read from
+   * @param targetDirectory File The target directory
+   * @param label An optional JLabel to display messages
+   * @param prefix A prefix to add to the extracted file in order to create the message
+   * @return java.util.List<File> the set of files extracted, null if cancelled
+   */
+  static public java.util.List<File> unzipWithWarning(InputStream zipStream, File targetDirectory, javax.swing.JLabel label, String prefix) {
+    try {
+      OverwriteValue policy = new OverwriteValue(NO);
+      BufferedInputStream bufIn = new BufferedInputStream(zipStream);
+      ZipInputStream input = new ZipInputStream(bufIn);
+      ZipEntry zipEntry = null;
+      ArrayList<File> fileSet = new ArrayList<File>();
+
+      byte[] buffer = new byte[1024];
+      while((zipEntry = input.getNextEntry())!=null) {
+        if (zipEntry.isDirectory()) continue;
+        if (label!=null) label.setText(prefix+zipEntry.getName());
+        File newFile = new File(targetDirectory, zipEntry.getName());
+        if(newFile.exists()) {
+          switch(policy.value) {
+             case NO_TO_ALL :
+               continue;
+             case YES_TO_ALL :
+               break;       // will overwrite
+             default :
+               switch(policy.value = confirmOverwrite(zipEntry.getName(),true)) {
+                  case NO_TO_ALL :
+                  case NO :
+                    continue;
+                  case CANCEL : return null;
+                  default : // Do nothing, i.e., will overwrite the file
+               }
+          }
+        }
+        newFile.getParentFile().mkdirs();
+        int bytesRead;
+        FileOutputStream output = new FileOutputStream(newFile);
+        while((bytesRead = input.read(buffer))!=-1) {
+          output.write(buffer, 0, bytesRead);
+        }
+        output.close();
+        input.closeEntry();
+        fileSet.add(newFile);
+      }
+      input.close();
+      return fileSet;
+    } catch(Exception exc) {
+      exc.printStackTrace();
+      return null;
+    }
   }
 
   /**
@@ -1078,6 +1149,7 @@ public class JarTool implements Tool, Runnable {
               case NO_TO_ALL :
               case NO :
                 return new StringBuffer();
+//              case CANCEL : return new StringBuffer(); 
               default : // Do nothing, i.e., will overwrite the file
            }
       }

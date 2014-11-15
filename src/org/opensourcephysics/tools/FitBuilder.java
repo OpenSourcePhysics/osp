@@ -264,6 +264,7 @@ public class FitBuilder extends FunctionTool {
         	}
         }
     	}
+    	FontSizer.setFonts(chooser, FontSizer.getLevel());
       int result = chooser.showSaveDialog(FitBuilder.this);
       if (result==JFileChooser.APPROVE_OPTION) {
         OSPRuntime.chooserDir = chooser.getCurrentDirectory().toString();

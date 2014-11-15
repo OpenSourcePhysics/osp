@@ -3,6 +3,7 @@ package org.opensourcephysics.tools;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Toolkit;
 import java.lang.reflect.InvocationTargetException;
 
@@ -23,6 +24,13 @@ public class DiagnosticsForThreads extends JPanel {
 
     JTable table = new JTable(tableModel);
     table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+
+    // code added Feb 2014 by Doug Brown
+  	FontSizer.setFonts(table, FontSizer.getLevel());
+  	Font font = table.getFont();
+  	table.setRowHeight(font.getSize()+4);
+  	table.getTableHeader().setFont(font);
+    // end added code
 
     TableColumnModel colModel = table.getColumnModel();
     int numColumns = colModel.getColumnCount();
@@ -53,7 +61,14 @@ public class DiagnosticsForThreads extends JPanel {
 	    JDialog dialog = new JDialog(); 
 	    DiagnosticsForThreads viewer = new DiagnosticsForThreads();
 	    dialog.setContentPane(viewer);
-	    dialog.setSize(500, 300);
+
+	    // code added Feb 2014 by Doug Brown
+	    int level = FontSizer.getLevel();
+	    int w = (int)(600*(1+level*0.2));
+	    int h = (int)(300*(1+level*0.2));
+	    dialog.setSize(w, h);
+	    // end added code
+	    
       // center on screen
       Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
       int x = (dim.width - dialog.getBounds().width) / 2;

@@ -8,7 +8,6 @@
 package org.opensourcephysics.tools;
 import java.awt.Dimension;
 import java.util.List;
-import javax.swing.BorderFactory;
 
 /**
  * A FunctionEditor for initial values.
@@ -89,7 +88,7 @@ public class InitialValueEditor extends ParamEditor {
    */
   public void refreshGUI() {
     super.refreshGUI();
-    setBorder(BorderFactory.createTitledBorder(ToolsRes.getString("InitialValueEditor.Border.Title"))); //$NON-NLS-1$
+    titledBorder.setTitle(ToolsRes.getString("InitialValueEditor.Border.Title")); //$NON-NLS-1$
   }
 
   /**

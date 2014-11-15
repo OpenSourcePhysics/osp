@@ -227,6 +227,26 @@ public class LibraryBrowser extends JPanel {
   }
   
   /**
+   * Sets the font level.
+   *
+   * @param level the desired font level
+   */
+  public void setFontLevel(int level) {
+		FontSizer.setFonts(this.getTopLevelAncestor(), level);
+		Font font = tabbedPane.getFont();	
+		tabbedPane.setFont(FontSizer.getResizedFont(font, level));
+		for (int i=0; i<tabbedPane.getTabCount(); i++) {
+			LibraryTreePanel treePanel = getTreePanel(i);
+  		treePanel.setFontLevel(level);
+		}
+		if (libraryManager!=null) {
+			libraryManager.setFontLevel(level);
+		}
+    
+		FontSizer.setFonts(OSPLog.getOSPLog(), level);
+  }
+  
+  /**
    * Imports a library with a specified path.
    * 
    * @param path the path to the Library xml file
@@ -321,6 +341,7 @@ public class LibraryBrowser extends JPanel {
 	  		}
 	  	}
   	}
+  	FontSizer.setFonts(collectionsMenu, FontSizer.getLevel());
   }
   
 	/**
@@ -482,7 +503,7 @@ public class LibraryBrowser extends JPanel {
 		if (library.importedPathList.size()>0 && libraryManager.guestList.getSelectedIndex()==-1) {
 			libraryManager.guestList.setSelectedIndex(0);
 		}
-		libraryManager.refreshGUI();
+		libraryManager.setFontLevel(FontSizer.getLevel());
 		return libraryManager;
 	}
   
@@ -630,6 +651,7 @@ public class LibraryBrowser extends JPanel {
    * @return a LibraryResource that describes and targets the file
    */
 	protected LibraryResource createResource(File targetFile, File baseDir, FileFilter filter) {
+		if (targetFile==null || !targetFile.exists()) return null;
 		if (!filter.accept(targetFile)) return null;
 		
 		String fileName = targetFile.getName();
@@ -790,6 +812,7 @@ public class LibraryBrowser extends JPanel {
     	Icon icon = primary? expandIcon: contractIcon;
     	Icon heavyIcon = primary? heavyExpandIcon: heavyContractIcon;
     	final TabTitle tabTitle = new TabTitle(icon, heavyIcon);
+    	FontSizer.setFonts(tabTitle, FontSizer.getLevel());
 	  	tabTitle.iconLabel.setToolTipText(primary? ToolsRes.getString("LibraryBrowser.Tooltip.Expand"): //$NON-NLS-1$
 	  			ToolsRes.getString("LibraryBrowser.Tooltip.Contract")); //$NON-NLS-1$
     	Action action = new AbstractAction() {
@@ -813,13 +836,20 @@ public class LibraryBrowser extends JPanel {
 		boolean changed = getTreePanel(n).isChanged();
   	tabbedPane.setTitleAt(n, changed? title+"*": title);  //$NON-NLS-1$
   	library.getNameMap().put(path, title);
+  	if (n==tabbedPane.getSelectedIndex()) {
+	    String tabname = " '"+title+"'"; //$NON-NLS-1$ //$NON-NLS-2$
+	    closeItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.CloseTab")+tabname); //$NON-NLS-1$
+  	}
   }
 
   /**
    * Creates the visible components of this panel.
    */
   protected void createGUI() {
-    setPreferredSize(new Dimension(800, 450));
+  	double factor = 1+ FontSizer.getLevel()*0.25;
+  	int w = (int)(factor*800);
+  	int h = (int)(factor*440);
+    setPreferredSize(new Dimension(w, h));
 
     loadCollectionAction = new ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -1022,13 +1052,13 @@ public class LibraryBrowser extends JPanel {
     searchField = new LibraryTreePanel.EntryField() {
   		public Dimension getMaximumSize() {	
   			Dimension dim = super.getMaximumSize();
-  			dim.width = 120;
+  			dim.width = (int)(120*(1+FontSizer.getLevel()*0.25));
   			return dim;
   		}
   		
   		public Dimension getPreferredSize() {
   			Dimension dim = super.getPreferredSize();
-  			dim.width = 120;
+  			dim.width = (int)(120*(1+FontSizer.getLevel()*0.25));
   			return dim;
   		}
 
@@ -1154,6 +1184,7 @@ public class LibraryBrowser extends JPanel {
 	          popup.addSeparator();
 	          popup.add(item);
           }
+    	    FontSizer.setFonts(popup, FontSizer.getLevel());
           popup.show(tabbedPane, e.getX(), e.getY()+8);
         }
       }
@@ -1248,6 +1279,7 @@ public class LibraryBrowser extends JPanel {
             	refreshGUI();
       		  }		
       		});
+    	    FontSizer.setFonts(popup, FontSizer.getLevel());
           popup.show(editButton, 0, editButton.getHeight());      		
       	}
       }
@@ -1402,7 +1434,7 @@ public class LibraryBrowser extends JPanel {
       }
     });
     helpMenu.add(aboutItem);
-    
+
     // create html about-browser pane
     htmlAboutPane = new LibraryTreePanel.HTMLPane();
 		htmlScroller = new JScrollPane(htmlAboutPane);
@@ -1528,6 +1560,13 @@ public class LibraryBrowser extends JPanel {
 		  	openRecentAction = new AbstractAction() {
 		  		public void actionPerformed(ActionEvent e) {
 		  			String path = e.getActionCommand();
+		  			library.addRecent(path, false);
+		  	    // select tab if path is already loaded
+		  	    int i = getTabIndexFromPath(path);
+		  	    if (i>-1) {
+		  	    	tabbedPane.setSelectedIndex(i);
+		  	    	return;
+		  	    }
 	    			TabLoader tabAdder = addTab(path, null);
 	    			if (tabAdder!=null) {
 	    	    	tabAdder.addPropertyChangeListener(new PropertyChangeListener() {  
@@ -1567,6 +1606,7 @@ public class LibraryBrowser extends JPanel {
 	    	recentMenu.add(item);
 	    }
   	}
+  	FontSizer.setFonts(recentMenu, FontSizer.getLevel());
   }
 
   /**
@@ -2342,6 +2382,8 @@ public class LibraryBrowser extends JPanel {
       try {
       	LibraryTreePanel treePanel = get();
 	    	if (treePanel!=null) {
+	    		treePanel.setFontLevel(FontSizer.getLevel());
+	    		
 	    		if (index<0) {
 	    			tabbedPane.addTab("", treePanel); //$NON-NLS-1$
 		    		index = tabbedPane.getTabCount()-1;
@@ -2365,6 +2407,8 @@ public class LibraryBrowser extends JPanel {
 		    			s+":\n"+path, //$NON-NLS-1$
 		  				ToolsRes.getString("LibraryBrowser.Dialog.CollectionNotFound.Title"), //$NON-NLS-1$
 		  				JOptionPane.WARNING_MESSAGE);  
+		  		library.removeRecent(path);
+		  		refreshRecentMenu();		    	
 		    	setProgress(-1);
 	    	}
       } catch (Exception ignore) {
