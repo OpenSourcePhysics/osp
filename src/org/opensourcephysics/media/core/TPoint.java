@@ -225,30 +225,6 @@ public class TPoint extends Point2D.Double implements Interactive, Trackable {
   }
 
   /**
-   * Sets the world position of this TPoint on the specified VideoPanel.
-   *
-   * @param x the world x coordinate
-   * @param y the world y coordinate
-   * @param vidPanel the video panel
-   */
-  public void setWorldPosition(double x, double y, VideoPanel vidPanel) {
-    if(screenPt==null) {
-      screenPt = new Point();
-    }
-    if(worldPt==null) {
-      worldPt = new Point2D.Double();
-    }
-    worldPt.setLocation(x, y);
-    AffineTransform toScreen = vidPanel.getPixelTransform();
-    if(!vidPanel.isDrawingInImageSpace()) {
-      int n = getFrameNumber(vidPanel);
-      toScreen.concatenate(vidPanel.getCoords().getToWorldTransform(n));
-    }
-    toScreen.transform(worldPt, screenPt);
-    setXY(worldPt.getX(), worldPt.getY());
-  }
-
-  /**
    * Sets the screen position of this TPoint. This can be overridden
    * by subclasses to change the behavior based on input event methods that
    * report the state of keys like shift, control, alt, etc.

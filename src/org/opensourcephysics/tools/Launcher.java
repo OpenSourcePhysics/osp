@@ -686,10 +686,6 @@ public class Launcher {
     return getSelectedTab().getRootNode();
   }
 
-  public int getHTMLTabCount() {
-	  return tabbedPane.getTabCount();
-  }
-  
   /**
    * Gets the current number of tabs (LaunchPanels)
    *
