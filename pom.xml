@@ -1,0 +1,10 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.github.buffetboy2001</groupId>
+  <artifactId>osp</artifactId>
+  <version>1.0.0-buffetboy2001-SNAPSHOT</version>
+  <dependencies>
+  </dependencies>
+  <url>www.opensourcephysics.org</url>
+  <description>buffetboy2001's fork of OSP. Visit opensourcephysics.org for details of the code.</description>
+</project>
