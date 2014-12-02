@@ -347,13 +347,13 @@ public class DiagnosticsForFFMPeg {
 		if (!completeHome) return 3; //missing ffmpeg jar in FFMPEG_HOME
 		
 		// from this point on FFMPEG_HOME is OK
-		if (!completeExt && !completeCodeBase) return 5; //no xuggle jars in code base or extensions
+		if (!completeExt && !completeCodeBase) return 5; //no ffmpeg jars in code base or extensions
 		
 		// from here on either code base or extension jars are complete
 		File loadableJar = completeExt? javaExtensionJars[0]: codeBaseJars[0]; 
 		long homeLength = ffmpegHomeJars[0].length();
 		boolean mismatched = homeLength!=loadableJar.length();
-		if (mismatched) return 6; //mismatched xuggle versions in code base or extensions
+		if (mismatched) return 6; //mismatched ffmpeg versions in code base or extensions
 		
 		if (!completeExt)
 			return 5;

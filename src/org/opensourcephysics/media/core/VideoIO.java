@@ -726,8 +726,8 @@ public class VideoIO {
   	message += "\n\n"+MediaRes.getString("VideoIO.Dialog.Label.Path")+": "+path; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
   	ArrayList<String> optionList = new ArrayList<String>();
   	for (VideoType next: engines) {
-  		if (next.getClass().getSimpleName().equals("XuggleVideoType")) { //$NON-NLS-1$
-  			optionList.add(MediaRes.getString("XuggleVideoType.Description")); //$NON-NLS-1$
+  		if (next.getClass().getSimpleName().equals("FFMPegVideoType")) { //$NON-NLS-1$
+  			optionList.add(MediaRes.getString("FFMPegVideoType.Description")); //$NON-NLS-1$
   		}
   		else if (next.getClass().getSimpleName().equals("QTVideoType")) { //$NON-NLS-1$
   			optionList.add(MediaRes.getString("QTVideoType.Description")); //$NON-NLS-1$
