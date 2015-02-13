@@ -142,6 +142,12 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
   private String yColumnName;
   // the name of the y data
 
+  protected String xColumnDescription;
+  // a description of the y data
+
+  protected String yColumnDescription;
+  // a description of the y data
+
   private boolean[] colVisible = new boolean[2];
   // column visibilities for table view
 
@@ -447,6 +453,42 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
    */
   public String getYColumnName() {
     return yColumnName;
+  }
+
+  /**
+   * Gets the x column description.
+   *
+   * @return the description (may be null)
+   */
+  public String getXColumnDescription() {
+    return xColumnDescription;
+  }
+
+  /**
+   * Sets the x column description.
+   *
+   * @param desc the description (may be null)
+   */
+  public void setXColumnDescription(String desc) {
+    xColumnDescription = desc;
+  }
+
+  /**
+   * Gets the y column description.
+   *
+   * @return the description (may be null)
+   */
+  public String getYColumnDescription() {
+    return yColumnDescription;
+  }
+
+  /**
+   * Sets the y column description.
+   *
+   * @param desc the description (may be null)
+   */
+  public void setYColumnDescription(String desc) {
+    yColumnDescription = desc;
   }
 
   /**
@@ -1498,6 +1540,8 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
       control.setValue("name", data.name);                     //$NON-NLS-1$
       control.setValue("x_name", data.xColumnName);            //$NON-NLS-1$
       control.setValue("y_name", data.yColumnName);            //$NON-NLS-1$
+      control.setValue("x_description", data.xColumnDescription); //$NON-NLS-1$
+      control.setValue("y_description", data.yColumnDescription); //$NON-NLS-1$
       control.setValue("line_color", data.lineColor);          //$NON-NLS-1$
       control.setValue("fill_color", data.fillColor);          //$NON-NLS-1$
       control.setValue("edge_color", data.edgeColor);          //$NON-NLS-1$
@@ -1546,6 +1590,8 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
       data.name = control.getString("name");          //$NON-NLS-1$
       data.xColumnName = control.getString("x_name"); //$NON-NLS-1$
       data.yColumnName = control.getString("y_name"); //$NON-NLS-1$
+      data.xColumnDescription = control.getString("x_description"); //$NON-NLS-1$
+      data.yColumnDescription = control.getString("y_description"); //$NON-NLS-1$
       Color color = (Color) control.getObject("line_color"); //$NON-NLS-1$
       if(color!=null) {
         data.lineColor = color;
