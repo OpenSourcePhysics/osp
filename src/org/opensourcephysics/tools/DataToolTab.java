@@ -101,6 +101,7 @@ import org.opensourcephysics.display.PlottingPanel;
 import org.opensourcephysics.display.Selectable;
 import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.display.axes.CartesianInteractive;
+import org.opensourcephysics.media.core.TPoint;
 import org.opensourcephysics.tools.DataToolTable.TableEdit;
 import org.opensourcephysics.tools.DataToolTable.WorkingDataset;
 
@@ -156,6 +157,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
   protected boolean positionVisible = false;
   protected boolean slopeVisible = false;
   protected boolean areaVisible = false;
+  protected boolean axesVisible = false;
   protected JPopupMenu varPopup;
   protected boolean isHorzVarPopup;
   protected Action setVarAction;
@@ -2165,14 +2167,16 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 //      }
       plot.setAxisLabels(xLabel, yLabel);
       // construct equation string
-      String depVar = TeXParser.removeSubscripting(workingData.getColumnName(1));
-      String indepVar = TeXParser.removeSubscripting(workingData.getColumnName(0));
-      if(curveFitter.fit instanceof UserFunction) {
-        curveFitter.eqnField.setText(depVar+" = "+ //$NON-NLS-1$
-          ((UserFunction) curveFitter.fit).getFullExpression(new String[] {indepVar}));
-      } else {
-        curveFitter.eqnField.setText(depVar+" = "+ //$NON-NLS-1$
-          curveFitter.fit.getExpression(indepVar));
+      if (curveFitter.fit!=null) {
+	      String depVar = TeXParser.removeSubscripting(workingData.getColumnName(1));
+	      String indepVar = TeXParser.removeSubscripting(workingData.getColumnName(0));
+	      if (curveFitter.fit instanceof UserFunction) {
+	        curveFitter.eqnField.setText(depVar+" = "+ //$NON-NLS-1$
+	          ((UserFunction) curveFitter.fit).getFullExpression(new String[] {indepVar}));
+	      } else {
+	        curveFitter.eqnField.setText(depVar+" = "+ //$NON-NLS-1$
+	          curveFitter.fit.getExpression(indepVar));
+	      }
       }
     } else {                                       // working data is null
       plot.setXLabel("");                          //$NON-NLS-1$
@@ -2300,7 +2304,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
   }
 
   /**
-   * A class to plot datasets, slope lines, areas and limits.
+   * A class to plot datasets, slope lines, areas, limits and axes.
    */
   class DataToolPlotter extends PlottingPanel {
     SelectionBox selectionBox;
@@ -2312,6 +2316,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     DecimalFormat sciFormat = new DecimalFormat("0.00E0"); //$NON-NLS-1$
     DecimalFormat fixedFormat = new DecimalFormat("0.00"); //$NON-NLS-1$
     String xVar, yVar, message;
+    Origin origin = new Origin();
 
     // constructor
     DataToolPlotter(Dataset dataset) {
@@ -2327,6 +2332,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       addDrawable(limits[0]);
       addDrawable(limits[1]);
       addDrawable(selectionBox);
+      addDrawable(origin);
     }
 
     /**
@@ -2738,6 +2744,95 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
     }
 
+    /**
+     * A class that draws interactive coordinate axes on the plot.
+     */
+    class Origin extends TPoint {
+    	Line2D axisLine = new Line2D.Double();
+      Stroke stroke = new BasicStroke(1.0f);
+      Rectangle hitRect = new Rectangle();
+      Color color = new Color(51, 51, 51);
+      Cursor move;
+
+      public void draw(DrawingPanel panel, Graphics g) {
+      	if (!axesVisible) return;
+        Color gcolor = g.getColor();
+        g.setColor(color);
+        int top = plot.getTopGutter();
+        int bottom = plot.getBounds().height-plot.getBottomGutter();
+        int xx = plot.xToPix(x);
+        axisLine.setLine(xx, top, xx, bottom);
+        ((Graphics2D) g).fill(stroke.createStrokedShape(axisLine));
+        int left = plot.getLeftGutter();
+        int right = plot.getBounds().width-plot.getRightGutter();
+        int yy = plot.yToPix(y);
+        axisLine.setLine(left, yy, right, yy);
+        ((Graphics2D) g).fill(stroke.createStrokedShape(axisLine));
+        g.setColor(gcolor);
+        hitRect.setBounds(xx-2, yy-2, xx+2, yy+2);
+      }
+
+      public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+        if (axesVisible && hitRect.contains(xpix, ypix)) {
+          return this;
+        }
+        return null;
+      }
+
+      public Cursor getPreferredCursor() {
+        if(move==null) {
+          // create cursor
+          String imageFile = "/org/opensourcephysics/resources/tools/images/limitcursor.gif";                     //$NON-NLS-1$
+          Image im = ResourceLoader.getImage(imageFile);
+          move = Toolkit.getDefaultToolkit().createCustomCursor(im, new Point(16, 16), "Move Integration Limit"); //$NON-NLS-1$
+        }
+        return move;
+      }
+
+      public void setXY(double x, double y) {
+        super.setXY(x, y);
+        curveFitter.fit(curveFitter.fit);
+      }
+
+      public boolean isMeasured() {
+        return axesVisible;
+      }
+
+//      public double getXMin() {
+//        Dataset data = dataTable.workingData;
+//        double dx = 0, min = 0;
+//        if((data!=null)&&(data.getIndex()>1)) {
+//          dx = Math.abs(data.getXMax()-data.getXMin());
+//          min = Math.min(data.getXMax(), data.getXMin());
+//        } else {
+//          dx = Math.abs(limits[0].x-limits[1].x);
+//          min = Math.min(limits[0].x, limits[1].x);
+//        }
+//        return min-0.02*dx;
+//      }
+//
+//      public double getXMax() {
+//        Dataset data = dataTable.workingData;
+//        double dx = 0, max = 0;
+//        if((data!=null)&&(data.getIndex()>1)) {
+//          dx = Math.abs(data.getXMax()-data.getXMin());
+//          max = Math.max(data.getXMax(), data.getXMin());
+//        } else {
+//          dx = Math.abs(limits[0].x-limits[1].x);
+//          max = Math.max(limits[0].x, limits[1].x);
+//        }
+//        return max+0.02*dx;
+//      }
+//
+//      public double getYMin() {
+//        return(plot.getYMin()+plot.getYMax())/2;
+//      }
+//
+//      public double getYMax() {
+//        return(plot.getYMin()+plot.getYMax())/2;
+//      }
+
+    }
   }
 
   //__________________________ static methods ___________________________
@@ -2790,12 +2885,13 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       // save function parameters
       String[] paramNames = tab.dataManager.getConstantNames();
       if (paramNames.length>0) {
-    		Object[][] paramArray = new Object[paramNames.length][3];
+    		Object[][] paramArray = new Object[paramNames.length][4];
     		int i = 0;
     		for (String name: paramNames) {
     			paramArray[i][0] = name;
     			paramArray[i][1] = tab.dataManager.getConstantValue(name);
     			paramArray[i][2] = tab.dataManager.getConstantExpression(name);
+    			paramArray[i][3] = tab.dataManager.getConstantDescription(name);
     			i++;
     		}
     		control.setValue("constants", paramArray); //$NON-NLS-1$
@@ -2805,13 +2901,20 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         DataFunction[] f = functions.toArray(new DataFunction[0]);
         control.setValue("data_functions", f); //$NON-NLS-1$
       }
-      // save fit function panels
-      if(tab.dataTool.fitBuilder!=null) {
-        ArrayList<FunctionPanel> fits = new ArrayList<FunctionPanel>(tab.dataTool.fitBuilder.panels.values());
-        control.setValue("fits", fits); //$NON-NLS-1$
+      // save selected fit function panel
+      // note: as of Dec 2014, no longer save ALL fitBuilder panels since most
+      // are for default or autoloaded functions
+      if (tab.dataTool.fitBuilder!=null && tab.curveFitter!=null) {
+      	String fitName = tab.curveFitter.fit.getName();
+      	FitFunctionPanel panel = (FitFunctionPanel)tab.dataTool.fitBuilder.getPanel(fitName);
+      	if (panel!=null) {
+	        ArrayList<FunctionPanel> fits = new ArrayList<FunctionPanel>();
+	        fits.add(panel);
+	        control.setValue("fits", fits); //$NON-NLS-1$
+      	}
       }
       // save selected fit name
-      control.setValue("selected_fit", tab.curveFitter.getSelectedFitName());    //$NON-NLS-1$
+      control.setValue("selected_fit", tab.curveFitter.fit.getName());    //$NON-NLS-1$
       // save autofit status
       control.setValue("autofit", tab.curveFitter.autofitCheckBox.isSelected()); //$NON-NLS-1$
       // save fit parameters
@@ -2892,7 +2995,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	    		String name = (String)constants[i][0];
 	    		double val = (Double)constants[i][1];
 	    		String expression = (String)constants[i][2];
-	    		tab.dataManager.setConstant(name, val, expression);
+	    		if (constants[i].length>=4) {
+	    			String desc = (String)constants[i][3];
+	    			tab.dataManager.setConstant(name, val, expression, desc);
+	    		}
+	    		else tab.dataManager.setConstant(name, val, expression);
     		}
     	}      
       Iterator<?> it = control.getPropertyContent().iterator();
@@ -2930,6 +3037,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       // select fit
       String fitName = control.getString("selected_fit"); //$NON-NLS-1$
       tab.curveFitter.fitDropDown.setSelectedItem(fitName);
+      tab.curveFitter.selectFit(fitName);
       // load autofit
       boolean autofit = control.getBoolean("autofit"); //$NON-NLS-1$
       tab.curveFitter.autofitCheckBox.setSelected(autofit);
