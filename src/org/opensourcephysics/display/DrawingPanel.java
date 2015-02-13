@@ -75,8 +75,8 @@ import org.opensourcephysics.tools.VideoTool;
  * @version 1.0
  */
 public class DrawingPanel extends JPanel implements ActionListener, Renderable {
-  static final boolean RECORD_PAINT_TIMES = false;                                                     // set true to test painting time
-  long currentTime = System.currentTimeMillis();
+	protected static final boolean RECORD_PAINT_TIMES = false;                                                     // set true to test painting time
+  protected long currentTime = System.currentTimeMillis();
 
   /** Message box location */
   public static final int BOTTOM_LEFT = 0;
@@ -142,17 +142,17 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
   protected CoordinateStringBuilder coordinateStrBuilder = CoordinateStringBuilder.createCartesian();
   protected GlassPanel glassPanel = new GlassPanel();
   protected OSPLayout glassPanelLayout = new OSPLayout();
-  int refreshDelay = 100;                                                     // time in ms to delay refresh events
-  javax.swing.Timer refreshTimer = new javax.swing.Timer(refreshDelay, this); // delay before for refreshing panel
-  VideoTool vidCap;
-  double imageRatio = 1.0;
+  protected int refreshDelay = 100;                                                     // time in ms to delay refresh events
+  protected javax.swing.Timer refreshTimer = new javax.swing.Timer(refreshDelay, this); // delay before for refreshing panel
+  protected VideoTool vidCap;
+  protected double imageRatio = 1.0;
   protected double xLeftMarginPercentage = 0.0, xRightMarginPercentage = 0.0;
   protected double yTopMarginPercentage = 0.0, yBottomMarginPercentage = 0.0;
-  boolean logScaleX = false;                                                  // set true if the this axis uses a logarithmic scale
-  boolean logScaleY = false;                                                  // set true if the this axis uses a logarithmic scale
-  int zoomDelay = 40, zoomCount;
-  javax.swing.Timer zoomTimer;
-  double dxmin, dxmax, dymin, dymax;
+  protected boolean logScaleX = false;                 // set true if the this axis uses a logarithmic scale
+  protected boolean logScaleY = false;                 // set true if the this axis uses a logarithmic scale
+  protected int zoomDelay = 40, zoomCount;
+  protected javax.swing.Timer zoomTimer;
+  protected double dxmin, dxmax, dymin, dymax;
 
   /**
    * DrawingPanel constructor.
