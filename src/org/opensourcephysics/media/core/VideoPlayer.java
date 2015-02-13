@@ -133,7 +133,6 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
   private String readoutType;
   private boolean inspectorButtonVisible = true;
   protected int height = 54;
-  private boolean linkedIn, linkedOut;
   // GUI elements
   private JToolBar toolbar;
   protected JButton readout;
@@ -534,11 +533,6 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     if(name.equals("stepnumber")) {                               // from ClipControl //$NON-NLS-1$
       updateReadout();
       updatePlayButtons(clipControl.isPlaying());
-      int frame = clipControl.getFrameNumber();
-      if (active==null) {
-	      linkedIn = frame==getVideoClip().getStartFrameNumber();
-	      linkedOut = frame==getVideoClip().getEndFrameNumber();
-      }
       firePropertyChange("stepnumber", null, e.getNewValue());    // to VideoPanel //$NON-NLS-1$
     } else if(name.equals("frameduration")) {                     // from ClipControl //$NON-NLS-1$
       updateReadout();
@@ -1044,7 +1038,6 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     		val = Math.max(val-offset, 0);
     		if (active.equals("in")) { //$NON-NLS-1$
     			int prevStart = clip.getStartFrameNumber();
-        	linkedIn = linkedIn || clipControl.getFrameNumber()==clip.getStartFrameNumber();    	
         	if (clip.setStartFrameNumber(val, maxEndFrame)) {
         		int newStart = clip.getStartFrameNumber();
 	  				vidPanel.setMessage(MediaRes.getString("VideoPlayer.InMarker.ToolTip")+": "+newStart); //$NON-NLS-1$ //$NON-NLS-2$
@@ -1054,9 +1047,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
             	startTime += (newStart-prevStart)*clipControl.getMeanFrameDuration();
             	clip.setStartTime(startTime);
             }        		
-	    			if (linkedIn) {
-	    				clipControl.setStepNumber(0);
-	    			}
+	    			clipControl.setStepNumber(0);
 						if (clip.inspector != null && clip.inspector.isVisible()) {
 							clip.inspector.startField.setValue(newStart);
 							clip.inspector.t0Field.setValue(clip.getStartTime()/1000);
@@ -1065,17 +1056,10 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 					}
     		}
     		else if (active.equals("out")) { //$NON-NLS-1$
-        	linkedOut = linkedOut || clipControl.getFrameNumber()==clip.getEndFrameNumber();
-        	boolean increasingFrameCount = clip.getVideo()==null && val>clip.getFrameCount()-1;
     			if (clip.setEndFrameNumber(val)) {
     				int end = clip.getEndFrameNumber();
 	  				vidPanel.setMessage(MediaRes.getString("VideoPlayer.OutMarker.ToolTip")+": "+end); //$NON-NLS-1$ //$NON-NLS-2$
-	    			if (linkedOut || increasingFrameCount) {
-	            Video video = clip.getVideo();
-	            if (video!=null && video.getFrameCount()>1)
-	            	clipControl.setStepNumber(clip.getStepCount()-1);
-	    				updateReadout();
-	    			}
+          	clipControl.setStepNumber(clip.getStepCount()-1);
 						if (clip.inspector != null && clip.inspector.isVisible()) {
 							clip.inspector.endField.setValue(clip.getEndFrameNumber());
 						}

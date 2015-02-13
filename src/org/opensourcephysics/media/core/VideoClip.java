@@ -55,7 +55,9 @@ import org.opensourcephysics.tools.ResourceLoader;
  */
 public class VideoClip {
   // instance fields
-  private int startFrame = 0;
+	public boolean changeEngine; // signals that user wishes to change preferred video engine
+
+	private int startFrame = 0;
   private int stepSize = 1;
   private int stepCount = 10;   // default stepCount is 10 if video is null
   private int frameCount = stepCount; // default frameCount same as stepCount
@@ -578,7 +580,7 @@ public class VideoClip {
    * Gets the first frame number.
    * @return the frame number
    */
-  private int getFirstFrameNumber() {
+  public int getFirstFrameNumber() {
   	if (video==null) return 0;
   	// frameShift changes frame number--but never less than zero
   	return Math.max(0, -frameShift);
@@ -588,7 +590,7 @@ public class VideoClip {
    * Gets the last frame number.
    * @return the frame number
    */
-  private int getLastFrameNumber() {
+  public int getLastFrameNumber() {
   	if (video==null) return getEndFrameNumber();
   	int finalVideoFrame = video.getFrameCount()-1;
   	// frameShift changes frame number--but never less than zero
@@ -653,6 +655,7 @@ public class VideoClip {
       XMLControl child = control.getChildControl("video"); //$NON-NLS-1$
       String path = child.getString("path"); //$NON-NLS-1$
       Video video = VideoIO.getVideo(path, null);
+      boolean engineChange = false;
       if (video==null && path!=null && !VideoIO.isCanceled()) {
       	if (ResourceLoader.getResource(path)!=null) { // resource exists but not loaded
 	        OSPLog.info("\""+path+"\" could not be opened");                                                  //$NON-NLS-1$ //$NON-NLS-2$
@@ -676,9 +679,10 @@ public class VideoClip {
 	        }
 	        else {
 	      		// provide immediate way to open with other engines
-	    			JCheckBox setAsDefaultBox = new JCheckBox(MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Checkbox")); //$NON-NLS-1$
-	        	video = VideoIO.getVideo(path, otherEngines, setAsDefaultBox, null);
-			    	if (video!=null && VideoIO.ENGINE_NONE.equals(VideoIO.getEngine()) && setAsDefaultBox.isSelected()) {
+	    			JCheckBox changePreferredEngine = new JCheckBox(MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Checkbox")); //$NON-NLS-1$
+	        	video = VideoIO.getVideo(path, otherEngines, changePreferredEngine, null);
+		    		engineChange = changePreferredEngine.isSelected();
+			    	if (video!=null && changePreferredEngine.isSelected()) {
 			    		String typeName = video.getClass().getSimpleName();
 			    		String newEngine = typeName.indexOf("Xuggle")>-1? VideoIO.ENGINE_XUGGLE: //$NON-NLS-1$
 			    			typeName.indexOf("QT")>-1? VideoIO.ENGINE_QUICKTIME: //$NON-NLS-1$
@@ -724,6 +728,7 @@ public class VideoClip {
         
       }
       VideoClip clip = new VideoClip(video);
+      clip.changeEngine = engineChange;
       if (path!=null) {
       	if (!path.startsWith("/") && path.indexOf(":")==-1) { //$NON-NLS-1$ //$NON-NLS-2$
       		// convert path to absolute 
