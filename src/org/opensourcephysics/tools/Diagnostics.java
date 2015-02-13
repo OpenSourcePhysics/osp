@@ -298,6 +298,7 @@ public class Diagnostics {
     java.security.CodeSource codeSource = classInJar.getProtectionDomain().getCodeSource();
     File jarFile = null;
     if (codeSource.getLocation() != null) {
+//      jarFile = new File(codeSource.getLocation().getPath());
       jarFile = new File(codeSource.getLocation().toURI());
     }
     else {

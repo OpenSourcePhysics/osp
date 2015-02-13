@@ -3,7 +3,6 @@ package org.opensourcephysics.tools;
 import java.awt.Component;
 import java.io.File;
 import java.lang.reflect.Method;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.*;
 import java.util.ArrayList;
@@ -57,9 +56,10 @@ public class DiagnosticsForXuggle {
 		try {
 			URL url = DiagnosticsForXuggle.class.getProtectionDomain().getCodeSource()
 					.getLocation();
+//			File myJarFile = new File(url.getPath());
 			File myJarFile = new File(url.toURI());
 			codeBase = myJarFile.getParent();
-		} catch (URISyntaxException e) {
+		} catch (Exception e) {
 		}
 		
     xuggleHome = System.getenv("XUGGLE_HOME"); //$NON-NLS-1$	
@@ -161,6 +161,7 @@ public class DiagnosticsForXuggle {
 	  	try {
 	  		Class<?> xuggleClass = Class.forName(className);
 				URL url = xuggleClass.getProtectionDomain().getCodeSource().getLocation();
+//				File codeFile = new File(url.getPath());
 				File codeFile = new File(url.toURI());
 				path = " " + codeFile.getAbsolutePath(); //$NON-NLS-1$
 				DateFormat format = DateFormat.getDateInstance(DateFormat.SHORT);
