@@ -149,6 +149,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
   protected AbstractButton[] customButtons;
   protected boolean anglesInDegrees;
   protected boolean usePopupEditor = true;
+  protected boolean confirmChanges = true;
 
   static {
     decimalFormat = NumberFormat.getInstance();
@@ -251,6 +252,30 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
   }
 
   /**
+   * Returns the description of the object.
+   *
+   * @param obj the object
+   * @return the description
+   */
+  public String getDescription(Object obj) {
+    return null;
+  }
+
+  /**
+   * Sets the description of the object. Subclasses should override and call this
+   * AFTER changing the object description.
+   *
+   * @param obj the object
+   * @param desc the description
+   */
+  public void setDescription(Object obj, String desc) {
+  	if (obj instanceof Parameter) {
+      firePropertyChange("param_description", null, null); //$NON-NLS-1$
+  	}
+    firePropertyChange("description", null, null); //$NON-NLS-1$
+  }
+
+  /**
    * Returns a tooltip for the object.
    *
    * @param obj the object
@@ -313,6 +338,24 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
       }
     }
   }
+  
+  /**
+   * Gets the confirmChanges flag.
+   *
+   * @return true if users are required to confirm changes to function names
+   */
+  public boolean getConfirmChanges() {
+  	return confirmChanges;
+  }
+
+  /**
+   * Sets the confirmChanges flag.
+   *
+   * @param confirm true to require users to confirm changes to function names
+   */
+  public void setConfirmChanges(boolean confirm) {
+  	confirmChanges= confirm;
+  }
 
   /**
    * Adds an object.
@@ -347,7 +390,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
    * @return the added object
    */
   public Object addObject(Object obj, int row, boolean postEdit, boolean firePropertyChange) {
-    obj = createUniqueObject(obj, getName(obj), true);
+    obj = createUniqueObject(obj, getName(obj), confirmChanges);
     if(obj==null) {
       return null;
     }
@@ -1140,6 +1183,30 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
           }
         }
 
+        public void mouseClicked(MouseEvent e) {
+        	if (OSPRuntime.isPopupTrigger(e)) {
+            int col = columnAtPoint(e.getPoint());
+            if (col!=0) return;
+            int row = rowAtPoint(e.getPoint());
+            if (tableModel.isCellEditable(row, col)) {
+            	String name = (String)table.getValueAt(row, col);
+            	Object obj = getObject(name);
+            	String desc = getDescription(obj);
+            	String message = ToolsRes.getString("FunctionEditor.Dialog.SetDescription.Message"); //$NON-NLS-1$
+              message += " \""+name+"\""; //$NON-NLS-1$ //$NON-NLS-2$
+            	Object input = JOptionPane.showInputDialog(FunctionEditor.this, 
+              		message,
+              		ToolsRes.getString("FunctionEditor.Dialog.SetDescription.Title"), //$NON-NLS-1$
+                  JOptionPane.PLAIN_MESSAGE, null, null, desc);
+              if (input==null || input.equals(desc)) {
+                return;
+              }
+              desc = input.toString();
+            	setDescription(obj, desc);
+            }
+        	}
+        }
+
       });
       addFocusListener(new FocusAdapter() {
         public void focusGained(FocusEvent e) {
@@ -1794,11 +1861,22 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 
     // Returns a label for the specified cell.
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-      setText(value.toString());
+      String val = value.toString();
+      if (col==0 && (FunctionEditor.this instanceof UserFunctionEditor)) {
+	      val = FitBuilder.localize(val);
+      }
+    	setText(val);
+    	
       Object obj = objects.get(row);
       String tooltip = getTooltip(obj);
-      setToolTipText(((col==0)&&(tooltip!=null)) ? tooltip : (col==0) ? ToolsRes.getString("FunctionEditor.Table.Cell.Name.Tooltip") : //$NON-NLS-1$
-        ToolsRes.getString("FunctionEditor.Table.Cell.Value.Tooltip")); //$NON-NLS-1$
+      String tooltipText = (col==0 && tooltip!=null)? tooltip: 
+      	(col==0)? ToolsRes.getString("FunctionEditor.Table.Cell.Name.Tooltip"): //$NON-NLS-1$
+        ToolsRes.getString("FunctionEditor.Table.Cell.Value.Tooltip"); //$NON-NLS-1$
+      if (tooltip==null && col==0) {
+      	tooltipText += " ("+ToolsRes.getString("FunctionEditor.Tooltip.HowToEdit")+")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+      }
+      setToolTipText(tooltipText);
+
       if((col==1)&&circularErrors.contains(obj)) {
         setToolTipText(ToolsRes.getString("FunctionEditor.Table.Cell.CircularErrors.Tooltip")); //$NON-NLS-1$
         setForeground(DARK_RED);

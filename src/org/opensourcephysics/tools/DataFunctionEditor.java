@@ -9,8 +9,10 @@ package org.opensourcephysics.tools;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Iterator;
+
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
+
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.DataFunction;
 import org.opensourcephysics.display.Dataset;
@@ -71,6 +73,42 @@ public class DataFunctionEditor extends FunctionEditor {
    */
   public String getExpression(Object obj) {
     return(obj==null) ? null : ((DataFunction) obj).getInputString();
+  }
+
+  /**
+   * Returns the description of the object.
+   *
+   * @param obj the object
+   * @return the description
+   */
+  public String getDescription(Object obj) {
+    return (obj==null)? null: ((DataFunction)obj).getYColumnDescription();
+  }
+
+  /**
+   * Sets the description of the object.
+   *
+   * @param obj the object
+   * @param desc the description
+   */
+  public void setDescription(Object obj, String desc) {
+  	if (obj!=null) {
+    	if (desc!=null && desc.trim().equals("")) { //$NON-NLS-1$
+    		desc = null;
+    	}
+  		((DataFunction)obj).setYColumnDescription(desc);
+  		super.setDescription(obj, desc);
+  	}
+  }
+
+  /**
+   * Returns a tooltip for the object.
+   *
+   * @param obj the object
+   * @return the tooltip
+   */
+  public String getTooltip(Object obj) {
+    return (obj==null) ? null : ((DataFunction)obj).getYColumnDescription();
   }
 
   /**
@@ -155,6 +193,8 @@ public class DataFunctionEditor extends FunctionEditor {
     ArrayList<Dataset> datasets = data.getDatasets();
     for(int i = 0; i<datasets.size(); i++) {
       Dataset next = datasets.get(i);
+      // added following line so leaving object name unchanged is not disallowed
+      if (obj!=null && next==obj && getName(obj).equals(name)) return false;
       if((i==0)&&TeXParser.removeSubscripting(next.getXColumnName()).equals(name)) {
         return true;
       }

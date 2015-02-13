@@ -36,12 +36,29 @@ public interface KnownFunction extends Function {
   public double getParameterValue(int i);
 
   /**
+   * Gets a parameter description. May be null.
+   *
+   * @param i the parameter index
+   * @return the description of the parameter (may be null)
+   */
+  public String getParameterDescription(int i);
+
+  /**
    * Sets a parameter value.
    *
    * @param i the parameter index
    * @param value the value
    */
   public void setParameterValue(int i, double value);
+
+  /**
+   * Sets the parameters.
+   *
+   * @param names the parameter names
+   * @param values the parameter values
+   * @param descriptions the parameter descriptions
+   */
+  public void setParameters(String[] names, double[] values, String[] descriptions);
 
   /**
    * Gets the equation.
@@ -57,6 +74,42 @@ public interface KnownFunction extends Function {
    * @return the name
    */
   public String getName();
+
+  /**
+   * Sets the name of the function.
+   *
+   * @param name the name
+   */
+  public void setName(String name);
+
+  /**
+   * Gets the description of the function.
+   *
+   * @return the description
+   */
+  public String getDescription();
+
+  /**
+   * Sets the description of the function.
+   *
+   * @param description the description
+   */
+  public void setDescription(String description);
+
+  /**
+   * Gets a clone of the function.
+   *
+   * @return the clone
+   */
+  public KnownFunction clone();
+
+  /**
+   * Determines if another Object is the same as this one.
+   *
+   * @param f the Object to test
+   * @return true if equal
+   */
+  public boolean equals(Object f);
 
 }
 

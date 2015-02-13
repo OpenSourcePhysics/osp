@@ -67,6 +67,7 @@ public class DataFunctionPanel extends FunctionPanel {
    */
   public void propertyChange(PropertyChangeEvent e) {
     if(e.getPropertyName().equals("edit")) {                                         //$NON-NLS-1$
+      refreshFunctions();
       super.propertyChange(e);
     } else if(e.getPropertyName().equals("function")) {                              //$NON-NLS-1$
       // function has been added or removed
@@ -100,7 +101,7 @@ public class DataFunctionPanel extends FunctionPanel {
       Parameter p = (Parameter) it.next();
       String name = p.getName();
       double val = p.getValue();
-      getData().setConstant(name, val, p.getExpression());
+      getData().setConstant(name, val, p.getExpression(), p.getDescription());
     }
     // evaluate the functions 
     functionEditor.evaluateAll();

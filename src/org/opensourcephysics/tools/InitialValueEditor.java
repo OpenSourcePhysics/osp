@@ -56,6 +56,13 @@ public class InitialValueEditor extends ParamEditor {
     return dim;
   }
 
+  @Override
+  public Dimension getMaximumSize() {
+  	Dimension dim = super.getMaximumSize();
+  	dim.height = getPreferredSize().height;
+    return dim;
+  }
+
   /**
    * Evaluates all current objects.
    */

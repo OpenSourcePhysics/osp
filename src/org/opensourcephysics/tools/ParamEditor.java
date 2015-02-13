@@ -21,6 +21,7 @@ public class ParamEditor extends FunctionEditor {
   protected double[] paramValues = new double[0];
   private DatasetManager data;
   private FunctionEditor[] functionEditors;
+  protected String[] paramDescriptions = new String[0];
 
   /**
    * Default constructor
@@ -91,6 +92,15 @@ public class ParamEditor extends FunctionEditor {
   }
 
   /**
+   * Gets the current parameter descriptions.
+   *
+   * @return an array of descriptions
+   */
+  public String[] getDescriptions() {
+    return paramDescriptions;
+  }
+
+  /**
    * Returns the name of the object.
    *
    * @param obj the object
@@ -111,6 +121,54 @@ public class ParamEditor extends FunctionEditor {
   }
 
   /**
+   * Returns the description of the object.
+   *
+   * @param obj the object
+   * @return the description
+   */
+  public String getDescription(Object obj) {
+    return (obj==null)? null: ((Parameter)obj).getDescription();
+  }
+
+  /**
+   * Sets the description of an object.
+   *
+   * @param obj the object
+   * @param desc the description
+   */
+  public void setDescription(Object obj, String desc) {
+  	if (obj!=null) {
+  		Parameter p = (Parameter)obj;
+    	if (desc!=null && desc.trim().equals("")) { //$NON-NLS-1$
+    		desc = null;
+    	}
+  		p.setDescription(desc);
+      for(int i = 0; i<objects.size(); i++) {
+        p = (Parameter) objects.get(i);
+        paramValues[i] = p.getValue();
+        paramDescriptions[i] = p.getDescription();
+      }
+  		super.setDescription(obj, desc);
+  	}
+  }
+
+  /**
+   * Sets the description of the named parameter, if any.
+   *
+   * @param name the name
+   * @param description the description
+   */
+  public void setDescription(String name, String description) {
+    for(Object obj: objects) {
+      Parameter param = (Parameter)obj;
+      if (param.getName().equals(name)) {
+      	setDescription(obj, description);
+      	break;
+      }
+    }
+  }
+
+  /**
    * Returns a tooltip for the object.
    *
    * @param obj the object
@@ -118,8 +176,9 @@ public class ParamEditor extends FunctionEditor {
    */
   public String getTooltip(Object obj) {
     String s = ((Parameter) obj).getDescription();
-    if(s==null) {
+    if (s==null) {
       s = ToolsRes.getString("ParamEditor.Table.Cell.Name.Tooltip"); //$NON-NLS-1$
+    	s += " ("+ToolsRes.getString("FunctionEditor.Tooltip.HowToEdit")+")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
     return s;
   }
@@ -201,28 +260,16 @@ public class ParamEditor extends FunctionEditor {
       Parameter p = (Parameter) evaluate.get(i);
       p.evaluate(objects);
     }
+    if(paramDescriptions.length!=objects.size()) {
+    	paramDescriptions = new String[objects.size()];
+    }
     for(int i = 0; i<objects.size(); i++) {
       Parameter p = (Parameter) objects.get(i);
       paramValues[i] = p.getValue();
+      paramDescriptions[i] = p.getDescription();
     }
   }
   
-  /**
-   * Sets the description of the named parameter, if any.
-   *
-   * @param name the name
-   * @param description the description
-   */
-  public void setDescription(String name, String description) {
-    for(Object obj: objects) {
-      Parameter param = (Parameter)obj;
-      if (param.getName().equals(name)) {
-      	param.setDescription(description);
-      	break;
-      }
-    }
-  }
-
   /**
    * Returns true if a name is already in use.
    *
@@ -232,6 +279,8 @@ public class ParamEditor extends FunctionEditor {
    */
   protected boolean isDisallowedName(Object obj, String name) {
     boolean disallowed = super.isDisallowedName(obj, name);
+    // added following line so leaving object name unchanged is not disallowed
+    if (!disallowed && obj!=null && getName(obj).equals(name)) return false;
     if(functionEditors!=null) {
       for(int i = 0; i<functionEditors.length; i++) {
         disallowed = disallowed||functionEditors[i].isDisallowedName(null, name);
@@ -308,9 +357,12 @@ public class ParamEditor extends FunctionEditor {
       Parameter p = (Parameter) getObject(name);
       if(p==null) {
         p = new Parameter(name, expression);
+        p.setDescription(data.getConstantDescription(name));
         addObject(p, false);
       }
-      else setExpression(name, expression, false);
+      else {
+      	setExpression(name, expression, false);
+      }
     }
   }
 
