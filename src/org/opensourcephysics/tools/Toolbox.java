@@ -6,13 +6,14 @@
  */
 
 package org.opensourcephysics.tools;
-import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.swing.JOptionPane;
+
 import org.opensourcephysics.controls.OSPLog;
 
 /**
@@ -22,6 +23,8 @@ import org.opensourcephysics.controls.OSPLog;
  * @version 0.1
  */
 public class Toolbox {
+  private static final String HOST = "localhost"; //$NON-NLS-1$
+  private static final int PORT = 1099;
   protected static Map<String, Tool> tools = new HashMap<String, Tool>();
   protected static Registry registry;
   protected static int allowRMI = -1; // flag to determine if RMI should be allowed.
@@ -61,7 +64,7 @@ public class Toolbox {
       return tool;
     }
     initRMI();
-    if(allowRMI==0) { // user has choosen not to allow RMI
+    if(allowRMI==0) { // user has chosen not to allow RMI
       return null;
     }
     // look for RMI tool
@@ -77,38 +80,28 @@ public class Toolbox {
   }
 
   private static void initRMI() {
-    if(allowRMI==0) { // user has choosen not to allow RMI
+    if(allowRMI==0) { // user has chosen not to allow RMI
       return;
     }
-    int selection = JOptionPane.showConfirmDialog(null, ToolsRes.getString("Toolbox.Dialog.UseRemote.Query"), ToolsRes.getString("Toolbox.Dialog.UseRemote.Title"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
-    if(selection==JOptionPane.YES_OPTION) {
-      allowRMI = 1;
-    } else {
-      allowRMI = 0;
-      return;
+    if (allowRMI<0) {
+	    int selection = JOptionPane.showConfirmDialog(null, ToolsRes.getString("Toolbox.Dialog.UseRemote.Query"), ToolsRes.getString("Toolbox.Dialog.UseRemote.Title"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
+	    if(selection==JOptionPane.YES_OPTION) {
+	      allowRMI = 1;
+	    } else {
+	      allowRMI = 0;
+	      return;
+	    }
     }
     if(registry==null) {
       try {
-        registry = LocateRegistry.getRegistry(1099);
-        registry.list();
+      	registry = LocateRegistry.getRegistry(HOST, PORT);
       } catch(RemoteException ex) {
+        OSPLog.info(ex.getMessage());
         try {
-          registry = LocateRegistry.createRegistry(1099);
+          registry = LocateRegistry.createRegistry(PORT);
         } catch(RemoteException ex1) {
           OSPLog.info(ex1.getMessage());
         }
-      }
-    }
-    if(System.getSecurityManager()==null) {
-      try {
-        // set the rmi server codebase and security policy properties
-        String base = "file:"+System.getProperty("user.dir");              //$NON-NLS-1$ //$NON-NLS-2$
-        System.setProperty("java.rmi.server.codebase", base+"/classes/");  //$NON-NLS-1$ //$NON-NLS-2$
-        System.setProperty("java.security.policy", base+"/Remote.policy"); //$NON-NLS-1$ //$NON-NLS-2$
-        // set the security manager
-        System.setSecurityManager(new RMISecurityManager());
-      } catch(Exception ex) {
-        OSPLog.info(ex.getMessage());
       }
     }
   }
