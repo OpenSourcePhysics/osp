@@ -101,7 +101,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     super(title);
     // forces dependence on the DatasetTool class;
     // add or remove the next line if you do not want the DatasetTool in your jar
-    // org.opensourcephysics.tools.DataTool.loadClass = true;
+//     org.opensourcephysics.tools.DataTool.loadClass = true;
     drawingPanel = _drawingPanel;
     if(drawingPanel!=null) {
       getContentPane().add(drawingPanel, BorderLayout.CENTER);

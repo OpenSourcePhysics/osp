@@ -138,7 +138,7 @@ public class FunctionDrawer implements Drawable, Measurable, Function {
     return yrange;
   }
 
-  void checkRange(DrawingPanel panel) {
+  protected void checkRange(DrawingPanel panel) {
     // check to see if the range or function has changed
     if((xrange[0]==panel.getXMin())&&(xrange[1]==panel.getXMax())&&(numpts==panel.getWidth())&&!functionChanged) {
       return;
