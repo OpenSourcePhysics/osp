@@ -32,6 +32,8 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
+import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ResourceLoader;
 import org.opensourcephysics.tools.Translator;
@@ -45,7 +47,7 @@ import org.opensourcephysics.tools.Translator;
  */
 public class OSPRuntime {
   static String version = "2.3";                                                                            //$NON-NLS-1$
-  static String releaseDate = "May 31, 2011";                                                           //$NON-NLS-1$
+  static String releaseDate = "1 Jan 2015";                                                           //$NON-NLS-1$
 
   /** Disables drawing for faster start-up and to avoid screen flash in Drawing Panels. */
   volatile public static boolean disableAllDrawing = false;
@@ -111,6 +113,9 @@ public class OSPRuntime {
   /** File Chooser starting directory. */
   public static String chooserDir;
 
+  /** User home directory. */
+  public static String userhomeDir;
+
   /** Location of OSP icon. */
   public static final String OSP_ICON_FILE = "/org/opensourcephysics/resources/controls/images/osp_icon.gif"; //$NON-NLS-1$
 
@@ -140,15 +145,25 @@ public class OSPRuntime {
   @SuppressWarnings("javadoc")
 	public final static HashMap<String, String> LOOK_AND_FEEL_TYPES = new HashMap<String, String>();
 
+  /** Preferences XML control */
+  private static XMLControl prefsControl;
+
+  /** Preferences path */
+  private static String prefsPath;
+  
+  /** Preferences filename */
+  private static String prefsFileName = "osp.prefs"; //$NON-NLS-1$
+
   /**
    * Sets default properties for OSP.
    */
   static {
-    //java.util.Locale.setDefault(new java.util.Locale("es"));  // test of language resources       
-    //setLookAndFeel(true, CROSS_PLATFORM_LF);                  // test of LnF
-    //setLookAndFeel(true, SYSTEM_LF);                  // test of LnF
-    try { // sets the default directory for the chooser                                                                             // system properties may not be readable in some contexts
+    try { // set the user home and default directory for the chooser                                                                             // system properties may not be readable in some contexts
       OSPRuntime.chooserDir = System.getProperty("user.dir", null);                            //$NON-NLS-1$
+      String userhome = System.getProperty("user.home"); 																			 //$NON-NLS-1$
+      if (userhome!=null) {
+      	userhomeDir = XML.forwardSlash(userhome);
+      }
     } catch(Exception ex) {
       OSPRuntime.chooserDir = null;
     }
@@ -183,7 +198,9 @@ public class OSPRuntime {
    * @param parent 
    */
   public static void showAboutDialog(Component parent) {
-    String aboutString = "OSP Library "+version+" released "+releaseDate+"\n"           //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		String date = OSPRuntime.getLaunchJarBuildDate();
+		if (date==null) date = releaseDate;
+    String aboutString = "OSP Library "+version+" released "+date+"\n"           //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                          +"Open Source Physics Project \n"+"www.opensourcephysics.org"; //$NON-NLS-1$ //$NON-NLS-2$
     JOptionPane.showMessageDialog(parent, aboutString, "About Open Source Physics", JOptionPane.INFORMATION_MESSAGE); //$NON-NLS-1$
   }
@@ -724,6 +741,142 @@ public class OSPRuntime {
   	if (locale.equals(Locale.TAIWAN))
   		return "\u7e41\u4f53\u4e2d\u6587"; //$NON-NLS-1$
   	return locale.getDisplayLanguage(locale);
+  }
+  
+	/**
+	 * Gets the default search paths, typically used for autoloading.
+	 * Search paths are platform-specific "appdata", user home and code base, in that order.
+	 * 
+	 * @return the default search paths
+	 */
+  public static ArrayList<String> getDefaultSearchPaths() {
+  	ArrayList<String> paths = new ArrayList<String>();
+  	if (isWindows()) {
+	  	String appdata = System.getenv("LOCALAPPDATA"); //$NON-NLS-1$
+	    if (appdata!=null) {
+	    	File dir = new File(appdata, "OSP"); //$NON-NLS-1$
+  			if (!dir.exists()) dir.mkdir();
+  			if (dir.exists()) {
+  				paths.add(XML.forwardSlash(dir.getAbsolutePath()));
+  			}
+	    }  		
+  	}
+  	else if (userhomeDir!=null && isMac()) {
+  		File dir = new File(userhomeDir, "Library/Application Support"); //$NON-NLS-1$
+  		if (dir.exists()) {
+  			dir = new File(dir, "OSP"); //$NON-NLS-1$
+  			if (!dir.exists()) dir.mkdir();
+  			if (dir.exists()) {
+  				paths.add(XML.forwardSlash(dir.getAbsolutePath()));
+  			}
+  		}
+  	}
+  	else if (userhomeDir!=null && isLinux()) {
+  		File dir = new File(userhomeDir, ".config"); //$NON-NLS-1$
+  		if (dir.exists()) {
+  			dir = new File(dir, "OSP"); //$NON-NLS-1$
+  			if (!dir.exists()) dir.mkdir();
+  			if (dir.exists()) {
+  				paths.add(XML.forwardSlash(dir.getAbsolutePath()));
+  			}
+  		}
+  	}
+    if (userhomeDir!=null) {
+    	paths.add(userhomeDir);
+    }  		
+    String codebase = OSPRuntime.getLaunchJarDirectory();
+    if (codebase!=null) {
+    	paths.add(XML.forwardSlash(codebase));
+    }
+  	return paths;
+  }
+  
+	/**
+	 * Gets a named preference object. The object must be cast to the correct type
+	 * by the user.
+	 * 
+	 * @param name the name of the preference
+	 * @return the object (may be null)
+	 */
+  public static Object getPreference(String name) {
+  	XMLControl control = getPrefsControl();
+  	return control.getObject(name);
+  }
+
+	/**
+	 * Sets a named preference object. The object can be anything storable
+	 * in an XMLControl--eg, String, Collection, OSP object, Boolean, Double, Integer
+	 * 
+	 * @param name the name of the preference
+	 * @param pref the object (may be null)
+	 */
+  public static void setPreference(String name, Object pref) {
+  	XMLControl control = getPrefsControl();
+  	control.setValue(name, pref);
+  }
+  
+	/**
+	 * Saves the current preference XMLControl by writing to a file.
+	 */
+  public static void savePreferences() {
+  	XMLControl control = getPrefsControl();
+  	File file = new File(prefsPath, prefsFileName);
+  	control.write(file.getAbsolutePath());
+  }
+
+	/**
+	 * Gets the preferences XML file if it exists.
+	 * 
+	 * @return the file, or null if none exists
+	 */
+  public static File getPreferencesFile() {
+  	getPrefsControl(); // ensures the prefs path is defined and writes file if needed	
+  	File file = new File(prefsPath, prefsFileName);
+  	if (file.exists()) return file;
+  	return null;
+  }
+
+	/**
+	 * Gets the preference XMLControl. This will load the control
+	 * from the prefs file if it can be found, otherwise create a new one.
+	 * 
+	 * @return the XMLControl
+	 */
+  private static XMLControl getPrefsControl() {
+  	if (prefsControl==null) {
+  		// try to load prefs control from default search paths
+  		ArrayList<String> dirs = getDefaultSearchPaths();
+  		for (String dir: dirs) {
+    		File file = new File(dir, prefsFileName);
+      	if (!file.exists()) {
+      		// try with leading dot
+      		file = new File(dir, "."+prefsFileName); //$NON-NLS-1$
+      		if (file.exists()) {
+      			prefsFileName = "."+prefsFileName; //$NON-NLS-1$
+      		}
+      	}
+    		if (file.exists()) {
+    			XMLControl test = new XMLControlElement(file.getAbsolutePath());
+    			if (!test.failedToRead()) {
+    				prefsControl = test;
+    				prefsPath = XML.forwardSlash(dir);
+    				break;
+    			}
+    		}
+  		}
+  		if (prefsControl==null) {
+  			prefsControl = new XMLControlElement();
+  			// by default, save prefs in first default search directory
+				prefsPath = XML.forwardSlash(dirs.get(0));
+				if (prefsPath.equals(userhomeDir)) {
+					// if saving in user home, add leading dot to hide
+					prefsFileName = "."+prefsFileName; //$NON-NLS-1$
+				}
+		  	File file = new File(prefsPath, prefsFileName);
+		  	prefsControl.write(file.getAbsolutePath());
+  		}
+  	}
+  	return prefsControl;
   }
 
   /**
