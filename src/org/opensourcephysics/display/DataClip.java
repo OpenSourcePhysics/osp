@@ -50,7 +50,7 @@ import org.opensourcephysics.controls.XMLControl;
 public class DataClip {
   private int dataLength = 2;  
 	private int startIndex = 0;
-	private int clipLength = 1;
+	private int clipLength = 0;
   private int stride = 1;
   private PropertyChangeSupport support;
   private boolean isAdjusting = false;
@@ -71,9 +71,8 @@ public class DataClip {
    * @param length the data length   
    */
   public void setDataLength(int length) {
-  	int prev = dataLength;
+  	length = Math.max(length, 1);
   	dataLength = length;
-    if (prev<3) setClipLength(dataLength);
   }
 
   /**
@@ -87,7 +86,8 @@ public class DataClip {
 
   /**
    * Sets the clip length (number of video frames on which the data
-   * is displayed).
+   * is displayed). If the clip length is set to zero or less then
+   * it is reported as equal to the entire data length.
    *
    * @param clipLength the desired clip length   
    * @return the resulting clip length
@@ -95,11 +95,13 @@ public class DataClip {
   public int setClipLength(int length) {
   	int prev = getClipLength();
   	// check limits
-  	length = Math.max(length, 1);
   	length = Math.min(length, dataLength);
-  	
+  	// if full length, set to zero
+  	if (length==dataLength) {
+  		length = 0;
+  	}
   	clipLength = length;
-    support.firePropertyChange("clip_length", prev, length); //$NON-NLS-1$
+    support.firePropertyChange("clip_length", prev, getClipLength()); //$NON-NLS-1$
     return getClipLength();
   }
 
@@ -110,6 +112,7 @@ public class DataClip {
    * @return the clip length
    */
   public int getClipLength() {
+  	if (clipLength<=0) return dataLength;
   	return clipLength;
   }
 

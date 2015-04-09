@@ -74,26 +74,24 @@ public interface DataTrack extends Trackable {
 	public void addPropertyChangeListener(PropertyChangeListener listener);
 	
 	/**
-	 * Sets the TimeDataUsed flag. When true, the VideoPanel uses the time
-	 * defined by the Data, if available.
-	 * 
-	 * @param useData true to use the time defined by the Data
-	 */
-  public void setTimeDataUsed(boolean useData);
-  
-	/**
-	 * Gets the TimeDataUsed flag.
-	 * 
-	 * @return true if the Data is used as the time basis
-	 */
-  public boolean isTimeDataUsed();
-  
-	/**
 	 * Determines if time is defined by the Data.
 	 * 
 	 * @return true if time data is available
 	 */
   public boolean isTimeDataAvailable();
 
+	/**
+	 * Gets the data-based video start time in seconds if available
+	 * 
+	 * @return the start time, or Double.NaN if undefined
+	 */
+  public double getVideoStartTime();
+
+	/**
+	 * Gets the data-based video frame duration in seconds if available
+	 * 
+	 * @return the frame duration, or Double.NaN if undefined
+	 */
+  public double getFrameDuration();
 
 }
