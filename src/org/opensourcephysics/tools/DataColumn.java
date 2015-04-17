@@ -12,14 +12,18 @@ import org.opensourcephysics.controls.XMLLoader;
 import org.opensourcephysics.display.Dataset;
 
 /**
- * A Dataset that represents a single column in a DataToolTable.
+ * DataColumn is a Dataset that represents a single column in a DataToolTable.
  * The x-column name is always "row" and the x-points are always row numbers.
+ * Y-values may be shifted from their raw values. All values have the same shift.
+ * 
  *
  * @author Douglas Brown
  * @version 1.0
  */
 public class DataColumn extends Dataset {
   boolean deletable = false;
+  double shift;
+  boolean shifted = false;
 
   /**
    * Constructs a DataColumn.
@@ -67,6 +71,67 @@ public class DataColumn extends Dataset {
    * @param b ignored
    */
   public void setXColumnVisible(boolean b) {}
+  
+  /**
+   * Gets a copy of the ypoints array, with shift added if shifted.
+   *
+   * @return the y points (may be shifted)
+   */
+  @Override
+  public double[] getYPoints() {
+    double[] temp = new double[index];
+    for (int i=0; i<index; i++) {
+    	temp[i] = isShifted()? ypoints[i]+shift: ypoints[i];
+    }
+    return temp;
+  }
+
+  /**
+   * Sets the shifted property to shift the values of all elements.
+   *
+   * @param shift true to shift the values
+   */
+  public void setShifted(boolean shift) {
+  	shifted = shift;
+  }
+  
+  /**
+   * Gets the shifted property.
+   *
+   * @return true if values are shifted
+   */
+  public boolean isShifted() {
+  	return shifted;
+  }
+  
+  /**
+   * Sets the shift used to shift the values of all elements.
+   *
+   * @param shift the shift
+   * @return true if shift was changed
+   */
+  public boolean setShift(double shift) {
+  	if (this.shift==shift) return false;
+  	this.shift = shift;
+  	return true;
+  }
+  
+  /**
+   * Gets the shift used to shift the values of all elements.
+   *
+   * @return the shift
+   */
+  public double getShift() {
+  	return shift;
+  }
+  
+  public void setShiftedValue(int i, double value) {
+  	if (i<0 || i>=getIndex()) return;
+  	double d = value-ypoints[i];
+  	if (!Double.isNaN(d)) {
+  		setShift(d);
+  	}
+  }
 
   /**
    * Returns the XML.ObjectLoader for this class.
@@ -83,7 +148,14 @@ public class DataColumn extends Dataset {
   protected static class Loader extends XMLLoader {
     public void saveObject(XMLControl control, Object obj) {
       DataColumn column = (DataColumn) obj;
+      double shift = column.getShift();
+      if (shift!=0) {
+        control.setValue("shift", shift); //$NON-NLS-1$
+      	// temporarily set shift to zero
+        column.shift = 0;
+      }
       Dataset.getLoader().saveObject(control, column);
+      column.shift = shift;
       if(column.deletable) {
         control.setValue("deletable", true); //$NON-NLS-1$
       }
@@ -96,6 +168,9 @@ public class DataColumn extends Dataset {
     public Object loadObject(XMLControl control, Object obj) {
       DataColumn column = (DataColumn) obj;
       Dataset.getLoader().loadObject(control, column);
+      if (control.getPropertyNames().contains("shift")) { //$NON-NLS-1$
+      	column.shift = control.getDouble("shift"); //$NON-NLS-1$
+      }
       column.deletable = control.getBoolean("deletable"); //$NON-NLS-1$
       return obj;
     }

@@ -184,13 +184,20 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   public static void main(String[] args) {
     DATATOOL.exitOnClose = true;
     DATATOOL.saveChangesOnClose = true;
-    DATATOOL.setVisible(true);
     if((args!=null)&&(args.length>0)&&(args[0]!=null)) {
+      DATATOOL.setVisible(true);
       DATATOOL.open(args[0]);
     } else {
-      DataToolTab tab = DATATOOL.createTab(null);
-      tab.setUserEditable(true);
-      DATATOOL.addTab(tab);
+    	DATATOOL.addWindowListener(new WindowAdapter() {
+        public void windowOpened(WindowEvent e) {
+        	if (DATATOOL.getTabCount()==0) {
+            DataToolTab tab = DATATOOL.createTab(null);
+            tab.setUserEditable(true);
+            DATATOOL.addTab(tab);
+        	}
+        }
+    	});
+      DATATOOL.setVisible(true);
     }
     
   }
@@ -2505,7 +2512,9 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     undoItem.setAccelerator(KeyStroke.getKeyStroke('Z', keyMask));
     undoItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        getSelectedTab().undoManager.undo();
+      	if (getSelectedTab().undoManager.canUndo()) {
+      		getSelectedTab().undoManager.undo();
+      	}
       }
 
     });
@@ -2515,7 +2524,9 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     redoItem.setAccelerator(KeyStroke.getKeyStroke('Y', keyMask));
     redoItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        getSelectedTab().undoManager.redo();
+      	if (getSelectedTab().undoManager.canRedo()) {
+      		getSelectedTab().undoManager.redo();
+      	}
       }
 
     });

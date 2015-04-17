@@ -189,12 +189,14 @@ public class HighlightableDataset extends Dataset implements Interactive {
       g2.clipRect(viewRect.x, viewRect.y, viewRect.x+viewRect.width, viewRect.y+viewRect.height);
     }
     hitShapes = new Shape[index];
+    double[] xValues = getXPoints();
+    double[] yValues = getYPoints();
     for(int i = 0; i<index; i++) {
-      if(Double.isNaN(ypoints[i])) {
+      if(Double.isNaN(yValues[i])) {
         continue;
       }
-      double xp = drawingPanel.xToPix(xpoints[i]);
-      double yp = drawingPanel.yToPix(ypoints[i]);
+      double xp = drawingPanel.xToPix(xValues[i]);
+      double yp = drawingPanel.yToPix(yValues[i]);
       hitShapes[i] = new Rectangle2D.Double(xp-offset, yp-offset, edge, edge);
       if(!isHighlighted(i)) {
         continue;
