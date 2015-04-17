@@ -75,6 +75,8 @@ public class VideoClip {
   private int endFrame;
   protected String readoutType;
   protected String videoPath;
+  protected double savedStartTime; // used when DataTrack sets start time
+  protected boolean startTimeIsSaved = false; // used when DataTrack sets start time
 
   /**
    * Constructs a VideoClip.
@@ -287,6 +289,7 @@ public class VideoClip {
   	if (video!=null)
   		n = Math.min(n, video.getFrameCount()-1);
   	frameShift = n;
+    support.firePropertyChange("frameshift", null, frameShift); //$NON-NLS-1$
   	setStartFrameNumber(start);
   	setStepCount(stepCount);
     return frameShift;
@@ -633,7 +636,8 @@ public class VideoClip {
       control.setValue("startframe", clip.getStartFrameNumber()); //$NON-NLS-1$
       control.setValue("stepsize", clip.getStepSize());           //$NON-NLS-1$
       control.setValue("stepcount", clip.getStepCount());         //$NON-NLS-1$
-      control.setValue("starttime", clip.getStartTime());         //$NON-NLS-1$
+      control.setValue("starttime", clip.startTimeIsSaved? 			  //$NON-NLS-1$
+      		clip.savedStartTime: clip.getStartTime());
       control.setValue("frameshift", clip.getFrameShift());         //$NON-NLS-1$
       control.setValue("readout", clip.readoutType);         //$NON-NLS-1$
       control.setValue("playallsteps", clip.playAllSteps);         //$NON-NLS-1$

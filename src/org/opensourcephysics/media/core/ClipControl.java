@@ -33,7 +33,9 @@ package org.opensourcephysics.media.core;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+
 import javax.swing.event.SwingPropertyChangeSupport;
+
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 
@@ -54,6 +56,8 @@ public abstract class ClipControl implements PropertyChangeListener {
   protected boolean looping = false;
   protected PropertyChangeSupport support;
   protected double timeStretch = 1;
+  protected DataTrack timeSource;
+  protected double savedFrameDuration;
 
   /**
    * Returns an instance of ClipControl.
@@ -203,6 +207,39 @@ public abstract class ClipControl implements PropertyChangeListener {
   }
 
   /**
+   * Gets the DataTrack time source, if any.
+   *
+   * @return the time source (may be null)
+   */
+  public DataTrack getTimeSource() {
+  	return timeSource;
+  }
+
+  /**
+   * Sets the time source to a DataTrack.
+   *
+   * @param source the time source (may be null)
+   */
+  public void setTimeSource(DataTrack source) {
+  	DataTrack prev = timeSource;
+  	timeSource = source;
+  	if (prev==null && timeSource!=null) {
+  		clip.savedStartTime = clip.isDefaultStartTime? Double.NaN: clip.getStartTime();
+  		clip.startTimeIsSaved = true;
+  		savedFrameDuration = getMeanFrameDuration();
+  	}
+  	else if (prev!=null && timeSource==null) {
+  		clip.setStartTime(clip.savedStartTime);
+  		clip.startTimeIsSaved = false;
+  		setFrameDuration(savedFrameDuration);
+  	}
+  	if (timeSource!=null && timeSource.isTimeDataAvailable()) {
+  		clip.setStartTime(timeSource.getVideoStartTime()*1000); // convert to ms
+  		setFrameDuration(timeSource.getFrameDuration()*1000); // convert to ms
+  	}
+  }
+
+  /**
    * Responds to property change events.
    *
    * @param e the property change event
@@ -293,10 +330,17 @@ public abstract class ClipControl implements PropertyChangeListener {
    * Empty dispose method.
    */
   public void dispose() {
-
   /** implemented by subclasses */
   }
-
+	
+  /**
+   * Determines if a DataTrack is actively providing time data.
+   */
+	public static boolean isTimeSource(DataTrack track) {
+		if (track.getVideoPanel()==null) return false;
+		return track==track.getVideoPanel().getPlayer().getClipControl().getTimeSource();
+	}
+	
   /**
    * A class to save and load data for this class.
    */
@@ -310,7 +354,8 @@ public abstract class ClipControl implements PropertyChangeListener {
     public void saveObject(XMLControl control, Object obj) {
       ClipControl clipControl = (ClipControl) obj;
       control.setValue("rate", clipControl.getRate());                 //$NON-NLS-1$
-      control.setValue("delta_t", clipControl.getMeanFrameDuration()); //$NON-NLS-1$
+      control.setValue("delta_t", clipControl.getTimeSource()!=null?   //$NON-NLS-1$
+      		clipControl.savedFrameDuration: clipControl.getMeanFrameDuration());
       if(clipControl.isLooping()) {
         control.setValue("looping", true); //$NON-NLS-1$
       }
