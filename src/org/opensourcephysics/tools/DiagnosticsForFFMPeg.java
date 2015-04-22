@@ -31,7 +31,7 @@ public class DiagnosticsForFFMPeg {
 	public static final String FFMPEG_URL = "http://www.compadre.org/osp/items/detail.cfm?ID=11606"; //$NON-NLS-1$
 	public static final String REQUEST_TRACKER = "Tracker"; //$NON-NLS-1$
 	public static final String BRIDJVERSION = "0.7-SNAPSHOT";
-	public static final String FFMPEG_VERSION = "2.3";
+	public static final String FFMPEG_VERSION = "2.6";
 	static String newline = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
 	static String[] ffmpegJarNames = new String[] {
 			"ffmpeg-"+FFMPEG_VERSION+".jar", "bridj-" + BRIDJVERSION + ".jar" }; //$NON-NLS-1$ //$NON-NLS-2$
