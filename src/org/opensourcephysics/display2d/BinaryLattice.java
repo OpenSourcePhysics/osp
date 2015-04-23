@@ -92,6 +92,7 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
     grid.setColor(color);
   }
   
+  
   public void setXMin(double _value) {
 	super.setXMin(_value);
     grid.setMinMax(xmin, xmax, ymin, ymax);
