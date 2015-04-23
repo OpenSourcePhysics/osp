@@ -457,7 +457,8 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
     oneColor = colors[1];
     ColorModel colorModel = new IndexColorModel(1, 2, new byte[] {(byte) zeroColor.getRed(), (byte) oneColor.getRed()}, // red
       new byte[] {(byte) zeroColor.getGreen(), (byte) oneColor.getGreen()},  // green
-        new byte[] {(byte) zeroColor.getBlue(), (byte) oneColor.getBlue()}); // blue
+        new byte[] {(byte) zeroColor.getBlue(), (byte) oneColor.getBlue()},  // blue
+        new byte[] {(byte) zeroColor.getAlpha(), (byte) oneColor.getAlpha()}); // alpha
     image = new BufferedImage(colorModel, raster, false, null);
   }
 
@@ -474,7 +475,8 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
     }
     ColorModel colorModel = new IndexColorModel(1, 2, new byte[] {(byte) zeroColor.getRed(), (byte) oneColor.getRed()}, // red
       new byte[] {(byte) zeroColor.getGreen(), (byte) oneColor.getGreen()},  // green
-        new byte[] {(byte) zeroColor.getBlue(), (byte) oneColor.getBlue()}); // blue
+      new byte[] {(byte) zeroColor.getBlue(),  (byte) oneColor.getBlue()}, // blue
+      new byte[] {(byte) zeroColor.getAlpha(), (byte) oneColor.getAlpha()}); // alpha
     image = new BufferedImage(colorModel, raster, false, null);
   }
 
