@@ -1501,7 +1501,7 @@ public class DatasetCurveFitter extends JPanel {
   /**
    * A JTextField that accepts only numbers.
    */
-  class NumberField extends JTextField {
+  static class NumberField extends JTextField {
     // instance fields
     protected NumberFormat format = NumberFormat.getInstance();
     protected double prevValue;

@@ -49,6 +49,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import javax.swing.AbstractAction;
+import javax.swing.AbstractSpinnerModel;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -64,12 +65,15 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.LookAndFeel;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SpinnerModel;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -77,6 +81,7 @@ import javax.swing.UIManager;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
@@ -177,7 +182,10 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
   protected Object[][] constantsLoadedFromXML;
   protected boolean replaceColumnsWithMatchingNames = true;
   protected JCheckBoxMenuItem measureFitCheckbox, originShiftCheckbox;
+  protected double prevShiftX, prevShiftY;
   protected NumberField shiftXField, shiftYField, selectedXField, selectedYField;
+  protected JSpinner shiftXSpinner;
+  protected SpinnerListener spinnerListener;
   protected JLabel shiftXLabel, shiftYLabel;
   protected boolean toggleMeasurement;
   protected int mouseX;
@@ -1334,7 +1342,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	      }
 	    	if (originShiftEnabled) {
 	    		toolbar.add(shiftXLabel, 2);
-	    		toolbar.add(shiftXField, 3);
+//	    		toolbar.add(shiftXField, 3);
+	    		toolbar.add(shiftXSpinner, 3);
 	    		toolbar.add(shiftYLabel, 4);
 	    		toolbar.add(shiftYField, 5);
 	    		if (!previouslyEnabled) {
@@ -1370,6 +1379,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	    	}
     		toolbar.validate();
         refreshAll();
+    		prevShiftX = -shiftXField.getValue();
+    		prevShiftY = -shiftYField.getValue();
 	    }	
 	  });
     measureFitCheckbox = new JCheckBoxMenuItem();
@@ -1616,16 +1627,16 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         if (ia==plot.origin) {
           plot.selectionBox.visible = false;
         	plot.origin.mouseDownPt = e.getPoint();
-        	Dataset data = dataTable.getDataset(plot.xVar);
-        	if (data !=null && data instanceof DataColumn) {
-        		DataColumn col = (DataColumn)data;
-        		plot.origin.mouseDownShiftX = col.getShift();
-        	}
-        	data = dataTable.getDataset(plot.yVar);
-        	if (data !=null && data instanceof DataColumn) {
-        		DataColumn col = (DataColumn)data;
-        		plot.origin.mouseDownShiftY = col.getShift();
-        	}
+//        	Dataset data = dataTable.getDataset(plot.xVar);
+//        	if (data !=null && data instanceof DataColumn) {
+//        		DataColumn col = (DataColumn)data;
+//        		plot.origin.mouseDownShiftX = col.getShift();
+//        	}
+//        	data = dataTable.getDataset(plot.yVar);
+//        	if (data !=null && data instanceof DataColumn) {
+//        		DataColumn col = (DataColumn)data;
+//        		plot.origin.mouseDownShiftY = col.getShift();
+//        	}
         	plot.lockScale(true);
         	return;
         }
@@ -1715,7 +1726,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         	Dataset data = dataTable.getDataset(plot.xVar);
         	if (data!=null && data instanceof DataColumn && plot.origin.isVertHit) {
           	deltaX = dx/plot.getXPixPerUnit();
-          	double shift = plot.origin.mouseDownShiftX+deltaX;
+          	double shift = prevShiftX+deltaX;
         		DataColumn col = (DataColumn)data;
         		double prev = col.getShift();
         		col.setShift(shift);
@@ -1733,7 +1744,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         	data = dataTable.getDataset(plot.yVar);
         	if (data!=null && data instanceof DataColumn && plot.origin.isHorzHit) {
           	deltaY = -dy/plot.getYPixPerUnit();
-          	double shiftY = plot.origin.mouseDownShiftY+deltaY;
+          	double shiftY = prevShiftY+deltaY;
         		DataColumn col = (DataColumn)data;
         		col.setShift(shiftY);
             tabChanged(true);
@@ -1801,22 +1812,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         plot.selectionBox.visible = false;
         if(ia!=null) {
         	if (ia==plot.origin) {
-        		double[] newShift = new double[2];
-        		double[] prevShift = new double[] {plot.origin.mouseDownShiftX, plot.origin.mouseDownShiftY};
-        		String[] colNames = new String[] {plot.xVar, plot.yVar};
-        		for (int i=0; i<2; i++) {
-             	Dataset data = dataTable.getDataset(colNames[i]);
-            	if (data!=null && data instanceof DataColumn) {
-            		DataColumn col = (DataColumn)data;
-            		newShift[i] = col.getShift();
-            	}
-        		}
-            boolean changed = newShift[0]!=prevShift[0] || newShift[1]!=prevShift[1];
-        		if (changed) {
-              ShiftEdit edit = new ShiftEdit(colNames, newShift, prevShift);
-              undoSupport.postEdit(edit);
-              refreshUndoItems();        		
-            }        		
+        		postShiftEdit();
         	}
           if(ia instanceof Selectable) {
             plot.setMouseCursor(((Selectable) ia).getPreferredCursor());
@@ -2385,6 +2381,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
   	if (data !=null && data instanceof DataColumn) {
   		double shift = ((DataColumn)data).getShift();
     	shiftXField.setValue(shift==0? 0: -shift);
+    	shiftXSpinner.setValue(shift==0? 0: -shift);
   	}
   	data = dataTable.getDataset(plot.yVar);
   	if (data !=null && data instanceof DataColumn) {
@@ -2413,6 +2410,24 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       dataTool.undoItem.setEnabled(undoManager.canUndo());
       dataTool.redoItem.setEnabled(undoManager.canRedo());
     }
+  }
+  
+  protected void postShiftEdit() {
+  	// check for change
+  	double shiftX = -shiftXField.getValue();
+  	double shiftY = -shiftYField.getValue();
+  	if (prevShiftX==shiftX && prevShiftY==shiftY) 
+  		return;
+  	
+	  // post undoable edit
+		double[] newShift = new double[] {shiftX, shiftY};
+		double[] prevShift = new double[] {prevShiftX, prevShiftY};
+		String[] colNames = new String[] {plot.xVar, plot.yVar};
+		ShiftEdit edit = new ShiftEdit(colNames, newShift, prevShift);
+		undoSupport.postEdit(edit);
+		refreshUndoItems();  
+		prevShiftX = shiftX;
+		prevShiftY = shiftY;
   }
 
 //_____________________________  inner classes ____________________________  
@@ -2549,8 +2564,15 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         	field.selectAll();
         }
       };
+//      MouseAdapter shiftMouseListener = new MouseAdapter() {
+//      	public void mousePressed(MouseEvent e) {
+//        	spinnerListener.prevShiftX = -shiftXField.getValue();
+//        	spinnerListener.prevShiftY = -shiftYField.getValue();
+//        	System.out.println("pig mouse pressed "+spinnerListener.prevShiftX);
+//      	}
+//      };
       
-      shiftXField = curveFitter.new NumberField(4) {
+      shiftXField = new NumberField(4) {
       	@Override
       	public Dimension getMaximumSize() {
       		Dimension dim = getPreferredSize();
@@ -2580,14 +2602,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 	            refreshAll();
 	            
-	             // post undoable edit
-	            double shiftY = -shiftYField.getValue();
-	        		double[] newShift = new double[] {shiftX, shiftY};
-	        		double[] prevShift = new double[] {prevX, shiftY};
-	        		String[] colNames = new String[] {plot.xVar, plot.yVar};
-              ShiftEdit edit = new ShiftEdit(colNames, newShift, prevShift);
-              undoSupport.postEdit(edit);
-              refreshUndoItems();
+//	             // pig post undoable edit?
         		}       		
         	}
         	shiftXField.selectAll();
@@ -2596,9 +2611,41 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       });
       shiftXField.addKeyListener(keyListener);
       shiftXField.addFocusListener(focusListener);
+//      shiftXField.addMouseListener(shiftMouseListener);
 
+      spinnerListener = new SpinnerListener();
+      SpinnerModel spinModel = new CrawlerSpinnerModel();
+      shiftXSpinner = new JSpinner(spinModel);
+      shiftXSpinner.setEditor(shiftXField);
+      ChangeListener xChangeListener = new ChangeListener() {
+        public void stateChanged(ChangeEvent e) {
+//        	if (refreshing) return;
+        	Dataset data = dataTable.getDataset(plot.xVar);
+        	if (data !=null && data instanceof DataColumn) {
+        		DataColumn col = (DataColumn)data;
+        		double prevX = col.getShift();
+        		double shiftX = -(Double)shiftXSpinner.getValue();
+        		if (col.setShift(shiftX)) {
+	            tabChanged(true);
+	        		// shift area limits
+	        		if (plot.areaLimits[0].pointIndex>-1 && plot.areaLimits[1].pointIndex>-1) {
+	        			plot.areaLimits[0].refreshX();
+	        			plot.areaLimits[1].refreshX();
+	        		}
+	        		else {
+		        		plot.areaLimits[0].setX(plot.areaLimits[0].getX()+shiftX-prevX);
+		        		plot.areaLimits[1].setX(plot.areaLimits[1].getX()+shiftX-prevX);
+	        		}
 
-      shiftYField = curveFitter.new NumberField(4) {
+	            refreshAll();	            
+        		}       		
+        	}
+        }
+    	};
+    	shiftXSpinner.addChangeListener(xChangeListener);
+    	shiftXSpinner.addChangeListener(spinnerListener);
+
+      shiftYField = new NumberField(4) {
       	@Override
       	public Dimension getMaximumSize() {
       		Dimension dim = getPreferredSize();
@@ -2616,15 +2663,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         		if (col.setShift(-shiftYField.getValue())) {
 	            tabChanged(true);             
 	            refreshAll();
-	            
-	             // post undoable edit
-	            double shiftX = -shiftXField.getValue();
-	        		double[] newShift = new double[] {shiftX, -shiftYField.getValue()};
-	        		double[] prevShift = new double[] {shiftX, prevY};
-	        		String[] colNames = new String[] {plot.xVar, plot.yVar};
-              ShiftEdit edit = new ShiftEdit(colNames, newShift, prevShift);
-              undoSupport.postEdit(edit);
-              refreshUndoItems();
         		}       		
         	}
         	shiftYField.selectAll();
@@ -2635,7 +2673,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       
       // create key listener to move origin with arrow keys
       addKeyListener(new KeyAdapter() {
-      	double shiftX = Double.NaN, shiftY = Double.NaN;
 
       	@Override
       	public void keyPressed(KeyEvent e) {
@@ -2685,9 +2722,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	          	Dataset data = dataTable.getDataset(plot.xVar);
 	          	if (data !=null && data instanceof DataColumn) {
 	          		DataColumn col = (DataColumn)data;
-		      			if (Double.isNaN(shiftX)) {
-		      				shiftX = col.getShift();
-		      			}
 	          		col.setShift(col.getShift()-dx);
 	              tabChanged(true);
 		        		// shift area limits
@@ -2705,9 +2739,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	          	Dataset data = dataTable.getDataset(plot.yVar);
 	          	if (data !=null && data instanceof DataColumn) {
 	          		DataColumn col = (DataColumn)data;
-		      			if (Double.isNaN(shiftY)) {
-		      				shiftY = col.getShift();
-		      			}
 	          		col.setShift(col.getShift()+dy);
 	              tabChanged(true);
 	          	}
@@ -2731,24 +2762,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       				|| e.getKeyCode()==KeyEvent.VK_LEFT
       				|| e.getKeyCode()==KeyEvent.VK_RIGHT) {
       			
-      			// post undoable edit
-      			shiftX = Double.isNaN(shiftX)? -shiftXField.getValue(): shiftX;
-      			shiftY = Double.isNaN(shiftY)? -shiftYField.getValue(): shiftY;
-        		double[] newShift = new double[2];
-        		double[] prevShift = new double[] {shiftX, shiftY};
-        		String[] colNames = new String[] {plot.xVar, plot.yVar};
-        		for (int i=0; i<2; i++) {
-             	Dataset data = dataTable.getDataset(colNames[i]);
-            	if (data!=null && data instanceof DataColumn) {
-            		DataColumn col = (DataColumn)data;
-            		newShift[i] = col.getShift();
-            	}
-        		}
-            ShiftEdit edit = new ShiftEdit(colNames, newShift, prevShift);
-            undoSupport.postEdit(edit);
-            refreshUndoItems();
-             // restore shiftX and shiftY to NaN
-      			shiftX = shiftY = Double.NaN;
+      			postShiftEdit();
       		}
   			}    	
 
@@ -3532,6 +3546,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       columnName = colNames;
       redoShift = newShifts;
       undoShift = prevShifts;
+      System.out.println("pig posting undoable edit "+newShifts[0]+" "+prevShifts[0]);
     }
 
     @Override
@@ -3583,7 +3598,85 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     }
   }
 
-  //__________________________ static methods and classes ___________________________
+  /**
+   * A number spinner model with a settable delta.
+   */
+  class CrawlerSpinnerModel extends AbstractSpinnerModel {
+    double val = 0;
+    double delta = 1;
+    double percentDelta = 1;
+
+    public Object getValue() {
+      return new Double(val);
+    }
+
+    public Object getNextValue() {
+      return new Double(val+delta);
+    }
+
+    public Object getPreviousValue() {
+      return new Double(val-delta);
+    }
+
+    public void setValue(Object value) {
+      if (value!=null) {
+        val = ((Double) value).doubleValue();
+        fireStateChanged();
+      }
+    }
+
+//    public void setPercentDelta(double percent) {
+//      percentDelta = percent;
+//    }
+//
+//    public double getPercentDelta() {
+//      return percentDelta;
+//    }
+//
+    // refresh delta based on current value and percent
+    public void refreshDelta() {
+      if(val!=0) {
+        delta = Math.abs(val*percentDelta/100);
+      }
+    }
+
+  }
+
+  class SpinnerListener implements ChangeListener, ActionListener {
+  	
+    // minimum time in ms between update requests
+    static final int MIN_TIME = 400;
+    long lastChange = System.currentTimeMillis();
+    boolean valueChanged=false;
+    Timer repeatTimer;
+    
+    public SpinnerListener(){
+      // timer polling every 200ms
+      repeatTimer = new Timer(200, this);
+      repeatTimer.start();
+    }
+    
+    public void stateChanged(ChangeEvent e) {
+      valueChanged=true;
+      lastChange = System.currentTimeMillis();
+    }
+    
+    // action called by timer
+    public void actionPerformed(ActionEvent e) {
+      if (valueChanged && (System.currentTimeMillis()-lastChange)>MIN_TIME){
+        valueChanged=false;
+        if (shiftXField.hasFocus()) {
+	        // post undoable edit
+          postShiftEdit();
+
+	        CrawlerSpinnerModel model = (CrawlerSpinnerModel)shiftXSpinner.getModel();
+	        model.refreshDelta();
+        }
+      }
+    }
+}
+  
+//__________________________ static methods and classes ___________________________
 
   /**
    * Returns an ObjectLoader to save and load data for this class.

@@ -467,7 +467,9 @@ public class DataToolTable extends DataTable {
         // double-click: select column and all rows (or select table if label column)
         else if(e.getClickCount()==2) {
           if(col==labelCol) {
-            selectAll();
+            setRowSelectionInterval(0, getRowCount()-1);
+            setColumnSelectionInterval(1, getColumnCount()-1);
+//            selectAll();
           } else {
             setRowSelectionInterval(0, getRowCount()-1); // all rows
             setColumnSelectionInterval(col, col);
@@ -616,7 +618,9 @@ public class DataToolTable extends DataTable {
             selectAllItem = new JMenuItem(text);
             selectAllItem.addActionListener(new ActionListener() {
               public void actionPerformed(ActionEvent e) {
-              	selectAll();
+                setRowSelectionInterval(0, getRowCount()-1);
+                setColumnSelectionInterval(1, getColumnCount()-1);
+//              	selectAll();
               }
             });
             popup.add(selectAllItem);
