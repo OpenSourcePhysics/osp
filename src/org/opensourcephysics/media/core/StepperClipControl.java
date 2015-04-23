@@ -54,7 +54,7 @@ public class StepperClipControl extends ClipControl {
   private int maxDelay = 5000;        // milliseconds
 
   /**
-   * Constructs a TimerClipControl object.
+   * Constructs a StepperClipControl object.
    *
    * @param videoClip the video clip
    */

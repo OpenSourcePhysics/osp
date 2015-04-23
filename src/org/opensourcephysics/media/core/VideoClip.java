@@ -77,6 +77,7 @@ public class VideoClip {
   protected String videoPath;
   protected double savedStartTime; // used when DataTrack sets start time
   protected boolean startTimeIsSaved = false; // used when DataTrack sets start time
+  protected boolean ignoreVideoLimit = false; // pig used to extend clip length past video end
 
   /**
    * Constructs a VideoClip.
@@ -230,7 +231,7 @@ public class VideoClip {
       return;
     }
     count = Math.abs(count);
-    if(video!=null) {
+    if (video!=null) {
       if(video.getFrameCount()>1) {
         int end = video.getFrameCount()-1-frameShift;
         int maxCount = 1+(int) ((end-startFrame)/(1.0*stepSize));
