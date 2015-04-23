@@ -1317,27 +1317,56 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     originShiftCheckbox.setSelected(originShiftEnabled);
     originShiftCheckbox.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent e) {
+	    	boolean previouslyEnabled = originShiftEnabled;
 	    	originShiftEnabled = originShiftCheckbox.isSelected();
-	    	// set all columns to shifted
+	    	double shiftX = 0;
+	    	// set all columns except row column to shifted
 	      for(int i = 1; i<dataTable.getColumnCount(); i++) {
 	        String colName = dataTable.getColumnName(i);
 	      	Dataset data = dataTable.getDataset(colName);
 	      	if (data!=null && data instanceof DataColumn) {
 	      		DataColumn dataCol = (DataColumn)data;
 	      		dataCol.setShifted(originShiftEnabled);
-	      	}
+	      		if (i==1) {
+	      			shiftX = dataCol.getShift();
+	      		}
+	      	}	      	
 	      }
 	    	if (originShiftEnabled) {
 	    		toolbar.add(shiftXLabel, 2);
 	    		toolbar.add(shiftXField, 3);
 	    		toolbar.add(shiftYLabel, 4);
 	    		toolbar.add(shiftYField, 5);
+	    		if (!previouslyEnabled) {
+        		// shift area limits
+        		if (plot.areaLimits[0].pointIndex>-1 && plot.areaLimits[1].pointIndex>-1) {
+        			plot.areaLimits[0].refreshX();
+        			plot.areaLimits[1].refreshX();
+        		}
+        		else {
+	        		plot.areaLimits[0].setX(plot.areaLimits[0].getX()+shiftX);
+	        		plot.areaLimits[1].setX(plot.areaLimits[1].getX()+shiftX);
+        		}
+	    			
+	    		}
 	    	}
 	    	else {
 	    		toolbar.remove(shiftXLabel);
 	    		toolbar.remove(shiftXField);
 	    		toolbar.remove(shiftYLabel);
 	    		toolbar.remove(shiftYField);
+	    		if (previouslyEnabled) {
+        		// shift area limits
+        		if (plot.areaLimits[0].pointIndex>-1 && plot.areaLimits[1].pointIndex>-1) {
+        			plot.areaLimits[0].refreshX();
+        			plot.areaLimits[1].refreshX();
+        		}
+        		else {
+	        		plot.areaLimits[0].setX(plot.areaLimits[0].getX()-shiftX);
+	        		plot.areaLimits[1].setX(plot.areaLimits[1].getX()-shiftX);
+        		}
+	    			
+	    		}
 	    	}
     		toolbar.validate();
         refreshAll();
@@ -1677,18 +1706,32 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         if (ia==plot.origin) {
           plot.selectionBox.visible = false;
           double deltaX = 0, deltaY = 0;
+        	int dx = plot.origin.mouseDownPt.x-e.getPoint().x;
+        	int dy = plot.origin.mouseDownPt.y-e.getPoint().y;
+        	if (e.isShiftDown()) {
+        		if (Math.abs(dx)>=Math.abs(dy)) dy = 0;
+        		else dx = 0;
+        	}
         	Dataset data = dataTable.getDataset(plot.xVar);
         	if (data!=null && data instanceof DataColumn && plot.origin.isVertHit) {
-          	int dx = plot.origin.mouseDownPt.x-e.getPoint().x;
           	deltaX = dx/plot.getXPixPerUnit();
-          	double shiftX = plot.origin.mouseDownShiftX+deltaX;
+          	double shift = plot.origin.mouseDownShiftX+deltaX;
         		DataColumn col = (DataColumn)data;
-        		col.setShift(shiftX);
+        		double prev = col.getShift();
+        		col.setShift(shift);
         		tabChanged(true);
+        		// shift area limits
+        		if (plot.areaLimits[0].pointIndex>-1 && plot.areaLimits[1].pointIndex>-1) {
+        			plot.areaLimits[0].refreshX();
+        			plot.areaLimits[1].refreshX();
+        		}
+        		else {
+	        		plot.areaLimits[0].setX(plot.areaLimits[0].getX()+shift-prev);
+	        		plot.areaLimits[1].setX(plot.areaLimits[1].getX()+shift-prev);
+        		}
         	}
         	data = dataTable.getDataset(plot.yVar);
         	if (data!=null && data instanceof DataColumn && plot.origin.isHorzHit) {
-          	int dy = plot.origin.mouseDownPt.y-e.getPoint().y;
           	deltaY = -dy/plot.getYPixPerUnit();
           	double shiftY = plot.origin.mouseDownShiftY+deltaY;
         		DataColumn col = (DataColumn)data;
@@ -2522,13 +2565,24 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         	if (data !=null && data instanceof DataColumn) {
         		DataColumn col = (DataColumn)data;
         		double prevX = col.getShift();
-        		if (col.setShift(-shiftXField.getValue())) {
-	            tabChanged(true);             
+        		double shiftX = -shiftXField.getValue();
+        		if (col.setShift(shiftX)) {
+	            tabChanged(true);
+	        		// shift area limits
+	        		if (plot.areaLimits[0].pointIndex>-1 && plot.areaLimits[1].pointIndex>-1) {
+	        			plot.areaLimits[0].refreshX();
+	        			plot.areaLimits[1].refreshX();
+	        		}
+	        		else {
+		        		plot.areaLimits[0].setX(plot.areaLimits[0].getX()+shiftX-prevX);
+		        		plot.areaLimits[1].setX(plot.areaLimits[1].getX()+shiftX-prevX);
+	        		}
+
 	            refreshAll();
 	            
 	             // post undoable edit
 	            double shiftY = -shiftYField.getValue();
-	        		double[] newShift = new double[] {-shiftXField.getValue(), shiftY};
+	        		double[] newShift = new double[] {shiftX, shiftY};
 	        		double[] prevShift = new double[] {prevX, shiftY};
 	        		String[] colNames = new String[] {plot.xVar, plot.yVar};
               ShiftEdit edit = new ShiftEdit(colNames, newShift, prevShift);
@@ -2585,7 +2639,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
       	@Override
       	public void keyPressed(KeyEvent e) {
-          if(e.getKeyCode()==KeyEvent.VK_SHIFT) {
+          if(e.getKeyCode()==KeyEvent.VK_CONTROL) {
           	if (toggleMeasurement) return;
           	toggleMeasurement = true;
           	refreshMeasurements();
@@ -2636,6 +2690,15 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		      			}
 	          		col.setShift(col.getShift()-dx);
 	              tabChanged(true);
+		        		// shift area limits
+	          		if (plot.areaLimits[0].pointIndex>-1 && plot.areaLimits[1].pointIndex>-1) {
+	          			plot.areaLimits[0].refreshX();
+	          			plot.areaLimits[1].refreshX();
+	          		}
+	          		else {
+			        		plot.areaLimits[0].setX(plot.areaLimits[0].getX()-dx);
+			        		plot.areaLimits[1].setX(plot.areaLimits[1].getX()-dx);
+	          		}
 	          	}
 	      		}
 	      		else if (!Double.isNaN(dy)) {
@@ -2655,7 +2718,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       	
   			@Override
   			public void keyReleased(KeyEvent e) {
-          if (e.getKeyCode()==KeyEvent.VK_SHIFT) {
+          if (e.getKeyCode()==KeyEvent.VK_CONTROL) {
           	if (!toggleMeasurement) return;
           	toggleMeasurement = false;
           	refreshMeasurements();
@@ -2789,49 +2852,52 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				}
 			} catch (Exception e) {
 			}
+      
       plot.slope = plot.value = Double.NaN;
       double[] xpoints = null;
       double[] ypoints = null;
       int j = measurementIndex;
+      double x = plot.pixToX(mouseX);
       if (data!=null && (positionVisible || slopeVisible || areaVisible)) {
-//      	plot.setCoordinateLabels(data.getXColumnName(), data.getYColumnName());
         if (data.getIndex()>0 && j<0) {
-          double x = plot.pixToX(mouseX);
           measurementIndex = j = plot.findIndexNearestX(x, data);
         }
+        
         xpoints = data.getXPoints();
         ypoints = data.getYPoints();
         boolean measureData = !fitterCheckbox.isSelected()
         		|| (measureFit && toggleMeasurement) 
-        		|| (!measureFit && !toggleMeasurement);
+        		|| (!measureFit && !toggleMeasurement);        
     		FunctionDrawer drawer = curveFitter.getDrawer();
-        if (positionVisible && j>-1) {
-        	if (measureData) {
+    		
+        if (positionVisible) {
+        	if (measureData && j>-1 && !Double.isNaN(ypoints[j])) {
             plot.value = ypoints[j];
             plot.valueCrossbars.x = xpoints[j];
             plot.valueCrossbars.y = ypoints[j];
             plot.xVar = data.getXColumnName();
             plot.yVar = data.getYColumnName();
         	}
-        	else {
-            plot.value = drawer.evaluate(xpoints[j]);
-            plot.valueCrossbars.x = xpoints[j];
-            plot.valueCrossbars.y = drawer.evaluate(xpoints[j]);
+        	else if (!measureData) {
+            plot.value = drawer.evaluate(x);
+            plot.valueCrossbars.x = x;
+            plot.valueCrossbars.y = drawer.evaluate(x);
             plot.xVar = data.getXColumnName();
             plot.yVar = data.getYColumnName();
         	}
         }
-        if (slopeVisible && j>0 && j<data.getIndex()-1) {
-        	if (measureData) {
+        if (slopeVisible) {
+        	if (measureData && j>0 && j<data.getIndex()-1 && !Double.isNaN(ypoints[j])) {
             plot.slopeLine.x = xpoints[j];
             plot.slopeLine.y = ypoints[j];
             plot.slope = (ypoints[j+1]-ypoints[j-1])/(xpoints[j+1]-xpoints[j-1]);
         	}
-        	else {
-            plot.slopeLine.x = xpoints[j];
-            plot.slopeLine.y = drawer.evaluate(xpoints[j]);
-            plot.slope = (drawer.evaluate(xpoints[j+1])-drawer.evaluate(xpoints[j-1]))/(xpoints[j+1]-xpoints[j-1]);
-        	}
+        	else if (!measureData) {
+            plot.slopeLine.x = x;
+            plot.slopeLine.y = drawer.evaluate(x);
+            double dx = 1/plot.getXPixPerUnit();
+            plot.slope = (drawer.evaluate(x+dx)-drawer.evaluate(x-dx))/(2*dx);
+         	}
         }
         plot.setMessage(plot.createMessage());
       }
@@ -2861,6 +2927,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
   		areaLimits[1].refreshX();
       double lower = Math.min(areaLimits[0].x, areaLimits[1].x);
       double upper = Math.max(areaLimits[0].x, areaLimits[1].x);
+      double del = (upper-lower)/200000;
+      if (del>0) {
+      	lower -= del;
+      	upper += del;
+      }
   		
       double[] xpoints,  ypoints;
       if (measureData) {
@@ -2884,7 +2955,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       ArrayList<Double> x = new ArrayList<Double>();
       ArrayList<Double> y = new ArrayList<Double>();
       for (int i = 0; i<xpoints.length; i++) {
-        if((xpoints[i]>=lower)&&(xpoints[i]<=upper)) {
+        if(xpoints[i]>=lower && xpoints[i]<=upper && !Double.isNaN(ypoints[i])) {
           x.add(xpoints[i]);
         	y.add(ypoints[i]);
         }
@@ -2913,7 +2984,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       }
       setMessage(createMessage());
     }
-
+    
     /**
      * Returns the index of the data point nearest the specified x on the plot.
      *
@@ -2932,9 +3003,20 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       // limit x to plot area
       x = Math.max(plot.getXMin(), x);
       x = Math.min(plot.getXMax(), x);
-      // look thru sorted data to find point nearest x
-      double[] sorted = data.getXPoints();
+      
+      double[] xpoints = data.getXPoints();
+      double[] ypoints = data.getYPoints();
+      
+      // sort x data, keeping only points for which the y-value is not NaN
+      ArrayList<Double> valid = new ArrayList<Double>();
+      for (int i=0; i<xpoints.length; i++) {
+      	if (Double.isNaN(ypoints[i])) continue;
+      	valid.add(xpoints[i]);
+      }
+      Double[] sorted = valid.toArray(new Double[valid.size()]);
       java.util.Arrays.sort(sorted);
+      last = sorted.length-1;
+      
       // check if pixel outside data range
       if(x<sorted[0]) {
         return 0;
@@ -2942,19 +3024,22 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       if(x>=sorted[last]) {
         return last;
       }
+      
+      // look thru sorted data to find point nearest x
       for(int i = 1; i<sorted.length; i++) {
-        if((x>=sorted[i-1])&&(x<sorted[i])) {
-          if(sorted[i-1]<plot.getXMin()) {
+        if (x>=sorted[i-1] && x<sorted[i]) {
+        	// found it
+          if (sorted[i-1]<plot.getXMin()) {
             x = sorted[i];
           } else if(sorted[i]>plot.getXMax()) {
             x = sorted[i-1];
           } else {
             x = (Math.abs(x-sorted[i-1])<Math.abs(x-sorted[i])) ? sorted[i-1] : sorted[i];
           }
-          // find index of data point with this value of x
-          double[] xpoints = data.getXPoints();
+          
+          // find index of first data point with this value of x
           for(int j = 0; j<xpoints.length; j++) {
-            if(xpoints[j]==x) {
+            if(xpoints[j]==x && !Double.isNaN(ypoints[j])) {
               return j;
             }
           }
@@ -3209,7 +3294,10 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       @Override
       public void setX(double x) {
         Dataset data = dataTable.workingData;
-        pointIndex = findIndexNearestX(x, data);
+        pointIndex = -1;
+        if (mouseEvent!=null && mouseEvent.isShiftDown()) {
+        	pointIndex = findIndexNearestX(x, data);
+        }
         this.x = (pointIndex==-1) ? x : data.getXPoints()[pointIndex];
         refreshArea();
         createMessage();
@@ -3263,11 +3351,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
        * refreshes the value of x based on current pointIndex.
        */
       public void refreshX() {
-         double[] data = dataTable.workingData.getXPoints();
-       	if (pointIndex>-1 && pointIndex<data.length) {
+        double[] data = dataTable.workingData.getXPoints();
+       	if (pointIndex>-1 && pointIndex<data.length && !java.lang.Double.isNaN(data[pointIndex])) {
  	        x = data[pointIndex];
        	}
-       }
+      }
 
       // the following methods are required by Selectable but not used
       
@@ -3454,6 +3542,17 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	    	if (data!=null && data instanceof DataColumn) {
 	    		DataColumn dataCol = (DataColumn)data;
 	    		dataCol.setShift(undoShift[i]);
+      		// shift area limits
+	    		if (i==0) {
+        		if (plot.areaLimits[0].pointIndex>-1 && plot.areaLimits[1].pointIndex>-1) {
+        			plot.areaLimits[0].refreshX();
+        			plot.areaLimits[1].refreshX();
+        		}
+        		else {
+		      		plot.areaLimits[0].setX(plot.areaLimits[0].getX()+undoShift[0]-redoShift[0]);
+		      		plot.areaLimits[1].setX(plot.areaLimits[1].getX()+undoShift[0]-redoShift[0]);
+        		}
+	    		}
 	    	}
     	}
       refreshAll();
@@ -3467,6 +3566,17 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	    	if (data!=null && data instanceof DataColumn) {
 	    		DataColumn dataCol = (DataColumn)data;
 	    		dataCol.setShift(redoShift[i]);
+      		// shift area limits
+	    		if (i==0) {
+        		if (plot.areaLimits[0].pointIndex>-1 && plot.areaLimits[1].pointIndex>-1) {
+        			plot.areaLimits[0].refreshX();
+        			plot.areaLimits[1].refreshX();
+        		}
+        		else {
+		      		plot.areaLimits[0].setX(plot.areaLimits[0].getX()+redoShift[0]-undoShift[0]);
+		      		plot.areaLimits[1].setX(plot.areaLimits[1].getX()+redoShift[0]-undoShift[0]);
+        		}
+	    		}
 	    	}
     	}
       refreshAll();
