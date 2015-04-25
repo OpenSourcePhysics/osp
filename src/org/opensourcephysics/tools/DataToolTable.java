@@ -6,9 +6,13 @@
  */
 
 package org.opensourcephysics.tools;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,6 +22,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EventObject;
@@ -467,9 +473,7 @@ public class DataToolTable extends DataTable {
         // double-click: select column and all rows (or select table if label column)
         else if(e.getClickCount()==2) {
           if(col==labelCol) {
-            setRowSelectionInterval(0, getRowCount()-1);
-            setColumnSelectionInterval(1, getColumnCount()-1);
-//            selectAll();
+            selectAllCells();
           } else {
             setRowSelectionInterval(0, getRowCount()-1); // all rows
             setColumnSelectionInterval(col, col);
@@ -618,9 +622,7 @@ public class DataToolTable extends DataTable {
             selectAllItem = new JMenuItem(text);
             selectAllItem.addActionListener(new ActionListener() {
               public void actionPerformed(ActionEvent e) {
-                setRowSelectionInterval(0, getRowCount()-1);
-                setColumnSelectionInterval(1, getColumnCount()-1);
-//              	selectAll();
+              	selectAllCells();
               }
             });
             popup.add(selectAllItem);
@@ -1862,6 +1864,13 @@ public class DataToolTable extends DataTable {
       }
     }
   }
+  
+  public void selectAllCells() {
+    setRowSelectionInterval(0, getRowCount()-1);
+    setColumnSelectionInterval(1, getColumnCount()-1);
+    OSPLog.finest("selected row count "+getSelectedRowCount() //$NON-NLS-1$
+    		+"  selected column count "+getSelectedColumnCount()); //$NON-NLS-1$
+  }
 
   /**
    * Deselects all selected columns and rows. Overrides JTable method.
@@ -1869,16 +1878,20 @@ public class DataToolTable extends DataTable {
   public void clearSelection() {
     if(workingData!=null) {
       workingData.clearHighlights();
+    }
+    if(selectedData!=null) {
       selectedData.clearHighlights();
     }
     // select only the focus cell so it has focus
-    if((focusRow>-1)&&(focusRow<getRowCount())&&(focusCol>0)&&(focusCol<getColumnCount())) {
+    if ((focusRow>-1)&&(focusRow<getRowCount())&&(focusCol>0)&&(focusCol<getColumnCount())) {
       setRowSelectionInterval(focusRow, focusRow);
       setColumnSelectionInterval(focusCol, focusCol);
     }
     leadCol = 0;
     leadRow = 0;
     super.clearSelection();
+    OSPLog.finest("selected row count "+getSelectedRowCount() //$NON-NLS-1$
+    		+"  selected column count "+getSelectedColumnCount()); //$NON-NLS-1$
   }
 
   /**
@@ -1910,6 +1923,18 @@ public class DataToolTable extends DataTable {
       setSelectedColumnNames(cols);
     }    
   }
+  
+  @Override
+  public NumberFormatDialog getFormatDialog(String[] names, String[] selected) {
+  	for (int i=0; i<names.length; i++) {
+  		if (names[i].endsWith(DataToolTab.SHIFTED)) {
+  			names[i] = names[i].substring(0, names[i].length()-DataToolTab.SHIFTED.length());
+  		}
+  	}
+  	return super.getFormatDialog(names, selected);
+  }
+
+
 
   /**
    * Gets the model column order.
@@ -2169,7 +2194,11 @@ public class DataToolTable extends DataTable {
       setConnected(yData.isConnected());
     }
 
+    @Override
     public void draw(DrawingPanel drawingPanel, java.awt.Graphics g) {
+      if(isWorkingYColumn) {
+      	drawSurrounds(drawingPanel, (Graphics2D)g);
+      }
       boolean vis = markersVisible;
       if(isWorkingYColumn&&!vis) {
         setMarkersVisible(true);
@@ -2178,6 +2207,59 @@ public class DataToolTable extends DataTable {
       if(isWorkingYColumn&&!vis) {
         setMarkersVisible(false);
       }
+    }
+    
+    /**
+     * Draw green shapes surrounding the working data points.
+     *
+     * @param  drawingPanel
+     * @param  g2
+     */
+    protected void drawSurrounds(DrawingPanel drawingPanel, Graphics2D g2) {
+    	// set up graphics
+      Color c = g2.getColor();
+      Stroke s = g2.getStroke();
+      g2.setColor(new Color(51, 255, 51, 153));
+      g2.setStroke(new BasicStroke(2));
+      
+      // set up shape size
+      Shape shape = null;
+      int radius = getMarkerSize()+2;
+      int marker = getMarkerShape();
+      if (marker==NO_MARKER || marker==PIXEL) {
+      	radius = 3;
+      }
+      int size = radius*2+1;
+      
+      // get data points
+      double[] tempX = getXPoints();
+      double[] tempY = getYPoints();      
+      double xp = 0;
+      double yp = 0;
+      
+      // draw surrounds
+      for(int i = 0; i<index; i++) {
+        if(Double.isNaN(tempY[i])) {
+          continue;
+        }
+        if(drawingPanel.isLogScaleX()&&(tempX[i]<=0)) {
+          continue;
+        }
+        if(drawingPanel.isLogScaleY()&&(tempY[i]<=0)) {
+          continue;
+        }
+        xp = drawingPanel.xToPix(tempX[i]);
+        yp = drawingPanel.yToPix(tempY[i]);
+        if (marker==SQUARE || marker==POST || marker==BAR) {
+          shape = new Rectangle2D.Double(xp-radius, yp-radius, size, size);        	
+        }
+        else shape = new Ellipse2D.Double(xp-radius, yp-radius, size, size);
+        g2.draw(shape);
+      }
+      
+      // restore graphics
+      g2.setColor(c);
+      g2.setStroke(s);
     }
 
     public boolean isMarkersVisible() {

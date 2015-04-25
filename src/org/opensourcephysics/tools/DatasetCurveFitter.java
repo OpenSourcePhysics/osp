@@ -10,6 +10,8 @@ import java.text.*;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.font.FontRenderContext;
+import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -1505,6 +1507,8 @@ public class DatasetCurveFitter extends JPanel {
     // instance fields
     protected NumberFormat format = NumberFormat.getInstance();
     protected double prevValue;
+    protected String pattern = "0"; //$NON-NLS-1$
+    protected int preferredWidth;
 
     /**
      * Constructor NumberField
@@ -1539,13 +1543,33 @@ public class DatasetCurveFitter extends JPanel {
     }
     
     public void applyPattern(String pattern) {
-      if(format instanceof DecimalFormat) {
+      if (format instanceof DecimalFormat) {
         try {
         	// catch occasional exceptions thrown when opening a trk file...
 					((DecimalFormat) format).applyPattern(pattern);
+					this.pattern = pattern;
 				} catch (Exception e) {
 				}
       }
+    }
+    
+    public String getPattern() {
+      return pattern;    	
+    }
+    
+    public NumberFormat getFormat() {
+    	return format;
+    }
+    
+    public int getPreferredWidth() {
+    	return preferredWidth;
+    }
+
+    protected void refreshPreferredWidth() {
+  		// determine preferred width of field
+      FontRenderContext frc = new FontRenderContext(null, false, false); 
+      Rectangle2D rect = getFont().getStringBounds(getText(), frc);
+      preferredWidth = (int)rect.getWidth()+24;
     }
 
   }
