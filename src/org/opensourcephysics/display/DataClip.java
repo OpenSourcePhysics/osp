@@ -107,7 +107,7 @@ public class DataClip {
 
   /**
    * Gets the clip length (number of video frames on which the data
-   * is displayed).
+   * is displayed unless limited by the video clip or stride).
    *
    * @return the clip length
    */
@@ -170,7 +170,7 @@ public class DataClip {
   
   /**
    * Gets the available clip length (step count). A step is available if it's index
-   * is less than the data length. 
+   * is less than the data length. Available clip length <= clip length
    *
    * @return the index
    */

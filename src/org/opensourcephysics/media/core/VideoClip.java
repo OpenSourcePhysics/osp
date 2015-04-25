@@ -312,7 +312,11 @@ public class VideoClip {
    * @param extras the number of extra frames to display
    */
   public void setExtraFrames(int extras) {
+  	int prev = extraFrames;
     extraFrames = Math.max(extras, 0);
+    if (prev!=extraFrames) {
+			OSPLog.finest("set extra frames to "+extraFrames); //$NON-NLS-1$
+    }
   }
 
   /**
@@ -378,6 +382,19 @@ public class VideoClip {
   }
 
   /**
+   * Sets the end frame number after adding extra frames if needed.
+   *
+   * @param end the desired end frame
+   * @return true if the end frame number was extended
+   */
+  public boolean extendEndFrameNumber(int end) {
+  	if (video!=null && getFrameCount()<=end) {
+  		setExtraFrames(end-getFrameCount()+extraFrames);  		
+  	}
+  	return setEndFrameNumber(end);
+  }
+
+  /**
    * Sets the end frame number.
    *
    * @param end the desired end frame
@@ -397,9 +414,6 @@ public class VideoClip {
     if(rem*1.0/stepSize>0.5) {
       count++;
     }
-//    else if(stepSize>1 && startFrame%2==0) {
-//      count++;
-//    }
     while (stepToFrame(count) > max) {
     	count--;
     }
