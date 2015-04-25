@@ -75,6 +75,9 @@ public class VideoClip {
   private int endFrame;
   protected String readoutType;
   protected String videoPath;
+  protected double savedStartTime; // used when DataTrack sets start time
+  protected boolean startTimeIsSaved = false; // used when DataTrack sets start time
+  protected int extraFrames = 0; // extends clip length past video end
 
   /**
    * Constructs a VideoClip.
@@ -130,15 +133,15 @@ public class VideoClip {
    * Sets the start frame number.
    *
    * @param start the desired start frame number
-   * @param maxEndFrame end frame number that cannot be exceeded
+   * @param maxStart start frame number that cannot be exceeded
    * @return true if changed
    */
-  public boolean setStartFrameNumber(int start, int maxEndFrame) {
+  public boolean setStartFrameNumber(int start, int maxStart) {
   	int prevStart = getStartFrameNumber();
     int prevEnd = getEndFrameNumber();
     // can't start before first frame number or after max end frame
     start = Math.max(start, getFirstFrameNumber());
-    start = Math.min(start, maxEndFrame);
+    start = Math.min(start, maxStart);
     
     if(video!=null && video.getFrameCount()>1) {
     	// set video end frame to last video frame (temporary)
@@ -149,16 +152,15 @@ public class VideoClip {
 
       // set start frame to frame number of first video frame
       startFrame = Math.max(0, video.getStartFrameNumber()-frameShift);      
-    }
-    
+    }    
     else { // no video or single-frame video
       startFrame = start;
       updateArray();
     }
-    
     start = getStartFrameNumber();
+    
     // reset end frame
-    setEndFrameNumber(prevEnd, maxEndFrame, true);
+    setEndFrameNumber(prevEnd);
     
     if(prevStart!=start) {
 	  	isDefaultState = false;
@@ -188,8 +190,8 @@ public class VideoClip {
       return false;
     }
     size = Math.abs(size);
-    if((video!=null)&&(video.getFrameCount()>1)) {
-      int maxSize = Math.max(video.getFrameCount()-startFrame-1, 1);
+    if (video!=null && video.getFrameCount()>1) {
+      int maxSize = Math.max(video.getFrameCount()-startFrame-1+extraFrames, 1);
       size = Math.min(size, maxSize);
     }
     if(stepSize==size) {
@@ -203,8 +205,10 @@ public class VideoClip {
     stepCount = 1+(endFrame-getStartFrameNumber())/stepSize;
     updateArray();
     support.firePropertyChange("stepsize", null, new Integer(size)); //$NON-NLS-1$
+    
     // reset end frame
     setEndFrameNumber(endFrame);
+
     trimFrameCount();
     return true;
   }
@@ -228,14 +232,14 @@ public class VideoClip {
       return;
     }
     count = Math.abs(count);
-    if(video!=null) {
-      if(video.getFrameCount()>1) {
-        int end = video.getFrameCount()-1-frameShift;
+    if (video!=null) {
+      if (video.getFrameCount()>1) {
+        int end = video.getFrameCount()-1-frameShift+extraFrames;
         int maxCount = 1+(int) ((end-startFrame)/(1.0*stepSize));
         count = Math.min(count, maxCount);
       }
       int end = startFrame+(count-1)*stepSize+frameShift;
-      if(end!=video.getEndFrameNumber()) {
+      if (end!=video.getEndFrameNumber()) {
         video.setEndFrameNumber(end);
       }
     }
@@ -287,6 +291,7 @@ public class VideoClip {
   	if (video!=null)
   		n = Math.min(n, video.getFrameCount()-1);
   	frameShift = n;
+    support.firePropertyChange("frameshift", null, frameShift); //$NON-NLS-1$
   	setStartFrameNumber(start);
   	setStepCount(stepCount);
     return frameShift;
@@ -302,13 +307,22 @@ public class VideoClip {
   }
 
   /**
+   * Sets the extra frame count. Extra frames are blank frames after the last frame of a video.
+   *
+   * @param extras the number of extra frames to display
+   */
+  public void setExtraFrames(int extras) {
+    extraFrames = Math.max(extras, 0);
+  }
+
+  /**
    * Gets the frame count.
    *
    * @return the number of frames
    */
   public int getFrameCount() {
     if(video!=null && video.getFrameCount()>1) {
-    	int n = video.getFrameCount();
+    	int n = video.getFrameCount() + extraFrames;
     	n = Math.min(n, n-frameShift);
     	n = Math.max(1, n);
     	return n;
@@ -359,7 +373,7 @@ public class VideoClip {
    * @param end the desired end frame
    * @return true if the end frame number was changed
    */
-  public boolean setEndFrameNumber(int end) {
+  public boolean setEndFrameNumber(int end) {  	
   	return setEndFrameNumber(end, maxFrameCount-1-frameShift, true);
   }
 
@@ -383,9 +397,9 @@ public class VideoClip {
     if(rem*1.0/stepSize>0.5) {
       count++;
     }
-    else if(stepSize>1 && startFrame%2==0) {
-      count++;
-    }
+//    else if(stepSize>1 && startFrame%2==0) {
+//      count++;
+//    }
     while (stepToFrame(count) > max) {
     	count--;
     }
@@ -394,9 +408,11 @@ public class VideoClip {
     end = getEndFrameNumber();
     
     // determine maximum step size and adjust step size if needed
-    int maxStepSize = Math.max(end-startFrame, 1);
-    if(maxStepSize<stepSize) {
-      stepSize = maxStepSize;
+    if (end!=startFrame) {
+	    int maxStepSize = Math.max(end-startFrame, 1);
+	    if(maxStepSize<stepSize) {
+	      stepSize = maxStepSize;
+	    }
     }
     
     return prev!=end;
@@ -592,7 +608,7 @@ public class VideoClip {
    */
   public int getLastFrameNumber() {
   	if (video==null) return getEndFrameNumber();
-  	int finalVideoFrame = video.getFrameCount()-1;
+  	int finalVideoFrame = video.getFrameCount()-1+extraFrames;
   	// frameShift changes frame number--but never less than zero
   	return Math.max(0, finalVideoFrame-frameShift);
   }
@@ -633,7 +649,8 @@ public class VideoClip {
       control.setValue("startframe", clip.getStartFrameNumber()); //$NON-NLS-1$
       control.setValue("stepsize", clip.getStepSize());           //$NON-NLS-1$
       control.setValue("stepcount", clip.getStepCount());         //$NON-NLS-1$
-      control.setValue("starttime", clip.getStartTime());         //$NON-NLS-1$
+      control.setValue("starttime", clip.startTimeIsSaved? 			  //$NON-NLS-1$
+      		clip.savedStartTime: clip.getStartTime());
       control.setValue("frameshift", clip.getFrameShift());         //$NON-NLS-1$
       control.setValue("readout", clip.readoutType);         //$NON-NLS-1$
       control.setValue("playallsteps", clip.playAllSteps);         //$NON-NLS-1$

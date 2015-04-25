@@ -146,6 +146,7 @@ public class ClipInspector extends JDialog {
       public void actionPerformed(ActionEvent e) {
   			int prevStart = clip.getStartFrameNumber();
         if (!clip.setStartFrameNumber(startField.getIntValue(), clip.getEndFrameNumber())) {
+          updateDisplay();
 	        startField.selectAll();
         	return; // no change
         }
@@ -186,6 +187,7 @@ public class ClipInspector extends JDialog {
       public void actionPerformed(ActionEvent e) {
       	int frameNumber = clipControl.getFrameNumber();
         if (!clip.setStepSize(stepSizeField.getIntValue())) {
+          updateDisplay();
 	        stepSizeField.selectAll();
         	return;
         }
@@ -203,6 +205,7 @@ public class ClipInspector extends JDialog {
       public void focusLost(FocusEvent e) {
       	int frameNumber = clipControl.getFrameNumber();
         if (!clip.setStepSize(stepSizeField.getIntValue())) {
+          updateDisplay();
 	        stepSizeField.selectAll();
         	return;
         }
@@ -223,6 +226,7 @@ public class ClipInspector extends JDialog {
     endField.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         if (!clip.setEndFrameNumber(endField.getIntValue())) {
+          updateDisplay();
         	endField.selectAll();
         	return;
         }
@@ -241,6 +245,7 @@ public class ClipInspector extends JDialog {
       }
       public void focusLost(FocusEvent e) {
         if (!clip.setEndFrameNumber(endField.getIntValue())) {
+          updateDisplay();
         	endField.selectAll();
         	return;
         }
