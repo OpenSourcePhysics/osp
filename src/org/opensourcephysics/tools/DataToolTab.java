@@ -128,7 +128,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
   
 	// static fields
   public final static String SHIFTED = "'"; //$NON-NLS-1$
-  protected static String helpName = "data_tool_help.html";    //$NON-NLS-1$
   protected static NumberFormat correlationFormat = NumberFormat.getInstance();
   
   static {
@@ -184,10 +183,10 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
   protected double prevShiftX, prevShiftY;
   protected NumberField shiftXField, shiftYField, selectedXField, selectedYField;
   protected JSpinner shiftXSpinner, shiftYSpinner;
-  protected SpinnerListener spinnerListener;
-  protected JLabel shiftXLabel, shiftYLabel;
-  protected boolean toggleMeasurement;
-  protected int mouseX;
+  protected ShiftEditListener shiftEditListener;
+  protected JLabel shiftXLabel, shiftYLabel, selectedXLabel, selectedYLabel;
+  protected int selectedDataIndex = -1;
+  protected boolean toggleMeasurement, freezeMeasurement;
 
   /**
    * Constructs a DataToolTab for the specified Data.
@@ -502,6 +501,15 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     }
     userEditable = editable;
     refreshGUI();
+  }
+
+  /**
+   * Returns true if this tab is user editable.
+   *
+   * @return true if user editable
+   */
+  public boolean isUserEditable() {
+    return userEditable && !originShiftEnabled;
   }
 
   /**
@@ -844,7 +852,23 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     }
     fitterAction.actionPerformed(null);
     propsTable.refreshTable();
-		refreshStatusBar();
+    
+    // set shift field and label fonts in case they are not currently displayed
+    FontSizer.setFonts(shiftXLabel, level);
+    FontSizer.setFonts(shiftYLabel, level);
+    FontSizer.setFonts(selectedXLabel, level);
+    FontSizer.setFonts(selectedYLabel, level);
+    FontSizer.setFonts(shiftXField, level);
+    FontSizer.setFonts(shiftYField, level);
+    FontSizer.setFonts(selectedXField, level);
+    FontSizer.setFonts(selectedYField, level);
+    shiftXField.refreshPreferredWidth();
+    shiftYField.refreshPreferredWidth();
+    selectedXField.refreshPreferredWidth();
+    selectedYField.refreshPreferredWidth();
+    toolbar.revalidate();
+
+		refreshStatusBar(null);
 		// kludge to display tables correctly: do propsAndStatsAction now, again after a millisecond!
     propsAndStatsAction.actionPerformed(null);
     Timer timer = new Timer(1, new ActionListener() {
@@ -871,7 +895,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
    * @return the first two data columns in the datatable (x-y order)
    */
   protected WorkingDataset getWorkingData() {
-    dataTable.getSelectedData();
+//    dataTable.getSelectedData();
     return dataTable.workingData;
   }
 
@@ -1360,14 +1384,19 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	        		plot.areaLimits[0].setX(plot.areaLimits[0].getX()+shiftX);
 	        		plot.areaLimits[1].setX(plot.areaLimits[1].getX()+shiftX);
         		}
-	    			
 	    		}
+	        ((CrawlerSpinnerModel)shiftXSpinner.getModel()).refreshDelta();
+	        ((CrawlerSpinnerModel)shiftYSpinner.getModel()).refreshDelta();
 	    	}
 	    	else {
 	    		toolbar.remove(shiftXLabel);
 	    		toolbar.remove(shiftXSpinner);
 	    		toolbar.remove(shiftYLabel);
 	    		toolbar.remove(shiftYSpinner);
+	    		toolbar.remove(selectedXLabel);
+	    		toolbar.remove(selectedXField);
+	    		toolbar.remove(selectedYLabel);
+	    		toolbar.remove(selectedYField);
 	    		if (previouslyEnabled) {
         		// shift area limits
         		if (plot.areaLimits[0].pointIndex>-1 && plot.areaLimits[1].pointIndex>-1) {
@@ -1470,11 +1499,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     helpButton.setToolTipText(ToolsRes.getString("Tool.Button.Help.ToolTip")); //$NON-NLS-1$
     helpButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        if(dataTool!=null) {
-          DataTool.showHelp(DataTool.helpName);
-        } else {
-          DataTool.showHelp(DataToolTab.helpName);
-        }
+        DataTool.showHelp();
       }
 
     });
@@ -1484,9 +1509,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     valueCheckbox.setToolTipText(ToolsRes.getString("DataToolTab.Checkbox.Position.Tooltip")); //$NON-NLS-1$
     valueCheckbox.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
+      	freezeMeasurement = false;
         positionVisible = valueCheckbox.isSelected();
         plot.setMessage(plot.createMessage());
         plot.repaint();
+        refreshStatusBar(null);
       }
 
     });
@@ -1496,11 +1523,12 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     slopeCheckbox.setSelected(false);
     slopeCheckbox.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
+      	freezeMeasurement = false;
         slopeVisible = slopeCheckbox.isSelected();
         plot.setMessage(plot.createMessage());
         plot.repaint();
+        refreshStatusBar(null);
       }
-
     });
     // create areaCheckbox
     areaCheckbox = new JCheckBoxMenuItem(ToolsRes.getString("DataToolTab.Checkbox.Area")); //$NON-NLS-1$
@@ -1552,7 +1580,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         if(statsVis) {
           statsTable.refreshStatistics();
         }
-        refreshStatusBar();
+        refreshStatusBar(null);
         int statsHeight = statsTable.getPreferredSize().height;
         int propsHeight = propsTable.getPreferredSize().height;
         LookAndFeel currentLF = UIManager.getLookAndFeel();
@@ -1622,7 +1650,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     MouseInputListener mouseSelector = new MouseInputAdapter() {
       Set<Integer> rowsInside = new HashSet<Integer>(); // points inside selectionBox
       Set<Integer> recent = new HashSet<Integer>();     // points recently added or removed
-      boolean boxActive;
+      boolean boxActive, selectionChanged;
       Interactive ia;
       
       @Override
@@ -1683,8 +1711,10 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
           
           plot.repaint();
           boxActive = false;
+          selectionChanged = true;
           return;
-        } else if(ia!=null) {
+        } 
+        else if(ia!=null) {
           boxActive = false;
           return;
         }
@@ -1708,6 +1738,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       
       @Override
       public void mouseDragged(MouseEvent e) {
+        selectionChanged = true;
         if (ia==plot.origin) {
           plot.selectionBox.visible = false;
           double deltaX = 0, deltaY = 0;
@@ -1802,11 +1833,20 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       
       @Override
       public void mouseReleased(MouseEvent e) {
+      	if (!selectionChanged && freezeMeasurement) {
+        	freezeMeasurement = false;
+        	plot.measurementX = e.getX();
+        	plot.measurementIndex = -1;
+        	plot.refreshMeasurements();
+      	}
+        selectionChanged = false;
       	plot.lockScale(false);
         plot.selectionBox.visible = false;
         if(ia!=null) {
         	if (ia==plot.origin) {
         		postShiftEdit();
+  	        ((CrawlerSpinnerModel)shiftXSpinner.getModel()).refreshDelta();
+  	        ((CrawlerSpinnerModel)shiftYSpinner.getModel()).refreshDelta();
         	}
           if(ia instanceof Selectable) {
             plot.setMouseCursor(((Selectable) ia).getPreferredCursor());
@@ -1835,10 +1875,17 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       
       @Override
       public void mouseMoved(MouseEvent e) {
-        mouseX = e.getX();
-        plot.measurementIndex = -1;
+        if (!freezeMeasurement) {
+        	plot.measurementX = e.getX();
+        	plot.measurementIndex = -1;
+        }        
         plot.refreshMeasurements();
       }
+          	
+    	@Override
+    	public void mouseEntered(MouseEvent e) {
+    		dataTable.dataToolTab.refreshStatusBar(null);
+    	}   	
     };
     plot.addMouseListener(mouseSelector);
     plot.addMouseMotionListener(mouseSelector);
@@ -1915,13 +1962,17 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     
     // create origin shift labels and fields
     shiftXLabel = new JLabel();
-    shiftXLabel.setBorder(BorderFactory.createEmptyBorder(2, 20, 2, 2));
+    shiftXLabel.setBorder(BorderFactory.createEmptyBorder(2, 12, 2, 2));
     shiftYLabel = new JLabel();
     shiftYLabel.setBorder(BorderFactory.createEmptyBorder(2, 8, 2, 2));
+    selectedXLabel = new JLabel();
+    selectedXLabel.setBorder(BorderFactory.createEmptyBorder(2, 12, 2, 2));
+    selectedYLabel = new JLabel();
+    selectedYLabel.setBorder(BorderFactory.createEmptyBorder(2, 8, 2, 2));
     
     // create shift spinner and field listeners
-    spinnerListener = new SpinnerListener();
-    KeyAdapter keyListener = new KeyAdapter() {
+    shiftEditListener = new ShiftEditListener();
+    KeyAdapter numberFieldKeyListener = new KeyAdapter() {
       public void keyPressed(KeyEvent e) {
         JComponent comp = (JComponent) e.getSource();
         if(e.getKeyCode()==KeyEvent.VK_ENTER) {
@@ -1931,7 +1982,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         }
       }
     };
-    FocusAdapter focusListener = new FocusAdapter() {
+    FocusAdapter numberFieldFocusListener = new FocusAdapter() {
       public void focusLost(FocusEvent e) {
         NumberField field = (NumberField) e.getSource();
         if(field.getBackground()!=Color.white) {
@@ -1975,14 +2026,15 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         		}
 
             refreshAll();
+  	        ((CrawlerSpinnerModel)shiftXSpinner.getModel()).refreshDelta();
       		}       		
       	}
       	shiftXField.selectAll();
 			}
     	
     });
-    shiftXField.addKeyListener(keyListener);
-    shiftXField.addFocusListener(focusListener);
+    shiftXField.addKeyListener(numberFieldKeyListener);
+    shiftXField.addFocusListener(numberFieldFocusListener);
 
     SpinnerModel spinModel = new CrawlerSpinnerModel();
     shiftXSpinner = new JSpinner(spinModel) {
@@ -1997,7 +2049,12 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     	@Override
     	public Dimension getPreferredSize() {
     		Dimension dim = super.getPreferredSize();
-    		dim.width = Math.max(dim.width, shiftXField.getPreferredWidth());
+    		for (Component c: this.getComponents()) {
+    			if (c instanceof JButton) {
+        		dim.width = shiftXField.getPreferredSize().width+c.getWidth()-2;
+        		return dim;
+    			}
+    		}
     		return dim;
     	}
     };
@@ -2027,7 +2084,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       }
   	};
   	shiftXSpinner.addChangeListener(xChangeListener);
-  	shiftXSpinner.addChangeListener(spinnerListener);
+  	shiftXSpinner.addChangeListener(shiftEditListener);
 
     shiftYField = new NumberField(4) {
     	@Override
@@ -2046,13 +2103,14 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       		if (col.setShift(-shiftYField.getValue())) {
             tabChanged(true);             
             refreshAll();
+  	        ((CrawlerSpinnerModel)shiftYSpinner.getModel()).refreshDelta();
       		}       		
       	}
       	shiftYField.selectAll();
 			}      	
     });
-    shiftYField.addKeyListener(keyListener);
-    shiftYField.addFocusListener(focusListener);
+    shiftYField.addKeyListener(numberFieldKeyListener);
+    shiftYField.addFocusListener(numberFieldFocusListener);
     
     spinModel = new CrawlerSpinnerModel();
     shiftYSpinner = new JSpinner(spinModel) {
@@ -2067,7 +2125,12 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     	@Override
     	public Dimension getPreferredSize() {
     		Dimension dim = super.getPreferredSize();
-    		dim.width = Math.max(dim.width, shiftYField.getPreferredWidth());
+    		for (Component c: this.getComponents()) {
+    			if (c instanceof JButton) {
+        		dim.width = shiftYField.getPreferredSize().width+c.getWidth()-2;
+        		return dim;
+    			}
+    		}
     		return dim;
     	}
     };
@@ -2087,8 +2150,79 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       }
   	};
   	shiftYSpinner.addChangeListener(yChangeListener);
-  	shiftYSpinner.addChangeListener(spinnerListener);
+  	shiftYSpinner.addChangeListener(shiftEditListener);
     
+  	selectedXField = new NumberField(4) {
+    	@Override
+    	public Dimension getMaximumSize() {
+    		Dimension dim = getPreferredSize();
+    		dim.height = super.getMaximumSize().height;
+    		return dim;
+    	}
+    };
+    selectedXField.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+      	Dataset data = dataTable.getDataset(plot.xVar);
+      	if (data !=null && data instanceof DataColumn) {
+      		DataColumn col = (DataColumn)data;
+      		double prev = col.getShift();
+      		double val = selectedXField.getValue();
+      		if (col.setShiftedValue(selectedDataIndex, val)) {
+            tabChanged(true);
+        		// shift area limits
+        		if (plot.areaLimits[0].pointIndex>-1 && plot.areaLimits[1].pointIndex>-1) {
+        			plot.areaLimits[0].refreshX();
+        			plot.areaLimits[1].refreshX();
+        		}
+        		else {
+        			double shift = col.getShift();
+	        		plot.areaLimits[0].setX(plot.areaLimits[0].getX()+shift-prev);
+	        		plot.areaLimits[1].setX(plot.areaLimits[1].getX()+shift-prev);
+        		}
+            refreshAll();
+  	        ((CrawlerSpinnerModel)shiftXSpinner.getModel()).refreshDelta();
+      		}       		
+      	}
+      	selectedXField.requestFocusInWindow();
+      	selectedXField.selectAll();
+      	shiftEditListener.stateChanged(null);
+			}
+    	
+    });
+    selectedXField.addKeyListener(numberFieldKeyListener);
+    selectedXField.addFocusListener(numberFieldFocusListener);
+    
+  	selectedYField = new NumberField(4) {
+    	@Override
+    	public Dimension getMaximumSize() {
+    		Dimension dim = getPreferredSize();
+    		dim.height = super.getMaximumSize().height;
+    		return dim;
+    	}
+    };
+    selectedYField.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+      	Dataset data = dataTable.getDataset(plot.yVar);
+      	if (data !=null && data instanceof DataColumn) {
+      		DataColumn col = (DataColumn)data;
+      		double val = selectedYField.getValue();
+      		if (col.setShiftedValue(selectedDataIndex, val)) {
+            tabChanged(true);
+            refreshAll();
+  	        ((CrawlerSpinnerModel)shiftYSpinner.getModel()).refreshDelta();
+      		}       		
+      	}
+      	selectedYField.requestFocusInWindow();
+				selectedYField.selectAll();
+      	shiftEditListener.stateChanged(null);
+			}
+    	
+    });
+    selectedYField.addKeyListener(numberFieldKeyListener);
+    selectedYField.addFocusListener(numberFieldFocusListener);
+
   }
 
   /**
@@ -2130,10 +2264,16 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         areaCheckbox.setToolTipText(ToolsRes.getString("DataToolTab.Checkbox.Area.Tooltip"));           //$NON-NLS-1$
         helpButton.setText(ToolsRes.getString("Tool.Button.Help"));                                     //$NON-NLS-1$
         helpButton.setToolTipText(ToolsRes.getString("Tool.Button.Help.ToolTip"));                      //$NON-NLS-1$
-        // set origin shift labels
+        // set origin and selected point shift labels
         String label = ToolsRes.getString("DataToolTab.Origin.Label")+":  "; //$NON-NLS-1$ //$NON-NLS-2$
         shiftXLabel.setText(label+plot.xVar);
         shiftYLabel.setText(plot.yVar);
+        shiftXLabel.setToolTipText(ToolsRes.getString("DataToolTab.Origin.Tooltip")); //$NON-NLS-1$
+        label = ToolsRes.getString("DataToolTab.Selection.Label")+":  "; //$NON-NLS-1$ //$NON-NLS-2$
+        selectedXLabel.setText(label+plot.xVar);
+        selectedXLabel.setToolTipText(ToolsRes.getString("DataToolTab.Selection.Tooltip")); //$NON-NLS-1$
+        selectedYLabel.setText(plot.yVar);
+        
         toolbar.remove(newColumnButton);
         if(userEditable) {
           int n = toolbar.getComponentIndex(helpButton);
@@ -2154,7 +2294,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         statsTable.refreshGUI();
         propsTable.refreshGUI();
         refreshPlot();
-        refreshStatusBar();
+        refreshStatusBar(null);
         tabChanged = changed;
       }
     };
@@ -2412,8 +2552,37 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
    */
   protected void setSelectedData(Dataset selectedData) {
     curveFitter.setData(selectedData);
-  	if (fourierPanel!=null)
+  	if (fourierPanel!=null) {
   		fourierPanel.refreshFourierData(selectedData, getName());
+  	}
+  	if (originShiftEnabled && selectedData!=null) {
+  		if (selectedData.getIndex()==1) {
+    		selectedDataIndex = dataTable.getSelectedRow();
+    		toolbar.add(selectedXLabel, 6);
+    		toolbar.add(selectedXField, 7);
+    		toolbar.add(selectedYLabel, 8);
+    		toolbar.add(selectedYField, 9);
+      	selectedXField.setValue(selectedData.getXPoints()[0]);
+		    selectedXField.refreshPreferredWidth();
+      	selectedYField.setValue(selectedData.getYPoints()[0]);
+		    selectedYField.refreshPreferredWidth();
+    		toolbar.revalidate();
+  		}
+  		else {
+    		toolbar.remove(selectedXLabel);  			
+    		toolbar.remove(selectedXField);
+    		toolbar.remove(selectedYLabel);
+    		toolbar.remove(selectedYField);  			
+    		toolbar.revalidate();
+    		selectedDataIndex = -1;
+  		}
+  	}
+  	if (positionVisible || slopeVisible) {
+  		plot.refreshMeasurements();
+  	}
+  	if (areaVisible) {
+  		plot.refreshArea();
+  	}
   }
 
   /**
@@ -2464,13 +2633,13 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       }
       plot.addDrawable(workingData);
 
-      // keep area limits within dataset limits
-      if (areaVisible) {
-        plot.areaLimits[0].x = Math.max(plot.areaLimits[0].x, workingData.getXMin());
-        plot.areaLimits[0].x = Math.min(plot.areaLimits[0].x, workingData.getXMax());
-        plot.areaLimits[1].x = Math.max(plot.areaLimits[1].x, workingData.getXMin());
-        plot.areaLimits[1].x = Math.min(plot.areaLimits[1].x, workingData.getXMax());
-      }
+//      // keep area limits within dataset limits
+//      if (areaVisible) {
+//        plot.areaLimits[0].x = Math.max(plot.areaLimits[0].x, workingData.getXMin());
+//        plot.areaLimits[0].x = Math.min(plot.areaLimits[0].x, workingData.getXMax());
+//        plot.areaLimits[1].x = Math.max(plot.areaLimits[1].x, workingData.getXMin());
+//        plot.areaLimits[1].x = Math.min(plot.areaLimits[1].x, workingData.getXMax());
+//      }
       workingData.restoreHighlights();
       // draw curve fit on top of dataset if curve fitter is visible
       if((fitterCheckbox!=null)&&fitterCheckbox.isSelected()) {
@@ -2521,21 +2690,41 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
   /**
    * Refreshes the status bar.
+   * 
+   * @param hint an optional hint to display (may be null)
    */
-  protected void refreshStatusBar() {
-  	if (statsCheckbox.isSelected()) {
-  		String s = ToolsRes.getString("DataToolTab.Status.Correlation"); //$NON-NLS-1$
-  		if (Double.isNaN(curveFitter.correlation)) {
-  			s += " "+ ToolsRes.getString("DataToolTab.Status.Correlation.Undefined"); //$NON-NLS-1$ //$NON-NLS-2$
+  protected void refreshStatusBar(String hint) {
+  	if (hint!=null) {
+      statusLabel.setText(hint); 
+  	}
+  	else if (slopeCheckbox.isSelected()) {
+  		String s = ToolsRes.getString("DataToolTab.Status.Slope"); //$NON-NLS-1$
+  		if (fitterCheckbox.isSelected()) {
+  			s += " "+ToolsRes.getString("DataToolTab.Status.MeasureFit"); //$NON-NLS-1$ //$NON-NLS-2$
   		}
-  		else {
-  			s += " = "+ correlationFormat.format(curveFitter.correlation); //$NON-NLS-1$ 			
+      statusLabel.setText(s);
+  	}
+  	else if (areaCheckbox.isSelected()) {
+  		String s = ToolsRes.getString("DataToolTab.Status.Area"); //$NON-NLS-1$
+  		if (fitterCheckbox.isSelected()) {
+  			s += " "+ToolsRes.getString("DataToolTab.Status.MeasureFit"); //$NON-NLS-1$ //$NON-NLS-2$
   		}
-  		statusLabel.setText(s); 
-      statusLabel.setFont(editableLabel.getFont().deriveFont(Font.BOLD));
+      statusLabel.setText(s);
+  	}
+  	else if (valueCheckbox.isSelected()) {
+  		String s = ToolsRes.getString("DataToolTab.Status.Value"); //$NON-NLS-1$
+  		if (fitterCheckbox.isSelected()) {
+  			s += " "+ToolsRes.getString("DataToolTab.Status.MeasureFit"); //$NON-NLS-1$ //$NON-NLS-2$
+  		}
+      statusLabel.setText(s);
+  	}
+  	else if (originShiftCheckbox.isSelected()) {
+      statusLabel.setText(ToolsRes.getString("DataToolTab.Status.ShiftOrigin"));  //$NON-NLS-1$
+  	}
+  	else if (statsCheckbox.isSelected()) {
+  		statusLabel.setText(getCorrelationString()); 
   	}
   	else {
-      statusLabel.setFont(editableLabel.getFont().deriveFont(Font.PLAIN));
   		if(dataManager.getDatasets().size()<2) {
 	      statusLabel.setText(userEditable ? ToolsRes.getString("DataToolTab.StatusBar.Text.CreateColumns")  //$NON-NLS-1$
 	                                       : ToolsRes.getString("DataToolTab.StatusBar.Text.PasteColumns")); //$NON-NLS-1$
@@ -2543,9 +2732,23 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	      statusLabel.setText(ToolsRes.getString("DataToolTab.StatusBar.Text.DragColumns"));                 //$NON-NLS-1$
 	    }
   	}
-    editableLabel.setText(userEditable? ToolsRes.getString("DataTool.MenuItem.Editable").toLowerCase()  //$NON-NLS-1$
+    editableLabel.setText(isUserEditable()? ToolsRes.getString("DataTool.MenuItem.Editable").toLowerCase()  //$NON-NLS-1$
         : ToolsRes.getString("DataTool.MenuItem.Noneditable").toLowerCase()); //$NON-NLS-1$
-    editableLabel.setForeground(userEditable? Color.GREEN.darker(): Color.RED.darker());
+    editableLabel.setForeground(isUserEditable()? Color.GREEN.darker(): Color.RED.darker());
+  }
+  
+  /**
+   * Gets a correlation string to display in the status bar.
+   */
+  protected String getCorrelationString() {
+		String s = ToolsRes.getString("DataToolTab.Status.Correlation"); //$NON-NLS-1$
+		if (Double.isNaN(curveFitter.correlation)) {
+			s += " "+ ToolsRes.getString("DataToolTab.Status.Correlation.Undefined"); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+		else {
+			s += " = "+ correlationFormat.format(curveFitter.correlation); //$NON-NLS-1$ 			
+		}
+		return s;
   }
 
   /**
@@ -2562,14 +2765,19 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
   		String existing = shiftXField.getPattern();
   		if (!pattern.equals(existing)) {
   			shiftXField.applyPattern(pattern);
+  			selectedXField.applyPattern(pattern);
   		}
-  		// set value
+  		// set values
   		double shift = ((DataColumn)data).getShift();
     	shiftXField.setValue(shift==0? 0: -shift);
     	shiftXSpinner.setValue(shift==0? 0: -shift);
+    	if (selectedDataIndex>-1) {
+    		selectedXField.setValue(data.getYPoints()[selectedDataIndex]);
+    	}
     	if (shift!=prevShiftX || !pattern.equals(existing)) {
 		    shiftXField.refreshPreferredWidth();
-		    shiftXSpinner.revalidate();
+		    selectedXField.refreshPreferredWidth();
+		    toolbar.revalidate();
 	    }
   	}
   	data = dataTable.getDataset(plot.yVar);
@@ -2582,14 +2790,19 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
   		String existing = shiftYField.getPattern();
   		if (!pattern.equals(existing)) {
   			shiftYField.applyPattern(pattern);
+  			selectedYField.applyPattern(pattern);
   		}
-  		// set value
+  		// set values
   		double shift = ((DataColumn)data).getShift();
     	shiftYField.setValue(shift==0? 0: -shift);
     	shiftYSpinner.setValue(shift==0? 0: -shift);
+    	if (selectedDataIndex>-1) {
+    		selectedYField.setValue(data.getYPoints()[selectedDataIndex]);
+    	}
     	if (shift!=prevShiftY || !pattern.equals(existing)) {
 		    shiftYField.refreshPreferredWidth();
-		    shiftYSpinner.revalidate();
+		    selectedYField.refreshPreferredWidth();
+		    toolbar.revalidate();
 	    }
   	}
   }
@@ -2715,7 +2928,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     boolean scaleLocked, dataPresent;
     double lockedXMin, lockedXMax, lockedYMin, lockedYMax;
     double mouseDownXMin, mouseDownXMax, mouseDownYMin, mouseDownYMax;
-    int measurementIndex = -1;
+    int measurementIndex = -1, measurementX = -1;
 
     /** 
      * Constructor
@@ -2738,9 +2951,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       addDrawable(selectionBox);
       addDrawable(origin);
       
-      // create key listener to move origin with arrow keys
+      // create key listener to move origin, fix measurements and extend slope line
       addKeyListener(new KeyAdapter() {
-
+      	
       	@Override
       	public void keyPressed(KeyEvent e) {
           if(e.getKeyCode()==KeyEvent.VK_CONTROL) {
@@ -2748,6 +2961,25 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
           	toggleMeasurement = true;
           	refreshMeasurements();
           	refreshArea();
+          	return;
+          }
+          if(e.getKeyCode()==KeyEvent.VK_SPACE) {
+          	if (!freezeMeasurement && e.isShiftDown()) {
+          		freezeMeasurement = true;
+          	}
+          	else {
+          		freezeMeasurement = false;
+          	};
+          	if (!freezeMeasurement && mouseEvent!=null) {
+            	plot.measurementX = mouseEvent.getX();
+            	plot.measurementIndex = -1;
+            	plot.refreshMeasurements();
+          	}
+          	return;
+          }
+          if(e.getKeyCode()==KeyEvent.VK_S && e.isShiftDown()) {
+          	dataTool.slopeExtended = !dataTool.slopeExtended;
+          	plot.refreshMeasurements();
           	return;
           }
       		if (!originShiftEnabled) return;
@@ -2811,6 +3043,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	          	}
 	      		}
             refreshAll();
+  	        ((CrawlerSpinnerModel)shiftXSpinner.getModel()).refreshDelta();
+  	        ((CrawlerSpinnerModel)shiftYSpinner.getModel()).refreshDelta();
       		}
       	}
       	
@@ -2938,7 +3172,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       double[] xpoints = null;
       double[] ypoints = null;
       int j = measurementIndex;
-      double x = plot.pixToX(mouseX);
+      double x = plot.pixToX(measurementX);
       if (data!=null && (positionVisible || slopeVisible || areaVisible)) {
         if (data.getIndex()>0 && j<0) {
           measurementIndex = j = plot.findIndexNearestX(x, data);
@@ -3063,6 +3297,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
           area /= 2;
         }
       }
+      // set true limits
+      areaLimits[0].trueLimit = areaDataset.getXMin();
+      areaLimits[1].trueLimit = areaDataset.getXMax();
       setMessage(createMessage());
     }
     
@@ -3211,10 +3448,13 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     	// set coordinate string builder variables
       coordinateStrBuilder.setCoordinateLabels(xAxis+"=", "  "+yAxis+"=");  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
       
-      // set origin shift labels
+      // set origin and selected point shift labels
       String label = ToolsRes.getString("DataToolTab.Origin.Label")+":  "; //$NON-NLS-1$ //$NON-NLS-2$
       shiftXLabel.setText(label+xVar);
       shiftYLabel.setText(yVar);
+      label = ToolsRes.getString("DataToolTab.Selection.Label")+":  "; //$NON-NLS-1$ //$NON-NLS-2$
+      selectedXLabel.setText(label+xVar);
+      selectedYLabel.setText(yVar);
     }
 
     @Override
@@ -3292,7 +3532,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       double x, y;
       Stroke stroke = new BasicStroke(1.5f);
       int length = 30;
-      Color color = new Color(0, 0, 0);
+      Color color = new Color(102, 102, 102);
 
 	    /**
 	     * Draws this slope line on the specified Graphics.
@@ -3310,7 +3550,15 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         double cos = dxPix/hyp;
         int xCenter = xToPix(x);
         int yCenter = yToPix(y);
-        setLine(xCenter-length*cos+1, yCenter+length*sin+1, xCenter+length*cos+1, yCenter-length*sin+1);
+        int len = length;
+        if (dataTool.slopeExtended) {
+        	len *= 40;
+	        int w = plot.getWidth()-plot.getRightGutter()-plot.getLeftGutter();
+	        int h = plot.getHeight()-plot.getTopGutter()-plot.getBottomGutter();
+	        Rectangle rect = new Rectangle(plot.getLeftGutter(), plot.getTopGutter(), w, h);
+	        g.setClip(rect);
+        }
+        setLine(xCenter-len*cos+1, yCenter+len*sin+1, xCenter+len*cos+1, yCenter-len*sin+1);
         Color gcolor = g.getColor();
         g.setColor(color);
         ((Graphics2D) g).fill(stroke.createStrokedShape(this));
@@ -3324,16 +3572,20 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
      */
     protected class LimitLine extends Line2D.Double implements Selectable {
     	int pointIndex = -1;
-      double x;
+      double x, trueLimit;
       Stroke stroke = new BasicStroke(1.0f);
       Rectangle hitRect = new Rectangle();
       Color color = new Color(51, 51, 51);
+      Color trueLimitColor;
       Cursor move;
 
       @Override
       public void draw(DrawingPanel panel, Graphics g) {
         if(!areaVisible) {
           return;
+        }
+        if (trueLimitColor==null) {
+        	trueLimitColor = color.brighter().brighter().brighter();
         }
         Color gcolor = g.getColor();
         g.setColor(color);
@@ -3342,6 +3594,10 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         int x1 = plot.xToPix(x);
         setLine(x1+1, y0, x1+1, y1);
         ((Graphics2D) g).fill(stroke.createStrokedShape(this));
+        // draw true limit
+        x1 = plot.xToPix(trueLimit);
+        g.setColor(trueLimitColor);
+        g.drawLine(x1+1, y0, x1+1, y1);
         g.setColor(gcolor);
         hitRect.setBounds(x1-2, y0, 6, y1-y0-20);
       }
@@ -3431,7 +3687,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
        */
       public void refreshX() {
         double[] data = dataTable.workingData.getXPoints();
-       	if (pointIndex>-1 && pointIndex<data.length && !java.lang.Double.isNaN(data[pointIndex])) {
+       	if (pointIndex>-1 && pointIndex<data.length 
+       			&& !java.lang.Double.isNaN(data[pointIndex])) {
  	        x = data[pointIndex];
        	}
       }
@@ -3635,7 +3892,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	    	}
     	}
       refreshAll();
-      spinnerListener.valueChanged = false;
+      shiftEditListener.valueChanged = false;
     }
     
     @Override
@@ -3660,7 +3917,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	    	}
     	}
       refreshAll();
-      spinnerListener.valueChanged = false;
+      shiftEditListener.valueChanged = false;
     }
   }
 
@@ -3704,19 +3961,35 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       if(val!=0) {
         delta = Math.abs(val*percentDelta/100);
       }
+      else {
+      	if (shiftXSpinner.getModel()==this) {
+      		Dataset dataset = dataTable.getDataset(plot.xVar);
+      		if (dataset!=null) {
+      			double range = dataset.getYMax()-dataset.getYMin();
+      			delta = range*percentDelta/100;
+      		}
+      	}
+      	else if (shiftYSpinner.getModel()==this) {
+      		Dataset dataset = dataTable.getDataset(plot.yVar);
+      		if (dataset!=null) {
+      			double range = dataset.getYMax()-dataset.getYMin();
+      			delta = range*percentDelta/100;
+      		}
+      	}
+      }
     }
 
   }
 
-  class SpinnerListener implements ChangeListener, ActionListener {
+  class ShiftEditListener implements ChangeListener, ActionListener {
   	
     // minimum time in ms between update requests
     static final int MIN_TIME = 400;
     long lastChange = System.currentTimeMillis();
-    boolean valueChanged=false;
+    boolean valueChanged = false;
     Timer repeatTimer;
     
-    public SpinnerListener(){
+    public ShiftEditListener(){
       // timer polling every 200ms
       repeatTimer = new Timer(200, this);
       repeatTimer.start();
@@ -3734,11 +4007,10 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         if (shiftXField.hasFocus() || shiftYField.hasFocus()) {
 	        // post undoable edit
           postShiftEdit();
-
-	        CrawlerSpinnerModel model = (CrawlerSpinnerModel)shiftXSpinner.getModel();
-	        model.refreshDelta();
-	        model = (CrawlerSpinnerModel)shiftYSpinner.getModel();
-	        model.refreshDelta();
+        }
+        else if (selectedXField.hasFocus() || selectedYField.hasFocus()) {
+	        // post undoable edit
+          postShiftEdit();
         }
       }
     }

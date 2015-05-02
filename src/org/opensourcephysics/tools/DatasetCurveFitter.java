@@ -246,34 +246,27 @@ public class DatasetCurveFitter extends JPanel {
     }
     autofitCheckBox.setEnabled(true);
     paramTable.setEnabled(true);
-//  	double x0 = 0, y0 = 0; 
-//  	if (tab!=null && tab.dataShiftEnabled && tab.plot!=null) {
-//  		TPoint origin = tab.plot.origin;
-//  		x0 = -origin.getX();
-//  		y0 = -origin.getY();
-//  	}
-//    double[] x = shiftValues(dataset.getValidXPoints(), x0);
-//    double[] y = shiftValues(dataset.getValidYPoints(), y0);
+
   	double[] x = dataset.getValidXPoints();
   	double[] y = dataset.getValidYPoints();
     double devSq = 0;
-    // autofit if checkbox is selected
     double[] prevParams = null;
     // get deviation before fitting
     double prevDevSq = getDevSquared(fit, x, y);
     boolean isLinearFit = false;
-    if(autofitCheckBox.isSelected() && !Double.isNaN(prevDevSq)) {
+    // autofit if checkbox is selected
+    if (autofitCheckBox.isSelected() && !Double.isNaN(prevDevSq)) {
       if(fit instanceof KnownPolynomial) {
         KnownPolynomial poly = (KnownPolynomial) fit;
         poly.fitData(x, y);
         isLinearFit = poly.degree()==1;
       } 
-      else if(fit instanceof UserFunction) {
+      else if (fit instanceof UserFunction) {
         // use HessianMinimize to autofit user function 
         UserFunction f = (UserFunction) fit;
         double[] params = new double[f.getParameterCount()];
-        // can't autofit if no parameters
-        if(params.length>0) {
+        // can't autofit if no parameters or data length < parameter count 
+        if (params.length>0 && params.length<=x.length && params.length<=y.length) {
           MinimizeUserFunction minFunc = new MinimizeUserFunction(f, x, y);
           prevParams = new double[params.length];
           for(int i = 0; i<params.length; i++) {
@@ -357,7 +350,7 @@ public class DatasetCurveFitter extends JPanel {
    */
   public void refreshStatusBar() {
   	if (tab!=null && tab.statsCheckbox.isSelected())
-  		tab.refreshStatusBar();
+  		tab.refreshStatusBar(tab.getCorrelationString());
   }
 
   /**
@@ -1054,7 +1047,7 @@ public class DatasetCurveFitter extends JPanel {
 			}
 			refreshFitDropDown();
 		}       		
-  	
+    refreshFitMap();  	
   }
   
   /**
@@ -1561,17 +1554,19 @@ public class DatasetCurveFitter extends JPanel {
     	return format;
     }
     
-    public int getPreferredWidth() {
-    	return preferredWidth;
-    }
-
     protected void refreshPreferredWidth() {
   		// determine preferred width of field
       FontRenderContext frc = new FontRenderContext(null, false, false); 
       Rectangle2D rect = getFont().getStringBounds(getText(), frc);
-      preferredWidth = (int)rect.getWidth()+24;
+      preferredWidth = (int)rect.getWidth()+8;
     }
 
+  	@Override
+  	public Dimension getPreferredSize() {
+  		Dimension dim = super.getPreferredSize();
+  		dim.width = Math.max(dim.width, preferredWidth);
+  		return dim;
+  	}
   }
   
 //_______________________________ static methods _________________________________

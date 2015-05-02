@@ -109,7 +109,7 @@ public class DataToolTable extends DataTable {
   JMenuItem insertRowItem, pasteRowsItem, copyRowsItem, cutRowsItem;
   JMenuItem insertCellsItem, deleteCellsItem, copyCellsItem, cutCellsItem, pasteInsertCellsItem, pasteCellsItem;
   JMenuItem addEndRowItem, trimRowsItem;
-  JMenuItem selectAllItem, selectNoneItem;
+  JMenuItem selectAllItem, selectNoneItem, clearContentsItem;
   Action clearCellsAction, pasteCellsAction, pasteInsertCellsAction, cantPasteCellsAction, cantPasteRowsAction, getPasteDataAction;
   MouseAdapter tableMouseListener;
   Color selectedBG, selectedFG, unselectedBG, selectedHeaderFG, selectedHeaderBG, rowBG;
@@ -138,6 +138,9 @@ public class DataToolTable extends DataTable {
     ListSelectionModel selectionModel = getSelectionModel();
     selectionModel.addListSelectionListener(new ListSelectionListener() {
       public void valueChanged(ListSelectionEvent e) {
+      	if (e.getFirstIndex()==-1) {
+      		return;
+      	}
         selectedRows.clear();
         int[] rows = getSelectedRows(); // selected view rows
         for(int i = 0; i<rows.length; i++) {
@@ -156,6 +159,7 @@ public class DataToolTable extends DataTable {
     selectionModel.addListSelectionListener(new ListSelectionListener() {
       public void valueChanged(ListSelectionEvent e) {
         getTableHeader().repaint();
+        dataToolTab.refreshPlot();
       }
 
     });
@@ -321,7 +325,7 @@ public class DataToolTable extends DataTable {
           // get newly selected columns
           cols = getSelectedColumnNames();
           // rename column item
-          if((cols.size()==1)&&dataToolTab.userEditable) {
+          if((cols.size()==1)&&dataToolTab.isUserEditable()) {
             int index = convertColumnIndexToModel(col)-1;
             final Dataset data = dataManager.getDataset(index);
             text = ToolsRes.getString("DataToolTable.Popup.MenuItem.RenameColumn");                                                    //$NON-NLS-1$
@@ -547,6 +551,7 @@ public class DataToolTable extends DataTable {
             setToolTipText(name+" = "+obj); //$NON-NLS-1$
           }
         }
+        requestFocusInWindow();
       }
       public void mouseDragged(MouseEvent e) {
         int col = columnAtPoint(e.getPoint());
@@ -635,8 +640,8 @@ public class DataToolTable extends DataTable {
             });
             popup.add(selectNoneItem);
             popup.addSeparator();
-
-            if(dataToolTab.userEditable&&!(data instanceof DataFunction)) {
+            
+            if(dataToolTab.isUserEditable() && !(data instanceof DataFunction)) {
               // insert cells item
               text = ToolsRes.getString("DataToolTable.Popup.MenuItem.InsertCells");        //$NON-NLS-1$
               insertCellsItem = new JMenuItem(text);
@@ -658,7 +663,7 @@ public class DataToolTable extends DataTable {
               });
               popup.add(insertCellsItem);
               // paste insert cells item
-              if(pasteData!=null) {
+              if (pasteData!=null) {
                 text = ToolsRes.getString("DataToolTable.Popup.MenuItem.PasteInsertCells"); //$NON-NLS-1$
                 pasteInsertCellsItem = new JMenuItem(text);
                 pasteInsertCellsItem.setActionCommand(String.valueOf(col));
@@ -686,7 +691,7 @@ public class DataToolTable extends DataTable {
               popup.add(deleteCellsItem);
             }
             if(!isEmptyCells||(pasteData!=null)) {
-              if(popup.getComponentCount()>0) {
+              if (popup.getComponentCount()>0 && !dataToolTab.originShiftEnabled) {
                 popup.addSeparator();
               }
               if(!isEmptyCells) {
@@ -701,7 +706,7 @@ public class DataToolTable extends DataTable {
 
                 });
                 popup.add(copyCellsItem);
-                if(dataToolTab.userEditable&&!(data instanceof DataFunction)) {
+                if (dataToolTab.isUserEditable() && !(data instanceof DataFunction)) {
                   // cut cells item
                   text = ToolsRes.getString("DataToolTable.Popup.MenuItem.CutCells"); //$NON-NLS-1$
                   cutCellsItem = new JMenuItem(text);
@@ -714,9 +719,17 @@ public class DataToolTable extends DataTable {
 
                   });
                   popup.add(cutCellsItem);
+                  text = ToolsRes.getString("DataToolTable.Popup.MenuItem.DeleteContents");        //$NON-NLS-1$
+                  clearContentsItem = new JMenuItem(text);
+                  clearContentsItem.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                    	clearCellsAction.actionPerformed(null);
+                    }
+                  });
+                  popup.add(clearContentsItem);
                 }
               }
-              if(dataToolTab.userEditable&&(pasteData!=null)) {
+              if (dataToolTab.isUserEditable() && pasteData!=null) {
                 // paste cells item
                 text = ToolsRes.getString("DataToolTable.Popup.MenuItem.PasteCells"); //$NON-NLS-1$
                 pasteCellsItem = new JMenuItem(text);
@@ -725,11 +738,12 @@ public class DataToolTable extends DataTable {
                 popup.add(pasteCellsItem);
               }
             }
+            
           }
           // label cell clicked: set lead row and show row popup
           else {
             leadRow = row;
-            if(dataToolTab.userEditable) {
+            if(dataToolTab.isUserEditable()) {
               // insert row item
               text = ToolsRes.getString("DataToolTable.Popup.MenuItem.InsertRows"); //$NON-NLS-1$
               insertRowItem = new JMenuItem(text);
@@ -796,7 +810,7 @@ public class DataToolTable extends DataTable {
 
             });
             popup.add(copyRowsItem);
-            if(dataToolTab.userEditable) {
+            if(dataToolTab.isUserEditable()) {
               // cut row item
               text = ToolsRes.getString("DataToolTable.Popup.MenuItem.CutRows"); //$NON-NLS-1$
               cutRowsItem = new JMenuItem(text);
@@ -1110,7 +1124,6 @@ public class DataToolTable extends DataTable {
     boolean colSelected = false;
     for(int k = 0; k<cols.length; k++) {
       colSelected = colSelected || (cols[k]==xCol) || (cols[k]==yCol);
-//      colSelected = colSelected||(cols[k]==yCol);
     }
     if(!colSelected||(getSelectedRowCount()==0)) { // nothing selected
       xValues = x;
@@ -1690,6 +1703,13 @@ public class DataToolTable extends DataTable {
    */
   protected double[] replacePoints(Dataset dataset, int[] rows, double[] vals) {
     double[] replaced = new double[rows.length];
+    DataColumn column = null;
+    boolean shifted = false;
+    if (dataset instanceof DataColumn) {
+    	column = (DataColumn)dataset;
+    	shifted = column.isShifted();
+    	column.setShifted(false);
+    }
     double[] x = dataset.getXPoints();
     // determine required row count
     int count = x.length;
@@ -1709,6 +1729,9 @@ public class DataToolTable extends DataTable {
     }
     dataset.clear();
     dataset.append(x, y);
+    if (column!=null) {
+    	column.setShifted(shifted);
+    }
     dataToolTab.tabChanged(true);
     return replaced;
   }
@@ -1865,11 +1888,12 @@ public class DataToolTable extends DataTable {
     }
   }
   
+  /**
+   * Selects all cells in the table.
+   */
   public void selectAllCells() {
-    setRowSelectionInterval(0, getRowCount()-1);
-    setColumnSelectionInterval(1, getColumnCount()-1);
-    OSPLog.finest("selected row count "+getSelectedRowCount() //$NON-NLS-1$
-    		+"  selected column count "+getSelectedColumnCount()); //$NON-NLS-1$
+    selectAll();
+    requestFocusInWindow();
   }
 
   /**
@@ -1890,8 +1914,7 @@ public class DataToolTable extends DataTable {
     leadCol = 0;
     leadRow = 0;
     super.clearSelection();
-    OSPLog.finest("selected row count "+getSelectedRowCount() //$NON-NLS-1$
-    		+"  selected column count "+getSelectedColumnCount()); //$NON-NLS-1$
+    repaint();
   }
 
   /**
@@ -1916,12 +1939,13 @@ public class DataToolTable extends DataTable {
     // re-sort to restore row order
     sort(getSortedColumn());
     // restore selected rows and columns
-    if(rows.length>0) {
-      setSelectedModelRows(rows);
-    }
+    // important to select columns first!
     if(!cols.isEmpty()) {
       setSelectedColumnNames(cols);
     }    
+    if(rows.length>0) {
+      setSelectedModelRows(rows);
+    }
   }
   
   @Override
@@ -2463,7 +2487,7 @@ public class DataToolTable extends DataTable {
     }
 
     public boolean isCellEditable(int row, int col) {
-      return (col>0 && tab.userEditable && (!tab.originShiftEnabled || col>2));
+      return (col>0 && tab.isUserEditable());
     }
 
   }

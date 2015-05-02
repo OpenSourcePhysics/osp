@@ -125,12 +125,13 @@ public class DataColumn extends Dataset {
   	return shift;
   }
   
-  public void setShiftedValue(int i, double value) {
-  	if (i<0 || i>=getIndex()) return;
+  public boolean setShiftedValue(int i, double value) {
+  	if (i<0 || i>=getIndex()) return false;
   	double d = value-ypoints[i];
   	if (!Double.isNaN(d)) {
-  		setShift(d);
+  		return setShift(d);
   	}
+  	return false;
   }
 
   /**

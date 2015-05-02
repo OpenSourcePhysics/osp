@@ -206,8 +206,9 @@ public class FunctionTool extends JDialog {
    */
   public void setSelectedPanel(String name) {
     Object item = getDropdownItem(name);
-    if (item != null)
+    if (item != null) {
     	dropdown.setSelectedItem(item);
+    }
   }
 
   /**
