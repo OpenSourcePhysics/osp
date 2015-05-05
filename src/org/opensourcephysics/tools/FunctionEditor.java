@@ -1615,6 +1615,13 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
         popupField.setBackground(Color.WHITE);
     	}
       field.setBackground(Color.WHITE);
+      // revalidate table to keep cell widths correct (workaround)
+      Runnable runner = new Runnable() {
+        public synchronized void run() {
+        	table.revalidate();
+        }
+      };
+      SwingUtilities.invokeLater(runner);
       return field.getText();
     }
 

@@ -105,15 +105,18 @@ public class InitialValueEditor extends ParamEditor {
   protected String getVariablesString(String separator) {
     StringBuffer vars = new StringBuffer(""); //$NON-NLS-1$
     int init = vars.length();
-    boolean firstItem = true;
-    // add parameters, if any
-    String[] paramNames = paramEditor.getNames();
-    for(int i = 0; i<paramNames.length; i++) {
-      if(!firstItem) {
-        vars.append(" "); //$NON-NLS-1$
+    int row = table.getSelectedRow();
+    if (!"t".equals(table.getValueAt(row, 0))) { //$NON-NLS-1$
+      // add parameters, if any
+	    boolean firstItem = true;
+      String[] paramNames = paramEditor.getNames();
+      for(int i = 0; i<paramNames.length; i++) {
+        if(!firstItem) {
+          vars.append(" "); //$NON-NLS-1$
+        }
+        vars.append(paramNames[i]);
+        firstItem = false;
       }
-      vars.append(paramNames[i]);
-      firstItem = false;
     }
     if(vars.length()==init) {
       return ToolsRes.getString("FunctionPanel.Instructions.Help"); //$NON-NLS-1$

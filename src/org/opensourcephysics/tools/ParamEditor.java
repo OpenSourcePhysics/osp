@@ -143,11 +143,11 @@ public class ParamEditor extends FunctionEditor {
     		desc = null;
     	}
   		p.setDescription(desc);
-      for(int i = 0; i<objects.size(); i++) {
-        p = (Parameter) objects.get(i);
-        paramValues[i] = p.getValue();
-        paramDescriptions[i] = p.getDescription();
-      }
+//      for(int i = 0; i<objects.size(); i++) {
+//        p = (Parameter) objects.get(i);
+//        paramValues[i] = p.getValue();
+//        paramDescriptions[i] = p.getDescription();
+//      }
   		super.setDescription(obj, desc);
   	}
   }
