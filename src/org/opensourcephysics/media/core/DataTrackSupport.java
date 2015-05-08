@@ -78,14 +78,7 @@ public class DataTrackSupport {
   			return true;
   		}
   		// otherwise send handshake message and return
-  		XMLControl control = getMessageControl(id);
-  		control.setValue("handshake", true); //$NON-NLS-1$
-    	try {
-  			remoteTool.send(new LocalJob(control.toXML()), getSupportTool());
-  		} catch (RemoteException e) {
-  			return false;
-  		}
-  		return true;
+  		return sendHandshake(id);
   	}
   	
   	// if not running, launch Tracker in separate VM  	
@@ -119,12 +112,7 @@ public class DataTrackSupport {
 	      public void actionPerformed(ActionEvent e) {
 	      	if (getRemoteTool()!=null) {
 	      		timer.stop();
-	      		XMLControl control = getMessageControl(id);
-	      		control.setValue("handshake", true); //$NON-NLS-1$
-	        	try {
-	      			remoteTool.send(new LocalJob(control.toXML()), getSupportTool());
-	      		} catch (RemoteException ex) {
-	      		}
+	      		sendHandshake(id);
 	      	}
 	      }
       });
@@ -249,6 +237,23 @@ public class DataTrackSupport {
   }
   
 //____________________________ private methods _______________________________
+  
+  /**
+   * Sends a handshake message.
+   *
+   * @param id a number to identify the data source (typically hashcode())
+   */
+  private static boolean sendHandshake(int id) {
+		XMLControl control = getMessageControl(id);
+		control.setValue("handshake", true); //$NON-NLS-1$
+		control.setValue("jar_path", OSPRuntime.getLaunchJarPath()); //$NON-NLS-1$
+  	try {
+			remoteTool.send(new LocalJob(control.toXML()), getSupportTool());
+		} catch (RemoteException e) {
+			return false;
+		}
+		return true;
+  }
   
   /**
    * Starts a ProcessBuilder and handles its output and error streams.
