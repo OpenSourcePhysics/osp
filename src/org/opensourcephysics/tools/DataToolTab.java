@@ -47,6 +47,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractSpinnerModel;
@@ -129,13 +130,23 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	// static fields
   public final static String SHIFTED = "'"; //$NON-NLS-1$
   protected static NumberFormat correlationFormat = NumberFormat.getInstance();
+  private static final Cursor SELECT_CURSOR, SELECT_REMOVE_CURSOR, SELECT_ZOOM_CURSOR;
   
   static {
     if(correlationFormat instanceof DecimalFormat) {
     	DecimalFormat format = (DecimalFormat) correlationFormat;
     	format.applyPattern("0.000"); //$NON-NLS-1$
     }
-
+    // create cursors
+    String imageFile = "/org/opensourcephysics/resources/tools/images/selectcursor.gif";                     //$NON-NLS-1$
+    Image im = ResourceLoader.getImage(imageFile);
+    SELECT_CURSOR = Toolkit.getDefaultToolkit().createCustomCursor(im, new Point(0, 0), "Add points"); //$NON-NLS-1$
+    imageFile = "/org/opensourcephysics/resources/tools/images/selectremovecursor.gif";                     //$NON-NLS-1$
+    im = ResourceLoader.getImage(imageFile);
+    SELECT_REMOVE_CURSOR = Toolkit.getDefaultToolkit().createCustomCursor(im, new Point(0, 0), "Remove points"); //$NON-NLS-1$
+    imageFile = "/org/opensourcephysics/resources/tools/images/selectzoomcursor.gif";                     //$NON-NLS-1$
+    im = ResourceLoader.getImage(imageFile);
+    SELECT_ZOOM_CURSOR = Toolkit.getDefaultToolkit().createCustomCursor(im, new Point(8, 8), "Zoom"); //$NON-NLS-1$
   }
   
   // instance fields
@@ -1648,13 +1659,20 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     
     // create mouse listener for selecting data points in plot
     MouseInputListener mouseSelector = new MouseInputAdapter() {
-      Set<Integer> rowsInside = new HashSet<Integer>(); // points inside selectionBox
-      Set<Integer> recent = new HashSet<Integer>();     // points recently added or removed
-      boolean boxActive, selectionChanged;
+    	TreeSet<Integer> rowsInside = new TreeSet<Integer>(); // points inside selectionBox
+    	TreeSet<Integer> recent = new TreeSet<Integer>();     // points recently added or removed
+      boolean boxActive, selectionChanged, readyToFindHits, selectionBoxChanged;
       Interactive ia;
+      Timer timerToFindHits;
+      boolean removeHits;
       
       @Override
       public void mousePressed(MouseEvent e) {
+      	if (OSPRuntime.isPopupTrigger(e)) {
+      		boxActive = false;
+      		plot.setMouseCursor(SELECT_ZOOM_CURSOR);
+      		return;
+      	}
         ia = plot.getInteractive();
         if (ia==plot.origin) {
           plot.selectionBox.visible = false;
@@ -1720,6 +1738,14 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         }
         boxActive = !OSPRuntime.isPopupTrigger(e);
         if(boxActive) {
+        	if (timerToFindHits==null) {
+        		timerToFindHits = new Timer(200, new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								findHits(removeHits);
+							}        			
+        		});
+        	}
           // prepare to drag
           if(!(e.isControlDown()||e.isShiftDown())) {
             dataTable.clearSelection();
@@ -1727,12 +1753,16 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
           // prefill rowsInside with currently selected rows
           rowsInside.clear();
           for(int row : dataTable.getSelectedModelRows()) {
-            rowsInside.add(new Integer(row));
+            rowsInside.add(row);
           }
           recent.clear();
           Point p = e.getPoint();
           plot.selectionBox.xstart = p.x;
           plot.selectionBox.ystart = p.y;
+          readyToFindHits = true;
+          removeHits = e.isShiftDown() && e.isControlDown();
+          timerToFindHits.start();
+          plot.setMouseCursor(removeHits? SELECT_REMOVE_CURSOR: SELECT_CURSOR);
         }
       }
       
@@ -1793,41 +1823,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         Point mouse = e.getPoint();
         plot.selectionBox.visible = true;
         plot.selectionBox.setSize(mouse.x-plot.selectionBox.xstart, mouse.y-plot.selectionBox.ystart);
-        // look for data points inside box
-        double[] xpoints = data.getXPoints();
-        double[] ypoints = data.getYPoints();
-        for(int i = 0; i<xpoints.length; i++) {
-          double xp = plot.xToPix(xpoints[i]);
-          double yp = plot.yToPix(ypoints[i]);
-          Integer index = dataTable.workingRows.get(new Integer(i));
-          int row = index.intValue();
-          // if a data point is inside the box, add it
-          if(plot.selectionBox.contains(xp, yp)) {
-            if(!rowsInside.contains(index)&&!recent.contains(index)) {
-              if(rowsInside.isEmpty()) {
-                ListSelectionModel model = dataTable.getColumnModel().getSelectionModel();
-                int col = dataTable.getXColumn();
-                model.setSelectionInterval(col, col);
-                col = dataTable.getYColumn();
-                model.addSelectionInterval(col, col);
-              }
-              rowsInside.add(index);
-              recent.add(index);
-              dataTable.getSelectionModel().addSelectionInterval(row, row);
-            }
-          }
-          // if a previously added data point is outside the box, remove it
-          else if(rowsInside.contains(index)&&recent.contains(index)) { // point should be removed
-            dataTable.getSelectionModel().removeSelectionInterval(row, row);
-            rowsInside.remove(index);
-            recent.remove(index);
-            dataTable.getSelectionModel().removeSelectionInterval(row, row);
-            if(rowsInside.isEmpty()) {
-              dataTable.getColumnModel().getSelectionModel().removeSelectionInterval(0, dataTable.getColumnCount()-1);
-            }
-          }
-        }
-        data = dataTable.getSelectedData();
+        selectionBoxChanged = true;
+        removeHits = e.isShiftDown() && e.isControlDown();
+        plot.setMouseCursor(removeHits? SELECT_REMOVE_CURSOR: SELECT_CURSOR);
         plot.repaint();
       }
       
@@ -1871,6 +1869,13 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
           }
         }
         plot.repaint();
+        if (timerToFindHits!=null) {
+        	timerToFindHits.stop();
+        }
+        if (selectionBoxChanged) {
+        	findHits(removeHits);
+        	selectionBoxChanged = false;
+        }
       }
       
       @Override
@@ -1885,7 +1890,72 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     	@Override
     	public void mouseEntered(MouseEvent e) {
     		dataTable.dataToolTab.refreshStatusBar(null);
-    	}   	
+    	} 
+    	
+      private void findHits(final boolean subtract) {
+      	if (!readyToFindHits || !selectionBoxChanged) return;
+      	selectionBoxChanged = false;
+      	Runnable runner = new Runnable() {
+      		public void run() {
+          	HighlightableDataset data = dataTable.workingData;
+    	      double[][] screenPoints = data.getScreenCoordinates();
+    	      Map<Integer, Integer> workingRows = dataTable.workingRows;
+          	if (data==null || workingRows==null) return;
+            ListSelectionModel columnSelectionModel = dataTable.getColumnModel().getSelectionModel();
+            for(int i = 0; i<screenPoints[0].length; i++) {
+              Integer row = workingRows.get(i);
+              if (row==null) {
+              	readyToFindHits = true;      			
+              	return;
+              }
+              // if a data point is inside the box, add/remove it
+              if(!Double.isNaN(screenPoints[1][i]) 
+              		&& plot.selectionBox.contains(screenPoints[0][i], screenPoints[1][i])) {
+                if (rowsInside.isEmpty()) {
+                	columnSelectionModel.setSelectionInterval(1, 2);
+                }
+                if (subtract) {
+                	rowsInside.remove(row);
+                }
+                else {
+                  rowsInside.add(row);
+                }
+                recent.add(row);
+              }
+              // if a recently added data point is outside the box, remove it
+              else if (recent.contains(row)) {
+                if (subtract) {
+                	rowsInside.add(row);
+                }
+                else {
+                  rowsInside.remove(row);
+                }
+                recent.remove(row);
+              }
+            }
+            if (rowsInside.isEmpty()) {
+            	columnSelectionModel.removeSelectionInterval(0, dataTable.getColumnCount()-1);
+							dataTable.getSelectionModel().clearSelection();
+              dataTable.getSelectedData(); // updates highlights      	
+            }
+            else {
+            	int[] rows = new int[rowsInside.size()];
+            	int i = 0;
+            	for (int next: rowsInside) {
+            		rows[i] = next;
+            		i++;
+            	}
+            	dataTable.setSelectedModelRows(rows);
+            }
+            plot.repaint();
+          	readyToFindHits = true;      			
+      		}
+      	};
+      	// pig should this be in separate thread?
+      	runner.run();
+//      	new Thread(runner).start();
+      }
+
     };
     plot.addMouseListener(mouseSelector);
     plot.addMouseMotionListener(mouseSelector);
@@ -2956,6 +3026,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       	
       	@Override
       	public void keyPressed(KeyEvent e) {
+      		if (plot.getCursor()==SELECT_CURSOR && e.isControlDown() && e.isShiftDown()) {
+            plot.setMouseCursor(SELECT_REMOVE_CURSOR);       			
+      		}
           if(e.getKeyCode()==KeyEvent.VK_CONTROL) {
           	if (toggleMeasurement) return;
           	toggleMeasurement = true;
@@ -3050,6 +3123,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       	
   			@Override
   			public void keyReleased(KeyEvent e) {
+      		if (plot.getCursor()==SELECT_REMOVE_CURSOR && (!e.isControlDown() || !e.isShiftDown())) {
+            plot.setMouseCursor(SELECT_CURSOR);       			
+      		}
           if (e.getKeyCode()==KeyEvent.VK_CONTROL) {
           	if (!toggleMeasurement) return;
           	toggleMeasurement = false;

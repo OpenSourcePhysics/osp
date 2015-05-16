@@ -88,6 +88,8 @@ public class DataTable extends JTable implements ActionListener {
   protected int labelColumnWidth=40, minimumDataColumnWidth=24;
   protected NumberFormatDialog formatDialog;
   protected int clickCountToSort = 1;
+  protected int sortedColumn;	
+
 
   /**
    *  Constructs a DatTable with a default data model
@@ -129,7 +131,10 @@ public class DataTable extends JTable implements ActionListener {
           TableColumnModel tcm = getColumnModel();
           int vc = tcm.getColumnIndexAtX(e.getX());
           int mc = convertColumnIndexToModel(vc);
-          decorator.sort(mc);
+          if (sortedColumn!=mc) {
+	          decorator.sort(mc);
+	          sortedColumn = mc;
+          }
         }
       }
 
@@ -261,6 +266,7 @@ public class DataTable extends JTable implements ActionListener {
    */
   public void sort(int col) {
     decorator.sort(col);
+    sortedColumn = col;
   }
 
   /**

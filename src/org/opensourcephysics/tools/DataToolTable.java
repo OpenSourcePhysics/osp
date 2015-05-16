@@ -114,7 +114,7 @@ public class DataToolTable extends DataTable {
   MouseAdapter tableMouseListener;
   Color selectedBG, selectedFG, unselectedBG, selectedHeaderFG, selectedHeaderBG, rowBG;
   int focusRow, focusCol, mouseRow, mouseCol;
-  int leadCol = 0, leadRow = 0;                                            // used for shift-click selections
+  int leadCol = 0, leadRow = 0, prevSortedColumn;                                            // used for shift-click selections
   int pasteW, pasteH;
   HashMap<String, double[]> pasteValues = new HashMap<String, double[]>();
   DatasetManager pasteData = null;
@@ -299,6 +299,7 @@ public class DataToolTable extends DataTable {
     });
     // mouse listener for table header
     getTableHeader().addMouseListener(new MouseAdapter() {
+    	
       public void mouseClicked(MouseEvent e) {
       	if (getRowCount()==0) return;        	
         final java.awt.Point mousePt = e.getPoint();
@@ -486,8 +487,13 @@ public class DataToolTable extends DataTable {
           // sort by row number
           sort(0);
         }
-        // single click label column: do nothing
-        else if(col==labelCol && getSortedColumn()==col) {
+        // single click label column: refresh selected rows
+        else if (col==labelCol && getSortedColumn()==col) {
+        	if (col!=prevSortedColumn) {
+	          int[] rows = getSelectedModelRows();
+	          setSelectedModelRows(rows);
+	          prevSortedColumn = col;      	
+          }
         }
         // control-click: add/remove columns to selection
         else if (e.isControlDown()) {
@@ -510,8 +516,11 @@ public class DataToolTable extends DataTable {
         }
         // single click: refresh selected rows
         else {
-          int[] rows = getSelectedModelRows();
-          setSelectedModelRows(rows);
+        	if (col!=prevSortedColumn) {
+	          int[] rows = getSelectedModelRows();
+	          setSelectedModelRows(rows);
+	          prevSortedColumn = col;
+        	}
         }
         getSelectedData();
         // save selected columns
@@ -1218,12 +1227,31 @@ public class DataToolTable extends DataTable {
       return;
     }
     removeRowSelectionInterval(0, getRowCount()-1);
+    TreeSet<Integer> viewRows = new TreeSet<Integer>();
     for(int i = 0; i<rows.length; i++) {
       int row = getViewRow(rows[i]);
       if(row>-1) {
-        addRowSelectionInterval(row, row);
+        viewRows.add(row);
       }
     }
+  	int start = -1, end = -1;
+		for (int next: viewRows) {
+			if (start==-1) {
+				start = next;
+				end = start;
+				continue;
+			}
+			if (next==end+1) {
+				end = next;
+				continue;
+			}
+			addRowSelectionInterval(start, end);
+			start = next;
+			end = next;
+		}
+		if (start>-1) {
+			addRowSelectionInterval(start, end);
+		}
   }
 
   /**
