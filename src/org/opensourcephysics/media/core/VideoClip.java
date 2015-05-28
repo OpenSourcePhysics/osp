@@ -117,6 +117,24 @@ public class VideoClip {
   		return (String)video.getProperty("absolutePath"); //$NON-NLS-1$
     return videoPath;
   }
+  
+  /**
+   * Imports a video without changing the existing start frame, etc. 
+   *
+   * @param vid the video to import
+   */
+  public void importVideo(Video vid) {
+    video = vid;
+    if(video!=null) {
+      video.setProperty("videoclip", this); //$NON-NLS-1$
+      if(video.getFrameCount()>1) {
+      	int last = getLastFrameNumber();
+        setStepCount(Math.min(last/getStepSize(), getStepCount()));
+      }
+    }
+    updateArray();
+  	
+  }
 
   /**
    * Sets the start frame number.
