@@ -510,7 +510,11 @@ public class DataToolPropsTable extends JTable {
    */
   class PropsTableModel extends AbstractTableModel {
     public String getColumnName(int col) {
-      return dataTable.getColumnName(col);
+    	String name = dataTable.getColumnName(col);
+    	if (name.endsWith(DataToolTab.SHIFTED)) {
+    		name = name.substring(0, name.length()-DataToolTab.SHIFTED.length());
+    	}
+      return name;
     }
 
     public int getRowCount() {
@@ -587,7 +591,7 @@ public class DataToolPropsTable extends JTable {
 
     // changes the value of a cell
     public void setValueAt(Object value, int row, int col) {
-      if(value instanceof Boolean) {
+      if (value instanceof Boolean) {
         dataTable.dataToolTab.tabChanged(true);
         boolean selected = ((Boolean) value).booleanValue();
         String name = getColumnName(col);

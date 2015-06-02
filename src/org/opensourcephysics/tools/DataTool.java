@@ -72,6 +72,7 @@ import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.controls.XMLProperty;
 import org.opensourcephysics.controls.XMLTree;
 import org.opensourcephysics.controls.XMLTreeChooser;
+import org.opensourcephysics.desktop.OSPDesktop;
 import org.opensourcephysics.display.Data;
 import org.opensourcephysics.display.DataFunction;
 import org.opensourcephysics.display.Dataset;
@@ -98,8 +99,10 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   protected static int buttonHeight = defaultButtonHeight;
   protected static String[] delimiters = new String[] {" ", "\t", ",", ";"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
   protected static TextFrame helpFrame;
-  protected static String helpName = "data_tool_help.html";                                 //$NON-NLS-1$
-  protected static String helpBase = "http://www.opensourcephysics.org/online_help/tools/"; //$NON-NLS-1$
+//  protected static String helpName = "data_tool_help.html";                                 //$NON-NLS-1$
+//  protected static String helpBase = "http://www.opensourcephysics.org/online_help/tools/"; //$NON-NLS-1$
+  protected static String helpName = "datatool/datatool_help.html";                                 //$NON-NLS-1$
+  protected static String helpBase = "http://www.cabrillo.edu/~dbrown/OSP/"; //$NON-NLS-1$
   private static ArrayList<Data> processedData = new ArrayList<Data>();
   
   // instance fields
@@ -156,7 +159,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   protected FitBuilder fitBuilder;
   protected boolean isLoading = false;
   protected JButton loadDataFunctionsButton, saveDataFunctionsButton;
-
+  protected boolean slopeExtended = false;
 
   static {
     DATATOOL = new DataTool();
@@ -184,13 +187,21 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   public static void main(String[] args) {
     DATATOOL.exitOnClose = true;
     DATATOOL.saveChangesOnClose = true;
-    DATATOOL.setVisible(true);
     if((args!=null)&&(args.length>0)&&(args[0]!=null)) {
+      DATATOOL.setVisible(true);
       DATATOOL.open(args[0]);
     } else {
-      DataToolTab tab = DATATOOL.createTab(null);
-      tab.setUserEditable(true);
-      DATATOOL.addTab(tab);
+    	DATATOOL.addWindowListener(new WindowAdapter() {
+    		@Override
+        public void windowOpened(WindowEvent e) {
+        	if (DATATOOL.getTabCount()==0) {
+            DataToolTab tab = DATATOOL.createTab(null);
+            tab.setUserEditable(true);
+            DATATOOL.addTab(tab);
+        	}
+        }
+    	});
+      DATATOOL.setVisible(true);
     }
     
   }
@@ -2113,27 +2124,31 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   }
 
   /**
-   * Shows the help frame and displays the specified help file.
-   *
-   * @param fileName the name of the help file
+   * Shows the DataTool help.
    */
-  protected static void showHelp(String fileName) {
+  protected static void showHelp() {
+  	String fileName = helpName;
     String helpPath = XML.getResolvedPath(fileName, helpBase);
-    if(ResourceLoader.getResource(helpPath)==null) {
+    if (ResourceLoader.getResource(helpPath)!=null) {
+	    // show help in desktop browser
+	    OSPDesktop.displayURL(helpPath);
+    }
+    else {
+    	fileName = "data_tool_help.html"; //$NON-NLS-1$
       String classBase = "/org/opensourcephysics/resources/tools/html/"; //$NON-NLS-1$
       helpPath = XML.getResolvedPath(fileName, classBase);
+	    if ((helpFrame==null)||!helpPath.equals(helpFrame.getTitle())) {
+		    helpFrame = new TextFrame(helpPath);
+		    helpFrame.enableHyperlinks();
+		    helpFrame.setSize(800, 600);
+		    // center on the screen
+		    Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+		    int x = (dim.width-helpFrame.getBounds().width)/2;
+		    int y = (dim.height-helpFrame.getBounds().height)/2;
+		    helpFrame.setLocation(x, y);
+		  }
+		  helpFrame.setVisible(true);
     }
-    if((helpFrame==null)||!helpPath.equals(helpFrame.getTitle())) {
-      helpFrame = new TextFrame(helpPath);
-      helpFrame.enableHyperlinks();
-      helpFrame.setSize(760, 560);
-      // center on the screen
-      Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-      int x = (dim.width-helpFrame.getBounds().width)/2;
-      int y = (dim.height-helpFrame.getBounds().height)/2;
-      helpFrame.setLocation(x, y);
-    }
-    helpFrame.setVisible(true);
   }
 
   /**
@@ -2505,7 +2520,9 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     undoItem.setAccelerator(KeyStroke.getKeyStroke('Z', keyMask));
     undoItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        getSelectedTab().undoManager.undo();
+      	if (getSelectedTab().undoManager.canUndo()) {
+      		getSelectedTab().undoManager.undo();
+      	}
       }
 
     });
@@ -2515,7 +2532,9 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     redoItem.setAccelerator(KeyStroke.getKeyStroke('Y', keyMask));
     redoItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        getSelectedTab().undoManager.redo();
+      	if (getSelectedTab().undoManager.canRedo()) {
+      		getSelectedTab().undoManager.redo();
+      	}
       }
 
     });
@@ -2667,10 +2686,9 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     displayMenu = new JMenu();
     menubar.add(displayMenu);
     languageMenu = new JMenu();
-    // get resource before installed locales so that launch jar is not null
-    String base = "/org/opensourcephysics/resources/tools/html/"; //$NON-NLS-1$
-    String help = XML.getResolvedPath(helpName, base);
-    ResourceLoader.getResource(help);
+    // get jar resource before installed locales so that launch jar is not null
+    String imagePath = "/org/opensourcephysics/resources/tools/images/open.gif"; //$NON-NLS-1$
+    ResourceLoader.getResource(imagePath);
     final Locale[] locales = OSPRuntime.getInstalledLocales();
     Action languageAction = new AbstractAction() {
       public void actionPerformed(ActionEvent e) {
@@ -2726,7 +2744,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     helpItem.setAccelerator(KeyStroke.getKeyStroke('H', keyMask));
     helpItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        showHelp(helpName);
+        showHelp();
       }
 
     });

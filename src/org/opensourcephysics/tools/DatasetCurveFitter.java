@@ -10,7 +10,8 @@ import java.text.*;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.AffineTransform;
+import java.awt.font.FontRenderContext;
+import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -20,7 +21,6 @@ import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import javax.swing.table.*;
 
 import org.opensourcephysics.display.*;
-import org.opensourcephysics.media.core.TPoint;
 import org.opensourcephysics.numerics.*;
 
 /**
@@ -153,14 +153,16 @@ public class DatasetCurveFitter extends JPanel {
 	    var = TeXParser.removeSubscripting(var);
 	    fitBuilder.setDefaultVariables(new String[] {var});
 	    if (!isActive) { // if active, regression done in fit method
-	    	double x0 = 0, y0 = 0; 
-	    	if (tab!=null && tab.axesVisible && tab.plot!=null) {
-	    		TPoint origin = tab.plot.origin;
-	    		x0 = -origin.getX();
-	    		y0 = -origin.getY();
-	    	}
-	      double[] x = shiftValues(dataset.getValidXPoints(), x0);
-	      double[] y = shiftValues(dataset.getValidYPoints(), y0);
+//	    	double x0 = 0, y0 = 0; 
+//	    	if (tab!=null && tab.dataShiftEnabled && tab.plot!=null) {
+//	    		TPoint origin = tab.plot.origin;
+//	    		x0 = -origin.getX();
+//	    		y0 = -origin.getY();
+//	    	}
+//	      double[] x = shiftValues(dataset.getValidXPoints(), x0);
+//	      double[] y = shiftValues(dataset.getValidYPoints(), y0);
+	    	double[] x = dataset.getValidXPoints();
+	    	double[] y = dataset.getValidYPoints();
 	      doLinearRegression(x, y, false);
 	      refreshStatusBar();
 	    }
@@ -244,32 +246,27 @@ public class DatasetCurveFitter extends JPanel {
     }
     autofitCheckBox.setEnabled(true);
     paramTable.setEnabled(true);
-  	double x0 = 0, y0 = 0; 
-  	if (tab!=null && tab.axesVisible && tab.plot!=null) {
-  		TPoint origin = tab.plot.origin;
-  		x0 = -origin.getX();
-  		y0 = -origin.getY();
-  	}
-    double[] x = shiftValues(dataset.getValidXPoints(), x0);
-    double[] y = shiftValues(dataset.getValidYPoints(), y0);
+
+  	double[] x = dataset.getValidXPoints();
+  	double[] y = dataset.getValidYPoints();
     double devSq = 0;
-    // autofit if checkbox is selected
     double[] prevParams = null;
     // get deviation before fitting
     double prevDevSq = getDevSquared(fit, x, y);
     boolean isLinearFit = false;
-    if(autofitCheckBox.isSelected() && !Double.isNaN(prevDevSq)) {
+    // autofit if checkbox is selected
+    if (autofitCheckBox.isSelected() && !Double.isNaN(prevDevSq)) {
       if(fit instanceof KnownPolynomial) {
         KnownPolynomial poly = (KnownPolynomial) fit;
         poly.fitData(x, y);
         isLinearFit = poly.degree()==1;
       } 
-      else if(fit instanceof UserFunction) {
+      else if (fit instanceof UserFunction) {
         // use HessianMinimize to autofit user function 
         UserFunction f = (UserFunction) fit;
         double[] params = new double[f.getParameterCount()];
-        // can't autofit if no parameters
-        if(params.length>0) {
+        // can't autofit if no parameters or data length < parameter count 
+        if (params.length>0 && params.length<=x.length && params.length<=y.length) {
           MinimizeUserFunction minFunc = new MinimizeUserFunction(f, x, y);
           prevParams = new double[params.length];
           for(int i = 0; i<params.length; i++) {
@@ -353,7 +350,7 @@ public class DatasetCurveFitter extends JPanel {
    */
   public void refreshStatusBar() {
   	if (tab!=null && tab.statsCheckbox.isSelected())
-  		tab.refreshStatusBar();
+  		tab.refreshStatusBar(tab.getCorrelationString());
   }
 
   /**
@@ -860,7 +857,7 @@ public class DatasetCurveFitter extends JPanel {
     fit = fitMap.get(name);
     if(fit!=null) {
       FunctionDrawer prev = drawer;
-      drawer = new OffsetFunctionDrawer(fit);
+      drawer = new FunctionDrawer(fit);
       drawer.setColor(color);
       paramTable.tableChanged(null);
       // construct equation string
@@ -927,21 +924,21 @@ public class DatasetCurveFitter extends JPanel {
     return uf;    	
   }
   
-  /**
-   * Shifts data values by a fixed offset
-   * 
-   * @param values an array of values
-   * @param offset the shift
-   * @return an array with shifted values
-   */
-  private double[] shiftValues(double[] values, double offset) {
-  	if (offset==0) return values;
-  	for (int i=0; i<values.length; i++) {
-  		values[i] += offset;
-  	}
-  	return values;
-  }
-  
+//  /**
+//   * Shifts data values by a fixed offset
+//   * 
+//   * @param values an array of values
+//   * @param offset the shift
+//   * @return an array with shifted values
+//   */
+//  private double[] shiftValues(double[] values, double offset) {
+//  	if (offset==0) return values;
+//  	for (int i=0; i<values.length; i++) {
+//  		values[i] += offset;
+//  	}
+//  	return values;
+//  }
+//  
   /**
    * Gets the total deviation squared between function and data
    */
@@ -1050,7 +1047,7 @@ public class DatasetCurveFitter extends JPanel {
 			}
 			refreshFitDropDown();
 		}       		
-  	
+    refreshFitMap();  	
   }
   
   /**
@@ -1095,87 +1092,8 @@ public class DatasetCurveFitter extends JPanel {
     return colorDialog;
   }
 
-  // _______________________ inner classes __________________________
+//__________________________ inner classes _____________________________
   
-//    /**
-//     * Inner fit builder class.
-//     */
-//  class FitBuilder extends FunctionTool {
-//  	
-//  	protected FitBuilder() {
-//  		super(DatasetCurveFitter.this, new Component[] {loadButton, saveButton,
-//  				 new JToolBar.Separator(), newFitButton, cloneFitButton, deleteFitButton});
-//  	}
-//  	
-//  	public void refreshDropdown(String name) {
-//	  	deleteFitButton.setEnabled(!getPanelNames().isEmpty());
-//	  	if (getPanelNames().isEmpty()) {
-//		  	String label = ToolsRes.getString("FitFunctionPanel.Label"); //$NON-NLS-1$
-//	      dropdownLabel.setText(label+":"); //$NON-NLS-1$
-//	  	}
-//	  	super.refreshDropdown(name);
-//	  }  			
-//  	
-//  	protected void refreshGUI() {
-//	  	super.refreshGUI();
-//	  	setTitle(ToolsRes.getString("DatasetCurveFitter.FitBuilder.Title")); //$NON-NLS-1$
-//	  	if (getPanelNames().isEmpty()) {
-//		  	String label = ToolsRes.getString("FitFunctionPanel.Label"); //$NON-NLS-1$
-//	      dropdownLabel.setText(label+":"); //$NON-NLS-1$
-//	  	}
-//			saveButton.setEnabled(this.getPanelNames().size()>0);
-//			loadButton.setToolTipText(ToolsRes.getString("DatasetCurveFitter.FitBuilder.Button.Load.Tooltip")); //$NON-NLS-1$
-//			saveButton.setToolTipText(ToolsRes.getString("DatasetCurveFitter.FitBuilder.Button.Save.Tooltip")); //$NON-NLS-1$
-//		} 
-//  	
-//  	protected boolean chooseFitFunctions(XMLControl control, String description) {
-//      ListChooser listChooser = new ListChooser(
-//          ToolsRes.getString("DatasetCurveFitter.FitBuilder."+description+".Title"), //$NON-NLS-1$ //$NON-NLS-2$
-//          ToolsRes.getString("DatasetCurveFitter.FitBuilder."+description+".Message"), //$NON-NLS-1$ //$NON-NLS-2$
-//          fitBuilder);
-//      // choose the elements and load the function tool
-//      ArrayList<XMLControl> originals = new ArrayList<XMLControl>();
-//      ArrayList<XMLControl> choices = new ArrayList<XMLControl>();
-//      ArrayList<String> names = new ArrayList<String>();
-//      ArrayList<String> expressions = new ArrayList<String>();
-//      for (Object next: control.getPropertyContent()) {
-//      	if (next instanceof XMLProperty) {
-//      		XMLProperty prop = (XMLProperty)next;
-//          for (Object obj: prop.getPropertyContent()) {
-//          	if (obj instanceof XMLProperty) {
-//          		XMLProperty f = (XMLProperty)obj;
-//          		XMLControl function = f.getChildControls()[0];
-//          		originals.add(function);
-//          		choices.add(function);
-//          		names.add(function.getString("name")); //$NON-NLS-1$
-//          		String desc = function.getString("description"); //$NON-NLS-1$
-//          		expressions.add(desc);
-//          	}
-//          }
-//      	}            	
-//      }
-//      // select all by default
-//      boolean[] selected = new boolean[choices.size()];
-//      for (int i = 0; i<selected.length; i++) {
-//      	selected[i] = true;
-//      }
-//      if (listChooser.choose(choices, names, expressions, selected)) {
-//        // compare choices with originals and remove unwanted object content
-//        for (XMLControl next: originals) {
-//          if (!choices.contains(next)) {
-//            XMLProperty prop = next.getParentProperty();
-//            XMLProperty parent = prop.getParentProperty();
-//            parent.getPropertyContent().remove(prop);
-//          }
-//        }
-//        return true;
-//      }
-//      return false;
-//  	}
-//  	
-//  };
-//
-
   /**
    * A table to display and edit parameters.
    */
@@ -1186,10 +1104,6 @@ public class DatasetCurveFitter extends JPanel {
      */
     public ParamTable(ParamTableModel model) {
       super(model);
-//      setPreferredScrollableViewportSize(new Dimension(120, 50));
-//      getColumnModel().getColumn(0).setPreferredWidth(150);
-//      getColumnModel().getColumn(1).setPreferredWidth(150);
-//      getColumnModel().getColumn(2).setWidth(20);
       setGridColor(Color.blue);
       JTableHeader header = getTableHeader();
       header.setForeground(Color.blue);
@@ -1582,10 +1496,12 @@ public class DatasetCurveFitter extends JPanel {
   /**
    * A JTextField that accepts only numbers.
    */
-  class NumberField extends JTextField {
+  static class NumberField extends JTextField {
     // instance fields
     protected NumberFormat format = NumberFormat.getInstance();
     protected double prevValue;
+    protected String pattern = "0"; //$NON-NLS-1$
+    protected int preferredWidth;
 
     /**
      * Constructor NumberField
@@ -1620,44 +1536,40 @@ public class DatasetCurveFitter extends JPanel {
     }
     
     public void applyPattern(String pattern) {
-      if(format instanceof DecimalFormat) {
+      if (format instanceof DecimalFormat) {
         try {
         	// catch occasional exceptions thrown when opening a trk file...
 					((DecimalFormat) format).applyPattern(pattern);
+					this.pattern = pattern;
 				} catch (Exception e) {
 				}
       }
     }
-
-  }
-  
-  class OffsetFunctionDrawer extends FunctionDrawer {
-  	
-  	OffsetFunctionDrawer(Function f) {
-  		super(f);
-  	}
-  	
-    @Override
-    public void draw(DrawingPanel panel, Graphics g) {
-      if(!isMeasured()) {
-        checkRange(panel);
-      }
-      Graphics2D g2 = (Graphics2D) g;
-      g2.setColor(color);
-      // transform from world to pixel coordinates
-      AffineTransform transform = panel.getPixelTransform();
-      if (tab!=null && tab.axesVisible && tab.plot!=null) {
-      	TPoint origin = tab.plot.origin;
-	      AffineTransform shifter = AffineTransform.getTranslateInstance(origin.getX(), origin.getY());
-      	transform.concatenate(shifter);
-      }
-      Shape s = getPath().createTransformedShape(transform);
-      g2.draw(s);
+    
+    public String getPattern() {
+      return pattern;    	
+    }
+    
+    public NumberFormat getFormat() {
+    	return format;
+    }
+    
+    protected void refreshPreferredWidth() {
+  		// determine preferred width of field
+      FontRenderContext frc = new FontRenderContext(null, false, false); 
+      Rectangle2D rect = getFont().getStringBounds(getText(), frc);
+      preferredWidth = (int)rect.getWidth()+8;
     }
 
-
-  	
+  	@Override
+  	public Dimension getPreferredSize() {
+  		Dimension dim = super.getPreferredSize();
+  		dim.width = Math.max(dim.width, preferredWidth);
+  		return dim;
+  	}
   }
+  
+//_______________________________ static methods _________________________________
   
   /**
    * Sets the default fit functions. Instances of DatasetCurveFitter instantiated AFTER

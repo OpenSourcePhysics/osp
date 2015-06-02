@@ -57,6 +57,8 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
+import org.opensourcephysics.tools.DataToolTab;
+
 /**
  *  DataTable displays multiple TableModels in a table. The first TableModel
  *  usually contains the independent variable for the other TableModel so that
@@ -86,6 +88,8 @@ public class DataTable extends JTable implements ActionListener {
   protected int labelColumnWidth=40, minimumDataColumnWidth=24;
   protected NumberFormatDialog formatDialog;
   protected int clickCountToSort = 1;
+  protected int sortedColumn;	
+
 
   /**
    *  Constructs a DatTable with a default data model
@@ -127,7 +131,10 @@ public class DataTable extends JTable implements ActionListener {
           TableColumnModel tcm = getColumnModel();
           int vc = tcm.getColumnIndexAtX(e.getX());
           int mc = convertColumnIndexToModel(vc);
-          decorator.sort(mc);
+          if (sortedColumn!=mc) {
+	          decorator.sort(mc);
+	          sortedColumn = mc;
+          }
         }
       }
 
@@ -156,6 +163,7 @@ public class DataTable extends JTable implements ActionListener {
     } else {
       precisionRenderersByColumnName.put(columnName, new PrecisionRenderer(pattern));
     }
+    firePropertyChange("format", null, columnName); //$NON-NLS-1$
   }
 
   /**
@@ -258,6 +266,7 @@ public class DataTable extends JTable implements ActionListener {
    */
   public void sort(int col) {
     decorator.sort(col);
+    sortedColumn = col;
   }
 
   /**
@@ -379,6 +388,10 @@ public class DataTable extends JTable implements ActionListener {
 	      while(keys.hasNext()) {
 	        String columnName = keys.next();
 	        if(tableColumn.getHeaderValue().equals(columnName)) {
+	        	baseRenderer = precisionRenderersByColumnName.get(columnName);
+	        	break;
+	        }
+	        else if(tableColumn.getHeaderValue().equals(columnName+DataToolTab.SHIFTED)) {
 	        	baseRenderer = precisionRenderersByColumnName.get(columnName);
 	        	break;
 	        }

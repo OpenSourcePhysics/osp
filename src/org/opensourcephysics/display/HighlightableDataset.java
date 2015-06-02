@@ -30,8 +30,9 @@ public class HighlightableDataset extends Dataset implements Interactive {
   boolean[] previous;
   Color highlightColor = new Color(255, 255, 0, 128);
   Shape highlightShape;
-  Shape[] hitShapes;
+  Shape[] hitShapes = new Shape[0];
   int hitIndex = -1;
+  double[][] screenCoordinates = new double[2][];
 
   /**
    * Default constructor.
@@ -189,12 +190,21 @@ public class HighlightableDataset extends Dataset implements Interactive {
       g2.clipRect(viewRect.x, viewRect.y, viewRect.x+viewRect.width, viewRect.y+viewRect.height);
     }
     hitShapes = new Shape[index];
+    double[] xValues = getXPoints();
+    double[] yValues = getYPoints();
+    if (screenCoordinates[0]==null || screenCoordinates[0].length!=index) {
+    	screenCoordinates[0] = new double[index];
+    	screenCoordinates[1] = new double[index];
+    }
     for(int i = 0; i<index; i++) {
-      if(Double.isNaN(ypoints[i])) {
+      if(Double.isNaN(yValues[i])) {
+      	screenCoordinates[1][i] = Double.NaN;
         continue;
       }
-      double xp = drawingPanel.xToPix(xpoints[i]);
-      double yp = drawingPanel.yToPix(ypoints[i]);
+      double xp = drawingPanel.xToPix(xValues[i]);
+      double yp = drawingPanel.yToPix(yValues[i]);
+      screenCoordinates[0][i] = xp;
+      screenCoordinates[1][i] = yp;
       hitShapes[i] = new Rectangle2D.Double(xp-offset, yp-offset, edge, edge);
       if(!isHighlighted(i)) {
         continue;
@@ -228,8 +238,8 @@ public class HighlightableDataset extends Dataset implements Interactive {
       return null;
     }
     hitIndex = -1;
-    for(int i = 0; i<index; i++) {
-      if((hitShapes!=null)&&(i<hitShapes.length)&&(hitShapes[i]!=null)&&hitShapes[i].contains(xpix, ypix)) {
+    for (int i = 0; i<hitShapes.length; i++) {
+      if(hitShapes[i]!=null && hitShapes[i].contains(xpix, ypix)) {
         hitIndex = i;
         return this;
       }
@@ -237,8 +247,22 @@ public class HighlightableDataset extends Dataset implements Interactive {
     return null;
   }
 
+  /**
+   * Gets the most recent hit index.
+   *
+   * @return the hit index 
+   */
   public int getHitIndex() {
     return hitIndex;
+  }
+
+  /**
+   * Gets the screen coordinates of all data points.
+   *
+   * @return screen coordinates 
+   */
+  public double[][] getScreenCoordinates() {
+    return screenCoordinates;
   }
 
   /**

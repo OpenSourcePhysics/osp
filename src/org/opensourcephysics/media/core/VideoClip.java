@@ -233,7 +233,7 @@ public class VideoClip {
     }
     count = Math.abs(count);
     if (video!=null) {
-      if (video.getFrameCount()>1) {
+      if(video.getFrameCount()>1) {
         int end = video.getFrameCount()-1-frameShift+extraFrames;
         int maxCount = 1+(int) ((end-startFrame)/(1.0*stepSize));
         count = Math.min(count, maxCount);

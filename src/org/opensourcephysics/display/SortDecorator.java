@@ -6,6 +6,9 @@
  */
 
 package org.opensourcephysics.display;
+import java.util.Arrays;
+import java.util.Comparator;
+
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
@@ -60,12 +63,43 @@ public class SortDecorator implements TableModel, TableModelListener {
     if(indexes.length<=rowCount) {
       allocate();
     }
-    for(int i = 0; i<rowCount; i++) {
-      for(int j = i+1; j<rowCount; j++) {
-        if(compare(indexes[i], indexes[j], column)<0) {
-          swap(i, j);
-        }
-      }
+    
+    // new faster sort method added by D Brown 2015-05-16
+    if (realModel.getColumnClass(column)==Double.class
+    		|| realModel.getColumnClass(column)==Integer.class) {
+    	Double[][] sortArray = new Double[rowCount][2];
+    	if (realModel.getColumnClass(column)==Double.class) {
+		    for(int i = 0; i<rowCount; i++) {
+		    	sortArray[i][0] = (Double)realModel.getValueAt(i, column);
+		    	sortArray[i][1] = 1.0*indexes[i];
+		    }
+    	}
+    	else {
+		    for(int i = 0; i<rowCount; i++) {
+		    	sortArray[i][0] = ((Integer)realModel.getValueAt(i, column)).doubleValue();
+		    	sortArray[i][1] = 1.0*indexes[i];
+		    }
+    	}
+	    Arrays.sort(sortArray, new Comparator<Double[]>() {
+				public int compare(Double[] a, Double[] b) {
+					if (a[0]==null || b[0]==null) {
+						return b[0]==a[0]? 0: b[0]==null? -1: 1;
+					}
+		      return(b[0]<a[0]) ? 1 : ((b[0]>a[0]) ? -1 : 0);
+				}	    	
+	    });
+	    for(int i = 0; i<rowCount; i++) {
+	    	indexes[i] = sortArray[i][1].intValue();
+	    }	    
+    }
+    else {  // use older sort method for String data 
+	    for(int i = 0; i<rowCount; i++) {
+	      for(int j = i+1; j<rowCount; j++) {
+	        if(compare(indexes[i], indexes[j], column)<0) {
+	          swap(i, j);
+	        }
+	      }
+	    }
     }
   }
   
