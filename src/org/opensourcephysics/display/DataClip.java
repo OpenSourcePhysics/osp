@@ -151,8 +151,8 @@ public class DataClip {
   public int setStride(int stride) {
   	int prev = getStride();
   	// check limits
-    stride = Math.max(stride, 1);
     stride = Math.min(stride, dataLength-1);
+    stride = Math.max(stride, 1);
     
     this.stride = stride;
     support.firePropertyChange("stride", prev, stride); //$NON-NLS-1$
