@@ -294,7 +294,13 @@ public class StepperClipControl extends ClipControl {
   public double getTime() {
   	if (video!=null && video.getDuration()>0) {
       int n = video.getFrameNumber();
-      return(video.getFrameTime(n)-video.getStartTime())*timeStretch;
+      double videoTime = video.getFrameTime(n);
+      int m = clip.stepToFrame(getStepNumber())+clip.getFrameShift();
+      if (m>video.getFrameCount()-1) {
+        int extra = m-video.getFrameCount()+1;
+        videoTime = video.getFrameTime(video.getFrameCount()-1)+extra*frameDuration;
+      }
+      return(videoTime-video.getStartTime())*timeStretch;
   	}
     return stepNumber*frameDuration*clip.getStepSize();
   }
@@ -308,7 +314,12 @@ public class StepperClipControl extends ClipControl {
   public double getStepTime(int stepNumber) {
   	if (video!=null && video.getDuration()>0) {
       int n = clip.stepToFrame(stepNumber)+clip.getFrameShift();
-      return(video.getFrameTime(n)-video.getStartTime())*timeStretch;
+      double videoTime = video.getFrameTime(n);
+      if (n>video.getFrameCount()-1) {
+      	int extra = n-video.getFrameCount()+1;
+      	videoTime = video.getFrameTime(video.getFrameCount()-1)+extra*frameDuration;
+      }
+      return (videoTime-video.getStartTime())*timeStretch;
   	}
     return stepNumber*frameDuration*clip.getStepSize();
   }
