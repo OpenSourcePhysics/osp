@@ -30,7 +30,7 @@ import org.opensourcephysics.display.OSPRuntime;
 public class ExtensionsManager {
 
 	private static final ExtensionsManager MANAGER = new ExtensionsManager();
-	private static boolean isReady = false;
+	private static boolean isReady = false, isSearching = false;
 	private static Set<File> allJavaExtensionDirectories = new TreeSet<File>();
 	private static int vmsFound = 0;
 	private static Timer timer;
@@ -240,7 +240,14 @@ public class ExtensionsManager {
    * @return a collection of java extension directory files
    */
 	private Set<File> findAllJavaExtensionDirectories() {
+		while (isSearching) {
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+			}
+		}
 		if (!isReady) {
+			isSearching = true;
 			vmsFound = 0;
 	    // set of extension directories used by the running Java VM 
 	    Set<String> vmExtDirs = new TreeSet<String>();
@@ -317,9 +324,10 @@ public class ExtensionsManager {
 				for (File next: searchPaths) {
 					findJavaExtensionDirectories(next, allJavaExtensionDirectories);
 				}
-				isReady = true;
 			} catch (Exception e) {
 			}
+			isReady = true;
+			isSearching = false;
 			// log results for trouble-shooting
 			StringBuffer buf =new StringBuffer("Java extension directories: "); //$NON-NLS-1$
 			for (File next: allJavaExtensionDirectories) {
