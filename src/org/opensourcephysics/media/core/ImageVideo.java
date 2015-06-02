@@ -428,6 +428,11 @@ public class ImageVideo extends VideoAdapter {
             paths[i] = pathArray[j++];
           }
         }
+        if (getProperty("name")==null) {                     //$NON-NLS-1$
+          setProperty("name", XML.getName(fileName));        //$NON-NLS-1$
+          setProperty("path", fileName);                     //$NON-NLS-1$
+          setProperty("absolutePath", fileName); //$NON-NLS-1$
+        }
         return true;
       } catch(IOException ex) {
         ex.printStackTrace();
