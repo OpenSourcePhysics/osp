@@ -1717,10 +1717,11 @@ public class ResourceLoader {
     
     if (url!=null) {     // successfully found url
       // extract file if extension is flagged for extraction
+      String urlFileName = url.getFile();
       Iterator<String> it = extractExtensions.iterator();
       while(it.hasNext()) {
         String ext = it.next();
-        if(url.getFile().endsWith(ext)) {
+        if(urlFileName.endsWith(ext.toLowerCase()) || urlFileName.endsWith(ext.toUpperCase())) {
           File zip = new File(base);
         	String targetPath = fileName;
         	String parent = zip.getParent();
