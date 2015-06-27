@@ -1898,9 +1898,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       	Runnable runner = new Runnable() {
       		public void run() {
           	HighlightableDataset data = dataTable.workingData;
-    	      double[][] screenPoints = data.getScreenCoordinates();
     	      Map<Integer, Integer> workingRows = dataTable.workingRows;
           	if (data==null || workingRows==null) return;
+    	      double[][] screenPoints = data.getScreenCoordinates();
             ListSelectionModel columnSelectionModel = dataTable.getColumnModel().getSelectionModel();
             for(int i = 0; i<screenPoints[0].length; i++) {
               Integer row = workingRows.get(i);

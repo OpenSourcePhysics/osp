@@ -11,16 +11,22 @@ import java.awt.Container;
 import java.awt.Font;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.SwingPropertyChangeSupport;
+
+import org.opensourcephysics.display.ResizableIcon;
 
 /**
  * A class for setting relative font sizes by level.
@@ -36,11 +42,15 @@ public class FontSizer {
   /** Base font for buttons */
   public static final Font BUTTON_FONT = new JButton().getFont();
 
+  /** Base font for buttons */
+  public static final int MAX_LEVEL = 20;
+
   // static fields
   static Object levelObj = new FontSizer();
   static PropertyChangeSupport support = new SwingPropertyChangeSupport(levelObj);
-  static int level;
+  static int level, integerFactor;
   static double levelFactor = 1.35; // size ratio per level
+  static double factor;
   static Map<Font, Font> fontMap = new HashMap<Font, Font>();
 
   /**
@@ -56,7 +66,10 @@ public class FontSizer {
    * @param n a non-negative integer level
    */
   public static void setLevel(int n) {
+  	n = Math.min(n, MAX_LEVEL);
     level = Math.max(n, 0);
+    factor = getFactor(level);
+    integerFactor = getIntegerFactor(level);
     
     Font font = getResizedFont(TEXT_FONT, level);    
     javax.swing.UIManager.put("OptionPane.messageFont", font); //$NON-NLS-1$
@@ -79,20 +92,35 @@ public class FontSizer {
   }
 
   /**
-   * Increments the font level and informs all listeners.
+   * Increments the font level.
    */
   public static void levelUp() {
-    level++;
-    support.firePropertyChange("level", null, new Integer(level)); //$NON-NLS-1$
+    setLevel(level+1);
   }
 
   /**
-   * Decrements the font level and informs all listeners.
+   * Decrements the font level.
    */
   public static void levelDown() {
-    level--;
-    level = Math.max(level, 0);
-    support.firePropertyChange("level", null, new Integer(level)); //$NON-NLS-1$
+    setLevel(level-1);
+  }
+
+  /**
+   * Gets the current factor.
+   *
+   * @return the factor
+   */
+  public static double getFactor() {
+    return factor;
+  }
+
+  /**
+   * Gets the current integer factor.
+   *
+   * @return the integer factor
+   */
+  public static int getIntegerFactor() {
+  	return integerFactor;
   }
 
   /**
@@ -175,6 +203,16 @@ public class FontSizer {
   }
 
   /**
+   * Gets the integer factor corresponding to a specified level.
+   *
+   * @param level the level
+   * @return the integer factor
+   */
+  public static int getIntegerFactor(int level) {
+  	return Math.round(Math.round(getFactor(level)));
+  }
+
+  /**
    * Adds a PropertyChangeListener.
    *
    * @param property the name of the property (only "level" accepted)
@@ -208,16 +246,17 @@ public class FontSizer {
     // get resized container font
     Font font = getResizedFont(c.getFont(), factor);
     // Added by Paco. This must be here because JComponent inherits from Container
-    if(c instanceof javax.swing.JComponent) {
+    if (c instanceof javax.swing.JComponent) {
       Border border = ((javax.swing.JComponent) c).getBorder();
       if(border instanceof TitledBorder) {
         setFontFactor((TitledBorder) border, factor);
       }
     }
     // End of added by Paco
-    if(c instanceof JMenu) {
+    if (c instanceof JMenu) {
       setMenuFont((JMenu) c, font);
-    } else {
+    } 
+    else {
       c.setFont(font);
       // iterate through child components
       for(int i = 0; i<c.getComponentCount(); i++) {
@@ -229,6 +268,43 @@ public class FontSizer {
         }
       }
     }
+    // added by Doug Brown June 2015 to resize icons along with fonts
+    if (c instanceof JButton) {
+    	JButton button = (JButton)c;
+    	for (int i=0; i<5; i++) {
+    		Icon icon = i==0? button.getIcon(): 
+    			i==2? button.getSelectedIcon(): 
+      		i==3? button.getRolloverIcon(): 
+        	i==4? button.getRolloverSelectedIcon():
+        	button.getDisabledIcon();
+  			if (icon!=null && icon instanceof ResizableIcon) {
+  				((ResizableIcon)icon).resize(getIntegerFactor());
+  			}
+    	}
+    }
+    else if (c instanceof JMenu) {
+    	JMenu menu = (JMenu)c;
+    	Icon icon = menu.getIcon();
+			if (icon!=null && icon instanceof ResizableIcon) {
+				((ResizableIcon)icon).resize(getIntegerFactor());
+			}
+    	for (int i=0; i< menu.getItemCount(); i++) {
+    		JMenuItem item = menu.getItem(i);
+    		if (item!=null) {
+    			setFontFactor(item, factor);
+    		}
+    	}
+    }
+    else try {
+			Method m = c.getClass().getMethod("getIcon", (Class<?>[])null); //$NON-NLS-1$
+			Icon icon = (Icon)m.invoke(c, (Object[])null);
+			if (icon!=null && icon instanceof ResizableIcon) {
+				((ResizableIcon)icon).resize(getIntegerFactor());
+			}
+		} catch (Exception e) {
+		}
+    // end of code added by Doug
+
     c.repaint();
   }
 
@@ -243,7 +319,7 @@ public class FontSizer {
     Font font = getResizedFont(c.getFont(), factor);
     c.setFont(font);
     // Added by Paco
-    if(c instanceof javax.swing.JComponent) {
+    if (c instanceof javax.swing.JComponent) {
       Border border = ((javax.swing.JComponent) c).getBorder();
       if(border instanceof TitledBorder) {
         setFontFactor((TitledBorder) border, factor);
@@ -260,7 +336,11 @@ public class FontSizer {
    */
   private static void setFontFactor(TitledBorder b, double factor) {
     // get resized border font
-    Font font = getResizedFont(b.getTitleFont(), factor);
+  	Font font = b.getTitleFont();
+  	if (font==null) {
+  		font = UIManager.getFont("TitledBorder.font"); //$NON-NLS-1$
+  	}
+    font = getResizedFont(font, factor);
     b.setTitleFont(font);
   }
 

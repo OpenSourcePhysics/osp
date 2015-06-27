@@ -40,6 +40,7 @@ import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
 
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.display.ResizableIcon;
 
 /**
  * This is a JPanel for managing Functions and supporting Parameters.
@@ -414,7 +415,7 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
    * @param icon the icon
    */
   public void setIcon(Icon icon) {
-    this.icon = icon;
+    this.icon = new ResizableIcon(icon);
   }
 
   /**

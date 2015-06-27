@@ -50,6 +50,7 @@ import javax.swing.WindowConstants;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.display.TextFrame;
 
 /**
@@ -206,9 +207,8 @@ public class FunctionTool extends JDialog {
    */
   public void setSelectedPanel(String name) {
     Object item = getDropdownItem(name);
-    if (item != null) {
+    if (item != null)
     	dropdown.setSelectedItem(item);
-    }
   }
 
   /**
@@ -367,13 +367,19 @@ public class FunctionTool extends JDialog {
 		}
 		DefaultComboBoxModel model = new DefaultComboBoxModel(items);
 		dropdown.setModel(model);
-		dropdown.setSelectedItem(n);
+		dropdown.setSelectedItem(n);		
 		
     java.awt.Container c = contentPane.getTopLevelAncestor();
     Dimension dim = c.getSize();
     dim.width = c.getMinimumSize().width;
+    int h = (int)(280*FontSizer.getFactor(level));
+    h = Math.max(h, dim.height);
+    h = Math.min(h, (int)Toolkit.getDefaultToolkit().getScreenSize().getHeight());
+    dim.height = h;
+    setSize(dim);
     c.setSize(dim);
     setVisible(vis);
+    refreshDropdown(null);
   }
 
   /**
@@ -685,7 +691,12 @@ public class FunctionTool extends JDialog {
     for (String next: panels.keySet()) {
     	FunctionPanel panel = panels.get(next);
     	String displayName = panel.getDisplayName();
-      Object item = new Object[] {panel.getIcon(), next, displayName};
+    	Icon icon = panel.getIcon();
+			if (icon!=null && icon instanceof ResizableIcon) {
+				int factor = FontSizer.getIntegerFactor(FontSizer.getLevel());
+				((ResizableIcon)icon).resize(factor);
+			}
+      Object item = new Object[] {icon, next, displayName};
       dropdown.addItem(item);
       if (toSelect==null || next.equals(name)) {
       	toSelect = (Object[])item;

@@ -40,6 +40,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -514,12 +515,12 @@ public class ResourceLoader {
   }
 
   /**
-   * Gets an image icon. May return null.
+   * Gets an icon. May return null.
    * 
    * @param path the path
    * @return the icon
    */
-  public static ImageIcon getIcon(String path) {
+  public static Icon getIcon(String path) {
     URL url = getAppletResourceURL(path); // added by W. Christian
     if(url!=null) {
       return new ImageIcon(url);
@@ -1717,11 +1718,10 @@ public class ResourceLoader {
     
     if (url!=null) {     // successfully found url
       // extract file if extension is flagged for extraction
-      String urlFileName = url.getFile();
       Iterator<String> it = extractExtensions.iterator();
       while(it.hasNext()) {
         String ext = it.next();
-        if(urlFileName.endsWith(ext.toLowerCase()) || urlFileName.endsWith(ext.toUpperCase())) {
+        if(url.getFile().endsWith(ext)) {
           File zip = new File(base);
         	String targetPath = fileName;
         	String parent = zip.getParent();

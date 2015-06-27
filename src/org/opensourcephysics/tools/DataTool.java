@@ -1722,6 +1722,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    * @param level the level
    */
   public void setFontLevel(int level) {
+  	if (getJMenuBar()==null) return;
     super.setFontLevel(level);
 		FontSizer.setFonts(emptyMenubar, level);
 		FontSizer.setFonts(fileMenu, level);
@@ -2821,6 +2822,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     emptyPasteMenu.add(emptyPasteTabItem);
     refreshGUI();
     refreshMenubar();
+    setFontLevel(FontSizer.getLevel());
     pack();
     // center this on the screen
     Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
