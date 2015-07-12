@@ -22,6 +22,8 @@ import org.opensourcephysics.controls.OSPLog;
  * @version 1.0
  */
 public class RemoteTool extends UnicastRemoteObject implements Tool {
+	private static final long serialVersionUID = 1L;
+	
   // instance fields
   Tool child;                                                                // a Tool to handle forwarded jobs
   Map<Job, Collection<Tool>> replies = new HashMap<Job, Collection<Tool>>(); // maps job to list of replyTo recipients

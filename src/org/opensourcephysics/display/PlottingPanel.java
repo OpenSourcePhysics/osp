@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.geom.AffineTransform;
+
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.axes.CartesianAxes;
@@ -28,10 +29,10 @@ import org.opensourcephysics.numerics.LogBase10Function;
  * @author Wolfgang Christian
  */
 public class PlottingPanel extends InteractivePanel {
-  DrawableAxes axes;
-  FunctionTransform functionTransform = new FunctionTransform();
-  final static double log10 = Math.log(10);
-  final static LogBase10Function logBase10Function = new LogBase10Function();
+	protected DrawableAxes axes;
+	protected FunctionTransform functionTransform = new FunctionTransform();
+	protected final static double log10 = Math.log(10);
+	protected final static LogBase10Function logBase10Function = new LogBase10Function();
 
   /**
    *  Constructs a new PlottingPanel that uses the given X axis label, Y axis

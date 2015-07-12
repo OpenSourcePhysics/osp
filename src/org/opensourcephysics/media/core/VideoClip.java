@@ -55,6 +55,8 @@ import org.opensourcephysics.tools.ResourceLoader;
  */
 public class VideoClip {
   // instance fields
+        public boolean changeEngine; // signals that user wishes to change preferred video engine
+
   private int startFrame = 0;
   private int stepSize = 1;
   private int stepCount = 10;   // default stepCount is 10 if video is null
@@ -73,6 +75,9 @@ public class VideoClip {
   private int endFrame;
   protected String readoutType;
   protected String videoPath;
+  protected double savedStartTime; // used when DataTrack sets start time
+  protected boolean startTimeIsSaved = false; // used when DataTrack sets start time
+  protected int extraFrames = 0; // extends clip length past video end
 
   /**
    * Constructs a VideoClip.
@@ -108,8 +113,8 @@ public class VideoClip {
    * @return the video path
    */
   public String getVideoPath() {
-  	if (video!=null)
-  		return (String)video.getProperty("absolutePath"); //$NON-NLS-1$
+        if (video!=null)
+                return (String)video.getProperty("absolutePath"); //$NON-NLS-1$
     return videoPath;
   }
 
@@ -120,26 +125,26 @@ public class VideoClip {
    * @return true if changed
    */
   public boolean setStartFrameNumber(int start) {
-  	int maxEndFrame = getLastFrameNumber();
-  	return setStartFrameNumber(start, maxEndFrame);
+        int maxEndFrame = getLastFrameNumber();
+        return setStartFrameNumber(start, maxEndFrame);
   }
 
   /**
    * Sets the start frame number.
    *
    * @param start the desired start frame number
-   * @param maxEndFrame end frame number that cannot be exceeded
+   * @param maxStart start frame number that cannot be exceeded
    * @return true if changed
    */
-  public boolean setStartFrameNumber(int start, int maxEndFrame) {
-  	int prevStart = getStartFrameNumber();
+  public boolean setStartFrameNumber(int start, int maxStart) {
+        int prevStart = getStartFrameNumber();
     int prevEnd = getEndFrameNumber();
     // can't start before first frame number or after max end frame
     start = Math.max(start, getFirstFrameNumber());
-    start = Math.min(start, maxEndFrame);
+    start = Math.min(start, maxStart);
     
     if(video!=null && video.getFrameCount()>1) {
-    	// set video end frame to last video frame (temporary)
+        // set video end frame to last video frame (temporary)
       video.setEndFrameNumber(video.getFrameCount()-1);
       // set video start frame number to desired start frame
       int vidStart = Math.max(0, start+frameShift);
@@ -153,14 +158,14 @@ public class VideoClip {
       startFrame = start;
       updateArray();
     }
-    
     start = getStartFrameNumber();
+    
     // reset end frame
-    setEndFrameNumber(prevEnd, maxEndFrame, true);
+    setEndFrameNumber(prevEnd);
     
     if(prevStart!=start) {
-	  	isDefaultState = false;
-    	support.firePropertyChange("startframe", null, new Integer(start)); //$NON-NLS-1$
+                isDefaultState = false;
+        support.firePropertyChange("startframe", null, new Integer(start)); //$NON-NLS-1$
     }
     return prevStart!=start;
   }
@@ -181,17 +186,17 @@ public class VideoClip {
    * @return true if changed
    */
   public boolean setStepSize(int size) {
-  	isDefaultState = false;
+        isDefaultState = false;
     if(size==0) {
       return false;
     }
     size = Math.abs(size);
-    if((video!=null)&&(video.getFrameCount()>1)) {
-      int maxSize = Math.max(video.getFrameCount()-startFrame-1, 1);
+    if (video!=null && video.getFrameCount()>1) {
+      int maxSize = Math.max(video.getFrameCount()-startFrame-1+extraFrames, 1);
       size = Math.min(size, maxSize);
     }
     if(stepSize==size) {
-    	return false;
+        return false;
     }
     
     // get current end frame
@@ -228,7 +233,7 @@ public class VideoClip {
     count = Math.abs(count);
     if(video!=null) {
       if(video.getFrameCount()>1) {
-        int end = video.getFrameCount()-1-frameShift;
+        int end = video.getFrameCount()-1-frameShift+extraFrames;
         int maxCount = 1+(int) ((end-startFrame)/(1.0*stepSize));
         count = Math.min(count, maxCount);
       }
@@ -238,12 +243,12 @@ public class VideoClip {
       }
     }
     else {
-    	count = Math.min(count, frameToStep(maxFrameCount-1)+1);
+        count = Math.min(count, frameToStep(maxFrameCount-1)+1);
     }
     count = Math.max(count, 1);
     if (stepCount==count) {
-	    updateArray();
-    	return;
+            updateArray();
+        return;
     }
     Integer prev = new Integer(stepCount);
     stepCount = count;
@@ -267,8 +272,8 @@ public class VideoClip {
    * @return the new frame shift
    */
   public int setFrameShift(int n) {
-  	int start = getStartFrameNumber();
-  	int steps = getStepCount();
+        int start = getStartFrameNumber();
+        int steps = getStepCount();
     return setFrameShift(n, start, steps);
   }
 
@@ -281,12 +286,13 @@ public class VideoClip {
    * @return the new frame shift
    */
   protected int setFrameShift(int n, int start, int stepCount) {
-  	// frameshift cannot be greater than highest video frame number--no frames would be visible!
-  	if (video!=null)
-  		n = Math.min(n, video.getFrameCount()-1);
-  	frameShift = n;
-  	setStartFrameNumber(start);
-  	setStepCount(stepCount);
+        // frameshift cannot be greater than highest video frame number--no frames would be visible!
+        if (video!=null)
+                n = Math.min(n, video.getFrameCount()-1);
+        frameShift = n;
+    support.firePropertyChange("frameshift", null, frameShift); //$NON-NLS-1$
+        setStartFrameNumber(start);
+        setStepCount(stepCount);
     return frameShift;
   }
 
@@ -300,16 +306,29 @@ public class VideoClip {
   }
 
   /**
+   * Sets the extra frame count. Extra frames are blank frames after the last frame of a video.
+   *
+   * @param extras the number of extra frames to display
+   */
+  public void setExtraFrames(int extras) {
+        int prev = extraFrames;
+    extraFrames = Math.max(extras, 0);
+    if (prev!=extraFrames) {
+                        OSPLog.finest("set extra frames to "+extraFrames); //$NON-NLS-1$
+    }
+  }
+
+  /**
    * Gets the frame count.
    *
    * @return the number of frames
    */
   public int getFrameCount() {
     if(video!=null && video.getFrameCount()>1) {
-    	int n = video.getFrameCount();
-    	n = Math.min(n, n-frameShift);
-    	n = Math.max(1, n);
-    	return n;
+        int n = video.getFrameCount() + extraFrames;
+        n = Math.min(n, n-frameShift);
+        n = Math.max(1, n);
+        return n;
     }
     int frames = getEndFrameNumber()+1;
     frameCount = Math.max(frameCount, frames);
@@ -323,7 +342,7 @@ public class VideoClip {
    * @param t0 the start time in milliseconds
    */
   public void setStartTime(double t0) {
-  	isDefaultState = false;
+        isDefaultState = false;
     if(startTime==t0 || (isDefaultStartTime && Double.isNaN(t0))) {
       return;
     }
@@ -347,7 +366,7 @@ public class VideoClip {
    * @return the end frame
    */
   public int getEndFrameNumber() {
-  	endFrame = startFrame+stepSize*(stepCount-1);
+        endFrame = startFrame+stepSize*(stepCount-1);
     return endFrame;
   }
 
@@ -358,7 +377,20 @@ public class VideoClip {
    * @return true if the end frame number was changed
    */
   public boolean setEndFrameNumber(int end) {
-  	return setEndFrameNumber(end, maxFrameCount-1-frameShift, true);
+        return setEndFrameNumber(end, maxFrameCount-1-frameShift, true);
+  }
+
+  /**
+   * Sets the end frame number after adding extra frames if needed.
+   *
+   * @param end the desired end frame
+   * @return true if the end frame number was extended
+   */
+  public boolean extendEndFrameNumber(int end) {
+        if (video!=null && getFrameCount()<=end) {
+                setExtraFrames(end-getFrameCount()+extraFrames);                
+        }
+        return setEndFrameNumber(end);
   }
 
   /**
@@ -369,10 +401,10 @@ public class VideoClip {
    * @return true if the end frame number was changed
    */
   private boolean setEndFrameNumber(int end, int max, boolean onlyIfChanged) {
-  	int prev = getEndFrameNumber();
-  	if (prev==end && onlyIfChanged)
-  		return false;
-  	isDefaultState = false;  	 	
+        int prev = getEndFrameNumber();
+        if (prev==end && onlyIfChanged)
+                return false;
+        isDefaultState = false;                 
     end = Math.max(end, startFrame); // end can't be less than start
     
     // determine step count needed for desired end frame
@@ -381,20 +413,19 @@ public class VideoClip {
     if(rem*1.0/stepSize>0.5) {
       count++;
     }
-    else if(stepSize>1 && startFrame%2==0) {
-      count++;
-    }
     while (stepToFrame(count) > max) {
-    	count--;
+        count--;
     }
     // set step count
     setStepCount(count+1);
     end = getEndFrameNumber();
     
     // determine maximum step size and adjust step size if needed
+    if (end!=startFrame) {
     int maxStepSize = Math.max(end-startFrame, 1);
     if(maxStepSize<stepSize) {
       stepSize = maxStepSize;
+    }
     }
     
     return prev!=end;
@@ -474,7 +505,7 @@ public class VideoClip {
    * @return true if in a default state
    */
   public boolean isDefaultState() {
-  	return isDefaultState && inspector==null;
+        return isDefaultState && inspector==null;
   }
 
   /**
@@ -483,10 +514,10 @@ public class VideoClip {
    * @param adjusting true if adjusting
    */
   public void setAdjusting(boolean adjusting) {
-  	if (isAdjusting==adjusting)
-  		return;
-  	isAdjusting = adjusting;
-		support.firePropertyChange("adjusting", null, adjusting); //$NON-NLS-1$
+        if (isAdjusting==adjusting)
+                return;
+        isAdjusting = adjusting;
+                support.firePropertyChange("adjusting", null, adjusting); //$NON-NLS-1$
   }
 
   /**
@@ -495,7 +526,7 @@ public class VideoClip {
    * @return true if adjusting
    */
   public boolean isAdjusting() {
-  	return isAdjusting;
+        return isAdjusting;
   }
 
   /**
@@ -504,7 +535,7 @@ public class VideoClip {
    * @param all true to play all steps
    */
   public void setPlayAllSteps(boolean all) {
-  	playAllSteps = all;
+        playAllSteps = all;
   }
 
   /**
@@ -513,7 +544,7 @@ public class VideoClip {
    * @return true if playing all steps
    */
   public boolean isPlayAllSteps() {
-  	return playAllSteps;
+        return playAllSteps;
   }
 
   /**
@@ -559,7 +590,7 @@ public class VideoClip {
    */
   protected void trimFrameCount() {
     if(video==null || video.getFrameCount()==1) {
-    	frameCount = getEndFrameNumber()+1;
+        frameCount = getEndFrameNumber()+1;
       support.firePropertyChange("framecount", null, new Integer(frameCount)); //$NON-NLS-1$
     }
   }
@@ -578,21 +609,21 @@ public class VideoClip {
    * Gets the first frame number.
    * @return the frame number
    */
-  private int getFirstFrameNumber() {
-  	if (video==null) return 0;
-  	// frameShift changes frame number--but never less than zero
-  	return Math.max(0, -frameShift);
+  public int getFirstFrameNumber() {
+        if (video==null) return 0;
+        // frameShift changes frame number--but never less than zero
+        return Math.max(0, -frameShift);
   }
 
   /**
    * Gets the last frame number.
    * @return the frame number
    */
-  private int getLastFrameNumber() {
-  	if (video==null) return getEndFrameNumber();
-  	int finalVideoFrame = video.getFrameCount()-1;
-  	// frameShift changes frame number--but never less than zero
-  	return Math.max(0, finalVideoFrame-frameShift);
+  public int getLastFrameNumber() {
+        if (video==null) return getEndFrameNumber();
+        int finalVideoFrame = video.getFrameCount()-1+extraFrames;
+        // frameShift changes frame number--but never less than zero
+        return Math.max(0, finalVideoFrame-frameShift);
   }
 
   /**
@@ -626,12 +657,13 @@ public class VideoClip {
         } else {
           control.setValue("video", video);   //$NON-NLS-1$
         }
-	      control.setValue("video_framecount", video.getFrameCount()); //$NON-NLS-1$
+              control.setValue("video_framecount", video.getFrameCount()); //$NON-NLS-1$
       }
       control.setValue("startframe", clip.getStartFrameNumber()); //$NON-NLS-1$
       control.setValue("stepsize", clip.getStepSize());           //$NON-NLS-1$
       control.setValue("stepcount", clip.getStepCount());         //$NON-NLS-1$
-      control.setValue("starttime", clip.getStartTime());         //$NON-NLS-1$
+      control.setValue("starttime", clip.startTimeIsSaved?                        //$NON-NLS-1$
+                clip.savedStartTime: clip.getStartTime());
       control.setValue("frameshift", clip.getFrameShift());         //$NON-NLS-1$
       control.setValue("readout", clip.readoutType);         //$NON-NLS-1$
       control.setValue("playallsteps", clip.playAllSteps);         //$NON-NLS-1$
@@ -653,57 +685,59 @@ public class VideoClip {
       XMLControl child = control.getChildControl("video"); //$NON-NLS-1$
       String path = child.getString("path"); //$NON-NLS-1$
       Video video = VideoIO.getVideo(path, null);
+      boolean engineChange = false;
       if (video==null && path!=null && !VideoIO.isCanceled()) {
-      	if (ResourceLoader.getResource(path)!=null) { // resource exists but not loaded
-	        OSPLog.info("\""+path+"\" could not be opened");                                                  //$NON-NLS-1$ //$NON-NLS-2$
-	        // determine if other engines are available for the video extension
-	        ArrayList<VideoType> otherEngines = new ArrayList<VideoType>();
-	        String engine = VideoIO.getEngine();
-	        String ext = XML.getExtension(path);        
-	        if (!engine.equals(VideoIO.ENGINE_FFMPEG)) {
-	        	VideoType ffmpegType = VideoIO.getVideoType("FFMPeg", ext); //$NON-NLS-1$
-	        	if (ffmpegType!=null) otherEngines.add(ffmpegType);
-	        }
-	        if (!engine.equals(VideoIO.ENGINE_QUICKTIME)) {
-	        	VideoType qtType = VideoIO.getVideoType("QT", ext); //$NON-NLS-1$
-	        	if (qtType!=null) otherEngines.add(qtType);
-	        }
-	        if (otherEngines.isEmpty()) {
-		        JOptionPane.showMessageDialog(null, 
-		        		MediaRes.getString("VideoIO.Dialog.BadVideo.Message")+"\n\n"+path, //$NON-NLS-1$ //$NON-NLS-2$
-		        		MediaRes.getString("VideoClip.Dialog.BadVideo.Title"),                                          //$NON-NLS-1$
-		            JOptionPane.WARNING_MESSAGE); 
-	        }
-	        else {
-	      		// provide immediate way to open with other engines
-	    			JCheckBox setAsDefaultBox = new JCheckBox(MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Checkbox")); //$NON-NLS-1$
-	        	video = VideoIO.getVideo(path, otherEngines, setAsDefaultBox, null);
-			    	if (video!=null && VideoIO.ENGINE_NONE.equals(VideoIO.getEngine()) && setAsDefaultBox.isSelected()) {
-			    		String typeName = video.getClass().getSimpleName();
-			    		String newEngine = typeName.indexOf("FFMPeg")>-1? VideoIO.ENGINE_FFMPEG: //$NON-NLS-1$
-			    			typeName.indexOf("QT")>-1? VideoIO.ENGINE_QUICKTIME: //$NON-NLS-1$
-			    				VideoIO.ENGINE_NONE;
-			    		VideoIO.setEngine(newEngine);
-			    	}	        	
-	        }
-      	}
-      	else {
-	        int response = JOptionPane.showConfirmDialog(null, "\""+path+"\" "                                //$NON-NLS-1$ //$NON-NLS-2$
-	          +MediaRes.getString("VideoClip.Dialog.VideoNotFound.Message"),                                  //$NON-NLS-1$
-	            MediaRes.getString("VideoClip.Dialog.VideoNotFound.Title"),                                   //$NON-NLS-1$
-	              JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-	        if(response==JOptionPane.YES_OPTION) {
-	        	VideoIO.getChooser().setAccessory(VideoIO.videoEnginePanel);
-	    	    VideoIO.videoEnginePanel.reset();
-	          VideoIO.getChooser().setSelectedFile(new File(path));
-	          java.io.File[] files = VideoIO.getChooserFiles("open video");                                         //$NON-NLS-1$
-	          if(files!=null && files.length>0) {
-	            VideoType selectedType = VideoIO.videoEnginePanel.getSelectedVideoType();
-	          	path = XML.getAbsolutePath(files[0]);
-	            video = VideoIO.getVideo(path, selectedType);
-	          }
-	        }
-      	}
+        if (ResourceLoader.getResource(path)!=null) { // resource exists but not loaded
+                OSPLog.info("\""+path+"\" could not be opened");                                                  //$NON-NLS-1$ //$NON-NLS-2$
+                // determine if other engines are available for the video extension
+                ArrayList<VideoType> otherEngines = new ArrayList<VideoType>();
+                String engine = VideoIO.getEngine();
+                String ext = XML.getExtension(path);        
+                if (!engine.equals(VideoIO.ENGINE_FFMPEG)) {
+                        VideoType ffmpegType = VideoIO.getVideoType("FFMPeg", ext); //$NON-NLS-1$
+                        if (ffmpegType!=null) otherEngines.add(ffmpegType);
+                }
+                if (!engine.equals(VideoIO.ENGINE_QUICKTIME)) {
+                        VideoType qtType = VideoIO.getVideoType("QT", ext); //$NON-NLS-1$
+                        if (qtType!=null) otherEngines.add(qtType);
+                }
+                if (otherEngines.isEmpty()) {
+                        JOptionPane.showMessageDialog(null, 
+                                        MediaRes.getString("VideoIO.Dialog.BadVideo.Message")+"\n\n"+path, //$NON-NLS-1$ //$NON-NLS-2$
+                                        MediaRes.getString("VideoClip.Dialog.BadVideo.Title"),                                          //$NON-NLS-1$
+                            JOptionPane.WARNING_MESSAGE); 
+                }
+                else {
+                        // provide immediate way to open with other engines
+                                JCheckBox changePreferredEngine = new JCheckBox(MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Checkbox")); //$NON-NLS-1$
+                        video = VideoIO.getVideo(path, otherEngines, changePreferredEngine, null);
+                                engineChange = changePreferredEngine.isSelected();
+                                if (video!=null && changePreferredEngine.isSelected()) {
+                                        String typeName = video.getClass().getSimpleName();
+                                        String newEngine = typeName.indexOf("FFMPeg")>-1? VideoIO.ENGINE_FFMPEG: //$NON-NLS-1$
+                                                typeName.indexOf("QT")>-1? VideoIO.ENGINE_QUICKTIME: //$NON-NLS-1$
+                                                        VideoIO.ENGINE_NONE;
+                                        VideoIO.setEngine(newEngine);
+                                }                       
+                }
+        }
+        else {
+                int response = JOptionPane.showConfirmDialog(null, "\""+path+"\" "                                //$NON-NLS-1$ //$NON-NLS-2$
+                  +MediaRes.getString("VideoClip.Dialog.VideoNotFound.Message"),                                  //$NON-NLS-1$
+                    MediaRes.getString("VideoClip.Dialog.VideoNotFound.Title"),                                   //$NON-NLS-1$
+                      JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if(response==JOptionPane.YES_OPTION) {
+                        VideoIO.getChooser().setAccessory(VideoIO.videoEnginePanel);
+                    VideoIO.videoEnginePanel.reset();
+                  VideoIO.getChooser().setSelectedFile(new File(path));
+                  java.io.File[] files = VideoIO.getChooserFiles("open video");                                         //$NON-NLS-1$
+                  if(files!=null && files.length>0) {
+                    VideoType selectedType = VideoIO.videoEnginePanel.getSelectedVideoType();
+                        path = XML.getAbsolutePath(files[0]);
+                    video = VideoIO.getVideo(path, selectedType);
+                  }
+                }
+        }
       }
       if (video!=null) {
         Collection<?> filters = (Collection<?>) child.getObject("filters"); //$NON-NLS-1$
@@ -716,21 +750,22 @@ public class VideoClip {
           }
         }
         if (video instanceof ImageVideo) {
-        	double dt = child.getDouble("delta_t"); //$NON-NLS-1$
-        	if (!Double.isNaN(dt)) {
-        		((ImageVideo)video).setFrameDuration(dt);
-        	}
+                double dt = child.getDouble("delta_t"); //$NON-NLS-1$
+                if (!Double.isNaN(dt)) {
+                        ((ImageVideo)video).setFrameDuration(dt);
+                }
         }
         
       }
       VideoClip clip = new VideoClip(video);
+      clip.changeEngine = engineChange;
       if (path!=null) {
-      	if (!path.startsWith("/") && path.indexOf(":")==-1) { //$NON-NLS-1$ //$NON-NLS-2$
-      		// convert path to absolute 
-        	String base = control.getString("basepath"); //$NON-NLS-1$
-      		path = XML.getResolvedPath(path, base);
-      	}
-      	clip.videoPath = path;
+        if (!path.startsWith("/") && path.indexOf(":")==-1) { //$NON-NLS-1$ //$NON-NLS-2$
+                // convert path to absolute 
+                String base = control.getString("basepath"); //$NON-NLS-1$
+                path = XML.getResolvedPath(path, base);
+        }
+        clip.videoPath = path;
       }
       return clip;
     }
@@ -750,10 +785,10 @@ public class VideoClip {
       int stepCount = control.getInt("stepcount"); //$NON-NLS-1$
       int frameCount = clip.getFrameCount();
       if (control.getPropertyNames().contains("video_framecount")) { //$NON-NLS-1$
-      	frameCount = control.getInt("video_framecount"); //$NON-NLS-1$
+        frameCount = control.getInt("video_framecount"); //$NON-NLS-1$
       }
       else if (start!=Integer.MIN_VALUE && stepSize!=Integer.MIN_VALUE && stepCount!=Integer.MIN_VALUE) {
-      	frameCount = start + stepCount*stepSize;
+        frameCount = start + stepCount*stepSize;
       }
       clip.setStepCount(frameCount); // this should equal or exceed the actual frameCount
 
@@ -779,11 +814,11 @@ public class VideoClip {
       if(!Double.isNaN(t)) {
         clip.startTime = t;
       }
-	    clip.readoutType = control.getString("readout"); //$NON-NLS-1$
-    	clip.playAllSteps = true; // by default
-	    if (control.getPropertyNames().contains("playallsteps")) { //$NON-NLS-1$
-	    	clip.playAllSteps = control.getBoolean("playallsteps"); //$NON-NLS-1$
-	    }
+            clip.readoutType = control.getString("readout"); //$NON-NLS-1$
+        clip.playAllSteps = true; // by default
+            if (control.getPropertyNames().contains("playallsteps")) { //$NON-NLS-1$
+                clip.playAllSteps = control.getBoolean("playallsteps"); //$NON-NLS-1$
+            }
       return obj;
     }
 

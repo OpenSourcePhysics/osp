@@ -190,7 +190,7 @@ public class XMLControlElement implements XMLControl {
    * @param obj the object
    */
   public void setValue(String name, Object obj) {
-    setValue(name, obj, XMLPropertyElement.defaultWriteNullFinalArrayElements);
+  	setValue(name, obj, XMLPropertyElement.defaultWriteNullFinalArrayElements);
   }
 
   /**
@@ -205,7 +205,7 @@ public class XMLControlElement implements XMLControl {
       return;
     }
     // clear the property if obj is null
-    if(obj==null) {
+    if (obj==null) {
       Iterator<XMLProperty> it = props.iterator();
       while(it.hasNext()) {
         XMLProperty prop = it.next();
@@ -217,6 +217,10 @@ public class XMLControlElement implements XMLControl {
       }
       return;
     }
+  	if (obj instanceof Boolean) {
+  		setValue(name, ((Boolean)obj).booleanValue());
+  		return;
+  	}
     String type = XML.getDataType(obj);
     if(type!=null) {
       if(type.equals("int")||type.equals("double")) { //$NON-NLS-1$ //$NON-NLS-2$
@@ -234,9 +238,10 @@ public class XMLControlElement implements XMLControl {
    */
   public boolean getBoolean(String name) {
     XMLProperty prop = getXMLProperty(name);
-    if((prop!=null)&&prop.getPropertyType().equals("boolean")) {       //$NON-NLS-1$
+    if (prop!=null && prop.getPropertyType().equals("boolean")) {       //$NON-NLS-1$
       return "true".equals(prop.getPropertyContent().get(0));          //$NON-NLS-1$
-    } else if((prop!=null)&&prop.getPropertyType().equals("string")) { //$NON-NLS-1$
+    } 
+    else if (prop!=null && prop.getPropertyType().equals("string")) { //$NON-NLS-1$
       return "true".equals(prop.getPropertyContent().get(0));          //$NON-NLS-1$
     }
     return false;

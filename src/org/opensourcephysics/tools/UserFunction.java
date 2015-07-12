@@ -6,6 +6,8 @@
  */
 
 package org.opensourcephysics.tools;
+import java.util.TreeMap;
+
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
@@ -26,6 +28,8 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
   protected String name;
   protected String[] paramNames = new String[0];
   protected double[] paramValues = new double[0];
+  protected String[] paramDescriptions = new String[0];
+  protected String[] functionNames = new String[0];
   protected String expression = "0";                     //$NON-NLS-1$
   protected String inputString = "0";                    //$NON-NLS-1$
   protected ParsedMultiVarFunction function = null;
@@ -33,7 +37,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
   protected UserFunction[] references = new UserFunction[0];
   protected boolean nameEditable = true;
   protected String description;
-  protected String[] functionNames;
+  protected KnownPolynomial polynomial;
 
   /**
    * Constructor.
@@ -48,6 +52,33 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
     } catch(ParserException ex) {
       /** empty block */
     }
+  }
+
+  /**
+   * Constructor that copies a KnownPolynomial.
+   *
+   * @param poly the KnownPolynomial
+   */
+  public UserFunction(KnownPolynomial poly) {
+    this(poly.getName());
+    polynomial = poly;
+    // set up name and description
+		setName(poly.getName());
+    setDescription(poly.getDescription());
+    
+    // set up parameters
+    String[] params = new String[poly.getParameterCount()];
+    double[] paramValues = new double[poly.getParameterCount()];
+    String[] desc = new String[poly.getParameterCount()];
+    for (int i=0; i<params.length; i++) {
+    	params[i] = poly.getParameterName(i);
+    	paramValues[i] = poly.getParameterValue(i);
+    	desc[i] = poly.getParameterDescription(i);
+    }
+  	setParameters(params, paramValues, desc);
+  	
+  	// set expression
+    setExpression(poly.getExpression("x"), new String[] {"x"}); //$NON-NLS-1$ //$NON-NLS-2$
   }
 
   /**
@@ -176,7 +207,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
    * Sets the expression.
    *
    * @param exp a parsable expression of the parameters and variables
-   * @param varNames the name of the independent variables
+   * @param varNames the names of the independent variables
    * @return true if successfully parsed
    */
   public boolean setExpression(String exp, String[] varNames) {
@@ -302,11 +333,26 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
   }
 
   /**
+   * Sets the parameters.
+   *
+   * @param names the parameter names
+   * @param values the parameter values
+   * @param descriptions the parameter descriptions
+   */
+  public void setParameters(String[] names, double[] values, String[] descriptions) {
+    paramNames = names;
+    paramValues = values;
+    if (descriptions!=null) {
+      paramDescriptions = descriptions;
+    }
+  }
+
+  /**
    * Sets the parameters of reference functions to those of this function.
    */
   public void updateReferenceParameters() {
     for(UserFunction next : references) {
-      next.setParameters(paramNames, paramValues);
+      next.setParameters(paramNames, paramValues, paramDescriptions);
       next.updateReferenceParameters();
     }
   }
@@ -337,6 +383,19 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
   public void setDescription(String desc) {
     description = desc;
   }
+  
+  /**
+   * Gets a parameter description. May be null.
+   *
+   * @param i the parameter index
+   * @return the description of the parameter (may be null)
+   */
+  public String getParameterDescription(int i) {
+  	if (i>=paramDescriptions.length) return null;
+  	return paramDescriptions[i];
+  }
+
+
 
   /**
    * Evaluates the function for a single variable x.
@@ -377,7 +436,16 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
   }
 
   /**
-   * Returns a clone of this UuserFunction.
+   * Determines if last evaluation resulted in NaN.
+   *
+   * @return true if result was converted from NaN to zero
+   */
+  public boolean evaluatedToNaN() {
+  	return function==null? false: function.evaluatedToNaN();
+  }
+
+  /**
+   * Returns a clone of this UserFunction.
    *
    * @return the clone
    */
@@ -385,16 +453,114 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
     UserFunction f = new UserFunction(name);
     f.setDescription(description);
     f.setNameEditable(nameEditable);
-    f.setParameters(paramNames, paramValues);
+    f.setParameters(paramNames, paramValues, paramDescriptions);
     UserFunction[] refs = new UserFunction[references.length];
     for(int i = 0; i<refs.length; i++) {
       refs[i] = references[i].clone();
     }
     f.setReferences(refs);
     f.setExpression(inputString, vars);
+    f.polynomial = polynomial==null? null: polynomial.clone();
     return f;
   }
 
+  /**
+   * Determines if another KnownFunction is the same as this one.
+   *
+   * @param f the KnownFunction to test
+   * @return true if equal
+   */
+  @Override
+  public boolean equals(Object f) {
+  	if (!(f instanceof UserFunction)) return false;
+  	UserFunction uf = (UserFunction)f;
+  	if (!getName().equals(uf.getName())) return false;
+  	if (!getInputString().equals(uf.getInputString())) return false;
+  	int n = getParameterCount();
+  	if (n!=uf.getParameterCount()) return false;
+  	for (int i=0; i<n; i++) {
+  		if (!getParameterName(i).equals(uf.getParameterName(i))) return false;
+  	}
+  	// ignore descriptions and parameter values
+  	return true;
+  }
+  /**
+   * Updates the associated polynomial, if any, with this functions current properties.
+   * 
+   * @return true if updated
+   */
+  public boolean updatePolynomial() {
+  	if (polynomial==null) return false;
+    // update name and description
+  	// see if function name is different than default polynomial name
+		polynomial.setName(this.getName());
+		polynomial.setDescription(this.getDescription());
+    
+    // update parameters
+    polynomial.setParameters(paramNames, paramValues, paramDescriptions);  
+    return true;
+  }
+  
+  /**
+   * Replaces a parameter name with a new one in the function expression.
+   *
+   * @param oldName the existing parameter name
+   * @param newName the new parameter name
+   * @return the modified expression, or null if failed
+   */
+  protected String replaceParameterNameInExpression(String oldName, String newName) {
+		String[] varNames = getIndependentVariables();
+		String expression = getInputString();
+		TreeMap<String, String> replacements = new TreeMap<String, String>();
+		
+		expression = replaceInExpression(oldName, newName, expression, replacements);
+		if (expression==null) return null;
+		
+		// restore dummy names
+		for (String key: replacements.keySet()) {
+			if (key.equals(newName)) continue;
+			expression = expression.replaceAll(key, replacements.get(key));
+		}
+		if (setExpression(expression, varNames)) return expression;
+		return null;
+  }
+  
+  /**
+   * Replaces a parameter name with a new one in a specified expression.
+   *
+   * @param oldName the existing parameter name
+   * @param newName the new parameter name
+   * @param expression the expression to modify
+   * @param replacements a map of parameter replacements already made
+   * @return the modified expression, or null if failed
+   */
+  private String replaceInExpression(String oldName, String newName, 
+  		String expression, TreeMap<String, String> replacements) {
+		if (replacements.values().contains(oldName)) return expression;
+		
+  	for (int i=0; i<getParameterCount(); i++) {
+			String nextParam = getParameterName(i);
+			if (oldName.equals(nextParam) || newName.equals(nextParam)) continue;
+			if (nextParam.contains(oldName)) {
+				// replace nextParam with dummy name
+				int k = 0;
+				for (int j=0; j<dummyVars.length; j++) {
+					if (dummyVars[j].equals(newName)) {
+						k = j+1;
+						break;
+					}
+				}
+				if (k>=dummyVars.length) return null;
+				expression = replaceInExpression(nextParam, dummyVars[k], expression, replacements);
+				if (expression==null) return null;
+			}
+		}
+  	
+		expression = expression.replaceAll(oldName, newName);
+		replacements.put(newName, oldName);
+		return expression;
+  }
+  
   /**
    * Evaluates the support functions for a single variable x.
    *
@@ -443,8 +609,12 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
       control.setValue("name_editable", f.isNameEditable());      //$NON-NLS-1$
       control.setValue("parameter_names", f.paramNames);          //$NON-NLS-1$
       control.setValue("parameter_values", f.paramValues);        //$NON-NLS-1$
+      control.setValue("parameter_descriptions", f.paramDescriptions);        //$NON-NLS-1$
       control.setValue("variables", f.getIndependentVariables()); //$NON-NLS-1$
       control.setValue("expression", f.getInputString());         //$NON-NLS-1$
+      if (f.polynomial!=null) {
+        control.setValue("polynomial", f.polynomial.getCoefficients());  //$NON-NLS-1$
+      }
     }
 
     public Object createObject(XMLControl control) {
@@ -460,9 +630,10 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
         f.setNameEditable(control.getBoolean("name_editable"));  //$NON-NLS-1$
       }
       String[] names = (String[]) control.getObject("parameter_names");   //$NON-NLS-1$
-      double[] values = (double[]) control.getObject("parameter_values"); //$NON-NLS-1$
       if(names!=null) {
-        f.setParameters(names, values);
+        double[] values = (double[]) control.getObject("parameter_values"); //$NON-NLS-1$
+        String[] desc = (String[]) control.getObject("parameter_descriptions");   //$NON-NLS-1$
+        f.setParameters(names, values, desc);
       }
       String[] vars = (String[]) control.getObject("variables"); //$NON-NLS-1$
       if(vars==null) {                              // for legacy code
@@ -470,6 +641,10 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
         vars = new String[] {var};
       }
       f.setExpression(control.getString("expression"), vars); //$NON-NLS-1$
+      double[] coeff = (double[])control.getObject("polynomial"); //$NON-NLS-1$
+      if (coeff!=null) {
+      	f.polynomial = new KnownPolynomial(coeff);
+      }
       return obj;
     }
 

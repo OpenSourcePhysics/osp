@@ -53,8 +53,9 @@ public class DataToolStatsTable extends JTable {
   public DataToolStatsTable(DataToolTable table) {
     dataTable = table;
     statsModel = new StatsTableModel();
-    // mouse motion listener for table
+    // add mouse listeners for table
     addMouseMotionListener(new MouseInputAdapter() {
+    	@Override
       public void mouseMoved(MouseEvent e) {
         int col = columnAtPoint(e.getPoint());
         int labelCol = convertColumnIndexToView(0);
@@ -70,6 +71,13 @@ public class DataToolStatsTable extends JTable {
         }
       }
     });
+    addMouseListener(new MouseInputAdapter() {
+    	@Override
+    	public void mouseEntered(MouseEvent e) {
+    		dataTable.dataToolTab.refreshStatusBar(dataTable.dataToolTab.getCorrelationString());
+    	}
+    });
+    
     init();
   }
 

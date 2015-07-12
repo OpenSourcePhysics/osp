@@ -6,9 +6,11 @@
  */
 
 package org.opensourcephysics.tools;
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 
@@ -92,7 +94,7 @@ public class UserFunctionEditor extends FunctionEditor {
    * @return the name
    */
   public String getName(Object obj) {
-    return(obj==null) ? null : ((UserFunction) obj).getName();
+    return (obj==null)? null: ((UserFunction)obj).getName();
   }
 
   /**
@@ -102,7 +104,33 @@ public class UserFunctionEditor extends FunctionEditor {
    * @return the expression
    */
   public String getExpression(Object obj) {
-    return(obj==null) ? null : ((UserFunction) obj).getInputString();
+    return (obj==null)? null: ((UserFunction)obj).getInputString();
+  }
+
+  /**
+   * Returns the description of the object.
+   *
+   * @param obj the object
+   * @return the description
+   */
+  public String getDescription(Object obj) {
+    return (obj==null)? null: ((UserFunction)obj).getDescription();
+  }
+
+  /**
+   * Sets the description of the object.
+   *
+   * @param obj the object
+   * @param desc the description
+   */
+  public void setDescription(Object obj, String desc) {
+  	if (obj!=null) {
+    	if (desc!=null && desc.trim().equals("")) { //$NON-NLS-1$
+    		desc = null;
+    	}
+  		((UserFunction)obj).setDescription(desc);
+  		super.setDescription(obj, desc);
+  	}
   }
 
   /**
@@ -122,6 +150,8 @@ public class UserFunctionEditor extends FunctionEditor {
    * @return true if the expression is editable
    */
   public boolean isExpressionEditable(Object obj) {
+  	UserFunction f = (UserFunction)obj;
+  	if (f.polynomial!=null) return false;
     return true;
   }
 
@@ -137,7 +167,7 @@ public class UserFunctionEditor extends FunctionEditor {
     for(int i = 0; i<evaluate.size(); i++) {
       UserFunction f = (UserFunction) evaluate.get(i);
       if(!parametersValid&&(paramEditor!=null)) {
-        f.setParameters(paramEditor.getNames(), paramEditor.getValues());
+        f.setParameters(paramEditor.getNames(), paramEditor.getValues(), paramEditor.getDescriptions());
       }
       f.setExpression(f.getInputString(), f.getIndependentVariables());
     }
@@ -180,7 +210,60 @@ public class UserFunctionEditor extends FunctionEditor {
    * @return the tooltip
    */
   public String getTooltip(Object obj) {
-    return(obj==null) ? null : ((UserFunction) obj).getDescription();
+    return (obj==null)? null: ((UserFunction)obj).getDescription();
+  }
+
+  /**
+   * Responds to property change events.
+   *
+   * @param e the event
+   */
+  public void propertyChange(PropertyChangeEvent e) {
+  	String propName = e.getPropertyName();
+    if (propName.equals("param_description")) { //$NON-NLS-1$
+      // parameter description has changed
+    	for (UserFunction f: getMainFunctions()) {
+        f.setParameters(paramEditor.getNames(), paramEditor.getValues(), paramEditor.getDescriptions());
+    	}
+    	for (UserFunction f: getSupportFunctions()) {
+        f.setParameters(paramEditor.getNames(), paramEditor.getValues(), paramEditor.getDescriptions());
+    	}
+    }
+    else if (propName.equals("edit")) { //$NON-NLS-1$
+      // parameter has changed
+    	UserFunction[] mainFunctions = getMainFunctions();
+    	if (mainFunctions.length>0) {
+	    	String newName = (String)e.getOldValue();
+	    	String oldName = null;
+	    	Object obj = e.getNewValue();
+	    	UserFunction func = getMainFunctions()[0];
+	    	if (func.polynomial!=null && obj!=null) {
+	    		if (obj instanceof DefaultEdit) {
+		      	DefaultEdit edit = (DefaultEdit)obj;
+		      	if (edit.editType!=FunctionEditor.NAME_EDIT) {
+		      		super.propertyChange(e);
+		      		return;
+		      	}
+		      	oldName = (String)edit.undoObj;
+	    		}
+	    		else if (obj instanceof String) {
+	    			oldName = (String)obj;
+	    		}
+	    		if (oldName!=null) {
+		      	for (UserFunction f: getMainFunctions()) {
+		          f.setParameters(paramEditor.getNames(), paramEditor.getValues(), paramEditor.getDescriptions());
+		          f.replaceParameterNameInExpression(oldName, newName);
+		      	}
+		      	for (UserFunction f: getSupportFunctions()) {
+		          f.setParameters(paramEditor.getNames(), paramEditor.getValues(), paramEditor.getDescriptions());
+		          f.replaceParameterNameInExpression(oldName, newName);
+		      	}
+	    		}
+	    	}
+    	}
+    }
+    
+    super.propertyChange(e);
   }
 
   //_________________________ protected methods ___________________________
@@ -232,19 +315,23 @@ public class UserFunctionEditor extends FunctionEditor {
       String var = ((UserFunction) obj).getIndependentVariable();
       disallowed = disallowed||var.equals(name);
     }
+    
     if(disallowed) {
       return true;
     }
-    if(functionPanel instanceof FitFunctionPanel) {
+    // added following line so leaving object name unchanged is not disallowed
+    if (obj!=null && getName(obj).equals(name)) return false;
+    
+    if (functionPanel instanceof FitFunctionPanel) {
       FitFunctionPanel fitPanel = (FitFunctionPanel) functionPanel;
-      if((fitPanel.functionTool!=null)&&(fitPanel.functionTool!=null)) {
+      if(fitPanel.functionTool!=null) {
         String s = fitPanel.functionTool.getUniqueName(name);
         disallowed = !name.equals(s);
         for(DatasetCurveFitter next : fitPanel.functionTool.curveFitters) {
           if(disallowed) {
             return true;
           }
-          disallowed = next.allFitsMap.keySet().contains(name);
+          disallowed = next.fitMap.keySet().contains(name);
         }
       }
     }
@@ -324,13 +411,13 @@ public class UserFunctionEditor extends FunctionEditor {
     }
     if(f==null) {
       f = new UserFunction(name);
-      f.setParameters(paramEditor.getNames(), paramEditor.getValues());
+      f.setParameters(paramEditor.getNames(), paramEditor.getValues(), paramEditor.getDescriptions());
       f.setExpression(expression, defaultVariableNames);
     } else if(!f.getName().equals(name)) {
       f.setNameEditable(true);
       f.setName(name);
     } else {
-      f.setParameters(paramEditor.getNames(), paramEditor.getValues());
+      f.setParameters(paramEditor.getNames(), paramEditor.getValues(), paramEditor.getDescriptions());
       f.setExpression(expression, f.getIndependentVariables());
     }
     return f;

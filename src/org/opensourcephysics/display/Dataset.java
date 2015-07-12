@@ -142,6 +142,12 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
   private String yColumnName;
   // the name of the y data
 
+  protected String xColumnDescription;
+  // a description of the y data
+
+  protected String yColumnDescription;
+  // a description of the y data
+
   private boolean[] colVisible = new boolean[2];
   // column visibilities for table view
 
@@ -450,6 +456,42 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
   }
 
   /**
+   * Gets the x column description.
+   *
+   * @return the description (may be null)
+   */
+  public String getXColumnDescription() {
+    return xColumnDescription;
+  }
+
+  /**
+   * Sets the x column description.
+   *
+   * @param desc the description (may be null)
+   */
+  public void setXColumnDescription(String desc) {
+    xColumnDescription = desc;
+  }
+
+  /**
+   * Gets the y column description.
+   *
+   * @return the description (may be null)
+   */
+  public String getYColumnDescription() {
+    return yColumnDescription;
+  }
+
+  /**
+   * Sets the y column description.
+   *
+   * @param desc the description (may be null)
+   */
+  public void setYColumnDescription(String desc) {
+    yColumnDescription = desc;
+  }
+
+  /**
    * Sets a name that can be used to identify the dataset.
    *
    * @param name String
@@ -575,8 +617,10 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
    */
   public double[][] getPoints() {
     double[][] temp = new double[index][2];
+    double[] xValues = getXPoints();
+    double[] yValues = getYPoints();
     for(int i = 0; i<index; i++) {
-      temp[i] = new double[] {xpoints[i], ypoints[i]};
+      temp[i] = new double[] {xValues[i], yValues[i]};
     }
     return temp;
   }
@@ -731,15 +775,17 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
   public Object getValueAt(int rowIndex, int columnIndex) {
     columnIndex = Dataset.convertTableColumnIndex(colVisible, columnIndex);
     rowIndex = rowIndex*stride;
+    double[] xValues = getXPoints();
+    double[] yValues = getYPoints();
     // conversionFactor added by D Brown Dec 2010
     if(columnIndex==0) {
-      return new Double(xpoints[rowIndex]);
+      return new Double(xValues[rowIndex]);
     }
     // changed by D.Brown
-    if(Double.isNaN(ypoints[rowIndex])) {
+    if(Double.isNaN(yValues[rowIndex])) {
       return null;
     }
-    return new Double(ypoints[rowIndex]);
+    return new Double(yValues[rowIndex]);
   }
 
   /**
@@ -1126,15 +1172,17 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
       return;
     }
     int i = 0;
+    double[] xValues = getXPoints();
+    double[] yValues = getYPoints();
     for(; i<index; i++) {
-      if(!Double.isNaN(ypoints[i])) {
-        generalPath.moveTo((float) xpoints[i], (float) ypoints[i]);
+      if(!Double.isNaN(yValues[i])) {
+        generalPath.moveTo((float) xValues[i], (float) yValues[i]);
         break;
       }
     }
     for(int j = i+1; j<index; j++) {
-      if(!Double.isNaN(ypoints[j])) {
-        generalPath.lineTo((float) xpoints[j], (float) ypoints[j]);
+      if(!Double.isNaN(yValues[j])) {
+        generalPath.lineTo((float) xValues[j], (float) yValues[j]);
       }
     }
   }
@@ -1236,18 +1284,20 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
     if(viewRect!=null) { // decrease the clip if we are in a scroll pane
       g2.clipRect(viewRect.x, viewRect.y, viewRect.x+viewRect.width, viewRect.y+viewRect.height);
     }
+    double[] tempX = getXPoints();
+    double[] tempY = getYPoints();
     for(int i = 0; i<index; i++) {
-      if(Double.isNaN(ypoints[i])) {
+      if(Double.isNaN(tempY[i])) {
         continue;
       }
-      if(drawingPanel.isLogScaleX()&&(xpoints[i]<=0)) {
+      if(drawingPanel.isLogScaleX()&&(tempX[i]<=0)) {
         continue;
       }
-      if(drawingPanel.isLogScaleY()&&(ypoints[i]<=0)) {
+      if(drawingPanel.isLogScaleY()&&(tempY[i]<=0)) {
         continue;
       }
-      xp = drawingPanel.xToPix(xpoints[i]);
-      yp = drawingPanel.yToPix(ypoints[i]);
+      xp = drawingPanel.xToPix(tempX[i]);
+      yp = drawingPanel.yToPix(tempY[i]);
       switch(markerShape) {
          case BAR :                                      // draw a bar graph.
            double bottom = Math.min(drawingPanel.yToPix(0), drawingPanel.yToPix(drawingPanel.getYMin()));
@@ -1382,18 +1432,20 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
     ymax = ymaxLogscale = -Double.MAX_VALUE;
     xmin = xminLogscale = Double.MAX_VALUE;
     ymin = yminLogscale = Double.MAX_VALUE;
+    double[] xValues = getXPoints();
+    double[] yValues = getYPoints();
     for(int i = 0; i<index; i++) {
-      if(Double.isNaN(xpoints[i])||Double.isInfinite(xpoints[i])||Double.isInfinite(ypoints[i])) {
+      if(Double.isNaN(xValues[i])||Double.isInfinite(xValues[i])||Double.isInfinite(yValues[i])) {
         continue;
       }
-      double xp = xpoints[i];
+      double xp = xValues[i];
       xmax = Math.max(xp, xmax);
       xmin = Math.min(xp, xmin);
       if(xp>0) {
         xmaxLogscale = Math.max(xp, xmaxLogscale);
         xminLogscale = Math.min(xp, xminLogscale);
       }
-      double yp = ypoints[i];
+      double yp = yValues[i];
       if(!Double.isNaN(yp)) {
         ymax = Math.max(yp, ymax);
         ymin = Math.min(yp, ymin);
@@ -1498,6 +1550,8 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
       control.setValue("name", data.name);                     //$NON-NLS-1$
       control.setValue("x_name", data.xColumnName);            //$NON-NLS-1$
       control.setValue("y_name", data.yColumnName);            //$NON-NLS-1$
+      control.setValue("x_description", data.xColumnDescription); //$NON-NLS-1$
+      control.setValue("y_description", data.yColumnDescription); //$NON-NLS-1$
       control.setValue("line_color", data.lineColor);          //$NON-NLS-1$
       control.setValue("fill_color", data.fillColor);          //$NON-NLS-1$
       control.setValue("edge_color", data.edgeColor);          //$NON-NLS-1$
@@ -1546,6 +1600,8 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
       data.name = control.getString("name");          //$NON-NLS-1$
       data.xColumnName = control.getString("x_name"); //$NON-NLS-1$
       data.yColumnName = control.getString("y_name"); //$NON-NLS-1$
+      data.xColumnDescription = control.getString("x_description"); //$NON-NLS-1$
+      data.yColumnDescription = control.getString("y_description"); //$NON-NLS-1$
       Color color = (Color) control.getObject("line_color"); //$NON-NLS-1$
       if(color!=null) {
         data.lineColor = color;

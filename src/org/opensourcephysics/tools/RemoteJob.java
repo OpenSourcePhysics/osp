@@ -16,6 +16,8 @@ import java.rmi.server.UnicastRemoteObject;
  * @version 1.0
  */
 public class RemoteJob extends UnicastRemoteObject implements Job {
+	private static final long serialVersionUID = 1L;
+	
   // instance fields
   Job wrappedJob;
 

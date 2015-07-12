@@ -44,10 +44,13 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
+
 import javax.swing.SwingUtilities;
+
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.display.Data;
 import org.opensourcephysics.display.Drawable;
 import org.opensourcephysics.display.InteractivePanel;
 import org.opensourcephysics.display.TextPanel;
@@ -581,6 +584,20 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
       }
       repaint();
     }
+  }
+  
+  /**
+   * Imports Data from a source into a DataTrack. 
+   * This method returns null, but superclass TrackerPanel overrides it
+   * and returns a DataTrack track.
+   * Source object may be String path, JPanel controlPanel, Tool tool, etc
+   * 
+   * @param data the Data to import
+   * @param source the data source (may be null)
+   * @return the DataTrack with the Data (may return null)
+   */
+  public DataTrack importData(Data data, Object source) {
+  	return null;
   }
 
   /**

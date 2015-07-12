@@ -11,6 +11,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -18,6 +19,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -28,6 +30,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+
+import org.opensourcephysics.tools.FontSizer;
 
 /**
  * This modal dialog lets the user choose any number of items
@@ -41,6 +45,8 @@ public class ListChooser extends JDialog {
   private JCheckBox[] checkBoxes;
   private JLabel instructions;
   private boolean applyChanges = false;
+  private String separator = ":  "; //$NON-NLS-1$
+  private Font lightFont;
 
   /**
    * Constructs a dialog with the specified title and text.
@@ -49,7 +55,7 @@ public class ListChooser extends JDialog {
    * @param text the label text
    */
   public ListChooser(String title, String text) {
-    this(title, text, null);
+    this(title, text, (JDialog)null);
   }
 
   /**
@@ -83,13 +89,11 @@ public class ListChooser extends JDialog {
   }
 
   /**
-   * Constructs a dialog with the specified title, text and owner.
-   *
-   * @param title the title of the dialog
-   * @param text the label text
-   * @param owner the component that owns the dialog (may be null)
+   * Creates the GUI.
    */
-  public void createGUI() {
+  private void createGUI() {
+  	// create the light font
+  	lightFont = new JLabel().getFont().deriveFont(Font.PLAIN);
     // create the buttons
     JButton cancelButton = new JButton(ControlsRes.getString("Chooser.Button.Cancel"));       //$NON-NLS-1$
     JButton okButton = new JButton(ControlsRes.getString("Chooser.Button.OK"));               //$NON-NLS-1$
@@ -157,6 +161,12 @@ public class ListChooser extends JDialog {
     int y = rect.y+(rect.height-this.getBounds().height)/2;
     setLocation(x, y);    	
   }
+  
+  public void setSeparator(String separator) {
+  	if (separator!=null) {
+  		this.separator = separator;
+  	}
+  }
 
   /**
    * Allows the user to choose from the supplied list. Items not selected are
@@ -211,6 +221,38 @@ public class ListChooser extends JDialog {
    * @return <code>true</code> if OK button was clicked
    */
   public boolean choose(Collection<?> choices, Collection<String> names, Collection<?> values, boolean[] selected, boolean[] disabled) {
+    return choose(choices, names, values, null, selected, disabled);
+  }
+
+  /**
+   * Allows the user to choose from the supplied list. Items not selected are
+   * removed from the list.
+   *
+   * @param choices a collection of objects to choose from
+   * @param names an optional collection of descriptive names
+   * @param values an optional collection of values
+   * @param descriptions an optional collection of descriptions
+   * @param selected an array of initially selected states
+   * @return <code>true</code> if OK button was clicked
+   */
+  public boolean choose(Collection<?> choices, Collection<String> names, Collection<?> values, Collection<String> descriptions, boolean[] selected) {
+    boolean[] disabled = new boolean[choices.size()]; // all false by default
+    return choose(choices, names, values, descriptions, selected, disabled);
+  }
+
+  /**
+   * Allows the user to choose from the supplied list. Items not selected are
+   * removed from the list.
+   *
+   * @param choices a collection of objects to choose from
+   * @param names an optional collection of descriptive names
+   * @param values an optional collection of values
+   * @param descriptions an optional collection of descriptions
+   * @param selected an array of initially selected states
+   * @param disabled an array of disabled states (true = disabled)
+   * @return <code>true</code> if OK button was clicked
+   */
+  public boolean choose(Collection<?> choices, Collection<String> names, Collection<?> values, Collection<String> descriptions, boolean[] selected, boolean[] disabled) {
     checkPane.removeAll();
     checkBoxes = new JCheckBox[choices.size()];
     selections = new boolean[choices.size()];
@@ -223,6 +265,10 @@ public class ListChooser extends JDialog {
     if(values!=null) {
       valueList.addAll(values);
     }
+    ArrayList<String> descriptionList = new ArrayList<String>();
+    if(descriptions!=null) {
+    	descriptionList.addAll(descriptions);
+    }
     Iterator<?> it = choices.iterator();
     int i = 0;
     while(it.hasNext()) {
@@ -232,17 +278,33 @@ public class ListChooser extends JDialog {
         checkBoxes[i] = new JCheckBox(objects[i].toString());
       } else {
         String text = nameList.get(i);
-        if((valueList.size()>i)&&(valueList.get(i)!=null)) {
-          text += ":  "+valueList.get(i); //$NON-NLS-1$
+        if (valueList.size()>i && valueList.get(i)!=null) {
+          text += separator+valueList.get(i);
         }
         checkBoxes[i] = new JCheckBox(text);
       }
       checkBoxes[i].setSelected(selected[i]);
       checkBoxes[i].setEnabled(!disabled[i]);
       checkBoxes[i].setBackground(Color.white);
-      checkPane.add(checkBoxes[i]);
+      checkBoxes[i].setFont(lightFont);
+      checkBoxes[i].setIconTextGap(10);
+
+      Box box = Box.createHorizontalBox();
+      box.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 8));
+      box.add(checkBoxes[i]);
+      box.add(Box.createHorizontalGlue());
+      checkPane.add(box);
+
+      if (descriptionList.size()>i && descriptionList.get(i)!=null) {
+	      JLabel label = new JLabel(descriptionList.get(i));
+      	label.setFont(lightFont);
+      	box.add(label);
+      }
+
       i++;
     }
+    FontSizer.setFonts(this, FontSizer.getLevel());
+    this.pack();
     setVisible(true);
     if(!applyChanges) {
       return false;

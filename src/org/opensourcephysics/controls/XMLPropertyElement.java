@@ -282,6 +282,10 @@ public class XMLPropertyElement implements XMLProperty {
     }
     // write the content
     List<Object> content = getPropertyContent();
+    // special case: null object
+    if (content.isEmpty() && "object".equals(type)) { //$NON-NLS-1$
+    	content.add("null"); //$NON-NLS-1$
+    }
     // if no content, write closing tag and return
     if(content.isEmpty()) {
       xml.append("/>"); //$NON-NLS-1$

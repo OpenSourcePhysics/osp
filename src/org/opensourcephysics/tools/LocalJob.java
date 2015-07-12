@@ -6,6 +6,8 @@
  */
 
 package org.opensourcephysics.tools;
+import java.io.Serializable;
+
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 
@@ -15,7 +17,10 @@ import org.opensourcephysics.controls.XMLControlElement;
  * @author Douglas Brown
  * @version 1.0
  */
-public class LocalJob implements Job {
+public class LocalJob implements Job, Serializable {
+	
+	private static final long serialVersionUID = 1L;
+
   // instance fields
   String xml;
 

@@ -206,8 +206,9 @@ public class FunctionTool extends JDialog {
    */
   public void setSelectedPanel(String name) {
     Object item = getDropdownItem(name);
-    if (item != null)
+    if (item != null) {
     	dropdown.setSelectedItem(item);
+    }
   }
 
   /**
@@ -413,6 +414,10 @@ public class FunctionTool extends JDialog {
     ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
       public void propertyChange(PropertyChangeEvent e) {
         refreshGUI();
+        if (FunctionTool.this instanceof FitBuilder) {
+        	// refresh dropdown since localized names change
+        	refreshDropdown(null);
+        }
       }
 
     });
@@ -448,7 +453,44 @@ public class FunctionTool extends JDialog {
 	  			dim.height = button.getHeight();
 	  		}
 	      return dim;
-	    }    	
+	    } 
+	    
+    	// override addItem method to alphabetize added items
+      public void addItem(Object obj) {
+      	if (obj==null) return;
+      	int count = getItemCount();
+      	for (int i=0; i<count; i++) {
+      		if (obj.equals(getItemAt(i))) return;
+      	}
+      	// add in alphabetical order, ignoring case
+      	Object[] array = (Object[])obj;
+      	String name = array.length>2? (String)array[2]: (String)array[1];
+      	// substitute localized name if this tool is a FitBuilder
+        if (FunctionTool.this instanceof FitBuilder) {
+  	      name = FitBuilder.localize(name);
+        }
+        
+      	boolean added = false;
+      	for (int i=0; i<count; i++) {
+      		Object[] nextArray = (Object[])getItemAt(i);
+        	String next = nextArray.length>2? (String)nextArray[2]: (String)nextArray[1];
+        	// substitute localized name if this tool is a FitBuilder
+          if (FunctionTool.this instanceof FitBuilder) {
+    	      next = FitBuilder.localize(next);
+          }
+      		if (name.compareToIgnoreCase(next)<0) {
+      			// next comes after name, so insert object here
+      			insertItemAt(obj, i);
+      			added = true;
+      			break;
+      		}
+      	}
+      	if (!added) {
+      		// add at end
+      		super.addItem(obj);
+      	}
+      }
+	    
     };
     dropdown.setBorder(BorderFactory.createEmptyBorder(0, 0, 1, 0));
     dropdownbar.add(dropdown);
@@ -746,10 +788,12 @@ public class FunctionTool extends JDialog {
       if (value != null) {
         Object[] array = (Object[])value;
         setIcon((Icon)array[0]);
-        if (array.length > 2) {
-        	setText((String)array[2]);
+        String val = array.length>2? (String)array[2]: (String)array[1];
+      	// substitute localized name if this tool is a FitBuilder
+        if (FunctionTool.this instanceof FitBuilder) {
+  	      val = FitBuilder.localize(val);
         }
-        else setText((String)array[1]);
+      	setText(val);
       }
       else {
         setIcon(null);

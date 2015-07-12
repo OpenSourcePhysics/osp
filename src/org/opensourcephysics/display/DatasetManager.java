@@ -48,6 +48,7 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
   ArrayList<String> constantNames = new ArrayList<String>();
   Map<String, Double> constantValues = new TreeMap<String, Double>();
   Map<String, String> constantExpressions = new TreeMap<String, String>();
+  Map<String, String> constantDescriptions = new TreeMap<String, String>();
   String name = ""; //$NON-NLS-1$
   int datasetID = hashCode();
 
@@ -903,8 +904,19 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
   }
 
   /**
+   * Returns the description of a constant.
+   * Added by Doug Brown 11/23/14.
+   *
+   * @param name the name of the constant
+   * @return the description, or null if not defined
+   */
+  public String getConstantDescription(String name) {
+  	return constantDescriptions.get(name);
+  }
+
+  /**
    * Sets the value of a constant.
-   * Added by Doug Brown 3/24/2011.
+   * Added by Doug Brown 3/24/2011. modified 11/23/14.
    *
    * @param name the name of the constant
    * @param val the value of the constant
@@ -918,8 +930,25 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
   }
 
   /**
+   * Sets the value of a constant.
+   * Added by Doug Brown 11/23/14.
+   *
+   * @param name the name of the constant
+   * @param val the value of the constant
+   * @param expression the expression that defines the value
+   * @param desc the description of the constant (may be null)
+   */
+  public void setConstant(String name, double val, String expression, String desc) {
+  	if (!constantNames.contains(name))
+  		constantNames.add(name);
+  	constantValues.put(name, val);
+  	constantExpressions.put(name, expression);
+  	constantDescriptions.put(name, desc);
+  }
+
+  /**
    * Clears a constant.
-   * Added by Doug Brown 3/24/2011.
+   * Added by Doug Brown 3/24/2011, modified 11/23/14.
    *
    * @param name the name of the constant
    */
@@ -927,11 +956,12 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
   	constantNames.remove(name);
   	constantValues.remove(name);
   	constantExpressions.remove(name);
+  	constantDescriptions.remove(name);
   }
 
   /**
    *  Create a string representation of the data.
-   * @return    the data
+   * @return a String of data
    */
   public String toString() {
     if(datasets.size()==0) {

@@ -22,6 +22,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.Icon;
@@ -37,6 +38,7 @@ import javax.swing.text.StyledDocument;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
+
 import org.opensourcephysics.display.OSPRuntime;
 
 /**
@@ -166,7 +168,7 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
       }
       refreshFunctions();
       refreshGUI();
-      if((functionTool!=null)&&(functionEditor.getObjects().size()>0)) {
+      if (functionTool!=null && functionEditor.getObjects().size()>0) {
         String functionName = (String) e.getOldValue();
         String prevName = null;
         if(e.getNewValue() instanceof FunctionEditor.DefaultEdit) {
@@ -174,7 +176,7 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
           if(edit.editType==FunctionEditor.NAME_EDIT) {
             prevName = edit.undoObj.toString();
           }
-        } else if(e.getNewValue() instanceof String) {
+        } else if (e.getNewValue() instanceof String) {
           prevName = e.getNewValue().toString();
         }
         functionTool.firePropertyChange("function", prevName, functionName); //$NON-NLS-1$
@@ -187,6 +189,8 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
       	functionTool.refreshGUI();
         functionTool.firePropertyChange("function", null, null);             //$NON-NLS-1$
       }
+    } else if (e.getPropertyName().equals("description") && functionTool!=null) {   //$NON-NLS-1$
+      functionTool.firePropertyChange("description", null, null);    //$NON-NLS-1$
     }
   }
 
@@ -454,7 +458,8 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
     StyledDocument doc = instructions.getStyledDocument();
     Style style = doc.getStyle("blue");                                                //$NON-NLS-1$
     String s = isEmpty() ? ToolsRes.getString("FunctionPanel.Instructions.GetStarted") //$NON-NLS-1$
-                         : ToolsRes.getString("FunctionPanel.Instructions.General");   //$NON-NLS-1$
+                         : ToolsRes.getString("FunctionPanel.Instructions.General")   //$NON-NLS-1$
+                           +"  "+ToolsRes.getString("FunctionPanel.Instructions.EditDescription"); //$NON-NLS-1$ //$NON-NLS-2$
     if(!editing&&hasCircularErrors()) {                                       // error condition
       s = ToolsRes.getString("FunctionPanel.Instructions.CircularErrors");    //$NON-NLS-1$
       style = doc.getStyle("red");                                            //$NON-NLS-1$
@@ -469,7 +474,8 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
       } else if(selectedColumn>-1) {
         s = ToolsRes.getString("FunctionPanel.Instructions.EditCell");        //$NON-NLS-1$
         if(selectedColumn==0) {
-          s += " "+ToolsRes.getString("FunctionPanel.Instructions.NameCell"); //$NON-NLS-1$//$NON-NLS-2$
+          s += "  "+ToolsRes.getString("FunctionPanel.Instructions.NameCell"); //$NON-NLS-1$//$NON-NLS-2$
+          s += "\n"+ToolsRes.getString("FunctionPanel.Instructions.EditDescription"); //$NON-NLS-1$//$NON-NLS-2$
         } else {
           s += " "+ToolsRes.getString("FunctionPanel.Instructions.Help");     //$NON-NLS-1$//$NON-NLS-2$
         }

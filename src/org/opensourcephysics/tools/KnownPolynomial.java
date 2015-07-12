@@ -9,11 +9,14 @@ package org.opensourcephysics.tools;
 import org.opensourcephysics.numerics.PolynomialLeastSquareFit;
 
 /**
- * A polynomial that implements KnownFunction.
+ * A polynomial that implements KnownFunction. Limited to degree 5 or less.
  */
 public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFunction {
-  String[] paramNames = {"A", "B", "C",  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+  String name;
+  String description;
+	String[] paramNames = {"A", "B", "C",  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                          "D", "E", "F"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+  String[] paramDescriptions;
 
   KnownPolynomial(double[] xdata, double[] ydata, int degree) {
     super(xdata, ydata, degree);
@@ -42,6 +45,23 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
   }
 
   /**
+   * Gets a parameter description. May be null.
+   *
+   * @param i the parameter index
+   * @return the description of the parameter (may be null)
+   */
+  public String getParameterDescription(int i) {
+  	if (paramDescriptions!=null && paramDescriptions.length>i) {
+  		return paramDescriptions[i];
+  	}
+  	if (getParameterCount()==2) {
+  		if (i==0) return ToolsRes.getString("Function.Parameter.Slope.Description"); //$NON-NLS-1$
+  		return ToolsRes.getString("Function.Parameter.Intercept.Description"); //$NON-NLS-1$
+  	}
+  	return null;
+  }
+
+  /**
    * Gets a parameter value.
    *
    * @param i the parameter index
@@ -58,14 +78,37 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
    * @param value the value
    */
   public void setParameterValue(int i, double value) {
+  	if (Double.isNaN(value)) return;
     coefficients[coefficients.length-i-1] = value;
   }
 
   /**
-   * Gets the equation.
+   * Sets the parameters.
+   *
+   * @param names the parameter names (may be null)
+   * @param values the parameter values (may be null)
+   * @param descriptions the parameter descriptions (may be null)
+   */
+  public void setParameters(String[] names, double[] values, String[] descriptions) {
+  	if (names!=null) {
+			for (int i=0; i<Math.min(names.length, getParameterCount()); i++) {
+				if (names[i]==null || "".equals(names[i].trim())) continue; //$NON-NLS-1$
+				paramNames[i] = names[i];
+			}
+  	}
+  	paramDescriptions = descriptions;
+  	if (values!=null) {
+  		for (int i=0; i<Math.min(values.length, getParameterCount()); i++) {
+  			setParameterValue(i, values[i]);
+  		}
+  	}
+  }
+
+  /**
+   * Gets the expression.
    *
    * @param indepVarName the name of the independent variable
-   * @return the equation
+   * @return the equation expression
    */
   public String getExpression(String indepVarName) {
     StringBuffer eqn = new StringBuffer();
@@ -91,7 +134,83 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
    * @return the name
    */
   public String getName() {
+  	if (name!=null) return name;
     return "Poly"+(getParameterCount()-1); //$NON-NLS-1$
+  }
+  
+  /**
+   * Sets the name of the function.
+   *
+   * @param aName the name
+   */
+  public void setName(String aName) {
+  	if (aName!=null && !"".equals(aName.trim())) { //$NON-NLS-1$
+  		name = aName;
+  	}
+  }
+
+  /**
+   * Gets the description of the function.
+   *
+   * @return the description
+   */
+  public String getDescription() {
+  	if (description!=null && !"".equals(description.trim())) return description; //$NON-NLS-1$
+  	return ToolsRes.getString("KnownPolynomial.Description")+" "+(getParameterCount()-1); //$NON-NLS-1$ //$NON-NLS-2$
+  }
+
+  /**
+   * Sets the description of the function.
+   *
+   * @param aDescription the description
+   */
+  public void setDescription(String aDescription) {
+  	description = aDescription;
+  }
+
+  /**
+   * Gets a clone of this function.
+   *
+   * @return the clone
+   */
+  public KnownPolynomial clone() {
+  	KnownPolynomial clone = new KnownPolynomial(coefficients);
+  	
+  	// set name and description
+  	clone.setName(getName());
+  	clone.setDescription(getDescription());
+
+  	// set parameters
+  	String[] names = new String[coefficients.length];
+  	double[] values = new double[coefficients.length];
+  	String[] desc = new String[coefficients.length];
+  	for (int i=0; i< coefficients.length; i++) {
+    	names[i] = getParameterName(i);
+    	values[i] = getParameterValue(i);
+    	desc[i] = getParameterDescription(i);
+  	}
+  	clone.setParameters(names, values, desc);
+  	
+  	return clone;
+  }
+  
+  /**
+   * Determines if another KnownFunction is the same as this one.
+   *
+   * @param f the KnownFunction to test
+   * @return true if equal
+   */
+  @Override
+  public boolean equals(Object f) {
+  	if (!(f instanceof KnownPolynomial)) return false;
+  	KnownPolynomial poly = (KnownPolynomial)f;
+  	int n = getParameterCount();
+  	if (n!=poly.getParameterCount()) return false;
+  	for (int i=0; i<n; i++) {
+  		if (!getParameterName(i).equals(poly.getParameterName(i))) return false;
+  	}
+  	// ignore descriptions and parameter values
+  	return true;
   }
   
 }

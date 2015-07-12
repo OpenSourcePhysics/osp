@@ -40,7 +40,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -73,6 +72,7 @@ import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.controls.XMLProperty;
 import org.opensourcephysics.controls.XMLTree;
 import org.opensourcephysics.controls.XMLTreeChooser;
+import org.opensourcephysics.desktop.OSPDesktop;
 import org.opensourcephysics.display.Data;
 import org.opensourcephysics.display.DataFunction;
 import org.opensourcephysics.display.Dataset;
@@ -94,14 +94,15 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   // static fields
   @SuppressWarnings("javadoc")
 	public static boolean loadClass = false;
-  protected static JFileChooser chooser;
   protected static Dimension dim = new Dimension(800, 540);
   protected static final int defaultButtonHeight = 28;
   protected static int buttonHeight = defaultButtonHeight;
   protected static String[] delimiters = new String[] {" ", "\t", ",", ";"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
   protected static TextFrame helpFrame;
-  protected static String helpName = "data_tool_help.html";                                 //$NON-NLS-1$
-  protected static String helpBase = "http://www.opensourcephysics.org/online_help/tools/"; //$NON-NLS-1$
+//  protected static String helpName = "data_tool_help.html";                                 //$NON-NLS-1$
+//  protected static String helpBase = "http://www.opensourcephysics.org/online_help/tools/"; //$NON-NLS-1$
+  protected static String helpName = "datatool/datatool_help.html";                                 //$NON-NLS-1$
+  protected static String helpBase = "http://www.cabrillo.edu/~dbrown/OSP/"; //$NON-NLS-1$
   private static ArrayList<Data> processedData = new ArrayList<Data>();
   
   // instance fields
@@ -152,10 +153,13 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   protected JMenuItem helpItem;
   protected JMenuItem logItem;
   protected JMenuItem aboutItem;
-  protected FunctionTool dataBuilder;
+  protected DataBuilder dataBuilder;
   protected boolean exitOnClose = false;
   protected boolean saveChangesOnClose = false;
   protected FitBuilder fitBuilder;
+  protected boolean isLoading = false;
+  protected JButton loadDataFunctionsButton, saveDataFunctionsButton;
+  protected boolean slopeExtended = false;
 
   static {
     DATATOOL = new DataTool();
@@ -183,14 +187,23 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   public static void main(String[] args) {
     DATATOOL.exitOnClose = true;
     DATATOOL.saveChangesOnClose = true;
-    DATATOOL.setVisible(true);
     if((args!=null)&&(args.length>0)&&(args[0]!=null)) {
+      DATATOOL.setVisible(true);
       DATATOOL.open(args[0]);
     } else {
-      DataToolTab tab = DATATOOL.createTab(null);
-      tab.setUserEditable(true);
-      DATATOOL.addTab(tab);
+    	DATATOOL.addWindowListener(new WindowAdapter() {
+    		@Override
+        public void windowOpened(WindowEvent e) {
+        	if (DATATOOL.getTabCount()==0) {
+            DataToolTab tab = DATATOOL.createTab(null);
+            tab.setUserEditable(true);
+            DATATOOL.addTab(tab);
+        	}
+        }
+    	});
+      DATATOOL.setVisible(true);
     }
+    
   }
   
   /**
@@ -254,9 +267,11 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     	// store this DataTool in the control so DataToolTab loader can use it for instantiation
     	control.setValue("datatool", this); //$NON-NLS-1$
     	
+    	isLoading = true;
       DataToolTab tab = (DataToolTab) control.loadObject(null);
       addTab(tab);
       tab.refreshGUI();
+    	isLoading = false;
       ArrayList<DataToolTab> tabs = new ArrayList<DataToolTab>();
       tabs.add(tab);
       return tabs;
@@ -1628,12 +1643,12 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
         removeTab(0, false);
       }
     }
-    tab.setFontLevel(FontSizer.getLevel());
     tab.dataTool = this;
     // assign a unique name (also traps for null name)
     tab.setName(getUniqueTabName(tab.getName()));
     OSPLog.finer("adding tab "+tab.getName()); //$NON-NLS-1$
     tabbedPane.addTab("", tab);                //$NON-NLS-1$
+    tab.setFontLevel(FontSizer.getLevel());
     tabbedPane.setSelectedComponent(tab);
     //    validate();
     refreshTabTitles();
@@ -2061,16 +2076,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    */
   protected FunctionTool getDataBuilder() {
     if(dataBuilder==null) {                                                   // create new tool if none exists
-      dataBuilder = new FunctionTool(this) {
-  		  protected void refreshGUI() {
-  		  	super.refreshGUI();
-  		  	dropdown.setToolTipText(ToolsRes.getString
-		  				("DataTool.DataBuilder.Dropdown.Tooltip")); //$NON-NLS-1$
-  	  		setTitle(ToolsRes.getString("DataTool.DataBuilder.Title")); //$NON-NLS-1$
-  		  }  			
-      };
+    	dataBuilder = new DataBuilder(this);
       dataBuilder.setFontLevel(FontSizer.getLevel());
-      dataBuilder.setHelpPath("data_builder_help.html");                      //$NON-NLS-1$
       dataBuilder.addPropertyChangeListener("function", this);                //$NON-NLS-1$
     }
     refreshDataBuilder();
@@ -2081,29 +2088,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    * Refreshes the data builder.
    */
   protected void refreshDataBuilder() {
-    if(dataBuilder==null) {
-      return;
-    }
-    // add and remove DataFunctionPanels based on current tabs
-    ArrayList<String> tabNames = new ArrayList<String>();
-    for(int i = 0; i<tabbedPane.getTabCount(); i++) {
-      DataToolTab tab = getTab(i);
-      tabNames.add(tab.getName());
-      if(dataBuilder.getPanel(tab.getName())==null) {
-        FunctionPanel panel = new DataFunctionPanel(tab.dataManager);
-        dataBuilder.addPanel(tab.getName(), panel);
-      }
-    }
-    ArrayList<String> remove = new ArrayList<String>();
-    for(Iterator<String> it = dataBuilder.panels.keySet().iterator(); it.hasNext(); ) {
-      String name = it.next().toString();
-      if(!tabNames.contains(name)) {
-        remove.add(name);
-      }
-    }
-    for(Iterator<String> it = remove.iterator(); it.hasNext(); ) {
-      String name = it.next().toString();
-      dataBuilder.removePanel(name);
+    if(dataBuilder!=null) {
+      dataBuilder.refreshPanels();
     }
   }
 
@@ -2123,7 +2109,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    *
    * @return the pasted string, or null if none
    */
-  protected static String paste() {
+  public static String paste() {
     Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
     Transferable data = clipboard.getContents(null);
     if((data!=null)&&data.isDataFlavorSupported(DataFlavor.stringFlavor)) {
@@ -2138,27 +2124,31 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   }
 
   /**
-   * Shows the help frame and displays the specified help file.
-   *
-   * @param fileName the name of the help file
+   * Shows the DataTool help.
    */
-  protected static void showHelp(String fileName) {
+  protected static void showHelp() {
+  	String fileName = helpName;
     String helpPath = XML.getResolvedPath(fileName, helpBase);
-    if(ResourceLoader.getResource(helpPath)==null) {
+    if (ResourceLoader.getResource(helpPath)!=null) {
+	    // show help in desktop browser
+	    OSPDesktop.displayURL(helpPath);
+    }
+    else {
+    	fileName = "data_tool_help.html"; //$NON-NLS-1$
       String classBase = "/org/opensourcephysics/resources/tools/html/"; //$NON-NLS-1$
       helpPath = XML.getResolvedPath(fileName, classBase);
+	    if ((helpFrame==null)||!helpPath.equals(helpFrame.getTitle())) {
+		    helpFrame = new TextFrame(helpPath);
+		    helpFrame.enableHyperlinks();
+		    helpFrame.setSize(800, 600);
+		    // center on the screen
+		    Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+		    int x = (dim.width-helpFrame.getBounds().width)/2;
+		    int y = (dim.height-helpFrame.getBounds().height)/2;
+		    helpFrame.setLocation(x, y);
+		  }
+		  helpFrame.setVisible(true);
     }
-    if((helpFrame==null)||!helpPath.equals(helpFrame.getTitle())) {
-      helpFrame = new TextFrame(helpPath);
-      helpFrame.enableHyperlinks();
-      helpFrame.setSize(760, 560);
-      // center on the screen
-      Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-      int x = (dim.width-helpFrame.getBounds().width)/2;
-      int y = (dim.height-helpFrame.getBounds().height)/2;
-      helpFrame.setLocation(x, y);
-    }
-    helpFrame.setVisible(true);
   }
 
   /**
@@ -2530,7 +2520,9 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     undoItem.setAccelerator(KeyStroke.getKeyStroke('Z', keyMask));
     undoItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        getSelectedTab().undoManager.undo();
+      	if (getSelectedTab().undoManager.canUndo()) {
+      		getSelectedTab().undoManager.undo();
+      	}
       }
 
     });
@@ -2540,7 +2532,9 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     redoItem.setAccelerator(KeyStroke.getKeyStroke('Y', keyMask));
     redoItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        getSelectedTab().undoManager.redo();
+      	if (getSelectedTab().undoManager.canRedo()) {
+      		getSelectedTab().undoManager.redo();
+      	}
       }
 
     });
@@ -2692,10 +2686,9 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     displayMenu = new JMenu();
     menubar.add(displayMenu);
     languageMenu = new JMenu();
-    // get resource before installed locales so that launch jar is not null
-    String base = "/org/opensourcephysics/resources/tools/html/"; //$NON-NLS-1$
-    String help = XML.getResolvedPath(helpName, base);
-    ResourceLoader.getResource(help);
+    // get jar resource before installed locales so that launch jar is not null
+    String imagePath = "/org/opensourcephysics/resources/tools/images/open.gif"; //$NON-NLS-1$
+    ResourceLoader.getResource(imagePath);
     final Locale[] locales = OSPRuntime.getInstalledLocales();
     Action languageAction = new AbstractAction() {
       public void actionPerformed(ActionEvent e) {
@@ -2751,7 +2744,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     helpItem.setAccelerator(KeyStroke.getKeyStroke('H', keyMask));
     helpItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        showHelp(helpName);
+        showHelp();
       }
 
     });
@@ -2878,7 +2871,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     aboutItem.setText(ToolsRes.getString("MenuItem.About"));                           //$NON-NLS-1$
     Locale[] locales = OSPRuntime.getInstalledLocales();
     for(int i = 0; i<locales.length; i++) {
-      if(locales[i].getLanguage().equals(ToolsRes.resourceLocale.getLanguage())) {
+      if(locales[i].getLanguage().equals(ToolsRes.getLanguage())) {
         languageItems[i].setSelected(true);
       }
     }
@@ -2940,8 +2933,9 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    * Shows the about dialog.
    */
   protected void showAboutDialog() {
-    String aboutString = getName()+" 1.5  March 2009\n"   //$NON-NLS-1$
-                         +"Code Author: Douglas Brown\n"  //$NON-NLS-1$
+		String date = OSPRuntime.getLaunchJarBuildDate();
+		if (date==null) date = ""; //$NON-NLS-1$
+    String aboutString = getName()+"   "+date+"\n"   //$NON-NLS-1$ //$NON-NLS-2$
                          +"Open Source Physics Project\n" //$NON-NLS-1$
                          +"www.opensourcephysics.org";    //$NON-NLS-1$
     JOptionPane.showMessageDialog(this, aboutString, ToolsRes.getString("Dialog.About.Title")+" "+getName(), //$NON-NLS-1$ //$NON-NLS-2$

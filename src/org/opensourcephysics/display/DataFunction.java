@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
@@ -190,6 +191,7 @@ public class DataFunction extends Dataset {
   }
 
   //______________________________ private methods ___________________________
+  
   // returns arrays of values
   private double[][] getFunctionData() {
     int length = 0;
@@ -281,8 +283,9 @@ public class DataFunction extends Dataset {
       DataFunction data = (DataFunction) obj;
       data.setYColumnName(control.getString("function_name")); //$NON-NLS-1$
       data.setExpression(control.getString("function"));       //$NON-NLS-1$
+      data.setYColumnDescription(control.getString("y_description")); //$NON-NLS-1$
       data.setID(control.getInt("datasetID"));                 //$NON-NLS-1$
-      // load Dataset display properties
+      // load Dataset display properties but not data itself
       if(control.getPropertyNames().contains("marker_shape")) { //$NON-NLS-1$
         data.setMarkerShape(control.getInt("marker_shape"));    //$NON-NLS-1$
       }

@@ -24,13 +24,13 @@ import org.opensourcephysics.numerics.Function;
  * @version 1.0
  */
 public class FunctionDrawer implements Drawable, Measurable, Function {
-  private double[] xrange = new double[2];
-  private double[] yrange = new double[2];
-  private int numpts = 0;
-  private GeneralPath generalPath = new GeneralPath();
-  private Function function;
-  private boolean filled = false;
-  private boolean measured = false; // set to true if function has been initialized.
+  protected double[] xrange = new double[2];
+  protected double[] yrange = new double[2];
+  protected int numpts = 0;
+  protected GeneralPath generalPath = new GeneralPath();
+  protected Function function;
+  protected boolean filled = false;
+  protected boolean measured = false; // set to true if function has been initialized.
   public Color color = Color.black;
   public boolean functionChanged = false;
 
@@ -138,7 +138,7 @@ public class FunctionDrawer implements Drawable, Measurable, Function {
     return yrange;
   }
 
-  void checkRange(DrawingPanel panel) {
+  protected void checkRange(DrawingPanel panel) {
     // check to see if the range or function has changed
     if((xrange[0]==panel.getXMin())&&(xrange[1]==panel.getXMax())&&(numpts==panel.getWidth())&&!functionChanged) {
       return;
