@@ -66,6 +66,7 @@ import org.opensourcephysics.display.DrawableTextLine;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.HighlightableDataset;
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.display.TextLine;
 
 /**
@@ -2164,7 +2165,13 @@ public class DataToolTable extends DataTable {
     }
 
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-      Component c = renderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+      // value is data column name
+      String realname = (value==null) ? "" : value.toString(); //$NON-NLS-1$
+      String name = realname;
+      if (OSPRuntime.isMac()) {
+      	name = TeXParser.removeSubscripting(name);
+      }
+      Component c = renderer.getTableCellRendererComponent(table, name, isSelected, hasFocus, row, col);
       if (headerFont==null) headerFont = c.getFont();
       int labelCol = convertColumnIndexToView(0);
       int xCol = (labelCol==0) ? 1 : 0;
@@ -2182,10 +2189,8 @@ public class DataToolTable extends DataTable {
       if(!(c instanceof JComponent)) {
         return c;
       }
-      // value is data column name
-      String name = (value==null) ? "" : value.toString(); //$NON-NLS-1$
-      textLine.setText(name);
       JComponent comp = (JComponent) c;
+      
       java.awt.Dimension dim = comp.getPreferredSize();
       dim.height += 1;
       dim.height = Math.max(getRowHeight()+2, dim.height);
@@ -2195,14 +2200,16 @@ public class DataToolTable extends DataTable {
         border = BorderFactory.createLineBorder(Color.LIGHT_GRAY);
       }
       panel.setBorder(border);
-      // set font: italics if undeletable, bold if sorted column
-      Dataset data = getDataset(name);
+      
+      // determine font: italics if undeletable, bold if sorted column
+      Font font;
+      Dataset data = getDataset(realname);
       if(!dataToolTab.isDeletable(data)) {
-        textLine.setFont((getSortedColumn()!=convertColumnIndexToModel(col))? 
-        		headerFont.deriveFont(Font.PLAIN+Font.ITALIC) : headerFont.deriveFont(Font.BOLD+Font.ITALIC));
+        font = getSortedColumn()!=convertColumnIndexToModel(col)? 
+        		headerFont.deriveFont(Font.PLAIN+Font.ITALIC) : headerFont.deriveFont(Font.BOLD+Font.ITALIC);
       } else {
-        textLine.setFont((getSortedColumn()!=convertColumnIndexToModel(col))? 
-        		headerFont.deriveFont(Font.PLAIN) : headerFont.deriveFont(Font.BOLD));
+        font = getSortedColumn()!=convertColumnIndexToModel(col)? 
+        		headerFont.deriveFont(Font.PLAIN) : headerFont.deriveFont(Font.BOLD);
       }
       int[] cols = getSelectedColumns();
       boolean selected = false;
@@ -2210,8 +2217,22 @@ public class DataToolTable extends DataTable {
         selected = selected||(cols[i]==col);
       }
       selected = selected&&(convertColumnIndexToModel(col)>0);
-      textLine.setColor(selected ? selectedHeaderFG : comp.getForeground());
       bgColor = selected? selectedHeaderBG: bgColor;
+      
+      // special case: textline doesn't work on OSX
+      if (OSPRuntime.isMac()) {
+        comp.setFont(font);
+        comp.setBackground(bgColor);
+        comp.setForeground(selected ? selectedHeaderFG : comp.getForeground());
+        if (comp instanceof JLabel) {
+        	((JLabel)comp).setHorizontalAlignment(SwingConstants.CENTER);
+        }
+        return comp;
+      }
+
+      textLine.setText(name);
+      textLine.setFont(font);
+      textLine.setColor(selected ? selectedHeaderFG : comp.getForeground());
       textLine.setBackground(bgColor);
       panel.setBackground(bgColor);
       return panel;
