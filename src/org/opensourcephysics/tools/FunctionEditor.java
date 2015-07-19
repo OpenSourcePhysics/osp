@@ -897,7 +897,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
   /**
    * Returns true if any objects have invalid expressions.
    */
-  protected boolean containsInvalidExpressions() {
+  public boolean containsInvalidExpressions() {
     for(Iterator<Object> it = objects.iterator(); it.hasNext(); ) {
       if(isInvalidExpression(it.next())) {
         return true;

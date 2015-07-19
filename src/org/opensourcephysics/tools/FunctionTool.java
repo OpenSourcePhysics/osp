@@ -159,6 +159,7 @@ public class FunctionTool extends JDialog {
     panels.put(name, panel);
     panel.addForbiddenNames(forbiddenNames.toArray(new String[0]));
     refreshDropdown(name);
+    panel.clearSelection();
     return panel;
   }
 
@@ -456,7 +457,7 @@ public class FunctionTool extends JDialog {
 	  				&& toolbarComponents.length > 0
 	  				& toolbarComponents[0] instanceof JButton) {
 	  			JButton button = (JButton)toolbarComponents[0];
-	  			dim.height = button.getHeight();
+	  			dim.height = button.getHeight();	  			
 	  		}
 	      return dim;
 	    } 
@@ -710,6 +711,7 @@ public class FunctionTool extends JDialog {
     else select(null);
     Runnable runner = new Runnable() {
     	public void run() {
+    		dropdown.revalidate();
         helpButton.requestFocusInWindow();
     	}
     };
