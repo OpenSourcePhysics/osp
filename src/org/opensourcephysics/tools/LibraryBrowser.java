@@ -79,6 +79,8 @@ public class LibraryBrowser extends JPanel {
   protected static Icon expandIcon, contractIcon, heavyExpandIcon, heavyContractIcon, refreshIcon;
   protected static final FileFilter TRACKER_FILTER = new TrackerDLFilter();
   protected static javax.swing.filechooser.FileFilter filesAndFoldersFilter =  new FilesAndFoldersFilter();
+  protected static Timer searchTimer;
+  protected static String searchTerm;
 	public static boolean fireHelpEvent = false;
   
 	static {
@@ -995,8 +997,8 @@ public class LibraryBrowser extends JPanel {
     // create search action, label, field and button
 		searchAction = new AbstractAction() {
 		  public void actionPerformed(ActionEvent e) {
-		  	final String s = searchField.getText();
-		  	if ("".equals(s.trim())) return; //$NON-NLS-1$
+		  	searchTerm = searchField.getText();
+		  	if ("".equals(searchTerm.trim())) return; //$NON-NLS-1$
 		  	searchField.selectAll();
 		  	searchField.setBackground(Color.white);
 		  	
@@ -1011,7 +1013,7 @@ public class LibraryBrowser extends JPanel {
 							if (library.noSearchSet.contains(next.collectionPath))
 								it.remove();
 				  	}
-		      	return searchFor(s.trim(), searchTargets);
+		      	return searchFor(searchTerm.trim(), searchTargets);
 		      }
 
 		      @Override
@@ -1020,9 +1022,30 @@ public class LibraryBrowser extends JPanel {
 	          	LibraryTreePanel results = get();
        		  	if (results==null) {
       	        Toolkit.getDefaultToolkit().beep();
+      	        // give visual cue, too
+      	        final Color color = searchField.getForeground();
+      	        searchField.setText(ToolsRes.getString("LibraryBrowser.Search.NotFound")); //$NON-NLS-1$
+      	        searchField.setForeground(Color.RED);
+      	        searchField.setBackground(Color.white);
+      	    		if (searchTimer==null) {
+      	    			searchTimer = new Timer(1000, new ActionListener() {
+      	    				 public void actionPerformed(ActionEvent e) {
+      	      	        searchField.setText(searchTerm);
+      	      	        searchField.setForeground(color);
+      	      			  	searchField.selectAll();
+      	      	        searchField.setBackground(Color.white);
+      	    				 }
+      	    			 });
+      	    			searchTimer.setRepeats(false);
+      	    			searchTimer.start();
+      	    		}
+      	    		else {
+      	    			searchTimer.restart();
+      	    		}
+      	        
       		  		return;
       		  	}
-      		  	String title = "'"+s.trim()+"'"; //$NON-NLS-1$ //$NON-NLS-2$
+      		  	String title = "'"+searchTerm.trim()+"'"; //$NON-NLS-1$ //$NON-NLS-2$
       		  	int i = getTabIndexFromTitle(title);
       		  	synchronized (tabbedPane) {
   							if (i > -1) {
