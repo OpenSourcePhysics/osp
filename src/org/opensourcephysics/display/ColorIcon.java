@@ -5,30 +5,6 @@
  * <http://www.opensourcephysics.org/>
  */
 
-/*
- * The tracker package defines a set of video/image analysis tools
- * built on the Open Source Physics framework by Wolfgang Christian.
- *
- * Copyright (c) 2005  Douglas Brown
- *
- * Tracker is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * Tracker is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Tracker; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
- * or view the license online at <http://www.gnu.org/copyleft/gpl.html>
- *
- * For additional Tracker information and documentation, please see
- * <http://www.cabrillo.edu/~dbrown/tracker/>.
- */
 package org.opensourcephysics.display;
 import java.awt.Color;
 import java.awt.Component;
