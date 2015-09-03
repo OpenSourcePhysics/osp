@@ -383,8 +383,9 @@ public class ExtensionsManager {
 	private Set<File> findJavaExtensionDirectories(File dir, Set<File> extDirs) {
 		if (dir==null) return extDirs;
 		try { // don't search symlinks
-			if (!dir.getCanonicalPath().equals(dir.getAbsolutePath()))
+			if (!dir.getCanonicalPath().equals(dir.getAbsolutePath())) {
 				return extDirs;
+			}
 		} catch (IOException e) {
 		}
 			
@@ -498,7 +499,7 @@ public class ExtensionsManager {
 					if (!javaFile.exists()) continue;
 					String jrePath = OSPRuntime.getJREPath(javaFile);
 					// only Apple-installed VMs (in /System/Library) support 32-bit operation
-					if (vmBitness==32 && !jrePath.startsWith("/System/Library")) //$NON-NLS-1$
+					if (OSPRuntime.isMac() && vmBitness==32 && !jrePath.startsWith("/System/Library")) //$NON-NLS-1$
 						continue;
 					
 					jreDirs.add(jrePath);
