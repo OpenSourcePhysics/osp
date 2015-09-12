@@ -125,7 +125,7 @@ public class ExtensionsManager {
 		if (ffmpegHome==null || dir==null) {
 			return false;
 		}
-	  if (!new File(ffmpegHome+"/"+DiagnosticsForFFMPeg.ffmpegJafNames[0]).exists()) { //$NON-NLS-1$
+	  if (!new File(ffmpegHome+"/"+DiagnosticsForFFMPeg.ffmpegJarNames[0]).exists()) { //$NON-NLS-1$
 	  	return false;
 	  }
     File ffmpegJarDir = new File(ffmpegHome); //$NON-NLS-1$
@@ -157,7 +157,7 @@ public class ExtensionsManager {
 		if (ffmpegHome==null) {
 			return null;
 		}
-		File ffmpegJar = new File(xuggleHome+"/"+DiagnosticsForFFMPeg.ffmpegJarNames[0]); //$NON-NLS-1$
+		File ffmpegJar = new File(ffmpegHome+"/"+DiagnosticsForFFMPeg.ffmpegJarNames[0]); //$NON-NLS-1$
 	  if (ffmpegJar.exists()) {
 	  	return ffmpegJar;
 	  }
