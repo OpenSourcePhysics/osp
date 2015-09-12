@@ -793,7 +793,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 					OSPLog.fine("failed to create thumbnail: "+ex.toString()); //$NON-NLS-1$
 				} catch(Error err) {
 				}
-			}
+			 }
 			return thumbFile;
     }
 

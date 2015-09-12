@@ -38,7 +38,7 @@ public class LibraryComPADRE {
   public static final String TRACKER_SERVER_TREE="http://www.compadre.org/osp/services/REST/osp_tracker.cfm?verb=Identify&OSPType=Tracker"; //$NON-NLS-1$
   public static final String TRACKER_SERVER_RECORDS="http://www.compadre.org/osp/services/REST/osp_tracker.cfm?OSPType=Tracker"; //$NON-NLS-1$
   public static final String TRACKER_COLLECTION_NAME="Tracker OSP Collection"; //$NON-NLS-1$
-  public static final String TRACKER_INFO_URL="http://www.cabrillo.edu/~dbrown/tracker/library/comPADRE_collection.html"; //$NON-NLS-1$
+  public static final String TRACKER_INFO_URL="http://physlets.org/tracker/library/comPADRE_collection.html"; //$NON-NLS-1$
   public static final String PRIMARY_ONLY="&OSPPrimary=Subject"; //$NON-NLS-1$
   public static final String GENERIC_COLLECTION_NAME="ComPADRE OSP Collection"; //$NON-NLS-1$
   public static final String ABOUT_OSP="About OSP and ComPADRE"; //$NON-NLS-1$

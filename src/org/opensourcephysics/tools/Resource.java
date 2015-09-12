@@ -25,9 +25,11 @@ import java.nio.charset.Charset;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 import org.opensourcephysics.controls.XML;
+import org.opensourcephysics.display.ResizableIcon;
 
 /**
  * This represents a resource obtained from a URL or File.
@@ -221,19 +223,20 @@ public class Resource {
   }
 
   /**
-   * Gets an ImageIcon.
+   * Gets an Icon.
    *
    * @return the icon
    */
-  public ImageIcon getIcon() {
+  public Icon getIcon() {
     if((icon==null)&&isAnImage) {
       icon = new ImageIcon(getURL());
       if(icon.getIconWidth()<1) {
         icon = null;
         isAnImage = false;
+        return null;
       }
     }
-    return icon;
+    return new ResizableIcon(icon);
   }
 
   /**
@@ -242,9 +245,11 @@ public class Resource {
    * @return the image
    */
   public Image getImage() {
-    ImageIcon icon = getIcon();
+    Icon icon = getIcon();
     if(icon!=null) {
-      return icon.getImage();
+    	ResizableIcon ico = (ResizableIcon)icon;
+    	ImageIcon imageIcon = (ImageIcon)ico.getBaseIcon();
+      return imageIcon.getImage();
     }
     return null;
   }

@@ -20,44 +20,44 @@ import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.display.OSPRuntime;
 
-/**
- * ExtensionsManager manages Java extensions directories.
- * Its primary use is to copy FFMPeg jars and QTJava.zip into appropriate ext directories.
- * 
- * @author Douglas Brown
- * @version 1.0
- */
+	/**
+	 * ExtensionsManager manages Java extensions directories.
+	 * Its primary use is to copy FFMPeg jars and QTJava.zip into appropriate ext directories.
+	 * 
+	 * @author Douglas Brown
+	 * @version 1.0
+	 */
 public class ExtensionsManager {
 
-        private static final ExtensionsManager MANAGER = new ExtensionsManager();
-        private static boolean isReady = false, isSearching = false;
-        private static Set<File> allJavaExtensionDirectories = new TreeSet<File>();
-        private static int vmsFound = 0;
-        private static Timer timer;
-
-        String ffmpegHome;
-        ExtensionsFilter extFilter;     
-        
-        /**
-         * Main method when used as a stand-alone application.
-         * @param args ignored
-         */
-        public static void main(String[] args) {
+	private static final ExtensionsManager MANAGER = new ExtensionsManager();
+	private static boolean isReady = false, isSearching = false;
+	private static Set<File> allJavaExtensionDirectories = new TreeSet<File>();
+	private static int vmsFound = 0;
+	private static Timer timer;
+	
+	String ffmpegHome;
+	ExtensionsFilter extFilter;	
+	
+	/**
+	 * Main method when used as a stand-alone application.
+	 * @param args ignored
+	 */
+	public static void main(String[] args) {
     // set up timer to allow the user to cancel searching every 30 seconds
     timer = new Timer(30000, new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         int selected = JOptionPane.showConfirmDialog(null,
-                        ToolsRes.getString("ExtensionsManager.Dialog.SlowSearch.Message1")+"\n"+ //$NON-NLS-1$ //$NON-NLS-2$
-                        ToolsRes.getString("ExtensionsManager.Dialog.SlowSearch.Message2")+" "+vmsFound+".\n"+  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                        ToolsRes.getString("ExtensionsManager.Dialog.SlowSearch.Message3"),  //$NON-NLS-1$
-                        ToolsRes.getString("ExtensionsManager.Dialog.SlowSearch.Title"), //$NON-NLS-1$
+        		ToolsRes.getString("ExtensionsManager.Dialog.SlowSearch.Message1")+"\n"+ //$NON-NLS-1$ //$NON-NLS-2$
+        		ToolsRes.getString("ExtensionsManager.Dialog.SlowSearch.Message2")+" "+vmsFound+".\n"+  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        		ToolsRes.getString("ExtensionsManager.Dialog.SlowSearch.Message3"),  //$NON-NLS-1$
+        		ToolsRes.getString("ExtensionsManager.Dialog.SlowSearch.Title"), //$NON-NLS-1$
               JOptionPane.YES_NO_OPTION);
           if(selected==JOptionPane.NO_OPTION) {
-                // print whatever has been found
-                synchronized(allJavaExtensionDirectories) {
-                        printExtensionDirectoriesForBitrock(allJavaExtensionDirectories);
-                }
-                System.exit(0);
+          	// print whatever has been found
+          	synchronized(allJavaExtensionDirectories) {
+          		printExtensionDirectoriesForBitrock(allJavaExtensionDirectories);
+          	}
+  	        System.exit(0);
           }
           else timer.restart();
       }
@@ -69,306 +69,308 @@ public class ExtensionsManager {
 //    System.out.println(qtJava);
     System.exit(0);
     
-//              // print list of extensions to stdout for use by Bitrock installers
-//              Set<File> extDirs = getManager().findJavaExtensionDirectories();
-//              printExtensionDirectoriesForBitrock(extDirs);
-//              System.exit(0);
-        }
-        
-        /**
-         * Gets the singleton ExtensionManager.
-         * @return the ExtensionManager
-         */
-        public static ExtensionsManager getManager() {
-                return MANAGER;         
-        }
-        
-        public static boolean isReady() {
-                return isReady;
-        }
-        
-        /**
-         * Private constructor.
-         */
-        private ExtensionsManager() {
-                ffmpegHome = System.getenv("FFMPEG_HOME"); //$NON-NLS-1$
-                extFilter = new ExtensionsFilter();                             
-        }
-        
+//		// print list of extensions to stdout for use by Bitrock installers
+//		Set<File> extDirs = getManager().findJavaExtensionDirectories();
+//		printExtensionDirectoriesForBitrock(extDirs);
+//		System.exit(0);
+	}
+	
+	/**
+	 * Gets the singleton ExtensionManager.
+	 * @return the ExtensionManager
+	 */
+	public static ExtensionsManager getManager() {
+		return MANAGER;		
+	}
+	
+	public static boolean isReady() {
+		return isReady;
+	}
+	
+	/**
+	 * Private constructor.
+	 */
+	private ExtensionsManager() {
+		ffmpegHome = System.getenv("FFMPEG_HOME"); //$NON-NLS-1$
+		extFilter = new ExtensionsFilter();				
+	}
+	
   /**
    * Finds extension directories and prints a space-delimited list to System.out. 
    * A single space delimiter is parsable by Bitrock installers.
    */
-        private static void printExtensionDirectoriesForBitrock(Set<File> extDirs) {
-                String separator = " "; //$NON-NLS-1$
-                StringBuffer buf = new StringBuffer(2);
-                for (File next: extDirs) {
-                        String fileName = XML.forwardSlash(next.getPath());
-                        buf.append("\""+fileName+"\""+separator); //$NON-NLS-1$ //$NON-NLS-2$
-                }
-                String s = buf.toString();
-                // remove last separator
-                if (s.length()>=separator.length()) {
-                        s = s.substring(0, s.length()-separator.length());
-                }
-                System.out.print(s);
-        }
-
-        /**
-         * Copies FFMPeg jar file to a target directory. Does nothing if the
-         * directory already contains a ffmpeg-FFMPEG_VERSION.jar of the same size.
-         * 
+	private static void printExtensionDirectoriesForBitrock(Set<File> extDirs) {
+		String separator = " "; //$NON-NLS-1$
+		StringBuffer buf = new StringBuffer(2);
+		for (File next: extDirs) {
+			String fileName = XML.forwardSlash(next.getPath());
+			buf.append("\""+fileName+"\""+separator); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+		String s = buf.toString();
+		// remove last separator
+		if (s.length()>=separator.length()) {
+			s = s.substring(0, s.length()-separator.length());
+		}
+		System.out.print(s);
+	}
+	
+  /**
+   * Copies FFMPeg jar files to a target directory. Does nothing if the directory
+   * already contains a ffmpeg-FFMPEG_VERSION.jar of the same size.
+   *
    * @param dir the directory
-         * @return true if jars are copied
-         */
-        public boolean copyFFMPegJarsTo(File dir) {
-                if (ffmpegHome==null || dir==null) {
-                        return false;
-                }
-          if (!new File(ffmpegHome+"/"+DiagnosticsForFFMPeg.ffmpegJarNames[0]).exists()) { //$NON-NLS-1$
-                return false;
-          }
+   * @return true if jars are copied
+   */
+	public boolean copyFFMPegJarsTo(File dir) {
+		if (ffmpegHome==null || dir==null) {
+			return false;
+		}
+	  if (!new File(ffmpegHome+"/"+DiagnosticsForFFMPeg.ffmpegJafNames[0]).exists()) { //$NON-NLS-1$
+	  	return false;
+	  }
     File ffmpegJarDir = new File(ffmpegHome); //$NON-NLS-1$
     String[] jarNames = DiagnosticsForFFMPeg.ffmpegJarNames;
-          File ffmpegFile = new File(ffmpegJarDir, jarNames[0]);
+	  File ffmpegFile = new File(ffmpegJarDir, jarNames[0]);
     long fileLength = ffmpegFile.length();
     File extFile = new File(dir, jarNames[0]);
     // copy ffmpeg jars
     if (!extFile.exists() || extFile.length()!=fileLength) {
-            for (String next: jarNames) {
-              ffmpegFile = new File(ffmpegJarDir, next);
-              extFile = new File(dir, next);
-              if (!copyFile(ffmpegFile, extFile)) {
-                return false;
-              }
-            }
-            // all jars were copied
+	    for (String next: jarNames) {
+	      ffmpegFile = new File(ffmpegJarDir, next);
+	      extFile = new File(dir, next);
+	      if (!copyFile(ffmpegFile, extFile)) {
+	      	return false;
+	      }
+	    }
+	    // all jars were copied
       return true;
     }
-                return false;
-        }
+		return false;
+	}
+	
+  /**
+   * Gets the ffmpeg-FFMPEG_VERSION.jar from the ffmpegHome directory, if it exists.
+   *
+   * @return ffmpeg-FFMPEG_VERSION.jar
+   */
+	public File getFFMPegJar() {
+		if (ffmpegHome==null) {
+			return null;
+		}
+		File ffmpegJar = new File(xuggleHome+"/"+DiagnosticsForFFMPeg.ffmpegJarNames[0]); //$NON-NLS-1$
+	  if (ffmpegJar.exists()) {
+	  	return ffmpegJar;
+	  }
+	  return null;
+	}
 
-        /**
-         * Gets the ffmpeg-FFMPEG_VERSION.jar from the standard directory, if it exists.
-         * 
-         * @return ffmpeg-FFMPEG_VERSION.jar
-         */
-        public File getFFMPegJar() {
-                if (ffmpegHome == null)
-                        return null;
-                File ffmpegJar = new File(ffmpegHome + "/"+DiagnosticsForFFMPeg.ffmpegJarNames[0]); //$NON-NLS-1$
-                if (ffmpegJar.exists()) {
-                        return ffmpegJar;
-                }
-                return null;
-        }
-        
- /**
+	
+  /**
    * Copies QTJava.zip to a target directory. Does not overwrite a later version.
    *
    * @param dir the directory
    * @return true if copied
    */
-        public boolean copyQTJavaTo(File dir) {
+	public boolean copyQTJavaTo(File dir) {
     File qtSource = getQTJavaZip(); // file to be copied
-          if (qtSource==null)   return false;
+	  if (qtSource==null)	return false;
     File extFile = new File(dir, qtSource.getName());
-        long modified = qtSource.lastModified();
+  	long modified = qtSource.lastModified();
 
     // copy qtSource to directory if newer
     if (!extFile.exists() || extFile.lastModified()<modified) {
-            if (!copyFile(qtSource, extFile))   {
-                return false;
-            }
+	    if (!copyFile(qtSource, extFile))	{
+	    	return false;
+	    }
       return true;
     }
-                return false;
-        }
-        
+		return false;
+	}
+	
   /**
    * Returns the QTJava.zip file with the latest modified date.
    *
    * @return the QTJava.zip file, or null if none found
    */
-        public File getQTJavaZip() {
-        String qtJarName = "QTJava.zip"; //$NON-NLS-1$
-        String currentDir = OSPRuntime.getLaunchJarPath();
-        if (currentDir!=null) {
-                currentDir = XML.getDirectoryPath(currentDir);
-        }
-        else {
-                currentDir = "."; //$NON-NLS-1$
-        }
+	public File getQTJavaZip() {
+  	String qtJarName = "QTJava.zip"; //$NON-NLS-1$
+  	String currentDir = OSPRuntime.getLaunchJarPath();
+  	if (currentDir!=null) {
+  		currentDir = XML.getDirectoryPath(currentDir);
+  	}
+  	else {
+  		currentDir = "."; //$NON-NLS-1$
+  	}
     String[] folderNames = {
-                currentDir,
-                "C:/Program Files/QuickTime/QTSystem", //$NON-NLS-1$
-                "C:/Program Files (x86)/QuickTime/QTSystem", //$NON-NLS-1$
-                "C:/windows/system32", //$NON-NLS-1$
-                "C:/windows/system", //$NON-NLS-1$
-                "C:/winNT/system32", //$NON-NLS-1$
-                "system/library/java/extensions"}; //$NON-NLS-1$
+    		currentDir,
+    		"C:/Program Files/QuickTime/QTSystem", //$NON-NLS-1$
+    		"C:/Program Files (x86)/QuickTime/QTSystem", //$NON-NLS-1$
+    		"C:/windows/system32", //$NON-NLS-1$
+    		"C:/windows/system", //$NON-NLS-1$
+    		"C:/winNT/system32", //$NON-NLS-1$
+    		"system/library/java/extensions"}; //$NON-NLS-1$
     // look for most recent QTJava.zip in system folders
     long modified = 0;
     File qtSource = null; // file to be returned
     for (String next: folderNames) {
       File qtFile = new File(next, qtJarName);
-        if (!qtFile.exists()) continue;
-        long date = qtFile.lastModified();
-        if (date>modified) {
-                modified = date;
-                qtSource = qtFile;
-        }     
+    	if (!qtFile.exists()) continue;
+    	long date = qtFile.lastModified();
+    	if (date>modified) {
+    		modified = date;
+    		qtSource = qtFile;
+    	}     
     }
-          return qtSource;
-        }
-        
+	  return qtSource;
+	}
+	
   /**
    * Finds all java extension directories on the current machine.
    * Win: typical jdk: Program Files\Java\jdkX.X.X_XX\jre\bin\java.exe
-         *                      typical jre: Program Files\Java\jreX.X.X_XX\bin\java.exe
-         *                                or Program Files\Java\jreX\bin\java.exe
-         *                      typical 32-bit jdk in 64-bit Windows: Program Files(x86)\Java\jdkX.X.X_XX\jre\bin\java.exe
-         * OSX: typical: /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home/bin/java
-         *                      symlink at: /Library/Java/Home/bin/java
-         *                      also in /Library/Java/JavaVirtualMachines?
-         * Linux: typical: /usr/lib/jvm/java-X-openjdk/jre/bin/java 
-         *                        symlink at: /usr/lib/jvm/java-X.X.X-openjdk/jre/bin/java
-         *                        sun versions: java-X-sun and java-X.X.X-sun
+	 *			typical jre: Program Files\Java\jreX.X.X_XX\bin\java.exe
+	 *			          or Program Files\Java\jreX\bin\java.exe
+	 *			typical 32-bit jdk in 64-bit Windows: Program Files(x86)\Java\jdkX.X.X_XX\jre\bin\java.exe
+	 * OSX: typical: /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home/bin/java
+	 *			symlink at: /Library/Java/Home/bin/java
+	 *			also in /Library/Java/JavaVirtualMachines?
+	 * Linux: typical: /usr/lib/jvm/java-X-openjdk/jre/bin/java 
+	 *			  symlink at: /usr/lib/jvm/java-X.X.X-openjdk/jre/bin/java
+	 *			  sun versions: java-X-sun and java-X.X.X-sun
    *
    * @return a collection of java extension directory files
    */
-        private Set<File> findAllJavaExtensionDirectories() {
-                while (isSearching) {
-                        try {
-                                Thread.sleep(200);
-                        } catch (InterruptedException e) {
-                        }
-                }
-                if (!isReady) {
-                        isSearching = true;
-                        vmsFound = 0;
-            // set of extension directories used by the running Java VM 
-            Set<String> vmExtDirs = new TreeSet<String>();
-            // set of "Java level" directories to search
-            Set<File> searchPaths = new TreeSet<File>();
-            
-                        try {
-                                // get and parse system extension directories property into vmExtDirs
-                                String paths = XML.forwardSlash(System.getProperty("java.ext.dirs")); //$NON-NLS-1$   
-                                String separator = System.getProperty("path.separator"); //$NON-NLS-1$
-                                int n = paths.indexOf(separator);
-                                while (n>-1) {
-                                        vmExtDirs.add(paths.substring(0, n));
-                                        paths = paths.substring(n+1);
-                                  n = paths.indexOf(separator);
-                                }
-                                if (!"".equals(paths)) {//$NON-NLS-1$
-                                        vmExtDirs.add(paths);
-                                }
-                                   
-                                for (String next: vmExtDirs) {
-                                        File dir = new File(next);
-                                        if (!dir.exists()) continue;
-                                        synchronized(allJavaExtensionDirectories) {
-                                                allJavaExtensionDirectories.add(dir);
-                                                vmsFound++;
-                                        }
-                                        
-                                  if (OSPRuntime.isMac()) {
-                                                // search path: /JavaVirtualMachines
-                                                while (dir!=null && dir.getPath().indexOf("/JavaVirtualMachines")>-1) { //$NON-NLS-1$
-                                                        if (dir.getName().equals("JavaVirtualMachines")) { //$NON-NLS-1$
-                                                                searchPaths.add(dir);
-                                                                break;
-                                                        }
-                                                        dir = dir.getParentFile();
-                                                }
-                                  }
-                                  else if (OSPRuntime.isLinux()) {
-                                          // search path: /jvm
-                                                while (dir!=null && dir.getPath().indexOf("/jvm")>-1) { //$NON-NLS-1$
-                                                        if (dir.getName().equals("jvm")) { //$NON-NLS-1$
-                                                                searchPaths.add(dir);
-                                                                break;
-                                                        }
-                                                        dir = dir.getParentFile();
-                                                }
-                                  }
-                                }
-                                
-                                if (OSPRuntime.isWindows()) {
-                                  String progfiles = System.getenv("ProgramFiles"); //$NON-NLS-1$
-                                        String w6432 = System.getenv("ProgramW6432"); //$NON-NLS-1$
-                                        String x86 = System.getenv("ProgramFiles(x86)"); //$NON-NLS-1$
-                                        // add Program Files (may or may not be x86) Java directory to search path if it exists
-                                        if (progfiles!=null) {
-                                                File file = new File(progfiles, "Java"); //$NON-NLS-1$
-                                                if (file.exists()) searchPaths.add(file);                               
-                                        }               
-                                        // add "Program Files" Java directory to search path if it exists
-                                        if (w6432!=null) { // 64-bit Windows
-                                                File file = new File(w6432, "Java"); //$NON-NLS-1$
-                                                if (file.exists()) searchPaths.add(file);                               
-                                        }               
-                                        // add "Program Files (x86)" Java directory to search path if it exists
-                                        if (x86!=null) { // 64-bit Windows
-                                                // add x86 Java directory to search path if it exists
-                                                File file = new File(x86, "Java"); //$NON-NLS-1$
-                                                if (file.exists()) searchPaths.add(file);                               
-                                        }
-                                }
-                                
-                                // search all searchPaths and add all extensions directories found
-                                for (File next: searchPaths) {
-                                        findJavaExtensionDirectories(next, allJavaExtensionDirectories);
-                                }
-                        } catch (Exception e) {
-                        }
-                        isReady = true;
-                        isSearching = false;
-                        // log results for trouble-shooting
-                        StringBuffer buf =new StringBuffer("Java extension directories: "); //$NON-NLS-1$
-                        for (File next: allJavaExtensionDirectories) {
-                                buf.append(next.getAbsolutePath()+", "); //$NON-NLS-1$
-                        }
-                        OSPLog.fine(buf.toString());
-                }
-                return new TreeSet<File>(allJavaExtensionDirectories);
-        }
-        
+	private Set<File> findAllJavaExtensionDirectories() {
+		while (isSearching) {
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+			}
+		}
+		if (!isReady) {
+			isSearching = true;
+			vmsFound = 0;
+	    // set of extension directories used by the running Java VM 
+	    Set<String> vmExtDirs = new TreeSet<String>();
+	    // set of "Java level" directories to search
+	    Set<File> searchPaths = new TreeSet<File>();
+	    
+			try {
+				// get and parse system extension directories property into vmExtDirs
+				String paths = XML.forwardSlash(System.getProperty("java.ext.dirs")); //$NON-NLS-1$   
+				String separator = System.getProperty("path.separator"); //$NON-NLS-1$
+				int n = paths.indexOf(separator);
+				while (n>-1) {
+					vmExtDirs.add(paths.substring(0, n));
+					paths = paths.substring(n+1);
+				  n = paths.indexOf(separator);
+				}
+				if (!"".equals(paths)) {//$NON-NLS-1$
+					vmExtDirs.add(paths);
+				}
+				   
+				for (String next: vmExtDirs) {
+					File dir = new File(next);
+					if (!dir.exists()) continue;
+					synchronized(allJavaExtensionDirectories) {
+						allJavaExtensionDirectories.add(dir);
+						vmsFound++;
+					}
+					
+				  if (OSPRuntime.isMac()) {
+						// search path: /JavaVirtualMachines
+						while (dir!=null && dir.getPath().indexOf("/JavaVirtualMachines")>-1) { //$NON-NLS-1$
+							if (dir.getName().equals("JavaVirtualMachines")) { //$NON-NLS-1$
+								searchPaths.add(dir);
+								break;
+							}
+							dir = dir.getParentFile();
+						}
+				  }
+				  else if (OSPRuntime.isLinux()) {
+					  // search path: /jvm
+						while (dir!=null && dir.getPath().indexOf("/jvm")>-1) { //$NON-NLS-1$
+							if (dir.getName().equals("jvm")) { //$NON-NLS-1$
+								searchPaths.add(dir);
+								break;
+							}
+							dir = dir.getParentFile();
+						}
+				  }
+				}
+				
+				if (OSPRuntime.isWindows()) {
+				  String progfiles = System.getenv("ProgramFiles"); //$NON-NLS-1$
+					String w6432 = System.getenv("ProgramW6432"); //$NON-NLS-1$
+					String x86 = System.getenv("ProgramFiles(x86)"); //$NON-NLS-1$
+					// add Program Files (may or may not be x86) Java directory to search path if it exists
+					if (progfiles!=null) {
+						File file = new File(progfiles, "Java"); //$NON-NLS-1$
+						if (file.exists()) searchPaths.add(file);   				
+					}    		
+					// add "Program Files" Java directory to search path if it exists
+					if (w6432!=null) { // 64-bit Windows
+						File file = new File(w6432, "Java"); //$NON-NLS-1$
+						if (file.exists()) searchPaths.add(file);   				
+					}    		
+					// add "Program Files (x86)" Java directory to search path if it exists
+					if (x86!=null) { // 64-bit Windows
+						// add x86 Java directory to search path if it exists
+						File file = new File(x86, "Java"); //$NON-NLS-1$
+						if (file.exists()) searchPaths.add(file);   				
+					}
+				}
+				
+				// search all searchPaths and add all extensions directories found
+				for (File next: searchPaths) {
+					findJavaExtensionDirectories(next, allJavaExtensionDirectories);
+				}
+			} catch (Exception e) {
+			}
+			isReady = true;
+			isSearching = false;
+			// log results for trouble-shooting
+			StringBuffer buf =new StringBuffer("Java extension directories: "); //$NON-NLS-1$
+			for (File next: allJavaExtensionDirectories) {
+				buf.append(next.getAbsolutePath()+", "); //$NON-NLS-1$
+			}
+			OSPLog.fine(buf.toString());
+		}
+		return new TreeSet<File>(allJavaExtensionDirectories);
+	}
+	
   /**
    * Finds java extension directories for Java 1.6 or greater.
    *
    * @return a Set of java extension directory files
    */
-        private Set<File> findJavaExtensionDirectories() {
+	private Set<File> findJavaExtensionDirectories() {
     // set of all Java extension directories on this machine
     Set<File> extDirs = findAllJavaExtensionDirectories();
     // set of extension directories to remove 
     Set<File> toExclude = new TreeSet<File>();
     synchronized(extDirs) {
-            for (File next: extDirs) {
-                if (next.getParentFile()==null || next.getParentFile().getParentFile()==null) continue; 
-                File javaFile = next.getParentFile().getParentFile();
-                int n = javaFile.getPath().indexOf("jdk"); //$NON-NLS-1$
-                n = Math.max(n, javaFile.getPath().indexOf("jre")); //$NON-NLS-1$       
-                int oldVersion = javaFile.getPath().indexOf("1.5."); //$NON-NLS-1$
-                oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("-5-")); //$NON-NLS-1$     
-                oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("1.4.")); //$NON-NLS-1$    
-                oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("1.3.")); //$NON-NLS-1$    
-                oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("1.2.")); //$NON-NLS-1$    
-                oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("1.3.")); //$NON-NLS-1$    
-                oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("1.2.")); //$NON-NLS-1$    
-                        if (n>-1 && oldVersion>-1) {
-                                toExclude.add(next);
-                        }
-            }
-            extDirs.removeAll(toExclude);
-            vmsFound -= toExclude.size()+1;
+	    for (File next: extDirs) {
+	    	if (next.getParentFile()==null || next.getParentFile().getParentFile()==null) continue; 
+	    	File javaFile = next.getParentFile().getParentFile();
+	    	int n = javaFile.getPath().indexOf("jdk"); //$NON-NLS-1$
+	    	n = Math.max(n, javaFile.getPath().indexOf("jre")); //$NON-NLS-1$   	
+	    	int oldVersion = javaFile.getPath().indexOf("1.5."); //$NON-NLS-1$
+	    	oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("-5-")); //$NON-NLS-1$   	
+	    	oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("1.4.")); //$NON-NLS-1$   	
+	    	oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("1.3.")); //$NON-NLS-1$   	
+	    	oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("1.2.")); //$NON-NLS-1$   	
+	    	oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("1.3.")); //$NON-NLS-1$   	
+	    	oldVersion = Math.max(oldVersion, javaFile.getPath().indexOf("1.2.")); //$NON-NLS-1$   	
+	  		if (n>-1 && oldVersion>-1) {
+	  			toExclude.add(next);
+	  		}
+	    }
+	    extDirs.removeAll(toExclude);
+	    vmsFound -= toExclude.size()+1;
     }
     return extDirs;
-        }
-        
+	}
+	
   /**
    * Finds all java extension directory files (recursively) in a directory.
    * Extension directories are added to a collection of Files and returned.
@@ -378,184 +380,185 @@ public class ExtensionsManager {
    * @param extDirs the collection to add to
    * @return the collection
    */
-        private Set<File> findJavaExtensionDirectories(File dir, Set<File> extDirs) {
-                if (dir==null) return extDirs;
-                try { // don't search symlinks
-                        if (!dir.getCanonicalPath().equals(dir.getAbsolutePath()))
-                                return extDirs;
-                } catch (IOException e) {
-                }
-                        
-                // search all children contained in the directory
-                String[] fileNames = dir.list();
-                if (fileNames!=null && fileNames.length>0) {
-                        for (String next: fileNames) {
-                                File subDir = new File(dir, next);
-                                // if subdirectory is an extensions folder, add it
-                                if (extFilter.accept(subDir, subDir.getName())) {
-                                        synchronized(extDirs) {
-                                                extDirs.add(subDir);
-                                                vmsFound++;
-                                        }
-                                }
-                                // else search the next level down
-                                else {
-                                        findJavaExtensionDirectories(subDir, extDirs);
-                                }
-                        }
-                }
-                return extDirs;
-        }
-        
+	private Set<File> findJavaExtensionDirectories(File dir, Set<File> extDirs) {
+		if (dir==null) return extDirs;
+		try { // don't search symlinks
+			if (!dir.getCanonicalPath().equals(dir.getAbsolutePath())) {
+				return extDirs;
+			}
+		} catch (IOException e) {
+		}
+			
+		// search all children contained in the directory
+		String[] fileNames = dir.list();
+		if (fileNames!=null && fileNames.length>0) {
+			for (String next: fileNames) {
+				File subDir = new File(dir, next);
+				// if subdirectory is an extensions folder, add it
+				if (extFilter.accept(subDir, subDir.getName())) {
+					synchronized(extDirs) {
+						extDirs.add(subDir);
+						vmsFound++;
+					}
+				}
+				// else search the next level down
+				else {
+					findJavaExtensionDirectories(subDir, extDirs);
+				}
+			}
+		}
+		return extDirs;
+	}
+	
   /**
    * Returns the bitness (32 or 64) of a JRE path.
    * @param jrePath the JRE path
    * @return the bitness
    */
-        public boolean is32BitVM(String jrePath) {
-                if (OSPRuntime.isWindows()) {                                   
-                        String x86 = System.getenv("ProgramFiles(x86)"); //$NON-NLS-1$
-                        if (x86!=null) {
-                                return jrePath.contains(x86)? true: false;
-                        }
-                        // if x86 not defined, must be a 32-bit OS and VM?
-                        return true;
-                }
-                if (OSPRuntime.isMac()) {
-                        // all OSX VMs can be run in 32-bit mode?
-                        return true;
-                }
-                // on linux, assume all JREs have same bitness as current VM?
-                return OSPRuntime.getVMBitness()==32;
-        }
+	public boolean is32BitVM(String jrePath) {
+		if (OSPRuntime.isWindows()) {					
+			String x86 = System.getenv("ProgramFiles(x86)"); //$NON-NLS-1$
+			if (x86!=null) {
+				return jrePath.contains(x86)? true: false;
+			}
+			// if x86 not defined, must be a 32-bit OS and VM?
+			return true;
+		}
+		if (OSPRuntime.isMac()) {
+			// all OSX VMs can be run in 32-bit mode?
+			return true;
+		}
+		// on linux, assume all JREs have same bitness as current VM?
+		return OSPRuntime.getVMBitness()==32;
+	}
 
-        
+	
   /**
    * Returns public JREs of a given bitness (32 or 64).
    * @param vmBitness the bitness desired
    * @return a Set of java JRE directory paths
    */
-        public TreeSet<String> getPublicJREs(int vmBitness) {
-                TreeSet<String> jreDirs = getAllJREs(vmBitness);
-                if (OSPRuntime.isWindows()) {                                   
-                        for (Iterator<String> it=jreDirs.iterator(); it.hasNext();) {
-                                String next = it.next();
-                                if (next.indexOf("jdk")>-1) { //$NON-NLS-1$
-                                        it.remove();
-                                }
-                        }
-                }
-                // log results for trouble-shooting
-                StringBuffer buf =new StringBuffer(vmBitness+"-bit JREs: "); //$NON-NLS-1$
-                for (String next: jreDirs) {
-                        buf.append(next+", "); //$NON-NLS-1$
-                }
-                OSPLog.fine(buf.toString());
+	public TreeSet<String> getPublicJREs(int vmBitness) {
+		TreeSet<String> jreDirs = getAllJREs(vmBitness);
+		if (OSPRuntime.isWindows()) {					
+			for (Iterator<String> it=jreDirs.iterator(); it.hasNext();) {
+				String next = it.next();
+				if (next.indexOf("jdk")>-1) { //$NON-NLS-1$
+					it.remove();
+				}
+			}
+		}
+		// log results for trouble-shooting
+		StringBuffer buf =new StringBuffer(vmBitness+"-bit JREs: "); //$NON-NLS-1$
+		for (String next: jreDirs) {
+			buf.append(next+", "); //$NON-NLS-1$
+		}
+		OSPLog.fine(buf.toString());
     return jreDirs;
-        }
-        
+	}
+	
   /**
    * Returns all public and private JREs of a given bitness (32 or 64).
    * @param vmBitness the bitness desired
    * @return a Set of java JRE directory paths
    */
-        public TreeSet<String> getAllJREs(int vmBitness) {
-                // first look at extension directories
+	public TreeSet<String> getAllJREs(int vmBitness) {
+		// first look at extension directories
     Set<File> extDirs = findJavaExtensionDirectories();
     TreeSet<String> jreDirs = new TreeSet<String>();
-                try {
-                        String x86 = System.getenv("ProgramFiles(x86)"); //$NON-NLS-1$
-                        // iterate through extDirs to fill jreDirs
-                        for (File next: extDirs) {
-                                // move up two levels from lib/ext
-                                File javaFile = next.getParentFile().getParentFile();
-                                if (OSPRuntime.isWindows()) {                                   
-                                        // if 32-bit VM specified, eliminate 64-bit
-                                        if (vmBitness==32 && x86!=null && !next.getPath().contains(x86)) {
-                                                continue;
-                                        }
-                                        // if 64-bit VM specified, eliminate 32-bit
-                                        if (vmBitness==64 && x86!=null && next.getPath().contains(x86)) {
-                                                continue;
-                                        }
+		try {
+			String x86 = System.getenv("ProgramFiles(x86)"); //$NON-NLS-1$
+			// iterate through extDirs to fill jreDirs
+			for (File next: extDirs) {
+				// move up two levels from lib/ext
+				File javaFile = next.getParentFile().getParentFile();
+				if (OSPRuntime.isWindows()) {					
+					// if 32-bit VM specified, eliminate 64-bit
+					if (vmBitness==32 && x86!=null && !next.getPath().contains(x86)) {
+						continue;
+					}
+					// if 64-bit VM specified, eliminate 32-bit
+					if (vmBitness==64 && x86!=null && next.getPath().contains(x86)) {
+						continue;
+					}
 
-                                        javaFile = new File(javaFile, "bin/java.exe"); //$NON-NLS-1$
-                                        if (!javaFile.exists()) continue;
-                                        // ignore symlink files
-                                        try {
-                                                if (!javaFile.getCanonicalPath().equals(javaFile.getAbsolutePath()))
-                                                        continue;
-                                        } catch (IOException e) {
-                                        }
+					javaFile = new File(javaFile, "bin/java.exe"); //$NON-NLS-1$
+					if (!javaFile.exists()) continue;
+					// ignore symlink files
+					try {
+						if (!javaFile.getCanonicalPath().equals(javaFile.getAbsolutePath()))
+							continue;
+					} catch (IOException e) {
+					}
 
-                                        String jrePath = OSPRuntime.getJREPath(javaFile);
-                                        jreDirs.add(jrePath);
-                                }
-                          else {
-                                        javaFile = new File(javaFile, "bin/java"); //$NON-NLS-1$
-                                        if (!javaFile.exists()) continue;
-                                        String jrePath = OSPRuntime.getJREPath(javaFile);
-                                        // only Apple-installed VMs (in /System/Library) support 32-bit operation
-                                        if (vmBitness==32 && !jrePath.startsWith("/System/Library")) //$NON-NLS-1$
-                                                continue;
-                                        
-                                        jreDirs.add(jrePath);
-                          }
-                        }
-                } catch (Exception e) {
-                }
-                
-                // OSX: search for jres in /Library and /System/Library
-                // typical:  /Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home
-                // typical:  /System/Library/Java/JavaVirtualMachines/1.6.0jdk/Contents/Home
-                if (OSPRuntime.isMac()) {
-                        Set<File> homeDirs = new TreeSet<File>();
-                        
-                        String[] libraries = new String[] {"/System/Library", "/Library"};  //$NON-NLS-1$//$NON-NLS-2$
-                        for (int i=0; i<libraries.length; i++) {
-                                File library = new File(libraries[i]);
-                                if (library.exists()) {
-                                        // search children
-                                        String[] subDirs = library.list();
-                                        if (subDirs!=null && subDirs.length>0) {
-                                                for (String next: subDirs) {
-                                                        File nextFile = new File(library, next);
-                                                        if (next.contains("Java")) { //$NON-NLS-1$
-                                                                findJREHomes(nextFile, homeDirs);
-                                                        }
-                                                        // if subdirectory is an extensions folder, add it
-                                                        else if (nextFile.getName().contains("Internet Plug-Ins")) { //$NON-NLS-1$
-                                                                String[] children = nextFile.list();
-                                                                if (children!=null && children.length>0) {
-                                                                        for (String childName: children) {
-                                                                                if (childName.contains("Java")) { //$NON-NLS-1$
-                                                                                        findJREHomes(new File(nextFile, childName), homeDirs);
-                                                                                }
-                                                                        }
-                                                                }
-                                                        }
-                                                }
-                                        }                               
-                                } // end library search
-                        }
-                        for (File home: homeDirs) {
-                                // only Apple-installed VMs (in /System/Library) support 32-bit operation
-                                if (vmBitness==32 && !home.getAbsolutePath().startsWith("/System/Library")) //$NON-NLS-1$
-                                        continue;
-                                
-                                jreDirs.add(home.getAbsolutePath());                                                                                                    
-                        }
-                } // end OSX search
-                        
-                // log results for trouble-shooting
-                StringBuffer buf =new StringBuffer(vmBitness+"-bit JREs: "); //$NON-NLS-1$
-                for (String next: jreDirs) {
-                        buf.append(next+", "); //$NON-NLS-1$
-                }
-                OSPLog.fine(buf.toString());
+					String jrePath = OSPRuntime.getJREPath(javaFile);
+					jreDirs.add(jrePath);
+				}
+			  else {
+					javaFile = new File(javaFile, "bin/java"); //$NON-NLS-1$
+					if (!javaFile.exists()) continue;
+					String jrePath = OSPRuntime.getJREPath(javaFile);
+					// only Apple-installed VMs (in /System/Library) support 32-bit operation
+					if (OSPRuntime.isMac() && vmBitness==32 && !jrePath.startsWith("/System/Library")) //$NON-NLS-1$
+						continue;
+					
+					jreDirs.add(jrePath);
+			  }
+			}
+		} catch (Exception e) {
+		}
+		
+		// OSX: search for jres in /Library and /System/Library
+		// typical:  /Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home
+		// typical:  /System/Library/Java/JavaVirtualMachines/1.6.0jdk/Contents/Home
+		if (OSPRuntime.isMac()) {
+			Set<File> homeDirs = new TreeSet<File>();
+			
+			String[] libraries = new String[] {"/System/Library", "/Library"};  //$NON-NLS-1$//$NON-NLS-2$
+			for (int i=0; i<libraries.length; i++) {
+				File library = new File(libraries[i]);
+				if (library.exists()) {
+					// search children
+					String[] subDirs = library.list();
+					if (subDirs!=null && subDirs.length>0) {
+						for (String next: subDirs) {
+							File nextFile = new File(library, next);
+							if (next.contains("Java")) { //$NON-NLS-1$
+								findJREHomes(nextFile, homeDirs);
+							}
+							// if subdirectory is an extensions folder, add it
+							else if (nextFile.getName().contains("Internet Plug-Ins")) { //$NON-NLS-1$
+								String[] children = nextFile.list();
+								if (children!=null && children.length>0) {
+									for (String childName: children) {
+										if (childName.contains("Java")) { //$NON-NLS-1$
+											findJREHomes(new File(nextFile, childName), homeDirs);
+										}
+									}
+								}
+							}
+						}
+					}				
+				} // end library search
+			}
+			for (File home: homeDirs) {
+				// only Apple-installed VMs (in /System/Library) support 32-bit operation
+				if (vmBitness==32 && !home.getAbsolutePath().startsWith("/System/Library")) //$NON-NLS-1$
+					continue;
+				
+				jreDirs.add(home.getAbsolutePath());													
+			}
+		} // end OSX search
+			
+		// log results for trouble-shooting
+		StringBuffer buf =new StringBuffer(vmBitness+"-bit JREs: "); //$NON-NLS-1$
+		for (String next: jreDirs) {
+			buf.append(next+", "); //$NON-NLS-1$
+		}
+		OSPLog.fine(buf.toString());
     return jreDirs;
-        }
-        
+	}
+	
   /**
    * Finds java jre (home directory) files (recursively) in a directory.
    * JRE homes are added to a collection of Files and returned.
@@ -565,64 +568,64 @@ public class ExtensionsManager {
    * @param jreHomes the collection to add to
    * @return the collection
    */
-        private void findJREHomes(File parent, Set<File> jreHomes) {
-                if (parent==null || !parent.exists() || !parent.isDirectory() || jreHomes==null) return;
-                try { // don't search symlinks
-                        if (!parent.getCanonicalPath().equals(parent.getAbsolutePath()))
-                                return;
-                } catch (IOException e) {
-                }
-                // check this (parent) file
-                File javaFile = new File(parent, "bin/java"); //$NON-NLS-1$
-                if (javaFile.exists()) {
-                        jreHomes.add(parent);
-                        return;
-                }
-                
-                // look for Contents if parent is plugin
-                if (parent.getName().contains(".plugin")) { //$NON-NLS-1$
-                        File child = new File(parent, "Contents"); //$NON-NLS-1$
-                        if (child.exists()) {
-                                findJREHomes(new File(child, "Home"), jreHomes); //$NON-NLS-1$
-                        }
-                        return;
-                }
-                
-                // search children
-                String[] children = parent.list();
-                if (children!=null) {
-                        for (String childName: children) {
-                                findJREHomes(new File(parent, childName), jreHomes);
-                        }
-                }
-        }
-        
+	private void findJREHomes(File parent, Set<File> jreHomes) {
+		if (parent==null || !parent.exists() || !parent.isDirectory() || jreHomes==null) return;
+		try { // don't search symlinks
+			if (!parent.getCanonicalPath().equals(parent.getAbsolutePath()))
+				return;
+		} catch (IOException e) {
+		}
+		// check this (parent) file
+		File javaFile = new File(parent, "bin/java"); //$NON-NLS-1$
+		if (javaFile.exists()) {
+			jreHomes.add(parent);
+			return;
+		}
+		
+		// look for Contents if parent is plugin
+		if (parent.getName().contains(".plugin")) { //$NON-NLS-1$
+			File child = new File(parent, "Contents"); //$NON-NLS-1$
+			if (child.exists()) {
+				findJREHomes(new File(child, "Home"), jreHomes); //$NON-NLS-1$
+			}
+			return;
+		}
+		
+		// search children
+		String[] children = parent.list();
+		if (children!=null) {
+			for (String childName: children) {
+				findJREHomes(new File(parent, childName), jreHomes);
+			}
+		}
+	}
+	
   /**
    * Finds the default JRE of a given bitness (32 or 64). A public JRE is returned if possible. 
    * @param vmBitness the bitness desired
    * @return the default JRE directory path, or null if none found
    */
-        public String getDefaultJRE(int vmBitness) {
-                // first look at public JREs
-                String JRE = null;
+	public String getDefaultJRE(int vmBitness) {
+		// first look at public JREs
+		String JRE = null;
     Set<String> jreDirs = getPublicJREs(vmBitness);
-                for (String next: jreDirs) {
-                        // choose the last one (highest version) since they are in alpha/numerical order
-                        JRE = next;
-                }
-                // if none found, look for jdk
-                if (JRE==null) {
-            jreDirs = getAllJREs(vmBitness);
-                        for (String next: jreDirs) {
-                                // choose the last one (highest version) since they are in alpha/numerical order
-                                JRE = next;
-                        }
-                }
-                // log results for trouble-shooting
-                OSPLog.fine(vmBitness+"-bit default JRE: "+JRE); //$NON-NLS-1$
+		for (String next: jreDirs) {
+			// choose the last one (highest version) since they are in alpha/numerical order
+			JRE = next;
+		}
+		// if none found, look for jdk
+		if (JRE==null) {
+	    jreDirs = getAllJREs(vmBitness);
+			for (String next: jreDirs) {
+				// choose the last one (highest version) since they are in alpha/numerical order
+				JRE = next;
+			}
+		}
+		// log results for trouble-shooting
+		OSPLog.fine(vmBitness+"-bit default JRE: "+JRE); //$NON-NLS-1$
     return JRE;
-        }
-        
+	}
+	
   /**
    * Copies a source file to a target file.
    *
@@ -631,72 +634,72 @@ public class ExtensionsManager {
    * @return true if successfully copied
    */
   private boolean copyFile(File inFile, File outFile) {
-        byte[] buffer = new byte[100000];
+  	byte[] buffer = new byte[100000];
     try {
-        InputStream in = new FileInputStream(inFile);
-        OutputStream out = new FileOutputStream(outFile);
-                        while (true) {
-                                synchronized (buffer) {
-                                        int amountRead = in.read(buffer);
-                                        if (amountRead == -1) {
-                                                break;
-                                        }
-                                        out.write(buffer, 0, amountRead);
-                                }
-                        }
-                        in.close();
-                        out.close();
-                        // following line sometimes fails on Windows 7??
-                        outFile.setLastModified(inFile.lastModified());
-                }                   
+    	InputStream in = new FileInputStream(inFile);
+    	OutputStream out = new FileOutputStream(outFile);
+			while (true) {
+				synchronized (buffer) {
+					int amountRead = in.read(buffer);
+					if (amountRead == -1) {
+						break;
+					}
+					out.write(buffer, 0, amountRead);
+				}
+			}
+			in.close();
+			out.close();
+			// following line sometimes fails on Windows 7??
+			outFile.setLastModified(inFile.lastModified());
+		}                   
     catch (IOException ex) {
-        return false;
+    	return false;
     }
-        return true;
+  	return true;
   }
 
-        /**
-         * ExtensionsFilter identifies Java extensions directories.
-         * 
-         * Windows:
-         *              typical jdk: Program Files\Java\jdkX.X.X_XX\jre\lib\ext
+	/**
+	 * ExtensionsFilter identifies Java extensions directories.
+	 * 
+	 * Windows:
+	 * 		typical jdk: Program Files\Java\jdkX.X.X_XX\jre\lib\ext
    *    typical jre: Program Files\Java\jreX.X.X_XX\lib\ext
    *             and Program Files\Java\jreX\lib\ext
-   *            on 64-bit Windows, 32-bit VMs are in: Program Files (x86)\Java\...
-   *            non-jre: Sun\Java\lib\ext.
-   *            exclude: \Program Files (x86)\Java\Java3D\x.x.x\lib\ext
-   *            jre search in: \Java
-         *
-         * OS X:
-         *              typical: /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home/lib/ext
-         *    non-jre: /Library/Java/Extensions and/or /System/Library/Java/Extensions
-         *              jre search in: /JavaVirtualMachines
-         * 
-         * Linux:
-         *              typical: /usr/lib/jvm/java-X-openjdk/jre/lib/ext
-         *                    or /usr/lib/jvm/java-X.X.X-openjdk/jre/lib/ext
-         *                    or /usr/lib/jvm/java-X-sun-X.X.X.XX/jre/lib/ext
-         *                    or /usr/lib/jvm/java-X.X.X-sun/jre/lib/ext
-         *              non-jre: /usr/java/packages/lib/ext
-         *              jre search in: /jvm
-         */
-  static class ExtensionsFilter implements FilenameFilter {     
+   *		on 64-bit Windows, 32-bit VMs are in: Program Files (x86)\Java\...
+   *		non-jre: Sun\Java\lib\ext.
+   *		exclude: \Program Files (x86)\Java\Java3D\x.x.x\lib\ext
+   *		jre search in: \Java
+	 *
+	 * OS X:
+	 * 		typical: /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home/lib/ext
+	 *    non-jre: /Library/Java/Extensions and/or /System/Library/Java/Extensions
+	 * 		jre search in: /JavaVirtualMachines
+	 * 
+	 * Linux:
+	 * 		typical: /usr/lib/jvm/java-X-openjdk/jre/lib/ext
+	 * 		      or /usr/lib/jvm/java-X.X.X-openjdk/jre/lib/ext
+	 * 		      or /usr/lib/jvm/java-X-sun-X.X.X.XX/jre/lib/ext
+	 * 		      or /usr/lib/jvm/java-X.X.X-sun/jre/lib/ext
+	 * 		non-jre: /usr/java/packages/lib/ext
+	 * 		jre search in: /jvm
+	 */
+  static class ExtensionsFilter implements FilenameFilter {  	
     public boolean accept(File dir, String name) {
-        if (!dir.isDirectory()) return false;
-        // standardize paths to forward slash
+    	if (!dir.isDirectory()) return false;
+    	// standardize paths to forward slash
       String path = XML.forwardSlash(dir.getPath());
       // accept jre extensions directories on all platforms
       if (path.endsWith("/lib/ext")) { //$NON-NLS-1$
         if (path.endsWith("/jre/lib/ext")) { //$NON-NLS-1$
-                return true;
+        	return true;
         }
         String jre = XML.getName(path.substring(0, path.length()-8));
         if (jre.indexOf("jre")>-1) //$NON-NLS-1$
-                return true;
+        	return true;
         if (path.indexOf("jdk")>-1 && path.indexOf("/Java/")>-1) //$NON-NLS-1$ //$NON-NLS-2$
-                return true;
+        	return true;
         if (path.indexOf("jre")>-1 && path.indexOf("/Java/")>-1) //$NON-NLS-1$ //$NON-NLS-2$
-                return true;
+        	return true;
       }
       // accept non-jre extensions directories
       // Linux

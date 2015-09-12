@@ -20,6 +20,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.rmi.RemoteException;
+
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -36,6 +37,7 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
+
 import org.opensourcephysics.controls.Cryptic;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;

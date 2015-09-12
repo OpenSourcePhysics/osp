@@ -315,7 +315,7 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
       public Dimension getPreferredSize() {
         Dimension dim = super.getPreferredSize();
         Font font = instructions.getFont();
-        dim.height = font.getSize()*3;
+        dim.height = Math.max(dim.height, font.getSize()*4);
         return dim;
       }
 

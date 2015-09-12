@@ -101,7 +101,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	@SuppressWarnings("javadoc")
 	public final static String THETA = TeXParser.parseTeX("$\\theta$"); //$NON-NLS-1$
 	public final static String OMEGA = TeXParser.parseTeX("$\\omega$"); //$NON-NLS-1$
-	public final static String DEGREES = "�"; //$NON-NLS-1$
+	public final static String DEGREES = "°"; //$NON-NLS-1$
   public final static int ADD_EDIT = 0;
   public final static int REMOVE_EDIT = 1;
   public final static int NAME_EDIT = 2;
@@ -897,7 +897,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
   /**
    * Returns true if any objects have invalid expressions.
    */
-  protected boolean containsInvalidExpressions() {
+  public boolean containsInvalidExpressions() {
     for(Iterator<Object> it = objects.iterator(); it.hasNext(); ) {
       if(isInvalidExpression(it.next())) {
         return true;

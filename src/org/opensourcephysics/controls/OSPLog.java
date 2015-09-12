@@ -214,7 +214,7 @@ public class OSPLog extends JFrame {
   public static void showLogInvokeLater() {
     Runnable doLater = new Runnable() {
       public void run() {
-        //showLogFromEventQueue();
+        showLog();
       }
 
     };

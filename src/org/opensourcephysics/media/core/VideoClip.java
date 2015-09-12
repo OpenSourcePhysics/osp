@@ -55,9 +55,9 @@ import org.opensourcephysics.tools.ResourceLoader;
  */
 public class VideoClip {
   // instance fields
-        public boolean changeEngine; // signals that user wishes to change preferred video engine
+	public boolean changeEngine; // signals that user wishes to change preferred video engine
 
-  private int startFrame = 0;
+	private int startFrame = 0;
   private int stepSize = 1;
   private int stepCount = 10;   // default stepCount is 10 if video is null
   private int frameCount = stepCount; // default frameCount same as stepCount
@@ -113,11 +113,11 @@ public class VideoClip {
    * @return the video path
    */
   public String getVideoPath() {
-        if (video!=null)
-                return (String)video.getProperty("absolutePath"); //$NON-NLS-1$
+  	if (video!=null)
+  		return (String)video.getProperty("absolutePath"); //$NON-NLS-1$
     return videoPath;
   }
-
+  
   /**
    * Sets the start frame number.
    *
@@ -125,8 +125,8 @@ public class VideoClip {
    * @return true if changed
    */
   public boolean setStartFrameNumber(int start) {
-        int maxEndFrame = getLastFrameNumber();
-        return setStartFrameNumber(start, maxEndFrame);
+  	int maxEndFrame = getLastFrameNumber();
+  	return setStartFrameNumber(start, maxEndFrame);
   }
 
   /**
@@ -137,14 +137,14 @@ public class VideoClip {
    * @return true if changed
    */
   public boolean setStartFrameNumber(int start, int maxStart) {
-        int prevStart = getStartFrameNumber();
+  	int prevStart = getStartFrameNumber();
     int prevEnd = getEndFrameNumber();
     // can't start before first frame number or after max end frame
     start = Math.max(start, getFirstFrameNumber());
     start = Math.min(start, maxStart);
     
     if(video!=null && video.getFrameCount()>1) {
-        // set video end frame to last video frame (temporary)
+    	// set video end frame to last video frame (temporary)
       video.setEndFrameNumber(video.getFrameCount()-1);
       // set video start frame number to desired start frame
       int vidStart = Math.max(0, start+frameShift);
@@ -152,8 +152,7 @@ public class VideoClip {
 
       // set start frame to frame number of first video frame
       startFrame = Math.max(0, video.getStartFrameNumber()-frameShift);      
-    }
-    
+    }    
     else { // no video or single-frame video
       startFrame = start;
       updateArray();
@@ -164,8 +163,8 @@ public class VideoClip {
     setEndFrameNumber(prevEnd);
     
     if(prevStart!=start) {
-                isDefaultState = false;
-        support.firePropertyChange("startframe", null, new Integer(start)); //$NON-NLS-1$
+	  	isDefaultState = false;
+    	support.firePropertyChange("startframe", null, new Integer(start)); //$NON-NLS-1$
     }
     return prevStart!=start;
   }
@@ -186,7 +185,7 @@ public class VideoClip {
    * @return true if changed
    */
   public boolean setStepSize(int size) {
-        isDefaultState = false;
+  	isDefaultState = false;
     if(size==0) {
       return false;
     }
@@ -196,7 +195,7 @@ public class VideoClip {
       size = Math.min(size, maxSize);
     }
     if(stepSize==size) {
-        return false;
+    	return false;
     }
     
     // get current end frame
@@ -206,8 +205,10 @@ public class VideoClip {
     stepCount = 1+(endFrame-getStartFrameNumber())/stepSize;
     updateArray();
     support.firePropertyChange("stepsize", null, new Integer(size)); //$NON-NLS-1$
+    
     // reset end frame
     setEndFrameNumber(endFrame);
+
     trimFrameCount();
     return true;
   }
@@ -231,24 +232,24 @@ public class VideoClip {
       return;
     }
     count = Math.abs(count);
-    if(video!=null) {
+    if (video!=null) {
       if(video.getFrameCount()>1) {
         int end = video.getFrameCount()-1-frameShift+extraFrames;
         int maxCount = 1+(int) ((end-startFrame)/(1.0*stepSize));
         count = Math.min(count, maxCount);
       }
       int end = startFrame+(count-1)*stepSize+frameShift;
-      if(end!=video.getEndFrameNumber()) {
+      if (end!=video.getEndFrameNumber()) {
         video.setEndFrameNumber(end);
       }
     }
     else {
-        count = Math.min(count, frameToStep(maxFrameCount-1)+1);
+    	count = Math.min(count, frameToStep(maxFrameCount-1)+1);
     }
     count = Math.max(count, 1);
     if (stepCount==count) {
-            updateArray();
-        return;
+	    updateArray();
+    	return;
     }
     Integer prev = new Integer(stepCount);
     stepCount = count;
@@ -272,8 +273,8 @@ public class VideoClip {
    * @return the new frame shift
    */
   public int setFrameShift(int n) {
-        int start = getStartFrameNumber();
-        int steps = getStepCount();
+  	int start = getStartFrameNumber();
+  	int steps = getStepCount();
     return setFrameShift(n, start, steps);
   }
 
@@ -286,13 +287,13 @@ public class VideoClip {
    * @return the new frame shift
    */
   protected int setFrameShift(int n, int start, int stepCount) {
-        // frameshift cannot be greater than highest video frame number--no frames would be visible!
-        if (video!=null)
-                n = Math.min(n, video.getFrameCount()-1);
-        frameShift = n;
+  	// frameshift cannot be greater than highest video frame number--no frames would be visible!
+  	if (video!=null)
+  		n = Math.min(n, video.getFrameCount()-1);
+  	frameShift = n;
     support.firePropertyChange("frameshift", null, frameShift); //$NON-NLS-1$
-        setStartFrameNumber(start);
-        setStepCount(stepCount);
+  	setStartFrameNumber(start);
+  	setStepCount(stepCount);
     return frameShift;
   }
 
@@ -311,10 +312,10 @@ public class VideoClip {
    * @param extras the number of extra frames to display
    */
   public void setExtraFrames(int extras) {
-        int prev = extraFrames;
+  	int prev = extraFrames;
     extraFrames = Math.max(extras, 0);
     if (prev!=extraFrames) {
-                        OSPLog.finest("set extra frames to "+extraFrames); //$NON-NLS-1$
+			OSPLog.finest("set extra frames to "+extraFrames); //$NON-NLS-1$
     }
   }
 
@@ -325,10 +326,10 @@ public class VideoClip {
    */
   public int getFrameCount() {
     if(video!=null && video.getFrameCount()>1) {
-        int n = video.getFrameCount() + extraFrames;
-        n = Math.min(n, n-frameShift);
-        n = Math.max(1, n);
-        return n;
+    	int n = video.getFrameCount() + extraFrames;
+    	n = Math.min(n, n-frameShift);
+    	n = Math.max(1, n);
+    	return n;
     }
     int frames = getEndFrameNumber()+1;
     frameCount = Math.max(frameCount, frames);
@@ -342,7 +343,7 @@ public class VideoClip {
    * @param t0 the start time in milliseconds
    */
   public void setStartTime(double t0) {
-        isDefaultState = false;
+  	isDefaultState = false;
     if(startTime==t0 || (isDefaultStartTime && Double.isNaN(t0))) {
       return;
     }
@@ -366,7 +367,7 @@ public class VideoClip {
    * @return the end frame
    */
   public int getEndFrameNumber() {
-        endFrame = startFrame+stepSize*(stepCount-1);
+  	endFrame = startFrame+stepSize*(stepCount-1);
     return endFrame;
   }
 
@@ -376,8 +377,8 @@ public class VideoClip {
    * @param end the desired end frame
    * @return true if the end frame number was changed
    */
-  public boolean setEndFrameNumber(int end) {
-        return setEndFrameNumber(end, maxFrameCount-1-frameShift, true);
+  public boolean setEndFrameNumber(int end) {  	
+  	return setEndFrameNumber(end, maxFrameCount-1-frameShift, true);
   }
 
   /**
@@ -387,10 +388,10 @@ public class VideoClip {
    * @return true if the end frame number was extended
    */
   public boolean extendEndFrameNumber(int end) {
-        if (video!=null && getFrameCount()<=end) {
-                setExtraFrames(end-getFrameCount()+extraFrames);                
-        }
-        return setEndFrameNumber(end);
+  	if (video!=null && getFrameCount()<=end) {
+  		setExtraFrames(end-getFrameCount()+extraFrames);  		
+  	}
+  	return setEndFrameNumber(end);
   }
 
   /**
@@ -401,10 +402,10 @@ public class VideoClip {
    * @return true if the end frame number was changed
    */
   private boolean setEndFrameNumber(int end, int max, boolean onlyIfChanged) {
-        int prev = getEndFrameNumber();
-        if (prev==end && onlyIfChanged)
-                return false;
-        isDefaultState = false;                 
+  	int prev = getEndFrameNumber();
+  	if (prev==end && onlyIfChanged)
+  		return false;
+  	isDefaultState = false;  	 	
     end = Math.max(end, startFrame); // end can't be less than start
     
     // determine step count needed for desired end frame
@@ -414,7 +415,7 @@ public class VideoClip {
       count++;
     }
     while (stepToFrame(count) > max) {
-        count--;
+    	count--;
     }
     // set step count
     setStepCount(count+1);
@@ -422,10 +423,10 @@ public class VideoClip {
     
     // determine maximum step size and adjust step size if needed
     if (end!=startFrame) {
-    int maxStepSize = Math.max(end-startFrame, 1);
-    if(maxStepSize<stepSize) {
-      stepSize = maxStepSize;
-    }
+	    int maxStepSize = Math.max(end-startFrame, 1);
+	    if(maxStepSize<stepSize) {
+	      stepSize = maxStepSize;
+	    }
     }
     
     return prev!=end;
@@ -505,7 +506,7 @@ public class VideoClip {
    * @return true if in a default state
    */
   public boolean isDefaultState() {
-        return isDefaultState && inspector==null;
+  	return isDefaultState && inspector==null;
   }
 
   /**
@@ -514,10 +515,10 @@ public class VideoClip {
    * @param adjusting true if adjusting
    */
   public void setAdjusting(boolean adjusting) {
-        if (isAdjusting==adjusting)
-                return;
-        isAdjusting = adjusting;
-                support.firePropertyChange("adjusting", null, adjusting); //$NON-NLS-1$
+  	if (isAdjusting==adjusting)
+  		return;
+  	isAdjusting = adjusting;
+		support.firePropertyChange("adjusting", null, adjusting); //$NON-NLS-1$
   }
 
   /**
@@ -526,7 +527,7 @@ public class VideoClip {
    * @return true if adjusting
    */
   public boolean isAdjusting() {
-        return isAdjusting;
+  	return isAdjusting;
   }
 
   /**
@@ -535,7 +536,7 @@ public class VideoClip {
    * @param all true to play all steps
    */
   public void setPlayAllSteps(boolean all) {
-        playAllSteps = all;
+  	playAllSteps = all;
   }
 
   /**
@@ -544,7 +545,7 @@ public class VideoClip {
    * @return true if playing all steps
    */
   public boolean isPlayAllSteps() {
-        return playAllSteps;
+  	return playAllSteps;
   }
 
   /**
@@ -590,7 +591,7 @@ public class VideoClip {
    */
   protected void trimFrameCount() {
     if(video==null || video.getFrameCount()==1) {
-        frameCount = getEndFrameNumber()+1;
+    	frameCount = getEndFrameNumber()+1;
       support.firePropertyChange("framecount", null, new Integer(frameCount)); //$NON-NLS-1$
     }
   }
@@ -610,9 +611,9 @@ public class VideoClip {
    * @return the frame number
    */
   public int getFirstFrameNumber() {
-        if (video==null) return 0;
-        // frameShift changes frame number--but never less than zero
-        return Math.max(0, -frameShift);
+  	if (video==null) return 0;
+  	// frameShift changes frame number--but never less than zero
+  	return Math.max(0, -frameShift);
   }
 
   /**
@@ -620,10 +621,10 @@ public class VideoClip {
    * @return the frame number
    */
   public int getLastFrameNumber() {
-        if (video==null) return getEndFrameNumber();
-        int finalVideoFrame = video.getFrameCount()-1+extraFrames;
-        // frameShift changes frame number--but never less than zero
-        return Math.max(0, finalVideoFrame-frameShift);
+  	if (video==null) return getEndFrameNumber();
+  	int finalVideoFrame = video.getFrameCount()-1+extraFrames;
+  	// frameShift changes frame number--but never less than zero
+  	return Math.max(0, finalVideoFrame-frameShift);
   }
 
   /**
@@ -657,13 +658,13 @@ public class VideoClip {
         } else {
           control.setValue("video", video);   //$NON-NLS-1$
         }
-              control.setValue("video_framecount", video.getFrameCount()); //$NON-NLS-1$
+	      control.setValue("video_framecount", video.getFrameCount()); //$NON-NLS-1$
       }
       control.setValue("startframe", clip.getStartFrameNumber()); //$NON-NLS-1$
       control.setValue("stepsize", clip.getStepSize());           //$NON-NLS-1$
       control.setValue("stepcount", clip.getStepCount());         //$NON-NLS-1$
-      control.setValue("starttime", clip.startTimeIsSaved?                        //$NON-NLS-1$
-                clip.savedStartTime: clip.getStartTime());
+      control.setValue("starttime", clip.startTimeIsSaved? 			  //$NON-NLS-1$
+      		clip.savedStartTime: clip.getStartTime());
       control.setValue("frameshift", clip.getFrameShift());         //$NON-NLS-1$
       control.setValue("readout", clip.readoutType);         //$NON-NLS-1$
       control.setValue("playallsteps", clip.playAllSteps);         //$NON-NLS-1$
@@ -750,22 +751,22 @@ public class VideoClip {
           }
         }
         if (video instanceof ImageVideo) {
-                double dt = child.getDouble("delta_t"); //$NON-NLS-1$
-                if (!Double.isNaN(dt)) {
-                        ((ImageVideo)video).setFrameDuration(dt);
-                }
+        	double dt = child.getDouble("delta_t"); //$NON-NLS-1$
+        	if (!Double.isNaN(dt)) {
+        		((ImageVideo)video).setFrameDuration(dt);
+        	}
         }
         
       }
       VideoClip clip = new VideoClip(video);
       clip.changeEngine = engineChange;
       if (path!=null) {
-        if (!path.startsWith("/") && path.indexOf(":")==-1) { //$NON-NLS-1$ //$NON-NLS-2$
-                // convert path to absolute 
-                String base = control.getString("basepath"); //$NON-NLS-1$
-                path = XML.getResolvedPath(path, base);
-        }
-        clip.videoPath = path;
+      	if (!path.startsWith("/") && path.indexOf(":")==-1) { //$NON-NLS-1$ //$NON-NLS-2$
+      		// convert path to absolute 
+        	String base = control.getString("basepath"); //$NON-NLS-1$
+      		path = XML.getResolvedPath(path, base);
+      	}
+      	clip.videoPath = path;
       }
       return clip;
     }
@@ -785,10 +786,10 @@ public class VideoClip {
       int stepCount = control.getInt("stepcount"); //$NON-NLS-1$
       int frameCount = clip.getFrameCount();
       if (control.getPropertyNames().contains("video_framecount")) { //$NON-NLS-1$
-        frameCount = control.getInt("video_framecount"); //$NON-NLS-1$
+      	frameCount = control.getInt("video_framecount"); //$NON-NLS-1$
       }
       else if (start!=Integer.MIN_VALUE && stepSize!=Integer.MIN_VALUE && stepCount!=Integer.MIN_VALUE) {
-        frameCount = start + stepCount*stepSize;
+      	frameCount = start + stepCount*stepSize;
       }
       clip.setStepCount(frameCount); // this should equal or exceed the actual frameCount
 
@@ -814,11 +815,11 @@ public class VideoClip {
       if(!Double.isNaN(t)) {
         clip.startTime = t;
       }
-            clip.readoutType = control.getString("readout"); //$NON-NLS-1$
-        clip.playAllSteps = true; // by default
-            if (control.getPropertyNames().contains("playallsteps")) { //$NON-NLS-1$
-                clip.playAllSteps = control.getBoolean("playallsteps"); //$NON-NLS-1$
-            }
+	    clip.readoutType = control.getString("readout"); //$NON-NLS-1$
+    	clip.playAllSteps = true; // by default
+	    if (control.getPropertyNames().contains("playallsteps")) { //$NON-NLS-1$
+	    	clip.playAllSteps = control.getBoolean("playallsteps"); //$NON-NLS-1$
+	    }
       return obj;
     }
 

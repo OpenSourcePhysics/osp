@@ -1473,25 +1473,38 @@ public class DataTable extends JTable implements ActionListener {
     }
 
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-      Component c = renderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-      if(!(c instanceof JComponent)) {
-        return c;
-      }
       // value is column name
       String name = (value==null) ? "" : value.toString(); //$NON-NLS-1$
-      textLine.setText(name);
+      if (OSPRuntime.isMac()) {
+      	name = TeXParser.removeSubscripting(name);
+      }
+      Component c = renderer.getTableCellRendererComponent(table, name, isSelected, hasFocus, row, col);
+      if (!(c instanceof JComponent)) {
+        return c;
+      }
       JComponent comp = (JComponent) c;
+      int sortCol = decorator.getSortedColumn();
+      Font font = comp.getFont();
+      if (OSPRuntime.isMac()) {
+      	// textline doesn't work on OSX
+        comp.setFont((sortCol!=convertColumnIndexToModel(col))? 
+        		font.deriveFont(Font.PLAIN) : 
+        		font.deriveFont(Font.BOLD));
+        if (comp instanceof JLabel) {
+        	((JLabel)comp).setHorizontalAlignment(SwingConstants.CENTER);
+        }
+        return comp;
+      }
+      textLine.setText(name);
       java.awt.Dimension dim = comp.getPreferredSize();
       dim.height += 1;
       panel.setPreferredSize(dim);
       javax.swing.border.Border border = comp.getBorder();
-      if(border instanceof javax.swing.border.EmptyBorder) {
+      if (border instanceof javax.swing.border.EmptyBorder) {
         border = BorderFactory.createLineBorder(Color.LIGHT_GRAY);
       }
       panel.setBorder(border);
       // set font: bold if sorted column
-      int sortCol = decorator.getSortedColumn();
-      Font font = comp.getFont();
       textLine.setFont((sortCol!=convertColumnIndexToModel(col)) ? font : font.deriveFont(Font.BOLD));
       textLine.setColor(comp.getForeground());
       textLine.setBackground(comp.getBackground());

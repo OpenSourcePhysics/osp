@@ -102,7 +102,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 //  protected static String helpName = "data_tool_help.html";                                 //$NON-NLS-1$
 //  protected static String helpBase = "http://www.opensourcephysics.org/online_help/tools/"; //$NON-NLS-1$
   protected static String helpName = "datatool/datatool_help.html";                                 //$NON-NLS-1$
-  protected static String helpBase = "http://www.cabrillo.edu/~dbrown/OSP/"; //$NON-NLS-1$
+  protected static String helpBase = "http://www.compadre.org/osp/online_help/tools/"; //$NON-NLS-1$
   private static ArrayList<Data> processedData = new ArrayList<Data>();
   
   // instance fields
@@ -1722,6 +1722,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    * @param level the level
    */
   public void setFontLevel(int level) {
+  	if (getJMenuBar()==null) return;
     super.setFontLevel(level);
 		FontSizer.setFonts(emptyMenubar, level);
 		FontSizer.setFonts(fileMenu, level);
@@ -2821,6 +2822,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     emptyPasteMenu.add(emptyPasteTabItem);
     refreshGUI();
     refreshMenubar();
+    setFontLevel(FontSizer.getLevel());
     pack();
     // center this on the screen
     Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();

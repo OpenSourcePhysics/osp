@@ -81,6 +81,7 @@ import javax.swing.event.MouseInputAdapter;
 import java.awt.event.MouseMotionListener;
 
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ResourceLoader;
 
@@ -1454,8 +1455,6 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
    */
   protected class PlayerButton extends JButton {
   	
-  	Icon onIcon, offIcon;
-  	
     /**
      * Constructs a PlayerButton.
      */
@@ -1492,37 +1491,10 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
      */
     public PlayerButton(Icon off, Icon on) {
   		this();
-  		onIcon = on;
-  		offIcon = off;
   		setIcon(off);
+  		setSelectedIcon(on);
     }
     
-    /**
-     * Sets the icon. Overrides JButton method.
-     *
-     * @param icon the icon
-     */
-    public void setIcon(Icon icon) {
-      super.setIcon(icon);
-      setSelectedIcon(icon);
-      setRolloverSelectedIcon(icon);  	
-    }
-    
-    /**
-     * Sets the selected state. Overrides JButton method.
-     *
-     * @param selected true to select
-     */
-    public void setSelected(boolean selected) {
-    	super.setSelected(selected);
-    	if (selected && onIcon !=null) {
-    		setIcon(onIcon);
-    	}
-    	else if (!selected && offIcon !=null) {
-    		setIcon(offIcon);
-    	}
-    }
-      	
   }
   
 }

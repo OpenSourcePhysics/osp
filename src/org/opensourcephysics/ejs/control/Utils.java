@@ -7,6 +7,7 @@
 
 package org.opensourcephysics.ejs.control;
 import javax.swing.ImageIcon;
+
 import org.opensourcephysics.tools.ResourceLoader;
 
 /**
@@ -117,7 +118,12 @@ public class Utils {
         icon = new javax.swing.ImageIcon(_gifFile);
       }
       if(icon==null) {
-        icon = ResourceLoader.getIcon(_gifFile);
+      	// code modified by Doug Brown June 2015 to get ImageIcon from ResourceLoader
+      	javax.swing.Icon resIcon = ResourceLoader.getIcon(_gifFile);
+      	if (resIcon!=null && resIcon instanceof org.opensourcephysics.display.ResizableIcon) {
+      		resIcon = ((org.opensourcephysics.display.ResizableIcon)resIcon).getBaseIcon(); 
+	        icon = (ImageIcon)resIcon;
+      	}
       }
     } else {
       // System.out.println ("Reading from "+_codebase+" :"+_gifFile);

@@ -1740,9 +1740,10 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         if(boxActive) {
         	if (timerToFindHits==null) {
         		timerToFindHits = new Timer(200, new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						findHits(removeHits);
-					}        			
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								findHits(removeHits);
+							}        			
         		});
         	}
           // prepare to drag
@@ -1897,9 +1898,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       	Runnable runner = new Runnable() {
       		public void run() {
           	HighlightableDataset data = dataTable.workingData;
-    	      double[][] screenPoints = data.getScreenCoordinates();
     	      Map<Integer, Integer> workingRows = dataTable.workingRows;
           	if (data==null || workingRows==null) return;
+    	      double[][] screenPoints = data.getScreenCoordinates();
             ListSelectionModel columnSelectionModel = dataTable.getColumnModel().getSelectionModel();
             for(int i = 0; i<screenPoints[0].length; i++) {
               Integer row = workingRows.get(i);
@@ -2075,6 +2076,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     	}
     };
     shiftXField.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
       	Dataset data = dataTable.getDataset(plot.xVar);
       	if (data !=null && data instanceof DataColumn) {
@@ -2163,6 +2165,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     	}
     };
     shiftYField.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
       	Dataset data = dataTable.getDataset(plot.yVar);
       	if (data !=null && data instanceof DataColumn) {
@@ -2228,6 +2231,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     	}
     };
     selectedXField.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
       	Dataset data = dataTable.getDataset(plot.xVar);
       	if (data !=null && data instanceof DataColumn) {
@@ -2268,6 +2272,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     	}
     };
     selectedYField.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
       	Dataset data = dataTable.getDataset(plot.yVar);
       	if (data !=null && data instanceof DataColumn) {
@@ -3560,6 +3565,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         super.setSize(w, h);
       }
 
+      @Override
       public void draw(DrawingPanel drawingPanel, Graphics g) {
         if(visible) {
           Graphics2D g2 = (Graphics2D) g;
@@ -3649,6 +3655,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       Color trueLimitColor;
       Cursor move;
 
+      @Override
       public void draw(DrawingPanel panel, Graphics g) {
         if(!areaVisible) {
           return;
@@ -3671,6 +3678,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         hitRect.setBounds(x1-2, y0, 6, y1-y0-20);
       }
 
+      @Override
       public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
         if(areaVisible&&hitRect.contains(xpix, ypix)) {
           return this;
@@ -3678,6 +3686,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         return null;
       }
 
+      @Override
       public Cursor getPreferredCursor() {
         if(move==null) {
           // create cursor
@@ -3688,10 +3697,12 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         return move;
       }
 
+      @Override
       public void setXY(double x, double y) {
         setX(x);
       }
 
+      @Override
       public void setX(double x) {
         Dataset data = dataTable.workingData;
         pointIndex = -1;
@@ -3704,10 +3715,12 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         plot.setMessage(message);
       }
       
+      @Override
       public boolean isMeasured() {
         return areaVisible;
       }
 
+      @Override
       public double getXMin() {
         Dataset data = dataTable.workingData;
         double dx = 0, min = 0;
@@ -3721,6 +3734,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         return min-0.02*dx;
       }
 
+      @Override
       public double getXMax() {
         Dataset data = dataTable.workingData;
         double dx = 0, max = 0;
@@ -3734,10 +3748,12 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         return max+0.02*dx;
       }
 
+      @Override
       public double getYMin() {
         return(plot.getYMin()+plot.getYMax())/2;
       }
 
+      @Override
       public double getYMax() {
         return(plot.getYMin()+plot.getYMax())/2;
       }
@@ -3755,28 +3771,36 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
       // the following methods are required by Selectable but not used
       
+      @Override
       public void setY(double y) {}
 
+      @Override
       public double getX() {
         return x;
       }
 
+      @Override
       public double getY() {
         return 0;
       }
 
+      @Override
       public void setSelected(boolean selectable) {}
 
+      @Override
       public boolean isSelected() {
         return false;
       }
 
+      @Override
       public void toggleSelected() {}
 
+      @Override
       public boolean isEnabled() {
         return true;
       }
 
+      @Override
       public void setEnabled(boolean enable) {}
 
     } // end LimitLine class
@@ -4084,6 +4108,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
    */
   static class Loader implements XML.ObjectLoader {
   	
+    @Override
     public void saveObject(XMLControl control, Object obj) {
       DataToolTab tab = (DataToolTab) obj;
       // save name and owner name
@@ -4196,6 +4221,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       }
     }
 
+    @Override
     public Object createObject(XMLControl control) {
     	// get DataTool from control
     	DataTool dataTool = (DataTool)control.getObject("datatool"); //$NON-NLS-1$
@@ -4210,6 +4236,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       return new DataToolTab(data, dataTool);
     }
 
+    @Override
     public Object loadObject(XMLControl control, Object obj) {
       final DataToolTab tab = (DataToolTab) obj;
       // load tab name and owner name, if any
