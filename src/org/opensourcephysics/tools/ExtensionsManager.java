@@ -130,22 +130,21 @@ public class ExtensionsManager {
 	  }
     File ffmpegJarDir = new File(ffmpegHome); //$NON-NLS-1$
     String[] jarNames = DiagnosticsForFFMPeg.ffmpegJarNames;
-	  File ffmpegFile = new File(ffmpegJarDir, jarNames[0]);
-    long fileLength = ffmpegFile.length();
-    File extFile = new File(dir, jarNames[0]);
-    // copy ffmpeg jars
-    if (!extFile.exists() || extFile.length()!=fileLength) {
-	    for (String next: jarNames) {
-	      ffmpegFile = new File(ffmpegJarDir, next);
-	      extFile = new File(dir, next);
-	      if (!copyFile(ffmpegFile, extFile)) {
-	      	return false;
-	      }
+    boolean copied = false;
+    for(String next: jarNames) {
+	  File ffmpegFile = new File(ffmpegJarDir, next);
+	    long fileLength = ffmpegFile.length();
+	    File extFile = new File(dir, next);
+	    // copy jar if needed
+	    if (!extFile.exists() || extFile.length()!=fileLength) {
+		      if (!copyFile(ffmpegFile, extFile)) {
+		      	return false;
+		      }
+		      copied = true;
 	    }
-	    // all jars were copied
-      return true;
     }
-		return false;
+    // all jars were copied or no jars were copied
+    return copied;
 	}
 	
   /**
