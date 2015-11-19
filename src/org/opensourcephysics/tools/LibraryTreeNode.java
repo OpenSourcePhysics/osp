@@ -82,9 +82,10 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
   	String target2 = treeNode.getAbsoluteTarget();
   	String html1 = this.getHTMLPath();
   	String html2 = treeNode.getHTMLPath();
-  	return ((target1==null&&target2==null) || (target1!=null && target2!=null && target1.equals(target2))
-  			&& (html1==null&&html2==null) || (html1!=null && html2!=null && html1.equals(html2))
-  			&& treeNode.getName().equals(this.getName()));
+  	return ( 
+  			((target1==null&&target2==null) || (target1!=null && target2!=null && target1.equals(target2)))
+  			&& ((html1==null&&html2==null) || (html1!=null && html2!=null && html1.equals(html2)))
+  			&& treeNode.getName().equals(this.getName()) );
   }
 
   
