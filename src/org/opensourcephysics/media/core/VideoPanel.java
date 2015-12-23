@@ -557,6 +557,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
       if(video!=null) {
         video.removePropertyChangeListener("coords", this);       //$NON-NLS-1$
         video.removePropertyChangeListener("image", this);        //$NON-NLS-1$
+        video.removePropertyChangeListener("filterChanged", this);        //$NON-NLS-1$
         video.removePropertyChangeListener("videoVisible", this); //$NON-NLS-1$
         video.removePropertyChangeListener("size", this);         //$NON-NLS-1$
         super.removeDrawable(video);
@@ -565,6 +566,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
       if(video!=null) {
         video.addPropertyChangeListener("coords", this);          //$NON-NLS-1$
         video.addPropertyChangeListener("image", this);           //$NON-NLS-1$
+        video.addPropertyChangeListener("filterChanged", this);           //$NON-NLS-1$
         video.addPropertyChangeListener("videoVisible", this);    //$NON-NLS-1$
         video.addPropertyChangeListener("size", this);            //$NON-NLS-1$
         // synchronize coords

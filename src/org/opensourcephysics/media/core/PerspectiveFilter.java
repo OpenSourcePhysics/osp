@@ -37,7 +37,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
@@ -64,6 +63,7 @@ import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -78,6 +78,7 @@ import javax.swing.event.ChangeListener;
 
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.Interactive;
 
@@ -90,6 +91,7 @@ import org.opensourcephysics.display.Interactive;
 public class PerspectiveFilter extends Filter {
 	
   // static fields
+  private static Color defaultColor = Color.RED;
   protected static FontRenderContext frc
 		  = new FontRenderContext(null,   // no AffineTransform
 		                          false,  // no antialiasing
@@ -111,8 +113,9 @@ public class PerspectiveFilter extends Filter {
   private Point2D[][] outCornerPoints = new Point2D[10][];
   private TreeSet<Integer> inKeyFrames = new TreeSet<Integer>();
   private TreeSet<Integer> outKeyFrames = new TreeSet<Integer>();
-  private boolean fixed = false;
+  private boolean fixedIn = false, fixedOut = true;
   private int fixedKey = 0;
+  private PropertyChangeListener videoListener;
   
   // inspector fields
   private Inspector inspector;
@@ -125,6 +128,12 @@ public class PerspectiveFilter extends Filter {
     quad = new Quadrilateral();
     refresh();
     hasInspector = true;
+    videoListener = new PropertyChangeListener() {
+    	public void propertyChange(PropertyChangeEvent e) {
+    		int n = (Integer)e.getNewValue();
+    		refreshCorners(n);
+    	}
+    };
   }
   
   /**
@@ -163,24 +172,34 @@ public class PerspectiveFilter extends Filter {
   }
 
   /**
+   * Gets whether the super-class of this filter is enabled.
+   *
+   * @return <code>true</code> if super is enabled.
+   */
+  public boolean isSuperEnabled() {
+    return super.isEnabled();
+  }
+
+  /**
    * Gets the inspector for this filter.
    *
    * @return the inspector
    */
-  public JDialog getInspector() {
-    if(inspector==null) {
-      inspector = new Inspector();
+  public synchronized JDialog getInspector() {
+  	if (frame==null && vidPanel!=null) {
+      frame = JOptionPane.getFrameForComponent(vidPanel);  		
+  	}
+  	Inspector myInspector = inspector;
+    if (myInspector==null) {
+    	myInspector = new Inspector();
     }
-    if(inspector.isModal()&&(vidPanel!=null)) {
-      Frame f = JOptionPane.getFrameForComponent(vidPanel);
-      if(frame!=f) {
-        frame = f;
-        if(inspector!=null) {
-          inspector.setVisible(false);
-        }
-        inspector = new Inspector();
-      }
+    if (myInspector.isModal() && vidPanel!=null) {
+      frame = JOptionPane.getFrameForComponent(vidPanel);
+      myInspector.setVisible(false);
+      myInspector.dispose();
+      myInspector = new Inspector();
     }
+    inspector = myInspector;
     inspector.initialize();
     return inspector;
   }
@@ -201,6 +220,8 @@ public class PerspectiveFilter extends Filter {
         MediaRes.getString("Filter.Button.Enable"));                                 //$NON-NLS-1$
       inputEditor.refreshGUI();
       outputEditor.refreshGUI();
+      inputEditor.refreshFields();
+      outputEditor.refreshFields();
     }
   }
   
@@ -210,30 +231,40 @@ public class PerspectiveFilter extends Filter {
    * @param panel the video panel
    */
   public void setVideoPanel(VideoPanel panel) {
+  	VideoPanel prevPanel = vidPanel;
   	super.setVideoPanel(panel);
-  	Video video = vidPanel.getVideo();
-  	video.addPropertyChangeListener("nextframe", new PropertyChangeListener() { //$NON-NLS-1$
-    	public void propertyChange(PropertyChangeEvent e) {
-    		int n = (Integer)e.getNewValue();
-    		refreshCorners(n);
-    	}
-    });
-  	vidPanel.propertyChange(new PropertyChangeEvent(this, "perspective", null, this)); //$NON-NLS-1$
+  	if (vidPanel!=null) {
+	  	Video video = vidPanel.getVideo();
+	  	video.addPropertyChangeListener("nextframe", videoListener); //$NON-NLS-1$
+	  	vidPanel.propertyChange(new PropertyChangeEvent(this, "perspective", null, this)); //$NON-NLS-1$
+  	}
+  	else if (prevPanel!=null) {
+  		prevPanel.removeDrawable(quad);
+	  	Video video = prevPanel.getVideo();
+	  	video.removePropertyChangeListener("nextframe", videoListener); //$NON-NLS-1$
+	  	prevPanel.propertyChange(new PropertyChangeEvent(this, "perspective", this, null)); //$NON-NLS-1$
+  	}
   }
   
   /**
    * Sets the fixed position behavior (all frames identical).
    * 
    * @param fix true to set the corner positions the same in all frames
+   * @param in true for input corners, false for output
    */
-  public void setFixed(boolean fix) {
-  	if (fixed!=fix) {
-  		fixed = fix;
-  		if (fixed && vidPanel!=null) {
-  			fixedKey = vidPanel.getFrameNumber();
-  	    saveCorners(fixedKey, true);
-  	    saveCorners(fixedKey, false);
+  public void setFixed(boolean fix, boolean in) {
+  	if (isFixed(in)!=fix) {
+			String filterState = new XMLControlElement(this).toXML();
+  		
+  		if (in) fixedIn = fix;
+  		else fixedOut = fix;
+  		
+  		if (isFixed(in)) {
+  	  	TreeSet<Integer> keyFrames = in? inKeyFrames: outKeyFrames;
+  	  	keyFrames.clear();
+  	    saveCorners(fixedKey, in); // save input corners
   		}
+      support.firePropertyChange("fixed", filterState, null); //$NON-NLS-1$
   	}
   }
   
@@ -242,8 +273,8 @@ public class PerspectiveFilter extends Filter {
    * 
    * @return true if fixed
    */
-  public boolean isFixed() {
-  	return fixed;
+  public boolean isFixed(boolean in) {
+  	return in? fixedIn: fixedOut;
   }
   
   /**
@@ -300,9 +331,10 @@ public class PerspectiveFilter extends Filter {
   public void deleteKeyFrame(int frameNumber, Corner corner) {
   	int index = getCornerIndex(corner);
   	if (index==-1) return;
-  	TreeSet<Integer> keyFrames = index<4? inKeyFrames: outKeyFrames;
-  	int key = getKeyFrame(frameNumber, keyFrames);
-  	if (key==0) return;
+  	boolean isInput = index<4? true: false;
+  	TreeSet<Integer> keyFrames = isInput? inKeyFrames: outKeyFrames;
+  	int key = getKeyFrame(frameNumber, isInput);
+  	if (key==0) return; // can't delete frame 0
   	keyFrames.remove(key);
   	Point2D[][] cornerPoints = index<4? inCornerPoints: outCornerPoints;
   	cornerPoints[key] = null;
@@ -617,18 +649,18 @@ public class PerspectiveFilter extends Filter {
   	// gIn can be null if memory limit was exceeded when trying to instantiate with large images
   	if (gIn==null && source!=null && input!=source) return;
 
-  	int key = getKeyFrame(frameNumber, inKeyFrames);
+  	int key = getKeyFrame(frameNumber, true); // input
   	for (int i=0; i<4; i++) {
 			quad.inCorners[i].setLocation(inCornerPoints[key][i]);
 		}  	
-  	key = getKeyFrame(frameNumber, outKeyFrames);
+  	key = getKeyFrame(frameNumber, false); // output
 		for (int i=0; i<4; i++) {
 			quad.outCorners[i].setLocation(outCornerPoints[key][i]);
 		}  	
   }
 
   private void saveCorners(int frameNumber, boolean in) {
-  	if (fixed) frameNumber = fixedKey;
+  	if (isFixed(in)) frameNumber = fixedKey;
   	ensureCornerCapacity(frameNumber);
   	TreeSet<Integer> keyFrames = in? inKeyFrames: outKeyFrames;
   	Point2D[][] cornerPoints = in? inCornerPoints: outCornerPoints;
@@ -661,7 +693,7 @@ public class PerspectiveFilter extends Filter {
 	  	}
 			for (int i=0; i<4; i++) {
 				cornerPoints[j][i].setLocation(cornerData[j][i][0], cornerData[j][i][1]);
-			}  		
+			}
   	}
   }
   
@@ -701,8 +733,21 @@ public class PerspectiveFilter extends Filter {
   	}
   }
   
-  private int getKeyFrame(int frameNumber, TreeSet<Integer> keyFrames) {
-  	if (fixed) return fixedKey;
+//  private int getKeyFrame(int frameNumber, TreeSet<Integer> keyFrames) {
+//  	TreeSet<Integer> keyFrames = index<4? inKeyFrames: outKeyFrames;
+//
+//  	if (isFixed()) return fixedKey;
+//  	int key = 0;
+//  	for (int i: keyFrames) {
+//  		if (i<=frameNumber)
+//  			key = i;
+//  	}
+//  	return key;
+//  }
+//    
+  private int getKeyFrame(int frameNumber, boolean in) {
+  	if (isFixed(in)) return fixedKey;
+  	TreeSet<Integer> keyFrames = in? inKeyFrames: outKeyFrames;
   	int key = 0;
   	for (int i: keyFrames) {
   		if (i<=frameNumber)
@@ -724,6 +769,7 @@ public class PerspectiveFilter extends Filter {
      * Constructs the Inspector.
      */
     public Inspector() {
+//      super(frame, false);
       super(frame, !(frame instanceof org.opensourcephysics.display.OSPFrame));
       setResizable(false);
       createGUI();
@@ -786,8 +832,10 @@ public class PerspectiveFilter extends Filter {
           }
         }
       });
+    	// ableButton already has action listener to enable/disable this filter
     	ableButton.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
+        	// refresh button state  
         	boolean enable = !PerspectiveFilter.super.isEnabled();
         	colorButton.setEnabled(enable);
         	tabbedPane.setEnabled(enable); 
@@ -818,6 +866,7 @@ public class PerspectiveFilter extends Filter {
     
     public void setVisible(boolean vis) {
     	super.setVisible(vis);
+
     	if (vidPanel!=null) {
 	    	if (vis) {
 	    		vidPanel.addDrawable(quad);
@@ -838,6 +887,15 @@ public class PerspectiveFilter extends Filter {
     	inputEditor.setEnabled(enable);
     	outputEditor.setEnabled(enable);
     	support.firePropertyChange("image", null, null); //$NON-NLS-1$
+    }
+    
+    @Override
+    public void dispose() {
+    	super.dispose();
+    	source = null;
+    	input = null;
+    	output = null;
+    	System.gc();
     }
 
   }
@@ -895,7 +953,7 @@ public class PerspectiveFilter extends Filter {
   private class Quadrilateral implements Trackable, Interactive,
   		PropertyChangeListener {
   	
-    private Corner[] inCorners = new Corner[4]; // input image corner positions (image units)
+  	private Corner[] inCorners = new Corner[4]; // input image corner positions (image units)
     private Corner[] outCorners = new Corner[4]; // output image corner positions
 		private Point2D[] screenPts = new Point2D[4];
 		private GeneralPath path = new GeneralPath();
@@ -910,7 +968,7 @@ public class PerspectiveFilter extends Filter {
 	  private TextLayout[] textLayouts = new TextLayout[4];
 	  private Font font = new JTextField().getFont();
 	  private Point p = new Point();
-	  private Color color = Color.RED;
+	  private Color color = defaultColor;
    
   	public Quadrilateral() {
     	for (int i = 0; i< inCorners.length; i++) {
@@ -1111,6 +1169,7 @@ public class PerspectiveFilter extends Filter {
   	int selectedShapeIndex;
   	JComboBox shapeDropdown = new JComboBox();
   	JLabel shapeLabel = new JLabel();
+  	JCheckBox fixedCheckbox;
   	boolean refreshing;
   	Box[] boxes = new Box[4];
   	TitledBorder cornersBorder = BorderFactory.createTitledBorder(""); //$NON-NLS-1$
@@ -1169,10 +1228,20 @@ public class PerspectiveFilter extends Filter {
   	    	}
   			}
   		});
+  		
+  		fixedCheckbox = new JCheckBox();
+//  		fixedCheckbox.setSelected(isFixed(isInput));
+  		fixedCheckbox.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent e) {
+  				if (refreshing || isFixed(isInput)==fixedCheckbox.isSelected()) return;
+  				setFixed(fixedCheckbox.isSelected(), isInput);
+  			}
+  		});
   		// assemble editor
   		Box box = Box.createHorizontalBox();
   		box.add(shapeLabel);
   		box.add(shapeDropdown);
+  		box.add(fixedCheckbox);
   		add(box, BorderLayout.NORTH);
   		add(fieldPanel, BorderLayout.CENTER);
   		refreshGUI();
@@ -1183,6 +1252,7 @@ public class PerspectiveFilter extends Filter {
   		refreshing = true;
   		shapeLabel.setText(MediaRes.getString("PerspectiveFilter.Label.Shape")); //$NON-NLS-1$
   		cornersBorder.setTitle(MediaRes.getString("PerspectiveFilter.Corners.Title")); //$NON-NLS-1$
+  		fixedCheckbox.setText(MediaRes.getString("PerspectiveFilter.Checkbox.Fixed")); //$NON-NLS-1$
   		shapeDropdown.removeAllItems();
   		if (this==inputEditor) {
   			shapeDropdown.addItem(MediaRes.getString("PerspectiveFilter.Shape.Any")); //$NON-NLS-1$
@@ -1193,6 +1263,7 @@ public class PerspectiveFilter extends Filter {
 	    	}
   		}
     	shapeDropdown.setSelectedIndex(selectedShapeIndex);
+  		fixedCheckbox.setSelected(isFixed(isInput));
     	refreshing = false;
   	}
   	
@@ -1207,6 +1278,7 @@ public class PerspectiveFilter extends Filter {
   	public void setEnabled(boolean b) {
   		shapeDropdown.setEnabled(b);
   		shapeLabel.setEnabled(b);
+  		fixedCheckbox.setEnabled(b);
   		for (int i=0; i<boxes.length; i++) {
   			for (Component c: boxes[i].getComponents()) {
   				c.setEnabled(b);
@@ -1258,12 +1330,19 @@ public class PerspectiveFilter extends Filter {
     		filter.refreshCorners(filter.vidPanel.getFrameNumber());
     	}
     	
+    	if (!filter.quad.color.equals(defaultColor)) {
+    		control.setValue("color", filter.quad.color); //$NON-NLS-1$   		
+    	}
+    	
       if((filter.frame!=null)&&(filter.inspector!=null)&&filter.inspector.isVisible()) {
         int x = filter.inspector.getLocation().x-filter.frame.getLocation().x;
         int y = filter.inspector.getLocation().y-filter.frame.getLocation().y;
         control.setValue("inspector_x", x); //$NON-NLS-1$
         control.setValue("inspector_y", y); //$NON-NLS-1$
       }
+      control.setValue("disabled", !filter.isSuperEnabled()); //$NON-NLS-1$
+      control.setValue("fixed_in", filter.fixedIn); //$NON-NLS-1$
+      control.setValue("fixed_out", filter.fixedOut); //$NON-NLS-1$
     }
 
     /**
@@ -1286,6 +1365,11 @@ public class PerspectiveFilter extends Filter {
     public Object loadObject(XMLControl control, Object obj) {
       final PerspectiveFilter filter = (PerspectiveFilter) obj;
       
+      if (control.getPropertyNames().contains("fixed_out")) { //$NON-NLS-1$
+      	filter.fixedIn = control.getBoolean("fixed_in"); //$NON-NLS-1$
+      	filter.fixedOut = control.getBoolean("fixed_out"); //$NON-NLS-1$
+      }
+      
     	double[][][] data = (double[][][])control.getObject("in_corners"); //$NON-NLS-1$
     	if (data!=null) {
     		filter.loadCornerData(data, true);
@@ -1293,6 +1377,12 @@ public class PerspectiveFilter extends Filter {
     	data = (double[][][])control.getObject("out_corners"); //$NON-NLS-1$
     	if (data!=null) {
     		filter.loadCornerData(data, false);
+    	}
+    	for (int i: filter.inKeyFrames) {
+    		filter.refreshCorners(i);
+    	}
+    	for (int i: filter.outKeyFrames) {
+    		filter.refreshCorners(i);
     	}
     	
   		int frame = control.getInt("startframe"); //$NON-NLS-1$
@@ -1302,9 +1392,19 @@ public class PerspectiveFilter extends Filter {
     	if (filter.vidPanel!=null) {
     		filter.refreshCorners(filter.vidPanel.getFrameNumber());
     	}
+    	
+    	if (control.getPropertyNames().contains("color")) { //$NON-NLS-1$
+    		filter.quad.color = (Color)control.getObject("color"); //$NON-NLS-1$
+    	}
 
       filter.inspectorX = control.getInt("inspector_x"); //$NON-NLS-1$
       filter.inspectorY = control.getInt("inspector_y"); //$NON-NLS-1$
+      
+      boolean disable = control.getBoolean("disabled"); //$NON-NLS-1$
+      if (disable && filter.isSuperEnabled() || (!disable && !filter.isSuperEnabled())) {
+      	filter.ableButton.doClick(0);
+      }
+      filter.refresh();
       return obj;
     }
 
