@@ -204,7 +204,7 @@ public abstract class AbstractAutoloadManager extends JDialog {
 	 */
 	protected void refreshGUI() {
 		setTitle(ToolsRes.getString("AutoloadManager.Title")); //$NON-NLS-1$		
-  	closeButton.setText(ToolsRes.getString("Tool.Button.Close")); //$NON-NLS-1$
+  	closeButton.setText(ToolsRes.getString("Button.OK")); //$NON-NLS-1$
   	searchPathsButton.setText(ToolsRes.getString("AutoloadManager.Button.SearchPaths")+"..."); //$NON-NLS-1$ //$NON-NLS-2$
   	refreshFunctionList();
 	}

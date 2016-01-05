@@ -293,7 +293,7 @@ public class DatasetCurveFitter extends JPanel {
             }
             devSq = prevDevSq;
             autofitCheckBox.setSelected(false);
-            Toolkit.getDefaultToolkit().beep();
+//            Toolkit.getDefaultToolkit().beep();
           }
         }
       }

@@ -951,6 +951,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
             }
             if(valid) {
               columnNames = strings;
+              columns = strings.length;
               textLine = input.readLine();
               continue;
             }
@@ -979,14 +980,13 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
             }
             // add valid data
             if(validData) {
-              if (emptyData && columns != Integer.MAX_VALUE && rowData.length!= columns) {
-              	rowData = new double[columns];
-              	for (int h = 0; h< columns; h++) {
-              		rowData[h] = Double.NaN;
-              	}
-              }
               rows.add(rowData);
-              columns = Math.min(rowData.length, columns);
+              if (columns==Integer.MAX_VALUE) {
+              	columns = rowData.length;
+              }
+              else {
+              	columns = Math.max(rowData.length, columns);
+              }
             }
           }
           // abort processing if no data found in first several lines
@@ -994,16 +994,17 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
             break;
           }
           textLine = input.readLine();
-        }
+        } // end while loop
+        
         // create datasets if data found
         if(!rows.isEmpty()&&(columns>0)) {
           input.close();
           // first reassemble data from rows into columns
           double[][] dataArray = new double[columns][rows.size()];
           for(int row = 0; row<rows.size(); row++) {
-            double[] next = rows.get(row);
+            double[] rowData = rows.get(row);
             for(int j = 0; j<columns; j++) {
-              dataArray[j][row] = next[j];
+              dataArray[j][row] = rowData.length>j? rowData[j]: Double.NaN;
             }
           }
           // then append data to datasets
@@ -1012,7 +1013,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
           double[] rowColumn = DataTool.getRowArray(rows.size());
           for(int j = 0; j<columns; j++) {
             Dataset dataset = data.getDataset(j);
-            String yColName = ((columnNames!=null)&&(columnNames.length>j)) ? columnNames[j] : ((j==0)&&(title!=null)) ? title : "?"; //$NON-NLS-1$
+            String yColName = ((columnNames!=null)&&(columnNames.length>j)) ? columnNames[j] : 
+            	((j==0)&&(title!=null)) ? title : "?"; //$NON-NLS-1$
             dataset.setXYColumnNames("row", yColName);  //$NON-NLS-1$
             dataset.setXColumnVisible(false);
             dataset.append(rowColumn, dataArray[j]);
