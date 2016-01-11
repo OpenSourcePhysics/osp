@@ -279,7 +279,8 @@ public class VideoClip {
   }
 
   /**
-   * Sets the frame shift.
+   * Sets the frame shift. 
+   * DISABLED Jan 2016--too many potential bugs in frame shifting, and very little need.
    *
    * @param n the desired frame shift
    * @param start the desired start frame
@@ -287,13 +288,13 @@ public class VideoClip {
    * @return the new frame shift
    */
   protected int setFrameShift(int n, int start, int stepCount) {
-  	// frameshift cannot be greater than highest video frame number--no frames would be visible!
-  	if (video!=null)
-  		n = Math.min(n, video.getFrameCount()-1);
-  	frameShift = n;
-    support.firePropertyChange("frameshift", null, frameShift); //$NON-NLS-1$
-  	setStartFrameNumber(start);
-  	setStepCount(stepCount);
+//  	// frameshift cannot be greater than highest video frame number--no frames would be visible!
+//  	if (video!=null)
+//  		n = Math.min(n, video.getFrameCount()-1);
+//  	frameShift = n;
+//    support.firePropertyChange("frameshift", null, frameShift); //$NON-NLS-1$
+//  	setStartFrameNumber(start);
+//  	setStepCount(stepCount);
     return frameShift;
   }
 
@@ -665,7 +666,7 @@ public class VideoClip {
       control.setValue("stepcount", clip.getStepCount());         //$NON-NLS-1$
       control.setValue("starttime", clip.startTimeIsSaved? 			  //$NON-NLS-1$
       		clip.savedStartTime: clip.getStartTime());
-      control.setValue("frameshift", clip.getFrameShift());         //$NON-NLS-1$
+//      control.setValue("frameshift", clip.getFrameShift());         //$NON-NLS-1$
       control.setValue("readout", clip.readoutType);         //$NON-NLS-1$
       control.setValue("playallsteps", clip.playAllSteps);         //$NON-NLS-1$
     }
@@ -793,11 +794,11 @@ public class VideoClip {
       }
       clip.setStepCount(frameCount); // this should equal or exceed the actual frameCount
 
-      // set frame shift
-      int shift = control.getInt("frameshift"); //$NON-NLS-1$
-      if(shift!=Integer.MIN_VALUE) {
-        clip.setFrameShift(shift);
-      }
+//      // set frame shift
+//      int shift = control.getInt("frameshift"); //$NON-NLS-1$
+//      if(shift!=Integer.MIN_VALUE) {
+//        clip.setFrameShift(shift);
+//      }
       // set start frame
       if(start!=Integer.MIN_VALUE) {
         clip.setStartFrameNumber(start);

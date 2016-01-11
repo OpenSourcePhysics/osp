@@ -211,7 +211,8 @@ public class DataTrackSupport {
 		try {
 			JarFile jar = new JarFile(file);
 	    Manifest mf = jar.getManifest();
-	    final Attributes attributes = mf.getMainAttributes();
+	    jar.close();
+	    Attributes attributes = mf.getMainAttributes();
 	    for (Object obj : attributes.keySet()) {
 	    	String key = obj.toString();
 	       if (key.contains("Build-Date")) { //$NON-NLS-1$

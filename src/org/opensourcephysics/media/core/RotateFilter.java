@@ -55,7 +55,6 @@ import javax.swing.SwingConstants;
 
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
-import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.tools.ResourceLoader;
 
 /**
