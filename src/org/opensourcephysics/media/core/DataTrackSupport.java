@@ -209,8 +209,9 @@ public class DataTrackSupport {
 			return false;
 		}
 		try {
-			JarFile jar = new JarFile(file);
+		JarFile jar = new JarFile(file);
 	    Manifest mf = jar.getManifest();
+	    jar.close();
 	    final Attributes attributes = mf.getMainAttributes();
 	    for (Object obj : attributes.keySet()) {
 	    	String key = obj.toString();
