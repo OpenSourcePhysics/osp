@@ -81,7 +81,7 @@ import javax.swing.event.MouseInputAdapter;
 import java.awt.event.MouseMotionListener;
 
 import org.opensourcephysics.display.OSPRuntime;
-import org.opensourcephysics.display.ResizableIcon;
+//import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ResourceLoader;
 
