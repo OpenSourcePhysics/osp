@@ -1248,7 +1248,8 @@ public class DataTable extends JTable implements ActionListener {
       sampleLabel = new JLabel(DisplayRes.getString("DataTable.NumberFormat.Dialog.Label.Sample"));  //$NON-NLS-1$
       patternField = new JTextField(6);
       patternField.setAction(new AbstractAction() {
-        public void actionPerformed(ActionEvent e) {
+		@SuppressWarnings("deprecation")
+		public void actionPerformed(ActionEvent e) {
           String pattern = patternField.getText();
           if (pattern.indexOf(NO_PATTERN)>-1)
           	pattern = ""; //$NON-NLS-1$
