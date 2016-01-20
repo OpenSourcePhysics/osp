@@ -750,6 +750,11 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
       } else {
         next = text.substring(0, i);
         text = text.substring(i+1);
+        while (" ".equals(delimiter)  //$NON-NLS-1$
+        		&& (text.startsWith(" ") || text.startsWith("\t"))) { //$NON-NLS-1$ //$NON-NLS-2$
+        	// treat multiple spaces/tabs as a single delimiter
+        	text = text.substring(1);
+        }
       }
       // iterate thru the tokens and add to token list
       while(text!=null) {
@@ -762,6 +767,11 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
         } else {
           next = text.substring(0, i).trim();
           text = text.substring(i+1);
+          while (" ".equals(delimiter)  //$NON-NLS-1$
+          		&& (text.startsWith(" ") || text.startsWith("\t"))) { //$NON-NLS-1$ //$NON-NLS-2$
+          	// treat multiple spaces/tabs as a single delimiter
+          	text = text.substring(1);
+          }
         }
       }
     }
