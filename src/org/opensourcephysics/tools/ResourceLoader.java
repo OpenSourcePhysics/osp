@@ -1546,7 +1546,7 @@ public class ResourceLoader {
    * @param path the file path
    * @return the resource, if any
    */
-  @SuppressWarnings("resource")
+//  @SuppressWarnings("resource") // Java 7
 static private Resource createZipResource(String path) {
   	// convert to non-URI form
   	path = getNonURIPath(path);
@@ -1661,7 +1661,7 @@ static private Resource createZipResource(String path) {
 	              urls = new URL[] {classURL};
 	              zipLoader = new URLClassLoader(urls);
 	              url = zipLoader.findResource(fileName);
-	              zipLoader.close();
+//	              zipLoader.close(); // Java 7 
 	            }
 	          }
 	          if(url!=null) {
