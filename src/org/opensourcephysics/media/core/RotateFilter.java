@@ -55,10 +55,9 @@ import javax.swing.SwingConstants;
 
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
-<<<<<<< HEAD
-=======
+
 //import org.opensourcephysics.display.ResizableIcon;
->>>>>>> refs/heads/master
+
 import org.opensourcephysics.tools.ResourceLoader;
 
 /**
