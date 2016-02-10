@@ -73,8 +73,8 @@ public class BrightnessFilter extends Filter {
   private Graphics2D gIn;
   private int defaultBrightness = 0;
   private double defaultContrast = 50;
-  private int brightness, previousBrightness;
-  private double contrast, previousContrast;
+  private int brightness = defaultBrightness, previousBrightness;
+  private double contrast = defaultContrast, previousContrast;
   private double slope;
   private double offset1;
   private double offset2;
@@ -104,6 +104,8 @@ public class BrightnessFilter extends Filter {
   public void setContrast(double contrast) {
     if (previousState==null) {
     	previousState = new XMLControlElement(this).toXML();
+    	previousBrightness = brightness;
+    	previousContrast = contrast;
     }
     changed = changed || this.contrast!=contrast;
     Double prev = new Double(this.contrast);
