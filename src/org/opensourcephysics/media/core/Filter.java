@@ -44,6 +44,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDialog;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.event.SwingPropertyChangeSupport;
 
 /**
@@ -183,6 +184,12 @@ public abstract class Filter {
    */
   public void setVideoPanel(VideoPanel panel) {
   	vidPanel = panel;
+  	if (vidPanel!=null) {
+      frame = JOptionPane.getFrameForComponent(vidPanel);
+  	}
+  	else {
+  		frame = null;
+  	}
   }
 
   /**
