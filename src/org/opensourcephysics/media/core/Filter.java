@@ -48,6 +48,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.event.SwingPropertyChangeSupport;
 
+import org.opensourcephysics.controls.OSPLog;
+
 /**
  * This is the abstract base class for all image filters. Note: subclasses
  * should always provide a no-argument constructor.
@@ -207,7 +209,7 @@ public abstract class Filter {
 
   @Override
   public void finalize() {
-  	System.out.println("pig finalized "+getClass().getSimpleName()+" "+hashCode());
+  	OSPLog.finer("finalized "+getClass().getSimpleName()); //$NON-NLS-1$
   }
 
   /**
@@ -316,11 +318,6 @@ public abstract class Filter {
     return menu;
   }
   
-//  @Override
-//  public void finalize() {
-//  	System.out.println("pig finalized "+this);
-//  }
-
 }
 
 /*
