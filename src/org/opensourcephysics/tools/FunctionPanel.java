@@ -430,7 +430,7 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
    *
    * @param tool the FunctionTool
    */
-  protected void setFunctionTool(FunctionTool tool) {
+  public void setFunctionTool(FunctionTool tool) {
     functionTool = tool;
   }
 
