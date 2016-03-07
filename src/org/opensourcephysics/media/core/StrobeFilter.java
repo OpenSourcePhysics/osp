@@ -30,13 +30,9 @@
  * please see <http://www.opensourcephysics.org/>.
  */
 package org.opensourcephysics.media.core;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Frame;
-import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -44,14 +40,18 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.image.BufferedImage;
+
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 
@@ -66,14 +66,13 @@ public class StrobeFilter extends Filter {
   protected int[] pixels, prevPixels;
   private double fade;
   private double defaultFade = 0;
-  private int w, h;
-  private BufferedImage input, output, source;
-  private Graphics2D gIn;
+  private boolean dark;
   // inspector fields
   private Inspector inspector;
   private JLabel fadeLabel;
   private NumberField fadeField;
   private JSlider fadeSlider;
+  private JRadioButton darkButton, brightButton;
 
   /**
    * Constructs a StrobeFilter object with default fade.
@@ -144,20 +143,18 @@ public class StrobeFilter extends Filter {
    *
    * @return the inspector
    */
-  public JDialog getInspector() {
-    if(inspector==null) {
-      inspector = new Inspector();
+  public synchronized JDialog getInspector() {
+  	Inspector myInspector = inspector;
+    if (myInspector==null) {
+    	myInspector = new Inspector();
     }
-    if(inspector.isModal()&&(vidPanel!=null)) {
-      Frame f = JOptionPane.getFrameForComponent(vidPanel);
-      if(frame!=f) {
-        frame = f;
-        if(inspector!=null) {
-          inspector.setVisible(false);
-        }
-        inspector = new Inspector();
-      }
+    if (myInspector.isModal() && vidPanel!=null) {
+      frame = JOptionPane.getFrameForComponent(vidPanel);
+      myInspector.setVisible(false);
+      myInspector.dispose();
+      myInspector = new Inspector();
     }
+    inspector = myInspector;
     inspector.initialize();
     return inspector;
   }
@@ -179,11 +176,19 @@ public class StrobeFilter extends Filter {
       inspector.setTitle(MediaRes.getString("Filter.Strobe.Title")); //$NON-NLS-1$
 	    fadeLabel.setText(MediaRes.getString("Filter.Ghost.Label.Fade"));           //$NON-NLS-1$
 	    fadeSlider.setToolTipText(MediaRes.getString("Filter.Ghost.ToolTip.Fade")); //$NON-NLS-1$
-      inspector.pack();
+	    brightButton.setText(MediaRes.getString("Filter.Strobe.RadioButton.Bright"));           //$NON-NLS-1$
+	    brightButton.setToolTipText(MediaRes.getString("Filter.Strobe.RadioButton.Bright.Tooltip")); //$NON-NLS-1$
+	    darkButton.setText(MediaRes.getString("Filter.Strobe.RadioButton.Dark"));           //$NON-NLS-1$
+	    darkButton.setToolTipText(MediaRes.getString("Filter.Strobe.RadioButton.Dark.Tooltip")); //$NON-NLS-1$
+
 	    boolean enabled = isEnabled();
+	    brightButton.setEnabled(enabled);
+	    darkButton.setEnabled(enabled);
 	    fadeLabel.setEnabled(enabled);
 	    fadeSlider.setEnabled(enabled);
 	    fadeField.setEnabled(enabled);
+
+	    inspector.pack();
     }
   }
 
@@ -209,13 +214,8 @@ public class StrobeFilter extends Filter {
     output = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
     output.createGraphics().drawImage(source, 0, 0, null);
     output.getRaster().getDataElements(0, 0, w, h, pixels);
-    int pixel, r, g, b;
     for(int i = 0; i<prevPixels.length; i++) {
-      pixel = pixels[i];
-      r = (pixel>>16)&0xff;  // red
-      g = (pixel>>8)&0xff;   // green
-      b = (pixel)&0xff;      // blue
-      prevPixels[i] = (r+g+b)/3; // value
+      prevPixels[i] = pixels[i]; // value
     }
   }
 
@@ -235,12 +235,23 @@ public class StrobeFilter extends Filter {
       gprev = (prevPixels[i]>>8)&0xff;            // previous green
       bprev = (prevPixels[i])&0xff;               // previous blue
       valprev = (rprev+gprev+bprev)/3;            // previous value
-      valprev = (int) ((1-fade)*valprev);         // faded previous value
-      if(valprev>val) {
-        rprev = (int) ((1-fade)*rprev);           // faded red
-        gprev = (int) ((1-fade)*gprev);           // faded green
-        bprev = (int) ((1-fade)*bprev);           // faded blue
-        pixels[i] = (rprev<<16)|(gprev<<8)|bprev; 
+      if (dark) {
+      	valprev = (int) (255-(1-fade)*(255-valprev)); // faded previous value
+        if(val>valprev) {
+          rprev = (int) (255-(1-fade)*(255-rprev));   // faded red
+          gprev = (int) (255-(1-fade)*(255-gprev));   // faded green
+          bprev = (int) (255-(1-fade)*(255-bprev));   // faded blue
+          pixels[i] = (rprev<<16)|(gprev<<8)| bprev; 
+        }
+      }
+      else {
+      	valprev = (int) ((1-fade)*valprev);         // faded previous value
+        if(valprev>val) {
+          rprev = (int) ((1-fade)*rprev);           // faded red
+          gprev = (int) ((1-fade)*gprev);           // faded green
+          bprev = (int) ((1-fade)*bprev);           // faded blue
+          pixels[i] = (rprev<<16)|(gprev<<8)| bprev; 
+        }
       }
       prevPixels[i] = pixels[i];
     }
@@ -275,6 +286,7 @@ public class StrobeFilter extends Filter {
     void createGUI() {
       // create components
       fadeLabel = new JLabel();
+      fadeLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
       fadeField = new DecimalField(4, 2);
       fadeField.setMaxValue(0.5);
       fadeField.setMinValue(0);
@@ -310,36 +322,41 @@ public class StrobeFilter extends Filter {
         }
 
       });
-      // add components to content pane
-      GridBagLayout gridbag = new GridBagLayout();
-      JPanel panel = new JPanel(gridbag);
+
+      ButtonGroup group = new ButtonGroup();
+      ActionListener brightDarkAction = new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          dark = darkButton.isSelected();
+        	clear();
+        }
+      };
+      brightButton = new JRadioButton();
+      darkButton = new JRadioButton();
+      group.add(brightButton);
+      group.add(darkButton);
+      brightButton.setSelected(true);
+      brightButton.addActionListener(brightDarkAction);
+      darkButton.addActionListener(brightDarkAction);
+      
+      JPanel panel = new JPanel(new BorderLayout());
       setContentPane(panel);
-      GridBagConstraints c = new GridBagConstraints();
-      c.anchor = GridBagConstraints.EAST;
-      c.fill = GridBagConstraints.NONE;
-      c.weightx = 0.0;
-      c.gridx = 0;
-      c.insets = new Insets(5, 5, 0, 0);
-      gridbag.setConstraints(fadeLabel, c);
-      panel.add(fadeLabel);
-      c.fill = GridBagConstraints.HORIZONTAL;
-      c.gridx = 1;
-      c.insets = new Insets(5, 0, 0, 0);
-      gridbag.setConstraints(fadeField, c);
-      panel.add(fadeField);
-      c.gridx = 2;
-      c.insets = new Insets(5, 0, 0, 0);
-      c.weightx = 1.0;
-      gridbag.setConstraints(fadeSlider, c);
-      panel.add(fadeSlider);
+      JPanel fadePanel = new JPanel(new FlowLayout());
+      fadePanel.add(fadeLabel);
+      fadePanel.add(fadeField);
+      fadePanel.add(fadeSlider);
+      panel.add(fadePanel, BorderLayout.NORTH);
+      
+      JPanel brightDarkBar = new JPanel(new FlowLayout());
+      brightDarkBar.add(brightButton);
+      brightDarkBar.add(darkButton);
+      panel.add(brightDarkBar, BorderLayout.CENTER);
+      
       JPanel buttonbar = new JPanel(new FlowLayout());
       buttonbar.add(ableButton);
       buttonbar.add(clearButton);
       buttonbar.add(closeButton);
-      c.gridx = 2;
-      c.gridy = 1;
-      gridbag.setConstraints(buttonbar, c);
-      panel.add(buttonbar);
+      panel.add(buttonbar, BorderLayout.SOUTH);
+            
     }
 
     /**
@@ -347,6 +364,7 @@ public class StrobeFilter extends Filter {
      */
     void initialize() {
       updateDisplay();
+      refresh();
     }
 
     /**
