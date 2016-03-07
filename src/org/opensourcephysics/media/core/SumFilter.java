@@ -33,8 +33,6 @@ package org.opensourcephysics.media.core;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Frame;
-import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -45,6 +43,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.image.BufferedImage;
+
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -54,6 +53,7 @@ import javax.swing.JSlider;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 
@@ -66,10 +66,8 @@ import org.opensourcephysics.controls.XMLControl;
 public class SumFilter extends Filter {
   // instance fields
   protected int[] pixels, rsums, gsums, bsums;
-  private int w, h, imageCount = 1;
+  private int imageCount = 1;
   private double brightness = 1; // fraction of full
-  private BufferedImage input, output, source;
-  private Graphics2D gIn;
   private boolean mean;
   private boolean skipSum = true;
   // inspector fields
@@ -152,20 +150,18 @@ public class SumFilter extends Filter {
    *
    * @return the inspector
    */
-  public JDialog getInspector() {
-    if(inspector==null) {
-      inspector = new Inspector();
+  public synchronized JDialog getInspector() {
+  	Inspector myInspector = inspector;
+    if (myInspector==null) {
+    	myInspector = new Inspector();
     }
-    if(inspector.isModal()&&(vidPanel!=null)) {
-      Frame f = JOptionPane.getFrameForComponent(vidPanel);
-      if(frame!=f) {
-        frame = f;
-        if(inspector!=null) {
-          inspector.setVisible(false);
-        }
-        inspector = new Inspector();
-      }
+    if (myInspector.isModal() && vidPanel!=null) {
+      frame = JOptionPane.getFrameForComponent(vidPanel);
+      myInspector.setVisible(false);
+      myInspector.dispose();
+      myInspector = new Inspector();
     }
+    inspector = myInspector;
     inspector.initialize();
     return inspector;
   }

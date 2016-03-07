@@ -35,7 +35,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -108,11 +107,8 @@ public class RadialDistortionFilter extends Filter {
   protected static double minFOV = Math.PI/18, maxFOV = Math.PI-.001;
   
   // instance fields
-  private BufferedImage source, input, output;
-  private Graphics2D gIn;
   private int[] pixelsIn, pixelsOut; // pixel color values
   private double[] xOut, yOut, xIn, yIn; // pixel positions on input and output images
-  private int w, h; // image dimensions in pixels
   private double pixelsToCorner; // half image diagonal in pixels
   private boolean isValidTransform = false, updatingDisplay = false;
   private double outputFOV;
@@ -182,20 +178,19 @@ public class RadialDistortionFilter extends Filter {
    *
    * @return the inspector
    */
-  public JDialog getInspector() {
-    if(inspector==null) {
-      inspector = new Inspector();
+  public synchronized JDialog getInspector() {
+  	Inspector myInspector = inspector;
+    if (myInspector==null) {
+    	myInspector = new Inspector();
     }
-    if(inspector.isModal()&&(vidPanel!=null)) {
-      Frame f = JOptionPane.getFrameForComponent(vidPanel);
-      if(frame!=f) {
-        frame = f;
-        if(inspector!=null) {
-          inspector.setVisible(false);
-        }
-        inspector = new Inspector();
-      }
+    if (myInspector.isModal() && vidPanel!=null) {
+      frame = JOptionPane.getFrameForComponent(vidPanel);
+      myInspector.setVisible(false);
+      myInspector.dispose();
+      myInspector = new Inspector();
     }
+    inspector = myInspector;
+    inspector.initialize();
     return inspector;
   }
 
@@ -947,6 +942,13 @@ public class RadialDistortionFilter extends Filter {
     }
     
     /**
+     * Initializes this inspector
+     */
+    void initialize() {
+      updateDisplay();
+    }
+
+   /**
      * Updates the inspector controls to reflect the current filter settings.
      */
     void updateDisplay() {

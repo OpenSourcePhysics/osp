@@ -32,8 +32,6 @@
 package org.opensourcephysics.media.core;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Frame;
-import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -67,10 +65,7 @@ import org.opensourcephysics.controls.XMLControlElement;
  */
 public class BrightnessFilter extends Filter {
   // instance fields
-  private BufferedImage source, input, output;
   private int[] pixels;
-  private int w, h;
-  private Graphics2D gIn;
   private int defaultBrightness = 0;
   private double defaultContrast = 50;
   private int brightness = defaultBrightness, previousBrightness;
@@ -187,20 +182,17 @@ public class BrightnessFilter extends Filter {
    *
    * @return the inspector
    */
-  public JDialog getInspector() {
-    if(inspector==null) {
-      inspector = new Inspector();
+  public synchronized JDialog getInspector() {
+  	Inspector myInspector = inspector;
+    if (myInspector==null) {
+    	myInspector = new Inspector();
     }
-    if(inspector.isModal()&&(vidPanel!=null)) {
-      Frame f = JOptionPane.getFrameForComponent(vidPanel);
-      if(frame!=f) {
-        frame = f;
-        if(inspector!=null) {
-          inspector.setVisible(false);
-        }
-        inspector = new Inspector();
-      }
+    if (myInspector.isModal() && vidPanel!=null) {
+      frame = JOptionPane.getFrameForComponent(vidPanel);
+      myInspector.dispose();
+      myInspector = new Inspector();
     }
+    inspector = myInspector;
     inspector.initialize();
     return inspector;
   }
@@ -225,11 +217,6 @@ public class BrightnessFilter extends Filter {
     brightnessSlider.setToolTipText(MediaRes.getString("Filter.Brightness.ToolTip.Brightness")); //$NON-NLS-1$
     contrastLabel.setText(MediaRes.getString("Filter.Brightness.Label.Contrast"));               //$NON-NLS-1$
     contrastSlider.setToolTipText(MediaRes.getString("Filter.Brightness.ToolTip.Contrast"));     //$NON-NLS-1$
-    if(inspector!=null) {
-      inspector.setTitle(MediaRes.getString("Filter.Brightness.Title")); //$NON-NLS-1$
-      inspector.updateDisplay();
-      inspector.pack();
-    }
     boolean enabled = isEnabled();
     brightnessLabel.setEnabled(enabled);
     brightnessSlider.setEnabled(enabled);
@@ -238,6 +225,21 @@ public class BrightnessFilter extends Filter {
     contrastSlider.setEnabled(enabled);
     contrastField.setEnabled(enabled);
     clearButton.setText(MediaRes.getString("Dialog.Button.Reset"));                //$NON-NLS-1$
+    if(inspector!=null) {
+      inspector.setTitle(MediaRes.getString("Filter.Brightness.Title")); //$NON-NLS-1$
+      inspector.updateDisplay();
+      inspector.pack();
+    }
+  }
+
+  @Override
+  public void dispose() {
+  	if (gIn!=null) gIn.dispose();
+  	if (source!=null) source.flush();
+  	if (input!=null) input.flush();
+  	if (output!=null) output.flush();
+  	super.dispose();
+  	inspector = null;
   }
 
   //_____________________________ private methods _______________________
@@ -420,7 +422,7 @@ public class BrightnessFilter extends Filter {
         c.fill = GridBagConstraints.NONE;
         c.weightx = 0.0;
         c.gridx = 0;
-        c.insets = new Insets(5, 5, 0, 0);
+        c.insets = new Insets(5, 5, 0, 2);
         gridbag.setConstraints(labels[i], c);
         panel.add(labels[i]);
         c.fill = GridBagConstraints.HORIZONTAL;
@@ -449,6 +451,7 @@ public class BrightnessFilter extends Filter {
      */
     void initialize() {
       updateDisplay();
+      refresh();
     }
 
     /**

@@ -30,7 +30,6 @@
  * please see <http://www.opensourcephysics.org/>.
  */
 package org.opensourcephysics.media.core;
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import javax.swing.JDialog;
 
@@ -42,10 +41,7 @@ import javax.swing.JDialog;
  */
 public class NegativeFilter extends Filter {
   // instance fields
-  private BufferedImage source, input, output;
   private int[] pixels;
-  private int w, h;
-  private Graphics2D gIn;
 
   /**
    * Constructs a NegativeFilter object.

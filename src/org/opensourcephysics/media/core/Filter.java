@@ -31,6 +31,7 @@
  */
 package org.opensourcephysics.media.core;
 import java.awt.Frame;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -66,6 +67,10 @@ public abstract class Filter {
   /** the y-component of inspector position */
   public int inspectorY;
   
+  protected BufferedImage source, input, output;
+  protected int w, h;
+  protected Graphics2D gIn;
+
   private boolean enabled = true;
   private String name;
   protected boolean changed = false;
@@ -184,12 +189,7 @@ public abstract class Filter {
    */
   public void setVideoPanel(VideoPanel panel) {
   	vidPanel = panel;
-  	if (vidPanel!=null) {
-      frame = JOptionPane.getFrameForComponent(vidPanel);
-  	}
-  	else {
-  		frame = null;
-  	}
+  	frame = vidPanel==null? null: JOptionPane.getFrameForComponent(vidPanel);
   }
 
   /**
@@ -203,6 +203,11 @@ public abstract class Filter {
       MediaRes.getString("Filter.Button.Enable"));                                 //$NON-NLS-1$
     clearButton.setText(MediaRes.getString("Filter.Button.Clear"));                //$NON-NLS-1$
     clearButton.setEnabled((isEnabled()));
+  }
+
+  @Override
+  public void finalize() {
+  	System.out.println("pig finalized "+getClass().getSimpleName()+" "+hashCode());
   }
 
   /**
@@ -225,6 +230,23 @@ public abstract class Filter {
    */
   public boolean isEnabled() {
     return enabled;
+  }
+
+  /**
+   * Disposes of this filter.
+   */
+  public void dispose() {
+    removePropertyChangeListener(stack);
+    stack = null;
+  	JDialog inspector = getInspector();
+  	if (inspector!=null) {
+  		inspector.dispose();
+  	}
+    setVideoPanel(null);
+  	if (gIn!=null) gIn.dispose();
+  	if (source!=null) source.flush();
+  	if (input!=null) input.flush();
+  	if (output!=null) output.flush();
   }
 
   /**
@@ -293,6 +315,11 @@ public abstract class Filter {
     }
     return menu;
   }
+  
+//  @Override
+//  public void finalize() {
+//  	System.out.println("pig finalized "+this);
+//  }
 
 }
 

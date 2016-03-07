@@ -33,7 +33,6 @@ package org.opensourcephysics.media.core;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Frame;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -46,10 +45,12 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 
@@ -63,9 +64,6 @@ public class ResizeFilter extends Filter {
   // instance fields
   private double widthFactor = 1.0;
   private double heightFactor = 1.0;
-  private int wIn, hIn;
-  private BufferedImage input, output, source;
-  private Graphics2D gIn;
   private Graphics2D gOut;
   // inspector fields
   private Inspector inspector;
@@ -154,20 +152,18 @@ public class ResizeFilter extends Filter {
    *
    * @return the inspector
    */
-  public JDialog getInspector() {
-    if(inspector==null) {
-      inspector = new Inspector();
+  public synchronized JDialog getInspector() {
+  	Inspector myInspector = inspector;
+    if (myInspector==null) {
+    	myInspector = new Inspector();
     }
-    if(inspector.isModal()&&(vidPanel!=null)) {
-      Frame f = JOptionPane.getFrameForComponent(vidPanel);
-      if(frame!=f) {
-        frame = f;
-        if(inspector!=null) {
-          inspector.setVisible(false);
-        }
-        inspector = new Inspector();
-      }
+    if (myInspector.isModal() && vidPanel!=null) {
+      frame = JOptionPane.getFrameForComponent(vidPanel);
+      myInspector.setVisible(false);
+      myInspector.dispose();
+      myInspector = new Inspector();
     }
+    inspector = myInspector;
     inspector.initialize();
     return inspector;
   }
@@ -194,11 +190,11 @@ public class ResizeFilter extends Filter {
     heightInField.setEnabled(enabled);
     widthOutField.setEnabled(enabled);
     heightOutField.setEnabled(enabled);
-    int wOut = (int) (wIn*widthFactor);
-    int hOut = (int) (hIn*heightFactor);
-    widthInField.setIntValue(wIn);
+    int wOut = (int) (w*widthFactor);
+    int hOut = (int) (h*heightFactor);
+    widthInField.setIntValue(w);
     widthOutField.setIntValue(wOut);
-    heightInField.setIntValue(hIn);
+    heightInField.setIntValue(h);
     heightOutField.setIntValue(hOut);
   }
 
@@ -211,18 +207,18 @@ public class ResizeFilter extends Filter {
    */
   private void initialize(BufferedImage sourceImage) {
     source = sourceImage;
-    wIn = source.getWidth();
-    hIn = source.getHeight();
+    w = source.getWidth();
+    h = source.getHeight();
     // look for DV format and resize for square pixels by default
-    if((wIn==720)&&(hIn==480)&&(widthFactor==1.0)&&(heightFactor==1.0)) {
+    if((w==720)&&(h==480)&&(widthFactor==1.0)&&(heightFactor==1.0)) {
       widthFactor = 0.889;
     }
-    int wOut = (int) (wIn*widthFactor);
-    int hOut = (int) (hIn*heightFactor);
+    int wOut = (int) (w*widthFactor);
+    int hOut = (int) (h*heightFactor);
     if(source.getType()==BufferedImage.TYPE_INT_RGB) {
       input = source;
     } else {
-      input = new BufferedImage(wIn, hIn, BufferedImage.TYPE_INT_RGB);
+      input = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
       gIn = input.createGraphics();
     }
     output = new BufferedImage(wOut, hOut, BufferedImage.TYPE_INT_RGB);
@@ -270,7 +266,7 @@ public class ResizeFilter extends Filter {
 //      widthOutField.setMinValue(10);
       widthOutField.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          setWidthFactor(1.0*widthOutField.getIntValue()/wIn);
+          setWidthFactor(1.0*widthOutField.getIntValue()/w);
           refresh();
           widthOutField.selectAll();
         }
@@ -281,7 +277,7 @@ public class ResizeFilter extends Filter {
           widthOutField.selectAll();
         }
         public void focusLost(FocusEvent e) {
-          setWidthFactor(1.0*widthOutField.getIntValue()/wIn);
+          setWidthFactor(1.0*widthOutField.getIntValue()/w);
           refresh();
         }
 
@@ -296,7 +292,7 @@ public class ResizeFilter extends Filter {
 //      heightOutField.setMinValue(100);
       heightOutField.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          setHeightFactor(1.0*heightOutField.getIntValue()/hIn);
+          setHeightFactor(1.0*heightOutField.getIntValue()/h);
           refresh();
           heightOutField.selectAll();
         }
@@ -307,7 +303,7 @@ public class ResizeFilter extends Filter {
           heightOutField.selectAll();
         }
         public void focusLost(FocusEvent e) {
-          setHeightFactor(1.0*heightOutField.getIntValue()/hIn);
+          setHeightFactor(1.0*heightOutField.getIntValue()/h);
           refresh();
         }
 

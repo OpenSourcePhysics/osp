@@ -37,6 +37,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+
 import javax.swing.JDialog;
 
 /**
@@ -68,6 +69,7 @@ public class FilterStack extends Filter implements PropertyChangeListener {
   public void addFilter(Filter filter) {
     filters.add(filter);
     filter.stack = this;
+    filter.removePropertyChangeListener(this);
     filter.addPropertyChangeListener(this);
     support.firePropertyChange("image", null, null);    //$NON-NLS-1$
     support.firePropertyChange("filter", null, filter); //$NON-NLS-1$
@@ -152,38 +154,24 @@ public class FilterStack extends Filter implements PropertyChangeListener {
     indexRemoved = filters.indexOf(filter);
     if(indexRemoved>-1) {
       filters.remove(filter);
-      filter.stack = null;
-      filter.removePropertyChangeListener(this);
+      filter.dispose();
       support.firePropertyChange("image", null, null);    //$NON-NLS-1$
       support.firePropertyChange("filter", filter, null); //$NON-NLS-1$
-      filter.setVideoPanel(null);
-    	JDialog inspector = filter.getInspector();
-    	if (inspector!=null) {
-    		inspector.setVisible(false);
-    		inspector.dispose();
-    	}
     }
+  	System.gc();
   }
 
   /**
    * Clears the filter stack.
    */
   public void clear() {
-    Iterator<Filter> it = filters.iterator();
-    while(it.hasNext()) {
-      Filter filter = it.next();
-    	JDialog inspector = filter.getInspector();
-    	if (inspector!=null) {
-    		inspector.setVisible(false);
-    		inspector.dispose();
-    	}
-      filter.stack = null;
-      filter.setVideoPanel(null);
-      filter.removePropertyChangeListener(this);
-    }
+  	for (Filter filter: filters) {
+  		filter.dispose();
+  	}
     filters.clear();
     support.firePropertyChange("image", null, null);  //$NON-NLS-1$
     support.firePropertyChange("filter", null, null); //$NON-NLS-1$
+  	System.gc();
   }
 
   /**
