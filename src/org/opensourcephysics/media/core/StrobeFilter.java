@@ -49,6 +49,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSlider;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -66,7 +67,7 @@ public class StrobeFilter extends Filter {
   protected int[] pixels, prevPixels;
   private double fade;
   private double defaultFade = 0;
-  private boolean dark;
+  private boolean brightTrails = false;
   // inspector fields
   private Inspector inspector;
   private JLabel fadeLabel;
@@ -103,6 +104,28 @@ public class StrobeFilter extends Filter {
    */
   public double getFade() {
     return fade;
+  }
+
+  /**
+   * Sets the bright trails flag. When true, trails are bright on dark
+   * backgrounds and fade to black. Otherwise trails are dark on bright
+   * backgrounds and fade to white.
+   *
+   * @param light true for bright trails on dark backgrounds
+   */
+  public void setBrightTrails(boolean bright) {
+    brightTrails = bright;
+  	clear();
+  }
+
+  /**
+   * Gets the bright trails flag.
+   *
+   * @return true if trails are bright
+   * @see #setBrightTrails
+   */
+  public boolean isBrightTrails() {
+    return brightTrails;
   }
 
   /**
@@ -235,21 +258,21 @@ public class StrobeFilter extends Filter {
       gprev = (prevPixels[i]>>8)&0xff;            // previous green
       bprev = (prevPixels[i])&0xff;               // previous blue
       valprev = (rprev+gprev+bprev)/3;            // previous value
-      if (dark) {
-      	valprev = (int) (255-(1-fade)*(255-valprev)); // faded previous value
-        if(val>valprev) {
-          rprev = (int) (255-(1-fade)*(255-rprev));   // faded red
-          gprev = (int) (255-(1-fade)*(255-gprev));   // faded green
-          bprev = (int) (255-(1-fade)*(255-bprev));   // faded blue
-          pixels[i] = (rprev<<16)|(gprev<<8)| bprev; 
-        }
-      }
-      else {
+      if (brightTrails) { // bright trails fade to black
       	valprev = (int) ((1-fade)*valprev);         // faded previous value
         if(valprev>val) {
           rprev = (int) ((1-fade)*rprev);           // faded red
           gprev = (int) ((1-fade)*gprev);           // faded green
           bprev = (int) ((1-fade)*bprev);           // faded blue
+          pixels[i] = (rprev<<16)|(gprev<<8)| bprev; 
+        }
+      }
+      else { // dark trails fade to white
+      	valprev = (int) (255-(1-fade)*(255-valprev)); // faded previous value
+        if(val>valprev) {
+          rprev = (int) (255-(1-fade)*(255-rprev));   // faded red
+          gprev = (int) (255-(1-fade)*(255-gprev));   // faded green
+          bprev = (int) (255-(1-fade)*(255-bprev));   // faded blue
           pixels[i] = (rprev<<16)|(gprev<<8)| bprev; 
         }
       }
@@ -326,15 +349,14 @@ public class StrobeFilter extends Filter {
       ButtonGroup group = new ButtonGroup();
       ActionListener brightDarkAction = new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          dark = darkButton.isSelected();
-        	clear();
+          setBrightTrails(brightButton.isSelected());
         }
       };
       brightButton = new JRadioButton();
       darkButton = new JRadioButton();
       group.add(brightButton);
       group.add(darkButton);
-      brightButton.setSelected(true);
+      darkButton.setSelected(!brightTrails);
       brightButton.addActionListener(brightDarkAction);
       darkButton.addActionListener(brightDarkAction);
       
@@ -373,6 +395,8 @@ public class StrobeFilter extends Filter {
     void updateDisplay() {
       fadeField.setValue(getFade());
       fadeSlider.setValue((int) (100*getFade()));
+      if (isBrightTrails()) brightButton.setSelected(true);
+      else darkButton.setSelected(true);
     }
 
   }
@@ -399,6 +423,9 @@ public class StrobeFilter extends Filter {
     public void saveObject(XMLControl control, Object obj) {
     	StrobeFilter filter = (StrobeFilter) obj;
       control.setValue("fade", filter.getFade()); //$NON-NLS-1$
+      if (filter.isBrightTrails()) {
+	      control.setValue("bright_trails", filter.isBrightTrails()); //$NON-NLS-1$      	
+      }
       if((filter.frame!=null)&&(filter.inspector!=null)&&filter.inspector.isVisible()) {
         int x = filter.inspector.getLocation().x-filter.frame.getLocation().x;
         int y = filter.inspector.getLocation().y-filter.frame.getLocation().y;
@@ -425,10 +452,11 @@ public class StrobeFilter extends Filter {
      * @return the loaded object
      */
     public Object loadObject(XMLControl control, Object obj) {
-      final StrobeFilter filter = (StrobeFilter) obj;
+      StrobeFilter filter = (StrobeFilter) obj;
       if(control.getPropertyNames().contains("fade")) { //$NON-NLS-1$
         filter.setFade(control.getDouble("fade"));      //$NON-NLS-1$
       }
+      filter.setBrightTrails(control.getBoolean("bright_trails"));      //$NON-NLS-1$
       filter.inspectorX = control.getInt("inspector_x"); //$NON-NLS-1$
       filter.inspectorY = control.getInt("inspector_y"); //$NON-NLS-1$
       return obj;
