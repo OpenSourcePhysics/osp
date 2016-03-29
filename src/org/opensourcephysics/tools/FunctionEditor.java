@@ -833,6 +833,13 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
   }
 
   /**
+   * Gets the FunctionPanel that manages this editor.
+   */
+  public FunctionPanel getFunctionPanel() {
+    return functionPanel;
+  }
+
+  /**
    * Returns the default name for newly created objects.
    */
   protected String getDefaultName() {
