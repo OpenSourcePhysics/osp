@@ -153,6 +153,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
   protected int zoomDelay = 40, zoomCount;
   protected javax.swing.Timer zoomTimer;
   protected double dxmin, dxmax, dymin, dymax;
+  protected PropertyChangeListener guiChangeListener;
 
   /**
    * DrawingPanel constructor.
@@ -207,20 +208,21 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 
     });
     zoomTimer.setInitialDelay(0);
-    // Changes font size
-    FontSizer.addPropertyChangeListener("level", new PropertyChangeListener() { //$NON-NLS-1$
+    // create guiChangeListener to change font size and refresh GUI
+    // added by D Brown 29 mar 2016
+    guiChangeListener = new PropertyChangeListener() {
       public void propertyChange(PropertyChangeEvent e) {
-        int level = ((Integer) e.getNewValue()).intValue();
-        setFontLevel(level);
+      	if (e.getPropertyName().equals("level")) { //$NON-NLS-1$
+	        int level = ((Integer) e.getNewValue()).intValue();
+	        setFontLevel(level);
+      	}
+      	else if (e.getPropertyName().equals("locale")) { //$NON-NLS-1$
+      		refreshGUI();
+      	}
       }
-
-    });
-    ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
-      public void propertyChange(PropertyChangeEvent e) {
-        refreshGUI();
-      }
-
-    });
+    };
+    FontSizer.addPropertyChangeListener("level", guiChangeListener); //$NON-NLS-1$
+    ToolsRes.addPropertyChangeListener("locale", guiChangeListener); //$NON-NLS-1$
   }
 
   /**
