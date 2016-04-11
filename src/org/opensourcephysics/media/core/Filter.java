@@ -209,7 +209,7 @@ public abstract class Filter {
 
   @Override
   public void finalize() {
-  	OSPLog.finer("finalized "+getClass().getSimpleName()); //$NON-NLS-1$
+  	OSPLog.finer(getClass().getSimpleName()+" resources released by garbage collector"); //$NON-NLS-1$
   }
 
   /**
@@ -242,6 +242,7 @@ public abstract class Filter {
     stack = null;
   	JDialog inspector = getInspector();
   	if (inspector!=null) {
+  		inspector.setVisible(false);
   		inspector.dispose();
   	}
     setVideoPanel(null);
@@ -318,6 +319,11 @@ public abstract class Filter {
     return menu;
   }
   
+//  @Override
+//  public void finalize() {
+//  	System.out.println("pig finalized "+this);
+//  }
+
 }
 
 /*

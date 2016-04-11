@@ -48,6 +48,7 @@ import java.awt.Stroke;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
@@ -221,13 +222,16 @@ public class PerspectiveFilter extends Filter {
   
   @Override
   public void dispose() {
+  	super.dispose();
   	if (vidPanel!=null && vidPanel.getVideo()!=null) {
     	vidPanel.removePropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 	  	Video video = vidPanel.getVideo();
 	  	video.removePropertyChangeListener("nextframe", videoListener); //$NON-NLS-1$
     	removePropertyChangeListener("visible", vidPanel); //$NON-NLS-1$
   	}
-  	super.dispose();
+  	source = input = output = null;
+  	pixelsOut = null;
+  	pixelsIn = null;
   }
 
   /**
@@ -859,21 +863,42 @@ public class PerspectiveFilter extends Filter {
       pack();
     }
     
-    public void setVisible(boolean vis) {
-    	super.setVisible(vis);
+    @Override
+    public void dispose() {
+    	contentPane.remove(tabbedPane);
+    	tabbedPane.removeAll();
+    	tabbedPane = null;
+    	super.dispose();
+    }
 
+    @Override
+    public void setVisible(boolean vis) {    	
+    	super.setVisible(vis);
+    	
     	if (vidPanel!=null) {
 	    	if (vis) {
 	    		vidPanel.addDrawable(quad);
 	      	support.firePropertyChange("visible", null, null); //$NON-NLS-1$
+	      	PerspectiveFilter.this.removePropertyChangeListener("visible", vidPanel); //$NON-NLS-1$
 	      	PerspectiveFilter.this.addPropertyChangeListener("visible", vidPanel); //$NON-NLS-1$
+	      	vidPanel.removePropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 	      	vidPanel.addPropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 	    	}
 	    	else {
-	    		vidPanel.removeDrawable(quad);
 	      	support.firePropertyChange("visible", null, null); //$NON-NLS-1$
 	      	PerspectiveFilter.this.removePropertyChangeListener("visible", vidPanel); //$NON-NLS-1$
 	      	vidPanel.removePropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
+	    		vidPanel.removeDrawable(quad);
+	      	// fire MOUSE_RELEASED event to ensure full deselection in Tracker
+	      	java.awt.Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(new MouseEvent(
+	  	 		  vidPanel,
+	  	      MouseEvent.MOUSE_RELEASED, 
+	  	      0,
+	  	      MouseEvent.BUTTON1_MASK, 
+	  	      -100, -100, 
+	  	      1, 
+	  	      false
+	        ));
 	    	}
     	}
     	boolean enable = PerspectiveFilter.super.isEnabled();
@@ -881,9 +906,9 @@ public class PerspectiveFilter extends Filter {
     	tabbedPane.setEnabled(enable); 
     	inputEditor.setEnabled(enable);
     	outputEditor.setEnabled(enable);
-    	support.firePropertyChange("image", null, null); //$NON-NLS-1$
-    }
-    
+    	support.firePropertyChange("image", null, null); //$NON-NLS-1$    	
+
+    }    
   }
   
   @SuppressWarnings("javadoc")

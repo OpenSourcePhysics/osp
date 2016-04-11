@@ -44,7 +44,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Collection;
 import java.util.HashMap;
+
 import javax.swing.event.SwingPropertyChangeSupport;
+
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.Interactive;
 
@@ -1008,11 +1011,9 @@ public class VideoAdapter implements Video {
     support.firePropertyChange(property, oldVal, newVal);
   }
 
-  /**
-   * Called by the garbage collector when this video is no longer in use.
-   */
+  @Override
   protected void finalize() {
-    dispose();
+  	OSPLog.finer(getClass().getSimpleName()+" resources released by garbage collector"); //$NON-NLS-1$
   }
 
   //_______________________________ protected methods _________________________
