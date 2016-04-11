@@ -319,11 +319,6 @@ public abstract class Filter {
     return menu;
   }
   
-//  @Override
-//  public void finalize() {
-//  	System.out.println("pig finalized "+this);
-//  }
-
 }
 
 /*
