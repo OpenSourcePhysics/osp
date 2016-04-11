@@ -442,13 +442,6 @@ public class ImageVideo extends VideoAdapter {
     return false;
   }
   
-  /**
-   * Called by the garbage collector when this video is no longer in use.
-   */
-  protected void finalize() {
-    //    System.out.println("imageVideo garbage"); //$NON-NLS-1$
-  }
-
   //_______________________ private/protected methods ____________________________
   
   /**
