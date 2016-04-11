@@ -174,7 +174,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
     if(panel!=null) {
       OSPLog.finest("removing panel "+name); //$NON-NLS-1$
       panels.remove(name);
-      panel.setFunctionTool(null);
+      panel.dispose();
       refreshDropdown(null);
       firePropertyChange("panel", panel, null); //$NON-NLS-1$
     }

@@ -80,6 +80,9 @@ public class ParamEditor extends FunctionEditor {
    */
   public void setFunctionEditors(FunctionEditor[] editors) {
     functionEditors = editors;
+    if (functionEditors==null) {
+    	paramEditor = null;
+    }
   }
 
   /**
