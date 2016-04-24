@@ -157,12 +157,22 @@ public class LibraryBrowser extends JPanel {
   	if (browser==null) {
   		String userHome = System.getProperty("user.home").replace('\\', '/'); //$NON-NLS-1$
   		String ospFolder = OSPRuntime.isWindows()? WINDOWS_OSP_DIRECTORY: OSP_DIRECTORY;
-    	String libraryPath = userHome+ospFolder+MY_LIBRARY_NAME;
+  		String ospPath = userHome+ospFolder;
+  		// if OSP folder doesn't exist in user home, then look 
+  		// in default OSPRuntime search directory
+  		if (!new File(ospPath).exists()) {
+    		ArrayList<String> dirs = OSPRuntime.getDefaultSearchPaths();
+				ospPath = XML.forwardSlash(dirs.get(0));
+  		}
+			if (!ospPath.endsWith("/")) { //$NON-NLS-1$
+				ospPath += "/"; //$NON-NLS-1$
+			}
+    	String libraryPath = ospPath+MY_LIBRARY_NAME;
       File libraryFile = new File(libraryPath);
     	// create new library if none exists
       boolean libraryExists = libraryFile.exists();
       if (!libraryExists) {
-      	String collectionPath = userHome+ospFolder+MY_COLLECTION_NAME;      	
+      	String collectionPath = ospPath+MY_COLLECTION_NAME;      	
   			File collectionFile = new File(collectionPath);
       	// create new collection if none exists
         if (!collectionFile.exists()) {
