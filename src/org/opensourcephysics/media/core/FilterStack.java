@@ -156,6 +156,12 @@ public class FilterStack extends Filter implements PropertyChangeListener {
       filter.removePropertyChangeListener(this);
       support.firePropertyChange("image", null, null);    //$NON-NLS-1$
       support.firePropertyChange("filter", filter, null); //$NON-NLS-1$
+      filter.setVideoPanel(null);
+    	JDialog inspector = filter.getInspector();
+    	if (inspector!=null) {
+    		inspector.setVisible(false);
+    		inspector.dispose();
+    	}
     }
   }
 
@@ -166,7 +172,13 @@ public class FilterStack extends Filter implements PropertyChangeListener {
     Iterator<Filter> it = filters.iterator();
     while(it.hasNext()) {
       Filter filter = it.next();
+    	JDialog inspector = filter.getInspector();
+    	if (inspector!=null) {
+    		inspector.setVisible(false);
+    		inspector.dispose();
+    	}
       filter.stack = null;
+      filter.setVideoPanel(null);
       filter.removePropertyChangeListener(this);
     }
     filters.clear();
@@ -234,12 +246,14 @@ public class FilterStack extends Filter implements PropertyChangeListener {
       Filter filter = it.next();
       JDialog inspector = filter.getInspector();
       if(inspector!=null) {
-        if(!vis) {                        // hide and mark visible inspectors
+        if(!vis) {                        
+        	// set the inspector's current visibility flag
           filter.inspectorVisible = inspector.isVisible();
+          // make sure all inspectors are hidden
           inspector.setVisible(false);
-        } else if(!inspector.isModal()) { // show marked non-modal inspectors, then unmark them
+        } else if(!inspector.isModal()) { // show only non-modal inspectors
+        	// use the visibility flag to set the visibility of every inspector
           inspector.setVisible(filter.inspectorVisible);
-          filter.inspectorVisible = false;
         }
       }
     }
@@ -262,7 +276,12 @@ public class FilterStack extends Filter implements PropertyChangeListener {
    * @param e the property change event
    */
   public void propertyChange(PropertyChangeEvent e) {
-    support.firePropertyChange("image", null, null); //$NON-NLS-1$
+  	if (e.getPropertyName().equals("filterChanged")) { //$NON-NLS-1$
+  		support.firePropertyChange("filterChanged", e.getOldValue(), e.getNewValue()); //$NON-NLS-1$
+  	}
+  	else {
+  		support.firePropertyChange("image", null, null); //$NON-NLS-1$
+  	}
   }
 
 }

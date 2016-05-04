@@ -546,6 +546,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
       oldClip.removePropertyChangeListener("framecount", this);    //$NON-NLS-1$
       oldClip.removePropertyChangeListener("starttime", this);    //$NON-NLS-1$
       oldClip.removePropertyChangeListener("adjusting", this);          //$NON-NLS-1$
+//      oldClip.removePropertyChangeListener("frameshift", this);          //$NON-NLS-1$
       VideoClip clip = (VideoClip) e.getNewValue();
       clip.addPropertyChangeListener("startframe", this);         //$NON-NLS-1$
       clip.addPropertyChangeListener("stepsize", this);           //$NON-NLS-1$
@@ -553,10 +554,12 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
       clip.addPropertyChangeListener("framecount", this);  //$NON-NLS-1$
       clip.addPropertyChangeListener("starttime", this);          //$NON-NLS-1$
       clip.addPropertyChangeListener("adjusting", this);          //$NON-NLS-1$
+//      clip.addPropertyChangeListener("frameshift", this);          //$NON-NLS-1$
       // replace current video with new clip's video
       if(video!=null) {
         video.removePropertyChangeListener("coords", this);       //$NON-NLS-1$
         video.removePropertyChangeListener("image", this);        //$NON-NLS-1$
+        video.removePropertyChangeListener("filterChanged", this);        //$NON-NLS-1$
         video.removePropertyChangeListener("videoVisible", this); //$NON-NLS-1$
         video.removePropertyChangeListener("size", this);         //$NON-NLS-1$
         super.removeDrawable(video);
@@ -565,6 +568,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
       if(video!=null) {
         video.addPropertyChangeListener("coords", this);          //$NON-NLS-1$
         video.addPropertyChangeListener("image", this);           //$NON-NLS-1$
+        video.addPropertyChangeListener("filterChanged", this);           //$NON-NLS-1$
         video.addPropertyChangeListener("videoVisible", this);    //$NON-NLS-1$
         video.addPropertyChangeListener("size", this);            //$NON-NLS-1$
         // synchronize coords

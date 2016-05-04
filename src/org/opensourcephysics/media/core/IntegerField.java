@@ -31,7 +31,6 @@
  */
 package org.opensourcephysics.media.core;
 import java.awt.Toolkit;
-import java.text.ParseException;
 
 /**
  * This is a NumberField that accepts only integers.
@@ -72,7 +71,8 @@ public class IntegerField extends NumberField {
       return(int) prevValue;
     }
     try {
-      retValue = format.parse(s).intValue();
+      retValue = Integer.parseInt(s);
+//      retValue = format.parse(s).intValue();
       if((minValue!=null)&&(retValue<minValue.intValue())) {
         setIntValue(minValue.intValue());
         return minValue.intValue();
@@ -81,7 +81,7 @@ public class IntegerField extends NumberField {
         setIntValue(maxValue.intValue());
         return maxValue.intValue();
       }
-    } catch(ParseException e) {
+    } catch(Exception e) {
       Toolkit.getDefaultToolkit().beep();
       setIntValue((int) prevValue);
       return(int) prevValue;

@@ -675,8 +675,15 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
           continue;
         }
         name = getName(next);
+        if (obj instanceof UserFunction) {
+        	// replace function names with # to prevent finding "x" in "exp", etc
+          UserFunction func = (UserFunction)obj;
+          String[] functionNames = func.getFunctionNames();
+          for (String s: functionNames) {
+            eqn = eqn.replaceAll(s, "#"); //$NON-NLS-1$
+          }
+        }
         if(eqn.indexOf(name)>-1) {
-          eqn = eqn.replaceAll(name, "#"); //$NON-NLS-1$
           directReferences.add(next);
           if(!references.contains(name)) {
             references.add(name);

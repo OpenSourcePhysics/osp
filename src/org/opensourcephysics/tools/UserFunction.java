@@ -395,7 +395,15 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
   	return paramDescriptions[i];
   }
 
-
+  /**
+   * Returns function names.
+   * Added by D. Brown 10 Dec 2015
+   *
+   * @return array of parser function names
+   */
+  public String[] getFunctionNames() {
+    return functionNames;
+  }
 
   /**
    * Evaluates the function for a single variable x.

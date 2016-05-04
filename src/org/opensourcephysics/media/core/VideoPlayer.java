@@ -81,7 +81,9 @@ import javax.swing.event.MouseInputAdapter;
 import java.awt.event.MouseMotionListener;
 
 import org.opensourcephysics.display.OSPRuntime;
-import org.opensourcephysics.display.ResizableIcon;
+
+//import org.opensourcephysics.display.ResizableIcon;
+
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ResourceLoader;
 
@@ -1112,7 +1114,6 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     readout.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
       	if (disabled) return;
-      	final VideoClip clip = getVideoClip();
         if(readoutTypes.length<2) {
           return;
         }
@@ -1164,35 +1165,36 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
             displayMenu.add(item);
           }
         }
-        final Video video = clip.getVideo();
-        if (video!=null && video.getFrameCount()>1) {
-	        item = new JMenuItem(MediaRes.getString("VideoPlayer.Readout.Menu.Renumber")); //$NON-NLS-1$
-	        item.setActionCommand("frame"); //$NON-NLS-1$
-	        item.addActionListener(new ActionListener() {
-	          public void actionPerformed(ActionEvent e) {
-	          	final int vidFrame = video.getFrameNumber();
-	          	Object response = JOptionPane.showInputDialog(vidPanel, 
-	          			MediaRes.getString("VideoPlayer.Dialog.SetFrameNumber.Message"), //$NON-NLS-1$
-	          			MediaRes.getString("VideoPlayer.Dialog.SetFrameNumber.Title")+" "+vidFrame,  //$NON-NLS-1$ //$NON-NLS-2$
-	          			JOptionPane.PLAIN_MESSAGE, 
-	          			null, null, getFrameNumber());
-	          	if (response!=null) {
-	            	if (!response.equals("")) try { //$NON-NLS-1$
-									int n = Integer.parseInt(response.toString());
-									int shift = vidFrame-n;
-			          	int start = clip.getStartFrameNumber();
-			          	int count = clip.getStepCount();
-			            clip.setFrameShift(shift, start, count);
-			            updateSlider();
-								} catch (NumberFormatException ex) {
-								}          		
-	          	}
-	          }
-	
-	        });
-	        item.addActionListener(readoutListener);
-	        popup.add(item);
-        }
+//      	final VideoClip clip = getVideoClip();
+//        final Video video = clip.getVideo();
+//        if (video!=null && video.getFrameCount()>1) {
+//	        item = new JMenuItem(MediaRes.getString("VideoPlayer.Readout.Menu.Renumber")); //$NON-NLS-1$
+//	        item.setActionCommand("frame"); //$NON-NLS-1$
+//	        item.addActionListener(new ActionListener() {
+//	          public void actionPerformed(ActionEvent e) {
+//	          	final int vidFrame = video.getFrameNumber();
+//	          	Object response = JOptionPane.showInputDialog(vidPanel, 
+//	          			MediaRes.getString("VideoPlayer.Dialog.SetFrameNumber.Message"), //$NON-NLS-1$
+//	          			MediaRes.getString("VideoPlayer.Dialog.SetFrameNumber.Title")+" "+vidFrame,  //$NON-NLS-1$ //$NON-NLS-2$
+//	          			JOptionPane.PLAIN_MESSAGE, 
+//	          			null, null, getFrameNumber());
+//	          	if (response!=null) {
+//	            	if (!response.equals("")) try { //$NON-NLS-1$
+//									int n = Integer.parseInt(response.toString());
+//									int shift = vidFrame-n;
+//			          	int start = clip.getStartFrameNumber();
+//			          	int count = clip.getStepCount();
+//			            clip.setFrameShift(shift, start, count);
+//			            updateSlider();
+//								} catch (NumberFormatException ex) {
+//								}          		
+//	          	}
+//	          }
+//	
+//	        });
+//	        item.addActionListener(readoutListener);
+//	        popup.add(item);
+//        }
         // show popup menu
         popup.show(readout, 0, readout.getHeight());
       }

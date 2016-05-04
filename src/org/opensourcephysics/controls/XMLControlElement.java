@@ -255,8 +255,14 @@ public class XMLControlElement implements XMLControl {
    */
   public double getDouble(String name) {
     XMLProperty prop = getXMLProperty(name);
-    if((prop!=null)&&(prop.getPropertyType().equals("double")||prop.getPropertyType().equals("int"))) { //$NON-NLS-1$ //$NON-NLS-2$
-      return Double.parseDouble((String) prop.getPropertyContent().get(0));
+    if((prop!=null) && (prop.getPropertyType().equals("double") //$NON-NLS-1$
+    		|| prop.getPropertyType().equals("int") //$NON-NLS-1$
+    		|| prop.getPropertyType().equals("string"))) { //$NON-NLS-1$
+    	try {
+    		return Double.parseDouble((String) prop.getPropertyContent().get(0));
+    	} catch(Exception ex) {
+      	return Double.NaN;
+      }
     }
     return Double.NaN;
   }
@@ -269,8 +275,13 @@ public class XMLControlElement implements XMLControl {
    */
   public int getInt(String name) {
     XMLProperty prop = getXMLProperty(name);
-    if((prop!=null)&&prop.getPropertyType().equals("int")) {           //$NON-NLS-1$
-      return Integer.parseInt((String) prop.getPropertyContent().get(0));
+    if((prop!=null) && (prop.getPropertyType().equals("int")  //$NON-NLS-1$
+    		|| prop.getPropertyType().equals("string"))) {           //$NON-NLS-1$
+    	try {
+        return Integer.parseInt((String) prop.getPropertyContent().get(0));
+      } catch(Exception ex) {
+      	return Integer.MIN_VALUE;
+      }
     } else if((prop!=null)&&prop.getPropertyType().equals("object")) { //$NON-NLS-1$
       XMLControl control = (XMLControl) prop.getPropertyContent().get(0);
       if(control.getObjectClass()==OSPCombo.class) {

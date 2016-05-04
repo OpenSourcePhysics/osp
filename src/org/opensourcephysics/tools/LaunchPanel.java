@@ -7,6 +7,10 @@
 
 package org.opensourcephysics.tools;
 import java.io.*;
+<<<<<<< HEAD
+=======
+import java.net.URL;
+>>>>>>> 2c57b2fab6170080b12c70e9b603be9b2d047bb1
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -112,12 +116,26 @@ public class LaunchPanel extends JPanel {
     node.tabNumber = ((url==null)&&(node.getDisplayTabCount()==0))
                          ? -1
                          : tabNumber;
-    if (url != null) {
+    LaunchNode.DisplayTab htmlData = null;
+    URL prevURL = null;
+    if (node.tabNumber>-1) {
+    	htmlData = node.tabData.get(node.tabNumber);
+    }
+    if (htmlData!=null) {
+    	prevURL = htmlData.url;
+    }
+    if (url!=null) {
+    	// set url to include anchor, if any
     	node.htmlURL = url;
-//      OSPLog.info("set selected node "+node+" to "+node.htmlURL //$NON-NLS-1$
-//          +"and tabnumber "+node.tabNumber);  //$NON-NLS-1$
+    	if (htmlData!=null) {
+    		htmlData.url = url;    
+    	}
     }
     setSelectedNode(node);
+    // restore previous URL
+    if (htmlData!=null) {
+    	htmlData.url = prevURL;    
+    }
   }
 
   /**
@@ -482,8 +500,6 @@ public class LaunchPanel extends JPanel {
               LaunchNode.DisplayTab htmlData = node.tabData.get(page);
               node.htmlURL = htmlData.url;
               node.tabNumber = page;
-//              OSPLog.info("set node "+node+" to "+node.htmlURL //$NON-NLS-1$
-//                  +"and tabnumber "+node.tabNumber);  //$NON-NLS-1$
             }
             LauncherUndo.NavEdit edit = launcher.undoManager.new NavEdit(prevNode, node);
             launcher.undoSupport.postEdit(edit);

@@ -293,15 +293,18 @@ public class TPoint extends Point2D.Double implements Interactive, Trackable {
    * Attaches this TPoint to another so it follows it.
    *
    * @param p the point to attach to
+   * @return true if a change has occurred
    */
-  public void attachTo(TPoint p) {
-  	if (p==null || p==this) return;
+  public boolean attachTo(TPoint p) {
+  	if (p==null || p==this) return false;
+  	if (p==attachedTo && p.getX()==this.getX() && p.getY()==this.getY()) return false;
   	// detach this from any previous point
   	detach();
   	// attach by adding property change listener
   	attachedTo = p;
   	p.addPropertyChangeListener("location", new Follower()); //$NON-NLS-1$
   	setXY(p.getX(), p.getY());
+  	return true;
   }
 
   /**

@@ -30,78 +30,93 @@
  * please see <http://www.opensourcephysics.org/>.
  */
 package org.opensourcephysics.media.core;
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.image.BufferedImage;
-
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ButtonGroup;
-import javax.swing.Icon;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRadioButtonMenuItem;
-import javax.swing.SwingConstants;
-
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 
-//import org.opensourcephysics.display.ResizableIcon;
-
-import org.opensourcephysics.tools.ResourceLoader;
-
 /**
- * This is a Filter that rotates the source image.
+ * This is a Filter that produces fading strobe images.
  *
  * @author Douglas Brown
  * @version 1.0
  */
-public class RotateFilter extends Filter {
-	// static constants
-	private static final int NONE = -1, CCW_90 = 0, CW_90 = 1, FULL_180 = 2;
-	private static final int[] types = {NONE, CCW_90, CW_90, FULL_180};
-	private static final String[] typeNames = {"None", "CCW",  //$NON-NLS-1$ //$NON-NLS-2$
-		"CW", "180"}; //$NON-NLS-1$ //$NON-NLS-2$
-	private static Icon cwIcon, ccwIcon;
-	
-	static {
-    String path = "/org/opensourcephysics/resources/media/images/cw.gif";  //$NON-NLS-1$
-    cwIcon = ResourceLoader.getIcon(path);
-    path = "/org/opensourcephysics/resources/media/images/ccw.gif";  //$NON-NLS-1$
-    ccwIcon = ResourceLoader.getIcon(path);
-	}
-	
+public class StrobeFilter extends Filter {
   // instance fields
-  private BufferedImage source, input, output;
-  private int[] pixelsIn, pixelsOut;
+  protected int[] pixels, prevPixels;
+  private double fade;
+  private double defaultFade = 0;
   private int w, h;
+  private BufferedImage input, output, source;
   private Graphics2D gIn;
-  private int rotationType = NONE; // no rotation
   // inspector fields
   private Inspector inspector;
-  private JRadioButtonMenuItem[] buttons = new JRadioButtonMenuItem[4];
-  private ButtonGroup buttonGroup;
-  private JCheckBox reverseCheckbox;
-  private JComponent rotationPanel;
-  private JComponent reversePanel;
-  private boolean reverse;
+  private JLabel fadeLabel;
+  private NumberField fadeField;
+  private JSlider fadeSlider;
 
   /**
-   * Constructs a RotateFilter object.
+   * Constructs a StrobeFilter object with default fade.
    */
-  public RotateFilter() {
-    refresh();
+  public StrobeFilter() {
+    setFade(defaultFade);
     hasInspector = true;
+  }
+
+  /**
+   * Sets the fade.
+   *
+   * @param fade the fraction by which the strobe image fades each time it is
+   * rendered. A fade of 0 never fades, while a fade of 1 fades completely
+   * and so is never seen.
+   */
+  public void setFade(double fade) {
+    Double prev = new Double(this.fade);
+    this.fade = Math.min(Math.abs(fade), 1);
+    support.firePropertyChange("fade", prev, new Double(fade)); //$NON-NLS-1$
+  }
+
+  /**
+   * Gets the fade.
+   *
+   * @return the fade.
+   * @see #setFade
+   */
+  public double getFade() {
+    return fade;
+  }
+
+  /**
+   * Overrides the setEnabled method to force reinitialization.
+   *
+   * @param enabled <code>true</code> if this is enabled.
+   */
+  public void setEnabled(boolean enabled) {
+    if(isEnabled()==enabled) {
+      return;
+    }
+    source = null;
+    super.setEnabled(enabled);
   }
 
   /**
@@ -120,25 +135,12 @@ public class RotateFilter extends Filter {
     if(sourceImage!=input) {
       gIn.drawImage(source, 0, 0, null);
     }
-    setOutputToRotate(input);
+    setOutputToStrobe();
     return output;
   }
 
   /**
-   * Sets the rotation type.
-   *
-   * @param type 
-   */
-  private void setRotationType(int type) {
-    if (type!=rotationType) {
-    	rotationType = type;
-    	source = null; // forces re-initialization
-      support.firePropertyChange("rotate", null, null); //$NON-NLS-1$
-    }
-  }
-
-  /**
-   * Gets the inspector for this filter.
+   * Implements abstract Filter method.
    *
    * @return the inspector
    */
@@ -161,105 +163,90 @@ public class RotateFilter extends Filter {
   }
 
   /**
+   * Clears strobe images.
+   */
+  public void clear() {
+    source = null;
+    support.firePropertyChange("image", null, null); //$NON-NLS-1$
+  }
+
+  /**
    * Refreshes this filter's GUI
    */
   public void refresh() {
     super.refresh();
     if(inspector!=null) {
-      inspector.setTitle(MediaRes.getString("Filter.Rotate.Title")); //$NON-NLS-1$
-      rotationPanel.setBorder(BorderFactory.createTitledBorder(MediaRes.getString("Filter.Rotate.Label.Rotate"))); //$NON-NLS-1$
-      for (int i = 0; i<buttons.length; i++) {
-      	buttons[i].setEnabled(isEnabled());
-      	buttons[i].setText(MediaRes.getString("Filter.Rotate.Button."+typeNames[i])); //$NON-NLS-1$
-      }
-      reverseCheckbox.setText(MediaRes.getString("Filter.Rotate.Checkbox.Reverse")); //$NON-NLS-1$
-      reverseCheckbox.setSelected(reverse);
+      inspector.setTitle(MediaRes.getString("Filter.Strobe.Title")); //$NON-NLS-1$
+	    fadeLabel.setText(MediaRes.getString("Filter.Ghost.Label.Fade"));           //$NON-NLS-1$
+	    fadeSlider.setToolTipText(MediaRes.getString("Filter.Ghost.ToolTip.Fade")); //$NON-NLS-1$
+      inspector.pack();
+	    boolean enabled = isEnabled();
+	    fadeLabel.setEnabled(enabled);
+	    fadeSlider.setEnabled(enabled);
+	    fadeField.setEnabled(enabled);
     }
   }
 
   //_____________________________ private methods _______________________
 
   /**
-   * Creates the input and output images and ColorConvertOp.
+   * Creates and initializes the input and output images.
    *
-   * @param image a new input image
+   * @param sourceImage a new source image
    */
-  private void initialize(BufferedImage image) {
-    source = image;
+  private void initialize(BufferedImage sourceImage) {
+    source = sourceImage;
     w = source.getWidth();
     h = source.getHeight();
-    pixelsIn = new int[w*h];
-    pixelsOut = new int[w*h];    
-    if (rotationType==CW_90 || rotationType==CCW_90)
-    	output = new BufferedImage(h, w, BufferedImage.TYPE_INT_RGB);
-    else
-      output = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+    pixels = new int[w*h];
+    prevPixels = new int[w*h];
     if(source.getType()==BufferedImage.TYPE_INT_RGB) {
       input = source;
     } else {
       input = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
       gIn = input.createGraphics();
     }
+    output = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+    output.createGraphics().drawImage(source, 0, 0, null);
+    output.getRaster().getDataElements(0, 0, w, h, pixels);
+    int pixel, r, g, b;
+    for(int i = 0; i<prevPixels.length; i++) {
+      pixel = pixels[i];
+      r = (pixel>>16)&0xff;  // red
+      g = (pixel>>8)&0xff;   // green
+      b = (pixel)&0xff;      // blue
+      prevPixels[i] = (r+g+b)/3; // value
+    }
   }
 
   /**
-   * Sets the output image pixels to a rotated version of the input pixels.
-   *
-   * @param image the input image
+   * Sets the output image pixels to a strobe of the input pixels.
    */
-  private void setOutputToRotate(BufferedImage image) {
-    image.getRaster().getDataElements(0, 0, w, h, pixelsIn);
-    int last = w*h-1;
-    if (rotationType>NONE || reverse) {
-	    for(int i = 0; i<pixelsIn.length; i++) {
-	    	if (rotationType==NONE) { // no rotation, just reversed
-	    		int row = i/w;
-	    		int col = w-(i%w)-1;
-	    		pixelsOut[w*row+col] = pixelsIn[i];
-		    }
-	    	else if (rotationType==CW_90) {
-	    		if (reverse) {
-		    		int col = h-(i/w)-1;
-		    		int row = w-(i%w)-1;
-		    		pixelsOut[h*row+col] = pixelsIn[i];
-	    		}
-	    		else {
-		    		int col = h-(i/w)-1;
-		    		int row = i%w;
-		    		pixelsOut[h*row+col] = pixelsIn[i];
-	    		}
-	    	}
-	    	else if (rotationType==CCW_90) {
-	    		if (reverse) {
-		    		int col = i/w;
-		    		int row = i%w;
-		    		pixelsOut[h*row+col] = pixelsIn[i];
-	    		}
-	    		else {
-		    		int col = i/w;
-		    		int row = w-(i%w)-1;
-		    		pixelsOut[h*row+col] = pixelsIn[i];
-	    		}
-	    	}
-	    	else { // 180 degrees
-	    		if (reverse) {
-		    		int row = h-(i/w)-1;
-		    		int col = i%w;
-		    		pixelsOut[w*row+col] = pixelsIn[i];
-	    		}
-	    		else
-	    			pixelsOut[last-i] = pixelsIn[i];
-	    	}
-	    }
+  private void setOutputToStrobe() {
+    input.getRaster().getDataElements(0, 0, w, h, pixels);
+    int pixel, r, g, b, val, rprev, gprev, bprev, valprev;
+    for(int i = 0; i<pixels.length; i++) {
+      pixel = pixels[i];
+      r = (pixel>>16)&0xff;                       // red
+      g = (pixel>>8)&0xff;                        // green
+      b = (pixel)&0xff;                           // blue
+      val = (r+g+b)/3;                            // value of current input pixel
+      rprev = (prevPixels[i]>>16)&0xff;           // previous red
+      gprev = (prevPixels[i]>>8)&0xff;            // previous green
+      bprev = (prevPixels[i])&0xff;               // previous blue
+      valprev = (rprev+gprev+bprev)/3;            // previous value
+      valprev = (int) ((1-fade)*valprev);         // faded previous value
+      if(valprev>val) {
+        rprev = (int) ((1-fade)*rprev);           // faded red
+        gprev = (int) ((1-fade)*gprev);           // faded green
+        bprev = (int) ((1-fade)*bprev);           // faded blue
+        pixels[i] = (rprev<<16)|(gprev<<8)|bprev; 
+      }
+      prevPixels[i] = pixels[i];
     }
-    if (rotationType==NONE && !reverse)
-  		output.getRaster().setDataElements(0, 0, w, h, pixelsIn);
-    else if (rotationType==CW_90 || rotationType==CCW_90)
-  		output.getRaster().setDataElements(0, 0, h, w, pixelsOut);
-  	else
-    	output.getRaster().setDataElements(0, 0, w, h, pixelsOut);
+    output.getRaster().setDataElements(0, 0, w, h, pixels);
   }
-  
+
   /**
    * Inner Inspector class to control filter parameters
    */
@@ -269,9 +256,9 @@ public class RotateFilter extends Filter {
      */
     public Inspector() {
       super(frame, !(frame instanceof org.opensourcephysics.display.OSPFrame));
+      setTitle(MediaRes.getString("Filter.Strobe.Title")); //$NON-NLS-1$
       setResizable(false);
       createGUI();
-      setTitle(MediaRes.getString("Filter.Rotate.Title")); //$NON-NLS-1$
       refresh();
       pack();
       // center on screen
@@ -286,60 +273,79 @@ public class RotateFilter extends Filter {
      * Creates the visible components.
      */
     void createGUI() {
-      // create and assemble radio buttons
-    	int leftBorder = 40; // space to left of buttons
-      rotationPanel = Box.createVerticalBox();
-      buttonGroup = new ButtonGroup();
-      ActionListener selector = new ActionListener() {
+      // create components
+      fadeLabel = new JLabel();
+      fadeField = new DecimalField(4, 2);
+      fadeField.setMaxValue(0.5);
+      fadeField.setMinValue(0);
+      fadeField.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-        	for (int i = 0; i<buttons.length; i++) {
-        		if (buttons[i].isSelected()) {
-        			setRotationType(types[i]);
-        			break;
-        		}
-        	}
+          setFade(fadeField.getValue());
+          updateDisplay();
+          fadeField.selectAll();
         }
-      };
-      for(int i = 0; i<buttons.length; i++) {
-        buttons[i] = new JRadioButtonMenuItem();
-        buttons[i].setSelected(rotationType==types[i]);
-        buttons[i].addActionListener(selector);
-        buttons[i].setBorder(BorderFactory.createEmptyBorder(2, leftBorder, 2, 2));
-        buttons[i].setHorizontalTextPosition(SwingConstants.LEFT);
-        if (types[i]==CW_90)
-        	buttons[i].setIcon(cwIcon);
-        else if (types[i]==CCW_90)
-        	buttons[i].setIcon(ccwIcon);
-        buttonGroup.add(buttons[i]);
-      	rotationPanel.add(buttons[i]);
-      }
-      // create and assemble reverse checkbox
-      reversePanel = Box.createVerticalBox();
-      reverseCheckbox = new JCheckBox();
-      reverseCheckbox.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-        	reverse = reverseCheckbox.isSelected();
-          support.firePropertyChange("rotate", null, null); //$NON-NLS-1$
-        }
+
       });
-      reversePanel.add(reverseCheckbox);
-      reverseCheckbox.setBorder(BorderFactory.createEmptyBorder(2, leftBorder+7, 2, 2));
+      fadeField.addFocusListener(new FocusListener() {
+        public void focusGained(FocusEvent e) {
+          fadeField.selectAll();
+        }
+        public void focusLost(FocusEvent e) {
+          setFade(fadeField.getValue());
+          updateDisplay();
+        }
+
+      });
+      fadeSlider = new JSlider(0, 0, 0);
+      fadeSlider.setMaximum(50);
+      fadeSlider.setMinimum(0);
+      fadeSlider.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
+      fadeSlider.addChangeListener(new ChangeListener() {
+        public void stateChanged(ChangeEvent e) {
+          int i = fadeSlider.getValue();
+          if(i!=(int) (getFade()*100)) {
+            setFade(i/100.0);
+            updateDisplay();
+          }
+        }
+
+      });
       // add components to content pane
-      JPanel contentPane = new JPanel(new BorderLayout());
-      setContentPane(contentPane);
-      contentPane.add(rotationPanel, BorderLayout.NORTH);
-      contentPane.add(reversePanel, BorderLayout.CENTER);
+      GridBagLayout gridbag = new GridBagLayout();
+      JPanel panel = new JPanel(gridbag);
+      setContentPane(panel);
+      GridBagConstraints c = new GridBagConstraints();
+      c.anchor = GridBagConstraints.EAST;
+      c.fill = GridBagConstraints.NONE;
+      c.weightx = 0.0;
+      c.gridx = 0;
+      c.insets = new Insets(5, 5, 0, 0);
+      gridbag.setConstraints(fadeLabel, c);
+      panel.add(fadeLabel);
+      c.fill = GridBagConstraints.HORIZONTAL;
+      c.gridx = 1;
+      c.insets = new Insets(5, 0, 0, 0);
+      gridbag.setConstraints(fadeField, c);
+      panel.add(fadeField);
+      c.gridx = 2;
+      c.insets = new Insets(5, 0, 0, 0);
+      c.weightx = 1.0;
+      gridbag.setConstraints(fadeSlider, c);
+      panel.add(fadeSlider);
       JPanel buttonbar = new JPanel(new FlowLayout());
       buttonbar.add(ableButton);
+      buttonbar.add(clearButton);
       buttonbar.add(closeButton);
-      contentPane.add(buttonbar, BorderLayout.SOUTH);
+      c.gridx = 2;
+      c.gridy = 1;
+      gridbag.setConstraints(buttonbar, c);
+      panel.add(buttonbar);
     }
 
     /**
      * Initializes this inspector
      */
     void initialize() {
-      refresh();
       updateDisplay();
     }
 
@@ -347,6 +353,8 @@ public class RotateFilter extends Filter {
      * Updates this inspector to reflect the current filter settings.
      */
     void updateDisplay() {
+      fadeField.setValue(getFade());
+      fadeSlider.setValue((int) (100*getFade()));
     }
 
   }
@@ -371,10 +379,8 @@ public class RotateFilter extends Filter {
      * @param obj the filter to save
      */
     public void saveObject(XMLControl control, Object obj) {
-      RotateFilter filter = (RotateFilter) obj;
-      if (filter.rotationType>NONE)
-      	control.setValue("rotation", RotateFilter.typeNames[filter.rotationType+1]); //$NON-NLS-1$
-      control.setValue("reverse", filter.reverse); //$NON-NLS-1$
+    	StrobeFilter filter = (StrobeFilter) obj;
+      control.setValue("fade", filter.getFade()); //$NON-NLS-1$
       if((filter.frame!=null)&&(filter.inspector!=null)&&filter.inspector.isVisible()) {
         int x = filter.inspector.getLocation().x-filter.frame.getLocation().x;
         int y = filter.inspector.getLocation().y-filter.frame.getLocation().y;
@@ -390,7 +396,7 @@ public class RotateFilter extends Filter {
      * @return the new filter
      */
     public Object createObject(XMLControl control) {
-      return new RotateFilter();
+      return new StrobeFilter();
     }
 
     /**
@@ -401,13 +407,10 @@ public class RotateFilter extends Filter {
      * @return the loaded object
      */
     public Object loadObject(XMLControl control, Object obj) {
-      final RotateFilter filter = (RotateFilter) obj;
-      String typeName = control.getString("rotation"); //$NON-NLS-1$ // could be null
-      for (int i = 0; i<RotateFilter.typeNames.length; i++) {
-      	if (RotateFilter.typeNames[i].equals(typeName))
-      		filter.rotationType = RotateFilter.types[i];
+      final StrobeFilter filter = (StrobeFilter) obj;
+      if(control.getPropertyNames().contains("fade")) { //$NON-NLS-1$
+        filter.setFade(control.getDouble("fade"));      //$NON-NLS-1$
       }
-      filter.reverse = control.getBoolean("reverse"); //$NON-NLS-1$
       filter.inspectorX = control.getInt("inspector_x"); //$NON-NLS-1$
       filter.inspectorY = control.getInt("inspector_y"); //$NON-NLS-1$
       return obj;

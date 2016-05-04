@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Vector;
+
 import javax.swing.AbstractButton;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -39,6 +40,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.OSPRuntime;
 
@@ -578,7 +580,8 @@ public class EjsTool {
     if(!returnValue.value) {
       return null;
     }
-    Object[] selection = list.getSelectedValues();
+    @SuppressWarnings("deprecation")
+		Object[] selection = list.getSelectedValues();
     java.util.List<Object> newList = new ArrayList<Object>();
     for(int i = 0, n = selection.length; i<n; i++) {
       newList.add(selection[i]);

@@ -286,7 +286,7 @@ public class VideoGrabber extends VideoCaptureTool {
     fps = Math.round(100*fps)/100; // round to nearest .01 fps
     int n = fpsDropDown.getItemCount();
     for(int i = 0; i<n; i++) {
-      String item = (String) fpsDropDown.getItemAt(i);
+      String item = (String)fpsDropDown.getItemAt(i);
       double dropdownValue = Double.parseDouble(item);
       if(fps==dropdownValue) {
         fpsDropDown.setSelectedIndex(i);
