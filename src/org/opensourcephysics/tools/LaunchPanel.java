@@ -7,10 +7,7 @@
 
 package org.opensourcephysics.tools;
 import java.io.*;
-<<<<<<< HEAD
-=======
 import java.net.URL;
->>>>>>> 2c57b2fab6170080b12c70e9b603be9b2d047bb1
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
