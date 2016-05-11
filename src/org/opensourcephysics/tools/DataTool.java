@@ -788,7 +788,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     if(text.startsWith("\"")) {       //$NON-NLS-1$
       String stripped = text.substring(1);
       int n = stripped.indexOf("\""); //$NON-NLS-1$
-      if(n==stripped.length()-1) {
+      if(n>-1 && n==stripped.length()-1) {
         return stripped.substring(0, n);
       }
     }
