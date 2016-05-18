@@ -1197,7 +1197,7 @@ public class DataTable extends JTable implements ActionListener {
     JList columnList;
     JScrollPane columnScroller;
 
-    NumberFormatDialog() {
+    protected NumberFormatDialog() {
       super(JOptionPane.getFrameForComponent(DataTable.this), true);
       setLayout(new BorderLayout());
       setTitle(DisplayRes.getString("DataTable.NumberFormat.Dialog.Title")); //$NON-NLS-1$
