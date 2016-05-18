@@ -622,7 +622,9 @@ public class VideoClip {
    * @return the frame number
    */
   public int getLastFrameNumber() {
-  	if (video==null) return getEndFrameNumber();
+  	if (video==null || video.getFrameCount()==1) {
+  		return getEndFrameNumber();
+  	}
   	int finalVideoFrame = video.getFrameCount()-1+extraFrames;
   	// frameShift changes frame number--but never less than zero
   	return Math.max(0, finalVideoFrame-frameShift);
