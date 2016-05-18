@@ -46,7 +46,7 @@ public class IntegerField extends NumberField {
    */
   public IntegerField(int columns) {
     super(columns);
-    fixedPattern = true;
+    fixedPattern = fixedPatternByDefault = true;
     format.setParseIntegerOnly(true);
     setIntValue((int) prevValue);
   }

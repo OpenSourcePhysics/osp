@@ -39,6 +39,9 @@ package org.opensourcephysics.media.core;
  * @version 1.0
  */
 public class DecimalField extends NumberField {
+	
+	protected String defaultPattern;
+	
   /**
    * Constructs a DecimalField.
    *
@@ -47,7 +50,7 @@ public class DecimalField extends NumberField {
    */
   public DecimalField(int columns, int places) {
     super(columns);
-    fixedPattern = true;
+    fixedPattern = fixedPatternByDefault = true;
     setDecimalPlaces(places);
   }
 
@@ -64,13 +67,32 @@ public class DecimalField extends NumberField {
     for(int i = 0; i<places; i++) {
       pattern += "0"; //$NON-NLS-1$
     }
-    format.applyPattern(pattern);
+    defaultPattern = pattern;
+    if (userPattern.equals("")) { //$NON-NLS-1$
+      format.applyPattern(pattern);
+    }
   }
 
   // Override NumberField methods so pattern cannot change
   public void setSigFigs(int sigfigs) {}
 
+  @Override
   public void setExpectedRange(double lower, double upper) {}
+
+  @Override
+  public void setFixedPattern(String pattern) {
+  	if (pattern==null) pattern = ""; //$NON-NLS-1$
+    pattern = pattern.trim();
+    if (pattern.equals(userPattern)) return;
+    userPattern = pattern;
+    if (userPattern.equals("")) { //$NON-NLS-1$
+      format.applyPattern(defaultPattern);
+    }
+    else {
+      format.applyPattern(userPattern);
+    }
+    setValue(prevValue);
+  }
 
 }
 
