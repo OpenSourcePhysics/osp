@@ -101,7 +101,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	@SuppressWarnings("javadoc")
 	public final static String THETA = TeXParser.parseTeX("$\\theta$"); //$NON-NLS-1$
 	public final static String OMEGA = TeXParser.parseTeX("$\\omega$"); //$NON-NLS-1$
-	public final static String DEGREES = "º"; //$NON-NLS-1$
+	public final static String DEGREES = "\u00B0"; //$NON-NLS-1$
   public final static int ADD_EDIT = 0;
   public final static int REMOVE_EDIT = 1;
   public final static int NAME_EDIT = 2;
