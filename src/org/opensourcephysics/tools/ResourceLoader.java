@@ -1356,6 +1356,7 @@ public class ResourceLoader {
       isJarOrFile = true;
     }
     // remove all but one leading slash
+    // pig why is this done? this causes network files to fail to load at Cabrillo...
     if (isJarOrFile) {
 	    while (path.startsWith("//")) { //$NON-NLS-1$
 	      path = path.substring(1);

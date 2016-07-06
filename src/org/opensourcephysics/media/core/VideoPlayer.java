@@ -44,6 +44,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -51,23 +53,33 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Locale;
 import java.util.TreeMap;
 import java.util.Hashtable;
 
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSlider;
 import javax.swing.JSpinner;
+import javax.swing.JSplitPane;
+import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
@@ -79,11 +91,11 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
 
 import java.awt.event.MouseMotionListener;
+import java.awt.font.FontRenderContext;
+import java.awt.geom.Rectangle2D;
 
+import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.OSPRuntime;
-
-//import org.opensourcephysics.display.ResizableIcon;
-
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ResourceLoader;
 
@@ -102,6 +114,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
   protected static Icon inOutIcon, playIcon, grayPlayIcon, pauseIcon;
   protected static Icon resetIcon, loopIcon, noloopIcon, videoClipIcon;
   protected static Icon stepIcon, grayStepIcon, backIcon, grayBackIcon;
+  private static GoToDialog goToDialog;
+  private static NumberFormat timeFormat = NumberFormat.getNumberInstance();
   static {
     String path = "/org/opensourcephysics/resources/media/images/in_out.gif";  //$NON-NLS-1$
     inOutIcon = ResourceLoader.getIcon(path);
@@ -149,8 +163,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
   private JSlider slider;
   private Hashtable<Integer, JLabel> sliderLabels;
   private JLabel inLabel, outLabel;
-  private NumberFormat timeFormat = NumberFormat.getNumberInstance();
-  private ActionListener readoutListener, timeSetListener;
+  private ActionListener readoutListener, timeSetListener, goToListener;
   private String active;
   private boolean disabled = false;
 
@@ -181,10 +194,11 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
       }
 
     });
-    createGUI();
     timeFormat.setMinimumIntegerDigits(1);
     timeFormat.setMaximumFractionDigits(3);
     timeFormat.setMinimumFractionDigits(3);
+
+    createGUI();
     clipControl = ClipControl.getControl(new VideoClip(null));
     clipControl.addPropertyChangeListener(this);
     getVideoClip().addPropertyChangeListener(this);
@@ -583,6 +597,10 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     }
   }
   
+  public void setLocale(Locale locale) {
+  	timeFormat = NumberFormat.getNumberInstance(locale);
+  }
+  
   /**
    * Enables and disables this component.
    * 
@@ -769,6 +787,11 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     readoutListener = new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         setReadoutType(e.getActionCommand());
+      }
+    };
+    goToListener = new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+      	showGoToDialog();
       }
     };
     timeSetListener = new ActionListener() {
@@ -1157,7 +1180,11 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
             item.addActionListener(timeSetListener);
             item.addActionListener(readoutListener);
             popup.add(item);
-          } else {
+            item = new JMenuItem(MediaRes.getString("VideoPlayer.Readout.Menu.GoTo")+"..."); //$NON-NLS-1$ //$NON-NLS-2$
+            item.setActionCommand(type);
+            item.addActionListener(goToListener);
+            popup.add(item);
+           } else {
             item = new JCheckBoxMenuItem(MediaRes.getString("VideoPlayer.Readout.MenuItem.Frame")); //$NON-NLS-1$
             item.setSelected(type.equals(readoutType));
             item.setActionCommand(type);
@@ -1419,6 +1446,26 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
       }
     } else {
     	// default readout is time
+    	// set formatting based on mean step duration
+    	if (timeFormat instanceof DecimalFormat) {
+    		DecimalFormat format = (DecimalFormat)timeFormat;
+	    	double dur = getMeanStepDuration(); // millisec
+	    	if (dur<10) {
+	    		format.applyPattern("0.00E0"); //$NON-NLS-1$
+	    	}
+	    	else if (dur<100) {
+	    		format.applyPattern(NumberField.DECIMAL_3_PATTERN);
+	    	}
+	    	else if (dur<1000) {
+	    		format.applyPattern(NumberField.DECIMAL_2_PATTERN);
+	    	}
+	    	else if (dur<10000) {
+	    		format.applyPattern(NumberField.DECIMAL_1_PATTERN);
+	    	}
+	    	else {
+	    		format.applyPattern("0.00E0"); //$NON-NLS-1$
+	    	}
+    	}
       display = timeFormat.format(getTime()/1000.0);
     }
     readout.setText(display);
@@ -1450,6 +1497,30 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     sliderLabels.put(new Integer(clip.getStartFrameNumber()), inLabel);
     sliderLabels.put(new Integer(clip.getEndFrameNumber()), outLabel);
 	  slider.repaint();  	
+  }
+  
+  public void showGoToDialog() {
+  	if (goToDialog==null) {
+    	goToDialog = new GoToDialog(this);
+    	// center dialog on videoPanel view
+    	Container c = VideoPlayer.this.getParent();
+    	while (c!=null) {
+    		if (c instanceof JSplitPane) {
+          Dimension dim = c.getSize();
+          Point p = c.getLocationOnScreen();
+          int x = (dim.width - goToDialog.getBounds().width) / 2;
+          int y = (dim.height - goToDialog.getBounds().height) / 2;
+          goToDialog.setLocation(p.x+x, p.y+y);
+          break;
+    		}
+      	c = c.getParent();	      		
+    	}
+  	}
+  	else {
+  		goToDialog.setPlayer(this);
+  	}
+  	goToDialog.setVisible(true);
+
   }
   
   /**
@@ -1499,6 +1570,238 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     
   }
   
+  /**
+   * GoToDialog inner class
+   */
+  protected static class GoToDialog extends JDialog {
+  	
+  	static HashMap<VideoPlayer, String[]> prev = new HashMap<VideoPlayer, String[]>();
+  	
+  	VideoPlayer player;
+    JButton okButton, cancelButton;
+    JLabel frameLabel, timeLabel, stepLabel;
+    JTextField frameField, timeField, stepField;
+    KeyAdapter keyListener;
+    FocusAdapter focusListener;
+    String prevFrame, prevTime, prevStep;
+  	
+  	public GoToDialog(VideoPlayer vidPlayer) {
+  		super(JOptionPane.getFrameForComponent(vidPlayer.vidPanel), true);
+  		setPlayer(vidPlayer);
+  		JPanel contentPane = new JPanel(new BorderLayout());
+  		setContentPane(contentPane);
+      // create buttons
+  		okButton = new JButton(DisplayRes.getString("GUIUtils.Ok")); //$NON-NLS-1$
+  		okButton.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+        	String input = stepField.getText();
+        	if (input!=null && !input.equals("")) try { //$NON-NLS-1$
+  					int n = Integer.parseInt(input);
+  					player.clipControl.setStepNumber(n);
+  					player.refresh();
+  				} catch (NumberFormatException ex) {
+  				}          		
+          setVisible(false);
+        }
+      });
+      cancelButton = new JButton(DisplayRes.getString("GUIUtils.Cancel")); //$NON-NLS-1$
+      cancelButton.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          setVisible(false);
+        }
+      });
+
+      // create key and focus listeners
+      keyListener = new KeyAdapter() {
+        public void keyPressed(KeyEvent e) {
+        	JTextField field = (JTextField)e.getSource();
+          if(e.getKeyCode()==KeyEvent.VK_ENTER) {
+          	okButton.doClick(0);
+          } 
+          else {
+          	field.setBackground(Color.yellow);
+          }
+        }
+        public void keyReleased(KeyEvent e) {
+        	JTextField field = (JTextField)e.getSource();
+          if(e.getKeyCode()!=KeyEvent.VK_ENTER) {
+          	setValues(field);
+          }
+        }
+
+      };
+      focusListener = new FocusAdapter() {
+        public void focusLost(FocusEvent e) {
+    			JTextField field = (JTextField)e.getSource();
+    			field.setBackground(Color.white);
+        }
+      };
+
+      // create input fields and labels
+      frameField = new JTextField(6);
+      frameField.addKeyListener(keyListener);
+      frameField.addFocusListener(focusListener);
+      timeField = new JTextField(6);
+      timeField.addKeyListener(keyListener);
+      timeField.addFocusListener(focusListener);
+      stepField = new JTextField(6);
+      stepField.addKeyListener(keyListener);
+      stepField.addFocusListener(focusListener);
+      frameLabel = new JLabel();
+      timeLabel = new JLabel();
+      stepLabel = new JLabel();
+      
+      // assemble 
+      Box box = Box.createVerticalBox();
+      JPanel framePanel = new JPanel();
+      framePanel.add(frameLabel);
+      framePanel.add(frameField);
+      box.add(framePanel);
+      JPanel timePanel = new JPanel();
+      timePanel.add(timeLabel);
+      timePanel.add(timeField);
+      box.add(timePanel);
+      JPanel stepPanel = new JPanel();
+      stepPanel.add(stepLabel);
+      stepPanel.add(stepField);
+      box.add(stepPanel);
+      contentPane.add(box, BorderLayout.CENTER);
+      
+      JPanel buttonPanel = new JPanel();
+      buttonPanel.add(okButton);
+      buttonPanel.add(cancelButton);
+      contentPane.add(buttonPanel, BorderLayout.SOUTH);
+      refreshGUI();
+      pack();
+  	}
+  	
+  	public void refreshGUI() {
+  		setTitle(MediaRes.getString("VideoPlayer.GoToDialog.Title")); //$NON-NLS-1$
+  		okButton.setText(DisplayRes.getString("GUIUtils.Ok")); //$NON-NLS-1$
+  		cancelButton.setText(DisplayRes.getString("GUIUtils.Cancel")); //$NON-NLS-1$
+      frameLabel.setText(MediaRes.getString("VideoPlayer.Readout.MenuItem.Frame")+":"); //$NON-NLS-1$ //$NON-NLS-2$
+      timeLabel.setText(MediaRes.getString("VideoPlayer.Readout.MenuItem.Time")+" (s):"); //$NON-NLS-1$ //$NON-NLS-2$
+      stepLabel.setText(MediaRes.getString("VideoPlayer.Readout.MenuItem.Step")+":"); //$NON-NLS-1$ //$NON-NLS-2$
+      // set label sizes
+      ArrayList<JLabel> labels = new ArrayList<JLabel>();
+      labels.add(frameLabel);
+      labels.add(timeLabel);
+      labels.add(stepLabel);
+      FontRenderContext frc = new FontRenderContext(null, false, false); 
+      Font font = frameLabel.getFont();
+      //display panel labels
+      int w = 0;
+      for(Iterator<JLabel> it = labels.iterator(); it.hasNext(); ) {
+        JLabel next = it.next();
+        Rectangle2D rect = font.getStringBounds(next.getText()+" ", frc); //$NON-NLS-1$
+        w = Math.max(w, (int) rect.getWidth()+1);
+      }
+      Dimension labelSize = new Dimension(w, 20);
+      for(Iterator<JLabel> it = labels.iterator(); it.hasNext(); ) {
+        JLabel next = it.next();
+        next.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 2));
+        next.setPreferredSize(labelSize);
+        next.setHorizontalAlignment(SwingConstants.TRAILING);
+      }
+  		
+  	}
+  	
+  	public void setPlayer(VideoPlayer vidPlayer) {
+  		if (player!=null && player!=vidPlayer) {
+  			prev.put(player, new String[] {prevFrame, prevTime, prevStep});
+  			String[] former = prev.get(vidPlayer);
+  			if (former!=null) {
+  				prevFrame = former[0];
+  				prevTime = former[1];
+  				prevStep = former[2];
+  				frameField.setText(prevFrame);
+  				timeField.setText(prevTime);
+  				stepField.setText(prevStep);
+  			}
+  		}
+  		player = vidPlayer;
+  	}
+  	
+  	private void setValues(JTextField inputField) {
+    	String input = inputField.getText();
+    	if ("".equals(input)) { //$NON-NLS-1$
+				prevFrame = ""; //$NON-NLS-1$
+				prevTime = ""; //$NON-NLS-1$
+				prevStep = ""; //$NON-NLS-1$
+    	}
+    	else {
+	  		VideoClip clip = player.getVideoClip();
+	  		if (inputField==frameField) {
+	      	try {
+						int frameNum = Integer.parseInt(input);
+						frameNum = Math.max(clip.getFirstFrameNumber(), frameNum);
+						frameNum = Math.min(clip.getEndFrameNumber(), frameNum);
+						int stepNum = clip.frameToStep(frameNum);
+						frameNum = clip.stepToFrame(stepNum);
+						double t = player.getStepTime(stepNum)/1000;
+						prevFrame = String.valueOf(frameNum);
+						prevTime = timeFormat.format(t);
+						prevStep = String.valueOf(stepNum);
+					} catch (NumberFormatException ex) {
+					}          		  			
+	  		}
+	  		else if (inputField==timeField) {
+					prevTime = input;
+	      	try {
+	      		input = input.replaceAll(",", "."); //$NON-NLS-1$ //$NON-NLS-2$
+						double t = Double.valueOf(input)*1000;
+						// find step number
+						double dt = player.getMeanStepDuration();
+						int n = (int)((t-clip.getStartTime())/dt);
+						int stepNum = Math.max(0, n);
+						stepNum = Math.min(stepNum, clip.getStepCount()-1);
+						int frameNum = clip.stepToFrame(stepNum);
+						t = player.getStepTime(stepNum)/1000;
+						prevFrame = String.valueOf(frameNum);
+						prevStep = String.valueOf(stepNum);
+					} catch (NumberFormatException ex) {
+						prevFrame = ""; //$NON-NLS-1$
+						prevStep = ""; //$NON-NLS-1$
+					}     
+	  		}
+	  		else {
+	      	try {
+						int stepNum = Integer.parseInt(input);
+						stepNum = Math.max(0, stepNum);
+						stepNum = Math.min(clip.getStepCount()-1, stepNum);
+						int frameNum = clip.stepToFrame(stepNum);
+						double t = player.getStepTime(stepNum)/1000;
+						prevFrame = String.valueOf(frameNum);
+						prevTime = timeFormat.format(t);
+						prevStep = String.valueOf(stepNum);
+					} catch (NumberFormatException ex) {
+					}          		  			
+	  		}
+    	}
+			frameField.setText(prevFrame);
+			timeField.setText(prevTime);
+			stepField.setText(prevStep);
+  	}
+  	
+  	public void setVisible(boolean vis) {
+  		if (vis) {
+  	    prevFrame = ""; //$NON-NLS-1$
+  	    prevTime = ""; //$NON-NLS-1$
+  	    prevStep = ""; //$NON-NLS-1$
+  			frameField.setText(prevFrame);
+  			timeField.setText(prevTime);
+  			stepField.setText(prevStep);
+  			frameField.setBackground(Color.white);
+  			timeField.setBackground(Color.white);
+  			stepField.setBackground(Color.white);
+  			FontSizer.setFonts(this, FontSizer.getLevel());
+  	    refreshGUI();
+  	    pack();
+  		}
+  		super.setVisible(vis);
+  	}
+  	
+  }
 }
 
 /*
