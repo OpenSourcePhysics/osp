@@ -365,7 +365,18 @@ public class NumberField extends JTextField {
     }
     value = Math.abs(value);
     if (value==0) {
-      format.applyPattern(DECIMAL_3_PATTERN);    	
+    	if (sigfigs==1) {
+	      format.applyPattern(INTEGER_PATTERN);    	
+    	}
+    	else if (sigfigs==2) {
+	      format.applyPattern(DECIMAL_1_PATTERN);    	
+    	}
+    	else if (sigfigs==3) {
+	      format.applyPattern(DECIMAL_2_PATTERN);    	
+    	}
+    	else {
+        format.applyPattern(DECIMAL_3_PATTERN);    	
+    	}
     } else if(value<ranges[0]) {
       format.applyPattern(patterns[0]);
     } else if(value<ranges[1]) {
