@@ -1356,12 +1356,12 @@ public class ResourceLoader {
       isJarOrFile = true;
     }
     // remove all but one leading slash
-    // pig why is this done? this causes network files to fail to load at Cabrillo...
-    if (isJarOrFile) {
-	    while (path.startsWith("//")) { //$NON-NLS-1$
-	      path = path.substring(1);
-	    }
-    }
+    // commented out by DB 2016-07-08 to enable opening local network files
+//    if (isJarOrFile) {
+//	    while (path.startsWith("//")) { //$NON-NLS-1$
+//	      path = path.substring(1);
+//	    }
+//    }
     // remove last leading slash if drive is specified
     if (path.startsWith("/") && path.indexOf(":")>-1) { //$NON-NLS-1$ //$NON-NLS-2$
       path = path.substring(1);
