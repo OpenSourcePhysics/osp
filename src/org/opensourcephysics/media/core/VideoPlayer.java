@@ -1584,6 +1584,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     KeyAdapter keyListener;
     FocusAdapter focusListener;
     String prevFrame, prevTime, prevStep;
+    Color error_red = new Color(255, 140, 160);
   	
   	public GoToDialog(VideoPlayer vidPlayer) {
   		super(JOptionPane.getFrameForComponent(vidPlayer.vidPanel), true);
@@ -1619,7 +1620,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
           	okButton.doClick(0);
           } 
           else {
-          	field.setBackground(Color.yellow);
+          	field.setBackground(Color.white);
           }
         }
         public void keyReleased(KeyEvent e) {
@@ -1732,36 +1733,48 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     	else {
 	  		VideoClip clip = player.getVideoClip();
 	  		if (inputField==frameField) {
+					prevFrame = input;
 	      	try {
 						int frameNum = Integer.parseInt(input);
+						int entered = frameNum;
 						frameNum = Math.max(clip.getFirstFrameNumber(), frameNum);
 						frameNum = Math.min(clip.getEndFrameNumber(), frameNum);
 						int stepNum = clip.frameToStep(frameNum);
 						frameNum = clip.stepToFrame(stepNum);
 						double t = player.getStepTime(stepNum)/1000;
-						prevFrame = String.valueOf(frameNum);
 						prevTime = timeFormat.format(t);
 						prevStep = String.valueOf(stepNum);
+						if (frameNum!=entered) {
+							frameField.setBackground(error_red);
+						}
 					} catch (NumberFormatException ex) {
+						prevTime = ""; //$NON-NLS-1$
+						prevStep = ""; //$NON-NLS-1$
+						frameField.setBackground(error_red);
 					}          		  			
 	  		}
 	  		else if (inputField==timeField) {
 					prevTime = input;
 	      	try {
 	      		input = input.replaceAll(",", "."); //$NON-NLS-1$ //$NON-NLS-2$
-						double t = Double.valueOf(input)*1000;
+						double t = Double.valueOf(input)*1000; // millisec
 						// find step number
 						double dt = player.getMeanStepDuration();
 						int n = (int)((t-clip.getStartTime())/dt);
 						int stepNum = Math.max(0, n);
 						stepNum = Math.min(stepNum, clip.getStepCount()-1);
 						int frameNum = clip.stepToFrame(stepNum);
-						t = player.getStepTime(stepNum)/1000;
+						double tmin = player.getFrameTime(clip.getFirstFrameNumber());
+						double tmax = player.getFrameTime(clip.getLastFrameNumber());
+						if (t<tmin || t>tmax) {
+							timeField.setBackground(error_red);
+						}
 						prevFrame = String.valueOf(frameNum);
 						prevStep = String.valueOf(stepNum);
 					} catch (NumberFormatException ex) {
 						prevFrame = ""; //$NON-NLS-1$
 						prevStep = ""; //$NON-NLS-1$
+						timeField.setBackground(error_red);
 					}     
 	  		}
 	  		else {
