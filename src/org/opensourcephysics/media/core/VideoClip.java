@@ -317,7 +317,17 @@ public class VideoClip {
     extraFrames = Math.max(extras, 0);
     if (prev!=extraFrames) {
 			OSPLog.finest("set extra frames to "+extraFrames); //$NON-NLS-1$
+			setStepCount(stepCount);
     }
+  }
+
+  /**
+   * Gets the extra frame count.
+   *
+   * @return the extra frames
+   */
+  public int getExtraFrames() {
+  	return extraFrames;
   }
 
   /**
@@ -390,7 +400,7 @@ public class VideoClip {
    */
   public boolean extendEndFrameNumber(int end) {
   	if (video!=null && getFrameCount()<=end) {
-  		setExtraFrames(end-getFrameCount()+extraFrames);  		
+  		setExtraFrames(end+1-getFrameCount()+extraFrames);  		
   	}
   	return setEndFrameNumber(end);
   }
