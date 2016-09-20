@@ -35,7 +35,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -108,11 +107,8 @@ public class RadialDistortionFilter extends Filter {
   protected static double minFOV = Math.PI/18, maxFOV = Math.PI-.001;
   
   // instance fields
-  private BufferedImage source, input, output;
-  private Graphics2D gIn;
   private int[] pixelsIn, pixelsOut; // pixel color values
   private double[] xOut, yOut, xIn, yIn; // pixel positions on input and output images
-  private int w, h; // image dimensions in pixels
   private double pixelsToCorner; // half image diagonal in pixels
   private boolean isValidTransform = false, updatingDisplay = false;
   private double outputFOV;
@@ -182,6 +178,7 @@ public class RadialDistortionFilter extends Filter {
    *
    * @return the inspector
    */
+<<<<<<< HEAD
   public JDialog getInspector() {
     if(inspector==null) {
       inspector = new Inspector();
@@ -196,6 +193,21 @@ public class RadialDistortionFilter extends Filter {
         inspector = new Inspector();
       }
     }
+=======
+  public synchronized JDialog getInspector() {
+  	Inspector myInspector = inspector;
+    if (myInspector==null) {
+    	myInspector = new Inspector();
+    }
+    if (myInspector.isModal() && vidPanel!=null) {
+      frame = JOptionPane.getFrameForComponent(vidPanel);
+      myInspector.setVisible(false);
+      myInspector.dispose();
+      myInspector = new Inspector();
+    }
+    inspector = myInspector;
+    inspector.initialize();
+>>>>>>> upstream/master
     return inspector;
   }
 
@@ -796,7 +808,7 @@ public class RadialDistortionFilter extends Filter {
       sourceAngleField = new IntegerField(3);
       sourceAngleField.setMaxValue(180);
       sourceAngleField.setMinValue(5);
-      sourceAngleField.setUnits("º"); //$NON-NLS-1$
+      sourceAngleField.setUnits("ï¿½"); //$NON-NLS-1$
       sourceAngleField.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           int n = sourceAngleField.getIntValue();
@@ -822,7 +834,7 @@ public class RadialDistortionFilter extends Filter {
       outputAngleField.setMaxValue(180);
       outputAngleField.setMinValue(0);
       outputAngleField.setEditable(false);
-      outputAngleField.setUnits("º"); //$NON-NLS-1$
+      outputAngleField.setUnits("ï¿½"); //$NON-NLS-1$
 
       radiusField = new IntegerField(3);
       radiusField.setMaxValue(rMax);
@@ -947,6 +959,16 @@ public class RadialDistortionFilter extends Filter {
     }
     
     /**
+<<<<<<< HEAD
+=======
+     * Initializes this inspector
+     */
+    void initialize() {
+      updateDisplay();
+    }
+
+   /**
+>>>>>>> upstream/master
      * Updates the inspector controls to reflect the current filter settings.
      */
     void updateDisplay() {

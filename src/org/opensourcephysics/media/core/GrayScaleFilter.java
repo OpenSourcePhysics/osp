@@ -33,8 +33,6 @@ package org.opensourcephysics.media.core;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Frame;
-import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -45,6 +43,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.image.BufferedImage;
+
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -55,6 +54,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 
@@ -71,10 +71,7 @@ public class GrayScaleFilter extends Filter {
   private static final double WT_B_VID = 0.11;
   private static final double WT_FLAT = 1.0/3;
   // instance fields
-  private BufferedImage source, input, output;
   private int[] pixels;
-  private int w, h;
-  private Graphics2D gIn;
   private double redWt, greenWt, blueWt;
   // inspector fields
   private Inspector inspector;
@@ -118,20 +115,18 @@ public class GrayScaleFilter extends Filter {
    *
    * @return the inspector
    */
-  public JDialog getInspector() {
-    if(inspector==null) {
-      inspector = new Inspector();
+  public synchronized JDialog getInspector() {
+  	Inspector myInspector = inspector;
+    if (myInspector==null) {
+    	myInspector = new Inspector();
     }
-    if(inspector.isModal()&&(vidPanel!=null)) {
-      Frame f = JOptionPane.getFrameForComponent(vidPanel);
-      if(frame!=f) {
-        frame = f;
-        if(inspector!=null) {
-          inspector.setVisible(false);
-        }
-        inspector = new Inspector();
-      }
+    if (myInspector.isModal() && vidPanel!=null) {
+      frame = JOptionPane.getFrameForComponent(vidPanel);
+      myInspector.setVisible(false);
+      myInspector.dispose();
+      myInspector = new Inspector();
     }
+    inspector = myInspector;
     inspector.initialize();
     return inspector;
   }

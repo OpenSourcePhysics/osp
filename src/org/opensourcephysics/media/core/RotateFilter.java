@@ -33,8 +33,6 @@ package org.opensourcephysics.media.core;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Frame;
-import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -55,9 +53,6 @@ import javax.swing.SwingConstants;
 
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
-
-//import org.opensourcephysics.display.ResizableIcon;
-
 import org.opensourcephysics.tools.ResourceLoader;
 
 /**
@@ -82,10 +77,7 @@ public class RotateFilter extends Filter {
 	}
 	
   // instance fields
-  private BufferedImage source, input, output;
   private int[] pixelsIn, pixelsOut;
-  private int w, h;
-  private Graphics2D gIn;
   private int rotationType = NONE; // no rotation
   // inspector fields
   private Inspector inspector;
@@ -142,20 +134,18 @@ public class RotateFilter extends Filter {
    *
    * @return the inspector
    */
-  public JDialog getInspector() {
-    if(inspector==null) {
-      inspector = new Inspector();
+  public synchronized JDialog getInspector() {
+  	Inspector myInspector = inspector;
+    if (myInspector==null) {
+    	myInspector = new Inspector();
     }
-    if(inspector.isModal()&&(vidPanel!=null)) {
-      Frame f = JOptionPane.getFrameForComponent(vidPanel);
-      if(frame!=f) {
-        frame = f;
-        if(inspector!=null) {
-          inspector.setVisible(false);
-        }
-        inspector = new Inspector();
-      }
+    if (myInspector.isModal() && vidPanel!=null) {
+      frame = JOptionPane.getFrameForComponent(vidPanel);
+      myInspector.setVisible(false);
+      myInspector.dispose();
+      myInspector = new Inspector();
     }
+    inspector = myInspector;
     inspector.initialize();
     return inspector;
   }

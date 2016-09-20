@@ -76,6 +76,8 @@ public class ResourceLoader {
   protected static ArrayList<String> pathsNotFound = new ArrayList<String>();
   protected static File ospCache;
   protected static boolean zipURLsOK;
+  protected static boolean webConnected;
+  protected static String downloadURL = ""; //$NON-NLS-1$
   
   static {
   	OSP_CACHE_FILTER = new FileFilter() {
@@ -83,6 +85,12 @@ public class ResourceLoader {
   			return file.isDirectory() && file.getName().startsWith("osp-"); //$NON-NLS-1$
   		}
   	};
+  	Runnable runner = new Runnable() {
+  		public void run() {
+	  		webConnected = ResourceLoader.isURLAvailable("http://www.opensourcephysics.org"); //$NON-NLS-1$
+  		}
+  	};
+  	new Thread(runner).start();
   }
 
   /**
@@ -836,13 +844,22 @@ public class ResourceLoader {
 		if (fileName==null) return null;
   	File target = getOSPCacheFile(urlPath, fileName);
 		File file = ResourceLoader.download(urlPath, target, alwaysOverwrite);
-		if (file==null) {
-			JOptionPane.showMessageDialog(null, 
-					ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Message1") //$NON-NLS-1$ 
-					+"\n"+ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Message2") //$NON-NLS-1$ //$NON-NLS-2$ 
-					+"\n"+ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Message3"), //$NON-NLS-1$ //$NON-NLS-2$ 
-					ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Title"), //$NON-NLS-1$ 
-					JOptionPane.ERROR_MESSAGE);
+		if (file==null && webConnected) {
+  		webConnected = ResourceLoader.isURLAvailable("http://www.opensourcephysics.org"); //$NON-NLS-1$
+    	if (!webConnected) {
+    		JOptionPane.showMessageDialog(null, 
+    				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
+    				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
+    				JOptionPane.WARNING_MESSAGE); 
+    	}
+    	else {
+				JOptionPane.showMessageDialog(null, 
+						ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Message1") //$NON-NLS-1$ 
+						+"\n"+ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Message2") //$NON-NLS-1$ //$NON-NLS-2$ 
+						+"\n"+ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Message3"), //$NON-NLS-1$ //$NON-NLS-2$ 
+						ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Title"), //$NON-NLS-1$ 
+						JOptionPane.ERROR_MESSAGE);
+    	}
 		}
 		return file;
   }
@@ -1215,10 +1232,23 @@ public class ResourceLoader {
    * @return the downloaded file, or null if failed
    */
   public static File download(String urlPath, File target, boolean alwaysOverwrite) {
+  	// compare urlPath with previous attempt and, if identical, check web connection
+  	if (!webConnected || downloadURL.equals(urlPath)) {
+  		webConnected = ResourceLoader.isURLAvailable("http://www.opensourcephysics.org"); //$NON-NLS-1$
+  	}
+  	if (!webConnected) {
+  		JOptionPane.showMessageDialog(null, 
+  				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
+  				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
+  				JOptionPane.WARNING_MESSAGE); 
+  		return null;
+  	}
+
   	urlPath = getURIPath(urlPath);
 		target.getParentFile().mkdirs();
     if (alwaysOverwrite || !target.exists()) {
 	  	OSPLog.finer("downloading "+urlPath+" to "+target); //$NON-NLS-1$ //$NON-NLS-2$
+	  	downloadURL = urlPath;
   		try {
   			Resource res = getResourceZipURLsOK(urlPath);
 				InputStream reader = res.openInputStream();
@@ -1231,10 +1261,12 @@ public class ResourceLoader {
         writer.close();
         reader.close();
 			} catch (Exception ex) {
-				ex.printStackTrace();
 			} 
+	  	downloadURL = ""; //$NON-NLS-1$
     }
-    if (target.exists()) return target; 
+    if (target.exists()) {
+    	return target; 
+    }
     return null;
   }
   
@@ -1324,11 +1356,12 @@ public class ResourceLoader {
       isJarOrFile = true;
     }
     // remove all but one leading slash
-    if (isJarOrFile) {
-	    while (path.startsWith("//")) { //$NON-NLS-1$
-	      path = path.substring(1);
-	    }
-    }
+    // commented out by DB 2016-07-08 to enable opening local network files
+//    if (isJarOrFile) {
+//	    while (path.startsWith("//")) { //$NON-NLS-1$
+//	      path = path.substring(1);
+//	    }
+//    }
     // remove last leading slash if drive is specified
     if (path.startsWith("/") && path.indexOf(":")>-1) { //$NON-NLS-1$ //$NON-NLS-2$
       path = path.substring(1);

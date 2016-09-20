@@ -48,6 +48,7 @@ import java.awt.Stroke;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
@@ -92,16 +93,13 @@ public class PerspectiveFilter extends Filter {
 	
   // static fields
   private static Color defaultColor = Color.RED;
-  protected static FontRenderContext frc
+  private static FontRenderContext frc
 		  = new FontRenderContext(null,   // no AffineTransform
 		                          false,  // no antialiasing
 		                          false); // no fractional metrics
 
   // instance fields
-  private BufferedImage source, input, output;
   private int[] pixelsIn, pixelsOut; // pixel color values
-  private int w, h;
-  private Graphics2D gIn;
   private double[][] matrix = new double[3][3]; // perspective transform matrix
   private double[][] temp1 = new double[3][3]; // intermediate matrix
   private double[][] temp2 = new double[3][3]; // intermediate matrix
@@ -186,9 +184,6 @@ public class PerspectiveFilter extends Filter {
    * @return the inspector
    */
   public synchronized JDialog getInspector() {
-  	if (frame==null && vidPanel!=null) {
-      frame = JOptionPane.getFrameForComponent(vidPanel);  		
-  	}
   	Inspector myInspector = inspector;
     if (myInspector==null) {
     	myInspector = new Inspector();
@@ -225,6 +220,20 @@ public class PerspectiveFilter extends Filter {
     }
   }
   
+  @Override
+  public void dispose() {
+  	super.dispose();
+  	if (vidPanel!=null && vidPanel.getVideo()!=null) {
+    	vidPanel.removePropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
+	  	Video video = vidPanel.getVideo();
+	  	video.removePropertyChangeListener("nextframe", videoListener); //$NON-NLS-1$
+    	removePropertyChangeListener("visible", vidPanel); //$NON-NLS-1$
+  	}
+  	source = input = output = null;
+  	pixelsOut = null;
+  	pixelsIn = null;
+  }
+
   /**
    * Sets the video panel.
    * 
@@ -234,11 +243,14 @@ public class PerspectiveFilter extends Filter {
   	VideoPanel prevPanel = vidPanel;
   	super.setVideoPanel(panel);
   	if (vidPanel!=null) {
+	  	// filter added
 	  	Video video = vidPanel.getVideo();
+	  	video.removePropertyChangeListener("nextframe", videoListener); //$NON-NLS-1$
 	  	video.addPropertyChangeListener("nextframe", videoListener); //$NON-NLS-1$
 	  	vidPanel.propertyChange(new PropertyChangeEvent(this, "perspective", null, this)); //$NON-NLS-1$
   	}
   	else if (prevPanel!=null) {
+  		// filter removed
   		prevPanel.removeDrawable(quad);
 	  	Video video = prevPanel.getVideo();
 	  	video.removePropertyChangeListener("nextframe", videoListener); //$NON-NLS-1$
@@ -733,18 +745,6 @@ public class PerspectiveFilter extends Filter {
   	}
   }
   
-//  private int getKeyFrame(int frameNumber, TreeSet<Integer> keyFrames) {
-//  	TreeSet<Integer> keyFrames = index<4? inKeyFrames: outKeyFrames;
-//
-//  	if (isFixed()) return fixedKey;
-//  	int key = 0;
-//  	for (int i: keyFrames) {
-//  		if (i<=frameNumber)
-//  			key = i;
-//  	}
-//  	return key;
-//  }
-//    
   private int getKeyFrame(int frameNumber, boolean in) {
   	if (isFixed(in)) return fixedKey;
   	TreeSet<Integer> keyFrames = in? inKeyFrames: outKeyFrames;
@@ -769,7 +769,6 @@ public class PerspectiveFilter extends Filter {
      * Constructs the Inspector.
      */
     public Inspector() {
-//      super(frame, false);
       super(frame, !(frame instanceof org.opensourcephysics.display.OSPFrame));
       setResizable(false);
       createGUI();
@@ -822,7 +821,7 @@ public class PerspectiveFilter extends Filter {
     	colorButton = new JButton();
     	colorButton.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          // show color chooser dialog with color of this track
+          // show color chooser dialog with color of this filter's quad
           Color newColor = JColorChooser.showDialog(null, 
           		MediaRes.getString("PerspectiveFilter.Dialog.Color.Title"),  //$NON-NLS-1$
           		quad.color);
@@ -864,21 +863,42 @@ public class PerspectiveFilter extends Filter {
       pack();
     }
     
-    public void setVisible(boolean vis) {
-    	super.setVisible(vis);
+    @Override
+    public void dispose() {
+    	contentPane.remove(tabbedPane);
+    	tabbedPane.removeAll();
+    	tabbedPane = null;
+    	super.dispose();
+    }
 
+    @Override
+    public void setVisible(boolean vis) {    	
+    	super.setVisible(vis);
+    	
     	if (vidPanel!=null) {
 	    	if (vis) {
 	    		vidPanel.addDrawable(quad);
 	      	support.firePropertyChange("visible", null, null); //$NON-NLS-1$
-	      	vidPanel.addPropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
+	      	PerspectiveFilter.this.removePropertyChangeListener("visible", vidPanel); //$NON-NLS-1$
 	      	PerspectiveFilter.this.addPropertyChangeListener("visible", vidPanel); //$NON-NLS-1$
+	      	vidPanel.removePropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
+	      	vidPanel.addPropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 	    	}
 	    	else {
-	    		vidPanel.removeDrawable(quad);
 	      	support.firePropertyChange("visible", null, null); //$NON-NLS-1$
 	      	PerspectiveFilter.this.removePropertyChangeListener("visible", vidPanel); //$NON-NLS-1$
 	      	vidPanel.removePropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
+	    		vidPanel.removeDrawable(quad);
+	      	// fire MOUSE_RELEASED event to ensure full deselection in Tracker
+	      	java.awt.Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(new MouseEvent(
+	  	 		  vidPanel,
+	  	      MouseEvent.MOUSE_RELEASED, 
+	  	      0,
+	  	      MouseEvent.BUTTON1_MASK, 
+	  	      -100, -100, 
+	  	      1, 
+	  	      false
+	        ));
 	    	}
     	}
     	boolean enable = PerspectiveFilter.super.isEnabled();
@@ -886,18 +906,9 @@ public class PerspectiveFilter extends Filter {
     	tabbedPane.setEnabled(enable); 
     	inputEditor.setEnabled(enable);
     	outputEditor.setEnabled(enable);
-    	support.firePropertyChange("image", null, null); //$NON-NLS-1$
-    }
-    
-    @Override
-    public void dispose() {
-    	super.dispose();
-    	source = null;
-    	input = null;
-    	output = null;
-    	System.gc();
-    }
+    	support.firePropertyChange("image", null, null); //$NON-NLS-1$    	
 
+    }    
   }
   
   @SuppressWarnings("javadoc")
@@ -934,8 +945,9 @@ public class PerspectiveFilter extends Filter {
     	}
     	saveCorners(vidPanel==null? 0: vidPanel.getFrameNumber(), in);
     	editor.refreshFields();
-      if (editor==outputEditor)
+      if (editor==outputEditor) {
       	PerspectiveFilter.this.support.firePropertyChange("image", null, null); //$NON-NLS-1$
+      }
       
       // fire cornerlocation event
     	PerspectiveFilter.this.support.firePropertyChange("cornerlocation", null, this); //$NON-NLS-1$

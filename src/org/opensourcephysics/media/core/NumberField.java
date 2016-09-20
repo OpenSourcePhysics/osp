@@ -41,6 +41,7 @@ import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
+
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
@@ -56,6 +57,10 @@ public class NumberField extends JTextField {
 	
 	// constants
 	public static final Color DISABLED_COLOR = new Color(120, 120, 120);
+	public static final String INTEGER_PATTERN = "0"; //$NON-NLS-1$
+	public static final String DECIMAL_1_PATTERN = "0.0"; //$NON-NLS-1$
+  public static final String DECIMAL_2_PATTERN = "0.00"; //$NON-NLS-1$
+  public static final String DECIMAL_3_PATTERN = "0.000"; //$NON-NLS-1$
 	
   // instance fields
   protected DecimalFormat format = (DecimalFormat) NumberFormat.getInstance();
@@ -65,9 +70,11 @@ public class NumberField extends JTextField {
   protected int sigfigs;
   protected boolean fixedPattern = false;
   protected String[] patterns = new String[5];
-  protected double[] ranges = {1, 10, 100, 1000};
+  protected double[] ranges = {0.1, 10, 100, 1000};
   protected String units;
   protected double conversionFactor = 1.0;
+  protected String userPattern = ""; //$NON-NLS-1$
+  protected boolean fixedPatternByDefault;
 
   /**
    * Constructs a NumberField with default sigfigs (4)
@@ -209,7 +216,7 @@ public class NumberField extends JTextField {
    * @param upper the upper end of the range
    */
   public void setExpectedRange(double lower, double upper) {
-    fixedPattern = true;
+    fixedPattern = fixedPatternByDefault = true;
     double range = Math.max(Math.abs(lower), Math.abs(upper));
 //    char d = format.getDecimalFormatSymbols().getDecimalSeparator();
     char d = '.';
@@ -251,7 +258,7 @@ public class NumberField extends JTextField {
     if(this.sigfigs==sigfigs) {
       return;
     }
-    ranges = new double[] {1, 10, 100, 1000};
+    ranges = new double[] {0.1, 10, 100, 1000};
     sigfigs = Math.max(sigfigs, 2);
     this.sigfigs = Math.min(sigfigs, 6);
     char d = '.';
@@ -357,7 +364,20 @@ public class NumberField extends JTextField {
       return;
     }
     value = Math.abs(value);
-    if(value<ranges[0]) {
+    if (value==0) {
+    	if (sigfigs==1) {
+	      format.applyPattern(INTEGER_PATTERN);    	
+    	}
+    	else if (sigfigs==2) {
+	      format.applyPattern(DECIMAL_1_PATTERN);    	
+    	}
+    	else if (sigfigs==3) {
+	      format.applyPattern(DECIMAL_2_PATTERN);    	
+    	}
+    	else {
+        format.applyPattern(DECIMAL_3_PATTERN);    	
+    	}
+    } else if(value<ranges[0]) {
       format.applyPattern(patterns[0]);
     } else if(value<ranges[1]) {
       format.applyPattern(patterns[1]);
@@ -372,7 +392,11 @@ public class NumberField extends JTextField {
 
   /**
    * Sets the patterns for this field. The patterns are applied as follows:
+<<<<<<< HEAD
    * value<1: patterns[0]
+=======
+   * value<0.1: patterns[0]
+>>>>>>> upstream/master
    * value<10: patterns[1]
    * value<100: patterns[2]
    * value<1000: patterns[3]
@@ -381,7 +405,7 @@ public class NumberField extends JTextField {
    * @param patterns the desired patterns
    */
   public void setPatterns(String[] patterns) {
-  	setPatterns(patterns, new double[] {1, 10, 100, 1000});
+  	setPatterns(patterns, new double[] {0.1, 10, 100, 1000});
   }
 
   /**
@@ -402,6 +426,35 @@ public class NumberField extends JTextField {
     }
   }
 
+  /**
+   * Sets a fixed user pattern.
+   *
+   * @param pattern the desired pattern (may be null)
+   */
+  public void setFixedPattern(String pattern) {
+  	if (pattern==null) pattern = ""; //$NON-NLS-1$
+    pattern = pattern.trim();
+    if (pattern.equals(userPattern)) return;
+    userPattern = pattern;
+    if (userPattern.equals("")) { //$NON-NLS-1$
+      fixedPattern = fixedPatternByDefault;
+      setFormatFor(getValue());
+    }
+    else {
+      fixedPattern = true;      
+      format.applyPattern(userPattern);
+    }
+    setValue(prevValue);
+  }
+  
+  /**
+   * Gets the fixed user pattern.
+   *
+   * @return the pattern
+   */
+  public String getFixedPattern() {
+    return userPattern;
+  }
 }
 
 /*

@@ -69,6 +69,7 @@ public class ClipInspector extends JDialog {
   protected boolean prevDefault;
   protected int currentStart, currentCount;
   protected Box frameBox, timeBox;
+  protected double dtMin = 1.0E-18, fpsMin = 1.0E-18;
 
   /**
    * Constructs a non-modal ClipInspector with access to the clip control.
@@ -301,6 +302,8 @@ public class ClipInspector extends JDialog {
     dtLabel.setBorder(labelBorder);
     dtField = new NumberField(5);
     dtField.setPatterns(new String[] {exp, fixed, fixed, fixed, exp}, limits);
+    dtField.setMaxValue(1/fpsMin);
+    dtField.setMinValue(dtMin);
     dtField.setUnits(" s"); //$NON-NLS-1$
     dtField.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -330,9 +333,9 @@ public class ClipInspector extends JDialog {
     exp = "0.0E0"; //$NON-NLS-1$
     fixed = "0.00"; //$NON-NLS-1$
     fpsField.setPatterns(new String[] {exp, fixed, fixed, fixed, exp});
-    fpsField.setMaxValue(100000);
+    fpsField.setMaxValue(1/dtMin);
+    fpsField.setMinValue(fpsMin);
     fpsField.setUnits(" /s"); //$NON-NLS-1$
-    fpsField.setMinValue(.000001);
     fpsField.setMaximumSize(fpsField.getPreferredSize());
     fpsField.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {

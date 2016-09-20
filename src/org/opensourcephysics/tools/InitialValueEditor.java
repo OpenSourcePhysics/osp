@@ -22,7 +22,7 @@ public class InitialValueEditor extends ParamEditor {
   public InitialValueEditor(ParamEditor editor) {
     super();
     paramEditor = editor;
-    functionPanel = editor.functionPanel;
+    setFunctionPanel(editor.getFunctionPanel());
   }
 
   /**

@@ -58,6 +58,7 @@ public abstract class ClipControl implements PropertyChangeListener {
   protected double timeStretch = 1;
   protected DataTrack timeSource;
   protected double savedFrameDuration;
+  public boolean videoVisible = true;
 
   /**
    * Returns an instance of ClipControl.

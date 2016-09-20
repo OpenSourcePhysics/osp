@@ -59,7 +59,7 @@ public class ScientificField extends NumberField {
     super(columns, sigfigs);
 //    char d = format.getDecimalFormatSymbols().getDecimalSeparator();
     char d = '.';
-    fixedPattern = true;
+    fixedPattern = fixedPatternByDefault = true;
     String s = ""; //$NON-NLS-1$
     for(int i = 0; i<this.sigfigs-1; i++) {
       s += "0"; //$NON-NLS-1$

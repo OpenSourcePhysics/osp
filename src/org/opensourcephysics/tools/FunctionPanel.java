@@ -39,6 +39,7 @@ import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
 
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.OSPRuntime;
 
 /**
@@ -430,7 +431,7 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
    *
    * @param tool the FunctionTool
    */
-  protected void setFunctionTool(FunctionTool tool) {
+  public void setFunctionTool(FunctionTool tool) {
     functionTool = tool;
   }
 
@@ -497,6 +498,28 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 
   protected boolean hasCircularErrors() {
     return !(functionEditor.circularErrors.isEmpty()&&paramEditor.circularErrors.isEmpty());
+  }
+
+  /**
+   * Disposes of this panel.
+   */
+  protected void dispose() {
+    paramEditor.removePropertyChangeListener(this);
+    paramEditor.removePropertyChangeListener(functionEditor);
+    functionEditor.removePropertyChangeListener(this);
+    functionEditor.removePropertyChangeListener(paramEditor);
+    functionEditor.setParamEditor(null);
+    paramEditor.setFunctionEditors(new FunctionEditor[0]);
+    functionEditor.setFunctionPanel(null);
+    functionEditor = null;
+    paramEditor.setFunctionPanel(null);
+    paramEditor = null;
+    setFunctionTool(null);
+  }
+
+  @Override
+  public void finalize() {
+  	OSPLog.finer(getClass().getSimpleName()+" resources released by garbage collector"); //$NON-NLS-1$
   }
 
 }

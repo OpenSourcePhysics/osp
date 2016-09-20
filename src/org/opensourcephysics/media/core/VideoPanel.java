@@ -490,6 +490,13 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
   }
 
   /**
+   * Clears all video filter classes from the map of available filters.
+   */
+  public void clearFilters() {
+    filterClasses.clear();
+  }
+
+  /**
    * Gets the map of available video filters.
    *
    * @return the map of available video filters

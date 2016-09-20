@@ -45,10 +45,11 @@ public class MediaRes {
   // static fields
   private static String BUNDLE_NAME = "org.opensourcephysics.resources.media.video"; //$NON-NLS-1$
   static ResourceBundle res;
+  static Locale resourceLocale;
 
   static {
     String language = Locale.getDefault().getLanguage();
-    Locale resourceLocale = Locale.ENGLISH;
+    resourceLocale = Locale.ENGLISH;
     for(Locale locale : OSPRuntime.getInstalledLocales()) {
       if(locale.getLanguage().equals(language)) {
         resourceLocale = locale;
@@ -87,6 +88,7 @@ public class MediaRes {
    * @param locale the locale
    */
   public static void setLocale(Locale locale) {
+  	resourceLocale = locale;
     res = ResourceBundle.getBundle(BUNDLE_NAME, locale);
   }
 

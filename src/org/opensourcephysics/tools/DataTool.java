@@ -788,7 +788,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     if(text.startsWith("\"")) {       //$NON-NLS-1$
       String stripped = text.substring(1);
       int n = stripped.indexOf("\""); //$NON-NLS-1$
-      if(n==stripped.length()-1) {
+      if(n>-1 && n==stripped.length()-1) {
         return stripped.substring(0, n);
       }
     }
@@ -950,16 +950,22 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
             }
           }
           // set column names if not yet set (null), String[] length > 0,
-          // all entries are NaN and none is "", and no data yet loaded
+          // all entries are NaN, and no data yet loaded
           if(rows.isEmpty()&&(strings.length>0)&&(columnNames==null)) {
             boolean valid = true;
             for(int k = 0; k<strings.length; k++) {
-              if(!Double.isNaN(rowData[k])||strings[k].equals("")) {                                                                   //$NON-NLS-1$
+              if(!Double.isNaN(rowData[k])) {
                 valid = false;
                 break;
               }
             }
             if(valid) {
+            	// replace "" with "?"
+            	for (int k=0; k<strings.length; k++) {
+            		if ("".equals(strings[k])) { //$NON-NLS-1$
+            			strings[k] = "?"; //$NON-NLS-1$
+            		}
+            	}
               columnNames = strings;
               columns = strings.length;
               textLine = input.readLine();

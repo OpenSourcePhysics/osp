@@ -31,6 +31,7 @@
  */
 package org.opensourcephysics.media.core;
 import java.awt.Frame;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -43,7 +44,10 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDialog;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.event.SwingPropertyChangeSupport;
+
+import org.opensourcephysics.controls.OSPLog;
 
 /**
  * This is the abstract base class for all image filters. Note: subclasses
@@ -64,6 +68,10 @@ public abstract class Filter {
   /** the y-component of inspector position */
   public int inspectorY;
   
+  protected BufferedImage source, input, output;
+  protected int w, h;
+  protected Graphics2D gIn;
+
   private boolean enabled = true;
   private String name;
 	protected VideoPanel vidPanel;
@@ -166,6 +174,7 @@ public abstract class Filter {
    */
   public void setVideoPanel(VideoPanel panel) {
   	vidPanel = panel;
+  	frame = vidPanel==null? null: JOptionPane.getFrameForComponent(vidPanel);
   }
 
   /**
@@ -179,6 +188,11 @@ public abstract class Filter {
       MediaRes.getString("Filter.Button.Enable"));                                 //$NON-NLS-1$
     clearButton.setText(MediaRes.getString("Filter.Button.Clear"));                //$NON-NLS-1$
     clearButton.setEnabled((isEnabled()));
+  }
+
+  @Override
+  public void finalize() {
+  	OSPLog.finer(getClass().getSimpleName()+" resources released by garbage collector"); //$NON-NLS-1$
   }
 
   /**
@@ -201,6 +215,24 @@ public abstract class Filter {
    */
   public boolean isEnabled() {
     return enabled;
+  }
+
+  /**
+   * Disposes of this filter.
+   */
+  public void dispose() {
+    removePropertyChangeListener(stack);
+    stack = null;
+  	JDialog inspector = getInspector();
+  	if (inspector!=null) {
+  		inspector.setVisible(false);
+  		inspector.dispose();
+  	}
+    setVideoPanel(null);
+  	if (gIn!=null) gIn.dispose();
+  	if (source!=null) source.flush();
+  	if (input!=null) input.flush();
+  	if (output!=null) output.flush();
   }
 
   /**
@@ -269,7 +301,7 @@ public abstract class Filter {
     }
     return menu;
   }
-
+  
 }
 
 /*

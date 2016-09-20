@@ -59,7 +59,7 @@ import org.opensourcephysics.display.TextFrame;
  * @author Douglas Brown
  */
 @SuppressWarnings("serial")
-public class FunctionTool extends JDialog {
+public class FunctionTool extends JDialog implements PropertyChangeListener {
   // static fields
   protected static String[] parserNames = new String[] {
     "e", "pi", "min", "mod",           //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
@@ -174,6 +174,7 @@ public class FunctionTool extends JDialog {
     if(panel!=null) {
       OSPLog.finest("removing panel "+name); //$NON-NLS-1$
       panels.remove(name);
+      panel.dispose();
       refreshDropdown(null);
       firePropertyChange("panel", panel, null); //$NON-NLS-1$
     }
@@ -268,6 +269,19 @@ public class FunctionTool extends JDialog {
     refreshDropdown(null);
   }
 
+  /**
+   * Responds to property change events from TrackerPanel.
+   *
+   * @param e the property change event
+   */
+  public void propertyChange(PropertyChangeEvent e) {
+    refreshGUI();
+    if (FunctionTool.this instanceof FitBuilder) {
+    	// refresh dropdown since localized names change
+    	refreshDropdown(null);
+    }
+  }
+  	
   /**
    * Adds names to the forbidden set.
    * 
@@ -418,16 +432,7 @@ public class FunctionTool extends JDialog {
    */
   private void createGUI() {
     // listen to ToolsRes for locale changes
-    ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
-      public void propertyChange(PropertyChangeEvent e) {
-        refreshGUI();
-        if (FunctionTool.this instanceof FitBuilder) {
-        	// refresh dropdown since localized names change
-        	refreshDropdown(null);
-        }
-      }
-
-    });
+    ToolsRes.addPropertyChangeListener("locale", this); //$NON-NLS-1$
     // configure the dialog
     setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
     // create the noData panel

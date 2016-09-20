@@ -172,7 +172,7 @@ public class StepperClipControl extends ClipControl {
         support.firePropertyChange("stepnumber", null, new Integer(n)); //$NON-NLS-1$
       }
       else {
-        video.setVisible(true);
+        video.setVisible(videoVisible);
 	      Runnable runner = new Runnable() {
 	        public void run() {
 	          if (videoFrameNumber==m) {
