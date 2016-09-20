@@ -94,12 +94,6 @@ public class BrightnessFilter extends Filter {
    * @param contrast the contrast.
    */
   public void setContrast(double contrast) {
-    if (previousState==null) {
-    	previousState = new XMLControlElement(this).toXML();
-    	previousBrightness = brightness;
-    	previousContrast = contrast;
-    }
-    changed = changed || this.contrast!=contrast;
     Double prev = new Double(this.contrast);
     this.contrast = contrast;
     updateFactors();

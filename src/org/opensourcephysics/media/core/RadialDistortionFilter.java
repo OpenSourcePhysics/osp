@@ -178,22 +178,6 @@ public class RadialDistortionFilter extends Filter {
    *
    * @return the inspector
    */
-<<<<<<< HEAD
-  public JDialog getInspector() {
-    if(inspector==null) {
-      inspector = new Inspector();
-    }
-    if(inspector.isModal()&&(vidPanel!=null)) {
-      Frame f = JOptionPane.getFrameForComponent(vidPanel);
-      if(frame!=f) {
-        frame = f;
-        if(inspector!=null) {
-          inspector.setVisible(false);
-        }
-        inspector = new Inspector();
-      }
-    }
-=======
   public synchronized JDialog getInspector() {
   	Inspector myInspector = inspector;
     if (myInspector==null) {
@@ -207,7 +191,6 @@ public class RadialDistortionFilter extends Filter {
     }
     inspector = myInspector;
     inspector.initialize();
->>>>>>> upstream/master
     return inspector;
   }
 
@@ -959,8 +942,6 @@ public class RadialDistortionFilter extends Filter {
     }
     
     /**
-<<<<<<< HEAD
-=======
      * Initializes this inspector
      */
     void initialize() {
@@ -968,7 +949,6 @@ public class RadialDistortionFilter extends Filter {
     }
 
    /**
->>>>>>> upstream/master
      * Updates the inspector controls to reflect the current filter settings.
      */
     void updateDisplay() {
