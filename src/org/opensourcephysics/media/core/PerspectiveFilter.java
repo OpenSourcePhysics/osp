@@ -117,7 +117,7 @@ public class PerspectiveFilter extends Filter {
   
   // inspector fields
   private Inspector inspector;
-
+  private boolean disposing = false;
 
   /**
    * Constructs a PerspectiveFilter object.
@@ -190,7 +190,6 @@ public class PerspectiveFilter extends Filter {
     }
     if (myInspector.isModal() && vidPanel!=null) {
       frame = JOptionPane.getFrameForComponent(vidPanel);
-      myInspector.setVisible(false);
       myInspector.dispose();
       myInspector = new Inspector();
     }
@@ -770,6 +769,7 @@ public class PerspectiveFilter extends Filter {
      */
     public Inspector() {
       super(frame, !(frame instanceof org.opensourcephysics.display.OSPFrame));
+      inspector = this;
       setResizable(false);
       createGUI();
       refresh();
@@ -796,6 +796,7 @@ public class PerspectiveFilter extends Filter {
     	// add change listener after adding tabs to prevent start-up event firing
     	tabbedPane.addChangeListener(new ChangeListener() {
         public void stateChanged(ChangeEvent e) {
+        	if (disposing) return;
         	refresh();
           PerspectiveFilter.this.support.firePropertyChange("image", null, null); //$NON-NLS-1$
           PerspectiveFilter.this.support.firePropertyChange("tab", null, null); //$NON-NLS-1$
@@ -865,27 +866,29 @@ public class PerspectiveFilter extends Filter {
     
     @Override
     public void dispose() {
+    	disposing = true;
     	contentPane.remove(tabbedPane);
     	tabbedPane.removeAll();
-    	tabbedPane = null;
     	super.dispose();
+    	disposing = false;
     }
 
     @Override
     public void setVisible(boolean vis) {    	
+    	if (vis==isVisible()) return;
     	super.setVisible(vis);
     	
     	if (vidPanel!=null) {
 	    	if (vis) {
 	    		vidPanel.addDrawable(quad);
-	      	support.firePropertyChange("visible", null, null); //$NON-NLS-1$
+		      support.firePropertyChange("visible", null, null); //$NON-NLS-1$
 	      	PerspectiveFilter.this.removePropertyChangeListener("visible", vidPanel); //$NON-NLS-1$
 	      	PerspectiveFilter.this.addPropertyChangeListener("visible", vidPanel); //$NON-NLS-1$
 	      	vidPanel.removePropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 	      	vidPanel.addPropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 	    	}
 	    	else {
-	      	support.firePropertyChange("visible", null, null); //$NON-NLS-1$
+	    		support.firePropertyChange("visible", null, null); //$NON-NLS-1$
 	      	PerspectiveFilter.this.removePropertyChangeListener("visible", vidPanel); //$NON-NLS-1$
 	      	vidPanel.removePropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 	    		vidPanel.removeDrawable(quad);
@@ -907,7 +910,6 @@ public class PerspectiveFilter extends Filter {
     	inputEditor.setEnabled(enable);
     	outputEditor.setEnabled(enable);
     	support.firePropertyChange("image", null, null); //$NON-NLS-1$    	
-
     }    
   }
   
