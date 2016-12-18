@@ -107,6 +107,7 @@ import org.opensourcephysics.display.DisplayColors;
 import org.opensourcephysics.display.Drawable;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.FunctionDrawer;
+import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.HighlightableDataset;
 import org.opensourcephysics.display.Interactive;
 import org.opensourcephysics.display.OSPRuntime;
@@ -140,13 +141,16 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     // create cursors
     String imageFile = "/org/opensourcephysics/resources/tools/images/selectcursor.gif";                     //$NON-NLS-1$
     Image im = ResourceLoader.getImage(imageFile);
-    SELECT_CURSOR = Toolkit.getDefaultToolkit().createCustomCursor(im, new Point(0, 0), "Add points"); //$NON-NLS-1$
+    SELECT_CURSOR = GUIUtils.createCustomCursor(im, new Point(0, 0), 
+    		"Add points", Cursor.CROSSHAIR_CURSOR); //$NON-NLS-1$
     imageFile = "/org/opensourcephysics/resources/tools/images/selectremovecursor.gif";                     //$NON-NLS-1$
     im = ResourceLoader.getImage(imageFile);
-    SELECT_REMOVE_CURSOR = Toolkit.getDefaultToolkit().createCustomCursor(im, new Point(0, 0), "Remove points"); //$NON-NLS-1$
+    SELECT_REMOVE_CURSOR = GUIUtils.createCustomCursor(im, new Point(0, 0), 
+    		"Remove points", Cursor.CROSSHAIR_CURSOR); //$NON-NLS-1$
     imageFile = "/org/opensourcephysics/resources/tools/images/selectzoomcursor.gif";                     //$NON-NLS-1$
     im = ResourceLoader.getImage(imageFile);
-    SELECT_ZOOM_CURSOR = Toolkit.getDefaultToolkit().createCustomCursor(im, new Point(8, 8), "Zoom"); //$NON-NLS-1$
+    SELECT_ZOOM_CURSOR = GUIUtils.createCustomCursor(im, new Point(8, 8), 
+    		"Zoom", Cursor.CROSSHAIR_CURSOR); //$NON-NLS-1$
   }
   
   // instance fields
@@ -3692,7 +3696,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
           // create cursor
           String imageFile = "/org/opensourcephysics/resources/tools/images/limitcursor.gif";                     //$NON-NLS-1$
           Image im = ResourceLoader.getImage(imageFile);
-          move = Toolkit.getDefaultToolkit().createCustomCursor(im, new Point(16, 16), "Move Integration Limit"); //$NON-NLS-1$
+          move = GUIUtils.createCustomCursor(im, new Point(16, 16), 
+          		"Move Integration Limit", Cursor.MOVE_CURSOR); //$NON-NLS-1$
         }
         return move;
       }
