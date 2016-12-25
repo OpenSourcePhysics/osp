@@ -31,7 +31,7 @@ public class DiagnosticsForFFMPeg {
 	public static final String FFMPEG_URL = "http://www.compadre.org/osp/items/detail.cfm?ID=11606"; //$NON-NLS-1$
 	public static final String REQUEST_TRACKER = "Tracker"; //$NON-NLS-1$
 	public static final String BRIDJVERSION = "0.7-SNAPSHOT";
-	public static final String FFMPEG_VERSION = "3.0";
+	public static final String FFMPEG_VERSION = "3.2";
 	static String newline = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
 	static String[] ffmpegJarNames = new String[] {
 			"ffmpeg-"+FFMPEG_VERSION+".jar", "bridj-" + BRIDJVERSION + ".jar" }; //$NON-NLS-1$ //$NON-NLS-2$
@@ -253,6 +253,11 @@ public class DiagnosticsForFFMPeg {
 		File[] jarFiles = new File[ffmpegJarNames.length];
 		for (int i = 0; i < jarFiles.length; i++) {
 			String next = ffmpegJarNames[i];
+			if(i == 0){
+				String nextu = next.substring(0, next.indexOf("-")) + ".jar";
+				File test = new File(dir, nextu);
+				next = test.exists() ? nextu : next;
+			}
 			File file = new File(dir, next);
 			jarFiles[i] = file.exists() ? file : null;
 		}
