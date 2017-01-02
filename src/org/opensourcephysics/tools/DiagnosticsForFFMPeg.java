@@ -34,7 +34,7 @@ public class DiagnosticsForFFMPeg {
 	public static final String FFMPEG_VERSION = "3.2";
 	static String newline = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
 	static String[] ffmpegJarNames = new String[] {
-			"ffmpeg-"+FFMPEG_VERSION+".jar", "bridj-" + BRIDJVERSION + ".jar" }; //$NON-NLS-1$ //$NON-NLS-2$
+			"ffmpeg.jar", "bridj-" + BRIDJVERSION + ".jar" }; //$NON-NLS-1$ //$NON-NLS-2$
 	static int vmBitness;
 	static String codeBase, javaExtDirectory;
 	static File[] codeBaseJars, ffmpegHomeJars, javaExtensionJars;
@@ -253,11 +253,6 @@ public class DiagnosticsForFFMPeg {
 		File[] jarFiles = new File[ffmpegJarNames.length];
 		for (int i = 0; i < jarFiles.length; i++) {
 			String next = ffmpegJarNames[i];
-			if(i == 0){
-				String nextu = next.substring(0, next.indexOf("-")) + ".jar";
-				File test = new File(dir, nextu);
-				next = test.exists() ? nextu : next;
-			}
 			File file = new File(dir, next);
 			jarFiles[i] = file.exists() ? file : null;
 		}
