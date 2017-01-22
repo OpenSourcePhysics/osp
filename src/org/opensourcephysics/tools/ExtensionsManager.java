@@ -122,6 +122,9 @@ public class ExtensionsManager {
    * @return true if jars are copied
    */
 	public boolean copyXuggleJarsTo(File dir) {
+  	if (xuggleHome==null) {
+			xuggleHome = (String)OSPRuntime.getPreference("XUGGLE_HOME"); //$NON-NLS-1$
+  	}
 		if (xuggleHome==null || dir==null) {
 			return false;
 		}

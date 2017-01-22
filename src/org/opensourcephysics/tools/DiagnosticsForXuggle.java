@@ -152,7 +152,7 @@ public class DiagnosticsForXuggle {
 		  OSPLog.config(pathEnvironment+" = "+pathValue); //$NON-NLS-1$
 		}
 			
-		// display appropriate dialog		
+		// display appropriate dialog	
 		if (status==0) { // xuggle working correctly
 			String fileInfo = newline;
 			String path = " "+XuggleRes.getString("Xuggle.Dialog.Unknown"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -208,6 +208,10 @@ public class DiagnosticsForXuggle {
     			showPrefsQuestionForTracker = true;
     		}
     	}
+    	boolean showCopyJarsQuestionForTracker = false;
+    	if (status==5 && "Tracker".equals(requester) && dialogOwner!=null) { //$NON-NLS-1$
+    		showCopyJarsQuestionForTracker = true; 
+    	}
   		if (showPrefsQuestionForTracker) {
     		box.add(new JLabel("  ")); //$NON-NLS-1$
     		String question = XuggleRes.getString("Xuggle.Dialog.AboutXuggle.ShowPrefs.Question"); //$NON-NLS-1$
@@ -227,6 +231,21 @@ public class DiagnosticsForXuggle {
 						}
 					} catch (Exception e) {
 					}
+    		}  			
+  		}
+  		else if (showCopyJarsQuestionForTracker) {
+    		box.add(new JLabel("  ")); //$NON-NLS-1$
+    		String question = XuggleRes.getString("Xuggle.Dialog.AboutXuggle.CopyJars.Question"); //$NON-NLS-1$
+    		box.add(new JLabel(question));
+    		
+    		int response = JOptionPane.showConfirmDialog(dialogOwner, box, 
+    				XuggleRes.getString("Xuggle.Dialog.BadXuggle.Title"),  //$NON-NLS-1$
+    				JOptionPane.YES_NO_OPTION, 
+    				JOptionPane.WARNING_MESSAGE);
+    		if (response==JOptionPane.YES_OPTION) {
+    			// copy jars to codebase directory
+    			File dir = new File(codeBase);
+    			ExtensionsManager.getManager().copyXuggleJarsTo(dir);    			
     		}  			
   		}
   		else {
@@ -396,7 +415,7 @@ public class DiagnosticsForXuggle {
 	 */
 	public static String[] getDiagnosticMessage(int status, String requester) {
 		
-		if (status==0) return null;
+		if (status==0) return new String[] {"OK"}; //$NON-NLS-1$
 
 		ArrayList<String> message = new ArrayList<String>();		
 		switch(status) {
