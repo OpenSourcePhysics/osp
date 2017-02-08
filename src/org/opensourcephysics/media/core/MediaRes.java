@@ -33,7 +33,6 @@ package org.opensourcephysics.media.core;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import org.opensourcephysics.display.OSPRuntime;
 
 /**
  * String resources for media classes.
@@ -44,27 +43,14 @@ import org.opensourcephysics.display.OSPRuntime;
 public class MediaRes {
   // static fields
   private static String BUNDLE_NAME = "org.opensourcephysics.resources.media.video"; //$NON-NLS-1$
-  static ResourceBundle res;
-  static Locale resourceLocale;
-
-  static {
-    String language = Locale.getDefault().getLanguage();
-    resourceLocale = Locale.ENGLISH;
-    for(Locale locale : OSPRuntime.getInstalledLocales()) {
-      if(locale.getLanguage().equals(language)) {
-        resourceLocale = locale;
-        break;
-      }
-    }
-    res = ResourceBundle.getBundle(BUNDLE_NAME, resourceLocale);
-  }
+  static Locale resourceLocale = Locale.getDefault();
+  static ResourceBundle res = ResourceBundle.getBundle(BUNDLE_NAME, resourceLocale);
 
   /**
    * Private constructor to prevent instantiation.
    */
   private MediaRes() {
-
-  /** empty block */
+  	/** empty block */
   }
 
   /**
