@@ -805,7 +805,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    */
   protected static double[] parseDoubles(String text, String delimiter) {
     String[] strings = parseStrings(text, delimiter);
-    return parseDoubles(strings);
+    return parseDoubles(strings, delimiter);
   }
 
   /**
@@ -813,9 +813,10 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    * Unparsable strings are set to Double.NaN.
    *
    * @param strings the String array to parse
+   * @param delimiter the delimiter that was used to parse the strings
    * @return an array of doubles
    */
-  protected static double[] parseDoubles(String[] strings) {
+  protected static double[] parseDoubles(String[] strings, String delimiter) {
     double[] doubles = new double[strings.length];
     for(int i = 0; i<strings.length; i++) {
       if(strings[i].indexOf("\t")>-1) { //$NON-NLS-1$
@@ -824,7 +825,16 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
         try {
           doubles[i] = Double.parseDouble(strings[i]);
         } catch(NumberFormatException e) {
-          doubles[i] = Double.NaN;
+        	// convert decimal separator commas with periods
+        	if (strings[i].indexOf(",")>-1 && !delimiter.equals(",")) { //$NON-NLS-1$ //$NON-NLS-2$
+        		strings[i] = strings[i].replace(",", "."); //$NON-NLS-1$ //$NON-NLS-2$
+            try {
+              doubles[i] = Double.parseDouble(strings[i]);
+            } catch(NumberFormatException e1) {
+            	doubles[i] = Double.NaN;
+            }        		
+        	}
+        	else doubles[i] = Double.NaN;
         }
       }
     }
@@ -928,7 +938,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
             continue;
           }
           String[] strings = DataTool.parseStrings(textLine, DataTool.delimiters[i]);
-          double[] rowData = DataTool.parseDoubles(strings);
+          double[] rowData = DataTool.parseDoubles(strings, DataTool.delimiters[i]);
           // set title if not yet set (null), String[] length > 0, all entries
           // are NaN and only one entry is not ""
           if(rows.isEmpty()&&(strings.length>0)&&(title==null)) {
