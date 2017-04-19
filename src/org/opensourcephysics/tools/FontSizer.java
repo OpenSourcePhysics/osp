@@ -42,7 +42,17 @@ public class FontSizer {
   /** Base font for buttons */
   public static final Font BUTTON_FONT = new JButton().getFont();
 
-  /** Base font for buttons */
+  /** Base font for menu accelerators */
+  public static final Font ACCELERATOR_FONT = (Font)UIManager.get("MenuItem.acceleratorFont"); //$NON-NLS-1$
+
+  /** Icons for checkbox, radio button and arrow menu items */
+  public static final ResizableIcon CHECKBOXMENUITEM_ICON;
+  public static final ResizableIcon RADIOBUTTONMENUITEM_ICON;
+  public static final ResizableIcon CHECKBOX_ICON;
+  public static final ResizableIcon RADIOBUTTON_ICON;
+  public static final ResizableIcon ARROW_ICON;
+
+  /** maximum font level */
   public static final int MAX_LEVEL = 20;
 
   // static fields
@@ -52,6 +62,24 @@ public class FontSizer {
   static double levelFactor = 1.25; // size ratio per level
   static double factor;
   static Map<Font, Font> fontMap = new HashMap<Font, Font>();
+  
+  static {
+	  Icon baseIcon = (Icon)UIManager.get("CheckBoxMenuItem.checkIcon"); //$NON-NLS-1$
+	  CHECKBOXMENUITEM_ICON = new ResizableIcon(baseIcon);
+  	UIManager.put("CheckBoxMenuItem.checkIcon", CHECKBOXMENUITEM_ICON); //$NON-NLS-1$
+	  baseIcon = (Icon)UIManager.get("CheckBox.icon"); //$NON-NLS-1$
+	  CHECKBOX_ICON = new ResizableIcon(baseIcon);
+  	UIManager.put("CheckBox.icon", CHECKBOX_ICON); //$NON-NLS-1$
+  	baseIcon = (Icon)UIManager.get("RadioButtonMenuItem.checkIcon"); //$NON-NLS-1$
+  	RADIOBUTTONMENUITEM_ICON = new ResizableIcon(baseIcon);
+  	UIManager.put("RadioButtonMenuItem.checkIcon", RADIOBUTTONMENUITEM_ICON); //$NON-NLS-1$
+  	baseIcon = (Icon)UIManager.get("RadioButton.icon"); //$NON-NLS-1$
+  	RADIOBUTTON_ICON = new ResizableIcon(baseIcon);
+  	UIManager.put("RadioButton.icon", RADIOBUTTON_ICON); //$NON-NLS-1$
+  	baseIcon = (Icon)UIManager.get("Menu.arrowIcon"); //$NON-NLS-1$
+  	ARROW_ICON = new ResizableIcon(baseIcon);
+  	UIManager.put("Menu.arrowIcon", ARROW_ICON); //$NON-NLS-1$
+  }
 
   /**
    * Private constructor to prevent instantiation.
@@ -71,13 +99,23 @@ public class FontSizer {
     factor = getFactor(level);
     integerFactor = getIntegerFactor(level);
     
+    CHECKBOXMENUITEM_ICON.resize(integerFactor);
+    CHECKBOX_ICON.resize(integerFactor);
+    ARROW_ICON.resize(integerFactor);
+    RADIOBUTTONMENUITEM_ICON.resize(integerFactor);
+    RADIOBUTTON_ICON.resize(integerFactor);
+        
     Font font = getResizedFont(TEXT_FONT, level);    
-    javax.swing.UIManager.put("OptionPane.messageFont", font); //$NON-NLS-1$
-    javax.swing.UIManager.put("TextField.font", font); //$NON-NLS-1$
-    javax.swing.UIManager.put("ToolTip.font", font);     //$NON-NLS-1$
+    UIManager.put("OptionPane.messageFont", font); //$NON-NLS-1$
+    UIManager.put("TextField.font", font); //$NON-NLS-1$
+    UIManager.put("ToolTip.font", font);     //$NON-NLS-1$
+    UIManager.put("TabbedPane.font", font);     //$NON-NLS-1$
+
+    font = getResizedFont(ACCELERATOR_FONT, level);    
+    UIManager.put("MenuItem.acceleratorFont", font);     //$NON-NLS-1$
         
   	font= getResizedFont(BUTTON_FONT, level);    
-    javax.swing.UIManager.put("OptionPane.buttonFont", font); //$NON-NLS-1$
+    UIManager.put("OptionPane.buttonFont", font); //$NON-NLS-1$
     
     support.firePropertyChange("level", null, new Integer(level)); //$NON-NLS-1$
   }
