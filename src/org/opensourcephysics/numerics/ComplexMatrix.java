@@ -8,7 +8,7 @@
 /**
     Adapted to OSP by Javier E. Hasbun, 2009.
   <P>
-    @Copyright (c) 2009
+    @Copyright (c) 2017
     This software is to support the Open Source Physics library
     http://www.opensourcephysics.org under the terms of the GNU General Public
     License (GPL) as published by the Free Software Foundation.
@@ -1092,6 +1092,6 @@ public strictfp class ComplexMatrix {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2007  The Open Source Physics project
+ * Copyright (c) 2017  The Open Source Physics project
  *                     http://www.opensourcephysics.org
  */

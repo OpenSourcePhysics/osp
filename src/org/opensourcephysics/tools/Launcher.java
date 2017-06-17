@@ -127,7 +127,6 @@ public class Launcher {
   protected static String resourcesPath = "/org/opensourcephysics/resources/tools/"; //$NON-NLS-1$
   protected static String classPath;                                                 // list of jar names for classes, resources
   protected static String tabSetBasePath = "";                                       // absolute base path of tabset      //$NON-NLS-1$
-  protected static String version = "1.4";                                           //$NON-NLS-1$
   protected static String releaseDate = "July 2007";                                 //$NON-NLS-1$
   protected static JFileChooser chooser;
   protected static FileFilter xmlFileFilter;
@@ -2160,13 +2159,13 @@ public class Launcher {
    */
   protected void showAboutDialog() {
     String newline = XML.NEW_LINE;
-    String vers = version;
+    String vers = OSPRuntime.VERSION;
 		String date = OSPRuntime.getLaunchJarBuildDate();
 		if (date!=null) 
 			vers = vers+"   "+date; //$NON-NLS-1$
 		String name = getClass().getSimpleName();
     String aboutString = name+" "+vers+newline                 //$NON-NLS-1$
-    		+"Copyright (c) 2010 Wolfgang Christian"+newline                 //$NON-NLS-1$
+    		+"Copyright (c) 2017 Wolfgang Christian"+newline                 //$NON-NLS-1$
         +"Open Source Physics Project"+newline                 //$NON-NLS-1$
         +"www.opensourcephysics.org"+newline+newline           //$NON-NLS-1$
         +LaunchRes.getString("Label.CodeAuthor")+": Douglas Brown"; //$NON-NLS-1$ //$NON-NLS-2$
@@ -3931,7 +3930,7 @@ public class Launcher {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2007  The Open Source Physics project
+ * Copyright (c) 2017  The Open Source Physics project
  *                     http://www.opensourcephysics.org
  */
 

@@ -2835,7 +2835,11 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     emptyExitItem.setAccelerator(KeyStroke.getKeyStroke('Q', keyMask));
     emptyExitItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        System.exit(0);
+        if(exitOnClose) {
+          System.exit(0);
+        } else {
+          setVisible(false);
+        }
       }
 
     });
@@ -2965,7 +2969,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   protected void showAboutDialog() {
 		String date = OSPRuntime.getLaunchJarBuildDate();
 		if (date==null) date = ""; //$NON-NLS-1$
-    String aboutString = getName()+"   "+date+"\n"   //$NON-NLS-1$ //$NON-NLS-2$
+    String aboutString = getName()+" "+OSPRuntime.VERSION+"  "+date+"\n"   //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                          +"Open Source Physics Project\n" //$NON-NLS-1$
                          +"www.opensourcephysics.org";    //$NON-NLS-1$
     JOptionPane.showMessageDialog(this, aboutString, ToolsRes.getString("Dialog.About.Title")+" "+getName(), //$NON-NLS-1$ //$NON-NLS-2$
@@ -3013,6 +3017,6 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2007  The Open Source Physics project
+ * Copyright (c) 2017  The Open Source Physics project
  *                     http://www.opensourcephysics.org
  */

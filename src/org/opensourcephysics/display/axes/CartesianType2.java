@@ -255,6 +255,6 @@ public class CartesianType2 extends AbstractAxes implements CartesianAxes {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2007  The Open Source Physics project
+ * Copyright (c) 2017  The Open Source Physics project
  *                     http://www.opensourcephysics.org
  */

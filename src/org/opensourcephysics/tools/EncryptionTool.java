@@ -54,8 +54,6 @@ import org.opensourcephysics.display.OSPRuntime;
  */
 @SuppressWarnings("serial")
 public class EncryptionTool extends JFrame implements Tool {
-  // static constants
-  private static final String VERSION = " 1.0"; //$NON-NLS-1$
   // static fields
   private static Dimension dim = new Dimension(720, 500);
   // instance fields
@@ -576,7 +574,7 @@ public class EncryptionTool extends JFrame implements Tool {
     aboutItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         String toolname = ToolsRes.getString("EncryptionTool.About.ToolName");                                             //$NON-NLS-1$
-        String aboutString = toolname+VERSION+XML.NEW_LINE+ToolsRes.getString("EncryptionTool.About.OSPName")+XML.NEW_LINE //$NON-NLS-1$
+        String aboutString = toolname+OSPRuntime.VERSION+XML.NEW_LINE+ToolsRes.getString("EncryptionTool.About.OSPName")+XML.NEW_LINE //$NON-NLS-1$
                              +"www.opensourcephysics.org";                                                                //$NON-NLS-1$
         JOptionPane.showMessageDialog(EncryptionTool.this, aboutString, ToolsRes.getString("EncryptionTool.About.Title"), //$NON-NLS-1$
           JOptionPane.INFORMATION_MESSAGE);
@@ -615,6 +613,6 @@ public class EncryptionTool extends JFrame implements Tool {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2007  The Open Source Physics project
+ * Copyright (c) 2017  The Open Source Physics project
  *                     http://www.opensourcephysics.org
  */
