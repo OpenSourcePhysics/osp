@@ -7,6 +7,7 @@
 
 package org.opensourcephysics.tools;
 
+import java.awt.Font;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -21,10 +22,12 @@ import java.util.TreeSet;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.filechooser.FileFilter;
 
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.media.core.ImageVideoType;
 import org.opensourcephysics.media.core.VideoFileFilter;
 import org.opensourcephysics.media.core.VideoIO;
@@ -67,28 +70,30 @@ public class LibraryResource implements Comparable<LibraryResource> {
   
   // static fields
   protected static List<String> allResourceTypes = new ArrayList<String>();
-  protected static Icon htmlIcon, videoIcon, trackerIcon, ejsIcon, pdfIcon, unknownIcon, imageIcon;
+  protected static ResizableIcon htmlIcon, videoIcon, trackerIcon, ejsIcon, pdfIcon, unknownIcon, imageIcon;
   protected static FileFilter[] imageFilters = new ImageVideoType().getFileFilters();
   protected static DecimalFormat megabyteFormat;
-
+  protected static Font bodyFont = new JButton().getFont().deriveFont(12f);
+  protected static Font h1Font = bodyFont.deriveFont(24f);
+  protected static Font h2Font = bodyFont.deriveFont(16f);
   
   static {
   	allResourceTypes.add(COLLECTION_TYPE);
   	for (String next: RESOURCE_TYPES) allResourceTypes.add(next);
     String imageFile = "/org/opensourcephysics/resources/tools/images/html.gif";        //$NON-NLS-1$
-    htmlIcon = new ImageIcon(LibraryResource.class.getResource(imageFile));
+    htmlIcon = new ResizableIcon(new ImageIcon(LibraryResource.class.getResource(imageFile)));
     imageFile = "/org/opensourcephysics/resources/tools/images/pdf.gif";        //$NON-NLS-1$
-    pdfIcon = new ImageIcon(LibraryResource.class.getResource(imageFile));
+    pdfIcon = new ResizableIcon(new ImageIcon(LibraryResource.class.getResource(imageFile)));
     imageFile = "/org/opensourcephysics/resources/tools/images/video.gif";        //$NON-NLS-1$
-    videoIcon = new ImageIcon(LibraryResource.class.getResource(imageFile));
+    videoIcon = new ResizableIcon(new ImageIcon(LibraryResource.class.getResource(imageFile)));
     imageFile = "/org/opensourcephysics/resources/tools/images/portrait.gif";        //$NON-NLS-1$
-    imageIcon = new ImageIcon(LibraryResource.class.getResource(imageFile));
+    imageIcon = new ResizableIcon(new ImageIcon(LibraryResource.class.getResource(imageFile)));
     imageFile = "/org/opensourcephysics/resources/tools/images/tracker_icon_16.png"; //$NON-NLS-1$
-    trackerIcon = new ImageIcon(LibraryResource.class.getResource(imageFile));
+    trackerIcon = new ResizableIcon(new ImageIcon(LibraryResource.class.getResource(imageFile)));
     imageFile = "/org/opensourcephysics/resources/tools/images/ejsicon.gif";        //$NON-NLS-1$
-    ejsIcon = new ImageIcon(LibraryResource.class.getResource(imageFile));
+    ejsIcon = new ResizableIcon(new ImageIcon(LibraryResource.class.getResource(imageFile)));
     imageFile = "/org/opensourcephysics/resources/tools/images/question_mark.gif";        //$NON-NLS-1$
-    unknownIcon = new ImageIcon(LibraryResource.class.getResource(imageFile));
+    unknownIcon = new ResizableIcon(new ImageIcon(LibraryResource.class.getResource(imageFile)));
     try {
 			megabyteFormat = (DecimalFormat)NumberFormat.getInstance();
 			megabyteFormat.applyPattern("0.0"); //$NON-NLS-1$
@@ -459,13 +464,14 @@ public class LibraryResource implements Comparable<LibraryResource> {
    * @return the icon
    */
 	public Icon getIcon() {
-		if (type==TRACKER_TYPE) return trackerIcon;
-		if (type==EJS_TYPE) return ejsIcon;
-		if (type==IMAGE_TYPE) return imageIcon;
-		if (type==VIDEO_TYPE) return videoIcon;
-		if (type==HTML_TYPE) return htmlIcon;
-		if (type==PDF_TYPE) return pdfIcon;
-		return null;
+		ResizableIcon icon = null;
+		if (type==TRACKER_TYPE) icon = trackerIcon;
+		if (type==EJS_TYPE) icon = ejsIcon;
+		if (type==IMAGE_TYPE) icon = imageIcon;
+		if (type==VIDEO_TYPE) icon = videoIcon;
+		if (type==HTML_TYPE) icon = htmlIcon;
+		if (type==PDF_TYPE) icon = pdfIcon;
+		return icon;
 	}
 	
   /**
@@ -807,7 +813,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 		return 
 				"body {\n"+ //$NON-NLS-1$
 				"  font-family: Verdana, Arial, Helvetica, sans-serif;\n"+ //$NON-NLS-1$
-				"  font-size: 12pt;\n"+ //$NON-NLS-1$
+				"  font-size: "+bodyFont.getSize()+"pt;\n"+ //$NON-NLS-1$ //$NON-NLS-2$
 				"  color: #405050;\n"+ //$NON-NLS-1$
 				"  background-color: #FFFFFF;\n"+ //$NON-NLS-1$
 				"}\n"; //$NON-NLS-1$
@@ -821,7 +827,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
   protected static String getH1Style() {
 		return 
 				"h1 {\n"+ //$NON-NLS-1$
-				"  font-size: 24pt;\n"+ //$NON-NLS-1$ 
+				"  font-size: "+h1Font.getSize()+"pt;\n"+ //$NON-NLS-1$ //$NON-NLS-2$ 
 				"  text-align: center;\n"+ //$NON-NLS-1$
 				"}\n"; //$NON-NLS-1$
   }
@@ -834,7 +840,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
   protected static String getH2Style() {
 		return 
 				"h2 {\n"+ //$NON-NLS-1$
-				"  font-size: 16pt;\n"+ //$NON-NLS-1$
+				"  font-size: "+h2Font.getSize()+"pt;\n"+ //$NON-NLS-1$ //$NON-NLS-2$
 				"}\n"; //$NON-NLS-1$
   }
   
