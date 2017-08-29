@@ -25,7 +25,7 @@ import org.opensourcephysics.controls.XMLLoader;
  * @version 1.0
  */
 public class Trail extends AbstractTrail implements LogMeasurable {
-  GeneralPath generalPath = new GeneralPath();
+  protected GeneralPath generalPath = new GeneralPath();
   boolean connected = true;
 
   /**
