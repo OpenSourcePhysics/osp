@@ -46,7 +46,7 @@ import org.opensourcephysics.tools.Translator;
  * @version 1.0
  */
 public class OSPRuntime {
-  public static final String VERSION = "4.0.0";                                                                            //$NON-NLS-1$
+  public static final String VERSION = "4.0.1";                                                                            //$NON-NLS-1$
 
   /** Disables drawing for faster start-up and to avoid screen flash in Drawing Panels. */
   volatile public static boolean disableAllDrawing = false;
