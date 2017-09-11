@@ -192,9 +192,11 @@ public class FitBuilder extends FunctionTool {
     setToolbarComponents(new Component[] {loadButton, saveButton,
 				 new JToolBar.Separator(), newFitButton, cloneFitButton, deleteFitButton,
 				 Box.createHorizontalGlue(), autoloadButton});
-    // autoload fits
-    for (String dir: getInitialSearchPaths()) {
-      autoloadFits(dir);
+    // autoload fits if parent is data tool
+    if (parent!=null && parent instanceof DataTool) {
+	    for (String dir: getInitialSearchPaths()) {
+	      autoloadFits(dir);
+	    }
     }
 	}
 	
