@@ -1305,7 +1305,14 @@ public class XMLControlElement implements XMLControl {
     try {
       // get document root opening tag line
       String openingTag = input.readLine();
-      while((openingTag!=null)&&(openingTag.indexOf("<object")==-1)) { //$NON-NLS-1$
+      int count = 0;
+      while (openingTag!=null && openingTag.indexOf("<object class=")==-1) { //$NON-NLS-1$
+        count++;
+        if (count>9) {
+        	// stop reading at 10 lines
+        	readFailed = true;
+        	return;
+        }
         openingTag = input.readLine();
       }
       // read this element from the root
