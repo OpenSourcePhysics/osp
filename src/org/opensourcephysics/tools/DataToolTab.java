@@ -3991,7 +3991,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         	xValue = getFormattedValue(x, xVar);
         }
         else {
-          if(Math.abs(x)>100 || Math.abs(x)<0.01) {
+          if(Math.abs(x)>100 || Math.abs(x)<1.0) {
             xValue = scientificFormat.format((float) x);
           } else {
             xValue = decimalFormat.format((float) x);
@@ -4001,7 +4001,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         	yValue = getFormattedValue(y, yVar);
         }
         else {
-          if(Math.abs(y)>100 || Math.abs(y)<0.01) {
+          if(Math.abs(y)>100 || Math.abs(y)<1.0) {
             yValue = scientificFormat.format((float) y);
           } else {
             yValue = decimalFormat.format((float) y);
