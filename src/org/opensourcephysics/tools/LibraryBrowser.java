@@ -40,6 +40,7 @@ import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.desktop.OSPDesktop;
 import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.display.TextFrame;
 import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.tools.LibraryCollection;
@@ -76,7 +77,7 @@ public class LibraryBrowser extends JPanel {
   protected static JFrame frame;
   protected static JDialog externalDialog;
   protected static JMenuBar menubar;
-  protected static Icon expandIcon, contractIcon, heavyExpandIcon, heavyContractIcon, refreshIcon;
+  protected static ResizableIcon expandIcon, contractIcon, heavyExpandIcon, heavyContractIcon, refreshIcon;
   protected static final FileFilter TRACKER_FILTER = new TrackerDLFilter();
   protected static javax.swing.filechooser.FileFilter filesAndFoldersFilter =  new FilesAndFoldersFilter();
   protected static Timer searchTimer;
@@ -91,15 +92,15 @@ public class LibraryBrowser extends JPanel {
     buttonBorder = BorderFactory.createCompoundBorder(space, buttonBorder);
     menubar = new JMenuBar();
     String imageFile = "/org/opensourcephysics/resources/tools/images/expand.png";        //$NON-NLS-1$
-    expandIcon = new ImageIcon(LibraryTreePanel.class.getResource(imageFile));
+    expandIcon = new ResizableIcon(new ImageIcon(LibraryTreePanel.class.getResource(imageFile)));
     imageFile = "/org/opensourcephysics/resources/tools/images/contract.png";        //$NON-NLS-1$
-    contractIcon = new ImageIcon(LibraryTreePanel.class.getResource(imageFile));
+    contractIcon = new ResizableIcon(new ImageIcon(LibraryTreePanel.class.getResource(imageFile)));
     imageFile = "/org/opensourcephysics/resources/tools/images/expand_bold.png";        //$NON-NLS-1$
-    heavyExpandIcon = new ImageIcon(LibraryTreePanel.class.getResource(imageFile));
+    heavyExpandIcon = new ResizableIcon(new ImageIcon(LibraryTreePanel.class.getResource(imageFile)));
     imageFile = "/org/opensourcephysics/resources/tools/images/contract_bold.png";        //$NON-NLS-1$
-    heavyContractIcon = new ImageIcon(LibraryTreePanel.class.getResource(imageFile));
+    heavyContractIcon = new ResizableIcon(new ImageIcon(LibraryTreePanel.class.getResource(imageFile)));
     imageFile = "/org/opensourcephysics/resources/tools/images/refresh.gif";        //$NON-NLS-1$
-    refreshIcon = new ImageIcon(LibraryTreePanel.class.getResource(imageFile));
+    refreshIcon = new ResizableIcon(new ImageIcon(LibraryTreePanel.class.getResource(imageFile)));
 	}
 	
 	// instance fields
@@ -254,7 +255,10 @@ public class LibraryBrowser extends JPanel {
 		if (libraryManager!=null) {
 			libraryManager.setFontLevel(level);
 		}
-    
+		ResizableIcon[] icons = {expandIcon, contractIcon, heavyExpandIcon, heavyContractIcon, refreshIcon};
+		for (ResizableIcon next: icons) {
+			next.resize(FontSizer.getIntegerFactor());
+		}    
 		FontSizer.setFonts(OSPLog.getOSPLog(), level);
   }
   

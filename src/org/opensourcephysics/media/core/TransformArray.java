@@ -9,7 +9,7 @@
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2014  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2017  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,6 @@ import java.awt.geom.AffineTransform;
 public class TransformArray {
   // instance fields
   private AffineTransform[] array;
-  private int length;
 
   /**
    * Constructs a TransformArray object.
@@ -50,10 +49,10 @@ public class TransformArray {
    * @param initialLength the initial length of the array
    */
   public TransformArray(int initialLength) {
-    length = initialLength;
-    array = new AffineTransform[length];
+  	initialLength = Math.max(initialLength, 1); // prevent empty arrays
+    array = new AffineTransform[initialLength];
     array[0] = new AffineTransform(); // seed
-    fill(array[0]);
+    fill(array, array[0]);
   }
 
   /**
@@ -63,7 +62,7 @@ public class TransformArray {
    * @return the transform at the specified index
    */
   public AffineTransform get(int n) {
-    if(n>=length) {
+    if(n>=array.length) {
       setLength(n+1);
     }
     return array[n];
@@ -75,33 +74,30 @@ public class TransformArray {
    * @param newLength the new length of the array
    */
   public void setLength(int newLength) {
-    if((newLength==length)||(newLength<1)) {
+    if((newLength==array.length)||(newLength<1)) {
       return;
     }
     AffineTransform[] newArray = new AffineTransform[newLength];
-    System.arraycopy(array, 0, newArray, 0, Math.min(newLength, length));
-    array = newArray;
-    if(newLength>length) {
-      AffineTransform at = array[length-1];
-      length = newLength;
-      fill(at);
-    } else {
-      length = newLength;
+    System.arraycopy(array, 0, newArray, 0, Math.min(newLength, array.length));
+    if(newLength>array.length) {
+      AffineTransform at = array[array.length-1];
+      fill(newArray, at);
     }
+    array = newArray;
   }
 
   //__________________________ private methods ___________________________
 
   /**
-   * Replaces null elements of the the array with copies of the specified
-   * transform.
+   * Replaces null elements of an array with copies of the specified transform.
    *
+   * @param array the AffineTransform[] to fill
    * @param at the transform to copy
    */
-  private void fill(AffineTransform at) {
-    for(int n = 0; n<length; n++) {
+  private void fill(AffineTransform[] array, AffineTransform at) {
+    for(int n = 0; n<array.length; n++) {
       if(array[n]==null) {
-        array[n] = new AffineTransform(at);
+      	array[n] = new AffineTransform(at); // clone
       }
     }
   }
@@ -128,6 +124,6 @@ public class TransformArray {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2007  The Open Source Physics project
+ * Copyright (c) 2017  The Open Source Physics project
  *                     http://www.opensourcephysics.org
  */

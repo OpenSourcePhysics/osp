@@ -19,7 +19,6 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -87,6 +86,7 @@ import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
@@ -107,12 +107,15 @@ import org.opensourcephysics.display.DisplayColors;
 import org.opensourcephysics.display.Drawable;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.FunctionDrawer;
+import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.HighlightableDataset;
 import org.opensourcephysics.display.Interactive;
+import org.opensourcephysics.display.InteractivePanel;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.PlottingPanel;
 import org.opensourcephysics.display.Selectable;
 import org.opensourcephysics.display.TeXParser;
+import org.opensourcephysics.display.axes.CartesianCoordinateStringBuilder;
 import org.opensourcephysics.display.axes.CartesianInteractive;
 import org.opensourcephysics.media.core.TPoint;
 import org.opensourcephysics.tools.DataToolTable.TableEdit;
@@ -140,13 +143,16 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     // create cursors
     String imageFile = "/org/opensourcephysics/resources/tools/images/selectcursor.gif";                     //$NON-NLS-1$
     Image im = ResourceLoader.getImage(imageFile);
-    SELECT_CURSOR = Toolkit.getDefaultToolkit().createCustomCursor(im, new Point(0, 0), "Add points"); //$NON-NLS-1$
+    SELECT_CURSOR = GUIUtils.createCustomCursor(im, new Point(0, 0), 
+    		"Add points", Cursor.CROSSHAIR_CURSOR); //$NON-NLS-1$
     imageFile = "/org/opensourcephysics/resources/tools/images/selectremovecursor.gif";                     //$NON-NLS-1$
     im = ResourceLoader.getImage(imageFile);
-    SELECT_REMOVE_CURSOR = Toolkit.getDefaultToolkit().createCustomCursor(im, new Point(0, 0), "Remove points"); //$NON-NLS-1$
+    SELECT_REMOVE_CURSOR = GUIUtils.createCustomCursor(im, new Point(0, 0), 
+    		"Remove points", Cursor.CROSSHAIR_CURSOR); //$NON-NLS-1$
     imageFile = "/org/opensourcephysics/resources/tools/images/selectzoomcursor.gif";                     //$NON-NLS-1$
     im = ResourceLoader.getImage(imageFile);
-    SELECT_ZOOM_CURSOR = Toolkit.getDefaultToolkit().createCustomCursor(im, new Point(8, 8), "Zoom"); //$NON-NLS-1$
+    SELECT_ZOOM_CURSOR = GUIUtils.createCustomCursor(im, new Point(8, 8), 
+    		"Zoom", Cursor.CROSSHAIR_CURSOR); //$NON-NLS-1$
   }
   
   // instance fields
@@ -1486,6 +1492,23 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       }
 
     });
+    // add mouse listeners to make sure new column name input field is editable
+    newColumnButton.addMouseListener(new MouseAdapter() {
+    	@Override
+    	public void mouseEntered(MouseEvent e) {
+    		if (dataTable.getColumnCount()==2) {
+    			newColumnButton.requestFocusInWindow();
+    		}
+    	}
+    });
+    newColumnButton.addMouseMotionListener(new MouseAdapter() {
+    	@Override
+    	public void mouseMoved(MouseEvent e) {
+    		if (dataTable.getColumnCount()==2) {
+    			newColumnButton.requestFocusInWindow();
+    		}
+    	}
+    });
     // create dataBuilderButton
     dataBuilderButton = DataTool.createButton(ToolsRes.getString("DataToolTab.Button.DataBuilder.Text")); //$NON-NLS-1$
     dataBuilderButton.setToolTipText(ToolsRes.getString("DataToolTab.Button.DataBuilder.Tooltip")); //$NON-NLS-1$
@@ -1656,6 +1679,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       plot.addDrawable(getWorkingData());
       plot.setTitle(getWorkingData().getName());
     }
+    // set new CoordinateStringBuilder
+    plot.setCoordinateStringBuilder(plot.new PlotCoordinateStringBuilder());
     
     // create mouse listener for selecting data points in plot
     MouseInputListener mouseSelector = new MouseInputAdapter() {
@@ -3683,7 +3708,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
           // create cursor
           String imageFile = "/org/opensourcephysics/resources/tools/images/limitcursor.gif";                     //$NON-NLS-1$
           Image im = ResourceLoader.getImage(imageFile);
-          move = Toolkit.getDefaultToolkit().createCustomCursor(im, new Point(16, 16), "Move Integration Limit"); //$NON-NLS-1$
+          move = GUIUtils.createCustomCursor(im, new Point(16, 16), 
+          		"Move Integration Limit", Cursor.MOVE_CURSOR); //$NON-NLS-1$
         }
         return move;
       }
@@ -3899,6 +3925,108 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       }
 
     } // end XYAxes class
+    
+    /**
+     * An inner CoordinateStringBuilder class that uses datatable formats.
+     */
+    protected class PlotCoordinateStringBuilder extends CartesianCoordinateStringBuilder {
+    	
+    	String defaultXLabel = "x=",  defaultYLabel = "  y="; //$NON-NLS-1$ //$NON-NLS-2$
+    	
+    	PlotCoordinateStringBuilder() {
+    		decimalFormat = new DecimalFormat("0.00#"); //$NON-NLS-1$
+    		scientificFormat = new DecimalFormat("0.00#E0"); //$NON-NLS-1$
+    	}
+ 
+      @Override
+    	public String getCoordinateString(DrawingPanel panel, MouseEvent e) {
+      	// determine if x and y columns are actually displayed in the table
+      	boolean xColDisplayed = false,  yColDisplayed = false;
+      	for(int i = 0; i<dataTable.getColumnCount(); i++) {
+          if (xVar!=null && xVar.equals(dataTable.getColumnName(i))) {
+          	xColDisplayed = true;
+          }
+          if (yVar!=null && yVar.equals(dataTable.getColumnName(i))) {
+          	yColDisplayed = true;
+          }
+        }
+      	String labelX = xColDisplayed? xLabel: defaultXLabel;
+      	String labelY = yColDisplayed? yLabel: defaultYLabel;
+
+      	// get values to display
+        double x = panel.pixToX(e.getPoint().x);
+        double y = panel.pixToY(e.getPoint().y);
+        if((panel instanceof InteractivePanel)&&((InteractivePanel) panel).getCurrentDraggable()!=null) {
+          x = ((InteractivePanel) panel).getCurrentDraggable().getX();
+          y = ((InteractivePanel) panel).getCurrentDraggable().getY();
+        }
+        
+      	// get formatted values
+        Object xValue = "", yValue = ""; //$NON-NLS-1$ //$NON-NLS-2$
+        if (xColDisplayed) {
+        	xValue = getFormattedValue(x, xVar);
+        }
+        else {
+          if(Math.abs(x)>100 || Math.abs(x)<1.0) {
+            xValue = scientificFormat.format((float) x);
+          } else {
+            xValue = decimalFormat.format((float) x);
+          }
+        }
+        if (yColDisplayed) {
+        	yValue = getFormattedValue(y, yVar);
+        }
+        else {
+          if(Math.abs(y)>100 || Math.abs(y)<1.0) {
+            yValue = scientificFormat.format((float) y);
+          } else {
+            yValue = decimalFormat.format((float) y);
+          }
+        }
+
+       String msg = ""; //$NON-NLS-1$
+        if (labelX!=null) {
+          msg = labelX+xValue;
+        }
+        if(labelY!=null) {
+          msg += labelY+yValue;
+        }
+        return msg;
+
+//      	String s = super.getCoordinateString(panel, e);
+//      	return s;
+      }
+      
+      /**
+       * Gets a value formatted for a given table column.
+       *
+       * @param value the value
+       * @param colNamae the column name
+       * @return the value formatted as it would be displayed in the table
+       */
+      public Object getFormattedValue(Object value, String colName) {
+      	if (value==null)
+      		return null;
+      	
+        int col = -1;
+      	for(int i = 0; i<dataTable.getColumnCount(); i++) {
+          if (colName!=null && colName.equals(dataTable.getColumnName(i))) {
+            col = i;
+            break;
+          }
+        }
+      	if (col>-1) {
+	      	TableCellRenderer renderer = dataTable.getCellRenderer(0, col);
+	        Component c = renderer.getTableCellRendererComponent(dataTable, value, false, false, 0, col);
+	        if (c instanceof JLabel) {
+	          String s = ((JLabel)c).getText().trim(); // formatting includes units, if any
+	          return s;
+	        }
+      	}
+      	return value;
+      }
+
+    } // end PlotCoordinateStringBuilder class
     
   } // end DataToolPlotter class
   
@@ -4374,6 +4502,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2007  The Open Source Physics project
+ * Copyright (c) 2017  The Open Source Physics project
  *                     http://www.opensourcephysics.org
  */

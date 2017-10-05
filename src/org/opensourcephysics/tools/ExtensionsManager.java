@@ -122,9 +122,12 @@ public class ExtensionsManager {
    * @return true if jars are copied
    */
 	public boolean copyFFMPegJarsTo(File dir) {
+	  if (ffmpegHome==null) {
+		ffmpegHome = (String)OSPRuntime.getPreference("FFMPEG_HOME"); //$NON-NLS-1$
 		if (ffmpegHome==null || dir==null) {
 			return false;
 		}
+	  }
 	  if (!new File(ffmpegHome+"/"+DiagnosticsForFFMPeg.ffmpegJarNames[0]).exists()) { //$NON-NLS-1$
 	  	return false;
 	  }

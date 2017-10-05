@@ -70,6 +70,13 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 
   /** Field POST           */
   public final static int CUSTOM = -1;   // marker type
+
+  /** maxPointsMultiplier: a multiplier for maxPoints */
+  public static double maxPointsMultiplier = 1.0;	
+	
+  /** defaultMaxPoints: the default maxPoints */
+  private static int defaultMaxPoints = 16*1024;	
+
   protected double[] xpoints;
   // array of x points
 
@@ -157,7 +164,7 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
   private int stride = 1;
   // stride for table view
 
-  protected int maxPoints = 16*1024;
+  protected int maxPoints = defaultMaxPoints;
   // the maximum number of points that will be saved in a dataset
 
   protected ArrayList<ErrorBar> errorBars = new ArrayList<ErrorBar>();
@@ -916,7 +923,8 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
       increaseCapacity(xpoints.length+pointsAdded);
       increasedCapacity = true;
     }
-    pointsAdded = Math.min(pointsAdded, maxPoints); //cannot add more than the maximum capacity
+    int maxPts = maxPoints==defaultMaxPoints? (int)(maxPoints*maxPointsMultiplier): maxPoints;
+    pointsAdded = Math.min(pointsAdded, maxPts); //cannot add more than the maximum capacity
     System.arraycopy(_xpoints, Math.max(0, _xpoints.length-pointsAdded), xpoints, index, pointsAdded);
     System.arraycopy(_ypoints, Math.max(0, _xpoints.length-pointsAdded), ypoints, index, pointsAdded);
     index += pointsAdded;
@@ -1404,7 +1412,8 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
    */
   private synchronized void increaseCapacity(int newCapacity) {
     int pointsAdded = newCapacity-xpoints.length;
-    newCapacity = Math.min(newCapacity, maxPoints); // do not let the number of data points exceed maxPoints
+    int maxPts = maxPoints==defaultMaxPoints? (int)(maxPoints*maxPointsMultiplier): maxPoints;
+    newCapacity = Math.min(newCapacity, maxPts); // do not let the number of data points exceed maxPoints
     int newIndex = Math.min(index, (3*newCapacity)/4); // drop 1/4 of the old data if the capacity is no longer increasing
     newIndex = Math.min(newIndex, newCapacity-pointsAdded); // drop 1/4 of the old data if the capacity is no longer increasing
     if(newIndex<0) {
@@ -1650,6 +1659,6 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2007  The Open Source Physics project
+ * Copyright (c) 2017  The Open Source Physics project
  *                     http://www.opensourcephysics.org
  */

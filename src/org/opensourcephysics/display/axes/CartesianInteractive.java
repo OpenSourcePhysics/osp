@@ -22,6 +22,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -29,7 +30,9 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
+
 import org.opensourcephysics.display.DrawingPanel;
+import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.Interactive;
 import org.opensourcephysics.display.PlottingPanel;
 import org.opensourcephysics.display.Selectable;
@@ -168,7 +171,8 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
            // create cursor
            String imageFile = "/org/opensourcephysics/resources/tools/images/horzleft.gif";                     //$NON-NLS-1$
            Image im = ResourceLoader.getImage(imageFile);
-           horzLeft = Toolkit.getDefaultToolkit().createCustomCursor(im, new Point(16, 16), "Horizontal Left"); //$NON-NLS-1$
+           horzLeft = GUIUtils.createCustomCursor(im, new Point(16, 16), 
+          		 "Horizontal Left", Cursor.W_RESIZE_CURSOR); //$NON-NLS-1$
          }
          return horzLeft;
        case HORZ_AXIS_MAX :
@@ -176,7 +180,8 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
            // create cursor
            String imageFile = "/org/opensourcephysics/resources/tools/images/horzright.gif";                      //$NON-NLS-1$
            Image im = ResourceLoader.getImage(imageFile);
-           horzRight = Toolkit.getDefaultToolkit().createCustomCursor(im, new Point(16, 16), "Horizontal Right"); //$NON-NLS-1$
+           horzRight = GUIUtils.createCustomCursor(im, new Point(16, 16), 
+          		 "Horizontal Right", Cursor.E_RESIZE_CURSOR); //$NON-NLS-1$
          }
          return horzRight;
        case HORZ_AXIS :
@@ -184,7 +189,8 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
            // create cursor
            String imageFile = "/org/opensourcephysics/resources/tools/images/horzcenter.gif";                       //$NON-NLS-1$
            Image im = ResourceLoader.getImage(imageFile);
-           horzCenter = Toolkit.getDefaultToolkit().createCustomCursor(im, new Point(16, 16), "Horizontal Center"); //$NON-NLS-1$
+           horzCenter = GUIUtils.createCustomCursor(im, new Point(16, 16), 
+          		 "Horizontal Center", Cursor.MOVE_CURSOR); //$NON-NLS-1$
          }
          return horzCenter;
        case VERT_AXIS_MIN :
@@ -192,7 +198,8 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
            // create cursor
            String imageFile = "/org/opensourcephysics/resources/tools/images/vertdown.gif";                   //$NON-NLS-1$
            Image im = ResourceLoader.getImage(imageFile);
-           vertDown = Toolkit.getDefaultToolkit().createCustomCursor(im, new Point(16, 16), "Vertical Down"); //$NON-NLS-1$
+           vertDown = GUIUtils.createCustomCursor(im, new Point(16, 16), 
+          		 "Vertical Down", Cursor.S_RESIZE_CURSOR); //$NON-NLS-1$
          }
          return vertDown;
        case VERT_AXIS_MAX :
@@ -200,7 +207,8 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
            // create cursor
            String imageFile = "/org/opensourcephysics/resources/tools/images/vertup.gif";                         //$NON-NLS-1$
            Image im = ResourceLoader.getImage(imageFile);
-           vertUp = Toolkit.getDefaultToolkit().createCustomCursor(im, new Point(16, 16), "Vertical Up");         //$NON-NLS-1$
+           vertUp = GUIUtils.createCustomCursor(im, new Point(16, 16), 
+          		 "Vertical Up", Cursor.N_RESIZE_CURSOR);         //$NON-NLS-1$
          }
          return vertUp;
        case VERT_AXIS :
@@ -208,7 +216,8 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
            // create cursor
            String imageFile = "/org/opensourcephysics/resources/tools/images/vertcenter.gif";                     //$NON-NLS-1$
            Image im = ResourceLoader.getImage(imageFile);
-           vertCenter = Toolkit.getDefaultToolkit().createCustomCursor(im, new Point(16, 16), "Vertical Center"); //$NON-NLS-1$
+           vertCenter = GUIUtils.createCustomCursor(im, new Point(16, 16), 
+          		 "Vertical Center", Cursor.MOVE_CURSOR); //$NON-NLS-1$
          }
          return vertCenter;
        case INSIDE :
@@ -216,7 +225,8 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
            // create cursor
            String imageFile = "/org/opensourcephysics/resources/tools/images/movecursor.gif";             //$NON-NLS-1$
            Image im = ResourceLoader.getImage(imageFile);
-           move = Toolkit.getDefaultToolkit().createCustomCursor(im, new Point(16, 16), "Move All Ways"); //$NON-NLS-1$
+           move = GUIUtils.createCustomCursor(im, new Point(16, 16), 
+          		 "Move All Ways", Cursor.MOVE_CURSOR); //$NON-NLS-1$
          }
          return move;
        case HORZ_VAR :
@@ -743,6 +753,6 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2007  The Open Source Physics project
+ * Copyright (c) 2017  The Open Source Physics project
  *                     http://www.opensourcephysics.org
  */

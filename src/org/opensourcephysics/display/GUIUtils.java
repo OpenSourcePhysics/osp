@@ -8,12 +8,17 @@
 package org.opensourcephysics.display;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -21,6 +26,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
+
 import org.jibble.epsgraphics.EpsGraphics2D;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.media.gif.GIFEncoder;
@@ -421,6 +427,26 @@ public class GUIUtils {
 	      ex.printStackTrace();
 	    }
 	  }
+  
+  /**
+   * Creates a custom cursor from an image. If an exception occurs, a predefined cursor is returned.
+   *
+   * @param image the Image
+   * @param hotspot the position of the cursor hotspot
+   * @param name the name of the cursor
+   * @param predefinedCursorType one of the predefined Cursor types
+   */
+  public static Cursor createCustomCursor(Image image, Point hotspot, String name, int predefinedCursorType) {
+	  try {
+			return Toolkit.getDefaultToolkit().createCustomCursor(image, hotspot, name);
+		} catch (Exception ex) {
+		  try {
+				return Cursor.getPredefinedCursor(predefinedCursorType);
+			} catch (Exception ex1) {
+			}
+		}
+	  return Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+  }
 
 }
 
@@ -444,6 +470,6 @@ public class GUIUtils {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2007  The Open Source Physics project
+ * Copyright (c) 2017  The Open Source Physics project
  *                     http://www.opensourcephysics.org
  */

@@ -1305,7 +1305,14 @@ public class XMLControlElement implements XMLControl {
     try {
       // get document root opening tag line
       String openingTag = input.readLine();
-      while((openingTag!=null)&&(openingTag.indexOf("<object")==-1)) { //$NON-NLS-1$
+      int count = 0;
+      while (openingTag!=null && openingTag.indexOf("<object class=")==-1) { //$NON-NLS-1$
+        count++;
+        if (count>9) {
+        	// stop reading at 10 lines
+        	readFailed = true;
+        	return;
+        }
         openingTag = input.readLine();
       }
       // read this element from the root
@@ -1838,6 +1845,6 @@ public class XMLControlElement implements XMLControl {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2007  The Open Source Physics project
+ * Copyright (c) 2017  The Open Source Physics project
  *                     http://www.opensourcephysics.org
  */

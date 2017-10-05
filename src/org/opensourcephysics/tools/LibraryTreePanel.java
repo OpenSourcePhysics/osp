@@ -91,6 +91,7 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.tools.LibraryResource.Metadata;
 
 /**
@@ -147,6 +148,7 @@ public class LibraryTreePanel extends JPanel {
 	protected String pathToRoot;
   protected LibraryTreeNode rootNode;
   protected DefaultTreeModel treeModel;
+  protected LibraryTreeNodeRenderer treeNodeRenderer;
   protected JTree tree;
   protected JScrollPane treeScroller = new JScrollPane();
   protected JScrollPane htmlScroller = new JScrollPane();
@@ -295,6 +297,25 @@ public class LibraryTreePanel extends JPanel {
 				authorLabel, contactLabel, keywordsLabel, metadataLabel, metadataDropdown};
 		FontSizer.setFonts(toSize, level);
 		EntryField.font = authorField.getFont();
+		
+		// resize treeNodeRenderer and LibraryResource icons
+		treeNodeRenderer.resizableOpenIcon.resize(FontSizer.getIntegerFactor());
+		treeNodeRenderer.resizableClosedIcon.resize(FontSizer.getIntegerFactor());
+		LibraryResource.trackerIcon.resize(FontSizer.getIntegerFactor());
+		LibraryResource.ejsIcon.resize(FontSizer.getIntegerFactor());
+		LibraryResource.imageIcon.resize(FontSizer.getIntegerFactor());
+		LibraryResource.videoIcon.resize(FontSizer.getIntegerFactor());
+		LibraryResource.htmlIcon.resize(FontSizer.getIntegerFactor());
+		LibraryResource.pdfIcon.resize(FontSizer.getIntegerFactor());
+		LibraryResource.unknownIcon.resize(FontSizer.getIntegerFactor());
+		
+		// resize LibraryResource stylesheet font sizes
+		LibraryResource.bodyFont = FontSizer.getResizedFont(LibraryResource.bodyFont, level);
+		LibraryResource.h1Font = FontSizer.getResizedFont(LibraryResource.h1Font, level);
+		LibraryResource.h2Font = FontSizer.getResizedFont(LibraryResource.h2Font, level);
+		
+		// clear htmlPanesByNode to force new HTML code with new stylesheets
+		htmlPanesByNode.clear();
 		
 		// refresh the tree structure
 		TreeModel model = tree.getModel();
@@ -1302,7 +1323,8 @@ public class LibraryTreePanel extends JPanel {
 	  	TreePath path = new TreePath(lastNode.getPath());
 	  	tree.scrollPathToVisible(path);
     }
-    tree.setCellRenderer(new LibraryTreeNodeRenderer());
+    treeNodeRenderer = new LibraryTreeNodeRenderer();
+    tree.setCellRenderer(treeNodeRenderer);
     tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
     ToolTipManager.sharedInstance().registerComponent(tree);
     // listen for tree selections and display the contents
@@ -1663,7 +1685,7 @@ public class LibraryTreePanel extends JPanel {
   	public HTMLPane() {
       setEditable(false);
       setFocusable(false);
-      setContentType("text/html"); //$NON-NLS-1$
+      setContentType("text/html; charset=UTF-8"); //$NON-NLS-1$
       addHyperlinkListener(hyperlinkListener);  
 	    HTMLDocument document = (HTMLDocument)getDocument();
 	    document.getStyleSheet().addRule(LibraryResource.getBodyStyle());  	
@@ -2289,6 +2311,14 @@ public class LibraryTreePanel extends JPanel {
    * A tree node renderer to render LibraryTreeNodes.
    */
   protected class LibraryTreeNodeRenderer extends DefaultTreeCellRenderer {
+  	ResizableIcon resizableOpenIcon, resizableClosedIcon;
+  	
+  	LibraryTreeNodeRenderer() {
+  		resizableOpenIcon = new ResizableIcon(super.getOpenIcon());
+  		resizableClosedIcon = new ResizableIcon(super.getClosedIcon());  		
+  	}
+  	
+  	@Override
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
       super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
       LibraryTreeNode node = (LibraryTreeNode) value;
@@ -2300,10 +2330,25 @@ public class LibraryTreePanel extends JPanel {
       		c = Color.red;
       }
       setToolTipText(node.getToolTip());
-      setIcon(icon!=null? icon: LibraryResource.unknownIcon);
+      if (icon==null) {
+      	LibraryResource.unknownIcon.resize(FontSizer.getIntegerFactor());
+      	icon = LibraryResource.unknownIcon;
+      }
+      setIcon(icon);
       setForeground(c);
       return this;
     }
+    
+    @Override
+    public Icon getOpenIcon() {
+    	return resizableOpenIcon;
+    }
+
+    @Override
+    public Icon getClosedIcon() {
+    	return resizableClosedIcon;
+    }
+    
   }
   
 //______________________________  static methods ___________________________
@@ -2371,6 +2416,6 @@ public class LibraryTreePanel extends JPanel {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2007  The Open Source Physics project
+ * Copyright (c) 2017  The Open Source Physics project
  *                     http://www.opensourcephysics.org
  */

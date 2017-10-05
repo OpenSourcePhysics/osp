@@ -46,8 +46,7 @@ import org.opensourcephysics.tools.Translator;
  * @version 1.0
  */
 public class OSPRuntime {
-  static String version = "2.3";                                                                            //$NON-NLS-1$
-  static String releaseDate = "1 Jan 2015";                                                           //$NON-NLS-1$
+  public static final String VERSION = "4.0.1";                                                                            //$NON-NLS-1$
 
   /** Disables drawing for faster start-up and to avoid screen flash in Drawing Panels. */
   volatile public static boolean disableAllDrawing = false;
@@ -199,8 +198,11 @@ public class OSPRuntime {
    */
   public static void showAboutDialog(Component parent) {
 		String date = OSPRuntime.getLaunchJarBuildDate();
-		if (date==null) date = releaseDate;
-    String aboutString = "OSP Library "+version+" released "+date+"\n"           //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		String vers = "OSP Library "+VERSION; //$NON-NLS-1$
+		if (date!=null) {
+			vers += " released "+date; //$NON-NLS-1$
+		}
+    String aboutString = vers+"\n"           //$NON-NLS-1$
                          +"Open Source Physics Project \n"+"www.opensourcephysics.org"; //$NON-NLS-1$ //$NON-NLS-2$
     JOptionPane.showMessageDialog(parent, aboutString, "About Open Source Physics", JOptionPane.INFORMATION_MESSAGE); //$NON-NLS-1$
   }
@@ -1164,6 +1166,6 @@ public class OSPRuntime {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2007  The Open Source Physics project
+ * Copyright (c) 2017  The Open Source Physics project
  *                     http://www.opensourcephysics.org
  */

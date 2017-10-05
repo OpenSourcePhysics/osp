@@ -9,7 +9,7 @@
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2014  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2017  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -465,3 +465,5 @@ public class SumFilter extends Filter {
   }
 
 }
+
+ * Copyright (c) 2017  The Open Source Physics project

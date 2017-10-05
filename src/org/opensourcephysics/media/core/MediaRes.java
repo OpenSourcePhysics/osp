@@ -9,7 +9,7 @@
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2014  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2017  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,6 @@ package org.opensourcephysics.media.core;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import org.opensourcephysics.display.OSPRuntime;
 
 /**
  * String resources for media classes.
@@ -44,27 +43,14 @@ import org.opensourcephysics.display.OSPRuntime;
 public class MediaRes {
   // static fields
   private static String BUNDLE_NAME = "org.opensourcephysics.resources.media.video"; //$NON-NLS-1$
-  static ResourceBundle res;
-  static Locale resourceLocale;
-
-  static {
-    String language = Locale.getDefault().getLanguage();
-    resourceLocale = Locale.ENGLISH;
-    for(Locale locale : OSPRuntime.getInstalledLocales()) {
-      if(locale.getLanguage().equals(language)) {
-        resourceLocale = locale;
-        break;
-      }
-    }
-    res = ResourceBundle.getBundle(BUNDLE_NAME, resourceLocale);
-  }
+  static Locale resourceLocale = Locale.getDefault();
+  static ResourceBundle res = ResourceBundle.getBundle(BUNDLE_NAME, resourceLocale);
 
   /**
    * Private constructor to prevent instantiation.
    */
   private MediaRes() {
-
-  /** empty block */
+  	/** empty block */
   }
 
   /**
@@ -114,6 +100,6 @@ public class MediaRes {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2007  The Open Source Physics project
+ * Copyright (c) 2017  The Open Source Physics project
  *                     http://www.opensourcephysics.org
  */

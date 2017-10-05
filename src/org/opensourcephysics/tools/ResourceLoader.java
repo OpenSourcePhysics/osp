@@ -1207,12 +1207,16 @@ public class ResourceLoader {
         }
         file.getParentFile().mkdirs();
         int bytesRead;
-        FileOutputStream output = new FileOutputStream(file);
-        while ((bytesRead=input.read(buffer)) != -1) 
-        	output.write(buffer, 0, bytesRead);
-        output.close();
-        input.closeEntry();
-        fileSet.add(file);
+        try {
+					FileOutputStream output = new FileOutputStream(file);
+					while ((bytesRead=input.read(buffer)) != -1) 
+						output.write(buffer, 0, bytesRead);
+					output.close();
+					input.closeEntry();
+					fileSet.add(file);
+				} catch (Exception e) {
+					continue;
+				}
       }
       input.close();
       return fileSet;
@@ -1232,6 +1236,7 @@ public class ResourceLoader {
    * @return the downloaded file, or null if failed
    */
   public static File download(String urlPath, File target, boolean alwaysOverwrite) {
+		if (target==null || target.getParentFile()==null) return null;
   	// compare urlPath with previous attempt and, if identical, check web connection
   	if (!webConnected || downloadURL.equals(urlPath)) {
   		webConnected = ResourceLoader.isURLAvailable("http://www.opensourcephysics.org"); //$NON-NLS-1$
@@ -1344,16 +1349,16 @@ public class ResourceLoader {
   	if (uriPath==null) return null;
   	String path = uriPath;
 //		String path = XML.forwardSlash(uriPath.trim());
-  	boolean isJarOrFile = false;
+//  	boolean isJarOrFile = false;
   	// remove jar protocol, if any
     if (path.startsWith("jar:")) {                     //$NON-NLS-1$
       path = path.substring(4);
-      isJarOrFile = true;
+//      isJarOrFile = true;
     }
   	// remove file protocol, if any
     if (path.startsWith("file:")) {                     //$NON-NLS-1$
       path = path.substring(5);
-      isJarOrFile = true;
+//      isJarOrFile = true;
     }
     // remove all but one leading slash
     // commented out by DB 2016-07-08 to enable opening local network files
@@ -1415,6 +1420,7 @@ public class ResourceLoader {
     // add file protocol if path to local file
 		if (!path.equals("")  //$NON-NLS-1$
 				&& !path.startsWith("http:")  //$NON-NLS-1$
+				&& !path.startsWith("https:")  //$NON-NLS-1$
 				&& !path.startsWith("jar:")  //$NON-NLS-1$
 				&& !path.startsWith("file:/")) { //$NON-NLS-1$
 			String protocol = OSPRuntime.isWindows()? "file:/": "file://"; //$NON-NLS-1$ //$NON-NLS-2$

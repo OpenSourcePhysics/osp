@@ -15,7 +15,7 @@ package org.opensourcephysics.display;
  * Minimum and maximum values may NOT be valid if isMeasured returns false.  Objects that
  * store data, for example, usually return zero if data is null.
  *
- * Copyright:    Copyright (c) 2008
+ * Copyright:    Copyright (c) 2017
  * @author Wolfgang Christian
  * @version 1.0
  */
@@ -66,6 +66,6 @@ public interface LogMeasurable extends Measurable {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2007  The Open Source Physics project
+ * Copyright (c) 2017  The Open Source Physics project
  *                     http://www.opensourcephysics.org
  */

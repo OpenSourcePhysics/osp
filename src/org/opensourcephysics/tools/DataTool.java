@@ -805,7 +805,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    */
   protected static double[] parseDoubles(String text, String delimiter) {
     String[] strings = parseStrings(text, delimiter);
-    return parseDoubles(strings);
+    return parseDoubles(strings, delimiter);
   }
 
   /**
@@ -813,9 +813,10 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    * Unparsable strings are set to Double.NaN.
    *
    * @param strings the String array to parse
+   * @param delimiter the delimiter that was used to parse the strings
    * @return an array of doubles
    */
-  protected static double[] parseDoubles(String[] strings) {
+  protected static double[] parseDoubles(String[] strings, String delimiter) {
     double[] doubles = new double[strings.length];
     for(int i = 0; i<strings.length; i++) {
       if(strings[i].indexOf("\t")>-1) { //$NON-NLS-1$
@@ -824,7 +825,16 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
         try {
           doubles[i] = Double.parseDouble(strings[i]);
         } catch(NumberFormatException e) {
-          doubles[i] = Double.NaN;
+        	// convert decimal separator commas with periods
+        	if (strings[i].indexOf(",")>-1 && !delimiter.equals(",")) { //$NON-NLS-1$ //$NON-NLS-2$
+        		strings[i] = strings[i].replace(",", "."); //$NON-NLS-1$ //$NON-NLS-2$
+            try {
+              doubles[i] = Double.parseDouble(strings[i]);
+            } catch(NumberFormatException e1) {
+            	doubles[i] = Double.NaN;
+            }        		
+        	}
+        	else doubles[i] = Double.NaN;
         }
       }
     }
@@ -928,7 +938,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
             continue;
           }
           String[] strings = DataTool.parseStrings(textLine, DataTool.delimiters[i]);
-          double[] rowData = DataTool.parseDoubles(strings);
+          double[] rowData = DataTool.parseDoubles(strings, DataTool.delimiters[i]);
           // set title if not yet set (null), String[] length > 0, all entries
           // are NaN and only one entry is not ""
           if(rows.isEmpty()&&(strings.length>0)&&(title==null)) {
@@ -2825,7 +2835,11 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     emptyExitItem.setAccelerator(KeyStroke.getKeyStroke('Q', keyMask));
     emptyExitItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        System.exit(0);
+        if(exitOnClose) {
+          System.exit(0);
+        } else {
+          setVisible(false);
+        }
       }
 
     });
@@ -2955,7 +2969,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   protected void showAboutDialog() {
 		String date = OSPRuntime.getLaunchJarBuildDate();
 		if (date==null) date = ""; //$NON-NLS-1$
-    String aboutString = getName()+"   "+date+"\n"   //$NON-NLS-1$ //$NON-NLS-2$
+    String aboutString = getName()+" "+OSPRuntime.VERSION+"  "+date+"\n"   //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                          +"Open Source Physics Project\n" //$NON-NLS-1$
                          +"www.opensourcephysics.org";    //$NON-NLS-1$
     JOptionPane.showMessageDialog(this, aboutString, ToolsRes.getString("Dialog.About.Title")+" "+getName(), //$NON-NLS-1$ //$NON-NLS-2$
@@ -3003,6 +3017,6 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2007  The Open Source Physics project
+ * Copyright (c) 2017  The Open Source Physics project
  *                     http://www.opensourcephysics.org
  */

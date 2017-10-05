@@ -17,7 +17,6 @@ import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.opensourcephysics.controls.ControlsRes;
 import org.opensourcephysics.display.DisplayRes;
-import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.dialogs.DialogsRes;
 
 /**
@@ -30,22 +29,10 @@ import org.opensourcephysics.display.dialogs.DialogsRes;
 public class ToolsRes {
   // static fields
   static final String BUNDLE_NAME = "org.opensourcephysics.resources.tools.tools"; //$NON-NLS-1$
-  static Locale resourceLocale = Locale.ENGLISH;
+  static Locale resourceLocale = Locale.getDefault();
   static ResourceBundle res = ResourceBundle.getBundle(BUNDLE_NAME, resourceLocale);
   static Object resObj = new ToolsRes();
   static PropertyChangeSupport support = new SwingPropertyChangeSupport(resObj);
-
-  static {
-    String language = Locale.getDefault().getLanguage();
-    resourceLocale = Locale.ENGLISH;
-    for(Locale locale : OSPRuntime.getInstalledLocales()) {
-      if(locale.getLanguage().equals(language)) {
-        resourceLocale = locale;
-        break;
-      }
-    }
-    res = ResourceBundle.getBundle(BUNDLE_NAME, resourceLocale);
-  }
 
   /**
    * Private constructor to prevent instantiation.
@@ -148,6 +135,6 @@ public class ToolsRes {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2007  The Open Source Physics project
+ * Copyright (c) 2017  The Open Source Physics project
  *                     http://www.opensourcephysics.org
  */
