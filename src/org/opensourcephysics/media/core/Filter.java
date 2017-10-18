@@ -49,6 +49,9 @@ import javax.swing.JOptionPane;
 import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.opensourcephysics.controls.OSPLog;
+import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.controls.XMLControlElement;
+import org.opensourcephysics.tools.DataTool;
 
 /**
  * This is the abstract base class for all image filters. Note: subclasses
@@ -81,8 +84,7 @@ public abstract class Filter {
   protected PropertyChangeSupport support;
   protected Action enabledAction;
   protected JCheckBoxMenuItem enabledItem;
-  protected JMenuItem deleteItem;
-  protected JMenuItem propertiesItem;
+  protected JMenuItem deleteItem, propertiesItem, copyItem;
   protected boolean hasInspector;
   protected Frame frame;
   protected JButton closeButton;
@@ -121,6 +123,12 @@ public abstract class Filter {
         }
       }
 
+    });
+    copyItem = new JMenuItem(MediaRes.getString("Filter.MenuItem.Copy")); //$NON-NLS-1$
+    copyItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        copy();
+      }
     });
     closeButton = new JButton();
     closeButton.addActionListener(new ActionListener() {
@@ -235,6 +243,14 @@ public abstract class Filter {
   }
 
   /**
+   * Copies this filter to the clipboard.
+   */
+  public void copy() {
+  	XMLControl control = new XMLControlElement(this);
+  	DataTool.copy(control.toXML());
+  }
+  
+  /**
    * Disposes of this filter.
    */
   public void dispose() {
@@ -304,6 +320,8 @@ public abstract class Filter {
       menu.addSeparator();
     }
     menu.add(enabledItem);
+    menu.addSeparator();
+    menu.add(copyItem);
     if(video!=null) {
       menu.addSeparator();
       deleteItem = new JMenuItem(MediaRes.getString("Filter.MenuItem.Delete")); //$NON-NLS-1$
