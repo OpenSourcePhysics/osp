@@ -29,6 +29,7 @@ public class DiagnosticsForXuggle {
   @SuppressWarnings("javadoc")
 	public static final String XUGGLE_INSTALLER_URL ="http://www.compadre.org/osp/items/detail.cfm?ID=11606"; //$NON-NLS-1$
 	public static final String REQUEST_TRACKER = "Tracker"; //$NON-NLS-1$
+	public static final long XUGGLE_54_FILE_LENGTH = 1000000; // smaller than ver 5.4 (38MB) but bigger than 3.4 (.35MB)
 	
 	static String newline = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
 	static String[] xuggleJarNames = new String[] {"xuggle-xuggler.jar", "logback-core.jar",  //$NON-NLS-1$ //$NON-NLS-2$
@@ -54,16 +55,18 @@ public class DiagnosticsForXuggle {
   	
 		// get code base and and XUGGLE_HOME
 		try {
-			URL url = DiagnosticsForXuggle.class.getProtectionDomain().getCodeSource()
-					.getLocation();
-//			File myJarFile = new File(url.getPath());
+			URL url = DiagnosticsForXuggle.class.getProtectionDomain().getCodeSource().getLocation();
 			File myJarFile = new File(url.toURI());
 			codeBase = myJarFile.getParent();
 		} catch (Exception e) {
 		}
 		
     xuggleHome = System.getenv("XUGGLE_HOME"); //$NON-NLS-1$	
-    xuggleHomeJars = new File[xuggleJarNames.length];
+  	if (xuggleHome==null) {
+			xuggleHome = (String)OSPRuntime.getPreference("XUGGLE_HOME"); //$NON-NLS-1$
+  	}
+
+  	xuggleHomeJars = new File[xuggleJarNames.length];
     javaExtensionJars = new File[xuggleJarNames.length];
     codeBaseJars = new File[xuggleJarNames.length];
   }
@@ -177,7 +180,7 @@ public class DiagnosticsForXuggle {
 					+ " " + xuggleHome + newline  //$NON-NLS-1$
 					+ XuggleRes.getString("Xuggle.Dialog.AboutXuggle.Message.Path") //$NON-NLS-1$ 
 					+ path;
-			if (VideoIO.guessXuggleVersion()==5.4) {
+			if (guessXuggleVersion()==5.4) {
 				String recommended = XuggleRes.getString("Xuggle.Dialog.ReplaceXuggle.Message1"); //$NON-NLS-1$
 				if (requester.equals("Tracker")) { //$NON-NLS-1$
 					recommended += "\n"+XuggleRes.getString("Xuggle.Dialog.ReplaceXuggle.Message3"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -201,7 +204,7 @@ public class DiagnosticsForXuggle {
     	if (status==7 && "Tracker".equals(requester) && dialogOwner!=null) { //$NON-NLS-1$
     		// wrong VM bitness: show Preferences dialog for Tracker if appropriate
     		if (OSPRuntime.isWindows()) {
-		    	Collection<String> jreDirs = ExtensionsManager.getManager().getPublicJREs(32);
+		    	Collection<File> jreDirs = JREFinder.getFinder().getJREs(32);
 		    	showPrefsQuestionForTracker = !jreDirs.isEmpty();
     		}
     		else if (OSPRuntime.isMac()) {
@@ -245,7 +248,7 @@ public class DiagnosticsForXuggle {
     		if (response==JOptionPane.YES_OPTION) {
     			// copy jars to codebase directory
     			File dir = new File(codeBase);
-    			ExtensionsManager.getManager().copyXuggleJarsTo(dir);    			
+    			copyXuggleJarsTo(dir);    			
     		}  			
   		}
   		else {
@@ -533,7 +536,7 @@ public class DiagnosticsForXuggle {
 		    	message.add(XuggleRes.getString("Xuggle.Dialog.WrongVMWindows.Message2")); //$NON-NLS-1$
 		    	message.add(" "); //$NON-NLS-1$
 		    	
-		    	Collection<String> jreDirs = ExtensionsManager.getManager().getPublicJREs(32);
+		    	Collection<File> jreDirs = JREFinder.getFinder().getJREs(32);
 					if (jreDirs.isEmpty()) {
 						if (REQUEST_TRACKER.equals(requester)) {
 				    	message.add(XuggleRes.getString("Xuggle.Dialog.NoVMTracker.Message1")); //$NON-NLS-1$
@@ -593,6 +596,70 @@ public class DiagnosticsForXuggle {
 		}
 		return xuggleVersion;
 	}
+	
+	/**
+   * Returns the best guess Xuggle version as a double based on file size.
+   * For an exact version number, use DiagnosticsForXuggle (requires Xuggle to be running).
+	 * @return 3.4 or 5.4 if xuggle installed, otherwise 0.0
+   */
+  public static double guessXuggleVersion() {
+		File xuggleJar = getXuggleJar();
+		if (xuggleJar!=null) {
+			return xuggleJar.length()<XUGGLE_54_FILE_LENGTH? 3.4: 5.4;
+		}
+		return 0;
+  }
+
+  /**
+   * Gets the xuggle-xuggler.jar from the xuggleHome directory, if it exists.
+   *
+   * @return xuggle-xuggler.jar
+   */
+	public static File getXuggleJar() {
+		if (xuggleHome==null) {
+			return null;
+		}
+		File xuggleJar = new File(xuggleHome+"/share/java/jars/xuggle-xuggler.jar"); //$NON-NLS-1$
+	  if (xuggleJar.exists()) {
+	  	return xuggleJar;
+	  }
+	  return null;
+	}
+
+  /**
+   * Copies Xuggle jar files to a target directory. Does nothing if the directory
+   * already contains a xuggle-xuggler.jar of the same size.
+   *
+   * @param dir the directory
+   * @return true if jars are copied
+   */
+	public static boolean copyXuggleJarsTo(File dir) {
+		if (xuggleHome==null || dir==null) {
+			return false;
+		}
+	  if (!new File(xuggleHome+"/share/java/jars/xuggle-xuggler.jar").exists()) { //$NON-NLS-1$
+	  	return false;
+	  }
+    File xuggleJarDir = new File(xuggleHome+"/share/java/jars"); //$NON-NLS-1$
+	  File xuggleFile = new File(xuggleJarDir, xuggleJarNames[0]);
+    long fileLength = xuggleFile.length();
+    File extFile = new File(dir, xuggleJarNames[0]);
+    // copy xuggle jars
+    if (!extFile.exists() || extFile.length()!=fileLength) {
+	    for (String next: xuggleJarNames) {
+	      xuggleFile = new File(xuggleJarDir, next);
+	      extFile = new File(dir, next);
+	      if (!VideoIO.copyFile(xuggleFile, extFile)) {
+	      	return false;
+	      }
+	    }
+	    // all jars were copied
+      return true;
+    }
+		return false;
+	}
+	
+
 	
 	/**
 	 * Tests this class.

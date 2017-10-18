@@ -66,9 +66,9 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.tools.DiagnosticsForXuggle;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ResourceLoader;
-import org.opensourcephysics.tools.ExtensionsManager;
 
 /**
  * This provides static methods for managing video and text input/output.
@@ -88,8 +88,6 @@ public class VideoIO {
 	public static final String ENGINE_NONE = "none"; //$NON-NLS-1$
 	@SuppressWarnings("javadoc")
 	public static final String DEFAULT_PREFERRED_EXPORT_EXTENSION = "mp4"; //$NON-NLS-1$
-	@SuppressWarnings("javadoc")
-	public static final long XUGGLE_54_FILE_LENGTH = 1000000; // smaller than ver 5.4 (38MB) but bigger than 3.4 (.35MB)
 	
 	// static fields
   protected static JFileChooser chooser;
@@ -251,7 +249,7 @@ public class VideoIO {
    */
   public static boolean isEngineInstalled(String engine) {
   	if (engine.equals(ENGINE_XUGGLE)) {
-  		return ExtensionsManager.getManager().getXuggleJar()!=null;
+  		return DiagnosticsForXuggle.getXuggleJar()!=null;
   	}
   	return false;
   }
@@ -290,45 +288,13 @@ public class VideoIO {
 		double xuggleVersion = 0;
     for (VideoType next: videoEngines) {
     	if (next.getClass().getSimpleName().contains(ENGINE_XUGGLE)) {
-    		xuggleVersion = guessXuggleVersion();
+    		xuggleVersion = DiagnosticsForXuggle.guessXuggleVersion();
     	}
     }
 		if (xuggleVersion>0) engine = ENGINE_XUGGLE;
   	return engine;
   }
 
-  /**
-   * Updates a video engine by copying files or creating symlinks if needed.
-   *
-   * @param engine ENGINE_XUGGLE or ENGINE_NONE
-   * @return true if updated
-   */
-  public static boolean updateEngine(String engine) {
-    // set up java vm extensions folders
-    String extFolders = XML.forwardSlash(System.getProperty("java.ext.dirs")); //$NON-NLS-1$
-    ArrayList<File> extDirs = new ArrayList<File>();
-    String separator = System.getProperty("path.separator"); //$NON-NLS-1$
-    int n = extFolders.indexOf(separator);
-    while (n>-1) {
-    	extDirs.add(new File(extFolders.substring(0, n)));
-    	extFolders = extFolders.substring(n+1);
-      n = extFolders.indexOf(separator);
-    }    
-    if (!"".equals(extFolders)) //$NON-NLS-1$
-    	extDirs.add(new File(extFolders));
-    
-  	ExtensionsManager manager = ExtensionsManager.getManager();
-  	if (engine.equals(ENGINE_XUGGLE)) {
-  		boolean copied = false;
-  		for (File extDir: extDirs) {
-  			if (!extDir.exists()) continue;
-  			copied = manager.copyXuggleJarsTo(extDir) || copied;
-  		}
-  		return copied;
-  	}
-    return false;
-  }
-  
   /**
    * test executing shell commands
    */
@@ -989,19 +955,6 @@ public class VideoIO {
 	  return null;
 	}
 	 
-	/**
-   * Returns the best guess Xuggle version as a double based on file size.
-   * For an exact version number, use DiagnosticsForXuggle (requires Xuggle to be running).
-	 * @return 3.4 or 5.4 if xuggle installed, otherwise 0.0
-   */
-  public static double guessXuggleVersion() {
-		File xuggleJar = ExtensionsManager.getManager().getXuggleJar();
-		if (xuggleJar!=null) {
-			return xuggleJar.length()<XUGGLE_54_FILE_LENGTH? 3.4: 5.4;
-		}
-		return 0;
-  }
-
   /**
    * A JPanel for setting a preferred video engine when opening a video.
    */  
