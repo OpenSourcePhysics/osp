@@ -1074,9 +1074,6 @@ class OSPLogHandler extends Handler {
     if(val==ConsoleLevel.ERR_CONSOLE.intValue()) {
     	if (msg.indexOf("OutOfMemory")>-1) //$NON-NLS-1$
     		ospLog.firePropertyChange("error", -1, OSPLog.OUT_OF_MEMORY_ERROR); //$NON-NLS-1$
-    	else if (msg.indexOf("quicktime.QTSession")>-1) {//$NON-NLS-1$
-    		ospLog.firePropertyChange("qt_error", null, msg); //$NON-NLS-1$
-    	}
     	if (!OSPLog.logConsole) return;
       style = OSPLog.magenta;
     } else if(val==ConsoleLevel.OUT_CONSOLE.intValue()) {

@@ -351,24 +351,6 @@ public class OSPRuntime {
 } 
   
   /**
-   * Determines if Quick Time for Java has been installed by looking for QTJava.zip in java extensions folder.
-   * 
-   * @return true if  QTJava found; false otherwise
-   */
-  static public boolean hasQTJava() {
-	    // look for QTJava.zip in java extensions folder
-	    String extdir = System.getProperty("java.ext.dirs"); //$NON-NLS-1$
-	    // look in first directory listed (before path separator, if any)
-      String separator = System.getProperty("path.separator"); //$NON-NLS-1$
-	    if(extdir.indexOf(separator)>-1) {
-	      extdir = extdir.substring(0, extdir.indexOf(separator));
-	    }
-	    String slash = System.getProperty("file.separator", "/"); //$NON-NLS-1$ //$NON-NLS-2$
-	    File extfile = new File(extdir+slash+"QTJava.zip");       //$NON-NLS-1$
-	    return extfile.exists();
-  }
-
-  /**
    * Determines if an InputEvent is a popup trigger.
    * @param e the input event
    * @return true if event is a popup trigger

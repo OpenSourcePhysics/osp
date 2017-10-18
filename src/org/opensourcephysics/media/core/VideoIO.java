@@ -83,8 +83,6 @@ public class VideoIO {
 	@SuppressWarnings("javadoc")
 	public static final String[] VIDEO_EXTENSIONS = {"mov", "avi", "mp4"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	@SuppressWarnings("javadoc")
-	public static final String ENGINE_QUICKTIME = "QT"; //$NON-NLS-1$
-	@SuppressWarnings("javadoc")
 	public static final String ENGINE_XUGGLE = "Xuggle"; //$NON-NLS-1$
 	@SuppressWarnings("javadoc")
 	public static final String ENGINE_NONE = "none"; //$NON-NLS-1$
@@ -248,17 +246,12 @@ public class VideoIO {
    * Determines if a video engine is installed on the current computer.
    * Note that accessing an installed engine may require switching Java VM.
    *
-   * @param engine ENGINE_QUICKTIME, ENGINE_XUGGLE, or ENGINE_NONE
+   * @param engine ENGINE_XUGGLE, or ENGINE_NONE
    * @return true if installed
    */
   public static boolean isEngineInstalled(String engine) {
   	if (engine.equals(ENGINE_XUGGLE)) {
   		return ExtensionsManager.getManager().getXuggleJar()!=null;
-  	}
-  	else if (engine.equals(ENGINE_QUICKTIME)) {
-  		if (OSPRuntime.isMac()) return true;
-  		if (OSPRuntime.isLinux()) return false;
-  		return ExtensionsManager.getManager().getQTJavaZip()!=null;
   	}
   	return false;
   }
@@ -266,7 +259,7 @@ public class VideoIO {
   /**
    * Gets the name of the current video engine.
    *
-   * @return ENGINE_QUICKTIME, ENGINE_XUGGLE, or ENGINE_NONE
+   * @return ENGINE_XUGGLE, or ENGINE_NONE
    */
   public static String getEngine() {
   	if (videoEngine==null) {
@@ -278,11 +271,10 @@ public class VideoIO {
   /**
    * Sets the current video engine by name.
    *
-   * @param engine ENGINE_QUICKTIME, ENGINE_XUGGLE, or ENGINE_NONE
+   * @param engine ENGINE_XUGGLE, or ENGINE_NONE
    */
   public static void setEngine(String engine) {
-  	if (engine==null || (!engine.equals(ENGINE_QUICKTIME)	
-  			&& !engine.equals(ENGINE_XUGGLE) 
+  	if (engine==null || (!engine.equals(ENGINE_XUGGLE) 
   			&& !engine.equals(ENGINE_NONE)))
   		return;
   	videoEngine = engine;
@@ -291,33 +283,24 @@ public class VideoIO {
   /**
    * Gets the name of the default video engine.
    *
-   * @return ENGINE_QUICKTIME, ENGINE_XUGGLE, or ENGINE_NONE
+   * @return ENGINE_XUGGLE, or ENGINE_NONE
    */
   public static String getDefaultEngine() {
   	String engine = ENGINE_NONE;
 		double xuggleVersion = 0;
-		boolean hasQT = false;
     for (VideoType next: videoEngines) {
     	if (next.getClass().getSimpleName().contains(ENGINE_XUGGLE)) {
     		xuggleVersion = guessXuggleVersion();
     	}
-    	else if (next.getClass().getSimpleName().contains(ENGINE_QUICKTIME)) {
-    		hasQT = true;
-    	}
     }
-		// Xuggle 3.4 is first choice  		
-		if (xuggleVersion==3.4) engine = ENGINE_XUGGLE;
-		// QuickTime is second choice
-		else if (hasQT) engine = ENGINE_QUICKTIME;
-		// Xuggle 5.4 is last choice--buggy
-		else if (xuggleVersion==5.4) engine = ENGINE_XUGGLE;
+		if (xuggleVersion>0) engine = ENGINE_XUGGLE;
   	return engine;
   }
 
   /**
    * Updates a video engine by copying files or creating symlinks if needed.
    *
-   * @param engine ENGINE_QUICKTIME, ENGINE_XUGGLE, or ENGINE_NONE
+   * @param engine ENGINE_XUGGLE or ENGINE_NONE
    * @return true if updated
    */
   public static boolean updateEngine(String engine) {
@@ -340,15 +323,6 @@ public class VideoIO {
   		for (File extDir: extDirs) {
   			if (!extDir.exists()) continue;
   			copied = manager.copyXuggleJarsTo(extDir) || copied;
-  		}
-  		return copied;
-  	}
-  	else if (engine.equals(ENGINE_QUICKTIME)) {
-    	if (org.opensourcephysics.display.OSPRuntime.isLinux()) return false;
-  		boolean copied = false;
-  		for (File extDir: extDirs) {
-  			if (!extDir.exists()) continue;
-  			copied = manager.copyQTJavaTo(extDir) || copied;
   		}
   		return copied;
   	}
@@ -636,16 +610,14 @@ public class VideoIO {
   /**
    * Gets an array of video types available to a specified video engine.
    * Always returns image and gif types in addition to the engine types.
-   * @param engine ENGINE_QUICKTIME, ENGINE_XUGGLE, or ENGINE_NONE
+   * @param engine ENGINE_XUGGLE, or ENGINE_NONE
    * @return the available video types
    */
   public static VideoType[] getVideoTypesForEngine(String engine) {
   	ArrayList<VideoType> available = new ArrayList<VideoType>();
-    boolean skipQT = VideoIO.getEngine().equals(ENGINE_XUGGLE) || VideoIO.getEngine().equals(ENGINE_NONE);
-    boolean skipXuggle = VideoIO.getEngine().equals(ENGINE_QUICKTIME) || VideoIO.getEngine().equals(ENGINE_NONE);
+    boolean skipXuggle = VideoIO.getEngine().equals(ENGINE_NONE);
     for (VideoType next: videoTypes) {
     	String typeName = next.getClass().getSimpleName();
-    	if (skipQT && typeName.contains(ENGINE_QUICKTIME)) continue;
     	if (skipXuggle && typeName.contains(ENGINE_XUGGLE)) continue;
   		available.add(next);
     }
@@ -696,11 +668,9 @@ public class VideoIO {
   	String extension = XML.getExtension(path);
     VideoType[] allTypes = getVideoTypesForExtension(extension);
     ArrayList<VideoType> allowedTypes = new ArrayList<VideoType>();
-    boolean skipQT = VideoIO.getEngine().equals(ENGINE_XUGGLE) || VideoIO.getEngine().equals(ENGINE_NONE);
-    boolean skipXuggle = VideoIO.getEngine().equals(ENGINE_QUICKTIME) || VideoIO.getEngine().equals(ENGINE_NONE);
+    boolean skipXuggle = VideoIO.getEngine().equals(ENGINE_NONE);
     for(int i = 0; i<allTypes.length; i++) {
     	String typeName = allTypes[i].getClass().getSimpleName();
-    	if (skipQT && typeName.contains(ENGINE_QUICKTIME)) continue;
     	if (skipXuggle && typeName.contains(ENGINE_XUGGLE)) continue;
     	allowedTypes.add(allTypes[i]);
     }
@@ -728,8 +698,7 @@ public class VideoIO {
 		// provide immediate way to open with other engines
     String engine = VideoIO.getEngine();
   	engine = VideoIO.ENGINE_NONE.equals(engine)? MediaRes.getString("VideoIO.Engine.None"): //$NON-NLS-1$
-  			VideoIO.ENGINE_XUGGLE.equals(engine)? MediaRes.getString("XuggleVideoType.Description"): //$NON-NLS-1$
-  			MediaRes.getString("QTVideoType.Description"); //$NON-NLS-1$
+  			MediaRes.getString("XuggleVideoType.Description"); //$NON-NLS-1$
   	String message = MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Message1")+" ("+engine+")."; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
   	message += "\n"+MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Message2"); //$NON-NLS-1$ //$NON-NLS-2$
   	message += "\n\n"+MediaRes.getString("VideoIO.Dialog.Label.Path")+": "+path; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -737,9 +706,6 @@ public class VideoIO {
   	for (VideoType next: engines) {
   		if (next.getClass().getSimpleName().equals("XuggleVideoType")) { //$NON-NLS-1$
   			optionList.add(MediaRes.getString("XuggleVideoType.Description")); //$NON-NLS-1$
-  		}
-  		else if (next.getClass().getSimpleName().equals("QTVideoType")) { //$NON-NLS-1$
-  			optionList.add(MediaRes.getString("QTVideoType.Description")); //$NON-NLS-1$
   		}
   	}
   	optionList.add(MediaRes.getString("Dialog.Button.Cancel")); //$NON-NLS-1$

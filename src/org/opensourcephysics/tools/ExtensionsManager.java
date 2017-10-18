@@ -22,7 +22,7 @@ import org.opensourcephysics.display.OSPRuntime;
 
 	/**
 	 * ExtensionsManager manages Java extensions directories.
-	 * Its primary use is to copy Xuggle jars and QTJava.zip into appropriate ext directories.
+	 * Its primary use is to copy Xuggle jars into appropriate ext directories.
 	 * 
 	 * @author Douglas Brown
 	 * @version 1.0
@@ -65,8 +65,6 @@ public class ExtensionsManager {
     timer.setRepeats(true);
     timer.start();
     
-//    File qtJava = getManager().getQTJavaZip();
-//    System.out.println(qtJava);
     System.exit(0);
     
 //		// print list of extensions to stdout for use by Bitrock installers
@@ -167,65 +165,6 @@ public class ExtensionsManager {
 	  return null;
 	}
 
-	
-  /**
-   * Copies QTJava.zip to a target directory. Does not overwrite a later version.
-   *
-   * @param dir the directory
-   * @return true if copied
-   */
-	public boolean copyQTJavaTo(File dir) {
-    File qtSource = getQTJavaZip(); // file to be copied
-	  if (qtSource==null)	return false;
-    File extFile = new File(dir, qtSource.getName());
-  	long modified = qtSource.lastModified();
-
-    // copy qtSource to directory if newer
-    if (!extFile.exists() || extFile.lastModified()<modified) {
-	    if (!copyFile(qtSource, extFile))	{
-	    	return false;
-	    }
-      return true;
-    }
-		return false;
-	}
-	
-  /**
-   * Returns the QTJava.zip file with the latest modified date.
-   *
-   * @return the QTJava.zip file, or null if none found
-   */
-	public File getQTJavaZip() {
-  	String qtJarName = "QTJava.zip"; //$NON-NLS-1$
-  	String currentDir = OSPRuntime.getLaunchJarPath();
-  	if (currentDir!=null) {
-  		currentDir = XML.getDirectoryPath(currentDir);
-  	}
-  	else {
-  		currentDir = "."; //$NON-NLS-1$
-  	}
-    String[] folderNames = {
-    		currentDir,
-    		"C:/Program Files/QuickTime/QTSystem", //$NON-NLS-1$
-    		"C:/Program Files (x86)/QuickTime/QTSystem", //$NON-NLS-1$
-    		"C:/windows/system32", //$NON-NLS-1$
-    		"C:/windows/system", //$NON-NLS-1$
-    		"C:/winNT/system32", //$NON-NLS-1$
-    		"system/library/java/extensions"}; //$NON-NLS-1$
-    // look for most recent QTJava.zip in system folders
-    long modified = 0;
-    File qtSource = null; // file to be returned
-    for (String next: folderNames) {
-      File qtFile = new File(next, qtJarName);
-    	if (!qtFile.exists()) continue;
-    	long date = qtFile.lastModified();
-    	if (date>modified) {
-    		modified = date;
-    		qtSource = qtFile;
-    	}     
-    }
-	  return qtSource;
-	}
 	
   /**
    * Finds all java extension directories on the current machine.

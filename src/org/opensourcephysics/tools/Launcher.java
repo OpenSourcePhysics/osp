@@ -1911,14 +1911,6 @@ public class Launcher {
 
     });
     diagnosticMenu.add(OSItem);
-    JMenuItem qtItem = new JMenuItem("QuickTime"); //$NON-NLS-1$
-    qtItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        Diagnostics.aboutQTJava();
-      }
-
-    });
-    diagnosticMenu.add(qtItem);
     JMenuItem j3dItem = new JMenuItem("Java 3D"); //$NON-NLS-1$
     j3dItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -3732,8 +3724,7 @@ public class Launcher {
           continue;
         }
       }
-      if((frames[i].getClass().getName().indexOf("SharedOwnerFrame")>-1)||( //$NON-NLS-1$
-        frames[i].getClass().getName().indexOf("QTFrame")>-1)) {            //$NON-NLS-1$
+      if((frames[i].getClass().getName().indexOf("SharedOwnerFrame")>-1)) {            //$NON-NLS-1$
         continue;
       }
       newFrames.add(frames[i]);

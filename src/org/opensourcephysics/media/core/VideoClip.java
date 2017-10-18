@@ -711,10 +711,6 @@ public class VideoClip {
 	        	VideoType xuggleType = VideoIO.getVideoType("Xuggle", ext); //$NON-NLS-1$
 	        	if (xuggleType!=null) otherEngines.add(xuggleType);
 	        }
-	        if (!engine.equals(VideoIO.ENGINE_QUICKTIME)) {
-	        	VideoType qtType = VideoIO.getVideoType("QT", ext); //$NON-NLS-1$
-	        	if (qtType!=null) otherEngines.add(qtType);
-	        }
 	        if (otherEngines.isEmpty()) {
 		        JOptionPane.showMessageDialog(null, 
 		        		MediaRes.getString("VideoIO.Dialog.BadVideo.Message")+"\n\n"+path, //$NON-NLS-1$ //$NON-NLS-2$
@@ -729,8 +725,7 @@ public class VideoClip {
 			    	if (video!=null && changePreferredEngine.isSelected()) {
 			    		String typeName = video.getClass().getSimpleName();
 			    		String newEngine = typeName.indexOf("Xuggle")>-1? VideoIO.ENGINE_XUGGLE: //$NON-NLS-1$
-			    			typeName.indexOf("QT")>-1? VideoIO.ENGINE_QUICKTIME: //$NON-NLS-1$
-			    				VideoIO.ENGINE_NONE;
+			    			VideoIO.ENGINE_NONE;
 			    		VideoIO.setEngine(newEngine);
 			    	}	        	
 	        }
