@@ -50,6 +50,7 @@ import javax.swing.SwingUtilities;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.display.Data;
 import org.opensourcephysics.display.Drawable;
 import org.opensourcephysics.display.InteractivePanel;
@@ -154,9 +155,15 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
       return;
     }
     Video prev = video;
-    VideoClip clip = new VideoClip(newVideo);
-    clip.setPlayAllSteps(playAllSteps);
-    getPlayer().setVideoClip(clip);
+    VideoClip prevClip = getPlayer().getVideoClip();
+    VideoClip newClip = new VideoClip(newVideo);
+    if (newVideo==null && prevClip!=null) {
+    	XMLControl control = new XMLControlElement(prevClip);
+    	control.setValue("video", null); //$NON-NLS-1$
+    	control.loadObject(newClip);
+    }
+    newClip.setPlayAllSteps(playAllSteps);    
+    getPlayer().setVideoClip(newClip);
     if(prev!=null) {
       prev.dispose();
     }

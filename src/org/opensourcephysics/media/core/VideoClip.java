@@ -668,10 +668,11 @@ public class VideoClip {
           if(vid.isFileBased()) {
             control.setValue("video", video); //$NON-NLS-1$
           }
+  	      control.setValue("video_framecount", clip.getFrameCount()); //$NON-NLS-1$
         } else {
           control.setValue("video", video);   //$NON-NLS-1$
+  	      control.setValue("video_framecount", video.getFrameCount()); //$NON-NLS-1$
         }
-	      control.setValue("video_framecount", video.getFrameCount()); //$NON-NLS-1$
       }
       control.setValue("startframe", clip.getStartFrameNumber()); //$NON-NLS-1$
       control.setValue("stepsize", clip.getStepSize());           //$NON-NLS-1$
