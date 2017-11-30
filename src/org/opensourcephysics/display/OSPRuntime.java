@@ -573,16 +573,20 @@ public class OSPRuntime {
 	  		else file = null;
 	  	}
 	  	else if (OSPRuntime.isMac()) {
-	  		// typical: /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home/bin/java
-	  		// symlink at: /Library/Java/Home/bin/java
-	  		// see also /Library/Java/JavaVirtualMachines?
-	  		if (file.getName().endsWith("jdk")) //$NON-NLS-1$
-	  			file = new File(file, "Contents/Home/bin/java"); //$NON-NLS-1$
-	  		else if (file.getName().equals("Home") //$NON-NLS-1$
-	  				&& file.getPath().indexOf("/Java")>-1) { //$NON-NLS-1$
-	  			file = new File(file, "bin/java"); //$NON-NLS-1$
+	  		// typical jdk public: /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home/jre
+	  		// jdk private: /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home
+	  		// in Tracker.app: /Applications/Tracker.app/Contents/PlugIns/Java.runtime/Contents/Home/jre
+	  		// also in /Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home
+	  		// also sometimes in /Library/Java...??
+	  		// symlink at: /Library/Java/Home/bin/java??
+	  		if (file.getName().endsWith("jdk")) { //$NON-NLS-1$
+	  			File parent = file;
+	  			file = new File(parent, "Contents/Home/jre/bin/java"); //$NON-NLS-1$
+	  			if (!file.exists()) {
+	  				file = new File(parent, "Contents/Home/bin/java"); //$NON-NLS-1$)
+	  			}
 	  		}
-	  		else file = null;
+	  		else file = new File(file, "bin/java"); //$NON-NLS-1$
 	  	}
 	  	else if (OSPRuntime.isLinux()) {
 	  		// typical: /usr/lib/jvm/java-X-openjdk/jre/bin/java 

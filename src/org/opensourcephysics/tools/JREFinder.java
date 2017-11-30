@@ -263,9 +263,12 @@ public class JREFinder {
 	 *			          or Program Files\Java\jreX\bin\java.exe
 	 *			          or Program Files\Java\jre-X\bin\java.exe
 	 *			typical 32-bit jdk in 64-bit Windows: Program Files(x86)\Java\jdkX.X.X_XX\jre\bin\java.exe
-	 * OSX: typical: /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home/bin/java
-	 *			symlink at: /Library/Java/Home/bin/java
-	 *			also in /Library/Java/JavaVirtualMachines?
+	 * OSX: typical: /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home/jre/bin/java
+	 *			symlink at: /Library/Java/Home/bin/java??
+	 *			also in embedded jre in Tracker.app: /Applications/Tracker.app/Contents/PlugIns/Java.runtime/Contents/Home/jre
+	 *			also in /Library/Java
+	 *			also in /Library/Internet Plug-Ins
+
 	 * Linux: typical: /usr/lib/jvm/java-X-openjdk/jre/bin/java 
 	 *			  symlink at: /usr/lib/jvm/java-X.X.X-openjdk/jre/bin/java
 	 *			  sun versions: java-X-sun and java-X.X.X-sun
@@ -308,9 +311,17 @@ public class JREFinder {
 					}
 				}
 				if (OSPRuntime.isMac()) {
+					// check for System environment TRACKER_HOME to search for embedded jre
+					String trackerhome = System.getenv("TRACKER_HOME"); //$NON-NLS-1$
+					if (trackerhome!=null) {
+						File file = new File(trackerhome);
+						if (file.exists()) searchPaths.add(file.getParentFile());   									
+					}
 					File file = new File("/System/Library/Java"); //$NON-NLS-1$
 					if (file.exists()) searchPaths.add(file);   									
 					file = new File("/Library/Java"); //$NON-NLS-1$
+					if (file.exists()) searchPaths.add(file);   									
+					file = new File("/Library/Internet Plug-Ins"); //$NON-NLS-1$
 					if (file.exists()) searchPaths.add(file);   									
 				}
 				if (OSPRuntime.isLinux()) {
@@ -359,14 +370,22 @@ public class JREFinder {
 		
 		// for OSX
 		if (OSPRuntime.isMac()) {
-			// check this directory
-			File javaFile = new File(dir, "bin/java"); //$NON-NLS-1$
+			// check for jre subfolder--add public jre instead of private in jdk
+			// should also find the embedded jre in Tracker.app
+			File javaFile = new File(dir, "jre/bin/java"); //$NON-NLS-1$
+			if (javaFile.exists()) {
+				jreSet.add(new JavaFile(new File(dir, "jre"))); //$NON-NLS-1$
+				return jreSet;
+			}
+			// check for bin/java file
+			javaFile = new File(dir, "bin/java"); //$NON-NLS-1$
 			if (javaFile.exists()) {
 				jreSet.add(new JavaFile(dir));
 				return jreSet;
 			}
 			
-			// look for Contents if parent is plugin
+			// look in Contents/Home if parent is a plugin
+			// eg /Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home
 			if (dir.getName().contains(".plugin")) { //$NON-NLS-1$
 				File child = new File(dir, "Contents"); //$NON-NLS-1$
 				if (child.exists()) {
@@ -427,7 +446,7 @@ public class JREFinder {
 	}
 	
 	/**
-	 * JavaFilter class identifies java files.
+	 * JavaFilter class identifies java executable files.
 	 */
   private static class JavaFilter implements FilenameFilter { 
   	@Override
@@ -438,7 +457,8 @@ public class JREFinder {
     	if (dir.getPath().contains("1.5.") || dir.getPath().contains("-5-")  //$NON-NLS-1$ //$NON-NLS-2$
     			|| dir.getPath().contains("1.4.") || dir.getPath().contains("1.3.") //$NON-NLS-1$ //$NON-NLS-2$
     			|| dir.getPath().contains("1.2.")) return false; //$NON-NLS-1$
-    	if (name.contains("javaw")) return true; //$NON-NLS-1$
+    	if (name.equals("java.exe")) return true; //$NON-NLS-1$  // windows
+    	if (name.equals("java")) return true; //$NON-NLS-1$ // OSX
       return false;
     }
   }
