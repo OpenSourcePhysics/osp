@@ -37,6 +37,20 @@ public class SortDecorator implements TableModel, TableModelListener {
     realModel.addTableModelListener(this);
     allocate();
   }
+  
+  /**
+   * Gets the sorted row number for a given real model row
+   * Added by D Brown Dec 2017
+   * 
+   * @param realModelRow the unsorted row number
+   * @return the sorted row number
+   */
+  public int getSortedRow(int realModelRow) {
+  	for (int i=0; i< indexes.length; i++) {
+  		if (indexes[i]==realModelRow) return i;
+  	}
+  	return -1;
+  }
 
   public Object getValueAt(int row, int column) {
   	if (column>=getColumnCount()) { return null; }
@@ -152,6 +166,11 @@ public class SortDecorator implements TableModel, TableModelListener {
     for(int i = 0; i<indexes.length; ++i) {
       indexes[i] = i;
     }
+  }
+  
+  public void reset() {
+  	allocate();
+  	sortedColumn = -1;
   }
 
   public int getRowCount() {
