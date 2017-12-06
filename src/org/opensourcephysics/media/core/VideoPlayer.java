@@ -921,6 +921,25 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
           });
           popup.add(item);
           popup.addSeparator();
+          boolean showTrim = false;
+          if(getVideoClip().getVideo()==null || getVideoClip().getVideo().getFrameCount()==1) {
+          	if (getVideoClip().getFrameCount()>getVideoClip().getEndFrameNumber()+1) {
+          		showTrim = true;
+          	}
+          }
+
+          if (showTrim) {
+          	String s = MediaRes.getString("VideoPlayer.Slider.Popup.Menu.TrimFrames"); //$NON-NLS-1$
+          	item = new JMenuItem(s); 
+	          item.addActionListener(new ActionListener() {
+	            public void actionPerformed(ActionEvent e) {
+	              getVideoClip().trimFrameCount();
+	            }
+	          });
+	          popup.add(item);
+	          popup.addSeparator();
+	  			}
+
     			final int frameNum = clipControl.getFrameNumber();
           if (active==null || active.equals("in")) { //$NON-NLS-1$
           	String s = MediaRes.getString("VideoPlayer.Slider.Popup.Menu.SetIn"); //$NON-NLS-1$
@@ -994,7 +1013,6 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     		if (active==null)
     			slideMouseListener.mouseReleased(e);
     		else {
-    			clip.trimFrameCount();
   				vidPanel.setMessage(null);
     		}
     		clip.setAdjusting(false);

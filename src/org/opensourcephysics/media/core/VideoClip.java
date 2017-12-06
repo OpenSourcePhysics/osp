@@ -209,7 +209,6 @@ public class VideoClip {
     // reset end frame
     setEndFrameNumber(endFrame);
 
-    trimFrameCount();
     return true;
   }
 
@@ -388,7 +387,7 @@ public class VideoClip {
    * @param end the desired end frame
    * @return true if the end frame number was changed
    */
-  public boolean setEndFrameNumber(int end) {  	
+  public boolean setEndFrameNumber(int end) { 
   	return setEndFrameNumber(end, maxFrameCount-1-frameShift, true);
   }
 
