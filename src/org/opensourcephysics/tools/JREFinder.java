@@ -234,10 +234,26 @@ public class JREFinder {
    * Finds the default JRE of a given bitness (32 or 64). A public JRE is returned if possible. 
    * 
    * @param vmBitness the bitness desired
+   * @param path the first path to search for a JRE--if found, return as default 
    * @return the default JRE directory, or null if none found
    */
-	public File getDefaultJRE(int vmBitness) {
-		// first look at public JREs
+	public File getDefaultJRE(int vmBitness, String path) {
+		// first look in path
+		if (path!=null) {
+			File dir = new File(path);
+			if (dir.exists()) {
+				Set<File> result = new TreeSet<File>();
+				result = findJREsInDirectory(dir, result);
+				if (!result.isEmpty()) {
+					for (File f: result) {	
+						// return first found that matches desired bitness
+						if (vmBitness==32 && is32BitVM(f.getPath())) return f;
+						if (vmBitness==64 && !is32BitVM(f.getPath())) return f;
+					}
+				}
+			}
+		}
+		// then look at public JREs
 		File JRE = null;
 		TreeSet<File> jreDirs = getPublicJREs(vmBitness);
 		for (File next: jreDirs) {
@@ -258,20 +274,24 @@ public class JREFinder {
   /**
    * Finds all jre directories on the current machine.
    * 
-   * Win: typical jdk: Program Files\Java\jdkX.X.X_XX\jre\bin\java.exe
+   * Win: typical bundled jre: {TRACKER_HOME}\jre\bin\java.exe
+   * 			typical jdk: Program Files\Java\jdkX.X.X_XX\jre\bin\java.exe
 	 *			typical jre: Program Files\Java\jreX.X.X_XX\bin\java.exe
 	 *			          or Program Files\Java\jreX\bin\java.exe
 	 *			          or Program Files\Java\jre-X\bin\java.exe
 	 *			typical 32-bit jdk in 64-bit Windows: Program Files(x86)\Java\jdkX.X.X_XX\jre\bin\java.exe
-	 * OSX: typical: /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home/jre/bin/java
+	 * OSX: typical bundled jre: {TRACKER_HOME}/../PlugIns/Java.runtime/Contents/Home/jre/bin/java
+   * 			typical: /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home/jre/bin/java
 	 *			symlink at: /Library/Java/Home/bin/java??
-	 *			also in embedded jre in Tracker.app: /Applications/Tracker.app/Contents/PlugIns/Java.runtime/Contents/Home/jre
+	 *			also in bundled jre in Tracker.app: /Applications/Tracker.app/Contents/PlugIns/Java.runtime/Contents/Home/jre
 	 *			also in /Library/Java
 	 *			also in /Library/Internet Plug-Ins
 
-	 * Linux: typical: /usr/lib/jvm/java-X-openjdk/jre/bin/java 
+	 * Linux: typical bundled jre: {TRACKER_HOME}/jre/bin/java
+   * 				typical: /usr/lib/jvm/java-X-openjdk/jre/bin/java 
 	 *			  symlink at: /usr/lib/jvm/java-X.X.X-openjdk/jre/bin/java
 	 *			  sun versions: java-X-sun and java-X.X.X-sun
+	 *        also: /usr/lib/jvm/jre1.8.0_151/bin/java ?
    *
    * @return a set of jre files
    */
@@ -289,6 +309,20 @@ public class JREFinder {
 	    Set<File> searchPaths = new TreeSet<File>();
 	    
 			try {
+				// search for bundled jre
+				String trackerhome = System.getenv("TRACKER_HOME"); //$NON-NLS-1$
+				if (trackerhome!=null) {
+					File file = new File(trackerhome);
+					if (file.exists()) {
+						if (OSPRuntime.isMac()) {
+							String path = file.getParent()+"/PlugIns/Java.runtime"; //$NON-NLS-1$
+							searchPaths.add(new File(path));  
+						}
+						else {
+							searchPaths.add(file);  
+						}
+					}
+				}
 				if (OSPRuntime.isWindows()) {
 				  String progfiles = System.getenv("ProgramFiles"); //$NON-NLS-1$
 					String w6432 = System.getenv("ProgramW6432"); //$NON-NLS-1$
@@ -310,9 +344,7 @@ public class JREFinder {
 						if (file.exists()) searchPaths.add(file);   				
 					}
 				}
-				if (OSPRuntime.isMac()) {
-					// check for System environment TRACKER_HOME to search for embedded jre
-					String trackerhome = System.getenv("TRACKER_HOME"); //$NON-NLS-1$
+				else if (OSPRuntime.isMac()) {
 					if (trackerhome!=null) {
 						File file = new File(trackerhome);
 						if (file.exists()) searchPaths.add(file.getParentFile());   									
@@ -324,7 +356,7 @@ public class JREFinder {
 					file = new File("/Library/Internet Plug-Ins"); //$NON-NLS-1$
 					if (file.exists()) searchPaths.add(file);   									
 				}
-				if (OSPRuntime.isLinux()) {
+				else if (OSPRuntime.isLinux()) {
 					File file = new File("/usr/lib/jvm"); //$NON-NLS-1$
 					if (file.exists()) searchPaths.add(file);   									
 				}
@@ -371,7 +403,7 @@ public class JREFinder {
 		// for OSX
 		if (OSPRuntime.isMac()) {
 			// check for jre subfolder--add public jre instead of private in jdk
-			// should also find the embedded jre in Tracker.app
+			// should also find the bundled jre in Tracker.app
 			File javaFile = new File(dir, "jre/bin/java"); //$NON-NLS-1$
 			if (javaFile.exists()) {
 				jreSet.add(new JavaFile(new File(dir, "jre"))); //$NON-NLS-1$
@@ -384,9 +416,10 @@ public class JREFinder {
 				return jreSet;
 			}
 			
-			// look in Contents/Home if parent is a plugin
+			// look in Contents/Home if parent is a plugin or runtime
 			// eg /Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home
-			if (dir.getName().contains(".plugin")) { //$NON-NLS-1$
+			// eg Tracker.app/Contents/PlugIns/Java.runtime/Contents/Home
+			if (dir.getName().contains(".plugin") || dir.getName().contains(".runtime")) { //$NON-NLS-1$ //$NON-NLS-2$
 				File child = new File(dir, "Contents"); //$NON-NLS-1$
 				if (child.exists()) {
 					findJREsInDirectory(new File(child, "Home"), jreSet); //$NON-NLS-1$
