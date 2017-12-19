@@ -450,6 +450,17 @@ public class OSPRuntime {
         return;
       }
     }
+		if (path.startsWith("jar:")) { //$NON-NLS-1$
+			path = path.substring(4, path.length());
+		}
+		try {
+			// check that file exists and set launchJarPath to file path
+			File file = new File(path);
+			if (!file.exists())  return;
+			path = XML.forwardSlash(file.getCanonicalPath());
+		} catch (Exception ex) {
+		}
+    OSPLog.finer("Setting launch jar path to "+path); //$NON-NLS-1$
     launchJarPath = path;
     launchJarName = path.substring(path.lastIndexOf("/")+1); //$NON-NLS-1$
   }
@@ -590,24 +601,30 @@ public class OSPRuntime {
 	  	}
 	  	else if (OSPRuntime.isLinux()) {
 	  		// typical: /usr/lib/jvm/java-X-openjdk/jre/bin/java 
+	  		// bundled: /opt/tracker/jre/bin/java 
 	  		// symlink at: /usr/lib/jvm/java-X.X.X-openjdk/jre/bin/java
 	  		// sun versions: java-X-sun and java-X.X.X-sun
-	  		if (file.getParentFile()!=null
-	  				&& file.getParentFile().getName().indexOf("jre")>-1) { //$NON-NLS-1$
-	  			file = file.getParentFile();
+	  		if ("jre".equals(file.getName())) { //$NON-NLS-1$
+	  			file = new File(file, "bin/java"); //$NON-NLS-1$
 	  		}
-	  		if (file.getParentFile()!=null
-	  				&& file.getParentFile().getName().indexOf("jdk")>-1) { //$NON-NLS-1$
-	  			file = file.getParentFile();
+	  		else {
+		  		if (file.getParentFile()!=null
+		  				&& file.getParentFile().getName().indexOf("jre")>-1) { //$NON-NLS-1$
+		  			file = file.getParentFile();
+		  		}
+		  		if (file.getParentFile()!=null
+		  				&& file.getParentFile().getName().indexOf("jdk")>-1) { //$NON-NLS-1$
+		  			file = file.getParentFile();
+		  		}
+		  		if (file.getParentFile()!=null
+		  				&& file.getParentFile().getName().indexOf("sun")>-1) { //$NON-NLS-1$
+		  			file = file.getParentFile();
+		  		}
+		  		if (file.getName().indexOf("jdk")>-1  //$NON-NLS-1$
+		  				|| file.getName().indexOf("sun")>-1) //$NON-NLS-1$
+		  			file = new File(file, "jre/bin/java"); //$NON-NLS-1$
+		  		else file = null;
 	  		}
-	  		if (file.getParentFile()!=null
-	  				&& file.getParentFile().getName().indexOf("sun")>-1) { //$NON-NLS-1$
-	  			file = file.getParentFile();
-	  		}
-	  		if (file.getName().indexOf("jdk")>-1  //$NON-NLS-1$
-	  				|| file.getName().indexOf("sun")>-1) //$NON-NLS-1$
-	  			file = new File(file, "jre/bin/java"); //$NON-NLS-1$
-	  		else file = null;
 	  	}
   	}
     // resolve symlinks to their targets

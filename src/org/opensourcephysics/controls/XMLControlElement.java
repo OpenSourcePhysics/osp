@@ -540,7 +540,7 @@ public class XMLControlElement implements XMLControl {
       File file = new File(fileName);
       if(file.exists()&&!file.canWrite()) {
     		JOptionPane.showMessageDialog(null, 
-    				ControlsRes.getString("Dialog.ReadOnly.Message"),  //$NON-NLS-1$
+    				ControlsRes.getString("Dialog.ReadOnly.Message")+": "+file.getPath(),  //$NON-NLS-1$ //$NON-NLS-2$
     				ControlsRes.getString("Dialog.ReadOnly.Title"),  //$NON-NLS-1$
     				JOptionPane.PLAIN_MESSAGE);
         canWrite = false;
