@@ -1976,7 +1976,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
           	readyToFindHits = true;      			
       		}
       	};
-      	// pig should this be in separate thread?
+      	// should this be in separate thread?
       	runner.run();
 //      	new Thread(runner).start();
       }

@@ -95,104 +95,6 @@ public class JREFinder {
 		// on linux, assume all JREs have same bitness as current VM?
 		return OSPRuntime.getVMBitness()==32;
 	}
-
-//	public TreeSet<String> getAllJREs(int vmBitness) {
-//		// first look at extension directories
-//    Set<File> extDirs = findJavaExtensionDirectories();
-//    TreeSet<String> jreDirs = new TreeSet<String>();
-//		try {
-//			String x86 = System.getenv("ProgramFiles(x86)"); //$NON-NLS-1$
-//			// iterate through extDirs to fill jreDirs
-//			for (File next: extDirs) {
-//				// move up two levels from lib/ext
-//				File javaFile = next.getParentFile().getParentFile();
-//				if (OSPRuntime.isWindows()) {					
-//					// if 32-bit VM specified, eliminate 64-bit
-//					if (vmBitness==32 && x86!=null && !next.getPath().contains(x86)) {
-//						continue;
-//					}
-//					// if 64-bit VM specified, eliminate 32-bit
-//					if (vmBitness==64 && x86!=null && next.getPath().contains(x86)) {
-//						continue;
-//					}
-//
-//					javaFile = new File(javaFile, "bin/java.exe"); //$NON-NLS-1$
-//					if (!javaFile.exists()) continue;
-//					// ignore symlink files
-//					try {
-//						if (!javaFile.getCanonicalPath().equals(javaFile.getAbsolutePath()))
-//							continue;
-//					} catch (IOException e) {
-//					}
-//
-//					String jrePath = OSPRuntime.getJREPath(javaFile);
-//					jreDirs.add(jrePath);
-//				}
-//			  else {
-//					javaFile = new File(javaFile, "bin/java"); //$NON-NLS-1$
-//					if (!javaFile.exists()) continue;
-//					String jrePath = OSPRuntime.getJREPath(javaFile);
-//					// only Apple-installed VMs (in /System/Library) support 32-bit operation
-//					if (OSPRuntime.isMac() && vmBitness==32 && !jrePath.startsWith("/System/Library")) //$NON-NLS-1$
-//						continue;
-//					
-//					jreDirs.add(jrePath);
-//			  }
-//			}
-//		} catch (Exception e) {
-//		}
-//		
-//		// pig reuse some code below?
-//		// OSX: search for jres in /Library and /System/Library
-//		// typical:  /Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home
-//		// typical:  /System/Library/Java/JavaVirtualMachines/1.6.0jdk/Contents/Home
-//		if (OSPRuntime.isMac()) {
-//			Set<File> homeDirs = new TreeSet<File>();
-//			
-//			String[] libraries = new String[] {"/System/Library", "/Library"};  //$NON-NLS-1$//$NON-NLS-2$
-//			for (int i=0; i<libraries.length; i++) {
-//				File library = new File(libraries[i]);
-//				if (library.exists()) {
-//					// search children
-//					String[] subDirs = library.list();
-//					if (subDirs!=null && subDirs.length>0) {
-//						for (String next: subDirs) {
-//							File nextFile = new File(library, next);
-//							if (next.contains("Java")) { //$NON-NLS-1$
-//								findJREHomes(nextFile, homeDirs);
-//							}
-//							// if subdirectory is an extensions folder, add it
-//							else if (nextFile.getName().contains("Internet Plug-Ins")) { //$NON-NLS-1$
-//								String[] children = nextFile.list();
-//								if (children!=null && children.length>0) {
-//									for (String childName: children) {
-//										if (childName.contains("Java")) { //$NON-NLS-1$
-//											findJREHomes(new File(nextFile, childName), homeDirs);
-//										}
-//									}
-//								}
-//							}
-//						}
-//					}				
-//				} // end library search
-//			}
-//			for (File home: homeDirs) {
-//				// only Apple-installed VMs (in /System/Library) support 32-bit operation
-//				if (vmBitness==32 && !home.getAbsolutePath().startsWith("/System/Library")) //$NON-NLS-1$
-//					continue;
-//				
-//				jreDirs.add(home.getAbsolutePath());													
-//			}
-//		} // end OSX search
-//			
-//		// log results for trouble-shooting
-//		StringBuffer buf =new StringBuffer(vmBitness+"-bit JREs: "); //$NON-NLS-1$
-//		for (String next: jreDirs) {
-//			buf.append(next+", "); //$NON-NLS-1$
-//		}
-//		OSPLog.fine(buf.toString());
-//    return jreDirs;
-//	}
 	
   /**
    * Returns all public and private JREs of a given bitness (32 or 64).
@@ -205,7 +107,7 @@ public class JREFinder {
 	 * 		typical 32-bit jre: as above, but in Program Files (x86)\Java\
 	 *
 	 * OS X: search in: /JavaVirtualMachines
-	 * 		typical: /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home/bin/javaw.exe pig??
+	 * 		typical: /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home/bin/javaw.exe ??
 	 * 
 	 * Linux: search in: /jvm
 	 * 		typical: /usr/lib/jvm/java-X-openjdk/jre/bin/javaw.exe
@@ -367,9 +269,7 @@ public class JREFinder {
 				}
 			} catch (Exception e) {
 			}
-			
-			// pig implement for OSX and Linux
-			
+						
 			isReady = true;
 			isSearching = false;
 			
