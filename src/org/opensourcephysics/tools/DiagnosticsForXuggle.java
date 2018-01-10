@@ -180,13 +180,6 @@ public class DiagnosticsForXuggle {
 					+ " " + xuggleHome + newline  //$NON-NLS-1$
 					+ XuggleRes.getString("Xuggle.Dialog.AboutXuggle.Message.Path") //$NON-NLS-1$ 
 					+ path;
-			if (guessXuggleVersion()==5.4) {
-				String recommended = XuggleRes.getString("Xuggle.Dialog.ReplaceXuggle.Message1"); //$NON-NLS-1$
-				if (requester.equals("Tracker")) { //$NON-NLS-1$
-					recommended += "\n"+XuggleRes.getString("Xuggle.Dialog.ReplaceXuggle.Message3"); //$NON-NLS-1$ //$NON-NLS-2$
-				}
-				message = message+"\n\n"+recommended; //$NON-NLS-1$
-			}
 			JOptionPane.showMessageDialog(dialogOwner,
 					message,
 					XuggleRes.getString("Xuggle.Dialog.AboutXuggle.Title"), //$NON-NLS-1$
@@ -351,6 +344,7 @@ public class DiagnosticsForXuggle {
 	 * 		5 XUGGLE_HOME OK, but no xuggle jars in code base or extensions
 	 * 		6 XUGGLE_HOME OK, but mismatched xuggle versions in code base or extensions
 	 * 		7 XUGGLE_HOME OK, but wrong Java VM bitness
+	 * 		8 unsupported Xuggle 5.4 installed
 	 * 	 -1 none of the above
 	 * 
 	 * @return status code
@@ -364,6 +358,9 @@ public class DiagnosticsForXuggle {
 		// return 0 if working correctly
 		if (VideoIO.getVideoType(VideoIO.ENGINE_XUGGLE, null)!=null) return 0;
 		
+		// return 8 if Xuggle version 5.4 is installed
+		if (guessXuggleVersion()==5.4) return 8;
+
 		boolean completeExt = javaExtensionJars[0]!=null;
 		for (int i=1; i< javaExtensionJars.length; i++) {
 			completeExt = completeExt && javaExtensionJars[i]!=null;
@@ -554,6 +551,11 @@ public class DiagnosticsForXuggle {
 			    	message.add(XuggleRes.getString("Xuggle.Dialog.SetVM.Message2")); //$NON-NLS-1$
 					}
 				}
+				break;
+				
+			case 8:
+	    	message.add(XuggleRes.getString("Xuggle.Dialog.UnsupportedVersion.Message1")); //$NON-NLS-1$
+	    	message.add(XuggleRes.getString("Xuggle.Dialog.UnsupportedVersion.Message2")); //$NON-NLS-1$
 				break;
 				
 			default: // none of the above
