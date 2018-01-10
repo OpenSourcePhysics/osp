@@ -136,10 +136,11 @@ public class JREFinder {
    * Finds the default JRE of a given bitness (32 or 64). A public JRE is returned if possible. 
    * 
    * @param vmBitness the bitness desired
-   * @param path the first path to search for a JRE--if found, return as default 
+   * @param path the first path to search for a JRE--if found, return as default
+   * @param searchAll true to search paths other than the specified one
    * @return the default JRE directory, or null if none found
    */
-	public File getDefaultJRE(int vmBitness, String path) {
+	public File getDefaultJRE(int vmBitness, String path, boolean searchAll) {
 		// first look in path
 		if (path!=null) {
 			File dir = new File(path);
@@ -155,7 +156,8 @@ public class JREFinder {
 				}
 			}
 		}
-		// then look at public JREs
+		if (!searchAll) return null;
+		// look for other public JREs
 		File JRE = null;
 		TreeSet<File> jreDirs = getPublicJREs(vmBitness);
 		for (File next: jreDirs) {
