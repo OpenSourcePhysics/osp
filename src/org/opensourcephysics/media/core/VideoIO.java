@@ -291,7 +291,7 @@ public class VideoIO {
     		xuggleVersion = DiagnosticsForXuggle.guessXuggleVersion();
     	}
     }
-		if (xuggleVersion>0) engine = ENGINE_XUGGLE;
+		if (xuggleVersion==3.4) engine = ENGINE_XUGGLE;
   	return engine;
   }
 
