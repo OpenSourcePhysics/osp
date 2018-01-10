@@ -1329,6 +1329,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         splitPanes[1].setEnabled(fitterVis);
         curveFitter.setActive(fitterVis);
         if(fitterVis) {
+        	curveFitter.setFontLevel(FontSizer.getLevel());
           splitPanes[1].setBottomComponent(curveFitter);
           splitPanes[1].setDividerSize(splitPanes[0].getDividerSize());
           splitPanes[1].setDividerLocation(-1);
@@ -2048,7 +2049,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     splitPanes[1].setTopComponent(plot);
     splitPanes[1].setBottomComponent(curveFitter);
     splitPanes[2].setBottomComponent(dataScroller);
-    curveFitter.splitPane.setDividerLocation(0);
     
     // set up the undo system
     undoManager = new UndoManager();
