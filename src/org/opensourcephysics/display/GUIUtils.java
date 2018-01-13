@@ -6,6 +6,7 @@
  */
 
 package org.opensourcephysics.display;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -25,6 +26,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
 import org.jibble.epsgraphics.EpsGraphics2D;
@@ -32,6 +34,20 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.media.gif.GIFEncoder;
 
 public class GUIUtils {
+	
+	// colors used to "disable/enable" TitledBorders and other non-Components
+  private static Color enabledColor, disabledColor;
+  static {
+  	enabledColor = UIManager.getColor("Label.foreground"); //$NON-NLS-1$
+  	if (enabledColor==null)
+  		enabledColor = Color.BLACK;
+  	disabledColor = UIManager.getColor("Label.disabledForeground"); //$NON-NLS-1$
+  	if (disabledColor==null)
+    	disabledColor = UIManager.getColor("Label.disabledText"); //$NON-NLS-1$
+  	if (disabledColor==null)
+  		disabledColor = Color.LIGHT_GRAY;
+  }
+
   private GUIUtils() {} // prohibits instantiation
 
   /**
@@ -311,6 +327,22 @@ public class GUIUtils {
     OSPRuntime.chooserDir = fileChooser.getCurrentDirectory().toString();
     File file = fileChooser.getSelectedFile();
     return file;
+  }
+  
+  /**
+   * Returns the enabled text color.
+   * @return the enabled color
+   */
+  public static Color getEnabledTextColor() {
+  	return enabledColor;
+  }
+
+  /**
+   * Returns the disabled text color.
+   * @return the disabled color
+   */
+  public static Color getDisabledTextColor() {
+  	return disabledColor;
   }
 
   /**

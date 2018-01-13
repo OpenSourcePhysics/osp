@@ -75,6 +75,7 @@ import javax.swing.event.ChangeListener;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.DrawingPanel;
+import org.opensourcephysics.display.GUIUtils;
 
 /**
  * This is a Filter that applies radial transformations to an image.
@@ -102,7 +103,6 @@ public class RadialDistortionFilter extends Filter {
 		  = new FontRenderContext(null,   // no AffineTransform
 		                          false,  // no antialiasing
 		                          false); // no fractional metrics
-  protected static Color enabledColor, disabledColor;
   protected static double minRadius = 0.20, maxRadius = 1.0;
   protected static double minFOV = Math.PI/18, maxFOV = Math.PI-.001;
   
@@ -132,16 +132,7 @@ public class RadialDistortionFilter extends Filter {
   	PROJECTION_TYPES.add(EQUISOLID);
   	PROJECTION_TYPES.add(EQUIDISTANT);
   	PROJECTION_TYPES.add(STEREOGRAPHIC);
-  	PROJECTION_TYPES.add(ORTHOGRAPHIC);
-  	
-  	enabledColor = UIManager.getColor("Label.foreground"); //$NON-NLS-1$
-  	if (enabledColor==null)
-  		enabledColor = Color.BLACK;
-  	disabledColor = UIManager.getColor("Label.disabledForeground"); //$NON-NLS-1$
-  	if (disabledColor==null)
-    	disabledColor = UIManager.getColor("Label.disabledText"); //$NON-NLS-1$
-  	if (disabledColor==null)
-  		disabledColor = Color.LIGHT_GRAY;
+  	PROJECTION_TYPES.add(ORTHOGRAPHIC);  	
   }
   /**
    * Constructor.
@@ -863,7 +854,6 @@ public class RadialDistortionFilter extends Filter {
       
       Box sourceStack = Box.createVerticalBox();
       sourceBorder = BorderFactory.createTitledBorder(""); //$NON-NLS-1$
-      sourceBorder.setTitleColor(Color.red);
       sourceStack.setBorder(sourceBorder);
       controlPanel.add(sourceStack);
       
@@ -934,7 +924,7 @@ public class RadialDistortionFilter extends Filter {
       sourceTypeDropdown.setEnabled(enabled);
       outputTypeDropdown.setEnabled(enabled);
     	colorButton.setEnabled(enabled);
-      Color color = enabled? enabledColor: disabledColor;
+      Color color = enabled? GUIUtils.getEnabledTextColor(): GUIUtils.getDisabledTextColor();
       sourceBorder.setTitleColor(color);
       outputBorder.setTitleColor(color);
       circleBorder.setTitleColor(color);
