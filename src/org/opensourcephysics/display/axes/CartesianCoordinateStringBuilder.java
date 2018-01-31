@@ -7,8 +7,10 @@
 
 package org.opensourcephysics.display.axes;
 import java.awt.event.MouseEvent;
+
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.InteractivePanel;
+import org.opensourcephysics.display.OSPRuntime;
 
 /**
  * Builds a coordinate string from a mouse event for an axis type.
@@ -52,6 +54,7 @@ public class CartesianCoordinateStringBuilder extends CoordinateStringBuilder {
     }
     String msg = ""; //$NON-NLS-1$
     if((Math.abs(x)>100)||(Math.abs(x)<0.01)||(Math.abs(y)>100)||(Math.abs(y)<0.01)) {
+      scientificFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
       if(xLabel!=null) {
         msg = xLabel+scientificFormat.format((float) x);
       }
@@ -59,6 +62,7 @@ public class CartesianCoordinateStringBuilder extends CoordinateStringBuilder {
         msg += yLabel+scientificFormat.format((float) y);
       }
     } else {
+      decimalFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
       if(xLabel!=null) {
         msg = xLabel+decimalFormat.format((float) x);
       }

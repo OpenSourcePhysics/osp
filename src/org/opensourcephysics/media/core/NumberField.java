@@ -45,6 +45,8 @@ import java.text.ParseException;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+import org.opensourcephysics.display.OSPRuntime;
+
 /**
  * A NumberField is a JTextField that formats and displays numbers.
  * This default implementation displays very small and very large numbers
@@ -188,6 +190,7 @@ public class NumberField extends JTextField {
     if(!isVisible()) {
       return;
     }
+    
     if(minValue!=null) {
       value = Math.max(value, minValue.doubleValue());
     }
@@ -199,7 +202,7 @@ public class NumberField extends JTextField {
     // display value: include factor, format, units
     value = conversionFactor*value;
     setFormatFor(value);
-    String s = format.format(value);
+    String s = getFormat().format(value);
     if(units!=null) {
       s += units;
     }
@@ -218,14 +221,12 @@ public class NumberField extends JTextField {
   public void setExpectedRange(double lower, double upper) {
     fixedPattern = fixedPatternByDefault = true;
     double range = Math.max(Math.abs(lower), Math.abs(upper));
-//    char d = format.getDecimalFormatSymbols().getDecimalSeparator();
-    char d = '.';
     if((range<0.1)||(range>=1000)) {     // scientific format
       String s = "";                     //$NON-NLS-1$
       for(int i = 0; i<sigfigs-1; i++) {
         s += "0";                        //$NON-NLS-1$
       }
-      format.applyPattern("0"+d+s+"E0"); //$NON-NLS-1$ //$NON-NLS-2$
+      format.applyPattern("0."+s+"E0"); //$NON-NLS-1$ //$NON-NLS-2$
     } else {                             // decimal format
       int n;
       if(range<1) {
@@ -244,7 +245,7 @@ public class NumberField extends JTextField {
       if(s.equals("")) {				 //$NON-NLS-1$
         format.applyPattern("0");        //$NON-NLS-1$ 
       } else {
-        format.applyPattern("0"+d+s);    //$NON-NLS-1$
+        format.applyPattern("0."+s);    //$NON-NLS-1$
       }
     }
   }
@@ -351,6 +352,7 @@ public class NumberField extends JTextField {
    * @return the format
    */
   public DecimalFormat getFormat() {
+    format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
     return format;
   }
 
@@ -451,6 +453,7 @@ public class NumberField extends JTextField {
   public String getFixedPattern() {
     return userPattern;
   }
+  
 }
 
 /*

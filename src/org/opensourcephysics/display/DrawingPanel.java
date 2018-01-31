@@ -34,9 +34,11 @@ import java.beans.PropertyChangeListener;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Locale;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -217,6 +219,11 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	        setFontLevel(level);
       	}
       	else if (e.getPropertyName().equals("locale")) { //$NON-NLS-1$
+          // set the default decimal separator
+      		Locale locale = (Locale)e.getNewValue();
+      		DecimalFormat format = (DecimalFormat)NumberFormat.getInstance(locale);
+          OSPRuntime.setDefaultDecimalSeparator(format.getDecimalFormatSymbols().getDecimalSeparator());
+      		refreshDecimalSeparators();
       		refreshGUI();
       	}
       }
@@ -237,6 +244,14 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     propertiesItem.setText(DisplayRes.getString("DrawingFrame.InspectMenuItem"));  //$NON-NLS-1$
   }
 
+  /**
+   * Refreshes the decimal separators.
+   */
+  protected void refreshDecimalSeparators() {  
+    scientificFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+    decimalFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+  }
+  
   /**
    * Sets the font level.
    *

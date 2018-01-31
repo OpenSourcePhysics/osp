@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.URL;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -98,16 +99,22 @@ public class OSPRuntime {
   protected static boolean authorMode = true;
 
   /** Path of the launch jar, if any. */
-  static private String launchJarPath;
+  private static String launchJarPath;
 
   /** Path of the launch jar, if any. */
-  static private String launchJarName;
+  private static String launchJarName;
 
   /** The launch jar, if any. */
-  static private JarFile launchJar = null;
+  private static JarFile launchJar = null;
 
   /** Build date of the launch jar, if known. */
-  static private String buildDate;
+  private static String buildDate;
+
+  /** The default decimal separator */
+  private static char defaultDecimalSeparator = '.';
+
+  /** The preferred decimal separator, if any */
+  private static String preferredDecimalSeparator;
 
   /** File Chooser starting directory. */
   public static String chooserDir;
@@ -175,6 +182,7 @@ public class OSPRuntime {
     LOOK_AND_FEEL_TYPES.put(CROSS_PLATFORM_LF, UIManager.getCrossPlatformLookAndFeelClassName());
     LOOK_AND_FEEL_TYPES.put(SYSTEM_LF, UIManager.getSystemLookAndFeelClassName());
     LOOK_AND_FEEL_TYPES.put(DEFAULT_LF, DEFAULT_LOOK_AND_FEEL.getClass().getName());
+    
 //	try {
 //	  Class.forName("com.sun.j3d.utils.universe.SimpleUniverse"); //$NON-NLS-1$
 //	  J3D= true; 
@@ -746,6 +754,49 @@ public class OSPRuntime {
   	if (locale.equals(Locale.TAIWAN))
   		return "\u7e41\u4f53\u4e2d\u6587"; //$NON-NLS-1$
   	return locale.getDisplayLanguage(locale);
+  }
+  
+	/**
+	 * Gets DecimalFormatSymbols that use the preferred decimal separator, if any.
+	 * If no preference, the default separator for the current locale is used.
+	 * 
+	 * @return the DecimalFormatSymbols
+	 */
+  public static DecimalFormatSymbols getDecimalFormatSymbols() {
+  	DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
+  	char c = defaultDecimalSeparator;
+    if (preferredDecimalSeparator!=null && preferredDecimalSeparator.length()>0) {
+  		c = preferredDecimalSeparator.charAt(0);
+  	}
+    decimalFormatSymbols.setDecimalSeparator(c); 	
+  	return decimalFormatSymbols;
+  }
+  
+	/**
+	 * Sets the default decimal separator.
+	 * 
+	 * @param c a decimal separator
+	 */
+  public static void setDefaultDecimalSeparator(char c) {
+  	defaultDecimalSeparator = c;
+  }
+  
+	/**
+	 * Sets the preferred decimal separator. May be null.
+	 * 
+	 * @param separator a decimal separator
+	 */
+  public static void setPreferredDecimalSeparator(String separator) {
+  	preferredDecimalSeparator = separator;
+  }
+  
+	/**
+	 * Gets the preferred decimal separator. May return null.
+	 * 
+	 * @return the separator, if any
+	 */
+  public static String getPreferredDecimalSeparator() {
+  	return preferredDecimalSeparator;
   }
   
 	/**

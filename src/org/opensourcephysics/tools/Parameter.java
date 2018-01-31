@@ -6,7 +6,6 @@
  */
 
 package org.opensourcephysics.tools;
-import java.text.DecimalFormatSymbols;
 import java.util.List;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
@@ -185,16 +184,9 @@ public class Parameter {
     try {
       String express = expression;
       // Suryono parser accepts only periods as decimal separators
-      // check default locale separator and substitute period if needed
-      DecimalFormatSymbols symbols = FunctionEditor.sciFormat.getDecimalFormatSymbols();
-      char separator = symbols.getDecimalSeparator();
-      // don't make substitutions in "if" statements since they use commas
-      if((separator!='.')&&(express.indexOf("if")==-1)) { //$NON-NLS-1$
-        int j = express.indexOf(separator);
-        while(j>-1) {
-          express = express.substring(0, j)+'.'+express.substring(j+1);
-          j = express.indexOf(separator);
-        }
+      // but don't make substitutions in "if" statements since they use commas
+      if(express.indexOf("if")==-1) { //$NON-NLS-1$
+      	express = express.replaceAll(",", "."); //$NON-NLS-1$ //$NON-NLS-2$
       }
       MultiVarFunction f = new ParsedMultiVarFunction(express, names);
       value = f.evaluate(values);

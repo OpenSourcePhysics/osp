@@ -2912,6 +2912,15 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   }
 
   /**
+   * Refreshes decimal separators in all tabs.
+   */
+  public void refreshDecimalSeparators() {
+  	for (int i=0; i<getTabCount(); i++) {
+  		getTab(i).refreshDecimalSeparators();
+  	}
+  }
+  
+  /**
    * Determines if the clipboard has pastable data.
    *
    * @return true if data is pastable

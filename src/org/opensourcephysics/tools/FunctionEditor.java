@@ -39,7 +39,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EventObject;
@@ -113,7 +112,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
   final static Color DARK_RED = new Color(220, 0, 0);
   
   // static fields
-  static NumberFormat decimalFormat;
+  static DecimalFormat decimalFormat;
   static DecimalFormat sciFormat;
   protected static boolean undoEditsEnabled = true;
   protected static String[] editTypes = {"add row", //$NON-NLS-1$
@@ -152,7 +151,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
   protected boolean confirmChanges = true;
 
   static {
-    decimalFormat = NumberFormat.getInstance();
+    decimalFormat = new DecimalFormat();
     decimalFormat.setMaximumFractionDigits(4);
     decimalFormat.setMinimumFractionDigits(0);
     decimalFormat.setMaximumIntegerDigits(3);
@@ -318,7 +317,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
     }
     for(int row = 0; row<objects.size(); row++) {
       Object obj = objects.get(row);
-      if(name.equals(getName(obj))&&!getExpression(obj).equals(expression)) {
+      if (name.equals(getName(obj)) && !getExpression(obj).equals(expression)) {
         String prev = getExpression(obj);
         obj = createObject(name, expression, obj);
         objects.remove(row);
@@ -652,6 +651,28 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
       temp.removeAll(evaluate);
     }
   }
+  
+  /**
+   * Determines if a test expression is valid.
+   *
+   * @param statement
+   * @return true if valid
+   */
+  protected boolean isValidExpression(String expression) {
+  	Parameter p = new Parameter("xxzz", expression); //$NON-NLS-1$
+  	String s = getVariablesString(""); //$NON-NLS-1$
+  	String start = ToolsRes.getString("FunctionPanel.Instructions.ValueCell"); //$NON-NLS-1$
+  	if (!s.startsWith(start)) {
+  		return !Double.isNaN(p.evaluate(new Parameter[0]));
+  	}
+  	String[] names = s.substring(start.length()).split(" "); //$NON-NLS-1$
+  	ArrayList<Object> temp = new ArrayList<Object>();
+  	for (String name: names) {
+  		Parameter next = new Parameter(name, "1"); //$NON-NLS-1$
+  		temp.add(next);
+  	}
+  	return !Double.isNaN(p.evaluate(temp));
+  }
 
   /**
    * Gets the names of functions referenced in a named function expression
@@ -773,6 +794,8 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
    * Refreshes the GUI.
    */
   protected void refreshGUI() {
+  	sciFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+  	decimalFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
     int[] rows = table.getSelectedRows();
     int col = table.getSelectedColumn();
     tableModel.fireTableStructureChanged(); // refreshes table header strings
@@ -822,7 +845,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 
   /**
    * Sets the param editor that defines parameters for functions.
-   * By default, the editor pased in is ignored unless not yet set.
+   * By default, the editor pasted in is ignored unless not yet set.
    */
   protected void setParamEditor(ParamEditor editor) {
     if((paramEditor==null)&&(editor!=null)) {
@@ -1376,15 +1399,31 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
       if (col==0) return name;
       String expression = getExpression(obj);
       try {
-				double value = Double.parseDouble(expression);
+        // for angles in degrees, convert
 	      if (anglesInDegrees && 
 	      		(name.indexOf(THETA)>-1 || name.indexOf(OMEGA)>-1)) {
+	        // use periods as decimal separators for parsing
+	        // but don't make substitutions in "if" statements since they use commas
+	        String express = expression;
+	        if(express.indexOf("if")==-1) { //$NON-NLS-1$
+	        	express = express.replaceAll(",", "."); //$NON-NLS-1$ //$NON-NLS-2$
+	        }
+					double value = Double.parseDouble(express);
 	      	String s = format(value*180/Math.PI, 0.0001);
 					if (name.indexOf(THETA)>-1)
 						s += DEGREES;
 					return s;		      	
 	      }
-	      return format(value, 0);
+	      // for other names, return expression with appropriate decimal separator
+        if(expression.indexOf("if")==-1) { //$NON-NLS-1$
+		      boolean isComma = ','==sciFormat.getDecimalFormatSymbols().getDecimalSeparator();
+	        String express = expression;
+        	if (isComma) express = express.replaceAll("\\.", ","); //$NON-NLS-1$ //$NON-NLS-2$
+        	else express = express.replaceAll(",", "."); //$NON-NLS-1$ //$NON-NLS-2$
+        	return express;
+        }
+	      return expression;
+//	      return format(value, 0);
 			} catch (NumberFormatException e) {
 			}
       return expression;
@@ -1422,7 +1461,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
           objects.add(row, obj);
         } 
         else {  // expression
-          prev = getValueAt(row, col).toString();
+          prev = getExpression(obj);
           type = EXPRESSION_EDIT;
           if(val.equals(prev)) {
             functionPanel.refreshInstructions(FunctionEditor.this, false, 1);
@@ -1535,13 +1574,6 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	      	FontSizer.setFonts(popup, level);
         }      	
         dragLabel.setText(ToolsRes.getString("FunctionEditor.DragLabel.Text")); //$NON-NLS-1$
-	      popupField.setText(value.toString());
-	      popupField.requestFocusInWindow();
-	  		try {
-					String s = popupField.getText();
-					setInitialValue(s);
-				} catch (NumberFormatException ex) {
-				}
 
 	      prevObject = objects.get(row);
 	      if (prevObject!=null) {
@@ -1549,7 +1581,21 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	      	prevExpression = getExpression(prevObject);
 	      }
 
+        String val = value.toString();
+        if (prevObject!=null && column>0) {
+        	val = prevExpression;
+        }
+        
+        popupField.setText(val);
+	      popupField.requestFocusInWindow();
+	  		try {
+					String s = popupField.getText();
+					setInitialValue(s);
+				} catch (NumberFormatException ex) {
+				}
+
 	      popupField.selectAll();
+	      popupField.setBackground(Color.WHITE);
 	      if (column==1) {
 		      variablesPane.setText(getVariablesString(":\n")); //$NON-NLS-1$
 	        StyledDocument doc = variablesPane.getStyledDocument();
@@ -1681,7 +1727,21 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
         popupField.addKeyListener(new KeyAdapter() {
           public void keyPressed(KeyEvent e) {
             if(e.getKeyCode()==KeyEvent.VK_ENTER) {
-            	String text = popupField.getText();
+            	String text = popupField.getText().trim();
+            	char separator = sciFormat.getDecimalFormatSymbols().getDecimalSeparator();
+              // warn of if statements that fail if user expects comma separator to work
+              if (separator==',') {
+              	if (!isValidExpression(text)) {
+	              	// warn that if statements can use only periods for separators
+              		JOptionPane.showMessageDialog(FunctionEditor.this,
+              				ToolsRes.getString("FunctionEditor.Dialog.IfStatementError.Message1") //$NON-NLS-1$
+              				+"\n"+ToolsRes.getString("FunctionEditor.Dialog.IfStatementError.Message2"),  //$NON-NLS-1$ //$NON-NLS-2$
+              				ToolsRes.getString("FunctionEditor.Dialog.IfStatementError.Title"),  //$NON-NLS-1$
+              				JOptionPane.ERROR_MESSAGE);
+              		return;
+              	}
+              }
+
             	// restore previous name and expression for undoable edit
             	// in case they were changed with mouse
           		int row = table.rowToSelect;

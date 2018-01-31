@@ -132,7 +132,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
   
 	// static fields
   public final static String SHIFTED = "'"; //$NON-NLS-1$
-  protected static NumberFormat correlationFormat = NumberFormat.getInstance();
+  protected static DecimalFormat correlationFormat = (DecimalFormat)NumberFormat.getInstance();
   private static final Cursor SELECT_CURSOR, SELECT_REMOVE_CURSOR, SELECT_ZOOM_CURSOR;
   
   static {
@@ -1681,7 +1681,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       plot.setTitle(getWorkingData().getName());
     }
     // set new CoordinateStringBuilder
-    plot.setCoordinateStringBuilder(plot.new PlotCoordinateStringBuilder());
+    plot.stringBuilder = plot.new PlotCoordinateStringBuilder();
+    plot.setCoordinateStringBuilder(plot.stringBuilder);
     
     // create mouse listener for selecting data points in plot
     MouseInputListener mouseSelector = new MouseInputAdapter() {
@@ -2402,6 +2403,17 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
   }
 
   /**
+   * Refreshes the decimal separators.
+   */
+  protected void refreshDecimalSeparators() {
+  	plot.sciFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+  	plot.fixedFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+  	plot.stringBuilder.refreshFormats();
+  	correlationFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+		dataTable.refreshTable();
+  }
+  
+  /**
    * Initializes this panel.
    */
   private void init() {
@@ -3019,6 +3031,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     double value = Double.NaN, slope = Double.NaN, area;
     DecimalFormat sciFormat = new DecimalFormat("0.00E0"); //$NON-NLS-1$
     DecimalFormat fixedFormat = new DecimalFormat("0.00"); //$NON-NLS-1$
+    PlotCoordinateStringBuilder stringBuilder;
     String xVar, yVar, message;
     boolean scaleLocked, dataPresent;
     double lockedXMin, lockedXMax, lockedYMin, lockedYMax;
@@ -3169,6 +3182,14 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
   			}    	
 
       });
+    }
+    
+    @Override
+    protected void refreshDecimalSeparators() { 
+      super.refreshDecimalSeparators();
+      if (dataTool.getSelectedTab()==DataToolTab.this) {
+      	dataTool.refreshDecimalSeparators();
+      }
     }
     
     /**
@@ -4016,9 +4037,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
           msg += labelY+yValue;
         }
         return msg;
-
-//      	String s = super.getCoordinateString(panel, e);
-//      	return s;
+      }
+      
+      void refreshFormats() {
+      	scientificFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());     	
+      	decimalFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());     	
       }
       
       /**

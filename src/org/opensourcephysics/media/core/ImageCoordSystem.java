@@ -35,9 +35,6 @@ import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.Locale;
 import java.util.TreeSet;
 
 import javax.swing.event.SwingPropertyChangeSupport;
@@ -60,14 +57,6 @@ import org.opensourcephysics.controls.XMLControl;
  * @version 1.0
  */
 public class ImageCoordSystem {
-  // static fields and initializer
-  protected static NumberFormat decimal = NumberFormat.getNumberInstance(Locale.US);
-  protected static NumberFormat sci = NumberFormat.getNumberInstance(Locale.US);
-
-  static {
-    ((DecimalFormat) decimal).applyPattern("0.00"); //$NON-NLS-1$
-    ((DecimalFormat) sci).applyPattern("0.###E0");  //$NON-NLS-1$
-  }
 
   // instance fields
   private int length;
@@ -1036,27 +1025,6 @@ public class ImageCoordSystem {
   	return isAdjusting;
   }
 
-  /**
-   * Returns a String containing all the data for a single frame number.
-   * Note: this will be deprecated since its functionality has been replaced
-   * by the inner FrameData and FrameDataLoader classes.
-   *
-   * @param n the frame number
-   * @return the data string
-   */
-  public String getDataString(int n) {
-    String originXStr = decimal.format(getOriginX(n));
-    String originYStr = decimal.format(getOriginY(n));
-    String thetaStr = decimal.format(getAngle(n));
-    String scaleXStr = sci.format(getScaleX(n));
-    String scaleYStr = sci.format(getScaleY(n));
-    return n+"\t"+originXStr //$NON-NLS-1$
-           +"\t"+originYStr  //$NON-NLS-1$
-           +"\t"+thetaStr    //$NON-NLS-1$
-           +"\t"+scaleXStr   //$NON-NLS-1$
-           +"\t"+scaleYStr;  //$NON-NLS-1$
-  }
-  
   /**
    * Gets the set of key frames. This returns the actual Set, not a copy, so the entries
    * can be converted when exporting a video clip/tracker panel combination.

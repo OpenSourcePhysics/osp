@@ -70,11 +70,14 @@ import org.opensourcephysics.tools.DataToolTab;
  * @version    1.0
  */
 public class DataTable extends JTable implements ActionListener {
+	
   static final Color PANEL_BACKGROUND = javax.swing.UIManager.getColor("Panel.background"); //$NON-NLS-1$
   final static Color LIGHT_BLUE = new Color(204, 204, 255);
   static final String NO_PATTERN 
   		= DisplayRes.getString("DataTable.FormatDialog.NoFormat"); //$NON-NLS-1$
   public static String rowName = DisplayRes.getString("DataTable.Header.Row");              //$NON-NLS-1$
+  private static DoubleRenderer defaultDoubleRenderer = new DoubleRenderer();
+  
   private final SortDecorator decorator;
   protected HashMap<String, PrecisionRenderer> precisionRenderersByColumnName 
   		= new HashMap<String, PrecisionRenderer>();
@@ -395,8 +398,14 @@ public class DataTable extends JTable implements ActionListener {
       }
     } catch(Exception ex) {}
     // if no precision base renderer, use default
-    if (baseRenderer==null)
-    	baseRenderer = getDefaultRenderer(getColumnClass(column));
+    if (baseRenderer==null) {
+    	if (getColumnClass(column).equals(Double.class)) {
+    		baseRenderer = defaultDoubleRenderer;
+    	}
+    	else {
+    		baseRenderer = getDefaultRenderer(getColumnClass(column));
+    	}
+    }
     // return unit renderer if defined
   	if (unitRenderer!=null) {
   		unitRenderer.setBaseRenderer(baseRenderer);
@@ -461,6 +470,13 @@ public class DataTable extends JTable implements ActionListener {
    * @param  evt
    */
   public void actionPerformed(ActionEvent evt) {
+  	// code added by D Brown to update decimal separator Jan 2018
+    for (String key: precisionRenderersByColumnName.keySet()) {
+    	PrecisionRenderer renderer = precisionRenderersByColumnName.get(key);
+    	renderer.numberFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+    }
+    defaultDoubleRenderer.numberFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+    
   	// code added by D Brown to maintain column order and widths (Mar 2014)
 		TableColumnModel model = this.getColumnModel();
 		int colCount = model.getColumnCount();
@@ -1035,9 +1051,26 @@ public class DataTable extends JTable implements ActionListener {
     }
 
   }
+  
+  protected static class DoubleRenderer extends DefaultTableCellRenderer {
+    DecimalFormat numberFormat;
+    
+    /**
+     *  Constructor
+     */
+    public DoubleRenderer() {
+      super();
+      numberFormat = (DecimalFormat)NumberFormat.getInstance();
+    }
 
-  protected static class PrecisionRenderer extends DefaultTableCellRenderer {
-    NumberFormat numberFormat;
+    @Override
+    public void setValue(Object value) {
+      setText((value==null) ? "" : numberFormat.format(value)); //$NON-NLS-1$
+    }
+
+  }
+
+  protected static class PrecisionRenderer extends DoubleRenderer {
     String pattern;
 
     /**
@@ -1047,7 +1080,6 @@ public class DataTable extends JTable implements ActionListener {
      */
     public PrecisionRenderer(int precision) {
       super();
-      numberFormat = NumberFormat.getInstance();
       numberFormat.setMaximumFractionDigits(precision);
       setHorizontalAlignment(SwingConstants.RIGHT);
       setBackground(Color.WHITE);
@@ -1060,22 +1092,9 @@ public class DataTable extends JTable implements ActionListener {
      */
     public PrecisionRenderer(String pattern) {
       super();
-      numberFormat = NumberFormat.getInstance();
-      if(numberFormat instanceof DecimalFormat) {
-        ((DecimalFormat) numberFormat).applyPattern(pattern);
-        this.pattern = pattern;
-      }
+      numberFormat.applyPattern(pattern);
+      this.pattern = pattern;
       setHorizontalAlignment(SwingConstants.RIGHT);
-    }
-
-    /**
-     *  Sets the string for the cell being rendered to value.
-     *
-     * @param  value  - the string value for this cell; if value is null it sets
-     *      the text value to an empty string
-     */
-    public void setValue(Object value) {
-      setText((value==null) ? "" : numberFormat.format(value)); //$NON-NLS-1$
     }
 
     /**
@@ -1244,8 +1263,7 @@ public class DataTable extends JTable implements ActionListener {
       sampleLabel = new JLabel(DisplayRes.getString("DataTable.NumberFormat.Dialog.Label.Sample"));  //$NON-NLS-1$
       patternField = new JTextField(6);
       patternField.setAction(new AbstractAction() {
-		@SuppressWarnings("deprecation")
-		public void actionPerformed(ActionEvent e) {
+      	public void actionPerformed(ActionEvent e) {
           String pattern = patternField.getText();
           if (pattern.indexOf(NO_PATTERN)>-1)
           	pattern = ""; //$NON-NLS-1$
@@ -1303,6 +1321,7 @@ public class DataTable extends JTable implements ActionListener {
                   }
                 } else {
                   try {
+                  	sampleFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
 										sampleFormat.applyPattern(pattern);
 										sampleField.setText(sampleFormat.format(Math.PI));
 									} catch (Exception e) {
@@ -1392,6 +1411,7 @@ public class DataTable extends JTable implements ActionListener {
         }
         patternField.setText(NO_PATTERN);
       } else {
+      	sampleFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
         sampleFormat.applyPattern(pattern);
         sampleField.setText(sampleFormat.format(Math.PI));
         patternField.setText(pattern);

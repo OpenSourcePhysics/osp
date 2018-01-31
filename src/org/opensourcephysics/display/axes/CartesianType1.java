@@ -16,11 +16,14 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
+
 import javax.swing.JPanel;
+
 import org.opensourcephysics.display.Dimensioned;
 import org.opensourcephysics.display.DrawableTextLine;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.OSPLayout;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.PlottingPanel;
 import org.opensourcephysics.display.TextLine;
 import org.opensourcephysics.tools.FontSizer;
@@ -91,8 +94,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
   /** If XTicks or YTicks are given/ */
   ArrayList<Double> xticks = null, yticks = null;
   ArrayList<String> xticklabels = null, yticklabels = null;
-  NumberFormat numberFormat = NumberFormat.getInstance();
-  NumberFormat scientificFormat = new DecimalFormat("0.0E0");         //$NON-NLS-1$
+  DecimalFormat numberFormat = new DecimalFormat();
+  DecimalFormat scientificFormat = new DecimalFormat("0.0E0");         //$NON-NLS-1$
 
   /** Whether to draw a background grid. */
   boolean drawMajorXGrid = true;
@@ -241,6 +244,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
         panel.recomputeTransform();
       }
     }
+    numberFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+    scientificFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
     drawPlot(panel, g);
   }
 

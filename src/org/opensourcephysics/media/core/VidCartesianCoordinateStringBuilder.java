@@ -8,7 +8,9 @@
 package org.opensourcephysics.media.core;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
+
 import org.opensourcephysics.display.DrawingPanel;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.axes.CartesianCoordinateStringBuilder;
 
 /**
@@ -50,8 +52,10 @@ public class VidCartesianCoordinateStringBuilder extends CartesianCoordinateStri
   public String getCoordinateString(double x, double y) {
     String msg;
     if((Math.abs(x)>100)||(Math.abs(x)<0.01)||(Math.abs(y)>100)||(Math.abs(y)<0.01)) {
+	  	scientificFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
       msg = xLabel+scientificFormat.format((float) x)+yLabel+scientificFormat.format((float) y);
     } else {
+	  	decimalFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
       msg = xLabel+decimalFormat.format((float) x)+yLabel+decimalFormat.format((float) y);
     }
     return msg;
