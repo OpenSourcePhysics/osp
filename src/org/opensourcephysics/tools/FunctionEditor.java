@@ -58,8 +58,10 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -1218,6 +1220,24 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
         public void mousePressed(MouseEvent e) {
           int row = rowAtPoint(e.getPoint());
           int col = columnAtPoint(e.getPoint());
+        	if (OSPRuntime.isPopupTrigger(e)) {
+        		String name = getValueAt(row, 0).toString();
+        		if (name.contains(THETA) || name.contains(OMEGA)) {
+        			JPopupMenu popup = new JPopupMenu();
+        			JMenuItem item = new JMenuItem();
+        			item.setText(anglesInDegrees?
+        					ToolsRes.getString("FunctionEditor.Popup.MenuItem.SwitchToRadians"): //$NON-NLS-1$
+        					ToolsRes.getString("FunctionEditor.Popup.MenuItem.SwitchToDegrees")); //$NON-NLS-1$
+        	    item.addActionListener(new ActionListener() {
+        	      public void actionPerformed(ActionEvent e) {
+        	      	setAnglesInDegrees(!anglesInDegrees);
+                  FunctionEditor.this.firePropertyChange("angles_in_radians", null, !anglesInDegrees); //$NON-NLS-1$
+        	      }
+        	    });
+        			popup.add(item);
+        			popup.show(table, e.getX(), e.getY());
+        		}
+        	}
           table.rowToSelect = row;
           table.columnToSelect = col;
           if(!tableModel.isCellEditable(row, col)) {
@@ -1583,7 +1603,12 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 
         String val = value.toString();
         if (prevObject!=null && column>0) {
-        	val = prevExpression;
+        	if (val.endsWith(DEGREES)) {
+        		val = val.substring(0, val.length()-1);
+        	}
+        	else {
+        		val = prevExpression;
+        	}
         }
         
         popupField.setText(val);

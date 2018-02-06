@@ -57,6 +57,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
+import org.opensourcephysics.media.core.NumberField;
 import org.opensourcephysics.tools.DataToolTab;
 
 /**
@@ -471,11 +472,15 @@ public class DataTable extends JTable implements ActionListener {
    */
   public void actionPerformed(ActionEvent evt) {
   	// code added by D Brown to update decimal separator Jan 2018
-    for (String key: precisionRenderersByColumnName.keySet()) {
-    	PrecisionRenderer renderer = precisionRenderersByColumnName.get(key);
-    	renderer.numberFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
-    }
-    defaultDoubleRenderer.numberFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+    try {
+    	// try block needed to catch occasional ConcurrentModificationException
+			for (String key: precisionRenderersByColumnName.keySet()) {
+				PrecisionRenderer renderer = precisionRenderersByColumnName.get(key);
+				renderer.numberFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+			}
+			defaultDoubleRenderer.getFormat().setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+		} catch (Exception e) {
+		}
     
   	// code added by D Brown to maintain column order and widths (Mar 2014)
 		TableColumnModel model = this.getColumnModel();
@@ -1052,25 +1057,44 @@ public class DataTable extends JTable implements ActionListener {
 
   }
   
+  /**
+   *  A default double renderer for the table
+   */
   protected static class DoubleRenderer extends DefaultTableCellRenderer {
-    DecimalFormat numberFormat;
+    NumberField numberField;
     
     /**
      *  Constructor
      */
     public DoubleRenderer() {
       super();
-      numberFormat = (DecimalFormat)NumberFormat.getInstance();
+      numberField = new NumberField(0);
     }
 
     @Override
     public void setValue(Object value) {
-      setText((value==null) ? "" : numberFormat.format(value)); //$NON-NLS-1$
+    	if (value==null) {
+    		setText(""); //$NON-NLS-1$
+    		return;
+    	}
+    	numberField.setValue((Double)value);
+      setText(numberField.getText());
+    }
+    
+    /**
+     *  Gets the number format
+     */
+    DecimalFormat getFormat() {
+    	return numberField.getFormat();
     }
 
   }
 
-  protected static class PrecisionRenderer extends DoubleRenderer {
+  /**
+   *  A settable precision double renderer for the table
+   */
+  protected static class PrecisionRenderer extends DefaultTableCellRenderer {
+    DecimalFormat numberFormat;
     String pattern;
 
     /**
@@ -1080,6 +1104,7 @@ public class DataTable extends JTable implements ActionListener {
      */
     public PrecisionRenderer(int precision) {
       super();
+      numberFormat = (DecimalFormat)NumberFormat.getInstance();
       numberFormat.setMaximumFractionDigits(precision);
       setHorizontalAlignment(SwingConstants.RIGHT);
       setBackground(Color.WHITE);
@@ -1092,6 +1117,7 @@ public class DataTable extends JTable implements ActionListener {
      */
     public PrecisionRenderer(String pattern) {
       super();
+      numberFormat = (DecimalFormat)NumberFormat.getInstance();
       numberFormat.applyPattern(pattern);
       this.pattern = pattern;
       setHorizontalAlignment(SwingConstants.RIGHT);
@@ -1104,6 +1130,11 @@ public class DataTable extends JTable implements ActionListener {
      */
     public void setPrecision(int precision) {
       numberFormat.setMaximumFractionDigits(precision);
+    }
+
+    @Override
+    public void setValue(Object value) {
+      setText((value==null) ? "" : numberFormat.format(value)); //$NON-NLS-1$
     }
 
   }
