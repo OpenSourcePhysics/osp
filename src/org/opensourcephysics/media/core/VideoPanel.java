@@ -690,6 +690,17 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
     }
     return pt;
   }
+  
+  /**
+   * Gets a XYCoordinateStringBuilder for a TPoint to display its coordinates.
+   * This default implementation returns the static TPoint string builder. 
+   *
+   * @param point the TPoint
+   * @return the XYCoordinateStringBuilder
+   */
+  public XYCoordinateStringBuilder getXYCoordinateStringBuilder(TPoint point) {
+  	return TPoint.xyStringBuilder;
+  }
 
   //______________________________ object loader ________________________________
 

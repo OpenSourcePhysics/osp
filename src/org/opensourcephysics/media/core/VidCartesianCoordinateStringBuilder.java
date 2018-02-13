@@ -16,7 +16,10 @@ import org.opensourcephysics.display.axes.CartesianCoordinateStringBuilder;
 /**
  * A coordinate string builder for a video panel.
  */
-public class VidCartesianCoordinateStringBuilder extends CartesianCoordinateStringBuilder {
+public class VidCartesianCoordinateStringBuilder 
+		extends CartesianCoordinateStringBuilder 
+		implements XYCoordinateStringBuilder {
+	
   protected VidCartesianCoordinateStringBuilder() {
     super();
   }
@@ -39,7 +42,7 @@ public class VidCartesianCoordinateStringBuilder extends CartesianCoordinateStri
     }
     VideoPanel vidPanel = (VideoPanel) panel;
     Point2D pt = vidPanel.getWorldMousePoint();
-    return getCoordinateString(pt.getX(), pt.getY());
+    return getCoordinateString(vidPanel, pt.getX(), pt.getY());
   }
 
   /**
@@ -49,7 +52,7 @@ public class VidCartesianCoordinateStringBuilder extends CartesianCoordinateStri
    * @param y the y
    * @return the coordinate string
    */
-  public String getCoordinateString(double x, double y) {
+  public String getCoordinateString(VideoPanel panel, double x, double y) {
     String msg;
     if((Math.abs(x)>100)||(Math.abs(x)<0.01)||(Math.abs(y)>100)||(Math.abs(y)<0.01)) {
 	  	scientificFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
