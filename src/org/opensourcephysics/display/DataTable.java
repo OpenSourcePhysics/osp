@@ -1069,6 +1069,8 @@ public class DataTable extends JTable implements ActionListener {
     public DoubleRenderer() {
       super();
       numberField = new NumberField(0);
+      setHorizontalAlignment(SwingConstants.RIGHT);
+      setBackground(Color.WHITE);
     }
 
     @Override
@@ -1505,10 +1507,10 @@ public class DataTable extends JTable implements ActionListener {
    * A header cell renderer that identifies sorted columns.
    * Added by D Brown 2010-10-24
    */
-  class HeaderRenderer implements TableCellRenderer {
-    TableCellRenderer renderer;
+  public class HeaderRenderer implements TableCellRenderer {
     DrawingPanel panel = new DrawingPanel();
-    DrawableTextLine textLine = new DrawableTextLine("", 0, -6); //$NON-NLS-1$
+    TableCellRenderer renderer;
+    protected DrawableTextLine textLine = new DrawableTextLine("", 0, -6); //$NON-NLS-1$
 
     /**
      * Constructor HeaderRenderer
@@ -1518,6 +1520,10 @@ public class DataTable extends JTable implements ActionListener {
       this.renderer = renderer;
       textLine.setJustification(TextLine.CENTER);
       panel.addDrawable(textLine);
+    }
+    
+    public TableCellRenderer getBaseRenderer() {
+    	return renderer;
     }
 
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
