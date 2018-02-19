@@ -8,7 +8,6 @@
 package demo;
 import javax.swing.JFrame;
 import org.opensourcephysics.frames.PlotFrame;
-//import org.opensourcephysics.tools.DiagnosticsForThreads;
 
 /**
  * A simple program to test the OSP Library installation.
@@ -23,11 +22,8 @@ public class FirstPlotApp {
     for(double x = -10, dx = 0.1; x<10; x += dx) {
       frame.append(0, x, Math.sin(x));
     }
-    //frame.setAutoscaleX(false);
-    //frame.setAutoscaleY(false);
     frame.setVisible(true);
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    //DiagnosticsForThreads.aboutThreads();
   }
 
 }

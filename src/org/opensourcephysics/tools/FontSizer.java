@@ -53,7 +53,7 @@ public class FontSizer {
   public static final ResizableIcon ARROW_ICON;
 
   /** maximum font level */
-  public static final int MAX_LEVEL = 20;
+  public static final int MAX_LEVEL = 9;
 
   // static fields
   static Object levelObj = new FontSizer();

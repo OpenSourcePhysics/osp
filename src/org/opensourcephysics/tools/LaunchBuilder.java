@@ -1418,8 +1418,6 @@ public class LaunchBuilder extends Launcher {
     redFileIcon = loadIcon(imageFile);
     imageFile = "/org/opensourcephysics/resources/tools/images/yellowfile.gif";   //$NON-NLS-1$
     yellowFileIcon = loadIcon(imageFile);
-    imageFile = "/org/opensourcephysics/resources/tools/images/whitefolder.gif";  //$NON-NLS-1$
-    whiteFolderIcon = loadIcon(imageFile);
     imageFile = "/org/opensourcephysics/resources/tools/images/redfolder.gif";    //$NON-NLS-1$
     redFolderIcon = loadIcon(imageFile);
     imageFile = "/org/opensourcephysics/resources/tools/images/greenfolder.gif";  //$NON-NLS-1$
@@ -2158,7 +2156,7 @@ public class LaunchBuilder extends Launcher {
    *
    * @param level the level
    */
-  protected void setFontLevel(int level) {
+  public void setFontLevel(int level) {
     final int prev = displaySplitPane.getLastDividerLocation();
     final String divider = displaySplitPane.getName();
     // set font levels of titled borders
