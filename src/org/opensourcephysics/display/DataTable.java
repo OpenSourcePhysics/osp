@@ -1529,6 +1529,7 @@ public class DataTable extends JTable implements ActionListener {
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
       // value is column name
       String name = (value==null) ? "" : value.toString(); //$NON-NLS-1$
+      textLine.setText(name);
       if (OSPRuntime.isMac()) {
       	name = TeXParser.removeSubscripting(name);
       }
@@ -1549,7 +1550,6 @@ public class DataTable extends JTable implements ActionListener {
         }
         return comp;
       }
-      textLine.setText(name);
       java.awt.Dimension dim = comp.getPreferredSize();
       dim.height += 1;
       panel.setPreferredSize(dim);
