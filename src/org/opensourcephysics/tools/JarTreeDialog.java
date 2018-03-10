@@ -478,7 +478,7 @@ public class JarTreeDialog extends JDialog {
   //    frame.setSize(400,600);
   //    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
   //    frame.setVisible(true);
-  //    File root = new File(System.getProperty("user.home")); //$NON-NLS-1$
+  //    File root = new File(OSPRuntime.getUserHome());
   //    JarTreeDialog tree = new JarTreeDialog(frame, root);
   //    tree.setVisible(true);
   //    String[] paths = tree.getSelectionRelativePaths();

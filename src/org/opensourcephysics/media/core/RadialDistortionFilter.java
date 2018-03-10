@@ -66,7 +66,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
-import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
@@ -782,7 +781,7 @@ public class RadialDistortionFilter extends Filter {
       sourceAngleField = new IntegerField(3);
       sourceAngleField.setMaxValue(180);
       sourceAngleField.setMinValue(5);
-      sourceAngleField.setUnits("º"); //$NON-NLS-1$
+      sourceAngleField.setUnits("\u00B0"); //$NON-NLS-1$
       sourceAngleField.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           int n = sourceAngleField.getIntValue();
@@ -808,7 +807,7 @@ public class RadialDistortionFilter extends Filter {
       outputAngleField.setMaxValue(180);
       outputAngleField.setMinValue(0);
       outputAngleField.setEditable(false);
-      outputAngleField.setUnits("º"); //$NON-NLS-1$
+      outputAngleField.setUnits("\u00B0"); //$NON-NLS-1$
 
       radiusField = new IntegerField(3);
       radiusField.setMaxValue(rMax);

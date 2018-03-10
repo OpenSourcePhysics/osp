@@ -168,7 +168,7 @@ public class VideoIO {
   public static JFileChooser getChooser() {
     if(chooser==null) {
     	File dir = (OSPRuntime.chooserDir==null)? 
-    			new File(System.getProperty("user.home")):  //$NON-NLS-1$
+    			new File(OSPRuntime.getUserHome()):
     			new File(OSPRuntime.chooserDir);
       chooser = new JFileChooser(dir);
       chooser.addPropertyChangeListener(videoEnginePanel);
@@ -315,7 +315,7 @@ public class VideoIO {
 //    		"logback-core.jar","logback-classic.jar"}; //$NON-NLS-1$ //$NON-NLS-2$
 //  	String shellCmd = "#!/bin/bash\nsudo cp "+xuggleFolder+"xuggle-xuggler.jar "+extFolder+"xuggle-copy.jar";        
 //  	shellCmd = "#!/bin/bash\ncp "+xuggleFolder+"xuggle-xuggler.jar ~/junk.jar";        
-//  	String home = System.getProperty("user.home");
+//  	String home = OSPRuntime.getUserHome();
 //  	String fileName = home+"/copyXuggle.sh";
 //    try {
 //      File file = new File(fileName);

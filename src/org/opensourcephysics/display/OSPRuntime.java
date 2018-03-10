@@ -14,7 +14,9 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -111,7 +113,7 @@ public class OSPRuntime {
   private static String buildDate;
 
   /** The default decimal separator */
-  private static char defaultDecimalSeparator = '.';
+  private static char defaultDecimalSeparator;
 
   /** The preferred decimal separator, if any */
   private static String preferredDecimalSeparator;
@@ -166,7 +168,7 @@ public class OSPRuntime {
   static {
     try { // set the user home and default directory for the chooser                                                                             // system properties may not be readable in some contexts
       OSPRuntime.chooserDir = System.getProperty("user.dir", null);                            //$NON-NLS-1$
-      String userhome = System.getProperty("user.home"); 																			 //$NON-NLS-1$
+      String userhome = getUserHome();
       if (userhome!=null) {
       	userhomeDir = XML.forwardSlash(userhome);
       }
@@ -182,7 +184,15 @@ public class OSPRuntime {
     LOOK_AND_FEEL_TYPES.put(CROSS_PLATFORM_LF, UIManager.getCrossPlatformLookAndFeelClassName());
     LOOK_AND_FEEL_TYPES.put(SYSTEM_LF, UIManager.getSystemLookAndFeelClassName());
     LOOK_AND_FEEL_TYPES.put(DEFAULT_LF, DEFAULT_LOOK_AND_FEEL.getClass().getName());
-    
+
+    NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
+    if (format instanceof DecimalFormat) {
+      defaultDecimalSeparator = ((DecimalFormat)format).getDecimalFormatSymbols().getDecimalSeparator();
+    }
+    else {
+      defaultDecimalSeparator = new DecimalFormat().getDecimalFormatSymbols().getDecimalSeparator();
+    }
+
 //	try {
 //	  Class.forName("com.sun.j3d.utils.universe.SimpleUniverse"); //$NON-NLS-1$
 //	  J3D= true; 
@@ -198,6 +208,60 @@ public class OSPRuntime {
    */
   private OSPRuntime() {
     /** empty block */
+  }
+  
+  /**
+   * Gets the user home directory.
+   * @return the user home 
+   */
+  public static String getUserHome() {
+    String home = System.getProperty("user.home"); //$NON-NLS-1$
+    if (isLinux()) {
+  		String homeEnv = System.getenv("HOME"); //$NON-NLS-1$
+  		if (homeEnv!=null) {
+  			home = homeEnv;
+  		}
+    }
+    return home==null? ".": home; //$NON-NLS-1$
+  }
+
+  /**
+   * Gets the download directory.
+   * @return the download directory
+   */
+  public static File getDownloadDir() {
+  	String home = getUserHome();
+		File downloadDir = new File(home+"/Downloads"); //$NON-NLS-1$
+		if (isLinux()) {
+			// get XDG_DOWNLOAD_DIR if possible--usually "$HOME/xxx" but may be absolute
+			String xdgDir = home+"/.config/user-dirs.dirs"; //$NON-NLS-1$
+			String xdgText = ResourceLoader.getString(xdgDir);
+			if (xdgText!=null) {
+				String[] split = xdgText.split("XDG_"); //$NON-NLS-1$
+				for (String next: split) {
+					if (next.contains("DOWNLOAD_DIR")) { //$NON-NLS-1$
+						// get name between quotes
+						int n = next.indexOf("\""); //$NON-NLS-1$
+						if (n>-1) {
+							next = next.substring(n+1);
+							n = next.indexOf("\""); //$NON-NLS-1$
+							if (n>-1) {
+								next = next.substring(0, n);
+								// substitute home for $HOME
+	  	    			if (next.startsWith("$HOME")) { //$NON-NLS-1$
+	  	    				next = home+next.substring(5);
+	  	    			}
+								File f = new File(next);
+								if (f.exists()) {
+									downloadDir = f;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+    return downloadDir;
   }
 
   /**

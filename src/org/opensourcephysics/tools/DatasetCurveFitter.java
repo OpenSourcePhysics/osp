@@ -385,7 +385,7 @@ public class DatasetCurveFitter extends JPanel {
     	else if (uncertainty<100) format.applyPattern("0"); //$NON-NLS-1$
     	else format.applyPattern("0.0E0"); //$NON-NLS-1$
     }
-  	return "± "+SEFormat.format(uncertainty); //$NON-NLS-1$
+  	return "\u00B1 "+SEFormat.format(uncertainty); //$NON-NLS-1$
   }
   
   /**

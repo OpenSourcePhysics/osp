@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.opensourcephysics.display.OSPRuntime;
+
 /**
  * This defines the ObjectLoader interface and static methods for managing and
  * accessing ObjectLoader implementations.

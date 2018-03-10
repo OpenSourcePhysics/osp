@@ -17,6 +17,7 @@ import java.util.TreeSet;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
+import org.opensourcephysics.display.OSPRuntime;
 
 /**
  * A Library for a LibraryBrowser. Maintains lists of collection paths and imported sub-libraries.
@@ -155,7 +156,7 @@ public class Library {
 	 */
 	protected void setName(String name) {
 		if (name==null) {
-      name = System.getProperty("user.home").replace('\\', '/'); //$NON-NLS-1$
+      name = OSPRuntime.getUserHome().replace('\\', '/');
       if(name.endsWith("/")) {                                         //$NON-NLS-1$ 
         name = name.substring(0, name.length()-1); 
       }

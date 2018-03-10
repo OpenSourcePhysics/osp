@@ -106,7 +106,7 @@ public class OSPLog extends JFrame {
   static {
     try {                                                // system properties may not be readable in some environments
       eol = System.getProperty("line.separator", eol);   //$NON-NLS-1$
-      logdir = System.getProperty("user.home", logdir);  //$NON-NLS-1$
+      logdir = System.getProperty("user.dir", logdir);  //$NON-NLS-1$
       slash = System.getProperty("file.separator", "/"); //$NON-NLS-1$//$NON-NLS-2$
     } catch(Exception ex) {
       /** empty block */
