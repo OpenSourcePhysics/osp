@@ -151,6 +151,8 @@ public class NumberField extends JTextField {
    */
   public double getValue() {
     String s = getText().trim();
+    if ("".equals(s)) return prevValue; //$NON-NLS-1$
+    
     // strip units, if any
     if((units!=null)&&!units.equals("")) { //$NON-NLS-1$
       int n = s.indexOf(units);
@@ -210,7 +212,7 @@ public class NumberField extends JTextField {
       setText(s);
     }
   }
-
+  
   /**
    * Sets the expected range of values for this number field.
    * Note this does not set a firm max or min--only an expectation.
