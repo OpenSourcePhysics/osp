@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
@@ -1311,9 +1312,9 @@ public class DataTable extends JTable implements ActionListener {
           try {
             showNumberFormatAndSample(pattern);
             // apply pattern to all selected columns
-            Object[] selectedColumns = columnList.getSelectedValues();
-            for(Object displayedName : selectedColumns) {
-            	String name = realNames.get(displayedName.toString());
+            List<String> selectedColumns = columnList.getSelectedValuesList();
+            for(String displayedName : selectedColumns) {
+            	String name = realNames.get(displayedName);
               setFormatPattern(name, pattern);
             }
             refreshTable();

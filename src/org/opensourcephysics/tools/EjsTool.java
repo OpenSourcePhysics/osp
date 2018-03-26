@@ -579,7 +579,7 @@ public class EjsTool {
       return null;
     }
     @SuppressWarnings("deprecation")
-	Object[] selection = list.getSelectedValues();
+		Object[] selection = list.getSelectedValues();
     java.util.List<Object> newList = new ArrayList<Object>();
     for(int i = 0, n = selection.length; i<n; i++) {
       newList.add(selection[i]);

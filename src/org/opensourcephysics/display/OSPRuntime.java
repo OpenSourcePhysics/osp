@@ -38,6 +38,7 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.tools.FontSizer;
+import org.opensourcephysics.tools.JREFinder;
 import org.opensourcephysics.tools.ResourceLoader;
 import org.opensourcephysics.tools.Translator;
 
@@ -707,7 +708,8 @@ public class OSPRuntime {
 				file = null;
 			}
   	}
-  	if (file!=null && file.exists()) return file;
+  	if (file!=null && file.exists()
+				&& JREFinder.JAVA_FILTER.accept(file.getParentFile(), file.getName())) return file;
   	return null;
   }
   

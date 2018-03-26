@@ -1585,7 +1585,7 @@ public class ResourceLoader {
    * @param path the file path
    * @return the resource, if any
    */
-//  @SuppressWarnings("resource") // Java 7
+  @SuppressWarnings("resource") // Java 7
 static private Resource createZipResource(String path) {
   	// convert to non-URI form
   	path = getNonURIPath(path);
@@ -1633,31 +1633,7 @@ static private Resource createZipResource(String path) {
       		zipFile.deleteOnExit();
       	base = zipFile.getAbsolutePath();
       	path = base+"!/"+fileName; //$NON-NLS-1$
-      }
-  		
-//  		
-//  		
-//  		File zipDir = null;
-//	  	String zipName = XML.getName(base);
-//  		if (ospCache!=null) {
-//				try {
-//					URL url = new URL(getURIPath(path));
-//					String host = url.getHost().replace('.', '_')+"/"; //$NON-NLS-1$
-//					host += zipName.replace('.', '_') + "/"; //$NON-NLS-1$
-//					zipDir = new File(ospCache, host);
-//				} catch (MalformedURLException e) {}			
-//  		}
-//  		if (zipDir==null) {
-//  			zipDir = new File(System.getProperty("java.io.tmpdir")); //$NON-NLS-1$			
-//      	deleteOnExit = true;
-//  		}
-//      File zipFile = download(base, zipName, zipDir, false);
-//      if (zipFile!=null) {
-//      	if (deleteOnExit)
-//      		zipFile.deleteOnExit();
-//      	base = zipFile.getAbsolutePath();
-//      	path = base+"!/"+fileName; //$NON-NLS-1$
-//      }
+      }  		
     }
   	
     URLClassLoader zipLoader = null;
