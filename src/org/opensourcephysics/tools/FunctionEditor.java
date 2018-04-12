@@ -1755,7 +1755,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
             	String text = popupField.getText().trim();
             	char separator = sciFormat.getDecimalFormatSymbols().getDecimalSeparator();
               // warn of if statements that fail if user expects comma separator to work
-              if (separator==',') {
+              if (table.columnToSelect==1 && separator==',') {
               	if (!isValidExpression(text)) {
 	              	// warn that if statements can use only periods for separators
               		JOptionPane.showMessageDialog(FunctionEditor.this,
