@@ -144,7 +144,7 @@ public class LibraryComPADRE {
 
       // look at all ComPADRE records in the document
       NodeList list = doc.getElementsByTagName("record"); //$NON-NLS-1$
-      for (int i=0; i<list.getLength(); i++) { // process nodes
+      for (int i=0; i<list.getLength(); i++) { // process record nodes
         Node node = list.item(i);
       	String[] attachment = null;
       	if (isDesiredOSPType(node)) {
@@ -153,6 +153,9 @@ public class LibraryComPADRE {
       		}
         	else {
   	        attachment = getAttachment(node, "Main"); //$NON-NLS-1$
+  	        if (attachment==null) {
+  	        	attachment = getAttachment(node, "Primary"); //$NON-NLS-1$
+  	        }      		
   	        if (attachment==null) {
   	        	attachment = getAttachment(node, "Supplemental"); //$NON-NLS-1$
   	        }      		
@@ -206,6 +209,9 @@ public class LibraryComPADRE {
       		}
         	else {
   	        attachment = getAttachment(node, "Main"); //$NON-NLS-1$
+  	        if (attachment==null) {
+  	        	attachment = getAttachment(node, "Primary"); //$NON-NLS-1$
+  	        }      		
   	        if (attachment==null) {
   	        	attachment = getAttachment(node, "Supplemental"); //$NON-NLS-1$
   	        }      		
@@ -325,9 +331,9 @@ public class LibraryComPADRE {
       Node fileTypeNode = getFirstChild(child,"file-type"); //$NON-NLS-1$
       if (fileTypeNode!=null && attachmentType.equals(getNodeValue(fileTypeNode))) {
         Node urlNode = getFirstChild(child,"download-url"); //$NON-NLS-1$
-        if (urlNode!=null) { // found downloadable attachment
-	      	// keep first attachment or (preferred) attachment with the same id as the node
-        	if (attachment==null || id.equals(getChildValue(child, "file-identifier"))) { //$NON-NLS-1$
+        if (urlNode!=null) { // found a downloadable attachment
+	      	// keep only attachments with the same id as the node
+        	if (id.equals(getChildValue(child, "file-identifier"))) { //$NON-NLS-1$
 	          String attachmentURL = getNodeValue(urlNode);
 	          Element fileNode = (Element)getFirstChild(child,"file-name"); //$NON-NLS-1$
 	          if (fileNode!=null) {
