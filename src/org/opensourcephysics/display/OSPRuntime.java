@@ -50,7 +50,7 @@ import org.opensourcephysics.tools.Translator;
  * @version 1.0
  */
 public class OSPRuntime {
-  public static final String VERSION = "5.0.0";                                                                            //$NON-NLS-1$
+  public static final String VERSION = "5.0.1";                                                                            //$NON-NLS-1$
   public static final String COMMA_DECIMAL_SEPARATOR = ",";                                                                            //$NON-NLS-1$
   public static final String PERIOD_DECIMAL_SEPARATOR = ".";                                                                            //$NON-NLS-1$
 
