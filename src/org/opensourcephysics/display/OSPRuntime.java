@@ -51,6 +51,8 @@ import org.opensourcephysics.tools.Translator;
  */
 public class OSPRuntime {
   public static final String VERSION = "5.0.0";                                                                            //$NON-NLS-1$
+  public static final String COMMA_DECIMAL_SEPARATOR = ",";                                                                            //$NON-NLS-1$
+  public static final String PERIOD_DECIMAL_SEPARATOR = ".";                                                                            //$NON-NLS-1$
 
   /** Disables drawing for faster start-up and to avoid screen flash in Drawing Panels. */
   volatile public static boolean disableAllDrawing = false;
@@ -114,7 +116,7 @@ public class OSPRuntime {
   private static String buildDate;
 
   /** The default decimal separator */
-  private static char defaultDecimalSeparator;
+  private static char defaultDecimalSeparator = ',';
 
   /** The preferred decimal separator, if any */
   private static String preferredDecimalSeparator;
@@ -188,10 +190,10 @@ public class OSPRuntime {
 
     NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
     if (format instanceof DecimalFormat) {
-      defaultDecimalSeparator = ((DecimalFormat)format).getDecimalFormatSymbols().getDecimalSeparator();
+      setDefaultDecimalSeparator(((DecimalFormat)format).getDecimalFormatSymbols().getDecimalSeparator());
     }
     else {
-      defaultDecimalSeparator = new DecimalFormat().getDecimalFormatSymbols().getDecimalSeparator();
+    	setDefaultDecimalSeparator(new DecimalFormat().getDecimalFormatSymbols().getDecimalSeparator());
     }
 
 //	try {
@@ -844,7 +846,10 @@ public class OSPRuntime {
 	 * @param c a decimal separator
 	 */
   public static void setDefaultDecimalSeparator(char c) {
-  	defaultDecimalSeparator = c;
+  	String s = String.valueOf(c);
+  	if (COMMA_DECIMAL_SEPARATOR.equals(s) || COMMA_DECIMAL_SEPARATOR.equals(s)) {
+  		defaultDecimalSeparator = c;
+  	}
   }
   
 	/**
@@ -853,7 +858,9 @@ public class OSPRuntime {
 	 * @param separator a decimal separator
 	 */
   public static void setPreferredDecimalSeparator(String separator) {
-  	preferredDecimalSeparator = separator;
+  	if (COMMA_DECIMAL_SEPARATOR.equals(separator) || COMMA_DECIMAL_SEPARATOR.equals(separator)) {
+    	preferredDecimalSeparator = separator;
+  	}
   }
   
 	/**
