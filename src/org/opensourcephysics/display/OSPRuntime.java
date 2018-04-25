@@ -50,7 +50,7 @@ import org.opensourcephysics.tools.Translator;
  * @version 1.0
  */
 public class OSPRuntime {
-  public static final String VERSION = "5.0.1";                                                                            //$NON-NLS-1$
+  public static final String VERSION = "5.0.2";                                                                            //$NON-NLS-1$
   public static final String COMMA_DECIMAL_SEPARATOR = ",";                                                                            //$NON-NLS-1$
   public static final String PERIOD_DECIMAL_SEPARATOR = ".";                                                                            //$NON-NLS-1$
 
@@ -847,7 +847,7 @@ public class OSPRuntime {
 	 */
   public static void setDefaultDecimalSeparator(char c) {
   	String s = String.valueOf(c);
-  	if (COMMA_DECIMAL_SEPARATOR.equals(s) || COMMA_DECIMAL_SEPARATOR.equals(s)) {
+  	if (COMMA_DECIMAL_SEPARATOR.equals(s) || PERIOD_DECIMAL_SEPARATOR.equals(s)) {
   		defaultDecimalSeparator = c;
   	}
   }
@@ -858,7 +858,7 @@ public class OSPRuntime {
 	 * @param separator a decimal separator
 	 */
   public static void setPreferredDecimalSeparator(String separator) {
-  	if (COMMA_DECIMAL_SEPARATOR.equals(separator) || COMMA_DECIMAL_SEPARATOR.equals(separator)) {
+  	if (COMMA_DECIMAL_SEPARATOR.equals(separator) || PERIOD_DECIMAL_SEPARATOR.equals(separator)) {
     	preferredDecimalSeparator = separator;
   	}
   }
