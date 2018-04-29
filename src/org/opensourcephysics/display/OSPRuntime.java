@@ -858,7 +858,7 @@ public class OSPRuntime {
 	 * @param separator a decimal separator
 	 */
   public static void setPreferredDecimalSeparator(String separator) {
-  	if (COMMA_DECIMAL_SEPARATOR.equals(separator) || PERIOD_DECIMAL_SEPARATOR.equals(separator)) {
+  	if (separator==null || COMMA_DECIMAL_SEPARATOR.equals(separator) || PERIOD_DECIMAL_SEPARATOR.equals(separator)) {
     	preferredDecimalSeparator = separator;
   	}
   }
