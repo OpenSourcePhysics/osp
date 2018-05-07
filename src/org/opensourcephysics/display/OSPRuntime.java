@@ -831,12 +831,13 @@ public class OSPRuntime {
 	 * @return the DecimalFormatSymbols
 	 */
   public static DecimalFormatSymbols getDecimalFormatSymbols() {
-  	DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
+  	DecimalFormatSymbols decimalFormatSymbols = DecimalFormatSymbols.getInstance();
   	char c = defaultDecimalSeparator;
     if (preferredDecimalSeparator!=null && preferredDecimalSeparator.length()>0) {
   		c = preferredDecimalSeparator.charAt(0);
   	}
-    decimalFormatSymbols.setDecimalSeparator(c); 	
+    decimalFormatSymbols.setDecimalSeparator(c);    
+    decimalFormatSymbols.setMinusSign('-');
   	return decimalFormatSymbols;
   }
   
