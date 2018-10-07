@@ -249,7 +249,7 @@ public class VideoIO {
    */
   public static boolean isEngineInstalled(String engine) {
 	if (engine.equals(ENGINE_FFMPEG)) {
-  		return DiagnosticsForFFMPeg.getFFMPegJar()!=null;
+  		return DiagnosticsForFFMPeg.hasFFMPegJars();
 	}
   	return false;
   }

@@ -31,7 +31,7 @@ public class DiagnosticsForFFMPeg {
 	public static final String FFMPEG_URL = "http://www.compadre.org/osp/items/detail.cfm?ID=11606"; //$NON-NLS-1$
 	public static final String REQUEST_TRACKER = "Tracker"; //$NON-NLS-1$
 	public static final String BRIDJVERSION = "0.7-SNAPSHOT";
-	public static final String FFMPEG_VERSION = "3.3";
+	public static final String FFMPEG_VERSION = "4.0";
 	static String newline = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
 	static String[] ffmpegJarNames = new String[] {
 			"ffmpeg.jar", "bridj-" + BRIDJVERSION + ".jar" }; //$NON-NLS-1$ //$NON-NLS-2$
@@ -188,7 +188,7 @@ public class DiagnosticsForFFMPeg {
     	if (status==7 && "Tracker".equals(requester) && dialogOwner!=null) { //$NON-NLS-1$
     		// wrong VM bitness: show Preferences dialog for Tracker if appropriate
     		if (OSPRuntime.isWindows()) {
-		    	Collection<String> jreDirs = ExtensionsManager.getManager().getPublicJREs(32);
+		    	Collection<File> jreDirs = JREFinder.getFinder().getJREs(32);
 		    	showPrefsQuestionForTracker = !jreDirs.isEmpty();
     		}
     		else if (OSPRuntime.isMac()) {
@@ -241,7 +241,7 @@ public class DiagnosticsForFFMPeg {
 	}
 	
 	/**
-	 * Gets the ffmpeg jar file (named in ffmpegJarName) found in a given
+	 * Gets the ffmpeg jar files (named in ffmpegJarNames) found in a given
 	 * directory. Always returns the file but may be null.
 	 * 
 	 * @param dir
@@ -259,6 +259,16 @@ public class DiagnosticsForFFMPeg {
 		return jarFiles;
 	}
 
+	/**
+	 * Searches for the ffmpeg jar files installed.
+	 * 
+	 *  @return true, if jar files found, false otherwise
+	 */
+	public static boolean hasFFMPegJars() {
+		int status = getStatusCode();
+		return status == 0;
+	}
+	
 	/**
 	 * Gets the ffmpeg jar file (named in ffmpegJarName)  in the current VM extensions. 
 	 * Always returns array but file may be null.
@@ -476,8 +486,7 @@ public class DiagnosticsForFFMPeg {
 				message.add(FFMPegRes.getString("FFMPeg.Dialog.WrongVMWindows.Message2")); //$NON-NLS-1$
 				message.add(" "); //$NON-NLS-1$
 
-				Collection<String> jreDirs = ExtensionsManager.getManager()
-						.getPublicJREs(32);
+				Collection<File> jreDirs = JREFinder.getFinder().getJREs(32);
 				if (jreDirs.isEmpty()) {
 					if (REQUEST_TRACKER.equals(requester)) {
 						message.add(FFMPegRes.getString("FFMPeg.Dialog.NoVMTracker.Message1")); //$NON-NLS-1$
