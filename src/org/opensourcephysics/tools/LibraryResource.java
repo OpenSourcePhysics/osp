@@ -27,6 +27,7 @@ import javax.swing.filechooser.FileFilter;
 
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.media.core.ImageVideoType;
 import org.opensourcephysics.media.core.VideoFileFilter;
@@ -786,6 +787,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
     	String filename = attachment[1];
       String resTitle = ToolsRes.getString("LibraryResource.Description.Resource"); //$NON-NLS-1$
       int bytes = Integer.parseInt(attachment[2]);    	
+    	megabyteFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
       String size = " ("+megabyteFormat.format(bytes/1048576.0)+"MB)"; //$NON-NLS-1$ //$NON-NLS-2$
     	buffer.append(
       		"\n        <p><b>"+resTitle+":  </b>"+filename+size+"</p>"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$

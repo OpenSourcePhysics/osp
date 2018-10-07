@@ -14,6 +14,9 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.URL;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -35,6 +38,7 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.tools.FontSizer;
+import org.opensourcephysics.tools.JREFinder;
 import org.opensourcephysics.tools.ResourceLoader;
 import org.opensourcephysics.tools.Translator;
 
@@ -46,7 +50,9 @@ import org.opensourcephysics.tools.Translator;
  * @version 1.0
  */
 public class OSPRuntime {
-  public static final String VERSION = "4.0.1";                                                                            //$NON-NLS-1$
+  public static final String VERSION = "5.0.2";                                                                            //$NON-NLS-1$
+  public static final String COMMA_DECIMAL_SEPARATOR = ",";                                                                            //$NON-NLS-1$
+  public static final String PERIOD_DECIMAL_SEPARATOR = ".";                                                                            //$NON-NLS-1$
 
   /** Disables drawing for faster start-up and to avoid screen flash in Drawing Panels. */
   volatile public static boolean disableAllDrawing = false;
@@ -98,16 +104,22 @@ public class OSPRuntime {
   protected static boolean authorMode = true;
 
   /** Path of the launch jar, if any. */
-  static private String launchJarPath;
+  private static String launchJarPath;
 
   /** Path of the launch jar, if any. */
-  static private String launchJarName;
+  private static String launchJarName;
 
   /** The launch jar, if any. */
-  static private JarFile launchJar = null;
+  private static JarFile launchJar = null;
 
   /** Build date of the launch jar, if known. */
-  static private String buildDate;
+  private static String buildDate;
+
+  /** The default decimal separator */
+  private static char defaultDecimalSeparator = ',';
+
+  /** The preferred decimal separator, if any */
+  private static String preferredDecimalSeparator;
 
   /** File Chooser starting directory. */
   public static String chooserDir;
@@ -159,7 +171,7 @@ public class OSPRuntime {
   static {
     try { // set the user home and default directory for the chooser                                                                             // system properties may not be readable in some contexts
       OSPRuntime.chooserDir = System.getProperty("user.dir", null);                            //$NON-NLS-1$
-      String userhome = System.getProperty("user.home"); 																			 //$NON-NLS-1$
+      String userhome = getUserHome();
       if (userhome!=null) {
       	userhomeDir = XML.forwardSlash(userhome);
       }
@@ -175,6 +187,15 @@ public class OSPRuntime {
     LOOK_AND_FEEL_TYPES.put(CROSS_PLATFORM_LF, UIManager.getCrossPlatformLookAndFeelClassName());
     LOOK_AND_FEEL_TYPES.put(SYSTEM_LF, UIManager.getSystemLookAndFeelClassName());
     LOOK_AND_FEEL_TYPES.put(DEFAULT_LF, DEFAULT_LOOK_AND_FEEL.getClass().getName());
+
+    NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
+    if (format instanceof DecimalFormat) {
+      setDefaultDecimalSeparator(((DecimalFormat)format).getDecimalFormatSymbols().getDecimalSeparator());
+    }
+    else {
+    	setDefaultDecimalSeparator(new DecimalFormat().getDecimalFormatSymbols().getDecimalSeparator());
+    }
+
 //	try {
 //	  Class.forName("com.sun.j3d.utils.universe.SimpleUniverse"); //$NON-NLS-1$
 //	  J3D= true; 
@@ -190,6 +211,60 @@ public class OSPRuntime {
    */
   private OSPRuntime() {
     /** empty block */
+  }
+  
+  /**
+   * Gets the user home directory.
+   * @return the user home 
+   */
+  public static String getUserHome() {
+    String home = System.getProperty("user.home"); //$NON-NLS-1$
+    if (isLinux()) {
+  		String homeEnv = System.getenv("HOME"); //$NON-NLS-1$
+  		if (homeEnv!=null) {
+  			home = homeEnv;
+  		}
+    }
+    return home==null? ".": home; //$NON-NLS-1$
+  }
+
+  /**
+   * Gets the download directory.
+   * @return the download directory
+   */
+  public static File getDownloadDir() {
+  	String home = getUserHome();
+		File downloadDir = new File(home+"/Downloads"); //$NON-NLS-1$
+		if (isLinux()) {
+			// get XDG_DOWNLOAD_DIR if possible--usually "$HOME/xxx" but may be absolute
+			String xdgDir = home+"/.config/user-dirs.dirs"; //$NON-NLS-1$
+			String xdgText = ResourceLoader.getString(xdgDir);
+			if (xdgText!=null) {
+				String[] split = xdgText.split("XDG_"); //$NON-NLS-1$
+				for (String next: split) {
+					if (next.contains("DOWNLOAD_DIR")) { //$NON-NLS-1$
+						// get name between quotes
+						int n = next.indexOf("\""); //$NON-NLS-1$
+						if (n>-1) {
+							next = next.substring(n+1);
+							n = next.indexOf("\""); //$NON-NLS-1$
+							if (n>-1) {
+								next = next.substring(0, n);
+								// substitute home for $HOME
+	  	    			if (next.startsWith("$HOME")) { //$NON-NLS-1$
+	  	    				next = home+next.substring(5);
+	  	    			}
+								File f = new File(next);
+								if (f.exists()) {
+									downloadDir = f;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+    return downloadDir;
   }
 
   /**
@@ -351,24 +426,6 @@ public class OSPRuntime {
 } 
   
   /**
-   * Determines if Quick Time for Java has been installed by looking for QTJava.zip in java extensions folder.
-   * 
-   * @return true if  QTJava found; false otherwise
-   */
-  static public boolean hasQTJava() {
-	    // look for QTJava.zip in java extensions folder
-	    String extdir = System.getProperty("java.ext.dirs"); //$NON-NLS-1$
-	    // look in first directory listed (before path separator, if any)
-      String separator = System.getProperty("path.separator"); //$NON-NLS-1$
-	    if(extdir.indexOf(separator)>-1) {
-	      extdir = extdir.substring(0, extdir.indexOf(separator));
-	    }
-	    String slash = System.getProperty("file.separator", "/"); //$NON-NLS-1$ //$NON-NLS-2$
-	    File extfile = new File(extdir+slash+"QTJava.zip");       //$NON-NLS-1$
-	    return extfile.exists();
-  }
-
-  /**
    * Determines if an InputEvent is a popup trigger.
    * @param e the input event
    * @return true if event is a popup trigger
@@ -468,6 +525,17 @@ public class OSPRuntime {
         return;
       }
     }
+		if (path.startsWith("jar:")) { //$NON-NLS-1$
+			path = path.substring(4, path.length());
+		}
+		try {
+			// check that file exists and set launchJarPath to file path
+			File file = new File(path);
+			if (!file.exists())  return;
+			path = XML.forwardSlash(file.getCanonicalPath());
+		} catch (Exception ex) {
+		}
+    OSPLog.finer("Setting launch jar path to "+path); //$NON-NLS-1$
     launchJarPath = path;
     launchJarName = path.substring(path.lastIndexOf("/")+1); //$NON-NLS-1$
   }
@@ -591,37 +659,47 @@ public class OSPRuntime {
 	  		else file = null;
 	  	}
 	  	else if (OSPRuntime.isMac()) {
-	  		// typical: /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home/bin/java
-	  		// symlink at: /Library/Java/Home/bin/java
-	  		// see also /Library/Java/JavaVirtualMachines?
-	  		if (file.getName().endsWith("jdk")) //$NON-NLS-1$
-	  			file = new File(file, "Contents/Home/bin/java"); //$NON-NLS-1$
-	  		else if (file.getName().equals("Home") //$NON-NLS-1$
-	  				&& file.getPath().indexOf("/Java")>-1) { //$NON-NLS-1$
-	  			file = new File(file, "bin/java"); //$NON-NLS-1$
+	  		// typical jdk public: /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home/jre
+	  		// jdk private: /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home
+	  		// in Tracker.app: /Applications/Tracker.app/Contents/PlugIns/Java.runtime/Contents/Home/jre
+	  		// also in /Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home
+	  		// also sometimes in /Library/Java...??
+	  		// symlink at: /Library/Java/Home/bin/java??
+	  		if (file.getName().endsWith("jdk")) { //$NON-NLS-1$
+	  			File parent = file;
+	  			file = new File(parent, "Contents/Home/jre/bin/java"); //$NON-NLS-1$
+	  			if (!file.exists()) {
+	  				file = new File(parent, "Contents/Home/bin/java"); //$NON-NLS-1$)
+	  			}
 	  		}
-	  		else file = null;
+	  		else file = new File(file, "bin/java"); //$NON-NLS-1$
 	  	}
 	  	else if (OSPRuntime.isLinux()) {
 	  		// typical: /usr/lib/jvm/java-X-openjdk/jre/bin/java 
+	  		// bundled: /opt/tracker/jre/bin/java 
 	  		// symlink at: /usr/lib/jvm/java-X.X.X-openjdk/jre/bin/java
 	  		// sun versions: java-X-sun and java-X.X.X-sun
-	  		if (file.getParentFile()!=null
-	  				&& file.getParentFile().getName().indexOf("jre")>-1) { //$NON-NLS-1$
-	  			file = file.getParentFile();
+	  		if ("jre".equals(file.getName())) { //$NON-NLS-1$
+	  			file = new File(file, "bin/java"); //$NON-NLS-1$
 	  		}
-	  		if (file.getParentFile()!=null
-	  				&& file.getParentFile().getName().indexOf("jdk")>-1) { //$NON-NLS-1$
-	  			file = file.getParentFile();
+	  		else {
+		  		if (file.getParentFile()!=null
+		  				&& file.getParentFile().getName().indexOf("jre")>-1) { //$NON-NLS-1$
+		  			file = file.getParentFile();
+		  		}
+		  		if (file.getParentFile()!=null
+		  				&& file.getParentFile().getName().indexOf("jdk")>-1) { //$NON-NLS-1$
+		  			file = file.getParentFile();
+		  		}
+		  		if (file.getParentFile()!=null
+		  				&& file.getParentFile().getName().indexOf("sun")>-1) { //$NON-NLS-1$
+		  			file = file.getParentFile();
+		  		}
+		  		if (file.getName().indexOf("jdk")>-1  //$NON-NLS-1$
+		  				|| file.getName().indexOf("sun")>-1) //$NON-NLS-1$
+		  			file = new File(file, "jre/bin/java"); //$NON-NLS-1$
+		  		else file = null;
 	  		}
-	  		if (file.getParentFile()!=null
-	  				&& file.getParentFile().getName().indexOf("sun")>-1) { //$NON-NLS-1$
-	  			file = file.getParentFile();
-	  		}
-	  		if (file.getName().indexOf("jdk")>-1  //$NON-NLS-1$
-	  				|| file.getName().indexOf("sun")>-1) //$NON-NLS-1$
-	  			file = new File(file, "jre/bin/java"); //$NON-NLS-1$
-	  		else file = null;
 	  	}
   	}
     // resolve symlinks to their targets
@@ -632,7 +710,8 @@ public class OSPRuntime {
 				file = null;
 			}
   	}
-  	if (file!=null && file.exists()) return file;
+  	if (file!=null && file.exists()
+				&& JREFinder.JAVA_FILTER.accept(file.getParentFile(), file.getName())) return file;
   	return null;
   }
   
@@ -743,6 +822,55 @@ public class OSPRuntime {
   	if (locale.equals(Locale.TAIWAN))
   		return "\u7e41\u4f53\u4e2d\u6587"; //$NON-NLS-1$
   	return locale.getDisplayLanguage(locale);
+  }
+  
+	/**
+	 * Gets DecimalFormatSymbols that use the preferred decimal separator, if any.
+	 * If no preference, the default separator for the current locale is used.
+	 * 
+	 * @return the DecimalFormatSymbols
+	 */
+  public static DecimalFormatSymbols getDecimalFormatSymbols() {
+  	DecimalFormatSymbols decimalFormatSymbols = DecimalFormatSymbols.getInstance();
+  	char c = defaultDecimalSeparator;
+    if (preferredDecimalSeparator!=null && preferredDecimalSeparator.length()>0) {
+  		c = preferredDecimalSeparator.charAt(0);
+  	}
+    decimalFormatSymbols.setDecimalSeparator(c);    
+    decimalFormatSymbols.setMinusSign('-');
+  	return decimalFormatSymbols;
+  }
+  
+	/**
+	 * Sets the default decimal separator.
+	 * 
+	 * @param c a decimal separator
+	 */
+  public static void setDefaultDecimalSeparator(char c) {
+  	String s = String.valueOf(c);
+  	if (COMMA_DECIMAL_SEPARATOR.equals(s) || PERIOD_DECIMAL_SEPARATOR.equals(s)) {
+  		defaultDecimalSeparator = c;
+  	}
+  }
+  
+	/**
+	 * Sets the preferred decimal separator. May be null.
+	 * 
+	 * @param separator a decimal separator
+	 */
+  public static void setPreferredDecimalSeparator(String separator) {
+  	if (separator==null || COMMA_DECIMAL_SEPARATOR.equals(separator) || PERIOD_DECIMAL_SEPARATOR.equals(separator)) {
+    	preferredDecimalSeparator = separator;
+  	}
+  }
+  
+	/**
+	 * Gets the preferred decimal separator. May return null.
+	 * 
+	 * @return the separator, if any
+	 */
+  public static String getPreferredDecimalSeparator() {
+  	return preferredDecimalSeparator;
   }
   
 	/**

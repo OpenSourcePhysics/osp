@@ -841,3 +841,10 @@ DataToolTab.Status.MeasureFit=Press control key to toggle measuring the fit func
 
 # Additions by Doug Brown 2015/07/23
 LibraryBrowser.Search.NotFound=Tak ditemui
+
+# Additions by Doug Brown 2018/01/29
+FunctionEditor.Dialog.IfStatementError.Message1="pernyataan if" mengandungi ralat. Pernyataan if mesti   
+FunctionEditor.Dialog.IfStatementError.Message2= guna nokhtah, bukan koma, sebagai pemisah perpuluhan.
+FunctionEditor.Dialog.IfStatementError.Title=Ralat Pernyataan If
+FunctionEditor.Popup.MenuItem.SwitchToDegrees=Tukar ke darjah
+FunctionEditor.Popup.MenuItem.SwitchToRadians=Tukar ke radian

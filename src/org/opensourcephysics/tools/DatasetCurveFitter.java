@@ -378,13 +378,14 @@ public class DatasetCurveFitter extends JPanel {
   	if (Double.isNaN(uncertainty)) return null;
     if(SEFormat instanceof DecimalFormat) {
     	DecimalFormat format = (DecimalFormat) SEFormat;
+      format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
     	if (uncertainty<0.1) format.applyPattern("0.0E0"); //$NON-NLS-1$
     	else if (uncertainty<1) format.applyPattern("0.00"); //$NON-NLS-1$
     	else if (uncertainty<10) format.applyPattern("0.0"); //$NON-NLS-1$
     	else if (uncertainty<100) format.applyPattern("0"); //$NON-NLS-1$
     	else format.applyPattern("0.0E0"); //$NON-NLS-1$
     }
-  	return "± "+SEFormat.format(uncertainty); //$NON-NLS-1$
+  	return "\u00B1 "+SEFormat.format(uncertainty); //$NON-NLS-1$
   }
   
   /**
@@ -1220,7 +1221,8 @@ public class DatasetCurveFitter extends JPanel {
                       ? Color.red
                       : table.isEnabled()? Color.black
                       : Color.gray);
-        Format format = spinCellEditor.field.format;
+        DecimalFormat format = (DecimalFormat)spinCellEditor.field.format;
+        format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
         setText(format.format(value));
         if (!autofitCheckBox.isSelected()) {
       		tooltip += " "+ToolsRes.getString("DatasetCurveFitter.SE.Autofit");        	  //$NON-NLS-1$//$NON-NLS-2$
@@ -1498,7 +1500,7 @@ public class DatasetCurveFitter extends JPanel {
    */
   static class NumberField extends JTextField {
     // instance fields
-    protected NumberFormat format = NumberFormat.getInstance();
+    protected DecimalFormat format = (DecimalFormat)NumberFormat.getInstance();
     protected double prevValue;
     protected String pattern = "0"; //$NON-NLS-1$
     protected int preferredWidth;
@@ -1531,6 +1533,7 @@ public class DatasetCurveFitter extends JPanel {
       if(!isVisible()) {
         return;
       }
+      format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
       setText(format.format(value));
       prevValue = value;
     }

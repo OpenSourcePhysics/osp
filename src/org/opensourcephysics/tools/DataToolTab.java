@@ -132,7 +132,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
   
 	// static fields
   public final static String SHIFTED = "'"; //$NON-NLS-1$
-  protected static NumberFormat correlationFormat = NumberFormat.getInstance();
+  protected static DecimalFormat correlationFormat = (DecimalFormat)NumberFormat.getInstance();
   private static final Cursor SELECT_CURSOR, SELECT_REMOVE_CURSOR, SELECT_ZOOM_CURSOR;
   
   static {
@@ -1329,6 +1329,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         splitPanes[1].setEnabled(fitterVis);
         curveFitter.setActive(fitterVis);
         if(fitterVis) {
+        	curveFitter.setFontLevel(FontSizer.getLevel());
           splitPanes[1].setBottomComponent(curveFitter);
           splitPanes[1].setDividerSize(splitPanes[0].getDividerSize());
           splitPanes[1].setDividerLocation(-1);
@@ -1680,7 +1681,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       plot.setTitle(getWorkingData().getName());
     }
     // set new CoordinateStringBuilder
-    plot.setCoordinateStringBuilder(plot.new PlotCoordinateStringBuilder());
+    plot.stringBuilder = plot.new PlotCoordinateStringBuilder();
+    plot.setCoordinateStringBuilder(plot.stringBuilder);
     
     // create mouse listener for selecting data points in plot
     MouseInputListener mouseSelector = new MouseInputAdapter() {
@@ -1975,7 +1977,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
           	readyToFindHits = true;      			
       		}
       	};
-      	// pig should this be in separate thread?
+      	// should this be in separate thread?
       	runner.run();
 //      	new Thread(runner).start();
       }
@@ -2047,7 +2049,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     splitPanes[1].setTopComponent(plot);
     splitPanes[1].setBottomComponent(curveFitter);
     splitPanes[2].setBottomComponent(dataScroller);
-    curveFitter.splitPane.setDividerLocation(0);
     
     // set up the undo system
     undoManager = new UndoManager();
@@ -2396,6 +2397,17 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     }
   }
 
+  /**
+   * Refreshes the decimal separators.
+   */
+  protected void refreshDecimalSeparators() {
+  	plot.sciFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+  	plot.fixedFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+  	plot.stringBuilder.refreshFormats();
+  	correlationFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+		dataTable.refreshTable();
+  }
+  
   /**
    * Initializes this panel.
    */
@@ -3014,6 +3026,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     double value = Double.NaN, slope = Double.NaN, area;
     DecimalFormat sciFormat = new DecimalFormat("0.00E0"); //$NON-NLS-1$
     DecimalFormat fixedFormat = new DecimalFormat("0.00"); //$NON-NLS-1$
+    PlotCoordinateStringBuilder stringBuilder;
     String xVar, yVar, message;
     boolean scaleLocked, dataPresent;
     double lockedXMin, lockedXMax, lockedYMin, lockedYMax;
@@ -3164,6 +3177,14 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
   			}    	
 
       });
+    }
+    
+    @Override
+    protected void refreshDecimalSeparators() { 
+      super.refreshDecimalSeparators();
+      if (dataTool.getSelectedTab()==DataToolTab.this) {
+      	dataTool.refreshDecimalSeparators();
+      }
     }
     
     /**
@@ -3992,9 +4013,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
           msg += labelY+yValue;
         }
         return msg;
-
-//      	String s = super.getCoordinateString(panel, e);
-//      	return s;
+      }
+      
+      void refreshFormats() {
+      	scientificFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());     	
+      	decimalFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());     	
       }
       
       /**

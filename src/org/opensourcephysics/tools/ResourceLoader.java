@@ -62,7 +62,7 @@ public class ResourceLoader {
   protected static final String WIN_XP_DEFAULT_CACHE = "/Local Settings/Application Data/OSP/Cache"; //$NON-NLS-1$
   protected static final String WINDOWS_DEFAULT_CACHE = "/AppData/Local/OSP/Cache"; //$NON-NLS-1$
   protected static final String OSX_DEFAULT_CACHE = "/Library/Caches/OSP"; //$NON-NLS-1$
-  protected static final String LINUX_DEFAULT_CACHE = "/Downloads/OSP/Cache"; //$NON-NLS-1$
+  protected static final String LINUX_DEFAULT_CACHE = "/.config/OSP/Cache"; //$NON-NLS-1$
   protected static final String SEARCH_CACHE_SUBDIRECTORY = "Search"; //$NON-NLS-1$
 
   protected static ArrayList<String> searchPaths = new ArrayList<String>();                        // search paths
@@ -650,7 +650,7 @@ public class ResourceLoader {
    */
   public static File getDefaultOSPCache() {
   	String cachePath = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$
-  	String userHome = System.getProperty("user.home"); //$NON-NLS-1$
+  	String userHome = OSPRuntime.getUserHome();
 		if (userHome!=null) {
 	  	userHome += "/"; //$NON-NLS-1$
 			if (OSPRuntime.isMac()) {
@@ -1585,7 +1585,7 @@ public class ResourceLoader {
    * @param path the file path
    * @return the resource, if any
    */
-//  @SuppressWarnings("resource") // Java 7
+  @SuppressWarnings("resource") // Java 7
 static private Resource createZipResource(String path) {
   	// convert to non-URI form
   	path = getNonURIPath(path);
@@ -1633,31 +1633,7 @@ static private Resource createZipResource(String path) {
       		zipFile.deleteOnExit();
       	base = zipFile.getAbsolutePath();
       	path = base+"!/"+fileName; //$NON-NLS-1$
-      }
-  		
-//  		
-//  		
-//  		File zipDir = null;
-//	  	String zipName = XML.getName(base);
-//  		if (ospCache!=null) {
-//				try {
-//					URL url = new URL(getURIPath(path));
-//					String host = url.getHost().replace('.', '_')+"/"; //$NON-NLS-1$
-//					host += zipName.replace('.', '_') + "/"; //$NON-NLS-1$
-//					zipDir = new File(ospCache, host);
-//				} catch (MalformedURLException e) {}			
-//  		}
-//  		if (zipDir==null) {
-//  			zipDir = new File(System.getProperty("java.io.tmpdir")); //$NON-NLS-1$			
-//      	deleteOnExit = true;
-//  		}
-//      File zipFile = download(base, zipName, zipDir, false);
-//      if (zipFile!=null) {
-//      	if (deleteOnExit)
-//      		zipFile.deleteOnExit();
-//      	base = zipFile.getAbsolutePath();
-//      	path = base+"!/"+fileName; //$NON-NLS-1$
-//      }
+      }  		
     }
   	
     URLClassLoader zipLoader = null;

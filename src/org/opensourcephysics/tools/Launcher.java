@@ -111,6 +111,7 @@ import org.opensourcephysics.display.AppFrame;
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.PrintUtils;
+import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.tools.LaunchNode.DisplayTab;
 
 /**
@@ -146,7 +147,7 @@ public class Launcher {
   protected static Icon redFolderIcon, greenFolderIcon, yellowFolderIcon;
   protected static Icon linkIcon, htmlIcon, launchEmptyIcon, ejsIcon;
   protected static Icon navOpenIcon, navClosedIcon;
-  protected static Icon backIcon, forwardIcon;
+  protected static Icon backIcon, forwardIcon, backDisabledIcon, forwardDisabledIcon;
   @SuppressWarnings("javadoc")
 	public static boolean singleAppMode = false;
   @SuppressWarnings("javadoc")
@@ -164,9 +165,11 @@ public class Launcher {
   protected int divider = 160;
   @SuppressWarnings("javadoc")
 	public LauncherFrame frame;
+  @SuppressWarnings("javadoc")
+	public boolean popupEnabled = true;
+  protected boolean postEdits = true;
   protected JPanel contentPane;
   protected JTabbedPane tabbedPane;
-  protected boolean postEdits = true;
   protected boolean navigationVisible = true;
   protected JToolBar navbar;
   protected JButton navButton;
@@ -263,6 +266,8 @@ public class Launcher {
     launchEmptyIcon = loadIcon(imageFile);
     imageFile = "/org/opensourcephysics/resources/tools/images/launchEJS.gif";   //$NON-NLS-1$
     ejsIcon = loadIcon(imageFile);
+    imageFile = "/org/opensourcephysics/resources/tools/images/whitefolder.gif";  //$NON-NLS-1$
+    whiteFolderIcon = loadIcon(imageFile);
     imageFile = "/org/opensourcephysics/resources/tools/images/nav_open.gif";   //$NON-NLS-1$
     navOpenIcon = loadIcon(imageFile);
     imageFile = "/org/opensourcephysics/resources/tools/images/nav_closed.gif"; //$NON-NLS-1$
@@ -271,6 +276,10 @@ public class Launcher {
     backIcon = loadIcon(imageFile);
     imageFile = "/org/opensourcephysics/resources/tools/images/redo.gif"; //$NON-NLS-1$
     forwardIcon = loadIcon(imageFile);
+    imageFile = "/org/opensourcephysics/resources/tools/images/undodisabled.gif"; //$NON-NLS-1$
+    backDisabledIcon = loadIcon(imageFile);
+    imageFile = "/org/opensourcephysics/resources/tools/images/redodisabled.gif"; //$NON-NLS-1$
+    forwardDisabledIcon = loadIcon(imageFile);
   }
 
   /**
@@ -986,7 +995,7 @@ public class Launcher {
    * @param root the root node
    * @return true if tab was added
    */
-  protected boolean addTab(LaunchNode root) {
+  public boolean addTab(LaunchNode root) {
     final LaunchPanel tab = new LaunchPanel(root, this);
     tabs.add(tab);
     if(root.isHiddenInLauncher()&&!(this instanceof LaunchBuilder)) {
@@ -1144,7 +1153,7 @@ public class Launcher {
    *
    * @return true if the tab was removed
    */
-  protected boolean removeSelectedTab() {
+  public boolean removeSelectedTab() {
     int i = tabbedPane.getSelectedIndex();
     if(i<0) {
       return false;
@@ -1419,6 +1428,8 @@ public class Launcher {
     navbar.setBorder(BorderFactory.createEtchedBorder());
     navButton = new JButton(navOpenIcon);
     navButton.setBorder(BorderFactory.createEmptyBorder());
+    navButton.setBorderPainted(false);
+    navButton.setOpaque(false);
     navButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         if(navbar.getComponentCount()>1) {
@@ -1452,6 +1463,7 @@ public class Launcher {
     });
     navbar.add(navButton);
     backButton = new JButton(backIcon);
+    backButton.setDisabledIcon(backDisabledIcon);
     backButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         undoManager.undo();
@@ -1461,6 +1473,7 @@ public class Launcher {
     });
     navbar.add(backButton);
     forwardButton = new JButton(forwardIcon);
+    forwardButton.setDisabledIcon(forwardDisabledIcon);
     forwardButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         undoManager.redo();
@@ -1911,14 +1924,6 @@ public class Launcher {
 
     });
     diagnosticMenu.add(OSItem);
-    JMenuItem qtItem = new JMenuItem("QuickTime"); //$NON-NLS-1$
-    qtItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        Diagnostics.aboutQTJava();
-      }
-
-    });
-    diagnosticMenu.add(qtItem);
     JMenuItem j3dItem = new JMenuItem("Java 3D"); //$NON-NLS-1$
     j3dItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -2032,20 +2037,23 @@ public class Launcher {
    *
    * @param level the level
    */
-  protected void setFontLevel(int level) {
+  public void setFontLevel(int level) {
     // set font levels of menubar and content pane
     FontSizer.setFonts(frame.getJMenuBar(), level);
     FontSizer.setFonts(frame.getContentPane(), level);
+    ((ResizableIcon)navOpenIcon).resize(FontSizer.getIntegerFactor());
+    ((ResizableIcon)navClosedIcon).resize(FontSizer.getIntegerFactor());
     // refresh string resources to adjust label sizes
     refreshStringResources();
-    // refresh the tree to adjust node sizes
-    LaunchPanel tab = getSelectedTab();
-    if(tab!=null) {
+    // refresh all trees to adjust node sizes
+    for (int i=0; i<getTabCount(); i++) {
+      LaunchPanel tab = getTab(i);
       Enumeration<?> en = tab.getRootNode().breadthFirstEnumeration();
       while(en.hasMoreElements()) {
         LaunchNode node = (LaunchNode) en.nextElement();
         tab.treeModel.nodeChanged(node);
       }
+      tab.repaint();
     }
     // refresh GUI to update font size menu
     refreshGUI();
@@ -2315,7 +2323,7 @@ public class Launcher {
               if(!org.opensourcephysics.desktop.OSPDesktop.displayURL(path)) {
                 OSPLog.warning("unable to open in browser: "+path);          //$NON-NLS-1$
               }
-            } else {                                                         // browse internally and post undoable edit
+            } else { // browse internally and post undoable edit
               URL prev = selectedNode.htmlURL;
               if(prev!=url) {
                 String undoPath = selectedNode.getPathString();
@@ -2336,7 +2344,7 @@ public class Launcher {
                   }
                 }
                 // post undoable edit
-                if(postEdits) {
+                if (postEdits) {
                   UndoableEdit edit = undoManager.new NavEdit(undoData, redoData);
                   undoSupport.postEdit(edit);
                 }
@@ -2465,6 +2473,7 @@ public class Launcher {
   protected void handleMousePressed(MouseEvent e, final LaunchPanel tab) {
     LaunchNode selectedNode = getSelectedNode();
     if(OSPRuntime.isPopupTrigger(e)) {
+    	if (!popupEnabled) return;
       // make sure node is selected for right-clicks
       TreePath path = tab.tree.getPathForLocation(e.getX(), e.getY());
       if(path==null) {
@@ -2829,26 +2838,27 @@ public class Launcher {
       LaunchNode node = (LaunchNode) value;
       setToolTipText(node.tooltip.equals("") //$NON-NLS-1$
                      ? null : node.tooltip);
+      Icon icon = whiteFolderIcon;
       if((node.getFileName()!=null)&&(Launcher.this instanceof LaunchBuilder)) {
         setToolTipText(LaunchRes.getString("ToolTip.FileName")+" \""+node.getFileName()+"\""); //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
-        setIcon(getFileIcon(node));
+        icon = getFileIcon(node);
       } else if(node.launchCount>0) {
         if(node.isSingleton()) {
-          setIcon(singletonIcon);
+        	icon = singletonIcon;
         } else if(node.isSingleVM()&&node.isSingleApp()) {
-          setIcon(singletonIcon);
+        	icon = singletonIcon;
         } else {
-          setIcon(launchedIcon);
+        	icon = launchedIcon;
         }
       } else if(hasEJSModel(node)) {
-        setIcon(ejsIcon);
+      	icon = ejsIcon;
       } else if(isLaunchable(node)) {
-        setIcon(launchIcon);
+      	icon = launchIcon;
       } else if(isLink(node)) {
-        setIcon(linkIcon);
+      	icon = linkIcon;
       } else if(node.isLeaf()) {
         if((node.getLaunchClass()==null)&&(node.launchClassName!=null)&&!node.launchClassName.equals("")) { //$NON-NLS-1$
-          setIcon(launchEmptyIcon);
+        	icon = launchEmptyIcon;
         } else if(node.getDisplayTabCount()>0) {
           int count = 0;
           for(Iterator<?> it = node.tabData.iterator(); it.hasNext(); ) {
@@ -2858,14 +2868,16 @@ public class Launcher {
             }
           }
           if(count>0) {
-            setIcon(htmlIcon);
+          	icon = htmlIcon;
           } else {
-            setIcon(noFileIcon);
+          	icon = noFileIcon;
           }
         } else {
-          setIcon(noFileIcon);
+        	icon = noFileIcon;
         }
       }
+      ((ResizableIcon)icon).resize(FontSizer.getIntegerFactor());
+      setIcon(icon);
       return this;
     }
 
@@ -3732,8 +3744,7 @@ public class Launcher {
           continue;
         }
       }
-      if((frames[i].getClass().getName().indexOf("SharedOwnerFrame")>-1)||( //$NON-NLS-1$
-        frames[i].getClass().getName().indexOf("QTFrame")>-1)) {            //$NON-NLS-1$
+      if((frames[i].getClass().getName().indexOf("SharedOwnerFrame")>-1)) {            //$NON-NLS-1$
         continue;
       }
       newFrames.add(frames[i]);

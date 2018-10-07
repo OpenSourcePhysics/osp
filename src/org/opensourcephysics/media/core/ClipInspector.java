@@ -158,7 +158,6 @@ public class ClipInspector extends JDialog {
         	startTime += (currentStart-prevStart)*clipControl.getMeanFrameDuration();
         	clip.setStartTime(startTime);
         }        		
-  			clip.trimFrameCount();
         currentCount = clip.getStepCount();
         updateDisplay();
         startField.selectAll();
@@ -489,7 +488,6 @@ public class ClipInspector extends JDialog {
     clipControl.setRate(prevRate);
     clipControl.setFrameDuration(prevDt);
     clipControl.setStepNumber(clip.frameToStep(prevFrame));
-    clip.trimFrameCount();
   }
 
 }

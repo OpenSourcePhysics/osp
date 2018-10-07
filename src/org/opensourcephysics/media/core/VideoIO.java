@@ -66,9 +66,9 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.tools.DiagnosticsForFFMPeg;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ResourceLoader;
-import org.opensourcephysics.tools.ExtensionsManager;
 
 /**
  * This provides static methods for managing video and text input/output.
@@ -82,8 +82,6 @@ public class VideoIO {
   // static constants
 	@SuppressWarnings("javadoc")
 	public static final String[] VIDEO_EXTENSIONS = {"mov", "avi", "mp4"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-	@SuppressWarnings("javadoc")
-	public static final String ENGINE_QUICKTIME = "QT"; //$NON-NLS-1$
 	@SuppressWarnings("javadoc")
 	public static final String ENGINE_FFMPEG = "FFMPeg"; //$NON-NLS-1$
 	@SuppressWarnings("javadoc")
@@ -170,7 +168,7 @@ public class VideoIO {
   public static JFileChooser getChooser() {
     if(chooser==null) {
     	File dir = (OSPRuntime.chooserDir==null)? 
-    			new File(System.getProperty("user.home")):  //$NON-NLS-1$
+    			new File(OSPRuntime.getUserHome()):
     			new File(OSPRuntime.chooserDir);
       chooser = new JFileChooser(dir);
       chooser.addPropertyChangeListener(videoEnginePanel);
@@ -246,25 +244,20 @@ public class VideoIO {
    * Determines if a video engine is installed on the current computer.
    * Note that accessing an installed engine may require switching Java VM.
    *
-   * @param engine ENGINE_QUICKTIME, ENGINE_FFMPEG or ENGINE_NONE
+   * @param engine ENGINE_FFMPEG, or ENGINE_NONE
    * @return true if installed
    */
   public static boolean isEngineInstalled(String engine) {
 	if (engine.equals(ENGINE_FFMPEG)) {
-		return ExtensionsManager.getManager().getFFMPegJar()!=null;
+  		return DiagnosticsForFFMPeg.getFFMPegJar()!=null;
 	}
-  	else if (engine.equals(ENGINE_QUICKTIME)) {
-  		if (OSPRuntime.isMac()) return true;
-  		if (OSPRuntime.isLinux()) return false;
-  		return ExtensionsManager.getManager().getQTJavaZip()!=null;
-  	}
   	return false;
   }
   
   /**
    * Gets the name of the current video engine.
    *
-   * @return ENGINE_QUICKTIME, ENGINE_FFMPEG or ENGINE_NONE
+   * @return ENGINE_FFMPEG, or ENGINE_NONE
    */
   public static String getEngine() {
   	if (videoEngine==null) {
@@ -276,11 +269,10 @@ public class VideoIO {
   /**
    * Sets the current video engine by name.
    *
-   * @param engine ENGINE_QUICKTIME, ENGINE_FFMPEG or ENGINE_NONE
+   * @param engine ENGINE_FFMPEG, or ENGINE_NONE
    */
   public static void setEngine(String engine) {
-  	if (engine==null || (!engine.equals(ENGINE_QUICKTIME)	
-  			&& !engine.equals(ENGINE_FFMPEG)
+  	if (engine==null || (!engine.equals(ENGINE_FFMPEG) 
   			&& !engine.equals(ENGINE_NONE)))
   		return;
   	videoEngine = engine;
@@ -289,68 +281,20 @@ public class VideoIO {
   /**
    * Gets the name of the default video engine.
    *
-   * @return ENGINE_QUICKTIME, ENGINE_FFMPEG or ENGINE_NONE
+   * @return ENGINE_FFMPEG, or ENGINE_NONE
    */
   public static String getDefaultEngine() {
   	String engine = ENGINE_NONE;
-		boolean hasQT = false;
 		boolean hasFFMPEG = false;
     for (VideoType next: videoEngines) {
     	if (next.getClass().getSimpleName().contains(ENGINE_FFMPEG)) {
     		hasFFMPEG = true;
     	}
-    	else if (next.getClass().getSimpleName().contains(ENGINE_QUICKTIME)) {
-    		hasQT = true;
-    	}
     }
-	    // ffmpeg is first choice  		
 		if (hasFFMPEG) engine = ENGINE_FFMPEG;
-		// QuickTime is second choice
-		else if (hasQT) engine = ENGINE_QUICKTIME;
   	return engine;
   }
 
-  /**
-   * Updates a video engine by copying files or creating symlinks if needed.
-   *
-   * @param engine ENGINE_QUICKTIME, ENGINE_FFMPEG or ENGINE_NONE
-   * @return true if updated
-   */
-  public static boolean updateEngine(String engine) {
-    // set up java vm extensions folders
-    String extFolders = XML.forwardSlash(System.getProperty("java.ext.dirs")); //$NON-NLS-1$
-    ArrayList<File> extDirs = new ArrayList<File>();
-    String separator = System.getProperty("path.separator"); //$NON-NLS-1$
-    int n = extFolders.indexOf(separator);
-    while (n>-1) {
-    	extDirs.add(new File(extFolders.substring(0, n)));
-    	extFolders = extFolders.substring(n+1);
-      n = extFolders.indexOf(separator);
-    }    
-    if (!"".equals(extFolders)) //$NON-NLS-1$
-    	extDirs.add(new File(extFolders));
-    
-  	ExtensionsManager manager = ExtensionsManager.getManager();
-  	if (engine.equals(ENGINE_FFMPEG)) {
-  		boolean copied = false;
-  		for (File extDir: extDirs) {
-  			if (!extDir.exists()) continue;
-  			copied = manager.copyFFMPegJarsTo(extDir) || copied;
-  		}
-  		return copied;
-  	}
-  	else if (engine.equals(ENGINE_QUICKTIME)) {
-    	if (org.opensourcephysics.display.OSPRuntime.isLinux()) return false;
-  		boolean copied = false;
-  		for (File extDir: extDirs) {
-  			if (!extDir.exists()) continue;
-  			copied = manager.copyQTJavaTo(extDir) || copied;
-  		}
-  		return copied;
-  	}
-    return false;
-  }
-  
   /**
    * test executing shell commands
    */
@@ -364,6 +308,7 @@ public class VideoIO {
 //    	extFolder = extFolder.substring(0, extFolder.indexOf(sep));
 //    }
 //    extFolder = extFolder+"/"; //$NON-NLS-1$
+//  	String home = OSPRuntime.getUserHome();
 //    try {
 //      File file = new File(fileName);
 //      FileOutputStream stream = new FileOutputStream(file);
@@ -623,18 +568,16 @@ public class VideoIO {
   /**
    * Gets an array of video types available to a specified video engine.
    * Always returns image and gif types in addition to the engine types.
-   * @param engine ENGINE_QUICKTIME, ENGINE_FFMPEG or ENGINE_NONE
+   * @param engine ENGINE_FFMPEG or ENGINE_NONE
    * @return the available video types
    */
   public static VideoType[] getVideoTypesForEngine(String engine) {
   	ArrayList<VideoType> available = new ArrayList<VideoType>();
-    boolean skipFFMPeg = VideoIO.getEngine().equals(ENGINE_QUICKTIME) 
-    		|| VideoIO.getEngine().equals(ENGINE_NONE);
+    boolean skipFFMPeg = VideoIO.getEngine().equals(ENGINE_NONE);
     boolean skipQT = VideoIO.getEngine().equals(ENGINE_FFMPEG) 
     		|| VideoIO.getEngine().equals(ENGINE_NONE);
     for (VideoType next: videoTypes) {
     	String typeName = next.getClass().getSimpleName();
-    	if (skipQT && typeName.contains(ENGINE_QUICKTIME)) continue;
     	if (skipFFMPeg && typeName.contains(ENGINE_FFMPEG)) continue;
   		available.add(next);
     }
@@ -685,13 +628,11 @@ public class VideoIO {
   	String extension = XML.getExtension(path);
     VideoType[] allTypes = getVideoTypesForExtension(extension);
     ArrayList<VideoType> allowedTypes = new ArrayList<VideoType>();
-    boolean skipFFMPeg = VideoIO.getEngine().equals(ENGINE_QUICKTIME) 
-    		|| VideoIO.getEngine().equals(ENGINE_NONE);
+    boolean skipFFMPeg = VideoIO.getEngine().equals(ENGINE_NONE);
     boolean skipQT = VideoIO.getEngine().equals(ENGINE_FFMPEG) 
     		|| VideoIO.getEngine().equals(ENGINE_NONE);
     for(int i = 0; i<allTypes.length; i++) {
     	String typeName = allTypes[i].getClass().getSimpleName();
-    	if (skipQT && typeName.contains(ENGINE_QUICKTIME)) continue;
     	if (skipFFMPeg && typeName.contains(ENGINE_FFMPEG)) continue;
     	allowedTypes.add(allTypes[i]);
     }
@@ -719,8 +660,7 @@ public class VideoIO {
 		// provide immediate way to open with other engines
     String engine = VideoIO.getEngine();
   	engine = VideoIO.ENGINE_NONE.equals(engine)? MediaRes.getString("VideoIO.Engine.None"): //$NON-NLS-1$
-  			VideoIO.ENGINE_FFMPEG.equals(engine)? MediaRes.getString("FFMPegVideoType.Description"): //$NON-NLS-1$
-  			MediaRes.getString("QTVideoType.Description"); //$NON-NLS-1$
+  			MediaRes.getString("FFMPegVideoType.Description"); //$NON-NLS-1$
   	String message = MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Message1")+" ("+engine+")."; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
   	message += "\n"+MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Message2"); //$NON-NLS-1$ //$NON-NLS-2$
   	message += "\n\n"+MediaRes.getString("VideoIO.Dialog.Label.Path")+": "+path; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -728,9 +668,6 @@ public class VideoIO {
   	for (VideoType next: engines) {
   		if (next.getClass().getSimpleName().equals("FFMPegVideoType")) { //$NON-NLS-1$
   			optionList.add(MediaRes.getString("FFMPegVideoType.Description")); //$NON-NLS-1$
-  		}
-  		else if (next.getClass().getSimpleName().equals("QTVideoType")) { //$NON-NLS-1$
-  			optionList.add(MediaRes.getString("QTVideoType.Description")); //$NON-NLS-1$
   		}
   	}
   	optionList.add(MediaRes.getString("Dialog.Button.Cancel")); //$NON-NLS-1$

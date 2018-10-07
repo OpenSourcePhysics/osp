@@ -292,6 +292,12 @@ public class ParamEditor extends FunctionEditor {
     return disallowed;
   }
 
+  @Override
+  protected boolean isValidExpression(String expression) {
+  	Parameter p = new Parameter("xxzz", expression); //$NON-NLS-1$
+  	return !Double.isNaN(p.evaluate(objects));
+  }
+
   /**
    * Pastes the clipboard contents.
    */

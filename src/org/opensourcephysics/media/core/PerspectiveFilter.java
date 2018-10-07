@@ -81,6 +81,7 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.display.DrawingPanel;
+import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.Interactive;
 
 /**
@@ -1298,7 +1299,7 @@ public class PerspectiveFilter extends Filter {
   				c.setEnabled(b);
   			}
   		}
-  		cornersBorder.setTitleColor(b? shapeLabel.getForeground(): new Color(153,153,153));
+  		cornersBorder.setTitleColor(b? shapeLabel.getForeground(): GUIUtils.getDisabledTextColor());
   	}
   }
   

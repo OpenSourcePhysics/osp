@@ -13,6 +13,7 @@ import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -29,7 +30,9 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
+
 import org.opensourcephysics.display.CellBorder;
+import org.opensourcephysics.display.OSPRuntime;
 
 /**
  * This displays statistics of data columns in a DataToolTable.
@@ -255,6 +258,7 @@ public class DataToolStatsTable extends JTable {
    *  Refresh the GUI.
    */
   public void refreshGUI() {
+  	numberRenderer.format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
     refreshStatistics();
   }
 
@@ -316,7 +320,7 @@ public class DataToolStatsTable extends JTable {
    * A class to render numbers and strings.
    */
   class NumberRenderer extends JLabel implements TableCellRenderer {
-    NumberFormat format = NumberFormat.getInstance();
+    DecimalFormat format = (DecimalFormat)NumberFormat.getInstance();
     Font font;
 
     /**

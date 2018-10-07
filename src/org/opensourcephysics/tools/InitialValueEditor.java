@@ -82,6 +82,12 @@ public class InitialValueEditor extends ParamEditor {
     }
   }
 
+  @Override
+  protected boolean isValidExpression(String expression) {
+  	Parameter p = new Parameter("xxzz", expression); //$NON-NLS-1$
+  	return !Double.isNaN(p.evaluate(paramEditor.getObjects()));
+  }
+
   /**
    * Creates the GUI.
    */

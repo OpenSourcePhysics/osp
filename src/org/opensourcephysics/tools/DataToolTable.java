@@ -649,9 +649,9 @@ public class DataToolTable extends DataTable {
               }
             });
             popup.add(selectNoneItem);
-            popup.addSeparator();
             
             if(dataToolTab.isUserEditable() && !(data instanceof DataFunction)) {
+	            popup.addSeparator();
               // insert cells item
               text = ToolsRes.getString("DataToolTable.Popup.MenuItem.InsertCells");        //$NON-NLS-1$
               insertCellsItem = new JMenuItem(text);

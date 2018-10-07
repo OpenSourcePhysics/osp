@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
@@ -57,6 +58,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
+import org.opensourcephysics.media.core.NumberField;
 import org.opensourcephysics.tools.DataToolTab;
 
 /**
@@ -70,11 +72,14 @@ import org.opensourcephysics.tools.DataToolTab;
  * @version    1.0
  */
 public class DataTable extends JTable implements ActionListener {
+	
   static final Color PANEL_BACKGROUND = javax.swing.UIManager.getColor("Panel.background"); //$NON-NLS-1$
   final static Color LIGHT_BLUE = new Color(204, 204, 255);
   static final String NO_PATTERN 
   		= DisplayRes.getString("DataTable.FormatDialog.NoFormat"); //$NON-NLS-1$
   public static String rowName = DisplayRes.getString("DataTable.Header.Row");              //$NON-NLS-1$
+  private static DoubleRenderer defaultDoubleRenderer = new DoubleRenderer();
+  
   private final SortDecorator decorator;
   protected HashMap<String, PrecisionRenderer> precisionRenderersByColumnName 
   		= new HashMap<String, PrecisionRenderer>();
@@ -88,8 +93,6 @@ public class DataTable extends JTable implements ActionListener {
   protected int labelColumnWidth=40, minimumDataColumnWidth=24;
   protected NumberFormatDialog formatDialog;
   protected int clickCountToSort = 1;
-  protected int sortedColumn;	
-
 
   /**
    *  Constructs a DatTable with a default data model
@@ -131,9 +134,8 @@ public class DataTable extends JTable implements ActionListener {
           TableColumnModel tcm = getColumnModel();
           int vc = tcm.getColumnIndexAtX(e.getX());
           int mc = convertColumnIndexToModel(vc);
-          if (sortedColumn!=mc) {
-	          decorator.sort(mc);
-	          sortedColumn = mc;
+          if (decorator.getSortedColumn()!=mc) {
+	          sort(mc);
           }
         }
       }
@@ -266,7 +268,6 @@ public class DataTable extends JTable implements ActionListener {
    */
   public void sort(int col) {
     decorator.sort(col);
-    sortedColumn = col;
   }
 
   /**
@@ -399,8 +400,14 @@ public class DataTable extends JTable implements ActionListener {
       }
     } catch(Exception ex) {}
     // if no precision base renderer, use default
-    if (baseRenderer==null)
-    	baseRenderer = getDefaultRenderer(getColumnClass(column));
+    if (baseRenderer==null) {
+    	if (getColumnClass(column).equals(Double.class)) {
+    		baseRenderer = defaultDoubleRenderer;
+    	}
+    	else {
+    		baseRenderer = getDefaultRenderer(getColumnClass(column));
+    	}
+    }
     // return unit renderer if defined
   	if (unitRenderer!=null) {
   		unitRenderer.setBaseRenderer(baseRenderer);
@@ -465,6 +472,17 @@ public class DataTable extends JTable implements ActionListener {
    * @param  evt
    */
   public void actionPerformed(ActionEvent evt) {
+  	// code added by D Brown to update decimal separator Jan 2018
+    try {
+    	// try block needed to catch occasional ConcurrentModificationException
+			for (String key: precisionRenderersByColumnName.keySet()) {
+				PrecisionRenderer renderer = precisionRenderersByColumnName.get(key);
+				renderer.numberFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+			}
+			defaultDoubleRenderer.getFormat().setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+		} catch (Exception e) {
+		}
+    
   	// code added by D Brown to maintain column order and widths (Mar 2014)
 		TableColumnModel model = this.getColumnModel();
 		int colCount = model.getColumnCount();
@@ -1039,9 +1057,47 @@ public class DataTable extends JTable implements ActionListener {
     }
 
   }
+  
+  /**
+   *  A default double renderer for the table
+   */
+  protected static class DoubleRenderer extends DefaultTableCellRenderer {
+    NumberField numberField;
+    
+    /**
+     *  Constructor
+     */
+    public DoubleRenderer() {
+      super();
+      numberField = new NumberField(0);
+      setHorizontalAlignment(SwingConstants.RIGHT);
+      setBackground(Color.WHITE);
+    }
 
+    @Override
+    public void setValue(Object value) {
+    	if (value==null) {
+    		setText(""); //$NON-NLS-1$
+    		return;
+    	}
+    	numberField.setValue((Double)value);
+      setText(numberField.getText());
+    }
+    
+    /**
+     *  Gets the number format
+     */
+    DecimalFormat getFormat() {
+    	return numberField.getFormat();
+    }
+
+  }
+
+  /**
+   *  A settable precision double renderer for the table
+   */
   protected static class PrecisionRenderer extends DefaultTableCellRenderer {
-    NumberFormat numberFormat;
+    DecimalFormat numberFormat;
     String pattern;
 
     /**
@@ -1051,7 +1107,7 @@ public class DataTable extends JTable implements ActionListener {
      */
     public PrecisionRenderer(int precision) {
       super();
-      numberFormat = NumberFormat.getInstance();
+      numberFormat = (DecimalFormat)NumberFormat.getInstance();
       numberFormat.setMaximumFractionDigits(precision);
       setHorizontalAlignment(SwingConstants.RIGHT);
       setBackground(Color.WHITE);
@@ -1064,22 +1120,10 @@ public class DataTable extends JTable implements ActionListener {
      */
     public PrecisionRenderer(String pattern) {
       super();
-      numberFormat = NumberFormat.getInstance();
-      if(numberFormat instanceof DecimalFormat) {
-        ((DecimalFormat) numberFormat).applyPattern(pattern);
-        this.pattern = pattern;
-      }
+      numberFormat = (DecimalFormat)NumberFormat.getInstance();
+      numberFormat.applyPattern(pattern);
+      this.pattern = pattern;
       setHorizontalAlignment(SwingConstants.RIGHT);
-    }
-
-    /**
-     *  Sets the string for the cell being rendered to value.
-     *
-     * @param  value  - the string value for this cell; if value is null it sets
-     *      the text value to an empty string
-     */
-    public void setValue(Object value) {
-      setText((value==null) ? "" : numberFormat.format(value)); //$NON-NLS-1$
     }
 
     /**
@@ -1089,6 +1133,11 @@ public class DataTable extends JTable implements ActionListener {
      */
     public void setPrecision(int precision) {
       numberFormat.setMaximumFractionDigits(precision);
+    }
+
+    @Override
+    public void setValue(Object value) {
+      setText((value==null) ? "" : numberFormat.format(value)); //$NON-NLS-1$
     }
 
   }
@@ -1248,8 +1297,7 @@ public class DataTable extends JTable implements ActionListener {
       sampleLabel = new JLabel(DisplayRes.getString("DataTable.NumberFormat.Dialog.Label.Sample"));  //$NON-NLS-1$
       patternField = new JTextField(6);
       patternField.setAction(new AbstractAction() {
-		@SuppressWarnings("deprecation")
-		public void actionPerformed(ActionEvent e) {
+      	public void actionPerformed(ActionEvent e) {
           String pattern = patternField.getText();
           if (pattern.indexOf(NO_PATTERN)>-1)
           	pattern = ""; //$NON-NLS-1$
@@ -1264,9 +1312,9 @@ public class DataTable extends JTable implements ActionListener {
           try {
             showNumberFormatAndSample(pattern);
             // apply pattern to all selected columns
-            Object[] selectedColumns = columnList.getSelectedValues();
-            for(Object displayedName : selectedColumns) {
-            	String name = realNames.get(displayedName.toString());
+            List<String> selectedColumns = columnList.getSelectedValuesList();
+            for(String displayedName : selectedColumns) {
+            	String name = realNames.get(displayedName);
               setFormatPattern(name, pattern);
             }
             refreshTable();
@@ -1307,6 +1355,7 @@ public class DataTable extends JTable implements ActionListener {
                   }
                 } else {
                   try {
+                  	sampleFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
 										sampleFormat.applyPattern(pattern);
 										sampleField.setText(sampleFormat.format(Math.PI));
 									} catch (Exception e) {
@@ -1396,6 +1445,7 @@ public class DataTable extends JTable implements ActionListener {
         }
         patternField.setText(NO_PATTERN);
       } else {
+      	sampleFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
         sampleFormat.applyPattern(pattern);
         sampleField.setText(sampleFormat.format(Math.PI));
         patternField.setText(pattern);
@@ -1458,10 +1508,10 @@ public class DataTable extends JTable implements ActionListener {
    * A header cell renderer that identifies sorted columns.
    * Added by D Brown 2010-10-24
    */
-  class HeaderRenderer implements TableCellRenderer {
-    TableCellRenderer renderer;
+  public class HeaderRenderer implements TableCellRenderer {
     DrawingPanel panel = new DrawingPanel();
-    DrawableTextLine textLine = new DrawableTextLine("", 0, -6); //$NON-NLS-1$
+    TableCellRenderer renderer;
+    protected DrawableTextLine textLine = new DrawableTextLine("", 0, -6); //$NON-NLS-1$
 
     /**
      * Constructor HeaderRenderer
@@ -1472,10 +1522,15 @@ public class DataTable extends JTable implements ActionListener {
       textLine.setJustification(TextLine.CENTER);
       panel.addDrawable(textLine);
     }
+    
+    public TableCellRenderer getBaseRenderer() {
+    	return renderer;
+    }
 
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
       // value is column name
       String name = (value==null) ? "" : value.toString(); //$NON-NLS-1$
+      textLine.setText(name);
       if (OSPRuntime.isMac()) {
       	name = TeXParser.removeSubscripting(name);
       }
@@ -1496,7 +1551,6 @@ public class DataTable extends JTable implements ActionListener {
         }
         return comp;
       }
-      textLine.setText(name);
       java.awt.Dimension dim = comp.getPreferredSize();
       dim.height += 1;
       panel.setPreferredSize(dim);

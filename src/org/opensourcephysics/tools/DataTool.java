@@ -2127,7 +2127,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    *
    * @param text the string to copy
    */
-  protected static void copy(String text) {
+  public static void copy(String text) {
     StringSelection data = new StringSelection(text);
     Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
     clipboard.setContents(data, data);
@@ -2911,6 +2911,15 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     }
   }
 
+  /**
+   * Refreshes decimal separators in all tabs.
+   */
+  public void refreshDecimalSeparators() {
+  	for (int i=0; i<getTabCount(); i++) {
+  		getTab(i).refreshDecimalSeparators();
+  	}
+  }
+  
   /**
    * Determines if the clipboard has pastable data.
    *

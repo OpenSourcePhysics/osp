@@ -62,6 +62,7 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.controls.XMLTreePanel;
+import org.opensourcephysics.display.OSPRuntime;
 
 /**
  * This is a dialog that displays a tree showing tabs to be saved.
@@ -172,8 +173,8 @@ public class LaunchSaver extends JDialog {
     } else {
       path = XML.forwardSlash(XML.getUserDirectory());
     }
-    if(path.indexOf("javaws")>-1) {                                  //$NON-NLS-1$
-      path = XML.forwardSlash(System.getProperty("user.home", ".")); //$NON-NLS-1$ //$NON-NLS-2$
+    if(path.indexOf("javaws")>-1) {   //$NON-NLS-1$
+      path = XML.forwardSlash(OSPRuntime.getUserHome());
       Launcher.tabSetBasePath = path;
     }
     pathField.setText(path+"/"); //$NON-NLS-1$

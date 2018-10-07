@@ -23,7 +23,7 @@ import org.opensourcephysics.controls.XMLLoader;
  * @version 1.0
  */
 public class InteractiveTextLine extends InteractiveShape {
-  TextLine textLine;
+  protected TextLine textLine;
   boolean dirty = true;
   double sx, sy;
   Rectangle2D boundsRect = new Rectangle2D.Float(0, 0, 0, 0);

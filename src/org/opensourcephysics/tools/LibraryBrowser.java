@@ -156,7 +156,7 @@ public class LibraryBrowser extends JPanel {
   		externalDialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
  	
   	if (browser==null) {
-  		String userHome = System.getProperty("user.home").replace('\\', '/'); //$NON-NLS-1$
+  		String userHome = OSPRuntime.getUserHome().replace('\\', '/');
   		String ospFolder = OSPRuntime.isWindows()? WINDOWS_OSP_DIRECTORY: OSP_DIRECTORY;
   		String ospPath = userHome+ospFolder;
   		// if OSP folder doesn't exist in user home, then look 

@@ -19,7 +19,11 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.w3c.dom.*;
+import org.opensourcephysics.controls.OSPLog;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * This provides static methods for getting a LibraryCollection from ComPADRE.
@@ -43,6 +47,7 @@ public class LibraryComPADRE {
   public static final String GENERIC_COLLECTION_NAME="ComPADRE OSP Collection"; //$NON-NLS-1$
   public static final String ABOUT_OSP="About OSP and ComPADRE"; //$NON-NLS-1$
   public static final String HOST="www.compadre.org"; //$NON-NLS-1$
+  public static String desiredOSPType; // if non-null, <osp-type> must contain this string
 
   /**
    * Loads a collection using a specified comPADRE search query.
@@ -66,7 +71,7 @@ public class LibraryComPADRE {
       return success;
     } 
     catch(Exception e) {
-    	e.printStackTrace(); 
+    	OSPLog.warning("failed to load ComPADRE collection "+query); //$NON-NLS-1$
     }
     return false;
   }
@@ -139,18 +144,22 @@ public class LibraryComPADRE {
 
       // look at all ComPADRE records in the document
       NodeList list = doc.getElementsByTagName("record"); //$NON-NLS-1$
-      for (int i=0; i<list.getLength(); i++) { // process nodes
+      for (int i=0; i<list.getLength(); i++) { // process record nodes
         Node node = list.item(i);
-      	String ospType = getChildValue(node, "osp-type"); //$NON-NLS-1$
       	String[] attachment = null;
-      	if (ospType.startsWith("EJS")) { //$NON-NLS-1$
-      		attachment = getAttachment(node, "Source Code"); //$NON-NLS-1$      		
-      	}
-      	else {
-	        attachment = getAttachment(node, "Main"); //$NON-NLS-1$
-	        if (attachment==null) {
-	        	attachment = getAttachment(node, "Supplemental"); //$NON-NLS-1$
-	        }      		
+      	if (isDesiredOSPType(node)) {
+      		if ("EJS".equals(desiredOSPType)) { //$NON-NLS-1$
+      			attachment = getAttachment(node, "Source Code"); //$NON-NLS-1$ 
+      		}
+        	else {
+  	        attachment = getAttachment(node, "Main"); //$NON-NLS-1$
+  	        if (attachment==null) {
+  	        	attachment = getAttachment(node, "Primary"); //$NON-NLS-1$
+  	        }      		
+  	        if (attachment==null) {
+  	        	attachment = getAttachment(node, "Supplemental"); //$NON-NLS-1$
+  	        }      		
+        	}
       	}
         // ignore if there is no associated attachment
         if (attachment==null) continue;
@@ -193,16 +202,20 @@ public class LibraryComPADRE {
       NodeList list = doc.getElementsByTagName("record"); //$NON-NLS-1$
       for (int i=0; i<list.getLength(); i++) { // process nodes
         Node node = list.item(i);
-      	String ospType = getChildValue(node, "osp-type"); //$NON-NLS-1$
       	String[] attachment = null;
-      	if (ospType.startsWith("EJS")) { //$NON-NLS-1$
-      		attachment = getAttachment(node, "Source Code"); //$NON-NLS-1$      		
-      	}
-      	else {
-	        attachment = getAttachment(node, "Main"); //$NON-NLS-1$
-	        if (attachment==null) {
-	        	attachment = getAttachment(node, "Supplemental"); //$NON-NLS-1$
-	        }      		
+      	if (isDesiredOSPType(node)) {
+      		if ("EJS".equals(desiredOSPType)) { //$NON-NLS-1$
+      			attachment = getAttachment(node, "Source Code"); //$NON-NLS-1$ 
+      		}
+        	else {
+  	        attachment = getAttachment(node, "Main"); //$NON-NLS-1$
+  	        if (attachment==null) {
+  	        	attachment = getAttachment(node, "Primary"); //$NON-NLS-1$
+  	        }      		
+  	        if (attachment==null) {
+  	        	attachment = getAttachment(node, "Supplemental"); //$NON-NLS-1$
+  	        }      		
+        	}
       	}
         // ignore if there is no associated attachment
         if (attachment==null) continue;
@@ -233,15 +246,20 @@ public class LibraryComPADRE {
       record.setName(name);
       record.setProperty("download_filename", attachment[1]); //$NON-NLS-1$
       String type = getChildValue(node, "osp-type");  //$NON-NLS-1$
-      if (type.toUpperCase().startsWith("EJS")) { //$NON-NLS-1$
-      	type = LibraryResource.EJS_TYPE;
-        record.setType(type);		
-      }
-      else if (type.toUpperCase().startsWith("TRACKER")) { //$NON-NLS-1$
-      	type = LibraryResource.TRACKER_TYPE;
-        record.setType(type);		
-      }
-      else record.setType(LibraryResource.UNKNOWN_TYPE);
+    	if (isDesiredOSPType(node)) {
+    		if ("EJS".equals(desiredOSPType)) { //$NON-NLS-1$
+        	type = LibraryResource.EJS_TYPE;
+          record.setType(type);		
+    		}
+      	else if ("Tracker".equals(desiredOSPType)){ //$NON-NLS-1$
+        	type = LibraryResource.TRACKER_TYPE;
+          record.setType(type);		
+      	}
+      	else {
+      		record.setType(LibraryResource.UNKNOWN_TYPE);
+      	}
+    	}
+
       String description = getChildValue(node, "description"); //$NON-NLS-1$
       String infoURL = getChildValue(node, "information-url"); //$NON-NLS-1$
       String thumbnailURL = getChildValue(node,"thumbnail-url"); //$NON-NLS-1$
@@ -313,9 +331,9 @@ public class LibraryComPADRE {
       Node fileTypeNode = getFirstChild(child,"file-type"); //$NON-NLS-1$
       if (fileTypeNode!=null && attachmentType.equals(getNodeValue(fileTypeNode))) {
         Node urlNode = getFirstChild(child,"download-url"); //$NON-NLS-1$
-        if (urlNode!=null) { // found downloadable attachment
-	      	// keep first attachment or (preferred) attachment with the same id as the node
-        	if (attachment==null || id.equals(getChildValue(child, "file-identifier"))) { //$NON-NLS-1$
+        if (urlNode!=null) { // found a downloadable attachment
+	      	// keep only attachments with the same id as the node
+        	if (id.equals(getChildValue(child, "file-identifier"))) { //$NON-NLS-1$
 	          String attachmentURL = getNodeValue(urlNode);
 	          Element fileNode = (Element)getFirstChild(child,"file-name"); //$NON-NLS-1$
 	          if (fileNode!=null) {
@@ -512,6 +530,21 @@ public class LibraryComPADRE {
    */
   protected static boolean isPrimarySubjectOnly(String path) {
   	return path.indexOf(PRIMARY_ONLY)>-1;
+  }
+
+  /**
+   * Determines if a node has an <osp-type> consistent with desiredOSPType.
+   * 
+   * @param node the node
+   * @return true if is of the desired <osp-type>
+   */
+  protected static boolean isDesiredOSPType(Node node) {
+  	List<Node> nodes = getAllChildren(node, "osp-type"); //$NON-NLS-1$
+  	for (Node next: nodes) {
+	  	// if desiredOSPType has not been specified then all osp-types are valid
+  		if (desiredOSPType==null || getNodeValue(next).contains(desiredOSPType)) return true;
+  	}
+  	return false;
   }
 
 }

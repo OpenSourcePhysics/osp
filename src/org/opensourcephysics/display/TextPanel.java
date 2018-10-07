@@ -89,6 +89,14 @@ public class TextPanel extends JPanel {
       SwingUtilities.invokeLater(runner);
     }
   }
+  
+  /**
+   * Sets the font. Added by Doug Brown Feb 2018
+   * @param font the font
+   */
+  public void setMessageFont(Font font) {
+  	this.font = font;
+  }
 
   /**
    * Gets the preferred size of this component.

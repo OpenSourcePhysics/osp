@@ -209,7 +209,6 @@ public class VideoClip {
     // reset end frame
     setEndFrameNumber(endFrame);
 
-    trimFrameCount();
     return true;
   }
 
@@ -388,7 +387,7 @@ public class VideoClip {
    * @param end the desired end frame
    * @return true if the end frame number was changed
    */
-  public boolean setEndFrameNumber(int end) {  	
+  public boolean setEndFrameNumber(int end) { 
   	return setEndFrameNumber(end, maxFrameCount-1-frameShift, true);
   }
 
@@ -668,10 +667,11 @@ public class VideoClip {
           if(vid.isFileBased()) {
             control.setValue("video", video); //$NON-NLS-1$
           }
+  	      control.setValue("video_framecount", clip.getFrameCount()); //$NON-NLS-1$
         } else {
           control.setValue("video", video);   //$NON-NLS-1$
+  	      control.setValue("video_framecount", video.getFrameCount()); //$NON-NLS-1$
         }
-	      control.setValue("video_framecount", video.getFrameCount()); //$NON-NLS-1$
       }
       control.setValue("startframe", clip.getStartFrameNumber()); //$NON-NLS-1$
       control.setValue("stepsize", clip.getStepSize());           //$NON-NLS-1$
@@ -711,10 +711,6 @@ public class VideoClip {
                         VideoType ffmpegType = VideoIO.getVideoType("FFMPeg", ext); //$NON-NLS-1$
                         if (ffmpegType!=null) otherEngines.add(ffmpegType);
                 }
-                if (!engine.equals(VideoIO.ENGINE_QUICKTIME)) {
-                        VideoType qtType = VideoIO.getVideoType("QT", ext); //$NON-NLS-1$
-                        if (qtType!=null) otherEngines.add(qtType);
-                }
                 if (otherEngines.isEmpty()) {
                         JOptionPane.showMessageDialog(null, 
                                         MediaRes.getString("VideoIO.Dialog.BadVideo.Message")+"\n\n"+path, //$NON-NLS-1$ //$NON-NLS-2$
@@ -729,8 +725,7 @@ public class VideoClip {
                                 if (video!=null && changePreferredEngine.isSelected()) {
                                         String typeName = video.getClass().getSimpleName();
                                         String newEngine = typeName.indexOf("FFMPeg")>-1? VideoIO.ENGINE_FFMPEG: //$NON-NLS-1$
-                                                typeName.indexOf("QT")>-1? VideoIO.ENGINE_QUICKTIME: //$NON-NLS-1$
-                                                        VideoIO.ENGINE_NONE;
+			    			VideoIO.ENGINE_NONE;
                                         VideoIO.setEngine(newEngine);
                                 }                       
                 }

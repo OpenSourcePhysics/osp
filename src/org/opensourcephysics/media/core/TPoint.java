@@ -58,7 +58,7 @@ import org.opensourcephysics.display.Interactive;
 public class TPoint extends Point2D.Double implements Interactive, Trackable {
   // static fields
   protected static boolean coordsVisibleInMouseBox = true;
-  protected static VidCartesianCoordinateStringBuilder coordinateStrBuilder = new VidCartesianCoordinateStringBuilder();
+  protected static XYCoordinateStringBuilder xyStringBuilder = new VidCartesianCoordinateStringBuilder();
   
   // instance fields
   protected boolean enabled = true;
@@ -284,7 +284,8 @@ public class TPoint extends Point2D.Double implements Interactive, Trackable {
   public void showCoordinates(VideoPanel vidPanel) {
     if(coordsVisibleInMouseBox) {
       getWorldPosition(vidPanel);
-      String s = coordinateStrBuilder.getCoordinateString(worldPt.getX(), worldPt.getY());
+      XYCoordinateStringBuilder builder = vidPanel.getXYCoordinateStringBuilder(this);
+      String s = builder.getCoordinateString(vidPanel, worldPt.getX(), worldPt.getY());
       vidPanel.setMessage(s, 0);
     }
   }

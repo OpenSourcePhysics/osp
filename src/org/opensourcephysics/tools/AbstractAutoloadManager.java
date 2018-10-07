@@ -56,7 +56,7 @@ import org.opensourcephysics.display.OSPRuntime;
 public abstract class AbstractAutoloadManager extends JDialog {
 	
 	SearchPathDialog searchPathDialog;
-	String searchPathChooserDir = System.getProperty("user.home"); //$NON-NLS-1$
+	String searchPathChooserDir = OSPRuntime.getUserHome();
 	Collection<String> searchPaths = new TreeSet<String>();
 	JPanel functionPanel, instructionPanel;
 	Box functionBox;
