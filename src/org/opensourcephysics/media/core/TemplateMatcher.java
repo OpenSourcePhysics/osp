@@ -905,7 +905,7 @@ public class TemplateMatcher {
   private double getDifferenceAtTestPoint(int x, int y) {
   	// for each pixel in template, get difference from corresponding test pixel
   	// return sum of these differences
-    double diff = 0;
+    long diff = 0;
     for (int i = 0; i < wTemplate; i++) {
     	for (int j = 0; j < hTemplate; j++) {
     		int templateIndex = j*wTemplate+i;
