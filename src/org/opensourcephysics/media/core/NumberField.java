@@ -41,7 +41,6 @@ import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
-
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
@@ -164,6 +163,12 @@ public class NumberField extends JTextField {
     if(s.equals(format.format(prevValue*conversionFactor))) {
       return prevValue;
     }
+
+    // replace other separators with format decimal separator
+    char ccc = format.getDecimalFormatSymbols().getDecimalSeparator();
+    String toReplace = ccc=='.'? ",": "\\."; //$NON-NLS-1$ //$NON-NLS-2$
+    s = s.replaceAll(toReplace, Character.toString(ccc));
+    
     double retValue;
     try {
       retValue = format.parse(s).doubleValue()/conversionFactor;
