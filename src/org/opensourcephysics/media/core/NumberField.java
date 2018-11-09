@@ -164,7 +164,7 @@ public class NumberField extends JTextField {
       return prevValue;
     }
 
-    // replace other separators with format decimal separator
+    // replace other separators with current decimal separator
     char ccc = format.getDecimalFormatSymbols().getDecimalSeparator();
     String toReplace = ccc=='.'? ",": "\\."; //$NON-NLS-1$ //$NON-NLS-2$
     s = s.replaceAll(toReplace, Character.toString(ccc));
