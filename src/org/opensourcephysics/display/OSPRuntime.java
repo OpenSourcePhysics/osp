@@ -82,6 +82,9 @@ public class OSPRuntime {
   public static Locale[] defaultLocales = new Locale[] {Locale.ENGLISH, new Locale("es"), new Locale("de"), //$NON-NLS-1$ //$NON-NLS-2$
     new Locale("da"), new Locale("sk"), Locale.TAIWAN};                                                       //$NON-NLS-1$ //$NON-NLS-2$
 
+  /** Portuguese locale */
+  public static final Locale PORTUGUESE = new Locale("pt", "PT"); //$NON-NLS-1$ //$NON-NLS-2$
+
   /** Set <I>true</I> if a program is being run within Launcher. */
   protected static boolean launcherMode = false;
 
@@ -188,7 +191,7 @@ public class OSPRuntime {
     LOOK_AND_FEEL_TYPES.put(SYSTEM_LF, UIManager.getSystemLookAndFeelClassName());
     LOOK_AND_FEEL_TYPES.put(DEFAULT_LF, DEFAULT_LOOK_AND_FEEL.getClass().getName());
 
-    NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
+    NumberFormat format = NumberFormat.getNumberInstance(Locale.getDefault());
     if (format instanceof DecimalFormat) {
       setDefaultDecimalSeparator(((DecimalFormat)format).getDecimalFormatSymbols().getDecimalSeparator());
     }

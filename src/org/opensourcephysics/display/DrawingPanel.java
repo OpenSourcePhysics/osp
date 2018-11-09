@@ -221,7 +221,10 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
       	else if (e.getPropertyName().equals("locale")) { //$NON-NLS-1$
           // set the default decimal separator
       		Locale locale = (Locale)e.getNewValue();
-      		DecimalFormat format = (DecimalFormat)NumberFormat.getInstance(locale);
+      		if (locale.equals(OSPRuntime.PORTUGUESE)) {
+      			locale = Locale.FRENCH; // substitute french since portuguese locale returns spurious decimal separator
+      		}
+      		DecimalFormat format = (DecimalFormat)NumberFormat.getNumberInstance(locale);
           OSPRuntime.setDefaultDecimalSeparator(format.getDecimalFormatSymbols().getDecimalSeparator());
       		refreshDecimalSeparators();
       		refreshGUI();

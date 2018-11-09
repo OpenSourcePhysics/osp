@@ -598,7 +598,10 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
   }
   
   public void setLocale(Locale locale) {
-  	timeFormat = NumberFormat.getNumberInstance(locale);
+  	if (timeFormat instanceof DecimalFormat) {
+  		((DecimalFormat)timeFormat).setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+  	}
+  	updateReadout();
   }
   
   /**
