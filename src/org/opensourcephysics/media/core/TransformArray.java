@@ -61,9 +61,13 @@ public class TransformArray {
    * @param n the array index
    * @return the transform at the specified index
    */
-  public AffineTransform get(int n) {
+  public synchronized AffineTransform get(int n) {
     if(n>=array.length) {
       setLength(n+1);
+    }
+    if (array[n]==null) {
+    	// if still null, create one!
+    	array[n] = new AffineTransform();
     }
     return array[n];
   }
@@ -73,7 +77,7 @@ public class TransformArray {
    *
    * @param newLength the new length of the array
    */
-  public void setLength(int newLength) {
+  public synchronized void setLength(int newLength) {
     if((newLength==array.length)||(newLength<1)) {
       return;
     }
@@ -97,7 +101,7 @@ public class TransformArray {
   private void fill(AffineTransform[] array, AffineTransform at) {
     for(int n = 0; n<array.length; n++) {
       if(array[n]==null) {
-      	array[n] = new AffineTransform(at); // clone
+      	array[n] = at==null? new AffineTransform(): new AffineTransform(at); // clone
       }
     }
   }
