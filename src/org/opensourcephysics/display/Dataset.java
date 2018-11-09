@@ -786,8 +786,10 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
     double[] yValues = getYPoints();
     // conversionFactor added by D Brown Dec 2010
     if(columnIndex==0) {
+    	if (rowIndex<0 || rowIndex>=xValues.length) return null;
       return new Double(xValues[rowIndex]);
     }
+  	if (rowIndex<0 || rowIndex>=yValues.length) return null;
     // changed by D.Brown
     if(Double.isNaN(yValues[rowIndex])) {
       return null;
