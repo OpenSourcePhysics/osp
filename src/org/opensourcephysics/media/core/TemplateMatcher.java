@@ -905,13 +905,13 @@ public class TemplateMatcher {
   private double getDifferenceAtTestPoint(int x, int y) {
   	// for each pixel in template, get difference from corresponding test pixel
   	// return sum of these differences
+	if (y*wTest+x < 0 || (y+hTemplate-1)*wTest+x+(wTemplate-1) >= targetPixels.length)
+		return Double.NaN; // may occur when doing Gaussian fit
     long diff = 0;
     for (int i = 0; i < wTemplate; i++) {
     	for (int j = 0; j < hTemplate; j++) {
     		int templateIndex = j*wTemplate+i;
     		int testIndex = (y+j)*wTest+x+i;
-    		if (testIndex < 0 || testIndex >= targetPixels.length)
-    			return Double.NaN; // may occur when doing Gaussian fit
       	if (!isPixelTransparent[templateIndex]) { // include only non-transparent pixels
       		int pixel = targetPixels[testIndex];
       		diff += getRGBDifference(pixel, templateR[templateIndex], templateG[templateIndex], templateB[templateIndex]);
