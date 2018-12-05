@@ -37,7 +37,16 @@ import java.util.*;
  * @version 1.0
  */
 @SuppressWarnings("serial")
-public class DatasetCurveFitterNoGUI extends DatasetCurveFitter {
+public class DatasetCurveFitterNoGUI extends JPanel {
+
+	Dataset dataset;               // the data to be fit
+	double correlation = Double.NaN;
+	double[] uncertainties = new double[2];
+	FitBuilder fitBuilder;
+	HessianMinimize hessian = new HessianMinimize();
+	LevenbergMarquardt levmar = new LevenbergMarquardt();
+	boolean fitEvaluatedToNaN = false;
+
 
 	/**
 	 * Constructs a DatasetCurveFitter for the specified Dataset.
@@ -117,6 +126,78 @@ public class DatasetCurveFitterNoGUI extends DatasetCurveFitter {
 		double rmsDev = Math.sqrt(devSq / x.length);
 		return rmsDev;
 	}
+
+	/**
+	 * Gets the total deviation squared between function and data
+	 */
+	protected double getDevSquared(Function f, double[] x, double[] y) {
+		fitEvaluatedToNaN = false;
+		double total = 0;
+		for(int i = 0; i<x.length; i++) {
+			double next = f.evaluate(x[i]);
+			double dev = (next-y[i]);
+			total += dev*dev;
+		}
+		return fitEvaluatedToNaN? Double.NaN: total;
+	}
+
+	/**
+	 * Determines the Pearson correlation and linear fit parameter SEs.
+	 *
+	 * @param xd double[]
+	 * @param yd double[]
+	 * @param isLinearFit true if linear fit (sets uncertainties to slope and intercept SE)
+	 */
+	public void doLinearRegression(double[] xd, double[] yd, boolean isLinearFit) {
+		int n = xd.length;
+
+		// set Double.NaN defaults
+		correlation = Double.NaN;
+		for (int i=0; i< uncertainties.length; i++)
+			uncertainties[i] = Double.NaN;
+
+		// return if less than 3 data points
+		if (n<3)  return;
+
+		double mean_x = xd[0];
+		double mean_y = yd[0];
+		for(int i=1; i<n; i++){
+			mean_x += xd[i];
+			mean_y += yd[i];
+		}
+		mean_x /= n;
+		mean_y /= n;
+
+		double sum_sq_x = 0;
+		double sum_sq_y = 0;
+		double sum_coproduct = 0;
+		for(int i=0; i<n; i++){
+			double delta_x = xd[i]-mean_x;
+			double delta_y = yd[i]-mean_y;
+			sum_sq_x += delta_x*delta_x;
+			sum_sq_y += delta_y*delta_y;
+			sum_coproduct += delta_x*delta_y;
+		}
+		if (sum_sq_x==0 || sum_sq_y==0) {
+			correlation = Double.NaN;
+			for (int i=0; i< uncertainties.length; i++)
+				uncertainties[i] = Double.NaN;
+			return;
+		}
+
+		double pop_sd_x = sum_sq_x/n;
+		double pop_sd_y = sum_sq_y/n;
+		double cov_x_y = sum_coproduct/n;
+		correlation = cov_x_y*cov_x_y/(pop_sd_x*pop_sd_y);
+
+		if (isLinearFit) {
+			double sumSqErr =  Math.max(0.0, sum_sq_y - sum_coproduct * sum_coproduct / sum_sq_x);
+			double meanSqErr = sumSqErr/(n-2);
+			uncertainties[0] = Math.sqrt(meanSqErr / sum_sq_x); // slope SE
+			uncertainties[1] = Math.sqrt(meanSqErr * ((1.0/n) + (mean_x*mean_x) / sum_sq_x)); // intercept SE
+		}
+	}
+
 }
 
 /*

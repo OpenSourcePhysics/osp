@@ -30,7 +30,7 @@ import org.opensourcephysics.numerics.*;
  * @version 1.0
  */
 @SuppressWarnings("serial")
-public class DatasetCurveFitter extends JPanel {
+public class DatasetCurveFitter extends DatasetCurveFitterNoGUI {
 	
   // static fields
   /** defaultFits are available in every instance */
@@ -44,10 +44,7 @@ public class DatasetCurveFitter extends JPanel {
   /** fitMap maps localized names to all available fits */
   Map<String, KnownFunction> fitMap = new TreeMap<String, KnownFunction>();
   PropertyChangeListener fitListener;
-  Dataset dataset;               // the data to be fit
   KnownFunction fit;             // the function to fit to the data
-  HessianMinimize hessian = new HessianMinimize();
-  LevenbergMarquardt levmar = new LevenbergMarquardt();
   FunctionDrawer drawer;
   Color color = Color.MAGENTA;
   JButton colorButton, closeButton;
@@ -67,12 +64,8 @@ public class DatasetCurveFitter extends JPanel {
   JSplitPane splitPane;
   JDialog colorDialog;
   int fontLevel;
-  FitBuilder fitBuilder;
-  double correlation = Double.NaN;
-  double[] uncertainties = new double[2];
   DataToolTab tab;
-  boolean fitEvaluatedToNaN = false;
-  
+
   static {
     defaultFits.add(new KnownPolynomial(new double[] {0, 0}));
     defaultFits.add(new KnownPolynomial(new double[] {0, 0, 0}));
@@ -109,12 +102,6 @@ public class DatasetCurveFitter extends JPanel {
   }
 
 
-    /**
-     * Empty constructor - for no-GUI purposes
-     */
-    protected DatasetCurveFitter() {
-    }
-
   /**
    * Constructs a DatasetCurveFitter for the specified Dataset.
    *
@@ -122,10 +109,8 @@ public class DatasetCurveFitter extends JPanel {
    * @param builder the FitBuilder used for constructing custom fits
    */
   public DatasetCurveFitter(Dataset data, FitBuilder builder) {
-    dataset = data;
-    fitBuilder = builder;
-    createGUI();
-//    fit(fit);
+	  super(data, builder);
+	  createGUI();
   }
 
   /**
@@ -972,64 +957,7 @@ public class DatasetCurveFitter extends JPanel {
     }
     return fitEvaluatedToNaN? Double.NaN: total;
   }
-  
-  /**
-   * Determines the Pearson correlation and linear fit parameter SEs.
-   *
-   * @param xd double[]
-   * @param yd double[]
-   * @param isLinearFit true if linear fit (sets uncertainties to slope and intercept SE)
-   */
-  public void doLinearRegression(double[] xd, double[] yd, boolean isLinearFit) {	
-  	int n = xd.length;
-  	
-  	// set Double.NaN defaults
-  	correlation = Double.NaN;
-  	for (int i=0; i< uncertainties.length; i++)
-  		uncertainties[i] = Double.NaN;
-  	
-    // return if less than 3 data points
-    if (n<3)  return;
-    
-    double mean_x = xd[0];
-    double mean_y = yd[0];    
-    for(int i=1; i<n; i++){
-      mean_x += xd[i];
-      mean_y += yd[i];
-	  }
-    mean_x /= n;
-    mean_y /= n;
 
-    double sum_sq_x = 0;
-    double sum_sq_y = 0;
-    double sum_coproduct = 0;
-    for(int i=0; i<n; i++){
-		  double delta_x = xd[i]-mean_x;
-		  double delta_y = yd[i]-mean_y;
-		  sum_sq_x += delta_x*delta_x;
-		  sum_sq_y += delta_y*delta_y;
-		  sum_coproduct += delta_x*delta_y;
-		}
-    if (sum_sq_x==0 || sum_sq_y==0) {
-    	correlation = Double.NaN;
-    	for (int i=0; i< uncertainties.length; i++)
-    		uncertainties[i] = Double.NaN;
-    	return;
-    }
-    
-    double pop_sd_x = sum_sq_x/n;
-    double pop_sd_y = sum_sq_y/n;
-    double cov_x_y = sum_coproduct/n;
-    correlation = cov_x_y*cov_x_y/(pop_sd_x*pop_sd_y);   
-    
-    if (isLinearFit) {
-      double sumSqErr =  Math.max(0.0, sum_sq_y - sum_coproduct * sum_coproduct / sum_sq_x);
-      double meanSqErr = sumSqErr/(n-2);
-      uncertainties[0] = Math.sqrt(meanSqErr / sum_sq_x); // slope SE
-      uncertainties[1] = Math.sqrt(meanSqErr * ((1.0/n) + (mean_x*mean_x) / sum_sq_x)); // intercept SE
-    }
-  }
-  
   private KnownFunction getFitFunction(FitFunctionPanel panel) {
   	UserFunction f = panel.getFitFunction();
   	if (f.polynomial!=null) {
@@ -1431,73 +1359,6 @@ public class DatasetCurveFitter extends JPanel {
       if(val!=0) {
         delta = Math.abs(val*percentDelta/100);
       }
-    }
-
-  }
-
-  /**
-   * A function whose value is the total deviation squared
-   * between a multivariable function and a set of data points.
-   * This is minimized by the HessianMinimize class.
-   */
-  public class MinimizeMultiVarFunction implements MultiVarFunction {
-    MultiVarFunction f;
-    double[] x, y; // the data
-    double[] vars = new double[5];
-
-    // Constructor
-    MinimizeMultiVarFunction(MultiVarFunction f, double[] x, double[] y) {
-      this.f = f;
-      this.x = x;
-      this.y = y;
-    }
-
-    // Evaluates the function
-    public double evaluate(double[] params) {
-      System.arraycopy(params, 0, vars, 1, 4);
-      double sum = 0.0;
-      for(int i = 0, n = x.length; i<n; i++) {
-        vars[0] = x[i];
-        // evaluate the function and find deviation
-        double dev = y[i]-f.evaluate(vars);
-        // sum the squares of the deviations
-        sum += dev*dev;
-      }
-      return sum;
-    }
-
-  }
-
-  /**
-   * A function whose value is the total deviation squared
-   * between a user function and a set of data points.
-   * This function is minimized by the HessianMinimize class.
-   */
-  public class MinimizeUserFunction implements MultiVarFunction {
-    UserFunction f;
-    double[] x, y; // the data
-
-    // Constructor
-    MinimizeUserFunction(UserFunction f, double[] x, double[] y) {
-      this.f = f;
-      this.x = x;
-      this.y = y;
-    }
-
-    // Evaluates this function
-    public double evaluate(double[] params) {
-      // set the parameter values of the user function
-      for(int i = 0; i<params.length; i++) {
-        f.setParameterValue(i, params[i]);
-      }
-      double sum = 0.0;
-      for(int i = 0; i<x.length; i++) {
-        // evaluate the user function and find deviation
-        double dev = y[i]-f.evaluate(x[i]);
-        // sum the squares of the deviations
-        sum += dev*dev;
-      }
-      return sum;
     }
 
   }
