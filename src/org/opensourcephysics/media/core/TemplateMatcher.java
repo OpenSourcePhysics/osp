@@ -33,7 +33,7 @@ import java.util.HashMap;
 import java.util.TreeMap;
 
 import org.opensourcephysics.display.Dataset;
-import org.opensourcephysics.tools.DatasetCurveFitter;
+import org.opensourcephysics.tools.DatasetCurveFitterNoGUI;
 import org.opensourcephysics.tools.FitBuilder;
 import org.opensourcephysics.tools.UserFunction;
 
@@ -49,7 +49,15 @@ public class TemplateMatcher {
 	
 	// static constants
 	private static final double LARGE_NUMBER = 1.0E10;
-	
+
+
+	// static fields for Gaussian fit
+	// It takes too much time to re-create them
+	private static DatasetCurveFitterNoGUI fitter; // used for Gaussian fit
+	private static Dataset dataset; // used for Gaussian fit
+	private static UserFunction fGaussian; // used for Gaussian fit
+
+
   // instance fields
 	private BufferedImage original, template, working, match;
 	private Shape mask;
@@ -61,9 +69,6 @@ public class TemplateMatcher {
   private int wTest, hTest; // width and height of the tested image (in search rect)
   private TPoint p = new TPoint(); // for general use in methods
   private double largeNumber = 1.0E20; // bigger than any expected difference
-  private DatasetCurveFitter fitter; // used for Gaussian fit
-  private Dataset dataset; // used for Gaussian fit
-  private UserFunction f; // used for Gaussian fit
   private double[] pixelOffsets = {-1, 0, 1}; // used for Gaussian fit
   private double[] xValues = new double[3]; // used for Gaussian fit
   private double[] yValues = new double[3]; // used for Gaussian fit
@@ -75,22 +80,42 @@ public class TemplateMatcher {
   /**
    * Constructs a TemplateMatcher object. If a mask shape is specified, then
    * only pixels that are entirely inside the mask are included in the template.
-   * 
-   * @param image the image to match
+   *
+   * @param templateImage the image to match
    * @param maskShape a shape to define inside pixels (may be null)
    */
-  public TemplateMatcher(BufferedImage image, Shape maskShape) {
-  	mask = maskShape;
-  	setTemplate(image);
-    // set up the Gaussian curve fitter
-		dataset = new Dataset();
-		fitter = new DatasetCurveFitter(dataset, new FitBuilder(null));
-		fitter.setActive(true);
-    fitter.setAutofit(true);
-    f = new UserFunction("gaussian"); //$NON-NLS-1$
-    f.setParameters(new String[] {"a", "b", "c"}, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-    		new double[] {1, 0, 1});
-    f.setExpression("a*exp(-(x-b)^2/c)", new String[] {"x"}); //$NON-NLS-1$ //$NON-NLS-2$
+  public TemplateMatcher(BufferedImage templateImage, Shape maskShape) {
+	  mask = maskShape;
+	  setTemplate(templateImage);
+
+	  long startTime2 = System.currentTimeMillis();
+	  // set up the Gaussian curve fitter
+	  if (dataset == null) { // static gaussian filter is uninitialized
+		  dataset = new Dataset();
+
+		  long endTime2 = System.currentTimeMillis();
+		  System.out.println("Creating new dataset, ms:");
+		  System.out.println(endTime2 - startTime2);
+		  startTime2 = System.currentTimeMillis();
+
+
+		  fitter = new DatasetCurveFitterNoGUI(dataset, new FitBuilder(null));
+		  //fitter.setActive(true);
+		  //fitter.setAutofit(true);
+
+		  endTime2 = System.currentTimeMillis();
+		  System.out.println("Building fitter, ms:");
+		  System.out.println(endTime2 - startTime2);
+
+		  long startTime = System.currentTimeMillis();
+		  fGaussian = new UserFunction("gaussian"); //$NON-NLS-1$
+		  fGaussian.setParameters(new String[]{"a", "b", "c"}, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				  new double[]{1, 0, 1});
+		  fGaussian.setExpression("a*exp(-(x-b)^2/c)", new String[]{"x"}); //$NON-NLS-1$ //$NON-NLS-2$
+		  long endTime = System.currentTimeMillis();
+		  System.out.println("Building Gaussian filter, ms:");
+		  System.out.println(endTime - startTime);
+	  }
   }
 
   /**

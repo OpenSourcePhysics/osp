@@ -108,6 +108,13 @@ public class DatasetCurveFitter extends JPanel {
     defaultFits.add(f);
   }
 
+
+    /**
+     * Empty constructor - for no-GUI purposes
+     */
+    protected DatasetCurveFitter() {
+    }
+
   /**
    * Constructs a DatasetCurveFitter for the specified Dataset.
    *
@@ -943,7 +950,7 @@ public class DatasetCurveFitter extends JPanel {
   /**
    * Gets the total deviation squared between function and data
    */
-  private double getDevSquared(Function f, double[] x, double[] y) {
+  protected double getDevSquared(Function f, double[] x, double[] y) {
   	fitEvaluatedToNaN = false;
     double total = 0;
     for(int i = 0; i<x.length; i++) {
