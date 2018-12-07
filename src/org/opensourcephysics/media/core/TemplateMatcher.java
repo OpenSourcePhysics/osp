@@ -162,149 +162,150 @@ public class TemplateMatcher {
   	}
   	return template;
   }
-  	
+
   /**
-   * Builds the template from an input image. 
-   * The input image dimensions must match the original. 
+   * Builds the template from an input image.
+   * The input image dimensions must match the original.
    * The input and original are overlaid onto the working image, from which
-   * the template is generated. Pixels that fall outside the mask are ignored 
-   * in the f template.		
-   * 
+   * the template is generated. Pixels that fall outside the mask are ignored
+   * in the f (?) template.
+   *
    * @param image the input image
    * @param alphaInput the opacity with which the input image is overlaid (0-255)
    * @param alphaOriginal the opacity with which the original image is overlaid (0-255)
    * @return the template
    */
   public BufferedImage buildTemplate(BufferedImage image, int alphaInput, int alphaOriginal) {
-  	int w = image.getWidth();
-		int h = image.getHeight();
-  	// return if image dimensions do not match original image
-		if (original.getWidth()!=w || original.getHeight()!=h)
-			return null;
-		// return existing if both alphas are zero
-		if (alphaInput==0 && alphaOriginal==0)
-			return template!=null? template: original;
-		// save alphas
-		alphas[0] = alphaInput;
-		alphas[1] = alphaOriginal;
-  	// set up argb input image
-		BufferedImage input;
-		if (image.getType()==BufferedImage.TYPE_INT_ARGB)
-			input = image;
-		else {
-			input = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-	  	input.createGraphics().drawImage(image, 0, 0, null);
-		}
-		// create working image if needed
-  	if (working==null) {
-  		working = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-  	}
-		// reset template dimensions and create new template if needed
-		if (template==null || w!=wTemplate || h!=hTemplate) {			
-			wTemplate = w;
-			hTemplate = h;
-			int len = w*h;
-			template = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-	    pixels = new int[len];
-	    templateR = new int[len];
-	    templateG = new int[len];
-	    templateB = new int[len];
-	    isPixelTransparent = new boolean[len];
-	    matchPixels = new int[len];
-		}
-  	// set alpha of input and draw onto working
-  	Graphics2D gWorking = working.createGraphics();
-  	alphaInput = Math.max(0, Math.min(255, alphaInput));
-		if (alphaInput>0) { // overlay only if not transparent
-			gWorking.setComposite(getComposite(alphaInput));
-	    gWorking.drawImage(input, 0, 0, null);
-		}
-  	// set alpha of original and draw onto working
-  	alphaOriginal = Math.max(0, Math.min(255, alphaOriginal));
-		if (alphaOriginal>0) { // overlay only if not transparent
-			gWorking.setComposite(getComposite(alphaOriginal));
-	    gWorking.drawImage(original, 0, 0, null);
-		}
-		// read pixels from working raster
-		working.getRaster().getDataElements(0, 0, wTemplate, hTemplate, pixels);
-  	if (mask != null) {
-	    // set pixels outside mask to transparent
-    	for (int i = 0; i < pixels.length; i++) {
-      	boolean inside = true;
-    		// pixel is inside only if all corners are inside
-    		int x = i%wTemplate, y = i/wTemplate;
-    		for (int j = 0; j < 2; j++) {
-    			for (int k = 0; k < 2; k++) {
-    	    	p.setLocation(x+j, y+k);
-    	    	inside = inside && mask.contains(p);
-    			}
-    		}
-      	if (!inside)
-      		pixels[i] = pixels[i] & (0 << 24); // set alpha to zero (transparent)
-    	}
-    }
-  	// write pixels to template raster
-  	template.getRaster().setDataElements(0, 0, wTemplate, hTemplate, pixels);
-  	// trim transparent edges from template
-  	int trimRight=0, trimBottom=0;
-  	trimLeft = trimTop = 0;
-  	// left edge
-  	boolean transparentEdge = true;
-  	while (transparentEdge && trimLeft < wTemplate) {
-  		for (int line = 0; line < hTemplate; line++) {
-  			int i = line*wTemplate+trimLeft;
-  			transparentEdge = transparentEdge && getAlpha(pixels[i])==0;	
-  		}
-  		if (transparentEdge) trimLeft++;
-  	}
-  	// right edge
-  	transparentEdge = true;
-  	while (transparentEdge && (trimLeft+trimRight) < wTemplate) {
-  		for (int line = 0; line < hTemplate; line++) {
-  			int i = (line+1)*wTemplate-1-trimRight;
-  			transparentEdge = transparentEdge && getAlpha(pixels[i])==0;	
-  		}
-  		if (transparentEdge) trimRight++;
-  	}
-  	// top edge
-  	transparentEdge = true;
-  	while (transparentEdge && trimTop < hTemplate) {
-  		for (int col = 0; col < wTemplate; col++) {
-  			int i = trimTop*wTemplate+col;
-  			transparentEdge = transparentEdge && getAlpha(pixels[i])==0;	
-  		}
-  		if (transparentEdge) trimTop++;
-  	}
-  	// bottom edge
-  	transparentEdge = true;
-  	while (transparentEdge && (trimTop+trimBottom) < hTemplate) {
-  		for (int col = 0; col < wTemplate; col++) {
-  			int i = (hTemplate-1-trimBottom)*wTemplate+col;
-  			transparentEdge = transparentEdge && getAlpha(pixels[i])==0;	
-  		}
-  		if (transparentEdge) trimBottom++;
-  	}
-  	// reduce size of template if needed
-  	if (trimLeft+trimRight+trimTop+trimBottom > 0) {
-  		wTemplate -= (trimLeft+trimRight);
-  		hTemplate -= (trimTop+trimBottom);
-  		wTemplate = Math.max(wTemplate, 1);
-  		hTemplate = Math.max(hTemplate, 1);
-  		int len = wTemplate*hTemplate;
-	    pixels = new int[len];
-	    templateR = new int[len];
-	    templateG = new int[len];
-	    templateB = new int[len];
-	    isPixelTransparent = new boolean[len];
-	    matchPixels = new int[len];
-	    BufferedImage bi = new BufferedImage(wTemplate, hTemplate, BufferedImage.TYPE_INT_ARGB);
-	    bi.createGraphics().drawImage(template, -trimLeft, -trimTop, null);
-  		template = bi;
-	    template.getRaster().getDataElements(0, 0, wTemplate, hTemplate, pixels);
-  	}
-  	return template;
+	  //System.out.println("Building a template...");
+	  int w = image.getWidth();
+	  int h = image.getHeight();
+	  // return if image dimensions do not match original image
+	  if (original.getWidth() != w || original.getHeight() != h)
+		  return null;
+	  // return existing if both alphas are zero
+	  if (alphaInput == 0 && alphaOriginal == 0)
+		  return template != null ? template : original;
+	  // save alphas
+	  alphas[0] = alphaInput;
+	  alphas[1] = alphaOriginal;
+	  // set up argb input image
+	  BufferedImage input;
+	  if (image.getType() == BufferedImage.TYPE_INT_ARGB)
+		  input = image;
+	  else {
+		  input = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		  input.createGraphics().drawImage(image, 0, 0, null);
+	  }
+	  // create working image if needed
+	  if (working == null) {
+		  working = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+	  }
+	  // reset template dimensions and create new template if needed
+	  if (template == null || w != wTemplate || h != hTemplate) {
+		  wTemplate = w;
+		  hTemplate = h;
+		  int len = w * h;
+		  template = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		  pixels = new int[len];
+		  templateR = new int[len];
+		  templateG = new int[len];
+		  templateB = new int[len];
+		  isPixelTransparent = new boolean[len];
+		  matchPixels = new int[len];
+	  }
+	  // set alpha of input and draw onto working
+	  Graphics2D gWorking = working.createGraphics();
+	  alphaInput = Math.max(0, Math.min(255, alphaInput));
+	  if (alphaInput > 0) { // overlay only if not transparent
+		  gWorking.setComposite(getComposite(alphaInput));
+		  gWorking.drawImage(input, 0, 0, null);
+	  }
+	  // set alpha of original and draw onto working
+	  alphaOriginal = Math.max(0, Math.min(255, alphaOriginal));
+	  if (alphaOriginal > 0) { // overlay only if not transparent
+		  gWorking.setComposite(getComposite(alphaOriginal));
+		  gWorking.drawImage(original, 0, 0, null);
+	  }
+	  // read pixels from working raster
+	  working.getRaster().getDataElements(0, 0, wTemplate, hTemplate, pixels);
+	  if (mask != null) {
+		  // set pixels outside mask to transparent
+		  for (int i = 0; i < pixels.length; i++) {
+			  boolean inside = true;
+			  // pixel is inside only if all corners are inside
+			  int x = i % wTemplate, y = i / wTemplate;
+			  for (int j = 0; j < 2 && inside; j++) {
+				  for (int k = 0; k < 2 && inside; k++) {
+					  p.setLocation(x + j, y + k);
+					  inside = inside && mask.contains(p);
+				  }
+			  }
+			  if (!inside)
+				  pixels[i] = pixels[i] & (0 << 24); // set alpha to zero (transparent)
+		  }
+	  }
+	  // write pixels to template raster
+	  template.getRaster().setDataElements(0, 0, wTemplate, hTemplate, pixels);
+	  // trim transparent edges from template
+	  int trimRight = 0, trimBottom = 0;
+	  trimLeft = trimTop = 0;
+	  // left edge
+	  boolean transparentEdge = true;
+	  while (transparentEdge && trimLeft < wTemplate) {
+		  for (int line = 0; line < hTemplate; line++) {
+			  int i = line * wTemplate + trimLeft;
+			  transparentEdge = transparentEdge && getAlpha(pixels[i]) == 0;
+		  }
+		  if (transparentEdge) trimLeft++;
+	  }
+	  // right edge
+	  transparentEdge = true;
+	  while (transparentEdge && (trimLeft + trimRight) < wTemplate) {
+		  for (int line = 0; line < hTemplate; line++) {
+			  int i = (line + 1) * wTemplate - 1 - trimRight;
+			  transparentEdge = transparentEdge && getAlpha(pixels[i]) == 0;
+		  }
+		  if (transparentEdge) trimRight++;
+	  }
+	  // top edge
+	  transparentEdge = true;
+	  while (transparentEdge && trimTop < hTemplate) {
+		  for (int col = 0; col < wTemplate; col++) {
+			  int i = trimTop * wTemplate + col;
+			  transparentEdge = transparentEdge && getAlpha(pixels[i]) == 0;
+		  }
+		  if (transparentEdge) trimTop++;
+	  }
+	  // bottom edge
+	  transparentEdge = true;
+	  while (transparentEdge && (trimTop + trimBottom) < hTemplate) {
+		  for (int col = 0; col < wTemplate; col++) {
+			  int i = (hTemplate - 1 - trimBottom) * wTemplate + col;
+			  transparentEdge = transparentEdge && getAlpha(pixels[i]) == 0;
+		  }
+		  if (transparentEdge) trimBottom++;
+	  }
+	  // reduce size of template if needed
+	  if (trimLeft + trimRight + trimTop + trimBottom > 0) {
+		  wTemplate -= (trimLeft + trimRight);
+		  hTemplate -= (trimTop + trimBottom);
+		  wTemplate = Math.max(wTemplate, 1);
+		  hTemplate = Math.max(hTemplate, 1);
+		  int len = wTemplate * hTemplate;
+		  pixels = new int[len];
+		  templateR = new int[len];
+		  templateG = new int[len];
+		  templateB = new int[len];
+		  isPixelTransparent = new boolean[len];
+		  matchPixels = new int[len];
+		  BufferedImage bi = new BufferedImage(wTemplate, hTemplate, BufferedImage.TYPE_INT_ARGB);
+		  bi.createGraphics().drawImage(template, -trimLeft, -trimTop, null);
+		  template = bi;
+		  template.getRaster().getDataElements(0, 0, wTemplate, hTemplate, pixels);
+	  }
+	  return template;
   }
-  
+
   /**
    * Gets the alphas used to build the most recent template.
    *
