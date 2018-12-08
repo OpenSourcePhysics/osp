@@ -69,6 +69,7 @@ public class TemplateMatcher {
   private int wTest, hTest; // width and height of the tested image (in search rect)
   private TPoint p = new TPoint(); // for general use in methods
   private double largeNumber = 1.0E20; // bigger than any expected difference
+  private long largeLong = 9223372036854775807L; // bigger than any expected difference
   private double[] pixelOffsets = {-1, 0, 1}; // used for Gaussian fit
   private double[] xValues = new double[3]; // used for Gaussian fit
   private double[] yValues = new double[3]; // used for Gaussian fit
@@ -416,12 +417,12 @@ public class TemplateMatcher {
     targetPixels = new int[wTest * hTest];
     target.getRaster().getDataElements(xMin, yMin, wTest, hTest, targetPixels);
     // find the rectangle point with the minimum difference
-    double matchDiff = largeNumber; // larger than typical differences
+    long matchDiff = largeLong; // larger than typical differences
     int xMatch=0, yMatch=0;
     double avgDiff = 0;
   	for (int x = 0; x <= searchRect.width; x++) {
   		for (int y = 0; y <= searchRect.height; y++) {
-    		double diff = getDifferenceAtTestPoint(x, y);
+    		long diff = getDifferenceAtTestPoint(x, y, matchDiff);
     		avgDiff += diff;
     		if (diff < matchDiff) {
     			matchDiff = diff;
@@ -430,85 +431,87 @@ public class TemplateMatcher {
     		}
     	}
     }
-  	avgDiff /= (searchRect.width*searchRect.height);
-		peakHeight = avgDiff/matchDiff-1;
-		peakWidth = Double.NaN;
-		double dx = 0, dy = 0;
-		// if match is not exact, fit a Gaussian and find peak
-		if (!Double.isInfinite(peakHeight)) {
-			// fill data arrays
-	  	xValues[1] = yValues[1] = peakHeight;
-  		for (int i = -1; i < 2; i++) {
-  			if (i == 0) continue;
-				double diff = getDifferenceAtTestPoint(xMatch+i, yMatch); 
-  			xValues[i+1] = avgDiff/diff-1; 
-				diff = getDifferenceAtTestPoint(xMatch, yMatch+i); 
-  			yValues[i+1] = avgDiff/diff-1; 
-  		}
-  		// estimate peakHeight = peak of gaussian
-  		// estimate offset dx of gaussian
-  		double pull = 1/(xValues[1]-xValues[0]);
-  		double push = 1/(xValues[1]-xValues[2]);
-  		if (Double.isNaN(pull)) pull=LARGE_NUMBER;
-  		if (Double.isNaN(push)) push=LARGE_NUMBER;
-  		dx = 0.6*(push-pull)/(push+pull);
-  		// estimate width wx of gaussian
-			double ratio = dx>0? peakHeight/xValues[0]: peakHeight/xValues[2];
-			double wx = dx>0? dx+1: dx-1;
-			wx = wx*wx/Math.log(ratio);
-  		// estimate offset dy of gaussian
-  		pull = 1/(yValues[1]-yValues[0]);
-  		push = 1/(yValues[1]-yValues[2]);
-  		if (Double.isNaN(pull)) pull=LARGE_NUMBER;
-  		if (Double.isNaN(push)) push=LARGE_NUMBER;
-  		dy = 0.6*(push-pull)/(push+pull);
-  		// estimate width wy of gaussian
-			ratio = dy>0? peakHeight/yValues[0]: peakHeight/yValues[2];
-			double wy = dy>0? dy+1: dy-1;
-			wy = wy*wy/Math.log(ratio);
 
-  		// set x parameters and fit to x data
-  		dataset.clear();
-  		dataset.append(pixelOffsets, xValues);
-			double rmsDev = 1;			
-  		for (int k = 0; k < 3; k++) {
-  			double c = k==0? wx: k==1? wx/3: wx*3;
-	  		f.setParameterValue(0, peakHeight);
-	  		f.setParameterValue(1, dx);
-	  		f.setParameterValue(2, c);
-    		rmsDev = fitter.fit(f);
-	      if (rmsDev < 0.01) { // fitter succeeded (3-point fit should be exact)	      	
-	      	dx = f.getParameterValue(1);
-	    		peakWidth = f.getParameterValue(2);
-	    		break;
-	      }
-  		}      
-  		if (!Double.isNaN(peakWidth)) {
-	      // set y parameters and fit to y data
-	  		dataset.clear();
-	  		dataset.append(pixelOffsets, yValues);
-	  		for (int k = 0; k < 3; k++) {
-	  			double c = k==0? wy: k==1? wy/3: wy*3;
-		  		f.setParameterValue(0, peakHeight);
-		  		f.setParameterValue(1, dy);
-		  		f.setParameterValue(2, c);
-	    		rmsDev = fitter.fit(f);
-		      if (rmsDev < 0.01) { // fitter succeeded (3-point fit should be exact)	      	
-		      	dy = f.getParameterValue(1);
-		      	peakWidth = (peakWidth+f.getParameterValue(2))/2;
-		    		break;
-		      }
-	  		}
-    		if (rmsDev > 0.01)
-    			peakWidth = Double.NaN;
-  		}
-		}
-		xMatch = xMatch+searchRect.x-left-trimLeft;
-		yMatch = yMatch+searchRect.y-top-trimTop;
-		refreshMatchImage(target, xMatch, yMatch);
-		return new TPoint(xMatch+dx, yMatch+dy);
+
+	  avgDiff /= (searchRect.width * searchRect.height);
+	  peakHeight = avgDiff / matchDiff - 1;
+	  peakWidth = Double.NaN;
+	  double dx = 0, dy = 0;
+	  // if match is not exact, fit a Gaussian and find peak
+	  if (!Double.isInfinite(peakHeight)) {
+		  // fill data arrays
+		  xValues[1] = yValues[1] = peakHeight;
+		  for (int i = -1; i < 2; i++) {
+			  if (i == 0) continue;
+			  double diff = getDifferenceAtTestPoint(xMatch + i, yMatch);
+			  xValues[i + 1] = avgDiff / diff - 1;
+			  diff = getDifferenceAtTestPoint(xMatch, yMatch + i);
+			  yValues[i + 1] = avgDiff / diff - 1;
+		  }
+		  // estimate peakHeight = peak of gaussian
+		  // estimate offset dx of gaussian
+		  double pull = 1 / (xValues[1] - xValues[0]);
+		  double push = 1 / (xValues[1] - xValues[2]);
+		  if (Double.isNaN(pull)) pull = LARGE_NUMBER;
+		  if (Double.isNaN(push)) push = LARGE_NUMBER;
+		  dx = 0.6 * (push - pull) / (push + pull);
+		  // estimate width wx of gaussian
+		  double ratio = dx > 0 ? peakHeight / xValues[0] : peakHeight / xValues[2];
+		  double wx = dx > 0 ? dx + 1 : dx - 1;
+		  wx = wx * wx / Math.log(ratio);
+		  // estimate offset dy of gaussian
+		  pull = 1 / (yValues[1] - yValues[0]);
+		  push = 1 / (yValues[1] - yValues[2]);
+		  if (Double.isNaN(pull)) pull = LARGE_NUMBER;
+		  if (Double.isNaN(push)) push = LARGE_NUMBER;
+		  dy = 0.6 * (push - pull) / (push + pull);
+		  // estimate width wy of gaussian
+		  ratio = dy > 0 ? peakHeight / yValues[0] : peakHeight / yValues[2];
+		  double wy = dy > 0 ? dy + 1 : dy - 1;
+		  wy = wy * wy / Math.log(ratio);
+
+		  // set x parameters and fit to x data
+		  dataset.clear();
+		  dataset.append(pixelOffsets, xValues);
+		  double rmsDev = 1;
+		  for (int k = 0; k < 3; k++) {
+			  double c = k == 0 ? wx : k == 1 ? wx / 3 : wx * 3;
+			  fGaussian.setParameterValue(0, peakHeight);
+			  fGaussian.setParameterValue(1, dx);
+			  fGaussian.setParameterValue(2, c);
+			  rmsDev = fitter.fit(fGaussian);
+			  if (rmsDev < 0.01) { // fitter succeeded (3-point fit should be exact)
+				  dx = fGaussian.getParameterValue(1);
+				  peakWidth = fGaussian.getParameterValue(2);
+				  break;
+			  }
+		  }
+		  if (!Double.isNaN(peakWidth)) {
+			  // set y parameters and fit to y data
+			  dataset.clear();
+			  dataset.append(pixelOffsets, yValues);
+			  for (int k = 0; k < 3; k++) {
+				  double c = k == 0 ? wy : k == 1 ? wy / 3 : wy * 3;
+				  fGaussian.setParameterValue(0, peakHeight);
+				  fGaussian.setParameterValue(1, dy);
+				  fGaussian.setParameterValue(2, c);
+				  rmsDev = fitter.fit(fGaussian);
+				  if (rmsDev < 0.01) { // fitter succeeded (3-point fit should be exact)
+					  dy = fGaussian.getParameterValue(1);
+					  peakWidth = (peakWidth + fGaussian.getParameterValue(2)) / 2;
+					  break;
+				  }
+			  }
+			  if (rmsDev > 0.01)
+				  peakWidth = Double.NaN;
+		  }
+	  }
+	  xMatch = xMatch + searchRect.x - left - trimLeft;
+	  yMatch = yMatch + searchRect.y - top - trimTop;
+	  refreshMatchImage(target, xMatch, yMatch);
+	  return new TPoint(xMatch + dx, yMatch + dy);
   }
-  
+
   /**
    * Refreshes the match image.
    *
@@ -921,33 +924,65 @@ public class TemplateMatcher {
   }
 
   /**
-   * Gets the total difference between the template and test pixels 
+   * Gets the total difference between the template and test pixels
    * at a specified test point. The test point is the point on the test
    * image where the top left corner of the template is located.
-   * 
+   *
    * @param x the test point x-component
    * @param y the test point y-component
    */
   private double getDifferenceAtTestPoint(int x, int y) {
-  	// for each pixel in template, get difference from corresponding test pixel
-  	// return sum of these differences
-	if (y*wTest+x < 0 || (y+hTemplate-1)*wTest+x+(wTemplate-1) >= targetPixels.length)
-		return Double.NaN; // may occur when doing Gaussian fit
-    long diff = 0;
-    for (int i = 0; i < wTemplate; i++) {
-    	for (int j = 0; j < hTemplate; j++) {
-    		int templateIndex = j*wTemplate+i;
-    		int testIndex = (y+j)*wTest+x+i;
-      	if (!isPixelTransparent[templateIndex]) { // include only non-transparent pixels
-      		int pixel = targetPixels[testIndex];
-      		diff += getRGBDifference(pixel, templateR[templateIndex], templateG[templateIndex], templateB[templateIndex]);
-      	}
-    	}
-    }
-    return diff;
+	  // for each pixel in template, get difference from corresponding test pixel
+	  // return sum of these differences
+	  if (y * wTest + x < 0 || (y + hTemplate - 1) * wTest + x + (wTemplate - 1) >= targetPixels.length)
+		  return Double.NaN; // may occur when doing Gaussian fit
+	  long diff = 0;
+	  for (int i = 0; i < wTemplate; i++) {
+		  for (int j = 0; j < hTemplate; j++) {
+			  int templateIndex = j * wTemplate + i;
+			  if (!isPixelTransparent[templateIndex]) { // include only non-transparent pixels
+				  int testIndex = (y + j) * wTest + x + i;
+				  int pixel = targetPixels[testIndex];
+				  diff += getRGBDifference(pixel, templateR[templateIndex], templateG[templateIndex], templateB[templateIndex]);
+			  }
+		  }
+	  }
+	  return diff;
   }
 
-  /**
+
+	/**
+	 * Gets the total difference between the template and test pixels
+	 * at a specified test point. The test point is the point on the test
+	 * image where the top left corner of the template is located.
+	 * When the difference becomes big enough, it gets approximated
+	 *  @param x the test point x-component
+	 * @param y the test point y-component
+	 * @param enough the value of rather big difference
+	 */
+	private long getDifferenceAtTestPoint(int x, int y, long enough) {
+		// for each pixel in template, get difference from corresponding test pixel
+		// return sum of these differences
+		if (y * wTest + x < 0 || (y + hTemplate - 1) * wTest + x + (wTemplate - 1) >= targetPixels.length)
+			return largeLong; // may occur when doing Gaussian fit
+		long diff = 0;
+		for (int i = 0; i < wTemplate; i++) {
+			for (int j = 0; j < hTemplate; j++) {
+				int templateIndex = j * wTemplate + i;
+				if (!isPixelTransparent[templateIndex]) { // include only non-transparent pixels
+					int testIndex = (y + j) * wTest + x + i;
+					int pixel = targetPixels[testIndex];
+					diff += getRGBDifference(pixel, templateR[templateIndex], templateG[templateIndex], templateB[templateIndex]);
+				}
+			}
+			if(diff > enough){
+				return diff * wTemplate / (i+1);
+			}
+		}
+		return diff;
+	}
+
+	/**
    * Gets the difference between a pixel and a comparison set of rgb components.
    */
   private double getRGBDifference(int pixel, int r, int g, int b) {
