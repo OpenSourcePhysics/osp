@@ -25,8 +25,7 @@
 package org.opensourcephysics.media.core;
 
 import java.awt.*;
-import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
+import java.awt.geom.*;
 import java.awt.image.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -73,6 +72,9 @@ public class TemplateMatcher {
   private double[] pixelOffsets = {-1, 0, 1}; // used for Gaussian fit
   private double[] xValues = new double[3]; // used for Gaussian fit
   private double[] yValues = new double[3]; // used for Gaussian fit
+	private boolean convexMask = false; // is the mask guaranteed to be convex?
+	private int[] convexMaskStart = null;
+	private int[] convexMaskEnd   = null;
   private double peakHeight, peakWidth; // peak height and width of most recent match
   private int trimLeft, trimTop;
   private int[] alphas = new int[2]; // most recent alphas {input, original}
@@ -88,6 +90,9 @@ public class TemplateMatcher {
   public TemplateMatcher(BufferedImage templateImage, Shape maskShape) {
 	  mask = maskShape;
 	  setTemplate(templateImage);
+	  if(mask instanceof Ellipse2D || mask instanceof RoundRectangle2D || mask instanceof Rectangle2D){
+		declareMaskAsConvex();
+	  }
 
 	  long startTime2 = System.currentTimeMillis();
 	  // set up the Gaussian curve fitter
@@ -307,6 +312,26 @@ public class TemplateMatcher {
 	  return template;
   }
 
+
+  public void declareMaskAsConvex(){
+  	convexMask = true;
+  	convexMaskStart = new int[wTemplate];
+  	convexMaskEnd   = new int[wTemplate];
+  	for(int i = 0; i < wTemplate; i++){
+  		int start = 0;
+  		while(start < hTemplate && isPixelTransparent[start*wTemplate + i]){
+  			start++;
+		}
+  		convexMaskStart[i] = start;
+
+		int end = hTemplate - 1;
+		while(end >= start && isPixelTransparent[end*wTemplate + i]){
+			end--;
+		}
+		convexMaskEnd[i] = end + 1;
+	}
+  }
+
   /**
    * Gets the alphas used to build the most recent template.
    *
@@ -422,7 +447,9 @@ public class TemplateMatcher {
     double avgDiff = 0;
   	for (int x = 0; x <= searchRect.width; x++) {
   		for (int y = 0; y <= searchRect.height; y++) {
-    		long diff = getDifferenceAtTestPoint(x, y, matchDiff);
+    		long diff = convexMask?
+					getDifferenceAtTestPointConvex(x, y, matchDiff):
+					getDifferenceAtTestPoint(x, y, matchDiff);
     		avgDiff += diff;
     		if (diff < matchDiff) {
     			matchDiff = diff;
@@ -974,6 +1001,37 @@ public class TemplateMatcher {
 					int pixel = targetPixels[testIndex];
 					diff += getRGBDifference(pixel, templateR[templateIndex], templateG[templateIndex], templateB[templateIndex]);
 				}
+			}
+			if(diff > enough){
+				return diff * wTemplate / (i+1);
+			}
+		}
+		return diff;
+	}
+
+	/**
+	 * Gets the total difference between the template and test pixels
+	 * at a specified test point. The test point is the point on the test
+	 * image where the top left corner of the template is located.
+	 * When the difference becomes big enough, it gets approximated
+	 *  @param x the test point x-component
+	 * @param y the test point y-component
+	 * @param enough the value of rather big difference
+	 */
+	private long getDifferenceAtTestPointConvex(int x, int y, long enough) {
+		// for each pixel in template, get difference from corresponding test pixel
+		// return sum of these differences
+		if (y * wTest + x < 0 || (y + hTemplate - 1) * wTest + x + (wTemplate - 1) >= targetPixels.length)
+			return largeLong; // may occur when doing Gaussian fit
+		long diff = 0;
+		for (int i = 0; i < wTemplate; i++) {
+			for (int j = convexMaskStart[i]; j < convexMaskEnd[i]; j++) {
+				int templateIndex = j * wTemplate + i;
+				//if (!isPixelTransparent[templateIndex]) { // include only non-transparent pixels
+					int testIndex = (y + j) * wTest + x + i;
+					int pixel = targetPixels[testIndex];
+					diff += getRGBDifference(pixel, templateR[templateIndex], templateG[templateIndex], templateB[templateIndex]);
+				//}
 			}
 			if(diff > enough){
 				return diff * wTemplate / (i+1);
