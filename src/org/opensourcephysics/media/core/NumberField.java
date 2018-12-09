@@ -161,6 +161,8 @@ public class NumberField extends JTextField {
         n = s.indexOf(units);
       }
     }
+
+    s=s.replaceAll("["+OSPRuntime.getAdditionalDecimalSeparators()+"]",""+format.getDecimalFormatSymbols().getDecimalSeparator());
     if(s.equals(format.format(prevValue*conversionFactor))) {
       return prevValue;
     }
