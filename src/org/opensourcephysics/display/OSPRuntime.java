@@ -121,6 +121,9 @@ public class OSPRuntime {
   /** The preferred decimal separator, if any */
   private static String preferredDecimalSeparator;
 
+  /** The additional decimal separators to be replaced with preferredDecimalSeparator, if any */
+  private static String additionalDecimalSeparators;
+
   /** File Chooser starting directory. */
   public static String chooserDir;
 
@@ -859,20 +862,37 @@ public class OSPRuntime {
 	 * @param separator a decimal separator
 	 */
   public static void setPreferredDecimalSeparator(String separator) {
-  	if (separator==null || COMMA_DECIMAL_SEPARATOR.equals(separator) || PERIOD_DECIMAL_SEPARATOR.equals(separator)) {
-    	preferredDecimalSeparator = separator;
-  	}
+    if (separator == null || COMMA_DECIMAL_SEPARATOR.equals(separator) || PERIOD_DECIMAL_SEPARATOR.equals(separator)) {
+      preferredDecimalSeparator = separator;
+    }
   }
-  
+    /**
+     * Sets the additional decimal separators.
+     *
+     * @param separator a decimal separator
+     */
+    public static void setAdditionalDecimalSeparators(String separator) {
+        additionalDecimalSeparators = separator;
+    }
+
 	/**
 	 * Gets the preferred decimal separator. May return null.
 	 * 
 	 * @return the separator, if any
 	 */
-  public static String getPreferredDecimalSeparator() {
-  	return preferredDecimalSeparator;
+    public static String getPreferredDecimalSeparator() {
+    	return preferredDecimalSeparator;
+    }
+
+  /**
+   * Gets the string containing additional decimal separators. May return null.
+   *
+   * @return the separators, if any
+   */
+  public static String getAdditionalDecimalSeparators() {
+    return additionalDecimalSeparators;
   }
-  
+
 	/**
 	 * Gets the default search paths, typically used for autoloading.
 	 * Search paths are platform-specific "appdata", user home and code base, in that order.
