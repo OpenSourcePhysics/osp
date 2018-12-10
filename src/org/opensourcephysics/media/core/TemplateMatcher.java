@@ -246,65 +246,78 @@ public class TemplateMatcher {
 
 	  // write pixels to template raster
 	  template.getRaster().setDataElements(0, 0, wTemplate, hTemplate, pixels);
-	  // trim transparent edges from template
-	  int trimRight = 0, trimBottom = 0;
-	  trimLeft = trimTop = 0;
-	  // left edge
-	  boolean transparentEdge = true;
-	  while (transparentEdge && trimLeft < wTemplate) {
-		  for (int line = 0; line < hTemplate && transparentEdge; line++) {
-			  int i = line * wTemplate + trimLeft;
-			  transparentEdge = transparentEdge && getAlpha(pixels[i]) == 0;
-		  }
-		  if (transparentEdge) trimLeft++;
-	  }
-	  // right edge
-	  transparentEdge = true;
-	  while (transparentEdge && (trimLeft + trimRight) < wTemplate) {
-		  for (int line = 0; line < hTemplate  && transparentEdge; line++) {
-			  int i = (line + 1) * wTemplate - 1 - trimRight;
-			  transparentEdge = transparentEdge && getAlpha(pixels[i]) == 0;
-		  }
-		  if (transparentEdge) trimRight++;
-	  }
-	  // top edge
-	  transparentEdge = true;
-	  while (transparentEdge && trimTop < hTemplate) {
-		  for (int col = 0; col < wTemplate  && transparentEdge; col++) {
-			  int i = trimTop * wTemplate + col;
-			  transparentEdge = transparentEdge && getAlpha(pixels[i]) == 0;
-		  }
-		  if (transparentEdge) trimTop++;
-	  }
-	  // bottom edge
-	  transparentEdge = true;
-	  while (transparentEdge && (trimTop + trimBottom) < hTemplate) {
-		  for (int col = 0; col < wTemplate && transparentEdge; col++) {
-			  int i = (hTemplate - 1 - trimBottom) * wTemplate + col;
-			  transparentEdge = transparentEdge && getAlpha(pixels[i]) == 0;
-		  }
-		  if (transparentEdge) trimBottom++;
-	  }
-	  // reduce size of template if needed
-	  if (trimLeft + trimRight + trimTop + trimBottom > 0) {
-		  wTemplate -= (trimLeft + trimRight);
-		  hTemplate -= (trimTop + trimBottom);
-		  wTemplate = Math.max(wTemplate, 1);
-		  hTemplate = Math.max(hTemplate, 1);
-		  int len = wTemplate * hTemplate;
-		  pixels = new int[len];
-		  templateR = new int[len];
-		  templateG = new int[len];
-		  templateB = new int[len];
-		  isPixelTransparent = new boolean[len];
-		  matchPixels = new int[len];
-		  BufferedImage bi = new BufferedImage(wTemplate, hTemplate, BufferedImage.TYPE_INT_ARGB);
-		  bi.createGraphics().drawImage(template, -trimLeft, -trimTop, null);
-		  template = bi;
-		  template.getRaster().getDataElements(0, 0, wTemplate, hTemplate, pixels);
-	  }
+
+	  trimTransparentEdgesFromTemplate();
 	  return template;
   }
+
+	/**
+	 * Trims transparent edges from the template
+	 */
+	private void trimTransparentEdgesFromTemplate(){
+		int trimRight = 0, trimBottom = 0;
+		trimLeft = trimTop = 0;
+		// left edge
+		// TODO: probe a point in the middle of an edge
+		boolean transparentEdge = true;
+		while (transparentEdge && trimLeft < wTemplate) {
+			for (int line = 0; line < hTemplate && transparentEdge; line++) {
+				int i = line * wTemplate + trimLeft;
+				transparentEdge = transparentEdge && getAlpha(pixels[i]) == 0;
+			}
+			if (transparentEdge) trimLeft++;
+		}
+		// right edge
+		transparentEdge = true;
+		while (transparentEdge && (trimLeft + trimRight) < wTemplate) {
+			for (int line = 0; line < hTemplate  && transparentEdge; line++) {
+				int i = (line + 1) * wTemplate - 1 - trimRight;
+				transparentEdge = transparentEdge && getAlpha(pixels[i]) == 0;
+			}
+			if (transparentEdge) trimRight++;
+		}
+		// top edge
+		transparentEdge = true;
+		while (transparentEdge && trimTop < hTemplate) {
+			for (int col = 0; col < wTemplate  && transparentEdge; col++) {
+				int i = trimTop * wTemplate + col;
+				transparentEdge = transparentEdge && getAlpha(pixels[i]) == 0;
+			}
+			if (transparentEdge) trimTop++;
+		}
+		// bottom edge
+		transparentEdge = true;
+		while (transparentEdge && (trimTop + trimBottom) < hTemplate) {
+			for (int col = 0; col < wTemplate && transparentEdge; col++) {
+				int i = (hTemplate - 1 - trimBottom) * wTemplate + col;
+				transparentEdge = transparentEdge && getAlpha(pixels[i]) == 0;
+			}
+			if (transparentEdge) trimBottom++;
+		}
+		// reduce size of template if needed
+		if (trimLeft + trimRight + trimTop + trimBottom > 0) {
+			wTemplate -= (trimLeft + trimRight);
+			hTemplate -= (trimTop + trimBottom);
+			wTemplate = Math.max(wTemplate, 1);
+			hTemplate = Math.max(hTemplate, 1);
+			int len = wTemplate * hTemplate;
+			pixels = new int[len];
+			templateR = new int[len];
+			templateG = new int[len];
+			templateB = new int[len];
+			isPixelTransparent = new boolean[len];
+			matchPixels = new int[len];
+			BufferedImage bi = new BufferedImage(wTemplate, hTemplate, BufferedImage.TYPE_INT_ARGB);
+			bi.createGraphics().drawImage(template, -trimLeft, -trimTop, null);
+			template = bi;
+			/* TODO: avoid redrawing (which is rather slow operation), maybe when a flag is up.
+				It should be enough to rebuild pixels and tune wTemplate and hTemplate
+			 */
+			template.getRaster().getDataElements(0, 0, wTemplate, hTemplate, pixels);
+		}
+
+	}
+
 
 	/**
 	 * Makes all the pixels outside mask transparent and black (because they do not matter)
