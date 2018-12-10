@@ -78,6 +78,7 @@ public class VideoClip {
   protected double savedStartTime; // used when DataTrack sets start time
   protected boolean startTimeIsSaved = false; // used when DataTrack sets start time
   protected int extraFrames = 0; // extends clip length past video end
+  public boolean reverse = false;
 
   /**
    * Constructs a VideoClip.
@@ -189,6 +190,7 @@ public class VideoClip {
     if(size==0) {
       return false;
     }
+    reverse = (size < 0);
     size = Math.abs(size);
     if (video!=null && video.getFrameCount()>1) {
       int maxSize = Math.max(video.getFrameCount()-startFrame-1+extraFrames, 1);

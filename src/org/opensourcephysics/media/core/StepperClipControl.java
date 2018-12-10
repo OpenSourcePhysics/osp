@@ -127,10 +127,18 @@ public class StepperClipControl extends ClipControl {
         readyToStep = false;
         timer.restart();
       }
-      if(stepNumber<clip.getStepCount()-1) {
-        setStepNumber(stepNumber+1);
-      } else if(looping) {
-        setStepNumber(0);
+      if(!clip.reverse) {
+        if (stepNumber < clip.getStepCount() - 1) {
+          setStepNumber(stepNumber + 1);
+        } else if (looping) {
+          setStepNumber(0);
+        }
+      }else {
+        if (stepNumber > 0) {
+          setStepNumber(stepNumber - 1);
+        } else if (looping) {
+          setStepNumber(clip.getStepCount() - 1);
+        }
       }
     }
   }
@@ -139,9 +147,11 @@ public class StepperClipControl extends ClipControl {
    * Steps back one step.
    */
   public void back() {
-    if(stepDisplayed&&(stepNumber>0)) {
+    if(
+            stepDisplayed && (!clip.reverse && stepNumber>0 || clip.reverse && stepNumber < clip.getStepCount())
+    ) {
       stepDisplayed = false;
-      setStepNumber(stepNumber-1);
+      setStepNumber(stepNumber+(clip.reverse ? 1 : -1));
     }
   }
 
