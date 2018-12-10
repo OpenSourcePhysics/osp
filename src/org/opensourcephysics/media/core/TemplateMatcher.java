@@ -38,14 +38,14 @@ import org.opensourcephysics.tools.UserFunction;
 
 /**
  * A class to find the best match of a template image in a target image.
- * The match location is estimated to sub-pixel accuracy by assuming the 
- * distribution of match scores near a peak is Gaussian. 
+ * The match location is estimated to sub-pixel accuracy by assuming the
+ * distribution of match scores near a peak is Gaussian.
  *
  * @author Douglas Brown
  * @version 1.0
  */
 public class TemplateMatcher {
-	
+
 	// static constants
 	private static final double LARGE_NUMBER = 1.0E10;
 
@@ -58,8 +58,8 @@ public class TemplateMatcher {
 
 
   // instance fields
-	private BufferedImage original, template, working, match;
-	private Shape mask;
+  private BufferedImage original, template, working, match;
+  private Shape mask;
   private int[] pixels, templateR, templateG, templateB;
   private boolean[] isPixelTransparent;
   private int[] targetPixels, matchPixels;
@@ -125,37 +125,42 @@ public class TemplateMatcher {
   }
 
   /**
-   * Sets the template to be used for the next search. 
+   * Sets the template to be used for the next search.
    * The new template dimensions must match those of the previous template.
    *
    * @param image the template image
    */
   public void setTemplate(BufferedImage image) {
   	if (template!=null && image.getType()==BufferedImage.TYPE_INT_ARGB
-  			&& wTemplate==image.getWidth() && hTemplate==image.getHeight()) {
+  			&& wTemplate==image.getWidth() && hTemplate==image.getHeight())
+  	{
 	  	template = image;
 	    template.getRaster().getDataElements(0, 0, wTemplate, hTemplate, pixels);
-			// set up rgb and transparency arrays for fast matching
-		  for (int i = 0; i < pixels.length; i++) {
-		    int val = pixels[i];
-		    templateR[i] = getRed(val);		// red
-		    templateG[i] = getGreen(val);		// green
-		    templateB[i] = getBlue(val);		// blue
-		    isPixelTransparent[i] = getAlpha(val)==0;		// alpha
-		  }
+
+		// set up rgb and transparency arrays for fast matching
+		for (int i = 0; i < pixels.length; i++) {
+			int val = pixels[i];
+			isPixelTransparent[i] = getAlpha(val)==0;		// alpha
+			//if (!isPixelTransparent[i]) {
+			templateR[i] = getRed(val);        // red
+			templateG[i] = getGreen(val);        // green
+			templateB[i] = getBlue(val);        // blue
+			//}
+		}
   	}
   	else {
     	if (image.getType()!=BufferedImage.TYPE_INT_ARGB) {
   			original = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-  	  	original.createGraphics().drawImage(image, 0, 0, null);  		
+  	  		original.createGraphics().drawImage(image, 0, 0, null);
     	}
-    	else
-    		original = image;
+    	else {
+			original = image;
+		}
     	template = buildTemplate(original, 255, 0); // builds from scratch
     	setTemplate(template);
-  	}  	
+  	}
   }
-  	
+
   /**
    * Gets the template. Includes only pixels inside the mask.
    *
@@ -340,18 +345,18 @@ public class TemplateMatcher {
   public int[] getAlphas() {
   	return alphas;
   }
-  	
+
   /**
-   * Sets the index. 
+   * Sets the index.
    *
    * @param index the index
    */
   public void setIndex(int index) {
   	this.index = index;
   }
-  	
+
   /**
-   * Gets the index. 
+   * Gets the index.
    * Note: index is not set internally, but only with calls to setIndex().
    *
    * @return the index
@@ -359,7 +364,7 @@ public class TemplateMatcher {
   public int getIndex() {
   	return index;
   }
-  	
+
   /**
    * Gets the working image pixels used to generate the template.
    *
@@ -370,10 +375,10 @@ public class TemplateMatcher {
   	if (pixels==null || pixels.length!=wTemplate*hTemplate) {
   		pixels = new int[wTemplate*hTemplate];
   	}
-		working.getRaster().getDataElements(0, 0, wTemplate, hTemplate, pixels);
+  	working.getRaster().getDataElements(0, 0, wTemplate, hTemplate, pixels);
   	return pixels;
   }
-  	
+
   /**
    * Sets the working image pixels used to generate the template.
    *
@@ -383,26 +388,26 @@ public class TemplateMatcher {
   	if (pixels!=null && pixels.length==wTemplate*hTemplate)
   		working.getRaster().setDataElements(0, 0, wTemplate, hTemplate, pixels);
   }
-  	
+
   /**
-   * Gets the template location at which the best match occurs in a rectangle. 
+   * Gets the template location at which the best match occurs in a rectangle.
    * May return null.
-   * 
+   *
    *  Template matching process:
-   *  1. At each test position in the search area, find the RGB square deviation ("RGBSqD": sum 
+   *  1. At each test position in the search area, find the RGB square deviation ("RGBSqD": sum
    *  			of squares of rgb differences of all pixels) between the template and video image.
    *  			Note that the RGBSqD is zero for a perfect match and larger for poorer matches.
    * 	2. Determine the average RGBSqD for all test positions.
-   *  3. Define the position for which the RGBSqD is minimum as the "working" best match. 
+   *  3. Define the position for which the RGBSqD is minimum as the "working" best match.
    *  			Define the peak height ("PH") of this match to be PH = (avgRGBSqD/matchRGBSqD)-1.
    *  			Note that the PH may vary from zero to infinity.
    *  4. If the PH exceeds the "Automark" setting, the match is deemed to be a good one
    *  			(i.e., significantly better than average).
    *  5. For sub-pixel accuracy, fit a Gaussian curve to the PHs of the working best match
-   *  			and its immediate vertical and horizontal neighbors. Note that the 3-point Gaussian 
+   *  			and its immediate vertical and horizontal neighbors. Note that the 3-point Gaussian
    *  			fits should be exact.
    *  6. The final best match (sub-pixel) is the position of the peak of the Gaussian fit.
-   *  7. Note that the width of the Gaussian fit is probably correlated with the uncertainty of 
+   *  7. Note that the width of the Gaussian fit is probably correlated with the uncertainty of
    *  			the match position, but it is not used to explicitly estimate this uncertainty.
    *
    * @param target the image to search
@@ -410,6 +415,7 @@ public class TemplateMatcher {
    * @return the optimized template location at which the best match, if any, is found
    */
   public TPoint getMatchLocation(BufferedImage target, Rectangle searchRect) {
+
     wTarget = target.getWidth();
     hTarget = target.getHeight();
     // determine insets needed to accommodate template
@@ -436,8 +442,8 @@ public class TemplateMatcher {
   	hTest = yMax-yMin;
     if (target.getType() != BufferedImage.TYPE_INT_RGB) {
     	BufferedImage image = new BufferedImage(wTarget, hTarget, BufferedImage.TYPE_INT_RGB);
-      image.createGraphics().drawImage(target, 0, 0, null);
-      target = image;
+    	image.createGraphics().drawImage(target, 0, 0, null);
+    	target = image;
     }
     targetPixels = new int[wTest * hTest];
     target.getRaster().getDataElements(xMin, yMin, wTest, hTest, targetPixels);
@@ -561,7 +567,7 @@ public class TemplateMatcher {
     }
 		match.getRaster().setDataElements(0, 0, wTemplate, hTemplate, matchPixels);
   }
-  
+
   /**
    * Gets the template location at which the best match occurs in a
    * rectangle and along a line. May return null.
@@ -575,7 +581,10 @@ public class TemplateMatcher {
    * @return the optimized template location of the best match, if any
    */
   public TPoint getMatchLocation(BufferedImage target, Rectangle searchRect,
-  		double x0, double y0, double theta, int spread) {  	
+  		double x0, double y0, double theta, int spread) {
+
+
+
     wTarget = target.getWidth();
     hTarget = target.getHeight();
     // determine insets needed to accommodate template
@@ -583,7 +592,7 @@ public class TemplateMatcher {
     if (wTemplate%2>0) right++;
     int top = hTemplate/2, bottom = top;
     if (hTemplate%2>0) bottom++;
-    
+
     // trim search rectangle if necessary
   	searchRect.x = Math.max(left, Math.min(wTarget-right, searchRect.x));
   	searchRect.y = Math.max(top, Math.min(hTarget-bottom, searchRect.y));
@@ -640,7 +649,7 @@ public class TemplateMatcher {
 		peakWidth = Double.NaN;
 		double dl = 0;
 		int matchIndex = searchPts.indexOf(matchPt);
-		
+
 		// if match is not exact, fit a Gaussian and find peak
 		if (!Double.isInfinite(peakHeight) && matchIndex>0 && matchIndex<searchPts.size()-1) {
 			// fill data arrays
@@ -654,8 +663,8 @@ public class TemplateMatcher {
 			diff = diffs.get(pt);
 	  	xValues[2] = pt.distance(matchPt);
 	  	yValues[2] = avgDiff/diff-1;
-	  	
-  		// determine approximate offset (dl) and width (w) values 
+
+  		// determine approximate offset (dl) and width (w) values
   		double pull = -xValues[0]/(yValues[1]-yValues[0]);
   		double push = xValues[2]/(yValues[1]-yValues[2]);
   		if (Double.isNaN(pull)) pull=LARGE_NUMBER;
@@ -689,30 +698,30 @@ public class TemplateMatcher {
 		refreshMatchImage(target, xMatch, yMatch);
 		return new TPoint(xMatch+dx, yMatch+dy);
   }
-  
+
   /**
    * Gets the most recent match image.
-   * 
+   *
    * @return the best match image
    */
   public BufferedImage getMatchImage() {
   	return match;
   }
-  
+
   /**
    * Returns the width and height of the peak for the most recent match.
    * The peak height is the ratio meanSqPixelDiff/matchSqPixelDiff.
-   * The peak width is the mean of the vertical and horizontal Gaussian fit widths. 
+   * The peak width is the mean of the vertical and horizontal Gaussian fit widths.
    * This data can be used to determine whether a match is acceptable.
    * A peak height greater than 5 is a reasonable standard for acceptability.
-   *  
+   *
    * Special cases:
    * 1. If the match is perfect, then the height is infinite and the width NaN.
    * 2. If the searchRect fell outside the target image, then no match was
-   *    possible and both the width and height are NaN. 
+   *    possible and both the width and height are NaN.
    * 3. If there were no points to search along the 1D x-axis path, then
-   *    the height is NaN and the width is negative. 
-   * 4. If the Gaussian fit optimization was not successful (either horizontally 
+   *    the height is NaN and the width is negative.
+   * 4. If the Gaussian fit optimization was not successful (either horizontally
    *    or vertically) then the height is finite and the width is NaN.
    *
    * @return double[2] {mean Gaussian width, height}
@@ -720,10 +729,10 @@ public class TemplateMatcher {
   public double[] getMatchWidthAndHeight() {
   	return new double[] {peakWidth, peakHeight};
   }
-  
+
   /**
    * Method to get the color value
-   * 
+   *
    * @param a 0-255 alpha
    * @param argb current color value
    * @return the integer value
@@ -734,10 +743,10 @@ public class TemplateMatcher {
    	int b = getBlue(argb);
    	return getValue(a, r, g, b);
   }
-  
+
   /**
    * Method to get the color value
-   * 
+   *
    * @param a 0-255 alpha
    * @param r 0-255 red
    * @param g 0-255 green
@@ -748,21 +757,21 @@ public class TemplateMatcher {
   	 int value = (a << 24) + (r << 16) + (g << 8) + b;
      return value;
   }
-  
+
   /**
    * Method to get the alpha component from a color value
-   * 
+   *
    * @param value the color value
    * @return 0-255 alpha component
    */
   public static int getAlpha(int value) {
-  	int alpha = (value >> 24) & 0xff;   
+  	int alpha = (value >> 24) & 0xff;
     return alpha;
   }
-  
+
   /**
    * Method to get the red component from a color value
-   * 
+   *
    * @param value the color value
    * @return 0-255 red component
    */
@@ -770,10 +779,10 @@ public class TemplateMatcher {
     int red = (value >> 16) & 0xff;
     return red;
   }
-  
+
   /**
    * Method to get the green component from a color value
-   * 
+   *
    * @param value the color value
    * @return 0-255 green component
    */
@@ -781,10 +790,10 @@ public class TemplateMatcher {
     int green = (value >> 8) & 0xff;
     return green;
   }
-  
+
   /**
    * Method to get the blue component from a color value
-   * 
+   *
    * @param value the color value
    * @return 0-255 blue component
    */
@@ -792,13 +801,13 @@ public class TemplateMatcher {
     int blue = value & 0xff;
     return blue;
   }
-  
+
 //_____________________________ private methods _______________________
 
   /**
    * Gets a list of Point2D objects that lie within pixels in a rectangle
    * and along a line.
-   * 
+   *
    * @param searchRect the rectangle
    * @param x0 the x-component of a point on the line
    * @param y0 the y-component of a point on the line
@@ -911,10 +920,10 @@ public class TemplateMatcher {
   /**
    * Gets the distance and point along a Line2D at a specified x.
    * If the Line2D is vertical this returns null.
-   * 
+   *
    * Based on a simplification of algorithm described by Paul Burke
    * at http://local.wasp.uwa.edu.au/~pbourke/geometry/lineline2d/ (April 1986)
-   * 
+   *
    * @param line the line
    * @param x the value of x
    * @return Object[] {fractional distance from line end, Point2D}
@@ -928,14 +937,14 @@ public class TemplateMatcher {
 		double y = line.getY1() + u*(line.getY2()-line.getY1());
 		return new Object[] {u, new Point2D.Double(x, y)};
   }
-  
+
   /**
    * Gets the distance and point along a Line2D at a specified y.
    * If the Line2D is horizontal this returns null.
-   * 
+   *
    * Based on a simplification of algorithm described by Paul Burke
    * at http://local.wasp.uwa.edu.au/~pbourke/geometry/lineline2d/ (April 1986)
-   * 
+   *
    * @param line the line
    * @param y the value of y
    * @return Object[] {fractional distance from line end, Point2D}
