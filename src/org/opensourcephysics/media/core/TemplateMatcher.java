@@ -252,7 +252,7 @@ public class TemplateMatcher {
 	  // left edge
 	  boolean transparentEdge = true;
 	  while (transparentEdge && trimLeft < wTemplate) {
-		  for (int line = 0; line < hTemplate; line++) {
+		  for (int line = 0; line < hTemplate && transparentEdge; line++) {
 			  int i = line * wTemplate + trimLeft;
 			  transparentEdge = transparentEdge && getAlpha(pixels[i]) == 0;
 		  }
@@ -261,7 +261,7 @@ public class TemplateMatcher {
 	  // right edge
 	  transparentEdge = true;
 	  while (transparentEdge && (trimLeft + trimRight) < wTemplate) {
-		  for (int line = 0; line < hTemplate; line++) {
+		  for (int line = 0; line < hTemplate  && transparentEdge; line++) {
 			  int i = (line + 1) * wTemplate - 1 - trimRight;
 			  transparentEdge = transparentEdge && getAlpha(pixels[i]) == 0;
 		  }
@@ -270,7 +270,7 @@ public class TemplateMatcher {
 	  // top edge
 	  transparentEdge = true;
 	  while (transparentEdge && trimTop < hTemplate) {
-		  for (int col = 0; col < wTemplate; col++) {
+		  for (int col = 0; col < wTemplate  && transparentEdge; col++) {
 			  int i = trimTop * wTemplate + col;
 			  transparentEdge = transparentEdge && getAlpha(pixels[i]) == 0;
 		  }
@@ -279,7 +279,7 @@ public class TemplateMatcher {
 	  // bottom edge
 	  transparentEdge = true;
 	  while (transparentEdge && (trimTop + trimBottom) < hTemplate) {
-		  for (int col = 0; col < wTemplate; col++) {
+		  for (int col = 0; col < wTemplate && transparentEdge; col++) {
 			  int i = (hTemplate - 1 - trimBottom) * wTemplate + col;
 			  transparentEdge = transparentEdge && getAlpha(pixels[i]) == 0;
 		  }
