@@ -56,6 +56,36 @@ public class TemplateMatcher {
 	private static Dataset dataset; // used for Gaussian fit
 	private static UserFunction fGaussian; // used for Gaussian fit
 
+	static {
+		long startTime2 = System.currentTimeMillis();
+		// set up the Gaussian curve fitter
+		dataset = new Dataset();
+
+		long endTime2 = System.currentTimeMillis();
+		System.out.println("Creating new dataset, ms:");
+		System.out.println(endTime2 - startTime2);
+		startTime2 = System.currentTimeMillis();
+
+
+		fitter = new DatasetCurveFitterNoGUI(dataset, new FitBuilder(null));
+		//fitter.setActive(true);
+		//fitter.setAutofit(true);
+
+		endTime2 = System.currentTimeMillis();
+		System.out.println("Building fitter, ms:");
+		System.out.println(endTime2 - startTime2);
+
+		long startTime = System.currentTimeMillis();
+		fGaussian = new UserFunction("gaussian"); //$NON-NLS-1$
+		fGaussian.setParameters(new String[]{"a", "b", "c"}, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				new double[]{1, 0, 1});
+		fGaussian.setExpression("a*exp(-(x-b)^2/c)", new String[]{"x"}); //$NON-NLS-1$ //$NON-NLS-2$
+		long endTime = System.currentTimeMillis();
+		System.out.println("Building Gaussian filter, ms:");
+		System.out.println(endTime - startTime);
+
+	}
+
 
   // instance fields
   private BufferedImage original, template, working, match;
@@ -94,34 +124,6 @@ public class TemplateMatcher {
 		declareMaskAsConvex();
 	  }
 
-	  long startTime2 = System.currentTimeMillis();
-	  // set up the Gaussian curve fitter
-	  if (dataset == null) { // static gaussian filter is uninitialized
-		  dataset = new Dataset();
-
-		  long endTime2 = System.currentTimeMillis();
-		  System.out.println("Creating new dataset, ms:");
-		  System.out.println(endTime2 - startTime2);
-		  startTime2 = System.currentTimeMillis();
-
-
-		  fitter = new DatasetCurveFitterNoGUI(dataset, new FitBuilder(null));
-		  //fitter.setActive(true);
-		  //fitter.setAutofit(true);
-
-		  endTime2 = System.currentTimeMillis();
-		  System.out.println("Building fitter, ms:");
-		  System.out.println(endTime2 - startTime2);
-
-		  long startTime = System.currentTimeMillis();
-		  fGaussian = new UserFunction("gaussian"); //$NON-NLS-1$
-		  fGaussian.setParameters(new String[]{"a", "b", "c"}, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				  new double[]{1, 0, 1});
-		  fGaussian.setExpression("a*exp(-(x-b)^2/c)", new String[]{"x"}); //$NON-NLS-1$ //$NON-NLS-2$
-		  long endTime = System.currentTimeMillis();
-		  System.out.println("Building Gaussian filter, ms:");
-		  System.out.println(endTime - startTime);
-	  }
   }
 
   /**
