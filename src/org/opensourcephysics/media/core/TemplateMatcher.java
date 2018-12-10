@@ -242,19 +242,18 @@ public class TemplateMatcher {
 	  // read pixels from working raster
 	  working.getRaster().getDataElements(0, 0, wTemplate, hTemplate, pixels);
 	  if (mask != null) {
-		  // set pixels outside mask to transparent
-		  for (int i = 0; i < pixels.length; i++) {
-			  boolean inside = true;
-			  // pixel is inside only if all corners are inside
-			  int x = i % wTemplate, y = i / wTemplate;
-			  for (int j = 0; j < 2 && inside; j++) {
-				  for (int k = 0; k < 2 && inside; k++) {
-					  p.setLocation(x + j, y + k);
-					  inside = inside && mask.contains(p);
+		  // set pixels outside mask to transparent and black (because they do not matter)
+		  for (int x = 0; x < wTemplate; x++){
+		  	  for(int y = 0; y < hTemplate; y++){
+				  if (!(
+						  mask.contains(x  , y  ) &&
+						  mask.contains(x  , y+1) &&
+						  mask.contains(x+1, y  ) &&
+						  mask.contains(x+1, y+1)
+				  )) {
+					  pixels[y * wTemplate + x] = 0; // set alpha to zero (transparent)
 				  }
 			  }
-			  if (!inside)
-				  pixels[i] = pixels[i] & (0 << 24); // set alpha to zero (transparent)
 		  }
 	  }
 	  // write pixels to template raster
