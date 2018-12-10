@@ -681,13 +681,13 @@ public class TemplateMatcher {
 			double rmsDev = 1;
   		for (int k = 0; k < 3; k++) {
   			double c = k==0? w: k==1? w/3: w*3;
-	  		f.setParameterValue(0, peakHeight);
-	  		f.setParameterValue(1, dl);
-	  		f.setParameterValue(2, c);
-    		rmsDev = fitter.fit(f);
-	      if (rmsDev < 0.01) { // fitter succeeded (3-point fit should be exact)	      	
-	      	dl = f.getParameterValue(1);
-	    		peakWidth = f.getParameterValue(2);
+	  		fGaussian.setParameterValue(0, peakHeight);
+	  		fGaussian.setParameterValue(1, dl);
+	  		fGaussian.setParameterValue(2, c);
+    		rmsDev = fitter.fit(fGaussian);
+	      if (rmsDev < 0.01) { // fitter succeeded (3-point fit should be exact)
+	      	dl = fGaussian.getParameterValue(1);
+	    		peakWidth = fGaussian.getParameterValue(2);
 	    		break;
 	      }
   		}
