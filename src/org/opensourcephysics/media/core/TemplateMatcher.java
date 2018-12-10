@@ -241,21 +241,9 @@ public class TemplateMatcher {
 	  }
 	  // read pixels from working raster
 	  working.getRaster().getDataElements(0, 0, wTemplate, hTemplate, pixels);
-	  if (mask != null) {
-		  // set pixels outside mask to transparent and black (because they do not matter)
-		  for (int x = 0; x < wTemplate; x++){
-		  	  for(int y = 0; y < hTemplate; y++){
-				  if (!(
-						  mask.contains(x  , y  ) &&
-						  mask.contains(x  , y+1) &&
-						  mask.contains(x+1, y  ) &&
-						  mask.contains(x+1, y+1)
-				  )) {
-					  pixels[y * wTemplate + x] = 0; // set alpha to zero (transparent)
-				  }
-			  }
-		  }
-	  }
+
+		makeOuterPixelsTransparent();
+
 	  // write pixels to template raster
 	  template.getRaster().setDataElements(0, 0, wTemplate, hTemplate, pixels);
 	  // trim transparent edges from template
@@ -317,6 +305,27 @@ public class TemplateMatcher {
 	  }
 	  return template;
   }
+
+	/**
+	 * Makes all the pixels outside mask transparent and black (because they do not matter)
+	 */
+	private void makeOuterPixelsTransparent(){
+		//TODO: refactor this to respect convex mask declaration
+		if (mask != null) {
+			for (int x = 0; x < wTemplate; x++){
+				for(int y = 0; y < hTemplate; y++){
+					if (!(
+							mask.contains(x  , y  ) &&
+							mask.contains(x  , y+1) &&
+							mask.contains(x+1, y  ) &&
+							mask.contains(x+1, y+1)
+					)) {
+						pixels[y * wTemplate + x] = 0; // set alpha to zero (transparent)
+					}
+				}
+			}
+		}
+	}
 
 
   public void declareMaskAsConvex(){
