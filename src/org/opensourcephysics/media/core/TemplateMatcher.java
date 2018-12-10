@@ -340,7 +340,9 @@ public class TemplateMatcher {
 		}
 	}
 
-
+	/**
+	 * Guarantees that the mask is convex and builds the appropriate limits
+	 */
   public void declareMaskAsConvex(){
   	convexMask = true;
   	convexMaskStart = new int[wTemplate];
