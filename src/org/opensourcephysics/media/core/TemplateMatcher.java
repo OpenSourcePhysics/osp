@@ -28,6 +28,7 @@ import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.TreeMap;
 
@@ -105,6 +106,8 @@ public class TemplateMatcher {
 	private boolean convexMask = false; // is the mask guaranteed to be convex?
 	private int[] convexMaskStart = null;
 	private int[] convexMaskEnd   = null;
+	private int[] quantityOfTransparentPixels = null;
+	private double[] columnExtrapolationCoefficients = null;
   private double peakHeight, peakWidth; // peak height and width of most recent match
   private int trimLeft, trimTop;
   private int[] alphas = new int[2]; // most recent alphas {input, original}
@@ -248,6 +251,7 @@ public class TemplateMatcher {
 	  template.getRaster().setDataElements(0, 0, wTemplate, hTemplate, pixels);
 
 	  trimTransparentEdgesFromTemplate();
+	  countColumnExtrapolationCoefficients();
 	  return template;
   }
 
@@ -257,27 +261,28 @@ public class TemplateMatcher {
 	private void trimTransparentEdgesFromTemplate(){
 		int trimRight = 0, trimBottom = 0;
 		trimLeft = trimTop = 0;
+
+		int trim;
 		// left edge
-		// TODO: probe a point in the middle of an edge
-		boolean transparentEdge = true;
-		while (transparentEdge && trimLeft < wTemplate) {
-			for (int line = 0; line < hTemplate && transparentEdge; line++) {
-				int i = line * wTemplate + trimLeft;
-				transparentEdge = transparentEdge && getAlpha(pixels[i]) == 0;
+		for(trim = 0; trim < wTemplate; trim++){
+			if(quantityOfTransparentPixels[trim] != hTemplate){
+				break;
 			}
-			if (transparentEdge) trimLeft++;
 		}
+		trimLeft = trim;
+
 		// right edge
-		transparentEdge = true;
-		while (transparentEdge && (trimLeft + trimRight) < wTemplate) {
-			for (int line = 0; line < hTemplate  && transparentEdge; line++) {
-				int i = (line + 1) * wTemplate - 1 - trimRight;
-				transparentEdge = transparentEdge && getAlpha(pixels[i]) == 0;
+		for(trim = wTemplate - 1; trim >= 0; trim--){
+			if(quantityOfTransparentPixels[trim] != hTemplate){
+				break;
 			}
-			if (transparentEdge) trimRight++;
 		}
+		trimRight = wTemplate - trim - 1;
+
+
+		// TODO: probe a point in the middle of an edge
 		// top edge
-		transparentEdge = true;
+		boolean transparentEdge = true;
 		while (transparentEdge && trimTop < hTemplate) {
 			for (int col = 0; col < wTemplate  && transparentEdge; col++) {
 				int i = trimTop * wTemplate + col;
@@ -295,6 +300,14 @@ public class TemplateMatcher {
 			if (transparentEdge) trimBottom++;
 		}
 		// reduce size of template if needed
+		if(trimLeft + trimRight != 0) {
+			quantityOfTransparentPixels = Arrays.copyOfRange(quantityOfTransparentPixels, trimLeft,wTemplate - trimRight);
+		}
+		if(trimTop + trimBottom != 0) {
+			for(int i = 0; i < quantityOfTransparentPixels.length; i++){
+				quantityOfTransparentPixels[i] -= trimTop + trimBottom;
+			}
+		}
 		if (trimLeft + trimRight + trimTop + trimBottom > 0) {
 			wTemplate -= (trimLeft + trimRight);
 			hTemplate -= (trimTop + trimBottom);
@@ -315,26 +328,46 @@ public class TemplateMatcher {
 			 */
 			template.getRaster().getDataElements(0, 0, wTemplate, hTemplate, pixels);
 		}
-
 	}
 
+	/**
+	 * For each column determines the number of pixels which are transparent.
+	 * Used when cropping left and right edges and when extrapolating the difference.
+	 */
+	private void countColumnExtrapolationCoefficients(){
+		columnExtrapolationCoefficients = new double[wTemplate];
+		int sum = 0;
+		for (int i = 0; i < wTemplate; i++){
+			sum += hTemplate - quantityOfTransparentPixels[i];
+			columnExtrapolationCoefficients[i] = sum;
+		}
+		for(int i = 0; i < wTemplate; i++){
+			columnExtrapolationCoefficients[i] = sum / columnExtrapolationCoefficients[i];
+		}
+	}
 
 	/**
 	 * Makes all the pixels outside mask transparent and black (because they do not matter)
 	 */
 	private void makeOuterPixelsTransparent(){
 		//TODO: refactor this to respect convex mask declaration
-		if (mask != null) {
-			for (int x = 0; x < wTemplate; x++){
-				for(int y = 0; y < hTemplate; y++){
-					if (!(
-							mask.contains(x  , y  ) &&
-							mask.contains(x  , y+1) &&
-							mask.contains(x+1, y  ) &&
-							mask.contains(x+1, y+1)
-					)) {
-						pixels[y * wTemplate + x] = 0; // set alpha to zero (transparent)
-					}
+
+		quantityOfTransparentPixels = new int [wTemplate];
+		if (mask == null) {
+			return;
+		}
+		for (int x = 0; x < wTemplate; x++){
+			//TODO: is the following initialization necessary in Java?
+			quantityOfTransparentPixels[x] = 0;
+			for(int y = 0; y < hTemplate; y++){
+				if (!(
+						mask.contains(x  , y  ) &&
+						mask.contains(x  , y+1) &&
+						mask.contains(x+1, y  ) &&
+						mask.contains(x+1, y+1)
+				)) {
+					pixels[y * wTemplate + x] = 0; // set alpha to zero (transparent)
+					quantityOfTransparentPixels[x]++;
 				}
 			}
 		}
@@ -1037,7 +1070,7 @@ public class TemplateMatcher {
 				}
 			}
 			if(diff > enough){
-				return diff * wTemplate / (i+1);
+				return (long)(((double)diff) * columnExtrapolationCoefficients[i]);
 			}
 		}
 		return diff;
@@ -1068,7 +1101,7 @@ public class TemplateMatcher {
 				//}
 			}
 			if(diff > enough){
-				return diff * wTemplate / (i+1);
+				return (long)(((double)diff) * columnExtrapolationCoefficients[i]);
 			}
 		}
 		return diff;
