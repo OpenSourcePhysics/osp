@@ -549,39 +549,18 @@ public class TemplateMatcher {
 		  double wy = est[1];
 
 		  // set x parameters and fit to x data
-		  dataset.clear();
-		  dataset.append(pixelOffsets, xValues);
-		  double rmsDev = 1;
-		  for (int k = 0; k < 3; k++) {
-			  double c = k == 0 ? wx : k == 1 ? wx / 3 : wx * 3;
-			  fGaussian.setParameterValue(0, peakHeight);
-			  fGaussian.setParameterValue(1, dx);
-			  fGaussian.setParameterValue(2, c);
-			  rmsDev = fitter.fit(fGaussian);
-			  if (rmsDev < 0.01) { // fitter succeeded (3-point fit should be exact)
-				  dx = fGaussian.getParameterValue(1);
-				  peakWidth = fGaussian.getParameterValue(2);
-				  break;
-			  }
-		  }
+		  est = fitGaussian(pixelOffsets, xValues, dx, wx);
+		  dx = est[0];
+		  peakWidth = est[1];
+
 		  if (!Double.isNaN(peakWidth)) {
-			  // set y parameters and fit to y data
-			  dataset.clear();
-			  dataset.append(pixelOffsets, yValues);
-			  for (int k = 0; k < 3; k++) {
-				  double c = k == 0 ? wy : k == 1 ? wy / 3 : wy * 3;
-				  fGaussian.setParameterValue(0, peakHeight);
-				  fGaussian.setParameterValue(1, dy);
-				  fGaussian.setParameterValue(2, c);
-				  rmsDev = fitter.fit(fGaussian);
-				  if (rmsDev < 0.01) { // fitter succeeded (3-point fit should be exact)
-					  dy = fGaussian.getParameterValue(1);
-					  peakWidth = (peakWidth + fGaussian.getParameterValue(2)) / 2;
-					  break;
-				  }
-			  }
-			  if (rmsDev > 0.01)
-				  peakWidth = Double.NaN;
+		  	// set y parameters and fit to y data
+			est = fitGaussian(pixelOffsets, yValues, dy, wy);
+			dy = est[0];
+			peakWidth = (peakWidth + est[1])/2;
+			if (est[2] > 0.01) {
+				peakWidth = Double.NaN;
+			}
 		  }
 	  }
 	  xMatch = xMatch + searchRect.x - left - trimLeft;
@@ -607,6 +586,27 @@ public class TemplateMatcher {
 		wx = wx * wx / Math.log(ratio);
 		return new double[]{dx, wx};
 	}
+
+	/**
+	 * Fits a gaussian
+	 */
+	private double[] fitGaussian(double[] offsets, double[] values, double dx, double wx){
+		dataset.clear();
+		dataset.append(offsets, values);
+		double rmsDev = 1;
+		for (int k = 0; k < 3; k++) {
+			double c = k == 0 ? wx : k == 1 ? wx / 3 : wx * 3;
+			fGaussian.setParameterValue(0, peakHeight);
+			fGaussian.setParameterValue(1, dx);
+			fGaussian.setParameterValue(2, c);
+			rmsDev = fitter.fit(fGaussian);
+			if (rmsDev < 0.01) { // fitter succeeded (3-point fit should be exact)
+				return new double[]{fGaussian.getParameterValue(1),fGaussian.getParameterValue(2),rmsDev};
+			}
+		}
+		return new double[]{dx,peakWidth,rmsDev};
+	}
+
 
 	/**
    * Refreshes the match image.
@@ -646,7 +646,7 @@ public class TemplateMatcher {
   public TPoint getMatchLocation(BufferedImage target, Rectangle searchRect,
   		double x0, double y0, double theta, int spread) {
 
-
+	//TODO: tests for this!
 
     wTarget = target.getWidth();
     hTarget = target.getHeight();
@@ -737,22 +737,10 @@ public class TemplateMatcher {
 			double w = dl>0? dl-xValues[0]: dl-xValues[2];
 			w = w*w/Math.log(ratio);
 
-  		// set parameters and fit to x data
-  		dataset.clear();
-  		dataset.append(xValues, yValues);
-			double rmsDev = 1;
-  		for (int k = 0; k < 3; k++) {
-  			double c = k==0? w: k==1? w/3: w*3;
-	  		fGaussian.setParameterValue(0, peakHeight);
-	  		fGaussian.setParameterValue(1, dl);
-	  		fGaussian.setParameterValue(2, c);
-    		rmsDev = fitter.fit(fGaussian);
-	      if (rmsDev < 0.01) { // fitter succeeded (3-point fit should be exact)
-	      	dl = fGaussian.getParameterValue(1);
-	    		peakWidth = fGaussian.getParameterValue(2);
-	    		break;
-	      }
-  		}
+			// set parameters and fit to x data
+			double[] est = fitGaussian(xValues, yValues, dl, w);
+			dl = est[0];
+			peakWidth = est[1];
 		}
 		double dx = dl*Math.cos(theta);
 		double dy = dl*Math.sin(theta);
