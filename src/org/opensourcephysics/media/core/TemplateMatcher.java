@@ -541,27 +541,12 @@ public class TemplateMatcher {
 			  diff = getDifferenceAtTestPoint(xMatch, yMatch + i);
 			  yValues[i + 1] = avgDiff / diff - 1;
 		  }
-		  // estimate peakHeight = peak of gaussian
-		  // estimate offset dx of gaussian
-		  double pull = 1 / (xValues[1] - xValues[0]);
-		  double push = 1 / (xValues[1] - xValues[2]);
-		  if (Double.isNaN(pull)) pull = LARGE_NUMBER;
-		  if (Double.isNaN(push)) push = LARGE_NUMBER;
-		  dx = 0.6 * (push - pull) / (push + pull);
-		  // estimate width wx of gaussian
-		  double ratio = dx > 0 ? peakHeight / xValues[0] : peakHeight / xValues[2];
-		  double wx = dx > 0 ? dx + 1 : dx - 1;
-		  wx = wx * wx / Math.log(ratio);
-		  // estimate offset dy of gaussian
-		  pull = 1 / (yValues[1] - yValues[0]);
-		  push = 1 / (yValues[1] - yValues[2]);
-		  if (Double.isNaN(pull)) pull = LARGE_NUMBER;
-		  if (Double.isNaN(push)) push = LARGE_NUMBER;
-		  dy = 0.6 * (push - pull) / (push + pull);
-		  // estimate width wy of gaussian
-		  ratio = dy > 0 ? peakHeight / yValues[0] : peakHeight / yValues[2];
-		  double wy = dy > 0 ? dy + 1 : dy - 1;
-		  wy = wy * wy / Math.log(ratio);
+		  double[] est = estimateGaussian(xValues);
+		  dx = est[0];
+		  double wx = est[1];
+		  est = estimateGaussian(yValues);
+		  dy = est[0];
+		  double wy = est[1];
 
 		  // set x parameters and fit to x data
 		  dataset.clear();
@@ -605,7 +590,25 @@ public class TemplateMatcher {
 	  return new TPoint(xMatch + dx, yMatch + dy);
   }
 
-  /**
+	/**
+	 * Estimates offset dx and width wx of gaussian
+	 * using three points
+	 */
+	private double[] estimateGaussian(double[] values){
+		// estimate offset dx of gaussian
+		double pull = 1 / (values[1] - values[0]);
+		double push = 1 / (values[1] - values[2]);
+		if (Double.isNaN(pull)) pull = LARGE_NUMBER;
+		if (Double.isNaN(push)) push = LARGE_NUMBER;
+		double dx = 0.6 * (push - pull) / (push + pull);
+		// estimate width wx of gaussian
+		double ratio = dx > 0 ? peakHeight / values[0] : peakHeight / values[2];
+		double wx = dx > 0 ? dx + 1 : dx - 1;
+		wx = wx * wx / Math.log(ratio);
+		return new double[]{dx, wx};
+	}
+
+	/**
    * Refreshes the match image.
    *
    * @param target the matched image
