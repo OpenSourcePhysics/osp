@@ -223,11 +223,6 @@ public class TemplateMatcher {
 		  int len = w * h;
 		  template = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 		  pixels = new int[len];
-		  templateR = new int[len];
-		  templateG = new int[len];
-		  templateB = new int[len];
-		  isPixelTransparent = new boolean[len];
-		  matchPixels = new int[len];
 	  }
 	  // set alpha of input and draw onto working
 	  Graphics2D gWorking = working.createGraphics();
@@ -252,8 +247,22 @@ public class TemplateMatcher {
 
 	  trimTransparentEdgesFromTemplate();
 	  countColumnExtrapolationCoefficients();
+	  initializeArrays();
+
 	  return template;
   }
+
+	/**
+	 * Create auxiliary arrays with proper length
+	 */
+  	private void initializeArrays(){
+		int len = wTemplate * hTemplate;
+		templateR = new int[len];
+		templateG = new int[len];
+		templateB = new int[len];
+		isPixelTransparent = new boolean[len];
+		matchPixels = new int[len];
+	}
 
 	/**
 	 * Trims transparent edges from the template
@@ -313,13 +322,7 @@ public class TemplateMatcher {
 			hTemplate -= (trimTop + trimBottom);
 			wTemplate = Math.max(wTemplate, 1);
 			hTemplate = Math.max(hTemplate, 1);
-			int len = wTemplate * hTemplate;
-			pixels = new int[len];
-			templateR = new int[len];
-			templateG = new int[len];
-			templateB = new int[len];
-			isPixelTransparent = new boolean[len];
-			matchPixels = new int[len];
+			pixels = new int[wTemplate * hTemplate];
 			BufferedImage bi = new BufferedImage(wTemplate, hTemplate, BufferedImage.TYPE_INT_ARGB);
 			bi.createGraphics().drawImage(template, -trimLeft, -trimTop, null);
 			template = bi;
