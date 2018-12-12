@@ -154,13 +154,7 @@ public class TemplateMatcher {
 		}
   	}
   	else {
-    	if (image.getType()!=BufferedImage.TYPE_INT_ARGB) {
-  			original = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-  	  		original.createGraphics().drawImage(image, 0, 0, null);
-    	}
-    	else {
-			original = image;
-		}
+  		original = BufferedImageUtils.convertIfNeeded(image, BufferedImage.TYPE_INT_ARGB);
     	template = buildTemplate(original, 255, 0); // builds from scratch
     	setTemplate(template);
   	}
@@ -205,13 +199,7 @@ public class TemplateMatcher {
 	  alphas[0] = alphaInput;
 	  alphas[1] = alphaOriginal;
 	  // set up argb input image
-	  BufferedImage input;
-	  if (image.getType() == BufferedImage.TYPE_INT_ARGB)
-		  input = image;
-	  else {
-		  input = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-		  input.createGraphics().drawImage(image, 0, 0, null);
-	  }
+	  BufferedImage input = BufferedImageUtils.convertIfNeeded(image, BufferedImage.TYPE_INT_ARGB);
 	  // create working image if needed
 	  if (working == null) {
 		  working = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
@@ -501,11 +489,7 @@ public class TemplateMatcher {
   	int yMax = Math.min(hTarget, searchRect.y+searchRect.height+bottom);
   	wTest = xMax-xMin;
   	hTest = yMax-yMin;
-    if (target.getType() != BufferedImage.TYPE_INT_RGB) {
-    	BufferedImage image = new BufferedImage(wTarget, hTarget, BufferedImage.TYPE_INT_RGB);
-    	image.createGraphics().drawImage(target, 0, 0, null);
-    	target = image;
-    }
+  	target = BufferedImageUtils.convertIfNeeded(target, BufferedImage.TYPE_INT_RGB);
     targetPixels = new int[wTest * hTest];
     target.getRaster().getDataElements(xMin, yMin, wTest, hTest, targetPixels);
     // find the rectangle point with the minimum difference
@@ -628,7 +612,7 @@ public class TemplateMatcher {
     if (match==null || match.getWidth()!=wTemplate || match.getHeight()!=hTemplate) {
     	match = new BufferedImage(wTemplate, hTemplate, BufferedImage.TYPE_INT_ARGB);
     }
-		match.getRaster().setDataElements(0, 0, wTemplate, hTemplate, matchPixels);
+    match.getRaster().setDataElements(0, 0, wTemplate, hTemplate, matchPixels);
   }
 
   /**
@@ -673,11 +657,7 @@ public class TemplateMatcher {
   	int yMax = Math.min(hTarget, searchRect.y+searchRect.height+bottom);
   	wTest = xMax-xMin;
   	hTest = yMax-yMin;
-    if (target.getType() != BufferedImage.TYPE_INT_RGB) {
-    	BufferedImage image = new BufferedImage(wTarget, hTarget, BufferedImage.TYPE_INT_RGB);
-      image.createGraphics().drawImage(target, 0, 0, null);
-      target = image;
-    }
+  	target = BufferedImageUtils.convertIfNeeded(target, BufferedImage.TYPE_INT_RGB);
     targetPixels = new int[wTest * hTest];
     target.getRaster().getDataElements(xMin, yMin, wTest, hTest, targetPixels);
     // get the points to search along the line
