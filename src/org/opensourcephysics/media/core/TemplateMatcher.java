@@ -535,7 +535,7 @@ public class TemplateMatcher {
 	  if (!Double.isInfinite(peakHeight)) {
 		  // fill data arrays
 		  xValues[1] = yValues[1] = peakHeight;
-		  for (int i = -1; i < 2; i+=2) {
+		  for (int i: new int[]{-1,1}) {
 			  double diff = getDifferenceAtTestPoint(xMatch + i, yMatch);
 			  xValues[i + 1] = avgDiff / diff - 1;
 			  diff = getDifferenceAtTestPoint(xMatch, yMatch + i);
