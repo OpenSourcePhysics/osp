@@ -1,6 +1,8 @@
 package org.opensourcephysics.media.core;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 public class BufferedImageUtils {
@@ -96,4 +98,42 @@ public class BufferedImageUtils {
 		g.dispose();
 		return b;
 	}
+
+	/**
+	 * Modifies the rectangle rect to be into image.
+	 * Preferres to move, if it is impossible - shrinks.
+	 * @param searchRect
+	 * @param image
+	 * @return true if the rectangle has been changed
+	 */
+
+	public static boolean moveRectIntoImage(Rectangle2D searchRect, BufferedImage image) {
+		int w = image.getWidth();
+		int h = image.getHeight();
+		Point2D corner = new Point2D.Double(searchRect.getX(), searchRect.getY());
+		Dimension dim = new Dimension((int) searchRect.getWidth(), (int) searchRect.getHeight());
+
+		boolean changed = false;
+		// reduce size if needed
+		if (w < dim.width || h < dim.height) {
+			changed = true;
+			dim.setSize(Math.min(w, dim.width), Math.min(h, dim.height));
+			searchRect.setFrame(corner, dim);
+		}
+
+		// move corner point if needed
+		double x = Math.max(0, corner.getX());
+		x = Math.min(x, w - dim.width);
+		double y = Math.max(0, corner.getY());
+		y = Math.min(y, h - dim.height);
+		if (x != corner.getX() || y != corner.getY()) {
+			changed = true;
+			corner.setLocation(x, y);
+			searchRect.setFrame(corner, dim);
+		}
+
+		return changed;
+	}
+
+
 }
