@@ -34,7 +34,6 @@ import java.util.TreeMap;
 
 import org.opensourcephysics.display.Dataset;
 import org.opensourcephysics.tools.DatasetCurveFitterNoGUI;
-import org.opensourcephysics.tools.FitBuilder;
 import org.opensourcephysics.tools.UserFunction;
 
 /**
@@ -68,9 +67,7 @@ public class TemplateMatcher {
 		startTime2 = System.currentTimeMillis();
 
 
-		fitter = new DatasetCurveFitterNoGUI(dataset, new FitBuilder(null));
-		//fitter.setActive(true);
-		//fitter.setAutofit(true);
+		fitter = new DatasetCurveFitterNoGUI(dataset, null);
 
 		endTime2 = System.currentTimeMillis();
 		System.out.println("Building fitter, ms:");
