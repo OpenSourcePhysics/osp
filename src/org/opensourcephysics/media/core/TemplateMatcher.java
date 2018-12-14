@@ -109,8 +109,9 @@ public class TemplateMatcher {
   private int trimLeft, trimTop;
   private int[] alphas = new int[2]; // most recent alphas {input, original}
   private int index; // for AutoTracker--not used internally
+	public long totalOpaquePixels;
 
-  /**
+	/**
    * Constructs a TemplateMatcher object. If a mask shape is specified, then
    * only pixels that are entirely inside the mask are included in the template.
    *
@@ -329,6 +330,7 @@ public class TemplateMatcher {
 			sum += hTemplate - quantityOfTransparentPixels[i];
 			columnExtrapolationCoefficients[i] = sum;
 		}
+		totalOpaquePixels = sum;
 		for(int i = 0; i < wTemplate; i++){
 			columnExtrapolationCoefficients[i] = sum / columnExtrapolationCoefficients[i];
 		}
@@ -359,6 +361,68 @@ public class TemplateMatcher {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Shifts the colors of the template in such way that the average color value for template
+	 * is equal to average color value of given image (probably match)
+	 */
+	public void shiftTemplate(BufferedImage example, int[] maxShift){
+		// Suppose pixels have been already built
+		int len = wTemplate * hTemplate;
+		int[] examplePixels = new int[len];
+		example.getRaster().getDataElements(0, 0, wTemplate, hTemplate, examplePixels);
+
+		long tR = 0, tG = 0, tB = 0, eR = 0, eB = 0, eG = 0;
+
+		for(int i = 0; i < len; i++){
+			if(!isPixelTransparent[i]){
+				tB += (pixels[i]      ) & 0xff;
+				tG += (pixels[i] >>  8) & 0xff;
+				tR += (pixels[i] >> 16) & 0xff;
+				eB += (examplePixels[i]      ) & 0xff;
+				eG += (examplePixels[i] >>  8) & 0xff;
+				eR += (examplePixels[i] >> 16) & 0xff;
+			}
+		}
+		int[] shift = {
+				(int)(1.0 * (eR - tR) / totalOpaquePixels),
+				(int)(1.0 * (eG - tG) / totalOpaquePixels),
+				(int)(1.0 * (eB - tB) / totalOpaquePixels),
+		};
+		shiftTemplate(shift, maxShift);
+	}
+
+	public void shiftTemplate(int[] shift, int[] maxShift){
+		for(int j = 0; j < 3; j++) {
+			maxShift[j] = Math.abs(maxShift[j]);
+			if (shift[j] > maxShift[j]) {
+				shift[j] = maxShift[j];
+			} else if (shift[j] < -maxShift[j]) {
+				shift[j] = -maxShift[j];
+			}
+		}
+		shiftTemplate(shift);
+	}
+
+	public void shiftTemplate(int[] shift){
+		if(shift[0] == 0 && shift[1] == 0 && shift[2] == 0){
+			return;
+		}
+
+		int len = wTemplate * hTemplate;
+
+		for(int i = 0; i < len; i++){
+			if(!isPixelTransparent[i]){
+				int pixel = pixels[i];
+				int r = Math.max(Math.min(((pixel >>> 16) & 0xff) + shift[0], 255),0);
+				int g = Math.max(Math.min(((pixel >>>  8) & 0xff) + shift[1], 255),0);
+				int b = Math.max(Math.min(((pixel       ) & 0xff) + shift[2], 255),0);
+				int a = pixel & 0xff000000;
+				pixels[i] = a | (r << 16) | (g << 8) | b;
+			}
+		}
+		template.getRaster().setDataElements(0, 0, wTemplate, hTemplate, pixels);
 	}
 
 	/**
