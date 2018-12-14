@@ -636,7 +636,7 @@ public class TPoint extends Point2D.Double implements Interactive, Trackable {
   /**
    * Compares this to the specified object.
    *
-   * @param object the object
+   * @param obj the object
    * @return <code>true</code> if this equals the specified object
    */
   public boolean equals(Object obj) {
