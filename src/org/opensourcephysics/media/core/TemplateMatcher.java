@@ -557,19 +557,26 @@ public class TemplateMatcher {
     long matchDiff = largeLong; // larger than typical differences
     int xMatch=0, yMatch=0;
     double avgDiff = 0;
-  	for (int x = 0; x <= searchRect.width; x++) {
-  		for (int y = 0; y <= searchRect.height; y++) {
-    		long diff = convexMask?
-					getDifferenceAtTestPointConvex(x, y, matchDiff):
-					getDifferenceAtTestPoint(x, y, matchDiff);
-    		avgDiff += diff;
-    		if (diff < matchDiff) {
-    			matchDiff = diff;
-    			xMatch = x;
-    			yMatch = y;
-    		}
-    	}
-    }
+
+
+    for (int dx = 0; dx < 4; dx++){
+    	for (int dy = 0; dy < 4; dy++){
+			for (int x = dx; x <= searchRect.width; x += 4) {
+				for (int y = dy; y <= searchRect.height; y += 4) {
+					long diff = convexMask?
+							getDifferenceAtTestPointConvex(x, y, matchDiff):
+							getDifferenceAtTestPoint(x, y, matchDiff);
+					avgDiff += diff;
+					if (diff < matchDiff) {
+						matchDiff = diff;
+						xMatch = x;
+						yMatch = y;
+					}
+				}
+			}
+		}
+	}
+
 
 
 	  avgDiff /= (searchRect.width * searchRect.height);
