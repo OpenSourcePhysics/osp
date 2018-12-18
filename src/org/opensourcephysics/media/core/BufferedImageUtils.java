@@ -135,5 +135,13 @@ public class BufferedImageUtils {
 		return changed;
 	}
 
+	public static BufferedImage createMagnifiedImage(BufferedImage source, int magFactor, int type) {
+		BufferedImage image = new BufferedImage(
+				magFactor*source.getWidth(),
+				magFactor*source.getHeight(),
+				type);
+		image.createGraphics().drawImage(source, 0, 0, image.getWidth(), image.getHeight(), null);
+		return image;
+	}
 
 }
