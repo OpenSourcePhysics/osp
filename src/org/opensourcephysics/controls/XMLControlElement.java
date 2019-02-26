@@ -1668,94 +1668,101 @@ public class XMLControlElement implements XMLControl {
    * @return the array
    */
   private Object arrayValue(String arrayString, Class<?> componentType) {
-    if(!(arrayString.startsWith("{")&&arrayString.endsWith("}"))) { //$NON-NLS-1$ //$NON-NLS-2$
+    if(!(arrayString.startsWith("{") && arrayString.endsWith("}"))) { //$NON-NLS-1$ //$NON-NLS-2$
       return null;
     }
     // trim the outer braces
     String trimmed = arrayString.substring(1, arrayString.length()-1);
-    if(componentType.isArray()) {
-      // create and collect the array elements from substrings
-      ArrayList<Object> list = new ArrayList<Object>();
-      ArrayList<Boolean> isNull = new ArrayList<Boolean>();
-      Class<?> arrayType = componentType.getComponentType();
-             
-      int i = trimmed.indexOf("{"); //$NON-NLS-1$
-      int j = indexOfClosingBrace(trimmed, i);
-      int k = trimmed.indexOf(","); //$NON-NLS-1$
-      while(j>0) {
-//        if (k<i) { // first comma is before opening brace
-        if (k>-1 && k<i) { // first comma is before opening brace
-        	isNull.add(true);
-          trimmed = trimmed.substring(k+1);
-        }
-        else {
-	        String nextArray = trimmed.substring(i, j+1);
-	        Object obj = arrayValue(nextArray, arrayType);
-	        list.add(obj);
-        	isNull.add(false);
-	        trimmed = trimmed.substring(j+1);
-	        if (trimmed.startsWith(",")) // comma following closing brace //$NON-NLS-1$
-		        trimmed = trimmed.substring(1);
-        }
-        i = trimmed.indexOf("{"); //$NON-NLS-1$
-//        j = trimmed.indexOf("}"); //$NON-NLS-1$
-        j = indexOfClosingBrace(trimmed, i);
-        k = trimmed.indexOf(","); //$NON-NLS-1$
-      }
-      // look for trailing null elements
-      while (k>-1) {
-      	isNull.add(true);
-        trimmed = trimmed.substring(k+1);
-        k = trimmed.indexOf(","); //$NON-NLS-1$
-      }
-      if (trimmed.length()>0) { // last element (after final comma) is null
-      	isNull.add(true);      	
-      }
-      // create the array
-      Object array = Array.newInstance(componentType, isNull.size());
-      // populate the array
-      Boolean[] hasNoElement = isNull.toArray(new Boolean[0]);
-      Iterator<Object> it = list.iterator();
-      for (int n=0; n<hasNoElement.length; n++) {
-        if (!hasNoElement[n] && it.hasNext()) {
-          Object obj = it.next();
-          Array.set(array, n, obj);
-        }
+    // break into chunks
+  	String[] chunks = trimmed.split(","); //$NON-NLS-1$
+  	// get array from chunks
+  	return arrayValueFromChunks(chunks, componentType);
+  }
+
+  /**
+   * Returns the array value of the chunks obtained by splitting an array string at commas. May return null.
+   *
+   * @param chunks the chunks
+   * @param componentType the component type of the array
+   * @return the array
+   */
+  private Object arrayValueFromChunks(String[] chunks, Class<?> componentType) {
+
+  	// handle multi-dimensional arrays 
+    if (componentType.isArray()) {
+    	
+	  	int level = 0; // keep track of subarray levels
+	    ArrayList<Object> subarrays = new ArrayList<Object>(); // collect level 0 subarrays
+	    ArrayList<Object> subarrayChunks = new ArrayList<Object>();
+	
+	    for (String next: chunks) {
+	    	
+	    	// look for null elements
+	  		if (level==0 && next.equals("null")) { //$NON-NLS-1$
+	      	subarrays.add(null);
+	      	continue;
+	  		}
+	  		// look for opening brace that defines a new subarray
+				if (level==0 && next.startsWith("{")) { //$NON-NLS-1$
+					subarrayChunks.clear(); // ready for new chunks
+					next = next.substring(1); // trim brace from first chunk
+					level = 1; // now working at level 1
+				}
+				// determine the level of the chunk from leading and trailing braces, if any
+	    	String temp = next;
+				while (temp.startsWith("{")) { //$NON-NLS-1$
+					temp = temp.substring(1);
+					level++;
+				}
+				while (temp.endsWith("}")) { //$NON-NLS-1$
+					temp = temp.substring(0, temp.length()-1);
+					level--;
+				}	
+				// look for closing brace of the subarray
+				if (level==0 && next.endsWith("}")) { //$NON-NLS-1$
+					// add the last chunk
+					next = next.substring(0, next.length()-1); // trim trailing brace
+					subarrayChunks.add(next);
+					// call this method recursively to get subarray
+					String[] subchunks = subarrayChunks.toArray(new String[subarrayChunks.size()]);
+		      Class<?> arrayType = componentType.getComponentType();
+	        Object obj = arrayValueFromChunks(subchunks, arrayType);
+	        // add subarray to the collection
+	        subarrays.add(obj);
+	        continue;
+				}
+				subarrayChunks.add(next);
+	  	}
+      // create and populate the array with the collected arrays
+    	Object[] elements = subarrays.toArray(new Object[subarrays.size()]);
+      Object array = Array.newInstance(componentType, elements.length);
+      for (int n=0; n<elements.length; n++) {
+        Array.set(array, n, elements[n]);
       }
       return array;
     }
-    // collect element substrings separated by commas
-    ArrayList<String> list = new ArrayList<String>();
-    while(!trimmed.equals("")) {    //$NON-NLS-1$
-      int i = trimmed.indexOf(","); //$NON-NLS-1$
-      if(i>-1) {
-        list.add(trimmed.substring(0, i));
-        trimmed = trimmed.substring(i+1);
-      } else {
-        list.add(trimmed);
-        break;
-      }
+    
+    // handle double, int and boolean arrays
+    else {
+	    // create and populate the array by parsing the chunks directly
+	    Object array = Array.newInstance(componentType, chunks.length);
+	    for (int n=0; n<chunks.length; n++) {
+	      if(componentType==Integer.TYPE) {
+	        int i = Integer.parseInt(chunks[n]);
+	        Array.setInt(array, n, i);
+	      } else if(componentType==Double.TYPE) {
+	        double x = Double.parseDouble(chunks[n]);
+	        Array.setDouble(array, n, x);
+	      } else if(componentType==Boolean.TYPE) {
+	        boolean bool = chunks[n].equals("true"); //$NON-NLS-1$
+	        Array.setBoolean(array, n, bool);
+	      }
+	    }
+	    return array;
     }
-    // create the array
-    Object array = Array.newInstance(componentType, list.size());
-    // populate the array
-    Iterator<String> it = list.iterator();
-    int n = 0;
-    while(it.hasNext()) {
-      if(componentType==Integer.TYPE) {
-        int i = Integer.parseInt(it.next());
-        Array.setInt(array, n++, i);
-      } else if(componentType==Double.TYPE) {
-        double x = Double.parseDouble(it.next());
-        Array.setDouble(array, n++, x);
-      } else if(componentType==Boolean.TYPE) {
-        boolean bool = it.next().equals("true"); //$NON-NLS-1$
-        Array.setBoolean(array, n++, bool);
-      }
-    }
-    return array;
   }
-
+  	
+  	
   /**
    * Returns the collection value of the specified property. May return null.
    *
@@ -1794,35 +1801,6 @@ public class XMLControlElement implements XMLControl {
     return null;
   }
   
-  /**
-   * Returns the index of the closing brace corresponding to the opening
-   * brace at the given index in an array string.
-   *
-   * @param arrayString the array string
-   * @param indexOfOpeningBrace the index of the opening brace
-   * @return the index of the closing brace
-   */
-  private int indexOfClosingBrace(String arrayString, int indexOfOpeningBrace) {
-    int pointer = indexOfOpeningBrace+1;
-    int n = 1; // count up/down for opening/closing braces
-    int opening = arrayString.indexOf("{", pointer); //$NON-NLS-1$
-    int closing = arrayString.indexOf("}", pointer); //$NON-NLS-1$
-    while (n>0) {
-    	if (opening>-1 && opening<closing) {
-    		n++;
-    		pointer = opening+1;
-        opening = arrayString.indexOf("{", pointer); //$NON-NLS-1$
-    	}
-    	else if (closing>-1) {
-    		n--;
-    		pointer = closing+1;
-        closing = arrayString.indexOf("}", pointer);  //$NON-NLS-1$
-    	}
-    	else return -1;
-    }
-    return pointer-1;
-  }
-
 }
 
 /*
