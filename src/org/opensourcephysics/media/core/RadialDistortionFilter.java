@@ -115,7 +115,7 @@ public class RadialDistortionFilter extends Filter {
   private int lowerRadiusLimit = (int)(100*minRadius);
   
   // parameters
-  private int interpolation = 1; // neighborhood size for color interpolation
+  private int interpolation = 2; // neighborhood size for color interpolation
   private double fixedRadius = 0.75; // radius (relative to corner distance) that remains fixed in corrected image
   private double sourceFOV = Math.PI/2;
   private String sourceProjectionType = RECTILINEAR;
@@ -620,11 +620,11 @@ public class RadialDistortionFilter extends Filter {
    * 
    * @param x the x-position relative to 0,0 (0<=x<1)
    * @param x the y-position relative to 0,0 (0<=y<1)
-   * @param values array of pixels color values [value(0,0), value(0,1), value(1,0), value(1,1)]
+   * @param values array of pixels color values [value(0,0), value(1,0), value(0,1), value(1,1)]
    * @return the interpolated color value 
    */
   private int bilinearInterpolation(double x, double y, int[] values) {
-  		return (int)((1-y)*((1-x)*values[0] + x*values[2]) + y*((1-x)*values[1] + x*values[3]));  	
+  		return (int)((1-y)*((1-x)*values[0] + x*values[1]) + y*((1-x)*values[2] + x*values[3]));  	
   }
   
   /**
