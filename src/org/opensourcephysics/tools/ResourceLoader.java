@@ -1113,7 +1113,9 @@ public class ResourceLoader {
     if(file.isDirectory()) {
       File[] files = file.listFiles();
       for(File next: files) {
-        deleteFile(next);
+        if (!deleteFile(next)) {
+        	OSPLog.finer("Unable to delete "+next); //$NON-NLS-1$
+        }
       }
     }
     return file.delete();
