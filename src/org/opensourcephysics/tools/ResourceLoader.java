@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -1153,8 +1154,8 @@ public class ResourceLoader {
    * @param zipPath the path to the zip file
    * @return a set of file names in alphabetical order
    */
-  public static Set<String> getZipContents(String zipPath) {
-    Set<String> fileNames = new TreeSet<String>();
+  public static Collection<String> getZipContents(String zipPath) {
+  	Collection<String> fileNames = new ArrayList<String>();
     try {
     	URL url = new URL(getURIPath(zipPath));    	
     	OSPLog.finest("zip url: "+url.toExternalForm()); //$NON-NLS-1$
