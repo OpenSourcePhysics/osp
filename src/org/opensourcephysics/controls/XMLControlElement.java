@@ -1376,7 +1376,7 @@ public class XMLControlElement implements XMLControl {
     try {
       // get document root tag
       String xml = input.readLine();
-      while((xml!=null)&&(xml.indexOf("<object")==-1)) {        //$NON-NLS-1$
+      while (xml!=null && xml.indexOf("<object")==-1) {        //$NON-NLS-1$
         xml = input.readLine();
       }
       // check class name
@@ -1473,7 +1473,11 @@ public class XMLControlElement implements XMLControl {
       xml = input.readLine();
       while(xml.indexOf("<property")!=-1) {                                                    //$NON-NLS-1$
         prop.content.add(readProperty(new XMLPropertyElement(prop), xml));
-        xml = input.readLine();
+        String line = input.readLine();
+        if (line==null) {
+        	throw(new IOException("reached end of file with no closing tag")); //$NON-NLS-1$
+        }
+        xml = line;
       }
     } else if(prop.type.equals("object")) {                                                    //$NON-NLS-1$
     	// add XMLControl unless value is null
@@ -1486,13 +1490,21 @@ public class XMLControlElement implements XMLControl {
       if(xml.indexOf(XML.CDATA_PRE)!=-1) {
         String s = xml.substring(xml.indexOf(XML.CDATA_PRE));
         while(s.indexOf(XML.CDATA_POST+"</property>")==-1) {                                   // look for end tag //$NON-NLS-1$
-          s += XML.NEW_LINE+input.readLine();
+          String line = input.readLine();
+          if (line==null) {
+          	throw(new IOException("reached end of file with no closing tag")); //$NON-NLS-1$
+          }
+        	s += XML.NEW_LINE+line;
         }
         xml = s.substring(0, s.indexOf(XML.CDATA_POST+"</property>")+XML.CDATA_POST.length()); //$NON-NLS-1$
       } else {
         String s = xml.substring(xml.indexOf(">")+1);                                          //$NON-NLS-1$
         while(s.indexOf("</property>")==-1) {                                                  // look for end tag //$NON-NLS-1$
-          s += XML.NEW_LINE+input.readLine();
+          String line = input.readLine();
+          if (line==null) {
+          	throw(new IOException("reached end of file with no closing tag")); //$NON-NLS-1$
+          }
+        	s += XML.NEW_LINE+line;
         }
         xml = s.substring(0, s.indexOf("</property>"));                                        //$NON-NLS-1$
       }
