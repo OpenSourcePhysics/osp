@@ -564,6 +564,12 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 	  		for (Metadata next: data) {
 	  			String key = next.getData()[0];
 	  			String value = next.getData()[1];
+	  			boolean isLibraryMetadata = false;
+	  			for (String metadataType: LibraryResource.META_TYPES) {
+	  				isLibraryMetadata = isLibraryMetadata || key.equals(metadataType);
+	  			}
+	  			if (!isLibraryMetadata) continue;
+	  			
 	  			boolean breakLine = false;
 	  			for (String metadataType: LibraryResource.META_TYPES) {
 	  				if (metadataType.toLowerCase().contains(key.toLowerCase()))
