@@ -33,6 +33,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -2027,7 +2028,7 @@ public class LibraryTreePanel extends JPanel {
 				if (node.getName().equals(targetName)) {
 	  			targetName = XML.stripExtension(targetName);
    	    	// look inside zip for html with same name as zip or trk
-  				Set<String> files = ResourceLoader.getZipContents(targetURLPath);
+	  			Collection<String> files = ResourceLoader.getZipContents(targetURLPath);
   				String htmlInfoPath = null;
   				for (String s: files) {
   					String htmlName = XML.stripExtension(XML.getName(s));

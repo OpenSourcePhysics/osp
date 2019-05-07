@@ -15,6 +15,7 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeSet;
@@ -432,7 +433,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 		    Runnable runner = new Runnable() {
 		      public void run() {
 	  				String zipPath = getAbsoluteTarget();
-						Set<String> files = ResourceLoader.getZipContents(zipPath);
+	  				Collection<String> files = ResourceLoader.getZipContents(zipPath);
 						for (String next: files) {
 							if (next.endsWith(".trk")) { //$NON-NLS-1$
 								setType(LibraryResource.TRACKER_TYPE);

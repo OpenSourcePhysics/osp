@@ -16,6 +16,7 @@ import java.io.FileFilter;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -2566,7 +2567,7 @@ public class LibraryBrowser extends JPanel {
     		if (ext.equals(next.toLowerCase())) return true;
     	}
     	if (ext.equals("zip")) { //$NON-NLS-1$
-				Set<String> files = ResourceLoader.getZipContents(file.getAbsolutePath());
+				Collection<String> files = ResourceLoader.getZipContents(file.getAbsolutePath());
 				for (String next: files) {
 					if (next.toLowerCase().endsWith(".trk")) return true; //$NON-NLS-1$
 				}

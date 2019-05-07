@@ -13,6 +13,7 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -228,7 +229,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 		    Runnable runner = new Runnable() {
 		      public void run() {
 	  				String zipPath = XML.getResolvedPath(target, base);
-						Set<String> files = ResourceLoader.getZipContents(zipPath);
+	  				Collection<String> files = ResourceLoader.getZipContents(zipPath);
 						for (String next: files) {
 							if (next.toUpperCase().endsWith(".TRK")) { //$NON-NLS-1$
 								setType(LibraryResource.TRACKER_TYPE);
