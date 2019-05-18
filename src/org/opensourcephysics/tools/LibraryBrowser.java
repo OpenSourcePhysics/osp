@@ -79,6 +79,7 @@ public class LibraryBrowser extends JPanel {
   protected static JDialog externalDialog;
   protected static JMenuBar menubar;
   protected static ResizableIcon expandIcon, contractIcon, heavyExpandIcon, heavyContractIcon, refreshIcon;
+  protected static ResizableIcon closeIcon, heavyCloseIcon;
   protected static final FileFilter TRACKER_FILTER = new TrackerDLFilter();
   protected static javax.swing.filechooser.FileFilter filesAndFoldersFilter =  new FilesAndFoldersFilter();
   protected static Timer searchTimer;
@@ -102,6 +103,10 @@ public class LibraryBrowser extends JPanel {
     heavyContractIcon = new ResizableIcon(new ImageIcon(LibraryTreePanel.class.getResource(imageFile)));
     imageFile = "/org/opensourcephysics/resources/tools/images/refresh.gif";        //$NON-NLS-1$
     refreshIcon = new ResizableIcon(new ImageIcon(LibraryTreePanel.class.getResource(imageFile)));
+    imageFile = "/org/opensourcephysics/resources/tools/images/closetab.gif";        //$NON-NLS-1$
+    closeIcon = new ResizableIcon(new ImageIcon(LibraryTreePanel.class.getResource(imageFile)));
+    imageFile = "/org/opensourcephysics/resources/tools/images/closetab_bold.gif";        //$NON-NLS-1$
+    heavyCloseIcon = new ResizableIcon(new ImageIcon(LibraryTreePanel.class.getResource(imageFile)));
 	}
 	
 	// instance fields
@@ -192,6 +197,7 @@ public class LibraryBrowser extends JPanel {
         library.save(libraryPath);
       }
   		browser = new LibraryBrowser(libraryPath);
+  		browser.setVisible(false);
 
       LibraryTreePanel treePanel = browser.getSelectedTreePanel();
   		if (treePanel!=null) {
@@ -256,7 +262,8 @@ public class LibraryBrowser extends JPanel {
 		if (libraryManager!=null) {
 			libraryManager.setFontLevel(level);
 		}
-		ResizableIcon[] icons = {expandIcon, contractIcon, heavyExpandIcon, heavyContractIcon, refreshIcon};
+		ResizableIcon[] icons = {expandIcon, contractIcon, heavyExpandIcon, heavyContractIcon, 
+				refreshIcon, closeIcon, heavyCloseIcon};
 		for (ResizableIcon next: icons) {
 			next.resize(FontSizer.getIntegerFactor());
 		}    
@@ -578,8 +585,9 @@ public class LibraryBrowser extends JPanel {
   protected int getTabIndexFromPath(String path) { 
   	for (int i=0; i<tabbedPane.getTabCount(); i++) {
   		LibraryTreePanel next = getTreePanel(i);
-  		if (next.pathToRoot.equals(path)) 
+  		if (path.equals(next.pathToRoot)) {
   			return i;
+  		}
   	}
   	return -1;
   }
@@ -756,7 +764,7 @@ public class LibraryBrowser extends JPanel {
       }
     	// look for HTML with base name + "_info"
     	for (File htmlFile: htmlFiles) {
-				String htmlName = XML.stripExtension(htmlFile.getName());   		
+				String htmlName = XML.stripExtension(htmlFile.getName());   	
     		if (htmlName.equals(baseName+"_info")) { //$NON-NLS-1$
           if ("".equals(record.getHTMLPath())) { //$NON-NLS-1$
       			relPath = XML.getPathRelativeTo(htmlFile.getAbsolutePath(), base.getAbsolutePath());
@@ -823,31 +831,58 @@ public class LibraryBrowser extends JPanel {
   	
   	String title = collection.getTitle(path);
   	
-    // add a TabTitle with expand and contract icons to ComPADRE tab 
-    if (path.contains(LibraryComPADRE.TRACKER_SERVER_TREE) && tabbedPane.getTabComponentAt(n)==null) {
-    	boolean primary = path.contains("OSPPrimary"); //$NON-NLS-1$
-    	Icon icon = primary? expandIcon: contractIcon;
-    	Icon heavyIcon = primary? heavyExpandIcon: heavyContractIcon;
-    	final TabTitle tabTitle = new TabTitle(icon, heavyIcon);
-    	FontSizer.setFonts(tabTitle, FontSizer.getLevel());
-	  	tabTitle.iconLabel.setToolTipText(primary? ToolsRes.getString("LibraryBrowser.Tooltip.Expand"): //$NON-NLS-1$
-	  			ToolsRes.getString("LibraryBrowser.Tooltip.Contract")); //$NON-NLS-1$
-    	Action action = new AbstractAction() {
+    if (tabbedPane.getTabComponentAt(n)==null) { // TabTitle not yet set
+	    // add TabTitle  
+    	final TabTitle tabTitle = new TabTitle();
+    	Icon icon = null, heavyIcon = null;
+    	String tooltip, name;
+      Action action = null;
+      if (path.contains(LibraryComPADRE.TRACKER_SERVER_TREE)) {
+  	  	name = "compadre"; //$NON-NLS-1$
+      	boolean primary = path.contains("OSPPrimary"); //$NON-NLS-1$
+      	icon = primary? expandIcon: contractIcon;
+      	heavyIcon = primary? heavyExpandIcon: heavyContractIcon;
+    		tabTitle.setIcons(name, icon, heavyIcon);
+    		
+  	  	tooltip = primary? ToolsRes.getString("LibraryBrowser.Tooltip.Expand"): //$NON-NLS-1$
+	  			ToolsRes.getString("LibraryBrowser.Tooltip.Contract"); //$NON-NLS-1$ 
+  	  	tabTitle.setTooltip(name, tooltip);
+  	  	
+  	  	action = new AbstractAction() {
+	  		  public void actionPerformed(ActionEvent e) {
+	  		  	boolean primaryOnly = tabTitle.normalIcons.get("compadre")==contractIcon; //$NON-NLS-1$
+	  		  	int index = getTabIndexFromTitle(tabTitle.titleLabel.getText());
+	  		  	if (index>-1) {
+		  	  		LibraryTreePanel treePanel = getTreePanel(index);
+		  		  	String path = LibraryComPADRE.getCollectionPath(treePanel.pathToRoot, primaryOnly);	  		  	
+		  		  	new TabLoader(path, index, null).execute();
+		  		  	
+		  		  	tabTitle.setIcons("compadre", primaryOnly? expandIcon: contractIcon, primaryOnly? heavyExpandIcon: heavyContractIcon); //$NON-NLS-1$
+		  		  	tabTitle.setTooltip("compadre", primaryOnly? ToolsRes.getString("LibraryBrowser.Tooltip.Expand"): //$NON-NLS-1$ //$NON-NLS-2$
+		  		  		ToolsRes.getString("LibraryBrowser.Tooltip.Contract")); //$NON-NLS-1$
+	  		  	}
+	  		  }
+	    	};      	
+	    	tabTitle.setAction(name, action);
+      }
+
+      // every tab gets a hide button
+	  	name = "hide"; //$NON-NLS-1$
+    	icon = closeIcon;
+    	heavyIcon = heavyCloseIcon;
+  		tabTitle.setIcons(name, icon, heavyIcon);
+  		
+	  	tooltip = ToolsRes.getString("LibraryBrowser.MenuItem.CloseTab").toLowerCase(); //$NON-NLS-1$
+	  	tabTitle.setTooltip(name, tooltip);
+    	
+      action = new AbstractAction() {
   		  public void actionPerformed(ActionEvent e) {
-  		  	boolean primaryOnly = tabTitle.normalIcon==contractIcon;
-  		  	int index = getTabIndexFromTitle(tabTitle.titleLabel.getText());
-  		  	if (index>-1) {
-	  	  		LibraryTreePanel treePanel = getTreePanel(index);
-	  		  	String path = LibraryComPADRE.getCollectionPath(treePanel.pathToRoot, primaryOnly);	  		  	
-	  		  	new TabLoader(path, index, null).execute();
-	  		  	
-	  		  	tabTitle.setIcons(primaryOnly? expandIcon: contractIcon, primaryOnly? heavyExpandIcon: heavyContractIcon);
-	  		  	tabTitle.iconLabel.setToolTipText(primaryOnly? ToolsRes.getString("LibraryBrowser.Tooltip.Expand"): //$NON-NLS-1$
-	  		  		ToolsRes.getString("LibraryBrowser.Tooltip.Contract")); //$NON-NLS-1$
-  		  	}
+  		  	closeItem.doClick(0);
   		  }
-    	};
-    	tabTitle.setAction(action);
+    	};      	      	
+    	tabTitle.setAction(name, action);
+    	
+    	FontSizer.setFonts(tabTitle, FontSizer.getLevel());
     	tabbedPane.setTabComponentAt(n, tabTitle);
     }
 		boolean changed = getTreePanel(n).isChanged();
@@ -1071,6 +1106,27 @@ public class LibraryBrowser extends JPanel {
   								tabbedPane.addTab(title, results);
   							}
 								tabbedPane.setSelectedComponent(results);
+	      		  	i = getTabIndexFromTitle(title);
+								
+	      		  	// add tab title with hide button
+					    	final TabTitle tabTitle = new TabTitle();
+						  	String name = "hide"; //$NON-NLS-1$
+					    	Icon icon = closeIcon, heavyIcon = heavyCloseIcon;
+					  		tabTitle.setIcons(name, icon, heavyIcon);
+					  		
+						  	String tooltip = ToolsRes.getString("LibraryBrowser.MenuItem.CloseTab").toLowerCase(); //$NON-NLS-1$
+						  	tabTitle.setTooltip(name, tooltip);
+					    	
+					      Action action = new AbstractAction() {
+					  		  public void actionPerformed(ActionEvent e) {
+					  		  	closeItem.doClick(0);
+					  		  }
+					    	};      	      	
+					    	tabTitle.setAction(name, action);
+					    	
+					    	FontSizer.setFonts(tabTitle, FontSizer.getLevel());
+					    	tabbedPane.setTabComponentAt(i, tabTitle);
+   							tabbedPane.setTitleAt(i, title);
   						}
       				LibraryTreePanel.htmlPanesByNode.remove(results.rootNode);  
       		  	results.showInfo(results.rootNode);
@@ -1675,8 +1731,41 @@ public class LibraryBrowser extends JPanel {
    * Opens a file with a specified path.
    * @param path the path to the file
    */
-  protected void open(String path) {
+  public void open(String path) {
   	if (path==null) return;
+  	
+  	// create a LibraryResource for path
+  	String realPath = path;
+		File cachedFile = ResourceLoader.getSearchCacheFile(path);
+		if (cachedFile.exists() && path.startsWith("http:")) {  			 //$NON-NLS-1$
+			realPath = cachedFile.getAbsolutePath();
+		}
+  	LibraryResource resource = loadResource(realPath);
+  	if (resource!=null) {
+  		// see if a matching resource is in a collection in the search cache
+  		LibraryResource match =  null;
+    	// collect cache targets--except those in the library no_search set
+	  	Set<LibraryResource> searchTargets = getSearchCacheTargets();
+	  	for (Iterator<LibraryResource> it = searchTargets.iterator(); it.hasNext();) {
+	  		LibraryResource next = it.next();
+				if (library.noSearchSet.contains(next.collectionPath))
+					it.remove();
+	  	}
+	  	// try to find the match
+			for (LibraryResource target: searchTargets) {
+				if (target==null) continue;
+				match = findMatchToPath(realPath, target);
+				if (match!=null) break; 					
+			}  				
+    	if (match!=null) {
+    		// if the match has a collection path, open the collection, select match and return
+    		String collectionPath = match.getCollectionPath();
+	      if (collectionPath!=null) {
+	      	loadTab(collectionPath, match.getTreePath(null));
+	      	return;
+	      }	    		
+    	}
+  	}
   	loadTab(path, null);
   }
   
@@ -2057,6 +2146,26 @@ public class LibraryBrowser extends JPanel {
   	}
   	return resultsOR;
   }
+  
+	/**
+	 * Finds a LibraryResource for a match to a path.
+	 * @param path the path
+	 * @param resource the LibraryResource
+	 * @return true if a match
+	 */
+	protected LibraryResource findMatchToPath(String path, LibraryResource target) {
+		String targetPath = target.getInheritedBasePath()+"/"+target.getTarget(); //$NON-NLS-1$
+		if (path.equals(targetPath)) return target;
+		if (target instanceof LibraryCollection) {
+			LibraryCollection collection = (LibraryCollection)target;
+			for (LibraryResource next: collection.getResources()) {
+				if (next==null) continue;
+				LibraryResource found = findMatchToPath(path, next);
+				if (found!=null) return found;
+			}		
+		}
+		return null;
+	}
 
   /**
    * Adds a collection to this browser's library after prompting the user to 
@@ -2220,7 +2329,7 @@ public class LibraryBrowser extends JPanel {
   	String code = imageCode+
 	  	"<h1>Open Source Physics Digital Library Browser</h1>"+ //$NON-NLS-1$
 	  	"<p>The OSP Digital Library Browser enables you to browse, organize and access collections of digital library resources "+ //$NON-NLS-1$
-	  	"such as EJS models and Tracker experiments. Collections and resources may be on a local drive or remote server.</p>"+ //$NON-NLS-1$
+	  	"such as EJS models and Tracker projects. Collections and resources may be on a local drive or remote server.</p>"+ //$NON-NLS-1$
 	  	"<ul>"+ //$NON-NLS-1$
 	  	"  <li>Open a collection by choosing from the <strong>Collections</strong> menu or entering a URL directly in the toolbar "+ //$NON-NLS-1$
 	  	"as with a web browser.</li>"+ //$NON-NLS-1$
@@ -2245,51 +2354,64 @@ public class LibraryBrowser extends JPanel {
 //______________________________ inner classes _________________________________
   
   /**
-   * A class to display and handle actions for a ComPADRE tab title.
+   * A class to display and handle actions for a tab title.
    */
   class TabTitle extends JPanel {
-  	JLabel titleLabel, iconLabel;
-  	Icon normalIcon, boldIcon;
-  	Action action;
+  	JLabel titleLabel;
+  	Map<String, JLabel> iconLabels =  new TreeMap<String, JLabel>();
+  	Map<String, Icon> normalIcons =  new TreeMap<String, Icon>();
+  	Map<String, Icon> boldIcons =  new TreeMap<String, Icon>();
+  	Map<String, Action> iconActions =  new TreeMap<String, Action>();
   	
-  	TabTitle(Icon lightIcon, Icon heavyIcon) {
+  	TabTitle() {
   		super(new BorderLayout());
   		this.setOpaque(false);
   		titleLabel = new JLabel();
-  		iconLabel = new JLabel();
-  		iconLabel.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 0));
-  		iconLabel.addMouseListener(new MouseAdapter() {
-        public void mouseClicked(MouseEvent e) {
-        	int i = getTabIndexFromTitle(titleLabel.getText());
-        	if (i>-1 && tabbedPane.getSelectedIndex()!=i) tabbedPane.setSelectedIndex(i);
-        	action.actionPerformed(null);
-        }
-        public void mouseEntered(MouseEvent e) {
-      		iconLabel.setIcon(boldIcon);
-        }
-        public void mouseExited(MouseEvent e) {
-      		iconLabel.setIcon(normalIcon);
-        }
-  		});
   		add(titleLabel, BorderLayout.WEST);
-  		add(iconLabel, BorderLayout.EAST);
-  		setIcons(lightIcon, heavyIcon);
   	}
   	
   	void setTitle(String title) {
   		titleLabel.setText(title);
   	}
   	
-  	void setIcons(Icon lightIcon, Icon heavyIcon) {
-  		normalIcon = lightIcon;
-  		boldIcon = heavyIcon;
-  		iconLabel.setIcon(normalIcon);
+  	void setIcons(final String name, Icon icon, Icon boldIcon) {
+  		JLabel label = iconLabels.get(name);
+  		if (label==null) {
+  			label = new JLabel();
+	  		iconLabels.put(name, label);	  		  			
+		  	label.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 0));
+		  	label.addMouseListener(new MouseAdapter() {
+	        public void mouseClicked(MouseEvent e) {
+	        	int i = getTabIndexFromTitle(titleLabel.getText());
+	        	if (i>-1 && tabbedPane.getSelectedIndex()!=i) tabbedPane.setSelectedIndex(i);
+	        	iconActions.get(name).actionPerformed(null);
+	        }
+	        public void mouseEntered(MouseEvent e) {
+	      		iconLabels.get(name).setIcon(boldIcons.get(name));
+	        }
+	        public void mouseExited(MouseEvent e) {
+	      		iconLabels.get(name).setIcon(normalIcons.get(name));
+	        }
+	  		});	 			
+  		}
+  		normalIcons.put(name, icon);
+  		boldIcons.put(name, boldIcon);
+  		label.setIcon(icon); 
+  		Box box = Box.createHorizontalBox();
+  		for (String key: iconLabels.keySet()) {
+  			box.add(iconLabels.get(key));
+  		}
+  		add(box, BorderLayout.EAST);
   	}
   	
-  	void setAction(Action action) {
-  		this.action = action;
+  	void setAction(String name, Action action) {
+  		iconActions.put(name, action);
   	}
-
+  	
+  	void setTooltip(String name, String tooltip) {
+  		iconLabels.get(name).setToolTipText(tooltip);
+  	}
+  	
   }
 
   /**
@@ -2317,10 +2439,16 @@ public class LibraryBrowser extends JPanel {
 	 	  	if (library.openTabPaths!=null) {
 	 	  		ArrayList<String> unopenedTabs = new ArrayList<String>();
 	 	  		String[] paths = library.openTabPaths;
+	 	  		
 		  		for (String path: paths) {
 		  			// first check search cache
 		    		File cachedFile = ResourceLoader.getSearchCacheFile(path);
 		    		if (cachedFile.exists()) {
+		    			// check if tab already open
+		          int i = getTabIndexFromPath(path);
+		          if (i>-1) {
+		          	continue;
+		          }		      		
 		    			TabLoader tabAdder = addTab(path, null);
 		    			if (tabAdder!=null) tabAdder.execute();  	
 		  			}
@@ -2423,8 +2551,15 @@ public class LibraryBrowser extends JPanel {
 	    		treePanel.setFontLevel(FontSizer.getLevel());
 	    		
 	    		if (index<0) {
-	    			tabbedPane.addTab("", treePanel); //$NON-NLS-1$
-		    		index = tabbedPane.getTabCount()-1;
+	    			// check if tab exists
+	    	  	int i = getTabIndexFromPath(path);
+	    	  	if (i>-1) {
+	    	  		index = i;
+	    	  	}
+	    	  	else {
+		    			tabbedPane.addTab("", treePanel); //$NON-NLS-1$
+			    		index = tabbedPane.getTabCount()-1;
+	    	  	}
 	    		}
 	    		refreshTabTitle(path, treePanel.rootResource);
 	    		tabbedPane.setToolTipTextAt(index, path);

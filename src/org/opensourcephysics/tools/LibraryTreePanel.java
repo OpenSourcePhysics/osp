@@ -2024,7 +2024,7 @@ public class LibraryTreePanel extends JPanel {
 		  	String ext = "."+XML.getExtension(target); //$NON-NLS-1$
 				URL targetURL = node.getTargetURL();  // returns cached target URL, if any
 				String targetURLPath = targetURL.toExternalForm();
-  			String targetName = XML.getName(targetURLPath);
+  			String targetName = ResourceLoader.getNonURIPath(XML.getName(targetURLPath));
 				if (node.getName().equals(targetName)) {
 	  			targetName = XML.stripExtension(targetName);
    	    	// look inside zip for html with same name as zip or trk
