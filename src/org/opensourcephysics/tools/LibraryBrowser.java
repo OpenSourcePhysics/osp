@@ -931,7 +931,7 @@ public class LibraryBrowser extends JPanel {
   	if (path==null) return null;
 		File cachedFile = ResourceLoader.getSearchCacheFile(path);
   	boolean isCachePath = cachedFile.exists();
-  	if (!isCachePath && !isWebConnected() && path.startsWith("http:")) { //$NON-NLS-1$
+  	if (!isCachePath && !isWebConnected() && path.startsWith("http")) { //$NON-NLS-1$
   		JOptionPane.showMessageDialog(this, 
   				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
   				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
@@ -1010,7 +1010,7 @@ public class LibraryBrowser extends JPanel {
    * @param collection the LibraryCollection itself
    */
   protected void refreshTabTitle(String path, LibraryResource collection) {
-  	int n = getTabIndexFromPath(path);
+  	final int n = getTabIndexFromPath(path);
   	if (n==-1) return;
   	
   	String title = collection.getTitle(path);
@@ -1035,16 +1035,13 @@ public class LibraryBrowser extends JPanel {
   	  	action = new AbstractAction() {
 	  		  public void actionPerformed(ActionEvent e) {
 	  		  	boolean primaryOnly = tabTitle.normalIcons.get("compadre")==contractIcon; //$NON-NLS-1$
-	  		  	int index = getTabIndexFromTitle(tabTitle.titleLabel.getText());
-	  		  	if (index>-1) {
-		  	  		LibraryTreePanel treePanel = getTreePanel(index);
-		  		  	String path = LibraryComPADRE.getCollectionPath(treePanel.pathToRoot, primaryOnly);	  		  	
-		  		  	new TabLoader(path, index, null).execute();
-		  		  	
-		  		  	tabTitle.setIcons("compadre", primaryOnly? expandIcon: contractIcon, primaryOnly? heavyExpandIcon: heavyContractIcon); //$NON-NLS-1$
-		  		  	tabTitle.setTooltip("compadre", primaryOnly? ToolsRes.getString("LibraryBrowser.Tooltip.Expand"): //$NON-NLS-1$ //$NON-NLS-2$
-		  		  		ToolsRes.getString("LibraryBrowser.Tooltip.Contract")); //$NON-NLS-1$
-	  		  	}
+	  	  		LibraryTreePanel treePanel = getTreePanel(n);
+	  		  	String path = LibraryComPADRE.getCollectionPath(treePanel.pathToRoot, primaryOnly);	  		  	
+	  		  	new TabLoader(path, n, null).execute();
+	  		  	
+	  		  	tabTitle.setIcons("compadre", primaryOnly? expandIcon: contractIcon, primaryOnly? heavyExpandIcon: heavyContractIcon); //$NON-NLS-1$
+	  		  	tabTitle.setTooltip("compadre", primaryOnly? ToolsRes.getString("LibraryBrowser.Tooltip.Expand"): //$NON-NLS-1$ //$NON-NLS-2$
+	  		  		ToolsRes.getString("LibraryBrowser.Tooltip.Contract")); //$NON-NLS-1$
 	  		  }
 	    	};      	
 	    	tabTitle.setAction(name, action);
@@ -1061,7 +1058,9 @@ public class LibraryBrowser extends JPanel {
     	
       action = new AbstractAction() {
   		  public void actionPerformed(ActionEvent e) {
-  		  	closeItem.doClick(0);
+          if (closeSelectedTab()) {
+            refreshGUI();
+          }
   		  }
     	};      	      	
     	tabTitle.setAction(name, action);
@@ -1401,8 +1400,9 @@ public class LibraryBrowser extends JPanel {
           JMenuItem item = new JMenuItem(ToolsRes.getString("MenuItem.Close")); //$NON-NLS-1$
           item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-              int i = tabbedPane.getSelectedIndex();
-              closeTab(i);
+              if (closeSelectedTab()) {
+                refreshGUI();
+              }
             }
           });
           popup.add(item);
@@ -1561,8 +1561,7 @@ public class LibraryBrowser extends JPanel {
     closeItem = new JMenuItem();
     closeItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        int i = tabbedPane.getSelectedIndex();
-        if (closeTab(i)) {
+        if (closeSelectedTab()) {
           refreshGUI();
         }
       }
@@ -1794,7 +1793,12 @@ public class LibraryBrowser extends JPanel {
 		  	openRecentAction = new AbstractAction() {
 		  		public void actionPerformed(ActionEvent e) {
 		  			String path = e.getActionCommand();
-		  			open(path);
+		  			if (path.startsWith("http")) { //$NON-NLS-1$
+		          loadTab(path, null);
+		      		library.addRecent(path, false);
+		      		refreshRecentMenu();		  				
+		  			}
+		  			else open(path);
 		  		}
 		  	};
 	  	}
@@ -1849,7 +1853,7 @@ public class LibraryBrowser extends JPanel {
   	// create a LibraryResource for path
   	String realPath = path;
 		File cachedFile = ResourceLoader.getSearchCacheFile(path);
-		if (cachedFile.exists() && path.startsWith("http:")) {  			 //$NON-NLS-1$
+		if (cachedFile.exists() && path.startsWith("http")) {  			 //$NON-NLS-1$
 			realPath = cachedFile.getAbsolutePath();
 		}
   	LibraryResource resource = loadResource(realPath);
@@ -1885,6 +1889,16 @@ public class LibraryBrowser extends JPanel {
   	loadTab(realPath, null);
 		library.addRecent(realPath, false);
 		refreshRecentMenu();
+  }
+  
+  /**
+   * Closes the selected tab.
+   * @return true unless cancelled by user
+   */
+  protected boolean closeSelectedTab() {
+    int i = tabbedPane.getSelectedIndex();
+    if (i<0) return true;
+    return closeTab(i);
   }
   
   /**
@@ -2611,9 +2625,13 @@ public class LibraryBrowser extends JPanel {
 		  	label.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 0));
 		  	label.addMouseListener(new MouseAdapter() {
 	        public void mouseClicked(MouseEvent e) {
-	        	int i = getTabIndexFromTitle(titleLabel.getText());
-	        	if (i>-1 && tabbedPane.getSelectedIndex()!=i) tabbedPane.setSelectedIndex(i);
-	        	iconActions.get(name).actionPerformed(null);
+	        	for (int n=0; n<tabbedPane.getTabCount(); n++) {
+	        		Component c = tabbedPane.getTabComponentAt(n);
+	        		if (c==TabTitle.this) {
+	  	        	if (tabbedPane.getSelectedIndex()!=n) tabbedPane.setSelectedIndex(n);
+	  	        	iconActions.get(name).actionPerformed(null);
+	        		}
+	        	}
 	        }
 	        public void mouseEntered(MouseEvent e) {
 	      		iconLabels.get(name).setIcon(boldIcons.get(name));
@@ -2661,7 +2679,7 @@ public class LibraryBrowser extends JPanel {
 		    	}
  	  		}
  	  	};
-    	if (!libraryPath.startsWith("http:")) { //$NON-NLS-1$
+    	if (!libraryPath.startsWith("http")) { //$NON-NLS-1$
 		    // load library
 	    	library.load(libraryPath);
 	    	// add my collection and recent collection
@@ -2702,7 +2720,7 @@ public class LibraryBrowser extends JPanel {
 			  		for (String path: paths) {
 			  			// check for local resource
 			      	Resource res = ResourceLoader.getResource(path);
-			    		if (res!=null && !path.startsWith("http:")) { //$NON-NLS-1$
+			    		if (res!=null && !path.startsWith("http")) { //$NON-NLS-1$
 			    			TabLoader tabAdder = addTab(path, null);
 			    			if (tabAdder!=null) tabAdder.execute();  	
 			  			}
@@ -2732,7 +2750,7 @@ public class LibraryBrowser extends JPanel {
      	  // add previously open tabs not available for loading in doInBackground method
 	 	  	if (library.openTabPaths!=null) {  	  		
 		  		for (final String path: library.openTabPaths) {
-		  			boolean available = isWebConnected() && path.startsWith("http:"); //$NON-NLS-1$
+		  			boolean available = isWebConnected() && path.startsWith("http"); //$NON-NLS-1$
 		  			if (available) {
 		    			TabLoader tabAdder = addTab(path, null);
 		    			if (tabAdder!=null) tabAdder.execute();  	
@@ -2833,9 +2851,11 @@ public class LibraryBrowser extends JPanel {
 	    		treePanel.setRootResource(resource, path, false);
     		}
     		else {
-	    		// tab is editable only if it is a local XML file and is not the recent collection
+	    		// tab is editable only if it is a local XML file, not the recent collection and not in the search cache
 	    		boolean editable = !path.startsWith("http") && path.toLowerCase().endsWith(".xml"); //$NON-NLS-1$ //$NON-NLS-2$
 	    		if (path.equals(getOSPPath()+RECENT_COLLECTION_NAME))  editable = false;
+	    		File searchCache = ResourceLoader.getSearchCache();
+	    		if (XML.forwardSlash(path).startsWith(XML.forwardSlash(searchCache.getPath()))) editable = false;
 	    		treePanel.setRootResource(resource, path, editable);
     		}
     		return treePanel;

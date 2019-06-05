@@ -637,7 +637,11 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
   		String path = getMetadataSourcePath();
     	if (path!=null) {
     		Resource res = ResourceLoader.getResourceZipURLsOK(path);
-    		String code = res.getString();
+    		String code = null;
+				try {
+					code = res.getString();
+				} catch (Exception e) {
+				}
 				if (code!=null) {
 					boolean[] isStandardType = new boolean[LibraryResource.META_TYPES.length];
 					String[] parts = code.split("<meta name="); //$NON-NLS-1$
