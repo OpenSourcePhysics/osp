@@ -78,6 +78,7 @@ public class VideoClip {
   protected double savedStartTime; // used when DataTrack sets start time
   protected boolean startTimeIsSaved = false; // used when DataTrack sets start time
   protected int extraFrames = 0; // extends clip length past video end
+  public boolean reverse = false;
 
   /**
    * Constructs a VideoClip.
@@ -189,6 +190,7 @@ public class VideoClip {
     if(size==0) {
       return false;
     }
+    reverse = (size < 0);
     size = Math.abs(size);
     if (video!=null && video.getFrameCount()>1) {
       int maxSize = Math.max(video.getFrameCount()-startFrame-1+extraFrames, 1);
@@ -701,52 +703,52 @@ public class VideoClip {
       Video video = VideoIO.getVideo(path, null);
       boolean engineChange = false;
       if (video==null && path!=null && !VideoIO.isCanceled()) {
-      	if (ResourceLoader.getResource(path)!=null) { // resource exists but not loaded
-	        OSPLog.info("\""+path+"\" could not be opened");                                                  //$NON-NLS-1$ //$NON-NLS-2$
-	        // determine if other engines are available for the video extension
-	        ArrayList<VideoType> otherEngines = new ArrayList<VideoType>();
-	        String engine = VideoIO.getEngine();
-	        String ext = XML.getExtension(path);        
-	        if (!engine.equals(VideoIO.ENGINE_XUGGLE)) {
-	        	VideoType xuggleType = VideoIO.getVideoType("Xuggle", ext); //$NON-NLS-1$
-	        	if (xuggleType!=null) otherEngines.add(xuggleType);
-	        }
-	        if (otherEngines.isEmpty()) {
-		        JOptionPane.showMessageDialog(null, 
-		        		MediaRes.getString("VideoIO.Dialog.BadVideo.Message")+"\n\n"+path, //$NON-NLS-1$ //$NON-NLS-2$
-		        		MediaRes.getString("VideoClip.Dialog.BadVideo.Title"),                                          //$NON-NLS-1$
-		            JOptionPane.WARNING_MESSAGE); 
-	        }
-	        else {
-	      		// provide immediate way to open with other engines
-	    			JCheckBox changePreferredEngine = new JCheckBox(MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Checkbox")); //$NON-NLS-1$
-	        	video = VideoIO.getVideo(path, otherEngines, changePreferredEngine, null);
-		    		engineChange = changePreferredEngine.isSelected();
-			    	if (video!=null && changePreferredEngine.isSelected()) {
-			    		String typeName = video.getClass().getSimpleName();
-			    		String newEngine = typeName.indexOf("Xuggle")>-1? VideoIO.ENGINE_XUGGLE: //$NON-NLS-1$
+        if (ResourceLoader.getResource(path)!=null) { // resource exists but not loaded
+                OSPLog.info("\""+path+"\" could not be opened");                                                  //$NON-NLS-1$ //$NON-NLS-2$
+                // determine if other engines are available for the video extension
+                ArrayList<VideoType> otherEngines = new ArrayList<VideoType>();
+                String engine = VideoIO.getEngine();
+                String ext = XML.getExtension(path);        
+                if (!engine.equals(VideoIO.ENGINE_FFMPEG)) {
+                        VideoType ffmpegType = VideoIO.getVideoType("FFMPeg", ext); //$NON-NLS-1$
+                        if (ffmpegType!=null) otherEngines.add(ffmpegType);
+                }
+                if (otherEngines.isEmpty()) {
+                        JOptionPane.showMessageDialog(null, 
+                                        MediaRes.getString("VideoIO.Dialog.BadVideo.Message")+"\n\n"+path, //$NON-NLS-1$ //$NON-NLS-2$
+                                        MediaRes.getString("VideoClip.Dialog.BadVideo.Title"),                                          //$NON-NLS-1$
+                            JOptionPane.WARNING_MESSAGE); 
+                }
+                else {
+                        // provide immediate way to open with other engines
+                                JCheckBox changePreferredEngine = new JCheckBox(MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Checkbox")); //$NON-NLS-1$
+                        video = VideoIO.getVideo(path, otherEngines, changePreferredEngine, null);
+                                engineChange = changePreferredEngine.isSelected();
+                                if (video!=null && changePreferredEngine.isSelected()) {
+                                        String typeName = video.getClass().getSimpleName();
+                                        String newEngine = typeName.indexOf("FFMPeg")>-1? VideoIO.ENGINE_FFMPEG: //$NON-NLS-1$
 			    			VideoIO.ENGINE_NONE;
-			    		VideoIO.setEngine(newEngine);
-			    	}	        	
-	        }
-      	}
-      	else {
-	        int response = JOptionPane.showConfirmDialog(null, "\""+path+"\" "                                //$NON-NLS-1$ //$NON-NLS-2$
-	          +MediaRes.getString("VideoClip.Dialog.VideoNotFound.Message"),                                  //$NON-NLS-1$
-	            MediaRes.getString("VideoClip.Dialog.VideoNotFound.Title"),                                   //$NON-NLS-1$
-	              JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-	        if(response==JOptionPane.YES_OPTION) {
-	        	VideoIO.getChooser().setAccessory(VideoIO.videoEnginePanel);
-	    	    VideoIO.videoEnginePanel.reset();
-	          VideoIO.getChooser().setSelectedFile(new File(path));
-	          java.io.File[] files = VideoIO.getChooserFiles("open video");                                         //$NON-NLS-1$
-	          if(files!=null && files.length>0) {
-	            VideoType selectedType = VideoIO.videoEnginePanel.getSelectedVideoType();
-	          	path = XML.getAbsolutePath(files[0]);
-	            video = VideoIO.getVideo(path, selectedType);
-	          }
-	        }
-      	}
+                                        VideoIO.setEngine(newEngine);
+                                }                       
+                }
+        }
+        else {
+                int response = JOptionPane.showConfirmDialog(null, "\""+path+"\" "                                //$NON-NLS-1$ //$NON-NLS-2$
+                  +MediaRes.getString("VideoClip.Dialog.VideoNotFound.Message"),                                  //$NON-NLS-1$
+                    MediaRes.getString("VideoClip.Dialog.VideoNotFound.Title"),                                   //$NON-NLS-1$
+                      JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if(response==JOptionPane.YES_OPTION) {
+                        VideoIO.getChooser().setAccessory(VideoIO.videoEnginePanel);
+                    VideoIO.videoEnginePanel.reset();
+                  VideoIO.getChooser().setSelectedFile(new File(path));
+                  java.io.File[] files = VideoIO.getChooserFiles("open video");                                         //$NON-NLS-1$
+                  if(files!=null && files.length>0) {
+                    VideoType selectedType = VideoIO.videoEnginePanel.getSelectedVideoType();
+                        path = XML.getAbsolutePath(files[0]);
+                    video = VideoIO.getVideo(path, selectedType);
+                  }
+                }
+        }
       }
       if (video!=null) {
         Collection<?> filters = (Collection<?>) child.getObject("filters"); //$NON-NLS-1$

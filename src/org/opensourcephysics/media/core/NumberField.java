@@ -160,6 +160,8 @@ public class NumberField extends JTextField {
         n = s.indexOf(units);
       }
     }
+
+    s=s.replaceAll("["+OSPRuntime.getAdditionalDecimalSeparators()+"]",""+format.getDecimalFormatSymbols().getDecimalSeparator());
     if(s.equals(format.format(prevValue*conversionFactor))) {
       return prevValue;
     }
@@ -401,7 +403,11 @@ public class NumberField extends JTextField {
 
   /**
    * Sets the patterns for this field. The patterns are applied as follows:
+<<<<<<< HEAD
+   * value<1: patterns[0]
+=======
    * value<0.1: patterns[0]
+>>>>>>> upstream/master
    * value<10: patterns[1]
    * value<100: patterns[2]
    * value<1000: patterns[3]

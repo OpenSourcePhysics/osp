@@ -42,7 +42,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.image.BufferedImage;
-
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -52,10 +51,8 @@ import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
-import org.opensourcephysics.controls.XMLControlElement;
 
 /**
  * This is a Filter that changes the brightness and contrast of a source image.
@@ -97,12 +94,6 @@ public class BrightnessFilter extends Filter {
    * @param contrast the contrast.
    */
   public void setContrast(double contrast) {
-    if (previousState==null) {
-    	previousState = new XMLControlElement(this).toXML();
-    	previousBrightness = brightness;
-    	previousContrast = contrast;
-    }
-    changed = changed || this.contrast!=contrast;
     Double prev = new Double(this.contrast);
     this.contrast = contrast;
     updateFactors();
@@ -124,12 +115,6 @@ public class BrightnessFilter extends Filter {
    * @param brightness the brightness.
    */
   public void setBrightness(int brightness) {
-    if (previousState==null) {
-    	previousState = new XMLControlElement(this).toXML();
-    	previousBrightness = this.brightness;
-    	previousContrast = this.contrast;
-    }
-    changed = changed || this.brightness!=brightness;
     Integer prev = new Integer(this.brightness);
     this.brightness = brightness;
     updateFactors();
@@ -145,18 +130,6 @@ public class BrightnessFilter extends Filter {
     return brightness;
   }
 
-  /**
-   * Determines if the filter settings have changed.
-   * 
-   * @return true if changed
-   */
-  @Override
-  public boolean isChanged() {
-  	if (!changed) return false;
-  	// changes have occurred so compare final and initial states
-  	return previousBrightness!=brightness || previousContrast!=contrast;
-  }
-  
   /**
    * Applies the filter to a source image and returns the result.
    *
@@ -217,6 +190,10 @@ public class BrightnessFilter extends Filter {
     brightnessSlider.setToolTipText(MediaRes.getString("Filter.Brightness.ToolTip.Brightness")); //$NON-NLS-1$
     contrastLabel.setText(MediaRes.getString("Filter.Brightness.Label.Contrast"));               //$NON-NLS-1$
     contrastSlider.setToolTipText(MediaRes.getString("Filter.Brightness.ToolTip.Contrast"));     //$NON-NLS-1$
+    if(inspector!=null) {
+      inspector.setTitle(MediaRes.getString("Filter.Brightness.Title")); //$NON-NLS-1$
+      inspector.pack();
+    }
     boolean enabled = isEnabled();
     brightnessLabel.setEnabled(enabled);
     brightnessSlider.setEnabled(enabled);
@@ -323,17 +300,6 @@ public class BrightnessFilter extends Filter {
      */
     void createGUI() {
       setTitle(MediaRes.getString("Filter.Brightness.Title")); //$NON-NLS-1$
-      addWindowFocusListener(new java.awt.event.WindowAdapter() {
-      	@Override
-      	public void windowLostFocus(java.awt.event.WindowEvent e) {
-          if (isChanged() && previousState!=null) {
-          	changed = false;
-            support.firePropertyChange("filterChanged", previousState, BrightnessFilter.this); //$NON-NLS-1$
-            previousState = null;
-          }
-      	}
-      });
-
       // create brightness components
       brightnessLabel = new JLabel();
       brightnessField = new IntegerField(3);
@@ -524,11 +490,6 @@ public class BrightnessFilter extends Filter {
       }
       filter.inspectorX = control.getInt("inspector_x"); //$NON-NLS-1$
       filter.inspectorY = control.getInt("inspector_y"); //$NON-NLS-1$
-      filter.previousState = null;
-      filter.changed = false;
-      if (filter.inspector!=null) {
-        filter.inspector.updateDisplay();
-      }
       return obj;
     }
 

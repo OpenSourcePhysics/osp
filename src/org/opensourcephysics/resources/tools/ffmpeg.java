@@ -11,23 +11,23 @@ import java.io.InputStream;
 import java.util.PropertyResourceBundle;
 
 /**
- * Resource loader for OSP tools.xuggle package.  Resources are obtained from properties.
+ * Resource loader for OSP tools.ffmpeg package.  Resources are obtained from properties.
  * 
  * Defining a Java resource class speeds up resource loading, particularly for applets because
  * a connection to the server is not required. 
  * 
  * @author Wolfgang Christian
 */
-public class xuggle extends PropertyResourceBundle {
+public class ffmpeg extends PropertyResourceBundle {
   // relative path to strings
-  static String res = "xuggle.properties"; //$NON-NLS-1$
+  static String res = "ffmpeg.properties"; //$NON-NLS-1$
 
   /**
    * Constructor tools
    * @throws IOException
    */
-  public xuggle() throws IOException {
-    this(xuggle.class.getResourceAsStream(res));
+  public ffmpeg() throws IOException {
+    this(ffmpeg.class.getResourceAsStream(res));
   }
 
   /**
@@ -35,7 +35,7 @@ public class xuggle extends PropertyResourceBundle {
    * @param stream
    * @throws IOException
    */
-  public xuggle(InputStream stream) throws IOException {
+  public ffmpeg(InputStream stream) throws IOException {
     super(stream);
   }
 

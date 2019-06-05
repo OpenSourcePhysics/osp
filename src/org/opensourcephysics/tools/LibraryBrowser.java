@@ -2541,11 +2541,11 @@ public class LibraryBrowser extends JPanel {
   static class TrackerDLFilter implements FileFilter {
   	
   	static {
-  		// if Xuggle is available, register with VideoIO
-  		String className = "org.opensourcephysics.media.xuggle.XuggleIO"; //$NON-NLS-1$
+  		// if FFMPeg is available, register with VideoIO
+  		String className = "org.opensourcephysics.media.ffmpeg.FFMPegIO"; //$NON-NLS-1$
       try {
-				Class<?> xuggleIOClass = Class.forName(className);
-	      Method method = xuggleIOClass.getMethod("registerWithVideoIO", (Class[]) null);  //$NON-NLS-1$
+				Class<?> ffmpegIOClass = Class.forName(className);
+	      Method method = ffmpegIOClass.getMethod("registerWithVideoIO", (Class[]) null);  //$NON-NLS-1$
 	      method.invoke(null, (Object[]) null);
 			} catch (Exception ex) {
 			}

@@ -37,7 +37,6 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -78,8 +77,6 @@ public abstract class Filter {
 
   private boolean enabled = true;
   private String name;
-  protected boolean changed = false;
-  protected String previousState;
 	protected VideoPanel vidPanel;
   protected PropertyChangeSupport support;
   protected Action enabledAction;
@@ -135,11 +132,6 @@ public abstract class Filter {
       public void actionPerformed(ActionEvent e) {
         JDialog inspector = getInspector();
         if(inspector!=null) {
-          if (isChanged() && previousState!=null) {
-          	changed = false;
-            support.firePropertyChange("filterChanged", previousState, Filter.this); //$NON-NLS-1$
-            previousState = null;
-          }
           inspector.setVisible(false);
         }
       }
@@ -182,15 +174,6 @@ public abstract class Filter {
    * Clears the filter. This default method does nothing.
    */
   public void clear() { /** empty block */ }
-  
-  /**
-   * Determines if the filter settings have changed.
-   * 
-   * @return true if changed
-   */
-  public boolean isChanged() {
-  	return changed;
-  }
   
   /**
    * Sets the video panel.

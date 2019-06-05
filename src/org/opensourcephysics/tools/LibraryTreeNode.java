@@ -82,10 +82,9 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
   	String target2 = treeNode.getAbsoluteTarget();
   	String html1 = this.getHTMLPath();
   	String html2 = treeNode.getHTMLPath();
-  	return ( 
-  			((target1==null&&target2==null) || (target1!=null && target2!=null && target1.equals(target2)))
-  			&& ((html1==null&&html2==null) || (html1!=null && html2!=null && html1.equals(html2)))
-  			&& treeNode.getName().equals(this.getName()) );
+  	return ((target1==null&&target2==null) || (target1!=null && target2!=null && target1.equals(target2))
+  			&& (html1==null&&html2==null) || (html1!=null && html2!=null && html1.equals(html2))
+  			&& treeNode.getName().equals(this.getName()));
   }
 
   
@@ -781,14 +780,14 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 				}							
 			}
 			
-			// video files: use Xuggle thumbnail tool, if available
+			// video files: use FFMPeg thumbnail tool, if available
 			else {
-	      String className = "org.opensourcephysics.media.xuggle.XuggleThumbnailTool"; //$NON-NLS-1$
+	      String className = "org.opensourcephysics.media.ffmpeg.FFMPegThumbnailTool"; //$NON-NLS-1$
 	      Class<?>[] types = new Class<?>[] {Dimension.class, String.class, String.class};
 	      Object[] values = new Object[] {defaultThumbnailDimension, sourcePath, thumbPath};
 		    try {
-		      Class<?> xuggleClass = Class.forName(className);
-		      Method method=xuggleClass.getMethod("createThumbnailFile", types); //$NON-NLS-1$
+		      Class<?> ffmpegClass = Class.forName(className);
+		      Method method=ffmpegClass.getMethod("createThumbnailFile", types); //$NON-NLS-1$
 		      thumbFile = (File)method.invoke(null, values);
 				} catch(Exception ex) {
 					OSPLog.fine("failed to create thumbnail: "+ex.toString()); //$NON-NLS-1$

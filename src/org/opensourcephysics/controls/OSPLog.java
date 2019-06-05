@@ -1079,9 +1079,6 @@ class OSPLogHandler extends Handler {
     } else if(val==ConsoleLevel.OUT_CONSOLE.intValue()) {
     	if (msg.indexOf("ERROR org.ffmpeg")>-1) //$NON-NLS-1$
     		ospLog.firePropertyChange("ffmpeg_error", null, msg); //$NON-NLS-1$
-    	else if (msg.indexOf("JNILibraryLoader")>-1) {//$NON-NLS-1$
-    		ospLog.firePropertyChange("xuggle_error", null, msg); //$NON-NLS-1$
-    	}
     	if (!OSPLog.logConsole) return;
       style = OSPLog.gray;
     } else if(val>=Level.WARNING.intValue()) {

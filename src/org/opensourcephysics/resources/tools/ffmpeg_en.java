@@ -9,15 +9,15 @@ package org.opensourcephysics.resources.tools;
 import java.io.IOException;
 
 /**
- * English resource loader for OSP xuggle package.  Resource strings are obtained from the superclass.
+ * English resource loader for OSP ffmpeg package.  Resource strings are obtained from the superclass.
  * @author Wolfgang Christian
 */
-public class xuggle_en extends xuggle {
+public class ffmpeg_en extends ffmpeg {
   /**
    * Constructor tools_en
    * @throws IOException
    */
-  public xuggle_en() throws IOException {
+  public ffmpeg_en() throws IOException {
     super();
   }
 

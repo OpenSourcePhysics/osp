@@ -51,7 +51,6 @@ public class ResizableIcon implements Icon {
     baseHeight = h = icon.getIconHeight();
   }
 
-  @Override
   public synchronized void paintIcon(Component c, Graphics g, int x, int y) {
     if (icon == null) {
       return;
@@ -67,12 +66,10 @@ public class ResizableIcon implements Icon {
     g.drawImage(baseImage, x, y, w, h, c);
   }
 
-  @Override
   public int getIconWidth() {
     return w;
   }
 
-  @Override
   public int getIconHeight() {
     return h;
   }
