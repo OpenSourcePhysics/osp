@@ -1795,37 +1795,6 @@ public class LibraryBrowser extends JPanel {
 		  		public void actionPerformed(ActionEvent e) {
 		  			String path = e.getActionCommand();
 		  			open(path);
-//		  			library.addRecent(path, false);
-//		  	    // select tab if path is already loaded
-//		  	    int i = getTabIndexFromPath(path);
-//		  	    if (i>-1) {
-//		  	    	tabbedPane.setSelectedIndex(i);
-//		  	    	return;
-//		  	    }
-//	    			TabLoader tabAdder = addTab(path, null);
-//	    			if (tabAdder!=null) {
-//	    	    	tabAdder.addPropertyChangeListener(new PropertyChangeListener() {  
-//	    	  			public  void propertyChange(PropertyChangeEvent e) {  
-//	    	  			  if ("progress".equals(e.getPropertyName())) {   //$NON-NLS-1$
-//	    	  			    Integer n = (Integer)e.getNewValue();  
-//	    				    	if (n>-1) {
-//	    				    		tabbedPane.setSelectedIndex(n);
-//	    					    	refreshGUI();
-//	    				    	}
-//	    	  			  }  
-//	    	  		  }  
-//	    	  		});
-//	    				tabAdder.execute();
-//	    			}
-//	    			else {
-//		        	library.recentTabs.remove(path);
-//		          refreshRecentMenu();
-//		        	JOptionPane.showMessageDialog(LibraryBrowser.this, 
-//		        			ToolsRes.getString("LibraryBrowser.Dialog.FileNotFound.Message") //$NON-NLS-1$
-//		        			+": "+path,  //$NON-NLS-1$
-//		        			ToolsRes.getString("LibraryBrowser.Dialog.FileNotFound.Title"),  //$NON-NLS-1$
-//		        			JOptionPane.WARNING_MESSAGE);
-//		    		}
 		  		}
 		  	};
 	  	}
