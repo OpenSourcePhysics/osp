@@ -64,6 +64,12 @@ public class Library {
 			library.browser = this.browser;
 			ospPathList.add(path);
 			ospPathToLibraryMap.put(path, library);
+			if (path.equals(LibraryBrowser.TRACKER_LIBRARY)) {
+				LibraryBrowser.trackerLibraryName = library.getName();
+			}
+			else if (path.equals(LibraryBrowser.SHARED_LIBRARY)) {
+				LibraryBrowser.sharedLibraryName = library.getName();
+			}
 		}
   	return true;
 	}
@@ -336,6 +342,7 @@ public class Library {
    */
   protected void addRecent(String filename, boolean atEnd) {
   	if (filename==null) return;
+  	filename = XML.forwardSlash(filename);
   	synchronized(recentTabs) {
 	  	while (recentTabs.contains(filename))
 	  		recentTabs.remove(filename);

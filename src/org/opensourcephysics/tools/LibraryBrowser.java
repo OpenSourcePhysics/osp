@@ -14,6 +14,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileFilter;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,6 +67,7 @@ public class LibraryBrowser extends JPanel {
 	protected static final String CLOSING = ")"; //$NON-NLS-1$
 	protected static final String MY_LIBRARY_NAME = "my_library.xml"; //$NON-NLS-1$
 	protected static final String MY_COLLECTION_NAME = "my_collection.xml"; //$NON-NLS-1$
+	protected static final String RECENT_COLLECTION_NAME = "recent_collection.xml"; //$NON-NLS-1$
 	protected static final String LIBRARY_HELP_NAME = "library_browser_help.html"; //$NON-NLS-1$
 	protected static final String LIBRARY_HELP_BASE = "http://www.opensourcephysics.org/online_help/tools/"; //$NON-NLS-1$
 	protected static final String WINDOWS_OSP_DIRECTORY = "/My Documents/OSP/"; //$NON-NLS-1$
@@ -85,6 +87,8 @@ public class LibraryBrowser extends JPanel {
   protected static Timer searchTimer;
   protected static String searchTerm;
 	public static boolean fireHelpEvent = false;
+	protected static String trackerLibraryName, sharedLibraryName;
+	public static int maxRecentCollectionSize = 18;
   
 	static {
     buttonBorder = BorderFactory.createEtchedBorder();
@@ -129,7 +133,6 @@ public class LibraryBrowser extends JPanel {
   protected TextFrame helpFrame;
   protected JEditorPane htmlAboutPane;
   protected FileFilter dlFileFilter = TRACKER_FILTER;
-  protected boolean isRecentPathXML; 
 	protected LibraryManager libraryManager;
 
 	/**
@@ -162,42 +165,46 @@ public class LibraryBrowser extends JPanel {
   		externalDialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
  	
   	if (browser==null) {
-  		String userHome = OSPRuntime.getUserHome().replace('\\', '/');
-  		String ospFolder = OSPRuntime.isWindows()? WINDOWS_OSP_DIRECTORY: OSP_DIRECTORY;
-  		String ospPath = userHome+ospFolder;
-  		// if OSP folder doesn't exist in user home, then look 
-  		// in default OSPRuntime search directory
-  		if (!new File(ospPath).exists()) {
-    		ArrayList<String> dirs = OSPRuntime.getDefaultSearchPaths();
-				ospPath = XML.forwardSlash(dirs.get(0));
-  		}
-			if (!ospPath.endsWith("/")) { //$NON-NLS-1$
-				ospPath += "/"; //$NON-NLS-1$
-			}
+  		String ospPath = getOSPPath();
+    	String collectionPath = ospPath+MY_COLLECTION_NAME;      	
+			File collectionFile = new File(collectionPath);
+			// create my collection if none exists
+      if (!collectionFile.exists()) {
+        String name = ToolsRes.getString("LibraryCollection.Name.Local"); //$NON-NLS-1$
+  			LibraryCollection collection = new LibraryCollection(name);
+  			String base = XML.getDirectoryPath(collectionPath);
+  			collection.setBasePath(XML.forwardSlash(base));
+  			// save new collection
+  			XMLControl control = new XMLControlElement(collection);
+  			control.write(collectionPath);
+      }
+      
+    	String recentCollectionPath = ospPath+RECENT_COLLECTION_NAME;      	
+			File recentCollectionFile = new File(recentCollectionPath);
+			// create my collection if none exists
+      if (!recentCollectionFile.exists()) {
+        String name = ToolsRes.getString("LibraryCollection.Name.Recent"); //$NON-NLS-1$
+  			LibraryCollection recentCollection = new LibraryCollection(name);
+  			String base = XML.getDirectoryPath(recentCollectionPath);
+  			recentCollection.setBasePath(XML.forwardSlash(base));
+  			// save new collection
+  			XMLControl control = new XMLControlElement(recentCollection);
+  			control.write(recentCollectionPath);
+      }
+      
     	String libraryPath = ospPath+MY_LIBRARY_NAME;
       File libraryFile = new File(libraryPath);
-    	// create new library if none exists
-      boolean libraryExists = libraryFile.exists();
-      if (!libraryExists) {
-      	String collectionPath = ospPath+MY_COLLECTION_NAME;      	
-  			File collectionFile = new File(collectionPath);
-      	// create new collection if none exists
-        if (!collectionFile.exists()) {
-          String name = ToolsRes.getString("LibraryCollection.Name.Local"); //$NON-NLS-1$
-    			LibraryCollection collection = new LibraryCollection(name);
-    			String base = XML.getDirectoryPath(collectionPath);
-    			collection.setBasePath(XML.forwardSlash(base));
-    			// save new collection
-    			XMLControl control = new XMLControlElement(collection);
-    			control.write(collectionPath);
-        }
+
+      if (!libraryFile.exists()) {
+      	// create new library if none exists
         Library library = new Library();
         String name = ToolsRes.getString("LibraryCollection.Name.Local"); //$NON-NLS-1$
+        // add my collection
         library.addCollection(collectionPath, name);
         library.save(libraryPath);
       }
+      
   		browser = new LibraryBrowser(libraryPath);
-  		browser.setVisible(false);
 
       LibraryTreePanel treePanel = browser.getSelectedTreePanel();
   		if (treePanel!=null) {
@@ -205,6 +212,7 @@ public class LibraryBrowser extends JPanel {
   			treePanel.showInfo(treePanel.rootNode);
   		}
   		OSPLog.getOSPLog(); // instantiate log in case of exceptions, etc 
+  		browser.cleanSearchCache();
   	}
   	  	
   	browser.setTitle(ToolsRes.getString("LibraryBrowser.Title")); //$NON-NLS-1$
@@ -450,9 +458,13 @@ public class LibraryBrowser extends JPanel {
   	LibraryTreePanel selected = getSelectedTreePanel();
   	if (selected!=null)
   		selected.refreshEntryFields();
+		String recentCollectionPath = LibraryBrowser.getOSPPath()+LibraryBrowser.RECENT_COLLECTION_NAME;
   	for (int i=0; i < tabbedPane.getTabCount(); i++) {
   		LibraryTreePanel treePanel = getTreePanel(i);
-      if (!treePanel.saveChanges(getTabTitle(i))) return false; // true unless the user cancels      		
+      if (!treePanel.saveChanges(getTabTitle(i))) return false; // true unless the user cancels
+  		if (recentCollectionPath.equals(treePanel.rootResource.collectionPath)) {
+  			treePanel.save();
+  		}
   	}
   	// determine which open tabs to save
   	ArrayList<String> tabsToSave = new ArrayList<String>();
@@ -465,6 +477,9 @@ public class LibraryBrowser extends JPanel {
   	library.openTabPaths = tabsToSave.isEmpty()? null: tabsToSave.toArray(new String[tabsToSave.size()]);
   	// save library
   	library.save(libraryPath);
+  	// save filechooser directory
+  	OSPRuntime.setPreference("file_chooser_directory", OSPRuntime.chooserDir); //$NON-NLS-1$
+    OSPRuntime.savePreferences();
   	
   	if (exitOnClose) {
       System.exit(0);
@@ -531,14 +546,97 @@ public class LibraryBrowser extends JPanel {
 		return libraryManager;
 	}
   
-
+	/**
+	 * Cleans the search cache of resources that no longer exist.
+	 * 
+	 * @return the collections manager
+	 */
+	protected void cleanSearchCache() {
+		Runnable runner = new Runnable() {
+			public void run() {
+				for (LibraryResource next: getSearchCacheTargets()) {
+					// can clean only local file targets
+					if (!next.getBasePath().contains("http")) { //$NON-NLS-1$
+						cleanResource(next);
+					}
+				}				
+			}
+		};
+		new Thread(runner).start();
+	}
+	
+	/**
+	 * Cleans a resource if it no longer exist.
+	 * 
+	 * @return true if cleaned
+	 */
+	protected boolean cleanResource(LibraryResource record) {
+		if (record==null) return false;
+		boolean isCollection = record instanceof LibraryCollection;
+		
+		// handle collections
+		if (isCollection) {
+			LibraryCollection collection = (LibraryCollection)record;
+			boolean collectionChanged = false;
+			for (LibraryResource next: collection.getResources()) {
+				if (cleanResource(next)) {
+					// remove from collection
+					collection.removeResource(next);
+					collectionChanged = true;
+				}
+			}
+			if (collectionChanged || collection.getResources().length==0) {
+    		String s = collection.getCollectionPath();
+    		boolean isTopCollection = XML.getName(s).equals(collection.getName());
+	    	File file = ResourceLoader.getSearchCacheFile(collection.getCollectionPath());
+	    	if (isTopCollection && file.exists()) {
+	  			if (collection.getResources().length==0) {
+	  				// delete empty collection
+	  				file.delete();
+	  				
+	  				// delete parent directory if shares the same name and is empty
+	  				String name = XML.stripExtension(file.getName());
+	  				file = file.getParentFile();
+	  				if (file.getName().equals(name) && file.list().length==0) {
+	  					file.delete();
+	  				}
+	  			}
+	  			else {
+		    		XMLControl control = new XMLControlElement(file.getAbsolutePath());
+		    		if (control.getObjectClassName().endsWith("LibraryCollection")) { //$NON-NLS-1$
+		    			String pathToRoot = control.getString("real_path"); //$NON-NLS-1$
+		    			control = new XMLControlElement(collection);
+			    		control.setValue("real_path", pathToRoot); //$NON-NLS-1$
+			    		control.write(file.getAbsolutePath());
+		    		}
+	  			}
+				}
+	    	return true;
+			}
+		}
+		
+		// delete missing resources and empty collections		
+		else {
+			String path = record.getAbsoluteTarget();
+			if (path==null || path.trim().equals("")) return false; //$NON-NLS-1$
+			File testFile = new File(path);
+			if (!testFile.exists()) {
+	    	File file = ResourceLoader.getSearchCacheFile(path);
+	    	if (file.exists()) {
+	    		file.delete();
+	    	}
+	    	return true;
+			}
+		}
+		return false;
+	}
   
   /**
    * Gets the selected LibraryTreePanel, if any.
    * 
    * @return the selected treePanel, or null if none
    */
-  protected LibraryTreePanel getSelectedTreePanel() {
+  public LibraryTreePanel getSelectedTreePanel() {
   	return (LibraryTreePanel)tabbedPane.getSelectedComponent();
   }
   
@@ -617,7 +715,6 @@ public class LibraryBrowser extends JPanel {
    */
   protected void loadTab(String path, List<String> treePath) {
   	path = XML.forwardSlash(path);
-		library.addRecent(path, false);
 		refreshRecentMenu();
     // select tab and treePath if path is already loaded
     int i = getTabIndexFromPath(path);
@@ -640,7 +737,36 @@ public class LibraryBrowser extends JPanel {
 			  }  
 		  }  
 		});
-  	tabAdder.execute();  	
+  	tabAdder.execute();
+  }
+  
+  
+  /**
+   * Gets the recent collection.
+   * 
+   * @return the collection, or null if failed
+   */
+  protected LibraryCollection getRecentCollection() {
+  	String path = getOSPPath()+RECENT_COLLECTION_NAME;
+  	// check open tabs
+  	int i = getTabIndexFromPath(path);
+  	if (i>-1) {
+      tabbedPane.setSelectedIndex(i);
+      LibraryTreePanel treePanel = getTreePanel(i);
+      LibraryResource record = treePanel.rootResource;
+      if (record instanceof LibraryCollection) {
+      	return (LibraryCollection)record;
+      }
+  	}
+   	XMLControlElement control = new XMLControlElement(getOSPPath()+RECENT_COLLECTION_NAME);
+  	if (!control.failedToRead() 
+  			&& control.getObjectClass()!=null
+  			&& LibraryCollection.class.isAssignableFrom(control.getObjectClass())) {
+  		LibraryCollection collection = (LibraryCollection)control.loadObject(null);
+  		collection.collectionPath = getOSPPath()+RECENT_COLLECTION_NAME;
+  		return collection;
+  	}
+  	return null;
   }
   
   /**
@@ -650,7 +776,6 @@ public class LibraryBrowser extends JPanel {
    * @return the resource, or null if failed
    */
   protected LibraryResource loadResource(String path) {
-  	isRecentPathXML = false;
   	File targetFile = new File(path);
 		if (targetFile.isDirectory()) {
 			return createCollection(targetFile, targetFile, dlFileFilter);
@@ -662,7 +787,6 @@ public class LibraryBrowser extends JPanel {
   	if (!control.failedToRead() 
   			&& control.getObjectClass()!=null
   			&& LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
-    	isRecentPathXML = true;    	
   		return (LibraryResource)control.loadObject(null);
   	}    	  	
   	return createResource(targetFile, targetFile.getParentFile(), dlFileFilter);
@@ -819,6 +943,66 @@ public class LibraryBrowser extends JPanel {
   }
   
   /**
+   * Refreshes the display of the currently selected node in a LibraryTreePanel.
+   * 
+   * @param treePanel the LibraryTreePanel to refresh
+   */
+  protected void refreshTreePanel(LibraryTreePanel treePanel) {
+    LibraryTreeNode node = treePanel.getSelectedNode();
+		if (node==treePanel.rootNode) {
+  		File cachedFile = ResourceLoader.getSearchCacheFile(treePanel.pathToRoot);
+  		if (cachedFile.exists()) {
+  			cachedFile.delete();
+  		}
+			// reload the root resource or directory
+			LibraryResource resource = loadResource(treePanel.pathToRoot);
+			if (resource!=null) {
+				treePanel.setRootResource(resource, treePanel.pathToRoot, treePanel.rootNode.isEditable());
+    		refreshTabTitle(treePanel.pathToRoot, treePanel.rootResource);
+		    // start background SwingWorker to load metadata and set up search database
+    		if (treePanel.metadataLoader!=null) {
+    			treePanel.metadataLoader.cancel();
+    		}
+    		treePanel.metadataLoader = treePanel.new MetadataLoader(true, null);
+    		treePanel.metadataLoader.execute();
+
+				return;
+			}
+		}
+    // for other nodes delete cached files and reload the node
+		else if (node!=null) {
+      
+			LibraryTreePanel.HTMLPane pane = new LibraryTreePanel.HTMLPane();
+			pane.setText("<h2>"+ToolsRes.getString("LibraryBrowser.Info.Refreshing")+" '"+node+"'</h2>"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+			treePanel.htmlScroller.setViewportView(pane);
+    	URL url = node.getHTMLURL(); // returns cached file URL, if any
+    	if (url!=null) {
+    		File cachedFile = ResourceLoader.getOSPCacheFile(url.toExternalForm());
+    		if (cachedFile.exists()) {
+    			cachedFile.delete();
+    		}	        		
+      	LibraryTreePanel.htmlPanesByURL.remove(url);
+    	}
+
+      // delete thumbnail image, if any
+      String target = node.getAbsoluteTarget();
+      if (target!=null) {
+      	File thumb = node.getThumbnailFile();
+      	if (thumb.exists()) {
+      		thumb.delete();
+      		node.record.setThumbnail(null);
+      	}
+      }
+      // clear metadata and description
+      node.record.setMetadata(null);
+      node.record.setDescription(null);
+      // reload the node
+      treePanel.new NodeLoader(node).execute();
+    }
+  	
+  }
+  
+  /**
    * Refreshes the title of a tab based on the properties of a LibraryCollection
    * and the path associated with that collection.
    * 
@@ -906,6 +1090,8 @@ public class LibraryBrowser extends JPanel {
     loadCollectionAction = new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         loadTab(e.getActionCommand(), null);
+    		library.addRecent(e.getActionCommand(), false);
+    		refreshRecentMenu();
       }
     };
     
@@ -953,6 +1139,8 @@ public class LibraryBrowser extends JPanel {
         
         if (isCollection) {
       		loadTab(path, null);
+      		library.addRecent(path, false);
+      		refreshRecentMenu();
       		refreshGUI();
       		LibraryTreePanel treePanel = getSelectedTreePanel();
       		if (treePanel!=null && treePanel.pathToRoot.equals(path)) {
@@ -1095,6 +1283,7 @@ public class LibraryBrowser extends JPanel {
       	        
       		  		return;
       		  	}
+
       		  	String title = "'"+searchTerm.trim()+"'"; //$NON-NLS-1$ //$NON-NLS-2$
       		  	int i = getTabIndexFromTitle(title);
       		  	synchronized (tabbedPane) {
@@ -1165,56 +1354,7 @@ public class LibraryBrowser extends JPanel {
       public void actionPerformed(ActionEvent e) {
       	LibraryTreePanel treePanel = getSelectedTreePanel();
       	if (treePanel!=null) {
-	        LibraryTreeNode node = treePanel.getSelectedNode();
-	        // if node is root, delete the cache file, if any, and reload the entire collection
-      		if (node==treePanel.rootNode) {
-		    		File cachedFile = ResourceLoader.getSearchCacheFile(treePanel.pathToRoot);
-		    		if (cachedFile.exists()) {
-		    			cachedFile.delete();
-		    		}
-      			// reload the root resource or directory
-      			LibraryResource resource = loadResource(treePanel.pathToRoot);
-      			if (resource!=null) {
-      				treePanel.setRootResource(resource, treePanel.pathToRoot, treePanel.rootNode.isEditable(), false);
-    	    		refreshTabTitle(treePanel.pathToRoot, treePanel.rootResource);
-    			    // start background SwingWorker to load metadata and set up search database
-    	    		if (treePanel.metadataLoader!=null) {
-    	    			treePanel.metadataLoader.cancel();
-    	    		}
-    	    		treePanel.metadataLoader = treePanel.new MetadataLoader(true, null);
-    	    		treePanel.metadataLoader.execute();
-      				return;
-      			}
-      		}
-	        // for other nodes delete cached files and reload the node
-      		else if (node!=null) {
-      			LibraryTreePanel.HTMLPane pane = new LibraryTreePanel.HTMLPane();
-      			pane.setText("<h2>"+ToolsRes.getString("LibraryBrowser.Info.Refreshing")+" '"+node+"'</h2>"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-      			treePanel.htmlScroller.setViewportView(pane);
-	        	URL url = node.getHTMLURL(); // returns cached file URL, if any
-	        	if (url!=null) {
-			    		File cachedFile = ResourceLoader.getOSPCacheFile(url.toExternalForm());
-			    		if (cachedFile.exists()) {
-			    			cachedFile.delete();
-			    		}	        		
-		        	LibraryTreePanel.htmlPanesByURL.remove(url);
-	        	}
-
-		        // delete thumbnail image, if any
-		        String target = node.getAbsoluteTarget();
-		        if (target!=null) {
-		        	File thumb = node.getThumbnailFile();
-		        	if (thumb.exists()) {
-		        		thumb.delete();
-		        		node.record.setThumbnail(null);
-		        	}
-		        }
-		        // clear metadata and description
-		        node.record.setMetadata(null);
-		        node.record.setDescription(null);
-		        
-		        treePanel.new NodeLoader(node).execute();
-	        }
+      		refreshTreePanel(treePanel);
       	}
       }
     });
@@ -1654,37 +1794,38 @@ public class LibraryBrowser extends JPanel {
 		  	openRecentAction = new AbstractAction() {
 		  		public void actionPerformed(ActionEvent e) {
 		  			String path = e.getActionCommand();
-		  			library.addRecent(path, false);
-		  	    // select tab if path is already loaded
-		  	    int i = getTabIndexFromPath(path);
-		  	    if (i>-1) {
-		  	    	tabbedPane.setSelectedIndex(i);
-		  	    	return;
-		  	    }
-	    			TabLoader tabAdder = addTab(path, null);
-	    			if (tabAdder!=null) {
-	    	    	tabAdder.addPropertyChangeListener(new PropertyChangeListener() {  
-	    	  			public  void propertyChange(PropertyChangeEvent e) {  
-	    	  			  if ("progress".equals(e.getPropertyName())) {   //$NON-NLS-1$
-	    	  			    Integer n = (Integer)e.getNewValue();  
-	    				    	if (n>-1) {
-	    				    		tabbedPane.setSelectedIndex(n);
-	    					    	refreshGUI();
-	    				    	}
-	    	  			  }  
-	    	  		  }  
-	    	  		});
-	    				tabAdder.execute();
-	    			}
-	    			else {
-		        	library.recentTabs.remove(path);
-		          refreshRecentMenu();
-		        	JOptionPane.showMessageDialog(LibraryBrowser.this, 
-		        			ToolsRes.getString("LibraryBrowser.Dialog.FileNotFound.Message") //$NON-NLS-1$
-		        			+": "+path,  //$NON-NLS-1$
-		        			ToolsRes.getString("LibraryBrowser.Dialog.FileNotFound.Title"),  //$NON-NLS-1$
-		        			JOptionPane.WARNING_MESSAGE);
-		    		}
+		  			open(path);
+//		  			library.addRecent(path, false);
+//		  	    // select tab if path is already loaded
+//		  	    int i = getTabIndexFromPath(path);
+//		  	    if (i>-1) {
+//		  	    	tabbedPane.setSelectedIndex(i);
+//		  	    	return;
+//		  	    }
+//	    			TabLoader tabAdder = addTab(path, null);
+//	    			if (tabAdder!=null) {
+//	    	    	tabAdder.addPropertyChangeListener(new PropertyChangeListener() {  
+//	    	  			public  void propertyChange(PropertyChangeEvent e) {  
+//	    	  			  if ("progress".equals(e.getPropertyName())) {   //$NON-NLS-1$
+//	    	  			    Integer n = (Integer)e.getNewValue();  
+//	    				    	if (n>-1) {
+//	    				    		tabbedPane.setSelectedIndex(n);
+//	    					    	refreshGUI();
+//	    				    	}
+//	    	  			  }  
+//	    	  		  }  
+//	    	  		});
+//	    				tabAdder.execute();
+//	    			}
+//	    			else {
+//		        	library.recentTabs.remove(path);
+//		          refreshRecentMenu();
+//		        	JOptionPane.showMessageDialog(LibraryBrowser.this, 
+//		        			ToolsRes.getString("LibraryBrowser.Dialog.FileNotFound.Message") //$NON-NLS-1$
+//		        			+": "+path,  //$NON-NLS-1$
+//		        			ToolsRes.getString("LibraryBrowser.Dialog.FileNotFound.Title"),  //$NON-NLS-1$
+//		        			JOptionPane.WARNING_MESSAGE);
+//		    		}
 		  		}
 		  	};
 	  	}
@@ -1708,22 +1849,24 @@ public class LibraryBrowser extends JPanel {
    */
   protected void open() {
     JFileChooser fileChooser = OSPRuntime.getChooser();
+    javax.swing.filechooser.FileFilter prev = fileChooser.getFileFilter();
     for (javax.swing.filechooser.FileFilter filter: fileChooser.getChoosableFileFilters()) {
     	fileChooser.removeChoosableFileFilter(filter);
     }
     fileChooser.addChoosableFileFilter(filesAndFoldersFilter);
     fileChooser.addChoosableFileFilter(Launcher.getXMLFilter());
-    fileChooser.setAcceptAllFileFilterUsed(false);
     fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-    fileChooser.setFileFilter(filesAndFoldersFilter);
+    fileChooser.setAcceptAllFileFilterUsed(false);
+    if (!fileChooser.getAcceptAllFileFilter().equals(prev)) {
+    	fileChooser.setFileFilter(prev);
+    }
     File file = GUIUtils.showOpenDialog(this);
     // reset chooser to original state    
     fileChooser.removeChoosableFileFilter(filesAndFoldersFilter);
-    fileChooser.removeChoosableFileFilter(Launcher.getXMLFilter());
-    fileChooser.setAcceptAllFileFilterUsed(true);
     fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		if (file!=null) {
 			open(file.getAbsolutePath());
+	    OSPRuntime.chooserDir = fileChooser.getCurrentDirectory().toString();
 		}
   }
   
@@ -1761,12 +1904,18 @@ public class LibraryBrowser extends JPanel {
     		// if the match has a collection path, open the collection, select match and return
     		String collectionPath = match.getCollectionPath();
 	      if (collectionPath!=null) {
+	      	// following line selects a tree path based on node name, not target
+	      	// so if multiple nodes have same name this selects the first 
 	      	loadTab(collectionPath, match.getTreePath(null));
+      		library.addRecent(realPath, false);
+      		refreshRecentMenu();
 	      	return;
 	      }	    		
     	}
   	}
-  	loadTab(path, null);
+  	loadTab(realPath, null);
+		library.addRecent(realPath, false);
+		refreshRecentMenu();
   }
   
   /**
@@ -1778,6 +1927,11 @@ public class LibraryBrowser extends JPanel {
   	if (index<0 || index>=tabbedPane.getTabCount()) return true;
     LibraryTreePanel treePanel = getTreePanel(index);
     if (!treePanel.saveChanges(getTabTitle(index))) return false;
+		// if node is in the recentCollection then save the collection
+		String recentCollectionPath = LibraryBrowser.getOSPPath()+LibraryBrowser.RECENT_COLLECTION_NAME;
+		if (recentCollectionPath.equals(treePanel.rootResource.collectionPath)) {
+			treePanel.save();
+		}
     tabbedPane.removeTabAt(index);
     return true;
   }
@@ -1794,16 +1948,16 @@ public class LibraryBrowser extends JPanel {
   }
 
   /**
-   * Saves the current root resource as a new xml file.
+   * Saves the current root resource (collection) as a new xml file.
    * @return the path to the saved file, or null if not saved
    */
   protected String saveAs() {
-  	String title = ToolsRes.getString("LibraryBrowser.FileChooser.Title.SaveAs"); //$NON-NLS-1$ 	
+  	String title = ToolsRes.getString("LibraryBrowser.FileChooser.Title.SaveCollectionAs"); //$NON-NLS-1$ 	
   	String path = getChooserSavePath(title);
 		if (path!=null) {
 			path = XML.forwardSlash(path);
 	  	LibraryTreePanel treePanel = getSelectedTreePanel();
-			treePanel.setRootResource(treePanel.rootResource, path, true, true);
+			treePanel.setRootResource(treePanel.rootResource, path, true);
 			path = save();
 			treePanel.setEditing(true);
 			refreshTabTitle(path, treePanel.rootResource);
@@ -1820,7 +1974,20 @@ public class LibraryBrowser extends JPanel {
    * @return the path, or null if canceled by the user
    */
   protected String getChooserSavePath(String chooserTitle) {
-		File file = GUIUtils.showSaveDialog(this, chooserTitle);
+  	// set xml extension as only choice
+    JFileChooser fileChooser = OSPRuntime.getChooser();
+    for (javax.swing.filechooser.FileFilter filter: fileChooser.getChoosableFileFilters()) {
+    	fileChooser.removeChoosableFileFilter(filter);
+    }
+//    fileChooser.addChoosableFileFilter(filesAndFoldersFilter);
+    fileChooser.addChoosableFileFilter(Launcher.getXMLFilter());
+    fileChooser.setAcceptAllFileFilterUsed(false);
+//    fileChooser.setFileFilter(Launcher.getXMLFilter());
+    File file = GUIUtils.showSaveDialog(this, chooserTitle);
+//    // reset chooser to original state    
+//    fileChooser.removeChoosableFileFilter(Launcher.getXMLFilter());
+//    fileChooser.setAcceptAllFileFilterUsed(true);
+
 		if (file ==null) return null;
 		String path = file.getAbsolutePath();
     String extension = XML.getExtension(path);
@@ -1893,28 +2060,121 @@ public class LibraryBrowser extends JPanel {
 		}
 		
 		if (found.isEmpty()) return null;
-  	
   	// create a LibraryCollection for the search results
   	String title = "'"+searchPhrase+"'"; //$NON-NLS-1$ //$NON-NLS-2$
   	LibraryTreePanel treePanel = createLibraryTreePanel();
   	String name = ToolsRes.getString("LibraryBrowser.SearchResults")+": "+title; //$NON-NLS-1$ //$NON-NLS-2$
   	LibraryCollection results = new LibraryCollection(name);
-  	treePanel.setRootResource(results, "", false, false); //$NON-NLS-1$
+  	treePanel.setRootResource(results, "", false); //$NON-NLS-1$
   	LibraryTreeNode root = treePanel.rootNode;
   	
+  	// organize resources into categories 
+  	String[] categories = new String[] {"compadre", "tracker", "shared", "local"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+  	Map<String, Set<LibraryResource>> liblist = new TreeMap<String, Set<LibraryResource>>();
 		for (LibraryResource next: found.keySet()) {
-			LibraryResource clone = next.getClone();
-			results.addResource(clone);
-	    LibraryTreeNode newNode = new LibraryTreeNode(clone, treePanel);
-	    newNode.setBasePath(next.getInheritedBasePath());
-    	treePanel.insertChildAt(newNode, root, root.getChildCount());
+			next.collectionPath = next.collectionPath==null? "": next.collectionPath; //$NON-NLS-1$
+			
+			if (next.collectionPath.contains("http")) { // web resources //$NON-NLS-1$
+				if (next.collectionPath.contains("compadre")) { //$NON-NLS-1$
+					Set<LibraryResource> set = liblist.get(categories[0]);
+					if (set==null ) {
+						set = new TreeSet<LibraryResource>();
+						liblist.put(categories[0], set);
+					}
+					set.add(next);
+				}
+				else if (next.collectionPath.contains("physlets.org/tracker")) { //$NON-NLS-1$
+					Set<LibraryResource> set = liblist.get(categories[1]);
+					if (set==null ) {
+						set = new TreeSet<LibraryResource>();
+						liblist.put(categories[1], set);
+					}
+					set.add(next);
+				}
+				else {
+					Set<LibraryResource> set = liblist.get(categories[2]);
+					if (set==null ) {
+						set = new TreeSet<LibraryResource>();
+						liblist.put(categories[2], set);
+					}
+					set.add(next);
+				}
+			}
+			else { // local resources
+				Set<LibraryResource> set = liblist.get(categories[3]);
+				if (set==null ) {
+					set = new TreeSet<LibraryResource>();
+					liblist.put(categories[3], set);
+				}
+				set.add(next);
+			}
 		}
-		  	
-  	LibraryTreeNode last = (LibraryTreeNode)root.getLastChild();
-  	TreePath path = new TreePath(last.getPath());
-  	treePanel.tree.scrollPathToVisible(path);
+		
+  	// construct the tree
+		for (String category: categories) {
+			if (!liblist.keySet().contains(category)) continue;
+			String catTitle = category.equals(categories[0])? ToolsRes.getString("Library.Name.ComPADRE"):  //$NON-NLS-1$
+					category.equals(categories[1])? trackerLibraryName: 
+					category.equals(categories[2])? sharedLibraryName: 
+					ToolsRes.getString("LibraryBrowser.SearchResults.LocalFiles"); //$NON-NLS-1$
+	  	LibraryCollection coll = new LibraryCollection(catTitle);
+	    LibraryTreeNode catNode = new LibraryTreeNode(coll, treePanel);
+    	treePanel.insertChildAt(catNode, root, root.getChildCount());
+    	
+			Set<LibraryResource> set = liblist.get(category);
+			Set<String> targets = new TreeSet<String>();
+			
+			// add collections first and keep track of added targets
+			for (LibraryResource next: set) {
+				if (next instanceof LibraryCollection) {
+					LibraryCollection nextCol = (LibraryCollection)next;
+					findTargetsInCollection(nextCol, targets);
+					LibraryResource clone = next.getClone();
+					results.addResource(clone);
+			    LibraryTreeNode newNode = new LibraryTreeNode(clone, treePanel);
+			    newNode.setBasePath(next.getInheritedBasePath());
+		    	treePanel.insertChildAt(newNode, catNode, catNode.getChildCount());
+				}
+			}
+			// add individual resources after collections unless targets already added
+			for (LibraryResource next: set) {
+				if (next instanceof LibraryCollection) continue;
+				String target = next.getTarget();
+				if (target!=null && !"".equals(target.trim())) { //$NON-NLS-1$
+					if (targets.contains(target)) continue;
+					targets.add(next.getTarget());					
+				}
+				LibraryResource clone = next.getClone();
+				results.addResource(clone);
+		    LibraryTreeNode newNode = new LibraryTreeNode(clone, treePanel);
+		    newNode.setBasePath(next.getInheritedBasePath());
+	    	treePanel.insertChildAt(newNode, catNode, catNode.getChildCount());
+			}
+		}
+		
+		treePanel.tree.expandRow(0);
+		treePanel.tree.expandRow(1);
+  	
   	treePanel.isChanged = false;
   	return treePanel;		
+	}
+	
+	/**
+	 * Finds all targets in a collection.
+	 * 
+	 * @param collection the collection
+	 * @param targets a Set to collect targets found
+	 */
+	private void findTargetsInCollection(LibraryCollection collection, Set<String> targets) {
+		for (LibraryResource res: collection.getResources()) {
+			if (res instanceof LibraryCollection) {
+				LibraryCollection col = (LibraryCollection)res;
+				findTargetsInCollection(col, targets);
+			}
+			else if (res.getTarget()!=null) {
+				targets.add(res.getTarget());
+			}
+		}		
 	}
 	
 	/**
@@ -2155,7 +2415,7 @@ public class LibraryBrowser extends JPanel {
 	 */
 	protected LibraryResource findMatchToPath(String path, LibraryResource target) {
 		String targetPath = target.getInheritedBasePath()+"/"+target.getTarget(); //$NON-NLS-1$
-		if (path.equals(targetPath)) return target;
+		if (XML.forwardSlash(path).equals(XML.forwardSlash(targetPath))) return target;
 		if (target instanceof LibraryCollection) {
 			LibraryCollection collection = (LibraryCollection)target;
 			for (LibraryResource next: collection.getResources()) {
@@ -2435,6 +2695,17 @@ public class LibraryBrowser extends JPanel {
     	if (!libraryPath.startsWith("http:")) { //$NON-NLS-1$
 		    // load library
 	    	library.load(libraryPath);
+	    	// add my collection and recent collection
+	  		String ospPath = getOSPPath();
+	    	String myCollectionPath = ospPath+MY_COLLECTION_NAME;      	
+        String name = ToolsRes.getString("LibraryCollection.Name.Local"); //$NON-NLS-1$
+        // add my collection
+        library.addCollection(myCollectionPath, name);
+	    	String recentCollectionPath = ospPath+RECENT_COLLECTION_NAME;      	
+        name = ToolsRes.getString("LibraryCollection.Name.Recent"); //$NON-NLS-1$
+        // add my collection
+        library.addCollection(recentCollectionPath, name);
+
      	  // add previously open tabs that are available
 	 	  	if (library.openTabPaths!=null) {
 	 	  		ArrayList<String> unopenedTabs = new ArrayList<String>();
@@ -2527,17 +2798,77 @@ public class LibraryBrowser extends JPanel {
     	setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
     	String realPath = path;
   		File cachedFile = ResourceLoader.getSearchCacheFile(path);
-  		if (cachedFile.exists() && path.startsWith("http:")) {  			 //$NON-NLS-1$
+  		if (cachedFile.exists() && path.startsWith("http")) {  			 //$NON-NLS-1$
   			realPath = cachedFile.getAbsolutePath();
   			saveToCache = false;
   		}
-
-    	LibraryResource resource = loadResource(realPath);
+  		
+    	LibraryResource resource = null;
+    	
+  		// open local files in the recentCollection instead of in their own tab
+    	String ext = XML.getExtension(path.toLowerCase());
+    	boolean isRecognizedType = ext.equals("trk")  //$NON-NLS-1$
+					|| ext.equals("trz") //$NON-NLS-1$
+					|| ext.equals("jpg") //$NON-NLS-1$
+					|| ext.equals("png") //$NON-NLS-1$
+					|| ext.equals("jpeg") //$NON-NLS-1$
+					|| ext.equals("pdf") //$NON-NLS-1$
+					|| ext.equals("htm") //$NON-NLS-1$
+					|| ext.equals("html") //$NON-NLS-1$
+					|| ext.equals("ejs") //$NON-NLS-1$
+					|| ext.equals("zip"); //$NON-NLS-1$
+    	if (!isRecognizedType) {
+	  		for (String vidExt: VideoIO.getVideoExtensions()) {
+					if (ext.equals(vidExt.toLowerCase())) {
+						isRecognizedType = true;
+						break;
+		  		}
+				}
+    	}
+    	boolean addToRecent =  !path.contains("http") && isRecognizedType; //$NON-NLS-1$
+  		
+    	if (addToRecent) {
+				String recentCollectionPath = getOSPPath()+RECENT_COLLECTION_NAME;
+  			path = recentCollectionPath;
+  			LibraryCollection collection = getRecentCollection();
+	    	LibraryResource child = loadResource(realPath);
+	    	if (child!=null) {
+	  			if (collection.insertResource(child, 0)) {
+	    			// remove excess nodes from recent collection
+	  				LibraryResource[] resources = collection.getResources();
+	  				int n = resources.length - maxRecentCollectionSize;
+	  				for (int i = 0; i<n; i++) {
+		  				collection.removeResource(resources[resources.length-1-i]);  					
+	  				}
+	  				child.collectionPath = recentCollectionPath;
+		  			XMLControl control = new XMLControlElement(collection);
+		    		control.setValue("real_path", recentCollectionPath); //$NON-NLS-1$
+		    		control.write(recentCollectionPath);
+	  			}
+	  			// name child before getting tree path
+	  			String prevName = child.getName();
+	  			child.setName(getNodeName(child));
+	  			treePath = child.getTreePath(null);
+	  			child.setName(prevName);
+  		  	index = getTabIndexFromPath(recentCollectionPath);
+	    	}
+  			resource = collection;
+  		}
+  		else {
+	    	resource = loadResource(realPath); 			
+  		}
     	if (resource!=null) {
     		LibraryTreePanel treePanel = index<0? createLibraryTreePanel(): getTreePanel(index);
-    		// tab is editable only if it is a local XML file
-    		boolean editable = !path.startsWith("http:") && path.toLowerCase().endsWith(".xml"); //$NON-NLS-1$ //$NON-NLS-2$
-    		treePanel.setRootResource(resource, path, editable, isRecentPathXML);
+    		if (addToRecent) {
+	    		// tab is non-editable XML
+	    		treePanel.setRootResource(resource, path, false);
+    		}
+    		else {
+	    		// tab is editable only if it is a local XML file and is not the recent collection
+	    		boolean editable = !path.startsWith("http") && path.toLowerCase().endsWith(".xml"); //$NON-NLS-1$ //$NON-NLS-2$
+	    		if (path.equals(getOSPPath()+RECENT_COLLECTION_NAME))  editable = false;
+	    		treePanel.setRootResource(resource, path, editable);
+    		}
     		return treePanel;
     	}
     	return null;
@@ -2590,6 +2921,64 @@ public class LibraryBrowser extends JPanel {
     }
   }
   
+  private String getNodeName(LibraryResource node) {
+  	String target = node.getAbsoluteTarget();		
+  	boolean isZip = target!=null 
+  			&& (target.toLowerCase().endsWith(".zip")  //$NON-NLS-1$
+  					|| target.toLowerCase().endsWith(".trz")); //$NON-NLS-1$
+  	if (!isZip) return node.getName();
+		// if target is ZIP, look for HTML and title inside
+		String uri = ResourceLoader.getURIPath(target);
+		URL targetURL = null;
+		try {
+			targetURL = new URL(uri);
+		} catch (MalformedURLException e) {
+			return node.getName();
+		}
+		String targetURLPath = targetURL.toExternalForm();
+		String baseName = XML.getName(target);
+    	// look inside zip/trz for thumbnail and html
+		Collection<String> files = ResourceLoader.getZipContents(targetURLPath);
+		for (String s: files) {
+			if (s.toLowerCase().contains("_thumbnail")) { //$NON-NLS-1$
+				baseName = s.substring(0, s.indexOf("_thumbnail")); //$NON-NLS-1$
+				break;
+			}
+		}
+		String htmlInfoPath = null;
+		for (String s: files) {
+			String htmlName = XML.stripExtension(XML.getName(s));
+			if (s.toLowerCase().contains(".htm")  //$NON-NLS-1$
+					&& (htmlName.equals(baseName+"_info"))) { //$NON-NLS-1$
+				htmlInfoPath = s;
+				break;
+			}
+		}
+		if (htmlInfoPath==null) {
+			for (String s: files) {
+				if ("trk".equals(XML.getExtension(s))) { //$NON-NLS-1$
+					String trkName = XML.stripExtension(XML.getName(s));
+  				for (String ss: files) {
+  					String htmlName = XML.stripExtension(XML.getName(ss));
+  					if (ss.toLowerCase().contains(".htm")  //$NON-NLS-1$
+  							&& (htmlName.equals(trkName+"_info"))) { //$NON-NLS-1$
+  						htmlInfoPath = ss;
+  					}
+  				}	  						
+				}
+			}
+		}
+		
+		if (htmlInfoPath!=null) {
+			// set node record's HTML path to relative path
+			String htmlPath = targetURLPath+"!/"+htmlInfoPath; //$NON-NLS-1$
+			String htmlCode = ResourceLoader.getHTMLCode(htmlPath);				
+			String title = ResourceLoader.getTitleFromHTMLCode(htmlCode);
+			if (title!=null) return title;
+		}
+		return node.getName();
+  }
+  
 //______________________________ static methods and classes ____________________________
 
   /**
@@ -2604,7 +2993,11 @@ public class LibraryBrowser extends JPanel {
   	browser.addComPADRECollection(LibraryComPADRE.EJS_SERVER_TREE+LibraryComPADRE.PRIMARY_ONLY);
   	browser.addComPADRECollection(LibraryComPADRE.TRACKER_SERVER_TREE+LibraryComPADRE.PRIMARY_ONLY);
   	browser.refreshCollectionsMenu();
-  	
+  	String dir = (String)OSPRuntime.getPreference("file_chooser_directory"); //$NON-NLS-1$
+		if (dir!=null) {
+			OSPRuntime.chooserDir = dir;
+		}
+
   	// code below opens Tracker when LibraryBrowser is launched as an independent application
   	
 //  	browser.addPropertyChangeListener("target", new PropertyChangeListener() { //$NON-NLS-1$
@@ -2669,6 +3062,27 @@ public class LibraryBrowser extends JPanel {
 		}
 		return null;
 	}
+	
+  /**
+   * Gets the path to the local OSP folder.
+   * 
+   * @return the path
+   */
+  protected static String getOSPPath() {
+		String userHome = OSPRuntime.getUserHome().replace('\\', '/');
+		String ospFolder = OSPRuntime.isWindows()? WINDOWS_OSP_DIRECTORY: OSP_DIRECTORY;
+		String ospPath = userHome+ospFolder;
+		// if OSP folder doesn't exist in user home, then look 
+		// in default OSPRuntime search directory
+		if (!new File(ospPath).exists()) {
+  		ArrayList<String> dirs = OSPRuntime.getDefaultSearchPaths();
+			ospPath = XML.forwardSlash(dirs.get(0));
+		}
+		if (!ospPath.endsWith("/")) { //$NON-NLS-1$
+			ospPath += "/"; //$NON-NLS-1$
+		}		
+  	return ospPath;
+  }  
 	
   /**
    * A FileFilter that accepts trk, pdf, html and zip (if trk found inside) files

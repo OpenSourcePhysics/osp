@@ -554,6 +554,8 @@ public class LibraryManager extends JDialog {
 		JPanel south = new JPanel();
 		south.add(okButton);
 		contentPane.add(south, BorderLayout.SOUTH);
+		
+		refreshGUI();
 	}
 	
 	/**
@@ -712,7 +714,7 @@ public class LibraryManager extends JDialog {
     }
 
 	}
-
+	
 	protected void refreshCacheTab() {
 		// refresh list of cache hosts
 		cacheBox.removeAll();

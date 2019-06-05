@@ -68,7 +68,7 @@ public class ResourceLoader {
 
   protected static ArrayList<String> searchPaths = new ArrayList<String>();                        // search paths
   protected static ArrayList<String> appletSearchPaths = new ArrayList<String>();                  // search paths for apples
-  protected static int maxPaths = 20;                                                              // max number of paths in history
+  protected static int maxPaths = 500;                                                             // max number of paths in history
   protected static Hashtable<String, Resource> resources = new Hashtable<String, Resource>();      // cached resources
   protected static boolean cacheEnabled=false, canceled=false;
   protected static Map<String, URLClassLoader> zipLoaders = new TreeMap<String, URLClassLoader>(); // maps path to zipLoader
@@ -195,12 +195,16 @@ public class ResourceLoader {
           }
         } catch(Exception ex) {}
       }  // end code added by Doug Brown 2009/11/14
-      for(Iterator<String> it = searchPaths.iterator(); it.hasNext(); ) {
-        String path = getPath(it.next(), name);
-        appletRes = findResourceInClass(path, type, searchFiles);
-        if(appletRes!=null) {
-          return appletRes;
-        }
+      
+      // look for applet resource in searchPaths
+      synchronized(searchPaths) {	
+  	    for(String next: searchPaths) {
+  	      String path = getPath(next, name);
+	        appletRes = findResourceInClass(path, type, searchFiles);
+	        if(appletRes!=null) {
+	          return appletRes;
+	        }
+	      }
       }
       appletRes = findResourceInClass(name, type, searchFiles);
       if(appletRes!=null) {
@@ -216,16 +220,18 @@ public class ResourceLoader {
     StringBuffer err = new StringBuffer("Not found: "+name); //$NON-NLS-1$
     err.append(" [searched "+name); //$NON-NLS-1$
     // look for resource in searchPaths
-    for(String next: searchPaths) {
-      String path = getPath(next, name);
-    	if (pathsNotFound.contains(path))
-    		continue;
-      res = findResource(path, type, searchFiles);
-      if(res!=null) {
-        return res;
-      }
-      pathsNotFound.add(path);
-      err.append(";"+path); //$NON-NLS-1$
+    synchronized(searchPaths) {
+	    for(String next: searchPaths) {
+	      String path = getPath(next, name);
+	    	if (pathsNotFound.contains(path))
+	    		continue;
+	      res = findResource(path, type, searchFiles);
+	      if(res!=null) {
+	        return res;
+	      }
+	      pathsNotFound.add(path);
+	      err.append(";"+path); //$NON-NLS-1$
+	    }
     }
     err.append("]"); //$NON-NLS-1$
     OSPLog.fine(err.toString());
@@ -331,16 +337,18 @@ public class ResourceLoader {
       }
     }
     // look for resource in searchPaths
-    for(Iterator<String> it = searchPaths.iterator(); it.hasNext(); ) {
-      path = getPath(getPath(it.next(), basePath), name);
-    	if (pathsNotFound.contains(path))
-    		continue;
-      res = findResource(path, type, searchFiles);
-      if(res!=null) {
-        return res;
-      }
-      pathsNotFound.add(path);
-      err.append(";"+path); //$NON-NLS-1$
+    synchronized(searchPaths) {
+		  for(String next: searchPaths) {
+	      path = getPath(getPath(next, basePath), name);
+	    	if (pathsNotFound.contains(path))
+	    		continue;
+	      res = findResource(path, type, searchFiles);
+	      if(res!=null) {
+	        return res;
+	      }
+	      pathsNotFound.add(path);
+	      err.append(";"+path); //$NON-NLS-1$
+	    }
     }
     err.append("]"); //$NON-NLS-1$
     OSPLog.fine(err.toString());
@@ -356,6 +364,7 @@ public class ResourceLoader {
     if((base==null)||base.equals("")||(maxPaths<1)) { //$NON-NLS-1$
       return;
     }
+    
     synchronized(searchPaths) {
       if(searchPaths.contains(base)) {
         searchPaths.remove(base);
@@ -785,7 +794,7 @@ public class ResourceLoader {
    * @param cacheFile the base cache directory
    * @param urlPath the URL path to the original file
    * @param name name of the file (may be null)
-   * @return the cache file
+   * @return a cached XML file
    */
   private static File getCacheFile(File cacheFile, String urlPath, String name) {
 		String cachePath = XML.forwardSlash(cacheFile.getAbsolutePath());

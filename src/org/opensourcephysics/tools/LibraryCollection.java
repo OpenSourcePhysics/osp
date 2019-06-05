@@ -69,13 +69,16 @@ public class LibraryCollection extends LibraryResource {
    * Adds a resource to the end of this collection.
    *
    * @param resource the resource
+   * @return true if the collection was modified
    */
-	public void addResource(LibraryResource resource) {
-		if (resource==null) return;
+	public boolean addResource(LibraryResource resource) {
+		if (resource==null) return false;
   	if (!resources.contains(resource)) {
   		resources.add(resource);
   		resource.parent = this;
+  		return true;
   	}
+  	return false;
   }
   
   /**
@@ -84,10 +87,13 @@ public class LibraryCollection extends LibraryResource {
    * @param resource the resource
    * @param index the index
    */
-	public void insertResource(LibraryResource resource, int index) {
+	public boolean insertResource(LibraryResource resource, int index) {
   	if (!resources.contains(resource)) {
   		resources.add(index, resource);
+  		resource.parent = this;
+  		return true;
   	}
+  	return false;
   }
   
   /**
@@ -97,6 +103,7 @@ public class LibraryCollection extends LibraryResource {
    */
 	public void removeResource(LibraryResource resource) {
   	resources.remove(resource);
+		resource.parent = null;
   }
   
   /**
@@ -136,6 +143,7 @@ public class LibraryCollection extends LibraryResource {
     	if (!collection.resources.isEmpty()) {
 	    	control.setValue("resources", collection.getResources()); //$NON-NLS-1$
     	}
+    	control.setValue("real_path", collection.collectionPath); //$NON-NLS-1$
     }
     
     /**
@@ -166,6 +174,7 @@ public class LibraryCollection extends LibraryResource {
     			collection.addResource(next);
     		}
     	}
+    	collection.collectionPath = control.getString("real_path"); //$NON-NLS-1$
     	return collection;
     }
   }
