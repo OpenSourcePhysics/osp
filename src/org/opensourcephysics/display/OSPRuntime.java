@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <http://www.opensourcephysics.org/>
+ * <https://www.compadre.org/osp/>
  */
 
 package org.opensourcephysics.display;
@@ -281,7 +281,7 @@ public class OSPRuntime {
 			vers += " released "+date; //$NON-NLS-1$
 		}
     String aboutString = vers+"\n"           //$NON-NLS-1$
-                         +"Open Source Physics Project \n"+"www.opensourcephysics.org"; //$NON-NLS-1$ //$NON-NLS-2$
+                         +"Open Source Physics Project \n"+"www.compadre.org/osp"; //$NON-NLS-1$ //$NON-NLS-2$
     JOptionPane.showMessageDialog(parent, aboutString, "About Open Source Physics", JOptionPane.INFORMATION_MESSAGE); //$NON-NLS-1$
   }
 
@@ -581,7 +581,7 @@ public class OSPRuntime {
     if(launchJarPath==null) {
       return null;
     }
-    boolean isWebFile = launchJarPath.startsWith("http:"); //$NON-NLS-1$
+    boolean isWebFile = launchJarPath.startsWith("http"); //$NON-NLS-1$
     if (!isWebFile) {
     	launchJarPath = ResourceLoader.getNonURIPath(launchJarPath);
     }
@@ -1297,6 +1297,6 @@ public class OSPRuntime {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017  The Open Source Physics project
- *                     http://www.opensourcephysics.org
+ * Copyright (c) 2019  The Open Source Physics project
+ *                     https://www.compadre.org/osp
  */

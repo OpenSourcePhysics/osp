@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <http://www.opensourcephysics.org/>
+ * <https://www.compadre.org/osp/>
  */
 
 package org.opensourcephysics.tools;
@@ -886,7 +886,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     toolbar.revalidate();
 
 		refreshStatusBar(null);
-		// kludge to display tables correctly: do propsAndStatsAction now, again after a millisecond!
+		// kludge to display tables correctly: do propsAndStatsAction now and again after a millisecond!
     propsAndStatsAction.actionPerformed(null);
     Timer timer = new Timer(1, new ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -2423,6 +2423,14 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
     splitPanes[1].setDividerLocation(1.0);
     propsAndStatsAction.actionPerformed(null);
+		// kludge: do propsAndStatsAction again after a few milliseconds!
+    Timer timer = new Timer(5, new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        propsAndStatsAction.actionPerformed(null);
+      }
+    });
+		timer.setRepeats(false);
+		timer.start();
     for(int i = 0; i<dataTable.getColumnCount(); i++) {
       String colName = dataTable.getColumnName(i);
       dataTable.getWorkingData(colName);
@@ -4552,6 +4560,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017  The Open Source Physics project
- *                     http://www.opensourcephysics.org
+ * Copyright (c) 2019  The Open Source Physics project
+ *                     https://www.compadre.org/osp
  */

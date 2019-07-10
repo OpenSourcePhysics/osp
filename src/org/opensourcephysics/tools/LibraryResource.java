@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <http://www.opensourcephysics.org/>
+ * <https://www.compadre.org/osp/>
  */
 
 package org.opensourcephysics.tools;
@@ -523,8 +523,9 @@ public class LibraryResource implements Comparable<LibraryResource> {
     if (title.equals("") && path!=null) { //$NON-NLS-1$
     	String fileName = XML.getName(path);
     	String basePath = XML.getDirectoryPath(path);
-    	if (basePath.startsWith("http:")) { //$NON-NLS-1$
-    		basePath = basePath.substring(5);
+    	int n = basePath.indexOf(":"); //$NON-NLS-1$
+    	if (basePath.startsWith("http") && n>-1) { //$NON-NLS-1$
+    		basePath = basePath.substring(n+1);
     		while (basePath.startsWith("/")) { //$NON-NLS-1$
     			basePath = basePath.substring(1);
     		}
@@ -1036,6 +1037,6 @@ public class LibraryResource implements Comparable<LibraryResource> {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017  The Open Source Physics project
- *                     http://www.opensourcephysics.org
+ * Copyright (c) 2019  The Open Source Physics project
+ *                     https://www.compadre.org/osp
  */

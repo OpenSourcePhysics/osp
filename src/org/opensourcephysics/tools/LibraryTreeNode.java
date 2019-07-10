@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <http://www.opensourcephysics.org/>
+ * <https://www.compadre.org/osp/>
  */
 
 package org.opensourcephysics.tools;
@@ -267,6 +267,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
     }
     if (thumb!=null) {
     	thumb = XML.forwardSlash(thumb);
+    	thumb = XML.getResolvedPath(thumb, record.getInheritedBasePath());
     	thumb = ResourceLoader.getURIPath(thumb);
     }    
     
@@ -699,8 +700,10 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
    */
   protected File getThumbnailFile() {
   	String thumbPath = record.getThumbnail();
-  	if (thumbPath!=null)
-  		return new File(thumbPath);
+  	if (thumbPath!=null) {
+  		File file = new File(thumbPath);
+  		if (file.exists()) return file;
+  	}
   	String path = getAbsoluteTarget();
   	String name = XML.stripExtension(XML.getName(path));
 		String fileName = name+"_thumbnail.png"; //$NON-NLS-1$
@@ -847,6 +850,6 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017  The Open Source Physics project
- *                     http://www.opensourcephysics.org
+ * Copyright (c) 2019  The Open Source Physics project
+ *                     https://www.compadre.org/osp
  */

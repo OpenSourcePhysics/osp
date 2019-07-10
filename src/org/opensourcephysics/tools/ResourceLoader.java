@@ -3,7 +3,7 @@
  * this code file.
  *
  * For additional information and documentation on Open Source Physics please
- * see: <http://www.opensourcephysics.org/>
+ * see: <https://www.compadre.org/osp/>
  */
 
 package org.opensourcephysics.tools;
@@ -88,7 +88,7 @@ public class ResourceLoader {
   	};
   	Runnable runner = new Runnable() {
   		public void run() {
-	  		webConnected = ResourceLoader.isURLAvailable("http://www.opensourcephysics.org"); //$NON-NLS-1$
+	  		webConnected = ResourceLoader.isURLAvailable("https://www.compadre.org/osp"); //$NON-NLS-1$
   		}
   	};
   	new Thread(runner).start();
@@ -855,7 +855,7 @@ public class ResourceLoader {
   	File target = getOSPCacheFile(urlPath, fileName);
 		File file = ResourceLoader.download(urlPath, target, alwaysOverwrite);
 		if (file==null && webConnected) {
-  		webConnected = ResourceLoader.isURLAvailable("http://www.opensourcephysics.org"); //$NON-NLS-1$
+  		webConnected = ResourceLoader.isURLAvailable("https://www.compadre.org/osp"); //$NON-NLS-1$
     	if (!webConnected) {
     		JOptionPane.showMessageDialog(null, 
     				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
@@ -995,7 +995,7 @@ public class ResourceLoader {
 	  	
 	  	// if separate stylesheet is used, copy to cache and replace in HTML code
 	  	String css = getStyleSheetFromHTMLCode(htmlCode);
-	  	if (css!=null && !css.startsWith("http:")) { //$NON-NLS-1$
+	  	if (css!=null && !css.startsWith("http")) { //$NON-NLS-1$
 	  		res = getResourceZipURLsOK(XML.getResolvedPath(css, htmlBasePath));
 	  		if (res!=null) {
 	  			String cssName = XML.getName(css);
@@ -1251,7 +1251,7 @@ public class ResourceLoader {
 		if (target==null || target.getParentFile()==null) return null;
   	// compare urlPath with previous attempt and, if identical, check web connection
   	if (!webConnected || downloadURL.equals(urlPath)) {
-  		webConnected = ResourceLoader.isURLAvailable("http://www.opensourcephysics.org"); //$NON-NLS-1$
+  		webConnected = ResourceLoader.isURLAvailable("https://www.compadre.org/osp"); //$NON-NLS-1$
   	}
   	if (!webConnected) {
   		JOptionPane.showMessageDialog(null, 
@@ -1637,7 +1637,7 @@ static private Resource createZipResource(String path) {
   	boolean isZip = base!=null && 
   			(base.endsWith(".zip") || base.endsWith(".jar") || base.endsWith(".trz")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
   	boolean deleteOnExit = ospCache==null;
-  	if (isZip && path.startsWith("http:")) {             //$NON-NLS-1$
+  	if (isZip && path.startsWith("http")) {             //$NON-NLS-1$
   		String zipFileName = XML.getName(base);
       File zipFile = downloadToOSPCache(base, zipFileName, false);
       if (zipFile!=null) {
@@ -1979,6 +1979,6 @@ static private Resource createZipResource(String path) {
  * Suite 330, Boston MA 02111-1307 USA or view the license online at
  * http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2007 The Open Source Physics project
- * http://www.opensourcephysics.org
+ * Copyright (c) 2019 The Open Source Physics project
+ * https://www.compadre.org/osp
  */
