@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.tools;
@@ -554,8 +554,6 @@ public class LibraryManager extends JDialog {
 		JPanel south = new JPanel();
 		south.add(okButton);
 		contentPane.add(south, BorderLayout.SOUTH);
-		
-		refreshGUI();
 	}
 	
 	/**
@@ -625,7 +623,7 @@ public class LibraryManager extends JDialog {
 				pathField.setCaretPosition(0);
 				String name = library.pathToNameMap.get(path);
 				nameField.setText(name);
-				boolean unavailable = path.startsWith("http") && !LibraryBrowser.webConnected; //$NON-NLS-1$
+				boolean unavailable = path.startsWith("http:") && !LibraryBrowser.webConnected; //$NON-NLS-1$
 	      Resource res = unavailable? null: ResourceLoader.getResourceZipURLsOK(path);
 	      if (res==null) {
 	      	pathField.setForeground(LibraryTreePanel.darkRed);
@@ -652,7 +650,7 @@ public class LibraryManager extends JDialog {
 				pathField.setCaretPosition(0);
 				String name = library.importedPathToLibraryMap.get(path).getName();
 				nameField.setText(name);
-				boolean unavailable = path.startsWith("http") && !LibraryBrowser.webConnected; //$NON-NLS-1$
+				boolean unavailable = path.startsWith("http:") && !LibraryBrowser.webConnected; //$NON-NLS-1$
 	      Resource res = unavailable? null: ResourceLoader.getResourceZipURLsOK(path);
 	      if (res==null) {
 	      	pathField.setForeground(LibraryTreePanel.darkRed);
@@ -714,7 +712,7 @@ public class LibraryManager extends JDialog {
     }
 
 	}
-	
+
 	protected void refreshCacheTab() {
 		// refresh list of cache hosts
 		cacheBox.removeAll();

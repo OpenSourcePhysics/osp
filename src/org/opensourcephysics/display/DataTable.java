@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
@@ -1312,9 +1311,9 @@ public class DataTable extends JTable implements ActionListener {
           try {
             showNumberFormatAndSample(pattern);
             // apply pattern to all selected columns
-            List<String> selectedColumns = columnList.getSelectedValuesList();
-            for(String displayedName : selectedColumns) {
-            	String name = realNames.get(displayedName);
+            Object[] selectedColumns = columnList.getSelectedValues();
+            for(Object displayedName : selectedColumns) {
+            	String name = realNames.get(displayedName.toString());
               setFormatPattern(name, pattern);
             }
             refreshTable();
@@ -1591,6 +1590,6 @@ public class DataTable extends JTable implements ActionListener {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2017  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

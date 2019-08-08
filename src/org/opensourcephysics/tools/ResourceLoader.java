@@ -3,7 +3,7 @@
  * this code file.
  *
  * For additional information and documentation on Open Source Physics please
- * see: <https://www.compadre.org/osp/>
+ * see: <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.tools;
@@ -27,7 +27,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -68,7 +67,7 @@ public class ResourceLoader {
 
   protected static ArrayList<String> searchPaths = new ArrayList<String>();                        // search paths
   protected static ArrayList<String> appletSearchPaths = new ArrayList<String>();                  // search paths for apples
-  protected static int maxPaths = 500;                                                             // max number of paths in history
+  protected static int maxPaths = 20;                                                              // max number of paths in history
   protected static Hashtable<String, Resource> resources = new Hashtable<String, Resource>();      // cached resources
   protected static boolean cacheEnabled=false, canceled=false;
   protected static Map<String, URLClassLoader> zipLoaders = new TreeMap<String, URLClassLoader>(); // maps path to zipLoader
@@ -88,7 +87,7 @@ public class ResourceLoader {
   	};
   	Runnable runner = new Runnable() {
   		public void run() {
-	  		webConnected = ResourceLoader.isURLAvailable("https://www.compadre.org/osp"); //$NON-NLS-1$
+	  		webConnected = ResourceLoader.isURLAvailable("http://www.opensourcephysics.org"); //$NON-NLS-1$
   		}
   	};
   	new Thread(runner).start();
@@ -195,16 +194,12 @@ public class ResourceLoader {
           }
         } catch(Exception ex) {}
       }  // end code added by Doug Brown 2009/11/14
-      
-      // look for applet resource in searchPaths
-      synchronized(searchPaths) {	
-  	    for(String next: searchPaths) {
-  	      String path = getPath(next, name);
-	        appletRes = findResourceInClass(path, type, searchFiles);
-	        if(appletRes!=null) {
-	          return appletRes;
-	        }
-	      }
+      for(Iterator<String> it = searchPaths.iterator(); it.hasNext(); ) {
+        String path = getPath(it.next(), name);
+        appletRes = findResourceInClass(path, type, searchFiles);
+        if(appletRes!=null) {
+          return appletRes;
+        }
       }
       appletRes = findResourceInClass(name, type, searchFiles);
       if(appletRes!=null) {
@@ -220,18 +215,16 @@ public class ResourceLoader {
     StringBuffer err = new StringBuffer("Not found: "+name); //$NON-NLS-1$
     err.append(" [searched "+name); //$NON-NLS-1$
     // look for resource in searchPaths
-    synchronized(searchPaths) {
-	    for(String next: searchPaths) {
-	      String path = getPath(next, name);
-	    	if (pathsNotFound.contains(path))
-	    		continue;
-	      res = findResource(path, type, searchFiles);
-	      if(res!=null) {
-	        return res;
-	      }
-	      pathsNotFound.add(path);
-	      err.append(";"+path); //$NON-NLS-1$
-	    }
+    for(String next: searchPaths) {
+      String path = getPath(next, name);
+    	if (pathsNotFound.contains(path))
+    		continue;
+      res = findResource(path, type, searchFiles);
+      if(res!=null) {
+        return res;
+      }
+      pathsNotFound.add(path);
+      err.append(";"+path); //$NON-NLS-1$
     }
     err.append("]"); //$NON-NLS-1$
     OSPLog.fine(err.toString());
@@ -337,18 +330,16 @@ public class ResourceLoader {
       }
     }
     // look for resource in searchPaths
-    synchronized(searchPaths) {
-		  for(String next: searchPaths) {
-	      path = getPath(getPath(next, basePath), name);
-	    	if (pathsNotFound.contains(path))
-	    		continue;
-	      res = findResource(path, type, searchFiles);
-	      if(res!=null) {
-	        return res;
-	      }
-	      pathsNotFound.add(path);
-	      err.append(";"+path); //$NON-NLS-1$
-	    }
+    for(Iterator<String> it = searchPaths.iterator(); it.hasNext(); ) {
+      path = getPath(getPath(it.next(), basePath), name);
+    	if (pathsNotFound.contains(path))
+    		continue;
+      res = findResource(path, type, searchFiles);
+      if(res!=null) {
+        return res;
+      }
+      pathsNotFound.add(path);
+      err.append(";"+path); //$NON-NLS-1$
     }
     err.append("]"); //$NON-NLS-1$
     OSPLog.fine(err.toString());
@@ -364,7 +355,6 @@ public class ResourceLoader {
     if((base==null)||base.equals("")||(maxPaths<1)) { //$NON-NLS-1$
       return;
     }
-    
     synchronized(searchPaths) {
       if(searchPaths.contains(base)) {
         searchPaths.remove(base);
@@ -794,7 +784,7 @@ public class ResourceLoader {
    * @param cacheFile the base cache directory
    * @param urlPath the URL path to the original file
    * @param name name of the file (may be null)
-   * @return a cached XML file
+   * @return the cache file
    */
   private static File getCacheFile(File cacheFile, String urlPath, String name) {
 		String cachePath = XML.forwardSlash(cacheFile.getAbsolutePath());
@@ -855,7 +845,7 @@ public class ResourceLoader {
   	File target = getOSPCacheFile(urlPath, fileName);
 		File file = ResourceLoader.download(urlPath, target, alwaysOverwrite);
 		if (file==null && webConnected) {
-  		webConnected = ResourceLoader.isURLAvailable("https://www.compadre.org/osp"); //$NON-NLS-1$
+  		webConnected = ResourceLoader.isURLAvailable("http://www.opensourcephysics.org"); //$NON-NLS-1$
     	if (!webConnected) {
     		JOptionPane.showMessageDialog(null, 
     				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
@@ -995,7 +985,7 @@ public class ResourceLoader {
 	  	
 	  	// if separate stylesheet is used, copy to cache and replace in HTML code
 	  	String css = getStyleSheetFromHTMLCode(htmlCode);
-	  	if (css!=null && !css.startsWith("http")) { //$NON-NLS-1$
+	  	if (css!=null && !css.startsWith("http:")) { //$NON-NLS-1$
 	  		res = getResourceZipURLsOK(XML.getResolvedPath(css, htmlBasePath));
 	  		if (res!=null) {
 	  			String cssName = XML.getName(css);
@@ -1123,9 +1113,7 @@ public class ResourceLoader {
     if(file.isDirectory()) {
       File[] files = file.listFiles();
       for(File next: files) {
-        if (!deleteFile(next)) {
-        	OSPLog.finer("Unable to delete "+next); //$NON-NLS-1$
-        }
+        deleteFile(next);
       }
     }
     return file.delete();
@@ -1163,8 +1151,8 @@ public class ResourceLoader {
    * @param zipPath the path to the zip file
    * @return a set of file names in alphabetical order
    */
-  public static Collection<String> getZipContents(String zipPath) {
-  	Collection<String> fileNames = new ArrayList<String>();
+  public static Set<String> getZipContents(String zipPath) {
+    Set<String> fileNames = new TreeSet<String>();
     try {
     	URL url = new URL(getURIPath(zipPath));    	
     	OSPLog.finest("zip url: "+url.toExternalForm()); //$NON-NLS-1$
@@ -1251,7 +1239,7 @@ public class ResourceLoader {
 		if (target==null || target.getParentFile()==null) return null;
   	// compare urlPath with previous attempt and, if identical, check web connection
   	if (!webConnected || downloadURL.equals(urlPath)) {
-  		webConnected = ResourceLoader.isURLAvailable("https://www.compadre.org/osp"); //$NON-NLS-1$
+  		webConnected = ResourceLoader.isURLAvailable("http://www.opensourcephysics.org"); //$NON-NLS-1$
   	}
   	if (!webConnected) {
   		JOptionPane.showMessageDialog(null, 
@@ -1597,7 +1585,7 @@ public class ResourceLoader {
    * @param path the file path
    * @return the resource, if any
    */
-  @SuppressWarnings("resource") // Java 7
+//  @SuppressWarnings("resource") // Java 7
 static private Resource createZipResource(String path) {
   	// convert to non-URI form
   	path = getNonURIPath(path);
@@ -1637,7 +1625,7 @@ static private Resource createZipResource(String path) {
   	boolean isZip = base!=null && 
   			(base.endsWith(".zip") || base.endsWith(".jar") || base.endsWith(".trz")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
   	boolean deleteOnExit = ospCache==null;
-  	if (isZip && path.startsWith("http")) {             //$NON-NLS-1$
+  	if (isZip && path.startsWith("http:")) {             //$NON-NLS-1$
   		String zipFileName = XML.getName(base);
       File zipFile = downloadToOSPCache(base, zipFileName, false);
       if (zipFile!=null) {
@@ -1645,7 +1633,31 @@ static private Resource createZipResource(String path) {
       		zipFile.deleteOnExit();
       	base = zipFile.getAbsolutePath();
       	path = base+"!/"+fileName; //$NON-NLS-1$
-      }  		
+      }
+  		
+//  		
+//  		
+//  		File zipDir = null;
+//	  	String zipName = XML.getName(base);
+//  		if (ospCache!=null) {
+//				try {
+//					URL url = new URL(getURIPath(path));
+//					String host = url.getHost().replace('.', '_')+"/"; //$NON-NLS-1$
+//					host += zipName.replace('.', '_') + "/"; //$NON-NLS-1$
+//					zipDir = new File(ospCache, host);
+//				} catch (MalformedURLException e) {}			
+//  		}
+//  		if (zipDir==null) {
+//  			zipDir = new File(System.getProperty("java.io.tmpdir")); //$NON-NLS-1$			
+//      	deleteOnExit = true;
+//  		}
+//      File zipFile = download(base, zipName, zipDir, false);
+//      if (zipFile!=null) {
+//      	if (deleteOnExit)
+//      		zipFile.deleteOnExit();
+//      	base = zipFile.getAbsolutePath();
+//      	path = base+"!/"+fileName; //$NON-NLS-1$
+//      }
     }
   	
     URLClassLoader zipLoader = null;
@@ -1979,6 +1991,6 @@ static private Resource createZipResource(String path) {
  * Suite 330, Boston MA 02111-1307 USA or view the license online at
  * http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019 The Open Source Physics project
- * https://www.compadre.org/osp
+ * Copyright (c) 2007 The Open Source Physics project
+ * http://www.opensourcephysics.org
  */

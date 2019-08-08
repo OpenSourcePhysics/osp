@@ -19,11 +19,11 @@ import org.opensourcephysics.display.OSPRuntime;
 public class JREFinder {
 
 	private static final JREFinder JRE_FINDER = new JREFinder();
-	public static final JavaFilter JAVA_FILTER = new JavaFilter();	
 	private static boolean isReady = false, isSearching = false;
 	private static TreeSet<File> allJREs = new TreeSet<File>();
 	private static TreeSet<File> searchedAndFoundJRE = new TreeSet<File>();
 	
+	private JavaFilter javaFilter;	
 	
 	/**
 	 * Gets the singleton JREFinder.
@@ -336,7 +336,7 @@ public class JREFinder {
 		if (fileNames!=null && fileNames.length>0) {
 			for (String next: fileNames) {
 				// if javaFilter accepts next then dir is "/bin" so add parent unless it is a jdk
-				if (JAVA_FILTER.accept(dir, next)) {
+				if (javaFilter.accept(dir, next)) {
 					synchronized(jreSet) {
 						jreSet.add(new JavaFile(parent));
 						if (parent.getParent().contains("jdk")) { //$NON-NLS-1$
@@ -377,20 +377,19 @@ public class JREFinder {
 	 * Private constructor.
 	 */
 	private JREFinder() {
+		javaFilter = new JavaFilter();				
 	}
 	
 	/**
-	 * JavaFilter class identifies acceptable java executable files.
+	 * JavaFilter class identifies java executable files.
 	 */
-  public static class JavaFilter implements FilenameFilter { 
+  private static class JavaFilter implements FilenameFilter { 
   	@Override
     public boolean accept(File dir, String name) {
       if (!dir.getPath().endsWith("bin")) return false; //$NON-NLS-1$
       if (!OSPRuntime.isMac() && !dir.getParent().contains("jre")) return false; //$NON-NLS-1$
       // reject older versions
-    	if (dir.getPath().contains("1.6.") || dir.getPath().contains("jre6")  //$NON-NLS-1$ //$NON-NLS-2$
-    			|| dir.getPath().contains("-6-") //$NON-NLS-1$
-    			|| dir.getPath().contains("1.5.") || dir.getPath().contains("-5-") //$NON-NLS-1$ //$NON-NLS-2$
+    	if (dir.getPath().contains("1.5.") || dir.getPath().contains("-5-")  //$NON-NLS-1$ //$NON-NLS-2$
     			|| dir.getPath().contains("1.4.") || dir.getPath().contains("1.3.") //$NON-NLS-1$ //$NON-NLS-2$
     			|| dir.getPath().contains("1.2.")) return false; //$NON-NLS-1$
     	if (name.equals("java.exe")) return true; //$NON-NLS-1$  // windows

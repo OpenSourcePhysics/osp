@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.tools;
@@ -575,7 +575,7 @@ public class EncryptionTool extends JFrame implements Tool {
       public void actionPerformed(ActionEvent e) {
         String toolname = ToolsRes.getString("EncryptionTool.About.ToolName");                                             //$NON-NLS-1$
         String aboutString = toolname+OSPRuntime.VERSION+XML.NEW_LINE+ToolsRes.getString("EncryptionTool.About.OSPName")+XML.NEW_LINE //$NON-NLS-1$
-                             +"www.compadre.org/osp";                                                                //$NON-NLS-1$
+                             +"www.opensourcephysics.org";                                                                //$NON-NLS-1$
         JOptionPane.showMessageDialog(EncryptionTool.this, aboutString, ToolsRes.getString("EncryptionTool.About.Title"), //$NON-NLS-1$
           JOptionPane.INFORMATION_MESSAGE);
       }
@@ -613,6 +613,6 @@ public class EncryptionTool extends JFrame implements Tool {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2017  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

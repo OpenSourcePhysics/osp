@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.tools;
@@ -2173,9 +2173,9 @@ public class Launcher {
 			vers = vers+"   "+date; //$NON-NLS-1$
 		String name = getClass().getSimpleName();
     String aboutString = name+" "+vers+newline                 //$NON-NLS-1$
-    		+"Copyright (c) 2019 Wolfgang Christian"+newline                 //$NON-NLS-1$
+    		+"Copyright (c) 2017 Wolfgang Christian"+newline                 //$NON-NLS-1$
         +"Open Source Physics Project"+newline                 //$NON-NLS-1$
-        +"www.compadre.org/osp"+newline+newline           //$NON-NLS-1$
+        +"www.opensourcephysics.org"+newline+newline           //$NON-NLS-1$
         +LaunchRes.getString("Label.CodeAuthor")+": Douglas Brown"; //$NON-NLS-1$ //$NON-NLS-2$
     String translator = LaunchRes.getString("Launcher.About.Translator"); //$NON-NLS-1$
     if (!translator.equals("")) { //$NON-NLS-1$
@@ -3941,7 +3941,7 @@ public class Launcher {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2017  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */
 

@@ -2,15 +2,15 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 /**
     Adapted to OSP by Javier E. Hasbun and Wolfgang Christian, 2009.
   <P>
-    @Copyright (c) 2019
+    @Copyright (c) 2017
     This software is to support the Open Source Physics library
-    https://www.compadre.org/osp under the terms of the GNU General Public
+    http://www.opensourcephysics.org under the terms of the GNU General Public
     License (GPL) as published by the Free Software Foundation.
  **/
 package org.opensourcephysics.numerics;
@@ -379,6 +379,6 @@ public class ComplexEigenvalueDecomposition implements java.io.Serializable {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2017  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

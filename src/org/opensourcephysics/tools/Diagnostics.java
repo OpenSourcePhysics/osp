@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.tools;
@@ -29,7 +29,7 @@ import org.opensourcephysics.display.OSPRuntime;
  */
 public class Diagnostics {
 	
-	public static final String TRACKER_INSTALLER_URL ="https://www.compadre.org/osp/items/detail.cfm?ID=7365"; //$NON-NLS-1$
+	public static final String TRACKER_INSTALLER_URL ="http://www.compadre.org/osp/items/detail.cfm?ID=7365"; //$NON-NLS-1$
 	
 	final static String JAVA_3D_URL = "http://java3d.java.net/binary-builds.html"; //$NON-NLS-1$
   final static String NEWLINE = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -299,6 +299,6 @@ public class Diagnostics {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2017  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

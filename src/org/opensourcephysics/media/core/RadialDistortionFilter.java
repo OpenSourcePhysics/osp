@@ -2,14 +2,14 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 /*
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2019  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2017  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
  * For additional information and documentation on Open Source Physics,
- * please see <https://www.compadre.org/osp/>.
+ * please see <http://www.opensourcephysics.org/>.
  */
 package org.opensourcephysics.media.core;
 import java.awt.BasicStroke;
@@ -115,7 +115,7 @@ public class RadialDistortionFilter extends Filter {
   private int lowerRadiusLimit = (int)(100*minRadius);
   
   // parameters
-  private int interpolation = 2; // neighborhood size for color interpolation
+  private int interpolation = 1; // neighborhood size for color interpolation
   private double fixedRadius = 0.75; // radius (relative to corner distance) that remains fixed in corrected image
   private double sourceFOV = Math.PI/2;
   private String sourceProjectionType = RECTILINEAR;
@@ -620,11 +620,11 @@ public class RadialDistortionFilter extends Filter {
    * 
    * @param x the x-position relative to 0,0 (0<=x<1)
    * @param x the y-position relative to 0,0 (0<=y<1)
-   * @param values array of pixels color values [value(0,0), value(1,0), value(0,1), value(1,1)]
+   * @param values array of pixels color values [value(0,0), value(0,1), value(1,0), value(1,1)]
    * @return the interpolated color value 
    */
   private int bilinearInterpolation(double x, double y, int[] values) {
-  		return (int)((1-y)*((1-x)*values[0] + x*values[1]) + y*((1-x)*values[2] + x*values[3]));  	
+  		return (int)((1-y)*((1-x)*values[0] + x*values[2]) + y*((1-x)*values[1] + x*values[3]));  	
   }
   
   /**
@@ -1102,6 +1102,6 @@ public class RadialDistortionFilter extends Filter {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2017  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

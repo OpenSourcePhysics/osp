@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 package org.opensourcephysics.display;
 
@@ -46,9 +46,14 @@ public class ResizableIcon implements Icon {
   	while (icon instanceof ResizableIcon) {
   		icon = ((ResizableIcon)icon).icon;
   	}
-    this.icon = icon;
-    baseWidth = w = icon.getIconWidth();
-    baseHeight = h = icon.getIconHeight();
+  	if(icon==null) {
+  		baseWidth = w=0;
+  		baseHeight = h=0;
+  	}else {
+	    this.icon = icon;
+	    baseWidth = w = icon.getIconWidth();
+	    baseHeight = h = icon.getIconHeight();
+  	}
   }
 
   @Override

@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.tools;
@@ -81,7 +81,7 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
   private Locale locale = Locale.getDefault();
   private Set<Class<?>> searched = new HashSet<Class<?>>();                      // classes searched for translations
   private Map<Class<?>, String> paths = new HashMap<Class<?>, String>();				 // property file directory paths
-  private String helpURL = "https://www.compadre.org/osp/online_help/tools/translator_tool_help.html"; //$NON-NLS-1$
+  private String helpURL = "http://www.opensourcephysics.org/online_help/tools/translator_tool_help.html"; //$NON-NLS-1$
   private boolean keepHidden = false;
   private XMLControl control = new XMLControlElement();
   private XMLTable table;
@@ -1024,6 +1024,6 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2017  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

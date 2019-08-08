@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.tools;
@@ -99,8 +99,10 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   protected static int buttonHeight = defaultButtonHeight;
   protected static String[] delimiters = new String[] {" ", "\t", ",", ";"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
   protected static TextFrame helpFrame;
+//  protected static String helpName = "data_tool_help.html";                                 //$NON-NLS-1$
+//  protected static String helpBase = "http://www.opensourcephysics.org/online_help/tools/"; //$NON-NLS-1$
   protected static String helpName = "datatool/datatool_help.html";                                 //$NON-NLS-1$
-  protected static String helpBase = "https://www.compadre.org/osp/online_help/tools/"; //$NON-NLS-1$
+  protected static String helpBase = "http://www.compadre.org/osp/online_help/tools/"; //$NON-NLS-1$
   private static ArrayList<Data> processedData = new ArrayList<Data>();
   
   // instance fields
@@ -2019,6 +2021,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
       public void propertyChange(PropertyChangeEvent e) {
         refreshGUI();
       }
+
     });
   }
 
@@ -2977,7 +2980,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		if (date==null) date = ""; //$NON-NLS-1$
     String aboutString = getName()+" "+OSPRuntime.VERSION+"  "+date+"\n"   //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                          +"Open Source Physics Project\n" //$NON-NLS-1$
-                         +"www.compadre.org/osp";    //$NON-NLS-1$
+                         +"www.opensourcephysics.org";    //$NON-NLS-1$
     JOptionPane.showMessageDialog(this, aboutString, ToolsRes.getString("Dialog.About.Title")+" "+getName(), //$NON-NLS-1$ //$NON-NLS-2$
       JOptionPane.INFORMATION_MESSAGE);
   }
@@ -3023,6 +3026,6 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2017  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

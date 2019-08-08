@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <https://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.tools;
@@ -144,7 +144,7 @@ public class LibraryComPADRE {
 
       // look at all ComPADRE records in the document
       NodeList list = doc.getElementsByTagName("record"); //$NON-NLS-1$
-      for (int i=0; i<list.getLength(); i++) { // process record nodes
+      for (int i=0; i<list.getLength(); i++) { // process nodes
         Node node = list.item(i);
       	String[] attachment = null;
       	if (isDesiredOSPType(node)) {
@@ -153,9 +153,6 @@ public class LibraryComPADRE {
       		}
         	else {
   	        attachment = getAttachment(node, "Main"); //$NON-NLS-1$
-  	        if (attachment==null) {
-  	        	attachment = getAttachment(node, "Primary"); //$NON-NLS-1$
-  	        }      		
   	        if (attachment==null) {
   	        	attachment = getAttachment(node, "Supplemental"); //$NON-NLS-1$
   	        }      		
@@ -210,9 +207,6 @@ public class LibraryComPADRE {
         	else {
   	        attachment = getAttachment(node, "Main"); //$NON-NLS-1$
   	        if (attachment==null) {
-  	        	attachment = getAttachment(node, "Primary"); //$NON-NLS-1$
-  	        }      		
-  	        if (attachment==null) {
   	        	attachment = getAttachment(node, "Supplemental"); //$NON-NLS-1$
   	        }      		
         	}
@@ -247,15 +241,14 @@ public class LibraryComPADRE {
       record.setProperty("download_filename", attachment[1]); //$NON-NLS-1$
       String type = getChildValue(node, "osp-type");  //$NON-NLS-1$
     	if (isDesiredOSPType(node)) {
-      	if ("Tracker".equals(desiredOSPType) || type.contains("Tracker")  //$NON-NLS-1$//$NON-NLS-2$
-      			|| downloadURL.contains("Tracker")) { //$NON-NLS-1$
-        	type = LibraryResource.TRACKER_TYPE;
-          record.setType(type);		
-      	}
-      	else if ("EJS".equals(desiredOSPType) || type.contains("EJS")) { //$NON-NLS-1$ //$NON-NLS-2$
+    		if ("EJS".equals(desiredOSPType)) { //$NON-NLS-1$
         	type = LibraryResource.EJS_TYPE;
           record.setType(type);		
     		}
+      	else if ("Tracker".equals(desiredOSPType)){ //$NON-NLS-1$
+        	type = LibraryResource.TRACKER_TYPE;
+          record.setType(type);		
+      	}
       	else {
       		record.setType(LibraryResource.UNKNOWN_TYPE);
       	}
@@ -332,9 +325,9 @@ public class LibraryComPADRE {
       Node fileTypeNode = getFirstChild(child,"file-type"); //$NON-NLS-1$
       if (fileTypeNode!=null && attachmentType.equals(getNodeValue(fileTypeNode))) {
         Node urlNode = getFirstChild(child,"download-url"); //$NON-NLS-1$
-        if (urlNode!=null) { // found a downloadable attachment
-	      	// keep only attachments with the same id as the node
-        	if (id.equals(getChildValue(child, "file-identifier"))) { //$NON-NLS-1$
+        if (urlNode!=null) { // found downloadable attachment
+	      	// keep first attachment or (preferred) attachment with the same id as the node
+        	if (attachment==null || id.equals(getChildValue(child, "file-identifier"))) { //$NON-NLS-1$
 	          String attachmentURL = getNodeValue(urlNode);
 	          Element fileNode = (Element)getFirstChild(child,"file-name"); //$NON-NLS-1$
 	          if (fileNode!=null) {

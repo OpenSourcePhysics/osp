@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -77,7 +77,7 @@ import org.opensourcephysics.tools.VideoTool;
  * @version 1.0
  */
 public class DrawingPanel extends JPanel implements ActionListener, Renderable {
-	protected static final boolean RECORD_PAINT_TIMES = false;                                                     // set true to test painting time
+  protected static final boolean RECORD_PAINT_TIMES = false;                                                     // set true to test painting time
   protected long currentTime = System.currentTimeMillis();
 
   /** Message box location */
@@ -221,10 +221,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
       	else if (e.getPropertyName().equals("locale")) { //$NON-NLS-1$
           // set the default decimal separator
       		Locale locale = (Locale)e.getNewValue();
-      		if (locale.equals(OSPRuntime.PORTUGUESE)) {
-      			locale = Locale.FRENCH; // substitute french since portuguese locale returns spurious decimal separator
-      		}
-      		DecimalFormat format = (DecimalFormat)NumberFormat.getNumberInstance(locale);
+      		DecimalFormat format = (DecimalFormat)NumberFormat.getInstance(locale);
           OSPRuntime.setDefaultDecimalSeparator(format.getDecimalFormatSymbols().getDecimalSeparator());
       		refreshDecimalSeparators();
       		refreshGUI();
@@ -678,14 +675,20 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
   public void paint(Graphics g) {
     Graphics2D g2 = (Graphics2D) g;
     boolean resetBuffered = buffered;
-    if(g2.getDeviceConfiguration().getDevice().getType()==GraphicsDevice.TYPE_PRINTER) {
+    /**
+    if(!OSPRuntime.isJS && g2.getDeviceConfiguration().getDevice().getType()==GraphicsDevice.TYPE_PRINTER) {
       buffered = false;
       //System.out.println("buffer off");
-    }
+    } **/
     super.paint(g);
+    paintEverything(g);
     buffered = resetBuffered;
   }
 
+  public void paintComponentTEST(Graphics g) {
+	  paintEverything(g);
+  }
+  
   /**
    * Paints this component.
    * @param g
@@ -693,6 +696,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
   public void paintComponent(Graphics g) {
     if(OSPRuntime.disableAllDrawing) {
       g.setColor(bgColor);
+      g.setColor(Color.RED);
       g.fillRect(0, 0, getWidth(), getHeight());
       return;
     }
@@ -701,6 +705,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
       if(!validImage||(getWidth()!=offscreenImage.getWidth())||(getHeight()!=offscreenImage.getHeight())) {
         if((getWidth()!=offscreenImage.getWidth())||(getHeight()!=offscreenImage.getHeight())) {
           g.setColor(Color.WHITE);
+          g.setColor(Color.CYAN);
           g.fillRect(0, 0, getWidth(), getHeight());
         } else {
           g.drawImage(offscreenImage, 0, 0, null); // copy old image to the screen for now
@@ -2885,6 +2890,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2017  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

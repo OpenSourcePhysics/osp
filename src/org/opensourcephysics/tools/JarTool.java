@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.tools;
@@ -497,7 +497,7 @@ public class JarTool implements Tool, Runnable {
         inputStream=OSPRuntime.applet.getClass().getResourceAsStream(filename);
       }
       if(inputStream==null) {  // use resource loader when not an applet
-        if(filename.indexOf("http")>-1) {  //$NON-NLS-1$
+        if(filename.indexOf("http:")>-1) {  //$NON-NLS-1$
           int n = filename.toLowerCase().indexOf(".zip!/"); //$NON-NLS-1$
           if (n==-1) n = filename.toLowerCase().indexOf(".jar!/");     //$NON-NLS-1$
           if (n==-1) n = filename.toLowerCase().indexOf(".trz!/");     //$NON-NLS-1$
@@ -1283,6 +1283,6 @@ public class JarTool implements Tool, Runnable {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2017  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

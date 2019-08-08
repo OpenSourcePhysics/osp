@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -38,7 +38,6 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.tools.FontSizer;
-import org.opensourcephysics.tools.JREFinder;
 import org.opensourcephysics.tools.ResourceLoader;
 import org.opensourcephysics.tools.Translator;
 
@@ -50,10 +49,10 @@ import org.opensourcephysics.tools.Translator;
  * @version 1.0
  */
 public class OSPRuntime {
-  public static final String VERSION = "5.1.0";                                                                            //$NON-NLS-1$
-  public static final String COMMA_DECIMAL_SEPARATOR = ",";                                                                            //$NON-NLS-1$
-  public static final String PERIOD_DECIMAL_SEPARATOR = ".";                                                                            //$NON-NLS-1$
+  public static final String VERSION = "4.0.1";                                                                            //$NON-NLS-1$
 
+  public static boolean isJS = /** @j2sNative true || */ false;
+  
   /** Disables drawing for faster start-up and to avoid screen flash in Drawing Panels. */
   volatile public static boolean disableAllDrawing = false;
 
@@ -81,9 +80,6 @@ public class OSPRuntime {
   /** Array of default OSP Locales. */
   public static Locale[] defaultLocales = new Locale[] {Locale.ENGLISH, new Locale("es"), new Locale("de"), //$NON-NLS-1$ //$NON-NLS-2$
     new Locale("da"), new Locale("sk"), Locale.TAIWAN};                                                       //$NON-NLS-1$ //$NON-NLS-2$
-
-  /** Portuguese locale */
-  public static final Locale PORTUGUESE = new Locale("pt", "PT"); //$NON-NLS-1$ //$NON-NLS-2$
 
   /** Set <I>true</I> if a program is being run within Launcher. */
   protected static boolean launcherMode = false;
@@ -119,7 +115,7 @@ public class OSPRuntime {
   private static String buildDate;
 
   /** The default decimal separator */
-  private static char defaultDecimalSeparator = ',';
+  private static char defaultDecimalSeparator;
 
   /** The preferred decimal separator, if any */
   private static String preferredDecimalSeparator;
@@ -191,12 +187,12 @@ public class OSPRuntime {
     LOOK_AND_FEEL_TYPES.put(SYSTEM_LF, UIManager.getSystemLookAndFeelClassName());
     LOOK_AND_FEEL_TYPES.put(DEFAULT_LF, DEFAULT_LOOK_AND_FEEL.getClass().getName());
 
-    NumberFormat format = NumberFormat.getNumberInstance(Locale.getDefault());
+    NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
     if (format instanceof DecimalFormat) {
-      setDefaultDecimalSeparator(((DecimalFormat)format).getDecimalFormatSymbols().getDecimalSeparator());
+      defaultDecimalSeparator = ((DecimalFormat)format).getDecimalFormatSymbols().getDecimalSeparator();
     }
     else {
-    	setDefaultDecimalSeparator(new DecimalFormat().getDecimalFormatSymbols().getDecimalSeparator());
+      defaultDecimalSeparator = new DecimalFormat().getDecimalFormatSymbols().getDecimalSeparator();
     }
 
 //	try {
@@ -281,7 +277,7 @@ public class OSPRuntime {
 			vers += " released "+date; //$NON-NLS-1$
 		}
     String aboutString = vers+"\n"           //$NON-NLS-1$
-                         +"Open Source Physics Project \n"+"www.compadre.org/osp"; //$NON-NLS-1$ //$NON-NLS-2$
+                         +"Open Source Physics Project \n"+"www.opensourcephysics.org"; //$NON-NLS-1$ //$NON-NLS-2$
     JOptionPane.showMessageDialog(parent, aboutString, "About Open Source Physics", JOptionPane.INFORMATION_MESSAGE); //$NON-NLS-1$
   }
 
@@ -581,7 +577,7 @@ public class OSPRuntime {
     if(launchJarPath==null) {
       return null;
     }
-    boolean isWebFile = launchJarPath.startsWith("http"); //$NON-NLS-1$
+    boolean isWebFile = launchJarPath.startsWith("http:"); //$NON-NLS-1$
     if (!isWebFile) {
     	launchJarPath = ResourceLoader.getNonURIPath(launchJarPath);
     }
@@ -713,8 +709,7 @@ public class OSPRuntime {
 				file = null;
 			}
   	}
-  	if (file!=null && file.exists()
-				&& JREFinder.JAVA_FILTER.accept(file.getParentFile(), file.getName())) return file;
+  	if (file!=null && file.exists()) return file;
   	return null;
   }
   
@@ -834,13 +829,12 @@ public class OSPRuntime {
 	 * @return the DecimalFormatSymbols
 	 */
   public static DecimalFormatSymbols getDecimalFormatSymbols() {
-  	DecimalFormatSymbols decimalFormatSymbols = DecimalFormatSymbols.getInstance();
+  	DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
   	char c = defaultDecimalSeparator;
     if (preferredDecimalSeparator!=null && preferredDecimalSeparator.length()>0) {
   		c = preferredDecimalSeparator.charAt(0);
   	}
-    decimalFormatSymbols.setDecimalSeparator(c);    
-    decimalFormatSymbols.setMinusSign('-');
+    decimalFormatSymbols.setDecimalSeparator(c); 	
   	return decimalFormatSymbols;
   }
   
@@ -850,10 +844,7 @@ public class OSPRuntime {
 	 * @param c a decimal separator
 	 */
   public static void setDefaultDecimalSeparator(char c) {
-  	String s = String.valueOf(c);
-  	if (COMMA_DECIMAL_SEPARATOR.equals(s) || PERIOD_DECIMAL_SEPARATOR.equals(s)) {
-  		defaultDecimalSeparator = c;
-  	}
+  	defaultDecimalSeparator = c;
   }
   
 	/**
@@ -862,9 +853,7 @@ public class OSPRuntime {
 	 * @param separator a decimal separator
 	 */
   public static void setPreferredDecimalSeparator(String separator) {
-  	if (separator==null || COMMA_DECIMAL_SEPARATOR.equals(separator) || PERIOD_DECIMAL_SEPARATOR.equals(separator)) {
-    	preferredDecimalSeparator = separator;
-  	}
+  	preferredDecimalSeparator = separator;
   }
   
 	/**
@@ -1297,6 +1286,6 @@ public class OSPRuntime {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2017  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

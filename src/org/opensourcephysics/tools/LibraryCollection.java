@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.tools;
@@ -69,16 +69,13 @@ public class LibraryCollection extends LibraryResource {
    * Adds a resource to the end of this collection.
    *
    * @param resource the resource
-   * @return true if the collection was modified
    */
-	public boolean addResource(LibraryResource resource) {
-		if (resource==null) return false;
+	public void addResource(LibraryResource resource) {
+		if (resource==null) return;
   	if (!resources.contains(resource)) {
   		resources.add(resource);
   		resource.parent = this;
-  		return true;
   	}
-  	return false;
   }
   
   /**
@@ -87,13 +84,10 @@ public class LibraryCollection extends LibraryResource {
    * @param resource the resource
    * @param index the index
    */
-	public boolean insertResource(LibraryResource resource, int index) {
+	public void insertResource(LibraryResource resource, int index) {
   	if (!resources.contains(resource)) {
   		resources.add(index, resource);
-  		resource.parent = this;
-  		return true;
   	}
-  	return false;
   }
   
   /**
@@ -103,7 +97,6 @@ public class LibraryCollection extends LibraryResource {
    */
 	public void removeResource(LibraryResource resource) {
   	resources.remove(resource);
-		resource.parent = null;
   }
   
   /**
@@ -143,7 +136,6 @@ public class LibraryCollection extends LibraryResource {
     	if (!collection.resources.isEmpty()) {
 	    	control.setValue("resources", collection.getResources()); //$NON-NLS-1$
     	}
-    	control.setValue("real_path", collection.collectionPath); //$NON-NLS-1$
     }
     
     /**
@@ -174,7 +166,6 @@ public class LibraryCollection extends LibraryResource {
     			collection.addResource(next);
     		}
     	}
-    	collection.collectionPath = control.getString("real_path"); //$NON-NLS-1$
     	return collection;
     }
   }
@@ -201,6 +192,6 @@ public class LibraryCollection extends LibraryResource {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2017  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
@@ -65,6 +65,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
    */
   public OSPControl(Object _model) {
     super(ControlsRes.getString("OSPControl.Default_Title")); //$NON-NLS-1$
+    //table = new OSPControlTable(new XMLControlElement());
+    System.out.println("Table created in OSP Control: "+table);
     model = _model;
     if(model!=null) {
       // added by D Brown 2006-09-10
@@ -249,6 +251,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
    * @return    the control parameters
    */
   public String toString() {
+	System.out.println("Table to string: "+table); // xxx debug
+	if(table==null) return "";
     return table.toString();
   }
 
@@ -686,6 +690,6 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2017  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

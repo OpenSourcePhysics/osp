@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.tools;
@@ -168,7 +168,7 @@ public class DataFunctionPanel extends FunctionPanel {
       	String[] function = (String[])next;
       	for (Object f: existingFunctions) {
       		DataFunction dataFunction = (DataFunction)f;
-      		if (dataFunction.getYColumnName().equals(function[0]) && dataFunction.getInputString().equals(function[1])) {
+      		if (dataFunction.getYColumnName().equals(function[0]) && dataFunction.getExpression().equals(function[1])) {
       			continue outer;
       		}
       	}
@@ -205,6 +205,6 @@ public class DataFunctionPanel extends FunctionPanel {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2017  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

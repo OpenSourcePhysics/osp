@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
@@ -714,8 +714,8 @@ public class XMLTable extends JTable {
     // Override the default tab behaviour
     InputMap im = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     KeyStroke tab = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
-    final Action prevTabAction = getActionMap().get(im.get(tab));
-    Action tabAction = new AbstractAction() {
+    try{final Action prevTabAction = getActionMap().get(im.get(tab));  // try added by W. Christian
+    Action tabAction = new AbstractAction() { 
       public void actionPerformed(ActionEvent e) {
         // tab to the next editable cell
         prevTabAction.actionPerformed(e);
@@ -741,6 +741,10 @@ public class XMLTable extends JTable {
 
     };
     getActionMap().put(im.get(tab), tabAction);
+    }catch(Exception x) {
+    	System.out.println("No previous tab action");
+    }
+
     // enter key starts editing
     Action enterAction = new AbstractAction() {
       public void actionPerformed(ActionEvent e) {
@@ -845,6 +849,6 @@ public class XMLTable extends JTable {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2017  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

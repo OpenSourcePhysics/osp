@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -786,10 +786,8 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
     double[] yValues = getYPoints();
     // conversionFactor added by D Brown Dec 2010
     if(columnIndex==0) {
-    	if (rowIndex<0 || rowIndex>=xValues.length) return null;
       return new Double(xValues[rowIndex]);
     }
-  	if (rowIndex<0 || rowIndex>=yValues.length) return null;
     // changed by D.Brown
     if(Double.isNaN(yValues[rowIndex])) {
       return null;
@@ -1661,6 +1659,6 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2017  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

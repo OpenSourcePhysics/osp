@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.tools;
@@ -15,7 +15,6 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeSet;
@@ -267,7 +266,6 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
     }
     if (thumb!=null) {
     	thumb = XML.forwardSlash(thumb);
-    	thumb = XML.getResolvedPath(thumb, record.getInheritedBasePath());
     	thumb = ResourceLoader.getURIPath(thumb);
     }    
     
@@ -434,7 +432,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 		    Runnable runner = new Runnable() {
 		      public void run() {
 	  				String zipPath = getAbsoluteTarget();
-	  				Collection<String> files = ResourceLoader.getZipContents(zipPath);
+						Set<String> files = ResourceLoader.getZipContents(zipPath);
 						for (String next: files) {
 							if (next.endsWith(".trk")) { //$NON-NLS-1$
 								setType(LibraryResource.TRACKER_TYPE);
@@ -565,12 +563,6 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 	  		for (Metadata next: data) {
 	  			String key = next.getData()[0];
 	  			String value = next.getData()[1];
-	  			boolean isLibraryMetadata = false;
-	  			for (String metadataType: LibraryResource.META_TYPES) {
-	  				isLibraryMetadata = isLibraryMetadata || key.equals(metadataType);
-	  			}
-	  			if (!isLibraryMetadata) continue;
-	  			
 	  			boolean breakLine = false;
 	  			for (String metadataType: LibraryResource.META_TYPES) {
 	  				if (metadataType.toLowerCase().contains(key.toLowerCase()))
@@ -638,11 +630,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
   		String path = getMetadataSourcePath();
     	if (path!=null) {
     		Resource res = ResourceLoader.getResourceZipURLsOK(path);
-    		String code = null;
-				try {
-					code = res.getString();
-				} catch (Exception e) {
-				}
+    		String code = res.getString();
 				if (code!=null) {
 					boolean[] isStandardType = new boolean[LibraryResource.META_TYPES.length];
 					String[] parts = code.split("<meta name="); //$NON-NLS-1$
@@ -700,10 +688,8 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
    */
   protected File getThumbnailFile() {
   	String thumbPath = record.getThumbnail();
-  	if (thumbPath!=null) {
-  		File file = new File(thumbPath);
-  		if (file.exists()) return file;
-  	}
+  	if (thumbPath!=null)
+  		return new File(thumbPath);
   	String path = getAbsoluteTarget();
   	String name = XML.stripExtension(XML.getName(path));
 		String fileName = name+"_thumbnail.png"; //$NON-NLS-1$
@@ -850,6 +836,6 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2017  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

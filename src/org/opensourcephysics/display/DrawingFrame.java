@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -920,7 +920,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     Class<?> fourierToolClass = null;
     if(OSPRuntime.loadFourierTool) {
       try {
-        fourierToolClass = Class.forName("org.opensourcephysics.tools.FourierTool");      //$NON-NLS-1$
+        //fourierToolClass = Class.forName("org.opensourcephysics.tools.FourierTool");      //$NON-NLS-1$
       } catch(Exception ex) {
         OSPLog.finest("Cannot instantiate Fourier analysis tool class:\n"+ex.toString()); //$NON-NLS-1$
         OSPRuntime.loadFourierTool = false;
@@ -1163,6 +1163,6 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2017  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */
