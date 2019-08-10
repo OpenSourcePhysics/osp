@@ -879,6 +879,9 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    * Adds a Tools menu to the menu bar.
    */
   protected JMenu loadToolsMenu() {
+	if(org.opensourcephysics.js.JSUtil.isJS) {  // external tools not supported in JavaScript.
+		  return null;
+	}
     JMenuBar menuBar = getJMenuBar();
     if(menuBar==null) {
       return null;

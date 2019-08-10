@@ -1006,6 +1006,10 @@ public class OSPRuntime {
    * @return translator, or null if none available
    */
   public static Translator getTranslator() {
+	  
+	 if(org.opensourcephysics.js.JSUtil.isJS) { // translator tool not supported in JavaScript.
+		 return null;
+	 }
     if((translator==null)&&loadTranslatorTool) {
       // creates the shared Translator
       try {

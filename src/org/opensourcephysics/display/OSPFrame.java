@@ -480,50 +480,6 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
     System.out.println("The parseXMLMenu method has been disabled to reduce the size OSP jar files."); //$NON-NLS-1$
   }
 
-  /*
-   * Creates a menu in the menu bar from the given XML document.
-   * @param xmlMenu name of the xml file with menu data
-   * @param type the class to load the menu, may be null
-   *
-   * public void parseXMLMenu(String xmlMenu, Class type) {
-   *  XMLControl xml = null;
-   *  if(type!=null) {
-   *     org.opensourcephysics.tools.Resource res = org.opensourcephysics.tools.ResourceLoader.getResource(xmlMenu,
-   *        type);
-   *     if(res!=null) {
-   *        xml = new XMLControlElement(res.getString());
-   *     }
-   *  }
-   *  if(xml==null) {
-   *     xml = new XMLControlElement(xmlMenu);
-   *  }
-   *  if(xml.failedToRead()) {
-   *     OSPLog.info("Menu not found: "+xmlMenu);
-   *  } else {
-   *     type = xml.getObjectClass();
-   *     if((type!=null)&&org.opensourcephysics.tools.LaunchNode.class.isAssignableFrom(type)) {
-   *        // load the xml data into a launch node and add the menu item
-   *        org.opensourcephysics.tools.LaunchNode node = (org.opensourcephysics.tools.LaunchNode) xml.loadObject(null);
-   *        JMenuBar menuBar = getJMenuBar();
-   *        if(menuBar==null) {
-   *           return;
-   *        }
-   *        // get the menu name and create the menu if null
-   *        String menuName = node.toString();
-   *        JMenu menu = getMenu(menuName);
-   *        if(menu==null) {
-   *           menu = new JMenu(menuName);
-   *           menuBar.add(menu);
-   *           menuBar.validate();
-   *        }
-   *        // add the node item to the menu
-   *        node.addMenuItemsTo(menu);
-   *        OSPLog.finest("Menu loaded: "+xmlMenu);
-   *     }
-   *  }
-   * }
-   */
-
   /**
    * Refreshes the user interface in response to display changes such as Language.
    */
@@ -556,7 +512,11 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
     b.setToolTipText(toolTipText);
     Class<?>[] parameters = {};
     try {
-      final java.lang.reflect.Method m = target.getClass().getMethod(methodName, parameters);
+       if(org.opensourcephysics.js.JSUtil.isJS) {
+    	   System.err.println("Cannot add button to invoke: "+methodName);  // reflection fails in SwingJS
+    	   return null;
+      }
+      final java.lang.reflect.Method m = target.getClass().getMethod(methodName, parameters);  // SwingJS throws no such method error
       b.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           Object[] args = {};

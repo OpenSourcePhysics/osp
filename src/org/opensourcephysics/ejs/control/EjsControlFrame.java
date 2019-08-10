@@ -324,6 +324,9 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
    * Adds a Tools menu to the menu bar.
    */
   protected JMenu loadToolsMenu() {
+	if(org.opensourcephysics.js.JSUtil.isJS) {  // external tools not supported in JavaScript.
+		  return null;
+	}
     JMenuBar menuBar = mainFrame.getJMenuBar();
     if(menuBar==null) {
       return null;

@@ -711,7 +711,7 @@ public class XMLTable extends JTable {
     header.setReorderingAllowed(false);
     header.setForeground(Color.BLACK); // set header text color
     setGridColor(Color.BLACK);
-    // Override the default tab behaviour
+    // Override the default tab behavior
     InputMap im = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     KeyStroke tab = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
     try{final Action prevTabAction = getActionMap().get(im.get(tab));  // try added by W. Christian

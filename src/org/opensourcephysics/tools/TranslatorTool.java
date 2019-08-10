@@ -167,6 +167,9 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
    * Private constructor.
    */
   private TranslatorTool() {
+	  if(org.opensourcephysics.js.JSUtil.isJS) {  // external tools not supported in JavaScript.
+		  return;
+	  }
     if(OSPRuntime.appletMode) {
       keepHidden = true;
     }

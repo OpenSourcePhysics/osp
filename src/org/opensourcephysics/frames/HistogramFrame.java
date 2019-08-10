@@ -134,6 +134,9 @@ public class HistogramFrame extends DrawingFrame {
    *
    */
   protected JMenu loadToolsMenu() {
+	if(org.opensourcephysics.js.JSUtil.isJS) {  // external tools not supported in JavaScript.
+		  return null;
+	}
     JMenuBar menuBar = getJMenuBar();
     if(menuBar==null) {
       return null;

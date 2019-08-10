@@ -34,6 +34,9 @@ public class Toolbox {
   }
 
   public static void addTool(String name, Tool tool) {
+	  if(org.opensourcephysics.js.JSUtil.isJS) {  // external tools not supported in JavaScript.
+		  return;
+	  }
     if(tools.get(name)==null) {
       tools.put(name, tool);
       OSPLog.fine("Added to toolbox: "+name); //$NON-NLS-1$
@@ -80,6 +83,9 @@ public class Toolbox {
   }
 
   private static void initRMI() {
+	if(org.opensourcephysics.js.JSUtil.isJS) {  // RMI not supported in JavaScript.
+		  return;
+	}
     if(allowRMI==0) { // user has chosen not to allow RMI
       return;
     }

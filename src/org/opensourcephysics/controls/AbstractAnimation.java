@@ -9,6 +9,10 @@ package org.opensourcephysics.controls;
 import java.awt.Frame;
 import java.text.DecimalFormat;
 import java.util.Collection;
+import javax.swing.Timer;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import javax.swing.JFrame;
 import org.opensourcephysics.display.OSPFrame;
 
@@ -26,6 +30,8 @@ public abstract class AbstractAnimation implements Animation, Runnable {
   protected Control control;                                           // the model's control
   protected volatile Thread animationThread;
   protected int delayTime = 100;                                       // time between animation steps in milliseconds
+  protected Timer      swingTimer;                                     // replaces thread in JavaScript simulations
+  long t0 = System.currentTimeMillis();                                // system clock at start of last time step
 
   /** Field decimalFormat can be used to display time and other numeric values. */
   protected DecimalFormat decimalFormat = new DecimalFormat("0.00E0"); // default numeric format for messages //$NON-NLS-1$
@@ -145,10 +151,16 @@ public abstract class AbstractAnimation implements Animation, Runnable {
    */
   public synchronized void stopAnimation() {
     if(animationThread==null) { // animation thread is already dead
+     if(org.opensourcephysics.js.JSUtil.isJS && swingTimer!=null) swingTimer.stop();
       return;
     }
     Thread tempThread = animationThread; // local reference
     animationThread = null; // signal the animation to stop
+    if(org.opensourcephysics.js.JSUtil.isJS) {
+    	if(swingTimer!=null) swingTimer.stop();
+    	return;
+    }
+	
     if(Thread.currentThread()==tempThread) {
       return; // cannot join with own thread so return
     }         // another thread has called this method in order to stop the animation thread
@@ -178,6 +190,32 @@ public abstract class AbstractAnimation implements Animation, Runnable {
     }
     doStep();
   }
+  
+	/**
+	 * Create the timer and perform one time step
+	 */
+	protected void createSwingTimer() {
+		long t1=System.currentTimeMillis();
+		int myDelay=(int)(t1 -t0);         // optimal delay based on last execution time 
+		myDelay=Math.min(delayTime, myDelay);  // do not wait longer than requested delay
+		myDelay=Math.max(5,myDelay);      // but wait a minimum of 5 ms.
+		t0=t1;                             //save current time
+		//System.out.println("my delay ="+myDelay);  // debugging code
+		swingTimer = new Timer(myDelay, new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				swingTimer = null;
+				doStep();
+				if( animationThread!=null) {
+					createSwingTimer();  // start another step if simulation is running
+					swingTimer.start();
+				}
+			}
+
+		});
+		swingTimer.setRepeats(false);
+	}
 
   /**
    * Starts the animation.
@@ -189,6 +227,12 @@ public abstract class AbstractAnimation implements Animation, Runnable {
       return; // animation is running
     }
     animationThread = new Thread(this);
+    if (org.opensourcephysics.js.JSUtil.isJS) {
+        createSwingTimer();
+        swingTimer.start();
+        return;
+    }
+    
     animationThread.setPriority(Thread.NORM_PRIORITY);
     //animationThread.setPriority(Thread.MAX_PRIORITY);   // for testing
     //animationThread.setPriority(Thread.MIN_PRIORITY);   // for testing
@@ -210,6 +254,10 @@ public abstract class AbstractAnimation implements Animation, Runnable {
    * Implementation of Runnable interface.  DO NOT access this method directly.
    */
   public void run() {
+	 if(org.opensourcephysics.js.JSUtil.isJS) {
+		 System.err.println("JavaScript error.  Thread run method called in Abstract Animation.");
+	    return;
+	}
     long sleepTime = delayTime;
     while(animationThread==Thread.currentThread()) {
       long currentTime = System.currentTimeMillis();

@@ -24,7 +24,12 @@
 
 package org.opensourcephysics.controls;
 import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Collection;
+
+import javax.swing.Timer;
+
 import org.opensourcephysics.display.GUIUtils;
 
 /**
@@ -257,11 +262,49 @@ abstract public class AbstractSimulation extends AbstractAnimation implements Si
    * Override this method to set the simulation's parameters.
    */
   public void reset() {}
+  
+	/**
+	 * Create the timer and perform one time step
+	 */
+	protected void createSwingTimer() {
+		long t1=System.currentTimeMillis();
+		int myDelay=(int)(t1 -t0);         // optimal delay based on last execution time 
+		myDelay=Math.min(delayTime, myDelay);  // do not wait longer than requested delay
+		myDelay=Math.max(5,myDelay);      // but wait a minimum of 5 ms.
+		t0=t1;                             //save current time
+		//System.out.println("Creating timer with delay ="+myDelay);  // debugging code
+		swingTimer = new Timer(myDelay, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+			  swingTimer = null;
+		      for(int i = 0; i<stepsPerDisplay; i++) {
+		          doStep();
+		          stepCounter++;
+		          if(animationThread==null) { // check for stop condition
+		            break;  // break out of for loop     
+		          }
+			  }
+		      org.opensourcephysics.display.GUIUtils.renderAnimatedFrames();
+			  if( animationThread!=null) {  // start another step if simulation is running
+				  createSwingTimer();
+				  swingTimer.start();
+			  }else {
+				  GUIUtils.setAnimatedFrameIgnoreRepaint(false); // updated view at end of animation  
+			  }
+			}
+
+		});
+		swingTimer.setRepeats(false);
+	}
 
   /**
    * Implementation of Runnable interface.  DO NOT access this method directly.
    */
   public void run() {
+    if(org.opensourcephysics.js.JSUtil.isJS) {
+	    System.err.println("JavaScript error.  Thread run method called in Abstract Simulation .");
+	    return;
+	}
     GUIUtils.setAnimatedFrameIgnoreRepaint(true); // animated frames are updated by this thread so no need to repaint
     long sleepTime = delayTime;
     while(animationThread==Thread.currentThread()) {
@@ -282,7 +325,7 @@ abstract public class AbstractSimulation extends AbstractAnimation implements Si
         Thread.sleep(sleepTime);
       } catch(InterruptedException ie) {}
     }
-    GUIUtils.setAnimatedFrameIgnoreRepaint(false); // animated frames are updated by this thread so no need to repaint
+    GUIUtils.setAnimatedFrameIgnoreRepaint(false); // updated view at end of animation
   }
 
   // Inner class that lets any control act as a SimControl.
