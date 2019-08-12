@@ -60,6 +60,8 @@ public class ResourceLoader {
 	
   @SuppressWarnings("javadoc")
 	public static final FileFilter OSP_CACHE_FILTER;
+  public static final String OSP_TEST_URL = "https://www.compadre.org/osp"; //$NON-NLS-1$
+  public static final String TRACKER_TEST_URL = "https://physlets.org/tracker/"; //$NON-NLS-1$
   protected static final String WIN_XP_DEFAULT_CACHE = "/Local Settings/Application Data/OSP/Cache"; //$NON-NLS-1$
   protected static final String WINDOWS_DEFAULT_CACHE = "/AppData/Local/OSP/Cache"; //$NON-NLS-1$
   protected static final String OSX_DEFAULT_CACHE = "/Library/Caches/OSP"; //$NON-NLS-1$
@@ -88,7 +90,8 @@ public class ResourceLoader {
   	};
   	Runnable runner = new Runnable() {
   		public void run() {
-	  		webConnected = ResourceLoader.isURLAvailable("https://www.compadre.org/osp"); //$NON-NLS-1$
+	  		webConnected = ResourceLoader.isURLAvailable(ResourceLoader.OSP_TEST_URL)
+	  				|| ResourceLoader.isURLAvailable(ResourceLoader.TRACKER_TEST_URL);
   		}
   	};
   	new Thread(runner).start();
@@ -855,7 +858,8 @@ public class ResourceLoader {
   	File target = getOSPCacheFile(urlPath, fileName);
 		File file = ResourceLoader.download(urlPath, target, alwaysOverwrite);
 		if (file==null && webConnected) {
-  		webConnected = ResourceLoader.isURLAvailable("https://www.compadre.org/osp"); //$NON-NLS-1$
+  		webConnected = ResourceLoader.isURLAvailable(ResourceLoader.OSP_TEST_URL)
+  				|| ResourceLoader.isURLAvailable(ResourceLoader.TRACKER_TEST_URL);
     	if (!webConnected) {
     		JOptionPane.showMessageDialog(null, 
     				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
@@ -1251,7 +1255,8 @@ public class ResourceLoader {
 		if (target==null || target.getParentFile()==null) return null;
   	// compare urlPath with previous attempt and, if identical, check web connection
   	if (!webConnected || downloadURL.equals(urlPath)) {
-  		webConnected = ResourceLoader.isURLAvailable("https://www.compadre.org/osp"); //$NON-NLS-1$
+  		webConnected = ResourceLoader.isURLAvailable(ResourceLoader.OSP_TEST_URL)
+  				|| ResourceLoader.isURLAvailable(ResourceLoader.TRACKER_TEST_URL);
   	}
   	if (!webConnected) {
   		JOptionPane.showMessageDialog(null, 
