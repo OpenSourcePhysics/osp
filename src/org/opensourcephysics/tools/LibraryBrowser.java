@@ -2670,7 +2670,8 @@ public class LibraryBrowser extends JPanel {
     public Library doInBackground() {
  	  	Runnable runner = new Runnable() {
  	  		public void run() {
-		  		webConnected = ResourceLoader.isURLAvailable("https://www.compadre.org/osp"); //$NON-NLS-1$
+		  		webConnected = ResourceLoader.isURLAvailable(ResourceLoader.OSP_TEST_URL)
+		  				|| ResourceLoader.isURLAvailable(ResourceLoader.TRACKER_TEST_URL);
 		    	if (!webConnected) {
 		    		JOptionPane.showMessageDialog(LibraryBrowser.this, 
 		    				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
@@ -2786,8 +2787,19 @@ public class LibraryBrowser extends JPanel {
     	String realPath = path;
   		File cachedFile = ResourceLoader.getSearchCacheFile(path);
   		if (cachedFile.exists() && path.startsWith("http")) {  			 //$NON-NLS-1$
-  			realPath = cachedFile.getAbsolutePath();
-  			saveToCache = false;
+  			boolean validCachedFile = true;
+  			String cachePath = cachedFile.getAbsolutePath();
+  			// replace any cached tracker library files with obsolete http protocols
+  			if (XML.forwardSlash(cachePath).contains("osp-physlets_org/tracker/library")) { //$NON-NLS-1$
+  				String content = ResourceLoader.getString(cachePath);
+  				if (content.contains("http://physlets.org")) { //$NON-NLS-1$
+  					validCachedFile = false;
+  				}
+  			}
+  			if (validCachedFile) {
+	  			realPath = cachePath;
+	  			saveToCache = false;
+  			}
   		}
   		
     	LibraryResource resource = null;
