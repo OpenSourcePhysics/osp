@@ -197,6 +197,9 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     timeFormat.setMinimumIntegerDigits(1);
     timeFormat.setMaximumFractionDigits(3);
     timeFormat.setMinimumFractionDigits(3);
+  	if (timeFormat instanceof DecimalFormat) {
+  		((DecimalFormat)timeFormat).setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+  	}
 
     createGUI();
     clipControl = ClipControl.getControl(new VideoClip(null));
