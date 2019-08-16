@@ -403,9 +403,9 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
       // a new image with the correct size will be created	
       //System.err.println("begin create compatible image w="+width+"  h= "+height + " image"+image);
       if(org.opensourcephysics.js.JSUtil.isJS) {
-    	  //image=new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-    	  image = getGraphicsConfiguration().createCompatibleImage(width, height);  // WC:  Check to see if bug is fixed
-    	  System.err.println("image ="+image);
+    	  image=new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    	  //image = getGraphicsConfiguration().createCompatibleImage(width, height);  // WC:  Check to see if bug is fixed
+    	  //System.err.println("image ="+image);
       } else{
     	  image = getGraphicsConfiguration().createCompatibleImage(width, height);
       }
