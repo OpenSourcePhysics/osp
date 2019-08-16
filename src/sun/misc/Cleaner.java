@@ -137,6 +137,7 @@ public class Cleaner
      * Runs this cleaner, if it has not been run before.
      */
     public void clean() {
+    	if(org.opensourcephysics.js.JSUtil.isJS) return;  //WC: doPrivileged not supported in JavaScript
         if (!remove(this))
             return;
         try {

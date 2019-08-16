@@ -295,7 +295,8 @@ public final class AccessController {
      */
 
 
-    public static native <T> T doPrivileged(PrivilegedAction<T> action);
+    //public static native <T> T doPrivileged(PrivilegedAction<T> action);  // WC: removed native declaration
+    public static  native <T> T doPrivileged(PrivilegedAction<T> action);
 
     /**
      * Performs the specified {@code PrivilegedAction} with privileges
@@ -324,6 +325,7 @@ public final class AccessController {
      */
 
     public static <T> T doPrivilegedWithCombiner(PrivilegedAction<T> action) {
+    	if (org.opensourcephysics.js.JSUtil.isJS)return null;  // WC: PrivilegedAction not allowed in JavaScript
         AccessControlContext acc = getStackAccessControlContext();
         if (acc == null) {
             return AccessController.doPrivileged(action);
@@ -419,6 +421,8 @@ public final class AccessController {
 
     public static <T> T doPrivileged(PrivilegedAction<T> action,
         AccessControlContext context, Permission... perms) {
+    	
+    	if (org.opensourcephysics.js.JSUtil.isJS)return null;  // WC: PrivilegedAction not allowed in JavaScript
 
         AccessControlContext parent = getContext();
         if (perms == null) {
@@ -481,6 +485,8 @@ public final class AccessController {
     
     public static <T> T doPrivilegedWithCombiner(PrivilegedAction<T> action,
         AccessControlContext context, Permission... perms) {
+    	
+    	if (org.opensourcephysics.js.JSUtil.isJS)return null;  // WC: PrivilegedAction not allowed in JavaScript
 
         AccessControlContext parent = getContext();
         DomainCombiner dc = parent.getCombiner();
@@ -560,6 +566,7 @@ public final class AccessController {
     public static <T> T doPrivilegedWithCombiner(PrivilegedExceptionAction<T> action)
         throws PrivilegedActionException
     {
+    	if (org.opensourcephysics.js.JSUtil.isJS)return null;  // WC: PrivilegedAction not allowed in JavaScript
         AccessControlContext acc = getStackAccessControlContext();
         if (acc == null) {
             return AccessController.doPrivileged(action);
@@ -601,6 +608,7 @@ public final class AccessController {
     }
 
     private static ProtectionDomain getCallerPD(final Class <?> caller) {
+    	if(org.opensourcephysics.js.JSUtil.isJS) return null;  //WC: doPrivileged not supported in JavaScript
         ProtectionDomain callerPd = doPrivileged
             (new PrivilegedAction<ProtectionDomain>() {
             public ProtectionDomain run() {
@@ -705,6 +713,7 @@ public final class AccessController {
                                      AccessControlContext context, Permission... perms)
         throws PrivilegedActionException
     {
+    	if (org.opensourcephysics.js.JSUtil.isJS)return null;  // WC: PrivilegedAction not allowed in JavaScript
         AccessControlContext parent = getContext();
         if (perms == null) {
             throw new NullPointerException("null permissions parameter");
@@ -770,6 +779,7 @@ public final class AccessController {
                                                  Permission... perms)
         throws PrivilegedActionException
     {
+    	if (org.opensourcephysics.js.JSUtil.isJS)return null;  // WC: PrivilegedAction not allowed in JavaScript
         AccessControlContext parent = getContext();
         DomainCombiner dc = parent.getCombiner();
         if (dc == null && context != null) {
@@ -850,6 +860,8 @@ public final class AccessController {
     {
         //System.err.println("checkPermission "+perm);
         //Thread.currentThread().dumpStack();
+    	
+    
 
         if (perm == null) {
             throw new NullPointerException("permission can't be null");

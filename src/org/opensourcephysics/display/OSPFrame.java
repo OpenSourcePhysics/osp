@@ -513,7 +513,7 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
     Class<?>[] parameters = {};
     try {
        if(org.opensourcephysics.js.JSUtil.isJS) {
-    	   System.err.println("Cannot add button to invoke: "+methodName);  // reflection fails in SwingJS
+    	   System.err.println("Cannot add button to invoke: "+methodName);  // WC: reflection fails in SwingJS
     	   return null;
       }
       final java.lang.reflect.Method m = target.getClass().getMethod(methodName, parameters);  // SwingJS throws no such method error

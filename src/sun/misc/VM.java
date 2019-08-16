@@ -25,7 +25,7 @@
 
 package sun.misc;
 
-//import static java.lang.Thread.State.*;
+import static java.lang.Thread.State.*;
 import java.util.Properties;
 
 public class VM {
@@ -370,6 +370,7 @@ public class VM {
 
     /**
      * Returns Thread.State for the given threadStatus
+     */
 
     public static Thread.State toThreadState(int threadStatus) {
         if ((threadStatus & JVMTI_THREAD_STATE_RUNNABLE) != 0) {
@@ -388,7 +389,7 @@ public class VM {
             return RUNNABLE;
         }
     }
-    */
+    
 
     /* The threadStatus field is set by the VM at state transition
      * in the hotspot implementation. Its value is set according to

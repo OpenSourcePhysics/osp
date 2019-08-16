@@ -21,8 +21,8 @@
   
       private static String args;
   
-      static {
-      args = (String)java.security.AccessController.doPrivileged
+      static { // WC: doPrivileged not supported in JavaScropt
+      args =(org.opensourcephysics.js.JSUtil.isJS)?args: (String)java.security.AccessController.doPrivileged
           (new sun.security.action.GetPropertyAction
           ("java.security.debug"));
   

@@ -693,6 +693,10 @@ public class JTree extends JComponent implements Scrollable, Accessible
      *  description: The UI object that implements the Component's LookAndFeel.
      */
     public void setUI(TreeUI ui) {
+    	if(org.opensourcephysics.js.JSUtil.isJS) {  // WC:  User interface not supported in JavaScript
+    		settingUI = false;
+    		return;
+    	}
         if (this.ui != ui) {
             settingUI = true;
             uiTreeExpansionListener = null;
@@ -713,6 +717,9 @@ public class JTree extends JComponent implements Scrollable, Accessible
      * @see JComponent#updateUI
      */
     public void updateUI() {
+    	if(org.opensourcephysics.js.JSUtil.isJS) {  // WC:  User interface not supported in JavaScript
+    		return;
+    	}
         setUI((TreeUI)UIManager.getUI(this));
 
         SwingUtilities.updateRendererOrEditorUI(getCellRenderer());

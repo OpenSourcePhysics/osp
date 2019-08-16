@@ -277,6 +277,7 @@ public abstract class Charset
     private static volatile String bugLevel = null;
 
     static boolean atBugLevel(String bl) {              // package-private
+    	if(org.opensourcephysics.js.JSUtil.isJS) return false;  //WC: doPrivileged not supported in JavaScript
         String level = bugLevel;
         if (level == null) {
             if (!sun.misc.VM.isBooted())

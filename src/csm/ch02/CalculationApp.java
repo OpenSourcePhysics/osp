@@ -32,7 +32,6 @@ public class CalculationApp extends AbstractCalculation {
    * Resets the program to its initial state.
    */
   public void reset() {
-	control.setValue("a value", 1.0); // describes parameter and sets its value
     control.setValue("x value", 10.0); // describes parameter and sets its value
   }
   
@@ -46,7 +45,6 @@ public class CalculationApp extends AbstractCalculation {
    */
   public static void main(String[] args) { // Create a calculation control structure using this class
 	  CalculationControl control=CalculationControl.createApp(new CalculationApp());
-	  control.addButton("System.out.println", "Press Me");
 	  control.addButton("myFunction", "Press Me");
   }
 }

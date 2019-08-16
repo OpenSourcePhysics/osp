@@ -340,6 +340,7 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
       return null;                    // no need to render if the frame is not visible
     }
     BufferedImage workingImage = checkImageSize(this.workingImage);
+    if(workingImage==null) return workingImage;
     synchronized(workingImage) {          // do not let threads access workingImage while it is being painted
       if(needResize) {
         computeConstants(workingImage.getWidth(), workingImage.getHeight());
@@ -393,12 +394,23 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
    */
   private BufferedImage checkImageSize(BufferedImage image) {
     int width = getWidth(), height = getHeight();
+    //System.err.println(" checkImageSize w="+width+"  h= "+height + "buffered image = "+image);
     if((width<=2)||(height<=2)) { // image is too small to draw anything useful
+    	//System.err.println(" width and height too small");
       return new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
     }
     if((image==null)||(width!=image.getWidth())||(height!=image.getHeight())) {
-      // a new image with the correct size will be created
-      return getGraphicsConfiguration().createCompatibleImage(width, height);
+      // a new image with the correct size will be created	
+      //System.err.println("begin create compatible image w="+width+"  h= "+height + " image"+image);
+      if(org.opensourcephysics.js.JSUtil.isJS) {
+    	  //image=new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    	  image = getGraphicsConfiguration().createCompatibleImage(width, height);  // WC:  Check to see if bug is fixed
+    	  System.err.println("image ="+image);
+      } else{
+    	  image = getGraphicsConfiguration().createCompatibleImage(width, height);
+      }
+      //System.err.println("begin create compatible image w="+width+"  h= "+height + " image"+image);
+      return image;
     }
     return image; // given image is the correct size
   }
