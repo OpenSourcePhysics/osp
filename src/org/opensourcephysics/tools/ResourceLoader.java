@@ -1757,7 +1757,7 @@ static private Resource createZipResource(String path) {
       Iterator<String> it = extractExtensions.iterator();
       while(it.hasNext()) {
         String ext = it.next();
-        if(url.getFile().endsWith(ext)) {
+        if(url.getFile().toLowerCase().endsWith(ext)) {
           File zip = new File(base);
         	String targetPath = fileName;
         	String parent = zip.getParent();
