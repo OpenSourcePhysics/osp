@@ -36,7 +36,8 @@ public class CalculationApp extends AbstractCalculation {
   }
   
   public void myFunction() {
-	  System.out.println("Button pressed.");
+	  System.out.println("Button pressed.");  // for debugging
+	  control.println("Button pressed");
   }
 
   /**

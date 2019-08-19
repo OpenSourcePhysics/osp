@@ -114,7 +114,9 @@ public class MethodWithOneParameter {
     // System.out.println ("Invoking method "+this.methodName+" with Value "+parameterList);
     try {
       if(returnValue==null) { // void return type
-        methodToCall.invoke(targetObject, parameterList);
+    	System.err.println ("invoking methodToCall  = "+methodToCall+ "  targetObject= "+targetObject + " parameters=" +parameterList);
+        methodToCall.invoke(targetObject, parameterList);  // WC: triggers Exception in JavaScript, but not Java
+        System.out.println ("after void return");
       } else if(returnValue instanceof DoubleValue) {
         ((DoubleValue) returnValue).value = ((Double) methodToCall.invoke(targetObject, parameterList)).doubleValue();
       } else if(returnValue instanceof IntegerValue) {
@@ -149,6 +151,8 @@ public class MethodWithOneParameter {
   }
 
   static public Method resolveMethod(Object _target, String _name, Class<?>[] _classList) {
+    // Added by W. Christian.  JS methods names always end with $
+	if(org.opensourcephysics.js.JSUtil.isJS && !_name.contains("$"))_name= _name+"$";
     java.lang.reflect.Method[] allMethods = _target.getClass().getMethods();
     for(int i = 0; i<allMethods.length; i++) {
       if(!allMethods[i].getName().equals(_name)) {

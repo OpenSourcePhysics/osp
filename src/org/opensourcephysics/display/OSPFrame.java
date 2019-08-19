@@ -503,7 +503,7 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
    */
   public JButton addButton(String methodName, String text, String toolTipText, final Object target) {
     TranslatableButton b = new TranslatableButton(text, toolTipText, target);
-    // changed by D Brown 2007-10-17
+    // changed to add translation tools for strings by D Brown 2007-10-17
     if(OSPRuntime.getTranslator()!=null) {
       text = OSPRuntime.getTranslator().getProperty(target.getClass(), "custom_button."+text, text);                      //$NON-NLS-1$
       toolTipText = OSPRuntime.getTranslator().getProperty(target.getClass(), "custom_button."+toolTipText, toolTipText); //$NON-NLS-1$
@@ -511,12 +511,8 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
     b.setText(text);
     b.setToolTipText(toolTipText);
     Class<?>[] parameters = {};
-    try {
-       if(org.opensourcephysics.js.JSUtil.isJS) {
-    	   System.err.println("Cannot add button to invoke: "+methodName);  // WC: reflection fails in SwingJS
-    	   return null;
-      }
-      final java.lang.reflect.Method m = target.getClass().getMethod(methodName, parameters);  // SwingJS throws no such method error
+    try {   
+      final java.lang.reflect.Method m = target.getClass().getMethod(methodName, parameters); 
       b.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           Object[] args = {};
