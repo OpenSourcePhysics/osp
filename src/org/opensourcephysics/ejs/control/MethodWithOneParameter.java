@@ -114,9 +114,7 @@ public class MethodWithOneParameter {
     // System.out.println ("Invoking method "+this.methodName+" with Value "+parameterList);
     try {
       if(returnValue==null) { // void return type
-    	System.err.println ("invoking methodToCall  = "+methodToCall+ "  targetObject= "+targetObject + " parameters=" +parameterList);
-        methodToCall.invoke(targetObject, parameterList);  // WC: triggers Exception in JavaScript, but not Java
-        System.out.println ("after void return");
+        methodToCall.invoke(targetObject, parameterList);
       } else if(returnValue instanceof DoubleValue) {
         ((DoubleValue) returnValue).value = ((Double) methodToCall.invoke(targetObject, parameterList)).doubleValue();
       } else if(returnValue instanceof IntegerValue) {
@@ -151,11 +149,12 @@ public class MethodWithOneParameter {
   }
 
   static public Method resolveMethod(Object _target, String _name, Class<?>[] _classList) {
-    // Added by W. Christian.  JS methods names always end with $
-	if(org.opensourcephysics.js.JSUtil.isJS && !_name.contains("$"))_name= _name+"$";
     java.lang.reflect.Method[] allMethods = _target.getClass().getMethods();
     for(int i = 0; i<allMethods.length; i++) {
-      if(!allMethods[i].getName().equals(_name)) {
+      // Added by W. Christian:  SwingJS getMethods returns functions that end with $
+      String jsName= _name;
+      if(org.opensourcephysics.js.JSUtil.isJS && allMethods[i].getName().endsWith("$") && !_name.endsWith("$")){jsName= _name+"$";} // append $ to name if needed
+      if(!allMethods[i].getName().equals(jsName)) {
         continue;
       }
       Class<?>[] parameters = allMethods[i].getParameterTypes();
@@ -170,7 +169,16 @@ public class MethodWithOneParameter {
         }
       }
       if(fits) {
-        return allMethods[i];
+    	if(org.opensourcephysics.js.JSUtil.isJS){
+        	java.lang.reflect.Method m=null;
+        	try {
+        	  m= _target.getClass().getMethod(_name, parameters); 
+        	}catch(NoSuchMethodException nsme) {
+        	      System.err.println("Error resolving method"+_name); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            }
+        	return m;    		
+    	}
+        return allMethods[i]; //WC: SwingJS adds an extra $ to methods in this array
       }
     }
     return null;
