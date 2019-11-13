@@ -642,7 +642,8 @@ public class OSPRuntime {
     		file = file.getParentFile();
     	}
 	  	if (OSPRuntime.isWindows()) {
-	  		// typical jdk: Program Files\Java\jdkX.X.X_XX\jre\bin\java.exe
+	  		// typical jdk: Program Files\Java\jdkX.X.X_XX\jre\bin\java.exe 
+	  		//					 or Program Files\Java\jdkXX.X.X\bin\java.exe
 	  		// typical jre: Program Files\Java\jreX.X.X_XX\bin\java.exe
 	  		//           or Program Files\Java\jreX\bin\java.exe
 	  		// typical 32-bit jdk in 64-bit Windows: Program Files(x86)\Java\jdkX.X.X_XX\jre\bin\java.exe
@@ -654,8 +655,14 @@ public class OSPRuntime {
 	  				&& file.getParentFile().getName().indexOf("jdk")>-1) { //$NON-NLS-1$
 	  			file = file.getParentFile();
 	  		}
-	  		if (file.getName().indexOf("jdk")>-1) //$NON-NLS-1$
-	  			file = new File(file, "jre/bin/java.exe"); //$NON-NLS-1$
+	  		if (file.getName().indexOf("jdk")>-1) { //$NON-NLS-1$
+	  			File jreFile = new File(file, "jre/bin/java.exe"); //$NON-NLS-1$
+	  			if (jreFile.exists()) file = jreFile;
+	  			else {
+	  				// newer jdks do NOT have a jre included so just use them directly
+	  				file = new File(file, "bin/java.exe"); //$NON-NLS-1$
+	  			}
+	  		}
 	  		else if (file.getName().indexOf("jre")>-1) { //$NON-NLS-1$
 	  			file = new File(file, "bin/java.exe"); //$NON-NLS-1$
 	  		}
