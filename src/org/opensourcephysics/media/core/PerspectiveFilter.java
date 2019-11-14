@@ -2,14 +2,14 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <http://www.opensourcephysics.org/>
+ * <https://www.compadre.org/osp/>
  */
 
 /*
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2017  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2019  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
  * For additional information and documentation on Open Source Physics,
- * please see <http://www.opensourcephysics.org/>.
+ * please see <https://www.compadre.org/osp/>.
  */
 package org.opensourcephysics.media.core;
 import java.awt.BasicStroke;
@@ -490,7 +490,6 @@ public class PerspectiveFilter extends Filter {
 	    	xTrans[i] = (matrix[0][0]*xSource[i] + matrix[0][1]*ySource[i] + matrix[0][2])/w;
 	    	yTrans[i] = (matrix[1][0]*xSource[i] + matrix[1][1]*ySource[i] + matrix[1][2])/w;
 	    }
-  		
   	}
   }
   
@@ -507,6 +506,7 @@ public class PerspectiveFilter extends Filter {
   	// get base pixel position
   	int col = (int)Math.floor(x);
   	int row = (int)Math.floor(y);
+  	
   	if (col<0 || col>=w || row<0 || row>=h) {
   		return 0;  // black if not in image
   	}
@@ -539,7 +539,7 @@ public class PerspectiveFilter extends Filter {
   	}
   	
 		// if not interpolating, return value of nearest neighbor  		
-		return u<0.5? v<0.5? pixelValues[row*w+col]: pixelValues[(row+1)*w+col]:
+  	return u<0.5? v<0.5? pixelValues[row*w+col]: pixelValues[(row+1)*w+col]:
 			v<0.5? pixelValues[row*w+col+1]: pixelValues[(row+1)*w+col+1];
   }
   
@@ -548,11 +548,11 @@ public class PerspectiveFilter extends Filter {
    * 
    * @param x the x-position relative to 0,0 (0<=x<1)
    * @param x the y-position relative to 0,0 (0<=y<1)
-   * @param values array of pixels color values [value(0,0), value(0,1), value(1,0), value(1,1)]
+   * @param values array of pixels color values [value(0,0), value(1,0), value(0,1), value(1,1)]
    * @return the interpolated color value 
    */
   private int bilinearInterpolation(double x, double y, int[] values) {
-  		return (int)((1-y)*((1-x)*values[0] + x*values[2]) + y*((1-x)*values[1] + x*values[3]));  	
+  	return (int)((1-y)*((1-x)*values[0] + x*values[1]) + y*((1-x)*values[2] + x*values[3]));  	
   }
   
 
@@ -645,7 +645,7 @@ public class PerspectiveFilter extends Filter {
   	matrix[2][1] = m1[0][1]*m2[2][0] + m1[1][1]*m2[2][1] + m1[2][1]*m2[2][2]; 
   	matrix[0][2] = m1[0][2]*m2[0][0] + m1[1][2]*m2[0][1] + m1[2][2]*m2[0][2]; 
   	matrix[1][2] = m1[0][2]*m2[1][0] + m1[1][2]*m2[1][1] + m1[2][2]*m2[1][2]; 
-  	matrix[2][2] = m1[0][2]*m2[2][0] + m1[1][2]*m2[2][1] + m1[2][2]*m2[2][2]; 
+  	matrix[2][2] = m1[0][2]*m2[2][0] + m1[1][2]*m2[2][1] + m1[2][2]*m2[2][2];   	
   }
 
   private double[][] getCornerData(Point2D[] cornerPoints) {
@@ -1447,6 +1447,6 @@ public class PerspectiveFilter extends Filter {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017  The Open Source Physics project
- *                     http://www.opensourcephysics.org
+ * Copyright (c) 2019  The Open Source Physics project
+ *                     https://www.compadre.org/osp
  */

@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <http://www.opensourcephysics.org/>
+ * <https://www.compadre.org/osp/>
  */
 
 package org.opensourcephysics.display;
@@ -221,7 +221,10 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
       	else if (e.getPropertyName().equals("locale")) { //$NON-NLS-1$
           // set the default decimal separator
       		Locale locale = (Locale)e.getNewValue();
-      		DecimalFormat format = (DecimalFormat)NumberFormat.getInstance(locale);
+      		if (locale.equals(OSPRuntime.PORTUGUESE)) {
+      			locale = Locale.FRENCH; // substitute french since portuguese locale returns spurious decimal separator
+      		}
+      		DecimalFormat format = (DecimalFormat)NumberFormat.getNumberInstance(locale);
           OSPRuntime.setDefaultDecimalSeparator(format.getDecimalFormatSymbols().getDecimalSeparator());
       		refreshDecimalSeparators();
       		refreshGUI();
@@ -2882,6 +2885,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017  The Open Source Physics project
- *                     http://www.opensourcephysics.org
+ * Copyright (c) 2019  The Open Source Physics project
+ *                     https://www.compadre.org/osp
  */

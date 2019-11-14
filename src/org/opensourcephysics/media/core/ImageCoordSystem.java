@@ -2,14 +2,14 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <http://www.opensourcephysics.org/>
+ * <https://www.compadre.org/osp/>
  */
 
 /*
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2017  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2019  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
  * For additional information and documentation on Open Source Physics,
- * please see <http://www.opensourcephysics.org/>.
+ * please see <https://www.compadre.org/osp/>.
  */
 package org.opensourcephysics.media.core;
 import java.awt.geom.AffineTransform;
@@ -67,6 +67,7 @@ public class ImageCoordSystem {
   private DoubleArray originX, originY;
   private DoubleArray cosine, sine;
   TreeSet<Integer> keyFrames = new TreeSet<Integer>();
+  protected boolean ignoreUpdateRequests = false;
   protected boolean firePropChange = true;
   private boolean isAdjusting = false;
   private boolean fixedOrigin = true;
@@ -590,7 +591,7 @@ public class ImageCoordSystem {
     			break;
     		}
     	}
-    	setOriginsXY(n, end, valueX, valueY);
+	    setOriginsXY(n, end, valueX, valueY);
     	keyFrames.add(n);
     	return;
     }
@@ -1123,7 +1124,8 @@ public class ImageCoordSystem {
   /**
    * Updates all transforms used to convert between drawing spaces.
    */
-  private void updateAllTransforms() {
+  protected void updateAllTransforms() {
+  	if (ignoreUpdateRequests) return;
     try {
       // don't fire property changes for individual updates
       firePropChange = false;
@@ -1149,6 +1151,7 @@ public class ImageCoordSystem {
    * @throws NoninvertibleTransformException
    */
   private void updateTransforms(int n) throws NoninvertibleTransformException {
+  	if (ignoreUpdateRequests) return;
     // update toImage transform
     AffineTransform at = toImage.get(n);
     double tx = originX.get(n);
@@ -1173,15 +1176,19 @@ public class ImageCoordSystem {
    * @param end the end frame number
    */
   private void updateTransforms(int start, int end) {
+  	if (ignoreUpdateRequests) return;
     try {
       // don't fire property changes for individual updates
+    	boolean prev = firePropChange;
       firePropChange = false;
       for(int i = start; i<length; i++) {
         updateTransforms(i);
       }
-      firePropChange = true;
+      firePropChange = prev;
       // fire property change for overall updates
-      support.firePropertyChange("transform", null, null); //$NON-NLS-1$
+      if (firePropChange) {
+      	support.firePropertyChange("transform", null, null); //$NON-NLS-1$
+      }
     } catch(NoninvertibleTransformException ex) {
       ex.printStackTrace();
     }
@@ -1259,6 +1266,6 @@ public class ImageCoordSystem {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017  The Open Source Physics project
- *                     http://www.opensourcephysics.org
+ * Copyright (c) 2019  The Open Source Physics project
+ *                     https://www.compadre.org/osp
  */

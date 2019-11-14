@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <http://www.opensourcephysics.org/>
+ * <https://www.compadre.org/osp/>
  */
 
 package org.opensourcephysics.tools;
@@ -33,6 +33,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -180,7 +181,7 @@ public class LibraryTreePanel extends JPanel {
   protected MouseAdapter treeMouseListener, convertPathMouseListener;
   protected TreeSelectionListener treeSelectionListener;
   protected XMLControl pasteControl;
-  protected boolean isEditing, isChanged, isXMLPath, ignoreChanges;
+  protected boolean isEditing, isChanged, ignoreChanges;
   protected XMLControl revertControl;
   protected int typeFieldWidth;
   protected String command;
@@ -205,11 +206,9 @@ public class LibraryTreePanel extends JPanel {
    * @param resource the resource
    * @param path the file path to the resource or collection
    * @param editable true if the collection is user-editable
-   * @param pathIsXML true if the path points to a DL xml file
    */
-  public void setRootResource(LibraryResource resource, String path, boolean editable, boolean pathIsXML) {
+  public void setRootResource(LibraryResource resource, String path, boolean editable) {
     rootResource = resource;
-    isXMLPath = pathIsXML;
     pathToRoot = path;
     // clean up existing tree, if any
     if (tree!=null) {
@@ -358,7 +357,7 @@ public class LibraryTreePanel extends JPanel {
    */
   protected boolean isEditable() {
   	boolean editable = rootNode!=null && rootNode.isEditable();
-  	if (editable && !pathToRoot.startsWith("http:")) { //$NON-NLS-1$
+  	if (editable && !pathToRoot.startsWith("http")) { //$NON-NLS-1$
   		File file = new File(pathToRoot);
   		editable = !file.exists() || file.canWrite();
   	}
@@ -372,6 +371,16 @@ public class LibraryTreePanel extends JPanel {
    */
   protected boolean isEditing() {
   	return isEditing;
+  }
+  
+  /**
+   * Refreshes the display of the selected node.
+   */
+  public void refreshSelectedNode() {
+  	LibraryTreeNode node = getSelectedNode();
+  	if (node!=null) {
+  		showInfo(node);
+  	}
   }
   
   /**
@@ -417,7 +426,7 @@ public class LibraryTreePanel extends JPanel {
       // check to see if resource is available
   		boolean available = false;
   		if (path!=null) { 
-  			if (path.startsWith("http:/")) {//$NON-NLS-1$
+  			if (path.startsWith("http")) {//$NON-NLS-1$
 	  			available = LibraryBrowser.isWebConnected();
 	  			if (!available) {
 	  				File cachedFile = null;
@@ -1301,7 +1310,7 @@ public class LibraryTreePanel extends JPanel {
   		revertControl = new XMLControlElement(revertControl);
   		LibraryResource record = (LibraryResource)revertControl.loadObject(null);
   		isChanged = false;
-  		setRootResource(record, pathToRoot, rootNode.isEditable(), isXMLPath);
+  		setRootResource(record, pathToRoot, rootNode.isEditable());
 			browser.refreshTabTitle(pathToRoot, rootResource);
   	}
   }
@@ -1489,20 +1498,28 @@ public class LibraryTreePanel extends JPanel {
    * @return the path to the saved file, or null if not saved
    */
   protected String save() {
-  	if (!isXMLPath) {
+		String recentCollectionPath = LibraryBrowser.getOSPPath()+LibraryBrowser.RECENT_COLLECTION_NAME;
+		if (recentCollectionPath.equals(rootResource.collectionPath)) {
+			XMLControl control = new XMLControlElement(rootResource);
+			control.write(pathToRoot);			
+			isChanged = false;
+		}
+		// if this is not a local xml file then saveAs
+		else if (pathToRoot.contains("http") //$NON-NLS-1$
+				|| !pathToRoot.toLowerCase().endsWith("xml")) { //$NON-NLS-1$
   		return browser.saveAs();
   	}
   	else if (isEditable()) {
 			XMLControl control = new XMLControlElement(rootResource);
-			control.write(pathToRoot);
+			control.write(pathToRoot);			
 			isChanged = false;
 		}
 		// save copy in OSP search folder
 		File cacheFile = ResourceLoader.getSearchCacheFile(pathToRoot);
-		XMLControl control = new XMLControlElement(rootNode.record);
+		XMLControl control = new XMLControlElement(rootResource);
 		control.setValue("real_path", pathToRoot); //$NON-NLS-1$
 		control.write(cacheFile.getAbsolutePath());
-		
+  	
 		return pathToRoot;
   }
 
@@ -1955,7 +1972,7 @@ public class LibraryTreePanel extends JPanel {
 	          		canceled = true; // prevents this from executing twice
 	          		// finished loading all nodes, so write xml file in OSP search folder
         	  		File cacheFile = ResourceLoader.getSearchCacheFile(pathToRoot);
-        	  		XMLControl control = new XMLControlElement(rootNode.record);
+        	  		XMLControl control = new XMLControlElement(rootResource);
         	  		control.setValue("real_path", pathToRoot); //$NON-NLS-1$
         				control.write(cacheFile.getAbsolutePath());
         				
@@ -2008,6 +2025,7 @@ public class LibraryTreePanel extends JPanel {
   	boolean hasNewChildren = false;
   	
   	NodeLoader(LibraryTreeNode treeNode) {
+  		// node may be a resource (with target) or collection (with or w/o target)
   		node = treeNode;
   	}
   	  	
@@ -2015,62 +2033,76 @@ public class LibraryTreePanel extends JPanel {
     public Void doInBackground() {
     	
 	  	String htmlPath = node.getHTMLPath();
-	  	String target = node.getAbsoluteTarget();			
+	  	String target = node.getAbsoluteTarget();		
 	  	boolean isZip = target!=null && 
 	  			(target.toLowerCase().endsWith(".zip") || target.toLowerCase().endsWith(".trz")); //$NON-NLS-1$ //$NON-NLS-2$
-			// if htmlPath is null and target is ZIP, look for HTML and title inside zip file
-			if (htmlPath==null && isZip) {
-		  	String ext = "."+XML.getExtension(target); //$NON-NLS-1$
+			// if target is TRZ or ZIP, look for HTML and title inside
+			if (isZip) {
 				URL targetURL = node.getTargetURL();  // returns cached target URL, if any
 				String targetURLPath = targetURL.toExternalForm();
-  			String targetName = XML.getName(targetURLPath);
-				if (node.getName().equals(targetName)) {
-	  			targetName = XML.stripExtension(targetName);
-   	    	// look inside zip for html with same name as zip or trk
-  				Set<String> files = ResourceLoader.getZipContents(targetURLPath);
-  				String htmlInfoPath = null;
+				String targetName = ResourceLoader.getNonURIPath(XML.getName(targetURLPath));
+		  	String ext = "."+XML.getExtension(target); //$NON-NLS-1$		  	
+  			targetName = XML.stripExtension(targetName);
+  			String baseName = targetName; // name shared by thumbnail and info files
+	  			
+ 	    	// get list of all zip contents
+  			Collection<String> files = ResourceLoader.getZipContents(targetURLPath);
+  			
+  			// first determine the true baseName from the thumbnail
+				for (String s: files) {
+					if (s.toLowerCase().contains("_thumbnail")) { //$NON-NLS-1$
+						baseName = s.substring(0, s.indexOf("_thumbnail")); //$NON-NLS-1$
+						break;
+					}
+				}
+				
+				// find the html info file with the same base name
+				String htmlInfoPath = null;
+				for (String s: files) {
+					String htmlName = XML.stripExtension(XML.getName(s));
+					if (s.toLowerCase().contains(".htm")  //$NON-NLS-1$
+							&& (htmlName.equals(baseName+"_info"))) { //$NON-NLS-1$
+						htmlInfoPath = s;
+						break;
+					}
+				}
+				// if html info not found with base name see if associated with trk files 
+				if (htmlInfoPath==null) {
   				for (String s: files) {
-  					String htmlName = XML.stripExtension(XML.getName(s));
-  					if (s.toLowerCase().contains(".htm")  //$NON-NLS-1$
-  							&& (htmlName.equals(targetName+"_info"))) { //$NON-NLS-1$
-  						htmlInfoPath = s;
+  					if ("trk".equals(XML.getExtension(s))) { //$NON-NLS-1$
+  						String trkName = XML.stripExtension(XML.getName(s));
+  	  				for (String ss: files) {
+  	  					String htmlName = XML.stripExtension(XML.getName(ss));
+  	  					if (ss.toLowerCase().contains(".htm")  //$NON-NLS-1$
+  	  							&& (htmlName.equals(trkName+"_info"))) { //$NON-NLS-1$
+  	  						htmlInfoPath = ss;
+  	  					}
+  	  				}	  						
   					}
   				}
-  				if (htmlInfoPath==null) {
-	  				for (String s: files) {
-	  					if ("trk".equals(XML.getExtension(s))) { //$NON-NLS-1$
-	  						String trkName = XML.stripExtension(XML.getName(s));
-	  	  				for (String ss: files) {
-	  	  					String htmlName = XML.stripExtension(XML.getName(ss));
-	  	  					if (ss.toLowerCase().contains(".htm")  //$NON-NLS-1$
-	  	  							&& (htmlName.equals(trkName+"_info"))) { //$NON-NLS-1$
-	  	  						htmlInfoPath = ss;
-	  	  					}
-	  	  				}	  						
-	  					}
-	  				}
-  				}
-  				
-  				if (htmlInfoPath!=null) {
-						// set node record's HTML path to relative path
-						htmlPath = targetURLPath+"!/"+htmlInfoPath; //$NON-NLS-1$
-						String htmlCode = ResourceLoader.getHTMLCode(htmlPath);
-						
-						String redirect = LibraryBrowser.getRedirectFromHTMLCode(htmlCode);
-						if (redirect!=null) {
-  						node.record.setHTMLPath(redirect);
-  						node.metadataSource = targetName+ext+"!/"+htmlInfoPath; //$NON-NLS-1$
-						}
-						else {
-							node.record.setHTMLPath(targetName+ext+"!/"+htmlInfoPath); //$NON-NLS-1$
-						}
-						
-		  			String title = ResourceLoader.getTitleFromHTMLCode(htmlCode);
-		  			if (title!=null) {
-		  				node.record.setName(title);
-		  			}
-  				}	      	  				
-  			} 				
+				}
+				
+				// if html info is found, set node properties 
+				if (htmlInfoPath!=null) {
+					// set node record's HTML path to relative path
+					htmlPath = targetURLPath+"!/"+htmlInfoPath; //$NON-NLS-1$
+					String htmlCode = ResourceLoader.getHTMLCode(htmlPath);
+					
+					String redirect = LibraryBrowser.getRedirectFromHTMLCode(htmlCode);
+					if (redirect!=null) {
+						node.record.setHTMLPath(redirect);
+						node.metadataSource = targetName+ext+"!/"+htmlInfoPath; //$NON-NLS-1$
+					}
+					else {
+						node.record.setHTMLPath(targetName+ext+"!/"+htmlInfoPath); //$NON-NLS-1$
+					}
+					
+	  			String title = ResourceLoader.getTitleFromHTMLCode(htmlCode);
+	  			if (title!=null) {
+	  				node.record.setName(title);
+	  			}
+				}	      	  				
+  		 				
 			}
 			
 			// load ComPADRE nodes
@@ -2124,6 +2156,7 @@ public class LibraryTreePanel extends JPanel {
   		if (node==rootNode) {
     		browser.refreshTabTitle(pathToRoot, rootResource);
   		}
+  		browser.refreshGUI();
     }
   }
   
@@ -2147,27 +2180,33 @@ public class LibraryTreePanel extends JPanel {
 		  	URL url = node.getHTMLURL(); // returns URL of original (if available) or cached (if it exists) HTML file
 		  	
 		  	if (url!=null) {
-		  		htmlPane = htmlPanesByURL.get(url);
-			  	if (htmlPane==null) {
-			  		htmlPane = new HTMLPane();
-			  		htmlPanesByURL.put(url, htmlPane);
-			  		htmlPane.setText("<h2>"+node+"</h2>"); //$NON-NLS-1$ //$NON-NLS-2$
-			  		try {
-	      			htmlPane.setPage(url);
-	    			} catch (Exception ex) {}
-			  	}
-			  	else if (!url.equals(htmlPane.getPage())) {
-		    		try {
-			  			htmlPane.getDocument().putProperty(Document.StreamDescriptionProperty, null);
-			  			htmlPane.setPage(url);
-						} catch (Exception ex) {}	  			
-			  	}
+		  		synchronized (htmlPanesByURL) {
+						htmlPane = htmlPanesByURL.get(url);
+						if (htmlPane == null) {
+							htmlPane = new HTMLPane();
+							htmlPanesByURL.put(url, htmlPane);
+							htmlPane.setText("<h2>" + node + "</h2>"); //$NON-NLS-1$ //$NON-NLS-2$
+							try {
+								htmlPane.setPage(url);
+							} catch (Exception ex) {}
+						}
+						else {
+							URL curURL = htmlPane.getPage();
+							if (!url.equals(curURL)) {
+								try {
+									htmlPane.getDocument().putProperty(Document.StreamDescriptionProperty, null);
+									htmlPane.setPage(url);
+								} catch (Exception ex) {}
+							}
+						}
+					}
 		  	}
 		  	else { // url==null
 		  		htmlPane = new HTMLPane();
 		  		String htmlStr = node.getHTMLString();
 		  		htmlPane.setText(htmlStr);
 		  	}
+		  	
 		  	if (htmlPane.getDocument() instanceof HTMLDocument) {
 	  	    HTMLDocument document = (HTMLDocument)htmlPane.getDocument();
 	  	    document.getStyleSheet().addRule(LibraryResource.getBodyStyle());  	
@@ -2416,6 +2455,6 @@ public class LibraryTreePanel extends JPanel {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017  The Open Source Physics project
- *                     http://www.opensourcephysics.org
+ * Copyright (c) 2019  The Open Source Physics project
+ *                     https://www.compadre.org/osp
  */

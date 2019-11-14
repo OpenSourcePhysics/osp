@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <http://www.opensourcephysics.org/>
+ * <https://www.compadre.org/osp/>
  */
 
 package org.opensourcephysics.display;
@@ -15,7 +15,7 @@ package org.opensourcephysics.display;
  * Minimum and maximum values may NOT be valid if isMeasured returns false.  Objects that
  * store data, for example, usually return zero if data is null.
  *
- * Copyright:    Copyright (c) 2017
+ * Copyright:    Copyright (c) 2019
  * @author Wolfgang Christian
  * @version 1.0
  */
@@ -66,6 +66,6 @@ public interface LogMeasurable extends Measurable {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017  The Open Source Physics project
- *                     http://www.opensourcephysics.org
+ * Copyright (c) 2019  The Open Source Physics project
+ *                     https://www.compadre.org/osp
  */

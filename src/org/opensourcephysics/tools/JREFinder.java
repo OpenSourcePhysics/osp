@@ -386,7 +386,7 @@ public class JREFinder {
   	@Override
     public boolean accept(File dir, String name) {
       if (!dir.getPath().endsWith("bin")) return false; //$NON-NLS-1$
-      if (!OSPRuntime.isMac() && !dir.getParent().contains("jre")) return false; //$NON-NLS-1$
+//      if (!OSPRuntime.isMac() && !dir.getParent().contains("jre")) return false; //$NON-NLS-1$
       // reject older versions
     	if (dir.getPath().contains("1.6.") || dir.getPath().contains("jre6")  //$NON-NLS-1$ //$NON-NLS-2$
     			|| dir.getPath().contains("-6-") //$NON-NLS-1$

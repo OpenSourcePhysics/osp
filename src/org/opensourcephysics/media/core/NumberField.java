@@ -2,14 +2,14 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <http://www.opensourcephysics.org/>
+ * <https://www.compadre.org/osp/>
  */
 
 /*
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2017  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2019  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
  * For additional information and documentation on Open Source Physics,
- * please see <http://www.opensourcephysics.org/>.
+ * please see <https://www.compadre.org/osp/>.
  */
 package org.opensourcephysics.media.core;
 import java.awt.Color;
@@ -41,7 +41,6 @@ import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
-
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
@@ -164,6 +163,12 @@ public class NumberField extends JTextField {
     if(s.equals(format.format(prevValue*conversionFactor))) {
       return prevValue;
     }
+
+    // replace other separators with current decimal separator
+    char ccc = format.getDecimalFormatSymbols().getDecimalSeparator();
+    String toReplace = ccc=='.'? ",": "\\."; //$NON-NLS-1$ //$NON-NLS-2$
+    s = s.replaceAll(toReplace, Character.toString(ccc));
+    
     double retValue;
     try {
       retValue = format.parse(s).doubleValue()/conversionFactor;
@@ -482,6 +487,6 @@ public class NumberField extends JTextField {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017  The Open Source Physics project
- *                     http://www.opensourcephysics.org
+ * Copyright (c) 2019  The Open Source Physics project
+ *                     https://www.compadre.org/osp
  */

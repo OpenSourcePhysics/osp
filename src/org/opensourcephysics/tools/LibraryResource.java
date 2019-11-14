@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <http://www.opensourcephysics.org/>
+ * <https://www.compadre.org/osp/>
  */
 
 package org.opensourcephysics.tools;
@@ -13,6 +13,7 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +58,8 @@ public class LibraryResource implements Comparable<LibraryResource> {
   @SuppressWarnings("javadoc")
 	public static final String TRACKER_TYPE = "Tracker"; //$NON-NLS-1$
   @SuppressWarnings("javadoc")
+	public static final String TRACKER_TAB_TYPE = "TrackerTab"; //$NON-NLS-1$
+  @SuppressWarnings("javadoc")
 	public static final String EJS_TYPE = "EJS"; //$NON-NLS-1$
   @SuppressWarnings("javadoc")
 	public static final String VIDEO_TYPE = "Video"; //$NON-NLS-1$
@@ -67,7 +70,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
   @SuppressWarnings("javadoc")
 	public static final String PDF_TYPE = "PDF"; //$NON-NLS-1$
   protected static final String[] RESOURCE_TYPES 
-  		= {TRACKER_TYPE, EJS_TYPE, VIDEO_TYPE, IMAGE_TYPE, HTML_TYPE, PDF_TYPE, UNKNOWN_TYPE};
+  		= {TRACKER_TYPE, TRACKER_TAB_TYPE, VIDEO_TYPE, IMAGE_TYPE, HTML_TYPE, PDF_TYPE, EJS_TYPE, UNKNOWN_TYPE};
   
   // static fields
   protected static List<String> allResourceTypes = new ArrayList<String>();
@@ -195,11 +198,11 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	}
 	
   /**
-   * Gets the absolute path to the target. Note: this is needed for the
+   * Gets the absolute path to the target. Note: this is needed for the compareTo method.
    *
    * @return the absolute target, or empty String if none
    */
-	private String getAbsoluteTarget() {
+	protected String getAbsoluteTarget() {
 		if ("".equals(target)) return target; //$NON-NLS-1$
   	return XML.getResolvedPath(target, getInheritedBasePath());
 	}
@@ -215,9 +218,13 @@ public class LibraryResource implements Comparable<LibraryResource> {
 		if (!path.equals(target)) {
 			thumbnail = null;
 			target = path;
+			
+			// determine and set the type
 			path = path.toUpperCase();
-			if (path.endsWith(".TRK") || path.endsWith(".TRZ")) //$NON-NLS-1$ //$NON-NLS-2$
+			if (path.endsWith(".TRZ")) //$NON-NLS-1$ 
 				setType(LibraryResource.TRACKER_TYPE);
+			else if (path.endsWith(".TRK")) //$NON-NLS-1$ 
+				setType(LibraryResource.TRACKER_TAB_TYPE);
 			else if (path.endsWith(".PDF")) //$NON-NLS-1$
 				setType(LibraryResource.PDF_TYPE);
 			else if (path.indexOf("EJS")>-1) { //$NON-NLS-1$
@@ -228,7 +235,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 		    Runnable runner = new Runnable() {
 		      public void run() {
 	  				String zipPath = XML.getResolvedPath(target, base);
-						Set<String> files = ResourceLoader.getZipContents(zipPath);
+	  				Collection<String> files = ResourceLoader.getZipContents(zipPath);
 						for (String next: files) {
 							if (next.toUpperCase().endsWith(".TRK")) { //$NON-NLS-1$
 								setType(LibraryResource.TRACKER_TYPE);
@@ -341,7 +348,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
   /**
    * Gets the type of resource.
    *
-   * @return the one of the static constant types defined in this class
+   * @return one of the static constant types defined in this class
    */
 	public String getType() {
 		return type;
@@ -467,6 +474,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	public Icon getIcon() {
 		ResizableIcon icon = null;
 		if (type==TRACKER_TYPE) icon = trackerIcon;
+		if (type==TRACKER_TAB_TYPE) icon = trackerIcon;
 		if (type==EJS_TYPE) icon = ejsIcon;
 		if (type==IMAGE_TYPE) icon = imageIcon;
 		if (type==VIDEO_TYPE) icon = videoIcon;
@@ -515,8 +523,9 @@ public class LibraryResource implements Comparable<LibraryResource> {
     if (title.equals("") && path!=null) { //$NON-NLS-1$
     	String fileName = XML.getName(path);
     	String basePath = XML.getDirectoryPath(path);
-    	if (basePath.startsWith("http:")) { //$NON-NLS-1$
-    		basePath = basePath.substring(5);
+    	int n = basePath.indexOf(":"); //$NON-NLS-1$
+    	if (basePath.startsWith("http") && n>-1) { //$NON-NLS-1$
+    		basePath = basePath.substring(n+1);
     		while (basePath.startsWith("/")) { //$NON-NLS-1$
     			basePath = basePath.substring(1);
     		}
@@ -585,29 +594,15 @@ public class LibraryResource implements Comparable<LibraryResource> {
   	result = this.getType().compareTo(resource.getType());
 		if (result!=EQUAL) return result;
   	
-//  	// compare metadata
-//		Set<Metadata> meta1 = this.getMetadata();
-//		Set<Metadata> meta2 = resource.getMetadata();
-//  	if (meta1!=null || meta2!=null) {
-//  		if (meta1==null) return AFTER;
-//  		if (meta2==null) return BEFORE;
-//  		if (meta1.size()>meta2.size()) return BEFORE;
-//  		if (meta1.size()<meta2.size()) return AFTER;
-//  		// both have metadata sets of same size
-//    	for (Metadata next1: meta1) {
-//    		if (meta2.contains(next1)) continue; // same metadata in both
-//    		String key = next1.getData()[0];
-//    		for (Metadata next2: meta2) {
-//    			// same key found
-//    			if (next2.getData()[0].equals(key)) {
-//    				return next1.getData()[1].compareTo(next2.getData()[1]);
-//    			}
-//    		}
-//    	} 		
-//  	}
-		
-		// if collection, compare child resources
+		// if collection, compare collectionPath & child resources
 		if (this instanceof LibraryCollection && resource instanceof LibraryCollection) {
+			String path1 = ((LibraryCollection)this).getCollectionPath();
+			String path2 = ((LibraryCollection)resource).getCollectionPath();
+			if (path1==null) path1 = ""; //$NON-NLS-1$
+			if (path2==null) path2 = ""; //$NON-NLS-1$
+			result = path1.compareTo(path2);
+			if (result!=EQUAL) return result;
+			
 			LibraryResource[] children1 = ((LibraryCollection)this).getResources();
 			LibraryResource[] children2 = ((LibraryCollection)resource).getResources();
 			if (children1.length>children2.length) return BEFORE;
@@ -1042,6 +1037,6 @@ public class LibraryResource implements Comparable<LibraryResource> {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017  The Open Source Physics project
- *                     http://www.opensourcephysics.org
+ * Copyright (c) 2019  The Open Source Physics project
+ *                     https://www.compadre.org/osp
  */

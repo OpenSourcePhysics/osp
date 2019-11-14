@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <http://www.opensourcephysics.org/>
+ * <https://www.compadre.org/osp/>
  */
 
 package org.opensourcephysics.display;
@@ -50,7 +50,7 @@ import org.opensourcephysics.tools.Translator;
  * @version 1.0
  */
 public class OSPRuntime {
-  public static final String VERSION = "5.0.2";                                                                            //$NON-NLS-1$
+  public static final String VERSION = "5.1.0";                                                                            //$NON-NLS-1$
   public static final String COMMA_DECIMAL_SEPARATOR = ",";                                                                            //$NON-NLS-1$
   public static final String PERIOD_DECIMAL_SEPARATOR = ".";                                                                            //$NON-NLS-1$
 
@@ -81,6 +81,9 @@ public class OSPRuntime {
   /** Array of default OSP Locales. */
   public static Locale[] defaultLocales = new Locale[] {Locale.ENGLISH, new Locale("es"), new Locale("de"), //$NON-NLS-1$ //$NON-NLS-2$
     new Locale("da"), new Locale("sk"), Locale.TAIWAN};                                                       //$NON-NLS-1$ //$NON-NLS-2$
+
+  /** Portuguese locale */
+  public static final Locale PORTUGUESE = new Locale("pt", "PT"); //$NON-NLS-1$ //$NON-NLS-2$
 
   /** Set <I>true</I> if a program is being run within Launcher. */
   protected static boolean launcherMode = false;
@@ -188,7 +191,7 @@ public class OSPRuntime {
     LOOK_AND_FEEL_TYPES.put(SYSTEM_LF, UIManager.getSystemLookAndFeelClassName());
     LOOK_AND_FEEL_TYPES.put(DEFAULT_LF, DEFAULT_LOOK_AND_FEEL.getClass().getName());
 
-    NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
+    NumberFormat format = NumberFormat.getNumberInstance(Locale.getDefault());
     if (format instanceof DecimalFormat) {
       setDefaultDecimalSeparator(((DecimalFormat)format).getDecimalFormatSymbols().getDecimalSeparator());
     }
@@ -278,7 +281,7 @@ public class OSPRuntime {
 			vers += " released "+date; //$NON-NLS-1$
 		}
     String aboutString = vers+"\n"           //$NON-NLS-1$
-                         +"Open Source Physics Project \n"+"www.opensourcephysics.org"; //$NON-NLS-1$ //$NON-NLS-2$
+                         +"Open Source Physics Project \n"+"www.compadre.org/osp"; //$NON-NLS-1$ //$NON-NLS-2$
     JOptionPane.showMessageDialog(parent, aboutString, "About Open Source Physics", JOptionPane.INFORMATION_MESSAGE); //$NON-NLS-1$
   }
 
@@ -578,7 +581,7 @@ public class OSPRuntime {
     if(launchJarPath==null) {
       return null;
     }
-    boolean isWebFile = launchJarPath.startsWith("http:"); //$NON-NLS-1$
+    boolean isWebFile = launchJarPath.startsWith("http"); //$NON-NLS-1$
     if (!isWebFile) {
     	launchJarPath = ResourceLoader.getNonURIPath(launchJarPath);
     }
@@ -639,7 +642,8 @@ public class OSPRuntime {
     		file = file.getParentFile();
     	}
 	  	if (OSPRuntime.isWindows()) {
-	  		// typical jdk: Program Files\Java\jdkX.X.X_XX\jre\bin\java.exe
+	  		// typical jdk: Program Files\Java\jdkX.X.X_XX\jre\bin\java.exe 
+	  		//					 or Program Files\Java\jdkXX.X.X\bin\java.exe
 	  		// typical jre: Program Files\Java\jreX.X.X_XX\bin\java.exe
 	  		//           or Program Files\Java\jreX\bin\java.exe
 	  		// typical 32-bit jdk in 64-bit Windows: Program Files(x86)\Java\jdkX.X.X_XX\jre\bin\java.exe
@@ -651,8 +655,14 @@ public class OSPRuntime {
 	  				&& file.getParentFile().getName().indexOf("jdk")>-1) { //$NON-NLS-1$
 	  			file = file.getParentFile();
 	  		}
-	  		if (file.getName().indexOf("jdk")>-1) //$NON-NLS-1$
-	  			file = new File(file, "jre/bin/java.exe"); //$NON-NLS-1$
+	  		if (file.getName().indexOf("jdk")>-1) { //$NON-NLS-1$
+	  			File jreFile = new File(file, "jre/bin/java.exe"); //$NON-NLS-1$
+	  			if (jreFile.exists()) file = jreFile;
+	  			else {
+	  				// newer jdks do NOT have a jre included so just use them directly
+	  				file = new File(file, "bin/java.exe"); //$NON-NLS-1$
+	  			}
+	  		}
 	  		else if (file.getName().indexOf("jre")>-1) { //$NON-NLS-1$
 	  			file = new File(file, "bin/java.exe"); //$NON-NLS-1$
 	  		}
@@ -1294,6 +1304,6 @@ public class OSPRuntime {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017  The Open Source Physics project
- *                     http://www.opensourcephysics.org
+ * Copyright (c) 2019  The Open Source Physics project
+ *                     https://www.compadre.org/osp
  */

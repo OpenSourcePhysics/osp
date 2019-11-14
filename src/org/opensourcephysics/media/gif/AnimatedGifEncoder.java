@@ -2,14 +2,14 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <http://www.opensourcephysics.org/>
+ * <https://www.compadre.org/osp/>
  */
 
 /*
  * The org.opensourcephysics.media.gif package provides animated gif
  * implementations of the Video and VideoRecorder interfaces.
  *
- * Copyright (c) 2017  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2019  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
  * For additional information and documentation on Open Source Physics,
- * please see <http://www.opensourcephysics.org/>.
+ * please see <https://www.compadre.org/osp/>.
  */
 package org.opensourcephysics.media.gif;
 import java.awt.Color;
@@ -521,6 +521,6 @@ public class AnimatedGifEncoder {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017  The Open Source Physics project
- *                     http://www.opensourcephysics.org
+ * Copyright (c) 2019  The Open Source Physics project
+ *                     https://www.compadre.org/osp
  */

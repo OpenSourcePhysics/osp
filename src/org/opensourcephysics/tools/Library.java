@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <http://www.opensourcephysics.org/>
+ * <https://www.compadre.org/osp/>
  */
 
 package org.opensourcephysics.tools;
@@ -64,6 +64,12 @@ public class Library {
 			library.browser = this.browser;
 			ospPathList.add(path);
 			ospPathToLibraryMap.put(path, library);
+			if (path.equals(LibraryBrowser.TRACKER_LIBRARY)) {
+				LibraryBrowser.trackerLibraryName = library.getName();
+			}
+			else if (path.equals(LibraryBrowser.SHARED_LIBRARY)) {
+				LibraryBrowser.sharedLibraryName = library.getName();
+			}
 		}
   	return true;
 	}
@@ -336,6 +342,7 @@ public class Library {
    */
   protected void addRecent(String filename, boolean atEnd) {
   	if (filename==null) return;
+  	filename = XML.forwardSlash(filename);
   	synchronized(recentTabs) {
 	  	while (recentTabs.contains(filename))
 	  		recentTabs.remove(filename);
