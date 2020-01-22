@@ -69,7 +69,8 @@ public class ToolsRes {
    *
    * @param loc the locale
    */
-  public static void setLocale(Locale loc) {
+  public static void setLocale(Locale loc) {	  
+	if(org.opensourcephysics.js.JSUtil.isJS) return;
     if(resourceLocale==loc) {
       return;
     }

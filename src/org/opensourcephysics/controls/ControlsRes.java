@@ -65,6 +65,7 @@ public class ControlsRes {
   }
 
   public static void setLocale(Locale locale) {
+	if(org.opensourcephysics.js.JSUtil.isJS) return;
     res = ResourceBundle.getBundle(BUNDLE_NAME, locale);
     setLocalStrings();
   }

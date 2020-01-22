@@ -751,11 +751,12 @@ public class OSPRuntime {
 
   /**
    * Gets Locales for languages that have properties files in the core library.
-   * Locales are returned with english first, then in alphabetical order.
+   * Locales are returned with English first, then in alphabetical order.
    * @return Locale[]
    */
   public static Locale[] getInstalledLocales() {
     ArrayList<Locale> list = new ArrayList<Locale>();
+    if(org.opensourcephysics.js.JSUtil.isJS) return list.toArray(new Locale[0]);
     java.util.TreeMap<String, Locale> languages = new java.util.TreeMap<String, Locale>();
     list.add(Locale.ENGLISH); // english is first in list
     if(getLaunchJarPath()!=null) {
@@ -815,6 +816,7 @@ public class OSPRuntime {
    * @return the display language
    */
   public static String getDisplayLanguage(Locale locale) {
+	if(org.opensourcephysics.js.JSUtil.isJS) return "English";
   	if (locale.equals(Locale.CHINA))
   		return "\u7b80\u4f53\u4e2d\u6587"; //$NON-NLS-1$
   	if (locale.equals(Locale.TAIWAN))
