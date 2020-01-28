@@ -339,7 +339,8 @@ public class EncryptionTool extends JFrame implements Tool {
    * @return the name of the opened file, or null if none opened
    */
   private String open() {
-    int result = OSPRuntime.getChooser().showOpenDialog(this);
+    @SuppressWarnings("deprecation")
+	int result = OSPRuntime.getChooser().showOpenDialog(this);
     if(result==JFileChooser.APPROVE_OPTION) {
       OSPRuntime.chooserDir = OSPRuntime.getChooser().getCurrentDirectory().toString();
       String fileName = OSPRuntime.getChooser().getSelectedFile().getAbsolutePath();

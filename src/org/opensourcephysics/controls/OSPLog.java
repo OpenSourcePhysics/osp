@@ -813,7 +813,7 @@ public class OSPLog extends JFrame {
       JRadioButtonMenuItem item = new JRadioButtonMenuItem(levels[i].getName());
       menu.add(item, 0);
       popupGroup.add(item);
-      if(logger.getLevel().toString().equals(levels[i])) {
+      if(logger.getLevel().toString().equals(levels[i].toString())) {
         item.setSelected(true);
       }
       item.setActionCommand(levels[i].getName());
@@ -874,7 +874,7 @@ public class OSPLog extends JFrame {
       JRadioButtonMenuItem item = new JRadioButtonMenuItem(levels[i].getName());
       menu.add(item, 0);
       menubarGroup.add(item);
-      if(logger.getLevel().toString().equals(levels[i])) {
+      if(logger.getLevel().toString().equals(levels[i].toString())) {
         item.setSelected(true);
       }
       item.setActionCommand(levels[i].getName());
