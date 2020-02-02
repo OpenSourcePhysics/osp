@@ -37,7 +37,7 @@ public class SimulationApp extends AbstractSimulation {
    */
   public void reset() { // invoked when reset button is pressed
 	control.setValue("a", 10.0); // unused parameter
-    control.setAdjustableValue("counter", 90); // allows dt to be changed after initialization
+    control.setAdjustableValue("counter", 90); // allows counter to be changed after initialization
   }
 
   /**

@@ -17,6 +17,8 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
 import java.lang.reflect.Array;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -108,7 +110,32 @@ public class XMLControlElement implements XMLControl {
     level = parent.getLevel();
   }
 
+
   /**
+   * BH we need to read the File object directly, as it will have the data in it already.
+   * 
+   * @param xmlFile
+   */
+  public XMLControlElement(File xmlFile) {
+	    this();
+	    readData(getFileData(xmlFile));
+  }
+  
+  /**
+   * BH by far the simplest way to read a file in its entirety as byte[] or String
+   * 
+   * @param xmlFile
+   * @return
+   */
+  private String getFileData(File xmlFile) {
+	  try {
+		return new String(Files.readAllBytes(Paths.get(xmlFile.toURI())), "UTF-8");
+	} catch (IOException e) {
+		return "";
+	}
+  }
+
+/**
    * Constructs a control and reads the specified input.
    * Input may be a file name or an xml string
    *
@@ -116,14 +143,18 @@ public class XMLControlElement implements XMLControl {
    */
   public XMLControlElement(String input) {
     this();
-    if(input.startsWith("<?xml")) { //$NON-NLS-1$
-      readXML(input);
-    } else {
-      read(input);
-    }
+    readData(input);
   }
 
-  /**
+	private void readData(String input) {
+		if (input.startsWith("<?xml")) { //$NON-NLS-1$
+			readXML(input);
+		} else {
+			read(input);
+		}
+	}
+
+/**
    * Constructs a copy of the specified XMLControl.
    *
    * @param control the XMLControl to copy.

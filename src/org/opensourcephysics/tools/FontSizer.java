@@ -335,9 +335,11 @@ public class FontSizer {
     }
     else try {
 			Method m = c.getClass().getMethod("getIcon", (Class<?>[])null); //$NON-NLS-1$
-			Icon icon = (Icon)m.invoke(c, (Object[])null);
-			if (icon!=null && icon instanceof ResizableIcon) {
-				((ResizableIcon)icon).resize(getIntegerFactor());
+			if (m != null) {
+				Icon icon = (Icon)m.invoke(c, (Object[])null);
+				if (icon!=null && icon instanceof ResizableIcon) {
+					((ResizableIcon)icon).resize(getIntegerFactor());
+				}
 			}
 		} catch (Exception e) {
 		}

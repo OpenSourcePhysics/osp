@@ -38,11 +38,11 @@ import org.opensourcephysics.ejs.control.value.Value;
  * <code>setProperty()</code> method.
  * <p>
  * After this, the value common to several of these ControlElements can be
- * set and retrived using a single setValue() or getValue() call from the
+ * set and retrieved using a single setValue() or getValue() call from the
  * ControlGroup.
  * <p>
  * You can also add any action you want to a ControlElement, but it is the
- * implementing class' responsability to trigger an action in response
+ * implementing class' responsibility to trigger an action in response
  * to a user's gesture (with the mouse or keyboard)
  * <p>
  * @see     GroupControl
@@ -516,7 +516,7 @@ public abstract class ControlElement {
     return setProperties(propTable);
   }
 
-  // This is neccesary just to make sure that some properties are processed
+  // This is necessary just to make sure that some properties are processed
   // first and some others (such as 'value') last
   private void preprocess(String _property, Hashtable<String, String> _propertyTable) {
     String value = _propertyTable.get(_property);
@@ -566,7 +566,7 @@ public abstract class ControlElement {
   }
 
   /**
-   * Returns wether a property information contains a given keyword in its preamble
+   * Returns whether a property information contains a given keyword in its preamble
    * @param     String _property The property name
    * @param     String _keyword The keyword to look for
    */
@@ -697,7 +697,7 @@ public abstract class ControlElement {
 
   /**
    * Defines a generic action that can be invoked from this
-   * <code>ControlElement</code>. It is the responsability of implementing
+   * <code>ControlElement</code>. It is the responsibility of implementing
    * classes to decide what actions types can be invoked and how.
    * <p>
    * If the method field is not a valid method for this target object
