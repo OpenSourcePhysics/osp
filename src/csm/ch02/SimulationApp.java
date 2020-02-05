@@ -7,6 +7,7 @@
 
 package csm.ch02;
 import org.opensourcephysics.controls.AbstractSimulation;
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.SimulationControl;
 
 /**
@@ -23,6 +24,7 @@ public class SimulationApp extends AbstractSimulation {
    */
   public void doStep() { // does a simulation step
     control.println("Counter = "+(counter--));
+    control.setAdjustableValue("counter", counter);
   }
 
   /**
@@ -30,10 +32,11 @@ public class SimulationApp extends AbstractSimulation {
    */
   public void initialize() {
     counter = control.getInt("counter");
+    OSPLog.info("Initializing SumulationApp");
   }
 
   /**
-   * Resets the simulation parameters to their intial state.
+   * Resets the simulation parameters to their initial state.
    */
   public void reset() { // invoked when reset button is pressed
 	control.setValue("a", 10.0); // unused parameter

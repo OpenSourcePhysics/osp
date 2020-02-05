@@ -8,11 +8,16 @@
 package org.opensourcephysics.ejs;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.util.Iterator;
+
+import javajs.async.SwingJSUtils;
+import javajs.async.SwingJSUtils.StateHelper;
+import javajs.async.SwingJSUtils.StateMachine;
 
 /**
  * A base interface for a simulation
  */
-public abstract class Simulation implements java.lang.Runnable {
+public abstract class Simulation implements java.lang.Runnable, StateMachine {
   static public final int MAXIMUM_FPS = 25;
   static public final int MINIMUM_FPS = 1;
   private Model model = null;
@@ -87,18 +92,51 @@ public abstract class Simulation implements java.lang.Runnable {
   public void pause() {
     thread = null;
     isPlaying = false;
+    if(org.opensourcephysics.js.JSUtil.isJS) {
+    	if(stateHelper!=null)stateHelper.setState(STATE_DONE);
+    	return;
+    }
   }
+  
+	private StateHelper stateHelper;
+	private int delayJS = (/** @j2sNative delay || */ (int)delay);
+	private final static int STATE_INIT = 0;
+	private final static int STATE_LOOP = 1;
+	private final static int STATE_DONE = 2;
+
+	public boolean stateLoop() {
+		while (thread != null && !thread.isInterrupted() && stateHelper.isAlive()) {
+			switch (stateHelper.getState()) {
+			default:
+			case STATE_INIT:
+				stateHelper.setState(STATE_LOOP);
+				stateHelper.sleep(delayJS);
+				return true;
+			case STATE_LOOP:
+				step();
+				stateHelper.sleep(delayJS);
+				return true;
+			case STATE_DONE:
+				return false;
+			}
+		}
+		return false;
+	}
 
   /**
     * Implementation of the Runnable interface
     */
   public void run() {
+	stateHelper = new SwingJSUtils.StateHelper(this);  
+	stateHelper.setState(STATE_INIT);
+	stateHelper.sleep(0);
+	/*	
     while(thread==Thread.currentThread()) {
       step();
       try {
         Thread.sleep(delay);
       } catch(InterruptedException ie) {}
-    }
+    }*/
   }
 
   /**

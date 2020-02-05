@@ -283,8 +283,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
   private void createMenuBar() {
     fileMenu = new JMenu(DisplayRes.getString("DrawingFrame.File_menu_item")); //$NON-NLS-1$
     JMenuItem printItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Print_menu_item")); //$NON-NLS-1$
-    printItem.setAccelerator(KeyStroke.getKeyStroke('P', MENU_SHORTCUT_KEY_MASK));
-    printItem.addActionListener(new ActionListener() {
+    if(!javajs.async.Async.isJS())  printItem.setAccelerator(KeyStroke.getKeyStroke('P', MENU_SHORTCUT_KEY_MASK));
+    if(!javajs.async.Async.isJS()) printItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         PrinterJob printerJob = PrinterJob.getPrinterJob();
         printerJob.setPrintable((Printable) drawingPanel);
@@ -334,10 +334,10 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
       }
 
     });
-    fileMenu.add(printItem);
+    if(!javajs.async.Async.isJS())fileMenu.add(printItem);
     fileMenu.add(saveXMLItem);
-    fileMenu.add(exportItem);
-    fileMenu.add(saveAsPSItem);
+    if(!javajs.async.Async.isJS())fileMenu.add(exportItem);
+    if(!javajs.async.Async.isJS())fileMenu.add(saveAsPSItem);
     fileMenu.add(inspectItem);
     menuBar.add(fileMenu);
     editMenu = new JMenu(DisplayRes.getString("DrawingFrame.Edit_menu_title")); //$NON-NLS-1$
@@ -622,9 +622,11 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
       return;
     }
     // display a TreePanel in a modal dialog
-    XMLTreePanel treePanel = new XMLTreePanel(xml);
+    System.err.println("DrawingFrame3D line 625");
     JDialog dialog = new JDialog((java.awt.Frame) null, true);
-    dialog.setContentPane(treePanel);
+    dialog.setTitle("TreePanel not impemented");
+    //XMLTreePanel treePanel = new XMLTreePanel(xml);
+    //dialog.setContentPane(treePanel);
     dialog.setSize(new Dimension(600, 300));
     dialog.setVisible(true);
   }

@@ -147,10 +147,14 @@ private final Class[] columnClass;
       }
     };
 
-    internalThread = new Thread(r, "ThreadViewer"); //$NON-NLS-1$
-    internalThread.setPriority(Thread.MAX_PRIORITY - 2);
-    internalThread.setDaemon(true);
-    internalThread.start();
+    if(org.opensourcephysics.js.JSUtil.isJS) {
+    	System.err.println("Warning:  Diagnostics for Threads are not supported in JavaScript.");
+    }else {
+        internalThread = new Thread(r, "ThreadViewer"); //$NON-NLS-1$
+        internalThread.setPriority(Thread.MAX_PRIORITY - 2);
+        internalThread.setDaemon(true);
+    	internalThread.start();
+    }
   }
 
   private void runWork() {

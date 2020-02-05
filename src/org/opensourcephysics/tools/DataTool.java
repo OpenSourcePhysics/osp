@@ -2476,8 +2476,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
       }
 
     });
-    printItem.setAccelerator(KeyStroke.getKeyStroke('P', keyMask));
-    fileMenu.add(printItem);
+    if(!javajs.async.Async.isJS()) printItem.setAccelerator(KeyStroke.getKeyStroke('P', keyMask));
+    if(!javajs.async.Async.isJS()) fileMenu.add(printItem);
     fileMenu.addSeparator();
     exitItem = new JMenuItem();
     exitItem.setAccelerator(KeyStroke.getKeyStroke('Q', keyMask));

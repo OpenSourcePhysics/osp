@@ -466,9 +466,13 @@ public class EjsTool {
       }
 
     };
-    java.lang.Thread thread = new Thread(runner);
-    thread.setPriority(Thread.NORM_PRIORITY);
-    thread.start();
+    if(org.opensourcephysics.js.JSUtil.isJS) {
+    	System.err.println("Warning:  EJSTool not supported in JavaScript.");
+    }else {
+	    java.lang.Thread thread = new Thread(runner);
+	    thread.setPriority(Thread.NORM_PRIORITY);
+	    thread.start();
+    }
     return quitCheckBox==null ? false : quitCheckBox.isSelected();
   }
 

@@ -16,7 +16,7 @@ import org.opensourcephysics.numerics.IntegerArray;
 
 /**
  *
- * OSPControlTable automaitally converts strings, such "pi" or "sqrt(2)" to numbers when
+ * OSPControlTable automatically converts strings, such "pi" or "sqrt(2)" to numbers when
  * getDouble and getInt are invoked.
  *
  * @author W. Christian

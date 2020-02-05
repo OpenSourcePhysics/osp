@@ -32,6 +32,8 @@ import javax.swing.text.Document;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
+
+import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ToolsRes;
 
 /**
@@ -76,6 +78,8 @@ public class MessageFrame extends JFrame {
     JScrollPane textScroller = new JScrollPane(textPane);
     textScroller.setWheelScrollingEnabled(true);
     logPanel.add(textScroller, BorderLayout.CENTER);
+    //FontSizer.setFonts(this, FontSizer.getLevel());
+    //textPane.setFont(textPane.getFont().deriveFont(16F));
     pack();
   }
 
@@ -126,6 +130,16 @@ public class MessageFrame extends JFrame {
 
       });
     }
+    
+	FontSizer.setFonts(APPLET_MESSAGEFRAME.textPane, FontSizer.getLevel());
+	FontSizer.addPropertyChangeListener("level", new PropertyChangeListener() { //$NON-NLS-1$
+		public void propertyChange(PropertyChangeEvent e) {
+			int level = ((Integer) e.getNewValue()).intValue();
+			FontSizer.setFonts(menuBar, level);
+			FontSizer.setFonts(APPLET_MESSAGEFRAME.textPane, level);
+		}
+
+	});
     ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() {           //$NON-NLS-1$
       public void propertyChange(PropertyChangeEvent e) {
         APPLET_MESSAGEFRAME.setTitle(ControlsRes.getString("MessageFrame.DefaultTitle")); //$NON-NLS-1$
@@ -253,6 +267,7 @@ public class MessageFrame extends JFrame {
     if((APPLET_MESSAGEFRAME==null)||!APPLET_MESSAGEFRAME.isDisplayable()) {
       createAppletMessageFrame();
     }
+
     Runnable refreshText = new Runnable() {
       public synchronized void run() {
         try {

@@ -33,6 +33,8 @@ import org.opensourcephysics.display.Dataset;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display2d.GridData;
 
+import javajs.async.AsyncFileChooser;
+
 // modified by W. Christian Jan 28, 2005
 
 /**
@@ -76,6 +78,46 @@ public class ExportTool implements Tool, PropertyChangeListener {
     fc.setApproveButtonText(ToolsRes.getString("ExportTool.FileChooser.Button.Export")); // Set export formats //$NON-NLS-1$
     setChooserFormats();
   }
+  
+  /*
+  void createFileChooser() {
+	    formats = new Hashtable<String, ExportFormat>();
+	    registerFormat(new ExportGnuplotFormat());
+	    registerFormat(new ExportXMLFormat());
+	    // Set the "filesOfTypeLabelText" to "File Format:"
+	    Object oldFilesOfTypeLabelText = UIManager.put("FileChooser.filesOfTypeLabelText", //$NON-NLS-1$
+	      ToolsRes.getString("ExportTool.FileChooser.Label.FileFormat"));                  //$NON-NLS-1$
+	    // Create a new FileChooser
+	    //fc = new JFileChooser(OSPRuntime.chooserDir)
+	    fc = OSPRuntime.getChooser();
+	     if(fc==null) {
+	        return;
+	     }
+	     String oldTitle = fc.getDialogTitle();
+	     fc.setDialogTitle("Export Data");
+	     fc.showOpenDialog(null, new Runnable() {
+	    	 // OK
+			@Override
+			public void run() {
+			     org.opensourcephysics.display.OSPRuntime.chooserDir = fc.getCurrentDirectory().toString();
+			     // It is critical to pass the actual file along, as it has the bytes already.
+			     // XMLControlElement xml = new XMLControlElement(fc.getSelectedFile());
+			     //xml.loadObject(GROrbitsApp.this); // load the data
+			     fc.setDialogTitle(oldTitle);
+			}
+	    	 
+	     }, new Runnable() {
+	    	 // cancel
+			@Override
+			public void run() {
+			     fc.setDialogTitle(oldTitle);
+			}
+	    	 
+	     });
+	    
+	
+	    setChooserFormats();
+	  }*/
 
   public void propertyChange(PropertyChangeEvent evt) {
     FileFilter filter = fc.getFileFilter();

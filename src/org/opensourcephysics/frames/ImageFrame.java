@@ -68,7 +68,7 @@ public class ImageFrame extends OSPFrame {
     fileMenu = new JMenu(DisplayRes.getString("DrawingFrame.File_menu_item"));     //$NON-NLS-1$
     printItem = new JMenuItem(DisplayRes.getString("ImageFrame.Print_menu_item")); //$NON-NLS-1$
     printItem.setAccelerator(KeyStroke.getKeyStroke('P', MENU_SHORTCUT_KEY_MASK));
-    printItem.addActionListener(new ActionListener() {
+    if(!javajs.async.Async.isJS()) printItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         PrintUtils.printComponent(drawingPanel);
       }
@@ -117,9 +117,9 @@ public class ImageFrame extends OSPFrame {
 
     });
     if(OSPRuntime.applet==null) {
-      fileMenu.add(saveImageMenu);
+      if(!javajs.async.Async.isJS())fileMenu.add(saveImageMenu);
       fileMenu.addSeparator();
-      fileMenu.add(printItem);
+      if(!javajs.async.Async.isJS())fileMenu.add(printItem);
     }
     menuBar.add(fileMenu);
     // edit menu

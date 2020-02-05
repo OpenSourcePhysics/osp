@@ -268,10 +268,14 @@ public class JarTool implements Tool, Runnable {
           return null;
         }
       }
-      JarTool builder = new JarTool(sources, parent, target, manifest, policy, ownerFrame);
-      java.lang.Thread thread = new Thread(builder);
-      thread.setPriority(Thread.NORM_PRIORITY);
-      thread.start();
+      if(org.opensourcephysics.js.JSUtil.isJS) {
+      	System.err.println("Warning:  JarTool not supported in JavaScript.");
+      }else {
+	      JarTool builder = new JarTool(sources, parent, target, manifest, policy, ownerFrame);
+	      java.lang.Thread thread = new Thread(builder);
+	      thread.setPriority(Thread.NORM_PRIORITY);
+	      thread.start();
+      }
       return target;
       //       return compressList(sources,parent,target,manifest,policy,ownerFrame);
     } catch(Exception exception) {

@@ -81,7 +81,7 @@ public class XMLTreePanel extends JPanel {
   }
 
   /**
-   * Contructs a tree panel with an XMLControl
+   * Constructs a tree panel with an XMLControl
    *
    * @param control the XMLControl
    * @param editable true to enable xml edits via the input field

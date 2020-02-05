@@ -1,2 +1,5 @@
 /bin/
 /site/
+/src/debugging/
+/src/testing/
+src/org/opensourcephysics/controls/OSPLog_template.txt

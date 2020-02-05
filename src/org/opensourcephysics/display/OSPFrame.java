@@ -217,8 +217,12 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
    * @param level the level
    */
   protected void setFontLevel(int level) {
-    FontSizer.setFonts(getJMenuBar(), level);
-    FontSizer.setFonts(getContentPane(), level);
+    try {
+    	FontSizer.setFonts(getJMenuBar(), level);
+        //FontSizer.setFonts(getContentPane(), level);   //WC: Bug in JS
+    }catch(Exception ex) {
+     	System.err.println("Err: OSPFrame line 220.");
+     }
   }
 
   /**

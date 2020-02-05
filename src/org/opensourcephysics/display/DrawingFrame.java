@@ -32,10 +32,12 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -53,6 +55,8 @@ import org.opensourcephysics.tools.LocalJob;
 import org.opensourcephysics.tools.SnapshotTool;
 import org.opensourcephysics.tools.Tool;
 import org.opensourcephysics.tools.VideoTool;
+
+import javajs.async.AsyncDialog;
 
 /**
  *  Drawing Frame: a frame that contains a drawing panel.
@@ -565,6 +569,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    * @param control the xml control
    */
   protected void pasteAction(XMLControlElement control) {
+	System.err.println("DrawingFrame Line 568");
     // get Drawables using an xml tree chooser
     XMLTreeChooser chooser = new XMLTreeChooser(DisplayRes.getString("DrawingFrame.SelectDrawables_chooser_title"), DisplayRes.getString("DrawingFrame.SelectDrawables_chooser_message"), this); //$NON-NLS-1$ //$NON-NLS-2$
     java.util.List<XMLProperty> props = chooser.choose(control, Drawable.class);
@@ -739,10 +744,10 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 
     });
     if(OSPRuntime.applet==null) {
-      fileMenu.add(printMenu);
+      if(!javajs.async.Async.isJS())fileMenu.add(printMenu);
       fileMenu.add(saveXMLItem);
-      fileMenu.add(exportItem);
-      fileMenu.add(saveImage);
+      if(!javajs.async.Async.isJS())fileMenu.add(exportItem);
+      if(!javajs.async.Async.isJS())fileMenu.add(saveImage);
     }
     fileMenu.add(inspectItem);
     menuBar.add(fileMenu);
@@ -1014,6 +1019,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    * Inspects the drawing frame by using an xml document tree.
    */
   public void inspectXML() {
+	System.err.println("DrawingFrame Line 1018");
     if(customInspector!=null) {
       customInspector.setVisible(true);
       return;
@@ -1030,49 +1036,58 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
       return;
     }
     // display a TreePanel in a modal dialog
-    XMLTreePanel treePanel = new XMLTreePanel(xml);
+    //XMLTreePanel treePanel = new XMLTreePanel(xml);
     JDialog dialog = new JDialog((java.awt.Frame) null, true);
-    dialog.setContentPane(treePanel);
+    dialog.setTitle("TreePanel not impemented");
+    //dialog.setContentPane(treePanel);
+    JPanel panel = new JPanel();
+    JLabel label = new JLabel();
+    label.setText(xml.toString());
+    dialog.setContentPane(panel);
     dialog.setSize(new Dimension(600, 300));
     dialog.setVisible(true);
   }
 
   public void saveXML() {
+	  System.err.println("DrawingFrame Line 1042");
     JFileChooser chooser = OSPRuntime.getChooser();
-    int result = chooser.showSaveDialog(null);
-    if(result==JFileChooser.APPROVE_OPTION) {
-      OSPRuntime.chooserDir = chooser.getCurrentDirectory().toString();
-      File file = chooser.getSelectedFile();
-      // check to see if file already exists
-      if(file.exists()) {
-        int selected = JOptionPane.showConfirmDialog(null, DisplayRes.getString("DrawingFrame.ReplaceExisting_message")+file.getName() //$NON-NLS-1$
-          +DisplayRes.getString("DrawingFrame.QuestionMark"),                           //$NON-NLS-1$
-            DisplayRes.getString("DrawingFrame.ReplaceFile_option_title"),              //$NON-NLS-1$
-              JOptionPane.YES_NO_CANCEL_OPTION);
-        if(selected!=JOptionPane.YES_OPTION) {
-          return;
-        }
-      }
-      String fileName = XML.getRelativePath(file.getAbsolutePath());
-      if((fileName==null)||fileName.trim().equals("")) {                                //$NON-NLS-1$
+    if(chooser==null) {
         return;
-      }
-      int i = fileName.toLowerCase().lastIndexOf(".xml");                               //$NON-NLS-1$
-      if(i!=fileName.length()-4) {
-        fileName += ".xml";                                                             //$NON-NLS-1$
-      }
-      try {
-        // if drawingPanel provides an xml loader, save the drawingPanel
-        Method method = drawingPanel.getClass().getMethod("getLoader", (Class[]) null); //$NON-NLS-1$
-        if((method!=null)&&Modifier.isStatic(method.getModifiers())) {
-          XMLControl xml = new XMLControlElement(drawingPanel);
-          xml.write(fileName);
+     }
+     String oldTitle = chooser.getDialogTitle();
+     chooser.setDialogTitle("Save XML Data");
+     int result = -1;
+     try {
+     	result = chooser.showSaveDialog(null);
+     } catch (Throwable e) {
+     	System.err.println("InterruptedException in saveXML()().");
+     	e.printStackTrace();
+     }
+     chooser.setDialogTitle(oldTitle);
+     if(result==JFileChooser.APPROVE_OPTION) {
+        File file = chooser.getSelectedFile();
+        // check to see if file already exists
+        org.opensourcephysics.display.OSPRuntime.chooserDir = chooser.getCurrentDirectory().toString();
+        String fileName = file.getAbsolutePath();
+        // String fileName = XML.getRelativePath(file.getAbsolutePath());
+        if((fileName==null)||fileName.trim().equals("")) {
+           return;
         }
-      } catch(NoSuchMethodException ex) {
-        // this drawingPanel cannot be saved
-        return;
-      }
-    }
+        int i = fileName.toLowerCase().lastIndexOf(".xml");
+        if(i!=fileName.length()-4) {
+           fileName += ".xml";
+           file = new File(fileName);
+        }
+        if(/** @j2sNative false && */file.exists()) {
+            int selected = JOptionPane.showConfirmDialog(null, "Replace existing "+file.getName()+"?", "Replace File",
+               JOptionPane.YES_NO_CANCEL_OPTION);
+            if(selected!=JOptionPane.YES_OPTION) {
+               return;
+            }
+         }
+        XMLControl xml = new XMLControlElement(drawingPanel);
+        xml.write(fileName);
+     }
   }
 
   /**
@@ -1127,6 +1142,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
      * @return Object
      */
     public Object loadObject(XMLControl control, Object obj) {
+    	System.err.println("1136");
       DrawingFrame frame = ((DrawingFrame) obj);
       DrawingPanel panel = frame.getDrawingPanel();
       panel.clear();

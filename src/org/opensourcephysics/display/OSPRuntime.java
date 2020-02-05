@@ -51,7 +51,7 @@ import javajs.async.AsyncFileChooser;
  * @version 1.0
  */
 public class OSPRuntime {
-  public static final String VERSION = "4.0.1";                                                                            //$NON-NLS-1$
+  public static final String VERSION = "5.0.0";                                                                            //$NON-NLS-1$
 
   public static boolean isJS = /** @j2sNative true || */ false;
   
@@ -274,7 +274,11 @@ public class OSPRuntime {
    */
   public static void showAboutDialog(Component parent) {
 		String date = OSPRuntime.getLaunchJarBuildDate();
-		String vers = "OSP Library "+VERSION; //$NON-NLS-1$
+		date ="February 1, 2020";
+		String vers = "JavaScript OSP Library "+VERSION; //$NON-NLS-1$
+		vers +="\n\nJavaScript transcription created using the\n"+
+		"java2script/SwingJS framework developed at\n"+
+				"St. Olaf College.\n";
 		if (date!=null) {
 			vers += " released "+date; //$NON-NLS-1$
 		}

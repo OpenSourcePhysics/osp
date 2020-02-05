@@ -294,21 +294,6 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
     });
     helpMenu.add(sysItem);
     helpMenu.addSeparator();
-    JMenuItem logToFileItem = new JCheckBoxMenuItem(EjsRes.getString("EjsControlFrame.LogToFile_check_box")); //$NON-NLS-1$
-    logToFileItem.setSelected(false);
-    logToFileItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
-        if(OSPRuntime.appletMode||(OSPRuntime.applet!=null)) {
-          return; // applets cannot log to file
-        }
-        OSPLog.getOSPLog().setLogToFile(item.isSelected());
-      }
-
-    });
-    if(OSPRuntime.applet==null) {
-      helpMenu.add(logToFileItem);
-    }
     JMenuItem logItem = new JMenuItem(EjsRes.getString("EjsControlFrame.MessageLog_menu_item")); //$NON-NLS-1$
     logItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -1009,11 +994,13 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
   }
 
   public void inspectXML() {
+	System.err.println("EjsControlFrame line 1021");
     // display a TreePanel in a modal dialog
     XMLControl xml = new XMLControlElement(getOSPApp());
-    XMLTreePanel treePanel = new XMLTreePanel(xml);
     JDialog dialog = new JDialog((java.awt.Frame) null, true);
-    dialog.setContentPane(treePanel);
+    dialog.setTitle("TreePanel not impemented");
+    //XMLTreePanel treePanel = new XMLTreePanel(xml);
+    //dialog.setContentPane(treePanel);
     dialog.setSize(new Dimension(600, 300));
     dialog.setVisible(true);
   }

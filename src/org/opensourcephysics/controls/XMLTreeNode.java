@@ -22,7 +22,7 @@ public class XMLTreeNode extends DefaultMutableTreeNode {
   private boolean inspectable = false;
 
   /**
-   * Contructs a node with an XMLProperty
+   * Constructs a node with an XMLProperty
    *
    * @param property the XMLProperty
    */
