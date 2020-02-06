@@ -10,20 +10,22 @@ import org.opensourcephysics.controls.XMLTreePanel;
 
 public class SetXMLControlTest {
 	
-	JFrame frame=new JFrame("Test XML Tree Panel");
+	JFrame frame;
 	
-	SetXMLControlTest(XMLControlElement xml){
-		frame.setSize(new Dimension(800, 800));
-		frame.setVisible(true);
-		JDialog dialog = new JDialog((JFrame) null, true); // this signature FAILS in JS
-		//JDialog dialog = new JDialog((java.awt.Frame) null, true); // this signature FAILS in JS
-		//JDialog dialog = new JDialog(frame, true); // this signature works in JS
-
+	boolean useFrame = false;
+	
+	SetXMLControlTest(XMLControlElement xml) {
+		if (useFrame) {
+			frame = new JFrame("Test XML Tree Panel");
+			frame.setSize(new Dimension(1, 1));
+			frame.setVisible(true);
+		}
+		JDialog dialog = new JDialog(frame, true); // this signature works in JS
 		XMLTreePanel treePanel = new XMLTreePanel(xml);
 		dialog.setContentPane(treePanel);
-	    dialog.setSize(new Dimension(600, 300));
-	    dialog.setVisible(true);
-	   
+		dialog.setSize(new Dimension(600, 300));
+		dialog.setVisible(true);
+		
 	}
 
 	public static void main(String[] args) {
