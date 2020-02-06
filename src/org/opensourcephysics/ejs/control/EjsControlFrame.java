@@ -368,7 +368,7 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
     });
     // create video capture menu item
     JMenuItem videoItem = new JMenuItem(DisplayRes.getString("DrawingFrame.MenuItem.Capture")); //$NON-NLS-1$
-    if(OSPRuntime.applet==null) {
+    if(false && OSPRuntime.applet==null) { // video capture not supported
       toolsMenu.add(videoItem);
     }
     Class<?> videoToolClass = null;
@@ -391,7 +391,9 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
             defaultDrawingPanel.setVideoTool((VideoTool) tool);
             ((VideoTool) tool).setVisible(true);
             ((VideoTool) tool).clear();
-          } catch(Exception ex) {}
+          } catch(Exception ex) {
+        	  OSPLog.warning("Video Capature not supported.");
+          }
         } else {
           defaultDrawingPanel.getVideoTool().setVisible(true);
         }

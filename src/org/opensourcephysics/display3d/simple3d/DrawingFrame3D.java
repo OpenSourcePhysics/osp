@@ -535,9 +535,9 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     });
     // create video capture menu item
     JMenuItem videoItem = new JMenuItem(DisplayRes.getString("DrawingFrame.MenuItem.Capture")); //$NON-NLS-1$
-    toolsMenu.add(videoItem);
+    if(false) toolsMenu.add(videoItem); // video capture not supported.
     Class<?> videoToolClass = null;
-    if(OSPRuntime.loadVideoTool) {
+    if(false&&OSPRuntime.loadVideoTool) { // video capture not supported.
       try {
         videoToolClass = Class.forName("org.opensourcephysics.tools.VideoCaptureTool"); //$NON-NLS-1$
       } catch(ClassNotFoundException ex) {
@@ -556,7 +556,9 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
             drawingPanel.setVideoTool((VideoTool) tool);
             ((VideoTool) tool).setVisible(true);
             ((VideoTool) tool).clear();
-          } catch(Exception ex) {}
+          } catch(Exception ex) {
+        	OSPLog.warning("Video capture not supported");
+          }
         } else {
           drawingPanel.getVideoTool().setVisible(true);
         }
