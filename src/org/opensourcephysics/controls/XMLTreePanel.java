@@ -72,7 +72,7 @@ public class XMLTreePanel extends JPanel {
   int maxStringLength = 24;
 
   /**
-   * Contructs a tree panel with an XMLControl
+   * Constructs a tree panel with an XMLControl
    *
    * @param control the XMLControl
    */
