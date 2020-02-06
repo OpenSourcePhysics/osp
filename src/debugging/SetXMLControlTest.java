@@ -15,7 +15,10 @@ public class SetXMLControlTest {
 	SetXMLControlTest(XMLControlElement xml){
 		frame.setSize(new Dimension(800, 800));
 		frame.setVisible(true);
-		JDialog dialog = new JDialog(frame, true);
+		JDialog dialog = new JDialog((JFrame) null, true); // this signature FAILS in JS
+		//JDialog dialog = new JDialog((java.awt.Frame) null, true); // this signature FAILS in JS
+		//JDialog dialog = new JDialog(frame, true); // this signature works in JS
+
 		XMLTreePanel treePanel = new XMLTreePanel(xml);
 		dialog.setContentPane(treePanel);
 	    dialog.setSize(new Dimension(600, 300));

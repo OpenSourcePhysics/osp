@@ -622,11 +622,10 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
       return;
     }
     // display a TreePanel in a modal dialog
-    System.err.println("DrawingFrame3D line 625");
     JDialog dialog = new JDialog((java.awt.Frame) null, true);
-    dialog.setTitle("TreePanel not impemented");
-    //XMLTreePanel treePanel = new XMLTreePanel(xml);
-    //dialog.setContentPane(treePanel);
+    XMLTreePanel treePanel = new XMLTreePanel(xml);
+    dialog.setTitle("XML Inspector");
+    dialog.setContentPane(treePanel);
     dialog.setSize(new Dimension(600, 300));
     dialog.setVisible(true);
   }

@@ -1019,7 +1019,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    * Inspects the drawing frame by using an xml document tree.
    */
   public void inspectXML() {
-	System.err.println("DrawingFrame Line 1018");
+	System.err.println("DrawingFrame Line 1018: customInspector="+customInspector);
     if(customInspector!=null) {
       customInspector.setVisible(true);
       return;
@@ -1031,25 +1031,22 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
       if((method!=null)&&Modifier.isStatic(method.getModifiers())) {
         xml = new XMLControlElement(drawingPanel);
       }
-    } catch(NoSuchMethodException ex) {
-      // this drawing panel cannot be inspected
+    } catch(NoSuchMethodException ex) {       // this drawing panel cannot be inspected
+        System.err.println("DrawingFram line 1039 NoSuchMethodException xml="+xml);
       return;
     }
     // display a TreePanel in a modal dialog
-    //XMLTreePanel treePanel = new XMLTreePanel(xml);
+    XMLTreePanel treePanel = new XMLTreePanel(xml);
     JDialog dialog = new JDialog((java.awt.Frame) null, true);
-    dialog.setTitle("TreePanel not impemented");
-    //dialog.setContentPane(treePanel);
-    JPanel panel = new JPanel();
-    JLabel label = new JLabel();
-    label.setText(xml.toString());
-    dialog.setContentPane(panel);
+    dialog.setTitle("XML Inspector");
+    System.err.println("Debug: DrawingFrame Line 1042");
+    dialog.setContentPane(treePanel);  // WC: JS bug here!
+    System.err.println("Debug: DrawingFrame Line 1444");
     dialog.setSize(new Dimension(600, 300));
     dialog.setVisible(true);
   }
 
   public void saveXML() {
-	  System.err.println("DrawingFrame Line 1042");
     JFileChooser chooser = OSPRuntime.getChooser();
     if(chooser==null) {
         return;

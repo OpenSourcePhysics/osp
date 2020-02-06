@@ -433,9 +433,9 @@ abstract public class ControlFrame extends OSPFrame implements Control {
 		// display a TreePanel in a modal dialog
 		XMLControl xml = new XMLControlElement(getOSPApp());
 		JDialog dialog = new JDialog((java.awt.Frame) null, true);
-		dialog.setTitle("TreePanel not impemented");
-		// XMLTreePanel treePanel = new XMLTreePanel(xml);
-		// dialog.setContentPane(treePanel);
+		dialog.setTitle("XML Inspector");
+		XMLTreePanel treePanel = new XMLTreePanel(xml);
+		dialog.setContentPane(treePanel);
 		dialog.setSize(new Dimension(600, 300));
 		dialog.setVisible(true);
 	}

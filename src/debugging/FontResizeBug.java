@@ -39,7 +39,7 @@ public class FontResizeBug {
 		JMenuItem sizeUpItem = new JMenuItem("Increase"); //$NON-NLS-1$
 		sizeUpItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//FontSizer.levelUp();
+				FontSizer.levelUp();
 			}
 
 		});
