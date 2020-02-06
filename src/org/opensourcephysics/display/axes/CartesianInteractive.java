@@ -398,88 +398,94 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
     if(hitRect.contains(p)) {
       return VERT_AXIS_MIN;
     }
+    
+    
     // horizontal variable
     Graphics g = drawingPanel.getGraphics();
-    int w = xLine.getWidth(g)+8;
-    int h = xLine.getHeight(g);
-    hitRect.setSize(w, h);
-    int x = (int) (xLine.getX()-w/2);
-    int y = (int) (xLine.getY()-h/2-xLine.getFontSize()/3);
-    hitRect.setLocation(x, y);
-    if(hitRect.contains(p)&&hasHorzVariablesPopup()) {
-      return HORZ_VAR;
-    }
-    // vertical variable: drawn sideways, so width<->height reversed
-    w = yLine.getHeight(g);
-    h = yLine.getWidth(g)+8;
-    hitRect.setSize(w, h);
-    x = (int) (yLine.getX()-w/2-yLine.getFontSize()/3);
-    y = (int) (yLine.getY()-h/2-1);
-    hitRect.setLocation(x, y);
-    if(hitRect.contains(p)&&hasVertVariablesPopup()) {
-      return VERT_VAR;
-    }
-    // inside
-    if(!((p.x<l)||(p.y<t)||(p.x>plotDim.width-r)||(p.y>plotDim.height-b))) {
-      return INSIDE;
-    }
-    // scale setter regions
-    ScientificField field = scaleSetter.scaleField;
-    Dimension fieldDim = field.getPreferredSize();
-    hitRect.setSize(fieldDim);
-    double xmin = drawingPanel.getXMin();
-    double xmax = drawingPanel.getXMax();
-    double ymin = drawingPanel.getYMin();
-    double ymax = drawingPanel.getYMax();
-    int offset = 8; // approx distance from axis to hitRect for scale setter 
-    // horizontal min
-    hitRect.setLocation(l-12, plotDim.height-b+6+offset);
-    if(hitRect.contains(p)) {
-      Point hitLoc = hitRect.getLocation(); // relative to plotPanel 
-      scaleSetter.add(scaleSetter.autoscaleCheckbox, BorderLayout.NORTH);
-      scaleSetter.validate();
-      Point fieldLoc = field.getLocation(); // relative to scaleSetter
-      Dimension size = scaleSetter.getPreferredSize();
-      scaleSetter.setBounds(hitLoc.x-fieldLoc.x, hitLoc.y-fieldLoc.y-offset, size.width, size.height);
-      return HORZ_MIN;
-    }
-    // horizontal max
-    hitRect.setLocation(plotDim.width-r-fieldDim.width+12, plotDim.height-b+6+offset);
-    if(hitRect.contains(p)) {
-      field.setExpectedRange(xmin, xmax);
-      Point hitLoc = hitRect.getLocation(); // relative to plotPanel  
-      scaleSetter.add(scaleSetter.autoscaleCheckbox, BorderLayout.NORTH);
-      scaleSetter.validate();
-      Point fieldLoc = field.getLocation(); // relative to scaleSetter
-      Dimension size = scaleSetter.getPreferredSize();
-      scaleSetter.setBounds(hitLoc.x-fieldLoc.x, hitLoc.y-fieldLoc.y-offset, size.width, size.height);
-      return HORZ_MAX;
-    }
-    // vertical min
-    hitRect.setLocation(l-fieldDim.width-1-offset, plotDim.height-b-fieldDim.height+8);
-    if(hitRect.contains(p)) {
-      field.setExpectedRange(ymin, ymax);
-      Point hitLoc = hitRect.getLocation(); // relative to plotPanel  
-      scaleSetter.add(scaleSetter.autoscaleCheckbox, BorderLayout.EAST);
-      scaleSetter.validate();
-      Point fieldLoc = field.getLocation(); // relative to scaleSetter
-      int minLoc = hitLoc.x-fieldLoc.x;
-      Dimension size = scaleSetter.getPreferredSize();
-      scaleSetter.setBounds(Math.max(minLoc, 1-fieldLoc.x), hitLoc.y-fieldLoc.y, size.width, size.height);
-      return VERT_MIN;
-    }
-    // vertical max
-    hitRect.setLocation(l-fieldDim.width-1-offset, t-8);
-    if(hitRect.contains(p)) {
-      field.setExpectedRange(ymin, ymax);
-      Point hitLoc = hitRect.getLocation(); // relative to plotPanel  
-      scaleSetter.add(scaleSetter.autoscaleCheckbox, BorderLayout.EAST);
-      scaleSetter.validate();
-      Point fieldLoc = field.getLocation(); // relative to scaleSetter
-      int minLoc = hitLoc.x-fieldLoc.x;
-      Dimension size = scaleSetter.getPreferredSize();
-      scaleSetter.setBounds(Math.max(minLoc, 1-fieldLoc.x), hitLoc.y-fieldLoc.y, size.width, size.height);
-      return VERT_MAX;
+    try {
+	    int w = xLine.getWidth(g)+8;
+	    int h = xLine.getHeight(g);
+	    hitRect.setSize(w, h);
+	    int x = (int) (xLine.getX()-w/2);
+	    int y = (int) (xLine.getY()-h/2-xLine.getFontSize()/3);
+	    hitRect.setLocation(x, y);
+	    if(hitRect.contains(p)&&hasHorzVariablesPopup()) {
+	      return HORZ_VAR;
+	    }
+	    // vertical variable: drawn sideways, so width<->height reversed
+	    w = yLine.getHeight(g);
+	    h = yLine.getWidth(g)+8;
+	    hitRect.setSize(w, h);
+	    x = (int) (yLine.getX()-w/2-yLine.getFontSize()/3);
+	    y = (int) (yLine.getY()-h/2-1);
+	    hitRect.setLocation(x, y);
+	    if(hitRect.contains(p)&&hasVertVariablesPopup()) {
+	      return VERT_VAR;
+	    }
+	    // inside
+	    if(!((p.x<l)||(p.y<t)||(p.x>plotDim.width-r)||(p.y>plotDim.height-b))) {
+	      return INSIDE;
+	    }
+	    // scale setter regions
+	    ScientificField field = scaleSetter.scaleField;
+	    Dimension fieldDim = field.getPreferredSize();
+	    hitRect.setSize(fieldDim);
+	    double xmin = drawingPanel.getXMin();
+	    double xmax = drawingPanel.getXMax();
+	    double ymin = drawingPanel.getYMin();
+	    double ymax = drawingPanel.getYMax();
+	    int offset = 8; // approx distance from axis to hitRect for scale setter 
+	    // horizontal min
+	    hitRect.setLocation(l-12, plotDim.height-b+6+offset);
+	    if(hitRect.contains(p)) {
+	      Point hitLoc = hitRect.getLocation(); // relative to plotPanel 
+	      scaleSetter.add(scaleSetter.autoscaleCheckbox, BorderLayout.NORTH);
+	      scaleSetter.validate();
+	      Point fieldLoc = field.getLocation(); // relative to scaleSetter
+	      Dimension size = scaleSetter.getPreferredSize();
+	      scaleSetter.setBounds(hitLoc.x-fieldLoc.x, hitLoc.y-fieldLoc.y-offset, size.width, size.height);
+	      return HORZ_MIN;
+	    }
+	    // horizontal max
+	    hitRect.setLocation(plotDim.width-r-fieldDim.width+12, plotDim.height-b+6+offset);
+	    if(hitRect.contains(p)) {
+	      field.setExpectedRange(xmin, xmax);
+	      Point hitLoc = hitRect.getLocation(); // relative to plotPanel  
+	      scaleSetter.add(scaleSetter.autoscaleCheckbox, BorderLayout.NORTH);
+	      scaleSetter.validate();
+	      Point fieldLoc = field.getLocation(); // relative to scaleSetter
+	      Dimension size = scaleSetter.getPreferredSize();
+	      scaleSetter.setBounds(hitLoc.x-fieldLoc.x, hitLoc.y-fieldLoc.y-offset, size.width, size.height);
+	      return HORZ_MAX;
+	    }
+	    // vertical min
+	    hitRect.setLocation(l-fieldDim.width-1-offset, plotDim.height-b-fieldDim.height+8);
+	    if(hitRect.contains(p)) {
+	      field.setExpectedRange(ymin, ymax);
+	      Point hitLoc = hitRect.getLocation(); // relative to plotPanel  
+	      scaleSetter.add(scaleSetter.autoscaleCheckbox, BorderLayout.EAST);
+	      scaleSetter.validate();
+	      Point fieldLoc = field.getLocation(); // relative to scaleSetter
+	      int minLoc = hitLoc.x-fieldLoc.x;
+	      Dimension size = scaleSetter.getPreferredSize();
+	      scaleSetter.setBounds(Math.max(minLoc, 1-fieldLoc.x), hitLoc.y-fieldLoc.y, size.width, size.height);
+	      return VERT_MIN;
+	    }
+	    // vertical max
+	    hitRect.setLocation(l-fieldDim.width-1-offset, t-8);
+	    if(hitRect.contains(p)) {
+	      field.setExpectedRange(ymin, ymax);
+	      Point hitLoc = hitRect.getLocation(); // relative to plotPanel  
+	      scaleSetter.add(scaleSetter.autoscaleCheckbox, BorderLayout.EAST);
+	      scaleSetter.validate();
+	      Point fieldLoc = field.getLocation(); // relative to scaleSetter
+	      int minLoc = hitLoc.x-fieldLoc.x;
+	      Dimension size = scaleSetter.getPreferredSize();
+	      scaleSetter.setBounds(Math.max(minLoc, 1-fieldLoc.x), hitLoc.y-fieldLoc.y, size.width, size.height);
+	      return VERT_MAX;
+	    }
+    } finally {
+    	g.dispose();
     }
     return -1;
   }

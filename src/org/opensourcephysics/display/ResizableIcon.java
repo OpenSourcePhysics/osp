@@ -69,6 +69,7 @@ public class ResizableIcon implements Icon {
     g2.fillRect(0, 0, baseWidth, baseHeight); 
     g2.setComposite(AlphaComposite.SrcOver);
     icon.paintIcon(c, g2, 0, 0);
+    g2.dispose();
     g.drawImage(baseImage, x, y, w, h, c);
   }
 

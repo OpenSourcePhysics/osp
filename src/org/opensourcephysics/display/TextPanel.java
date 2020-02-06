@@ -120,6 +120,7 @@ public class TextPanel extends JPanel {
     int boxHeight = fm.getAscent()+4;      // current string height
     int boxWidth = fm.stringWidth(text)+6; // current string width
     g2.setFont(oldFont);
+    g2.dispose();
     return new Dimension(boxWidth, boxHeight);
   }
 

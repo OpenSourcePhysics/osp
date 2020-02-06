@@ -2588,32 +2588,34 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     	showUndraggedBox = show;
     }
 
-    /**
-     * Drags the corner of the ZoomBox.
-     * Drag uses XORMode drawing to first erase and then repaint the box.
-     *
-     * @param xpix
-     * @param ypix
-     */
-    public void drag(int xpix, int ypix) {
-      if(!visible) {
-        return;
-      }
-      dragged = true;
-      xstop = xpix;
-      ystop = ypix;
-      Graphics g = getGraphics();
-      if(g==null) {
-        return;
-      }
-      g.setXORMode(Color.green);
-      g.drawRect(Math.min(xstart, xlast), Math.min(ystart, ylast), Math.abs(xlast-xstart), Math.abs(ylast-ystart));
-      xlast = xstop;
-      ylast = ystop;
-      g.drawRect(Math.min(xstart, xlast), Math.min(ystart, ylast), Math.abs(xlast-xstart), Math.abs(ylast-ystart));
-      g.setPaintMode();
-      g.dispose();
-    }
+		/**
+		 * Drags the corner of the ZoomBox. Drag uses XORMode drawing to first erase and
+		 * then repaint the box.
+		 *
+		 * @param xpix
+		 * @param ypix
+		 */
+		public void drag(int xpix, int ypix) {
+			if (!visible) {
+				return;
+			}
+			dragged = true;
+			xstop = xpix;
+			ystop = ypix;
+			Graphics g = getGraphics();
+			if (g == null) {
+				return;
+			}
+			g.setXORMode(Color.green);
+			g.drawRect(Math.min(xstart, xlast), Math.min(ystart, ylast), Math.abs(xlast - xstart),
+					Math.abs(ylast - ystart));
+			xlast = xstop;
+			ylast = ystop;
+			g.drawRect(Math.min(xstart, xlast), Math.min(ystart, ylast), Math.abs(xlast - xstart),
+					Math.abs(ylast - ystart));
+			g.setPaintMode();
+			g.dispose();
+		}
 
     /**
      * Paints the ZoomBox after dragging is complete.
