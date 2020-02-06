@@ -968,11 +968,11 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     });
     // create video capture menu item
     JMenuItem videoItem = new JMenuItem(DisplayRes.getString("DrawingFrame.MenuItem.Capture")); //$NON-NLS-1$
-    if(OSPRuntime.applet==null) {
+    if(OSPRuntime.applet==null && false) { // video capture no longer supported.
       toolsMenu.add(videoItem);
     }
     Class<?> videoToolClass = null;
-    if(OSPRuntime.loadVideoTool) {
+    if(false&& OSPRuntime.loadVideoTool) {  // video capture no longer supported.
       try {
         videoToolClass = Class.forName("org.opensourcephysics.tools.VideoCaptureTool"); //$NON-NLS-1$
       } catch(Exception ex) {
