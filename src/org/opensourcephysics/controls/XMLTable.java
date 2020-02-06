@@ -714,9 +714,12 @@ public class XMLTable extends JTable {
     // Override the default tab behavior
     InputMap im = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     KeyStroke tab = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
-    try{final Action prevTabAction = getActionMap().get(im.get(tab));  // try added by W. Christian
-    Action tabAction = new AbstractAction() { 
-      public void actionPerformed(ActionEvent e) {
+    Object key = im.get(tab);
+    // SwingJS cannot capture TAB in this way
+    if (key != null) {
+     Action prevTabAction = getActionMap().get(key); 
+     Action tabAction = new AbstractAction() { 
+       public void actionPerformed(ActionEvent e) {
         // tab to the next editable cell
         prevTabAction.actionPerformed(e);
         JTable table = (JTable) e.getSource();
@@ -737,11 +740,10 @@ public class XMLTable extends JTable {
           }
         }
         table.changeSelection(row, column, false, false);
-      }
-
-    };
-    getActionMap().put(im.get(tab), tabAction);
-    }catch(Exception x) {
+       }
+     };
+     getActionMap().put(key, tabAction);
+    } else {
     	System.out.println("No previous tab action");
     }
 
