@@ -26,9 +26,9 @@ public class SetXMLControlTest {
 //		dialog.setContentPane(treePanel);
 		dialog.add(treePanel);
 		dialog.setSize(new Dimension(600, 300));
-		treePanel.doBHTest();
+		//treePanel.doBHTest();
 		dialog.setVisible(true);
-		treePanel.doBHTest();
+		//treePanel.doBHTest();
 
 	}
 

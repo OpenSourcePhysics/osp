@@ -29,7 +29,6 @@ import java.util.Iterator;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -40,8 +39,6 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -73,7 +70,6 @@ public class XMLTreePanel extends JPanel {
   protected boolean editable;
   protected JPopupMenu popup;
   int maxStringLength = 24;
-private JScrollPane xmlScroller;
 
   /**
    * Constructs a tree panel with an XMLControl
@@ -292,13 +288,9 @@ private JScrollPane xmlScroller;
     };
     xmlPane.setPreferredSize(new Dimension(360, 200));
     xmlPane.setEditable(false);
-    xmlScroller = new JScrollPane(xmlPane);
-    xmlScroller.setBorder(new LineBorder(Color.GREEN,17));
-
-
-    //JPanel xmlScroller = new JPanel();
+    JScrollPane xmlScroller = new JScrollPane(xmlPane);
     // create data panel for right side of split pane
-    JPanel dataPanel = new JPanel(new BorderLayout());    
+    JPanel dataPanel = new JPanel(new BorderLayout());
     dataPanel.add(toolbar, BorderLayout.NORTH);
     dataPanel.add(xmlScroller, BorderLayout.CENTER);
     // create split pane
@@ -306,9 +298,6 @@ private JScrollPane xmlScroller;
     add(splitPane, BorderLayout.CENTER);
     treeScroller.setPreferredSize(new Dimension(140, 200));
     displayProperty(root, editable);
-    
-	System.out.println("XMLTreePanel java scroller viewport pref " + xmlScroller.getViewport().getPreferredSize());
-
   }
 
   private XMLTreeNode createTree(XMLControl control) {
@@ -437,16 +426,6 @@ private JScrollPane xmlScroller;
 
   }
 
-
-  public void doBHTest() {
-	  JEditorPane view = (JEditorPane)xmlScroller.getViewport().getView();
-	  System.out.println("XMLTreePanel min size " + getMinimumSize() + " " 
-  + view.getUI().getMinimumSize(view));
-	  System.out.println(view.getScrollableTracksViewportWidth());
-		System.out.println("XMLTreePanel java scroller viewport size " + xmlScroller.getViewport().getSize());
-		System.out.println("XMLTreePanel java scroller viewport pref " + xmlScroller.getViewport().getPreferredSize());
-  }
-  
 }
 
 /*
