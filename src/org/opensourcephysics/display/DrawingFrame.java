@@ -232,7 +232,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    * @param ceil the xceil value
    */
   public void limitAutoscaleX(double floor, double ceil) {
-    drawingPanel.limitAutoscaleX(floor, ceil);
+    if(drawingPanel!=null) drawingPanel.limitAutoscaleX(floor, ceil);
   }
 
   /**
@@ -246,7 +246,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    * @param ceil the yceil value
    */
   public void limitAutoscaleY(double floor, double ceil) {
-    drawingPanel.limitAutoscaleY(floor, ceil);
+	  if(drawingPanel!=null) drawingPanel.limitAutoscaleY(floor, ceil);
   }
 
   /**
