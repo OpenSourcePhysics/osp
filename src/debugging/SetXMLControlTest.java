@@ -14,7 +14,7 @@ public class SetXMLControlTest {
 	
 	JFrame frame;
 	
-	boolean useFrame = true;
+	boolean useFrame = false;
 	
 	SetXMLControlTest(XMLControlElement xml) {
 		if (useFrame) {
@@ -23,13 +23,10 @@ public class SetXMLControlTest {
 		//JDialog dialog = new JDialog(frame, true); // this signature works in JS
 		JDialog dialog = new JDialog((JFrame)null, true); // this signature DOES NOT WORK in JS
 		XMLTreePanel treePanel = new XMLTreePanel(xml);
-//		dialog.setContentPane(treePanel);
-		dialog.add(treePanel);
+		dialog.setContentPane(treePanel);
+//alternative		dialog.add(treePanel);
 		dialog.setSize(new Dimension(600, 300));
-		//treePanel.doBHTest();
 		dialog.setVisible(true);
-		//treePanel.doBHTest();
-
 	}
 
 	public static void main(String[] args) {
