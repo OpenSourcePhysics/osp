@@ -403,8 +403,10 @@ public class PlotFrame extends DrawingFrame {
    * Clears drawable objects added by the user to this frame.
    */
   public void clearDrawables() {
-    drawingPanel.clear(); // removes all drawables
-    drawingPanel.addDrawable(datasetManager);
+	  if(drawingPanel!=null) {
+        drawingPanel.clear(); // removes all drawables
+        drawingPanel.addDrawable(datasetManager);
+	  }
   }
 
   /**
