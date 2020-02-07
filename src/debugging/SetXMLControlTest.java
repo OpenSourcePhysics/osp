@@ -1,9 +1,11 @@
 package debugging;
 
+import java.awt.Color;
 import java.awt.Dimension;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.border.LineBorder;
 
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.controls.XMLTreePanel;
@@ -12,21 +14,22 @@ public class SetXMLControlTest {
 	
 	JFrame frame;
 	
-	boolean useFrame = false;
+	boolean useFrame = true;
 	
 	SetXMLControlTest(XMLControlElement xml) {
 		if (useFrame) {
 			frame = new JFrame("Test XML Tree Panel");
-			frame.setSize(new Dimension(1, 1));
-			frame.setVisible(true);
 		}
 		//JDialog dialog = new JDialog(frame, true); // this signature works in JS
 		JDialog dialog = new JDialog((JFrame)null, true); // this signature DOES NOT WORK in JS
 		XMLTreePanel treePanel = new XMLTreePanel(xml);
-		dialog.setContentPane(treePanel);
+//		dialog.setContentPane(treePanel);
+		dialog.add(treePanel);
 		dialog.setSize(new Dimension(600, 300));
+		treePanel.doBHTest();
 		dialog.setVisible(true);
-		
+		treePanel.doBHTest();
+
 	}
 
 	public static void main(String[] args) {
