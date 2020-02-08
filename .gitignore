@@ -1,4 +1,5 @@
+.gitignore
 /bin/
 /site/
-/src/testing/ 
+/src/testing/
 src/org/opensourcephysics/controls/OSPLog_template.txt

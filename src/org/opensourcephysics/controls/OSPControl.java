@@ -66,7 +66,6 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
   public OSPControl(Object _model) {
     super(ControlsRes.getString("OSPControl.Default_Title")); //$NON-NLS-1$
     //table = new OSPControlTable(new XMLControlElement());
-    System.out.println("Table created in OSP Control: "+table);
     model = _model;
     if(model!=null) {
       // added by D Brown 2006-09-10
@@ -251,7 +250,7 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
    * @return    the control parameters
    */
   public String toString() {
-	System.out.println("Table to string: "+table); // xxx debug
+	//System.out.println("Table to string: "+table); // xxx debug
 	if(table==null) return "";
     return table.toString();
   }
