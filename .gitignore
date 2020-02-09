@@ -1,4 +1,5 @@
 .gitignore
+swingjs-copy.xml
 /bin/
 /site/
 /src/testing/
