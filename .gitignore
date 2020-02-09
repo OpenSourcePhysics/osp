@@ -1,3 +1,9 @@
+.gitignore
+.classpath
+.project
+swingjs-copy.xml
+src/org/opensourcephysics/controls/*.txt
 /bin/
 /site/
+/src/testing/
 .DS_Store
