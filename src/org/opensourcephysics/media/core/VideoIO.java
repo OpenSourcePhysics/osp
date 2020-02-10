@@ -110,8 +110,8 @@ public class VideoIO {
       String name = "org.opensourcephysics.media.gif.GifVideoType"; //$NON-NLS-1$
       Class<VideoType> gifClass = (Class<VideoType>)Class.forName(name);
       addVideoType(gifClass.newInstance());
-    } catch(Exception ex) {
-    } catch(Error err) {
+    } catch(Throwable e) {
+    	e.printStackTrace();
     }
     VideoFileFilter filter = new VideoFileFilter("jpg",  //$NON-NLS-1$
     		new String[] {"jpg", "jpeg"}); //$NON-NLS-1$ //$NON-NLS-2$
