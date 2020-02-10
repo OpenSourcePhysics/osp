@@ -996,7 +996,6 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
   }
 
   public void inspectXML() {
-	System.err.println("EjsControlFrame line 1021");
     // display a TreePanel in a modal dialog
     XMLControl xml = new XMLControlElement(getOSPApp());
     JDialog dialog = new JDialog((java.awt.Frame) null, true);

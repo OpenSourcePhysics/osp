@@ -179,7 +179,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    * @param  label  the label
    */
   public void setXLabel(String label) {
-    if(drawingPanel instanceof PlottingPanel) {
+    if(drawingPanel!=null && drawingPanel instanceof PlottingPanel) {
       ((PlottingPanel) drawingPanel).setXLabel(label);
     }
   }
@@ -190,7 +190,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    * @param  label  the label
    */
   public void setYLabel(String label) {
-    if(drawingPanel instanceof PlottingPanel) {
+    if(drawingPanel!=null && drawingPanel instanceof PlottingPanel) {
       ((PlottingPanel) drawingPanel).setYLabel(label);
     }
   }
@@ -202,7 +202,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    * @param deltaR double
    */
   public void setPolar(String plotTitle, double deltaR) {
-    if(drawingPanel instanceof PlottingPanel) {
+    if(drawingPanel!=null && drawingPanel instanceof PlottingPanel) {
       ((PlottingPanel) drawingPanel).setPolar(plotTitle, deltaR);
     }
   }
@@ -216,7 +216,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    * @param plotTitle String
    */
   public void setCartesian(String xLabel, String yLabel, String plotTitle) {
-    if(drawingPanel instanceof PlottingPanel) {
+    if(drawingPanel!=null && drawingPanel instanceof PlottingPanel) {
       ((PlottingPanel) drawingPanel).setCartesian(xLabel, yLabel, plotTitle);
     }
   }
@@ -323,7 +323,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    * @param yPixPerUnit double
    */
   public void setPixelsPerUnit(boolean enable, double xPixPerUnit, double yPixPerUnit) {
-    drawingPanel.setPixelsPerUnit(enable, xPixPerUnit, yPixPerUnit);
+	  if(drawingPanel!=null)drawingPanel.setPixelsPerUnit(enable, xPixPerUnit, yPixPerUnit);
   }
 
   /**
@@ -366,14 +366,14 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    */
   public void clearDataAndRepaint() {
     clearData();
-    drawingPanel.repaint();
+    if(drawingPanel!=null)drawingPanel.repaint();
   }
 
   /**
    * Clears Drawable objects added by the user from this frame.
    */
   public void clearDrawables() {
-    drawingPanel.clear(); // removes all drawables
+	  if(drawingPanel!=null)drawingPanel.clear(); // removes all drawables
   }
 
   /**
@@ -414,7 +414,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    * @param msg
    */
   public void setMessage(String msg) {
-    drawingPanel.setMessage(msg);
+    if(drawingPanel!=null)drawingPanel.setMessage(msg);
   }
 
   /**
@@ -429,7 +429,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    * @param location
    */
   public void setMessage(String msg, int location) {
-    drawingPanel.setMessage(msg, location);
+    if(drawingPanel!=null) drawingPanel.setMessage(msg, location);
   }
 
   /**
@@ -493,7 +493,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    * @param c the class
    */
   public synchronized <T extends Drawable> void removeObjectsOfClass(Class<T> c) {
-    drawingPanel.removeObjectsOfClass(c);
+	  if(drawingPanel!=null) drawingPanel.removeObjectsOfClass(c);
   }
 
   /**
@@ -532,7 +532,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     if(drawingPanel instanceof PlottingPanel) {
       ((PlottingPanel) drawingPanel).getAxes().setInteriorBackground(color);
     } else {
-      drawingPanel.setBackground(color);
+    	 if(drawingPanel!=null) drawingPanel.setBackground(color);
     }
   }
 
