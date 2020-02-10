@@ -580,7 +580,11 @@ public class XMLControlElement implements XMLControl {
         return null;
       }
       
-      if (!JSUtil.isJS) {
+      /**
+       * @j2sNative
+       */
+      
+      {if (!JSUtil.isJS) {
     
     	  
       FileOutputStream stream = new FileOutputStream(file);
@@ -600,11 +604,11 @@ public class XMLControlElement implements XMLControl {
           fileName = fileName.substring(0, fileName.lastIndexOf("\\")+1)+getDoctype(); //$NON-NLS-1$
         } else {
           fileName = doctype;
-        }
+       }
         writeDocType(new FileWriter(fileName));
       }
       
-      }
+      }}
       
       if(file.exists()) {
         return XML.getAbsolutePath(file);
