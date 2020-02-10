@@ -64,6 +64,8 @@ public class ResourceLoader {
   protected static final String OSX_DEFAULT_CACHE = "/Library/Caches/OSP"; //$NON-NLS-1$
   protected static final String LINUX_DEFAULT_CACHE = "/.config/OSP/Cache"; //$NON-NLS-1$
   protected static final String SEARCH_CACHE_SUBDIRECTORY = "Search"; //$NON-NLS-1$
+  
+  public static final String TRACKER_TEST_URL = null; // needed for tracker
 
   protected static ArrayList<String> searchPaths = new ArrayList<String>();                        // search paths
   protected static ArrayList<String> appletSearchPaths = new ArrayList<String>();                  // search paths for apples
