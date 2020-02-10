@@ -2394,6 +2394,12 @@ public class LibraryTreePanel extends JPanel {
   	return chooser;
   }
 
+  public void refreshSelectedNode() {
+	// BH needed by tracker -- what does it do?
+	// TODO Auto-generated method stub
+	
+  }
+
 }
 
 /*
