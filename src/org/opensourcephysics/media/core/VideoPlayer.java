@@ -1115,8 +1115,12 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     slider.addMouseMotionListener(inOutSetter);
     InputMap im = slider.getInputMap(JComponent.WHEN_FOCUSED);
     ActionMap am = SwingUtilities.getUIActionMap(slider);
+    if (am != null) {
+    	// TODO
+    	// SwingJS Slider may not implement KeyEvents yet
     am.put(im.get(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0)), null);
     am.put(im.get(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0)), null);
+    }
     slider.addKeyListener(new KeyAdapter() {
       public void keyPressed(KeyEvent e) {
       	if (disabled) return;
