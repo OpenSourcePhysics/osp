@@ -100,22 +100,27 @@ public class VideoFileFilter extends FileFilter implements Comparable<VideoFileF
     return false;
   }
 
+  private String description;
+  
   /**
    * Gets a description of the file types accepted by this filter.  
    * 
    * @return the description
    */
   public String getDescription() {
-  	String description = MediaRes.getString(type.toUpperCase()+"FileFilter.Description"); //$NON-NLS-1$
+    // BH 2020.02.09 Java inefficiency during compare operation
+	if (description != null)
+		return description;
+	String desc = MediaRes.getString(type.toUpperCase()+"FileFilter.Description"); //$NON-NLS-1$
   	if (extensions!=null) {
-  		description += " ("; //$NON-NLS-1$
+  		desc += " ("; //$NON-NLS-1$
   		for (int i = 0; i < extensions.length; i++) {
-  			if (i>0) description += ", "; //$NON-NLS-1$
-  			description += "."+extensions[i]; //$NON-NLS-1$
+  			if (i>0) desc += ", "; //$NON-NLS-1$
+  			desc += "."+extensions[i]; //$NON-NLS-1$
   		}
-  		description += ")"; //$NON-NLS-1$
+  		desc += ")"; //$NON-NLS-1$
   	}
-  	return description;
+  	return this.description = desc;
   }
   
   /**
