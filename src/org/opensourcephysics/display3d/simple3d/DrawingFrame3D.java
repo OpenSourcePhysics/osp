@@ -283,8 +283,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
   private void createMenuBar() {
     fileMenu = new JMenu(DisplayRes.getString("DrawingFrame.File_menu_item")); //$NON-NLS-1$
     JMenuItem printItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Print_menu_item")); //$NON-NLS-1$
-    if(!javajs.async.Async.isJS())  printItem.setAccelerator(KeyStroke.getKeyStroke('P', MENU_SHORTCUT_KEY_MASK));
-    if(!javajs.async.Async.isJS()) printItem.addActionListener(new ActionListener() {
+    if(!org.opensourcephysics.js.JSUtil.isJS)  printItem.setAccelerator(KeyStroke.getKeyStroke('P', MENU_SHORTCUT_KEY_MASK));
+    if(!org.opensourcephysics.js.JSUtil.isJS) printItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         PrinterJob printerJob = PrinterJob.getPrinterJob();
         printerJob.setPrintable((Printable) drawingPanel);
@@ -334,10 +334,10 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
       }
 
     });
-    if(!javajs.async.Async.isJS())fileMenu.add(printItem);
+    if(!org.opensourcephysics.js.JSUtil.isJS)fileMenu.add(printItem);
     fileMenu.add(saveXMLItem);
-    if(!javajs.async.Async.isJS())fileMenu.add(exportItem);
-    if(!javajs.async.Async.isJS())fileMenu.add(saveAsPSItem);
+    if(!org.opensourcephysics.js.JSUtil.isJS)fileMenu.add(exportItem);
+    if(!org.opensourcephysics.js.JSUtil.isJS)fileMenu.add(saveAsPSItem);
     fileMenu.add(inspectItem);
     menuBar.add(fileMenu);
     editMenu = new JMenu(DisplayRes.getString("DrawingFrame.Edit_menu_title")); //$NON-NLS-1$

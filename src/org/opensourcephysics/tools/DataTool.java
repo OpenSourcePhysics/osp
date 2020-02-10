@@ -2476,8 +2476,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
       }
 
     });
-    if(!javajs.async.Async.isJS()) printItem.setAccelerator(KeyStroke.getKeyStroke('P', keyMask));
-    if(!javajs.async.Async.isJS()) fileMenu.add(printItem);
+    if(!org.opensourcephysics.js.JSUtil.isJS) printItem.setAccelerator(KeyStroke.getKeyStroke('P', keyMask));
+    if(!org.opensourcephysics.js.JSUtil.isJS) fileMenu.add(printItem);
     fileMenu.addSeparator();
     exitItem = new JMenuItem();
     exitItem.setAccelerator(KeyStroke.getKeyStroke('Q', keyMask));
