@@ -49,6 +49,7 @@ import org.opensourcephysics.controls.XMLProperty;
 import org.opensourcephysics.controls.XMLTreeChooser;
 import org.opensourcephysics.controls.XMLTreePanel;
 import org.opensourcephysics.display.axes.DrawableAxes;
+import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.Job;
 import org.opensourcephysics.tools.LocalJob;
@@ -179,7 +180,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    * @param  label  the label
    */
   public void setXLabel(String label) {
-    if(drawingPanel!=null && drawingPanel instanceof PlottingPanel) {
+    if(drawingPanel instanceof PlottingPanel) {
       ((PlottingPanel) drawingPanel).setXLabel(label);
     }
   }
@@ -190,7 +191,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    * @param  label  the label
    */
   public void setYLabel(String label) {
-    if(drawingPanel!=null && drawingPanel instanceof PlottingPanel) {
+    if(drawingPanel instanceof PlottingPanel) {
       ((PlottingPanel) drawingPanel).setYLabel(label);
     }
   }
@@ -202,7 +203,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    * @param deltaR double
    */
   public void setPolar(String plotTitle, double deltaR) {
-    if(drawingPanel!=null && drawingPanel instanceof PlottingPanel) {
+    if(drawingPanel instanceof PlottingPanel) {
       ((PlottingPanel) drawingPanel).setPolar(plotTitle, deltaR);
     }
   }
@@ -216,7 +217,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    * @param plotTitle String
    */
   public void setCartesian(String xLabel, String yLabel, String plotTitle) {
-    if(drawingPanel!=null && drawingPanel instanceof PlottingPanel) {
+    if(drawingPanel instanceof PlottingPanel) {
       ((PlottingPanel) drawingPanel).setCartesian(xLabel, yLabel, plotTitle);
     }
   }
@@ -744,10 +745,10 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 
     });
     if(OSPRuntime.applet==null) {
-      if(!javajs.async.Async.isJS())fileMenu.add(printMenu);
+      if(!JSUtil.isJS)fileMenu.add(printMenu);
       fileMenu.add(saveXMLItem);
-      if(!javajs.async.Async.isJS())fileMenu.add(exportItem);
-      if(!javajs.async.Async.isJS())fileMenu.add(saveImage);
+      if(!JSUtil.isJS)fileMenu.add(exportItem);
+      if(!JSUtil.isJS)fileMenu.add(saveImage);
     }
     fileMenu.add(inspectItem);
     menuBar.add(fileMenu);
