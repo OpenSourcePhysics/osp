@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.AbstractButton;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JMenu;
@@ -333,16 +334,23 @@ public class FontSizer {
     		}
     	}
     }
-    else try {
-			Method m = c.getClass().getMethod("getIcon", (Class<?>[])null); //$NON-NLS-1$
-			if (m != null) {
-				Icon icon = (Icon)m.invoke(c, (Object[])null);
+    else if (c instanceof AbstractButton)  {
+    	// BH SwingJS "getIcon" is a method in AbstractButton, JFileChooser, JOptionPane, 
+    	// JLabel, and DefaultTreeCellRenderer. 
+    	// It is fair to assume we can just check for AbstractButton?
+    	// Otherwise we are depending upon throwing an Exception, which is
+    	// OK, but not really good form. 
+    	Icon icon = ((AbstractButton) c).getIcon();
+// formerly:
+//			Method m = c.getClass().getMethod("getIcon", (Class<?>[])null); //$NON-NLS-1$
+//			if (m != null) {
+//				Icon icon = (Icon)m.invoke(c, (Object[])null);
 				if (icon!=null && icon instanceof ResizableIcon) {
 					((ResizableIcon)icon).resize(getIntegerFactor());
 				}
 			}
-		} catch (Exception e) {
-		}
+//		} catch (Exception e) {
+//		}
     // end of code added by Doug
 
     c.repaint();
