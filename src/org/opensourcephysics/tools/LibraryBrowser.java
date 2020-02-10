@@ -798,7 +798,6 @@ public class LibraryBrowser extends JPanel {
   	if (path==null) return null;
 		File cachedFile = ResourceLoader.getSearchCacheFile(path);
   	boolean isCachePath = cachedFile.exists();
-  	System.out.println("LibraryBrowser tab " + path);
   	if (!isCachePath && !isWebConnected() && path.startsWith("http:")) { //$NON-NLS-1$
   		JOptionPane.showMessageDialog(this, 
   				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
