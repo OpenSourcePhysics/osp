@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
@@ -11,34 +11,50 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Enumeration;
+import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+import java.util.logging.XMLFormatter;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.WindowConstants;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
@@ -49,7 +65,6 @@ import org.opensourcephysics.tools.FontSizer;
 /**
  * This is a viewable file-based message log for a java package.
  * It displays log records in a text pane and saves them in a temp file.
- * Modified for JavaScript library.
  *
  * @author Douglas Brown
  * @author Wolfgang Christian
@@ -70,12 +85,17 @@ public class OSPLog extends JFrame {
 	
   // instance fields
   private Logger logger;
+  private Handler fileHandler;
+  private OSPLogHandler logHandler;
   private JTextPane textPane;
+  private String logFileName;
+  private String tempFileName;
   private JPanel logPanel;
   private JPopupMenu popup;
   private ButtonGroup popupGroup, menubarGroup;
   private String pkgName;
   private String bundleName;
+  private JMenuItem logToFileItem;
   private boolean hasPermission = true;
   private static LogRecord[] messageStorage = new LogRecord[128];
   private static int messageIndex = 0;
@@ -99,6 +119,18 @@ public class OSPLog extends JFrame {
    * @return the shared OSPLog
    */
   public static OSPLog getOSPLog() {
+    if(OSPLOG==null) {
+      if(!OSPRuntime.appletMode&&(OSPRuntime.applet==null)) { // cannot redirect applet streams
+        OSPLOG = new OSPLog("org.opensourcephysics", null);   //$NON-NLS-1$
+        try {
+          System.setOut(new PrintStream(new LoggerOutputStream(ConsoleLevel.OUT_CONSOLE, System.out)));
+          System.setErr(new PrintStream(new LoggerOutputStream(ConsoleLevel.ERR_CONSOLE, System.err)));
+        } catch(SecurityException ex) {
+          /** empty block */
+        }
+        setLevel(defaultLevel);
+      }
+    }
     return OSPLOG;
   }
 
@@ -124,8 +156,10 @@ public class OSPLog extends JFrame {
    * @return true if visible
    */
   public static boolean isLogVisible() {
-    if(MessageFrame.APPLET_MESSAGEFRAME!=null) {
+    if((OSPRuntime.appletMode||(OSPRuntime.applet!=null))&&(MessageFrame.APPLET_MESSAGEFRAME!=null)) {
       return MessageFrame.APPLET_MESSAGEFRAME.isVisible();
+    } else if(OSPLOG!=null) {
+      return OSPLOG.isVisible();
     }
     return false;
   }
@@ -136,7 +170,11 @@ public class OSPLog extends JFrame {
    * @param true to set visible
    */
   public void setVisible(boolean visible) {
-      org.opensourcephysics.controls.MessageFrame.showLog(visible); 
+    if(OSPRuntime.appletMode||(OSPRuntime.applet!=null)) {
+      org.opensourcephysics.controls.MessageFrame.showLog(visible);
+    } else {
+      super.setVisible(visible);
+    }
   }
 
   /**
@@ -145,15 +183,42 @@ public class OSPLog extends JFrame {
    * @return true if visible
    */
   public boolean isVisible() {
+    if(OSPRuntime.appletMode||(OSPRuntime.applet!=null)) {
       return org.opensourcephysics.controls.MessageFrame.isLogVisible();
+    }
+    return super.isVisible();
   }
 
   /**
    * Shows the log when it is invoked from the event queue.
    */
   public static JFrame showLog() {
+    if(OSPRuntime.appletMode||(OSPRuntime.applet!=null)) {
       return org.opensourcephysics.controls.MessageFrame.showLog(true);
-  
+    }
+    getOSPLog().setVisible(true);
+    Logger logger = OSPLOG.getLogger();
+    for(int i = 0, n = messageStorage.length; i<n; i++) {
+      LogRecord record = messageStorage[(i+messageIndex)%n];
+      if(record!=null) {
+        logger.log(record);
+      }
+    }
+    messageIndex = 0;
+    return getOSPLog();
+  }
+
+  /**
+   * Shows the log.
+   */
+  public static void showLogInvokeLater() {
+    Runnable doLater = new Runnable() {
+      public void run() {
+        showLog();
+      }
+
+    };
+    java.awt.EventQueue.invokeLater(doLater);
   }
 
   /**
@@ -161,7 +226,15 @@ public class OSPLog extends JFrame {
    * @return the current level value
    */
   public static int getLevelValue() {
+    if(OSPRuntime.appletMode||(OSPRuntime.applet!=null)) {
       return org.opensourcephysics.controls.MessageFrame.getLevelValue();
+    }
+    try {
+      Level level = getOSPLog().getLogger().getLevel();
+      if (level!=null) return level.intValue();
+    } catch(Exception ex) { // throws security exception if the caller does not have LoggingPermission("control").
+    }
+    return -1;
   }
 
   /**
@@ -170,7 +243,32 @@ public class OSPLog extends JFrame {
    * @param level the Level
    */
   public static void setLevel(Level level) {
+    if(OSPRuntime.appletMode||(OSPRuntime.applet!=null)) {
       org.opensourcephysics.controls.MessageFrame.setLevel(level);
+    } else {
+      try {
+        getOSPLog().getLogger().setLevel(level);
+      } catch(Exception ex) { // throws security exception if the caller does not have LoggingPermission("control").
+        // keep the current level
+      }
+      // refresh the level menus if the menubar exists
+      if((getOSPLog()==null)||(getOSPLog().menubarGroup==null)) {
+        return;
+      }
+      for(int i = 0; i<2; i++) {
+        Enumeration<AbstractButton> e = getOSPLog().menubarGroup.getElements();
+        if(i==1) {
+          e = getOSPLog().popupGroup.getElements();
+        }
+        while(e.hasMoreElements()) {
+          JMenuItem item = (JMenuItem) e.nextElement();
+          if(getOSPLog().getLogger().getLevel().toString().equals(item.getActionCommand())) {
+            item.setSelected(true);
+            break;
+          }
+        }
+      }
+    }
   }
 
   /**
@@ -193,7 +291,11 @@ public class OSPLog extends JFrame {
    * @param msg the message
    */
   public static void severe(String msg) {
+    if(OSPRuntime.appletMode||(OSPRuntime.applet!=null)) {
       org.opensourcephysics.controls.MessageFrame.severe(msg);
+    } else {
+      log(Level.SEVERE, msg);
+    }
   }
 
   /**
@@ -202,7 +304,11 @@ public class OSPLog extends JFrame {
    * @param msg the message
    */
   public static void warning(String msg) {
+    if(OSPRuntime.appletMode||(OSPRuntime.applet!=null)) {
       org.opensourcephysics.controls.MessageFrame.warning(msg);
+    } else {
+      log(Level.WARNING, msg);
+    }
   }
 
   /**
@@ -211,7 +317,11 @@ public class OSPLog extends JFrame {
    * @param msg the message
    */
   public static void info(String msg) {
+    if(OSPRuntime.appletMode||(OSPRuntime.applet!=null)) {
       org.opensourcephysics.controls.MessageFrame.info(msg);
+    } else {
+      log(Level.INFO, msg);
+    }
   }
 
   /**
@@ -220,7 +330,11 @@ public class OSPLog extends JFrame {
    * @param msg the message
    */
   public static void config(String msg) {
+    if(OSPRuntime.appletMode||(OSPRuntime.applet!=null)) {
       org.opensourcephysics.controls.MessageFrame.config(msg);
+    } else {
+      log(Level.CONFIG, msg);
+    }
   }
 
   /**
@@ -229,7 +343,11 @@ public class OSPLog extends JFrame {
    * @param msg the message
    */
   public static void fine(String msg) {
+    if(OSPRuntime.appletMode||(OSPRuntime.applet!=null)) {
       org.opensourcephysics.controls.MessageFrame.fine(msg);
+    } else {
+      log(Level.FINE, msg);
+    }
   }
 
   /**
@@ -238,7 +356,12 @@ public class OSPLog extends JFrame {
    * @param msg the message
    */
   public static void clearLog() {
+    messageIndex = 0;
+    if(OSPRuntime.appletMode||(OSPRuntime.applet!=null)) {
       org.opensourcephysics.controls.MessageFrame.clear();
+    } else {
+      OSPLOG.clear();
+    }
   }
 
   /**
@@ -247,7 +370,11 @@ public class OSPLog extends JFrame {
    * @param msg the message
    */
   public static void finer(String msg) {
+    if(OSPRuntime.appletMode||(OSPRuntime.applet!=null)) {
       org.opensourcephysics.controls.MessageFrame.finer(msg);
+    } else {
+      log(Level.FINER, msg);
+    }
   }
 
   /**
@@ -256,7 +383,11 @@ public class OSPLog extends JFrame {
    * @param msg the message
    */
   public static void finest(String msg) {
+    if(OSPRuntime.appletMode||(OSPRuntime.applet!=null)) {
       org.opensourcephysics.controls.MessageFrame.finest(msg);
+    } else {
+      log(Level.FINEST, msg);
+    }
   }
 
   /**
@@ -331,6 +462,132 @@ public class OSPLog extends JFrame {
     textPane.setText(null);
   }
 
+  /**
+   * Saves the log to a text file specified by name.
+   *
+   * @param fileName the file name
+   * @return the name of the file
+   */
+  public String saveLog(String fileName) {
+    if((fileName==null)||fileName.trim().equals("")) { //$NON-NLS-1$
+      return saveLogAs();
+    }
+    try {
+      BufferedWriter out = new BufferedWriter(new FileWriter(fileName));
+      out.write(textPane.getText());
+      out.flush();
+      out.close();
+      return fileName;
+    } catch(IOException ex) {
+      return null;
+    }
+  }
+
+  /**
+   * Saves a log to a text file selected with a chooser.
+   *
+   * @return the name of the file
+   */
+  public String saveLogAs() {
+    int result = getChooser().showSaveDialog(null);
+    if(result==JFileChooser.APPROVE_OPTION) {
+      File file = getChooser().getSelectedFile();
+      // check to see if file already exists
+      if(file.exists()) {
+        int selected = JOptionPane.showConfirmDialog(this, ControlsRes.getString("OSPLog.ReplaceExisting_dialog_message")+file.getName() //$NON-NLS-1$
+          +ControlsRes.getString("OSPLog.question_mark"), ControlsRes.getString("OSPLog.ReplaceFile_dialog_title"), //$NON-NLS-1$ //$NON-NLS-2$
+            JOptionPane.YES_NO_CANCEL_OPTION);
+        if(selected!=JOptionPane.YES_OPTION) {
+          return null;
+        }
+      }
+      String fileName = XML.getRelativePath(file.getAbsolutePath());
+      return saveLog(fileName);
+    }
+    return null;
+  }
+
+  /**
+   * Saves the xml-formatted log records to a file specified by name.
+   *
+   * @param fileName the file name
+   * @return the name of the file
+   */
+  public String saveXML(String fileName) {
+    if(OSPRuntime.appletMode||(OSPRuntime.applet!=null)) {
+      logger.log(Level.FINE, "Cannot save XML file when running as an applet."); //$NON-NLS-1$
+      return null;                                                               // cannot log to file in applet mode
+    }
+    if((fileName==null)||fileName.trim().equals("")) { //$NON-NLS-1$
+      return saveXMLAs();
+    }
+    // open temp file and get xml string
+    String xml = read(tempFileName);
+    // add closing tag to xml
+    Handler fileHandler = getFileHandler();
+    String tail = fileHandler.getFormatter().getTail(fileHandler);
+    xml = xml+tail;
+    // write the xml
+    try {
+      BufferedWriter out = new BufferedWriter(new FileWriter(fileName));
+      out.write(xml);
+      out.flush();
+      out.close();
+      return fileName;
+    } catch(IOException ex) {
+      return null;
+    }
+  }
+
+  /**
+   * Saves the xml-formatted log records to a file selected with a chooser.
+   *
+   * @return the name of the file
+   */
+  public String saveXMLAs() {
+    int result = getChooser().showSaveDialog(null);
+    if(result==JFileChooser.APPROVE_OPTION) {
+      File file = getChooser().getSelectedFile();
+      // check to see if file already exists
+      if(file.exists()) {
+        int selected = JOptionPane.showConfirmDialog(this, ControlsRes.getString("OSPLog.ReplaceExisting_dialog_message")+file.getName() //$NON-NLS-1$
+          +ControlsRes.getString("OSPLog.question_mark"), ControlsRes.getString("OSPLog.ReplaceFile_dialog_title"), //$NON-NLS-1$ //$NON-NLS-2$
+            JOptionPane.YES_NO_CANCEL_OPTION);
+        if(selected!=JOptionPane.YES_OPTION) {
+          return null;
+        }
+      }
+      logFileName = XML.getRelativePath(file.getAbsolutePath());
+      return saveXML(logFileName);
+    }
+    return null;
+  }
+
+  /**
+   * Opens a text file selected with a chooser and writes the contents to the log.
+   *
+   * @return the name of the file
+   */
+  public String open() {
+    int result = getChooser().showOpenDialog(null);
+    if(result==JFileChooser.APPROVE_OPTION) {
+      File file = getChooser().getSelectedFile();
+      String fileName = XML.getRelativePath(file.getAbsolutePath());
+      return open(fileName);
+    }
+    return null;
+  }
+
+  /**
+   * Opens a text file specified by name and writes the contents to the log.
+   *
+   * @param fileName the file name
+   * @return the file name
+   */
+  public String open(String fileName) {
+    textPane.setText(read(fileName));
+    return fileName;
+  }
 
   /**
    * Gets the logger.
@@ -341,6 +598,24 @@ public class OSPLog extends JFrame {
     return logger;
   }
 
+  /**
+   * Enables logging to a file.
+   *
+   * @param enable true to log to a file
+   */
+  public void setLogToFile(boolean enable) {
+    if(OSPRuntime.appletMode||(OSPRuntime.applet!=null)) {
+      logger.log(Level.FINE, "Cannot log to file when running as an applet."); //$NON-NLS-1$
+      return;                                                                  // cannot log to file in applet mode
+    }
+    if(enable) {
+      logToFileItem.setSelected(true);
+      logger.addHandler(getFileHandler());
+    } else {
+      logToFileItem.setSelected(false);
+      logger.removeHandler(fileHandler);
+    }
+  }
 
   /*
    *  //Uncomment this method to test the OSPLog.
@@ -436,6 +711,7 @@ public class OSPLog extends JFrame {
     gray = textPane.addStyle("gray", black); //$NON-NLS-1$
     StyleConstants.setForeground(gray, Color.GRAY);
     // create the logger
+    createLogger();
     // create the menus
     createMenus();
     pack();
@@ -458,7 +734,70 @@ public class OSPLog extends JFrame {
 
     });
   }
-  
+
+  /**
+   * Creates and initializes the logger.
+   *
+   * @return the logger
+   */
+  protected Logger createLogger() {
+    // get the package logger and reference the ResourceBundle it will use
+    if(bundleName!=null) {
+      try {
+        logger = Logger.getLogger(pkgName, bundleName);
+      } catch(Exception ex) {
+        logger = Logger.getLogger(pkgName);
+      }
+    } else {
+      logger = Logger.getLogger(pkgName);
+    }
+    try {
+      logger.setLevel(defaultLevel);
+      // add a log handler for this log
+      logHandler = new OSPLogHandler(textPane, this);
+      logHandler.setFormatter(new ConsoleFormatter());
+      logHandler.setLevel(Level.ALL);
+      // ignore parent handlers (specifically root console handler)
+      OSPRuntime.class.getClass(); // force the static methods to execute
+      logger.setUseParentHandlers(false);
+      logger.addHandler(logHandler);
+    } catch(SecurityException ex) {
+      hasPermission = false;
+    }
+    return logger;
+  }
+
+  /**
+   * Gets the file handler using lazy instantiation.
+   *
+   * @return the Handler
+   */
+  protected synchronized Handler getFileHandler() {
+    if(fileHandler!=null) {
+      return fileHandler;
+    }
+    try {
+      // add a file handler with file name equal to short package name
+      int i = pkgName.lastIndexOf(".");                                        //$NON-NLS-1$
+      if(i>-1) {
+        pkgName = pkgName.substring(i+1);
+      }
+      if(logdir.endsWith(slash)) {
+        tempFileName = logdir+pkgName+".log";                                  //$NON-NLS-1$
+      } else {
+        tempFileName = logdir+slash+pkgName+".log";                            //$NON-NLS-1$
+      }
+      fileHandler = new FileHandler(tempFileName);
+      fileHandler.setFormatter(new XMLFormatter());
+      fileHandler.setLevel(Level.ALL);
+      logger.addHandler(fileHandler);
+      logger.log(Level.INFO, "Logging to file enabled. File = "+tempFileName); //$NON-NLS-1$
+    } catch(Exception ex) {
+      ex.printStackTrace();
+    }
+    return fileHandler;
+  }
+
   /**
    * Creates the popup menu.
    */
@@ -493,7 +832,23 @@ public class OSPLog extends JFrame {
 
       });
     }
+    popup.addSeparator();
+    Action openAction = new AbstractAction(ControlsRes.getString("OSPLog.Open_popup")) { //$NON-NLS-1$
+      public void actionPerformed(ActionEvent e) {
+        open();
+      }
 
+    };
+    openAction.setEnabled(!OSPRuntime.appletMode&&(OSPRuntime.applet==null));
+    popup.add(openAction);
+    Action saveAsAction = new AbstractAction(ControlsRes.getString("OSPLog.SaveAs_popup")) { //$NON-NLS-1$
+      public void actionPerformed(ActionEvent e) {
+        saveLogAs();
+      }
+
+    };
+    saveAsAction.setEnabled(!OSPRuntime.appletMode&&(OSPRuntime.applet==null));
+    popup.add(saveAsAction);
     popup.addSeparator();
     Action clearAction = new AbstractAction(ControlsRes.getString("OSPLog.Clear_popup")) { //$NON-NLS-1$
       public void actionPerformed(ActionEvent e) {
@@ -507,6 +862,8 @@ public class OSPLog extends JFrame {
     setJMenuBar(menubar);
     menu = new JMenu(ControlsRes.getString("OSPLog.File_menu")); //$NON-NLS-1$
     menubar.add(menu);
+    menu.add(openAction);
+    menu.add(saveAsAction);
     menu = new JMenu(ControlsRes.getString("OSPLog.Edit_menu")); //$NON-NLS-1$
     menubar.add(menu);
     menu.add(clearAction);
@@ -538,6 +895,54 @@ public class OSPLog extends JFrame {
     }
     JMenu prefMenu = new JMenu(ControlsRes.getString("OSPLog.Options_menu")); //$NON-NLS-1$
     menubar.add(prefMenu);
+    logToFileItem = new JCheckBoxMenuItem(ControlsRes.getString("OSPLog.LogToFile_check_box")); //$NON-NLS-1$
+    logToFileItem.setSelected(false);
+    logToFileItem.setEnabled(!OSPRuntime.appletMode&&(OSPRuntime.applet==null));
+    logToFileItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
+        setLogToFile(item.isSelected());
+      }
+
+    });
+    prefMenu.add(logToFileItem);
+  }
+
+  /**
+   * Gets a file chooser.
+   *
+   * @return the chooser
+   */
+  protected static JFileChooser getChooser() {
+    if(chooser==null) {
+      chooser = new JFileChooser(new File(OSPRuntime.chooserDir));
+    }
+  	FontSizer.setFonts(chooser, FontSizer.getLevel());
+    return chooser;
+  }
+
+  /**
+   * Reads a file.
+   *
+   * @param fileName the name of the file
+   * @return the file contents as a String
+   */
+  protected String read(String fileName) {
+    File file = new File(fileName);
+    StringBuffer buffer = null;
+    try {
+      BufferedReader in = new BufferedReader(new FileReader(file));
+      buffer = new StringBuffer();
+      String line = in.readLine();
+      while(line!=null) {
+        buffer.append(line+XML.NEW_LINE);
+        line = in.readLine();
+      }
+      in.close();
+    } catch(IOException ex) {
+      logger.warning(ex.toString());
+    }
+    return buffer.toString();
   }
   
   private OSPLog(String name, String resourceBundleName) {
@@ -551,7 +956,9 @@ public class OSPLog extends JFrame {
   }
 
   private static void log(Level level, String msg) {
+	  System.out.println("OSPLog " + level + " " + msg);
     LogRecord record = new LogRecord(level, msg);
+    
     // get the stack trace
     StackTraceElement stack[] = (new Throwable()).getStackTrace();
     // find the first method not in class OSPLog
@@ -576,7 +983,45 @@ public class OSPLog extends JFrame {
 
 }
 
+/**
+ * A class that formats a record as if this were the console.
+ */
+class ConsoleFormatter extends SimpleFormatter {
+  /**
+   * Formats the record as if this were the console.
+   *
+   * @param record LogRecord
+   * @return String
+   */
+  public String format(LogRecord record) {
+    String message = formatMessage(record);
+    if((record.getLevel().intValue()==ConsoleLevel.OUT_CONSOLE.intValue())||(record.getLevel().intValue()==ConsoleLevel.ERR_CONSOLE.intValue())) {
+      StringBuffer sb = new StringBuffer();
+      if((message.length()>0)&&(message.charAt(0)=='\t')) {
+        message = message.replaceFirst("\t", "    "); //$NON-NLS-1$//$NON-NLS-2$
+      } else {
+        sb.append("CONSOLE: ");                       //$NON-NLS-1$
+      }
+      sb.append(message);
+      sb.append(OSPLog.eol);
+      // new line after message
+      if(record.getThrown()!=null) {
+        try {
+          StringWriter sw = new StringWriter();
+          PrintWriter pw = new PrintWriter(sw);
+          record.getThrown().printStackTrace(pw);
+          pw.close();
+          sb.append(sw.toString());
+        } catch(Exception ex) {
+          ex.printStackTrace();
+        }
+      }
+      return sb.toString();
+    }
+    return super.format(record);
+  }
 
+}
 
 /**
  * A class that writes an output stream to the logger.
@@ -600,6 +1045,74 @@ class LoggerOutputStream extends OutputStream {
     } else {
       buffer.append((char) c);
     }
+  }
+
+}
+
+/**
+ * A handler class for a text log.
+ */
+class OSPLogHandler extends Handler {
+	
+  JTextPane logPane;
+  OSPLog ospLog;
+
+  /**
+   * Constructor OSPLogHandler
+   * @param textPane
+   */
+  public OSPLogHandler(JTextPane textPane, OSPLog log) {
+    logPane = textPane;
+    ospLog = log;
+  }
+  
+  public void publish(LogRecord record) {
+    if(!isLoggable(record)) {
+      return;
+    }
+    String msg = getFormatter().format(record);
+    Style style = OSPLog.green; // default style
+    int val = record.getLevel().intValue();
+    if(val==ConsoleLevel.ERR_CONSOLE.intValue()) {
+    	if (msg.indexOf("OutOfMemory")>-1) //$NON-NLS-1$
+    		ospLog.firePropertyChange("error", -1, OSPLog.OUT_OF_MEMORY_ERROR); //$NON-NLS-1$
+    	if (!OSPLog.logConsole) return;
+      style = OSPLog.magenta;
+    } else if(val==ConsoleLevel.OUT_CONSOLE.intValue()) {
+    	if (msg.indexOf("ERROR org.ffmpeg")>-1) //$NON-NLS-1$
+    		ospLog.firePropertyChange("ffmpeg_error", null, msg); //$NON-NLS-1$
+    	else if (msg.indexOf("JNILibraryLoader")>-1) {//$NON-NLS-1$
+    		ospLog.firePropertyChange("xuggle_error", null, msg); //$NON-NLS-1$
+    	}
+    	if (!OSPLog.logConsole) return;
+      style = OSPLog.gray;
+    } else if(val>=Level.WARNING.intValue()) {
+      style = OSPLog.red;
+    } else if(val>=Level.INFO.intValue()) {
+      style = OSPLog.black;
+    } else if(val>=Level.CONFIG.intValue()) {
+      style = OSPLog.green;
+    } else if(val>=Level.FINEST.intValue()) {
+      style = OSPLog.blue;
+    }
+    try {
+      Document doc = logPane.getDocument();
+      doc.insertString(doc.getLength(), msg+'\n', style);
+      // scroll to display new message
+      Rectangle rect = logPane.getBounds();
+      rect.y = rect.height;
+      logPane.scrollRectToVisible(rect);
+    } catch(BadLocationException ex) {
+      System.err.println(ex);
+    }
+  }
+
+  public void flush() {
+    /** empty block */
+  }
+
+  public void close() {
+    /** empty block */
   }
 
 }
