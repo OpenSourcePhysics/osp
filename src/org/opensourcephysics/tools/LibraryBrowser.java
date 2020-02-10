@@ -530,7 +530,7 @@ public class LibraryBrowser extends JPanel {
    * 
    * @return the selected treePanel, or null if none
    */
-  protected LibraryTreePanel getSelectedTreePanel() {
+  public LibraryTreePanel getSelectedTreePanel() {
   	return (LibraryTreePanel)tabbedPane.getSelectedComponent();
   }
   
@@ -798,6 +798,7 @@ public class LibraryBrowser extends JPanel {
   	if (path==null) return null;
 		File cachedFile = ResourceLoader.getSearchCacheFile(path);
   	boolean isCachePath = cachedFile.exists();
+  	System.out.println("LibraryBrowser tab " + path);
   	if (!isCachePath && !isWebConnected() && path.startsWith("http:")) { //$NON-NLS-1$
   		JOptionPane.showMessageDialog(this, 
   				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
@@ -1674,7 +1675,7 @@ public class LibraryBrowser extends JPanel {
    * Opens a file with a specified path.
    * @param path the path to the file
    */
-  protected void open(String path) {
+  public void open(String path) {
   	if (path==null) return;
   	loadTab(path, null);
   }
