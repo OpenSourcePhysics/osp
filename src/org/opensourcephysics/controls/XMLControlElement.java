@@ -26,6 +26,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JOptionPane;
+
+import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.tools.Resource;
 import org.opensourcephysics.tools.ResourceLoader;
 
@@ -577,6 +579,10 @@ public class XMLControlElement implements XMLControl {
         canWrite = false;
         return null;
       }
+      
+      if (!JSUtil.isJS) {
+    
+    	  
       FileOutputStream stream = new FileOutputStream(file);
       java.nio.charset.Charset charset = java.nio.charset.Charset.forName(encoding);
       write(new OutputStreamWriter(stream, charset));
@@ -597,6 +603,9 @@ public class XMLControlElement implements XMLControl {
         }
         writeDocType(new FileWriter(fileName));
       }
+      
+      }
+      
       if(file.exists()) {
         return XML.getAbsolutePath(file);
       }
