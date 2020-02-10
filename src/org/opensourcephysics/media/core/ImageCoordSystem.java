@@ -59,6 +59,9 @@ import org.opensourcephysics.controls.XMLControl;
 public class ImageCoordSystem {
 
   // instance fields
+	
+	  protected boolean ignoreUpdateRequests;// for tracker ReferenceFrame
+
   private int length;
   protected PropertyChangeSupport support;
   private Point2D point = new Point2D.Double();
@@ -1123,7 +1126,7 @@ public class ImageCoordSystem {
   /**
    * Updates all transforms used to convert between drawing spaces.
    */
-  private void updateAllTransforms() {
+  protected void updateAllTransforms() {
     try {
       // don't fire property changes for individual updates
       firePropChange = false;
