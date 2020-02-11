@@ -41,6 +41,9 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+import org.opensourcephysics.controls.ControlUtils;
+import org.opensourcephysics.controls.ControlsRes;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
@@ -814,6 +817,23 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 
     });
     helpMenu.add(aboutItem);
+		JMenuItem sysItem = new JMenuItem(ControlsRes.getString("ControlFrame.System")); //$NON-NLS-1$
+		sysItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				ControlUtils.showSystemProperties(true);
+			}
+
+		});
+		helpMenu.add(sysItem);
+		helpMenu.addSeparator();
+		JMenuItem logItem = new JMenuItem(ControlsRes.getString("ControlFrame.Message_Log")); //$NON-NLS-1$
+		logItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				OSPLog.showLog();
+			}
+		});
+
+		helpMenu.add(logItem);
   }
 
   /**
@@ -886,7 +906,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    */
   protected JMenu loadToolsMenu() {
 	if(org.opensourcephysics.js.JSUtil.isJS) {  // external tools not supported in JavaScript.
-		  return null;
+		  //return null;
 	}
     JMenuBar menuBar = getJMenuBar();
     if(menuBar==null) {
@@ -1020,7 +1040,6 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    * Inspects the drawing frame by using an xml document tree.
    */
   public void inspectXML() {
-	System.err.println("DrawingFrame Line 1018: customInspector="+customInspector);
     if(customInspector!=null) {
       customInspector.setVisible(true);
       return;
@@ -1040,9 +1059,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     XMLTreePanel treePanel = new XMLTreePanel(xml);
     JDialog dialog = new JDialog((java.awt.Frame) null, true);
     dialog.setTitle("XML Inspector");
-    System.err.println("Debug: DrawingFrame Line 1042");
     dialog.setContentPane(treePanel);  // WC: JS bug here!
-    System.err.println("Debug: DrawingFrame Line 1444");
     dialog.setSize(new Dimension(600, 300));
     dialog.setVisible(true);
   }
@@ -1140,7 +1157,6 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
      * @return Object
      */
     public Object loadObject(XMLControl control, Object obj) {
-    	System.err.println("1136");
       DrawingFrame frame = ((DrawingFrame) obj);
       DrawingPanel panel = frame.getDrawingPanel();
       panel.clear();

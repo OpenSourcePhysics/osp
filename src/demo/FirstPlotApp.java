@@ -7,6 +7,8 @@
 
 package demo;
 import javax.swing.JFrame;
+
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.frames.PlotFrame;
 
 /**
@@ -24,6 +26,7 @@ public class FirstPlotApp {
     }
     frame.setVisible(true);
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    OSPLog.info("FirstPlotApp running.");
   }
 
 }
