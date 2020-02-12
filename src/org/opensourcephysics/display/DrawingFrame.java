@@ -61,6 +61,7 @@ import org.opensourcephysics.tools.Tool;
 import org.opensourcephysics.tools.VideoTool;
 
 import javajs.async.AsyncDialog;
+import javajs.async.AsyncFileChooser;
 
 /**
  *  Drawing Frame: a frame that contains a drawing panel.
@@ -654,22 +655,24 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     fileMenu = new JMenu(DisplayRes.getString("DrawingFrame.File_menu_item")); //$NON-NLS-1$
     JMenu printMenu = new JMenu(DisplayRes.getString("DrawingFrame.Print_menu_title"));        //$NON-NLS-1$
     JMenuItem printItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Print_menu_item")); //$NON-NLS-1$
-    printMenu.add(printItem);
-    printItem.setAccelerator(KeyStroke.getKeyStroke('P', MENU_SHORTCUT_KEY_MASK));
-    printItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        PrintUtils.printComponent(drawingPanel);
-      }
-
-    });
-    JMenuItem printFrameItem = new JMenuItem(DisplayRes.getString("DrawingFrame.PrintFrame_menu_item")); //$NON-NLS-1$
-    printMenu.add(printFrameItem);
-    printFrameItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        PrintUtils.printComponent(DrawingFrame.this);
-      }
-
-    });
+   if(!JSUtil.isJS) { // cannot print from within browser
+	  	printMenu.add(printItem);
+	    printItem.setAccelerator(KeyStroke.getKeyStroke('P', MENU_SHORTCUT_KEY_MASK));
+	    printItem.addActionListener(new ActionListener() {
+	      public void actionPerformed(ActionEvent e) {
+	        PrintUtils.printComponent(drawingPanel);
+	      }
+	
+	    });
+	    JMenuItem printFrameItem = new JMenuItem(DisplayRes.getString("DrawingFrame.PrintFrame_menu_item")); //$NON-NLS-1$
+	    printMenu.add(printFrameItem);
+	    printFrameItem.addActionListener(new ActionListener() {
+	      public void actionPerformed(ActionEvent e) {
+	        PrintUtils.printComponent(DrawingFrame.this);
+	      }
+	
+	    });
+    }
     JMenuItem saveXMLItem = new JMenuItem(DisplayRes.getString("DrawingFrame.SaveXML_menu_item")); //$NON-NLS-1$
     saveXMLItem.setAccelerator(KeyStroke.getKeyStroke('S', MENU_SHORTCUT_KEY_MASK));
     saveXMLItem.addActionListener(new ActionListener() {
@@ -694,6 +697,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     exportItem.setAccelerator(KeyStroke.getKeyStroke('E', MENU_SHORTCUT_KEY_MASK));
     Class<?> exportTool = null;
     if(OSPRuntime.loadExportTool) {
+    	OSPLog.fine("Loading ExportTool");
       try {
         exportTool = Class.forName("org.opensourcephysics.tools.ExportTool");        //$NON-NLS-1$
       } catch(Exception ex) {
@@ -709,10 +713,11 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
           Method m = tool.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
           Tool tool = (Tool) m.invoke(null, (Object[]) null);
           tool.send(new LocalJob(drawingPanel), reply);
-        } catch(Exception ex) {}
+        } catch(Exception ex) { System.err.println("Error creating ExportTool.");}
       }
 
     });
+    OSPLog.info("Done with Export Tool");
     //Save menu item
     JMenu saveImage = new JMenu(DisplayRes.getString("DrawingFrame.SaveImage_menu_title"));      //$NON-NLS-1$
     JMenuItem epsMenuItem = new JMenuItem(DisplayRes.getString("DrawingFrame.EPS_menu_item"));   //$NON-NLS-1$
@@ -747,12 +752,14 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
       }
 
     });
-    if(OSPRuntime.applet==null) {
-      if(!JSUtil.isJS)fileMenu.add(printMenu);
+    //if(OSPRuntime.applet==null) { // applets no longer supported
+      if(!JSUtil.isJS) fileMenu.add(printMenu);
       fileMenu.add(saveXMLItem);
-      if(!JSUtil.isJS)fileMenu.add(exportItem);
-      if(!JSUtil.isJS)fileMenu.add(saveImage);
-    }
+      //if(!JSUtil.isJS)
+      	fileMenu.add(exportItem);
+      //if(!JSUtil.isJS)
+      	fileMenu.add(saveImage);
+    //}
     fileMenu.add(inspectItem);
     menuBar.add(fileMenu);
     // edit menu
@@ -1065,7 +1072,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
   }
 
   public void saveXML() {
-    JFileChooser chooser = OSPRuntime.getChooser();
+  	AsyncFileChooser chooser = OSPRuntime.getChooser();
     if(chooser==null) {
         return;
      }

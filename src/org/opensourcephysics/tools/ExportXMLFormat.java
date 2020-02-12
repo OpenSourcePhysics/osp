@@ -13,6 +13,8 @@ import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JOptionPane;
+
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 
@@ -32,6 +34,7 @@ public class ExportXMLFormat implements ExportFormat {
   }
 
   public void export(File file, List<Object> data) {
+    OSPLog.finer("Exporting XML data to file="+file);
     FileWriter fw = null;
     try {
       fw = new FileWriter(file);

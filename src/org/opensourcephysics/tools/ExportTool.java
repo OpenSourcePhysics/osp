@@ -48,7 +48,7 @@ public class ExportTool implements Tool, PropertyChangeListener {
   * TOOL is the single instance of ExportTool registered with the OSP Toolbox.
   */
   static ExportTool TOOL;
-  JFileChooser fc;
+  AsyncFileChooser fc;
   static String exportExtension = "txt"; //$NON-NLS-1$
   static Hashtable<String, ExportFormat> formats;
   JCheckBox[] checkBoxes;
@@ -70,7 +70,9 @@ public class ExportTool implements Tool, PropertyChangeListener {
     Object oldFilesOfTypeLabelText = UIManager.put("FileChooser.filesOfTypeLabelText", //$NON-NLS-1$
       ToolsRes.getString("ExportTool.FileChooser.Label.FileFormat"));                  //$NON-NLS-1$
     // Create a new FileChooser
-    fc = new JFileChooser(OSPRuntime.chooserDir);
+    //fc = new JFileChooser(OSPRuntime.chooserDir);
+    fc=OSPRuntime.getChooser();
+    
     // Reset the "filesOfTypeLabelText" to previous value
     UIManager.put("FileChooser.filesOfTypeLabelText", oldFilesOfTypeLabelText);          //$NON-NLS-1$
     fc.setDialogType(JFileChooser.SAVE_DIALOG);
@@ -253,7 +255,7 @@ public class ExportTool implements Tool, PropertyChangeListener {
         }
       }
       String description = fc.getFileFilter().getDescription();
-      formats.get(description).export(file, filterDataObjects(data));
+      if(!description.trim().equals("not implemented")) formats.get(description).export(file, filterDataObjects(data));
       if(file.getName().endsWith(exportExtension)) {
         exportName = file.getName().substring(0, file.getName().length()-1-exportExtension.length());
         // System.out.println("new name="+exportName);
