@@ -956,10 +956,8 @@ public class OSPLog extends JFrame {
   }
 
   private static void log(Level level, String msg) {
-	  System.out.println("OSPLog " + level + " " + msg);
-    LogRecord record = new LogRecord(level, msg);
-    
-    // get the stack trace
+//	  System.out.println("OSPLog " + level + " " + msg);
+    LogRecord record = new LogRecord(level, msg);  
     StackTraceElement stack[] = (new Throwable()).getStackTrace();
     // find the first method not in class OSPLog
     for(int i = 0; i<stack.length; i++) {
