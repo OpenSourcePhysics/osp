@@ -580,13 +580,6 @@ public class XMLControlElement implements XMLControl {
         return null;
       }
       
-      /**
-       * @j2sNative
-       */
-      
-      {if (!JSUtil.isJS) {
-    
-    	  
       FileOutputStream stream = new FileOutputStream(file);
       java.nio.charset.Charset charset = java.nio.charset.Charset.forName(encoding);
       write(new OutputStreamWriter(stream, charset));
@@ -607,10 +600,8 @@ public class XMLControlElement implements XMLControl {
        }
         writeDocType(new FileWriter(fileName));
       }
-      
-      }}
-      
-      if(file.exists()) {
+            
+      if(/** @j2sNative true || */file.exists()) {
         return XML.getAbsolutePath(file);
       }
     } catch(IOException ex) {
@@ -1178,6 +1169,9 @@ public class XMLControlElement implements XMLControl {
   public <T> List<T> getObjects(Class<T> type, boolean useChooser) {
     java.util.List<XMLProperty> props;
     if(useChooser) {
+
+    	/** @j2sNative alert("XMLControlElement.getObjects with chooser called -- not configured to be asynchronous"); */
+    	
       String name = type.getName();
       name = name.substring(name.lastIndexOf(".")+1);                                                                                                                                                                           //$NON-NLS-1$
       // select objects using an xml tree chooser
@@ -1190,6 +1184,7 @@ public class XMLControlElement implements XMLControl {
       tree.selectHighlightedProperties();
       props = tree.getSelectedProperties();
     }
+    
     List<T> objects = new ArrayList<T>();
     Iterator<XMLProperty> it = props.iterator();
     while(it.hasNext()) {
