@@ -32,6 +32,7 @@ import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.display.Dataset;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display2d.GridData;
+import org.opensourcephysics.js.JSUtil;
 
 import javajs.async.AsyncFileChooser;
 
@@ -224,11 +225,65 @@ public class ExportTool implements Tool, PropertyChangeListener {
   static public void registerFormat(ExportFormat format) {
     formats.put(format.description(), format);
   }
+  
+  public void exportJS(Job job){
+  	XMLControlElement control = new XMLControlElement();
+  	
+    try {
+      control.readXML(job.getXML());
+    } catch(Exception ex) {
+    	System.err.println("Error reading XML for export.");
+    }
+    OSPLog.fine("Exporting XML");
+    OSPLog.finer("XML="+control.toXML());
+    AsyncFileChooser chooser = OSPRuntime.getChooser();
+    if(chooser==null) {
+       return;
+    }
+    String oldTitle = chooser.getDialogTitle();
+    chooser.setDialogTitle("Export");
+    int result = -1;
+    try {
+    	result = chooser.showSaveDialog(null);
+    } catch (Throwable e) {
+    	e.printStackTrace();
+    }
+    chooser.setDialogTitle(oldTitle);
+    if(result==JFileChooser.APPROVE_OPTION) {
+        File file = chooser.getSelectedFile();              
+        // check to see if file already exists
+        org.opensourcephysics.display.OSPRuntime.chooserDir = chooser.getCurrentDirectory().toString();
+        String fileName = file.getAbsolutePath();
+        // String fileName = XML.getRelativePath(file.getAbsolutePath());
+        if((fileName==null)||fileName.trim().equals("")) {
+           return;
+        }
+        int i = fileName.toLowerCase().lastIndexOf(".xml");
+        if(i!=fileName.length()-4) {
+           fileName += ".xml";
+           file = new File(fileName);
+        }
+        if(/** @j2sNative false && */file.exists()) {
+            int selected = JOptionPane.showConfirmDialog(null, "Replace existing "+file.getName()+"?", "Replace File",
+               JOptionPane.YES_NO_CANCEL_OPTION);
+            if(selected!=JOptionPane.YES_OPTION) {
+               return;
+            }
+         }
+        control.write(fileName);
+    }
+    OSPLog.fine("Done Exporting");
+
+}
 
   /*
   * Displays the export dialog with a given XML file.
   */
   public void send(Job job, Tool replyTo) throws RemoteException {
+  	if(JSUtil.isJS) {
+  		exportJS(job);
+  		return;
+  	}
     XMLControlElement control = new XMLControlElement();
     try {
       control.readXML(job.getXML());
