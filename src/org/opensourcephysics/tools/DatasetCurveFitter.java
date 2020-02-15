@@ -16,6 +16,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.*;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import javax.swing.table.*;
@@ -503,7 +504,31 @@ public class DatasetCurveFitter extends JPanel {
       }
 
     });
-    class FitDropDownRenderer extends BasicComboBoxRenderer {
+    // BH 2020.02.13 can't extend a Basic renderer -- that's a UI component.
+    class FitDropDownRenderer extends JLabel
+    implements ListCellRenderer {
+    	
+		public FitDropDownRenderer() {
+
+			super();
+			setOpaque(true);
+			setBorder(new EmptyBorder(1, 1, 1, 1));
+		}
+
+		public Dimension getPreferredSize() {
+			Dimension size;
+
+			if ((this.getText() == null) || (this.getText().equals(""))) {
+				setText(" ");
+				size = super.getPreferredSize();
+				setText("");
+			} else {
+				size = super.getPreferredSize();
+			}
+
+			return size;
+		}
+			
       public Component getListCellRendererComponent(JList list, Object value,
           int index, boolean isSelected, boolean cellHasFocus) {
         if (isSelected) {
@@ -524,6 +549,7 @@ public class DatasetCurveFitter extends JPanel {
         return this;
       }
     }
+    
     fitDropDown.setRenderer(new FitDropDownRenderer());
 
     // create equation field
