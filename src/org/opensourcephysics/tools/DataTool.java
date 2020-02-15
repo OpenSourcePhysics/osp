@@ -42,6 +42,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Consumer;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -230,7 +231,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    */
   public DataTool(XMLControl control) {
     this();
-    addTabs(control);
+    addTabs(control, null);
   }
 
   /**
@@ -259,9 +260,11 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    * Adds tabs loaded with data from an xml control.
    *
    * @param control the xml control
-   * @return a list of newly added tabs, or null if failed
+   * @param whenDone 
    */
-  public ArrayList<DataToolTab> addTabs(XMLControl control) {
+  public void addTabs(XMLControl control, Consumer<ArrayList<DataToolTab>> whenDone) {
+	 //  * @return a list of newly added tabs, or null if failed
+     // BH 2020.02.13 changed from returning tabs to void
     // if control is for DataToolTab class, load tab from control
     if(DataToolTab.class == control.getObjectClass()) {
     	// store this DataTool in the control so DataToolTab loader can use it for instantiation
@@ -274,7 +277,9 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     	isLoading = false;
       ArrayList<DataToolTab> tabs = new ArrayList<DataToolTab>();
       tabs.add(tab);
-      return tabs;
+      if (whenDone != null)
+    	  whenDone.accept(tabs);
+      return;
     }
     // if control is for FourierToolTab, load the source data into a tab
   	if(control.getObjectClassName().endsWith("FourierToolTab")) { //$NON-NLS-1$
@@ -285,15 +290,24 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
       tab.refreshGUI();
       ArrayList<DataToolTab> tabs = new ArrayList<DataToolTab>();
       tabs.add(tab);
-      return tabs;
+      if (whenDone != null)
+    	  whenDone.accept(tabs);
+      return;
     }
     // otherwise load data from control into tabs
-    ArrayList<DataToolTab> tabs = loadTabsFromXML(control, useChooser);
-    for(DataToolTab tab : tabs) {
-      addTab(tab);
-      tab.refreshGUI();
-    }
-    return tabs;
+    loadTabsFromXMLAsync(control, new Consumer<ArrayList<DataToolTab>>() {
+
+		@Override
+		public void accept(ArrayList<DataToolTab> tabs) {
+		    for(DataToolTab tab : tabs) {
+		        addTab(tab);
+		        tab.refreshGUI();
+		      }
+		      if (whenDone != null)
+		    	  whenDone.accept(tabs);
+		}
+    	
+    });
   }
 
   /**
@@ -479,95 +493,109 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     return tabs;
   }
 
-  /**
-   * Opens an xml or data file specified by name.
-   *
-   * @param fileName the file name
-   * @return the file name, if successfully opened (datasets loaded)
-   */
-  public String open(String fileName) {
-    OSPLog.fine("opening "+fileName); //$NON-NLS-1$
-    Resource res = ResourceLoader.getResource(fileName);
-    if(res!=null) {
-      Reader in = res.openReader();
-      String firstLine = readFirstLine(in);
-      // if xml, read the file into an XML control and add tab
-      if(firstLine.startsWith("<?xml")) { //$NON-NLS-1$
-        XMLControlElement control = new XMLControlElement(fileName);
-        ArrayList<DataToolTab> tabs = addTabs(control);
-        if(!tabs.isEmpty()) {
-          for(DataToolTab tab : tabs) {
-            refreshDataBuilder();
-            if(tabs.size()==1) {
-              tab.fileName = fileName;
-            }
-            tab.tabChanged(false);
-          }
-          try {
-			in.close();
-		  } catch (IOException e) {
-			//e.printStackTrace();
-		   }
-          return fileName;
-        }
-      }
-      // if not xml, attempt to import data and add tab
-      else if(res.getString()!=null) {
-        Data data = parseData(res.getString(), fileName);
-        if(data!=null) {
-        	DataToolTab tab = createTab(data);
-          addTab(tab);
-          refreshDataBuilder();
-          tab.fileName = fileName;
-          tab.tabChanged(false);
-          return fileName;
-        }
-      }
-    }
-    OSPLog.finest("no data found"); //$NON-NLS-1$
-    return null;
-  }
+	/**
+	 * Opens an xml or data file specified by name.
+	 *
+	 * @param fileName the file name
+	 */
+	public void open(String fileName) {
+		// @return the file name, if successfully opened (datasets loaded)
+		// BH 2020.02.13 return was string;
+		OSPLog.fine("opening " + fileName); //$NON-NLS-1$
+		Resource res = ResourceLoader.getResource(fileName);
+		if (res != null) {
+			Reader in = res.openReader();
+			String firstLine = readFirstLine(in);
+			// if xml, read the file into an XML control and add tab
+			if (firstLine.startsWith("<?xml")) { //$NON-NLS-1$
+				XMLControlElement control = new XMLControlElement(fileName);
+				addTabs(control, new Consumer<ArrayList<DataToolTab>>() {
 
-  /**
-   * Imports an xml or data file into an existing tab.
-   *
-   * @param tab the tab
-   * @param fileName the file name
-   * @return the file name, if successfully imported (datasets loaded)
-   */
-  public String importFileIntoTab(DataToolTab tab, String fileName) {
-    OSPLog.fine("importing "+fileName); //$NON-NLS-1$
-    Resource res = ResourceLoader.getResource(fileName);
-    if(res!=null) {
-      Reader in = res.openReader();
-      String firstLine = readFirstLine(in);
-      // if xml, read the file into an XML control and add tab
-      if(firstLine.startsWith("<?xml")) { //$NON-NLS-1$
-        XMLControlElement control = new XMLControlElement(fileName);
-        ArrayList<Data> dataList = getSelfContainedData(control, false);
-        if(!dataList.isEmpty()) {
-          DatasetManager manager = new DatasetManager();
-          for(Data next : dataList) {
-            for(DataColumn column : getDataColumns(next)) {
-              manager.addDataset(column);
-            }
-          }
-          tab.addColumns(manager, true, true, true);
-          return fileName;
-        }
-      }
-      // if not xml, attempt to import data and add tab
-      else if(res.getString()!=null) {
-        Data data = parseData(res.getString(), fileName);
-        if(data!=null) {
-          tab.addColumns(data, true, true, true);
-          return fileName;
-        }
-      }
-    }
-    OSPLog.finest("no data found"); //$NON-NLS-1$
-    return null;
-  }
+					@Override
+					public void accept(ArrayList<DataToolTab> tabs) {
+						if (tabs.isEmpty()) {
+							OSPLog.finest("no data found"); //$NON-NLS-1$
+						} else {
+							for (DataToolTab tab : tabs) {
+								refreshDataBuilder();
+								if (tabs.size() == 1) {
+									tab.fileName = fileName;
+								}
+								tab.tabChanged(false);
+							}
+							try {
+								in.close();
+							} catch (IOException e) {
+								// e.printStackTrace();
+							}
+						}
+					}
+					
+				});
+				return;
+			} 
+			if (res.getString() != null) {
+				// if not xml, attempt to import data and add tab
+				Data data = parseData(res.getString(), fileName);
+				if (data != null) {
+					DataToolTab tab = createTab(data);
+					addTab(tab);
+					refreshDataBuilder();
+					tab.fileName = fileName;
+					tab.tabChanged(false);
+					return;
+				}
+			}
+		}
+		OSPLog.finest("no data found"); //$NON-NLS-1$
+	}
+
+	/**
+	 * Imports an xml or data file into an existing tab.
+	 *
+	 * @param tab      the tab
+	 * @param fileName the file name
+	 * @return the file name, if successfully imported (datasets loaded)
+	 */
+	void importFileIntoTab(DataToolTab tab, String fileName) {
+		OSPLog.fine("importing " + fileName); //$NON-NLS-1$
+		Resource res = ResourceLoader.getResource(fileName);
+		if (res != null) {
+			Reader in = res.openReader();
+			String firstLine = readFirstLine(in);
+			// if xml, read the file into an XML control and add tab
+			if (firstLine.startsWith("<?xml")) { //$NON-NLS-1$
+				XMLControlElement control = new XMLControlElement(fileName);
+				getSelfContainedDataAsync(control, false, new Consumer<ArrayList<Data>>() {
+
+					@Override
+					public void accept(ArrayList<Data> dataList) {
+						if (dataList.isEmpty()) {
+							OSPLog.finest("no data found"); //$NON-NLS-1$
+						} else {
+							DatasetManager manager = new DatasetManager();
+							for (Data next : dataList) {
+								for (DataColumn column : getDataColumns(next)) {
+									manager.addDataset(column);
+								}
+							}
+							tab.addColumns(manager, true, true, true);
+						}
+					}
+				});
+				return;
+			} 
+			if (res.getString() != null) {
+				// if not xml, attempt to import data and add tab
+				Data data = parseData(res.getString(), fileName);
+				if (data != null) {
+					tab.addColumns(data, true, true, true);
+					return;
+				}
+			}
+		}
+		OSPLog.finest("no data found"); //$NON-NLS-1$
+	}
 
   /**
    * Sends a job to this tool and specifies a tool to reply to.
@@ -619,7 +647,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     }
     // else add tabs based on child Data objects, if any, within the control
     else {
-      addTabs(control);                   // adds Data objects found in XMLControl
+      addTabs(control, null);                   // adds Data objects found in XMLControl
     }
   }
 
@@ -1132,77 +1160,101 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    *
    * @param control the XMLControl
    * @param useChooser true to present data choices to user
-   *
+   * @param whenDone Runnable to run after choice is made
    * @return a list of self-contained Data objects
    */
-  private static ArrayList<Data> getSelfContainedData(XMLControl control, boolean useChooser) {
+  private void getSelfContainedDataAsync(XMLControl control, boolean useChooser, Consumer<ArrayList<Data>> whenDone) {
+    HashSet<Integer> IDs = new HashSet<Integer>();
     ArrayList<Data> dataList = new ArrayList<Data>();
-    java.util.List<XMLProperty> xmlControls;
     // first get the Data XMLControls
+    
+    Consumer<List<XMLProperty>> whenChosen = new Consumer<List<XMLProperty>>() {
+
+		@Override
+		public void accept(List<XMLProperty> xmlControls) {
+		    
+		    // load the Data XMLControls and collect Data objects
+		    for(XMLProperty prop : xmlControls) {
+		      XMLControl next = (XMLControl) prop;
+		      Data data = null;
+		      if(next instanceof XMLControlElement) {
+		        XMLControlElement element = (XMLControlElement) next;
+		        data = (Data) element.loadObject(null, true, true);
+		      } else {
+		        data = (Data) next.loadObject(null);
+		      }
+		      if(data!=null) {
+		        for(Data nextData : getSelfContainedData(data)) {
+		          // check IDs to prevent duplicates
+		          Integer id = new Integer(nextData.getID());
+		          if(!IDs.contains(id)) {
+		            IDs.add(id);
+		            dataList.add(nextData);
+		            // remove any previously added Datasets within DatasetManagers
+		            if(nextData instanceof DatasetManager) {
+		              for(Dataset dataset : nextData.getDatasets()) {
+		                dataList.remove(dataset);
+		                id = new Integer(dataset.getID());
+		                IDs.add(id);
+		              }
+		            }
+		          }
+		        }
+		      }
+		    }
+		    if (whenDone != null)
+		    	whenDone.accept(dataList);
+		}
+    	
+    };
     if(useChooser) {
       // get user-selected Data XMLControls from an xml tree chooser
       XMLTreeChooser chooser = new XMLTreeChooser(ToolsRes.getString("Chooser.Title"),        //$NON-NLS-1$
         ToolsRes.getString("Chooser.Label"), null);                                           //$NON-NLS-1$
-      xmlControls = chooser.choose(control, Data.class);
+      chooser.chooseAsync(control, Data.class, new Runnable() {
+
+		@Override
+		public void run() {
+			whenChosen.accept(chooser.getList());			
+		}
+    	  
+      });
     } else {
       // get all Data XMLControls
       XMLTree tree = new XMLTree(control);
       tree.setHighlightedClass(Data.class);
       tree.selectHighlightedProperties();
-      xmlControls = tree.getSelectedProperties();
+      List<XMLProperty> xmlControls = tree.getSelectedProperties();
       if(xmlControls.isEmpty()) {
         JOptionPane.showMessageDialog(null, ToolsRes.getString("Dialog.NoDatasets.Message")); //$NON-NLS-1$
       }
+      whenChosen.accept(xmlControls);
     }
-    // load the Data XMLControls and collect Data objects
-    HashSet<Integer> IDs = new HashSet<Integer>();
-    for(XMLProperty prop : xmlControls) {
-      XMLControl next = (XMLControl) prop;
-      Data data = null;
-      if(next instanceof XMLControlElement) {
-        XMLControlElement element = (XMLControlElement) next;
-        data = (Data) element.loadObject(null, true, true);
-      } else {
-        data = (Data) next.loadObject(null);
-      }
-      if(data!=null) {
-        for(Data nextData : getSelfContainedData(data)) {
-          // check IDs to prevent duplicates
-          Integer id = new Integer(nextData.getID());
-          if(!IDs.contains(id)) {
-            IDs.add(id);
-            dataList.add(nextData);
-            // remove any previously added Datasets within DatasetManagers
-            if(nextData instanceof DatasetManager) {
-              for(Dataset dataset : nextData.getDatasets()) {
-                dataList.remove(dataset);
-                id = new Integer(dataset.getID());
-                IDs.add(id);
-              }
-            }
-          }
-        }
-      }
-    }
-    return dataList;
   }
 
-  /**
-   * Loads data from an XMLControl into one or more tabs.
-   *
-   * @param control the XMLControl describing the data
-   * @param useChooser true to present data choices to user
-   *
-   * @return a list of loaded tabs
-   */
-  private ArrayList<DataToolTab> loadTabsFromXML(XMLControl control, boolean useChooser) {
-    ArrayList<DataToolTab> loadedTabs = new ArrayList<DataToolTab>();
-    ArrayList<Data> dataList = getSelfContainedData(control, useChooser);
-    for(Data next : dataList) {
-      loadedTabs.add(createTab(next));
-    }
-    return loadedTabs;
-  }
+	/**
+	 * Loads data from an XMLControl into one or more tabs.
+	 * 
+	 * @param control
+	 *
+	 * @param control    the XMLControl describing the data
+	 * @param useChooser true to present data choices to user
+	 *
+	 * @return a list of loaded tabs
+	 */
+	private void loadTabsFromXMLAsync(XMLControl control, Consumer<ArrayList<DataToolTab>> whenLoaded) {
+		getSelfContainedDataAsync(control, useChooser, new Consumer<ArrayList<Data>>() {
+
+			@Override
+			public void accept(ArrayList<Data> dataList) {
+				ArrayList<DataToolTab> loadedTabs = new ArrayList<DataToolTab>();
+				for (Data next : dataList) {
+					loadedTabs.add(createTab(next));
+				}
+				whenLoaded.accept(loadedTabs);
+			}
+		});
+	}
 
   /**
    * Constructs a dataset from independent xColumn and yColumn datasets.
@@ -1886,32 +1938,34 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    *
    * @return the name of the opened file
    */
-  protected String open() {
+  protected void open() {
+	// BH changed return String to void
     int result = OSPRuntime.getChooser().showOpenDialog(null);
     if(result==JFileChooser.APPROVE_OPTION) {
       OSPRuntime.chooserDir = OSPRuntime.getChooser().getCurrentDirectory().toString();
       String fileName = OSPRuntime.getChooser().getSelectedFile().getAbsolutePath();
       fileName = XML.getRelativePath(fileName);
-      return open(fileName);
+      open(fileName);
     }
-    return null;
   }
 
   /**
    * Imports an xml or data file selected with a chooser into a specified tab.
    *
    * @param tab the tab to import into
-   * @return the name of the imported file
    */
-  protected String importFileIntoTab(DataToolTab tab) {
-    int result = OSPRuntime.getChooser().showOpenDialog(tab);
-    if(result==JFileChooser.APPROVE_OPTION) {
-      OSPRuntime.chooserDir = OSPRuntime.getChooser().getCurrentDirectory().toString();
-      String fileName = OSPRuntime.getChooser().getSelectedFile().getAbsolutePath();
-      fileName = XML.getRelativePath(fileName);
-      return importFileIntoTab(tab, fileName);
-    }
-    return null;
+    void importFileIntoTab(DataToolTab tab) {
+    OSPRuntime.getChooser().showOpenDialog(tab, new Runnable() {
+
+		@Override
+		public void run() {
+		      OSPRuntime.chooserDir = OSPRuntime.getChooser().getCurrentDirectory().toString();
+		      String fileName = OSPRuntime.getChooser().getSelectedFile().getAbsolutePath();
+		      fileName = XML.getRelativePath(fileName);
+		      importFileIntoTab(tab, fileName);
+		}
+    	
+    }, null);
   }
 
   /**
@@ -2195,6 +2249,14 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
       saveChangesOnClose = false;
     }
     super.setDefaultCloseOperation(operation);
+  }
+  
+  public void dispose() {
+	  super.dispose();
+  }
+  
+  public void finalize() throws Throwable {
+	  super.finalize();
   }
 
   /**
@@ -2667,16 +2729,24 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
                 tabbedPane.setSelectedIndex(i);
               }
             } else {
-              ArrayList<DataToolTab> tabs = addTabs(control);
-              for(DataToolTab tab : tabs) {
-                tab.setUserEditable(true);
-              }
-              int i = getTabCount()-1;
-              tabbedPane.setSelectedIndex(i);
+              addTabs(control, new Consumer<ArrayList<DataToolTab>>() {
+
+				@Override
+				public void accept(ArrayList<DataToolTab> tabs) {
+		              for(DataToolTab tab : tabs) {
+		                  tab.setUserEditable(true);
+		                }
+		                int i = getTabCount()-1;
+		                tabbedPane.setSelectedIndex(i);
+		                refreshDataBuilder();
+				}
+            	  
+              });
+              return;
             }
           }
           if(!failed) {
-            refreshDataBuilder();
+              refreshDataBuilder();
           }
         }
         if(failed) {
@@ -2692,21 +2762,25 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     pasteColumnsItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         if(controlContainsData) {
-          ArrayList<Data> dataList = getSelfContainedData(control, useChooser);
-          if(!dataList.isEmpty()) {
-            DatasetManager manager = new DatasetManager();
-            for(Data next : dataList) {
-              for(DataColumn column : getDataColumns(next)) {
-                manager.addDataset(column);
-              }
-            }
-            addableData = manager;
-          }
-        }
-        if(addableData!=null) {
-          DataToolTab tab = getSelectedTab();
-          OSPLog.finest("pasting columns into "+tab.getName()); //$NON-NLS-1$
-          tab.addColumns(addableData, true, true, true);
+        	getSelfContainedDataAsync(control, useChooser, new Consumer<ArrayList<Data>>() {
+
+			@Override
+			public void accept(ArrayList<Data> dataList) {
+		          if(!dataList.isEmpty()) {
+		              DatasetManager manager = new DatasetManager();
+		              for(Data next : dataList) {
+		                for(DataColumn column : getDataColumns(next)) {
+		                  manager.addDataset(column);
+		                }
+		              }
+		              addableData = manager;
+		              addColumnsFromPaste();
+		            }
+			}
+        	  
+          });
+        } else {
+        	addColumnsFromPaste();
         }
       }
 
@@ -2863,7 +2937,18 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     setLocation(x, y);
   }
 
-  /**
+    /**
+     * add columns, possibly asynchronously
+     */
+	protected void addColumnsFromPaste() {
+		if (addableData != null) {
+			DataToolTab tab = getSelectedTab();
+			OSPLog.finest("pasting columns into " + tab.getName()); //$NON-NLS-1$
+			tab.addColumns(addableData, true, true, true);
+		}
+	}
+
+/**
    * Refreshes the GUI.
    */
   protected void refreshGUI() {

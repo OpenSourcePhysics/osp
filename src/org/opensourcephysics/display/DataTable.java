@@ -179,12 +179,15 @@ public class DataTable extends JTable implements ActionListener {
       unitRenderersByColumnName.remove(columnName);
     } 
     else {
-			TableCellRenderer renderer = getDefaultRenderer(Double.class);
-      for (String next: precisionRenderersByColumnName.keySet()) {
-        if(next.equals(columnName)) {
-          renderer = precisionRenderersByColumnName.get(columnName);
-        }
-      }
+    	TableCellRenderer renderer = precisionRenderersByColumnName.get(columnName);
+    	if (renderer == null)
+    		renderer = getDefaultRenderer(Double.class);
+//			TableCellRenderer renderer = getDefaultRenderer(Double.class);
+//      for (String next: precisionRenderersByColumnName.keySet()) {
+//        if(next.equals(columnName)) {
+//          renderer = precisionRenderersByColumnName.get(columnName);
+//        }
+//      }
       UnitRenderer unitRenderer = new UnitRenderer(renderer, units, tooltip);
     	unitRenderersByColumnName.put(columnName, unitRenderer);
     }
@@ -372,31 +375,40 @@ public class DataTable extends JTable implements ActionListener {
     TableCellRenderer baseRenderer = null;
     try {
     	// find units renderer
+    	// BH 2020.02.14 efficiencies -- needs doublechecking
       TableColumn tableColumn = getColumnModel().getColumn(column);
-      Iterator<String> keys = unitRenderersByColumnName.keySet().iterator();
-      while(keys.hasNext()) {
-        String columnName = keys.next();
-        if(tableColumn.getHeaderValue().equals(columnName)) {
-          unitRenderer = unitRenderersByColumnName.get(columnName);
-          break;
-        }
-      }
+      unitRenderer = unitRenderersByColumnName.get(tableColumn.getHeaderValue());
+//      Iterator<String> keys = unitRenderersByColumnName.keySet().iterator();
+//      while(keys.hasNext()) {
+//        String columnName = keys.next();
+//        if(tableColumn.getHeaderValue().equals(columnName)) {
+//          unitRenderer = unitRenderersByColumnName.get(columnName);
+//          break;
+//        }
+//      }
       // find base renderer
-      baseRenderer = tableColumn.getCellRenderer();
+      baseRenderer = tableColumn.getCellRenderer();      
       if (baseRenderer==null) {
-	      keys = precisionRenderersByColumnName.keySet().iterator();
-	      while(keys.hasNext()) {
-	        String columnName = keys.next();
-	        if(tableColumn.getHeaderValue().equals(columnName)) {
-	        	baseRenderer = precisionRenderersByColumnName.get(columnName);
-	        	break;
-	        }
-	        else if(tableColumn.getHeaderValue().equals(columnName+DataToolTab.SHIFTED)) {
-	        	baseRenderer = precisionRenderersByColumnName.get(columnName);
-	        	break;
-	        }
-	      }
+    	  String key = (String) tableColumn.getHeaderValue();
+    	  baseRenderer = precisionRenderersByColumnName.get(key);
+    	  if (baseRenderer == null && key.endsWith(DataToolTab.SHIFTED)) {
+        	  baseRenderer = precisionRenderersByColumnName.get(key.substring(0, key.length() - 1));
+          }
       }
+//      if (baseRenderer==null) {
+//	      keys = precisionRenderersByColumnName.keySet().iterator();
+//	      while(keys.hasNext()) {
+//	        String columnName = keys.next();
+//	        if(tableColumn.getHeaderValue().equals(columnName)) {
+//	        	baseRenderer = precisionRenderersByColumnName.get(columnName);
+//	        	break;
+//	        }
+//	        else if(tableColumn.getHeaderValue().equals(columnName+DataToolTab.SHIFTED)) {
+//	        	baseRenderer = precisionRenderersByColumnName.get(columnName);
+//	        	break;
+//	        }
+//	      }
+//      }
     } catch(Exception ex) {}
     // if no precision base renderer, use default
     if (baseRenderer==null) {

@@ -117,6 +117,7 @@ import org.opensourcephysics.display.Selectable;
 import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.display.axes.CartesianCoordinateStringBuilder;
 import org.opensourcephysics.display.axes.CartesianInteractive;
+import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.media.core.TPoint;
 import org.opensourcephysics.tools.DataToolTable.TableEdit;
 import org.opensourcephysics.tools.DataToolTable.WorkingDataset;
@@ -1608,6 +1609,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
     // create propsAndStatsAction
     propsAndStatsAction = new AbstractAction() {
+    	
       public void actionPerformed(ActionEvent e) {
       	// lay out the table bar split panes
         boolean statsVis = statsCheckbox.isSelected();
@@ -1709,7 +1711,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         }
         // add or remove point if Interactive is dataset
         if (ia instanceof HighlightableDataset) {
-          HighlightableDataset data = (HighlightableDataset) ia;
+            
+            HighlightableDataset data = (HighlightableDataset) ia;
           int index = data.getHitIndex();
           ListSelectionModel model = dataTable.getColumnModel().getSelectionModel();
           int col = dataTable.getXColumn();
@@ -1727,7 +1730,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
             }
           }
           if(!e.isControlDown()) {
-            dataTable.setSelectedModelRows(new int[] {index});
+           dataTable.setSelectedModelRows(new int[] {index});
           } else {
             int[] rows = dataTable.getSelectedModelRows();
             boolean needsAdding = true;
@@ -1750,7 +1753,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
                 j++;
               }
             }
-            dataTable.setSelectedModelRows(newRows);
+            if (!JSUtil.isJS)
+            	dataTable.setSelectedModelRows(newRows);
           }
           dataTable.getSelectedData();
           
@@ -1765,13 +1769,15 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         }
         boxActive = !OSPRuntime.isPopupTrigger(e);
         if(boxActive) {
-        	if (timerToFindHits==null) {
+        	if (timerToFindHits==null && !JSUtil.isJS) { // BH 2020.02.14
         		timerToFindHits = new Timer(200, new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								findHits(removeHits);
+								findHits(removeHits, !JSUtil.isJS);
+								timerToFindHits.restart();
 							}        			
         		});
+        		timerToFindHits.setRepeats(false); // BH 2020.02.14
         	}
           // prepare to drag
           if(!(e.isControlDown()||e.isShiftDown())) {
@@ -1788,7 +1794,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
           plot.selectionBox.ystart = p.y;
           readyToFindHits = true;
           removeHits = e.isShiftDown() && e.isControlDown();
-          timerToFindHits.start();
+          if (timerToFindHits != null)
+        	  timerToFindHits.start();
           plot.setMouseCursor(removeHits? SELECT_REMOVE_CURSOR: SELECT_CURSOR);
         }
       }
@@ -1898,12 +1905,13 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         plot.repaint();
         if (timerToFindHits!=null) {
         	timerToFindHits.stop();
+        	timerToFindHits = null; // BH 2020.02.14
         }
         if (selectionBoxChanged) {
-        	findHits(removeHits);
+        	findHits(removeHits, true);
         	selectionBoxChanged = false;
         }
-      }
+     }
       
       @Override
       public void mouseMoved(MouseEvent e) {
@@ -1919,8 +1927,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     		dataTable.dataToolTab.refreshStatusBar(null);
     	} 
     	
-      private void findHits(final boolean subtract) {
-      	if (!readyToFindHits || !selectionBoxChanged) return;
+      void findHits(final boolean subtract, boolean showInTable) {
+      	if (!readyToFindHits || showInTable && !selectionBoxChanged) 
+      		return;
       	selectionBoxChanged = false;
       	Runnable runner = new Runnable() {
       		public void run() {
@@ -1960,12 +1969,14 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
                 recent.remove(row);
               }
             }
+            if (showInTable) {
             if (rowsInside.isEmpty()) {
-            	columnSelectionModel.removeSelectionInterval(0, dataTable.getColumnCount()-1);
-							dataTable.getSelectionModel().clearSelection();
-              dataTable.getSelectedData(); // updates highlights      	
-            }
-            else {
+            	if (dataTable.getSelectedRowCount() > 0) {
+            		columnSelectionModel.removeSelectionInterval(0, dataTable.getColumnCount()-1);
+					dataTable.getSelectionModel().clearSelection();
+					dataTable.getSelectedData(); // updates highlights 
+            	}
+            } else {
             	int[] rows = new int[rowsInside.size()];
             	int i = 0;
             	for (int next: rowsInside) {
@@ -1973,6 +1984,12 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
             		i++;
             	}
             	dataTable.setSelectedModelRows(rows);
+                    Rectangle r = dataTable.getCellRect(rows[0], 0, false);
+                    if (r != null) {
+                    	r.height += (rows[rows.length - 1] - rows[0]) * dataTable.getRowHeight();
+                    	dataTable.scrollRectToVisible(r);
+                    }
+            }
             }
             plot.repaint();
           	readyToFindHits = true;      			
@@ -2791,8 +2808,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     if (areaVisible) {
       plot.refreshArea();
     }
-    
-    repaint();
+    // BH was this.repaint?
+    plot.repaint();
   }
 
   /**

@@ -68,6 +68,7 @@ import org.opensourcephysics.display.HighlightableDataset;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.display.TextLine;
+import org.opensourcephysics.js.JSUtil;
 
 /**
  * This is a DataTable that displays DataColumns
@@ -551,7 +552,7 @@ public class DataToolTable extends DataTable {
           mouseRow = row;
           mouseCol = col;
           dataRenderer.showFocus = (col==labelCol);
-          repaint();
+          dorepaint(2);
           if(col==labelCol) {
             dataRenderer.showFocus = true;
             setToolTipText(ToolsRes.getString("DataToolTable.Deselect.Tooltip")); //$NON-NLS-1$
@@ -588,7 +589,7 @@ public class DataToolTable extends DataTable {
         if(!popup.isVisible()) {
           mouseRow = -1;
           dataRenderer.showFocus = true;
-          repaint();
+          dorepaint(1);
         }
       }
       public void mousePressed(MouseEvent e) {
@@ -610,7 +611,7 @@ public class DataToolTable extends DataTable {
             leadCol = col;
             leadRow = row;
           }
-          repaint();
+          dorepaint(3);
           getPasteDataAction.actionPerformed(null);
           final int[] rows = getSelectedModelRows();
           // determine if selection is all empty cells
@@ -631,7 +632,7 @@ public class DataToolTable extends DataTable {
             final Dataset data = dataManager.getDataset(index);
             mouseRow = row;
             mouseCol = col;
-            repaint();
+            dorepaint(4);
             
             text = ToolsRes.getString("DataToolTable.Popup.MenuItem.SelectAll");        //$NON-NLS-1$
             selectAllItem = new JMenuItem(text);
@@ -961,7 +962,20 @@ public class DataToolTable extends DataTable {
     getActionMap().put(im.get(delete), clearCellsAction);
   }
 
-  /**
+	protected void dorepaint(int i) {
+		switch (i) {
+		case 1:
+		case 2:
+		case 3:
+		case 4:
+		default:
+			if (!JSUtil.isJS)
+				repaint(); // BH 2020.02.14 seeing if we can avoid this
+
+		}
+	}
+
+/**
    * Gets the working data for a specified column name.
    * The working y-data is the named table column
    * The working x-data is the x (yellow) table column

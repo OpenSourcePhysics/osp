@@ -10,6 +10,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridLayout;
@@ -18,6 +19,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.util.HashMap;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
@@ -52,22 +54,24 @@ import org.opensourcephysics.display.CellBorder;
 import org.opensourcephysics.display.Dataset;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.TeXParser;
+import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.tools.DataToolTable.WorkingDataset;
 
 /**
- * This displays plot properties of the columns in a data tool table.
+ * A table that displays plot properties of the columns in a data tool table.
  *
  * @author Douglas Brown
- * @version 1.0
+ * @author Bob Hanson
+ * @version 2.0
  */
-public class DataToolPropsTable extends JTable {
+final public class DataToolPropsTable extends JTable {
   // static fields
   final static Color LIGHT_RED = new Color(255, 153, 153);
   // instance fields
   DataToolTable dataTable;
   PropsTableModel propsModel;
   DataToolTable.LabelRenderer labelRenderer;
-  PropsRenderer propsRenderer;
+  // BH 2020.02.15 PropsRenderer propsRenderer;
   MarkerEditor markerEditor = new MarkerEditor();
   JDialog styleDialog;
   Dataset markerDataset = new Dataset();
@@ -83,12 +87,15 @@ public class DataToolPropsTable extends JTable {
   int markerRow = 0, lineRow = 1, styleRow = 2, axisRow = 3;
   boolean labelDrawn;
 
+  private HashMap<String, PropsRenderer> htCellRenderers = new HashMap<>();
+
   /**
    * Constructor.
    *
    * @param table the datatable
    */
   public DataToolPropsTable(DataToolTable table) {
+	  super();
     dataTable = table;
     propsModel = new PropsTableModel();
     addMouseMotionListener(new MouseInputAdapter() {
@@ -143,7 +150,7 @@ public class DataToolPropsTable extends JTable {
     setGridColor(Color.blue);
     setTableHeader(null); // no table header
     labelRenderer = dataTable.labelRenderer;
-    propsRenderer = new PropsRenderer();
+    //propsRenderer = new PropsRenderer();
     setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
     refreshCellWidths();
   }
@@ -232,6 +239,8 @@ public class DataToolPropsTable extends JTable {
     }
     dataTable.setLabelColumnWidth(w+5);
   }
+  
+  
 
   /**
    * Returns the renderer for a cell specified by row and column.
@@ -245,7 +254,11 @@ public class DataToolPropsTable extends JTable {
     if(i==0) {
       return labelRenderer;
     }
-    return propsRenderer;
+    String name = row + " " + dataTable.getColumnModel().getColumn(column).getHeaderValue().toString();
+    PropsRenderer pr = htCellRenderers.get(name);
+    if (pr == null)
+    	htCellRenderers.put(name,  pr = new PropsRenderer());
+    return pr;
   }
 
   /**
@@ -432,6 +445,9 @@ public class DataToolPropsTable extends JTable {
       });
       // create color popup, action and buttons
       colorPopup = new JDialog(styleDialog, true);
+      System.out.println(colorPopup.getFocusableWindowState());
+      System.out.println(colorPopup.getPeer());
+
       colorPopup.setUndecorated(true);
       colorPopup.getContentPane().add(cc.getChooserPanels()[0]);
       colorPopup.pack();
@@ -462,8 +478,10 @@ public class DataToolPropsTable extends JTable {
       JPanel markerPlotPanel = new JPanel();
       markerPlotPanel.add(markerPlot);
       markerNorth.add(markerPlotPanel);
+      
       JPanel markerButtonPanel = new JPanel();
       markerButtonPanel.add(markerColorButton);
+      
       markerNorth.add(markerButtonPanel);
       markerNorth.add(markerVisCheckbox);
       JPanel markerCenter = new JPanel(new GridLayout());
@@ -617,7 +635,8 @@ public class DataToolPropsTable extends JTable {
    * A class to render checkboxes and dataset markers.
    */
   class PropsRenderer implements TableCellRenderer {
-    JPanel panel = new JPanel(new GridLayout());
+  
+    JPanel panel;
     JCheckBox checkbox = new JCheckBox();
     DrawingPanel plot = new DrawingPanel();
     Dataset markerset = new Dataset();
@@ -641,57 +660,67 @@ public class DataToolPropsTable extends JTable {
       checkbox.setBackground(Color.white);
     }
 
-    // Returns a component for the specified cell.
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-      panel.remove(checkbox);
-      panel.remove(plot);
-      int labelCol = dataTable.convertColumnIndexToView(0);
-      int xCol = (labelCol==0) ? 1 : 0;
-      int yCol = (labelCol<2) ? 2 : 1;
-      Color color = (col==xCol) ? DataToolTable.xAxisColor : (col==yCol) ? DataToolTable.yAxisColor : Color.white;
-      panel.setBackground((row!=axisRow) ? Color.white : color);
-      if(value==null) {
-        return panel;
-      }
-      if(value instanceof String) {
-        Component c = getDefaultRenderer(String.class).getTableCellRendererComponent(DataToolPropsTable.this, value, false, false, 0, 0);
-        if(c instanceof JLabel) {
-          JLabel label = (JLabel) c;
-          label.setHorizontalAlignment(SwingConstants.CENTER);
-          label.setBackground(color);
-          label.setBorder(new CellBorder(new Color(240, 240, 240)));
-          return label;
-        }
-      }
-      if(value instanceof WorkingDataset) {
-        WorkingDataset working = (WorkingDataset) value;
-        markerset.setMarkerColor(working.getFillColor(), working.getEdgeColor());
-        markerset.setMarkerSize(working.getMarkerSize());
-        markerset.setMarkerShape(working.markerType);
-        lineset.setLineColor(working.getLineColor());
-        Boolean markerVis = (Boolean) propsModel.getValueAt(markerRow, col);
-        Boolean lineVis = (Boolean) propsModel.getValueAt(lineRow, col);
-        plot.clear();
-        if(markerVis.booleanValue()) {
-          plot.addDrawable(markerset);
-        }
-        if(lineVis.booleanValue()) {
-          plot.addDrawable(lineset);
-        }
-        panel.add(plot);
-      } 
-      else {                                                                            // value is Boolean
-        if(col==xCol) {
-          return panel;
-        }
-        checkbox.setSelected(((Boolean) value).booleanValue());
-        checkbox.setEnabled(propsModel.isCellEditable(row, col));
-        panel.add(checkbox);
-      }
-      panel.setBorder(new CellBorder(new Color(240, 240, 240)));
-      return panel;
-    }
-
+		// Returns a component for the specified cell.
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+				int row, int col) {
+//        panel.remove(checkbox);
+//        panel.remove(plot);
+			int labelCol = dataTable.convertColumnIndexToView(0);
+			int xCol = (labelCol == 0) ? 1 : 0;
+			int yCol = (labelCol < 2) ? 2 : 1;
+			Color color = (col == xCol) ? DataToolTable.xAxisColor
+					: (col == yCol) ? DataToolTable.yAxisColor : Color.white;
+			if (value == null) {
+				return null;
+			}
+			if (value instanceof String) {
+				Component c = getDefaultRenderer(String.class).getTableCellRendererComponent(DataToolPropsTable.this,
+						value, false, false, 0, 0);
+				JLabel label = (JLabel) c;
+				label.setHorizontalAlignment(SwingConstants.CENTER);
+				label.setBackground(color);
+				label.setBorder(new CellBorder(new Color(240, 240, 240)));
+				return label;
+			}
+			if (value instanceof WorkingDataset) {
+				WorkingDataset working = (WorkingDataset) value;
+				markerset.setMarkerColor(working.getFillColor(), working.getEdgeColor());
+				markerset.setMarkerSize(working.getMarkerSize());
+				markerset.setMarkerShape(working.markerType);
+				lineset.setLineColor(working.getLineColor());
+				Boolean markerVis = (Boolean) propsModel.getValueAt(markerRow, col);
+				Boolean lineVis = (Boolean) propsModel.getValueAt(lineRow, col);
+				plot.clear();
+				if (markerVis.booleanValue()) {
+					plot.addDrawable(markerset);
+				}
+				if (lineVis.booleanValue()) {
+					plot.addDrawable(lineset);
+				}
+				if (panel == null) {
+					panel = new JPanel(new GridLayout());
+					panel.setBorder(new CellBorder(new Color(240, 240, 240)));
+					panel.setBackground((row != axisRow) ? Color.white : color);
+					panel.add(plot);
+				}
+				return panel;
+			}
+			// value is Boolean
+			if (col == xCol) {
+				return null;
+			}
+			checkbox.setSelected(((Boolean) value).booleanValue());
+			checkbox.setEnabled(propsModel.isCellEditable(row, col));
+			checkbox.setOpaque(false);
+			if (panel == null) {
+				panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, JSUtil.isJS ? -8 : -4));
+				panel.setBorder(new CellBorder(new Color(240, 240, 240)));
+				panel.setBackground((row != axisRow) ? Color.white : color);
+				panel.add(checkbox);
+			}
+			return panel;
+		}
   }
 
   /**
