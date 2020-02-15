@@ -2296,11 +2296,14 @@ public class LibraryBrowser extends JPanel {
    */
   class LibraryLoader extends SwingWorker<Library, Object> {
   	
-    @Override
+    protected static final String WEB_CONNECTED_TEST_URL = "https://www.google.com"; // was "http://www.opensourcephysics.org" but that has CORS problems
+
+	@Override
     public Library doInBackground() {
  	  	Runnable runner = new Runnable() {
  	  		public void run() {
-		  		webConnected = ResourceLoader.isURLAvailable("http://www.opensourcephysics.org"); //$NON-NLS-1$
+ 	  			// BH 
+		  		webConnected = ResourceLoader.isURLAvailable(WEB_CONNECTED_TEST_URL); //$NON-NLS-1$
 		    	if (!webConnected) {
 		    		JOptionPane.showMessageDialog(LibraryBrowser.this, 
 		    				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
