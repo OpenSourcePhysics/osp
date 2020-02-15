@@ -850,7 +850,8 @@ public class XMLControlElement implements XMLControl {
       }
     }
     try {
-      if(XML.getLoader(type).getClass()==XML.getLoader(obj.getClass()).getClass()) {
+    	// BH 2020.02.13 adding check for null obj
+      if(obj != null && XML.getLoader(type).getClass()==XML.getLoader(obj.getClass()).getClass()) {
         autoImport = true;
         importAll = true;
       }
@@ -1169,6 +1170,7 @@ public class XMLControlElement implements XMLControl {
   public <T> List<T> getObjects(Class<T> type, boolean useChooser) {
     java.util.List<XMLProperty> props;
     if(useChooser) {
+    	// BH never used?
 
     	/** @j2sNative alert("XMLControlElement.getObjects with chooser called -- not configured to be asynchronous"); */
     	

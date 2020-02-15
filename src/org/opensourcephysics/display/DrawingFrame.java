@@ -28,6 +28,8 @@ import java.lang.reflect.Modifier;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -577,16 +579,24 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 	System.err.println("DrawingFrame Line 568");
     // get Drawables using an xml tree chooser
     XMLTreeChooser chooser = new XMLTreeChooser(DisplayRes.getString("DrawingFrame.SelectDrawables_chooser_title"), DisplayRes.getString("DrawingFrame.SelectDrawables_chooser_message"), this); //$NON-NLS-1$ //$NON-NLS-2$
-    java.util.List<XMLProperty> props = chooser.choose(control, Drawable.class);
-    if(!props.isEmpty()) {
-      Iterator<XMLProperty> it = props.iterator();
-      while(it.hasNext()) {
-        XMLControl prop = (XMLControl) it.next();
-        Drawable drawable = (Drawable) prop.loadObject(null);
-        addDrawable(drawable);
-      }
-    }
-    drawingPanel.repaint();
+		// BH 2020.02.13 asynchronous XMLTreeChooser
+	    chooser.chooseAsync(control, Drawable.class, new Runnable() {
+
+			@Override
+			public void run() {
+				List<XMLProperty> props = chooser.getList();
+				if (!props.isEmpty()) {
+					Iterator<XMLProperty> it = props.iterator();
+					while (it.hasNext()) {
+						XMLControl prop = (XMLControl) it.next();
+						Drawable drawable = (Drawable) prop.loadObject(null);
+						addDrawable(drawable);
+					}
+				}
+				drawingPanel.repaint();
+			}
+
+    });
   }
 
   /**

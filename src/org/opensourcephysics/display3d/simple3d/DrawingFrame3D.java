@@ -40,9 +40,11 @@ import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
+import org.opensourcephysics.controls.XMLProperty;
 import org.opensourcephysics.controls.XMLTreeChooser;
 import org.opensourcephysics.controls.XMLTreePanel;
 import org.opensourcephysics.display.DisplayRes;
+import org.opensourcephysics.display.Drawable;
 import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPFrame;
 import org.opensourcephysics.display.OSPRuntime;
@@ -197,19 +199,27 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
       XMLTreeChooser chooser = new XMLTreeChooser(DisplayRes.getString("DrawingFrame3D.XMLChooser.Title"), //$NON-NLS-1$
         DisplayRes.getString("DrawingFrame3D.XMLChooser.Message"),                                         //$NON-NLS-1$
           this);
-      java.util.List<?> props = chooser.choose(control, Element.class);
-      if(!props.isEmpty()) {
-        Iterator<?> it = props.iterator();
-        while(it.hasNext()) {
-          XMLControl prop = (XMLControl) it.next();
-          Element element = (Element) prop.loadObject(null);
-          System.out.println("Adding element "+element);                                                   //$NON-NLS-1$
-          drawingPanel.addElement(element);
-        }
-      }
-      if(drawingPanel!=null) {
-        drawingPanel.repaint();
-      }
+      // BH 2020.02.13 asynchronous XMLTreeChooser
+      chooser.chooseAsync(control, Drawable.class, new Runnable() {
+			@Override
+			public void run() {
+				java.util.List<XMLProperty> props = chooser.getList();
+				if (!props.isEmpty()) {
+					Iterator<?> it = props.iterator();
+					while (it.hasNext()) {
+						XMLControl prop = (XMLControl) it.next();
+						Element element = (Element) prop.loadObject(null);
+						System.out.println("Adding element " + element); //$NON-NLS-1$
+						drawingPanel.addElement(element);
+					}
+				}
+				if (drawingPanel != null) {
+					drawingPanel.repaint();
+				}
+			}
+      	
+      });
+            
     } catch(UnsupportedFlavorException ex) {}
     catch(IOException ex) {}
     catch(HeadlessException ex) {}

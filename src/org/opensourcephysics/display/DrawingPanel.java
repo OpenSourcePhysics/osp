@@ -56,6 +56,7 @@ import org.opensourcephysics.display.axes.CoordinateStringBuilder;
 import org.opensourcephysics.display.dialogs.DrawingPanelInspector;
 import org.opensourcephysics.display.dialogs.ScaleInspector;
 import org.opensourcephysics.display.dialogs.XMLDrawingPanelInspector;
+import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ToolsRes;
 import org.opensourcephysics.tools.VideoTool;
@@ -77,8 +78,8 @@ import org.opensourcephysics.tools.VideoTool;
  * @version 1.0
  */
 public class DrawingPanel extends JPanel implements ActionListener, Renderable {
-  protected static final boolean RECORD_PAINT_TIMES = false;                                                     // set true to test painting time
-  protected long currentTime = System.currentTimeMillis();
+  protected static boolean RECORD_PAINT_TIMES = false;                                                     // set true to test painting time
+  protected long currentTime;// = System.currentTimeMillis();
 
   /** Message box location */
   public static final int BOTTOM_LEFT = 0;
@@ -788,6 +789,8 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
    * @param g
    */
   protected void paintEverything(Graphics g) {
+	  RECORD_PAINT_TIMES = true;
+	  
     if(RECORD_PAINT_TIMES) {
       long time = System.currentTimeMillis();
       System.out.println("elapsed time(s)="+((int) (time-currentTime)/1000.0)); //$NON-NLS-1$
@@ -799,7 +802,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     ArrayList<Drawable> tempList = getDrawables(); // holds a clone of the drawable object list
     scale(tempList); // sets the world-coordinate scale based on the autoscale values
     setPixelScale(); // sets the pixel scale and the world-to-pixel affine transformation matrix
-	if (!OSPRuntime.isMac()) {  //Rendering hint bug in Mac Snow Leopard 
+	if (!JSUtil.isJS && !OSPRuntime.isMac()) {  //Rendering hint bug in Mac Snow Leopard 
 		if (antialiasTextOn) {
 			((Graphics2D) g).setRenderingHint(
 					RenderingHints.KEY_TEXT_ANTIALIASING,
@@ -2528,7 +2531,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
      * Handle the mouse exited event.
      * @param e
      */
-    public void mouseExited(MouseEvent e) {
+    public void mouseExited(MouseEvent e) {	
       setMouseCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
 
