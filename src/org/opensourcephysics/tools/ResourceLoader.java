@@ -48,6 +48,7 @@ import javax.swing.JOptionPane;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.js.JSUtil;
 
 /**
  * This defines static methods for loading resources.
@@ -1481,7 +1482,7 @@ public class ResourceLoader {
    */
   static private Resource createFileResource(String path) {
       // don't create file resources when in applet mode
-    if(OSPRuntime.applet!=null) {
+    if(OSPRuntime.applet!=null || JSUtil.isJS) {
       return null;
     }
     // ignore paths that refer to zip or jar files
