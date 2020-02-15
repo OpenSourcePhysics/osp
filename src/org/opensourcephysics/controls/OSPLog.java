@@ -60,6 +60,7 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.tools.FontSizer;
 
 /**
@@ -122,11 +123,13 @@ public class OSPLog extends JFrame {
     if(OSPLOG==null) {
       if(!OSPRuntime.appletMode&&(OSPRuntime.applet==null)) { // cannot redirect applet streams
         OSPLOG = new OSPLog("org.opensourcephysics", null);   //$NON-NLS-1$
+        if (!JSUtil.isJS) {// BH 2020.02.14 performance killer!
         try {
           System.setOut(new PrintStream(new LoggerOutputStream(ConsoleLevel.OUT_CONSOLE, System.out)));
           System.setErr(new PrintStream(new LoggerOutputStream(ConsoleLevel.ERR_CONSOLE, System.err)));
         } catch(SecurityException ex) {
           /** empty block */
+        }
         }
         setLevel(defaultLevel);
       }
@@ -956,7 +959,10 @@ public class OSPLog extends JFrame {
   }
 
   private static void log(Level level, String msg) {
-//	  System.out.println("OSPLog " + level + " " + msg);
+	if (JSUtil.isJS) {
+		System.out.println("OSPLog " + level + " " + msg);
+		return;
+	}
     LogRecord record = new LogRecord(level, msg);  
     StackTraceElement stack[] = (new Throwable()).getStackTrace();
     // find the first method not in class OSPLog
