@@ -37,6 +37,7 @@ import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
+import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ResourceLoader;
 import org.opensourcephysics.tools.Translator;
@@ -1003,7 +1004,9 @@ public class OSPRuntime {
 					prefsFileName = "."+prefsFileName; //$NON-NLS-1$
 				}
 		  	File file = new File(prefsPath, prefsFileName);
-		  	prefsControl.write(file.getAbsolutePath());
+		  	// BH 2020.02.13 don't want to download this file.
+		  	if (!JSUtil.isJS)
+		  		prefsControl.write(file.getAbsolutePath());
   		}
   	}
   	return prefsControl;
