@@ -29,7 +29,13 @@ public class SaveXMLFile {
 		XMLTreePanel treePanel = new XMLTreePanel(xml);
 		dialog.setContentPane(treePanel);
 		dialog.setSize(new Dimension(600, 300));
+		
+		// BH: The following will not work in JavaScript, because Dialog.setVisible(true) can't block the thread.
+		
 		dialog.setVisible(true);
+		
+		// In JavaScript, this next line will be executed immediately after the dialog is shown; 
+		// it won't wait for the Dialog to be closed.
 		
 		saveXML(xml);
 		System.out.println("XML Saved");
@@ -41,6 +47,7 @@ public class SaveXMLFile {
     //JFileChooser chooser = OSPRuntime.getChooser();
     JFileChooser chooser = new JFileChooser();
     if(chooser==null) {
+    	// BH can that ever happen?
     	 System.err.println("Chooser not instantiated.");
        return;
     }
@@ -49,6 +56,7 @@ public class SaveXMLFile {
     chooser.setCurrentDirectory(currentLocation);
     int result = -1;
     try {
+    	// This works in JavaScript and Java, because both are modal for a save request
     	result = chooser.showSaveDialog(null);
     } catch (Throwable e) {
     	e.printStackTrace();
@@ -57,6 +65,12 @@ public class SaveXMLFile {
     if(result==JFileChooser.APPROVE_OPTION) {
         File file = chooser.getSelectedFile();              
         // check to see if file already exists
+        
+        // BH It is not possible to see if a file that is going to be saved exists -- or, more
+        // specificaly, not relevant, since the browser will always add "(1)" or "(2)", etc. to 
+        // a filename if one exists already. Also, the web page has no way of knowing what directory
+        // the file will be saved in, and it certainly cannot search it, even if it did know.
+        
         org.opensourcephysics.display.OSPRuntime.chooserDir = chooser.getCurrentDirectory().toString();
         String fileName = file.getAbsolutePath();
         if((fileName==null)||fileName.trim().equals("")) {
@@ -67,7 +81,12 @@ public class SaveXMLFile {
            fileName += ext;
            file = new File(fileName);
         }
+        
+        // BH bypass, since it is not a relevant question in JavaScript
+        
         if(/** @j2sNative false && */file.exists()) {
+        	
+        	// Again, this would not block in JavaScript. "selected" will be NaN. 
             int selected = JOptionPane.showConfirmDialog(null, "Replace existing "+file.getName()+"?", "Replace File",
                JOptionPane.YES_NO_CANCEL_OPTION);
             if(selected!=JOptionPane.YES_OPTION) {
