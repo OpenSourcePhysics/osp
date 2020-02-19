@@ -1,4 +1,4 @@
-package debugging;
+package testing;
 
 import java.awt.Color;
 import java.awt.Dimension;

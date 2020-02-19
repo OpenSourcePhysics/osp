@@ -1,4 +1,4 @@
-package debugging;
+package testing;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,7 +13,7 @@ import javax.swing.JTable;
 import org.opensourcephysics.display.OSPFrame;
 import org.opensourcephysics.tools.FontSizer;
 
-public class FontResizeBug {
+public class FontResizeTest {
 
 	Object[][] data = { { "Kathy", "Smith", "Snowboarding", new Integer(5), new Boolean(false) },
 			{ "John", "Doe", "Rowing", new Integer(3), new Boolean(true) },
@@ -30,7 +30,7 @@ public class FontResizeBug {
 	JTable table;
 
 	@SuppressWarnings("deprecation")
-	FontResizeBug() {
+	FontResizeTest() {
 	    menuBar = new JMenuBar();
 		frame.getRootPane().setMenuBar(menuBar);
 		// font menu
@@ -63,7 +63,7 @@ public class FontResizeBug {
 	}
 
 	public static void main(String[] args) {
-		new FontResizeBug();
+		new FontResizeTest();
 
 	}
 

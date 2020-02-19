@@ -1,4 +1,4 @@
-package debugging;
+package testing;
 
 import javax.swing.JFileChooser;
 

@@ -1,31 +1,40 @@
 package debugging;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
-import org.opensourcephysics.controls.XMLControl;
-import org.opensourcephysics.controls.XMLControlElement;
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.OSPRuntime;
 
-public class SaveXMLFile {
+public class SaveTXTFile {
 	
   File currentLocation=null;
 	
-	SaveXMLFile(XMLControlElement xml) {
-		/** @j2sNative   	currentLocation = window.location.pathname.split('/').slice(0, -1).join('/') */
-		saveXML(xml);
-		System.out.println("XML Saved");
+  SaveTXTFile() {
+  	
+  	/** @j2sNative   	currentLocation = window.location.pathname.split('/').slice(0, -1).join('/') */
+  	
+  	String str="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
+  			+ "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure "
+  			+ "dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat "
+  			+ "non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n";
+		saveTXT(str);
+		System.out.println("TXT Saved");
 	}
 	
-  public void saveXML(XMLControl xml){
-  	//String ext=".txt";
-  	String ext=".xml";
+  public void saveTXT(String str){
+  	String ext=".txt";
     JFileChooser chooser = OSPRuntime.getChooser();
     //JFileChooser chooser = new JFileChooser();
     String oldTitle = chooser.getDialogTitle();
-    chooser.setDialogTitle("Save XML File");
+    chooser.setDialogTitle("Save TXT File");
     chooser.setCurrentDirectory(currentLocation);
     int result = -1;
     try {
@@ -65,22 +74,29 @@ public class SaveXMLFile {
                return;
             }
          }
-        xml.write(fileName);
+        FileOutputStream stream=null;
+				try {
+					stream = new FileOutputStream(file);
+				} catch (FileNotFoundException ex) {
+					OSPLog.info(ex.getMessage());
+					return;
+				}
+        java.nio.charset.Charset charset = java.nio.charset.Charset.forName("UTF-8");
+        OutputStreamWriter out = new OutputStreamWriter(stream, charset);
+        try {
+        	BufferedWriter output = new BufferedWriter(out);
+          output.write(str);
+          output.flush();
+          output.close();
+        } catch(IOException ex) {
+          OSPLog.info(ex.getMessage());
+        }
     }
 
 }
 
 	public static void main(String[] args) {
-		XMLControlElement control= new XMLControlElement();
-		String myName="myName";
-		control.setValue("name", myName);
-		double pi=3.14;
-		control.setValue("pi", pi);
-		double[] array= {10.0,20.0,30.0};
-		control.setValue("data", array);
-		double[][] array2D= {{1,10.0},{2,20.0},{3,30.0}};
-		control.setValue("data2", array2D);
-		new SaveXMLFile(control);
+		new SaveTXTFile();
 	}
 
 }

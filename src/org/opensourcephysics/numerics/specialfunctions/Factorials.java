@@ -47,18 +47,19 @@ public class Factorials {
     return Math.exp(gammaln(n+1.0));
   }
 
-  static {
-    long val = 1;
-    int maxN = 1;
-    while(val*maxN>=val) {
-      val = val*maxN;
-      maxN++;
-    }
-    fac = new long[maxN]; // maxN should be ~21
-    fac[0] = 1;
-    for(int i = 1; i<maxN; i++) {
-      fac[i] = fac[i-1]*i;
-    }
+	static {
+		long val = 1;
+		int maxN = 1;
+		while (val * maxN >= val) {
+			val = val * maxN;
+			if("Infinity".equals(val)) break;  // JavaScript sets val to Infinity when >1.0176293457175084e+308
+			maxN++;
+		}
+		fac = new long[maxN]; // maxN should be ~21 in Java and ~308 in JavaScript
+		fac[0] = 1;
+		for (int i = 1; i < maxN; i++) {
+			fac[i] = fac[i - 1] * i;
+		}
   }
 
   /**
@@ -96,6 +97,11 @@ public class Factorials {
    */
   public static double logChoose(int n, int k) {
     return logFactorial(n)-logFactorial(k)-logFactorial(n-k);
+  }
+  
+  public static void main(String args[]) {
+    System.out.println(Factorials.factorial(3));
+    System.out.println(Factorials.factorial(20));
   }
   /*
    *  --------------- test code  ---------------

@@ -24,13 +24,13 @@
 
 package org.opensourcephysics.controls;
 import java.awt.Frame;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Collection;
 
-import javax.swing.Timer;
-
 import org.opensourcephysics.display.GUIUtils;
+
+import javajs.async.SwingJSUtils;
+import javajs.async.SwingJSUtils.StateHelper;
+import javajs.async.SwingJSUtils.StateMachine;
 
 /**
  * AbstractSimulation is a template for SIP simulations.
@@ -44,7 +44,7 @@ import org.opensourcephysics.display.GUIUtils;
  * @author       Wolfgang Christian
  * @version 1.0
  */
-abstract public class AbstractSimulation extends AbstractAnimation implements Simulation {
+abstract public class AbstractSimulation extends AbstractAnimation implements Simulation, StateMachine {
   protected SimControl control; // shadows superclass field
   protected boolean showStepsPerDisplay = false;
   protected int stepsPerDisplay = 1;
@@ -262,49 +262,44 @@ abstract public class AbstractSimulation extends AbstractAnimation implements Si
    * Override this method to set the simulation's parameters.
    */
   public void reset() {}
+	
+	private StateHelper stateHelper;
+	//private int delay = (/** @j2sNative 20 || */ 20);
+	private final static int STATE_INIT = 0;
+	private final static int STATE_LOOP = 1;
+	private final static int STATE_DONE = 2;
   
-	/**
-	 * Create the timer and perform one time step
-	 */
-	protected void createSwingTimer() {
-		long t1=System.currentTimeMillis();
-		int myDelay=(int)(t1 -t0);         // optimal delay based on last execution time 
-		myDelay=Math.min(delayTime, myDelay);  // do not wait longer than requested delay
-		myDelay=Math.max(5,myDelay);      // but wait a minimum of 5 ms.
-		t0=t1;                             //save current time
-		//System.out.println("Creating timer with delay ="+myDelay);  // debugging code
-		swingTimer = new Timer(myDelay, new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-			  swingTimer = null;
-		      for(int i = 0; i<stepsPerDisplay; i++) {
-		          doStep();
-		          stepCounter++;
-		          if(animationThread==null) { // check for stop condition
-		            break;  // break out of for loop     
-		          }
-			  }
-		      org.opensourcephysics.display.GUIUtils.renderAnimatedFrames();
-			  if( animationThread!=null) {  // start another step if simulation is running
-				  createSwingTimer();
-				  swingTimer.start();
-			  }else {
-				  GUIUtils.setAnimatedFrameIgnoreRepaint(false); // updated view at end of animation  
-			  }
+	public boolean stateLoop() {
+		while (animationThread != null && !animationThread.isInterrupted() && stateHelper.isAlive()) {
+			switch (stateHelper.getState()) {
+			default:
+			case STATE_INIT:
+				GUIUtils.setAnimatedFrameIgnoreRepaint(true); // animated frames are updated by this thread so no need to repaint
+				stateHelper.setState(STATE_LOOP);
+				stateHelper.sleep(delayTime);
+				return true;
+			case STATE_LOOP:
+				long currentTime = System.currentTimeMillis();
+				doStep();
+				int sleepTime = (int)Math.max(10, delayTime-(System.currentTimeMillis()-currentTime));
+				stateHelper.sleep(sleepTime);
+				return true;
+			case STATE_DONE:
+				GUIUtils.setAnimatedFrameIgnoreRepaint(false); // updated view at end of animation
+				return false;
 			}
-
-		});
-		swingTimer.setRepeats(false);
+		}
+		return false;
 	}
 
   /**
    * Implementation of Runnable interface.  DO NOT access this method directly.
    */
   public void run() {
-    if(org.opensourcephysics.js.JSUtil.isJS) {
-	    System.err.println("JavaScript error.  Thread run method called in Abstract Simulation .");
-	    return;
-	}
+  	stateHelper = new SwingJSUtils.StateHelper(this);  
+  	stateHelper.setState(STATE_INIT);
+  	stateHelper.sleep(0);
+  	/*
     GUIUtils.setAnimatedFrameIgnoreRepaint(true); // animated frames are updated by this thread so no need to repaint
     long sleepTime = delayTime;
     while(animationThread==Thread.currentThread()) {
@@ -326,6 +321,7 @@ abstract public class AbstractSimulation extends AbstractAnimation implements Si
       } catch(InterruptedException ie) {}
     }
     GUIUtils.setAnimatedFrameIgnoreRepaint(false); // updated view at end of animation
+    */
   }
 
   // Inner class that lets any control act as a SimControl.

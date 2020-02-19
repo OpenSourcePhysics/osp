@@ -321,7 +321,7 @@ public class Launcher {
       try {
         Thread thread = new Thread(launchRunner);
         thread.start();
-        thread.join(5000); // wait for join but don't wait over 5 seconds
+        if(!org.opensourcephysics.js.JSUtil.isJS)thread.join(5000); // wait for join but don't wait over 5 seconds
       } catch(InterruptedException ex) {
         /** empty block */
       }

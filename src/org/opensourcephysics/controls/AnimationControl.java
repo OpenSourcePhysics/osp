@@ -110,8 +110,8 @@ public class AnimationControl extends OSPControl {
     if(model instanceof AbstractAnimation) {
       // stops the animation
       ((AbstractAnimation) model).animationThread = null;
-      if(((AbstractAnimation) model).swingTimer!=null) {
-        ((AbstractAnimation) model).swingTimer.stop();
+      if(((AbstractAnimation) model).stateHelper!=null) {
+        ((AbstractAnimation) model).stateHelper.setState(AbstractAnimation.STATE_DONE);
       }
     }
     super.dispose();
