@@ -7,6 +7,8 @@
 
 package org.opensourcephysics.numerics.specialfunctions;
 
+import org.opensourcephysics.js.JSUtil;
+
 /**
  * Computes the factorial of an integer and functions closely related to factorials.
  */
@@ -50,12 +52,14 @@ public class Factorials {
 	static {
 		long val = 1;
 		int maxN = 1;
+		if(JSUtil.isJS) {
+			maxN=13;  
+		} else 
 		while (val * maxN >= val) {
 			val = val * maxN;
-			if("Infinity".equals(val)) break;  // JavaScript sets val to Infinity when >1.0176293457175084e+308
 			maxN++;
 		}
-		fac = new long[maxN]; // maxN should be ~21 in Java and ~308 in JavaScript
+		fac = new long[maxN]; // maxN should be ~21 in Java and 13 in JavaScript
 		fac[0] = 1;
 		for (int i = 1; i < maxN; i++) {
 			fac[i] = fac[i - 1] * i;
@@ -99,10 +103,6 @@ public class Factorials {
     return logFactorial(n)-logFactorial(k)-logFactorial(n-k);
   }
   
-  public static void main(String args[]) {
-    System.out.println(Factorials.factorial(3));
-    System.out.println(Factorials.factorial(20));
-  }
   /*
    *  --------------- test code  ---------------
    * public static void main(String args[]) {

@@ -78,6 +78,9 @@ import org.opensourcephysics.tools.Tool;
 import org.opensourcephysics.tools.ToolsRes;
 import org.opensourcephysics.tools.VideoTool;
 
+import javafx.stage.FileChooser;
+import javajs.async.AsyncFileChooser;
+
 /**
  * EjsControlFrame defines an Easy Java Simulations control that is guaranteed to have a
  * parent frame.
@@ -986,13 +989,46 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
     }
   }
 
-  public void loadXML() {
+  /*
+  public void loadXML() {  Java only version of Chooser API
     JFileChooser chooser = OSPRuntime.getChooser();
     int result = chooser.showOpenDialog(null);
     if(result==JFileChooser.APPROVE_OPTION) {
       String fileName = chooser.getSelectedFile().getAbsolutePath();
       loadXML(XML.getRelativePath(fileName));
     }
+  } */
+  
+  /*
+   * Loads an XML file using a Chooser in both Java and JS versions of OSP library.
+   */
+  public void loadXML() {
+  	AsyncFileChooser chooser = OSPRuntime.getChooser();
+    //AsyncFileChooser chooser = new AsyncFileChooser();
+    System.err.println("Loading xml");
+    String oldTitle = chooser.getDialogTitle();
+    chooser.setDialogTitle("Load XML Data");
+    chooser.showOpenDialog(null, new Runnable() {
+   	 // OK
+		@Override
+		public void run() {
+		     org.opensourcephysics.display.OSPRuntime.chooserDir = chooser.getCurrentDirectory().toString();
+		     // It is critical to pass the actual file along, as it has the bytes already.
+		     File file=chooser.getSelectedFile();
+		     OSPLog.fine("reading file="+file);
+		     XMLControlElement xml = new XMLControlElement(file);
+		     chooser.setDialogTitle(oldTitle);
+		     loadXML(xml, false);
+		}
+   	 
+    }, new Runnable() {
+   	 // cancel
+		@Override
+		public void run() {
+		     chooser.setDialogTitle(oldTitle);
+		}
+   	 
+    });
   }
 
   public void inspectXML() {

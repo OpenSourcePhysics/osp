@@ -38,7 +38,7 @@ public class DoubleArray {
   /**
    * Creates a DoubleArray of the given length with all elements set to zero.
    *
-   * The length of the arry cannot be changed.
+   * The length of the array cannot be changed.
    *
    * @param array
    */
@@ -48,7 +48,7 @@ public class DoubleArray {
   }
 
   /**
-   * Creates an arry with the given string being the default string.
+   * Creates an array with the given string being the default string.
    *
    * The given string determines the length of the array.  This lenght cannot be changed.
    * @param str
