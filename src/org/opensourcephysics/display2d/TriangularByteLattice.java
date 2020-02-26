@@ -100,8 +100,11 @@ public class TriangularByteLattice implements Measurable {
     if(!visible) {
       return;
     }
-    Shape oldClip = g.getClip();
-    g.setClip(null);
+    g = g.create();
+    //Shape oldClip = g.getClip();
+    // BH 2020.02.26 CAN'T DO THIS:
+    // unclip needed here
+    //g.setClip(null);
     double xScale=(xmax-xmin)/(xmaxLattice-xminLattice);
     double yScale=-(ymax-ymin)/(ymaxLattice-yminLattice);
     for(int yi = 0; yi<nrow; yi++) {
@@ -120,7 +123,7 @@ public class TriangularByteLattice implements Measurable {
         }
       }
     }
-    g.setClip(oldClip);
+    g.dispose();// BH 2020.02.26//setClip(oldClip);
   }
 
   /**

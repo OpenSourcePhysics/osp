@@ -178,19 +178,21 @@ public class InteractiveLabel extends MeasuredCircle implements Interactive {
       if(tempText==null) {
         return;
       }
-      Graphics2D g2 = (Graphics2D) g;
+      Graphics2D g2 = (Graphics2D) g.create();
       g2.setColor(color);
-      Font oldFont = g2.getFont();
+//      Font oldFont = g2.getFont();
       g2.setFont(font);
-      Shape clipShape = g2.getClip();
+//      Shape clipShape = g2.getClip();
+      // unclip needed here?
       g2.setClip(0, 0, panel.getWidth(), panel.getHeight());
       g2.setColor(Color.YELLOW);
       g2.fillRect(leftPix, topPix, boxWidth, boxHeight);
       g2.setColor(Color.BLACK);
       g2.drawRect(leftPix, topPix, boxWidth, boxHeight);
       g2.drawString(tempText, leftPix+3, topPix+boxHeight-2);
-      g2.setFont(oldFont);
-      g2.setClip(clipShape);
+//      g2.setFont(oldFont);
+//      g2.setClip(clipShape);
+      g2.dispose();
     }
 
     void computeBoxMetrics(DrawingPanel panel, Graphics g) {

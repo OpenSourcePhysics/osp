@@ -55,8 +55,9 @@ public class YAxis extends XYAxis {
     if(pixLoc>drawingPanel.getWidth()-1) {
       location = drawingPanel.getXMax();
     }
-    Graphics2D g2 = (Graphics2D) g;
-    Shape clipShape = g2.getClip();
+    Graphics2D g2 = (Graphics2D) g.create();
+    //Shape clipShape = g2.getClip();
+    // unclip needed here?
     g2.clipRect(0, 0, drawingPanel.getWidth(), drawingPanel.getHeight());
     switch(locationType) {
        case DRAW_AT_LOCATION :
@@ -70,7 +71,7 @@ public class YAxis extends XYAxis {
          drawInsideDisplay(drawingPanel, g);
          break;
     }
-    g2.setClip(clipShape);
+    g2.dispose();// BH 2020.02.26//setClip(clipShape);
   }
 
   private void drawInsideDisplay(DrawingPanel drawingPanel, Graphics g) {

@@ -3682,6 +3682,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         if(!slopeVisible||java.lang.Double.isNaN(slope)) {
           return;
         }
+        g = g.create();
         double dxPix = 1*getXPixPerUnit();
         double dyPix = slope*getYPixPerUnit();
         double hyp = Math.sqrt(dxPix*dxPix+dyPix*dyPix);
@@ -3702,8 +3703,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         g.setColor(color);
         ((Graphics2D) g).fill(stroke.createStrokedShape(this));
         g.setColor(gcolor);
+        g.dispose(); // BH 2020.02.26
       }
-
     } // end SlopeLine class
 
     /**

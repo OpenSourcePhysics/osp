@@ -2070,14 +2070,13 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     if(tempList==null) {
       return;
     }
-    Graphics2D g2 = (Graphics2D) g;
-    Iterator<Drawable> it = tempList.iterator();
-    Shape clipShape = g2.getClip();
     int w = getWidth()-leftGutter-rightGutter;
     int h = getHeight()-bottomGutter-topGutter;
     if((w<0)||(h<0)) {
       return;
     }
+    Graphics2D g2 = (Graphics2D) g.create();
+    Iterator<Drawable> it = tempList.iterator();
     if(clipAtGutter) {
       g2.clipRect(leftGutter, topGutter, w, h);
     }
@@ -2092,7 +2091,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
         drawable.draw(this, g2);
       }
     }
-    g2.setClip(clipShape);
+    g2.dispose(); // BH 2020.02.26
   }
 
   /**

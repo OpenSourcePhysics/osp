@@ -8,6 +8,7 @@
 package org.opensourcephysics.display2d;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.util.Random;
@@ -209,9 +210,10 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
     int x1pix = panel.xToPix(x);
     int y1pix = panel.yToPix(y);
     int x2pix, y2pix;
-    Shape clipShape = g.getClip();
+    //Shape clipShape = g.getClip();
     Rectangle r = getBounds(panel);
-    g.clipRect(r.x, r.y, r.width, r.height);
+    Graphics2D g2 = (Graphics2D) g.create();
+    g2.clipRect(r.x, r.y, r.width, r.height);
     for(int ix = 0; ix<nx; ix++) {
       x += dx;
       x2pix = panel.xToPix(x);
@@ -219,15 +221,16 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
         y -= dy;
         y2pix = panel.yToPix(y);
         int val = data[ix][iy]&0xFF;
-        g.setColor(colors[val]);
-        g.fillRect(x1pix, y1pix, Math.abs(x2pix-x1pix)+1, Math.abs(y1pix-y2pix)+1);
+        g2.setColor(colors[val]);
+        g2.fillRect(x1pix, y1pix, Math.abs(x2pix-x1pix)+1, Math.abs(y1pix-y2pix)+1);
         y1pix = y2pix;
       }
       x1pix = x2pix;
       y = (dy<0) ? ymax-dy : ymax;
       y1pix = panel.yToPix(y);
     }
-    g.setClip(clipShape);
+    //g.setClip(clipShape);
+    g2.dispose(); // BH 2020.02.26
     super.draw(panel, g); // draw the grid
   }
 

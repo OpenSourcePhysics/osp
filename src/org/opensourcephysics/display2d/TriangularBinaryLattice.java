@@ -147,8 +147,11 @@ public class TriangularBinaryLattice implements Measurable {
       return;
     }
     // drawableDelegate.draw(panel, g);
-    Shape oldClip = g.getClip();
-    g.setClip(null);
+    g = g.create();
+//    Shape oldClip = g.getClip();
+    // BH 2020.02.26 - CAN'T DO THIS:
+    // unclip needed here?
+   // g.setClip(null);
     double xScale=(xmax-xmin)/(xmaxLattice-xminLattice);
     double yScale=-(ymax-ymin)/(ymaxLattice-yminLattice);
     int row = 0;
@@ -181,7 +184,7 @@ public class TriangularBinaryLattice implements Measurable {
         column++;
       }
     }
-    g.setClip(oldClip);
+    g.dispose();// BH 2020.02.26//setClip(oldClip);
   }
 
   /**

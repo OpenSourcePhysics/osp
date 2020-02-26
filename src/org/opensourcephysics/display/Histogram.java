@@ -323,14 +323,15 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
     if(bins.size()==0 || !visible) {
       return;
     }
-    Shape oldClip = g.getClip();
+//    Shape oldClip = g.getClip();
+    g = g.create();
     g.setColor(binFillColor);
     g.clipRect(0, 0, drawingPanel.getWidth(), drawingPanel.getHeight());
     for(Iterator<Integer> keys = bins.keySet().iterator(); keys.hasNext(); ) {
       Integer binNumber = keys.next();
       Double d = (bins.get(binNumber));
       if(d==null) {
-        return;
+        break;
       }
       double occurrences = d.doubleValue();
       if(normalizedToOne) {
@@ -342,7 +343,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
         drawPoint(drawingPanel, g, binNumber.intValue(), occurrences);
       }
     }
-    g.setClip(oldClip);
+//    g.setClip(oldClip);
+    g.dispose();
   }
 
   /** Clears all data from this histogram and resets min and max values. */

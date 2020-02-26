@@ -179,11 +179,14 @@ public class HighlightableDataset extends Dataset implements Interactive {
    */
   public void draw(DrawingPanel drawingPanel, Graphics g) {
     super.draw(drawingPanel, g);
-    Graphics2D g2 = (Graphics2D) g;
     int offset = getMarkerSize()+4;
     int edge = 2*offset;
+    Graphics2D g2 = (Graphics2D) g.create();
     // increase the clip to include the entire highlight
-    Shape clipShape = g2.getClip();
+//    Shape clipShape = g2.getClip();
+    
+    // unclip needed here.
+    
     g2.setClip(drawingPanel.leftGutter-offset-1, drawingPanel.topGutter-offset-1, drawingPanel.getWidth()-drawingPanel.leftGutter-drawingPanel.rightGutter+2+2*offset, drawingPanel.getHeight()-drawingPanel.bottomGutter-drawingPanel.topGutter+2+2*offset);
     Rectangle viewRect = drawingPanel.getViewRect();
     if(viewRect!=null) { // decrease the clip if we are in a scroll pane
@@ -212,7 +215,8 @@ public class HighlightableDataset extends Dataset implements Interactive {
       g2.setColor(highlightColor);
       g2.fill(hitShapes[i]);
     }
-    g2.setClip(clipShape); // restore the original clip
+    //g2.setClip(clipShape); // restore the original clip
+    g2.dispose(); // BH 2020.02.26
   }
 
   /**

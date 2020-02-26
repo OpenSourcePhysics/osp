@@ -125,8 +125,6 @@ public class PolarType2 extends AbstractPolarAxis implements PolarAxes {
  * @param g
  */
   public void draw(DrawingPanel panel, Graphics g) {
-    Graphics2D g2 = (Graphics2D) g;
-    Shape clipShape = g2.getClip();
     int gw = panel.getLeftGutter()+panel.getRightGutter();
     int gh = panel.getTopGutter()+panel.getLeftGutter();
     if(interiorColor!=null) {
@@ -135,15 +133,8 @@ public class PolarType2 extends AbstractPolarAxis implements PolarAxes {
       g.setColor(gridcolor);
       g.drawRect(panel.getLeftGutter(), panel.getTopGutter(), panel.getWidth()-gw, panel.getHeight()-gh);
     }
-    g2.clipRect(panel.getLeftGutter(), panel.getTopGutter(), panel.getWidth()-gw, panel.getHeight()-gh);
-    double rmax = Math.abs(panel.getXMax())+Math.abs(panel.getYMax());
-    rmax = Math.max(rmax, Math.abs(panel.getXMax())+Math.abs(panel.getYMin()));
-    rmax = Math.max(rmax, Math.abs(panel.getXMin())+Math.abs(panel.getYMax()));
-    rmax = Math.max(rmax, Math.abs(panel.getXMin())+Math.abs(panel.getYMin()));
-    double dr = drawRings(rmax, panel, g);
-    drawSpokes(rmax, panel, g);
-    g2.setClip(clipShape);
-    drawRAxis(dr, rmax, panel, g);
+    Graphics2D g2 = (Graphics2D) g.create();
+    // BH 2020.02.26 moved title up. OK?
     titleLine.setX((panel.getXMax()+panel.getXMin())/2);
     if(panel.getTopGutter()>20) {
       titleLine.setY(panel.getYMax()+5/panel.getYPixPerUnit());
@@ -151,7 +142,18 @@ public class PolarType2 extends AbstractPolarAxis implements PolarAxes {
       titleLine.setY(panel.getYMax()-25/panel.getYPixPerUnit());
     }
     titleLine.setColor(panel.getForeground());
-    titleLine.draw(panel, g);
+    titleLine.draw(panel, g2);
+//  Shape clipShape = g2.getClip();
+    g2.clipRect(panel.getLeftGutter(), panel.getTopGutter(), panel.getWidth()-gw, panel.getHeight()-gh);
+    double rmax = Math.abs(panel.getXMax())+Math.abs(panel.getYMax());
+    rmax = Math.max(rmax, Math.abs(panel.getXMax())+Math.abs(panel.getYMin()));
+    rmax = Math.max(rmax, Math.abs(panel.getXMin())+Math.abs(panel.getYMax()));
+    rmax = Math.max(rmax, Math.abs(panel.getXMin())+Math.abs(panel.getYMin()));
+    double dr = drawRings(rmax, panel, g2);
+    drawSpokes(rmax, panel, g2);
+//    g2.setClip(clipShape);
+    drawRAxis(dr, rmax, panel, g2);
+    g2.dispose(); // BH 2020.02.26 added -- but after drawRAxis. OK?
   }
 
 }

@@ -134,8 +134,8 @@ public class TitleText extends DrawableTextLine {
          ypix = yoff;
          break;
     }
-    Graphics2D g2 = (Graphics2D) g;
-    Shape currentClip = g2.getClip();
+    Graphics2D g2 = (Graphics2D) g.create();
+    //Shape currentClip = g2.getClip();
     Rectangle viewRect = panel.getViewRect();
     if(viewRect==null) {
       g2.setClip(0, 0, panel.getWidth(), panel.getHeight());
@@ -143,7 +143,7 @@ public class TitleText extends DrawableTextLine {
       g2.setClip(viewRect.x, viewRect.y, viewRect.x+viewRect.width, viewRect.y+viewRect.height);
     }
     drawText(g, xpix, ypix);
-    g2.setClip(currentClip); // restore the original clipping
+    g2.dispose();// BH 2020.02.26//setClip(currentClip); // restore the original clipping
   }
 
 }

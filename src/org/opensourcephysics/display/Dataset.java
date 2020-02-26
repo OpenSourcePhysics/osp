@@ -1285,7 +1285,8 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
     double yp = 0;
     Shape shape = null;
     int size = markerSize*2+1;
-    Shape clipShape = g2.getClip();
+    g2 = (Graphics2D) g2.create();
+    //Shape clipShape = g2.getClip();
     // increase the clip so as to include the entire marker
     g2.setClip(drawingPanel.leftGutter-markerSize-1, drawingPanel.topGutter-markerSize-1, drawingPanel.getWidth()-drawingPanel.leftGutter-drawingPanel.rightGutter+2+2*markerSize, drawingPanel.getHeight()-drawingPanel.bottomGutter-drawingPanel.topGutter+2+2*markerSize);
     Rectangle viewRect = drawingPanel.getViewRect();
@@ -1382,7 +1383,9 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
     while(it.hasNext()) { // copy only the obejcts of the correct type
       (it.next()).draw(drawingPanel, g2);
     }
-    g2.setClip(clipShape); // restore the original clipping
+    g2.dispose();
+    // BH 2020.02.26 can't do this in JavaScript
+    //g2.setClip(clipShape); // restore the original clipping
   }
 
   /**

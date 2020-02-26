@@ -489,8 +489,9 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
     Color foreground = panel.getForeground();
     int panelHeight = panel.getHeight();
     int panelWidth = panel.getWidth();
-    Shape previousClip = graphics.getClip();
-    Font previousFont = graphics.getFont();
+//    Shape previousClip = graphics.getClip();
+//    Font previousFont = graphics.getFont();
+    graphics = graphics.create();
     graphics.clipRect(0, 0, panelWidth, panelHeight);
     graphics.setFont(labelFont);
     graphics.setColor(foreground);
@@ -853,8 +854,9 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
     }
     graphics.setColor(foreground);
     graphics.drawRect(leftGutter, topGutter, width-1, height-1);
-    graphics.setFont(previousFont);
-    graphics.setClip(previousClip);
+//    graphics.setFont(previousFont);
+//    graphics.setClip(previousClip);
+    graphics.dispose(); // BH 2020.02.26
   }
 
   // /////////////////////////////////////////////////////////////////
