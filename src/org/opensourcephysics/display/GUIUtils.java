@@ -31,6 +31,7 @@ import javax.swing.WindowConstants;
 
 import org.jibble.epsgraphics.EpsGraphics2D;
 import org.opensourcephysics.controls.XML;
+import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.media.gif.GIFEncoder;
 
 public class GUIUtils {
@@ -307,7 +308,7 @@ public class GUIUtils {
     }
     OSPRuntime.chooserDir = fileChooser.getCurrentDirectory().toString();
     File file = fileChooser.getSelectedFile();
-    if(file.exists()) {
+    if(!JSUtil.isJS && file.exists()) {
       int selected = JOptionPane.showConfirmDialog(parent, DisplayRes.getString("DrawingFrame.ReplaceExisting_message")+" "+file.getName()+DisplayRes.getString("DrawingFrame.QuestionMark"), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         DisplayRes.getString("DrawingFrame.ReplaceFile_option_title"), //$NON-NLS-1$
           JOptionPane.YES_NO_CANCEL_OPTION);
@@ -381,7 +382,9 @@ public class GUIUtils {
   public static void saveImage(JComponent comp, File outputFile, String outputFileFormat) throws IOException {
     FileOutputStream fos = null;
     try {
-      fos = new FileOutputStream(outputFile);
+    	// BH 2020.02.25 so that file name displays with the right extension initially
+      File file = fixExtension(outputFile, outputFileFormat);
+      fos = new FileOutputStream(file);
       if(outputFileFormat.equals("eps")) {                                                     //$NON-NLS-1$
         EpsGraphics2D g = new EpsGraphics2D("", fos, 0, 0, comp.getWidth(), comp.getHeight()); //$NON-NLS-1$
         comp.paint(g);
@@ -394,7 +397,8 @@ public class GUIUtils {
         Graphics g = bi.getGraphics();
         comp.paint(g);
         g.dispose();
-        if (outputFileFormat.equals("gif")) { //$NON-NLS-1$
+        if (false && //BH 2020.02.25
+        		outputFileFormat.equals("gif")) { //$NON-NLS-1$
           GIFEncoder encoder = new GIFEncoder(bi);
           encoder.Write(fos);
         }
@@ -413,52 +417,65 @@ public class GUIUtils {
   }
 
   /**
+   * BH 2020.02.26 adding file extension if missing; ("jpeg" to "jpg") 
+   * @param file
+   * @param ext
+   * @return File object
+   */
+  private static File fixExtension(File file, String ext) {
+	  String fileName = file.getAbsolutePath();
+		String extension = XML.getExtension(fileName);
+		if ((extension == null) || ".".equals(extension)) { //$NON-NLS-1$
+			fileName = XML.stripExtension(fileName) + "." + (ext.equals("jpeg") ? "jpg" : ext);	 //$NON-NLS-1$
+			file = new File(fileName);
+		}
+		return file;
+  }
+
+/**
    *  Saves the contents of the specified component in the given file format.  Pops
    *  open a save file dialog to allow the user to select the output file. Note method requires Java 1.4
    *
    * @param  component   comp the component
-   * @param  ouputFileFormat output file format. One of eps, jpeg, or png
+   * @param  outputFileFormat output file format. One of eps, jpeg, or png
    * @param  parent  dialog parent
    */
-  public static void saveImage(JComponent component, String ouputFileFormat, Component parent) {
+  public static void saveImage(JComponent component, String outputFileFormat, Component parent) {
     File outputFile = GUIUtils.showSaveDialog(component, DisplayRes.getString("GUIUtils.Title.SaveImage")); //$NON-NLS-1$
     if(outputFile==null) {
       return;
     }
     try {
-      GUIUtils.saveImage(component, outputFile, ouputFileFormat);
+      GUIUtils.saveImage(component, outputFile, outputFileFormat);
     } catch(IOException ioe) {
       JOptionPane.showMessageDialog(parent, "An error occurred while saving the file "+outputFile.getName()+".'"); //$NON-NLS-1$ //$NON-NLS-2$
     }
   }
   
-  public static void saveImageAs(JComponent component,String type, String title, String description, String[] extensions) {
-	    JFileChooser chooser = OSPRuntime.createChooser(title, description, extensions);
-	    String fileName = OSPRuntime.chooseFilename(chooser);
-	    if(fileName==null) {
-	      return;
-	    }
-	    File file = new File(fileName);
-	    String extension = XML.getExtension(fileName);
-	    if((extension==null)||".".equals(extension)) {                                                                      //$NON-NLS-1$
-	      fileName = XML.stripExtension(fileName)+"."+extensions[0];                                                        //$NON-NLS-1$
-	      file = new File(fileName);
-	      if(file.exists()) {
-	        int selected = JOptionPane.showConfirmDialog(null, DisplayRes.getString("DrawingFrame.ReplaceExisting_message") //$NON-NLS-1$
-	          +" "+file.getName()+DisplayRes.getString("DrawingFrame.QuestionMark"), //$NON-NLS-1$ //$NON-NLS-2$
-	            DisplayRes.getString("DrawingFrame.ReplaceFile_option_title"),       //$NON-NLS-1$
-	              JOptionPane.YES_NO_CANCEL_OPTION);
-	        if(selected!=JOptionPane.YES_OPTION) {
-	          return;
-	        }
-	      }
-	    }
-	    try {
-	      GUIUtils.saveImage(component, file, type);
-	    } catch(IOException ex) {
-	      ex.printStackTrace();
-	    }
-	  }
+	public static void saveImageAs(JComponent component, String type, String title, String description,
+			String[] extensions) {
+		JFileChooser chooser = OSPRuntime.createChooser(title, description, extensions);
+		String fileName = OSPRuntime.chooseFilename(chooser);
+		if (fileName == null) {
+			return;
+		}
+		File file = fixExtension(new File(fileName), extensions[0]);
+		if (!JSUtil.isJS && file.exists()) { // BH 2020.02.25
+			int selected = JOptionPane.showConfirmDialog(null,
+					DisplayRes.getString("DrawingFrame.ReplaceExisting_message") //$NON-NLS-1$
+							+ " " + file.getName() + DisplayRes.getString("DrawingFrame.QuestionMark"), //$NON-NLS-1$ //$NON-NLS-2$
+					DisplayRes.getString("DrawingFrame.ReplaceFile_option_title"), //$NON-NLS-1$
+					JOptionPane.YES_NO_CANCEL_OPTION);
+			if (selected != JOptionPane.YES_OPTION) {
+				return;
+			}
+		}
+		try {
+			GUIUtils.saveImage(component, file, type);
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+	}
   
   /**
    * Creates a custom cursor from an image. If an exception occurs, a predefined cursor is returned.
