@@ -42,17 +42,17 @@ public class PixelRectangle implements Drawable {
    * @param g Graphics
    */
   public void draw(DrawingPanel panel, Graphics g) {
-  	Graphics2D g2 = (Graphics2D) g.create();
-//  	Shape clipShape = g2.getClip();
-  	/** @j2sNative g2.unclip$I(-3); */
+  	g = g.create();
+//  	Shape clipShape = g.getClip();
+  	/** @j2sNative g.unclip$I(-3); */
   	System.out.println("working");
-  	g2.setClip(0, 0, panel.getWidth(), panel.getHeight());
+  	g.setClip(0, 0, panel.getWidth(), panel.getHeight());
     // this method implements the Drawable interface
     g.setColor(Color.RED);                // set drawing color to red
     g.fillRect(left, top, width, height); // draws rectangle
-//    g2.setClip(clipShape);
-  	/** @j2sNative g2.unclip$I(3); */
-    g2.dispose();
+//    g.setClip(clipShape);
+  	/** @j2sNative g.unclip$I(3); */
+    g.dispose();
   }
 }
 
