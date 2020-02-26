@@ -231,7 +231,6 @@ public abstract class AbstractAnimation implements Animation, Runnable, StateMac
 			switch (stateHelper.getState()) {
 			default:
 			case STATE_INIT:
-				GUIUtils.setAnimatedFrameIgnoreRepaint(true); // animated frames are updated by this thread so no need to repaint
 				stateHelper.setState(STATE_LOOP);
 				stateHelper.sleep(delayTime);
 				return true;
@@ -242,7 +241,6 @@ public abstract class AbstractAnimation implements Animation, Runnable, StateMac
 				stateHelper.sleep(sleepTime);
 				return true;
 			case STATE_DONE:
-				GUIUtils.setAnimatedFrameIgnoreRepaint(false); // updated view at end of animation
 				return false;
 			}
 		}

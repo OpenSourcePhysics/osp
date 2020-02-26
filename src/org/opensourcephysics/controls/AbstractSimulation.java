@@ -236,7 +236,7 @@ abstract public class AbstractSimulation extends AbstractAnimation implements Si
    * Sets the number of animation steps before animated drawing panels are rendered.
    *
    * The default steps per animation is 1.  Increase this number if frequent rendering
-   * causes slugish behavior.
+   * causes sluggish behavior.
    *
    * @param num int
    */
@@ -282,6 +282,7 @@ abstract public class AbstractSimulation extends AbstractAnimation implements Si
 				long currentTime = System.currentTimeMillis();
 				doStep();
 				int sleepTime = (int)Math.max(10, delayTime-(System.currentTimeMillis()-currentTime));
+				org.opensourcephysics.display.GUIUtils.renderAnimatedFrames(); // repaints all animated frames
 				stateHelper.sleep(sleepTime);
 				return true;
 			case STATE_DONE:
