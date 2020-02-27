@@ -7,7 +7,7 @@ import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.controls.XMLTreePanel;
 import org.opensourcephysics.display.OSPRuntime;
-
+import org.opensourcephysics.js.JSUtil;
 
 import javajs.async.AsyncFileChooser;
 
@@ -33,7 +33,10 @@ public class ReadXMLFile {
    	 // OK
 		@Override
 		public void run() {
+			if (!JSUtil.isJS) {
+				// no directory information in HTML5
 		     org.opensourcephysics.display.OSPRuntime.chooserDir = chooser.getCurrentDirectory().toString();
+			}
 		     // It is critical to pass the actual file along, as it has the bytes already.
 		     File file=chooser.getSelectedFile();
 		     OSPLog.fine("reading file="+file);
