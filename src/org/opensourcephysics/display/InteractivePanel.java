@@ -330,6 +330,8 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
       if(showCoordinates) {
         String s = coordinateStrBuilder.getCoordinateString(InteractivePanel.this, e);
         blMessageBox.setText(s);
+        messages.setMessage(s, 0);
+        repaint();
       }
     }
 
@@ -346,6 +348,8 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
       iaDraggable = null;
       if(showCoordinates) {
         blMessageBox.setText(null);
+        messages.setMessage(null, 0);
+        repaint();
       }
       setMouseCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
     }
@@ -404,6 +408,8 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
       if(showCoordinates) {
         String s = coordinateStrBuilder.getCoordinateString(InteractivePanel.this, e);
         blMessageBox.setText(s);
+        messages.setMessage(s, 0);
+        repaint();
       }
     }
 

@@ -124,7 +124,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
   protected BufferedImage offscreenImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
   protected BufferedImage workingImage = offscreenImage;
   private boolean buffered = false;                                        // true will draw this component using an off-screen image
-  private MessageDrawable messages=  new MessageDrawable();
+  protected MessageDrawable messages=  new MessageDrawable();
   protected TextPanel trMessageBox = new TextPanel();                      // text box in top right hand corner for message
   protected TextPanel tlMessageBox = new TextPanel();                      // text box in top left hand corner for message
   protected TextPanel brMessageBox = new TextPanel();                      // text box in lower right hand corner for message
@@ -264,6 +264,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     brMessageBox.font = font;
     blMessageBox.font = font;
     invalidateImage(); // validImage = false;
+    repaint();
   }
 
   /**
@@ -2468,6 +2469,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
          messages.setMessage(msg, 3);
          break;
     }
+    repaint();
   }
 
   /**
@@ -2508,7 +2510,11 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
      */
     public void mousePressed(MouseEvent e) {
       String s = coordinateStrBuilder.getCoordinateString(DrawingPanel.this, e);
+      System.err.println(" pressed coortd=="+s);
       blMessageBox.setText(s);
+      messages.setMessage(s, 0);
+      invalidateImage(); // validImage = false;
+      repaint();
     }
 
     /**
@@ -2517,6 +2523,8 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
      */
     public void mouseReleased(MouseEvent e) {
       blMessageBox.setText(null);
+      messages.setMessage(null, 0);
+      repaint();
     }
 
     /**
@@ -2543,7 +2551,10 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
      */
     public void mouseDragged(MouseEvent e) {
       String s = coordinateStrBuilder.getCoordinateString(DrawingPanel.this, e);
+      System.err.println(" pressed coortd=="+s);
       blMessageBox.setText(s);
+      messages.setMessage(s, 0);
+      repaint();
     }
 
   }
