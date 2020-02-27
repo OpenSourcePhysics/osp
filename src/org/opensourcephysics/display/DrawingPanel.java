@@ -16,11 +16,9 @@ import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GraphicsDevice;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.Shape;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -126,6 +124,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
   protected BufferedImage offscreenImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
   protected BufferedImage workingImage = offscreenImage;
   private boolean buffered = false;                                        // true will draw this component using an off-screen image
+  private MessageDrawable messages=  new MessageDrawable();
   protected TextPanel trMessageBox = new TextPanel();                      // text box in top right hand corner for message
   protected TextPanel tlMessageBox = new TextPanel();                      // text box in top left hand corner for message
   protected TextPanel brMessageBox = new TextPanel();                      // text box in lower right hand corner for message
@@ -169,7 +168,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     glassPanel.add(brMessageBox, OSPLayout.BOTTOM_RIGHT_CORNER);
     glassPanel.add(blMessageBox, OSPLayout.BOTTOM_LEFT_CORNER);
     glassPanel.setOpaque(false);
-    super.add(glassPanel, BorderLayout.CENTER);
+    if(!JSUtil.isJS) super.add(glassPanel, BorderLayout.CENTER);
     setBackground(bgColor);
     setPreferredSize(new Dimension(300, 300));
     showCoordinates = true; // show coordinates by default
@@ -622,18 +621,20 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
       if(image==workingImage) {
         zoomBox.paint(osg);               // paint the zoom
       }
-      Rectangle viewRect = this.viewRect; // reference for thread safety
-      if(viewRect!=null) {
-        Rectangle r = new Rectangle(0, 0, image.getWidth(null), image.getHeight(null));
-        glassPanel.setBounds(r);
-        glassPanelLayout.checkLayoutRect(glassPanel, r);
-        glassPanel.render(osg);
-        glassPanel.setBounds(viewRect);
-        glassPanelLayout.checkLayoutRect(glassPanel, viewRect);
-      } else {
-        glassPanel.render(osg);
+	    if(!JSUtil.isJS){  // do not use glassPanel in JS
+	      Rectangle viewRect = this.viewRect; // reference for thread safety
+	      if(viewRect!=null) {
+	        Rectangle r = new Rectangle(0, 0, image.getWidth(null), image.getHeight(null));
+	        glassPanel.setBounds(r);
+	        glassPanelLayout.checkLayoutRect(glassPanel, r);
+	        glassPanel.render(osg);
+	        glassPanel.setBounds(viewRect);
+	        glassPanelLayout.checkLayoutRect(glassPanel, viewRect);
+	      } else {
+	        glassPanel.render(osg);
+	      }
       }
-      osg.dispose();
+	    osg.dispose();
     }
     imageRatio = 1.00;
     return image;
@@ -684,10 +685,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     super.paint(g);
     paintEverything(g);
     buffered = resetBuffered;
-  }
-
-  public void paintComponentTEST(Graphics g) {
-	  paintEverything(g);
   }
   
   /**
@@ -2091,6 +2088,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
         drawable.draw(this, g2);
       }
     }
+    if(JSUtil.isJS)messages.draw(this, g);  // do not use Glass Panel in JS
     g2.dispose(); // BH 2020.02.26
   }
 
@@ -2437,6 +2435,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
    */
   public void setMessage(String msg) {
     brMessageBox.setText(msg); // the default message box
+    messages.setMessage(msg);
   }
 
   /**
@@ -2452,17 +2451,21 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
    */
   public void setMessage(String msg, int location) {
     switch(location) {
-       case 0 : // usually used for mouse coordiantes
+       case 0 : // usually used for mouse coordinates
          blMessageBox.setText(msg);
+         messages.setMessage(msg, 0);
          break;
        case 1 :
          brMessageBox.setText(msg);
+         messages.setMessage(msg, 1);
          break;
        case 2 :
          trMessageBox.setText(msg);
+         messages.setMessage(msg, 2);
          break;
        case 3 :
          tlMessageBox.setText(msg);
+         messages.setMessage(msg, 3);
          break;
     }
   }
