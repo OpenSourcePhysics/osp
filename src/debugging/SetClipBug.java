@@ -37,7 +37,6 @@ public class SetClipBug extends AbstractSimulation {
     // gets rectangle dimensions
     int width = control.getInt("width");
     int height = control.getInt("height");
-    boolean clip=control.getBoolean("clip");
     Drawable rectangle = new PixelRectangle(left, top, width, height);
     frame.addDrawable(rectangle);
     // frame is automatically rendered after Calculate button is pressed
