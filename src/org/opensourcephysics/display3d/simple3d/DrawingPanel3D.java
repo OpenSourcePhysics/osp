@@ -94,7 +94,7 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
   // Variables for painting
   volatile private boolean dirtyImage = true;                               // offscreenImage needs to be recomputed
   // the image that will be copied to the screen
-  volatile private BufferedImage offscreenImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+  volatile private BufferedImage offscreenImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
   // the image into which we will draw
   private BufferedImage workingImage = offscreenImage;
   private javax.swing.Timer updateTimer = new javax.swing.Timer(100, this); // delay before updating the panel
@@ -397,18 +397,19 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
     //System.err.println(" checkImageSize w="+width+"  h= "+height + "buffered image = "+image);
     if((width<=2)||(height<=2)) { // image is too small to draw anything useful
     	//System.err.println(" width and height too small");
-      return new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+      return new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
     }
     if((image==null)||(width!=image.getWidth())||(height!=image.getHeight())) {
       // a new image with the correct size will be created	
       //System.err.println("begin create compatible image w="+width+"  h= "+height + " image"+image);
-      if(org.opensourcephysics.js.JSUtil.isJS) {
-    	  image=new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-    	  //image = getGraphicsConfiguration().createCompatibleImage(width, height);  // WC:  Check to see if bug is fixed
-    	  //System.err.println("image ="+image);
-      } else{
+//      if(false && org.opensourcephysics.js.JSUtil.isJS) {
+//    	  image=new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+//    	  //image = getGraphicsConfiguration().createCompatibleImage(width, height);  // WC:  Check to see if bug is fixed
+//    	  //System.err.println("image ="+image);
+//      } else{
+    	  // BH 2020.02.26 -- this is the best way to go in JavaScript as well.
     	  image = getGraphicsConfiguration().createCompatibleImage(width, height);
-      }
+//      }
       //System.err.println("begin create compatible image w="+width+"  h= "+height + " image"+image);
       return image;
     }
