@@ -19,9 +19,9 @@ public class ComplexColorMapper {
   private double ceil;
   private Color ceilColor = Color.lightGray;
   private JFrame legendFrame;
-  int[] reds = new int[256];
-  int[] greens = new int[256];
-  int[] blues = new int[256];
+  double[] reds = new double[256];
+  double[] greens = new double[256];
+  double[] blues = new double[256];
   protected ZExpansion zMap = null;
 
   /**
@@ -141,8 +141,8 @@ public class ComplexColorMapper {
    * @return the HSB color
    */
   public Color phaseToColor(double phi) {
-    float b = 1; // brightness
-    float h = (float) ((Math.PI+phi)/PI2);
+    double b = 1; // brightness
+    double h = (double) ((Math.PI+phi)/PI2);
     int index = ((int) (255*h));
     return new Color((int) (b*reds[index]), (int) (b*greens[index]), (int) (b*blues[index]));
   }
@@ -154,8 +154,8 @@ public class ComplexColorMapper {
    * @return the HSB color
    */
   public Color complexToColor(double re, double im) {
-    float b = 1; // brightness
-    float h = (float) ((Math.PI+Math.atan2(im, re))/PI2);
+    double b = 1; // brightness
+    double h = (double) ((Math.PI+Math.atan2(im, re))/PI2);
     int index = ((int) (255*h));
     return new Color((int) (b*reds[index]), (int) (b*greens[index]), (int) (b*blues[index]));
   }
@@ -178,8 +178,8 @@ public class ComplexColorMapper {
     } else {
       zval = Math.min(zval, ceil);
     }
-    float b = (float) (zval/ceil);                                        // brightness
-    float h = (float) ((Math.PI+Math.atan2(samples[2], samples[1]))/PI2); // hue
+    double b = (zval/ceil);                                        // brightness
+    double h = ((Math.PI+Math.atan2(samples[2], samples[1]))/PI2); // hue
     int index = ((int) (255*h));
     return new Color((int) (b*reds[index]), (int) (b*greens[index]), (int) (b*blues[index]));
   }
@@ -202,8 +202,8 @@ public class ComplexColorMapper {
     } else if(zval>ceil+COLOR_ERR) {
       return ceilColor;
     }
-    float b = (float) (zval/ceil);
-    float h = (float) ((Math.PI+Math.atan2(vertex[4], vertex[3]))/PI2);
+    double b = (double) (zval/ceil);
+    double h = (double) ((Math.PI+Math.atan2(vertex[4], vertex[3]))/PI2);
     int index = ((int) (255*h));
     return new Color((int) (b*reds[index]), (int) (b*greens[index]), (int) (b*blues[index]));
     // return  Color.getHSBColor(h,1,b);
@@ -250,11 +250,11 @@ public class ComplexColorMapper {
     double pi = Math.PI;
     for(int i = 0; i<256; i++) {
       double val = Math.abs(Math.sin(pi*i/255));
-      blues[i] = (int) (255*val*val);
+      blues[i] = (255*val*val);
       val = Math.abs(Math.sin(pi*i/255+pi/3));
-      greens[i] = (int) (255*val*val*Math.sqrt(val));
+      greens[i] = (255*val*val*Math.sqrt(val));
       val = Math.abs(Math.sin(pi*i/255+2*pi/3));
-      reds[i] = (int) (255*val*val);
+      reds[i] = (255*val*val);
     }
   }
 
