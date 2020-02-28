@@ -525,6 +525,8 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
           double min = auto ? Double.NaN : scaleField.getValue();
           double max = min;
           switch(region) {
+          	 default:
+        	   return; // BH 2020.02.28 region can be 0.
              case HORZ_MIN :
                max = drawingPanel.isAutoscaleXMax()? Double.NaN: drawingPanel.getXMax();
                break;
