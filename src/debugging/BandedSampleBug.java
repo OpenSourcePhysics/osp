@@ -23,8 +23,13 @@ public class BandedSampleBug {
     carpet.setGridData(griddata);
     carpet.clearData();
     drawingFrame.setVisible(true);
-    initCarpet();
-    plottingPanel.repaint();
+    new Thread(new Runnable() {
+  		@Override
+		public void run() {
+  	      initCarpet();
+          plottingPanel.repaint();    	
+		}
+    }).start();
 	}
 	
 	void initCarpet() {

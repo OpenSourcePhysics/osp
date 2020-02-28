@@ -6,7 +6,7 @@
  */
 
 package org.opensourcephysics.display2d;
-public class ComplexCarpet extends ComplexInterpolatedPlot {
+public class ComplexCarpet extends ComplexInterpolatedPlot implements ICarpet {
   /**
    * Constructor ComplexCarpet
    * @param griddata
@@ -67,9 +67,14 @@ public class ComplexCarpet extends ComplexInterpolatedPlot {
         }
       }
     }
-    double dy = (griddata.getBottom()-griddata.getTop())/(image.getHeight()-1);
+	int imageWidth = image.getWidth();
+	int imageHeight = image.getHeight();
+	double x0 = griddata.getLeft();
+	double y = griddata.getTop();
+    double dx = (griddata.getRight()-x0)/(imageWidth-1);
+	double dy = (griddata.getBottom()-y)/(imageHeight-1);
     int nr = 1+(int) Math.abs(griddata.getDy()/dy);
-    int offset = nr*image.getWidth();
+    int offset = nr*imageWidth;
     int length = rgbData[0].length-offset;
     System.arraycopy(rgbData[0], 0, rgbData[0], offset, length);
     System.arraycopy(rgbData[1], 0, rgbData[1], offset, length);
@@ -77,13 +82,11 @@ public class ComplexCarpet extends ComplexInterpolatedPlot {
     double[] samples = new double[3];
     int[] indexes = new int[] {ampIndex, reIndex, imIndex};
     byte[] rgb = new byte[3];
-    double y = griddata.getTop();
-    double dx = (griddata.getRight()-griddata.getLeft())/(image.getWidth()-1);
-    for(int j = 0, my = image.getHeight(); j<nr; j++) {
-      double x = griddata.getLeft();
-      for(int i = 0, mx = image.getWidth(); i<mx; i++) {
+    for(int j = 0, my = imageHeight; j<nr; j++) {
+      double x = x0;
+      for(int i = 0, mx = imageWidth; i<mx; i++) {
+          int index = (dy<0) ? j*mx+i : (my-j-1)*mx+i;
         colorMap.samplesToComponents(griddata.interpolate(x, y, indexes, samples), rgb);
-        int index = (dy<0) ? j*mx+i : (my-j-1)*mx+i;
         rgbData[0][index] = rgb[0]; // red
         rgbData[1][index] = rgb[1]; // green
         rgbData[2][index] = rgb[2]; // blue
