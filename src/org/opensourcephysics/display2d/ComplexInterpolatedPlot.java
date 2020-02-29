@@ -8,23 +8,18 @@
 package org.opensourcephysics.display2d;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Transparency;
-import java.awt.color.ColorSpace;
-import java.awt.image.BandedSampleModel;
 import java.awt.image.BufferedImage;
-import java.awt.image.ComponentColorModel;
-import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
-import java.awt.image.Raster;
-import java.awt.image.WritableRaster;
+
 import javax.swing.JFrame;
+
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.Grid;
 import org.opensourcephysics.display.MeasuredImage;
+import org.opensourcephysics.js.JSUtil;
 
 /**
  * ComplexInterpolatedPlot creates an image of a scalar field by interpolating every
@@ -36,8 +31,10 @@ import org.opensourcephysics.display.MeasuredImage;
  * @version    1.0
  */
 public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
+
   GridData griddata;
-  byte[][] rgbData;
+  //byte[][] rgbData;
+  protected byte[] pixelData;
   Grid grid;
   ComplexColorMapper colorMap;
   boolean autoscaleZ = true;
@@ -338,6 +335,12 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
   }
 
   /**
+   * used to indicate to the ColorMapper what kind of pixels to write, 
+   * TYPE_4BYTE_ABGR for Java or TYPE_4BYTE_HTML5 for JavaScript
+   */
+  protected int imageType;
+
+  /**
    * Checks if the image is the correct size.
    */
   protected void checkImage(DrawingPanel panel) {
@@ -355,6 +358,7 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
       bPix = panel.yToPix(griddata.getBottom());
       tPix = panel.yToPix(griddata.getTop());
     }
+
     leftPix = Math.min(lPix, rPix);
     rightPix = Math.max(lPix, rPix);
     bottomPix = Math.max(bPix, tPix);
@@ -365,94 +369,126 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
     rightPix = Math.min(rightPix, panel.getWidth());
     topPix = Math.max(0, topPix);
     bottomPix = Math.min(bottomPix, panel.getHeight());
-    int row = bottomPix-topPix+1;
-    int col = rightPix-leftPix+1;
-    if((image!=null)&&(image.getWidth()==col)&&(image.getHeight()==row)&&(left==panel.pixToX(leftPix))&&(top==panel.pixToY(topPix))&&(bottom==panel.pixToX(bottomPix))&&(right==panel.pixToY(rightPix))) {
+    int height = bottomPix-topPix+1;
+    int width = rightPix-leftPix+1;
+    boolean haveImage = (image!=null)&&(image.getWidth()==width)&&(image.getHeight()==height);
+    if(haveImage&&(left==panel.pixToX(leftPix))&&(top==panel.pixToY(topPix))&&(bottom==panel.pixToX(bottomPix))&&(right==panel.pixToY(rightPix))) {
       return; // image exists, has the correct location, and is the correct size
     }
     left = panel.pixToX(leftPix);
     top = panel.pixToY(topPix);
     bottom = panel.pixToX(bottomPix);
     right = panel.pixToY(rightPix);
-    if((image!=null)&&(image.getWidth()==col)&&(image.getHeight()==row)) {
+    if(haveImage) {
       recolorImage();
       return; // image exists and is the correct size so recolor it
     }
-    int size = row*col;
+    int size = height*width;
     if(size<4) {
       image = null;
       return;
     }
-    OSPLog.finer("ComplexInterpolatedPlot image created with row="+row+" and col="+col); //$NON-NLS-1$ //$NON-NLS-2$
-    ComponentColorModel ccm = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB), new int[] {8, 8, 8}, false, // hasAlpha
-      false, Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
-    BandedSampleModel csm = new BandedSampleModel(DataBuffer.TYPE_BYTE, col, row, col, new int[] {0, 1, 2}, new int[] {0, 0, 0});
-    rgbData = new byte[3][size];
-    DataBuffer databuffer = new DataBufferByte(rgbData, size);
-    WritableRaster raster = Raster.createWritableRaster(csm, databuffer, new Point(0, 0));
-    image = new BufferedImage(ccm, raster, false, null);
+    OSPLog.finer("ComplexInterpolatedPlot image created with width="+width+" and height="+height); //$NON-NLS-1$ //$NON-NLS-2$
+
+
+    // BH: While this does work, there is a much simpler way:
+    // Just select Java's TYPE_4BYTE_ABGR option 
+    // We do have to set the pixels opaque then, but we
+    // also get to define a buffer that is identical to HTML5
+    // using type -6. 
+//    ComponentColorModel ccm = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB), new int[] {8, 8, 8}, false, // hasAlpha
+//      false, Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
+//    BandedSampleModel csm = new BandedSampleModel(DataBuffer.TYPE_BYTE, width, height, width, new int[] {0, 1, 2}, new int[] {0, 0, 0});
+//    rgbData = new byte[3][size];
+//    DataBuffer databuffer = new DataBufferByte(rgbData, size);
+//    WritableRaster raster = Raster.createWritableRaster(csm, databuffer, new Point(0, 0));
+//    image = new BufferedImage(ccm, raster, false, null);
+
+    
+    imageType = 
+    		(JSUtil.isJS ? JSUtil.TYPE_4BYTE_HTML5
+    				: BufferedImage.TYPE_4BYTE_ABGR);
+    image = new BufferedImage(width, height, imageType);
+    pixelData = ((DataBufferByte)image.getRaster().getDataBuffer()).getData();
     update();
   }
 
-  /**
-   * Recolors the image pixels using the data array.
-   */
-  protected void recolorImage() {
-    // use references for thread safety
-    GridData griddata = this.griddata;
-    byte[][] rgbData = this.rgbData;
-    BufferedImage image = this.image;
-    if(griddata==null) {
-      return;
-    }
-    if(griddata.isCellData()) {
-      double dx = griddata.getDx();
-      double dy = griddata.getDy();
-      xmin = griddata.getLeft()-dx/2;
-      xmax = griddata.getRight()+dx/2;
-      ymin = griddata.getBottom()+dy/2;
-      ymax = griddata.getTop()-dy/2;
-    } else {
-      xmin = griddata.getLeft();
-      xmax = griddata.getRight();
-      ymin = griddata.getBottom();
-      ymax = griddata.getTop();
-    }
-    grid.setMinMax(xmin, xmax, ymin, ymax);
-    if(image==null) {
-      return;
-    }
-    if(rgbData[0].length!=image.getWidth()*image.getHeight()) {
-      return;
-    }
-    byte[] rgb = new byte[3];
-    double y = top;
-    int iw = image.getWidth();
-    double dx = (xmax-xmin)/(ixsize-1);
-    double dy = (ymin-ymax)/(iysize-1);
-    if(griddata.getDx()<0) {
-      dx = -dx;
-    }
-    if(griddata.getDy()>0) {
-      dy = -dy;
-    }
-    double[] samples = new double[3];
-    int[] indexes = new int[] {ampIndex, reIndex, imIndex};
-    for(int j = 0, jh = image.getHeight(); j<jh; j++) {
-      double x = left;
-      for(int i = 0; i<iw; i++) {
-        colorMap.samplesToComponents(griddata.interpolate(x, y, indexes, samples), rgb);
-        int index = (dy<0) ? j*iw+i : (jh-j-1)*iw+i;
-        rgbData[0][index] = rgb[0]; // red
-        rgbData[1][index] = rgb[1]; // green
-        rgbData[2][index] = rgb[2]; // blue
-        x += dx;
-      }
-      y += dy;
-    }
-  }
+	/**
+	 * Recolors the image pixels using the data array.
+	 */
+	protected void recolorImage() {
+		// use references for thread safety
+		GridData griddata = this.griddata;
+		// byte[][] componentData = this.rgbData;
+		BufferedImage image = this.image;
+		if (griddata == null) {
+			return;
+		}
+		if (griddata.isCellData()) {
+			double dx = griddata.getDx();
+			double dy = griddata.getDy();
+			xmin = griddata.getLeft() - dx / 2;
+			xmax = griddata.getRight() + dx / 2;
+			ymin = griddata.getBottom() + dy / 2;
+			ymax = griddata.getTop() - dy / 2;
+		} else {
+			xmin = griddata.getLeft();
+			xmax = griddata.getRight();
+			ymin = griddata.getBottom();
+			ymax = griddata.getTop();
+		}
+		grid.setMinMax(xmin, xmax, ymin, ymax);
+		if (image == null) {
+			return;
+		}
+		if (pixelData.length != image.getWidth() * image.getHeight() * 4) {
+			return;
+		}
+		// byte[] rgb = new byte[3];
+		double y = top;
+		double dx = (xmax - xmin) / (ixsize - 1);
+		double dy = (ymin - ymax) / (iysize - 1);
+		if (griddata.getDx() < 0) {
+			dx = -dx;
+		}
+		if (griddata.getDy() > 0) {
+			dy = -dy;
+		}
+		writeToRaster(left, y, dx, dy);
+	}
 
-  /**
+	protected void writeToRaster(double x0, double y, double dx, double dy) {
+		int width = image.getWidth();
+		int height = image.getHeight();
+		double[] samples = new double[3];
+		int[] indexes = new int[] { ampIndex, reIndex, imIndex };
+		byte[] tempRGB = new byte[3];
+		byte[] pixels = pixelData;
+		boolean isABGR = (imageType == BufferedImage.TYPE_4BYTE_ABGR);
+		for (int j = 0; j < height; j++, y += dy) {
+			double x = left;
+			for (int i = 0; i < width; i++, x += dx) {
+				int pt = ((dy < 0) ? j * width + i : (height - j - 1) * width + i) << 2;
+				byte[] ret = colorMap.sampleToPixel(griddata.interpolate(x, y, indexes, samples), tempRGB);
+				// note that -1 here will become UInt8 255 for the canvas by anding with 0xFF
+				if (isABGR) {
+					// Java BufferedImage.TYPE_4BYTE_ABGR
+					pixels[pt++] = -1;//a;
+					pixels[pt++] = ret[2];//b;
+					pixels[pt++] = ret[1];//g;
+					pixels[pt++] = ret[0];//r;
+				} else {
+					// SwingJS BufferedImage.TYPE_4BYTE_HTML5
+					pixels[pt++] = ret[0];//r;
+					pixels[pt++] = ret[1];//g;
+					pixels[pt++] = ret[2];//b;
+					pixels[pt++] = -1;//a;
+				}
+			}
+		}
+	}
+
+/**
    * Determines the palette type that will be used.
    * Not implemented.   Only one palette type.
    * @param type

@@ -7,11 +7,14 @@
 
 package org.opensourcephysics.display2d;
 import java.awt.Color;
+
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
+
 import org.opensourcephysics.display.InteractivePanel;
 import org.opensourcephysics.display.axes.XAxis;
 import org.opensourcephysics.display.axes.XYAxis;
+import org.opensourcephysics.js.JSUtil;
 
 public class ComplexColorMapper {
   static final double PI2 = Math.PI*2;
@@ -120,21 +123,6 @@ public class ComplexColorMapper {
   }
 
   /**
-   * Converts a double to color components.
-   *
-   * @param samples double[]
-   * @param rgb byte[]
-   * @return byte[]
-   */
-  public byte[] samplesToComponents(double[] samples, byte[] rgb) {
-    Color color = samplesToColor(samples);
-    rgb[0] = (byte) color.getRed();
-    rgb[1] = (byte) color.getGreen();
-    rgb[2] = (byte) color.getBlue();
-    return rgb;
-  }
-
-  /**
    * Converts a phase angle in the range [-Pi,Pi] to hue, saturation, and brightness.
    *
    * @param phi phase angle
@@ -159,30 +147,80 @@ public class ComplexColorMapper {
     int index = ((int) (255*h));
     return new Color((int) (b*reds[index]), (int) (b*greens[index]), (int) (b*blues[index]));
   }
+  
+  private Color colorTemp = new Color(0);
 
-  /**
-   * Converts an array of samples to hue, saturation, and brightness.
-   * Samples contains magnitude, re, and im.
-   * @param samples
-   * @return the HSB color
-   */
-  public Color samplesToColor(double[] samples) {
-    double zval = samples[0];
-    if(zMap!=null) {
-      zval = zMap.evaluate(zval);
-    }
-    if(zval<=0) {
-      return Color.black;
-    } else if((zMap==null)&&(zval>ceil+COLOR_ERR)) {
-      return ceilColor;
-    } else {
-      zval = Math.min(zval, ceil);
-    }
-    double b = (zval/ceil);                                        // brightness
-    double h = ((Math.PI+Math.atan2(samples[2], samples[1]))/PI2); // hue
-    int index = ((int) (255*h));
-    return new Color((int) (b*reds[index]), (int) (b*greens[index]), (int) (b*blues[index]));
-  }
+	/**
+	 * Converts an array of samples to hue, saturation, and brightness. Samples
+	 * contains magnitude, re, and im.
+	 * 
+	 * @param samples
+	 * @return the HSB color
+	 */
+	public Color samplesToColor(double[] samples) {
+		double zval = samples[0];
+		if (zMap != null) {
+			zval = zMap.evaluate(zval);
+		}
+		if (zval <= 0) {
+			return Color.black;
+		} else if ((zMap == null) && (zval > ceil + COLOR_ERR)) {
+			return ceilColor;
+		} else {
+			zval = Math.min(zval, ceil);
+		}
+		double bb = (double) (zval / ceil); // brightness
+		double h = (double) ((Math.PI + Math.atan2(samples[2], samples[1])) / PI2); // hue
+		int index = ((int) (255 * h));
+		int r = (int) (bb * reds[index]);
+		int g = (int) (bb * greens[index]);
+		int b = (int) (bb * blues[index]);
+		int v = (((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF)) | 0xFF000000;
+		Color c = (JSUtil.isJS ? colorTemp : null);
+		/**
+		 * just mutate colorTemp
+		 * @j2sNative
+		 * 
+		 * c.value = v;
+		 * 
+		 * 
+		 */
+		{
+			c = new Color(v);
+		}
+		return c;
+	}
+  
+    private byte[] rgbCeil = new byte[3];
+    private byte[] rgbBlack = new byte[3];
+
+	/**
+	 * Return a pixel in the standard rgba format of raster.getPixel.
+	 * 
+	 * @param samples
+	 * @param retRGB temp array to be returned  
+	 * @return byte[] in the form of filling [r g b a]
+	 * 
+	 */
+	public byte[] sampleToPixel(double[] samples, byte[]retRGB) {
+		double zval = samples[0];
+		if (zMap != null) {
+			zval = zMap.evaluate(zval);
+		}
+		if (zval <= 0) {
+			return rgbBlack;
+		}
+		if ((zMap == null) && (zval > ceil + COLOR_ERR)) {
+			return rgbCeil;
+		}
+		double bb = (double) (Math.min(zval, ceil) / ceil); // brightness
+		double h = (double) ((Math.PI + Math.atan2(samples[2], samples[1])) / PI2); // hue
+		int index = ((int) (255 * h));
+		retRGB[0] = (byte) (bb * reds[index]);
+		retRGB[1] = (byte) (bb * greens[index]);
+		retRGB[2] = (byte) (bb * blues[index]);
+		return retRGB;
+	}
 
   /**
    * Converts a vertex point array of samples to hue, saturation, and brightness.
@@ -244,17 +282,18 @@ public class ComplexColorMapper {
    */
   public void setCeilColor(Color _ceilColor) {
     ceilColor = _ceilColor;
+    rgbCeil = new byte[] {(byte)ceilColor.getRed(), (byte)ceilColor.getGreen(), (byte)ceilColor.getBlue()};
   }
 
   private void initColors() {
     double pi = Math.PI;
     for(int i = 0; i<256; i++) {
       double val = Math.abs(Math.sin(pi*i/255));
-      blues[i] = (255*val*val);
+      blues[i] = (int) (255*val*val);
       val = Math.abs(Math.sin(pi*i/255+pi/3));
-      greens[i] = (255*val*val*Math.sqrt(val));
+      greens[i] = (int) (255*val*val*Math.sqrt(val));
       val = Math.abs(Math.sin(pi*i/255+2*pi/3));
-      reds[i] = (255*val*val);
+      reds[i] = (int) (255*val*val);
     }
   }
 

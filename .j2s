@@ -1,7 +1,7 @@
 #j2s configuration file
  
 #enable the Java2Script transpiler -- comment out to disable
-j2s.compiler.status=enable
+j2s.compiler.status=enabled
 
 
 # destination directory for all JavaScript
