@@ -1,14 +1,22 @@
 package debugging;
 
+import java.awt.Graphics;
+
 import org.opensourcephysics.display.DrawingFrame;
+import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.PlottingPanel;
 import org.opensourcephysics.display2d.ArrayData;
 import org.opensourcephysics.display2d.GrayscalePlot;
 
 public class GrayscalePlotBug {
-	int numpts=16;
+	int numpts=128;
 	ArrayData griddata = new ArrayData(numpts, numpts, 3);
-	GrayscalePlot grayscalePlot = new GrayscalePlot(griddata);
+	GrayscalePlot grayscalePlot = new GrayscalePlot(griddata) {
+		public void draw(DrawingPanel panel, Graphics g) {
+			setRandomVals();
+			super.draw(panel, g);
+		}
+	};
 	PlottingPanel plottingPanel = new PlottingPanel("x", "t", null);
 	DrawingFrame drawingFrame = new DrawingFrame(plottingPanel);
 
@@ -20,9 +28,8 @@ public class GrayscalePlotBug {
 		plottingPanel.setAutoscaleX(true);
 		plottingPanel.setAutoscaleY(true);
 		griddata.setScale(0, numpts, 0,numpts);
-    drawingFrame.setVisible(true);
-		setRandomVals();
-    plottingPanel.repaint();
+		drawingFrame.setVisible(true);
+		plottingPanel.repaint();
 	}
 	
 	public void setRandomVals() {
@@ -30,11 +37,14 @@ public class GrayscalePlotBug {
 		double[][] dataR = data[0];
 		double[][] dataG = data[1];
 		double[][] dataB = data[2];
+		double r = Math.random();
 		for(int i=0; i<numpts; i++ ) {
 			for(int j=0; j<numpts; j++ ) {
-				dataR[i][j]=255*Math.random();
-				dataG[i][j]=255*Math.random();
-				dataB[i][j]=255*Math.random();
+//				dataR[i][j]=255*Math.random();
+//				dataG[i][j]=255*Math.random();
+//				dataB[i][j]=255*Math.random();
+				dataR[i][j]=(r > 0.7 ? 255.0 * i/ numpts : r > 0.5 ? 255.0 * j /numpts : 255.0 * i/ numpts * j /numpts);
+				// green and blue are not used in this -- just amplitude (R)
 			}
 		}
 		grayscalePlot.update();

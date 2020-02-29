@@ -92,8 +92,9 @@ public class MeasuredImage implements Measurable {
       panel.setMessage(DisplayRes.getString("MeasuredImage.NoImage")); //$NON-NLS-1$
       return;
     }
-    Graphics2D g2 = (Graphics2D) g;
-    AffineTransform gat = g2.getTransform(); // save graphics transform
+    Graphics2D g2 = (Graphics2D) g.create();
+    // BH 2020.02.29 using create/dispose here
+//    AffineTransform gat = g2.getTransform(); // save graphics transform
     RenderingHints hints = g2.getRenderingHints();
     if (!OSPRuntime.isMac()) {  //Rendering hint bug in Mac Snow Leopard 
       g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
@@ -104,15 +105,17 @@ public class MeasuredImage implements Measurable {
     g2.transform(AffineTransform.getTranslateInstance(panel.leftGutter+panel.xPixPerUnit*(xmin-panel.xmin), panel.topGutter+panel.yPixPerUnit*(panel.ymax-ymax)));
     g2.transform(AffineTransform.getScaleInstance(sx, sy));
     g2.drawImage(image, 0, 0, panel);
-    g2.setTransform(gat);        // restore graphics transform
     g2.setRenderingHints(hints); // restore the hints
+    g2.dispose();
   }
 
   public boolean isMeasured() {
-    if(image==null) {
-      return false;
-    }
-    return true;
+	  // BH just tidier
+	  return (image != null);
+//    if(image==null) {
+//      return false;
+//    }
+//    return true;
   }
 
   public double getXMin() {

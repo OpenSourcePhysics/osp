@@ -12,9 +12,11 @@ import java.awt.Point;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
@@ -169,8 +171,8 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
     if(griddata==null) {
       return;
     }
-    int nx = griddata.getNx();
-    int ny = griddata.getNy();
+    int nx = griddata.getNx(); // columns, so width
+    int ny = griddata.getNy(); // rows, so height
     int size = nx*ny;
     Grid newgrid = new Grid(nx, ny, xmin, xmax, ymin, ymax);
     if(grid!=null) {
@@ -180,14 +182,24 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
       newgrid.setColor(Color.pink);
     }
     grid = newgrid;
-    ComponentColorModel ccm = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_GRAY), new int[] {16}, false, // hasAlpha
-      false, // alspha premultiplied
-        Transparency.OPAQUE, DataBuffer.TYPE_USHORT);
-    ComponentSampleModel csm = new ComponentSampleModel(DataBuffer.TYPE_USHORT, nx, ny, 1, nx, new int[] {0});
-    bwData = new short[size];
-    DataBuffer databuffer = new DataBufferUShort(bwData, size);
-    WritableRaster raster = Raster.createWritableRaster(csm, databuffer, new Point(0, 0));
-    image = new BufferedImage(ccm, raster, true, null);
+    // BH 2020.02.29 just keeping this simple. It is better 
+    // and simpler to let Java manage the buffer. This is exactly the
+    // same operation.
+//    ComponentColorModel ccm = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_GRAY), new int[] {16}, 
+//    		false, // hasAlpha
+//    		// BH note: since hasAlpha is false here, both of the next
+//    		// two fields are ignored, set to false and Transparency.OPAQUE, as you have here.
+//    			false, // alpha premultiplied
+//    			Transparency.OPAQUE, 
+//    		DataBuffer.TYPE_USHORT);
+//    ComponentSampleModel csm = new ComponentSampleModel(DataBuffer.TYPE_USHORT, nx, ny, 1, nx, new int[] {0});
+//    bwData = new short[size];
+//    DataBuffer databuffer = new DataBufferUShort(bwData, size);
+//    WritableRaster raster = Raster.createWritableRaster(csm, databuffer, new Point(0, 0));
+//    image = new BufferedImage(ccm, raster, true, null);
+    image = new BufferedImage(ny, nx, BufferedImage.TYPE_USHORT_GRAY);
+    bwData = ((DataBufferUShort) image.getRaster().getDataBuffer()).getData();
+       
     xmin = griddata.getLeft();
     xmax = griddata.getRight();
     ymin = griddata.getBottom();
@@ -360,68 +372,106 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
     ampIndex = indexes[0];
   }
 
-  /**
-   * Recolors the image pixels using the data array.
-   */
-  protected void recolorImage() {
-    if(griddata==null) {
-      return;
-    }
-    if(griddata.isCellData()) {
-      double dx = griddata.getDx();
-      double dy = griddata.getDy();
-      xmin = griddata.getLeft()-dx/2;
-      xmax = griddata.getRight()+dx/2;
-      ymin = griddata.getBottom()+dy/2;
-      ymax = griddata.getTop()-dy/2;
-    } else {
-      xmin = griddata.getLeft();
-      xmax = griddata.getRight();
-      ymin = griddata.getBottom();
-      ymax = griddata.getTop();
-    }
-    grid.setMinMax(xmin, xmax, ymin, ymax);
-    double[][][] data = griddata.getData();
-    int nx = griddata.getNx();
-    int ny = griddata.getNy();
-    double zscale = 2*Short.MAX_VALUE/(ceil-floor);
-    if(griddata instanceof GridPointData) {
-      int index = ampIndex+2;
-      for(int ix = 0; ix<nx; ix++) {
-        for(int iy = 0; iy<ny; iy++) {
-          double val = data[ix][iy][index];
-          if(zMap!=null) {
-            val = zMap.evaluate(val);
-          }
-          val = zscale*(val-floor);
-          if(val<0) {
-            bwData[iy*nx+ix] = 0;
-          } else if(val>2*Short.MAX_VALUE) {
-            bwData[iy*nx+ix] = (short) (2*Short.MAX_VALUE);
-          } else {
-            bwData[iy*nx+ix] = (short) val;
-          }
-        }
-      }
-    } else if(griddata instanceof ArrayData) {
-      for(int ix = 0; ix<nx; ix++) {
-        for(int iy = 0; iy<ny; iy++) {
-          double val = data[ampIndex][ix][iy];
-          if(zMap!=null) {
-            val = zMap.evaluate(val);
-          }
-          val = zscale*(val-floor);
-          if(val<0) {
-            bwData[iy*nx+ix] = 0;
-          } else if(val>2*Short.MAX_VALUE) {
-            bwData[iy*nx+ix] = (short) (2*Short.MAX_VALUE);
-          } else {
-            bwData[iy*nx+ix] = (short) val;
-          }
-        }
-      }
-    }
-  }
+	/**
+	 * Recolors the image pixels using the data array.
+	 */
+	protected void recolorImage() {
+		if (griddata == null) {
+			return;
+		}
+		if (griddata.isCellData()) {
+			double dx = griddata.getDx();
+			double dy = griddata.getDy();
+			xmin = griddata.getLeft() - dx / 2;
+			xmax = griddata.getRight() + dx / 2;
+			ymin = griddata.getBottom() + dy / 2;
+			ymax = griddata.getTop() - dy / 2;
+		} else {
+			xmin = griddata.getLeft();
+			xmax = griddata.getRight();
+			ymin = griddata.getBottom();
+			ymax = griddata.getTop();
+		}
+		grid.setMinMax(xmin, xmax, ymin, ymax);
+		double[][][] data = griddata.getData();
+		int nx = griddata.getNx();
+		int ny = griddata.getNy();
+		double zscale = 2 * Short.MAX_VALUE / (ceil - floor);
+		if (griddata instanceof GridPointData) {
+			int index = ampIndex + 2;
+			// BH note -- this is inverted from standard practice
+			// of scanning rows slowly and columns more quickly.
+			// I am reversing this so that columns are inside, allowing for
+			// a simple pointer description
+//      for(int ix = 0, pt = 0; ix<nx; ix++) {
+//        for(int iy = 0; iy<ny; iy++, pt++) {
+//          double val = data[ix][iy][index];
+//          if(zMap!=null) {
+//            val = zMap.evaluate(val);
+//          }
+//          val = zscale*(val-floor);
+//          if(val<0) {
+//            bwData[iy*nx+ix] = 0;
+//          } else if(val>2*Short.MAX_VALUE) {
+//            bwData[iy*nx+ix] = (short) (2*Short.MAX_VALUE);
+//          } else {
+//            bwData[iy*nx+ix] = (short) val;
+//          }
+//        }
+//      }
+			for (int iy = 0, pt = 0; iy < ny; iy++) {
+				for (int ix = 0; ix < nx; ix++, pt++) {
+					double val = data[ix][iy][index];
+					if (zMap != null) {
+						val = zMap.evaluate(val);
+					}
+					val = zscale * (val - floor);
+					if (val < 0) {
+						bwData[pt] = 0;
+					} else if (val > 2 * Short.MAX_VALUE) {
+						// BH just being clear that this is FFFE
+						bwData[pt] = -1;//(short) 0xFFFF;//-2;//(short) (2 * Short.MAX_VALUE);
+					} else {
+						bwData[pt] = (short) val;
+					}
+				}
+			}
+		} else if (griddata instanceof ArrayData) {
+//			for (int ix = 0; ix < nx; ix++) {
+//				for (int iy = 0; iy < ny; iy++) {
+//					double val = data[ampIndex][ix][iy];
+//					if (zMap != null) {
+//						val = zMap.evaluate(val);
+//					}
+//					val = zscale * (val - floor);
+//					if (val < 0) {
+//						bwData[iy * nx + ix] = 0;
+//					} else if (val > 2 * Short.MAX_VALUE) {
+//						bwData[iy * nx + ix] = (short) (2 * Short.MAX_VALUE);
+//					} else {
+//						bwData[iy * nx + ix] = (short) val;
+//					}
+//				}
+//			}
+				for (int iy = 0, pt = 0; iy < ny; iy++) {
+					for (int ix = 0; ix < nx; ix++, pt++) {
+					double val = data[ampIndex][ix][iy];
+					if (zMap != null) {
+						val = zMap.evaluate(val);
+					}
+					val = zscale * (val - floor);
+					if (val < 0) {
+						bwData[pt] = 0;
+					} else if (val > 2 * Short.MAX_VALUE) {
+						// BH just being clear that this is FFFE
+						bwData[pt] = -1;//-2;//(short) (2 * Short.MAX_VALUE);
+					} else {
+						bwData[pt] = (short) val;
+					}
+				}
+			}
+		}
+	}
 
   /**
    * Draws the image and the grid.
