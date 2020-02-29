@@ -70,6 +70,7 @@ import org.opensourcephysics.display.OSPFrame;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.PrintUtils;
 import org.opensourcephysics.ejs.EjsRes;
+import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.Job;
 import org.opensourcephysics.tools.LocalJob;
@@ -227,7 +228,7 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
     fileMenu.add(saveAsItem);
     fileMenu.add(inspectItem);
     fileMenu.add(clearItem);
-    fileMenu.add(printMenu);
+    if(!JSUtil.isJS)fileMenu.add(printMenu);
     printMenu.add(printFrameItem);
     printMenu.add(saveFrameAsEPSItem);
     readItem.setAccelerator(KeyStroke.getKeyStroke('R', MENU_SHORTCUT_KEY_MASK));
@@ -432,7 +433,7 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
       });
     }
     translateItem.setEnabled(OSPRuntime.getTranslator()!=null);
-    languageMenu.add(translateItem, 0);
+    if(!JSUtil.isJS)languageMenu.add(translateItem, 0);
     final Locale[] locales = OSPRuntime.getInstalledLocales();
     Action languageAction = new AbstractAction() {
       public void actionPerformed(ActionEvent e) {
@@ -461,7 +462,7 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
         languageItems[i].setSelected(true);
       }
     }
-    displayMenu.add(languageMenu);
+    if(!JSUtil.isJS)displayMenu.add(languageMenu);
     JMenu fontMenu = new JMenu(EjsRes.getString("EjsControlFrame.Font_menu")); //$NON-NLS-1$
     displayMenu.add(fontMenu);
     JMenuItem sizeUpItem = new JMenuItem();
@@ -483,7 +484,7 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
     });
     fontMenu.add(sizeDownItem);
     JMenu aliasMenu = new JMenu(EjsRes.getString("EjsControlFrame.AntiAlias_menu")); //$NON-NLS-1$
-    displayMenu.add(aliasMenu);
+    if(!JSUtil.isJS)displayMenu.add(aliasMenu);
     final JCheckBoxMenuItem textAliasItem = new JCheckBoxMenuItem(EjsRes.getString("EjsControlFrame.Text_check_box"), //$NON-NLS-1$
       false);
     textAliasItem.addActionListener(new ActionListener() {
@@ -508,7 +509,7 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
       }
 
     });
-    aliasMenu.addChangeListener(new ChangeListener() {
+    if(!JSUtil.isJS)aliasMenu.addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent e) {
         if(defaultDrawingPanel==null) {
           textAliasItem.setEnabled(false);

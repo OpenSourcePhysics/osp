@@ -767,7 +767,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
       fileMenu.add(saveXMLItem);
       //if(!JSUtil.isJS)
       	fileMenu.add(exportItem);
-      //if(!JSUtil.isJS)
+      if(!JSUtil.isJS)
       	fileMenu.add(saveImage);
     //}
     fileMenu.add(inspectItem);
@@ -888,7 +888,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 
     });
     JMenu aliasMenu = new JMenu(DisplayRes.getString("DrawingFrame.AntiAlias_menu_title")); //$NON-NLS-1$
-    displayMenu.add(aliasMenu);
+    if(!JSUtil.isJS) displayMenu.add(aliasMenu);
     final JCheckBoxMenuItem textAliasItem = new JCheckBoxMenuItem(DisplayRes.getString("DrawingFrame.Text_checkbox_label"), false); //$NON-NLS-1$
     textAliasItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -962,7 +962,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     });
     // create Fourier Tool menu item if the tool exists in the classpath
     JMenuItem fourierToolItem = new JMenuItem(DisplayRes.getString("DrawingFrame.FourierTool_menu_item")); //$NON-NLS-1$
-    toolsMenu.add(fourierToolItem);
+    if(!JSUtil.isJS) toolsMenu.add(fourierToolItem);
     Class<?> fourierToolClass = null;
     if(OSPRuntime.loadFourierTool) {
       try {
@@ -990,10 +990,10 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     });
     // create snapshot menu item
     JMenuItem snapshotItem = new JMenuItem(DisplayRes.getString("DisplayPanel.Snapshot_menu_item")); //$NON-NLS-1$
-    if(OSPRuntime.applet==null) {
+    if(OSPRuntime.applet==null && !JSUtil.isJS ) {
       toolsMenu.add(snapshotItem);
     }
-    snapshotItem.addActionListener(new ActionListener() {
+    if(!JSUtil.isJS) snapshotItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         SnapshotTool tool = SnapshotTool.getTool();
         if(drawingPanel!=null) {
