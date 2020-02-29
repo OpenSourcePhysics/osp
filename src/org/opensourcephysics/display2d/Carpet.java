@@ -7,6 +7,13 @@
 
 package org.opensourcephysics.display2d;
 
+/**
+ * Real version of ComplexCarpet
+ * 
+ * not tested
+ * 
+ *
+ */
 public class Carpet extends InterpolatedPlot {
 	/**
 	 * Constructor Carpet
