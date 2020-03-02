@@ -81,7 +81,7 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
   private Locale locale = Locale.getDefault();
   private Set<Class<?>> searched = new HashSet<Class<?>>();                      // classes searched for translations
   private Map<Class<?>, String> paths = new HashMap<Class<?>, String>();				 // property file directory paths
-  private String helpURL = "http://www.opensourcephysics.org/online_help/tools/translator_tool_help.html"; //$NON-NLS-1$
+  private String helpURL = "https://www.compadre.org/online_help/tools/translator_tool_help.html"; //$NON-NLS-1$
   private boolean keepHidden = false;
   private XMLControl control = new XMLControlElement();
   private XMLTable table;

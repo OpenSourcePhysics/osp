@@ -93,7 +93,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
   protected JPanel buttonbar = new JPanel(new FlowLayout());
   protected Component[] toolbarComponents;                                                  // may be null
   protected String helpPath = "";                                                     //$NON-NLS-1$
-  protected String helpBase = "http://www.opensourcephysics.org/online_help/tools/";  //$NON-NLS-1$
+  protected String helpBase = "https://www.compadre.org/online_help/tools/";  //$NON-NLS-1$
   protected TextFrame helpFrame;
   protected JDialog helpDialog;
   protected ActionListener helpAction;

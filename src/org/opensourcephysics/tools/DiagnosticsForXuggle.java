@@ -27,7 +27,7 @@ import org.opensourcephysics.media.core.VideoIO;
 public class DiagnosticsForXuggle {
 	
   @SuppressWarnings("javadoc")
-	public static final String XUGGLE_INSTALLER_URL ="http://www.compadre.org/osp/items/detail.cfm?ID=11606"; //$NON-NLS-1$
+	public static final String XUGGLE_INSTALLER_URL ="https://www.compadre.org/osp/items/detail.cfm?ID=11606"; //$NON-NLS-1$
 	public static final String REQUEST_TRACKER = "Tracker"; //$NON-NLS-1$
 	public static final long XUGGLE_54_FILE_LENGTH = 1000000; // smaller than ver 5.4 (38MB) but bigger than 3.4 (.35MB)
 	

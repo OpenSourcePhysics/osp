@@ -66,7 +66,7 @@ public class LibraryBrowser extends JPanel {
 	protected static final String MY_LIBRARY_NAME = "my_library.xml"; //$NON-NLS-1$
 	protected static final String MY_COLLECTION_NAME = "my_collection.xml"; //$NON-NLS-1$
 	protected static final String LIBRARY_HELP_NAME = "library_browser_help.html"; //$NON-NLS-1$
-	protected static final String LIBRARY_HELP_BASE = "http://www.opensourcephysics.org/online_help/tools/"; //$NON-NLS-1$
+	protected static final String LIBRARY_HELP_BASE = "https://www.compadre.org/online_help/tools/"; //$NON-NLS-1$
 	protected static final String WINDOWS_OSP_DIRECTORY = "/My Documents/OSP/"; //$NON-NLS-1$
 	protected static final String OSP_DIRECTORY = "/Documents/OSP/"; //$NON-NLS-1$
 	  
@@ -888,7 +888,7 @@ public class LibraryBrowser extends JPanel {
     		String xmlPath = path;
         
         // if path has no extension, look for xml file with same name
-        if (!path.startsWith("http://www.compadre.org/OSP/") //$NON-NLS-1$
+        if (!path.startsWith("https://www.compadre.org/OSP/") //$NON-NLS-1$
         		&& XML.getExtension(path)==null) {
       		while (xmlPath.endsWith("/")) //$NON-NLS-1$
       			xmlPath = xmlPath.substring(0, xmlPath.length()-1);
@@ -2234,9 +2234,9 @@ public class LibraryBrowser extends JPanel {
 	  	"<p>The ComPADRE Pathway, a part of the National Science Digital Library, is a growing network of educational resource "+ //$NON-NLS-1$
 	  	"collections supporting teachers and students in Physics and Astronomy. As a user you may explore collections designed to meet "+ //$NON-NLS-1$
 	  	"your specific needs and help build the network by recommending resources, commenting on resources, and starting or joining "+ //$NON-NLS-1$
-	  	"discussions. For more information, see &lt;<b><a href=\"http://www.compadre.org/OSP/\">http://www.compadre.org/OSP/</a></b>&gt;. "+ //$NON-NLS-1$
+	  	"discussions. For more information, see &lt;<b><a href=\"https://www.compadre.org/OSP/\">http://www.compadre.org/OSP/</a></b>&gt;. "+ //$NON-NLS-1$
 	  	"To recommend an OSP resource for ComPADRE, visit the Suggest a Resource page at &lt;<b><a href="+ //$NON-NLS-1$
-	  	"\"http://www.compadre.org/osp/items/suggest.cfm\">http://www.compadre.org/osp/items/suggest.cfm</a></b>&gt;.&nbsp; "+ //$NON-NLS-1$
+	  	"\"https://www.compadre.org/osp/items/suggest.cfm\">http://www.compadre.org/osp/items/suggest.cfm</a></b>&gt;.&nbsp; "+ //$NON-NLS-1$
 	  	"Contact the OSP Collection editor, Wolfgang Christian, for additional information.</p>"; //$NON-NLS-1$
   	return code;
   }
@@ -2296,14 +2296,12 @@ public class LibraryBrowser extends JPanel {
    */
   class LibraryLoader extends SwingWorker<Library, Object> {
   	
-    protected static final String WEB_CONNECTED_TEST_URL = "https://www.google.com"; // was "http://www.opensourcephysics.org" but that has CORS problems
-
 	@Override
     public Library doInBackground() {
  	  	Runnable runner = new Runnable() {
  	  		public void run() {
  	  			// BH 
-		  		webConnected = ResourceLoader.isURLAvailable(WEB_CONNECTED_TEST_URL); //$NON-NLS-1$
+		  		webConnected = ResourceLoader.isURLAvailable(ResourceLoader.WEB_CONNECTED_TEST_URL); //$NON-NLS-1$
 		    	if (!webConnected) {
 		    		JOptionPane.showMessageDialog(LibraryBrowser.this, 
 		    				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$

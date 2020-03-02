@@ -68,6 +68,8 @@ public class ResourceLoader {
   
   public static final String TRACKER_TEST_URL = null; // needed for tracker
 
+  protected static final String WEB_CONNECTED_TEST_URL = "https://www.compadre.org/osp/";
+
   protected static ArrayList<String> searchPaths = new ArrayList<String>();                        // search paths
   protected static ArrayList<String> appletSearchPaths = new ArrayList<String>();                  // search paths for apples
   protected static int maxPaths = 20;                                                              // max number of paths in history
@@ -90,7 +92,7 @@ public class ResourceLoader {
   	};
   	Runnable runner = new Runnable() {
   		public void run() {
-	  		webConnected = ResourceLoader.isURLAvailable("http://www.opensourcephysics.org"); //$NON-NLS-1$
+	  		webConnected = ResourceLoader.isURLAvailable(WEB_CONNECTED_TEST_URL);//.http://www.opensourcephysics.org"); //$NON-NLS-1$
   		}
   	};
   	new Thread(runner).start();
@@ -848,7 +850,7 @@ public class ResourceLoader {
   	File target = getOSPCacheFile(urlPath, fileName);
 		File file = ResourceLoader.download(urlPath, target, alwaysOverwrite);
 		if (file==null && webConnected) {
-  		webConnected = ResourceLoader.isURLAvailable("http://www.opensourcephysics.org"); //$NON-NLS-1$
+  		webConnected = ResourceLoader.isURLAvailable(WEB_CONNECTED_TEST_URL); //$NON-NLS-1$
     	if (!webConnected) {
     		JOptionPane.showMessageDialog(null, 
     				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
@@ -1242,7 +1244,7 @@ public class ResourceLoader {
 		if (target==null || target.getParentFile()==null) return null;
   	// compare urlPath with previous attempt and, if identical, check web connection
   	if (!webConnected || downloadURL.equals(urlPath)) {
-  		webConnected = ResourceLoader.isURLAvailable("http://www.opensourcephysics.org"); //$NON-NLS-1$
+  		webConnected = ResourceLoader.isURLAvailable(WEB_CONNECTED_TEST_URL); //$NON-NLS-1$
   	}
   	if (!webConnected) {
   		JOptionPane.showMessageDialog(null, 
@@ -1331,6 +1333,8 @@ public class ResourceLoader {
    * @return true if available
    */
   public static boolean isURLAvailable(String urlPath) {
+	  if (JSUtil.isJS)// BH 2020.03.02 trying this to see if it is reasonable
+		  urlPath = "https://www.google.com";
 	  try {
       // make a URL, open a connection, get content
       URL url = new URL(urlPath);

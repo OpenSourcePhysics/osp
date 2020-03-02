@@ -29,7 +29,7 @@ import org.opensourcephysics.display.OSPRuntime;
  */
 public class Diagnostics {
 	
-	public static final String TRACKER_INSTALLER_URL ="http://www.compadre.org/osp/items/detail.cfm?ID=7365"; //$NON-NLS-1$
+	public static final String TRACKER_INSTALLER_URL ="https://www.compadre.org/osp/items/detail.cfm?ID=7365"; //$NON-NLS-1$
 	
 	final static String JAVA_3D_URL = "http://java3d.java.net/binary-builds.html"; //$NON-NLS-1$
   final static String NEWLINE = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$

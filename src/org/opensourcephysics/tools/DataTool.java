@@ -103,7 +103,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 //  protected static String helpName = "data_tool_help.html";                                 //$NON-NLS-1$
 //  protected static String helpBase = "http://www.opensourcephysics.org/online_help/tools/"; //$NON-NLS-1$
   protected static String helpName = "datatool/datatool_help.html";                                 //$NON-NLS-1$
-  protected static String helpBase = "http://www.compadre.org/osp/online_help/tools/"; //$NON-NLS-1$
+  protected static String helpBase = "https://www.compadre.org/osp/online_help/tools/"; //$NON-NLS-1$
   private static ArrayList<Data> processedData = new ArrayList<Data>();
   
   // instance fields
