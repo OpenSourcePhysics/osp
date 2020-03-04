@@ -130,7 +130,7 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
     if(!visible) {
       return;
     }
-    if (!OSPRuntime.isMac()) {  //Rendering hint bug in Mac Snow Leopard 
+    if (OSPRuntime.setRenderingHints) {  //Rendering hint bug in Mac Snow Leopard 
       Graphics2D g2 = ((Graphics2D) g);
       g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
       g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);

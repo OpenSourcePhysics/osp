@@ -39,21 +39,11 @@ import org.opensourcephysics.display.axes.XYAxis;
  * @created    May 21, 2003
  * @version    1.0
  */
-public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
+public class CellLatticeOSX extends Grid implements Measurable, CellLattice.OSLattice {
   boolean visible = true; // shadow super.visible
   Color[] colors = new Color[256];
   byte[][] data;
   private JFrame legendFrame;
-
-  /**
-   * Constructs a cell lattice.
-   *
-   * Cell values are -128 to 127.
-   *
-   */
-  public CellLatticeOSX() {
-    this(1, 1);
-  }
 
   /**
    *  Constructs a Cell lattice with the given size. Site values are -128 to 127.
