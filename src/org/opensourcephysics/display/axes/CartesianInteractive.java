@@ -632,7 +632,6 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
         scaleSetter.hideIfInactive();
       }
       drawHitRect = ((mouseRegion==HORZ_VAR)||(mouseRegion==VERT_VAR));
-      plot.repaint();
     }
 
     public void mouseDragged(MouseEvent e) {
