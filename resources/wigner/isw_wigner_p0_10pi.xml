@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object class="org.opensourcephysics.controls.OSPApplication">
+    <property name="control" type="object">
+    <object class="org.opensourcephysics.controls.AnimationControl">
+        <property name="initialize_mode" type="boolean">false</property>
+        <property name="numpts" type="string">160</property>
+        <property name="gutter points" type="string">25</property>
+        <property name="psi range" type="string">5</property>
+        <property name="p range" type="string">66</property>
+        <property name="dt" type="string">0.001</property>
+        <property name="x min" type="string">-0.5</property>
+        <property name="x max" type="string">0.5</property>
+        <property name="re coef" type="string">{0.06586115614516679,0,-0.11114208594066549,0,0.19241880621059887,0,-0.2838059822897801,0,0.3454414502184544,0,-0.34540017599657064,0,0.28352349305595403,0,-0.1910449051150776,0,0.10567115084668113,0,-0.047979005258334546,0,0.017882151249052954,0,-0.00547094055510861,0,0.0013739721617562247,0,-0.0002832484732433854,0,0.00004793259270177153}</property>
+        <property name="im coef" type="string">{0,-0.06284454506131405,0,0.14282342912722704,0,-0.2379094555842968,0,0.32063068544582574,0,-0.3540034590037845,0,0.3207478113214524,0,-0.23854864092112943,0,0.14563359937348308,0,-0.07298264589138521,0,0.030022806390599822,0,-0.010138102231838995,0,0.002810190437195622,0,-0.000639423424307231,0,0.00011943044174913173,0,-0.000018311133756296}</property>
+        <property name="V(x)" type="string">well</property>
+        <property name="energy scale" type="string">2/pi</property>
+        <property name="time format" type="string">0.000</property>
+        <property name="style" type="string">ampwithphase</property>
+        <property name="hide frame" type="boolean">false</property>
+    </object>
+    </property>
+    <property name="model" type="object">
+    <object class="org.opensourcephysics.davidson.qm.QMSuperpositionWignerApp"/>
+    </property>
+</object>
