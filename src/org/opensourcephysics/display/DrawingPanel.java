@@ -787,11 +787,11 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
    * @param g
    */
   protected void paintEverything(Graphics g) {
-	  RECORD_PAINT_TIMES = true;
+	  RECORD_PAINT_TIMES = false;
 	  
     if(RECORD_PAINT_TIMES) {
       long time = System.currentTimeMillis();
-      System.out.println("elapsed time(s)="+((int) (time-currentTime)/1000.0)); //$NON-NLS-1$
+      System.out.println("DrawingPanel elapsed time(s)="+((int) (time-currentTime)/1000.0)); //$NON-NLS-1$
       currentTime = time;
     }
     // the following statement has been moved to paintComponent
@@ -800,7 +800,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     ArrayList<Drawable> tempList = getDrawables(); // holds a clone of the drawable object list
     scale(tempList); // sets the world-coordinate scale based on the autoscale values
     setPixelScale(); // sets the pixel scale and the world-to-pixel affine transformation matrix
-	if (!JSUtil.isJS && !OSPRuntime.isMac()) {  //Rendering hint bug in Mac Snow Leopard 
+	if (!JSUtil.isJS && OSPRuntime.setRenderingHints) {  //Rendering hint bug in Mac Snow Leopard 
 		if (antialiasTextOn) {
 			((Graphics2D) g).setRenderingHint(
 					RenderingHints.KEY_TEXT_ANTIALIASING,
@@ -834,7 +834,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     }
     paintLast(g); // does nothing yet but can be used to add a legend, etc
     if(RECORD_PAINT_TIMES) {
-      System.out.println("paint time (ms)="+(int) (System.currentTimeMillis()-currentTime)+'\n'); //$NON-NLS-1$
+      System.out.println("DrawingPanel paint time (ms)="+(int) (System.currentTimeMillis()-currentTime)+'\n'); //$NON-NLS-1$
     }
   }
 
@@ -1605,9 +1605,8 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     double ymax = -Double.MAX_VALUE;
     boolean measurableFound = false;
     ArrayList<Drawable> tempList = getDrawables(); // this clones the list of drawables
-    Iterator<Drawable> it = tempList.iterator();
-    while(it.hasNext()) {
-      Object obj = it.next();
+    for (int i = 0, n = tempList.size(); i < n; i++) {
+      Object obj = tempList.get(i);
       if(!(obj instanceof Measurable)||!((Measurable) obj).isMeasured()) {
         continue;               // object is not measurable or measure is not set
       }
@@ -1885,9 +1884,8 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     double newXMin = Double.MAX_VALUE;
     double newXMax = -Double.MAX_VALUE;
     boolean measurableFound = false;
-    Iterator<Drawable> it = tempList.iterator();
-    while(it.hasNext()) {
-      Object obj = it.next();
+    for (int i = 0, n = tempList.size(); i < n; i++) {
+      Object obj = tempList.get(i);
       if(!(obj instanceof Measurable)) {
         continue;               // object is not measurable
       }
@@ -1979,9 +1977,8 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     double newYMin = Double.MAX_VALUE;
     double newYMax = -Double.MAX_VALUE;
     boolean measurableFound = false;
-    Iterator<Drawable> it = tempList.iterator();
-    while(it.hasNext()) {
-      Object obj = it.next();
+    for (int i = 0, n = tempList.size(); i < n; i++) {
+        Object obj = tempList.get(i);
       if(!(obj instanceof Measurable)) {
         continue; // object is not measurable
       }
@@ -2074,22 +2071,20 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
       return;
     }
     Graphics2D g2 = (Graphics2D) g.create();
-    Iterator<Drawable> it = tempList.iterator();
     if(clipAtGutter) {
       g2.clipRect(leftGutter, topGutter, w, h);
     }
     if(!tempList.isEmpty()&&(tempList.get(0) instanceof False3D)) {
       tempList.get(0).draw(this, g2);
     } else {
-      while(it.hasNext()) {
+        for (int i = 0, n = tempList.size(); i < n; i++) {
         if(!validImage) {
           break; // abort drawing
         }
-        Drawable drawable = it.next();
-        drawable.draw(this, g2);
+        tempList.get(i).draw(this, g2);
       }
     }
-    if(JSUtil.isJS)messages.draw(this, g);  // do not use Glass Panel in JS
+    if(JSUtil.isJS)messages.draw(this, g2);  // do not use Glass Panel in JS
     g2.dispose(); // BH 2020.02.26
   }
 

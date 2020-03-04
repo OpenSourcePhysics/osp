@@ -30,6 +30,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
+
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputAdapter;
@@ -375,18 +377,19 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
     return workingImage;
   }
 
-  /**
-   * Whether the image is dirty or any of the elements has changed
-   * @return boolean
-   */
-  private final boolean needsUpdate() {
-    for(Iterator<Element> it = elementList.iterator(); it.hasNext(); ) {
-      if((it.next()).getElementChanged()) {
-        return true;
-      }
-    }
-    return false;
-  }
+	/**
+	 * Whether the image is dirty or any of the elements has changed
+	 * 
+	 * @return boolean
+	 */
+	private final boolean needsUpdate() {
+		for (int i = elementList.size(); --i >= 0;) {
+			if (elementList.get(i).getElementChanged()) {
+				return true;
+			}
+		}
+		return false;
+	}
 
   /**
    * Checks the image to see if the working image has the correct Dimension.
@@ -505,14 +508,15 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
     }
   }
 
+  private double[] firstPoint = new double[3], secondPoint = new double[3];
+
   public void zoomToFit() {
     double minX = Double.POSITIVE_INFINITY, maxX = Double.NEGATIVE_INFINITY;
     double minY = Double.POSITIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY;
     double minZ = Double.POSITIVE_INFINITY, maxZ = Double.NEGATIVE_INFINITY;
-    double[] firstPoint = new double[3], secondPoint = new double[3];
-    Iterator<org.opensourcephysics.display3d.core.Element> it = getElements().iterator();
-    while(it.hasNext()) {
-      ((org.opensourcephysics.display3d.simple3d.Element) it.next()).getExtrema(firstPoint, secondPoint);
+    List<org.opensourcephysics.display3d.core.Element> e = getElements();
+    for (int i = e.size(); --i >= 0;) {
+      ((Element) e.get(i)).getExtrema(firstPoint, secondPoint);
       minX = Math.min(Math.min(minX, firstPoint[0]), secondPoint[0]);
       maxX = Math.max(Math.max(maxX, firstPoint[0]), secondPoint[0]);
       minY = Math.min(Math.min(minY, firstPoint[1]), secondPoint[1]);
@@ -784,39 +788,38 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
     paintDrawableList(g, tempList);
   }
 
-  private void paintDrawableList(Graphics g, java.util.List<org.opensourcephysics.display3d.core.Element> tempList) {
-    Graphics2D g2 = (Graphics2D) g;
-    Iterator<org.opensourcephysics.display3d.core.Element> it = tempList.iterator();
-    if(quickRedrawOn||!visHints.isRemoveHiddenLines()) { // Do a quick sketch of the scene
-      while(it.hasNext()) {
-        ((Element) it.next()).drawQuickly(g2);
-      }
-      return;
-    }
-    // Collect objects, sort and draw them one by one. Takes time!!!
-    list3D.clear();
-    while(it.hasNext()) { // Collect all Objects3D
-      Object3D[] objects = ((Element) it.next()).getObjects3D();
-      if(objects==null) {
-        continue;
-      }
-      for(int i = 0, n = objects.length; i<n; i++) {
-        // providing NaN as distance can be used by Drawables3D to hide a given Object3D
-        if(!Double.isNaN(objects[i].getDistance())) {
-          list3D.add(objects[i]);
-        }
-      }
-    }
-    if(list3D.size()<=0) {
-      return;
-    }
-    Object3D[] objects = list3D.toArray(new Object3D[0]);
-    Arrays.sort(objects, comparator);
-    for(int i = 0, n = objects.length; i<n; i++) {
-      Object3D obj = objects[i];
-      obj.getElement().draw(g2, obj.getIndex());
-    }
-  }
+	private void paintDrawableList(Graphics g, java.util.List<org.opensourcephysics.display3d.core.Element> tempList) {
+		Graphics2D g2 = (Graphics2D) g;
+		if (quickRedrawOn || !visHints.isRemoveHiddenLines()) { // Do a quick sketch of the scene
+			for (int i = 0, n = tempList.size(); i < n; i++) {
+				((Element) tempList.get(i)).drawQuickly(g2);
+			}
+			return;
+		}
+		// Collect objects, sort and draw them one by one. Takes time!!!
+		list3D.clear();
+		for (int ii = 0, nn = tempList.size(); ii < nn; ii++) {
+			Object3D[] objects = ((Element) tempList.get(ii)).getObjects3D();
+			if (objects == null) {
+				continue;
+			}
+			for (int i = 0, n = objects.length; i < n; i++) {
+				// providing NaN as distance can be used by Drawables3D to hide a given Object3D
+				if (!Double.isNaN(objects[i].getDistance())) {
+					list3D.add(objects[i]);
+				}
+			}
+		}
+		if (list3D.size() <= 0) {
+			return;
+		}
+		Object3D[] objects = list3D.toArray(new Object3D[0]);
+		Arrays.sort(objects, comparator);
+		for (int i = 0, n = objects.length; i < n; i++) {
+			Object3D obj = objects[i];
+			obj.getElement().draw(g2, obj.getIndex());
+		}
+	}
 
   // ----------------------------------------------------
   // Printable interface
@@ -1069,16 +1072,15 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
   }
 
   private void reportTheNeedToProject() {
-    Iterator<org.opensourcephysics.display3d.core.Element> it = getElements().iterator();
-    while(it.hasNext()) {
-      ((Element) it.next()).setNeedToProject(true);
-    }
-    it = new ArrayList<org.opensourcephysics.display3d.core.Element>(decorationList).iterator();
-    while(it.hasNext()) {
-      ((Element) it.next()).setNeedToProject(true);
-    }
+	setToProject(getElements());
+	setToProject(decorationList);
   }
 
+  private void setToProject(List<org.opensourcephysics.display3d.core.Element> elements) {
+	  for (int i = elements.size(); --i >= 0;)
+		  ((Element) elements.get(i)).setNeedToProject(true);
+  }
+  
   private void resetDecoration(double _dx, double _dy, double _dz) {
     boxSides[0].setXYZ(xmin, ymin, zmin);
     boxSides[0].setSizeXYZ(_dx, 0.0, 0.0);
@@ -1190,20 +1192,19 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
     }
   }
 
-  // ----------------------------------------------------
-  // Interaction
-  // ----------------------------------------------------
-  private InteractionTarget getTargetHit(int x, int y) {
-    Iterator<org.opensourcephysics.display3d.core.Element> it = getElements().iterator();
-    InteractionTarget target = null;
-    while(it.hasNext()) {
-      target = ((Element) it.next()).getTargetHit(x, y);
-      if(target!=null) {
-        return target;
-      }
-    }
-    return null;
-  }
+	// ----------------------------------------------------
+	// Interaction
+	// ----------------------------------------------------
+	private InteractionTarget getTargetHit(int x, int y) {
+		List<org.opensourcephysics.display3d.core.Element> e = getElements();
+		for (int i = 0, n = e.size(); i < n; i++) {
+			InteractionTarget target = ((Element) e.get(i)).getTargetHit(x, y);
+			if (target != null) {
+				return target;
+			}
+		}
+		return null;
+	}
 
   private void setMouseCursor(Cursor cursor) {
     Container c = getTopLevelAncestor();
