@@ -101,7 +101,6 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   protected static String[] delimiters = new String[] {" ", "\t", ",", ";"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
   protected static TextFrame helpFrame;
 //  protected static String helpName = "data_tool_help.html";                                 //$NON-NLS-1$
-//  protected static String helpBase = "http://www.opensourcephysics.org/online_help/tools/"; //$NON-NLS-1$
   protected static String helpName = "datatool/datatool_help.html";                                 //$NON-NLS-1$
   protected static String helpBase = "https://www.compadre.org/osp/online_help/tools/"; //$NON-NLS-1$
   private static ArrayList<Data> processedData = new ArrayList<Data>();
