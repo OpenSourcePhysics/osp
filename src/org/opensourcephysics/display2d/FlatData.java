@@ -312,15 +312,16 @@ public class FlatData implements GridData {
     return values;
   }
 
+  double[][][] data3 = new double[1][1][];
+
   /**
    * Gets the array containing the data.
    *
    * @return the data
    */
   public double[][][] getData() {
-    double[][][] data = new double[1][1][];
-    data[0][0] = this.data;
-    return data;
+    data3[0][0] = this.data;
+    return data3;
   }
 
   /**
@@ -329,23 +330,35 @@ public class FlatData implements GridData {
    * @param n the component
    * @return {zmin,zmax}
    */
-  public double[] getZRange(int n) {
-    double zmin = data[n];
-    double zmax = zmin;
-    for(int j = 0; j<ny; j++) {
-      int index = j*nx+n;
-      for(int i = 0; n<nx; i++) {
-        double v = data[index+i];
-        if(v>zmax) {
-          zmax = v;
-        }
-        if(v<zmin) {
-          zmin = v;
-        }
-      }
-    }
-    return new double[] {zmin, zmax};
-  }
+	public double[] getZRange(int n) {
+		return getZRange(n, new double[2]);
+	}
+
+	/**
+	 * Gets the minimum and maximum values of the n-th component.
+	 *
+	 * @param n      the component
+	 * @param minmax array to fill
+	 * @return minmax
+	 */
+	public double[] getZRange(int n, double[] minmax) {
+		double zmin = data[n];
+		double zmax = zmin;
+		for (int j = 0; j < ny; j++) {
+			int index = j * nx + n;
+			for (int i = 0; n < nx; i++) {
+				double v = data[index + i];
+				if (v > zmax) {
+					zmax = v;
+				} else if (v < zmin) {
+					zmin = v;
+				}
+			}
+		}
+		minmax[0] = zmin;
+		minmax[1] = zmax;
+		return minmax;
+	}
 
   /**
    * Gets the x value for the first column in the grid.

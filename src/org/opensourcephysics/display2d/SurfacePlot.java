@@ -1146,6 +1146,8 @@ public class SurfacePlot implements Plot2D, False3D {
     }
   }
 
+  double[] minmax = new double[2];
+
   /**
    * Updates the surface plot using the current data.
    */
@@ -1154,7 +1156,7 @@ public class SurfacePlot implements Plot2D, False3D {
       return;
     }
     if(autoscaleZ) {
-      double[] minmax = griddata.getZRange(ampIndex);
+      griddata.getZRange(ampIndex, minmax);
       if(symmetricZ){
           zmax=Math.max(Math.abs(minmax[1]),Math.abs(minmax[0]));
           zmin=-zmax;

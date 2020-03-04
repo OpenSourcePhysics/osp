@@ -104,6 +104,10 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
     reTrail.color = Color.RED;
     imTrail.color = Color.BLUE;
     initialSize = 10;
+    xpoints = new double[initialSize];
+    re_points = new double[initialSize];
+    im_points = new double[initialSize];
+    amp_points = new double[initialSize];
     xColumnName = "x";   //$NON-NLS-1$
     reColumnName = "re"; //$NON-NLS-1$
     imColumnName = "im"; //$NON-NLS-1$
@@ -715,10 +719,6 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
    */
   public void clear() {
     index = 0;
-    xpoints = new double[initialSize];
-    re_points = new double[initialSize];
-    im_points = new double[initialSize];
-    amp_points = new double[initialSize];
     ampPath.reset();
     reTrail.clear();
     imTrail.clear();

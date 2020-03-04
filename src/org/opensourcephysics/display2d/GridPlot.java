@@ -9,6 +9,8 @@ package org.opensourcephysics.display2d;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
+
 import javax.swing.JFrame;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
@@ -80,8 +82,7 @@ public class GridPlot extends MeasuredImage implements Plot2D {
     }
     int nx = griddata.getNx();
     int ny = griddata.getNy();
-    rgbData = new int[nx*ny];
-    image = new BufferedImage(nx, ny, BufferedImage.TYPE_INT_ARGB);
+    setImage(nx, ny);
     Grid newgrid = new Grid(nx, ny);
     newgrid.setColor(Color.lightGray);
     if(grid!=null) {
@@ -94,7 +95,12 @@ public class GridPlot extends MeasuredImage implements Plot2D {
     update();
   }
 
-  /**
+  private void setImage(int nx, int ny) {
+	    image = new BufferedImage(nx, ny, BufferedImage.TYPE_INT_ARGB);
+	    rgbData = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
+  }
+
+/**
    * Gets the x coordinate for the given index.
    *
    * @param i int
@@ -331,11 +337,11 @@ public class GridPlot extends MeasuredImage implements Plot2D {
       return;
     }
     if(autoscaleZ) {
-      double[] minmax = griddata.getZRange(ampIndex);
+      griddata.getZRange(ampIndex, minmax);
       double ceil = minmax[1];
       double floor = minmax[0];
       if(symmetricZ){
-        ceil=Math.max(Math.abs(minmax[1]),Math.abs(minmax[0]));
+        ceil=Math.max(Math.abs(ceil),Math.abs(floor));
         floor=-ceil;
       }
       colorMap.setScale(floor, ceil);
@@ -372,31 +378,28 @@ public class GridPlot extends MeasuredImage implements Plot2D {
     int ny = griddata.getNy();
     if(griddata instanceof GridPointData) {
       int index = ampIndex+2;
-      for(int j = 0, count = 0; j<ny; j++) {
-        for(int i = 0; i<nx; i++) {
-          rgbData[count] = colorMap.doubleToColor(data[i][j][index]).getRGB();
-          count++;
+      for(int j = 0, pt = 0; j<ny; j++) {
+        for(int i = 0; i<nx; i++, pt++) {
+          rgbData[pt] = colorMap.doubleToColor(data[i][j][index]).getRGB();
         }
       }
-      image.setRGB(0, 0, nx, ny, rgbData, 0, nx);
+//      image.setRGB(0, 0, nx, ny, rgbData, 0, nx);
     } else if(griddata instanceof ArrayData) {
-      for(int j = 0, count = 0; j<ny; j++) {
-        for(int i = 0; i<nx; i++) {
-          rgbData[count] = colorMap.doubleToColor(data[ampIndex][i][j]).getRGB();
-          count++;
+      for(int j = 0, pt = 0; j<ny; j++) {
+        for(int i = 0; i<nx; i++, pt++) {
+          rgbData[pt] = colorMap.doubleToColor(data[ampIndex][i][j]).getRGB();
         }
       }
-      image.setRGB(0, 0, nx, ny, rgbData, 0, nx);
+//      image.setRGB(0, 0, nx, ny, rgbData, 0, nx);
     } else if(griddata instanceof FlatData) {
       int stride = data[0][0].length/(nx*ny);
-      for(int j = 0, count = 0; j<ny; j++) {
+      for(int j = 0, pt = 0; j<ny; j++) {
         int offset = j*nx*stride;
-        for(int i = 0; i<nx; i++) {
-          rgbData[count] = colorMap.doubleToColor(data[0][0][offset+i*stride+ampIndex]).getRGB();
-          count++;
+        for(int i = 0; i<nx; i++, pt++) {
+          rgbData[pt] = colorMap.doubleToColor(data[0][0][offset+i*stride+ampIndex]).getRGB();
         }
       }
-      image.setRGB(0, 0, nx, ny, rgbData, 0, nx);
+//      image.setRGB(0, 0, nx, ny, rgbData, 0, nx);
     }
   }
 

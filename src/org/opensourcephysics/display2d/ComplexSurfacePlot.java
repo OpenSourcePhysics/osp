@@ -609,6 +609,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
   private final int poly_x[] = new int[9];
   private final int poly_y[] = new int[9];
 
+  private double[] samples = new double[3];
+
   /**
    * Plots a single plane
    *
@@ -616,7 +618,6 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    * @param verticescount number of vertices to process
    */
   private final void plotPlane(Graphics g, ComplexSurfaceVertex[] vertex, int verticescount) {
-    double[] samples = new double[3];
     int count, loop, index;
     double re, im, result;
     boolean low1, low2;
@@ -1183,6 +1184,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
     }
   }
 
+  private double[] minmax = new double[2];
+
   /**
    * Updates the surface plot using the current data.
    */
@@ -1191,7 +1194,7 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
       return;
     }
     if(autoscaleZ) {
-      double[] minmax = griddata.getZRange(ampIndex);
+        griddata.getZRange(ampIndex, minmax);
       if(symmetricZ){
     	 zmax=Math.max(Math.abs(minmax[1]),Math.abs(minmax[0]));
     	 zmin=-zmax;

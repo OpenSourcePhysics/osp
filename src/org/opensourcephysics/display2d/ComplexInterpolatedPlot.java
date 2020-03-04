@@ -38,9 +38,10 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
   Grid grid;
   ComplexColorMapper colorMap;
   boolean autoscaleZ = true;
-  int ampIndex = 0; // amplitude index
-  int reIndex = 1;  // real index
-  int imIndex = 2;  // imaginary index
+  private int ampIndex = 0; // amplitude index
+  private int reIndex = 1;  // real index
+  private int imIndex = 2;  // imaginary index
+  private int[] indexes = new int[] { ampIndex, reIndex, imIndex };
   int leftPix, rightPix, topPix, bottomPix;
   int ixsize, iysize;
   double top, left, bottom, right;
@@ -200,6 +201,7 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
     ampIndex = indexes[0];
     reIndex = indexes[1];
     imIndex = indexes[2];
+    indexes = new int[] { ampIndex, reIndex, imIndex };
   }
 
   /**
@@ -313,7 +315,7 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
    */
   public synchronized void update() {
     if(autoscaleZ&&(griddata!=null)) {
-      double[] minmax = griddata.getZRange(ampIndex);
+      griddata.getZRange(ampIndex, minmax);
       colorMap.setScale(minmax[1]);
     }
     recolorImage();
@@ -457,12 +459,12 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
 		writeToRaster(left, y, dx, dy);
 	}
 
+	private double[] samples = new double[3];
+	private byte[] tempRGB = new byte[3];
+
 	protected void writeToRaster(double x0, double y, double dx, double dy) {
 		int width = image.getWidth();
 		int height = image.getHeight();
-		double[] samples = new double[3];
-		int[] indexes = new int[] { ampIndex, reIndex, imIndex };
-		byte[] tempRGB = new byte[3];
 		byte[] pixels = pixelData;
 		boolean isABGR = (imageType == BufferedImage.TYPE_4BYTE_ABGR);
 		for (int j = 0; j < height; j++, y += dy) {

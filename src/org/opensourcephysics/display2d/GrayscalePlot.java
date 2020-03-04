@@ -345,7 +345,7 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
       return;
     }
     if(autoscaleZ) {
-      double[] minmax = griddata.getZRange(ampIndex);
+      griddata.getZRange(ampIndex, minmax);
       if(symmetricZ){
        	 ceil=Math.max(Math.abs(minmax[1]),Math.abs(minmax[0]));
        	 floor=-ceil;

@@ -273,7 +273,7 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
    */
   public void update() {
     if(autoscaleZ) {
-      double[] minmax = griddata.getZRange(ampIndex);
+        griddata.getZRange(ampIndex, minmax);
       colorMap.setScale(minmax[1]);
     }
     recolorImage();
@@ -293,6 +293,8 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
       colorMap.setZMap(null);
     }
   }
+
+  private double[] samples = new double[3];
 
   /**
    * Recolors the image pixels using the data array.
@@ -318,7 +320,6 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
     double[][][] data = griddata.getData();
     int nx = griddata.getNx();
     int ny = griddata.getNy();
-    double[] samples = new double[3];
     if(griddata instanceof GridPointData) {
       int ampIndex = this.ampIndex+2;
       int reIndex = this.reIndex+2;

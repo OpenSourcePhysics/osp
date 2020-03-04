@@ -213,10 +213,6 @@ public class FFT2DFrame extends DrawingFrame {
    *
    * @param nx int
    * @param ny int
-   * @param xmin double
-   * @param xmax double
-   * @param ymin double
-   * @param ymax double
    */
   private void resizeGrid(int nx, int ny) {
     fftData = new double[2*nx*ny];

@@ -394,13 +394,14 @@ public class ContourPlot implements Plot2D {
     }
     colorMap.updateLegend(zMap);
   }
-
+  
   /**
    * Updates the internal data by interpolating large grids onto a smaller array.
    */
   void updateInterpolated(GridData griddata) {
     if(autoscaleZ) {
-      double[] minmax = griddata.getZRange(ampIndex);
+    	
+      griddata.getZRange(ampIndex, minmax);
       if(symmetricZ){
      	 zmax=Math.max(Math.abs(minmax[1]),Math.abs(minmax[0]));
      	 zmin=-zmax;
@@ -428,6 +429,9 @@ public class ContourPlot implements Plot2D {
     }
   }
 
+  
+  double[] minmax = new double[2];
+
   /**
    * Updates the contour data my directly copying values.
    */
@@ -436,7 +440,7 @@ public class ContourPlot implements Plot2D {
       return;
     }
     if(autoscaleZ) {
-      double[] minmax = griddata.getZRange(ampIndex);
+      griddata.getZRange(ampIndex, minmax);
       if(symmetricZ){
       	 zmax=Math.max(Math.abs(minmax[1]),Math.abs(minmax[0]));
       	 zmin=-zmax;

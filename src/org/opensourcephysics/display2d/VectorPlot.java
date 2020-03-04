@@ -441,6 +441,8 @@ public class VectorPlot implements Plot2D {
     return colorMap.showLegend();
   }
 
+  double[] minmax = new double[2];
+
   /**
    * Updates the vector field using the data array.
    */
@@ -449,7 +451,7 @@ public class VectorPlot implements Plot2D {
       return;
     }
     if(autoscaleZ) {
-      double[] minmax = griddata.getZRange(ampIndex);
+      griddata.getZRange(ampIndex, minmax);
       colorMap.setScale(minmax[1]);
     }
     if(griddata.isCellData()) {

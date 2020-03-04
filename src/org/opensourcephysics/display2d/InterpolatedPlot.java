@@ -325,7 +325,7 @@ protected byte[] pixelData;
       return;
     }
     if(autoscaleZ) {
-      double[] minmax = griddata.getZRange(ampIndex);
+      griddata.getZRange(ampIndex, minmax);
       double ceil = minmax[1];
       double floor = minmax[0];
       if(symmetricZ){
@@ -441,13 +441,12 @@ protected byte[] pixelData;
   
   protected void writeToRoster(double x0, double y, double dx, double dy) {
 	    int width = image.getWidth();
-		byte[] tempRGB = new byte[3];
 		byte[] pixels = pixelData;
 		boolean isABGR = (imageType == BufferedImage.TYPE_4BYTE_ABGR);
 	    for(int i = 0, height = image.getHeight(); i<height; i++, y += dy) {
 	      double x = x0;
 	      for(int j = 0; j<width; j++, x += dx) {
-	        byte[] ret = colorMap.doubleToComponents(griddata.interpolate(x, y, ampIndex), tempRGB);
+	        byte[] ret = colorMap.doubleToComponents(griddata.interpolate(x, y, ampIndex));
 	        int pt = (i*width+j)<<2;
 			// note that -1 here will become UInt8 255 for the canvas by anding with 0xFF
 			if (isABGR) {

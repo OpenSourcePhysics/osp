@@ -37,6 +37,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.io.File;
 
 import javax.swing.JButton;
@@ -239,6 +240,7 @@ public class BaselineFilter extends Filter {
    * Sets the output to an image-subtracted version of the input.
    */
   private void subtractBaseline() {
+	  int[] pixels = ((DataBufferInt)input.getRaster().getDataBuffer()).getData();
     input.getRaster().getDataElements(0, 0, w, h, pixels);
     if(baseline!=null) {
       int pixel, base, r, g, b;
@@ -257,7 +259,7 @@ public class BaselineFilter extends Filter {
         pixels[i] = (r<<16)|(g<<8)|b;
       }
     }
-    output.getRaster().setDataElements(0, 0, w, h, pixels);
+    //output.getRaster().setDataElements(0, 0, w, h, pixels);
   }
 
   /**
