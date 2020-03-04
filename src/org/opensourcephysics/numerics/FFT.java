@@ -76,7 +76,8 @@ public class FFT {
     }
     this.n = n;
     norm = n;
-    scratch = new double[2*n];
+    if (scratch == null || scratch.length < 2 * n)
+    	scratch = new double[2*n];
     setup_wavetable(n);
   }
 
@@ -392,6 +393,8 @@ public class FFT {
    * The main transformation driver
    */
 
+  private double[] scratch1;
+
   /**
    * Method transform_internal
    *
@@ -404,7 +407,9 @@ public class FFT {
     if(n==1) {
       return; /* FFT of 1 data point is the identity */
     }
-    double scratch[] = new double[2*n];
+    //private 
+    if (scratch1 == null || scratch1.length < 2*n)
+    	 scratch1 = new double[2*n];
     int product = 1;
     int state = 0;
     double in[], out[];
@@ -417,12 +422,12 @@ public class FFT {
         in = data;
         in0 = i0;
         istride = stride;
-        out = scratch;
+        out = scratch1;
         out0 = 0;
         ostride = 2;
         state = 1;
       } else {
-        in = scratch;
+        in = scratch1;
         in0 = 0;
         istride = 2;
         out = data;
@@ -455,8 +460,8 @@ public class FFT {
     }
     if(state==1) { /* copy results back from scratch to data */
       for(int i = 0; i<n; i++) {
-        data[i0+stride*i] = scratch[2*i];
-        data[i0+stride*i+1] = scratch[2*i+1];
+        data[i0+stride*i] = scratch1[2*i];
+        data[i0+stride*i+1] = scratch1[2*i+1];
       }
     }
   }
