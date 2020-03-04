@@ -6,8 +6,11 @@
  */
 
 package org.opensourcephysics.ejs.control;
+import java.net.URL;
+
 import javax.swing.ImageIcon;
 
+import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.tools.ResourceLoader;
 
 /**
@@ -23,11 +26,15 @@ public class Utils {
     if(cacheImages.get(_filename)!=null) {
       return true;
     }
+    if (JSUtil.isJS && _codebase == null) {
+    	URL u = Utils.class.getClassLoader().getResource(_filename);
+    	return (u != null);
+    }
     if(_codebase!=null) {
       if(_codebase.startsWith("file:")) {              //$NON-NLS-1$
         _codebase = "file:///"+_codebase.substring(6); //$NON-NLS-1$
       }
-      if(!_codebase.endsWith("/")) {                   //$NON-NLS-1$
+      if(!_filename.startsWith("/") && !_codebase.endsWith("/")) {                   //$NON-NLS-1$
         _codebase += "/";                              //$NON-NLS-1$
       }
     }
