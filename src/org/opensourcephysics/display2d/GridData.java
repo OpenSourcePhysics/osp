@@ -155,6 +155,9 @@ public interface GridData {
    */
   public double[] getZRange(int n);
 
+  // BH 2020.03.04
+  public double[] getZRange(int n, double[] minmaz);
+
   /**
    * Gets the x value for the first column in the grid.
    * @return  the leftmost x value

@@ -31,9 +31,12 @@ public class ColorMapper {
   public static final int NORENDER = 8;      // special SurfacePlotter palette
   public static final int REDBLUE_SHADE = 9; // special SurfacePlotter palette
   private Color[] colors;
+  private byte[][] rgbs;
   private double floor, ceil;
-  private Color floorColor = Color.darkGray;
-  private Color ceilColor = Color.lightGray;
+  private Color floorColor;
+  private Color ceilColor;
+  private byte[] floorColorRGB;
+  private byte[] ceilColorRGB;
   private int numColors;
   private int paletteType;
   private JFrame legendFrame;
@@ -171,23 +174,21 @@ public class ColorMapper {
     }
   }
 
-  /**
-   * Converts a double to color components.
-   *
-   * @param value double
-   * @param rgb byte[]
-   * @return byte[]
-   */
-  public byte[] doubleToComponents(double value, byte[] rgb) {
-    if(zMap!=null) {
-      value = zMap.evaluate(value);
-    }
-    Color color = doubleToColor(value);
-    rgb[0] = (byte) color.getRed();
-    rgb[1] = (byte) color.getGreen();
-    rgb[2] = (byte) color.getBlue();
-    return rgb;
-  }
+	/**
+	 * Converts a double to color components.
+	 *
+	 * @param value double
+	 * @return byte[]
+	 */
+	public byte[] doubleToComponents(double value) {
+		if (zMap != null) {
+			value = zMap.evaluate(value);
+		}
+		int index = doubleToIndex(value);
+		return (index < 0 ? floorColorRGB 
+				: index >= colors.length ? ceilColorRGB
+				: rgbs[index]);
+	}
 
   /**
    * Converts a double to a color.
@@ -303,8 +304,14 @@ public class ColorMapper {
    * @param _ceilColor
    */
   public void setFloorCeilColor(Color _floorColor, Color _ceilColor) {
+	  if (_floorColor == null)
+		  _floorColor = Color.DARK_GRAY;
+	  if (_ceilColor == null)
+		  _ceilColor = Color.LIGHT_GRAY;
     floorColor = _floorColor;
     ceilColor = _ceilColor;
+    floorColorRGB = toRGB(floorColor);
+    ceilColorRGB = toRGB(ceilColor);
   }
 
   /**
@@ -320,14 +327,26 @@ public class ColorMapper {
    * @param _colors
    */
   public void setColorPalette(Color[] _colors) {
-    floorColor = Color.darkGray;
-    ceilColor = Color.lightGray;
+  	setFloorCeilColor(null, null);    	
     colors = _colors;
     numColors = colors.length;
+    rgbs = new byte[numColors][];
+    for (int i = 0; i < numColors; i++) {
+    	Color c = colors[i];
+    	rgbs[i] = toRGB(c);
+    }
     paletteType = CUSTOM;
   }
 
-  /**
+  private byte[] toRGB(Color c) {
+  	byte[] rgb = new byte[3];
+  	rgb[0] = (byte) c.getRed();
+  	rgb[1] = (byte) c.getGreen();
+  	rgb[2] = (byte) c.getBlue();
+	return rgb;
+}
+
+/**
    * Sets the number of colors
    * @param _numColors
    */
@@ -338,13 +357,17 @@ public class ColorMapper {
     numColors = _numColors;
     if(paletteType==CUSTOM) {
       Color newColors[] = new Color[numColors];
+      byte[][] newRGBs = new byte[numColors][3];
       for(int i = 0, n = Math.min(colors.length, numColors); i<n; i++) {
         newColors[i] = colors[i];
+        newRGBs[i] = rgbs[i];
       }
       for(int i = colors.length; i<numColors; i++) {
         newColors[i] = colors[colors.length-1];
+        newRGBs[i] = rgbs[colors.length-1];
       }
       colors = newColors;
+      rgbs = newRGBs;
     } else {
       setPaletteType(paletteType);
     }
@@ -356,11 +379,11 @@ public class ColorMapper {
    */
   public void setPaletteType(int _paletteType) {
     paletteType = _paletteType;
-    floorColor = Color.darkGray;
-    ceilColor = Color.lightGray;
+    
     if((paletteType==GRAYSCALE)||(paletteType==BLACK)) {
-      floorColor = new Color(64, 64, 128);
-      ceilColor = new Color(255, 191, 191);
+    	setFloorCeilColor(new Color(64, 64, 128), new Color(255, 191, 191));
+    } else {
+    	setFloorCeilColor(null, null);    	
     }
     colors = getColorPalette(numColors, paletteType);
     numColors = Math.max(2, numColors); // need at least 2 colors
