@@ -15,6 +15,7 @@ import java.awt.Shape;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Iterator;
 
 import javax.swing.JPanel;
@@ -945,6 +946,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
     return results;
   }
 
+  Hashtable<String,String> htFormats = new Hashtable<>();
+  
   /**
    *  Return a string for displaying the specified number using the specified
    *  number of digits after the decimal point. NOTE: java.text.NumberFormat in
@@ -960,6 +963,10 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
     if(num==0) {
       return "0"; //$NON-NLS-1$
     }
+    String key = "" + numfracdigits + " " + chop + " " + num;
+    String val = htFormats.get(key);
+    if (val != null)
+    	return val;
     NumberFormat numberFormat;
     if((Math.abs(num)<0.01)&&(Math.abs(num)>chop)) {
       numberFormat = this.scientificFormat;
@@ -970,7 +977,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
       numberFormat.setMinimumFractionDigits(numfracdigits);
       numberFormat.setMaximumFractionDigits(numfracdigits);
     }
-    return numberFormat.format(num);
+    htFormats.put(key, val = numberFormat.format(num));
+    return val;
   }
 
   /**

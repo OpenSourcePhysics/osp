@@ -80,6 +80,10 @@ public class OSPRuntime {
   /** Shared Translator after loading, if available. */
   private static Translator translator;                                                                     // shared Translator
 
+
+  /** Storage of separator value */
+  private static DecimalFormatSymbols dfs = new DecimalFormatSymbols();
+
   /** Array of default OSP Locales. */
   public static Locale[] defaultLocales = new Locale[] {Locale.ENGLISH, new Locale("es"), new Locale("de"), //$NON-NLS-1$ //$NON-NLS-2$
     new Locale("da"), new Locale("sk"), Locale.TAIWAN};                                                       //$NON-NLS-1$ //$NON-NLS-2$
@@ -120,8 +124,8 @@ public class OSPRuntime {
   /** The default decimal separator */
   private static char defaultDecimalSeparator;
 
-  /** The preferred decimal separator, if any */
-  private static String preferredDecimalSeparator;
+//  /** The preferred decimal separator, if any */
+//  private static String preferredDecimalSeparator;
 
   /** File Chooser starting directory. */
   public static String chooserDir;
@@ -192,11 +196,13 @@ public class OSPRuntime {
 
     NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
     if (format instanceof DecimalFormat) {
-      defaultDecimalSeparator = ((DecimalFormat)format).getDecimalFormatSymbols().getDecimalSeparator();
+    	defaultDecimalSeparator = ((DecimalFormat)format).getDecimalFormatSymbols().getDecimalSeparator();
     }
     else {
       defaultDecimalSeparator = new DecimalFormat().getDecimalFormatSymbols().getDecimalSeparator();
     }
+    
+    dfs.setDecimalSeparator(defaultDecimalSeparator);
 
 //	try {
 //	  Class.forName("com.sun.j3d.utils.universe.SimpleUniverse"); //$NON-NLS-1$
@@ -370,17 +376,23 @@ public class OSPRuntime {
     }
   }
 
+  private static boolean isMac;
+  
+  static {
+	    try {                                                                        
+	    	// system properties may not be readable in some environments
+	        isMac = (/** @j2sNative 1 ? false : */ (System.getProperty("os.name", "").toLowerCase().startsWith("mac"))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	      } catch(SecurityException ex) {
+	      }
+
+  }
   /**
    * Determines if OS is Mac
    *
    * @return true if Mac
    */
   public static boolean isMac() {
-    try {                                                                        // system properties may not be readable in some environments
-      return(System.getProperty("os.name", "").toLowerCase().startsWith("mac")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-    } catch(SecurityException ex) {
-      return false;
-    }
+	  return isMac;
   }
 
   /**
@@ -410,7 +422,7 @@ public class OSPRuntime {
   
   static public boolean hasJava3D() {
     try{
-      if (OSPRuntime.isMac()) {  // extra testing for Mac
+      if (isMac) {  // extra testing for Mac
         boolean tryIt=true;
         String home = System.getProperty("java.home");//$NON-NLS-1$
         String version = System.getProperty("java.version"); //$NON-NLS-1$
@@ -442,7 +454,7 @@ public class OSPRuntime {
       if (me.isShiftDown()) return false;
       return (me.isPopupTrigger())
       		||(me.getButton()==MouseEvent.BUTTON3)
-      		||(me.isControlDown()&&isMac());
+      		||(me.isControlDown()&&isMac);
     }
     return false;
   }
@@ -664,7 +676,7 @@ public class OSPRuntime {
 	  		}
 	  		else file = null;
 	  	}
-	  	else if (OSPRuntime.isMac()) {
+	  	else if (isMac) {
 	  		// typical jdk public: /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home/jre
 	  		// jdk private: /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home
 	  		// in Tracker.app: /Applications/Tracker.app/Contents/PlugIns/Java.runtime/Contents/Home/jre
@@ -830,6 +842,7 @@ public class OSPRuntime {
   		return "\u7e41\u4f53\u4e2d\u6587"; //$NON-NLS-1$
   	return locale.getDisplayLanguage(locale);
   }
+
   
 	/**
 	 * Gets DecimalFormatSymbols that use the preferred decimal separator, if any.
@@ -837,15 +850,9 @@ public class OSPRuntime {
 	 * 
 	 * @return the DecimalFormatSymbols
 	 */
-  public static DecimalFormatSymbols getDecimalFormatSymbols() {
-  	DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
-  	char c = defaultDecimalSeparator;
-    if (preferredDecimalSeparator!=null && preferredDecimalSeparator.length()>0) {
-  		c = preferredDecimalSeparator.charAt(0);
-  	}
-    decimalFormatSymbols.setDecimalSeparator(c); 	
-  	return decimalFormatSymbols;
-  }
+	public static DecimalFormatSymbols getDecimalFormatSymbols() {
+		return dfs;
+	}
   
 	/**
 	 * Sets the default decimal separator.
@@ -853,7 +860,7 @@ public class OSPRuntime {
 	 * @param c a decimal separator
 	 */
   public static void setDefaultDecimalSeparator(char c) {
-  	defaultDecimalSeparator = c;
+  	dfs.setDecimalSeparator(c);
   }
   
 	/**
@@ -862,17 +869,17 @@ public class OSPRuntime {
 	 * @param separator a decimal separator
 	 */
   public static void setPreferredDecimalSeparator(String separator) {
-  	preferredDecimalSeparator = separator;
+	  dfs.setDecimalSeparator(separator.length() > 0 ? separator.charAt(0) : defaultDecimalSeparator);
   }
   
-	/**
-	 * Gets the preferred decimal separator. May return null.
-	 * 
-	 * @return the separator, if any
-	 */
-  public static String getPreferredDecimalSeparator() {
-  	return preferredDecimalSeparator;
-  }
+//	/**
+//	 * Gets the preferred decimal separator. May return null.
+//	 * 
+//	 * @return the separator, if any
+//	 */
+//  public static String getPreferredDecimalSeparator() {
+//  	return preferredDecimalSeparator;
+//  }
   
 	/**
 	 * Gets the default search paths, typically used for autoloading.
@@ -892,7 +899,7 @@ public class OSPRuntime {
   			}
 	    }  		
   	}
-  	else if (userhomeDir!=null && isMac()) {
+  	else if (userhomeDir!=null && isMac) {
   		File dir = new File(userhomeDir, "Library/Application Support"); //$NON-NLS-1$
   		if (dir.exists()) {
   			dir = new File(dir, "OSP"); //$NON-NLS-1$
@@ -1041,6 +1048,8 @@ public class OSPRuntime {
    * 
    */
   private static AsyncFileChooser chooser;
+
+  public static boolean setRenderingHints = (!JSUtil.isJS && !isMac);
 
   /**
    * Gets a file chooser.

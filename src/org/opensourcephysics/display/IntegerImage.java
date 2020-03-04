@@ -257,8 +257,10 @@ public class IntegerImage implements Measurable {
 		}
 		Graphics2D g2 = (Graphics2D) g;
 		AffineTransform gat = g2.getTransform(); // save graphics transform
-		RenderingHints hints = g2.getRenderingHints();
-		if (!OSPRuntime.isMac()) { // Rendering hint bug in Mac Snow Leopard
+		// BH 2020.03.04 no need for getting/setting rendering hints if not a mac
+		RenderingHints hints = null;
+		if (OSPRuntime.setRenderingHints) { // Rendering hint bug in Mac Snow Leopard
+			hints = g2.getRenderingHints();
 			g2.setRenderingHint(RenderingHints.KEY_DITHERING,
 					RenderingHints.VALUE_DITHER_DISABLE);
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -273,7 +275,8 @@ public class IntegerImage implements Measurable {
 		g2.transform(AffineTransform.getScaleInstance(sx, sy));  // scales image to world units
 		g2.drawImage(image, 0, 0, panel);
 		g2.setTransform(gat); // restore graphics conext
-		g2.setRenderingHints(hints); // restore the hints
+		if (hints != null)
+			g2.setRenderingHints(hints); // restore the hints
 	}
 
 	public boolean isMeasured() {
