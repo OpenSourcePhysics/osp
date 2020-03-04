@@ -30,8 +30,8 @@ public class JSUtil {
 	static {
 		String[] corsEnabled = new String[] {
 				 "www.physlets.org", 
-				 "www.opensourcephysics.org",
-				 "www.compadre.org" 
+				 //"www.opensourcephysics.org",
+				 "www.compadre.org/osp/online_help" 
 				 };
 				
 		for (int i = corsEnabled.length; --i >= 0;) {
