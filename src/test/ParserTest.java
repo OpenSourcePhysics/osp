@@ -1,4 +1,4 @@
-package testing;
+package test;
 
 import org.opensourcephysics.numerics.ParserException;
 import org.opensourcephysics.numerics.SuryonoParser;
