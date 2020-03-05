@@ -37,19 +37,19 @@ public class ArrayData implements GridData {
   /**
    * Constructor ArrayData
    *
-   * @param ix
-   * @param iy
+   * @param nx
+   * @param ny
    * @param nsamples
    */
-  public ArrayData(int ix, int iy, int nsamples) {
-    if((iy<1)||(ix<1)) {
-      throw new IllegalArgumentException("Number of dataset rows and columns must be positive. Your row="+iy+"  col="+ix); //$NON-NLS-1$ //$NON-NLS-2$
+  public ArrayData(int nx, int ny, int nsamples) {
+    if((ny<1)||(nx<1)) {
+      throw new IllegalArgumentException("Number of dataset rows and columns must be positive. Your row="+ny+"  col="+nx); //$NON-NLS-1$ //$NON-NLS-2$
     }
     if((nsamples<1)) {
       throw new IllegalArgumentException("Number of 2d data components must be positive. Your ncomponents="+nsamples); //$NON-NLS-1$
     }
-    data = new double[nsamples][ix][iy]; // x, y, and components
-    setScale(0, ix, 0, iy);
+    data = new double[nsamples][nx][ny]; // x, y, and components
+    setScale(0, nx, 0, ny);
     names = new String[nsamples];
     for(int i = 0; i<nsamples; i++) {
       names[i] = "Component_"+i; //$NON-NLS-1$
