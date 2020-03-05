@@ -480,6 +480,9 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
     measureFonts(panel);
   }
 
+  public int getTickLength() {
+	  return tickLength;
+  }
   /**
    *  Draws the axes onto the specified panel
    *
@@ -535,8 +538,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
       graphics.setColor(interiorColor);
       graphics.fillRect(leftGutter, topGutter, width, height);
     }
-    int xCoord1 = leftGutter+tickLength;
-    int xCoord2 = lrx-tickLength;
+    int xCoord1 = leftGutter+this.getTickLength();
+    int xCoord2 = lrx-Math.abs(tickLength);
     int numfracdigits = numFracDigits(yTickSize);
     int yTickWidth = 12;
     if(yticks==null) {
@@ -579,14 +582,14 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
           offset = 0;                                             // changed by W. Christian
           // offset = -labelheight / 8;
         }
-        graphics.drawLine(leftGutter, yCoord1, xCoord1, yCoord1); // draw tick marks on both sides of plot, y tick marks are drawn horizontally
-        // graphics.drawLine(lrx, yCoord1, xCoord2, yCoord1);
-        graphics.drawLine(width+leftGutter-1, yCoord1, xCoord2, yCoord1);
         if(drawMajorYGrid&&(yCoord1>=topGutter)&&(yCoord1<=lry)) {                // draw grid line
           graphics.setColor(gridcolor);
           graphics.drawLine(xCoord1, yCoord1, xCoord2, yCoord1);
           graphics.setColor(foreground);
         }
+        graphics.drawLine(leftGutter, yCoord1, xCoord1, yCoord1); // draw tick marks on both sides of plot, y tick marks are drawn horizontally
+        // graphics.drawLine(lrx, yCoord1, xCoord2, yCoord1);
+        graphics.drawLine(width+leftGutter-1, yCoord1, xCoord2, yCoord1);
         int labelWidth = labelFontMetrics.stringWidth(yticklabel);
         // NOTE: 4 pixel spacing between axis and labels.
         graphics.drawString(yticklabel, leftGutter-labelWidth-4, yCoord1+offset); // draw tick label
@@ -652,7 +655,7 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
       }
     }
     // ////////////////// horizontal axis
-    int yCoord1 = topGutter+tickLength;
+    int yCoord1 = topGutter+Math.abs(tickLength);
     int yCoord2 = lry-tickLength;
     int charwidth = labelFontMetrics.stringWidth("8"); //$NON-NLS-1$
     if(xticks==null) { // auto-ticks
@@ -741,6 +744,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
           graphics.drawLine(xCoord1, yCoord1, xCoord1, yCoord2);
           graphics.setColor(foreground);
         }
+        // lower tick
+        graphics.drawLine(xCoord1, lry, xCoord1, yCoord2);
         int labxpos = xCoord1-labelFontMetrics.stringWidth(xticklabel)/2;
         if(hasExponent) {
           graphics.drawString(xticklabel, labxpos+7, lry+3+labelheight); // draw tick label
@@ -804,16 +809,16 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
           // Draw the label.
           // NOTE: 3 pixel spacing between axis and labels.
           graphics.drawString(label, labxpos, lry+3+labelheight);
-          // Draw the label mark on the axis
-          graphics.drawLine(xCoord1, topGutter, xCoord1, yCoord1);
-          // graphics.drawLine(xCoord1, bottomGutterY, xCoord1, yCoord2);
-          graphics.drawLine(xCoord1, height+topGutter-1, xCoord1, yCoord2);
           // Draw the grid line
           if(drawMajorXGrid&&(xCoord1>=leftGutter)&&(xCoord1<=lrx)) {
             graphics.setColor(gridcolor);
             graphics.drawLine(xCoord1, yCoord1, xCoord1, yCoord2);
-            graphics.setColor(foreground);
           }
+          graphics.setColor(foreground);
+          // Draw the label mark on the axis
+          graphics.drawLine(xCoord1, topGutter, xCoord1, yCoord1);
+          // graphics.drawLine(xCoord1, bottomGutterY, xCoord1, yCoord2);
+          graphics.drawLine(xCoord1, height+topGutter-1, xCoord1, yCoord2);
         }
       }
     }
@@ -1332,6 +1337,10 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
     }
     return null;
   }
+
+	public void setTickLength(int len) {
+		tickLength = len;
+	}
 
 }
 

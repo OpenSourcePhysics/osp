@@ -117,7 +117,7 @@ public class MessageDrawable implements Drawable {
 	 */
 	public void draw(DrawingPanel panel, Graphics g) {
 		g = g.create();
-		/** @j2sNative g.unclip$I(-3); */
+//		/** @j2sNative g.unclip$I(-3); */
 		Font oldFont = g.getFont();
 		g.setFont(font);
 		FontMetrics fm = g.getFontMetrics();
@@ -158,7 +158,7 @@ public class MessageDrawable implements Drawable {
 			g.drawRect(panel.getWidth() - width - 1, panel.getHeight() - height-1, width, height); // fills rectangle
 			g.drawString(brStr, panel.getWidth() - width + 4, panel.getHeight() - 4);
 		}
-		/** @j2sNative g.unclip$I(3); */
+//		/** @j2sNative g.unclip$I(3); */
 		g.setFont(oldFont);
 		g.dispose();
 	}

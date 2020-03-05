@@ -8,6 +8,7 @@
 package debugging;
 import org.opensourcephysics.controls.*;
 import org.opensourcephysics.display.*;
+import org.opensourcephysics.display.axes.CartesianType1;
 import org.opensourcephysics.frames.*;
 
 /**
@@ -25,6 +26,8 @@ public class SetClipBug extends AbstractSimulation {
    */
   public SetClipBug() {
     frame.setPreferredMinMax(0, 10, 0, 10);
+    PlottingPanel p = (PlottingPanel) frame.getDrawingPanel();
+    ((CartesianType1)p.getAxes()).setTickLength(-3);
   }
 
   /**
@@ -37,7 +40,7 @@ public class SetClipBug extends AbstractSimulation {
     // gets rectangle dimensions
     int width = control.getInt("width");
     int height = control.getInt("height");
-    Drawable rectangle = new PixelRectangle(left, top, width, height);
+    Drawable rectangle = new PixelRectangle(control, left, top, width, height);
     frame.addDrawable(rectangle);
     // frame is automatically rendered after Calculate button is pressed
   }
@@ -65,7 +68,9 @@ public class SetClipBug extends AbstractSimulation {
   }
 
 	protected void doStep() {
-		time +=0.01;
+		time +=0.1;
+	    control.setValue("xleft", (control.getInt("xleft") + time * 10)%200); // sets default input values
+	    control.setValue("ytop", (control.getInt("ytop") + time * 10)%180-10); // sets default input values
 	  frame.setMessage("t="+ControlUtils.f2(time));
 	}
 }
