@@ -63,7 +63,7 @@ public class Carpet extends InterpolatedPlot {
 		int offset = nr * imageWidth;
 		int length = imageWidth * imageHeight * 4 - offset;
 		System.arraycopy(pixelData, 0, pixelData, offset, length);
-		writeToRoster(x0, y, dx, dy);
+		writeToRaster(x0, y, dx, dy);
 	}
 
 }
