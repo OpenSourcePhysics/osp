@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object class="org.opensourcephysics.controls.OSPApplication">
+    <property name="control" type="object">
+    <object class="org.opensourcephysics.controls.SimulationControl">
+        <property name="initialize_mode" type="boolean">true</property>
+        <property name="numpts" type="string">50</property>
+        <property name="psi range" type="string">8</property>
+        <property name="dt" type="string">0.0001</property>
+        <property name="x min" type="string">0</property>
+        <property name="x max" type="string">1</property>
+        <property name="re coef x" type="array" class="[D">
+            <property name="array" type="string">{0.5006623887035347,-0.45360916402127766,-0.45360916402127766,0.33735905998252613,0.33735905998252613,-0.20595703992606568,-0.20595703992606568,0.1032130496248032,0.1032130496248032,-0.04245866009209627,-0.04245866009209627,0.014337441677925822,0.014337441677925822,-0.003974209429708643,-0.003974209429708643,0.0009042812784128691,0.0009042812784128691,-0.00016890015080908073,-0.00016890015080908073,0.000025895853392986372,0.000025895853392986372}</property>
+        </property>
+        <property name="im coef x" type="array" class="[D">
+            <property name="array" type="string">{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}</property>
+        </property>
+        <property name="V(x)" type="string">ring</property>
+        <property name="y min" type="string">0</property>
+        <property name="y max" type="string">1</property>
+        <property name="re coef y" type="array" class="[D">
+            <property name="array" type="string">{0.5006623887035347,-0.45360916402127766,-0.45360916402127766,0.33735905998252613,0.33735905998252613,-0.20595703992606568,-0.20595703992606568,0.1032130496248032,0.1032130496248032,-0.04245866009209627,-0.04245866009209627,0.014337441677925822,0.014337441677925822,-0.003974209429708643,-0.003974209429708643,0.0009042812784128691,0.0009042812784128691,-0.00016890015080908073,-0.00016890015080908073,0.000025895853392986372,0.000025895853392986372}</property>
+        </property>
+        <property name="im coef y" type="array" class="[D">
+            <property name="array" type="string">{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}</property>
+        </property>
+        <property name="V(y)" type="string">ring</property>
+        <property name="energy scale" type="string">1</property>
+        <property name="time format" type="string">0.0000</property>
+    </object>
+    </property>
+    <property name="model" type="object">
+    <object class="davidson.qm2d.QMSuperposition2DApp"/>
+    </property>
+</object>

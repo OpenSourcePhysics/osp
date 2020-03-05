@@ -10,7 +10,7 @@
         <property name="dt" type="string">0.1</property>
         <property name="x min" type="string">-0.5</property>
         <property name="x max" type="string">0.5</property>
-        <property name="re coef" type="string">{0,0,0,0,1,0}</property>
+        <property name="re coef" type="string">{0,0,0,0,0,1}</property>
         <property name="im coef" type="string">{0,0,0,0,0,0}</property>
         <property name="V(x)" type="string">well</property>
         <property name="energy scale" type="string">1</property>

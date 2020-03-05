@@ -112,6 +112,27 @@ public class QMSuperpositionWRApp extends QMSuperpositionApp {
    * @param args String[]
    */
   public static void main(String[] args) {
+	  int val = 1;
+	  if (args.length == 0) {
+		  // BH 2020.03.04 "_dav" here to indicate to use davison, not org.opersourcephysics.davidson
+		  switch (val) {
+		  //default:
+		  case 1:
+			  args = new String[] {"wigner/isw_wigner_p0_10pi_dav.xml"};
+			  break;
+		  case 2:
+			  args = new String[] {"wigner/sho_wigner_dav.xml"};
+			  break;
+		  case 3:
+			  args = new String[] {"wigner/isw_wigner_5_dav.xml"};
+			  break;
+		  case 4:
+			  args = new String[] {"isw_wigner_p0_10pi.xml"};
+			  break;
+		  }
+		  
+	  }
+
     final QMSuperpositionWRApp app = new QMSuperpositionWRApp();
     new QMSuperpositionStyleControl(app, args);
     app.customize();

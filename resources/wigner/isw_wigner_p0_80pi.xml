@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object class="org.opensourcephysics.controls.OSPApplication">
+    <property name="control" type="object">
+    <object class="org.opensourcephysics.controls.AnimationControl">
+        <property name="initialize_mode" type="boolean">false</property>
+        <property name="numpts" type="string">240</property>
+        <property name="gutter points" type="string">24</property>
+        <property name="psi range" type="string">5</property>
+        <property name="p range" type="string">280</property>
+        <property name="dt" type="string">0.001</property>
+        <property name="x min" type="string">-0.5</property>
+        <property name="x max" type="string">0.5</property>
+        <property name="re coef" type="string">{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.00004793259309141679,0,-0.0002832484728523005,0,0.0013739721621201476,0,-0.005470940553961585,0,0.01788215123161055,0,-0.04797900491355866,0,0.10567114538670039,0,-0.19104483404849443,0,0.2835227338169101,0,-0.34539351762535575,0,0.3453935176255866,0,-0.28352273381669757,0,0.19104483404869965,0,-0.1056711453864936,0,0.04797900491377339,0,-0.01788215123139884,0,0.005470940554175307,0,-0.0013739721619061382,0,0.00028324847306675986,0,-0.000047932592876470175}</property>
+        <property name="im coef" type="string">{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.00001831113356613865,0,-0.00011943044195391404,0,0.0006394234240916955,0,-0.0028101904375773252,0,0.010138102235352392,0,-0.03002280647119195,0,0.07298264729666377,0,-0.14563361956481088,0,0.2385488790083899,0,-0.32075011588778346,0,0.3540217701373596,0,-0.3207501158877902,0,0.2385488790083794,0,-0.14563361956481652,0,0.07298264729666228,0,-0.030022806471199214,0,0.010138102235346747,0,-0.002810190437584565,0,0.0006394234240833727,0,-0.00011943044196331356,0,0.000018311133555646487}</property>
+        <property name="V(x)" type="string">well</property>
+        <property name="energy scale" type="string">2/pi</property>
+        <property name="time format" type="string">0.000</property>
+        <property name="style" type="string">ampwithphase</property>
+        <property name="hide frame" type="boolean">false</property>
+    </object>
+    </property>
+    <property name="model" type="object">
+    <object class="davidson.qm.QMSuperpositionWignerApp"/>
+    </property>
+</object>

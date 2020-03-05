@@ -5,17 +5,19 @@
         <property name="initialize_mode" type="boolean">false</property>
         <property name="numpts" type="string">250</property>
         <property name="gutter points" type="string">48</property>
-        <property name="psi range" type="string">2</property>
-        <property name="p range" type="string">25</property>
-        <property name="dt" type="string">0.1</property>
-        <property name="x min" type="string">-0.5</property>
-        <property name="x max" type="string">0.5</property>
-        <property name="re coef" type="string">{0,0,0,0,1,0}</property>
-        <property name="im coef" type="string">{0,0,0,0,0,0}</property>
-        <property name="V(x)" type="string">well</property>
+        <property name="psi range" type="string">1</property>
+        <property name="p range" type="string">5</property>
+        <property name="dt" type="string">0.05</property>
+        <property name="x min" type="string">-5</property>
+        <property name="x max" type="string">5</property>
+        <property name="re coef" type="string">{0.707,0,0,0.707,0,0,0,0,0}</property>
+        <property name="im coef" type="string">{0,0,0,0,0,0,0,0,0}</property>
+        <property name="V(x)" type="string">sho</property>
         <property name="energy scale" type="string">1</property>
         <property name="time format" type="string">0.00</property>
-        <property name="style" type="string">reim</property>
+        <property name="ode tolerance" type="string">1.0E-4</property>
+        <property name="bisection tolerance" type="string">1.0E-4</property>
+        <property name="style" type="string">ampwithphase</property>
         <property name="hide frame" type="boolean">false</property>
     </object>
     </property>

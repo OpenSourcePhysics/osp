@@ -24,6 +24,6 @@
     </object>
     </property>
     <property name="model" type="object">
-    <object class="org.opensourcephysics.davidson.qm.QMSuperpositionWignerApp"/>
+    <object class="davidson.qm.QMSuperpositionWignerApp"/>
     </property>
 </object>
