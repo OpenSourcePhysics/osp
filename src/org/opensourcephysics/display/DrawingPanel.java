@@ -678,11 +678,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
   public void paint(Graphics g) {
     Graphics2D g2 = (Graphics2D) g;
     boolean resetBuffered = buffered;
-    /**
-    if(!OSPRuntime.isJS && g2.getDeviceConfiguration().getDevice().getType()==GraphicsDevice.TYPE_PRINTER) {
-      buffered = false;
-      //System.out.println("buffer off");
-    } **/
     super.paint(g);
     paintEverything(g);
     buffered = resetBuffered;
@@ -1619,11 +1614,9 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
       }
       double gymax = measurable.getYMax();
       double gymin = measurable.getYMin();
-      //System.out.println("measurable="+measurable+" is Log Measurable?"+ (measurable instanceof LogMeasurable));
       if(logScaleY&&(measurable instanceof LogMeasurable)) {
         gymax = ((LogMeasurable) measurable).getYMaxLogscale();
         gymin = ((LogMeasurable) measurable).getYMinLogscale();
-        //System.out.println("ymin="+gymin+ "  ymax="+gymax+  "    measurable="+measurable);
       }
       if(!Double.isNaN(gxmax)&&!Double.isNaN(gxmin)&&!Double.isNaN(gymax)&&!Double.isNaN(gymin)) {
         xmin = Math.min(xmin, gxmin);
@@ -1987,11 +1980,9 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
         continue; // objects' measure not yet set
       }
       double ymi = measurable.getYMin(), yma = measurable.getYMax();
-      //System.out.println("measurable="+measurable+" is Log Measurable?"+ (measurable instanceof LogMeasurable));
       if(logScaleY&&(measurable instanceof LogMeasurable)) {
         yma = ((LogMeasurable) measurable).getYMaxLogscale();
         ymi = ((LogMeasurable) measurable).getYMinLogscale();
-        //System.out.println("ymin="+ymi+ "  ymax="+yma+  "    measurable="+measurable);
       }
       if(!Double.isNaN(ymi)&&!Double.isNaN(yma)) {
         newYMin = Math.min(newYMin, ymi);
