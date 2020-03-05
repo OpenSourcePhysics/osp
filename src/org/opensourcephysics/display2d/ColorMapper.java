@@ -332,13 +332,12 @@ public class ColorMapper {
     numColors = colors.length;
     rgbs = new byte[numColors][];
     for (int i = 0; i < numColors; i++) {
-    	Color c = colors[i];
-    	rgbs[i] = toRGB(c);
+    	rgbs[i] = toRGB(colors[i]);
     }
     paletteType = CUSTOM;
   }
 
-  private byte[] toRGB(Color c) {
+  private static byte[] toRGB(Color c) {
   	byte[] rgb = new byte[3];
   	rgb[0] = (byte) c.getRed();
   	rgb[1] = (byte) c.getGreen();
@@ -378,65 +377,67 @@ public class ColorMapper {
    * @param _paletteType
    */
   public void setPaletteType(int _paletteType) {
-    paletteType = _paletteType;
-    
+    paletteType = _paletteType;    
     if((paletteType==GRAYSCALE)||(paletteType==BLACK)) {
     	setFloorCeilColor(new Color(64, 64, 128), new Color(255, 191, 191));
     } else {
     	setFloorCeilColor(null, null);    	
     }
-    colors = getColorPalette(numColors, paletteType);
     numColors = Math.max(2, numColors); // need at least 2 colors
+    colors = getColorPalette(numColors, paletteType, rgbs = new byte[numColors][]);
   }
 
-  /**
-   * Gets a array of colors for use in data visualization.
-   *
-   * Colors are similar to the colors returned by a color mapper instance.
-   * @param numColors
-   * @param paletteType
-   * @return
-   */
-  static public Color[] getColorPalette(int numColors, int paletteType) {
-    if(numColors<2) {
-      numColors = 2;
-    }
-    Color colors[] = new Color[numColors];
-    for(int i = 0; i<numColors; i++) {
-      float level = (float) i/(numColors-1)*0.8f;
-      int r = 0, b = 0;
-      switch(paletteType) {
-         case ColorMapper.REDBLUE_SHADE :
-           r = (Math.max(0, -numColors-1+i*2)*255)/(numColors-1);
-           b = (Math.max(0, numColors-1-i*2)*255)/(numColors-1);
-           colors[i] = new Color(r, 0, b);
-           break;
-         case ColorMapper.SPECTRUM :
-           level = 0.8f-level;
-           colors[i] = Color.getHSBColor(level, 1.0f, 1.0f);
-           break;
-         case ColorMapper.GRAYSCALE :
-         case ColorMapper.BLACK :
-           colors[i] = new Color(i*255/(numColors-1), i*255/(numColors-1), i*255/(numColors-1));
-           break;
-         case ColorMapper.RED :
-           colors[i] = new Color(i*255/(numColors-1), 0, 0);
-           break;
-         case ColorMapper.GREEN :
-           colors[i] = new Color(0, i*255/(numColors-1), 0);
-           break;
-         case ColorMapper.BLUE :
-           colors[i] = new Color(0, 0, i*255/(numColors-1));
-           break;
-         case ColorMapper.DUALSHADE :
-         default :
-           level = (float) i/(numColors-1);
-           colors[i] = Color.getHSBColor(0.8f*(1-level), 1.0f, 0.2f+1.6f*Math.abs(0.5f-level));
-           break;
-      }
-    }
-    return colors;
-  }
+	/**
+	 * Gets a array of colors for use in data visualization.
+	 *
+	 * Colors are similar to the colors returned by a color mapper instance.
+	 * 
+	 * @param numColors
+	 * @param paletteType
+	 * @return
+	 */
+	static public Color[] getColorPalette(int numColors, int paletteType, byte[][] rgbs) {
+		if (numColors < 2) {
+			numColors = 2;
+		}
+		Color colors[] = new Color[numColors];
+		for (int i = 0; i < numColors; i++) {
+			float level = 0.8f * i / (numColors - 1);
+			int r = 0, b = 0;
+			switch (paletteType) {
+			case ColorMapper.REDBLUE_SHADE:
+				r = (Math.max(0, -numColors - 1 + i * 2) * 255) / (numColors - 1);
+				b = (Math.max(0, numColors - 1 - i * 2) * 255) / (numColors - 1);
+				colors[i] = new Color(r, 0, b);
+				break;
+			case ColorMapper.SPECTRUM:
+				level = 0.8f - level;
+				colors[i] = Color.getHSBColor(level, 1.0f, 1.0f);
+				break;
+			case ColorMapper.GRAYSCALE:
+			case ColorMapper.BLACK:
+				colors[i] = new Color(i * 255 / (numColors - 1), i * 255 / (numColors - 1), i * 255 / (numColors - 1));
+				break;
+			case ColorMapper.RED:
+				colors[i] = new Color(i * 255 / (numColors - 1), 0, 0);
+				break;
+			case ColorMapper.GREEN:
+				colors[i] = new Color(0, i * 255 / (numColors - 1), 0);
+				break;
+			case ColorMapper.BLUE:
+				colors[i] = new Color(0, 0, i * 255 / (numColors - 1));
+				break;
+			case ColorMapper.DUALSHADE:
+			default:
+				level = (float) i / (numColors - 1);
+				colors[i] = Color.getHSBColor(0.8f * (1 - level), 1.0f, 0.2f + 1.6f * Math.abs(0.5f - level));
+				break;
+			}
+			if (rgbs != null)
+				rgbs[i] = toRGB(colors[i]);
+		}
+		return colors;
+	}
 
   /**
    * Gets a loader that allows a Circle to be represented as XML data.
