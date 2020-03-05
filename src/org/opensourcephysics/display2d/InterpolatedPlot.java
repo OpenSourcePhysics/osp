@@ -366,8 +366,10 @@ protected byte[] pixelData;
     rightPix = Math.min(rightPix, panel.getWidth());
     topPix = Math.max(0, topPix);
     bottomPix = Math.min(bottomPix, panel.getHeight());
+    
     int height = bottomPix-topPix+1;
     int width = rightPix-leftPix+1;
+    
     if((image!=null)&&(image.getWidth()==width)&&(image.getHeight()==height)&&(left==panel.pixToX(leftPix))&&(top==panel.pixToY(topPix))&&(bottom==panel.pixToX(bottomPix))&&(right==panel.pixToY(rightPix))) {
       return; // image exists, has the correct location, and is the correct size
     }
@@ -435,15 +437,16 @@ protected byte[] pixelData;
     if(griddata.getDy()>0) {
       dy = -dy;
     }
-    writeToRoster(left, y, dx, dy);
+    writeToRaster(left, y, dx, dy);
   }
 
   
-  protected void writeToRoster(double x0, double y, double dx, double dy) {
+  protected void writeToRaster(double x0, double y, double dx, double dy) {
 	    int width = image.getWidth();
+	    int height = image.getHeight();
 		byte[] pixels = pixelData;
 		boolean isABGR = (imageType == BufferedImage.TYPE_4BYTE_ABGR);
-	    for(int i = 0, height = image.getHeight(); i<height; i++, y += dy) {
+	    for(int i = 0; i<height; i++, y += dy) {
 	      double x = x0;
 	      for(int j = 0; j<width; j++, x += dx) {
 	        byte[] ret = colorMap.doubleToComponents(griddata.interpolate(x, y, ampIndex));
@@ -488,6 +491,7 @@ protected byte[] pixelData;
     }
     checkImage(panel);
     if(image!=null) {
+  	  // Note that the image in this case extends beyond the clipping range.
       g.drawImage(image, leftPix, topPix, panel);
     }
     grid.draw(panel, g);
