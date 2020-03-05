@@ -1,4 +1,4 @@
-package debugging;
+package test;
 
 import javax.swing.border.EtchedBorder;
 

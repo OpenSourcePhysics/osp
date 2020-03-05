@@ -1,4 +1,4 @@
-package debugging;
+package test;
 
 import java.awt.Graphics;
 
@@ -8,7 +8,7 @@ import org.opensourcephysics.display.PlottingPanel;
 import org.opensourcephysics.display2d.ArrayData;
 import org.opensourcephysics.display2d.GrayscalePlot;
 
-public class GrayscalePlotBug {
+public class GrayscalePlotTest {
 	int numpts=128;
 	ArrayData griddata = new ArrayData(numpts, numpts, 3);
 	GrayscalePlot grayscalePlot = new GrayscalePlot(griddata) {
@@ -21,7 +21,7 @@ public class GrayscalePlotBug {
 	DrawingFrame drawingFrame = new DrawingFrame(plottingPanel);
 
 
-	GrayscalePlotBug() {
+	GrayscalePlotTest() {
 		griddata.setScale( -1.0, 1.0, 0, 1.0);
 		grayscalePlot.setAutoscaleZ(true, 0, 1);
 		plottingPanel.addDrawable(grayscalePlot);
@@ -53,7 +53,7 @@ public class GrayscalePlotBug {
 
 
 	public static void main(String[] args) {
-		new GrayscalePlotBug();
+		new GrayscalePlotTest();
 	}
 
 }

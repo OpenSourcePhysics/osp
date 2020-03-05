@@ -1,11 +1,11 @@
-package debugging;
+package test;
 
 import org.opensourcephysics.display.DrawingFrame;
 import org.opensourcephysics.display.PlottingPanel;
 import org.opensourcephysics.display2d.ArrayData;
 import org.opensourcephysics.display2d.ComplexCarpet;
 
-public class BandedSampleBug {
+public class BandedSampleTest {
 	ComplexCarpet carpet = new ComplexCarpet(null);
 	PlottingPanel plottingPanel = new PlottingPanel("x", "t", null);
 	DrawingFrame drawingFrame = new DrawingFrame(plottingPanel);
@@ -14,7 +14,7 @@ public class BandedSampleBug {
 	int numdt=64;
 	ArrayData griddata = new ArrayData(numpts, numdt, 3);
 
-	BandedSampleBug() {
+	BandedSampleTest() {
 		plottingPanel.addDrawable(carpet);
 		plottingPanel.setAutoscaleX(true);
 		plottingPanel.setAutoscaleY(true);
@@ -47,7 +47,7 @@ public class BandedSampleBug {
 
 
 	public static void main(String[] args) {
-		new BandedSampleBug();
+		new BandedSampleTest();
 	}
 
 }
