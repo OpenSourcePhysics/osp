@@ -1595,6 +1595,9 @@ public class ResourceLoader {
 //  @SuppressWarnings("resource") // Java 7
 static private Resource createZipResource(String path) {
   	// convert to non-URI form
+    if(JSUtil.isJS) {
+        return null;
+      }
   	path = getNonURIPath(path);
 
     // get separate zip base and relative file name

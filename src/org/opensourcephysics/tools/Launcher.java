@@ -112,6 +112,7 @@ import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.PrintUtils;
 import org.opensourcephysics.display.ResizableIcon;
+import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.tools.LaunchNode.DisplayTab;
 
 /**
@@ -298,7 +299,7 @@ public class Launcher {
     createGUI(splash);
     XML.setLoader(LaunchSet.class, new LaunchSet());
     // if statement added by W. Christian
-    if(OSPRuntime.applet==null) {                             // never allow new VM if Launcher was instantiated by an applet
+    if(!JSUtil.isJS && OSPRuntime.applet==null) {                             // never allow new VM if Launcher was instantiated by an applet
       // determine whether launching in new VM is possible; may not be possible in Java Web Start
       // create a test launch thread
       Runnable launchRunner = new Runnable() {
@@ -1987,11 +1988,11 @@ public class Launcher {
       });
     }
     // if launch jar not yet found, load class file as last attempt
-    if(OSPRuntime.getLaunchJarPath()==null) {
+    if(!JSUtil.isJS && OSPRuntime.getLaunchJarPath()==null) {
       ResourceLoader.getResource("/org/opensourcephysics/tools/Launcher.class"); //$NON-NLS-1$
     }
     // create and populate the internal xset menu
-    if(OSPRuntime.getLaunchJarPath()!=null) {
+    if(!JSUtil.isJS && OSPRuntime.getLaunchJarPath()!=null) {
       JarFile jar = OSPRuntime.getLaunchJar();
       if(jar!=null) {
         Action action = new AbstractAction() {
