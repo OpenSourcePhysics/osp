@@ -181,7 +181,7 @@ public class LibraryBrowser extends JPanel {
       
     	String recentCollectionPath = ospPath+RECENT_COLLECTION_NAME;      	
 			File recentCollectionFile = new File(recentCollectionPath);
-			// create my collection if none exists
+			// create recent collection if none exists
       if (!recentCollectionFile.exists()) {
         String name = ToolsRes.getString("LibraryCollection.Name.Recent"); //$NON-NLS-1$
   			LibraryCollection recentCollection = new LibraryCollection(name);
@@ -680,7 +680,7 @@ public class LibraryBrowser extends JPanel {
    * @param path the collection path
    * @return the tab index
    */
-  protected int getTabIndexFromPath(String path) { 
+  public int getTabIndexFromPath(String path) { 
   	for (int i=0; i<tabbedPane.getTabCount(); i++) {
   		LibraryTreePanel next = getTreePanel(i);
   		if (path.equals(next.pathToRoot)) {
@@ -746,7 +746,7 @@ public class LibraryBrowser extends JPanel {
    * 
    * @return the collection, or null if failed
    */
-  protected LibraryCollection getRecentCollection() {
+  public LibraryCollection getRecentCollection() {
   	String path = getOSPPath()+RECENT_COLLECTION_NAME;
   	// check open tabs
   	int i = getTabIndexFromPath(path);
@@ -2672,7 +2672,7 @@ public class LibraryBrowser extends JPanel {
  	  		public void run() {
 		  		webConnected = ResourceLoader.isURLAvailable(ResourceLoader.OSP_TEST_URL)
 		  				|| ResourceLoader.isURLAvailable(ResourceLoader.TRACKER_TEST_URL);
-		    	if (!webConnected) {
+		    	if (!webConnected && libraryPath.startsWith("http")) { //$NON-NLS-1$
 		    		JOptionPane.showMessageDialog(LibraryBrowser.this, 
 		    				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
 		    				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$

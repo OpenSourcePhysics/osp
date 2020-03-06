@@ -1391,6 +1391,16 @@ public class LibraryTreePanel extends JPanel {
           }
         });
 	  	}
+	  	if (rootResource==browser.getRecentCollection()) { // this is the recent collection tab
+	   		item = new JMenuItem(ToolsRes.getString("LibraryTreePanel.Popup.Item.Remove")); //$NON-NLS-1$
+	   		popup.addSeparator();
+	      popup.add(item);
+	      item.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent e) {
+          	removeNode(node);
+          }
+        });
+	  	}
 	    FontSizer.setFonts(popup, FontSizer.getLevel());
       return popup;
   	}
