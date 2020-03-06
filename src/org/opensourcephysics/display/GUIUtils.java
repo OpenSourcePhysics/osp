@@ -319,7 +319,8 @@ public class GUIUtils {
   }
 
   public static File showOpenDialog(Component parent) {
-    JFileChooser fileChooser = OSPRuntime.getChooser(); // new JFileChooser();
+    JFileChooser fileChooser = new JFileChooser();
+    fileChooser.setCurrentDirectory(new File(OSPRuntime.chooserDir));
     int result = fileChooser.showOpenDialog(parent);
     if(result!=JFileChooser.APPROVE_OPTION) {
       return null;
