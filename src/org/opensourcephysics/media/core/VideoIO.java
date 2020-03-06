@@ -877,6 +877,7 @@ public class VideoIO {
     if(file==null) {
       Video video = vidPanel.getVideo();
       JFileChooser chooser = getChooser();
+      chooser.setCurrentDirectory(new File(OSPRuntime.chooserDir));
       chooser.removeChoosableFileFilter(videoFileFilter);
       chooser.removeChoosableFileFilter(imageFileFilter);
       chooser.setDialogTitle(chooserTitle);
