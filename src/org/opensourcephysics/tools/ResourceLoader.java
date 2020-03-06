@@ -1258,7 +1258,7 @@ public class ResourceLoader {
   		webConnected = ResourceLoader.isURLAvailable(ResourceLoader.OSP_TEST_URL)
   				|| ResourceLoader.isURLAvailable(ResourceLoader.TRACKER_TEST_URL);
   	}
-  	if (!webConnected) {
+  	if (!webConnected && urlPath.startsWith("http")) { //$NON-NLS-1$
   		JOptionPane.showMessageDialog(null, 
   				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
   				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
