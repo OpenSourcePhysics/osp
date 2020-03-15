@@ -4,5 +4,6 @@ build-ospcore.xml
 ospcoreclasses
 /bin/
 /site/
+/site1/
 /src/testing/
 src/org/opensourcephysics/controls/OSPLog_template.txt
