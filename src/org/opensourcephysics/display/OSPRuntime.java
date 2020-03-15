@@ -125,7 +125,7 @@ public class OSPRuntime {
   private static char defaultDecimalSeparator;
 
   /** The preferred decimal separator, if any */
-  private static String preferredDecimalSeparator;
+  private static String preferredDecimalSeparator = null;
 
   /** File Chooser starting directory. */
   public static String chooserDir;
@@ -856,6 +856,9 @@ public class OSPRuntime {
 	/**
 	 * Sets the default decimal separator.
 	 * 
+	 * Sets the current DecimalFormatSymbols value to the given value
+	 * as long as there is no preferred decimal separator.
+	 * 
 	 * @param c a decimal separator
 	 */
   public static void setDefaultDecimalSeparator(char c) {
@@ -865,9 +868,13 @@ public class OSPRuntime {
   }
   
 	/**
-	 * Sets the preferred decimal separator. May be null.
 	 * 
-	 * @param separator a decimal separator
+	 * Sets the preferred decimal separator.
+	 * 
+	 * @param separator If non-null, assigns the given value to the current
+	 *                  DecimalFormatSymbols value; if null, resets the
+	 *                  DecimalFormatSymbols value to the default value.
+	 * 
 	 */
   public static void setPreferredDecimalSeparator(String separator) {
 	  if (separator != null && separator.length() == 0)
