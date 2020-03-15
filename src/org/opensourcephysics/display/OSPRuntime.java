@@ -124,8 +124,8 @@ public class OSPRuntime {
   /** The default decimal separator */
   private static char defaultDecimalSeparator;
 
-//  /** The preferred decimal separator, if any */
-//  private static String preferredDecimalSeparator;
+  /** The preferred decimal separator, if any */
+  private static String preferredDecimalSeparator;
 
   /** File Chooser starting directory. */
   public static String chooserDir;
@@ -194,7 +194,7 @@ public class OSPRuntime {
     LOOK_AND_FEEL_TYPES.put(SYSTEM_LF, UIManager.getSystemLookAndFeelClassName());
     LOOK_AND_FEEL_TYPES.put(DEFAULT_LF, DEFAULT_LOOK_AND_FEEL.getClass().getName());
 
-    NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
+    NumberFormat format = NumberFormat.getInstance(Locale.FRANCE);//Locale.getDefault());
     if (format instanceof DecimalFormat) {
     	defaultDecimalSeparator = ((DecimalFormat)format).getDecimalFormatSymbols().getDecimalSeparator();
     }
@@ -377,7 +377,7 @@ public class OSPRuntime {
   }
 
   private static boolean isMac;
-  
+
   static {
 	    try {                                                                        
 	    	// system properties may not be readable in some environments
@@ -835,7 +835,6 @@ public class OSPRuntime {
    * @return the display language
    */
   public static String getDisplayLanguage(Locale locale) {
-	if(org.opensourcephysics.js.JSUtil.isJS) return "English";
   	if (locale.equals(Locale.CHINA))
   		return "\u7b80\u4f53\u4e2d\u6587"; //$NON-NLS-1$
   	if (locale.equals(Locale.TAIWAN))
@@ -860,7 +859,9 @@ public class OSPRuntime {
 	 * @param c a decimal separator
 	 */
   public static void setDefaultDecimalSeparator(char c) {
-  	dfs.setDecimalSeparator(c);
+	  defaultDecimalSeparator = c;
+	  if (preferredDecimalSeparator != null)
+		  dfs.setDecimalSeparator(c);
   }
   
 	/**
@@ -869,17 +870,18 @@ public class OSPRuntime {
 	 * @param separator a decimal separator
 	 */
   public static void setPreferredDecimalSeparator(String separator) {
+	  preferredDecimalSeparator = separator;
 	  dfs.setDecimalSeparator(separator.length() > 0 ? separator.charAt(0) : defaultDecimalSeparator);
   }
   
-//	/**
-//	 * Gets the preferred decimal separator. May return null.
-//	 * 
-//	 * @return the separator, if any
-//	 */
-//  public static String getPreferredDecimalSeparator() {
-//  	return preferredDecimalSeparator;
-//  }
+	/**
+	 * Gets the preferred decimal separator. May return null.
+	 * 
+	 * @return the separator, if any
+	 */
+  public static String getPreferredDecimalSeparator() {
+  	return preferredDecimalSeparator;
+  }
   
 	/**
 	 * Gets the default search paths, typically used for autoloading.
