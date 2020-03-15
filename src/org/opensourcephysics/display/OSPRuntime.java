@@ -860,7 +860,7 @@ public class OSPRuntime {
 	 */
   public static void setDefaultDecimalSeparator(char c) {
 	  defaultDecimalSeparator = c;
-	  if (preferredDecimalSeparator != null)
+	  if (preferredDecimalSeparator == null)
 		  dfs.setDecimalSeparator(c);
   }
   
@@ -870,8 +870,10 @@ public class OSPRuntime {
 	 * @param separator a decimal separator
 	 */
   public static void setPreferredDecimalSeparator(String separator) {
+	  if (separator != null && separator.length() == 0)
+		  separator = null;
 	  preferredDecimalSeparator = separator;
-	  dfs.setDecimalSeparator(separator.length() > 0 ? separator.charAt(0) : defaultDecimalSeparator);
+	  dfs.setDecimalSeparator(separator == null ? defaultDecimalSeparator : separator.charAt(0));
   }
   
 	/**
