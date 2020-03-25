@@ -1,0 +1,17 @@
+<project name="zip" default="toJs" basedir=".">
+ 
+   <target name="toJs" id="toJs">
+  			
+   	
+   	<echo>creating OSP.zip </echo>
+   	<zip destfile="dist/OSP.zip" basedir="site/swingjs/j2s" includes="
+   		org/jibble/** 
+   		org/opensourcephysics/**
+	" />
+   	
+  </target>
+
+
+		
+	
+</project>
