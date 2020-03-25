@@ -297,6 +297,9 @@ public class XMLTreePanel extends JPanel {
     JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treeScroller, dataPanel);
     add(splitPane, BorderLayout.CENTER);
     treeScroller.setPreferredSize(new Dimension(140, 200));
+    // with the default splitPane.setResizeWeight(0), any overage
+    // results in a closed pane. HTML5 may have ever so slightly different character widths.
+    splitPane.setDividerLocation(140); // BH 2020.03.25 setting this guarantees the preferred size initially
     displayProperty(root, editable);
   }
 
