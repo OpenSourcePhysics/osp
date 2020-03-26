@@ -1639,6 +1639,11 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
   public AffineTransform getPixelTransform() {
     return(AffineTransform) pixelTransform.clone();
   }
+  
+  public AffineTransform getPixelTransform(AffineTransform tr) {
+	  tr.setTransform(pixelTransform);
+	  return tr;
+	  }
 
   /**
    * Retrieves the 6 specifiable values in the pixel transformation
