@@ -33,6 +33,11 @@ public class DataRaster implements Measurable {
    * The drawing panel  that determines the image size.
    */
   DrawingPanel primaryDrawingPanel = null;
+  
+  public DrawingPanel getDrawingPanel() {
+	  return primaryDrawingPanel;
+  }
+  
   Color backgroundColor;
   ArrayList<ImageData> imageDatasets = new ArrayList<ImageData>();
   boolean visible = true;

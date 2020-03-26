@@ -38,6 +38,15 @@ public class ByteImage implements Measurable {
 	int nrow, ncol;    // number of rows and column in array
 	double xmin, xmax, ymin, ymax; // drawing scale
 	boolean visible = true;
+	
+	public void setVisible(boolean b) {
+		visible = b;
+	}
+	
+	public boolean getVisible() {
+		return visible;
+	}
+	
 	boolean dirtyImage=true;  // true if array elements have changed
 	
 	/**

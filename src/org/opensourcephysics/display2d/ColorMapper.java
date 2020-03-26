@@ -387,6 +387,10 @@ public class ColorMapper {
     colors = getColorPalette(numColors, paletteType, rgbs = new byte[numColors][]);
   }
 
+	static public Color[] getColorPalette(int numColors, int paletteType) {
+		return getColorPalette(numColors, paletteType, null);
+	}
+
 	/**
 	 * Gets a array of colors for use in data visualization.
 	 *
