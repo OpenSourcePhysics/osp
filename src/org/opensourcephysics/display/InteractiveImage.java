@@ -59,25 +59,22 @@ public class InteractiveImage extends InteractiveShape implements ImageObserver 
     return false;
   }
 
-  /**
-   * Draws the image.
-   *
-   * @param panel  the world in which the arrow is viewed
-   * @param g  the graphics context upon which to draw
-   */
-  public void draw(DrawingPanel panel, Graphics g) {
-    toPixels = panel.getPixelTransform();
-    Point2D pt = new Point2D.Double(x, y);
-    pt = toPixels.transform(pt, pt);
-    Graphics2D g2 = (Graphics2D) g;
-    g2.translate(pt.getX(), pt.getY());
-    AffineTransform trans = new AffineTransform();
-    trans.translate(-width/2, -height/2);
-    trans.rotate(-theta, width/2, height/2);
-    trans.scale(width/image.getWidth(null), height/image.getHeight(null));
-    g2.drawImage(image, trans, null);
-    g2.translate(-pt.getX(), -pt.getY());
-  }
+	/**
+	 * Draws the image.
+	 *
+	 * @param panel the world in which the image is viewed
+	 * @param g     the graphics context upon which to draw
+	 */
+	public void draw(DrawingPanel panel, Graphics g) {
+		getPixelPt(panel);
+		Graphics2D g2 = (Graphics2D) g;
+		g2.translate(pixelPt.x, pixelPt.y);
+		trIS.setToTranslation(-width / 2, -height / 2);
+		trIS.rotate(-theta, width / 2, height / 2);
+		trIS.scale(width / image.getWidth(null), height / image.getHeight(null));
+		g2.drawImage(image, trIS, null);
+		g2.translate(-pixelPt.x, -pixelPt.y);
+	}
 
   public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
     if((infoflags&ImageObserver.WIDTH)==1) {

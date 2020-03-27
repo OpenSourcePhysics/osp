@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import org.opensourcephysics.numerics.Function;
 
@@ -181,7 +182,7 @@ public class FunctionDrawer implements Drawable, Measurable, Function {
       generalPath.closePath();
     }
   }
-
+  
   /**
    * Draw the function on a drawing panel.
    * @param panel  the drawing panel

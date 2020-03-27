@@ -34,7 +34,9 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
   protected double width, height;       // an estimate of the shape's width and height
   protected double xoff, yoff;          // offset from center
   protected boolean pixelSized = false; // width and height are fixed and given in pixels
-  AffineTransform toPixels = new AffineTransform();
+  protected AffineTransform toPixels = new AffineTransform();
+  protected Point2D.Double pixelPt = new Point2D.Double(); // BH 2020.03.26
+  
   boolean enableMeasure = false;        // enables the measure so that this object affects a drawing panel's scale
 
   /**
@@ -56,7 +58,7 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
     width = bounds.getWidth();
     height = bounds.getHeight();
     shapeClass = shape.getClass().getName();
-    shape = AffineTransform.getTranslateInstance(x, y).createTransformedShape(shape);
+    shape = getTranslateInstance(x, y).createTransformedShape(shape);
   }
 
   /**
@@ -211,30 +213,37 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
     shape = transformation.createTransformedShape(shape);
   }
 
-  /**
-   * Draws the shape.
-   *
-   * @param panel the drawing panel
-   * @param g  the graphics context
-   */
-  public void draw(DrawingPanel panel, Graphics g) {
-    Graphics2D g2 = ((Graphics2D) g);
-    toPixels = panel.getPixelTransform();
-    Shape temp;
-    if(pixelSized) {
-      Point2D pt = new Point2D.Double(x, y);
-      pt = toPixels.transform(pt, pt);
-      // translate the shape to correct pixel coordinates
-      temp = new AffineTransform(1, 0, 0, -1, -x+pt.getX()+xoff, y+pt.getY()-yoff).createTransformedShape(shape);
-      temp = AffineTransform.getRotateInstance(-theta, pt.getX(), pt.getY()).createTransformedShape(temp);
-    } else {
-      temp = toPixels.createTransformedShape(shape);
-    }
-    g2.setPaint(color);
-    g2.fill(temp);
-    g2.setPaint(edgeColor);
-    g2.draw(temp);
-  }
+	/**
+	 * Draws the shape.
+	 *
+	 * @param panel the drawing panel
+	 * @param g     the graphics context
+	 */
+	public void draw(DrawingPanel panel, Graphics g) {
+		Graphics2D g2 = ((Graphics2D) g);
+		Shape temp;
+		if (pixelSized) {
+			toPixels.setTransform(panel.getPixelTransform());
+			// translate the shape to correct pixel coordinates
+			trIS.setTransform(1, 0, 0, -1, -x + pixelPt.x + xoff, y + pixelPt.y - yoff);
+			trIS.rotate(-theta, pixelPt.x, pixelPt.y);
+			temp = trIS.createTransformedShape(shape);
+			
+			// was:
+//		      Point2D pt = new Point2D.Double(x, y);
+//		      pt = toPixels.transform(pt, pt);
+//		      // translate the shape to correct pixel coordinates
+//		      temp = new AffineTransform(1, 0, 0, -1, -x+pt.getX()+xoff, y+pt.getY()-yoff).createTransformedShape(shape);
+//		      temp = AffineTransform.getRotateInstance(-theta, pt.getX(), pt.getY()).createTransformedShape(temp);
+
+		} else {
+			temp = toPixels.createTransformedShape(shape);
+		}
+		g2.setPaint(color);
+		g2.fill(temp);
+		g2.setPaint(edgeColor);
+		g2.draw(temp);
+	}
 
   /**
    * Tests if the specified coordinates are inside the boundary of the
@@ -277,13 +286,7 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
    * @return boolean
    */
   public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
-    if((shape==null)||!enabled) {
-      return false;
-    }
-    if(shape.contains(panel.pixToX(xpix), panel.pixToY(ypix))) {
-      return true;
-    }
-    return false;
+    return enabled && shape != null && shape.contains(panel.pixToX(xpix), panel.pixToY(ypix));
   }
 
   /**
@@ -298,15 +301,16 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
     color = _fillColor;
     edgeColor = _edgeColor;
   }
-
+  
   /**
    * Sets the rotation angle in radians.
    *
    * @param theta the new angle
    */
   public void setTheta(double theta) {
-    if(!pixelSized) {
-      shape = AffineTransform.getRotateInstance(theta-this.theta, x, y).createTransformedShape(shape);
+    if(!pixelSized && theta != this.theta) {
+    	
+      shape = getRotateInstance(theta-this.theta, x, y).createTransformedShape(shape);
     }
     this.theta = theta;
   }
@@ -339,20 +343,27 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
   public void setWidth(double width) {
     width = Math.abs(width);
     double w = width/this.width;
-    if(w<0.02) {
+    if(w<0.02 || w == 1) {
       return;
     }
-    if(pixelSized) {
-      shape = AffineTransform.getTranslateInstance(-x, -y).createTransformedShape(shape);
-      shape = AffineTransform.getScaleInstance(w, 1).createTransformedShape(shape);
-      shape = AffineTransform.getTranslateInstance(x, y).createTransformedShape(shape);
+	trIS.setToTranslation(x, y);
+    if(pixelSized || theta == 0) {
+    	trIS.scale(w, 1);
+//      shape = AffineTransform.getTranslateInstance(-x, -y).createTransformedShape(shape);
+//      shape = AffineTransform.getScaleInstance(w, 1).createTransformedShape(shape);
+//      shape = AffineTransform.getTranslateInstance(x, y).createTransformedShape(shape);
     } else {
-      shape = AffineTransform.getTranslateInstance(-x, -y).createTransformedShape(shape);
-      shape = AffineTransform.getRotateInstance(-theta).createTransformedShape(shape);
-      shape = AffineTransform.getScaleInstance(w, 1).createTransformedShape(shape);
-      shape = AffineTransform.getRotateInstance(theta).createTransformedShape(shape);
-      shape = AffineTransform.getTranslateInstance(x, y).createTransformedShape(shape);
+    	trIS.rotate(theta);
+    	trIS.scale(w, 1);
+    	trIS.rotate(-theta);
+//      shape = AffineTransform.getTranslateInstance(-x, -y).createTransformedShape(shape);
+//      shape = AffineTransform.getRotateInstance(-theta).createTransformedShape(shape);
+//      shape = AffineTransform.getScaleInstance(w, 1).createTransformedShape(shape);
+//      shape = AffineTransform.getRotateInstance(theta).createTransformedShape(shape);
+//      shape = AffineTransform.getTranslateInstance(x, y).createTransformedShape(shape);
     }
+	trIS.translate(-x, -y);
+	shape = trIS.createTransformedShape(shape);
     xoff *= w;
     this.width = width;
   }
@@ -373,19 +384,25 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
   public void setHeight(double height) {
     height = Math.abs(height);
     double h = height/this.height;
-    if(h<0.02) {
+    if(h<0.02 || h == 1) {
       return;
     }
-    if(pixelSized) {
-      shape = AffineTransform.getTranslateInstance(-x, -y).createTransformedShape(shape);
-      shape = AffineTransform.getScaleInstance(1, h).createTransformedShape(shape);
-      shape = AffineTransform.getTranslateInstance(x, y).createTransformedShape(shape);
+	trIS.setToTranslation(x, y);
+    if(pixelSized || theta == 0) {
+    	trIS.scale(1, h);
+//      shape = AffineTransform.getTranslateInstance(-x, -y).createTransformedShape(shape);
+//      shape = AffineTransform.getScaleInstance(1, h).createTransformedShape(shape);
+//      shape = AffineTransform.getTranslateInstance(x, y).createTransformedShape(shape);
     } else {
-      shape = AffineTransform.getTranslateInstance(-x, -y).createTransformedShape(shape);
-      shape = AffineTransform.getRotateInstance(-theta).createTransformedShape(shape);
-      shape = AffineTransform.getScaleInstance(1, h).createTransformedShape(shape);
-      shape = AffineTransform.getRotateInstance(theta).createTransformedShape(shape);
-      shape = AffineTransform.getTranslateInstance(x, y).createTransformedShape(shape);
+    	trIS.rotate(theta);
+    	trIS.scale(1, h);
+    	trIS.rotate(-theta);
+//      shape = AffineTransform.getTranslateInstance(-x, -y).createTransformedShape(shape);
+//      shape = AffineTransform.getRotateInstance(-theta).createTransformedShape(shape);
+//      shape = AffineTransform.getScaleInstance(1, h).createTransformedShape(shape);
+//      shape = AffineTransform.getRotateInstance(theta).createTransformedShape(shape);
+//      shape = AffineTransform.getTranslateInstance(x, y).createTransformedShape(shape);
+    	trIS.translate(-x, -y);
     }
     yoff *= h;
     this.height = height;
@@ -400,8 +417,8 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
    * @param yoffset double
    */
   public void setOffset(double xoffset, double yoffset) {
-    if(!pixelSized) { // change the actual shape
-      shape = AffineTransform.getTranslateInstance(x+xoffset, y+yoffset).createTransformedShape(shape);
+    if(!pixelSized && (xoffset != xoff || yoffset != yoff)) { // change the actual shape
+      shape = getTranslateInstance(x+xoffset, y+yoffset).createTransformedShape(shape);
     }
     xoff = xoffset;
     yoff = yoffset;
@@ -414,7 +431,9 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
    * @param _y
    */
   public void setXY(double _x, double _y) {
-    shape = AffineTransform.getTranslateInstance(_x-x, _y-y).createTransformedShape(shape);
+	  if (_x == x && _y == y)
+		  return;
+    shape = getTranslateInstance(_x-x, _y-y).createTransformedShape(shape);
     x = _x;
     y = _y;
   }
@@ -425,7 +444,9 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
    * @param _x
    */
   public void setX(double _x) {
-    shape = AffineTransform.getTranslateInstance(_x-x, 0).createTransformedShape(shape);
+	  if (x == _x)
+		  return;
+    shape = getTranslateInstance(_x-x, 0).createTransformedShape(shape);
     x = _x;
   }
 
@@ -435,7 +456,9 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
    * @param _y
    */
   public void setY(double _y) {
-    shape = AffineTransform.getTranslateInstance(0, _y-y).createTransformedShape(shape);
+	  if (_y == y)
+		  return;
+    shape = getTranslateInstance(0, _y-y).createTransformedShape(shape);
     y = _y;
   }
 
@@ -589,6 +612,37 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
     }
 
   }
+
+  protected void getPixelPt(DrawingPanel panel) {
+		// bh 2020.03.26 No new objects here.
+		toPixels.setTransform(panel.getPixelTransform());   
+	    pixelPt.setLocation(x, y);
+	    toPixels.transform(pixelPt, pixelPt);	    
+  }
+
+  protected AffineTransform trIS = new AffineTransform();
+
+  protected AffineTransform getRotateInstance(double theta) {
+		trIS.setToRotation(theta);
+		return trIS;
+	}
+
+	protected AffineTransform getRotateInstance(double theta, double x, double y) {
+		trIS.setToRotation(theta, x, y);
+		return trIS;
+	}
+
+
+	protected AffineTransform getScaleInstance(double sx, double sy) {
+		trIS.setToScale(sx, sy);
+		return trIS;
+	}
+
+	protected AffineTransform getTranslateInstance(double tx, double ty) {
+		trIS.setToTranslation(tx, ty);
+		return trIS;
+	}
+
 
 }
 

@@ -19,12 +19,14 @@ import java.awt.Graphics2D;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
@@ -676,7 +678,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
   }
 
   public void paint(Graphics g) {
-    Graphics2D g2 = (Graphics2D) g;
     boolean resetBuffered = buffered;
     super.paint(g);
     paintEverything(g);
@@ -1632,18 +1633,19 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     return new Rectangle2D.Double(0, 0, 0, 0);
   }
 
+  private AffineTransform trDP = new AffineTransform();
   /**
    * Gets the affine transformation that converts from world to pixel coordinates.
-   * @return the affine transformation
+   * @return the affine transformation -- NOT A CLONE!
    */
   public AffineTransform getPixelTransform() {
-    return(AffineTransform) pixelTransform.clone();
+    return pixelTransform;//(AffineTransform) pixelTransform.clone();
   }
-  
+
   public AffineTransform getPixelTransform(AffineTransform tr) {
 	  tr.setTransform(pixelTransform);
 	  return tr;
-	  }
+  }
 
   /**
    * Retrieves the 6 specifiable values in the pixel transformation
@@ -1677,7 +1679,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
       xmax = (xmaxPreferred+xminPreferred)/2+Math.max(width-leftGutter-rightGutter-1, 1)/xPixPerUnit/2;
       ymin = (ymaxPreferred+yminPreferred)/2-Math.max(height-bottomGutter-topGutter-1, 1)/yPixPerUnit/2;
       ymax = (ymaxPreferred+yminPreferred)/2+Math.max(height-bottomGutter-topGutter-1, 1)/yPixPerUnit/2;
-      pixelTransform = new AffineTransform(xPixPerUnit, 0, 0, -yPixPerUnit, -xmin*xPixPerUnit+leftGutter, ymax*yPixPerUnit+topGutter);
+      pixelTransform.setTransform(xPixPerUnit, 0, 0, -yPixPerUnit, -xmin*xPixPerUnit+leftGutter, ymax*yPixPerUnit+topGutter);
       pixelTransform.getMatrix(pixelMatrix); // puts the transformation into the pixel matrix
       return;
     }
@@ -1697,7 +1699,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
         yPixPerUnit = Math.max(height-bottomGutter-topGutter, 1)/(ymax-ymin); // the y scale in pixels per unit
       }
     }
-    pixelTransform = new AffineTransform(xPixPerUnit, 0, 0, -yPixPerUnit, -xmin*xPixPerUnit+leftGutter, ymax*yPixPerUnit+topGutter);
+    pixelTransform.setTransform(xPixPerUnit, 0, 0, -yPixPerUnit, -xmin*xPixPerUnit+leftGutter, ymax*yPixPerUnit+topGutter);
     pixelTransform.getMatrix(pixelMatrix); // puts the transformation into the pixel matrix
   }
 
@@ -1707,7 +1709,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
   public void recomputeTransform() {
     xPixPerUnit = Math.max(width-leftGutter-rightGutter, 1)/(xmax-xmin);
     yPixPerUnit = Math.max(height-bottomGutter-topGutter, 1)/(ymax-ymin); // the y scale in pixels
-    pixelTransform = new AffineTransform(xPixPerUnit, 0, 0, -yPixPerUnit, -xmin*xPixPerUnit+leftGutter, ymax*yPixPerUnit+topGutter);
+    pixelTransform.setTransform(xPixPerUnit, 0, 0, -yPixPerUnit, -xmin*xPixPerUnit+leftGutter, ymax*yPixPerUnit+topGutter);
     pixelTransform.getMatrix(pixelMatrix); // puts the transformation into the pixel matrix
   }
 
@@ -2080,7 +2082,8 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
         tempList.get(i).draw(this, g2);
       }
     }
-    if(JSUtil.isJS)messages.draw(this, g2);  // do not use Glass Panel in JS
+    if(!JSUtil.isJS)
+    	messages.draw(this, g2);  // do not use Glass Panel in JS
     g2.dispose(); // BH 2020.02.26
   }
 
@@ -2876,6 +2879,14 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     }
 
   }
+	public Shape transformPath2(GeneralPath s) {
+		return pixelTransform.createTransformedShape(s);
+	}
+
+
+	public Shape transformShape2(Shape s) {
+		return pixelTransform.createTransformedShape(s);
+	}
 
 }
 

@@ -93,53 +93,51 @@ public class VideoAdapter implements Video {
     initialize();
   }
 
-  /**
-   * Draws the video image on the panel.
-   *
-   * @param panel the drawing panel requesting the drawing
-   * @param g the graphics context on which to draw
-   */
-  public void draw(DrawingPanel panel, Graphics g) {
-    if(!visible) {
-      return;
-    }
-    Graphics2D g2 = (Graphics2D) g;
-    if(((panel instanceof VideoPanel)&&((VideoPanel) panel).isDrawingInImageSpace())||isMeasured) {
-      AffineTransform gat = g2.getTransform(); // save graphics transform
-      g2.transform(panel.getPixelTransform()); // world to screen
-      if(panel instanceof VideoPanel) {
-        VideoPanel vidPanel = (VideoPanel) panel;
-        if(!vidPanel.isDrawingInImageSpace()) {
-          // use video panel's coords for vid to world transform
-          ImageCoordSystem coords = vidPanel.getCoords();
-          g2.transform(coords.getToWorldTransform(frameNumber));
-        }
-      } 
-      else { // not a video panel, so draw in world space
-        // use this video's coords for vid to world transform
-        g2.transform(coords.getToWorldTransform(frameNumber));
-      }
-      // draw the video or filtered image
-      if(filterStack.isEmpty()||!filterStack.isEnabled()) {
-        g2.drawImage(rawImage, 0, 0, panel);
-      } else {
-        g2.drawImage(getImage(), 0, 0, panel);
-      }
-      g2.setTransform(gat);                    // restore transform
-    } 
-    else { // center image in panel if not measured
-      double centerX = (panel.getXMax()+panel.getXMin())/2;
-      double centerY = (panel.getYMax()+panel.getYMin())/2;
-      int xoffset = panel.xToPix(centerX)-size.width/2;
-      int yoffset = panel.yToPix(centerY)-size.height/2;
-      // draw the video or filtered image
-      if(filterStack.isEmpty()||!filterStack.isEnabled()) {
-        g2.drawImage(rawImage, xoffset, yoffset, panel);
-      } else {
-        g2.drawImage(getImage(), xoffset, yoffset, panel);
-      }
-    }
-  }
+	/**
+	 * Draws the video image on the panel.
+	 *
+	 * @param panel the drawing panel requesting the drawing
+	 * @param g     the graphics context on which to draw
+	 */
+	public void draw(DrawingPanel panel, Graphics g) {
+		if (!visible) {
+			return;
+		}
+		Graphics2D g2 = (Graphics2D) g;
+		if (((panel instanceof VideoPanel) && ((VideoPanel) panel).isDrawingInImageSpace()) || isMeasured) {
+			g2 = (Graphics2D) g2.create();
+			g2.transform(panel.getPixelTransform()); // world to screen
+			if (panel instanceof VideoPanel) {
+				VideoPanel vidPanel = (VideoPanel) panel;
+				if (!vidPanel.isDrawingInImageSpace()) {
+					// use video panel's coords for vid to world transform
+					ImageCoordSystem coords = vidPanel.getCoords();
+					g2.transform(coords.getToWorldTransform(frameNumber));
+				}
+			} else { // not a video panel, so draw in world space
+				// use this video's coords for vid to world transform
+				g2.transform(coords.getToWorldTransform(frameNumber));
+			}
+			// draw the video or filtered image
+			if (filterStack.isEmpty() || !filterStack.isEnabled()) {
+				g2.drawImage(rawImage, 0, 0, panel);
+			} else {
+				g2.drawImage(getImage(), 0, 0, panel);
+			}
+			g2.dispose();
+		} else { // center image in panel if not measured
+			double centerX = (panel.getXMax() + panel.getXMin()) / 2;
+			double centerY = (panel.getYMax() + panel.getYMin()) / 2;
+			int xoffset = panel.xToPix(centerX) - size.width / 2;
+			int yoffset = panel.yToPix(centerY) - size.height / 2;
+			// draw the video or filtered image
+			if (filterStack.isEmpty() || !filterStack.isEnabled()) {
+				g2.drawImage(rawImage, xoffset, yoffset, panel);
+			} else {
+				g2.drawImage(getImage(), xoffset, yoffset, panel);
+			}
+		}
+	}
 
   /**
    * Shows or hides the video.

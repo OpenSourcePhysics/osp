@@ -17,13 +17,14 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Point2D.Double;
 import java.awt.geom.Rectangle2D;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
 
 public class InteractiveCenteredArrow extends BoundedShape {
-  Point2D[] hotSpots = new Point2D[2]; // shadows superclass field
+  Point2D.Double[] hotSpots = new Point2D.Double[2]; // shadows superclass field
   BasicStroke stroke = new BasicStroke(2);
   Shape head;
   static int HEAD = 1;
@@ -45,7 +46,7 @@ public class InteractiveCenteredArrow extends BoundedShape {
     width = w;
     height = h;
     for(int i = 0, n = hotSpots.length; i<n; i++) {
-      hotSpots[i] = new Point2D.Float(0, 0);
+      hotSpots[i] = new Point2D.Double();
     }
   }
 
@@ -143,14 +144,13 @@ public class InteractiveCenteredArrow extends BoundedShape {
    */
   public void draw(DrawingPanel panel, Graphics g) {
     Graphics2D g2 = (Graphics2D) g;
-    toPixels = panel.getPixelTransform();
+    getPixelPt(panel);
+    pixelBounds = computePixelBounds(pixelPt);
     Shape temp;
-    Point2D pt = new Point2D.Double(x, y);
-    pt = toPixels.transform(pt, pt);
-    computePixelBounds(pt);
     if(pixelSized) {
       // translate the shape to correct pixel coordinates
-      temp = new AffineTransform(1, 0, 0, -1, -x+pt.getX(), y+pt.getY()).createTransformedShape(shape);
+    	trIC.setTransform(1, 0, 0, -1, -x+pixelPt.x, y+pixelPt.y);
+    	temp = trIC.createTransformedShape(shape);
     } else {
       temp = toPixels.createTransformedShape(shape);
     }
@@ -158,11 +158,12 @@ public class InteractiveCenteredArrow extends BoundedShape {
     Stroke oldStroke = g2.getStroke();
     g2.setStroke(stroke);
     g2.draw(temp);
-    hotSpots[0].setLocation(pt);
-    pt = new Point2D.Double(x+width/2, y+height/2);
-    pt = toPixels.transform(pt, pt);
-    hotSpots[1].setLocation(pt);
-    temp = AffineTransform.getTranslateInstance(pt.getX(), pt.getY()).createTransformedShape(head);
+    hotSpots[CENTER].setLocation(pixelPt);
+    pixelPt.setLocation(x+width/2, y+height/2);
+    toPixels.transform(pixelPt, pixelPt);
+    hotSpots[BOTTOM].setLocation(pixelPt);
+    trIC.setToTranslation(pixelPt.x, pixelPt.y);
+    temp = trIC.createTransformedShape(head);
     g2.fill(temp);
     g2.draw(temp);
     g2.setStroke(oldStroke);
@@ -179,13 +180,17 @@ public class InteractiveCenteredArrow extends BoundedShape {
     g2.setPaint(Color.BLACK);
   }
 
-  private void computePixelBounds(Point2D pt) {
-    double dx = toPixels.getScaleX()*width;
-    double dy = toPixels.getScaleY()*height;
-    double len = Math.sqrt(dx*dx+dy*dy)+delta;
-    Rectangle2D rect = new Rectangle2D.Double(pt.getX()-len/2, pt.getY()-delta, len, d2);
-    pixelBounds = AffineTransform.getRotateInstance(-theta, pt.getX(), pt.getY()).createTransformedShape(rect);
-  }
+  private AffineTransform trIC = new AffineTransform();
+  private Rectangle2D.Double rect = new Rectangle2D.Double();
+  
+	private Shape computePixelBounds(Point2D.Double pt) {
+		double dx = toPixels.getScaleX() * width;
+		double dy = toPixels.getScaleY() * height;
+		double len = Math.sqrt(dx * dx + dy * dy) + delta;
+		rect.setFrame(pt.x - len / 2, pt.y - delta, len, d2);
+		trIC.setToRotation(-theta, pt.x, pt.y);
+		return trIC.createTransformedShape(rect);
+	}
 
   /**
    * Gets the cursor depending on the current hot spot.
@@ -211,9 +216,10 @@ public class InteractiveCenteredArrow extends BoundedShape {
     path.lineTo((-size), (-size/2));
     path.lineTo((-size), (+size/2));
     path.closePath();
-    AffineTransform rot = AffineTransform.getRotateInstance(-theta);
-    Shape head = rot.createTransformedShape(path);
-    return head;
+    if (theta == 0)
+    	return path;
+    trIC.setToRotation(-theta);
+    return trIC.createTransformedShape(path);
   }
 
   /**

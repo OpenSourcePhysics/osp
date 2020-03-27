@@ -38,7 +38,8 @@ public class DrawableShape implements Drawable {
     this.x = x;
     this.y = y;
     shapeClass = shape.getClass().getName();
-    this.shape = AffineTransform.getTranslateInstance(x, y).createTransformedShape(shape);
+    trDS.setToTranslation(x, y);
+    this.shape = trDS.createTransformedShape(shape);
   }
 
   /**
@@ -77,15 +78,18 @@ public class DrawableShape implements Drawable {
     this.edgeColor = edgeColor;
   }
 
-  /**
-   * Sets the rotation angle in radians.
-   *
-   * @param theta the new angle
-   */
-  public void setTheta(double theta) {
-    shape = AffineTransform.getRotateInstance(theta-this.theta, x, y).createTransformedShape(shape);
-    this.theta = theta;
-  }
+	/**
+	 * Sets the rotation angle in radians.
+	 *
+	 * @param theta the new angle
+	 */
+	public void setTheta(double theta) {
+		if (this.theta == theta)
+			return;
+		trDS.setToRotation(theta - this.theta, x, y);
+		shape = trDS.createTransformedShape(shape);
+		this.theta = theta;
+	}
 
   /**
    * Gets the value of the roation angle theta.
@@ -110,7 +114,8 @@ public class DrawableShape implements Drawable {
    * @param mat double[][]
    */
   public void tranform(double[][] mat) {
-    shape = (new AffineTransform(mat[0][0], mat[1][0], mat[0][1], mat[1][1], mat[0][2], mat[1][2])).createTransformedShape(shape);
+	  trDS.setTransform(mat[0][0], mat[1][0], mat[0][1], mat[1][1], mat[0][2], mat[1][2]);
+    shape = trDS.createTransformedShape(shape);
   }
 
   /**
@@ -120,7 +125,10 @@ public class DrawableShape implements Drawable {
    * @param _y
    */
   public void setXY(double _x, double _y) {
-    shape = AffineTransform.getTranslateInstance(_x-x, _y-y).createTransformedShape(shape);
+	  if (x == _x && y == _y)
+		  return;
+	  trDS.setToTranslation(_x-x, _y-y);
+    shape = trDS.createTransformedShape(shape);
     x = _x;
     y = _y;
   }
@@ -131,7 +139,10 @@ public class DrawableShape implements Drawable {
    * @param _x
    */
   public void setX(double _x) {
-    shape = AffineTransform.getTranslateInstance(_x-x, 0).createTransformedShape(shape);
+	  if (x == _x)
+		  return;
+	  trDS.setToTranslation(_x-x, 0);
+    shape = trDS.createTransformedShape(shape);
     x = _x;
   }
 
@@ -143,15 +154,18 @@ public class DrawableShape implements Drawable {
     return x;
   }
 
-  /**
-   * Sets the y coordinate.
-   *
-   * @param _y
-   */
-  public void setY(double _y) {
-    shape = AffineTransform.getTranslateInstance(0, _y-y).createTransformedShape(shape);
-    y = _y;
-  }
+	/**
+	 * Sets the y coordinate.
+	 *
+	 * @param _y
+	 */
+	public void setY(double _y) {
+		if (y == _y)
+			return;
+		trDS.setToTranslation(0, _y - y);
+		shape = trDS.createTransformedShape(shape);
+		y = _y;
+	}
 
   /**
    * Gets the value of y.
@@ -174,6 +188,7 @@ public class DrawableShape implements Drawable {
     return name;
   }
 
+  AffineTransform trDS = new AffineTransform();
   /**
    * Draws the shape.
    *
@@ -181,7 +196,7 @@ public class DrawableShape implements Drawable {
    * @param g Graphics
    */
   public void draw(DrawingPanel panel, Graphics g) {
-    Shape temp = panel.getPixelTransform().createTransformedShape(shape);
+    Shape temp = panel.transformShape2(shape);
     Graphics2D g2 = ((Graphics2D) g);
     g2.setPaint(color);
     g2.fill(temp);

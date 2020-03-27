@@ -550,11 +550,20 @@ public class PlottingPanel extends InteractivePanel {
 
   /**
    * Gets the affine transformation that converts from world to pixel coordinates.
+   * 
+   * NOT A CLONE!
+   * 
    * @return the affine transformation
    */
   public AffineTransform getPixelTransform() {
-    return(AffineTransform) functionTransform.clone();
+	    return functionTransform;
+    //return(AffineTransform) functionTransform.clone();
   }
+
+  public AffineTransform getPixelTransform(AffineTransform tr) {
+	  tr.setTransform(functionTransform);
+	  return tr;
+	  }
 
   /**
    * Method logBase10

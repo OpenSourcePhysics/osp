@@ -32,6 +32,8 @@ public class DrawableGroup implements Drawable {
     }
   }
 
+  AffineTransform trDG = new AffineTransform();
+
   /**
    * Draws the shapes in the drawable list.
    *
@@ -41,20 +43,29 @@ public class DrawableGroup implements Drawable {
   public void draw(DrawingPanel panel, Graphics g) {
     int xpix = panel.xToPix(0);
     int ypix = panel.yToPix(0);
+    
     Graphics2D g2 = (Graphics2D) g;
-    Iterator<Drawable> it = drawableList.iterator();
-    AffineTransform oldAT = g2.getTransform();
-    AffineTransform at = g2.getTransform();
-    at.concatenate(AffineTransform.getRotateInstance(-theta, xpix, ypix));
+       
     double xt = x*panel.getXPixPerUnit()*Math.cos(theta)+y*panel.getYPixPerUnit()*Math.sin(theta);
     double yt = x*panel.getXPixPerUnit()*Math.sin(theta)-y*panel.getYPixPerUnit()*Math.cos(theta);
-    at.concatenate(AffineTransform.getTranslateInstance(xt, yt));
-    g2.setTransform(at);
-    while(it.hasNext()) {
-      Drawable drawable = it.next();
-      drawable.draw(panel, g2);
+    AffineTransform at = g2.getTransform();
+    trDG.setTransform(at);    
+    trDG.rotate(-theta, xpix, ypix);
+    trDG.translate(xt, yt);
+    
+    
+    // was:
+//    AffineTransform at = g2.getTransform();
+//    at.concatenate(AffineTransform.getRotateInstance(-theta, xpix, ypix));
+//    double xt = x*panel.getXPixPerUnit()*Math.cos(theta)+y*panel.getYPixPerUnit()*Math.sin(theta);
+//    double yt = x*panel.getXPixPerUnit()*Math.sin(theta)-y*panel.getYPixPerUnit()*Math.cos(theta);
+//    at.concatenate(AffineTransform.getTranslateInstance(xt, yt));
+
+    g2.setTransform(trDG);
+    for (int i = 0, n = drawableList.size(); i < n; i++) {
+      drawableList.get(i).draw(panel, g2);
     }
-    g2.setTransform(oldAT);
+    g2.setTransform(at);
   }
 
   /**

@@ -901,14 +901,12 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
    * @param g2
    */
   protected void drawLinePlot(DrawingPanel drawingPanel, Graphics2D g2) {
-    AffineTransform at = (AffineTransform) (drawingPanel.getPixelTransform().clone());
-    Shape s = ampPath.createTransformedShape(at);
+    AffineTransform at = drawingPanel.getPixelTransform();
     g2.setColor(lineColor);
-    g2.draw(s);
+    g2.draw(ampPath.createTransformedShape(at));
     if(showPhase) {
       at.concatenate(flip);
-      s = ampPath.createTransformedShape(at);
-      g2.draw(s);
+      g2.draw(ampPath.createTransformedShape(at));
     }
   }
 

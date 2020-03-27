@@ -261,8 +261,8 @@ public class Spring implements Measurable {
       g2.drawLine(a, b, a, b);
       return;
     }
-    Shape s = springPath.createTransformedShape(panel.getPixelTransform());
-    g2.draw(s);
+    
+    g2.draw(panel.transformShape2(springPath));
   }
 
   // -------------------------------------

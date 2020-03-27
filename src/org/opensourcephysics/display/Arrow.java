@@ -14,6 +14,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Point2D.Double;
+
 import org.opensourcephysics.controls.XML;
 
 /**
@@ -147,6 +149,8 @@ public class Arrow implements Drawable {
   public void setHeadSize(float size) {
     headSize = size;
   }
+  
+  Point2D.Double ptA = new Point2D.Double();
 
   /**
    * Draws the arrow.
@@ -156,35 +160,48 @@ public class Arrow implements Drawable {
    */
   public void draw(DrawingPanel panel, Graphics g) {
     Graphics2D g2 = (Graphics2D) g;
-    AffineTransform toPixels = panel.getPixelTransform();
+    AffineTransform tr = panel.getPixelTransform();
     g2.setPaint(color);
     // draw the shaft
-    g2.draw(toPixels.createTransformedShape(new Line2D.Double(x, y, x+a, y+b)));
-    Point2D pt = new Point2D.Double(x+a, y+b);
-    pt = toPixels.transform(pt, pt);
-    double aspect = panel.isSquareAspect() ? 1 : -toPixels.getScaleX()/toPixels.getScaleY();
-    Shape head = getHead(Math.atan2(b, aspect*a));
-    Shape temp = AffineTransform.getTranslateInstance(pt.getX(), pt.getY()).createTransformedShape(head);
+    g2.draw(tr.createTransformedShape(new Line2D.Double(x, y, x+a, y+b)));
+    ptA.setLocation(x+a, y+b);
+    tr.transform(ptA, ptA);
+    double aspect = panel.isSquareAspect() ? 1 : -tr.getScaleX()/tr.getScaleY();
+    Shape temp = getHead(ptA, Math.atan2(b, aspect*a));
     // draw the head
     g2.fill(temp);
     g2.setPaint(Color.BLACK);
   }
 
-  /**
-   * Gets the arrowhead shape.
-   * @param theta double the angle of the arrow
-   * @return Shape
-   */
-  protected Shape getHead(double theta) {
-    GeneralPath path = new GeneralPath();
-    path.moveTo(1, 0);
-    path.lineTo(-headSize, -headSize/2);
-    path.lineTo(-headSize, +headSize/2);
-    path.closePath();
-    AffineTransform rot = AffineTransform.getRotateInstance(-theta);
-    Shape head = rot.createTransformedShape(path);
-    return head;
-  }
+  private double lastTheta = java.lang.Double.NaN, lastX, lastY, lastHeadSize;
+  private Shape head;
+
+  private AffineTransform trA = new AffineTransform();
+
+	/**
+	 * Gets the arrowhead shape.
+	 * 
+	 * @param ptA2
+	 * @param theta double the angle of the arrow
+	 * @return Shape
+	 */
+	protected Shape getHead(Double ptA, double theta) {
+		if (theta == lastTheta && lastX == ptA.x && lastY == ptA.y && headSize == lastHeadSize)
+			return head;
+		lastTheta = theta;
+		lastX = ptA.x;
+		lastY = ptA.y;
+		lastHeadSize = headSize;
+		GeneralPath path = new GeneralPath();
+		path.moveTo(1, 0);
+		path.lineTo(-headSize, -headSize / 2);
+		path.lineTo(-headSize, +headSize / 2);
+		path.closePath();
+		trA.setToTranslation(ptA.x, ptA.y);
+		trA.rotate(-theta);
+		return head = trA.createTransformedShape(path);
+	}
+
 
   /**
    * Gets a loader that allows a Circle to be represented as XML data.

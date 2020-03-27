@@ -27,7 +27,7 @@ public class ElementCircle extends Element implements org.opensourcephysics.disp
   private double[] pixel = new double[3];     // The ouput of position projections
   private double[] pixelSize = new double[2]; // The ouput of size projections
   private Object3D[] objects = new Object3D[] {new Object3D(this, 0)};
-  private AffineTransform transform = new AffineTransform(), originalTransform = null;
+  private AffineTransform transform = new AffineTransform();
 
   {
     setSizeXYZ(0, 0, 0);
@@ -110,8 +110,8 @@ public class ElementCircle extends Element implements org.opensourcephysics.disp
     int xc = (int) (pixel[0]-pixelSize[0]/2), yc = (int) (pixel[1]-pixelSize[1]/2);
     _g2.setStroke(getRealStyle().getLineStroke());
     if(angle!=0.0) {
-      originalTransform = _g2.getTransform();
-      transform.setTransform(originalTransform);
+    	_g2 = (Graphics2D) _g2.create();
+      transform.setTransform(_g2.getTransform());
       transform.rotate(-angle, pixel[0], pixel[1]);
       _g2.setTransform(transform);
     }
@@ -124,7 +124,7 @@ public class ElementCircle extends Element implements org.opensourcephysics.disp
       _g2.drawOval(xc, yc, (int) pixelSize[0], (int) pixelSize[1]);
     }
     if(angle!=0.0) {
-      _g2.setTransform(originalTransform);
+    	_g2.dispose();
     }
   }
 

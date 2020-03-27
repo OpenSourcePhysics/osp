@@ -10,9 +10,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Shape;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.ImageObserver;
 
@@ -43,6 +41,8 @@ public class BoundedImage extends BoundedShape implements ImageObserver {
     setPixelSized(true);
   }
 
+  private AffineTransform trBI = new AffineTransform();
+  
   /**
    * Draws the image.
    *
@@ -50,38 +50,37 @@ public class BoundedImage extends BoundedShape implements ImageObserver {
    * @param g  the graphics context upon which to draw
    */
   public void draw(DrawingPanel panel, Graphics g) {
-    toPixels = panel.getPixelTransform();
-    Point2D pt = new Point2D.Double(x, y);
-    pt = toPixels.transform(pt, pt);
+	getPixelPt(panel);
     Graphics2D g2 = (Graphics2D) g;
-    g2.translate(pt.getX(), pt.getY());
-    AffineTransform trans = new AffineTransform();
-    trans.translate(-width/2, -height/2);
-    trans.rotate(-theta, width/2, height/2);
-    trans.scale(width/image.getWidth(null), height/image.getHeight(null));
-    g2.drawImage(image, trans, null);
-    g2.translate(-pt.getX(), -pt.getY());
-    drawFixedBounds(panel, g);
+    g2.translate(pixelPt.x, pixelPt.y);
+    trBI.setToTranslation(-width/2, -height/2);
+    trBI.rotate(-theta, width/2, height/2);
+    trBI.scale(width/image.getWidth(null), height/image.getHeight(null));
+    g2.drawImage(image, trBI, null);
+    g2.translate(-pixelPt.x, -pixelPt.y);
+    getFixedBounds();
+    if (selected)
+    	drawFixedBounds(g);
   }
 
-  /**
+  Rectangle2D.Double rectBI = new Rectangle2D.Double();
+  
+  private void getFixedBounds() {
+	rectBI.setFrame(pixelPt.x-width/2, pixelPt.y-height/2, width, height);
+	pixelBounds = computeFixedHotSpots(rectBI);
+    if(theta != 0) {
+      pixelBounds = getRotateInstance(-theta, pixelPt.x, pixelPt.y).createTransformedShape(pixelBounds);
+    }
+
+  }
+  
+/**
    * Draws the bounds around the image.
    *
    * @param panel the drawing panel
    * @param g  the graphics context
    */
-  private void drawFixedBounds(DrawingPanel panel, Graphics g) {
-    Point2D pt = new Point2D.Double(x, y);
-    pt = toPixels.transform(pt, pt);
-    Shape temp = new Rectangle2D.Double(pt.getX()-width/2, pt.getY()-height/2, width, height);
-    computeFixedHotSpots(temp.getBounds2D());
-    pixelBounds = temp.getBounds2D();
-    if(theta!=0) {
-      pixelBounds = AffineTransform.getRotateInstance(-theta, pt.getX(), pt.getY()).createTransformedShape(pixelBounds);
-    }
-    if(!selected) {
-      return;
-    }
+  private void drawFixedBounds(Graphics g) {
     Graphics2D g2 = ((Graphics2D) g);
     g2.setPaint(boundsColor);
     g2.draw(pixelBounds);

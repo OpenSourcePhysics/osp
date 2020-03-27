@@ -6,8 +6,9 @@
  */
 
 package org.opensourcephysics.ejs.control;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.opensourcephysics.ejs.control.value.DoubleValue;
 import org.opensourcephysics.ejs.control.value.Value;
 
@@ -19,8 +20,8 @@ import org.opensourcephysics.ejs.control.value.Value;
 public class GroupVariable {
   private String name;
   private Value value;
-  private Vector<Item> elementList;
-  private Vector<MethodWithOneParameter> methodList;
+  private List<Item> elementList;
+  private List<MethodWithOneParameter> methodList;
 
   // A GroupVariable should be created with a non-null value
   // that matches the type it is going to be used.
@@ -32,8 +33,8 @@ public class GroupVariable {
    */
   public GroupVariable(String _aName, Value _aValue) {
     name = _aName;
-    elementList = new Vector<Item>();
-    methodList = new Vector<MethodWithOneParameter>();
+    elementList = new ArrayList<Item>();
+    methodList = new ArrayList<MethodWithOneParameter>();
     // value = _aValue.cloneValue();
     if(_aValue!=null) {
       value = _aValue.cloneValue();
@@ -75,33 +76,45 @@ public class GroupVariable {
   }
 
   public void removeElementListener(ControlElement _element, int _index) {
-    for(Enumeration<Item> e = elementList.elements(); e.hasMoreElements(); ) {
-      Item item = e.nextElement();
-      if((item.element==_element)&&(item.index==_index)) {
-        elementList.removeElement(item);
-        return;
-      }
-    }
+	  // BH 2020.03.27 optimization
+	  for (int i = elementList.size(); --i >= 0;) {
+		 Item item = elementList.get(i);
+	      if((item.element==_element)&&(item.index==_index)) {
+	          elementList.remove(i);
+	          return;
+	        }		 
+	  }
+//    for(Enumeration<Item> e = elementList.elements(); e.hasMoreElements(); ) {
+//      Item item = e.nextElement();
+//      if((item.element==_element)&&(item.index==_index)) {
+//        elementList.removeElement(item);
+//        return;
+//      }
+//    }
   }
 
-  public void propagateValue(ControlElement _element) {
-    for(Enumeration<Item> e = elementList.elements(); e.hasMoreElements(); ) {
-      Item item = e.nextElement();
-      if(item.element!=_element) {
-        item.element.setActive(false);
-        if(item.element.myMethodsForProperties[item.index]!=null) { // AMAVP (See note in ControlElement)
-          // System.out.println ("I  call the method "+item.element.myMethodsForProperties[item.index].toString()+ "first!");
-          item.element.setValue(item.index, item.element.myMethodsForProperties[item.index].invoke(ControlElement.METHOD_FOR_VARIABLE, null)); // null = no calling object
-        } else if(item.element.myExpressionsForProperties[item.index]!=null) { // AMAVP (See note in ControlElement)
-          // System.out.println ("I  call the expression "+item.element.myExpressionsForProperties[item.index].expression+ "first!");
-          item.element.setValue(item.index, item.element.myExpressionsForProperties[item.index]);
-        } else {
-          item.element.setValue(item.index, value);
-        }
-        item.element.setActive(true);
-      }
-    }
-  }
+	public void propagateValue(ControlElement _element) {
+		for (int i = elementList.size(); --i >= 0;) {
+			Item item = elementList.get(i);
+			if (item.element != _element) {
+				item.element.setActive(false);
+				if (item.element.myMethodsForProperties[item.index] != null) { // AMAVP (See note in ControlElement)
+					// System.out.println ("I call the method
+					// "+item.element.myMethodsForProperties[item.index].toString()+ "first!");
+					item.element.setValue(item.index, item.element.myMethodsForProperties[item.index]
+							.invoke(ControlElement.METHOD_FOR_VARIABLE, null)); // null = no calling object
+				} else if (item.element.myExpressionsForProperties[item.index] != null) { // AMAVP (See note in
+																							// ControlElement)
+					// System.out.println ("I call the expression
+					// "+item.element.myExpressionsForProperties[item.index].expression+ "first!");
+					item.element.setValue(item.index, item.element.myExpressionsForProperties[item.index]);
+				} else {
+					item.element.setValue(item.index, value);
+				}
+				item.element.setActive(true);
+			}
+		}
+	}
 
   // --------------------------------------------------------
   // Adding and removing method elements
@@ -114,21 +127,21 @@ public class GroupVariable {
     methodList.add(new MethodWithOneParameter(ControlElement.VARIABLE_CHANGED, _target, _method, null, null, _anObject));
   }
 
-  public void removeListener(Object _target, String _method) {
-    for(Enumeration<MethodWithOneParameter> e = methodList.elements(); e.hasMoreElements(); ) {
-      MethodWithOneParameter method = e.nextElement();
-      if(method.equals(ControlElement.VARIABLE_CHANGED, _target, _method)) {
-        methodList.removeElement(method);
-        return;
-      }
-    }
-  }
+	public void removeListener(Object _target, String _method) {
+		for (int i = methodList.size(); --i >= 0;) {
+			MethodWithOneParameter method = methodList.get(i);
+			if (method.equals(ControlElement.VARIABLE_CHANGED, _target, _method)) {
+				methodList.remove(method);
+				return;
+			}
+		}
+	}
 
-  public void invokeListeners(ControlElement _element) {
-    for(Enumeration<MethodWithOneParameter> e = methodList.elements(); e.hasMoreElements(); ) {
-      e.nextElement().invoke(ControlElement.VARIABLE_CHANGED, _element);
-    }
-  }
+	public void invokeListeners(ControlElement _element) {
+		for (int i = 0, n = methodList.size(); i < n; i++) {
+			methodList.get(i).invoke(ControlElement.VARIABLE_CHANGED, _element);
+		}
+	}
 
   // --------------------------------------------------------
   // Internal classes

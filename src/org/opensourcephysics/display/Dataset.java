@@ -169,6 +169,8 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 
   protected ArrayList<ErrorBar> errorBars = new ArrayList<ErrorBar>();
   protected Shape customMarker = new Rectangle2D.Double(-markerSize/2, -markerSize/2, markerSize, markerSize);
+
+private Shape myShape;
   
   /**
    *  Dataset constructor.
@@ -829,6 +831,7 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
     if(Double.isNaN(x)||Double.isInfinite(x)||Double.isInfinite(y)) {
       return;
     }
+    myShape = null;
     if(index>=xpoints.length) {
       increaseCapacity(xpoints.length*2);
     }
@@ -888,6 +891,7 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
    */
   public void append(double[] _xpoints, double[] _ypoints) {
     boolean badData = false;
+    myShape = null;
     for(int i = 0; i<_xpoints.length; i++) {
       double xp = _xpoints[i];
       double yp = _ypoints[i];
@@ -1025,6 +1029,7 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
     generalPath.reset();
     errorBars.clear();
     resetXYMinMax();
+    myShape = null;
   }
 
   /**
@@ -1171,29 +1176,30 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
     }
   }
 
-  /**
-   *  Recalculate the general path.
-   */
-  protected void recalculatePath() {
-    generalPath.reset();
-    if(index<1) {
-      return;
-    }
-    int i = 0;
-    double[] xValues = getXPoints();
-    double[] yValues = getYPoints();
-    for(; i<index; i++) {
-      if(!Double.isNaN(yValues[i])) {
-        generalPath.moveTo((float) xValues[i], (float) yValues[i]);
-        break;
-      }
-    }
-    for(int j = i+1; j<index; j++) {
-      if(!Double.isNaN(yValues[j])) {
-        generalPath.lineTo((float) xValues[j], (float) yValues[j]);
-      }
-    }
-  }
+	/**
+	 * Recalculate the general path.
+	 */
+	protected void recalculatePath() {
+		myShape = null;
+		generalPath.reset();
+		if (index < 1) {
+			return;
+		}
+		int i = 0;
+		double[] xValues = getXPoints();
+		double[] yValues = getYPoints();
+		for (; i < index; i++) {
+			if (!Double.isNaN(yValues[i])) {
+				generalPath.moveTo((float) xValues[i], (float) yValues[i]);
+				break;
+			}
+		}
+		for (int j = i + 1; j < index; j++) {
+			if (!Double.isNaN(yValues[j])) {
+				generalPath.lineTo((float) xValues[j], (float) yValues[j]);
+			}
+		}
+	}
 
   /**
    *  Move an out-of-place datum into its correct position.
@@ -1238,12 +1244,14 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
     if(noNumbers) {
       return;
     }
-    AffineTransform at = drawingPanel.getPixelTransform();
-    Shape s = generalPath.createTransformedShape(at);
     g2.setColor(lineColor);
-    g2.draw(s);
+    if (myShape == null)
+    	myShape = drawingPanel.transformPath2(generalPath);
+    g2.draw(myShape);
   }
 
+
+  private AffineTransform trD = new AffineTransform();
   /**
    *  Fills the line connecting the data points.
    *
@@ -1262,12 +1270,12 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
     if(noNumbers) {
       return;
     }
-    AffineTransform at = drawingPanel.getPixelTransform();
-    Shape s = generalPath.createTransformedShape(at);
+    if (myShape == null)
+    	myShape = drawingPanel.transformPath2(generalPath);
     g2.setColor(fillColor);
-    g2.fill(s);
+    g2.fill(myShape);
     g2.setColor(edgeColor);
-    g2.draw(s);
+    g2.draw(myShape);
   }
 
   /**

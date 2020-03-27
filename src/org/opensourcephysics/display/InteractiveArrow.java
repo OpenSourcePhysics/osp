@@ -17,16 +17,17 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Point2D.Double;
 import java.awt.geom.Rectangle2D;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
 
 public class InteractiveArrow extends BoundedShape {
-  Point2D[] hotSpots = new Point2D[2]; // shadows superclass field
+  Point2D.Double[] hotSpots = new Point2D.Double[2]; // shadows superclass field
   BasicStroke stroke = new BasicStroke(2);
   Shape head;
-  static int HEAD = 1;
+  final static int HEAD = 1;
 
   /**
    * Constructor InteractiveArrow
@@ -44,7 +45,7 @@ public class InteractiveArrow extends BoundedShape {
     width = w;
     height = h;
     for(int i = 0, n = hotSpots.length; i<n; i++) {
-      hotSpots[i] = new Point2D.Float(0, 0);
+      hotSpots[i] = new Point2D.Double();
     }
   }
 
@@ -79,14 +80,11 @@ public class InteractiveArrow extends BoundedShape {
     if(!enabled) {
       return false;
     }
-    if(pixelBounds.contains(xpix, ypix)&&!selected) {
-      return true;
-    }
-    if(selected) {
-      hotspot = getHotSpotIndex(xpix, ypix, hotSpots);
-      return true;
-    }
-    return false;
+    if (selected) {
+        hotspot = getHotSpotIndex(xpix, ypix, hotSpots);
+        return true;
+    } 
+    return pixelBounds.contains(xpix, ypix);
   }
 
   /**
@@ -145,57 +143,60 @@ public class InteractiveArrow extends BoundedShape {
     head = getHead(theta);
   }
 
-  /**
-   * Draws the arrow.
-   *
-   * @param panel  the world in which the arrow is viewed
-   * @param g  the graphics context upon which to draw
-   */
-  public void draw(DrawingPanel panel, Graphics g) {
-    Graphics2D g2 = (Graphics2D) g;
-    toPixels = panel.getPixelTransform();
-    Shape temp;
-    Point2D pt = new Point2D.Double(x, y);
-    pt = toPixels.transform(pt, pt);
-    computePixelBounds(pt);
-    if(pixelSized) {
-      // translate the shape to correct pixel coordinates
-      temp = new AffineTransform(1, 0, 0, -1, -x+pt.getX(), y+pt.getY()).createTransformedShape(shape);
-    } else {
-      temp = toPixels.createTransformedShape(shape);
-    }
-    g2.setPaint(edgeColor);
-    Stroke oldStroke = g2.getStroke();
-    g2.setStroke(stroke);
-    g2.draw(temp);
-    hotSpots[0].setLocation(pt);
-    pt = new Point2D.Double(x+width, y+height);
-    pt = toPixels.transform(pt, pt);
-    hotSpots[1].setLocation(pt);
-    temp = AffineTransform.getTranslateInstance(pt.getX(), pt.getY()).createTransformedShape(head);
-    g2.fill(temp);
-    g2.draw(temp);
-    g2.setStroke(oldStroke);
-    if(!selected||hideBounds) {
-      return;
-    }
-    g2.setPaint(boundsColor);
-    if(xyDrag) {
-      g2.fillRect((int) hotSpots[CENTER].getX()-delta, (int) hotSpots[CENTER].getY()-delta, d2, d2);
-    }
-    if(rotateDrag) {
-      g2.fillOval((int) hotSpots[HEAD].getX()-delta, (int) hotSpots[HEAD].getY()-delta, d2, d2);
-    }
-    g2.setPaint(Color.BLACK);
-  }
+  private AffineTransform trIA = new AffineTransform();
+  
+	/**
+	 * Draws the arrow.
+	 *
+	 * @param panel the world in which the arrow is viewed
+	 * @param g     the graphics context upon which to draw
+	 */
+	public void draw(DrawingPanel panel, Graphics g) {
+		Graphics2D g2 = (Graphics2D) g;
+		getPixelPt(panel);
+		pixelBounds = computePixelBounds(pixelPt);
+		Shape temp;
+		if (pixelSized) {
+			// translate the shape to correct pixel coordinates
+			trIA.setTransform(1, 0, 0, -1, -x + pixelPt.x, y + pixelPt.y);
+			temp = trIA.createTransformedShape(shape);
+		} else {
+			temp = toPixels.createTransformedShape(shape);
+		}
+		g2.setPaint(edgeColor);
+		Stroke oldStroke = g2.getStroke();
+		g2.setStroke(stroke);
+		g2.draw(temp);
+		hotSpots[CENTER].setLocation(pixelPt);
+		pixelPt.setLocation(x + width, y + height);
+		toPixels.transform(pixelPt, pixelPt);
+		hotSpots[BOTTOM].setLocation(pixelPt);
+		temp = AffineTransform.getTranslateInstance(pixelPt.x, pixelPt.y).createTransformedShape(head);
+		g2.fill(temp);
+		g2.draw(temp);
+		g2.setStroke(oldStroke);
+		if (!selected || hideBounds) {
+			return;
+		}
+		g2.setPaint(boundsColor);
+		if (xyDrag) {
+			g2.fillRect((int) hotSpots[CENTER].getX() - delta, (int) hotSpots[CENTER].getY() - delta, d2, d2);
+		}
+		if (rotateDrag) {
+			g2.fillOval((int) hotSpots[HEAD].getX() - delta, (int) hotSpots[HEAD].getY() - delta, d2, d2);
+		}
+		g2.setPaint(Color.BLACK);
+	}
 
-  private void computePixelBounds(Point2D pt) {
-    double dx = toPixels.getScaleX()*width;
-    double dy = toPixels.getScaleY()*height;
-    double len = Math.sqrt(dx*dx+dy*dy)+delta;
-    Rectangle2D rect = new Rectangle2D.Double(pt.getX(), pt.getY()-delta, len, d2);
-    pixelBounds = AffineTransform.getRotateInstance(-theta, pt.getX(), pt.getY()).createTransformedShape(rect);
-  }
+  private Rectangle2D.Double rectIA = new Rectangle2D.Double();
+  
+	private Shape computePixelBounds(Point2D.Double pt) {
+		double dx = toPixels.getScaleX() * width;
+		double dy = toPixels.getScaleY() * height;
+		double len = Math.sqrt(dx * dx + dy * dy) + delta;
+		rectIA.setFrame(pt.x, pt.y - delta, len, d2);
+		return (theta == 0 ? rectIA : getRotateInstance(-theta, pt.x, pt.y).createTransformedShape(rectIA));
+	}
 
   /**
    * Gets the cursor depending on the current hot spot.
@@ -221,9 +222,8 @@ public class InteractiveArrow extends BoundedShape {
     path.lineTo((-headSize), (-headSize/2));
     path.lineTo((-headSize), (+headSize/2));
     path.closePath();
-    AffineTransform rot = AffineTransform.getRotateInstance(-theta);
-    Shape head = rot.createTransformedShape(path);
-    return head;
+    trIA.setToRotation(-theta);
+    return trIA.createTransformedShape(path);
   }
 
   /**

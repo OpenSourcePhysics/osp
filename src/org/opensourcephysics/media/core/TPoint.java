@@ -177,6 +177,8 @@ public class TPoint extends Point2D.Double implements Interactive, Trackable {
     return vidPanel.getFrameNumber();
   }
 
+  protected AffineTransform toScreen;
+  
   /**
    * Gets the screen position of this TPoint on the specified VideoPanel.
    *
@@ -184,13 +186,14 @@ public class TPoint extends Point2D.Double implements Interactive, Trackable {
    * @return the screen point
    */
   public Point getScreenPosition(VideoPanel vidPanel) {
-    AffineTransform toScreen = vidPanel.getPixelTransform();
+	    if(screenPt==null) {
+	        toScreen = new AffineTransform();
+	        screenPt = new Point();
+	      }
+    toScreen.setTransform(vidPanel.getPixelTransform());
     if(!vidPanel.isDrawingInImageSpace()) {
       int n = getFrameNumber(vidPanel);
       toScreen.concatenate(vidPanel.getCoords().getToWorldTransform(n));
-    }
-    if(screenPt==null) {
-      screenPt = new Point();
     }
     toScreen.transform(this, screenPt);
     return screenPt;
@@ -206,12 +209,13 @@ public class TPoint extends Point2D.Double implements Interactive, Trackable {
   public void setScreenPosition(int x, int y, VideoPanel vidPanel) {
     if(screenPt==null) {
       screenPt = new Point();
+      toScreen = new AffineTransform();
     }
     if(worldPt==null) {
       worldPt = new Point2D.Double();
     }
     screenPt.setLocation(x, y);
-    AffineTransform toScreen = vidPanel.getPixelTransform();
+    toScreen.setTransform(vidPanel.getPixelTransform());
     if(!vidPanel.isDrawingInImageSpace()) {
       int n = getFrameNumber(vidPanel);
       toScreen.concatenate(vidPanel.getCoords().getToWorldTransform(n));
@@ -662,12 +666,13 @@ public class TPoint extends Point2D.Double implements Interactive, Trackable {
     // get image coordinates of the screen point
     if(screenPt==null) {
       screenPt = new Point();
+      toScreen = new AffineTransform();
     }
     if(worldPt==null) {
       worldPt = new Point2D.Double();
     }
     screenPt.setLocation(xScreen, yScreen);
-    AffineTransform toScreen = vidPanel.getPixelTransform();
+    toScreen.setTransform(vidPanel.getPixelTransform());
     if(!vidPanel.isDrawingInImageSpace()) {
       int n = getFrameNumber(vidPanel);
       toScreen.concatenate(vidPanel.getCoords().getToWorldTransform(n));

@@ -668,56 +668,61 @@ public class TextLine {
     drawText(g, x, y);
   }
 
-  /**
-   * Parse the text then draw it without any rotation.
-   * @param g Graphics context
-   * @param x pixel position of the text
-   * @param y pixel position of the text
-   */
-  public void drawText(Graphics g, int x, int y) {
-    TextState ts;
-    int xoffset = x;
-    int yoffset = y;
-    if((g==null)||(text==null)) {
-      return;
-    }
-    Graphics lg = g.create();
-    if(lg==null) {
-      return; // added by W. Christian
-    }
-    parseText(g);
-    if(justification==CENTER) {
-      xoffset = x-width/2;
-    } else if(justification==RIGHT) {
-      xoffset = x-width;
-    }
-    if(background!=null) {
-      lg.setColor(background);
-      lg.fillRect(xoffset, yoffset-ascent, width, height);
-      lg.setColor(g.getColor());
-    }
-    if(font!=null) {
-      lg.setFont(font);
-    }
-    if(color!=null) {
-      lg.setColor(color);
-    }
-    Vector<TextState> vec; // added by W. Christian in case a parse is called during drawing.
-    synchronized(list) {
-      vec = new Vector<TextState>(list);
-    } // added by W. Christian
-    for(int i = 0; i<vec.size(); i++) {
-      ts = (vec.elementAt(i));
-      if(ts.f!=null) {
-        lg.setFont(ts.f);
-      }
-      if(ts.s!=null) {
-        lg.drawString(ts.toString(), ts.x+xoffset, ts.y+yoffset);
-      }
-    }
-    lg.dispose();
-    lg = null;
-  }
+	/**
+	 * Parse the text then draw it without any rotation.
+	 * 
+	 * @param g Graphics context
+	 * @param x pixel position of the text
+	 * @param y pixel position of the text
+	 */
+	public void drawText(Graphics g, int x, int y) {
+		TextState ts;
+		int xoffset = x;
+		int yoffset = y;
+		if ((g == null) || (text == null)) {
+			return;
+		}
+		Graphics lg = g.create();
+		if (lg == null) {
+			return; // added by W. Christian
+		}
+		parseText(g);
+		if (justification == CENTER) {
+			xoffset = x - width / 2;
+		} else if (justification == RIGHT) {
+			xoffset = x - width;
+		}
+		if (background != null) {
+			lg.setColor(background);
+			lg.fillRect(xoffset, yoffset - ascent, width, height);
+			lg.setColor(g.getColor());
+		}
+		if (font != null) {
+			lg.setFont(font);
+		}
+		if (color != null) {
+			lg.setColor(color);
+		}
+		if (keepItSimple(text)) {
+			lg.drawString(text, 0 + xoffset, 0 + yoffset);
+		} else {
+			Vector<TextState> vec; // added by W. Christian in case a parse is called during drawing.
+			synchronized (list) {
+				vec = new Vector<TextState>(list);
+			} // added by W. Christian
+			for (int i = 0; i < vec.size(); i++) {
+				ts = (vec.elementAt(i));
+				if (ts.f != null) {
+					lg.setFont(ts.f);
+				}
+				if (ts.s != null) {
+					lg.drawString(ts.toString(), ts.x + xoffset, ts.y + yoffset);
+				}
+			}
+		}
+		lg.dispose();
+		lg = null;
+	}
 
   /**
    * @return Logical font name of the set font

@@ -109,14 +109,15 @@ public class InteractiveTextLine extends InteractiveShape {
     return false;
   }
 
-  private void checkBounds(Graphics g) {
-    if(dirty||(toPixels.getScaleX()!=sx)||(toPixels.getScaleY()!=sy)) {
-      boundsRect = textLine.getStringBounds(g);
-      sx = toPixels.getScaleX();
-      sy = toPixels.getScaleY();
-      dirty = false;
-    }
-  }
+	private boolean checkBoundsChanged() {
+		if (dirty || (toPixels.getScaleX() != sx) || (toPixels.getScaleY() != sy)) {
+			sx = toPixels.getScaleX();
+			sy = toPixels.getScaleY();
+			dirty = false;
+			return true;
+		}
+		return false;
+	}
 
   /**
    * Draws the text.
@@ -129,16 +130,15 @@ public class InteractiveTextLine extends InteractiveShape {
       return;
     }
     textLine.setColor(color);
-    toPixels = panel.getPixelTransform();
-    checkBounds(g);
-    Point2D pt = new Point2D.Double(x, y);
-    pt = toPixels.transform(pt, pt);
+    getPixelPt(panel);
+    if (checkBoundsChanged())
+        boundsRect = textLine.getStringBounds(g);
     Graphics2D g2 = (Graphics2D) g;
-    g2.translate(pt.getX(), pt.getY());
+    g2.translate(pixelPt.x, pixelPt.y);
     g2.rotate(-theta);
     textLine.drawText(g2, (int) boundsRect.getX(), (int) boundsRect.getY());
     g2.rotate(theta);
-    g2.translate(-pt.getX(), -pt.getY());
+    g2.translate(-pixelPt.x, -pixelPt.y);
   }
 
   /**
