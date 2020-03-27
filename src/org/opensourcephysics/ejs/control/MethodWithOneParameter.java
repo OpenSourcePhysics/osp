@@ -7,9 +7,12 @@
 
 package org.opensourcephysics.ejs.control;
 import java.lang.reflect.Method;
+
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.ejs.control.value.BooleanValue;
 import org.opensourcephysics.ejs.control.value.DoubleValue;
 import org.opensourcephysics.ejs.control.value.IntegerValue;
+import org.opensourcephysics.ejs.control.value.ObjectValue;
 import org.opensourcephysics.ejs.control.value.StringValue;
 import org.opensourcephysics.ejs.control.value.Value;
 
@@ -25,87 +28,101 @@ public class MethodWithOneParameter {
   private MethodWithOneParameter secondMethod = null;
   private Value returnValue = null; // AMAVP (See Note in ControlElement)
 
-  /**
-   * Equivalent to MethodWithOneParameter (_type, _target, _name, null);
-   */
-  // MethodWithOneParameter (int _type, Object _target, String _name) {
-  // this(_type, _target, _name, null);
-  // }
+	/**
+	 * Equivalent to MethodWithOneParameter (_type, _target, _name, null);
+	 */
+	// MethodWithOneParameter (int _type, Object _target, String _name) {
+	// this(_type, _target, _name, null);
+	// }
 
-  /**
-   * Creates a new method from the input parameters.
-   * @param int _type An integer type to help create families of actions
-   * @param Object _target The object that implements the method
-   * @param String _name The description of the method.
-   *   1.- If the method's parameter list is void, then you can specify either
-   *       'method()' or just 'method'
-   *   2.- If the method accepts a boolean, you can specify either 'method(true)'
-   *       or 'method(false)'
-   *   3.- If the method accepts a double, you can specify something like 'method(1.0)'
-   *   4.- If the method accepts an integer, you can specify something like 'method(1)'
-   *   5.- If the method accepts a String, you can specify something like 'method("my string")'
-   *   In all cases, the first version is the recommended one.
-   * @param MethodWithOneParameter _secondMethod A second action that will be invoked
-   *   following this one. This is useful when you want to call more than one methods at once
-   * @param _anObject and object for the very special case of method("#CONTROL#"); //Added on Jan 31st 2004
-   */
-  MethodWithOneParameter(int _type, Object _target, String _name, String _returnType, MethodWithOneParameter _secondMethod, Object _anObject) {
-    Class<?>[] classList = {};
-    Object parameter = null;
-    Class<?> parameterClass = null;
-    methodName = _name;
-    methodType = _type;
-    targetObject = _target;
-    secondMethod = _secondMethod;
-    String parts[] = splitMethodName(_name.trim());
-    if(parts[2].equals("#CONTROL#")&&(_anObject!=null)) { //$NON-NLS-1$
-      parameter = _anObject;
-      parameterClass = _anObject.getClass();
-      // System.out.println ("Class of OBJECT is "+parameterClass);
-    } else {
-      Value value = Value.parseConstant(parts[2], false); // NO silent mode
-      if(value instanceof StringValue) {                  // method ("String")
-        parameter = value.getString();
-        parameterClass = _name.getClass();                // String
-      } else if(value instanceof BooleanValue) {          // method (boolean)
-        parameter = new Boolean(value.getBoolean());
-        parameterClass = Boolean.TYPE;
-      } else if(value instanceof DoubleValue) {           // method (double)
-        parameter = new Double(value.getDouble());
-        parameterClass = Double.TYPE;
-      } else if(value instanceof IntegerValue) {          // method (int)
-        parameter = new Integer(value.getInteger());
-        parameterClass = Integer.TYPE;
-      }
-    }
-    if(parameter!=null) {            // method(parameter);
-      classList = new Class[1];
-      classList[0] = parameterClass; // parameter
-      parameterList = new Object[1];
-      parameterList[0] = parameter;
-    }
-    methodToCall = resolveMethod(targetObject, parts[1], classList);
-    if(methodToCall==null) {
-      System.err.println(getClass().getName()+" : Error! Unable to find a suitable method "+methodName+" in class "+targetObject.getClass().getName()); //$NON-NLS-1$ //$NON-NLS-2$
-    }
-    if(_returnType==null) {
-      returnValue = null;                                 // AMAVP
-    } else {
-      _returnType = _returnType.trim().toLowerCase();
-      if(_returnType.equals("double")) {                  //$NON-NLS-1$
-        returnValue = new DoubleValue(0.0);
-        // else if (_returnType.equals("byte"))    returnValue = new IntegerValue(0);
-      } else if(_returnType.equals("int")) {              //$NON-NLS-1$
-        returnValue = new IntegerValue(0);
-      } else if(_returnType.equals("string")) {           //$NON-NLS-1$
-        returnValue = new StringValue("");                //$NON-NLS-1$
-      } else if(_returnType.equals("boolean")) {          //$NON-NLS-1$
-        returnValue = new BooleanValue(false);
-      } else {
-        returnValue = null;                               // return type is void
-      }
-    }
-  }
+	/**
+	 * Creates a new method from the input parameters.
+	 * 
+	 * @param                        int _type An integer type to help create
+	 *                               families of actions
+	 * @param Object                 _target The object that implements the method
+	 * @param String                 _name The description of the method. 1.- If the
+	 *                               method's parameter list is void, then you can
+	 *                               specify either 'method()' or just 'method' 2.-
+	 *                               If the method accepts a boolean, you can
+	 *                               specify either 'method(true)' or
+	 *                               'method(false)' 3.- If the method accepts a
+	 *                               double, you can specify something like
+	 *                               'method(1.0)' 4.- If the method accepts an
+	 *                               integer, you can specify something like
+	 *                               'method(1)' 5.- If the method accepts a String,
+	 *                               you can specify something like 'method("my
+	 *                               string")' In all cases, the first version is
+	 *                               the recommended one.
+	 * @param MethodWithOneParameter _secondMethod A second action that will be
+	 *                               invoked following this one. This is useful when
+	 *                               you want to call more than one methods at once
+	 * @param _anObject              and object for the very special case of
+	 *                               method("#CONTROL#"); //Added on Jan 31st 2004
+	 */
+	MethodWithOneParameter(int _type, Object _target, String _name, String _returnType,
+			MethodWithOneParameter _secondMethod, Object _anObject) {
+		Class<?>[] classList = {};
+		Object parameter = null;
+		Class<?> parameterClass = null;
+		methodName = _name;
+		methodType = _type;
+		targetObject = _target;
+		secondMethod = _secondMethod;
+		String parts[] = splitMethodName(_name.trim());
+		if (parts[2].equals("#CONTROL#") && (_anObject != null)) { //$NON-NLS-1$
+			parameter = _anObject;
+			parameterClass = _anObject.getClass();
+			// System.out.println ("Class of OBJECT is "+parameterClass);
+		} else {
+			Value value = Value.parseConstant(parts[2], false); // NO silent mode
+			if (value instanceof StringValue) { // method ("String")
+				parameter = value.getString();
+				parameterClass = _name.getClass(); // String
+			} else if (value instanceof BooleanValue) { // method (boolean)
+				parameter = new Boolean(value.getBoolean());
+				parameterClass = Boolean.TYPE;
+			} else if (value instanceof DoubleValue) { // method (double)
+				parameter = new Double(value.getDouble());
+				parameterClass = Double.TYPE;
+			} else if (value instanceof IntegerValue) { // method (int)
+				parameter = new Integer(value.getInteger());
+				parameterClass = Integer.TYPE;
+			}
+		}
+		if (parameter != null) { // method(parameter);
+			classList = new Class[1];
+			classList[0] = parameterClass; // parameter
+			parameterList = new Object[1];
+			parameterList[0] = parameter;
+		}
+		methodToCall = resolveMethod(targetObject, parts[1], classList);
+		if (methodToCall == null) {
+			System.err.println(getClass().getName() + " : Error! Unable to find a suitable method " + methodName //$NON-NLS-1$
+					+ " in class " + targetObject.getClass().getName()); //$NON-NLS-1$
+		}
+		// BH 2020.03.27 cannot determine return type for JavaScript -- just assign
+		// ObjectValue
+		if (OSPRuntime.isJS) {
+			returnValue = new ObjectValue(null);
+		} else if (_returnType == null) {
+			returnValue = null; // AMAVP
+		} else {
+			_returnType = _returnType.trim().toLowerCase();
+			if (_returnType.equals("double")) { //$NON-NLS-1$
+				returnValue = new DoubleValue(0.0);
+				// else if (_returnType.equals("byte")) returnValue = new IntegerValue(0);
+			} else if (_returnType.equals("int")) { //$NON-NLS-1$
+				returnValue = new IntegerValue(0);
+			} else if (_returnType.equals("string")) { //$NON-NLS-1$
+				returnValue = new StringValue(""); //$NON-NLS-1$
+			} else if (_returnType.equals("boolean")) { //$NON-NLS-1$
+				returnValue = new BooleanValue(false);
+			} else {
+				returnValue = null; // return type is void
+			}
+		}
+	}
 
   public Value invoke(int _type, Object _callingObject) { // Modified for AMAVP
     if(methodType!=_type) {
@@ -113,16 +130,30 @@ public class MethodWithOneParameter {
     }
     // System.out.println ("Invoking method "+this.methodName+" with Value "+parameterList);
     try {
-      if(returnValue==null) { // void return type
-        methodToCall.invoke(targetObject, parameterList);
-      } else if(returnValue instanceof DoubleValue) {
-        ((DoubleValue) returnValue).value = ((Double) methodToCall.invoke(targetObject, parameterList)).doubleValue();
-      } else if(returnValue instanceof IntegerValue) {
-        ((IntegerValue) returnValue).value = ((Integer) methodToCall.invoke(targetObject, parameterList)).intValue();
-      } else if(returnValue instanceof BooleanValue) {
-        ((BooleanValue) returnValue).value = ((Boolean) methodToCall.invoke(targetObject, parameterList)).booleanValue();
-      } else if(returnValue instanceof StringValue) {
-        ((StringValue) returnValue).value = methodToCall.invoke(targetObject, parameterList).toString();
+    	
+      Object val = methodToCall.invoke(targetObject, parameterList);	
+      if(val == null || returnValue==null) {
+        returnValue = new ObjectValue(val);
+      }
+      switch (returnValue.getType()) {
+      default:
+      case Value.TYPE_OBJECT:
+    	  ((ObjectValue) returnValue).value = val;
+    	  break;
+      case Value.TYPE_BOOLEAN:
+          ((BooleanValue) returnValue).value = ((Boolean) val).booleanValue();
+    	  break;
+      case Value.TYPE_DOUBLE:
+          ((DoubleValue) returnValue).value = ((Double) val).doubleValue();
+    	  break;
+      case Value.TYPE_EXPRESSION:
+    	  break;
+      case Value.TYPE_INTEGER:
+          ((IntegerValue) returnValue).value = ((Integer) val).intValue();
+    	  break;
+      case Value.TYPE_STRING:
+          ((StringValue) returnValue).value = val.toString();
+    	  break;
       }
       if(secondMethod!=null) {
         secondMethod.invoke(_type, _callingObject);

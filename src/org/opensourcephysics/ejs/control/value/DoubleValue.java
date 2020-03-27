@@ -21,6 +21,7 @@ public class DoubleValue extends Value {
    * @param _val
    */
   public DoubleValue(double _val) {
+	  super(TYPE_DOUBLE);
     value = _val;
   }
 

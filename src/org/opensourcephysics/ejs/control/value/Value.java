@@ -26,6 +26,23 @@ package org.opensourcephysics.ejs.control.value;
  * @see java.lang.Number
  */
 public abstract class Value {
+	
+	public final static int TYPE_OBJECT     = 0;
+	public final static int TYPE_BOOLEAN    = 1;
+	public final static int TYPE_DOUBLE     = 2;
+	public final static int TYPE_EXPRESSION = 3;
+	public final static int TYPE_INTEGER    = 4;
+	public final static int TYPE_STRING     = 5;
+	
+	protected int type;
+	
+	Value(int type) {
+		this.type = type;
+	}
+	
+	public int getType() {
+		return type;
+	}
   /**
    * Returns the value of the variable as a boolean
    */
@@ -60,38 +77,45 @@ public abstract class Value {
    * Copies one value into another
    */
   public void copyValue(Value _source) {
-    if(this instanceof DoubleValue) {
-      ((DoubleValue) this).value = _source.getDouble();
-    } else if(this instanceof IntegerValue) {
-      ((IntegerValue) this).value = _source.getInteger();
-    } else if(this instanceof BooleanValue) {
-      ((BooleanValue) this).value = _source.getBoolean();
-    } else if(this instanceof StringValue) {
-      ((StringValue) this).value = _source.getString();
-    } else if(this instanceof ObjectValue) {
-      ((ObjectValue) this).value = _source.getObject();
-    }
+	  switch (type) {
+      case Value.TYPE_OBJECT:
+          ((ObjectValue) this).value = _source.getObject();
+    	  break;
+      case Value.TYPE_BOOLEAN:
+          ((BooleanValue) this).value = _source.getBoolean();
+    	  break;
+      case Value.TYPE_DOUBLE:
+          ((DoubleValue) this).value = _source.getDouble();
+    	  break;
+      case Value.TYPE_EXPRESSION:
+    	  break;
+      case Value.TYPE_INTEGER:
+          ((IntegerValue) this).value = _source.getInteger();
+    	  break;
+      case Value.TYPE_STRING:
+          ((StringValue) this).value = _source.getString();
+    	  break;
+	  }
   }
 
   /**
    * Clones one value into another
    */
   public Value cloneValue() {
-    if(this instanceof DoubleValue) {
-      return new DoubleValue(this.getDouble());
-    }
-    if(this instanceof IntegerValue) {
-      return new IntegerValue(this.getInteger());
-    }
-    if(this instanceof BooleanValue) {
-      return new BooleanValue(this.getBoolean());
-    }
-    if(this instanceof StringValue) {
-      return new StringValue(this.getString());
-    }
-    if(this instanceof ObjectValue) {
-      return new ObjectValue(this.getObject());
-    }
+	  switch (type) {
+      case Value.TYPE_OBJECT:
+          return new ObjectValue(this.getObject());
+      case Value.TYPE_BOOLEAN:
+          return new BooleanValue(this.getBoolean());
+      case Value.TYPE_DOUBLE:
+          return new DoubleValue(this.getDouble());
+      case Value.TYPE_EXPRESSION:
+    	  break;
+      case Value.TYPE_INTEGER:
+          return new IntegerValue(this.getInteger());
+      case Value.TYPE_STRING:
+          return new StringValue(this.getString());
+	  }
     return null;
   }
 

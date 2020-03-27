@@ -21,6 +21,7 @@ public class StringValue extends Value {
    * @param _val
    */
   public StringValue(String _val) {
+	  super(TYPE_STRING);
     value = _val;
   }
 

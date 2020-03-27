@@ -32,6 +32,7 @@ public class ExpressionValue extends Value {
    * @param _group
    */
   public ExpressionValue(String _expression, GroupControl _group) {
+	  super(TYPE_EXPRESSION);
     group = _group;
     expression = new String(_expression.trim());
     processExpression();

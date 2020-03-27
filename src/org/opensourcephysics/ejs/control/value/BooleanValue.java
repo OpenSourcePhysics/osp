@@ -21,6 +21,7 @@ public class BooleanValue extends Value {
    * @param _val
    */
   public BooleanValue(boolean _val) {
+	  super(TYPE_BOOLEAN);
     value = _val;
   }
 
