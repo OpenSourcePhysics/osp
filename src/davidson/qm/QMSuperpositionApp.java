@@ -135,9 +135,9 @@ public class QMSuperpositionApp extends AbstractAnimation implements PropertyCha
          }
          if(control.getObject("shooting tolerance")!=null) {
             double tol = control.getDouble("shooting tolerance");
-            //superposition = new EigenstateShootingSuperposition(potential, numpts, xmin, xmax, tol, tol);
+            superposition = new EigenstateShootingSuperposition(potential, numpts, xmin, xmax, tol, tol);
          } else {
-            //superposition = new EigenstateShootingSuperposition(potential, numpts, xmin, xmax);
+            superposition = new EigenstateShootingSuperposition(potential, numpts, xmin, xmax);
          }
       }
       if(!superposition.setCoef(recoef.getArray(), imcoef.getArray())) {

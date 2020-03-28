@@ -1,4 +1,5 @@
 .gitignore
+*.old
 swingjs-copy.xml
 build-ospcore.xml
 ospcoreclasses
