@@ -32,7 +32,7 @@ public class DiagnosticsForSystem extends DataPanel{
       String val = System.getProperty(next);
       appendRow(new String[]{next,val}) ; 
     }
-	refreshTable(); // make sure the table shows the current values
+	refreshTable("DiagnosticsForSystem"); // make sure the table shows the current values
 	setRowNumberVisible(false);
 	setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
   }

@@ -8,6 +8,7 @@
 package org.opensourcephysics.display;
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -62,11 +63,15 @@ public class DataTableFrame extends OSPFrame {
     c.add(scrollPane, BorderLayout.CENTER);
     // table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
     pack();
-    // setVisible(true);
     if(!OSPRuntime.appletMode) {
       createMenuBar();
       loadDisplayMenu();
     }
+    setVisible(true);
+  }
+
+  public void paint(Graphics g) {
+	  super.paint(g);
   }
 
   /**

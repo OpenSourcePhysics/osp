@@ -199,7 +199,7 @@ public class OSPRuntime {
     	defaultDecimalSeparator = ((DecimalFormat)format).getDecimalFormatSymbols().getDecimalSeparator();
     }
     else {
-      defaultDecimalSeparator = new DecimalFormat().getDecimalFormatSymbols().getDecimalSeparator();
+      defaultDecimalSeparator = org.opensourcephysics.numerics.Util.newDecimalFormat("0").getDecimalFormatSymbols().getDecimalSeparator();
     }
     
     dfs.setDecimalSeparator(defaultDecimalSeparator);

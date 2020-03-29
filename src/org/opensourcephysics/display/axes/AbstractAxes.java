@@ -32,7 +32,7 @@ public abstract class AbstractAxes implements DrawableAxes {
   protected Font titleFont = new Font("Dialog", Font.BOLD, 14);          //$NON-NLS-1$
   protected Font labelFont = new Font("SansSerif", Font.PLAIN, 9);       //$NON-NLS-1$
   protected Font superscriptFont = new Font("SansSerif", Font.PLAIN, 9); //$NON-NLS-1$
-  protected DecimalFormat labelFormat = new DecimalFormat("0.0");        //$NON-NLS-1$
+  protected DecimalFormat labelFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.0");        //$NON-NLS-1$
   protected Color gridcolor = Color.lightGray;
   protected Color interiorColor = Color.white;
   protected DrawableTextLine titleLine = new DrawableTextLine("", 0, 0); //$NON-NLS-1$

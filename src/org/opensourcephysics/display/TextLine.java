@@ -10,7 +10,12 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.ImageObserver;
 import java.util.Stack;
 import java.util.Vector;
 
@@ -668,6 +673,8 @@ public class TextLine {
     drawText(g, x, y);
   }
 
+	Vector<TextState> vec; // added by W. Christian in case a parse is called during drawing.
+
 	/**
 	 * Parse the text then draw it without any rotation.
 	 * 
@@ -706,23 +713,66 @@ public class TextLine {
 		if (keepItSimple(text)) {
 			lg.drawString(text, 0 + xoffset, 0 + yoffset);
 		} else {
-			Vector<TextState> vec; // added by W. Christian in case a parse is called during drawing.
 			synchronized (list) {
-				vec = new Vector<TextState>(list);
+				vec.clear();
+				vec.addAll(list);
+				for (int i = 0; i < vec.size(); i++) {
+					ts = (vec.elementAt(i));
+					if (ts.f != null) {
+						lg.setFont(ts.f);
+					}
+					if (ts.s != null) {
+						lg.drawString(ts.toString(), ts.x + xoffset, ts.y + yoffset);
+					}
+				}
 			} // added by W. Christian
-			for (int i = 0; i < vec.size(); i++) {
-				ts = (vec.elementAt(i));
-				if (ts.f != null) {
-					lg.setFont(ts.f);
-				}
-				if (ts.s != null) {
-					lg.drawString(ts.toString(), ts.x + xoffset, ts.y + yoffset);
-				}
-			}
 		}
 		lg.dispose();
 		lg = null;
 	}
+
+	  protected AffineTransform trTL = new AffineTransform();
+	  
+	  protected void drawRotatedText(double theta, double x, double y, Graphics g) {
+	      trTL.setToRotation(-theta, x, y);
+	      ((Graphics2D) g).transform(trTL);
+	      drawText(g, (int) x, (int) y);
+	      trTL.setToRotation(theta, x, y);
+	      ((Graphics2D) g).transform(trTL);
+	  }
+
+	private BufferedImage image;
+	  
+	/**
+	 * Paint the font onto and image, and then paint that using a transform onto the actual graphic.
+	 * 
+	 * @param panel
+	 * @param g
+	 * @param theta
+	 * @param x
+	 * @param y
+	 */
+	protected void drawTextImageRotated(ImageObserver panel, Graphics g, double theta, double x, double y) {
+		int w = g.getFontMetrics().stringWidth(text) + 7;
+		int h = g.getFontMetrics().getHeight() + 10;
+		if (image == null || image.getWidth() != w || image.getHeight() != h) {
+			image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		}		
+		Graphics2D imageGraphics = image.createGraphics();
+		imageGraphics.setFont(g.getFont());
+		imageGraphics.setColor(Color.BLACK);
+		drawText(imageGraphics, w / 2 - 2, h - 5);
+		imageGraphics.dispose();
+
+		Graphics2D g2d = (Graphics2D) g;
+		g2d.translate(x - h - 2, y + w / 2);
+		trTL.setToRotation(-theta, 0, 0);
+		if (OSPRuntime.setRenderingHints)
+			g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+		g2d.drawImage(image, trTL, panel);
+		g2d.translate(-x + h + 2, -y - w / 2);
+	}
+
 
   /**
    * @return Logical font name of the set font

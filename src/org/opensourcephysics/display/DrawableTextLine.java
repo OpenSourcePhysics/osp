@@ -14,6 +14,7 @@ import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.ImageObserver;
 
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
@@ -136,38 +137,43 @@ public class DrawableTextLine extends TextLine implements Drawable {
   
   private void drawWithPixWindows(DrawingPanel panel, Graphics g) {
     if(theta!=0) {
-      ((Graphics2D) g).transform(AffineTransform.getRotateInstance(-theta, x, y));
-      drawText(g, (int) x, (int) y);
-      ((Graphics2D) g).transform(AffineTransform.getRotateInstance(theta, x, y));
+    	drawRotatedText(theta, x, y, g);
     } else {
       drawText(g, (int) x, (int) y);
     }
   }
+  
+  int imgWidth, imgHeight;
+  BufferedImage image;
   
   private void drawWithPixMac(DrawingPanel panel, Graphics g) {
 	if(theta==0){
 		drawWithPixWindows( panel,  g);
 		return;
 	}
-    int w=g.getFontMetrics().stringWidth(text)+7;
-    int h=g.getFontMetrics().getHeight()+10;
-    BufferedImage image = new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
-    Graphics2D imageGraphics=image.createGraphics();
-    imageGraphics.setFont(g.getFont());
-    //imageGraphics.setColor(Color.RED);  // debug
-    //imageGraphics.fillRect(0, 0, w, h);
-    imageGraphics.setColor(Color.BLACK);
-    drawText(imageGraphics, w/2-2, h-5);
-    imageGraphics.dispose();
-    Graphics2D g2d=(Graphics2D) g;
-    g2d.translate(x-h-2,y+w/2);
-    AffineTransform at= AffineTransform.getRotateInstance(-theta, 0, 0);
-    g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-    g2d.drawImage(image,at, panel);
-    g2d.translate(-x+h+2,-y-w/2);
+	drawTextImageRotated(panel, g, theta, x, y);
    }
  
-  /**
+  protected void drawTextImageRotated(ImageObserver panel, Graphics g, double theta, double x, double y) {
+	    int w=g.getFontMetrics().stringWidth(text)+7;
+	    int h=g.getFontMetrics().getHeight()+10;
+	    BufferedImage image = new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
+	    Graphics2D imageGraphics=image.createGraphics();
+	    imageGraphics.setFont(g.getFont());
+	    //imageGraphics.setColor(Color.RED);  // debug
+	    //imageGraphics.fillRect(0, 0, w, h);
+	    imageGraphics.setColor(Color.BLACK);
+	    drawText(imageGraphics, w/2-2, h-5);
+	    imageGraphics.dispose();
+	    Graphics2D g2d=(Graphics2D) g;
+	    g2d.translate(x-h-2,y+w/2);
+	    AffineTransform at= AffineTransform.getRotateInstance(-theta, 0, 0);
+	    g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+	    g2d.drawImage(image,at, panel);
+	    g2d.translate(-x+h+2,-y-w/2);
+  }
+
+/**
    * Draws the TextLine using world units for x and y.
    *
    * @param panel DrawingPanel

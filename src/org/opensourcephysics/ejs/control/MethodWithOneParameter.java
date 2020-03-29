@@ -73,7 +73,6 @@ public class MethodWithOneParameter {
 		if (parts[2].equals("#CONTROL#") && (_anObject != null)) { //$NON-NLS-1$
 			parameter = _anObject;
 			parameterClass = _anObject.getClass();
-			// System.out.println ("Class of OBJECT is "+parameterClass);
 		} else {
 			Value value = Value.parseConstant(parts[2], false); // NO silent mode
 			if (value instanceof StringValue) { // method ("String")
@@ -103,67 +102,91 @@ public class MethodWithOneParameter {
 		}
 		// BH 2020.03.27 cannot determine return type for JavaScript -- just assign
 		// ObjectValue
-		if (OSPRuntime.isJS) {
-			returnValue = new ObjectValue(null);
-		} else if (_returnType == null) {
-			returnValue = null; // AMAVP
+		if (OSPRuntime.isJS || _returnType == null) {
+			returnValue = null;
 		} else {
 			_returnType = _returnType.trim().toLowerCase();
-			if (_returnType.equals("double")) { //$NON-NLS-1$
+			if (_returnType.equals("double"))
 				returnValue = new DoubleValue(0.0);
-				// else if (_returnType.equals("byte")) returnValue = new IntegerValue(0);
-			} else if (_returnType.equals("int")) { //$NON-NLS-1$
+//  else if (_returnType.equals("byte"))    returnValue = new IntegerValue(0);
+			else if (_returnType.equals("int"))
 				returnValue = new IntegerValue(0);
-			} else if (_returnType.equals("string")) { //$NON-NLS-1$
-				returnValue = new StringValue(""); //$NON-NLS-1$
-			} else if (_returnType.equals("boolean")) { //$NON-NLS-1$
-				returnValue = new BooleanValue(false);
-			} else {
-				returnValue = null; // return type is void
-			}
+			else if (_returnType.equals("string"))
+				returnValue = new StringValue("");
+			else if (_returnType.equals("boolean"))
+				returnValue = Value.VALUE_FALSE;
+			else if (_returnType.equals("object"))
+				returnValue = new ObjectValue(null);
+			else
+				returnValue = null; // return type is Void
 		}
 	}
 
-  public Value invoke(int _type, Object _callingObject) { // Modified for AMAVP
-    if(methodType!=_type) {
-      return null;
-    }
-    // System.out.println ("Invoking method "+this.methodName+" with Value "+parameterList);
-    try {
-    	
-      Object val = methodToCall.invoke(targetObject, parameterList);	
-      if(val == null || returnValue==null) {
-        returnValue = new ObjectValue(val);
-      }
-      switch (returnValue.getType()) {
-      default:
-      case Value.TYPE_OBJECT:
-    	  ((ObjectValue) returnValue).value = val;
-    	  break;
-      case Value.TYPE_BOOLEAN:
-          ((BooleanValue) returnValue).value = ((Boolean) val).booleanValue();
-    	  break;
-      case Value.TYPE_DOUBLE:
-          ((DoubleValue) returnValue).value = ((Double) val).doubleValue();
-    	  break;
-      case Value.TYPE_EXPRESSION:
-    	  break;
-      case Value.TYPE_INTEGER:
-          ((IntegerValue) returnValue).value = ((Integer) val).intValue();
-    	  break;
-      case Value.TYPE_STRING:
-          ((StringValue) returnValue).value = val.toString();
-    	  break;
-      }
-      if(secondMethod!=null) {
-        secondMethod.invoke(_type, _callingObject);
-      }
-    } catch(Exception exc) {
-      exc.printStackTrace(System.err);
-      return null;
-    }
-    return returnValue;
-  }
+	/**
+	 * Infer the return type from the return value. Note that methods that return
+	 * Object may instead return a different type, and methods that return null will
+	 * return ObjectValue
+	 * 
+	 * @param val
+	 * @return Value
+	 * 
+	 */
+	private static Value inferType(Object val) {
+		switch (val.getClass().getName()) {
+		case "java.lang.String":
+			return new StringValue(null);
+		case "java.lang.Float":
+		case "java.lang.Double":
+			return new DoubleValue(0);
+		case "java.lang.Integer":
+			return new IntegerValue(0);
+		case "java.lang.Boolean":
+			return Value.VALUE_FALSE;
+		default:
+			return new ObjectValue(null);
+		}
+	}
+
+	public Value invoke(int _type, Object _callingObject) { // Modified for AMAVP
+		if (methodType != _type)
+			return null;
+		Value ret = returnValue;
+		try {
+			Object val = methodToCall.invoke(targetObject, parameterList);
+			if (val == null) {
+				ret = Value.VALUE_NULL;
+			} else if (ret == null) {
+				ret = inferType(val);
+			}
+			switch (ret.getType()) {
+			default:
+			case Value.TYPE_OBJECT:
+				((ObjectValue) ret).value = val;
+				break;
+			case Value.TYPE_BOOLEAN:
+				ret = (((Boolean) val).booleanValue() ? Value.VALUE_TRUE : Value.VALUE_FALSE);
+				break;
+			case Value.TYPE_DOUBLE:
+				((DoubleValue) ret).value = ((Double) val).doubleValue();
+				break;
+			case Value.TYPE_EXPRESSION:
+				break;
+			case Value.TYPE_INTEGER:
+				((IntegerValue) ret).value = ((Integer) val).intValue();
+				break;
+			case Value.TYPE_STRING:
+				((StringValue) ret).value = val.toString();
+				break;
+			}
+			if (secondMethod != null) {
+				secondMethod.invoke(_type, _callingObject);
+			}
+		} catch (Exception exc) {
+			exc.printStackTrace(System.err);
+			return null;
+		}
+		return ret;
+	}
 
   public boolean equals(int _type, Object _target, String _name) {
     if(methodType!=_type) {

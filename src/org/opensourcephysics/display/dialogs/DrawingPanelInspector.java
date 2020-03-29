@@ -28,7 +28,7 @@ import org.opensourcephysics.display.DrawingPanel;
 public class DrawingPanelInspector extends JDialog {
   static DrawingPanelInspector inspector;
   DrawingPanel drawingPanel;
-  DecimalFormat format = new DecimalFormat("0.00000E00"); //$NON-NLS-1$
+  DecimalFormat format = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00000E00"); //$NON-NLS-1$
   JPanel panel1 = new JPanel();
   BorderLayout borderLayout1 = new BorderLayout();
   JTabbedPane jTabbedPane1 = new JTabbedPane();

@@ -26,12 +26,12 @@ import org.opensourcephysics.display.TextFrame;
 import org.opensourcephysics.tools.FontSizer;
 
 public class ControlUtils {
-  static DecimalFormat format2 = new DecimalFormat("#0.00");      //$NON-NLS-1$
-  static DecimalFormat format3 = new DecimalFormat("#0.000");     //$NON-NLS-1$
-  static DecimalFormat format4 = new DecimalFormat("#0.0000");    //$NON-NLS-1$
-  static DecimalFormat format_E2 = new DecimalFormat("0.00E0");   //$NON-NLS-1$
-  static DecimalFormat format_E3 = new DecimalFormat("0.000E0");  //$NON-NLS-1$
-  static DecimalFormat format_E4 = new DecimalFormat("0.0000E0"); //$NON-NLS-1$
+  static DecimalFormat format2 = org.opensourcephysics.numerics.Util.newDecimalFormat("#0.00");      //$NON-NLS-1$
+  static DecimalFormat format3 = org.opensourcephysics.numerics.Util.newDecimalFormat("#0.000");     //$NON-NLS-1$
+  static DecimalFormat format4 = org.opensourcephysics.numerics.Util.newDecimalFormat("#0.0000");    //$NON-NLS-1$
+  static DecimalFormat format_E2 = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00E0");   //$NON-NLS-1$
+  static DecimalFormat format_E3 = org.opensourcephysics.numerics.Util.newDecimalFormat("0.000E0");  //$NON-NLS-1$
+  static DecimalFormat format_E4 = org.opensourcephysics.numerics.Util.newDecimalFormat("0.0000E0"); //$NON-NLS-1$
 
   /**
    * Convert a double to a string, printing two decimal places.

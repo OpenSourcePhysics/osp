@@ -45,7 +45,7 @@ public class QMSuperpositionWignerApp extends QMSuperpositionApp {
 
   public void initializeAnimation() {
     super.initializeAnimation();
-    wigner.decimalFormat=decimalFormat;
+    wigner.decimalFormat=sciFormat;
     wigner.prange=control.getDouble("p range");
     wigner.time=time;
     wigner.initialize(superposition, control.getInt("gutter points"));
@@ -54,7 +54,7 @@ public class QMSuperpositionWignerApp extends QMSuperpositionApp {
   public void doStep() {
     super.doStep();
     if(dataPanel!=null && showDataPanelTime) {
-        dataPanel.setMessage("t="+decimalFormat.format(time));
+        dataPanel.setMessage("t="+sciFormat.format(time));
     }
     wigner.time=time;
     wigner.doStep(superposition);
