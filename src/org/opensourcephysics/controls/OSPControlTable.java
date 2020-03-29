@@ -81,7 +81,7 @@ public class OSPControlTable extends XMLTable implements Control {
     if(pattern==null) {
       format = null;
     } else {
-      format = new DecimalFormat(pattern);
+      format = org.opensourcephysics.numerics.Util.newDecimalFormat(pattern);
     }
   }
 

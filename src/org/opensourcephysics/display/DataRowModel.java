@@ -105,24 +105,26 @@ public class DataRowModel extends AbstractTableModel {
     }
   }
 
-  /**
-   * Appends a row of data.
-   *
-   * @param x double[]
-   */
-  void appendDoubles(double[] x) {
-    double[] row;
-    if(x==null) {
-      return;
-    }
-    row = new double[x.length];
-    System.arraycopy(x, 0, row, 0, x.length);
-    if((maxRows>0)&&(rowList.size()>=maxRows)) {
-      rowList.remove(0); // Paco added this line
-    }
-    rowList.add(row);
-    colCount = Math.max(colCount, row.length+1);
-  }
+	/**
+	 * Appends a row of data.
+	 *
+	 * @param x double[]
+	 */
+	void appendDoubles(double[] x) {
+		int n = getRowCount();
+		double[] row;
+		if (x == null) {
+			return;
+		}
+		row = new double[x.length];
+		System.arraycopy(x, 0, row, 0, x.length);
+		if ((maxRows > 0) && (rowList.size() >= maxRows)) {
+			rowList.remove(0); // Paco added this line
+		}
+		rowList.add(row);
+		colCount = Math.max(colCount, row.length + 1);
+		updateTable(n);
+	}
 
   /**
    * Appends a row of data.
@@ -130,6 +132,7 @@ public class DataRowModel extends AbstractTableModel {
    * @param x double[]
    */
   void appendInts(int[] x) {
+		int n = getRowCount();
     int[] row;
     if(x==null) {
       return;
@@ -141,6 +144,7 @@ public class DataRowModel extends AbstractTableModel {
     }
     rowList.add(row);
     colCount = Math.max(colCount, row.length+1);
+	updateTable(n);
   }
 
   /**
@@ -149,6 +153,7 @@ public class DataRowModel extends AbstractTableModel {
    * @param x double[]
    */
   void appendBytes(byte[] x) {
+		int n = getRowCount();
     byte[] row;
     if(x==null) {
       return;
@@ -160,27 +165,36 @@ public class DataRowModel extends AbstractTableModel {
     }
     rowList.add(row);
     colCount = Math.max(colCount, row.length+1);
+	updateTable(n);
   }
 
-  /**
-   * Appends a row of data.
-   *
-   * @param x double[]
-   */
-  void appendStrings(String[] x) {
-    String[] row;
-    if(x==null) {
-      return;
-    }
-    row = new String[x.length];
-    System.arraycopy(x, 0, row, 0, x.length);
-    if((maxRows>0)&&(rowList.size()>=maxRows)) {
-      rowList.remove(0); // Paco added this line
-    }
-    rowList.add(row);
-    colCount = Math.max(colCount, row.length+1);
-  }
+	/**
+	 * Appends a row of data.
+	 *
+	 * @param x double[]
+	 */
+	void appendStrings(String[] x) {
+		int n = getRowCount();
+		String[] row;
+		if (x == null) {
+			return;
+		}
+		row = new String[x.length];
+		System.arraycopy(x, 0, row, 0, x.length);
+		if ((maxRows > 0) && (rowList.size() >= maxRows)) {
+			rowList.remove(0); // Paco added this line
+		}
+		colCount = Math.max(colCount, row.length + 1);
+		rowList.add(row);
+		updateTable(n);
+	}
 
+
+	private void updateTable(int n) {
+		int n1 = getRowCount();
+		if (n != n1)
+			fireTableRowsInserted(n, n);
+	}
   /**
    *  Sets the display row number flag. Table displays row number.
    *
