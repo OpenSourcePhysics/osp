@@ -390,7 +390,7 @@ public class DataRowTable extends JTable implements ActionListener {
 	}
 
 	public void scrollToEnd() {
-		if (false)
+		if (false) // this did not work so well in JavaScript
 		SwingUtilities.invokeLater(new Runnable() {
 
 			@Override
