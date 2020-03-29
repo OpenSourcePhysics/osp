@@ -80,7 +80,7 @@ public abstract class AbstractPolarAxis extends AbstractAxes implements PolarAxe
    * @param formatString
    */
   public void setLabelFormat(String formatString) {
-    labelFormat = org.opensourcephysics.numerics.Util.newDecimalFormat(formatString);
+    labelFormat = new DecimalFormat(formatString);
   }
 
   /**

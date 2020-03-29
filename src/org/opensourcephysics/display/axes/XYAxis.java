@@ -43,8 +43,8 @@ abstract public class XYAxis implements Interactive {
   int locationType = DRAW_IN_DISPLAY;
   int axisType = LINEAR;
   String logBase = "10";                                        //$NON-NLS-1$
-  DecimalFormat labelFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.0");         //$NON-NLS-1$
-  DecimalFormat integerFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("000");       //$NON-NLS-1$
+  DecimalFormat labelFormat = new DecimalFormat("0.0");         //$NON-NLS-1$
+  DecimalFormat integerFormat = new DecimalFormat("000");       //$NON-NLS-1$
   double label_step = -14;
   double label_start = 2;
   DrawableTextLine axisLabel = new DrawableTextLine("x", 0, 0); //$NON-NLS-1$
@@ -93,7 +93,7 @@ abstract public class XYAxis implements Interactive {
    * @param formatString
    */
   public void setLabelFormat(String formatString) {
-    labelFormat = org.opensourcephysics.numerics.Util.newDecimalFormat(formatString);
+    labelFormat = new DecimalFormat(formatString);
   }
 
   /**

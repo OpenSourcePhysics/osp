@@ -23,7 +23,7 @@ import org.opensourcephysics.display.OSPFrame;
 public abstract class AbstractCalculation implements Calculation {
   protected OSPFrame mainFrame;                                        // the main frame that closed the program
   protected Control control;                                           // the Calculation's control
-  protected DecimalFormat decimalFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00E0"); // display format for messages //$NON-NLS-1$
+  protected DecimalFormat decimalFormat = new DecimalFormat("0.00E0"); // display format for messages //$NON-NLS-1$
 
   /**
    * Sets object that controls this calculation.

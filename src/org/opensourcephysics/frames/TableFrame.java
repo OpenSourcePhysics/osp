@@ -152,15 +152,15 @@ public class TableFrame extends OSPFrame {
     boolean wasVisible = super.isVisible();
     super.setVisible(vis);
     if(vis&&!wasVisible) {      // refresh if the table was NOT visible and is now visible.
-      tableData.refreshTable("TF.setVis " + vis); // make sure the table shows the current values
+      tableData.refreshTable(); // make sure the table shows the current values
     }
   }
 
   /**
    * Refresh the data in the table.
    */
-  public void refreshTable(String from) {
-    tableData.refreshTable(from);
+  public void refreshTable() {
+    tableData.refreshTable();
   }
 
   /**

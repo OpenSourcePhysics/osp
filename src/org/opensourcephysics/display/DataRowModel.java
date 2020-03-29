@@ -7,9 +7,6 @@
 
 package org.opensourcephysics.display;
 import java.util.ArrayList;
-
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
 public class DataRowModel extends AbstractTableModel {
@@ -19,14 +16,13 @@ public class DataRowModel extends AbstractTableModel {
   int colCount = 0, maxRows = -1;
   int firstRowIndex = 0;
   int stride = 1;
-private String updateType;
 
   /**
    * Constructor DataRowModel
    */
   public DataRowModel() {
     colNames.add(0, "row"); //default for zero column //$NON-NLS-1$
-   }
+  }
 
   /**
    *  Sets the stride between rows.
@@ -42,9 +38,6 @@ private String updateType;
    * Sets the maximum number of rows the data can hold
    */
   public void setMaxPoints(int max) {
-	  
-	  max = 200;
-	  
     maxRows = max;
     if((maxRows<=0)||(rowList.size()<=max)) {
       return;
@@ -112,26 +105,24 @@ private String updateType;
     }
   }
 
-	/**
-	 * Appends a row of data.
-	 *
-	 * @param x double[]
-	 */
-	void appendDoubles(double[] x) {
-		int n = getRowCount();
-		double[] row;
-		if (x == null) {
-			return;
-		}
-		row = new double[x.length];
-		System.arraycopy(x, 0, row, 0, x.length);
-		if ((maxRows > 0) && (rowList.size() >= maxRows)) {
-			rowList.remove(0); // Paco added this line
-		}
-		rowList.add(row);
-		colCount = Math.max(colCount, row.length + 1);
-		updateTable(n);
-	}
+  /**
+   * Appends a row of data.
+   *
+   * @param x double[]
+   */
+  void appendDoubles(double[] x) {
+    double[] row;
+    if(x==null) {
+      return;
+    }
+    row = new double[x.length];
+    System.arraycopy(x, 0, row, 0, x.length);
+    if((maxRows>0)&&(rowList.size()>=maxRows)) {
+      rowList.remove(0); // Paco added this line
+    }
+    rowList.add(row);
+    colCount = Math.max(colCount, row.length+1);
+  }
 
   /**
    * Appends a row of data.
@@ -139,7 +130,6 @@ private String updateType;
    * @param x double[]
    */
   void appendInts(int[] x) {
-		int n = getRowCount();
     int[] row;
     if(x==null) {
       return;
@@ -151,7 +141,6 @@ private String updateType;
     }
     rowList.add(row);
     colCount = Math.max(colCount, row.length+1);
-	updateTable(n);
   }
 
   /**
@@ -160,7 +149,6 @@ private String updateType;
    * @param x double[]
    */
   void appendBytes(byte[] x) {
-		int n = getRowCount();
     byte[] row;
     if(x==null) {
       return;
@@ -172,41 +160,27 @@ private String updateType;
     }
     rowList.add(row);
     colCount = Math.max(colCount, row.length+1);
-	updateTable(n);
   }
 
-	/**
-	 * Appends a row of data.
-	 *
-	 * @param x double[]
-	 */
-	void appendStrings(String[] x) {
-		int n = getRowCount();
-		String[] row;
-		if (x == null) {
-			return;
-		}
-		row = new String[x.length];
-		System.arraycopy(x, 0, row, 0, x.length);
-		if ((maxRows > 0) && (rowList.size() >= maxRows)) {
-			rowList.remove(0); // Paco added this line
-		}
-		colCount = Math.max(colCount, row.length + 1);
-		rowList.add(row);
-		updateTable(n);
-	}
+  /**
+   * Appends a row of data.
+   *
+   * @param x double[]
+   */
+  void appendStrings(String[] x) {
+    String[] row;
+    if(x==null) {
+      return;
+    }
+    row = new String[x.length];
+    System.arraycopy(x, 0, row, 0, x.length);
+    if((maxRows>0)&&(rowList.size()>=maxRows)) {
+      rowList.remove(0); // Paco added this line
+    }
+    rowList.add(row);
+    colCount = Math.max(colCount, row.length+1);
+  }
 
-	
-//	private int rowInserted;
-
-	private void updateTable(int n) {
-		pointCount++;
-//		rowInserted = -1;
-//		int n1 = getRowCount();
-//		if (n != n1) {
-//			rowInserted = n;
-//		}
-	}
   /**
    *  Sets the display row number flag. Table displays row number.
    *
@@ -345,73 +319,6 @@ private String updateType;
     }
     return ""; //$NON-NLS-1$
   }
-
-   private int lastRowAppended = -1;
-private int pointCount;
-
-	/**
-	 * Called from DataRowTable.refreshTable(from), this method handles all
-	 * communication directing repaints via the JTable's UI class. There is no need
-	 * to create events ourselves, unless those are intended for in-house use.
-	 * 
-	 * @param table
-	 * 
-	 * @param type
-	 */
-	public void refreshModel(DataRowTable table, String type) {
-		switch (type) {
-		default:
-			updateType = "?";
-			System.out.println("DataRowTable.refreshTable " + type + " not processed");
-			return;
-		case "appendRow":
-			int n = getRowCount() - 1;
-			if (n == lastRowAppended) {
-				if (pointCount <= maxRows || (pointCount + stride) % stride == 0) {
-					updateType = "maxRows";
-				} else {
-					updateType = null;
-				}
-				return;
-			}
-			lastRowAppended = n;
-			updateType = "rowAppended";
-			return;
-		case "setColumnName":
-		case "setColumnNames":
-			updateType = "columnNamed";
-			return;
-		case "CDT.finalUpdate":
-			String update = updateType;
-			if (update == null)
-				return;
-			updateType = null;
-			switch (update) {
-			case "rowAppended":
-				fireTableRowsInserted(lastRowAppended, lastRowAppended);
-				table.scrollToEnd();
-				return;
-			case "?":
-			case "maxRows":
-			case "columnnamed":
-				fireTableStructureChanged();
-				return;
-			default:
-				return;
-			}
-		}
-
-//  if(refreshDelay>0) {
-//    refreshTimer.start();
-//  } else {
-//    if(SwingUtilities.isEventDispatchThread()) {
-//      doRefreshTable.run();
-//    } else {
-//      SwingUtilities.invokeLater(doRefreshTable);
-//    }
-//  }
-
-	}
 
 }
 

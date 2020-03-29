@@ -29,9 +29,9 @@ public class VisualizationHints implements org.opensourcephysics.display3d.core.
   private String formatZ = "z = 0.00;z = -0.00";              //$NON-NLS-1$
   private String[] axesLabels = new String[] {"X", "Y", "Z"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
   // Implementation variables
-  private NumberFormat theFormatX = org.opensourcephysics.numerics.Util.newDecimalFormat(formatX);
-  private NumberFormat theFormatY = org.opensourcephysics.numerics.Util.newDecimalFormat(formatY);
-  private NumberFormat theFormatZ = org.opensourcephysics.numerics.Util.newDecimalFormat(formatZ);
+  private NumberFormat theFormatX = new DecimalFormat(formatX);
+  private NumberFormat theFormatY = new DecimalFormat(formatY);
+  private NumberFormat theFormatZ = new DecimalFormat(formatZ);
 
   /**
    * The DrawingPanel3D to which it belongs.

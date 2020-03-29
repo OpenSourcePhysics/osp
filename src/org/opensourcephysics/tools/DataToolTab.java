@@ -3046,8 +3046,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     LimitLine[] areaLimits = new LimitLine[2];
     Dataset areaDataset;
     double value = Double.NaN, slope = Double.NaN, area;
-    DecimalFormat sciFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00E0"); //$NON-NLS-1$
-    DecimalFormat fixedFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00"); //$NON-NLS-1$
+    DecimalFormat sciFormat = new DecimalFormat("0.00E0"); //$NON-NLS-1$
+    DecimalFormat fixedFormat = new DecimalFormat("0.00"); //$NON-NLS-1$
     PlotCoordinateStringBuilder stringBuilder;
     String xVar, yVar, message;
     boolean scaleLocked, dataPresent;
@@ -3997,8 +3997,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     	String defaultXLabel = "x=",  defaultYLabel = "  y="; //$NON-NLS-1$ //$NON-NLS-2$
     	
     	PlotCoordinateStringBuilder() {
-    		decimalFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00#"); //$NON-NLS-1$
-    		scientificFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00#E0"); //$NON-NLS-1$
+    		decimalFormat = new DecimalFormat("0.00#"); //$NON-NLS-1$
+    		scientificFormat = new DecimalFormat("0.00#E0"); //$NON-NLS-1$
     	}
  
       @Override

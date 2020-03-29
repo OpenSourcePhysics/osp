@@ -95,7 +95,7 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
   /** If XTicks or YTicks are given/ */
   ArrayList<Double> xticks = null, yticks = null;
   ArrayList<String> xticklabels = null, yticklabels = null;
-  DecimalFormat numberFormat =new DecimalFormat();
+  DecimalFormat numberFormat = new DecimalFormat();
   DecimalFormat scientificFormat = new DecimalFormat("0.0E0");         //$NON-NLS-1$
 
   /** Whether to draw a background grid. */

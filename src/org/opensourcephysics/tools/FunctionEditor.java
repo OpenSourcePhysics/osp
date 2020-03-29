@@ -115,7 +115,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
   
   // static fields
   static DecimalFormat decimalFormat;
-  static DecimalFormat sciFormat0000;
+  static DecimalFormat sciFormat;
   protected static boolean undoEditsEnabled = true;
   protected static String[] editTypes = {"add row", //$NON-NLS-1$
     	"delete row", "edit name", "edit expression"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -158,7 +158,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
     decimalFormat.setMinimumFractionDigits(0);
     decimalFormat.setMaximumIntegerDigits(3);
     decimalFormat.setMinimumIntegerDigits(1);
-    sciFormat0000 = org.opensourcephysics.numerics.Util.newDecimalFormat("0.0000E0"); //$NON-NLS-1$
+    sciFormat = new DecimalFormat("0.0000E0"); //$NON-NLS-1$
   }
 
   /**
@@ -796,7 +796,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
    * Refreshes the GUI.
    */
   protected void refreshGUI() {
-  	sciFormat0000.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+  	sciFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
   	decimalFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
     int[] rows = table.getSelectedRows();
     int col = table.getSelectedColumn();
@@ -1436,7 +1436,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	      }
 	      // for other names, return expression with appropriate decimal separator
         if(expression.indexOf("if")==-1) { //$NON-NLS-1$
-		      boolean isComma = ','==sciFormat0000.getDecimalFormatSymbols().getDecimalSeparator();
+		      boolean isComma = ','==sciFormat.getDecimalFormatSymbols().getDecimalSeparator();
 	        String express = expression;
         	if (isComma) express = express.replaceAll("\\.", ","); //$NON-NLS-1$ //$NON-NLS-2$
         	else express = express.replaceAll(",", "."); //$NON-NLS-1$ //$NON-NLS-2$
@@ -1753,7 +1753,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
           public void keyPressed(KeyEvent e) {
             if(e.getKeyCode()==KeyEvent.VK_ENTER) {
             	String text = popupField.getText().trim();
-            	char separator = sciFormat0000.getDecimalFormatSymbols().getDecimalSeparator();
+            	char separator = sciFormat.getDecimalFormatSymbols().getDecimalSeparator();
               // warn of if statements that fail if user expects comma separator to work
               if (separator==',') {
               	if (!isValidExpression(text)) {
@@ -2345,7 +2345,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
     }
     double absVal = Math.abs(value);
     boolean scientific = ((absVal<0.01)&&(value!=0))||(absVal>=1000);
-    String s = scientific ? sciFormat0000.format(value) : decimalFormat.format(value);
+    String s = scientific ? sciFormat.format(value) : decimalFormat.format(value);
     // eliminate trailing "0000x" and "9999x"
     int n = s.indexOf("E");                     // exponential symbol //$NON-NLS-1$
     String tail = (n>-1) ? s.substring(n) : ""; //$NON-NLS-1$
@@ -2357,7 +2357,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
     n = s.indexOf("9999"); //$NON-NLS-1$
     if(n>1) {
       s = s.substring(0, n);
-      DecimalFormatSymbols symbols = sciFormat0000.getDecimalFormatSymbols();
+      DecimalFormatSymbols symbols = sciFormat.getDecimalFormatSymbols();
       char separator = symbols.getDecimalSeparator();
       int m = s.indexOf(separator);
       if(m==s.length()-1) {

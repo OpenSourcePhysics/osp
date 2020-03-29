@@ -336,17 +336,6 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
     return image;
   }
 
-  private Rectangle visibleRect = new Rectangle();
-  
-  // BH 2020.03.28 can reuse this.
-  private Runnable doNow = new Runnable() {
-      public void run() {
-    	computeVisibleRect(visibleRect);
-        paintImmediately(visibleRect);
-      }
-
-    };
-
   public BufferedImage render() {
     if(!isShowing()||isIconified()) { // don't render if panel cannot be seen
       needsToRecompute = true;        // make sure we recompute later when we are showing
@@ -368,8 +357,14 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
     // the offscreenImage is now ready to be copied to the screen
     // always update a Swing component from the event thread
     if(SwingUtilities.isEventDispatchThread()) {
-      doNow.run(); // we are already within the event thread so DO IT!
+      paintImmediately(getVisibleRect()); // we are already within the event thread so DO IT!
     } else {                              // paint within the event thread
+      Runnable doNow = new Runnable() {   // runnable object will be called by invokeAndWait
+        public void run() {
+          paintImmediately(getVisibleRect());
+        }
+
+      };
       try {
         SwingUtilities.invokeAndWait(doNow);
       } // wait for the paint operation to finish; should be fast

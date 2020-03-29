@@ -16,8 +16,8 @@ import org.opensourcephysics.controls.XMLControl;
 public class DoubleArray {
   public static int NumberFormatError = 1;
   public static int ArrayIndexOutOfBoundsError = 2;
-  protected DecimalFormat format = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00");       // display format //$NON-NLS-1$
-  protected DecimalFormat formatExp = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00#E0"); // display format //$NON-NLS-1$
+  protected DecimalFormat format = new DecimalFormat("0.00");       // display format //$NON-NLS-1$
+  protected DecimalFormat formatExp = new DecimalFormat("0.00#E0"); // display format //$NON-NLS-1$
   protected double[] array;
   protected String defaultString;
   protected double[] defaultArray;
@@ -67,7 +67,7 @@ public class DoubleArray {
    * @see java.text.DecimalFormat
    */
   public void setDecimalFormat(String pattern) {
-    format = org.opensourcephysics.numerics.Util.newDecimalFormat(pattern);
+    format = new DecimalFormat(pattern);
     formatExp = format;
   }
 

@@ -29,7 +29,7 @@ import org.opensourcephysics.display.False3D;
 public class ComplexSurfacePlot implements Plot2D, False3D {
   boolean visible = true;
   ComplexColorMapper colorMap = new ComplexColorMapper(1);         // color map with ceiling=1.
-  protected DecimalFormat labelFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00"); //$NON-NLS-1$
+  protected DecimalFormat labelFormat = new DecimalFormat("0.00"); //$NON-NLS-1$
   private static final int TOP = 0;
   private static final int CENTER = 1;
   //  // for splitting polygons
@@ -1090,7 +1090,7 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    * @param _format the format string
    */
   public void setLabelFormat(String _format) {
-    labelFormat = org.opensourcephysics.numerics.Util.newDecimalFormat(_format);
+    labelFormat = new DecimalFormat(_format);
   }
 
   /**

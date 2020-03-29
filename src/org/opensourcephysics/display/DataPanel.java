@@ -9,7 +9,6 @@ package org.opensourcephysics.display;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -26,12 +25,7 @@ public class DataPanel extends JPanel {
     add(scrollPane, BorderLayout.CENTER);
   }
   
-
   
-  
-  public void paintComponent(Graphics g) {
-	  super.paintComponent(g);
-  }
   /**
    * Sets the font for this component.
    *
@@ -59,8 +53,8 @@ public class DataPanel extends JPanel {
   /**
    * Refresh the data in the tables.
    */
-  public void refreshTable(String from) {
-    table.refreshTable(from);
+  public void refreshTable() {
+    table.refreshTable();
   }
 
   /**
@@ -79,7 +73,7 @@ public class DataPanel extends JPanel {
    */
   public void setColumnNames(int column, String name) {
     if(table.rowModel.setColumnNames(column, name)) { // refresh if the table changed
-      refreshTable("setColumnName");
+      refreshTable();
     }
   }
 
@@ -96,7 +90,7 @@ public class DataPanel extends JPanel {
       }
     }
     if(changed) {
-      refreshTable("setColumnNames");
+      refreshTable();
     }
   }
 
@@ -107,7 +101,7 @@ public class DataPanel extends JPanel {
    */
   public void setRowNumberVisible(boolean vis) {
     if(table.rowModel.setRowNumberVisible(vis)) { // refresh if the table changed
-      refreshTable("setRowNumberVis " + vis);
+      refreshTable();
     }
   }
 
@@ -119,7 +113,7 @@ public class DataPanel extends JPanel {
   public void setFirstRowIndex(int index) {
     if(table.rowModel.firstRowIndex!=index) { // refresh if the table changed
       table.rowModel.firstRowIndex = index;
-      refreshTable("setFirstRowIndex " + index);
+      refreshTable();
     }
   }
 
@@ -194,7 +188,7 @@ public class DataPanel extends JPanel {
   public synchronized void appendRow(double[] x) {
     table.rowModel.appendDoubles(x);
     if(isShowing()) {
-      table.refreshTable("appendRow");
+      table.refreshTable();
     }
   }
 
@@ -205,7 +199,7 @@ public class DataPanel extends JPanel {
   public synchronized void appendRow(int[] x) {
     table.rowModel.appendInts(x);
     if(isShowing()) {
-      table.refreshTable("appendRow");
+      table.refreshTable();
     }
   }
 
@@ -216,7 +210,7 @@ public class DataPanel extends JPanel {
   public synchronized void appendRow(Object[] x) {
     table.rowModel.appendRow(x);
     if(isShowing()) {
-      table.refreshTable("appendRow");
+      table.refreshTable();
     }
   }
 
@@ -227,7 +221,7 @@ public class DataPanel extends JPanel {
   public synchronized void appendRow(byte[] x) {
     table.rowModel.appendBytes(x);
     if(isShowing()) {
-      table.refreshTable("appendRow");
+      table.refreshTable();
     }
   }
 
@@ -318,7 +312,7 @@ public class DataPanel extends JPanel {
    */
   public void setVisible(boolean vis) {
     if(vis) {
-      table.refreshTable(" vis " + vis); // make sure the table shows the current values
+      table.refreshTable(); // make sure the table shows the current values
     }
     super.setVisible(vis);
   }

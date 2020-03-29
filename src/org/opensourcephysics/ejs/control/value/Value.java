@@ -34,10 +34,6 @@ public abstract class Value {
 	public final static int TYPE_INTEGER    = 4;
 	public final static int TYPE_STRING     = 5;
 	
-	public static final Value VALUE_NULL = new ObjectValue(null);	
-	public static final Value VALUE_FALSE = new BooleanValue(false);
-	public static final Value VALUE_TRUE = new BooleanValue(true);
-
 	protected int type;
 	
 	Value(int type) {

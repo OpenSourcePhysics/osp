@@ -36,7 +36,7 @@ public abstract class AbstractAnimation implements Animation, Runnable, StateMac
   long t0 = System.currentTimeMillis();                                // system clock at start of last time step
 
   /** Field decimalFormat can be used to display time and other numeric values. */
-  protected DecimalFormat sciFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00E0"); // default numeric format for messages //$NON-NLS-1$
+  protected DecimalFormat decimalFormat = new DecimalFormat("0.00E0"); // default numeric format for messages //$NON-NLS-1$
 
   /**
    * Sets the Control for this model and initializes the control's values.

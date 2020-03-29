@@ -41,10 +41,10 @@ public class DataRaster implements Measurable {
   Color backgroundColor;
   ArrayList<ImageData> imageDatasets = new ArrayList<ImageData>();
   boolean visible = true;
-  double xmin = -1;
-  double xmax = 1;
-  double ymin = -1;
-  double ymax = 1;
+  protected double xmin = -1;
+  protected double xmax = 1;
+  protected double ymin = -1;
+  protected double ymax = 1;
   private double xrange, yrange;
   //private int alpha = 255;         // the alpha value for the image
   private BufferedImage image;

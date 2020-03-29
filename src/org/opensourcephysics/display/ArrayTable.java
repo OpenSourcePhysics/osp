@@ -48,7 +48,7 @@ public class ArrayTable extends JTable implements ActionListener {
   ArrayCellRenderer cellRenderer = new ArrayCellRenderer();
   java.util.Dictionary<Integer, DecimalFormat> formatDictionary = new java.util.Hashtable<Integer, DecimalFormat>();
   String formatPattern = "0.000";                                             //$NON-NLS-1$
-  DecimalFormat defaultFormat = org.opensourcephysics.numerics.Util.newDecimalFormat(formatPattern);
+  DecimalFormat defaultFormat = new DecimalFormat(formatPattern);
   Object prevValue;
 
   /**
@@ -292,7 +292,7 @@ public class ArrayTable extends JTable implements ActionListener {
   public void setNumericFormat(String str) {
     if((str!=null)&&!str.equals(formatPattern)) { // format has changed
       formatPattern = str;
-      defaultFormat = org.opensourcephysics.numerics.Util.newDecimalFormat(str);
+      defaultFormat = new DecimalFormat(str);
       refreshTable();
     }
   }
@@ -304,7 +304,7 @@ public class ArrayTable extends JTable implements ActionListener {
   public void setNumericFormat(String[] str) {
     ((java.util.Hashtable<Integer, DecimalFormat>) formatDictionary).clear();
     for(int i = 0, n = str.length; i<n; i++) {
-      formatDictionary.put(i, org.opensourcephysics.numerics.Util.newDecimalFormat(str[i]));
+      formatDictionary.put(i, new DecimalFormat(str[i]));
     }
     refreshTable();
   }

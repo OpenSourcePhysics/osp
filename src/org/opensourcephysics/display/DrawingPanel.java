@@ -131,8 +131,8 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
   protected TextPanel tlMessageBox = new TextPanel();                      // text box in top left hand corner for message
   protected TextPanel brMessageBox = new TextPanel();                      // text box in lower right hand corner for message
   protected TextPanel blMessageBox = new TextPanel();                      // text box in lower left hand corner for mouse coordinates
-  protected DecimalFormat scientificFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.###E0"); // coordinate display format for message box. //$NON-NLS-1$
-  protected DecimalFormat decimalFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00"); // coordinate display format for message box. //$NON-NLS-1$
+  protected DecimalFormat scientificFormat = new DecimalFormat("0.###E0"); // coordinate display format for message box. //$NON-NLS-1$
+  protected DecimalFormat decimalFormat = new DecimalFormat("0.00"); // coordinate display format for message box. //$NON-NLS-1$
   protected MouseInputAdapter mouseController = new CMController();           // handles the coordinate display on mouse actions
   protected boolean showCoordinates = false;                                  // set to true when mouse listener is added
   protected MouseInputAdapter optionController = new OptionController();      // handles optional mouse actions
@@ -492,14 +492,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     }
   }
 
-  private Runnable runImageCheck = new Runnable() {
-      public void run() {
-        workingImage();
-      }
-
-    };
-
-    /**
+  /**
    * Checks the image to see if the working image has the correct Dimension.
    *
    * Checking is done in the event dispatch thread.
@@ -507,6 +500,12 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
    * @return <code>true <\code> if the offscreen image matches the panel;  <code>false <\code> otherwise
    */
   protected boolean checkWorkingImage() {
+    Runnable runImageCheck = new Runnable() {
+      public void run() {
+        workingImage();
+      }
+
+    };
     if(SwingUtilities.isEventDispatchThread()) {
       return workingImage();
     }
@@ -566,18 +565,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     return false;
   }
 
-  private Rectangle visibleRect = new Rectangle();
-  
-  // BH 2020.03.28 can reuse this.
-  private Runnable doNow = new Runnable() {
-      public void run() {
-    	computeVisibleRect(visibleRect);
-        paintImmediately(visibleRect);
-      }
-
-    };
-
-    /**
+  /**
    * Paints all drawables onto an offscreen image buffer and copies this image onto the screen.
    *
    * @return the image buffer
@@ -595,9 +583,15 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
       workingImage = temp;
     }
     // always update a Swing component from the event thread
+    Runnable doNow = new Runnable() {
+      public void run() {
+        paintImmediately(getVisibleRect());
+      }
+
+    };
     try {
       if(SwingUtilities.isEventDispatchThread()) {
-    	  doNow.run();
+        paintImmediately(getVisibleRect());
       } else { // paint within the event thread
         SwingUtilities.invokeAndWait(doNow);
       }
