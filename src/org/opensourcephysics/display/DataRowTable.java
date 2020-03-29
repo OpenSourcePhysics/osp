@@ -8,6 +8,7 @@
 package org.opensourcephysics.display;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
@@ -361,14 +362,23 @@ public class DataRowTable extends JTable implements ActionListener {
       }
       return tableColumn;
     }
-
-<<<<<<< HEAD
-  }
-=======
 	public void scrollToEnd() {
+		if (false)
 		SwingUtilities.invokeLater(new Runnable() {
->>>>>>> parent of a417ba8... scrollToEnd too slow for JavaScript
 
+			@Override
+			public void run() {
+		        Rectangle cellRect = getCellRect(getRowCount() -1, 0, false);
+		        if (cellRect != null) {
+		            scrollRectToVisible(cellRect);
+		        }
+			}
+			
+		});
+	}
+	  
+  }
+  
 }
 
 /*
