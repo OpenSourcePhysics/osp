@@ -194,6 +194,8 @@ public class Grid implements Drawable {
       }
     }
   }
+  
+  private BasicStroke stroke2 = new BasicStroke(2);
 
   public void draw(DrawingPanel panel, Graphics g) {
     if(!visible) {
@@ -206,10 +208,9 @@ public class Grid implements Drawable {
       return;
     }
     Graphics2D g2 = (Graphics2D) g;
-    AffineTransform at = panel.getPixelTransform();
-    Shape s = generalPath.createTransformedShape(at);
+    Shape s = generalPath.createTransformedShape(panel.getPixelTransform());
     g2.setColor(color);
-    g2.setStroke(new BasicStroke(2)); // BH just a bit better in JavaScript
+    g2.setStroke(stroke2); // BH just a bit better in JavaScript
     g2.draw(s);
     g2.setColor(Color.black);
   }

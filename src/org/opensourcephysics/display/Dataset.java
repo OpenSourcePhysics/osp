@@ -1252,6 +1252,7 @@ private Shape myShape;
 
 
   private AffineTransform trD = new AffineTransform();
+
   /**
    *  Fills the line connecting the data points.
    *
@@ -1368,7 +1369,7 @@ private Shape myShape;
            // draw and center the point
            break;
          case CUSTOM :
-           Shape temp = AffineTransform.getTranslateInstance(xp, yp).createTransformedShape(customMarker);
+           Shape temp = getTranslateInstance(xp, yp).createTransformedShape(customMarker);
            g2.setColor(fillColor);
            g2.fill(temp);
            if(edgeColor!=fillColor) {
@@ -1395,6 +1396,12 @@ private Shape myShape;
     // BH 2020.02.26 can't do this in JavaScript
     //g2.setClip(clipShape); // restore the original clipping
   }
+
+	protected AffineTransform getTranslateInstance(double tx, double ty) {
+		trD.setToTranslation(tx, ty);
+		return trD;
+	}
+
 
   /**
    *  Removes infinities and NaN (x only) from the dataset.

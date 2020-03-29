@@ -154,25 +154,6 @@ public class DrawableTextLine extends TextLine implements Drawable {
 	drawTextImageRotated(panel, g, theta, x, y);
    }
  
-  protected void drawTextImageRotated(ImageObserver panel, Graphics g, double theta, double x, double y) {
-	    int w=g.getFontMetrics().stringWidth(text)+7;
-	    int h=g.getFontMetrics().getHeight()+10;
-	    BufferedImage image = new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
-	    Graphics2D imageGraphics=image.createGraphics();
-	    imageGraphics.setFont(g.getFont());
-	    //imageGraphics.setColor(Color.RED);  // debug
-	    //imageGraphics.fillRect(0, 0, w, h);
-	    imageGraphics.setColor(Color.BLACK);
-	    drawText(imageGraphics, w/2-2, h-5);
-	    imageGraphics.dispose();
-	    Graphics2D g2d=(Graphics2D) g;
-	    g2d.translate(x-h-2,y+w/2);
-	    AffineTransform at= AffineTransform.getRotateInstance(-theta, 0, 0);
-	    g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-	    g2d.drawImage(image,at, panel);
-	    g2d.translate(-x+h+2,-y-w/2);
-  }
-
 /**
    * Draws the TextLine using world units for x and y.
    *
@@ -195,23 +176,7 @@ public class DrawableTextLine extends TextLine implements Drawable {
 			drawWithWorldWindows(panel, g);
 			return;
 		}
-		int w = g.getFontMetrics().stringWidth(text) + 7;
-		int h = g.getFontMetrics().getHeight() + 10;
-		BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-		Graphics2D imageGraphics = image.createGraphics();
-		imageGraphics.setColor(Color.BLACK);
-		imageGraphics.setFont(g.getFont());
-		drawText(imageGraphics, w / 2 - 2, h - 5);
-		imageGraphics.dispose();
-		Graphics2D g2d = (Graphics2D) g;
-		pixelPt.setLocation(x, y);
-		AffineTransform at = panel.getPixelTransform();
-		at.transform(pixelPt, pixelPt);
-		g2d.translate(pixelPt.x - h - 2, pixelPt.y + w / 2);
-		at.setToRotation(-theta, 0, 0);
-		g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-		g2d.drawImage(image, at, panel);
-		g2d.translate(-pixelPt.x + h + 2, -pixelPt.y - w / 2);
+		super.drawTextImageRotated(panel, g, theta, x, y);
 	}
   
 //	private AffineTransform trTL = new AffineTransform();
@@ -224,14 +189,14 @@ public class DrawableTextLine extends TextLine implements Drawable {
 	 */
 	private void drawWithWorldWindows(DrawingPanel panel, Graphics g) {
 		pixelPt.setLocation(x, y);
-		AffineTransform at = panel.getPixelTransform();
-		at.transform(pixelPt, pixelPt);
+		trTL.setTransform(panel.getPixelTransform());
+		trTL.transform(pixelPt, pixelPt);
 		if (theta != 0) {
-			at.setToRotation(-theta, pixelPt.x, pixelPt.y);
-			((Graphics2D) g).transform(at);
+			trTL.setToRotation(-theta, pixelPt.x, pixelPt.y);
+			((Graphics2D) g).transform(trTL);
 			drawText(g, (int) pixelPt.x, (int) pixelPt.y);
-			at.setToRotation(theta, pixelPt.x, pixelPt.y);
-			((Graphics2D) g).transform(at);
+			trTL.setToRotation(theta, pixelPt.x, pixelPt.y);
+			((Graphics2D) g).transform(trTL);
 		} else {
 			drawText(g, (int) pixelPt.x, (int) pixelPt.y);
 		}

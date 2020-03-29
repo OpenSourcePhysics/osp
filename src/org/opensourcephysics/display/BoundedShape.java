@@ -513,7 +513,7 @@ public class BoundedShape extends InteractiveShape implements Selectable {
 			pixelBounds = computeFixedHotSpots(temp);
 		} else {
 			// rotate the shape into standard position to get correct x-y bounds
-			temp = AffineTransform.getTranslateInstance(-x + pixelPt.x + xoff, -y + pixelPt.y - yoff)
+			temp = getTranslateInstance(-x + pixelPt.x + xoff, -y + pixelPt.y - yoff)
 					.createTransformedShape(shape);
 			pixelBounds = getRotateInstance(-theta, pixelPt.getX(), pixelPt.getY())
 					.createTransformedShape(computeFixedHotSpots(temp));

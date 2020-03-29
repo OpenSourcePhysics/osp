@@ -222,8 +222,8 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
 	public void draw(DrawingPanel panel, Graphics g) {
 		Graphics2D g2 = ((Graphics2D) g);
 		Shape temp;
+		getPixelPt(panel);
 		if (pixelSized) {
-			toPixels.setTransform(panel.getPixelTransform());
 			// translate the shape to correct pixel coordinates
 			trIS.setTransform(1, 0, 0, -1, -x + pixelPt.x + xoff, y + pixelPt.y - yoff);
 			trIS.rotate(-theta, pixelPt.x, pixelPt.y);
