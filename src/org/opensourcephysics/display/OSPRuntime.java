@@ -421,8 +421,7 @@ public class OSPRuntime {
   }
   
   static public boolean hasJava3D() {
-  	return false;  //  Java 3D is no longer supported
-  	/*
+  	if(true)return false;  //  Java 3D is no longer supported
     try{
       if (isMac) {  // extra testing for Mac
         boolean tryIt=true;
@@ -442,7 +441,7 @@ public class OSPRuntime {
     }
  	catch (Exception e) {  // do not not complain
 		  return false; 
-    }*/
+    }
 } 
   
   /**
