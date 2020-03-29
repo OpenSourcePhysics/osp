@@ -390,6 +390,7 @@ public class DataRowTable extends JTable implements ActionListener {
 	}
 
 	public void scrollToEnd() {
+		if (false)
 		SwingUtilities.invokeLater(new Runnable() {
 
 			@Override
