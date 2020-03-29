@@ -7,6 +7,9 @@
 
 package org.opensourcephysics.numerics;
 import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * A utility class for numerical analysis.
@@ -22,19 +25,32 @@ public final class Util {
   /** The default precision for numerical analysis. */
   public static final double defaultNumericalPrecision = Math.sqrt(Double.MIN_VALUE);
 
+  private static Map<String, DecimalFormat> htFormats = new Hashtable<>();
+
+  public static DecimalFormat newDecimalFormat(String format) {
+	  DecimalFormat f = htFormats.get(format);
+	  if (f == null) {
+		  f = new DecimalFormat(format);
+		  htFormats.put(format,  f);
+	  }
+	return f;
+}
+
   /** Parser for simple arithmetic expressions. */
   private static SuryonoParser parser = new SuryonoParser(0);     // parser without variables
   // standard output formats
-  static DecimalFormat format2 = new DecimalFormat("#0.00");      //$NON-NLS-1$
-  static DecimalFormat format3 = new DecimalFormat("#0.000");     //$NON-NLS-1$
-  static DecimalFormat format4 = new DecimalFormat("#0.0000");    //$NON-NLS-1$
-  static DecimalFormat format_E2 = new DecimalFormat("0.00E0");   //$NON-NLS-1$
-  static DecimalFormat format_E3 = new DecimalFormat("0.000E0");  //$NON-NLS-1$
-  static DecimalFormat format_E4 = new DecimalFormat("0.0000E0"); //$NON-NLS-1$
+  static DecimalFormat format2 = org.opensourcephysics.numerics.Util.newDecimalFormat("#0.00");      //$NON-NLS-1$
+  static DecimalFormat format3 = org.opensourcephysics.numerics.Util.newDecimalFormat("#0.000");     //$NON-NLS-1$
+  static DecimalFormat format4 = org.opensourcephysics.numerics.Util.newDecimalFormat("#0.0000");    //$NON-NLS-1$
+  static DecimalFormat format_E2 = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00E0");   //$NON-NLS-1$
+  static DecimalFormat format_E3 = org.opensourcephysics.numerics.Util.newDecimalFormat("0.000E0");  //$NON-NLS-1$
+  static DecimalFormat format_E4 = org.opensourcephysics.numerics.Util.newDecimalFormat("0.0000E0"); //$NON-NLS-1$
 
   private Util() {}                                               // prohibit instantiation because all methods are static
 
-  /**
+  
+
+/**
    * Convert a double to a string, printing two decimal places.
    * @param d  Input double
    */

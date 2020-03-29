@@ -29,7 +29,7 @@ public class Protractor extends InteractiveCircle implements Drawable {
   int protractorRadius, protractorRadius2, arrowLengthPix;
   protected Tip tip = new Tip();
   protected double arrowTheta = 0, orientation = 0;
-  protected DecimalFormat f = new DecimalFormat("000"); //$NON-NLS-1$
+  protected DecimalFormat f = org.opensourcephysics.numerics.Util.newDecimalFormat("000"); //$NON-NLS-1$
   protected boolean showTheta = false;
   protected InteractiveLabel tauBox = new InteractiveLabel(thetaStr+f.format(getTheta()));
 

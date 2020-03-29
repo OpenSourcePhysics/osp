@@ -162,79 +162,90 @@ public class ResourceLoader {
     return getResource(name, type, true);
   }
 
-  /**
-   * Gets a resource specified by name and Class. If no resource is found using
-   * the name alone, the searchPaths are searched.
-   * Files are searched only if searchFile is true.
-   *
-   * @param name the file or URL name
-   * @param type the Class providing default ClassLoader resource loading
-   * @param searchFiles true to search files
-   * @return the Resource, or null if none found
-   */
-  public static Resource getResource(String name, Class<?> type, boolean searchFiles) {
-    if((name==null)||name.equals("")) { //$NON-NLS-1$
-      return null;
-    }
-    pathsNotFound.clear();
-    // Remove leading and trailing inverted commas (added by Paco)
-    if(name.startsWith("\"")) { //$NON-NLS-1$   
-      name = name.substring(1);
-    }
-    if(name.endsWith("\"")) { //$NON-NLS-1$   
-      name = name.substring(0, name.length()-1);
-    }
-    if(name.startsWith("./")) { //$NON-NLS-1$   
-      name = name.substring(2);
-    }
-    if(OSPRuntime.isAppletMode()||(OSPRuntime.applet!=null)) { // added by Paco
-      Resource appletRes = null;
-      // following code added by Doug Brown 2009/11/14
-      if(type==OSPRuntime.applet.getClass()) {
-        try {
-          URL url = type.getResource(name);
-          appletRes = createResource(url);
-          if(appletRes!=null) {
-            return appletRes;
-          }
-        } catch(Exception ex) {}
-      }  // end code added by Doug Brown 2009/11/14
-      for(Iterator<String> it = searchPaths.iterator(); it.hasNext(); ) {
-        String path = getPath(it.next(), name);
-        appletRes = findResourceInClass(path, type, searchFiles);
-        if(appletRes!=null) {
-          return appletRes;
-        }
-      }
-      appletRes = findResourceInClass(name, type, searchFiles);
-      if(appletRes!=null) {
-        return appletRes;
-      }
-    }
-    // look for resource with name only
-    Resource res = findResource(name, type, searchFiles);
-    if(res!=null) {
-      return res;
-    }
-    pathsNotFound.add(name);
-    StringBuffer err = new StringBuffer("Not found: "+name); //$NON-NLS-1$
-    err.append(" [searched "+name); //$NON-NLS-1$
-    // look for resource in searchPaths
-    for(String next: searchPaths) {
-      String path = getPath(next, name);
-    	if (pathsNotFound.contains(path))
-    		continue;
-      res = findResource(path, type, searchFiles);
-      if(res!=null) {
-        return res;
-      }
-      pathsNotFound.add(path);
-      err.append(";"+path); //$NON-NLS-1$
-    }
-    err.append("]"); //$NON-NLS-1$
-    OSPLog.fine(err.toString());
-    return null;
-  }
+	/**
+	 * Gets a resource specified by name and Class. If no resource is found using
+	 * the name alone, the searchPaths are searched. Files are searched only if
+	 * searchFile is true.
+	 *
+	 * @param name        the file or URL name
+	 * @param type        the Class providing default ClassLoader resource loading
+	 * @param searchFiles true to search files
+	 * @return the Resource, or null if none found
+	 */
+	public static Resource getResource(String name, Class<?> type, boolean searchFiles) {
+		if ((name == null) || name.equals("")) { //$NON-NLS-1$
+			return null;
+		}
+		pathsNotFound.clear();
+		// Remove leading and trailing inverted commas (added by Paco)
+		if (name.startsWith("\"")) { //$NON-NLS-1$
+			name = name.substring(1);
+		}
+		if (name.endsWith("\"")) { //$NON-NLS-1$
+			name = name.substring(0, name.length() - 1);
+		}
+		if (name.startsWith("./")) { //$NON-NLS-1$
+			name = name.substring(2);
+		}
+		/**
+		 * not applicable
+		 * 
+		 * @j2sNative
+		 * 
+		 */
+		{
+			// removed by Transpiler
+			if (!OSPRuntime.isJS && (OSPRuntime.isAppletMode() || (OSPRuntime.applet != null))) { // added by Paco
+
+				Resource appletRes = null;
+				// following code added by Doug Brown 2009/11/14
+				if (type == OSPRuntime.applet.getClass()) {
+					try {
+						URL url = type.getResource(name);
+						appletRes = createResource(url);
+						if (appletRes != null) {
+							return appletRes;
+						}
+					} catch (Exception ex) {
+					}
+				} // end code added by Doug Brown 2009/11/14
+				for (Iterator<String> it = searchPaths.iterator(); it.hasNext();) {
+					String path = getPath(it.next(), name);
+					appletRes = findResourceInClass(path, type, searchFiles);
+					if (appletRes != null) {
+						return appletRes;
+					}
+				}
+				appletRes = findResourceInClass(name, type, searchFiles);
+				if (appletRes != null) {
+					return appletRes;
+				}
+			}
+		}
+		// look for resource with name only
+		Resource res = findResource(name, type, searchFiles);
+		if (res != null) {
+			return res;
+		}
+		pathsNotFound.add(name);
+		StringBuffer err = new StringBuffer("Not found: " + name); //$NON-NLS-1$
+		err.append(" [searched " + name); //$NON-NLS-1$
+		// look for resource in searchPaths
+		for (String next : searchPaths) {
+			String path = getPath(next, name);
+			if (pathsNotFound.contains(path))
+				continue;
+			res = findResource(path, type, searchFiles);
+			if (res != null) {
+				return res;
+			}
+			pathsNotFound.add(path);
+			err.append(";" + path); //$NON-NLS-1$
+		}
+		err.append("]"); //$NON-NLS-1$
+		OSPLog.fine(err.toString());
+		return null;
+	}
 
   /**
    * Gets a resource specified by base path and name. If base path is relative
@@ -1300,7 +1311,7 @@ public class ResourceLoader {
     source = source.substring(0, n+4);
     
   	try {
-    	URL url = new URL(source);    	
+    	URL url = new URL(source);
       BufferedInputStream bufIn = new BufferedInputStream(url.openStream());
       ZipInputStream input = new ZipInputStream(bufIn);
       ZipEntry zipEntry=null;
@@ -1333,8 +1344,11 @@ public class ResourceLoader {
    * @return true if available
    */
   public static boolean isURLAvailable(String urlPath) {
-	  if (JSUtil.isJS)// BH 2020.03.02 trying this to see if it is reasonable
-		  urlPath = "https://www.google.com";
+	  if (JSUtil.isJS) {
+		  // BH 2020.03.02 trying this to see if it is reasonable
+		  // This specific URL will be replaced with a known CORS server by j2sApplet.js
+		  urlPath = "https://INTERNET.TEST";
+	  }
 	  try {
       // make a URL, open a connection, get content
       URL url = new URL(urlPath);
@@ -1864,95 +1878,88 @@ static private Resource createZipResource(String path) {
     return res; // may be null
   }
 
-  /**
-   * Creates a Resource.
-   *
-   * @param url the URL
-   * @return the resource, if any
-   * @throws IOException
-   */
-  static private Resource createResource(URL url) throws IOException {  	
-    if(url==null) {
-      return null;
-    }
-    String path = url.toExternalForm();
-    URL working = url;
-    String content = null;
-    
-    // web-based zip files require special handling
-    int n = path.toLowerCase().indexOf(".zip!/"); //$NON-NLS-1$
-    if (n==-1) n = path.toLowerCase().indexOf(".jar!/");     //$NON-NLS-1$
-    if (n==-1) n = path.toLowerCase().indexOf(".trz!/");     //$NON-NLS-1$
-    if (n>-1 && path.startsWith("http")) { //$NON-NLS-1$
-    	content = path.substring(n+6);
-    	working = new URL(path.substring(0, n+4));
-    }
+	/**
+	 * Creates a Resource.
+	 *
+	 * @param url the URL
+	 * @return the resource, if any
+	 * @throws IOException
+	 */
+	static private Resource createResource(URL url) throws IOException {
+		if (url == null) {
+			return null;
+		}
+		String path = url.toExternalForm();
+		URL working = url;
+		String content = null;
 
-    // check that url is accessible
-    InputStream stream = working.openStream();
-    if(stream.read()==-1) {
-    	stream.close();
-      return null;
-    }
-    stream.close();
-    Resource res = new Resource(working, content);
-    return res;
-  }
+		// web-based zip files require special handling
+		int n = path.toLowerCase().indexOf(".zip!/"); //$NON-NLS-1$
+		if (n == -1)
+			n = path.toLowerCase().indexOf(".jar!/"); //$NON-NLS-1$
+		if (n == -1)
+			n = path.toLowerCase().indexOf(".trz!/"); //$NON-NLS-1$
+		if (n > -1 && path.startsWith("http")) { //$NON-NLS-1$
+			// check that url is accessible
+			content = path.substring(n + 6);
+			working = new URL(path.substring(0, n + 4));
+			InputStream stream = working.openStream();
+			if (stream.read() == -1) {
+				stream.close();
+				return null;
+			}
+			stream.close();
+		}
 
-  /**
-   * Finds the resource using only the class resource loader
-   */
-  private static Resource findResourceInClass(String path, Class<?> type, boolean searchFiles) { // added by Paco
-    path = path.replaceAll("/\\./", "/"); // This eliminates any embedded /./ //$NON-NLS-1$ //$NON-NLS-2$
-    if(type==null) {
-      type = Resource.class;
-    }
-    Resource res = null;
-    // look for cached resource
-    if(cacheEnabled) {
-      res = resources.get(path);
-      if((res!=null)&&(searchFiles||(res.getFile()==null))) {
-        OSPLog.finest("Found in cache: "+path); //$NON-NLS-1$
-        return res;
-      }
-    }
-    if((res = createClassResource(path, type))!=null) {
-      if(cacheEnabled) {
-        resources.put(path, res);
-      }
-      return res;
-    }
-    return null;
-  }
+		// BH 2020.03.28 URLs are checked when created; only a URI might not have a
+		// target at this point.
 
-  private static Resource findResource(String path, Class<?> type, boolean searchFiles) {
-  	path = path.replaceAll("/\\./", "/"); // This eliminates any embedded /./ //$NON-NLS-1$ //$NON-NLS-2$
-    if(type==null) {
-      type = Resource.class;
-    }
-    Resource res = null;
-    // look for cached resource
-    if(cacheEnabled) {
-      res = resources.get(path);
-      if((res!=null)&&(searchFiles||(res.getFile()==null))) {
-        OSPLog.finest("Found in cache: "+path); //$NON-NLS-1$
-        return res;
-      }
-    }
-    // try to load resource in file/url/zip/class order
-    // search files only if flagged
-    if((searchFiles&&(res = createFileResource(path))!=null)
-    		||(res = createURLResource(path))!=null
-    		||(res = createZipResource(path))!=null
-    		||(res = createClassResource(path, type))!=null) {
-      if(cacheEnabled) {
-        resources.put(path, res);
-      }
-      return res;
-    }
-    return null;
-  }
+		Resource res = new Resource(working, content);
+		return res;
+	}
 
+
+	private static Resource findResource(String path, Class<?> type, boolean searchFiles) {
+		return findResource(path, type, searchFiles, false);
+	}
+	
+	private static Resource findResource(String path, Class<?> type, boolean searchFiles, boolean createOnly) {
+
+		path = path.replaceAll("/\\./", "/"); // This eliminates any embedded /./ //$NON-NLS-1$ //$NON-NLS-2$
+		if (type == null) {
+			type = Resource.class;
+		}
+		Resource res = null;
+		// look for cached resource
+		if (cacheEnabled) {
+			res = resources.get(path);
+			if ((res != null) && (searchFiles || (res.getFile() == null))) {
+				OSPLog.finest("Found in cache: " + path); //$NON-NLS-1$
+				return res;
+			}
+		}
+		if (createOnly) {
+			res = createClassResource(path, type);
+		} else if ((searchFiles && (res = createFileResource(path)) != null) || (res = createURLResource(path)) != null
+				|| (res = createZipResource(path)) != null || (res = createClassResource(path, type)) != null) {
+			// res is not null;
+		}
+		if (res != null && cacheEnabled) {
+			resources.put(path, res);
+		}
+		return res;
+	}
+
+
+	  /**
+	   * Never called -- was for applet only
+	   * Finds the resource using only the class resource loader
+	   */
+
+		private static Resource findResourceInClass(String path, Class<?> type, boolean searchFiles) { 
+		  // added by Paco
+		  return findResource(path, type, searchFiles, true);
+		}
   /**
    * Gets a path from a base path and file name.
    *

@@ -70,7 +70,7 @@ public class QMSuperpositionApp extends AbstractAnimation implements PropertyCha
       }
       String str = control.getString("dt");
       String tformat = control.getString("time format");
-      decimalFormat = new DecimalFormat(tformat); // display format for messages
+      sciFormat = org.opensourcephysics.numerics.Util.newDecimalFormat(tformat); // display format for messages
       double val = Util.evalMath(str);
       if(Double.isNaN(val)) {
          control.println("Error reading dt.");
@@ -165,9 +165,9 @@ public class QMSuperpositionApp extends AbstractAnimation implements PropertyCha
          centeredPhase=true;
       }
       superposition.getPsi(psiDataset);
-      psiPanel.setMessage("t="+decimalFormat.format(time));
+      psiPanel.setMessage("t="+sciFormat.format(time));
       if(dataPanel!=null && showDataPanelTime) {
-         dataPanel.setMessage("t="+decimalFormat.format(time));
+         dataPanel.setMessage("t="+sciFormat.format(time));
       }
       psiPanel.repaint();
       //psiFrame.setVisible(true);
@@ -197,9 +197,9 @@ public class QMSuperpositionApp extends AbstractAnimation implements PropertyCha
       time += dt;
       superposition.update(time);
       superposition.getPsi(psiDataset);
-      psiPanel.setMessage("t="+decimalFormat.format(time));
+      psiPanel.setMessage("t="+sciFormat.format(time));
       if(dataPanel!=null && showDataPanelTime) {
-         dataPanel.setMessage("t="+decimalFormat.format(time));
+         dataPanel.setMessage("t="+sciFormat.format(time));
       }
       psiPanel.render();
       if(time>=Float.MAX_VALUE) {

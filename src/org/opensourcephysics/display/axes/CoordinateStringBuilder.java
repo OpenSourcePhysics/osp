@@ -15,8 +15,8 @@ import org.opensourcephysics.display.TeXParser;
  * Builds a coordinate string from a mouse event for an axis type.
  */
 public abstract class CoordinateStringBuilder {
-  protected DecimalFormat scientificFormat = new DecimalFormat("0.###E0"); // coordinate display format for message box. //$NON-NLS-1$
-  protected DecimalFormat decimalFormat = new DecimalFormat("0.00"); // coordinate display format for message box. //$NON-NLS-1$
+  protected DecimalFormat scientificFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.###E0"); // coordinate display format for message box. //$NON-NLS-1$
+  protected DecimalFormat decimalFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00"); // coordinate display format for message box. //$NON-NLS-1$
   protected String xLabel = "x=";   //$NON-NLS-1$
   protected String yLabel = "  y="; //$NON-NLS-1$
 

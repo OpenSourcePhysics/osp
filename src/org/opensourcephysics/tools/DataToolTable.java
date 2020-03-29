@@ -11,6 +11,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.Toolkit;
@@ -1628,7 +1629,7 @@ public class DataToolTable extends DataTable {
     int endRow = getModelRow(getRowCount()-1);
     for(int i = 0; i<rows.length; i++) {
       if(endRow==rows[i]) {
-        java.awt.Rectangle rect = getVisibleRect();
+    	computeVisibleRect(rect);
         rect.y = getSize().height-rect.height+getRowHeight();
         scrollRectToVisible(rect);
         break;
@@ -1637,6 +1638,8 @@ public class DataToolTable extends DataTable {
     return values;
   }
 
+  private Rectangle rect = new Rectangle();
+  
   /**
    * Deletes rows.
    *
