@@ -362,7 +362,12 @@ public class DataRowTable extends JTable implements ActionListener {
       return tableColumn;
     }
 
+<<<<<<< HEAD
   }
+=======
+	public void scrollToEnd() {
+		SwingUtilities.invokeLater(new Runnable() {
+>>>>>>> parent of a417ba8... scrollToEnd too slow for JavaScript
 
 }
 
