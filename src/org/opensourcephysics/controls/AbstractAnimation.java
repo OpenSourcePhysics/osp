@@ -37,7 +37,8 @@ public abstract class AbstractAnimation implements Animation, Runnable, StateMac
 
   /** Field decimalFormat can be used to display time and other numeric values. */
   protected DecimalFormat sciFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00E0"); // default numeric format for messages //$NON-NLS-1$
-
+  /** Field decimalFormat can be used to display time and other numeric values. */
+  protected DecimalFormat decimalFormat = sciFormat; // default numeric format for messages //$NON-NLS-1$
   /**
    * Sets the Control for this model and initializes the control's values.
    *
