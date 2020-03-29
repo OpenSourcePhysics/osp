@@ -11,11 +11,13 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.JViewport;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -67,13 +69,30 @@ public class DataRowTable extends JTable implements ActionListener {
 		setColumnModel(new DataTableColumnModel());
 		setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		setColumnSelectionAllowed(true);
-//    rowModel.addTableModelListener(new TableModelListener() {
-//      public void tableChanged(TableModelEvent e) {
-//        // forward the table model event to property change listeners
-//        DataRowTable.this.firePropertyChange("cell", null, e); //$NON-NLS-1$
-//      }
-//
-//    });
+	    rowModel.addTableModelListener(new TableModelListener() {
+	      public void tableChanged(TableModelEvent e) {
+	    	  showChange(e);
+	    	  DataRowTable.this.firePropertyChange("cell", null, e); //$NON-NLS-1$
+	      }
+
+		private void showChange(TableModelEvent e) {
+	        // forward the table model event to property change listeners
+	    	  String type = "" + e.getType();
+	    	  switch (e.getType()) {
+	    	  case 0:
+	    		  type = "UPDATE";
+	    		  break;
+	    	  case 1:
+	    		 type = "INSERT";
+	    		 break;
+	    	  case -1:
+	    		  type = "DELETE";
+	    		  break;
+	    	  }
+	    	  System.out.println("DataRowTable model listener tableChanged type " + type);	    		
+		}
+	
+	    });
 		setDefaultRenderer(Object.class, cellRenderer);
 		getTableHeader().setForeground(Color.blue); // set text color
 		getTableHeader().setReorderingAllowed(true);
@@ -147,7 +166,7 @@ public class DataRowTable extends JTable implements ActionListener {
 			return; // nothing changed
 		}
 		formats.put(column, f);
-		refreshTable("columrnFormat");
+		refreshTable("columnFormat");
 	}
 
 	/**
@@ -186,62 +205,23 @@ public class DataRowTable extends JTable implements ActionListener {
 		refreshTable("setStride");
 	}
 
-	private String from;
-
-	private Runnable doRefreshTable = new Runnable() {
-		public synchronized void run() {
-			tableChanged(new TableModelEvent(getModel(), TableModelEvent.HEADER_ROW));
-		}
-
-	};
-	private String updatetype;
-
+//
+//	private Runnable doRefreshTable = new Runnable() {
+//		public synchronized void run() {
+//			tableChanged(new TableModelEvent(getModel(), TableModelEvent.HEADER_ROW));
+//		}
+//
+//	};
 	/**
    *  Refresh the data in the DataTable, as well as other changes to the table,
    *  such as row number visibility. Changes to the TableModels displayed in the
    *  table will not be visible until this method is called.
    */
-  public void refreshTable(String from) {
-	 
-//	  System.out.println("DataRowTable.refreshTable " + from);
-	  switch (from) {
-	  default:
-	  case "appendRow":	
-		  // this is taken care of already in DataRowModel
-		  return;
-	  case "setColumnName":
-	  case "setColumnNames":
-		  updatetype = "column";
-		  return;
-	  case "CDT.finalUpdate":
-		  String update = updatetype;
-		  if (update == null)
-			  return;
-		  updatetype = null;
-		  switch (update) { 
-		  case "column":
-			  rowModel.fireTableStructureChanged();
-			  return;
-		  default:
-			  return;
-		  }
-	  }
-	  
-//    if(refreshDelay>0) {
-//      refreshTimer.start();
-//    } else {
-//      if(SwingUtilities.isEventDispatchThread()) {
-//        doRefreshTable.run();
-//      } else {
-//        SwingUtilities.invokeLater(doRefreshTable);
-//      }
-//    }
+  public void refreshTable(String type) {
+	  // BH 2020.03.29 delegated to DataRowModel.
+	  rowModel.refreshModel(this, type);
   }
   
-  public void paintComponent(Graphics g) {
-	  super.paintComponent(g);
-  }
-
 	/**
 	 * Returns the renderer for a cell specified by row and column.
 	 *
@@ -254,6 +234,7 @@ public class DataRowTable extends JTable implements ActionListener {
 		if ((i == 0) && rowModel.rowNumberVisible) {
 			return indexRenderer;
 		}
+
 		return cellRenderer;
 		// return getDefaultRenderer(getColumnClass(column));
 	}
@@ -307,7 +288,9 @@ public class DataRowTable extends JTable implements ActionListener {
 				setText((String) value);
 			} else if (f == null) {
 				setText(value.toString());
-			} else {
+			} else if (value instanceof Double && Double.isNaN(((Double)value).doubleValue())) {
+				setText(""); // BH added
+			} else {		
 				try {
 					setText(f.format(value));
 				} catch (IllegalArgumentException ex) {
@@ -406,6 +389,19 @@ public class DataRowTable extends JTable implements ActionListener {
 
 	}
 
+	public void scrollToEnd() {
+		SwingUtilities.invokeLater(new Runnable() {
+
+			@Override
+			public void run() {
+		        Rectangle cellRect = getCellRect(getRowCount() -1, 0, false);
+		        if (cellRect != null) {
+		            scrollRectToVisible(cellRect);
+		        }
+			}
+			
+		});
+	}
 }
 
 /*
