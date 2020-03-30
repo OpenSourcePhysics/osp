@@ -9,10 +9,45 @@ package org.opensourcephysics.display;
 
 import java.util.ArrayList;
 
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
+
+/**
+ * BH 2020.03.30 note:
+ * 
+ * DataRowTable is used in ThreeStateNuclearDecay, where it tracks the three
+ * nuclear states over time.
+ * 
+ * The symptom in SwingJS was that it was taking an inordinant amount of time to
+ * append to the table and to scroll it, and there was a huge amount of activity
+ * just in adding a new row.
+ * 
+ * The problem turned out to be calls to DataRowTable.refreshTable(), which was
+ * firing a full table rebuild -- basically a clean sweep of all rows and
+ * columns -- every time a row was added.
+ * 
+ * The solution was to disambiguate the calls to refreshTable() as
+ * refreshTable(String type), allowing a more nuanced approach. In addition,
+ * that functionality, arising from DataRowModel, was moved into DataRowModel as
+ * refreshModel(String type).
+ * 
+ * This solved the basic problem of too many, too full, updates.
+ * 
+ * The second problem was that in SwingJS we don't necessarily have to repaint a
+ * cell if nothing has changed, particularly during scrolling. "Repainting"
+ * actually amounts to rebuilding the HTML5 structure of the table, leading to
+ * expensive restyling of the DOM.
+ * 
+ * To avoid this, SwingJS was modified to allow for a null return from
+ * DataRowTable.getCellRenderer(row, column). The new method is
+ * getCellRendererOrNull(int row, int column, boolean isScrolling), which is
+ * called whenever JSTableUI does not absolutely have to recreate a cell from
+ * scratch -- during scrolling particularly.
+ * 
+ * 
+ * @author hansonr and others
+ *
+ */
 public class DataRowModel extends AbstractTableModel {
 	ArrayList<Object> rowList = new ArrayList<Object>();
 	ArrayList<String> colNames = new ArrayList<String>();

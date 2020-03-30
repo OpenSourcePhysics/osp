@@ -30,6 +30,11 @@ import javax.swing.table.TableColumn;
 
 /**
  * A JTable to display rows of integers, doubles and Strings.
+ * 
+ * BH 2020.03.30 See note in DataRowModel.java
+ * 
+ * 
+ * 
  *
  * @author Wolfgang Christian
  * @version 1.0
@@ -71,7 +76,7 @@ public class DataRowTable extends JTable implements ActionListener {
 		setColumnSelectionAllowed(true);
 	    rowModel.addTableModelListener(new TableModelListener() {
 	      public void tableChanged(TableModelEvent e) {
-	    	  showChange(e);
+	    	  //showChange(e);
 	    	  DataRowTable.this.firePropertyChange("cell", null, e); //$NON-NLS-1$
 	      }
 
@@ -223,6 +228,19 @@ public class DataRowTable extends JTable implements ActionListener {
   }
   
 	/**
+	 * This method is called only by JSTableUI for SwingJS option to not paint a
+	 * cell.
+	 * 
+	 * @param row
+	 * @param column
+	 * @param isScrolling indicates that this paint is due to a scrolling operation
+	 *                    only.
+	 * @return null to indicate not to paint, or the cell renderer to do so.
+	 */
+  public TableCellRenderer getCellRendererOrNull(int row, int column, boolean isScrolling) {
+	 return (isScrolling ? null : rowModel.mustPaint(row, column) ? getCellRenderer(row, column) : null);
+  }
+	/**
 	 * Returns the renderer for a cell specified by row and column.
 	 *
 	 * @param row    the row number
@@ -230,6 +248,7 @@ public class DataRowTable extends JTable implements ActionListener {
 	 * @return the cell renderer
 	 */
 	public TableCellRenderer getCellRenderer(int row, int column) {
+		//System.out.println("DRT.getCellRenderer " + row + " " + column);
 		int i = convertColumnIndexToModel(column);
 		if ((i == 0) && rowModel.rowNumberVisible) {
 			return indexRenderer;
