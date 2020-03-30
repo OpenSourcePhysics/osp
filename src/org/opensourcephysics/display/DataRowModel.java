@@ -12,6 +12,8 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
+import org.opensourcephysics.controls.OSPLog;
+
 public class DataRowModel extends AbstractTableModel {
   ArrayList<Object> rowList = new ArrayList<Object>();
   ArrayList<String> colNames = new ArrayList<String>();
@@ -362,7 +364,8 @@ private int pointCount;
 		switch (type) {
 		default:
 			updateType = "?";
-			System.out.println("DataRowTable.refreshTable " + type + " not processed");
+			OSPLog.fine("DataRowTable.refreshTable " + type + " not processed");
+			// System.out.println("DataRowTable.refreshTable " + type + " not processed");
 			return;
 		case "appendRow":
 			int n = getRowCount() - 1;

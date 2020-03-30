@@ -162,6 +162,10 @@ public class TableFrame extends OSPFrame {
   public void refreshTable(String from) {
     tableData.refreshTable(from);
   }
+  
+  public void refreshTable() {
+    refreshTable("?");
+  }
 
   /**
    * Clears data from drawing objects within this frame.
