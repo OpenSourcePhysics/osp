@@ -44,9 +44,6 @@ private String updateType;
    * Sets the maximum number of rows the data can hold
    */
   public void setMaxPoints(int max) {
-	  
-	  max = 200;
-	  
     maxRows = max;
     if((maxRows<=0)||(rowList.size()<=max)) {
       return;
@@ -232,7 +229,12 @@ private String updateType;
    */
   public boolean setColumnNames(int column, String name) {
     name = TeXParser.parseTeX(name);
-    if( (colNames==null)|| (column<colNames.size())&& colNames.get(column)!=null && colNames.get(column).equals(name)) {  // W. Christian added null check
+		if ((colNames == null)
+				|| (column < colNames.size()) && colNames.get(column) != null && colNames.get(column).equals(name)) { // W.
+																														// Christian
+																														// added
+																														// null
+																														// check
       return false;
     }
     while(column>=colNames.size()) {
@@ -351,6 +353,11 @@ private String updateType;
    private int lastRowAppended = -1;
 private int pointCount;
 
+	public boolean mustPaint(int row, int column) {
+		//System.out.println("DRM mustPaint " + row + "  "+ column + " " + updateType + " " + lastRowAppended);
+		return lastRowAppended == -2 ? false : updateType != "appendRow" || row == lastRowAppended;
+	}
+
 	/**
 	 * Called from DataRowTable.refreshTable(from), this method handles all
 	 * communication directing repaints via the JTable's UI class. There is no need
@@ -361,16 +368,16 @@ private int pointCount;
 	 * @param type
 	 */
 	public void refreshModel(DataRowTable table, String type) {
+		//System.out.println("DataRowTable.refreshTable " + type + " " + lastRowAppended);
 		switch (type) {
 		default:
 			updateType = "?";
-			OSPLog.fine("DataRowTable.refreshTable " + type + " not processed");
-			// System.out.println("DataRowTable.refreshTable " + type + " not processed");
+			System.out.println("DataRowTable.refreshTable " + type + " not processed");
 			return;
 		case "appendRow":
 			int n = getRowCount() - 1;
 			if (n == lastRowAppended) {
-				if (pointCount <= maxRows || (pointCount + stride) % stride == 0) {
+				if (pointCount >= maxRows && (pointCount + stride) % stride == 0) {
 					updateType = "maxRows";
 				} else {
 					updateType = null;
@@ -380,28 +387,22 @@ private int pointCount;
 			lastRowAppended = n;
 			updateType = "rowAppended";
 			return;
+		case "clearData":
+			pointCount = 0;
+			lastRowAppended = -1;
+			updateType = "dataCleared";
+			fireUpdate();
+			break;
 		case "setColumnName":
 		case "setColumnNames":
 			updateType = "columnNamed";
 			return;
+		case "_pause":
+			// must add to application's pause button.
+			updateType = "paused";
+			return;
 		case "CDT.finalUpdate":
-			String update = updateType;
-			if (update == null)
-				return;
-			updateType = null;
-			switch (update) {
-			case "rowAppended":
-				fireTableRowsInserted(lastRowAppended, lastRowAppended);
-				table.scrollToEnd();
-				return;
-			case "?":
-			case "maxRows":
-			case "columnnamed":
-				fireTableStructureChanged();
-				return;
-			default:
-				return;
-			}
+			fireUpdate();
 		}
 
 //  if(refreshDelay>0) {
@@ -416,27 +417,51 @@ private int pointCount;
 
 	}
 
-}
+	private void fireUpdate() {
+			String update = updateType;
+			if (update == null)
+				return;
+			updateType = null;
+			switch (update) {
+		case "dataCleared":
+			return;
+			case "rowAppended":
+				fireTableRowsInserted(lastRowAppended, lastRowAppended);
+			//table.scrollToEnd();
+				return;
+		case "columnnamed":
+			lastRowAppended = -2;
+			case "?":
+			case "maxRows":
+		case "paused":
+				fireTableStructureChanged();
+				return;
+			default:
+				return;
+			}
+		}
+
+	}
 
 /*
- * Open Source Physics software is free software; you can redistribute
- * it and/or modify it under the terms of the GNU General Public License (GPL) as
+ * Open Source Physics software is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License (GPL) as
  * published by the Free Software Foundation; either version 2 of the License,
  * or(at your option) any later version.
-
+ * 
  * Code that uses any portion of the code in the org.opensourcephysics package
- * or any subpackage (subdirectory) of this package must must also be be released
- * under the GNU GPL license.
+ * or any subpackage (subdirectory) of this package must must also be be
+ * released under the GNU GPL license.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
- * or view the license online at http://www.gnu.org/copyleft/gpl.html
+ * You should have received a copy of the GNU General Public License along with
+ * this; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
+ * Suite 330, Boston MA 02111-1307 USA or view the license online at
+ * http://www.gnu.org/copyleft/gpl.html
  *
  * Copyright (c) 2017  The Open Source Physics project
  *                     http://www.opensourcephysics.org
