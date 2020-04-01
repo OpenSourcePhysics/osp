@@ -15,11 +15,11 @@ import org.opensourcephysics.tools.FontSizer;
 
 public class FontResizeTest {
 
-	Object[][] data = { { "Kathy", "Smith", "Snowboarding", new Integer(5), Boolean.FALSE },
-			{ "John", "Doe", "Rowing", new Integer(3), Boolean.TRUE },
-			{ "Sue", "Black", "Knitting", new Integer(2), Boolean.FALSE },
-			{ "Jane", "White", "Speed reading", new Integer(20), Boolean.TRUE },
-			{ "Joe", "Brown", "Pool", new Integer(10), Boolean.FALSE } };
+	Object[][] data = { { "Kathy", "Smith", "Snowboarding", Integer.valueOf(5), Boolean.FALSE },
+			{ "John", "Doe", "Rowing", Integer.valueOf(3), Boolean.TRUE },
+			{ "Sue", "Black", "Knitting", Integer.valueOf(2), Boolean.FALSE },
+			{ "Jane", "White", "Speed reading", Integer.valueOf(20), Boolean.TRUE },
+			{ "Joe", "Brown", "Pool", Integer.valueOf(10), Boolean.FALSE } };
 
 	String[] columnNames = { "First Name", "Last Name", "Sport", "# of Years", "Vegetarian" };
 

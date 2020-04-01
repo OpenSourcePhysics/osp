@@ -171,7 +171,7 @@ public class DataToolStatsTable extends JTable {
     if(min==Double.MAX_VALUE) {
       min = Double.NaN;
     }
-    return new Object[] {new Double(max), new Double(min), new Double(mean), new Double(sd), new Double(sd/Math.sqrt(count)), new Integer(count)};
+    return new Object[] {new Double(max), new Double(min), new Double(mean), new Double(sd), new Double(sd/Math.sqrt(count)), Integer.valueOf(count)};
   }
 
   /**

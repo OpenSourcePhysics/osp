@@ -368,7 +368,7 @@ public class XMLControlElement implements XMLControl {
       } else if(type.equals("collection")) { //$NON-NLS-1$
         return collectionValue(prop);
       } else if(type.equals("int")) {        //$NON-NLS-1$
-        return new Integer(intValue(prop));
+        return Integer.valueOf(intValue(prop));
       } else if(type.equals("double")) {     //$NON-NLS-1$
         return new Double(doubleValue(prop));
       } else if(type.equals("boolean")) {    //$NON-NLS-1$
@@ -1097,9 +1097,9 @@ public class XMLControlElement implements XMLControl {
   public String addNumbering(String name) {
     Integer count = counts.get(name);
     if(count==null) {
-      count = new Integer(0);
+      count = Integer.valueOf(0);
     }
-    count = new Integer(count.intValue()+1);
+    count = Integer.valueOf(count.intValue()+1);
     counts.put(name, count);
     return name+" "+count.toString(); //$NON-NLS-1$
   }
@@ -1670,7 +1670,7 @@ public class XMLControlElement implements XMLControl {
       } else if(type.equals("int")) {                               //$NON-NLS-1$
         int val = intValue(next);
         if(Object.class.isAssignableFrom(componentType)) {
-          Array.set(array, n, new Integer(val));
+          Array.set(array, n, Integer.valueOf(val));
         } else {
           Array.setInt(array, n, val);
         }

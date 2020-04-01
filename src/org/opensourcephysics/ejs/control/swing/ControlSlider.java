@@ -317,7 +317,7 @@ public class ControlSlider extends ControlSwingElement {
     if(ticksFormat!=null) {
       java.util.Hashtable<Integer, JLabel> table = new java.util.Hashtable<Integer, JLabel>();
       for(int i = 0; i<=RESOLUTION; i += 2*spacing) {
-        table.put(new Integer(i), new javax.swing.JLabel(ticksFormat.format(minimum+i/scale)));
+        table.put(Integer.valueOf(i), new javax.swing.JLabel(ticksFormat.format(minimum+i/scale)));
       }
       slider.setLabelTable(table);
     }

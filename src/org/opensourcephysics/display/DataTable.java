@@ -886,7 +886,7 @@ public class DataTable extends JTable implements ActionListener {
       }
       if(rowNumberVisible) {
         if(columnIndex==0) {
-          return new Integer(rowIndex);
+          return Integer.valueOf(rowIndex);
         }
       }
       ModelFilterResult mfr = ModelFilterResult.find(rowNumberVisible, dataTableElements, columnIndex);

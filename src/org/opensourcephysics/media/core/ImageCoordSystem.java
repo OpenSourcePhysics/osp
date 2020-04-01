@@ -1165,7 +1165,7 @@ public class ImageCoordSystem {
     toWorld.get(n).setTransform(at.createInverse());
     // fire property change
     if(firePropChange) {
-      support.firePropertyChange("transform", null, new Integer(n)); //$NON-NLS-1$
+      support.firePropertyChange("transform", null, Integer.valueOf(n)); //$NON-NLS-1$
     }
   }
 

@@ -85,7 +85,7 @@ public class MethodWithOneParameter {
 				parameter = new Double(value.getDouble());
 				parameterClass = Double.TYPE;
 			} else if (value instanceof IntegerValue) { // method (int)
-				parameter = new Integer(value.getInteger());
+				parameter = Integer.valueOf(value.getInteger());
 				parameterClass = Integer.TYPE;
 			}
 		}

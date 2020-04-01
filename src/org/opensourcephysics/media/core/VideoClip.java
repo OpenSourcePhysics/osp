@@ -164,7 +164,7 @@ public class VideoClip {
     
     if(prevStart!=start) {
 	  	isDefaultState = false;
-    	support.firePropertyChange("startframe", null, new Integer(start)); //$NON-NLS-1$
+    	support.firePropertyChange("startframe", null, Integer.valueOf(start)); //$NON-NLS-1$
     }
     return prevStart!=start;
   }
@@ -204,7 +204,7 @@ public class VideoClip {
     // set stepCount to near value
     stepCount = 1+(endFrame-getStartFrameNumber())/stepSize;
     updateArray();
-    support.firePropertyChange("stepsize", null, new Integer(size)); //$NON-NLS-1$
+    support.firePropertyChange("stepsize", null, Integer.valueOf(size)); //$NON-NLS-1$
     
     // reset end frame
     setEndFrameNumber(endFrame);
@@ -250,10 +250,10 @@ public class VideoClip {
 	    updateArray();
     	return;
     }
-    Integer prev = new Integer(stepCount);
+    Integer prev = Integer.valueOf(stepCount);
     stepCount = count;
     updateArray();
-    support.firePropertyChange("stepcount", prev, new Integer(stepCount)); //$NON-NLS-1$
+    support.firePropertyChange("stepcount", prev, Integer.valueOf(stepCount)); //$NON-NLS-1$
   }
 
   /**
@@ -602,7 +602,7 @@ public class VideoClip {
   protected void trimFrameCount() {
     if(video==null || video.getFrameCount()==1) {
     	frameCount = getEndFrameNumber()+1;
-      support.firePropertyChange("framecount", null, new Integer(frameCount)); //$NON-NLS-1$
+      support.firePropertyChange("framecount", null, Integer.valueOf(frameCount)); //$NON-NLS-1$
     }
   }
   

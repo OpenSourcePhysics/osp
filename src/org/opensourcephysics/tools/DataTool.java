@@ -1185,7 +1185,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		      if(data!=null) {
 		        for(Data nextData : getSelfContainedData(data)) {
 		          // check IDs to prevent duplicates
-		          Integer id = new Integer(nextData.getID());
+		          Integer id = Integer.valueOf(nextData.getID());
 		          if(!IDs.contains(id)) {
 		            IDs.add(id);
 		            dataList.add(nextData);
@@ -1193,7 +1193,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		            if(nextData instanceof DatasetManager) {
 		              for(Dataset dataset : nextData.getDatasets()) {
 		                dataList.remove(dataset);
-		                id = new Integer(dataset.getID());
+		                id = Integer.valueOf(dataset.getID());
 		                IDs.add(id);
 		              }
 		            }

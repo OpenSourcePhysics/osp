@@ -1069,7 +1069,7 @@ public class DataToolTable extends DataTable {
         continue;
       }
       // post edit: target is column, value is dataset
-      Integer colInt = new Integer(cols[i]);
+      Integer colInt = Integer.valueOf(cols[i]);
       TableEdit edit = new TableEdit(DELETE_COLUMN_EDIT, name, colInt, deleted);
       dataToolTab.undoSupport.postEdit(edit);
     }
@@ -1138,7 +1138,7 @@ public class DataToolTable extends DataTable {
       if(Double.isNaN(x[i])) {
         continue;
       }
-      workingRows.put(new Integer(workingIndex++), new Integer(i));
+      workingRows.put(Integer.valueOf(workingIndex++), Integer.valueOf(i));
     }
     workingData.clearHighlights();
     // is x- or y-source column selected?

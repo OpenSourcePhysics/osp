@@ -372,7 +372,7 @@ public class ArrayTableModel extends AbstractTableModel {
    */
   public Object getValueAt(int row, int column) {
     if(showRowNumber&&(column==0)) {
-      return new Integer(row+firstRow);
+      return Integer.valueOf(row+firstRow);
     }
     int offset = showRowNumber ? 1 : 0;
     if(transposed) {
@@ -381,14 +381,14 @@ public class ArrayTableModel extends AbstractTableModel {
       column = temp;
     }
     if(intArray1!=null) {
-      return new Integer(intArray1[row]);
+      return Integer.valueOf(intArray1[row]);
     }
     if(intArray2!=null) {
       int col = transposed ? column : column-offset;
       if((row>intArray2.length-1)||(col>intArray2[row].length-1)||(col<0)) {
         return null;
       }
-      return new Integer(intArray2[row][col]);
+      return Integer.valueOf(intArray2[row][col]);
     }
     if(doubleArray1!=null) {
       return new Double(doubleArray1[row]);

@@ -299,15 +299,15 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     String list = types.toLowerCase();
     int i = list.indexOf("time"); //$NON-NLS-1$
     if(i>=0) {
-      map.put(new Integer(i), "time"); //$NON-NLS-1$
+      map.put(Integer.valueOf(i), "time"); //$NON-NLS-1$
     }
     i = list.indexOf("step"); //$NON-NLS-1$
     if(i>=0) {
-      map.put(new Integer(i), "step"); //$NON-NLS-1$
+      map.put(Integer.valueOf(i), "step"); //$NON-NLS-1$
     }
     i = list.indexOf("frame"); //$NON-NLS-1$
     if(i>=0) {
-      map.put(new Integer(i), "frame"); //$NON-NLS-1$
+      map.put(Integer.valueOf(i), "frame"); //$NON-NLS-1$
     }
     if(map.isEmpty()) {
       return;
@@ -851,8 +851,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     inLabel = new JLabel(inOutIcon);
     outLabel = new JLabel(inOutIcon);
     sliderLabels = new Hashtable<Integer, JLabel>();
-    sliderLabels.put(new Integer(0), inLabel);
-    sliderLabels.put(new Integer(9), outLabel);
+    sliderLabels.put(Integer.valueOf(0), inLabel);
+    sliderLabels.put(Integer.valueOf(9), outLabel);
     slider.setLabelTable(sliderLabels);
     slider.setPaintLabels(true);
     final MouseListener slideMouseListener = slider.getMouseListeners()[0];
@@ -1516,8 +1516,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     slider.setMinimum(Math.max(0, -clip.getFrameShift()));
     slider.setMaximum(slider.getMinimum()+clip.getFrameCount()-1);
     sliderLabels.clear();
-    sliderLabels.put(new Integer(clip.getStartFrameNumber()), inLabel);
-    sliderLabels.put(new Integer(clip.getEndFrameNumber()), outLabel);
+    sliderLabels.put(Integer.valueOf(clip.getStartFrameNumber()), inLabel);
+    sliderLabels.put(Integer.valueOf(clip.getEndFrameNumber()), outLabel);
 	  slider.repaint();  	
   }
   

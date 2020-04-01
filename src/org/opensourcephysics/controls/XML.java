@@ -639,7 +639,7 @@ public class XML {
       }
       public Object createObject(XMLControl control) {
         int val = control.getInt("value"); //$NON-NLS-1$
-        return new Integer(val);
+        return Integer.valueOf(val);
       }
       public Object loadObject(XMLControl control, Object obj) {
         Integer i = (Integer) obj;
@@ -647,7 +647,7 @@ public class XML {
         if(i.intValue()==val) {
           return i;
         }
-        return new Integer(val);
+        return Integer.valueOf(val);
       }
     });
     setLoader(Boolean.class, new XML.ObjectLoader() {

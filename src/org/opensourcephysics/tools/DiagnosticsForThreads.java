@@ -196,7 +196,7 @@ private final Class[] columnClass;
       Thread t = thread[i];
       Object[] rowCell = cell[i];
 
-      rowCell[0] = new Integer(t.getPriority());
+      rowCell[0] = Integer.valueOf(t.getPriority());
       rowCell[1] = new Boolean(t.isAlive());
       rowCell[2] = new Boolean(t.isDaemon());
       rowCell[3] = new Boolean(t.isInterrupted());

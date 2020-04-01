@@ -620,7 +620,7 @@ public class VideoAdapter implements Video {
     }
     n = Math.max(0, n);
     startFrameNumber = Math.min(endFrameNumber, n);
-    firePropertyChange("startframe", null, new Integer(startFrameNumber)); //$NON-NLS-1$
+    firePropertyChange("startframe", null, Integer.valueOf(startFrameNumber)); //$NON-NLS-1$
   }
 
   /**
@@ -647,7 +647,7 @@ public class VideoAdapter implements Video {
       n = Math.min(frameCount-1, n);
     }
     endFrameNumber = Math.max(startFrameNumber, n);
-    firePropertyChange("endframe", null, new Integer(endFrameNumber)); //$NON-NLS-1$
+    firePropertyChange("endframe", null, Integer.valueOf(endFrameNumber)); //$NON-NLS-1$
   }
 
   /**

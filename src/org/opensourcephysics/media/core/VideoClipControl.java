@@ -244,7 +244,7 @@ public class VideoClipControl extends ClipControl {
         return;
       }
       super.setFrameNumber(n-clip.getFrameShift());
-      Integer nInt = new Integer(stepNumber);
+      Integer nInt = Integer.valueOf(stepNumber);
       support.firePropertyChange("stepnumber", null, nInt); // to VideoPlayer //$NON-NLS-1$
     } 
     else if(name.equals("playing")) {                     // from Video //$NON-NLS-1$

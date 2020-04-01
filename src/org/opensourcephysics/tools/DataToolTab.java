@@ -479,7 +479,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         if(postEdit) {
           int col = dataTable.getColumnCount()-1;
           // post edit: target is column, value is data column
-          TableEdit edit = dataTable.new TableEdit(DataToolTable.INSERT_COLUMN_EDIT, next.getYColumnName(), new Integer(col), next);
+          TableEdit edit = dataTable.new TableEdit(DataToolTable.INSERT_COLUMN_EDIT, next.getYColumnName(), Integer.valueOf(col), next);
           undoSupport.postEdit(edit);
         }
         refreshDataBuilder();
@@ -1478,7 +1478,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
         }
         int col = dataTable.getColumnCount()-1;
         // post edit: target is column, value is dataset
-        TableEdit edit = dataTable.new TableEdit(DataToolTable.INSERT_COLUMN_EDIT, newName, new Integer(col), column);
+        TableEdit edit = dataTable.new TableEdit(DataToolTable.INSERT_COLUMN_EDIT, newName, Integer.valueOf(col), column);
         undoSupport.postEdit(edit);
         dataTable.refreshUndoItems();
         Runnable runner = new Runnable() {

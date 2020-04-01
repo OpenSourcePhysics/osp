@@ -63,7 +63,7 @@ public class ParsedEjsControl extends EjsControl implements SimControl {
     if(value==null) {
       return null;
     } else if(value instanceof IntegerValue) {
-      return new Integer(super.getInt(var));
+      return Integer.valueOf(super.getInt(var));
     } else if(value instanceof DoubleValue) {
       return new Double(super.getDouble(var));
     } else if(value instanceof BooleanValue) {

@@ -118,7 +118,7 @@ public class FontSizer {
   	font= getResizedFont(BUTTON_FONT, level);    
     UIManager.put("OptionPane.buttonFont", font); //$NON-NLS-1$
     
-    support.firePropertyChange("level", null, new Integer(level)); //$NON-NLS-1$
+    support.firePropertyChange("level", null, Integer.valueOf(level)); //$NON-NLS-1$
   }
 
   /**

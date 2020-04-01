@@ -159,7 +159,7 @@ public class StepperClipControl extends ClipControl {
     if (video==null) {
       super.setStepNumber(n);
       stepDisplayed = true;
-      support.firePropertyChange("stepnumber", null, new Integer(n)); //$NON-NLS-1$
+      support.firePropertyChange("stepnumber", null, Integer.valueOf(n)); //$NON-NLS-1$
     } 
     else {
       int end = video.getEndFrameNumber();
@@ -169,7 +169,7 @@ public class StepperClipControl extends ClipControl {
         super.setStepNumber(n);
         video.setVisible(false);
         stepDisplayed = true;
-        support.firePropertyChange("stepnumber", null, new Integer(n)); //$NON-NLS-1$
+        support.firePropertyChange("stepnumber", null, Integer.valueOf(n)); //$NON-NLS-1$
       }
       else {
         video.setVisible(videoVisible);
@@ -182,7 +182,7 @@ public class StepperClipControl extends ClipControl {
 	            if (video.getFrameNumber()==m) { // setting frame number will have no effect
 	              StepperClipControl.super.setStepNumber(stepNum);
 	              stepDisplayed = true;
-	              support.firePropertyChange("stepnumber", null, new Integer(stepNum)); //$NON-NLS-1$	            	
+	              support.firePropertyChange("stepnumber", null, Integer.valueOf(stepNum)); //$NON-NLS-1$	            	
 	            }
 	            else {
 	            	video.setFrameNumber(m);
@@ -339,7 +339,7 @@ public class StepperClipControl extends ClipControl {
       stepDisplayed = true;
       if(n!=videoFrameNumber) {
         super.setFrameNumber(n-clip.getFrameShift());
-        support.firePropertyChange("stepnumber", null, new Integer(stepNumber)); //$NON-NLS-1$
+        support.firePropertyChange("stepnumber", null, Integer.valueOf(stepNumber)); //$NON-NLS-1$
       }
       if(playing) {
         step();

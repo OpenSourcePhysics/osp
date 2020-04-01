@@ -2331,7 +2331,7 @@ public class Launcher {
               URL prev = selectedNode.htmlURL;
               if(prev!=url) {
                 String undoPath = selectedNode.getPathString();
-                Integer undoPage = new Integer(selectedNode.tabNumber);
+                Integer undoPage = Integer.valueOf(selectedNode.tabNumber);
                 Object[] undoData = new Object[] {null, undoPath, undoPage, prev};
                 Object[] redoData = null;
                 // check to see if link is an anchor in same page
@@ -2395,7 +2395,7 @@ public class Launcher {
           String nextPath = next.getFile();
           if(nextPath.equals(urlPath)) { // found match
             String nodePath = node.getPathString();
-            return new Object[] {nodePath, new Integer(j)};
+            return new Object[] {nodePath, Integer.valueOf(j)};
           }
         }
       }

@@ -341,7 +341,7 @@ public class DataRowModel extends AbstractTableModel {
 	public Object getValueAt(int row, int column) {
 		row = row * stride;
 		if ((column == 0) && rowNumberVisible) {
-			return new Integer(row + firstRowIndex);
+			return Integer.valueOf(row + firstRowIndex);
 		}
 		if (!rowNumberVisible) {
 			column++;
@@ -372,7 +372,7 @@ public class DataRowModel extends AbstractTableModel {
 			if (column > array.length) {
 				return ""; //$NON-NLS-1$
 			}
-			return new Integer(array[column - 1]);
+			return Integer.valueOf(array[column - 1]);
 		}
 		if (r instanceof String[]) {
 			String[] array = (String[]) r;

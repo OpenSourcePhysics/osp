@@ -449,8 +449,8 @@ public class LaunchPanel extends JPanel {
         LaunchNode node = getSelectedNode();
         if((node!=null)&&launcher.postEdits) {
           String nodePath = node.getPathString();
-          Integer undoPage = new Integer(node.prevTabNumber);
-          Integer redoPage = new Integer(node.tabNumber);
+          Integer undoPage = Integer.valueOf(node.prevTabNumber);
+          Integer redoPage = Integer.valueOf(node.tabNumber);
           Object[] undoData = new Object[] {null, nodePath, undoPage, node.prevURL};
           Object[] redoData = new Object[] {null, nodePath, redoPage, node.htmlURL};
           LauncherUndo.NavEdit edit = launcher.undoManager.new NavEdit(undoData, redoData);

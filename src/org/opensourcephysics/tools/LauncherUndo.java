@@ -164,12 +164,12 @@ public class LauncherUndo extends UndoManager {
       if(prev!=null) {
         undoNode = prev.getPathString();
         undoURL = prev.htmlURL;
-        undoPage = new Integer(prev.tabNumber);
+        undoPage = Integer.valueOf(prev.tabNumber);
       }
       if(node!=null) {
         redoNode = node.getPathString();
         redoURL = node.htmlURL;
-        redoPage = new Integer(node.tabNumber);
+        redoPage = Integer.valueOf(node.tabNumber);
       }
     }
 

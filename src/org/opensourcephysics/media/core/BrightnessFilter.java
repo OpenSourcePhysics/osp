@@ -130,10 +130,10 @@ public class BrightnessFilter extends Filter {
     	previousContrast = this.contrast;
     }
     changed = changed || this.brightness!=brightness;
-    Integer prev = new Integer(this.brightness);
+    Integer prev = Integer.valueOf(this.brightness);
     this.brightness = brightness;
     updateFactors();
-    support.firePropertyChange("brightness", prev, new Integer(brightness)); //$NON-NLS-1$
+    support.firePropertyChange("brightness", prev, Integer.valueOf(brightness)); //$NON-NLS-1$
   }
 
   /**

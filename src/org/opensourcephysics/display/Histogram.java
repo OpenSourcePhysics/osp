@@ -161,12 +161,12 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
         java.util.StringTokenizer st = new java.util.StringTokenizer(s, "\t"); //$NON-NLS-1$
         int binNumber = Integer.parseInt(st.nextToken());
         double numberOfoccurrences = Double.parseDouble(st.nextToken());
-        Double prioroccurrences = bins.get(new Integer(binNumber));
+        Double prioroccurrences = bins.get(Integer.valueOf(binNumber));
         if(prioroccurrences==null) {                                           // first occurence for this bin
-          bins.put(new Integer(binNumber), new Double(numberOfoccurrences));
+          bins.put(Integer.valueOf(binNumber), new Double(numberOfoccurrences));
         } else {
           numberOfoccurrences += prioroccurrences.doubleValue();               // increase occurrences for bin by prioroccurrences
-          bins.put(new Integer(binNumber), new Double(numberOfoccurrences));
+          bins.put(Integer.valueOf(binNumber), new Double(numberOfoccurrences));
         }
         ymax = Math.max(numberOfoccurrences, ymax);
         xmin = Math.min(binNumber*binWidth+binOffset, xmin);
@@ -247,13 +247,13 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
     sum += numberOfoccurrences;
     int binNumber = hashCode(value);
     // Determine if there have previously been any occurrences for this bin
-    Double occurrences = bins.get(new Integer(binNumber));
+    Double occurrences = bins.get(Integer.valueOf(binNumber));
     if(occurrences==null) {                             // first occurence for this bin
-      bins.put(new Integer(binNumber), new Double(numberOfoccurrences));
+      bins.put(Integer.valueOf(binNumber), new Double(numberOfoccurrences));
     } else {
       // need to put Objects in HashMap, but can only add doubles
       numberOfoccurrences += occurrences.doubleValue(); // increase occurrences for bin by numberOfoccurrences
-      bins.put(new Integer(binNumber), new Double(numberOfoccurrences));
+      bins.put(Integer.valueOf(binNumber), new Double(numberOfoccurrences));
     }
     ymax = Math.max(numberOfoccurrences, ymax);
     xmin = Math.min(binNumber*binWidth+binOffset, xmin);
@@ -830,7 +830,7 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
     }
     double[] ydata = new double[nbins];
     for(int i = 0; i<nbins; i++) {
-      Integer binNumber = new Integer(i);
+      Integer binNumber = Integer.valueOf(i);
       Double bin = bins.get(binNumber);
       ydata[i] = (bin==null) ? 0 : bin.doubleValue();
       //System.out.println("number"+binNumber.intValue()+"  x="+data[0][i]+ "  occurrences="+data[1][i]);
@@ -851,7 +851,7 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
     double[][] data = new double[2][nbins];
     int iStart = (int) (xmin/binWidth);
     for(int i = 0; i<nbins; i++) {
-      Integer binNumber = new Integer(i+iStart);
+      Integer binNumber = Integer.valueOf(i+iStart);
       Double bin = bins.get(binNumber);
       data[0][i] = xmin+i*binWidth+binOffset+binWidth/2;
       data[1][i] = (bin==null) ? 0 : bin.doubleValue();
@@ -873,7 +873,7 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
     double[][] data = new double[2][nbins];
     int iStart = (int) (xmin/binWidth);
     for(int i = 0; i<nbins; i++) {
-      Integer binNumber = new Integer(i+iStart);
+      Integer binNumber = Integer.valueOf(i+iStart);
       Double bin = bins.get(binNumber);
       data[0][i] = xmin+i*binWidth+binOffset+binWidth/2;
       data[1][i] = (bin==null) ? 0 : bin.doubleValue();

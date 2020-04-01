@@ -1042,8 +1042,8 @@ public class LaunchBuilder extends Launcher {
       refreshNode(prev);
     }
     if(newNodeSelected) {
-      argSpinner.setValue(new Integer(0));
-      displaySpinner.setValue(new Integer(0));
+      argSpinner.setValue(Integer.valueOf(0));
+      displaySpinner.setValue(Integer.valueOf(0));
       newNodeSelected = false;
     }
     LaunchNode root = getRootNode();
@@ -1093,7 +1093,7 @@ public class LaunchBuilder extends Launcher {
       boolean badURL = (urlPath!=null && displayTab.url==null && displayTab.modelClass==null);
       pathField.setText(urlPath);
       pathField.setBackground(badURL ? RED : Color.white);
-      displaySpinnerModel.setMaximum(new Integer(node.getDisplayTabCount()));
+      displaySpinnerModel.setMaximum(Integer.valueOf(node.getDisplayTabCount()));
       displaySpinner.setVisible(node.getDisplayTab(0)!=null);
       boolean hasHTML = displayTab!=null && displayTab.path!=null && !displayTab.path.toLowerCase().endsWith("pdf"); //$NON-NLS-1$
       tabTitleLabel.setVisible(hasHTML);

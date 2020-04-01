@@ -133,7 +133,7 @@ public class GifVideo extends VideoAdapter {
     rawImage = decoder.getFrame(index);
     isValidImage = false;
     isValidFilteredImage = false;
-    support.firePropertyChange("framenumber", null, new Integer(n)); //$NON-NLS-1$
+    support.firePropertyChange("framenumber", null, Integer.valueOf(n)); //$NON-NLS-1$
     // repaint panels in case they don't listen
     Iterator<DrawingPanel> it = panels.iterator();
     while(it.hasNext()) {

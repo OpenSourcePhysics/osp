@@ -743,7 +743,7 @@ final public class DataToolPropsTable extends JTable {
 			closeButton.setText(ToolsRes.getString("Button.OK")); //$NON-NLS-1$
 			dialog.setName(null); // set to null to prevent changes when setting
 			sizeSpinner.setToolTipText(ToolsRes.getString("Spinner.MarkerSize.ToolTip")); //$NON-NLS-1$
-			sizeSpinner.setValue(new Integer(working.getMarkerSize()));
+			sizeSpinner.setValue(Integer.valueOf(working.getMarkerSize()));
 			shapeSpinner.setToolTipText(ToolsRes.getString("Spinner.MarkerShape.ToolTip")); //$NON-NLS-1$
 			shapeNames = new String[] { ToolsRes.getString("Shape.Circle"), //$NON-NLS-1$
 					ToolsRes.getString("Shape.Square"), //$NON-NLS-1$

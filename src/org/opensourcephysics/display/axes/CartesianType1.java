@@ -263,7 +263,7 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *   return;
    *   }
    *   legendStrings.add(legend);
-   *   legendDatasets.add(new Integer(dataset));
+   *   legendDatasets.add(Integer.valueOf(dataset));
    *   }
    */
 

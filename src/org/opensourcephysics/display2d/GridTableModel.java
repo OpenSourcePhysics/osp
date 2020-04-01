@@ -63,7 +63,7 @@ public class GridTableModel extends AbstractTableModel {
   public Object getValueAt(int rowIndex, int columnIndex) {
     // return new Double(griddata.getValue(rowIndex,columnIndex,0));
     if(columnIndex==0) {
-      return new Integer(rowIndex);
+      return Integer.valueOf(rowIndex);
     }
     return ControlUtils.f3(griddata.getValue(columnIndex-1, rowIndex, component));
   }

@@ -65,15 +65,15 @@ public class SimpleTableDemo extends JPanel {
 
         Object[][] data = {
 	    {"Kathy", "Smith",
-	     "Snowboarding", new Integer(5), Boolean.FALSE},
+	     "Snowboarding", Integer.valueOf(5), Boolean.FALSE},
 	    {"John", "Doe",
-	     "Rowing", new Integer(3), Boolean.TRUE},
+	     "Rowing", Integer.valueOf(3), Boolean.TRUE},
 	    {"Sue", "Black",
-	     "Knitting", new Integer(2), Boolean.FALSE},
+	     "Knitting", Integer.valueOf(2), Boolean.FALSE},
 	    {"Jane", "White",
-	     "Speed reading", new Integer(20), Boolean.TRUE},
+	     "Speed reading", Integer.valueOf(20), Boolean.TRUE},
 	    {"Joe", "Brown",
-	     "Pool", new Integer(10), Boolean.FALSE}
+	     "Pool", Integer.valueOf(10), Boolean.FALSE}
         };
         
         final JTable table = new JTable(data, columnNames);
