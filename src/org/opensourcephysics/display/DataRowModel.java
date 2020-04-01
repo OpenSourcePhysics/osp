@@ -365,7 +365,7 @@ public class DataRowModel extends AbstractTableModel {
 			if (column > array.length) {
 				return ""; //$NON-NLS-1$
 			}
-			return new Byte(array[column - 1]);
+			return Byte.valueOf(array[column - 1]);
 		}
 		if (r instanceof int[]) {
 			int[] array = (int[]) r;
