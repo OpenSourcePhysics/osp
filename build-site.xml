@@ -31,6 +31,9 @@
   	<!-- non-Java resources to copy to site/ -->
     <property name="resource.dir" value="resources" />  	
   	
+  	<!-- non-Java resources to copy to site/ -->
+    <property name="site-resource.dir" value="site-resources" />  	  	
+
 	<!-- output directories -->
 
   	<property name="site.dir" value="site" />
@@ -68,8 +71,14 @@
 
  	<!-- transfer resources -->
 
+  	<echo> Copying ${site-resource.dir} files into ${site.dir} </echo>
+  	<copy todir="${site.dir}">
+      <fileset dir="${site-resource.dir}" erroronmissingdir="false" >
+      	<include name="**"/>
+  	</fileset>
+    </copy>
   	<echo> Copying ${resource.dir} files into ${j2s.dir} </echo>
-  	<copy todir="${j2s.dir}">
+   	<copy todir="${j2s.dir}">
       <fileset dir="${resource.dir}">
       	<include name="**"/>
   	</fileset>
