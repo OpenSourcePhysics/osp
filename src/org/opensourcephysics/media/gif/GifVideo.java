@@ -107,7 +107,7 @@ public class GifVideo extends VideoAdapter {
         setFrameNumber(getStartFrameNumber());
       }
       timer.restart();
-      support.firePropertyChange("playing", null, new Boolean(true)); //$NON-NLS-1$
+      support.firePropertyChange("playing", null, Boolean.TRUE); //$NON-NLS-1$
     }
   }
 
@@ -117,7 +117,7 @@ public class GifVideo extends VideoAdapter {
   public void stop() {
     if(timer.isRunning()) {
       timer.stop();
-      support.firePropertyChange("playing", null, new Boolean(false)); //$NON-NLS-1$
+      support.firePropertyChange("playing", null, Boolean.FALSE); //$NON-NLS-1$
     }
   }
 

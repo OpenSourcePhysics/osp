@@ -765,17 +765,17 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
       public void mousePressed(MouseEvent e) {
       	if (disabled) return;
         if(e.getSource()==stepButton) {
-          firePropertyChange("stepbutton", null, new Boolean(true)); //$NON-NLS-1$
+          firePropertyChange("stepbutton", null, Boolean.TRUE); //$NON-NLS-1$
         } else {
-          firePropertyChange("backbutton", null, new Boolean(true)); //$NON-NLS-1$
+          firePropertyChange("backbutton", null, Boolean.TRUE); //$NON-NLS-1$
         }
       }
       public void mouseExited(MouseEvent e) {
       	if (disabled) return;
         if(e.getSource()==stepButton) {
-          firePropertyChange("stepbutton", null, new Boolean(false)); //$NON-NLS-1$
+          firePropertyChange("stepbutton", null, Boolean.FALSE); //$NON-NLS-1$
         } else {
-          firePropertyChange("backbutton", null, new Boolean(false)); //$NON-NLS-1$
+          firePropertyChange("backbutton", null, Boolean.FALSE); //$NON-NLS-1$
         }
       }
 
@@ -1022,7 +1022,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
   			vidPanel.setMouseCursor(Cursor.getDefaultCursor());
       	if (disabled) return;
   			slideMouseListener.mouseExited(e);
-        firePropertyChange("slider", null, new Boolean(false)); //$NON-NLS-1$
+        firePropertyChange("slider", null, Boolean.FALSE); //$NON-NLS-1$
     	}
     	
     	public void mouseMoved(MouseEvent e) {

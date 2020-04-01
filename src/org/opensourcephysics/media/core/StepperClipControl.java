@@ -101,7 +101,7 @@ public class StepperClipControl extends ClipControl {
     } else {
       step();
     }
-    support.firePropertyChange("playing", null, new Boolean(true)); //$NON-NLS-1$
+    support.firePropertyChange("playing", null, Boolean.TRUE); //$NON-NLS-1$
   }
 
   /**
@@ -112,7 +112,7 @@ public class StepperClipControl extends ClipControl {
     readyToStep = true;
     stepDisplayed = true;
     playing = false;
-    support.firePropertyChange("playing", null, new Boolean(false)); //$NON-NLS-1$
+    support.firePropertyChange("playing", null, Boolean.FALSE); //$NON-NLS-1$
   }
 
   /**
