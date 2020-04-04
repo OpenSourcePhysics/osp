@@ -54,7 +54,7 @@ public class ControlDialog extends ControlWindow {
     // setProperty ("visible","true");
     dialog.addWindowListener(new java.awt.event.WindowAdapter() {
       public void windowClosing(java.awt.event.WindowEvent evt) {
-        internalValue.value = false;
+        internalValue.setValue(false);
         variableChanged(ControlWindow.VISIBLE+2, internalValue);
       }
 

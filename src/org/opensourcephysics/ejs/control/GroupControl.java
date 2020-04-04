@@ -795,7 +795,7 @@ public class GroupControl {
    * @param _value
    */
   public void setValue(String _name, boolean _value) {
-    booleanValue.value = _value;
+    booleanValue.setValue(_value);
     setValue(_name, booleanValue);
   }
 

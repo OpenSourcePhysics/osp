@@ -63,13 +63,13 @@ public class ControlRadioButton extends ControlSwingElement {
   }
 
   private void setInternalValue(boolean _state) {
-    internalValue.value = _state;
+    internalValue.setValue(_state);
     if(parent!=null) {
       parent.informRadioGroup(mySelf, _state);
     }
     variableChanged(VARIABLE, internalValue);
     invokeActions();
-    if(internalValue.value) {
+    if(internalValue.getBoolean()) {
       invokeActions(ControlSwingElement.ACTION_ON);
     } else {
       invokeActions(ControlSwingElement.ACTION_OFF);
@@ -164,7 +164,7 @@ public class ControlRadioButton extends ControlSwingElement {
          radioButton.setHorizontalAlignment(_value.getInteger());
          break;                                                                  // alignment
        case VARIABLE :
-         radioButton.setSelected(internalValue.value = _value.getBoolean());
+         radioButton.setSelected(internalValue.setValue(_value));
          break;
        case 5 :
          defaultStateSet = true;

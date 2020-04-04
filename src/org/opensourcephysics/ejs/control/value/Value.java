@@ -86,7 +86,7 @@ public abstract class Value {
           ((ObjectValue) this).value = _source.getObject();
     	  break;
       case Value.TYPE_BOOLEAN:
-          ((BooleanValue) this).value = _source.getBoolean();
+          ((BooleanValue) this).setValue(_source);
     	  break;
       case Value.TYPE_DOUBLE:
           ((DoubleValue) this).value = _source.getDouble();

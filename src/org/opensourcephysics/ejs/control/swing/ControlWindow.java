@@ -169,8 +169,8 @@ public abstract class ControlWindow extends ControlContainer implements NeedsUpd
          setWaitForReset(_value.getBoolean());
          break;
        case VISIBLE :                                                             // Overrides its super 'visible'
-         internalValue.value = _value.getBoolean();
-         if(internalValue.value) {
+         internalValue.setValue(_value);
+         if(internalValue.getBoolean()) {
            show();
          } else {
            hide();
@@ -217,7 +217,7 @@ public abstract class ControlWindow extends ControlContainer implements NeedsUpd
          setWaitForReset(false);
          break;
        case VISIBLE :                                                   // Overrides its super 'visible'
-         internalValue.value = true;
+         internalValue.setValue(true);
          show();
          break;
        case SIZE :                                                      // // Overrides its super 'size'

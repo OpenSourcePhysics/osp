@@ -60,10 +60,10 @@ public class ControlCheckBox extends ControlSwingElement {
 
   private void setInternalValue(boolean _state) {
     // System.out.println ("Setting internal value of "+this.toString()+" to "+_state);
-    internalValue.value = _state;
+    internalValue.setValue(_state);
     variableChanged(VARIABLE, internalValue);
     invokeActions();
-    if(internalValue.value) {
+    if(internalValue.getBoolean()) {
       invokeActions(ControlSwingElement.ACTION_ON);
     } else {
       invokeActions(ControlSwingElement.ACTION_OFF);
@@ -150,7 +150,7 @@ public class ControlCheckBox extends ControlSwingElement {
          checkbox.setHorizontalAlignment(_value.getInteger());
          break;                                                                  // alignment
        case VARIABLE :
-         checkbox.setSelected(internalValue.value = _value.getBoolean());
+         checkbox.setSelected(internalValue.setValue(_value));
          break;
        case 5 :
          defaultStateSet = true;

@@ -49,6 +49,7 @@ import javax.swing.table.AbstractTableModel;
  *
  */
 public class DataRowModel extends AbstractTableModel {
+	public static final String FINAL_UPDATE = "CDT.finalUpdate";
 	ArrayList<Object> rowList = new ArrayList<Object>();
 	ArrayList<String> colNames = new ArrayList<String>();
 	boolean rowNumberVisible = true;
@@ -401,12 +402,17 @@ public class DataRowModel extends AbstractTableModel {
 	 * 
 	 * @param type
 	 */
-	public void refreshModel(DataRowTable table, String type) {
-		//System.out.println("DataRowTable.refreshTable " + type + " " + lastRowAppended);
+	void refreshModel(DataRowTable table, String type) {
+		System.out.println("DataRowModel.refreshModel " + type + " " + lastRowAppended);
 		switch (type) {
 		default:
 			updateType = "?";
-			System.out.println("DataRowTable.refreshTable " + type + " not processed");
+			System.out.println("DataRowModel.refreshModel " + type + " not processed");
+			return;
+		case "columnFormat":
+		case "setStride":
+		case "setRowNumberVis":
+			updateType = type;
 			return;
 		case "appendRow":
 			int n = getRowCount() - 1;
@@ -435,7 +441,7 @@ public class DataRowModel extends AbstractTableModel {
 			// must add to application's pause button.
 			updateType = "paused";
 			return;
-		case "CDT.finalUpdate":
+		case FINAL_UPDATE:
 			fireUpdate();
 		}
 
@@ -465,9 +471,13 @@ public class DataRowModel extends AbstractTableModel {
 			return;
 		case "columnnamed":
 			lastRowAppended = -2;
+			return;
 		case "?":
 		case "maxRows":
 		case "paused":
+		case "formatColumn":
+		case "setStride":
+		case "setRowNumberVis":
 			fireTableStructureChanged();
 			return;
 		default:

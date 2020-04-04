@@ -45,7 +45,7 @@ public class ControlFrame extends ControlWindow {
     // setProperty ("visible","true");
     frame.addWindowListener(new java.awt.event.WindowAdapter() {
       public void windowClosing(java.awt.event.WindowEvent evt) {
-        internalValue.value = false;
+        internalValue.setValue(false);
         variableChanged(ControlWindow.VISIBLE+4, internalValue);
         if(frame.getDefaultCloseOperation()==JFrame.EXIT_ON_CLOSE) {
           // System.out.println (frame.getName()+" is closing");
