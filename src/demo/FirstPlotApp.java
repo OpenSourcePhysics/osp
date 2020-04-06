@@ -9,6 +9,7 @@ package demo;
 import javax.swing.JFrame;
 
 import org.opensourcephysics.controls.OSPLog;
+import org.opensourcephysics.ejs.control.value.Value;
 import org.opensourcephysics.frames.PlotFrame;
 
 /**
@@ -18,6 +19,9 @@ import org.opensourcephysics.frames.PlotFrame;
  * @version 1.0
  */
 public class FirstPlotApp {
+	
+	static Value v = Value.VALUE_NULL;
+	
   public static void main(String[] args) {
     PlotFrame frame = new PlotFrame("position", "amplitude", "First Plot"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     frame.setSize(400, 400);

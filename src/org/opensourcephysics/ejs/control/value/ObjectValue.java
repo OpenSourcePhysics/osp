@@ -51,8 +51,116 @@ public class ObjectValue extends Value {
 	}
 
 	public String getString() {
-		if (value == null) {
+		if (value == null)
 			return null;
+		// System.out.println ("Value is "+value);
+		if (value instanceof double[]) {
+			double[] data = (double[]) value;
+			String txt = "new double[]{";
+			for (int i = 0; i < data.length; i++) {
+				if (i > 0)
+					txt += ",";
+				txt += data[i];
+			}
+			return txt + "}";
+		}
+		if (value instanceof int[]) {
+			int[] data = (int[]) value;
+			String txt = "new int[]{";
+			for (int i = 0; i < data.length; i++) {
+				if (i > 0)
+					txt += ",";
+				txt += data[i];
+			}
+			return txt + "}";
+		}
+		if (value instanceof double[][]) {
+			double[][] data = (double[][]) value;
+			// System.out.println ("dim = "+data.length+","+data[0].length);
+			String txt = "new double[][]{";
+			for (int i = 0; i < data.length; i++) {
+				if (i > 0)
+					txt += ",{";
+				else
+					txt += "{";
+				for (int j = 0; j < data[i].length; j++) {
+					if (j > 0)
+						txt += ",";
+					txt += data[i][j];
+				}
+				txt += "}";
+			}
+			// System.out.println ("Returning "+txt);
+			return txt + "}";
+		}
+		if (value instanceof int[][]) {
+			int[][] data = (int[][]) value;
+			String txt = "new int[][]{";
+			for (int i = 0; i < data.length; i++) {
+				if (i > 0)
+					txt += ",{";
+				else
+					txt += "{";
+				for (int j = 0; j < data[i].length; j++) {
+					if (j > 0)
+						txt += ",";
+					txt += data[i][j];
+				}
+				txt += "}";
+			}
+			return txt + "}";
+		}
+		if (value instanceof double[][][]) {
+			double[][][] data = (double[][][]) value;
+			// System.out.println ("dim = "+data.length+","+data[0].length);
+			String txt = "new double[][][]{";
+			for (int i = 0; i < data.length; i++) {
+				if (i > 0)
+					txt += ",{";
+				else
+					txt += "{";
+				for (int j = 0; j < data[i].length; j++) {
+					if (j > 0)
+						txt += ",{";
+					else
+						txt += "{";
+					for (int k = 0; k < data[i][j].length; k++) {
+						if (k > 0)
+							txt += ",";
+						txt += data[i][j][k];
+					}
+					txt += "}";
+				}
+				txt += "}";
+			}
+			// System.out.println ("Returning "+txt);
+			return txt + "}";
+		}
+		if (value instanceof int[][][]) {
+			int[][][] data = (int[][][]) value;
+			// System.out.println ("dim = "+data.length+","+data[0].length);
+			String txt = "new int[][][]{";
+			for (int i = 0; i < data.length; i++) {
+				if (i > 0)
+					txt += ",{";
+				else
+					txt += "{";
+				for (int j = 0; j < data[i].length; j++) {
+					if (j > 0)
+						txt += ",{";
+					else
+						txt += "{";
+					for (int k = 0; k < data[i][j].length; k++) {
+						if (k > 0)
+							txt += ",";
+						txt += data[i][j][k];
+					}
+					txt += "}";
+				}
+				txt += "}";
+			}
+			// System.out.println ("Returning "+txt);
+			return txt + "}";
 		}
 		return value.toString();
 	}
