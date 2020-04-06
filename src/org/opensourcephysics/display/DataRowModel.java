@@ -403,11 +403,11 @@ public class DataRowModel extends AbstractTableModel {
 	 * @param type
 	 */
 	void refreshModel(DataRowTable table, String type) {
-		System.out.println("DataRowModel.refreshModel " + type + " " + lastRowAppended);
+		//System.out.println("DataRowModel.refreshModel " + type + " " + lastRowAppended);
 		switch (type) {
 		default:
 			updateType = "?";
-			System.out.println("DataRowModel.refreshModel " + type + " not processed");
+			//System.out.println("DataRowModel.refreshModel " + type + " not processed");
 			return;
 		case "columnFormat":
 		case "setStride":
