@@ -222,6 +222,7 @@ public class DataRowTable extends JTable implements ActionListener {
    *  such as row number visibility. Changes to the TableModels displayed in the
    *  table will not be visible until this method is called.
    */
+	
   public void refreshTable(String type) {
 	  // BH 2020.03.29 delegated to DataRowModel.
 	  rowModel.refreshModel(this, type);

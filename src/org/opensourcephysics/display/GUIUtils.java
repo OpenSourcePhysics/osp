@@ -12,8 +12,10 @@ import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -26,6 +28,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
@@ -496,6 +500,56 @@ public class GUIUtils {
 		}
 	  return Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
   }
+
+public static JTextPane newJTextPane() {
+	return (OSPRuntime.antiAliasText ? new JTextPane() {
+		public void paintComponent(Graphics g) {
+			{
+				Graphics2D g2 = (Graphics2D) g;
+				RenderingHints rh = g2.getRenderingHints();
+				rh.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+				rh.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			}
+			super.paintComponent(g);
+		}
+
+	} : new JTextPane()
+
+	// BH 2020.04.04 only problem here is that with the override, we get the wrong
+	// background color. SwingJS detects that the
+	// JTextPane has overridden paintComponent, which is not generally a problem,
+	// but
+	// in this case it is, because we can't paint the background via the graphics,
+	// or so it seeems. Anyway, the solution is to move the check for antialiasing
+	// text
+	// outside the override.
+	);
+}
+
+public static JTextArea newJTextArea() {
+	return (OSPRuntime.antiAliasText ? new JTextArea() {
+		public void paintComponent(Graphics g) {
+			{
+				Graphics2D g2 = (Graphics2D) g;
+				RenderingHints rh = g2.getRenderingHints();
+				rh.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+				rh.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			}
+			super.paintComponent(g);
+		}
+
+	} : new JTextArea()
+
+	// BH 2020.04.04 only problem here is that with the override, we get the wrong
+	// background color. SwingJS detects that the
+	// JTextPane has overridden paintComponent, which is not generally a problem,
+	// but
+	// in this case it is, because we can't paint the background via the graphics,
+	// or so it seeems. Anyway, the solution is to move the check for antialiasing
+	// text
+	// outside the override.
+	);
+}
 
 }
 

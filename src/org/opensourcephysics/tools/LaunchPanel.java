@@ -19,7 +19,7 @@ import javax.swing.text.html.HTMLDocument;
 import javax.swing.tree.*;
 
 import org.opensourcephysics.controls.*;
-import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.tools.LaunchNode.DisplayTab;
 
 /**
@@ -398,18 +398,7 @@ public class LaunchPanel extends JPanel {
     splitPane = new JSplitPane();
     add(splitPane, BorderLayout.CENTER);
     dataPanel = new JPanel(new BorderLayout());
-    descriptionPane = new JTextPane() {
-      public void paintComponent(Graphics g) {
-        if(OSPRuntime.antiAliasText) {
-          Graphics2D g2 = (Graphics2D) g;
-          RenderingHints rh = g2.getRenderingHints();
-          rh.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-          rh.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        }
-        super.paintComponent(g);
-      }
-
-    };
+    descriptionPane = GUIUtils.newJTextPane();
     descriptionPane.setEditable(false);
     descriptionPane.setContentType(LaunchPanel.TEXT_TYPE);
     descriptionScroller = new JScrollPane(descriptionPane);

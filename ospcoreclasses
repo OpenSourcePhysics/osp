@@ -484,14 +484,11 @@ javax/swing/tree/VariableHeightLayoutCache.js
 javax/swing/undo/AbstractUndoableEdit.js
 javax/swing/undo/CompoundEdit.js
 javax/swing/undo/UndoableEdit.js
-org/opensourcephysics/controls/ConsoleFormatter.js
 org/opensourcephysics/controls/ConsoleLevel.js
 org/opensourcephysics/controls/Control.js
 org/opensourcephysics/controls/ControlUtils.js
 org/opensourcephysics/controls/ControlsRes.js
-org/opensourcephysics/controls/LoggerOutputStream.js
 org/opensourcephysics/controls/OSPLog.js
-org/opensourcephysics/controls/OSPLogHandler.js
 org/opensourcephysics/controls/XML.js
 org/opensourcephysics/controls/XMLControl.js
 org/opensourcephysics/controls/XMLControlElement.js

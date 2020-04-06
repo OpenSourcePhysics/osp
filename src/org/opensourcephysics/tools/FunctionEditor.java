@@ -89,6 +89,7 @@ import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.controls.XMLProperty;
+import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
 
@@ -1802,18 +1803,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
         });
         
         // create variables pane
-        variablesPane = new JTextPane() {
-          public void paintComponent(Graphics g) {
-            if(OSPRuntime.antiAliasText) {
-              Graphics2D g2 = (Graphics2D) g;
-              RenderingHints rh = g2.getRenderingHints();
-              rh.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-              rh.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            }
-            super.paintComponent(g);
-          }
-
-        };
+        variablesPane = GUIUtils.newJTextPane();
         variablesPane.setEditable(false);
         variablesPane.setFocusable(false);
         variablesPane.setBorder(popupField.getBorder());

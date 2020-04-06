@@ -389,8 +389,9 @@ public class DataRowModel extends AbstractTableModel {
 	private int pointCount;
 
 	public boolean mustPaint(int row, int column) {
-		//System.out.println("DRM mustPaint " + row + "  "+ column + " " + updateType + " " + lastRowAppended);
-		return lastRowAppended == -2 ? false : updateType != "appendRow" || row == lastRowAppended;
+		boolean b = lastRowAppended == -2 ? true : updateType != "appendRow" || row == lastRowAppended;
+		////System.out.println("DRM mustPaint " + row + "  "+ column + " " + updateType + " " + lastRowAppended + " " + b);
+		return b;
 	}
 
 	/**
@@ -412,9 +413,12 @@ public class DataRowModel extends AbstractTableModel {
 		case "columnFormat":
 		case "setStride":
 		case "setRowNumberVis":
+			lastRowAppended = -2;
 			updateType = type;
 			return;
 		case "appendRow":
+			if (lastRowAppended == -2)
+				fireUpdate();
 			int n = getRowCount() - 1;
 			if (n == lastRowAppended) {
 				if (pointCount >= maxRows && (pointCount + stride) % stride == 0) {
@@ -462,14 +466,13 @@ public class DataRowModel extends AbstractTableModel {
 		if (update == null)
 			return;
 		updateType = null;
+		//System.out.println("fireUpdate " + update);
 		switch (update) {
-		case "dataCleared":
-			return;
 		case "rowAppended":
 			fireTableRowsInserted(lastRowAppended, lastRowAppended);
 			//table.scrollToEnd();
 			return;
-		case "columnnamed":
+		case "columnNamed":
 			lastRowAppended = -2;
 			return;
 		case "?":
@@ -478,6 +481,7 @@ public class DataRowModel extends AbstractTableModel {
 		case "formatColumn":
 		case "setStride":
 		case "setRowNumberVis":
+		case "dataCleared":
 			fireTableStructureChanged();
 			return;
 		default:

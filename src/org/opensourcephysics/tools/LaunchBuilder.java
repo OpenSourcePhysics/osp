@@ -90,6 +90,7 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.display.DisplayRes;
+import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.PrintUtils;
 
@@ -1541,18 +1542,7 @@ public class LaunchBuilder extends Launcher {
     languagesField = new JTextField();
     languagesField.addKeyListener(keyListener);
     languagesField.addFocusListener(focusListener);
-    commentPane = new JTextPane() {
-      public void paintComponent(Graphics g) {
-        if(OSPRuntime.antiAliasText) {
-          Graphics2D g2 = (Graphics2D) g;
-          RenderingHints rh = g2.getRenderingHints();
-          rh.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-          rh.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        }
-        super.paintComponent(g);
-      }
-
-    };
+    commentPane = GUIUtils.newJTextPane();
     commentPane.addKeyListener(keyListener);
     commentPane.addFocusListener(focusListener);
     commentScroller = new JScrollPane(commentPane);
@@ -1596,18 +1586,7 @@ public class LaunchBuilder extends Launcher {
     displaySplitPane.setBottomComponent(descriptionScroller);
     displaySplitPane.setOneTouchExpandable(true);
     displaySplitPane.setResizeWeight(1);
-    htmlPane = new JTextPane() {
-      public void paintComponent(Graphics g) {
-        if(OSPRuntime.antiAliasText) {
-          Graphics2D g2 = (Graphics2D) g;
-          RenderingHints rh = g2.getRenderingHints();
-          rh.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-          rh.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        }
-        super.paintComponent(g);
-      }
-
-    };
+    htmlPane = GUIUtils.newJTextPane();
     htmlPane.setEditable(false);
     htmlScroller = new JScrollPane(htmlPane);
     htmlScroller.setBorder(displayTitle);
