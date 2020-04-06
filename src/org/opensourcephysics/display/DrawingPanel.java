@@ -2885,12 +2885,12 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     }
 
   }
-	public Shape transformPath2(GeneralPath s) {
+	public Shape transformPath(GeneralPath s) {
 		return pixelTransform.createTransformedShape(s);
 	}
 
 
-	public Shape transformShape2(Shape s) {
+	public Shape transformShape(Shape s) {
 		return pixelTransform.createTransformedShape(s);
 	}
 

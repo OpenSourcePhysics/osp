@@ -262,7 +262,7 @@ public class Spring implements Measurable {
       return;
     }
     
-    g2.draw(panel.transformShape2(springPath));
+    g2.draw(panel.transformShape(springPath));
   }
 
   // -------------------------------------

@@ -1246,7 +1246,7 @@ private Shape myShape;
     }
     g2.setColor(lineColor);
     if (myShape == null)
-    	myShape = drawingPanel.transformPath2(generalPath);
+    	myShape = drawingPanel.transformPath(generalPath);
     g2.draw(myShape);
   }
 
@@ -1272,7 +1272,7 @@ private Shape myShape;
       return;
     }
     if (myShape == null)
-    	myShape = drawingPanel.transformPath2(generalPath);
+    	myShape = drawingPanel.transformPath(generalPath);
     g2.setColor(fillColor);
     g2.fill(myShape);
     g2.setColor(edgeColor);

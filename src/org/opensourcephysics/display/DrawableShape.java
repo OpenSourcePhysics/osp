@@ -196,7 +196,7 @@ public class DrawableShape implements Drawable {
    * @param g Graphics
    */
   public void draw(DrawingPanel panel, Graphics g) {
-    Shape temp = panel.transformShape2(shape);
+    Shape temp = panel.transformShape(shape);
     Graphics2D g2 = ((Graphics2D) g);
     g2.setPaint(color);
     g2.fill(temp);

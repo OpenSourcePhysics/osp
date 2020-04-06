@@ -132,7 +132,7 @@ public class Trail extends AbstractTrail implements LogMeasurable {
     Graphics2D g2 = (Graphics2D) g;
     g2.setColor(color);
     // transform from world to pixel coordinates
-    Shape s = panel.transformPath2(generalPath);
+    Shape s = panel.transformPath(generalPath);
     if(drawingStroke!=null) {
       Stroke stroke = g2.getStroke();
       g2.setStroke(drawingStroke);

@@ -68,7 +68,7 @@ public class TrailSmart extends TrailBezier {
     path.lineTo(endPts[2], endPts[3]);
     path.lineTo((float) x1, (float) y1);
     path.lineTo((float) x2, (float) y2);
-    g2.draw(panel.transformPath2(pathEnd));
+    g2.draw(panel.transformPath(pathEnd));
   }
 
   /**

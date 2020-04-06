@@ -130,7 +130,7 @@ public class TrailBezier extends AbstractTrail {
     Graphics2D g2 = (Graphics2D) g;
     g2.setColor(color);
     // transform paths from world to pixel coordinates
-    Shape s = panel.transformPath2(path);
+    Shape s = panel.transformPath(path);
     if(drawingStroke!=null) {
       Stroke stroke = g2.getStroke();
       g2.setStroke(drawingStroke);
@@ -142,12 +142,12 @@ public class TrailBezier extends AbstractTrail {
     if(closed) {
       return;
     }
-    g2.draw(panel.transformPath2(pathStart));
+    g2.draw(panel.transformPath(pathStart));
     if(numpts>2) {
         pathEnd.reset();
         path.moveTo(endPts[0], endPts[1]); // start the path at the last point
         path.curveTo(endPts[0]+slack*dx2, endPts[1]+slack*dy2, endPts[2]-slack*dxEstimate, endPts[3]-slack*dyEstimate, endPts[2], endPts[3]);
-        g2.draw(panel.transformPath2(pathEnd));
+        g2.draw(panel.transformPath(pathEnd));
     }
   }
 
