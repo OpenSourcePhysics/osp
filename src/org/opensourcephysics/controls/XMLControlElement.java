@@ -445,35 +445,35 @@ public class XMLControlElement implements XMLControl {
     }
   }
 
-  /**
-   * Reads data into this control from a named source.
-   *
-   * @param name the name
-   * @return the path of the opened document or null if failed
-   */
-  public String read(String name) {
-    OSPLog.finest("reading "+name); //$NON-NLS-1$
-    Resource res = ResourceLoader.getResource(name);
-    File file = res.getFile();
-    if(res!=null) {
-    	try {
-      read(res.openReader());
-      String path = XML.getDirectoryPath(name);
-      if(!path.equals("")) { //$NON-NLS-1$
-        ResourceLoader.addSearchPath(path);
-        basepath = path;
-      } else {
-        basepath = XML.getDirectoryPath(res.getAbsolutePath());
-      }
-      canWrite = ((file!=null)&&file.canWrite());
-      return res.getAbsolutePath();
-    } catch (Exception e) {
-    	System.err.println("Could not open " + res);
-    }
-    }
-    readFailed = true;
-    return null;
-  }
+	/**
+	 * Reads data into this control from a named source.
+	 *
+	 * @param name the name
+	 * @return the path of the opened document or null if failed
+	 */
+	public String read(String name) {
+		OSPLog.finest("reading " + name); //$NON-NLS-1$
+		Resource res = ResourceLoader.getResource(name);
+		if (res != null) {
+			try {
+				read(res.openReader());
+				String path = XML.getDirectoryPath(name);
+				if (!path.equals("")) { //$NON-NLS-1$
+					ResourceLoader.addSearchPath(path);
+					basepath = path;
+				} else {
+					basepath = XML.getDirectoryPath(res.getAbsolutePath());
+				}
+				File file = res.getFile();
+				canWrite = ((file != null) && file.canWrite());
+				return res.getAbsolutePath();
+			} catch (Exception e) {
+				System.err.println("Could not open " + res);
+			}
+		}
+		readFailed = true;
+		return null;
+	}
 
   /**
    * Reads the control from an xml string.
