@@ -21,18 +21,7 @@ import org.opensourcephysics.tools.ResourceLoader;
 
 public class TextFrame extends JFrame {
   HyperlinkListener hyperlinkListener;
-  JTextPane textPane = new JTextPane() {
-    public void paintComponent(Graphics g) {
-      if(OSPRuntime.antiAliasText) {
-        Graphics2D g2 = (Graphics2D) g;
-        RenderingHints rh = g2.getRenderingHints();
-        rh.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        rh.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-      }
-      super.paintComponent(g);
-    }
-
-  };
+  JTextPane textPane = GUIUtils.newJTextPane();
   JScrollPane textScroller;
 
   /**

@@ -109,6 +109,7 @@ import org.opensourcephysics.controls.XMLTreePanel;
 import org.opensourcephysics.desktop.OSPDesktop;
 import org.opensourcephysics.display.AppFrame;
 import org.opensourcephysics.display.DisplayRes;
+import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.PrintUtils;
 import org.opensourcephysics.display.ResizableIcon;
@@ -3896,18 +3897,7 @@ public class Launcher {
 
     // constructor
     HTMLPane() {
-      editorPane = new JTextPane() {
-        public void paintComponent(Graphics g) {
-          if(OSPRuntime.antiAliasText) {
-            Graphics2D g2 = (Graphics2D) g;
-            RenderingHints rh = g2.getRenderingHints();
-            rh.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            rh.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-          }
-          super.paintComponent(g);
-        }
-
-      };
+      editorPane = GUIUtils.newJTextPane();
       editorPane.setEditable(false);
       editorPane.addMouseListener(new MouseAdapter() {
         public void mousePressed(MouseEvent e) {

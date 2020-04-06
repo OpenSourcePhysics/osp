@@ -35,6 +35,8 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+
+import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.Hidable;
 import org.opensourcephysics.display.OSPFrame;
 import org.opensourcephysics.display.OSPRuntime;
@@ -79,18 +81,9 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
     Font labelFont = new Font("Dialog", Font.BOLD, 12); //$NON-NLS-1$
     inputLabel = new JLabel(ControlsRes.getString("OSPControl.Input_Parameters"), SwingConstants.CENTER); //$NON-NLS-1$
     inputLabel.setFont(labelFont);
-    messageTextArea = new JTextArea(5, 5) {
-      public void paintComponent(Graphics g) {
-        if(OSPRuntime.antiAliasText) {
-          Graphics2D g2 = (Graphics2D) g;
-          RenderingHints rh = g2.getRenderingHints();
-          rh.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-          rh.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        }
-        super.paintComponent(g);
-      }
-
-    };
+    messageTextArea = GUIUtils.newJTextArea();
+    messageTextArea.setRows(5);
+    messageTextArea.setColumns(5);
     JScrollPane messageScrollPane = new JScrollPane(messageTextArea);
     // contains a view of the control
     JPanel topPanel = new JPanel(new BorderLayout());

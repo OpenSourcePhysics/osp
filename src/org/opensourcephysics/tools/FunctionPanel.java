@@ -40,7 +40,7 @@ import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
 
 import org.opensourcephysics.controls.OSPLog;
-import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.display.GUIUtils;
 
 /**
  * This is a JPanel for managing Functions and supporting Parameters.
@@ -209,18 +209,7 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
    */
   protected void createGUI() {
     // create textpane and color styles for instructions
-    instructions = new JTextPane() {
-      public void paintComponent(Graphics g) {
-        if(OSPRuntime.antiAliasText) {
-          Graphics2D g2 = (Graphics2D) g;
-          RenderingHints rh = g2.getRenderingHints();
-          rh.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-          rh.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        }
-        super.paintComponent(g);
-      }
-
-    };
+    instructions = GUIUtils.newJTextPane();
     instructions.setEditable(false);
     instructions.setOpaque(false);
     instructions.setFocusable(false);

@@ -46,6 +46,8 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+
+import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.ArrayInspector;
 
@@ -274,18 +276,7 @@ public class XMLTreePanel extends JPanel {
     });
     toolbar.add(input);
     // create xml pane and scroller
-    xmlPane = new JTextPane() {
-      public void paintComponent(Graphics g) {
-        if(OSPRuntime.antiAliasText) {
-          Graphics2D g2 = (Graphics2D) g;
-          RenderingHints rh = g2.getRenderingHints();
-          rh.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-          rh.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        }
-        super.paintComponent(g);
-      }
-
-    };
+    xmlPane = GUIUtils.newJTextPane();
     xmlPane.setPreferredSize(new Dimension(360, 200));
     xmlPane.setEditable(false);
     JScrollPane xmlScroller = new JScrollPane(xmlPane);
