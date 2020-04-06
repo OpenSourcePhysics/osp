@@ -343,6 +343,9 @@ public class Resource {
     return clip;
   }
 
+  public String toString() {
+	  return "[resource " + (file != null ? file.toString() : url != null ? url.toString() : null) + "]";
+  }
 }
 
 /*

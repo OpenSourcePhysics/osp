@@ -455,7 +455,8 @@ public class XMLControlElement implements XMLControl {
     OSPLog.finest("reading "+name); //$NON-NLS-1$
     Resource res = ResourceLoader.getResource(name);
     File file = res.getFile();
-    if(res!=null && file != null) {
+    if(res!=null) {
+    	try {
       read(res.openReader());
       String path = XML.getDirectoryPath(name);
       if(!path.equals("")) { //$NON-NLS-1$
@@ -466,6 +467,9 @@ public class XMLControlElement implements XMLControl {
       }
       canWrite = ((file!=null)&&file.canWrite());
       return res.getAbsolutePath();
+    } catch (Exception e) {
+    	System.err.println("Could not open " + res);
+    }
     }
     readFailed = true;
     return null;
