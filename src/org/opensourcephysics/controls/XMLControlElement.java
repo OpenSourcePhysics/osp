@@ -454,7 +454,8 @@ public class XMLControlElement implements XMLControl {
   public String read(String name) {
     OSPLog.finest("reading "+name); //$NON-NLS-1$
     Resource res = ResourceLoader.getResource(name);
-    if(res!=null) {
+    File file = res.getFile();
+    if(res!=null && file != null) {
       read(res.openReader());
       String path = XML.getDirectoryPath(name);
       if(!path.equals("")) { //$NON-NLS-1$
@@ -463,7 +464,6 @@ public class XMLControlElement implements XMLControl {
       } else {
         basepath = XML.getDirectoryPath(res.getAbsolutePath());
       }
-      File file = res.getFile();
       canWrite = ((file!=null)&&file.canWrite());
       return res.getAbsolutePath();
     }
@@ -1338,77 +1338,77 @@ public class XMLControlElement implements XMLControl {
     return null;
   }
 
-  /**
-   * Reads this control from the current input.
-   */
-  private void readInput() {
-    readFailed = false;
-    try {
-      // get document root opening tag line
-      String openingTag = input.readLine();
-      int count = 0;
-      while (openingTag!=null && openingTag.indexOf("<object class=")==-1) { //$NON-NLS-1$
-        count++;
-        if (count>9) {
-        	// stop reading at 10 lines
-        	readFailed = true;
-        	return;
-        }
-        openingTag = input.readLine();
-      }
-      // read this element from the root
-      if(openingTag!=null) {
-        // get version, if any
-        String xml = openingTag;
-        int i = xml.indexOf("version=");                               //$NON-NLS-1$
-        if(i!=-1) {
-          xml = xml.substring(i+9);
-          version = xml.substring(0, xml.indexOf("\""));               //$NON-NLS-1$
-        }
-        readObject(this, openingTag);
-      } else {
-        readFailed = true;
-        return;
-      }
-    } catch(Exception ex) {
-      readFailed = true;
-      OSPLog.warning("Failed to read xml: "+ex.getMessage());          //$NON-NLS-1$
-      return;
-    }
-    // if object class is Cryptic, decrypt and inspect
-    if(Cryptic.class.equals(getObjectClass())) {
-      Cryptic cryptic = (Cryptic) loadObject(null);
-      // get the decrypted xml
-      String xml = cryptic.decrypt();
-      // return if decrypted xml is not readable by a test control
-      XMLControl test = new XMLControlElement(xml);
-      if(test.failedToRead()) {
-        return;
-      }
-      // keep current password for possible verification needs
-      String pass = password;
-      // get the password from the test control
-      password = test.getString("xml_password");       //$NON-NLS-1$
-      // return if decrypt policy is NEVER or unverified PASSWORD
-      switch(decryptPolicy) {
-         case NEVER_DECRYPT :
-           return;
-         case PASSWORD_DECRYPT :
-           if((password!=null)&&!password.equals("")&& //$NON-NLS-1$
-                        !password.equals(pass)) {
-             if(!Password.verify(password, null)) {
-               return;
-             }
-           }
-      }
-      // otherwise read the decrypted xml into this control
-      clearValues();
-      object = null;
-      className = Object.class.getName();
-      theClass = null;
-      readXML(xml);
-    }
-  }
+	/**
+	 * Reads this control from the current input.
+	 */
+	private void readInput() {
+		readFailed = false;
+		try {
+			// get document root opening tag line
+			String openingTag = input.readLine();
+			int count = 0;
+			while (openingTag != null && openingTag.indexOf("<object class=") == -1) { //$NON-NLS-1$
+				count++;
+				if (count > 9) {
+					// stop reading at 10 lines
+					readFailed = true;
+					return;
+				}
+				openingTag = input.readLine();
+			}
+			// read this element from the root
+			if (openingTag != null) {
+				// get version, if any
+				String xml = openingTag;
+				int i = xml.indexOf("version="); //$NON-NLS-1$
+				if (i != -1) {
+					xml = xml.substring(i + 9);
+					version = xml.substring(0, xml.indexOf("\"")); //$NON-NLS-1$
+				}
+				readObject(this, openingTag);
+			} else {
+				readFailed = true;
+				return;
+			}
+		} catch (Exception ex) {
+			readFailed = true;
+			OSPLog.warning("Failed to read xml: " + ex.getMessage()); //$NON-NLS-1$
+			return;
+		}
+		// if object class is Cryptic, decrypt and inspect
+		if (Cryptic.class.equals(getObjectClass())) {
+			Cryptic cryptic = (Cryptic) loadObject(null);
+			// get the decrypted xml
+			String xml = cryptic.decrypt();
+			// return if decrypted xml is not readable by a test control
+			XMLControl test = new XMLControlElement(xml);
+			if (test.failedToRead()) {
+				return;
+			}
+			// keep current password for possible verification needs
+			String pass = password;
+			// get the password from the test control
+			password = test.getString("xml_password"); //$NON-NLS-1$
+			// return if decrypt policy is NEVER or unverified PASSWORD
+			switch (decryptPolicy) {
+			case NEVER_DECRYPT:
+				return;
+			case PASSWORD_DECRYPT:
+				if ((password != null) && !password.equals("") && //$NON-NLS-1$
+						!password.equals(pass)) {
+					if (!Password.verify(password, null)) {
+						return;
+					}
+				}
+			}
+			// otherwise read the decrypted xml into this control
+			clearValues();
+			object = null;
+			className = Object.class.getName();
+			theClass = null;
+			readXML(xml);
+		}
+	}
 
   /**
    * Checks to see if the input is for the specified class.
