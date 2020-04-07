@@ -260,7 +260,7 @@ public class VideoIO {
    * @return ENGINE_XUGGLE, or ENGINE_NONE
    */
   public static String getEngine() {
-  	if (videoEngine==null) {
+  	if (videoEngine==null && !OSPRuntime.isJS) {
   		videoEngine = getDefaultEngine();
   	}
   	return videoEngine;
@@ -278,22 +278,25 @@ public class VideoIO {
   	videoEngine = engine;
   }
 
-  /**
-   * Gets the name of the default video engine.
-   *
-   * @return ENGINE_XUGGLE, or ENGINE_NONE
-   */
-  public static String getDefaultEngine() {
-  	String engine = ENGINE_NONE;
-		double xuggleVersion = 0;
-    for (VideoType next: videoEngines) {
-    	if (next.getClass().getSimpleName().contains(ENGINE_XUGGLE)) {
-    		xuggleVersion = DiagnosticsForXuggle.guessXuggleVersion();
-    	}
-    }
-		if (xuggleVersion==3.4) engine = ENGINE_XUGGLE;
-  	return engine;
-  }
+	/**
+	 * Gets the name of the default video engine.
+	 *
+	 * @return ENGINE_XUGGLE, or ENGINE_NONE
+	 */
+	public static String getDefaultEngine() {
+		String engine = ENGINE_NONE;
+		if (!OSPRuntime.isJS) {
+			double xuggleVersion = 0;
+			for (VideoType next : videoEngines) {
+				if (next.getClass().getSimpleName().contains(ENGINE_XUGGLE)) {
+					xuggleVersion = DiagnosticsForXuggle.guessXuggleVersion();
+				}
+			}
+			if (xuggleVersion == 3.4)
+				engine = ENGINE_XUGGLE;
+		}
+		return engine;
+	}
 
   /**
    * test executing shell commands

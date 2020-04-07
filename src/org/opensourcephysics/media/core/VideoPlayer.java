@@ -502,9 +502,9 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     if(visible==inspectorButtonVisible) {
       return;
     }
+    inspectorButtonVisible = visible;
     Runnable runner = new Runnable() {
       public void run() {
-        inspectorButtonVisible = visible;
         if(visible) {
           toolbar.add(inspectorButton);
         } else {
@@ -514,11 +514,17 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
       }
 
     };
-    EventQueue.invokeLater(runner);
+    // this is only done upon TrackerPanel construction;
+    if (OSPRuntime.isJS)
+    	runner.run();
+    else
+    	SwingUtilities.invokeLater(runner);
   }
 
   /**
    * Shows or hides the looping button.
+   * 
+   * Only invoked during VideoGrabber.createGUI
    *
    * @param visible <code>true</code> to show the looping button
    */
@@ -534,7 +540,10 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
       }
 
     };
-    EventQueue.invokeLater(runner);
+    if (OSPRuntime.isJS)
+    	runner.run();
+    else
+    	SwingUtilities.invokeLater(runner);
   }
 
   /**
@@ -579,8 +588,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
       updateReadout();
     }
   }
-
-  /**
+ /**
    * Refreshes the GUI.
    */
   public void refresh() {
@@ -1410,7 +1418,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
   	    }  			
   		}
   	};
-    if(SwingUtilities.isEventDispatchThread()) runner.run();
+    if(OSPRuntime.isJS || SwingUtilities.isEventDispatchThread()) runner.run();
     else SwingUtilities.invokeLater(runner);
   }
 

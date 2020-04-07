@@ -32,7 +32,8 @@ public class DiagnosticsForXuggle {
 	public static final long XUGGLE_54_FILE_LENGTH = 1000000; // smaller than ver 5.4 (38MB) but bigger than 3.4 (.35MB)
 	
 	static String newline = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
-	static String[] xuggleJarNames = new String[] {"xuggle-xuggler.jar", "logback-core.jar",  //$NON-NLS-1$ //$NON-NLS-2$
+	static String[] xuggleJarNames = 
+			new String[] {"xuggle-xuggler.jar", "logback-core.jar",  //$NON-NLS-1$ //$NON-NLS-2$
 			"logback-classic.jar", "slf4j-api.jar"}; //$NON-NLS-1$ //$NON-NLS-2$
 	static int vmBitness;
 	static String codeBase, xuggleHome, javaExtDirectory;
@@ -41,35 +42,29 @@ public class DiagnosticsForXuggle {
 	static String requester;
   static Component dialogOwner;
 	
-	static{  // added by W. Christian
-    try {
-      String name = "org.opensourcephysics.media.xuggle.XuggleIO"; //$NON-NLS-1$
-      Class<?> xuggleClass = Class.forName(name);
-      Method method=xuggleClass.getMethod("registerWithVideoIO"); //$NON-NLS-1$
-      method.invoke(null, (Object[])null);
-		} catch(Exception ex) {
-		} catch(Error err) {
-		}
-    
-    vmBitness = OSPRuntime.getVMBitness();
-  	
-		// get code base and and XUGGLE_HOME
-		try {
-			URL url = DiagnosticsForXuggle.class.getProtectionDomain().getCodeSource().getLocation();
-			File myJarFile = new File(url.toURI());
-			codeBase = myJarFile.getParent();
-		} catch (Exception e) {
-		}
-		
-    xuggleHome = System.getenv("XUGGLE_HOME"); //$NON-NLS-1$	
-  	if (xuggleHome==null) {
-			xuggleHome = (String)OSPRuntime.getPreference("XUGGLE_HOME"); //$NON-NLS-1$
-  	}
+	static { // added by W. Christian
+		if (!OSPRuntime.isJS) {
+			OSPRuntime.registerWithVidoeoIO();
+			vmBitness = OSPRuntime.getVMBitness();
 
-  	xuggleHomeJars = new File[xuggleJarNames.length];
-    javaExtensionJars = new File[xuggleJarNames.length];
-    codeBaseJars = new File[xuggleJarNames.length];
-  }
+			// get code base and and XUGGLE_HOME
+			try {
+				URL url = DiagnosticsForXuggle.class.getProtectionDomain().getCodeSource().getLocation();
+				File myJarFile = new File(url.toURI());
+				codeBase = myJarFile.getParent();
+			} catch (Exception e) {
+			}
+
+			xuggleHome = System.getenv("XUGGLE_HOME"); //$NON-NLS-1$
+			if (xuggleHome == null) {
+				xuggleHome = (String) OSPRuntime.getPreference("XUGGLE_HOME"); //$NON-NLS-1$
+			}
+
+			xuggleHomeJars = new File[xuggleJarNames.length];
+			javaExtensionJars = new File[xuggleJarNames.length];
+			codeBaseJars = new File[xuggleJarNames.length];
+		}
+	}
 
 	private DiagnosticsForXuggle() {
 	}

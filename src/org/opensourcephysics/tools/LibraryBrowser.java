@@ -2541,16 +2541,9 @@ public class LibraryBrowser extends JPanel {
    */
   static class TrackerDLFilter implements FileFilter {
   	
-  	static {
-  		// if Xuggle is available, register with VideoIO
-  		String className = "org.opensourcephysics.media.xuggle.XuggleIO"; //$NON-NLS-1$
-      try {
-				Class<?> xuggleIOClass = Class.forName(className);
-	      Method method = xuggleIOClass.getMethod("registerWithVideoIO", (Class[]) null);  //$NON-NLS-1$
-	      method.invoke(null, (Object[]) null);
-			} catch (Exception ex) {
-			}
-  	}
+		static {
+			  OSPRuntime.registerWithVidoeoIO();
+		}
   	
     public boolean accept(File file) {
     	if (file==null || file.isDirectory()) return false;

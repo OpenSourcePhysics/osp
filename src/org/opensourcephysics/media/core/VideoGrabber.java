@@ -35,6 +35,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.display.Drawable;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.gif.GifVideoRecorder;
 import org.opensourcephysics.tools.VideoCaptureTool;
 
@@ -79,14 +80,7 @@ public class VideoGrabber extends VideoCaptureTool {
   boolean previewAll = false;
 
   static{  // added by W. Christian
-    try {
-      String name = "org.opensourcephysics.media.xuggle.XuggleIO"; //$NON-NLS-1$
-      Class<?> xuggleClass = Class.forName(name);
-      Method method=xuggleClass.getMethod("registerWithVideoIO"); //$NON-NLS-1$
-      method.invoke(null, (Object[])null);
-		} catch(Exception ex) {
-		} catch(Error err) {
-		} 
+	  OSPRuntime.registerWithVidoeoIO();
    }
 
   /**

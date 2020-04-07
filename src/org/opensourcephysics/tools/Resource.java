@@ -28,6 +28,7 @@ import java.util.zip.ZipInputStream;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.display.ResizableIcon;
 
@@ -192,9 +193,11 @@ public class Resource {
           }
       		
       	}
+      	
         return getURL().openStream();
       } catch(IOException ex) {
-        ex.printStackTrace();
+    	  OSPLog.fine("Resource file not found " + url);
+        //ex.printStackTrace();
       }
     }
     return null;

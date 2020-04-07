@@ -54,6 +54,7 @@ import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.display.Data;
 import org.opensourcephysics.display.Drawable;
 import org.opensourcephysics.display.InteractivePanel;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TextPanel;
 
 /**
@@ -370,7 +371,10 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
       }
 
     };
-    SwingUtilities.invokeLater(setPlayerVis);
+    if (OSPRuntime.isJS)
+    	setPlayerVis.run();
+    else
+    	SwingUtilities.invokeLater(setPlayerVis);
   }
 
   /**

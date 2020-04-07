@@ -49,7 +49,7 @@ public class TextPanel extends JPanel {
    */
   public TextPanel(String text) {
     this();
-    setText(text);
+    setTextQuietly(text, true);
   }
 
   /**
@@ -60,36 +60,43 @@ public class TextPanel extends JPanel {
    * @param _text
    */
   public void setText(String _text) {
-    _text = TeXParser.parseTeX(_text);
-    if(text==_text) {
-      return;
-    }
-    text = _text;
-    if(text==null) {
-      text = ""; //$NON-NLS-1$
-    }
-    final Container c = this.getParent();
-    if(c==null) {
-      return;
-    }
-    Runnable runner = new Runnable() {
-      public synchronized void run() {
-        if(c.getLayout() instanceof OSPLayout) {
-          ((OSPLayout) c.getLayout()).quickLayout(c, TextPanel.this);
-          repaint();
-        } else {
-          c.validate();
-        }
-      }
-
-    };
-    if(SwingUtilities.isEventDispatchThread()) {
-      runner.run();
-    } else {
-      SwingUtilities.invokeLater(runner);
-    }
+	  setTextQuietly(_text, false);
   }
   
+ public void setTextQuietly(String _text, boolean isQuiet) {
+		_text = TeXParser.parseTeX(_text);
+		if (text == _text) {
+			return;
+		}
+		text = _text;
+		if (text == null) {
+			text = ""; //$NON-NLS-1$
+		}
+		if (isQuiet)
+			return;
+		final Container c = this.getParent();
+		if (c == null) {
+			return;
+		}
+		Runnable runner = new Runnable() {
+			public synchronized void run() {
+				if (c.getLayout() instanceof OSPLayout) {
+					((OSPLayout) c.getLayout()).quickLayout(c, TextPanel.this);
+					repaint();
+				} else {
+					c.validate();
+				}
+			}
+
+		};
+		if (OSPRuntime.isJS || SwingUtilities.isEventDispatchThread()) {
+			runner.run();
+		} else {
+			SwingUtilities.invokeLater(runner);
+		}
+
+	}
+     
   /**
    * Sets the font. Added by Doug Brown Feb 2018
    * @param font the font

@@ -1353,6 +1353,20 @@ public class OSPRuntime {
 
 	}
 
+	public static void registerWithVidoeoIO() {
+		if (!isJS) {
+			try {
+				String name = "org.opensourcephysics.media.xuggle.XuggleIO"; //$NON-NLS-1$
+				Class<?> xuggleClass = Class.forName(name);
+				Method method = xuggleClass.getMethod("registerWithVideoIO"); //$NON-NLS-1$
+				method.invoke(null, (Object[]) null);
+			} catch (Exception ex) {
+			} catch (Error err) {
+			}
+
+		}
+	}
+
 }
 /*
  * Open Source Physics software is free software; you can redistribute it and/or
