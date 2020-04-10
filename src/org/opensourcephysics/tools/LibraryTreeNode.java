@@ -27,6 +27,7 @@ import javax.swing.tree.TreePath;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.core.VideoFileFilter;
 import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.media.gif.GifDecoder;
@@ -194,46 +195,48 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
   	return null;
   }
   
-  /**
-   * Returns the html URL for this node, or null if html path is empty or invalid.
-   * If a cached file exists, this returns its URL instead of the original.
-   * 
-   * @return the URL
-   */
-  protected URL getHTMLURL() {
-  	String path = getHTMLPath();
-  	if (path==null) return null;
+	/**
+	 * Returns the html URL for this node, or null if html path is empty or invalid.
+	 * If a cached file exists, this returns its URL instead of the original.
+	 * 
+	 * @return the URL
+	 */
+	protected URL getHTMLURL() {
+		String path = getHTMLPath();
+		if (path == null)
+			return null;
 		URL url = null;
-		
-		File cachedFile = ResourceLoader.getOSPCacheFile(path);
-  	boolean foundInCache = cachedFile.exists();
 
-	  // see if URL is in the map
-  	if (htmlURLs.keySet().contains(path)) { 
-  		url = htmlURLs.get(path);
-  	}
-  	else {
-  		String workingPath = path;
+		File cachedFile = null;
+		boolean foundInCache = false;
+		if (!OSPRuntime.isJS) {
+		    ResourceLoader.getOSPCacheFile(path);
+			foundInCache = cachedFile.exists();
+		}
+		// see if URL is in the map
+		if (htmlURLs.keySet().contains(path)) {
+			url = htmlURLs.get(path);
+		} else {
+			String workingPath = path;
 			if (foundInCache) {
 				workingPath = cachedFile.toURI().toString();
 			}
-	  	// first try to get URL with raw path
-  		Resource res = ResourceLoader.getResourceZipURLsOK(workingPath);
-  		if (res!=null) {
-  			url = res.getURL();
-  		}  		
-  		else {
-	    	// try with URI form of path
-  			workingPath = ResourceLoader.getURIPath(workingPath);
-	  		res = ResourceLoader.getResourceZipURLsOK(workingPath);
-	  		if (res!=null) {
-	  			url = res.getURL();
-	  		}
-  		}
-  	}
-  	htmlURLs.put(path, url);
-  	return url;
-  }
+			// first try to get URL with raw path
+			Resource res = ResourceLoader.getResourceZipURLsOK(workingPath);
+			if (res != null) {
+				url = res.getURL();
+			} else {
+				// try with URI form of path
+				workingPath = ResourceLoader.getURIPath(workingPath);
+				res = ResourceLoader.getResourceZipURLsOK(workingPath);
+				if (res != null) {
+					url = res.getURL();
+				}
+			}
+		}
+		htmlURLs.put(path, url);
+		return url;
+	}
   
   /**
    * Returns an HTML string that describes this node's resource.

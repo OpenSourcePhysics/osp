@@ -863,264 +863,274 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     sliderLabels.put(Integer.valueOf(9), outLabel);
     slider.setLabelTable(sliderLabels);
     slider.setPaintLabels(true);
-    final MouseListener slideMouseListener = slider.getMouseListeners()[0];
-    slider.removeMouseListener(slideMouseListener);
-    final MouseMotionListener slideMouseMotionListener = slider.getMouseMotionListeners()[0];
-    slider.removeMouseMotionListener(slideMouseMotionListener);
+    final MouseListener basicUIMouseListener = slider.getMouseListeners()[0];
+    slider.removeMouseListener(basicUIMouseListener);
+    final MouseMotionListener basicUIMouseMotionListener = slider.getMouseMotionListeners()[0];
+    slider.removeMouseMotionListener(basicUIMouseMotionListener);
     final MouseInputAdapter inOutSetter = new MouseInputAdapter() {
     	
     	float inset = 0;
     	int x;
     	int maxEndFrame;
     	
-    	public void mousePressed(MouseEvent e) {
-      	if (disabled) return;
-      	stop();
-  			maxEndFrame = getVideoClip().getEndFrameNumber();
-  			if (OSPRuntime.isPopupTrigger(e)) {
-          // inner popup menu listener classes
-          ActionListener listener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-        			VideoClip clip = getVideoClip();
-        			int val = clipControl.getFrameNumber();
-            	if ("in".equals(e.getActionCommand())) { //$NON-NLS-1$
-              	clip.setStartFrameNumber(val, maxEndFrame);
-    						if (clip.inspector != null && clip.inspector.isVisible()) {
-    							clip.inspector.startField.setValue(clip.getStartFrameNumber());
-    						}
-            	}
-            	else {
-              	clip.setEndFrameNumber(val);
-    						if (clip.inspector != null && clip.inspector.isVisible()) {
-    							clip.inspector.endField.setValue(clip.getEndFrameNumber());
-    						}
-            	}
-            	refresh();
-            }
-          };
-          // create popup menu and add menu items
-          JPopupMenu popup = new JPopupMenu();
-          JMenuItem item = new JMenuItem(MediaRes.getString("ClipInspector.Title")+"...");  //$NON-NLS-1$ //$NON-NLS-2$ 
-          item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-            	if (disabled) return;
-              Frame frame = null;
-              Container c = vidPanel.getTopLevelAncestor();
-              if(c instanceof Frame) {
-                frame = (Frame) c;
-              }
-              ClipInspector inspector = getVideoClip().getClipInspector(clipControl, frame);
-              if(inspector.isVisible()) {
-                return;
-              }
-              Point p0 = new Frame().getLocation();
-              Point loc = inspector.getLocation();
-              if((loc.x==p0.x)&&(loc.y==p0.y)) {
-              	// center on screen
-                Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-                int x = (dim.width - inspector.getBounds().width) / 2;
-                int y = (dim.height - inspector.getBounds().height) / 2;
-                inspector.setLocation(x, y);
-              }
-              inspector.initialize();
-              inspector.setVisible(true);
-            }
+			public void mousePressed(MouseEvent e) {
+				if (disabled)
+					return;
+				stop();
+				maxEndFrame = getVideoClip().getEndFrameNumber();
+				if (OSPRuntime.isPopupTrigger(e)) {
+					// inner popup menu listener classes
+					ActionListener listener = new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							VideoClip clip = getVideoClip();
+							int val = clipControl.getFrameNumber();
+							if ("in".equals(e.getActionCommand())) { //$NON-NLS-1$
+								clip.setStartFrameNumber(val, maxEndFrame);
+								if (clip.inspector != null && clip.inspector.isVisible()) {
+									clip.inspector.startField.setValue(clip.getStartFrameNumber());
+								}
+							} else {
+								clip.setEndFrameNumber(val);
+								if (clip.inspector != null && clip.inspector.isVisible()) {
+									clip.inspector.endField.setValue(clip.getEndFrameNumber());
+								}
+							}
+							refresh();
+						}
+					};
+					// create popup menu and add menu items
+					JPopupMenu popup = new JPopupMenu();
+					JMenuItem item = new JMenuItem(MediaRes.getString("ClipInspector.Title") + "..."); //$NON-NLS-1$ //$NON-NLS-2$
+					item.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							if (disabled)
+								return;
+							Frame frame = null;
+							Container c = vidPanel.getTopLevelAncestor();
+							if (c instanceof Frame) {
+								frame = (Frame) c;
+							}
+							ClipInspector inspector = getVideoClip().getClipInspector(clipControl, frame);
+							if (inspector.isVisible()) {
+								return;
+							}
+							Point p0 = new Frame().getLocation();
+							Point loc = inspector.getLocation();
+							if ((loc.x == p0.x) && (loc.y == p0.y)) {
+								// center on screen
+								Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+								int x = (dim.width - inspector.getBounds().width) / 2;
+								int y = (dim.height - inspector.getBounds().height) / 2;
+								inspector.setLocation(x, y);
+							}
+							inspector.initialize();
+							inspector.setVisible(true);
+						}
 
-          });
-          popup.add(item);
-          popup.addSeparator();
-          boolean showTrim = false;
-          if(getVideoClip().getVideo()==null || getVideoClip().getVideo().getFrameCount()==1) {
-          	if (getVideoClip().getFrameCount()>getVideoClip().getEndFrameNumber()+1) {
-          		showTrim = true;
-          	}
-          }
+					});
+					popup.add(item);
+					popup.addSeparator();
+					boolean showTrim = false;
+					if (getVideoClip().getVideo() == null || getVideoClip().getVideo().getFrameCount() == 1) {
+						if (getVideoClip().getFrameCount() > getVideoClip().getEndFrameNumber() + 1) {
+							showTrim = true;
+						}
+					}
 
-          if (showTrim) {
-          	String s = MediaRes.getString("VideoPlayer.Slider.Popup.Menu.TrimFrames"); //$NON-NLS-1$
-          	item = new JMenuItem(s); 
-	          item.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent e) {
-	              getVideoClip().trimFrameCount();
-	            }
-	          });
-	          popup.add(item);
-	          popup.addSeparator();
-	  			}
+					if (showTrim) {
+						String s = MediaRes.getString("VideoPlayer.Slider.Popup.Menu.TrimFrames"); //$NON-NLS-1$
+						item = new JMenuItem(s);
+						item.addActionListener(new ActionListener() {
+							public void actionPerformed(ActionEvent e) {
+								getVideoClip().trimFrameCount();
+							}
+						});
+						popup.add(item);
+						popup.addSeparator();
+					}
 
-    			final int frameNum = clipControl.getFrameNumber();
-          if (active==null || active.equals("in")) { //$NON-NLS-1$
-          	String s = MediaRes.getString("VideoPlayer.Slider.Popup.Menu.SetIn"); //$NON-NLS-1$
-	          s += " ("+frameNum+")"; //$NON-NLS-1$ //$NON-NLS-2$
-          	item = new JMenuItem(s); 
-	          item.setActionCommand("in"); //$NON-NLS-1$
-	          item.addActionListener(listener);
-	          popup.add(item);
-	  			}
-          if (active==null || active.equals("out")) { //$NON-NLS-1$
-          	String s = MediaRes.getString("VideoPlayer.Slider.Popup.Menu.SetOut"); //$NON-NLS-1$
-	          s += " ("+frameNum+")"; //$NON-NLS-1$ //$NON-NLS-2$
-          	item = new JMenuItem(s); 
-	          item.setActionCommand("out"); //$NON-NLS-1$
-	          item.addActionListener(listener);
-	          popup.add(item);
-	  			}
-  				active = null;
-  				
-  				boolean includeTimeItems = false;
-          for(String type: readoutTypes) {
-            if (type.equals("time")) //$NON-NLS-1$
-            	includeTimeItems = true;
-          }
-          if (includeTimeItems) {
-	  				// set frame time to zero
-	          popup.addSeparator();
-	          if (getTime()!=0) {
-		        	String s = MediaRes.getString("VideoPlayer.Popup.Menu.SetTimeToZero"); //$NON-NLS-1$
-		        	item = new JMenuItem(s); 
-		          item.addActionListener(new ActionListener() {
-		            public void actionPerformed(ActionEvent e) {
-		            	if (disabled) return;
+					final int frameNum = clipControl.getFrameNumber();
+					if (active == null || active.equals("in")) { //$NON-NLS-1$
+						String s = MediaRes.getString("VideoPlayer.Slider.Popup.Menu.SetIn"); //$NON-NLS-1$
+						s += " (" + frameNum + ")"; //$NON-NLS-1$ //$NON-NLS-2$
+						item = new JMenuItem(s);
+						item.setActionCommand("in"); //$NON-NLS-1$
+						item.addActionListener(listener);
+						popup.add(item);
+					}
+					if (active == null || active.equals("out")) { //$NON-NLS-1$
+						String s = MediaRes.getString("VideoPlayer.Slider.Popup.Menu.SetOut"); //$NON-NLS-1$
+						s += " (" + frameNum + ")"; //$NON-NLS-1$ //$NON-NLS-2$
+						item = new JMenuItem(s);
+						item.setActionCommand("out"); //$NON-NLS-1$
+						item.addActionListener(listener);
+						popup.add(item);
+					}
+					active = null;
+
+					boolean includeTimeItems = false;
+					for (String type : readoutTypes) {
+						if (type.equals("time")) //$NON-NLS-1$
+							includeTimeItems = true;
+					}
+					if (includeTimeItems) {
+						// set frame time to zero
+						popup.addSeparator();
+						if (getTime() != 0) {
+							String s = MediaRes.getString("VideoPlayer.Popup.Menu.SetTimeToZero"); //$NON-NLS-1$
+							item = new JMenuItem(s);
+							item.addActionListener(new ActionListener() {
+								public void actionPerformed(ActionEvent e) {
+									if (disabled)
+										return;
 									double t0 = -clipControl.getTime();
 									getVideoClip().setStartTime(t0);
-		            }
-		          });
-		          item.addActionListener(readoutListener);
-		          popup.add(item);
-	          }
-	          // set frame time
-	          item = new JMenuItem(MediaRes.getString("VideoPlayer.Readout.Menu.SetTime")); //$NON-NLS-1$
-	          item.setActionCommand("time"); //$NON-NLS-1$
-	          item.addActionListener(timeSetListener);
-	          item.addActionListener(readoutListener);
-	          popup.add(item);
-          }
-          // show popup menu
-          popup.show(slider, e.getX(), e.getY());
-  			}
-  			else if (active==null) {
-    			slideMouseListener.mousePressed(e);
-    		}
-    		else {
-    			stop();
-    			x = e.getX();
-    			if (active=="in") { //$NON-NLS-1$
-	  				int start = getVideoClip().getStartFrameNumber();
-	  				vidPanel.setMessage(MediaRes.getString("VideoPlayer.InMarker.ToolTip")+": "+start); //$NON-NLS-1$ //$NON-NLS-2$
-    			}
-    			else if (active=="out") { //$NON-NLS-1$
-	  				int end = getVideoClip().getEndFrameNumber();
-	  				vidPanel.setMessage(MediaRes.getString("VideoPlayer.OutMarker.ToolTip")+": "+end); //$NON-NLS-1$ //$NON-NLS-2$
-    			}
-    		}
-    	}
+								}
+							});
+							item.addActionListener(readoutListener);
+							popup.add(item);
+						}
+						// set frame time
+						item = new JMenuItem(MediaRes.getString("VideoPlayer.Readout.Menu.SetTime")); //$NON-NLS-1$
+						item.setActionCommand("time"); //$NON-NLS-1$
+						item.addActionListener(timeSetListener);
+						item.addActionListener(readoutListener);
+						popup.add(item);
+					}
+					// show popup menu
+					popup.show(slider, e.getX(), e.getY());
+				} else if (active == null) {
+					// BH no! slideMouseListener.mousePressed(e);
+					return;
+				} else {
+					stop();
+					x = e.getX();
+					if (active == "in") { //$NON-NLS-1$
+						int start = getVideoClip().getStartFrameNumber();
+						vidPanel.setMessage(MediaRes.getString("VideoPlayer.InMarker.ToolTip") + ": " + start); //$NON-NLS-1$ //$NON-NLS-2$
+					} else if (active == "out") { //$NON-NLS-1$
+						int end = getVideoClip().getEndFrameNumber();
+						vidPanel.setMessage(MediaRes.getString("VideoPlayer.OutMarker.ToolTip") + ": " + end); //$NON-NLS-1$ //$NON-NLS-2$
+					}
+				}
+				e.consume();
+		}
     	
-    	public void mouseReleased(MouseEvent e) {
-      	if (disabled) return;
-  			VideoClip clip = getVideoClip();
-    		if (active==null)
-    			slideMouseListener.mouseReleased(e);
-    		else {
-  				vidPanel.setMessage(null);
-    		}
-    		clip.setAdjusting(false);
-    	}
+			public void mouseReleased(MouseEvent e) {
+				if (disabled)
+					return;
+				VideoClip clip = getVideoClip();
+				if (active == null) {
+					// slideMouseListener.mouseReleased(e);
+				} else {
+					vidPanel.setMessage(null);
+					e.consume();
+				}
+				clip.setAdjusting(false);
+			}
     	
-    	public void mouseExited(MouseEvent e) {
-  			vidPanel.setMouseCursor(Cursor.getDefaultCursor());
-      	if (disabled) return;
-  			slideMouseListener.mouseExited(e);
-        firePropertyChange("slider", null, Boolean.FALSE); //$NON-NLS-1$
-    	}
+			public void mouseExited(MouseEvent e) {
+				vidPanel.setMouseCursor(Cursor.getDefaultCursor());
+				if (disabled)
+					return;
+				//slideMouseListener.mouseExited(e);
+				firePropertyChange("slider", null, Boolean.FALSE); //$NON-NLS-1$
+			}
     	
-    	public void mouseMoved(MouseEvent e) {
-  			active = null;
-      	if (disabled) return;
-    		int yMin = slider.getHeight()-inLabel.getHeight()-2;
-    		if (inset==0)
-    			inset = slider.getInsets().left + 7;
-    		int offset = Math.min(0, getVideoClip().getFrameShift());
-    		if (e.getY()>yMin) {
-    			VideoClip clip = getVideoClip();
-	    		double pixPerFrame = (slider.getWidth()-2*inset)/(clip.getFrameCount()-1);
-	    		int start = getVideoClip().getStartFrameNumber();
-	    		int x = (int)(inset+(start+offset)*pixPerFrame);
-	    		String hint = " "+MediaRes.getString("VideoPlayer.InOutMarker.ToolTip");  //$NON-NLS-1$//$NON-NLS-2$
-	    		if (e.getX()<x+8 && e.getX()>x-8) {
-	    			active = "in"; //$NON-NLS-1$
-	    	    slider.setToolTipText(
-	    	    		MediaRes.getString("VideoPlayer.InMarker.ToolTip")+": "+start+hint); //$NON-NLS-1$ //$NON-NLS-2$
-	    		}
-	    		else {
-	    			int end = getVideoClip().getEndFrameNumber();
-		    		x = (int)(inset+(end+offset)*pixPerFrame);
-		    		if (e.getX()<x+8 && e.getX()>x-8) {
-		    			active = "out"; //$NON-NLS-1$
-		    	    slider.setToolTipText(
-		    	    		MediaRes.getString("VideoPlayer.OutMarker.ToolTip")+": "+end+hint); //$NON-NLS-1$ //$NON-NLS-2$
-		    		}
-	    		}
-    		}
-    		if (active==null) {
-    			slideMouseMotionListener.mouseMoved(e);
-    			vidPanel.setMouseCursor(Cursor.getDefaultCursor());
-    	    slider.setToolTipText(MediaRes.getString("VideoPlayer.Slider.ToolTip")); //$NON-NLS-1$
-    		}
-    		else {
-    			vidPanel.setMouseCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    		}
-    	}
+			public void mouseMoved(MouseEvent e) {
+				active = null;
+				if (disabled)
+					return;
+				int yMin = slider.getHeight() - inLabel.getHeight() - 2;
+				if (inset == 0)
+					inset = slider.getInsets().left + 7;
+				int offset = Math.min(0, getVideoClip().getFrameShift());
+				if (e.getY() > yMin) {
+					VideoClip clip = getVideoClip();
+					double pixPerFrame = (slider.getWidth() - 2 * inset) / (clip.getFrameCount() - 1);
+					int start = getVideoClip().getStartFrameNumber();
+					int x = (int) (inset + (start + offset) * pixPerFrame);
+					String hint = " " + MediaRes.getString("VideoPlayer.InOutMarker.ToolTip"); //$NON-NLS-1$//$NON-NLS-2$
+					if (e.getX() < x + 8 && e.getX() > x - 8) {
+						active = "in"; //$NON-NLS-1$
+						slider.setToolTipText(MediaRes.getString("VideoPlayer.InMarker.ToolTip") + ": " + start + hint); //$NON-NLS-1$ //$NON-NLS-2$
+					} else {
+						int end = getVideoClip().getEndFrameNumber();
+						x = (int) (inset + (end + offset) * pixPerFrame);
+						if (e.getX() < x + 8 && e.getX() > x - 8) {
+							active = "out"; //$NON-NLS-1$
+							slider.setToolTipText(
+									MediaRes.getString("VideoPlayer.OutMarker.ToolTip") + ": " + end + hint); //$NON-NLS-1$ //$NON-NLS-2$
+						}
+					}
+				}
+				if (active == null) {
+					//slideMouseMotionListener.mouseMoved(e);
+					vidPanel.setMouseCursor(Cursor.getDefaultCursor());
+					slider.setToolTipText(MediaRes.getString("VideoPlayer.Slider.ToolTip")); //$NON-NLS-1$
+				} else {
+					vidPanel.setMouseCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+					e.consume();
+				}
+			}
     	
-    	public void mouseDragged(MouseEvent e) {
-      	if (disabled) return;
-    		if (active==null) {
-	    		slideMouseMotionListener.mouseDragged(e);
-	    		return;
-    		}
-  			VideoClip clip = getVideoClip();
-    		clip.setAdjusting(true);
-    		boolean increasing = e.getX()>x;
-    		x = e.getX();
-    		int offset = Math.min(0, getVideoClip().getFrameShift());
-    		int val = Math.round((clip.getFrameCount()-1)*(e.getX()-inset)/(slider.getWidth()-2*inset));
-    		if (increasing)
-    			val = Math.min(val, clip.getFrameCount()-1+getVideoClip().getStepSize());
-    		else
-    			val = Math.min(val, clip.getFrameCount()-1);
-    		val = Math.max(val-offset, 0);
-    		if (active.equals("in")) { //$NON-NLS-1$
-    			int prevStart = clip.getStartFrameNumber();
-        	if (clip.setStartFrameNumber(val, maxEndFrame)) {
-        		int newStart = clip.getStartFrameNumber();
-	  				vidPanel.setMessage(MediaRes.getString("VideoPlayer.InMarker.ToolTip")+": "+newStart); //$NON-NLS-1$ //$NON-NLS-2$
-            // reset start time if needed
-            if (!clip.isDefaultStartTime) {
-        			double startTime = clip.getStartTime();
-            	startTime += (newStart-prevStart)*clipControl.getMeanFrameDuration();
-            	clip.setStartTime(startTime);
-            }        		
-	    			clipControl.setStepNumber(0);
+			public void mouseDragged(MouseEvent e) {
+				if (disabled)
+					return;
+				if (active == null) {
+//	    		slideMouseMotionListener.mouseDragged(e);
+					return;
+				}
+				VideoClip clip = getVideoClip();
+				clip.setAdjusting(true);
+				boolean increasing = e.getX() > x;
+				x = e.getX();
+				int offset = Math.min(0, getVideoClip().getFrameShift());
+				int val = Math.round((clip.getFrameCount() - 1) * (e.getX() - inset) / (slider.getWidth() - 2 * inset));
+				if (increasing)
+					val = Math.min(val, clip.getFrameCount() - 1 + getVideoClip().getStepSize());
+				else
+					val = Math.min(val, clip.getFrameCount() - 1);
+				val = Math.max(val - offset, 0);
+				if (active.equals("in")) { //$NON-NLS-1$
+					int prevStart = clip.getStartFrameNumber();
+					if (clip.setStartFrameNumber(val, maxEndFrame)) {
+						int newStart = clip.getStartFrameNumber();
+						vidPanel.setMessage(MediaRes.getString("VideoPlayer.InMarker.ToolTip") + ": " + newStart); //$NON-NLS-1$ //$NON-NLS-2$
+						// reset start time if needed
+						if (!clip.isDefaultStartTime) {
+							double startTime = clip.getStartTime();
+							startTime += (newStart - prevStart) * clipControl.getMeanFrameDuration();
+							clip.setStartTime(startTime);
+						}
+						clipControl.setStepNumber(0);
 						if (clip.inspector != null && clip.inspector.isVisible()) {
 							clip.inspector.startField.setValue(newStart);
-							clip.inspector.t0Field.setValue(clip.getStartTime()/1000);
+							clip.inspector.t0Field.setValue(clip.getStartTime() / 1000);
 						}
-    				updateReadout();
+						updateReadout();
 					}
-    		}
-    		else if (active.equals("out")) { //$NON-NLS-1$
-    			if (clip.setEndFrameNumber(val)) {
-    				int end = clip.getEndFrameNumber();
-	  				vidPanel.setMessage(MediaRes.getString("VideoPlayer.OutMarker.ToolTip")+": "+end); //$NON-NLS-1$ //$NON-NLS-2$
-          	clipControl.setStepNumber(clip.getStepCount()-1);
+				} else if (active.equals("out")) { //$NON-NLS-1$
+					if (clip.setEndFrameNumber(val)) {
+						int end = clip.getEndFrameNumber();
+						vidPanel.setMessage(MediaRes.getString("VideoPlayer.OutMarker.ToolTip") + ": " + end); //$NON-NLS-1$ //$NON-NLS-2$
+						clipControl.setStepNumber(clip.getStepCount() - 1);
 						if (clip.inspector != null && clip.inspector.isVisible()) {
 							clip.inspector.endField.setValue(clip.getEndFrameNumber());
 						}
 					}
-    		}
-    	}
+				}
+				e.consume();
+			}
     };
     slider.addMouseListener(inOutSetter);
     slider.addMouseMotionListener(inOutSetter);
+    if (basicUIMouseListener != null)
+    	slider.addMouseListener(basicUIMouseListener);
+    slider.addMouseMotionListener(inOutSetter);
+    if (basicUIMouseMotionListener != null)
+    	slider.addMouseMotionListener(basicUIMouseMotionListener);
+    // BH much better to just take out the UI listener and add it later, with 
     InputMap im = slider.getInputMap(JComponent.WHEN_FOCUSED);
     ActionMap am = SwingUtilities.getUIActionMap(slider);
     if (am != null) {

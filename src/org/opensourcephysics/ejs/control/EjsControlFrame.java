@@ -79,7 +79,6 @@ import org.opensourcephysics.tools.Tool;
 import org.opensourcephysics.tools.ToolsRes;
 import org.opensourcephysics.tools.VideoTool;
 
-import javafx.stage.FileChooser;
 import javajs.async.AsyncFileChooser;
 
 /**

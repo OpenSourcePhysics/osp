@@ -73,6 +73,8 @@ import org.opensourcephysics.tools.FontSizer;
  */
 public class OSPLog extends JFrame {
 
+	protected static boolean logToJSConsole = true; // BH 2020.04.06 set to false for production
+
 	public static class LoggerPrintStream extends PrintStream {
 
 		protected boolean isErr;
@@ -1189,6 +1191,10 @@ public class OSPLog extends JFrame {
 				return;
 			}
 			String msg = getFormatter().format(record);
+			
+			if (logToJSConsole)
+				realSysout.println("OSPLog:" + msg);
+
 			Style style = OSPLog.green; // default style
 			int val = record.getLevel().intValue();
 			if (val == ConsoleLevel.ERR_CONSOLE.intValue()) {

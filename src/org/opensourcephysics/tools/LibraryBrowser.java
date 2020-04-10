@@ -73,7 +73,7 @@ public class LibraryBrowser extends JPanel {
 	// static fields
 	private static LibraryBrowser browser;
 	protected static Border buttonBorder;
-  protected static boolean webConnected;
+  protected static boolean webConnected = OSPRuntime.isJS;
   protected static JFrame frame;
   protected static JDialog externalDialog;
   protected static JMenuBar menubar;
@@ -139,105 +139,111 @@ public class LibraryBrowser extends JPanel {
   }
 
   
-  /**
-	 * Gets the shared singleton browser in a JDialog or, if none, in a shared JFrame.
+	/**
+	 * Gets the shared singleton browser in a JDialog or, if none, in a shared
+	 * JFrame.
 	 * 
 	 * @param dialog a JDialog (if null, browser is returned in a JFrame)
 	 * @return the shared LibraryBrowser
 	 */
-  public static LibraryBrowser getBrowser(JDialog dialog) {
-  	boolean newFrame = false;
-  	if (frame==null && dialog==null) {
-  		newFrame = true;
-  		frame = new JFrame();
-  	}
-  	externalDialog = dialog;
-  	if (externalDialog!=null)
-  		externalDialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
- 	
-  	if (browser==null) {
-  		String userHome = OSPRuntime.getUserHome().replace('\\', '/');
-  		String ospFolder = OSPRuntime.isWindows()? WINDOWS_OSP_DIRECTORY: OSP_DIRECTORY;
-  		String ospPath = userHome+ospFolder;
-  		// if OSP folder doesn't exist in user home, then look 
-  		// in default OSPRuntime search directory
-  		if (!new File(ospPath).exists()) {
-    		ArrayList<String> dirs = OSPRuntime.getDefaultSearchPaths();
-				ospPath = XML.forwardSlash(dirs.get(0));
-  		}
-			if (!ospPath.endsWith("/")) { //$NON-NLS-1$
-				ospPath += "/"; //$NON-NLS-1$
-			}
-    	String libraryPath = ospPath+MY_LIBRARY_NAME;
-      File libraryFile = new File(libraryPath);
-    	// create new library if none exists
-      boolean libraryExists = libraryFile.exists();
-      if (!libraryExists) {
-      	String collectionPath = ospPath+MY_COLLECTION_NAME;      	
-  			File collectionFile = new File(collectionPath);
-      	// create new collection if none exists
-        if (!collectionFile.exists()) {
-          String name = ToolsRes.getString("LibraryCollection.Name.Local"); //$NON-NLS-1$
-    			LibraryCollection collection = new LibraryCollection(name);
-    			String base = XML.getDirectoryPath(collectionPath);
-    			collection.setBasePath(XML.forwardSlash(base));
-    			// save new collection
-    			XMLControl control = new XMLControlElement(collection);
-    			control.write(collectionPath);
-        }
-        Library library = new Library();
-        String name = ToolsRes.getString("LibraryCollection.Name.Local"); //$NON-NLS-1$
-        library.addCollection(collectionPath, name);
-        library.save(libraryPath);
-      }
-  		browser = new LibraryBrowser(libraryPath);
+	public static LibraryBrowser getBrowser(JDialog dialog) {
+		boolean newFrame = false;
+		if (frame == null && dialog == null) {
+			newFrame = true;
+			frame = new JFrame();
+		}
+		externalDialog = dialog;
+		if (externalDialog != null)
+			externalDialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-      LibraryTreePanel treePanel = browser.getSelectedTreePanel();
-  		if (treePanel!=null) {
-  			treePanel.setSelectedNode(treePanel.rootNode);
-  			treePanel.showInfo(treePanel.rootNode);
-  		}
-  		OSPLog.getOSPLog(); // instantiate log in case of exceptions, etc 
-  	}
-  	  	
-  	browser.setTitle(ToolsRes.getString("LibraryBrowser.Title")); //$NON-NLS-1$
-    if (externalDialog!=null) {
-    	externalDialog.setContentPane(browser);
-    	externalDialog.setJMenuBar(menubar);
-    	externalDialog.addWindowListener(new WindowAdapter() {
-	      public void windowClosing(WindowEvent e) {
-	        browser.exit();
-	      }
-	    });
-    	externalDialog.pack();
-    }
-    else {
-	  	frame.setContentPane(browser);
-    	frame.setJMenuBar(menubar);
-	    frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-	    // add window listener to exit
-	    frame.addWindowListener(new WindowAdapter() {
-	      public void windowClosing(WindowEvent e) {
-	        browser.exit();
-	      }
-	    });
-	    try {
-	      java.net.URL url = LibraryBrowser.class.getResource(OSPRuntime.OSP_ICON_FILE);
-	      ImageIcon icon = new ImageIcon(url);
-	      frame.setIconImage(icon.getImage());
-	    } catch(Exception ex) {} 
-    	frame.pack();
-    	if (newFrame) {
-        // center on screen
-        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        int x = (dim.width - frame.getBounds().width) / 2;
-        int y = (dim.height - frame.getBounds().height) / 2;
-        frame.setLocation(x, y);    		
-    	}
-    }
-  	
-  	return browser;
-  }
+		if (browser == null) {
+			String libraryPath = null;
+			if (!OSPRuntime.isJS) {
+
+				String userHome = OSPRuntime.getUserHome().replace('\\', '/');
+				String ospFolder = OSPRuntime.isWindows() ? WINDOWS_OSP_DIRECTORY : OSP_DIRECTORY;
+				String ospPath = userHome + ospFolder;
+				// if OSP folder doesn't exist in user home, then look
+				// in default OSPRuntime search directory
+				if (!new File(ospPath).exists()) {
+					ArrayList<String> dirs = OSPRuntime.getDefaultSearchPaths();
+					ospPath = XML.forwardSlash(dirs.get(0));
+				}
+				if (!ospPath.endsWith("/")) { //$NON-NLS-1$
+					ospPath += "/"; //$NON-NLS-1$
+				}
+				libraryPath = ospPath + MY_LIBRARY_NAME;
+				File libraryFile = new File(libraryPath);
+				// create new library if none exists
+				boolean libraryExists = libraryFile.exists();
+				if (!libraryExists) {
+					String collectionPath = ospPath + MY_COLLECTION_NAME;
+					File collectionFile = new File(collectionPath);
+					// create new collection if none exists
+					if (!collectionFile.exists()) {
+						String name = ToolsRes.getString("LibraryCollection.Name.Local"); //$NON-NLS-1$
+						LibraryCollection collection = new LibraryCollection(name);
+						String base = XML.getDirectoryPath(collectionPath);
+						collection.setBasePath(XML.forwardSlash(base));
+						// save new collection
+						XMLControl control = new XMLControlElement(collection);
+						control.write(collectionPath);
+					}
+					Library library = new Library();
+					String name = ToolsRes.getString("LibraryCollection.Name.Local"); //$NON-NLS-1$
+					library.addCollection(collectionPath, name);
+					library.save(libraryPath);
+				}
+
+			}
+			browser = new LibraryBrowser(libraryPath);
+
+			LibraryTreePanel treePanel = browser.getSelectedTreePanel();
+			if (treePanel != null) {
+				treePanel.setSelectedNode(treePanel.rootNode);
+				treePanel.showInfo(treePanel.rootNode);
+			}
+			OSPLog.getOSPLog(); // instantiate log in case of exceptions, etc
+		}
+
+		browser.setTitle(ToolsRes.getString("LibraryBrowser.Title")); //$NON-NLS-1$
+		if (externalDialog != null) {
+			externalDialog.setContentPane(browser);
+			externalDialog.setJMenuBar(menubar);
+			externalDialog.addWindowListener(new WindowAdapter() {
+				public void windowClosing(WindowEvent e) {
+					browser.exit();
+				}
+			});
+			externalDialog.pack();
+		} else {
+			frame.setContentPane(browser);
+			frame.setJMenuBar(menubar);
+			frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+			// add window listener to exit
+			frame.addWindowListener(new WindowAdapter() {
+				public void windowClosing(WindowEvent e) {
+					browser.exit();
+				}
+			});
+			try {
+				java.net.URL url = LibraryBrowser.class.getResource(OSPRuntime.OSP_ICON_FILE);
+				ImageIcon icon = new ImageIcon(url);
+				frame.setIconImage(icon.getImage());
+			} catch (Exception ex) {
+			}
+			frame.pack();
+			if (newFrame) {
+				// center on screen
+				Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+				int x = (dim.width - frame.getBounds().width) / 2;
+				int y = (dim.height - frame.getBounds().height) / 2;
+				frame.setLocation(x, y);
+			}
+		}
+
+		return browser;
+	}
   
   /**
    * Sets the font level.
@@ -634,30 +640,29 @@ public class LibraryBrowser extends JPanel {
   	tabAdder.execute();  	
   }
   
-  /**
-   * Loads a library resource from a given path.
-   * 
-   * @param path the path
-   * @return the resource, or null if failed
-   */
-  protected LibraryResource loadResource(String path) {
-  	isRecentPathXML = false;
-  	File targetFile = new File(path);
-		if (targetFile.isDirectory()) {
+	/**
+	 * Loads a library resource from a given path.
+	 * 
+	 * @param path the path
+	 * @return the resource, or null if failed
+	 */
+	protected LibraryResource loadResource(String path) {
+		isRecentPathXML = false;
+		File targetFile = new File(path);
+		if (!OSPRuntime.isJS && targetFile.isDirectory()) {
 			return createCollection(targetFile, targetFile, dlFileFilter);
 		}
-    if (LibraryComPADRE.isComPADREPath(path)) {
-	  	return LibraryComPADRE.getCollection(path);
-	  }
-  	XMLControlElement control = new XMLControlElement(path);
-  	if (!control.failedToRead() 
-  			&& control.getObjectClass()!=null
-  			&& LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
-    	isRecentPathXML = true;    	
-  		return (LibraryResource)control.loadObject(null);
-  	}    	  	
-  	return createResource(targetFile, targetFile.getParentFile(), dlFileFilter);
-  }
+		if (LibraryComPADRE.isComPADREPath(path)) {
+			return LibraryComPADRE.getCollection(path);
+		}
+		XMLControlElement control = new XMLControlElement(path);
+		if (!control.failedToRead() && control.getObjectClass() != null
+				&& LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
+			isRecentPathXML = true;
+			return (LibraryResource) control.loadObject(null);
+		}
+		return createResource(targetFile, targetFile.getParentFile(), dlFileFilter);
+	}
   
   /**
    * Creates a LibraryResource that describes and targets a file.
@@ -797,8 +802,8 @@ public class LibraryBrowser extends JPanel {
   protected TabLoader addTab(String path, List<String> treePath) {
   	if (path==null) return null;
 		File cachedFile = ResourceLoader.getSearchCacheFile(path);
-  	boolean isCachePath = cachedFile.exists();
-  	if (!isCachePath && !isWebConnected() && path.startsWith("http:")) { //$NON-NLS-1$
+  	boolean isCachePath = !OSPRuntime.isJS && cachedFile.exists();
+  	if (!isCachePath && !isWebConnected() && isHTTP(path)) { //$NON-NLS-1$
   		JOptionPane.showMessageDialog(this, 
   				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
   				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
@@ -808,8 +813,8 @@ public class LibraryBrowser extends JPanel {
   	TabLoader tabAdder = new TabLoader(path, -1, treePath);
   	return tabAdder;
   }
-  
-  /**
+    
+/**
    * Refreshes the title of a tab based on the properties of a LibraryCollection
    * and the path associated with that collection.
    * 
@@ -2298,9 +2303,12 @@ public class LibraryBrowser extends JPanel {
   	
 	@Override
     public Library doInBackground() {
+		if (libraryPath == null)
+			return library;
+		
  	  	Runnable runner = new Runnable() {
  	  		public void run() {
- 	  			// BH 
+ 	  			
 		  		webConnected = ResourceLoader.isURLAvailable(ResourceLoader.WEB_CONNECTED_TEST_URL); //$NON-NLS-1$
 		    	if (!webConnected) {
 		    		JOptionPane.showMessageDialog(LibraryBrowser.this, 
@@ -2310,7 +2318,7 @@ public class LibraryBrowser extends JPanel {
 		    	}
  	  		}
  	  	};
-    	if (!libraryPath.startsWith("http:")) { //$NON-NLS-1$
+    	if (libraryPath == null || !isHTTP(libraryPath) && !libraryPath.startsWith("https:")) { //$NON-NLS-1$  //$NON-NLS-2$
 		    // load library
 	    	library.load(libraryPath);
      	  // add previously open tabs that are available
@@ -2334,7 +2342,7 @@ public class LibraryBrowser extends JPanel {
 			  		for (String path: paths) {
 			  			// check for local resource
 			      	Resource res = ResourceLoader.getResource(path);
-			    		if (res!=null && !path.startsWith("http:")) { //$NON-NLS-1$
+			    		if (res!=null && !isHTTP(path)) { //$NON-NLS-1$
 			    			TabLoader tabAdder = addTab(path, null);
 			    			if (tabAdder!=null) tabAdder.execute();  	
 			  			}
@@ -2364,7 +2372,7 @@ public class LibraryBrowser extends JPanel {
      	  // add previously open tabs not available for loading in doInBackground method
 	 	  	if (library.openTabPaths!=null) {  	  		
 		  		for (final String path: library.openTabPaths) {
-		  			boolean available = isWebConnected() && path.startsWith("http:"); //$NON-NLS-1$
+		  			boolean available = isWebConnected() && isHTTP(path); //$NON-NLS-1$
 		  			if (available) {
 		    			TabLoader tabAdder = addTab(path, null);
 		    			if (tabAdder!=null) tabAdder.execute();  	
@@ -2394,26 +2402,30 @@ public class LibraryBrowser extends JPanel {
   		this.treePath = treePath;
   	}
   	
-    @Override
-    public LibraryTreePanel doInBackground() {
-    	setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-    	String realPath = path;
-  		File cachedFile = ResourceLoader.getSearchCacheFile(path);
-  		if (cachedFile.exists() && path.startsWith("http:")) {  			 //$NON-NLS-1$
-  			realPath = cachedFile.getAbsolutePath();
-  			saveToCache = false;
-  		}
+		@Override
+		public LibraryTreePanel doInBackground() {
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			String realPath = path;
+			if (OSPRuntime.isJS) {
+				saveToCache = false;
+			} else {
+				File cachedFile = ResourceLoader.getSearchCacheFile(path);
+				if (cachedFile.exists() && isHTTP(path)) { // $NON-NLS-1$
+					realPath = cachedFile.getAbsolutePath();
+					saveToCache = false;
+				}
+			}
 
-    	LibraryResource resource = loadResource(realPath);
-    	if (resource!=null) {
-    		LibraryTreePanel treePanel = index<0? createLibraryTreePanel(): getTreePanel(index);
-    		// tab is editable only if it is a local XML file
-    		boolean editable = !path.startsWith("http:") && path.toLowerCase().endsWith(".xml"); //$NON-NLS-1$ //$NON-NLS-2$
-    		treePanel.setRootResource(resource, path, editable, isRecentPathXML);
-    		return treePanel;
-    	}
-    	return null;
-    }
+			LibraryResource resource = loadResource(realPath);
+			if (resource != null) {
+				LibraryTreePanel treePanel = index < 0 ? createLibraryTreePanel() : getTreePanel(index);
+				// tab is editable only if it is a local XML file
+				boolean editable = !isHTTP(path) && path.toLowerCase().endsWith(".xml"); //$NON-NLS-1$ //$NON-NLS-2$
+				treePanel.setRootResource(resource, path, editable, isRecentPathXML);
+				return treePanel;
+			}
+			return null;
+		}
 
     @Override
     protected void done() {
@@ -2622,5 +2634,11 @@ public class LibraryBrowser extends JPanel {
     }
 
   }
-  
+
+
+
+  public static boolean isHTTP(String path) {
+	  return path.startsWith("http:") || path.startsWith("https:");
+  }
+
 }

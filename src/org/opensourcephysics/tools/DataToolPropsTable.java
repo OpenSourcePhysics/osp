@@ -445,8 +445,6 @@ final public class DataToolPropsTable extends JTable {
 			});
 			// create color popup, action and buttons
 			colorPopup = new JDialog(styleDialog, true);
-			System.out.println(colorPopup.getFocusableWindowState());
-			System.out.println(colorPopup.getPeer());
 
 			colorPopup.setUndecorated(true);
 			colorPopup.getContentPane().add(cc.getChooserPanels()[0]);
