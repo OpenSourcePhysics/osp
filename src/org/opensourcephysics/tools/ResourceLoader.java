@@ -1460,6 +1460,7 @@ public class ResourceLoader {
    * @return URL of the Resource, or null if none found
    */
   private static URL getAppletResourceURL(String name) {
+  	if(JSUtil.isJS) return null;
     if((OSPRuntime.applet==null)||(name==null)||name.trim().equals("")) { //$NON-NLS-1$
       return null;
     }
@@ -1537,7 +1538,7 @@ public class ResourceLoader {
     }
     Resource res = null;
     // following added by Doug Brown 2009/11/14
-    if(OSPRuntime.applet!=null) {
+    if(!JSUtil.isJS && OSPRuntime.applet!=null) {
       try { // let applet class try to get it first
         //URL url = OSPRuntime.applet.getClass().getResource(path);
         URL url = getAppletResourceURL(path);

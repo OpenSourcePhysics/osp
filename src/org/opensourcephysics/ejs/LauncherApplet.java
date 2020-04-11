@@ -138,24 +138,6 @@ public class LauncherApplet extends JApplet {
     }
   }
 
-  // public void destroy(){
-  // System.out.println("LauncherApplet destroy Method.");
-  // super.destroy();
-  // }
-  //
-  // public void stop(){
-  // System.out.println("LauncherApplet stop Method.");
-  // super.stop();
-  // }
-  //
-  // public void start(){
-  // System.out.println("LauncherApplet start Method.");
-  // super.start();
-  // }
-  //
-  // public String getAppletInfo () {
-  // return "An applet to launch a Simulation.";
-  // }
   public String[][] getParameterInfo() {
     String[][] pinfo = {
       {"simulation", "String", "The simulation"},                        //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
