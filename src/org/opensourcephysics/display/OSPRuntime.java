@@ -44,6 +44,7 @@ import org.opensourcephysics.tools.ResourceLoader;
 import org.opensourcephysics.tools.Translator;
 
 import javajs.async.AsyncFileChooser;
+import swingjs.api.JSUtilI;
 
 /**
  * This class defines static methods related to the runtime environment.
@@ -58,6 +59,21 @@ public class OSPRuntime {
 	public static boolean isJS = /** @j2sNative true || */
 			false;
 
+	public static JSUtilI jsutil;
+	
+	static {
+		System.err.println("OSPRuntime is not set up for CORS access to physlets.org - using chemapps.stolaf.edu");
+		// BH implement this when physlets.org is set up for CORS
+//		try {
+//			if (isJS) {
+//				jsutil = ((JSUtilI)Class.forName("swingjs.JSUtil").newInstance());
+//				jsutil.addDirectDatabaseCall("physlets.org");
+//			}
+//			
+//		} catch (Exception e) {
+//			OSPLog.warning("OSPRuntime could not create jsutil");
+//		}
+	}
 	/**
 	 * Disables drawing for faster start-up and to avoid screen flash in Drawing
 	 * Panels.
