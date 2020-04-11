@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -665,26 +666,26 @@ public class ResourceLoader {
    * @return the default OSP cache
    */
   public static File getDefaultOSPCache() {
-  	String cachePath = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$
+  	String cacheDir = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$
   	String userHome = OSPRuntime.getUserHome();
-		if (userHome!=null) {
+		if (!OSPRuntime.isJS && userHome!=null) {
 	  	userHome += "/"; //$NON-NLS-1$
 			if (OSPRuntime.isMac()) {
-				cachePath = userHome+ResourceLoader.OSX_DEFAULT_CACHE;
+				cacheDir = userHome+ResourceLoader.OSX_DEFAULT_CACHE;
 			}
 			else if (OSPRuntime.isLinux()) {
-				cachePath = userHome+ResourceLoader.LINUX_DEFAULT_CACHE;
+				cacheDir = userHome+ResourceLoader.LINUX_DEFAULT_CACHE;
 			}
 			else if (OSPRuntime.isWindows()) {
 				String os = System.getProperty("os.name", "").toLowerCase(); //$NON-NLS-1$ //$NON-NLS-2$
 				if (os.indexOf("xp")>-1) //$NON-NLS-1$
-					cachePath = userHome+ResourceLoader.WIN_XP_DEFAULT_CACHE;
+					cacheDir = userHome+ResourceLoader.WIN_XP_DEFAULT_CACHE;
 				else
-					cachePath = userHome+ResourceLoader.WINDOWS_DEFAULT_CACHE;
+					cacheDir = userHome+ResourceLoader.WINDOWS_DEFAULT_CACHE;
 			}
 		}
-		if (cachePath==null) return null;
-		return new File(cachePath);
+		if (cacheDir==null) return null;
+		return new File(cacheDir);
   }
   
   /**
@@ -722,20 +723,21 @@ public class ResourceLoader {
   
 
   
-  /**
-   * Determines if a path defines a file in the OSP cache.
-   * 
-   * @param path the path
-   * @return true if path is in the OSP cache
-   */
-  public static boolean isOSPCachePath(String path) {
-  	File cacheFile = getOSPCache();
-  	if (cacheFile==null)
-			cacheFile = new File(System.getProperty("java.io.tmpdir")); //$NON-NLS-1$	
-		String cachePath = XML.forwardSlash(cacheFile.getAbsolutePath())+"/osp-"; //$NON-NLS-1$
-  	if (XML.forwardSlash(path).contains(cachePath)) return true;
-  	return false;
-  }
+	/**
+	 * Determines if a path defines a file in the OSP cache.
+	 * 
+	 * @param path the path
+	 * @return true if path is in the OSP cache
+	 */
+	public static boolean isOSPCachePath(String path) {
+		File cacheDir = getOSPCache();
+		if (cacheDir == null)
+			cacheDir = new File(System.getProperty("java.io.tmpdir")); //$NON-NLS-1$
+		String cachePath = XML.forwardSlash(cacheDir.getAbsolutePath()) + "/osp-"; //$NON-NLS-1$
+		if (XML.forwardSlash(path).contains(cachePath))
+			return true;
+		return false;
+	}
   
   /**
    * Gets the cache file associated with a URL path.
@@ -755,10 +757,10 @@ public class ResourceLoader {
    * @return the cache file
    */
   public static File getOSPCacheFile(String urlPath, String name) {
-  	File cacheFile = getOSPCache();
-  	if (cacheFile==null)
-			cacheFile = new File(System.getProperty("java.io.tmpdir")); //$NON-NLS-1$	
-  	return getCacheFile(cacheFile, urlPath, name);
+  	File cacheDir = getOSPCache();
+  	if (cacheDir==null)
+			cacheDir = new File(System.getProperty("java.io.tmpdir")); //$NON-NLS-1$	
+  	return getCacheFile(cacheDir, urlPath, name);
   }
 
   /**
@@ -1989,6 +1991,76 @@ public class ResourceLoader {
     }
     return path;
   }
+
+	/**
+	 * 
+	 * Fix HTML being loaded from remote sources into HTMLDocuments and displayed
+	 * using JEditorPane.
+	 * 
+	 * @param htmlStr
+	 * @return
+	 * 
+	 * @author hansonr
+	 * @param url 
+	 */
+	public static String fixHTTPS(String htmlStr, URL url) {
+		String dir = url.getPath();
+		dir = dir.substring(0, dir.lastIndexOf("/") + 1);
+		String base = "https://" + url.getHost() + "/" + dir;
+		htmlStr = htmlStr.replace("http://physlets", "https://physlets"); 
+		htmlStr = htmlStr.replace("src=\"http", "#SH#");
+		htmlStr = htmlStr.replace("src=\"", "src=\"" + base);
+		htmlStr = htmlStr.replace("#SH#","src=\"http");
+		return htmlStr;
+	}
+
+	/**
+	 * Just get the URL contents as a string
+	 * @param url
+	 * @return
+	 * 
+	 * @author hansonr
+	 */
+	public static String getURLContents(URL url) {
+		try {
+			// Java 9!			return new String(url.openStream().readAllBytes());
+			return new String(getLimitedStreamBytes(url.openStream(), -1));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
+	 * From javajs.Rdr
+	 * 
+	 */
+	public static byte[] getLimitedStreamBytes(InputStream is, long n) throws IOException {
+
+		// Note: You cannot use InputStream.available() to reliably read
+		// zip data from the web.
+
+		int buflen = (n > 0 && n < 1024 ? (int) n : 1024);
+		byte[] buf = new byte[buflen];
+		byte[] bytes = new byte[n < 0 ? 4096 : (int) n];
+		int len = 0;
+		int totalLen = 0;
+		if (n < 0)
+			n = Integer.MAX_VALUE;
+		while (totalLen < n && (len = is.read(buf, 0, buflen)) > 0) {
+			totalLen += len;
+			if (totalLen > bytes.length)
+				bytes = Arrays.copyOf(bytes, totalLen * 2);
+			System.arraycopy(buf, 0, bytes, totalLen - len, len);
+			if (n != Integer.MAX_VALUE && totalLen + buflen > bytes.length)
+				buflen = bytes.length - totalLen;
+		}
+		if (totalLen == bytes.length)
+			return bytes;
+		buf = new byte[totalLen];
+		System.arraycopy(bytes, 0, buf, 0, totalLen);
+		return buf;
+	}
 
 }
 

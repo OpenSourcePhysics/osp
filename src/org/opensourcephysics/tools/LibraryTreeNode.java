@@ -210,7 +210,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 		File cachedFile = null;
 		boolean foundInCache = false;
 		if (!OSPRuntime.isJS) {
-		    ResourceLoader.getOSPCacheFile(path);
+		    cachedFile = ResourceLoader.getOSPCacheFile(path);
 			foundInCache = cachedFile.exists();
 		}
 		// see if URL is in the map

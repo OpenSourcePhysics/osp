@@ -62,17 +62,16 @@ public class OSPRuntime {
 	public static JSUtilI jsutil;
 	
 	static {
-		System.err.println("OSPRuntime is not set up for CORS access to physlets.org - using chemapps.stolaf.edu");
-		// BH implement this when physlets.org is set up for CORS
-//		try {
-//			if (isJS) {
-//				jsutil = ((JSUtilI)Class.forName("swingjs.JSUtil").newInstance());
-//				jsutil.addDirectDatabaseCall("physlets.org");
-//			}
-//			
-//		} catch (Exception e) {
-//			OSPLog.warning("OSPRuntime could not create jsutil");
-//		}
+		// note - this is only for https
+		try {
+			if (isJS) {
+				jsutil = ((JSUtilI)Class.forName("swingjs.JSUtil").newInstance());
+				jsutil.addDirectDatabaseCall("https://physlets.org");
+			}
+			
+		} catch (Exception e) {
+			OSPLog.warning("OSPRuntime could not create jsutil");
+		}
 	}
 	/**
 	 * Disables drawing for faster start-up and to avoid screen flash in Drawing
