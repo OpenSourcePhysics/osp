@@ -56,9 +56,9 @@ public class LibraryBrowser extends JPanel {
 	
   // static constants
 	@SuppressWarnings("javadoc")
-	public static final String TRACKER_LIBRARY = "http://physlets.org/tracker/library/tracker_library.xml"; //$NON-NLS-1$
+	public static final String TRACKER_LIBRARY = "https://physlets.org/tracker/library/tracker_library.xml"; //$NON-NLS-1$
 	@SuppressWarnings("javadoc")
-	public static final String SHARED_LIBRARY = "http://physlets.org/tracker/library/shared_library.xml"; //$NON-NLS-1$
+	public static final String SHARED_LIBRARY = "https://physlets.org/tracker/library/shared_library.xml"; //$NON-NLS-1$
 	protected static final String AND = " AND "; //$NON-NLS-1$
 	protected static final String OR = " OR "; //$NON-NLS-1$
 	protected static final String OPENING = "("; //$NON-NLS-1$
