@@ -542,7 +542,7 @@ public class OSPLog extends JFrame {
 
 	private StringBuffer logBuffer = new StringBuffer();
 
-	private PrintStream realSysout;
+	private static PrintStream realSysout;
 
 	/**
 	 * Allows getting the text from the logBuffer
@@ -1030,6 +1030,9 @@ public class OSPLog extends JFrame {
 
 	private static void log(Level level, String msg) {
 		LogRecord record = new LogRecord(level, msg);
+		
+		if (logToJSConsole && realSysout != null)
+			realSysout.println("OSPLog[" + level + "] " + msg);
 
 		String className = null, methodName = null;
 		if (OSPRuntime.isJS) {
@@ -1059,6 +1062,7 @@ public class OSPLog extends JFrame {
 			record.setSourceClassName(className);
 			record.setSourceMethodName(methodName);
 		}
+		
 		if (OSPLOG != null) {
 			OSPLOG.getLogger().log(record);
 		} else {
@@ -1191,9 +1195,6 @@ public class OSPLog extends JFrame {
 				return;
 			}
 			String msg = getFormatter().format(record);
-			
-			if (logToJSConsole)
-				realSysout.println("OSPLog:" + msg);
 
 			Style style = OSPLog.green; // default style
 			int val = record.getLevel().intValue();
