@@ -803,7 +803,8 @@ public class ResourceLoader {
    * @return the cache file
    */
   private static File getCacheFile(File cacheFile, String urlPath, String name) {
-		String cachePath = XML.forwardSlash(cacheFile.getAbsolutePath());
+	  // SwingJS this might be null. 
+		String cachePath = (cacheFile == null ? "./" :  XML.forwardSlash(cacheFile.getAbsolutePath()));
 		urlPath = getURIPath(urlPath);
   		
 		String host = ""; //$NON-NLS-1$
@@ -1634,7 +1635,7 @@ public class ResourceLoader {
 			fileName = path.substring(i + 5);
 		}
 		
-		System.out.println("resource loader for " + path + " \n " + base + " " + fileName);
+		System.out.println("resource loader for " + path + " \n base=" + base);
 		if (base == null) {
 			if (path.endsWith(".zip") //$NON-NLS-1$
 					|| path.endsWith(".trz") //$NON-NLS-1$
@@ -1651,7 +1652,7 @@ public class ResourceLoader {
 		// if loading from a web file, download to OSP cache
 		boolean isZip = base != null && (base.endsWith(".zip") || base.endsWith(".jar") || base.endsWith(".trz")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		boolean deleteOnExit = ospCache == null;
-		if (isZip && path.startsWith("http:")) { //$NON-NLS-1$
+		if (isZip && (path.startsWith("http:") ||path.startsWith("https:"))) { //$NON-NLS-1$
 			String zipFileName = XML.getName(base);
 			File zipFile = downloadToOSPCache(base, zipFileName, false);
 			if (zipFile != null) {

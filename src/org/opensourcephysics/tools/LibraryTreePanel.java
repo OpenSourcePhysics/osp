@@ -358,7 +358,7 @@ public class LibraryTreePanel extends JPanel {
    */
   protected boolean isEditable() {
   	boolean editable = rootNode!=null && rootNode.isEditable();
-  	if (editable && !pathToRoot.startsWith("http:")) { //$NON-NLS-1$
+  	if (editable && !LibraryBrowser.isHTTP(pathToRoot)) { //$NON-NLS-1$
   		File file = new File(pathToRoot);
   		editable = !file.exists() || file.canWrite();
   	}
@@ -374,175 +374,173 @@ public class LibraryTreePanel extends JPanel {
   	return isEditing;
   }
   
-  /**
-   * Displays the resource data for the specified node.
-   *
-   * @param node the LibraryTreeNode
-   */
-  protected void showInfo(LibraryTreeNode node) {
-  	if (node==null) {
-  		htmlScroller.setViewportView(emptyHTMLPane);
-    	nameField.setText(null);
-    	typeField.setText(" "); //$NON-NLS-1$
-    	basePathField.setText(null);
-    	htmlField.setText(null);
-    	targetField.setText(null);
-    	nameField.setBackground(Color.white);
-    	basePathField.setBackground(Color.white);
-    	htmlField.setBackground(Color.white);
-    	targetField.setBackground(Color.white);
-    	nameField.setEnabled(false);
-    	basePathField.setEnabled(false);
-    	htmlField.setEnabled(false);
-    	targetField.setEnabled(false);
-    	typeField.setEnabled(false);
-    	nameLabel.setEnabled(false);
-    	htmlLabel.setEnabled(false);
-    	basePathLabel.setEnabled(false);
-    	targetLabel.setEnabled(false);
-    	typeLabel.setEnabled(false);
-    	openHTMLButton.setEnabled(false);
-    	openBasePathButton.setEnabled(false);
-    	openFileButton.setEnabled(false);
-    	return;
-  	}
-  	// show node data
+	/**
+	 * Displays the resource data for the specified node.
+	 *
+	 * @param node the LibraryTreeNode
+	 */
+	protected void showInfo(LibraryTreeNode node) {
+		if (node == null) {
+			htmlScroller.setViewportView(emptyHTMLPane);
+			nameField.setText(null);
+			typeField.setText(" "); //$NON-NLS-1$
+			basePathField.setText(null);
+			htmlField.setText(null);
+			targetField.setText(null);
+			nameField.setBackground(Color.white);
+			basePathField.setBackground(Color.white);
+			htmlField.setBackground(Color.white);
+			targetField.setBackground(Color.white);
+			nameField.setEnabled(false);
+			basePathField.setEnabled(false);
+			htmlField.setEnabled(false);
+			targetField.setEnabled(false);
+			typeField.setEnabled(false);
+			nameLabel.setEnabled(false);
+			htmlLabel.setEnabled(false);
+			basePathLabel.setEnabled(false);
+			targetLabel.setEnabled(false);
+			typeLabel.setEnabled(false);
+			openHTMLButton.setEnabled(false);
+			openBasePathButton.setEnabled(false);
+			openFileButton.setEnabled(false);
+			return;
+		}
+		// show node data
 		showHTMLPane(node);
-		
-  	boolean isCollection = node.record instanceof LibraryCollection;
-  	String path = node.isRoot()? pathToRoot: node.getAbsoluteTarget();
-  	LibraryTreePanel selected = browser.getSelectedTreePanel();
-  	if (selected==this && !browser.commandField.getText().equals(path)) {
-  		browser.commandField.setText(path);
-      // check to see if resource is available
-  		boolean available = false;
-  		if (path!=null) { 
-  			if (path.startsWith("http:/")) {//$NON-NLS-1$
-	  			available = LibraryBrowser.isWebConnected();
-	  			if (!available) {
-	  				File cachedFile = null;
-			  		if (isCollection) {
-			  			cachedFile = ResourceLoader.getSearchCacheFile(path);
-			  		}
-			  		else {
-				  		String filename = node.record.getProperty("download_filename"); //$NON-NLS-1$
-			  			cachedFile = ResourceLoader.getOSPCacheFile(path, filename);
-			  		}
-		      	available = cachedFile.exists();
-	  			}
-	  		}
-  			else {
-  				available = ResourceLoader.getResourceZipURLsOK(ResourceLoader.getURIPath(path))!=null;
-  			}
-  		}
-      browser.commandField.setForeground(available? defaultForeground: darkRed);
-  		browser.commandField.setCaretPosition(0);
-  		if (node.isRoot()) browser.commandButton.setEnabled(false);
-  	}
-  	// show editor data if editing
-  	if (isEditing()) {
-	  	if (!nameField.getText().equals(node.getName())) {
-	  		nameField.setText(node.getName());
-	  		nameField.setCaretPosition(0);
-	  	}
-	  	String base = basePathField.hasFocus()? node.record.getBasePath(): node.getBasePath();
-	  	if (!basePathField.getText().equals(base)) {
-	  		basePathField.setText(base);
-	  		basePathField.setCaretPosition(0);
-	  	}
-	  	if (!htmlField.getText().equals(node.record.getHTMLPath())) {
-	  		htmlField.setText(node.record.getHTMLPath());
-	  		htmlField.setCaretPosition(0);
-	  	}
-	  	boolean isValidHTML = true;
-	  	if (!"".equals(node.record.getHTMLPath())) { //$NON-NLS-1$
-	  		isValidHTML = node.getHTMLURL()!=null;
-	  	}
-			htmlField.setForeground(isValidHTML? defaultForeground: darkRed);
+
+		boolean isCollection = node.record instanceof LibraryCollection;
+		String path = node.isRoot() ? pathToRoot : node.getAbsoluteTarget();
+		LibraryTreePanel selected = browser.getSelectedTreePanel();
+		if (selected == this && !browser.commandField.getText().equals(path)) {
+			browser.commandField.setText(path);
+			// check to see if resource is available
+			boolean available = false;
+			if (path != null) {
+				if (LibraryBrowser.isHTTP(path)) {
+					available = LibraryBrowser.isWebConnected();
+					if (!available) {
+						File cachedFile = null;
+						if (isCollection) {
+							cachedFile = ResourceLoader.getSearchCacheFile(path);
+						} else {
+							String filename = node.record.getProperty("download_filename"); //$NON-NLS-1$
+							cachedFile = ResourceLoader.getOSPCacheFile(path, filename);
+						}
+						available = cachedFile.exists();
+					}
+				} else {
+					available = ResourceLoader.getResourceZipURLsOK(ResourceLoader.getURIPath(path)) != null;
+				}
+			}
+			browser.commandField.setForeground(available ? defaultForeground : darkRed);
+			browser.commandField.setCaretPosition(0);
+			if (node.isRoot())
+				browser.commandButton.setEnabled(false);
+		}
+		// show editor data if editing
+		if (isEditing()) {
+			if (!nameField.getText().equals(node.getName())) {
+				nameField.setText(node.getName());
+				nameField.setCaretPosition(0);
+			}
+			String base = basePathField.hasFocus() ? node.record.getBasePath() : node.getBasePath();
+			if (!basePathField.getText().equals(base)) {
+				basePathField.setText(base);
+				basePathField.setCaretPosition(0);
+			}
+			if (!htmlField.getText().equals(node.record.getHTMLPath())) {
+				htmlField.setText(node.record.getHTMLPath());
+				htmlField.setCaretPosition(0);
+			}
+			boolean isValidHTML = true;
+			if (!"".equals(node.record.getHTMLPath())) { //$NON-NLS-1$
+				isValidHTML = node.getHTMLURL() != null;
+			}
+			htmlField.setForeground(isValidHTML ? defaultForeground : darkRed);
 			htmlField.setBackground(Color.white);
 //			htmlField.setBackground(isValidHTML? Color.white: lightRed);
-	  	if (!targetField.getText().equals(node.getTarget())) {
-	  		targetField.setText(node.getTarget());
-	  		targetField.setCaretPosition(0);
-	  	}
-	  	boolean isValidTarget = true;
-	  	if (node.getTarget()!=null) {
-	  		isValidTarget = node.getTargetURL()!=null;
-	  	}
-	  	targetField.setForeground(isValidTarget? defaultForeground: darkRed);
-	  	targetField.setBackground(Color.white);
+			if (!targetField.getText().equals(node.getTarget())) {
+				targetField.setText(node.getTarget());
+				targetField.setCaretPosition(0);
+			}
+			boolean isValidTarget = true;
+			if (node.getTarget() != null) {
+				isValidTarget = node.getTargetURL() != null;
+			}
+			targetField.setForeground(isValidTarget ? defaultForeground : darkRed);
+			targetField.setBackground(Color.white);
 //	  	targetField.setBackground(isValidTarget? Color.white: lightRed);
-	  	String type = node.record.getType();
-	  	type = ToolsRes.getString("LibraryResource.Type."+type); //$NON-NLS-1$
-	  	typeField.setText(type);
-	  	boolean hasBasePath = !"".equals(node.record.getBasePath()); //$NON-NLS-1$
-	  	nameField.setEnabled(true);
-	  	basePathField.setEnabled(true);
-	  	htmlField.setEnabled(true);
-	  	typeField.setEnabled(true);
-	  	targetField.setEnabled(!isCollection);
-	  	nameLabel.setEnabled(true);
-	  	htmlLabel.setEnabled(true);
-	  	basePathLabel.setEnabled(true);
-	  	targetLabel.setEnabled(!isCollection);
-	  	typeLabel.setEnabled(true);
-	  	openHTMLButton.setEnabled(true);
-	  	openBasePathButton.setEnabled(true);
-	  	openFileButton.setEnabled(!isCollection);
-	  	basePathField.setForeground(hasBasePath || basePathField.hasFocus()? 
-	  			defaultForeground: lightGreen);
-	    nameField.setBackground(Color.white);
-	    basePathField.setBackground(Color.white);
-	    
-	    // show metadata
-    	String authors = node.getMetadataValue(LibraryResource.META_AUTHOR);
-    	if (authors==null) authors = ""; //$NON-NLS-1$
-	  	if (!authorField.getText().equals(authors)) {
-	  		authorField.setText(authors);
-	  		authorField.setCaretPosition(0);
-		  	authorField.setBackground(Color.white);
-	  	}
-    	String contact = node.getMetadataValue(LibraryResource.META_CONTACT);
-    	if (contact==null) contact = ""; //$NON-NLS-1$
-	  	if (!contactField.getText().equals(contact)) {
-	  		contactField.setText(contact);
-	  		contactField.setCaretPosition(0);
-	  		contactField.setBackground(Color.white);
-	  	}
-    	String keys = node.getMetadataValue(LibraryResource.META_KEYWORDS);
-    	if (keys==null) keys = ""; //$NON-NLS-1$
-	  	if (!keywordsField.getText().equals(keys)) {
-	  		keywordsField.setText(keys);
-	  		keywordsField.setCaretPosition(0);
-	  		keywordsField.setBackground(Color.white);
-	  	}
-	  	if (node.selectedMetadata!=null) {
-	  		metadataDropdown.getEditor().setItem(node.selectedMetadata);
-	  	}
-	  	else {
-	  		metadataDropdown.getEditor().setItem(emptyMetadata);		  		
-	  	}
-	    
-	    // set tooltips
+			String type = node.record.getType();
+			type = ToolsRes.getString("LibraryResource.Type." + type); //$NON-NLS-1$
+			typeField.setText(type);
+			boolean hasBasePath = !"".equals(node.record.getBasePath()); //$NON-NLS-1$
+			nameField.setEnabled(true);
+			basePathField.setEnabled(true);
+			htmlField.setEnabled(true);
+			typeField.setEnabled(true);
+			targetField.setEnabled(!isCollection);
+			nameLabel.setEnabled(true);
+			htmlLabel.setEnabled(true);
+			basePathLabel.setEnabled(true);
+			targetLabel.setEnabled(!isCollection);
+			typeLabel.setEnabled(true);
+			openHTMLButton.setEnabled(true);
+			openBasePathButton.setEnabled(true);
+			openFileButton.setEnabled(!isCollection);
+			basePathField.setForeground(hasBasePath || basePathField.hasFocus() ? defaultForeground : lightGreen);
+			nameField.setBackground(Color.white);
+			basePathField.setBackground(Color.white);
+
+			// show metadata
+			String authors = node.getMetadataValue(LibraryResource.META_AUTHOR);
+			if (authors == null)
+				authors = ""; //$NON-NLS-1$
+			if (!authorField.getText().equals(authors)) {
+				authorField.setText(authors);
+				authorField.setCaretPosition(0);
+				authorField.setBackground(Color.white);
+			}
+			String contact = node.getMetadataValue(LibraryResource.META_CONTACT);
+			if (contact == null)
+				contact = ""; //$NON-NLS-1$
+			if (!contactField.getText().equals(contact)) {
+				contactField.setText(contact);
+				contactField.setCaretPosition(0);
+				contactField.setBackground(Color.white);
+			}
+			String keys = node.getMetadataValue(LibraryResource.META_KEYWORDS);
+			if (keys == null)
+				keys = ""; //$NON-NLS-1$
+			if (!keywordsField.getText().equals(keys)) {
+				keywordsField.setText(keys);
+				keywordsField.setCaretPosition(0);
+				keywordsField.setBackground(Color.white);
+			}
+			if (node.selectedMetadata != null) {
+				metadataDropdown.getEditor().setItem(node.selectedMetadata);
+			} else {
+				metadataDropdown.getEditor().setItem(emptyMetadata);
+			}
+
+			// set tooltips
 			path = htmlField.getText();
 			if (!path.equals(XML.getPathRelativeTo(path, base))) {
 				htmlField.setToolTipText(ToolsRes.getString("LibraryTreePanel.Tooltip.Relative")); //$NON-NLS-1$
-			}
-			else if (!path.equals(XML.getResolvedPath(path, base))) {
+			} else if (!path.equals(XML.getResolvedPath(path, base))) {
 				htmlField.setToolTipText(ToolsRes.getString("LibraryTreePanel.Tooltip.Absolute")); //$NON-NLS-1$
-			}
-			else htmlField.setToolTipText(null);
+			} else
+				htmlField.setToolTipText(null);
 			path = targetField.getText();
 			if (!path.equals(XML.getPathRelativeTo(path, base))) {
 				targetField.setToolTipText(ToolsRes.getString("LibraryTreePanel.Tooltip.Relative")); //$NON-NLS-1$
-			}
-			else if (!path.equals(XML.getResolvedPath(path, base))) {
+			} else if (!path.equals(XML.getResolvedPath(path, base))) {
 				targetField.setToolTipText(ToolsRes.getString("LibraryTreePanel.Tooltip.Absolute")); //$NON-NLS-1$
-			}
-			else targetField.setToolTipText(null);
-  	}
-  	repaint();
-  }
+			} else
+				targetField.setToolTipText(null);
+		}
+		repaint();
+	}
   
   /**
    * Displays the HTMLPane for a given tree node.
@@ -1315,7 +1313,7 @@ public class LibraryTreePanel extends JPanel {
     treeModel = new DefaultTreeModel(root);
     tree = new JTree(treeModel) {
     	public JToolTip createToolTip() {
-    		return new JMultiLineToolTip();
+    		return new JMultiLineToolTip(100, new Color(0xCCCCFF)); // Meta L&F
     	}
     };
     if (root.createChildNodes()) {
@@ -1335,29 +1333,36 @@ public class LibraryTreePanel extends JPanel {
     treeScroller.setViewportView(tree);
   }
   
-  /**
-   * Determines if the clipboard can be pasted.
-   * 
-   * @return true if the clipboard contains a LibraryTreeNode XMLControl string
-   */
-  protected boolean isClipboardPastable() {
-  	pasteControl = null;
-    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-    Transferable data = clipboard.getContents(null);
-    String dataString = null;
+  private Boolean clipboardAvailable;
+  
+	/**
+	 * Determines if the clipboard can be pasted.
+	 * 
+	 * @return true if the clipboard contains a LibraryTreeNode XMLControl string
+	 */
+	protected boolean isClipboardPastable() {
+		if (clipboardAvailable != null)
+			return clipboardAvailable.booleanValue();
+		clipboardAvailable = Boolean.FALSE;
+		pasteControl = null;
 		try {
-			dataString = (String)data.getTransferData(DataFlavor.stringFlavor);
-		} catch (Exception e) {} 
-		if(dataString!=null) {
-      XMLControlElement control = new XMLControlElement();
-      control.readXML(dataString);
-      if (LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
-      	pasteControl = control;
-      	return true;
-      }
-    }
-    return false;
-  }
+			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+			Transferable data = clipboard.getContents(null);
+			String dataString = null;
+			dataString = (String) data.getTransferData(DataFlavor.stringFlavor);
+			if (dataString != null) {
+				XMLControlElement control = new XMLControlElement();
+				control.readXML(dataString);
+				if (LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
+					pasteControl = control;
+					clipboardAvailable = Boolean.TRUE;
+					return true;
+				}
+			}
+		} catch (Exception e) {
+		}
+		return false;
+	}
   
   /**
    * Returns a popup menu with items appropriate for a given tree node.

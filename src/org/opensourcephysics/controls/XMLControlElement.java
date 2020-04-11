@@ -468,7 +468,7 @@ public class XMLControlElement implements XMLControl {
 				canWrite = ((file != null) && file.canWrite());
 				return res.getAbsolutePath();
 			} catch (Exception e) {
-				System.err.println("Could not open " + res);
+				OSPLog.warning("Could not open " + res);
 			}
 		}
 		readFailed = true;
