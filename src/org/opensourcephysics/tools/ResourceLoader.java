@@ -1998,19 +1998,20 @@ public class ResourceLoader {
 	 * using JEditorPane.
 	 * 
 	 * @param htmlStr
+	 * @param url
 	 * @return
-	 * 
 	 * @author hansonr
-	 * @param url 
 	 */
 	public static String fixHTTPS(String htmlStr, URL url) {
-		String dir = url.getPath();
-		dir = dir.substring(0, dir.lastIndexOf("/") + 1);
-		String base = "https://" + url.getHost() + "/" + dir;
+		if (url != null) {
+			String dir = url.getPath();
+			dir = dir.substring(0, dir.lastIndexOf("/") + 1);
+			String base = "https://" + url.getHost() + "/" + dir;			
+			htmlStr = htmlStr.replace("src=\"http", "#SH#");
+			htmlStr = htmlStr.replace("src=\"", "src=\"" + base);
+			htmlStr = htmlStr.replace("#SH#","src=\"http");
+		}
 		htmlStr = htmlStr.replace("http://physlets", "https://physlets"); 
-		htmlStr = htmlStr.replace("src=\"http", "#SH#");
-		htmlStr = htmlStr.replace("src=\"", "src=\"" + base);
-		htmlStr = htmlStr.replace("#SH#","src=\"http");
 		return htmlStr;
 	}
 

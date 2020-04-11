@@ -67,6 +67,8 @@ public class OSPRuntime {
 			if (isJS) {
 				jsutil = ((JSUtilI)Class.forName("swingjs.JSUtil").newInstance());
 				jsutil.addDirectDatabaseCall("https://physlets.org");
+				jsutil.addDirectDatabaseCall("https://www.compadre.org/OSP");
+				jsutil.addDirectDatabaseCall("https://www.compadre.org/osp");
 			}
 			
 		} catch (Exception e) {

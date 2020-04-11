@@ -20,6 +20,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.opensourcephysics.controls.OSPLog;
+import org.opensourcephysics.display.OSPRuntime;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -225,88 +226,93 @@ public class LibraryComPADRE {
     return success;
   }
   
-  /**
-   * Reloads a ComPADRE record into a LibraryTreeNode.
-   * 
-   * @param treeNode the LibraryTreeNode to reload 
-   * @return true if successfully reloaded
-   */
-  protected static boolean loadResource(LibraryResource record, Node node, String[] attachment, LibraryTreeNode treeNode) {
-    try {        
-      // get the node data and create the HTML code
-      String downloadURL = processURL(attachment[0]);
-      record.setTarget(downloadURL);
-      String name = getChildValue(node, "title");  //$NON-NLS-1$
-      record.setName(name);
-      record.setProperty("download_filename", attachment[1]); //$NON-NLS-1$
-      String type = getChildValue(node, "osp-type");  //$NON-NLS-1$
-    	if (isDesiredOSPType(node)) {
-    		if ("EJS".equals(desiredOSPType)) { //$NON-NLS-1$
-        	type = LibraryResource.EJS_TYPE;
-          record.setType(type);		
-    		}
-      	else if ("Tracker".equals(desiredOSPType)){ //$NON-NLS-1$
-        	type = LibraryResource.TRACKER_TYPE;
-          record.setType(type);		
-      	}
-      	else {
-      		record.setType(LibraryResource.UNKNOWN_TYPE);
-      	}
-    	}
+	/**
+	 * Reloads a ComPADRE record into a LibraryTreeNode.
+	 * 
+	 * @param treeNode the LibraryTreeNode to reload
+	 * @return true if successfully reloaded
+	 */
+	protected static boolean loadResource(LibraryResource record, Node node, String[] attachment,
+			LibraryTreeNode treeNode) {
+		try {
+			// get the node data and create the HTML code
+			String downloadURL = processURL(attachment[0]);
+			record.setTarget(downloadURL);
+			String name = getChildValue(node, "title"); //$NON-NLS-1$
+			record.setName(name);
+			record.setProperty("download_filename", attachment[1]); //$NON-NLS-1$
+			String type = getChildValue(node, "osp-type"); //$NON-NLS-1$
+			if (isDesiredOSPType(node)) {
+				if ("EJS".equals(desiredOSPType)) { //$NON-NLS-1$
+					type = LibraryResource.EJS_TYPE;
+					record.setType(type);
+				} else if ("Tracker".equals(desiredOSPType)) { //$NON-NLS-1$
+					type = LibraryResource.TRACKER_TYPE;
+					record.setType(type);
+				} else {
+					record.setType(LibraryResource.UNKNOWN_TYPE);
+				}
+			}
 
-      String description = getChildValue(node, "description"); //$NON-NLS-1$
-      String infoURL = getChildValue(node, "information-url"); //$NON-NLS-1$
-      String thumbnailURL = getChildValue(node,"thumbnail-url"); //$NON-NLS-1$
-      String authors = ""; //$NON-NLS-1$
-      for (Node next: getAllChildren(getFirstChild(node, "contributors"), "contributor")) { //$NON-NLS-1$ //$NON-NLS-2$
-        Element el = (Element)next;
-        if ("Author".equals(el.getAttribute("role")))  //$NON-NLS-1$ //$NON-NLS-2$
-        	authors += getNodeValue(next)+", "; //$NON-NLS-1$
-      }
-      if (authors.endsWith(", "))  //$NON-NLS-1$
-      	authors = authors.substring(0, authors.length()-2);
-      
-  		// cache the thumbnail
-      File cachedFile = ResourceLoader.getOSPCacheFile(thumbnailURL);
-      String cachePath = cachedFile.getAbsolutePath();
-  		record.setThumbnail(cachePath);
-  		if (!cachedFile.exists()) {
-		    treeNode.new ThumbnailLoader(thumbnailURL, cachePath).execute();
-  		}
-  		thumbnailURL = ResourceLoader.getURIPath(cachePath);
-     
-      // get the html code and set the description
-      String htmlCode = LibraryResource.getHTMLBody(name, type,	thumbnailURL, description, authors, null, infoURL, attachment);
-      record.setDescription(htmlCode);
-      
-      // convert <osp-subject> information into keywords and add metadata to the library record
-      record.setMetadata(null);
-      ArrayList<String> words = new ArrayList<String>();
-      for (Node next: getAllChildren(node, "osp-subject")) { //$NON-NLS-1$
-      	String[] subjects = getNodeValue(next).split(" / "); //$NON-NLS-1$
-      	for (String s: subjects) {
-      		// skip "General" subject--too vague
-      		if (s.equals("General")) continue; //$NON-NLS-1$
-      		if (!words.contains(s)) words.add(s);
-      	}
-      }        
-      if (!words.isEmpty()) {
-      	StringBuffer buf = new StringBuffer();
-      	for (String s: words) {
-      		buf.append(s+", "); //$NON-NLS-1$
-      	}
-      	String keywords = buf.toString();
-      	keywords = keywords.substring(0, keywords.length()-2);
-        record.addMetadata(new LibraryResource.Metadata("keywords", keywords)); //$NON-NLS-1$
-      }
-      if (!"".equals(authors))  //$NON-NLS-1$
-      	record.addMetadata(new LibraryResource.Metadata("author", authors)); //$NON-NLS-1$
+			String description = getChildValue(node, "description"); //$NON-NLS-1$
+			String infoURL = getChildValue(node, "information-url"); //$NON-NLS-1$
+			String thumbnailURL = getChildValue(node, "thumbnail-url"); //$NON-NLS-1$
+			String authors = ""; //$NON-NLS-1$
+			for (Node next : getAllChildren(getFirstChild(node, "contributors"), "contributor")) { //$NON-NLS-1$ //$NON-NLS-2$
+				Element el = (Element) next;
+				if ("Author".equals(el.getAttribute("role"))) //$NON-NLS-1$ //$NON-NLS-2$
+					authors += getNodeValue(next) + ", "; //$NON-NLS-1$
+			}
+			if (authors.endsWith(", ")) //$NON-NLS-1$
+				authors = authors.substring(0, authors.length() - 2);
 
-      return true;
-    }
-    catch(Exception e) { e.printStackTrace(); }
-    return false;
-  }
+			if (!OSPRuntime.isJS) {
+				// cache the thumbnail
+				File cachedFile = ResourceLoader.getOSPCacheFile(thumbnailURL);
+				String cachePath = cachedFile.getAbsolutePath();
+				record.setThumbnail(cachePath);
+				if (!cachedFile.exists()) {
+					treeNode.new ThumbnailLoader(thumbnailURL, cachePath).execute();
+				}
+				thumbnailURL = ResourceLoader.getURIPath(cachePath);
+			}
+			// get the html code and set the description
+			String htmlCode = LibraryResource.getHTMLBody(name, type, thumbnailURL, description, authors, null, infoURL,
+					attachment);
+			record.setDescription(htmlCode);
+
+			// convert <osp-subject> information into keywords and add metadata to the
+			// library record
+			record.setMetadata(null);
+			ArrayList<String> words = new ArrayList<String>();
+			for (Node next : getAllChildren(node, "osp-subject")) { //$NON-NLS-1$
+				String[] subjects = getNodeValue(next).split(" / "); //$NON-NLS-1$
+				for (String s : subjects) {
+					// skip "General" subject--too vague
+					if (s.equals("General")) //$NON-NLS-1$
+						continue;
+					if (!words.contains(s))
+						words.add(s);
+				}
+			}
+			if (!words.isEmpty()) {
+				StringBuffer buf = new StringBuffer();
+				for (String s : words) {
+					buf.append(s + ", "); //$NON-NLS-1$
+				}
+				String keywords = buf.toString();
+				keywords = keywords.substring(0, keywords.length() - 2);
+				record.addMetadata(new LibraryResource.Metadata("keywords", keywords)); //$NON-NLS-1$
+			}
+			if (!"".equals(authors)) //$NON-NLS-1$
+				record.addMetadata(new LibraryResource.Metadata("author", authors)); //$NON-NLS-1$
+
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
     
   /**
    * Returns data for a downloadable DOM Node attachment.
