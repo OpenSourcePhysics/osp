@@ -751,7 +751,6 @@ public class LibraryBrowser extends JPanel {
   	// check open tabs
   	int i = getTabIndexFromPath(path);
   	if (i>-1) {
-      tabbedPane.setSelectedIndex(i);
       LibraryTreePanel treePanel = getTreePanel(i);
       LibraryResource record = treePanel.rootResource;
       if (record instanceof LibraryCollection) {
