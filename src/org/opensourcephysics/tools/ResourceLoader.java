@@ -69,7 +69,7 @@ public class ResourceLoader {
   
   public static final String TRACKER_TEST_URL = null; // needed for tracker
 
-  protected static final String WEB_CONNECTED_TEST_URL = "https://www.compadre.org/osp/";
+  protected static final String WEB_CONNECTED_TEST_URL = OSPRuntime.WEB_CONNECTED_TEST_URL;
 
   protected static ArrayList<String> searchPaths = new ArrayList<String>();                        // search paths
   protected static ArrayList<String> appletSearchPaths = new ArrayList<String>();                  // search paths for apples
@@ -93,7 +93,7 @@ public class ResourceLoader {
   	};
   	Runnable runner = new Runnable() {
   		public void run() {
-	  		webConnected = ResourceLoader.isURLAvailable(WEB_CONNECTED_TEST_URL);//.http://www.opensourcephysics.org"); //$NON-NLS-1$
+	  		webConnected = isWebConnected();//.http://www.opensourcephysics.org"); //$NON-NLS-1$
   		}
   	};
   	new Thread(runner).start();
@@ -851,37 +851,37 @@ public class ResourceLoader {
 		return cacheFile;
   }
 
-  /**
-   * Downloads a file from the web to the OSP Cache.
-   * 
-   * @param urlPath the path to the file
-   * @param fileName the name to assign the downloaded file
-   * @param alwaysOverwrite true to overwrite an existing file, if any
-   * @return the downloaded file, or null if failed to download
-   */
-  public static File downloadToOSPCache(String urlPath, String fileName, boolean alwaysOverwrite) {
-		if (fileName==null) return null;
-  	File target = getOSPCacheFile(urlPath, fileName);
+	/**
+	 * Downloads a file from the web to the OSP Cache.
+	 * 
+	 * @param urlPath         the path to the file
+	 * @param fileName        the name to assign the downloaded file
+	 * @param alwaysOverwrite true to overwrite an existing file, if any
+	 * @return the downloaded file, or null if failed to download
+	 */
+	public static File downloadToOSPCache(String urlPath, String fileName, boolean alwaysOverwrite) {
+		if (fileName == null)
+			return null;
+		File target = getOSPCacheFile(urlPath, fileName);
 		File file = ResourceLoader.download(urlPath, target, alwaysOverwrite);
-		if (file==null && webConnected) {
-  		webConnected = ResourceLoader.isURLAvailable(WEB_CONNECTED_TEST_URL); //$NON-NLS-1$
-    	if (!webConnected) {
-    		JOptionPane.showMessageDialog(null, 
-    				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
-    				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
-    				JOptionPane.WARNING_MESSAGE); 
-    	}
-    	else {
-				JOptionPane.showMessageDialog(null, 
-						ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Message1") //$NON-NLS-1$ 
-						+"\n"+ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Message2") //$NON-NLS-1$ //$NON-NLS-2$ 
-						+"\n"+ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Message3"), //$NON-NLS-1$ //$NON-NLS-2$ 
-						ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Title"), //$NON-NLS-1$ 
+		if (file == null && webConnected) {
+			webConnected = isWebConnected(); // $NON-NLS-1$
+			if (!webConnected) {
+				JOptionPane.showMessageDialog(null,
+						ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
+						ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
+						JOptionPane.WARNING_MESSAGE);
+			} else {
+				JOptionPane.showMessageDialog(null,
+						ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Message1") //$NON-NLS-1$
+								+ "\n" + ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Message2") //$NON-NLS-1$ //$NON-NLS-2$
+								+ "\n" + ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Message3"), //$NON-NLS-1$ //$NON-NLS-2$
+						ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Title"), //$NON-NLS-1$
 						JOptionPane.ERROR_MESSAGE);
-    	}
+			}
 		}
 		return file;
-  }
+	}
   
   /**
    * Returns the HTML code for a local or web HTML page.
@@ -1258,7 +1258,7 @@ public class ResourceLoader {
 		if (target==null || target.getParentFile()==null) return null;
   	// compare urlPath with previous attempt and, if identical, check web connection
   	if (!webConnected || downloadURL.equals(urlPath)) {
-  		webConnected = ResourceLoader.isURLAvailable(WEB_CONNECTED_TEST_URL); //$NON-NLS-1$
+  		webConnected = isWebConnected(); //$NON-NLS-1$
   	}
   	if (!webConnected) {
   		JOptionPane.showMessageDialog(null, 
@@ -1338,6 +1338,16 @@ public class ResourceLoader {
       return null;
     }
   	return target;
+  }
+  
+  /**
+   * Return true if there is any internet signal at all.
+   * The exact URL is negotiable, but it must be CORS allowed.
+   * 
+   * @return
+   */
+  public static boolean isWebConnected() {
+	  return isURLAvailable(WEB_CONNECTED_TEST_URL);
   }
   
   /**
@@ -2014,55 +2024,6 @@ public class ResourceLoader {
 		htmlStr = htmlStr.replace("http://physlets", "https://physlets"); 
 		return htmlStr;
 	}
-
-	/**
-	 * Just get the URL contents as a string
-	 * @param url
-	 * @return
-	 * 
-	 * @author hansonr
-	 */
-	public static String getURLContents(URL url) {
-		try {
-			// Java 9!			return new String(url.openStream().readAllBytes());
-			return new String(getLimitedStreamBytes(url.openStream(), -1));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	/**
-	 * From javajs.Rdr
-	 * 
-	 */
-	public static byte[] getLimitedStreamBytes(InputStream is, long n) throws IOException {
-
-		// Note: You cannot use InputStream.available() to reliably read
-		// zip data from the web.
-
-		int buflen = (n > 0 && n < 1024 ? (int) n : 1024);
-		byte[] buf = new byte[buflen];
-		byte[] bytes = new byte[n < 0 ? 4096 : (int) n];
-		int len = 0;
-		int totalLen = 0;
-		if (n < 0)
-			n = Integer.MAX_VALUE;
-		while (totalLen < n && (len = is.read(buf, 0, buflen)) > 0) {
-			totalLen += len;
-			if (totalLen > bytes.length)
-				bytes = Arrays.copyOf(bytes, totalLen * 2);
-			System.arraycopy(buf, 0, bytes, totalLen - len, len);
-			if (n != Integer.MAX_VALUE && totalLen + buflen > bytes.length)
-				buflen = bytes.length - totalLen;
-		}
-		if (totalLen == bytes.length)
-			return bytes;
-		buf = new byte[totalLen];
-		System.arraycopy(bytes, 0, buf, 0, totalLen);
-		return buf;
-	}
-
 }
 
 /*

@@ -54,10 +54,14 @@ import swingjs.api.JSUtilI;
  * @version 1.0
  */
 public class OSPRuntime {
+	
 	public static final String VERSION = "5.0.0"; //$NON-NLS-1$
 
 	public static boolean isJS = /** @j2sNative true || */
 			false;
+
+
+	public static /* BH NOT final */ String WEB_CONNECTED_TEST_URL = (isJS ? "https://pubchem.ncbi.nlm.nih.gov" : "https://www.compadre.org/osp/");
 
 	public static JSUtilI jsutil;
 	
@@ -67,8 +71,9 @@ public class OSPRuntime {
 			if (isJS) {
 				jsutil = ((JSUtilI)Class.forName("swingjs.JSUtil").newInstance());
 				jsutil.addDirectDatabaseCall("https://physlets.org");
-				jsutil.addDirectDatabaseCall("https://www.compadre.org/OSP");
-				jsutil.addDirectDatabaseCall("https://www.compadre.org/osp");
+				System.err.println("Still not accessing https://www.compadre.org/osp using CORS");
+				//jsutil.addDirectDatabaseCall("https://www.compadre.org/OSP");
+				//jsutil.addDirectDatabaseCall("https://www.compadre.org/osp");
 			}
 			
 		} catch (Exception e) {
