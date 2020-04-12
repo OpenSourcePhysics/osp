@@ -1450,7 +1450,7 @@ public class LibraryTreePanel extends JPanel {
 	 * @param index  the index
 	 * @return true if added
 	 */
-	protected boolean insertChildAt(final LibraryTreeNode child, LibraryTreeNode parent, int index) {
+	protected boolean insertChildAt(final LibraryTreeNode child, LibraryTreeNode parent, int index) {		
 		if (tree == null || parent.getChildCount() < index)
 			return false;
 		DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
@@ -2206,23 +2206,22 @@ public class LibraryTreePanel extends JPanel {
 					if (htmlPane == null) {
 						htmlPane = new HTMLPane();
 						htmlPanesByURL.put(url, htmlPane);
-						try {
-							htmlStr = ResourceLoader.getURLContents(url);
-						} catch (Exception ex) {
-							htmlStr = ("<h2>" + node + "</h2>"); //$NON-NLS-1$ //$NON-NLS-2$
-						}
+						htmlStr = "";
 					} else if (url.equals(htmlPane.getPage())) {
 						htmlStr = null;
 					} else {
+						htmlStr = "";
+						htmlPane.getDocument().putProperty(Document.StreamDescriptionProperty, null);
+					}
+				}
+				if (htmlStr != null) {
+					if (htmlStr == "") {
 						try {
-							htmlPane.getDocument().putProperty(Document.StreamDescriptionProperty, null);
-							htmlStr = ResourceLoader.getURLContents(url);
+							htmlStr = new String(LibraryBrowser.getURLContents(url));
 						} catch (Exception ex) {
 							htmlStr = ("<h2>" + node + "</h2>"); //$NON-NLS-1$ //$NON-NLS-2$
 						}
 					}
-				}
-				if (htmlStr != null) {
 					HTMLDocument document = (HTMLDocument) htmlPane.getDocument();
 					document.setBase(url);
 					htmlPane.setText(ResourceLoader.fixHTTPS(htmlStr, url));

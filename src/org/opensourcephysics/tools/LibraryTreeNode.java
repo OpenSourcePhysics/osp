@@ -209,10 +209,8 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 
 		File cachedFile = null;
 		boolean foundInCache = false;
-		if (!OSPRuntime.isJS) {
-		    cachedFile = ResourceLoader.getOSPCacheFile(path);
-			foundInCache = cachedFile.exists();
-		}
+	    cachedFile = ResourceLoader.getOSPCacheFile(path);
+		foundInCache = cachedFile.exists();
 		// see if URL is in the map
 		if (htmlURLs.keySet().contains(path)) {
 			url = htmlURLs.get(path);
@@ -700,6 +698,10 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
   }
   
   /**
+   * SwingJS note: This does not work in SwingJS because it is being invoked immediately after creating the image. Unlike in Java, 
+   * ImageIO cannot wait for the image creation to complete without a clock tick. But it would seem that we don't need this, anyway.
+   * We can just transfer the files.
+   * 
    * Creates a thumbnail image and writes it to a specified path.
    * @param image the full-size image from which to create the thumbnail 
    * @param path the path for the thumbnail image file
@@ -739,69 +741,58 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
   		sourcePath = imageSource;
   	}
   	
-    @Override
-    public File doInBackground() {
+		@Override
+		public File doInBackground() {
 			// create a new thumbnail
-			File thumbFile = null; 
+			File thumbFile = null;
 			String ext = XML.getExtension(sourcePath);
-			
-			// GIF files
-			if (ext!=null && "GIF".equals(ext.toUpperCase())) { //$NON-NLS-1$
+			Runnable r; // BH SwingJS must load images asynchronously
+			if (ext != null && "GIF".equals(ext.toUpperCase())) { //$NON-NLS-1$
+				// GIF files
 				GifDecoder decoder = new GifDecoder();
-			  int status = decoder.read(sourcePath);
-			  if(status!=0) { // error
-					OSPLog.fine("failed to create thumbnail for GIF "+thumbPath); //$NON-NLS-1$
-			  }
-			  else {
-			  	BufferedImage image = decoder.getImage();
-			  	Dimension size = new Dimension(image.getWidth(), image.getHeight());
-			  	thumbFile = createThumbnailFile(image, thumbPath, size);
-			  }
-			}
-			
-			// PNG and JPEG files
-			else if (ext!=null && 
-					("PNG".equals(ext.toUpperCase()) || ext.toUpperCase().contains("JP"))) { //$NON-NLS-1$ //$NON-NLS-2$
+				int status = decoder.read(sourcePath);
+				if (status != 0) { // error
+					OSPLog.fine("failed to create thumbnail for GIF " + thumbPath); //$NON-NLS-1$
+				} else {
+					thumbFile = LibraryBrowser.copyFile(sourcePath, thumbPath);
+				}
+			} else if (ext != null && ("PNG".equals(ext.toUpperCase()) || ext.toUpperCase().contains("JP"))) { //$NON-NLS-1$ //$NON-NLS-2$
+				// PNG and JPEG files
 
 				try {
 					URL url = new URL(ResourceLoader.getURIPath(sourcePath));
-					BufferedImage image = ImageIO.read(url);
-			  	Dimension size = new Dimension(image.getWidth(), image.getHeight());
-			  	thumbFile = createThumbnailFile(image, thumbPath, size);
+					ImageIO.read(url);
+					thumbFile = LibraryBrowser.copyFile(sourcePath, thumbPath);
 				} catch (Exception e) {
-					OSPLog.fine("failed to create thumbnail for "+thumbPath); //$NON-NLS-1$
+					OSPLog.fine("failed to create thumbnail for " + thumbPath); //$NON-NLS-1$
 				}
-			}
-
-			// ZIP files
-			else if (ext!=null && ("ZIP".equals(ext.toUpperCase()) || "TRZ".equals(ext.toUpperCase()))) { //$NON-NLS-1$ //$NON-NLS-2$
+			} else if (ext != null && ("ZIP".equals(ext.toUpperCase()) || "TRZ".equals(ext.toUpperCase()))) { //$NON-NLS-1$ //$NON-NLS-2$
+				// ZIP files
 				// look for image file in zip with name that includes "_thumbnail"
-				for (String next: ResourceLoader.getZipContents(sourcePath)) {
-					if (next.indexOf("_thumbnail")>-1) { //$NON-NLS-1$
-						String s = ResourceLoader.getURIPath(sourcePath+"!/"+next); //$NON-NLS-1$
+				for (String next : ResourceLoader.getZipContents(sourcePath)) {
+					if (next.indexOf("_thumbnail") > -1) { //$NON-NLS-1$
+						String s = ResourceLoader.getURIPath(sourcePath + "!/" + next); //$NON-NLS-1$
 						thumbFile = JarTool.extract(s, new File(thumbPath));
 					}
-				}							
-			}
-			
-			// video files: use Xuggle thumbnail tool, if available
-			else {
-	      String className = "org.opensourcephysics.media.xuggle.XuggleThumbnailTool"; //$NON-NLS-1$
-	      Class<?>[] types = new Class<?>[] {Dimension.class, String.class, String.class};
-	      Object[] values = new Object[] {defaultThumbnailDimension, sourcePath, thumbPath};
-		    try {
-		      Class<?> xuggleClass = Class.forName(className);
-		      Method method=xuggleClass.getMethod("createThumbnailFile", types); //$NON-NLS-1$
-		      thumbFile = (File)method.invoke(null, values);
-				} catch(Exception ex) {
-					OSPLog.fine("failed to create thumbnail: "+ex.toString()); //$NON-NLS-1$
-				} catch(Error err) {
 				}
-			 }
+			} else {
+				// video files: use Xuggle thumbnail tool, if available
+				String className = "org.opensourcephysics.media.xuggle.XuggleThumbnailTool"; //$NON-NLS-1$
+				Class<?>[] types = new Class<?>[] { Dimension.class, String.class, String.class };
+				Object[] values = new Object[] { defaultThumbnailDimension, sourcePath, thumbPath };
+				try {
+					Class<?> xuggleClass = Class.forName(className);
+					Method method = xuggleClass.getMethod("createThumbnailFile", types); //$NON-NLS-1$
+					thumbFile = (File) method.invoke(null, values);
+				} catch (Exception ex) {
+					OSPLog.fine("failed to create thumbnail: " + ex.toString()); //$NON-NLS-1$
+				} catch (Error err) {
+				}
+			}
 			return thumbFile;
-    }
+		}
 
-    @Override
+	@Override
     protected void done() {
       try {
      	 File thumbFile = get();

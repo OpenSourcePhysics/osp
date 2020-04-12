@@ -7,15 +7,36 @@
 
 package org.opensourcephysics.tools;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileFilter;
-import java.lang.reflect.Method;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -25,7 +46,32 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JEditorPane;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
+import javax.swing.Timer;
+import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -43,8 +89,6 @@ import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.display.TextFrame;
 import org.opensourcephysics.media.core.VideoIO;
-import org.opensourcephysics.tools.LibraryCollection;
-import org.opensourcephysics.tools.LibraryTreePanel;
 import org.opensourcephysics.tools.LibraryResource.Metadata;
 
 /**
@@ -648,13 +692,19 @@ public class LibraryBrowser extends JPanel {
 	 */
 	protected LibraryResource loadResource(String path) {
 		isRecentPathXML = false;
-		File targetFile = new File(path);
-		if (!OSPRuntime.isJS && targetFile.isDirectory()) {
-			return createCollection(targetFile, targetFile, dlFileFilter);
-		}
+		
+		// BH moving this forward; Java was looking at an "https://..." file
+		// path to check if it was a directory?? SwingJS was allowing it to be a directory
 		if (LibraryComPADRE.isComPADREPath(path)) {
 			return LibraryComPADRE.getCollection(path);
 		}
+		
+		// was first:
+		File targetFile = new File(path);		
+		if (targetFile.isDirectory()) {
+			return createCollection(targetFile, targetFile, dlFileFilter);
+		}
+		
 		XMLControlElement control = new XMLControlElement(path);
 		if (!control.failedToRead() && control.getObjectClass() != null
 				&& LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
@@ -802,7 +852,7 @@ public class LibraryBrowser extends JPanel {
   protected TabLoader addTab(String path, List<String> treePath) {
   	if (path==null) return null;
 		File cachedFile = ResourceLoader.getSearchCacheFile(path);
-  	boolean isCachePath = !OSPRuntime.isJS && cachedFile.exists();
+  	boolean isCachePath = cachedFile.exists();
   	if (!isCachePath && !isWebConnected() && isHTTP(path)) { //$NON-NLS-1$
   		JOptionPane.showMessageDialog(this, 
   				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
@@ -1035,55 +1085,53 @@ public class LibraryBrowser extends JPanel {
 		      	return searchFor(searchTerm.trim(), searchTargets);
 		      }
 
-		      @Override
-		      protected void done() {
-	          try {
-	          	LibraryTreePanel results = get();
-       		  	if (results==null) {
-      	        Toolkit.getDefaultToolkit().beep();
-      	        // give visual cue, too
-      	        final Color color = searchField.getForeground();
-      	        searchField.setText(ToolsRes.getString("LibraryBrowser.Search.NotFound")); //$NON-NLS-1$
-      	        searchField.setForeground(Color.RED);
-      	        searchField.setBackground(Color.white);
-      	    		if (searchTimer==null) {
-      	    			searchTimer = new Timer(1000, new ActionListener() {
-      	    				 public void actionPerformed(ActionEvent e) {
-      	      	        searchField.setText(searchTerm);
-      	      	        searchField.setForeground(color);
-      	      			  	searchField.selectAll();
-      	      	        searchField.setBackground(Color.white);
-      	    				 }
-      	    			 });
-      	    			searchTimer.setRepeats(false);
-      	    			searchTimer.start();
-      	    		}
-      	    		else {
-      	    			searchTimer.restart();
-      	    		}
-      	        
-      		  		return;
-      		  	}
-      		  	String title = "'"+searchTerm.trim()+"'"; //$NON-NLS-1$ //$NON-NLS-2$
-      		  	int i = getTabIndexFromTitle(title);
-      		  	synchronized (tabbedPane) {
-  							if (i > -1) {
-  								// replace existing tab
-  								tabbedPane.setComponentAt(i, results);
-  							} 
-  							else {
-  								tabbedPane.addTab(title, results);
-  							}
-								tabbedPane.setSelectedComponent(results);
-  						}
-      				LibraryTreePanel.htmlPanesByNode.remove(results.rootNode);  
-      		  	results.showInfo(results.rootNode);
+					@Override
+					protected void done() {
+						try {
+							LibraryTreePanel results = get();
+							if (results == null) {
+								Toolkit.getDefaultToolkit().beep();
+								// give visual cue, too
+								final Color color = searchField.getForeground();
+								searchField.setText(ToolsRes.getString("LibraryBrowser.Search.NotFound")); //$NON-NLS-1$
+								searchField.setForeground(Color.RED);
+								searchField.setBackground(Color.white);
+								if (searchTimer == null) {
+									searchTimer = new Timer(1000, new ActionListener() {
+										public void actionPerformed(ActionEvent e) {
+											searchField.setText(searchTerm);
+											searchField.setForeground(color);
+											searchField.selectAll();
+											searchField.setBackground(Color.white);
+										}
+									});
+									searchTimer.setRepeats(false);
+									searchTimer.start();
+								} else {
+									searchTimer.restart();
+								}
 
-  						refreshGUI();
-						} catch (Exception e) {							
-    	        Toolkit.getDefaultToolkit().beep();
+								return;
+							}
+							String title = "'" + searchTerm.trim() + "'"; //$NON-NLS-1$ //$NON-NLS-2$
+							int i = getTabIndexFromTitle(title);
+							synchronized (tabbedPane) {
+								if (i > -1) {
+									// replace existing tab
+									tabbedPane.setComponentAt(i, results);
+								} else {
+									tabbedPane.addTab(title, results);
+								}
+								tabbedPane.setSelectedComponent(results);
+							}
+							LibraryTreePanel.htmlPanesByNode.remove(results.rootNode);
+							results.showInfo(results.rootNode);
+
+							refreshGUI();
+						} catch (Exception e) {
+							Toolkit.getDefaultToolkit().beep();
 						}
-		      }
+					}
 				}		 
 				new Searcher().execute();
 		  }		
@@ -2309,7 +2357,7 @@ public class LibraryBrowser extends JPanel {
  	  	Runnable runner = new Runnable() {
  	  		public void run() {
  	  			
-		  		webConnected = ResourceLoader.isURLAvailable(ResourceLoader.WEB_CONNECTED_TEST_URL); //$NON-NLS-1$
+		  		webConnected = ResourceLoader.isWebConnected(); //$NON-NLS-1$
 		    	if (!webConnected) {
 		    		JOptionPane.showMessageDialog(LibraryBrowser.this, 
 		    				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
@@ -2406,15 +2454,11 @@ public class LibraryBrowser extends JPanel {
 		public LibraryTreePanel doInBackground() {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			String realPath = path;
-			if (OSPRuntime.isJS) {
-				saveToCache = false;
-			} else {
 				File cachedFile = ResourceLoader.getSearchCacheFile(path);
 				if (cachedFile.exists() && isHTTP(path)) { // $NON-NLS-1$
 					realPath = cachedFile.getAbsolutePath();
 					saveToCache = false;
 				}
-			}
 
 			LibraryResource resource = loadResource(realPath);
 			if (resource != null) {
@@ -2635,10 +2679,71 @@ public class LibraryBrowser extends JPanel {
 
   }
 
-
-
   public static boolean isHTTP(String path) {
 	  return path.startsWith("http:") || path.startsWith("https:");
   }
+
+
+	public static File copyFile(String sourcePath, String destPath) { 
+		File f = new File(destPath);
+		try {
+			Path path = f.toPath();
+			Files.createDirectories(path.getParent());
+			Files.write(path, getURLContents(new URL(sourcePath)));
+		} catch (Exception e) { 
+			e.printStackTrace();
+		}
+		return f;
+	}
+
+	/**
+	 * Just get the URL contents as a string
+	 * @param url
+	 * @return
+	 * 
+	 * @author hansonr
+	 */
+	public static byte[] getURLContents(URL url) {
+		try {
+			// Java 9!			return new String(url.openStream().readAllBytes());
+			return getLimitedStreamBytes(url.openStream(), -1);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
+	 * From javajs.Rdr
+	 * 
+	 */
+	public static byte[] getLimitedStreamBytes(InputStream is, long n) throws IOException {
+
+		// Note: You cannot use InputStream.available() to reliably read
+		// zip data from the web.
+
+		int buflen = (n > 0 && n < 1024 ? (int) n : 1024);
+		byte[] buf = new byte[buflen];
+		byte[] bytes = new byte[n < 0 ? 4096 : (int) n];
+		int len = 0;
+		int totalLen = 0;
+		if (n < 0)
+			n = Integer.MAX_VALUE;
+		while (totalLen < n && (len = is.read(buf, 0, buflen)) > 0) {
+			totalLen += len;
+			if (totalLen > bytes.length)
+				bytes = Arrays.copyOf(bytes, totalLen * 2);
+			System.arraycopy(buf, 0, bytes, totalLen - len, len);
+			if (n != Integer.MAX_VALUE && totalLen + buflen > bytes.length)
+				buflen = bytes.length - totalLen;
+		}
+		if (totalLen == bytes.length)
+			return bytes;
+		buf = new byte[totalLen];
+		System.arraycopy(bytes, 0, buf, 0, totalLen);
+		return buf;
+	}
+
+
 
 }

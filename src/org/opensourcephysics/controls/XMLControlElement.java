@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
@@ -456,21 +457,25 @@ public class XMLControlElement implements XMLControl {
 		Resource res = ResourceLoader.getResource(name);
 		if (res != null) {
 			try {
-				read(res.openReader());
-				String path = XML.getDirectoryPath(name);
-				if (!path.equals("")) { //$NON-NLS-1$
-					ResourceLoader.addSearchPath(path);
-					basepath = path;
-				} else {
-					basepath = XML.getDirectoryPath(res.getAbsolutePath());
+				BufferedReader in = res.openReader();
+				if (in != null) {
+					// BH just avoids the NullPointerException, particularly for prefs files
+					read(in);
+					String path = XML.getDirectoryPath(name);
+					if (!path.equals("")) { //$NON-NLS-1$
+						ResourceLoader.addSearchPath(path);
+						basepath = path;
+					} else {
+						basepath = XML.getDirectoryPath(res.getAbsolutePath());
+					}
+					File file = res.getFile();
+					canWrite = ((file != null) && file.canWrite());
+					return res.getAbsolutePath();
 				}
-				File file = res.getFile();
-				canWrite = ((file != null) && file.canWrite());
-				return res.getAbsolutePath();
 			} catch (Exception e) {
-				OSPLog.warning("Could not open " + res);
 			}
 		}
+		OSPLog.warning("Could not open " + res);
 		readFailed = true;
 		return null;
 	}

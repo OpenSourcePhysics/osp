@@ -766,6 +766,8 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	    buffer.append (
 	    	"\n        "+thumbnailPath+"></p>"); //$NON-NLS-1$ //$NON-NLS-2$    	
     }
+    
+    
     if (description!=null && !description.equals("")) { //$NON-NLS-1$
     	if (!description.startsWith("<p>")) { //$NON-NLS-1$
     		description = "<p>"+insertLineBreaks(description)+"</p>"; //$NON-NLS-1$ //$NON-NLS-2$
