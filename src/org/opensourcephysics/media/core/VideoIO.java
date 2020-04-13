@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeSet;
+import java.util.function.Function;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -70,6 +71,8 @@ import org.opensourcephysics.tools.DiagnosticsForXuggle;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ResourceLoader;
 
+import javajs.async.AsyncFileChooser;
+
 /**
  * This provides static methods for managing video and text input/output.
  *
@@ -90,7 +93,7 @@ public class VideoIO {
 	public static final String DEFAULT_PREFERRED_EXPORT_EXTENSION = "mp4"; //$NON-NLS-1$
 	
 	// static fields
-  protected static JFileChooser chooser;
+  protected static AsyncFileChooser chooser;
   protected static VideoFileFilter videoFileFilter = new VideoFileFilter();
 	protected static Collection<VideoFileFilter> singleVideoTypeFilters 
 			= new TreeSet<VideoFileFilter>();
@@ -165,12 +168,12 @@ public class VideoIO {
    *
    * @return the file chooser
    */
-  public static JFileChooser getChooser() {
+  public static AsyncFileChooser getChooser() {
     if(chooser==null) {
     	File dir = (OSPRuntime.chooserDir==null)? 
     			new File(OSPRuntime.getUserHome()):
     			new File(OSPRuntime.chooserDir);
-      chooser = new JFileChooser(dir);
+      chooser = new AsyncFileChooser(dir);
       chooser.addPropertyChangeListener(videoEnginePanel);
     }
   	FontSizer.setFonts(chooser, FontSizer.getLevel());
@@ -748,54 +751,100 @@ public class VideoIO {
     return open((File) null, vidPanel);
   }
 
-  /**
-   * Displays a file chooser and returns the chosen files.
-   *
-   * @param type may be "open", "open video", "save", "insert image"
-   * @return the files, or null if no files chosen
-   */
-  public static File[] getChooserFiles(String type) {
-    JFileChooser chooser = getChooser();
-    chooser.setMultiSelectionEnabled(false);
-    chooser.setAcceptAllFileFilterUsed(true);
-    int result = JFileChooser.CANCEL_OPTION;
-    if(type.toLowerCase().equals("open")) { // open any file //$NON-NLS-1$
-      chooser.addChoosableFileFilter(videoFileFilter);
-      chooser.setFileFilter(chooser.getAcceptAllFileFilter());
-      result = chooser.showOpenDialog(null);
-    } 
-    else if(type.toLowerCase().equals("open video")) { // open video //$NON-NLS-1$
-      chooser.addChoosableFileFilter(videoFileFilter);
-      result = chooser.showOpenDialog(null);
-    } 
-    else if(type.toLowerCase().equals("save")) { // save any file //$NON-NLS-1$
-    	// note this sets no file filters but does include acceptAll
-      // also sets file name to "untitled"
-      String filename = MediaRes.getString("VideoIO.FileName.Untitled"); //$NON-NLS-1$
-	    chooser.setSelectedFile(new File(filename+"."+defaultXMLExt)); //$NON-NLS-1$
-      result = chooser.showSaveDialog(null);
-    } 
-    else if(type.toLowerCase().equals("insert image")) { //$NON-NLS-1$
-      chooser.setMultiSelectionEnabled(true);
-      chooser.setAcceptAllFileFilterUsed(false);
-      chooser.addChoosableFileFilter(imageFileFilter);
-      chooser.setSelectedFile(new File("")); //$NON-NLS-1$
-      result = chooser.showOpenDialog(null);
-      File[] files = chooser.getSelectedFiles();
-      chooser.removeChoosableFileFilter(imageFileFilter);
-      chooser.setSelectedFile(new File(""));  //$NON-NLS-1$
-      if(result==JFileChooser.APPROVE_OPTION) {
-        return files;
-      }
-    }
-    if(result==JFileChooser.APPROVE_OPTION) {
-    	File file = chooser.getSelectedFile();
-      chooser.removeChoosableFileFilter(videoFileFilter);
-      chooser.setSelectedFile(new File(""));  //$NON-NLS-1$
-      return new File[] {file};
-    }
-    return null;
-  }
+
+	/**
+	 * A Stop-gap method to allow Java-only functionality.
+	 * 
+	 * @param type
+	 * @return
+	 */
+	@Deprecated
+	public static File[] getChooserFiles(String type) {
+		return getChooserFilesAsync(type, null);
+	}
+
+	/**
+	 * Displays a file chooser and returns the chosen files.
+	 *
+	 * @param type may be "open", "open video", "save", "insert image"
+	 * @return the files, or null if no files chosen
+	 */
+	public static File[] getChooserFilesAsync(String type, Function<File[], Void> processFiles) {
+		AsyncFileChooser chooser = getChooser();
+		chooser.setMultiSelectionEnabled(false);
+		chooser.setAcceptAllFileFilterUsed(true);
+
+		Runnable resetChooser = new Runnable() {
+
+			@Override
+			public void run() {
+				chooser.resetChoosableFileFilters();
+				if (processFiles != null)
+					chooser.setSelectedFile(null); //$NON-NLS-1$
+			}
+
+		};
+
+		Runnable okOpen = new Runnable() {
+
+			@Override
+			public void run() {
+				File file = chooser.getSelectedFile();
+				resetChooser.run();
+				if (processFiles != null)
+					processFiles.apply(new File[] { file });
+			}
+
+		};
+
+		Runnable okSave = new Runnable() {
+
+			@Override
+			public void run() {
+				File file = chooser.getSelectedFile();
+				resetChooser.run();
+//			if (canWrite(file))
+				if (processFiles != null)
+					processFiles.apply(new File[] { file });
+			}
+
+		};
+		boolean isSave = false;
+		if (type.toLowerCase().equals("open")) { // open any file //$NON-NLS-1$
+			chooser.addChoosableFileFilter(videoFileFilter);
+			chooser.setFileFilter(chooser.getAcceptAllFileFilter());
+			chooser.showOpenDialog(null, okOpen, resetChooser);
+		} else if (type.toLowerCase().equals("open video")) { // open video //$NON-NLS-1$
+			chooser.addChoosableFileFilter(videoFileFilter);
+			chooser.showOpenDialog(null, okOpen, resetChooser);
+		} else if (type.toLowerCase().equals("save")) { // save any file //$NON-NLS-1$
+			// note this sets no file filters but does include acceptAll
+			// also sets file name to "untitled"
+			isSave = true;
+			String filename = MediaRes.getString("VideoIO.FileName.Untitled"); //$NON-NLS-1$
+			chooser.setSelectedFile(new File(filename + "." + defaultXMLExt)); //$NON-NLS-1$
+			chooser.showSaveDialog(null, okSave, resetChooser);
+		} else if (type.toLowerCase().equals("insert image")) { //$NON-NLS-1$
+			chooser.setMultiSelectionEnabled(true);
+			chooser.setAcceptAllFileFilterUsed(false);
+			chooser.addChoosableFileFilter(imageFileFilter);
+			chooser.setSelectedFile(new File("")); //$NON-NLS-1$
+			chooser.showSaveDialog(null, okSave, resetChooser);
+		} else {
+			return null;
+		}
+		File ret = processChoose(chooser, null, processFiles != null);
+		return (ret == null ? null : new File[] { ret });
+	}
+  
+  protected static File processChoose(AsyncFileChooser chooser, File ret, boolean isAsync) {
+		if (isAsync)
+			return null;
+		if (ret == null && chooser.getSelectedOption() == JFileChooser.APPROVE_OPTION)
+			ret = chooser.getSelectedFile();
+		chooser.setSelectedFile(null);
+		return ret;
+	}
 
   /**
    * Loads data or a video from a specified file into a VideoPanel.

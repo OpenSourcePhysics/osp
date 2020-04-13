@@ -400,6 +400,7 @@ public class JarTool implements Tool, Runnable {
         // create new Map and fill it
         contents = new HashMap<String, ZipEntry>();
         jarContents.put(source.getPath(), contents);
+        OSPRuntime.addJSCachedBytes(source);
         ZipInputStream input = new ZipInputStream(new FileInputStream(source));
         ZipEntry zipEntry = null;
         while((zipEntry = input.getNextEntry())!=null) {

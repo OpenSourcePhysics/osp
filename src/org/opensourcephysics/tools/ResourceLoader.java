@@ -202,12 +202,13 @@ public class ResourceLoader {
 				// following code added by Doug Brown 2009/11/14
 				if (type == OSPRuntime.applet.getClass()) {
 					try {
-						URL url = type.getResource(name);
+						URL url = getTypeResource(type, name);
 						appletRes = createResource(url);
 						if (appletRes != null) {
 							return appletRes;
 						}
 					} catch (Exception ex) {
+						// url was not found
 					}
 				} // end code added by Doug Brown 2009/11/14
 				for (Iterator<String> it = searchPaths.iterator(); it.hasNext();) {
@@ -1173,7 +1174,7 @@ public class ResourceLoader {
   public static Set<String> getZipContents(String zipPath) {
     Set<String> fileNames = new TreeSet<String>();
     try {
-    	URL url = new URL(getURIPath(zipPath));    	
+    	URL url = fileToCachedURL(zipPath);
     	OSPLog.finest("zip url: "+url.toExternalForm()); //$NON-NLS-1$
       BufferedInputStream bufIn = new BufferedInputStream(url.openStream());
       ZipInputStream input = new ZipInputStream(bufIn);
@@ -1191,6 +1192,26 @@ public class ResourceLoader {
   }
   
   /**
+   * 
+   * Convert a file path to a URL, retrieving any cached file data,
+   * as from DnD. 
+   * 
+   * @param path 
+   * @return
+   */
+  private static URL fileToCachedURL(String path) {
+	URL url = null;
+	try {
+		url = new URL(getURIPath(path));
+		OSPRuntime.addJSCachedBytes(url);
+	} catch (MalformedURLException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}   
+  	return url;
+}
+
+/**
    * Unzips a ZIP file into the given directory. ZIP file may be on a server.
    * Can be canceled using the static setCanceled(boolean) method.
    * Note this does not warn of possible overwrites.
@@ -1205,7 +1226,7 @@ public class ResourceLoader {
 			targetDir = new File(System.getProperty("java.io.tmpdir")); //$NON-NLS-1$
   	OSPLog.finer("unzipping "+zipPath+" to "+targetDir); //$NON-NLS-1$ //$NON-NLS-2$
   	try {
-    	URL url = new URL(getURIPath(zipPath));    	
+    	URL url = fileToCachedURL(zipPath);    	
       BufferedInputStream bufIn = new BufferedInputStream(url.openStream());
       ZipInputStream input = new ZipInputStream(bufIn);
       ZipEntry zipEntry=null;
@@ -1314,7 +1335,7 @@ public class ResourceLoader {
     source = source.substring(0, n+4);
     
   	try {
-    	URL url = new URL(source);
+    	URL url = fileToCachedURL(source);
       BufferedInputStream bufIn = new BufferedInputStream(url.openStream());
       ZipInputStream input = new ZipInputStream(bufIn);
       ZipEntry zipEntry=null;
@@ -1452,6 +1473,10 @@ public class ResourceLoader {
 //      i = path.indexOf("&");                         //$NON-NLS-1$
 //    }
     // add file protocol if path to local file
+    if (path.startsWith("/"))
+    	return "file:" + path;
+    // BH because nonURIPath can return //./xxx
+    
 		if (!path.equals("")  //$NON-NLS-1$
 				&& !path.startsWith("http:")  //$NON-NLS-1$
 				&& !path.startsWith("https:")  //$NON-NLS-1$
@@ -1565,7 +1590,7 @@ public class ResourceLoader {
       if(path.indexOf(":/")>-1) {  //$NON-NLS-1$
         try {
 //          URL url = new URL(path); // changed to use URI path 2011/09/11 DB
-          URL url = new URL(getURIPath(path));          
+          URL url = fileToCachedURL(path);          
           res = createResource(url);
         } catch(Exception ex) {
           /** empty block */
@@ -1673,30 +1698,6 @@ public class ResourceLoader {
 				base = zipFile.getAbsolutePath();
 				path = base + "!/" + fileName; //$NON-NLS-1$
 			}
-
-//  		
-//  		
-//  		File zipDir = null;
-//	  	String zipName = XML.getName(base);
-//  		if (ospCache!=null) {
-//				try {
-//					URL url = new URL(getURIPath(path));
-//					String host = url.getHost().replace('.', '_')+"/"; //$NON-NLS-1$
-//					host += zipName.replace('.', '_') + "/"; //$NON-NLS-1$
-//					zipDir = new File(ospCache, host);
-//				} catch (MalformedURLException e) {}			
-//  		}
-//  		if (zipDir==null) {
-//  			zipDir = new File(System.getProperty("java.io.tmpdir")); //$NON-NLS-1$			
-//      	deleteOnExit = true;
-//  		}
-//      File zipFile = download(base, zipName, zipDir, false);
-//      if (zipFile!=null) {
-//      	if (deleteOnExit)
-//      		zipFile.deleteOnExit();
-//      	base = zipFile.getAbsolutePath();
-//      	path = base+"!/"+fileName; //$NON-NLS-1$
-//      }
 		}
 
 		URLClassLoader zipLoader = null;
@@ -1860,15 +1861,17 @@ public class ResourceLoader {
       name = name.substring(i+5);
     }
     Resource res = null;
-    try {                                   // check relative to root of jarfile containing specified class
-      URL url = type.getResource("/"+name); //$NON-NLS-1$
+    try { // check relative to root of jarfile containing specified class
+    	// BH now allows for retrieving cached data
+      URL url = getTypeResource(type, "/"+name); //$NON-NLS-1$
       res = createResource(url);
     } catch(Exception ex) {
-      /** empty block */
+       //url data were not found in the j2s/ directory
     }
     if(res==null) {
       try { // check relative to specified class
-        URL url = type.getResource(name);
+        URL url = getTypeResource(type, name);
+           
         res = createResource(url);
       } catch(Exception ex) {
         /** empty block */
@@ -1893,6 +1896,20 @@ public class ResourceLoader {
     }
     return res; // may be null
   }
+
+  /**
+   * First check to see if we have cached bytes. 
+   * @param type
+   * @param path
+   * @return
+   */
+	private static URL getTypeResource(Class<?> type, String path) {
+		byte[] bytes = OSPRuntime.getCachedBytes(path);
+		if (bytes != null) {
+			return fileToCachedURL(path);
+		}
+	return type.getResource(path);
+}
 
 	/**
 	 * Creates a Resource.

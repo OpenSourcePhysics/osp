@@ -1389,6 +1389,32 @@ public class OSPRuntime {
 		}
 	}
 
+	/**
+	 * Cache (or clear) J2S._javaFileCache for this file.
+	 * 
+	 * @param file
+	 * @param isAdd
+	 */
+	public static void cacheJSFile(File file, boolean isAdd) {
+		if (isJS) {
+			jsutil.cachePathData(file.getAbsolutePath(), (isAdd ? jsutil.getBytes(file) : null));
+		}
+	}
+
+	/**
+	 * Fet bytes cached for temporary or DnD files in JavaScript.
+	 * 
+	 * @param path
+	 * @return
+	 */
+	public static byte[] getCachedBytes(String path) {
+		return (isJS ? jsutil.getCachedBytes(path) : null);
+	}
+	
+	public static byte[] addJSCachedBytes(Object URLorURIorFile) {
+		return (isJS ? jsutil.addJSCachedBytes(URLorURIorFile) : null);
+	}
+
 }
 /*
  * Open Source Physics software is free software; you can redistribute it and/or
