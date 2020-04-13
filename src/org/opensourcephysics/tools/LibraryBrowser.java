@@ -480,7 +480,11 @@ public class LibraryBrowser extends JPanel {
   	if (externalDialog!=null) {
   		externalDialog.setVisible(vis);
   	}
-  	else frame.setVisible(vis);
+  	else {
+  		frame.setVisible(vis);
+  		if (vis)
+  			frame.toFront();
+  	}
   }
 
   /**
