@@ -735,6 +735,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
    */
   class ThumbnailLoader extends SwingWorker<File, Object> {
   	String thumbPath, sourcePath;
+  	boolean checkImages = !OSPRuntime.isJS;
   	
   	ThumbnailLoader(String imageSource, String thumbnailPath) {
   		thumbPath = thumbnailPath;
@@ -749,8 +750,11 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 			Runnable r; // BH SwingJS must load images asynchronously
 			if (ext != null && "GIF".equals(ext.toUpperCase())) { //$NON-NLS-1$
 				// GIF files
-				GifDecoder decoder = new GifDecoder();
-				int status = decoder.read(sourcePath);
+				int status = 0;
+				if (checkImages) {
+					GifDecoder decoder = new GifDecoder();
+					status = decoder.read(sourcePath);
+				}
 				if (status != 0) { // error
 					OSPLog.fine("failed to create thumbnail for GIF " + thumbPath); //$NON-NLS-1$
 				} else {
@@ -760,8 +764,10 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 				// PNG and JPEG files
 
 				try {
-					URL url = new URL(ResourceLoader.getURIPath(sourcePath));
-					ImageIO.read(url);
+					if (checkImages) {
+						URL url = new URL(ResourceLoader.getURIPath(sourcePath));
+						ImageIO.read(url);
+					}
 					thumbFile = LibraryBrowser.copyFile(sourcePath, thumbPath);
 				} catch (Exception e) {
 					OSPLog.fine("failed to create thumbnail for " + thumbPath); //$NON-NLS-1$
