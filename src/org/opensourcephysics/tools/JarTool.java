@@ -68,21 +68,21 @@ import org.opensourcephysics.display.OSPRuntime;
  * @version 1.0
  */
 public class JarTool implements Tool, Runnable {
-  static public final int YES = 0;
-  static public final int NO = 1;
-  static public final int YES_TO_ALL = 2;
-  static public final int NO_TO_ALL = 3;
-  static public final int CANCEL = 4;
+  static private final int YES = 0;
+  static private final int NO = 1;
+  static private final int YES_TO_ALL = 2;
+  static private final int NO_TO_ALL = 3;
+  static private final int CANCEL = 4;
   
   // ---- Localization
-  static private final String BUNDLE_NAME = "org.opensourcephysics.resources.tools.tools"; //$NON-NLS-1$
-  static private ResourceBundle res = ResourceBundle.getBundle(BUNDLE_NAME);
+  static private final String JAR_TOOL_BUNDLE_NAME = "org.opensourcephysics.resources.tools.tools"; //$NON-NLS-1$
+  static private ResourceBundle res = ResourceBundle.getBundle(JAR_TOOL_BUNDLE_NAME);
 
-  static public void setLocale(Locale locale) {
-    res = ResourceBundle.getBundle(BUNDLE_NAME, locale);
+  static private void setLocale(Locale locale) {
+    res = ResourceBundle.getBundle(JAR_TOOL_BUNDLE_NAME, locale);
   }
 
-  static public String getString(String key) {
+  static private String getString(String key) {
     try {
       return res.getString(key);
     } catch(MissingResourceException e) {
@@ -95,21 +95,23 @@ public class JarTool implements Tool, Runnable {
   /**
    * The singleton shared translator tool.
    */
-  private static JarTool TOOL = new JarTool();
+  private static JarTool instance;
   private static JFileChooser chooser;
   private static int overwritePolicy = NO;
   private static Frame ownerFrame = null;
   private static Map<String, Map<String, ZipEntry>> jarContents = new HashMap<String, Map<String, ZipEntry>>(); // added by D Brown 2007-10-31
 
   /**
+   * for LaunchBuilder
+   * 
    * Gets the shared JarTool.
    * @return the shared JarTool
    */
-  public static JarTool getTool() {
-    if(TOOL==null) {
-      TOOL = new JarTool();
+  public static JarTool getInstance() {
+    if(instance==null) {
+      instance = new JarTool();
     }
-    return TOOL;
+    return instance;
   }
 
   /**
@@ -149,6 +151,7 @@ public class JarTool implements Tool, Runnable {
    * @param replyTo the tool to notify when the job is complete (may be null)
    * @throws RemoteException
    */
+  @Override
   public void send(Job job, Tool replyTo) throws RemoteException {}
 
   // -----------------------------------
@@ -600,7 +603,7 @@ public class JarTool implements Tool, Runnable {
    * @param targetDirectory File The target directory where to extract the files
    * @return boolean
    */
-  static public boolean extract(Object source, java.util.List<?> files, File targetDirectory) {
+  static private boolean extract(Object source, java.util.List<?> files, File targetDirectory) {
     if(files.size()<=0) {
       return true;
     }
@@ -895,7 +898,7 @@ public class JarTool implements Tool, Runnable {
   //        Private methods
   // -----------------------------------
 
-  static public int confirmOverwrite(String filename) {
+  static private int confirmOverwrite(String filename) {
     return confirmOverwrite(filename, false);
   }
 
@@ -904,7 +907,7 @@ public class JarTool implements Tool, Runnable {
    * @param file File
    * @return boolean
    */
-  static public int confirmOverwrite(String filename, boolean canCancel) {
+  static private int confirmOverwrite(String filename, boolean canCancel) {
     final JDialog dialog = new JDialog();
     final OverwriteValue returnValue = new OverwriteValue(NO);
     java.awt.event.MouseAdapter mouseListener = new java.awt.event.MouseAdapter() {

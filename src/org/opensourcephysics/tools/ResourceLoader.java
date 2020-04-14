@@ -9,6 +9,7 @@
 package org.opensourcephysics.tools;
 import java.applet.AudioClip;
 import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
@@ -34,7 +35,9 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -42,13 +45,20 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
+import javax.swing.AbstractButton;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
+import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.js.JSUtil;
 
@@ -673,17 +683,17 @@ public class ResourceLoader {
 		if (!OSPRuntime.isJS && userHome!=null) {
 	  	userHome += "/"; //$NON-NLS-1$
 			if (OSPRuntime.isMac()) {
-				cacheDir = userHome+ResourceLoader.OSX_DEFAULT_CACHE;
+				cacheDir = userHome+OSX_DEFAULT_CACHE;
 			}
 			else if (OSPRuntime.isLinux()) {
-				cacheDir = userHome+ResourceLoader.LINUX_DEFAULT_CACHE;
+				cacheDir = userHome+LINUX_DEFAULT_CACHE;
 			}
 			else if (OSPRuntime.isWindows()) {
 				String os = System.getProperty("os.name", "").toLowerCase(); //$NON-NLS-1$ //$NON-NLS-2$
 				if (os.indexOf("xp")>-1) //$NON-NLS-1$
-					cacheDir = userHome+ResourceLoader.WIN_XP_DEFAULT_CACHE;
+					cacheDir = userHome+WIN_XP_DEFAULT_CACHE;
 				else
-					cacheDir = userHome+ResourceLoader.WINDOWS_DEFAULT_CACHE;
+					cacheDir = userHome+WINDOWS_DEFAULT_CACHE;
 			}
 		}
 		if (cacheDir==null) return null;
@@ -1167,7 +1177,18 @@ public class ResourceLoader {
   }
   
   private static Map<String, Set<String>> htZipContents = new HashMap<>();
-  
+
+  /**
+   * zip contents caching can save time in complex loading. 
+   * 
+   */
+	public static void clearZipCache() {
+		htZipContents.clear();
+	}
+
+  private static boolean zipContainsFile(String zipPath, String fileName) {
+	  return getZipContents(zipPath).contains(fileName);
+  }
    /**
    * Gets the contents of a zip file.
    * 
@@ -1175,7 +1196,7 @@ public class ResourceLoader {
    * @return a set of file names in alphabetical order
    */
   public static Set<String> getZipContents(String zipPath) {
-  	URL url = fileToCachedURL(zipPath);
+  	URL url = getURLWithCachedBytes(zipPath); // BH carry over bytes if we have them already
     Set<String> fileNames = htZipContents.get(url.toString());
     if (fileNames == null) {
     	fileNames = new TreeSet<String>();
@@ -1188,7 +1209,9 @@ public class ResourceLoader {
       ZipEntry zipEntry=null;
       while ((zipEntry=input.getNextEntry())!=null) {
       	OSPLog.finest("zip entry: "+zipEntry); //$NON-NLS-1$
-        if (zipEntry.isDirectory()) continue;
+        if (zipEntry.isDirectory() 
+        		|| zipEntry.getSize() == 0) // BH 2020.04.14 to be consistent with above use
+        	continue;
         String fileName = zipEntry.getName();
         fileNames.add(fileName);
       }
@@ -1207,7 +1230,7 @@ public class ResourceLoader {
    * @param path 
    * @return
    */
-  private static URL fileToCachedURL(String path) {
+  private static URL getURLWithCachedBytes(String path) {
 	URL url = null;
 	try {
 		url = new URL(getURIPath(path));
@@ -1234,7 +1257,7 @@ public class ResourceLoader {
 			targetDir = new File(System.getProperty("java.io.tmpdir")); //$NON-NLS-1$
   	OSPLog.finer("unzipping "+zipPath+" to "+targetDir); //$NON-NLS-1$ //$NON-NLS-2$
   	try {
-    	URL url = fileToCachedURL(zipPath);    	
+    	URL url = getURLWithCachedBytes(zipPath);    	
       BufferedInputStream bufIn = new BufferedInputStream(url.openStream());
       ZipInputStream input = new ZipInputStream(bufIn);
       ZipEntry zipEntry=null;
@@ -1343,7 +1366,7 @@ public class ResourceLoader {
     source = source.substring(0, n+4);
     
   	try {
-    	URL url = fileToCachedURL(source);
+    	URL url = getURLWithCachedBytes(source);
       BufferedInputStream bufIn = new BufferedInputStream(url.openStream());
       ZipInputStream input = new ZipInputStream(bufIn);
       ZipEntry zipEntry=null;
@@ -1599,7 +1622,7 @@ public class ResourceLoader {
       if(path.indexOf(":/")>-1) {  //$NON-NLS-1$
         try {
 //          URL url = new URL(path); // changed to use URI path 2011/09/11 DB
-          URL url = fileToCachedURL(path);          
+          URL url = getURLWithCachedBytes(path);          
           res = createResource(url);
         } catch(Exception ex) {
           /** empty block */
@@ -1710,25 +1733,16 @@ public class ResourceLoader {
 		URL url = null;
 
 		if (base != null) {
-			// following ZipFile code added by D Brown 12 Sep 2013
-			// look through ZipFile entries for requested fileName
-			try {
-				ZipFile zipFile = new ZipFile(base);
-				Enumeration<? extends ZipEntry> entries = zipFile.entries();
-				while (entries.hasMoreElements()) {
-					ZipEntry entry = entries.nextElement();
-					if (entry.getName().equals(fileName) && entry.getSize() > 0) {
-						url = new URL("file", null, path); //$NON-NLS-1$
-						// URL constructor takes "jar" for any ZIP-based file (per Wikipedia)
-						url = new URL("jar", null, url.toExternalForm()); //$NON-NLS-1$
-						break;
-					}
+			if (zipContainsFile(base, fileName)) {
+				try {
+					url = new URL("file", null, path);  //$NON-NLS-1$
+					// file:C:/temp/car.trz!/Car in a loop with friction.trk
+					// URL constructor takes "jar" for any ZIP-based file (per Wikipedia)
+					url = new URL("jar", null, url.toExternalForm()); //$NON-NLS-1$
+					// jar:file:C:/temp/car.trz!/Car in a loop with friction.trk
+				} catch (MalformedURLException e) {
 				}
-				zipFile.close();
-			} catch (IOException ex) {
 			}
-			// end code added 12 Sep 2013
-
 			if (url == null) {
 				// use existing zip loader, if any
 				zipLoader = zipLoaders.get(base);
@@ -1773,9 +1787,9 @@ public class ResourceLoader {
 				}
 			}
 		}
-		String launchJarPath = OSPRuntime.getLaunchJarPath();
+		String launchJarPath;
 		// if still not found, use launch jar loader, if any
-		if ((url == null) && (launchJarPath != null)) {
+		if ((url == null) && ((launchJarPath = OSPRuntime.getLaunchJarPath()) != null)) {
 			zipLoader = zipLoaders.get(launchJarPath);
 			if (zipLoader != null) {
 				url = zipLoader.findResource(fileName);
@@ -1807,11 +1821,8 @@ public class ResourceLoader {
 
 		if (url != null) { // successfully found url
 			// extract file if extension is flagged for extraction
-			String file = url.getFile();
-			Iterator<String> it = extractExtensions.iterator();
-			while (it.hasNext()) {
-				String ext = it.next();
-				if (file.endsWith(ext)) {
+			String ext = "." + XML.getExtension(url.toString()); 
+			if (extractExtensions.contains("." + ext)) {
 					File zip = new File(base);
 					String targetPath = fileName;
 					String parent = zip.getParent();
@@ -1822,12 +1833,11 @@ public class ResourceLoader {
 					}
 					File target = new File(targetPath);
 					if (!target.exists()) {
-						target = JarTool.extract(zip, fileName, targetPath);
+						target = extract(zip, fileName, targetPath);
 						if (deleteOnExit)
 							target.deleteOnExit();
 					}
 					return createFileResource(target.getAbsolutePath());
-				}
 			}
 			try {
 				Resource res = createResource(url);
@@ -1912,7 +1922,7 @@ public class ResourceLoader {
 	private static URL getTypeResource(Class<?> type, String path) {
 		byte[] bytes = OSPRuntime.getCachedBytes(path);
 		if (bytes != null) {
-			return fileToCachedURL(path);
+			return getURLWithCachedBytes(path);
 		}
 	return type.getResource(path);
 }
@@ -2047,7 +2057,332 @@ public class ResourceLoader {
 		htmlStr = htmlStr.replace("http://physlets", "https://physlets"); 
 		return htmlStr;
 	}
+
+	
+	// BH 2020.04.14 from EjsTool
+
+	public static String extractFiles(String modelPath, File sourceDir, List<Object> finalList,
+			File destinationDirectory) {
+		// Extract files
+		destinationDirectory.mkdirs();
+		int policy = NO;
+		for (Iterator<?> it = finalList.iterator(); it.hasNext();) {
+			String resource = (String) it.next();
+			File targetFile = resource.startsWith("./") ? new File(destinationDirectory, resource.substring(2)) //$NON-NLS-1$
+					: new File(sourceDir, resource);
+			if (targetFile.exists()) {
+				switch (policy) {
+				case NO_TO_ALL:
+					continue;
+				case YES_TO_ALL:
+					break; // will overwrite
+				default:
+					switch (policy = confirmOverwrite(resource)) {
+					case NO_TO_ALL:
+					case NO:
+						continue;
+					default: // Do nothing, i.e., will overwrite the file
+					}
+				}
+			}
+			String originalName = resource.startsWith("./") ? modelPath + resource.substring(2) : resource; //$NON-NLS-1$
+			File result = extract(originalName, targetFile); // Use the ResourceLoader
+			if (result == null)
+				return originalName;
+		}
+		return null;
+	}
+
+	// BH 2020.04.14 from JarFile
+
+	  private static Map<String, Map<String, ZipEntry>> jarContents = new HashMap<String, Map<String, ZipEntry>>(); // added by D Brown 2007-10-31
+
+	  /**
+	   * From ResourceLoader 
+	   * 
+	   * Extracts a given file from a compressed (ZIP, JAR or TRZ) file
+	   * @param source File The compressed file to extract the file from
+	   * @param filename String The path of the file to extract
+	   * @param destination String The full (or relative to whatever the current
+	   * user directory is) path where to save the extracted file
+	   * @return File The extracted file, null if failed
+	   */
+	  static public File extract(File source, String filename, String destination) {
+	    return extract2(source, filename, new File(destination));
+	  }
+	  
+	  /**
+	   * null return here means trouble.
+	   * 
+	   */
+		static private File extract2(File source, String fileName, File target) {
+			String targetName = target.toString();
+			System.out.println("RL extracting " + fileName + " " + targetName + " from " + source);
+			int flen = (fileName.endsWith("/") ? fileName.length() : 0);
+			FileOutputStream fos = null;
+			try (FileInputStream fis = new FileInputStream(source);
+					ZipInputStream zis = (ZipInputStream) new ZipInputStream(fis);) {
+				ZipEntry ze;
+				while ((ze = zis.getNextEntry()) != null && flen >= 0) {
+					String name = ze.getName();
+					if (flen == 0 && name.equals(fileName)) {
+						flen = -1;
+						break;
+					} else if (flen > 0 && name.startsWith(fileName)) {
+						target = new File(targetName + name.substring(flen));
+					} else {
+						continue;
+					}
+					File parent = target.getParentFile();
+					if (parent != null) {
+						parent.mkdirs();
+					}
+					fos = new FileOutputStream(target);
+					LibraryBrowser.getLimitedStreamBytes(zis, ze.getSize(), fos);
+					fos.close();
+					System.out.println("RL extracted " + targetName + " " + target.length());
+				}
+			} catch (IOException e2) {
+				return null;
+			}
+			return target;
+		}
+	  
+	  /**
+	   * Extracts a given file from a compressed (ZIP, JAR or TRZ) file
+	   * Extensive changes by D Brown 2007-10-31
+	   * @param source File The compressed file to extract the file from
+	   * @param filename String The path of the file to extract
+	   * @param target File The target file for the extracted file
+	   * @return File The extracted file, null if failed
+	   */
+	  static private File extract0(File source, String filename, File target) {
+	    if((source.exists()==false)||(filename==null)||(filename.trim().length()<1)||(target==null)) {
+	      return null;
+	    }
+		System.out.println("extracting " + filename + " " + target + " from " + source);
+	    boolean isDirectory = filename.endsWith("/"); //$NON-NLS-1$
+	    try {
+	    	
+	      // get contents Map of filename to ZipEntry for source jar
+	      Map<String, ZipEntry> contents = jarContents.get(source.getPath());
+	      if(contents==null) {
+	        // create new Map and fill it
+	        contents = new HashMap<String, ZipEntry>();
+	        jarContents.put(source.getPath(), contents);
+	        OSPRuntime.addJSCachedBytes(source);
+	        ZipInputStream input = new ZipInputStream(new FileInputStream(source));
+	        ZipEntry zipEntry = null;
+	        while((zipEntry = input.getNextEntry())!=null) {
+	          if(zipEntry.isDirectory()) {
+	            continue;                               // don't include directories
+	          }
+	          contents.put(zipEntry.getName(), zipEntry);
+	        }
+	        input.close();
+	      }
+	      if(isDirectory) {
+	        // target is a directory: extract all contained files
+	        Iterator<String> it = contents.keySet().iterator();
+	        while(it.hasNext()) {
+	          String next = it.next();
+	          if(next.startsWith(filename)) {
+	            // next is in the directory, so extract it
+	            ZipEntry zipEntry = contents.get(next);
+	            // construct new target for the file
+	            int n = filename.length();
+	            File newTarget = new File(target, zipEntry.getName().substring(n));
+	            extract0(source, next, newTarget);
+	          }
+	        }
+	        return target;
+	      }
+	      // target is a file
+	      ZipEntry entry = contents.get(filename);      
+	      ZipFile input = new ZipFile(source);
+	      InputStream in = input.getInputStream(entry); // A stream to read the entry
+	      
+	      File parent = target.getParentFile();
+	      if(parent!=null) {
+	        parent.mkdirs();
+	      }
+	      int bytesRead;
+	      byte[] buffer = new byte[1024];
+	      FileOutputStream output = new FileOutputStream(target);
+	      while((bytesRead = in.read(buffer))!=-1) {
+	        output.write(buffer, 0, bytesRead);
+	      }
+	      output.close();
+	      input.close();
+			System.out.println("extracted " + target + " " + target.length());
+	      return target;
+	    } catch(Exception ex) {
+	      ex.printStackTrace();
+	    }
+	    return null;
+	  }
+
+
+	  /**
+	   * Extracts a file using the ResourceLoader utility
+	   * @param filename String The path of the file to extract
+	   * @param target File The target file for the extracted file
+	   * @return File The extracted file, null if failed
+	   */
+	  static public File extract(String filename, File target) {
+		//System.out.println("Extract filename="+filename); //$NON-NLS-1$
+	    if((filename==null)||(filename.trim().length()<=0)||(target==null)) {
+	      return null;
+	    }
+	    try {
+	      InputStream inputStream=null;
+	      if(OSPRuntime.applet!=null) {// added by Wolfgang Christian
+	        //URL url=OSPRuntime.applet.getClass().getResource(filename);
+	        //inputStream=url.openStream();
+	        inputStream=OSPRuntime.applet.getClass().getResourceAsStream(filename);
+	      }
+	      if(inputStream==null) {  // use resource loader when not an applet
+	        if(filename.indexOf("http:")>-1) {  //$NON-NLS-1$
+	          int n = filename.toLowerCase().indexOf(".zip!/"); //$NON-NLS-1$
+	          if (n==-1) n = filename.toLowerCase().indexOf(".jar!/");     //$NON-NLS-1$
+	          if (n==-1) n = filename.toLowerCase().indexOf(".trz!/");     //$NON-NLS-1$
+	          if (n>-1) {
+	          	File extracted = extractFileFromZIP(filename, target, false);
+	          	if (extracted!=null) return extracted;
+	          }        	
+	        }
+	        else {
+	           Resource is = getResource(filename, false);
+	          inputStream = (is == null ? null : is.openInputStream());
+	        }
+	      }
+	      if(inputStream==null) {
+	        return null;
+	      }
+	      BufferedInputStream input = new BufferedInputStream(inputStream);
+	      target.getParentFile().mkdirs();
+	      int bytesRead;
+	      byte[] buffer = new byte[1024];
+	      FileOutputStream output = new FileOutputStream(target);
+	      while((bytesRead = input.read(buffer))!=-1) {
+	        output.write(buffer, 0, bytesRead);
+	      }
+	      output.close();
+	      input.close();
+	      return target;
+	    } catch(Exception exc) {
+	      System.err.println("JarTool extract resource error.  Filename="+filename); //$NON-NLS-1$
+	      exc.printStackTrace();
+	      return null;
+	    }
+	  }
+
+	  // -----------------------------------
+	  //        Private methods
+	  // -----------------------------------
+
+	  static public int confirmOverwrite(String filename) {
+	    return confirmOverwrite(filename, false);
+	  }
+
+	  // ---- Localization
+	  static private final String JAR_TOOL_BUNDLE_NAME = "org.opensourcephysics.resources.tools.tools"; //$NON-NLS-1$
+	  static private ResourceBundle res = ResourceBundle.getBundle(JAR_TOOL_BUNDLE_NAME);
+
+	  static public void setLocale(Locale locale) {
+	    res = ResourceBundle.getBundle(JAR_TOOL_BUNDLE_NAME, locale);
+	  }
+
+	  static public final int YES = 0;
+	  static public final int NO = 1;
+	  static public final int YES_TO_ALL = 2;
+	  static public final int NO_TO_ALL = 3;
+	  static public final int CANCEL = 4;
+	  
+
+	  static private class OverwriteValue {
+		    int value = NO;
+
+		    OverwriteValue(int val) {
+		      value = val;
+		    }
+
+		  }
+
+	  /**
+	   * Whether to overwrite an existing file.
+	   * @param file File
+	   * @return boolean
+	   */
+	  static public int confirmOverwrite(String filename, boolean canCancel) {
+	    final JDialog dialog = new JDialog();
+	    final OverwriteValue returnValue = new OverwriteValue(NO);
+	    java.awt.event.MouseAdapter mouseListener = new java.awt.event.MouseAdapter() {
+	      public void mousePressed(java.awt.event.MouseEvent evt) {
+	        AbstractButton button = (AbstractButton) (evt.getSource());
+	        String aCmd = button.getActionCommand();
+	        if(aCmd.equals("yes")) {             //$NON-NLS-1$   
+	          returnValue.value = YES;
+	        } else if(aCmd.equals("no")) {       //$NON-NLS-1$   
+	          returnValue.value = NO;
+	        } else if(aCmd.equals("yesToAll")) { //$NON-NLS-1$   
+	          returnValue.value = YES_TO_ALL;
+	        } else if(aCmd.equals("noToAll")) {  //$NON-NLS-1$   
+	          returnValue.value = NO_TO_ALL;
+	        } else if(aCmd.equals("cancel")) {  //$NON-NLS-1$   
+	          returnValue.value = CANCEL;
+	        }
+	        dialog.setVisible(false);
+	      }
+
+	    };
+	    JButton yesButton = new JButton(res.getString("JarTool.Yes")); //$NON-NLS-1$
+	    yesButton.setActionCommand("yes"); //$NON-NLS-1$
+	    yesButton.addMouseListener(mouseListener);
+	    JButton noButton = new JButton(res.getString("JarTool.No")); //$NON-NLS-1$
+	    noButton.setActionCommand("no"); //$NON-NLS-1$
+	    noButton.addMouseListener(mouseListener);
+	    JButton yesToAllButton = new JButton(res.getString("JarTool.YesToAll")); //$NON-NLS-1$
+	    yesToAllButton.setActionCommand("yesToAll"); //$NON-NLS-1$
+	    yesToAllButton.addMouseListener(mouseListener);
+	    JButton noToAllButton = new JButton(res.getString("JarTool.NoToAll")); //$NON-NLS-1$
+	    noToAllButton.setActionCommand("noToAll"); //$NON-NLS-1$
+	    noToAllButton.addMouseListener(mouseListener);
+	    JButton cancelButton = new JButton(res.getString("JarTreeDialog.Button.Cancel")); //$NON-NLS-1$
+	    cancelButton.setActionCommand("cancel"); //$NON-NLS-1$
+	    cancelButton.addMouseListener(mouseListener);
+	    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+	    buttonPanel.add(yesButton);
+	    buttonPanel.add(yesToAllButton);
+	    buttonPanel.add(noButton);
+	    buttonPanel.add(noToAllButton);
+	    if (canCancel) buttonPanel.add(cancelButton);
+	    JLabel label = new JLabel(DisplayRes.getString("DrawingFrame.ReplaceExisting_message")+" "+ //$NON-NLS-1$ //$NON-NLS-2$
+	      filename+DisplayRes.getString("DrawingFrame.QuestionMark")); //$NON-NLS-1$
+	    label.setHorizontalAlignment(SwingConstants.CENTER);
+	    label.setBorder(new javax.swing.border.EmptyBorder(10, 10, 10, 10));
+	    dialog.setTitle(DisplayRes.getString("DrawingFrame.ReplaceFile_option_title")); //$NON-NLS-1$
+	    dialog.getContentPane().setLayout(new java.awt.BorderLayout(5, 0));
+	    dialog.getContentPane().add(label, java.awt.BorderLayout.CENTER);
+	    dialog.getContentPane().add(buttonPanel, java.awt.BorderLayout.SOUTH);
+	    dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+	      public void windowClosing(java.awt.event.WindowEvent event) {
+	        returnValue.value = NO;
+	      }
+
+	    });
+	    dialog.validate();
+	    dialog.pack();
+	    dialog.setLocationRelativeTo(null);
+	    dialog.setModal(true);
+	    dialog.setVisible(true);
+	    return returnValue.value;
+	  }
+
+
 }
+
+
 
 /*
  * Open Source Physics software is free software; you can redistribute it and/or

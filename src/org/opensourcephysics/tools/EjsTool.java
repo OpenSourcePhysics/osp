@@ -18,6 +18,7 @@ import java.io.LineNumberReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -225,258 +226,240 @@ public class EjsTool {
     return path;
   }
 
-  /**
-   * Extracts an EJS model (and its resource files) from the given
-   * source and then runs EJS with that model. The example is extracted
-   * in the source directory of the users' EJS. The user will be warned
-   * before overwriting any file.
-   * @return boolean
-   */
-  static private boolean doRunEjs(String _model, java.util.Set<String> _resources, Class<?> _ejsClass, final String _password) {
-    String ejsRootDirPath = null;
-    //String console_options = null;
-    String sourceDirPath = null;
-    String version = null;
-    File ejsRootDirectory = null;
-    java.awt.Component parentComponent = null;
-    try {
-      String filename = System.getProperty("user.home").replace('\\', '/');       //$NON-NLS-1$
-      if(!filename.endsWith("/")) {                                               //$NON-NLS-1$ 
-        filename = filename+"/";                                                  //$NON-NLS-1$ 
-      }
-      Reader reader = new FileReader(filename+INFO_FILE);
-      LineNumberReader l = new LineNumberReader(reader);
-      String sl = l.readLine();
-      while(sl!=null) {
-        if(sl.startsWith("ejs_root_directory = ")) {                              //$NON-NLS-1$ 
-          ejsRootDirPath = sl.substring("ejs_root_directory = ".length()).trim(); //$NON-NLS-1$ 
-          //else if (sl.startsWith("console_options = "))    console_options = sl.substring("console_options = ".length()).trim();
-        } else if(sl.startsWith("source_directory = ")) {                                                     //$NON-NLS-1$ 
-          sourceDirPath = sl.substring("source_directory = ".length()).trim();                                //$NON-NLS-1$ 
-        } else if(sl.startsWith("version = ")) {                                                              //$NON-NLS-1$ 
-          version = sl.substring("version = ".length()).trim();                                               //$NON-NLS-1$ 
-        }
-        sl = l.readLine();
-      }
-      reader.close();
-      int major = 3;
-      if(version!=null) {
-        int index = version.indexOf('.');
-        if(index>=0) {
-          major = Integer.parseInt(version.substring(0, index));
-        }
-      }
-      if(major<4) {                                                                                           // Incorrect version, update to 4.0
-        JOptionPane.showMessageDialog(parentComponent, version+" "+res.getString("EjsTool.IncorrectVersion"), //$NON-NLS-1$ //$NON-NLS-2$
-          res.getString("EjsTool.Error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
-        return false;
-      }
-      // See if EjsConsole.jar is there
-      ejsRootDirectory = new File(ejsRootDirPath);
-      if(!new File(ejsRootDirectory, "EjsConsole.jar").exists()) {    //$NON-NLS-1$ 
-        ejsRootDirectory = null;
-      }
-    } catch(Exception exc) {
-      exc.printStackTrace();
-      ejsRootDirectory = null;
-    }
-    if(ejsRootDirectory==null) {
-      // Create a chooser
-      JFileChooser chooser = OSPRuntime.createChooser("", new String[] {});         //$NON-NLS-1$
-      chooser.setDialogTitle(res.getString("EjsTool.EjsNotFound"));                 //$NON-NLS-1$
-      chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-      chooser.setMultiSelectionEnabled(false);
-      // The message
-      JTextArea textArea = new JTextArea(res.getString("EjsTool.IndicateRootDir")); //$NON-NLS-1$
-      textArea.setWrapStyleWord(true);
-      textArea.setLineWrap(true);
-      textArea.setEditable(false);
-      textArea.setFont(textArea.getFont().deriveFont(java.awt.Font.BOLD));
-      textArea.setPreferredSize(new java.awt.Dimension(150, 60));
-      textArea.setBackground(chooser.getBackground());
-      textArea.setBorder(new javax.swing.border.EmptyBorder(5, 10, 0, 0));
-      chooser.setAccessory(textArea);
-      // Check that it exists or ask the user for it
-      while(ejsRootDirectory==null) {
-        if(chooser.showOpenDialog((java.awt.Component) null)!=JFileChooser.APPROVE_OPTION) {
-          return false;                                                             // The user canceled
-        }
-        ejsRootDirectory = chooser.getSelectedFile();
-        if(ejsRootDirectory==null) {
-          return false;                                                             // The user canceled
-        }
-        if(!new File(ejsRootDirectory, "EjsConsole.jar").exists()) {                //$NON-NLS-1$ 
-          ejsRootDirectory = null;
-        }
-      }
-    }
-    File sourceDir = new File(sourceDirPath);
-    if(!sourceDir.exists()) {
-      sourceDir.mkdirs();
-    }
-    // Extract the model and auxiliary files
-    java.util.List<String> extractList = new ArrayList<String>();
-    // Make relative files relative
-    String modelPath = _model;
-    int modelPathLength = 0;
-    int index = modelPath.lastIndexOf('/');
-    if(index>=0) {
-      _model = "./"+modelPath.substring(index+1);  //$NON-NLS-1$
-      modelPath = modelPath.substring(0, index+1); // including the '/'
-      modelPathLength = modelPath.length();
-    }
-    if(!_resources.contains(_model)) {
-      _resources.add(_model); // Make sure the model is there
-    }
-    if(modelPathLength>0) {
-      for(String res : _resources) {
-        extractList.add(res.startsWith(modelPath) ? "./"+res.substring(modelPathLength) : res); //$NON-NLS-1$
-      }
-    } else {
-      extractList.addAll(_resources);
-    }
-    java.util.Collections.sort(extractList);
-    
-    // Auxiliary panel for the confirmation list
-    JPanel auxPanel = new JPanel(new BorderLayout());
+	/**
+	 * Extracts an EJS model (and its resource files) from the given source and then
+	 * runs EJS with that model. The example is extracted in the source directory of
+	 * the users' EJS. The user will be warned before overwriting any file.
+	 * 
+	 * @return boolean
+	 */
+	static private boolean doRunEjs(String _model, java.util.Set<String> _resources, Class<?> _ejsClass,
+			final String _password) {
+		String ejsRootDirPath = null;
+		// String console_options = null;
+		String sourceDirPath = null;
+		String version = null;
+		File ejsRootDirectory = null;
+		java.awt.Component parentComponent = null;
+		try {
+			String filename = System.getProperty("user.home").replace('\\', '/'); //$NON-NLS-1$
+			if (!filename.endsWith("/")) { //$NON-NLS-1$
+				filename = filename + "/"; //$NON-NLS-1$
+			}
+			Reader reader = new FileReader(filename + INFO_FILE);
+			LineNumberReader l = new LineNumberReader(reader);
+			String sl = l.readLine();
+			while (sl != null) {
+				if (sl.startsWith("ejs_root_directory = ")) { //$NON-NLS-1$
+					ejsRootDirPath = sl.substring("ejs_root_directory = ".length()).trim(); //$NON-NLS-1$
+					// else if (sl.startsWith("console_options = ")) console_options =
+					// sl.substring("console_options = ".length()).trim();
+				} else if (sl.startsWith("source_directory = ")) { //$NON-NLS-1$
+					sourceDirPath = sl.substring("source_directory = ".length()).trim(); //$NON-NLS-1$
+				} else if (sl.startsWith("version = ")) { //$NON-NLS-1$
+					version = sl.substring("version = ".length()).trim(); //$NON-NLS-1$
+				}
+				sl = l.readLine();
+			}
+			reader.close();
+			int major = 3;
+			if (version != null) {
+				int index = version.indexOf('.');
+				if (index >= 0) {
+					major = Integer.parseInt(version.substring(0, index));
+				}
+			}
+			if (major < 4) { // Incorrect version, update to 4.0
+				JOptionPane.showMessageDialog(parentComponent,
+						version + " " + res.getString("EjsTool.IncorrectVersion"), //$NON-NLS-1$ //$NON-NLS-2$
+						res.getString("EjsTool.Error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+				return false;
+			}
+			// See if EjsConsole.jar is there
+			ejsRootDirectory = new File(ejsRootDirPath);
+			if (!new File(ejsRootDirectory, "EjsConsole.jar").exists()) { //$NON-NLS-1$
+				ejsRootDirectory = null;
+			}
+		} catch (Exception exc) {
+			exc.printStackTrace();
+			ejsRootDirectory = null;
+		}
+		if (ejsRootDirectory == null) {
+			// Create a chooser
+			JFileChooser chooser = OSPRuntime.createChooser("", new String[] {}); //$NON-NLS-1$
+			chooser.setDialogTitle(res.getString("EjsTool.EjsNotFound")); //$NON-NLS-1$
+			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			chooser.setMultiSelectionEnabled(false);
+			// The message
+			JTextArea textArea = new JTextArea(res.getString("EjsTool.IndicateRootDir")); //$NON-NLS-1$
+			textArea.setWrapStyleWord(true);
+			textArea.setLineWrap(true);
+			textArea.setEditable(false);
+			textArea.setFont(textArea.getFont().deriveFont(java.awt.Font.BOLD));
+			textArea.setPreferredSize(new java.awt.Dimension(150, 60));
+			textArea.setBackground(chooser.getBackground());
+			textArea.setBorder(new javax.swing.border.EmptyBorder(5, 10, 0, 0));
+			chooser.setAccessory(textArea);
+			// Check that it exists or ask the user for it
+			while (ejsRootDirectory == null) {
+				if (chooser.showOpenDialog((java.awt.Component) null) != JFileChooser.APPROVE_OPTION) {
+					return false; // The user canceled
+				}
+				ejsRootDirectory = chooser.getSelectedFile();
+				if (ejsRootDirectory == null) {
+					return false; // The user canceled
+				}
+				if (!new File(ejsRootDirectory, "EjsConsole.jar").exists()) { //$NON-NLS-1$
+					ejsRootDirectory = null;
+				}
+			}
+		}
+		File sourceDir = new File(sourceDirPath);
+		if (!sourceDir.exists()) {
+			sourceDir.mkdirs();
+		}
+		// Extract the model and auxiliary files
+		java.util.List<String> extractList = new ArrayList<String>();
+		// Make relative files relative
+		String modelPath = _model;
+		int modelPathLength = 0;
+		int index = modelPath.lastIndexOf('/');
+		if (index >= 0) {
+			_model = "./" + modelPath.substring(index + 1); //$NON-NLS-1$
+			modelPath = modelPath.substring(0, index + 1); // including the '/'
+			modelPathLength = modelPath.length();
+		}
+		if (!_resources.contains(_model)) {
+			_resources.add(_model); // Make sure the model is there
+		}
+		if (modelPathLength > 0) {
+			for (String res : _resources) {
+				extractList.add(res.startsWith(modelPath) ? "./" + res.substring(modelPathLength) : res); //$NON-NLS-1$
+			}
+		} else {
+			extractList.addAll(_resources);
+		}
+		java.util.Collections.sort(extractList);
 
-    JCheckBox originalPathBox = new JCheckBox(res.getString("EjsTool.KeepOriginalPath"), false); //$NON-NLS-1$
-    JTextField originalPathField = new JTextField(modelPath);
-    originalPathField.setEditable(false);
-    
-    JPanel originalPathPanel = new JPanel(new BorderLayout());
-    originalPathPanel.add(originalPathBox,BorderLayout.WEST);
-    originalPathPanel.add(originalPathField,BorderLayout.CENTER);
-    
-    JCheckBox quitCheckBox = null;
-    if (!OSPRuntime.appletMode) { // Applets do not quit
-      quitCheckBox = new JCheckBox(res.getString("EjsTool.QuitSimulation"), true); //$NON-NLS-1$
-      auxPanel.add(quitCheckBox, BorderLayout.NORTH);
-    }
-    
-    auxPanel.add(originalPathPanel, BorderLayout.CENTER);
-    
-    java.util.List<Object> finalList = ejsConfirmList(parentComponent, new java.awt.Dimension(400, 400), res.getString("EjsTool.ExtractingFiles"), res.getString("EjsTool.Message"), extractList, auxPanel); //$NON-NLS-1$ //$NON-NLS-2$
-    if(finalList==null) {
-      return false; // The user canceled
-    }
-    /* Add the "files" directory to the ResourceLoader
-    String filesDir=null;
-    if (ResourceLoader.getResource(_model)==null) { // Search in the class "files" directory
-      filesDir = _ejsClass.getName().replace('.', '/') + "/files";
-      ResourceLoader.addSearchPath(filesDir);
-    }
-    */
-    
-    File destinationDirectory = null;
-    String relativeDir = ""; //$NON-NLS-1$
-    if (originalPathBox.isSelected()) {
-      destinationDirectory = new File(sourceDir,modelPath);
-      relativeDir = modelPath;
-    }
-    else { // the user selects a destination directory
-      // Create a chooser
-      JFileChooser chooser = OSPRuntime.createChooser("", new String[] {}); //$NON-NLS-1$
-      chooser.setDialogTitle(res.getString("EjsTool.ChooseDestinationDirectory")); //$NON-NLS-1$
-      chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-      chooser.setMultiSelectionEnabled(false);
-      chooser.setCurrentDirectory(sourceDir);
-      // Choose a correct destination directory
-      sourceDirPath = EjsTool.getPath(sourceDir);
-      while(destinationDirectory==null) {
-        if(chooser.showOpenDialog((java.awt.Component) null)!=JFileChooser.APPROVE_OPTION) {
-          return false;                                                                              // The user canceled
-        }
-        destinationDirectory = chooser.getSelectedFile();
-        if(destinationDirectory==null) {
-          return false;                                                                              // The user canceled
-        }
-        String destDirPath = EjsTool.getPath(destinationDirectory);
-        if(!destDirPath.startsWith(sourceDirPath)) {
-          JOptionPane.showMessageDialog(parentComponent, res.getString("EjsTool.MustBeUnderSource"), //$NON-NLS-1$
-              res.getString("EjsTool.Error"), JOptionPane.ERROR_MESSAGE);                              //$NON-NLS-1$
-          destinationDirectory = null;
-        } else {
-          relativeDir = destDirPath.substring(sourceDirPath.length());
-        }
-      }
+		// Auxiliary panel for the confirmation list
+		JPanel auxPanel = new JPanel(new BorderLayout());
 
-    }
-    // Extract files
-    destinationDirectory.mkdirs();
-    int policy = JarTool.NO;
-    for(Iterator<?> it = finalList.iterator(); it.hasNext(); ) {
-      String resource = (String) it.next();
-      File targetFile = resource.startsWith("./") ? new File(destinationDirectory, resource.substring(2)) : new File(sourceDir, resource); //$NON-NLS-1$
-      if(targetFile.exists()) {
-        switch(policy) {
-           case JarTool.NO_TO_ALL :
-             continue;
-           case JarTool.YES_TO_ALL :
-             break;                                                                                                                // will overwrite
-           default :
-             switch(policy = JarTool.confirmOverwrite(resource)) {
-                case JarTool.NO_TO_ALL :
-                case JarTool.NO :
-                  continue;
-                default :                                                                                                          // Do nothing, i.e., will overwrite the file
-             }
-        }
-      }
-      String originalName = resource.startsWith("./") ? modelPath+resource.substring(2) : resource;                                //$NON-NLS-1$
-//      System.err.println ("Extract "+originalName+" into "+targetFile.getAbsolutePath());
-      File result = JarTool.extract(originalName, targetFile);                                                                     // Use the ResourceLoader
-      if(result==null) {
-        String[] message = new String[] {res.getString("JarTool.FileNotExtracted"),                                                //$NON-NLS-1$
-                                         originalName+" "+res.getString("JarTool.FileNotExtractedFrom")+" "+_ejsClass.toString()}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        JOptionPane.showMessageDialog((JFrame) null, message, res.getString("JarTool.Error"), JOptionPane.WARNING_MESSAGE); //$NON-NLS-1$
-        return false;
-      }
-    }
-    // Now run the EJS console
-    //final String theOptions = console_options;
-    final String theModel = relativeDir+(_model.startsWith("./") ? _model.substring(2) : _model); //$NON-NLS-1$
-    final File theDir = ejsRootDirectory;
-    Runnable runner = new Runnable() {
-      public void run() {
-        try {
-          final Vector<String> cmd = new Vector<String>();
-          String javaHome = System.getProperty("java.home");                                      //$NON-NLS-1$
-          if(javaHome!=null) {
-            cmd.add(javaHome+java.io.File.separator+"bin"+java.io.File.separator+"java");         //$NON-NLS-1$ //$NON-NLS-2$
-          } else {
-            cmd.add("java");                                                                      //$NON-NLS-1$
-          }
-          //if (theOptions!=null) cmd.add("-Dejs.console_options="+theOptions);
-          cmd.add("-jar");                                                                        //$NON-NLS-1$
-          cmd.add("EjsConsole.jar");                                                              //$NON-NLS-1$
-          if (_password!=null && _password.length()>0) {
-            cmd.add("-launcher.password"); //$NON-NLS-1$
-            cmd.add("\""+_password+"\"");                                                         //$NON-NLS-1$ //$NON-NLS-2$
-          }
-          cmd.add("-file");                                                                       //$NON-NLS-1$
-          cmd.add(theModel);
-          String[] cmdarray = cmd.toArray(new String[0]);
+		JCheckBox originalPathBox = new JCheckBox(res.getString("EjsTool.KeepOriginalPath"), false); //$NON-NLS-1$
+		JTextField originalPathField = new JTextField(modelPath);
+		originalPathField.setEditable(false);
+
+		JPanel originalPathPanel = new JPanel(new BorderLayout());
+		originalPathPanel.add(originalPathBox, BorderLayout.WEST);
+		originalPathPanel.add(originalPathField, BorderLayout.CENTER);
+
+		JCheckBox quitCheckBox = null;
+		if (!OSPRuntime.appletMode) { // Applets do not quit
+			quitCheckBox = new JCheckBox(res.getString("EjsTool.QuitSimulation"), true); //$NON-NLS-1$
+			auxPanel.add(quitCheckBox, BorderLayout.NORTH);
+		}
+
+		auxPanel.add(originalPathPanel, BorderLayout.CENTER);
+
+		java.util.List<Object> finalList = ejsConfirmList(parentComponent, new java.awt.Dimension(400, 400),
+				res.getString("EjsTool.ExtractingFiles"), res.getString("EjsTool.Message"), extractList, auxPanel); //$NON-NLS-1$ //$NON-NLS-2$
+		if (finalList == null) {
+			return false; // The user canceled
+		}
+		/*
+		 * Add the "files" directory to the ResourceLoader String filesDir=null; if
+		 * (ResourceLoader.getResource(_model)==null) { // Search in the class "files"
+		 * directory filesDir = _ejsClass.getName().replace('.', '/') + "/files";
+		 * ResourceLoader.addSearchPath(filesDir); }
+		 */
+
+		File destinationDirectory = null;
+		String relativeDir = ""; //$NON-NLS-1$
+		if (originalPathBox.isSelected()) {
+			destinationDirectory = new File(sourceDir, modelPath);
+			relativeDir = modelPath;
+		} else { // the user selects a destination directory
+			// Create a chooser
+			JFileChooser chooser = OSPRuntime.createChooser("", new String[] {}); //$NON-NLS-1$
+			chooser.setDialogTitle(res.getString("EjsTool.ChooseDestinationDirectory")); //$NON-NLS-1$
+			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			chooser.setMultiSelectionEnabled(false);
+			chooser.setCurrentDirectory(sourceDir);
+			// Choose a correct destination directory
+			sourceDirPath = EjsTool.getPath(sourceDir);
+			while (destinationDirectory == null) {
+				if (chooser.showOpenDialog((java.awt.Component) null) != JFileChooser.APPROVE_OPTION) {
+					return false; // The user canceled
+				}
+				destinationDirectory = chooser.getSelectedFile();
+				if (destinationDirectory == null) {
+					return false; // The user canceled
+				}
+				String destDirPath = EjsTool.getPath(destinationDirectory);
+				if (!destDirPath.startsWith(sourceDirPath)) {
+					JOptionPane.showMessageDialog(parentComponent, res.getString("EjsTool.MustBeUnderSource"), //$NON-NLS-1$
+							res.getString("EjsTool.Error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+					destinationDirectory = null;
+				} else {
+					relativeDir = destDirPath.substring(sourceDirPath.length());
+				}
+			}
+
+		}
+
+		String err = ResourceLoader.extractFiles(modelPath, sourceDir, finalList, destinationDirectory);
+
+		if (err != null) {
+			String[] message = new String[] { res.getString("JarTool.FileNotExtracted"), //$NON-NLS-1$
+					err + " " + res.getString("JarTool.FileNotExtractedFrom") + " " + _ejsClass.toString() }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			JOptionPane.showMessageDialog((JFrame) null, message, res.getString("JarTool.Error"), //$NON-NLS-1$
+					JOptionPane.WARNING_MESSAGE);
+			return false;
+		}
+		// Now run the EJS console
+		// final String theOptions = console_options;
+		final String theModel = relativeDir + (_model.startsWith("./") ? _model.substring(2) : _model); //$NON-NLS-1$
+		final File theDir = ejsRootDirectory;
+		Runnable runner = new Runnable() {
+			public void run() {
+				try {
+					final Vector<String> cmd = new Vector<String>();
+					String javaHome = System.getProperty("java.home"); //$NON-NLS-1$
+					if (javaHome != null) {
+						cmd.add(javaHome + java.io.File.separator + "bin" + java.io.File.separator + "java"); //$NON-NLS-1$ //$NON-NLS-2$
+					} else {
+						cmd.add("java"); //$NON-NLS-1$
+					}
+					// if (theOptions!=null) cmd.add("-Dejs.console_options="+theOptions);
+					cmd.add("-jar"); //$NON-NLS-1$
+					cmd.add("EjsConsole.jar"); //$NON-NLS-1$
+					if (_password != null && _password.length() > 0) {
+						cmd.add("-launcher.password"); //$NON-NLS-1$
+						cmd.add("\"" + _password + "\""); //$NON-NLS-1$ //$NON-NLS-2$
+					}
+					cmd.add("-file"); //$NON-NLS-1$
+					cmd.add(theModel);
+					String[] cmdarray = cmd.toArray(new String[0]);
 //                    for (int i=0; i<cmdarray.length; i++) System.out.println ("Trying to run ["+i+"] = "+cmdarray[i]);
-          Process proc = Runtime.getRuntime().exec(cmdarray, null, theDir);
-          proc.waitFor();
-        } catch(Exception exc) {
-          exc.printStackTrace();
-        }
-      }
+					Process proc = Runtime.getRuntime().exec(cmdarray, null, theDir);
+					proc.waitFor();
+				} catch (Exception exc) {
+					exc.printStackTrace();
+				}
+			}
 
-    };
-    if(org.opensourcephysics.js.JSUtil.isJS) {
-    	System.err.println("Warning:  EJSTool not supported in JavaScript.");
-    }else {
-	    java.lang.Thread thread = new Thread(runner);
-	    thread.setPriority(Thread.NORM_PRIORITY);
-	    thread.start();
-    }
-    return quitCheckBox==null ? false : quitCheckBox.isSelected();
-  }
+		};
+		if (org.opensourcephysics.js.JSUtil.isJS) {
+			System.err.println("Warning:  EJSTool not supported in JavaScript.");
+		} else {
+			java.lang.Thread thread = new Thread(runner);
+			thread.setPriority(Thread.NORM_PRIORITY);
+			thread.start();
+		}
+		return quitCheckBox == null ? false : quitCheckBox.isSelected();
+	}
 
-  public static java.util.List<Object> ejsConfirmList(Component _target, Dimension _size, String _message, String _title, java.util.List<?> _list) {
+
+public static java.util.List<Object> ejsConfirmList(Component _target, Dimension _size, String _message, String _title, java.util.List<?> _list) {
     return ejsConfirmList(_target, _size, _message, _title, _list, (JComponent) null);
   }
 

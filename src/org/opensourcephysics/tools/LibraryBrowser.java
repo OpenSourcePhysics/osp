@@ -707,7 +707,7 @@ public class LibraryBrowser extends JPanel {
 		// was first:
 		File targetFile = new File(path);		
 		if (targetFile.isDirectory()) {
-			return createCollection(targetFile, targetFile, dlFileFilter);
+			return createCollectionFromDirectory(targetFile, targetFile, dlFileFilter);
 		}
 		
 		XMLControlElement control = new XMLControlElement(path);
@@ -761,7 +761,7 @@ public class LibraryBrowser extends JPanel {
    * @param filter a FileFilter to determine which files are DL resources
    * @return the collection
    */
-	protected LibraryCollection createCollection(File targetDir, File base, FileFilter filter) {
+	private LibraryCollection createCollectionFromDirectory(File targetDir, File base, FileFilter filter) {
 		// find HTML files in this folder 
 		FileFilter htmlFilter = new HTMLFilter();
 		File[] htmlFiles = targetDir.listFiles(htmlFilter);
@@ -789,7 +789,7 @@ public class LibraryBrowser extends JPanel {
 		// find subfolders
 		File[] subdirs = targetDir.listFiles(new DirectoryFilter());
 		for (File dir: subdirs) {
-			LibraryCollection subCollection = createCollection(dir, base, filter);
+			LibraryCollection subCollection = createCollectionFromDirectory(dir, base, filter);
 			if (subCollection.getResources().length>0)
 			collection.addResource(subCollection);
 		}
@@ -2465,7 +2465,13 @@ public class LibraryBrowser extends JPanel {
 					saveToCache = false;
 				}
 
+			// BH 2020.04.14 added to speed up zip file checking
+			boolean doCache = OSPRuntime.doCacheZipContents;
+			OSPRuntime.doCacheZipContents = true;
 			LibraryResource resource = loadResource(realPath);
+			OSPRuntime.doCacheZipContents = doCache;
+			if (!doCache)
+				ResourceLoader.clearZipCache();
 			if (resource != null) {
 				LibraryTreePanel treePanel = index < 0 ? createLibraryTreePanel() : getTreePanel(index);
 				// tab is editable only if it is a local XML file

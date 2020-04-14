@@ -785,7 +785,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 							// now what!??
 						} else {
 							String s = ResourceLoader.getURIPath(sourcePath + "!/" + next); //$NON-NLS-1$
-							thumbFile = JarTool.extract(s, new File(thumbPath));
+							thumbFile = ResourceLoader.extract(s, new File(thumbPath));
 						}
 					}
 				}
