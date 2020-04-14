@@ -29,6 +29,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -189,7 +190,7 @@ public class ResourceLoader {
 			name = name.substring(2);
 		}
 		/**
-		 * not applicable
+		 * not applicable -- Tracker Java applet only
 		 * 
 		 * @j2sNative
 		 * 
@@ -1165,16 +1166,22 @@ public class ResourceLoader {
     return results;
   }
   
-  /**
+  private static Map<String, Set<String>> htZipContents = new HashMap<>();
+  
+   /**
    * Gets the contents of a zip file.
    * 
    * @param zipPath the path to the zip file
    * @return a set of file names in alphabetical order
    */
   public static Set<String> getZipContents(String zipPath) {
-    Set<String> fileNames = new TreeSet<String>();
+  	URL url = fileToCachedURL(zipPath);
+    Set<String> fileNames = htZipContents.get(url.toString());
+    if (fileNames == null) {
+    	fileNames = new TreeSet<String>();
+    	if (OSPRuntime.doCacheZipContents)
+    		htZipContents.put(url.toString(), fileNames);
     try {
-    	URL url = fileToCachedURL(zipPath);
     	OSPLog.finest("zip url: "+url.toExternalForm()); //$NON-NLS-1$
       BufferedInputStream bufIn = new BufferedInputStream(url.openStream());
       ZipInputStream input = new ZipInputStream(bufIn);
@@ -1188,6 +1195,7 @@ public class ResourceLoader {
       input.close();
     }
     catch (Exception ex) {}    
+   }
     return fileNames;
   }
   
@@ -1346,6 +1354,8 @@ public class ResourceLoader {
         if (!sourceName.contains(filename)) continue;
         target.getParentFile().mkdirs();
         int bytesRead;
+        // BH note - this is where files are written to /TEMP/
+        // note that they are NOT in their fully !/ escaped forms.
         FileOutputStream output = new FileOutputStream(target);
         while ((bytesRead=input.read(buffer)) != -1) 
         	output.write(buffer, 0, bytesRead);
@@ -1539,7 +1549,7 @@ public class ResourceLoader {
    */
   static private Resource createFileResource(String path) {
       // don't create file resources when in applet mode
-    if(OSPRuntime.applet!=null || JSUtil.isJS) {
+    if(OSPRuntime.applet!=null) {
       return null;
     }
     // ignore paths that refer to zip or jar files
@@ -1578,7 +1588,6 @@ public class ResourceLoader {
     // following added by Doug Brown 2009/11/14
     if(!JSUtil.isJS && OSPRuntime.applet!=null) {
       try { // let applet class try to get it first
-        //URL url = OSPRuntime.applet.getClass().getResource(path);
         URL url = getAppletResourceURL(path);
         res = createResource(url);
       } catch(Exception ex) {
@@ -1648,9 +1657,6 @@ public class ResourceLoader {
 //  @SuppressWarnings("resource") // Java 7
 	static private Resource createZipResource(String path) {
 		// convert to non-URI form
-		if (JSUtil.isJS) {
-			return null;
-		}
 		path = getNonURIPath(path);
 
 		// get separate zip base and relative file name

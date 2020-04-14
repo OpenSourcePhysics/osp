@@ -7,6 +7,14 @@
 
 package org.opensourcephysics.desktop;
 
+import java.io.File;
+import java.io.FileOutputStream;
+
+import org.opensourcephysics.controls.OSPLog;
+import org.opensourcephysics.display.OSPRuntime;
+
+import com.sun.javafx.fxml.LoadListener;
+
 /**
  * OSPDesktop invokes the java.awt.Desktop API using reflection for Java 1.5 compatibility.
  *
@@ -16,36 +24,57 @@ public class OSPDesktop {
   static final String desktopClassName = "java.awt.Desktop"; //$NON-NLS-1$
   static boolean desktopSupported;
 
-  static {
-    java.lang.reflect.Method m;
-    try {
-      m = Class.forName(desktopClassName).getMethod("isDesktopSupported", (Class<?>[]) null); //$NON-NLS-1$
-      desktopSupported = (Boolean) m.invoke(null, (Object[]) null);
-    } catch(Exception e) {
-      //e.printStackTrace();]
-      desktopSupported = false;
-    }
-  }
+  // No java.awt.Desktop for SwingJS
+  
+	static {
+		if (!OSPRuntime.isJS) {
+			java.lang.reflect.Method m;
+			try {
+				m = Class.forName(desktopClassName).getMethod("isDesktopSupported", (Class<?>[]) null); //$NON-NLS-1$
+				desktopSupported = (Boolean) m.invoke(null, (Object[]) null);
+			} catch (Exception e) {
+				// e.printStackTrace();]
+				desktopSupported = false;
+			}
+		}
+	}
 
-  /**
-   * Display a URL in the system browser.
-   *
-   * Attempts to open URL with desktop API if available;  attempts Ostermiller code otherwise.
-   *
-   * @return true if successful
-   */
-  public static boolean displayURL(String url) {
-    try {
-      if(!org.opensourcephysics.desktop.OSPDesktop.browse(url)) {
-        // try the old way
-        org.opensourcephysics.desktop.ostermiller.Browser.init();
-        org.opensourcephysics.desktop.ostermiller.Browser.displayURL(url);
-      }
-      return true;
-    } catch(Exception e1) {
-      return false;
-    }
-  }
+	/**
+	 * Display a URL in the system browser.
+	 *
+	 * Attempts to open URL with desktop API if available; attempts Ostermiller code
+	 * otherwise.
+	 *
+	 * @return true if successful
+	 */
+	public static boolean displayURL(String url) {
+
+		try {
+
+			if (OSPRuntime.isJS) {
+				if (url.startsWith("file")) {
+					byte[] bytes = OSPRuntime.getCachedBytes(url);
+					if (bytes == null) {
+						OSPLog.warning("OSPDDesktop could not display " + url);
+					} else {
+						 String name = url.toString();
+						name = name.substring(name.lastIndexOf("/") + 1);
+						File fout = new File(name);
+						FileOutputStream fos = new FileOutputStream(fout);
+						fos.write(bytes);
+						fos.close(); // ... and off it goes!!
+					}
+				} else {
+					OSPRuntime.displayURL(url);
+				}
+			} else if (!OSPDesktop.browse(url)) {
+				OSPRuntime.displayURL(url);
+			}
+			return true;
+		} catch (Exception e1) {
+			return false;
+		}
+	}
 
   /**
    * Determines if the desktop API is supported.

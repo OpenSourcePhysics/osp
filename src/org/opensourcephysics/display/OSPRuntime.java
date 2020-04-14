@@ -11,6 +11,7 @@ import java.awt.Component;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
@@ -57,9 +58,34 @@ public class OSPRuntime {
 	
 	public static final String VERSION = "5.0.0"; //$NON-NLS-1$
 
+	private static boolean isMac;
+
+	static {
+		try {
+			// system properties may not be readable in some environments
+			isMac = (/** @j2sNative 1 ? false : */
+			(System.getProperty("os.name", "").toLowerCase().startsWith("mac"))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		} catch (SecurityException ex) {
+		}
+
+	}
+
 	public static boolean isJS = /** @j2sNative true || */
 			false;
 
+	public static boolean setRenderingHints = (isJS && !isMac);
+
+	public static boolean doCacheZipContents = OSPRuntime.isJS; // for ResourceLoader
+
+	public static boolean skipDisplayOfPDF = !OSPRuntime.isJS; // for TrackerIO, for now.
+	
+	/**
+	 * BH AsyncFileChooser extends JFileChooser, so all of the methods of
+	 * JFileChooser are still available. In particular, the SAVE action needs no
+	 * changes. But File reading requires asynchronous action in SwingJS.
+	 * 
+	 */
+	private static AsyncFileChooser chooser;
 
 	public static /* BH NOT final */ String WEB_CONNECTED_TEST_URL = (isJS ? "https://pubchem.ncbi.nlm.nih.gov" : "https://www.compadre.org/osp/");
 
@@ -411,17 +437,6 @@ public class OSPRuntime {
 		}
 	}
 
-	private static boolean isMac;
-
-	static {
-		try {
-			// system properties may not be readable in some environments
-			isMac = (/** @j2sNative 1 ? false : */
-			(System.getProperty("os.name", "").toLowerCase().startsWith("mac"))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		} catch (SecurityException ex) {
-		}
-
-	}
 
 	/**
 	 * Determines if OS is Mac
@@ -1110,15 +1125,7 @@ public class OSPRuntime {
 		return translator;
 	}
 
-	/**
-	 * BH AsyncFileChooser extends JFileChooser, so all of the methods of
-	 * JFileChooser are still available. In particular, the SAVE action needs no
-	 * changes. But File reading requires asynchronous action in SwingJS.
-	 * 
-	 */
-	private static AsyncFileChooser chooser;
 
-	public static boolean setRenderingHints = (!JSUtil.isJS && !isMac);
 
 	/**
 	 * Gets a file chooser. The choose is static and will therefore be the same for
@@ -1413,6 +1420,27 @@ public class OSPRuntime {
 	
 	public static byte[] addJSCachedBytes(Object URLorURIorFile) {
 		return (isJS ? jsutil.addJSCachedBytes(URLorURIorFile) : null);
+	}
+
+	public static void displayURL(String url) throws IOException {
+		
+		if (isJS) {
+			jsutil.displayURL(url, "_blank");
+		} else {
+			/**
+			 * totally ignore
+			 * 
+			 * @j2sNative
+			 * 
+			 *   
+			 */
+			{
+				// try the old way
+				org.opensourcephysics.desktop.ostermiller.Browser.init();
+				org.opensourcephysics.desktop.ostermiller.Browser.displayURL(url);
+			}
+			
+		}
 	}
 
 }

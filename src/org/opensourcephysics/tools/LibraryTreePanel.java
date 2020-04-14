@@ -93,6 +93,7 @@ import javax.swing.tree.TreeSelectionModel;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
+import org.opensourcephysics.desktop.OSPDesktop;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.tools.LibraryResource.Metadata;
@@ -131,15 +132,17 @@ public class LibraryTreePanel extends JPanel {
 		hyperlinkListener = new HyperlinkListener() {
 			public void hyperlinkUpdate(HyperlinkEvent e) {
 				if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-					try {
-						// try the preferred way
-						if (!org.opensourcephysics.desktop.OSPDesktop.browse(e.getURL().toURI())) {
-							// try the old way
-							org.opensourcephysics.desktop.ostermiller.Browser.init();
-							org.opensourcephysics.desktop.ostermiller.Browser.displayURL(e.getURL().toString());
-						}
-					} catch (Exception ex) {
-					}
+		          	OSPDesktop.displayURL(e.getURL().toString());
+//
+//					try {
+//						// try the preferred way
+//						if (!org.opensourcephysics.desktop.OSPDesktop.browse(e.getURL().toURI())) {
+//							// try the old way
+//							org.opensourcephysics.desktop.ostermiller.Browser.init();
+//							org.opensourcephysics.desktop.ostermiller.Browser.displayURL(e.getURL().toString());
+//						}
+//					} catch (Exception ex) {
+//					}
 				}
 			}
 		};

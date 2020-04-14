@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -2710,7 +2711,7 @@ public class LibraryBrowser extends JPanel {
 	public static byte[] getURLContents(URL url) {
 		try {
 			// Java 9!			return new String(url.openStream().readAllBytes());
-			return getLimitedStreamBytes(url.openStream(), -1);
+			return getLimitedStreamBytes(url.openStream(), -1, null);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -2721,26 +2722,33 @@ public class LibraryBrowser extends JPanel {
 	 * From javajs.Rdr
 	 * 
 	 */
-	public static byte[] getLimitedStreamBytes(InputStream is, long n) throws IOException {
+	public static byte[] getLimitedStreamBytes(InputStream is, long n, OutputStream out) throws IOException {
 
 		// Note: You cannot use InputStream.available() to reliably read
 		// zip data from the web.
 
+		boolean toOut = (out != null);
 		int buflen = (n > 0 && n < 1024 ? (int) n : 1024);
 		byte[] buf = new byte[buflen];
-		byte[] bytes = new byte[n < 0 ? 4096 : (int) n];
+		byte[] bytes = (out == null ? new byte[n < 0 ? 4096 : (int) n] : null);
 		int len = 0;
 		int totalLen = 0;
 		if (n < 0)
 			n = Integer.MAX_VALUE;
 		while (totalLen < n && (len = is.read(buf, 0, buflen)) > 0) {
 			totalLen += len;
-			if (totalLen > bytes.length)
-				bytes = Arrays.copyOf(bytes, totalLen * 2);
-			System.arraycopy(buf, 0, bytes, totalLen - len, len);
-			if (n != Integer.MAX_VALUE && totalLen + buflen > bytes.length)
-				buflen = bytes.length - totalLen;
+			if (toOut) {
+				out.write(buf, 0, len);
+			} else {
+				if (totalLen > bytes.length)
+					bytes = Arrays.copyOf(bytes, totalLen * 2);
+				System.arraycopy(buf, 0, bytes, totalLen - len, len);
+				if (n != Integer.MAX_VALUE && totalLen + buflen > bytes.length)
+					buflen = bytes.length - totalLen;
+				}
 		}
+		if (toOut) 
+			return null;
 		if (totalLen == bytes.length)
 			return bytes;
 		buf = new byte[totalLen];

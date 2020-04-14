@@ -17,7 +17,9 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
@@ -37,7 +39,7 @@ import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.util.zip.ZipFile; // not supported by SwingJS
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
@@ -188,6 +190,8 @@ public class JarTool implements Tool, Runnable {
   }
 
   /**
+   * called by LaunchBuilder
+   * 
    * Sets the owner frame for progress dialogs that may appear when creating
    * a JAR file.
    * @param owner Frame
@@ -197,6 +201,9 @@ public class JarTool implements Tool, Runnable {
   }
 
   /**
+   * 
+   * called by LaunchBuilder
+   * 
    * Creates a JAR file out of the list of contents provided.
    * Each entry in the sources list can be either a single file, a directory,
    * or a compressed (ZIP, JAR or TRZ) file.
@@ -296,7 +303,7 @@ public class JarTool implements Tool, Runnable {
    * @param target String The name of an existing compressed file, relative
    * to the parent directory.
    */
-  public File append(ArrayList<String> sources, File parent, String target) {
+  private File append(ArrayList<String> sources, File parent, String target) {
     OverwriteValue policy = new OverwriteValue(overwritePolicy);
     overwritePolicy = NO;
     if(sources.size()<=0) {
@@ -319,7 +326,9 @@ public class JarTool implements Tool, Runnable {
     }
   }
 
-  /**
+/**
+   * From LaunchBuilder save jar
+   * 
    * Creates a Manifest for a JAR file with the given parameters
    * @param classpath String
    * @param mainclass String
@@ -357,7 +366,7 @@ public class JarTool implements Tool, Runnable {
    * @param file File the jar file from which to obtain the manifest
    * @return Manifest the manifest found, null if failed.
    */
-  static public Manifest getManifest(File file) {
+  static private Manifest getManifest(File file) {
     try {
       JarFile jar = new JarFile(file);
       Manifest manifest = jar.getManifest();
@@ -369,6 +378,8 @@ public class JarTool implements Tool, Runnable {
   }
 
   /**
+   * From ResourceLoader 
+   * 
    * Extracts a given file from a compressed (ZIP, JAR or TRZ) file
    * @param source File The compressed file to extract the file from
    * @param filename String The path of the file to extract
@@ -377,9 +388,41 @@ public class JarTool implements Tool, Runnable {
    * @return File The extracted file, null if failed
    */
   static public File extract(File source, String filename, String destination) {
-    return extract(source, filename, new File(destination));
+    return extract0(source, filename, new File(destination));
   }
-
+  
+	static private File extract2(File source, String fileName, File target) {
+		String targetName = target.toString();
+		System.out.println("extracting " + fileName + " " + targetName + " from " + source);
+		int flen = (fileName.endsWith("/") ? fileName.length() : 0);
+		FileOutputStream fos = null;
+		try (FileInputStream fis = new FileInputStream(source);
+				ZipInputStream zis = (ZipInputStream) new ZipInputStream(fis);) {
+			ZipEntry ze;
+			while ((ze = zis.getNextEntry()) != null && flen >= 0) {
+				String name = ze.getName();
+				if (flen == 0 && name.equals(fileName)) {
+					flen = -1;
+					break;
+				} else if (flen > 0 && name.startsWith(fileName)) {
+					target = new File(targetName + name.substring(flen));
+				} else {
+					continue;
+				}
+				File parent = target.getParentFile();
+				if (parent != null) {
+					parent.mkdirs();
+				}
+				fos = new FileOutputStream(target);
+				LibraryBrowser.getLimitedStreamBytes(zis, ze.getSize(), fos);
+				fos.close();
+				System.out.println("extracted " + targetName + " " + target.length());
+			}
+		} catch (IOException e2) {
+		}
+		return target;
+	}
+  
   /**
    * Extracts a given file from a compressed (ZIP, JAR or TRZ) file
    * Extensive changes by D Brown 2007-10-31
@@ -388,12 +431,14 @@ public class JarTool implements Tool, Runnable {
    * @param target File The target file for the extracted file
    * @return File The extracted file, null if failed
    */
-  static public File extract(File source, String filename, File target) {
+  static private File extract0(File source, String filename, File target) {
     if((source.exists()==false)||(filename==null)||(filename.trim().length()<1)||(target==null)) {
       return null;
     }
-    boolean isDirectory = (filename.lastIndexOf("/")==filename.length()-1); //$NON-NLS-1$
+	System.out.println("extracting " + filename + " " + target + " from " + source);
+    boolean isDirectory = filename.endsWith("/"); //$NON-NLS-1$
     try {
+    	
       // get contents Map of filename to ZipEntry for source jar
       Map<String, ZipEntry> contents = jarContents.get(source.getPath());
       if(contents==null) {
@@ -422,15 +467,16 @@ public class JarTool implements Tool, Runnable {
             // construct new target for the file
             int n = filename.length();
             File newTarget = new File(target, zipEntry.getName().substring(n));
-            extract(source, next, newTarget);
+            extract0(source, next, newTarget);
           }
         }
         return target;
       }
       // target is a file
-      ZipEntry entry = contents.get(filename);
+      ZipEntry entry = contents.get(filename);      
       ZipFile input = new ZipFile(source);
       InputStream in = input.getInputStream(entry); // A stream to read the entry
+      
       File parent = target.getParentFile();
       if(parent!=null) {
         parent.mkdirs();
@@ -443,6 +489,7 @@ public class JarTool implements Tool, Runnable {
       }
       output.close();
       input.close();
+		System.out.println("extracted " + target + " " + target.length());
       return target;
     } catch(Exception ex) {
       ex.printStackTrace();
@@ -451,13 +498,16 @@ public class JarTool implements Tool, Runnable {
   }
 
   /**
+   * 
+   * BH No references
+   * 
    * Extracts a file using the given class loader
    * @param _classLoader ClassLoader The class loader to extract the files from
    * @param filename String The path of the file to extract
    * @param target File The target file for the extracted file
    * @return File The extracted file, null if failed
    */
-  static public File extract(ClassLoader classLoader, String filename, File target) {
+  static private File extract(ClassLoader classLoader, String filename, File target) {
     if((filename==null)||(filename.trim().length()<=0)||(target==null)) {
       return null;
     }
@@ -512,7 +562,8 @@ public class JarTool implements Tool, Runnable {
           }        	
         }
         else {
-          inputStream = ResourceLoader.getResource(filename, false).openInputStream();
+           Resource is = ResourceLoader.getResource(filename, false);
+          inputStream = (is == null ? null : is.openInputStream());
         }
       }
       if(inputStream==null) {
@@ -537,6 +588,9 @@ public class JarTool implements Tool, Runnable {
   }
 
   /**
+   * 
+   * BH No references
+   * 
    * Extract a list of files (given by their relative names) to the given target directory.
    * If files exist, the user will be warned.
    * @param source Object Either a compressed java.io.File with the given resources,
@@ -584,7 +638,7 @@ public class JarTool implements Tool, Runnable {
       if(source==null) {
         result = extract(filename, targetFile);                                                                                                             // Use the ResourceLoader
       } else if(source instanceof File) {
-        result = extract((File) source, filename, targetFile);
+        result = extract0((File) source, filename, targetFile);
       } else if(source instanceof ClassLoader) {
         result = extract((ClassLoader) source, filename, targetFile);
       }
@@ -1132,7 +1186,7 @@ public class JarTool implements Tool, Runnable {
       String filepath = file.getAbsolutePath();
       File zipFile = new File(filepath.substring(0, filepath.indexOf("!")));                                           //$NON-NLS-1$
       File target = new File(targetDirectory, entry);
-      if(extract(zipFile, entry, target)!=null) {
+      if(extract0(zipFile, entry, target)!=null) {
         return new StringBuffer();
       }
       return new StringBuffer(res.getString("JarTool.CantCopy")+" "+filename+" --> "+targetDirectory.getName()+".\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$

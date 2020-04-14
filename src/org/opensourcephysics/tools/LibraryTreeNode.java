@@ -414,70 +414,73 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 		}
   }
   
-  /**
-   * Sets the target of this node's resource. May be absolute or relative path.
-   * 
-   * @param path the target path
-   * @return true if changed
-   */
-  protected boolean setTarget(String path) {
+	/**
+	 * Sets the target of this node's resource. May be absolute or relative path.
+	 * 
+	 * @param path the target path
+	 * @return true if changed
+	 */
+	protected boolean setTarget(String path) {
 		if (record.setTarget(path)) {
 			// target has changed
-			if (path==null) path = ""; //$NON-NLS-1$
+			if (path == null)
+				path = ""; //$NON-NLS-1$
 			if (path.toLowerCase().endsWith(".trk") || path.toLowerCase().endsWith(".trz")) //$NON-NLS-1$ //$NON-NLS-2$
 				setType(LibraryResource.TRACKER_TYPE);
-			else if (path.indexOf("EJS")>-1) { //$NON-NLS-1$
+			else if (path.indexOf("EJS") > -1) { //$NON-NLS-1$
 				setType(LibraryResource.EJS_TYPE);
-  		}
-  		else if (path.toLowerCase().endsWith(".zip")) { //$NON-NLS-1$
-		    Runnable runner = new Runnable() {
-		      public void run() {
-	  				String zipPath = getAbsoluteTarget();
+			} else if (path.toLowerCase().endsWith(".zip")) { //$NON-NLS-1$
+				Runnable libNodeSetZipTypeRunner = new Runnable() {
+					public void run() {
+						String zipPath = getAbsoluteTarget();
 						Set<String> files = ResourceLoader.getZipContents(zipPath);
-						for (String next: files) {
+						for (String next : files) {
 							if (next.endsWith(".trk")) { //$NON-NLS-1$
 								setType(LibraryResource.TRACKER_TYPE);
 								break;
 							}
 						}
-		      }
-		    };
-	      new Thread(runner).start();
-			}
-  		else if (path.equals("")) { //$NON-NLS-1$
-  			if (getHTMLPath()==null)
-  				setType(LibraryResource.UNKNOWN_TYPE);
-  			else setType(LibraryResource.HTML_TYPE);
-  		}
-  		else {
-  			boolean found = false;
-  			for (FileFilter next: LibraryResource.imageFilters) {
-  				if (found) break;
-    			VideoFileFilter filter = (VideoFileFilter)next;
-    			for (String ext: filter.getExtensions()) {  				
-  					if (path.toUpperCase().endsWith("."+ext.toUpperCase())) { //$NON-NLS-1$
-  						setType(LibraryResource.IMAGE_TYPE);
-  						found = true;
-  		  		}
-    			}
-  			}
-	  		for (String ext: VideoIO.getVideoExtensions()) {
-  				if (found) break;
-					if (path.toUpperCase().endsWith("."+ext.toUpperCase())) { //$NON-NLS-1$
+					}
+				};
+				Thread libNodeSetZipType = new Thread(libNodeSetZipTypeRunner);
+				libNodeSetZipType.setName("libNodeSetZipType");
+				libNodeSetZipType.start();
+			} else if (path.equals("")) { //$NON-NLS-1$
+				if (getHTMLPath() == null)
+					setType(LibraryResource.UNKNOWN_TYPE);
+				else
+					setType(LibraryResource.HTML_TYPE);
+			} else {
+				boolean found = false;
+				for (FileFilter next : LibraryResource.imageFilters) {
+					if (found)
+						break;
+					VideoFileFilter filter = (VideoFileFilter) next;
+					for (String ext : filter.getExtensions()) {
+						if (path.toUpperCase().endsWith("." + ext.toUpperCase())) { //$NON-NLS-1$
+							setType(LibraryResource.IMAGE_TYPE);
+							found = true;
+						}
+					}
+				}
+				for (String ext : VideoIO.getVideoExtensions()) {
+					if (found)
+						break;
+					if (path.toUpperCase().endsWith("." + ext.toUpperCase())) { //$NON-NLS-1$
 						setType(LibraryResource.VIDEO_TYPE);
 						found = true;
-		  		}
+					}
 				}
-  		}
-  		LibraryTreePanel.htmlPanesByNode.remove(this);
-  		record.setThumbnail(null);
+			}
+			LibraryTreePanel.htmlPanesByNode.remove(this);
+			record.setThumbnail(null);
 			treePanel.showInfo(this);
-  		treePanel.setChanged();
+			treePanel.setChanged();
 			tooltip = null; // triggers new tooltip
-  		return true;
+			return true;
 		}
 		return false;
-  }
+	}
   
   /**
    * Sets the html path of this node's resource.
@@ -777,8 +780,13 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 				// look for image file in zip with name that includes "_thumbnail"
 				for (String next : ResourceLoader.getZipContents(sourcePath)) {
 					if (next.indexOf("_thumbnail") > -1) { //$NON-NLS-1$
-						String s = ResourceLoader.getURIPath(sourcePath + "!/" + next); //$NON-NLS-1$
-						thumbFile = JarTool.extract(s, new File(thumbPath));
+						if (OSPRuntime.isJS) {
+							thumbFile = new File(thumbPath);
+							// now what!??
+						} else {
+							String s = ResourceLoader.getURIPath(sourcePath + "!/" + next); //$NON-NLS-1$
+							thumbFile = JarTool.extract(s, new File(thumbPath));
+						}
 					}
 				}
 			} else {

@@ -16,6 +16,7 @@ import javax.swing.JTextPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import org.opensourcephysics.controls.OSPLog;
+import org.opensourcephysics.desktop.OSPDesktop;
 import org.opensourcephysics.tools.Resource;
 import org.opensourcephysics.tools.ResourceLoader;
 
@@ -91,13 +92,15 @@ public class TextFrame extends JFrame {
     hyperlinkListener = new HyperlinkListener() {
       public void hyperlinkUpdate(HyperlinkEvent e) {
         if(e.getEventType()==HyperlinkEvent.EventType.ACTIVATED) {
-          try {
-            if(!org.opensourcephysics.desktop.OSPDesktop.browse(e.getURL().toURI())) {
-              // try the old way
-              org.opensourcephysics.desktop.ostermiller.Browser.init();
-              org.opensourcephysics.desktop.ostermiller.Browser.displayURL(e.getURL().toString());
-            }
-          } catch(Exception e1) {}
+          	OSPDesktop.displayURL(e.getURL().toString());
+//          try {
+//          	.browse(e.getURL().toURI());
+//            if(!org.opensourcephysics.desktop.OSPDesktop.browse(e.getURL().toURI())) {
+//              // try the old way
+//              org.opensourcephysics.desktop.ostermiller.Browser.init();
+//              org.opensourcephysics.desktop.ostermiller.Browser.displayURL(e.getURL().toString());
+//            }
+//          } catch(Exception e1) {}
         }
       }
 
