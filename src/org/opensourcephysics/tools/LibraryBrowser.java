@@ -858,7 +858,7 @@ public class LibraryBrowser extends JPanel {
   	if (path==null) return null;
 		File cachedFile = ResourceLoader.getSearchCacheFile(path);
   	boolean isCachePath = cachedFile.exists();
-  	if (!isCachePath && !isWebConnected() && isHTTP(path)) { //$NON-NLS-1$
+  	if (!isCachePath && !isWebConnected() && ResourceLoader.isHTTP(path)) { //$NON-NLS-1$
   		JOptionPane.showMessageDialog(this, 
   				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
   				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
@@ -2371,7 +2371,7 @@ public class LibraryBrowser extends JPanel {
 		    	}
  	  		}
  	  	};
-    	if (libraryPath == null || !isHTTP(libraryPath) && !libraryPath.startsWith("https:")) { //$NON-NLS-1$  //$NON-NLS-2$
+    	if (libraryPath == null || !ResourceLoader.isHTTP(libraryPath)) { //$NON-NLS-1$  //$NON-NLS-2$
 		    // load library
 	    	library.load(libraryPath);
      	  // add previously open tabs that are available
@@ -2395,7 +2395,7 @@ public class LibraryBrowser extends JPanel {
 			  		for (String path: paths) {
 			  			// check for local resource
 			      	Resource res = ResourceLoader.getResource(path);
-			    		if (res!=null && !isHTTP(path)) { //$NON-NLS-1$
+			    		if (res!=null && !ResourceLoader.isHTTP(path)) { //$NON-NLS-1$
 			    			TabLoader tabAdder = addTab(path, null);
 			    			if (tabAdder!=null) tabAdder.execute();  	
 			  			}
@@ -2425,7 +2425,7 @@ public class LibraryBrowser extends JPanel {
      	  // add previously open tabs not available for loading in doInBackground method
 	 	  	if (library.openTabPaths!=null) {  	  		
 		  		for (final String path: library.openTabPaths) {
-		  			boolean available = isWebConnected() && isHTTP(path); //$NON-NLS-1$
+		  			boolean available = isWebConnected() && ResourceLoader.isHTTP(path); //$NON-NLS-1$
 		  			if (available) {
 		    			TabLoader tabAdder = addTab(path, null);
 		    			if (tabAdder!=null) tabAdder.execute();  	
@@ -2460,7 +2460,7 @@ public class LibraryBrowser extends JPanel {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			String realPath = path;
 				File cachedFile = ResourceLoader.getSearchCacheFile(path);
-				if (cachedFile.exists() && isHTTP(path)) { // $NON-NLS-1$
+				if (cachedFile.exists() && ResourceLoader.isHTTP(path)) { // $NON-NLS-1$
 					realPath = cachedFile.getAbsolutePath();
 					saveToCache = false;
 				}
@@ -2475,7 +2475,7 @@ public class LibraryBrowser extends JPanel {
 			if (resource != null) {
 				LibraryTreePanel treePanel = index < 0 ? createLibraryTreePanel() : getTreePanel(index);
 				// tab is editable only if it is a local XML file
-				boolean editable = !isHTTP(path) && path.toLowerCase().endsWith(".xml"); //$NON-NLS-1$ //$NON-NLS-2$
+				boolean editable = !ResourceLoader.isHTTP(path) && path.toLowerCase().endsWith(".xml"); //$NON-NLS-1$ //$NON-NLS-2$
 				treePanel.setRootResource(resource, path, editable, isRecentPathXML);
 				return treePanel;
 			}
@@ -2690,12 +2690,7 @@ public class LibraryBrowser extends JPanel {
 
   }
 
-  public static boolean isHTTP(String path) {
-	  return path.startsWith("http:") || path.startsWith("https:");
-  }
-
-
-	public static File copyFile(String sourcePath, String destPath) { 
+  public static File copyFile(String sourcePath, String destPath) { 
 		File f = new File(destPath);
 		try {
 			Path path = f.toPath();

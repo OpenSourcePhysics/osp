@@ -73,11 +73,18 @@ public class OSPRuntime {
 	public static boolean isJS = /** @j2sNative true || */
 			false;
 
-	public static boolean setRenderingHints = (isJS && !isMac);
+	public static boolean setRenderingHints = (!isJS && !isMac);
+	
+	public static boolean checkZipLoaders = !isJS;  // for ResourceLloader
 
 	public static boolean doCacheZipContents = OSPRuntime.isJS; // for ResourceLoader
 
 	public static boolean skipDisplayOfPDF = !OSPRuntime.isJS; // for TrackerIO, for now.
+
+	public static boolean checkTempDirCache = OSPRuntime.isJS; // for ResourceLoader.
+
+	public static final String tempDir = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$  // BH centralized
+	
 	
 	/**
 	 * BH AsyncFileChooser extends JFileChooser, so all of the methods of
@@ -217,6 +224,7 @@ public class OSPRuntime {
 	@SuppressWarnings("javadoc")
 	public final static HashMap<String, String> LOOK_AND_FEEL_TYPES = new HashMap<String, String>();
 
+
 	/** Preferences XML control */
 	private static XMLControl prefsControl;
 
@@ -225,6 +233,8 @@ public class OSPRuntime {
 
 	/** Preferences filename */
 	private static String prefsFileName = "osp.prefs"; //$NON-NLS-1$
+
+	
 
 	/**
 	 * Sets default properties for OSP.

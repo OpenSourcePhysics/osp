@@ -87,7 +87,7 @@ public class ResourceLoader {
   protected static int maxPaths = 20;                                                              // max number of paths in history
   protected static Hashtable<String, Resource> resources = new Hashtable<String, Resource>();      // cached resources
   protected static boolean cacheEnabled=false, canceled=false;
-  protected static Map<String, URLClassLoader> zipLoaders = new TreeMap<String, URLClassLoader>(); // maps path to zipLoader
+  protected static Map<String, URLClassLoader> zipLoaders = (OSPRuntime.checkZipLoaders ? new TreeMap<String, URLClassLoader>() : null); // maps path to zipLoader
   protected static URLClassLoader xsetZipLoader; // zipLoader of current xset
   protected static Set<String> extractExtensions = new TreeSet<String>();
   protected static ArrayList<String> pathsNotFound = new ArrayList<String>();
@@ -184,7 +184,7 @@ public class ResourceLoader {
 	 * @param searchFiles true to search files
 	 * @return the Resource, or null if none found
 	 */
-	public static Resource getResource(String name, Class<?> type, boolean searchFiles) {
+	private static Resource getResource(String name, Class<?> type, boolean searchFiles) {
 		if ((name == null) || name.equals("")) { //$NON-NLS-1$
 			return null;
 		}
@@ -196,9 +196,14 @@ public class ResourceLoader {
 		if (name.endsWith("\"")) { //$NON-NLS-1$
 			name = name.substring(0, name.length() - 1);
 		}
-		if (name.startsWith("./")) { //$NON-NLS-1$
+		while (name.startsWith("./")) { //$NON-NLS-1$
 			name = name.substring(2);
 		}
+		
+		if (OSPRuntime.isJS) {
+			if (!isHTTP(name) && !name.startsWith("/"))
+				name = OSPRuntime.tempDir + name;
+		} else
 		/**
 		 * not applicable -- Tracker Java applet only
 		 * 
@@ -235,6 +240,7 @@ public class ResourceLoader {
 				}
 			}
 		}
+		
 		// look for resource with name only
 		Resource res = findResource(name, type, searchFiles);
 		if (res != null) {
@@ -678,7 +684,7 @@ public class ResourceLoader {
    * @return the default OSP cache
    */
   public static File getDefaultOSPCache() {
-  	String cacheDir = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$
+  	String cacheDir = OSPRuntime.tempDir;
   	String userHome = OSPRuntime.getUserHome();
 		if (!OSPRuntime.isJS && userHome!=null) {
 	  	userHome += "/"; //$NON-NLS-1$
@@ -744,7 +750,7 @@ public class ResourceLoader {
 	public static boolean isOSPCachePath(String path) {
 		File cacheDir = getOSPCache();
 		if (cacheDir == null)
-			cacheDir = new File(System.getProperty("java.io.tmpdir")); //$NON-NLS-1$
+			cacheDir = new File(OSPRuntime.tempDir); //$NON-NLS-1$
 		String cachePath = XML.forwardSlash(cacheDir.getAbsolutePath()) + "/osp-"; //$NON-NLS-1$
 		if (XML.forwardSlash(path).contains(cachePath))
 			return true;
@@ -771,7 +777,7 @@ public class ResourceLoader {
   public static File getOSPCacheFile(String urlPath, String name) {
   	File cacheDir = getOSPCache();
   	if (cacheDir==null)
-			cacheDir = new File(System.getProperty("java.io.tmpdir")); //$NON-NLS-1$	
+			cacheDir = new File(OSPRuntime.tempDir); //$NON-NLS-1$	
   	return getCacheFile(cacheDir, urlPath, name);
   }
 
@@ -1186,7 +1192,7 @@ public class ResourceLoader {
 		htZipContents.clear();
 	}
 
-  private static boolean zipContainsFile(String zipPath, String fileName) {
+  private static boolean findFileInZipFile(String zipPath, String fileName) {
 	  return getZipContents(zipPath).contains(fileName);
   }
    /**
@@ -1254,7 +1260,7 @@ public class ResourceLoader {
    */
   public static Set<File> unzip(String zipPath, File targetDir, boolean alwaysOverwrite) {
   	if (targetDir==null)
-			targetDir = new File(System.getProperty("java.io.tmpdir")); //$NON-NLS-1$
+			targetDir = new File(OSPRuntime.tempDir); //$NON-NLS-1$
   	OSPLog.finer("unzipping "+zipPath+" to "+targetDir); //$NON-NLS-1$ //$NON-NLS-2$
   	try {
     	URL url = getURLWithCachedBytes(zipPath);    	
@@ -1729,11 +1735,10 @@ public class ResourceLoader {
 			}
 		}
 
-		URLClassLoader zipLoader = null;
 		URL url = null;
 
-		if (base != null) {
-			if (zipContainsFile(base, fileName)) {
+		if (base != null) { // car.trz
+			if (findFileInZipFile(base, fileName)) {
 				try {
 					url = new URL("file", null, path);  //$NON-NLS-1$
 					// file:C:/temp/car.trz!/Car in a loop with friction.trk
@@ -1743,38 +1748,18 @@ public class ResourceLoader {
 				} catch (MalformedURLException e) {
 				}
 			}
-			if (url == null) {
+			if (url == null && zipLoaders != null) {
 				// use existing zip loader, if any
-				zipLoader = zipLoaders.get(base);
+				URLClassLoader zipLoader = zipLoaders.get(base);
 				if (zipLoader != null) {
 					url = zipLoader.findResource(fileName);
 				} else {
-					try {
-						// create new zip loader
-						URL[] urls = new URL[] { new URL("file", null, base) }; //$NON-NLS-1$
-						zipLoader = new URLClassLoader(urls);
-						url = zipLoader.findResource(fileName);
-						if (url == null) { // workaround works in IE?
-							URL classURL = Resource.class.getResource("/" + base); //$NON-NLS-1$
-							if (classURL != null) {
-								urls = new URL[] { classURL };
-								zipLoader = new URLClassLoader(urls);
-								url = zipLoader.findResource(fileName);
-//	              zipLoader.close(); // Java 7 
-							}
-						}
-						if (url != null) {
-							zipLoaders.put(base, zipLoader);
-						}
-
-					} catch (Exception ex) {
-						/** empty block */
-					}
+					url = findInJarPath(base, fileName);
 				}
 			}
 		}
 		// if not found, use xset zip loader, if any
-		if ((url == null) && (xsetZipLoader != null)) {
+		if ((url == null) && zipLoaders != null && (xsetZipLoader != null)) {
 			url = xsetZipLoader.findResource(fileName);
 			if (url != null) {
 				Iterator<String> it = zipLoaders.keySet().iterator();
@@ -1789,30 +1774,13 @@ public class ResourceLoader {
 		}
 		String launchJarPath;
 		// if still not found, use launch jar loader, if any
-		if ((url == null) && ((launchJarPath = OSPRuntime.getLaunchJarPath()) != null)) {
-			zipLoader = zipLoaders.get(launchJarPath);
+		if ((url == null) && zipLoaders != null && ((launchJarPath = OSPRuntime.getLaunchJarPath()) != null)) {
+			// BH n/a for SwingJS
+			URLClassLoader zipLoader = zipLoaders.get(launchJarPath);
 			if (zipLoader != null) {
 				url = zipLoader.findResource(fileName);
 			} else {
-				try {
-					// create new zip loader
-					URL[] urls = new URL[] { new URL("file", null, launchJarPath) }; //$NON-NLS-1$
-					zipLoader = new URLClassLoader(urls);
-					url = zipLoader.findResource(fileName);
-					if (url == null) { // workaround works in IE?
-						URL classURL = Resource.class.getResource("/" + launchJarPath); //$NON-NLS-1$
-						if (classURL != null) {
-							urls = new URL[] { classURL };
-							zipLoader = new URLClassLoader(urls);
-							url = zipLoader.findResource(fileName);
-						}
-					}
-					if (url != null) {
-						zipLoaders.put(launchJarPath, zipLoader);
-					}
-				} catch (Exception ex) {
-					/** empty block */
-				}
+				url = findInJarPath(launchJarPath, fileName);
 			}
 			if (url != null) {
 				base = launchJarPath;
@@ -1822,7 +1790,7 @@ public class ResourceLoader {
 		if (url != null) { // successfully found url
 			// extract file if extension is flagged for extraction
 			String ext = "." + XML.getExtension(url.toString()); 
-			if (extractExtensions.contains("." + ext)) {
+			if (extractExtensions.contains(ext)) {
 					File zip = new File(base);
 					String targetPath = fileName;
 					String parent = zip.getParent();
@@ -1844,9 +1812,6 @@ public class ResourceLoader {
 				if ((res == null) || (res.getAbsolutePath().indexOf(path) == -1)) {
 					return null;
 				}
-				if (fileName.endsWith("xset")) { //$NON-NLS-1$
-					xsetZipLoader = zipLoader;
-				}
 				OSPLog.finer("Zip: " + XML.forwardSlash(res.getAbsolutePath())); //$NON-NLS-1$
 				return res;
 			} catch (IOException ex) {
@@ -1856,7 +1821,44 @@ public class ResourceLoader {
 		return null;
 	}
 
-  /**
+	/**
+	 * Look for a file in a JAR file or base path.   n/a to JavaScript? 
+	 * 
+	 * Not implemented in JavaScript because URLClassLoader is not implemented.
+	 * 
+	 * @param launchJarPath
+	 * @param fileName
+	 * @return found url
+	 * 
+	 * @author hansonr 
+	 */
+	private static URL findInJarPath(String launchJarPath, String fileName) {
+		try {
+			// create new zip loader
+			URL[] urls = new URL[] { new URL("file", null, launchJarPath) }; //$NON-NLS-1$
+			URLClassLoader zipLoader = new URLClassLoader(urls);
+			URL url = zipLoader.findResource(fileName);
+			if (url == null) { // workaround works in IE?
+				URL classURL = Resource.class.getResource("/" + launchJarPath); //$NON-NLS-1$
+				if (classURL != null) {
+					urls = new URL[] { classURL };
+					zipLoader = new URLClassLoader(urls);
+					url = zipLoader.findResource(fileName);
+				}
+			}
+			if (url != null) {
+				zipLoaders.put(launchJarPath, zipLoader);
+				if (fileName.endsWith("xset")) { //$NON-NLS-1$
+					xsetZipLoader = zipLoader;
+				}
+			}
+			return url;
+		} catch (Exception ex) {
+			return null;
+		}
+	}
+
+/**
    * Creates a Resource from a class resource, typically in a jar file.
    *
    * @param name the resource name
@@ -1979,6 +1981,7 @@ public class ResourceLoader {
 			type = Resource.class;
 		}
 		Resource res = null;
+
 		// look for cached resource
 		if (cacheEnabled) {
 			res = resources.get(path);
@@ -1987,8 +1990,10 @@ public class ResourceLoader {
 				return res;
 			}
 		}
-		if (createOnly) {
-			res = createClassResource(path, type);
+
+		if (OSPRuntime.checkTempDirCache && !ResourceLoader.isHTTP(path) && new File(OSPRuntime.tempDir + path).exists()
+				|| createOnly) {
+			res = createClassResource(path = OSPRuntime.tempDir + path, type);
 		} else if ((searchFiles && (res = createFileResource(path)) != null) || (res = createURLResource(path)) != null
 				|| (res = createZipResource(path)) != null || (res = createClassResource(path, type)) != null) {
 			// res is not null;
@@ -2148,80 +2153,82 @@ public class ResourceLoader {
 			return target;
 		}
 	  
-	  /**
-	   * Extracts a given file from a compressed (ZIP, JAR or TRZ) file
-	   * Extensive changes by D Brown 2007-10-31
-	   * @param source File The compressed file to extract the file from
-	   * @param filename String The path of the file to extract
-	   * @param target File The target file for the extracted file
-	   * @return File The extracted file, null if failed
-	   */
-	  static private File extract0(File source, String filename, File target) {
-	    if((source.exists()==false)||(filename==null)||(filename.trim().length()<1)||(target==null)) {
-	      return null;
-	    }
-		System.out.println("extracting " + filename + " " + target + " from " + source);
-	    boolean isDirectory = filename.endsWith("/"); //$NON-NLS-1$
-	    try {
-	    	
-	      // get contents Map of filename to ZipEntry for source jar
-	      Map<String, ZipEntry> contents = jarContents.get(source.getPath());
-	      if(contents==null) {
-	        // create new Map and fill it
-	        contents = new HashMap<String, ZipEntry>();
-	        jarContents.put(source.getPath(), contents);
-	        OSPRuntime.addJSCachedBytes(source);
-	        ZipInputStream input = new ZipInputStream(new FileInputStream(source));
-	        ZipEntry zipEntry = null;
-	        while((zipEntry = input.getNextEntry())!=null) {
-	          if(zipEntry.isDirectory()) {
-	            continue;                               // don't include directories
-	          }
-	          contents.put(zipEntry.getName(), zipEntry);
-	        }
-	        input.close();
-	      }
-	      if(isDirectory) {
-	        // target is a directory: extract all contained files
-	        Iterator<String> it = contents.keySet().iterator();
-	        while(it.hasNext()) {
-	          String next = it.next();
-	          if(next.startsWith(filename)) {
-	            // next is in the directory, so extract it
-	            ZipEntry zipEntry = contents.get(next);
-	            // construct new target for the file
-	            int n = filename.length();
-	            File newTarget = new File(target, zipEntry.getName().substring(n));
-	            extract0(source, next, newTarget);
-	          }
-	        }
-	        return target;
-	      }
-	      // target is a file
-	      ZipEntry entry = contents.get(filename);      
-	      ZipFile input = new ZipFile(source);
-	      InputStream in = input.getInputStream(entry); // A stream to read the entry
-	      
-	      File parent = target.getParentFile();
-	      if(parent!=null) {
-	        parent.mkdirs();
-	      }
-	      int bytesRead;
-	      byte[] buffer = new byte[1024];
-	      FileOutputStream output = new FileOutputStream(target);
-	      while((bytesRead = in.read(buffer))!=-1) {
-	        output.write(buffer, 0, bytesRead);
-	      }
-	      output.close();
-	      input.close();
-			System.out.println("extracted " + target + " " + target.length());
-	      return target;
-	    } catch(Exception ex) {
-	      ex.printStackTrace();
-	    }
-	    return null;
-	  }
-
+// BH 2020.04.14 abandoned
+//		
+//	  /**
+//	   * Extracts a given file from a compressed (ZIP, JAR or TRZ) file
+//	   * Extensive changes by D Brown 2007-10-31
+//	   * @param source File The compressed file to extract the file from
+//	   * @param filename String The path of the file to extract
+//	   * @param target File The target file for the extracted file
+//	   * @return File The extracted file, null if failed
+//	   */
+//	  static private File extract0(File source, String filename, File target) {
+//	    if((source.exists()==false)||(filename==null)||(filename.trim().length()<1)||(target==null)) {
+//	      return null;
+//	    }
+//		System.out.println("extracting " + filename + " " + target + " from " + source);
+//	    boolean isDirectory = filename.endsWith("/"); //$NON-NLS-1$
+//	    try {
+//	    	
+//	      // get contents Map of filename to ZipEntry for source jar
+//	      Map<String, ZipEntry> contents = jarContents.get(source.getPath());
+//	      if(contents==null) {
+//	        // create new Map and fill it
+//	        contents = new HashMap<String, ZipEntry>();
+//	        jarContents.put(source.getPath(), contents);
+//	        OSPRuntime.addJSCachedBytes(source);
+//	        ZipInputStream input = new ZipInputStream(new FileInputStream(source));
+//	        ZipEntry zipEntry = null;
+//	        while((zipEntry = input.getNextEntry())!=null) {
+//	          if(zipEntry.isDirectory()) {
+//	            continue;                               // don't include directories
+//	          }
+//	          contents.put(zipEntry.getName(), zipEntry);
+//	        }
+//	        input.close();
+//	      }
+//	      if(isDirectory) {
+//	        // target is a directory: extract all contained files
+//	        Iterator<String> it = contents.keySet().iterator();
+//	        while(it.hasNext()) {
+//	          String next = it.next();
+//	          if(next.startsWith(filename)) {
+//	            // next is in the directory, so extract it
+//	            ZipEntry zipEntry = contents.get(next);
+//	            // construct new target for the file
+//	            int n = filename.length();
+//	            File newTarget = new File(target, zipEntry.getName().substring(n));
+//	            extract0(source, next, newTarget);
+//	          }
+//	        }
+//	        return target;
+//	      }
+//	      // target is a file
+//	      ZipEntry entry = contents.get(filename);      
+//	      ZipFile input = new ZipFile(source);
+//	      InputStream in = input.getInputStream(entry); // A stream to read the entry
+//	      
+//	      File parent = target.getParentFile();
+//	      if(parent!=null) {
+//	        parent.mkdirs();
+//	      }
+//	      int bytesRead;
+//	      byte[] buffer = new byte[1024];
+//	      FileOutputStream output = new FileOutputStream(target);
+//	      while((bytesRead = in.read(buffer))!=-1) {
+//	        output.write(buffer, 0, bytesRead);
+//	      }
+//	      output.close();
+//	      input.close();
+//			System.out.println("extracted " + target + " " + target.length());
+//	      return target;
+//	    } catch(Exception ex) {
+//	      ex.printStackTrace();
+//	    }
+//	    return null;
+//	  }
+//
 
 	  /**
 	   * Extracts a file using the ResourceLoader utility
@@ -2377,6 +2384,10 @@ public class ResourceLoader {
 	    dialog.setModal(true);
 	    dialog.setVisible(true);
 	    return returnValue.value;
+	  }
+
+	public static boolean isHTTP(String path) {
+		  return path.startsWith("http:") || path.startsWith("https:");
 	  }
 
 

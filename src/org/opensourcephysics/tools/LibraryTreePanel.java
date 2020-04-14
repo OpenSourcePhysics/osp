@@ -362,7 +362,7 @@ public class LibraryTreePanel extends JPanel {
 	 */
 	protected boolean isEditable() {
 		boolean editable = rootNode != null && rootNode.isEditable();
-		if (editable && !LibraryBrowser.isHTTP(pathToRoot)) { // $NON-NLS-1$
+		if (editable && !ResourceLoader.isHTTP(pathToRoot)) { // $NON-NLS-1$
 			File file = new File(pathToRoot);
 			editable = !file.exists() || file.canWrite();
 		}
@@ -421,7 +421,7 @@ public class LibraryTreePanel extends JPanel {
 			// check to see if resource is available
 			boolean available = false;
 			if (path != null) {
-				if (LibraryBrowser.isHTTP(path)) {
+				if (ResourceLoader.isHTTP(path)) {
 					available = LibraryBrowser.isWebConnected();
 					if (!available) {
 						File cachedFile = null;

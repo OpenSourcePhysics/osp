@@ -290,7 +290,7 @@ public class VideoIO {
 	 * @return ENGINE_XUGGLE, or ENGINE_NONE
 	 */
 	public static String getEngine() {
-		if (videoEngine == null && !OSPRuntime.isJS) {
+		if (videoEngine == null) {
 			videoEngine = getDefaultEngine();
 		}
 		return videoEngine;
@@ -611,7 +611,7 @@ public class VideoIO {
 	 */
 	public static VideoType[] getVideoTypesForEngine(String engine) {
 		ArrayList<VideoType> available = new ArrayList<VideoType>();
-		boolean skipXuggle = VideoIO.getEngine().equals(ENGINE_NONE);
+		boolean skipXuggle = engine.equals(ENGINE_NONE);
 		for (VideoType next : videoTypes) {
 			String typeName = next.getClass().getSimpleName();
 			if (skipXuggle && typeName.contains(ENGINE_XUGGLE))
