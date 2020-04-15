@@ -122,7 +122,7 @@ public class VideoFrame extends DrawingFrame {
   protected void createActions() {
     openAction = new AbstractAction(MediaRes.getString("VideoFrame.MenuItem.Open"), null) { //$NON-NLS-1$
       public void actionPerformed(ActionEvent e) {
-        VideoIO.open(null, (VideoPanel) drawingPanel);
+        VideoIO.openVideoPanelFileAsync(null, (VideoPanel) drawingPanel);
       }
 
     };

@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -706,7 +707,7 @@ public class LibraryBrowser extends JPanel {
 		// was first:
 		File targetFile = new File(path);		
 		if (targetFile.isDirectory()) {
-			return createCollection(targetFile, targetFile, dlFileFilter);
+			return createCollectionFromDirectory(targetFile, targetFile, dlFileFilter);
 		}
 		
 		XMLControlElement control = new XMLControlElement(path);
@@ -760,7 +761,7 @@ public class LibraryBrowser extends JPanel {
    * @param filter a FileFilter to determine which files are DL resources
    * @return the collection
    */
-	protected LibraryCollection createCollection(File targetDir, File base, FileFilter filter) {
+	private LibraryCollection createCollectionFromDirectory(File targetDir, File base, FileFilter filter) {
 		// find HTML files in this folder 
 		FileFilter htmlFilter = new HTMLFilter();
 		File[] htmlFiles = targetDir.listFiles(htmlFilter);
@@ -788,7 +789,7 @@ public class LibraryBrowser extends JPanel {
 		// find subfolders
 		File[] subdirs = targetDir.listFiles(new DirectoryFilter());
 		for (File dir: subdirs) {
-			LibraryCollection subCollection = createCollection(dir, base, filter);
+			LibraryCollection subCollection = createCollectionFromDirectory(dir, base, filter);
 			if (subCollection.getResources().length>0)
 			collection.addResource(subCollection);
 		}
@@ -857,7 +858,7 @@ public class LibraryBrowser extends JPanel {
   	if (path==null) return null;
 		File cachedFile = ResourceLoader.getSearchCacheFile(path);
   	boolean isCachePath = cachedFile.exists();
-  	if (!isCachePath && !isWebConnected() && isHTTP(path)) { //$NON-NLS-1$
+  	if (!isCachePath && !isWebConnected() && ResourceLoader.isHTTP(path)) { //$NON-NLS-1$
   		JOptionPane.showMessageDialog(this, 
   				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
   				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
@@ -2370,7 +2371,7 @@ public class LibraryBrowser extends JPanel {
 		    	}
  	  		}
  	  	};
-    	if (libraryPath == null || !isHTTP(libraryPath) && !libraryPath.startsWith("https:")) { //$NON-NLS-1$  //$NON-NLS-2$
+    	if (libraryPath == null || !ResourceLoader.isHTTP(libraryPath)) { //$NON-NLS-1$  //$NON-NLS-2$
 		    // load library
 	    	library.load(libraryPath);
      	  // add previously open tabs that are available
@@ -2394,7 +2395,7 @@ public class LibraryBrowser extends JPanel {
 			  		for (String path: paths) {
 			  			// check for local resource
 			      	Resource res = ResourceLoader.getResource(path);
-			    		if (res!=null && !isHTTP(path)) { //$NON-NLS-1$
+			    		if (res!=null && !ResourceLoader.isHTTP(path)) { //$NON-NLS-1$
 			    			TabLoader tabAdder = addTab(path, null);
 			    			if (tabAdder!=null) tabAdder.execute();  	
 			  			}
@@ -2424,7 +2425,7 @@ public class LibraryBrowser extends JPanel {
      	  // add previously open tabs not available for loading in doInBackground method
 	 	  	if (library.openTabPaths!=null) {  	  		
 		  		for (final String path: library.openTabPaths) {
-		  			boolean available = isWebConnected() && isHTTP(path); //$NON-NLS-1$
+		  			boolean available = isWebConnected() && ResourceLoader.isHTTP(path); //$NON-NLS-1$
 		  			if (available) {
 		    			TabLoader tabAdder = addTab(path, null);
 		    			if (tabAdder!=null) tabAdder.execute();  	
@@ -2459,16 +2460,22 @@ public class LibraryBrowser extends JPanel {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			String realPath = path;
 				File cachedFile = ResourceLoader.getSearchCacheFile(path);
-				if (cachedFile.exists() && isHTTP(path)) { // $NON-NLS-1$
+				if (cachedFile.exists() && ResourceLoader.isHTTP(path)) { // $NON-NLS-1$
 					realPath = cachedFile.getAbsolutePath();
 					saveToCache = false;
 				}
 
+			// BH 2020.04.14 added to speed up zip file checking
+			boolean doCache = OSPRuntime.doCacheZipContents;
+			OSPRuntime.doCacheZipContents = true;
 			LibraryResource resource = loadResource(realPath);
+			OSPRuntime.doCacheZipContents = doCache;
+			if (!doCache)
+				ResourceLoader.clearZipCache();
 			if (resource != null) {
 				LibraryTreePanel treePanel = index < 0 ? createLibraryTreePanel() : getTreePanel(index);
 				// tab is editable only if it is a local XML file
-				boolean editable = !isHTTP(path) && path.toLowerCase().endsWith(".xml"); //$NON-NLS-1$ //$NON-NLS-2$
+				boolean editable = !ResourceLoader.isHTTP(path) && path.toLowerCase().endsWith(".xml"); //$NON-NLS-1$ //$NON-NLS-2$
 				treePanel.setRootResource(resource, path, editable, isRecentPathXML);
 				return treePanel;
 			}
@@ -2683,12 +2690,7 @@ public class LibraryBrowser extends JPanel {
 
   }
 
-  public static boolean isHTTP(String path) {
-	  return path.startsWith("http:") || path.startsWith("https:");
-  }
-
-
-	public static File copyFile(String sourcePath, String destPath) { 
+  public static File copyFile(String sourcePath, String destPath) { 
 		File f = new File(destPath);
 		try {
 			Path path = f.toPath();
@@ -2710,7 +2712,7 @@ public class LibraryBrowser extends JPanel {
 	public static byte[] getURLContents(URL url) {
 		try {
 			// Java 9!			return new String(url.openStream().readAllBytes());
-			return getLimitedStreamBytes(url.openStream(), -1);
+			return getLimitedStreamBytes(url.openStream(), -1, null);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -2721,26 +2723,33 @@ public class LibraryBrowser extends JPanel {
 	 * From javajs.Rdr
 	 * 
 	 */
-	public static byte[] getLimitedStreamBytes(InputStream is, long n) throws IOException {
+	public static byte[] getLimitedStreamBytes(InputStream is, long n, OutputStream out) throws IOException {
 
 		// Note: You cannot use InputStream.available() to reliably read
 		// zip data from the web.
 
+		boolean toOut = (out != null);
 		int buflen = (n > 0 && n < 1024 ? (int) n : 1024);
 		byte[] buf = new byte[buflen];
-		byte[] bytes = new byte[n < 0 ? 4096 : (int) n];
+		byte[] bytes = (out == null ? new byte[n < 0 ? 4096 : (int) n] : null);
 		int len = 0;
 		int totalLen = 0;
 		if (n < 0)
 			n = Integer.MAX_VALUE;
 		while (totalLen < n && (len = is.read(buf, 0, buflen)) > 0) {
 			totalLen += len;
-			if (totalLen > bytes.length)
-				bytes = Arrays.copyOf(bytes, totalLen * 2);
-			System.arraycopy(buf, 0, bytes, totalLen - len, len);
-			if (n != Integer.MAX_VALUE && totalLen + buflen > bytes.length)
-				buflen = bytes.length - totalLen;
+			if (toOut) {
+				out.write(buf, 0, len);
+			} else {
+				if (totalLen > bytes.length)
+					bytes = Arrays.copyOf(bytes, totalLen * 2);
+				System.arraycopy(buf, 0, bytes, totalLen - len, len);
+				if (n != Integer.MAX_VALUE && totalLen + buflen > bytes.length)
+					buflen = bytes.length - totalLen;
+				}
 		}
+		if (toOut) 
+			return null;
 		if (totalLen == bytes.length)
 			return bytes;
 		buf = new byte[totalLen];

@@ -2254,7 +2254,7 @@ public class LaunchBuilder extends Launcher {
         java.util.jar.Manifest manifest = JarTool.createManifest("", "org.opensourcephysics.tools.Launcher"); //$NON-NLS-1$//$NON-NLS-2$
         JarTool.alwaysOverwrite();    // overwrite all with no warning
         JarTool.setOwnerFrame(frame); // set owner of progress dialog
-        JarTool.getTool().create(source, base, target, manifest);
+        JarTool.getInstance().create(source, base, target, manifest);
       }
 
     };
@@ -2400,6 +2400,9 @@ public class LaunchBuilder extends Launcher {
         try {
           Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
           Transferable data = clipboard.getContents(null);
+          if (data == null)
+        	  return;
+
           String dataString = (String) data.getTransferData(DataFlavor.stringFlavor);
           if(dataString!=null) {
             XMLControlElement control = new XMLControlElement();

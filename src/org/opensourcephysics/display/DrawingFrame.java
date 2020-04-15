@@ -791,6 +791,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
         try {
           Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
           Transferable data = clipboard.getContents(null);
+          if (data == null)
+        	  return;
           XMLControlElement control = new XMLControlElement();
           control.readXML((String) data.getTransferData(DataFlavor.stringFlavor));
           pasteAction(control);

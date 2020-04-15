@@ -95,7 +95,7 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 	protected String chosenExtension;
   
   static {
-    tempDirectory = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$
+    tempDirectory = OSPRuntime.tempDir; //$NON-NLS-1$
   }
 
   /**

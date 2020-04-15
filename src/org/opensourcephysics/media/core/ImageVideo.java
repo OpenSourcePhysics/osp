@@ -43,6 +43,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.Resource;
 import org.opensourcephysics.tools.ResourceLoader;
 
@@ -736,7 +737,10 @@ public class ImageVideo extends VideoAdapter {
       // legacy code that opens single image or sequence
       if(paths==null) {
         try {
-          String path = control.getString("path");      //$NON-NLS-1$
+          String path = control.getString("path");           
+          if (OSPRuntime.checkTempDirCache)
+				path = OSPRuntime.tempDir + path;          
+          //$NON-NLS-1$
           boolean seq = control.getBoolean("sequence"); //$NON-NLS-1$
           if(path!=null) {
             ImageVideo vid = new ImageVideo(path, seq);

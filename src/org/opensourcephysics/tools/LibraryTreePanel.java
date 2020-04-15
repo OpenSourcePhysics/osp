@@ -93,6 +93,7 @@ import javax.swing.tree.TreeSelectionModel;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
+import org.opensourcephysics.desktop.OSPDesktop;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.tools.LibraryResource.Metadata;
@@ -131,15 +132,17 @@ public class LibraryTreePanel extends JPanel {
 		hyperlinkListener = new HyperlinkListener() {
 			public void hyperlinkUpdate(HyperlinkEvent e) {
 				if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-					try {
-						// try the preferred way
-						if (!org.opensourcephysics.desktop.OSPDesktop.browse(e.getURL().toURI())) {
-							// try the old way
-							org.opensourcephysics.desktop.ostermiller.Browser.init();
-							org.opensourcephysics.desktop.ostermiller.Browser.displayURL(e.getURL().toString());
-						}
-					} catch (Exception ex) {
-					}
+		          	OSPDesktop.displayURL(e.getURL().toString());
+//
+//					try {
+//						// try the preferred way
+//						if (!org.opensourcephysics.desktop.OSPDesktop.browse(e.getURL().toURI())) {
+//							// try the old way
+//							org.opensourcephysics.desktop.ostermiller.Browser.init();
+//							org.opensourcephysics.desktop.ostermiller.Browser.displayURL(e.getURL().toString());
+//						}
+//					} catch (Exception ex) {
+//					}
 				}
 			}
 		};
@@ -359,7 +362,7 @@ public class LibraryTreePanel extends JPanel {
 	 */
 	protected boolean isEditable() {
 		boolean editable = rootNode != null && rootNode.isEditable();
-		if (editable && !LibraryBrowser.isHTTP(pathToRoot)) { // $NON-NLS-1$
+		if (editable && !ResourceLoader.isHTTP(pathToRoot)) { // $NON-NLS-1$
 			File file = new File(pathToRoot);
 			editable = !file.exists() || file.canWrite();
 		}
@@ -418,7 +421,7 @@ public class LibraryTreePanel extends JPanel {
 			// check to see if resource is available
 			boolean available = false;
 			if (path != null) {
-				if (LibraryBrowser.isHTTP(path)) {
+				if (ResourceLoader.isHTTP(path)) {
 					available = LibraryBrowser.isWebConnected();
 					if (!available) {
 						File cachedFile = null;
@@ -630,7 +633,7 @@ public class LibraryTreePanel extends JPanel {
 				try {
 					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 					Transferable data = clipboard.getContents(null);
-					String dataString = (String) data.getTransferData(DataFlavor.stringFlavor);
+					String dataString = data == null ? null : (String) data.getTransferData(DataFlavor.stringFlavor);
 					if (dataString != null) {
 						XMLControlElement control = new XMLControlElement();
 						control.readXML(dataString);
@@ -1352,8 +1355,7 @@ public class LibraryTreePanel extends JPanel {
 		try {
 			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 			Transferable data = clipboard.getContents(null);
-			String dataString = null;
-			dataString = (String) data.getTransferData(DataFlavor.stringFlavor);
+			String dataString = data == null ? null :  (String) data.getTransferData(DataFlavor.stringFlavor);
 			if (dataString != null) {
 				XMLControlElement control = new XMLControlElement();
 				control.readXML(dataString);

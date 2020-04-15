@@ -995,7 +995,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
     try {
       Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
       Transferable tran = clipboard.getContents(null);
-      String dataString = (String) tran.getTransferData(DataFlavor.stringFlavor);
+      String dataString = (String) (tran == null ? null : tran.getTransferData(DataFlavor.stringFlavor));
       if(dataString!=null) {
         XMLControlElement control = new XMLControlElement();
         control.readXML(dataString);
