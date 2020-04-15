@@ -55,6 +55,7 @@ public class ClipboardJob extends LocalJob {
     // this is the paste function
     try {
       Transferable data = clipboard.getContents(null);
+      if (data != null)
       return(String) data.getTransferData(DataFlavor.stringFlavor);
     } catch(Exception ex) {
       ex.printStackTrace();

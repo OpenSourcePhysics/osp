@@ -633,7 +633,7 @@ public class LibraryTreePanel extends JPanel {
 				try {
 					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 					Transferable data = clipboard.getContents(null);
-					String dataString = (String) data.getTransferData(DataFlavor.stringFlavor);
+					String dataString = data == null ? null : (String) data.getTransferData(DataFlavor.stringFlavor);
 					if (dataString != null) {
 						XMLControlElement control = new XMLControlElement();
 						control.readXML(dataString);
@@ -1355,8 +1355,7 @@ public class LibraryTreePanel extends JPanel {
 		try {
 			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 			Transferable data = clipboard.getContents(null);
-			String dataString = null;
-			dataString = (String) data.getTransferData(DataFlavor.stringFlavor);
+			String dataString = data == null ? null :  (String) data.getTransferData(DataFlavor.stringFlavor);
 			if (dataString != null) {
 				XMLControlElement control = new XMLControlElement();
 				control.readXML(dataString);

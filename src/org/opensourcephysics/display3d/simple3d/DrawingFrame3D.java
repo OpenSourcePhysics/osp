@@ -193,6 +193,9 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     try {
       Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
       Transferable data = clipboard.getContents(null);
+      if (data == null)
+    	  return;
+
       XMLControlElement control = new XMLControlElement();
       control.readXML((String) data.getTransferData(DataFlavor.stringFlavor));
       // get Drawables using an xml tree chooser

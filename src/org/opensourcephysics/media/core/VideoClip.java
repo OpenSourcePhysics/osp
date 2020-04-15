@@ -45,6 +45,7 @@ import javax.swing.event.SwingPropertyChangeSupport;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.ResourceLoader;
 
 /**
@@ -698,6 +699,8 @@ public class VideoClip {
       ResourceLoader.addSearchPath(control.getString("basepath")); //$NON-NLS-1$
       XMLControl child = control.getChildControl("video"); //$NON-NLS-1$
       String path = child.getString("path"); //$NON-NLS-1$
+      if (OSPRuntime.checkTempDirCache)
+			path = OSPRuntime.tempDir + path;
       Video video = VideoIO.getVideo(path, null);
       boolean engineChange = false;
       if (video==null && path!=null && !VideoIO.isCanceled()) {

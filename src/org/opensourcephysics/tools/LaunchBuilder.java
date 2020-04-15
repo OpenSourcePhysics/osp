@@ -2400,6 +2400,9 @@ public class LaunchBuilder extends Launcher {
         try {
           Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
           Transferable data = clipboard.getContents(null);
+          if (data == null)
+        	  return;
+
           String dataString = (String) data.getTransferData(DataFlavor.stringFlavor);
           if(dataString!=null) {
             XMLControlElement control = new XMLControlElement();
