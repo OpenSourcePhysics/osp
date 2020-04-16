@@ -212,7 +212,6 @@ public class AnimationControl extends OSPControl {
       }
       ((Animation) model).resetAnimation();
       if(xmlDefault!=null) {
-    	  // BH will be synchronous in JavaScript; just an OK/Cancel question
         xmlDefault.loadObject(getOSPApp(), true, true);
       }
       table.refresh();

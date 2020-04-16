@@ -830,8 +830,7 @@ public class XMLControlElement implements XMLControl {
   }
 
   /**
-   * Loads an object with data from this element. The message, if sent, will be 
-   * synchronous in Java or JavaScript.
+   * Loads an object with data from this element.
    *
    * @param obj the object to load
    * @param autoImport true to automatically import data from mismatched classes
@@ -839,72 +838,67 @@ public class XMLControlElement implements XMLControl {
    * @return the loaded object
    */
   public Object loadObject(Object obj, boolean autoImport, boolean importAll) {
-		Class<?> type = getObjectClass();
-		if (type == null) {
-			if (obj == null) {
-				return null;
-			}
-			if (!autoImport) {
-				int result = JOptionPane.showConfirmDialog(null,
-						ControlsRes.getString("XMLControlElement.Dialog.UnknownClass.Message") + " \"" + className //$NON-NLS-1$ //$NON-NLS-2$
-								+ "\"" + XML.NEW_LINE //$NON-NLS-1$
-								+ ControlsRes.getString("XMLControlElement.Dialog.MismatchedClass.Query") + " \"" //$NON-NLS-1$ //$NON-NLS-2$
-								+ obj.getClass().getName() + "\"", //$NON-NLS-1$
-						ControlsRes.getString("XMLControlElement.Dialog.MismatchedClass.Title"), //$NON-NLS-1$
-						JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-				if (result != JOptionPane.YES_OPTION) {
-					return obj;
-				}
-			}
-			if (!importInto(obj, importAll)) {
-				return obj;
-			}
-			type = obj.getClass();
-		}
-		try {
-			// BH 2020.02.13 adding check for null obj
-			if (obj != null && XML.getLoader(type).getClass() == XML.getLoader(obj.getClass()).getClass()) {
-				autoImport = true;
-				importAll = true;
-			}
-		} catch (Exception ex) {
+    Class<?> type = getObjectClass();
+    if(type==null) {
+      if(obj!=null) {
+        if(!autoImport) {
+          int result = JOptionPane.showConfirmDialog(null, ControlsRes.getString("XMLControlElement.Dialog.UnknownClass.Message")+" \""+className+"\""+XML.NEW_LINE //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            +ControlsRes.getString("XMLControlElement.Dialog.MismatchedClass.Query")+" \""+obj.getClass().getName()+"\"", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+              ControlsRes.getString("XMLControlElement.Dialog.MismatchedClass.Title"), //$NON-NLS-1$
+                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+          if(result!=JOptionPane.YES_OPTION) {
+            return obj;
+          }
+        }
+        if(!importInto(obj, importAll)) {
+          return obj;
+        }
+        type = obj.getClass();
+      } else {
+        return null;
+      }
+    }
+    try {
+    	// BH 2020.02.13 adding check for null obj
+      if(obj != null && XML.getLoader(type).getClass()==XML.getLoader(obj.getClass()).getClass()) {
+        autoImport = true;
+        importAll = true;
+      }
+    } catch(Exception ex) {
 
-			/** empty block */
-		}
-		if ((obj != null) && !type.isInstance(obj)) {
-			if (!autoImport) {
-				int result = JOptionPane.showConfirmDialog(null,
-						ControlsRes.getString("XMLControlElement.Dialog.MismatchedClass.Message") + " \"" //$NON-NLS-1$ //$NON-NLS-2$
-								+ type.getName() + "\"" + XML.NEW_LINE //$NON-NLS-1$
-								+ ControlsRes.getString("XMLControlElement.Dialog.MismatchedClass.Query") + " \"" //$NON-NLS-1$ //$NON-NLS-2$
-								+ obj.getClass().getName() + "\"", //$NON-NLS-1$
-						ControlsRes.getString("XMLControlElement.Dialog.MismatchedClass.Title"), //$NON-NLS-1$
-						JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-				if (result != JOptionPane.YES_OPTION) {
-					return obj;
-				}
-			}
-			if (!importInto(obj, importAll)) {
-				return obj;
-			}
-			type = obj.getClass();
-		}
-		XML.ObjectLoader loader = XML.getLoader(type);
-		if (obj == null) { // if obj is null, try to create a new one
-			if (object == null) {
-				object = loader.createObject(this);
-			}
-			obj = object;
-		}
-		if (obj == null) {
-			return null; // unable to create new obj
-		}
-		if (type.isInstance(obj)) {
-			obj = loader.loadObject(this, obj);
-			object = obj;
-		}
-		return obj;
-	}
+    /** empty block */
+    }
+    if((obj!=null)&&!type.isInstance(obj)) {
+      if(!autoImport) {
+        int result = JOptionPane.showConfirmDialog(null, ControlsRes.getString("XMLControlElement.Dialog.MismatchedClass.Message")+" \""+type.getName()+"\""+XML.NEW_LINE //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+          +ControlsRes.getString("XMLControlElement.Dialog.MismatchedClass.Query")+" \""+obj.getClass().getName()+"\"", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            ControlsRes.getString("XMLControlElement.Dialog.MismatchedClass.Title"), //$NON-NLS-1$
+              JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if(result!=JOptionPane.YES_OPTION) {
+          return obj;
+        }
+      }
+      if(!importInto(obj, importAll)) {
+        return obj;
+      }
+      type = obj.getClass();
+    }
+    XML.ObjectLoader loader = XML.getLoader(type);
+    if(obj==null) { // if obj is null, try to create a new one
+      if(object==null) {
+        object = loader.createObject(this);
+      }
+      obj = object;
+    }
+    if(obj==null) {
+      return null; // unable to create new obj
+    }
+    if(type.isInstance(obj)) {
+      obj = loader.loadObject(this, obj);
+      object = obj;
+    }
+    return obj;
+  }
 
   /**
    * Clears all properties.
