@@ -75,15 +75,16 @@ public class OSPRuntime {
 
 	public static boolean setRenderingHints = (!isJS && !isMac);
 	
+	public static boolean autoAddLibrary = !isJS; // for ResourceLoader
+
+	public static boolean checkTempDirCache = isJS; // for ResourceLoader.
+
 	public static boolean checkZipLoaders = !isJS;  // for ResourceLloader
 
 	public static boolean doCacheZipContents = isJS; // for ResourceLoader
 
 	public static boolean skipDisplayOfPDF = !isJS; // for TrackerIO, for now.
 
-	public static boolean checkTempDirCache = isJS; // for ResourceLoader.
-
-	public static boolean autoAddLibrary = !isJS;
 
 	
 	public static final String tempDir = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$  // BH centralized
