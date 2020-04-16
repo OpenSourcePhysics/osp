@@ -83,7 +83,7 @@ public class OSPRuntime {
 
 	public static boolean doCacheZipContents = isJS; // for ResourceLoader
 
-	public static boolean skipDisplayOfPDF = !isJS; // for TrackerIO, for now.
+	public static boolean skipDisplayOfPDF = isJS; // for TrackerIO, for now.
 
 
 	
