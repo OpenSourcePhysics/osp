@@ -202,7 +202,9 @@ public class ResourceLoader {
 		
 		if (OSPRuntime.isJS) {
 			// could be file:/TEMP; could be what?
-			System.out.println("RL " + name);
+			//System.out.println("RL " + name);
+			if (!isHTTP(name) && !name.startsWith("/") && name.indexOf(OSPRuntime.tempDir)< 0 )
+				name = OSPRuntime.tempDir + name;
 		} else
 		/**
 		 * not applicable -- Tracker Java applet only
