@@ -77,12 +77,15 @@ public class OSPRuntime {
 	
 	public static boolean checkZipLoaders = !isJS;  // for ResourceLloader
 
-	public static boolean doCacheZipContents = OSPRuntime.isJS; // for ResourceLoader
+	public static boolean doCacheZipContents = isJS; // for ResourceLoader
 
-	public static boolean skipDisplayOfPDF = !OSPRuntime.isJS; // for TrackerIO, for now.
+	public static boolean skipDisplayOfPDF = !isJS; // for TrackerIO, for now.
 
-	public static boolean checkTempDirCache = OSPRuntime.isJS; // for ResourceLoader.
+	public static boolean checkTempDirCache = isJS; // for ResourceLoader.
 
+	public static boolean autoAddLibrary = !isJS;
+
+	
 	public static final String tempDir = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$  // BH centralized
 	
 	
@@ -234,7 +237,7 @@ public class OSPRuntime {
 	/** Preferences filename */
 	private static String prefsFileName = "osp.prefs"; //$NON-NLS-1$
 
-	
+
 
 	/**
 	 * Sets default properties for OSP.
@@ -242,13 +245,13 @@ public class OSPRuntime {
 	static {
 		try { // set the user home and default directory for the chooser // system properties
 				// may not be readable in some contexts
-			OSPRuntime.chooserDir = System.getProperty("user.dir", null); //$NON-NLS-1$
+			chooserDir = System.getProperty("user.dir", null); //$NON-NLS-1$
 			String userhome = getUserHome();
 			if (userhome != null) {
 				userhomeDir = XML.forwardSlash(userhome);
 			}
 		} catch (Exception ex) {
-			OSPRuntime.chooserDir = null;
+			chooserDir = null;
 		}
 		// fill the look and feel map
 		LOOK_AND_FEEL_TYPES.put(METAL_LF, "javax.swing.plaf.metal.MetalLookAndFeel"); //$NON-NLS-1$
@@ -349,7 +352,7 @@ public class OSPRuntime {
 	 * @param parent
 	 */
 	public static void showAboutDialog(Component parent) {
-		String date = OSPRuntime.getLaunchJarBuildDate();
+		String date = getLaunchJarBuildDate();
 		date = "February 1, 2020";
 		String vers = "JavaScript OSP Library " + VERSION; //$NON-NLS-1$
 		vers += "\n\nJavaScript transcription created using the\n" + "java2script/SwingJS framework developed at\n"
@@ -678,7 +681,7 @@ public class OSPRuntime {
 			launchJarPath = ResourceLoader.getNonURIPath(launchJarPath);
 		}
 		try {
-			if ((OSPRuntime.applet == null) && !isWebFile) { // application mode
+			if ((applet == null) && !isWebFile) { // application mode
 				launchJar = new JarFile(launchJarPath);
 			} else { // applet mode
 				URL url;
@@ -736,7 +739,7 @@ public class OSPRuntime {
 			if (jrePath.endsWith("/bin")) { //$NON-NLS-1$
 				file = file.getParentFile();
 			}
-			if (OSPRuntime.isWindows()) {
+			if (isWindows()) {
 				// typical jdk: Program Files\Java\jdkX.X.X_XX\jre\bin\java.exe
 				// typical jre: Program Files\Java\jreX.X.X_XX\bin\java.exe
 				// or Program Files\Java\jreX\bin\java.exe
@@ -771,7 +774,7 @@ public class OSPRuntime {
 					}
 				} else
 					file = new File(file, "bin/java"); //$NON-NLS-1$
-			} else if (OSPRuntime.isLinux()) {
+			} else if (isLinux()) {
 				// typical: /usr/lib/jvm/java-X-openjdk/jre/bin/java
 				// bundled: /opt/tracker/jre/bin/java
 				// symlink at: /usr/lib/jvm/java-X.X.X-openjdk/jre/bin/java
@@ -1013,7 +1016,7 @@ public class OSPRuntime {
 		if (userhomeDir != null) {
 			paths.add(userhomeDir);
 		}
-		String codebase = OSPRuntime.getLaunchJarDirectory();
+		String codebase = getLaunchJarDirectory();
 		if (codebase != null) {
 			paths.add(XML.forwardSlash(codebase));
 		}
@@ -1149,8 +1152,8 @@ public class OSPRuntime {
 			return chooser;
 		}
 		try {
-			chooser = (OSPRuntime.chooserDir == null) ? new AsyncFileChooser()
-					: new AsyncFileChooser(new File(OSPRuntime.chooserDir));
+			chooser = (chooserDir == null) ? new AsyncFileChooser()
+					: new AsyncFileChooser(new File(chooserDir));
 		} catch (Exception e) {
 			System.err.println("Exception in OSPFrame getChooser=" + e); //$NON-NLS-1$
 			return null;
@@ -1245,7 +1248,7 @@ public class OSPRuntime {
 			result = chooser.showOpenDialog(parent);
 		}
 		if (result == JFileChooser.APPROVE_OPTION) {
-			OSPRuntime.chooserDir = chooser.getCurrentDirectory().toString();
+			chooserDir = chooser.getCurrentDirectory().toString();
 			File file = chooser.getSelectedFile();
 			// check to see if file exists
 			if (toSave) { // saving: check if the file will be overwritten
@@ -1310,7 +1313,7 @@ public class OSPRuntime {
 	 * @return JFileChooser
 	 */
 	static public javax.swing.JFileChooser createChooser(String description, String[] extensions, final File homeDir) {
-		javax.swing.JFileChooser chooser = new javax.swing.JFileChooser(new File(OSPRuntime.chooserDir));
+		javax.swing.JFileChooser chooser = new javax.swing.JFileChooser(new File(chooserDir));
 		ExtensionFileFilter filter = new ExtensionFileFilter();
 		for (int i = 0; i < extensions.length; i++) {
 			filter.addExtension(extensions[i]);
