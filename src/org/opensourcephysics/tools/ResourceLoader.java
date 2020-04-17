@@ -1594,7 +1594,7 @@ public class ResourceLoader {
         if(path.endsWith("xset")) {                                    //$NON-NLS-1$
           xsetZipLoader = null;
         }
-        OSPLog.finer("File: "+XML.forwardSlash(res.getAbsolutePath())); //$NON-NLS-1$
+        OSPLog.finer("loaded file resource "+XML.forwardSlash(res.getAbsolutePath())); //$NON-NLS-1$
         return res;
       }
     } catch(Exception ex) {
@@ -1674,7 +1674,7 @@ public class ResourceLoader {
       if(path.endsWith(".xset")) {                                  //$NON-NLS-1$
         xsetZipLoader = null;
       }
-      OSPLog.finer("URL: "+XML.forwardSlash(res.getAbsolutePath())); //$NON-NLS-1$
+      OSPLog.finer("loaded URL resource "+XML.forwardSlash(res.getAbsolutePath())); //$NON-NLS-1$
     }
     return res;
   }
@@ -1814,7 +1814,7 @@ public class ResourceLoader {
 				if ((res == null) || (res.getAbsolutePath().indexOf(path) == -1)) {
 					return null;
 				}
-				OSPLog.finer("Zip: " + XML.forwardSlash(res.getAbsolutePath())); //$NON-NLS-1$
+				OSPLog.finer("loaded zip resource " + XML.forwardSlash(res.getAbsolutePath())); //$NON-NLS-1$
 				return res;
 			} catch (IOException ex) {
 				/** empty block */
@@ -1911,7 +1911,7 @@ public class ResourceLoader {
       if(name.endsWith("xset")) {                                //$NON-NLS-1$
         xsetZipLoader = null;
       }
-      OSPLog.finer("Class resource: "+path);                      //$NON-NLS-1$
+      OSPLog.finer("loaded class resource: "+path);                      //$NON-NLS-1$
       OSPRuntime.setLaunchJarPath(path);
     }
     return res; // may be null
