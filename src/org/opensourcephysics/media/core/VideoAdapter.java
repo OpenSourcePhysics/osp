@@ -58,7 +58,7 @@ import org.opensourcephysics.display.Interactive;
  * @author Douglas Brown
  * @version 1.0
  */
-public class VideoAdapter implements Video {
+public abstract class VideoAdapter implements Video {
   // instance fields
   protected Image rawImage;              // raw image from video source
   protected Dimension size;              // image pixel dimensions

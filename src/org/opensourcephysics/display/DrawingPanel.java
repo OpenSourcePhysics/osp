@@ -163,6 +163,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
    * DrawingPanel constructor.
    */
   public DrawingPanel() {
+	  setName("DrawingPanel");
     glassPanel.setLayout(glassPanelLayout);
     super.setLayout(new BorderLayout());
     glassPanel.add(trMessageBox, OSPLayout.TOP_RIGHT_CORNER);
@@ -170,7 +171,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     glassPanel.add(brMessageBox, OSPLayout.BOTTOM_RIGHT_CORNER);
     glassPanel.add(blMessageBox, OSPLayout.BOTTOM_LEFT_CORNER);
     glassPanel.setOpaque(false);
-    if(!JSUtil.isJS) super.add(glassPanel, BorderLayout.CENTER);
+    add(glassPanel, BorderLayout.CENTER);
     setBackground(bgColor);
     setPreferredSize(new Dimension(300, 300));
     showCoordinates = true; // show coordinates by default
@@ -630,7 +631,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
       if(image==workingImage) {
         zoomBox.paint(osg);               // paint the zoom
       }
-	    if(!JSUtil.isJS){  // do not use glassPanel in JS
+//	    if(!JSUtil.isJS){  // do not use glassPanel in JS
 	      Rectangle viewRect = this.viewRect; // reference for thread safety
 	      if(viewRect!=null) {
 	        Rectangle r = new Rectangle(0, 0, image.getWidth(null), image.getHeight(null));
@@ -642,7 +643,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	      } else {
 	        glassPanel.render(osg);
 	      }
-      }
+//      }
 	    osg.dispose();
     }
     imageRatio = 1.00;
@@ -802,7 +803,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     ArrayList<Drawable> tempList = getDrawables(); // holds a clone of the drawable object list
     scale(tempList); // sets the world-coordinate scale based on the autoscale values
     setPixelScale(); // sets the pixel scale and the world-to-pixel affine transformation matrix
-	if (!JSUtil.isJS && OSPRuntime.setRenderingHints) {  //Rendering hint bug in Mac Snow Leopard 
+	if (OSPRuntime.setRenderingHints) {  //Rendering hint bug in Mac Snow Leopard 
 		if (antialiasTextOn) {
 			((Graphics2D) g).setRenderingHint(
 					RenderingHints.KEY_TEXT_ANTIALIASING,
@@ -2088,7 +2089,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
         tempList.get(i).draw(this, g2);
       }
     }
-    if(!JSUtil.isJS)
+//    if(!JSUtil.isJS)
     	messages.draw(this, g2);  // do not use Glass Panel in JS
     g2.dispose(); // BH 2020.02.26
   }
@@ -2791,7 +2792,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
           continue;
         }
         g.translate(c[i].getX(), c[i].getY());
-        c[i].print(g);
+        c[i].paint(g);
         g.translate(-c[i].getX(), -c[i].getY());
       }
       } catch(Exception ex) {/* do nothing if drawing fails*/ }

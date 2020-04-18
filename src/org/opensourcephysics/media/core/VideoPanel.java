@@ -110,6 +110,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
    * @param video the video to be drawn
    */
   public VideoPanel(Video video) {
+    setName("VideoPanel");
     setSquareAspect(true);
     player = new VideoPlayer(this);
     player.addPropertyChangeListener("videoclip", this);     //$NON-NLS-1$

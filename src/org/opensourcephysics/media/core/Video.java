@@ -32,160 +32,178 @@
 package org.opensourcephysics.media.core;
 
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 
 /**
- * This defines methods to control a video image sequence.
- * Individual images within the sequence are referred to as frames.
+ * This defines methods to control a video image sequence. Individual images
+ * within the sequence are referred to as frames.
  *
  * @author Douglas Brown
  * @version 1.0
  */
 public interface Video extends InteractiveImage, Playable, Trackable, PropertyChangeListener {
-  /**
-   * Steps forward in the video.
-   */
-  public void step();
+	/**
+	 * Steps forward in the video.
+	 */
+	public void step();
 
-  /**
-   * Steps backward in the video.
-   */
-  public void back();
+	/**
+	 * Steps backward in the video.
+	 */
+	public void back();
 
-  /**
-   * Gets the total number of frames.
-   * @return the number of frames in the image sequence
-   */
-  public int getFrameCount();
+	/**
+	 * Gets the total number of frames.
+	 * 
+	 * @return the number of frames in the image sequence
+	 */
+	public int getFrameCount();
 
-  /**
-   * Gets the current frame number.
-   * @return the number of the current frame
-   */
-  public int getFrameNumber();
+	/**
+	 * Gets the current frame number.
+	 * 
+	 * @return the number of the current frame
+	 */
+	public int getFrameNumber();
 
-  /**
-   * Sets the frame number.
-   * @param n a number between getStartFrameNumber() and getEndFrameNumber()
-   * @see #getStartFrameNumber
-   * @see #getEndFrameNumber
-   */
-  public void setFrameNumber(int n);
+	/**
+	 * Sets the frame number.
+	 * 
+	 * @param n a number between getStartFrameNumber() and getEndFrameNumber()
+	 * @see #getStartFrameNumber
+	 * @see #getEndFrameNumber
+	 */
+	public void setFrameNumber(int n);
 
-  /**
-   * Gets the start frame number.
-   * @return the number of the start frame
-   * @see #getEndFrameNumber
-   */
-  public int getStartFrameNumber();
+	/**
+	 * Gets the start frame number.
+	 * 
+	 * @return the number of the start frame
+	 * @see #getEndFrameNumber
+	 */
+	public int getStartFrameNumber();
 
-  /**
-   * Sets the start frame number.
-   * @param n a number between 0 and getEndFrameNumber()
-   * @see #setEndFrameNumber
-   */
-  public void setStartFrameNumber(int n);
+	/**
+	 * Sets the start frame number.
+	 * 
+	 * @param n a number between 0 and getEndFrameNumber()
+	 * @see #setEndFrameNumber
+	 */
+	public void setStartFrameNumber(int n);
 
-  /**
-   * Gets the end frame number.
-   * @return the number of the end frame
-   * @see #getStartFrameNumber
-   */
-  public int getEndFrameNumber();
+	/**
+	 * Gets the end frame number.
+	 * 
+	 * @return the number of the end frame
+	 * @see #getStartFrameNumber
+	 */
+	public int getEndFrameNumber();
 
-  /**
-   * Sets the end frame number.
-   * @param n a number between getStartFrameNumber() and getFrameCount()
-   * @see #setStartFrameNumber
-   */
-  public void setEndFrameNumber(int n);
+	/**
+	 * Sets the end frame number.
+	 * 
+	 * @param n a number between getStartFrameNumber() and getFrameCount()
+	 * @see #setStartFrameNumber
+	 */
+	public void setEndFrameNumber(int n);
 
-  /**
-   * Gets the start time of the specified frame in milliseconds.
-   * @param n the frame number
-   * @return the start time of the frame in milliseconds
-   */
-  public double getFrameTime(int n);
+	/**
+	 * Allow setting the name after a no-parameter constructor from
+	 * Class.newInstance().
+	 * 
+	 * @param name
+	 */
+	void init(String fileName) throws IOException;
 
-  /**
-   * Gets the duration of the specified frame in milliseconds.
-   * @param n the frame number
-   * @return the duration of the frame in milliseconds
-   */
-  public double getFrameDuration(int n);
 
-  /**
-   * Sets x position of UL corner of the specified video frame
-   * in world units.
-   *
-   * @param n the video frame number
-   * @param x the world x position
-   */
-  public void setFrameX(int n, double x);
+	/**
+	 * Gets the start time of the specified frame in milliseconds.
+	 * 
+	 * @param n the frame number
+	 * @return the start time of the frame in milliseconds
+	 */
+	public double getFrameTime(int n);
 
-  /**
-   * Sets y position of UL corner of the specified video frame
-   * in world units.
-   *
-   * @param n the video frame number
-   * @param y the world y position
-   */
-  public void setFrameY(int n, double y);
+	/**
+	 * Gets the duration of the specified frame in milliseconds.
+	 * 
+	 * @param n the frame number
+	 * @return the duration of the frame in milliseconds
+	 */
+	public double getFrameDuration(int n);
 
-  /**
-   * Sets the x and y position of the UL corner of the
-   * specified video frame in world units.
-   *
-   * @param n the video frame number
-   * @param x the world x position
-   * @param y the world y position
-   */
-  public void setFrameXY(int n, double x, double y);
+	/**
+	 * Sets x position of UL corner of the specified video frame in world units.
+	 *
+	 * @param n the video frame number
+	 * @param x the world x position
+	 */
+	public void setFrameX(int n, double x);
 
-  /**
-   * Sets the relative aspect of the specified video frame.
-   * The pixel aspect of an image is the ratio of its pixel width to height.
-   * Its world aspect is the ratio of width to height in world units.
-   * For example, a 320 x 240 pixel image has a pixel aspect of 4/3.
-   * If its relative aspect is set to 2, then the world aspect of the image will be 8/3.
-   * This means that if the image width is set to 16, its height will be 6.
-   * Conversely, if its height is set to 10, its width will be 8/3 x 10 = 26.666.
-   *
-   * @param n the video frame number
-   * @param relativeAspect the world aspect of the image relative to its pixel aspect.
-   */
-  public void setFrameRelativeAspect(int n, double relativeAspect);
+	/**
+	 * Sets y position of UL corner of the specified video frame in world units.
+	 *
+	 * @param n the video frame number
+	 * @param y the world y position
+	 */
+	public void setFrameY(int n, double y);
 
-  /**
-   * Sets the width of the specified video frame in world units. This
-   * method also sets the height using the relative aspect.
-   *
-   * @param n the video frame number
-   * @param width the width in world units
-   */
-  public void setFrameWidth(int n, double width);
+	/**
+	 * Sets the x and y position of the UL corner of the specified video frame in
+	 * world units.
+	 *
+	 * @param n the video frame number
+	 * @param x the world x position
+	 * @param y the world y position
+	 */
+	public void setFrameXY(int n, double x, double y);
 
-  /**
-   * Sets the height of the specified video frame in world units. This
-   * method also sets the width using the relative aspect.
-   *
-   * @param n the video frame number
-   * @param height the height in world units
-   */
-  public void setFrameHeight(int n, double height);
+	/**
+	 * Sets the relative aspect of the specified video frame. The pixel aspect of an
+	 * image is the ratio of its pixel width to height. Its world aspect is the
+	 * ratio of width to height in world units. For example, a 320 x 240 pixel image
+	 * has a pixel aspect of 4/3. If its relative aspect is set to 2, then the world
+	 * aspect of the image will be 8/3. This means that if the image width is set to
+	 * 16, its height will be 6. Conversely, if its height is set to 10, its width
+	 * will be 8/3 x 10 = 26.666.
+	 *
+	 * @param n              the video frame number
+	 * @param relativeAspect the world aspect of the image relative to its pixel
+	 *                       aspect.
+	 */
+	public void setFrameRelativeAspect(int n, double relativeAspect);
 
-  /**
-   * Sets the angle in radians of the specified video frame measured ccw
-   * from the world x-axis.
-   *
-   * @param n the video frame number
-   * @param angle the angle n radians
-   */
-  public void setFrameAngle(int n, double angle);
+	/**
+	 * Sets the width of the specified video frame in world units. This method also
+	 * sets the height using the relative aspect.
+	 *
+	 * @param n     the video frame number
+	 * @param width the width in world units
+	 */
+	public void setFrameWidth(int n, double width);
 
-  /**
-   * Disposes of this video.
-   */
-  public void dispose();
+	/**
+	 * Sets the height of the specified video frame in world units. This method also
+	 * sets the width using the relative aspect.
+	 *
+	 * @param n      the video frame number
+	 * @param height the height in world units
+	 */
+	public void setFrameHeight(int n, double height);
+
+	/**
+	 * Sets the angle in radians of the specified video frame measured ccw from the
+	 * world x-axis.
+	 *
+	 * @param n     the video frame number
+	 * @param angle the angle n radians
+	 */
+	public void setFrameAngle(int n, double angle);
+
+	/**
+	 * Disposes of this video.
+	 */
+	public void dispose();
 
 }
 
