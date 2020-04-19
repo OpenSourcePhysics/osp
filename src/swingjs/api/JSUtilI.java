@@ -12,6 +12,11 @@ import swingjs.api.js.HTML5Applet;
 public interface JSUtilI {
 
 	/**
+	 * An image raster identical to HTML5's RGBA byte-based data object
+	 */
+	int TYPE_4BYTE_HTML5 = -6;
+
+	/**
 	 * Indicate to SwingJS that the given file type is binary.
 	 * 
 	 * @param ext
