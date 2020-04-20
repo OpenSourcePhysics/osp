@@ -86,7 +86,7 @@ public class MovieFactory {
 	 */
 	public static String getDefaultEngine() {
 		if (OSPRuntime.isJS) {
-			return VideoIO.ENGINE_XUGGLEJS;
+			return VideoIO.ENGINE_MOVIEJS;
 		}
 		/**
 		 * Java only
