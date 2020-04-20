@@ -726,96 +726,94 @@ public class ImageVideo extends VideoAdapter {
       control.setValue("delta_t", video.deltaT); //$NON-NLS-1$
     }
 
-    /**
-     * Creates a new ImageVideo.
-     *
-     * @param control the control
-     * @return the new ImageVideo
-     */
-    public Object createObject(XMLControl control) {
-      String[] paths = (String[]) control.getObject("paths"); //$NON-NLS-1$
-      // legacy code that opens single image or sequence
-      if(paths==null) {
-        try {
-          String path = control.getString("path");           
-          if (OSPRuntime.checkTempDirCache)
-				path = OSPRuntime.tempDir + path;          
-          //$NON-NLS-1$
-          boolean seq = control.getBoolean("sequence"); //$NON-NLS-1$
-          if(path!=null) {
-            ImageVideo vid = new ImageVideo(path, seq);
-            return vid;
-          }
-        } catch(IOException ex) {
-          ex.printStackTrace();
-          return null;
-        }
-      }
-      // pre-2007 code
-      boolean[] sequences = (boolean[]) control.getObject("sequences"); //$NON-NLS-1$
-      if(sequences!=null) {
-        try {
-          ImageVideo vid = new ImageVideo(paths[0], sequences[0]);
-          for(int i = 1; i<paths.length; i++) {
-            vid.append(paths[i], sequences[i]);
-          }
-          return vid;
-        } catch(Exception ex) {
-          ex.printStackTrace();
-          return null;
-        }
-      }
-      // 2007+ code
-      if(paths.length==0) {
-        return null;
-      }
-      ImageVideo vid = null;
-      ArrayList<String> badPaths = null;
-      for(int i = 0; i<paths.length; i++) {
-        try {
-          if(vid==null) {
-            vid = new ImageVideo(paths[i], false);
-          } else {
-            vid.append(paths[i], false);
-          }
-        } catch(Exception ex) {
-          if(badPaths==null) {
-            badPaths = new ArrayList<String>();
-          }
-          badPaths.add("\""+paths[i]+"\""); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-      }
-      if(badPaths!=null) {
-        String s = badPaths.get(0);
-        for(int i = 1; i<badPaths.size(); i++) {
-          s += ", "+badPaths.get(i);                                                                      //$NON-NLS-1$
-        }
-        JOptionPane.showMessageDialog(null, MediaRes.getString("ImageVideo.Dialog.MissingImages.Message") //$NON-NLS-1$
-                                      +":\n"+s,                                                           //$NON-NLS-1$
-                                        MediaRes.getString("ImageVideo.Dialog.MissingImages.Title"),      //$NON-NLS-1$
-                                          JOptionPane.WARNING_MESSAGE);
-      }
-      if(vid==null) {
-        return null;
-      }
-      vid.rawImage = vid.images[0];
-      Collection<?> filters = Collection.class.cast(control.getObject("filters")); //$NON-NLS-1$
-      if(filters!=null) {
-        vid.getFilterStack().clear();
-        Iterator<?> it = filters.iterator();
-        while(it.hasNext()) {
-          Filter filter = (Filter) it.next();
-          vid.getFilterStack().addFilter(filter);
-        }
-      }
-    	String path = paths[0];
-    	String ext = XML.getExtension(path);
-      VideoType type = VideoIO.getVideoType("image", ext); //$NON-NLS-1$
-      if (type!=null)
-      	vid.setProperty("video_type", type); //$NON-NLS-1$
-      vid.deltaT = control.getDouble("delta_t"); //$NON-NLS-1$
-      return vid;
-    }
+		/**
+		 * Creates a new ImageVideo.
+		 *
+		 * @param control the control
+		 * @return the new ImageVideo
+		 */
+		public Object createObject(XMLControl control) {
+			String[] paths = (String[]) control.getObject("paths"); //$NON-NLS-1$
+			// legacy code that opens single image or sequence
+			if (paths == null) {
+				try {
+					String path = control.getString("path"); //$NON-NLS-1$
+					if (path != null) {
+						if (OSPRuntime.checkTempDirCache)
+							path = OSPRuntime.tempDir + path;
+						boolean seq = control.getBoolean("sequence"); //$NON-NLS-1$
+						return new ImageVideo(path, seq);
+					}
+				} catch (IOException ex) {
+					ex.printStackTrace();
+					return null;
+				}
+			}
+			// pre-2007 code
+			boolean[] sequences = (boolean[]) control.getObject("sequences"); //$NON-NLS-1$
+			if (sequences != null) {
+				try {
+					ImageVideo vid = new ImageVideo(paths[0], sequences[0]);
+					for (int i = 1; i < paths.length; i++) {
+						vid.append(paths[i], sequences[i]);
+					}
+					return vid;
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					return null;
+				}
+			}
+			// 2007+ code
+			if (paths.length == 0) {
+				return null;
+			}
+			ImageVideo vid = null;
+			ArrayList<String> badPaths = null;
+			for (int i = 0; i < paths.length; i++) {
+				try {
+					if (vid == null) {
+						vid = new ImageVideo(paths[i], false);
+					} else {
+						vid.append(paths[i], false);
+					}
+				} catch (Exception ex) {
+					if (badPaths == null) {
+						badPaths = new ArrayList<String>();
+					}
+					badPaths.add("\"" + paths[i] + "\""); //$NON-NLS-1$ //$NON-NLS-2$
+				}
+			}
+			if (badPaths != null) {
+				String s = badPaths.get(0);
+				for (int i = 1; i < badPaths.size(); i++) {
+					s += ", " + badPaths.get(i); //$NON-NLS-1$
+				}
+				JOptionPane.showMessageDialog(null, MediaRes.getString("ImageVideo.Dialog.MissingImages.Message") //$NON-NLS-1$
+						+ ":\n" + s, //$NON-NLS-1$
+						MediaRes.getString("ImageVideo.Dialog.MissingImages.Title"), //$NON-NLS-1$
+						JOptionPane.WARNING_MESSAGE);
+			}
+			if (vid == null) {
+				return null;
+			}
+			vid.rawImage = vid.images[0];
+			Collection<?> filters = Collection.class.cast(control.getObject("filters")); //$NON-NLS-1$
+			if (filters != null) {
+				vid.getFilterStack().clear();
+				Iterator<?> it = filters.iterator();
+				while (it.hasNext()) {
+					Filter filter = (Filter) it.next();
+					vid.getFilterStack().addFilter(filter);
+				}
+			}
+			String path = paths[0];
+			String ext = XML.getExtension(path);
+			VideoType type = VideoIO.getVideoType("image", ext); //$NON-NLS-1$
+			if (type != null)
+				vid.setProperty("video_type", type); //$NON-NLS-1$
+			vid.deltaT = control.getDouble("delta_t"); //$NON-NLS-1$
+			return vid;
+		}
 
     /**
      * This does nothing, but is required by the XML.ObjectLoader interface.
@@ -829,12 +827,6 @@ public class ImageVideo extends VideoAdapter {
     }
 
   }
-
-@Override
-public void init(String fileName) throws IOException {
-	// TODO Auto-generated method stub
-	
-}
 
 }
 

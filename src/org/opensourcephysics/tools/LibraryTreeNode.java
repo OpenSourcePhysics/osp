@@ -12,7 +12,6 @@ import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,6 +30,7 @@ import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.core.VideoFileFilter;
 import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.media.gif.GifDecoder;
+import org.opensourcephysics.media.mov.MovieFactory;
 import org.opensourcephysics.tools.LibraryResource.Metadata;
 
 /**
@@ -758,7 +758,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 					GifDecoder decoder = new GifDecoder();
 					status = decoder.read(sourcePath);
 				}
-				if (status != 0) { // error
+				if (status != GifDecoder.STATUS_OK) { // error
 					OSPLog.fine("failed to create thumbnail for GIF " + thumbPath); //$NON-NLS-1$
 				} else {
 					thumbFile = LibraryBrowser.copyFile(sourcePath, thumbPath);
@@ -780,28 +780,14 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 				// look for image file in zip with name that includes "_thumbnail"
 				for (String next : ResourceLoader.getZipContents(sourcePath)) {
 					if (next.indexOf("_thumbnail") > -1) { //$NON-NLS-1$
-						if (OSPRuntime.isJS) {
-							thumbFile = new File(thumbPath);
-							// now what!??
-						} else {
-							String s = ResourceLoader.getURIPath(sourcePath + "!/" + next); //$NON-NLS-1$
-							thumbFile = ResourceLoader.extract(s, new File(thumbPath));
-						}
+						String s = ResourceLoader.getURIPath(sourcePath + "!/" + next); //$NON-NLS-1$
+						thumbFile = ResourceLoader.extract(s, new File(thumbPath));
 					}
 				}
 			} else {
-				// video files: use Xuggle thumbnail tool, if available
-				String className = "org.opensourcephysics.media.xuggle.XuggleThumbnailTool"; //$NON-NLS-1$
-				Class<?>[] types = new Class<?>[] { Dimension.class, String.class, String.class };
+				// This better be a movie!
 				Object[] values = new Object[] { defaultThumbnailDimension, sourcePath, thumbPath };
-				try {
-					Class<?> xuggleClass = Class.forName(className);
-					Method method = xuggleClass.getMethod("createThumbnailFile", types); //$NON-NLS-1$
-					thumbFile = (File) method.invoke(null, values);
-				} catch (Exception ex) {
-					OSPLog.fine("failed to create thumbnail: " + ex.toString()); //$NON-NLS-1$
-				} catch (Error err) {
-				}
+				thumbFile = MovieFactory.createThumbnailFile(values);
 			}
 			return thumbFile;
 		}

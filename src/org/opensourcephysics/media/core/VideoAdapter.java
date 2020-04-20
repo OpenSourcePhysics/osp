@@ -42,14 +42,20 @@ import java.awt.image.Raster;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.opensourcephysics.controls.OSPLog;
+import org.opensourcephysics.controls.XML;
+import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.Interactive;
+import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.media.mov.JSMovieVideo;
 
 /**
  * This provides basic implementations of all Video methods. Subclasses should
@@ -994,6 +1000,83 @@ public abstract class VideoAdapter implements Video {
       support.firePropertyChange(e);
     }
   }
+  
+	/**
+	 * A class to save and load and save  VideoAdapter data.
+	 */
+	abstract public static class Loader implements XML.ObjectLoader {
+		
+		/**
+		 * subclassed to GifVideo, ImageVideo, JSMovieVideo, and XuggleVideo
+		 * @param path
+		 * @return
+		 * @throws IOException
+		 */
+		protected abstract VideoAdapter createVideo(String path) throws IOException;
+		
+		/**
+		 * Saves video data to an XMLControl.
+		 *
+		 * @param control the control to save to
+		 * @param obj     the Video object to save
+		 */
+		public void saveObject(XMLControl control, Object obj) {
+			VideoAdapter video = (VideoAdapter) obj;
+			String base = (String) video.getProperty("base"); //$NON-NLS-1$
+			String absPath = (String) video.getProperty("absolutePath"); //$NON-NLS-1$
+			if (base != null && absPath != null)
+				control.setValue("path", XML.getPathRelativeTo(absPath, base)); //$NON-NLS-1$
+			else {
+				String path = (String) video.getProperty("path"); //$NON-NLS-1$
+				control.setValue("path", path); //$NON-NLS-1$
+			}
+			if (!video.getFilterStack().isEmpty()) {
+				control.setValue("filters", video.getFilterStack().getFilters()); //$NON-NLS-1$
+			}
+		}
+
+		/**
+		 * Creates a new Video.
+		 *
+		 * @param control the control
+		 * @return the new Video
+		 */
+		public Object createObject(XMLControl control) {
+			try {
+				String path = control.getString("path"); //$NON-NLS-1$
+				if (OSPRuntime.checkTempDirCache)
+					path = OSPRuntime.tempDir + path;
+				return createVideo(path);
+			} catch (IOException ex) {
+				OSPLog.fine(ex.getMessage());
+				return null;
+			}
+		}
+
+		/**
+		 * This does nothing, but is required by the XML.ObjectLoader interface
+		 *
+		 * @param control the control
+		 * @param obj     the Video object
+		 * @return the loaded object
+		 */
+		public Object loadObject(XMLControl control, Object obj) {
+			VideoAdapter video = (VideoAdapter) obj;
+			Collection<?> filters = (Collection<?>) control.getObject("filters"); //$NON-NLS-1$
+			if (filters != null) {
+				video.getFilterStack().clear();
+				Iterator<?> it = filters.iterator();
+				while (it.hasNext()) {
+					Filter filter = (Filter) it.next();
+					video.getFilterStack().addFilter(filter);
+				}
+			}
+			return obj;
+		}
+
+	}
+
+
 
   //____________________________ protected methods ____________________________
 
@@ -1009,7 +1092,8 @@ public abstract class VideoAdapter implements Video {
     support.firePropertyChange(property, oldVal, newVal);
   }
 
-  @Override
+
+@Override
   protected void finalize() {
   	OSPLog.finer(getClass().getSimpleName()+" resources released by garbage collector"); //$NON-NLS-1$
   }

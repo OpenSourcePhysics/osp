@@ -41,10 +41,10 @@ public interface VideoType {
   /**
    * Opens a new video with the specified name.
    *
-   * @param name the name of the video
+   * @param path the path to the video
    * @return the new video
    */
-  public Video getVideo(String name);
+  public Video getVideo(String path);
 
   /**
    * Return true if the specified video is this type.

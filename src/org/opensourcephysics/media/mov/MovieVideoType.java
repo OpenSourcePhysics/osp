@@ -134,7 +134,7 @@ public class MovieVideoType implements VideoType {
    * @return the video recorder
    */
   public VideoRecorder getRecorder() {
-  	return MovieFactory.newXtractorVideoRecorder(this);  	
+  	return MovieFactory.newMovieVideoRecorder(this);  	
   }
 
   /**

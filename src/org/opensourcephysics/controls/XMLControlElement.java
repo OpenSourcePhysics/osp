@@ -12,7 +12,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
@@ -26,9 +25,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import javax.swing.JOptionPane;
 
-import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.tools.Resource;
 import org.opensourcephysics.tools.ResourceLoader;
 
@@ -40,14 +39,14 @@ import org.opensourcephysics.tools.ResourceLoader;
  */
 public class XMLControlElement implements XMLControl {
   // static constants
-  @SuppressWarnings("javadoc")
+
 	public static final int ALWAYS_DECRYPT = 0;
-  @SuppressWarnings("javadoc")
+
 	public static final int PASSWORD_DECRYPT = 3;
-  @SuppressWarnings("javadoc")
+
 	public static final int NEVER_DECRYPT = 5;
   // static fields
-  @SuppressWarnings("javadoc")
+
 	public static int compactArraySize = 0;
   protected static String encoding = "UTF-8";                             //$NON-NLS-1$
   
@@ -63,8 +62,8 @@ public class XMLControlElement implements XMLControl {
   protected ArrayList<XMLProperty> props = new ArrayList<XMLProperty>();
   protected BufferedReader input;
   protected BufferedWriter output;
-  @SuppressWarnings("javadoc")
-	public boolean canWrite;
+
+  public boolean canWrite;
   protected boolean valid = false;
   protected boolean readFailed = false;
   protected String version;

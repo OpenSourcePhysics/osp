@@ -36,16 +36,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
-import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.media.core.DoubleArray;
-import org.opensourcephysics.media.core.Filter;
 import org.opensourcephysics.media.core.ImageCoordSystem;
 import org.opensourcephysics.media.core.VideoAdapter;
 import org.opensourcephysics.media.core.VideoIO;
@@ -334,76 +330,17 @@ public class GifVideo extends VideoAdapter {
   /**
    * A class to save and load ImageVideo data.
    */
-  static class Loader implements XML.ObjectLoader {
-    /**
-     * Saves GifVideo data to an XMLControl.
-     *
-     * @param control the control to save to
-     * @param obj the GifVideo object to save
-     */
-    public void saveObject(XMLControl control, Object obj) {
-      GifVideo video = (GifVideo) obj;
-      String base = (String) video.getProperty("base");            //$NON-NLS-1$
-      String absPath = (String) video.getProperty("absolutePath"); //$NON-NLS-1$
-      if (base!=null && absPath!=null)
-      	control.setValue("path", XML.getPathRelativeTo(absPath, base)); //$NON-NLS-1$
-      else {
-        String path = (String) video.getProperty("path"); //$NON-NLS-1$
-      	control.setValue("path", path); //$NON-NLS-1$
-      }
-      if(!video.getFilterStack().isEmpty()) {
-        control.setValue("filters", video.getFilterStack().getFilters()); //$NON-NLS-1$
-      }
-    }
+  static class Loader extends VideoAdapter.Loader {
 
-    /**
-     * Creates a new GifVideo.
-     *
-     * @param control the control
-     * @return the new GifVideo
-     */
-    public Object createObject(XMLControl control) {
-      try {
-      	String path = control.getString("path"); //$NON-NLS-1$
-      	GifVideo video = new GifVideo(path);
-        VideoType gifType = VideoIO.getVideoType("gif", null); //$NON-NLS-1$
-        if (gifType!=null)
-        	video.setProperty("video_type", gifType); //$NON-NLS-1$
-        return video;
-      } catch(IOException ex) {
-      	OSPLog.fine(ex.getMessage());
-        return null;
-      }
-    }
-
-    /**
-     * This does nothing, but is required by the XML.ObjectLoader interface
-     *
-     * @param control the control
-     * @param obj the GifVideo object
-     * @return the loaded object
-     */
-    public Object loadObject(XMLControl control, Object obj) {
-      GifVideo video = (GifVideo) obj;
-      Collection<?> filters = (Collection<?>) control.getObject("filters"); //$NON-NLS-1$
-      if(filters!=null) {
-        video.getFilterStack().clear();
-        Iterator<?> it = filters.iterator();
-        while(it.hasNext()) {
-          Filter filter = (Filter) it.next();
-          video.getFilterStack().addFilter(filter);
-        }
-      }
-      return obj;
-    }
+		protected VideoAdapter createVideo(String path) throws IOException {
+	      	GifVideo video = new GifVideo(path);
+	        VideoType gifType = VideoIO.getVideoType("gif", null); //$NON-NLS-1$
+	        if (gifType!=null)
+	        	video.setProperty("video_type", gifType); //$NON-NLS-1$
+	        return video;
+		}
 
   }
-
-@Override
-public void init(String fileName) throws IOException {
-	// TODO Auto-generated method stub
-	
-}
 
 }
 

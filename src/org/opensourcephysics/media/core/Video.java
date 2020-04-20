@@ -32,7 +32,6 @@
 package org.opensourcephysics.media.core;
 
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 
 /**
  * This defines methods to control a video image sequence. Individual images
@@ -105,16 +104,8 @@ public interface Video extends InteractiveImage, Playable, Trackable, PropertyCh
 	 * @param n a number between getStartFrameNumber() and getFrameCount()
 	 * @see #setStartFrameNumber
 	 */
+	
 	public void setEndFrameNumber(int n);
-
-	/**
-	 * Allow setting the name after a no-parameter constructor from
-	 * Class.newInstance().
-	 * 
-	 * @param name
-	 */
-	void init(String fileName) throws IOException;
-
 
 	/**
 	 * Gets the start time of the specified frame in milliseconds.

@@ -11,7 +11,6 @@ import java.awt.Component;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
@@ -79,6 +78,8 @@ public class OSPRuntime {
 	public static boolean setRenderingHints = (!isJS && !isMac);
 	
 	public static boolean autoAddLibrary = !isJS; // for ResourceLoader
+
+	public static boolean cantCreateMovieFiles = isJS;
 
 	public static boolean checkTempDirCache = isJS; // for ResourceLoader.
 
@@ -223,20 +224,12 @@ public class OSPRuntime {
 	public final static String SYSTEM_LF = "SYSTEM"; //$NON-NLS-1$
 	@SuppressWarnings("javadoc")
 	public final static String METAL_LF = "METAL"; //$NON-NLS-1$
-	@SuppressWarnings("javadoc")
 	public final static String GTK_LF = "GTK"; //$NON-NLS-1$
-	@SuppressWarnings("javadoc")
 	public final static String MOTIF_LF = "MOTIF"; //$NON-NLS-1$
-	@SuppressWarnings("javadoc")
 	public final static String WINDOWS_LF = "WINDOWS"; //$NON-NLS-1$
-	@SuppressWarnings("javadoc")
 	public final static String DEFAULT_LF = "DEFAULT"; //$NON-NLS-1$
-	@SuppressWarnings("javadoc")
-	public final static LookAndFeel DEFAULT_LOOK_AND_FEEL = UIManager.getLookAndFeel(); // save the default before we
-																						// change LnF
-	@SuppressWarnings("javadoc")
+	public final static LookAndFeel DEFAULT_LOOK_AND_FEEL = UIManager.getLookAndFeel(); // save the default before we																						// change LnF
 	public final static boolean DEFAULT_LOOK_AND_FEEL_DECORATIONS = JFrame.isDefaultLookAndFeelDecorated();
-	@SuppressWarnings("javadoc")
 	public final static HashMap<String, String> LOOK_AND_FEEL_TYPES = new HashMap<String, String>();
 
 

@@ -1,5 +1,7 @@
 package org.opensourcephysics.media.mov;
 
+import java.awt.Dimension;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -11,7 +13,6 @@ import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.media.core.VideoRecorder;
 import org.opensourcephysics.media.core.VideoType;
 import org.opensourcephysics.media.xuggle.DiagnosticsForXuggle;
-import org.opensourcephysics.media.xugglejs.XuggleJSThumbnailTool;
 
 /**
  * A factory class to allow options for implementing Xuggle-like behavior
@@ -20,7 +21,9 @@ import org.opensourcephysics.media.xugglejs.XuggleJSThumbnailTool;
  */
 public class MovieFactory {
 
-	public static VideoRecorder newXtractorVideoRecorder(MovieVideoType xuggleVideoType) {
+	public static VideoRecorder newMovieVideoRecorder(MovieVideoType videoType) {
+		if (OSPRuntime.isJS)
+			return null;
 		try {
 			return (VideoRecorder) Class.forName("org.opensourcephysics.media.core.XuggleVideoRecorder").newInstance();
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
@@ -31,8 +34,11 @@ public class MovieFactory {
 
 	public static Video newVideo(String name, String description) {
 		try {
+			if (OSPRuntime.isJS) {
+				return new JSMovieVideo(name);
+			}
 			Video video = (Video) Class.forName("org.opensourcephysics.media.core.XuggleVideo").newInstance();
-			video.init(name);
+			((MovieVideoI) video).init(name);
 			return video;
 		} catch (IOException | InstantiationException | IllegalAccessException | ClassNotFoundException e) {
 	    	OSPLog.fine(description+": "+e.getMessage()); //$NON-NLS-1$
@@ -43,7 +49,7 @@ public class MovieFactory {
 
 	public static void startXtractorThumbnailTool() {
 		if (OSPRuntime.isJS) {
-			XuggleJSThumbnailTool.start();
+			return;
 		} else {
 			try {
 				Class.forName("org.opensourcephysics.media.xuggle.XuggleThumbnailTool");
@@ -124,5 +130,23 @@ public class MovieFactory {
 	}
 
 	public static ArrayList<VideoType> videoEngines = new ArrayList<VideoType>();
+
+	public static File createThumbnailFile(Object[] values) {
+		if (OSPRuntime.isJS) {
+			return JSMovieVideo.createThumbnailFile(values);
+		}
+		// video files: use Xuggle thumbnail tool, if available
+		String className = "org.opensourcephysics.media.xuggle.XuggleThumbnailTool"; //$NON-NLS-1$
+		Class<?>[] types = new Class<?>[] { Dimension.class, String.class, String.class };
+		try {
+			Class<?> xuggleClass = Class.forName(className);
+			Method method = xuggleClass.getMethod("createThumbnailFile", types); //$NON-NLS-1$
+			return (File) method.invoke(null, values);
+		} catch (Exception ex) {
+			OSPLog.fine("failed to create thumbnail: " + ex.toString()); //$NON-NLS-1$
+		} catch (Error err) {
+		}
+		return null;
+	}
 
 }
