@@ -29,7 +29,7 @@
  * For additional information and documentation on Open Source Physics,
  * please see <http://www.opensourcephysics.org/>.
  */
-package org.opensourcephysics.media.js;
+package org.opensourcephysics.media.movie;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
@@ -54,12 +54,12 @@ import org.opensourcephysics.tools.Resource;
 import org.opensourcephysics.tools.ResourceLoader;
 
 /**
- * This is a video that wraps an animated gif image.
+ * This is a video that uses HTML5/JS.
  *
  * @author Douglas Brown
  * @version 1.0
  */
-public class JSVideo extends VideoAdapter {
+public class MovieVideo extends VideoAdapter {
   // instance fields
   protected int[] startTimes; // in milliseconds
   private javax.swing.Timer timer;
@@ -71,7 +71,7 @@ public class JSVideo extends VideoAdapter {
    * @param name the name of the file
    * @throws IOException
    */
-  public JSVideo(String name) throws IOException {
+  public MovieVideo(String name) throws IOException {
     load(name);
     createTimer();
   }
@@ -343,7 +343,7 @@ public class JSVideo extends VideoAdapter {
      * @param obj the GifVideo object to save
      */
     public void saveObject(XMLControl control, Object obj) {
-      JSVideo video = (JSVideo) obj;
+      MovieVideo video = (MovieVideo) obj;
       String base = (String) video.getProperty("base");            //$NON-NLS-1$
       String absPath = (String) video.getProperty("absolutePath"); //$NON-NLS-1$
       if (base!=null && absPath!=null)
@@ -366,7 +366,7 @@ public class JSVideo extends VideoAdapter {
     public Object createObject(XMLControl control) {
       try {
       	String path = control.getString("path"); //$NON-NLS-1$
-      	JSVideo video = new JSVideo(path);
+      	MovieVideo video = new MovieVideo(path);
         VideoType gifType = VideoIO.getVideoType("gif", null); //$NON-NLS-1$
         if (gifType!=null)
         	video.setProperty("video_type", gifType); //$NON-NLS-1$
@@ -385,7 +385,7 @@ public class JSVideo extends VideoAdapter {
      * @return the loaded object
      */
     public Object loadObject(XMLControl control, Object obj) {
-      JSVideo video = (JSVideo) obj;
+      MovieVideo video = (MovieVideo) obj;
       Collection<?> filters = (Collection<?>) control.getObject("filters"); //$NON-NLS-1$
       if(filters!=null) {
         video.getFilterStack().clear();

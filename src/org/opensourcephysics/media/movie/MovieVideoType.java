@@ -29,7 +29,7 @@
  * For additional information and documentation on Open Source Physics,
  * please see <http://www.opensourcephysics.org/>.
  */
-package org.opensourcephysics.media.js;
+package org.opensourcephysics.media.movie;
 import java.io.IOException;
 
 import org.opensourcephysics.controls.OSPLog;
@@ -39,12 +39,12 @@ import org.opensourcephysics.media.core.VideoRecorder;
 import org.opensourcephysics.media.core.VideoType;
 
 /**
- * This implements the VideoType interface with a buffered image type.
+ * This implements the VideoType interface with HTML5/JS.
  *
  * @author Douglas Brown
  * @version 1.0
  */
-public class JSVideoType implements VideoType {
+public class MovieVideoType implements VideoType {
   protected static VideoFileFilter oggFilter
   	= new VideoFileFilter("0gg", new String[] {"ogg"}); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -56,7 +56,7 @@ public class JSVideoType implements VideoType {
    */
   public Video getVideo(String name) {
     try {
-    	Video video = new JSVideo(name);
+    	Video video = new MovieVideo(name);
       video.setProperty("video_type", this); //$NON-NLS-1$
       return video;
     } catch(IOException ex) {
@@ -126,7 +126,7 @@ public class JSVideoType implements VideoType {
    * @return true if the video is this type
    */
   public boolean isType(Video video) {
-    return video.getClass().equals(JSVideo.class);
+    return video.getClass().equals(MovieVideo.class);
   }
 }
 
