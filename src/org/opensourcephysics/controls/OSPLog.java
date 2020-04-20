@@ -640,17 +640,19 @@ public class OSPLog extends JFrame {
 
 	/**
 	 * Opens a text file selected with a chooser and writes the contents to the log.
-	 *
-	 * @return the name of the file
 	 */
-	public String open() {
-		int result = getChooser().showOpenDialog(null);
-		if (result == JFileChooser.APPROVE_OPTION) {
-			File file = getChooser().getSelectedFile();
-			String fileName = XML.getRelativePath(file.getAbsolutePath());
-			return open(fileName);
-		}
-		return null;
+	public void open() {
+	    OSPRuntime.getChooser().showOpenDialog(null, new Runnable() {
+
+			@Override
+			public void run() {
+				File file = OSPRuntime.getChooser().getSelectedFile();
+			    String fileName =  XML.getRelativePath(file.getAbsolutePath());
+			    fileName = XML.getRelativePath(fileName);
+			    open(fileName);
+			}
+	    	
+	    }, null);
 	}
 
 	/**
@@ -659,14 +661,13 @@ public class OSPLog extends JFrame {
 	 * @param fileName the file name
 	 * @return the file name
 	 */
-	public String open(String fileName) {
+	public void open(String fileName) {
 		String data = read(fileName);
 		logBuffer.setLength(0);
 		logBuffer.append(data);
 		if (logPane != null) {
 			logPane.setText(data);
 		}
-		return fileName;
 	}
 
 	/**
