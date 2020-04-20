@@ -54,7 +54,12 @@ public class MovieFactory {
 	}
 
 	public static void registerWithViewoIO() {
-		MovieIO.registerWithVideoIO();
+		if (OSPRuntime.isJS || System.getenv("XUGGLE_HOME") != null) {//$NON-NLS-1$
+			MovieIO.registerWithVideoIO();
+		} else {
+			OSPLog.config("Xuggle not installed? (XUGGLE_HOME not found)"); //$NON-NLS-1$
+		}
+
 	}
 
 	/**

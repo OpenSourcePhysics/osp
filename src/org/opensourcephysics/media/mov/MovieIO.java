@@ -41,8 +41,6 @@ public class MovieIO {
    * Registers Xuggle video types with VideoIO class.
    */
   static public void registerWithVideoIO(){ // add Xuggle video types, if available
-    String xugglehome = System.getenv("XUGGLE_HOME"); //$NON-NLS-1$
-    if (xugglehome!=null) {
       try {
     	  VideoIO.addVideoEngine(new MovieVideoType());
 
@@ -111,10 +109,6 @@ public class MovieIO {
       catch (Error er) { // Xuggle not working
       	OSPLog.config("Xuggle error: "+er.toString()); //$NON-NLS-1$
       }    	
-    }
-    else {
-    	OSPLog.config("Xuggle not installed? (XUGGLE_HOME not found)"); //$NON-NLS-1$
-    }
   }
   
 }
