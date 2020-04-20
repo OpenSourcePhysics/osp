@@ -21,6 +21,8 @@ import org.opensourcephysics.display.Grid;
 import org.opensourcephysics.display.MeasuredImage;
 import org.opensourcephysics.js.JSUtil;
 
+import swingjs.api.JSUtilI;
+
 /**
  * InterpolatedPlot creates an image of a scalar field by interpolating every
  * image pixel to an untabulated point (x,y) in the 2d data.  This interpolation smooths
@@ -388,7 +390,7 @@ protected byte[] pixelData;
     }
     OSPLog.finer("InterpolatedPlot image created with row="+height+" and col="+width); //$NON-NLS-1$ //$NON-NLS-2$
     imageType = 
-    		(JSUtil.isJS ? JSUtil.TYPE_4BYTE_HTML5
+    		(JSUtil.isJS ? JSUtilI.TYPE_4BYTE_HTML5
     				: BufferedImage.TYPE_4BYTE_ABGR);
     image = new BufferedImage(width, height, imageType);
     pixelData = ((DataBufferByte)image.getRaster().getDataBuffer()).getData();

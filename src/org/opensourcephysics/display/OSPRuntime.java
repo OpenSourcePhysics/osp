@@ -40,6 +40,7 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.js.JSUtil;
+import org.opensourcephysics.media.mov.MovieFactory;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ResourceLoader;
 import org.opensourcephysics.tools.Translator;
@@ -70,6 +71,8 @@ public class OSPRuntime {
 
 	}
 
+	// BH note: Cannot use "final" here because then the constant will be set before the
+	// transpiler ever sees it.
 	public static boolean isJS = /** @j2sNative true || */
 			false;
 
@@ -81,11 +84,11 @@ public class OSPRuntime {
 
 	public static boolean checkZipLoaders = !isJS;  // for ResourceLloader
 
-	public static boolean doCacheZipContents = isJS; // for ResourceLoader
+	public static boolean doCacheZipContents = true;//isJS; // for ResourceLoader
 
 	public static boolean skipDisplayOfPDF = isJS; // for TrackerIO, for now.
 
-
+	public static boolean embedVideoAsObject = isJS;
 	
 	public static final String tempDir = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$  // BH centralized
 	
@@ -103,20 +106,28 @@ public class OSPRuntime {
 	public static JSUtilI jsutil;
 	
 	static {
-		// note - this is only for https
 		try {
 			if (isJS) {
-				jsutil = ((JSUtilI)Class.forName("swingjs.JSUtil").newInstance());
-				jsutil.addDirectDatabaseCall("https://physlets.org");
+				jsutil = ((JSUtilI) Class.forName("swingjs.JSUtil").newInstance());
+
+				// note - this is only for https
+				String[] corsEnabled = new String[] { 
+						"www.physlets.org", 
+						"https://physlets.org",
+						// "www.opensourcephysics.org",
+						// "https://www.compadre.org/OSP",
+						"www.compadre.org/osp/online_help" };
+				for (int i = corsEnabled.length; --i >= 0;) {
+					jsutil.addDirectDatabaseCall(corsEnabled[i]);
+				}
 				System.err.println("Still not accessing https://www.compadre.org/osp using CORS");
-				//jsutil.addDirectDatabaseCall("https://www.compadre.org/OSP");
-				//jsutil.addDirectDatabaseCall("https://www.compadre.org/osp");
 			}
-			
+
 		} catch (Exception e) {
 			OSPLog.warning("OSPRuntime could not create jsutil");
 		}
 	}
+	
 	/**
 	 * Disables drawing for faster start-up and to avoid screen flash in Drawing
 	 * Panels.
@@ -1397,17 +1408,7 @@ public class OSPRuntime {
 	}
 
 	public static void registerWithVidoeoIO() {
-		if (!isJS) {
-			try {
-				String name = "org.opensourcephysics.media.xuggle.XuggleIO"; //$NON-NLS-1$
-				Class<?> xuggleClass = Class.forName(name);
-				Method method = xuggleClass.getMethod("registerWithVideoIO"); //$NON-NLS-1$
-				method.invoke(null, (Object[]) null);
-			} catch (Exception ex) {
-			} catch (Error err) {
-			}
-
-		}
+		MovieFactory.registerWithViewoIO();
 	}
 
 	/**

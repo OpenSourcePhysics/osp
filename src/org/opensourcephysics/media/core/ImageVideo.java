@@ -830,6 +830,12 @@ public class ImageVideo extends VideoAdapter {
 
   }
 
+@Override
+public void init(String fileName) throws IOException {
+	// TODO Auto-generated method stub
+	
+}
+
 }
 
 /*
