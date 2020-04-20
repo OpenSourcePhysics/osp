@@ -126,7 +126,7 @@ public class VideoIO {
 
 	// static constants
 	public static final String[] VIDEO_EXTENSIONS = { "mov", "avi", "mp4" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-	public static final String ENGINE_XUGGLEJS = "XuggleJS"; //$NON-NLS-1$
+	public static final String ENGINE_MOVIEJS = "MovieJS"; //$NON-NLS-1$
 	public static final String ENGINE_XUGGLE = "Xuggle"; //$NON-NLS-1$
 	public static final String ENGINE_NONE = "none"; //$NON-NLS-1$
 	public static final String DEFAULT_PREFERRED_EXPORT_EXTENSION = "mp4"; //$NON-NLS-1$
