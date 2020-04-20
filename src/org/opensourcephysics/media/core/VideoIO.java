@@ -126,10 +126,29 @@ public class VideoIO {
 
 	// static constants
 	public static final String[] VIDEO_EXTENSIONS = { "mov", "avi", "mp4" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-	public static final String ENGINE_MOVIEJS = "MovieJS"; //$NON-NLS-1$
+	public static final String ENGINE_JS = "JS"; //$NON-NLS-1$
 	public static final String ENGINE_XUGGLE = "Xuggle"; //$NON-NLS-1$
 	public static final String ENGINE_NONE = "none"; //$NON-NLS-1$
 	public static final String DEFAULT_PREFERRED_EXPORT_EXTENSION = "mp4"; //$NON-NLS-1$
+
+	/**
+	 * Test to see if the name starts with "JS" or "Xuggle".
+	 * 
+	 * @param name  an engine name or a class name
+	 * @return
+	 */
+	public static boolean isNameLikeMovieEngine(String name) {
+		return name.startsWith(getMovieEngineName());
+	}
+
+	/**
+	 * secure method of determining whether this file type shoud be
+	 * directed to a MovieVideoI
+	 * @return
+	 */
+	public static String getMovieEngineName() {
+		return (OSPRuntime.isJS ? ENGINE_JS : ENGINE_XUGGLE);
+	}
 
 	// static fields
 	protected static AsyncFileChooser chooser;
@@ -552,16 +571,14 @@ public class VideoIO {
 	 * Gets an array of video types available to a specified video engine. Always
 	 * returns image and gif types in addition to the engine types.
 	 * 
-	 * @param engine ENGINE_XUGGLE, or ENGINE_NONE
+	 * @param engine ENGINE_XUGGLE, ENGINE_JS, or ENGINE_NONE
 	 * @return the available video types
 	 */
 	public static VideoType[] getVideoTypesForEngine(String engine) {
 		ArrayList<VideoType> available = new ArrayList<VideoType>();
-		boolean skipXuggle = engine.equals(ENGINE_NONE);
+		boolean skipMovies = engine.equals(ENGINE_NONE);
 		for (VideoType next : videoTypes) {
-			String typeName = next.getClass().getSimpleName();
-			// BH! 2020.04.20 was "contains:"
-			if (skipXuggle && typeName.startsWith(ENGINE_XUGGLE))
+			if (skipMovies && VideoIO.isNameLikeMovieEngine(next.getClass().getSimpleName()))
 				continue;
 			available.add(next);
 		}
@@ -617,9 +634,9 @@ public class VideoIO {
 		String extension = XML.getExtension(path);
 		VideoType[] allTypes = getVideoTypesForExtension(extension);
 		ArrayList<VideoType> allowedTypes = new ArrayList<VideoType>();
-		boolean skipXuggle = MovieFactory.getEngine().equals(ENGINE_NONE);
+		boolean skipMovies = MovieFactory.getEngine().equals(ENGINE_NONE);
 		for (int i = 0; i < allTypes.length; i++) {
-			if (skipXuggle && allTypes[i] instanceof MovieVideoType)
+			if (skipMovies && allTypes[i] instanceof MovieVideoType)
 				continue;
 			allowedTypes.add(allTypes[i]);
 		}
@@ -1121,6 +1138,7 @@ public class VideoIO {
 			}
 		}
 	}
+
 
 }
 

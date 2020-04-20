@@ -715,15 +715,16 @@ public class VideoClip {
 					if (ResourceLoader.getResource(path) != null) { // resource exists but not loaded
 						OSPLog.info("\"" + path + "\" could not be opened"); //$NON-NLS-1$ //$NON-NLS-2$
 						// determine if other engines are available for the video extension
-						ArrayList<VideoType> otherEngines = new ArrayList<VideoType>();
+						ArrayList<VideoType> movieEngines = new ArrayList<VideoType>();
 						String engine = MovieFactory.getEngine();
 						String ext = XML.getExtension(path);
-						if (!engine.equals(VideoIO.ENGINE_XUGGLE)) { // java so only check for xuggle
-							VideoType xuggleType = VideoIO.getVideoType(VideoIO.ENGINE_XUGGLE, ext); // $NON-NLS-1$
-							if (xuggleType != null)
-								otherEngines.add(xuggleType);
+						// BH! Doug, please check
+						if (!VideoIO.isNameLikeMovieEngine(engine)) {
+							VideoType movieType = VideoIO.getVideoType(VideoIO.getMovieEngineName(), ext); // $NON-NLS-1$
+							if (movieType != null)
+								movieEngines.add(movieType);
 						}
-						if (otherEngines.isEmpty()) {
+						if (movieEngines.isEmpty()) {
 							JOptionPane.showMessageDialog(null,
 									MediaRes.getString("VideoIO.Dialog.BadVideo.Message") + "\n\n" + path, //$NON-NLS-1$ //$NON-NLS-2$
 									MediaRes.getString("VideoClip.Dialog.BadVideo.Title"), //$NON-NLS-1$
@@ -732,10 +733,10 @@ public class VideoClip {
 							// provide immediate way to open with other engines
 							JCheckBox changePreferredEngine = new JCheckBox(
 									MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Checkbox")); //$NON-NLS-1$
-							video = VideoIO.getVideo(path, otherEngines, changePreferredEngine, null);
+							video = VideoIO.getVideo(path, movieEngines, changePreferredEngine, null);
 							engineChange = changePreferredEngine.isSelected();
 							if (video != null && changePreferredEngine.isSelected()) {
-								MovieFactory.setEngine(video instanceof MovieVideoI ? VideoIO.ENGINE_XUGGLE : VideoIO.ENGINE_NONE);
+								MovieFactory.setEngine(video instanceof MovieVideoI ? VideoIO.getMovieEngineName() : VideoIO.ENGINE_NONE);
 							}
 						}
 					} else {

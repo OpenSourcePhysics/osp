@@ -79,7 +79,11 @@ public class OSPRuntime {
 	
 	public static boolean autoAddLibrary = !isJS; // for ResourceLoader
 
-	public static boolean cantCreateMovieFiles = isJS;
+	public static boolean canCreateMovieFiles = !isJS;  // opposite of above? -- ExportVideoDialog
+
+	public static boolean canReadJSMovieFiles = isJS; // wishful thinking!
+	
+	public static boolean canRecordMovieFiles = !isJS; // MovieVideoType.recordable default
 
 	public static boolean checkTempDirCache = isJS; // for ResourceLoader.
 
@@ -231,6 +235,7 @@ public class OSPRuntime {
 	public final static LookAndFeel DEFAULT_LOOK_AND_FEEL = UIManager.getLookAndFeel(); // save the default before we																						// change LnF
 	public final static boolean DEFAULT_LOOK_AND_FEEL_DECORATIONS = JFrame.isDefaultLookAndFeelDecorated();
 	public final static HashMap<String, String> LOOK_AND_FEEL_TYPES = new HashMap<String, String>();
+
 
 
 	/** Preferences XML control */

@@ -22,8 +22,10 @@ import org.opensourcephysics.media.xuggle.DiagnosticsForXuggle;
 public class MovieFactory {
 
 	public static VideoRecorder newMovieVideoRecorder(MovieVideoType videoType) {
-		if (OSPRuntime.isJS)
+		if (OSPRuntime.isJS) {
+			OSPLog.warning("MovieFactory videoRecorder not implemented for JavaScript");
 			return null;
+		}
 		try {
 			return (VideoRecorder) Class.forName("org.opensourcephysics.media.core.XuggleVideoRecorder").newInstance();
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
@@ -76,7 +78,8 @@ public class MovieFactory {
 	 * @return true if JavaScript or installed
 	 */
 	public static boolean isEngineInstalled(String engine) {
-		return (OSPRuntime.isJS || engine.startsWith(VideoIO.ENGINE_XUGGLE) && DiagnosticsForXuggle.getXuggleJar() != null);
+		return (OSPRuntime.isJS 
+				|| VideoIO.isNameLikeMovieEngine(engine) && DiagnosticsForXuggle.getXuggleJar() != null);
 	}
 
 	/**
@@ -85,25 +88,12 @@ public class MovieFactory {
 	 * @return ENGINE_XUGGLE, or ENGINE_NONE
 	 */
 	public static String getDefaultEngine() {
-		if (OSPRuntime.isJS) {
-			return VideoIO.ENGINE_XUGGLEJS;
+		for (VideoType next : MovieFactory.videoEngines) {
+			if (VideoIO.isNameLikeMovieEngine(next.getClass().getSimpleName())
+					&& (OSPRuntime.isJS || DiagnosticsForXuggle.guessXuggleVersion() == 3.4))
+				return VideoIO.getMovieEngineName();
 		}
-		/**
-		 * Java only
-		 * 
-		 * @j2sNative
-		 */
-		{
-			for (VideoType next : MovieFactory.videoEngines) {
-				// BH! was contains
-				if (next.getClass().getSimpleName().startsWith(VideoIO.ENGINE_XUGGLE)) {
-					double xuggleVersion = DiagnosticsForXuggle.guessXuggleVersion();
-					if (xuggleVersion == 3.4)
-						return VideoIO.ENGINE_XUGGLE;
-				}
-			}
-			return VideoIO.ENGINE_NONE;
-		}
+		return VideoIO.ENGINE_NONE;
 	}
 
 	/**
@@ -124,8 +114,8 @@ public class MovieFactory {
 	 * @param engine ENGINE_XUGGLE, or ENGINE_NONE
 	 */
 	public static void setEngine(String engine) {
-		// BH 2020.04.20 was "equals(ENGINE_XUGGLE)" but I think that was a bug.
-		if (engine != null && (engine.startsWith(VideoIO.ENGINE_XUGGLE) || engine.equals(VideoIO.ENGINE_NONE)))
+		if (engine != null && (engine.equals(VideoIO.ENGINE_NONE) 
+				|| VideoIO.isNameLikeMovieEngine(engine)))
 			VideoIO.videoEngine = engine;
 	}
 
@@ -147,6 +137,11 @@ public class MovieFactory {
 		} catch (Error err) {
 		}
 		return null;
+	}
+
+	public static String getMovieClass() {
+		return (OSPRuntime.isJS ? null  : "com.xuggle.xuggler.IContainer"); //$NON-NLS-1$
+		
 	}
 
 }

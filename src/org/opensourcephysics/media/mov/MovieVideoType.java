@@ -1,7 +1,7 @@
 /*
  * The org.opensourcephysics.media.frame package provides video
  * frame services including implementations of the Video and VideoRecorder interfaces
- * using Xuggle (Java) and XuggleJS (JavaScript -- our minimal implementation).
+ * using Xuggle (Java) and JS (JavaScript -- our minimal implementation).
  *
  * Copyright (c) 2017  Douglas Brown and Wolfgang Christian.
  *
@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.TreeSet;
 
 import org.opensourcephysics.controls.OSPLog;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.core.MediaRes;
 import org.opensourcephysics.media.core.VideoFileFilter;
 import org.opensourcephysics.media.core.Video;
@@ -38,7 +39,7 @@ import org.opensourcephysics.media.core.VideoRecorder;
 import org.opensourcephysics.media.core.VideoType;
 
 /**
- * This implements the VideoType interface with a Xuggle type.
+ * This implements the VideoType interface with a Xuggle or JS type.
  *
  * @author Douglas Brown
  * @version 1.0
@@ -47,10 +48,9 @@ public class MovieVideoType implements VideoType {
 	
   protected static TreeSet<VideoFileFilter> movieFileFilters 
   		= new TreeSet<VideoFileFilter>();
-  protected static String movieClass = "com.xuggle.xuggler.IContainer"; //$NON-NLS-1$
   protected static PropertyChangeListener errorListener;
   protected static boolean isMovieTypeAvailable = true;
-  protected boolean recordable = true;
+  protected boolean recordable = OSPRuntime.canRecordMovieFiles;
   
   static {
   	errorListener = new PropertyChangeListener() {
@@ -67,16 +67,18 @@ public class MovieVideoType implements VideoType {
   private VideoFileFilter singleTypeFilter; // null for general type
     
   /**
-   * Constructor attempts to load a xuggle class the first time used.
-   * This will throw an error if xuggle is not available.
+   * Constructor attempts to load a movie class the first time used.
+   * This will throw an error if movies are not available.
    */
   public MovieVideoType() {
+	  if (OSPRuntime.isJS && OSPRuntime.canReadJSMovieFiles)
+		  return;
   	if (!isMovieTypeAvailable)
 			throw new Error("Video frame extractor unavailable"); //$NON-NLS-1$
   	boolean logConsole = OSPLog.isConsoleMessagesLogged();
   	try {
     	OSPLog.setConsoleMessagesLogged(false);
-  		Class.forName(movieClass);
+  		Class.forName(MovieFactory.getMovieClass());
     	OSPLog.setConsoleMessagesLogged(logConsole);
 		} catch (Exception ex) {
     	OSPLog.setConsoleMessagesLogged(logConsole);
@@ -111,7 +113,7 @@ public class MovieVideoType implements VideoType {
   }
 
   /**
-   * Reports whether this xuggle type can record videos
+   * Reports whether this type can record videos
    *
    * @return true by default (set recordable to change)
    */
