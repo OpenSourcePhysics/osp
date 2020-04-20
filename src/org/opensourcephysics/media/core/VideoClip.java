@@ -718,7 +718,7 @@ public class VideoClip {
 						ArrayList<VideoType> otherEngines = new ArrayList<VideoType>();
 						String engine = MovieFactory.getEngine();
 						String ext = XML.getExtension(path);
-						if (!engine.equals(VideoIO.ENGINE_XUGGLE) && !engine.equals(VideoIO.ENGINE_XUGGLEJS)) {
+						if (!engine.equals(VideoIO.ENGINE_XUGGLE)) { // java so only check for xuggle
 							VideoType xuggleType = VideoIO.getVideoType(VideoIO.ENGINE_XUGGLE, ext); // $NON-NLS-1$
 							if (xuggleType != null)
 								otherEngines.add(xuggleType);
