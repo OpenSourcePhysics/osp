@@ -22,7 +22,7 @@
  * For additional information and documentation on Open Source Physics,
  * please see <https://www.compadre.org/osp/>.
  */
-package org.opensourcephysics.media.xuggle;
+package org.opensourcephysics.media.mov;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.media.core.VideoFileFilter;
@@ -35,7 +35,7 @@ import org.opensourcephysics.tools.ResourceLoader;
  * @author Wolfgang Christian, Douglas Brown
  * @version 1.0
  */
-public class XuggleIO {
+public class MovieIO {
 	
 	/**
    * Registers Xuggle video types with VideoIO class.
@@ -44,12 +44,12 @@ public class XuggleIO {
     String xugglehome = System.getenv("XUGGLE_HOME"); //$NON-NLS-1$
     if (xugglehome!=null) {
       try {
-    	  VideoIO.addVideoEngine(new XuggleVideoType());
+    	  VideoIO.addVideoEngine(new MovieVideoType());
 
         // add common video types
       	for (String ext: VideoIO.VIDEO_EXTENSIONS) { // {"mov", "avi", "mp4"}
         	VideoFileFilter filter = new VideoFileFilter(ext, new String[] {ext});
-        	XuggleVideoType xuggleType = new XuggleVideoType(filter);
+        	MovieVideoType xuggleType = new MovieVideoType(filter);
         	// avi not recordable with xuggle
           if (ext.equals("avi")) { //$NON-NLS-1$
           	xuggleType.setRecordable(false);
@@ -60,45 +60,45 @@ public class XuggleIO {
       	// add additional xuggle types
       	// FLV
         VideoFileFilter filter = new VideoFileFilter("flv", new String[] {"flv"}); //$NON-NLS-1$ //$NON-NLS-2$
-        VideoIO.addVideoType(new XuggleVideoType(filter));
+        VideoIO.addVideoType(new MovieVideoType(filter));
         ResourceLoader.addExtractExtension("flv"); //$NON-NLS-1$
       	// WMV
       	filter = new VideoFileFilter("asf", new String[] {"wmv"}); //$NON-NLS-1$ //$NON-NLS-2$
-        VideoIO.addVideoType(new XuggleVideoType(filter));
+        VideoIO.addVideoType(new MovieVideoType(filter));
         ResourceLoader.addExtractExtension("wmv"); //$NON-NLS-1$
       	// DV
       	filter = new VideoFileFilter("dv", new String[] {"dv"}); //$NON-NLS-1$ //$NON-NLS-2$
-      	XuggleVideoType vidType = new XuggleVideoType(filter);
+      	MovieVideoType vidType = new MovieVideoType(filter);
       	vidType.setRecordable(false);
       	VideoIO.addVideoType(vidType);
         ResourceLoader.addExtractExtension("dv"); //$NON-NLS-1$
       	// MTS
       	filter = new VideoFileFilter("mts", new String[] {"mts"}); //$NON-NLS-1$ //$NON-NLS-2$
-      	vidType = new XuggleVideoType(filter);
+      	vidType = new MovieVideoType(filter);
       	vidType.setRecordable(false);
       	VideoIO.addVideoType(vidType);
         ResourceLoader.addExtractExtension("mts"); //$NON-NLS-1$
       	// M2TS
       	filter = new VideoFileFilter("m2ts", new String[] {"m2ts"}); //$NON-NLS-1$ //$NON-NLS-2$
-      	vidType = new XuggleVideoType(filter);
+      	vidType = new MovieVideoType(filter);
       	vidType.setRecordable(false);
       	VideoIO.addVideoType(vidType);
         ResourceLoader.addExtractExtension("m2ts"); //$NON-NLS-1$
       	// MPG
       	filter = new VideoFileFilter("mpg", new String[] {"mpg"}); //$NON-NLS-1$ //$NON-NLS-2$
-      	vidType = new XuggleVideoType(filter);
+      	vidType = new MovieVideoType(filter);
       	vidType.setRecordable(false);
       	VideoIO.addVideoType(vidType);
         ResourceLoader.addExtractExtension("mpg"); //$NON-NLS-1$
       	// MOD
       	filter = new VideoFileFilter("mod", new String[] {"mod"}); //$NON-NLS-1$ //$NON-NLS-2$
-      	vidType = new XuggleVideoType(filter);
+      	vidType = new MovieVideoType(filter);
       	vidType.setRecordable(false);
       	VideoIO.addVideoType(vidType);
         ResourceLoader.addExtractExtension("mod"); //$NON-NLS-1$
       	// OGG
       	filter = new VideoFileFilter("ogg", new String[] {"ogg"}); //$NON-NLS-1$ //$NON-NLS-2$
-      	vidType = new XuggleVideoType(filter);
+      	vidType = new MovieVideoType(filter);
       	vidType.setRecordable(false);
       	VideoIO.addVideoType(vidType);
         ResourceLoader.addExtractExtension("ogg"); //$NON-NLS-1$

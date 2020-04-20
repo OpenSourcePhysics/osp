@@ -1,6 +1,7 @@
 /*
- * The org.opensourcephysics.media.xuggle package provides Xuggle
- * services including implementations of the Video and VideoRecorder interfaces.
+ * The org.opensourcephysics.media.frame package provides video
+ * frame services including implementations of the Video and VideoRecorder interfaces
+ * using Xuggle (Java) and XuggleJS (JavaScript -- our minimal implementation).
  *
  * Copyright (c) 2017  Douglas Brown and Wolfgang Christian.
  *
@@ -22,7 +23,7 @@
  * For additional information and documentation on Open Source Physics,
  * please see <https://www.compadre.org/osp/>.
  */
-package org.opensourcephysics.media.xuggle;
+package org.opensourcephysics.media.mov;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -42,25 +43,25 @@ import org.opensourcephysics.media.core.VideoType;
  * @author Douglas Brown
  * @version 1.0
  */
-public class XuggleVideoType implements VideoType {
+public class MovieVideoType implements VideoType {
 	
-  protected static TreeSet<VideoFileFilter> xuggleFileFilters 
+  protected static TreeSet<VideoFileFilter> movieFileFilters 
   		= new TreeSet<VideoFileFilter>();
-  protected static String xuggleClass = "com.xuggle.xuggler.IContainer"; //$NON-NLS-1$
+  protected static String movieClass = "com.xuggle.xuggler.IContainer"; //$NON-NLS-1$
   protected static PropertyChangeListener errorListener;
-  protected static boolean isXuggleAvailable = true;
+  protected static boolean isMovieTypeAvailable = true;
   protected boolean recordable = true;
   
   static {
   	errorListener = new PropertyChangeListener() {
     	public void propertyChange(PropertyChangeEvent e) {
     		if (e.getPropertyName().equals("xuggle_error")) { //$NON-NLS-1$
-    			isXuggleAvailable = false;
+    			isMovieTypeAvailable = false;
     		}
     	}
   	};
     OSPLog.getOSPLog().addPropertyChangeListener(errorListener);
-    XuggleFactory.startXuggleThumbnailTool();
+    MovieFactory.startXtractorThumbnailTool();
   }
   
   private VideoFileFilter singleTypeFilter; // null for general type
@@ -69,17 +70,17 @@ public class XuggleVideoType implements VideoType {
    * Constructor attempts to load a xuggle class the first time used.
    * This will throw an error if xuggle is not available.
    */
-  public XuggleVideoType() {
-  	if (!isXuggleAvailable)
-			throw new Error("Xuggle unavailable"); //$NON-NLS-1$
+  public MovieVideoType() {
+  	if (!isMovieTypeAvailable)
+			throw new Error("Video frame extractor unavailable"); //$NON-NLS-1$
   	boolean logConsole = OSPLog.isConsoleMessagesLogged();
   	try {
     	OSPLog.setConsoleMessagesLogged(false);
-  		Class.forName(xuggleClass);
+  		Class.forName(movieClass);
     	OSPLog.setConsoleMessagesLogged(logConsole);
 		} catch (Exception ex) {
     	OSPLog.setConsoleMessagesLogged(logConsole);
-			throw new Error("Xuggle unavailable"); //$NON-NLS-1$
+			throw new Error("Video frame extractor unavailable"); //$NON-NLS-1$
 		}
   }
 
@@ -88,22 +89,22 @@ public class XuggleVideoType implements VideoType {
    * 
    * @param filter the file filter 
    */
-  public XuggleVideoType(VideoFileFilter filter) {
+  public MovieVideoType(VideoFileFilter filter) {
   	this();
   	if (filter!=null) {
 			singleTypeFilter = filter;
-			xuggleFileFilters.add(filter);
+			movieFileFilters.add(filter);
   	}
   }
 
   /**
-   * Opens a named video as a XuggleVideo.
+   * Opens a named video as a XtractorVideo.
    *
    * @param name the name of the video
-   * @return a new Xuggle video
+   * @return a new Xtractor video
    */
   public Video getVideo(String name) { 
-    	Video video = XuggleFactory.newXuggleVideo(name, getDescription());
+    	Video video = MovieFactory.newVideo(name, getDescription());
     	if (video != null)
     		video.setProperty("video_type", this); //$NON-NLS-1$
       return video;
@@ -133,7 +134,7 @@ public class XuggleVideoType implements VideoType {
    * @return the video recorder
    */
   public VideoRecorder getRecorder() {
-  	return XuggleFactory.newXuggleVideoRecorder(this);  	
+  	return MovieFactory.newXtractorVideoRecorder(this);  	
   }
 
   /**
@@ -144,7 +145,7 @@ public class XuggleVideoType implements VideoType {
   public VideoFileFilter[] getFileFilters() {
   	if (singleTypeFilter!=null)
   		return new VideoFileFilter[] {singleTypeFilter};
-    return xuggleFileFilters.toArray(new VideoFileFilter[0]);
+    return movieFileFilters.toArray(new VideoFileFilter[0]);
   }
 
   /**
@@ -165,7 +166,7 @@ public class XuggleVideoType implements VideoType {
    * @return true if the video is this type
    */
   public boolean isType(Video video) {
-  	if (!(video instanceof XuggleVideoI)) return false;
+  	if (!(video instanceof MovieVideoI)) return false;
   	if (singleTypeFilter==null) return true;
   	String name = (String)video.getProperty("name"); //$NON-NLS-1$
   	return singleTypeFilter.accept(new File(name));

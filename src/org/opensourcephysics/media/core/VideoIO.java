@@ -68,7 +68,10 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.display.OSPRuntime;
-import org.opensourcephysics.tools.DiagnosticsForXuggle;
+import org.opensourcephysics.media.gif.GifVideoType;
+import org.opensourcephysics.media.mov.MovieFactory;
+import org.opensourcephysics.media.mov.MovieVideoI;
+import org.opensourcephysics.media.mov.MovieVideoType;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ResourceLoader;
 
@@ -80,7 +83,6 @@ import javajs.async.AsyncFileChooser;
  * @author Douglas Brown
  * @version 1.0
  */
-@SuppressWarnings("unchecked")
 public class VideoIO {
 
 	public static class SingleExtFileFilter extends FileFilter {
@@ -123,13 +125,10 @@ public class VideoIO {
 	}
 
 	// static constants
-	@SuppressWarnings("javadoc")
 	public static final String[] VIDEO_EXTENSIONS = { "mov", "avi", "mp4" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-	@SuppressWarnings("javadoc")
+	public static final String ENGINE_XUGGLEJS = "XuggleJS"; //$NON-NLS-1$
 	public static final String ENGINE_XUGGLE = "Xuggle"; //$NON-NLS-1$
-	@SuppressWarnings("javadoc")
 	public static final String ENGINE_NONE = "none"; //$NON-NLS-1$
-	@SuppressWarnings("javadoc")
 	public static final String DEFAULT_PREFERRED_EXPORT_EXTENSION = "mp4"; //$NON-NLS-1$
 
 	// static fields
@@ -138,23 +137,24 @@ public class VideoIO {
 	protected static Collection<VideoFileFilter> singleVideoTypeFilters = new TreeSet<VideoFileFilter>();
 	protected static FileFilter imageFileFilter;
 	protected static ArrayList<VideoType> videoTypes = new ArrayList<VideoType>();
-	protected static ArrayList<VideoType> videoEngines = new ArrayList<VideoType>();
 	protected static String defaultXMLExt = "xml"; //$NON-NLS-1$
-	protected static String videoEngine;
-	protected static VideoEnginePanel videoEnginePanel;
+	public static String videoEngine;
+	private static VideoEnginePanel videoEnginePanel;
 	protected static boolean canceled;
 	protected static String preferredExportExtension = DEFAULT_PREFERRED_EXPORT_EXTENSION;
 
 	static {
 		// add video types
-		// add Gif video type, if available
-		try {
-			String name = "org.opensourcephysics.media.gif.GifVideoType"; //$NON-NLS-1$
-			Class<VideoType> gifClass = (Class<VideoType>) Class.forName(name);
-			addVideoType(gifClass.newInstance());
-		} catch (Throwable e) {
-			e.printStackTrace();
-		}
+		addVideoType(new GifVideoType());
+// BH! is there any question here?
+//		// add Gif video type, if available
+//		try {
+//			String name = "org.opensourcephysics.media.gif.GifVideoType"; //$NON-NLS-1$
+//			Class<VideoType> gifClass = (Class<VideoType>) Class.forName(name);
+//			addVideoType(gifClass.newInstance());
+//		} catch (Throwable e) {
+//			e.printStackTrace();
+//		}
 		VideoFileFilter filter = new VideoFileFilter("jpg", //$NON-NLS-1$
 				new String[] { "jpg", "jpeg" }); //$NON-NLS-1$ //$NON-NLS-2$
 		addVideoType(new ImageVideoType(filter));
@@ -169,10 +169,12 @@ public class VideoIO {
 			}
 
 		};
-		// video engine panel
-		videoEnginePanel = new VideoEnginePanel();
 	}
 
+	protected static VideoEnginePanel getVideoEnginePanel() {
+		return (videoEnginePanel == null ? (videoEnginePanel = new VideoEnginePanel()) : videoEnginePanel);
+	}
+	
 	/**
 	 * protected constructor to discourage instantiation
 	 */
@@ -268,63 +270,6 @@ public class VideoIO {
 			return relativePath;
 		}
 		return path;
-	}
-
-	/**
-	 * Determines if a video engine is installed on the current computer. Note that
-	 * accessing an installed engine may require switching Java VM.
-	 *
-	 * @param engine ENGINE_XUGGLE, or ENGINE_NONE
-	 * @return true if installed
-	 */
-	public static boolean isEngineInstalled(String engine) {
-		if (engine.equals(ENGINE_XUGGLE)) {
-			return DiagnosticsForXuggle.getXuggleJar() != null;
-		}
-		return false;
-	}
-
-	/**
-	 * Gets the name of the current video engine.
-	 *
-	 * @return ENGINE_XUGGLE, or ENGINE_NONE
-	 */
-	public static String getEngine() {
-		if (videoEngine == null) {
-			videoEngine = getDefaultEngine();
-		}
-		return videoEngine;
-	}
-
-	/**
-	 * Sets the current video engine by name.
-	 *
-	 * @param engine ENGINE_XUGGLE, or ENGINE_NONE
-	 */
-	public static void setEngine(String engine) {
-		if (engine == null || (!engine.equals(ENGINE_XUGGLE) && !engine.equals(ENGINE_NONE)))
-			return;
-		videoEngine = engine;
-	}
-
-	/**
-	 * Gets the name of the default video engine.
-	 *
-	 * @return ENGINE_XUGGLE, or ENGINE_NONE
-	 */
-	public static String getDefaultEngine() {
-		String engine = ENGINE_NONE;
-		if (!OSPRuntime.isJS) {
-			double xuggleVersion = 0;
-			for (VideoType next : videoEngines) {
-				if (next.getClass().getSimpleName().contains(ENGINE_XUGGLE)) {
-					xuggleVersion = DiagnosticsForXuggle.guessXuggleVersion();
-				}
-			}
-			if (xuggleVersion == 3.4)
-				engine = ENGINE_XUGGLE;
-		}
-		return engine;
 	}
 
 	/**
@@ -500,14 +445,15 @@ public class VideoIO {
 		if (engine != null) {
 			OSPLog.finest(engine.getClass().getSimpleName() + " " + engine.getDefaultExtension()); //$NON-NLS-1$
 			boolean hasType = false;
-			for (VideoType next : videoEngines) {
+			for (VideoType next : MovieFactory.videoEngines) {
 				if (next.getClass() == engine.getClass()) {
 					hasType = true;
 				}
 			}
 			if (!hasType) {
-				videoEngines.add(engine);
-				videoEnginePanel.addVideoEngine(engine);
+				MovieFactory.videoEngines.add(engine);
+				if (videoEnginePanel != null)
+					videoEnginePanel.addVideoEngine(engine);
 			}
 		}
 	}
@@ -599,7 +545,7 @@ public class VideoIO {
 	 * @return the video types
 	 */
 	public static VideoType[] getVideoTypes() {
-		return getVideoTypesForEngine(VideoIO.getEngine());
+		return getVideoTypesForEngine(MovieFactory.getEngine());
 	}
 
 	/**
@@ -614,7 +560,8 @@ public class VideoIO {
 		boolean skipXuggle = engine.equals(ENGINE_NONE);
 		for (VideoType next : videoTypes) {
 			String typeName = next.getClass().getSimpleName();
-			if (skipXuggle && typeName.contains(ENGINE_XUGGLE))
+			// BH! 2020.04.20 was "contains:"
+			if (skipXuggle && typeName.startsWith(ENGINE_XUGGLE))
 				continue;
 			available.add(next);
 		}
@@ -647,6 +594,9 @@ public class VideoIO {
 	 * @return the video
 	 */
 	public static Video getVideo(String path, VideoType vidType) {
+		// BH! 2020.04.20 from TrackerIO, but equally useful here.
+		if (path.startsWith("file:")) //$NON-NLS-1$
+			path = ResourceLoader.getNonURIPath(path);
 		OSPLog.fine("path: " + path + " type: " + vidType); //$NON-NLS-1$ //$NON-NLS-2$
 		Video video = null;
 		VideoIO.setCanceled(false);
@@ -667,10 +617,9 @@ public class VideoIO {
 		String extension = XML.getExtension(path);
 		VideoType[] allTypes = getVideoTypesForExtension(extension);
 		ArrayList<VideoType> allowedTypes = new ArrayList<VideoType>();
-		boolean skipXuggle = VideoIO.getEngine().equals(ENGINE_NONE);
+		boolean skipXuggle = MovieFactory.getEngine().equals(ENGINE_NONE);
 		for (int i = 0; i < allTypes.length; i++) {
-			String typeName = allTypes[i].getClass().getSimpleName();
-			if (skipXuggle && typeName.contains(ENGINE_XUGGLE))
+			if (skipXuggle && allTypes[i] instanceof MovieVideoType)
 				continue;
 			allowedTypes.add(allTypes[i]);
 		}
@@ -699,7 +648,7 @@ public class VideoIO {
 	 */
 	public static Video getVideo(String path, ArrayList<VideoType> engines, JComponent component, JFrame frame) {
 		// provide immediate way to open with other engines
-		String engine = VideoIO.getEngine();
+		String engine = MovieFactory.getEngine();
 		engine = VideoIO.ENGINE_NONE.equals(engine) ? MediaRes.getString("VideoIO.Engine.None") : //$NON-NLS-1$
 				MediaRes.getString("XuggleVideoType.Description"); //$NON-NLS-1$
 		String message = MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Message1") + " (" + engine + ")."; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -707,7 +656,7 @@ public class VideoIO {
 		message += "\n\n" + MediaRes.getString("VideoIO.Dialog.Label.Path") + ": " + path; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		ArrayList<String> optionList = new ArrayList<String>();
 		for (VideoType next : engines) {
-			if (next.getClass().getSimpleName().equals("XuggleVideoType")) { //$NON-NLS-1$
+			if (next instanceof MovieVideoType) {
 				optionList.add(MediaRes.getString("XuggleVideoType.Description")); //$NON-NLS-1$
 			}
 		}
@@ -786,7 +735,8 @@ public class VideoIO {
 	 * Displays a file chooser and returns the chosen files.
 	 *
 	 * @param type may be "open", "open video", "save", "insert image"
-	 * @return the files, or null if no files chosen
+	 * @param processFiles asynchronous follower method
+	 * @return the files, or null if no files chosen or asynchronous
 	 */
 	public static File[] getChooserFilesAsync(String type, Function<File[], Void> processFiles) {
 		AsyncFileChooser chooser = getChooser();
@@ -828,7 +778,6 @@ public class VideoIO {
 			}
 
 		};
-		boolean isSave = false;
 		if (type.toLowerCase().equals("open")) { // open any file //$NON-NLS-1$
 			chooser.addChoosableFileFilter(videoFileFilter);
 			chooser.setFileFilter(chooser.getAcceptAllFileFilter());
@@ -839,7 +788,6 @@ public class VideoIO {
 		} else if (type.toLowerCase().equals("save")) { // save any file //$NON-NLS-1$
 			// note this sets no file filters but does include acceptAll
 			// also sets file name to "untitled"
-			isSave = true;
 			String filename = MediaRes.getString("VideoIO.FileName.Untitled"); //$NON-NLS-1$
 			chooser.setSelectedFile(new File(filename + "." + defaultXMLExt)); //$NON-NLS-1$
 			chooser.showSaveDialog(null, okSave, resetChooser);
@@ -852,10 +800,19 @@ public class VideoIO {
 		} else {
 			return null;
 		}
+		// Async will return null here
 		File ret = processChoose(chooser, null, processFiles != null);
 		return (ret == null ? null : new File[] { ret });
 	}
 
+	/**
+	 * Also used by TrackerIO
+	 * 
+	 * @param chooser
+	 * @param ret
+	 * @param isAsync
+	 * @return
+	 */
 	protected static File processChoose(AsyncFileChooser chooser, File ret, boolean isAsync) {
 		if (isAsync)
 			return null;
@@ -1142,7 +1099,7 @@ public class VideoIO {
 				if (!isButtonSelected) {
 					for (JRadioButton button : buttonMap.keySet()) {
 						// action command is VideoType simple name
-						button.setSelected(button.getActionCommand().contains(VideoIO.getEngine()));
+						button.setSelected(button.getActionCommand().contains(MovieFactory.getEngine()));
 					}
 				}
 			}

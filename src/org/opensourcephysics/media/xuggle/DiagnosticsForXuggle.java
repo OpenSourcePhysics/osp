@@ -1,4 +1,4 @@
-package org.opensourcephysics.tools;
+package org.opensourcephysics.media.xuggle;
 
 import java.awt.Component;
 import java.io.File;
@@ -16,6 +16,9 @@ import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.core.VideoIO;
+import org.opensourcephysics.tools.Diagnostics;
+import org.opensourcephysics.tools.JREFinder;
+import org.opensourcephysics.tools.XuggleRes;
 
 /**
  * Checks to see if Xuggle is installed and working.
