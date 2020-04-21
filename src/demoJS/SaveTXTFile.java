@@ -1,4 +1,4 @@
-package test;
+package demoJS;
 
 import java.io.BufferedWriter;
 import java.io.File;

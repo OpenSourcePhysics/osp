@@ -1,4 +1,4 @@
-package test;
+package demoJS;
 
 import java.io.File;
 import javax.swing.JFrame;
@@ -6,7 +6,6 @@ import javax.swing.JFrame;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.controls.XMLTreePanel;
-import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.js.JSUtil;
 
 import javajs.async.AsyncFileChooser;
