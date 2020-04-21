@@ -79,7 +79,7 @@ public class MovieFactory {
 	 */
 	public static boolean isEngineInstalled(String engine) {
 		return (OSPRuntime.isJS 
-				|| VideoIO.isNameLikeMovieEngine(engine) && DiagnosticsForXuggle.getXuggleJar() != null);
+				|| VideoIO.isMovieEngine(engine) && DiagnosticsForXuggle.getXuggleJar() != null);
 	}
 
 	/**
@@ -89,9 +89,9 @@ public class MovieFactory {
 	 */
 	public static String getDefaultEngine() {
 		for (VideoType next : MovieFactory.videoEngines) {
-			if (VideoIO.isNameLikeMovieEngine(next.getClass().getSimpleName())
+			if (next instanceof MovieVideoType
 					&& (OSPRuntime.isJS || DiagnosticsForXuggle.guessXuggleVersion() == 3.4))
-				return VideoIO.getMovieEngineName();
+				return VideoIO.getMovieEngineBaseName();
 		}
 		return VideoIO.ENGINE_NONE;
 	}
@@ -115,7 +115,7 @@ public class MovieFactory {
 	 */
 	public static void setEngine(String engine) {
 		if (engine != null && (engine.equals(VideoIO.ENGINE_NONE) 
-				|| VideoIO.isNameLikeMovieEngine(engine)))
+				|| VideoIO.isMovieEngine(engine)))
 			VideoIO.videoEngine = engine;
 	}
 

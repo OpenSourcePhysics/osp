@@ -354,7 +354,7 @@ public class DiagnosticsForXuggle {
 		pathValue = System.getenv(pathEnvironment);
 		
 		// return 0 if working correctly
-		if (VideoIO.getVideoType(VideoIO.ENGINE_XUGGLE, null)!=null) return 0;
+		if (VideoIO.getVideoType(VideoIO.getMovieEngineBaseName(), null)!=null) return 0;
 		
 		// return 8 if Xuggle version 5.4 is installed
 		if (guessXuggleVersion()==5.4) return 8;

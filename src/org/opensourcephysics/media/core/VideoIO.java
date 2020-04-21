@@ -132,21 +132,25 @@ public class VideoIO {
 	public static final String DEFAULT_PREFERRED_EXPORT_EXTENSION = "mp4"; //$NON-NLS-1$
 
 	/**
-	 * Test to see if the name starts with "JS" or "Xuggle".
+	 * Test to see if the name starts with "JS" or "Xuggle";
+	 * used for testing engine names and 
 	 * 
 	 * @param name  an engine name or a class name
 	 * @return
 	 */
-	public static boolean isNameLikeMovieEngine(String name) {
-		return name.startsWith(getMovieEngineName());
+	public static boolean isMovieEngine(String name) {
+		return name.startsWith(getMovieEngineBaseName());
 	}
 
 	/**
-	 * secure method of determining whether this file type shoud be
+	 * Get the base name ("JS" or "Xuggle") of the engine, which also
+	 * serves as a check for Video subclass using its  
+	 * 
+	 * A secure method of determining whether this file type should be
 	 * directed to a MovieVideoI
-	 * @return
+	 * @return either ENGINE_JS or ENGINE_XUGGLE; never ENGINE_NONE
 	 */
-	public static String getMovieEngineName() {
+	public static String getMovieEngineBaseName() {
 		return (OSPRuntime.isJS ? ENGINE_JS : ENGINE_XUGGLE);
 	}
 
@@ -578,7 +582,7 @@ public class VideoIO {
 		ArrayList<VideoType> available = new ArrayList<VideoType>();
 		boolean skipMovies = engine.equals(ENGINE_NONE);
 		for (VideoType next : videoTypes) {
-			if (skipMovies && VideoIO.isNameLikeMovieEngine(next.getClass().getSimpleName()))
+			if (skipMovies && next instanceof MovieVideoType)
 				continue;
 			available.add(next);
 		}

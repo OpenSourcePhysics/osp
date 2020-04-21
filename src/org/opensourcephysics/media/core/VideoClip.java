@@ -719,8 +719,8 @@ public class VideoClip {
 						String engine = MovieFactory.getEngine();
 						String ext = XML.getExtension(path);
 						// BH! Doug, please check
-						if (!VideoIO.isNameLikeMovieEngine(engine)) {
-							VideoType movieType = VideoIO.getVideoType(VideoIO.getMovieEngineName(), ext); // $NON-NLS-1$
+						if (!VideoIO.isMovieEngine(engine)) {
+							VideoType movieType = VideoIO.getVideoType(VideoIO.getMovieEngineBaseName(), ext); // $NON-NLS-1$
 							if (movieType != null)
 								movieEngines.add(movieType);
 						}
@@ -736,7 +736,7 @@ public class VideoClip {
 							video = VideoIO.getVideo(path, movieEngines, changePreferredEngine, null);
 							engineChange = changePreferredEngine.isSelected();
 							if (video != null && changePreferredEngine.isSelected()) {
-								MovieFactory.setEngine(video instanceof MovieVideoI ? VideoIO.getMovieEngineName() : VideoIO.ENGINE_NONE);
+								MovieFactory.setEngine(video instanceof MovieVideoI ? VideoIO.getMovieEngineBaseName() : VideoIO.ENGINE_NONE);
 							}
 						}
 					} else {
