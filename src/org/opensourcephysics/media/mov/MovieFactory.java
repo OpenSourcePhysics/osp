@@ -88,10 +88,15 @@ public class MovieFactory {
 	 * @return ENGINE_XUGGLE, or ENGINE_NONE
 	 */
 	public static String getDefaultEngine() {
+<<<<<<< HEAD
 		for (VideoType next : MovieFactory.videoEngines) {
 			if (VideoIO.isNameLikeMovieEngine(next.getClass().getSimpleName())
 					&& (OSPRuntime.isJS || DiagnosticsForXuggle.guessXuggleVersion() == 3.4))
 				return VideoIO.getMovieEngineName();
+=======
+		if (OSPRuntime.isJS) {
+			return VideoIO.ENGINE_MOVIEJS;
+>>>>>>> branch 'swingJS' of https://github.com/OpenSourcePhysics/osp.git
 		}
 		return VideoIO.ENGINE_NONE;
 	}
