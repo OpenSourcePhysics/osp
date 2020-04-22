@@ -142,6 +142,41 @@ public class VideoIO {
 		return name.startsWith(getMovieEngineBaseName());
 	}
 
+
+	public static VideoType getMovieType(String extension) {
+		if (MovieFactory.getEngine() == VideoIO.ENGINE_NONE)
+			return null;
+		MovieVideoType mtype = null;
+		synchronized (videoTypes) {
+			for (VideoType next : videoTypes) {
+				if (next instanceof MovieVideoI) {
+					mtype = (MovieVideoType) next;
+					break;
+				}
+			}
+			if (extension == null) {
+				return mtype;
+			}
+			String id = mtype.getDefaultExtension();
+			if (id != null && id.indexOf(extension) > -1)
+				return mtype;
+			return checkVideoFilter(mtype, extension);
+		}
+	}
+
+	private static VideoType checkVideoFilter(VideoType mtype, String extension) {
+		VideoFileFilter[] filters = mtype.getFileFilters();
+		for (VideoFileFilter filter : filters) {
+			if (filter.extensions != null) {
+				for (String s : filter.extensions)
+					if (s.indexOf(extension) > -1)
+						return mtype;
+			}
+		}
+		return null;
+	}
+
+
 	/**
 	 * Get the base name ("JS" or "Xuggle") of the engine, which also
 	 * serves as a check for Video subclass using its  
@@ -519,14 +554,8 @@ public class VideoIO {
 			}
 			// third pass: compare with all extensions
 			for (VideoType next : candidates) {
-				VideoFileFilter[] filters = next.getFileFilters();
-				for (VideoFileFilter filter : filters) {
-					if (filter.extensions != null) {
-						for (String s : filter.extensions)
-							if (s.indexOf(extension) > -1)
-								return next;
-					}
-				}
+				if (checkVideoFilter(next, extension) != null)
+					return next;
 			}
 		}
 		return null;
@@ -1142,7 +1171,6 @@ public class VideoIO {
 			}
 		}
 	}
-
 
 }
 

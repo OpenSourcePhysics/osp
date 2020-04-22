@@ -716,14 +716,9 @@ public class VideoClip {
 						OSPLog.info("\"" + path + "\" could not be opened"); //$NON-NLS-1$ //$NON-NLS-2$
 						// determine if other engines are available for the video extension
 						ArrayList<VideoType> movieEngines = new ArrayList<VideoType>();
-						String engine = MovieFactory.getEngine();
-						String ext = XML.getExtension(path);
-						// BH! Doug, please check
-						if (!VideoIO.isMovieEngine(engine)) {
-							VideoType movieType = VideoIO.getVideoType(VideoIO.getMovieEngineBaseName(), ext); // $NON-NLS-1$
+							VideoType movieType = VideoIO.getMovieType(XML.getExtension(path));
 							if (movieType != null)
 								movieEngines.add(movieType);
-						}
 						if (movieEngines.isEmpty()) {
 							JOptionPane.showMessageDialog(null,
 									MediaRes.getString("VideoIO.Dialog.BadVideo.Message") + "\n\n" + path, //$NON-NLS-1$ //$NON-NLS-2$

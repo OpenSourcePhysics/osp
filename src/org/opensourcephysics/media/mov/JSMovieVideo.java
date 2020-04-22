@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import javax.swing.JLabel;
+
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.media.core.DoubleArray;
@@ -40,6 +42,8 @@ import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.media.core.VideoType;
 import org.opensourcephysics.tools.Resource;
 import org.opensourcephysics.tools.ResourceLoader;
+
+import swingjs.api.js.HTML5Video;
 
 /**
  * This is a video that uses HTML5/JS to read mp4, mov, and other movie video formats.
@@ -66,7 +70,12 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI {
 		 */
 		public static final int STATUS_OPEN_ERROR = 2;
 
+		JLabel videoLabel = new JLabel();
+
+		HTML5Video jsvideo;
+		
 		public int getFrameCount() {
+			// We cannot get this from a streaming video. 
 			// TODO Auto-generated method stub
 			return 0;
 		}
@@ -265,8 +274,8 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI {
 	 * @return the duration of the video in milliseconds, or -1 if not known
 	 */
 	public double getDuration() {
-		int n = getFrameCount() - 1;
-		return getFrameTime(n) + getDelay(n);
+		// done
+		return HTML5Video.getDuration(jsvideo) * 1000;
 	}
 
 	/**
@@ -375,24 +384,6 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI {
 		}
 
 	}
-
-	@Override
-	public void init(String fileName) throws IOException {
-		// n/a
-	}
-
-	@Override
-	public boolean isSmoothPlay() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public void setSmoothPlay(boolean b) {
-		// TODO Auto-generated method stub
-	}
-
-
 }
 
 /*

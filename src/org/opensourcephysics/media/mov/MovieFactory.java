@@ -13,6 +13,7 @@ import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.media.core.VideoRecorder;
 import org.opensourcephysics.media.core.VideoType;
 import org.opensourcephysics.media.xuggle.DiagnosticsForXuggle;
+import org.opensourcephysics.media.xuggle.XuggleVideoI;
 
 /**
  * A factory class to allow options for implementing Xuggle-like behavior
@@ -40,7 +41,7 @@ public class MovieFactory {
 				return new JSMovieVideo(name);
 			}
 			Video video = (Video) Class.forName("org.opensourcephysics.media.core.XuggleVideo").newInstance();
-			((MovieVideoI) video).init(name);
+			((XuggleVideoI) video).init(name);
 			return video;
 		} catch (IOException | InstantiationException | IllegalAccessException | ClassNotFoundException e) {
 	    	OSPLog.fine(description+": "+e.getMessage()); //$NON-NLS-1$

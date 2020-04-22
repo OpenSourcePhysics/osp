@@ -1,13 +1,10 @@
 package org.opensourcephysics.media.mov;
 
-import java.io.IOException;
-
+/**
+ * A marker interface for identifying anything that handles MOV/MP4 video files
+ * @author hansonr
+ *
+ */
 public interface MovieVideoI {
-
-	boolean isSmoothPlay();
-
-	void setSmoothPlay(boolean b);
-
-	void init(String name) throws IOException;
 
 }
