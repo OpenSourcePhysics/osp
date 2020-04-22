@@ -61,7 +61,7 @@ public class MovieVideoType implements VideoType, MovieVideoI {
     	}
   	};
     OSPLog.getOSPLog().addPropertyChangeListener(errorListener);
-    MovieFactory.startXtractorThumbnailTool();
+    MovieFactory.startMovieThumbnailTool();
   }
   
   private VideoFileFilter singleTypeFilter; // null for general type

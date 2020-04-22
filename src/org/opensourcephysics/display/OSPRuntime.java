@@ -79,8 +79,6 @@ public class OSPRuntime {
 	
 	public static boolean autoAddLibrary = !isJS; // for ResourceLoader
 
-	public static boolean canCreateMovieFiles = !isJS;  // opposite of above? -- ExportVideoDialog
-
 	public static boolean canReadJSMovieFiles = isJS; // wishful thinking!
 	
 	public static boolean canRecordMovieFiles = !isJS; // MovieVideoType.recordable default

@@ -353,8 +353,7 @@ public class VideoGrabber extends VideoCaptureTool {
     
     // make all VideoIO VideoTypes available to the user
     // added by D Brown 29 Oct 2011
-    for (VideoType next: VideoIO.getVideoTypes()) {
-    	if (!next.canRecord()) continue;
+    for (VideoType next: VideoIO.getVideoTypes(true)) {
       String desc = next.getDescription();
       vidTypes.put(desc, next);
       vidTypeDropDown.addItem(desc);   	

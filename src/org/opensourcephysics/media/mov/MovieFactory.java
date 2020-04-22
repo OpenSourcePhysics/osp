@@ -23,8 +23,12 @@ import org.opensourcephysics.media.xuggle.XuggleVideoI;
 public class MovieFactory {
 
 	public static VideoRecorder newMovieVideoRecorder(MovieVideoType videoType) {
+		if (!OSPRuntime.canRecordMovieFiles) {
+			OSPLog.warning("MovieFactory videoRecorder not implemented");
+			return null;
+		}
 		if (OSPRuntime.isJS) {
-			OSPLog.warning("MovieFactory videoRecorder not implemented for JavaScript");
+			OSPLog.warning("MovieFactory videoRecorder not implemented");
 			return null;
 		}
 		try {
@@ -50,7 +54,7 @@ public class MovieFactory {
 		}
 	}
 
-	public static void startXtractorThumbnailTool() {
+	public static void startMovieThumbnailTool() {
 		if (OSPRuntime.isJS) {
 			return;
 		} else {
@@ -118,6 +122,14 @@ public class MovieFactory {
 		if (engine != null && (engine.equals(VideoIO.ENGINE_NONE) 
 				|| VideoIO.isMovieEngine(engine)))
 			VideoIO.videoEngine = engine;
+	}
+
+	/** called by VideoClip.Loader and TrackerIO only
+	 * 
+	 * @param video
+	 */
+	public static void setEngine(Video video) {
+		setEngine(video instanceof MovieVideoI ? VideoIO.getMovieEngineBaseName() : VideoIO.ENGINE_NONE);
 	}
 
 	public static ArrayList<VideoType> videoEngines = new ArrayList<VideoType>();

@@ -708,32 +708,17 @@ public class VideoClip {
 			boolean engineChange = false;
 			if (video == null && path != null && !VideoIO.isCanceled()) {
 				// Java only
-				/**  Java only -- transpiler can skip this
+				/**
+				 * Java only -- transpiler can skip this
+				 * 
 				 * @j2sNative
 				 */
 				{
 					if (ResourceLoader.getResource(path) != null) { // resource exists but not loaded
 						OSPLog.info("\"" + path + "\" could not be opened"); //$NON-NLS-1$ //$NON-NLS-2$
-						// determine if other engines are available for the video extension
-						ArrayList<VideoType> movieEngines = new ArrayList<VideoType>();
-							VideoType movieType = VideoIO.getMovieType(XML.getExtension(path));
-							if (movieType != null)
-								movieEngines.add(movieType);
-						if (movieEngines.isEmpty()) {
-							JOptionPane.showMessageDialog(null,
-									MediaRes.getString("VideoIO.Dialog.BadVideo.Message") + "\n\n" + path, //$NON-NLS-1$ //$NON-NLS-2$
-									MediaRes.getString("VideoClip.Dialog.BadVideo.Title"), //$NON-NLS-1$
-									JOptionPane.WARNING_MESSAGE);
-						} else {
-							// provide immediate way to open with other engines
-							JCheckBox changePreferredEngine = new JCheckBox(
-									MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Checkbox")); //$NON-NLS-1$
-							video = VideoIO.getVideo(path, movieEngines, changePreferredEngine, null);
-							engineChange = changePreferredEngine.isSelected();
-							if (video != null && changePreferredEngine.isSelected()) {
-								MovieFactory.setEngine(video instanceof MovieVideoI ? VideoIO.getMovieEngineBaseName() : VideoIO.ENGINE_NONE);
-							}
-						}
+						boolean[] setAsDefault = new boolean[1];
+						video = VideoIO.getAvailableEngineFromDialog(video, path, null, true, setAsDefault);
+						engineChange = setAsDefault[0];
 					} else {
 						int response = JOptionPane.showConfirmDialog(null, "\"" + path + "\" " //$NON-NLS-1$ //$NON-NLS-2$
 								+ MediaRes.getString("VideoClip.Dialog.VideoNotFound.Message"), //$NON-NLS-1$

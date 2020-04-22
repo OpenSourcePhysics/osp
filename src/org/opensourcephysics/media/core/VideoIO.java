@@ -53,6 +53,7 @@ import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -567,11 +568,11 @@ public class VideoIO {
 	 * @param ext the extension
 	 * @return the video types
 	 */
-	public static VideoType[] getVideoTypesForExtension(String ext) {
+	private static ArrayList<VideoType> getVideoTypesForExtension(String ext) {
 		ext = ext.toLowerCase();
 		ArrayList<VideoType> found = new ArrayList<VideoType>();
 		// first add types for which ext is the default extension
-		VideoType[] vidTypes = getVideoTypes();
+		ArrayList<VideoType> vidTypes = getVideoTypes(false);
 		for (VideoType next : vidTypes) {
 			String id = next.getDefaultExtension();
 			if (id != null && id.indexOf(ext) > -1)
@@ -588,7 +589,7 @@ public class VideoIO {
 				}
 			}
 		}
-		return found.toArray(new VideoType[0]);
+		return found;
 	}
 
 	/**
@@ -596,28 +597,18 @@ public class VideoIO {
 	 *
 	 * @return the video types
 	 */
-	public static VideoType[] getVideoTypes() {
-		return getVideoTypesForEngine(MovieFactory.getEngine());
-	}
-
-	/**
-	 * Gets an array of video types available to a specified video engine. Always
-	 * returns image and gif types in addition to the engine types.
-	 * 
-	 * @param engine ENGINE_XUGGLE, ENGINE_JS, or ENGINE_NONE
-	 * @return the available video types
-	 */
-	public static VideoType[] getVideoTypesForEngine(String engine) {
+	public static ArrayList<VideoType> getVideoTypes(boolean isExport) {
 		ArrayList<VideoType> available = new ArrayList<VideoType>();
-		boolean skipMovies = engine.equals(ENGINE_NONE);
+		boolean skipMovies = (MovieFactory.getEngine() == ENGINE_NONE);
 		for (VideoType next : videoTypes) {
 			if (skipMovies && next instanceof MovieVideoType)
 				continue;
-			available.add(next);
+			if (!isExport || OSPRuntime.canRecordMovieFiles && next.canRecord())
+				available.add(next);
 		}
-		return available.toArray(new VideoType[0]);
+		return available;
 	}
-
+	
 	/**
 	 * Cancels the current operation when true.
 	 *
@@ -659,19 +650,18 @@ public class VideoIO {
 			if (video != null)
 				return video;
 		}
-
 		if (VideoIO.isCanceled())
 			return null;
 
 		// try other allowed video types for the file extension
 		String extension = XML.getExtension(path);
-		VideoType[] allTypes = getVideoTypesForExtension(extension);
+		ArrayList<VideoType> allTypes = getVideoTypesForExtension(extension);
 		ArrayList<VideoType> allowedTypes = new ArrayList<VideoType>();
 		boolean skipMovies = MovieFactory.getEngine().equals(ENGINE_NONE);
-		for (int i = 0; i < allTypes.length; i++) {
-			if (skipMovies && allTypes[i] instanceof MovieVideoType)
+		for (int i = 0; i < allTypes.size(); i++) {
+			if (skipMovies && allTypes.get(i) instanceof MovieVideoType)
 				continue;
-			allowedTypes.add(allTypes[i]);
+			allowedTypes.add(allTypes.get(i));
 		}
 		for (VideoType next : allowedTypes) {
 			OSPLog.finest("preferred type " + next.getClass().getSimpleName() //$NON-NLS-1$
@@ -682,7 +672,6 @@ public class VideoIO {
 			if (video != null)
 				return video;
 		}
-
 		return null;
 	}
 
@@ -903,15 +892,16 @@ public class VideoIO {
 	private static void openVideoPanelFileSync(File file, VideoPanel vidPanel) {
 		// BH Can this be a directory? user  selects that?
 		if (videoFileFilter.accept(file, true)) { // load video
-			VideoType[] types = getVideoTypes();
+			ArrayList<VideoType> types = getVideoTypes(false);
 			Video video = null;
-			for (int i = 0; i < types.length; i++) {
-				video = types[i].getVideo(file.getAbsolutePath());
+			for (int i = 0; i < types.size(); i++) {
+				VideoType type = types.get(i);
+				video = type.getVideo(file.getAbsolutePath());
 				if (video != null) {
-					OSPLog.info(file.getName() + " opened as type " + types[i].getDescription()); //$NON-NLS-1$
+					OSPLog.info(file.getName() + " opened as type " + type.getDescription()); //$NON-NLS-1$
 					break;
 				}
-				OSPLog.info(file.getName() + " failed as type " + types[i].getDescription()); //$NON-NLS-1$
+				OSPLog.info(file.getName() + " failed as type " + type.getDescription()); //$NON-NLS-1$
 			}
 			if (video != null) {
 				vidPanel.setVideo(video);
@@ -1172,6 +1162,45 @@ public class VideoIO {
 		}
 	}
 
+	/**
+	 * Check for a MovieVideoI that can handle the extension associated with this
+	 * path
+	 * 
+	 * merged from VideoClip and TrackerIO
+	 * 
+	 * @param video        starting video that failed to load
+	 * @param path
+	 * @param frame
+	 * @param checkTypes   option to check paths or not -- in other words, just show
+	 *                     the bad video message and return null
+	 * @param setAsDefault return [0] == true if option was taken by user
+	 * @return video or null
+	 */
+	public static Video getAvailableEngineFromDialog(Video video, String path, JFrame frame, boolean checkTypes,
+			boolean[] setAsDefault) {
+		// determine if other engines are available for the video extension
+		ArrayList<VideoType> movieEngines = new ArrayList<VideoType>();
+		VideoType movieType = (checkTypes ? VideoIO.getMovieType(XML.getExtension(path)) : null);
+		if (movieType != null)
+			movieEngines.add(movieType);
+		if (movieEngines.isEmpty()) {
+			JOptionPane.showMessageDialog(frame, MediaRes.getString("VideoIO.Dialog.BadVideo.Message") + "\n\n" + path, //$NON-NLS-1$ //$NON-NLS-2$
+					MediaRes.getString("VideoClip.Dialog.BadVideo.Title"), //$NON-NLS-1$
+					JOptionPane.WARNING_MESSAGE);
+			// BH! was leave video unchanged??
+			return null;
+		}
+		// provide immediate way to open with other engines
+		JCheckBox setAsDefaultBox = new JCheckBox(MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Checkbox")); //$NON-NLS-1$
+		video = VideoIO.getVideo(path, movieEngines, setAsDefaultBox, frame);
+		boolean setDefault = setAsDefaultBox.isSelected();
+		if (video != null && setDefault) {
+			MovieFactory.setEngine(video);
+			setAsDefault[0] = true;
+		}
+		return video;
+	}
+	
 }
 
 /*
