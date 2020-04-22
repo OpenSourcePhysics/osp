@@ -1,15 +1,32 @@
 package swingjs.api.js;
 
+import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.util.function.Function;
 
-import swingjs.api.js.HTML5Video.Promise;
+import swingjs.api.JSUtilI;
 
 /**
  * A full-service interface for HTML5 video element interaction. Allows setting
  * and getting HTML5 video element properties. ActionListeners can be set to
  * listen for JavaScript events associated with a video element.
+ * 
+ * Video is added using a JavaScript-only two-parameter constructor for
+ * ImageIcon with "jsvideo" as the description, allowing for video construction
+ * from byte[], File, or URL.
+ * 
+ * After adding the ImageIcon to a JLabel, calling
+ * jlabel.getClientProperty("jsvideo") returns an object of type HTML5Video that
+ * has the full suite of HTML5 video element properties, methods, and events.
+ * 
+ * Access to event listeners is via the method addActionListener, below, which
+ * return an ActionEvent that has as its source both the video element source as
+ * well as the original JavaScript event as an Object[] { jsvideo, event }. The
+ * id of this ActionEvent is 12345, and its command is the name of the event,
+ * for example, "canplay".
  * 
  * See https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement for
  * details.
@@ -55,23 +72,35 @@ public interface HTML5Video {
 	};
 
 	// direct methods
-	
+
 	public void addTextTrack() throws Throwable;
+
 	public Object captureStream() throws Throwable;
+
 	public String canPlayType(String mediaType) throws Throwable;
+
 	public void fastSeek(double time) throws Throwable;
+
 	public void load() throws Throwable;
+
 	public void mozCaptureStream() throws Throwable;
+
 	public void mozCaptureStreamUntilEnded() throws Throwable;
+
 	public void mozGetMetadata() throws Throwable;
+
 	public void pause() throws Throwable;
+
 	public Promise play() throws Throwable;
+
 	public Promise seekToNextFrame() throws Throwable;
+
 	public Promise setMediaKeys(Object mediaKeys) throws Throwable;
+
 	public Promise setSinkId(String id) throws Throwable;
 
 	// convenience methods
-	
+
 	public static double getDuration(HTML5Video v) {
 		return /** @j2sNative v.duration || */
 		0;
@@ -86,11 +115,44 @@ public interface HTML5Video {
 		return /** @j2sNative v.currentTime|| */
 		0;
 	}
+	
+	public static Dimension getSize(HTML5Video v) {
+		return new Dimension(/** @j2sNative v.videoWidth || */
+		0, /** @j2sNative v.videoHeight|| */
+		0);
+	}
+	
+
+	/**
+	 * 
+	 * Create a BufferedIfmage from the current frame. The image will be of type
+	 * swingjs.api.JSUtilI.TYPE_4BYTE_HTML5, matching the data buffer of HTML5
+	 * images.
+	 * 
+	 * @param v
+	 * @return
+	 */
+	public static BufferedImage getImage(HTML5Video v) {
+		Dimension d = HTML5Video.getSize(v);
+		BufferedImage image = (BufferedImage) HTML5Video.getProperty(v, "_image");
+		if (image == null || image.getWidth() != d.width || image.getHeight() != d.height) {
+			image = new BufferedImage(d.width, d.height, JSUtilI.TYPE_4BYTE_HTML5);
+			HTML5Video.setProperty(v, "_image", image);
+		}
+		Graphics g = image.createGraphics();
+		/**
+		 * @j2sNative 
+		 *  
+		 * g.canvas.getContext('2d').drawImage(v, 0, 0, d.width, d.height);
+		 */
+		g.dispose();
+		return image;
+	}
 
 	// property setting and getting
-	
+
 	/**
-	 * Set a property of the the HTML5 video element using jsvideo[key] = value. 
+	 * Set a property of the the HTML5 video element using jsvideo[key] = value.
 	 * Numbers and Booleans will be unboxed.
 	 * 
 	 * @param jsvideo the HTML5 video element
@@ -108,12 +170,13 @@ public interface HTML5Video {
 	}
 
 	/**
-	 * Get a property using jsvideo[key], boxing number as Double and boolean as Boolean.
+	 * Get a property using jsvideo[key], boxing number as Double and boolean as
+	 * Boolean.
 	 * 
 	 * @param jsvideo the HTML5 video element
 	 * 
 	 * @param key
-	 * @return  value or value boxed as Double or Boolean
+	 * @return value or value boxed as Double or Boolean
 	 */
 	@SuppressWarnings("unused")
 	public static Object getProperty(HTML5Video jsvideo, String key) {
@@ -135,14 +198,15 @@ public interface HTML5Video {
 	}
 
 	// event action
-	
+
 	/**
-	 * Add an ActionListener for the designated events. When an event is fired, 
+	 * Add an ActionListener for the designated events. When an event is fired,
 	 * 
-	 * @param jsvideo the HTML5 video element
+	 * @param jsvideo  the HTML5 video element
 	 * @param listener
-	 * @param events array of events to listen to or null to listen on all video element event types
-	 * @return an array of event/listener pairs that can be used for removal. 
+	 * @param events   array of events to listen to or null to listen on all video
+	 *                 element event types
+	 * @return an array of event/listener pairs that can be used for removal.
 	 */
 	public static Object[] addActionListener(HTML5Video jsvideo, ActionListener listener, String... events) {
 		if (events == null || events.length == 0)
@@ -154,45 +218,45 @@ public interface HTML5Video {
 			public Void apply(Object jsevent) {
 				String name = (/** @j2sNative jsevent.type || */
 				"?");
-				ActionEvent e = new ActionEvent(new Object[] { jsvideo, jsevent }, 12345, name, System.currentTimeMillis(), 0);
+				ActionEvent e = new ActionEvent(new Object[] { jsvideo, jsevent }, 12345, name,
+						System.currentTimeMillis(), 0);
 				listener.actionPerformed(e);
 				return null;
 			}
 		};
 		Object[] listeners = new Object[0];
 		for (int i = 0; i < events.length; i++) {
-			/** @j2sNative 
-			 * var func = function(event){f.apply.apply(f, [event])};
-			 * jsvideo.addEventListener(events[i],func); 
-			 * listeners.push(events[i]);
-			 * listeners.push(func);
+			/**
+			 * @j2sNative var func = function(event){f.apply.apply(f, [event])};
+			 *            jsvideo.addEventListener(events[i],func);
+			 *            listeners.push(events[i]); listeners.push(func);
 			 */
 		}
 		return listeners;
 	}
 
 	/**
-	 * Remove action listener 
+	 * Remove action listener
 	 * 
-	 * @param jsvideo the HTML5 video element
-	 * @param listener
-	 * @param events array of events to listen to or null to listen on all video element event types
+	 * @param jsvideo   the HTML5 video element
+	 * @param listeners an array of event/listener pairs created by
+	 *                  addActionListener
 	 */
 	@SuppressWarnings("unused")
 	public static void removeActionListener(HTML5Video jsvideo, Object[] listeners) {
-		for (int i = 0; i < listeners.length; i+= 2) {
+		for (int i = 0; i < listeners.length; i += 2) {
 			String event = (String) listeners[i];
 			Object listener = listeners[i + 1];
 			/**
 			 * @j2sNative
 			 * 
-			 * jsvideo.removeEventListener(event, listener);
+			 * 			jsvideo.removeEventListener(event, listener);
 			 */
 		}
 	}
 
 	// HTMLMediaElement properties
-	
+
 //	audioTracks
 //	autoplay
 //	buffered Read only
