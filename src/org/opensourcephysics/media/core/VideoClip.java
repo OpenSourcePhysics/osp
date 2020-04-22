@@ -707,6 +707,13 @@ public class VideoClip {
 			Video video = VideoIO.getVideo(path, null);
 			boolean engineChange = false;
 			if (video == null && path != null && !VideoIO.isCanceled()) {
+				if (OSPRuntime.isJS) {
+					if (ResourceLoader.getResource(path) != null) { // resource exists but not loaded
+						OSPLog.info("\"" + path + "\" could not be opened"); //$NON-NLS-1$ //$NON-NLS-2$
+					}
+					JOptionPane.showMessageDialog(null,  "\"" + path + "\" could not be opened");
+				}
+				
 				// Java only
 				/**
 				 * Java only -- transpiler can skip this
@@ -725,6 +732,7 @@ public class VideoClip {
 								MediaRes.getString("VideoClip.Dialog.VideoNotFound.Title"), //$NON-NLS-1$
 								JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 						if (response == JOptionPane.YES_OPTION) {
+							// BH!  We cannot do this is JavaScript
 							VideoEnginePanel panel = VideoIO.getVideoEnginePanel();
 							VideoIO.getChooser().setAccessory(panel);
 							panel.reset();

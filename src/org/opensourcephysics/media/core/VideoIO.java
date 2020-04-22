@@ -595,6 +595,7 @@ public class VideoIO {
 	/**
 	 * Gets an array of available video types
 	 *
+	 * @param isExport  true if we need a recorder (TrackerIO and VideoGrabber only)
 	 * @return the video types
 	 */
 	public static ArrayList<VideoType> getVideoTypes(boolean isExport) {
@@ -976,6 +977,7 @@ public class VideoIO {
 				chooser.setCurrentDirectory(new File(parent));
 			}
 			chooser.setSelectedFile(file);
+			// BH no problem in JavaScript; it will default to standard JavaScript Confirm
 			int result = chooser.showSaveDialog(vidPanel);
 			if (result == JFileChooser.APPROVE_OPTION) {
 				file = chooser.getSelectedFile();
@@ -1078,10 +1080,12 @@ public class VideoIO {
 		/**
 		 * Gets the selected video engine type.
 		 * 
+		 * JavaScript will return null.
+		 * 
 		 * @return the video engine type
 		 */
 		public VideoType getSelectedVideoType() {
-			if (chooser.getAccessory() == null || chooser.getAccessory() == emptyPanel)
+			if (OSPRuntime.isJS || chooser.getAccessory() == null || chooser.getAccessory() == emptyPanel)
 				return null;
 			for (JRadioButton button : buttonMap.keySet()) {
 				if (button.isSelected()) {
@@ -1164,7 +1168,10 @@ public class VideoIO {
 
 	/**
 	 * Check for a MovieVideoI that can handle the extension associated with this
-	 * path
+	 * path.
+	 * 
+	 * Currently only returns a single engine. In principle, this could be expanded to allow more then one 
+	 * available engine.
 	 * 
 	 * merged from VideoClip and TrackerIO
 	 * 
