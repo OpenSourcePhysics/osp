@@ -79,7 +79,7 @@ public class OSPRuntime {
 	
 	public static boolean autoAddLibrary = !isJS; // for ResourceLoader
 
-	public static boolean canReadJSMovieFiles = isJS; // wishful thinking!
+	public static boolean canReadJSMovieFiles = true; // wishful thinking!
 	
 	public static boolean canRecordMovieFiles = !isJS; // MovieVideoType.recordable default
 

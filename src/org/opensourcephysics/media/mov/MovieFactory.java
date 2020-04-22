@@ -13,6 +13,7 @@ import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.media.core.VideoRecorder;
 import org.opensourcephysics.media.core.VideoType;
 import org.opensourcephysics.media.xuggle.DiagnosticsForXuggle;
+import org.opensourcephysics.media.xuggle.XuggleIO;
 import org.opensourcephysics.media.xuggle.XuggleVideoI;
 
 /**
@@ -67,8 +68,13 @@ public class MovieFactory {
 	}
 
 	public static void registerWithViewoIO() {
-		if (OSPRuntime.isJS || System.getenv("XUGGLE_HOME") != null) {//$NON-NLS-1$
-			MovieIO.registerWithVideoIO();
+		if (OSPRuntime.isJS) {
+			JSMovieIO.registerWithVideoIO();
+			return;
+		}
+		
+		if (System.getenv("XUGGLE_HOME") != null) {//$NON-NLS-1$
+			XuggleIO.registerWithVideoIO();
 		} else {
 			OSPLog.config("Xuggle not installed? (XUGGLE_HOME not found)"); //$NON-NLS-1$
 		}

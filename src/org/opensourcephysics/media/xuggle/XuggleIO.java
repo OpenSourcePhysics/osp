@@ -19,11 +19,12 @@
  * For additional information and documentation on Open Source Physics,
  * please see <https://www.compadre.org/osp/>.
  */
-package org.opensourcephysics.media.mov;
+package org.opensourcephysics.media.xuggle;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.media.core.VideoFileFilter;
 import org.opensourcephysics.media.core.VideoIO;
+import org.opensourcephysics.media.mov.MovieVideoType;
 import org.opensourcephysics.tools.ResourceLoader;
 
 /**
@@ -32,26 +33,29 @@ import org.opensourcephysics.tools.ResourceLoader;
  * @author Wolfgang Christian, Douglas Brown
  * @version 1.0
  */
-public class MovieIO {
+public class XuggleIO {
 	
 	/**
    * Registers Xuggle video types with VideoIO class.
    */
   static public void registerWithVideoIO(){ // add Xuggle video types, if available
       try {
-    	  VideoIO.addVideoEngine(new MovieVideoType());
+    	  VideoIO.addVideoEngine(new MovieVideoType());		
 
         // add common video types
       	for (String ext: VideoIO.VIDEO_EXTENSIONS) { // {"mov", "avi", "mp4"}
         	VideoFileFilter filter = new VideoFileFilter(ext, new String[] {ext});
-        	MovieVideoType xuggleType = new MovieVideoType(filter);
+        	MovieVideoType movieType = new MovieVideoType(filter);
         	// avi not recordable with xuggle
           if (ext.equals("avi")) { //$NON-NLS-1$
-          	xuggleType.setRecordable(false);
+          	movieType.setRecordable(false);
           }
-          VideoIO.addVideoType(xuggleType);
+          VideoIO.addVideoType(movieType);
           ResourceLoader.addExtractExtension(ext);
       	} 
+      	
+      	
+      	
       	// add additional xuggle types
       	// FLV
         VideoFileFilter filter = new VideoFileFilter("flv", new String[] {"flv"}); //$NON-NLS-1$ //$NON-NLS-2$
