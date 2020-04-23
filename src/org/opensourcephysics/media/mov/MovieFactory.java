@@ -140,20 +140,23 @@ public class MovieFactory {
 
 	public static ArrayList<VideoType> videoEngines = new ArrayList<VideoType>();
 
-	public static File createThumbnailFile(Object[] values) {
+	public static File createThumbnailFile(Dimension defaultThumbnailDimension, String sourcePath, String thumbPath) {
+		// TODO Auto-generated method stub
 		if (OSPRuntime.isJS) {
-			return JSMovieVideo.createThumbnailFile(values);
+			return JSMovieVideo.createThumbnailFile(defaultThumbnailDimension, sourcePath, thumbPath);
 		}
-		// video files: use Xuggle thumbnail tool, if available
-		String className = "org.opensourcephysics.media.xuggle.XuggleThumbnailTool"; //$NON-NLS-1$
-		Class<?>[] types = new Class<?>[] { Dimension.class, String.class, String.class };
-		try {
-			Class<?> xuggleClass = Class.forName(className);
-			Method method = xuggleClass.getMethod("createThumbnailFile", types); //$NON-NLS-1$
-			return (File) method.invoke(null, values);
-		} catch (Exception ex) {
-			OSPLog.fine("failed to create thumbnail: " + ex.toString()); //$NON-NLS-1$
-		} catch (Error err) {
+		if (getEngine() != VideoIO.ENGINE_NONE) {
+			// video files: use Xuggle thumbnail tool, if available
+			String className = "org.opensourcephysics.media.xuggle.XuggleThumbnailTool"; //$NON-NLS-1$
+			Class<?>[] types = new Class<?>[] { Dimension.class, String.class, String.class };
+			try {
+				Class<?> xuggleClass = Class.forName(className);
+				Method method = xuggleClass.getMethod("createThumbnailFile", types); //$NON-NLS-1$
+				return (File) method.invoke(null, new Object[] { defaultThumbnailDimension, sourcePath, thumbPath });
+			} catch (Exception ex) {
+				OSPLog.fine("failed to create thumbnail: " + ex.toString()); //$NON-NLS-1$
+			} catch (Error err) {
+			}
 		}
 		return null;
 	}
@@ -162,5 +165,6 @@ public class MovieFactory {
 		return (OSPRuntime.isJS ? null  : "com.xuggle.xuggler.IContainer"); //$NON-NLS-1$
 		
 	}
+
 
 }

@@ -5,7 +5,10 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.net.URL;
 import java.util.function.Function;
+
+import javax.swing.JLabel;
 
 import swingjs.api.JSUtilI;
 
@@ -34,7 +37,7 @@ import swingjs.api.JSUtilI;
  * @author hansonr
  *
  */
-public interface HTML5Video {
+public interface HTML5Video extends DOMNode {
 
 	public interface Promise {
 
@@ -162,8 +165,8 @@ public interface HTML5Video {
 	public static void setProperty(HTML5Video jsvideo, String key, Object value) {
 		if (value instanceof Number) {
 			/** @j2sNative jsvideo[key] = +value; */
-		} else if (value instanceof Number || value instanceof Boolean) {
-			/** @j2sNative jsvideo[key] = !+value */
+		} else if (value instanceof Boolean) {
+			/** @j2sNative jsvideo[key] = !!+value */
 		} else {
 			/** @j2sNative jsvideo[key] = value; */
 		}
@@ -253,6 +256,12 @@ public interface HTML5Video {
 			 * 			jsvideo.removeEventListener(event, listener);
 			 */
 		}
+	}
+
+	public static JLabel createLabel(URL url) {
+		JLabel label = new JLabel();
+		// TODO
+		return label;
 	}
 
 	// HTMLMediaElement properties

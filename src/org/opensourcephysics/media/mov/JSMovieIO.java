@@ -35,7 +35,7 @@ import org.opensourcephysics.tools.ResourceLoader;
 public class JSMovieIO {
 	
 	/**
-	 * Registers HTML5 video types with VideoIO class.
+	 * Registers HTML5 video types with VideoIO class for file reading
 	 *
 	 * see https://en.wikipedia.org/wiki/HTML5_video#Browser_support
 	 */

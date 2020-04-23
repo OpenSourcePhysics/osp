@@ -22,19 +22,21 @@
 package org.opensourcephysics.media.mov;
 
 import java.awt.Dimension;
-import java.awt.Graphics;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.net.URL;
+import java.util.ArrayList;
 
 import javax.swing.JLabel;
 
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
-import org.opensourcephysics.display.DrawingPanel;
+import org.opensourcephysics.media.core.AsyncVideoI;
 import org.opensourcephysics.media.core.DoubleArray;
 import org.opensourcephysics.media.core.ImageCoordSystem;
 import org.opensourcephysics.media.core.VideoAdapter;
@@ -43,6 +45,9 @@ import org.opensourcephysics.media.core.VideoType;
 import org.opensourcephysics.tools.Resource;
 import org.opensourcephysics.tools.ResourceLoader;
 
+import javajs.async.SwingJSUtils.StateHelper;
+import javajs.async.SwingJSUtils.StateMachine;
+import swingjs.api.js.DOMNode;
 import swingjs.api.js.HTML5Video;
 
 /**
@@ -53,127 +58,76 @@ import swingjs.api.js.HTML5Video;
  * @author Douglas Brown
  * @version 1.0
  */
-public class JSMovieVideo extends VideoAdapter implements MovieVideoI {
+public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVideoI {
 	
-		/**
-		 * File read status: No errors.
-		 */
-		public static final int STATUS_OK = 0;
+	// array of frame start times in milliseconds
+	private double[] startTimes;
+	private long systemStartPlayTime;
+	private double frameStartPlayTime;
+	private int frame;
+	//private Timer failDetectTimer;
 
-		/**
-		 * File read status: Error decoding file (may be partially decoded)
-		 */
-		public static final int STATUS_FORMAT_ERROR = 1;
-
-		/**
-		 * File read status: Unable to open source.
-		 */
-		public static final int STATUS_OPEN_ERROR = 2;
-
-		JLabel videoLabel = new JLabel();
-
-		HTML5Video jsvideo;
-		
-		public int getFrameCount() {
-			// We cannot get this from a streaming video. 
-			// TODO Auto-generated method stub
-			return 0;
+	private HTML5Video jsvideo;
+	
+	private JLabel videoLabel;
+	private String fileName;
+	private URL url;
+	private File file;
+	
+	public JSMovieVideo(String path) throws IOException {
+		Frame[] frames = Frame.getFrames();
+		for (int i = 0, n = frames.length; i < n; i++) {
+			if (frames[i].getName().equals("Tracker")) { //$NON-NLS-1$
+				addPropertyChangeListener("progress", (PropertyChangeListener) frames[i]); //$NON-NLS-1$
+				addPropertyChangeListener("stalled", (PropertyChangeListener) frames[i]); //$NON-NLS-1$
+				break;
+			}
 		}
-
-		public BufferedImage getFrame(int index) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		/**
-		 * 
-		 * @param n
-		 * @return delay in ms
-		 */
-		public int getDelay(int n) {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-		public int read(String movName) {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-
-	// instance fields
-	protected int[] startTimes; // in milliseconds
-	private javax.swing.Timer timer;
-	private HashSet<DrawingPanel> panels = new HashSet<DrawingPanel>();
-
-	/**
-	 * Creates a JSVideo and loads a mov video specified by name
-	 *
-	 * @param movName the name of the video file
-	 * @throws IOException
-	 */
-	public JSMovieVideo(String movName) throws IOException {
-		load(movName);
-		createTimer();
+		// timer to detect failures
+//		failDetectTimer = new Timer(6000, new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				if (frame == prevFrame) {
+//					firePropertyChange("stalled", null, path); //$NON-NLS-1$
+//					failDetectTimer.stop();
+//				}
+//				prevFrame = frame;
+//			}
+//		});
+//		failDetectTimer.setRepeats(true);
+		load(path);
 	}
 
 	/**
-	 * Draws the video image on the panel.
-	 *
-	 * @param panel the drawing panel requesting the drawing
-	 * @param g     the graphics context on which to draw
-	 */
-	public void draw(DrawingPanel panel, Graphics g) {
-		panels.add(panel);
-		super.draw(panel, g);
-	}
-
-	/**
-	 * Plays the video at the current rate.
+	 * Plays the video at the current rate. Overrides VideoAdapter method.
 	 */
 	public void play() {
 		if (getFrameCount() == 1) {
 			return;
 		}
-		if (!timer.isRunning()) {
-			if (getFrameNumber() >= getEndFrameNumber()) {
-				setFrameNumber(getStartFrameNumber());
-			}
-			timer.restart();
-			support.firePropertyChange("playing", null, Boolean.TRUE); //$NON-NLS-1$
-		}
+		int n = getFrameNumber() + 1;
+		playing = true;
+		support.firePropertyChange("playing", null, new Boolean(true)); //$NON-NLS-1$
+		startPlayingAtFrame(n);
 	}
 
 	/**
 	 * Stops the video.
 	 */
 	public void stop() {
-		if (timer.isRunning()) {
-			timer.stop();
-			support.firePropertyChange("playing", null, Boolean.FALSE); //$NON-NLS-1$
-		}
+		playing = false;
+		support.firePropertyChange("playing", null, new Boolean(false)); //$NON-NLS-1$
 	}
 
 	/**
-	 * Overrides VideoAdapter setFrameNumber method.
+	 * Sets the frame number. Overrides VideoAdapter setFrameNumber method.
 	 *
 	 * @param n the desired frame number
 	 */
-	@Override
 	public void setFrameNumber(int n) {
+		if (n == getFrameNumber())
+			return;
 		super.setFrameNumber(n);
-		n = getFrameNumber();
-		int index = Math.min(n, getFrameCount() - 1);
-		rawImage = getFrame(index);
-		isValidImage = false;
-		isValidFilteredImage = false;
-		support.firePropertyChange("framenumber", null, Integer.valueOf(n)); //$NON-NLS-1$
-		// repaint panels in case they don't listen
-		Iterator<DrawingPanel> it = panels.iterator();
-		while (it.hasNext()) {
-			DrawingPanel panel = it.next();
-			panel.repaint();
-		}
+		state.getImage(n);
 	}
 
 	/**
@@ -190,7 +144,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI {
 	}
 
 	/**
-	 * Gets the current video time in milliseconds.
+	 * Gets the current frame time in milliseconds.
 	 *
 	 * @return the current time in milliseconds, or -1 if not known
 	 */
@@ -199,14 +153,14 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI {
 	}
 
 	/**
-	 * Sets the video time in milliseconds.
+	 * Sets the frame number to (nearly) a desired time in milliseconds.
 	 *
 	 * @param millis the desired time in milliseconds
 	 */
 	public void setTime(double millis) {
 		millis = Math.abs(millis);
 		for (int i = 0; i < startTimes.length; i++) {
-			int t = startTimes[i];
+			double t = startTimes[i];
 			if (millis < t) { // find first frame with later start time
 				setFrameNumber(i - 1);
 				break;
@@ -215,7 +169,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI {
 	}
 
 	/**
-	 * Gets the start time in milliseconds.
+	 * Gets the start frame time in milliseconds.
 	 *
 	 * @return the start time in milliseconds, or -1 if not known
 	 */
@@ -224,15 +178,14 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI {
 	}
 
 	/**
-	 * Sets the start time in milliseconds. NOTE: the actual start time is normally
-	 * set to the beginning of a frame.
+	 * Sets the start frame to (nearly) a desired time in milliseconds.
 	 *
 	 * @param millis the desired start time in milliseconds
 	 */
 	public void setStartTime(double millis) {
 		millis = Math.abs(millis);
 		for (int i = 0; i < startTimes.length; i++) {
-			int t = startTimes[i];
+			double t = startTimes[i];
 			if (millis < t) { // find first frame with later start time
 				setStartFrameNumber(i - 1);
 				break;
@@ -241,18 +194,19 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI {
 	}
 
 	/**
-	 * Gets the end time in milliseconds.
+	 * Gets the end frame time in milliseconds.
 	 *
 	 * @return the end time in milliseconds, or -1 if not known
 	 */
 	public double getEndTime() {
 		int n = getEndFrameNumber();
-		return getFrameTime(n) + getDelay(n);
+		if (n < getFrameCount() - 1)
+			return getFrameTime(n + 1);
+		return getDuration();
 	}
 
 	/**
-	 * Sets the end time in milliseconds. NOTE: the actual end time is set to the
-	 * end of a frame.
+	 * Sets the end frame to (nearly) a desired time in milliseconds.
 	 *
 	 * @param millis the desired end time in milliseconds
 	 */
@@ -260,7 +214,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI {
 		millis = Math.abs(millis);
 		millis = Math.min(getDuration(), millis);
 		for (int i = 0; i < startTimes.length; i++) {
-			int t = startTimes[i];
+			double t = startTimes[i];
 			if (millis < t) { // find first frame with later start time
 				setEndFrameNumber(i - 1);
 				break;
@@ -274,50 +228,320 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI {
 	 * @return the duration of the video in milliseconds, or -1 if not known
 	 */
 	public double getDuration() {
-		// done
-		return HTML5Video.getDuration(jsvideo) * 1000;
+		return HTML5Video.getDuration(jsvideo);
 	}
 
 	/**
-	 * Loads a mov video specified by name.
+	 * Sets the relative play rate. Overrides VideoAdapter method.
 	 *
-	 * @param movName the mov video name
+	 * @param rate the relative play rate.
+	 */
+	public void setRate(double rate) {
+		super.setRate(rate);
+		if (isPlaying()) {
+			startPlayingAtFrame(getFrameNumber());
+		}
+	}
+
+	/**
+	 * Disposes of this video.
+	 */
+	public void dispose() {
+		super.dispose();
+		DOMNode.dispose(jsvideo);
+		videoLabel.removeNotify();
+		
+	}
+//______________________________  private methods _________________________
+
+	/**
+	 * Sets the system and frame start times.
+	 * 
+	 * @param frameNumber the frame number at which playing will start
+	 */
+	private void startPlayingAtFrame(int frameNumber) {
+		// systemStartPlayTime is the system time when play starts
+		systemStartPlayTime = System.currentTimeMillis();
+		// frameStartPlayTime is the frame time where play starts
+		frameStartPlayTime = getFrameTime(frameNumber);
+		setFrameNumber(frameNumber);
+	}
+
+	/**
+	 * Plays the next time-appropriate frame at the current rate.
+	 */
+	private void continuePlaying() {
+		int n = getFrameNumber();
+		if (n < getEndFrameNumber()) {
+			long elapsedTime = System.currentTimeMillis() - systemStartPlayTime;
+			double frameTime = frameStartPlayTime + getRate() * elapsedTime;
+			int frameToPlay = getFrameNumberBefore(frameTime);
+			while (frameToPlay > -1 && frameToPlay <= n) {
+				elapsedTime = System.currentTimeMillis() - systemStartPlayTime;
+				frameTime = frameStartPlayTime + getRate() * elapsedTime;
+				frameToPlay = getFrameNumberBefore(frameTime);
+			}
+			if (frameToPlay == -1) {
+				frameToPlay = getEndFrameNumber();
+			}
+			setFrameNumber(frameToPlay);
+		} else if (looping) {
+			startPlayingAtFrame(getStartFrameNumber());
+		} else {
+			stop();
+		}
+	}
+
+	/**
+	 * Gets the number of the last frame before the specified time.
+	 *
+	 * @param time the time in milliseconds
+	 * @return the frame number, or -1 if not found
+	 */
+	private int getFrameNumberBefore(double time) {
+		for (int i = 0; i < startTimes.length; i++) {
+			if (time < startTimes[i])
+				return i - 1;
+		}
+		// if not found, see if specified time falls in last frame
+		int n = startTimes.length - 1;
+		// assume last and next-to-last frames have same duration
+		double endTime = 2 * startTimes[n] - startTimes[n - 1];
+		if (time < endTime)
+			return n;
+		return -1;
+	}
+
+	/**
+	 * Loads a video specified by name.
+	 *
+	 * @param fileName the video file name
 	 * @throws IOException
 	 */
-	protected void load(String movName) throws IOException {
-		int status = read(movName);
-		if (status == STATUS_OPEN_ERROR) {
-			throw new IOException("Gif " + movName + " not found"); //$NON-NLS-1$ //$NON-NLS-2$
-		} else if (status == STATUS_FORMAT_ERROR) {
-			throw new IOException("File format error"); //$NON-NLS-1$
+	private void load(String fileName) throws IOException {
+		this.fileName = fileName;
+		Resource res = ResourceLoader.getResource(fileName);
+		if (res == null) {
+			throw new IOException("unable to create resource for " + fileName); //$NON-NLS-1$
 		}
-		setProperty("name", movName); //$NON-NLS-1$
-		// set path to be saved in XMLControl
-		if (movName.indexOf(":") == -1) { //$NON-NLS-1$
+		url = res.getURL();
+		file = res.getFile();
+		
+		boolean isLocal = url.getProtocol().toLowerCase().indexOf("file") > -1; //$NON-NLS-1$
+		String path = isLocal ? res.getAbsolutePath() : url.toExternalForm();
+		OSPLog.finest("JSMovieVideo loading " + path + " local?: " + isLocal); //$NON-NLS-1$ //$NON-NLS-2$
+				// set properties
+		setProperty("name", XML.getName(fileName)); //$NON-NLS-1$
+		setProperty("absolutePath", res.getAbsolutePath()); //$NON-NLS-1$
+		if (fileName.indexOf(":") == -1) { //$NON-NLS-1$
 			// if name is relative, path is name
-			setProperty("path", XML.forwardSlash(movName)); //$NON-NLS-1$
-			Resource res = ResourceLoader.getResource(movName);
-			if (res != null)
-				setProperty("absolutePath", res.getAbsolutePath()); //$NON-NLS-1$
+			setProperty("path", XML.forwardSlash(fileName)); //$NON-NLS-1$
 		} else {
 			// else path is relative to user directory
-			setProperty("path", XML.getRelativePath(movName)); //$NON-NLS-1$
-			setProperty("absolutePath", movName); //$NON-NLS-1$
+			setProperty("path", XML.getRelativePath(fileName)); //$NON-NLS-1$
 		}
-		frameCount = getFrameCount();
-		startFrameNumber = 0;
-		endFrameNumber = frameCount - 1;
-		// create startTimes array
-		startTimes = new int[frameCount];
-		startTimes[0] = 0;
-		for (int i = 1; i < startTimes.length; i++) {
-			startTimes[i] = startTimes[i - 1] + getDelay(i - 1);
-		}
-		setImage(getFrame(0));
+		firePropertyChange("progress", fileName, 0); //$NON-NLS-1$
+		frame = 0;
+		//failDetectTimer.start();
+		if (state == null)
+			state = new State();
+		state.load(path);
+		
 	}
 
+
+	State state;
+	public String err;
+
+	private class State implements StateMachine {
+		
+		long keyTimeStamp = Long.MIN_VALUE;
+		long startTimeStamp = Long.MIN_VALUE;
+		ArrayList<Double> seconds = new ArrayList<Double>();
+
+		static final int STATE_ERROR             = -99;
+
+		static final int STATE_IDLE              = -1;
+		static final int STATE_FIND_FRAMES_INIT  = 00;
+		static final int STATE_FIND_FRAMES_LOOP  = 01;
+		static final int STATE_FIND_FRAMES_READY = 02;
+		static final int STATE_FIND_FRAMES_DONE  = 99;
+		
+		static final int STATE_LOAD_VIDEO_INIT    = 10;
+		static final int STATE_LOAD_VIDEO_READY   = 12;
+		
+		static final int STATE_GET_IMAGE_INIT    = 20;
+		static final int STATE_GET_IMAGE_READY   = 22;
+		
+		
+		private StateHelper helper;
+		private double t;
+		private double dt = 0;
+		
+		private ActionListener canplaythrough = new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				helper.next(StateHelper.UNCHANGED);
+			}
+			
+		};
+		private Object[] readyListener;
+		private double duration;
+		private int thisFrame;
+		private String path;
+		
+		State() {
+			helper = new StateHelper(this);
+		}
+
+		public void load(String path) {
+			this.path = path;
+		}
+
+		public void getImage(int n) {
+			if (thisFrame == n)
+				return;
+			thisFrame = n;
+			t = JSMovieVideo.this.getFrameTime(n);
+			helper.next(STATE_GET_IMAGE_INIT);
+		}
+
+		public void findAllFrames(Runnable r) {
+			helper.next(STATE_FIND_FRAMES_INIT);
+		}
+
+		private void dispose()  {
+			HTML5Video.removeActionListener(jsvideo, readyListener);
+		}
+		
+		private void seekToNextFrame() {
+			if (dt == 0) {
+				try {
+					jsvideo.seekToNextFrame();
+				} catch (Throwable e) {
+					err = "JSMovieVideo cannot seek to next Frame";
+					e.printStackTrace();
+				}
+			} else {
+				HTML5Video.setCurrentTime(jsvideo, t = t + dt);
+			}
+		}
+
+
+		private void setReadyListener() {
+			if (readyListener != null)
+				readyListener = HTML5Video.addActionListener(jsvideo, canplaythrough, "canplaythrough");
+		}
+		@Override
+		public boolean stateLoop() {
+			while (helper.isAlive()) {
+				switch (err == null ? STATE_ERROR : helper.getState()) {
+				case STATE_IDLE:
+					return false;
+				case STATE_LOAD_VIDEO_INIT:
+					setReadyListener();
+					videoLabel = HTML5Video.createLabel(url);
+					helper.setState(STATE_LOAD_VIDEO_READY);
+					return true;
+				case STATE_LOAD_VIDEO_READY:
+					findAllFrames(null);
+					return false;
+				case STATE_FIND_FRAMES_INIT:
+					err = null;
+					setReadyListener();
+					duration = HTML5Video.getDuration(jsvideo);
+					t = 0.0;
+					dt = (DOMNode.getAttr(jsvideo, "seekToNextFrame") == null ? 0.0033334 : 0.0);
+					helper.setState(STATE_FIND_FRAMES_LOOP);
+					continue;
+				case STATE_FIND_FRAMES_LOOP:
+					if (t >= duration) {
+						helper.setState(STATE_FIND_FRAMES_DONE);
+						continue;
+					}
+					helper.setState(STATE_FIND_FRAMES_READY);
+					seekToNextFrame();
+					return true; // asynchronous
+				case STATE_FIND_FRAMES_READY:
+					if (VideoIO.isCanceled()) {
+						// failDetectTimer.stop();
+						firePropertyChange("progress", fileName, null); //$NON-NLS-1$
+						// clean up temporary objects
+						dispose();
+						err = "Canceled by user"; //$NON-NLS-1$
+						return false;
+					}
+					t = HTML5Video.getCurrentTime(jsvideo);
+					//frameTimeStamps.put(frame, Long.valueOf((long) (t * 1000)));
+					seconds.add(Double.valueOf(t * 1000));
+					firePropertyChange("progress", fileName, frame); //$NON-NLS-1$
+					frame++;
+					System.out.println(frame + " " + t);
+					helper.setState(STATE_FIND_FRAMES_LOOP);
+					continue;
+					///////////////////////////////////////
+				case STATE_FIND_FRAMES_DONE:
+					// clean up temporary objects
+					// throw IOException if no frames were loaded
+					if (seconds.size() == 0) {
+						firePropertyChange("progress", fileName, null); //$NON-NLS-1$
+						dispose();
+						err = "no frames"; //$NON-NLS-1$
+					}
+
+					// set initial video clip properties
+					frameCount = seconds.size();
+					startFrameNumber = 0;
+					endFrameNumber = frameCount - 1;
+					// create startTimes array
+					startTimes = new double[frameCount];
+					startTimes[0] = 0;
+					for (int i = 1; i < startTimes.length; i++) {
+						startTimes[i] = seconds.get(i) * 1000;
+					}
+
+					firePropertyChange("progress", fileName, null); //$NON-NLS-1$
+					// failDetectTimer.stop();
+//					if (img == null) {
+//						dispose();
+//						throw new IOException("No images"); //$NON-NLS-1$
+//					}
+//					setImage(img);
+					helper.setState(STATE_IDLE);
+					continue;
+				case STATE_GET_IMAGE_INIT:
+					helper.setState(STATE_GET_IMAGE_READY);
+					setReadyListener();
+					HTML5Video.setCurrentTime(jsvideo, t);
+					return true;
+				case STATE_GET_IMAGE_READY:
+					BufferedImage bi = HTML5Video.getImage(jsvideo);
+					if (bi != null) {
+						rawImage = bi;
+						isValidImage = false;
+						isValidFilteredImage = false;
+						firePropertyChange("framenumber", null, new Integer(thisFrame)); //$NON-NLS-1$
+//						if (isPlaying()) {
+//							Runnable runner = new Runnable() {
+//								public void run() {
+//									continuePlaying();
+//								}
+//							};
+//							SwingUtilities.invokeLater(runner);
+//						}
+					}
+					helper.setState(STATE_IDLE);
+					continue;
+				}
+				return false;
+			}
+			return false;
+
+		}
+	}	
 	/**
-	 * Sets the image.
+	 * Sets the initial image.
 	 *
 	 * @param image the image
 	 */
@@ -327,41 +551,13 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI {
 		refreshBufferedImage();
 		// create coordinate system and relativeAspects
 		coords = new ImageCoordSystem(frameCount);
-		coords.addPropertyChangeListener(this);
+		coords.addPropertyChangeListener(JSMovieVideo.this);
 		aspects = new DoubleArray(frameCount, 1);
 	}
 
-	/**
-	 * Creates the timer.
-	 */
-	private void createTimer() {
-		int delay = getDelay(0);
-		timer = new javax.swing.Timer(delay, new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (getFrameNumber() < getEndFrameNumber()) {
-					int delay = getDelay(getFrameNumber() + 1);
-					timer.setDelay((int) (delay / getRate()));
-					setFrameNumber(getFrameNumber() + 1);
-				} else if (looping) {
-					int delay = getDelay(getStartFrameNumber());
-					timer.setDelay((int) (delay / getRate()));
-					setFrameNumber(getStartFrameNumber());
-				} else {
-					stop();
-				}
-			}
-
-		});
-	}
-
-	public static File createThumbnailFile(Object[] values) {
-		//	{ defaultThumbnailDimension, sourcePath, thumbPath };
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	/**
-	 * Returns an XML.ObjectLoader to save and load JSVideo data.
+	 * Returns an XML.ObjectLoader to save and load XuggleVideo data.
 	 *
 	 * @return the object loader
 	 */
@@ -369,21 +565,28 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI {
 		return new Loader();
 	}
 
-
 	/**
-	 * A class to save and load JMovieVideo data.
+	 * A class to save and load XuggleVideo data.
 	 */
-	static class Loader extends VideoAdapter.Loader implements XML.ObjectLoader {
-		
+	static public class Loader extends VideoAdapter.Loader {
+
+		@Override
 		protected VideoAdapter createVideo(String path) throws IOException {
-			JSMovieVideo video = new JSMovieVideo(path);
-			VideoType type = VideoIO.getVideoType("mov", null); //$NON-NLS-1$
-			if (type != null)
-				video.setProperty("video_type", type); //$NON-NLS-1$
+			VideoAdapter video = new JSMovieVideo(path);
+			String ext = XML.getExtension(path);
+			VideoType VideoType = VideoIO.getMovieType(ext);
+			if (VideoType != null)
+				video.setProperty("video_type", VideoType); //$NON-NLS-1$
 			return video;
 		}
-
 	}
+
+	public static File createThumbnailFile(Dimension defaultThumbnailDimension, String sourcePath, String thumbPath) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
 }
 
 /*

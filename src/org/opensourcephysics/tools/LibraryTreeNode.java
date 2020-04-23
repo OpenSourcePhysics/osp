@@ -786,8 +786,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 				}
 			} else {
 				// This better be a movie!
-				Object[] values = new Object[] { defaultThumbnailDimension, sourcePath, thumbPath };
-				thumbFile = MovieFactory.createThumbnailFile(values);
+				thumbFile = MovieFactory.createThumbnailFile(defaultThumbnailDimension, sourcePath, thumbPath);
 			}
 			return thumbFile;
 		}

@@ -44,8 +44,7 @@ public class XuggleIO {
 
         // add common video types
       	for (String ext: VideoIO.VIDEO_EXTENSIONS) { // {"mov", "avi", "mp4"}
-        	VideoFileFilter filter = new VideoFileFilter(ext, new String[] {ext});
-        	MovieVideoType movieType = new MovieVideoType(filter);
+        	MovieVideoType movieType =  VideoIO.getMovieType(ext);
         	// avi not recordable with xuggle
           if (ext.equals("avi")) { //$NON-NLS-1$
           	movieType.setRecordable(false);

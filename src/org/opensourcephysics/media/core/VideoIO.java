@@ -145,10 +145,13 @@ public class VideoIO {
 	}
 
 
-	public static VideoType getMovieType(String extension) {
+	public static MovieVideoType getMovieType(String extension) {
 		if (MovieFactory.getEngine() == VideoIO.ENGINE_NONE)
 			return null;
 		MovieVideoType mtype = null;
+		if (videoTypes == null) {
+			System.out.println("????");
+		}
 		synchronized (videoTypes) {
 			for (VideoType next : videoTypes) {
 				if (next instanceof MovieVideoI) {
@@ -162,7 +165,7 @@ public class VideoIO {
 			String id = mtype.getDefaultExtension();
 			if (id != null && id.indexOf(extension) > -1)
 				return mtype;
-			return checkVideoFilter(mtype, extension);
+			return (MovieVideoType) checkVideoFilter(mtype, extension);
 		}
 	}
 
@@ -193,10 +196,10 @@ public class VideoIO {
 
 	// static fields
 	protected static AsyncFileChooser chooser;
-	protected static VideoFileFilter videoFileFilter = new VideoFileFilter();
-	protected static Collection<VideoFileFilter> singleVideoTypeFilters = new TreeSet<VideoFileFilter>();
 	protected static FileFilter imageFileFilter;
-	protected static ArrayList<VideoType> videoTypes = new ArrayList<VideoType>();
+	protected static ArrayList<VideoType> videoTypes;
+	protected static VideoFileFilter videoFileFilter;
+	protected static Collection<VideoFileFilter> singleVideoTypeFilters = new TreeSet<VideoFileFilter>();
 	protected static String defaultXMLExt = "xml"; //$NON-NLS-1$
 	public static String videoEngine;
 	private static VideoEnginePanel videoEnginePanel;
@@ -204,6 +207,8 @@ public class VideoIO {
 	protected static String preferredExportExtension = DEFAULT_PREFERRED_EXPORT_EXTENSION;
 
 	static {
+		videoTypes = new ArrayList<VideoType>();
+		videoFileFilter = new VideoFileFilter();
 		// add video types
 		addVideoType(new GifVideoType());
 // BH! is there any question here?
