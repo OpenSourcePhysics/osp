@@ -1225,7 +1225,7 @@ public class ResourceLoader {
         	continue;
         String fileName = zipEntry.getName();
         fileNames.put(fileName, zipEntry); // Java has no use for the ZipEntry, but JavaScript can read it.
-      }
+      }  
       input.close();
     }
     catch (Exception ex) {}    
@@ -1959,7 +1959,7 @@ public class ResourceLoader {
 			n = path.toLowerCase().indexOf(".jar!/"); //$NON-NLS-1$
 		if (n == -1)
 			n = path.toLowerCase().indexOf(".trz!/"); //$NON-NLS-1$
-		if (n > -1 && path.startsWith("http")) { //$NON-NLS-1$
+		if (n > -1 && isHTTP(path)) { //$NON-NLS-1$
 			// check that url is accessible
 			content = path.substring(n + 6);
 			working = new URL(path.substring(0, n + 4));

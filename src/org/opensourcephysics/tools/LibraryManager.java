@@ -318,7 +318,7 @@ public class LibraryManager extends JDialog {
         
         if (tabbedPane.getSelectedComponent()==collectionsPanel) {
         	boolean isResource = false;
-	        if (!path.startsWith("http") && new File(path).isDirectory()) { //$NON-NLS-1$
+	        if (!ResourceLoader.isHTTP(path) && new File(path).isDirectory()) {
 	        	isResource = true;
 	        }
 	        else {

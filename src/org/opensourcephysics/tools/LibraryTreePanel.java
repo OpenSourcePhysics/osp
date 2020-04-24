@@ -2149,7 +2149,7 @@ public class LibraryTreePanel extends JPanel {
 				boolean requiresCache = htmlPath.contains("!/"); //$NON-NLS-1$  // file in zip
 				// not for local trz files
 				// maybe never for JS?
-				requiresCache = requiresCache && htmlPath.startsWith("http");
+				requiresCache = requiresCache && ResourceLoader.isHTTP(htmlPath);
 				if (requiresCache) {
 					File cachedFile = ResourceLoader.getOSPCacheFile(htmlPath);
 					boolean foundInCache = cachedFile.exists();					
