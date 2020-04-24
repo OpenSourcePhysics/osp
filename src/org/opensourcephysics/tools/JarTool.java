@@ -555,7 +555,7 @@ public class JarTool implements Tool, Runnable {
         inputStream=OSPRuntime.applet.getClass().getResourceAsStream(filename);
       }
       if(inputStream==null) {  // use resource loader when not an applet
-        if(filename.indexOf("http:")>-1) {  //$NON-NLS-1$
+        if(ResourceLoader.isHTTP(filename)) {  //$NON-NLS-1$
           int n = filename.toLowerCase().indexOf(".zip!/"); //$NON-NLS-1$
           if (n==-1) n = filename.toLowerCase().indexOf(".jar!/");     //$NON-NLS-1$
           if (n==-1) n = filename.toLowerCase().indexOf(".trz!/");     //$NON-NLS-1$

@@ -516,7 +516,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
     if (title.equals("") && path!=null) { //$NON-NLS-1$
     	String fileName = XML.getName(path);
     	String basePath = XML.getDirectoryPath(path);
-    	if (basePath.startsWith("http:")) { //$NON-NLS-1$
+    	if (ResourceLoader.isHTTP(basePath)) {
     		basePath = basePath.substring(5);
     		while (basePath.startsWith("/")) { //$NON-NLS-1$
     			basePath = basePath.substring(1);

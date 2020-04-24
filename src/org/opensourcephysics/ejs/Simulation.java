@@ -10,6 +10,8 @@ package org.opensourcephysics.ejs;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 
+import org.opensourcephysics.tools.ResourceLoader;
+
 import javajs.async.SwingJSUtils;
 import javajs.async.SwingJSUtils.StateHelper;
 import javajs.async.SwingJSUtils.StateMachine;
@@ -599,7 +601,7 @@ public abstract class Simulation implements java.lang.Runnable, StateMachine {
 				String url = _filename.substring(4);
 				// System.out.println ("url = "+url);
 				// System.out.println ("codebase = "+_codebase);
-				if ((_codebase == null) || url.startsWith("http:")) { //$NON-NLS-1$
+				if ((_codebase == null) || ResourceLoader.isHTTP(url)) { //$NON-NLS-1$
 					// Do nothing
 				} else {
 					url = _codebase + url;

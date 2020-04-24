@@ -623,8 +623,8 @@ public class LibraryManager extends JDialog {
 				pathField.setCaretPosition(0);
 				String name = library.pathToNameMap.get(path);
 				nameField.setText(name);
-				boolean unavailable = path.startsWith("http:") && !LibraryBrowser.webConnected; //$NON-NLS-1$
-	      Resource res = unavailable? null: ResourceLoader.getResourceZipURLsOK(path);
+				boolean unavailable = ResourceLoader.isHTTP(path) && !LibraryBrowser.webConnected; 
+				Resource res = unavailable? null: ResourceLoader.getResourceZipURLsOK(path);
 	      if (res==null) {
 	      	pathField.setForeground(LibraryTreePanel.darkRed);
 	      }
@@ -650,7 +650,7 @@ public class LibraryManager extends JDialog {
 				pathField.setCaretPosition(0);
 				String name = library.importedPathToLibraryMap.get(path).getName();
 				nameField.setText(name);
-				boolean unavailable = path.startsWith("http:") && !LibraryBrowser.webConnected; //$NON-NLS-1$
+				boolean unavailable = ResourceLoader.isHTTP(path) && !LibraryBrowser.webConnected; //$NON-NLS-1$
 	      Resource res = unavailable? null: ResourceLoader.getResourceZipURLsOK(path);
 	      if (res==null) {
 	      	pathField.setForeground(LibraryTreePanel.darkRed);
