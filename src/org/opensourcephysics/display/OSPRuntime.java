@@ -75,8 +75,6 @@ public class OSPRuntime {
 	public static boolean isJS = /** @j2sNative true || */
 			false;
 
-	public static boolean setRenderingHints = (!isJS && !isMac);
-	
 	public static boolean autoAddLibrary = !isJS; // for ResourceLoader
 
 	public static boolean canReadJSMovieFiles = true; // wishful thinking!
@@ -89,6 +87,10 @@ public class OSPRuntime {
 
 	public static boolean doCacheZipContents = true;//isJS; // for ResourceLoader
 
+	public static boolean resCacheEnabled = isJS; // for ResourceLoader 
+	
+	public static boolean setRenderingHints = (!isJS && !isMac);
+	
 	public static boolean skipDisplayOfPDF = isJS; // for TrackerIO, for now.
 
 	public static boolean embedVideoAsObject = isJS;
@@ -247,6 +249,7 @@ public class OSPRuntime {
 
 	/** Preferences filename */
 	private static String prefsFileName = "osp.prefs"; //$NON-NLS-1$
+
 
 
 
@@ -687,7 +690,7 @@ public class OSPRuntime {
 		if (launchJarPath == null) {
 			return null;
 		}
-		boolean isWebFile = launchJarPath.startsWith("http:"); //$NON-NLS-1$
+		boolean isWebFile = ResourceLoader.isHTTP(launchJarPath); //$NON-NLS-1$
 		if (!isWebFile) {
 			launchJarPath = ResourceLoader.getNonURIPath(launchJarPath);
 		}
