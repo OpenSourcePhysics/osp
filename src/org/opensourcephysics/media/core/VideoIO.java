@@ -159,7 +159,7 @@ public class VideoIO {
 					break;
 				}
 			}
-			if (extension == null) {
+			if (extension == null || mtype == null) {
 				return mtype;
 			}
 			String id = mtype.getDefaultExtension();
@@ -293,7 +293,7 @@ public class VideoIO {
 		if ((absolutePath.indexOf("/") == -1) && (absolutePath.indexOf("\\") == -1)) { //$NON-NLS-1$ //$NON-NLS-2$
 			return absolutePath;
 		}
-		if (absolutePath.startsWith("http:")) {//$NON-NLS-1$
+		if (ResourceLoader.isHTTP(absolutePath)) {
 			return absolutePath;
 		}
 		String path = absolutePath;
