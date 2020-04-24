@@ -78,14 +78,14 @@ public class Resource {
   }
 
   /**
-   * Constructs a resource from a ZIP url with content.
+   * Constructs a resource from a ZIP [url]!/[content].
    *
    * @param zipURL the URL
    * @param content the path of the contents relative to the ZIP file
    */
   protected Resource(URL zipURL, String content) {
-    this.url = zipURL;
-    zipContent = content;
+    this.url = zipURL;    // url!/
+    zipContent = content; //    !/content
     if (content!=null) try {
     	String path = zipURL.toExternalForm()+"!/"+content; //$NON-NLS-1$
 			contentURL = new URL(path);
@@ -165,43 +165,32 @@ public class Resource {
     return null;
   }
 
-  /**
-   * Opens an InputStream.
-   *
-   * @return the stream
-   */
-  public InputStream openInputStream() {
-    if (getFile()!=null) {
-      try {
-        return new FileInputStream(getFile());
-      } catch(FileNotFoundException ex) {
-        ex.printStackTrace();
-      }
-    }
-    if (url!=null) {
-      try {
-      	if (zipContent!=null) {
-          BufferedInputStream bufIn = new BufferedInputStream(url.openStream());
-          ZipInputStream input = new ZipInputStream(bufIn);
-          ZipEntry zipEntry=null;
-          while ((zipEntry=input.getNextEntry()) != null) {
-            if (zipEntry.isDirectory()) continue;
-            String filename = zipEntry.getName();
-            if (zipContent.contains(filename)) {
-            	return input;
-            }
-          }
-      		
-      	}
-      	
-        return getURL().openStream();
-      } catch(IOException ex) {
-    	  OSPLog.fine("Resource file not found " + url);
-        //ex.printStackTrace();
-      }
-    }
-    return null;
-  }
+	/**
+	 * Opens an InputStream.
+	 *
+	 * @return the stream
+	 */
+	public InputStream openInputStream() {
+		if (getFile() != null) {
+			try {
+				return new FileInputStream(getFile());
+			} catch (FileNotFoundException ex) {
+				ex.printStackTrace();
+			}
+		}
+		if (url != null) {
+			try {
+				if (zipContent != null || url.toString().indexOf("!/") >= 0) {
+					return ResourceLoader.openZipEntryStream(url);
+				}
+				return ResourceLoader.openStream(url);
+			} catch (IOException ex) {
+				OSPLog.fine("Resource file not found " + url);
+				// ex.printStackTrace();
+			}
+		}
+		return null;
+	}
 
   /**
    * Opens a BufferedReader for the default character set (UTF-8).

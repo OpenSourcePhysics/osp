@@ -86,7 +86,8 @@ public class ResourceLoader {
   protected static ArrayList<String> appletSearchPaths = new ArrayList<String>();                  // search paths for apples
   protected static int maxPaths = 20;                                                              // max number of paths in history
   protected static Hashtable<String, Resource> resources = new Hashtable<String, Resource>();      // cached resources
-  protected static boolean cacheEnabled=false, canceled=false;
+  protected static boolean cacheEnabled = OSPRuntime.resCacheEnabled;
+  protected static boolean canceled=false;
   protected static Map<String, URLClassLoader> zipLoaders = (OSPRuntime.checkZipLoaders ? new TreeMap<String, URLClassLoader>() : null); // maps path to zipLoader
   protected static URLClassLoader xsetZipLoader; // zipLoader of current xset
   protected static Set<String> extractExtensions = new TreeSet<String>();
@@ -217,8 +218,8 @@ public class ResourceLoader {
 		 */
 		{
 			// removed by Transpiler
-			if (!OSPRuntime.isJS && (OSPRuntime.isAppletMode() || (OSPRuntime.applet != null))) { // added by Paco
-
+			if (OSPRuntime.isAppletMode() || (OSPRuntime.applet != null)) { 
+				// added by Paco
 				Resource appletRes = null;
 				// following code added by Doug Brown 2009/11/14
 				if (type == OSPRuntime.applet.getClass()) {
@@ -1027,7 +1028,7 @@ public class ResourceLoader {
 	  	
 	  	// if separate stylesheet is used, copy to cache and replace in HTML code
 	  	String css = getStyleSheetFromHTMLCode(htmlCode);
-	  	if (css!=null && !css.startsWith("http:")) { //$NON-NLS-1$
+	  	if (css!=null && !isHTTP(css)) { //$NON-NLS-1$
 	  		res = getResourceZipURLsOK(XML.getResolvedPath(css, htmlBasePath));
 	  		if (res!=null) {
 	  			String cssName = XML.getName(css);
@@ -1215,6 +1216,7 @@ public class ResourceLoader {
     		htZipContents.put(url.toString(), fileNames);
     try {
     	OSPLog.finest("zip url: "+url.toExternalForm()); //$NON-NLS-1$
+    	// Scan URL zip stream for files. 
       BufferedInputStream bufIn = new BufferedInputStream(url.openStream());
       ZipInputStream input = new ZipInputStream(bufIn);
       ZipEntry zipEntry=null;
@@ -1522,8 +1524,7 @@ public class ResourceLoader {
     // BH because nonURIPath can return //./xxx
     
 		if (!path.equals("")  //$NON-NLS-1$
-				&& !path.startsWith("http:")  //$NON-NLS-1$
-				&& !path.startsWith("https:")  //$NON-NLS-1$
+				&& !isHTTP(path)
 				&& !path.startsWith("jar:")  //$NON-NLS-1$
 				&& !path.startsWith("file:/")) { //$NON-NLS-1$
 			String protocol = OSPRuntime.isWindows()? "file:/": "file://"; //$NON-NLS-1$ //$NON-NLS-2$
@@ -1546,7 +1547,7 @@ public class ResourceLoader {
     if((OSPRuntime.applet==null)||(name==null)||name.trim().equals("")) { //$NON-NLS-1$
       return null;
     }
-    if(name.startsWith("http:")||name.startsWith("https:")){ //$NON-NLS-1$  //$NON-NLS-2$ // open a direct connection for http and https resources
+    if(isHTTP(name)){ //$NON-NLS-1$  //$NON-NLS-2$ // open a direct connection for http and https resources
     	try {
 			return new java.net.URL(name);
 		} catch (MalformedURLException e) {
@@ -1712,7 +1713,6 @@ public class ResourceLoader {
 			fileName = path.substring(i + 5);
 		}
 		
-		System.out.println("resource loader for " + path + " \n base=" + base);
 		if (base == null) {
 			if (path.endsWith(".zip") //$NON-NLS-1$
 					|| path.endsWith(".trz") //$NON-NLS-1$
@@ -1729,7 +1729,7 @@ public class ResourceLoader {
 		// if loading from a web file, download to OSP cache
 		boolean isZip = base != null && (base.endsWith(".zip") || base.endsWith(".jar") || base.endsWith(".trz")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		boolean deleteOnExit = ospCache == null;
-		if (isZip && (path.startsWith("http:") ||path.startsWith("https:"))) { //$NON-NLS-1$
+		if (isZip && isHTTP(path)) { //$NON-NLS-1$
 			String zipFileName = XML.getName(base);
 			File zipFile = downloadToOSPCache(base, zipFileName, false);
 			if (zipFile != null) {
@@ -2261,7 +2261,7 @@ public class ResourceLoader {
 	        inputStream=OSPRuntime.applet.getClass().getResourceAsStream(filename);
 	      }
 	      if(inputStream==null) {  // use resource loader when not an applet
-	        if(filename.indexOf("http:")>-1) {  //$NON-NLS-1$
+	        if(isHTTP(filename)) {  //$NON-NLS-1$
 	          int n = filename.toLowerCase().indexOf(".zip!/"); //$NON-NLS-1$
 	          if (n==-1) n = filename.toLowerCase().indexOf(".jar!/");     //$NON-NLS-1$
 	          if (n==-1) n = filename.toLowerCase().indexOf(".trz!/");     //$NON-NLS-1$
@@ -2401,6 +2401,34 @@ public class ResourceLoader {
 	public static boolean isHTTP(String path) {
 		  return path.startsWith("http:") || path.startsWith("https:");
 	  }
+
+	public static InputStream openZipEntryStream(URL url) throws IOException {
+		// Use JarInputStream
+		 
+		// oddly, the ZIP file idea produces a second ladder_wood entry. 
+//		OSPLog.finest("RL.openZipEntry " + url);
+//		if (url.getProtocol() != "jar")
+//			url = new URL("jar", null, url.toString());
+//		return url.openStream();
+		String zipContent = url.toString();
+		BufferedInputStream bufIn = new BufferedInputStream(url.openStream());
+		ZipInputStream input = new ZipInputStream(bufIn);
+		ZipEntry zipEntry = null;
+		while ((zipEntry = input.getNextEntry()) != null) {
+			if (zipEntry.isDirectory())
+				continue;
+			String filename = zipEntry.getName();
+			if (zipContent.contains(filename)) {
+				return input;
+			}
+		}
+		return null;
+	}
+
+	public static InputStream openStream(URL url) throws IOException {
+		// TODO SwingJS
+		return url.openStream();
+	}
 
 
 }
