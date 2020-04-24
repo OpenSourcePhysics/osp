@@ -445,6 +445,8 @@ public class XMLControlElement implements XMLControl {
     }
   }
 
+  static Object sync= new Object();
+
 	/**
 	 * Reads data into this control from a named source.
 	 *
@@ -452,30 +454,32 @@ public class XMLControlElement implements XMLControl {
 	 * @return the path of the opened document or null if failed
 	 */
 	public String read(String name) {
-		OSPLog.finest("reading " + name); //$NON-NLS-1$
-		Resource res = ResourceLoader.getResource(name);
-		if (res != null) {
-			try {
-				BufferedReader in = res.openReader();
-				if (in != null) {
-					// BH just avoids the NullPointerException, particularly for prefs files
-					read(in);
-					String path = XML.getDirectoryPath(name);
-					if (!path.equals("")) { //$NON-NLS-1$
-						ResourceLoader.addSearchPath(path);
-						basepath = path;
-					} else {
-						basepath = XML.getDirectoryPath(res.getAbsolutePath());
+		synchronized (sync) {
+			OSPLog.finest("reading " + name); //$NON-NLS-1$
+			Resource res = ResourceLoader.getResource(name);
+			if (res != null) {
+				try {
+					BufferedReader in = res.openReader();
+					if (in != null) {
+						// BH just avoids the NullPointerException, particularly for prefs files
+						read(in);
+						String path = XML.getDirectoryPath(name);
+						if (!path.equals("")) { //$NON-NLS-1$
+							ResourceLoader.addSearchPath(path);
+							basepath = path;
+						} else {
+							basepath = XML.getDirectoryPath(res.getAbsolutePath());
+						}
+						File file = res.getFile();
+						canWrite = ((file != null) && file.canWrite());
+						return res.getAbsolutePath();
 					}
-					File file = res.getFile();
-					canWrite = ((file != null) && file.canWrite());
-					return res.getAbsolutePath();
+				} catch (Exception e) {
 				}
-			} catch (Exception e) {
 			}
+			OSPLog.warning("Could not open " + res);
+			readFailed = true;
 		}
-		OSPLog.warning("Could not open " + res);
-		readFailed = true;
 		return null;
 	}
 
