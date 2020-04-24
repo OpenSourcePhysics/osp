@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.zip.ZipEntry;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -228,8 +229,8 @@ public class LibraryResource implements Comparable<LibraryResource> {
 		    Runnable runner = new Runnable() {
 		      public void run() {
 	  				String zipPath = XML.getResolvedPath(target, base);
-						Set<String> files = ResourceLoader.getZipContents(zipPath);
-						for (String next: files) {
+						Map<String, ZipEntry> files = ResourceLoader.getZipContents(zipPath);
+						for (String next: files.keySet()) {
 							if (next.toUpperCase().endsWith(".TRK")) { //$NON-NLS-1$
 								setType(LibraryResource.TRACKER_TYPE);
 								break;

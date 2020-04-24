@@ -169,6 +169,8 @@ public class FontSizer {
    * @param level the level
    */
   public static void setFonts(Object obj, int level) {
+	  if (obj == null)
+		  return; // BH 2020.04.23 may be the case for missing buttons in Tracker
   	if (obj instanceof Object[]) {
   		for (Object next: ((Object[])obj)) {
   			setFonts(next, level);

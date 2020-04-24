@@ -46,6 +46,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -2627,8 +2628,8 @@ public class LibraryBrowser extends JPanel {
     		if (ext.equals(next.toLowerCase())) return true;
     	}
     	if (ext.equals("zip")) { //$NON-NLS-1$
-				Set<String> files = ResourceLoader.getZipContents(file.getAbsolutePath());
-				for (String next: files) {
+				Map<String, ZipEntry> files = ResourceLoader.getZipContents(file.getAbsolutePath());
+				for (String next: files.keySet()) {
 					if (next.toLowerCase().endsWith(".trk")) return true; //$NON-NLS-1$
 				}
     	}

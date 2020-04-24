@@ -203,8 +203,11 @@ public class ResourceLoader {
 		if (OSPRuntime.isJS) {
 			// could be file:/TEMP; could be what?
 			//System.out.println("RL " + name);
-			if (!isHTTP(name) && !name.startsWith("/") && name.indexOf(OSPRuntime.tempDir)< 0 )
+			if (!isHTTP(name) && !name.startsWith("/") 
+					&& name.indexOf(OSPRuntime.tempDir)< 0 ) {
+				if (false)//
 				name = OSPRuntime.tempDir + name;
+			}
 		} else
 		/**
 		 * not applicable -- Tracker Java applet only
@@ -1184,7 +1187,7 @@ public class ResourceLoader {
     return results;
   }
   
-  private static Map<String, Set<String>> htZipContents = new HashMap<>();
+  private static Map<String, Map<String, ZipEntry>> htZipContents = new HashMap<>();
 
   /**
    * zip contents caching can save time in complex loading. 
@@ -1194,8 +1197,8 @@ public class ResourceLoader {
 		htZipContents.clear();
 	}
 
-  private static boolean findFileInZipFile(String zipPath, String fileName) {
-	  return getZipContents(zipPath).contains(fileName);
+  private static ZipEntry findFileInZipFile(String zipPath, String fileName) {
+	  return getZipContents(zipPath).get(fileName);
   }
    /**
    * Gets the contents of a zip file.
@@ -1203,11 +1206,11 @@ public class ResourceLoader {
    * @param zipPath the path to the zip file
    * @return a set of file names in alphabetical order
    */
-  public static Set<String> getZipContents(String zipPath) {
+  public static Map<String, ZipEntry> getZipContents(String zipPath) {
   	URL url = getURLWithCachedBytes(zipPath); // BH carry over bytes if we have them already
-    Set<String> fileNames = htZipContents.get(url.toString());
+    Map<String, ZipEntry> fileNames = htZipContents.get(url.toString());
     if (fileNames == null) {
-    	fileNames = new TreeSet<String>();
+    	fileNames = new HashMap<String, ZipEntry>();
     	if (OSPRuntime.doCacheZipContents)
     		htZipContents.put(url.toString(), fileNames);
     try {
@@ -1221,7 +1224,7 @@ public class ResourceLoader {
         		|| zipEntry.getSize() == 0) // BH 2020.04.14 to be consistent with above use
         	continue;
         String fileName = zipEntry.getName();
-        fileNames.add(fileName);
+        fileNames.put(fileName, zipEntry); // Java has no use for the ZipEntry, but JavaScript can read it.
       }
       input.close();
     }
@@ -1250,45 +1253,46 @@ public class ResourceLoader {
   	return url;
 }
 
-/**
-   * Unzips a ZIP file into the given directory. ZIP file may be on a server.
-   * Can be canceled using the static setCanceled(boolean) method.
-   * Note this does not warn of possible overwrites.
-   * 
-   * @param zipPath the (url) path to the zip file
-   * @param targetDir target directory to save the extracted files
-   * @param alwaysOverwrite true to overwrite existing files, if any
-   * @return the Set of extracted files
-   */
-  public static Set<File> unzip(String zipPath, File targetDir, boolean alwaysOverwrite) {
-  	if (targetDir==null)
-			targetDir = new File(OSPRuntime.tempDir); //$NON-NLS-1$
-  	OSPLog.finer("unzipping "+zipPath+" to "+targetDir); //$NON-NLS-1$ //$NON-NLS-2$
-  	try {
-    	URL url = getURLWithCachedBytes(zipPath);    	
-      BufferedInputStream bufIn = new BufferedInputStream(url.openStream());
-      ZipInputStream input = new ZipInputStream(bufIn);
-      ZipEntry zipEntry=null;
-      Set<File> fileSet = new HashSet<File>();
-      byte[] buffer = new byte[1024];
-      setCanceled(false);
-      while ((zipEntry=input.getNextEntry()) != null) {
-        if (zipEntry.isDirectory()) continue;
-        if (isCanceled()) {
-          input.close();
-          return null;
-        }
-        String filename = zipEntry.getName();
-        File file = new File(targetDir, filename);
-        if (!alwaysOverwrite && file.exists()) {
-          fileSet.add(file);
-        	continue;
-        }
-        file.getParentFile().mkdirs();
-        int bytesRead;
-        try {
+	/**
+	 * Unzips a ZIP file into the given directory. ZIP file may be on a server. Can
+	 * be canceled using the static setCanceled(boolean) method. Note this does not
+	 * warn of possible overwrites.
+	 * 
+	 * @param zipPath         the (url) path to the zip file
+	 * @param targetDir       target directory to save the extracted files
+	 * @param alwaysOverwrite true to overwrite existing files, if any
+	 * @return the Set of extracted files
+	 */
+	public static Set<File> unzip(String zipPath, File targetDir, boolean alwaysOverwrite) {
+		if (targetDir == null)
+			targetDir = new File(OSPRuntime.tempDir); // $NON-NLS-1$
+		OSPLog.finer("unzipping " + zipPath + " to " + targetDir); //$NON-NLS-1$ //$NON-NLS-2$
+		try {
+			URL url = getURLWithCachedBytes(zipPath);
+			BufferedInputStream bufIn = new BufferedInputStream(url.openStream());
+			ZipInputStream input = new ZipInputStream(bufIn);
+			ZipEntry zipEntry = null;
+			Set<File> fileSet = new HashSet<File>();
+			byte[] buffer = new byte[1024];
+			setCanceled(false);
+			while ((zipEntry = input.getNextEntry()) != null) {
+				if (zipEntry.isDirectory())
+					continue;
+				if (isCanceled()) {
+					input.close();
+					return null;
+				}
+				String filename = zipEntry.getName();
+				File file = new File(targetDir, filename);
+				if (!alwaysOverwrite && file.exists()) {
+					fileSet.add(file);
+					continue;
+				}
+				file.getParentFile().mkdirs();
+				int bytesRead;
+				try {
 					FileOutputStream output = new FileOutputStream(file);
-					while ((bytesRead=input.read(buffer)) != -1) 
+					while ((bytesRead = input.read(buffer)) != -1)
 						output.write(buffer, 0, bytesRead);
 					output.close();
 					input.closeEntry();
@@ -1296,15 +1300,14 @@ public class ResourceLoader {
 				} catch (Exception e) {
 					continue;
 				}
-      }
-      input.close();
-      return fileSet;
-    }
-    catch (Exception ex) { 
-      ex.printStackTrace();
-      return null;
-    }    
-  }  
+			}
+			input.close();
+			return fileSet;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return null;
+		}
+	}  
   
   /**
    * Downloads a file from the web to a target File.
@@ -1580,7 +1583,7 @@ public class ResourceLoader {
    */
   static private Resource createFileResource(String path) {
       // don't create file resources when in applet mode
-    if(OSPRuntime.applet!=null) {
+    if(OSPRuntime.applet!=null || isHTTP(path)) {
       return null;
     }
     // ignore paths that refer to zip or jar files
@@ -1740,13 +1743,15 @@ public class ResourceLoader {
 		URL url = null;
 
 		if (base != null) { // car.trz
-			if (findFileInZipFile(base, fileName)) {
+			ZipEntry ze = findFileInZipFile(base, fileName);
+			if (ze != null) {
 				try {
 					url = new URL("file", null, path);  //$NON-NLS-1$
 					// file:C:/temp/car.trz!/Car in a loop with friction.trk
 					// URL constructor takes "jar" for any ZIP-based file (per Wikipedia)
 					url = new URL("jar", null, url.toExternalForm()); //$NON-NLS-1$
 					// jar:file:C:/temp/car.trz!/Car in a loop with friction.trk
+					
 				} catch (MalformedURLException e) {
 				}
 			}
@@ -1824,12 +1829,11 @@ public class ResourceLoader {
 	}
 
 	/**
-	 * Look for a file in a JAR file or base path.   n/a to JavaScript? 
-	 * 
-	 * Not implemented in JavaScript because URLClassLoader is not implemented.
+	 * Look for a file in a JAR file or base path. 
 	 * 
 	 * @param launchJarPath
 	 * @param fileName
+	 * @param ZipEntry -- JavaScript can use this to directly retrieve the byte[] data
 	 * @return found url
 	 * 
 	 * @author hansonr 
@@ -1860,62 +1864,65 @@ public class ResourceLoader {
 		}
 	}
 
-/**
-   * Creates a Resource from a class resource, typically in a jar file.
-   *
-   * @param name the resource name
-   * @param type the class providing the classloader
-   * @return the resource, if any
-   */
-  static private Resource createClassResource(String name, Class<?> type) {
-    // ignore any name that has a protocol
-    if(name.indexOf(":/")!=-1) { //$NON-NLS-1$
-      return null;
-    }
-    String originalName = name;
-    int i = name.indexOf("jar!/"); //$NON-NLS-1$
-    if(i==-1) {
-      i = name.indexOf("exe!/"); //$NON-NLS-1$
-    }
-    if(i!=-1) {
-      name = name.substring(i+5);
-    }
-    Resource res = null;
-    try { // check relative to root of jarfile containing specified class
-    	// BH now allows for retrieving cached data
-      URL url = getTypeResource(type, "/"+name); //$NON-NLS-1$
-      res = createResource(url);
-    } catch(Exception ex) {
-       //url data were not found in the j2s/ directory
-    }
-    if(res==null) {
-      try { // check relative to specified class
-        URL url = getTypeResource(type, name);
-           
-        res = createResource(url);
-      } catch(Exception ex) {
-        /** empty block */
-      }
-    }
-    // if resource is found, log and set launchJarName if not yet set
-    if(res!=null) {
-      String path = XML.forwardSlash(res.getAbsolutePath());
-      // don't return resources from Java runtime system jars
-      if((path.indexOf("/jre")>-1)&&(path.indexOf("/lib")>-1)) { //$NON-NLS-1$ //$NON-NLS-2$
-        return null;
-      }
-      // don't return resources that don't contain original name
-      if(!getNonURIPath(path).contains(originalName) && !path.contains(originalName)) {
-        return null;
-      }
-      if(name.endsWith("xset")) {                                //$NON-NLS-1$
-        xsetZipLoader = null;
-      }
-      OSPLog.finer("loaded class resource: "+path);                      //$NON-NLS-1$
-      OSPRuntime.setLaunchJarPath(path);
-    }
-    return res; // may be null
-  }
+	/**
+	 * Creates a Resource from a class resource, typically in a jar file.
+	 *
+	 * @param name the resource name
+	 * @param type the class providing the classloader
+	 * @return the resource, if any
+	 */
+	static private Resource createClassResource(String name, Class<?> type) {
+		// ignore any name that has a protocol
+		if (name.indexOf(":/") != -1) { //$NON-NLS-1$
+			return null;
+		}
+		String originalName = name;
+		int i = name.indexOf("jar!/"); //$NON-NLS-1$
+		if (i == -1) {
+			i = name.indexOf("exe!/"); //$NON-NLS-1$
+		}
+		if (i != -1) {
+			name = name.substring(i + 5);
+		}
+		Resource res = null;
+		if (!name.startsWith("/")) {
+			// /TEMP/ for example
+			try { // check relative to root of jarfile containing specified class
+					// BH now allows for retrieving cached data
+				URL url = getTypeResource(type, "/" + name); //$NON-NLS-1$
+				res = createResource(url);
+			} catch (Exception ex) {
+				// url data were not found in the j2s/ directory
+			}
+		}
+		if (res == null) {
+			try { // check relative to specified class
+				URL url = getTypeResource(type, name);
+
+				res = createResource(url);
+			} catch (Exception ex) {
+				/** empty block */
+			}
+		}
+		// if resource is found, log and set launchJarName if not yet set
+		if (res != null) {
+			String path = XML.forwardSlash(res.getAbsolutePath());
+			// don't return resources from Java runtime system jars
+			if ((path.indexOf("/jre") > -1) && (path.indexOf("/lib") > -1)) { //$NON-NLS-1$ //$NON-NLS-2$
+				return null;
+			}
+			// don't return resources that don't contain original name
+			if (!getNonURIPath(path).contains(originalName) && !path.contains(originalName)) {
+				return null;
+			}
+			if (name.endsWith("xset")) { //$NON-NLS-1$
+				xsetZipLoader = null;
+			}
+			OSPLog.finer("loaded class resource: " + path); //$NON-NLS-1$
+			OSPRuntime.setLaunchJarPath(path);
+		}
+		return res; // may be null
+	}
 
   /**
    * First check to see if we have cached bytes. 
@@ -1978,7 +1985,10 @@ public class ResourceLoader {
 	
 	private static Resource findResource(String path, Class<?> type, boolean searchFiles, boolean createOnly) {
 
-		path = path.replaceAll("/\\./", "/"); // This eliminates any embedded /./ //$NON-NLS-1$ //$NON-NLS-2$
+		if (!isHTTP(path)) {
+			// BH 2020.04.23 don't do this for https://./xxxx
+			path = path.replaceAll("/\\./", "/"); // This eliminates any embedded /./ //$NON-NLS-1$ //$NON-NLS-2$
+		}
 		if (type == null) {
 			type = Resource.class;
 		}

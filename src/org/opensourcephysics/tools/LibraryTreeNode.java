@@ -15,8 +15,10 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.zip.ZipEntry;
 
 import javax.imageio.ImageIO;
 import javax.swing.SwingWorker;
@@ -433,8 +435,8 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 				Runnable libNodeSetZipTypeRunner = new Runnable() {
 					public void run() {
 						String zipPath = getAbsoluteTarget();
-						Set<String> files = ResourceLoader.getZipContents(zipPath);
-						for (String next : files) {
+						Map<String, ZipEntry> files = ResourceLoader.getZipContents(zipPath);
+						for (String next : files.keySet()) {
 							if (next.endsWith(".trk")) { //$NON-NLS-1$
 								setType(LibraryResource.TRACKER_TYPE);
 								break;
@@ -778,7 +780,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 			} else if (ext != null && ("ZIP".equals(ext.toUpperCase()) || "TRZ".equals(ext.toUpperCase()))) { //$NON-NLS-1$ //$NON-NLS-2$
 				// ZIP files
 				// look for image file in zip with name that includes "_thumbnail"
-				for (String next : ResourceLoader.getZipContents(sourcePath)) {
+				for (String next : ResourceLoader.getZipContents(sourcePath).keySet()) {
 					if (next.indexOf("_thumbnail") > -1) { //$NON-NLS-1$
 						String s = ResourceLoader.getURIPath(sourcePath + "!/" + next); //$NON-NLS-1$
 						thumbFile = ResourceLoader.extract(s, new File(thumbPath));

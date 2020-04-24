@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 
-import javax.swing.JLabel;
+import javax.swing.JDialog;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
@@ -40,6 +40,7 @@ import org.opensourcephysics.media.core.AsyncVideoI;
 import org.opensourcephysics.media.core.DoubleArray;
 import org.opensourcephysics.media.core.ImageCoordSystem;
 import org.opensourcephysics.media.core.VideoAdapter;
+import org.opensourcephysics.media.core.VideoFrame;
 import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.media.core.VideoType;
 import org.opensourcephysics.tools.Resource;
@@ -69,10 +70,9 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 
 	private HTML5Video jsvideo;
 	
-	private JLabel videoLabel;
+	private JDialog videoDialog;
 	private String fileName;
 	private URL url;
-	private File file;
 	
 	public JSMovieVideo(String path) throws IOException {
 		Frame[] frames = Frame.getFrames();
@@ -249,7 +249,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	public void dispose() {
 		super.dispose();
 		DOMNode.dispose(jsvideo);
-		videoLabel.removeNotify();
+		videoDialog.dispose();
 		
 	}
 //______________________________  private methods _________________________
@@ -325,7 +325,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 			throw new IOException("unable to create resource for " + fileName); //$NON-NLS-1$
 		}
 		url = res.getURL();
-		file = res.getFile();
+		//file = res.getFile();
 		
 		boolean isLocal = url.getProtocol().toLowerCase().indexOf("file") > -1; //$NON-NLS-1$
 		String path = isLocal ? res.getAbsolutePath() : url.toExternalForm();
@@ -441,7 +441,8 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					return false;
 				case STATE_LOAD_VIDEO_INIT:
 					setReadyListener();
-					videoLabel = HTML5Video.createLabel(url);
+					videoDialog = HTML5Video.createDialog(null, url, 500, null);
+					videoDialog.setVisible(true);
 					helper.setState(STATE_LOAD_VIDEO_READY);
 					return true;
 				case STATE_LOAD_VIDEO_READY:

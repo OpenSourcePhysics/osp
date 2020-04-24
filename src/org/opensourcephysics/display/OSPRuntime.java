@@ -93,6 +93,9 @@ public class OSPRuntime {
 
 	public static boolean embedVideoAsObject = isJS;
 	
+
+	public static boolean unzipFiles = true;//!isJS; // for ResourceLoader
+	
 	public static final String tempDir = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$  // BH centralized
 	
 	

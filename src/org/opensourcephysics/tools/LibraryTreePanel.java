@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractListModel;
@@ -2083,9 +2084,9 @@ public class LibraryTreePanel extends JPanel {
 				if (node.getName().equals(targetName)) {
 					targetName = XML.stripExtension(targetName);
 					// look inside zip for html with same name as zip or trk
-					Set<String> files = ResourceLoader.getZipContents(targetURLPath);
+					Map<String, ZipEntry> files = ResourceLoader.getZipContents(targetURLPath);
 					String htmlInfoPath = null;
-					for (String s : files) {
+					for (String s : files.keySet()) {
 						String htmlName = XML.stripExtension(XML.getName(s));
 						if (s.toLowerCase().contains(".htm") //$NON-NLS-1$
 								&& (htmlName.equals(targetName + "_info"))) { //$NON-NLS-1$
@@ -2093,10 +2094,10 @@ public class LibraryTreePanel extends JPanel {
 						}
 					}
 					if (htmlInfoPath == null) {
-						for (String s : files) {
+						for (String s : files.keySet()) {
 							if ("trk".equals(XML.getExtension(s))) { //$NON-NLS-1$
 								String trkName = XML.stripExtension(XML.getName(s));
-								for (String ss : files) {
+								for (String ss : files.keySet()) {
 									String htmlName = XML.stripExtension(XML.getName(ss));
 									if (ss.toLowerCase().contains(".htm") //$NON-NLS-1$
 											&& (htmlName.equals(trkName + "_info"))) { //$NON-NLS-1$
