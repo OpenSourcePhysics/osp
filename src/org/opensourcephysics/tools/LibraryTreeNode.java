@@ -636,7 +636,6 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
   		String path = getMetadataSourcePath();
     	if (path!=null) {
     		Resource res = ResourceLoader.getResourceZipURLsOK(path);
-    		OSPLog.finest("!!LibraryTreeNode " + this.toString());
     		String code = res.getString();
 				if (code!=null) {
 					boolean[] isStandardType = new boolean[LibraryResource.META_TYPES.length];
@@ -784,7 +783,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 				for (String next : ResourceLoader.getZipContents(sourcePath).keySet()) {
 					if (next.indexOf("_thumbnail") > -1) { //$NON-NLS-1$
 						String s = ResourceLoader.getURIPath(sourcePath + "!/" + next); //$NON-NLS-1$
-						thumbFile = ResourceLoader.extract(s, new File(thumbPath), true);
+						thumbFile = ResourceLoader.extract(s, new File(thumbPath));
 					}
 				}
 			} else {
