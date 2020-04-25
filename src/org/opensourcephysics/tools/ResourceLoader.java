@@ -1358,7 +1358,11 @@ public class ResourceLoader {
     }
     return null;
   }
-  
+
+	public static File extractFileFromZIP(String source, File target, boolean alwaysOverwrite) {
+		return extractFileFromZIP(source, target, alwaysOverwrite, true);
+	}
+
 	/**
 	 * Extracts a file from a ZIP archive to a target file. ZIP archive may be on a
 	 * server.
@@ -2126,7 +2130,7 @@ public class ResourceLoader {
 				}
 			}
 			String originalName = resource.startsWith("./") ? modelPath + resource.substring(2) : resource; //$NON-NLS-1$
-			File result = extract(originalName, targetFile, true); // Use the ResourceLoader
+			File result = extract(originalName, targetFile, true); 
 			if (result == null)
 				return originalName;
 		}
@@ -2264,6 +2268,9 @@ public class ResourceLoader {
 //	    return null;
 //	  }
 //
+		static public File extract(String filename, File target) {
+			return extract(filename, target, true);
+		}
 
 	/**
 	 * Extracts a file using the ResourceLoader utility
