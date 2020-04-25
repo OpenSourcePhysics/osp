@@ -129,7 +129,7 @@ public class LibraryTreePanel extends JPanel {
 
 	static {
 		String imageFile = "/org/opensourcephysics/resources/tools/images/open.gif"; //$NON-NLS-1$
-		openFileIcon = new ImageIcon(LibraryTreePanel.class.getResource(imageFile));
+		openFileIcon = new ImageIcon(ResourceLoader.getImageZipResource(imageFile));
 		hyperlinkListener = new HyperlinkListener() {
 			public void hyperlinkUpdate(HyperlinkEvent e) {
 				if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {

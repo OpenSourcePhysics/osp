@@ -50,6 +50,7 @@ import javax.swing.tree.TreeSelectionModel;
 import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.ArrayInspector;
+import org.opensourcephysics.tools.ResourceLoader;
 
 /**
  * This is a split pane view of an XML tree and its contents.
@@ -204,16 +205,16 @@ public class XMLTreePanel extends JPanel {
     String imageFile = "/org/opensourcephysics/resources/controls/images/inspect.gif"; //$NON-NLS-1$
     // Don't use resource loader to improve performance.  Changed by W. Christian
     //inspectIcon = ResourceLoader.getIcon(imageFile);
-    inspectIcon = new ImageIcon(XMLTreePanel.class.getResource(imageFile));
+    inspectIcon = new ImageIcon(ResourceLoader.getImageZipResource(imageFile));
     imageFile = "/org/opensourcephysics/resources/controls/images/value.gif";         //$NON-NLS-1$
     //valueIcon = ResourceLoader.getIcon(imageFile);
-    valueIcon = new ImageIcon(XMLTreePanel.class.getResource(imageFile));
+    valueIcon = new ImageIcon(ResourceLoader.getImageZipResource(imageFile));
     imageFile = "/org/opensourcephysics/resources/controls/images/folder.gif";        //$NON-NLS-1$
     //folderIcon = ResourceLoader.getIcon(imageFile);
-    folderIcon = new ImageIcon(XMLTreePanel.class.getResource(imageFile));
+    folderIcon = new ImageIcon(ResourceLoader.getImageZipResource(imageFile));
     imageFile = "/org/opensourcephysics/resources/controls/images/inspectfolder.gif"; //$NON-NLS-1$
     //inspectFolderIcon = ResourceLoader.getIcon(imageFile);
-    inspectFolderIcon = new ImageIcon(XMLTreePanel.class.getResource(imageFile));
+    inspectFolderIcon = new ImageIcon(ResourceLoader.getImageZipResource(imageFile));
     popup = new JPopupMenu();
     JMenuItem item = new JMenuItem(ControlsRes.getString("XMLTreePanel.Popup.MenuItem.Inspect")); //$NON-NLS-1$
     popup.add(item);

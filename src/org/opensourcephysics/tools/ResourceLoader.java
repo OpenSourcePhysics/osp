@@ -574,24 +574,13 @@ public class ResourceLoader {
     if(url!=null) {
       return new ImageIcon(url);
     }
+    url = getImageZipResource(path);
+    if (url != null)
+    	return new ImageIcon(url);
     Resource res = getResource(path);
     return(res==null) ? null : res.getIcon();
   }
 
-  /**
-   * Gets an image. May return null.
-   * 
-   * @param path the path
-   * @return the image
-   */
-  public static Image getImage(String path) {
-    URL url = getAppletResourceURL(path); // added by W. Christian
-    if(url!=null) {
-      return new ImageIcon(url).getImage();
-    }
-    Resource res = getResource(path);
-    return(res==null) ? null : res.getImage();
-  }
 
   /**
    * Gets a buffered image. May return null.
@@ -1217,8 +1206,7 @@ public class ResourceLoader {
     try {
     	OSPLog.finest("zip url: "+url.toExternalForm()); //$NON-NLS-1$
     	// Scan URL zip stream for files. 
-      BufferedInputStream bufIn = new BufferedInputStream(url.openStream());
-      ZipInputStream input = new ZipInputStream(bufIn);
+      ZipInputStream input = new ZipInputStream(url.openStream());
       ZipEntry zipEntry=null;
       while ((zipEntry=input.getNextEntry())!=null) {
       	OSPLog.finest("zip entry: "+zipEntry); //$NON-NLS-1$
@@ -1291,12 +1279,16 @@ public class ResourceLoader {
 					continue;
 				}
 				file.getParentFile().mkdirs();
-				int bytesRead;
 				try {
-					FileOutputStream output = new FileOutputStream(file);
-					while ((bytesRead = input.read(buffer)) != -1)
-						output.write(buffer, 0, bytesRead);
-					output.close();
+					if (OSPRuntime.isJS) {
+						OSPRuntime.jsutil.streamToFile(input, file);
+					} else {
+						FileOutputStream output = new FileOutputStream(file);
+						int bytesRead;
+						while ((bytesRead = input.read(buffer)) != -1)
+							output.write(buffer, 0, bytesRead);
+						output.close();
+					}
 					input.closeEntry();
 					fileSet.add(file);
 				} catch (Exception e) {
@@ -1383,17 +1375,16 @@ public class ResourceLoader {
 		source = zipfile_path[0];
 		String path = zipfile_path[1];
 		try {
-			URL url = getURLWithCachedBytes(source);
-			ZipInputStream input = new ZipInputStream(url.openStream());
 			if (OSPRuntime.isJS) {
 				// Direct seek to known zip entry.
 				ZipEntry ze = findFileInZipFile(source, path);
-				if (ze == null || OSPRuntime.jsutil.seekZipEntry(input, ze) == -1)
+				if (ze == null)
 					return null;
-				OSPRuntime.jsutil.streamToFile(input, target);
+				OSPRuntime.jsutil.setFileBytes(target,  OSPRuntime.jsutil.getZipBytes(ze));
 			} else /** @j2sNative */
 			{
-
+				URL url = getURLWithCachedBytes(source);
+				ZipInputStream input = new ZipInputStream(url.openStream());
 				ZipEntry zipEntry = null;
 				byte[] buffer = new byte[1024];
 				while ((zipEntry = input.getNextEntry()) != null) {
@@ -1412,8 +1403,8 @@ public class ResourceLoader {
 					output.close();
 					input.closeEntry();
 				}
+				input.close();
 			}
-			input.close();
 			return target;
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -1604,25 +1595,30 @@ public class ResourceLoader {
   }
 
   /**
-   * Creates a Resource from a file.
+   * Creates a Resource from a file path, if it is appropriate to do so.
    *
    * @param path the file path
    * @return the resource, if any
    */
   static private Resource createFileResource(String path) {
       // don't create file resources when in applet mode
-    if(OSPRuntime.applet!=null || isHTTP(path)) {
-      return null;
-    }
-    // ignore paths that refer to zip or jar files
-    if(path.indexOf(".zip")>-1 || path.indexOf(".jar")>-1 || path.indexOf(".trz")>-1) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-      return null;
-    }
-    File file = new File(path);
+	    // ignore paths that refer to zip or jar files
+    return (OSPRuntime.applet!=null || isHTTP(path)  
+    		|| path.indexOf(".zip")>-1 || path.indexOf(".jar")>-1 || path.indexOf(".trz")>-1 //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+       ? null : createFileResource(new File(path)));
+  }
+
+  /**
+   * Creates a Resource from a file. Checks that this is appropriate are assumed to have already been done.
+   *
+   * @param path the file path
+   * @return the resource, if any
+   */
+	private static Resource createFileResource(File file) {
     try {
       if(file.exists()&&file.canRead()) {
         Resource res = new Resource(file);
-        if(path.endsWith("xset")) {                                    //$NON-NLS-1$
+        if(file.getName().endsWith("xset")) {                                    //$NON-NLS-1$
           xsetZipLoader = null;
         }
         OSPLog.finer("loaded file resource "+XML.forwardSlash(res.getAbsolutePath())); //$NON-NLS-1$
@@ -1739,7 +1735,7 @@ public class ResourceLoader {
 			base = path.substring(0, i + 3);
 			fileName = path.substring(i + 5);
 		}
-		
+
 		if (base == null) {
 			if (path.endsWith(".zip") //$NON-NLS-1$
 					|| path.endsWith(".trz") //$NON-NLS-1$
@@ -1756,7 +1752,7 @@ public class ResourceLoader {
 		// if loading from a web file, download to OSP cache
 		boolean isZip = base != null && (base.endsWith(".zip") || base.endsWith(".jar") || base.endsWith(".trz")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		boolean deleteOnExit = ospCache == null;
-		if (isZip && isHTTP(path)) { //$NON-NLS-1$
+		if (isZip && isHTTP(path)) { // $NON-NLS-1$
 			String zipFileName = XML.getName(base);
 			File zipFile = downloadToOSPCache(base, zipFileName, false);
 			if (zipFile != null) {
@@ -1768,17 +1764,18 @@ public class ResourceLoader {
 		}
 
 		URL url = null;
-
+		ZipEntry ze = null;
 		if (base != null) { // car.trz
-			ZipEntry ze = findFileInZipFile(base, fileName);
+			ze = findFileInZipFile(base, fileName);
 			if (ze != null) {
+
 				try {
-					url = new URL("file", null, path);  //$NON-NLS-1$
+					url = new URL("file", null, path); //$NON-NLS-1$
 					// file:C:/temp/car.trz!/Car in a loop with friction.trk
 					// URL constructor takes "jar" for any ZIP-based file (per Wikipedia)
 					url = new URL("jar", null, url.toExternalForm()); //$NON-NLS-1$
 					// jar:file:C:/temp/car.trz!/Car in a loop with friction.trk
-					
+
 				} catch (MalformedURLException e) {
 				}
 			}
@@ -1823,23 +1820,27 @@ public class ResourceLoader {
 
 		if (url != null) { // successfully found url
 			// extract file if extension is flagged for extraction
-			String ext = "." + XML.getExtension(url.toString()); 
+			String ext = "." + XML.getExtension(url.toString());
 			if (extractExtensions.contains(ext)) {
-					File zip = new File(base);
-					String targetPath = fileName;
-					String parent = zip.getParent();
-					// if target path is relative, resolve wrt parent folder of zip file
-					if (parent != null && !targetPath.startsWith("/") //$NON-NLS-1$
-							&& fileName.indexOf(":/") == -1) { //$NON-NLS-1$
-						targetPath = XML.getResolvedPath(fileName, parent);
-					}
-					File target = new File(targetPath);
-					if (!target.exists()) {
-						target = extract(zip, fileName, targetPath);
+				String targetPath = fileName;
+				File zip = new File(base);
+				String parent = zip.getParent();
+				// if target path is relative, resolve wrt parent folder of zip file
+				if (parent != null && !targetPath.startsWith("/") //$NON-NLS-1$
+						&& fileName.indexOf(":/") == -1) { //$NON-NLS-1$
+					targetPath = XML.getResolvedPath(fileName, parent);
+				}
+				File target = new File(targetPath);
+				if (!target.exists()) {
+					if (OSPRuntime.isJS && ze != null) {
+						OSPRuntime.jsutil.setFileBytes(target,  OSPRuntime.jsutil.getZipBytes(ze));
+					} else {
+						target = extract2(zip, fileName, target);
 						if (deleteOnExit)
 							target.deleteOnExit();
 					}
-					return createFileResource(target.getAbsolutePath());
+				}
+				return createFileResource(target);
 			}
 			try {
 				Resource res = createResource(url);
@@ -2139,26 +2140,14 @@ public class ResourceLoader {
 
 	// BH 2020.04.14 from JarFile
 
-	  private static Map<String, Map<String, ZipEntry>> jarContents = new HashMap<String, Map<String, ZipEntry>>(); // added by D Brown 2007-10-31
-
 	  /**
-	   * From ResourceLoader 
-	   * 
 	   * Extracts a given file from a compressed (ZIP, JAR or TRZ) file
 	   * @param source File The compressed file to extract the file from
 	   * @param filename String The path of the file to extract
 	   * @param destination String The full (or relative to whatever the current
 	   * user directory is) path where to save the extracted file
 	   * @return File The extracted file, null if failed
-	   */
-	  static public File extract(File source, String filename, String destination) {
-	    return extract2(source, filename, new File(destination));
-	  }
-	  
-	  /**
-	   * null return here means trouble.
-	   * 
-	   */
+	   */ 
 		static private File extract2(File source, String fileName, File target) {
 			String targetName = target.toString();
 			System.out.println("RL extracting " + fileName + " " + targetName + " from " + source);
@@ -2194,6 +2183,8 @@ public class ResourceLoader {
 	  
 // BH 2020.04.14 abandoned
 //		
+//		  private static Map<String, Map<String, ZipEntry>> jarContents = new HashMap<String, Map<String, ZipEntry>>(); // added by D Brown 2007-10-31
+//
 //	  /**
 //	   * Extracts a given file from a compressed (ZIP, JAR or TRZ) file
 //	   * Extensive changes by D Brown 2007-10-31
@@ -2459,6 +2450,49 @@ public class ResourceLoader {
 	public static InputStream openStream(URL url) throws IOException {
 		// TODO SwingJS
 		return url.openStream();
+	}
+
+	  /**
+	   * Gets an image. May return null.
+	   * 
+	   * @param path the path
+	   * @return the image
+	   */
+	  public static Image getImage(String path) {
+	    URL url = getAppletResourceURL(path); // added by W. Christian
+	    if(url!=null) {
+	      return new ImageIcon(url).getImage();
+	    }
+	    Resource res = getResource(path);
+	    return(res==null) ? null : res.getImage();
+	  }
+
+	  final static String myPath = "/org/opensourcephysics/resources/";
+	  final static String zipPath = myPath + "images.zip";
+	  
+	public static URL getImageZipResource(String imagePath) {
+		if (imagePath.startsWith("$/")) {
+			imagePath = myPath + imagePath.substring(2);
+		}
+		if (OSPRuntime.isJS) {
+			// "/org/opensourcephysics/resources/controls/images/xxxxx.jpg"
+			int pt = 0;
+			if (imagePath.indexOf(myPath) == 0 && (pt = imagePath.indexOf("/images/")) >= 0) {
+				try {
+					String fileName = imagePath.substring(myPath.length(), pt) + imagePath.substring(pt + 7);
+					ZipEntry ze = findFileInZipFile(zipPath, fileName);
+					if (ze != null) {
+						URL ret = new URL("file", null, imagePath);
+						OSPRuntime.jsutil.setURLBytes(ret, OSPRuntime.jsutil.getZipBytes(ze));
+						return ret;
+					}
+
+				} catch (IOException e) {
+					// fall back
+				}
+			}
+		}
+		return ResourceLoader.class.getResource(imagePath);
 	}
 
 

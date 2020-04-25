@@ -30,6 +30,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 import org.opensourcephysics.tools.FontSizer;
+import org.opensourcephysics.tools.ResourceLoader;
 import org.opensourcephysics.tools.ToolsRes;
 
 /**
@@ -104,7 +105,7 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
 
     });
     try {
-      URL url = OSPFrame.class.getResource(OSP_ICON_FILE);
+      URL url = ResourceLoader.getImageZipResource(OSP_ICON_FILE);
       ImageIcon icon = new ImageIcon(url);
       setIconImage(icon.getImage());
       //setIconImage(ResourceLoader.getImage(OSPRuntime.OSP_ICON_FILE));

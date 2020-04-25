@@ -17,6 +17,8 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.opensourcephysics.tools.ResourceLoader;
+
 /**
  * This is an XML tree in a scroller.
  *
@@ -138,7 +140,7 @@ public class XMLTree {
   protected void createGUI() {
     // create icons
     String imageFile = "/org/opensourcephysics/resources/controls/images/hilite.gif"; //$NON-NLS-1$
-    hiliteIcon = new ImageIcon(XMLTree.class.getResource(imageFile));
+    hiliteIcon = new ImageIcon(ResourceLoader.getImageZipResource(imageFile));
     // create root and tree
     root = new XMLTreeNode(control);
     tree = new JTree(root);

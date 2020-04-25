@@ -138,15 +138,15 @@ public class LibraryBrowser extends JPanel {
     buttonBorder = BorderFactory.createCompoundBorder(space, buttonBorder);
     menubar = new JMenuBar();
     String imageFile = "/org/opensourcephysics/resources/tools/images/expand.png";        //$NON-NLS-1$
-    expandIcon = new ResizableIcon(new ImageIcon(LibraryTreePanel.class.getResource(imageFile)));
+    expandIcon = new ResizableIcon(new ImageIcon(ResourceLoader.getImageZipResource(imageFile)));
     imageFile = "/org/opensourcephysics/resources/tools/images/contract.png";        //$NON-NLS-1$
-    contractIcon = new ResizableIcon(new ImageIcon(LibraryTreePanel.class.getResource(imageFile)));
+    contractIcon = new ResizableIcon(new ImageIcon(ResourceLoader.getImageZipResource(imageFile)));
     imageFile = "/org/opensourcephysics/resources/tools/images/expand_bold.png";        //$NON-NLS-1$
-    heavyExpandIcon = new ResizableIcon(new ImageIcon(LibraryTreePanel.class.getResource(imageFile)));
+    heavyExpandIcon = new ResizableIcon(new ImageIcon(ResourceLoader.getImageZipResource(imageFile)));
     imageFile = "/org/opensourcephysics/resources/tools/images/contract_bold.png";        //$NON-NLS-1$
-    heavyContractIcon = new ResizableIcon(new ImageIcon(LibraryTreePanel.class.getResource(imageFile)));
+    heavyContractIcon = new ResizableIcon(new ImageIcon(ResourceLoader.getImageZipResource(imageFile)));
     imageFile = "/org/opensourcephysics/resources/tools/images/refresh.gif";        //$NON-NLS-1$
-    refreshIcon = new ResizableIcon(new ImageIcon(LibraryTreePanel.class.getResource(imageFile)));
+    refreshIcon = new ResizableIcon(new ImageIcon(ResourceLoader.getImageZipResource(imageFile)));
 	}
 	
 	// instance fields
@@ -273,7 +273,7 @@ public class LibraryBrowser extends JPanel {
 				}
 			});
 			try {
-				java.net.URL url = LibraryBrowser.class.getResource(OSPRuntime.OSP_ICON_FILE);
+				java.net.URL url = ResourceLoader.getImageZipResource(OSPRuntime.OSP_ICON_FILE);
 				ImageIcon icon = new ImageIcon(url);
 				frame.setIconImage(icon.getImage());
 			} catch (Exception ex) {
@@ -2272,7 +2272,7 @@ public class LibraryBrowser extends JPanel {
    */
   protected String getAboutLibraryBrowserText() {
   	
-    String path = "org/opensourcephysics/resources/tools/images/compadre_banner.jpg";  //$NON-NLS-1$
+    String path = "/org/opensourcephysics/resources/tools/images/compadre_banner.jpg";  //$NON-NLS-1$
     Resource res = ResourceLoader.getResource(path);
     String imageCode = "<p align=\"center\"><img src=\""+res.getURL()+"\"></p>"; //$NON-NLS-1$ //$NON-NLS-2$
   	String code = imageCode+
