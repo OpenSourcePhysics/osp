@@ -560,7 +560,7 @@ public class JarTool implements Tool, Runnable {
           if (n==-1) n = filename.toLowerCase().indexOf(".jar!/");     //$NON-NLS-1$
           if (n==-1) n = filename.toLowerCase().indexOf(".trz!/");     //$NON-NLS-1$
           if (n>-1) {
-          	File extracted = ResourceLoader.extractFileFromZIP(filename, target, false);
+          	File extracted = ResourceLoader.extractFileFromZIP(filename, target, false, true);
           	if (extracted!=null) return extracted;
           }        	
         }

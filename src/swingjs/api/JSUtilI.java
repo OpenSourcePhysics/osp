@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import swingjs.api.js.HTML5Applet;
 
@@ -209,14 +211,25 @@ public interface JSUtilI {
 	/**
 	 * Attach cached bytes to a file-like object, including URL,
 	 * or anything having a 秘bytes field (File, URI, Path)
-	 * from J2S._javaFileCache.
+	 * from J2S._javaFileCache. That is, allow two such objects
+	 * to share the same underlying byte[ ] array.
 	 * 
 	 * 
 	 * @param URLorURIorFile
-	 * @return
+	 * @return byte[] or null
 	 */
 	byte[] addJSCachedBytes(Object URLorURIorFile);
 
 	void displayURL(String url, String target);
 
+
+	/**
+	 * Seek an open ZipInputStream to the supplied ZipEntry, if possible.
+	 * 
+	 * @param zis the ZipInputStream
+	 * @param ze  the ZipEntry
+	 * @return the length of this entry, or -1 if, for whatever reason, this was not possible
+	 */
+	long seekZipEntry(ZipInputStream zis, ZipEntry ze);
 }
+ 

@@ -1359,55 +1359,78 @@ public class ResourceLoader {
     return null;
   }
   
-  /**
-   * Extracts a file from a ZIP archive to a target file. ZIP archive may be on a server.
-   * 
-   * @param source the path of the file to be extracted (eg "http:/www.server/folder/images.zip!/image1.png")
-   * @param target target file to save
-   * @param alwaysOverwrite true to overwrite existing files, if any
-   * @return the extracted file
-   */
-  public static File extractFileFromZIP(String source, File target, boolean alwaysOverwrite) {
-    if (!alwaysOverwrite && target.exists())
-    	return target;
-    String lcSource = XML.forwardSlash(source).toLowerCase();
-    int n = lcSource.indexOf(".zip!/"); //$NON-NLS-1$
-    if (n==-1) n = lcSource.indexOf(".jar!/");     //$NON-NLS-1$
-    if (n==-1) n = lcSource.indexOf(".trz!/");     //$NON-NLS-1$
-    if (n==-1) return null;
-    String sourceName = source.substring(n+6);
-    source = source.substring(0, n+4);
-    
-  	try {
-    	URL url = getURLWithCachedBytes(source);
-      BufferedInputStream bufIn = new BufferedInputStream(url.openStream());
-      ZipInputStream input = new ZipInputStream(bufIn);
-      ZipEntry zipEntry=null;
-      byte[] buffer = new byte[1024];
-      while ((zipEntry=input.getNextEntry()) != null) {
-        if (zipEntry.isDirectory()) continue;
-        String filename = zipEntry.getName();
-        if (!sourceName.contains(filename)) continue;
-        target.getParentFile().mkdirs();
-        int bytesRead;
-        // BH note - this is where files are written to /TEMP/
-        // note that they are NOT in their fully !/ escaped forms.
-        FileOutputStream output = new FileOutputStream(target);
-        while ((bytesRead=input.read(buffer)) != -1) 
-        	output.write(buffer, 0, bytesRead);
-        output.close();
-        input.closeEntry();
-      }
-      input.close();
-    }
-    catch (Exception ex) { 
-      ex.printStackTrace();
-      return null;
-    }
-  	return target;
-  }
+	/**
+	 * Extracts a file from a ZIP archive to a target file. ZIP archive may be on a
+	 * server.
+	 * 
+	 * @param source          the path of the file to be extracted (eg
+	 *                        "http:/www.server/folder/images.zip!/image1.png")
+	 * @param target          target file to save
+	 * @param alwaysOverwrite true to overwrite existing files, if any
+	 * @return the extracted file
+	 */
+	public static File extractFileFromZIP(String source, File target, boolean alwaysOverwrite,
+			boolean forceFileCreation) {
+		if (!alwaysOverwrite && target.exists())
+			return target;
+		String[] zipfile_path = getJarURLParts(source);
+		if (zipfile_path == null)
+			return null;
+		source = zipfile_path[0];
+		String path = zipfile_path[1];
+		try {
+			URL url = getURLWithCachedBytes(source);
+			ZipInputStream input = new ZipInputStream(url.openStream());
+			if (OSPRuntime.isJS) {
+				// Direct seek to known zip entry.
+				ZipEntry ze = findFileInZipFile(source, path);
+				if (ze == null || OSPRuntime.jsutil.seekZipEntry(input, ze) == -1)
+					return null;
+				OSPRuntime.jsutil.streamToFile(input, target);
+			} else /** @j2sNative */
+			{
+
+				ZipEntry zipEntry = null;
+				byte[] buffer = new byte[1024];
+				while ((zipEntry = input.getNextEntry()) != null) {
+					if (zipEntry.isDirectory())
+						continue;
+					String filename = zipEntry.getName();
+					if (!path.contains(filename))
+						continue;
+					target.getParentFile().mkdirs();
+					int bytesRead;
+					// BH note - this is where files are written to /TEMP/
+					// note that they are NOT in their fully !/ escaped forms.
+					FileOutputStream output = new FileOutputStream(target);
+					while ((bytesRead = input.read(buffer)) != -1)
+						output.write(buffer, 0, bytesRead);
+					output.close();
+					input.closeEntry();
+				}
+			}
+			input.close();
+			return target;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return null;
+		}
+	}
   
   /**
+   * Divide [jarfile]!/[path] into String[] {jarfile,path}
+   * @param source
+   * @return
+   */
+	private static String[] getJarURLParts(String source) {
+		String lcSource = XML.forwardSlash(source).toLowerCase();
+		int n = lcSource.indexOf(".zip!/"); //$NON-NLS-1$
+		return (n == -1 && (n = lcSource.indexOf(".jar!/")) //$NON-NLS-1$
+		== -1 && (n = lcSource.indexOf(".trz!/")) //$NON-NLS-1$
+		== -1 ? null : new String[] { source.substring(0, n + 4), source.substring(n + 6) });
+	}
+
+/**
    * Return true if there is any internet signal at all.
    * The exact URL is negotiable, but it must be CORS allowed.
    * 
@@ -2103,7 +2126,7 @@ public class ResourceLoader {
 				}
 			}
 			String originalName = resource.startsWith("./") ? modelPath + resource.substring(2) : resource; //$NON-NLS-1$
-			File result = extract(originalName, targetFile); // Use the ResourceLoader
+			File result = extract(originalName, targetFile, true); // Use the ResourceLoader
 			if (result == null)
 				return originalName;
 		}
@@ -2242,59 +2265,62 @@ public class ResourceLoader {
 //	  }
 //
 
-	  /**
-	   * Extracts a file using the ResourceLoader utility
-	   * @param filename String The path of the file to extract
-	   * @param target File The target file for the extracted file
-	   * @return File The extracted file, null if failed
-	   */
-	  static public File extract(String filename, File target) {
-		//System.out.println("Extract filename="+filename); //$NON-NLS-1$
-	    if((filename==null)||(filename.trim().length()<=0)||(target==null)) {
-	      return null;
-	    }
-	    try {
-	      InputStream inputStream=null;
-	      if(OSPRuntime.applet!=null) {// added by Wolfgang Christian
-	        //URL url=OSPRuntime.applet.getClass().getResource(filename);
-	        //inputStream=url.openStream();
-	        inputStream=OSPRuntime.applet.getClass().getResourceAsStream(filename);
-	      }
-	      if(inputStream==null) {  // use resource loader when not an applet
-	        if(isHTTP(filename)) {  //$NON-NLS-1$
-	          int n = filename.toLowerCase().indexOf(".zip!/"); //$NON-NLS-1$
-	          if (n==-1) n = filename.toLowerCase().indexOf(".jar!/");     //$NON-NLS-1$
-	          if (n==-1) n = filename.toLowerCase().indexOf(".trz!/");     //$NON-NLS-1$
-	          if (n>-1) {
-	          	File extracted = extractFileFromZIP(filename, target, false);
-	          	if (extracted!=null) return extracted;
-	          }        	
-	        }
-	        else {
-	           Resource is = getResource(filename, false);
-	          inputStream = (is == null ? null : is.openInputStream());
-	        }
-	      }
-	      if(inputStream==null) {
-	        return null;
-	      }
-	      BufferedInputStream input = new BufferedInputStream(inputStream);
-	      target.getParentFile().mkdirs();
-	      int bytesRead;
-	      byte[] buffer = new byte[1024];
-	      FileOutputStream output = new FileOutputStream(target);
-	      while((bytesRead = input.read(buffer))!=-1) {
-	        output.write(buffer, 0, bytesRead);
-	      }
-	      output.close();
-	      input.close();
-	      return target;
-	    } catch(Exception exc) {
-	      System.err.println("JarTool extract resource error.  Filename="+filename); //$NON-NLS-1$
-	      exc.printStackTrace();
-	      return null;
-	    }
-	  }
+	/**
+	 * Extracts a file using the ResourceLoader utility
+	 * 
+	 * @param filename String The path of the file to extract
+	 * @param target   File The target file for the extracted file
+	 * @return File The extracted file, null if failed
+	 */
+	static public File extract(String filename, File target, boolean forceFileCreation) {
+		// System.out.println("Extract filename="+filename); //$NON-NLS-1$
+		if ((filename == null) || (filename.trim().length() <= 0) || (target == null)) {
+			return null;
+		}
+		try {
+			InputStream inputStream = null;
+			if (OSPRuntime.applet != null) {// added by Wolfgang Christian
+				// URL url=OSPRuntime.applet.getClass().getResource(filename);
+				// inputStream=url.openStream();
+				inputStream = OSPRuntime.applet.getClass().getResourceAsStream(filename);
+			}
+			if (inputStream == null) { // use resource loader when not an applet
+				if (isHTTP(filename)) { // $NON-NLS-1$
+					int n = filename.toLowerCase().indexOf(".zip!/"); //$NON-NLS-1$
+					if (n == -1)
+						n = filename.toLowerCase().indexOf(".jar!/"); //$NON-NLS-1$
+					if (n == -1)
+						n = filename.toLowerCase().indexOf(".trz!/"); //$NON-NLS-1$
+					if (n > -1) {
+						File extracted = extractFileFromZIP(filename, target, false, forceFileCreation);
+						if (extracted != null)
+							return extracted;
+					}
+				} else {
+					Resource is = getResource(filename, false);
+					inputStream = (is == null ? null : is.openInputStream());
+				}
+			}
+			if (inputStream == null) {
+				return null;
+			}
+			BufferedInputStream input = new BufferedInputStream(inputStream);
+			target.getParentFile().mkdirs();
+			int bytesRead;
+			byte[] buffer = new byte[1024];
+			FileOutputStream output = new FileOutputStream(target);
+			while ((bytesRead = input.read(buffer)) != -1) {
+				output.write(buffer, 0, bytesRead);
+			}
+			output.close();
+			input.close();
+			return target;
+		} catch (Exception exc) {
+			System.err.println("JarTool extract resource error.  Filename=" + filename); //$NON-NLS-1$
+			exc.printStackTrace();
+			return null;
+		}
+	}
 
 	  // -----------------------------------
 	  //        Private methods
@@ -2403,26 +2429,24 @@ public class ResourceLoader {
 	  }
 
 	public static InputStream openZipEntryStream(URL url) throws IOException {
-		// Use JarInputStream
-		 
-		// oddly, the ZIP file idea produces a second ladder_wood entry. 
-//		OSPLog.finest("RL.openZipEntry " + url);
-//		if (url.getProtocol() != "jar")
-//			url = new URL("jar", null, url.toString());
-//		return url.openStream();
-		String zipContent = url.toString();
-		BufferedInputStream bufIn = new BufferedInputStream(url.openStream());
-		ZipInputStream input = new ZipInputStream(bufIn);
-		ZipEntry zipEntry = null;
-		while ((zipEntry = input.getNextEntry()) != null) {
-			if (zipEntry.isDirectory())
-				continue;
-			String filename = zipEntry.getName();
-			if (zipContent.contains(filename)) {
-				return input;
-			}
-		}
-		return null;
+		// BH: Use JarInputStream, as it is more reliable and oh so easier.
+		OSPLog.finest("RL.openZipEntry " + url);
+		if (url.getProtocol() != "jar")
+			url = new URL("jar", null, url.toString());
+		return url.openStream();
+//		String zipContent = url.toString();
+//		BufferedInputStream bufIn = new BufferedInputStream(url.openStream());
+//		ZipInputStream input = new ZipInputStream(bufIn);
+//		ZipEntry zipEntry = null;
+//		while ((zipEntry = input.getNextEntry()) != null) {
+//			if (zipEntry.isDirectory())
+//				continue;
+//			String filename = zipEntry.getName();
+//			if (zipContent.contains(filename)) {
+//				return input;
+//			}
+//		}
+//		return null;
 	}
 
 	public static InputStream openStream(URL url) throws IOException {

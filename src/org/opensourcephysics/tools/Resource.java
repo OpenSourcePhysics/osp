@@ -201,18 +201,16 @@ public class Resource {
     return openReader(defaultCharset);
   }
 
-  /**
-   * Opens a BufferedReader for a specified character set.
-   * @param charset the character set
-   * @return the reader
-   */
-  public BufferedReader openReader(java.nio.charset.Charset charset) {
-    InputStream stream = openInputStream();
-    if(stream==null) {
-      return null;
-    }
-    return new BufferedReader(new InputStreamReader(stream, charset));
-  }
+	/**
+	 * Opens a BufferedReader for a specified character set.
+	 * 
+	 * @param charset the character set
+	 * @return the reader
+	 */
+	public BufferedReader openReader(java.nio.charset.Charset charset) {
+		InputStream stream = openInputStream();
+		return (stream == null ? null : new BufferedReader(new InputStreamReader(stream, charset)));
+	}
 
   /**
    * Gets an Icon.
@@ -283,7 +281,7 @@ public class Resource {
     if(string==null) {
       StringBuffer buffer = new StringBuffer();
       try {
-        BufferedReader in = new BufferedReader(openReader());
+        BufferedReader in = openReader();
         String line = in.readLine();
         while(line!=null) {
           buffer.append(line+XML.NEW_LINE);
