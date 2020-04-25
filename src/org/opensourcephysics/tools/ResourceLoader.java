@@ -887,7 +887,7 @@ public class ResourceLoader {
 		if (fileName == null)
 			return null;
 		File target = getOSPCacheFile(urlPath, fileName);
-		File file = ResourceLoader.download(urlPath, target, alwaysOverwrite);
+		File file = download(urlPath, target, alwaysOverwrite);
 		if (file == null && webConnected) {
 			webConnected = isWebConnected(); // $NON-NLS-1$
 			if (!webConnected) {
