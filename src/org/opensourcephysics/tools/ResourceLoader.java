@@ -1414,7 +1414,7 @@ public class ResourceLoader {
   
   /**
    * Divide [jarfile]!/[path] into String[] {jarfile,path}
-   * @param source
+   * @param source must be zip, trz, or jar
    * @return
    */
 	private static String[] getJarURLParts(String source) {
@@ -2468,32 +2468,37 @@ public class ResourceLoader {
 	  }
 
 	  final static String myPath = "/org/opensourcephysics/resources/";
-	  final static String zipPath = myPath + "images.zip";
+	  final static String imagezipPath = myPath + "images.zip";
 	  
 	public static URL getImageZipResource(String imagePath) {
-		if (imagePath.startsWith("$/")) {
-			imagePath = myPath + imagePath.substring(2);
-		}
+		
 		if (OSPRuntime.isJS) {
-			// "/org/opensourcephysics/resources/controls/images/xxxxx.jpg"
-			int pt = 0;
-			if (imagePath.indexOf(myPath) == 0 && (pt = imagePath.indexOf("/images/")) >= 0) {
-				try {
+			String[] parts = null;
+			if (imagePath.indexOf("!/") < 0) {
+				// "/org/opensourcephysics/resources/controls/images/xxxxx.jpg"
+				int pt = 0;
+				if (imagePath.indexOf(myPath) == 0 && (pt = imagePath.indexOf("/images/")) >= 0) {
 					String fileName = imagePath.substring(myPath.length(), pt) + imagePath.substring(pt + 7);
-					ZipEntry ze = findFileInZipFile(zipPath, fileName);
-					if (ze != null) {
-						URL ret = new URL("file", null, imagePath);
-						OSPRuntime.jsutil.setURLBytes(ret, OSPRuntime.jsutil.getZipBytes(ze));
-						return ret;
-					}
-
-				} catch (IOException e) {
-					// fall back
+				    parts = new String[] {imagezipPath, fileName};
 				}
+			} else {
+				parts = getJarURLParts(imagePath);				
+			}
+			try {
+				ZipEntry ze;
+				if (parts != null && (ze = findFileInZipFile(parts[0], parts[1])) != null) {
+					URL ret = new URL("file", null, imagePath);
+					OSPRuntime.jsutil.setURLBytes(ret, OSPRuntime.jsutil.getZipBytes(ze));
+					if (ret != null)
+						return ret;			
+				}
+			} catch (IOException e) {
+				// fall back
 			}
 		}
 		return ResourceLoader.class.getResource(imagePath);
 	}
+
 
 
 }
