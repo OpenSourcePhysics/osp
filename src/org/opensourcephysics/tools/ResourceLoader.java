@@ -14,6 +14,7 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -1187,8 +1188,21 @@ public class ResourceLoader {
 		htZipContents.clear();
 	}
 
-  private static ZipEntry findFileInZipFile(String zipPath, String fileName) {
-	  return getZipContents(zipPath).get(fileName);
+	/**
+	 * Retrieve the ZipEntry for a file in a given zip file.
+	 * 
+	 * Note that in JavaScript only, the ZipEntry returned contains a reference to
+	 * the underlying ByteArrayInputStream ultimately backing this zip file. This
+	 * allows us to retrieve the file data directly from the ZipEntry using
+	 * jsutil.getZipBytes(zipEntry).
+	 * 
+	 * 
+	 * @param zipFile
+	 * @param fileName
+	 * @return the ZipEntry for this file, possibly cached.
+	 */
+  public static ZipEntry findZipEntry(String zipFile, String fileName) {
+	  return getZipContents(zipFile).get(fileName);
   }
    /**
    * Gets the contents of a zip file.
@@ -1369,60 +1383,113 @@ public class ResourceLoader {
 			boolean forceFileCreation) {
 		if (!alwaysOverwrite && target.exists())
 			return target;
-		String[] zipfile_path = getJarURLParts(source);
-		if (zipfile_path == null)
-			return null;
-		source = zipfile_path[0];
-		String path = zipfile_path[1];
 		try {
-			if (OSPRuntime.isJS) {
-				// Direct seek to known zip entry.
-				ZipEntry ze = findFileInZipFile(source, path);
-				if (ze == null)
-					return null;
-				OSPRuntime.jsutil.setFileBytes(target,  OSPRuntime.jsutil.getZipBytes(ze));
-			} else /** @j2sNative */
-			{
-				URL url = getURLWithCachedBytes(source);
-				ZipInputStream input = new ZipInputStream(url.openStream());
-				ZipEntry zipEntry = null;
-				byte[] buffer = new byte[1024];
-				while ((zipEntry = input.getNextEntry()) != null) {
-					if (zipEntry.isDirectory())
-						continue;
-					String filename = zipEntry.getName();
-					if (!path.contains(filename))
-						continue;
-					target.getParentFile().mkdirs();
-					int bytesRead;
-					// BH note - this is where files are written to /TEMP/
-					// note that they are NOT in their fully !/ escaped forms.
-					FileOutputStream output = new FileOutputStream(target);
-					while ((bytesRead = input.read(buffer)) != -1)
-						output.write(buffer, 0, bytesRead);
-					output.close();
-					input.closeEntry();
-				}
-				input.close();
-			}
+			getZipEntryBytes(source, target);
 			return target;
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			return null;
 		}
 	}
-  
-  /**
-   * Divide [jarfile]!/[path] into String[] {jarfile,path}
-   * @param source must be zip, trz, or jar
-   * @return
-   */
-	private static String[] getJarURLParts(String source) {
-		String lcSource = XML.forwardSlash(source).toLowerCase();
-		int n = lcSource.indexOf(".zip!/"); //$NON-NLS-1$
-		return (n == -1 && (n = lcSource.indexOf(".jar!/")) //$NON-NLS-1$
-		== -1 && (n = lcSource.indexOf(".trz!/")) //$NON-NLS-1$
-		== -1 ? null : new String[] { source.substring(0, n + 4), source.substring(n + 6) });
+
+	/**
+	 * A general osp method that can be used to pull bytes or create a File from a
+	 * zip file, efficiently caching a map of ZipEntry data in JavaScript that can
+	 * directly seek and extract bytes from that data.
+	 * 
+	 * The ZipEntry is cached automatically.
+	 * 
+	 * 
+	 * @param jarSource [zipFile]!/[entryPath] in jar-protocol URL format.
+	 * @param target    the File object to used, or null if only byte[] return is
+	 *                  desired
+	 * @return In JavaScript, all bytes are always returned; in Java, all bytes are
+	 *         returned only when target is null -- otherwise, only one buffer's
+	 *         worth of bytes are returned. In either case, a null byte[] return
+	 *         means something went wrong, as of course also does IOException.
+	 * 
+	 * @throws IOException
+	 */
+	public static byte[] getZipEntryBytes(String jarSource, File target) throws IOException {
+		String[] parts = getJarURLParts(jarSource);
+		return (parts == null ? null : getZipEntryBytes(parts[0], parts[1], target));
+	}
+
+	/**
+	 * A general osp method that can be used to pull bytes or create a File from a
+	 * zip file, efficiently caching a map of ZipEntry data in JavaScript that can
+	 * directly seek and extract bytes from that data.
+	 * 
+	 * The ZipEntry is cached automatically. 
+	 * 
+	 * 
+	 * @param zipFile
+	 * @param entryPath
+	 * @param target      the File object to used, or null if only byte[] return is
+	 *                    desired
+	 * @return In JavaScript, all bytes are always returned; in Java, all bytes are
+	 *         returned only when target is null -- otherwise, only one buffer's
+	 *         worth of bytes are returned. In either case, a null byte[] return
+	 *         means something went wrong, as of course also does IOException.
+	 * 
+	 * @throws IOException
+	 */
+	public static byte[] getZipEntryBytes(String zipFile, String entryPath, File target) throws IOException {
+		byte[] bytes = null;
+		if (OSPRuntime.isJS) {
+			// Direct seek to known zip entry.
+			ZipEntry ze = findZipEntry(zipFile, entryPath);
+			if (ze == null)
+				return null;
+			bytes = OSPRuntime.jsutil.getZipBytes(ze);
+			if (bytes != null && target != null) {
+				// Note that this will NOT download to the user, as we are not 
+				// creating a FileOutputStream.
+				OSPRuntime.jsutil.setFileBytes(target, bytes);
+			}
+		} else /** @j2sIgnore */
+		{
+			// Java Only -- none of this is necessary in SwingJS, since we can 
+			// directly access the ZipEntry data. 
+			URL url = getURLWithCachedBytes(zipFile);
+			ZipInputStream input = new ZipInputStream(url.openStream());
+			ZipEntry zipEntry = null;
+			while ((zipEntry = input.getNextEntry()) != null) {
+				if (!zipEntry.isDirectory() && entryPath.contains(zipEntry.getName()))
+					break;
+			}
+			if (zipEntry != null) {
+				if (target != null)
+					target.getParentFile().mkdirs();
+				bytes = new byte[1024];
+				int bytesRead;
+				OutputStream output = (target == null ? new ByteArrayOutputStream() : new FileOutputStream(target));
+				while ((bytesRead = input.read(bytes)) != -1)
+					output.write(bytes, 0, bytesRead);
+				output.close();
+				input.closeEntry();
+				if (target == null) {
+					bytes = ((ByteArrayOutputStream) output).toByteArray();
+				}
+			}
+			input.close();
+		}
+		if (bytes == null)
+			throw new IOException("No bytes were found for " + zipFile + "!/" + entryPath);
+		return bytes;
+	}
+
+	/**
+	 * Divide [jarfile]!/[path] into String[] {jarfile,path}
+	 * 
+	 * @return null if "!/" is not found, { jarfile, null } if path would be "",
+	 *         and { jarfile, path } otherwise.
+	 */
+	public static String[] getJarURLParts(String source) {
+		int n = source.indexOf("!/");
+		return (n < 0 ? null
+				: n == source.length() - 2 ? new String[] { source.substring(0, n), null }
+						: new String[] { source.substring(0, n), source.substring(n + 2) });
 	}
 
 /**
@@ -1766,7 +1833,7 @@ public class ResourceLoader {
 		URL url = null;
 		ZipEntry ze = null;
 		if (base != null) { // car.trz
-			ze = findFileInZipFile(base, fileName);
+			ze = findZipEntry(base, fileName);
 			if (ze != null) {
 
 				try {
@@ -2486,7 +2553,7 @@ public class ResourceLoader {
 			}
 			try {
 				ZipEntry ze;
-				if (parts != null && (ze = findFileInZipFile(parts[0], parts[1])) != null) {
+				if (parts != null && (ze = findZipEntry(parts[0], parts[1])) != null) {
 					URL ret = new URL("file", null, imagePath);
 					OSPRuntime.jsutil.setURLBytes(ret, OSPRuntime.jsutil.getZipBytes(ze));
 					if (ret != null)
@@ -2498,9 +2565,6 @@ public class ResourceLoader {
 		}
 		return ResourceLoader.class.getResource(imagePath);
 	}
-
-
-
 }
 
 
