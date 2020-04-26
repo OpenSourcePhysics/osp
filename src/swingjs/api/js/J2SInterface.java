@@ -33,9 +33,9 @@ public interface J2SInterface {
 	 */
 	String getDefaultLanguage(boolean isAll);
 
-	Object getFileData(String fileName, Object fSuccess, boolean doProcess, boolean isBinary);
+	Object getFileData(String fileName, Object fWhenDone, boolean doProcess, boolean isBinary);
 
-	void getFileFromDialog(Object fDone, String type);
+	void getFileFromDialog(Object fWhenDone, String type);
 
 	Object getJavaResource(String resourceName, boolean isJavaPath);
 	
