@@ -395,14 +395,12 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		private Object[] readyListener;
 		private double duration;
 		private int thisFrame = 0;
-		private String path;
 		
 		State() {
 			helper = new StateHelper(this);
 		}
 
 		public void load(String path) {
-			this.path = path;
 			helper.next(STATE_LOAD_VIDEO_INIT);
 		}
 
@@ -451,6 +449,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 						public Void apply(HTML5Video video) {
 							jsvideo = video;
 							videoDialog.setVisible(true);
+							OSPLog.finer("JSMovieVideo " + HTML5Video.getSize(jsvideo) + " duration:" + HTML5Video.getDuration(jsvideo));
 							helper.next(STATE_LOAD_VIDEO_READY);
 							return null;
 						}
