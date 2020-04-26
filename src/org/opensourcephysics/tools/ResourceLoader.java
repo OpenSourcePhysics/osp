@@ -1217,38 +1217,39 @@ public class ResourceLoader {
 		}
 		return null;
 	}
-   /**
-   * Gets the contents of a zip file.
-   * 
-   * @param zipPath the path to the zip file
-   * @return a set of file names in alphabetical order
-   */
-  public static Map<String, ZipEntry> getZipContents(String zipPath) {
-  	URL url = getURLWithCachedBytes(zipPath); // BH carry over bytes if we have them already
-    Map<String, ZipEntry> fileNames = htZipContents.get(url.toString());
-    if (fileNames == null) {
-    	fileNames = new HashMap<String, ZipEntry>();
-    	if (OSPRuntime.doCacheZipContents)
-    		htZipContents.put(url.toString(), fileNames);
-    try {
-    	OSPLog.finest("zip url: "+url.toExternalForm()); //$NON-NLS-1$
-    	// Scan URL zip stream for files. 
-      ZipInputStream input = new ZipInputStream(url.openStream());
-      ZipEntry zipEntry=null;
-      while ((zipEntry=input.getNextEntry())!=null) {
-      	OSPLog.finest("zip entry: "+zipEntry); //$NON-NLS-1$
-        if (zipEntry.isDirectory() 
-        		|| zipEntry.getSize() == 0) // BH 2020.04.14 to be consistent with above use
-        	continue;
-        String fileName = zipEntry.getName();
-        fileNames.put(fileName, zipEntry); // Java has no use for the ZipEntry, but JavaScript can read it.
-      }  
-      input.close();
-    }
-    catch (Exception ex) {}    
-   }
-    return fileNames;
-  }
+
+	/**
+	 * Gets the contents of a zip file.
+	 * 
+	 * @param zipPath the path to the zip file
+	 * @return a set of file names in alphabetical order
+	 */
+	public static Map<String, ZipEntry> getZipContents(String zipPath) {
+		URL url = getURLWithCachedBytes(zipPath); // BH carry over bytes if we have them already
+		Map<String, ZipEntry> fileNames = htZipContents.get(url.toString());
+		if (fileNames == null) {
+			fileNames = new HashMap<String, ZipEntry>();
+			if (OSPRuntime.doCacheZipContents)
+				htZipContents.put(url.toString(), fileNames);
+			try {
+				// Scan URL zip stream for files.
+				ZipInputStream input = new ZipInputStream(url.openStream());
+				ZipEntry zipEntry = null;
+				int n = 0;
+				while ((zipEntry = input.getNextEntry()) != null) {
+					if (zipEntry.isDirectory() || zipEntry.getSize() == 0) 
+						continue;
+					n++;
+					String fileName = zipEntry.getName();
+					fileNames.put(fileName, zipEntry); // Java has no use for the ZipEntry, but JavaScript can read it.
+				}
+				input.close();
+				OSPLog.finest("ResourceLoader: " + n + " zip entries found in " + url); //$NON-NLS-1$
+			} catch (Exception ex) {
+			}
+		}
+		return fileNames;
+	}
   
   /**
    * 
