@@ -58,11 +58,10 @@ public class MovieFactory {
 	public static void startMovieThumbnailTool() {
 		if (OSPRuntime.isJS) {
 			return;
-		} else {
+		} else if (getDefaultEngine() != VideoIO.ENGINE_NONE){
 			try {
 				Class.forName("org.opensourcephysics.media.xuggle.XuggleThumbnailTool");
 			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
 			}
 		}
 	}
