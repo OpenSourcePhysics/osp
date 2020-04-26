@@ -314,7 +314,7 @@ public interface HTML5Video extends DOMNode {
 	 * @param maxWidth
 	 * @return
 	 */
-	public static JDialog createDialog(Frame parent, Object source, int maxWidth, Runnable whenReady) {
+	public static JDialog createDialog(Frame parent, Object source, int maxWidth, Function<HTML5Video, Void> whenReady) {
 		JDialog dialog = new JDialog(parent);
 		Container p = dialog.getContentPane();
 		p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
@@ -347,7 +347,7 @@ public interface HTML5Video extends DOMNode {
 				dialog.pack();
 //				dialog.setVisible(false);
 				if (whenReady != null)
-					whenReady.run();
+					whenReady.apply(jsvideo);
 			}
 			
 		}, "canplaythrough");

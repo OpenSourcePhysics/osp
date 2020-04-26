@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.function.Function;
 
 import javax.swing.JDialog;
 
@@ -433,7 +434,6 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 			}
 		}
 
-
 		private void setReadyListener() {
 			if (readyListener != null)
 				readyListener = HTML5Video.addActionListener(jsvideo, canplaythrough, "canplaythrough");
@@ -445,12 +445,42 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 				case STATE_IDLE:
 					return false;
 				case STATE_LOAD_VIDEO_INIT:
-					setReadyListener();
-					videoDialog = HTML5Video.createDialog(null, url, 500, null);
-					videoDialog.setVisible(true);
-					helper.setState(STATE_LOAD_VIDEO_READY);
+					videoDialog = HTML5Video.createDialog(null, url, 500, new Function<HTML5Video, Void>() {
+						
+						@Override
+						public Void apply(HTML5Video video) {
+							jsvideo = video;
+							videoDialog.setVisible(true);
+							helper.next(STATE_LOAD_VIDEO_READY);
+							return null;
+						}
+						
+					});
 					return true;
 				case STATE_LOAD_VIDEO_READY:
+					helper.setState(STATE_GET_IMAGE_READY);
+					continue;
+				case STATE_GET_IMAGE_INIT:
+					helper.setState(STATE_GET_IMAGE_READY);
+					setReadyListener();
+					HTML5Video.setCurrentTime(jsvideo, t);
+					return true;
+				case STATE_GET_IMAGE_READY:
+					BufferedImage bi = HTML5Video.getImage(jsvideo);
+					if (bi != null) {
+						rawImage = bi;
+						isValidImage = false;
+						isValidFilteredImage = false;
+						firePropertyChange("framenumber", null, new Integer(thisFrame)); //$NON-NLS-1$
+//						if (isPlaying()) {
+//							Runnable runner = new Runnable() {
+//								public void run() {
+//									continuePlaying();
+//								}
+//							};
+//							SwingUtilities.invokeLater(runner);
+//						}
+					}
 					findAllFrames(null);
 					return false;
 				case STATE_FIND_FRAMES_INIT:
@@ -514,29 +544,6 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 //						throw new IOException("No images"); //$NON-NLS-1$
 //					}
 //					setImage(img);
-					helper.setState(STATE_IDLE);
-					continue;
-				case STATE_GET_IMAGE_INIT:
-					helper.setState(STATE_GET_IMAGE_READY);
-					setReadyListener();
-					HTML5Video.setCurrentTime(jsvideo, t);
-					return true;
-				case STATE_GET_IMAGE_READY:
-					BufferedImage bi = HTML5Video.getImage(jsvideo);
-					if (bi != null) {
-						rawImage = bi;
-						isValidImage = false;
-						isValidFilteredImage = false;
-						firePropertyChange("framenumber", null, new Integer(thisFrame)); //$NON-NLS-1$
-//						if (isPlaying()) {
-//							Runnable runner = new Runnable() {
-//								public void run() {
-//									continuePlaying();
-//								}
-//							};
-//							SwingUtilities.invokeLater(runner);
-//						}
-					}
 					helper.setState(STATE_IDLE);
 					continue;
 				}
