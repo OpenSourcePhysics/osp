@@ -98,6 +98,12 @@ public interface VideoType {
    */
   public VideoFileFilter getDefaultFileFilter();
 
+  /**
+   * Checks to see if this file fits this type based on file extension.
+   * 
+   * @param file
+   * @return
+   */
   default public boolean accepts(File file) {
 	  VideoFileFilter[] filters = getFileFilters();
 	  for (int i = filters.length; --i >= 0;)
