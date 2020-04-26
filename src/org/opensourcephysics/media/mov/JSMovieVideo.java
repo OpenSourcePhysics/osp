@@ -118,6 +118,12 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		support.firePropertyChange("playing", null, new Boolean(false)); //$NON-NLS-1$
 	}
 
+
+	public BufferedImage getImage() {
+		return (rawImage == null ? null : super.getImage());
+	}
+	
+
 	/**
 	 * Sets the frame number. Overrides VideoAdapter setFrameNumber method.
 	 *
@@ -349,7 +355,6 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		
 	}
 
-
 	State state;
 	public String err;
 
@@ -388,7 +393,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		};
 		private Object[] readyListener;
 		private double duration;
-		private int thisFrame;
+		private int thisFrame = 0;
 		private String path;
 		
 		State() {
@@ -397,6 +402,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 
 		public void load(String path) {
 			this.path = path;
+			helper.next(STATE_LOAD_VIDEO_INIT);
 		}
 
 		public void getImage(int n) {
@@ -404,7 +410,6 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 				return;
 			thisFrame = n;
 			t = JSMovieVideo.this.getFrameTime(n);
-			helper.next(STATE_GET_IMAGE_INIT);
 		}
 
 		public void findAllFrames(Runnable r) {
@@ -436,7 +441,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		@Override
 		public boolean stateLoop() {
 			while (helper.isAlive()) {
-				switch (err == null ? STATE_ERROR : helper.getState()) {
+				switch (err == null ? helper.getState() : STATE_ERROR) {
 				case STATE_IDLE:
 					return false;
 				case STATE_LOAD_VIDEO_INIT:

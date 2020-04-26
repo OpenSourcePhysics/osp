@@ -1464,7 +1464,7 @@ public class OSPRuntime {
 
 	public static void showStatus(String msg) {
 		if (isJS && logToJ2SMonitor) 
-			jsutil.showStatus(msg,  false);
+			jsutil.showStatus(msg,  true);
 	}
 
 }
