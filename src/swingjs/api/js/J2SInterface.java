@@ -76,6 +76,8 @@ public interface J2SInterface {
 
 	String fixCachePath(String uri);
 
+	void showStatus(String msg, boolean doFadeOut);
+
 
 }
 

@@ -278,4 +278,14 @@ public interface JSUtilI {
 	 */
 	long transferTo(InputStream is, OutputStream out) throws IOException;
 
+	/**
+	 * Retrieve any bytes already attached to this URL.
+	 * 
+	 * @param url
+	 * @return
+	 */
+	byte[] getURLBytes(URL url);
+
+	void showStatus(String msg, boolean doFadeOut);
+
 }
