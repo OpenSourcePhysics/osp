@@ -30,12 +30,14 @@
  * please see <http://www.opensourcephysics.org/>.
  */
 package org.opensourcephysics.media.core;
+import java.awt.BorderLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
+import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import org.opensourcephysics.display.DrawingFrame;
 import org.opensourcephysics.display.OSPRuntime;
@@ -79,6 +81,12 @@ public class VideoFrame extends DrawingFrame {
     if(!OSPRuntime.appletMode) {
       createActions();
       modifyMenuBar();
+      JToolBar playerBar = new JToolBar();
+      playerBar.setFloatable(false);
+      add(playerBar, BorderLayout.SOUTH);
+//      vidPanel.getPlayer().setBorder(null);
+      vidPanel.setPlayerVisible(false);
+      playerBar.add(vidPanel.getPlayer());
     }
   }
 
