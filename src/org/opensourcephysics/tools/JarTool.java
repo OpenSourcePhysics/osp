@@ -417,7 +417,7 @@ public class JarTool implements Tool, Runnable {
 					parent.mkdirs();
 				}
 				fos = new FileOutputStream(target);
-				LibraryBrowser.getLimitedStreamBytes(zis, ze.getSize(), fos);
+				ResourceLoader.getLimitedStreamBytes(zis, ze.getSize(), fos);
 				fos.close();
 				System.out.println("extracted " + targetName + " " + target.length());
 			}

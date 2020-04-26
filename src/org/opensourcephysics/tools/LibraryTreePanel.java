@@ -2062,9 +2062,31 @@ public class LibraryTreePanel extends JPanel {
 
 		LibraryTreeNode node;
 		boolean hasNewChildren = false;
-
+		Runnable doneAsync;
+		
 		NodeLoader(LibraryTreeNode treeNode) {
 			node = treeNode;
+			
+			doneAsync = new Runnable() {
+
+				@Override
+				public void run() {
+					LibraryTreePanel.htmlPanesByNode.remove(node);
+					LibraryTreePanel.htmlPanesByURL.remove(node.getHTMLURL());
+					if (hasNewChildren) {
+						node.createChildNodes();
+						treeModel.nodeStructureChanged(node);
+					} else {
+						treeModel.nodeChanged(node);
+					}
+					if (node == getSelectedNode()) {
+						showInfo(node);
+					}
+					if (node == rootNode) {
+						browser.refreshTabTitle(pathToRoot, rootResource);
+					}
+				}				
+			};
 		}
 
 		@Override
@@ -2131,57 +2153,65 @@ public class LibraryTreePanel extends JPanel {
 
 			// load ComPADRE nodes
 			String urlPath = node.record.getProperty("reload_url"); //$NON-NLS-1$
+
+			String htmlPathFinal = htmlPath;
+			
+			Runnable onDone = new Runnable() {
+				public void run() {
+
+					// clear description for non-ComPADRE nodes with no HTML path
+					if (htmlPathFinal == null) {
+						if (urlPath == null)
+							node.record.setDescription(null);
+					} else { // htmlPath not null
+								// copy HTML to cache if required
+						boolean requiresCache = htmlPathFinal.contains("!/"); //$NON-NLS-1$ // file in zip
+						// not for local trz files
+						// maybe never for JS?
+						requiresCache = requiresCache && ResourceLoader.isHTTP(htmlPathFinal);
+						if (requiresCache) {
+							File cachedFile = ResourceLoader.getOSPCacheFile(htmlPathFinal);
+							boolean foundInCache = cachedFile.exists();
+							if (!foundInCache)
+								ResourceLoader.copyHTMLToOSPCache(htmlPathFinal);
+						}
+					}
+
+					htmlPanesByNode.remove(node);
+					LibraryTreeNode.htmlURLs.remove(htmlPathFinal);
+
+					// load metadata into node
+					node.getMetadata();
+
+					doneAsync.run();
+				}
+				
+			};
+			
+			Runnable onSuccess = new Runnable() {
+				public void run() {
+				hasNewChildren = true;
+				onDone.run();
+				}
+			};
+			
+			
 			if (target != null && target.contains(LibraryComPADRE.HOST)) {
+				
 				if (node.record instanceof LibraryCollection) {
-					hasNewChildren = LibraryComPADRE.loadResources(node);
+					hasNewChildren = false;
+					LibraryComPADRE.loadResources(node, onSuccess, onDone);
 				} else if ("".equals(node.record.getDescription()) && urlPath != null) { //$NON-NLS-1$
-					LibraryComPADRE.reloadResource(node, urlPath);
+					LibraryComPADRE.reloadResource(node, urlPath, onDone);
 				}
 			}
-
-			// clear description for non-ComPADRE nodes with no HTML path
-			if (htmlPath == null) {
-				if (urlPath == null)
-					node.record.setDescription(null);
-			} 
-			else { // htmlPath not null
-				// copy HTML to cache if required
-				boolean requiresCache = htmlPath.contains("!/"); //$NON-NLS-1$  // file in zip
-				// not for local trz files
-				// maybe never for JS?
-				requiresCache = requiresCache && ResourceLoader.isHTTP(htmlPath);
-				if (requiresCache) {
-					File cachedFile = ResourceLoader.getOSPCacheFile(htmlPath);
-					boolean foundInCache = cachedFile.exists();					
-					if (!foundInCache) ResourceLoader.copyHTMLToOSPCache(htmlPath);					
-				}
-			}
-
-			htmlPanesByNode.remove(node);
-			LibraryTreeNode.htmlURLs.remove(htmlPath);
-
-			// load metadata into node
-			node.getMetadata();
-
+			
 			return null;
 		}
 
 		@Override
 		protected void done() {
-			LibraryTreePanel.htmlPanesByNode.remove(node);
-			LibraryTreePanel.htmlPanesByURL.remove(node.getHTMLURL());
-			if (hasNewChildren) {
-				node.createChildNodes();
-				treeModel.nodeStructureChanged(node);
-			} else {
-				treeModel.nodeChanged(node);
-			}
-			if (node == getSelectedNode()) {
-				showInfo(node);
-			}
-			if (node == rootNode) {
-				browser.refreshTabTitle(pathToRoot, rootResource);
-			}
+			// see doneAync
 		}
 	}
 
@@ -2224,7 +2254,7 @@ public class LibraryTreePanel extends JPanel {
 				if (htmlStr != null) {
 					if (htmlStr == "") {
 						try {
-							htmlStr = new String(LibraryBrowser.getURLContents(url));
+							htmlStr = new String(ResourceLoader.getURLContents(url));
 						} catch (Exception ex) {
 							htmlStr = ("<h2>" + node + "</h2>"); //$NON-NLS-1$ //$NON-NLS-2$
 						}
@@ -2397,6 +2427,7 @@ public class LibraryTreePanel extends JPanel {
 			Color c = getForeground();
 			if (node.record instanceof LibraryCollection) {
 				icon = expanded ? getOpenIcon() : getClosedIcon();
+				// the color when it has not been loaded. 
 				if (node.getTarget() != null)
 					c = Color.red;
 			}

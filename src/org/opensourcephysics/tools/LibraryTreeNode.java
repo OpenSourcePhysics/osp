@@ -12,6 +12,7 @@ import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -741,18 +742,41 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
   class ThumbnailLoader extends SwingWorker<File, Object> {
   	String thumbPath, sourcePath;
   	boolean checkImages = !OSPRuntime.isJS;
-  	
-  	ThumbnailLoader(String imageSource, String thumbnailPath) {
-  		thumbPath = thumbnailPath;
-  		sourcePath = imageSource;
-  	}
+  	boolean isAsync = OSPRuntime.isJS;
+  	File thumbFile;
+	protected Runnable doneAsync;
+	
+		ThumbnailLoader(String imageSource, String thumbnailPath) {
+			thumbPath = thumbnailPath;
+			sourcePath = imageSource;
+
+			doneAsync = new Runnable() {
+
+				@Override
+				public void run() {
+					try {
+						// File thumbFile = get();
+						record.setThumbnail(
+								thumbFile == null || !thumbFile.exists() ? null : thumbFile.getAbsolutePath());
+
+						if (record.getThumbnail() != null) {
+							LibraryTreePanel.htmlPanesByNode.remove(LibraryTreeNode.this);
+							treePanel.showInfo(treePanel.getSelectedNode());
+						}
+					} catch (Exception ignore) {
+					}
+				}
+
+			};
+
+		}
   	
 		@Override
 		public File doInBackground() {
+			
 			// create a new thumbnail
 			File thumbFile = null;
 			String ext = XML.getExtension(sourcePath);
-			Runnable r; // BH SwingJS must load images asynchronously
 			if (ext != null && "GIF".equals(ext.toUpperCase())) { //$NON-NLS-1$
 				// GIF files
 				int status = 0;
@@ -763,7 +787,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 				if (status != GifDecoder.STATUS_OK) { // error
 					OSPLog.fine("failed to create thumbnail for GIF " + thumbPath); //$NON-NLS-1$
 				} else {
-					thumbFile = LibraryBrowser.copyFile(sourcePath, thumbPath);
+					thumbFile = ResourceLoader.copyURLtoFile(sourcePath, thumbPath);
 				}
 			} else if (ext != null && ("PNG".equals(ext.toUpperCase()) || ext.toUpperCase().contains("JP"))) { //$NON-NLS-1$ //$NON-NLS-2$
 				// PNG and JPEG files
@@ -773,19 +797,25 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 						URL url = new URL(ResourceLoader.getURIPath(sourcePath));
 						ImageIO.read(url);
 					}
-					thumbFile = LibraryBrowser.copyFile(sourcePath, thumbPath);
+					thumbFile = ResourceLoader.copyURLtoFile(sourcePath, thumbPath);
 				} catch (Exception e) {
 					OSPLog.fine("failed to create thumbnail for " + thumbPath); //$NON-NLS-1$
 				}
 			} else if (ext != null && ("ZIP".equals(ext.toUpperCase()) || "TRZ".equals(ext.toUpperCase()))) { //$NON-NLS-1$ //$NON-NLS-2$
 				// ZIP files
 				// look for image file in zip with name that includes "_thumbnail"
-				for (String next : ResourceLoader.getZipContents(sourcePath).keySet()) {
-					if (next.indexOf("_thumbnail") > -1) { //$NON-NLS-1$
-						String s = ResourceLoader.getURIPath(sourcePath + "!/" + next); //$NON-NLS-1$
-						thumbFile = ResourceLoader.extract(s, new File(thumbPath));
-					}
+				thumbFile = new File(thumbPath);
+				try {
+					ResourceLoader.getZipEntryBytes(sourcePath + "*_thumbnail", thumbFile);
+				} catch (IOException e) {
+					thumbFile = null;
 				}
+//				for (String next : ResourceLoader.getZipContents(sourcePath).keySet()) {
+//					if (next.indexOf("_thumbnail") > -1) { //$NON-NLS-1$
+//						String s = ResourceLoader.getURIPath(sourcePath + "!/" + next); //$NON-NLS-1$
+//						thumbFile = ResourceLoader.extract(s, new File(thumbPath));
+//					}
+//				}
 			} else {
 				// This better be a movie!
 				thumbFile = MovieFactory.createThumbnailFile(defaultThumbnailDimension, sourcePath, thumbPath);
@@ -795,16 +825,8 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 
 	@Override
     protected void done() {
-      try {
-     	 File thumbFile = get();
-       record.setThumbnail(thumbFile==null || !thumbFile.exists()? null: thumbFile.getAbsolutePath());
-       
-       if (record.getThumbnail()!=null) {
-      	 LibraryTreePanel.htmlPanesByNode.remove(LibraryTreeNode.this);      			
-      	 treePanel.showInfo(treePanel.getSelectedNode());
-       }
-      } catch (Exception ignore) {
-      }
+		if (!isAsync)
+			doneAsync.run();
     }
   }
   

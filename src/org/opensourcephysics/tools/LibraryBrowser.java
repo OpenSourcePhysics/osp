@@ -30,14 +30,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -654,42 +648,64 @@ public class LibraryBrowser extends JPanel {
   	return -1;
   }
 
-  /**
-   * Loads a tab from a given path. If the tab is already loaded, this selects it.
-   * if not yet loaded, this adds a new tab and selects it.
-   * If a treePath is specified, the node it points to will be selected 
-   * 
-   * @param path the path
-   * @param treePath tree path to select in root-first order (may be null)
-   */
-  protected void loadTab(String path, List<String> treePath) {
-  	path = XML.forwardSlash(path);
+	/**
+	 * Loads a tab from a given path. If the tab is already loaded, this selects it.
+	 * if not yet loaded, this adds a new tab and selects it. If a treePath is
+	 * specified, the node it points to will be selected
+	 * 
+	 * @param path     the path
+	 * @param treePath tree path to select in root-first order (may be null)
+	 */
+	protected void loadTab(String path, List<String> treePath) {
+		path = XML.forwardSlash(path);
 		library.addRecent(path, false);
 		refreshRecentMenu();
-    // select tab and treePath if path is already loaded
-    int i = getTabIndexFromPath(path);
-    if (i>-1) {
-    	tabbedPane.setSelectedIndex(i);
-    	LibraryTreePanel treePanel = getTreePanel(i);
-    	treePanel.setSelectionPath(treePath);
-    	return;
-    }
-    // otherwise add new tab
-		TabLoader tabAdder = addTab(path, treePath);
-		if (tabAdder==null) return;
-  	tabAdder.addPropertyChangeListener(new PropertyChangeListener() {  
-			public  void propertyChange(PropertyChangeEvent e) {  
-			  if ("progress".equals(e.getPropertyName())) {   //$NON-NLS-1$
-			    Integer n = (Integer)e.getNewValue();  
-		    	if (n>-1) {
-		    		tabbedPane.setSelectedIndex(n);
-		    	}
-			  }  
-		  }  
-		});
-  	tabAdder.execute();  	
-  }
+		// select tab and treePath if path is already loaded
+		int i = getTabIndexFromPath(path);
+		if (i > -1) {
+			tabbedPane.setSelectedIndex(i);
+			LibraryTreePanel treePanel = getTreePanel(i);
+			treePanel.setSelectionPath(treePath);
+			return;
+		}
+		// otherwise add new tab
+		loadTabAndListen(path, treePath, "LoadTab");
+	}
   
+	protected TabLoader loadTabAndListen(String path, List<String> treePath, String mode) {
+		TabLoader tabAdder = addTab(path, treePath);
+		if (tabAdder == null)
+			return null;
+		tabAdder.addPropertyChangeListener(new PropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent e) {
+				if ("progress".equals(e.getPropertyName())) { //$NON-NLS-1$
+					Integer n = (Integer) e.getNewValue();
+					if (n > -1) {
+						OSPRuntime.showStatus("LibaryBrowser: " + n);//$NON-NLS-1$
+						tabbedPane.setSelectedIndex(n);
+						switch (mode) {
+						case "LoadTab"://$NON-NLS-1$
+							break;
+						case "OpenRecent"://$NON-NLS-1$
+							refreshGUI();
+							break;
+						case "CreateNew"://$NON-NLS-1$
+							LibraryTreePanel treePanel = getSelectedTreePanel();
+							treePanel.setEditing(true);
+							refreshGUI();
+							break;
+						}
+					}
+				}
+			}
+		});
+		tabAdder.execute();
+		return tabAdder;
+	}
+	
+	
+
+
 	/**
 	 * Loads a library resource from a given path.
 	 * 
@@ -1288,55 +1304,64 @@ public class LibraryBrowser extends JPanel {
     
     // create property change listener for treePanels
     treePanelListener = new PropertyChangeListener() {
-  		public void propertyChange(PropertyChangeEvent e) {
-  			String propertyName = e.getPropertyName();
-  			if (propertyName.equals("collection_edit")) { //$NON-NLS-1$
-    			refreshGUI();
-  			}
-  			else if (propertyName.equals("target")) { //$NON-NLS-1$
-    			LibraryResource record = null;
-    			if (e.getNewValue() instanceof LibraryTreeNode) {
-  	  			LibraryTreeNode node = (LibraryTreeNode)e.getNewValue();
-  	  			if (node.record instanceof LibraryCollection) {
-  		  			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-  	  				if (!LibraryComPADRE.loadResources(node)) {
-    		  			setCursor(Cursor.getDefaultCursor());
-  	  		  		JOptionPane.showMessageDialog(LibraryBrowser.this, 
-  	  		  				ToolsRes.getString("LibraryBrowser.Dialog.NoResources.Message"), //$NON-NLS-1$
-  	  		  				ToolsRes.getString("LibraryBrowser.Dialog.NoResources.Title"), //$NON-NLS-1$
-  	  		  				JOptionPane.PLAIN_MESSAGE); 
-  	  		  		return;
-  	  				}
-  	  				node.createChildNodes();
-  	  				LibraryTreePanel.htmlPanesByNode.remove(node);
-  	  		    LibraryTreeNode lastChild = (LibraryTreeNode)node.getLastChild();
-  	  		  	TreePath path = new TreePath(lastChild.getPath());
-  	  		  	getSelectedTreePanel().tree.scrollPathToVisible(path);
-  	  				getSelectedTreePanel().showInfo(node);
-  		  			setCursor(Cursor.getDefaultCursor());
-  	  				return;
-  	  			}
-  	  			record = node.record.getClone();
-  	  			record.setBasePath(node.getBasePath());
-    			}
-    			else record = (LibraryResource)e.getNewValue();
-    			
-    			String target = record.getTarget();
-    			if (target!=null && (target.toLowerCase().endsWith(".pdf") //$NON-NLS-1$
-    					 || target.toLowerCase().endsWith(".html") //$NON-NLS-1$
-    					 || target.toLowerCase().endsWith(".htm"))) { //$NON-NLS-1$
-    				target = XML.getResolvedPath(target, record.getBasePath());
-    				target = ResourceLoader.getURIPath(target);
-		  			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-    				OSPDesktop.displayURL(target);
-		  			setCursor(Cursor.getDefaultCursor());
-    			}
-    			else {
-	    			// forward the event to browser listeners
-	    			firePropertyChange("target", e.getOldValue(), record); //$NON-NLS-1$
-    			}
-  			}
-  		}
+			public void propertyChange(PropertyChangeEvent e) {
+				String propertyName = e.getPropertyName();
+				if (propertyName.equals("collection_edit")) { //$NON-NLS-1$
+					refreshGUI();
+					return;
+				}
+				if (!propertyName.equals("target")) { //$NON-NLS-1$
+					return;
+				}
+
+				LibraryResource record = null;
+				Object oldValue = e.getOldValue();
+
+				if (!(e.getNewValue() instanceof LibraryTreeNode)) {
+					record = (LibraryResource) e.getNewValue();
+					setRecordTarget(record, oldValue);
+					return;
+				}
+
+				LibraryTreeNode node = (LibraryTreeNode) e.getNewValue();
+
+				if (!(node.record instanceof LibraryCollection)) {
+					record = node.record.getClone();
+					record.setBasePath(node.getBasePath());
+					setRecordTarget(record, oldValue);
+				}
+
+				Runnable onSuccess = new Runnable() {
+
+					@Override
+					public void run() {
+						node.createChildNodes();
+						LibraryTreePanel.htmlPanesByNode.remove(node);
+						LibraryTreeNode lastChild = (LibraryTreeNode) node.getLastChild();
+						TreePath path = new TreePath(lastChild.getPath());
+						getSelectedTreePanel().tree.scrollPathToVisible(path);
+						getSelectedTreePanel().showInfo(node);
+						setCursor(Cursor.getDefaultCursor());
+					}
+
+				};
+
+				Runnable onFailure = new Runnable() {
+
+					@Override
+					public void run() {
+						setCursor(Cursor.getDefaultCursor());
+						JOptionPane.showMessageDialog(LibraryBrowser.this,
+								ToolsRes.getString("LibraryBrowser.Dialog.NoResources.Message"), //$NON-NLS-1$
+								ToolsRes.getString("LibraryBrowser.Dialog.NoResources.Title"), //$NON-NLS-1$
+								JOptionPane.PLAIN_MESSAGE);
+					}
+
+				};
+				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				LibraryComPADRE.loadResources(node, onSuccess, onFailure);
+			}
+			
   	};
     
     // create edit button
@@ -1554,7 +1579,24 @@ public class LibraryBrowser extends JPanel {
   	
   }
   
-  /**
+  protected void setRecordTarget(LibraryResource record, Object oldTarget) {
+		String target = record.getTarget();
+		if (target != null && (target.toLowerCase().endsWith(".pdf") //$NON-NLS-1$
+				|| target.toLowerCase().endsWith(".html") //$NON-NLS-1$
+				|| target.toLowerCase().endsWith(".htm"))) { //$NON-NLS-1$
+			target = XML.getResolvedPath(target, record.getBasePath());
+			target = ResourceLoader.getURIPath(target);
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			OSPDesktop.displayURL(target);
+			setCursor(Cursor.getDefaultCursor());
+		} else {
+			// forward the event to browser listeners
+			firePropertyChange("target", oldTarget, record); //$NON-NLS-1$
+		}
+}
+
+
+/**
    * Refreshes the GUI, including locale-dependent resources strings.
    */
   protected void refreshGUI() {
@@ -1654,40 +1696,25 @@ public class LibraryBrowser extends JPanel {
   		recentMenu.setEnabled(!library.recentTabs.isEmpty());
 	  	if (openRecentAction==null) {
 		  	openRecentAction = new AbstractAction() {
-		  		public void actionPerformed(ActionEvent e) {
-		  			String path = e.getActionCommand();
-		  			library.addRecent(path, false);
-		  	    // select tab if path is already loaded
-		  	    int i = getTabIndexFromPath(path);
-		  	    if (i>-1) {
-		  	    	tabbedPane.setSelectedIndex(i);
-		  	    	return;
-		  	    }
-	    			TabLoader tabAdder = addTab(path, null);
-	    			if (tabAdder!=null) {
-	    	    	tabAdder.addPropertyChangeListener(new PropertyChangeListener() {  
-	    	  			public  void propertyChange(PropertyChangeEvent e) {  
-	    	  			  if ("progress".equals(e.getPropertyName())) {   //$NON-NLS-1$
-	    	  			    Integer n = (Integer)e.getNewValue();  
-	    				    	if (n>-1) {
-	    				    		tabbedPane.setSelectedIndex(n);
-	    					    	refreshGUI();
-	    				    	}
-	    	  			  }  
-	    	  		  }  
-	    	  		});
-	    				tabAdder.execute();
-	    			}
-	    			else {
-		        	library.recentTabs.remove(path);
-		          refreshRecentMenu();
-		        	JOptionPane.showMessageDialog(LibraryBrowser.this, 
-		        			ToolsRes.getString("LibraryBrowser.Dialog.FileNotFound.Message") //$NON-NLS-1$
-		        			+": "+path,  //$NON-NLS-1$
-		        			ToolsRes.getString("LibraryBrowser.Dialog.FileNotFound.Title"),  //$NON-NLS-1$
-		        			JOptionPane.WARNING_MESSAGE);
-		    		}
-		  		}
+					public void actionPerformed(ActionEvent e) {
+						String path = e.getActionCommand();
+						library.addRecent(path, false);
+						// select tab if path is already loaded
+						int i = getTabIndexFromPath(path);
+						if (i > -1) {
+							tabbedPane.setSelectedIndex(i);
+							return;
+						}
+						if (loadTabAndListen(path, null, "OpenRecent") == null) {
+							library.recentTabs.remove(path);
+							refreshRecentMenu();
+							JOptionPane.showMessageDialog(LibraryBrowser.this,
+									ToolsRes.getString("LibraryBrowser.Dialog.FileNotFound.Message") //$NON-NLS-1$
+											+ ": " + path, //$NON-NLS-1$
+									ToolsRes.getString("LibraryBrowser.Dialog.FileNotFound.Title"), //$NON-NLS-1$
+									JOptionPane.WARNING_MESSAGE);
+						}
+					}
 		  	};
 	  	}
 	  	recentMenu.removeAll();
@@ -2140,38 +2167,24 @@ public class LibraryBrowser extends JPanel {
   	refreshGUI();
   }
 
-  /**
-   * Creates a new LibraryCollection file.
-   * @return the path to the new collection
-   */
-  protected String createNewCollection() {
-  	String title = ToolsRes.getString("LibraryBrowser.FileChooser.Title.SaveCollectionAs"); //$NON-NLS-1$ 	
-  	String path = getChooserSavePath(title);
-		if (path!=null) {
+	/**
+	 * Creates a new LibraryCollection file.
+	 * 
+	 * @return the path to the new collection
+	 */
+	protected String createNewCollection() {
+		String title = ToolsRes.getString("LibraryBrowser.FileChooser.Title.SaveCollectionAs"); //$NON-NLS-1$
+		String path = getChooserSavePath(title);
+		if (path != null) {
 			LibraryCollection collection = new LibraryCollection(null);
 			// save new collection
 			XMLControl control = new XMLControlElement(collection);
 			control.write(path);
 			path = XML.forwardSlash(path);
-  		TabLoader tabAdder = addTab(path, null);
-  		if (tabAdder==null) return null;
-    	tabAdder.addPropertyChangeListener(new PropertyChangeListener() {  
-  			public  void propertyChange(PropertyChangeEvent e) {  
-  			  if ("progress".equals(e.getPropertyName())) {   //$NON-NLS-1$
-  			    Integer n = (Integer)e.getNewValue();  
-			    	if (n>-1) {
-			    		tabbedPane.setSelectedIndex(n);
-			    		LibraryTreePanel treePanel = getSelectedTreePanel();
-			    		treePanel.setEditing(true);
-				    	refreshGUI();
-			    	}
-  			  }  
-  		  }  
-  		});
-    	tabAdder.execute();
+			loadTabAndListen(path, null, "CreateNew");
 		}
-  	return path;
-  }
+		return path;
+	}
   
   /**
    * Returns a name that is not a duplicate of an existing name.
@@ -2690,73 +2703,6 @@ public class LibraryBrowser extends JPanel {
     }
 
   }
-
-  public static File copyFile(String sourcePath, String destPath) { 
-		File f = new File(destPath);
-		try {
-			Path path = f.toPath();
-			Files.createDirectories(path.getParent());
-			Files.write(path, getURLContents(new URL(sourcePath)));
-		} catch (Exception e) { 
-			e.printStackTrace();
-		}
-		return f;
-	}
-
-	/**
-	 * Just get the URL contents as a string
-	 * @param url
-	 * @return
-	 * 
-	 * @author hansonr
-	 */
-	public static byte[] getURLContents(URL url) {
-		try {
-			// Java 9!			return new String(url.openStream().readAllBytes());
-			return getLimitedStreamBytes(url.openStream(), -1, null);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	/**
-	 * From javajs.Rdr
-	 * 
-	 */
-	public static byte[] getLimitedStreamBytes(InputStream is, long n, OutputStream out) throws IOException {
-
-		// Note: You cannot use InputStream.available() to reliably read
-		// zip data from the web.
-
-		boolean toOut = (out != null);
-		int buflen = (n > 0 && n < 1024 ? (int) n : 1024);
-		byte[] buf = new byte[buflen];
-		byte[] bytes = (out == null ? new byte[n < 0 ? 4096 : (int) n] : null);
-		int len = 0;
-		int totalLen = 0;
-		if (n < 0)
-			n = Integer.MAX_VALUE;
-		while (totalLen < n && (len = is.read(buf, 0, buflen)) > 0) {
-			totalLen += len;
-			if (toOut) {
-				out.write(buf, 0, len);
-			} else {
-				if (totalLen > bytes.length)
-					bytes = Arrays.copyOf(bytes, totalLen * 2);
-				System.arraycopy(buf, 0, bytes, totalLen - len, len);
-				if (n != Integer.MAX_VALUE && totalLen + buflen > bytes.length)
-					buflen = bytes.length - totalLen;
-				}
-		}
-		if (toOut) 
-			return null;
-		if (totalLen == bytes.length)
-			return bytes;
-		buf = new byte[totalLen];
-		System.arraycopy(bytes, 0, buf, 0, totalLen);
-		return buf;
-	}
 
 
 

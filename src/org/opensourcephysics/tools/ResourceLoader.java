@@ -14,6 +14,7 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -28,6 +29,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -38,6 +41,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeMap;
@@ -1199,11 +1203,20 @@ public class ResourceLoader {
 	 * 
 	 * @param zipFile
 	 * @param fileName
+	 * @param isContains fileName is a fragment of the entry name, not the other way
+	 *                   around
 	 * @return the ZipEntry for this file, possibly cached.
 	 */
-  public static ZipEntry findZipEntry(String zipFile, String fileName) {
-	  return getZipContents(zipFile).get(fileName);
-  }
+	public static ZipEntry findZipEntry(String zipFile, String fileName, boolean isContains) {
+		if (!isContains) {
+			return getZipContents(zipFile).get(fileName);
+		} 
+		for ( Entry<String, ZipEntry> entry : getZipContents(zipFile).entrySet()) {
+		  	if (entry.getKey().indexOf(fileName) >= 0)
+		  		return entry.getValue();
+		}
+		return null;
+	}
    /**
    * Gets the contents of a zip file.
    * 
@@ -1436,9 +1449,13 @@ public class ResourceLoader {
 	 */
 	public static byte[] getZipEntryBytes(String zipFile, String entryPath, File target) throws IOException {
 		byte[] bytes = null;
+		boolean isContains = entryPath.startsWith("*");
+		if (isContains) {
+			entryPath = entryPath.substring(1);
+		}
 		if (OSPRuntime.isJS) {
 			// Direct seek to known zip entry.
-			ZipEntry ze = findZipEntry(zipFile, entryPath);
+			ZipEntry ze = findZipEntry(zipFile, entryPath, isContains);
 			if (ze == null)
 				return null;
 			bytes = OSPRuntime.jsutil.getZipBytes(ze);
@@ -1455,7 +1472,10 @@ public class ResourceLoader {
 			ZipInputStream input = new ZipInputStream(url.openStream());
 			ZipEntry zipEntry = null;
 			while ((zipEntry = input.getNextEntry()) != null) {
-				if (!zipEntry.isDirectory() && entryPath.contains(zipEntry.getName()))
+				// BH 2020.04.25 allow both a in b and b in a
+				if (!zipEntry.isDirectory() && 
+						(isContains ? zipEntry.getName().contains(entryPath) 
+						 : entryPath.contains(zipEntry.getName())))
 					break;
 			}
 			if (zipEntry != null) {
@@ -1482,14 +1502,20 @@ public class ResourceLoader {
 	/**
 	 * Divide [jarfile]!/[path] into String[] {jarfile,path}
 	 * 
-	 * @return null if "!/" is not found, { jarfile, null } if path would be "",
-	 *         and { jarfile, path } otherwise.
+	 * String source can be from a url such as jar:file:/... or file:/... or from
+	 * File.absolutePath().
+	 * 
+	 * @return null if "!/" is not found, { jarfile, null } if path would be "", and
+	 *         { jarfile, path } otherwise.
 	 */
 	public static String[] getJarURLParts(String source) {
 		int n = source.indexOf("!/");
-		return (n < 0 ? null
-				: n == source.length() - 2 ? new String[] { source.substring(0, n), null }
-						: new String[] { source.substring(0, n), source.substring(n + 2) });
+		if (n < 0)
+			return null;
+		String jarfile = source.substring(0, n).replace("jar:",  "").replace("file:",  "");
+		while (jarfile.startsWith("//"))
+			jarfile = jarfile.substring(1);
+		return new String[] { jarfile , (n == source.length() - 2 ? null : source.substring(n + 2)) };
 	}
 
 /**
@@ -1833,7 +1859,7 @@ public class ResourceLoader {
 		URL url = null;
 		ZipEntry ze = null;
 		if (base != null) { // car.trz
-			ze = findZipEntry(base, fileName);
+			ze = findZipEntry(base, fileName, false);
 			if (ze != null) {
 
 				try {
@@ -2238,7 +2264,7 @@ public class ResourceLoader {
 						parent.mkdirs();
 					}
 					fos = new FileOutputStream(target);
-					LibraryBrowser.getLimitedStreamBytes(zis, ze.getSize(), fos);
+					ResourceLoader.getLimitedStreamBytes(zis, ze.getSize(), fos);
 					fos.close();
 					System.out.println("RL extracted " + targetName + " " + target.length());
 				}
@@ -2493,9 +2519,25 @@ public class ResourceLoader {
 		  return path.startsWith("http:") || path.startsWith("https:");
 	  }
 
+	/**
+	 * From Resource.
+	 * 
+	 * @param url
+	 * @return
+	 * @throws IOException
+	 */
 	public static InputStream openZipEntryStream(URL url) throws IOException {
 		// BH: Use JarInputStream, as it is more reliable and oh so easier.
-		OSPLog.finest("RL.openZipEntry " + url);
+		
+		if (OSPRuntime.isJS) {
+			byte[] bytes = OSPRuntime.jsutil.getURLBytes(url);
+			if (bytes == null) {
+				bytes = getZipEntryBytes(url.toString(), null);
+				OSPRuntime.jsutil.setURLBytes(url, bytes);
+			}
+			return (bytes == null ? null : new ByteArrayInputStream(bytes));
+		}
+	
 		if (url.getProtocol() != "jar")
 			url = new URL("jar", null, url.toString());
 		return url.openStream();
@@ -2553,7 +2595,7 @@ public class ResourceLoader {
 			}
 			try {
 				ZipEntry ze;
-				if (parts != null && (ze = findZipEntry(parts[0], parts[1])) != null) {
+				if (parts != null && (ze = findZipEntry(parts[0], parts[1], false)) != null) {
 					URL ret = new URL("file", null, imagePath);
 					OSPRuntime.jsutil.setURLBytes(ret, OSPRuntime.jsutil.getZipBytes(ze));
 					if (ret != null)
@@ -2564,6 +2606,81 @@ public class ResourceLoader {
 			}
 		}
 		return ResourceLoader.class.getResource(imagePath);
+	}
+
+	/**
+	 * Just get the URL contents as a string
+	 * @param url
+	 * @return
+	 * 
+	 * @author hansonr
+	 */
+	public static byte[] getURLContents(URL url) {
+		try {
+			if (OSPRuntime.isJS) {				
+				// Java 9!			return new String(url.openStream().readAllBytes());
+				return OSPRuntime.jsutil.readAllBytes(url.openStream());
+			}
+			return ResourceLoader.getLimitedStreamBytes(url.openStream(), -1, null);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
+	 * From javajs.Rdr
+	 * 
+	 */
+	public static byte[] getLimitedStreamBytes(InputStream is, long n, OutputStream out) throws IOException {
+	
+		// Note: You cannot use InputStream.available() to reliably read
+		// zip data from the web.
+	
+		boolean toOut = (out != null);
+		int buflen = (n > 0 && n < 1024 ? (int) n : 1024);
+		byte[] buf = new byte[buflen];
+		byte[] bytes = (out == null ? new byte[n < 0 ? 4096 : (int) n] : null);
+		int len = 0;
+		int totalLen = 0;
+		if (n < 0)
+			n = Integer.MAX_VALUE;
+		while (totalLen < n && (len = is.read(buf, 0, buflen)) > 0) {
+			totalLen += len;
+			if (toOut) {
+				out.write(buf, 0, len);
+			} else {
+				if (totalLen > bytes.length)
+					bytes = Arrays.copyOf(bytes, totalLen * 2);
+				System.arraycopy(buf, 0, bytes, totalLen - len, len);
+				if (n != Integer.MAX_VALUE && totalLen + buflen > bytes.length)
+					buflen = bytes.length - totalLen;
+				}
+		}
+		if (toOut) 
+			return null;
+		if (totalLen == bytes.length)
+			return bytes;
+		buf = new byte[totalLen];
+		System.arraycopy(bytes, 0, buf, 0, totalLen);
+		return buf;
+	}
+
+	public static File copyURLtoFile(String urlPath, String filePath) { 	
+		File f = new File(filePath);
+		try {
+			if (OSPRuntime.isJS) {
+				FileOutputStream fos = new FileOutputStream(f);
+				OSPRuntime.jsutil.transferTo(new URL(urlPath).openStream(), fos);
+			} else {
+				Path path = f.toPath();
+				Files.createDirectories(path.getParent());
+				Files.write(path, getURLContents(new URL(urlPath)));
+			}
+		} catch (Exception e) { 
+			e.printStackTrace();
+		}
+		return f;
 	}
 }
 
