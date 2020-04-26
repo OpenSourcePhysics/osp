@@ -87,6 +87,8 @@ public class OSPRuntime {
 
 	public static boolean doCacheZipContents = true;//isJS; // for ResourceLoader
 
+	public static boolean logToJ2SMonitor = isJS; // for OSPRuntime
+
 	public static boolean resCacheEnabled = isJS; // for ResourceLoader 
 	
 	public static boolean setRenderingHints = (!isJS && !isMac);
@@ -1458,6 +1460,11 @@ public class OSPRuntime {
 			}
 			
 		}
+	}
+
+	public static void showStatus(String msg) {
+		if (isJS && logToJ2SMonitor) 
+			jsutil.showStatus(msg,  false);
 	}
 
 }

@@ -1032,11 +1032,14 @@ public class OSPLog extends JFrame {
 	private static void log(Level level, String msg) {
 		LogRecord record = new LogRecord(level, msg);
 		
-		if (logToJSConsole && realSysout != null)
-			realSysout.println("OSPLog[" + level + "] " + msg);
-
 		String className = null, methodName = null;
 		if (OSPRuntime.isJS) {
+			
+			if (logToJSConsole && realSysout != null)
+				realSysout.println("OSPLog[" + level + "] " + msg);
+
+			OSPRuntime.showStatus("OSPLog[" + level + "] " + msg);
+			
 			try {
 			/** @j2sNative 
 			 * var o = arguments.callee.caller.caller;
