@@ -692,7 +692,9 @@ public class VideoIO {
 	 * @param frame     owner of the dialogs (may be null)
 	 * @return the video
 	 */
-	public static Video getVideo(String path, ArrayList<VideoType> engines, JComponent component, JFrame frame) {
+	public static Video getVideoFromDialog(String path, ArrayList<VideoType> engines, JComponent component, JFrame frame) 
+	 /** @j2sIgnore*/
+	{
 		// provide immediate way to open with other engines
 		String engine = MovieFactory.getEngine();
 		engine = VideoIO.ENGINE_NONE.equals(engine) ? MediaRes.getString("VideoIO.Engine.None") : //$NON-NLS-1$
@@ -703,6 +705,7 @@ public class VideoIO {
 		ArrayList<String> optionList = new ArrayList<String>();
 		for (VideoType next : engines) {
 			if (next instanceof MovieVideoType) {
+				// BH TODO fix this ref to Xuggle
 				optionList.add(MediaRes.getString("XuggleVideoType.Description")); //$NON-NLS-1$
 			}
 		}
@@ -897,26 +900,29 @@ public class VideoIO {
 	}
 		
 	private static void openVideoPanelFileSync(File file, VideoPanel vidPanel) {
-		// BH Can this be a directory? user  selects that?
+		// BH Can this be a directory? user selects that?
 		if (videoFileFilter.accept(file, true)) { // load video
 			ArrayList<VideoType> types = getVideoTypes(false);
 			Video video = null;
+			String name = file.getAbsolutePath();
 			for (int i = 0; i < types.size(); i++) {
 				VideoType type = types.get(i);
-				video = type.getVideo(file.getAbsolutePath());
-				if (video != null) {
-					OSPLog.info(file.getName() + " opened as type " + type.getDescription()); //$NON-NLS-1$
-					break;
+				if (type.accepts(file)) {
+					video = type.getVideo(name);
+					if (video != null) {
+						OSPLog.info(file.getName() + " opened as type " + type.getDescription()); //$NON-NLS-1$
+						break;
+					}
+					OSPLog.info(file.getName() + " failed as type " + type.getDescription()); //$NON-NLS-1$
 				}
-				OSPLog.info(file.getName() + " failed as type " + type.getDescription()); //$NON-NLS-1$
 			}
-			if (video != null) {
-				vidPanel.setVideo(video);
-				vidPanel.repaint();
-			} else {
+			if (video == null) {
 				JOptionPane.showMessageDialog(vidPanel, MediaRes.getString("VideoIO.Dialog.BadVideo.Message") + //$NON-NLS-1$
 						ResourceLoader.getNonURIPath(XML.getAbsolutePath(file)));
+				return;
 			}
+			vidPanel.setVideo(video);
+			vidPanel.repaint();
 		} else { // load data
 			XMLControlElement control = new XMLControlElement();
 			control.read(file.getAbsolutePath());
@@ -1190,7 +1196,8 @@ public class VideoIO {
 	 * @return video or null
 	 */
 	public static Video getAvailableEngineFromDialog(Video video, String path, JFrame frame, boolean checkTypes,
-			boolean[] setAsDefault) {
+			boolean[] setAsDefault) /** @j2sIgnore*/ {
+
 		// determine if other engines are available for the video extension
 		ArrayList<VideoType> movieEngines = new ArrayList<VideoType>();
 		VideoType movieType = (checkTypes ? VideoIO.getMovieType(XML.getExtension(path)) : null);
@@ -1205,7 +1212,7 @@ public class VideoIO {
 		}
 		// provide immediate way to open with other engines
 		JCheckBox setAsDefaultBox = new JCheckBox(MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Checkbox")); //$NON-NLS-1$
-		video = VideoIO.getVideo(path, movieEngines, setAsDefaultBox, frame);
+		video = VideoIO.getVideoFromDialog(path, movieEngines, setAsDefaultBox, frame);
 		boolean setDefault = setAsDefaultBox.isSelected();
 		if (video != null && setDefault) {
 			MovieFactory.setEngine(video);
@@ -1213,7 +1220,6 @@ public class VideoIO {
 		}
 		return video;
 	}
-	
 }
 
 /*

@@ -31,6 +31,8 @@
  */
 package org.opensourcephysics.media.core;
 
+import java.io.File;
+
 /**
  * This defines methods common to all video types.
  *
@@ -95,6 +97,14 @@ public interface VideoType {
    * @return the default file filter
    */
   public VideoFileFilter getDefaultFileFilter();
+
+  default public boolean accepts(File file) {
+	  VideoFileFilter[] filters = getFileFilters();
+	  for (int i = filters.length; --i >= 0;)
+		  if (filters[i].accept(file))
+			  return true;
+	  return false;
+  }
 
 }
 

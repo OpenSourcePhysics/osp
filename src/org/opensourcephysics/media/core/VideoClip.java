@@ -714,7 +714,7 @@ public class VideoClip {
 					JOptionPane.showMessageDialog(null,  "\"" + path + "\" could not be opened");
 				}
 				
-				// Java only
+	
 				/**
 				 * Java only -- transpiler can skip this
 				 * 

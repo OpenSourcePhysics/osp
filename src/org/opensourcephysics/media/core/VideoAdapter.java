@@ -227,6 +227,7 @@ public abstract class VideoAdapter implements Video {
    * @return the current video image with filters applied
    */
   public BufferedImage getImage() {
+	  refreshBufferedImage();
     if(!isValidImage) { // bufferedImage needs refreshing
       isValidImage = true;
       Graphics g = bufferedImage.createGraphics();
@@ -857,23 +858,25 @@ public abstract class VideoAdapter implements Video {
     return rate;
   }
 
-  /**
-   * Sets the image coordinate system used to convert from
-   * imagespace to worldspace.
-   *
-   * @param coords the image coordinate system
-   */
-  public void setCoords(ImageCoordSystem coords) {
-    if(coords==this.coords) {
-      return;
-    }
-    this.coords.removePropertyChangeListener(this);
-    coords.addPropertyChangeListener(this);
-    this.coords = coords;
-    isMeasured = true;
-    isValidMeasure = false;
-    firePropertyChange("coords", null, coords); //$NON-NLS-1$
-  }
+	/**
+	 * Sets the image coordinate system used to convert from imagespace to
+	 * worldspace.
+	 *
+	 * @param newCoords the image coordinate system
+	 */
+	public void setCoords(ImageCoordSystem newCoords) {
+		if (newCoords == coords) {
+			return;
+		}
+		if (coords != null) {
+			coords.removePropertyChangeListener(this);
+		}
+		newCoords.addPropertyChangeListener(this);
+		coords = newCoords;
+		isMeasured = true;
+		isValidMeasure = false;
+		firePropertyChange("coords", null, newCoords); //$NON-NLS-1$
+	}
 
   /**
    * Gets the image coordinate system.
