@@ -181,6 +181,7 @@ public class VideoIO {
 	static {
 		videoTypes = new ArrayList<VideoType>();
 		videoFileFilter = new VideoFileFilter();
+		MovieFactory.hasVideoEngine(); // should load video types
 		// add video types
 		addVideoType(new GifVideoType());
 // BH! is there any question here?
