@@ -31,9 +31,8 @@ public class MovieFactory {
 
 	private static String movieVideoName;
 
-	private static ArrayList<VideoType> movieVideoTypes = new ArrayList<VideoType>();
-
-	public static boolean isMovieTypeAvailable;
+	public static boolean hadXuggleError = false;
+	public static Boolean xuggleIsAvailable = null;
 
 	
 	/**
@@ -65,7 +64,7 @@ public class MovieFactory {
 			new PropertyChangeListener() {
 				public void propertyChange(PropertyChangeEvent e) {
 					if (e.getPropertyName().equals("xuggle_error")) { //$NON-NLS-1$
-						isMovieTypeAvailable = false;
+						hadXuggleError = true;
 						// so noted; remove errorListener
 						OSPLog.getOSPLog().removePropertyChangeListener(errorListener[0]);
 						errorListener[0] = null;
@@ -78,13 +77,15 @@ public class MovieFactory {
 	    OSPLog.getOSPLog().addPropertyChangeListener(errorListener[0]);
 	}
 	
+	private static ArrayList<VideoType> movieVideoTypes = new ArrayList<VideoType>();
+
 	/**
 	 * Adds a video engine to the list of available engines
 	 *
 	 * @param movieVideoType the video engine type
 	 */
 	public static void addMovieVideoType(VideoType movieVideoType) {
-		if (movieVideoType == null)
+		if (movieVideoType == null || movieVideoTypes == null)
 			return;
 		OSPLog.finest(movieVideoType.getClass().getSimpleName() + " " + movieVideoType.getDefaultExtension()); //$NON-NLS-1$
 		for (VideoType next : movieVideoTypes) {
@@ -119,16 +120,18 @@ public class MovieFactory {
 	}
 
 	public static void ensureAvailable() throws Error {
-		if (OSPRuntime.isJS)
+		if (OSPRuntime.isJS || xuggleIsAvailable == Boolean.TRUE)
 			return;
-		if (!isMovieTypeAvailable)
+		if (hadXuggleError || xuggleIsAvailable == Boolean.FALSE)
 			throw new Error("Video frame extractor unavailable"); //$NON-NLS-1$
 		boolean logConsole = OSPLog.isConsoleMessagesLogged();
 		try {
 			OSPLog.setConsoleMessagesLogged(false);
 			Class.forName("com.xuggle.xuggler.IContainer"); //$NON-NLS-1$
+			xuggleIsAvailable = Boolean.TRUE;
 			OSPLog.setConsoleMessagesLogged(logConsole);
 		} catch (Exception ex) {
+			xuggleIsAvailable = Boolean.FALSE;
 			OSPLog.setConsoleMessagesLogged(logConsole);
 			throw new Error("Video frame extractor unavailable"); //$NON-NLS-1$
 		}
