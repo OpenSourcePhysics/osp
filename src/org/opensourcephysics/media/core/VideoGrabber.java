@@ -35,7 +35,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.display.Drawable;
-import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.gif.GifVideoRecorder;
 import org.opensourcephysics.tools.VideoCaptureTool;
 
@@ -78,10 +77,6 @@ public class VideoGrabber extends VideoCaptureTool {
   int[] pixels = new int[1];
   Map<String, VideoType> vidTypes = new HashMap<String, VideoType>();
   boolean previewAll = false;
-
-  static{  // added by W. Christian
-	  OSPRuntime.registerWithVidoeoIO();
-   }
 
   /**
    * Constructor that uses default video dimensions.

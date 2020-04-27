@@ -77,8 +77,6 @@ public class OSPRuntime {
 
 	public static boolean autoAddLibrary = !isJS; // for ResourceLoader
 
-	public static boolean canReadJSMovieFiles = true; // wishful thinking!
-	
 	public static boolean canRecordMovieFiles = !isJS; // MovieVideoType.recordable default
 
 	public static boolean checkTempDirCache = isJS; // for ResourceLoader.
@@ -1409,10 +1407,6 @@ public class OSPRuntime {
 			return false;
 		}
 
-	}
-
-	public static void registerWithVidoeoIO() {
-		MovieFactory.registerWithViewoIO();
 	}
 
 	/**

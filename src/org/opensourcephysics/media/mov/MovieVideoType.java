@@ -24,17 +24,14 @@
  * please see <https://www.compadre.org/osp/>.
  */
 package org.opensourcephysics.media.mov;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
 import java.util.TreeSet;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.core.MediaRes;
-import org.opensourcephysics.media.core.VideoFileFilter;
 import org.opensourcephysics.media.core.Video;
+import org.opensourcephysics.media.core.VideoFileFilter;
 import org.opensourcephysics.media.core.VideoRecorder;
 import org.opensourcephysics.media.core.VideoType;
 
@@ -48,43 +45,21 @@ public class MovieVideoType implements VideoType, MovieVideoI {
 	
   protected static TreeSet<VideoFileFilter> movieFileFilters 
   		= new TreeSet<VideoFileFilter>();
-  protected static PropertyChangeListener errorListener;
-  protected static boolean isMovieTypeAvailable = true;
   protected boolean recordable = OSPRuntime.canRecordMovieFiles;
   
   static {
-  	errorListener = new PropertyChangeListener() {
-    	public void propertyChange(PropertyChangeEvent e) {
-    		if (e.getPropertyName().equals("xuggle_error")) { //$NON-NLS-1$
-    			isMovieTypeAvailable = false;
-    		}
-    	}
-  	};
-    OSPLog.getOSPLog().addPropertyChangeListener(errorListener);
     MovieFactory.startMovieThumbnailTool();
   }
   
   private VideoFileFilter singleTypeFilter; // null for general type
     
-  /**
-   * Constructor attempts to load a movie class the first time used.
-   * This will throw an error if movies are not available.
-   */
-  public MovieVideoType() {
-	  if (OSPRuntime.isJS && OSPRuntime.canReadJSMovieFiles)
-		  return;
-  	if (!isMovieTypeAvailable)
-			throw new Error("Video frame extractor unavailable"); //$NON-NLS-1$
-  	boolean logConsole = OSPLog.isConsoleMessagesLogged();
-  	try {
-    	OSPLog.setConsoleMessagesLogged(false);
-  		Class.forName(MovieFactory.getMovieClass());
-    	OSPLog.setConsoleMessagesLogged(logConsole);
-		} catch (Exception ex) {
-    	OSPLog.setConsoleMessagesLogged(logConsole);
-			throw new Error("Video frame extractor unavailable"); //$NON-NLS-1$
-		}
-  }
+	/**
+	 * Constructor attempts to load a movie class the first time used. This will
+	 * throw an error if movies are not available.
+	 */
+	public MovieVideoType() {
+		MovieFactory.ensureAvailable();
+	}
 
   /**
    * Constructor with a file filter for a specific container type.
@@ -106,7 +81,7 @@ public class MovieVideoType implements VideoType, MovieVideoI {
    * @return a new Xtractor video
    */
   public Video getVideo(String name) { 
-    	Video video = MovieFactory.newVideo(name, getDescription());
+    	Video video = MovieFactory.newMovieVideo(name, getDescription());
     	if (video != null)
     		video.setProperty("video_type", this); //$NON-NLS-1$
       return video;

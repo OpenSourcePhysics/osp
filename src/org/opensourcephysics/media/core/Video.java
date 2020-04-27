@@ -196,6 +196,8 @@ public interface Video extends InteractiveImage, Playable, Trackable, PropertyCh
 	 */
 	public void dispose();
 
+	public String getName();
+
 }
 
 /*

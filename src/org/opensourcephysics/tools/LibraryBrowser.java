@@ -2622,10 +2622,6 @@ public class LibraryBrowser extends JPanel {
    */
   static class TrackerDLFilter implements FileFilter {
   	
-		static {
-			  OSPRuntime.registerWithVidoeoIO();
-		}
-  	
     public boolean accept(File file) {
     	if (file==null || file.isDirectory()) return false;
     	String name = file.getName();

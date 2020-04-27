@@ -35,7 +35,7 @@ public class Diagnostics {
   final static String NEWLINE = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
 
   static String requester;
-  static Component dialogOwner;
+  protected static Component dialogOwner;
 
   public static void aboutJava() {
     String version = System.getProperty("java.version", "unknown version");   //$NON-NLS-1$ //$NON-NLS-2$
@@ -65,6 +65,10 @@ public class Diagnostics {
 	 */
   public static void setDialogOwner(Component owner) {
   	dialogOwner = owner;
+  }
+  
+  public static Component getDialogOwner() {
+	  return dialogOwner;
   }
   
   public static File getJarFile(Class<?> classInJar) throws Exception {

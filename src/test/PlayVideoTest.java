@@ -8,8 +8,6 @@ public class PlayVideoTest {
 	
 	
 	public static void main(String[] args) {
-		// register JSVideoTypes with VideoIO here
-		MovieFactory.registerWithViewoIO();
 		VideoPanel panel = new VideoPanel();
 		VideoFrame frame = new VideoFrame(panel);
 		frame.setVisible(true);

@@ -828,6 +828,11 @@ public class ImageVideo extends VideoAdapter {
 
   }
 
+	@Override
+	public String getName() {
+		return "Image";
+	}
+
 }
 
 /*

@@ -55,7 +55,6 @@ import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.Interactive;
 import org.opensourcephysics.display.OSPRuntime;
-import org.opensourcephysics.media.mov.JSMovieVideo;
 
 /**
  * This provides basic implementations of all Video methods. Subclasses should
@@ -1009,6 +1008,9 @@ public abstract class VideoAdapter implements Video {
 	 */
 	abstract public static class Loader implements XML.ObjectLoader {
 		
+		protected Loader() {
+			// only created by a VideoAdapter
+		}
 		/**
 		 * subclassed to GifVideo, ImageVideo, JSMovieVideo, and XuggleVideo
 		 * @param path

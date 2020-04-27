@@ -41,7 +41,7 @@ import org.opensourcephysics.media.core.AsyncVideoI;
 import org.opensourcephysics.media.core.DoubleArray;
 import org.opensourcephysics.media.core.ImageCoordSystem;
 import org.opensourcephysics.media.core.VideoAdapter;
-import org.opensourcephysics.media.core.VideoFrame;
+import org.opensourcephysics.media.core.VideoFileFilter;
 import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.media.core.VideoType;
 import org.opensourcephysics.tools.Resource;
@@ -62,6 +62,30 @@ import swingjs.api.js.HTML5Video;
  */
 public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVideoI {
 	
+	public static boolean registered;
+
+	/**
+	 * Registers HTML5 video types with VideoIO class for file reading
+	 *
+	 * see https://en.wikipedia.org/wiki/HTML5_video#Browser_support
+	 */
+	static {
+		MovieFactory.addMovieVideoType(new MovieVideoType());
+		// add common video types -- was JSMovieIO
+		for (String ext : VideoIO.JS_VIDEO_EXTENSIONS) { // {"mov", "ogg", "mp4"}
+			VideoFileFilter filter = new VideoFileFilter(ext, new String[] { ext });
+			MovieVideoType movieType = new MovieVideoType(filter);
+			movieType.setRecordable(false);
+			VideoIO.addVideoType(movieType);
+			ResourceLoader.addExtractExtension(ext);
+		}
+		registered = true;
+	}
+  
+	public Object getProperty(String name) {
+		return super.getProperty(name);
+	}
+
 	// array of frame start times in milliseconds
 	private double[] startTimes;
 	private long systemStartPlayTime;
@@ -361,8 +385,6 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 
 	private class State implements StateMachine {
 		
-		long keyTimeStamp = Long.MIN_VALUE;
-		long startTimeStamp = Long.MIN_VALUE;
 		ArrayList<Double> seconds = new ArrayList<Double>();
 
 		static final int STATE_ERROR             = -99;
@@ -612,6 +634,11 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		return null;
 	}
 
+
+	@Override
+	public String getName() {
+		return "JS";
+	}
 
 }
 
