@@ -70,7 +70,9 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 * see https://en.wikipedia.org/wiki/HTML5_video#Browser_support
 	 */
 	static {
+		// BH question: what does this next line do? Maybe nothing?
 		MovieFactory.addMovieVideoType(new JSMovieVideoType());
+		
 		// add common video types -- was JSMovieIO
 		for (String ext : VideoIO.JS_VIDEO_EXTENSIONS) { // {"mov", "ogg", "mp4"}
 			VideoFileFilter filter = new VideoFileFilter(ext, new String[] { ext });
