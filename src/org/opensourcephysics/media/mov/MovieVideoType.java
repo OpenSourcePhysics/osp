@@ -142,10 +142,13 @@ public abstract class MovieVideoType implements VideoType, MovieVideoI {
    * @return true if the video is this type
    */
   public boolean isType(Video video) {
-  	if (!(video instanceof MovieVideoI)) return false;
-  	if (singleTypeFilter==null) return true;
-  	String name = (String)video.getProperty("name"); //$NON-NLS-1$
-  	return singleTypeFilter.accept(new File(name));
+	  // BH I think all we need here is 
+	  return (video instanceof MovieVideoI);
+//	  
+//  	if (!(video instanceof MovieVideoI)) return false;
+//  	if (singleTypeFilter==null) return true;
+//  	String name = (String)video.getProperty("name"); //$NON-NLS-1$
+//  	return singleTypeFilter.accept(new File(name));
   }
 
   /**
