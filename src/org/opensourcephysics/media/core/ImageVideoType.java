@@ -178,7 +178,7 @@ public class ImageVideoType implements VideoType {
    * @return true if the video is this type
    */
   public boolean isType(Video video) {
-    return video.getClass().equals(ImageVideo.class);
+    return video instanceof ImageVideo;
   }
 
 }

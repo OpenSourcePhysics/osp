@@ -126,7 +126,7 @@ public class GifVideoType implements VideoType {
    * @return true if the video is this type
    */
   public boolean isType(Video video) {
-    return video.getClass().equals(GifVideo.class);
+    return video instanceof GifVideo;
   }
 }
 
