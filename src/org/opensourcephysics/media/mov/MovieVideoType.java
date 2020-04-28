@@ -27,7 +27,6 @@ package org.opensourcephysics.media.mov;
 import java.io.File;
 import java.util.TreeSet;
 
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.core.MediaRes;
 import org.opensourcephysics.media.core.Video;
@@ -41,7 +40,7 @@ import org.opensourcephysics.media.core.VideoType;
  * @author Douglas Brown
  * @version 1.0
  */
-public class MovieVideoType implements VideoType, MovieVideoI {
+public abstract class MovieVideoType implements VideoType, MovieVideoI {
 	
   protected static TreeSet<VideoFileFilter> movieFileFilters 
   		= new TreeSet<VideoFileFilter>();
@@ -51,7 +50,7 @@ public class MovieVideoType implements VideoType, MovieVideoI {
     MovieFactory.startMovieThumbnailTool();
   }
   
-  private VideoFileFilter singleTypeFilter; // null for general type
+  protected VideoFileFilter singleTypeFilter; // null for general type
     
 	/**
 	 * Constructor attempts to load a movie class the first time used. This will
@@ -155,9 +154,7 @@ public class MovieVideoType implements VideoType, MovieVideoI {
    * @return a description
    */
   public String getDescription() {
-  	if (singleTypeFilter!=null)
-  		return singleTypeFilter.getDescription();
-    return MediaRes.getString("XuggleVideoType.Description"); //$NON-NLS-1$
+  	return (singleTypeFilter == null ? null : singleTypeFilter.getDescription());
   }
 
   /**
