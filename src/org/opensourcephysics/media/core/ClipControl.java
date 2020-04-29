@@ -59,6 +59,7 @@ public abstract class ClipControl implements PropertyChangeListener {
   protected DataTrack timeSource;
   protected double savedFrameDuration;
   public boolean videoVisible = true;
+public static final String PROPERTY_FRAMENUMBER = "framenumber";
 
   /**
    * Returns an instance of ClipControl.

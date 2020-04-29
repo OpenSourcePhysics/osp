@@ -555,10 +555,10 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
    */
   public void propertyChange(PropertyChangeEvent e) {
     String name = e.getPropertyName();
-    if(name.equals("stepnumber")) {                               // from ClipControl //$NON-NLS-1$
+    if(name.equals(VideoPanel.PROPERTY_STEPNUMBER)) {                               // from ClipControl //$NON-NLS-1$
       updateReadout();
       updatePlayButtons(clipControl.isPlaying());
-      firePropertyChange("stepnumber", null, e.getNewValue());    // to VideoPanel //$NON-NLS-1$
+      firePropertyChange(VideoPanel.PROPERTY_STEPNUMBER, null, e.getNewValue());    // to VideoPanel //$NON-NLS-1$
     } else if(name.equals("frameduration")) {                     // from ClipControl //$NON-NLS-1$
       updateReadout();
       firePropertyChange("frameduration", null, e.getNewValue()); // to VideoPanel //$NON-NLS-1$
