@@ -3,20 +3,35 @@ package debugging;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.FlowLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Random;
 
 import javax.swing.*;
 
-public class ProgressBarTest {
+import javafx.concurrent.Task;
+
+public class ProgressBarTest implements PropertyChangeListener {
 	
 	int min = 0;
 	int max = 10;
-	int count = 0;  
-	JSlider slider = new JSlider(JSlider.HORIZONTAL, min, max, count);
+	int progress = 0; 
+	boolean done=true;
+	JProgressBar progressBar;
+	JButton button;
+	Task task;
 	
 	ProgressBarTest(){
+		progressBar = new JProgressBar(min, max);
+		progressBar.setString("Not running");
+		progressBar.setValue(0);
+		progressBar.setStringPainted(true);
+		
 		JFrame frame = new JFrame("Async Progress Bar");
 		frame.setLayout(new BorderLayout());
 
@@ -25,14 +40,19 @@ public class ProgressBarTest {
 
 		JLabel label = new JLabel("Progress Bar Test");
 
-		JButton button = new JButton();
+		button = new JButton();
 		button.setText("Count");
 		
 		button.addActionListener(new ActionListener(){
 
 			@Override
 			public void actionPerformed(ActionEvent e) {	
-				count();
+				progressBar.setString("Running");
+				button.setEnabled(false);
+		    done = false;
+		    task = new Task();
+		    task.addPropertyChangeListener(ProgressBarTest.this);
+		    task.execute();
 			}
 			});
 
@@ -42,7 +62,7 @@ public class ProgressBarTest {
 		JPanel sliderPanel = new JPanel();
 		sliderPanel.setBackground(Color.GREEN);
 		sliderPanel.setSize(300, 50);
-		sliderPanel.add(slider);
+		sliderPanel.add(progressBar);
 
 		frame.setSize(300, 300);
 		frame.add(panel, BorderLayout.NORTH);
@@ -52,39 +72,52 @@ public class ProgressBarTest {
 		frame.setVisible(true);	
 	}
 	
-	void count() {
-		count=0;
-		System.out.println("\nCounting");
-		longJob();
-		slider.setValue(count);
-	}
-	
-	void longJob() {
-		System.out.println("Start long job.");
-		Runnable counting = new Runnable() {
-			@Override
-			public void run() {
-				while(count<max) {  // doing long job
-          try { Thread.sleep(1000); } // sleep one second
-          catch(InterruptedException ie) {
-          	System.err.println("Thread interrupted.");
-          }
-          count++;
-          slider.setValue(count);  // update progress bar
-				}
-				slider.setValue(count);
-				System.out.println("Done long job.\n");
-			} // end of run
-		};
-		
-    Thread t = new Thread(counting);
-    t.start();
-		
-	}
+  class Task extends SwingWorker{
+    /*
+     * Main task. Executed in background thread.
+     */
+    @Override
+    public Void doInBackground() {
+        int progress = 0;
+        setProgress(0);
+        while (progress < max) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ignore) {
+            	System.err.println("Progress interrupted.");
+            }
+            progress++;
+            setProgress(progress);
+        }
+        return null;
+    }
+
+    /*
+     * Executed in event dispatching thread
+     */
+    @Override
+    public void done() {
+        Toolkit.getDefaultToolkit().beep();
+        button.setEnabled(true);
+        System.out.println("Done!\n");
+        progressBar.setString("Done");
+    }
+}
+
 
 	public static void main(String[] args) {
      new ProgressBarTest();
 	}
+
+  /**
+   * Invoked when task's progress property changes.
+   */
+  public void propertyChange(PropertyChangeEvent evt) {
+      if ("progress" == evt.getPropertyName()) {
+          int progress = (Integer) evt.getNewValue();
+          progressBar.setValue(progress);
+      } 
+  }
 
 }
 
