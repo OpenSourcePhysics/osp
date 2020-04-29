@@ -2254,7 +2254,7 @@ public class ResourceLoader {
 					String name = ze.getName();
 					if (flen == 0 && name.equals(fileName)) {
 						flen = -1;
-						break;
+//						break;
 					} else if (flen > 0 && name.startsWith(fileName)) {
 						target = new File(targetName + name.substring(flen));
 					} else {
