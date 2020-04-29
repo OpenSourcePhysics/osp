@@ -18,6 +18,7 @@ import javax.swing.event.MouseInputAdapter;
  * @author Francisco Esquembre
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class InteractivePanel extends DrawingPanel implements InteractiveMouseHandler {
   public static final int MOUSE_PRESSED = 1;
   public static final int MOUSE_RELEASED = 2;

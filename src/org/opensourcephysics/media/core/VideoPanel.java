@@ -72,6 +72,7 @@ import org.opensourcephysics.display.TextPanel;
  * @author Douglas Brown
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class VideoPanel extends InteractivePanel implements PropertyChangeListener {
   // static fields
   protected static int defaultWidth = 640;
