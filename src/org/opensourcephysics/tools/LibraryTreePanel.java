@@ -42,6 +42,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
@@ -73,6 +74,7 @@ import javax.swing.JToolTip;
 import javax.swing.JTree;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.ToolTipManager;
 import javax.swing.border.Border;
@@ -133,7 +135,7 @@ public class LibraryTreePanel extends JPanel {
 		hyperlinkListener = new HyperlinkListener() {
 			public void hyperlinkUpdate(HyperlinkEvent e) {
 				if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-		          	OSPDesktop.displayURL(e.getURL().toString());
+					OSPDesktop.displayURL(e.getURL().toString());
 //
 //					try {
 //						// try the preferred way
@@ -234,7 +236,7 @@ public class LibraryTreePanel extends JPanel {
 			splitPane.setDividerLocation(treeScroller.getPreferredSize().width);
 			isChanged = false;
 			ignoreChanges = false;
-			refreshGUI();
+			refreshGUI(false);
 		}
 	}
 
@@ -331,7 +333,7 @@ public class LibraryTreePanel extends JPanel {
 			treeModel.nodeStructureChanged(rootNode);
 			setSelectedNode(selectedNode);
 		}
-		refreshGUI();
+		refreshGUI(false);
 
 	}
 
@@ -1225,26 +1227,32 @@ public class LibraryTreePanel extends JPanel {
 	 * Refreshes the GUI including locale-dependent resource strings.
 	 */
 	protected void refreshGUI() {
+		refreshGUI(false);
+	}
+
+	protected void refreshGUI(boolean andRebuild) {
 		// set button and label text
-		addCollectionButton.setText(ToolsRes.getString("LibraryTreePanel.Button.AddCollection")); //$NON-NLS-1$
-		addResourceButton.setText(ToolsRes.getString("LibraryTreePanel.Button.AddResource")); //$NON-NLS-1$
-		copyButton.setText(ToolsRes.getString("LibraryTreePanel.Button.Copy")); //$NON-NLS-1$
-		cutButton.setText(ToolsRes.getString("LibraryTreePanel.Button.Cut")); //$NON-NLS-1$
-		pasteButton.setText(ToolsRes.getString("LibraryTreePanel.Button.Paste")); //$NON-NLS-1$
-		moveUpButton.setText(ToolsRes.getString("LibraryTreePanel.Button.Up")); //$NON-NLS-1$
-		moveDownButton.setText(ToolsRes.getString("LibraryTreePanel.Button.Down")); //$NON-NLS-1$
-		metadataButton
-				.setText(metadataButton.isSelected() ? ToolsRes.getString("LibraryTreePanel.Button.Metadata.Hide") : //$NON-NLS-1$
-						ToolsRes.getString("LibraryTreePanel.Button.Metadata.Show")); //$NON-NLS-1$
-		nameLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.Name")); //$NON-NLS-1$
-		typeLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.Type")); //$NON-NLS-1$
-		htmlLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.HTML")); //$NON-NLS-1$
-		basePathLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.BasePath")); //$NON-NLS-1$
-		targetLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.TargetFile")); //$NON-NLS-1$
-		authorLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.Author")); //$NON-NLS-1$
-		contactLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.Contact")); //$NON-NLS-1$
-		keywordsLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.Keywords")); //$NON-NLS-1$
-		metadataLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.Metadata")); //$NON-NLS-1$
+		if (andRebuild) {
+			addCollectionButton.setText(ToolsRes.getString("LibraryTreePanel.Button.AddCollection")); //$NON-NLS-1$
+			addResourceButton.setText(ToolsRes.getString("LibraryTreePanel.Button.AddResource")); //$NON-NLS-1$
+			copyButton.setText(ToolsRes.getString("LibraryTreePanel.Button.Copy")); //$NON-NLS-1$
+			cutButton.setText(ToolsRes.getString("LibraryTreePanel.Button.Cut")); //$NON-NLS-1$
+			pasteButton.setText(ToolsRes.getString("LibraryTreePanel.Button.Paste")); //$NON-NLS-1$
+			moveUpButton.setText(ToolsRes.getString("LibraryTreePanel.Button.Up")); //$NON-NLS-1$
+			moveDownButton.setText(ToolsRes.getString("LibraryTreePanel.Button.Down")); //$NON-NLS-1$
+			metadataButton
+					.setText(metadataButton.isSelected() ? ToolsRes.getString("LibraryTreePanel.Button.Metadata.Hide") : //$NON-NLS-1$
+							ToolsRes.getString("LibraryTreePanel.Button.Metadata.Show")); //$NON-NLS-1$
+			nameLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.Name")); //$NON-NLS-1$
+			typeLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.Type")); //$NON-NLS-1$
+			htmlLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.HTML")); //$NON-NLS-1$
+			basePathLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.BasePath")); //$NON-NLS-1$
+			targetLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.TargetFile")); //$NON-NLS-1$
+			authorLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.Author")); //$NON-NLS-1$
+			contactLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.Contact")); //$NON-NLS-1$
+			keywordsLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.Keywords")); //$NON-NLS-1$
+			metadataLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.Metadata")); //$NON-NLS-1$
+		}
 		browser.refreshButton.setEnabled(getSelectedNode() != null);
 		if (getSelectedNode() == rootNode) {
 			browser.refreshButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Tooltip.Reload")); //$NON-NLS-1$
@@ -1356,7 +1364,7 @@ public class LibraryTreePanel extends JPanel {
 		try {
 			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 			Transferable data = clipboard.getContents(null);
-			String dataString = data == null ? null :  (String) data.getTransferData(DataFlavor.stringFlavor);
+			String dataString = data == null ? null : (String) data.getTransferData(DataFlavor.stringFlavor);
 			if (dataString != null) {
 				XMLControlElement control = new XMLControlElement();
 				control.readXML(dataString);
@@ -1453,7 +1461,7 @@ public class LibraryTreePanel extends JPanel {
 	 * @param index  the index
 	 * @return true if added
 	 */
-	protected boolean insertChildAt(final LibraryTreeNode child, LibraryTreeNode parent, int index) {		
+	protected boolean insertChildAt(final LibraryTreeNode child, LibraryTreeNode parent, int index) {
 		if (tree == null || parent.getChildCount() < index)
 			return false;
 		DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
@@ -2062,31 +2070,9 @@ public class LibraryTreePanel extends JPanel {
 
 		LibraryTreeNode node;
 		boolean hasNewChildren = false;
-		Runnable doneAsync;
-		
+
 		NodeLoader(LibraryTreeNode treeNode) {
 			node = treeNode;
-			
-			doneAsync = new Runnable() {
-
-				@Override
-				public void run() {
-					LibraryTreePanel.htmlPanesByNode.remove(node);
-					LibraryTreePanel.htmlPanesByURL.remove(node.getHTMLURL());
-					if (hasNewChildren) {
-						node.createChildNodes();
-						treeModel.nodeStructureChanged(node);
-					} else {
-						treeModel.nodeChanged(node);
-					}
-					if (node == getSelectedNode()) {
-						showInfo(node);
-					}
-					if (node == rootNode) {
-						browser.refreshTabTitle(pathToRoot, rootResource);
-					}
-				}				
-			};
 		}
 
 		@Override
@@ -2102,60 +2088,78 @@ public class LibraryTreePanel extends JPanel {
 				String ext = "." + XML.getExtension(target); //$NON-NLS-1$
 				URL targetURL = node.getTargetURL(); // returns cached target URL, if any
 				String targetURLPath = targetURL.toExternalForm();
-				String targetName = XML.getName(targetURLPath);
-				if (node.getName().equals(targetName)) {
-					targetName = XML.stripExtension(targetName);
+				String name = XML.getName(targetURLPath);
+				if (node.getName().equals(name)) {
 					// look inside zip for html with same name as zip or trk
-					Map<String, ZipEntry> files = ResourceLoader.getZipContents(targetURLPath);
-					String htmlInfoPath = null;
-					for (String s : files.keySet()) {
-						String htmlName = XML.stripExtension(XML.getName(s));
-						if (s.toLowerCase().contains(".htm") //$NON-NLS-1$
-								&& (htmlName.equals(targetName + "_info"))) { //$NON-NLS-1$
-							htmlInfoPath = s;
-						}
-					}
-					if (htmlInfoPath == null) {
-						for (String s : files.keySet()) {
-							if ("trk".equals(XML.getExtension(s))) { //$NON-NLS-1$
-								String trkName = XML.stripExtension(XML.getName(s));
-								for (String ss : files.keySet()) {
-									String htmlName = XML.stripExtension(XML.getName(ss));
-									if (ss.toLowerCase().contains(".htm") //$NON-NLS-1$
-											&& (htmlName.equals(trkName + "_info"))) { //$NON-NLS-1$
-										htmlInfoPath = ss;
+					name = XML.stripExtension(name);
+					String targetName = name;
+					
+					ResourceLoader.getZipContentsAsync(targetURLPath, new Function<Map<String, ZipEntry>, Void>() {
+
+						@Override
+						public Void apply(Map<String, ZipEntry> files) {
+							if (files == null)
+								return null;
+							String htmlPath = node.getHTMLPath();
+							String htmlInfoPath = null;
+							for (String s : files.keySet()) {
+								String htmlName = XML.stripExtension(XML.getName(s));
+								if (s.toLowerCase().contains(".htm") //$NON-NLS-1$
+										&& (htmlName.equals(targetName + "_info"))) { //$NON-NLS-1$
+									htmlInfoPath = s;
+								}
+							}
+							if (htmlInfoPath == null) {
+								for (String s : files.keySet()) {
+									if ("trk".equals(XML.getExtension(s))) { //$NON-NLS-1$
+										String trkName = XML.stripExtension(XML.getName(s));
+										for (String ss : files.keySet()) {
+											String htmlName = XML.stripExtension(XML.getName(ss));
+											if (ss.toLowerCase().contains(".htm") //$NON-NLS-1$
+													&& (htmlName.equals(trkName + "_info"))) { //$NON-NLS-1$
+												htmlInfoPath = ss;
+											}
+										}
 									}
 								}
 							}
-						}
-					}
 
-					if (htmlInfoPath != null) {
-						// set node record's HTML path to relative path
-						htmlPath = targetURLPath + "!/" + htmlInfoPath; //$NON-NLS-1$
-						String htmlCode = ResourceLoader.getHTMLCode(htmlPath);
+							if (htmlInfoPath != null) {
+								// set node record's HTML path to relative path
+								htmlPath = targetURLPath + "!/" + htmlInfoPath; //$NON-NLS-1$
+								String htmlCode = ResourceLoader.getHTMLCode(htmlPath);
 
-						String redirect = LibraryBrowser.getRedirectFromHTMLCode(htmlCode);
-						if (redirect != null) {
-							node.record.setHTMLPath(redirect);
-							node.metadataSource = targetName + ext + "!/" + htmlInfoPath; //$NON-NLS-1$
-						} else {
-							node.record.setHTMLPath(targetName + ext + "!/" + htmlInfoPath); //$NON-NLS-1$
+								String redirect = LibraryBrowser.getRedirectFromHTMLCode(htmlCode);
+								if (redirect != null) {
+									node.record.setHTMLPath(redirect);
+									node.metadataSource = targetName + ext + "!/" + htmlInfoPath; //$NON-NLS-1$
+								} else {
+									node.record.setHTMLPath(targetName + ext + "!/" + htmlInfoPath); //$NON-NLS-1$
+								}
+
+								String title = ResourceLoader.getTitleFromHTMLCode(htmlCode);
+								if (title != null) {
+									node.record.setName(title);
+								}
+							}
+							loadComPadreNodesAsync(htmlPath, target);
+							return null;
 						}
 
-						String title = ResourceLoader.getTitleFromHTMLCode(htmlCode);
-						if (title != null) {
-							node.record.setName(title);
-						}
-					}
+					});
+					return null;
 				}
 			}
+			loadComPadreNodesAsync(htmlPath, target);
+			return null;
+		}
 
+		private void loadComPadreNodesAsync(String htmlPath, String target) {
 			// load ComPADRE nodes
 			String urlPath = node.record.getProperty("reload_url"); //$NON-NLS-1$
 
 			String htmlPathFinal = htmlPath;
-			
+
 			Runnable onDone = new Runnable() {
 				public void run() {
 
@@ -2183,21 +2187,20 @@ public class LibraryTreePanel extends JPanel {
 					// load metadata into node
 					node.getMetadata();
 
-					doneAsync.run();
+					doneAsync();
 				}
-				
+
 			};
-			
+
 			Runnable onSuccess = new Runnable() {
 				public void run() {
-				hasNewChildren = true;
-				onDone.run();
+					hasNewChildren = true;
+					onDone.run();
 				}
 			};
-			
-			
+
 			if (target != null && target.contains(LibraryComPADRE.HOST)) {
-				
+
 				if (node.record instanceof LibraryCollection) {
 					hasNewChildren = false;
 					LibraryComPADRE.loadResources(node, onSuccess, onDone);
@@ -2205,8 +2208,31 @@ public class LibraryTreePanel extends JPanel {
 					LibraryComPADRE.reloadResource(node, urlPath, onDone);
 				}
 			}
-			
-			return null;
+
+		}
+
+		protected void doneAsync() {
+			SwingUtilities.invokeLater(new Runnable() {
+
+				@Override
+				public void run() {
+					LibraryTreePanel.htmlPanesByNode.remove(node);
+					LibraryTreePanel.htmlPanesByURL.remove(node.getHTMLURL());
+					if (hasNewChildren) {
+						node.createChildNodes();
+						treeModel.nodeStructureChanged(node);
+					} else {
+						treeModel.nodeChanged(node);
+					}
+					if (node == getSelectedNode()) {
+						showInfo(node);
+					}
+					if (node == rootNode) {
+						browser.refreshTabTitle(pathToRoot, rootResource);
+					}
+				}
+				
+			});
 		}
 
 		@Override
@@ -2252,42 +2278,83 @@ public class LibraryTreePanel extends JPanel {
 					}
 				}
 				if (htmlStr != null) {
+					HTMLPane pane = htmlPane;
 					if (htmlStr == "") {
-						try {
-							htmlStr = new String(ResourceLoader.getURLContents(url));
-						} catch (Exception ex) {
-							htmlStr = ("<h2>" + node + "</h2>"); //$NON-NLS-1$ //$NON-NLS-2$
+						if (OSPRuntime.allowAsyncURL) {
+							ResourceLoader.getURLContentsAsync(url, new Function<byte[], Void>() {
+
+								@Override
+								public Void apply(byte[] bytes) {
+									String s;
+									if (bytes == null)
+										s = ("<h2>" + node + "</h2>"); //$NON-NLS-1$ //$NON-NLS-2$
+									else
+										s = new String(bytes);
+									showHTMLDocument(pane, url, s);
+									htmlPanesByNode.put(node, pane);
+									pane.setCaretPosition(0);
+									whenDone(pane);
+									return null;
+								}
+
+							});
+							return null;
 						}
+						htmlStr = new String(ResourceLoader.getURLContents(url));
 					}
-					HTMLDocument document = (HTMLDocument) htmlPane.getDocument();
-					document.setBase(url);
-					htmlPane.setText(ResourceLoader.fixHTTPS(htmlStr, url));
-					if (htmlPane.getDocument() instanceof HTMLDocument) {
-						document.getStyleSheet().addRule(LibraryResource.getBodyStyle());
-						document.getStyleSheet().addRule(LibraryResource.getH1Style());
-						document.getStyleSheet().addRule(LibraryResource.getH2Style());
-					}
+					showHTMLDocument(htmlPane, url, htmlStr);
 				}
 				htmlPanesByNode.put(node, htmlPane);
 				htmlPane.setCaretPosition(0);
 			}
-			return htmlPane;
+			whenDone(htmlPane);
+			return null;
+		}
+
+		/**
+		 * Only when the resource is loaded are we ready for sending the "done()"
+		 * message to AWTEventQueue. Java does this loading synchronously, but in a
+		 * concurrent thread; JavaScript will do it asynchronously in a background
+		 * thread.
+		 * 
+		 * Note that SwingWorkers may finish doInBackground and set "isDone" long before
+		 * they ever fire done() because done() is fired from an event added to the
+		 * event queue. But even this is not sufficient for truly asynchronous work.
+		 * 
+		 * @param htmlPane
+		 */
+		protected void whenDone(HTMLPane htmlPane) {
+			SwingUtilities.invokeLater(new Runnable() {
+
+				@Override
+				public void run() {
+					if (htmlPane != null && node == getSelectedNode()) {
+						htmlScroller.setViewportView(htmlPane);
+						if (node == rootNode) {
+							browser.refreshButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Tooltip.Reload")); //$NON-NLS-1$
+						} else
+							browser.refreshButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Tooltip.Refresh")); //$NON-NLS-1$
+					}
+				}
+
+			});
+
 		}
 
 		@Override
 		protected void done() {
-			HTMLPane htmlPane = null;
-			try {
-				htmlPane = get();
-			} catch (Exception e) {
-			}
-			if (htmlPane != null && node == getSelectedNode()) {
-				htmlScroller.setViewportView(htmlPane);
-				if (node == rootNode) {
-					browser.refreshButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Tooltip.Reload")); //$NON-NLS-1$
-				} else
-					browser.refreshButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Tooltip.Refresh")); //$NON-NLS-1$
-			}
+			// replaced by whenDone() for asynchronous file loading
+		}
+	}
+
+	protected static void showHTMLDocument(HTMLPane htmlPane, URL url, String htmlStr) {
+		HTMLDocument document = (HTMLDocument) htmlPane.getDocument();
+		document.setBase(url);
+		htmlPane.setText(ResourceLoader.fixHTTPS(htmlStr, url));
+		if (htmlPane.getDocument() instanceof HTMLDocument) {
+			document.getStyleSheet().addRule(LibraryResource.getBodyStyle());
+			document.getStyleSheet().addRule(LibraryResource.getH1Style());
+			document.getStyleSheet().addRule(LibraryResource.getH2Style());
 		}
 	}
 
@@ -2427,7 +2494,7 @@ public class LibraryTreePanel extends JPanel {
 			Color c = getForeground();
 			if (node.record instanceof LibraryCollection) {
 				icon = expanded ? getOpenIcon() : getClosedIcon();
-				// the color when it has not been loaded. 
+				// the color when it has not been loaded.
 				if (node.getTarget() != null)
 					c = Color.red;
 			}

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.function.Function;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -75,6 +76,8 @@ public class OSPRuntime {
 	public static boolean isJS = /** @j2sNative true || */
 			false;
 
+	public static boolean allowAsyncURL = isJS; // for OSPRuntime and Library SwingWorkers
+	
 	public static boolean autoAddLibrary = !isJS; // for ResourceLoader
 
 	public static boolean canRecordMovieFiles = !isJS; // MovieVideoType.recordable default
@@ -1459,6 +1462,14 @@ public class OSPRuntime {
 	public static void showStatus(String msg) {
 		if (isJS && logToJ2SMonitor) 
 			jsutil.showStatus(msg,  true);
+	}
+
+	public static void getURLBytesAsync(URL url, Function<byte[], Void> whenDone) {
+		if (allowAsyncURL) {
+			jsutil.getURLBytesAsync(url,  whenDone);
+		} else {
+			whenDone.apply(jsutil.getURLBytes(url));
+		}
 	}
 
 }

@@ -8,6 +8,7 @@
 package org.opensourcephysics.controls;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -25,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import javax.swing.JOptionPane;
 
@@ -137,6 +139,7 @@ public class XMLControlElement implements XMLControl {
 	}
   }
 
+  
 /**
    * Constructs a control and reads the specified input.
    * Input may be a file name or an xml string
@@ -446,6 +449,58 @@ public class XMLControlElement implements XMLControl {
   }
 
   static Object sync= new Object();
+
+	public void readAsync(String name, Function<String, Void> whenDone) {
+		synchronized (sync) {
+			OSPLog.finest("reading " + name); //$NON-NLS-1$
+			Resource res = ResourceLoader.getResource(name);
+
+			if (res == null) {
+				processReader(name, null, null, null);
+				return;
+			}
+			if (res.getFile() != null) {
+				// synchronous for file
+				processReader(name, res, res.openReader(), whenDone);
+				return;
+			}
+			ResourceLoader.getURLContentsAsync(res.getURL(), new Function<byte[], Void>() {
+
+				@Override
+				public Void apply(byte[] bytes) {
+
+					if (bytes == null) {
+						processReader(name, null, null, whenDone);
+					} else {
+						processReader(name, res, ResourceLoader.readerForStream(new ByteArrayInputStream(bytes), null), whenDone);
+					}
+					return null;
+				}
+
+			});
+		}
+	}
+
+	protected void processReader(String name, Resource res, BufferedReader in, Function<String, Void> whenDone) {
+		if (res == null) {
+			OSPLog.warning("Could not open " + name);
+			readFailed = true;
+			whenDone.apply(null);
+			return;
+		}
+		read(in);
+		String path = XML.getDirectoryPath(name);
+		if (!path.equals("")) { //$NON-NLS-1$
+			ResourceLoader.addSearchPath(path);
+			basepath = path;
+		} else {
+			basepath = XML.getDirectoryPath(res.getAbsolutePath());
+		}
+		File file = res.getFile();
+		canWrite = ((file != null) && file.canWrite());
+		whenDone.apply(res.getAbsolutePath());
+	}
+
 
 	/**
 	 * Reads data into this control from a named source.
@@ -1875,6 +1930,7 @@ public class XMLControlElement implements XMLControl {
     }
     return pointer-1;
   }
+
 
 }
 
