@@ -79,7 +79,7 @@ public class VideoClip {
   private int[] stepFrames;
   ClipInspector inspector;
   private PropertyChangeSupport support;
-  private boolean playAllSteps = false;
+  private boolean playAllSteps = true;
   private boolean isDefaultState;
   private boolean isAdjusting = false;
   private int endFrame;
