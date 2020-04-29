@@ -307,18 +307,19 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	private void continuePlaying() {
 		int n = getFrameNumber();
 		if (n < getEndFrameNumber()) {
-			long elapsedTime = System.currentTimeMillis() - systemStartPlayTime;
-			double frameTime = frameStartPlayTime + getRate() * elapsedTime;
-			int frameToPlay = getFrameNumberBefore(frameTime);
-			while (frameToPlay > -1 && frameToPlay <= n) {
-				elapsedTime = System.currentTimeMillis() - systemStartPlayTime;
-				frameTime = frameStartPlayTime + getRate() * elapsedTime;
-				frameToPlay = getFrameNumberBefore(frameTime);
-			}
-			if (frameToPlay == -1) {
-				frameToPlay = getEndFrameNumber();
-			}
-			setFrameNumber(frameToPlay);
+//			
+//			long elapsedTime = System.currentTimeMillis() - systemStartPlayTime;
+//			double frameTime = frameStartPlayTime + getRate() * elapsedTime;
+//			int frameToPlay = getFrameNumberBefore(frameTime);
+//			while (frameToPlay > -1 && frameToPlay <= n) {
+//				elapsedTime = System.currentTimeMillis() - systemStartPlayTime;
+//				frameTime = frameStartPlayTime + getRate() * elapsedTime;
+//				frameToPlay = getFrameNumberBefore(frameTime);
+//			}
+//			if (frameToPlay == -1) {
+//				frameToPlay = getEndFrameNumber();
+//			}
+			setFrameNumber(++n);
 		} else if (looping) {
 			startPlayingAtFrame(getStartFrameNumber());
 		} else {
@@ -529,7 +530,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					helper.setState(STATE_FIND_FRAMES_LOOP);
 					continue;
 				case STATE_FIND_FRAMES_DONE:
-					videoDialog.toBack();
+					videoDialog.setVisible(false);
 					// clean up temporary objects
 					// throw IOException if no frames were loaded
 					if (seconds.size() == 0) {
