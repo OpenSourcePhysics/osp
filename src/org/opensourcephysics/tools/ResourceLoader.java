@@ -7,7 +7,6 @@
  */
 
 package org.opensourcephysics.tools;
-
 import java.applet.AudioClip;
 import java.awt.Component;
 import java.awt.FlowLayout;
@@ -81,118 +80,118 @@ import org.opensourcephysics.js.JSUtil;
  * @version 1.0
  */
 public class ResourceLoader {
-
+	
 	private final static String encoding = "UTF-8"; //$NON-NLS-1$
     final static Charset defaultCharset = Charset.forName(encoding);
 
 
-	@SuppressWarnings("javadoc")
+  @SuppressWarnings("javadoc")
 	public static final FileFilter OSP_CACHE_FILTER;
-	protected static final String WIN_XP_DEFAULT_CACHE = "/Local Settings/Application Data/OSP/Cache"; //$NON-NLS-1$
-	protected static final String WINDOWS_DEFAULT_CACHE = "/AppData/Local/OSP/Cache"; //$NON-NLS-1$
-	protected static final String OSX_DEFAULT_CACHE = "/Library/Caches/OSP"; //$NON-NLS-1$
-	protected static final String LINUX_DEFAULT_CACHE = "/.config/OSP/Cache"; //$NON-NLS-1$
-	protected static final String SEARCH_CACHE_SUBDIRECTORY = "Search"; //$NON-NLS-1$
+  protected static final String WIN_XP_DEFAULT_CACHE = "/Local Settings/Application Data/OSP/Cache"; //$NON-NLS-1$
+  protected static final String WINDOWS_DEFAULT_CACHE = "/AppData/Local/OSP/Cache"; //$NON-NLS-1$
+  protected static final String OSX_DEFAULT_CACHE = "/Library/Caches/OSP"; //$NON-NLS-1$
+  protected static final String LINUX_DEFAULT_CACHE = "/.config/OSP/Cache"; //$NON-NLS-1$
+  protected static final String SEARCH_CACHE_SUBDIRECTORY = "Search"; //$NON-NLS-1$
+  
+  public static final String TRACKER_TEST_URL = null; // needed for tracker
 
-	public static final String TRACKER_TEST_URL = null; // needed for tracker
+  protected static final String WEB_CONNECTED_TEST_URL = OSPRuntime.WEB_CONNECTED_TEST_URL;
 
-	protected static final String WEB_CONNECTED_TEST_URL = OSPRuntime.WEB_CONNECTED_TEST_URL;
-
-	protected static ArrayList<String> searchPaths = new ArrayList<String>(); // search paths
-	protected static ArrayList<String> appletSearchPaths = new ArrayList<String>(); // search paths for apples
-	protected static int maxPaths = 20; // max number of paths in history
-	protected static Hashtable<String, Resource> resources = new Hashtable<String, Resource>(); // cached resources
-	protected static boolean cacheEnabled = OSPRuntime.resCacheEnabled;
-	protected static boolean canceled = false;
+  protected static ArrayList<String> searchPaths = new ArrayList<String>();                        // search paths
+  protected static ArrayList<String> appletSearchPaths = new ArrayList<String>();                  // search paths for apples
+  protected static int maxPaths = 20;                                                              // max number of paths in history
+  protected static Hashtable<String, Resource> resources = new Hashtable<String, Resource>();      // cached resources
+  protected static boolean cacheEnabled = OSPRuntime.resCacheEnabled;
+  protected static boolean canceled=false;
 	protected static Map<String, URLClassLoader> zipLoaders = (OSPRuntime.checkZipLoaders
 			? new TreeMap<String, URLClassLoader>()
 			: null); // maps path to zipLoader
-	protected static URLClassLoader xsetZipLoader; // zipLoader of current xset
-	protected static Set<String> extractExtensions = new TreeSet<String>();
-	protected static ArrayList<String> pathsNotFound = new ArrayList<String>();
-	protected static File ospCache;
-	protected static boolean zipURLsOK;
-	protected static boolean webConnected;
-	protected static String downloadURL = ""; //$NON-NLS-1$
+  protected static URLClassLoader xsetZipLoader; // zipLoader of current xset
+  protected static Set<String> extractExtensions = new TreeSet<String>();
+  protected static ArrayList<String> pathsNotFound = new ArrayList<String>();
+  protected static File ospCache;
+  protected static boolean zipURLsOK;
+  protected static boolean webConnected;
+  protected static String downloadURL = ""; //$NON-NLS-1$
+  
+  static {
+  	OSP_CACHE_FILTER = new FileFilter() {
+  		public boolean accept(File file) {
+  			return file.isDirectory() && file.getName().startsWith("osp-"); //$NON-NLS-1$
+  		}
+  	};
+  	Runnable runner = new Runnable() {
+  		public void run() {
+	  		webConnected = isWebConnected();//.http://www.opensourcephysics.org"); //$NON-NLS-1$
+  		}
+  	};
+  	new Thread(runner).start();
+  }
 
-	static {
-		OSP_CACHE_FILTER = new FileFilter() {
-			public boolean accept(File file) {
-				return file.isDirectory() && file.getName().startsWith("osp-"); //$NON-NLS-1$
-			}
-		};
-		Runnable runner = new Runnable() {
-			public void run() {
-				webConnected = isWebConnected();// .http://www.opensourcephysics.org"); //$NON-NLS-1$
-			}
-		};
-		new Thread(runner).start();
-	}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private ResourceLoader() {
+    /** empty block */
+  }
 
-	/**
-	 * Private constructor to prevent instantiation.
-	 */
-	private ResourceLoader() {
-		/** empty block */
-	}
+  /**
+   * Gets a resource specified by name. If no resource is found using the name
+   * alone, the searchPaths are searched.
+   *
+   * @param name the file or URL name
+   * @return the Resource, or null if none found
+   */
+  public static Resource getResource(String name) {
+    return getResource(name, true);
+  }
 
-	/**
-	 * Gets a resource specified by name. If no resource is found using the name
-	 * alone, the searchPaths are searched.
-	 *
-	 * @param name the file or URL name
-	 * @return the Resource, or null if none found
-	 */
-	public static Resource getResource(String name) {
-		return getResource(name, true);
-	}
+  /**
+   * Gets a resource specified by name. If no resource is found using the name
+   * alone, the searchPaths are searched. This will find a zip file as a URL
+   * resource, unlike the getResource(String) method.
+   *
+   * @param name the file or URL name
+   * @return the Resource, or null if none found
+   */
+  public static Resource getResourceZipURLsOK(String name) {
+  	zipURLsOK = true;
+    Resource res = getResource(name, true);
+  	zipURLsOK = false;
+    return res;
+  }
 
-	/**
-	 * Gets a resource specified by name. If no resource is found using the name
-	 * alone, the searchPaths are searched. This will find a zip file as a URL
-	 * resource, unlike the getResource(String) method.
-	 *
-	 * @param name the file or URL name
-	 * @return the Resource, or null if none found
-	 */
-	public static Resource getResourceZipURLsOK(String name) {
-		zipURLsOK = true;
-		Resource res = getResource(name, true);
-		zipURLsOK = false;
-		return res;
-	}
-
-	/**
+  /**
 	 * Gets a resource specified by name. If no resource is found using the name
 	 * alone, the searchPaths are searched. Files are searched only if searchFile is
 	 * true.
-	 *
-	 * @param name        the file or URL name
-	 * @param searchFiles true to search files
-	 * @return the Resource, or null if none found
-	 */
-	public static Resource getResource(String name, boolean searchFiles) {
-		try {
-			URL url = getAppletResourceURL(name); // added by W. Christian
-			if (url != null) {
-				return new Resource(url);
-			}
+   *
+   * @param name the file or URL name
+   * @param searchFiles true to search files
+   * @return the Resource, or null if none found
+   */
+  public static Resource getResource(String name, boolean searchFiles) {
+    try {
+      URL url = getAppletResourceURL(name); // added by W. Christian
+      if(url!=null) {
+        return new Resource(url);
+      }
 		} catch (Exception ex) {
 		}
-		return getResource(name, Resource.class, searchFiles);
-	}
+    return getResource(name, Resource.class, searchFiles);
+  }
 
-	/**
-	 * Gets a resource specified by name and Class. If no resource is found using
-	 * the name alone, the searchPaths are searched.
-	 *
-	 * @param name the file or URL name
-	 * @param type the Class providing default ClassLoader resource loading
-	 * @return the Resource, or null if none found
-	 */
-	public static Resource getResource(String name, Class<?> type) {
-		return getResource(name, type, true);
-	}
+  /**
+   * Gets a resource specified by name and Class. If no resource is found using
+   * the name alone, the searchPaths are searched.
+   *
+   * @param name the file or URL name
+   * @param type the Class providing default ClassLoader resource loading
+   * @return the Resource, or null if none found
+   */
+  public static Resource getResource(String name, Class<?> type) {
+    return getResource(name, type, true);
+  }
 
 	/**
 	 * Gets a resource specified by name and Class. If no resource is found using
@@ -219,13 +218,13 @@ public class ResourceLoader {
 		while (name.startsWith("./")) { //$NON-NLS-1$
 			name = name.substring(2);
 		}
-
+		
 		if (OSPRuntime.isJS) {
 			// could be file:/TEMP; could be what?
-			// System.out.println("RL " + name);
+			//System.out.println("RL " + name);
 			if (!isHTTP(name) && !name.startsWith("/") && name.indexOf(OSPRuntime.tempDir) < 0) {
 				if (false)//
-					name = OSPRuntime.tempDir + name;
+				name = OSPRuntime.tempDir + name;
 			}
 		} else
 		/**
@@ -236,7 +235,7 @@ public class ResourceLoader {
 		 */
 		{
 			// removed by Transpiler
-			if (OSPRuntime.isAppletMode() || (OSPRuntime.applet != null)) {
+			if (OSPRuntime.isAppletMode() || (OSPRuntime.applet != null)) { 
 				// added by Paco
 				Resource appletRes = null;
 				// following code added by Doug Brown 2009/11/14
@@ -264,7 +263,7 @@ public class ResourceLoader {
 				}
 			}
 		}
-
+		
 		// look for resource with name only
 		Resource res = findResource(name, type, searchFiles);
 		if (res != null) {
@@ -290,468 +289,470 @@ public class ResourceLoader {
 		return null;
 	}
 
-	/**
+  /**
 	 * Gets a resource specified by base path and name. If base path is relative and
 	 * no resource is found using the base alone, the searchPaths are searched.
-	 *
-	 * @param basePath the base path
-	 * @param name     the file or URL name
-	 * @return the Resource, or null if none found
-	 */
-	public static Resource getResource(String basePath, String name) {
-		return getResource(basePath, name, Resource.class);
-	}
+   *
+   * @param basePath the base path
+   * @param name the file or URL name
+   * @return the Resource, or null if none found
+   */
+  public static Resource getResource(String basePath, String name) {
+    return getResource(basePath, name, Resource.class);
+  }
 
-	/**
+  /**
 	 * Gets a resource specified by base path and name. If base path is relative and
 	 * no resource is found using the base alone, the searchPaths are searched.
 	 * Files are searched only if searchFile is true.
-	 *
-	 * @param basePath    the base path
-	 * @param name        the file or URL name
-	 * @param searchFiles true to search files
-	 * @return the Resource, or null if none found
-	 */
-	public static Resource getResource(String basePath, String name, boolean searchFiles) {
-		return getResource(basePath, name, Resource.class, searchFiles);
-	}
+   *
+   * @param basePath the base path
+   * @param name the file or URL name
+   * @param searchFiles true to search files
+   * @return the Resource, or null if none found
+   */
+  public static Resource getResource(String basePath, String name, boolean searchFiles) {
+    return getResource(basePath, name, Resource.class, searchFiles);
+  }
 
-	/**
-	 * Gets a resource specified by base path, name and class. If base path is
+  /**
+   * Gets a resource specified by base path, name and class. If base path is
 	 * relative and no resource is found using the base alone, the searchPaths are
 	 * searched.
-	 *
-	 * @param basePath the base path
-	 * @param name     the file or URL name
-	 * @param type     the Class providing ClassLoader resource loading
-	 * @return the Resource, or null if none found
-	 */
-	public static Resource getResource(String basePath, String name, Class<Resource> type) {
-		return getResource(basePath, name, type, true);
-	}
+   *
+   * @param basePath the base path
+   * @param name the file or URL name
+   * @param type the Class providing ClassLoader resource loading
+   * @return the Resource, or null if none found
+   */
+  public static Resource getResource(String basePath, String name, Class<Resource> type) {
+    return getResource(basePath, name, type, true);
+  }
 
-	/**
-	 * Gets a resource specified by base path, name and class. If base path is
+  /**
+ * Gets a resource specified by base path, name and class. If base path is
 	 * relative and no resource is found using the base alone, the searchPaths are
 	 * searched. Files are searched only if searchFile is true.
-	 *
-	 * @param basePath    the base path
-	 * @param name        the file or URL name
-	 * @param type        the Class providing ClassLoader resource loading
-	 * @param searchFiles true to search files
-	 * @return the Resource, or null if none found
-	 */
-	public static Resource getResource(String basePath, String name, Class<Resource> type, boolean searchFiles) {
-		if (basePath == null) {
-			return getResource(name, type);
-		}
-		if (name.startsWith("./")) { //$NON-NLS-1$
-			name = name.substring(2);
-		}
-		// look for resource with basePath and name
-		pathsNotFound.clear();
-		String path = getPath(basePath, name);
-		Resource res = findResource(path, type, searchFiles);
-		if (res != null) {
-			return res;
-		}
-		// keep looking only if base path is relative
-		if (basePath.startsWith("/") || (basePath.indexOf(":/") > -1)) { //$NON-NLS-1$ //$NON-NLS-2$
-			return null;
-		}
-		pathsNotFound.add(path);
-		StringBuffer err = new StringBuffer("Not found: " + path); //$NON-NLS-1$
-		err.append(" [searched " + path); //$NON-NLS-1$
-		if (OSPRuntime.applet != null) { // applet mode
-			String docBase = OSPRuntime.applet.getDocumentBase().toExternalForm();
-			docBase = XML.getDirectoryPath(docBase) + "/"; //$NON-NLS-1$
-			path = getPath(getPath(docBase, basePath), name);
-			if (!pathsNotFound.contains(path)) {
-				res = findResource(path, type, searchFiles);
-				if (res != null) {
-					return res;
-				}
-				pathsNotFound.add(path);
-				err.append(";" + path); //$NON-NLS-1$
-			}
-			String codeBase = OSPRuntime.applet.getCodeBase().toExternalForm();
-			if (!codeBase.equals(docBase)) {
-				path = getPath(getPath(codeBase, basePath), name);
-				if (!pathsNotFound.contains(path)) {
-					res = findResource(path, type, searchFiles);
-					if (res != null) {
-						return res;
-					}
-					pathsNotFound.add(path);
-					err.append(";" + path); //$NON-NLS-1$
-				}
-			}
-		}
-		// look for resource in searchPaths
-		for (Iterator<String> it = searchPaths.iterator(); it.hasNext();) {
-			path = getPath(getPath(it.next(), basePath), name);
-			if (pathsNotFound.contains(path))
-				continue;
-			res = findResource(path, type, searchFiles);
-			if (res != null) {
-				return res;
-			}
-			pathsNotFound.add(path);
-			err.append(";" + path); //$NON-NLS-1$
-		}
-		err.append("]"); //$NON-NLS-1$
-		OSPLog.fine(err.toString());
-		return null;
-	}
+ *
+ * @param basePath the base path
+ * @param name the file or URL name
+ * @param type the Class providing ClassLoader resource loading
+ * @param searchFiles true to search files
+ * @return the Resource, or null if none found
+ */
+  public static Resource getResource(String basePath, String name, Class<Resource> type, boolean searchFiles) {
+  	if(basePath==null) {
+      return getResource(name, type);
+    }
+    if(name.startsWith("./")) { //$NON-NLS-1$   
+      name = name.substring(2);
+    }
+    // look for resource with basePath and name
+    pathsNotFound.clear();
+    String path = getPath(basePath, name);
+    Resource res = findResource(path, type, searchFiles);
+    if(res!=null) {
+      return res;
+    }
+    // keep looking only if base path is relative
+    if(basePath.startsWith("/")||(basePath.indexOf(":/")>-1)) { //$NON-NLS-1$ //$NON-NLS-2$
+      return null;
+    }
+    pathsNotFound.add(path);
+    StringBuffer err = new StringBuffer("Not found: "+path); //$NON-NLS-1$
+    err.append(" [searched "+path); //$NON-NLS-1$
+    if(OSPRuntime.applet!=null) {                  // applet mode
+      String docBase = OSPRuntime.applet.getDocumentBase().toExternalForm();
+      docBase = XML.getDirectoryPath(docBase)+"/"; //$NON-NLS-1$
+      path = getPath(getPath(docBase, basePath), name);
+    	if (!pathsNotFound.contains(path)) {
+	      res = findResource(path, type, searchFiles);
+	      if(res!=null) {
+	        return res;
+	      }
+	      pathsNotFound.add(path);
+	      err.append(";"+path);                        //$NON-NLS-1$
+    	}
+      String codeBase = OSPRuntime.applet.getCodeBase().toExternalForm();
+      if(!codeBase.equals(docBase)) {
+        path = getPath(getPath(codeBase, basePath), name);
+      	if (!pathsNotFound.contains(path)) {
+	        res = findResource(path, type, searchFiles);
+	        if(res!=null) {
+	          return res;
+	        }
+	        pathsNotFound.add(path);
+	        err.append(";"+path);                      //$NON-NLS-1$
+      	}
+      }
+    }
+    // look for resource in searchPaths
+    for(Iterator<String> it = searchPaths.iterator(); it.hasNext(); ) {
+      path = getPath(getPath(it.next(), basePath), name);
+    	if (pathsNotFound.contains(path))
+    		continue;
+      res = findResource(path, type, searchFiles);
+      if(res!=null) {
+        return res;
+      }
+      pathsNotFound.add(path);
+      err.append(";"+path); //$NON-NLS-1$
+    }
+    err.append("]"); //$NON-NLS-1$
+    OSPLog.fine(err.toString());
+    return null;
+  }
 
-	/**
-	 * Adds a path at the beginning of the searchPaths list.
-	 *
-	 * @param base the base path to add
-	 */
-	public static void addSearchPath(String base) {
-		if ((base == null) || base.equals("") || (maxPaths < 1)) { //$NON-NLS-1$
-			return;
-		}
-		synchronized (searchPaths) {
-			if (searchPaths.contains(base)) {
-				searchPaths.remove(base);
-			} else {
-				OSPLog.fine("Added path: " + base); //$NON-NLS-1$
-			}
-			searchPaths.add(0, base);
-			while (searchPaths.size() > Math.max(maxPaths, 0)) {
-				base = searchPaths.get(searchPaths.size() - 1);
-				OSPLog.fine("Removed path: " + base); //$NON-NLS-1$
-				searchPaths.remove(base);
-			}
-		}
-	}
+  /**
+   * Adds a path at the beginning of the searchPaths list.
+   *
+   * @param base the base path to add
+   */
+  public static void addSearchPath(String base) {
+    if((base==null)||base.equals("")||(maxPaths<1)) { //$NON-NLS-1$
+      return;
+    }
+    synchronized(searchPaths) {
+      if(searchPaths.contains(base)) {
+        searchPaths.remove(base);
+      } else {
+        OSPLog.fine("Added path: "+base);   //$NON-NLS-1$
+      }
+      searchPaths.add(0, base);
+      while(searchPaths.size()>Math.max(maxPaths, 0)) {
+        base = searchPaths.get(searchPaths.size()-1);
+        OSPLog.fine("Removed path: "+base); //$NON-NLS-1$
+        searchPaths.remove(base);
+      }
+    }
+  }
 
-	/**
-	 * Removes a path from the searchPaths list.
-	 *
-	 * @param base the base path to remove
-	 */
-	public static void removeSearchPath(String base) {
-		if ((base == null) || base.equals("")) { //$NON-NLS-1$
-			return;
-		}
-		synchronized (searchPaths) {
-			if (searchPaths.contains(base)) {
-				OSPLog.fine("Removed path: " + base); //$NON-NLS-1$
-				searchPaths.remove(base);
-			}
-		}
-	}
+  /**
+   * Removes a path from the searchPaths list.
+   *
+   * @param base the base path to remove
+   */
+  public static void removeSearchPath(String base) {
+    if((base==null)||base.equals("")) { //$NON-NLS-1$
+      return;
+    }
+    synchronized(searchPaths) {
+      if(searchPaths.contains(base)) {
+        OSPLog.fine("Removed path: "+base); //$NON-NLS-1$
+        searchPaths.remove(base);
+      }
+    }
+  }
 
-	/**
+  /**
 	 * Adds a search path at the beginning of the applet's search path list. Added
 	 * by Wolfgang Christian.
-	 *
-	 * @param base the base path to add
-	 */
-	public static void addAppletSearchPath(String base) {
-		if ((base == null) || (maxPaths < 1)) {
-			return;
-		}
-		base = base.trim();
+   *
+   * @param base the base path to add
+   */
+  public static void addAppletSearchPath(String base) {
+    if((base==null)||(maxPaths<1)) {
+      return;
+    }
+	base=base.trim();
 		if (!base.endsWith("/")) //$NON-NLS-1$
 			base = base + "/"; //$NON-NLS-1$
-		synchronized (appletSearchPaths) {
-			if (appletSearchPaths.contains(base)) {
-				appletSearchPaths.remove(base); // search path will be added to top of list later
-			} else {
-				OSPLog.fine("Applet search path added: " + base); //$NON-NLS-1$
-			}
-			appletSearchPaths.add(0, base);
-			while (appletSearchPaths.size() > Math.max(maxPaths, 0)) {
-				base = appletSearchPaths.get(appletSearchPaths.size() - 1);
-				OSPLog.fine("Removed path: " + base); //$NON-NLS-1$
-				appletSearchPaths.remove(base);
-			}
-		}
-	}
+    synchronized(appletSearchPaths) {
+      if(appletSearchPaths.contains(base)) {
+        appletSearchPaths.remove(base);                 // search path will be added to top of list later
+      } else {
+        OSPLog.fine("Applet search path added: "+base); //$NON-NLS-1$
+      }
+      appletSearchPaths.add(0, base);
+      while(appletSearchPaths.size()>Math.max(maxPaths, 0)) {
+        base = appletSearchPaths.get(appletSearchPaths.size()-1);
+        OSPLog.fine("Removed path: "+base);             //$NON-NLS-1$
+        appletSearchPaths.remove(base);
+      }
+    }
+  }
 
-	/**
+  /**
 	 * Removes a path from the applet search path list. Added by Wolfgang Christian.
-	 *
-	 * @param base the base path to remove
-	 */
-	public static void removeAppletSearchPath(String base) {
-		if ((base == null) || base.equals("")) { //$NON-NLS-1$
-			return;
-		}
-		synchronized (appletSearchPaths) {
-			if (appletSearchPaths.contains(base)) {
-				OSPLog.fine("Applet search path removed: " + base); //$NON-NLS-1$
-				appletSearchPaths.remove(base);
-			}
-		}
-	}
+   *
+   * @param base the base path to remove
+   */
+  public static void removeAppletSearchPath(String base) {
+    if((base==null)||base.equals("")) { //$NON-NLS-1$
+      return;
+    }
+    synchronized(appletSearchPaths) {
+      if(appletSearchPaths.contains(base)) {
+        OSPLog.fine("Applet search path removed: "+base); //$NON-NLS-1$
+        appletSearchPaths.remove(base);
+      }
+    }
+  }
 
-	/**
-	 * Sets the cacheEnabled property.
-	 *
-	 * @param enabled true to enable the cache
-	 */
-	public static void setCacheEnabled(boolean enabled) {
-		cacheEnabled = enabled;
-	}
+  /**
+   * Sets the cacheEnabled property.
+   *
+   * @param enabled true to enable the cache
+   */
+  public static void setCacheEnabled(boolean enabled) {
+    cacheEnabled = enabled;
+  }
 
-	/**
-	 * Gets the cacheEnabled property.
-	 *
-	 * @return true if the cache is enabled
-	 */
-	public static boolean isCacheEnabled() {
-		return cacheEnabled;
-	}
+  /**
+   * Gets the cacheEnabled property.
+   *
+   * @return true if the cache is enabled
+   */
+  public static boolean isCacheEnabled() {
+    return cacheEnabled;
+  }
 
-	/**
+  /**
 	 * Adds an extension to the end of the extractExtensions list. Files with this
 	 * extension found inside jars are extracted before loading.
-	 *
-	 * @param extension the extension to add
-	 */
-	public static void addExtractExtension(String extension) {
-		if ((extension == null) || extension.equals("")) { //$NON-NLS-1$
-			return;
-		}
-		if (!extension.startsWith(".")) { //$NON-NLS-1$
-			extension = "." + extension; //$NON-NLS-1$
-		}
-		OSPLog.finest("Added extension: " + extension); //$NON-NLS-1$
-		synchronized (extractExtensions) {
-			extractExtensions.add(extension);
-		}
-	}
+   *
+   * @param extension the extension to add
+   */
+  public static void addExtractExtension(String extension) {
+    if((extension==null)||extension.equals("")) { //$NON-NLS-1$
+      return;
+    }
+    if(!extension.startsWith(".")) { //$NON-NLS-1$
+      extension = "."+extension;     //$NON-NLS-1$
+    }
+    OSPLog.finest("Added extension: "+extension); //$NON-NLS-1$
+    synchronized(extractExtensions) {
+      extractExtensions.add(extension);
+    }
+  }
 
-	/**
-	 * Cancels the current operation when true.
-	 *
-	 * @param cancel true to cancel
-	 */
-	public static void setCanceled(boolean cancel) {
-		canceled = cancel;
-	}
+  /**
+   * Cancels the current operation when true.
+   *
+   * @param cancel true to cancel
+   */
+  public static void setCanceled(boolean cancel) {
+  	canceled = cancel;
+  }
+  
+  /**
+   * Determines if the current operation is canceled.
+   *
+   * @return true if canceled
+   */
+  public static boolean isCanceled() {
+  	return canceled;
+  }
+  
+  // ___________________________ convenience methods _________________________
+  
+  /**
+   * Opens and returns an input stream. May return null.
+   * 
+   * @param path the path
+   * @return the input stream
+   */
+  public static InputStream openInputStream(String path) {
+    Resource res = getResource(path);
+    return(res==null) ? null : res.openInputStream();
+  }
 
-	/**
-	 * Determines if the current operation is canceled.
-	 *
-	 * @return true if canceled
-	 */
-	public static boolean isCanceled() {
-		return canceled;
-	}
+  /**
+   * Opens and returns a reader. May return null.
+   * 
+   * @param path the path
+   * @return the reader
+   */
+  public static Reader openReader(String path) {
+    Resource res = getResource(path);
+    return(res==null) ? null : res.openReader();
+  }
 
-	// ___________________________ convenience methods _________________________
+  /**
+   * Gets a string. May return null.
+   * 
+   * @param path the path
+   * @return the string
+   */
+  public static String getString(String path) {
+    Resource res = getResource(path);
+    return(res==null) ? null : res.getString();
+  }
 
-	/**
-	 * Opens and returns an input stream. May return null.
-	 * 
-	 * @param path the path
-	 * @return the input stream
-	 */
-	public static InputStream openInputStream(String path) {
-		Resource res = getResource(path);
-		return (res == null) ? null : res.openInputStream();
-	}
+  /**
+   * Gets an icon. May return null.
+   * 
+   * @param path the path
+   * @return the icon
+   */
+  public static Icon getIcon(String path) {
+    URL url = getAppletResourceURL(path); // added by W. Christian
+    if(url!=null) {
+      return new ImageIcon(url);
+    }
+    url = getImageZipResource(path);
+    if (url != null)
+    	return new ImageIcon(url);
+    Resource res = getResource(path);
+    return(res==null) ? null : res.getIcon();
+  }
 
-	/**
-	 * Opens and returns a reader. May return null.
-	 * 
-	 * @param path the path
-	 * @return the reader
-	 */
-	public static Reader openReader(String path) {
-		Resource res = getResource(path);
-		return (res == null) ? null : res.openReader();
-	}
 
-	/**
-	 * Gets a string. May return null.
-	 * 
-	 * @param path the path
-	 * @return the string
-	 */
-	public static String getString(String path) {
-		Resource res = getResource(path);
-		return (res == null) ? null : res.getString();
-	}
+  /**
+   * Gets a buffered image. May return null.
+   * 
+   * @param path the path
+   * @return the image
+   */
+  public static BufferedImage getBufferedImage(String path) {
+    Resource res = getResource(path);
+    return(res==null) ? null : res.getBufferedImage();
+  }
 
-	/**
-	 * Gets an icon. May return null.
-	 * 
-	 * @param path the path
-	 * @return the icon
-	 */
-	public static Icon getIcon(String path) {
-		URL url = getAppletResourceURL(path); // added by W. Christian
-		if (url != null) {
-			return new ImageIcon(url);
-		}
-		url = getImageZipResource(path);
-		if (url != null)
-			return new ImageIcon(url);
-		Resource res = getResource(path);
-		return (res == null) ? null : res.getIcon();
-	}
+  /**
+  * Gets a buffered image. May return null.
+  * 
+  * @param path the path
+   * @param bufferedImageType one of the types defined by the BufferedImage class
+  * @return the image
+  */
+ public static BufferedImage getBufferedImage(String path, int bufferedImageType) {
+   Resource res = getResource(path);
+   return(res==null) ? null : res.getBufferedImage(bufferedImageType);
+ }
 
-	/**
-	 * Gets a buffered image. May return null.
-	 * 
-	 * @param path the path
-	 * @return the image
-	 */
-	public static BufferedImage getBufferedImage(String path) {
-		Resource res = getResource(path);
-		return (res == null) ? null : res.getBufferedImage();
-	}
-
-	/**
-	 * Gets a buffered image. May return null.
-	 * 
-	 * @param path              the path
-	 * @param bufferedImageType one of the types defined by the BufferedImage class
-	 * @return the image
-	 */
-	public static BufferedImage getBufferedImage(String path, int bufferedImageType) {
-		Resource res = getResource(path);
-		return (res == null) ? null : res.getBufferedImage(bufferedImageType);
-	}
-
-	/**
-	 * Gets an audio clip. May return null.
-	 * 
-	 * @param path the path
-	 * @return the audio clip
-	 */
-	public static AudioClip getAudioClip(String path) {
-		Resource res = getResource(path);
-		return (res == null) ? null : res.getAudioClip();
-	}
-
-	/**
-	 * Sets the directory for cached files.
-	 * 
-	 * @param newCache the desired cache directory
-	 */
-	public static void setOSPCache(File newCache) {
-		if (newCache != null && !newCache.equals(ospCache)) {
-			// reject new cache if it is a subdirectory of the current cache!
-			if (ospCache != null && newCache.getAbsolutePath().contains(ospCache.getAbsolutePath())) {
-				Toolkit.getDefaultToolkit().beep();
-				return;
-			}
-			if (!newCache.exists() || !newCache.isDirectory()) {
-				if (!newCache.mkdirs()) {
-					Toolkit.getDefaultToolkit().beep();
-					return;
+  /**
+   * Gets an audio clip. May return null.
+   * 
+   * @param path the path
+   * @return the audio clip
+   */
+  public static AudioClip getAudioClip(String path) {
+    Resource res = getResource(path);
+    return(res==null) ? null : res.getAudioClip();
+  }
+  
+  /**
+   * Sets the directory for cached files.
+   * 
+   * @param newCache the desired cache directory
+   */
+  public static void setOSPCache(File newCache) {
+  	if (newCache!=null && !newCache.equals(ospCache)) {
+  		// reject new cache if it is a subdirectory of the current cache!
+  		if (ospCache!=null && newCache.getAbsolutePath().contains(ospCache.getAbsolutePath())) {
+        Toolkit.getDefaultToolkit().beep();
+  			return;
+  		}
+      if (!newCache.exists() || !newCache.isDirectory()) {
+      	if (!newCache.mkdirs()) {
+          Toolkit.getDefaultToolkit().beep();
+          return;
+      	}
+      }
+      if (!newCache.canWrite()) {
+        Toolkit.getDefaultToolkit().beep();
+        return;
+      }
+      if (ospCache!=null) {
+	      // copy existing cached files into new cache and delete old cache
+		  	File[] hostDirectories = ospCache.listFiles(OSP_CACHE_FILTER);
+      	for (File host: hostDirectories) {
+      		String hostname = host.getName();
+      		File newHost = new File(newCache, hostname);
+      		copyAllFiles(host, newHost);
+      	}
+      	
+      	// copy search cache files into new cache
+      	File searchCache = new File(ospCache, SEARCH_CACHE_SUBDIRECTORY);
+      	File newSearchCache = new File(newCache, SEARCH_CACHE_SUBDIRECTORY);
+    		copyAllFiles(searchCache, newSearchCache);
+    		
+      	// clear prev cache, including search cache
+    		clearOSPCache(ospCache, true); 
+    		// delete prev cache only if it is empty
+		  	File[] files = ospCache.listFiles();
+		  	if (files!=null && files.length==0) {
+		  		ospCache.delete();
 				}
-			}
-			if (!newCache.canWrite()) {
-				Toolkit.getDefaultToolkit().beep();
-				return;
-			}
-			if (ospCache != null) {
-				// copy existing cached files into new cache and delete old cache
-				File[] hostDirectories = ospCache.listFiles(OSP_CACHE_FILTER);
-				for (File host : hostDirectories) {
-					String hostname = host.getName();
-					File newHost = new File(newCache, hostname);
-					copyAllFiles(host, newHost);
-				}
+      }
+    	ospCache = newCache;
+  	}
+  }
 
-				// copy search cache files into new cache
-				File searchCache = new File(ospCache, SEARCH_CACHE_SUBDIRECTORY);
-				File newSearchCache = new File(newCache, SEARCH_CACHE_SUBDIRECTORY);
-				copyAllFiles(searchCache, newSearchCache);
-
-				// clear prev cache, including search cache
-				clearOSPCache(ospCache, true);
-				// delete prev cache only if it is empty
-				File[] files = ospCache.listFiles();
-				if (files != null && files.length == 0) {
-					ospCache.delete();
-				}
-			}
-			ospCache = newCache;
-		}
-	}
-
-	/**
-	 * Gets the directory for cached files.
-	 * 
-	 * @return the OSP cache
-	 */
-	public static File getOSPCache() {
-		return ospCache;
-	}
-
-	/**
-	 * Gets the default directory for cached files.
-	 * 
-	 * @return the default OSP cache
-	 */
-	public static File getDefaultOSPCache() {
-		String cacheDir = OSPRuntime.tempDir;
-		String userHome = OSPRuntime.getUserHome();
-		if (!OSPRuntime.isJS && userHome != null) {
-			userHome += "/"; //$NON-NLS-1$
+  /**
+   * Gets the directory for cached files.
+   * 
+   * @return the OSP cache
+   */
+  public static File getOSPCache() {
+  	return ospCache;
+  }
+  
+  /**
+   * Gets the default directory for cached files.
+   * 
+   * @return the default OSP cache
+   */
+  public static File getDefaultOSPCache() {
+  	String cacheDir = OSPRuntime.tempDir;
+  	String userHome = OSPRuntime.getUserHome();
+		if (!OSPRuntime.isJS && userHome!=null) {
+	  	userHome += "/"; //$NON-NLS-1$
 			if (OSPRuntime.isMac()) {
-				cacheDir = userHome + OSX_DEFAULT_CACHE;
+				cacheDir = userHome+OSX_DEFAULT_CACHE;
 			} else if (OSPRuntime.isLinux()) {
-				cacheDir = userHome + LINUX_DEFAULT_CACHE;
+				cacheDir = userHome+LINUX_DEFAULT_CACHE;
 			} else if (OSPRuntime.isWindows()) {
 				String os = System.getProperty("os.name", "").toLowerCase(); //$NON-NLS-1$ //$NON-NLS-2$
-				if (os.indexOf("xp") > -1) //$NON-NLS-1$
-					cacheDir = userHome + WIN_XP_DEFAULT_CACHE;
+				if (os.indexOf("xp")>-1) //$NON-NLS-1$
+					cacheDir = userHome+WIN_XP_DEFAULT_CACHE;
 				else
-					cacheDir = userHome + WINDOWS_DEFAULT_CACHE;
+					cacheDir = userHome+WINDOWS_DEFAULT_CACHE;
 			}
 		}
 		if (cacheDir == null)
 			return null;
 		return new File(cacheDir);
-	}
-
-	/**
-	 * Uses a JFileChooser to select a cache directory.
+  }
+  
+  /**
+   * Uses a JFileChooser to select a cache directory.
 	 * 
-	 * @param parent a component to own the file chooser
-	 * @return the chosen file
-	 */
-	public static File chooseOSPCache(Component parent) {
-		JFileChooser chooser = new JFileChooser(getOSPCache());
-		if (OSPRuntime.isMac())
-			chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-		else
-			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		javax.swing.filechooser.FileFilter folderFilter = new javax.swing.filechooser.FileFilter() {
-			// accept directories only
-			public boolean accept(File f) {
+   * @param parent  a component to own the file chooser
+   * @return the chosen file
+   */
+  public static File chooseOSPCache(Component parent) {
+    JFileChooser chooser = new JFileChooser(getOSPCache());
+    if (OSPRuntime.isMac())
+      chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+    else
+    	chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+    javax.swing.filechooser.FileFilter folderFilter = new javax.swing.filechooser.FileFilter() {
+      // accept directories only
+      public boolean accept(File f) {
 				if (f == null)
 					return false;
-				return f.isDirectory();
-			}
+        return f.isDirectory();
+      }
+      public String getDescription() {
+        return ToolsRes.getString("LibraryTreePanel.FolderFileFilter.Description"); //$NON-NLS-1$
+      } 	     	
+    };
+    chooser.setAcceptAllFileFilterUsed(false);
+    chooser.addChoosableFileFilter(folderFilter);
+    String text = ToolsRes.getString("ResourceLoader.FileChooser.Cache"); //$NON-NLS-1$
+    chooser.setDialogTitle(text);
+  	FontSizer.setFonts(chooser, FontSizer.getLevel());
+	  int result = chooser.showDialog(parent, text);
+    if (result==JFileChooser.APPROVE_OPTION) {
+      return chooser.getSelectedFile();
+    }
+  	return null;
+  }
+  
 
-			public String getDescription() {
-				return ToolsRes.getString("LibraryTreePanel.FolderFileFilter.Description"); //$NON-NLS-1$
-			}
-		};
-		chooser.setAcceptAllFileFilterUsed(false);
-		chooser.addChoosableFileFilter(folderFilter);
-		String text = ToolsRes.getString("ResourceLoader.FileChooser.Cache"); //$NON-NLS-1$
-		chooser.setDialogTitle(text);
-		FontSizer.setFonts(chooser, FontSizer.getLevel());
-		int result = chooser.showDialog(parent, text);
-		if (result == JFileChooser.APPROVE_OPTION) {
-			return chooser.getSelectedFile();
-		}
-		return null;
-	}
-
+  
 	/**
 	 * Determines if a path defines a file in the OSP cache.
 	 * 
@@ -761,86 +762,86 @@ public class ResourceLoader {
 	public static boolean isOSPCachePath(String path) {
 		File cacheDir = getOSPCache();
 		if (cacheDir == null)
-			cacheDir = new File(OSPRuntime.tempDir); // $NON-NLS-1$
+			cacheDir = new File(OSPRuntime.tempDir); //$NON-NLS-1$
 		String cachePath = XML.forwardSlash(cacheDir.getAbsolutePath()) + "/osp-"; //$NON-NLS-1$
 		if (XML.forwardSlash(path).contains(cachePath))
 			return true;
 		return false;
 	}
-
+  
+  /**
+   * Gets the cache file associated with a URL path.
+   * 
+   * @param urlPath the path to the file
+   * @return the cache file
+   */
+  public static File getOSPCacheFile(String urlPath) {
+  	return getOSPCacheFile(urlPath, null);
+  }
+	
 	/**
-	 * Gets the cache file associated with a URL path.
-	 * 
-	 * @param urlPath the path to the file
-	 * @return the cache file
-	 */
-	public static File getOSPCacheFile(String urlPath) {
-		return getOSPCacheFile(urlPath, null);
-	}
+   * Gets the cache file associated with a URL path.
+   * 
+   * @param urlPath the path to the file
+   * @param name name of the file (may be null)
+   * @return the cache file
+   */
+  public static File getOSPCacheFile(String urlPath, String name) {
+  	File cacheDir = getOSPCache();
+  	if (cacheDir==null)
+			cacheDir = new File(OSPRuntime.tempDir); //$NON-NLS-1$	
+  	return getCacheFile(cacheDir, urlPath, name);
+  }
 
-	/**
-	 * Gets the cache file associated with a URL path.
-	 * 
-	 * @param urlPath the path to the file
-	 * @param name    name of the file (may be null)
-	 * @return the cache file
-	 */
-	public static File getOSPCacheFile(String urlPath, String name) {
-		File cacheDir = getOSPCache();
-		if (cacheDir == null)
-			cacheDir = new File(OSPRuntime.tempDir); // $NON-NLS-1$
-		return getCacheFile(cacheDir, urlPath, name);
-	}
-
-	/**
-	 * Gets the search cache directory.
-	 * 
-	 * @return the search cache
-	 */
-	public static File getSearchCache() {
-		File ospCache = getOSPCache();
-		if (ospCache == null) {
-			ospCache = getDefaultOSPCache();
-		}
+  /**
+   * Gets the search cache directory.
+   * 
+   * @return the search cache
+   */
+  public static File getSearchCache() {
+  	File ospCache = getOSPCache();
+  	if (ospCache==null) {
+  		ospCache = getDefaultOSPCache();
+  	}
 		if (ospCache == null)
 			return null;
-		File searchCache = new File(ospCache, SEARCH_CACHE_SUBDIRECTORY);
-		searchCache.mkdirs();
-		return searchCache;
-	}
-
+  	File searchCache = new File(ospCache, SEARCH_CACHE_SUBDIRECTORY);
+  	searchCache.mkdirs();
+  	return searchCache;
+  }
+  
 	/**
-	 * Gets the search cache (XML) file associated with a URL path.
-	 * 
-	 * @param urlPath the path to the file
-	 * @return the search cache file
-	 */
-	public static File getSearchCacheFile(String urlPath) {
+   * Gets the search cache (XML) file associated with a URL path.
+   * 
+   * @param urlPath the path to the file
+   * @return the search cache file
+   */
+  public static File getSearchCacheFile(String urlPath) {
 		String filename = XML.getName(urlPath);
-		String basename = XML.stripExtension(filename);
-		String ext = XML.getExtension(filename);
-		if (ext != null)
-			basename += "_" + ext; //$NON-NLS-1$
+  	String basename = XML.stripExtension(filename);
+  	String ext = XML.getExtension(filename);
+  	if (ext!=null) 
+  		basename += "_"+ext; //$NON-NLS-1$
 		// following line needed to clean up long extensions associated with ComPADRE
 		// query paths
-		basename = basename.replace('&', '_').replace('?', '_').replace('=', '_');
-		filename = basename + ".xml"; //$NON-NLS-1$
-		return getCacheFile(getSearchCache(), urlPath, filename);
-	}
+  	basename = basename.replace('&', '_').replace('?', '_').replace('=', '_');
+  	filename = basename+".xml"; //$NON-NLS-1$
+  	return getCacheFile(getSearchCache(), urlPath, filename);
+  }
 
 	/**
-	 * Gets the cache file associated with a base cache directory and URL path.
+   * Gets the cache file associated with a base cache directory and URL path.
 	 * 
-	 * @param cacheFile the base cache directory
-	 * @param urlPath   the URL path to the original file
-	 * @param name      name of the file (may be null)
-	 * @return the cache file
-	 */
-	private static File getCacheFile(File cacheFile, String urlPath, String name) {
-		// SwingJS this might be null.
-		String cachePath = (cacheFile == null ? "./" : XML.forwardSlash(cacheFile.getAbsolutePath()));
+   * @param cacheFile the base cache directory
+   * @param urlPath the URL path to the original file
+   * @param name name of the file (may be null)
+   * @return the cache file
+   */
+  private static File getCacheFile(File cacheFile, String urlPath, String name) {
+	  // SwingJS this might be null. 
+		String cachePath = (cacheFile == null ? "./" :  XML.forwardSlash(cacheFile.getAbsolutePath()));
 		urlPath = getURIPath(urlPath);
-
+  		
 		String host = ""; //$NON-NLS-1$
 		String path = ""; //$NON-NLS-1$
 		String filename = ""; //$NON-NLS-1$
@@ -848,40 +849,40 @@ public class ResourceLoader {
 			URL url = new URL(urlPath);
 			host = url.getHost().replace('.', '_');
 			path = getNonURIPath(url.getPath());
-
+			
 			int n = path.indexOf(cachePath);
-			if (n > -1) {
-				path = path.substring(n + cachePath.length());
+			if (n>-1) {
+				path = path.substring(n+cachePath.length());
 			}
 			// if path is local, strip drive letter
 			n = path.lastIndexOf(":"); //$NON-NLS-1$
-			if (n > -1) {
-				path = path.substring(n + 1);
+			if (n>-1) {
+				path = path.substring(n+1);
 			}
 			// strip leading slash
-			while (path.startsWith("/")) { //$NON-NLS-1$
-				path = path.substring(1);
-			}
+  		while (path.startsWith("/")) { //$NON-NLS-1$
+  			path = path.substring(1);
+  		}
 			String pathname = XML.getName(path);
 			if (!"".equals(pathname)) { //$NON-NLS-1$
 				path = XML.getDirectoryPath(path);
 			}
 			path = path.replace('.', '_').replace("!", ""); //$NON-NLS-1$ //$NON-NLS-2$
-			filename = name == null ? pathname : name;
-		} catch (MalformedURLException e) {
+			filename = name==null? pathname: name;
+		} catch (MalformedURLException e) {				
 		}
-
+		
 		if ("".equals(host)) //$NON-NLS-1$
-			host = "local_machine"; //$NON-NLS-1$
-		if (!path.startsWith("osp-")) //$NON-NLS-1$
-			cacheFile = new File(cacheFile, "osp-" + host); //$NON-NLS-1$
+			host = "local_machine"; //$NON-NLS-1$		
+		if (!path.startsWith("osp-"))  //$NON-NLS-1$
+			cacheFile = new File(cacheFile, "osp-"+host); //$NON-NLS-1$
 		if (!"".equals(path)) //$NON-NLS-1$
 			cacheFile = new File(cacheFile, path);
 		if (!"".equals(filename)) //$NON-NLS-1$
 			cacheFile = new File(cacheFile, filename);
-
+		
 		return cacheFile;
-	}
+  }
 
 	/**
 	 * Downloads a file from the web to the OSP Cache.
@@ -914,23 +915,23 @@ public class ResourceLoader {
 		}
 		return file;
 	}
-
-	/**
-	 * Returns the HTML code for a local or web HTML page.
+  
+  /**
+   * Returns the HTML code for a local or web HTML page.
 	 * 
-	 * @param path the path to the HTML page
-	 * @return the HTML code, or null if not found or not HTML
-	 */
+   * @param path the path to the HTML page 
+   * @return the HTML code, or null if not found or not HTML
+   */
 	public static String getHTMLCode(String path) {
 		Resource res = getResourceZipURLsOK(path);
 		if (res == null)
 			return null;
 		String html = res.getString();
-		if (html != null && html.trim().startsWith("<!DOCTYPE html")) //$NON-NLS-1$
+		if (html!=null && html.trim().startsWith("<!DOCTYPE html")) //$NON-NLS-1$
 			return html;
 		return null;
 	}
-
+	
 	public static void getHTMLCodeAsync(String path, Function<String, Void> whenDone) {
 		getResourceZipURLsOKAsync(path, new Function<Resource, Void>() {
 
@@ -953,172 +954,172 @@ public class ResourceLoader {
 		whenDone.apply(getResourceZipURLsOK(path));
 	}
 
-	/**
-	 * Returns the title, if any, of an HTML page.
+  /**
+   * Returns the title, if any, of an HTML page.
 	 * 
-	 * @param code the HTML code
-	 * @return the title, or null if none defined
-	 */
+   * @param code the HTML code 
+   * @return the title, or null if none defined
+   */
 	public static String getTitleFromHTMLCode(String code) {
 		if (code == null)
 			return null;
 		String[] parts = code.split("<title>"); //$NON-NLS-1$
-		if (parts.length > 1) {
+		if (parts.length>1) {
 			parts = parts[1].split("</title>"); //$NON-NLS-1$
-			if (parts.length > 1) {
+			if (parts.length>1) {
 				return parts[0].trim();
 			}
 		}
 		return null;
 	}
-
-	/**
-	 * Returns the first stylesheet link, if any, in an HTML page.
+	
+  /**
+   * Returns the first stylesheet link, if any, in an HTML page.
 	 * 
-	 * @param code the HTML code
-	 * @return the first stylesheet link found, or null if none
-	 */
+   * @param code the HTML code 
+   * @return the first stylesheet link found, or null if none
+   */
 	public static String getStyleSheetFromHTMLCode(String code) {
 		if (code == null)
 			return null;
 		// typical tag is in head: <link rel="stylesheet" type="text/css"
 		// href="myFolder/myStyleSheet.css">
 		String[] parts = code.split("<head>"); //$NON-NLS-1$
-		if (parts.length > 1) {
+		if (parts.length>1) {
 			parts = parts[1].split("</head>"); //$NON-NLS-1$
-			if (parts.length > 1) {
+			if (parts.length>1) {
 				parts = parts[0].split("<link"); //$NON-NLS-1$
-				if (parts.length > 1) {
+				if (parts.length>1) {
 					// skip parts[0]
-					for (int i = 1; i < parts.length; i++) {
-						if (parts[i].contains("\"stylesheet\"")) { //$NON-NLS-1$
-							parts = parts[i].split("href"); //$NON-NLS-1$
-							if (parts.length > 1) {
+					for (int i=1; i<parts.length; i++) {
+			  		if (parts[i].contains("\"stylesheet\"")) { //$NON-NLS-1$
+			  			parts = parts[i].split("href"); //$NON-NLS-1$
+							if (parts.length>1) {
 								parts = parts[1].split("\""); //$NON-NLS-1$
 								if (parts.length > 1)
 									return parts[1];
 							}
-						}
+			  		}
 					}
 				}
 
 			}
-		}
+		}  	
 		return null;
 	}
-
-	/**
-	 * Copies an HTML file with associated images and stylesheet to the OSP cache.
+	
+  /**
+   * Copies an HTML file with associated images and stylesheet to the OSP cache.
 	 * Note this does NOT overwrite cache files--to replace, delete them before
 	 * calling this method
 	 * 
-	 * @param htmlPath the path to the source HTML file
-	 * @return the copied File, or null if failed
-	 */
-	public static File copyHTMLToOSPCache(String htmlPath) {
+   * @param htmlPath the path to the source HTML file
+   * @return the copied File, or null if failed
+   */
+  public static File copyHTMLToOSPCache(String htmlPath) {
 		if (htmlPath == null)
 			return null;
-		// read html text
-		String htmlCode = null;
-		Resource res = getResourceZipURLsOK(htmlPath);
-		if (res != null) {
-			// if the resource is a file in the OSP cache, return it
-			if (res.getFile() != null && isOSPCachePath(htmlPath)) {
-				return res.getFile();
-			}
-			htmlCode = res.getString();
-		}
-		if (htmlCode != null) {
-			String htmlBasePath = XML.getDirectoryPath(htmlPath);
-			File htmlTarget = getOSPCacheFile(htmlPath);
-			File targetDirectory = htmlTarget.getParentFile();
-			targetDirectory.mkdirs();
-
-			// look for image references
-			File imageDir = new File(targetDirectory, "images"); //$NON-NLS-1$
-			String img = "<img "; //$NON-NLS-1$
-			String pre = "src=\""; //$NON-NLS-1$
-			String post = "\""; //$NON-NLS-1$
-
-			String temp = htmlCode;
-			int j = temp.indexOf(img);
+  	// read html text
+  	String htmlCode = null;
+  	Resource res = getResourceZipURLsOK(htmlPath);
+  	if (res!=null) {
+  		// if the resource is a file in the OSP cache, return it 
+	  	if (res.getFile()!=null && isOSPCachePath(htmlPath)) {
+	  		return res.getFile();
+	  	}
+  		htmlCode = res.getString();
+  	}
+  	if (htmlCode!=null) {
+  		String htmlBasePath = XML.getDirectoryPath(htmlPath);
+  		File htmlTarget = getOSPCacheFile(htmlPath);
+  		File targetDirectory = htmlTarget.getParentFile();
+  		targetDirectory.mkdirs();
+  		
+	  	// look for image references
+	  	File imageDir = new File(targetDirectory, "images"); //$NON-NLS-1$
+  		String img = "<img "; //$NON-NLS-1$
+  		String pre = "src=\""; //$NON-NLS-1$
+  		String post = "\""; //$NON-NLS-1$
+  		
+  		String temp = htmlCode;
+  		int j = temp.indexOf(img);
 			if (j > -1)
 				imageDir.mkdirs();
-			while (j > -1) {
-				temp = temp.substring(j + img.length());
-				j = temp.indexOf(pre);
-				temp = temp.substring(j + pre.length());
-				j = temp.indexOf(post);
-				if (j > -1) {
-					String next = temp.substring(0, j); // the image path specified in the html itself
-					String path = XML.getResolvedPath(next, htmlBasePath);
-					res = getResourceZipURLsOK(path);
-					if (res != null) {
-						// copy image and replace image path in html code
-						String filename = XML.getName(next);
-						File imageTarget = download(path, new File(imageDir, filename), false);
-						if (imageTarget != null) {
+  		while (j>-1) {
+  			temp = temp.substring(j+img.length());
+  			j = temp.indexOf(pre);
+  			temp = temp.substring(j+pre.length());
+  			j = temp.indexOf(post);
+  			if (j>-1) {
+  				String next = temp.substring(0, j); // the image path specified in the html itself
+  				String path = XML.getResolvedPath(next, htmlBasePath);
+  	      res = getResourceZipURLsOK(path);
+  				if (res!=null) {
+      			// copy image and replace image path in html code
+  					String filename = XML.getName(next);
+      			File imageTarget = download(path, new File(imageDir, filename), false);
+      			if (imageTarget!=null) {
 							path = XML.getPathRelativeTo(imageTarget.getAbsolutePath(),
 									targetDirectory.getAbsolutePath());
-							if (!next.equals(path)) {
-								htmlCode = htmlCode.replace(pre + next + post, pre + path + post);
-							}
-						}
-					}
-				}
-				j = temp.indexOf(img);
-			}
-
-			// if separate stylesheet is used, copy to cache and replace in HTML code
-			String css = getStyleSheetFromHTMLCode(htmlCode);
-			if (css != null && !isHTTP(css)) { // $NON-NLS-1$
-				res = getResourceZipURLsOK(XML.getResolvedPath(css, htmlBasePath));
-				if (res != null) {
-					String cssName = XML.getName(css);
-					File cssTarget = new File(targetDirectory, cssName);
-					cssTarget = download(res.getAbsolutePath(), cssTarget, false);
-					if (cssTarget != null && !cssName.equals(css)) {
-						htmlCode = htmlCode.replace(css, cssName);
-					}
-				}
-			}
-
-			// write modified html text into target file
-			try {
-				FileWriter fout = new FileWriter(htmlTarget);
-				fout.write(htmlCode);
-				fout.close();
-				return htmlTarget;
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
-		}
-		return null;
-	}
-
-	/**
+	      			if (!next.equals(path)) {
+	      				htmlCode = htmlCode.replace(pre+next+post, pre+path+post);
+	      			}      				
+      			}
+  				}
+  			}
+  			j = temp.indexOf(img);				
+  		}
+	  	
+	  	// if separate stylesheet is used, copy to cache and replace in HTML code
+	  	String css = getStyleSheetFromHTMLCode(htmlCode);
+	  	if (css!=null && !isHTTP(css)) { //$NON-NLS-1$
+	  		res = getResourceZipURLsOK(XML.getResolvedPath(css, htmlBasePath));
+	  		if (res!=null) {
+	  			String cssName = XML.getName(css);
+	  			File cssTarget = new File(targetDirectory, cssName);
+    			cssTarget = download(res.getAbsolutePath(), cssTarget, false);
+    			if (cssTarget!=null && !cssName.equals(css)) {
+      			htmlCode = htmlCode.replace(css, cssName);      				
+    			}
+	  		}
+	  	}
+  		
+	  	// write modified html text into target file
+      try {
+	      FileWriter fout = new FileWriter(htmlTarget);
+	      fout.write(htmlCode);
+	      fout.close();
+		  	return htmlTarget;
+	    } catch(Exception ex) {
+	      ex.printStackTrace();
+	    }
+  	}
+  	return null;
+  }
+  
+  /**
 	 * Copies a source file to a target file. If source file is a directory, copies
 	 * contents of directory, including subdirectories
-	 *
-	 * @param inFile  the source
-	 * @param outFile the target
-	 * @return true if all files successfully copied
-	 */
-	public static boolean copyAllFiles(File inFile, File outFile) {
-		if (inFile.isDirectory()) {
-			outFile.mkdir();
-			boolean success = true;
-			for (File in : inFile.listFiles()) {
-				String filename = in.getName();
-				File out = new File(outFile, filename);
-				success = success && copyAllFiles(in, out);
-			}
-			return success;
-		}
-		byte[] buffer = new byte[16384]; // 2^14
-		try {
-			InputStream in = new FileInputStream(inFile);
-			OutputStream out = new FileOutputStream(outFile);
+   *
+   * @param inFile the source
+   * @param outFile the target
+   * @return true if all files successfully copied
+   */
+  public static boolean copyAllFiles(File inFile, File outFile) {
+  	if (inFile.isDirectory()) {
+  		outFile.mkdir();
+  		boolean success = true;
+  		for (File in: inFile.listFiles()) {
+  			String filename = in.getName();
+  			File out = new File(outFile, filename);
+  			success = success && copyAllFiles(in, out);
+  		}
+  		return success;
+  	}
+  	byte[] buffer = new byte[16384]; // 2^14
+    try {
+    	InputStream in = new FileInputStream(inFile);
+    	OutputStream out = new FileOutputStream(outFile);
 			while (true) {
 				synchronized (buffer) {
 					int amountRead = in.read(buffer);
@@ -1131,112 +1132,114 @@ public class ResourceLoader {
 			in.close();
 			out.close();
 		} catch (IOException ex) {
-			return false;
-		}
-		return true;
-	}
+    	return false;
+    }
+  	return true;
+  }
 
-	/**
+
+  
+  /**
 	 * Clears an OSP cache. Always deletes "osp-host" directories in cache. Deletes
 	 * search cache if requested.
-	 * 
-	 * @param cache            the cache to clear
-	 * @param clearSearchCache true to clear the search cache
-	 * @return true if successfully cleared
-	 */
-	public static boolean clearOSPCache(File cache, boolean clearSearchCache) {
+   * 
+   * @param cache the cache to clear
+   * @param clearSearchCache true to clear the search cache
+   * @return true if successfully cleared
+   */
+  public static boolean clearOSPCache(File cache, boolean clearSearchCache) {
 		if (cache == null || !cache.canWrite())
 			return false;
-		boolean success = true;
-		File[] files = cache.listFiles(OSP_CACHE_FILTER);
+  	boolean success = true;
+  	File[] files = cache.listFiles(OSP_CACHE_FILTER);
 		if (files == null)
 			return true;
-		for (File next : files) {
-			success = success && deleteFile(next);
-		}
-		if (clearSearchCache) {
-			File searchCache = new File(cache, SEARCH_CACHE_SUBDIRECTORY);
-			success = success && deleteFile(searchCache);
-		}
-		if (!success) {
+    for(File next: files) {
+    	success = success && deleteFile(next);
+    }
+    if (clearSearchCache) {
+    	File searchCache = new File(cache, SEARCH_CACHE_SUBDIRECTORY);
+    	success = success && deleteFile(searchCache);    	
+    }
+    if (!success) {
 			JOptionPane.showMessageDialog(null, ToolsRes.getString("ResourceLoader.Dialog.UnableToClearCache.Message1") //$NON-NLS-1$
-					+ "\n" + ToolsRes.getString("ResourceLoader.Dialog.UnableToClearCache.Message2"), //$NON-NLS-1$ //$NON-NLS-2$
-					ToolsRes.getString("ResourceLoader.Dialog.UnableToClearCache.Title"), //$NON-NLS-1$
+					+"\n"+ToolsRes.getString("ResourceLoader.Dialog.UnableToClearCache.Message2"), //$NON-NLS-1$ //$NON-NLS-2$ 
+					ToolsRes.getString("ResourceLoader.Dialog.UnableToClearCache.Title"), //$NON-NLS-1$ 
 					JOptionPane.WARNING_MESSAGE);
-		}
-		return success;
-	}
+    }
+    return success;
+  }
 
-	/**
-	 * Clears an OSP cache host directory.
-	 * 
-	 * @param hostDir the cache host directory to clear
-	 * @return true if successfully cleared
-	 */
-	public static boolean clearOSPCacheHost(File hostDir) {
+  /**
+   * Clears an OSP cache host directory.
+   * 
+   * @param hostDir the cache host directory to clear
+   * @return true if successfully cleared
+   */
+  public static boolean clearOSPCacheHost(File hostDir) {
 		if (hostDir == null || !hostDir.canWrite())
 			return true;
 		if (!OSP_CACHE_FILTER.accept(hostDir))
 			return false;
-		boolean success = deleteFile(hostDir);
-		if (!success) {
+  	boolean success = deleteFile(hostDir);
+    if (!success) {
 			JOptionPane.showMessageDialog(null, ToolsRes.getString("ResourceLoader.Dialog.UnableToClearCache.Message1") //$NON-NLS-1$
-					+ "\n" + ToolsRes.getString("ResourceLoader.Dialog.UnableToClearCache.Message2"), //$NON-NLS-1$ //$NON-NLS-2$
-					ToolsRes.getString("ResourceLoader.Dialog.UnableToClearCache.Title"), //$NON-NLS-1$
+					+"\n"+ToolsRes.getString("ResourceLoader.Dialog.UnableToClearCache.Message2"), //$NON-NLS-1$ //$NON-NLS-2$ 
+					ToolsRes.getString("ResourceLoader.Dialog.UnableToClearCache.Title"), //$NON-NLS-1$ 
 					JOptionPane.WARNING_MESSAGE);
-		}
-		return success;
-	}
+    }
+    return success;
+  }
 
-	/**
+  /**
 	 * Deletes a file or folder. In case of a folder, deletes all contents and the
 	 * folder itself.
-	 * 
-	 * @param file the file to delete
-	 * @return true if deleted
-	 */
-	public static boolean deleteFile(File file) {
-		if (file.isDirectory()) {
-			File[] files = file.listFiles();
-			for (File next : files) {
-				deleteFile(next);
-			}
-		}
-		return file.delete();
-	}
-
-	/**
+   * 
+   * @param file the file to delete
+   * @return true if deleted
+   */
+  public static boolean deleteFile(File file) {
+    if(file.isDirectory()) {
+      File[] files = file.listFiles();
+      for(File next: files) {
+        deleteFile(next);
+      }
+    }
+    return file.delete();
+  }
+  
+  /**
 	 * Gets the list of files in a directory and its subdirectories that are
 	 * accepted by a FileFilter.
-	 * 
-	 * @param directory the directory to search
-	 * @param filter    the FileFilter
-	 * @return the list of files
-	 */
-	public static List<File> getFiles(File directory, FileFilter filter) {
-		List<File> results = new ArrayList<File>();
-		if (directory.isFile()) {
-			results.add(directory);
-			return results;
-		}
-		File[] contents = directory.listFiles(filter);
-		for (File file : contents) {
-			if (file.isDirectory()) {
-				List<File> deeperList = getFiles(file, filter);
-				results.addAll(deeperList);
+   * 
+   * @param directory the directory to search
+   * @param filter the FileFilter
+   * @return the list of files
+   */
+  public static List<File> getFiles(File directory, FileFilter filter) {
+    List<File> results = new ArrayList<File>();
+    if (directory.isFile()) {
+    	results.add(directory);
+    	return results;
+    }
+    File[] contents = directory.listFiles(filter);
+    for (File file: contents) {
+      if (file.isDirectory()) {
+        List<File> deeperList = getFiles(file, filter);
+        results.addAll(deeperList);
 			} else {
-				results.add(file);
-			}
-		}
-		return results;
-	}
+        results.add(file);       	
+      }
+    }
+    return results;
+  }
+  
+  private static Map<String, Map<String, ZipEntry>> htZipContents = new HashMap<>();
 
-	private static Map<String, Map<String, ZipEntry>> htZipContents = new HashMap<>();
-
-	/**
-	 * zip contents caching can save time in complex loading.
-	 * 
-	 */
+  /**
+   * zip contents caching can save time in complex loading. 
+   * 
+   */
 	public static void clearZipCache() {
 		htZipContents.clear();
 	}
@@ -1259,10 +1262,10 @@ public class ResourceLoader {
 	public static ZipEntry findZipEntry(String zipFile, String fileName, boolean isContains) {
 		if (!isContains) {
 			return getZipContents(zipFile).get(fileName);
-		}
-		for (Entry<String, ZipEntry> entry : getZipContents(zipFile).entrySet()) {
-			if (entry.getKey().indexOf(fileName) >= 0)
-				return entry.getValue();
+		} 
+		for ( Entry<String, ZipEntry> entry : getZipContents(zipFile).entrySet()) {
+		  	if (entry.getKey().indexOf(fileName) >= 0)
+		  		return entry.getValue();
 		}
 		return null;
 	}
@@ -1332,42 +1335,42 @@ public class ResourceLoader {
 
 	private static Map<String, ZipEntry> readZipContents(InputStream is, URL url) throws IOException {
 		HashMap<String, ZipEntry> fileNames = new HashMap<String, ZipEntry>();
-		if (OSPRuntime.doCacheZipContents)
-			htZipContents.put(url.toString(), fileNames);
+			if (OSPRuntime.doCacheZipContents)
+				htZipContents.put(url.toString(), fileNames);
 		ZipInputStream input = new ZipInputStream(is);
-		ZipEntry zipEntry = null;
-		int n = 0;
-		while ((zipEntry = input.getNextEntry()) != null) {
-			if (zipEntry.isDirectory() || zipEntry.getSize() == 0)
-				continue;
-			n++;
-			String fileName = zipEntry.getName();
-			fileNames.put(fileName, zipEntry); // Java has no use for the ZipEntry, but JavaScript can read it.
-		}
-		input.close();
-		OSPLog.finest("ResourceLoader: " + n + " zip entries found in " + url); //$NON-NLS-1$
+				ZipEntry zipEntry = null;
+				int n = 0;
+				while ((zipEntry = input.getNextEntry()) != null) {
+					if (zipEntry.isDirectory() || zipEntry.getSize() == 0) 
+						continue;
+					n++;
+					String fileName = zipEntry.getName();
+					fileNames.put(fileName, zipEntry); // Java has no use for the ZipEntry, but JavaScript can read it.
+				}
+				input.close();
+				OSPLog.finest("ResourceLoader: " + n + " zip entries found in " + url); //$NON-NLS-1$
 		return fileNames;
 	}
-
-	/**
-	 * 
+  
+  /**
+   * 
 	 * Convert a file path to a URL, retrieving any cached file data, as from DnD.
 	 * Do not do any actual data transfer.
-	 * 
-	 * @param path
-	 * @return
-	 */
-	private static URL getURLWithCachedBytes(String path) {
-		URL url = null;
-		try {
-			url = new URL(getURIPath(path));
-			OSPRuntime.addJSCachedBytes(url);
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return url;
-	}
+   * 
+   * @param path 
+   * @return
+   */
+  private static URL getURLWithCachedBytes(String path) {
+	URL url = null;
+	try {
+		url = new URL(getURIPath(path));
+		OSPRuntime.addJSCachedBytes(url);
+	} catch (MalformedURLException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}   
+  	return url;
+}
 
 	/**
 	 * Unzips a ZIP file into the given directory. ZIP file may be on a server. Can
@@ -1427,55 +1430,55 @@ public class ResourceLoader {
 			ex.printStackTrace();
 			return null;
 		}
-	}
-
-	/**
-	 * Downloads a file from the web to a target File.
-	 * 
-	 * @param urlPath         the path to the file
-	 * @param target          the target file
-	 * @param alwaysOverwrite true to overwrite an existing file, if any
-	 * @return the downloaded file, or null if failed
-	 */
-	public static File download(String urlPath, File target, boolean alwaysOverwrite) {
+	}  
+  
+  /**
+   * Downloads a file from the web to a target File.
+   * 
+   * @param urlPath the path to the file
+   * @param target the target file
+   * @param alwaysOverwrite true to overwrite an existing file, if any
+   * @return the downloaded file, or null if failed
+   */
+  public static File download(String urlPath, File target, boolean alwaysOverwrite) {
 		if (target == null || target.getParentFile() == null)
 			return null;
-		// compare urlPath with previous attempt and, if identical, check web connection
-		if (!webConnected || downloadURL.equals(urlPath)) {
-			webConnected = isWebConnected(); // $NON-NLS-1$
-		}
-		if (!webConnected) {
+  	// compare urlPath with previous attempt and, if identical, check web connection
+  	if (!webConnected || downloadURL.equals(urlPath)) {
+  		webConnected = isWebConnected(); //$NON-NLS-1$
+  	}
+  	if (!webConnected) {
 			JOptionPane.showMessageDialog(null, ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
-					ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
-					JOptionPane.WARNING_MESSAGE);
-			return null;
-		}
+  				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
+  				JOptionPane.WARNING_MESSAGE); 
+  		return null;
+  	}
 
-		urlPath = getURIPath(urlPath);
+  	urlPath = getURIPath(urlPath);
 		target.getParentFile().mkdirs();
-		if (alwaysOverwrite || !target.exists()) {
-			OSPLog.finer("downloading " + urlPath + " to " + target); //$NON-NLS-1$ //$NON-NLS-2$
-			downloadURL = urlPath;
-			try {
-				Resource res = getResourceZipURLsOK(urlPath);
+    if (alwaysOverwrite || !target.exists()) {
+	  	OSPLog.finer("downloading "+urlPath+" to "+target); //$NON-NLS-1$ //$NON-NLS-2$
+	  	downloadURL = urlPath;
+  		try {
+  			Resource res = getResourceZipURLsOK(urlPath);
 				InputStream reader = res.openInputStream();
-				FileOutputStream writer = new FileOutputStream(target);
-				byte[] buffer = new byte[65536]; // 2^14 = 64K
-				int bytesRead = 0;
-				while ((bytesRead = reader.read(buffer)) > 0) {
-					writer.write(buffer, 0, bytesRead);
-				}
-				writer.close();
-				reader.close();
+        FileOutputStream writer = new FileOutputStream(target);
+        byte[] buffer = new byte[65536]; // 2^14 = 64K
+        int bytesRead = 0;
+        while ((bytesRead = reader.read(buffer)) > 0) { 
+        	writer.write(buffer, 0, bytesRead);
+        }  
+        writer.close();
+        reader.close();
 			} catch (Exception ex) {
-			}
-			downloadURL = ""; //$NON-NLS-1$
-		}
-		if (target.exists()) {
-			return target;
-		}
-		return null;
-	}
+			} 
+	  	downloadURL = ""; //$NON-NLS-1$
+    }
+    if (target.exists()) {
+    	return target; 
+    }
+    return null;
+  }
 
 	public static File extractFileFromZIP(String source, File target, boolean alwaysOverwrite) {
 		return extractFileFromZIP(source, target, alwaysOverwrite, true);
@@ -1526,7 +1529,7 @@ public class ResourceLoader {
 		String[] parts = getJarURLParts(jarSource);
 		return (parts == null ? null : getZipEntryBytes(parts[0], parts[1], target));
 	}
-	
+
 
 	public static void getZipEntryBytesAsync(String source, File target, Function<byte[], Void> whenDone) {
 		String[] parts = getJarURLParts(source);
@@ -1575,13 +1578,13 @@ public class ResourceLoader {
 	 * zip file, efficiently caching a map of ZipEntry data in JavaScript that can
 	 * directly seek and extract bytes from that data.
 	 * 
-	 * The ZipEntry is cached automatically.
+	 * The ZipEntry is cached automatically. 
 	 * 
 	 * 
 	 * @param zipFile
 	 * @param entryPath
-	 * @param target    the File object to used, or null if only byte[] return is
-	 *                  desired
+	 * @param target      the File object to used, or null if only byte[] return is
+	 *                    desired
 	 * @return In JavaScript, all bytes are always returned; in Java, all bytes are
 	 *         returned only when target is null -- otherwise, only one buffer's
 	 *         worth of bytes are returned. In either case, a null byte[] return
@@ -1602,21 +1605,21 @@ public class ResourceLoader {
 				return null;
 			bytes = OSPRuntime.jsutil.getZipBytes(ze);
 			if (bytes != null && target != null) {
-				// Note that this will NOT download to the user, as we are not
+				// Note that this will NOT download to the user, as we are not 
 				// creating a FileOutputStream.
 				OSPRuntime.jsutil.setFileBytes(target, bytes);
 			}
 		} else /** @j2sIgnore */
 		{
-			// Java Only -- none of this is necessary in SwingJS, since we can
-			// directly access the ZipEntry data.
+			// Java Only -- none of this is necessary in SwingJS, since we can 
+			// directly access the ZipEntry data. 
 			URL url = getURLWithCachedBytes(zipFile);
 			ZipInputStream input = new ZipInputStream(url.openStream());
 			ZipEntry zipEntry = null;
 			while ((zipEntry = input.getNextEntry()) != null) {
 				// BH 2020.04.25 allow both a in b and b in a
 				if (!zipEntry.isDirectory() && (isContains ? zipEntry.getName().contains(entryPath)
-						: entryPath.contains(zipEntry.getName())))
+						 : entryPath.contains(zipEntry.getName())))
 					break;
 			}
 			if (zipEntry != null) {
@@ -1653,85 +1656,85 @@ public class ResourceLoader {
 		int n = source.indexOf("!/");
 		if (n < 0)
 			return null;
-		String jarfile = source.substring(0, n).replace("jar:", "").replace("file:", "");
+		String jarfile = source.substring(0, n).replace("jar:",  "").replace("file:",  "");
 		while (jarfile.startsWith("//"))
 			jarfile = jarfile.substring(1);
-		return new String[] { jarfile, (n == source.length() - 2 ? null : source.substring(n + 2)) };
+		return new String[] { jarfile , (n == source.length() - 2 ? null : source.substring(n + 2)) };
 	}
 
-	/**
+/**
 	 * Return true if there is any internet signal at all. The exact URL is
 	 * negotiable, but it must be CORS allowed.
-	 * 
-	 * @return
-	 */
-	public static boolean isWebConnected() {
-		return isURLAvailable(WEB_CONNECTED_TEST_URL);
-	}
+   * 
+   * @return
+   */
+  public static boolean isWebConnected() {
+	  return isURLAvailable(WEB_CONNECTED_TEST_URL);
+  }
+  
+  /**
+   * Determines if a url path is available (ie both valid and connected).
+   *
+   * @param urlPath the path in URI form
+   * @return true if available
+   */
+  public static boolean isURLAvailable(String urlPath) {
+	  if (JSUtil.isJS) {
+		  // BH 2020.03.02 trying this to see if it is reasonable
+		  // This specific URL will be replaced with a known CORS server by j2sApplet.js
+		  urlPath = "https://INTERNET.TEST";
+	  }
+	  try {
+      // make a URL, open a connection, get content
+      URL url = new URL(urlPath);
+      HttpURLConnection urlConnect = (HttpURLConnection)url.openConnection();
+      urlConnect.getContent();	
+	  } catch (Exception ex) {
+		  return false;
+	  }
+	  return true;
+  }
 
-	/**
-	 * Determines if a url path is available (ie both valid and connected).
-	 *
-	 * @param urlPath the path in URI form
-	 * @return true if available
-	 */
-	public static boolean isURLAvailable(String urlPath) {
-		if (JSUtil.isJS) {
-			// BH 2020.03.02 trying this to see if it is reasonable
-			// This specific URL will be replaced with a known CORS server by j2sApplet.js
-			urlPath = "https://INTERNET.TEST";
-		}
-		try {
-			// make a URL, open a connection, get content
-			URL url = new URL(urlPath);
-			HttpURLConnection urlConnect = (HttpURLConnection) url.openConnection();
-			urlConnect.getContent();
-		} catch (Exception ex) {
-			return false;
-		}
-		return true;
-	}
-
-	/**
-	 * Removes protocol and "%20" from URI paths.
-	 *
-	 * @param uriPath the path in URI form
-	 * @return the path
-	 */
-	public static String getNonURIPath(String uriPath) {
+  /**
+   * Removes protocol and "%20" from URI paths.
+   *
+   * @param uriPath the path in URI form
+   * @return the path
+   */
+  public static String getNonURIPath(String uriPath) {
 		if (uriPath == null)
 			return null;
-		String path = uriPath;
+  	String path = uriPath;
 //		String path = XML.forwardSlash(uriPath.trim());
 //  	boolean isJarOrFile = false;
-		// remove jar protocol, if any
-		if (path.startsWith("jar:")) { //$NON-NLS-1$
-			path = path.substring(4);
+  	// remove jar protocol, if any
+    if (path.startsWith("jar:")) {                     //$NON-NLS-1$
+      path = path.substring(4);
 //      isJarOrFile = true;
-		}
-		// remove file protocol, if any
-		if (path.startsWith("file:")) { //$NON-NLS-1$
-			path = path.substring(5);
+    }
+  	// remove file protocol, if any
+    if (path.startsWith("file:")) {                     //$NON-NLS-1$
+      path = path.substring(5);
 //      isJarOrFile = true;
-		}
-		// remove all but one leading slash
-		// commented out by DB 2016-07-08 to enable opening local network files
+    }
+    // remove all but one leading slash
+    // commented out by DB 2016-07-08 to enable opening local network files
 //    if (isJarOrFile) {
 //	    while (path.startsWith("//")) { //$NON-NLS-1$
 //	      path = path.substring(1);
 //	    }
 //    }
-		// remove last leading slash if drive is specified
-		if (path.startsWith("/") && path.indexOf(":") > -1) { //$NON-NLS-1$ //$NON-NLS-2$
-			path = path.substring(1);
-		}
-		// replace "%20" with space
-		int j = path.indexOf("%20"); //$NON-NLS-1$
-		while (j > -1) {
-			String s = path.substring(0, j);
-			path = s + " " + path.substring(j + 3); //$NON-NLS-1$
-			j = path.indexOf("%20"); //$NON-NLS-1$
-		}
+    // remove last leading slash if drive is specified
+    if (path.startsWith("/") && path.indexOf(":")>-1) { //$NON-NLS-1$ //$NON-NLS-2$
+      path = path.substring(1);
+    }
+    // replace "%20" with space
+    int j = path.indexOf("%20");                       //$NON-NLS-1$
+    while(j>-1) {
+      String s = path.substring(0, j);
+      path = s+" "+path.substring(j+3);                //$NON-NLS-1$
+      j = path.indexOf("%20");                         //$NON-NLS-1$
+    }
 //    // replace "%26" with "&"
 //    j = path.indexOf("%26");                           //$NON-NLS-1$
 //    while(j>-1) {
@@ -1739,31 +1742,31 @@ public class ResourceLoader {
 //      path = s+"&"+path.substring(j+3);                //$NON-NLS-1$
 //      j = path.indexOf("%26");                         //$NON-NLS-1$
 //    }
-		return path;
-	}
+  	return path;
+  }
 
-	/**
-	 * Converts a path to URI form (spaces replaced by "%20", etc).
-	 *
-	 * @param path the path
-	 * @return the path in URI form
-	 */
-	public static String getURIPath(String path) {
+  /**
+   * Converts a path to URI form (spaces replaced by "%20", etc).
+   *
+   * @param path the path
+   * @return the path in URI form
+   */
+  public static String getURIPath(String path) {
 		if (path == null)
 			return null;
 		// trim and change backslashes to forward slashes
 		path = XML.forwardSlash(path.trim());
 		// add forward slash at end if needed
-		if (!path.equals("") //$NON-NLS-1$
+		if (!path.equals("")  //$NON-NLS-1$
 				&& XML.getExtension(path) == null && !path.endsWith("/")) //$NON-NLS-1$
 			path += "/"; //$NON-NLS-1$
-		// replace spaces with "%20"
-		int i = path.indexOf(" "); //$NON-NLS-1$
-		while (i > -1) {
-			String s = path.substring(0, i);
-			path = s + "%20" + path.substring(i + 1); //$NON-NLS-1$
-			i = path.indexOf(" "); //$NON-NLS-1$
-		}
+    // replace spaces with "%20"
+    int i = path.indexOf(" ");                       //$NON-NLS-1$
+    while(i>-1) {
+      String s = path.substring(0, i);
+      path = s+"%20"+path.substring(i+1);            //$NON-NLS-1$
+      i = path.indexOf(" ");                         //$NON-NLS-1$
+    }
 //    // replace "&" with "%26"
 //    i = path.indexOf("&");                           //$NON-NLS-1$
 //    while(i>-1) {
@@ -1771,178 +1774,178 @@ public class ResourceLoader {
 //      path = s+"%26"+path.substring(i+1);            //$NON-NLS-1$
 //      i = path.indexOf("&");                         //$NON-NLS-1$
 //    }
-		// add file protocol if path to local file
-		if (path.startsWith("/"))
-			return "file:" + path;
-		// BH because nonURIPath can return //./xxx
-
-		if (!path.equals("") //$NON-NLS-1$
+    // add file protocol if path to local file
+    if (path.startsWith("/"))
+    	return "file:" + path;
+    // BH because nonURIPath can return //./xxx
+    
+		if (!path.equals("")  //$NON-NLS-1$
 				&& !isHTTP(path) && !path.startsWith("jar:") //$NON-NLS-1$
 				&& !path.startsWith("file:/")) { //$NON-NLS-1$
-			String protocol = OSPRuntime.isWindows() ? "file:/" : "file://"; //$NON-NLS-1$ //$NON-NLS-2$
-			path = protocol + path;
+			String protocol = OSPRuntime.isWindows()? "file:/": "file://"; //$NON-NLS-1$ //$NON-NLS-2$
+			path = protocol+path;
 		}
-		return path;
-	}
+  	return path;
+  }
 
-	// ______________________________ private methods ___________________________
+  // ______________________________ private methods ___________________________
 
-	/**
+  /**
 	 * Gets the resource URL using the applet's class loader. Added by Wolfgang
 	 * Christian.
-	 *
-	 * @param name of the resource
-	 * @return URL of the Resource, or null if none found
-	 */
-	private static URL getAppletResourceURL(String name) {
+   *
+   * @param name of the resource
+   * @return URL of the Resource, or null if none found
+   */
+  private static URL getAppletResourceURL(String name) {
 		if (JSUtil.isJS)
 			return null;
-		if ((OSPRuntime.applet == null) || (name == null) || name.trim().equals("")) { //$NON-NLS-1$
-			return null;
-		}
+    if((OSPRuntime.applet==null)||(name==null)||name.trim().equals("")) { //$NON-NLS-1$
+      return null;
+    }
 		if (isHTTP(name)) { // $NON-NLS-1$ //$NON-NLS-2$ // open a direct connection for http and https
 							// resources
-			try {
-				return new java.net.URL(name);
-			} catch (MalformedURLException e) {
-				// e.printStackTrace();
-			}
-		}
-		name = name.trim(); // remove whitespace
-		if (!name.startsWith("/")) { //$NON-NLS-1$ // try applet search paths for relative paths
-			for (Iterator<String> it = appletSearchPaths.iterator(); it.hasNext();) {
-				String path = it.next();
-				String tempName = name; // tempName may change
-				if (tempName.startsWith("../")) { //$NON-NLS-1$
-					tempName = tempName.substring(3); // remove prefix
-					path = path.substring(0, path.length() - 1); // drop trailing slash
-					int last = path.lastIndexOf("/"); //$NON-NLS-1$ // find last directory slash
+    	try {
+			return new java.net.URL(name);
+		} catch (MalformedURLException e) {
+			//e.printStackTrace();
+		} 
+    }
+    name=name.trim();  // remove whitespace
+    if(!name.startsWith("/")) { //$NON-NLS-1$ // try applet search paths for relative paths
+      for(Iterator<String> it = appletSearchPaths.iterator(); it.hasNext(); ) {
+        String path = it.next();
+        String tempName=name;                   // tempName may change
+    	if(tempName.startsWith("../")) {        //$NON-NLS-1$   
+    		  tempName = tempName.substring(3);     //remove prefix
+              path=path.substring(0, path.length()-1); // drop trailing slash
+              int last=path.lastIndexOf("/"); //$NON-NLS-1$ // find last directory slash
 					path = (last > 0) ? path.substring(0, last) : "/"; //$NON-NLS-1$ // drop last directory if it
 																		// exists
-				} else if (tempName.startsWith("./")) { //$NON-NLS-1$
-					tempName = tempName.substring(2); // remove reference to current directory
-				}
-				URL url = OSPRuntime.applet.getClass().getResource(path + tempName);
-				if (url != null) {
-					return url;
-				}
-			}
-		}
-		return OSPRuntime.applet.getClass().getResource(name); // url not found in applet search paths
-	}
+        }else if(tempName.startsWith("./")) {         //$NON-NLS-1$   
+        	tempName = tempName.substring(2);     //remove reference to current directory
+        } 
+        URL url = OSPRuntime.applet.getClass().getResource(path+tempName);
+        if(url!=null) {
+          return url;
+        }
+      }
+    }
+    return OSPRuntime.applet.getClass().getResource(name); // url not found in applet search paths
+  }
 
-	/**
-	 * Creates a Resource from a file path, if it is appropriate to do so.
-	 *
-	 * @param path the file path
-	 * @return the resource, if any
-	 */
-	static private Resource createFileResource(String path) {
-		// don't create file resources when in applet mode
-		// ignore paths that refer to zip or jar files
+  /**
+   * Creates a Resource from a file path, if it is appropriate to do so.
+   *
+   * @param path the file path
+   * @return the resource, if any
+   */
+  static private Resource createFileResource(String path) {
+      // don't create file resources when in applet mode
+	    // ignore paths that refer to zip or jar files
 		return (OSPRuntime.applet != null || isHTTP(path) || path.indexOf(".zip") > -1 || path.indexOf(".jar") > -1 //$NON-NLS-1$ //$NON-NLS-2$
 				|| path.indexOf(".trz") > -1 //$NON-NLS-1$
 						? null
 						: createFileResource(new File(path)));
-	}
+  }
 
-	/**
+  /**
 	 * Creates a Resource from a file. Checks that this is appropriate are assumed
 	 * to have already been done.
-	 *
-	 * @param path the file path
-	 * @return the resource, if any
-	 */
+   *
+   * @param path the file path
+   * @return the resource, if any
+   */
 	private static Resource createFileResource(File file) {
-		try {
-			if (file.exists() && file.canRead()) {
-				Resource res = new Resource(file);
-				if (file.getName().endsWith("xset")) { //$NON-NLS-1$
-					xsetZipLoader = null;
-				}
-				OSPLog.finer("loaded file resource " + XML.forwardSlash(res.getAbsolutePath())); //$NON-NLS-1$
-				return res;
-			}
-		} catch (Exception ex) {
-			/** empty block */
-		}
-		return null;
-	}
+    try {
+      if(file.exists()&&file.canRead()) {
+        Resource res = new Resource(file);
+        if(file.getName().endsWith("xset")) {                                    //$NON-NLS-1$
+          xsetZipLoader = null;
+        }
+        OSPLog.finer("loaded file resource "+XML.forwardSlash(res.getAbsolutePath())); //$NON-NLS-1$
+        return res;
+      }
+    } catch(Exception ex) {
+      /** empty block */
+    }
+    return null;
+  }
 
-	/**
-	 * Creates a Resource from a URL.
-	 *
-	 * @param path the url path
-	 * @return the resource, if any
-	 */
-	static private Resource createURLResource(String path) {
-		// ignore paths that refer to zip or jar files unless explicitly OK
+  /**
+   * Creates a Resource from a URL.
+   *
+   * @param path the url path
+   * @return the resource, if any
+   */
+  static private Resource createURLResource(String path) {
+    // ignore paths that refer to zip or jar files unless explicitly OK
 		if (!zipURLsOK && (path.indexOf(".zip") > -1 || path.indexOf(".jar") > -1 || path.indexOf(".trz") > -1)) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-			return null;
-		}
-		Resource res = null;
-		// following added by Doug Brown 2009/11/14
-		if (!JSUtil.isJS && OSPRuntime.applet != null) {
-			try { // let applet class try to get it first
-				URL url = getAppletResourceURL(path);
-				res = createResource(url);
-			} catch (Exception ex) {
-				/** empty block */
-			}
-		} // end code added by Doug Brown 2009/11/14
-		if (res == null) {
-			// if path includes protocol, use it directly
-			if (path.indexOf(":/") > -1) { //$NON-NLS-1$
-				try {
+      return null;
+    }
+    Resource res = null;
+    // following added by Doug Brown 2009/11/14
+    if(!JSUtil.isJS && OSPRuntime.applet!=null) {
+      try { // let applet class try to get it first
+        URL url = getAppletResourceURL(path);
+        res = createResource(url);
+      } catch(Exception ex) {
+        /** empty block */
+      }
+    } // end code added by Doug Brown 2009/11/14
+    if(res==null) {
+      // if path includes protocol, use it directly
+      if(path.indexOf(":/")>-1) {  //$NON-NLS-1$
+        try {
 //          URL url = new URL(path); // changed to use URI path 2011/09/11 DB
-					URL url = getURLWithCachedBytes(path);
-					res = createResource(url);
-				} catch (Exception ex) {
-					/** empty block */
-				}
-			}
-			// else if applet mode and relative path, search document and code base
-			else {
-				if ((OSPRuntime.applet != null) && !path.startsWith("/")) { //$NON-NLS-1$
-					// first check document base
-					URL docBase = OSPRuntime.applet.getDocumentBase();
-					try {
-						// following added by Doug Brown 2009/11/14
-						String basePath = docBase.toString();
-						// strip query, if any, from document base
-						int n = basePath.indexOf("?"); //$NON-NLS-1$
-						if (n > -1) {
-							docBase = new URL(basePath.substring(0, n));
-						}
-						// end code added by Doug Brown 2009/11/14
-						URL url = new URL(docBase, path);
-						res = createResource(url);
-					} catch (Exception ex) {
-						/** empty block */
-					}
-					if (res == null) {
-						URL codeBase = OSPRuntime.applet.getCodeBase();
-						String s = XML.getDirectoryPath(docBase.toExternalForm()) + "/"; //$NON-NLS-1$
-						if (!codeBase.toExternalForm().equals(s)) {
-							try {
-								URL url = new URL(codeBase, path);
-								res = createResource(url);
-							} catch (Exception ex) {
-								/** empty block */
-							}
-						}
-					}
-				}
-			}
-		}
-		if (res != null) {
-			if (path.endsWith(".xset")) { //$NON-NLS-1$
-				xsetZipLoader = null;
-			}
-			OSPLog.finer("loaded URL resource " + XML.forwardSlash(res.getAbsolutePath())); //$NON-NLS-1$
-		}
-		return res;
-	}
+          URL url = getURLWithCachedBytes(path);          
+          res = createResource(url);
+        } catch(Exception ex) {
+          /** empty block */
+        }
+      }
+      // else if applet mode and relative path, search document and code base
+      else {
+        if((OSPRuntime.applet!=null)&&!path.startsWith("/")) {             //$NON-NLS-1$
+          // first check document base
+          URL docBase = OSPRuntime.applet.getDocumentBase();
+          try {
+            // following added by Doug Brown 2009/11/14
+            String basePath = docBase.toString();
+            // strip query, if any, from document base
+            int n = basePath.indexOf("?");                                 //$NON-NLS-1$
+            if(n>-1) {
+              docBase = new URL(basePath.substring(0, n));
+            }
+            // end code added by Doug Brown 2009/11/14
+            URL url = new URL(docBase, path);
+            res = createResource(url);
+          } catch(Exception ex) {
+            /** empty block */
+          }
+          if(res==null) {
+            URL codeBase = OSPRuntime.applet.getCodeBase();
+            String s = XML.getDirectoryPath(docBase.toExternalForm())+"/"; //$NON-NLS-1$
+            if(!codeBase.toExternalForm().equals(s)) {
+              try {
+                URL url = new URL(codeBase, path);
+                res = createResource(url);
+              } catch(Exception ex) {
+                /** empty block */
+              }
+            }
+          }
+        }
+      }
+    }
+    if(res!=null) {
+      if(path.endsWith(".xset")) {                                  //$NON-NLS-1$
+        xsetZipLoader = null;
+      }
+      OSPLog.finer("loaded URL resource "+XML.forwardSlash(res.getAbsolutePath())); //$NON-NLS-1$
+    }
+    return res;
+  }
 
 	/**
 	 * Creates a Resource from within a zip or jar file.
@@ -2071,7 +2074,7 @@ public class ResourceLoader {
 				File target = new File(targetPath);
 				if (!target.exists()) {
 					if (OSPRuntime.isJS && ze != null) {
-						OSPRuntime.jsutil.setFileBytes(target, OSPRuntime.jsutil.getZipBytes(ze));
+						OSPRuntime.jsutil.setFileBytes(target,  OSPRuntime.jsutil.getZipBytes(ze));
 					} else {
 						target = extract2(zip, fileName, target);
 						if (deleteOnExit)
@@ -2095,7 +2098,7 @@ public class ResourceLoader {
 	}
 
 	/**
-	 * Look for a file in a JAR file or base path.
+	 * Look for a file in a JAR file or base path. 
 	 * 
 	 * @param launchJarPath
 	 * @param fileName
@@ -2103,7 +2106,7 @@ public class ResourceLoader {
 	 *                      byte[] data
 	 * @return found url
 	 * 
-	 * @author hansonr
+	 * @author hansonr 
 	 */
 	private static URL findInJarPath(String launchJarPath, String fileName) {
 		try {
@@ -2191,20 +2194,20 @@ public class ResourceLoader {
 		return res; // may be null
 	}
 
-	/**
-	 * First check to see if we have cached bytes.
+  /**
+   * First check to see if we have cached bytes. 
 	 * 
-	 * @param type
-	 * @param path
-	 * @return
-	 */
+   * @param type
+   * @param path
+   * @return
+   */
 	private static URL getTypeResource(Class<?> type, String path) {
 		byte[] bytes = OSPRuntime.getCachedBytes(path);
 		if (bytes != null) {
 			return getURLWithCachedBytes(path);
 		}
-		return type.getResource(path);
-	}
+	return type.getResource(path);
+}
 
 	/**
 	 * Creates a Resource.
@@ -2227,7 +2230,7 @@ public class ResourceLoader {
 			n = path.toLowerCase().indexOf(".jar!/"); //$NON-NLS-1$
 		if (n == -1)
 			n = path.toLowerCase().indexOf(".trz!/"); //$NON-NLS-1$
-		if (n > -1 && isHTTP(path)) { // $NON-NLS-1$
+		if (n > -1 && isHTTP(path)) { //$NON-NLS-1$
 			// check that url is accessible
 			content = path.substring(n + 6);
 			working = new URL(path.substring(0, n + 4));
@@ -2246,10 +2249,11 @@ public class ResourceLoader {
 		return res;
 	}
 
+
 	private static Resource findResource(String path, Class<?> type, boolean searchFiles) {
 		return findResource(path, type, searchFiles, false);
 	}
-
+	
 	private static Resource findResource(String path, Class<?> type, boolean searchFiles, boolean createOnly) {
 
 		if (!isHTTP(path)) {
@@ -2283,41 +2287,41 @@ public class ResourceLoader {
 		return res;
 	}
 
-	/**
+
+	  /**
 	 * Never called -- was for applet only Finds the resource using only the class
 	 * resource loader
-	 */
+	   */
 
-	private static Resource findResourceInClass(String path, Class<?> type, boolean searchFiles) {
-		// added by Paco
-		return findResource(path, type, searchFiles, true);
-	}
-
-	/**
-	 * Gets a path from a base path and file name.
-	 *
-	 * @param base the base path
-	 * @param name the file name
-	 * @return the path
-	 */
-	private static String getPath(String base, String name) {
-		if (base == null) {
-			base = ""; //$NON-NLS-1$
+		private static Resource findResourceInClass(String path, Class<?> type, boolean searchFiles) { 
+		  // added by Paco
+		  return findResource(path, type, searchFiles, true);
 		}
-		if (base.endsWith(".jar") || base.endsWith(".zip") || base.endsWith(".trz")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-			base += "!"; //$NON-NLS-1$
-		}
-		String path = XML.getResolvedPath(name, base);
-		// correct the path so that it works with Mac
-		if (OSPRuntime.isMac() && path.startsWith("file:/") && !path.startsWith("file:///")) { //$NON-NLS-1$ //$NON-NLS-2$
-			path = path.substring(6);
-			while (path.startsWith("/")) { //$NON-NLS-1$
-				path = path.substring(1);
-			}
-			path = "file:///" + path; //$NON-NLS-1$
-		}
-		return path;
-	}
+  /**
+   * Gets a path from a base path and file name.
+   *
+   * @param base the base path
+   * @param name the file name
+   * @return the path
+   */
+  private static String getPath(String base, String name) {
+    if(base==null) {
+      base = ""; //$NON-NLS-1$
+    }
+    if(base.endsWith(".jar") || base.endsWith(".zip") || base.endsWith(".trz")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+      base += "!"; //$NON-NLS-1$
+    }
+    String path = XML.getResolvedPath(name, base);
+    // correct the path so that it works with Mac
+    if(OSPRuntime.isMac()&&path.startsWith("file:/")&&!path.startsWith("file:///")) { //$NON-NLS-1$ //$NON-NLS-2$
+      path = path.substring(6);
+      while(path.startsWith("/")) {                                                   //$NON-NLS-1$
+        path = path.substring(1);
+      }
+      path = "file:///"+path;                                                         //$NON-NLS-1$
+    }
+    return path;
+  }
 
 	/**
 	 * 
@@ -2333,15 +2337,16 @@ public class ResourceLoader {
 		if (url != null) {
 			String dir = url.getPath();
 			dir = dir.substring(0, dir.lastIndexOf("/") + 1);
-			String base = "https://" + url.getHost() + "/" + dir;
+			String base = "https://" + url.getHost() + "/" + dir;			
 			htmlStr = htmlStr.replace("src=\"http", "#SH#");
 			htmlStr = htmlStr.replace("src=\"", "src=\"" + base);
-			htmlStr = htmlStr.replace("#SH#", "src=\"http");
+			htmlStr = htmlStr.replace("#SH#","src=\"http");
 		}
-		htmlStr = htmlStr.replace("http://physlets", "https://physlets");
+		htmlStr = htmlStr.replace("http://physlets", "https://physlets"); 
 		return htmlStr;
 	}
 
+	
 	// BH 2020.04.14 from EjsTool
 
 	public static String extractFiles(String modelPath, File sourceDir, List<Object> finalList,
@@ -2369,7 +2374,7 @@ public class ResourceLoader {
 				}
 			}
 			String originalName = resource.startsWith("./") ? modelPath + resource.substring(2) : resource; //$NON-NLS-1$
-			File result = extract(originalName, targetFile, true);
+			File result = extract(originalName, targetFile, true); 
 			if (result == null)
 				return originalName;
 		}
@@ -2378,48 +2383,48 @@ public class ResourceLoader {
 
 	// BH 2020.04.14 from JarFile
 
-	/**
-	 * Extracts a given file from a compressed (ZIP, JAR or TRZ) file
+	  /**
+	   * Extracts a given file from a compressed (ZIP, JAR or TRZ) file
 	 * 
-	 * @param source      File The compressed file to extract the file from
-	 * @param filename    String The path of the file to extract
+	   * @param source File The compressed file to extract the file from
+	   * @param filename String The path of the file to extract
 	 * @param destination String The full (or relative to whatever the current user
 	 *                    directory is) path where to save the extracted file
-	 * @return File The extracted file, null if failed
-	 */
-	static private File extract2(File source, String fileName, File target) {
-		String targetName = target.toString();
-		System.out.println("RL extracting " + fileName + " " + targetName + " from " + source);
-		int flen = (fileName.endsWith("/") ? fileName.length() : 0);
-		FileOutputStream fos = null;
-		try (FileInputStream fis = new FileInputStream(source);
-				ZipInputStream zis = (ZipInputStream) new ZipInputStream(fis);) {
-			ZipEntry ze;
-			while ((ze = zis.getNextEntry()) != null && flen >= 0) {
-				String name = ze.getName();
-				if (flen == 0 && name.equals(fileName)) {
-					flen = -1;
-					break;
-				} else if (flen > 0 && name.startsWith(fileName)) {
-					target = new File(targetName + name.substring(flen));
-				} else {
-					continue;
+	   * @return File The extracted file, null if failed
+	   */ 
+		static private File extract2(File source, String fileName, File target) {
+			String targetName = target.toString();
+			System.out.println("RL extracting " + fileName + " " + targetName + " from " + source);
+			int flen = (fileName.endsWith("/") ? fileName.length() : 0);
+			FileOutputStream fos = null;
+			try (FileInputStream fis = new FileInputStream(source);
+					ZipInputStream zis = (ZipInputStream) new ZipInputStream(fis);) {
+				ZipEntry ze;
+				while ((ze = zis.getNextEntry()) != null && flen >= 0) {
+					String name = ze.getName();
+					if (flen == 0 && name.equals(fileName)) {
+						flen = -1;
+//						break;
+					} else if (flen > 0 && name.startsWith(fileName)) {
+						target = new File(targetName + name.substring(flen));
+					} else {
+						continue;
+					}
+					File parent = target.getParentFile();
+					if (parent != null) {
+						parent.mkdirs();
+					}
+					fos = new FileOutputStream(target);
+					ResourceLoader.getLimitedStreamBytes(zis, ze.getSize(), fos);
+					fos.close();
+					System.out.println("RL extracted " + targetName + " " + target.length());
 				}
-				File parent = target.getParentFile();
-				if (parent != null) {
-					parent.mkdirs();
-				}
-				fos = new FileOutputStream(target);
-				ResourceLoader.getLimitedStreamBytes(zis, ze.getSize(), fos);
-				fos.close();
-				System.out.println("RL extracted " + targetName + " " + target.length());
+			} catch (IOException e2) {
+				return null;
 			}
-		} catch (IOException e2) {
-			return null;
+			return target;
 		}
-		return target;
-	}
-
+	  
 // BH 2020.04.14 abandoned
 //		
 //		  private static Map<String, Map<String, ZipEntry>> jarContents = new HashMap<String, Map<String, ZipEntry>>(); // added by D Brown 2007-10-31
@@ -2498,9 +2503,9 @@ public class ResourceLoader {
 //	    return null;
 //	  }
 //
-	static public File extract(String filename, File target) {
-		return extract(filename, target, true);
-	}
+		static public File extract(String filename, File target) {
+			return extract(filename, target, true);
+		}
 
 	/**
 	 * Extracts a file using the ResourceLoader utility
@@ -2559,112 +2564,113 @@ public class ResourceLoader {
 		}
 	}
 
-	// -----------------------------------
-	// Private methods
-	// -----------------------------------
+	  // -----------------------------------
+	  //        Private methods
+	  // -----------------------------------
 
-	static public int confirmOverwrite(String filename) {
-		return confirmOverwrite(filename, false);
-	}
+	  static public int confirmOverwrite(String filename) {
+	    return confirmOverwrite(filename, false);
+	  }
 
-	// ---- Localization
-	static private final String JAR_TOOL_BUNDLE_NAME = "org.opensourcephysics.resources.tools.tools"; //$NON-NLS-1$
-	static private ResourceBundle res = ResourceBundle.getBundle(JAR_TOOL_BUNDLE_NAME);
+	  // ---- Localization
+	  static private final String JAR_TOOL_BUNDLE_NAME = "org.opensourcephysics.resources.tools.tools"; //$NON-NLS-1$
+	  static private ResourceBundle res = ResourceBundle.getBundle(JAR_TOOL_BUNDLE_NAME);
 
-	static public void setLocale(Locale locale) {
-		res = ResourceBundle.getBundle(JAR_TOOL_BUNDLE_NAME, locale);
-	}
+	  static public void setLocale(Locale locale) {
+	    res = ResourceBundle.getBundle(JAR_TOOL_BUNDLE_NAME, locale);
+	  }
 
-	static public final int YES = 0;
-	static public final int NO = 1;
-	static public final int YES_TO_ALL = 2;
-	static public final int NO_TO_ALL = 3;
-	static public final int CANCEL = 4;
+	  static public final int YES = 0;
+	  static public final int NO = 1;
+	  static public final int YES_TO_ALL = 2;
+	  static public final int NO_TO_ALL = 3;
+	  static public final int CANCEL = 4;
+	  
 
-	static private class OverwriteValue {
-		int value = NO;
+	  static private class OverwriteValue {
+		    int value = NO;
 
-		OverwriteValue(int val) {
-			value = val;
-		}
+		    OverwriteValue(int val) {
+		      value = val;
+		    }
 
-	}
+		  }
 
-	/**
-	 * Whether to overwrite an existing file.
+	  /**
+	   * Whether to overwrite an existing file.
 	 * 
-	 * @param file File
-	 * @return boolean
-	 */
-	static public int confirmOverwrite(String filename, boolean canCancel) {
-		final JDialog dialog = new JDialog();
-		final OverwriteValue returnValue = new OverwriteValue(NO);
-		java.awt.event.MouseAdapter mouseListener = new java.awt.event.MouseAdapter() {
-			public void mousePressed(java.awt.event.MouseEvent evt) {
-				AbstractButton button = (AbstractButton) (evt.getSource());
-				String aCmd = button.getActionCommand();
-				if (aCmd.equals("yes")) { //$NON-NLS-1$
-					returnValue.value = YES;
-				} else if (aCmd.equals("no")) { //$NON-NLS-1$
-					returnValue.value = NO;
-				} else if (aCmd.equals("yesToAll")) { //$NON-NLS-1$
-					returnValue.value = YES_TO_ALL;
-				} else if (aCmd.equals("noToAll")) { //$NON-NLS-1$
-					returnValue.value = NO_TO_ALL;
-				} else if (aCmd.equals("cancel")) { //$NON-NLS-1$
-					returnValue.value = CANCEL;
-				}
-				dialog.setVisible(false);
-			}
+	   * @param file File
+	   * @return boolean
+	   */
+	  static public int confirmOverwrite(String filename, boolean canCancel) {
+	    final JDialog dialog = new JDialog();
+	    final OverwriteValue returnValue = new OverwriteValue(NO);
+	    java.awt.event.MouseAdapter mouseListener = new java.awt.event.MouseAdapter() {
+	      public void mousePressed(java.awt.event.MouseEvent evt) {
+	        AbstractButton button = (AbstractButton) (evt.getSource());
+	        String aCmd = button.getActionCommand();
+	        if(aCmd.equals("yes")) {             //$NON-NLS-1$   
+	          returnValue.value = YES;
+	        } else if(aCmd.equals("no")) {       //$NON-NLS-1$   
+	          returnValue.value = NO;
+	        } else if(aCmd.equals("yesToAll")) { //$NON-NLS-1$   
+	          returnValue.value = YES_TO_ALL;
+	        } else if(aCmd.equals("noToAll")) {  //$NON-NLS-1$   
+	          returnValue.value = NO_TO_ALL;
+	        } else if(aCmd.equals("cancel")) {  //$NON-NLS-1$   
+	          returnValue.value = CANCEL;
+	        }
+	        dialog.setVisible(false);
+	      }
 
-		};
-		JButton yesButton = new JButton(res.getString("JarTool.Yes")); //$NON-NLS-1$
-		yesButton.setActionCommand("yes"); //$NON-NLS-1$
-		yesButton.addMouseListener(mouseListener);
-		JButton noButton = new JButton(res.getString("JarTool.No")); //$NON-NLS-1$
-		noButton.setActionCommand("no"); //$NON-NLS-1$
-		noButton.addMouseListener(mouseListener);
-		JButton yesToAllButton = new JButton(res.getString("JarTool.YesToAll")); //$NON-NLS-1$
-		yesToAllButton.setActionCommand("yesToAll"); //$NON-NLS-1$
-		yesToAllButton.addMouseListener(mouseListener);
-		JButton noToAllButton = new JButton(res.getString("JarTool.NoToAll")); //$NON-NLS-1$
-		noToAllButton.setActionCommand("noToAll"); //$NON-NLS-1$
-		noToAllButton.addMouseListener(mouseListener);
-		JButton cancelButton = new JButton(res.getString("JarTreeDialog.Button.Cancel")); //$NON-NLS-1$
-		cancelButton.setActionCommand("cancel"); //$NON-NLS-1$
-		cancelButton.addMouseListener(mouseListener);
-		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-		buttonPanel.add(yesButton);
-		buttonPanel.add(yesToAllButton);
-		buttonPanel.add(noButton);
-		buttonPanel.add(noToAllButton);
+	    };
+	    JButton yesButton = new JButton(res.getString("JarTool.Yes")); //$NON-NLS-1$
+	    yesButton.setActionCommand("yes"); //$NON-NLS-1$
+	    yesButton.addMouseListener(mouseListener);
+	    JButton noButton = new JButton(res.getString("JarTool.No")); //$NON-NLS-1$
+	    noButton.setActionCommand("no"); //$NON-NLS-1$
+	    noButton.addMouseListener(mouseListener);
+	    JButton yesToAllButton = new JButton(res.getString("JarTool.YesToAll")); //$NON-NLS-1$
+	    yesToAllButton.setActionCommand("yesToAll"); //$NON-NLS-1$
+	    yesToAllButton.addMouseListener(mouseListener);
+	    JButton noToAllButton = new JButton(res.getString("JarTool.NoToAll")); //$NON-NLS-1$
+	    noToAllButton.setActionCommand("noToAll"); //$NON-NLS-1$
+	    noToAllButton.addMouseListener(mouseListener);
+	    JButton cancelButton = new JButton(res.getString("JarTreeDialog.Button.Cancel")); //$NON-NLS-1$
+	    cancelButton.setActionCommand("cancel"); //$NON-NLS-1$
+	    cancelButton.addMouseListener(mouseListener);
+	    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+	    buttonPanel.add(yesButton);
+	    buttonPanel.add(yesToAllButton);
+	    buttonPanel.add(noButton);
+	    buttonPanel.add(noToAllButton);
 		if (canCancel)
 			buttonPanel.add(cancelButton);
-		JLabel label = new JLabel(DisplayRes.getString("DrawingFrame.ReplaceExisting_message") + " " + //$NON-NLS-1$ //$NON-NLS-2$
-				filename + DisplayRes.getString("DrawingFrame.QuestionMark")); //$NON-NLS-1$
-		label.setHorizontalAlignment(SwingConstants.CENTER);
-		label.setBorder(new javax.swing.border.EmptyBorder(10, 10, 10, 10));
-		dialog.setTitle(DisplayRes.getString("DrawingFrame.ReplaceFile_option_title")); //$NON-NLS-1$
-		dialog.getContentPane().setLayout(new java.awt.BorderLayout(5, 0));
-		dialog.getContentPane().add(label, java.awt.BorderLayout.CENTER);
-		dialog.getContentPane().add(buttonPanel, java.awt.BorderLayout.SOUTH);
-		dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent event) {
-				returnValue.value = NO;
-			}
+	    JLabel label = new JLabel(DisplayRes.getString("DrawingFrame.ReplaceExisting_message")+" "+ //$NON-NLS-1$ //$NON-NLS-2$
+	      filename+DisplayRes.getString("DrawingFrame.QuestionMark")); //$NON-NLS-1$
+	    label.setHorizontalAlignment(SwingConstants.CENTER);
+	    label.setBorder(new javax.swing.border.EmptyBorder(10, 10, 10, 10));
+	    dialog.setTitle(DisplayRes.getString("DrawingFrame.ReplaceFile_option_title")); //$NON-NLS-1$
+	    dialog.getContentPane().setLayout(new java.awt.BorderLayout(5, 0));
+	    dialog.getContentPane().add(label, java.awt.BorderLayout.CENTER);
+	    dialog.getContentPane().add(buttonPanel, java.awt.BorderLayout.SOUTH);
+	    dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+	      public void windowClosing(java.awt.event.WindowEvent event) {
+	        returnValue.value = NO;
+	      }
 
-		});
-		dialog.validate();
-		dialog.pack();
-		dialog.setLocationRelativeTo(null);
-		dialog.setModal(true);
-		dialog.setVisible(true);
-		return returnValue.value;
-	}
+	    });
+	    dialog.validate();
+	    dialog.pack();
+	    dialog.setLocationRelativeTo(null);
+	    dialog.setModal(true);
+	    dialog.setVisible(true);
+	    return returnValue.value;
+	  }
 
 	public static boolean isHTTP(String path) {
-		return path.startsWith("http:") || path.startsWith("https:");
-	}
+		  return path.startsWith("http:") || path.startsWith("https:");
+	  }
 
 	/**
 	 * From Resource.
@@ -2675,7 +2681,7 @@ public class ResourceLoader {
 	 */
 	public static InputStream openZipEntryStream(URL url) throws IOException {
 		// BH: Use JarInputStream, as it is more reliable and oh so easier.
-
+		
 		if (OSPRuntime.isJS) {
 			byte[] bytes = OSPRuntime.jsutil.getURLBytes(url);
 			if (bytes == null) {
@@ -2684,7 +2690,7 @@ public class ResourceLoader {
 			}
 			return (bytes == null ? null : new ByteArrayInputStream(bytes));
 		}
-
+	
 		if (url.getProtocol() != "jar")
 			url = new URL("jar", null, url.toString());
 		return url.openStream();
@@ -2708,26 +2714,26 @@ public class ResourceLoader {
 		return url.openStream();
 	}
 
-	/**
-	 * Gets an image. May return null.
-	 * 
-	 * @param path the path
-	 * @return the image
-	 */
-	public static Image getImage(String path) {
-		URL url = getAppletResourceURL(path); // added by W. Christian
-		if (url != null) {
-			return new ImageIcon(url).getImage();
-		}
-		Resource res = getResource(path);
-		return (res == null) ? null : res.getImage();
-	}
+	  /**
+	   * Gets an image. May return null.
+	   * 
+	   * @param path the path
+	   * @return the image
+	   */
+	  public static Image getImage(String path) {
+	    URL url = getAppletResourceURL(path); // added by W. Christian
+	    if(url!=null) {
+	      return new ImageIcon(url).getImage();
+	    }
+	    Resource res = getResource(path);
+	    return(res==null) ? null : res.getImage();
+	  }
 
-	final static String myPath = "/org/opensourcephysics/resources/";
-	final static String imagezipPath = myPath + "images.zip";
-
+	  final static String myPath = "/org/opensourcephysics/resources/";
+	  final static String imagezipPath = myPath + "images.zip";
+	  
 	public static URL getImageZipResource(String imagePath) {
-
+		
 		if (OSPRuntime.isJS) {
 			String[] parts = null;
 			if (imagePath.indexOf("!/") < 0) {
@@ -2735,10 +2741,10 @@ public class ResourceLoader {
 				int pt = 0;
 				if (imagePath.indexOf(myPath) == 0 && (pt = imagePath.indexOf("/images/")) >= 0) {
 					String fileName = imagePath.substring(myPath.length(), pt) + imagePath.substring(pt + 7);
-					parts = new String[] { imagezipPath, fileName };
+				    parts = new String[] {imagezipPath, fileName};
 				}
 			} else {
-				parts = getJarURLParts(imagePath);
+				parts = getJarURLParts(imagePath);				
 			}
 			try {
 				ZipEntry ze;
@@ -2746,7 +2752,7 @@ public class ResourceLoader {
 					URL ret = new URL("file", null, imagePath);
 					OSPRuntime.jsutil.setURLBytes(ret, OSPRuntime.jsutil.getZipBytes(ze));
 					if (ret != null)
-						return ret;
+						return ret;			
 				}
 			} catch (IOException e) {
 				// fall back
@@ -2765,8 +2771,8 @@ public class ResourceLoader {
 	 */
 	public static byte[] getURLContents(URL url) {
 		try {
-			if (OSPRuntime.isJS) {
-				// Java 9! return new String(url.openStream().readAllBytes());
+			if (OSPRuntime.isJS) {				
+				// Java 9!			return new String(url.openStream().readAllBytes());
 				return OSPRuntime.jsutil.readAllBytes(url.openStream());
 			}
 			return ResourceLoader.getLimitedStreamBytes(url.openStream(), -1, null);
@@ -2804,10 +2810,10 @@ public class ResourceLoader {
 	 * 
 	 */
 	public static byte[] getLimitedStreamBytes(InputStream is, long n, OutputStream out) throws IOException {
-
+	
 		// Note: You cannot use InputStream.available() to reliably read
 		// zip data from the web.
-
+	
 		boolean toOut = (out != null);
 		int buflen = (n > 0 && n < 1024 ? (int) n : 1024);
 		byte[] buf = new byte[buflen];
@@ -2826,9 +2832,9 @@ public class ResourceLoader {
 				System.arraycopy(buf, 0, bytes, totalLen - len, len);
 				if (n != Integer.MAX_VALUE && totalLen + buflen > bytes.length)
 					buflen = bytes.length - totalLen;
-			}
+				}
 		}
-		if (toOut)
+		if (toOut) 
 			return null;
 		if (totalLen == bytes.length)
 			return bytes;
@@ -2837,7 +2843,7 @@ public class ResourceLoader {
 		return buf;
 	}
 
-	public static File copyURLtoFile(String urlPath, String filePath) {
+	public static File copyURLtoFile(String urlPath, String filePath) { 	
 		File f = new File(filePath);
 		try {
 			if (OSPRuntime.isJS) {
@@ -2848,7 +2854,7 @@ public class ResourceLoader {
 				Files.createDirectories(path.getParent());
 				Files.write(path, getURLContents(new URL(urlPath)));
 			}
-		} catch (Exception e) {
+		} catch (Exception e) { 
 			e.printStackTrace();
 		}
 		return f;
@@ -2873,8 +2879,8 @@ public class ResourceLoader {
 							} catch (IOException e) {
 							}
 						return null;
-					}
-					
+}
+
 				});
 				} else {
 					Path path = f.toPath();

@@ -75,10 +75,15 @@ import org.opensourcephysics.display.TextPanel;
 @SuppressWarnings("serial")
 public class VideoPanel extends InteractivePanel implements PropertyChangeListener {
   // static fields
-  protected static int defaultWidth = 640;
-  protected static int defaultHeight = 480;
-  // instance fields
+  protected final static int defaultWidth = 640;
+  protected final static int defaultHeight = 480;
+  
+  public final static String PROPERTY_ASYNC_VIDEO_READY = "asyncVideoReady";
+  public static final String PROPERTY_STEPNUMBER = "stepnumber";
 
+  // instance fields
+  
+  
   /** set to true when this panel has been changed, false when saved */
   public boolean changed = false;
 
@@ -115,7 +120,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
     setSquareAspect(true);
     player = new VideoPlayer(this);
     player.addPropertyChangeListener("videoclip", this);     //$NON-NLS-1$
-    player.addPropertyChangeListener("stepnumber", this);    //$NON-NLS-1$
+    player.addPropertyChangeListener(VideoPanel.PROPERTY_STEPNUMBER, this);    //$NON-NLS-1$
     player.addPropertyChangeListener("frameduration", this); //$NON-NLS-1$
     add(player, BorderLayout.SOUTH);
     VideoClip clip = player.getVideoClip();
@@ -147,32 +152,53 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
     coords.setAllOriginsXY(imageWidth/2, imageHeight/2);
   }
 
-  /**
-   * Sets the video.
-   *
-   * @param newVideo the video
-   * @param playAllSteps true to play all steps
-   */
-  public void setVideo(Video newVideo, boolean playAllSteps) {
-    if(newVideo==video) {
-      return;
-    }
-    Video prev = video;
-    VideoClip prevClip = getPlayer().getVideoClip();
-    VideoClip newClip = new VideoClip(newVideo);
-    if (newVideo==null && prevClip!=null) {
-    	XMLControl control = new XMLControlElement(prevClip);
-    	control.setValue("video", null); //$NON-NLS-1$
-    	control.loadObject(newClip);
-    }
-    newClip.setPlayAllSteps(playAllSteps);    
-    getPlayer().setVideoClip(newClip);
-    if(prev!=null) {
-      prev.dispose();
-    }
-  }
+  private Runnable asyncReady;
+  
+	/**
+	 * Sets the video.
+	 *
+	 * @param newVideo     the video
+	 * @param playAllSteps true to play all steps
+	 */
+	public void setVideo(Video newVideo, boolean playAllSteps) {
+		if (newVideo == video) {
+			return;
+		}
+		Video prev = video;
+		if (newVideo instanceof AsyncVideoI) {
+			// wait for "asyncVideoReady" property event
+			asyncReady = new Runnable() {
 
-  /**
+				@Override
+				public void run() {
+					newVideo.removePropertyChangeListener(PROPERTY_ASYNC_VIDEO_READY, VideoPanel.this); //$NON-NLS-1$
+					initializePlayer(prev, newVideo, playAllSteps);
+				}
+
+			};
+			newVideo.addPropertyChangeListener(PROPERTY_ASYNC_VIDEO_READY, this); //$NON-NLS-1$
+		} else {
+			initializePlayer(prev, newVideo, playAllSteps);
+		}
+	}
+
+  private void initializePlayer(Video prev, Video newVideo, boolean playAllSteps) {
+	    
+	    VideoClip prevClip = getPlayer().getVideoClip();
+	    VideoClip newClip = new VideoClip(newVideo);
+	    if (newVideo==null && prevClip!=null) {
+	    	XMLControl control = new XMLControlElement(prevClip);
+	    	control.setValue("video", null); //$NON-NLS-1$
+	    	control.loadObject(newClip);
+	    }
+	    newClip.setPlayAllSteps(playAllSteps);    
+	    getPlayer().setVideoClip(newClip);
+	    if(prev!=null) {
+	      prev.dispose();
+	    }
+}
+
+/**
    * Sets the video.
    *
    * @param newVideo the video
@@ -536,79 +562,91 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
     }
   }
 
-  /**
-   * Responds to property change events. VideoPanel listens for the following
-   * events: "videoclip" and "stepnumber" from VideoPlayer, "coords" and "image"
-   * from Video.
-   *
-   * @param e the property change event
-   */
-  public void propertyChange(PropertyChangeEvent e) {
-    String name = e.getPropertyName();
-    if(name.equals("size")) {                                     // from Video //$NON-NLS-1$
-      Dimension dim = (Dimension) e.getNewValue();
-      setImageWidth(dim.width);
-      setImageHeight(dim.height);
-    } else if(name.equals("coords")) {                            // from Video //$NON-NLS-1$
-      // replace current coords with video's new coords
-      coords = video.getCoords();
-    } else if(name.equals("image")||                              //$NON-NLS-1$
-      name.equals("videoVisible")) {                              // from Video //$NON-NLS-1$
-      repaint();
-    } else if(name.equals("stepnumber")) {                        // from VideoPlayer //$NON-NLS-1$
-      repaint();
-    } else if(name.equals("videoclip")) {                         // from VideoPlayer //$NON-NLS-1$
-      // update property change listeners
-      VideoClip oldClip = (VideoClip) e.getOldValue();
-      oldClip.removePropertyChangeListener("startframe", this);   //$NON-NLS-1$
-      oldClip.removePropertyChangeListener("stepsize", this);     //$NON-NLS-1$
-      oldClip.removePropertyChangeListener("stepcount", this);    //$NON-NLS-1$
-      oldClip.removePropertyChangeListener("framecount", this);    //$NON-NLS-1$
-      oldClip.removePropertyChangeListener("starttime", this);    //$NON-NLS-1$
-      oldClip.removePropertyChangeListener("adjusting", this);          //$NON-NLS-1$
+	/**
+	 * Responds to property change events. VideoPanel listens for the following
+	 * events: "videoclip" and "stepnumber" from VideoPlayer, "coords" and "image"
+	 * from Video.
+	 *
+	 * @param e the property change event
+	 */
+	public void propertyChange(PropertyChangeEvent e) {
+		String name = e.getPropertyName();
+		switch (name) {
+		case "size": // from Video //$NON-NLS-1$
+			Dimension dim = (Dimension) e.getNewValue();
+			setImageWidth(dim.width);
+			setImageHeight(dim.height);
+			break;
+		case "coords": // from Video //$NON-NLS-1$
+			// replace current coords with video's new coords
+			coords = video.getCoords();
+			break;
+		case "image": //$NON-NLS-1$
+		case "videoVisible": // from Video //$NON-NLS-1$
+			repaint();
+			break;
+		case PROPERTY_ASYNC_VIDEO_READY:
+			if (asyncReady != null) {
+				asyncReady.run();
+				asyncReady = null;
+			}
+			break;
+		case PROPERTY_STEPNUMBER: // from VideoPlayer //$NON-NLS-1$
+			repaint();
+			break;
+		case "videoclip": // from VideoPlayer //$NON-NLS-1$
+			// update property change listeners
+			VideoClip oldClip = (VideoClip) e.getOldValue();
+			oldClip.removePropertyChangeListener("startframe", this); //$NON-NLS-1$
+			oldClip.removePropertyChangeListener("stepsize", this); //$NON-NLS-1$
+			oldClip.removePropertyChangeListener("stepcount", this); //$NON-NLS-1$
+			oldClip.removePropertyChangeListener("framecount", this); //$NON-NLS-1$
+			oldClip.removePropertyChangeListener("starttime", this); //$NON-NLS-1$
+			oldClip.removePropertyChangeListener("adjusting", this); //$NON-NLS-1$
 //      oldClip.removePropertyChangeListener("frameshift", this);          //$NON-NLS-1$
-      VideoClip clip = (VideoClip) e.getNewValue();
-      clip.addPropertyChangeListener("startframe", this);         //$NON-NLS-1$
-      clip.addPropertyChangeListener("stepsize", this);           //$NON-NLS-1$
-      clip.addPropertyChangeListener("stepcount", this);          //$NON-NLS-1$
-      clip.addPropertyChangeListener("framecount", this);  //$NON-NLS-1$
-      clip.addPropertyChangeListener("starttime", this);          //$NON-NLS-1$
-      clip.addPropertyChangeListener("adjusting", this);          //$NON-NLS-1$
+			VideoClip clip = (VideoClip) e.getNewValue();
+			clip.addPropertyChangeListener("startframe", this); //$NON-NLS-1$
+			clip.addPropertyChangeListener("stepsize", this); //$NON-NLS-1$
+			clip.addPropertyChangeListener("stepcount", this); //$NON-NLS-1$
+			clip.addPropertyChangeListener("framecount", this); //$NON-NLS-1$
+			clip.addPropertyChangeListener("starttime", this); //$NON-NLS-1$
+			clip.addPropertyChangeListener("adjusting", this); //$NON-NLS-1$
 //      clip.addPropertyChangeListener("frameshift", this);          //$NON-NLS-1$
-      // replace current video with new clip's video
-      if(video!=null) {
-        video.removePropertyChangeListener("coords", this);       //$NON-NLS-1$
-        video.removePropertyChangeListener("image", this);        //$NON-NLS-1$
-        video.removePropertyChangeListener("filterChanged", this);        //$NON-NLS-1$
-        video.removePropertyChangeListener("videoVisible", this); //$NON-NLS-1$
-        video.removePropertyChangeListener("size", this);         //$NON-NLS-1$
-        super.removeDrawable(video);
-      }
-      video = clip.getVideo();
-      if(video!=null) {
-        video.addPropertyChangeListener("coords", this);          //$NON-NLS-1$
-        video.addPropertyChangeListener("image", this);           //$NON-NLS-1$
-        video.addPropertyChangeListener("filterChanged", this);           //$NON-NLS-1$
-        video.addPropertyChangeListener("videoVisible", this);    //$NON-NLS-1$
-        video.addPropertyChangeListener("size", this);            //$NON-NLS-1$
-        // synchronize coords
-        if(video.isMeasured()) {
-          coords = video.getCoords();
-        } else {
-          video.setCoords(coords);
-        }
-        synchronized(drawableList) {
-          drawableList.add(0, video);                             // put video at back
-        }
-        BufferedImage vidImage = video.getImage();
-        if(vidImage!=null) {
-          setImageWidth(vidImage.getWidth());
-          setImageHeight(vidImage.getHeight());
-        }
-      }
-      repaint();
-    }
-  }
+			// replace current video with new clip's video
+			if (video != null) {
+				video.removePropertyChangeListener("coords", this); //$NON-NLS-1$
+				video.removePropertyChangeListener("image", this); //$NON-NLS-1$
+				video.removePropertyChangeListener("filterChanged", this); //$NON-NLS-1$
+				video.removePropertyChangeListener("videoVisible", this); //$NON-NLS-1$
+				video.removePropertyChangeListener("size", this); //$NON-NLS-1$
+				super.removeDrawable(video);
+			}
+			video = clip.getVideo();
+			if (video != null) {
+				video.addPropertyChangeListener("coords", this); //$NON-NLS-1$
+				video.addPropertyChangeListener("image", this); //$NON-NLS-1$
+				video.addPropertyChangeListener("filterChanged", this); //$NON-NLS-1$
+				video.addPropertyChangeListener("videoVisible", this); //$NON-NLS-1$
+				video.addPropertyChangeListener("size", this); //$NON-NLS-1$
+				// synchronize coords
+				if (video.isMeasured()) {
+					coords = video.getCoords();
+				} else {
+					video.setCoords(coords);
+				}
+				synchronized (drawableList) {
+					drawableList.add(0, video); // put video at back
+				}
+				BufferedImage vidImage = video.getImage();
+				if (vidImage != null) {
+					setImageWidth(vidImage.getWidth());
+					setImageHeight(vidImage.getHeight());
+				}
+				break;
+			}
+			repaint();
+		}
+	}
   
   /**
    * Imports Data from a source into a DataTrack. 

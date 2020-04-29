@@ -128,7 +128,7 @@ public class ImageVideo extends VideoAdapter {
     rawImage = getImageAtFrame(getFrameNumber(), rawImage);
     isValidImage = false;
     isValidFilteredImage = false;
-    firePropertyChange("framenumber", null, Integer.valueOf(getFrameNumber())); //$NON-NLS-1$
+    firePropertyChange(ClipControl.PROPERTY_FRAMENUMBER, null, Integer.valueOf(getFrameNumber())); //$NON-NLS-1$
   }
   
   /**

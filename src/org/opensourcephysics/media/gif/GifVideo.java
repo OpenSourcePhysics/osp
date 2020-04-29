@@ -41,6 +41,7 @@ import java.util.Iterator;
 
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.display.DrawingPanel;
+import org.opensourcephysics.media.core.ClipControl;
 import org.opensourcephysics.media.core.DoubleArray;
 import org.opensourcephysics.media.core.ImageCoordSystem;
 import org.opensourcephysics.media.core.VideoAdapter;
@@ -129,7 +130,7 @@ public class GifVideo extends VideoAdapter {
     rawImage = decoder.getFrame(index);
     isValidImage = false;
     isValidFilteredImage = false;
-    support.firePropertyChange("framenumber", null, Integer.valueOf(n)); //$NON-NLS-1$
+    support.firePropertyChange(ClipControl.PROPERTY_FRAMENUMBER, null, Integer.valueOf(n)); //$NON-NLS-1$
     // repaint panels in case they don't listen
     Iterator<DrawingPanel> it = panels.iterator();
     while(it.hasNext()) {
