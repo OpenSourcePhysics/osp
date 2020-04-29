@@ -48,6 +48,7 @@ import org.opensourcephysics.display.OSPRuntime;
  * @author Douglas Brown
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class VideoFrame extends DrawingFrame {
   // instance fields
   protected Action openAction;

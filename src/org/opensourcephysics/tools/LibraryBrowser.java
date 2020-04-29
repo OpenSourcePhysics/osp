@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
@@ -519,32 +520,32 @@ public class LibraryBrowser extends JPanel {
 
 //____________________ private and protected methods ____________________________
 
-  /**
-   * Private constructor to prevent instantiation except for singleton.
-   * 
-   * @param libraryPath the path to a Library xml file
-   */
-  private LibraryBrowser(String libraryPath) {
-  	super(new BorderLayout());
-  	this.libraryPath = libraryPath;
-  	library.browser = this;
-    createGUI();
-    refreshGUI();
+	/**
+	 * Private constructor to prevent instantiation except for singleton.
+	 * 
+	 * @param libraryPath the path to a Library xml file
+	 */
+	private LibraryBrowser(String libraryPath) {
+		super(new BorderLayout());
+		this.libraryPath = libraryPath;
+		library.browser = this;
+		createGUI();
+		refreshGUI(true);
 		refreshCollectionsMenu();
 		editButton.requestFocusInWindow();
-    ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
-      public void propertyChange(PropertyChangeEvent e) {
-        refreshGUI();
-        refreshCollectionsMenu();
-        if (libraryManager!=null)
-        	libraryManager.refreshGUI();
-        LibraryTreePanel.htmlPanesByNode.clear();
-        LibraryTreePanel treePanel = getSelectedTreePanel();
-        if (treePanel!=null)
-        	treePanel.showInfo(treePanel.getSelectedNode());
-      }
-    });
-  }
+		ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
+			public void propertyChange(PropertyChangeEvent e) {
+				refreshGUI(true);
+				refreshCollectionsMenu();
+				if (libraryManager != null)
+					libraryManager.refreshGUI();
+				LibraryTreePanel.htmlPanesByNode.clear();
+				LibraryTreePanel treePanel = getSelectedTreePanel();
+				if (treePanel != null)
+					treePanel.showInfo(treePanel.getSelectedNode());
+			}
+		});
+	}
   
 	/**
 	 * Gets the library manager for this browser.
@@ -704,6 +705,42 @@ public class LibraryBrowser extends JPanel {
 	}
 	
 	
+	protected void loadResourceAsync(String path, Function<LibraryResource, Void> whenDone) {
+		isRecentPathXML = false;
+		
+		// BH moving this forward; Java was looking at an "https://..." file
+		// path to check if it was a directory?? SwingJS was allowing it to be a directory
+		if (LibraryComPADRE.isComPADREPath(path)) {
+			whenDone.apply(LibraryComPADRE.getCollection(path));
+			return;
+		}
+		
+		// was first:
+		File targetFile = new File(path);		
+		if (targetFile.isDirectory()) {
+			whenDone.apply(createCollectionFromDirectory(targetFile, targetFile, dlFileFilter));
+			return;
+		}
+		
+		XMLControlElement control = new XMLControlElement();
+		
+		control.readAsync(path, new Function<String, Void>() {
+
+			@Override
+			public Void apply(String fullPath) {
+				if (!control.failedToRead() && control.getObjectClass() != null
+						&& LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
+					isRecentPathXML = true;
+					whenDone.apply((LibraryResource) control.loadObject(null));
+				} else {
+					whenDone.apply(createResource(targetFile, targetFile.getParentFile(), dlFileFilter));
+				}
+				return null;
+			}
+			
+		});
+	
+	}
 
 
 	/**
@@ -963,9 +1000,9 @@ public class LibraryBrowser extends JPanel {
         path = ResourceLoader.getNonURIPath(path);
         Resource res = null;
     		String xmlPath = path;
-        
+        path = path.replace("/OSP/", "/osp/");
         // if path has no extension, look for xml file with same name
-        if (!path.startsWith("https://www.compadre.org/OSP/") //$NON-NLS-1$
+        if (!path.startsWith("https://www.compadre.org/osp/") //$NON-NLS-1$
         		&& XML.getExtension(path)==null) {
       		while (xmlPath.endsWith("/")) //$NON-NLS-1$
       			xmlPath = xmlPath.substring(0, xmlPath.length()-1);
@@ -1596,94 +1633,101 @@ public class LibraryBrowser extends JPanel {
 }
 
 
-/**
-   * Refreshes the GUI, including locale-dependent resources strings.
-   */
-  protected void refreshGUI() {
-  	if (tabbedPane.getTabCount()==0) {
-  		remove(tabbedPane);
-      add(htmlScroller, BorderLayout.CENTER);
-      validate();
-  	}
-  	else {
-  		remove(htmlScroller);
-      add(tabbedPane, BorderLayout.CENTER);
-  	}
-  	// set text strings
-  	setTitle(ToolsRes.getString("LibraryBrowser.Title")); //$NON-NLS-1$
-    fileMenu.setText(ToolsRes.getString("Menu.File")); //$NON-NLS-1$
-    newItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.New")); //$NON-NLS-1$
-    openItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.Open")); //$NON-NLS-1$
-    closeAllItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.CloseAll")); //$NON-NLS-1$
-    saveItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.Save")); //$NON-NLS-1$
-    saveAsItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.SaveAs")); //$NON-NLS-1$
-    exitItem.setText(ToolsRes.getString("MenuItem.Exit")); //$NON-NLS-1$
-    collectionsMenu.setText(ToolsRes.getString("LibraryBrowser.Menu.Collections")); //$NON-NLS-1$
-    manageMenu.setText(ToolsRes.getString("LibraryBrowser.Menu.Manage")); //$NON-NLS-1$
-    collectionsItem.setText(ToolsRes.getString("LibraryManager.Tab.MyLibrary")+"..."); //$NON-NLS-1$ //$NON-NLS-2$
-    searchItem.setText(ToolsRes.getString("LibraryManager.Tab.Search")+"..."); //$NON-NLS-1$ //$NON-NLS-2$
-    cacheItem.setText(ToolsRes.getString("LibraryManager.Tab.Cache")+"..."); //$NON-NLS-1$ //$NON-NLS-2$
-    helpMenu.setText(ToolsRes.getString("Menu.Help")); //$NON-NLS-1$
-    helpItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.Help"));                    //$NON-NLS-1$
-    logItem.setText(ToolsRes.getString("MenuItem.Log"));                               //$NON-NLS-1$
-    aboutItem.setText(ToolsRes.getString("MenuItem.About"));                           //$NON-NLS-1$
-    commandLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.Target")); //$NON-NLS-1$
-  	commandButton.setText(ToolsRes.getString("LibraryTreePanel.Button.Load")); //$NON-NLS-1$
-  	commandField.setToolTipText(ToolsRes.getString("LibraryBrowser.Field.Command.Tooltip")); //$NON-NLS-1$
-    searchLabel.setText(ToolsRes.getString("LibraryBrowser.Label.Search")); //$NON-NLS-1$
-  	searchField.setToolTipText(ToolsRes.getString("LibraryBrowser.Field.Search.Tooltip")); //$NON-NLS-1$ 
-    saveAsItem.setEnabled(true);
-    refreshRecentMenu();
-  	// rebuild file menu
-    fileMenu.removeAll();
-    fileMenu.add(newItem);
-    fileMenu.add(openItem);
-    fileMenu.add(recentMenu);
-    fileMenu.addSeparator();
-    fileMenu.add(closeItem);
-    fileMenu.add(closeAllItem);
-    fileMenu.addSeparator();
-    fileMenu.add(saveItem);
-    fileMenu.add(saveAsItem);
-    fileMenu.addSeparator();
-    fileMenu.add(exitItem);
-    
-  	LibraryTreePanel treePanel = getSelectedTreePanel();
-    if (treePanel!=null) {
-      editButton.setText(!treePanel.isEditing()?
-      		ToolsRes.getString("LibraryBrowser.Button.OpenEditor"): //$NON-NLS-1$
-      		ToolsRes.getString("LibraryBrowser.Button.CloseEditor")); //$NON-NLS-1$
-      editButton.setEnabled(treePanel.isEditable());
-      String tabname = " '"+getTabTitle(treePanel.pathToRoot)+"'"; //$NON-NLS-1$ //$NON-NLS-2$
-      closeItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.CloseTab")+tabname); //$NON-NLS-1$
-      closeItem.setEnabled(true);
-      closeAllItem.setEnabled(true);
-      saveItem.setEnabled(treePanel.isChanged());
-      int i = tabbedPane.getSelectedIndex();
-    	String title = tabbedPane.getTitleAt(i);
-      if (treePanel.isChanged() && !title.endsWith("*")) { //$NON-NLS-1$
-      	tabbedPane.setTitleAt(i, title+"*");  //$NON-NLS-1$
-      }
-      else if (!treePanel.isChanged() && title.endsWith("*")) { //$NON-NLS-1$
-      	tabbedPane.setTitleAt(i, title.substring(0, title.length()-1)); 
-      }
-      treePanel.refreshGUI();
-    }
-    else {
-    	refreshButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Tooltip.Refresh")); //$NON-NLS-1$
-    	editButton.setText(ToolsRes.getString("LibraryBrowser.Button.OpenEditor")); //$NON-NLS-1$
-      saveItem.setEnabled(false);
-      closeItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.CloseTab")); //$NON-NLS-1$
-      closeItem.setEnabled(false);
-      closeAllItem.setEnabled(false);
-      editButton.setEnabled(false);
-      refreshButton.setEnabled(false);
-      commandField.setText(null);
-      commandButton.setEnabled(false);
-      saveAsItem.setEnabled(false);
-    }
-    repaint();
-  }
+	/**
+	 * Refreshes the GUI, including locale-dependent resources strings.
+	 */
+	protected void refreshGUI() {
+		refreshGUI(false);
+	}
+	
+	protected void refreshGUI(boolean andRebuild) {
+		if (tabbedPane.getTabCount() == 0) {
+			// BH unnecessary refresh causes flashing in JavaScript
+			if (htmlScroller.getParent() != this) {
+				remove(tabbedPane);
+				add(htmlScroller, BorderLayout.CENTER);
+				validate();
+			}
+		} else {
+			// BH unnecessary refresh causes flashing in JavaScript
+			if (tabbedPane.getParent() != this) {
+				remove(htmlScroller);
+				add(tabbedPane, BorderLayout.CENTER);
+			}
+		}
+		if (andRebuild) {
+			// set text strings
+			setTitle(ToolsRes.getString("LibraryBrowser.Title")); //$NON-NLS-1$
+			fileMenu.setText(ToolsRes.getString("Menu.File")); //$NON-NLS-1$
+			newItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.New")); //$NON-NLS-1$
+			openItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.Open")); //$NON-NLS-1$
+			closeAllItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.CloseAll")); //$NON-NLS-1$
+			saveItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.Save")); //$NON-NLS-1$
+			saveAsItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.SaveAs")); //$NON-NLS-1$
+			exitItem.setText(ToolsRes.getString("MenuItem.Exit")); //$NON-NLS-1$
+			collectionsMenu.setText(ToolsRes.getString("LibraryBrowser.Menu.Collections")); //$NON-NLS-1$
+			manageMenu.setText(ToolsRes.getString("LibraryBrowser.Menu.Manage")); //$NON-NLS-1$
+			collectionsItem.setText(ToolsRes.getString("LibraryManager.Tab.MyLibrary") + "..."); //$NON-NLS-1$ //$NON-NLS-2$
+			searchItem.setText(ToolsRes.getString("LibraryManager.Tab.Search") + "..."); //$NON-NLS-1$ //$NON-NLS-2$
+			cacheItem.setText(ToolsRes.getString("LibraryManager.Tab.Cache") + "..."); //$NON-NLS-1$ //$NON-NLS-2$
+			helpMenu.setText(ToolsRes.getString("Menu.Help")); //$NON-NLS-1$
+			helpItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.Help")); //$NON-NLS-1$
+			logItem.setText(ToolsRes.getString("MenuItem.Log")); //$NON-NLS-1$
+			aboutItem.setText(ToolsRes.getString("MenuItem.About")); //$NON-NLS-1$
+			commandLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.Target")); //$NON-NLS-1$
+			commandButton.setText(ToolsRes.getString("LibraryTreePanel.Button.Load")); //$NON-NLS-1$
+			commandField.setToolTipText(ToolsRes.getString("LibraryBrowser.Field.Command.Tooltip")); //$NON-NLS-1$
+			searchLabel.setText(ToolsRes.getString("LibraryBrowser.Label.Search")); //$NON-NLS-1$
+			searchField.setToolTipText(ToolsRes.getString("LibraryBrowser.Field.Search.Tooltip")); //$NON-NLS-1$
+			saveAsItem.setEnabled(true);
+			refreshRecentMenu();
+			// rebuild file menu
+			fileMenu.removeAll();
+			fileMenu.add(newItem);
+			fileMenu.add(openItem);
+			fileMenu.add(recentMenu);
+			fileMenu.addSeparator();
+			fileMenu.add(closeItem);
+			fileMenu.add(closeAllItem);
+			fileMenu.addSeparator();
+			fileMenu.add(saveItem);
+			fileMenu.add(saveAsItem);
+			fileMenu.addSeparator();
+			fileMenu.add(exitItem);
+		}
+		LibraryTreePanel treePanel = getSelectedTreePanel();
+		if (treePanel != null) {
+			editButton.setText(!treePanel.isEditing() ? ToolsRes.getString("LibraryBrowser.Button.OpenEditor") : //$NON-NLS-1$
+					ToolsRes.getString("LibraryBrowser.Button.CloseEditor")); //$NON-NLS-1$
+			editButton.setEnabled(treePanel.isEditable());
+			String tabname = " '" + getTabTitle(treePanel.pathToRoot) + "'"; //$NON-NLS-1$ //$NON-NLS-2$
+			closeItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.CloseTab") + tabname); //$NON-NLS-1$
+			closeItem.setEnabled(true);
+			closeAllItem.setEnabled(true);
+			saveItem.setEnabled(treePanel.isChanged());
+			int i = tabbedPane.getSelectedIndex();
+			String title = tabbedPane.getTitleAt(i);
+			if (treePanel.isChanged() && !title.endsWith("*")) { //$NON-NLS-1$
+				tabbedPane.setTitleAt(i, title + "*"); //$NON-NLS-1$
+			} else if (!treePanel.isChanged() && title.endsWith("*")) { //$NON-NLS-1$
+				tabbedPane.setTitleAt(i, title.substring(0, title.length() - 1));
+			}
+			treePanel.refreshGUI(andRebuild);
+		} else {
+			refreshButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Tooltip.Refresh")); //$NON-NLS-1$
+			editButton.setText(ToolsRes.getString("LibraryBrowser.Button.OpenEditor")); //$NON-NLS-1$
+			saveItem.setEnabled(false);
+			closeItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.CloseTab")); //$NON-NLS-1$
+			closeItem.setEnabled(false);
+			closeAllItem.setEnabled(false);
+			editButton.setEnabled(false);
+			refreshButton.setEnabled(false);
+			commandField.setText(null);
+			commandButton.setEnabled(false);
+			saveAsItem.setEnabled(false);
+		}
+		repaint();
+	}
   
   /**
    * Refreshes the open recent files menu.
@@ -2306,7 +2350,7 @@ public class LibraryBrowser extends JPanel {
 	  	"<p>The ComPADRE Pathway, a part of the National Science Digital Library, is a growing network of educational resource "+ //$NON-NLS-1$
 	  	"collections supporting teachers and students in Physics and Astronomy. As a user you may explore collections designed to meet "+ //$NON-NLS-1$
 	  	"your specific needs and help build the network by recommending resources, commenting on resources, and starting or joining "+ //$NON-NLS-1$
-	  	"discussions. For more information, see &lt;<b><a href=\"https://www.compadre.org/OSP/\">http://www.compadre.org/OSP/</a></b>&gt;. "+ //$NON-NLS-1$
+	  	"discussions. For more information, see &lt;<b><a href=\"https://www.compadre.org/osp/\">http://www.compadre.org/osp/</a></b>&gt;. "+ //$NON-NLS-1$
 	  	"To recommend an OSP resource for ComPADRE, visit the Suggest a Resource page at &lt;<b><a href="+ //$NON-NLS-1$
 	  	"\"https://www.compadre.org/osp/items/suggest.cfm\">http://www.compadre.org/osp/items/suggest.cfm</a></b>&gt;.&nbsp; "+ //$NON-NLS-1$
 	  	"Contact the OSP Collection editor, Wolfgang Christian, for additional information.</p>"; //$NON-NLS-1$

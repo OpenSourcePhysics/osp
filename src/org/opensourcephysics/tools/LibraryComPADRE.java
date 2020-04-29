@@ -7,9 +7,12 @@
 
 package org.opensourcephysics.tools;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import java.util.function.Function;
 
 import javax.xml.parsers.*;
 import javax.xml.transform.Result;
@@ -25,6 +28,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * This provides static methods for getting a LibraryCollection from ComPADRE.
@@ -35,11 +39,11 @@ import org.w3c.dom.NodeList;
  */
 @SuppressWarnings("javadoc")
 public class LibraryComPADRE {
-	public static final String OSP_INFO_URL = "https://www.compadre.org/OSP/online_help/EjsDL/OSPCollection.html"; //$NON-NLS-1$
+	public static final String OSP_INFO_URL = "https://www.compadre.org/osp/online_help/EjsDL/OSPCollection.html"; //$NON-NLS-1$
 	public static final String EJS_SERVER_TREE = "https://www.compadre.org/osp/services/REST/osp_jars.cfm?verb=Identify&OSPType=EJS%20Model&AttachedDocument=Source%20Code"; //$NON-NLS-1$
 	public static final String EJS_SERVER_RECORDS = "https://www.compadre.org/osp/services/REST/osp_jars.cfm?OSPType=EJS%20Model&AttachedDocument=Source%20Code"; //$NON-NLS-1$
 	public static final String EJS_COLLECTION_NAME = "EJS OSP Collection"; //$NON-NLS-1$
-	public static final String EJS_INFO_URL = "https://www.compadre.org/OSP/online_help/EjsDL/DLModels.html"; //$NON-NLS-1$
+	public static final String EJS_INFO_URL = "https://www.compadre.org/osp/online_help/EjsDL/DLModels.html"; //$NON-NLS-1$
 	public static final String TRACKER_SERVER_TREE = "https://www.compadre.org/osp/services/REST/osp_tracker.cfm?verb=Identify&OSPType=Tracker"; //$NON-NLS-1$
 	public static final String TRACKER_SERVER_RECORDS = "https://www.compadre.org/osp/services/REST/osp_tracker.cfm?OSPType=Tracker"; //$NON-NLS-1$
 	public static final String TRACKER_COLLECTION_NAME = "Tracker OSP Collection"; //$NON-NLS-1$
@@ -161,56 +165,69 @@ public class LibraryComPADRE {
 			String urlPath = treeNode.getAbsoluteTarget();
 			URL url = new URL(urlPath);
 
-			Document doc = factory.newDocumentBuilder().parse(url.openStream());
-
-			// writeXmlFile(doc, "compadre_resource.txt"); // for testing
-
-			// look at all ComPADRE records in the document
-			NodeList list = doc.getElementsByTagName("record"); //$NON-NLS-1$
-			int n = list.getLength();
-			if (n == 0) {
-				collection.setDescription(null);
-				collection.setTarget(null);
-				onFailure.run();
-				return;
-			}
-
-			Runnable[] nextIndex = new Runnable[1];
-
-			Runnable onFound = new Runnable() {
+			ResourceLoader.getURLContentsAsync(url, new Function<byte[], Void>() {
 
 				@Override
-				public void run() {
-					success[0] = true;
-					start(nextIndex[0]);
-
-				}
-
-			};
-			Runnable onNothingNew = new Runnable() {
-
-				@Override
-				public void run() {
-					start(nextIndex[0]);
-				}
-
-			};
-
-			nextIndex[0] = new Runnable() {
-
-				@Override
-				public void run() {
-					if (index[0] >= n) {
-						whenDone.run();
-					} else {
-						loadNode(list.item(index[0]++), collection, treeNode, urlPath, onFound, onNothingNew);
+				public Void apply(byte[] bytes) {
+					int n = 0;
+					Document doc;
+					NodeList list = null;
+					try {
+						doc = factory.newDocumentBuilder().parse(new ByteArrayInputStream(bytes));
+						list = doc.getElementsByTagName("record"); //$NON-NLS-1$
+						n = list.getLength();
+					} catch (SAXException | IOException | ParserConfigurationException e) {
+					}
+					if (n == 0) {
+					collection.setDescription(null);
+					collection.setTarget(null);
+					onFailure.run();
+					return null;
 					}
 
-				}
+					Runnable[] nextIndex = new Runnable[1];
 
-			};
-			
-			start(nextIndex[0]);
+					Runnable onFound = new Runnable() {
+
+						@Override
+						public void run() {
+							success[0] = true;
+							start(nextIndex[0]);
+
+						}
+
+					};
+					Runnable onNothingNew = new Runnable() {
+
+						@Override
+						public void run() {
+							start(nextIndex[0]);
+						}
+
+					};
+
+					int ni = n;
+					
+					NodeList l = list;
+					nextIndex[0] = new Runnable() {
+
+						@Override
+						public void run() {
+							if (index[0] >= ni) {
+								whenDone.run();
+							} else {
+								loadNode(l.item(index[0]++), collection, treeNode, urlPath, onFound, onNothingNew);
+							}
+
+						}
+
+					};
+					
+					start(nextIndex[0]);
+					return null;
+				}
+				
+			});
 
 		} catch (Exception e) {
 			whenDone.run();
@@ -236,6 +253,10 @@ public class LibraryComPADRE {
 					attachment = getAttachment(node, "Supplemental"); //$NON-NLS-1$
 				}
 			}
+		}
+		if (attachment == null) {
+			onNothingNew.run();
+			return;
 		}
 		// ignore if there is no associated attachment
 		if (attachment != null) {

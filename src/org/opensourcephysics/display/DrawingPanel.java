@@ -56,7 +56,6 @@ import org.opensourcephysics.display.axes.CoordinateStringBuilder;
 import org.opensourcephysics.display.dialogs.DrawingPanelInspector;
 import org.opensourcephysics.display.dialogs.ScaleInspector;
 import org.opensourcephysics.display.dialogs.XMLDrawingPanelInspector;
-import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ToolsRes;
 import org.opensourcephysics.tools.VideoTool;
@@ -77,6 +76,7 @@ import org.opensourcephysics.tools.VideoTool;
  * @author Joshua Gould
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class DrawingPanel extends JPanel implements ActionListener, Renderable {
   protected static boolean RECORD_PAINT_TIMES = false;                                                     // set true to test painting time
   protected long currentTime;// = System.currentTimeMillis();
@@ -1640,7 +1640,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     return new Rectangle2D.Double(0, 0, 0, 0);
   }
 
-  private AffineTransform trDP = new AffineTransform();
+ // private AffineTransform trDP = new AffineTransform();
   /**
    * Gets the affine transformation that converts from world to pixel coordinates.
    * @return the affine transformation -- NOT A CLONE!

@@ -35,7 +35,7 @@ public class BinaryLatticeTest {
   private void randomizeCells() {
      for(int i = 0; i<size; i++) {
         for(int j = 0; j<size; j++) {
-           if(Math.random()>0.5) {
+           if(j < i) {//Math.random()>0.5) {
               spinData[i][j] = 1;
            } else {
               spinData[i][j] = -1;

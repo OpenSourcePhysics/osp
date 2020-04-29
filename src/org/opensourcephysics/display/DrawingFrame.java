@@ -34,12 +34,10 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -60,9 +58,7 @@ import org.opensourcephysics.tools.Job;
 import org.opensourcephysics.tools.LocalJob;
 import org.opensourcephysics.tools.SnapshotTool;
 import org.opensourcephysics.tools.Tool;
-import org.opensourcephysics.tools.VideoTool;
 
-import javajs.async.AsyncDialog;
 import javajs.async.AsyncFileChooser;
 
 /**
@@ -1007,39 +1003,39 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 
     });
     // create video capture menu item
-    JMenuItem videoItem = new JMenuItem(DisplayRes.getString("DrawingFrame.MenuItem.Capture")); //$NON-NLS-1$
-    if(OSPRuntime.applet==null && false) { // video capture no longer supported.
-      toolsMenu.add(videoItem);
-    }
-    Class<?> videoToolClass = null;
-    if(false&& OSPRuntime.loadVideoTool) {  // video capture no longer supported.
-      try {
-        videoToolClass = Class.forName("org.opensourcephysics.tools.VideoCaptureTool"); //$NON-NLS-1$
-      } catch(Exception ex) {
-        OSPRuntime.loadVideoTool = false;
-        OSPLog.finest("Cannot instantiate video capture tool class:\n"+ex.toString());  //$NON-NLS-1$
-        videoItem.setEnabled(false);
-      }
-    }
-    final Class<?> finalVideoToolClass = videoToolClass; // class must be final for action listener
-    videoItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        if(drawingPanel.getVideoTool()==null) {
-          try {
-            Method m = finalVideoToolClass.getMethod("getTool", (Class[]) null);             //$NON-NLS-1$
-            Tool tool = (Tool) m.invoke(null, (Object[]) null);                              // tool is a VideoTool
-            drawingPanel.setVideoTool((VideoTool) tool);
-            ((VideoTool) tool).setVisible(true);
-            ((VideoTool) tool).clear();
-          } catch(Exception ex) {
-            OSPLog.finest("Cannot perform action to get video tool class:\n"+ex.toString()); //$NON-NLS-1$
-          }
-        } else {
-          drawingPanel.getVideoTool().setVisible(true);
-        }
-      }
-
-    });
+//    JMenuItem videoItem = new JMenuItem(DisplayRes.getString("DrawingFrame.MenuItem.Capture")); //$NON-NLS-1$
+//    if(OSPRuntime.applet==null && false) { // video capture no longer supported.
+//      toolsMenu.add(videoItem);
+//g    }
+//    Class<?> videoToolClass = null;
+//    if(false&& OSPRuntime.loadVideoTool) {  // video capture no longer supported.
+//      try {
+//        videoToolClass = Class.forName("org.opensourcephysics.tools.VideoCaptureTool"); //$NON-NLS-1$
+//      } catch(Exception ex) {
+//        OSPRuntime.loadVideoTool = false;
+//        OSPLog.finest("Cannot instantiate video capture tool class:\n"+ex.toString());  //$NON-NLS-1$
+//        videoItem.setEnabled(false);
+//      }
+//    }
+//    final Class<?> finalVideoToolClass = videoToolClass; // class must be final for action listener
+//    videoItem.addActionListener(new ActionListener() {
+//      public void actionPerformed(ActionEvent e) {
+//        if(drawingPanel.getVideoTool()==null) {
+//          try {
+//            Method m = finalVideoToolClass.getMethod("getTool", (Class[]) null);             //$NON-NLS-1$
+//            Tool tool = (Tool) m.invoke(null, (Object[]) null);                              // tool is a VideoTool
+//            drawingPanel.setVideoTool((VideoTool) tool);
+//            ((VideoTool) tool).setVisible(true);
+//            ((VideoTool) tool).clear();
+//          } catch(Exception ex) {
+//            OSPLog.finest("Cannot perform action to get video tool class:\n"+ex.toString()); //$NON-NLS-1$
+//          }
+//        } else {
+//          drawingPanel.getVideoTool().setVisible(true);
+//        }
+//      }
+//
+//    });
     return toolsMenu;
   }
 
