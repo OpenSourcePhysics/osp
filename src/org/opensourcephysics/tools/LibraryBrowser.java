@@ -1000,9 +1000,9 @@ public class LibraryBrowser extends JPanel {
         path = ResourceLoader.getNonURIPath(path);
         Resource res = null;
     		String xmlPath = path;
-        
+        path = path.replace("/OSP/", "/osp/");
         // if path has no extension, look for xml file with same name
-        if (!path.startsWith("https://www.compadre.org/OSP/") //$NON-NLS-1$
+        if (!path.startsWith("https://www.compadre.org/osp/") //$NON-NLS-1$
         		&& XML.getExtension(path)==null) {
       		while (xmlPath.endsWith("/")) //$NON-NLS-1$
       			xmlPath = xmlPath.substring(0, xmlPath.length()-1);
@@ -2350,7 +2350,7 @@ public class LibraryBrowser extends JPanel {
 	  	"<p>The ComPADRE Pathway, a part of the National Science Digital Library, is a growing network of educational resource "+ //$NON-NLS-1$
 	  	"collections supporting teachers and students in Physics and Astronomy. As a user you may explore collections designed to meet "+ //$NON-NLS-1$
 	  	"your specific needs and help build the network by recommending resources, commenting on resources, and starting or joining "+ //$NON-NLS-1$
-	  	"discussions. For more information, see &lt;<b><a href=\"https://www.compadre.org/OSP/\">http://www.compadre.org/OSP/</a></b>&gt;. "+ //$NON-NLS-1$
+	  	"discussions. For more information, see &lt;<b><a href=\"https://www.compadre.org/osp/\">http://www.compadre.org/osp/</a></b>&gt;. "+ //$NON-NLS-1$
 	  	"To recommend an OSP resource for ComPADRE, visit the Suggest a Resource page at &lt;<b><a href="+ //$NON-NLS-1$
 	  	"\"https://www.compadre.org/osp/items/suggest.cfm\">http://www.compadre.org/osp/items/suggest.cfm</a></b>&gt;.&nbsp; "+ //$NON-NLS-1$
 	  	"Contact the OSP Collection editor, Wolfgang Christian, for additional information.</p>"; //$NON-NLS-1$
