@@ -370,39 +370,39 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 
     });
     // create video capture menu item
-    JMenuItem videoItem = new JMenuItem(DisplayRes.getString("DrawingFrame.MenuItem.Capture")); //$NON-NLS-1$
-    if(false && OSPRuntime.applet==null) { // video capture not supported
-      toolsMenu.add(videoItem);
-    }
-    Class<?> videoToolClass = null;
-    if(OSPRuntime.loadVideoTool) {
-      try {
-        videoToolClass = Class.forName("org.opensourcephysics.tools.VideoCaptureTool"); //$NON-NLS-1$
-      } catch(ClassNotFoundException ex) {
-        OSPRuntime.loadVideoTool = false;
-        OSPLog.finest("Cannot instantiate video capture tool class:\n"+ex.toString());  //$NON-NLS-1$
-        videoItem.setEnabled(false);
-      }
-    }
-    final Class<?> finalVideoToolClass = videoToolClass; // class must be final for action listener
-    videoItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        if(defaultDrawingPanel.getVideoTool()==null) {
-          try {
-            Method m = finalVideoToolClass.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
-            Tool tool = (Tool) m.invoke(null, (Object[]) null);                  // tool is a VideoTool
-            defaultDrawingPanel.setVideoTool((VideoTool) tool);
-            ((VideoTool) tool).setVisible(true);
-            ((VideoTool) tool).clear();
-          } catch(Exception ex) {
-        	  OSPLog.warning("Video Capature not supported.");
-          }
-        } else {
-          defaultDrawingPanel.getVideoTool().setVisible(true);
-        }
-      }
-
-    });
+//    JMenuItem videoItem = new JMenuItem(DisplayRes.getString("DrawingFrame.MenuItem.Capture")); //$NON-NLS-1$
+//    if(false && OSPRuntime.applet==null) { // video capture not supported
+//      toolsMenu.add(videoItem);
+//    }
+//    Class<?> videoToolClass = null;
+//    if(OSPRuntime.loadVideoTool) {
+//      try {
+//        videoToolClass = Class.forName("org.opensourcephysics.tools.VideoCaptureTool"); //$NON-NLS-1$
+//      } catch(ClassNotFoundException ex) {
+//        OSPRuntime.loadVideoTool = false;
+//        OSPLog.finest("Cannot instantiate video capture tool class:\n"+ex.toString());  //$NON-NLS-1$
+//        videoItem.setEnabled(false);
+//      }
+//    }
+//    final Class<?> finalVideoToolClass = videoToolClass; // class must be final for action listener
+//    videoItem.addActionListener(new ActionListener() {
+//      public void actionPerformed(ActionEvent e) {
+//        if(defaultDrawingPanel.getVideoTool()==null) {
+//          try {
+//            Method m = finalVideoToolClass.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
+//            Tool tool = (Tool) m.invoke(null, (Object[]) null);                  // tool is a VideoTool
+//            defaultDrawingPanel.setVideoTool((VideoTool) tool);
+//            ((VideoTool) tool).setVisible(true);
+//            ((VideoTool) tool).clear();
+//          } catch(Exception ex) {
+//        	  OSPLog.warning("Video Capature not supported.");
+//          }
+//        } else {
+//          defaultDrawingPanel.getVideoTool().setVisible(true);
+//        }
+//      }
+//
+//    });
     return toolsMenu;
   }
 
