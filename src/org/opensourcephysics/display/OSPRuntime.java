@@ -132,7 +132,6 @@ public class OSPRuntime {
 				for (int i = corsEnabled.length; --i >= 0;) {
 					jsutil.addDirectDatabaseCall(corsEnabled[i]);
 				}
-				System.err.println("Still not accessing https://www.compadre.org/osp using CORS");
 			}
 
 		} catch (Exception e) {
