@@ -21,6 +21,7 @@ import org.opensourcephysics.display.axes.PolarAxes;
 import org.opensourcephysics.display.axes.PolarType2;
 import org.opensourcephysics.display.axes.XYAxis;
 import org.opensourcephysics.numerics.FunctionTransform;
+import org.opensourcephysics.numerics.InvertibleFunction;
 import org.opensourcephysics.numerics.LogBase10Function;
 
 /**
@@ -30,7 +31,6 @@ import org.opensourcephysics.numerics.LogBase10Function;
  */
 public class PlottingPanel extends InteractivePanel {
 	protected DrawableAxes axes;
-	protected FunctionTransform functionTransform = new FunctionTransform();
 	protected final static double log10 = Math.log(10);
 	protected final static LogBase10Function logBase10Function = new LogBase10Function();
 
@@ -58,35 +58,39 @@ public class PlottingPanel extends InteractivePanel {
       _xAxisType, _yAxisType);
   }
 
-  /**
-   *  Constructs a new PlottingPanel with cartesian axes that use the given X axis label, Y axis
-   *  label, and plot title.
-   *
-   * @param  xlabel      The X axis label.
-   * @param  ylabel      The Y axis label.
-   * @param  plotTitle   The plot title.
-   * @param  xAxisType   Description of Parameter
-   * @param  yAxisType   Description of Parameter
-   */
-  public PlottingPanel(String xlabel, String ylabel, String plotTitle, int xAxisType, int yAxisType) {
+	/**
+	 * Constructs a new PlottingPanel with cartesian axes that use the given X axis
+	 * label, Y axis label, and plot title.
+	 *
+	 * @param xlabel    The X axis label.
+	 * @param ylabel    The Y axis label.
+	 * @param plotTitle The plot title.
+	 * @param xAxisType Description of Parameter
+	 * @param yAxisType Description of Parameter
+	 */
+	public PlottingPanel(String xlabel, String ylabel, String plotTitle, int xAxisType, int yAxisType) {
 //    axes = new CartesianType1(this);
-  	// axes changed to interactive by default. D Brown 2012-01-27
-    axes = new CartesianInteractive(this);
-    axes.setXLabel(xlabel, null);
-    axes.setYLabel(ylabel, null);
-    axes.setTitle(plotTitle, null);
-    functionTransform.setXFunction(logBase10Function); // set function transforms but do not apply functions
-    functionTransform.setYFunction(logBase10Function);
-    if(xAxisType==XYAxis.LOG10) {
-      logScaleX = true;
-    }
-    if(yAxisType==XYAxis.LOG10) {
-      logScaleY = true;
-    }
-    setLogScale(logScaleX, logScaleY);
-  }
+		// axes changed to interactive by default. D Brown 2012-01-27
+		axes = new CartesianInteractive(this);
+		axes.setXLabel(xlabel, null);
+		axes.setYLabel(ylabel, null);
+		axes.setTitle(plotTitle, null);
+		pixelTransform = new FunctionTransform();
+		((FunctionTransform) pixelTransform).setXFunction(logBase10Function);
+		((FunctionTransform) pixelTransform).setYFunction(logBase10Function);
+		logScaleX = (xAxisType == XYAxis.LOG10);
+		logScaleY = (yAxisType == XYAxis.LOG10);
+		setLogScale(logScaleX, logScaleY);
 
-  /**
+	}
+
+	private void setXYFunction(boolean logx, boolean logy) {
+		FunctionTransform ft = (FunctionTransform) pixelTransform;
+		ft.setApplyXFunction(logx);
+		ft.setApplyYFunction(logy);
+	}
+
+/**
    * Gets the interactive drawable that was accessed by the last mouse event.
    *
    * This methods overrides the default implemenation in order to check for draggable axes.
@@ -475,10 +479,9 @@ public class PlottingPanel extends InteractivePanel {
       xmax = (xmaxPreferred+xminPreferred)/2+Math.max(width-leftGutter-rightGutter-1, 1)/xPixPerUnit/2;
       ymin = (ymaxPreferred+yminPreferred)/2-Math.max(height-bottomGutter-topGutter-1, 1)/yPixPerUnit/2;
       ymax = (ymaxPreferred+yminPreferred)/2+Math.max(height-bottomGutter-topGutter-1, 1)/yPixPerUnit/2;
-      functionTransform.setTransform(xPixPerUnit, 0, 0, -yPixPerUnit, -xmin*xPixPerUnit+leftGutter, ymax*yPixPerUnit+topGutter);
-      functionTransform.setApplyXFunction(false);
-      functionTransform.setApplyYFunction(false);
-      functionTransform.getMatrix(pixelMatrix); // puts the transformation into the pixel matrix
+      pixelTransform.setTransform(xPixPerUnit, 0, 0, -yPixPerUnit, -xmin*xPixPerUnit+leftGutter, ymax*yPixPerUnit+topGutter);
+      setXYFunction(false, false);
+      pixelTransform.getMatrix(pixelMatrix); // puts the transformation into the pixel matrix
       return;
     }
     xPixPerUnit = (width-leftGutter-rightGutter)/(xmax-xmin);
@@ -514,57 +517,41 @@ public class PlottingPanel extends InteractivePanel {
         bottomGutter = Math.max(0, bottomGutter);
       }
     }
-    functionTransform.setTransform(xPixPerUnit, 0, 0, -yPixPerUnit, -xmin*xPixPerUnit+leftGutter, ymax*yPixPerUnit+topGutter);
-    if(logScaleX) {
-      functionTransform.setApplyXFunction(true);
-    } else {
-      functionTransform.setApplyXFunction(false);
-    }
-    if(logScaleY) {
-      functionTransform.setApplyYFunction(true);
-    } else {
-      functionTransform.setApplyYFunction(false);
-    }
-    functionTransform.getMatrix(pixelMatrix);
+    pixelTransform.setTransform(xPixPerUnit, 0, 0, -yPixPerUnit, -xmin*xPixPerUnit+leftGutter, ymax*yPixPerUnit+topGutter);
+    setXYFunction(logScaleX, logScaleY);
+    pixelTransform.getMatrix(pixelMatrix);
   }
 
-  /**
-   * Recomputes the pixel transformation based on the current minimum and maximum values and the gutters.
-   */
-  public void recomputeTransform() {
-    xPixPerUnit = Math.max(width-leftGutter-rightGutter, 1)/(xmax-xmin);
-    yPixPerUnit = Math.max(height-bottomGutter-topGutter, 1)/(ymax-ymin); // the y scale in pixels
-    functionTransform.setTransform(xPixPerUnit, 0, 0, -yPixPerUnit, -xmin*xPixPerUnit+leftGutter, ymax*yPixPerUnit+topGutter);
-    if(logScaleX) {
-      functionTransform.setApplyXFunction(true);
-    } else {
-      functionTransform.setApplyXFunction(false);
-    }
-    if(logScaleY) {
-      functionTransform.setApplyYFunction(true);
-    } else {
-      functionTransform.setApplyYFunction(false);
-    }
-    functionTransform.getMatrix(pixelMatrix);
-  }
+	/**
+	 * Recomputes the pixel transformation based on the current minimum and maximum
+	 * values and the gutters.
+	 */
+	public void recomputeTransform() {
+		xPixPerUnit = Math.max(width - leftGutter - rightGutter, 1) / (xmax - xmin);
+		yPixPerUnit = Math.max(height - bottomGutter - topGutter, 1) / (ymax - ymin); // the y scale in pixels
+		pixelTransform.setTransform(xPixPerUnit, 0, 0, -yPixPerUnit, -xmin * xPixPerUnit + leftGutter,
+				ymax * yPixPerUnit + topGutter);
+		setXYFunction(logScaleX, logScaleY);
+		pixelTransform.getMatrix(pixelMatrix);
+	}
 
-  /**
-   * Gets the affine transformation that converts from world to pixel coordinates.
-   * 
-   * NOT A CLONE!
-   * 
-   * @return the affine transformation
-   */
-  public AffineTransform getPixelTransform() {
-	    return functionTransform;
-    //return(AffineTransform) functionTransform.clone();
-  }
-
-  public AffineTransform getPixelTransform(AffineTransform tr) {
-	  tr.setTransform(functionTransform);
-	  return tr;
-	  }
-
+//  /**
+//   * Gets the affine transformation that converts from world to pixel coordinates.
+//   * 
+//   * NOT A CLONE!
+//   * 
+//   * @return the affine transformation
+//   */
+//  public AffineTransform getPixelTransform() {
+//	    return functionTransform;
+//    //return(AffineTransform) functionTransform.clone();
+//  }
+//
+//  public AffineTransform getPixelTransform(AffineTransform tr) {
+//	  tr.setTransform(functionTransform);
+//	  return tr;
+//	  }
+//
   /**
    * Method logBase10
    *

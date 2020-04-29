@@ -1711,7 +1711,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
   }
 
   /**
-   * Recomputes the pixel transforamtion based on the current minimum and maximum values and the gutters.
+   * Recomputes the pixel transformation based on the current minimum and maximum values and the gutters.
    */
   public void recomputeTransform() {
     xPixPerUnit = Math.max(width-leftGutter-rightGutter, 1)/(xmax-xmin);
