@@ -9,6 +9,7 @@ package org.opensourcephysics.display;
 import java.awt.Cursor;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+
 import javax.swing.event.MouseInputAdapter;
 
 /**

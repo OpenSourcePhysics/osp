@@ -58,13 +58,19 @@ import org.opensourcephysics.tools.ResourceLoader;
  * @version 1.0
  */
 public class VideoClip {
-  // instance fields
+
+	
+	public final static String PROPERTY_VIDEO_FRAMECOUNT = "framecount";
+
+
+	
+	// instance fields
 	public boolean changeEngine; // signals that user wishes to change preferred video engine
 
 	private int startFrame = 0;
   private int stepSize = 1;
   private int stepCount = 10;   // default stepCount is 10 if video is null
-  private int frameCount = stepCount; // default frameCount same as stepCount
+  private int nullVideoFrameCount = stepCount; // default frameCount same as stepCount
   private int maxFrameCount = 300000; // approx 2h45m at 30fps
   private int frameShift = 0; // for shifted video frame numbers
   private double startTime = 0; // start time in milliseconds
@@ -346,9 +352,9 @@ public class VideoClip {
     	return n;
     }
     int frames = getEndFrameNumber()+1;
-    frameCount = Math.max(frameCount, frames);
-    frameCount = Math.min(frameCount, maxFrameCount);
-    return frameCount;
+    nullVideoFrameCount = Math.max(nullVideoFrameCount, frames);
+    nullVideoFrameCount = Math.min(nullVideoFrameCount, maxFrameCount);
+    return nullVideoFrameCount;
   }
 
   /**
@@ -600,15 +606,15 @@ public class VideoClip {
     support.removePropertyChangeListener(property, listener);
   }
 
-  /**
-   * Trims unneeded frames after end frame (null videos only).
-   */
-  protected void trimFrameCount() {
-    if(video==null || video.getFrameCount()==1) {
-    	frameCount = getEndFrameNumber()+1;
-      support.firePropertyChange("framecount", null, Integer.valueOf(frameCount)); //$NON-NLS-1$
-    }
-  }
+	/**
+	 * Trims unneeded frames after end frame (null videos only).
+	 */
+	protected void trimFrameCount() {
+		if (video == null || video.getFrameCount() == 1) {
+			nullVideoFrameCount = getEndFrameNumber() + 1;
+			support.firePropertyChange(VideoClip.PROPERTY_VIDEO_FRAMECOUNT, null, Integer.valueOf(nullVideoFrameCount)); //$NON-NLS-1$
+		}
+	}
   
   /**
    * Updates the list of step frames.

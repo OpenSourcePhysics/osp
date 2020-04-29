@@ -78,8 +78,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
   protected final static int defaultWidth = 640;
   protected final static int defaultHeight = 480;
   
-  public final static String PROPERTY_ASYNC_VIDEO_READY = "asyncVideoReady";
-  public static final String PROPERTY_STEPNUMBER = "stepnumber";
+  
+  
 
   // instance fields
   
@@ -120,14 +120,14 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
     setSquareAspect(true);
     player = new VideoPlayer(this);
     player.addPropertyChangeListener("videoclip", this);     //$NON-NLS-1$
-    player.addPropertyChangeListener(VideoPanel.PROPERTY_STEPNUMBER, this);    //$NON-NLS-1$
+    player.addPropertyChangeListener(ClipControl.PROPERTY_VIDEO_STEPNUMBER, this);    //$NON-NLS-1$
     player.addPropertyChangeListener("frameduration", this); //$NON-NLS-1$
     add(player, BorderLayout.SOUTH);
     VideoClip clip = player.getVideoClip();
     clip.addPropertyChangeListener("startframe", this); //$NON-NLS-1$
     clip.addPropertyChangeListener("stepsize", this);   //$NON-NLS-1$
     clip.addPropertyChangeListener("stepcount", this);  //$NON-NLS-1$
-    clip.addPropertyChangeListener("framecount", this);  //$NON-NLS-1$
+    clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEO_FRAMECOUNT, this);  //$NON-NLS-1$
     clip.addPropertyChangeListener("starttime", this);  //$NON-NLS-1$
     clip.addPropertyChangeListener("adjusting", this);          //$NON-NLS-1$
     // define mousePanel and messagePanel
@@ -171,12 +171,13 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 
 				@Override
 				public void run() {
-					newVideo.removePropertyChangeListener(PROPERTY_ASYNC_VIDEO_READY, VideoPanel.this); //$NON-NLS-1$
+					newVideo.removePropertyChangeListener(AsyncVideoI.PROPERTY_VIDEO_ASYNC_READY, VideoPanel.this); //$NON-NLS-1$
 					initializePlayer(prev, newVideo, playAllSteps);
+					repaint();
 				}
 
 			};
-			newVideo.addPropertyChangeListener(PROPERTY_ASYNC_VIDEO_READY, this); //$NON-NLS-1$
+			newVideo.addPropertyChangeListener(AsyncVideoI.PROPERTY_VIDEO_ASYNC_READY, this); //$NON-NLS-1$
 		} else {
 			initializePlayer(prev, newVideo, playAllSteps);
 		}
@@ -562,6 +563,12 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
     }
   }
 
+  
+  public void repaint() {
+	  System.out.println("VideoPanel.repaint");
+	  super.repaint();
+  }
+
 	/**
 	 * Responds to property change events. VideoPanel listens for the following
 	 * events: "videoclip" and "stepnumber" from VideoPlayer, "coords" and "image"
@@ -583,15 +590,16 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			break;
 		case "image": //$NON-NLS-1$
 		case "videoVisible": // from Video //$NON-NLS-1$
+		case AsyncVideoI.PROPERTY_VIDEO_IMAGE_READY:
 			repaint();
 			break;
-		case PROPERTY_ASYNC_VIDEO_READY:
+		case AsyncVideoI. PROPERTY_VIDEO_ASYNC_READY:
 			if (asyncReady != null) {
 				asyncReady.run();
 				asyncReady = null;
 			}
 			break;
-		case PROPERTY_STEPNUMBER: // from VideoPlayer //$NON-NLS-1$
+		case ClipControl.PROPERTY_VIDEO_STEPNUMBER: // from VideoPlayer //$NON-NLS-1$
 			repaint();
 			break;
 		case "videoclip": // from VideoPlayer //$NON-NLS-1$
@@ -600,7 +608,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			oldClip.removePropertyChangeListener("startframe", this); //$NON-NLS-1$
 			oldClip.removePropertyChangeListener("stepsize", this); //$NON-NLS-1$
 			oldClip.removePropertyChangeListener("stepcount", this); //$NON-NLS-1$
-			oldClip.removePropertyChangeListener("framecount", this); //$NON-NLS-1$
+			oldClip.removePropertyChangeListener(VideoClip.PROPERTY_VIDEO_FRAMECOUNT, this); // $NON-NLS-1$
 			oldClip.removePropertyChangeListener("starttime", this); //$NON-NLS-1$
 			oldClip.removePropertyChangeListener("adjusting", this); //$NON-NLS-1$
 //      oldClip.removePropertyChangeListener("frameshift", this);          //$NON-NLS-1$
@@ -608,7 +616,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			clip.addPropertyChangeListener("startframe", this); //$NON-NLS-1$
 			clip.addPropertyChangeListener("stepsize", this); //$NON-NLS-1$
 			clip.addPropertyChangeListener("stepcount", this); //$NON-NLS-1$
-			clip.addPropertyChangeListener("framecount", this); //$NON-NLS-1$
+			clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEO_FRAMECOUNT, this); // $NON-NLS-1$
 			clip.addPropertyChangeListener("starttime", this); //$NON-NLS-1$
 			clip.addPropertyChangeListener("adjusting", this); //$NON-NLS-1$
 //      clip.addPropertyChangeListener("frameshift", this);          //$NON-NLS-1$

@@ -238,7 +238,7 @@ public class VideoClipControl extends ClipControl {
    */
   public void propertyChange(PropertyChangeEvent e) {
     String name = e.getPropertyName();
-    if(name.equals(ClipControl.PROPERTY_FRAMENUMBER)) {                        // from Video //$NON-NLS-1$
+    if(name.equals(ClipControl.PROPERTY_VIDEO_FRAMENUMBER)) {                        // from Video //$NON-NLS-1$
       int n = ((Integer) e.getNewValue()).intValue();
       if(n==videoFrameNumber) {
         super.setFrameNumber(n-clip.getFrameShift());
@@ -246,7 +246,7 @@ public class VideoClipControl extends ClipControl {
       }
       super.setFrameNumber(n-clip.getFrameShift());
       Integer nInt = Integer.valueOf(stepNumber);
-      support.firePropertyChange(VideoPanel.PROPERTY_STEPNUMBER, null, nInt); // to VideoPlayer //$NON-NLS-1$
+      support.firePropertyChange(ClipControl.PROPERTY_VIDEO_STEPNUMBER, null, nInt); // to VideoPlayer //$NON-NLS-1$
     } 
     else if(name.equals("playing")) {                     // from Video //$NON-NLS-1$
 //      boolean playing = ((Boolean) e.getNewValue()).booleanValue();
