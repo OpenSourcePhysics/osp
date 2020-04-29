@@ -160,6 +160,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 */
 	public void setFrameNumber(int n) {
 		super.setFrameNumber(n);
+//		OSPLog.finest("JSMovieVideo.setFrameNumber " + n + " " + getFrameNumber());
 		state.getImage(getFrameNumber());
 	}
 
@@ -435,7 +436,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 				return;
 			thisFrame = n;
 			t = JSMovieVideo.this.getFrameTime(n)/1000.0;
-			OSPLog.finest("JSMovieVideo.state.getImage " + n + " " + t);
+			//OSPLog.finest("JSMovieVideo.state.getImage " + n + " " + t);
 			helper.next(STATE_GET_IMAGE_INIT);
 		}
 
@@ -524,7 +525,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					seconds.add(Double.valueOf(t));
 					firePropertyChange("progress", fileName, frame); //$NON-NLS-1$
 					frame++;
-					OSPLog.finest("JSMovieVideo frame " + frame + " " + t);
+					//OSPLog.finest("JSMovieVideo frame " + frame + " " + t);
 					helper.setState(STATE_FIND_FRAMES_LOOP);
 					continue;
 				case STATE_FIND_FRAMES_DONE:

@@ -38,6 +38,7 @@ import java.awt.Image;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.awt.image.Raster;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -55,6 +56,9 @@ import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.Interactive;
 import org.opensourcephysics.display.OSPRuntime;
+
+import sun.awt.image.IntegerInterleavedRaster;
+import swingjs.api.JSUtilI;
 
 /**
  * This provides basic implementations of all Video methods. Subclasses should
@@ -89,7 +93,7 @@ public abstract class VideoAdapter implements Video {
   protected PropertyChangeSupport support;
   protected HashMap<String, Object> properties = new HashMap<String, Object>();
   protected FilterStack filterStack = new FilterStack();
-  protected Raster clearRaster;
+  protected DataBufferInt clearRaster;
 
   /**
    * Protected constructor creates an empty VideoAdapter
@@ -220,27 +224,28 @@ public abstract class VideoAdapter implements Video {
     return isMeasured;
   }
 
-  /**
-   * Gets the current video image after applying enabled filters.
-   *
-   * @return the current video image with filters applied
-   */
-  public BufferedImage getImage() {
-	  refreshBufferedImage();
-    if(!isValidImage) { // bufferedImage needs refreshing
-      isValidImage = true;
-      Graphics g = bufferedImage.createGraphics();
-      bufferedImage.setData(clearRaster);
-      g.drawImage(rawImage, 0, 0, null);
-    }
-    if(filterStack.isEmpty()||!filterStack.isEnabled()) {
-      return bufferedImage;
-    } else if(!isValidFilteredImage) { // filteredImage needs refreshing
-      isValidFilteredImage = true;
-      filteredImage = filterStack.getFilteredImage(bufferedImage);
-    }
-    return filteredImage;
-  }
+	/**
+	 * Gets the current video image after applying enabled filters.
+	 *
+	 * @return the current video image with filters applied
+	 */
+	public BufferedImage getImage() {
+		refreshBufferedImage();
+		if (!isValidImage) { // bufferedImage needs refreshing
+			isValidImage = true;
+			Graphics g = bufferedImage.createGraphics();
+		     // bufferedImage.setData(clearRaster);
+			g.drawImage(rawImage, 0, 0, null);
+			g.dispose();
+		}
+		if (filterStack.isEmpty() || !filterStack.isEnabled()) {
+			return bufferedImage;
+		} else if (!isValidFilteredImage) { // filteredImage needs refreshing
+			isValidFilteredImage = true;
+			filteredImage = filterStack.getFilteredImage(bufferedImage);
+		}
+		return filteredImage;
+	}
 
   /**
    * Returns this video if enabled.
@@ -1113,23 +1118,26 @@ public abstract class VideoAdapter implements Video {
     filterStack.addPropertyChangeListener(this);
   }
 
-  /**
-   * Refreshes the BufferedImage based on current size.
-   * Creates a new image if needed.
-   */
-  protected void refreshBufferedImage() {
-    if((bufferedImage==null)||(bufferedImage.getWidth()!=size.width)||(bufferedImage.getHeight()!=size.height)) {
-      bufferedImage = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_RGB);
-      int clear = new Color(0, 0, 0, 0).getRGB();
-      int[] rgb = new int[size.width*size.height];
-      for(int i = 0; i<rgb.length; i++) {
-        rgb[i] = clear;
-      }
-      bufferedImage.setRGB(0, 0, size.width, size.height, rgb, 0, size.width);
-      clearRaster = bufferedImage.getData();
-      isValidImage = false;
-    }
-  }
+	/**
+	 * Refreshes the BufferedImage based on current size. Creates a new image if
+	 * needed.
+	 */
+	protected void refreshBufferedImage() {
+		if ((bufferedImage == null) || (bufferedImage.getWidth() != size.width)
+				|| (bufferedImage.getHeight() != size.height)) {
+			OSPLog.finest("VideoAdapter.refreshBufferedImage " + size);
+			bufferedImage = new BufferedImage(size.width, size.height, OSPRuntime.isJS ? JSUtilI.TYPE_4BYTE_HTML5 : BufferedImage.TYPE_INT_RGB);
+			//			clearRaster = (DataBufferInt) bufferedImage.getRaster().getDataBuffer();
+//			int clear = new Color(0, 0, 0, 0).getRGB();
+//			int[] rgb = new int[size.width * size.height];
+//			for (int i = 0; i < rgb.length; i++) {
+//				rgb[i] = clear;
+//			}
+//			bufferedImage.setRGB(0, 0, size.width, size.height, rgb, 0, size.width);
+			//clearRaster = bufferedImage.getData();
+			isValidImage = false;
+		}
+	}
 
   /**
    * Finds the min and max values of x and y.
