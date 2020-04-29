@@ -126,9 +126,8 @@ public class OSPRuntime {
 						"www.physlets.org", 
 						"https://physlets.org",
 						// "www.opensourcephysics.org",
-						"https://www.compadre.org/osp",
-						"www.compadre.org/profiles",
-						"www.compadre.org/osp/online_help" };
+						"www.compadre.org/osp",
+						"www.compadre.org/profiles" };
 				for (int i = corsEnabled.length; --i >= 0;) {
 					jsutil.addDirectDatabaseCall(corsEnabled[i]);
 				}
