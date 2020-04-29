@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Locale;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ButtonGroup;
@@ -50,6 +51,7 @@ import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.SwingPropertyChangeSupport;
+
 import org.opensourcephysics.controls.Animation;
 import org.opensourcephysics.controls.Calculation;
 import org.opensourcephysics.controls.ControlUtils;
@@ -77,7 +79,6 @@ import org.opensourcephysics.tools.LocalJob;
 import org.opensourcephysics.tools.SnapshotTool;
 import org.opensourcephysics.tools.Tool;
 import org.opensourcephysics.tools.ToolsRes;
-import org.opensourcephysics.tools.VideoTool;
 
 import javajs.async.AsyncFileChooser;
 
@@ -434,7 +435,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
     translateItem.setEnabled(OSPRuntime.getTranslator()!=null);
     if(!JSUtil.isJS)languageMenu.add(translateItem, 0);
     final Locale[] locales = OSPRuntime.getInstalledLocales();
-    Action languageAction = new AbstractAction() {
+    @SuppressWarnings("serial")
+	Action languageAction = new AbstractAction() {
       public void actionPerformed(ActionEvent e) {
         String language = e.getActionCommand();
         OSPLog.finest("setting language to "+language); //$NON-NLS-1$
@@ -1050,7 +1052,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
     }
   }
 
-  class EjsFrame extends OSPFrame implements MainFrame {
+  @SuppressWarnings("serial")
+class EjsFrame extends OSPFrame implements MainFrame {
     public OSPFrame getMainFrame() {
       return this;
     }
