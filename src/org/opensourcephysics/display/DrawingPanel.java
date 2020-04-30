@@ -144,7 +144,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
   protected Rectangle viewRect = null;                                        // the clipping rectangle within a scroll pane viewport
   // CoordinateStringBuilder converts a mouse event into a string that displays world coordinates.
   protected CoordinateStringBuilder coordinateStrBuilder = CoordinateStringBuilder.createCartesian();
-  protected GlassPanel glassPanel = new GlassPanel();
+  protected GlassPanel glassPanel;
   protected OSPLayout glassPanelLayout = new OSPLayout();
   protected int refreshDelay = 100;                                                     // time in ms to delay refresh events
   protected javax.swing.Timer refreshTimer = new javax.swing.Timer(refreshDelay, this); // delay before for refreshing panel
@@ -159,81 +159,85 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
   protected double dxmin, dxmax, dymin, dymax;
   protected PropertyChangeListener guiChangeListener;
 
-  /**
-   * DrawingPanel constructor.
-   */
-  public DrawingPanel() {
-	  setName("DrawingPanel");
-    glassPanel.setLayout(glassPanelLayout);
-    super.setLayout(new BorderLayout());
-    glassPanel.add(trMessageBox, OSPLayout.TOP_RIGHT_CORNER);
-    glassPanel.add(tlMessageBox, OSPLayout.TOP_LEFT_CORNER);
-    glassPanel.add(brMessageBox, OSPLayout.BOTTOM_RIGHT_CORNER);
-    glassPanel.add(blMessageBox, OSPLayout.BOTTOM_LEFT_CORNER);
-    glassPanel.setOpaque(false);
-    add(glassPanel, BorderLayout.CENTER);
-    setBackground(bgColor);
-    setPreferredSize(new Dimension(300, 300));
-    showCoordinates = true; // show coordinates by default
-    addMouseListener(mouseController);
-    addMouseMotionListener(mouseController);
-    addOptionController();
-    // invalidate the buffered image if the size changes
-    addComponentListener(new java.awt.event.ComponentAdapter() {
-      public void componentResized(ComponentEvent e) {
-        invalidateImage(); // validImage = false;
-      }
+	/**
+	 * DrawingPanel constructor.
+	 */
+	public DrawingPanel() {
+		setName("DrawingPanel");
+		if (OSPRuntime.isJS) {
+			// no glassPanel
+		} else {
+			glassPanel = new GlassPanel();
+			glassPanel.setLayout(glassPanelLayout);
+			super.setLayout(new BorderLayout());
+			glassPanel.add(trMessageBox, OSPLayout.TOP_RIGHT_CORNER);
+			glassPanel.add(tlMessageBox, OSPLayout.TOP_LEFT_CORNER);
+			glassPanel.add(brMessageBox, OSPLayout.BOTTOM_RIGHT_CORNER);
+			glassPanel.add(blMessageBox, OSPLayout.BOTTOM_LEFT_CORNER);
+			glassPanel.setOpaque(false);
+			add(glassPanel, BorderLayout.CENTER);
+		}
+		setBackground(bgColor);
+		setPreferredSize(new Dimension(300, 300));
+		showCoordinates = true; // show coordinates by default
+		addMouseListener(mouseController);
+		addMouseMotionListener(mouseController);
+		addOptionController();
+		// invalidate the buffered image if the size changes
+		addComponentListener(new java.awt.event.ComponentAdapter() {
+			public void componentResized(ComponentEvent e) {
+				invalidateImage(); // validImage = false;
+			}
 
-    });
-    buildPopupmenu();
-    refreshTimer.setRepeats(false);
-    refreshTimer.setCoalesce(true);
-    setFontLevel(FontSizer.getLevel());
-    zoomTimer = new javax.swing.Timer(zoomDelay, new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        // reset and hide the zoom box
-        zoomBox.xlast = zoomBox.xstop = zoomBox.xstart = 0;
-        zoomBox.ylast = zoomBox.ystop = zoomBox.ystart = 0;
-        zoomBox.visible = zoomBox.dragged = false;
-        int steps = 4;
-        if(zoomCount<steps) {
-          zoomCount++;
-          double xmin = getXMin()+dxmin/steps;
-          double xmax = getXMax()+dxmax/steps;
-          double ymin = getYMin()+dymin/steps;
-          double ymax = getYMax()+dymax/steps;
-          setPreferredMinMax(xmin, xmax, ymin, ymax);
-          repaint(); // repaint the panel with the new scale
-        } else {
-          zoomTimer.stop();
-          invalidateImage();
-          repaint();
-        }
-      }
+		});
+		buildPopupmenu();
+		refreshTimer.setRepeats(false);
+		refreshTimer.setCoalesce(true);
+		setFontLevel(FontSizer.getLevel());
+		zoomTimer = new javax.swing.Timer(zoomDelay, new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// reset and hide the zoom box
+				zoomBox.xlast = zoomBox.xstop = zoomBox.xstart = 0;
+				zoomBox.ylast = zoomBox.ystop = zoomBox.ystart = 0;
+				zoomBox.visible = zoomBox.dragged = false;
+				int steps = 4;
+				if (zoomCount < steps) {
+					zoomCount++;
+					double xmin = getXMin() + dxmin / steps;
+					double xmax = getXMax() + dxmax / steps;
+					double ymin = getYMin() + dymin / steps;
+					double ymax = getYMax() + dymax / steps;
+					setPreferredMinMax(xmin, xmax, ymin, ymax);
+					repaint(); // repaint the panel with the new scale
+				} else {
+					zoomTimer.stop();
+					invalidateImage();
+					repaint();
+				}
+			}
 
-    });
-    zoomTimer.setInitialDelay(0);
-    // create guiChangeListener to change font size and refresh GUI
-    // added by D Brown 29 mar 2016
-    guiChangeListener = new PropertyChangeListener() {
-      public void propertyChange(PropertyChangeEvent e) {
-      	if (e.getPropertyName().equals("level")) { //$NON-NLS-1$
-	        int level = ((Integer) e.getNewValue()).intValue();
-	        setFontLevel(level);
-      	}
-      	else if (e.getPropertyName().equals("locale")) { //$NON-NLS-1$
-          // set the default decimal separator
-      		Locale locale = (Locale)e.getNewValue();
-      		DecimalFormat format = (DecimalFormat)NumberFormat.getInstance(locale);
-          OSPRuntime.setDefaultDecimalSeparator(format.getDecimalFormatSymbols().getDecimalSeparator());
-      		refreshDecimalSeparators();
-      		refreshGUI();
-      	}
-      }
-    };
-    FontSizer.addPropertyChangeListener("level", guiChangeListener); //$NON-NLS-1$
-    ToolsRes.addPropertyChangeListener("locale", guiChangeListener); //$NON-NLS-1$
-  }
+		});
+		zoomTimer.setInitialDelay(0);
+		// create guiChangeListener to change font size and refresh GUI
+		// added by D Brown 29 mar 2016
+		guiChangeListener = new PropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent e) {
+				if (e.getPropertyName().equals("level")) { //$NON-NLS-1$
+					int level = ((Integer) e.getNewValue()).intValue();
+					setFontLevel(level);
+				} else if (e.getPropertyName().equals("locale")) { //$NON-NLS-1$
+					// set the default decimal separator
+					Locale locale = (Locale) e.getNewValue();
+					DecimalFormat format = (DecimalFormat) NumberFormat.getInstance(locale);
+					OSPRuntime.setDefaultDecimalSeparator(format.getDecimalFormatSymbols().getDecimalSeparator());
+					refreshDecimalSeparators();
+					refreshGUI();
+				}
+			}
+		};
+		FontSizer.addPropertyChangeListener("level", guiChangeListener); //$NON-NLS-1$
+		ToolsRes.addPropertyChangeListener("locale", guiChangeListener); //$NON-NLS-1$
+	}
 
   /**
    * Refreshes the user interface in response to display changes such as Language.
@@ -617,38 +621,39 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     return offscreenImage;
   }
 
-  /**
-   * Paints all drawables onto an image.
-   *
-   * @param image
-   * @return the image buffer
-   */
-  public BufferedImage render(BufferedImage image) {
-    Graphics osg = image.getGraphics();
-    imageRatio =((float) getWidth()<=0)?1: image.getWidth()/(float) getWidth();  // ratio of image to panel width
-    if(osg!=null) {
-      paintEverything(osg);
-      if(image==workingImage) {
-        zoomBox.paint(osg);               // paint the zoom
-      }
-//	    if(!JSUtil.isJS){  // do not use glassPanel in JS
-	      Rectangle viewRect = this.viewRect; // reference for thread safety
-	      if(viewRect!=null) {
-	        Rectangle r = new Rectangle(0, 0, image.getWidth(null), image.getHeight(null));
-	        glassPanel.setBounds(r);
-	        glassPanelLayout.checkLayoutRect(glassPanel, r);
-	        glassPanel.render(osg);
-	        glassPanel.setBounds(viewRect);
-	        glassPanelLayout.checkLayoutRect(glassPanel, viewRect);
-	      } else {
-	        glassPanel.render(osg);
-	      }
-//      }
-	    osg.dispose();
-    }
-    imageRatio = 1.00;
-    return image;
-  }
+	/**
+	 * Paints all drawables onto an image.
+	 *
+	 * @param image
+	 * @return the image buffer
+	 */
+	public BufferedImage render(BufferedImage image) {
+		Graphics osg = image.getGraphics();
+		imageRatio = ((float) getWidth() <= 0) ? 1 : image.getWidth() / (float) getWidth(); // ratio of image to panel
+																							// width
+		if (osg != null) {
+			paintEverything(osg);
+			if (image == workingImage) {
+				zoomBox.paint(osg); // paint the zoom
+			}
+			if (glassPanel != null) { // do not use glassPanel in JS
+				Rectangle viewRect = this.viewRect; // reference for thread safety
+				if (viewRect != null) {
+					Rectangle r = new Rectangle(0, 0, image.getWidth(null), image.getHeight(null));
+					glassPanel.setBounds(r);
+					glassPanelLayout.checkLayoutRect(glassPanel, r);
+					glassPanel.render(osg);
+					glassPanel.setBounds(viewRect);
+					glassPanelLayout.checkLayoutRect(glassPanel, viewRect);
+				} else {
+					glassPanel.render(osg);
+				}
+			}
+			osg.dispose();
+		}
+		imageRatio = 1.00;
+		return image;
+	}
 
   public int getWidth() {
     return(int) (imageRatio*super.getWidth());  // effective width when rendering images
@@ -744,8 +749,10 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
     while(c!=null) {
       if(c instanceof JViewport) {
         rect = ((JViewport) c).getViewRect();
-        glassPanel.setBounds(rect);
-        glassPanelLayout.checkLayoutRect(glassPanel, rect);
+        if (glassPanel != null) {
+        	glassPanel.setBounds(rect);
+        	glassPanelLayout.checkLayoutRect(glassPanel, rect);
+        }
         break;
       }
       c = c.getParent();
@@ -1711,7 +1718,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
   }
 
   /**
-   * Recomputes the pixel transformation based on the current minimum and maximum values and the gutters.
+   * Recomputes the pixel transforamtion based on the current minimum and maximum values and the gutters.
    */
   public void recomputeTransform() {
     xPixPerUnit = Math.max(width-leftGutter-rightGutter, 1)/(xmax-xmin);
@@ -2106,7 +2113,8 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 
   public void setIgnoreRepaint(boolean ignoreRepaint) {
     super.setIgnoreRepaint(ignoreRepaint);
-    glassPanel.setIgnoreRepaint(ignoreRepaint);
+    if (glassPanel != null)
+    	glassPanel.setIgnoreRepaint(ignoreRepaint);
   }
 
   /**

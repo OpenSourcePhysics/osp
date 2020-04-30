@@ -33,6 +33,7 @@ import javax.swing.SwingConstants;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.Interactive;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.PlottingPanel;
 import org.opensourcephysics.display.Selectable;
 import org.opensourcephysics.display.dialogs.DialogsRes;
@@ -97,7 +98,10 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
     scaleSetterPanel = new javax.swing.JPanel(null);
     scaleSetterPanel.setOpaque(false);
     scaleSetterPanel.add(scaleSetter);
-    plot.getGlassPanel().add(scaleSetterPanel, BorderLayout.CENTER);
+    if (plot.getGlassPanel() != null) {
+    	plot.getGlassPanel().add(scaleSetterPanel, BorderLayout.CENTER);
+    }
+    
   }
 
   /**
