@@ -3,20 +3,16 @@ package debugging;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Random;
 
 import javax.swing.*;
 
-import javafx.concurrent.Task;
-
-public class ProgressBarTest implements PropertyChangeListener {
+public class ProgressBarSwingWorker implements PropertyChangeListener {
 	
 	int min = 0;
 	int max = 10;
@@ -26,13 +22,13 @@ public class ProgressBarTest implements PropertyChangeListener {
 	JButton button;
 	Task task;
 	
-	ProgressBarTest(){
+	ProgressBarSwingWorker(){
 		progressBar = new JProgressBar(min, max);
 		progressBar.setString("Not running");
 		progressBar.setValue(0);
 		progressBar.setStringPainted(true);
 		
-		JFrame frame = new JFrame("Async Progress Bar");
+		JFrame frame = new JFrame("Progress Bar with SwingWorker Task");
 		frame.setLayout(new BorderLayout());
 
 		JPanel panel = new JPanel();
@@ -51,7 +47,7 @@ public class ProgressBarTest implements PropertyChangeListener {
 				button.setEnabled(false);
 		    done = false;
 		    task = new Task();
-		    task.addPropertyChangeListener(ProgressBarTest.this);
+		    task.addPropertyChangeListener(ProgressBarSwingWorker.this);
 		    task.execute();
 			}
 			});
@@ -64,7 +60,7 @@ public class ProgressBarTest implements PropertyChangeListener {
 		sliderPanel.setSize(300, 50);
 		sliderPanel.add(progressBar);
 
-		frame.setSize(300, 300);
+		frame.setSize(500, 300);
 		frame.add(panel, BorderLayout.NORTH);
 		frame.add(sliderPanel, BorderLayout.SOUTH);
 		frame.setLocationRelativeTo(null);
@@ -106,7 +102,7 @@ public class ProgressBarTest implements PropertyChangeListener {
 
 
 	public static void main(String[] args) {
-     new ProgressBarTest();
+     new ProgressBarSwingWorker();
 	}
 
   /**

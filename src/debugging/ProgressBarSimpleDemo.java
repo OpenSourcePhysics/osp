@@ -9,15 +9,18 @@ import java.awt.event.ActionListener;
 
 import javax.swing.*;
 
-public class ProgressSliderTest {
+public class ProgressBarSimpleDemo {
 	
 	int min = 0;
 	int max = 10;
 	int count = 0;  
-	JSlider slider = new JSlider(JSlider.HORIZONTAL, min, max, count);
+	JProgressBar progressBar=new JProgressBar(min, max);;
 	
-	ProgressSliderTest(){
-		JFrame frame = new JFrame("Slider Progress Bar");
+	ProgressBarSimpleDemo(){
+		progressBar.setString("Not running");
+		progressBar.setStringPainted(true);
+		
+		JFrame frame = new JFrame("Progress Bar with Thread");
 		frame.setLayout(new BorderLayout());
 
 		JPanel panel = new JPanel();
@@ -42,7 +45,7 @@ public class ProgressSliderTest {
 		JPanel sliderPanel = new JPanel();
 		sliderPanel.setBackground(Color.GREEN);
 		sliderPanel.setSize(300, 50);
-		sliderPanel.add(slider);
+		sliderPanel.add(progressBar);
 
 		frame.setSize(300, 300);
 		frame.add(panel, BorderLayout.NORTH);
@@ -54,9 +57,10 @@ public class ProgressSliderTest {
 	
 	void count() {
 		count=0;
+		progressBar.setString("Running");
 		System.out.println("\nCounting");
 		longJob();
-		slider.setValue(count);
+		progressBar.setValue(count);
 	}
 	
 	void longJob() {
@@ -70,10 +74,11 @@ public class ProgressSliderTest {
           	System.err.println("Thread interrupted.");
           }
           count++;
-          slider.setValue(count);  // update progress bar
+          progressBar.setValue(count);// update progress bar
 				}
-				slider.setValue(count);
+				progressBar.setValue(count);
 				System.out.println("Done long job.\n");
+				progressBar.setString("Done");
 			} // end of run
 		};
 		
@@ -83,7 +88,7 @@ public class ProgressSliderTest {
 	}
 
 	public static void main(String[] args) {
-     new ProgressSliderTest();
+     new ProgressBarSimpleDemo();
 	}
 
 }
