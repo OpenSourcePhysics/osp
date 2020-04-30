@@ -4,7 +4,6 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
@@ -27,7 +26,7 @@ public class MovieFactory {
 	private static final String ENGINE_JS = "JS"; //$NON-NLS-1$
 	public static final String ENGINE_XUGGLE = "Xuggle"; //$NON-NLS-1$
 
-	private static String xuggleClassPath = "org.opensourcephysics.media.xuggle.";
+	private static String xuggleClassPath = "org.opensourcephysics.media.xuggle."; //$NON-NLS-1$
 
 	private static String movieVideoName;
 
@@ -53,10 +52,13 @@ public class MovieFactory {
 					// mere request does the job
 				}
 			} else {
-				Class.forName(xuggleClassPath + "XuggleVideo");
+				Class.forName(xuggleClassPath + "XuggleVideo"); //$NON-NLS-1$
+				xuggleIsAvailable = Boolean.TRUE;
+				movieVideoName = ENGINE_XUGGLE;
 			}
-		} catch (Throwable e) {
-			OSPLog.config("Xuggle not installed? " + xuggleClassPath + "XuggleVideo not found"); //$NON-NLS-1$
+		} catch (Throwable e) {			
+			OSPLog.config("Xuggle not installed? " + xuggleClassPath + "XuggleVideo not found"); //$NON-NLS-1$ //$NON-NLS-2$
+			movieVideoName = ENGINE_NONE;
 		}
 	}
 
@@ -164,8 +166,7 @@ public class MovieFactory {
 	public static boolean hasVideoEngine() {
 		return (OSPRuntime.isJS ? true
 				: movieVideoName != null ? movieVideoName != ENGINE_NONE
-				: "Xuggle".equals(getVideoProperty("name"))
-				&& ((Double) getVideoProperty("version")).doubleValue() == 3.4);
+				: false);
 	}
 
 	/**
@@ -192,10 +193,15 @@ public class MovieFactory {
 				if (name != null)
 					((PluginVideoI) video).init(name);
 			}
-		} catch (IOException | InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+		} catch (Exception e) {
 			if (name != null) {
 				OSPLog.fine(description + ": " + e.getMessage()); //$NON-NLS-1$
 				e.printStackTrace();
+			}
+		} catch (Error er) {
+			if (name != null) {
+				OSPLog.fine(description + ": " + er.getMessage()); //$NON-NLS-1$
+				er.printStackTrace();
 			}
 		}
 		return video;
