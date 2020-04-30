@@ -39,9 +39,9 @@ import javax.swing.SwingUtilities;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.media.core.AsyncVideoI;
-import org.opensourcephysics.media.core.ClipControl;
 import org.opensourcephysics.media.core.DoubleArray;
 import org.opensourcephysics.media.core.ImageCoordSystem;
+import org.opensourcephysics.media.core.Video;
 import org.opensourcephysics.media.core.VideoAdapter;
 import org.opensourcephysics.media.core.VideoFileFilter;
 import org.opensourcephysics.media.core.VideoIO;
@@ -91,7 +91,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	}
 
 	// array of frame start times in milliseconds
-	private double[] startTimesMillis;
+	private double[] frameTimesMillis;
 	private long systemStartPlayTime;
 	private double frameStartPlayTime;
 	private int frame;
@@ -107,8 +107,8 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		Frame[] frames = Frame.getFrames();
 		for (int i = 0, n = frames.length; i < n; i++) {
 			if (frames[i].getName().equals("Tracker")) { //$NON-NLS-1$
-				addPropertyChangeListener("progress", (PropertyChangeListener) frames[i]); //$NON-NLS-1$
-				addPropertyChangeListener("stalled", (PropertyChangeListener) frames[i]); //$NON-NLS-1$
+				addPropertyChangeListener(PROPERTY_VIDEO_PROGRESS, (PropertyChangeListener) frames[i]); //$NON-NLS-1$
+				addPropertyChangeListener(PROPERTY_VIDEO_STALLED, (PropertyChangeListener) frames[i]); //$NON-NLS-1$
 				break;
 			}
 		}
@@ -171,10 +171,10 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 * @return the start time of the frame in milliseconds, or -1 if not known
 	 */
 	public double getFrameTime(int n) {
-		if ((n >= startTimesMillis.length) || (n < 0)) {
+		if ((n >= frameTimesMillis.length) || (n < 0)) {
 			return -1;
 		}
-		return startTimesMillis[n];
+		return frameTimesMillis[n];
 	}
 
 	/**
@@ -193,8 +193,8 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 */
 	public void setTime(double millis) {
 		millis = Math.abs(millis);
-		for (int i = 0; i < startTimesMillis.length; i++) {
-			double t = startTimesMillis[i];
+		for (int i = 0; i < frameTimesMillis.length; i++) {
+			double t = frameTimesMillis[i];
 			if (millis < t) { // find first frame with later start time
 				setFrameNumber(i - 1);
 				break;
@@ -218,8 +218,8 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 */
 	public void setStartTime(double millis) {
 		millis = Math.abs(millis);
-		for (int i = 0; i < startTimesMillis.length; i++) {
-			double t = startTimesMillis[i];
+		for (int i = 0; i < frameTimesMillis.length; i++) {
+			double t = frameTimesMillis[i];
 			if (millis < t) { // find first frame with later start time
 				setStartFrameNumber(i - 1);
 				break;
@@ -247,8 +247,8 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	public void setEndTime(double millis) {
 		millis = Math.abs(millis);
 		millis = Math.min(getDuration(), millis);
-		for (int i = 0; i < startTimesMillis.length; i++) {
-			double t = startTimesMillis[i];
+		for (int i = 0; i < frameTimesMillis.length; i++) {
+			double t = frameTimesMillis[i];
 			if (millis < t) { // find first frame with later start time
 				setEndFrameNumber(i - 1);
 				break;
@@ -334,14 +334,14 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 * @return the frame number, or -1 if not found
 	 */
 	private int getFrameNumberBefore(double time) {
-		for (int i = 0; i < startTimesMillis.length; i++) {
-			if (time < startTimesMillis[i])
+		for (int i = 0; i < frameTimesMillis.length; i++) {
+			if (time < frameTimesMillis[i])
 				return i - 1;
 		}
 		// if not found, see if specified time falls in last frame
-		int n = startTimesMillis.length - 1;
+		int n = frameTimesMillis.length - 1;
 		// assume last and next-to-last frames have same duration
-		double endTime = 2 * startTimesMillis[n] - startTimesMillis[n - 1];
+		double endTime = 2 * frameTimesMillis[n] - frameTimesMillis[n - 1];
 		if (time < endTime)
 			return n;
 		return -1;
@@ -375,7 +375,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 			// else path is relative to user directory
 			setProperty("path", XML.getRelativePath(fileName)); //$NON-NLS-1$
 		}
-		firePropertyChange("progress", fileName, 0); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_VIDEO_PROGRESS, fileName, 0); //$NON-NLS-1$
 		frame = 0;
 		//failDetectTimer.start();
 		if (state == null)
@@ -404,6 +404,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		
 		static final int STATE_GET_IMAGE_INIT    = 20;
 		static final int STATE_GET_IMAGE_READY   = 22;
+		static final int STATE_GET_IMAGE_READY2  = 23;
 		
 		
 		private StateHelper helper;
@@ -414,7 +415,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				helper.next(StateHelper.UNCHANGED);
+				next(StateHelper.UNCHANGED);
 			}
 			
 		};
@@ -423,9 +424,15 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		private int thisFrame = 0;
 
 		public Runnable whenReady;
+
+		private boolean debugging = false; // voluminous event information
 		
 		State() {
 			helper = new StateHelper(this);
+		}
+
+		protected void next(int stateNext) {
+			helper.delayedState(10, stateNext);		
 		}
 
 		public void load(String path) {
@@ -438,7 +445,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 			thisFrame = n;
 			t = JSMovieVideo.this.getFrameTime(n)/1000.0;
 			//OSPLog.finest("JSMovieVideo.state.getImage " + n + " " + t);
-			helper.next(STATE_GET_IMAGE_INIT);
+			next(STATE_GET_IMAGE_INIT);
 		}
 
 		public void findAllFrames(Runnable r) {
@@ -463,44 +470,57 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		}
 
 		private void setReadyListener() {
-			if (readyListener == null)
-				readyListener = HTML5Video.addActionListener(jsvideo, canplaythrough, "canplaythrough");
+			if (readyListener != null)
+				return;
+			readyListener = HTML5Video.addActionListener(jsvideo, canplaythrough, "canplaythrough", "ended");
+			if (debugging) {
+				HTML5Video.addActionListener(jsvideo, new ActionListener() {
+
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						OSPLog.finest("JSMovieVideo.actionPerformed " + e.getActionCommand());
+					}
+
+				});
+
+			}
 		}
 
 		@Override
 		public boolean stateLoop() {
+			JSMovieVideo v = JSMovieVideo.this;
 			while (helper.isAlive()) {
-				switch (err == null ? helper.getState() : STATE_ERROR) {
+				switch (v.err == null ? helper.getState() : STATE_ERROR) {
 				case STATE_IDLE:
 					return false;
 				case STATE_LOAD_VIDEO_INIT:
-					videoDialog = HTML5Video.createDialog(null, url, 500, new Function<HTML5Video, Void>() {
+					v.videoDialog = HTML5Video.createDialog(null, v.url, 500, new Function<HTML5Video, Void>() {
 
 						@Override
 						public Void apply(HTML5Video video) {
-							jsvideo = video;
-							helper.next(STATE_LOAD_VIDEO_READY);
+							v.jsvideo = video;
+							next(STATE_LOAD_VIDEO_READY);
 							return null;
 						}
 
 					});
 					return true;
 				case STATE_LOAD_VIDEO_READY:
-					videoDialog.setVisible(true);
-					size = HTML5Video.getSize(jsvideo);
-					duration = HTML5Video.getDuration(jsvideo);
-					int n = HTML5Video.getFrameCount(jsvideo);
-					setFrameCount(n);
-					OSPLog.finer("JSMovieVideo " + size + "\n duration:" + duration + " est. frameCount:" + n);
+					v.videoDialog.setVisible(true);
+					v.size = HTML5Video.getSize(v.jsvideo);
+					duration = HTML5Video.getDuration(v.jsvideo);
+					int n = HTML5Video.getFrameCount(v.jsvideo);
+					v.setFrameCount(n);
+					OSPLog.finer("JSMovieVideo " + v.size + "\n duration:" + duration + " est. v.frameCount:" + n);
 					setReadyListener();
-					helper.setState(STATE_GET_IMAGE_READY);
+					findAllFrames(null);
 					continue;
 				case STATE_FIND_FRAMES_INIT:
-					err = null;
+					v.err = null;
 					setReadyListener();
-					duration = HTML5Video.getDuration(jsvideo);
+					duration = HTML5Video.getDuration(v.jsvideo);
 					t = 0.0;
-					dt = (DOMNode.getAttr(jsvideo, "seekToNextFrame") == null ? 0.033334 : 0.0);
+					dt = (DOMNode.getAttr(v.jsvideo, "seekToNextFrame") == null ? 0.033334 : 0.0);
 					seconds = new ArrayList<Double>();
 					helper.setState(STATE_FIND_FRAMES_LOOP);
 					continue;
@@ -515,80 +535,79 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 				case STATE_FIND_FRAMES_READY:
 					if (VideoIO.isCanceled()) {
 						// failDetectTimer.stop();
-						firePropertyChange("progress", fileName, null); //$NON-NLS-1$
+						v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, null); //$NON-NLS-1$
 						// clean up temporary objects
 						dispose();
-						err = "Canceled by user"; //$NON-NLS-1$
+						v.err = "Canceled by user"; //$NON-NLS-1$
 						return false;
 					}
-					t = HTML5Video.getCurrentTime(jsvideo);
+					t = HTML5Video.getCurrentTime(v.jsvideo);
 					// frameTimeStamps.put(frame, Long.valueOf((long) (t * 1000)));
 					seconds.add(Double.valueOf(t));
-					firePropertyChange("progress", fileName, frame); //$NON-NLS-1$
-					frame++;
+					v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, v.frame); //$NON-NLS-1$
+					v.frame++;
 					//OSPLog.finest("JSMovieVideo frame " + frame + " " + t);
 					helper.setState(STATE_FIND_FRAMES_LOOP);
 					continue;
 				case STATE_FIND_FRAMES_DONE:
-					videoDialog.setVisible(false);
+					helper.setState(STATE_IDLE);
+					v.videoDialog.setVisible(false);
 					// clean up temporary objects
 					// throw IOException if no frames were loaded
 					if (seconds.size() == 0) {
-						firePropertyChange("progress", fileName, null); //$NON-NLS-1$
+						v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, null); //$NON-NLS-1$
 						dispose();
-						err = "no frames"; //$NON-NLS-1$
+						v.err = "no frames"; //$NON-NLS-1$
 					}
 
 					// set initial video clip properties
-					setFrameCount(seconds.size());
-					OSPLog.finer("JSMovieVideo " + size + "\n duration:" + duration + " act. frameCount:" + frameCount);
-					startFrameNumber = 0;
-					endFrameNumber = frameCount - 1;
+					v.setFrameCount(seconds.size());
+					OSPLog.finer("JSMovieVideo " + v.size + "\n duration:" + duration + " act. frameCount:" + v.frameCount);
+					v.startFrameNumber = 0;
+					v.endFrameNumber = v.frameCount - 1;
 					// create startTimes array
-					startTimesMillis = new double[frameCount];
-					startTimesMillis[0] = 0;
-					for (int i = 1; i < startTimesMillis.length; i++) {
-						startTimesMillis[i] = seconds.get(i).doubleValue()*1000;
+					v.frameTimesMillis = new double[v.frameCount];
+					for (int i = 1; i < v.frameTimesMillis.length; i++) {
+						v.frameTimesMillis[i] = seconds.get(i).doubleValue()*1000;
 					}
 					seconds = null;
 
-					firePropertyChange("progress", fileName, null); //$NON-NLS-1$
-					firePropertyChange(AsyncVideoI.PROPERTY_VIDEO_ASYNC_READY, null, Integer.valueOf(frameCount));
+					v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, null); //$NON-NLS-1$ // to TFrame
+					thisFrame = -1;
+					v.setFrameNumber(0);
 					// failDetectTimer.stop();
 //					if (img == null) {
 //						dispose();
 //						throw new IOException("No images"); //$NON-NLS-1$
 //					}
 //					setImage(img);
-					helper.setState(STATE_IDLE);
 					continue;
 				case STATE_GET_IMAGE_INIT:
 					helper.setState(STATE_GET_IMAGE_READY);
 					setReadyListener();
-					HTML5Video.setCurrentTime(jsvideo, t);
+					HTML5Video.setCurrentTime(v.jsvideo, t);
 					return true;
 				case STATE_GET_IMAGE_READY:
-					BufferedImage bi = HTML5Video.getImage(jsvideo);
+					BufferedImage bi = HTML5Video.getImage(v.jsvideo);
 					if (bi != null) {
-						isValidImage = false;
-						isValidFilteredImage = false;
-						if (rawImage == null) {
-							setImage(bi);
-							findAllFrames(null);
-						} else {
-							rawImage = bi;
-							firePropertyChange(ClipControl.PROPERTY_VIDEO_FRAMENUMBER, null, new Integer(thisFrame)); //$NON-NLS-1$
-							firePropertyChange(AsyncVideoI.PROPERTY_VIDEO_IMAGE_READY, null, bi); //$NON-NLS-1$
-							if (isPlaying()) {
+						v.isValidImage = false;
+						v.isValidFilteredImage = false;
+						if (v.rawImage == null) {
+							v.rawImage = bi;
+							v.firePropertyChange(PROPERTY_VIDEO_ASYNC_READY, null, Integer.valueOf(v.frameCount));
+							return true;
+						}
+							v.rawImage = bi;
+							v.firePropertyChange(Video.PROPERTY_VIDEO_FRAMENUMBER, null, new Integer(thisFrame)); //$NON-NLS-1$
+							v.firePropertyChange(AsyncVideoI.PROPERTY_VIDEO_IMAGE_READY, null, bi); //$NON-NLS-1$
+							if (v.isPlaying()) {
 								Runnable runner = new Runnable() {
-									public void run() {
-										continuePlaying();
-									}
+								public void run() {
+									v.continuePlaying();
+								}
 								};
 								SwingUtilities.invokeLater(runner);
 							}
-
-						}
 					}
 					return false;
 				///////////////////////////////////////

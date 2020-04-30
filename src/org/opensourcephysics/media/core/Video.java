@@ -41,6 +41,23 @@ import java.beans.PropertyChangeListener;
  * @version 1.0
  */
 public interface Video extends InteractiveImage, Playable, Trackable, PropertyChangeListener {
+	
+	public static final String PROPERTY_VIDEO_SIZE = "size";//$NON-NLS-1$
+	public final static String PROPERTY_VIDEO_FRAMENUMBER = "framenumber"; //$NON-NLS-1$
+	public final static String PROPERTY_VIDEO_STARTFRAME = "startframe";//$NON-NLS-1$
+	public final static String PROPERTY_VIDEO_NEXTFRAME = "nextframe";//$NON-NLS-1$
+	public final static String PROPERTY_VIDEO_ENDFRAME = "endframe";//$NON-NLS-1$
+	public final static String PROPERTY_VIDEO_COORDS = "coords";//$NON-NLS-1$
+	
+
+	public final static String PROPERTY_VIDEO_LOOPING = "looping"; //$NON-NLS-1$
+	public final static String PROPERTY_VIDEO_PLAYING = "playing"; //$NON-NLS-1$
+	public final static String PROPERTY_VIDEO_RATE = "rate"; //$NON-NLS-1$
+
+	public static final String PROPERTY_VIDEO_IMAGE = "image"; //$NON-NLS-1$
+	public static final String PROPERTY_VIDEO_VIDEOVISIBLE = "videoVisible";//$NON-NLS-1$
+	public static final String PROPERTY_VIDEO_FILTERCHANGED = "filterChanged"; //$NON-NLS-1$
+
 	/**
 	 * Steps forward in the video.
 	 */

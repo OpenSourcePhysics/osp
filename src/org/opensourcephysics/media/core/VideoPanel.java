@@ -119,17 +119,17 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
     setName("VideoPanel");
     setSquareAspect(true);
     player = new VideoPlayer(this);
-    player.addPropertyChangeListener("videoclip", this);     //$NON-NLS-1$
-    player.addPropertyChangeListener(ClipControl.PROPERTY_VIDEO_STEPNUMBER, this);    //$NON-NLS-1$
-    player.addPropertyChangeListener("frameduration", this); //$NON-NLS-1$
+    player.addPropertyChangeListener(VideoPlayer.PROPERTY_VIDEOPLAYER_VIDEOCLIP, this);     //$NON-NLS-1$
+    player.addPropertyChangeListener(VideoPlayer.PROPERTY_VIDEO_STEPNUMBER, this);    //$NON-NLS-1$
+    player.addPropertyChangeListener(VideoPlayer.PROPERTY_VIDEO_FRAMEDURATION, this); //$NON-NLS-1$
     add(player, BorderLayout.SOUTH);
     VideoClip clip = player.getVideoClip();
-    clip.addPropertyChangeListener("startframe", this); //$NON-NLS-1$
-    clip.addPropertyChangeListener("stepsize", this);   //$NON-NLS-1$
-    clip.addPropertyChangeListener("stepcount", this);  //$NON-NLS-1$
-    clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEO_FRAMECOUNT, this);  //$NON-NLS-1$
-    clip.addPropertyChangeListener("starttime", this);  //$NON-NLS-1$
-    clip.addPropertyChangeListener("adjusting", this);          //$NON-NLS-1$
+    clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STARTFRAME, this); //$NON-NLS-1$
+    clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STEPSIZE, this);   //$NON-NLS-1$
+    clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STEPCOUNT, this);  //$NON-NLS-1$
+    clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_FRAMECOUNT, this);  //$NON-NLS-1$
+    clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STARTTIME, this);  //$NON-NLS-1$
+    clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_ADJUSTING, this);          //$NON-NLS-1$
     // define mousePanel and messagePanel
     mousePanel = blMessageBox;
     messagePanel = brMessageBox;
@@ -563,11 +563,6 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
     }
   }
 
-  
-  public void repaint() {
-	  System.out.println("VideoPanel.repaint");
-	  super.repaint();
-  }
 
 	/**
 	 * Responds to property change events. VideoPanel listens for the following
@@ -579,17 +574,17 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	public void propertyChange(PropertyChangeEvent e) {
 		String name = e.getPropertyName();
 		switch (name) {
-		case "size": // from Video //$NON-NLS-1$
+		case Video.PROPERTY_VIDEO_SIZE:
 			Dimension dim = (Dimension) e.getNewValue();
 			setImageWidth(dim.width);
 			setImageHeight(dim.height);
 			break;
-		case "coords": // from Video //$NON-NLS-1$
+		case Video.PROPERTY_VIDEO_COORDS: 
 			// replace current coords with video's new coords
 			coords = video.getCoords();
 			break;
-		case "image": //$NON-NLS-1$
-		case "videoVisible": // from Video //$NON-NLS-1$
+		case Video.PROPERTY_VIDEO_IMAGE:
+		case Video.PROPERTY_VIDEO_VIDEOVISIBLE: 
 		case AsyncVideoI.PROPERTY_VIDEO_IMAGE_READY:
 			repaint();
 			break;
@@ -602,40 +597,40 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		case ClipControl.PROPERTY_VIDEO_STEPNUMBER: // from VideoPlayer //$NON-NLS-1$
 			repaint();
 			break;
-		case "videoclip": // from VideoPlayer //$NON-NLS-1$
+		case VideoPlayer.PROPERTY_VIDEOPLAYER_VIDEOCLIP: // from VideoPlayer //$NON-NLS-1$
 			// update property change listeners
 			VideoClip oldClip = (VideoClip) e.getOldValue();
-			oldClip.removePropertyChangeListener("startframe", this); //$NON-NLS-1$
-			oldClip.removePropertyChangeListener("stepsize", this); //$NON-NLS-1$
-			oldClip.removePropertyChangeListener("stepcount", this); //$NON-NLS-1$
-			oldClip.removePropertyChangeListener(VideoClip.PROPERTY_VIDEO_FRAMECOUNT, this); // $NON-NLS-1$
-			oldClip.removePropertyChangeListener("starttime", this); //$NON-NLS-1$
-			oldClip.removePropertyChangeListener("adjusting", this); //$NON-NLS-1$
-//      oldClip.removePropertyChangeListener("frameshift", this);          //$NON-NLS-1$
+			oldClip.removePropertyChangeListener(Video.PROPERTY_VIDEO_STARTFRAME, this); 
+			oldClip.removePropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STEPSIZE, this); 
+			oldClip.removePropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STEPCOUNT, this); 
+			oldClip.removePropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_FRAMECOUNT, this); 
+			oldClip.removePropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STARTTIME, this); 
+			oldClip.removePropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_ADJUSTING, this); 
+//      oldClip.removePropertyChangeListener("frameshift", this);          
 			VideoClip clip = (VideoClip) e.getNewValue();
-			clip.addPropertyChangeListener("startframe", this); //$NON-NLS-1$
-			clip.addPropertyChangeListener("stepsize", this); //$NON-NLS-1$
-			clip.addPropertyChangeListener("stepcount", this); //$NON-NLS-1$
-			clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEO_FRAMECOUNT, this); // $NON-NLS-1$
-			clip.addPropertyChangeListener("starttime", this); //$NON-NLS-1$
-			clip.addPropertyChangeListener("adjusting", this); //$NON-NLS-1$
-//      clip.addPropertyChangeListener("frameshift", this);          //$NON-NLS-1$
+			clip.addPropertyChangeListener(Video.PROPERTY_VIDEO_STARTFRAME, this); 
+			clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STEPSIZE, this); 
+			clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STEPCOUNT, this); 
+			clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_FRAMECOUNT, this); 
+			clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STARTTIME, this); 
+			clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_ADJUSTING, this); 
+//      clip.addPropertyChangeListener("frameshift", this);          
 			// replace current video with new clip's video
 			if (video != null) {
-				video.removePropertyChangeListener("coords", this); //$NON-NLS-1$
-				video.removePropertyChangeListener("image", this); //$NON-NLS-1$
-				video.removePropertyChangeListener("filterChanged", this); //$NON-NLS-1$
-				video.removePropertyChangeListener("videoVisible", this); //$NON-NLS-1$
-				video.removePropertyChangeListener("size", this); //$NON-NLS-1$
+				video.removePropertyChangeListener(Video.PROPERTY_VIDEO_COORDS, this);
+				video.removePropertyChangeListener(Video.PROPERTY_VIDEO_IMAGE, this); 
+				video.removePropertyChangeListener(Video.PROPERTY_VIDEO_FILTERCHANGED, this);
+				video.removePropertyChangeListener(Video.PROPERTY_VIDEO_VIDEOVISIBLE, this); 
+				video.removePropertyChangeListener(Video.PROPERTY_VIDEO_SIZE, this); 
 				super.removeDrawable(video);
 			}
 			video = clip.getVideo();
 			if (video != null) {
-				video.addPropertyChangeListener("coords", this); //$NON-NLS-1$
-				video.addPropertyChangeListener("image", this); //$NON-NLS-1$
-				video.addPropertyChangeListener("filterChanged", this); //$NON-NLS-1$
-				video.addPropertyChangeListener("videoVisible", this); //$NON-NLS-1$
-				video.addPropertyChangeListener("size", this); //$NON-NLS-1$
+				video.addPropertyChangeListener(Video.PROPERTY_VIDEO_COORDS, this); 
+				video.addPropertyChangeListener(Video.PROPERTY_VIDEO_IMAGE, this); 
+				video.addPropertyChangeListener(Video.PROPERTY_VIDEO_FILTERCHANGED, this); 
+				video.addPropertyChangeListener(Video.PROPERTY_VIDEO_VIDEOVISIBLE, this); 
+				video.addPropertyChangeListener(Video.PROPERTY_VIDEO_SIZE, this); 
 				// synchronize coords
 				if (video.isMeasured()) {
 					coords = video.getCoords();

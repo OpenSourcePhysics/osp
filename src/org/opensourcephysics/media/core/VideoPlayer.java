@@ -109,7 +109,13 @@ import org.opensourcephysics.tools.ResourceLoader;
 @SuppressWarnings("serial")
 public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	
-	// static fields
+	public static final String PROPERTY_VIDEOPLAYER_VIDEOCLIP = "videoclip"; //$NON-NLS-1$
+
+	public static final String PROPERTY_VIDEO_STEPNUMBER = "stepnumber"; //$NON-NLS-1$
+
+	public static final String PROPERTY_VIDEO_FRAMEDURATION = "frameduration"; //$NON-NLS-1$
+	
+// static fields
   protected static Icon inOutIcon, playIcon, grayPlayIcon, pauseIcon;
   protected static Icon resetIcon, loopIcon, noloopIcon, videoClipIcon;
   protected static Icon stepIcon, grayStepIcon, backIcon, grayBackIcon;
@@ -263,7 +269,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
       updateLoopButton(clipControl.isLooping());
       updateReadout();
       updateSlider();
-      firePropertyChange("videoclip", oldClip, clip); //$NON-NLS-1$
+      firePropertyChange(PROPERTY_VIDEOPLAYER_VIDEOCLIP, oldClip, clip); //$NON-NLS-1$
       System.gc();
     }
   }
@@ -545,48 +551,59 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     	SwingUtilities.invokeLater(runner);
   }
 
-  /**
-   * Responds to property change events. VideoPlayer listens for the
-   * following events: "playing", "stepnumber". "frameduration" and "looping"
-   * from ClipControl, and "startframe", "stepsize", "stepcount" and "starttime"
-   * from VideoClip.
-   *
-   * @param e the property change event
-   */
-  public void propertyChange(PropertyChangeEvent e) {
-    String name = e.getPropertyName();
-    if(name.equals(ClipControl.PROPERTY_VIDEO_STEPNUMBER)) {                               // from ClipControl //$NON-NLS-1$
-      updateReadout();
-      updatePlayButtons(clipControl.isPlaying());
-      firePropertyChange(ClipControl.PROPERTY_VIDEO_STEPNUMBER, null, e.getNewValue());    // to VideoPanel //$NON-NLS-1$
-    } else if(name.equals("frameduration")) {                     // from ClipControl //$NON-NLS-1$
-      updateReadout();
-      firePropertyChange("frameduration", null, e.getNewValue()); // to VideoPanel //$NON-NLS-1$
-    } else if(name.equals("playing")) {                           // from ClipControl //$NON-NLS-1$
-      boolean playing = ((Boolean) e.getNewValue()).booleanValue();
-      updatePlayButtons(playing);
-      firePropertyChange("playing", null, e.getNewValue());    // to VideoPanel //$NON-NLS-1$      
-    } else if(name.equals("looping")) {                           // from ClipControl //$NON-NLS-1$
-      boolean looping = ((Boolean) e.getNewValue()).booleanValue();
-      updateLoopButton(looping);
-    } else if(name.equals("rate")) {                              // from ClipControl //$NON-NLS-1$
-      rateSpinner.setValue(new Double(getRate()));
-    } else if(name.equals("stepcount")) {                         // from VideoClip //$NON-NLS-1$
-      updatePlayButtons(clipControl.isPlaying());
-      updateReadout();
-      updateSlider();
-    } else if(name.equals(VideoClip.PROPERTY_VIDEO_FRAMECOUNT)) {                         // from VideoClip //$NON-NLS-1$
-      updateSlider();
-    } else if(name.equals("stepsize")) {                          // from VideoClip //$NON-NLS-1$
-      updateReadout();
-      updateSlider();
-    } else if(name.equals("startframe")) {                        // from VideoClip //$NON-NLS-1$
-    	updateReadout();
-      updateSlider();
-    } else if(name.equals("starttime")) {                         // from VideoClip //$NON-NLS-1$
-      updateReadout();
-    }
-  }
+	/**
+	 * Responds to property change events. VideoPlayer listens for the following
+	 * events: "playing", "stepnumber", "frameduration", and "looping" from
+	 * ClipControl, and "startframe", "stepsize", "stepcount" and "starttime" from
+	 * VideoClip.
+	 *
+	 * @param e the property change event
+	 */
+	public void propertyChange(PropertyChangeEvent e) {
+		switch (e.getPropertyName()) {
+		case ClipControl.PROPERTY_VIDEO_STEPNUMBER:
+			updateReadout();
+			updatePlayButtons(clipControl.isPlaying());
+			firePropertyChange(PROPERTY_VIDEO_STEPNUMBER, null, e.getNewValue()); 
+			// to VideoPanel
+			break;
+		case ClipControl.PROPERTY_VIDEO_FRAMEDURATION:
+			updateReadout();
+			firePropertyChange(PROPERTY_VIDEO_FRAMEDURATION, null, e.getNewValue()); 
+			// to VideoPanel //$NON-NLS-1$
+			break;
+		case ClipControl.PROPERTY_VIDEO_LOOPING:
+			boolean looping = ((Boolean) e.getNewValue()).booleanValue();
+			updateLoopButton(looping);
+			break;
+		case ClipControl.PROPERTY_VIDEO_PLAYING:
+			boolean playing = ((Boolean) e.getNewValue()).booleanValue();
+			updatePlayButtons(playing);
+			firePropertyChange(ClipControl.PROPERTY_VIDEO_PLAYING, null, e.getNewValue()); // to VideoPanel 
+			break;
+		case ClipControl.PROPERTY_VIDEO_RATE: // from ClipControl 
+			rateSpinner.setValue(new Double(getRate()));
+			break;
+		case VideoClip.PROPERTY_VIDEOCLIP_STEPCOUNT: // from VideoClip
+			updatePlayButtons(clipControl.isPlaying());
+			updateReadout();
+			updateSlider();
+			break;
+		case VideoClip.PROPERTY_VIDEOCLIP_FRAMECOUNT: // from VideoClip 
+			updateSlider();
+			break;
+		case VideoClip.PROPERTY_VIDEOCLIP_STEPSIZE: // from VideoClip
+			updateReadout();
+			updateSlider();
+			break;
+		case VideoClip.PROPERTY_VIDEOCLIP_STARTFRAME: // from VideoClip 
+			updateReadout();
+			updateSlider();
+			break;
+		case VideoClip.PROPERTY_VIDEOCLIP_STARTTIME: // from VideoClip 
+			updateReadout();
+		}
+	}
  /**
    * Refreshes the GUI.
    */

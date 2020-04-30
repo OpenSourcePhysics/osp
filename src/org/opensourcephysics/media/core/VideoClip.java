@@ -34,11 +34,9 @@ import java.awt.Frame;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.event.SwingPropertyChangeSupport;
 
@@ -47,8 +45,6 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.core.VideoIO.VideoEnginePanel;
-import org.opensourcephysics.media.mov.MovieFactory;
-import org.opensourcephysics.media.mov.MovieVideoI;
 import org.opensourcephysics.tools.ResourceLoader;
 
 /**
@@ -59,11 +55,18 @@ import org.opensourcephysics.tools.ResourceLoader;
  */
 public class VideoClip {
 
-	
-	public final static String PROPERTY_VIDEO_FRAMECOUNT = "framecount";
+	public final static String PROPERTY_VIDEOCLIP_STARTFRAME = "startframe";//$NON-NLS-1$
 
+	public final static String PROPERTY_VIDEOCLIP_FRAMECOUNT = "framecount";//$NON-NLS-1$
 
-	
+	public static final String PROPERTY_VIDEOCLIP_STEPSIZE = "stepsize";//$NON-NLS-1$
+
+	public static final String PROPERTY_VIDEOCLIP_STEPCOUNT = "stepcount";//$NON-NLS-1$
+
+	public static final String PROPERTY_VIDEOCLIP_STARTTIME = "starttime";//$NON-NLS-1$
+
+	public static final String PROPERTY_VIDEOCLIP_ADJUSTING = "adjusting";//$NON-NLS-1$
+
 	// instance fields
 	public boolean changeEngine; // signals that user wishes to change preferred video engine
 
@@ -174,7 +177,7 @@ public class VideoClip {
     
     if(prevStart!=start) {
 	  	isDefaultState = false;
-    	support.firePropertyChange("startframe", null, Integer.valueOf(start)); //$NON-NLS-1$
+    	support.firePropertyChange(PROPERTY_VIDEOCLIP_STARTFRAME, null, Integer.valueOf(start)); //$NON-NLS-1$
     }
     return prevStart!=start;
   }
@@ -214,7 +217,7 @@ public class VideoClip {
     // set stepCount to near value
     stepCount = 1+(endFrame-getStartFrameNumber())/stepSize;
     updateArray();
-    support.firePropertyChange("stepsize", null, Integer.valueOf(size)); //$NON-NLS-1$
+    support.firePropertyChange(PROPERTY_VIDEOCLIP_STEPSIZE, null, Integer.valueOf(size)); //$NON-NLS-1$
     
     // reset end frame
     setEndFrameNumber(endFrame);
@@ -263,7 +266,7 @@ public class VideoClip {
     Integer prev = Integer.valueOf(stepCount);
     stepCount = count;
     updateArray();
-    support.firePropertyChange("stepcount", prev, Integer.valueOf(stepCount)); //$NON-NLS-1$
+    support.firePropertyChange(PROPERTY_VIDEOCLIP_STEPCOUNT, prev, Integer.valueOf(stepCount)); //$NON-NLS-1$
   }
 
   /**
@@ -369,7 +372,7 @@ public class VideoClip {
     }
     isDefaultStartTime = Double.isNaN(t0);
     startTime = Double.isNaN(t0) ? 0.0 : t0;
-    support.firePropertyChange("starttime", null, new Double(startTime)); //$NON-NLS-1$
+    support.firePropertyChange(PROPERTY_VIDEOCLIP_STARTTIME, null, new Double(startTime)); //$NON-NLS-1$
   }
 
   /**
@@ -538,7 +541,7 @@ public class VideoClip {
   	if (isAdjusting==adjusting)
   		return;
   	isAdjusting = adjusting;
-		support.firePropertyChange("adjusting", null, adjusting); //$NON-NLS-1$
+		support.firePropertyChange(PROPERTY_VIDEOCLIP_ADJUSTING, null, adjusting); //$NON-NLS-1$
   }
 
   /**
@@ -612,7 +615,7 @@ public class VideoClip {
 	protected void trimFrameCount() {
 		if (video == null || video.getFrameCount() == 1) {
 			nullVideoFrameCount = getEndFrameNumber() + 1;
-			support.firePropertyChange(VideoClip.PROPERTY_VIDEO_FRAMECOUNT, null, Integer.valueOf(nullVideoFrameCount)); //$NON-NLS-1$
+			support.firePropertyChange(VideoClip.PROPERTY_VIDEOCLIP_FRAMECOUNT, null, Integer.valueOf(nullVideoFrameCount)); //$NON-NLS-1$
 		}
 	}
   

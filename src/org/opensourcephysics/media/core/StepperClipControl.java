@@ -62,7 +62,6 @@ public class StepperClipControl extends ClipControl {
     super(videoClip);
     videoClip.addPropertyChangeListener(this);
     if(video!=null) {
-      video.addPropertyChangeListener(this);
       if(video.getFrameCount()>1 && video.getDuration()>0) {
         double ti = video.getFrameTime(video.getStartFrameNumber());
         double tf = video.getFrameTime(video.getEndFrameNumber());
@@ -101,7 +100,7 @@ public class StepperClipControl extends ClipControl {
     } else {
       step();
     }
-    support.firePropertyChange("playing", null, Boolean.TRUE); //$NON-NLS-1$
+    support.firePropertyChange(ClipControl.PROPERTY_VIDEO_PLAYING, null, Boolean.TRUE); //$NON-NLS-1$
   }
 
   /**
@@ -212,7 +211,7 @@ public class StepperClipControl extends ClipControl {
 //	    delay = Math.max(delay, minDelay);
 	    timer.setInitialDelay(getTimerDelay());
 //    }
-    support.firePropertyChange("rate", null, new Double(rate)); //$NON-NLS-1$
+    support.firePropertyChange(ClipControl.PROPERTY_VIDEO_RATE, null, new Double(rate)); //$NON-NLS-1$
   }
 
   /**
@@ -261,7 +260,7 @@ public class StepperClipControl extends ClipControl {
 	    frameDuration = duration;
 	    timer.setInitialDelay(getTimerDelay());
     }
-    support.firePropertyChange("frameduration", null, new Double(duration)); //$NON-NLS-1$
+    support.firePropertyChange(ClipControl.PROPERTY_VIDEO_FRAMEDURATION, null, new Double(duration)); //$NON-NLS-1$
   }
 
   /**
@@ -274,7 +273,7 @@ public class StepperClipControl extends ClipControl {
       return;
     }
     looping = loops;
-    support.firePropertyChange("looping", null, new Boolean(loops)); //$NON-NLS-1$
+    support.firePropertyChange(ClipControl.PROPERTY_VIDEO_LOOPING, null, new Boolean(loops)); //$NON-NLS-1$
   }
 
   /**
@@ -334,7 +333,7 @@ public class StepperClipControl extends ClipControl {
     if(name.equals("stepsize")) {    								// from video clip //$NON-NLS-1$
       timer.setInitialDelay(getTimerDelay());
     } 
-    else if(name.equals(ClipControl.PROPERTY_VIDEO_FRAMENUMBER)) {           // from video //$NON-NLS-1$
+    else if(name.equals(Video.PROPERTY_VIDEO_FRAMENUMBER)) {           // from video //$NON-NLS-1$
     	int n = ((Integer) e.getNewValue()).intValue();
       stepDisplayed = true;
       if(n!=videoFrameNumber) {

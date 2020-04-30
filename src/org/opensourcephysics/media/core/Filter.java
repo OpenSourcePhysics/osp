@@ -62,7 +62,9 @@ import org.opensourcephysics.tools.DataTool;
  */
 public abstract class Filter {
 	
-  // instance fields
+  public static final String PROPERTY_VISIBLE = "visible";
+
+// instance fields
   /** true if the filter inspector is visible */
   public boolean inspectorVisible;
 

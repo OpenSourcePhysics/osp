@@ -49,7 +49,6 @@ public class VideoClipControl extends ClipControl {
    */
   protected VideoClipControl(VideoClip videoClip) {
     super(videoClip);
-    video.addPropertyChangeListener(this);
   }
 
   /**
@@ -212,7 +211,7 @@ public class VideoClipControl extends ClipControl {
     if(count!=0) {
       timeStretch = duration*count/(tf-ti);
     }
-    support.firePropertyChange("frameduration", null, new Double(duration)); //$NON-NLS-1$
+    support.firePropertyChange(ClipControl.PROPERTY_VIDEO_FRAMEDURATION, null, new Double(duration)); //$NON-NLS-1$
   }
 
   /**
@@ -230,37 +229,31 @@ public class VideoClipControl extends ClipControl {
     return timeStretch*video.getDuration()/video.getFrameCount();
   }
 
-  /**
-   * Responds to property change events. VideoClipControl listens for the
-   * following events: "playing", "looping", "rate" and "framenumber" from Video.
-   *
-   * @param e the property change event
-   */
-  public void propertyChange(PropertyChangeEvent e) {
-    String name = e.getPropertyName();
-    if(name.equals(ClipControl.PROPERTY_VIDEO_FRAMENUMBER)) {                        // from Video //$NON-NLS-1$
-      int n = ((Integer) e.getNewValue()).intValue();
-      if(n==videoFrameNumber) {
-        super.setFrameNumber(n-clip.getFrameShift());
-        return;
-      }
-      super.setFrameNumber(n-clip.getFrameShift());
-      Integer nInt = Integer.valueOf(stepNumber);
-      support.firePropertyChange(ClipControl.PROPERTY_VIDEO_STEPNUMBER, null, nInt); // to VideoPlayer //$NON-NLS-1$
-    } 
-    else if(name.equals("playing")) {                     // from Video //$NON-NLS-1$
-//      boolean playing = ((Boolean) e.getNewValue()).booleanValue();
-//      if(!playing) {
-//        setStepNumber(stepNumber+1);
-//      }
-      support.firePropertyChange(e);                        // to VideoPlayer
-    } 
-    else if(name.equals("rate")                           // from Video //$NON-NLS-1$
-           || name.equals("looping")) {                     // from Video //$NON-NLS-1$
-      support.firePropertyChange(e);                        // to VideoPlayer
-    }
-    else super.propertyChange(e);
-  }
+	/**
+	 * Responds to property change events. VideoClipControl listens for the
+	 * following events: "playing", "looping", "rate" and "framenumber" from Video.
+	 *
+	 * @param e the property change event
+	 */
+	public void propertyChange(PropertyChangeEvent e) {
+		switch (e.getPropertyName()) {
+		case Video.PROPERTY_VIDEO_FRAMENUMBER:
+			int n = ((Integer) e.getNewValue()).intValue();
+			boolean changed = (n != videoFrameNumber);
+			super.setFrameNumber(n - clip.getFrameShift());
+			if (changed)
+				support.firePropertyChange(ClipControl.PROPERTY_VIDEO_STEPNUMBER, null, stepNumber); // to VideoPlayer
+			break;
+		case Video.PROPERTY_VIDEO_RATE: 
+		case Video.PROPERTY_VIDEO_PLAYING:
+		case Video.PROPERTY_VIDEO_LOOPING:
+			support.firePropertyChange(e); // to VideoPlayer
+			break;
+		default:
+			super.propertyChange(e);
+			break;
+		}
+	}
 
   /**
    * Removes this listener from the video so it can be garbage collected.

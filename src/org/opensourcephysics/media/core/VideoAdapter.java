@@ -30,7 +30,6 @@
  * please see <http://www.opensourcephysics.org/>.
  */
 package org.opensourcephysics.media.core;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -39,7 +38,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
-import java.awt.image.Raster;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -57,7 +55,6 @@ import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.Interactive;
 import org.opensourcephysics.display.OSPRuntime;
 
-import sun.awt.image.IntegerInterleavedRaster;
 import swingjs.api.JSUtilI;
 
 /**
@@ -68,7 +65,7 @@ import swingjs.api.JSUtilI;
  * @version 1.0
  */
 public abstract class VideoAdapter implements Video {
-  // instance fields
+// instance fields
   protected Image rawImage;              // raw image from video source
   protected Dimension size;              // image pixel dimensions
   protected BufferedImage bufferedImage; // offscreen buffered image copy
@@ -94,8 +91,7 @@ public abstract class VideoAdapter implements Video {
   protected HashMap<String, Object> properties = new HashMap<String, Object>();
   protected FilterStack filterStack = new FilterStack();
   protected DataBufferInt clearRaster;
-
-  /**
+/**
    * Protected constructor creates an empty VideoAdapter
    */
   protected VideoAdapter() {
@@ -155,7 +151,7 @@ public abstract class VideoAdapter implements Video {
    */
   public void setVisible(boolean visible) {
     this.visible = visible;
-    firePropertyChange("videoVisible", null, new Boolean(visible)); //$NON-NLS-1$
+    firePropertyChange(PROPERTY_VIDEO_VIDEOVISIBLE, null, new Boolean(visible)); //$NON-NLS-1$
   }
 
   /**
@@ -605,7 +601,7 @@ public abstract class VideoAdapter implements Video {
     }
     n = Math.min(n, endFrameNumber);
     n = Math.max(n, startFrameNumber);
-    firePropertyChange("nextframe", null, n); //$NON-NLS-1$
+    firePropertyChange(PROPERTY_VIDEO_NEXTFRAME, null, n); //$NON-NLS-1$
     frameNumber = n;
   }
 
@@ -631,8 +627,9 @@ public abstract class VideoAdapter implements Video {
     }
     n = Math.max(0, n);
     startFrameNumber = Math.min(endFrameNumber, n);
-    firePropertyChange("startframe", null, Integer.valueOf(startFrameNumber)); //$NON-NLS-1$
+    firePropertyChange(PROPERTY_VIDEO_STARTFRAME, null, Integer.valueOf(startFrameNumber)); //$NON-NLS-1$
   }
+  
 
   /**
    * Gets the end frame number.
@@ -658,7 +655,7 @@ public abstract class VideoAdapter implements Video {
       n = Math.min(frameCount-1, n);
     }
     endFrameNumber = Math.max(startFrameNumber, n);
-    firePropertyChange("endframe", null, Integer.valueOf(endFrameNumber)); //$NON-NLS-1$
+    firePropertyChange(PROPERTY_VIDEO_ENDFRAME, null, Integer.valueOf(endFrameNumber)); //$NON-NLS-1$
   }
 
   /**
@@ -825,7 +822,7 @@ public abstract class VideoAdapter implements Video {
       return;
     }
     looping = loops;
-    firePropertyChange("looping", null, new Boolean(looping)); //$NON-NLS-1$
+    firePropertyChange(PROPERTY_VIDEO_LOOPING, null, new Boolean(looping)); //$NON-NLS-1$
   }
 
   /**
@@ -879,7 +876,7 @@ public abstract class VideoAdapter implements Video {
 		coords = newCoords;
 		isMeasured = true;
 		isValidMeasure = false;
-		firePropertyChange("coords", null, newCoords); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_VIDEO_COORDS, null, newCoords); //$NON-NLS-1$
 	}
 
   /**

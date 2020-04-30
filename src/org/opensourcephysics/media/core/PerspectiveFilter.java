@@ -226,8 +226,8 @@ public class PerspectiveFilter extends Filter {
   	if (vidPanel!=null && vidPanel.getVideo()!=null) {
     	vidPanel.removePropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 	  	Video video = vidPanel.getVideo();
-	  	video.removePropertyChangeListener("nextframe", videoListener); //$NON-NLS-1$
-    	removePropertyChangeListener("visible", vidPanel); //$NON-NLS-1$
+	  	video.removePropertyChangeListener(Video.PROPERTY_VIDEO_NEXTFRAME, videoListener); //$NON-NLS-1$
+    	removePropertyChangeListener(Filter.PROPERTY_VISIBLE, vidPanel); //$NON-NLS-1$
   	}
   	source = input = output = null;
   	pixelsOut = null;
@@ -245,15 +245,15 @@ public class PerspectiveFilter extends Filter {
   	if (vidPanel!=null) {
 	  	// filter added
 	  	Video video = vidPanel.getVideo();
-	  	video.removePropertyChangeListener("nextframe", videoListener); //$NON-NLS-1$
-	  	video.addPropertyChangeListener("nextframe", videoListener); //$NON-NLS-1$
+	  	video.removePropertyChangeListener(Video.PROPERTY_VIDEO_NEXTFRAME, videoListener); //$NON-NLS-1$
+	  	video.addPropertyChangeListener(Video.PROPERTY_VIDEO_NEXTFRAME, videoListener); //$NON-NLS-1$
 	  	vidPanel.propertyChange(new PropertyChangeEvent(this, "perspective", null, this)); //$NON-NLS-1$
   	}
   	else if (prevPanel!=null) {
   		// filter removed
   		prevPanel.removeDrawable(quad);
 	  	Video video = prevPanel.getVideo();
-	  	video.removePropertyChangeListener("nextframe", videoListener); //$NON-NLS-1$
+	  	video.removePropertyChangeListener(Video.PROPERTY_VIDEO_NEXTFRAME, videoListener); //$NON-NLS-1$
 	  	prevPanel.propertyChange(new PropertyChangeEvent(this, "perspective", this, null)); //$NON-NLS-1$
   	}
   }
@@ -882,15 +882,15 @@ public class PerspectiveFilter extends Filter {
     	if (vidPanel!=null) {
 	    	if (vis) {
 	    		vidPanel.addDrawable(quad);
-		      support.firePropertyChange("visible", null, null); //$NON-NLS-1$
-	      	PerspectiveFilter.this.removePropertyChangeListener("visible", vidPanel); //$NON-NLS-1$
-	      	PerspectiveFilter.this.addPropertyChangeListener("visible", vidPanel); //$NON-NLS-1$
+		      support.firePropertyChange(PROPERTY_VISIBLE, null, null); //$NON-NLS-1$
+	      	PerspectiveFilter.this.removePropertyChangeListener(PROPERTY_VISIBLE, vidPanel); //$NON-NLS-1$
+	      	PerspectiveFilter.this.addPropertyChangeListener(PROPERTY_VISIBLE, vidPanel); //$NON-NLS-1$
 	      	vidPanel.removePropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 	      	vidPanel.addPropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 	    	}
 	    	else {
-	    		support.firePropertyChange("visible", null, null); //$NON-NLS-1$
-	      	PerspectiveFilter.this.removePropertyChangeListener("visible", vidPanel); //$NON-NLS-1$
+	    		support.firePropertyChange(PROPERTY_VISIBLE, null, null); //$NON-NLS-1$
+	      	PerspectiveFilter.this.removePropertyChangeListener(PROPERTY_VISIBLE, vidPanel); //$NON-NLS-1$
 	      	vidPanel.removePropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 	    		vidPanel.removeDrawable(quad);
 	      	// fire MOUSE_RELEASED event to ensure full deselection in Tracker

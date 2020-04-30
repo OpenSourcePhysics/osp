@@ -54,7 +54,7 @@ import org.opensourcephysics.tools.ResourceLoader;
  * @version 1.0
  */
 public class ImageVideo extends VideoAdapter {
-  // instance fields
+// instance fields
   protected Component observer = new JPanel();             // image observer
   protected BufferedImage[] images = new BufferedImage[0]; // image array
   protected String[] paths = new String[0];                // relative image paths
@@ -128,7 +128,7 @@ public class ImageVideo extends VideoAdapter {
     rawImage = getImageAtFrame(getFrameNumber(), rawImage);
     isValidImage = false;
     isValidFilteredImage = false;
-    firePropertyChange(ClipControl.PROPERTY_VIDEO_FRAMENUMBER, null, Integer.valueOf(getFrameNumber())); //$NON-NLS-1$
+    firePropertyChange(Video.PROPERTY_VIDEO_FRAMENUMBER, null, Integer.valueOf(getFrameNumber())); //$NON-NLS-1$
   }
   
   /**
@@ -329,7 +329,7 @@ public class ImageVideo extends VideoAdapter {
     endFrameNumber = frameCount-1;
     Dimension newDim = getSize();
     if((newDim.height!=size.height)||(newDim.width!=size.width)) {
-      this.firePropertyChange("size", size, newDim); //$NON-NLS-1$
+      this.firePropertyChange(PROPERTY_VIDEO_SIZE, size, newDim); //$NON-NLS-1$
       size = newDim;
       refreshBufferedImage();
     }
@@ -685,7 +685,7 @@ public class ImageVideo extends VideoAdapter {
     }
     Dimension newDim = getSize();
     if((newDim.height!=size.height)||(newDim.width!=size.width)) {
-      this.firePropertyChange("size", size, newDim); //$NON-NLS-1$
+      this.firePropertyChange(PROPERTY_VIDEO_SIZE, size, newDim); //$NON-NLS-1$
       size = newDim;
       refreshBufferedImage();
     }

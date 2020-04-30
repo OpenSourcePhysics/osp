@@ -59,9 +59,12 @@ public abstract class ClipControl implements PropertyChangeListener {
   protected DataTrack timeSource;
   protected double savedFrameDuration;
   public boolean videoVisible = true;
-  
-  public static final String PROPERTY_VIDEO_STEPNUMBER = "stepnumber";
-  public static final String PROPERTY_VIDEO_FRAMENUMBER = "framenumber";
+	public final static String PROPERTY_VIDEO_LOOPING = "looping"; //$NON-NLS-1$
+	public final static String PROPERTY_VIDEO_PLAYING = "playing"; //$NON-NLS-1$
+	public final static String PROPERTY_VIDEO_RATE = "rate"; //$NON-NLS-1$
+   
+	  public static final String PROPERTY_VIDEO_STEPNUMBER = "stepnumber"; //$NON-NLS-1$
+	  public static final String PROPERTY_VIDEO_FRAMEDURATION = "frameduration"; //$NON-NLS-1$
 
   /**
    * Returns an instance of ClipControl.
@@ -86,6 +89,8 @@ public abstract class ClipControl implements PropertyChangeListener {
   protected ClipControl(VideoClip videoClip) {
     clip = videoClip;
     video = clip.getVideo();
+    if (video != null)
+        video.addPropertyChangeListener(this);
     support = new SwingPropertyChangeSupport(this);
   }
 
@@ -249,10 +254,12 @@ public abstract class ClipControl implements PropertyChangeListener {
    * @param e the property change event
    */
   public void propertyChange(PropertyChangeEvent e) {
-    String name = e.getPropertyName();
-    if(name.equals("startframe")) {  // from video clip //$NON-NLS-1$
+    switch (e.getPropertyName()) {
+    case Video.PROPERTY_VIDEO_STARTFRAME: //$NON-NLS-1$
+    	// from video clip
     	int n = getFrameNumber();
 	    stepNumber = clip.frameToStep(n);
+	    break;
     }
   }
 
