@@ -7,33 +7,43 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.function.Function;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 
 import javajs.async.SwingJSUtils.StateHelper;
 import javajs.async.SwingJSUtils.StateMachine;
 
+/**
+ * Asynchronous SwingJS version for Java or JavaScript
+ * 
+ * @author hansonr
+ *
+ */
 public class ProgressBarSimpleDemo {
 
 	private int min = 0;
 	private int max = 10;
 	private int count = 0;
-	
+
 	private final JProgressBar progressBar;
 
 	private final State state;
 	protected long delaySynchronous = 1000;
 
 	ProgressBarSimpleDemo(int min, int max, boolean asynchronous) {
-		
+
 		this.min = min;
 		this.max = max;
 
 		state = (asynchronous ? new State() : null);
-		
+
 		progressBar = new JProgressBar(min, max);
 		progressBar.setString("Not running");
 		progressBar.setStringPainted(true);
-		
+
 		JFrame frame = new JFrame("Progress Bar with Thread");
 		frame.setLayout(new BorderLayout());
 
@@ -108,7 +118,7 @@ public class ProgressBarSimpleDemo {
 	public void setState(int newState) {
 		state.helper.setState(newState);
 	}
-		
+
 	public int getNextState() {
 		return state.helper.getNextState();
 	}
@@ -116,15 +126,15 @@ public class ProgressBarSimpleDemo {
 	public void setNextState(int newState) {
 		state.helper.setNextState(newState);
 	}
-	
+
 	public void delayedState(int nextState, int startDelayMillis) {
 		state.helper.delayedState(startDelayMillis, nextState);
 	}
-	
+
 	public void done() {
 		state.helper.setState(State.STATE_DONE);
 	}
-	
+
 	public void kill() {
 		state.helper.setState(State.STATE_INTERRUPTED);
 		state.helper.interrupt();
@@ -139,22 +149,32 @@ public class ProgressBarSimpleDemo {
 		public final static int STATE_DONE = 99;
 
 		final private StateHelper helper;
-		
+
 		protected int delayMillis = 1000;
 		protected Function<Integer, Void> onExit;
-		
+
 		/**
 		 * set true to allow restarts, false to close upon completion
 		 */
 		protected boolean persists = false;
-		
+
 		State() {
 			helper = new StateHelper(this);
 			helper.setState(STATE_IDLE);
 		}
 
 		protected void start() {
-			helper.next(STATE_INIT);
+			switch (helper.getState()) {
+			case STATE_IDLE:
+			case STATE_DONE:
+			case STATE_INTERRUPTED:
+				helper.restart();
+				helper.next(STATE_INIT);
+				break;
+			default:
+				helper.setNextState(STATE_INIT);
+				break;
+			}
 		}
 
 		@Override
@@ -190,7 +210,6 @@ public class ProgressBarSimpleDemo {
 			return false;
 		}
 
-
 	}
 
 	Runnable counting = new Runnable() {
@@ -208,7 +227,6 @@ public class ProgressBarSimpleDemo {
 			onDone();
 		} // end of run
 	};
-
 
 	public void longJob() {
 		System.out.println("Start long job.");
