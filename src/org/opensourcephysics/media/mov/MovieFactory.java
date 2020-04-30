@@ -4,7 +4,6 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
@@ -27,7 +26,7 @@ public class MovieFactory {
 	private static final String ENGINE_JS = "JS"; //$NON-NLS-1$
 	public static final String ENGINE_XUGGLE = "Xuggle"; //$NON-NLS-1$
 
-	private static String xuggleClassPath = "org.opensourcephysics.media.xuggle.";
+	private static String xuggleClassPath = "org.opensourcephysics.media.xuggle."; //$NON-NLS-1$
 
 	private static String movieVideoName;
 
@@ -53,10 +52,13 @@ public class MovieFactory {
 					// mere request does the job
 				}
 			} else {
-				Class.forName(xuggleClassPath + "XuggleVideo");
+				Class.forName(xuggleClassPath + "XuggleVideo"); //$NON-NLS-1$
+				xuggleIsAvailable = Boolean.TRUE;
+				movieVideoName = ENGINE_XUGGLE;
 			}
-		} catch (Throwable e) {
-			OSPLog.config("Xuggle not installed? " + xuggleClassPath + "XuggleVideo not found"); //$NON-NLS-1$
+		} catch (Throwable e) {			
+			OSPLog.config("Xuggle not installed? " + xuggleClassPath + "XuggleVideo not found"); //$NON-NLS-1$ //$NON-NLS-2$
+			movieVideoName = ENGINE_NONE;
 		}
 	}
 
@@ -164,38 +166,43 @@ public class MovieFactory {
 	public static boolean hasVideoEngine() {
 		return (OSPRuntime.isJS ? true
 				: movieVideoName != null ? movieVideoName != ENGINE_NONE
-				: "Xuggle".equals(getVideoProperty("name"))
-				&& ((Double) getVideoProperty("version")).doubleValue() == 3.4);
+				: false);
 	}
 
-	/**
-	 * Communicate with JSMovieVideo or XuggleVideo through
-	 * DrawableImage.getProperty(String). This method is only called in Java, and
-	 * only a few times, particularly to get the Xuggle version, to call up an
-	 * "about" panel, and to update JAR files.
-	 * 
-	 * @param name
-	 * @return something
-	 */
-	public static Object getVideoProperty(String name) {
-		Video video = newMovieVideo(null, null);
-		return (video == null ? null : video.getProperty(name));
-	}
-
+//	/**
+//	 * Communicate with JSMovieVideo or XuggleVideo through
+//	 * DrawableImage.getProperty(String). This method is only called in Java, and
+//	 * only a few times, particularly to get the Xuggle version, to call up an
+//	 * "about" panel, and to update JAR files.
+//	 * 
+//	 * @param name
+//	 * @return something
+//	 */
+//	public static Object getVideoProperty(String name) {
+//		Video video = newMovieVideo(null, null);
+//		return (video == null ? null : video.getProperty(name));
+//	}
+//
 	public static Video newMovieVideo(String name, String description) {
 		Video video = null;
 		try {
 			if (OSPRuntime.isJS) {
 				video = new JSMovieVideo(name);
-			} else {
-				video = (Video) Class.forName(xuggleClassPath + "XuggleVideo").newInstance();
-				if (name != null)
-					((PluginVideoI) video).init(name);
-			}
-		} catch (IOException | InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+			} 
+//			else {
+//				video = (Video) Class.forName(xuggleClassPath + "XuggleVideo").newInstance();
+//				if (name != null)
+//					((PluginVideoI) video).init(name);
+//			}
+		} catch (Exception e) {
 			if (name != null) {
 				OSPLog.fine(description + ": " + e.getMessage()); //$NON-NLS-1$
 				e.printStackTrace();
+			}
+		} catch (Error er) {
+			if (name != null) {
+				OSPLog.fine(description + ": " + er.getMessage()); //$NON-NLS-1$
+				er.printStackTrace();
 			}
 		}
 		return video;
@@ -210,12 +217,13 @@ public class MovieFactory {
 			OSPLog.warning("MovieFactory videoRecorder not implemented");
 			return null;
 		}
-		try {
-			return (VideoRecorder) Class.forName(xuggleClassPath + "XuggleVideoRecorder").newInstance();
-		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-			e.printStackTrace();
-			return null;
-		}
+//		try {
+//			return (VideoRecorder) Class.forName(xuggleClassPath + "XuggleVideoRecorder").newInstance();
+//		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+//			e.printStackTrace();
+//			return null;
+//		}
+		return null;
 	}
 
 	/**
