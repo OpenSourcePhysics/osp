@@ -169,30 +169,31 @@ public class MovieFactory {
 				: false);
 	}
 
-	/**
-	 * Communicate with JSMovieVideo or XuggleVideo through
-	 * DrawableImage.getProperty(String). This method is only called in Java, and
-	 * only a few times, particularly to get the Xuggle version, to call up an
-	 * "about" panel, and to update JAR files.
-	 * 
-	 * @param name
-	 * @return something
-	 */
-	public static Object getVideoProperty(String name) {
-		Video video = newMovieVideo(null, null);
-		return (video == null ? null : video.getProperty(name));
-	}
-
+//	/**
+//	 * Communicate with JSMovieVideo or XuggleVideo through
+//	 * DrawableImage.getProperty(String). This method is only called in Java, and
+//	 * only a few times, particularly to get the Xuggle version, to call up an
+//	 * "about" panel, and to update JAR files.
+//	 * 
+//	 * @param name
+//	 * @return something
+//	 */
+//	public static Object getVideoProperty(String name) {
+//		Video video = newMovieVideo(null, null);
+//		return (video == null ? null : video.getProperty(name));
+//	}
+//
 	public static Video newMovieVideo(String name, String description) {
 		Video video = null;
 		try {
 			if (OSPRuntime.isJS) {
 				video = new JSMovieVideo(name);
-			} else {
-				video = (Video) Class.forName(xuggleClassPath + "XuggleVideo").newInstance();
-				if (name != null)
-					((PluginVideoI) video).init(name);
-			}
+			} 
+//			else {
+//				video = (Video) Class.forName(xuggleClassPath + "XuggleVideo").newInstance();
+//				if (name != null)
+//					((PluginVideoI) video).init(name);
+//			}
 		} catch (Exception e) {
 			if (name != null) {
 				OSPLog.fine(description + ": " + e.getMessage()); //$NON-NLS-1$
@@ -216,12 +217,13 @@ public class MovieFactory {
 			OSPLog.warning("MovieFactory videoRecorder not implemented");
 			return null;
 		}
-		try {
-			return (VideoRecorder) Class.forName(xuggleClassPath + "XuggleVideoRecorder").newInstance();
-		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-			e.printStackTrace();
-			return null;
-		}
+//		try {
+//			return (VideoRecorder) Class.forName(xuggleClassPath + "XuggleVideoRecorder").newInstance();
+//		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+//			e.printStackTrace();
+//			return null;
+//		}
+		return null;
 	}
 
 	/**
