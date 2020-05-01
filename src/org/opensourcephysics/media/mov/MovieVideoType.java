@@ -24,18 +24,17 @@
  * please see <https://www.compadre.org/osp/>.
  */
 package org.opensourcephysics.media.mov;
-import java.io.File;
 import java.util.TreeSet;
 
 import org.opensourcephysics.display.OSPRuntime;
-import org.opensourcephysics.media.core.MediaRes;
 import org.opensourcephysics.media.core.Video;
 import org.opensourcephysics.media.core.VideoFileFilter;
 import org.opensourcephysics.media.core.VideoRecorder;
 import org.opensourcephysics.media.core.VideoType;
 
 /**
- * This implements the VideoType interface with a Xuggle or JS type.
+ * This implements the VideoType interface for video files. 
+ * Video engines like Xuggle and JS are subclasses of MovieVideoType.
  *
  * @author Douglas Brown
  * @version 1.0
