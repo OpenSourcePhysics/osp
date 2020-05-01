@@ -601,7 +601,7 @@ public class VideoIO {
 
 		// try first with specified VideoType, if any
 		if (vidType != null) {
-			OSPLog.finest("requested type " + vidType.getClass().getSimpleName() //$NON-NLS-1$
+			OSPLog.finest("preferred type " + vidType.getClass().getSimpleName() //$NON-NLS-1$
 					+ " " + vidType.getDescription()); //$NON-NLS-1$
 			video = vidType.getVideo(path);
 			if (video != null)
@@ -613,15 +613,15 @@ public class VideoIO {
 		// try other allowed video types for the file extension
 		String extension = XML.getExtension(path);
 		ArrayList<VideoType> allTypes = getVideoTypesForExtension(extension);
-		ArrayList<VideoType> allowedTypes = new ArrayList<VideoType>();
-		boolean skipMovies = !MovieFactory.hasVideoEngine();
-		for (int i = 0; i < allTypes.size(); i++) {
-			if (skipMovies && allTypes.get(i) instanceof MovieVideoType)
-				continue;
-			allowedTypes.add(allTypes.get(i));
-		}
-		for (VideoType next : allowedTypes) {
-			OSPLog.finest("preferred type " + next.getClass().getSimpleName() //$NON-NLS-1$
+//		ArrayList<VideoType> allowedTypes = new ArrayList<VideoType>();
+//		boolean skipMovies = !MovieFactory.hasVideoEngine();
+//		for (int i = 0; i < allTypes.size(); i++) {
+//			if (skipMovies && allTypes.get(i) instanceof MovieVideoType)
+//				continue;
+//			allowedTypes.add(allTypes.get(i));
+//		}
+		for (VideoType next : allTypes) {
+			OSPLog.finest("trying type " + next.getClass().getSimpleName() //$NON-NLS-1$
 					+ " " + next.getDescription()); //$NON-NLS-1$
 			video = next.getVideo(path);
 			if (VideoIO.isCanceled())
