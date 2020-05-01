@@ -268,23 +268,23 @@ public class ImageVideo extends VideoAdapter {
     }
   }
 
-  /**
-   * Inserts the named image or image sequence at the specified index.
-   *
-   * @param imageName the image name
-   * @param index the index
-   * @param sequence true to automatically load image sequence, if any
-   * @throws IOException
-   */
-  public void insert(String imageName, int index, boolean sequence) throws IOException {
-    Object[] array = loadImages(imageName, false, // don't ask user for confirmation
-      sequence);
-    Image[] images = (Image[]) array[0];
-    if(images.length>0) {
-      String[] paths = (String[]) array[1];
-      insert(images, index, paths);
-    }
-  }
+	/**
+	 * Inserts the named image or image sequence at the specified index.
+	 *
+	 * @param imageName the image name
+	 * @param index     the index
+	 * @param sequence  true to automatically load image sequence, if any
+	 * @throws IOException
+	 */
+	public void insert(String imageName, int index, boolean sequence) throws IOException {
+		Object[] images_paths = loadImages(imageName, false, // don't ask user for confirmation
+				sequence);
+		Image[] images = (Image[]) images_paths[0];
+		if (images.length > 0) {
+			String[] paths = (String[]) images_paths[1];
+			insert(images, index, paths);
+		}
+	}
 
   /**
    * Inserts an image at the specified index.
@@ -624,72 +624,73 @@ public class ImageVideo extends VideoAdapter {
     return pathList.toArray(new String[0]);
   }
 
-  /**
-   * Inserts images starting at the specified index.
-   *
-   * @param newImages an array of images
-   * @param index the insertion index
-   * @param imagePaths array of image file paths.
-   */
-  protected void insert(Image[] newImages, int index, String[] imagePaths) {
-  	if (readOnly && imagePaths==null) return;
-    int len = length();
-    index = Math.min(index, len); // in case some prev images not successfully loaded
-    int n = newImages.length;
-    // convert new images to BufferedImage if nec
-    BufferedImage[] buf = new BufferedImage[n];
-    for(int i = 0; i<newImages.length; i++) {
-      Image im = newImages[i];
-      if(im instanceof BufferedImage) {
-        buf[i] = (BufferedImage) im;
-      } else {
-        int w = im.getWidth(null);
-        int h = im.getHeight(null);
-        buf[i] = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        buf[i].createGraphics().drawImage(im, 0, 0, null);
-      }
-    }
-    // insert new images
-    BufferedImage[] newArray = new BufferedImage[len+n];
-    System.arraycopy(images, 0, newArray, 0, index);
-    System.arraycopy(buf, 0, newArray, index, n);
-    System.arraycopy(images, index, newArray, index+n, len-index);
-    images = newArray;
-    // create empty paths if null
-    if(imagePaths==null) {
-      imagePaths = new String[newImages.length];
-      for(int i = 0; i<imagePaths.length; i++) {
-        imagePaths[i] = ""; //$NON-NLS-1$
-      }
-    }
-    // insert new paths
-    n = imagePaths.length;
-    String[] newPaths = new String[len+n];
-    System.arraycopy(paths, 0, newPaths, 0, index);
-    System.arraycopy(imagePaths, 0, newPaths, index, n);
-    System.arraycopy(paths, index, newPaths, index+n, len-index);
-    paths = newPaths;
-    rawImage = getImageAtFrame(index, rawImage);
-    frameCount = length();
-    endFrameNumber = frameCount-1;
-    if(coords==null) {
-      size = new Dimension(rawImage.getWidth(observer), rawImage.getHeight(observer));
-      refreshBufferedImage();
-      // create coordinate system and relativeAspects
-      coords = new ImageCoordSystem(frameCount);
-      coords.addPropertyChangeListener(this);
-      aspects = new DoubleArray(frameCount, 1);
-    } else {
-      coords.setLength(frameCount);
-      aspects.setLength(frameCount);
-    }
-    Dimension newDim = getSize();
-    if((newDim.height!=size.height)||(newDim.width!=size.width)) {
-      this.firePropertyChange(PROPERTY_VIDEO_SIZE, size, newDim); //$NON-NLS-1$
-      size = newDim;
-      refreshBufferedImage();
-    }
-  }
+	/**
+	 * Inserts images starting at the specified index.
+	 *
+	 * @param newImages  an array of images
+	 * @param index      the insertion index
+	 * @param imagePaths array of image file paths.
+	 */
+	protected void insert(Image[] newImages, int index, String[] imagePaths) {
+		if (readOnly && imagePaths == null)
+			return;
+		int len = length();
+		index = Math.min(index, len); // in case some prev images not successfully loaded
+		int n = newImages.length;
+		// convert new images to BufferedImage if nec
+		BufferedImage[] buf = new BufferedImage[n];
+		for (int i = 0; i < newImages.length; i++) {
+			Image im = newImages[i];
+			if (im instanceof BufferedImage) {
+				buf[i] = (BufferedImage) im;
+			} else {
+				int w = im.getWidth(null);
+				int h = im.getHeight(null);
+				buf[i] = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+				buf[i].createGraphics().drawImage(im, 0, 0, null);
+			}
+		}
+		// insert new images
+		BufferedImage[] newArray = new BufferedImage[len + n];
+		System.arraycopy(images, 0, newArray, 0, index);
+		System.arraycopy(buf, 0, newArray, index, n);
+		System.arraycopy(images, index, newArray, index + n, len - index);
+		images = newArray;
+		// create empty paths if null
+		if (imagePaths == null) {
+			imagePaths = new String[newImages.length];
+			for (int i = 0; i < imagePaths.length; i++) {
+				imagePaths[i] = ""; //$NON-NLS-1$
+			}
+		}
+		// insert new paths
+		n = imagePaths.length;
+		String[] newPaths = new String[len + n];
+		System.arraycopy(paths, 0, newPaths, 0, index);
+		System.arraycopy(imagePaths, 0, newPaths, index, n);
+		System.arraycopy(paths, index, newPaths, index + n, len - index);
+		paths = newPaths;
+		rawImage = getImageAtFrame(index, rawImage);
+		frameCount = length();
+		endFrameNumber = frameCount - 1;
+		if (coords == null) {
+			size = new Dimension(rawImage.getWidth(observer), rawImage.getHeight(observer));
+			refreshBufferedImage();
+			// create coordinate system and relativeAspects
+			coords = new ImageCoordSystem(frameCount);
+			coords.addPropertyChangeListener(this);
+			aspects = new DoubleArray(frameCount, 1);
+		} else {
+			coords.setLength(frameCount);
+			aspects.setLength(frameCount);
+		}
+		Dimension newDim = getSize();
+		if ((newDim.height != size.height) || (newDim.width != size.width)) {
+			this.firePropertyChange(PROPERTY_VIDEO_SIZE, size, newDim); // $NON-NLS-1$
+			size = newDim;
+			refreshBufferedImage();
+		}
+	}
 
   //______________________________ static XML.Loader_________________________  
 
