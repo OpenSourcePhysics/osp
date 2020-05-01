@@ -104,7 +104,14 @@ public interface XMLControl extends Control, XMLProperty {
    */
   public String toXML();
 
+  
+  	public String getBasepath();
+
+	public void setBasepath(String basepath);
+	
 }
+
+
 
 /*
  * Open Source Physics software is free software; you can redistribute
