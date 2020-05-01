@@ -14,9 +14,10 @@ import org.opensourcephysics.media.core.Video;
 import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.media.core.VideoRecorder;
 import org.opensourcephysics.media.core.VideoType;
+import org.opensourcephysics.tools.ResourceLoader;
 
 /**
- * A factory class to allow options for implementing Xuggle-like behavior
+ * A factory class to manage video engines
  * @author hansonr
  *
  */
@@ -27,56 +28,64 @@ public class MovieFactory {
 	public static final String ENGINE_XUGGLE = "Xuggle"; //$NON-NLS-1$
 
 	private static String xuggleClassPath = "org.opensourcephysics.media.xuggle."; //$NON-NLS-1$
+	private static String xugglePropertiesPath = "org/opensourcephysics/resources/xuggle/xuggle.properties"; //$NON-NLS-1$
 
-	private static String movieVideoName;
+	private static String videoEngineName;
 
 	public static boolean hadXuggleError = false;
 	public static Boolean xuggleIsAvailable = null;
+	public static boolean xuggleIsPresent = false;
 
 	
 	/**
-	 * Add video types MOV, MP4, OGG, AVI, etc., as appropriate.
+	 * Initialize video classes to register their video types
 	 * 
 	 * JSMovieVideo and XuggleVideo self-register via their static initializers. 
 	 * We could call anything here, and it would do the job. The action happens
 	 * at the point of "JSMovieVideo." not "JSMovieVideo.registered". Likewise,
 	 * for Xuggle, we just need to load the class, not actually do anything with it.
-	 * 
-	 * Thus no need for "XuggleIO" or "JSMovieIO". 
 	 */
 	static {
-		//public static boolean registerWithViewoIO()
 		try {
 			if (OSPRuntime.isJS) {
 				if (JSMovieVideo.registered) {
 					// mere request does the job
+					videoEngineName = ENGINE_JS;
+					xuggleIsAvailable = Boolean.FALSE;
+					xuggleIsPresent = false;
 				}
 			} else {
 				Class.forName(xuggleClassPath + "XuggleVideo"); //$NON-NLS-1$
 				xuggleIsAvailable = Boolean.TRUE;
-				movieVideoName = ENGINE_XUGGLE;
+				xuggleIsPresent = true;
+				videoEngineName = ENGINE_XUGGLE;
 			}
 		} catch (Throwable e) {			
-			OSPLog.config("Xuggle not installed? " + xuggleClassPath + "XuggleVideo not found"); //$NON-NLS-1$ //$NON-NLS-2$
-			movieVideoName = ENGINE_NONE;
+			videoEngineName = ENGINE_NONE;
+			if (!OSPRuntime.isJS) {
+				OSPLog.config("Xuggle not installed? " + xuggleClassPath + "XuggleVideo failed"); //$NON-NLS-1$ //$NON-NLS-2$
+				xuggleIsAvailable = Boolean.FALSE;
+				String jarPath = OSPRuntime.getLaunchJarPath();
+				xuggleIsPresent = (jarPath!=null && ResourceLoader.getResource(jarPath+"!/"+xugglePropertiesPath)!=null); //$NON-NLS-1$
+			}
 		}
 	}
 
 	private static PropertyChangeListener[] errorListener = new PropertyChangeListener[] {
-			new PropertyChangeListener() {
-				public void propertyChange(PropertyChangeEvent e) {
-					if (e.getPropertyName().equals("xuggle_error")) { //$NON-NLS-1$
-						hadXuggleError = true;
-						// so noted; remove errorListener
-						OSPLog.getOSPLog().removePropertyChangeListener(errorListener[0]);
-						errorListener[0] = null;
-					}
+		new PropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent e) {
+				if (e.getPropertyName().equals("xuggle_error")) { //$NON-NLS-1$
+					hadXuggleError = true;
+					// so noted; remove errorListener
+					OSPLog.getOSPLog().removePropertyChangeListener(errorListener[0]);
+					errorListener[0] = null;
 				}
-		  	}
+			}
+	  }
 	};
 
 	static {
-	    OSPLog.getOSPLog().addPropertyChangeListener(errorListener[0]);
+	  OSPLog.getOSPLog().addPropertyChangeListener(errorListener[0]);
 	}
 	
 	private static ArrayList<VideoType> movieVideoTypes = new ArrayList<VideoType>();
@@ -102,7 +111,6 @@ public class MovieFactory {
 
 	public static File createThumbnailFile(Dimension defaultThumbnailDimension, String sourcePath, String thumbPath) {
 		if (hasVideoEngine()) {
-			// TODO Auto-generated method stub
 			if (OSPRuntime.isJS)
 				return JSMovieVideo.createThumbnailFile(defaultThumbnailDimension, sourcePath, thumbPath);
 
@@ -125,7 +133,7 @@ public class MovieFactory {
 		if (OSPRuntime.isJS || xuggleIsAvailable == Boolean.TRUE)
 			return;
 		if (hadXuggleError || xuggleIsAvailable == Boolean.FALSE)
-			throw new Error("Video frame extractor unavailable"); //$NON-NLS-1$
+			throw new Error("Movie videos unavailable"); //$NON-NLS-1$
 		boolean logConsole = OSPLog.isConsoleMessagesLogged();
 		try {
 			OSPLog.setConsoleMessagesLogged(false);
@@ -135,7 +143,7 @@ public class MovieFactory {
 		} catch (Exception ex) {
 			xuggleIsAvailable = Boolean.FALSE;
 			OSPLog.setConsoleMessagesLogged(logConsole);
-			throw new Error("Video frame extractor unavailable"); //$NON-NLS-1$
+			throw new Error("Movie videos unavailable"); //$NON-NLS-1$
 		}
 	}
 
@@ -152,37 +160,23 @@ public class MovieFactory {
 			String name = getMovieVideoName(false);
 			return (name == ENGINE_NONE ? MediaRes.getString("VideoIO.Engine.None") : name); //$NON-NLS-1$
 		}
-		if (movieVideoName == null) {
+		if (videoEngineName == null) {
 			for (VideoType next : movieVideoTypes) {
 				if (next instanceof MovieVideoType && hasVideoEngine()) {
-					return movieVideoName = (OSPRuntime.isJS ? ENGINE_JS : ENGINE_XUGGLE);
+					return videoEngineName = (OSPRuntime.isJS ? ENGINE_JS : ENGINE_XUGGLE);
 				}
 			}
-			movieVideoName = ENGINE_NONE;
+			videoEngineName = ENGINE_NONE;
 		}
-		return movieVideoName;
+		return videoEngineName;
 	}
 
 	public static boolean hasVideoEngine() {
 		return (OSPRuntime.isJS ? true
-				: movieVideoName != null ? movieVideoName != ENGINE_NONE
+				: videoEngineName != null ? videoEngineName != ENGINE_NONE
 				: false);
 	}
 
-//	/**
-//	 * Communicate with JSMovieVideo or XuggleVideo through
-//	 * DrawableImage.getProperty(String). This method is only called in Java, and
-//	 * only a few times, particularly to get the Xuggle version, to call up an
-//	 * "about" panel, and to update JAR files.
-//	 * 
-//	 * @param name
-//	 * @return something
-//	 */
-//	public static Object getVideoProperty(String name) {
-//		Video video = newMovieVideo(null, null);
-//		return (video == null ? null : video.getProperty(name));
-//	}
-//
 	public static Video newMovieVideo(String name, String description) {
 		Video video = null;
 		try {
@@ -232,7 +226,7 @@ public class MovieFactory {
 	 * @param video
 	 */
 	public static void setEngine(Video video) {
-		movieVideoName = (video instanceof MovieVideoI ? video.getName()
+		videoEngineName = (video instanceof MovieVideoI ? video.getName()
 				: ENGINE_NONE);
 	}
 
@@ -242,9 +236,50 @@ public class MovieFactory {
 		}
 		if (hasVideoEngine()) {
 			try {
-				Class.forName(xuggleClassPath + "XuggleThumbnailTool");
+				Class.forName(xuggleClassPath + "XuggleThumbnailTool"); //$NON-NLS-1$
 			} catch (ClassNotFoundException e) {
 			}
+		}
+	}
+	
+	/**
+	 * Updates video engine files if available
+	 * 
+	 * @return array of video engine names that were updated. May return null.
+	 */
+	public static String[] getUpdatedVideoEngines() {
+		if (!OSPRuntime.isJS) /** @j2sNative */ {	
+			if (videoEngineName.equals(ENGINE_XUGGLE)) {
+				// copy xuggle files to codebase
+				try {
+					String codebase = OSPRuntime.getLaunchJarDirectory();
+					if (codebase != null) {
+						// call DiagnosticsForXuggle.copyXuggleJarsTo by reflection
+						Class<?> clas = Class.forName("org.opensourcephysics.media.xuggle.DiagnosticsForXuggle"); //$NON-NLS-1$
+						Method method = clas.getMethod("copyXuggleJarsTo", new Class[] {File.class}); //$NON-NLS-1$
+						Object result = method.invoke(null, new Object[] {new File(codebase)});
+						if ((Boolean)result) return new String[] {ENGINE_XUGGLE};
+					}		
+				} catch (Exception e) {}
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Show an About dialog for a video engine
+	 * 
+	 * @param engineName one of the allowed engine names
+	 * @param requester name of a requestor. May be null.
+	 */
+	public static void showAbout(String engineName, String requester) {
+		if (engineName==ENGINE_XUGGLE) {
+			// call DiagnosticsForXuggle.aboutXuggle by reflection
+			try {
+				Class<?> clas = Class.forName("org.opensourcephysics.media.xuggle.DiagnosticsForXuggle"); //$NON-NLS-1$
+				Method method = clas.getMethod("aboutXuggle", new Class[] {String.class}); //$NON-NLS-1$
+				method.invoke(null, new Object[] {requester});
+			} catch (Exception e1) {}
 		}
 	}
 
