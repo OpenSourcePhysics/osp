@@ -76,44 +76,6 @@ public class OSPRuntime {
 	public static boolean isJS = /** @j2sNative true || */
 			false;
 
-	public static boolean allowAsyncURL = isJS; // for OSPRuntime and Library SwingWorkers
-	
-	public static boolean autoAddLibrary = !isJS; // for ResourceLoader
-
-	public static boolean canRecordMovieFiles = !isJS; // MovieVideoType.recordable default
-
-	public static boolean checkTempDirCache = isJS; // for ResourceLoader.
-
-	public static boolean checkZipLoaders = !isJS;  // for ResourceLloader
-
-	public static boolean doCacheZipContents = true;//isJS; // for ResourceLoader
-
-	public static boolean logToJ2SMonitor = isJS; // for OSPRuntime
-
-	public static boolean resCacheEnabled = isJS; // for ResourceLoader 
-	
-	public static boolean setRenderingHints = (!isJS && !isMac);
-	
-	public static boolean skipDisplayOfPDF = isJS; // for TrackerIO, for now.
-
-	public static boolean embedVideoAsObject = isJS;
-	
-
-	public static boolean unzipFiles = !isJS; // for TrackerIO
-	
-	public static final String tempDir = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$  // BH centralized
-	
-	
-	/**
-	 * BH AsyncFileChooser extends JFileChooser, so all of the methods of
-	 * JFileChooser are still available. In particular, the SAVE action needs no
-	 * changes. But File reading requires asynchronous action in SwingJS.
-	 * 
-	 */
-	private static AsyncFileChooser chooser;
-
-	public static /* BH NOT final */ String WEB_CONNECTED_TEST_URL = (isJS ? "https://pubchem.ncbi.nlm.nih.gov" : "https://www.compadre.org/osp/");
-
 	public static JSUtilI jsutil;
 	
 	static {
@@ -138,6 +100,47 @@ public class OSPRuntime {
 		}
 	}
 	
+	public static boolean allowAsyncURL = isJS; // for OSPRuntime and Library SwingWorkers
+	
+	public static boolean autoAddLibrary = !isJS; // for ResourceLoader
+
+	public static boolean canRecordMovieFiles = !isJS; // MovieVideoType.recordable default
+
+	public static boolean checkTempDirCache = isJS; // for ResourceLoader.
+
+	public static boolean checkZipLoaders = !isJS;  // for ResourceLloader
+
+	public static boolean doCacheZipContents = true;//isJS; // for ResourceLoader
+
+	public static boolean logToJ2SMonitor = isJS; // for OSPRuntime
+
+	public static boolean resCacheEnabled = isJS; // for ResourceLoader 
+	
+	public static boolean setRenderingHints = (!isJS && !isMac);
+	
+	public static boolean skipDisplayOfPDF = isJS; // for TrackerIO, for now.
+
+	public static boolean embedVideoAsObject = isJS;
+	
+
+	public static boolean unzipFiles = false;// !isJS; // for TrackerIO
+	
+	static {
+		OSPLog.warning("OSPRuntime unzipFiles setting is false for BH testing");
+	}
+	public static final String tempDir = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$  // BH centralized
+	
+	
+	/**
+	 * BH AsyncFileChooser extends JFileChooser, so all of the methods of
+	 * JFileChooser are still available. In particular, the SAVE action needs no
+	 * changes. But File reading requires asynchronous action in SwingJS.
+	 * 
+	 */
+	private static AsyncFileChooser chooser;
+
+	public static /* BH NOT final */ String WEB_CONNECTED_TEST_URL = (isJS ? "https://pubchem.ncbi.nlm.nih.gov" : "https://www.compadre.org/osp/");
+
 	/**
 	 * Disables drawing for faster start-up and to avoid screen flash in Drawing
 	 * Panels.

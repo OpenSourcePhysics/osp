@@ -20,7 +20,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -38,7 +37,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -53,7 +51,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 import javax.swing.AbstractButton;
@@ -1335,20 +1332,20 @@ public class ResourceLoader {
 
 	private static Map<String, ZipEntry> readZipContents(InputStream is, URL url) throws IOException {
 		HashMap<String, ZipEntry> fileNames = new HashMap<String, ZipEntry>();
-			if (OSPRuntime.doCacheZipContents)
-				htZipContents.put(url.toString(), fileNames);
+		if (OSPRuntime.doCacheZipContents)
+			htZipContents.put(url.toString(), fileNames);
 		ZipInputStream input = new ZipInputStream(is);
-				ZipEntry zipEntry = null;
-				int n = 0;
-				while ((zipEntry = input.getNextEntry()) != null) {
-					if (zipEntry.isDirectory() || zipEntry.getSize() == 0) 
-						continue;
-					n++;
-					String fileName = zipEntry.getName();
-					fileNames.put(fileName, zipEntry); // Java has no use for the ZipEntry, but JavaScript can read it.
-				}
-				input.close();
-				OSPLog.finest("ResourceLoader: " + n + " zip entries found in " + url); //$NON-NLS-1$
+		ZipEntry zipEntry = null;
+		int n = 0;
+		while ((zipEntry = input.getNextEntry()) != null) {
+			if (zipEntry.isDirectory() || zipEntry.getSize() == 0)
+				continue;
+			n++;
+			String fileName = zipEntry.getName();
+			fileNames.put(fileName, zipEntry); // Java has no use for the ZipEntry, but JavaScript can read it.
+		}
+		input.close();
+		OSPLog.finest("ResourceLoader: " + n + " zip entries found in " + url); //$NON-NLS-1$
 		return fileNames;
 	}
   

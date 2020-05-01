@@ -43,6 +43,7 @@ import javax.swing.event.SwingPropertyChangeSupport;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.controls.XMLProperty;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.core.VideoIO.VideoEnginePanel;
 import org.opensourcephysics.tools.ResourceLoader;
@@ -91,6 +92,8 @@ public class VideoClip {
   protected double savedStartTime; // used when DataTrack sets start time
   protected boolean startTimeIsSaved = false; // used when DataTrack sets start time
   protected int extraFrames = 0; // extends clip length past video end
+
+  private String basepath; // path to TRZ or ZIP file containing the images cor this clip.
 
   /**
    * Constructs a VideoClip.
@@ -709,10 +712,21 @@ public class VideoClip {
 				return new VideoClip(null);
 			}
 			ResourceLoader.addSearchPath(control.getString("basepath")); //$NON-NLS-1$
+
 			XMLControl child = control.getChildControl("video"); //$NON-NLS-1$
 			String path = child.getString("path"); //$NON-NLS-1$
-			if (OSPRuntime.checkTempDirCache)
+			
+			if (!OSPRuntime.unzipFiles) {
+				XMLProperty o = control.getParentProperty();
+				XMLProperty parent = o.getParentProperty();
+				if (parent instanceof XMLControl) {
+					String basepath = ((XMLControl)parent).getBasepath();
+					((XMLControl) control).setBasepath(basepath);
+					path = basepath + "/" + path;
+				}			    	
+			} else if (OSPRuntime.checkTempDirCache) {
 				path = OSPRuntime.tempDir + path;
+			}
 			Video video = VideoIO.getVideo(path, null);
 			boolean engineChange = false;
 			if (video == null && path != null && !VideoIO.isCanceled()) {
@@ -840,6 +854,10 @@ public class VideoClip {
     }
 
   }
+
+	public void setBasepath(String basepath) {
+		this.basepath = basepath;
+	}
 
 }
 
