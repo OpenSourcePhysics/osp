@@ -469,127 +469,111 @@ public class ImageVideo extends VideoAdapter {
   	return images.length;
   }
 
-  /**
-   * Loads an image or image sequence specified by name. This returns
-   * an Object[] containing an Image[] at index 0 and a String[] at index 1.
-   *
-   * @param imagePath the image path
-   * @param alwaysAsk true to always ask for sequence confirmation
-   * @param sequence true to automatically load sequences (if not alwaysAsk)
-   * @return an array of loaded images and their corresponding paths
-   * @throws IOException
-   */
-  private Object[] loadImages(String imagePath, boolean alwaysAsk, boolean sequence) throws IOException {
-    Resource res = ResourceLoader.getResource(imagePath);
-    if(res==null) {
-      throw new IOException("Image "+imagePath+" not found"); //$NON-NLS-1$ //$NON-NLS-2$
-    }
-    Image image = res.getImage();
-    if(image==null) {
-      throw new IOException("\""+imagePath+"\" is not an image"); //$NON-NLS-1$ //$NON-NLS-2$
-    }
-    if(getProperty("name")==null) {                       //$NON-NLS-1$
-      setProperty("name", XML.getName(imagePath));        //$NON-NLS-1$
-      setProperty("path", imagePath);                     //$NON-NLS-1$
-      setProperty("absolutePath", res.getAbsolutePath()); //$NON-NLS-1$
-    }
-    if(!alwaysAsk&&!sequence) {
-      Image[] images = new Image[] {image};
-      String[] paths = new String[] {imagePath};
-      return new Object[] {images, paths};
-    }
-    ArrayList<String> pathList = new ArrayList<String>();
-    pathList.add(imagePath);
-    // look for image sequence (numbered image names)
-    String name = XML.getName(imagePath);
-    String extension = ""; //$NON-NLS-1$
-    int i = imagePath.lastIndexOf('.');
-    if((i>0)&&(i<imagePath.length()-1)) {
-      extension = imagePath.substring(i).toLowerCase();
-      imagePath = imagePath.substring(0, i); // now free of extension
-    }
-    int len = imagePath.length();
-    int n = 0;
-    // first find the number of digits in name end
-    int digits = 1;
-    for(; digits<len; digits++) {
-      try {
-        n = Integer.parseInt(imagePath.substring(len-digits));
-      } catch(NumberFormatException ex) {
-        break;
-      }
-    }
-    digits--; // failed at digits, so go back one
-    if(digits==0) { // no number found, so load single image
-      Image[] images = new Image[] {image};
-      String[] paths = new String[] {imagePath+extension};
-      return new Object[] {images, paths};
-    }
-    // image name ends with number, so look for sequence
-    ArrayList<Image> imageList = new ArrayList<Image>();
-    imageList.add(image);
-    int limit = 10;
-    digits = Math.min(digits, 4);
-    switch(digits) {
-       case 1 :
-         limit = 10;
-         break;
-       case 2 :
-         limit = 100;
-         break;
-       case 3 :
-         limit = 1000;
-         break;
-       case 4 :
-         limit = 10000;
-    }
-    String root = imagePath.substring(0, len-digits);
-    try {
-      boolean asked = false;
-      while(n<limit-1) {
-        n++;
-        // fill with leading zeros if nec
-        String num = String.valueOf(n);
-        int zeros = digits-num.length();
-        for(int k = 0; k<zeros; k++) {
-          num = "0"+num;                                                                                                                               //$NON-NLS-1$
-        }
-        imagePath = root+num+extension;
-        // load images only if not loading as needed
-        if (!readOnly || imageList.isEmpty()) {
-	        image = ResourceLoader.getImage(imagePath);
-	        if(image==null) {
-	          break;
-	        }
-        }
-        // if loading as needed, just check that the resource exists
-        else if(ResourceLoader.getResource(imagePath)==null)
-        	break;
-        if(!asked&&alwaysAsk) {
-          asked = true;
-          // strip path from image name
-          int response = JOptionPane.showOptionDialog(null, "\""+name+"\" "+MediaRes.getString("ImageVideo.Dialog.LoadSequence.Message")+XML.NEW_LINE+ //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-            MediaRes.getString("ImageVideo.Dialog.LoadSequence.Query"),                                                                                                                                                                       //$NON-NLS-1$
-              MediaRes.getString("ImageVideo.Dialog.LoadSequence.Title"),                                                                                                                                                                     //$NON-NLS-1$
-                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[] {MediaRes.getString("ImageVideo.Dialog.LoadSequence.Button.SingleImage"), MediaRes.getString("ImageVideo.Dialog.LoadSequence.Button.AllImages")}, //$NON-NLS-1$ //$NON-NLS-2$
-                  MediaRes.getString("ImageVideo.Dialog.LoadSequence.Button.AllImages")); //$NON-NLS-1$
-          if(response==JOptionPane.YES_OPTION) {
-            break;
-          }
-        }
-        // always add first image to list, but later images only if not loading as needed
-        if (!readOnly || imageList.isEmpty()) {
-        	imageList.add(image);
-        }
-        pathList.add(imagePath);
-      }
-    } catch(NumberFormatException ex) {
-      ex.printStackTrace();
-    } 
-    Image[] images = imageList.toArray(new Image[0]);
-    String[] paths = pathList.toArray(new String[0]);
-    return new Object[] {images, paths};
-  }
+	/**
+	 * Loads an image or image sequence specified by name. This returns an Object[]
+	 * containing an Image[] at index 0 and a String[] at index 1.
+	 *
+	 * @param imagePath the image path
+	 * @param alwaysAsk true to always ask for sequence confirmation
+	 * @param sequence  true to automatically load sequences (if not alwaysAsk)
+	 * @return an array of loaded images and their corresponding paths
+	 * @throws IOException
+	 */
+	private Object[] loadImages(String imagePath, boolean alwaysAsk, boolean sequence) throws IOException {
+		Resource res = ResourceLoader.getResource(imagePath);
+		if (res == null) {
+			throw new IOException("Image " + imagePath + " not found"); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+		Image image = res.getImage();
+		if (image == null) {
+			throw new IOException("\"" + imagePath + "\" is not an image"); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+		if (getProperty("name") == null) { //$NON-NLS-1$
+			setProperty("name", XML.getName(imagePath)); //$NON-NLS-1$
+			setProperty("path", imagePath); //$NON-NLS-1$
+			setProperty("absolutePath", res.getAbsolutePath()); //$NON-NLS-1$
+		}
+		if (!alwaysAsk && !sequence) {
+			Image[] images = new Image[] { image };
+			String[] paths = new String[] { imagePath };
+			return new Object[] { images, paths };
+		}
+		ArrayList<String> pathList = new ArrayList<String>();
+		pathList.add(imagePath);
+		// look for image sequence (numbered image names)
+		String name = XML.getName(imagePath);
+		String extension = ""; //$NON-NLS-1$
+		int i = imagePath.lastIndexOf('.');
+		if ((i > 0) && (i < imagePath.length() - 1)) {
+			extension = imagePath.substring(i).toLowerCase();
+			imagePath = imagePath.substring(0, i); // now free of extension
+		}
+		int len = imagePath.length();
+		int digits = 0;
+		while (digits <= 4 && --len >= 0 && Character.isDigit(imagePath.charAt(len))) {
+			digits++;
+		}
+		int limit;
+		switch (digits) {
+		case 0:
+			// no number found, so load single image
+			Image[] images = new Image[] { image };
+			String[] paths = new String[] { imagePath + extension };
+			return new Object[] { images, paths };
+		default:
+			// 1 -> 10, 2 -> 100, etc.
+			limit = (int) Math.pow(10, digits);
+		}
+		// image name ends with number, so look for sequence
+		String root = imagePath.substring(0, ++len);
+		int n = Integer.parseInt(imagePath.substring(len));
+		ArrayList<Image> imageList = new ArrayList<Image>();
+		imageList.add(image);
+		try {
+			boolean asked = false;
+			while (++n < limit) {
+				// fill with leading zeros if nec
+				String num = "000" + n;
+				imagePath = root + (num.substring(num.length() - digits)) + extension;
+				// load images only if not loading as needed
+				if (!readOnly || imageList.isEmpty()) {
+					image = ResourceLoader.getImage(imagePath);
+					if (image == null) {
+						break;
+					}
+				}
+				// if loading as needed, just check that the resource exists
+				else if (ResourceLoader.getResource(imagePath) == null)
+					break;
+				if (!asked && alwaysAsk) {
+					asked = true;
+					// strip path from image name
+					int response = JOptionPane.showOptionDialog(null, "\"" + name + "\" " //$NON-NLS-1$ //$NON-NLS-2$
+							+ MediaRes.getString("ImageVideo.Dialog.LoadSequence.Message") + XML.NEW_LINE + //$NON-NLS-1$
+							MediaRes.getString("ImageVideo.Dialog.LoadSequence.Query"), //$NON-NLS-1$
+							MediaRes.getString("ImageVideo.Dialog.LoadSequence.Title"), //$NON-NLS-1$
+							JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+							new String[] { MediaRes.getString("ImageVideo.Dialog.LoadSequence.Button.SingleImage"), //$NON-NLS-1$
+									MediaRes.getString("ImageVideo.Dialog.LoadSequence.Button.AllImages") }, //$NON-NLS-1$
+							MediaRes.getString("ImageVideo.Dialog.LoadSequence.Button.AllImages")); //$NON-NLS-1$
+					if (response == JOptionPane.YES_OPTION) {
+						break;
+					}
+				}
+				// always add first image to list, but later images only if not loading as
+				// needed
+				if (!readOnly || imageList.isEmpty()) {
+					imageList.add(image);
+				}
+				pathList.add(imagePath);
+			}
+		} catch (NumberFormatException ex) {
+			ex.printStackTrace();
+		}
+		Image[] images = imageList.toArray(new Image[0]);
+		String[] paths = pathList.toArray(new String[0]);
+		return new Object[] { images, paths };
+	}
 
   /**
    * Returns the valid paths (i.e., those that are not "").

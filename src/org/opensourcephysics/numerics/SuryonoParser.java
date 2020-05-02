@@ -839,16 +839,34 @@ public final class SuryonoParser extends MathExpParser {
         getNextCharacter();
       }
     }
-    try {
-      value = Double.valueOf(numstr).doubleValue();
-    } catch(NumberFormatException e) {
-      position = start;
-      throw new ParserException(SYNTAX_ERROR);
+    value = getNumber(numstr);
+    if (Double.isNaN(value)) {
+        position = start;
+        throw new ParserException(SYNTAX_ERROR);
     }
     number[num++] = value;
     addCode(NUMERIC);
   }
 
+	private static double getNumber(String name) {
+		if (couldBeNumber(name)) {
+			try {
+				return Double.parseDouble(name);
+			} catch (NumberFormatException e) {
+			}
+		}
+		return Double.NaN;
+	}
+
+	/**
+	 * before we test for a NFE, at least check that it COULD be a number. 
+	 * I is for "Infinity"
+	 * @param n
+	 * @return
+	 */
+	private static boolean couldBeNumber(String n) {
+		return (n.length() > 0 && "+-.I0123456789".indexOf(n.charAt(0)) >= 0);
+	}
   /**
    * Scans a non-numerical identifier. Can be function call,
    * variable, reference, etc.
