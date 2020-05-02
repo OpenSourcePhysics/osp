@@ -632,62 +632,62 @@ public class VideoIO {
 		return null;
 	}
 
-	/**
-	 * Returns a video from a specified path using a video engine chosen by user.
-	 * May return null.
-	 *
-	 * @param path      the path
-	 * @param engines   array of available video types
-	 * @param component a JComponent to display with the text (may be null)
-	 * @param frame     owner of the dialogs (may be null)
-	 * @return the video
-	 */
-	public static Video getVideoFromDialog(String path, ArrayList<VideoType> engines, JComponent component, JFrame frame) 
-	 /** @j2sIgnore*/
-	{
-		// provide immediate way to open with other engines
-		String engine = MovieFactory.getMovieVideoName(true);
-		String message = MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Message1") + " (" + engine + ")."; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		message += "\n" + MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Message2"); //$NON-NLS-1$ //$NON-NLS-2$
-		message += "\n\n" + MediaRes.getString("VideoIO.Dialog.Label.Path") + ": " + path; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		ArrayList<String> optionList = new ArrayList<String>();
-		for (VideoType next : engines) {
-			if (next instanceof MovieVideoType) {
-				// BH TODO fix this ref to Xuggle
-				optionList.add(MediaRes.getString("XuggleVideoType.Description")); //$NON-NLS-1$
-			}
-		}
-		optionList.add(MediaRes.getString("Dialog.Button.Cancel")); //$NON-NLS-1$
-		Object[] options = optionList.toArray(new String[optionList.size()]);
-		// assemble message panel with text and checkbox
-		JPanel messagePanel = new JPanel(new BorderLayout());
-		JTextArea textArea = new JTextArea();
-		textArea.setText(message);
-		textArea.setOpaque(false);
-		textArea.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 4));
-		messagePanel.add(textArea, BorderLayout.NORTH);
-		if (component != null) {
-			component.setBorder(BorderFactory.createEmptyBorder(12, 0, 12, 0));
-			messagePanel.add(component, BorderLayout.SOUTH);
-		}
-		int response = JOptionPane.showOptionDialog(frame, messagePanel,
-				MediaRes.getString("VideoClip.Dialog.BadVideo.Title"), //$NON-NLS-1$
-				JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
-		if (response >= 0 && response < options.length - 1) {
-			VideoType desiredType = engines.get(response);
-			Video video = getVideo(path, desiredType);
-			if (video == null && !VideoIO.isCanceled()) {
-				// failed again
-				JOptionPane.showMessageDialog(frame,
-						MediaRes.getString("VideoIO.Dialog.BadVideo.Message") + "\n\n" + path, //$NON-NLS-1$ //$NON-NLS-2$
-						MediaRes.getString("VideoClip.Dialog.BadVideo.Title"), //$NON-NLS-1$
-						JOptionPane.WARNING_MESSAGE);
-			}
-			return video;
-		}
-		return null;
-	}
-
+//	/**
+//	 * Returns a video from a specified path using a video engine chosen by user.
+//	 * May return null.
+//	 *
+//	 * @param path      the path
+//	 * @param engines   array of available video types
+//	 * @param component a JComponent to display with the text (may be null)
+//	 * @param frame     owner of the dialogs (may be null)
+//	 * @return the video
+//	 */
+//	public static Video getVideoFromDialog(String path, ArrayList<VideoType> engines, JComponent component, JFrame frame) 
+//	 /** @j2sIgnore*/
+//	{
+//		// provide immediate way to open with other engines
+//		String engine = MovieFactory.getMovieVideoName(true);
+//		String message = MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Message1") + " (" + engine + ")."; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+//		message += "\n" + MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Message2"); //$NON-NLS-1$ //$NON-NLS-2$
+//		message += "\n\n" + MediaRes.getString("VideoIO.Dialog.Label.Path") + ": " + path; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+//		ArrayList<String> optionList = new ArrayList<String>();
+//		for (VideoType next : engines) {
+//			if (next instanceof MovieVideoType) {
+//				// BH TODO fix this ref to Xuggle
+//				optionList.add(MediaRes.getString("XuggleVideoType.Description")); //$NON-NLS-1$
+//			}
+//		}
+//		optionList.add(MediaRes.getString("Dialog.Button.Cancel")); //$NON-NLS-1$
+//		Object[] options = optionList.toArray(new String[optionList.size()]);
+//		// assemble message panel with text and checkbox
+//		JPanel messagePanel = new JPanel(new BorderLayout());
+//		JTextArea textArea = new JTextArea();
+//		textArea.setText(message);
+//		textArea.setOpaque(false);
+//		textArea.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 4));
+//		messagePanel.add(textArea, BorderLayout.NORTH);
+//		if (component != null) {
+//			component.setBorder(BorderFactory.createEmptyBorder(12, 0, 12, 0));
+//			messagePanel.add(component, BorderLayout.SOUTH);
+//		}
+//		int response = JOptionPane.showOptionDialog(frame, messagePanel,
+//				MediaRes.getString("VideoClip.Dialog.BadVideo.Title"), //$NON-NLS-1$
+//				JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+//		if (response >= 0 && response < options.length - 1) {
+//			VideoType desiredType = engines.get(response);
+//			Video video = getVideo(path, desiredType);
+//			if (video == null && !VideoIO.isCanceled()) {
+//				// failed again
+//				JOptionPane.showMessageDialog(frame,
+//						MediaRes.getString("VideoIO.Dialog.BadVideo.Message") + "\n\n" + path, //$NON-NLS-1$ //$NON-NLS-2$
+//						MediaRes.getString("VideoClip.Dialog.BadVideo.Title"), //$NON-NLS-1$
+//						JOptionPane.WARNING_MESSAGE);
+//			}
+//			return video;
+//		}
+//		return null;
+//	}
+//
 	/**
 	 * Returns a clone of the specified video.
 	 *
@@ -1103,7 +1103,7 @@ public class VideoIO {
 				if (!isButtonSelected) {
 					for (JRadioButton button : buttonMap.keySet()) {
 						// action command is VideoType simple name
-						button.setSelected(button.getActionCommand().contains(MovieFactory.getMovieVideoName(false)));
+						button.setSelected(button.getActionCommand().contains(MovieFactory.getMovieEngineName(false)));
 					}
 				}
 			}
@@ -1126,48 +1126,48 @@ public class VideoIO {
 		}
 	}
 
-	/**
-	 * Check for a MovieVideoI that can handle the extension associated with this
-	 * path.
-	 * 
-	 * Currently only returns a single engine. In principle, this could be expanded to allow more then one 
-	 * available engine.
-	 * 
-	 * merged from VideoClip and TrackerIO
-	 * 
-	 * @param video        starting video that failed to load
-	 * @param path
-	 * @param frame
-	 * @param checkTypes   option to check paths or not -- in other words, just show
-	 *                     the bad video message and return null
-	 * @param setAsDefault return [0] == true if option was taken by user
-	 * @return video or null
-	 */
-	public static Video getAvailableEngineFromDialog(Video video, String path, JFrame frame, boolean checkTypes,
-			boolean[] setAsDefault) /** @j2sIgnore*/ {
-
-		// determine if other engines are available for the video extension
-		ArrayList<VideoType> movieEngines = new ArrayList<VideoType>();
-		VideoType movieType = (checkTypes ? VideoIO.getMovieType(XML.getExtension(path)) : null);
-		if (movieType != null)
-			movieEngines.add(movieType);
-		if (movieEngines.isEmpty()) {
-			JOptionPane.showMessageDialog(frame, MediaRes.getString("VideoIO.Dialog.BadVideo.Message") + "\n\n" + path, //$NON-NLS-1$ //$NON-NLS-2$
-					MediaRes.getString("VideoClip.Dialog.BadVideo.Title"), //$NON-NLS-1$
-					JOptionPane.WARNING_MESSAGE);
-			// BH! was leave video unchanged??
-			return null;
-		}
-		// provide immediate way to open with other engines
-		JCheckBox setAsDefaultBox = new JCheckBox(MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Checkbox")); //$NON-NLS-1$
-		video = VideoIO.getVideoFromDialog(path, movieEngines, setAsDefaultBox, frame);
-		boolean setDefault = setAsDefaultBox.isSelected();
-		if (video != null && setDefault) {
-			MovieFactory.setEngine(video);
-			setAsDefault[0] = true;
-		}
-		return video;
-	}
+//	/**
+//	 * Check for a MovieVideoI that can handle the extension associated with this
+//	 * path.
+//	 * 
+//	 * Currently only returns a single engine. In principle, this could be expanded to allow more then one 
+//	 * available engine.
+//	 * 
+//	 * merged from VideoClip and TrackerIO
+//	 * 
+//	 * @param video        starting video that failed to load
+//	 * @param path
+//	 * @param frame
+//	 * @param checkTypes   option to check paths or not -- in other words, just show
+//	 *                     the bad video message and return null
+//	 * @param setAsDefault return [0] == true if option was taken by user
+//	 * @return video or null
+//	 */
+//	public static Video getAvailableEngineFromDialog(Video video, String path, JFrame frame, boolean checkTypes,
+//			boolean[] setAsDefault) /** @j2sIgnore*/ {
+//
+//		// determine if other engines are available for the video extension
+//		ArrayList<VideoType> movieEngines = new ArrayList<VideoType>();
+//		VideoType movieType = (checkTypes ? VideoIO.getMovieType(XML.getExtension(path)) : null);
+//		if (movieType != null)
+//			movieEngines.add(movieType);
+//		if (movieEngines.isEmpty()) {
+//			JOptionPane.showMessageDialog(frame, MediaRes.getString("VideoIO.Dialog.BadVideo.Message") + "\n\n" + path, //$NON-NLS-1$ //$NON-NLS-2$
+//					MediaRes.getString("VideoClip.Dialog.BadVideo.Title"), //$NON-NLS-1$
+//					JOptionPane.WARNING_MESSAGE);
+//			// BH! was leave video unchanged??
+//			return null;
+//		}
+//		// provide immediate way to open with other engines
+//		JCheckBox setAsDefaultBox = new JCheckBox(MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Checkbox")); //$NON-NLS-1$
+//		video = VideoIO.getVideoFromDialog(path, movieEngines, setAsDefaultBox, frame);
+//		boolean setDefault = setAsDefaultBox.isSelected();
+//		if (video != null && setDefault) {
+//			MovieFactory.setEngine(video);
+//			setAsDefault[0] = true;
+//		}
+//		return video;
+//	}
 }
 
 /*

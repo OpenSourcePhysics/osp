@@ -52,11 +52,9 @@ public abstract class MovieVideoType implements VideoType, MovieVideoI {
   protected VideoFileFilter singleTypeFilter; // null for general type
     
 	/**
-	 * Constructor attempts to load a movie class the first time used. This will
-	 * throw an error if movies are not available.
+	 * Constructor no longer attempts calls the MovieFactory. 
 	 */
 	public MovieVideoType() {
-		MovieFactory.ensureAvailable();
 	}
 
   /**

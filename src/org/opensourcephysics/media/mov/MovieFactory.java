@@ -5,19 +5,15 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.core.MediaRes;
 import org.opensourcephysics.media.core.Video;
-import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.media.core.VideoRecorder;
-import org.opensourcephysics.media.core.VideoType;
 import org.opensourcephysics.tools.ResourceLoader;
 
 /**
- * A factory class to manage video engines
+ * A factory class to manage movie engines
  * @author hansonr
  *
  */
@@ -30,12 +26,11 @@ public class MovieFactory {
 	private static String xuggleClassPath = "org.opensourcephysics.media.xuggle."; //$NON-NLS-1$
 	private static String xugglePropertiesPath = "org/opensourcephysics/resources/xuggle/xuggle.properties"; //$NON-NLS-1$
 
-	private static String videoEngineName;
+	private static String movieEngineName = ENGINE_NONE;
 
 	public static boolean hadXuggleError = false;
 	public static Boolean xuggleIsAvailable = null;
 	public static boolean xuggleIsPresent = false;
-
 	
 	/**
 	 * Initialize video classes to register their video types
@@ -50,7 +45,7 @@ public class MovieFactory {
 			if (OSPRuntime.isJS) {
 				if (JSMovieVideo.registered) {
 					// mere request does the job
-					videoEngineName = ENGINE_JS;
+					movieEngineName = ENGINE_JS;
 					xuggleIsAvailable = Boolean.FALSE;
 					xuggleIsPresent = false;
 				}
@@ -58,10 +53,9 @@ public class MovieFactory {
 				Class.forName(xuggleClassPath + "XuggleVideo"); //$NON-NLS-1$
 				xuggleIsAvailable = Boolean.TRUE;
 				xuggleIsPresent = true;
-				videoEngineName = ENGINE_XUGGLE;
+				movieEngineName = ENGINE_XUGGLE;
 			}
 		} catch (Throwable e) {			
-			videoEngineName = ENGINE_NONE;
 			if (!OSPRuntime.isJS) {
 				OSPLog.config("Xuggle not installed? " + xuggleClassPath + "XuggleVideo failed"); //$NON-NLS-1$ //$NON-NLS-2$
 				xuggleIsAvailable = Boolean.FALSE;
@@ -88,27 +82,6 @@ public class MovieFactory {
 	  OSPLog.getOSPLog().addPropertyChangeListener(errorListener[0]);
 	}
 	
-	private static ArrayList<VideoType> movieVideoTypes = new ArrayList<VideoType>();
-
-	/**
-	 * Adds a video engine to the list of available engines
-	 *
-	 * @param movieVideoType the video engine type
-	 */
-	public static void addMovieVideoType(VideoType movieVideoType) {
-		if (movieVideoType == null || movieVideoTypes == null)
-			return;
-		OSPLog.finest(movieVideoType.getClass().getSimpleName() + " " + movieVideoType.getDefaultExtension()); //$NON-NLS-1$
-		for (VideoType next : movieVideoTypes) {
-			if (next.getClass() == movieVideoType.getClass()) {
-				return;
-			}
-		}
-		movieVideoTypes.add(movieVideoType);
-		if (VideoIO.videoEnginePanel != null)
-			VideoIO.videoEnginePanel.addMovieVideoType((MovieVideoType) movieVideoType);
-	}
-
 	public static File createThumbnailFile(Dimension defaultThumbnailDimension, String sourcePath, String thumbPath) {
 		if (hasVideoEngine()) {
 			if (OSPRuntime.isJS)
@@ -129,52 +102,20 @@ public class MovieFactory {
 		return null;
 	}
 
-	public static void ensureAvailable() throws Error {
-		if (OSPRuntime.isJS || xuggleIsAvailable == Boolean.TRUE)
-			return;
-		if (hadXuggleError || xuggleIsAvailable == Boolean.FALSE)
-			throw new Error("Movie videos unavailable"); //$NON-NLS-1$
-		boolean logConsole = OSPLog.isConsoleMessagesLogged();
-		try {
-			OSPLog.setConsoleMessagesLogged(false);
-			Class.forName("com.xuggle.xuggler.IContainer"); //$NON-NLS-1$
-			xuggleIsAvailable = Boolean.TRUE;
-			OSPLog.setConsoleMessagesLogged(logConsole);
-		} catch (Exception ex) {
-			xuggleIsAvailable = Boolean.FALSE;
-			OSPLog.setConsoleMessagesLogged(logConsole);
-			throw new Error("Movie videos unavailable"); //$NON-NLS-1$
-		}
-	}
-
 	/**
-	 * Gets the name of the current video engine.
+	 * Gets the name of the current movie engine.
 	 * 
-	 * @param forDialog
-	 *
 	 * @param forDialog if true, returns locale version of "none"
 	 * @return "Xuggle" or "JS" or "none" or Locale version of "none"
 	 */
-	public static String getMovieVideoName(boolean forDialog) {
-		if (forDialog) {
-			String name = getMovieVideoName(false);
-			return (name == ENGINE_NONE ? MediaRes.getString("VideoIO.Engine.None") : name); //$NON-NLS-1$
-		}
-		if (videoEngineName == null) {
-			for (VideoType next : movieVideoTypes) {
-				if (next instanceof MovieVideoType && hasVideoEngine()) {
-					return videoEngineName = (OSPRuntime.isJS ? ENGINE_JS : ENGINE_XUGGLE);
-				}
-			}
-			videoEngineName = ENGINE_NONE;
-		}
-		return videoEngineName;
+	public static String getMovieEngineName(boolean forDialog) {
+		return forDialog && movieEngineName == ENGINE_NONE ? 
+				MediaRes.getString("VideoIO.Engine.None") :
+				movieEngineName;
 	}
 
 	public static boolean hasVideoEngine() {
-		return (OSPRuntime.isJS ? true
-				: videoEngineName != null ? videoEngineName != ENGINE_NONE
-				: false);
+		return movieEngineName != ENGINE_NONE;
 	}
 
 	public static Video newMovieVideo(String name, String description) {
@@ -249,7 +190,7 @@ public class MovieFactory {
 	 */
 	public static String[] getUpdatedVideoEngines() {
 		if (!OSPRuntime.isJS) /** @j2sNative */ {	
-			if (videoEngineName.equals(ENGINE_XUGGLE)) {
+			if (movieEngineName.equals(ENGINE_XUGGLE)) {
 				// copy xuggle files to codebase
 				try {
 					String codebase = OSPRuntime.getLaunchJarDirectory();
