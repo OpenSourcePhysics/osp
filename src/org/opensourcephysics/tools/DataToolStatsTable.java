@@ -178,18 +178,13 @@ public class DataToolStatsTable extends JTable {
    *  Refresh the data display in this table.
    */
   public void refreshTable() {
-    Runnable refresh = new Runnable() {
-      public synchronized void run() {
+  	OSPRuntime.postEvent(new Runnable() {
+  		public synchronized void run() {
         tableChanged(new TableModelEvent(statsModel, TableModelEvent.HEADER_ROW));
         refreshCellWidths();
       }
 
-    };
-    if(SwingUtilities.isEventDispatchThread()) {
-      refresh.run();
-    } else {
-      SwingUtilities.invokeLater(refresh);
-    }
+    });
   }
 
   /**

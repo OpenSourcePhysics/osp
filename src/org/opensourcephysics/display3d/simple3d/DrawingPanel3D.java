@@ -38,6 +38,7 @@ import javax.swing.event.MouseInputAdapter;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.OSPLayout;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TextPanel;
 import org.opensourcephysics.display3d.core.interaction.InteractionEvent;
 import org.opensourcephysics.display3d.core.interaction.InteractionListener;
@@ -367,16 +368,8 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
     }
     // the offscreenImage is now ready to be copied to the screen
     // always update a Swing component from the event thread
-    if(SwingUtilities.isEventDispatchThread()) {
-      doNow.run(); // we are already within the event thread so DO IT!
-    } else {                              // paint within the event thread
-      try {
-        SwingUtilities.invokeAndWait(doNow);
-      } // wait for the paint operation to finish; should be fast
-        catch(InvocationTargetException ex) {}
-      catch(InterruptedException ex) {}
-    }
-    if((vidCap!=null)&&(offscreenImage!=null)&&vidCap.isRecording()) { // buffered image should exists so use it.
+	OSPRuntime.dispatchEventWait(doNow);
+	if((vidCap!=null)&&(offscreenImage!=null)&&vidCap.isRecording()) { // buffered image should exists so use it.
       vidCap.addFrame(offscreenImage);
     }
     return workingImage;

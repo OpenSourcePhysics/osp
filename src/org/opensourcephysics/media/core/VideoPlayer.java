@@ -1424,28 +1424,25 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
    * @param playing <code>true</code> if the video is playing
    */
   private void updatePlayButtons(final boolean playing) {
-  	Runnable runner = new Runnable() {
-  		public void run() {
-  	    int stepCount = getVideoClip().getStepCount();
-  	    boolean canPlay = stepCount>1;
-  	    playButton.setEnabled(canPlay && (playing || getStepNumber()<stepCount-1));
-  	    stepButton.setEnabled(canPlay && (playing || getStepNumber()<stepCount-1));
-  	    backButton.setEnabled(canPlay && (playing || getStepNumber()>0));
-  	    playButton.setSelected(playing);
-  	    if(playing) {
-  	      playButton.setToolTipText(MediaRes.getString("VideoPlayer.Button.Pause.ToolTip")); //$NON-NLS-1$
-  	      playButton.setPressedIcon(pauseIcon);
-  	      playButton.setIcon(pauseIcon);
-  	    } 
-  	    else {
-  	      playButton.setToolTipText(MediaRes.getString("VideoPlayer.Button.Play.ToolTip"));  //$NON-NLS-1$
-  	      playButton.setPressedIcon(playIcon);
-  	      playButton.setIcon(playIcon);
-  	    }  			
-  		}
-  	};
-    if(OSPRuntime.isJS || SwingUtilities.isEventDispatchThread()) runner.run();
-    else SwingUtilities.invokeLater(runner);
+  	OSPRuntime.postEvent(new Runnable() {
+			public void run() {
+				int stepCount = getVideoClip().getStepCount();
+				boolean canPlay = stepCount > 1;
+				playButton.setEnabled(canPlay && (playing || getStepNumber() < stepCount - 1));
+				stepButton.setEnabled(canPlay && (playing || getStepNumber() < stepCount - 1));
+				backButton.setEnabled(canPlay && (playing || getStepNumber() > 0));
+				playButton.setSelected(playing);
+				if (playing) {
+					playButton.setToolTipText(MediaRes.getString("VideoPlayer.Button.Pause.ToolTip")); //$NON-NLS-1$
+					playButton.setPressedIcon(pauseIcon);
+					playButton.setIcon(pauseIcon);
+				} else {
+					playButton.setToolTipText(MediaRes.getString("VideoPlayer.Button.Play.ToolTip")); //$NON-NLS-1$
+					playButton.setPressedIcon(playIcon);
+					playButton.setIcon(playIcon);
+				}
+			}
+  	});
   }
 
   /**

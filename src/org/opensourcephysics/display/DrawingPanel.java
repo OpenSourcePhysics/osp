@@ -572,15 +572,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
   }
 
   private Rectangle visibleRect = new Rectangle();
-  
-  // BH 2020.03.28 can reuse this.
-  private Runnable doNow = new Runnable() {
-      public void run() {
-    	computeVisibleRect(visibleRect);
-        paintImmediately(visibleRect);
-      }
-
-    };
 
     /**
    * Paints all drawables onto an offscreen image buffer and copies this image onto the screen.
@@ -600,14 +591,13 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
       workingImage = temp;
     }
     // always update a Swing component from the event thread
-    try {
-      if(SwingUtilities.isEventDispatchThread()) {
-    	  doNow.run();
-      } else { // paint within the event thread
-        SwingUtilities.invokeAndWait(doNow);
-      }
-    } catch(InvocationTargetException ex1) {}
-    catch(InterruptedException ex1) {}
+    OSPRuntime.dispatchEventWait(new Runnable() {
+        public void run() {
+        	computeVisibleRect(visibleRect);
+            paintImmediately(visibleRect);
+          }
+
+        });
     if(vidCap!=null) {
       if(buffered) { // buffered image exists so use it.
         vidCap.addFrame(offscreenImage);

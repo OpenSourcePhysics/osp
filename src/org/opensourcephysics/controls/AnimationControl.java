@@ -12,6 +12,7 @@ import java.util.Iterator;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.opensourcephysics.display.GUIUtils;
+import org.opensourcephysics.display.OSPRuntime;
 
 /**
  *  A GUI consisting of an input text area, a message area, and various buttons
@@ -129,7 +130,7 @@ public class AnimationControl extends OSPControl {
     if(model instanceof Animation) {
       ((Animation) model).stopAnimation();
     }
-    Runnable doNow = new Runnable() {
+    OSPRuntime.dispatchEventWait(new Runnable() {
       public void run() {
         startBtnActionPerformed(new ActionEvent(this, 0, stopText));
         resetBtnActionPerformed(new ActionEvent(this, 0, newText));
@@ -140,15 +141,7 @@ public class AnimationControl extends OSPControl {
         }
       }
 
-    };
-    try {
-      if(SwingUtilities.isEventDispatchThread()) {
-        doNow.run();
-      } else { // paint within the event thread
-        SwingUtilities.invokeAndWait(doNow);
-      }
-    } catch(java.lang.reflect.InvocationTargetException ex1) {}
-    catch(InterruptedException ex1) {}
+    });
   }
 
   /**

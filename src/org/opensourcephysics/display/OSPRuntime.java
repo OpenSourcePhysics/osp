@@ -12,6 +12,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.URL;
@@ -32,6 +33,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.LookAndFeel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
@@ -282,7 +284,7 @@ public class OSPRuntime {
 		LOOK_AND_FEEL_TYPES.put(SYSTEM_LF, UIManager.getSystemLookAndFeelClassName());
 		LOOK_AND_FEEL_TYPES.put(DEFAULT_LF, DEFAULT_LOOK_AND_FEEL.getClass().getName());
 
-		NumberFormat format = NumberFormat.getInstance(Locale.FRANCE);// Locale.getDefault());
+		NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
 		if (format instanceof DecimalFormat) {
 			defaultDecimalSeparator = ((DecimalFormat) format).getDecimalFormatSymbols().getDecimalSeparator();
 		} else {
@@ -1472,6 +1474,25 @@ public class OSPRuntime {
 		} else {
 			whenDone.apply(jsutil.getURLBytes(url));
 		}
+	}
+
+	public static void postEvent(Runnable runner) {
+		if (isJS || SwingUtilities.isEventDispatchThread())
+			runner.run();
+		else
+			SwingUtilities.invokeLater(runner);
+	}
+
+
+	public static void dispatchEventWait(Runnable runner) {
+		if (isJS || SwingUtilities.isEventDispatchThread())
+			runner.run();
+		else
+			try {
+				SwingUtilities.invokeAndWait(runner);
+			} catch (InvocationTargetException | InterruptedException e) {
+				e.printStackTrace();
+			}
 	}
 
 }

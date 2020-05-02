@@ -636,17 +636,11 @@ public class XMLTable extends JTable {
 
   // refreshes the table
   public void refresh() {
-    Runnable runner = new Runnable() {
+	  OSPRuntime.postEvent(new Runnable() {
       public synchronized void run() {
         tableChanged(new TableModelEvent(tableModel, TableModelEvent.HEADER_ROW));
       }
-
-    };
-    if(SwingUtilities.isEventDispatchThread()) {
-      runner.run();
-    } else {
-      SwingUtilities.invokeLater(runner);
-    }
+    });
   }
 
   public void tableChanged(TableModelEvent e) {

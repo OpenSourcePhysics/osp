@@ -1655,38 +1655,37 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		}
 
 		void setInitialValue(final String stringValue) {
-			Runnable runner = new Runnable() {
+	    	OSPRuntime.postEvent(new Runnable() {
 				public void run() {
-					JDialog editor = getPopupEditor();
-					String val = stringValue.replaceAll(",", "."); //$NON-NLS-1$ //$NON-NLS-2$
-					if ("".equals(val)) //$NON-NLS-1$
-						val = "0"; //$NON-NLS-1$
-					double value = getNumber(val);
-					if (Double.isNaN(value)) {
-						editor.getContentPane().remove(dragPane);
-					} else {
-						valueMouseController.prevValue = value;
-						popupField.setToolTipText(ToolsRes.getString("FunctionEditor.PopupField.Tooltip")); //$NON-NLS-1$
-						revertButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Revert.Tooltip")); //$NON-NLS-1$
-						variablesPane.setToolTipText(ToolsRes.getString("FunctionEditor.VariablesPane.Tooltip")); //$NON-NLS-1$
-						int row = table.rowToSelect;
-						String tooltip = ToolsRes.getString("FunctionEditor.DragLabel.Tooltip"); //$NON-NLS-1$
-						dragLabel.setToolTipText(tooltip);
-						String name = (String) table.getValueAt(row, 0);
-						if (!name.equals("t")) { //$NON-NLS-1$
-							editor.getContentPane().add(dragPane, BorderLayout.SOUTH);
-						} else {
-							editor.getContentPane().remove(dragPane);
-						}
-					}
-					editor.pack();
+					setInitialValuesAsync(stringValue);
 				}
-			};
-			if (SwingUtilities.isEventDispatchThread()) {
-				runner.run();
+			});
+		}
+
+		protected void setInitialValuesAsync(String stringValue) {
+			JDialog editor = getPopupEditor();
+			String val = stringValue.replaceAll(",", "."); //$NON-NLS-1$ //$NON-NLS-2$
+			if ("".equals(val)) //$NON-NLS-1$
+				val = "0"; //$NON-NLS-1$
+			double value = getNumber(val);
+			if (Double.isNaN(value)) {
+				editor.getContentPane().remove(dragPane);
 			} else {
-				SwingUtilities.invokeLater(runner);
+				valueMouseController.prevValue = value;
+				popupField.setToolTipText(ToolsRes.getString("FunctionEditor.PopupField.Tooltip")); //$NON-NLS-1$
+				revertButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Revert.Tooltip")); //$NON-NLS-1$
+				variablesPane.setToolTipText(ToolsRes.getString("FunctionEditor.VariablesPane.Tooltip")); //$NON-NLS-1$
+				int row = table.rowToSelect;
+				String tooltip = ToolsRes.getString("FunctionEditor.DragLabel.Tooltip"); //$NON-NLS-1$
+				dragLabel.setToolTipText(tooltip);
+				String name = (String) table.getValueAt(row, 0);
+				if (!name.equals("t")) { //$NON-NLS-1$
+					editor.getContentPane().add(dragPane, BorderLayout.SOUTH);
+				} else {
+					editor.getContentPane().remove(dragPane);
+				}
 			}
+			editor.pack();
 		}
 
 		// Determines when editing starts.

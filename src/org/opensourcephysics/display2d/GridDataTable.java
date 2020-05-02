@@ -18,6 +18,8 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import org.opensourcephysics.display.OSPRuntime;
+
 public class GridDataTable extends JTable implements ActionListener {
   static final Color PANEL_BACKGROUND = javax.swing.UIManager.getColor("Panel.background"); //$NON-NLS-1$
   int refreshDelay = 0;                                                                     // time in ms to delay refresh events
@@ -73,17 +75,12 @@ public class GridDataTable extends JTable implements ActionListener {
     if(refreshDelay>0) {
       refreshTimer.start();
     } else {
-      Runnable doRefreshTable = new Runnable() {
+    	OSPRuntime.postEvent(new Runnable() {
         public synchronized void run() {
           tableChanged(new TableModelEvent(tableModel, TableModelEvent.HEADER_ROW));
         }
 
-      };
-      if(SwingUtilities.isEventDispatchThread()) {
-        doRefreshTable.run();
-      } else {
-        SwingUtilities.invokeLater(doRefreshTable);
-      }
+      });
     }
   }
 

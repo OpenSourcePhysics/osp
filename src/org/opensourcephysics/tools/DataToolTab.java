@@ -2342,84 +2342,83 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
    * Refreshes the GUI.
    */
   protected void refreshGUI() {
-    Runnable runner = new Runnable() {
+  	OSPRuntime.postEvent(new Runnable() {
       public void run() {
-        boolean changed = tabChanged;
-        newColumnButton.setText(ToolsRes.getString("DataToolTab.Button.NewColumn.Text"));               //$NON-NLS-1$
-        newColumnButton.setToolTipText(ToolsRes.getString("DataToolTab.Button.NewColumn.Tooltip"));     //$NON-NLS-1$
-        dataBuilderButton.setText(ToolsRes.getString("DataToolTab.Button.DataBuilder.Text"));           //$NON-NLS-1$
-        dataBuilderButton.setToolTipText(ToolsRes.getString("DataToolTab.Button.DataBuilder.Tooltip")); //$NON-NLS-1$
-        dataBuilderButton.setEnabled(originatorID!=0);
-        refreshDataButton.setText(ToolsRes.getString("DataToolTab.Button.Refresh.Text"));               //$NON-NLS-1$
-        refreshDataButton.setToolTipText(ToolsRes.getString("DataToolTab.Button.Refresh.Tooltip"));     //$NON-NLS-1$
-        measureButton.setText(ToolsRes.getString("DataToolTab.Button.Measure.Label"));               //$NON-NLS-1$
-        measureButton.setToolTipText(ToolsRes.getString("DataToolTab.Button.Measure.Tooltip"));     //$NON-NLS-1$
-        analyzeButton.setText(ToolsRes.getString("DataToolTab.Button.Analyze.Label"));               //$NON-NLS-1$
-        analyzeButton.setToolTipText(ToolsRes.getString("DataToolTab.Button.Analyze.Tooltip"));     //$NON-NLS-1$
-        statsCheckbox.setText(ToolsRes.getString("Checkbox.Statistics.Label"));                         //$NON-NLS-1$
-        statsCheckbox.setToolTipText(ToolsRes.getString("Checkbox.Statistics.ToolTip"));                //$NON-NLS-1$
-        fitterCheckbox.setText(ToolsRes.getString("Checkbox.Fits.Label"));                          //$NON-NLS-1$
-        fitterCheckbox.setToolTipText(ToolsRes.getString("Checkbox.Fits.ToolTip"));                 //$NON-NLS-1$
-        fourierCheckbox.setText(ToolsRes.getString("DataToolTab.Checkbox.Fourier.Label"));          //$NON-NLS-1$
-        fourierCheckbox.setToolTipText(ToolsRes.getString("DataToolTab.Checkbox.Fourier.ToolTip")); //$NON-NLS-1$
-        originShiftCheckbox.setText(ToolsRes.getString("DataToolTab.Checkbox.DataShift.Label"));      //$NON-NLS-1$
-        originShiftCheckbox.setToolTipText(ToolsRes.getString("DataToolTab.Checkbox.DataShift.ToolTip")); //$NON-NLS-1$
-        originShiftCheckbox.setEnabled(!plot.getDrawables(WorkingDataset.class).isEmpty());
-        measureFitCheckbox.setText(ToolsRes.getString("DataToolTab.Checkbox.MeasureFit.Label"));        //$NON-NLS-1$
-        measureFitCheckbox.setToolTipText(ToolsRes.getString("DataToolTab.Checkbox.MeasureFit.ToolTip")); //$NON-NLS-1$
-        propsCheckbox.setText(ToolsRes.getString("DataToolTab.Checkbox.Properties.Text"));              //$NON-NLS-1$
-        propsCheckbox.setToolTipText(ToolsRes.getString("DataToolTab.Checkbox.Properties.Tooltip"));    //$NON-NLS-1$
-        valueCheckbox.setText(ToolsRes.getString("DataToolTab.Checkbox.Position"));                     //$NON-NLS-1$
-        valueCheckbox.setToolTipText(ToolsRes.getString("DataToolTab.Checkbox.Position.Tooltip"));      //$NON-NLS-1$
-        slopeCheckbox.setText(ToolsRes.getString("DataToolTab.Checkbox.Slope"));                        //$NON-NLS-1$
-        slopeCheckbox.setToolTipText(ToolsRes.getString("DataToolTab.Checkbox.Slope.Tooltip"));         //$NON-NLS-1$
-        areaCheckbox.setText(ToolsRes.getString("DataToolTab.Checkbox.Area"));                          //$NON-NLS-1$
-        areaCheckbox.setToolTipText(ToolsRes.getString("DataToolTab.Checkbox.Area.Tooltip"));           //$NON-NLS-1$
-        helpButton.setText(ToolsRes.getString("Tool.Button.Help"));                                     //$NON-NLS-1$
-        helpButton.setToolTipText(ToolsRes.getString("Tool.Button.Help.ToolTip"));                      //$NON-NLS-1$
-        // set origin and selected point shift labels
-        String label = ToolsRes.getString("DataToolTab.Origin.Label")+":  "; //$NON-NLS-1$ //$NON-NLS-2$
-        shiftXLabel.setText(label+plot.xVar);
-        shiftYLabel.setText(plot.yVar);
-        shiftXLabel.setToolTipText(ToolsRes.getString("DataToolTab.Origin.Tooltip")); //$NON-NLS-1$
-        label = ToolsRes.getString("DataToolTab.Selection.Label")+":  "; //$NON-NLS-1$ //$NON-NLS-2$
-        selectedXLabel.setText(label+plot.xVar);
-        selectedXLabel.setToolTipText(ToolsRes.getString("DataToolTab.Selection.Tooltip")); //$NON-NLS-1$
-        selectedYLabel.setText(plot.yVar);
-        
-        toolbar.remove(newColumnButton);
-        if(userEditable) {
-          int n = toolbar.getComponentIndex(helpButton);
-          toolbar.add(newColumnButton, n);
-          toolbar.validate();
-        }
-        toolbar.remove(refreshDataButton);
-        Collection<Tool> tools = jobManager.getTools(dataManager);
-        for(Tool tool : tools) {
-          if(tool instanceof DataRefreshTool) {
-            int n = toolbar.getComponentIndex(helpButton);
-            toolbar.add(refreshDataButton, n);
-            toolbar.validate();
-            break;
-          }
-        }
-        curveFitter.refreshGUI();
-        statsTable.refreshGUI();
-        propsTable.refreshGUI();
-        refreshPlot();
-        refreshStatusBar(null);
-        tabChanged = changed;
+    	  refreshGUIAsync();
       }
-    };
-    
-    if(SwingUtilities.isEventDispatchThread()) {
-      runner.run();
-    } else {
-      SwingUtilities.invokeLater(runner);
-    }
+    });
+  
   }
 
-  /**
+  protected void refreshGUIAsync() {
+      boolean changed = tabChanged;
+      newColumnButton.setText(ToolsRes.getString("DataToolTab.Button.NewColumn.Text"));               //$NON-NLS-1$
+      newColumnButton.setToolTipText(ToolsRes.getString("DataToolTab.Button.NewColumn.Tooltip"));     //$NON-NLS-1$
+      dataBuilderButton.setText(ToolsRes.getString("DataToolTab.Button.DataBuilder.Text"));           //$NON-NLS-1$
+      dataBuilderButton.setToolTipText(ToolsRes.getString("DataToolTab.Button.DataBuilder.Tooltip")); //$NON-NLS-1$
+      dataBuilderButton.setEnabled(originatorID!=0);
+      refreshDataButton.setText(ToolsRes.getString("DataToolTab.Button.Refresh.Text"));               //$NON-NLS-1$
+      refreshDataButton.setToolTipText(ToolsRes.getString("DataToolTab.Button.Refresh.Tooltip"));     //$NON-NLS-1$
+      measureButton.setText(ToolsRes.getString("DataToolTab.Button.Measure.Label"));               //$NON-NLS-1$
+      measureButton.setToolTipText(ToolsRes.getString("DataToolTab.Button.Measure.Tooltip"));     //$NON-NLS-1$
+      analyzeButton.setText(ToolsRes.getString("DataToolTab.Button.Analyze.Label"));               //$NON-NLS-1$
+      analyzeButton.setToolTipText(ToolsRes.getString("DataToolTab.Button.Analyze.Tooltip"));     //$NON-NLS-1$
+      statsCheckbox.setText(ToolsRes.getString("Checkbox.Statistics.Label"));                         //$NON-NLS-1$
+      statsCheckbox.setToolTipText(ToolsRes.getString("Checkbox.Statistics.ToolTip"));                //$NON-NLS-1$
+      fitterCheckbox.setText(ToolsRes.getString("Checkbox.Fits.Label"));                          //$NON-NLS-1$
+      fitterCheckbox.setToolTipText(ToolsRes.getString("Checkbox.Fits.ToolTip"));                 //$NON-NLS-1$
+      fourierCheckbox.setText(ToolsRes.getString("DataToolTab.Checkbox.Fourier.Label"));          //$NON-NLS-1$
+      fourierCheckbox.setToolTipText(ToolsRes.getString("DataToolTab.Checkbox.Fourier.ToolTip")); //$NON-NLS-1$
+      originShiftCheckbox.setText(ToolsRes.getString("DataToolTab.Checkbox.DataShift.Label"));      //$NON-NLS-1$
+      originShiftCheckbox.setToolTipText(ToolsRes.getString("DataToolTab.Checkbox.DataShift.ToolTip")); //$NON-NLS-1$
+      originShiftCheckbox.setEnabled(!plot.getDrawables(WorkingDataset.class).isEmpty());
+      measureFitCheckbox.setText(ToolsRes.getString("DataToolTab.Checkbox.MeasureFit.Label"));        //$NON-NLS-1$
+      measureFitCheckbox.setToolTipText(ToolsRes.getString("DataToolTab.Checkbox.MeasureFit.ToolTip")); //$NON-NLS-1$
+      propsCheckbox.setText(ToolsRes.getString("DataToolTab.Checkbox.Properties.Text"));              //$NON-NLS-1$
+      propsCheckbox.setToolTipText(ToolsRes.getString("DataToolTab.Checkbox.Properties.Tooltip"));    //$NON-NLS-1$
+      valueCheckbox.setText(ToolsRes.getString("DataToolTab.Checkbox.Position"));                     //$NON-NLS-1$
+      valueCheckbox.setToolTipText(ToolsRes.getString("DataToolTab.Checkbox.Position.Tooltip"));      //$NON-NLS-1$
+      slopeCheckbox.setText(ToolsRes.getString("DataToolTab.Checkbox.Slope"));                        //$NON-NLS-1$
+      slopeCheckbox.setToolTipText(ToolsRes.getString("DataToolTab.Checkbox.Slope.Tooltip"));         //$NON-NLS-1$
+      areaCheckbox.setText(ToolsRes.getString("DataToolTab.Checkbox.Area"));                          //$NON-NLS-1$
+      areaCheckbox.setToolTipText(ToolsRes.getString("DataToolTab.Checkbox.Area.Tooltip"));           //$NON-NLS-1$
+      helpButton.setText(ToolsRes.getString("Tool.Button.Help"));                                     //$NON-NLS-1$
+      helpButton.setToolTipText(ToolsRes.getString("Tool.Button.Help.ToolTip"));                      //$NON-NLS-1$
+      // set origin and selected point shift labels
+      String label = ToolsRes.getString("DataToolTab.Origin.Label")+":  "; //$NON-NLS-1$ //$NON-NLS-2$
+      shiftXLabel.setText(label+plot.xVar);
+      shiftYLabel.setText(plot.yVar);
+      shiftXLabel.setToolTipText(ToolsRes.getString("DataToolTab.Origin.Tooltip")); //$NON-NLS-1$
+      label = ToolsRes.getString("DataToolTab.Selection.Label")+":  "; //$NON-NLS-1$ //$NON-NLS-2$
+      selectedXLabel.setText(label+plot.xVar);
+      selectedXLabel.setToolTipText(ToolsRes.getString("DataToolTab.Selection.Tooltip")); //$NON-NLS-1$
+      selectedYLabel.setText(plot.yVar);
+      
+      toolbar.remove(newColumnButton);
+      if(userEditable) {
+        int n = toolbar.getComponentIndex(helpButton);
+        toolbar.add(newColumnButton, n);
+        toolbar.validate();
+      }
+      toolbar.remove(refreshDataButton);
+      Collection<Tool> tools = jobManager.getTools(dataManager);
+      for(Tool tool : tools) {
+        if(tool instanceof DataRefreshTool) {
+          int n = toolbar.getComponentIndex(helpButton);
+          toolbar.add(refreshDataButton, n);
+          toolbar.validate();
+          break;
+        }
+      }
+      curveFitter.refreshGUI();
+      statsTable.refreshGUI();
+      propsTable.refreshGUI();
+      refreshPlot();
+      refreshStatusBar(null);
+      tabChanged = changed;
+  }
+
+/**
    * Refreshes the decimal separators.
    */
   protected void refreshDecimalSeparators() {

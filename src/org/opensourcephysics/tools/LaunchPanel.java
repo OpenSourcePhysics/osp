@@ -20,7 +20,9 @@ import javax.swing.tree.*;
 
 import org.opensourcephysics.controls.*;
 import org.opensourcephysics.display.GUIUtils;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.LaunchNode.DisplayTab;
+import org.opensourcephysics.tools.Launcher.HTMLPane;
 
 /**
  * This is a panel that displays a tree with a LaunchNode root.
@@ -225,171 +227,159 @@ public class LaunchPanel extends JPanel {
     return null;
   }
 
-  /**
-   * Displays all tabs for the specified node.
-   *
-   * @param node the LaunchNode
-   */
-  protected void displayTabs(LaunchNode node) {
-    if(node!=null) {
-      OSPLog.finer(LaunchRes.getString("Log.Message.NodeSelected") //$NON-NLS-1$
-                   +" "+node);  //$NON-NLS-1$
-      boolean isBuilder = launcher instanceof LaunchBuilder;
-      String noTitle = LaunchRes.getString("HTMLTab.Title.Untitled"); //$NON-NLS-1$
-      java.net.URL url = node.htmlURL;                            // what URL to display
-      // don't display PDF files in Launcher
-      if (url!=null && url.getPath().toLowerCase().endsWith("pdf")) //$NON-NLS-1$
-      	url = null;
-      int tabNumber = node.tabNumber;                             // which tab to display it in
-      boolean hasModel = false;
-      if(url==null && node.getDisplayTabCount()>0) {
-	      // skip display tabs with PDFs
-	      int k = 0;
-	      for (int i=tabNumber; i<node.getDisplayTabCount(); i++) {
-	        DisplayTab next = node.getDisplayTab(i);
-	        // next!=null condiiton added by W. Christian
-	        if(next!=null && next.url!=null && next.url.getPath().toLowerCase().endsWith(".pdf")) { //$NON-NLS-1$
-	        	k++;
-	        }
-	        else break;
-	      }
-        // node has multiple URLs so pick the tab-associated one
-        tabNumber = Math.max(0, tabNumber);
-        DisplayTab displayTab = node.getDisplayTab(tabNumber+k);
-        if(displayTab==null){ // null check added by W.Chrisitan
-        	// do nothing
-        }else if(displayTab.url!=null) {  
-          url = displayTab.url;
-        } else {
-        	hasModel = displayTab.getModelClass() != null;
-        }
-      }
-      
-      // don't display PDF files in Launcher
-      if (url!=null && url.getPath().toLowerCase().endsWith("pdf")) //$NON-NLS-1$
-      	url = null;
-      
-      // rebuild tabs
-      rebuildingTabs = true;
-      int tabCount = 0;
-      if(!isBuilder) {
-        tabbedPane.removeAll();
-      }
-      Iterator<?> it = node.tabData.iterator();
-      while(it.hasNext()) {
-        final LaunchNode.DisplayTab displayTab = (LaunchNode.DisplayTab) it.next();
-        if(displayTab.url!=null && !displayTab.url.getPath().toLowerCase().endsWith(".pdf")) { //$NON-NLS-1$
-          try {
-            if(displayTab.url.getContent()!=null) {
-              final Launcher.HTMLPane html = launcher.getHTMLTab(tabCount);
-              final java.net.URL theURL = ((tabNumber==tabCount)&&(url!=null))
-                                          ? url
-                                          : displayTab.url;
-              final boolean nodeEnabled = node.enabled;
-              Runnable runner = new Runnable() {
-                public void run() {
-                  try {
-                  	if (htmlSubstitutions.isEmpty()) {
-                  		// the traditional method
-                  		html.editorPane.setPage(theURL);                  	                  	
-                  	}
-                  	else {
-                    	// read url into a string
-                    	Scanner scanner = new Scanner(theURL.openStream(), "UTF-8"); //$NON-NLS-1$
-                    	String text = scanner.useDelimiter("\\A").next(); //$NON-NLS-1$
-                    	scanner.close();
-                    	// make html substitutions
-                    	for (String target: htmlSubstitutions.keySet()) {
-                    		String newValue = htmlSubstitutions.get(target);
-                    		text = text.replaceAll(target, newValue);
-                    	}
-                    	// set document base for relative paths
-                    	HTMLDocument doc = (HTMLDocument)html.editorPane.getDocument();
-	                    doc.setBase(theURL);
-	                    // set editorPane text
-                    	html.editorPane.setText(text);
-                    	// scroll to top
-                    	html.editorPane.setCaretPosition(0);
-                  	}
-                  } catch(IOException e) {
-                  }
-                  
-                  if(theURL.getRef()!=null) {
-                    html.editorPane.scrollToReference(theURL.getRef());
-                  	if (FontSizer.getLevel()>0) {
-	                  	// invoke scrollToReference again later at high font levels
-	                    Timer timer = new Timer(100, new ActionListener() {
-	                      public void actionPerformed(ActionEvent e) {
-	                      	html.editorPane.scrollToReference(theURL.getRef());
-	                      }
-	                    });
-	                		timer.setRepeats(false);
-	                		timer.start();
-                  	}
-                  }
-                  launcher.setLinksEnabled(html.editorPane, displayTab.hyperlinksEnabled && nodeEnabled);
-                }
+	/**
+	 * Displays all tabs for the specified node.
+	 *
+	 * @param node the LaunchNode
+	 */
+	protected void displayTabs(LaunchNode node) {
+		if (node != null) {
+			OSPLog.finer(LaunchRes.getString("Log.Message.NodeSelected") //$NON-NLS-1$
+					+ " " + node); //$NON-NLS-1$
+			boolean isBuilder = launcher instanceof LaunchBuilder;
+			String noTitle = LaunchRes.getString("HTMLTab.Title.Untitled"); //$NON-NLS-1$
+			java.net.URL url = node.htmlURL; // what URL to display
+			// don't display PDF files in Launcher
+			if (url != null && url.getPath().toLowerCase().endsWith("pdf")) //$NON-NLS-1$
+				url = null;
+			int tabNumber = node.tabNumber; // which tab to display it in
+			boolean hasModel = false;
+			if (url == null && node.getDisplayTabCount() > 0) {
+				// skip display tabs with PDFs
+				int k = 0;
+				for (int i = tabNumber; i < node.getDisplayTabCount(); i++) {
+					DisplayTab next = node.getDisplayTab(i);
+					// next!=null condiiton added by W. Christian
+					if (next != null && next.url != null && next.url.getPath().toLowerCase().endsWith(".pdf")) { //$NON-NLS-1$
+						k++;
+					} else
+						break;
+				}
+				// node has multiple URLs so pick the tab-associated one
+				tabNumber = Math.max(0, tabNumber);
+				DisplayTab displayTab = node.getDisplayTab(tabNumber + k);
+				if (displayTab == null) { // null check added by W.Chrisitan
+					// do nothing
+				} else if (displayTab.url != null) {
+					url = displayTab.url;
+				} else {
+					hasModel = displayTab.getModelClass() != null;
+				}
+			}
 
-              };
-              if(SwingUtilities.isEventDispatchThread()) {
-                runner.run();
-              } else {
-                SwingUtilities.invokeLater(runner);
-              }
-              if(!isBuilder) {
-                String title = (displayTab.title==null)
-                               ? noTitle
-                               : displayTab.title;
-                
-                tabbedPane.addTab(title, html.scroller);
-                tabCount++;
-              }
-            }
-          } catch(IOException ex) {
-            OSPLog.fine(LaunchRes.getString("Log.Message.BadURL")  //$NON-NLS-1$
-                        +" "+displayTab.url);  //$NON-NLS-1$
-          }
-        }
-        else if (displayTab.getModelScroller() != null) {
-          if(!isBuilder) {
-            String title = (displayTab.title==null)
-                           ? noTitle
-                           : displayTab.title;
-            tabbedPane.addTab(title, displayTab.getModelScroller());
-            tabCount++;
-          }
-        }
-      }
-      // display appropriate tabs
-      if(!isBuilder) {
-        if(url!=null || hasModel) {
-          if((tabbedPane.getTabCount()==1)&&tabbedPane.getTitleAt(0).equals(noTitle)) {
-            splitPane.setRightComponent(tabbedPane.getComponentAt(0));
-          } 
-          else if(tabbedPane.getTabCount()>0) {
-            splitPane.setRightComponent(tabbedPane);
-            if(tabbedPane.getTabCount()>tabNumber) {
-              tabbedPane.setSelectedIndex(tabNumber);
-            }
-          }
-        }
-        else {
-        	JScrollPane launchPane = node.getLaunchModelScroller();
-        	if (launchPane != null) {
-            splitPane.setRightComponent(launchPane);
-          } 
+			// don't display PDF files in Launcher
+			if (url != null && url.getPath().toLowerCase().endsWith("pdf")) //$NON-NLS-1$
+				url = null;
+
+			// rebuild tabs
+			rebuildingTabs = true;
+			int tabCount = 0;
+			if (!isBuilder) {
+				tabbedPane.removeAll();
+			}
+			Iterator<?> it = node.tabData.iterator();
+			while (it.hasNext()) {
+				LaunchNode.DisplayTab displayTab = (LaunchNode.DisplayTab) it.next();
+				if (displayTab.url != null && !displayTab.url.getPath().toLowerCase().endsWith(".pdf")) { //$NON-NLS-1$
+					try {
+						if (displayTab.url.getContent() != null) {
+							Launcher.HTMLPane html = launcher.getHTMLTab(tabCount);
+							java.net.URL theURL = ((tabNumber == tabCount) && (url != null)) ? url : displayTab.url;
+							OSPRuntime.postEvent(new Runnable() {
+								public void run() {
+									launchHtml(html, theURL, displayTab.hyperlinksEnabled && node.enabled);
+								}
+
+							});
+							if (!isBuilder) {
+								String title = (displayTab.title == null) ? noTitle : displayTab.title;
+
+								tabbedPane.addTab(title, html.scroller);
+								tabCount++;
+							}
+						}
+					} catch (IOException ex) {
+						OSPLog.fine(LaunchRes.getString("Log.Message.BadURL") //$NON-NLS-1$
+								+ " " + displayTab.url); //$NON-NLS-1$
+					}
+				} else if (displayTab.getModelScroller() != null) {
+					if (!isBuilder) {
+						String title = (displayTab.title == null) ? noTitle : displayTab.title;
+						tabbedPane.addTab(title, displayTab.getModelScroller());
+						tabCount++;
+					}
+				}
+			}
+			// display appropriate tabs
+			if (!isBuilder) {
+				if (url != null || hasModel) {
+					if ((tabbedPane.getTabCount() == 1) && tabbedPane.getTitleAt(0).equals(noTitle)) {
+						splitPane.setRightComponent(tabbedPane.getComponentAt(0));
+					} else if (tabbedPane.getTabCount() > 0) {
+						splitPane.setRightComponent(tabbedPane);
+						if (tabbedPane.getTabCount() > tabNumber) {
+							tabbedPane.setSelectedIndex(tabNumber);
+						}
+					}
+				} else {
+					JScrollPane launchPane = node.getLaunchModelScroller();
+					if (launchPane != null) {
+						splitPane.setRightComponent(launchPane);
+					} else {
+						descriptionPane.setText(node.description);
+						splitPane.setRightComponent(descriptionScroller);
+					}
+				}
+			}
+			rebuildingTabs = false;
+			launcher.refreshGUI();
+		}
+	}
+
+  protected void launchHtml(HTMLPane html, URL theURL, boolean nodeEnabled) {
+      try {
+        	if (htmlSubstitutions.isEmpty()) {
+        		// the traditional method
+        		html.editorPane.setPage(theURL);                  	                  	
+        	}
         	else {
-            descriptionPane.setText(node.description);
-            splitPane.setRightComponent(descriptionScroller);
-  	      }
+          	// read url into a string
+          	Scanner scanner = new Scanner(theURL.openStream(), "UTF-8"); //$NON-NLS-1$
+          	String text = scanner.useDelimiter("\\A").next(); //$NON-NLS-1$
+          	scanner.close();
+          	// make html substitutions
+          	for (String target: htmlSubstitutions.keySet()) {
+          		String newValue = htmlSubstitutions.get(target);
+          		text = text.replaceAll(target, newValue);
+          	}
+          	// set document base for relative paths
+          	HTMLDocument doc = (HTMLDocument)html.editorPane.getDocument();
+              doc.setBase(theURL);
+              // set editorPane text
+          	html.editorPane.setText(text);
+          	// scroll to top
+          	html.editorPane.setCaretPosition(0);
+        	}
+        } catch(IOException e) {
         }
-      }
-      rebuildingTabs = false;
-      launcher.refreshGUI();
-    }
+        
+        if(theURL.getRef()!=null) {
+          html.editorPane.scrollToReference(theURL.getRef());
+        	if (FontSizer.getLevel()>0) {
+            	// invoke scrollToReference again later at high font levels
+              Timer timer = new Timer(100, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                	html.editorPane.scrollToReference(theURL.getRef());
+                }
+              });
+          		timer.setRepeats(false);
+          		timer.start();
+        	}
+        }
+        launcher.setLinksEnabled(html.editorPane, nodeEnabled);	
   }
 
-  /**
+/**
    * Creates the GUI.
    */
   protected void createGUI() {

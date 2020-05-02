@@ -54,6 +54,7 @@ import javax.swing.table.TableColumn;
 import org.opensourcephysics.display.CellBorder;
 import org.opensourcephysics.display.Dataset;
 import org.opensourcephysics.display.DrawingPanel;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.tools.DataToolTable.WorkingDataset;
@@ -173,18 +174,13 @@ final public class DataToolPropsTable extends JTable {
 	 * Refresh the data display in this table.
 	 */
 	public void refreshTable() {
-		Runnable refresh = new Runnable() {
+    	OSPRuntime.postEvent(new Runnable() {
 			public synchronized void run() {
 				tableChanged(new TableModelEvent(propsModel, TableModelEvent.HEADER_ROW));
 				refreshCellWidths();
 			}
 
-		};
-		if (SwingUtilities.isEventDispatchThread()) {
-			refresh.run();
-		} else {
-			SwingUtilities.invokeLater(refresh);
-		}
+		});
 	}
 
 	public void addColumn(TableColumn aColumn) {

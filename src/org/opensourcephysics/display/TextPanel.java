@@ -78,7 +78,8 @@ public class TextPanel extends JPanel {
 		if (c == null) {
 			return;
 		}
-		Runnable runner = new Runnable() {
+		
+		OSPRuntime.postEvent(new Runnable() {
 			public synchronized void run() {
 				if (c.getLayout() instanceof OSPLayout) {
 					((OSPLayout) c.getLayout()).quickLayout(c, TextPanel.this);
@@ -88,13 +89,7 @@ public class TextPanel extends JPanel {
 				}
 			}
 
-		};
-		if (OSPRuntime.isJS || SwingUtilities.isEventDispatchThread()) {
-			runner.run();
-		} else {
-			SwingUtilities.invokeLater(runner);
-		}
-
+		});
 	}
      
   /**

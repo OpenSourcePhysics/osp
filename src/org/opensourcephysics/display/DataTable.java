@@ -462,17 +462,12 @@ public class DataTable extends JTable implements ActionListener {
     if(refreshDelay>0) {
       refreshTimer.start();
     } else {
-      Runnable doRefreshTable = new Runnable() {
+    	OSPRuntime.postEvent(new Runnable() {
         public synchronized void run() {
           actionPerformed(null);
         }
 
-      };
-      if(SwingUtilities.isEventDispatchThread()) {
-        doRefreshTable.run();
-      } else {
-        SwingUtilities.invokeLater(doRefreshTable);
-      }
+      });
     }
   }
 
