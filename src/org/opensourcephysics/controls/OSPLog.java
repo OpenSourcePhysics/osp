@@ -1247,6 +1247,10 @@ public class OSPLog extends JFrame {
 		}
 
 	}
+
+	public static void debug(String msg) {
+		finest(msg);
+	}
 }
 
 /**
