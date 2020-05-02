@@ -23,8 +23,8 @@ import org.opensourcephysics.tools.ResourceLoader;
  */
 public class MovieFactory {
 
-	private static final String ENGINE_NONE = "none"; //$NON-NLS-1$
-	private static final String ENGINE_JS = "JS"; //$NON-NLS-1$
+	public static final String ENGINE_NONE = "none"; //$NON-NLS-1$
+	public static final String ENGINE_JS = "JS"; //$NON-NLS-1$
 	public static final String ENGINE_XUGGLE = "Xuggle"; //$NON-NLS-1$
 
 	private static String xuggleClassPath = "org.opensourcephysics.media.xuggle."; //$NON-NLS-1$
@@ -220,16 +220,16 @@ public class MovieFactory {
 		return null;
 	}
 
-	/**
-	 * called by VideoClip.Loader and TrackerIO only
-	 * 
-	 * @param video
-	 */
-	public static void setEngine(Video video) {
-		videoEngineName = (video instanceof MovieVideoI ? video.getName()
-				: ENGINE_NONE);
-	}
-
+//	/**
+//	 * called by VideoClip.Loader and TrackerIO only
+//	 * 
+//	 * @param video
+//	 */
+//	public static void setEngine(Video video) {
+//		videoEngineName = (video instanceof MovieVideoI ? video.getName()
+//				: ENGINE_NONE);
+//	}
+//
 	public static void startMovieThumbnailTool() {
 		if (OSPRuntime.isJS) {
 			return; // ?? 

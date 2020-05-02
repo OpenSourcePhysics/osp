@@ -46,6 +46,8 @@ import org.opensourcephysics.controls.XMLControlElement;
  */
 public class ImageVideoType implements VideoType {
 	
+	public static final String TYPE_IMAGE = "Image"; //$NON-NLS-1$
+	
   protected static TreeSet<VideoFileFilter> imageFileFilters 
 			= new TreeSet<VideoFileFilter>();
 

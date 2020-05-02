@@ -814,8 +814,8 @@ public class ImageVideo extends VideoAdapter {
   }
 
 	@Override
-	public String getName() {
-		return "Image";
+	public String getTypeName() {
+		return ImageVideoType.TYPE_IMAGE;
 	}
 
 }

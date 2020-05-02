@@ -344,8 +344,8 @@ public class GifVideo extends VideoAdapter {
   }
 
 	@Override
-	public String getName() {
-		return "Gif";
+	public String getTypeName() {
+		return GifVideoType.TYPE_GIF;
 	}
 
 }
