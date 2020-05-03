@@ -36,6 +36,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.function.Function;
 
 import javax.swing.JOptionPane;
 import javax.swing.event.SwingPropertyChangeSupport;
@@ -46,6 +47,7 @@ import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLProperty;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.core.VideoIO.VideoEnginePanel;
+import org.opensourcephysics.tools.Resource;
 import org.opensourcephysics.tools.ResourceLoader;
 
 /**
@@ -727,9 +729,9 @@ public class VideoClip {
 			} else if (OSPRuntime.checkTempDirCache) {
 				path = OSPRuntime.tempDir + path;
 			}
-			Video video = VideoIO.getVideo(path, null);
+			Video[] video = new Video[] {VideoIO.getVideo(path, null)};
 			boolean engineChange = false;
-			if (video == null && path != null && !VideoIO.isCanceled()) {
+			if (video[0] == null && path != null && !VideoIO.isCanceled()) {
 				if (OSPRuntime.isJS) {
 					if (ResourceLoader.getResource(path) != null) { // resource exists but not loaded
 						OSPLog.info("\"" + path + "\" could not be opened"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -752,40 +754,42 @@ public class VideoClip {
 								MediaRes.getString("VideoClip.Dialog.VideoNotFound.Title"), //$NON-NLS-1$
 								JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 						if (response == JOptionPane.YES_OPTION) {
-							// BH!  We cannot do this is JavaScript
-							VideoEnginePanel panel = VideoIO.getVideoEnginePanel();
-							VideoIO.getChooser().setAccessory(panel);
-							panel.reset();
 							VideoIO.getChooser().setSelectedFile(new File(path));
-							java.io.File[] files = VideoIO.getChooserFiles("open video"); //$NON-NLS-1$
-							if (files != null && files.length > 0) {
-								VideoType selectedType = panel.getSelectedVideoType();
-								path = XML.getAbsolutePath(files[0]);
-								video = VideoIO.getVideo(path, selectedType);
-							}
+							VideoIO.getChooserFilesAsync("open", new Function<File[], Void>() {//$NON-NLS-1$
+
+								@Override
+								public Void apply(File[] files) {
+									if (files != null && files.length > 0) {
+										String path = XML.getAbsolutePath(files[0]);
+										video[0] = VideoIO.getVideo(path, null);
+									}
+									return null;
+								}
+
+							}); 
 						}
 					}
 				}
 			}
-			if (video != null) {
+			if (video[0] != null) {
 				Collection<?> filters = (Collection<?>) child.getObject("filters"); //$NON-NLS-1$
 				if (filters != null) {
-					video.getFilterStack().clear();
+					video[0].getFilterStack().clear();
 					Iterator<?> it = filters.iterator();
 					while (it.hasNext()) {
 						Filter filter = (Filter) it.next();
-						video.getFilterStack().addFilter(filter);
+						video[0].getFilterStack().addFilter(filter);
 					}
 				}
-				if (video instanceof ImageVideo) {
+				if (video[0] instanceof ImageVideo) {
 					double dt = child.getDouble("delta_t"); //$NON-NLS-1$
 					if (!Double.isNaN(dt)) {
-						((ImageVideo) video).setFrameDuration(dt);
+						((ImageVideo) video[0]).setFrameDuration(dt);
 					}
 				}
 
 			}
-			VideoClip clip = new VideoClip(video);
+			VideoClip clip = new VideoClip(video[0]);
 			clip.changeEngine = engineChange;
 			if (path != null) {
 				if (!path.startsWith("/") && path.indexOf(":") == -1) { //$NON-NLS-1$ //$NON-NLS-2$
