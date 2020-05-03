@@ -59,8 +59,7 @@ import swingjs.api.js.HTML5Video;
  *
  * status: Only fleshed in; not implemented.
  * 
- * @author Douglas Brown
- * @version 1.0
+ * @author rhanson
  */
 public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVideoI {
 	
@@ -72,10 +71,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 * see https://en.wikipedia.org/wiki/HTML5_video#Browser_support
 	 */
 	static {
-		// BH question: what does this next line do? Maybe nothing?
-		MovieFactory.addMovieVideoType(new JSMovieVideoType());
-		
-		// add common video types -- was JSMovieIO
+		// add common video types 
 		for (String ext : VideoIO.JS_VIDEO_EXTENSIONS) { // {"mov", "ogg", "mp4"}
 			VideoFileFilter filter = new VideoFileFilter(ext, new String[] { ext });
 			MovieVideoType movieType = new JSMovieVideoType(filter);
@@ -128,6 +124,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 
 	/**
 	 * Plays the video at the current rate. Overrides VideoAdapter method.
+	 * pig this and stop below overrides may not be needed--needs testing
 	 */
 	public void play() {
 		if (getFrameCount() == 1) {
@@ -639,7 +636,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	}
 
 	/**
-	 * Returns an XML.ObjectLoader to save and load XuggleVideo data.
+	 * Returns an XML.ObjectLoader to save and load JSMovieVideo data.
 	 *
 	 * @return the object loader
 	 */
@@ -648,7 +645,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	}
 
 	/**
-	 * A class to save and load XuggleVideo data.
+	 * A class to save and load JSMovieVideo data.
 	 */
 	static public class Loader extends VideoAdapter.Loader {
 
@@ -670,8 +667,8 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 
 
 	@Override
-	public String getName() {
-		return "JS";
+	public String getTypeName() {
+		return MovieFactory.ENGINE_JS;
 	}
 }
 

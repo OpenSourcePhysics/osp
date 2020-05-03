@@ -746,9 +746,6 @@ public class VideoClip {
 				{
 					if (ResourceLoader.getResource(path) != null) { // resource exists but not loaded
 						OSPLog.info("\"" + path + "\" could not be opened"); //$NON-NLS-1$ //$NON-NLS-2$
-						boolean[] setAsDefault = new boolean[1];
-						video = VideoIO.getAvailableEngineFromDialog(video, path, null, true, setAsDefault);
-						engineChange = setAsDefault[0];
 					} else {
 						int response = JOptionPane.showConfirmDialog(null, "\"" + path + "\" " //$NON-NLS-1$ //$NON-NLS-2$
 								+ MediaRes.getString("VideoClip.Dialog.VideoNotFound.Message"), //$NON-NLS-1$
