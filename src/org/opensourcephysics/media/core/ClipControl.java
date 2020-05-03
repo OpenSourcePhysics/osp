@@ -143,7 +143,6 @@ public abstract class ClipControl implements PropertyChangeListener {
   public void setFrameNumber(int n) {
   	if (clip.includesFrame(n)) {
 	    stepNumber = clip.frameToStep(n);
-	    n = Math.max(0, n+clip.getFrameShift());
 	    videoFrameNumber = n;
   	}
   }
@@ -155,7 +154,7 @@ public abstract class ClipControl implements PropertyChangeListener {
    */
   public void setStepNumber(int n) {
     stepNumber = n;
-    n = Math.max(0, clip.stepToFrame(n)+clip.getFrameShift());
+    n = Math.max(0, clip.stepToFrame(n));
     videoFrameNumber = n;
   }
 
@@ -210,7 +209,7 @@ public abstract class ClipControl implements PropertyChangeListener {
    * @return the frame number
    */
   public int getFrameNumber() {
-  	int n = videoFrameNumber-clip.getFrameShift();
+  	int n = videoFrameNumber;
   	n = Math.max(0, n); // can't be negative
   	return n;
   }
