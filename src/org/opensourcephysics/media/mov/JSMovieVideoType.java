@@ -1,9 +1,8 @@
 /*
- * The org.opensourcephysics.media.frame package provides video
- * frame services including implementations of the Video and VideoRecorder interfaces
- * using Xuggle (Java) and JS (JavaScript -- our minimal implementation).
+ * The org.opensourcephysics.media.mov package provides movie video services
+ * and JavaScript implementations of Video and VideoType.
  *
- * Copyright (c) 2017  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2017  Robert Hanson, Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,20 +23,23 @@
  * please see <https://www.compadre.org/osp/>.
  */
 package org.opensourcephysics.media.mov;
+import java.io.File;
+
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.media.core.MediaRes;
+import org.opensourcephysics.media.core.Video;
 import org.opensourcephysics.media.core.VideoFileFilter;
+import org.opensourcephysics.media.core.VideoRecorder;
 
 /**
- * This implements the VideoType interface with a Xuggle or JS type.
+ * This implements the VideoType interface with a JS type.
  *
- * @author Douglas Brown
- * @version 1.0
+ * @author hansonr
  */
 public class JSMovieVideoType extends MovieVideoType {
   
 	/**
-	 * Constructor attempts to load a movie class the first time used. This will
-	 * throw an error if movies are not available.
+	 * No-arg constructor.
 	 */
 	public JSMovieVideoType() {
 		super();
@@ -61,6 +63,42 @@ public class JSMovieVideoType extends MovieVideoType {
 	  String type = super.getDefaultExtension();
 	  return (type == null ? MediaRes.getString("JSVideoType.Description") : type);  //$NON-NLS-1$
   }
+  
+  /**
+   * Return true if the specified video is this type.
+   *
+   * @param video the video
+   * @return true if the video is this type
+   */
+  public boolean isType(Video video) {
+  	if (!(video.getClass() == JSMovieVideo.class)) return false;
+  	if (singleTypeFilter==null) return true;
+  	String name = (String)video.getProperty("name"); //$NON-NLS-1$
+  	return singleTypeFilter.accept(new File(name));
+  }
+
+  @Override
+  public Video getVideo(String name) { 
+		try {
+			Video video = new JSMovieVideo(name);
+  		video.setProperty("video_type", this); //$NON-NLS-1$
+  		return video;
+		} catch (Exception e) {
+			if (name != null) {
+				OSPLog.fine(getDescription() + ": " + e.getMessage()); //$NON-NLS-1$
+			}
+			e.printStackTrace();
+		} 
+    return null;
+  }
+
+  @Override
+  public VideoRecorder getRecorder() {
+		OSPLog.warning("JSMovieVideoType unable to record");
+		return null;
+  }
+
+
 }
 
 /*
