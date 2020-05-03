@@ -27,6 +27,7 @@ import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.SwingPropertyChangeSupport;
 
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.ResizableIcon;
 
 /**
@@ -162,36 +163,37 @@ public class FontSizer {
   	return integerFactor;
   }
 
-  /**
-   * Sets the fonts of an object to a specified level.
-   *
-   * @param obj the object
-   * @param level the level
-   */
-  public static void setFonts(Object obj, int level) {
-	  if (obj == null)
-		  return; // BH 2020.04.23 may be the case for missing buttons in Tracker
-  	if (obj instanceof Object[]) {
-  		for (Object next: ((Object[])obj)) {
-  			setFonts(next, level);
-  		}
-  		return;
-  	}
-  	if (obj instanceof Collection) {
-  		for (Object next: ((Collection<?>)obj)) {
-  			setFonts(next, level);
-  		}
-  		return;
-  	}
-    double factor = getFactor(level);
-    if(obj instanceof Container) {
-      setFontFactor((Container) obj, factor);
-    } else if(obj instanceof TitledBorder) {
-      setFontFactor((TitledBorder) obj, factor);
-    } else if(obj instanceof Component) {
-      setFontFactor((Component) obj, factor);
-    }
-  }
+	/**
+	 * Sets the fonts of an object to a specified level.
+	 *
+	 * @param obj   the object
+	 * @param level the level
+	 */
+	public static void setFonts(Object obj, int level) {
+
+		if (obj == null || OSPRuntime.allowSetFonts)
+			return; // BH 2020.04.23 may be the case for missing buttons in Tracker
+		if (obj instanceof Object[]) {
+			for (Object next : ((Object[]) obj)) {
+				setFonts(next, level);
+			}
+			return;
+		}
+		if (obj instanceof Collection) {
+			for (Object next : ((Collection<?>) obj)) {
+				setFonts(next, level);
+			}
+			return;
+		}
+		double factor = getFactor(level);
+		if (obj instanceof Container) {
+			setFontFactor((Container) obj, factor);
+		} else if (obj instanceof TitledBorder) {
+			setFontFactor((TitledBorder) obj, factor);
+		} else if (obj instanceof Component) {
+			setFontFactor((Component) obj, factor);
+		}
+	}
 
   /**
    * Resizes a font to a specified level.
