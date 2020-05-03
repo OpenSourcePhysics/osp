@@ -162,7 +162,7 @@ public class StepperClipControl extends ClipControl {
     } 
     else {
       int end = video.getEndFrameNumber();
-      final int m = clip.stepToFrame(n)+clip.getFrameShift();
+      final int m = clip.stepToFrame(n);
       final int stepNum = n;
       if (m>end) {
         super.setStepNumber(n);
@@ -294,7 +294,7 @@ public class StepperClipControl extends ClipControl {
   	if (video!=null && video.getDuration()>0) {
       int n = video.getFrameNumber();
       double videoTime = video.getFrameTime(n);
-      int m = clip.stepToFrame(getStepNumber())+clip.getFrameShift();
+      int m = clip.stepToFrame(getStepNumber());
       if (m>video.getFrameCount()-1) {
         int extra = m-video.getFrameCount()+1;
         videoTime = video.getFrameTime(video.getFrameCount()-1)+extra*frameDuration;
@@ -312,7 +312,7 @@ public class StepperClipControl extends ClipControl {
    */
   public double getStepTime(int stepNumber) {
   	if (video!=null && video.getDuration()>0) {
-      int n = clip.stepToFrame(stepNumber)+clip.getFrameShift();
+      int n = clip.stepToFrame(stepNumber);
       double videoTime = video.getFrameTime(n);
       if (n>video.getFrameCount()-1) {
       	int extra = n-video.getFrameCount()+1;
@@ -337,7 +337,7 @@ public class StepperClipControl extends ClipControl {
     	int n = ((Integer) e.getNewValue()).intValue();
       stepDisplayed = true;
       if(n!=videoFrameNumber) {
-        super.setFrameNumber(n-clip.getFrameShift());
+        super.setFrameNumber(n);
         support.firePropertyChange(ClipControl.PROPERTY_VIDEO_STEPNUMBER, null, Integer.valueOf(stepNumber)); //$NON-NLS-1$
       }
       if(playing) {

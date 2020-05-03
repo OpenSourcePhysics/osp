@@ -46,8 +46,6 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLProperty;
 import org.opensourcephysics.display.OSPRuntime;
-import org.opensourcephysics.media.core.VideoIO.VideoEnginePanel;
-import org.opensourcephysics.tools.Resource;
 import org.opensourcephysics.tools.ResourceLoader;
 
 /**
@@ -78,7 +76,6 @@ public class VideoClip {
   private int stepCount = 10;   // default stepCount is 10 if video is null
   private int nullVideoFrameCount = stepCount; // default frameCount same as stepCount
   private int maxFrameCount = 300000; // approx 2h45m at 30fps
-  private int frameShift = 0; // for shifted video frame numbers
   private double startTime = 0; // start time in milliseconds
   protected boolean isDefaultStartTime = true;
   protected Video video = null;
@@ -165,11 +162,11 @@ public class VideoClip {
     	// set video end frame to last video frame (temporary)
       video.setEndFrameNumber(video.getFrameCount()-1);
       // set video start frame number to desired start frame
-      int vidStart = Math.max(0, start+frameShift);
+      int vidStart = Math.max(0, start);
       video.setStartFrameNumber(vidStart);
 
       // set start frame to frame number of first video frame
-      startFrame = Math.max(0, video.getStartFrameNumber()-frameShift);      
+      startFrame = Math.max(0, video.getStartFrameNumber());      
     }    
     else { // no video or single-frame video
       startFrame = start;
@@ -251,11 +248,11 @@ public class VideoClip {
     count = Math.abs(count);
     if (video!=null) {
       if(video.getFrameCount()>1) {
-        int end = video.getFrameCount()-1-frameShift+extraFrames;
+        int end = video.getFrameCount()-1+extraFrames;
         int maxCount = 1+(int) ((end-startFrame)/(1.0*stepSize));
         count = Math.min(count, maxCount);
       }
-      int end = startFrame+(count-1)*stepSize+frameShift;
+      int end = startFrame+(count-1)*stepSize;
       if (end!=video.getEndFrameNumber()) {
         video.setEndFrameNumber(end);
       }
@@ -281,47 +278,6 @@ public class VideoClip {
    */
   public int getStepCount() {
     return stepCount;
-  }
-
-  /**
-   * Sets the frame shift.
-   *
-   * @param n the desired frame shift
-   * @return the new frame shift
-   */
-  public int setFrameShift(int n) {
-  	int start = getStartFrameNumber();
-  	int steps = getStepCount();
-    return setFrameShift(n, start, steps);
-  }
-
-  /**
-   * Sets the frame shift. 
-   * DISABLED Jan 2016--too many potential bugs in frame shifting, and very little need.
-   *
-   * @param n the desired frame shift
-   * @param start the desired start frame
-   * @param stepCount the desired step count
-   * @return the new frame shift
-   */
-  protected int setFrameShift(int n, int start, int stepCount) {
-//  	// frameshift cannot be greater than highest video frame number--no frames would be visible!
-//  	if (video!=null)
-//  		n = Math.min(n, video.getFrameCount()-1);
-//  	frameShift = n;
-//    support.firePropertyChange("frameshift", null, frameShift); //$NON-NLS-1$
-//  	setStartFrameNumber(start);
-//  	setStepCount(stepCount);
-    return frameShift;
-  }
-
-  /**
-   * Gets the frame shift.
-   *
-   * @return frame shift
-   */
-  public int getFrameShift() {
-    return frameShift;
   }
 
   /**
@@ -355,7 +311,7 @@ public class VideoClip {
   public int getFrameCount() {
     if(video!=null && video.getFrameCount()>1) {
     	int n = video.getFrameCount() + extraFrames;
-    	n = Math.min(n, n-frameShift);
+    	n = Math.min(n, n);
     	n = Math.max(1, n);
     	return n;
     }
@@ -406,7 +362,7 @@ public class VideoClip {
    * @return true if the end frame number was changed
    */
   public boolean setEndFrameNumber(int end) { 
-  	return setEndFrameNumber(end, maxFrameCount-1-frameShift, true);
+  	return setEndFrameNumber(end, maxFrameCount-1, true);
   }
 
   /**
@@ -639,9 +595,7 @@ public class VideoClip {
    * @return the frame number
    */
   public int getFirstFrameNumber() {
-  	if (video==null) return 0;
-  	// frameShift changes frame number--but never less than zero
-  	return Math.max(0, -frameShift);
+  	return 0;
   }
 
   /**
@@ -652,9 +606,7 @@ public class VideoClip {
   	if (video==null || video.getFrameCount()==1) {
   		return getEndFrameNumber();
   	}
-  	int finalVideoFrame = video.getFrameCount()-1+extraFrames;
-  	// frameShift changes frame number--but never less than zero
-  	return Math.max(0, finalVideoFrame-frameShift);
+  	return video.getFrameCount()-1+extraFrames;
   }
 
   /**
@@ -696,7 +648,6 @@ public class VideoClip {
       control.setValue("stepcount", clip.getStepCount());         //$NON-NLS-1$
       control.setValue("starttime", clip.startTimeIsSaved? 			  //$NON-NLS-1$
       		clip.savedStartTime: clip.getStartTime());
-//      control.setValue("frameshift", clip.getFrameShift());         //$NON-NLS-1$
       control.setValue("readout", clip.readoutType);         //$NON-NLS-1$
       control.setValue("playallsteps", clip.playAllSteps);         //$NON-NLS-1$
     }
@@ -824,11 +775,6 @@ public class VideoClip {
       }
       clip.setStepCount(frameCount); // this should equal or exceed the actual frameCount
 
-//      // set frame shift
-//      int shift = control.getInt("frameshift"); //$NON-NLS-1$
-//      if(shift!=Integer.MIN_VALUE) {
-//        clip.setFrameShift(shift);
-//      }
       // set start frame
       if(start!=Integer.MIN_VALUE) {
         clip.setStartFrameNumber(start);
