@@ -31,7 +31,6 @@
  */
 package org.opensourcephysics.media.core;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
@@ -53,14 +52,10 @@ import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JTextArea;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileFilter;
 
@@ -126,7 +121,7 @@ public class VideoIO {
 	}
 
 	// static constants
-	public static final String[] JS_VIDEO_EXTENSIONS = { "ogg", "mov", "mp4" }; //$NON-NLS-1$ //$NON-NLS-3$
+	public static final String[] JS_VIDEO_EXTENSIONS = { "ogg", "mov", "mp4" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	public static final String DEFAULT_PREFERRED_EXPORT_EXTENSION = "mp4"; //$NON-NLS-1$
 
 
@@ -135,7 +130,7 @@ public class VideoIO {
 			return null;
 		MovieVideoType mtype = null;
 		if (videoTypes == null) {
-			System.out.println("????");
+			System.out.println("????"); //$NON-NLS-1$
 		}
 		synchronized (videoTypes) {
 			for (VideoType next : videoTypes) {
@@ -180,24 +175,16 @@ public class VideoIO {
 	static {
 		videoTypes = new ArrayList<VideoType>();
 		videoFileFilter = new VideoFileFilter();
-		MovieFactory.hasVideoEngine(); // should load video types
-		// add video types
+		 // add movie types by instantiating MovieFactory
+		MovieFactory.hasVideoEngine();
+		// add other video types
 		addVideoType(new GifVideoType());
-// BH! is there any question here?
-//		// add Gif video type, if available
-//		try {
-//			String name = "org.opensourcephysics.media.gif.GifVideoType"; //$NON-NLS-1$
-//			Class<VideoType> gifClass = (Class<VideoType>) Class.forName(name);
-//			addVideoType(gifClass.newInstance());
-//		} catch (Throwable e) {
-//			e.printStackTrace();
-//		}
 		VideoFileFilter filter = new VideoFileFilter("jpg", //$NON-NLS-1$
 				new String[] { "jpg", "jpeg" }); //$NON-NLS-1$ //$NON-NLS-2$
 		addVideoType(new ImageVideoType(filter));
 		filter = new VideoFileFilter("png", new String[] { "png" }); //$NON-NLS-1$ //$NON-NLS-2$
 		addVideoType(new ImageVideoType(filter));
-		imageFileFilter = new SingleExtFileFilter(null, MediaRes.getString("VideoIO.ImageFileFilter.Description")) {
+		imageFileFilter = new SingleExtFileFilter(null, MediaRes.getString("VideoIO.ImageFileFilter.Description")) { //$NON-NLS-1$
 			public boolean accept(File f, boolean checkDir) {
 				String ext = VideoIO.getExtension(f); 
 				return (checkDir && f.isDirectory()
@@ -551,16 +538,13 @@ public class VideoIO {
 	/**
 	 * Gets an array of available video types
 	 *
-	 * @param isExport  true if we need a recorder (TrackerIO and VideoGrabber only)
+	 * @param canRecord  true if we need a recorder (TrackerIO and VideoGrabber only)
 	 * @return the video types
 	 */
-	public static ArrayList<VideoType> getVideoTypes(boolean isExport) {
+	public static ArrayList<VideoType> getVideoTypes(boolean canRecord) {
 		ArrayList<VideoType> available = new ArrayList<VideoType>();
-		boolean skipMovies = !MovieFactory.hasVideoEngine();
 		for (VideoType next : videoTypes) {
-			if (skipMovies && next instanceof MovieVideoType)
-				continue;
-			if (!isExport || OSPRuntime.canRecordMovieFiles && next.canRecord())
+			if (!canRecord || OSPRuntime.canRecordMovieFiles && next.canRecord())
 				available.add(next);
 		}
 		return available;
