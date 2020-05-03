@@ -7,6 +7,7 @@
 
 package org.opensourcephysics.tools;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
@@ -235,11 +236,12 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
       }
     }
     // replace strings in both expression and names in sorted list order
+    System.out.println("checking " + exp);
     for(int k = 0; k<sorted.size(); k++) {
       String next = sorted.get(k).toString();
       for(int i = 0; i<vars.length; i++) {
-        if(next.equals(vars[i])) {
-          exp = exp.replaceAll(vars[i], dummyVars[i]);
+        if(next.equals(vars[i])) {	
+          exp = replaceAll(exp,vars[i], dummyVars[i]);
           names[i] = dummyVars[i];
           for(int j = vars.length; j<names.length; j++) {
             names[j] = names[j].replaceAll(vars[i], dummyVars[i]);
@@ -283,7 +285,12 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
     return false;
   }
 
-  /**
+  private static String replaceAll(String exp, String var, String repl) {
+	  return exp.replaceAll(var, repl);
+	  //return (exp.indexOf(var) < 0 ? exp : Pattern.compile("(\\w)" + var + "(\\w)").matcher(" " + exp + " ").replaceAll("$1"+repl+"$2")).trim();
+  }
+
+/**
    * Gets the parameter count.
    * @return the number of parameters
    */
