@@ -60,8 +60,9 @@ public class JSMovieVideoType extends MovieVideoType {
    * @return a description
    */
   public String getDescription() {
-	  String type = super.getDefaultExtension();
-	  return (type == null ? MediaRes.getString("JSVideoType.Description") : type);  //$NON-NLS-1$
+  	if (singleTypeFilter!=null)
+  		return singleTypeFilter.getDescription();
+    return MediaRes.getString("JSVideoType.Description"); //$NON-NLS-1$
   }
   
   /**
