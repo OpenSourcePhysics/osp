@@ -99,6 +99,13 @@ public interface VideoType {
   public VideoFileFilter getDefaultFileFilter();
 
   /**
+   * Gets the short name of the video type.
+   *
+   * @return the type name
+   */
+  public String getTypeName();
+
+  /**
    * Checks to see if this file fits this type based on file extension.
    * 
    * @param file

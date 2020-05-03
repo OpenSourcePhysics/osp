@@ -793,7 +793,7 @@ public class ImageVideo extends VideoAdapter {
 			}
 			String path = paths[0];
 			String ext = XML.getExtension(path);
-			VideoType type = VideoIO.getVideoType("image", ext); //$NON-NLS-1$
+			VideoType type = VideoIO.getVideoType(ImageVideoType.TYPE_IMAGE, ext); //$NON-NLS-1$
 			if (type != null)
 				vid.setProperty("video_type", type); //$NON-NLS-1$
 			vid.deltaT = control.getDouble("delta_t"); //$NON-NLS-1$

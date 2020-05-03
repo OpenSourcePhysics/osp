@@ -99,6 +99,10 @@ public class JSMovieVideoType extends MovieVideoType {
 		return null;
   }
 
+	@Override
+	public String getTypeName() {
+		return MovieFactory.ENGINE_JS;
+	}
 
 }
 
