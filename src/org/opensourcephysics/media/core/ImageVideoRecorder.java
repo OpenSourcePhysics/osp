@@ -86,7 +86,7 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
     if (saveFile!=null) {
 	    if (!isSaved) saveScratch();
 	    if (savedFilePaths!=null && savedFilePaths.length>0) {
-	    	ImageVideo video = new ImageVideo(savedFilePaths[0], savedFilePaths.length>1);    		
+	    	ImageVideo video = new ImageVideo(savedFilePaths[0], null, savedFilePaths.length>1);    		
 		    video.setFrameDuration(frameDuration);
 		    return video;
 		}	    

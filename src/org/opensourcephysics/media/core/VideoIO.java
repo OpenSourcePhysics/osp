@@ -550,6 +550,7 @@ public class VideoIO {
 		return canceled;
 	}
 
+
 	/**
 	 * Returns a video from a specified path. May return null.
 	 *
@@ -558,6 +559,9 @@ public class VideoIO {
 	 * @return the video
 	 */
 	public static Video getVideo(String path, VideoType vidType) {
+		return getVideo(path, null, vidType);
+	}
+	public static Video getVideo(String path, String basePath, VideoType vidType) {
 		// BH! 2020.04.20 from TrackerIO, but equally useful here.
 		if (path.startsWith("file:")) //$NON-NLS-1$
 			path = ResourceLoader.getNonURIPath(path);
@@ -569,7 +573,7 @@ public class VideoIO {
 		if (vidType != null) {
 			OSPLog.finest("preferred type " + vidType.getClass().getSimpleName() //$NON-NLS-1$
 					+ " " + vidType.getDescription()); //$NON-NLS-1$
-			video = vidType.getVideo(path);
+			video = vidType.getVideo(path, basePath);
 			if (video != null)
 				return video;
 		}
@@ -589,7 +593,7 @@ public class VideoIO {
 		for (VideoType next : allTypes) {
 			OSPLog.finest("trying type " + next.getClass().getSimpleName() //$NON-NLS-1$
 					+ " " + next.getDescription()); //$NON-NLS-1$
-			video = next.getVideo(path);
+			video = next.getVideo(path, basePath);
 			if (VideoIO.isCanceled())
 				return null;
 			if (video != null)
@@ -822,7 +826,7 @@ public class VideoIO {
 			for (int i = 0; i < types.size(); i++) {
 				VideoType type = types.get(i);
 				if (type.accepts(file)) {
-					video = type.getVideo(name);
+					video = type.getVideo(name, null);
 					if (video != null) {
 						OSPLog.info(file.getName() + " opened as type " + type.getDescription()); //$NON-NLS-1$
 						break;

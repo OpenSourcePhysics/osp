@@ -1020,8 +1020,13 @@ public class OSPLog extends JFrame {
 		LoggerPrintStream loggerOutPrint = new LoggerPrintStream(loggerOut, false);
 		LoggerPrintStream loggerErrPrint = new LoggerPrintStream(loggerErr, true);
 		try {
-			System.setOut(loggerOutPrint);
+			if (!OSPRuntime.isJS) {
+			
+				System.setOut(loggerOutPrint);
 			System.setErr(loggerErrPrint);
+			
+			
+			}
 		} catch (SecurityException ex) {
 			/** empty block */
 		}

@@ -82,6 +82,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		registered = true;
 	}
   
+	
 	public Object getProperty(String name) {
 		return super.getProperty(name);
 	}
@@ -99,7 +100,12 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	private String fileName;
 	private URL url;
 	
+	
 	public JSMovieVideo(String path) throws IOException {
+		this(path, (String) null);
+	}
+
+	public JSMovieVideo(String name, String basePath) throws IOException {
 		Frame[] frames = Frame.getFrames();
 		for (int i = 0, n = frames.length; i < n; i++) {
 			if (frames[i].getName().equals("Tracker")) { //$NON-NLS-1$
@@ -119,8 +125,9 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 //			}
 //		});
 //		failDetectTimer.setRepeats(true);
-		load(path);
+		load(name, basePath);
 	}
+
 
 	/**
 	 * Plays the video at the current rate. Overrides VideoAdapter method.
@@ -350,9 +357,10 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 * @param fileName the video file name
 	 * @throws IOException
 	 */
-	private void load(String fileName) throws IOException {
+	private void load(String fileName, String basePath) throws IOException {
+		this.baseDir = XML.getDirectoryPath(basePath);
 		this.fileName = fileName;
-		Resource res = ResourceLoader.getResource(fileName);
+		Resource res = ResourceLoader.getResource(getAbsolutePath(fileName));
 		if (res == null) {
 			throw new IOException("unable to create resource for " + fileName); //$NON-NLS-1$
 		}

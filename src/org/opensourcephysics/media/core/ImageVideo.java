@@ -79,8 +79,8 @@ public class ImageVideo extends VideoAdapter {
    * @param sequence true to automatically load image sequence, if any
    * @throws IOException
    */
-  public ImageVideo(String imageName, boolean sequence) throws IOException {
-    this(imageName, sequence, true);
+  public ImageVideo(String imageName, String basePath, boolean sequence) throws IOException {
+    this(imageName, basePath, sequence, true);
   }
 
   /**
@@ -91,8 +91,11 @@ public class ImageVideo extends VideoAdapter {
    * @param fileBased true if images will be loaded from files only as needed
    * @throws IOException
    */
-  public ImageVideo(String imageName, boolean sequence, boolean fileBased) throws IOException {
+  public ImageVideo(String imageName, String basePath, boolean sequence, boolean fileBased) throws IOException {
   	readOnly = fileBased;
+  	if (basePath != null) {
+  		setProperty("absolutePath", basePath + "/" + imageName);
+  	}
     append(imageName, sequence);
   }
 
@@ -483,7 +486,7 @@ private int length() {
 	 * @throws IOException
 	 */
 	private Object[] loadImages(String imagePath, boolean alwaysAsk, boolean sequence) throws IOException {
-		Resource res = ResourceLoader.getResource(imagePath);
+		Resource res = ResourceLoader.getResource(getAbsolutePath(imagePath));
 		if (res == null) {
 			throw new IOException("Image " + imagePath + " not found"); //$NON-NLS-1$ //$NON-NLS-2$
 		}
@@ -540,13 +543,13 @@ private int length() {
 				imagePath = root + (num.substring(num.length() - digits)) + extension;
 				// load images only if not loading as needed
 				if (!readOnly || imageList.isEmpty()) {
-					image = ResourceLoader.getImage(imagePath);
+					image = ResourceLoader.getImage(getAbsolutePath(imagePath));
 					if (image == null) {
 						break;
 					}
 				}
 				// if loading as needed, just check that the resource exists
-				else if (ResourceLoader.getResource(imagePath) == null)
+				else if (ResourceLoader.getResource(getAbsolutePath(imagePath)) == null)
 					break;
 				if (!asked && alwaysAsk) {
 					asked = true;
@@ -731,7 +734,7 @@ private int length() {
 						if (OSPRuntime.checkTempDirCache)
 							path = OSPRuntime.tempDir + path;
 						boolean seq = control.getBoolean("sequence"); //$NON-NLS-1$
-						return new ImageVideo(path, seq);
+						return new ImageVideo(path, null, seq);
 					}
 				} catch (IOException ex) {
 					ex.printStackTrace();
@@ -742,7 +745,7 @@ private int length() {
 			boolean[] sequences = (boolean[]) control.getObject("sequences"); //$NON-NLS-1$
 			if (sequences != null) {
 				try {
-					ImageVideo vid = new ImageVideo(paths[0], sequences[0]);
+					ImageVideo vid = new ImageVideo(paths[0], null, sequences[0]);
 					for (int i = 1; i < paths.length; i++) {
 						vid.append(paths[i], sequences[i]);
 					}
@@ -761,7 +764,7 @@ private int length() {
 			for (int i = 0; i < paths.length; i++) {
 				try {
 					if (vid == null) {
-						vid = new ImageVideo(paths[i], false);
+						vid = new ImageVideo(paths[i], null, false);
 					} else {
 						vid.append(paths[i], false);
 					}

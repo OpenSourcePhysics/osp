@@ -80,8 +80,13 @@ public class JSMovieVideoType extends MovieVideoType {
 
   @Override
   public Video getVideo(String name) { 
+	  return getVideo(name, null);
+  }
+
+	@Override
+	public Video getVideo(String name, String basePath) {
 		try {
-			Video video = new JSMovieVideo(name);
+			Video video = new JSMovieVideo(name, basePath);
   		video.setProperty("video_type", this); //$NON-NLS-1$
   		return video;
 		} catch (Exception e) {
@@ -91,7 +96,8 @@ public class JSMovieVideoType extends MovieVideoType {
 			e.printStackTrace();
 		} 
     return null;
-  }
+	}
+
 
   @Override
   public VideoRecorder getRecorder() {

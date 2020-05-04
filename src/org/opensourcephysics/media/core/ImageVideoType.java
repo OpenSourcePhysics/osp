@@ -80,23 +80,27 @@ public class ImageVideoType implements VideoType {
    */
   public Video getVideo(File file) {
     try {
-    	Video video = new ImageVideo(file.getAbsolutePath(), true);
+    	Video video = new ImageVideo(file.getAbsolutePath(), null, true);
       video.setProperty("video_type", this); //$NON-NLS-1$
       return video;
     } catch(IOException ex) {
       return null;
     }
   }
-
   /**
    * Opens a named image as an ImageVideo.
    *
    * @param name the name of the image
    * @return a new image video
    */
-  public Video getVideo(String name) {
-  	// if an XML file with the image name is found, load it in order to get frame duration
-  	String xmlName = XML.stripExtension(name)+".xml"; //$NON-NLS-1$
+  public Video getVideo(String name) { 
+	  return getVideo(name, null);
+  }
+
+  public Video getVideo(String name, String basePath) {
+	
+	   	// if an XML file with the image name is found, load it in order to get frame duration
+  	String xmlName = XML.stripExtension(basePath == null ? name : basePath + "/" + name)+".xml"; //$NON-NLS-1$
   	XMLControl control = new XMLControlElement(xmlName);
 	if (!control.failedToRead() && control.getObjectClass()==ImageVideo.class) {
 		return (Video)control.loadObject(null);
@@ -104,7 +108,7 @@ public class ImageVideoType implements VideoType {
 
 	// else load image(s) directly
   	try {
-    	Video video = new ImageVideo(name, true);
+    	Video video = new ImageVideo(name, basePath, true);
       video.setProperty("video_type", this); //$NON-NLS-1$
       return video;
     } catch(IOException ex) {

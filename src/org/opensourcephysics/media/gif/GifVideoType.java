@@ -58,6 +58,11 @@ public class GifVideoType implements VideoType {
    * @return a new image video
    */
   public Video getVideo(String name) {
+	  return getVideo(name, null);
+  }
+
+	@Override
+	public Video getVideo(String name, String basePath) {
     try {
     	Video video = new GifVideo(name);
       video.setProperty("video_type", this); //$NON-NLS-1$

@@ -669,7 +669,7 @@ public class VideoClip {
 
 			XMLControl child = control.getChildControl("video"); //$NON-NLS-1$
 			String path = child.getString("path"); //$NON-NLS-1$
-			Video[] video = new Video[] {VideoIO.getVideo(path, null)};
+			Video[] video = new Video[] {VideoIO.getVideo(path, basePath, null)};
 			boolean engineChange = false;
 			if (video[0] == null && path != null && !VideoIO.isCanceled()) {
 				if (OSPRuntime.isJS) {
