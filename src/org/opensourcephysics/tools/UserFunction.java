@@ -6,6 +6,7 @@
  */
 
 package org.opensourcephysics.tools;
+import java.util.Arrays;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 
@@ -148,7 +149,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
     // replace dummys with var names
     String s = inputString;
     for(int i = 0; i<vars.length; i++) {
-      s = replaceAll(s, dummyVars[i], vars[i]);
+      s = s.replaceAll(dummyVars[i], vars[i]);
     }
     return s;
   }
@@ -162,7 +163,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
     // replace dummys with var names
     String s = expression;
     for(int i = 0; i<vars.length; i++) {
-      s = replaceAll(s, dummyVars[i], vars[i]);
+      s = s.replaceAll(dummyVars[i], vars[i]);
     }
     return s;
   }
@@ -199,7 +200,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
     String s = getExpression(varNames);
     // replace references with their full expressions in parentheses
     for(UserFunction f : references) {
-      s = replaceAll(s, f.getName(), "("+f.getFullExpression(varNames)+")"); //$NON-NLS-1$//$NON-NLS-2$
+      s = s.replaceAll(f.getName(), "("+f.getFullExpression(varNames)+")"); //$NON-NLS-1$//$NON-NLS-2$
     }
     return s;
   }
@@ -213,57 +214,72 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
    */
   public boolean setExpression(String exp, String[] varNames) {
     vars = varNames;
-    String[] names = new String[references.length+paramNames.length+vars.length];
+    String[] names = new String[vars.length + paramNames.length + references.length];
+    for(int i = 0; i<varNames.length; i++) {
+        names[i] = dummyVars[i];
+      }
     for(int i = 0; i<paramNames.length; i++) {
       names[i+vars.length] = paramNames[i];
     }
     for(int i = 0; i<references.length; i++) {
       names[i+vars.length+paramNames.length] = references[i].getName();
     }
-    // replace indep vars with dummys starting with longest names
-    java.util.ArrayList<String> sorted = new java.util.ArrayList<String>();
-    sorted.add(vars[0]);
-    // fill and sort the sorted list
-    for(int i = 1; i<vars.length; i++) {
-      int size = sorted.size();
-      for(int j = 0; j<size; j++) {
-        if(vars[i].length()>sorted.get(j).toString().length()) {
-          sorted.add(j, vars[i]);
-          break;
-        } else if(j==size-1) {
-          sorted.add(vars[i]);
-        }
-      }
+    
+	  exp = exp.replaceAll(" ","");
+    // add padding around all names 
+    exp = exp.replaceAll("([A-Za-z_]\\w*)" , " $1 ");
+    
+    // replace dependents
+    
+    for (int i = 0; i < vars.length; i++) {
+    	exp = exp.replaceAll(" " + vars[i] + " ", " " + dummyVars[i] + " ");
     }
-    // replace strings in both expression and names in sorted list order
-    for(int k = 0; k<sorted.size(); k++) {
-      String next = sorted.get(k).toString();
-      for(int i = 0; i<vars.length; i++) {
-        if(next.equals(vars[i])) {	
-          exp = replaceAll(exp,vars[i], dummyVars[i]);
-          names[i] = dummyVars[i];
-          for(int j = vars.length; j<names.length; j++) {
-            names[j] = replaceAll(names[j], vars[i], dummyVars[i]);
-          }
-          // replace modified function names with originals
-          for(int j = 0; j<functionNames.length; j++) {
-            String modified = replaceAll(functionNames[j], vars[i], dummyVars[i]);
-            if(!modified.equals(functionNames[j])) {
-              exp = replaceAll(exp, modified, functionNames[j]);
-            }
-          }
-        }
-      }
-    }
-    // replace modified names with originals
-    for(int i = 0; i<paramNames.length; i++) {
-      exp = replaceAll(exp, names[vars.length+i], paramNames[i]);
-      names[vars.length+i] = paramNames[i];
-    }
-    for(int i = 0; i<references.length; i++) {
-      exp = replaceAll(exp, names[vars.length+paramNames.length+i], references[i].getName());
-      names[vars.length+paramNames.length+i] = references[i].getName();
-    }
+    
+//    
+//    // replace indep vars with dummys starting with longest names
+//    java.util.ArrayList<String> sorted = new java.util.ArrayList<String>();
+//    sorted.add(vars[0]);
+//    // fill and sort the sorted list
+//    for(int i = 1; i<vars.length; i++) {
+//      int size = sorted.size();
+//      for(int j = 0; j<size; j++) {
+//        if(vars[i].length()>sorted.get(j).toString().length()) {
+//          sorted.add(j, vars[i]);
+//          break;
+//        } else if(j==size-1) {
+//          sorted.add(vars[i]);
+//        }
+//      }
+//    }
+//    // replace strings in both expression and names in sorted list order
+//    for(int k = 0; k<sorted.size(); k++) {
+//      String next = sorted.get(k).toString();
+//      for(int i = 0; i<vars.length; i++) {
+//        if(next.equals(vars[i])) {	
+//          exp = replaceAll(exp,vars[i], dummyVars[i]);
+//          names[i] = dummyVars[i];
+//          for(int j = vars.length; j<names.length; j++) {
+//            names[j] = replaceAll(names[j], vars[i], dummyVars[i]);
+//          }
+//          // replace modified function names with originals
+//          for(int j = 0; j<functionNames.length; j++) {
+//            String modified = replaceAll(functionNames[j], vars[i], dummyVars[i]);
+//            if(!modified.equals(functionNames[j])) {
+//              exp = replaceAll(exp, modified, functionNames[j]);
+//            }
+//          }
+//        }
+//      }
+//    }
+//    // replace modified names with originals
+//    for(int i = 0; i<paramNames.length; i++) {
+//      exp = replaceAll(exp, names[vars.length+i], paramNames[i]);
+//      names[vars.length+i] = paramNames[i];
+//    }
+//    for(int i = 0; i<references.length; i++) {
+//      exp = replaceAll(exp, names[vars.length+paramNames.length+i], references[i].getName());
+//      names[vars.length+paramNames.length+i] = references[i].getName();
+//    }
     inputString = exp;
     // try to parse expression
     try {
@@ -284,11 +300,6 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
       expression = "0";                                    //$NON-NLS-1$
     }
     return false;
-  }
-
-  private static String replaceAll(String exp, String var, String repl) {
-	  //return exp.replaceAll(var, repl);
-	  return (exp.indexOf(var) < 0 ? exp : Pattern.compile("(\\W)" + var + "(\\W)").matcher(" " + exp + " ").replaceAll("$1"+repl+"$2")).trim();
   }
 
 /**
@@ -448,7 +459,11 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
     System.arraycopy(x, 0, values, 0, x.length);
     System.arraycopy(paramValues, 0, values, x.length, paramValues.length);
     System.arraycopy(support, 0, values, x.length+paramValues.length, support.length);
-    return function.evaluate(values);
+    double d = function.evaluate(values);
+    System.out.println(this.expression + " x=" + Arrays.toString(x) + " d="+ d + " v=" + Arrays.toString(values));
+    return d;
+
+    
   }
 
   /**
@@ -541,7 +556,16 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 		return null;
   }
   
-  /**
+	private String replaceAll(String exp, String key, String rep) {
+		exp = exp.replaceAll(" ", "");
+		// add padding around all names
+		exp = exp.replaceAll("([A-Za-z_]\\w*)", " $1 ");
+		exp = exp.replaceAll(" " + key + " ", " " + rep + " ");
+		exp = exp.replaceAll(" ", "");
+		return exp;
+	}
+
+/**
    * Replaces a parameter name with a new one in a specified expression.
    *
    * @param oldName the existing parameter name
@@ -572,7 +596,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 			}
 		}
   	
-		expression = replaceAll(expression, oldName, newName);
+		expression = expression.replaceAll(oldName, newName);
 		replacements.put(newName, oldName);
 		return expression;
   }
