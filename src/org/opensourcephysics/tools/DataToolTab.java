@@ -2371,7 +2371,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
       fourierCheckbox.setToolTipText(ToolsRes.getString("DataToolTab.Checkbox.Fourier.ToolTip")); //$NON-NLS-1$
       originShiftCheckbox.setText(ToolsRes.getString("DataToolTab.Checkbox.DataShift.Label"));      //$NON-NLS-1$
       originShiftCheckbox.setToolTipText(ToolsRes.getString("DataToolTab.Checkbox.DataShift.ToolTip")); //$NON-NLS-1$
-      originShiftCheckbox.setEnabled(!plot.getDrawables(WorkingDataset.class).isEmpty());
+      originShiftCheckbox.setEnabled(!plot.getDrawablesExcept(WorkingDataset.class, null).isEmpty());
       measureFitCheckbox.setText(ToolsRes.getString("DataToolTab.Checkbox.MeasureFit.Label"));        //$NON-NLS-1$
       measureFitCheckbox.setToolTipText(ToolsRes.getString("DataToolTab.Checkbox.MeasureFit.ToolTip")); //$NON-NLS-1$
       propsCheckbox.setText(ToolsRes.getString("DataToolTab.Checkbox.Properties.Text"));              //$NON-NLS-1$

@@ -31,7 +31,6 @@
  */
 package org.opensourcephysics.media.core;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
@@ -45,7 +44,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.TreeSet;
 import java.util.function.Function;
 
@@ -53,14 +52,10 @@ import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JTextArea;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileFilter;
 
@@ -138,7 +133,8 @@ public class VideoIO {
 			System.out.println("????");
 		}
 		synchronized (videoTypes) {
-			for (VideoType next : videoTypes) {
+			for (int i = 0, n = videoTypes.size(); i < n; i++) {
+				VideoType next = videoTypes.get(i);
 				if (next instanceof MovieVideoI) {
 					mtype = (MovieVideoType) next;
 					break;
@@ -156,11 +152,13 @@ public class VideoIO {
 
 	private static VideoType checkVideoFilter(VideoType mtype, String extension) {
 		VideoFileFilter[] filters = mtype.getFileFilters();
-		for (VideoFileFilter filter : filters) {
+		for (int i = 0; i < filters.length; i++) {
+			VideoFileFilter filter = filters[i];
 			if (filter.extensions != null) {
-				for (String s : filter.extensions)
-					if (s.indexOf(extension) > -1)
+				for (int j = 0; j < filter.extensions.length; j++) {
+					if (filter.extensions[j].indexOf(extension) > -1)
 						return mtype;
+				}
 			}
 		}
 		return null;
@@ -458,7 +456,8 @@ public class VideoIO {
 	public static void addVideoType(VideoType type) {
 		if (type != null) {
 			boolean hasType = false;
-			for (VideoType next : videoTypes) {
+			for (int i = 0, n = videoTypes.size(); i < n; i++) {
+				VideoType next = videoTypes.get(i);
 				if (next.getDescription().equals(type.getDescription()) && next.getClass() == type.getClass()) {
 					hasType = true;
 				}
@@ -491,7 +490,8 @@ public class VideoIO {
 				candidates.addAll(videoTypes);
 			} else {
 				className = className.toLowerCase();
-				for (VideoType next : videoTypes) {
+				for (int i = 0, n = videoTypes.size(); i < n; i++) {
+					VideoType next = videoTypes.get(i);
 					String name = next.getClass().getSimpleName().toLowerCase();
 					if (name.indexOf(className) > -1)
 						candidates.add(next);
@@ -504,13 +504,15 @@ public class VideoIO {
 			}
 			// second pass: compare with default extension
 			extension = extension.toLowerCase();
-			for (VideoType next : candidates) {
+			for (int i = 0, n = candidates.size(); i < n; i++) {
+				VideoType next = candidates.get(i);
 				String id = next.getDefaultExtension();
 				if (id != null && id.indexOf(extension) > -1)
 					return next;
 			}
 			// third pass: compare with all extensions
-			for (VideoType next : candidates) {
+			for (int i = 0, n = candidates.size(); i < n; i++) {
+				VideoType next = candidates.get(i);
 				if (checkVideoFilter(next, extension) != null)
 					return next;
 			}
@@ -529,19 +531,23 @@ public class VideoIO {
 		ArrayList<VideoType> found = new ArrayList<VideoType>();
 		// first add types for which ext is the default extension
 		ArrayList<VideoType> vidTypes = getVideoTypes(false);
-		for (VideoType next : vidTypes) {
+		for (int i = 0, n = vidTypes.size(); i < n; i++) {
+			VideoType next = vidTypes.get(i);
 			String id = next.getDefaultExtension();
 			if (id != null && id.indexOf(ext) > -1)
 				found.add(next);
 		}
 		// then add types for which ext is accepted
-		for (VideoType next : vidTypes) {
+		for (int i = 0, n = vidTypes.size(); i < n; i++) {
+			VideoType next = vidTypes.get(i);
 			VideoFileFilter[] filters = next.getFileFilters();
-			for (VideoFileFilter filter : filters) {
+			for (int k = 0; k < filters.length; k++) {
+				VideoFileFilter filter = filters[k];
 				if (filter.extensions != null) {
-					for (String s : filter.extensions)
-						if (s.indexOf(ext) > -1 && !found.contains(next))
+					for (int j = 0; j < filter.extensions.length; j++) {
+						if (filter.extensions[j].indexOf(ext) > -1 && !found.contains(next))
 							found.add(next);
+					}	
 				}
 			}
 		}
@@ -557,7 +563,8 @@ public class VideoIO {
 	public static ArrayList<VideoType> getVideoTypes(boolean isExport) {
 		ArrayList<VideoType> available = new ArrayList<VideoType>();
 		boolean skipMovies = !MovieFactory.hasVideoEngine();
-		for (VideoType next : videoTypes) {
+		for (int i = 0, n = videoTypes.size(); i < n; i++) {
+			VideoType next = videoTypes.get(i);
 			if (skipMovies && next instanceof MovieVideoType)
 				continue;
 			if (!isExport || OSPRuntime.canRecordMovieFiles && next.canRecord())
@@ -620,7 +627,8 @@ public class VideoIO {
 //				continue;
 //			allowedTypes.add(allTypes.get(i));
 //		}
-		for (VideoType next : allTypes) {
+		for (int i = 0, n = allTypes.size(); i < n; i++) {
+			VideoType next = allTypes.get(i);
 			OSPLog.finest("trying type " + next.getClass().getSimpleName() //$NON-NLS-1$
 					+ " " + next.getDescription()); //$NON-NLS-1$
 			video = next.getVideo(path);
@@ -703,12 +711,10 @@ public class VideoIO {
 			ImageVideo oldVid = (ImageVideo) video;
 			ImageVideo newVid = new ImageVideo(oldVid.getImages());
 			newVid.rawImage = newVid.images[0];
-			Collection<Filter> filters = video.getFilterStack().getFilters();
+			List<Filter> filters = video.getFilterStack().getFilters();
 			if (filters != null) {
-				Iterator<Filter> it = filters.iterator();
-				while (it.hasNext()) {
-					Filter filter = it.next();
-					newVid.getFilterStack().addFilter(filter);
+				for (int i = 0, n = filters.size(); i < n; i++) {
+					newVid.getFilterStack().addFilter(filters.get(i));
 				}
 			}
 			return newVid;
@@ -1087,8 +1093,9 @@ public class VideoIO {
 			for (JRadioButton button : buttonMap.keySet()) {
 				if (button.isSelected())
 					isButtonSelected = true;
-				VideoType type = buttonMap.get(button);
-				for (FileFilter filter : type.getFileFilters()) {
+				VideoFileFilter[] filters = buttonMap.get(button).getFileFilters();
+				for (int k = 0; k < filters.length; k++) {
+					VideoFileFilter filter = filters[k];
 					if (selectedFile != null && filter.accept(selectedFile)) {
 						count++;
 						continue;

@@ -433,22 +433,33 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
     return getPlayer().getFrameNumber();
   }
 
-  /**
-   * Overrides DrawingPanel getDrawables method.
-   *
-   * @return a list of Drawable objects
-   */
-  public ArrayList<Drawable> getDrawables() {
-    ArrayList<Drawable> list = super.getDrawables();
-    if(isDrawingInImageSpace()) {
-      for(Drawable d : list) {
-        if(!Trackable.class.isInstance(d)) {
-          list.remove(d);
-        }
-      }
-    }
-    return list;
-  }
+//	/**
+//	 * Overrides DrawingPanel getDrawables method.
+//	 *
+//	 * @return a list of Drawable objects
+//	 */
+//	public ArrayList<Drawable> getDrawables() {
+//		return (isDrawingInImageSpace() ? (ArrayList<Drawable>) 
+//				(Object) getDrawables(Trackable.class) : super.getDrawables());
+//	}
+
+	  public ArrayList<Drawable> getDrawables() {
+		    ArrayList<Drawable> list = super.getDrawables();
+		    if(isDrawingInImageSpace()) {
+		      for(Drawable d : list) {
+		        if(!Trackable.class.isInstance(d)) {
+		          list.remove(d);
+		        }
+		      }
+		    }
+		    return list;
+		  }
+	/**
+	 * Must clone if removing Trackable
+	 */
+	  public synchronized ArrayList<Drawable> getDrawablesNoClone() {
+		  return getDrawables();
+	  }
 
   /**
    * Adds a drawable object to the drawable list.

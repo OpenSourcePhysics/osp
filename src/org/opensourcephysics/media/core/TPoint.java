@@ -67,7 +67,7 @@ public class TPoint extends Point2D.Double implements Interactive, Trackable {
   protected boolean stepEditTrigger = false;
   protected boolean isAdjusting = false;
   protected Point screenPt;
-  protected Point2D worldPt;
+  protected Point2D.Double worldPt;
   protected PropertyChangeSupport support;
   protected TPoint attachedTo;
 
@@ -254,7 +254,11 @@ public class TPoint extends Point2D.Double implements Interactive, Trackable {
     if(worldPt==null) {
       worldPt = new Point2D.Double();
     }
-    return at.transform(this, worldPt);
+
+    System.out.println(n + " " + worldPt);
+    Point2D p2 = at.transform(this, worldPt);
+    System.out.println(" x,y " + this.getX() + this.getY() +  " p2 " + p2 + "\n" + at);
+    return p2;
   }
 
   /**

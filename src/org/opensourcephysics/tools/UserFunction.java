@@ -148,7 +148,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
     // replace dummys with var names
     String s = inputString;
     for(int i = 0; i<vars.length; i++) {
-      s = s.replaceAll(dummyVars[i], vars[i]);
+      s = replaceAll(s, dummyVars[i], vars[i]);
     }
     return s;
   }
@@ -162,7 +162,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
     // replace dummys with var names
     String s = expression;
     for(int i = 0; i<vars.length; i++) {
-      s = s.replaceAll(dummyVars[i], vars[i]);
+      s = replaceAll(s, dummyVars[i], vars[i]);
     }
     return s;
   }
@@ -199,7 +199,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
     String s = getExpression(varNames);
     // replace references with their full expressions in parentheses
     for(UserFunction f : references) {
-      s = s.replaceAll(f.getName(), "("+f.getFullExpression(varNames)+")"); //$NON-NLS-1$//$NON-NLS-2$
+      s = replaceAll(s, f.getName(), "("+f.getFullExpression(varNames)+")"); //$NON-NLS-1$//$NON-NLS-2$
     }
     return s;
   }
@@ -236,7 +236,6 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
       }
     }
     // replace strings in both expression and names in sorted list order
-    System.out.println("checking " + exp);
     for(int k = 0; k<sorted.size(); k++) {
       String next = sorted.get(k).toString();
       for(int i = 0; i<vars.length; i++) {
@@ -244,13 +243,13 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
           exp = replaceAll(exp,vars[i], dummyVars[i]);
           names[i] = dummyVars[i];
           for(int j = vars.length; j<names.length; j++) {
-            names[j] = names[j].replaceAll(vars[i], dummyVars[i]);
+            names[j] = replaceAll(names[j], vars[i], dummyVars[i]);
           }
           // replace modified function names with originals
           for(int j = 0; j<functionNames.length; j++) {
-            String modified = functionNames[j].replaceAll(vars[i], dummyVars[i]);
+            String modified = replaceAll(functionNames[j], vars[i], dummyVars[i]);
             if(!modified.equals(functionNames[j])) {
-              exp = exp.replaceAll(modified, functionNames[j]);
+              exp = replaceAll(exp, modified, functionNames[j]);
             }
           }
         }
@@ -258,11 +257,11 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
     }
     // replace modified names with originals
     for(int i = 0; i<paramNames.length; i++) {
-      exp = exp.replaceAll(names[vars.length+i], paramNames[i]);
+      exp = replaceAll(exp, names[vars.length+i], paramNames[i]);
       names[vars.length+i] = paramNames[i];
     }
     for(int i = 0; i<references.length; i++) {
-      exp = exp.replaceAll(names[vars.length+paramNames.length+i], references[i].getName());
+      exp = replaceAll(exp, names[vars.length+paramNames.length+i], references[i].getName());
       names[vars.length+paramNames.length+i] = references[i].getName();
     }
     inputString = exp;
@@ -276,6 +275,8 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
       }
     } catch(ParserException ex) {
       try {
+    	  // Note that any constants or unidentified variables will cause this condition. 
+    	  
         function = new ParsedMultiVarFunction("0", names); //$NON-NLS-1$
       } catch(ParserException ex2) {
         /** empty block */
@@ -286,8 +287,8 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
   }
 
   private static String replaceAll(String exp, String var, String repl) {
-	  return exp.replaceAll(var, repl);
-	  //return (exp.indexOf(var) < 0 ? exp : Pattern.compile("(\\w)" + var + "(\\w)").matcher(" " + exp + " ").replaceAll("$1"+repl+"$2")).trim();
+	  //return exp.replaceAll(var, repl);
+	  return (exp.indexOf(var) < 0 ? exp : Pattern.compile("(\\W)" + var + "(\\W)").matcher(" " + exp + " ").replaceAll("$1"+repl+"$2")).trim();
   }
 
 /**
@@ -534,7 +535,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 		// restore dummy names
 		for (String key: replacements.keySet()) {
 			if (key.equals(newName)) continue;
-			expression = expression.replaceAll(key, replacements.get(key));
+			expression = replaceAll(expression, key, replacements.get(key));
 		}
 		if (setExpression(expression, varNames)) return expression;
 		return null;
@@ -571,7 +572,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 			}
 		}
   	
-		expression = expression.replaceAll(oldName, newName);
+		expression = replaceAll(expression, oldName, newName);
 		replacements.put(newName, oldName);
 		return expression;
   }
@@ -665,6 +666,9 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 
   }
 
+  public String toString() {
+	  return "[UserFunction " + function.toString() + "]";
+  }
 }
 
 /*

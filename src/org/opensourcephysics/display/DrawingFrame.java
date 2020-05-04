@@ -464,6 +464,12 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     return new ArrayList<Drawable>(); // return an empty list
   }
 
+  private ArrayList<Drawable> EMPTY_LIST = new ArrayList<>();
+
+  public synchronized ArrayList<Drawable> getDrawablesNoClone() {
+	    return (drawingPanel == null ? EMPTY_LIST : drawingPanel.getDrawablesNoClone());
+  }
+
   public DrawableAxes getAxes() {
     if(drawingPanel instanceof PlottingPanel) {
       return((PlottingPanel) drawingPanel).getAxes();
@@ -487,6 +493,13 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     }
     return new ArrayList<T>(); // return an empty list
   }
+
+  public synchronized <T extends Drawable> ArrayList<T> getDrawablesExcept(Class<T> c, Drawable except) {
+	    if(drawingPanel!=null) {
+	      return drawingPanel.getDrawablesExcept(c, except);
+	    }
+	    return new ArrayList<T>(); // return an empty list
+	  }
 
   /**
    * Removes all objects of the given class from the drawable list.

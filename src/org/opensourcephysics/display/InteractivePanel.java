@@ -12,6 +12,8 @@ import java.util.ArrayList;
 
 import javax.swing.event.MouseInputAdapter;
 
+import org.opensourcephysics.media.core.Trackable;
+
 /**
  * InteractivePanel is a drawing panel that invokes the handleMouseAction method in
  * Interactive objects.

@@ -436,9 +436,7 @@ public class PlotFrame extends DrawingFrame {
    * @return the list
    */
   public synchronized ArrayList<Drawable> getDrawables() {
-    ArrayList<Drawable> list = super.getDrawables();
-    list.remove(datasetManager);
-    return list;
+	    return super.getDrawablesExcept(null, datasetManager);
   }
 
   /**
@@ -452,9 +450,7 @@ public class PlotFrame extends DrawingFrame {
    * @see #getObjectOfClass(Class c)
    */
   public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
-    ArrayList<T> list = super.getDrawables(c);
-    list.remove(datasetManager);
-    return list;
+	return getDrawablesExcept(c, datasetManager);
   }
 
   /**

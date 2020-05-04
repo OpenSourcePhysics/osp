@@ -12,6 +12,8 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.text.DecimalFormat;
 import java.util.Iterator;
+import java.util.List;
+
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -105,11 +107,10 @@ public class DrawingPanelInspector extends JDialog {
   }
 
   void getContent() {
-    Iterator<Drawable> it = drawingPanel.getDrawables().iterator();
     StringBuffer buffer = new StringBuffer();
-    while(it.hasNext()) {
-      Object obj = it.next();
-      buffer.append(obj.toString());
+	  List<Drawable> list = drawingPanel.getDrawablesNoClone();
+	  for (int i = 0, n = list.size(); i < n; i++) {
+      buffer.append(list.get(i).toString());
       buffer.append('\n');
     }
     contentTextPane.setText(buffer.toString());

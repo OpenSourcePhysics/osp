@@ -70,6 +70,7 @@ public abstract class VideoAdapter implements Video {
   protected Dimension size;              // image pixel dimensions
   protected BufferedImage bufferedImage; // offscreen buffered image copy
   protected BufferedImage filteredImage; // filtered image
+  protected String baseDir;
   protected int frameCount;
   protected int frameNumber;
   protected int startFrameNumber;
@@ -1183,6 +1184,12 @@ public abstract class VideoAdapter implements Video {
       }
     }
     isValidMeasure = true;
+  }
+
+  protected String getAbsolutePath(String path) {
+	  if (baseDir == null)
+		  baseDir = XML.getDirectoryPath((String) getProperty("absolutePath"));	  		  
+	  return baseDir + "/" + XML.getName(path);
   }
 
 }

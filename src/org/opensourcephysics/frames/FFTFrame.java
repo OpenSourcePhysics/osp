@@ -368,9 +368,7 @@ public class FFTFrame extends DrawingFrame {
    * @return the list
    */
   public synchronized ArrayList<Drawable> getDrawables() {
-    ArrayList<Drawable> list = super.getDrawables();
-    list.remove(complexDataset);
-    return list;
+	    return super.getDrawablesExcept(null, complexDataset);
   }
 
   /**
@@ -393,9 +391,7 @@ public class FFTFrame extends DrawingFrame {
    * @see #getObjectOfClass(Class c)
    */
   public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
-    ArrayList<T> list = super.getDrawables(c);
-    list.remove(complexDataset);
-    return list;
+		return getDrawablesExcept(c, complexDataset);
   }
 
   /**

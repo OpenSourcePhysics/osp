@@ -711,22 +711,11 @@ public class VideoClip {
 			if (!hasVideo) {
 				return new VideoClip(null);
 			}
-			ResourceLoader.addSearchPath(control.getString("basepath")); //$NON-NLS-1$
+			String basePath = control.getString("basepath"); //$NON-NLS-1$;
+			ResourceLoader.addSearchPath(basePath);
 
 			XMLControl child = control.getChildControl("video"); //$NON-NLS-1$
 			String path = child.getString("path"); //$NON-NLS-1$
-			
-			if (!OSPRuntime.unzipFiles) {
-				XMLProperty o = control.getParentProperty();
-				XMLProperty parent = o.getParentProperty();
-				if (parent instanceof XMLControl) {
-					String basepath = ((XMLControl)parent).getBasepath();
-					((XMLControl) control).setBasepath(basepath);
-					path = basepath + "/" + path;
-				}			    	
-			} else if (OSPRuntime.checkTempDirCache) {
-				path = OSPRuntime.tempDir + path;
-			}
 			Video video = VideoIO.getVideo(path, null);
 			boolean engineChange = false;
 			if (video == null && path != null && !VideoIO.isCanceled()) {

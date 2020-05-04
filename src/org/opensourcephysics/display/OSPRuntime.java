@@ -124,15 +124,18 @@ public class OSPRuntime {
 	
 	public static boolean setRenderingHints = (!isJS && !isMac);
 	
-	public static boolean skipDisplayOfPDF = isJS; // for TrackerIO, for now.
+	public static boolean skipDisplayOfPDF = true;//isJS; // for TrackerIO, for now.
 
 	public static boolean embedVideoAsObject = isJS;
 	
 
-	public static boolean unzipFiles = false;// !isJS; // for TrackerIO
+	public static boolean unzipFiles = !isJS; // for TrackerIO
 	
 	static {
-		OSPLog.warning("OSPRuntime unzipFiles setting is false for BH testing");
+		if (!isJS && !unzipFiles)
+			OSPLog.warning("OSPRuntime.unzipFiles setting is false for BH testing");
+		if (!isJS && skipDisplayOfPDF)
+			OSPLog.warning("OSPRuntime.skipDisplayOfPDF true for BH testing");
 	}
 	public static final String tempDir = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$  // BH centralized
 	

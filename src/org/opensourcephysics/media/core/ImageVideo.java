@@ -279,6 +279,7 @@ public class ImageVideo extends VideoAdapter {
 	public void insert(String imageName, int index, boolean sequence) throws IOException {
 		Object[] images_paths = loadImages(imageName, false, // don't ask user for confirmation
 				sequence);
+		// from a TRZ file
 		Image[] images = (Image[]) images_paths[0];
 		if (images.length > 0) {
 			String[] paths = (String[]) images_paths[1];
@@ -452,9 +453,10 @@ public class ImageVideo extends VideoAdapter {
    * @param defaultImage the image to return if no other found
    */
   private Image getImageAtFrame(int frameNumber, Image defaultImage) {
+	  
     if (readOnly && frameNumber<paths.length) {
       if(!paths[frameNumber].equals("")) {//$NON-NLS-1$
-        Image image = ResourceLoader.getImage(paths[frameNumber]);
+        Image image = ResourceLoader.getImage(getAbsolutePath(paths[frameNumber]));
         if (image!=null) return image;
       }
     }
@@ -464,7 +466,8 @@ public class ImageVideo extends VideoAdapter {
     return defaultImage;
   }
   
-  private int length() {
+
+private int length() {
   	if (readOnly) return paths.length;
   	return images.length;
   }
@@ -602,6 +605,7 @@ public class ImageVideo extends VideoAdapter {
     ArrayList<String> pathList = new ArrayList<String>();
     for(int i = 0; i<paths.length; i++) {
       if(!paths[i].equals("")) { //$NON-NLS-1$
+    	 
         pathList.add(XML.getPathRelativeTo(paths[i], base));
       }
     }

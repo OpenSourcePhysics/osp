@@ -701,18 +701,12 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
    */
   public void clearData() {
     if(defaultDrawingPanel!=null) {
-      ArrayList<?> list = defaultDrawingPanel.getDrawables(Dataset.class);
-      Iterator<?> it = list.iterator();
-      while(it.hasNext()) { // copy only the objects of the correct type
-        Dataset obj = (Dataset) it.next();
-        obj.clear();
-      }
-      list = defaultDrawingPanel.getDrawables(DatasetManager.class);
-      it = list.iterator();
-      while(it.hasNext()) { // copy only the objects of the correct type
-        DatasetManager obj = (DatasetManager) it.next();
-        obj.clear();
-      }
+      ArrayList<?> list = defaultDrawingPanel.getDrawablesExcept(Dataset.class, null);
+      for (int i = 0, n = list.size(); i < n; i++)
+    	  ((Dataset) list.get(i)).clear();
+      list = defaultDrawingPanel.getDrawablesExcept(DatasetManager.class, null);
+      for (int i = 0, n = list.size(); i < n; i++)
+    	  ((DatasetManager) list.get(i)).clear();
       defaultDrawingPanel.invalidateImage();
     }
   }

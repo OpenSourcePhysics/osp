@@ -172,9 +172,7 @@ public class LatticeFrame extends DrawingFrame {
    * @return the list
    */
   public synchronized ArrayList<Drawable> getDrawables() {
-    ArrayList<Drawable> list = super.getDrawables();
-    list.remove(lattice);
-    return list;
+	    return super.getDrawablesExcept(null, lattice);
   }
 
   /**
@@ -188,9 +186,7 @@ public class LatticeFrame extends DrawingFrame {
    * @see #getObjectOfClass(Class c)
    */
   public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
-    ArrayList<T> list = super.getDrawables(c);
-    list.remove(lattice);
-    return list;
+	return getDrawablesExcept(c, lattice);
   }
 
   /**

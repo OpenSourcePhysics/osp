@@ -424,9 +424,7 @@ public class FFT2DFrame extends DrawingFrame {
    * @return the list
    */
   public synchronized ArrayList<Drawable> getDrawables() {
-    ArrayList<Drawable> list = super.getDrawables();
-    list.remove(plot);
-    return list;
+    return super.getDrawablesExcept(null, plot);
   }
 
   /**
@@ -440,9 +438,7 @@ public class FFT2DFrame extends DrawingFrame {
    * @see #getObjectOfClass(Class c)
    */
   public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
-    ArrayList<T> list = super.getDrawables(c);
-    list.remove(plot);
-    return list;
+		return getDrawablesExcept(c, plot);
   }
 
   private void fillGrid(int nx, int ny, double[] vals) {

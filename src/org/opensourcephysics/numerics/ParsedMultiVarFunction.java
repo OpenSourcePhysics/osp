@@ -32,7 +32,7 @@ public final class ParsedMultiVarFunction implements MultiVarFunction {
   public ParsedMultiVarFunction(String _fStr, String[] var) throws ParserException {
     fStr = _fStr;
     SuryonoParser parser = null;
-    parser = new SuryonoParser(fStr, var);
+    parser = new SuryonoParser(fStr, var, true);
     function = parser;
     functionNames = parser.getFunctionNames();
   }
