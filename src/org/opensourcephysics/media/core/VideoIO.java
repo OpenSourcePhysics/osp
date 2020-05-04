@@ -31,10 +31,7 @@
  */
 package org.opensourcephysics.media.core;
 
-import java.awt.Dimension;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -43,20 +40,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.function.Function;
 
 import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileFilter;
 
 import org.opensourcephysics.controls.OSPLog;
@@ -121,7 +111,7 @@ public class VideoIO {
 	}
 
 	// static constants
-	public static final String[] JS_VIDEO_EXTENSIONS = { "ogg", "mov", "mp4" }; //$NON-NLS-1$ //$NON-NLS-3$
+	public static final String[] JS_VIDEO_EXTENSIONS = { "ogg", "mov", "mp4" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	public static final String DEFAULT_PREFERRED_EXPORT_EXTENSION = "mp4"; //$NON-NLS-1$
 
 
@@ -130,11 +120,10 @@ public class VideoIO {
 			return null;
 		MovieVideoType mtype = null;
 		if (videoTypes == null) {
-			System.out.println("????");
+			System.out.println("????"); //$NON-NLS-1$
 		}
 		synchronized (videoTypes) {
-			for (int i = 0, n = videoTypes.size(); i < n; i++) {
-				VideoType next = videoTypes.get(i);
+			for (VideoType next : videoTypes) {
 				if (next instanceof MovieVideoI) {
 					mtype = (MovieVideoType) next;
 					break;
@@ -152,13 +141,11 @@ public class VideoIO {
 
 	private static VideoType checkVideoFilter(VideoType mtype, String extension) {
 		VideoFileFilter[] filters = mtype.getFileFilters();
-		for (int i = 0; i < filters.length; i++) {
-			VideoFileFilter filter = filters[i];
+		for (VideoFileFilter filter : filters) {
 			if (filter.extensions != null) {
-				for (int j = 0; j < filter.extensions.length; j++) {
-					if (filter.extensions[j].indexOf(extension) > -1)
+				for (String s : filter.extensions)
+					if (s.indexOf(extension) > -1)
 						return mtype;
-				}
 			}
 		}
 		return null;
@@ -171,31 +158,22 @@ public class VideoIO {
 	protected static VideoFileFilter videoFileFilter;
 	protected static Collection<VideoFileFilter> singleVideoTypeFilters = new TreeSet<VideoFileFilter>();
 	protected static String defaultXMLExt = "xml"; //$NON-NLS-1$
-	public static VideoEnginePanel videoEnginePanel;
 	protected static boolean canceled;
 	protected static String preferredExportExtension = DEFAULT_PREFERRED_EXPORT_EXTENSION;
 
 	static {
 		videoTypes = new ArrayList<VideoType>();
 		videoFileFilter = new VideoFileFilter();
-		MovieFactory.hasVideoEngine(); // should load video types
-		// add video types
+		 // add movie types by instantiating MovieFactory
+		MovieFactory.hasVideoEngine();
+		// add other video types
 		addVideoType(new GifVideoType());
-// BH! is there any question here?
-//		// add Gif video type, if available
-//		try {
-//			String name = "org.opensourcephysics.media.gif.GifVideoType"; //$NON-NLS-1$
-//			Class<VideoType> gifClass = (Class<VideoType>) Class.forName(name);
-//			addVideoType(gifClass.newInstance());
-//		} catch (Throwable e) {
-//			e.printStackTrace();
-//		}
 		VideoFileFilter filter = new VideoFileFilter("jpg", //$NON-NLS-1$
 				new String[] { "jpg", "jpeg" }); //$NON-NLS-1$ //$NON-NLS-2$
 		addVideoType(new ImageVideoType(filter));
 		filter = new VideoFileFilter("png", new String[] { "png" }); //$NON-NLS-1$ //$NON-NLS-2$
 		addVideoType(new ImageVideoType(filter));
-		imageFileFilter = new SingleExtFileFilter(null, MediaRes.getString("VideoIO.ImageFileFilter.Description")) {
+		imageFileFilter = new SingleExtFileFilter(null, MediaRes.getString("VideoIO.ImageFileFilter.Description")) { //$NON-NLS-1$
 			public boolean accept(File f, boolean checkDir) {
 				String ext = VideoIO.getExtension(f); 
 				return (checkDir && f.isDirectory()
@@ -206,10 +184,6 @@ public class VideoIO {
 		};
 	}
 
-	protected static VideoEnginePanel getVideoEnginePanel() {
-		return (videoEnginePanel == null ? (videoEnginePanel = new VideoEnginePanel()) : videoEnginePanel);
-	}
-	
 	/**
 	 * protected constructor to discourage instantiation
 	 */
@@ -238,7 +212,6 @@ public class VideoIO {
 			File dir = (OSPRuntime.chooserDir == null) ? new File(OSPRuntime.getUserHome())
 					: new File(OSPRuntime.chooserDir);
 			chooser = new AsyncFileChooser(dir);
-			chooser.addPropertyChangeListener(videoEnginePanel);
 		}
 		FontSizer.setFonts(chooser, FontSizer.getLevel());
 		return chooser;
@@ -456,8 +429,7 @@ public class VideoIO {
 	public static void addVideoType(VideoType type) {
 		if (type != null) {
 			boolean hasType = false;
-			for (int i = 0, n = videoTypes.size(); i < n; i++) {
-				VideoType next = videoTypes.get(i);
+			for (VideoType next : videoTypes) {
 				if (next.getDescription().equals(type.getDescription()) && next.getClass() == type.getClass()) {
 					hasType = true;
 				}
@@ -476,24 +448,21 @@ public class VideoIO {
 	 * Returns the first registered video type corresponding to a class name and/or
 	 * extension. Strings are case-insensitive.
 	 *
-	 * @param className all or part of the simple class name (may be null)
+	 * @param typeName one of the predefined video type names (may be null)
 	 * @param extension the extension (may be null)
-	 * @return the video type
+	 * @return the VideoType, or null if none found
 	 */
-	public static VideoType getVideoType(String className, String extension) {
-		if (className == null && extension == null)
+	public static VideoType getVideoType(String typeName, String extension) {
+		if (typeName == null && extension == null)
 			return null;
 		ArrayList<VideoType> candidates = new ArrayList<VideoType>();
 		synchronized (videoTypes) {
-			// first pass: check class names
-			if (className == null) {
+			// first pass: check type names
+			if (typeName == null) {
 				candidates.addAll(videoTypes);
 			} else {
-				className = className.toLowerCase();
-				for (int i = 0, n = videoTypes.size(); i < n; i++) {
-					VideoType next = videoTypes.get(i);
-					String name = next.getClass().getSimpleName().toLowerCase();
-					if (name.indexOf(className) > -1)
+				for (VideoType next : videoTypes) {
+					if (next.getTypeName()==typeName)
 						candidates.add(next);
 				}
 			}
@@ -504,15 +473,13 @@ public class VideoIO {
 			}
 			// second pass: compare with default extension
 			extension = extension.toLowerCase();
-			for (int i = 0, n = candidates.size(); i < n; i++) {
-				VideoType next = candidates.get(i);
+			for (VideoType next : candidates) {
 				String id = next.getDefaultExtension();
 				if (id != null && id.indexOf(extension) > -1)
 					return next;
 			}
 			// third pass: compare with all extensions
-			for (int i = 0, n = candidates.size(); i < n; i++) {
-				VideoType next = candidates.get(i);
+			for (VideoType next : candidates) {
 				if (checkVideoFilter(next, extension) != null)
 					return next;
 			}
@@ -531,23 +498,19 @@ public class VideoIO {
 		ArrayList<VideoType> found = new ArrayList<VideoType>();
 		// first add types for which ext is the default extension
 		ArrayList<VideoType> vidTypes = getVideoTypes(false);
-		for (int i = 0, n = vidTypes.size(); i < n; i++) {
-			VideoType next = vidTypes.get(i);
+		for (VideoType next : vidTypes) {
 			String id = next.getDefaultExtension();
 			if (id != null && id.indexOf(ext) > -1)
 				found.add(next);
 		}
 		// then add types for which ext is accepted
-		for (int i = 0, n = vidTypes.size(); i < n; i++) {
-			VideoType next = vidTypes.get(i);
+		for (VideoType next : vidTypes) {
 			VideoFileFilter[] filters = next.getFileFilters();
-			for (int k = 0; k < filters.length; k++) {
-				VideoFileFilter filter = filters[k];
+			for (VideoFileFilter filter : filters) {
 				if (filter.extensions != null) {
-					for (int j = 0; j < filter.extensions.length; j++) {
-						if (filter.extensions[j].indexOf(ext) > -1 && !found.contains(next))
+					for (String s : filter.extensions)
+						if (s.indexOf(ext) > -1 && !found.contains(next))
 							found.add(next);
-					}	
 				}
 			}
 		}
@@ -557,17 +520,13 @@ public class VideoIO {
 	/**
 	 * Gets an array of available video types
 	 *
-	 * @param isExport  true if we need a recorder (TrackerIO and VideoGrabber only)
+	 * @param canRecord  true if we need a recorder (TrackerIO and VideoGrabber only)
 	 * @return the video types
 	 */
-	public static ArrayList<VideoType> getVideoTypes(boolean isExport) {
+	public static ArrayList<VideoType> getVideoTypes(boolean canRecord) {
 		ArrayList<VideoType> available = new ArrayList<VideoType>();
-		boolean skipMovies = !MovieFactory.hasVideoEngine();
-		for (int i = 0, n = videoTypes.size(); i < n; i++) {
-			VideoType next = videoTypes.get(i);
-			if (skipMovies && next instanceof MovieVideoType)
-				continue;
-			if (!isExport || OSPRuntime.canRecordMovieFiles && next.canRecord())
+		for (VideoType next : videoTypes) {
+			if (!canRecord || OSPRuntime.canRecordMovieFiles && next.canRecord())
 				available.add(next);
 		}
 		return available;
@@ -627,8 +586,7 @@ public class VideoIO {
 //				continue;
 //			allowedTypes.add(allTypes.get(i));
 //		}
-		for (int i = 0, n = allTypes.size(); i < n; i++) {
-			VideoType next = allTypes.get(i);
+		for (VideoType next : allTypes) {
 			OSPLog.finest("trying type " + next.getClass().getSimpleName() //$NON-NLS-1$
 					+ " " + next.getDescription()); //$NON-NLS-1$
 			video = next.getVideo(path);
@@ -711,10 +669,12 @@ public class VideoIO {
 			ImageVideo oldVid = (ImageVideo) video;
 			ImageVideo newVid = new ImageVideo(oldVid.getImages());
 			newVid.rawImage = newVid.images[0];
-			List<Filter> filters = video.getFilterStack().getFilters();
+			Collection<Filter> filters = video.getFilterStack().getFilters();
 			if (filters != null) {
-				for (int i = 0, n = filters.size(); i < n; i++) {
-					newVid.getFilterStack().addFilter(filters.get(i));
+				Iterator<Filter> it = filters.iterator();
+				while (it.hasNext()) {
+					Filter filter = it.next();
+					newVid.getFilterStack().addFilter(filter);
 				}
 			}
 			return newVid;
@@ -1003,178 +963,6 @@ public class VideoIO {
 		return null;
 	}
 
-	/**
-	 * A JPanel for setting a preferred video engine when opening a video.
-	 */
-	public static class VideoEnginePanel extends JPanel implements PropertyChangeListener {
-
-		JPanel emptyPanel;
-		File selectedFile;
-		ButtonGroup videoEngineButtonGroup = new ButtonGroup();
-		HashMap<JRadioButton, VideoType> buttonMap = new HashMap<JRadioButton, VideoType>();
-		TitledBorder title;
-		boolean isClosing = false;
-
-		/**
-		 * Constructor
-		 */
-		VideoEnginePanel() {
-			super();
-			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-			title = BorderFactory.createTitledBorder(MediaRes.getString("VideoEnginePanel.TitledBorder.Title")); //$NON-NLS-1$
-			setBorder(title);
-			emptyPanel = new JPanel() {
-				public Dimension getPreferredSize() {
-					return videoEnginePanel.getPreferredSize();
-				}
-			};
-		}
-
-		/**
-		 * Adds a video engine type to the available choices.
-		 * 
-		 * @param type the video engine type
-		 */
-		public void addMovieVideoType(MovieVideoType type) {
-			JRadioButton button = new JRadioButton(type.getDescription());
-			button.setActionCommand(type.getClass().getSimpleName());
-			videoEngineButtonGroup.add(button);
-			buttonMap.put(button, type);
-			add(button);
-		}
-
-		/**
-		 * Gets the selected video engine type.
-		 * 
-		 * JavaScript will return null.
-		 * 
-		 * @return the video engine type
-		 */
-		public VideoType getSelectedVideoType() {
-			if (OSPRuntime.isJS || chooser.getAccessory() == null || chooser.getAccessory() == emptyPanel)
-				return null;
-			for (JRadioButton button : buttonMap.keySet()) {
-				if (button.isSelected()) {
-					VideoType engineType = buttonMap.get(button);
-					OSPLog.finest("selected video type: " + engineType); //$NON-NLS-1$
-					String engineName = engineType.getClass().getSimpleName();
-					String ext = XML.getExtension(selectedFile.getName());
-					VideoType specificType = getVideoType(engineName, ext);
-					return specificType == null ? engineType : specificType;
-				}
-			}
-			return null;
-		}
-
-		/**
-		 * Resets to a ready state.
-		 */
-		public void reset() {
-			isClosing = false;
-			refresh();
-		}
-
-		/**
-		 * Refreshes the GUI.
-		 */
-		public void refresh() {
-			if (isClosing)
-				return;
-			selectedFile = chooser.getSelectedFile();
-			// if one or fewer video engines available, don't show this at all!
-			if (buttonMap.size() < 2) {
-				chooser.setAccessory(null);
-				chooser.validate();
-				return;
-			}
-			// count the video engine choices
-			int count = 0;
-			boolean isButtonSelected = false;
-			for (JRadioButton button : buttonMap.keySet()) {
-				if (button.isSelected())
-					isButtonSelected = true;
-				VideoFileFilter[] filters = buttonMap.get(button).getFileFilters();
-				for (int k = 0; k < filters.length; k++) {
-					VideoFileFilter filter = filters[k];
-					if (selectedFile != null && filter.accept(selectedFile)) {
-						count++;
-						continue;
-					}
-				}
-			}
-			if (count < 2) {
-				chooser.setAccessory(emptyPanel);
-			} else {
-				chooser.setAccessory(videoEnginePanel);
-				// select the current video engine by default
-				if (!isButtonSelected) {
-					for (JRadioButton button : buttonMap.keySet()) {
-						// action command is VideoType simple name
-						button.setSelected(button.getActionCommand().contains(MovieFactory.getMovieEngineName(false)));
-					}
-				}
-			}
-			chooser.validate();
-			chooser.repaint();
-		}
-
-		/**
-		 * Responds to property change event.
-		 */
-		public void propertyChange(PropertyChangeEvent e) {
-			String name = e.getPropertyName();
-			if (name.toLowerCase().indexOf("closing") > -1) { //$NON-NLS-1$
-				isClosing = true;
-			} else if (chooser.getAccessory() == null) {
-				return;
-			} else if (name.equals(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY)) {
-				refresh();
-			}
-		}
-	}
-
-//	/**
-//	 * Check for a MovieVideoI that can handle the extension associated with this
-//	 * path.
-//	 * 
-//	 * Currently only returns a single engine. In principle, this could be expanded to allow more then one 
-//	 * available engine.
-//	 * 
-//	 * merged from VideoClip and TrackerIO
-//	 * 
-//	 * @param video        starting video that failed to load
-//	 * @param path
-//	 * @param frame
-//	 * @param checkTypes   option to check paths or not -- in other words, just show
-//	 *                     the bad video message and return null
-//	 * @param setAsDefault return [0] == true if option was taken by user
-//	 * @return video or null
-//	 */
-//	public static Video getAvailableEngineFromDialog(Video video, String path, JFrame frame, boolean checkTypes,
-//			boolean[] setAsDefault) /** @j2sIgnore*/ {
-//
-//		// determine if other engines are available for the video extension
-//		ArrayList<VideoType> movieEngines = new ArrayList<VideoType>();
-//		VideoType movieType = (checkTypes ? VideoIO.getMovieType(XML.getExtension(path)) : null);
-//		if (movieType != null)
-//			movieEngines.add(movieType);
-//		if (movieEngines.isEmpty()) {
-//			JOptionPane.showMessageDialog(frame, MediaRes.getString("VideoIO.Dialog.BadVideo.Message") + "\n\n" + path, //$NON-NLS-1$ //$NON-NLS-2$
-//					MediaRes.getString("VideoClip.Dialog.BadVideo.Title"), //$NON-NLS-1$
-//					JOptionPane.WARNING_MESSAGE);
-//			// BH! was leave video unchanged??
-//			return null;
-//		}
-//		// provide immediate way to open with other engines
-//		JCheckBox setAsDefaultBox = new JCheckBox(MediaRes.getString("VideoIO.Dialog.TryDifferentEngine.Checkbox")); //$NON-NLS-1$
-//		video = VideoIO.getVideoFromDialog(path, movieEngines, setAsDefaultBox, frame);
-//		boolean setDefault = setAsDefaultBox.isSelected();
-//		if (video != null && setDefault) {
-//			MovieFactory.setEngine(video);
-//			setAsDefault[0] = true;
-//		}
-//		return video;
-//	}
 }
 
 /*

@@ -27,13 +27,11 @@ package org.opensourcephysics.media.mov;
 import java.util.TreeSet;
 
 import org.opensourcephysics.display.OSPRuntime;
-import org.opensourcephysics.media.core.Video;
 import org.opensourcephysics.media.core.VideoFileFilter;
-import org.opensourcephysics.media.core.VideoRecorder;
 import org.opensourcephysics.media.core.VideoType;
 
 /**
- * This implements the VideoType interface for video files. 
+ * This implements the VideoType interface for "movie" video files. 
  * Video engines like Xuggle and JS are subclasses of MovieVideoType.
  *
  * @author Douglas Brown
@@ -52,7 +50,7 @@ public abstract class MovieVideoType implements VideoType, MovieVideoI {
   protected VideoFileFilter singleTypeFilter; // null for general type
     
 	/**
-	 * Constructor no longer attempts calls the MovieFactory. 
+	 * No-arg constructor (no longer attempts calls the MovieFactory). 
 	 */
 	public MovieVideoType() {
 	}
@@ -71,19 +69,6 @@ public abstract class MovieVideoType implements VideoType, MovieVideoI {
   }
 
   /**
-   * Opens a named video as a XtractorVideo.
-   *
-   * @param name the name of the video
-   * @return a new Xtractor video
-   */
-  public Video getVideo(String name) { 
-    	Video video = MovieFactory.newMovieVideo(name, getDescription());
-    	if (video != null)
-    		video.setProperty("video_type", this); //$NON-NLS-1$
-      return video;
-  }
-
-  /**
    * Reports whether this type can record videos
    *
    * @return true by default (set recordable to change)
@@ -99,15 +84,6 @@ public abstract class MovieVideoType implements VideoType, MovieVideoI {
    */
   public void setRecordable(boolean record) {
     recordable = record;
-  }
-
-  /**
-   * Gets a Xuggle video recorder.
-   *
-   * @return the video recorder
-   */
-  public VideoRecorder getRecorder() {
-  	return MovieFactory.newMovieVideoRecorder(this);  	
   }
 
   /**
@@ -132,22 +108,6 @@ public abstract class MovieVideoType implements VideoType, MovieVideoI {
   	return null;
   }
   
-  /**
-   * Return true if the specified video is this type.
-   *
-   * @param video the video
-   * @return true if the video is this type
-   */
-  public boolean isType(Video video) {
-	  // BH I think all we need here is 
-	  return (video instanceof MovieVideoI);
-//	  
-//  	if (!(video instanceof MovieVideoI)) return false;
-//  	if (singleTypeFilter==null) return true;
-//  	String name = (String)video.getProperty("name"); //$NON-NLS-1$
-//  	return singleTypeFilter.accept(new File(name));
-  }
-
   /**
    * Gets the name and/or description of this type.
    *

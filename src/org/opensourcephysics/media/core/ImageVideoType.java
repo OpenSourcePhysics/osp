@@ -183,6 +183,10 @@ public class ImageVideoType implements VideoType {
     return video instanceof ImageVideo;
   }
 
+	@Override
+	public String getTypeName() {
+		return TYPE_IMAGE;
+	}
 }
 
 /*

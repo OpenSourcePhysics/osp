@@ -1060,19 +1060,18 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 				int yMin = slider.getHeight() - inLabel.getHeight() - 2;
 				if (inset == 0)
 					inset = slider.getInsets().left + 7;
-				int offset = Math.min(0, getVideoClip().getFrameShift());
 				if (e.getY() > yMin) {
 					VideoClip clip = getVideoClip();
 					double pixPerFrame = (slider.getWidth() - 2 * inset) / (clip.getFrameCount() - 1);
 					int start = getVideoClip().getStartFrameNumber();
-					int x = (int) (inset + (start + offset) * pixPerFrame);
+					int x = (int) (inset + start * pixPerFrame);
 					String hint = " " + MediaRes.getString("VideoPlayer.InOutMarker.ToolTip"); //$NON-NLS-1$//$NON-NLS-2$
 					if (e.getX() < x + 8 && e.getX() > x - 8) {
 						active = "in"; //$NON-NLS-1$
 						slider.setToolTipText(MediaRes.getString("VideoPlayer.InMarker.ToolTip") + ": " + start + hint); //$NON-NLS-1$ //$NON-NLS-2$
 					} else {
 						int end = getVideoClip().getEndFrameNumber();
-						x = (int) (inset + (end + offset) * pixPerFrame);
+						x = (int) (inset + end * pixPerFrame);
 						if (e.getX() < x + 8 && e.getX() > x - 8) {
 							active = "out"; //$NON-NLS-1$
 							slider.setToolTipText(
@@ -1101,13 +1100,12 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 				clip.setAdjusting(true);
 				boolean increasing = e.getX() > x;
 				x = e.getX();
-				int offset = Math.min(0, getVideoClip().getFrameShift());
 				int val = Math.round((clip.getFrameCount() - 1) * (e.getX() - inset) / (slider.getWidth() - 2 * inset));
 				if (increasing)
 					val = Math.min(val, clip.getFrameCount() - 1 + getVideoClip().getStepSize());
 				else
 					val = Math.min(val, clip.getFrameCount() - 1);
-				val = Math.max(val - offset, 0);
+				val = Math.max(val, 0);
 				if (active.equals("in")) { //$NON-NLS-1$
 					int prevStart = clip.getStartFrameNumber();
 					if (clip.setStartFrameNumber(val, maxEndFrame)) {
@@ -1544,7 +1542,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
   private void updateSlider() {
     // update slider
     VideoClip clip = getVideoClip();
-    slider.setMinimum(Math.max(0, -clip.getFrameShift()));
+    slider.setMinimum(0);
     slider.setMaximum(slider.getMinimum()+clip.getFrameCount()-1);
     sliderLabels.clear();
     sliderLabels.put(Integer.valueOf(clip.getStartFrameNumber()), inLabel);

@@ -329,13 +329,13 @@ public class GifVideo extends VideoAdapter {
   }
 
   /**
-   * A class to save and load ImageVideo data.
+   * A class to save and load GifVideo data.
    */
   static class Loader extends VideoAdapter.Loader {
 
 		protected VideoAdapter createVideo(String path) throws IOException {
 	      	GifVideo video = new GifVideo(path);
-	        VideoType gifType = VideoIO.getVideoType("gif", null); //$NON-NLS-1$
+	        VideoType gifType = VideoIO.getVideoType(GifVideoType.TYPE_GIF, null); //$NON-NLS-1$
 	        if (gifType!=null)
 	        	video.setProperty("video_type", gifType); //$NON-NLS-1$
 	        return video;

@@ -131,6 +131,12 @@ public class GifVideoType implements VideoType {
   public boolean isType(Video video) {
     return video instanceof GifVideo;
   }
+  
+	@Override
+	public String getTypeName() {
+		return TYPE_GIF;
+	}
+
 }
 
 /*

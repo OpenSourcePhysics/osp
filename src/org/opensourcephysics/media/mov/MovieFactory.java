@@ -8,8 +8,6 @@ import java.lang.reflect.Method;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.core.MediaRes;
-import org.opensourcephysics.media.core.Video;
-import org.opensourcephysics.media.core.VideoRecorder;
 import org.opensourcephysics.tools.ResourceLoader;
 
 /**
@@ -82,6 +80,14 @@ public class MovieFactory {
 	  OSPLog.getOSPLog().addPropertyChangeListener(errorListener[0]);
 	}
 	
+	/**
+	 * Creates a thumbnail file for a movie video.
+	 * 
+	 * @param defaultThumbnailDimension desired dimension
+	 * @param sourcePath movie video source
+	 * @param thumbPath path of the newly created thumbnail
+	 * @return the thumbnail file, or null if failed
+	 */
 	public static File createThumbnailFile(Dimension defaultThumbnailDimension, String sourcePath, String thumbPath) {
 		if (hasVideoEngine()) {
 			if (OSPRuntime.isJS)
@@ -114,63 +120,18 @@ public class MovieFactory {
 				movieEngineName;
 	}
 
+	/**
+	 * Determines if a movie engine is available
+	 * 
+	 * @return true if available
+	 */
 	public static boolean hasVideoEngine() {
 		return movieEngineName != ENGINE_NONE;
 	}
 
-	public static Video newMovieVideo(String name, String description) {
-		Video video = null;
-		try {
-			if (OSPRuntime.isJS) {
-				video = new JSMovieVideo(name);
-			} 
-//			else {
-//				video = (Video) Class.forName(xuggleClassPath + "XuggleVideo").newInstance();
-//				if (name != null)
-//					((PluginVideoI) video).init(name);
-//			}
-		} catch (Exception e) {
-			if (name != null) {
-				OSPLog.fine(description + ": " + e.getMessage()); //$NON-NLS-1$
-				e.printStackTrace();
-			}
-		} catch (Error er) {
-			if (name != null) {
-				OSPLog.fine(description + ": " + er.getMessage()); //$NON-NLS-1$
-				er.printStackTrace();
-			}
-		}
-		return video;
-	}
-
-	public static VideoRecorder newMovieVideoRecorder(MovieVideoType videoType) {
-		if (!OSPRuntime.canRecordMovieFiles) {
-			OSPLog.warning("MovieFactory videoRecorder not implemented");
-			return null;
-		}
-		if (OSPRuntime.isJS) {
-			OSPLog.warning("MovieFactory videoRecorder not implemented");
-			return null;
-		}
-//		try {
-//			return (VideoRecorder) Class.forName(xuggleClassPath + "XuggleVideoRecorder").newInstance();
-//		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-//			e.printStackTrace();
-//			return null;
-//		}
-		return null;
-	}
-
-//	/**
-//	 * called by VideoClip.Loader and TrackerIO only
-//	 * 
-//	 * @param video
-//	 */
-//	public static void setEngine(Video video) {
-//		videoEngineName = (video instanceof MovieVideoI ? video.getName()
-//				: ENGINE_NONE);
-//	}
-//
+	/**
+	 * "Starts" the thumbnail tool (if present) by instantiating it by reflection.
+	 */
 	public static void startMovieThumbnailTool() {
 		if (OSPRuntime.isJS) {
 			return; // ?? 

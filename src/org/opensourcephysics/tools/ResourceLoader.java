@@ -2240,8 +2240,16 @@ public class ResourceLoader {
 		}
 
 		// BH 2020.03.28 URLs are checked when created; only a URI might not have a
-		// target at this point.
-
+		// target at this point. 2020.04.02 DB added following to check for target
+		
+		// check that url is a real target
+		InputStream stream = working.openStream();
+		if (stream.read() == -1) {
+			stream.close();
+			return null;
+		}
+		stream.close();
+		
 		Resource res = new Resource(working, content);
 		return res;
 	}

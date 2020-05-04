@@ -94,7 +94,7 @@ public class VideoClipControl extends ClipControl {
     final int stepNum = Math.min(clip.getStepCount()-1, n);
     Runnable runner = new Runnable() {
       public void run() {
-        int m = clip.stepToFrame(stepNum)+clip.getFrameShift();
+        int m = clip.stepToFrame(stepNum);
         video.setFrameNumber(m);
       }
 
@@ -160,7 +160,7 @@ public class VideoClipControl extends ClipControl {
    * @return the frame number
    */
   public int getFrameNumber() {
-  	int n = video.getFrameNumber()-clip.getFrameShift();
+  	int n = video.getFrameNumber();
   	n = Math.max(0, n); // can't be negative
   	return n;
   }
@@ -240,7 +240,7 @@ public class VideoClipControl extends ClipControl {
 		case Video.PROPERTY_VIDEO_FRAMENUMBER:
 			int n = ((Integer) e.getNewValue()).intValue();
 			boolean changed = (n != videoFrameNumber);
-			super.setFrameNumber(n - clip.getFrameShift());
+			super.setFrameNumber(n);
 			if (changed)
 				support.firePropertyChange(ClipControl.PROPERTY_VIDEO_STEPNUMBER, null, stepNumber); // to VideoPlayer
 			break;
