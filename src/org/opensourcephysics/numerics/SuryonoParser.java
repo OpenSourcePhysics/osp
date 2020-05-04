@@ -1002,7 +1002,7 @@ public final class SuryonoParser extends MathExpParser {
 			return;
 		}
 		// appendVariables option added by W. Christian
-		if ((//allowUnknown || 
+		if ((allowUnknown || 
 				appendVariables) && append(stream)) {
 			return;
 		}
