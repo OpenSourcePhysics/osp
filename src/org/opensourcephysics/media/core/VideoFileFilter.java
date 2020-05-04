@@ -85,7 +85,8 @@ public class VideoFileFilter extends VideoIO.SingleExtFileFilter implements Comp
 		if (extensions != null) {
 			String extension = VideoIO.getExtension(f);
 			if (extension != null) {
-				for (String next : extensions) {
+				for (int i = 0, n = extensions.length; i < n; i++) {
+					String next = extensions[i];
 					if (extension.equalsIgnoreCase(next))
 						return true;
 				}

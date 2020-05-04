@@ -456,7 +456,7 @@ public class ImageVideo extends VideoAdapter {
    * @param defaultImage the image to return if no other found
    */
   private Image getImageAtFrame(int frameNumber, Image defaultImage) {
-	  
+	 	  
     if (readOnly && frameNumber<paths.length) {
       if(!paths[frameNumber].equals("")) {//$NON-NLS-1$
         Image image = ResourceLoader.getImage(getAbsolutePath(paths[frameNumber]));

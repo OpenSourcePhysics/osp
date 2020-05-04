@@ -19,8 +19,8 @@ package org.opensourcephysics.numerics;
  */
 public final class ParsedMultiVarFunction implements MultiVarFunction {
   private final String fStr;
-  private final MultiVarFunction function;
-  private String[] functionNames;
+  private final MultiVarFunction myFunction;
+  private final String[] myFunctionNames;
 
   /**
    * Constructs a ParsedFunction from the given string and independent variable.
@@ -31,10 +31,9 @@ public final class ParsedMultiVarFunction implements MultiVarFunction {
    */
   public ParsedMultiVarFunction(String _fStr, String[] var) throws ParserException {
     fStr = _fStr;
-    SuryonoParser parser = null;
-    parser = new SuryonoParser(fStr, var, true);
-    function = parser;
-    functionNames = parser.getFunctionNames();
+    SuryonoParser parser = new SuryonoParser(fStr, var, true);
+    myFunction = parser;
+    myFunctionNames = parser.getFunctionNames();
   }
 
   /**
@@ -44,8 +43,9 @@ public final class ParsedMultiVarFunction implements MultiVarFunction {
    *
    * @return the value of the function
    */
+  @Override
   public double evaluate(double[] x) {
-    return function.evaluate(x);
+    return myFunction.evaluate(x);
   }
 
   /**
@@ -53,6 +53,7 @@ public final class ParsedMultiVarFunction implements MultiVarFunction {
    *
    * @return the string
    */
+  @Override
   public String toString() {
     return "f(x) = "+fStr; //$NON-NLS-1$
   }
@@ -64,7 +65,7 @@ public final class ParsedMultiVarFunction implements MultiVarFunction {
    * @return array of function names
    */
   public String[] getFunctionNames() {
-    return functionNames;
+    return myFunctionNames;
   }
 
   /**
@@ -73,8 +74,8 @@ public final class ParsedMultiVarFunction implements MultiVarFunction {
    * @return true if result was converted from NaN to zero
    */
   public boolean evaluatedToNaN() {
-  	if (function instanceof SuryonoParser) {
-  		return ((SuryonoParser)function).evaluatedToNaN();
+  	if (myFunction instanceof SuryonoParser) {
+  		return ((SuryonoParser)myFunction).evaluatedToNaN();
   	}
   	return false;
   }

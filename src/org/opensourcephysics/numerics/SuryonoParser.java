@@ -357,7 +357,7 @@ public final class SuryonoParser extends MathExpParser {
 	 * Remove any escape sequences such as \, and replace with the character. by W.
 	 * Christian.
 	 *
-	 * @param function the function
+	 * @param myFunction the function
 	 *
 	 * @return the new function
 	 */
@@ -869,7 +869,7 @@ public final class SuryonoParser extends MathExpParser {
 		addCode(NUMERIC);
 	}
 
-	private static double getNumber(String name) {
+	public static double getNumber(String name) {
 		if (couldBeNumber(name)) {
 			try {
 				return Double.parseDouble(name);
@@ -886,7 +886,7 @@ public final class SuryonoParser extends MathExpParser {
 	 * @param n
 	 * @return
 	 */
-	private static boolean couldBeNumber(String n) {
+	public static boolean couldBeNumber(String n) {
 		return (n.length() > 0 && "+-.I0123456789".indexOf(n.charAt(0)) >= 0);
 	}
 

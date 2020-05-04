@@ -80,7 +80,7 @@ public class TShape extends TPoint {
    *
    * @param point the Point2D
    */
-  public TShape(Point2D point) {
+  public TShape(Point2D.Double point) {
     super(point);
   }
 
@@ -126,7 +126,8 @@ public class TShape extends TPoint {
    * @param vidPanel the video panel
    * @return the bounding rectangle
    */
-  public Rectangle getBounds(VideoPanel vidPanel) {
+  @Override
+public Rectangle getBounds(VideoPanel vidPanel) {
     return getShape(vidPanel).getBounds();
   }
 
@@ -154,7 +155,8 @@ public class TShape extends TPoint {
    * @param panel the drawing panel requesting the drawing
    * @param _g the graphics context on which to draw
    */
-  public void draw(DrawingPanel panel, Graphics _g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics _g) {
     if(!(panel instanceof VideoPanel)||!isVisible()) {
       return;
     }
@@ -175,7 +177,8 @@ public class TShape extends TPoint {
    * @param ypix the y pixel position on the panel
    * @return the interactive drawable object
    */
-  public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
     if(!(panel instanceof VideoPanel)) {
       return null;
     }
@@ -195,7 +198,8 @@ public class TShape extends TPoint {
    *
    * @return a descriptive string
    */
-  public String toString() {
+  @Override
+public String toString() {
     return "TShape ["+x+", "+y+"]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
   }
 
