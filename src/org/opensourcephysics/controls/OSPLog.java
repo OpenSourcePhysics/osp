@@ -52,6 +52,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+import javax.swing.Timer;
 import javax.swing.WindowConstants;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -214,7 +215,13 @@ public class OSPLog extends JFrame {
   public static void showLogInvokeLater() {
     Runnable doLater = new Runnable() {
       public void run() {
-        showLog();
+        Timer timer = new Timer(500, new ActionListener() {
+          public void actionPerformed(ActionEvent e) {
+            showLog();
+          }
+        });
+    		timer.setRepeats(false);
+    		timer.start();
       }
 
     };
