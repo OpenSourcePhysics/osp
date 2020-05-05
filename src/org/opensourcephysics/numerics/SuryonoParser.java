@@ -39,8 +39,6 @@ package org.opensourcephysics.numerics;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import org.opensourcephysics.controls.OSPLog;
-
 /**
  * The class <code>Parser</code> is a mathematical expression parser.
  * <p>
@@ -220,9 +218,13 @@ public final class SuryonoParser extends MathExpParser {
 	private static final char OR_CODE = (char) 11; // Boolean OR
 	private static final char NOT_CODE = (char) 12; // Boolean NOT
 	// built in functions
-	private final static String funcname[] = { "sin", "cos", "tan", "ln", "log", "abs", "int", "frac", "asin", "acos", "atan", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$
-			"sinh", "cosh", "tanh", "asinh", "acosh", "atanh", "ceil", "floor", "round", "exp", "sqr", "sqrt", "sign", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$ //$NON-NLS-12$ //$NON-NLS-13$
-			"step", "random" //$NON-NLS-1$ //$NON-NLS-2$
+	private final static String funcname[] = { 
+			"sin", "cos", "tan", "ln", "log",          //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ 
+			"abs", "int", "frac", "asin", "acos",      //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ 
+			"atan",  "sinh", "cosh", "tanh", "asinh",  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ 
+			"acosh", "atanh", "ceil", "floor", "round",//$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$  
+			"exp", "sqr", "sqrt", "sign", "step",      //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ 
+			"random"                                   //$NON-NLS-1$
 	};
 	// extended functions
 	private final static String extfunc[] = { "min", "max", "mod", "atan2" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
@@ -476,6 +478,7 @@ public final class SuryonoParser extends MathExpParser {
 	 *
 	 * @return array of function names
 	 */
+	@Override
 	public String[] getFunctionNames() {
 		if (allFunctions != null)
 			return allFunctions;
@@ -565,6 +568,7 @@ public final class SuryonoParser extends MathExpParser {
 		return evaluate();
 	}
 
+	@Override
 	public double evaluate(double x)
 	// added by Wolfgang Christian to make it easier to call parser.
 	{
@@ -575,9 +579,9 @@ public final class SuryonoParser extends MathExpParser {
 		return evaluate();
 	}
 
-	public double evaluate(double[] v)
-	// added by Wolfgang Christian to make it easier to call parser with an array.
-	{
+	@Override
+	public double evaluate(double[] v) {
+		// added by Wolfgang Christian to make it easier to call parser with an array.
 		if (var_value.length != v.length) {
 			System.out.println("JEParser Error: incorrect number of variables."); //$NON-NLS-1$
 			return 0;
@@ -730,6 +734,7 @@ public final class SuryonoParser extends MathExpParser {
 	 *
 	 * @return the function string
 	 */
+	@Override
 	public String getFunction() {
 		return function;
 	}
@@ -739,6 +744,7 @@ public final class SuryonoParser extends MathExpParser {
 	 *
 	 * Added by W. Christian to implement the MathExpParser interface.
 	 */
+	@Override
 	public void setFunction(String funcStr) throws ParserException {
 		function = funcStr;
 		define(function);
@@ -756,6 +762,7 @@ public final class SuryonoParser extends MathExpParser {
 	 *
 	 * Added by W. Christian to implement the MathExpParser interface.
 	 */
+	@Override
 	public void setFunction(String funcStr, String[] vars) throws ParserException {
 		function = funcStr;
 		if (vars.length != var_count) {
@@ -1308,20 +1315,11 @@ public final class SuryonoParser extends MathExpParser {
 	private double builtInFunction(int function, double parameter) {
 		switch (function) {
 		case 0:
-			if (radian) {
-				return Math.sin(parameter);
-			}
-			return Math.sin(parameter * DEGTORAD);
+			return Math.sin(radian ? parameter : parameter * DEGTORAD);
 		case 1:
-			if (radian) {
-				return Math.cos(parameter);
-			}
-			return Math.cos(parameter * DEGTORAD);
+			return Math.cos(radian ? parameter : parameter * DEGTORAD);
 		case 2:
-			if (radian) {
-				return Math.tan(parameter);
-			}
-			return Math.tan(parameter * DEGTORAD);
+			return Math.tan(radian ? parameter : parameter * DEGTORAD);
 		case 3:
 			return Math.log(parameter);
 		case 4:
@@ -1333,33 +1331,22 @@ public final class SuryonoParser extends MathExpParser {
 		case 7:
 			return parameter - Math.rint(parameter);
 		case 8:
-			if (radian) {
-				return Math.asin(parameter);
-			}
-			return Math.asin(parameter) / DEGTORAD;
+			return Math.asin(parameter) / (radian ? 1 : DEGTORAD);
 		case 9:
-			if (radian) {
-				return Math.acos(parameter);
-			}
-			return Math.acos(parameter) / DEGTORAD;
+			return Math.acos(parameter) / (radian ? 1 : DEGTORAD);
 		case 10:
-			if (radian) {
-				return Math.atan(parameter);
-			}
-			return Math.atan(parameter) / DEGTORAD;
+			return Math.atan(parameter) / (radian ? 1 : DEGTORAD);
 		case 11:
-			return (Math.exp(parameter) - Math.exp(-parameter)) / 2;
+			return Math.sinh(parameter);// (Math.exp(parameter) - Math.exp(-parameter)) / 2;
 		case 12:
-			return (Math.exp(parameter) + Math.exp(-parameter)) / 2;
+			return Math.cosh(parameter);//(Math.exp(parameter) + Math.exp(-parameter)) / 2;
 		case 13:
-			double a = Math.exp(parameter);
-			double b = Math.exp(-parameter);
-			return (a - b) / (a + b);
-		case 14:
+			return Math.tanh(parameter); //double a = Math.exp(parameter); double b = Math.exp(-parameter);	return (a - b) / (a + b);
+		case 14: // asinh
 			return Math.log(parameter + Math.sqrt(parameter * parameter + 1));
-		case 15:
+		case 15: // acosh
 			return Math.log(parameter + Math.sqrt(parameter * parameter - 1));
-		case 16:
+		case 16: // atanh
 			return Math.log((1 + parameter) / (1 - parameter)) / 2;
 		case 17:
 			return Math.ceil(parameter);
@@ -1374,18 +1361,9 @@ public final class SuryonoParser extends MathExpParser {
 		case 22:
 			return Math.sqrt(parameter);
 		case 23:
-			if (parameter == 0.0d) {
-				return 0;
-			} else if (parameter > 0.0d) {
-				return 1;
-			} else {
-				return -1;
-			}
+			return Math.signum(parameter); // {-1, 0, 1}
 		case 24:
-			if (parameter < 0) {
-				return 0;
-			}
-			return 1; // added by W. Christian for step function
+			return (parameter < 0 ? 0 : 1); // {0, 0, 1} added by W. Christian for step function
 		case 25:
 			return parameter * Math.random(); // added by W. Christian for random function
 		default:

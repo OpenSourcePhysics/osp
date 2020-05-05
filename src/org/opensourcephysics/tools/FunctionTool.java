@@ -274,7 +274,8 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
    *
    * @param e the property change event
    */
-  public void propertyChange(PropertyChangeEvent e) {
+  @Override
+public void propertyChange(PropertyChangeEvent e) {
     refreshGUI();
     if (FunctionTool.this instanceof FitBuilder) {
     	// refresh dropdown since localized names change
@@ -298,7 +299,8 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
    *
    * @param vis true to show this tool
    */
-  public void setVisible(boolean vis) {
+  @Override
+public void setVisible(boolean vis) {
   	if (contentPane.getTopLevelAncestor()==this)
   		super.setVisible(vis);
   	else
@@ -311,7 +313,8 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
    *
    * @return true if visible
    */
-  public boolean isVisible() {
+  @Override
+public boolean isVisible() {
   	if (contentPane.getTopLevelAncestor()==this) return super.isVisible();
   	return contentPane.getTopLevelAncestor().isVisible();
   }
@@ -423,7 +426,8 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
   /**
    * Fires a property change. This makes this method visible to the tools package.
    */
-  protected void firePropertyChange(String name, Object oldObj, Object newObj) {
+  @Override
+protected void firePropertyChange(String name, Object oldObj, Object newObj) {
     super.firePropertyChange(name, oldObj, newObj);
   }
 
@@ -443,7 +447,8 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
     dropdownLabel = new JLabel();
     dropdownLabel.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 2));
     dropdownLabel.addMouseListener(new MouseAdapter() {
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
         String name = getSelectedName();
         if(name!=null) {
           FunctionPanel panel = panels.get(name);
@@ -456,7 +461,8 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
     // create dropdown
     dropdown = new JComboBox() {
     	// override getMaximumSize method so has same height as buttons
-	    public Dimension getMaximumSize() {
+	    @Override
+		public Dimension getMaximumSize() {
 	      Dimension dim = super.getMaximumSize();
 	  		if (toolbarComponents != null 
 	  				&& toolbarComponents.length > 0
@@ -468,7 +474,8 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	    } 
 	    
     	// override addItem method to alphabetize added items
-      public void addItem(Object obj) {
+      @Override
+	public void addItem(Object obj) {
       	if (obj==null) return;
       	int count = getItemCount();
       	for (int i=0; i<count; i++) {
@@ -510,7 +517,8 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
     DropdownRenderer renderer= new DropdownRenderer();
     dropdown.setRenderer(renderer);
     dropdown.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         Object item = dropdown.getSelectedItem();
         if(item!=null) {
           String name = ((Object[])item)[1].toString();
@@ -536,12 +544,14 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
     // create buttons
     closeButton = new JButton(ToolsRes.getString("Tool.Button.Close")); //$NON-NLS-1$
     closeButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         setVisible(false);
       }
     });
     helpAction = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         if(helpFrame==null) {
           // show web help if available
           String help = XML.getResolvedPath(helpPath, helpBase);
@@ -575,7 +585,8 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
     popup = new JPopupMenu();
     ButtonGroup group = new ButtonGroup();
     Action fontSizeAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         int i = Integer.parseInt(e.getActionCommand());
         setFontLevel(i);
       }
@@ -595,7 +606,8 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
       }
     }
     fontButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         popup.show(fontButton, 0, fontButton.getHeight());
       }
 
@@ -715,7 +727,8 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
     }
     else select(null);
     Runnable runner = new Runnable() {
-    	public void run() {
+    	@Override
+		public void run() {
     		dropdown.revalidate();
         helpButton.requestFocusInWindow();
     	}
@@ -791,7 +804,8 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
       setBorder(BorderFactory.createEmptyBorder(1, 4, 1, 0));
     }
   	
-    public Component getListCellRendererComponent(JList list,
+    @Override
+	public Component getListCellRendererComponent(JList list,
                                                   Object value,
                                                   int index,
                                                   boolean isSelected,
@@ -836,17 +850,20 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
    * A class to save and load data for this class.
    */
   static class Loader implements XML.ObjectLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       FunctionTool tool = (FunctionTool)obj;
       ArrayList<FunctionPanel> functions = new ArrayList<FunctionPanel>(tool.panels.values());
       control.setValue("functions", functions); //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return null;
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       FunctionTool tool = (FunctionTool)obj;
       ArrayList<?> functions = (ArrayList<?>) control.getObject("functions"); //$NON-NLS-1$
       if(functions!=null) {
