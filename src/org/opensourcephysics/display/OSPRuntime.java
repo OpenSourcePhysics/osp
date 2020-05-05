@@ -196,6 +196,11 @@ public class OSPRuntime {
 	/** Static reference to an applet for document/code base access. */
 	public static JApplet applet;
 
+	public static void setApplet(JApplet a) {
+		applet = a;
+		isApplet = true;
+	}
+
 	/** True if launched by WebStart. */
 	public static boolean webStart;
 
@@ -263,6 +268,8 @@ public class OSPRuntime {
 
 	/** Preferences filename */
 	private static String prefsFileName = "osp.prefs"; //$NON-NLS-1$
+
+	public static boolean isApplet;
 
 
 

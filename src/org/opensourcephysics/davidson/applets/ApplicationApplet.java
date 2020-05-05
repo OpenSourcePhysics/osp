@@ -36,6 +36,7 @@ import org.opensourcephysics.tools.Translator;
  * @author     Wolfgang Christian
  * @created    October 06, 2005
  */
+@SuppressWarnings("serial")
 public class ApplicationApplet extends JApplet {
   JFrame mainFrame = null;
   JButton showFramesButton = new JButton("Show"); //$NON-NLS-1$
@@ -61,9 +62,10 @@ public class ApplicationApplet extends JApplet {
   /**
    *  Initializes the applet
    */
-  public void init() {
+  @Override
+public void init() {
     super.init();
-    OSPRuntime.applet = this;
+    OSPRuntime.setApplet(this);
     OSPRuntime.appletMode = false; // This insures that ALL frames are made visible when the applet is launched.
     if(getParameter("showLog", "false").toLowerCase().trim().equals("true")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
       OSPLog.showLog();
@@ -129,7 +131,8 @@ public class ApplicationApplet extends JApplet {
   /**
    *  Destroys the applet's resources.
    */
-  public void destroy() {
+  @Override
+public void destroy() {
     disposeOwnedFrames();
     target = null;
     mainFrame = null;
@@ -228,12 +231,13 @@ public class ApplicationApplet extends JApplet {
   }
 
   private class DisplayBtnListener implements ActionListener {
-    public void actionPerformed(ActionEvent e) {
+    @Override
+	public void actionPerformed(ActionEvent e) {
       if(singleApp&&(OSPRuntime.applet!=ApplicationApplet.this)) {
         disposeOwnedFrames();
         target = null;
         mainFrame = null;
-        OSPRuntime.applet = ApplicationApplet.this;
+        OSPRuntime.setApplet(ApplicationApplet.this);
       }
       if(target==null) {
         target = createTarget();

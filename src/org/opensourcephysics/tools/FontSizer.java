@@ -11,9 +11,9 @@ import java.awt.Container;
 import java.awt.Font;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import javax.swing.AbstractButton;
@@ -27,6 +27,7 @@ import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.SwingPropertyChangeSupport;
 
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.ResizableIcon;
 
@@ -279,86 +280,100 @@ public class FontSizer {
 
   //_______________________________ private methods ____________________________
 
-  /**
-   * Increases a container's normal font sizes by the specified factor.
-   *
-   * @param c a container
-   * @param factor the factor
-   */
-  private static void setFontFactor(Container c, double factor) {
-    // get resized container font
-    Font font = getResizedFont(c.getFont(), factor);
-    // Added by Paco. This must be here because JComponent inherits from Container
-    if (c instanceof javax.swing.JComponent) {
-      Border border = ((javax.swing.JComponent) c).getBorder();
-      if(border instanceof TitledBorder) {
-        setFontFactor((TitledBorder) border, factor);
-      }
-    }
-    // End of added by Paco
-    if (c instanceof JMenu) {
-      setMenuFont((JMenu) c, font);
-    } 
-    else {
-      c.setFont(font);
-      // iterate through child components
-      for(int i = 0; i<c.getComponentCount(); i++) {
-        Component co = c.getComponent(i);
-        if((co instanceof Container)) {
-          setFontFactor((Container) co, factor);
-        } else {
-          setFontFactor(co, factor);
-        }
-      }
-    }
-    // added by Doug Brown June 2015 to resize icons along with fonts
-    if (c instanceof JButton) {
-    	JButton button = (JButton)c;
-    	for (int i=0; i<5; i++) {
-    		Icon icon = i==0? button.getIcon(): 
-    			i==2? button.getSelectedIcon(): 
-      		i==3? button.getRolloverIcon(): 
-        	i==4? button.getRolloverSelectedIcon():
-        	button.getDisabledIcon();
-  			if (icon!=null && icon instanceof ResizableIcon) {
-  				((ResizableIcon)icon).resize(getIntegerFactor());
-  			}
-    	}
-    }
-    else if (c instanceof JMenu) {
-    	JMenu menu = (JMenu)c;
-    	Icon icon = menu.getIcon();
-			if (icon!=null && icon instanceof ResizableIcon) {
-				((ResizableIcon)icon).resize(getIntegerFactor());
+  private final static IdentityHashMap<Container, Double> containerMap = new IdentityHashMap<>();
+
+	/**
+	 * Increases a container's normal font sizes by the specified factor.
+	 *
+	 * @param c      a container
+	 * @param factor the factor
+	 */
+	private static void setFontFactor(Container c, double factor) {
+		// BH adds map to ensure we are really making a change.
+		if (c == null) {
+			containerMap.clear();
+			return;
+		}
+		if (factor == 0) {
+			OSPLog.debug("FontSizer entry removed for " + c.getClass().getName());
+			containerMap.remove(c);
+			return;
+		}
+		Double d = containerMap.get(c);
+		if (d != null && d.doubleValue() == factor) {
+			OSPLog.debug("FontSizer skipped for " + c.getClass().getName());
+			return;
+		}
+		containerMap.put(c, factor);
+		// get resized container font
+		Font font = getResizedFont(c.getFont(), factor);
+		// Added by Paco. This must be here because JComponent inherits from Container
+		if (c instanceof javax.swing.JComponent) {
+			Border border = ((javax.swing.JComponent) c).getBorder();
+			if (border instanceof TitledBorder) {
+				setFontFactor((TitledBorder) border, factor);
 			}
-    	for (int i=0; i< menu.getItemCount(); i++) {
-    		JMenuItem item = menu.getItem(i);
-    		if (item!=null) {
-    			setFontFactor(item, factor);
-    		}
-    	}
-    }
-    else if (c instanceof AbstractButton)  {
-    	// BH SwingJS "getIcon" is a method in AbstractButton, JFileChooser, JOptionPane, 
-    	// JLabel, and DefaultTreeCellRenderer. 
-    	// It is fair to assume we can just check for AbstractButton?
-    	// Otherwise we are depending upon throwing an Exception, which is
-    	// OK, but not really good form. 
-    	Icon icon = ((AbstractButton) c).getIcon();
+		}
+		// End of added by Paco
+		if (!(c instanceof JMenu)) {
+			c.setFont(font);
+			// iterate through child components
+			for (int i = 0; i < c.getComponentCount(); i++) {
+				Component co = c.getComponent(i);
+				if ((co instanceof Container)) {
+					setFontFactor((Container) co, factor);
+				} else {
+					setFontFactor(co, factor);
+				}
+			}
+		}
+		// added by Doug Brown June 2015 to resize icons along with fonts
+		if (c instanceof JButton) {
+			JButton button = (JButton) c;
+			for (int i = 0; i < 5; i++) {
+				Icon icon = i == 0 ? button.getIcon()
+						: i == 2 ? button.getSelectedIcon()
+								: i == 3 ? button.getRolloverIcon()
+										: i == 4 ? button.getRolloverSelectedIcon() : button.getDisabledIcon();
+				if (icon != null && icon instanceof ResizableIcon) {
+					((ResizableIcon) icon).resize(getIntegerFactor());
+				}
+			}
+		} else if (c instanceof JMenu) {
+			JMenu menu = (JMenu) c;
+			setMenuFont(menu, font);
+			Icon icon = menu.getIcon();
+			if (icon != null && icon instanceof ResizableIcon) {
+				((ResizableIcon) icon).resize(getIntegerFactor());
+			}
+			for (int i = 0; i < menu.getItemCount(); i++) {
+				JMenuItem item = menu.getItem(i);
+				if (item != null) {
+					setFontFactor(item, factor);
+				}
+			}
+		} else if (c instanceof AbstractButton) {
+			// BH SwingJS "getIcon" is a method in AbstractButton, JFileChooser,
+			// JOptionPane,
+			// JLabel, and DefaultTreeCellRenderer.
+			// It is fair to assume we can just check for AbstractButton?
+			// Otherwise we are depending upon throwing an Exception, which is
+			// OK, but not really good form.
+			Icon icon = ((AbstractButton) c).getIcon();
 // formerly:
 //			Method m = c.getClass().getMethod("getIcon", (Class<?>[])null); //$NON-NLS-1$
 //			if (m != null) {
 //				Icon icon = (Icon)m.invoke(c, (Object[])null);
-				if (icon!=null && icon instanceof ResizableIcon) {
-					((ResizableIcon)icon).resize(getIntegerFactor());
-				}
+			if (icon != null && icon instanceof ResizableIcon) {
+				((ResizableIcon) icon).resize(getIntegerFactor());
 			}
+		}
 //		} catch (Exception e) {
 //		}
-    // end of code added by Doug
+		// end of code added by Doug
 
-    c.repaint();
-  }
+		c.repaint();
+	}
 
   /**
    * Increases a component's normal font sizes by the specified factor.

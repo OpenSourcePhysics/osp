@@ -389,7 +389,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
       return;
     }
     Runnable setPlayerVis = new Runnable() {
-      public void run() {
+      @Override
+	public void run() {
         playerVisible = visible;
         if(playerVisible) {
           add(player, BorderLayout.SOUTH);
@@ -443,7 +444,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 //				(Object) getDrawables(Trackable.class) : super.getDrawables());
 //	}
 
-	  public ArrayList<Drawable> getDrawables() {
+	  @Override
+	public ArrayList<Drawable> getDrawables() {
 		    ArrayList<Drawable> list = super.getDrawables();
 		    if(isDrawingInImageSpace()) {
 		      for(Drawable d : list) {
@@ -457,7 +459,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	/**
 	 * Must clone if removing Trackable
 	 */
-	  public synchronized ArrayList<Drawable> getDrawablesNoClone() {
+	  @Override
+	public synchronized ArrayList<Drawable> getDrawablesNoClone() {
 		  return getDrawables();
 	  }
 
@@ -466,7 +469,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
    *
    * @param drawable the drawable object
    */
-  public synchronized void addDrawable(Drawable drawable) {
+  @Override
+public synchronized void addDrawable(Drawable drawable) {
     if(drawable==null) {
       return;
     }
@@ -483,7 +487,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
    *
    * @param drawable the drawable object
    */
-  public synchronized void removeDrawable(Drawable drawable) {
+  @Override
+public synchronized void removeDrawable(Drawable drawable) {
     if(drawable==video) {
       setVideo(null);
     } else {
@@ -496,7 +501,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
    *
    * @param c the class to remove
    */
-  public synchronized <T extends Drawable> void removeObjectsOfClass(Class<T> c) {
+  @Override
+public synchronized <T extends Drawable> void removeObjectsOfClass(Class<T> c) {
     if(video.getClass()==c) {
       setVideo(null);
     } else {
@@ -508,7 +514,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
    * Removes all drawable objects except the video.
    * To remove the video, use setVideo(null);
    */
-  public synchronized void clear() {
+  @Override
+public synchronized void clear() {
     super.clear();
     // add back the video
     if(video!=null) {
@@ -582,6 +589,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	 *
 	 * @param e the property change event
 	 */
+	@Override
 	public void propertyChange(PropertyChangeEvent e) {
 		String name = e.getPropertyName();
 		switch (name) {
@@ -681,7 +689,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
    *
    * @param g the graphics context to draw on
    */
-  protected void paintEverything(Graphics g) {
+  @Override
+protected void paintEverything(Graphics g) {
     // increase bottom gutter to make room for the player
     if(playerVisible) {
       bottomGutter += player.height;
@@ -698,7 +707,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
    *
    * @param drawables the list of drawable objects
    */
-  protected void scale(ArrayList<Drawable> drawables) {
+  @Override
+protected void scale(ArrayList<Drawable> drawables) {
     if(drawingInImageSpace) {
       // scale to image units
       xminPreferred = -imageBorder*imageWidth+xOffset;
@@ -781,7 +791,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
      * @param control the control to save to
      * @param obj the object to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       VideoPanel vidPanel = (VideoPanel) obj;
       // save the video clip and coords
       control.setValue("videoclip", vidPanel.getPlayer().getVideoClip()); //$NON-NLS-1$
@@ -800,7 +811,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
      * @param control the control
      * @return the newly created object
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new VideoPanel();
     }
 
@@ -811,7 +823,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
      * @param obj the object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       VideoPanel vidPanel = (VideoPanel) obj;
       // load the video clip
       VideoClip clip = (VideoClip) control.getObject("videoclip"); //$NON-NLS-1$
