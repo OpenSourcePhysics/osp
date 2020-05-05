@@ -2129,16 +2129,19 @@ public class LibraryTreePanel extends JPanel {
 	  	// clear description for non-ComPADRE nodes with no HTML path
 	  	if (htmlPath==null) {
 	  		if (urlPath==null) node.record.setDescription(null);
-	  	}
-	  	else {
-	  		// copy HTML to cache if needed
-	  		File cachedFile = ResourceLoader.getOSPCacheFile(htmlPath);
-	    	boolean foundInCache = cachedFile.exists();
-//		  	boolean isCacheable = htmlPath.startsWith("http") || htmlPath.contains("!/"); //$NON-NLS-1$ //$NON-NLS-2$
-		  	boolean isCacheable = htmlPath.contains("!/"); //$NON-NLS-1$
-	  		if (!foundInCache && isCacheable)
-	  			cachedFile = ResourceLoader.copyHTMLToOSPCache(htmlPath);
-	  	}
+			} 
+			else { // htmlPath not null
+				// copy HTML to cache if required
+				boolean requiresCache = htmlPath.contains("!/"); //$NON-NLS-1$  // file in zip
+				// not for local trz files
+				// maybe never for JS?
+				requiresCache = requiresCache && htmlPath.startsWith("http");
+				if (requiresCache) {
+					File cachedFile = ResourceLoader.getOSPCacheFile(htmlPath);
+					boolean foundInCache = cachedFile.exists();					
+					if (!foundInCache) ResourceLoader.copyHTMLToOSPCache(htmlPath);					
+				}
+			}
 	  	
       htmlPanesByNode.remove(node);
       LibraryTreeNode.htmlURLs.remove(htmlPath);
