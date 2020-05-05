@@ -158,7 +158,7 @@ public class VideoIO {
 	protected static VideoFileFilter videoFileFilter;
 	protected static Collection<VideoFileFilter> singleVideoTypeFilters = new TreeSet<VideoFileFilter>();
 	protected static String defaultXMLExt = "xml"; //$NON-NLS-1$
-	protected static boolean canceled;
+	private static boolean canceled;
 	protected static String preferredExportExtension = DEFAULT_PREFERRED_EXPORT_EXTENSION;
 
 	static {
