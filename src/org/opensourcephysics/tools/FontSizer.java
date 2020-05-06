@@ -301,7 +301,7 @@ public class FontSizer {
 		}
 		Double d = containerMap.get(c);
 		if (d != null && d.doubleValue() == factor) {
-			OSPLog.debug("FontSizer skipped for " + c.getClass().getName());
+			//OSPLog.debug("FontSizer skipped for " + c.getClass().getName());
 			return;
 		}
 		containerMap.put(c, factor);
