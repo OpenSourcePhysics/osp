@@ -76,7 +76,11 @@ public class Resource {
 	 * @param file the file
 	 */
 	public Resource(File file) {
-		this.file = file;
+		if (file.toString().indexOf("!/") >= 0) {
+			this.url = ResourceLoader.getJarURLForFile(file.getAbsolutePath());
+		} else {
+			this.file = file;
+		}
 	}
 
 	/**

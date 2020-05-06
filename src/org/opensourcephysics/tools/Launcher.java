@@ -14,9 +14,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -80,8 +78,8 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
-import javax.swing.WindowConstants;
 import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -121,6 +119,7 @@ import org.opensourcephysics.tools.LaunchNode.DisplayTab;
  *
  * @author Douglas Brown
  */
+@SuppressWarnings("serial")
 public class Launcher {
   // static constants
   protected static final Icon defaultIcon = new DefaultIcon();
@@ -304,7 +303,8 @@ public class Launcher {
       // determine whether launching in new VM is possible; may not be possible in Java Web Start
       // create a test launch thread
       Runnable launchRunner = new Runnable() {
-        public void run() {
+        @Override
+		public void run() {
           // prevent single VM in Vista and Linux
           if(OSPRuntime.isVista()||OSPRuntime.isLinux()) {
             return;
@@ -1005,14 +1005,16 @@ public class Launcher {
     }
     tab.tree.setCellRenderer(new LaunchRenderer());
     tab.tree.addTreeSelectionListener(new TreeSelectionListener() {
-      public void valueChanged(TreeSelectionEvent e) {
+      @Override
+	public void valueChanged(TreeSelectionEvent e) {
         newNodeSelected = true;
         refreshGUI();
       }
 
     });
     tab.tree.addMouseListener(new MouseAdapter() {
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
         if(splashDialog!=null) {
           splashDialog.dispose();
         }
@@ -1021,7 +1023,8 @@ public class Launcher {
 
     });
     tab.tree.addMouseListener(new MouseAdapter() {
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
         popup.removeAll();
         handleMousePressed(e, tab);
       }
@@ -1034,7 +1037,8 @@ public class Launcher {
       tabbedPane.setToolTipTextAt(tabbedPane.getSelectedIndex(), root.tooltip);
     }
     tab.dataPanel.addComponentListener(new ComponentAdapter() {
-      public void componentResized(ComponentEvent e) {
+      @Override
+	public void componentResized(ComponentEvent e) {
         divider = tab.splitPane.getDividerLocation();
       }
 
@@ -1055,7 +1059,8 @@ public class Launcher {
         if(html.url.getContent()!=null) {
           final java.net.URL url = html.url;
           Runnable runner = new Runnable() {
-            public void run() {
+            @Override
+			public void run() {
               try {
                 textPane.setPage(url);
               } catch(IOException ex) {
@@ -1086,7 +1091,8 @@ public class Launcher {
     JPanel box = new JPanel();
     contentPane.add(box, BorderLayout.SOUTH);
     ActionListener openAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         // open linked file and node
         int i = Integer.parseInt(e.getActionCommand());
         LaunchNode child = (LaunchNode) node.getChildAt(i);
@@ -1342,14 +1348,16 @@ public class Launcher {
     fileMenu.add(printMenu);
     // print action
     printFrameItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         PrintUtils.printComponent(frame);
       }
 
     });
     // save as EPS action
     saveFrameAsEPSItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         try {
           PrintUtils.saveComponentAsEPS(frame);
         } catch(IOException ex) {
@@ -1375,7 +1383,8 @@ public class Launcher {
   private void appletGUI() { // added by W. Christian
     hideItem = new JMenuItem(LaunchRes.getString("Menu.File.Hide")); //$NON-NLS-1$
     hideItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         exit();
       }
 
@@ -1433,7 +1442,8 @@ public class Launcher {
     navButton.setBorderPainted(false);
     navButton.setOpaque(false);
     navButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         if(navbar.getComponentCount()>1) {
           navbar.remove(backButton);
           navbar.remove(forwardButton);
@@ -1467,7 +1477,8 @@ public class Launcher {
     backButton = new JButton(backIcon);
     backButton.setDisabledIcon(backDisabledIcon);
     backButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         undoManager.undo();
         refreshGUI();
       }
@@ -1477,7 +1488,8 @@ public class Launcher {
     forwardButton = new JButton(forwardIcon);
     forwardButton.setDisabledIcon(forwardDisabledIcon);
     forwardButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         undoManager.redo();
         refreshGUI();
       }
@@ -1496,20 +1508,24 @@ public class Launcher {
     Font font = memoryButton.getFont();
     memoryButton.setFont(font.deriveFont(Font.PLAIN, font.getSize()-1)); 
     memoryButton.addMouseListener(new MouseAdapter() {
-    	public void mouseEntered(MouseEvent e) {
+    	@Override
+		public void mouseEntered(MouseEvent e) {
         refreshMemoryButton();
     		memoryButton.setBorderPainted(true);
     	}
     	
-    	public void mouseExited(MouseEvent e) {
+    	@Override
+		public void mouseExited(MouseEvent e) {
     		memoryButton.setBorderPainted(false);
     	}
 
-    	public void mousePressed(MouseEvent e) {
+    	@Override
+		public void mousePressed(MouseEvent e) {
         JPopupMenu popup = new JPopupMenu();
   	    JMenu menu = new JMenu(LaunchRes.getString("Launcher.Button.Memory.Popup.Relaunch")); //$NON-NLS-1$
   	    ActionListener relauncher = new ActionListener() {
-  	    	public void actionPerformed(ActionEvent e) {
+  	    	@Override
+			public void actionPerformed(ActionEvent e) {
   	    		JMenuItem item = (JMenuItem)e.getSource();
   	    		String text = item.getText();
   	    		text = text.substring(0, text.length()-2);
@@ -1552,7 +1568,8 @@ public class Launcher {
     tabbedPane = new JTabbedPane(SwingConstants.BOTTOM);
     contentPane.add(tabbedPane, BorderLayout.CENTER);
     tabbedPane.addChangeListener(new ChangeListener() {
-      public void stateChanged(ChangeEvent e) {
+      @Override
+	public void stateChanged(ChangeEvent e) {
         previousNode = selectedNode;
         selectedNode = getSelectedNode();
         newNodeSelected = true;
@@ -1578,7 +1595,8 @@ public class Launcher {
 
     });
     tabListener = new MouseAdapter() {
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
         if(contentPane.getTopLevelAncestor()!=frame) {
           return;
         }
@@ -1587,7 +1605,8 @@ public class Launcher {
           JPopupMenu popup = new JPopupMenu();
           JMenuItem item = new JMenuItem(LaunchRes.getString("MenuItem.Close")); //$NON-NLS-1$
           item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            @Override
+			public void actionPerformed(ActionEvent e) {
               removeSelectedTab();
             }
 
@@ -1603,7 +1622,8 @@ public class Launcher {
     final JMenuBar menubar = new JMenuBar();
     fileMenu = new JMenu();
     fileMenu.addMouseListener(new MouseAdapter() {
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
         if(splashDialog!=null) {
           splashDialog.dispose();
         }
@@ -1616,7 +1636,8 @@ public class Launcher {
     int mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
     openItem.setAccelerator(KeyStroke.getKeyStroke('O', mask));
     openItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         String[] prevArgs = undoManager.getLauncherState();
         if(prevArgs!=null) {
           String fileName = open();
@@ -1635,7 +1656,8 @@ public class Launcher {
     });
     passwordItem = new JMenuItem();
     passwordItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         if(Password.verify(password, tabSetName)) {
           passwords.add(password);
           getRootNode().enabled = true;
@@ -1654,14 +1676,16 @@ public class Launcher {
     });
     closeTabItem = new JMenuItem();
     closeTabItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         removeSelectedTab();
       }
 
     });
     closeAllItem = new JMenuItem();
     closeAllItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         String[] prevArgs = undoManager.getLauncherState();
         if(removeAllTabs()&&(prevArgs!=null)) {
           // null new args indicate not redoable
@@ -1678,7 +1702,8 @@ public class Launcher {
       editItem.setEnabled(false);
     }
     editItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         if((password!=null)&&!pwRequiredToLoad&&!Password.verify(password, tabSetName)) {
           return;
         }
@@ -1723,7 +1748,8 @@ public class Launcher {
     backItem = new JMenuItem();
     backItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, mask));
     backItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         undoManager.undo();
         refreshGUI();
       }
@@ -1733,7 +1759,8 @@ public class Launcher {
     menubar.add(displayMenu);
     // language menu
     LaunchRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
-      public void propertyChange(PropertyChangeEvent e) {
+      @Override
+	public void propertyChange(PropertyChangeEvent e) {
         refreshStringResources();
         refreshGUI();
       }
@@ -1742,7 +1769,8 @@ public class Launcher {
     languageMenu = new JMenu();
     final Locale[] locales = OSPRuntime.getInstalledLocales();
     Action languageAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         String language = e.getActionCommand();
         OSPLog.finest("setting language to "+language); //$NON-NLS-1$
         for(int i = 0; i<locales.length; i++) {
@@ -1767,7 +1795,8 @@ public class Launcher {
     displayMenu.addSeparator();
     // font size listener
     FontSizer.addPropertyChangeListener("level", new PropertyChangeListener() { //$NON-NLS-1$
-      public void propertyChange(PropertyChangeEvent e) {
+      @Override
+	public void propertyChange(PropertyChangeEvent e) {
         int level = ((Integer) e.getNewValue()).intValue();
         setFontLevel(level);
       }
@@ -1775,7 +1804,8 @@ public class Launcher {
     });
     sizeUpItem = new JMenuItem();
     sizeUpItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         FontSizer.levelUp();
       }
 
@@ -1783,7 +1813,8 @@ public class Launcher {
     displayMenu.add(sizeUpItem);
     sizeDownItem = new JMenuItem();
     sizeDownItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         FontSizer.levelDown();
       }
 
@@ -1794,7 +1825,8 @@ public class Launcher {
     lookFeelMenu = new JMenu();
     displayMenu.add(lookFeelMenu);
     Action lfAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         setLookAndFeel(e.getActionCommand(), false);
       }
 
@@ -1847,7 +1879,8 @@ public class Launcher {
     helpMenu = new JMenu();
     helpMenu.addMouseListener(new MouseAdapter() {
       // hide splash dialog if visible
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
         if(splashDialog!=null) {
           splashDialog.dispose();
         }
@@ -1857,10 +1890,12 @@ public class Launcher {
     });
     helpMenu.addMouseListener(new MouseAdapter() {
       // refresh authorInfo item
-      public void mouseEntered(MouseEvent e) {
+      @Override
+	public void mouseEntered(MouseEvent e) {
         mousePressed(e);
       }
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
         LaunchNode node = getSelectedNode();
         if(node!=null) {
           helpMenu.add(authorInfoItem);
@@ -1874,7 +1909,8 @@ public class Launcher {
     logItem = new JMenuItem();
     logItem.setAccelerator(KeyStroke.getKeyStroke('L', mask));
     logItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         if(OSPRuntime.applet==null) { // not running as applet so create and position the log.
           Point p0 = new Frame().getLocation();
           OSPLog log = OSPLog.getOSPLog();
@@ -1891,7 +1927,8 @@ public class Launcher {
     inspectItem = new JMenuItem();
     helpMenu.add(inspectItem);
     inspectItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         LaunchSet tabSet = new LaunchSet(Launcher.this, tabSetName);
         tabSet.showHiddenNodes = Launcher.this instanceof LaunchBuilder;
         XMLControl xml = new XMLControlElement(tabSet);
@@ -1907,7 +1944,8 @@ public class Launcher {
     helpMenu.add(diagnosticMenu);
     JMenuItem jarItem = new JMenuItem("Jar"); //$NON-NLS-1$
     jarItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         Diagnostics.aboutLaunchJar();
       }
 
@@ -1915,7 +1953,8 @@ public class Launcher {
     diagnosticMenu.add(jarItem);
     JMenuItem vmItem = new JMenuItem("Java VM"); //$NON-NLS-1$
     vmItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         Diagnostics.aboutJava();
       }
 
@@ -1923,7 +1962,8 @@ public class Launcher {
     diagnosticMenu.add(vmItem);
     JMenuItem OSItem = new JMenuItem("OS"); //$NON-NLS-1$
     OSItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         Diagnostics.aboutOS();
       }
 
@@ -1931,7 +1971,8 @@ public class Launcher {
     diagnosticMenu.add(OSItem);
     JMenuItem j3dItem = new JMenuItem("Java 3D"); //$NON-NLS-1$
     j3dItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         Diagnostics.aboutJava3D();
       }
 
@@ -1939,7 +1980,8 @@ public class Launcher {
     diagnosticMenu.add(j3dItem);
     JMenuItem joglItem = new JMenuItem("JOGL"); //$NON-NLS-1$
     joglItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         Diagnostics.aboutJOGL();
       }
 
@@ -1948,7 +1990,8 @@ public class Launcher {
     helpMenu.addSeparator();
     aboutItem = new JMenuItem();
     aboutItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         showAboutDialog();
       }
 
@@ -1956,7 +1999,8 @@ public class Launcher {
     helpMenu.add(aboutItem);
     authorInfoItem = new JMenuItem();
     authorInfoItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         showAuthorInformation();
       }
 
@@ -1965,14 +2009,17 @@ public class Launcher {
     if(OSPRuntime.applet==null) {
       // add window listener to exit
       frame.addWindowListener(new WindowAdapter() {
-        public void windowClosing(WindowEvent e) {
+        @Override
+		public void windowClosing(WindowEvent e) {
           exit();
         }
         // Added by W. Christian to disable the Language menu
-        public void windowGainedFocus(WindowEvent e) {
+        @Override
+		public void windowGainedFocus(WindowEvent e) {
           OSPRuntime.setAuthorMode(false);
         }
-        public void windowActivated(WindowEvent e) {
+        @Override
+		public void windowActivated(WindowEvent e) {
           OSPRuntime.setAuthorMode(false);
         }
 
@@ -1982,7 +2029,8 @@ public class Launcher {
       exitItem = new JMenuItem();
       exitItem.setAccelerator(KeyStroke.getKeyStroke('Q', mask));
       exitItem.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           exit();
         }
 
@@ -1997,7 +2045,8 @@ public class Launcher {
       JarFile jar = OSPRuntime.getLaunchJar();
       if(jar!=null) {
         Action action = new AbstractAction() {
-          public void actionPerformed(ActionEvent e) {
+          @Override
+		public void actionPerformed(ActionEvent e) {
             // get name of file to open
             String fileName = ((JMenuItem) e.getSource()).getText();
             fileName = OSPRuntime.getLaunchJarName()+"!/"+fileName;                  //$NON-NLS-1$
@@ -2122,7 +2171,8 @@ public class Launcher {
     }
     if(!isVisible()) {
       frame.addWindowListener(new WindowAdapter() {
-        public void windowOpened(WindowEvent e) {
+        @Override
+		public void windowOpened(WindowEvent e) {
           setLookAndFeel(lf, always);
           frame.removeWindowListener(this);
         }
@@ -2284,7 +2334,8 @@ public class Launcher {
     if((linkListener==null)&&enabled) {
       linkListener = new HyperlinkListener() {
         HyperlinkEvent event;
-        public void hyperlinkUpdate(HyperlinkEvent e) {
+        @Override
+		public void hyperlinkUpdate(HyperlinkEvent e) {
           if(e.getEventType()==HyperlinkEvent.EventType.ACTIVATED) {
             // workaround so each event is handled only once
             if(event==e) {
@@ -2315,7 +2366,8 @@ public class Launcher {
                     // add shutdown hook to dispose of extracted file
                     final File tempFile = res.getFile();
                     Thread shutdownHook = new Thread() {
-                      public void run() {
+                      @Override
+					public void run() {
                         tempFile.deleteOnExit();
                       }
 
@@ -2492,7 +2544,8 @@ public class Launcher {
       // add items to popup menu
       JMenuItem inspectItem = new JMenuItem(LaunchRes.getString("MenuItem.Inspect")); //$NON-NLS-1$
       inspectItem.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           inspect(node);
         }
 
@@ -2505,7 +2558,8 @@ public class Launcher {
           JMenuItem launchItem = new JMenuItem(LaunchRes.getString("MenuItem.Launch"));       //$NON-NLS-1$
           popup.add(launchItem);
           launchItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            @Override
+			public void actionPerformed(ActionEvent e) {
               node.launch(tab);
             }
 
@@ -2515,7 +2569,8 @@ public class Launcher {
           JMenuItem terminateItem = new JMenuItem(LaunchRes.getString("MenuItem.Terminate")); //$NON-NLS-1$
           popup.add(terminateItem);
           terminateItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            @Override
+			public void actionPerformed(ActionEvent e) {
               node.terminateAll();
             }
 
@@ -2527,7 +2582,8 @@ public class Launcher {
             JMenuItem launchItem = new JMenuItem(LaunchRes.getString("MenuItem.Relaunch")); //$NON-NLS-1$
             popup.add(launchItem);
             launchItem.addActionListener(new ActionListener() {
-              public void actionPerformed(ActionEvent e) {
+              @Override
+			public void actionPerformed(ActionEvent e) {
                 node.launch(tab);
               }
 
@@ -2539,7 +2595,8 @@ public class Launcher {
           JMenuItem ejsItem = new JMenuItem(LaunchRes.getString("Popup.MenuItem.EjsModel")); //$NON-NLS-1$
           popup.add(ejsItem);
           ejsItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            @Override
+			public void actionPerformed(ActionEvent e) {
               boolean quit = EjsTool.runEjs(node.getLaunchClass(), new Cryptic(password).getCryptic()); 
               if(quit) {
                 node.terminateAll();
@@ -2651,13 +2708,15 @@ public class Launcher {
       splash.setBackground(Color.white);
       splash.setPreferredSize(new Dimension(w, h));
       splash.addMouseListener(new MouseAdapter() {
-        public void mousePressed(MouseEvent e) {
+        @Override
+		public void mousePressed(MouseEvent e) {
           splashDialog.dispose();
         }
 
       });
       frame.addMouseListener(new MouseAdapter() {
-        public void mousePressed(MouseEvent e) {
+        @Override
+		public void mousePressed(MouseEvent e) {
           splashDialog.dispose();
           frame.removeMouseListener(this);
         }
@@ -2684,7 +2743,8 @@ public class Launcher {
       creditsLabel.setHorizontalAlignment(SwingConstants.CENTER);
       creditsLabel.setAlignmentX(0.5f);
       splashPathLabel = new JLabel(" ") {    //$NON-NLS-1$
-        public void setText(String s) {
+        @Override
+		public void setText(String s) {
           int max = 80;
           if((s!=null)&&(s.length()>max)) {
             s = s.substring(0, max-4)+"..."; //$NON-NLS-1$
@@ -2705,7 +2765,8 @@ public class Launcher {
       splash.add(labels, BorderLayout.CENTER);
       splashDialog.pack();
       splashTimer = new javax.swing.Timer(4000, new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           if(frame.isShowing()) {
             splashDialog.dispose();
             splashTimer.stop();
@@ -2732,7 +2793,8 @@ public class Launcher {
       frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
       // restore default close operation later
       Runnable runner = new Runnable() {
-        public void run() {
+        @Override
+		public void run() {
           frame.setDefaultCloseOperation(op);
         }
 
@@ -2840,7 +2902,8 @@ public class Launcher {
    * A cell renderer class to show launchable nodes.
    */
   private class LaunchRenderer extends DefaultTreeCellRenderer {
-    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+    @Override
+	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
       super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
       LaunchNode node = (LaunchNode) value;
       setToolTipText(node.tooltip.equals("") //$NON-NLS-1$
@@ -2942,7 +3005,8 @@ public class Launcher {
       name = XML.getName(XML.forwardSlash(path));
     }
 
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       LaunchSet tabset = (LaunchSet) obj;
       Launcher launcher = tabset.launcher;
       control.setValue("classpath", classPath);  //$NON-NLS-1$
@@ -3003,11 +3067,13 @@ public class Launcher {
       control.setValue("xml_password", launcher.password); //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return null;
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       LaunchSet tabset = (LaunchSet) obj;
       final Launcher launcher = tabset.launcher;
       // load a different launch set
@@ -3023,7 +3089,8 @@ public class Launcher {
       final String lookAndFeel = control.getString("look_and_feel"); //$NON-NLS-1$
       if(lookAndFeel!=null) {
         Runnable runner = new Runnable() {
-          public void run() {
+          @Override
+		public void run() {
             launcher.setLookAndFeel(lookAndFeel, false);
           }
 
@@ -3135,6 +3202,7 @@ public class Launcher {
 			if (launcher.getRootNode()!=null && !launcher.getRootNode().enabled) {
 				final Launcher launchr = launcher;
 				Runnable runner = new Runnable() {
+					@Override
 					public void run() {
 						launchr.passwordItem.doClick(0);
 					}
@@ -3243,7 +3311,8 @@ public class Launcher {
       //        launchArgs = null;
       //      else  launchArgs = args;
       final Runnable launchRunner = new Runnable() {
-        public void run() {
+        @Override
+		public void run() {
           activeNode = node;
           try {
             Method m = type.getMethod("main", new Class[] {String[].class}); //$NON-NLS-1$
@@ -3271,7 +3340,8 @@ public class Launcher {
         frameFinder.stop();
       }
       frameFinder = new javax.swing.Timer(1000, new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           findFramesFor(node, prevFrames, launchRunner); // stops timer if finds frames
         }
 
@@ -3329,7 +3399,8 @@ public class Launcher {
     //    }
     // create a launch thread for separate VM
     Runnable launchRunner = new Runnable() {
-      public void run() {
+      @Override
+	public void run() {
         OSPLog.finer(LaunchRes.getString("Log.Message.Command")+" "+cmd.toString()); //$NON-NLS-1$//$NON-NLS-2$
         String[] cmdarray = cmd.toArray(new String[0]);
         String[] envVars = new String[] {"osp_launcher=true"};                       //$NON-NLS-1$
@@ -3449,7 +3520,8 @@ public class Launcher {
     }
     // create a timer to exit the system after 500 ms
     final Timer timer = new Timer(500, new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         System.exit(0);
       }
     });
@@ -3457,7 +3529,8 @@ public class Launcher {
     timer.start();
     // create a thread to launch in separate VM
     Runnable launchRunner = new Runnable() {
-      public void run() {
+      @Override
+	public void run() {
         String[] cmdarray = cmd.toArray(new String[0]);
         try {
           Process proc = Runtime.getRuntime().exec(cmdarray);
@@ -3540,7 +3613,8 @@ public class Launcher {
   	if (xmlFileFilter==null) {
 	    xmlFileFilter = new FileFilter() {
 	      // accept all directories and *.xml files.
-	      public boolean accept(File f) {
+	      @Override
+		public boolean accept(File f) {
 	        if(f==null) {
 	          return false;
 	        }
@@ -3559,7 +3633,8 @@ public class Launcher {
 	        return false;
 	      }
 	      // the description of this filter
-	      public String getDescription() {
+	      @Override
+		public String getDescription() {
 	        return LaunchRes.getString("FileChooser.XMLFilter.Description"); //$NON-NLS-1$
 	      }
 	
@@ -3582,7 +3657,8 @@ public class Launcher {
     // add xml file filters
     launcherFileFilter = new FileFilter() {
       // accept all directories, *.xml, *.xset and zip files.
-      public boolean accept(File f) {
+      @Override
+	public boolean accept(File f) {
         if(f==null) {
           return false;
         }
@@ -3602,14 +3678,16 @@ public class Launcher {
         return false;
       }
       // the description of this filter
-      public String getDescription() {
+      @Override
+	public String getDescription() {
         return LaunchRes.getString("FileChooser.LauncherFilter.Description"); //$NON-NLS-1$
       }
 
     };
     xsetFileFilter = new FileFilter() {
       // accept all directories and *.xset files.
-      public boolean accept(File f) {
+      @Override
+	public boolean accept(File f) {
         if(f==null) {
           return false;
         }
@@ -3628,7 +3706,8 @@ public class Launcher {
         return false;
       }
       // the description of this filter
-      public String getDescription() {
+      @Override
+	public String getDescription() {
         return LaunchRes.getString("FileChooser.XSETFilter.Description"); //$NON-NLS-1$
       }
 
@@ -3824,7 +3903,8 @@ public class Launcher {
       this.runner = runner;
     }
 
-    public void windowClosing(WindowEvent e) {
+    @Override
+	public void windowClosing(WindowEvent e) {
       OSPLog.fine("Closing frames for node "+node); //$NON-NLS-1$
       Iterator<Frame> it = frames.iterator();
       // dispose of control frame and associated frames
@@ -3870,18 +3950,21 @@ public class Launcher {
   static class DefaultIcon implements Icon {
     int w = 16, h = 16; // width and height of icon
 
-    public void paintIcon(Component c, Graphics g, int x, int y) {
+    @Override
+	public void paintIcon(Component c, Graphics g, int x, int y) {
       Color prev = g.getColor();
       g.setColor(Color.BLUE);
       g.drawOval(x+3, y+3, w-6, h-6);
       g.setColor(prev);
     }
 
-    public int getIconWidth() {
+    @Override
+	public int getIconWidth() {
       return w;
     }
 
-    public int getIconHeight() {
+    @Override
+	public int getIconHeight() {
       return h;
     }
 
@@ -3900,7 +3983,8 @@ public class Launcher {
       editorPane = GUIUtils.newJTextPane();
       editorPane.setEditable(false);
       editorPane.addMouseListener(new MouseAdapter() {
-        public void mousePressed(MouseEvent e) {
+        @Override
+		public void mousePressed(MouseEvent e) {
           if(!undoManager.canUndo()) {
             return;
           }
@@ -3909,7 +3993,8 @@ public class Launcher {
             JPopupMenu popup = new JPopupMenu();
             JMenuItem item = new JMenuItem(LaunchRes.getString("Popup.MenuItem.Back")); //$NON-NLS-1$
             item.addActionListener(new ActionListener() {
-              public void actionPerformed(ActionEvent e) {
+              @Override
+			public void actionPerformed(ActionEvent e) {
                 undoManager.undo();
               }
 

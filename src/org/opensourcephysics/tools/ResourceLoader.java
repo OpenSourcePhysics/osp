@@ -2006,16 +2006,7 @@ public class ResourceLoader {
 		if (base != null) { // car.trz
 			ze = findZipEntry(base, fileName, false);
 			if (ze != null) {
-
-				try {
-					url = new URL("file", null, path); //$NON-NLS-1$
-					// file:C:/temp/car.trz!/Car in a loop with friction.trk
-					// URL constructor takes "jar" for any ZIP-based file (per Wikipedia)
-					url = new URL("jar", null, url.toExternalForm()); //$NON-NLS-1$
-					// jar:file:C:/temp/car.trz!/Car in a loop with friction.trk
-
-				} catch (MalformedURLException e) {
-				}
+				url = getJarURLForFile(path);
 			}
 			if (url == null && zipLoaders != null) {
 				// use existing zip loader, if any
@@ -2090,6 +2081,28 @@ public class ResourceLoader {
 			} catch (IOException ex) {
 				/** empty block */
 			}
+		}
+		return null;
+	}
+
+	/**
+	 * C:/temp/car.trz!/Car in a loop with friction.trk
+	 * 
+	 * becomes
+	 * 
+	 * jar:file:C:/temp/car.trz!/Car in a loop with friction.trk
+	 * 
+	 * 
+	 * @param path
+	 * @return jar URL
+	 */
+	public static URL getJarURLForFile(String fileName) {
+		// URL constructor takes "jar" for any ZIP-based file (per Wikipedia)
+		
+		try {
+			return new URL("jar", null, new URL("file", null, fileName).toString()); //$NON-NLS-1$ //$NON-NLS-2$
+
+		} catch (MalformedURLException e) {
 		}
 		return null;
 	}

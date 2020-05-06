@@ -7,32 +7,33 @@
 
 package org.opensourcephysics.display;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
+
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.tools.Resource;
-import org.opensourcephysics.tools.ResourceLoader;
 
 public class DataFile extends DataAdapter {
   java.util.List<Data> dataList = null;
   protected static String[] delimiters = new String[] {" ", "\t", ",", ";"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 
-  /**
-   * Creates a DataFile using data in the given file.
-   *
-   * @param fileName
-   */
-  public DataFile(String fileName) {
-    super(null);
-    if(fileName!=null) {
-      open(fileName);
-    }
-  }
+	/**
+	 * Creates a DataFile using data in the given file.
+	 *
+	 * @param fileName
+	 */
+	public DataFile(File file) {
+		super(null);
+		if (file != null) {
+			open(file);
+		}
+	}
 
   /**
    * Some objects (eg, a Group) do not contain data, but a list of Data
@@ -41,7 +42,8 @@ public class DataFile extends DataAdapter {
    *
    * @return a list of Data objects, or null if this object contains data
    */
-  public java.util.List<Data> getDataList() {
+  @Override
+public java.util.List<Data> getDataList() {
     return dataList;
   }
 
@@ -49,32 +51,26 @@ public class DataFile extends DataAdapter {
    * Opens an xml or data file specified by name.
    *
    * @param fileName   the file name
-   * @return the file name, if successfully opened
    */
-  public String open(String fileName) {
+  public void open(File file) {
     dataList = null;
     data = null;
-    OSPLog.fine("opening "+fileName); //$NON-NLS-1$
-    Resource res = ResourceLoader.getResource(fileName);
-    if(res!=null) {
+    OSPLog.fine("opening "+file); //$NON-NLS-1$
+    Resource res = new Resource(file);
       Reader in = res.openReader();
       String firstLine = readFirstLine(in);
       // if xml, read the file into an XML control and add tab
       if(firstLine.startsWith("<?xml")) { //$NON-NLS-1$
-        XMLControlElement control = new XMLControlElement(fileName);
+        XMLControlElement control = new XMLControlElement(file);
         dataList = control.getObjects(Data.class);
-        return fileName;
       }
       // if not xml, attempt to import data and add tab
       else if(res.getString()!=null) {
-        data = parseData(res.getString(), fileName);
+        data = parseData(res.getString(), file.toString());
         if(data!=null) {
-          return fileName;
         }
       }
-    }
     OSPLog.finest("no data found"); //$NON-NLS-1$
-    return null;
   }
 
   /**
