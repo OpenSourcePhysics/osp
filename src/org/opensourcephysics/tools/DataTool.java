@@ -603,7 +603,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    * @param replyTo the tool to notify when the job is complete (may be null)
    * @throws RemoteException
    */
-  public void send(Job job, Tool replyTo) throws RemoteException {
+  @Override
+public void send(Job job, Tool replyTo) throws RemoteException {
     XMLControlElement control = new XMLControlElement(job.getXML());
     if(control.failedToRead()||(control.getObjectClass()==Object.class)) {
       return;
@@ -673,7 +674,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    *
    * @param e the event
    */
-  public void propertyChange(PropertyChangeEvent e) {
+  @Override
+public void propertyChange(PropertyChangeEvent e) {
     String name = e.getPropertyName();
     if(name.equals("function")) {                     //$NON-NLS-1$
       DataToolTab tab = getSelectedTab();
@@ -1791,7 +1793,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   /**
    * Clears data by removing all tabs.
    */
-  public void clearData() {
+  @Override
+public void clearData() {
     removeAllTabs();
   }
 
@@ -1800,7 +1803,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    *
    * @param level the level
    */
-  public void setFontLevel(int level) {
+  @Override
+public void setFontLevel(int level) {
   	if (getJMenuBar()==null) return;
     super.setFontLevel(level);
 		FontSizer.setFonts(emptyMenubar, level);
@@ -1939,13 +1943,17 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    */
   protected void open() {
 	// BH changed return String to void
-    int result = OSPRuntime.getChooser().showOpenDialog(null);
-    if(result==JFileChooser.APPROVE_OPTION) {
-      OSPRuntime.chooserDir = OSPRuntime.getChooser().getCurrentDirectory().toString();
-      String fileName = OSPRuntime.getChooser().getSelectedFile().getAbsolutePath();
-      fileName = XML.getRelativePath(fileName);
-      open(fileName);
-    }
+    OSPRuntime.getChooser().showOpenDialog(null, new Runnable() {
+
+		@Override
+		public void run() {
+		      OSPRuntime.chooserDir = OSPRuntime.getChooser().getCurrentDirectory().toString();
+		      String fileName = OSPRuntime.getChooser().getSelectedFile().getAbsolutePath();
+		      fileName = XML.getRelativePath(fileName);
+		      open(fileName);
+		}
+    	
+    }, null);
   }
 
   /**
@@ -2071,7 +2079,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     createGUI();
     Toolbox.addTool(name, this);
     ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
-      public void propertyChange(PropertyChangeEvent e) {
+      @Override
+	public void propertyChange(PropertyChangeEvent e) {
         refreshGUI();
       }
 
@@ -2239,7 +2248,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    *
    * @param operation the operation
    */
-  public void setDefaultCloseOperation(int operation) {
+  @Override
+public void setDefaultCloseOperation(int operation) {
     if((operation==JFrame.EXIT_ON_CLOSE)) {
       exitOnClose = true;
       operation = WindowConstants.DO_NOTHING_ON_CLOSE;
@@ -2250,11 +2260,13 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     super.setDefaultCloseOperation(operation);
   }
   
-  public void dispose() {
+  @Override
+public void dispose() {
 	  super.dispose();
   }
   
-  public void finalize() throws Throwable {
+  @Override
+public void finalize() throws Throwable {
 	  super.finalize();
   }
 
@@ -2275,7 +2287,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
     // add window listener to exit
     this.addWindowListener(new WindowAdapter() {
-      public void windowClosing(WindowEvent e) {
+      @Override
+	public void windowClosing(WindowEvent e) {
         exitItem.doClick(0);
       }
 
@@ -2296,7 +2309,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     tabbedPane = new JTabbedPane(SwingConstants.TOP);
     centerPanel.add(tabbedPane, BorderLayout.CENTER);
     tabbedPane.addChangeListener(new ChangeListener() {
-      public void stateChanged(ChangeEvent e) {
+      @Override
+	public void stateChanged(ChangeEvent e) {
         final DataToolTab tab = getSelectedTab();
         if(tab!=null) {
         	tab.refreshData();
@@ -2316,7 +2330,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 
     });
     tabbedPane.addMouseListener(new MouseAdapter() {
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
         if(OSPRuntime.isPopupTrigger(e)) {
           final int index = tabbedPane.getSelectedIndex();
           // make popup with name change, clone and close items
@@ -2324,7 +2339,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
           JMenuItem item = new JMenuItem(ToolsRes.getString("DataTool.MenuItem.Name"));                                     //$NON-NLS-1$
           popup.add(item);
           item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            @Override
+			public void actionPerformed(ActionEvent e) {
               DataToolTab tab = getTab(index);
               String name = tab.getName();
               Object input = JOptionPane.showInputDialog(DataTool.this, ToolsRes.getString("DataTool.Dialog.Name.Message"), //$NON-NLS-1$
@@ -2346,7 +2362,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
             popup.addSeparator();
             item = new JMenuItem(ToolsRes.getString("DataTool.MenuItem.NewTab"));                           //$NON-NLS-1$
             item.addActionListener(new ActionListener() {
-              public void actionPerformed(ActionEvent e) {
+              @Override
+			public void actionPerformed(ActionEvent e) {
                 newTabItem.doClick(0);
               }
 
@@ -2357,7 +2374,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
             final JMenuItem cloneTabItem = new JMenuItem(ToolsRes.getString("DataTool.MenuItem.Editable")); //$NON-NLS-1$
             cloneMenu.add(cloneTabItem);
             cloneTabItem.addActionListener(new ActionListener() {
-              public void actionPerformed(ActionEvent e) {
+              @Override
+			public void actionPerformed(ActionEvent e) {
                 // determine name of cloned tab
                 String name = getTab(index).getName();
                 String postfix = "_"+ToolsRes.getString("DataTool.Clone.Subscript");                        //$NON-NLS-1$ //$NON-NLS-2$
@@ -2377,7 +2395,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
             item = new JMenuItem(ToolsRes.getString("DataTool.MenuItem.Noneditable")); //$NON-NLS-1$
             cloneMenu.add(item);
             item.addActionListener(new ActionListener() {
-              public void actionPerformed(ActionEvent e) {
+              @Override
+			public void actionPerformed(ActionEvent e) {
                 cloneTabItem.doClick(0);
                 DataToolTab tab = getTab(getTabCount()-1);
                 tab.setUserEditable(false);
@@ -2394,7 +2413,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
           item = new JMenuItem(ToolsRes.getString("MenuItem.Close")); //$NON-NLS-1$
           popup.add(item);
           item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            @Override
+			public void actionPerformed(ActionEvent e) {
               removeTab(index, true);
             }
 
@@ -2402,7 +2422,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
           item = new JMenuItem(ToolsRes.getString("MenuItem.CloseOthers")); //$NON-NLS-1$
           popup.add(item);
           item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            @Override
+			public void actionPerformed(ActionEvent e) {
               removeAllButTab(index);
             }
 
@@ -2410,7 +2431,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
           item = new JMenuItem(ToolsRes.getString("MenuItem.CloseAll")); //$NON-NLS-1$
           popup.add(item);
           item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            @Override
+			public void actionPerformed(ActionEvent e) {
               removeAllTabs();
             }
 
@@ -2427,10 +2449,12 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     fileMenu = new JMenu();
     menubar.add(fileMenu);
     MouseAdapter fileMenuChecker = new MouseAdapter() {
-      public void mouseEntered(MouseEvent e) {
+      @Override
+	public void mouseEntered(MouseEvent e) {
         mousePressed(e);
       }
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
         boolean empty = getSelectedTab().originatorID==0;
         if(!OSPRuntime.appletMode) {
           exportItem.setEnabled(!empty);
@@ -2451,7 +2475,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     newTabItem = new JMenuItem();
     newTabItem.setAccelerator(KeyStroke.getKeyStroke('N', keyMask));
     newTabItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         DataToolTab tab = createTab(null);
         tab.userEditable = true;
         addTab(tab);
@@ -2464,7 +2489,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
       openItem = new JMenuItem();
       openItem.setAccelerator(KeyStroke.getKeyStroke('O', keyMask));
       openItem.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           open();
         }
       });
@@ -2473,7 +2499,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     fileMenu.addSeparator();
     closeItem = new JMenuItem();
     closeItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         int index = tabbedPane.getSelectedIndex();
         removeTab(index, true);
       }
@@ -2482,7 +2509,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     fileMenu.add(closeItem);
     closeAllItem = new JMenuItem();
     closeAllItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         removeAllTabs();
       }
 
@@ -2492,7 +2520,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     if(!OSPRuntime.appletMode) {
       importItem = new JMenuItem();
       importItem.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           DataToolTab tab = getSelectedTab();
           importFileIntoTab(tab);
         }
@@ -2501,7 +2530,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
       fileMenu.add(importItem);
       exportItem = new JMenuItem();
       exportItem.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           getSelectedTab().saveTableDataToFile();
         }
 
@@ -2512,7 +2542,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
       saveItem = new JMenuItem();
       saveItem.setAccelerator(KeyStroke.getKeyStroke('S', keyMask));
       saveItem.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           DataToolTab tab = getSelectedTab();
           save(tab.fileName);
         }
@@ -2522,7 +2553,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
       // save as item
       saveAsItem = new JMenuItem();
       saveAsItem.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           saveAs();
         }
 
@@ -2532,7 +2564,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     }
     printItem = new JMenuItem();
     printItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         SnapshotTool.getTool().printImage(DataTool.this);
       }
 
@@ -2543,7 +2576,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     exitItem = new JMenuItem();
     exitItem.setAccelerator(KeyStroke.getKeyStroke('Q', keyMask));
     exitItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         if(!saveChangesOnClose||removeAllTabs()) {
           if(exitOnClose) {
             System.exit(0);
@@ -2558,10 +2592,12 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     editMenu = new JMenu();
     // create mouse listener to prepare edit menu
     MouseAdapter editMenuChecker = new MouseAdapter() {
-      public void mouseEntered(MouseEvent e) {
+      @Override
+	public void mouseEntered(MouseEvent e) {
         mousePressed(e);
       }
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
         // ignore until menu is displayed
         if(!editMenu.isPopupMenuVisible()&&!emptyEditMenu.isPopupMenuVisible()) {
           return;
@@ -2609,7 +2645,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     undoItem.setEnabled(false);
     undoItem.setAccelerator(KeyStroke.getKeyStroke('Z', keyMask));
     undoItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	if (getSelectedTab().undoManager.canUndo()) {
       		getSelectedTab().undoManager.undo();
       	}
@@ -2621,7 +2658,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     redoItem.setEnabled(false);
     redoItem.setAccelerator(KeyStroke.getKeyStroke('Y', keyMask));
     redoItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	if (getSelectedTab().undoManager.canRedo()) {
       		getSelectedTab().undoManager.redo();
       	}
@@ -2635,7 +2673,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     editMenu.add(copyMenu);
     copyTabItem = new JMenuItem();
     copyTabItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         int i = tabbedPane.getSelectedIndex();
         String title = tabbedPane.getTitleAt(i);
         OSPLog.finest("copying tab "+title); //$NON-NLS-1$
@@ -2647,14 +2686,16 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     copyDataItem = new JMenuItem();
     copyDataItem.setAccelerator(KeyStroke.getKeyStroke('C', keyMask));
     copyDataItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         getSelectedTab().copyTableDataToClipboard();
       }
 
     });
     copyImageItem = new JMenuItem();
     copyImageItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         String tabName = getSelectedTab().getName();
         OSPLog.finest("copying image of "+tabName); //$NON-NLS-1$
         SnapshotTool.getTool().copyImage(DataTool.this);
@@ -2662,7 +2703,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 
     });
     MouseAdapter pasteMenuChecker = new MouseAdapter() {
-      public void mouseEntered(MouseEvent e) {
+      @Override
+	public void mouseEntered(MouseEvent e) {
         // ignore if menu is disabled or already displayed
         if(!pasteMenu.isEnabled()||pasteMenu.isPopupMenuVisible()) {
           return;
@@ -2683,7 +2725,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     editMenu.add(pasteMenu);
     pasteTabItem = new JMenuItem();
     pasteTabItem.setAction(new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         boolean failed = false;
         String dataString = paste();
         if(dataString!=null) {
@@ -2759,7 +2802,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     pasteMenu.add(pasteTabItem);
     pasteColumnsItem = new JMenuItem();
     pasteColumnsItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         if(controlContainsData) {
         	getSelfContainedDataAsync(control, useChooser, new Consumer<ArrayList<Data>>() {
 
@@ -2793,7 +2837,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     ResourceLoader.getResource(imagePath);
     final Locale[] locales = OSPRuntime.getInstalledLocales();
     Action languageAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         String language = e.getActionCommand();
         OSPLog.finest("setting language to "+language); //$NON-NLS-1$ 
         for(int i = 0; i<locales.length; i++) {
@@ -2819,7 +2864,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     displayMenu.add(fontSizeMenu);
     fontSizeGroup = new ButtonGroup();
     Action fontSizeAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         int i = Integer.parseInt(e.getActionCommand());
         FontSizer.setLevel(i);
 //        setFontLevel(i);
@@ -2845,7 +2891,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     helpItem = new JMenuItem();
     helpItem.setAccelerator(KeyStroke.getKeyStroke('H', keyMask));
     helpItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         showHelp();
       }
 
@@ -2855,7 +2902,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     logItem = new JMenuItem();
     logItem.setAccelerator(KeyStroke.getKeyStroke('L', keyMask));
     logItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         Point p0 = new Frame().getLocation();
         JFrame frame = OSPLog.getOSPLog();
         if((frame.getLocation().x==p0.x)&&(frame.getLocation().y==p0.y)) {
@@ -2871,7 +2919,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     aboutItem = new JMenuItem();
     aboutItem.setAccelerator(KeyStroke.getKeyStroke('A', keyMask));
     aboutItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         showAboutDialog();
       }
 
@@ -2885,7 +2934,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     emptyNewTabItem = new JMenuItem();
     emptyNewTabItem.setAccelerator(KeyStroke.getKeyStroke('N', keyMask));
     emptyNewTabItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         DataToolTab tab = createTab(null);
         tab.userEditable = true;
         addTab(tab);
@@ -2897,7 +2947,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     emptyOpenItem = new JMenuItem();
     emptyOpenItem.setAccelerator(KeyStroke.getKeyStroke('O', keyMask));
     emptyOpenItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         open();
       }
 
@@ -2907,7 +2958,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
     emptyExitItem = new JMenuItem();
     emptyExitItem.setAccelerator(KeyStroke.getKeyStroke('Q', keyMask));
     emptyExitItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         if(exitOnClose) {
           System.exit(0);
         } else {
@@ -2950,7 +3002,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 /**
    * Refreshes the GUI.
    */
-  protected void refreshGUI() {
+  @Override
+protected void refreshGUI() {
     setTitle(ToolsRes.getString("DataTool.Frame.Title"));                     //$NON-NLS-1$
     emptyFileMenu.setText(ToolsRes.getString("Menu.File"));                   //$NON-NLS-1$
     emptyNewTabItem.setText(ToolsRes.getString("DataTool.MenuItem.NewTab"));  //$NON-NLS-1$
@@ -3077,7 +3130,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    */
   protected static JButton createButton(String text) {
     JButton button = new JButton(text) {
-      public Dimension getMaximumSize() {
+      @Override
+	public Dimension getMaximumSize() {
         Dimension dim = super.getMaximumSize();
         dim.height = buttonHeight;
         return dim;
