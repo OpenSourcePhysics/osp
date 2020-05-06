@@ -19,6 +19,7 @@ import org.opensourcephysics.controls.XMLControl;
  *
  * @author Douglas Brown
  */
+@SuppressWarnings("serial")
 public class UserFunctionEditor extends FunctionEditor {
   private UserFunction[] mainFunctions = new UserFunction[0];
   private String[] defaultVariableNames = new String[] {"x"}; //$NON-NLS-1$
@@ -93,7 +94,8 @@ public class UserFunctionEditor extends FunctionEditor {
    * @param obj the object
    * @return the name
    */
-  public String getName(Object obj) {
+  @Override
+public String getName(Object obj) {
     return (obj==null)? null: ((UserFunction)obj).getName();
   }
 
@@ -103,7 +105,8 @@ public class UserFunctionEditor extends FunctionEditor {
    * @param obj the object
    * @return the expression
    */
-  public String getExpression(Object obj) {
+  @Override
+public String getExpression(Object obj) {
     return (obj==null)? null: ((UserFunction)obj).getInputString();
   }
 
@@ -113,7 +116,8 @@ public class UserFunctionEditor extends FunctionEditor {
    * @param obj the object
    * @return the description
    */
-  public String getDescription(Object obj) {
+  @Override
+public String getDescription(Object obj) {
     return (obj==null)? null: ((UserFunction)obj).getDescription();
   }
 
@@ -123,7 +127,8 @@ public class UserFunctionEditor extends FunctionEditor {
    * @param obj the object
    * @param desc the description
    */
-  public void setDescription(Object obj, String desc) {
+  @Override
+public void setDescription(Object obj, String desc) {
   	if (obj!=null) {
     	if (desc!=null && desc.trim().equals("")) { //$NON-NLS-1$
     		desc = null;
@@ -139,7 +144,8 @@ public class UserFunctionEditor extends FunctionEditor {
    * @param obj the object
    * @return true if the name is editable
    */
-  public boolean isNameEditable(Object obj) {
+  @Override
+public boolean isNameEditable(Object obj) {
     return((UserFunction) obj).isNameEditable();
   }
 
@@ -149,7 +155,8 @@ public class UserFunctionEditor extends FunctionEditor {
    * @param obj the object
    * @return true if the expression is editable
    */
-  public boolean isExpressionEditable(Object obj) {
+  @Override
+public boolean isExpressionEditable(Object obj) {
   	UserFunction f = (UserFunction)obj;
   	if (f.polynomial!=null) return false;
     return true;
@@ -158,7 +165,8 @@ public class UserFunctionEditor extends FunctionEditor {
   /**
    * Evaluates all current objects.
    */
-  public void evaluateAll() {
+  @Override
+public void evaluateAll() {
     super.evaluateAll();
     ParamEditor paramEditor = getParamEditor();
     if(!parametersValid&&(paramEditor!=null)) {
@@ -180,7 +188,8 @@ public class UserFunctionEditor extends FunctionEditor {
    * @param obj the object
    * @param postEdit true to post an undoable edit
    */
-  public Object addObject(Object obj, int row, boolean postEdit, boolean firePropertyChange) {
+  @Override
+public Object addObject(Object obj, int row, boolean postEdit, boolean firePropertyChange) {
     obj = super.addObject(obj, row, postEdit, firePropertyChange);
     if(obj!=null) {
       firePropertyChange("function", null, obj); //$NON-NLS-1$
@@ -195,7 +204,8 @@ public class UserFunctionEditor extends FunctionEditor {
    * @param postEdit true to post an undoable edit
    * @return the removed object
    */
-  public Object removeObject(Object obj, boolean postEdit) {
+  @Override
+public Object removeObject(Object obj, boolean postEdit) {
     obj = super.removeObject(obj, postEdit);
     if(obj!=null) {
       firePropertyChange("function", obj, null); //$NON-NLS-1$
@@ -209,7 +219,8 @@ public class UserFunctionEditor extends FunctionEditor {
    * @param obj the object
    * @return the tooltip
    */
-  public String getTooltip(Object obj) {
+  @Override
+public String getTooltip(Object obj) {
     return (obj==null)? null: ((UserFunction)obj).getDescription();
   }
 
@@ -218,7 +229,8 @@ public class UserFunctionEditor extends FunctionEditor {
    *
    * @param e the event
    */
-  public void propertyChange(PropertyChangeEvent e) {
+  @Override
+public void propertyChange(PropertyChangeEvent e) {
   	String propName = e.getPropertyName();
     if (propName.equals("param_description")) { //$NON-NLS-1$
       // parameter description has changed
@@ -275,7 +287,8 @@ public class UserFunctionEditor extends FunctionEditor {
    * @param obj the object
    * @return true if important
    */
-  protected boolean isImportant(Object obj) {
+  @Override
+protected boolean isImportant(Object obj) {
     for(int i = 0; i<mainFunctions.length; i++) {
       if(mainFunctions[i]==obj) {
         return true;
@@ -287,7 +300,8 @@ public class UserFunctionEditor extends FunctionEditor {
   /**
    * Informs an object about other objects referenced in its expression.
    */
-  protected void setReferences(Object obj, List<Object> ref) {
+  @Override
+protected void setReferences(Object obj, List<Object> ref) {
     UserFunction f = (UserFunction) obj;
     UserFunction[] references = ref.toArray(new UserFunction[0]);
     f.setReferences(references);
@@ -309,7 +323,8 @@ public class UserFunctionEditor extends FunctionEditor {
    * @param name the proposed name for the object
    * @return true if disallowed
    */
-  protected boolean isDisallowedName(Object obj, String name) {
+  @Override
+protected boolean isDisallowedName(Object obj, String name) {
     boolean disallowed = super.isDisallowedName(obj, name);
     if(obj!=null) {
       String var = ((UserFunction) obj).getIndependentVariable();
@@ -341,7 +356,8 @@ public class UserFunctionEditor extends FunctionEditor {
   /**
    * Returns a String with the names of variables available for expressions.
    */
-  protected String getVariablesString(String separator) {
+  @Override
+protected String getVariablesString(String separator) {
     StringBuffer vars = new StringBuffer(""); //$NON-NLS-1$
     int init = vars.length();
     boolean firstItem = true;
@@ -390,7 +406,8 @@ public class UserFunctionEditor extends FunctionEditor {
   /**
    * Returns true if the object's expression is invalid.
    */
-  protected boolean isInvalidExpression(Object obj) {
+  @Override
+protected boolean isInvalidExpression(Object obj) {
     UserFunction f = (UserFunction) obj;
     return !f.getExpression().equals(f.getInputString());
   }
@@ -404,7 +421,8 @@ public class UserFunctionEditor extends FunctionEditor {
    * @param obj ignored
    * @return the object
    */
-  protected Object createObject(String name, String expression, Object obj) {
+  @Override
+protected Object createObject(String name, String expression, Object obj) {
     UserFunction f = (UserFunction) obj;
     if((f!=null)&&f.getName().equals(name)&&f.getInputString().equals(expression)) {
       return f;
@@ -447,7 +465,8 @@ public class UserFunctionEditor extends FunctionEditor {
    * A class to save and load data for this class.
    */
   static class Loader implements XML.ObjectLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       UserFunctionEditor editor = (UserFunctionEditor) obj;
       UserFunction[] functions = editor.getMainFunctions();
       control.setValue("main_functions", functions); //$NON-NLS-1$
@@ -457,11 +476,13 @@ public class UserFunctionEditor extends FunctionEditor {
       }
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new UserFunctionEditor();
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       UserFunctionEditor editor = (UserFunctionEditor) obj;
       UserFunction[] functions = (UserFunction[]) control.getObject("main_functions"); //$NON-NLS-1$
       editor.setMainFunctions(functions);

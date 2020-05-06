@@ -17,6 +17,7 @@ import org.opensourcephysics.display.DatasetManager;
  *
  * @author Douglas Brown
  */
+@SuppressWarnings("serial")
 public class ParamEditor extends FunctionEditor {
   protected double[] paramValues = new double[0];
   private DatasetManager data;
@@ -109,7 +110,8 @@ public class ParamEditor extends FunctionEditor {
    * @param obj the object
    * @return the name
    */
-  public String getName(Object obj) {
+  @Override
+public String getName(Object obj) {
     return(obj==null) ? null : ((Parameter) obj).paramName;
   }
 
@@ -119,7 +121,8 @@ public class ParamEditor extends FunctionEditor {
    * @param obj the object
    * @return the expression
    */
-  public String getExpression(Object obj) {
+  @Override
+public String getExpression(Object obj) {
     return(obj==null) ? null : ((Parameter) obj).expression;
   }
 
@@ -129,7 +132,8 @@ public class ParamEditor extends FunctionEditor {
    * @param obj the object
    * @return the description
    */
-  public String getDescription(Object obj) {
+  @Override
+public String getDescription(Object obj) {
     return (obj==null)? null: ((Parameter)obj).getDescription();
   }
 
@@ -139,7 +143,8 @@ public class ParamEditor extends FunctionEditor {
    * @param obj the object
    * @param desc the description
    */
-  public void setDescription(Object obj, String desc) {
+  @Override
+public void setDescription(Object obj, String desc) {
   	if (obj!=null) {
   		Parameter p = (Parameter)obj;
     	if (desc!=null && desc.trim().equals("")) { //$NON-NLS-1$
@@ -177,7 +182,8 @@ public class ParamEditor extends FunctionEditor {
    * @param obj the object
    * @return the tooltip
    */
-  public String getTooltip(Object obj) {
+  @Override
+public String getTooltip(Object obj) {
     String s = ((Parameter) obj).getDescription();
     if (s==null) {
       s = ToolsRes.getString("ParamEditor.Table.Cell.Name.Tooltip"); //$NON-NLS-1$
@@ -192,7 +198,8 @@ public class ParamEditor extends FunctionEditor {
    * @param obj the object
    * @return true if the name is editable
    */
-  public boolean isNameEditable(Object obj) {
+  @Override
+public boolean isNameEditable(Object obj) {
     return((Parameter) obj).isNameEditable();
   }
 
@@ -202,7 +209,8 @@ public class ParamEditor extends FunctionEditor {
    * @param obj the object
    * @return true if the expression is editable
    */
-  public boolean isExpressionEditable(Object obj) {
+  @Override
+public boolean isExpressionEditable(Object obj) {
     return((Parameter) obj).isExpressionEditable();
   }
 
@@ -222,26 +230,24 @@ public class ParamEditor extends FunctionEditor {
    */
   public ArrayList<Parameter> evaluateDependents(Parameter seed) {
     ArrayList<Parameter> temp = new ArrayList<Parameter>();
-    ArrayList<Parameter> toRemove = new ArrayList<Parameter>();
-    for(int i = 0; i<evaluate.size(); i++) {
+    for(int i = evaluate.size(); --i >= 0;) {
       Parameter param = (Parameter) evaluate.get(i);
       if(param.paramName.equals(seed.paramName)) {
         temp.add(seed);
-        toRemove.add(seed);
         for(int j = i+1; j<evaluate.size(); j++) {
           Parameter p = (Parameter) evaluate.get(j);
           temp.add(new Parameter(p.paramName, p.expression));
         }
         // evaluate temp list
-        for(int j = 0; j<temp.size(); j++) {
+        for(int j = temp.size(); --j >= 0;) {
           // for each parameter, evaluate and set paramValues element
           Parameter p = temp.get(j);
           p.evaluate(temp);
           if(getReferences(p.getName(), null).isEmpty()) {
-            toRemove.add(p);
+            temp.remove(j);
           }
         }
-        temp.removeAll(toRemove);
+        temp.remove(seed);
         return temp;
       }
     }
@@ -251,7 +257,8 @@ public class ParamEditor extends FunctionEditor {
   /**
    * Evaluates all current objects.
    */
-  public void evaluateAll() {
+  @Override
+public void evaluateAll() {
     super.evaluateAll();
     if(this.getClass()!=ParamEditor.class) {
       return;
@@ -280,7 +287,8 @@ public class ParamEditor extends FunctionEditor {
    * @param name the proposed name for the object
    * @return true if duplicate
    */
-  protected boolean isDisallowedName(Object obj, String name) {
+  @Override
+protected boolean isDisallowedName(Object obj, String name) {
     boolean disallowed = super.isDisallowedName(obj, name);
     // added following line so leaving object name unchanged is not disallowed
     if (!disallowed && obj!=null && getName(obj).equals(name)) return false;
@@ -301,7 +309,8 @@ public class ParamEditor extends FunctionEditor {
   /**
    * Pastes the clipboard contents.
    */
-  protected void paste() {
+  @Override
+protected void paste() {
     XMLControl[] controls = getClipboardContents();
     if(controls==null) {
       return;
@@ -319,7 +328,8 @@ public class ParamEditor extends FunctionEditor {
   /**
    * Returns true if the object expression is invalid.
    */
-  protected boolean isInvalidExpression(Object obj) {
+  @Override
+protected boolean isInvalidExpression(Object obj) {
     return Double.isNaN(((Parameter) obj).getValue());
   }
 
@@ -332,7 +342,8 @@ public class ParamEditor extends FunctionEditor {
    * @param obj ignored
    * @return the object
    */
-  protected Object createObject(String name, String expression, Object obj) {
+  @Override
+protected Object createObject(String name, String expression, Object obj) {
     Parameter original = (Parameter) obj;
     if((original!=null)&&original.paramName.equals(name)&&original.expression.equals(expression)) {
       return original;
@@ -349,7 +360,8 @@ public class ParamEditor extends FunctionEditor {
   /**
    * Refreshes the GUI.
    */
-  protected void refreshGUI() {
+  @Override
+protected void refreshGUI() {
     super.refreshGUI();
     newButton.setToolTipText(ToolsRes.getString("ParamEditor.Button.New.Tooltip"));              //$NON-NLS-1$
     titledBorder.setTitle(ToolsRes.getString("ParamEditor.Border.Title")); //$NON-NLS-1$
@@ -400,7 +412,8 @@ public class ParamEditor extends FunctionEditor {
   /**
    * Returns the default name for newly created objects.
    */
-  protected String getDefaultName() {
+  @Override
+protected String getDefaultName() {
     return ToolsRes.getString("ParamEditor.New.Name.Default"); //$NON-NLS-1$
   }
 

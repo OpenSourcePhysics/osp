@@ -133,7 +133,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
     messageFrame.setSize(300, 175);
     // responds to data from the DatasetTool
     reply = new Tool() {
-      public void send(Job job, Tool replyTo) throws RemoteException {
+      @Override
+	public void send(Job job, Tool replyTo) throws RemoteException {
         if(defaultDrawingPanel==null) {
           return;
         }
@@ -166,7 +167,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
    *
    * @param mainFrame JFrame
    */
-  public void addChildFrame(JFrame child) {
+  @Override
+public void addChildFrame(JFrame child) {
     if((mainFrame==null)||(child==null)) {
       return;
     }
@@ -176,7 +178,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
   /**
    * Clears the child frames from the main frame.
    */
-  public void clearChildFrames() {
+  @Override
+public void clearChildFrames() {
     if(mainFrame==null) {
       return;
     }
@@ -187,7 +190,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
    * Gets a copy of the ChildFrames collection.
    * @return Collection
    */
-  public Collection<JFrame> getChildFrames() {
+  @Override
+public Collection<JFrame> getChildFrames() {
     return mainFrame.getChildFrames();
   }
 
@@ -196,7 +200,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
    *
    * @return
    */
-  public OSPFrame getMainFrame() {
+  @Override
+public OSPFrame getMainFrame() {
     return mainFrame;
   }
 
@@ -233,43 +238,49 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
     printMenu.add(saveFrameAsEPSItem);
     readItem.setAccelerator(KeyStroke.getKeyStroke('R', MENU_SHORTCUT_KEY_MASK));
     readItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         // readParameters(); // cannot use a static method here because of run-time binding
-        loadXML((String) null);
+        loadXML();
         support.firePropertyChange("xmlDefault", null, xmlDefault); //$NON-NLS-1$
         mainFrame.repaint();
       }
 
     });
     clearItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         clearDefaultXML();
       }
 
     });
     saveAsItem.setAccelerator(KeyStroke.getKeyStroke('S', MENU_SHORTCUT_KEY_MASK));
     saveAsItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         saveXML();
       }
 
     });
     inspectItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         inspectXML(); // cannot use a static method here because of run-time binding
       }
 
     });
     // print item
     printFrameItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         PrintUtils.printComponent(mainFrame);
       }
 
     });
     // save as EPS item
     saveFrameAsEPSItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         try {
           PrintUtils.saveComponentAsEPS(mainFrame);
         } catch(IOException ex) {}
@@ -283,7 +294,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
     menuBar.add(helpMenu);
     JMenuItem aboutItem = new JMenuItem(EjsRes.getString("EjsControlFrame.About_menu_item")); //$NON-NLS-1$
     aboutItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         OSPRuntime.showAboutDialog(EjsControlFrame.this.getMainFrame());
       }
 
@@ -291,7 +303,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
     helpMenu.add(aboutItem);
     JMenuItem sysItem = new JMenuItem(EjsRes.getString("EjsControlFrame.System_menu_item")); //$NON-NLS-1$
     sysItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         ControlUtils.showSystemProperties(true);
       }
 
@@ -300,7 +313,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
     helpMenu.addSeparator();
     JMenuItem logItem = new JMenuItem(EjsRes.getString("EjsControlFrame.MessageLog_menu_item")); //$NON-NLS-1$
     logItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         OSPLog.showLog();
       }
 
@@ -338,7 +352,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
     }
     final Class<?> finalDatasetToolClass = datasetToolClass; // class must be final for action listener
     datasetItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         try {
           Method m = finalDatasetToolClass.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
           Tool tool = (Tool) m.invoke(null, (Object[]) null);
@@ -360,7 +375,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
       toolsMenu.add(snapshotItem);
     }
     snapshotItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         SnapshotTool tool = SnapshotTool.getTool();
         if(defaultDrawingPanel!=null) {
           tool.saveImage(null, defaultDrawingPanel);
@@ -422,7 +438,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
     // added by D Brown 2007-10-17
     if(OSPRuntime.getTranslator()!=null) {
       translateItem.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           OSPRuntime.getTranslator().showProperties(model.getClass());
           if(OSPRuntime.getTranslator() instanceof Hidable) {
             ((Hidable) OSPRuntime.getTranslator()).setKeepHidden(false);
@@ -437,7 +454,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
     final Locale[] locales = OSPRuntime.getInstalledLocales();
     @SuppressWarnings("serial")
 	Action languageAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         String language = e.getActionCommand();
         OSPLog.finest("setting language to "+language); //$NON-NLS-1$
         for(int i = 0; i<locales.length; i++) {
@@ -469,7 +487,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
     JMenuItem sizeUpItem = new JMenuItem();
     sizeUpItem.setText(EjsRes.getString("EjsControlFrame.IncreaseFontSize_menu_item")); //$NON-NLS-1$
     sizeUpItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         FontSizer.levelUp();
       }
 
@@ -478,7 +497,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
     final JMenuItem sizeDownItem = new JMenuItem();
     sizeDownItem.setText(EjsRes.getString("EjsControlFrame.DecreaseFontSize_menu_item")); //$NON-NLS-1$
     sizeDownItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         FontSizer.levelDown();
       }
 
@@ -489,7 +509,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
     final JCheckBoxMenuItem textAliasItem = new JCheckBoxMenuItem(EjsRes.getString("EjsControlFrame.Text_check_box"), //$NON-NLS-1$
       false);
     textAliasItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         defaultDrawingPanel.setAntialiasTextOn(textAliasItem.isSelected());
         defaultDrawingPanel.repaint();
       }
@@ -498,20 +519,23 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
     aliasMenu.add(textAliasItem);
     final JCheckBoxMenuItem shapeAliasItem = new JCheckBoxMenuItem(EjsRes.getString("EjsControlFrame.Drawing_check_box"), false); //$NON-NLS-1$
     shapeAliasItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         defaultDrawingPanel.setAntialiasShapeOn(shapeAliasItem.isSelected());
         defaultDrawingPanel.repaint();
       }
 
     });
     fontMenu.addChangeListener(new ChangeListener() {
-      public void stateChanged(ChangeEvent e) {
+      @Override
+	public void stateChanged(ChangeEvent e) {
         sizeDownItem.setEnabled(FontSizer.getLevel()>0);
       }
 
     });
     if(!JSUtil.isJS)aliasMenu.addChangeListener(new ChangeListener() {
-      public void stateChanged(ChangeEvent e) {
+      @Override
+	public void stateChanged(ChangeEvent e) {
         if(defaultDrawingPanel==null) {
           textAliasItem.setEnabled(false);
           shapeAliasItem.setEnabled(false);
@@ -527,7 +551,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
     aliasMenu.add(shapeAliasItem);
     menuBar.add(displayMenu);
     ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
-      public void propertyChange(PropertyChangeEvent e) {
+      @Override
+	public void propertyChange(PropertyChangeEvent e) {
         refreshGUI();
       }
 
@@ -589,7 +614,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
    *
    * @param s
    */
-  public void println(String s) {
+  @Override
+public void println(String s) {
     print(s+"\n"); //$NON-NLS-1$
   }
 
@@ -597,7 +623,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
    * Prints a blank line in the control's message area.  GUI controls will usually display
    * messages in a non-editable text area.
    */
-  public void println() {
+  @Override
+public void println() {
     print("\n"); //$NON-NLS-1$
   }
 
@@ -607,7 +634,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
    *
    * @param s
    */
-  public void print(final String s) {
+  @Override
+public void print(final String s) {
     if(s==null) {
       return; // nothing to print
     }
@@ -617,7 +645,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
       return;
     }
     Runnable doLater = new Runnable() {
-      public void run() {
+      @Override
+	public void run() {
         messageArea.append(s);
       }
 
@@ -629,13 +658,15 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
   /**
    *  Remove all text from the message area.
    */
-  public void clearMessages() {
+  @Override
+public void clearMessages() {
     if(SwingUtilities.isEventDispatchThread()||Thread.currentThread().getName().equals("main")) { //$NON-NLS-1$
       messageArea.setText("");                                                                    //$NON-NLS-1$
       return;
     }
     Runnable doLater = new Runnable() {
-      public void run() {
+      @Override
+	public void run() {
         messageArea.setText(""); //$NON-NLS-1$
       }
 
@@ -662,7 +693,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
    * Stops the animation and prints a message.
    * @param message String
    */
-  public void calculationDone(String message) {
+  @Override
+public void calculationDone(String message) {
     if((message==null)||message.trim().equals("")) { //$NON-NLS-1$
       return;
     }
@@ -681,7 +713,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
    * @param propList String
    * @return ControlElement
    */
-  public ControlElement addObject(Object object, String classname, String propList) {
+  @Override
+public ControlElement addObject(Object object, String classname, String propList) {
     if(object instanceof DrawingPanel) {
       defaultDrawingPanel = (DrawingPanel) object;
       if(snapshotItem!=null) {
@@ -737,7 +770,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
    *
    * @return
    */
-  public JRootPane getRootPane() {
+  @Override
+public JRootPane getRootPane() {
     return mainFrame.getRootPane();
   }
 
@@ -746,7 +780,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
    *
    * @return content pane of the frame
    */
-  public Container getContentPane() {
+  @Override
+public Container getContentPane() {
     return mainFrame.getContentPane();
   }
 
@@ -754,7 +789,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
    * Sets the frame's content pane. Implementation of RootPaneContainer.
    * @param contentPane
    */
-  public void setContentPane(Container contentPane) {
+  @Override
+public void setContentPane(Container contentPane) {
     mainFrame.setContentPane(contentPane);
   }
 
@@ -765,7 +801,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
    *
    * @return layeredPane of the frame
    */
-  public JLayeredPane getLayeredPane() {
+  @Override
+public JLayeredPane getLayeredPane() {
     return mainFrame.getLayeredPane();
   }
 
@@ -775,7 +812,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
    * @see javax.swing.RootPaneContainer
    * @param layeredPane
    */
-  public void setLayeredPane(JLayeredPane layeredPane) {
+  @Override
+public void setLayeredPane(JLayeredPane layeredPane) {
     mainFrame.setLayeredPane(layeredPane);
   }
 
@@ -786,7 +824,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
    *
    * @return glass pane component
    */
-  public Component getGlassPane() {
+  @Override
+public Component getGlassPane() {
     return mainFrame.getGlassPane();
   }
 
@@ -796,7 +835,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
    * @see javax.swing.RootPaneContainer
    * @param glassPane
    */
-  public void setGlassPane(Component glassPane) {
+  @Override
+public void setGlassPane(Component glassPane) {
     mainFrame.setGlassPane(glassPane);
   }
 
@@ -880,7 +920,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
   /**
    * Gets the OSP Application controlled by this frame.
    */
-  public OSPApplication getOSPApp() {
+  @Override
+public OSPApplication getOSPApp() {
     if(app==null) {
       app = new OSPApplication(this, model);
     }
@@ -924,7 +965,7 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
     }
     XMLControlElement xml = null;
     try {
-      xml = new XMLControlElement(fileName);
+      xml = new XMLControlElement(new File(fileName));
     } catch(Exception ex) {
       System.out.println("XML file not loaded: "+fileName); //$NON-NLS-1$
       System.out.println("EjsControlFrame Exception: "+ex); //$NON-NLS-1$
@@ -1048,23 +1089,28 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 
   @SuppressWarnings("serial")
 class EjsFrame extends OSPFrame implements MainFrame {
-    public OSPFrame getMainFrame() {
+    @Override
+	public OSPFrame getMainFrame() {
       return this;
     }
 
-    public void render() {
+    @Override
+	public void render() {
       EjsControlFrame.this.render();
     }
 
-    public void clearData() {
+    @Override
+	public void clearData() {
       EjsControlFrame.this.clearData();
     }
 
-    public void clearDataAndRepaint() {
+    @Override
+	public void clearDataAndRepaint() {
       EjsControlFrame.this.clearDataAndRepaint();
     }
 
-    public void dispose() {
+    @Override
+	public void dispose() {
       messageFrame.setVisible(false);
       messageFrame.dispose();
       super.dispose();
@@ -1073,13 +1119,15 @@ class EjsFrame extends OSPFrame implements MainFrame {
     /**
      * Invalidates image buffers if a drawing panel is buffered.
      */
-    public void invalidateImage() {
+    @Override
+	public void invalidateImage() {
       if(defaultDrawingPanel!=null) {
         defaultDrawingPanel.invalidateImage();
       }
     }
 
-    public OSPApplication getOSPApp() {
+    @Override
+	public OSPApplication getOSPApp() {
       return EjsControlFrame.this.getOSPApp();
     }
 

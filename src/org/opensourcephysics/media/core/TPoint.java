@@ -56,6 +56,7 @@ import org.opensourcephysics.display.Interactive;
  * @author Douglas Brown
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class TPoint extends Point2D.Double implements Interactive, Trackable {
 	// static fields
 	protected static boolean coordsVisibleInMouseBox = true;

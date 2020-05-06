@@ -15,12 +15,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Locale;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ButtonGroup;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
@@ -31,6 +30,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPFrame;
@@ -47,6 +47,7 @@ import javajs.async.AsyncFileChooser;
  * @author Wolfgang Christian
  * @version 1.0
  */
+@SuppressWarnings("serial")
 abstract public class ControlFrame extends OSPFrame implements Control {
 	final static int MENU_SHORTCUT_KEY_MASK = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 	protected Object model; // the object that will be controlled
@@ -104,6 +105,7 @@ abstract public class ControlFrame extends OSPFrame implements Control {
 		editMenu.add(copyItem);
 		copyItem.setAccelerator(KeyStroke.getKeyStroke('C', MENU_SHORTCUT_KEY_MASK));
 		copyItem.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				copy();
 			}
@@ -111,12 +113,14 @@ abstract public class ControlFrame extends OSPFrame implements Control {
 		});
 		saveAsItem.setAccelerator(KeyStroke.getKeyStroke('S', MENU_SHORTCUT_KEY_MASK));
 		saveAsItem.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveXML();
 			}
 
 		});
 		inspectItem.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				inspectXML(); // cannot use a static method here because of run-time binding
 			}
@@ -124,6 +128,7 @@ abstract public class ControlFrame extends OSPFrame implements Control {
 		});
 		readItem.setAccelerator(KeyStroke.getKeyStroke('L', MENU_SHORTCUT_KEY_MASK));
 		readItem.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				// readParameters(); // cannot use a static method here because of run-time
 				// binding
@@ -132,6 +137,7 @@ abstract public class ControlFrame extends OSPFrame implements Control {
 
 		});
 		clearItem.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				if ((xmlDefault == null) || (model == null)) {
 					return;
@@ -152,6 +158,7 @@ abstract public class ControlFrame extends OSPFrame implements Control {
 		});
 		// print item
 		printFrameItem.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				PrintUtils.printComponent(ControlFrame.this);
 			}
@@ -159,6 +166,7 @@ abstract public class ControlFrame extends OSPFrame implements Control {
 		});
 		// save as EPS item
 		saveFrameAsEPSItem.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
 					PrintUtils.saveComponentAsEPS(ControlFrame.this);
@@ -174,6 +182,7 @@ abstract public class ControlFrame extends OSPFrame implements Control {
 		menuBar.add(helpMenu);
 		JMenuItem aboutItem = new JMenuItem(ControlsRes.getString("ControlFrame.About")); //$NON-NLS-1$
 		aboutItem.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				OSPRuntime.showAboutDialog(ControlFrame.this);
 			}
@@ -182,6 +191,7 @@ abstract public class ControlFrame extends OSPFrame implements Control {
 		helpMenu.add(aboutItem);
 		JMenuItem sysItem = new JMenuItem(ControlsRes.getString("ControlFrame.System")); //$NON-NLS-1$
 		sysItem.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				ControlUtils.showSystemProperties(true);
 			}
@@ -190,6 +200,7 @@ abstract public class ControlFrame extends OSPFrame implements Control {
 		helpMenu.add(sysItem);
 		JMenuItem showItem = new JMenuItem(ControlsRes.getString("ControlFrame.Display_All_Frames")); //$NON-NLS-1$
 		showItem.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				org.opensourcephysics.display.GUIUtils.showDrawingAndTableFrames();
 			}
@@ -199,6 +210,7 @@ abstract public class ControlFrame extends OSPFrame implements Control {
 		helpMenu.addSeparator();
 		JMenuItem logItem = new JMenuItem(ControlsRes.getString("ControlFrame.Message_Log")); //$NON-NLS-1$
 		logItem.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				OSPLog.showLog();
 			}
@@ -214,6 +226,7 @@ abstract public class ControlFrame extends OSPFrame implements Control {
 	 *
 	 * @return the display menu
 	 */
+	@Override
 	protected JMenu loadDisplayMenu() {
 		JMenuBar menuBar = getJMenuBar();
 		if (menuBar == null) {
@@ -229,6 +242,7 @@ abstract public class ControlFrame extends OSPFrame implements Control {
 		languageMenu = new JMenu();
 		languageMenu.setText(ControlsRes.getString("ControlFrame.Language")); //$NON-NLS-1$
 		Action languageAction = new AbstractAction() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				String language = e.getActionCommand();
 				OSPLog.finest("setting language to " + language); //$NON-NLS-1$
@@ -265,6 +279,7 @@ abstract public class ControlFrame extends OSPFrame implements Control {
 		displayMenu.add(fontMenu);
 		JMenuItem sizeUpItem = new JMenuItem(ControlsRes.getString("ControlFrame.Increase_Font_Size")); //$NON-NLS-1$
 		sizeUpItem.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				FontSizer.levelUp();
 			}
@@ -273,6 +288,7 @@ abstract public class ControlFrame extends OSPFrame implements Control {
 		fontMenu.add(sizeUpItem);
 		final JMenuItem sizeDownItem = new JMenuItem(ControlsRes.getString("ControlFrame.Decrease_Font_Size")); //$NON-NLS-1$
 		sizeDownItem.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				FontSizer.levelDown();
 			}
@@ -280,6 +296,7 @@ abstract public class ControlFrame extends OSPFrame implements Control {
 		});
 		fontMenu.add(sizeDownItem);
 		fontMenu.addChangeListener(new ChangeListener() {
+			@Override
 			public void stateChanged(ChangeEvent e) {
 				sizeDownItem.setEnabled(FontSizer.getLevel() > 0);
 			}
@@ -291,6 +308,7 @@ abstract public class ControlFrame extends OSPFrame implements Control {
 	/**
 	 * Refreshes the user interface in response to display changes such as Language.
 	 */
+	@Override
 	protected void refreshGUI() {
 		super.refreshGUI();
 		createMenuBar();
@@ -420,10 +438,8 @@ abstract public class ControlFrame extends OSPFrame implements Control {
 			public void run() {
 				fc.setDialogTitle(oldTitle);
 				File file = fc.getSelectedFile();
-				if (file == null)
-					return;
-				String fileName = fc.getSelectedFile().getAbsolutePath();
-				loadXML(new XMLControlElement(fileName), false);
+				if (file != null)
+					loadXML(new XMLControlElement(file), false);
 			}
 
 		}, null);

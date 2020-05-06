@@ -93,15 +93,17 @@ public class ImageVideoType implements VideoType {
    * @param name the name of the image
    * @return a new image video
    */
-  public Video getVideo(String name) { 
+  @Override
+public Video getVideo(String name) { 
 	  return getVideo(name, null);
   }
 
-  public Video getVideo(String name, String basePath) {
+  @Override
+public Video getVideo(String name, String basePath) {
 	
 	   	// if an XML file with the image name is found, load it in order to get frame duration
   	String xmlName = XML.stripExtension(basePath == null ? name : basePath + "/" + name)+".xml"; //$NON-NLS-1$
-  	XMLControl control = new XMLControlElement(xmlName);
+  	XMLControl control = new XMLControlElement(new File(xmlName));
 	if (!control.failedToRead() && control.getObjectClass()==ImageVideo.class) {
 		return (Video)control.loadObject(null);
 	}
@@ -121,7 +123,8 @@ public class ImageVideoType implements VideoType {
    *
    * @return the video recorder
    */
-  public VideoRecorder getRecorder() {
+  @Override
+public VideoRecorder getRecorder() {
     return new ImageVideoRecorder(this);
   }
 
@@ -130,7 +133,8 @@ public class ImageVideoType implements VideoType {
    *
    * @return true if this can record videos
    */
-  public boolean canRecord() {
+  @Override
+public boolean canRecord() {
     return true;
   }
 
@@ -139,7 +143,8 @@ public class ImageVideoType implements VideoType {
    *
    * @return a description
    */
-  public String getDescription() {
+  @Override
+public String getDescription() {
   	if (singleTypeFilter!=null)
   		return singleTypeFilter.getDescription();
     return MediaRes.getString("ImageVideoType.Description"); //$NON-NLS-1$
@@ -150,7 +155,8 @@ public class ImageVideoType implements VideoType {
    *
    * @return a description
    */
-  public String getDefaultExtension() {
+  @Override
+public String getDefaultExtension() {
   	if (singleTypeFilter!=null) {
   		return singleTypeFilter.getDefaultExtension();
   	}
@@ -162,7 +168,8 @@ public class ImageVideoType implements VideoType {
    *
    * @return a file filter
    */
-  public VideoFileFilter[] getFileFilters() {
+  @Override
+public VideoFileFilter[] getFileFilters() {
     return imageFileFilters.toArray(new VideoFileFilter[0]);
   }
 
@@ -171,7 +178,8 @@ public class ImageVideoType implements VideoType {
    *
    * @return the default file filter
    */
-  public VideoFileFilter getDefaultFileFilter() {
+  @Override
+public VideoFileFilter getDefaultFileFilter() {
   	if (singleTypeFilter!=null)
   		return singleTypeFilter;
   	return null;
@@ -183,7 +191,8 @@ public class ImageVideoType implements VideoType {
    * @param video the video
    * @return true if the video is this type
    */
-  public boolean isType(Video video) {
+  @Override
+public boolean isType(Video video) {
     return video instanceof ImageVideo;
   }
 

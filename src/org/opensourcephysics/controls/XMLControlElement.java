@@ -73,10 +73,12 @@ public class XMLControlElement implements XMLControl {
 	protected String doctype = "osp10.dtd"; //$NON-NLS-1$
 	private String basepath;
 
+	@Override
 	public String getBasepath() {
 		return basepath;
 	}
 
+	@Override
 	public void setBasepath(String basepath) {
 		this.basepath = basepath;
 	}
@@ -184,6 +186,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @param lock boolean
 	 */
+	@Override
 	public void setLockValues(boolean lock) {
 
 		/** empty block */
@@ -195,6 +198,7 @@ public class XMLControlElement implements XMLControl {
 	 * @param name  the name
 	 * @param value the boolean value
 	 */
+	@Override
 	public void setValue(String name, boolean value) {
 		if (name == null) {
 			return;
@@ -208,6 +212,7 @@ public class XMLControlElement implements XMLControl {
 	 * @param name  the name
 	 * @param value the double value
 	 */
+	@Override
 	public void setValue(String name, double value) {
 		if (name == null) {
 			return;
@@ -221,6 +226,7 @@ public class XMLControlElement implements XMLControl {
 	 * @param name  the name
 	 * @param value the int value
 	 */
+	@Override
 	public void setValue(String name, int value) {
 		if (name == null) {
 			return;
@@ -234,6 +240,7 @@ public class XMLControlElement implements XMLControl {
 	 * @param name the name
 	 * @param obj  the object
 	 */
+	@Override
 	public void setValue(String name, Object obj) {
 		setValue(name, obj, XMLPropertyElement.defaultWriteNullFinalArrayElements);
 	}
@@ -282,6 +289,7 @@ public class XMLControlElement implements XMLControl {
 	 * @param name the name
 	 * @return the boolean value, or false if none found
 	 */
+	@Override
 	public boolean getBoolean(String name) {
 		XMLProperty prop = getXMLProperty(name);
 		if (prop != null && prop.getPropertyType().equals("boolean")) { //$NON-NLS-1$
@@ -298,6 +306,7 @@ public class XMLControlElement implements XMLControl {
 	 * @param name the name
 	 * @return the double value, or Double.NaN if none found
 	 */
+	@Override
 	public double getDouble(String name) {
 		XMLProperty prop = getXMLProperty(name);
 		if ((prop != null) && (prop.getPropertyType().equals("double") //$NON-NLS-1$
@@ -318,6 +327,7 @@ public class XMLControlElement implements XMLControl {
 	 * @param name the name
 	 * @return the int value, or Integer.MIN_VALUE if none found
 	 */
+	@Override
 	public int getInt(String name) {
 		XMLProperty prop = getXMLProperty(name);
 		if ((prop != null) && (prop.getPropertyType().equals("int") //$NON-NLS-1$
@@ -343,6 +353,7 @@ public class XMLControlElement implements XMLControl {
 	 * @param name the name
 	 * @return the string value, or null if none found
 	 */
+	@Override
 	public String getString(String name) {
 		XMLProperty prop = getXMLProperty(name);
 		if ((prop != null) && prop.getPropertyType().equals("string")) { //$NON-NLS-1$
@@ -370,6 +381,7 @@ public class XMLControlElement implements XMLControl {
 	 * @param name the name
 	 * @return the object, or null if not found
 	 */
+	@Override
 	public Object getObject(String name) {
 		XMLProperty prop = getXMLProperty(name);
 		if (prop != null) {
@@ -398,6 +410,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @return a set of names
 	 */
+	@Override
 	public Collection<String> getPropertyNames() {
 		synchronized (propNames) {
 			return new ArrayList<String>(propNames);
@@ -411,6 +424,7 @@ public class XMLControlElement implements XMLControl {
 	 * @param name the property name
 	 * @return the type
 	 */
+	@Override
 	public String getPropertyType(String name) {
 		XMLProperty prop = getXMLProperty(name);
 		if (prop != null) {
@@ -519,6 +533,7 @@ public class XMLControlElement implements XMLControl {
 	 * @param name the name
 	 * @return the path of the opened document or null if failed
 	 */
+	@Override
 	public String read(String name) {
 		synchronized (sync) {
 			OSPLog.finest("reading " + name); //$NON-NLS-1$
@@ -554,6 +569,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @param xml the xml string
 	 */
+	@Override
 	public void readXML(String xml) {
 		input = new BufferedReader(new StringReader(xml));
 		readInput();
@@ -567,6 +583,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @param in the Reader
 	 */
+	@Override
 	public void read(Reader in) {
 		if (in instanceof BufferedReader) {
 			input = (BufferedReader) in;
@@ -623,6 +640,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @return <code>true</code> if the most recent read operation failed
 	 */
+	@Override
 	public boolean failedToRead() {
 		return readFailed;
 	}
@@ -633,6 +651,7 @@ public class XMLControlElement implements XMLControl {
 	 * @param fileName the file name
 	 * @return the path of the saved document or null if failed
 	 */
+	@Override
 	public String write(String fileName) {
 		canWrite = true;
 		int n = fileName.lastIndexOf("/"); //$NON-NLS-1$
@@ -695,6 +714,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @param out the Writer
 	 */
+	@Override
 	public void write(Writer out) {
 		try {
 			output = new BufferedWriter(out);
@@ -734,6 +754,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @return the xml string
 	 */
+	@Override
 	public String toXML() {
 		return toString();
 	}
@@ -817,6 +838,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @return the <code>Class</code> of the object
 	 */
+	@Override
 	public Class<?> getObjectClass() {
 		if (className == null) {
 			return null;
@@ -848,6 +870,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @return the object class name
 	 */
+	@Override
 	public String getObjectClassName() {
 		return className;
 	}
@@ -857,6 +880,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @param obj the object to save.
 	 */
+	@Override
 	public void saveObject(Object obj) {
 		if (obj == null) {
 			obj = object;
@@ -884,6 +908,7 @@ public class XMLControlElement implements XMLControl {
 	 * @param obj the object to load
 	 * @return the loaded object
 	 */
+	@Override
 	public Object loadObject(Object obj) {
 		return loadObject(obj, false, false);
 	}
@@ -980,6 +1005,7 @@ public class XMLControlElement implements XMLControl {
 	/**
 	 * Clears all properties.
 	 */
+	@Override
 	public void clearValues() {
 		props.clear();
 		propNames.clear();
@@ -990,6 +1016,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @param s the string
 	 */
+	@Override
 	public void println(String s) {
 		System.out.println(s);
 	}
@@ -997,6 +1024,7 @@ public class XMLControlElement implements XMLControl {
 	/**
 	 * Method required by the Control interface.
 	 */
+	@Override
 	public void println() {
 		System.out.println();
 	}
@@ -1006,6 +1034,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @param s the string
 	 */
+	@Override
 	public void print(String s) {
 		System.out.print(s);
 	}
@@ -1013,6 +1042,7 @@ public class XMLControlElement implements XMLControl {
 	/**
 	 * Method required by the Control interface.
 	 */
+	@Override
 	public void clearMessages() {
 
 		/** empty block */
@@ -1023,6 +1053,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @param s the string
 	 */
+	@Override
 	public void calculationDone(String s) {
 
 		/** empty block */
@@ -1033,6 +1064,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @return a name
 	 */
+	@Override
 	public String getPropertyName() {
 		XMLProperty parent = getParentProperty();
 		// if no class name, return parent name
@@ -1078,6 +1110,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @return the type
 	 */
+	@Override
 	public String getPropertyType() {
 		return "object"; //$NON-NLS-1$
 	}
@@ -1087,6 +1120,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @return the class
 	 */
+	@Override
 	public Class<?> getPropertyClass() {
 		return getObjectClass();
 	}
@@ -1096,6 +1130,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @return the parent
 	 */
+	@Override
 	public XMLProperty getParentProperty() {
 		return parent;
 	}
@@ -1105,6 +1140,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @return a non-negative integer
 	 */
+	@Override
 	public int getLevel() {
 		return level;
 	}
@@ -1114,6 +1150,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @return a list of XMLProperties
 	 */
+	@Override
 	public List<Object> getPropertyContent() {
 		return new ArrayList<Object>(props);
 	}
@@ -1124,6 +1161,7 @@ public class XMLControlElement implements XMLControl {
 	 * @param name the property name
 	 * @return the XMLControl
 	 */
+	@Override
 	public XMLControl getChildControl(String name) {
 		XMLControl[] children = getChildControls();
 		for (int i = 0; i < children.length; i++) {
@@ -1140,6 +1178,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @return an XMLControl array
 	 */
+	@Override
 	public XMLControl[] getChildControls() {
 		ArrayList<XMLControl> list = new ArrayList<XMLControl>();
 		Iterator<XMLProperty> it = props.iterator();
@@ -1193,6 +1232,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @param stringValue the string value of a primitive or string property
 	 */
+	@Override
 	public void setValue(String stringValue) {
 
 		/** empty block */
@@ -1203,6 +1243,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @return the string xml representation
 	 */
+	@Override
 	public String toString() {
 		StringBuffer xml = new StringBuffer(""); //$NON-NLS-1$
 		// write the header if this is the top level
@@ -1290,6 +1331,7 @@ public class XMLControlElement implements XMLControl {
 	 *
 	 * @return a clone
 	 */
+	@Override
 	public Object clone() {
 		return new XMLControlElement(this);
 	}

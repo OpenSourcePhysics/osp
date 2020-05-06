@@ -15,11 +15,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -99,6 +96,7 @@ import org.opensourcephysics.display.TeXParser;
  *
  * @author Douglas Brown
  */
+@SuppressWarnings("serial")
 public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	// static constants
 	@SuppressWarnings("javadoc")
@@ -185,6 +183,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	 *
 	 * @return the table size plus button and instruction heights
 	 */
+	@Override
 	public Dimension getPreferredSize() {
 		Dimension dim = table.getPreferredSize();
 		dim.height += table.getTableHeader().getHeight();
@@ -465,6 +464,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	 *
 	 * @param e the event
 	 */
+	@Override
 	public void propertyChange(PropertyChangeEvent e) {
 		String name = e.getPropertyName();
 		if (name.equals("focus") || name.equals("edit")) { //$NON-NLS-1$ //$NON-NLS-2$
@@ -617,8 +617,8 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		}
 		// check for circular references
 		circularErrors.clear();
-		for (Iterator<Object> it = objects.iterator(); it.hasNext();) {
-			Object next = it.next();
+		for (int io = 0, no = objects.size(); io < no; io++) {
+			Object next = objects.get(io);
 			String name = getName(next);
 			if (getReferences(name, null).contains(name)) {
 				circularErrors.add(next);
@@ -626,11 +626,11 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		}
 		// find all functions that reference circular errors
 		errors.clear();
-		for (Iterator<Object> it = objects.iterator(); it.hasNext();) {
-			Object next = it.next();
-			String name = getName(next);
-			for (Iterator<Object> it2 = circularErrors.iterator(); it2.hasNext();) {
-				String badName = getName(it2.next());
+		for (Iterator<Object> it2 = circularErrors.iterator(); it2.hasNext();) {
+			String badName = getName(it2.next());
+			for (int io = 0, no = objects.size(); io < no; io++) {
+				Object next = objects.get(io);
+				String name = getName(next);
 				if (getReferences(name, null).contains(badName)) {
 					errors.add(next);
 					break;
@@ -643,13 +643,14 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		temp.removeAll(errors);
 		ArrayList<String> names = new ArrayList<String>();
 		while (!temp.isEmpty()) {
-			for (int i = 0; i < temp.size(); i++) {
+			for (int i = temp.size(); --i >= 0;) {
 				Object next = temp.get(i);
 				String name = getName(next);
 				Set<String> references = getReferences(name, null);
 				if (names.containsAll(references)) {
 					evaluate.add(next);
 					names.add(name);
+					temp.remove(i);
 				}
 			}
 			temp.removeAll(evaluate);
@@ -694,8 +695,8 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		if (obj != null) {
 			String eqn = getExpression(obj);
 			List<Object> directReferences = new ArrayList<Object>();
-			for (Iterator<Object> it = sortedObjects.iterator(); it.hasNext();) {
-				Object next = it.next();
+			for (int is = 0, ns = sortedObjects.size(); is < ns; is++) {
+				Object next = sortedObjects.get(is);
 				if (next == obj) {
 					continue;
 				}
@@ -704,8 +705,8 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 					// replace function names with # to prevent finding "x" in "exp", etc
 					UserFunction func = (UserFunction) obj;
 					String[] functionNames = func.getFunctionNames();
-					for (String s : functionNames) {
-						eqn = eqn.replaceAll(s, "#"); //$NON-NLS-1$
+					for (int in = functionNames.length; --in >= 0;) {
+						eqn = eqn.replaceAll(functionNames[in], "#"); //$NON-NLS-1$
 					}
 				}
 				if (eqn.indexOf(name) > -1) {
@@ -742,6 +743,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		buttonPanel = new JPanel(new FlowLayout());
 		newButton = new JButton();
 		newButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				String name = getDefaultName();
 				Object obj = createUniqueObject(null, name, false);
@@ -751,6 +753,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		});
 		cutButton = new JButton();
 		cutButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				Object[] array = getSelectedObjects();
 				copy(array);
@@ -763,6 +766,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		});
 		copyButton = new JButton();
 		copyButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				copy(getSelectedObjects());
 			}
@@ -770,6 +774,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		});
 		pasteButton = new JButton();
 		pasteButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				paste();
 			}
@@ -781,6 +786,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		buttonPanel.add(pasteButton);
 		add(buttonPanel, BorderLayout.NORTH);
 		MouseListener tableFocuser = new MouseAdapter() {
+			@Override
 			public void mousePressed(MouseEvent e) {
 				table.requestFocusInWindow();
 				functionPanel.clearSelection();
@@ -1232,6 +1238,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 			getTableHeader().setReorderingAllowed(false);
 			setGridColor(Color.BLACK);
 			addMouseListener(new MouseAdapter() {
+				@Override
 				public void mousePressed(MouseEvent e) {
 					int row = rowAtPoint(e.getPoint());
 					int col = columnAtPoint(e.getPoint());
@@ -1244,6 +1251,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 									? ToolsRes.getString("FunctionEditor.Popup.MenuItem.SwitchToRadians") //$NON-NLS-1$
 									: ToolsRes.getString("FunctionEditor.Popup.MenuItem.SwitchToDegrees")); //$NON-NLS-1$
 							item.addActionListener(new ActionListener() {
+								@Override
 								public void actionPerformed(ActionEvent e) {
 									setAnglesInDegrees(!anglesInDegrees);
 									FunctionEditor.this.firePropertyChange("angles_in_radians", null, !anglesInDegrees); //$NON-NLS-1$
@@ -1264,6 +1272,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 					}
 				}
 
+				@Override
 				public void mouseClicked(MouseEvent e) {
 					if (OSPRuntime.isPopupTrigger(e)) {
 						int col = columnAtPoint(e.getPoint());
@@ -1290,6 +1299,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 
 			});
 			addFocusListener(new FocusAdapter() {
+				@Override
 				public void focusGained(FocusEvent e) {
 					firePropertyChange("focus", null, null); //$NON-NLS-1$
 					if (getRowCount() == 0) {
@@ -1304,6 +1314,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 					selectOnFocus = true;
 				}
 
+				@Override
 				public void focusLost(FocusEvent e) {
 					rowToSelect = Math.max(0, getSelectedRow());
 					columnToSelect = Math.max(0, getSelectedColumn());
@@ -1313,6 +1324,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 			// enter key action starts editing
 			InputMap im = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 			Action enterAction = new AbstractAction() {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					// start editing
 					JTable table = (JTable) e.getSource();
@@ -1329,6 +1341,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 			// tab key tabs to next editable cell or component
 			KeyStroke tab = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
 			Action tabAction = new AbstractAction() {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					int rowCount = table.getRowCount();
 					int row = table.rowToSelect;
@@ -1385,15 +1398,18 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		}
 
 		// gets the cell editor
+		@Override
 		public TableCellEditor getCellEditor(int row, int column) {
 			return tableCellEditor;
 		}
 
 		// gets the cell renderer
+		@Override
 		public TableCellRenderer getCellRenderer(int row, int column) {
 			return tableCellRenderer;
 		}
 
+		@Override
 		public void setFont(Font font) {
 			super.setFont(font);
 			getTableHeader().setFont(font);
@@ -1413,22 +1429,26 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		boolean settingValue = false;
 
 		// returns the number of columns in the table
+		@Override
 		public int getColumnCount() {
 			return 2;
 		}
 
 		// returns the number of rows in the table
+		@Override
 		public int getRowCount() {
 			return objects.size();
 		}
 
 		// gets the name of the column
+		@Override
 		public String getColumnName(int col) {
 			return (col == 0) ? ToolsRes.getString("FunctionEditor.Table.Column.Name") : //$NON-NLS-1$
 					ToolsRes.getString("FunctionEditor.Table.Column.Value"); //$NON-NLS-1$
 		}
 
 		// gets the value in a cell
+		@Override
 		public Object getValueAt(int row, int col) {
 			Object obj = objects.get(row);
 			String name = getName(obj);
@@ -1465,6 +1485,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		}
 
 		// changes the value of a cell
+		@Override
 		public void setValueAt(Object value, int row, int col) {
 			if (settingValue) {
 				return;
@@ -1528,6 +1549,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		}
 
 		// determines if a cell is editable
+		@Override
 		public boolean isCellEditable(int row, int col) {
 			Object obj = objects.get(row);
 			return ((col == 0) && isNameEditable(obj)) || ((col == 1) && isExpressionEditable(obj));
@@ -1560,6 +1582,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 			field.setEditable(true);
 			field.setFont(field.getFont().deriveFont(18f));
 			field.addKeyListener(new KeyAdapter() {
+				@Override
 				public void keyPressed(KeyEvent e) {
 					if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 						keyPressed = true;
@@ -1571,6 +1594,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 
 			});
 			field.addFocusListener(new FocusAdapter() {
+				@Override
 				public void focusGained(FocusEvent e) {
 					if (usePopupEditor) {
 						stopCellEditing();
@@ -1580,6 +1604,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 					table.clearSelection();
 				}
 
+				@Override
 				public void focusLost(FocusEvent e) {
 					if (!mouseClicked) {
 						stopCellEditing();
@@ -1594,6 +1619,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		}
 
 		// Gets the component to be displayed while editing.
+		@Override
 		public Component getTableCellEditorComponent(JTable atable, Object value, boolean isSelected, int row,
 				int column) {
 			table.rowToSelect = row;
@@ -1656,6 +1682,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 
 		void setInitialValue(final String stringValue) {
 	    	OSPRuntime.postEvent(new Runnable() {
+				@Override
 				public void run() {
 					setInitialValuesAsync(stringValue);
 				}
@@ -1689,6 +1716,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		}
 
 		// Determines when editing starts.
+		@Override
 		public boolean isCellEditable(EventObject e) {
 			if (e instanceof MouseEvent) {
 				firePropertyChange("focus", null, null); //$NON-NLS-1$
@@ -1696,6 +1724,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 				if (me.getClickCount() == 2) {
 					mouseClicked = true;
 					Runnable runner = new Runnable() {
+						@Override
 						public synchronized void run() {
 							field.selectAll();
 						}
@@ -1710,6 +1739,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		}
 
 		// Called when editing is completed.
+		@Override
 		public Object getCellEditorValue() {
 			if (usePopupEditor) {
 				popupField.setBackground(Color.WHITE);
@@ -1717,6 +1747,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 			field.setBackground(Color.WHITE);
 			// revalidate table to keep cell widths correct (workaround)
 			Runnable runner = new Runnable() {
+				@Override
 				public synchronized void run() {
 					table.revalidate();
 				}
@@ -1756,6 +1787,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 				font = FontSizer.getResizedFont(font, level);
 				popupField.setFont(font);
 				popupField.addKeyListener(new KeyAdapter() {
+					@Override
 					public void keyPressed(KeyEvent e) {
 						if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 							String text = popupField.getText().trim();
@@ -1802,6 +1834,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 						}
 					}
 
+					@Override
 					public void keyReleased(KeyEvent e) {
 						if (e.getKeyCode() == KeyEvent.VK_ENTER)
 							return;
@@ -1828,6 +1861,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 				StyleConstants.setForeground(red, Color.red);
 				varBegin = varEnd = 0;
 				variablesPane.addMouseListener(new MouseAdapter() {
+					@Override
 					public void mousePressed(MouseEvent e) {
 						if (varEnd == 0) {
 							return;
@@ -1839,6 +1873,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 						setInitialValue(popupField.getText());
 					}
 
+					@Override
 					public void mouseExited(MouseEvent e) {
 						StyledDocument doc = variablesPane.getStyledDocument();
 						Style blue = doc.getStyle("blue"); //$NON-NLS-1$
@@ -1848,6 +1883,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 
 				});
 				variablesPane.addMouseMotionListener(new MouseMotionAdapter() {
+					@Override
 					public void mouseMoved(MouseEvent e) {
 						varBegin = varEnd = 0;
 						// select and highlight the variable under mouse
@@ -1916,6 +1952,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 				space = BorderFactory.createEmptyBorder(0, 2, 0, 2);
 				revertButton.setBorder(BorderFactory.createCompoundBorder(line, space));
 				revertButton.addActionListener(new ActionListener() {
+					@Override
 					public void actionPerformed(ActionEvent e) {
 						if (prevObject != null) {
 							// restore original value
@@ -1974,6 +2011,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		}
 
 		// Returns a label for the specified cell.
+		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 				int row, int col) {
 			String val = value.toString();
@@ -2229,6 +2267,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		}
 
 		// undoes the change
+		@Override
 		public void undo() throws CannotUndoException {
 			super.undo();
 			undoEditsEnabled = false;
@@ -2273,6 +2312,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		}
 
 		// redoes the change
+		@Override
 		public void redo() throws CannotUndoException {
 			super.redo();
 			undoEditsEnabled = false;
@@ -2324,6 +2364,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		}
 
 		// returns the presentation name
+		@Override
 		public String getPresentationName() {
 			if (editType == REMOVE_EDIT) {
 				return "Deletion"; //$NON-NLS-1$

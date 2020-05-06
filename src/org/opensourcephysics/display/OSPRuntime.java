@@ -42,7 +42,6 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.js.JSUtil;
-import org.opensourcephysics.media.mov.MovieFactory;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ResourceLoader;
 import org.opensourcephysics.tools.Translator;
@@ -1124,7 +1123,7 @@ public class OSPRuntime {
 					}
 				}
 				if (file.exists()) {
-					XMLControl test = new XMLControlElement(file.getAbsolutePath());
+					XMLControl test = new XMLControlElement(file);
 					if (!test.failedToRead()) {
 						prefsControl = test;
 						prefsPath = XML.forwardSlash(dir);
@@ -1196,6 +1195,7 @@ public class OSPRuntime {
 		javax.swing.filechooser.FileFilter defaultFilter = chooser.getFileFilter();
 		javax.swing.filechooser.FileFilter xmlFilter = new javax.swing.filechooser.FileFilter() {
 			// accept all directories and *.xml files.
+			@Override
 			public boolean accept(File f) {
 				if (f == null) {
 					return false;
@@ -1216,6 +1216,7 @@ public class OSPRuntime {
 			}
 
 			// the description of this filter
+			@Override
 			public String getDescription() {
 				return DisplayRes.getString("OSPRuntime.FileFilter.Description.XML"); //$NON-NLS-1$
 			}
@@ -1223,6 +1224,7 @@ public class OSPRuntime {
 		};
 		javax.swing.filechooser.FileFilter txtFilter = new javax.swing.filechooser.FileFilter() {
 			// accept all directories and *.txt files.
+			@Override
 			public boolean accept(File f) {
 				if (f == null) {
 					return false;
@@ -1243,6 +1245,7 @@ public class OSPRuntime {
 			}
 
 			// the description of this filter
+			@Override
 			public String getDescription() {
 				return DisplayRes.getString("OSPRuntime.FileFilter.Description.TXT"); //$NON-NLS-1$
 			}
@@ -1356,10 +1359,12 @@ public class OSPRuntime {
 		filter.setDescription(description);
 		if (homeDir != null) {
 			chooser.setFileSystemView(new javax.swing.filechooser.FileSystemView() {
+				@Override
 				public File createNewFolder(File arg0) throws IOException {
 					return javax.swing.filechooser.FileSystemView.getFileSystemView().createNewFolder(arg0);
 				}
 
+				@Override
 				public File getHomeDirectory() {
 					return homeDir;
 				}
@@ -1390,6 +1395,7 @@ public class OSPRuntime {
 			extensions.add(extension.toLowerCase());
 		}
 
+		@Override
 		public String toString() {
 			return description;
 		}
@@ -1408,10 +1414,12 @@ public class OSPRuntime {
 		 * 
 		 * @return a description for the file set
 		 */
+		@Override
 		public String getDescription() {
 			return description;
 		}
 
+		@Override
 		public boolean accept(File f) {
 			if (f == null)
 				return false;

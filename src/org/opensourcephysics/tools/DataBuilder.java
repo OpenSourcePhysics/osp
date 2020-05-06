@@ -56,8 +56,7 @@ public class DataBuilder extends FunctionTool {
 		    int result = chooser.showOpenDialog(dataTool);
 		    if(result==JFileChooser.APPROVE_OPTION) {
 		      OSPRuntime.chooserDir = chooser.getCurrentDirectory().toString();
-		      String fileName = chooser.getSelectedFile().getAbsolutePath();
-		      XMLControl control = new XMLControlElement(fileName);
+		      XMLControl control = new XMLControlElement(chooser.getSelectedFile());
 		      if (control.failedToRead()) {
 		        JOptionPane.showMessageDialog(dataTool, 
 		        		ToolsRes.getString("Dialog.Invalid.Message"), //$NON-NLS-1$

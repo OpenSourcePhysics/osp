@@ -121,8 +121,7 @@ public class QMSuperpositionWignerWRApp extends QMSuperpositionWignerApp {
     frame=c.cont;
     app.customize();
     if((args==null)||(args.length==0)) { 
-      String fileName = "/davidson/qm/wigner_default.xml";
-      c.loadXML(fileName);
+      c.loadXML("/davidson/qm/wigner_default.xml");
     }
     OSPRuntime.disableAllDrawing = false;
     GUIUtils.repaintOSPFrames();
