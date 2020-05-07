@@ -10,7 +10,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
@@ -99,7 +98,8 @@ public class InteractiveTextLine extends InteractiveShape {
    * @param ypix int
    * @return boolean
    */
-  public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
     if((textLine==null)||!enabled) {
       return false;
     }
@@ -125,7 +125,8 @@ public class InteractiveTextLine extends InteractiveShape {
    * @param panel  the world in which the arrow is viewed
    * @param g  the graphics context upon which to draw
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(textLine.getText().trim().equals("")) { //$NON-NLS-1$
       return;
     }
@@ -153,7 +154,8 @@ public class InteractiveTextLine extends InteractiveShape {
    * A class to save and load InteractiveArrow in an XMLControl.
    */
   protected static class InteractiveTextLineLoader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       InteractiveTextLine interactiveTextLine = (InteractiveTextLine) obj;
       control.setValue("text", interactiveTextLine.getText());           //$NON-NLS-1$
       control.setValue("x", interactiveTextLine.x);                      //$NON-NLS-1$
@@ -163,11 +165,13 @@ public class InteractiveTextLine extends InteractiveShape {
       control.setValue("color", interactiveTextLine.color);              //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new InteractiveTextLine("", 0, 0); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       InteractiveTextLine interactiveTextLine = (InteractiveTextLine) obj;
       double x = control.getDouble("x"); //$NON-NLS-1$
       double y = control.getDouble("y"); //$NON-NLS-1$

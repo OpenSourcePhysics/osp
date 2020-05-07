@@ -1015,7 +1015,8 @@ class TextState extends Object {
     return tmp;
   }
 
-  public String toString() {
+  @Override
+public String toString() {
     return s.toString();
   }
 

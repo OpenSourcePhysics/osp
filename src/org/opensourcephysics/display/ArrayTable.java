@@ -40,6 +40,7 @@ import javax.swing.table.TableColumn;
  * @author Wolfgang Christian
  * @version 1.1
  */
+@SuppressWarnings("serial")
 public class ArrayTable extends JTable implements ActionListener {
   int refreshDelay = 300;                                                     // time in ms to delay refresh events
   javax.swing.Timer refreshTimer = new javax.swing.Timer(refreshDelay, this); // delay for refreshTable
@@ -139,7 +140,8 @@ public class ArrayTable extends JTable implements ActionListener {
     refreshTimer.setCoalesce(true);
     setModel(tableModel);
     tableModel.addTableModelListener(new TableModelListener() {
-      public void tableChanged(TableModelEvent e) {
+      @Override
+	public void tableChanged(TableModelEvent e) {
         int row = e.getFirstRow();
         int col = tableModel.showRowNumber ? e.getColumn()+1 : e.getColumn();
         Object value=getValueAt(row, col);
@@ -182,7 +184,8 @@ public class ArrayTable extends JTable implements ActionListener {
     KeyStroke tab = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
     final Action prevTabAction = getActionMap().get(im.get(tab));
     Action tabAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         // tab to the next editable cell
         prevTabAction.actionPerformed(e);
         JTable table = (JTable) e.getSource();
@@ -209,7 +212,8 @@ public class ArrayTable extends JTable implements ActionListener {
     getActionMap().put(im.get(tab), tabAction);
     // enter key starts editing
     Action enterAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         // start editing
         JTable table = (JTable) e.getSource();
         int row = table.getSelectedRow();
@@ -237,7 +241,8 @@ public class ArrayTable extends JTable implements ActionListener {
    * @param  e ignored
    * @return false if the cell cannot be edited or the indices are invalid
    */
-  public boolean editCellAt(int row, int column, EventObject e) {
+  @Override
+public boolean editCellAt(int row, int column, EventObject e) {
     boolean editing = super.editCellAt(row, column, e);
     // save current value for comparison with value after editing
     if(editing) {
@@ -264,7 +269,8 @@ public class ArrayTable extends JTable implements ActionListener {
    *
    * @param  evt
    */
-  public void actionPerformed(ActionEvent evt) {
+  @Override
+public void actionPerformed(ActionEvent evt) {
     tableChanged(new TableModelEvent(tableModel, TableModelEvent.HEADER_ROW));
   }
 
@@ -420,7 +426,8 @@ public class ArrayTable extends JTable implements ActionListener {
    * Gets the default font of this component.
    * @return this component's font
    */
-  public Font getFont() {
+  @Override
+public Font getFont() {
     if(indexRenderer==null) {
       indexRenderer = new ArrayIndexRenderer();
     }
@@ -434,7 +441,8 @@ public class ArrayTable extends JTable implements ActionListener {
    * @param font the desired <code>Font</code> for this component
    * @see java.awt.Component#getFont
    */
-  public void setFont(Font font){ // Added by Paco
+  @Override
+public void setFont(Font font){ // Added by Paco
     super.setFont(font);
     if(indexRenderer==null) {
       indexRenderer = new ArrayIndexRenderer();
@@ -454,7 +462,8 @@ public class ArrayTable extends JTable implements ActionListener {
    * @param color  the desired foreground <code>Color</code> 
    * @see java.awt.Component#getForeground
    */
-  public void setForeground(Color color){
+  @Override
+public void setForeground(Color color){
     super.setForeground(color);
     if(indexRenderer==null) {
       indexRenderer = new ArrayIndexRenderer();
@@ -484,7 +493,8 @@ public class ArrayTable extends JTable implements ActionListener {
    * @param color  the desired background <code>Color</code> 
    * @see java.awt.Component#getBackground
    */
-  public void setBackground(Color color){
+  @Override
+public void setBackground(Color color){
     super.setBackground(color);
     if(indexRenderer==null) {
       indexRenderer = new ArrayIndexRenderer();
@@ -513,7 +523,8 @@ public class ArrayTable extends JTable implements ActionListener {
    * @param column the column number
    * @return the cell renderer
    */
-  public TableCellRenderer getCellRenderer(int row, int column) {
+  @Override
+public TableCellRenderer getCellRenderer(int row, int column) {
     int i = convertColumnIndexToModel(column);
     if((i==0)&&tableModel.showRowNumber) {
       return indexRenderer;
@@ -535,7 +546,8 @@ public class ArrayTable extends JTable implements ActionListener {
       setBackground(Color.WHITE);
     }
 
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    @Override
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
       super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
       boolean editable = table.isCellEditable(row, column);
       setEnabled(editable);
@@ -588,7 +600,8 @@ public class ArrayTable extends JTable implements ActionListener {
      * @param column the column number
      * @return a label with the row number
      */
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    @Override
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
       if(column==0) {
         setHorizontalAlignment(SwingConstants.RIGHT);
       } else {

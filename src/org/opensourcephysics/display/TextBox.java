@@ -11,7 +11,6 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Shape;
 
 public class TextBox implements Drawable {
   public static final int COORDINATE_PLACEMENT = 0;
@@ -76,7 +75,8 @@ public class TextBox implements Drawable {
     boxWidth = 0;
   }
 
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     String tempText = text; // local reference for thread safety
     if(tempText==null) {
       return;

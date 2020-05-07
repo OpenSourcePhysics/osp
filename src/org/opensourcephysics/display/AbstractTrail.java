@@ -107,7 +107,8 @@ public abstract class AbstractTrail implements Drawable, Measurable {
    *
    * @return boolean
    */
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return enableMeasure&&(this.numpts>0);
   }
 
@@ -115,7 +116,8 @@ public abstract class AbstractTrail implements Drawable, Measurable {
    * Gets the minimum x value in the trail.
    * @return double
    */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return xmin;
   }
 
@@ -123,7 +125,8 @@ public abstract class AbstractTrail implements Drawable, Measurable {
    * Gets the maximum x value in the trail.
    * @return double
    */
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return xmax;
   }
 
@@ -131,7 +134,8 @@ public abstract class AbstractTrail implements Drawable, Measurable {
    * Gets the minimum y value in the trail.
    * @return double
    */
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return ymin;
   }
 
@@ -139,7 +143,8 @@ public abstract class AbstractTrail implements Drawable, Measurable {
    * Gets the maximum y value in the trail.
    * @return double
    */
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return ymax;
   }
 

@@ -57,7 +57,8 @@ public class PolarType1 extends AbstractPolarAxis implements PolarAxes, Dimensio
    * @param panel the drawing panel that requested the interior
    * @return the interior dimension
    */
-  public Dimension getInterior(DrawingPanel panel) {
+  @Override
+public Dimension getInterior(DrawingPanel panel) {
     double max = Math.abs(panel.getPreferredXMax());
     max = Math.max(max, Math.abs(panel.getPreferredXMin()));
     max = Math.max(max, Math.abs(panel.getPreferredYMax()));
@@ -74,7 +75,8 @@ public class PolarType1 extends AbstractPolarAxis implements PolarAxes, Dimensio
    * @param  s the label
    * @param font_name an optional font name
    */
-  public void setXLabel(String s, String font_name) {}
+  @Override
+public void setXLabel(String s, String font_name) {}
 
   /**
    * Sets the y label of the axes.
@@ -84,14 +86,16 @@ public class PolarType1 extends AbstractPolarAxis implements PolarAxes, Dimensio
    * @param  s the label
    * @param font_name an optional font name
    */
-  public void setYLabel(String s, String font_name) {}
+  @Override
+public void setYLabel(String s, String font_name) {}
 
   /**
    * Gets the x axis label.
    *
    * @return String
    */
-  public String getXLabel() {
+  @Override
+public String getXLabel() {
     return ""; //$NON-NLS-1$
   }
 
@@ -100,7 +104,8 @@ public class PolarType1 extends AbstractPolarAxis implements PolarAxes, Dimensio
    *
    * @return String
    */
-  public String getYLabel() {
+  @Override
+public String getYLabel() {
     return ""; //$NON-NLS-1$
   }
 
@@ -121,29 +126,34 @@ public class PolarType1 extends AbstractPolarAxis implements PolarAxes, Dimensio
   /**
    * Shows a grid line for every x axis major tickmark.
    */
-  public void setShowMajorXGrid(boolean showGrid) {}
+  @Override
+public void setShowMajorXGrid(boolean showGrid) {}
 
   /**
    * Shows a grid line for every x axis minor tickmark.
    */
-  public void setShowMinorXGrid(boolean showGrid) {}
+  @Override
+public void setShowMinorXGrid(boolean showGrid) {}
 
   /**
    * Shows a grid line for every y axis major tickmark.
    */
-  public void setShowMajorYGrid(boolean showGrid) {}
+  @Override
+public void setShowMajorYGrid(boolean showGrid) {}
 
   /**
    * Shows a grid line for every y axis minor tickmark.
    */
-  public void setShowMinorYGrid(boolean showGrid) {}
+  @Override
+public void setShowMinorYGrid(boolean showGrid) {}
 
   /**
    * Draws a representation of an object in a drawing panel.
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     double rmax = Math.abs(panel.getPreferredXMax());
     double dr = drawRings(rmax, panel, g);
     drawSpokes(rmax, panel, g);

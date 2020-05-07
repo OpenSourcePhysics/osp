@@ -23,7 +23,8 @@ public class DrawableShapeLoader extends XMLLoader {
    * @param control XMLControl
    * @param obj Object
    */
-  public void saveObject(XMLControl control, Object obj) {
+  @Override
+public void saveObject(XMLControl control, Object obj) {
     DrawableShape drawableShape = (DrawableShape) obj;
     control.setValue("geometry", drawableShape.shapeClass);  //$NON-NLS-1$
     control.setValue("x", drawableShape.x);                  //$NON-NLS-1$
@@ -40,7 +41,8 @@ public class DrawableShapeLoader extends XMLLoader {
    * @param control XMLControl
    * @return Object
    */
-  public Object createObject(XMLControl control) {
+  @Override
+public Object createObject(XMLControl control) {
     return new DrawableShape(new GeneralPath(), 0, 0); // default shape is a path
   }
 
@@ -51,7 +53,8 @@ public class DrawableShapeLoader extends XMLLoader {
    * @param obj Object
    * @return Object
    */
-  public Object loadObject(XMLControl control, Object obj) {
+  @Override
+public Object loadObject(XMLControl control, Object obj) {
     DrawableShape drawableShape = (DrawableShape) obj;
     String geometry = control.getString("geometry"); //$NON-NLS-1$
     double x = control.getDouble("x");               //$NON-NLS-1$

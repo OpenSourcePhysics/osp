@@ -309,7 +309,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    * Line colors for Data interface.
    * @return color array
    */
-  public java.awt.Color[] getLineColors() {
+  @Override
+public java.awt.Color[] getLineColors() {
     return null;
   }
 
@@ -317,7 +318,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    * Fill colors for Data interface.
    * @return color array
    */
-  public java.awt.Color[] getFillColors() {
+  @Override
+public java.awt.Color[] getFillColors() {
     return null;
   }
 
@@ -354,7 +356,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    *
    * @return    <code>true<\code> if measure is valid
    */
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     for(int i = 0; i<datasets.size(); i++) {
       Dataset d = datasets.get(i);
       if(d.isMeasured()) {
@@ -369,7 +372,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    *
    * @param id the ID number
    */
-  public void setID(int id) {
+  @Override
+public void setID(int id) {
     datasetID = id;
   }
 
@@ -378,7 +382,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    *
    * @return the ID number
    */
-  public int getID() {
+  @Override
+public int getID() {
     return datasetID;
   }
 
@@ -387,7 +392,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    *
    * @return    xmin
    */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     double xmin = Double.MAX_VALUE;
     for(int i = 0; i<datasets.size(); i++) {
       Dataset d = datasets.get(i);
@@ -398,7 +404,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
     return xmin;
   }
 
-  public double getXMinLogscale() {
+  @Override
+public double getXMinLogscale() {
     double xmin = Double.MAX_VALUE;
     for(int i = 0; i<datasets.size(); i++) {
       Dataset d = datasets.get(i);
@@ -414,7 +421,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    *
    * @return    xmax
    */
-  public double getXMax() {
+  @Override
+public double getXMax() {
     double xmax = -Double.MAX_VALUE;
     for(int i = 0; i<datasets.size(); i++) {
       Dataset d = datasets.get(i);
@@ -425,7 +433,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
     return xmax;
   }
 
-  public double getXMaxLogscale() {
+  @Override
+public double getXMaxLogscale() {
     double xmax = -Double.MAX_VALUE;
     for(int i = 0; i<datasets.size(); i++) {
       Dataset d = datasets.get(i);
@@ -441,7 +450,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    *
    * @return    ymin
    */
-  public double getYMin() {
+  @Override
+public double getYMin() {
     double ymin = Double.MAX_VALUE;
     for(int i = 0; i<datasets.size(); i++) {
       Dataset d = datasets.get(i);
@@ -452,7 +462,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
     return ymin;
   }
 
-  public double getYMinLogscale() {
+  @Override
+public double getYMinLogscale() {
     double ymin = Double.MAX_VALUE;
     for(int i = 0; i<datasets.size(); i++) {
       Dataset d = datasets.get(i);
@@ -468,7 +479,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    *
    * @return    ymax
    */
-  public double getYMax() {
+  @Override
+public double getYMax() {
     double ymax = -Double.MAX_VALUE;
     for(int i = 0; i<datasets.size(); i++) {
       Dataset d = datasets.get(i);
@@ -479,7 +491,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
     return ymax;
   }
 
-  public double getYMaxLogscale() {
+  @Override
+public double getYMaxLogscale() {
     double ymax = -Double.MAX_VALUE;
     for(int i = 0; i<datasets.size(); i++) {
       Dataset d = datasets.get(i);
@@ -543,7 +556,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    *
    * @return    the count
    */
-  public int getColumnCount() {
+  @Override
+public int getColumnCount() {
     int columnCount = 0;
     for(int i = 0; i<datasets.size(); i++) {
       Dataset d = datasets.get(i);
@@ -558,7 +572,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    *
    * @return    the count
    */
-  public int getRowCount() {
+  @Override
+public int getRowCount() {
     int rowCount = 0;
     for(int i = 0; i<datasets.size(); i++) {
       Dataset d = datasets.get(i);
@@ -572,7 +587,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    *
    * @return name
    */
-  public String getName() {
+  @Override
+public String getName() {
     return name;
   }
 
@@ -593,7 +609,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    * @param tableColumnIndex
    * @return              the name
    */
-  public String getColumnName(int tableColumnIndex) {
+  @Override
+public String getColumnName(int tableColumnIndex) {
     if(datasets.size()==0) {
       return null;
     }
@@ -617,7 +634,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    * @param tableColumnIndex
    * @return              the datum
    */
-  public Object getValueAt(int rowIndex, int tableColumnIndex) {
+  @Override
+public Object getValueAt(int rowIndex, int tableColumnIndex) {
     if(datasets.size()==0) {
       return null;
     }
@@ -643,7 +661,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    * @param  columnIndex
    * @return              the class
    */
-  public Class<Double> getColumnClass(int columnIndex) {
+  @Override
+public Class<Double> getColumnClass(int columnIndex) {
     return Double.class;
   }
 
@@ -710,7 +729,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    * @param  drawingPanel
    * @param  g
    */
-  public void draw(DrawingPanel drawingPanel, Graphics g) {
+  @Override
+public void draw(DrawingPanel drawingPanel, Graphics g) {
     for(int i = 0; i<datasets.size(); i++) {
       (datasets.get(i)).draw(drawingPanel, g);
     }
@@ -764,7 +784,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    * Gets a shallow clone of the dataset list. Implements Data.
    * @return cloned list
    */
-  public ArrayList<Dataset> getDatasets() {
+  @Override
+public ArrayList<Dataset> getDatasets() {
     return new ArrayList<Dataset>(datasets);
   }
 
@@ -773,7 +794,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    * This method is used by Data displaying tools to create as many pages as needed.
    * @return a list of Data objects, or null if this object contains data
    */
-  public java.util.List<Data> getDataList() {
+  @Override
+public java.util.List<Data> getDataList() {
     return null;
   }
 
@@ -781,7 +803,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    * The column names to be used in the data display tool
    * @return string array
    */
-  public String[] getColumnNames() {
+  @Override
+public String[] getColumnNames() {
     int n = datasets.size();
     String[] names = new String[n];
     for(int i = 0; i<n; i++) {
@@ -797,7 +820,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    *
    * @return double[][]
    */
-  public double[][] getData2D() {
+  @Override
+public double[][] getData2D() {
     if(isXPointsLinked()) {
       int count = datasets.size();
       int index = 0;
@@ -821,7 +845,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    *
    * @return double[][][]
    */
-  public double[][][] getData3D() {
+  @Override
+public double[][][] getData3D() {
     return null;
   }
 
@@ -963,7 +988,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    *  Create a string representation of the data.
    * @return a String of data
    */
-  public String toString() {
+  @Override
+public String toString() {
     if(datasets.size()==0) {
       return "No data in datasets."; //$NON-NLS-1$
     }
@@ -1028,7 +1054,8 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
    * A class to save and load Dataset data in an XMLControl.
    */
   private static class Loader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       DatasetManager dsm = (DatasetManager) obj;
       control.setValue("connected", dsm.connected);       //$NON-NLS-1$
       control.setValue("sorted", dsm.sorted);             //$NON-NLS-1$
@@ -1042,11 +1069,13 @@ public class DatasetManager extends AbstractTableModel implements Measurable, Lo
       control.setValue("id", dsm.datasetID);         			//$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new DatasetManager();
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       DatasetManager dsm = (DatasetManager) obj;
       dsm.connected = control.getBoolean("connected");      //$NON-NLS-1$
       dsm.sorted = control.getBoolean("sorted");            //$NON-NLS-1$

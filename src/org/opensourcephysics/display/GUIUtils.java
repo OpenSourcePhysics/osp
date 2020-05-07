@@ -61,7 +61,8 @@ public class GUIUtils {
    * @return
    * @deprecated  use TeXParser class.
    */
-  public static String parseTeX(String input) {
+  @Deprecated
+public static String parseTeX(String input) {
     return TeXParser.parseTeX(input);
   }
 
@@ -71,7 +72,8 @@ public class GUIUtils {
    * @return
    * @deprecated  use TeXParser class.
    */
-  public static String removeSubscripting(String input) {
+  @Deprecated
+public static String removeSubscripting(String input) {
     return TeXParser.removeSubscripting(input);
   }
 
@@ -503,6 +505,7 @@ public class GUIUtils {
 
 public static JTextPane newJTextPane() {
 	return (OSPRuntime.antiAliasText ? new JTextPane() {
+		@Override
 		public void paintComponent(Graphics g) {
 			{
 				Graphics2D g2 = (Graphics2D) g;
@@ -528,6 +531,7 @@ public static JTextPane newJTextPane() {
 
 public static JTextArea newJTextArea() {
 	return (OSPRuntime.antiAliasText ? new JTextArea() {
+		@Override
 		public void paintComponent(Graphics g) {
 			{
 				Graphics2D g2 = (Graphics2D) g;

@@ -128,7 +128,8 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
    *
    * @param e the property change event
    */
-  public void propertyChange(PropertyChangeEvent e) {
+  @Override
+public void propertyChange(PropertyChangeEvent e) {
     // forward event to listeners
     changed = true;
     firePropertyChange(e.getPropertyName(), e.getOldValue(), e.getNewValue());
@@ -353,7 +354,8 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
    * @param font the desired <code>Font</code> for this component
    * @see java.awt.Component#getFont
    */
-  public void setFont(Font font){ // Added by Paco
+  @Override
+public void setFont(Font font){ // Added by Paco
     super.setFont(font);
     if (tables!=null) for(int i = 0; i<tables.length; i++) tables[i].setFont(font);
   }
@@ -366,7 +368,8 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
    * @param fg  the desired foreground <code>Color</code> 
    * @see java.awt.Component#getForeground
    */
-  public void setForeground(Color color){ // Added by Paco
+  @Override
+public void setForeground(Color color){ // Added by Paco
     super.setForeground(color);
     if (tables!=null) for(int i = 0; i<tables.length; i++) tables[i].setForeground(color);
   }
@@ -379,7 +382,8 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
    * @param fg  the desired background <code>Color</code> 
    * @see java.awt.Component#getBackground
    */
-  public void setBackground(Color color){ // Added by Paco
+  @Override
+public void setBackground(Color color){ // Added by Paco
     super.setBackground(color);
     if (tables!=null) for(int i = 0; i<tables.length; i++) tables[i].setBackground(color);
   }
@@ -473,7 +477,8 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
       editor.getTextField().setFont(tables[0].indexRenderer.getFont());
       spinner.setEditor(editor);
       spinner.addChangeListener(new ChangeListener() {
-        public void stateChanged(ChangeEvent e) {
+        @Override
+		public void stateChanged(ChangeEvent e) {
           int i = ((Integer) spinner.getValue()).intValue();
           scrollpane.setViewportView(tables[i]);
         }
@@ -678,7 +683,8 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
    * Gets column names from Table Model.
    * Implementation of Data interface.
    */
-  public String[] getColumnNames() {
+  @Override
+public String[] getColumnNames() {
     double[][] data = getData2D();
     if(data==null) {
       return null; // no data
@@ -702,7 +708,8 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
    * Gets double[][] data from the Table Model and transposes this array if necessary.
    * Implementation of Data interface.
    */
-  public double[][] getData2D() {
+  @Override
+public double[][] getData2D() {
     if((tables==null)||(tables[0]==null)) {
       return null;
     }
@@ -733,7 +740,8 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
    * Not used because double[][][] is not used in any OSP Tools.
    * Implementation of Data interface method.
    */
-  public double[][][] getData3D() {
+  @Override
+public double[][][] getData3D() {
     return null;
   }
 
@@ -741,7 +749,8 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
    * Not used because Data is stored in this object, not in a list of Data objects.
    * Implementation of Data interface.
    */
-  public List<Data> getDataList() {
+  @Override
+public List<Data> getDataList() {
     return null;
   }
 
@@ -749,7 +758,8 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
    * Not used Data because is stored in 2D arrays.
    * Implementation of Data interface.
    */
-  public ArrayList<Dataset> getDatasets() {
+  @Override
+public ArrayList<Dataset> getDatasets() {
     return null;
   }
 
@@ -757,7 +767,8 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
    * Fill colors for columns are not specified. Client should assign colors.
    * Implementation of Data interface.
    */
-  public Color[] getFillColors() {
+  @Override
+public Color[] getFillColors() {
     return null;
   }
 
@@ -765,14 +776,16 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
    * Lines colors for columns are not specified.  Client should assign colors.
    * Implementation of Data interface.
    */
-  public Color[] getLineColors() {
+  @Override
+public Color[] getLineColors() {
     return null;
   }
 
   /**
    * Gets the Data ID.
    */
-  public int getID() {
+  @Override
+public int getID() {
     boolean transposed = tables[0].tableModel.transposed;
     if(transposed) {
       return ID^0xffff; // exclusive OR to reverse and produce new ID
@@ -783,7 +796,8 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
   /**
    * Sets the Data ID.
    */
-  public void setID(int id) {
+  @Override
+public void setID(int id) {
     ID = id;
   }
 

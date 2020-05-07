@@ -19,7 +19,8 @@ public class CircleLoader extends XMLLoader {
    * @param control XMLControl
    * @param obj Object
    */
-  public void saveObject(XMLControl control, Object obj) {
+  @Override
+public void saveObject(XMLControl control, Object obj) {
     Circle circle = (Circle) obj;
     control.setValue("x", circle.x);                 //$NON-NLS-1$
     control.setValue("y", circle.y);                 //$NON-NLS-1$
@@ -32,7 +33,8 @@ public class CircleLoader extends XMLLoader {
    * @param control XMLControl
    * @return Object
    */
-  public Object createObject(XMLControl control) {
+  @Override
+public Object createObject(XMLControl control) {
     return new Circle();
   }
 
@@ -42,7 +44,8 @@ public class CircleLoader extends XMLLoader {
    * @param obj Object
    * @return Object
    */
-  public Object loadObject(XMLControl control, Object obj) {
+  @Override
+public Object loadObject(XMLControl control, Object obj) {
     Circle circle = (Circle) obj;
     circle.x = control.getDouble("x"); //$NON-NLS-1$
     circle.y = control.getDouble("y"); //$NON-NLS-1$

@@ -19,7 +19,8 @@ public class ArrowLoader extends XMLLoader {
    * @param control XMLControl
    * @param obj Object
    */
-  public void saveObject(XMLControl control, Object obj) {
+  @Override
+public void saveObject(XMLControl control, Object obj) {
     Arrow arrow = (Arrow) obj;
     control.setValue("x", arrow.x);                //$NON-NLS-1$
     control.setValue("y", arrow.y);                //$NON-NLS-1$
@@ -34,7 +35,8 @@ public class ArrowLoader extends XMLLoader {
    * @param control XMLControl
    * @return Object
    */
-  public Object createObject(XMLControl control) {
+  @Override
+public Object createObject(XMLControl control) {
     return new Arrow(0, 0, 0, 0);
   }
 
@@ -44,7 +46,8 @@ public class ArrowLoader extends XMLLoader {
    * @param obj Object
    * @return Object
    */
-  public Object loadObject(XMLControl control, Object obj) {
+  @Override
+public Object loadObject(XMLControl control, Object obj) {
     Arrow arrow = (Arrow) obj;
     arrow.x = control.getDouble("x");                        //$NON-NLS-1$
     arrow.y = control.getDouble("y");                        //$NON-NLS-1$

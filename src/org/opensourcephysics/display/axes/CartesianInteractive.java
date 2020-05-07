@@ -33,7 +33,6 @@ import javax.swing.SwingConstants;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.Interactive;
-import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.PlottingPanel;
 import org.opensourcephysics.display.Selectable;
 import org.opensourcephysics.display.dialogs.DialogsRes;
@@ -77,14 +76,16 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
     panel.addMouseListener(axisListener);
     panel.addMouseMotionListener(axisListener);
     panel.addKeyListener(new java.awt.event.KeyAdapter() {
-      public void keyPressed(java.awt.event.KeyEvent e) {
+      @Override
+	public void keyPressed(java.awt.event.KeyEvent e) {
         if (!enabled) return;
         if((mouseRegion==INSIDE)&&!drawingPanel.isFixedScale()&&(e.getKeyCode()==java.awt.event.KeyEvent.VK_ALT)) {
           altDown = true;
           plot.setMouseCursor(getPreferredCursor());
         }
       }
-      public void keyReleased(java.awt.event.KeyEvent e) {
+      @Override
+	public void keyReleased(java.awt.event.KeyEvent e) {
         if (!enabled) return;
         if(e.getKeyCode()==java.awt.event.KeyEvent.VK_ALT) {
           altDown = false;
@@ -119,7 +120,8 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
    * @param panel the drawing panel
    * @param g the graphics context
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     super.draw(panel, g);
     if(drawHitRect) {
       g.drawRect(hitRect.x, hitRect.y, hitRect.width, hitRect.height);
@@ -146,28 +148,34 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
   }
 
   // overrides CartesianType1 method
-  public double getX() {
+  @Override
+public double getX() {
     return Double.isNaN(mouseX) ? plot.pixToX(plot.getMouseIntX()) : mouseX;
   }
 
   // overrides CartesianType1 method
-  public double getY() {
+  @Override
+public double getY() {
     return Double.isNaN(mouseY) ? plot.pixToY(plot.getMouseIntY()) : mouseY;
   }
 
   // implements Selectable
-  public void setSelected(boolean selectable) {}
+  @Override
+public void setSelected(boolean selectable) {}
 
   // implements Selectable
-  public boolean isSelected() {
+  @Override
+public boolean isSelected() {
     return false;
   }
 
   // implements Selectable
-  public void toggleSelected() {}
+  @Override
+public void toggleSelected() {}
 
   // implements Selectable
-  public Cursor getPreferredCursor() {
+  @Override
+public Cursor getPreferredCursor() {
     switch(mouseRegion) {
        case HORZ_AXIS_MIN :
          if(horzLeft==null) {
@@ -240,19 +248,22 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
   }
 
   // implements Interactive
-  public boolean isEnabled() {
+  @Override
+public boolean isEnabled() {
     return enabled;
   }
 
   // implements Interactive
-  public void setEnabled(boolean enable) {
+  @Override
+public void setEnabled(boolean enable) {
     enabled = enable;
   }
 
   public void addAxisListener(ActionListener listener) { axisListeners.add(listener); } // Paco
 
   // implements Interactive
-  public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
     if(drawingPanel.isFixedScale()) {
       return null;
     }
@@ -269,30 +280,36 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
   }
 
   // implements Interactive
-  public void setXY(double x, double y) {}
+  @Override
+public void setXY(double x, double y) {}
 
   // implements Measurable
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return true;
   }
 
   // implements Measurable
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return drawingPanel.getXMin();
   }
 
   // implements Measurable
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return drawingPanel.getXMax();
   }
 
   // implements Measurable
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return drawingPanel.getYMin();
   }
 
   // implements Measurable
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return drawingPanel.getYMax();
   }
 
@@ -312,7 +329,8 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
    * @param factor the factor
    * @param panel the drawing panel on which these axes are drawn
    */
-  public void resizeFonts(double factor, DrawingPanel panel) {
+  @Override
+public void resizeFonts(double factor, DrawingPanel panel) {
     super.resizeFonts(factor, panel);
     if(scaleSetter!=null) {
       scaleSetter.scaleField.setFont(FontSizer.getResizedFont(scaleSetter.scaleField.getFont(), factor));
@@ -521,7 +539,8 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
     private ScaleSetter() {
       super(new BorderLayout());
       scaleAction = new AbstractAction() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           scaleField.setBackground(Color.white);
           pinned = false;
           boolean auto = autoscaleCheckbox.isSelected();
@@ -562,7 +581,8 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
       autoscaleCheckbox.setHorizontalTextPosition(SwingConstants.RIGHT);
       autoscaleCheckbox.addActionListener(scaleAction);
       scaleField = new ScientificField(6, 3) {
-        public Dimension getPreferredSize() {
+        @Override
+		public Dimension getPreferredSize() {
           Dimension dim = super.getPreferredSize();
           dim.width -= 4;
           return dim;
@@ -570,14 +590,16 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 
       };
       scaleField.addActionListener(new AbstractAction() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           autoscaleCheckbox.setSelected(false);
           scaleAction.actionPerformed(null);
         }
 
       });
       scaleField.addFocusListener(new FocusAdapter() {
-        public void focusLost(FocusEvent e) {
+        @Override
+		public void focusLost(FocusEvent e) {
           if(scaleField.getBackground()==Color.yellow) {
             autoscaleCheckbox.setSelected(false);
             scaleAction.actionPerformed(null);
@@ -586,7 +608,8 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 
       });
       scaleField.addMouseListener(new MouseAdapter() {
-        public void mousePressed(MouseEvent e) {
+        @Override
+		public void mousePressed(MouseEvent e) {
           pinned = true;
           if(e.getClickCount()==2) {
             scaleField.selectAll();
@@ -623,7 +646,8 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
    * A mouse listener for handling interactivity
    */
   class AxisMouseListener extends javax.swing.event.MouseInputAdapter {
-    public void mouseMoved(MouseEvent e) {
+    @Override
+	public void mouseMoved(MouseEvent e) {
       if (!enabled) return; // Paco
       altDown = e.isAltDown();
       Point p = e.getPoint();
@@ -638,7 +662,8 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
       drawHitRect = ((mouseRegion==HORZ_VAR)||(mouseRegion==VERT_VAR));
     }
 
-    public void mouseDragged(MouseEvent e) {
+    @Override
+	public void mouseDragged(MouseEvent e) {
       if (!enabled) return; // Paco
       double dx = 0, dy = 0, min = 0, max = 0;
       switch(mouseRegion) {
@@ -699,7 +724,8 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
       mouseLoc = e.getPoint();
     }
 
-    public void mousePressed(MouseEvent e) {
+    @Override
+	public void mousePressed(MouseEvent e) {
       if (!enabled) return; // Paco
     	plot.requestFocusInWindow();
       altDown = e.isAltDown();
@@ -725,13 +751,15 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
       plot.repaint();
     }
 
-    public void mouseReleased(MouseEvent e) {
+    @Override
+	public void mouseReleased(MouseEvent e) {
       if (!enabled) return; // Paco
       mouseX = Double.NaN;
       mouseY = Double.NaN;
     }
 
-    public void mouseExited(MouseEvent e) {
+    @Override
+	public void mouseExited(MouseEvent e) {
       if (!enabled) return; // Paco
       Point p = e.getPoint();
       if(!new Rectangle(plot.getSize()).contains(p)&&(scaleSetter!=null)&&"".equals(InputEvent.getModifiersExText(e.getModifiersEx()))) { //$NON-NLS-1$

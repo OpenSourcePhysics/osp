@@ -10,7 +10,6 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import org.opensourcephysics.numerics.Function;
 
@@ -62,7 +61,8 @@ public class FunctionDrawer implements Drawable, Measurable, Function {
    * @param x
    * @return value of the function
    */
-  public double evaluate(double x) {
+  @Override
+public double evaluate(double x) {
     return function.evaluate(x);
   }
 
@@ -188,7 +188,8 @@ public class FunctionDrawer implements Drawable, Measurable, Function {
    * @param panel  the drawing panel
    * @param g      the graphics context
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!measured) {
       checkRange(panel);
     }
@@ -221,23 +222,28 @@ public class FunctionDrawer implements Drawable, Measurable, Function {
   }
 
   // Implementation of measured interface.
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return measured;
   }
 
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return xrange[0];
   }
 
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return xrange[1];
   }
 
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return yrange[0];
   }
 
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return yrange[1];
   }
 

@@ -105,7 +105,8 @@ public class Protractor extends InteractiveCircle implements Drawable {
     return showTheta;
   }
 
-  public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
     Interactive interactive = super.findInteractive(panel, xpix, ypix);
     if(interactive!=null) {
       return interactive;
@@ -123,7 +124,8 @@ public class Protractor extends InteractiveCircle implements Drawable {
    * @param panel DrawingPanel
    * @param g Graphics
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     Graphics2D g2 = (Graphics2D) g;
     double i1 = panel.xToPix(x);
     double j1 = panel.yToPix(y);
@@ -174,7 +176,8 @@ public class Protractor extends InteractiveCircle implements Drawable {
   }
 
   public class Tip extends InteractiveCircle {
-    public void setXY(double x, double y) {
+    @Override
+	public void setXY(double x, double y) {
       this.x = x;
       this.y = y;
       arrowTheta = Math.atan2(y-Protractor.this.y, x-Protractor.this.x);

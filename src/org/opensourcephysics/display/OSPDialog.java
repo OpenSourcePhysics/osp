@@ -70,7 +70,8 @@ public class OSPDialog extends JDialog {
     this(""); //$NON-NLS-1$
   }
 
-  public void setSize(int width, int height) {
+  @Override
+public void setSize(int width, int height) {
     super.setSize(width, height);
     validate();
   }
@@ -80,7 +81,9 @@ public class OSPDialog extends JDialog {
    *
    * @deprecated
    */
-  public void show() {
+  @Deprecated
+@Override
+public void show() {
     if(!keepHidden) {
       super.show();
     }

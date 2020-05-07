@@ -10,7 +10,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * Draws a group of shapes.
@@ -40,7 +39,8 @@ public class DrawableGroup implements Drawable {
    * @param panel the drawing panel
    * @param g  the graphics context
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     int xpix = panel.xToPix(0);
     int ypix = panel.yToPix(0);
     

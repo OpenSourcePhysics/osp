@@ -14,7 +14,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 /**
  * The TextPanel renders text in a component.
@@ -80,6 +79,7 @@ public class TextPanel extends JPanel {
 		}
 		
 		OSPRuntime.postEvent(new Runnable() {
+			@Override
 			public synchronized void run() {
 				if (c.getLayout() instanceof OSPLayout) {
 					((OSPLayout) c.getLayout()).quickLayout(c, TextPanel.this);
@@ -106,7 +106,8 @@ public class TextPanel extends JPanel {
    * @see #getMinimumSize
    * @see LayoutManager
    */
-  public Dimension getPreferredSize() {
+  @Override
+public Dimension getPreferredSize() {
     Container c = this.getParent();
     String text = this.text; // local reference for thread safety
     if((c==null)||text.equals("")) { //$NON-NLS-1$
@@ -130,7 +131,8 @@ public class TextPanel extends JPanel {
    * Paints this component.
    * @param g
    */
-  public void paintComponent(Graphics g) {
+  @Override
+public void paintComponent(Graphics g) {
     String text = this.text; // local reference for thread safety
     if(!dim.equals(getPreferredSize())) {
       dim = getPreferredSize();

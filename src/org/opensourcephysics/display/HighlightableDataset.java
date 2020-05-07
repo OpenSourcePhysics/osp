@@ -68,7 +68,8 @@ public class HighlightableDataset extends Dataset implements Interactive {
    * @param  x the x value
    * @param  y the y value
    */
-  public void append(double x, double y) {
+  @Override
+public void append(double x, double y) {
     super.append(x, y);
     adjustCapacity(xpoints.length);
   }
@@ -79,7 +80,8 @@ public class HighlightableDataset extends Dataset implements Interactive {
    * @param  xarray the x array
    * @param  yarray the y array
    */
-  public void append(double[] xarray, double[] yarray) {
+  @Override
+public void append(double[] xarray, double[] yarray) {
     super.append(xarray, yarray);
     adjustCapacity(xpoints.length);
   }
@@ -87,7 +89,8 @@ public class HighlightableDataset extends Dataset implements Interactive {
   /**
    * Clear all data from this Dataset.
    */
-  public void clear() {
+  @Override
+public void clear() {
     super.clear();
     previous = highlighted;
     highlighted = new boolean[xpoints.length];
@@ -151,7 +154,8 @@ public class HighlightableDataset extends Dataset implements Interactive {
    *
    * @param  loc the datum
    */
-  protected void moveDatum(int loc) {
+  @Override
+protected void moveDatum(int loc) {
     super.moveDatum(loc);
   }
 
@@ -177,7 +181,8 @@ public class HighlightableDataset extends Dataset implements Interactive {
    * @param  drawingPanel the drawing panel
    * @param  g the graphics
    */
-  public void draw(DrawingPanel drawingPanel, Graphics g) {
+  @Override
+public void draw(DrawingPanel drawingPanel, Graphics g) {
     super.draw(drawingPanel, g);
     int offset = getMarkerSize()+4;
     int edge = 2*offset;
@@ -228,7 +233,8 @@ public class HighlightableDataset extends Dataset implements Interactive {
    * @param ypix the y pixel position on the panel
    * @return the object
    */
-  public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
     // return hits only within active plot area 
     int l = panel.getLeftGutter();
     int r = panel.getRightGutter();
@@ -274,14 +280,16 @@ public class HighlightableDataset extends Dataset implements Interactive {
    *
    * @param enabled ignored
    */
-  public void setEnabled(boolean enabled) {}
+  @Override
+public void setEnabled(boolean enabled) {}
 
   /**
    * Implements Interactive.
    *
    * @return true
    */
-  public boolean isEnabled() {
+  @Override
+public boolean isEnabled() {
     return true;
   }
 
@@ -291,28 +299,32 @@ public class HighlightableDataset extends Dataset implements Interactive {
    * @param x ignored
    * @param y ignored
    */
-  public void setXY(double x, double y) {}
+  @Override
+public void setXY(double x, double y) {}
 
   /**
    * Implements Interactive.
    *
    * @param x ignored
    */
-  public void setX(double x) {}
+  @Override
+public void setX(double x) {}
 
   /**
    * Implements Interactive.
    *
    * @param y ignored
    */
-  public void setY(double y) {}
+  @Override
+public void setY(double y) {}
 
   /**
    * Implements Interactive.
    *
    * @return the x value at the current hit index, or Double.NaN if none
    */
-  public double getX() {
+  @Override
+public double getX() {
     if(hitIndex>-1) {
       return xpoints[hitIndex];
     }
@@ -324,7 +336,8 @@ public class HighlightableDataset extends Dataset implements Interactive {
    *
    * @return the y value at the current hit index, or Double.NaN if none
    */
-  public double getY() {
+  @Override
+public double getY() {
     if(hitIndex>-1) {
       return ypoints[hitIndex];
     }
@@ -344,17 +357,20 @@ public class HighlightableDataset extends Dataset implements Interactive {
    * A class to save and load Dataset data in an XMLControl.
    */
   private static class Loader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       XML.getLoader(Dataset.class).saveObject(control, obj);
       HighlightableDataset data = (HighlightableDataset) obj;
       control.setValue("highlighted", data.highlighted); //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new HighlightableDataset();
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       XML.getLoader(Dataset.class).loadObject(control, obj);
       HighlightableDataset data = (HighlightableDataset) obj;
       boolean[] highlighted = (boolean[]) control.getObject("highlighted"); //$NON-NLS-1$

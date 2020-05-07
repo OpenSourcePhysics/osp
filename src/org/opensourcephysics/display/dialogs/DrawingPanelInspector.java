@@ -11,7 +11,6 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.text.DecimalFormat;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.BoxLayout;
@@ -204,21 +203,24 @@ public class DrawingPanelInspector extends JDialog {
     xminmaxpanel.setToolTipText(DisplayRes.getString("DrawingPanelInspector.ScalePanel.Tooltip")); //$NON-NLS-1$
     applyButton.setText(DisplayRes.getString("DrawingPanelInspector.ApplyButton.Text"));           //$NON-NLS-1$
     applyButton.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         applyButton_actionPerformed(e);
       }
 
     });
     cancelButton.setText(DisplayRes.getString("GUIUtils.Cancel")); //$NON-NLS-1$
     cancelButton.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         cancelButton_actionPerformed(e);
       }
 
     });
     okButton.setText(DisplayRes.getString("GUIUtils.Ok")); //$NON-NLS-1$
     okButton.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         okButton_actionPerformed(e);
       }
 
@@ -226,7 +228,8 @@ public class DrawingPanelInspector extends JDialog {
     measureButton.setFont(new java.awt.Font("Dialog", 0, 10));                               //$NON-NLS-1$
     measureButton.setText(DisplayRes.getString("DrawingPanelInspector.MeasureButton.Text")); //$NON-NLS-1$
     measureButton.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         measureButton_actionPerformed(e);
       }
 
@@ -234,7 +237,8 @@ public class DrawingPanelInspector extends JDialog {
     snapButton.setFont(new java.awt.Font("Dialog", 0, 10));                                //$NON-NLS-1$
     snapButton.setText(DisplayRes.getString("DrawingPanelInspector.SnapshotButton.Text")); //$NON-NLS-1$
     snapButton.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         snapButton_actionPerformed(e);
       }
 

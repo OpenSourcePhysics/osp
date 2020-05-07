@@ -180,7 +180,8 @@ public class DrawableShape implements Drawable {
    *
    * @return String
    */
-  public String toString() {
+  @Override
+public String toString() {
     String name = getClass().getName();
     name = name.substring(1+name.lastIndexOf("."))+'['; //$NON-NLS-1$
     name += "x="+x;                                     //$NON-NLS-1$
@@ -195,7 +196,8 @@ public class DrawableShape implements Drawable {
    * @param panel DrawingPanel
    * @param g Graphics
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     Shape temp = panel.transformShape(shape);
     Graphics2D g2 = ((Graphics2D) g);
     g2.setPaint(color);

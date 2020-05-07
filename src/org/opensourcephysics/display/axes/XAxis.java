@@ -11,7 +11,6 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Shape;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.Interactive;
 
@@ -43,7 +42,8 @@ public class XAxis extends XYAxis {
    * @param drawingPanel
    * @param g
    */
-  public void draw(DrawingPanel drawingPanel, Graphics g) {
+  @Override
+public void draw(DrawingPanel drawingPanel, Graphics g) {
     int pixLoc = drawingPanel.yToPix(location);
     if(pixLoc<1) {
       location = drawingPanel.getYMin();
@@ -198,7 +198,8 @@ public class XAxis extends XYAxis {
   }
 
   // implements interactive interface
-  public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
     if(!enabled) {
       return null;
     }
@@ -208,11 +209,13 @@ public class XAxis extends XYAxis {
     return null;
   }
 
-  public void setXY(double x, double y) {
+  @Override
+public void setXY(double x, double y) {
     location = y;
   }
 
-  public void setY(double y) {
+  @Override
+public void setY(double y) {
     location = y;
   }
 

@@ -10,12 +10,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
-
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
@@ -107,7 +103,8 @@ public class DrawableTextLine extends TextLine implements Drawable {
  * @param panel DrawingPanel
  * @param g Graphics
  */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if((text==null)||text.equals("")) { //$NON-NLS-1$
       return;
     }
@@ -214,7 +211,8 @@ public class DrawableTextLine extends TextLine implements Drawable {
    * A class to save and load InteractiveArrow in an XMLControl.
    */
   protected static class DrawableTextLineLoader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       DrawableTextLine drawableTextLine = (DrawableTextLine) obj;
       control.setValue("text", drawableTextLine.getText());         //$NON-NLS-1$
       control.setValue("x", drawableTextLine.x);                    //$NON-NLS-1$
@@ -224,11 +222,13 @@ public class DrawableTextLine extends TextLine implements Drawable {
       control.setValue("pixel position", drawableTextLine.pixelXY); //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new DrawableTextLine("", 0, 0); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       DrawableTextLine drawableTextLine = (DrawableTextLine) obj;
       drawableTextLine.x = control.getDouble("x");                     //$NON-NLS-1$
       drawableTextLine.y = control.getDouble("y");                     //$NON-NLS-1$

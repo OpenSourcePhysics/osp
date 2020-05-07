@@ -140,7 +140,8 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
   }
 
   class Phase implements Drawable {
-    public void draw(DrawingPanel panel, Graphics g) {
+    @Override
+	public void draw(DrawingPanel panel, Graphics g) {
       int w = panel.getWidth()-5+1;
       int h = panel.getHeight()-25;
       for(int i = 5; i<w; i++) {
@@ -158,7 +159,8 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
    *
    * @return <code>true<\code> if measure is valid
    */
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     if(index<1) {
       return false;
     }
@@ -169,7 +171,8 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
    * Gets the x world coordinate for the left hand side of the panel.
    * @return xmin
    */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return xmin;
   }
 
@@ -177,7 +180,8 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
    * Gets the x world coordinate for the right hand side of the panel.
    * @return xmax
    */
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return xmax;
   }
 
@@ -185,7 +189,8 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
    * Gets y world coordinate for the bottom of the panel.
    * @return ymin
    */
-  public double getYMin() {
+  @Override
+public double getYMin() {
     if(markerShape==RE_IM_CURVE) {
       return -ampmax;
     } else if(centered&&((markerShape==PHASE_BAR)||(markerShape==PHASE_CURVE))) {
@@ -199,7 +204,8 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
    * Gets y world coordinate for the top of the panel.
    * @return ymax
    */
-  public double getYMax() {
+  @Override
+public double getYMax() {
     if(markerShape==RE_IM_CURVE) {
       return ampmax;
     } else if(centered&&((markerShape==PHASE_BAR)||(markerShape==PHASE_CURVE))) {
@@ -423,7 +429,8 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
    * Line colors for Data interface.
    * @return
    */
-  public java.awt.Color[] getLineColors() {
+  @Override
+public java.awt.Color[] getLineColors() {
     return new Color[] {lineColor, lineColor};
   }
 
@@ -440,7 +447,8 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
    * Fill colors to Data interface.
    * @return
    */
-  public java.awt.Color[] getFillColors() {
+  @Override
+public java.awt.Color[] getFillColors() {
     return new Color[] {lineColor, lineColor};
   }
 
@@ -638,7 +646,8 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
    *
    * @param id the ID number
    */
-  public void setID(int id) {
+  @Override
+public void setID(int id) {
     datasetID = id;
   }
 
@@ -647,7 +656,8 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
    *
    * @return the ID number
    */
-  public int getID() {
+  @Override
+public int getID() {
     return datasetID;
   }
 
@@ -690,7 +700,8 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
    * @param drawingPanel
    * @param g
    */
-  public void draw(DrawingPanel drawingPanel, Graphics g) {
+  @Override
+public void draw(DrawingPanel drawingPanel, Graphics g) {
     if(!visible) {
         return;
     }
@@ -729,7 +740,8 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
    * Create a string representation of the data.
    * @return  the data
    */
-  public String toString() {
+  @Override
+public String toString() {
     if(index==0) {
       return "Dataset empty."; //$NON-NLS-1$
     }
@@ -751,7 +763,8 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
    * Gets the number of columns for rendering in a JTable.
    * @return the count
    */
-  public int getColumnCount() {
+  @Override
+public int getColumnCount() {
     return 3;
   }
 
@@ -759,7 +772,8 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
    * Gets the number of rows for rendering in a JTable.
    * @return the count
    */
-  public int getRowCount() {
+  @Override
+public int getRowCount() {
     return(index+stride-1)/stride;
   }
 
@@ -768,7 +782,8 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
    * @param columnIndex
    * @return the name
    */
-  public String getColumnName(int columnIndex) {
+  @Override
+public String getColumnName(int columnIndex) {
     switch(columnIndex) {
        case 0 :
          return xColumnName;
@@ -786,7 +801,8 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
    * @param columnIndex
    * @return the datum
    */
-  public Object getValueAt(int rowIndex, int columnIndex) {
+  @Override
+public Object getValueAt(int rowIndex, int columnIndex) {
     rowIndex = rowIndex*stride;
     switch(columnIndex) {
        case 0 :
@@ -804,7 +820,8 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
    * @param columnIndex
    * @return the class
    */
-  public Class<?> getColumnClass(int columnIndex) {
+  @Override
+public Class<?> getColumnClass(int columnIndex) {
     return Double.class;
   }
 
@@ -1069,7 +1086,8 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
    *
    * @return String
    */
-  public String getName() {
+  @Override
+public String getName() {
     return name;
   }
 
@@ -1077,11 +1095,13 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
    * The column names to be used in the data display tool
    * @return
    */
-  public String[] getColumnNames() {
+  @Override
+public String[] getColumnNames() {
     return new String[] {"Re", "Im"}; //$NON-NLS-1$ //$NON-NLS-2$
   }
 
-  public double[][] getData2D() {
+  @Override
+public double[][] getData2D() {
     double[][] data = new double[3][index];
     data[0] = getXPoints();
     data[1] = getRePoints();
@@ -1089,11 +1109,13 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
     return data;
   }
 
-  public double[][][] getData3D() {
+  @Override
+public double[][][] getData3D() {
     return null;
   }
 
-  public ArrayList<Dataset> getDatasets() {
+  @Override
+public ArrayList<Dataset> getDatasets() {
     if((reDataset==null)||(imDataset==null)) {
       reDataset = new Dataset(Color.RED, Color.RED, true);
       imDataset = new Dataset(Color.BLUE, Color.BLUE, true);
@@ -1115,7 +1137,8 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
    * This method is used by Data displaying tools to create as many pages as needed.
    * @return A list of DataInformation elements, null if the element itself is a DataInformation
    */
-  public java.util.List<Data> getDataList() {
+  @Override
+public java.util.List<Data> getDataList() {
     if((reDataset==null)||(imDataset==null)) {
       reDataset = new Dataset(Color.RED, Color.RED, true);
       imDataset = new Dataset(Color.BLUE, Color.BLUE, true);
@@ -1136,7 +1159,8 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
   * A class to save and load Dataset data in an XMLControl.
   */
   private static class Loader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       ComplexDataset data = (ComplexDataset) obj;
       control.setValue("points", data.getPoints());            //$NON-NLS-1$
       // control.setValue("x_points", data.getXPoints());
@@ -1153,11 +1177,13 @@ public class ComplexDataset extends AbstractTableModel implements Drawable, Meas
       control.setValue("index", data.index);                   //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ComplexDataset();
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       ComplexDataset data = (ComplexDataset) obj;
       double[][] points = (double[][]) control.getObject("points"); //$NON-NLS-1$
       if((points!=null)&&(points[0]!=null)) {

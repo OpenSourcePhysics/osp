@@ -70,14 +70,16 @@ public class DataTableFrame extends OSPFrame {
     setVisible(true);
   }
 
-  public void paint(Graphics g) {
+  @Override
+public void paint(Graphics g) {
 	  super.paint(g);
   }
 
   /**
    * Adds a Display menu to the menu bar.
    */
-  protected JMenu loadDisplayMenu() {
+  @Override
+protected JMenu loadDisplayMenu() {
     JMenuBar menuBar = getJMenuBar();
     if(menuBar==null) {
       return null;
@@ -87,7 +89,8 @@ public class DataTableFrame extends OSPFrame {
     menuBar.add(displayMenu);
     JMenuItem setFontItem = new JMenuItem(DisplayRes.getString("DataTableFrame.NumberFormat_menu_item_title")); //$NON-NLS-1$
     setFontItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         setNumberFormat();
       }
 
@@ -111,21 +114,24 @@ public class DataTableFrame extends OSPFrame {
     editMenu.add(selectAlItem);
     copyItem.setAccelerator(KeyStroke.getKeyStroke('C', DrawingFrame.MENU_SHORTCUT_KEY_MASK));
     copyItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         copy();
       }
 
     });
     selectAlItem.setAccelerator(KeyStroke.getKeyStroke('A', DrawingFrame.MENU_SHORTCUT_KEY_MASK));
     selectAlItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         table.selectAll();
       }
 
     });
     saveAsItem.setAccelerator(KeyStroke.getKeyStroke('S', DrawingFrame.MENU_SHORTCUT_KEY_MASK));
     saveAsItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         saveAs();
       }
 

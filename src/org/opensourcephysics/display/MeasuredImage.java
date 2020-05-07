@@ -85,7 +85,8 @@ public class MeasuredImage implements Measurable {
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible) {
       return;
     }
@@ -113,7 +114,8 @@ public class MeasuredImage implements Measurable {
     g2.dispose();
   }
 
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
 	  // BH just tidier
 	  return (image != null);
 //    if(image==null) {
@@ -122,19 +124,23 @@ public class MeasuredImage implements Measurable {
 //    return true;
   }
 
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return xmin;
   }
 
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return xmax;
   }
 
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return ymin;
   }
 
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return ymax;
   }
 

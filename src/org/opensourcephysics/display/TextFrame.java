@@ -6,9 +6,6 @@
  */
 
 package org.opensourcephysics.display;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.io.IOException;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -70,7 +67,8 @@ public class TextFrame extends JFrame {
       textPane.removeHyperlinkListener(hyperlinkListener);
     }
     hyperlinkListener = new HyperlinkListener() {
-      public void hyperlinkUpdate(HyperlinkEvent e) {
+      @Override
+	public void hyperlinkUpdate(HyperlinkEvent e) {
         if(e.getEventType()==HyperlinkEvent.EventType.ACTIVATED) {
           try {
             textPane.setPage(e.getURL());
@@ -90,7 +88,8 @@ public class TextFrame extends JFrame {
       textPane.removeHyperlinkListener(hyperlinkListener);
     }
     hyperlinkListener = new HyperlinkListener() {
-      public void hyperlinkUpdate(HyperlinkEvent e) {
+      @Override
+	public void hyperlinkUpdate(HyperlinkEvent e) {
         if(e.getEventType()==HyperlinkEvent.EventType.ACTIVATED) {
           	OSPDesktop.displayURL(e.getURL().toString());
 //          try {

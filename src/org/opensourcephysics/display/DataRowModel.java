@@ -293,6 +293,7 @@ public class DataRowModel extends AbstractTableModel {
 	 *
 	 * @return the column count
 	 */
+	@Override
 	public int getColumnCount() {
 		int offset = rowNumberVisible ? 0 : 1;
 		if (getRowCount() == 0) {
@@ -309,6 +310,7 @@ public class DataRowModel extends AbstractTableModel {
 	 * @param column the column index
 	 * @return the column name
 	 */
+	@Override
 	public String getColumnName(int column) {
 		if ((column == 0) && rowNumberVisible) {
 			return colNames.get(0);
@@ -327,6 +329,7 @@ public class DataRowModel extends AbstractTableModel {
 	 *
 	 * @return the row count
 	 */
+	@Override
 	public int getRowCount() {
 		return (rowList.size() + stride - 1) / stride;
 		// return rowList.size();
@@ -339,6 +342,7 @@ public class DataRowModel extends AbstractTableModel {
 	 * @param column the column index
 	 * @return the value
 	 */
+	@Override
 	public Object getValueAt(int row, int column) {
 		row = row * stride;
 		if ((column == 0) && rowNumberVisible) {

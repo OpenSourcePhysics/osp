@@ -42,11 +42,13 @@ public class InteractiveCircle extends MeasuredCircle implements Interactive {
    * Enables mouse interactions.
    * @param _enableInteraction
    */
-  public void setEnabled(boolean _enableInteraction) {
+  @Override
+public void setEnabled(boolean _enableInteraction) {
     enableInteraction = _enableInteraction;
   }
 
-  public boolean isEnabled() {
+  @Override
+public boolean isEnabled() {
     return enableInteraction;
   }
 
@@ -57,7 +59,8 @@ public class InteractiveCircle extends MeasuredCircle implements Interactive {
     return true;
   }
 
-  public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
     if(!enableInteraction) {
       return null;
     }
@@ -82,7 +85,8 @@ public class InteractiveCircle extends MeasuredCircle implements Interactive {
      * @param control XMLControl
      * @param obj Object
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       super.saveObject(control, obj);
       InteractiveCircle circle = (InteractiveCircle) obj;
       control.setValue("interaction enabled", circle.enableInteraction); //$NON-NLS-1$
@@ -94,7 +98,8 @@ public class InteractiveCircle extends MeasuredCircle implements Interactive {
      * @param control XMLControl
      * @return Object
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new InteractiveCircle();
     }
 
@@ -104,7 +109,8 @@ public class InteractiveCircle extends MeasuredCircle implements Interactive {
      * @param obj Object
      * @return Object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       InteractiveCircle circle = (InteractiveCircle) obj;
       circle.enableInteraction = control.getBoolean("interaction enabled"); //$NON-NLS-1$

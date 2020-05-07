@@ -11,7 +11,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.Shape;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -212,7 +211,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    * @param  panel
    * @param  g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible) {
       return;
     }
@@ -325,7 +325,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    * @param  title the title
    * @param font_name an optional font name
    */
-  public void setTitle(String title, String font_name) {
+  @Override
+public void setTitle(String title, String font_name) {
     titleLine.setText(title);
     if((font_name==null)||font_name.equals("")) { //$NON-NLS-1$
       // resize fonts in order to adjust gutters
@@ -361,7 +362,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    * @param  label the label
    * @param font_name an optional font name
    */
-  public void setXLabel(String label, String font_name) {
+  @Override
+public void setXLabel(String label, String font_name) {
     xLine.setText(label);
     if((font_name==null)||font_name.equals("")) { //$NON-NLS-1$
       return;
@@ -375,7 +377,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *
    * @param  xlog  If true, logarithmic axis is used.
    */
-  public void setXLog(boolean xlog) {
+  @Override
+public void setXLog(boolean xlog) {
     this.xlog = xlog;
   }
 
@@ -387,7 +390,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    * @param  label the label
    * @param font_name an optional font name
    */
-  public void setYLabel(String label, String font_name) {
+  @Override
+public void setYLabel(String label, String font_name) {
     yLine.setText(label);
     if((font_name==null)||font_name.equals("")) { //$NON-NLS-1$
       return;
@@ -401,7 +405,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *
    * @param  ylog  If true, logarithmic axis is used.
    */
-  public void setYLog(boolean ylog) {
+  @Override
+public void setYLog(boolean ylog) {
     this.ylog = ylog;
   }
 
@@ -410,7 +415,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *
    * @return    The title.
    */
-  public String getTitle() {
+  @Override
+public String getTitle() {
     return titleLine.getText();
   }
 
@@ -419,7 +425,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *
    * @return    The X label.
    */
-  public String getXLabel() {
+  @Override
+public String getXLabel() {
     return xLine.getText();
   }
 
@@ -428,7 +435,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *
    * @return    True if the X axis is logarithmic.
    */
-  public boolean isXLog() {
+  @Override
+public boolean isXLog() {
     return xlog;
   }
 
@@ -437,7 +445,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *
    * @return    The Y label.
    */
-  public String getYLabel() {
+  @Override
+public String getYLabel() {
     return yLine.getText();
   }
 
@@ -446,7 +455,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *
    * @return    True if the Y axis is logarithmic.
    */
-  public boolean isYLog() {
+  @Override
+public boolean isYLog() {
     return ylog;
   }
 
@@ -456,7 +466,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    * @param factor the factor
    * @param panel the drawing panel on which these axes are drawn
    */
-  public void resizeFonts(double factor, DrawingPanel panel) {
+  @Override
+public void resizeFonts(double factor, DrawingPanel panel) {
     super.resizeFonts(factor, panel);
     if(xLine==null) {
       return;
@@ -1273,7 +1284,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *
    * @param  showGrid  The new drawMajorXGrid value
    */
-  public void setShowMajorXGrid(boolean showGrid) {
+  @Override
+public void setShowMajorXGrid(boolean showGrid) {
     drawMajorXGrid = showGrid;
     if(!showGrid) {
       drawMinorXGrid = showGrid;
@@ -1285,7 +1297,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *
    * @param  showGrid  The new drawMinorXGrid value
    */
-  public void setShowMinorXGrid(boolean showGrid) {
+  @Override
+public void setShowMinorXGrid(boolean showGrid) {
     drawMinorXGrid = showGrid;
   }
 
@@ -1295,7 +1308,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *
    * @param  showGrid  The new drawMajorYGrid value
    */
-  public void setShowMajorYGrid(boolean showGrid) {
+  @Override
+public void setShowMajorYGrid(boolean showGrid) {
     drawMajorYGrid = showGrid;
     if(!showGrid) {
       drawMinorYGrid = showGrid;
@@ -1307,19 +1321,24 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *
    * @param  showGrid  The new drawMinorYGrid value
    */
-  public void setShowMinorYGrid(boolean showGrid) {
+  @Override
+public void setShowMinorYGrid(boolean showGrid) {
     drawMinorYGrid = showGrid;
   }
 
-  public void setX(double x) {}
+  @Override
+public void setX(double x) {}
 
-  public void setY(double y) {}
+  @Override
+public void setY(double y) {}
 
-  public double getX() {
+  @Override
+public double getX() {
     return 0;
   }
 
-  public double getY() {
+  @Override
+public double getY() {
     return 0;
   }
 
@@ -1329,7 +1348,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    * @param panel DrawingPanel
    * @return Dimension
    */
-  public Dimension getInterior(DrawingPanel panel) {
+  @Override
+public Dimension getInterior(DrawingPanel panel) {
     if(panel.getDimensionSetter()==null) {
       adjustGutters = true;
     } else {

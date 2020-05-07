@@ -63,7 +63,8 @@ public class Circle implements Drawable {
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     int xpix = panel.xToPix(x)-pixRadius;
     int ypix = panel.yToPix(y)-pixRadius;
     g.setColor(color);
@@ -122,7 +123,8 @@ public class Circle implements Drawable {
    *
    * @return String
    */
-  public String toString() {
+  @Override
+public String toString() {
     String name = getClass().getName();
     name = name.substring(1+name.lastIndexOf("."))+'['; //$NON-NLS-1$
     name += "x="+x;                                     //$NON-NLS-1$

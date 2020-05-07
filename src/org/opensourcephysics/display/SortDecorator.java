@@ -52,7 +52,8 @@ public class SortDecorator implements TableModel, TableModelListener {
   	return -1;
   }
 
-  public Object getValueAt(int row, int column) {
+  @Override
+public Object getValueAt(int row, int column) {
   	if (column>=getColumnCount()) { return null; }
     if(indexes.length<=row) {
       allocate();
@@ -60,14 +61,16 @@ public class SortDecorator implements TableModel, TableModelListener {
     return realModel.getValueAt(indexes[row], column);
   }
 
-  public void setValueAt(Object aValue, int row, int column) {
+  @Override
+public void setValueAt(Object aValue, int row, int column) {
     if(indexes.length<=row) {
       allocate();
     }
     realModel.setValueAt(aValue, indexes[row], column);
   }
 
-  public void tableChanged(TableModelEvent e) {
+  @Override
+public void tableChanged(TableModelEvent e) {
     allocate();
   }
 
@@ -96,6 +99,7 @@ public class SortDecorator implements TableModel, TableModelListener {
 			    }
 				}
 			  Arrays.sort(sortArray, new Comparator<Double[]>() {
+					@Override
 					public int compare(Double[] a, Double[] b) {
 						if (a[0]==null || b[0]==null) {
 							return b[0]==a[0]? 0: b[0]==null? -1: 1;
@@ -176,34 +180,41 @@ public class SortDecorator implements TableModel, TableModelListener {
   	sortedColumn = -1;
   }
 
-  public int getRowCount() {
+  @Override
+public int getRowCount() {
     return realModel.getRowCount();
   }
 
-  public int getColumnCount() {
+  @Override
+public int getColumnCount() {
     return realModel.getColumnCount();
   }
 
-  public String getColumnName(int columnIndex) {
+  @Override
+public String getColumnName(int columnIndex) {
   	if (columnIndex>=getColumnCount()) { return "unknown"; } //$NON-NLS-1$
     return realModel.getColumnName(columnIndex);
   }
 
-  public Class<?> getColumnClass(int columnIndex) {
+  @Override
+public Class<?> getColumnClass(int columnIndex) {
   	if (columnIndex>=getColumnCount()) { return Object.class; }
     return realModel.getColumnClass(columnIndex);
   }
 
-  public boolean isCellEditable(int rowIndex, int columnIndex) {
+  @Override
+public boolean isCellEditable(int rowIndex, int columnIndex) {
   	if (columnIndex>=getColumnCount()) { return false; }
     return realModel.isCellEditable(rowIndex, columnIndex);
   }
 
-  public void addTableModelListener(TableModelListener l) {
+  @Override
+public void addTableModelListener(TableModelListener l) {
     realModel.addTableModelListener(l);
   }
 
-  public void removeTableModelListener(TableModelListener l) {
+  @Override
+public void removeTableModelListener(TableModelListener l) {
     realModel.removeTableModelListener(l);
   }
 

@@ -8,7 +8,6 @@
 package org.opensourcephysics.display.axes;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Shape;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.PlottingPanel;
 import org.opensourcephysics.display.TextLine;
@@ -55,7 +54,8 @@ public class PolarType2 extends AbstractPolarAxis implements PolarAxes {
    * @param  s the label
    * @param font_name an optional font name
    */
-  public void setXLabel(String s, String font_name) {}
+  @Override
+public void setXLabel(String s, String font_name) {}
 
   /**
    * Sets the y label of the axes.
@@ -65,14 +65,16 @@ public class PolarType2 extends AbstractPolarAxis implements PolarAxes {
    * @param  label the label
    * @param s an optional font name
    */
-  public void setYLabel(String s, String font_name) {}
+  @Override
+public void setYLabel(String s, String font_name) {}
 
   /**
    * Gets the x axis label.
    *
    * @return String
    */
-  public String getXLabel() {
+  @Override
+public String getXLabel() {
     return ""; //$NON-NLS-1$
   }
 
@@ -81,7 +83,8 @@ public class PolarType2 extends AbstractPolarAxis implements PolarAxes {
    *
    * @return String
    */
-  public String getYLabel() {
+  @Override
+public String getYLabel() {
     return ""; //$NON-NLS-1$
   }
 
@@ -102,29 +105,34 @@ public class PolarType2 extends AbstractPolarAxis implements PolarAxes {
   /**
    * Shows a grid line for every x axis major tickmark.
    */
-  public void setShowMajorXGrid(boolean showGrid) {}
+  @Override
+public void setShowMajorXGrid(boolean showGrid) {}
 
   /**
    * Shows a grid line for every x axis minor tickmark.
    */
-  public void setShowMinorXGrid(boolean showGrid) {}
+  @Override
+public void setShowMinorXGrid(boolean showGrid) {}
 
   /**
    * Shows a grid line for every y axis major tickmark.
    */
-  public void setShowMajorYGrid(boolean showGrid) {}
+  @Override
+public void setShowMajorYGrid(boolean showGrid) {}
 
   /**
    * Shows a grid line for every y axis minor tickmark.
    */
-  public void setShowMinorYGrid(boolean showGrid) {}
+  @Override
+public void setShowMinorYGrid(boolean showGrid) {}
 
   /**
  * Draws a representation of an object in a drawing panel.
  * @param panel
  * @param g
  */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     int gw = panel.getLeftGutter()+panel.getRightGutter();
     int gh = panel.getTopGutter()+panel.getLeftGutter();
     if(interiorColor!=null) {

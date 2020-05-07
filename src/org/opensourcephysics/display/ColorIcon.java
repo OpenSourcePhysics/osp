@@ -69,7 +69,8 @@ public class ColorIcon implements Icon {
    *
    * @return the icon width
    */
-  public int getIconWidth() {
+  @Override
+public int getIconWidth() {
     return w;
   }
 
@@ -78,7 +79,8 @@ public class ColorIcon implements Icon {
    *
    * @return the icon height
    */
-  public int getIconHeight() {
+  @Override
+public int getIconHeight() {
     return h;
   }
 
@@ -90,7 +92,8 @@ public class ColorIcon implements Icon {
    * @param x the x coordinate of the icon
    * @param y the y coordinate of the icon
    */
-  public void paintIcon(Component c, Graphics _g, int x, int y) {
+  @Override
+public void paintIcon(Component c, Graphics _g, int x, int y) {
     Graphics2D g = (Graphics2D) _g;
     Rectangle rect = new Rectangle(x, y, w, h);
     Paint gPaint = g.getPaint();

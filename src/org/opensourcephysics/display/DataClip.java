@@ -300,7 +300,8 @@ public class DataClip {
      * @param control the control to save to
      * @param obj the object to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       DataClip clip = (DataClip) obj;
       control.setValue("start", clip.getStartIndex()); //$NON-NLS-1$
       control.setValue("clip_length", clip.getClipLength()); //$NON-NLS-1$
@@ -314,7 +315,8 @@ public class DataClip {
      * @param control the XMLControl with the object data
      * @return the newly created object
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new DataClip();
     }
 
@@ -325,7 +327,8 @@ public class DataClip {
      * @param obj the object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
     	DataClip clip = (DataClip) obj;
     	clip.setDataLength(control.getInt("data_length")); //$NON-NLS-1$
     	clip.setStartIndex(control.getInt("start")); //$NON-NLS-1$

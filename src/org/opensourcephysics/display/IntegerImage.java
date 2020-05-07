@@ -244,6 +244,7 @@ public class IntegerImage implements Measurable {
 	 * @param g
 	 */
 
+	@Override
 	public void draw(DrawingPanel panel, Graphics g) {
 		if (!visible) {
 			return;
@@ -279,6 +280,7 @@ public class IntegerImage implements Measurable {
 			g2.setRenderingHints(hints); // restore the hints
 	}
 
+	@Override
 	public boolean isMeasured() {
 		if (image == null) {
 			return false;
@@ -286,18 +288,22 @@ public class IntegerImage implements Measurable {
 		return true;
 	}
 
+	@Override
 	public double getXMin() {
 		return xmin;
 	}
 
+	@Override
 	public double getXMax() {
 		return xmax;
 	}
 
+	@Override
 	public double getYMin() {
 		return ymin;
 	}
 
+	@Override
 	public double getYMax() {
 		return ymax;
 	}

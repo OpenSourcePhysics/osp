@@ -33,7 +33,8 @@ public class Trail extends AbstractTrail implements LogMeasurable {
    * @param x double
    * @param y double
    */
-  public synchronized void addPoint(double x, double y) {
+  @Override
+public synchronized void addPoint(double x, double y) {
     if(closed) {
       throw new IllegalStateException("Cannot add points to a closed trail."); //$NON-NLS-1$
     }
@@ -82,7 +83,8 @@ public class Trail extends AbstractTrail implements LogMeasurable {
    * Closes the path by connecting the first point to the last point.
    * Points cannot be added to a closed path;
    */
-  public void closeTrail() {
+  @Override
+public void closeTrail() {
     closed = true;
     generalPath.closePath();
   }
@@ -111,7 +113,8 @@ public class Trail extends AbstractTrail implements LogMeasurable {
   /**
    * Clears all points from the trail.
    */
-  public synchronized void clear() {
+  @Override
+public synchronized void clear() {
     closed = false;
     numpts = 0;
     xmax = xmaxLogscale = -Double.MAX_VALUE;
@@ -125,7 +128,8 @@ public class Trail extends AbstractTrail implements LogMeasurable {
    * Draws the trail on the panel.
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(numpts==0) {
       return;
     }
@@ -156,7 +160,8 @@ public class Trail extends AbstractTrail implements LogMeasurable {
    * A class to save and load Dataset data in an XMLControl.
    */
   private static class Loader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       Trail trail = (Trail) obj;
       control.setValue("connected", trail.connected);      //$NON-NLS-1$
       control.setValue("color", trail.color);              //$NON-NLS-1$
@@ -164,11 +169,13 @@ public class Trail extends AbstractTrail implements LogMeasurable {
       control.setValue("general path", trail.generalPath); //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new Trail();
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       Trail trail = (Trail) obj;
       trail.connected = control.getBoolean("connected");                   //$NON-NLS-1$
       trail.color = (Color) control.getObject("color");                    //$NON-NLS-1$

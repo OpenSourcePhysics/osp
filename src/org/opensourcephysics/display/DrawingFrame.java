@@ -120,7 +120,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     }
     // responds to data from the Data Tool
     reply = new Tool() {
-      public void send(Job job, Tool replyTo) throws RemoteException {
+      @Override
+	public void send(Job job, Tool replyTo) throws RemoteException {
         XMLControlElement control = new XMLControlElement();
         try {
           control.readXML(job.getXML());
@@ -147,7 +148,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
   /**
    * Renders the drawing panel if the frame is showing and not iconified.
    */
-  public void render() {
+  @Override
+public void render() {
     if(isIconified()||!isShowing()) {
       return;
     }
@@ -161,7 +163,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
   /**
    * Invalidates image buffers if a drawing panel buffered.
    */
-  public void invalidateImage() {
+  @Override
+public void invalidateImage() {
     if(drawingPanel!=null) {
       drawingPanel.invalidateImage();
     }
@@ -367,7 +370,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
   /**
    * Clears data and repaints the drawing panel within this frame.
    */
-  public void clearDataAndRepaint() {
+  @Override
+public void clearDataAndRepaint() {
     clearData();
     if(drawingPanel!=null)drawingPanel.repaint();
   }
@@ -558,7 +562,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    *
    * @param  g
    */
-  public void paint(Graphics g) {
+  @Override
+public void paint(Graphics g) {
     if(!OSPRuntime.appletMode) {
       super.paint(g);
       return;
@@ -644,7 +649,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
    * @param clipboard Clipboard
    * @param contents Transferable
    */
-  public void lostOwnership(Clipboard clipboard, Transferable contents) {}
+  @Override
+public void lostOwnership(Clipboard clipboard, Transferable contents) {}
 
   /**
    * Enables the copy edit menu item.
@@ -654,7 +660,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     copyItem.setEnabled(enable);
   }
 
-  protected void refreshGUI() {
+  @Override
+protected void refreshGUI() {
     createMenuBar();
     addMenuItems();
     pack();
@@ -678,7 +685,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 	  	printMenu.add(printItem);
 	    printItem.setAccelerator(KeyStroke.getKeyStroke('P', MENU_SHORTCUT_KEY_MASK));
 	    printItem.addActionListener(new ActionListener() {
-	      public void actionPerformed(ActionEvent e) {
+	      @Override
+		public void actionPerformed(ActionEvent e) {
 	        PrintUtils.printComponent(drawingPanel);
 	      }
 	
@@ -686,7 +694,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 	    JMenuItem printFrameItem = new JMenuItem(DisplayRes.getString("DrawingFrame.PrintFrame_menu_item")); //$NON-NLS-1$
 	    printMenu.add(printFrameItem);
 	    printFrameItem.addActionListener(new ActionListener() {
-	      public void actionPerformed(ActionEvent e) {
+	      @Override
+		public void actionPerformed(ActionEvent e) {
 	        PrintUtils.printComponent(DrawingFrame.this);
 	      }
 	
@@ -695,7 +704,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     JMenuItem saveXMLItem = new JMenuItem(DisplayRes.getString("DrawingFrame.SaveXML_menu_item")); //$NON-NLS-1$
     saveXMLItem.setAccelerator(KeyStroke.getKeyStroke('S', MENU_SHORTCUT_KEY_MASK));
     saveXMLItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         saveXML();
       }
 
@@ -727,7 +737,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     }
     final Class<?> tool = exportTool;
     exportItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         try {
           Method m = tool.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
           Tool tool = (Tool) m.invoke(null, (Object[]) null);
@@ -746,19 +757,22 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     saveImage.add(jpegMenuItem);
     saveImage.add(pngMenuItem);
     epsMenuItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         GUIUtils.saveImage(drawingPanel, "eps", DrawingFrame.this); //$NON-NLS-1$
       }
 
     });
     jpegMenuItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         GUIUtils.saveImage(drawingPanel, "jpeg", DrawingFrame.this); //$NON-NLS-1$
       }
 
     });
     pngMenuItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         GUIUtils.saveImage(drawingPanel, "png", DrawingFrame.this); //$NON-NLS-1$
       }
 
@@ -766,7 +780,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     JMenuItem inspectItem = new JMenuItem(DisplayRes.getString("DrawingFrame.InspectMenuItem")); //$NON-NLS-1$
     inspectItem.setAccelerator(KeyStroke.getKeyStroke('I', MENU_SHORTCUT_KEY_MASK));
     inspectItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         inspectXML(); // cannot use a static method here because of run-time binding
       }
 
@@ -786,7 +801,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     menuBar.add(editMenu);
     copyItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Copy_menu_item")); //$NON-NLS-1$
     copyItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         XMLControlElement control = new XMLControlElement(DrawingFrame.this);
         control.saveObject(null);
         copyAction(control);
@@ -796,7 +812,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     editMenu.add(copyItem);
     pasteItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Paste_menu_item")); //$NON-NLS-1$
     pasteItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         try {
           Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
           Transferable data = clipboard.getContents(null);
@@ -815,7 +832,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     editMenu.add(pasteItem);
     replaceItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Replace_menu_item")); //$NON-NLS-1$
     replaceItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         try {
           Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
           Transferable data = clipboard.getContents(null);
@@ -839,7 +857,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     menuBar.add(helpMenu);
     JMenuItem aboutItem = new JMenuItem(DisplayRes.getString("DrawingFrame.AboutOSP_menu_item")); //$NON-NLS-1$
     aboutItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         OSPRuntime.showAboutDialog(DrawingFrame.this);
       }
 
@@ -847,6 +866,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     helpMenu.add(aboutItem);
 		JMenuItem sysItem = new JMenuItem(ControlsRes.getString("ControlFrame.System")); //$NON-NLS-1$
 		sysItem.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				ControlUtils.showSystemProperties(true);
 			}
@@ -856,6 +876,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 		helpMenu.addSeparator();
 		JMenuItem logItem = new JMenuItem(ControlsRes.getString("ControlFrame.Message_Log")); //$NON-NLS-1$
 		logItem.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				OSPLog.showLog();
 			}
@@ -867,7 +888,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
   /**
    * Adds a Display menu to the menu bar.
    */
-  protected JMenu loadDisplayMenu() {
+  @Override
+protected JMenu loadDisplayMenu() {
     JMenuBar menuBar = getJMenuBar();
     if(menuBar==null) {
       return null;
@@ -878,7 +900,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     displayMenu.add(fontMenu);
     JMenuItem sizeUpItem = new JMenuItem(DisplayRes.getString("DrawingFrame.IncreaseFontSize_menu_item")); //$NON-NLS-1$
     sizeUpItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         FontSizer.levelUp();
       }
 
@@ -886,14 +909,16 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     fontMenu.add(sizeUpItem);
     final JMenuItem sizeDownItem = new JMenuItem(DisplayRes.getString("DrawingFrame.DecreaseFontSize_menu_item")); //$NON-NLS-1$
     sizeDownItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         FontSizer.levelDown();
       }
 
     });
     fontMenu.add(sizeDownItem);
     fontMenu.addChangeListener(new ChangeListener() {
-      public void stateChanged(ChangeEvent e) {
+      @Override
+	public void stateChanged(ChangeEvent e) {
         sizeDownItem.setEnabled(FontSizer.getLevel()>0);
       }
 
@@ -902,7 +927,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     if(!JSUtil.isJS) displayMenu.add(aliasMenu);
     final JCheckBoxMenuItem textAliasItem = new JCheckBoxMenuItem(DisplayRes.getString("DrawingFrame.Text_checkbox_label"), false); //$NON-NLS-1$
     textAliasItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         drawingPanel.antialiasTextOn = textAliasItem.isSelected();
         drawingPanel.repaint();
       }
@@ -911,14 +937,16 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     aliasMenu.add(textAliasItem);
     final JCheckBoxMenuItem shapeAliasItem = new JCheckBoxMenuItem(DisplayRes.getString("DrawingFrame.Drawing_textbox_label"), false); //$NON-NLS-1$
     shapeAliasItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         drawingPanel.antialiasShapeOn = shapeAliasItem.isSelected();
         drawingPanel.repaint();
       }
 
     });
     aliasMenu.addChangeListener(new ChangeListener() {
-      public void stateChanged(ChangeEvent e) {
+      @Override
+	public void stateChanged(ChangeEvent e) {
         textAliasItem.setSelected(drawingPanel.antialiasTextOn);
         shapeAliasItem.setSelected(drawingPanel.antialiasShapeOn);
       }
@@ -932,7 +960,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
   /**
    * Adds a Tools menu to the menu bar.
    */
-  protected JMenu loadToolsMenu() {
+  @Override
+protected JMenu loadToolsMenu() {
 	if(org.opensourcephysics.js.JSUtil.isJS) {  // external tools not supported in JavaScript.
 		  //return null;
 	}
@@ -958,7 +987,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     }
     final Class<?> finalDatasetToolClass = datasetToolClass; // class must be final for action listener
     datasetItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         try {
           Method m = finalDatasetToolClass.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
           Tool tool = (Tool) m.invoke(null, (Object[]) null);
@@ -986,7 +1016,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
     }
     final Class<?> finalFourierToolClass = fourierToolClass; // class must be final for action listener
     fourierToolItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         try {
           Method m = finalFourierToolClass.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
           Tool tool = (Tool) m.invoke(null, (Object[]) null);
@@ -1005,7 +1036,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
       toolsMenu.add(snapshotItem);
     }
     if(!JSUtil.isJS) snapshotItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         SnapshotTool tool = SnapshotTool.getTool();
         if(drawingPanel!=null) {
           tool.saveImage(null, drawingPanel);
@@ -1149,7 +1181,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
      * @param control XMLControl
      * @return Object
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       DrawingFrame frame = new DrawingFrame();
       frame.setTitle(control.getString("title"));                                    //$NON-NLS-1$
       frame.setLocation(control.getInt("location x"), control.getInt("location y")); //$NON-NLS-1$ //$NON-NLS-2$
@@ -1166,7 +1199,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
      * @param control XMLControl
      * @param obj Object
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       DrawingFrame frame = (DrawingFrame) obj;
       control.setValue("title", frame.getTitle());                //$NON-NLS-1$
       control.setValue("showing", frame.isShowing());             //$NON-NLS-1$
@@ -1184,7 +1218,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
      * @param obj Object
      * @return Object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       DrawingFrame frame = ((DrawingFrame) obj);
       DrawingPanel panel = frame.getDrawingPanel();
       panel.clear();

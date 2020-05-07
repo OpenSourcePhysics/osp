@@ -57,7 +57,8 @@ public class AutoScaleInspector extends JDialog {
   private void createGUI() {
     xAutoscaleCheckBox = new JCheckBox(DialogsRes.AUTOSCALE_AUTO+" x"); //$NON-NLS-1$
     xAutoscaleCheckBox.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         plotPanel.setAutoscaleX(xAutoscaleCheckBox.isSelected());
         plotPanel.scale();
         updateDisplay();
@@ -67,7 +68,8 @@ public class AutoScaleInspector extends JDialog {
     });
     yAutoscaleCheckBox = new JCheckBox(DialogsRes.AUTOSCALE_AUTO+" y"); //$NON-NLS-1$
     yAutoscaleCheckBox.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         plotPanel.setAutoscaleY(yAutoscaleCheckBox.isSelected());
         plotPanel.scale();
         updateDisplay();
@@ -103,7 +105,8 @@ public class AutoScaleInspector extends JDialog {
     okButton = new JButton(DialogsRes.AUTOSCALE_OK);
     okButton.setForeground(new Color(0, 0, 102));
     okButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         setVisible(false);
       }
 

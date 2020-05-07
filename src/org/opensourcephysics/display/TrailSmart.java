@@ -7,7 +7,6 @@
 
 package org.opensourcephysics.display;
 import java.awt.Graphics2D;
-import java.awt.Shape;
 
 /**
  * TrailSmart adds points to a Bezier trail only if the new point deviates from a straight line.
@@ -34,7 +33,8 @@ public class TrailSmart extends TrailBezier {
    * @param x double
    * @param y double
    */
-  public synchronized void addPoint(double x, double y) {
+  @Override
+public synchronized void addPoint(double x, double y) {
     double dx2 = x-endPts[2];
     double dy2 = y-endPts[3];
     double ds2 = Math.sqrt(dy2*dy2+dx2*dx2);
@@ -75,7 +75,8 @@ public class TrailSmart extends TrailBezier {
    * Gets the minimum x value in the trail.
    * @return double
    */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return Math.min(x2, xmin);
   }
 
@@ -83,7 +84,8 @@ public class TrailSmart extends TrailBezier {
    * Gets the maximum x value in the trail.
    * @return double
    */
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return Math.max(x2, xmax);
   }
 
@@ -91,7 +93,8 @@ public class TrailSmart extends TrailBezier {
    * Gets the minimum y value in the trail.
    * @return double
    */
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return Math.min(y2, ymin);
   }
 
@@ -99,7 +102,8 @@ public class TrailSmart extends TrailBezier {
    * Gets the maximum y value in the trail.
    * @return double
    */
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return Math.max(y2, ymax);
   }
 

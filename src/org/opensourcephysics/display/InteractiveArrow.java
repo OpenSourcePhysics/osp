@@ -17,7 +17,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import java.awt.geom.Point2D.Double;
 import java.awt.geom.Rectangle2D;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
@@ -63,7 +62,8 @@ public class InteractiveArrow extends BoundedShape {
    * @param xoffset double
    * @param yoffset double
    */
-  public void setOffset(double xoffset, double yoffset) {
+  @Override
+public void setOffset(double xoffset, double yoffset) {
     return;
   }
 
@@ -75,7 +75,8 @@ public class InteractiveArrow extends BoundedShape {
    * @param ypix int
    * @return boolean
    */
-  public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
     hotspot = NONE;
     if(!enabled) {
       return false;
@@ -92,7 +93,8 @@ public class InteractiveArrow extends BoundedShape {
    *
    * @param theta
    */
-  public void setTheta(double theta) {
+  @Override
+public void setTheta(double theta) {
     double len = Math.sqrt(width*width+height*height);
     double dx = len*Math.cos(theta);
     double dy = len*Math.sin(theta);
@@ -110,7 +112,8 @@ public class InteractiveArrow extends BoundedShape {
    * @param x
    * @param y
    */
-  void setHotSpotXY(double x, double y) {
+  @Override
+void setHotSpotXY(double x, double y) {
     if(hideBounds) {
       setXY(x, y);
       return;
@@ -151,6 +154,7 @@ public class InteractiveArrow extends BoundedShape {
 	 * @param panel the world in which the arrow is viewed
 	 * @param g     the graphics context upon which to draw
 	 */
+	@Override
 	public void draw(DrawingPanel panel, Graphics g) {
 		Graphics2D g2 = (Graphics2D) g;
 		getPixelPt(panel);
@@ -203,7 +207,8 @@ public class InteractiveArrow extends BoundedShape {
    *
    * @return Cursor
    */
-  public java.awt.Cursor getPreferredCursor() {
+  @Override
+public java.awt.Cursor getPreferredCursor() {
     if(xyDrag&&(hotspot==CENTER)) {
       return java.awt.Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
     } else if(rotateDrag&&(hotspot==HEAD)) {
@@ -238,7 +243,8 @@ public class InteractiveArrow extends BoundedShape {
    * A class to save and load InteractiveArrow in an XMLControl.
    */
   protected static class InteractiveArrowLoader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       InteractiveArrow arrow = (InteractiveArrow) obj;
       control.setValue("x", arrow.x);                      //$NON-NLS-1$
       control.setValue("y", arrow.y);                      //$NON-NLS-1$
@@ -249,11 +255,13 @@ public class InteractiveArrow extends BoundedShape {
       control.setValue("color", arrow.color);              //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new InteractiveArrow(0, 0, 0, 0);
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       InteractiveArrow arrow = (InteractiveArrow) obj;
       double x = control.getDouble("x");      //$NON-NLS-1$
       double y = control.getDouble("y");      //$NON-NLS-1$

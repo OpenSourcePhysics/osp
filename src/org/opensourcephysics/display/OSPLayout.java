@@ -101,7 +101,8 @@ public class OSPLayout extends BorderLayout {
     super(hgap, vgap);
   }
 
-  public void addLayoutComponent(Component comp, Object constraints) {
+  @Override
+public void addLayoutComponent(Component comp, Object constraints) {
     if(!list.contains(comp)) {
       list.add(comp);
       components = list.toArray(new Component[0]);
@@ -137,7 +138,8 @@ public class OSPLayout extends BorderLayout {
    * @see     java.awt.Container#remove(java.awt.Component)
    * @see     java.awt.Container#removeAll()
    */
-  public void removeLayoutComponent(Component comp) {
+  @Override
+public void removeLayoutComponent(Component comp) {
     if(list.contains(comp)) {
       list.remove(comp);
       components = list.toArray(new Component[0]);
@@ -163,7 +165,8 @@ public class OSPLayout extends BorderLayout {
    * Lays out the container argument using this layout.
    * @param target Container
    */
-  public void layoutContainer(Container target) {
+  @Override
+public void layoutContainer(Container target) {
     super.layoutContainer(target);
     doMyLayout(target);
   }

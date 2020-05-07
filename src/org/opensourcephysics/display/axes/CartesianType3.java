@@ -62,7 +62,8 @@ public class CartesianType3 extends AbstractAxes implements CartesianAxes, Inter
    * @param s the title
    * @param font_name an optional font name
    */
-  public void setXLabel(String s, String font_name) {
+  @Override
+public void setXLabel(String s, String font_name) {
     xaxis.setTitle(s, font_name);
   }
 
@@ -74,7 +75,8 @@ public class CartesianType3 extends AbstractAxes implements CartesianAxes, Inter
    * @param s the title
    * @param font_name an optional font name
    */
-  public void setYLabel(String s, String font_name) {
+  @Override
+public void setYLabel(String s, String font_name) {
     yaxis.setTitle(s, font_name);
   }
 
@@ -86,7 +88,8 @@ public class CartesianType3 extends AbstractAxes implements CartesianAxes, Inter
    * @param s the title
    * @param font_name an optional font name
    */
-  public void setTitle(String s, String font_name) {
+  @Override
+public void setTitle(String s, String font_name) {
     titleLine.setText(s);
     if((font_name==null)||font_name.equals("")) { //$NON-NLS-1$
       return;
@@ -99,7 +102,8 @@ public class CartesianType3 extends AbstractAxes implements CartesianAxes, Inter
    *
    * @return String
    */
-  public String getXLabel() {
+  @Override
+public String getXLabel() {
     return xaxis.axisLabel.getText();
   }
 
@@ -108,7 +112,8 @@ public class CartesianType3 extends AbstractAxes implements CartesianAxes, Inter
    *
    * @return String
    */
-  public String getYLabel() {
+  @Override
+public String getYLabel() {
     return yaxis.axisLabel.getText();
   }
 
@@ -117,7 +122,8 @@ public class CartesianType3 extends AbstractAxes implements CartesianAxes, Inter
    *
    * @return String
    */
-  public String getTitle() {
+  @Override
+public String getTitle() {
     return titleLine.getText();
   }
 
@@ -126,7 +132,8 @@ public class CartesianType3 extends AbstractAxes implements CartesianAxes, Inter
    *
    * @param isLog true for log scale; false otherwise
    */
-  public void setXLog(boolean isLog) {
+  @Override
+public void setXLog(boolean isLog) {
     xlog = isLog; // Added by Paco
     if(isLog) {
       xaxis.setAxisType(XYAxis.LOG10);
@@ -140,7 +147,8 @@ public class CartesianType3 extends AbstractAxes implements CartesianAxes, Inter
    *
    * @param isLog true for log scale; false otherwise
    */
-  public void setYLog(boolean isLog) {
+  @Override
+public void setYLog(boolean isLog) {
     ylog = isLog; // Added by Paco
     if(isLog) {
       yaxis.setAxisType(XYAxis.LOG10);
@@ -149,11 +157,13 @@ public class CartesianType3 extends AbstractAxes implements CartesianAxes, Inter
     }
   }
 
-  public boolean isXLog() {
+  @Override
+public boolean isXLog() {
     return xlog;
   }
 
-  public boolean isYLog() {
+  @Override
+public boolean isYLog() {
     return ylog;
   }
 
@@ -163,7 +173,8 @@ public class CartesianType3 extends AbstractAxes implements CartesianAxes, Inter
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible) {
       return;
     }
@@ -190,14 +201,16 @@ public class CartesianType3 extends AbstractAxes implements CartesianAxes, Inter
   /**
    * Sets the interior background color.
    */
-  public void setInteriorBackground(Color color) {
+  @Override
+public void setInteriorBackground(Color color) {
     interiorColor = color;
   }
 
   /**
    * Shows a grid line for every x axis major tickmark.
    */
-  public void setShowMajorXGrid(boolean showGrid) {
+  @Override
+public void setShowMajorXGrid(boolean showGrid) {
     xaxis.setShowMajorGrid(showGrid);
     if(!showGrid) {
       setShowMinorXGrid(showGrid);
@@ -207,14 +220,16 @@ public class CartesianType3 extends AbstractAxes implements CartesianAxes, Inter
   /**
    * Shows a grid line for every x axis minor tickmark.
    */
-  public void setShowMinorXGrid(boolean showGrid) {
+  @Override
+public void setShowMinorXGrid(boolean showGrid) {
     // minor grids not yet implemented
   }
 
   /**
    * Shows a grid line for every y axis major tickmark.
    */
-  public void setShowMajorYGrid(boolean showGrid) {
+  @Override
+public void setShowMajorYGrid(boolean showGrid) {
     yaxis.setShowMajorGrid(showGrid);
     if(!showGrid) {
       setShowMinorYGrid(showGrid);
@@ -224,7 +239,8 @@ public class CartesianType3 extends AbstractAxes implements CartesianAxes, Inter
   /**
    * Shows a grid line for every y axis minor tickmark.
    */
-  public void setShowMinorYGrid(boolean showGrid) {
+  @Override
+public void setShowMinorYGrid(boolean showGrid) {
     // minor grids not yet implemented
   }
 
@@ -233,32 +249,39 @@ public class CartesianType3 extends AbstractAxes implements CartesianAxes, Inter
     yaxis.setLocation((panel.getXMax()+panel.getXMin())/2);
   }
 
-  public void setEnabled(boolean _enabled) {
+  @Override
+public void setEnabled(boolean _enabled) {
     enabled = _enabled;
   }
 
-  public boolean isEnabled() {
+  @Override
+public boolean isEnabled() {
     return enabled;
   }
 
-  public void setXY(double x, double y) {
+  @Override
+public void setXY(double x, double y) {
     xaxis.setLocation(y); // Added by Paco
     yaxis.setLocation(x); // Added by Paco
   }
 
-  public void setX(double x) {
+  @Override
+public void setX(double x) {
     yaxis.setLocation(x); // Added by Paco
   }
 
-  public void setY(double y) {
+  @Override
+public void setY(double y) {
     xaxis.setLocation(y); // Added by Paco
   }
 
-  public double getX() {
+  @Override
+public double getX() {
     return 0;
   }
 
-  public double getY() {
+  @Override
+public double getY() {
     return 0;
   }
 
@@ -266,7 +289,8 @@ public class CartesianType3 extends AbstractAxes implements CartesianAxes, Inter
    * Gets the minimum x needed to draw this object.
    * @return minimum
    */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return 0;
   }
 
@@ -274,7 +298,8 @@ public class CartesianType3 extends AbstractAxes implements CartesianAxes, Inter
    * Gets the maximum x needed to draw this object.
    * @return maximum
    */
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return 0;
   }
 
@@ -282,7 +307,8 @@ public class CartesianType3 extends AbstractAxes implements CartesianAxes, Inter
    * Gets the minimum y needed to draw this object.
    * @return minimum
    */
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return 0;
   }
 
@@ -290,7 +316,8 @@ public class CartesianType3 extends AbstractAxes implements CartesianAxes, Inter
    * Gets the maximum y needed to draw this object.
    * @return minimum
    */
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return 0;
   }
 
@@ -300,11 +327,13 @@ public class CartesianType3 extends AbstractAxes implements CartesianAxes, Inter
    *
    * @return true if min/max values are valid
    */
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return false;
   } // the axes should not effect the scale
 
-  public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
     if(!visible) {
       return null;
     }

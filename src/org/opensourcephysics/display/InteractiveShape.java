@@ -219,6 +219,7 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
 	 * @param panel the drawing panel
 	 * @param g     the graphics context
 	 */
+	@Override
 	public void draw(DrawingPanel panel, Graphics g) {
 		Graphics2D g2 = ((Graphics2D) g);
 		Shape temp;
@@ -285,7 +286,8 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
    * @param ypix int
    * @return boolean
    */
-  public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
     return enabled && shape != null && shape.contains(panel.pixToX(xpix), panel.pixToY(ypix));
   }
 
@@ -430,7 +432,8 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
    * @param _x
    * @param _y
    */
-  public void setXY(double _x, double _y) {
+  @Override
+public void setXY(double _x, double _y) {
 	  if (_x == x && _y == y)
 		  return;
     shape = getTranslateInstance(_x-x, _y-y).createTransformedShape(shape);
@@ -443,7 +446,8 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
    *
    * @param _x
    */
-  public void setX(double _x) {
+  @Override
+public void setX(double _x) {
 	  if (x == _x)
 		  return;
     shape = getTranslateInstance(_x-x, 0).createTransformedShape(shape);
@@ -455,7 +459,8 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
    *
    * @param _y
    */
-  public void setY(double _y) {
+  @Override
+public void setY(double _y) {
 	  if (_y == y)
 		  return;
     shape = getTranslateInstance(0, _y-y).createTransformedShape(shape);
@@ -466,7 +471,8 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
    * Gets a description of this object.
    * @return String
    */
-  public String toString() {
+  @Override
+public String toString() {
     return "InteractiveShape:"+"\n \t shape="+shapeClass+"\n \t x="+x+"\n \t y="+y+"\n \t width="+width+"\n \t height="+height+"\n \t theta="+theta; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
   }
 
@@ -484,7 +490,8 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
    *
    * @return minimum
    */
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return enableMeasure;
   }
 
@@ -493,7 +500,8 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
    *
    * @return minimum
    */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     if(pixelSized) {
       return x-width/toPixels.getScaleX()/2;
     }
@@ -505,7 +513,8 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
    *
    * @return maximum
    */
-  public double getXMax() {
+  @Override
+public double getXMax() {
     if(pixelSized) {
       return x+width/toPixels.getScaleX()/2;
     }
@@ -517,7 +526,8 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
    *
    * @return minimum
    */
-  public double getYMin() {
+  @Override
+public double getYMin() {
     if(pixelSized) {
       return y-height/toPixels.getScaleY()/2;
     }
@@ -529,7 +539,8 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
    *
    * @return maximum
    */
-  public double getYMax() {
+  @Override
+public double getYMax() {
     if(pixelSized) {
       return y+height/toPixels.getScaleY()/2;
     }
@@ -548,7 +559,8 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
   * A class to save and load InteractiveShape in an XMLControl.
   */
   protected static class InteractiveShapeLoader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       InteractiveShape interactiveShape = (InteractiveShape) obj;
       control.setValue("geometry", interactiveShape.shapeClass);      //$NON-NLS-1$
       control.setValue("x", interactiveShape.x);                      //$NON-NLS-1$
@@ -566,7 +578,8 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
       control.setValue("general path", shape); //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new InteractiveShape(new Rectangle2D.Double(0, 0, 0, 0)); // default shape is a rectangle for now
     }
 
@@ -580,7 +593,8 @@ public class InteractiveShape extends AbstractInteractive implements Measurable 
       }
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       InteractiveShape interactiveShape = (InteractiveShape) obj;
       String type = control.getString("geometry");                                                 //$NON-NLS-1$
       double x = control.getDouble("x");                                                           //$NON-NLS-1$

@@ -29,7 +29,8 @@ public class DataPanel extends JPanel {
 
   
   
-  public void paintComponent(Graphics g) {
+  @Override
+public void paintComponent(Graphics g) {
 	  super.paintComponent(g);
   }
   /**
@@ -38,7 +39,8 @@ public class DataPanel extends JPanel {
    * @param font the desired <code>Font</code> for this component
    * @see java.awt.Component#getFont
    */
-  public void setFont(Font font){
+  @Override
+public void setFont(Font font){
 	  super.setFont(font);
 	  if(table!=null)table.setFont(font);
   }
@@ -51,7 +53,8 @@ public class DataPanel extends JPanel {
    * @param fg  the desired foreground <code>Color</code> 
    * @see java.awt.Component#getForeground
    */
-  public void setForeground(Color color){
+  @Override
+public void setForeground(Color color){
 	  super.setForeground(color);
 	  if(table!=null)table.setForeground(color);
   }
@@ -316,7 +319,8 @@ public class DataPanel extends JPanel {
    * @param vis  if <code>true</code>, shows this component;
    * otherwise, hides this component
    */
-  public void setVisible(boolean vis) {
+  @Override
+public void setVisible(boolean vis) {
     if(vis) {
       table.refreshTable(" vis " + vis); // make sure the table shows the current values
     }

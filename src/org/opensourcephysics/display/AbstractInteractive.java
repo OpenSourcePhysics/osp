@@ -27,7 +27,8 @@ public abstract class AbstractInteractive implements Interactive {
    * @param panel the drawing panel
    * @param g  the graphics context
    */
-  public abstract void draw(DrawingPanel panel, Graphics g);
+  @Override
+public abstract void draw(DrawingPanel panel, Graphics g);
 
   /**
    * Checks to see if this object is enabled and if the pixel coordinates are inside the drawable.
@@ -43,11 +44,13 @@ public abstract class AbstractInteractive implements Interactive {
    * Sets the enabled flag.
    * @param _enabled
    */
-  public void setEnabled(boolean _enabled) {
+  @Override
+public void setEnabled(boolean _enabled) {
     enabled = _enabled;
   }
 
-  public boolean isEnabled() {
+  @Override
+public boolean isEnabled() {
     return enabled;
   }
 
@@ -56,7 +59,8 @@ public abstract class AbstractInteractive implements Interactive {
    * @param _x
    * @param _y
    */
-  public void setXY(double _x, double _y) {
+  @Override
+public void setXY(double _x, double _y) {
     x = _x;
     y = _y;
   }
@@ -69,30 +73,36 @@ public abstract class AbstractInteractive implements Interactive {
    * @param ypix int
    * @return Interactive
    */
-  public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
     if(isInside(panel, xpix, ypix)&&enabled) {
       return this;
     }
     return null;
   }
 
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return false;
   }
 
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return x;
   }
 
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return x;
   }
 
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return y;
   }
 
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return y;
   }
 
@@ -101,7 +111,8 @@ public abstract class AbstractInteractive implements Interactive {
    *
    * @return double x
    */
-  public double getX() {
+  @Override
+public double getX() {
     return x;
   }
 
@@ -110,7 +121,8 @@ public abstract class AbstractInteractive implements Interactive {
    *
    * @param _x
    */
-  public void setX(double _x) {
+  @Override
+public void setX(double _x) {
     x = _x;
   }
 
@@ -119,7 +131,8 @@ public abstract class AbstractInteractive implements Interactive {
    *
    * @return double y
    */
-  public double getY() {
+  @Override
+public double getY() {
     return y;
   }
 
@@ -128,7 +141,8 @@ public abstract class AbstractInteractive implements Interactive {
    *
    * @param _y
    */
-  public void setY(double _y) {
+  @Override
+public void setY(double _y) {
     y = _y;
   }
 

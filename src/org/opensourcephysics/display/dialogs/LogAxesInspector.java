@@ -57,7 +57,8 @@ public class LogAxesInspector extends JDialog {
   private void createGUI() {
     logXCheckBox = new JCheckBox(DialogsRes.LOG_X);
     logXCheckBox.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         plotPanel.setLogScaleX(logXCheckBox.isSelected());
         plotPanel.scale();
         updateDisplay();
@@ -67,7 +68,8 @@ public class LogAxesInspector extends JDialog {
     });
     logYCheckBox = new JCheckBox(DialogsRes.LOG_Y);
     logYCheckBox.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         plotPanel.setLogScaleY(logYCheckBox.isSelected());
         plotPanel.scale();
         updateDisplay();
@@ -103,7 +105,8 @@ public class LogAxesInspector extends JDialog {
     okButton = new JButton(DialogsRes.LOG_OK);
     okButton.setForeground(new Color(0, 0, 102));
     okButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         setVisible(false);
       }
 

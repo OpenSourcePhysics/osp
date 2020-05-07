@@ -10,7 +10,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.Shape;
 
 /**
  * A text line that is offset relative to a drawing panel's display area.
@@ -72,7 +71,8 @@ public class TitleText extends DrawableTextLine {
  *
  * @param font Font
  */
-  public void setFont(Font font) {
+  @Override
+public void setFont(Font font) {
     super.setFont(font);
     dirty = true;
   }
@@ -82,7 +82,8 @@ public class TitleText extends DrawableTextLine {
    *
    * @param text String
    */
-  public void setText(String text) {
+  @Override
+public void setText(String text) {
     super.setText(text);
     dirty = true;
   }
@@ -93,7 +94,8 @@ public class TitleText extends DrawableTextLine {
  * @param panel DrawingPanel
  * @param g Graphics
  */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(dirty) {
       parseText(g);
       dirty = false;

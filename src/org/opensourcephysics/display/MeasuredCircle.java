@@ -41,7 +41,8 @@ public class MeasuredCircle extends Circle implements Measurable {
    *
    * @return minimum
    */
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return enableMeasure;
   }
 
@@ -50,7 +51,8 @@ public class MeasuredCircle extends Circle implements Measurable {
    *
    * @return minimum
    */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return x;
   }
 
@@ -59,7 +61,8 @@ public class MeasuredCircle extends Circle implements Measurable {
    *
    * @return maximum
    */
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return x;
   }
 
@@ -68,7 +71,8 @@ public class MeasuredCircle extends Circle implements Measurable {
    *
    * @return minimum
    */
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return y;
   }
 
@@ -77,7 +81,8 @@ public class MeasuredCircle extends Circle implements Measurable {
    *
    * @return maximum
    */
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return y;
   }
 

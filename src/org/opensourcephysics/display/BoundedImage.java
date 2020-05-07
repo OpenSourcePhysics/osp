@@ -49,7 +49,8 @@ public class BoundedImage extends BoundedShape implements ImageObserver {
    * @param panel  the world in which the arrow is viewed
    * @param g  the graphics context upon which to draw
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
 	getPixelPt(panel);
     Graphics2D g2 = (Graphics2D) g;
     g2.translate(pixelPt.x, pixelPt.y);
@@ -104,7 +105,8 @@ public class BoundedImage extends BoundedShape implements ImageObserver {
     g.setColor(Color.BLACK);
   }
 
-  public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
+  @Override
+public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
     if((infoflags&ImageObserver.WIDTH)==1) {
       this.width = width;
     }

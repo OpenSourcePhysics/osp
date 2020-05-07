@@ -77,7 +77,8 @@ public class BoundedTextLine extends BoundedImage {
    * @param panel  the world in which the arrow is viewed
    * @param g  the graphics context upon which to draw
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     checkImageSize(panel, g);
     Graphics ig = image.getGraphics();
     textLine.setColor(color);

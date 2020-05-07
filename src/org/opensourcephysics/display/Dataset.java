@@ -40,6 +40,7 @@ import org.opensourcephysics.controls.XMLLoader;
  * @created    February 13, 2002
  * @version    1.0
  */
+@SuppressWarnings("serial")
 public class Dataset extends AbstractTableModel implements Measurable, LogMeasurable, Data {
   /** Field datasetID: an integer ID that identifies this object */
   protected int datasetID = hashCode();
@@ -217,7 +218,8 @@ private Shape myShape;
    *
    * @param id the ID number
    */
-  public void setID(int id) {
+  @Override
+public void setID(int id) {
     datasetID = id;
   }
 
@@ -226,7 +228,8 @@ private Shape myShape;
    *
    * @return the ID number
    */
-  public int getID() {
+  @Override
+public int getID() {
     return datasetID;
   }
 
@@ -324,7 +327,8 @@ private Shape myShape;
    * Fill colors for Data interface.
    * @return color array
    */
-  public java.awt.Color[] getFillColors() {
+  @Override
+public java.awt.Color[] getFillColors() {
     return new Color[] {Color.BLACK, fillColor};
   }
 
@@ -350,7 +354,8 @@ private Shape myShape;
    * Line colors for Data interface.
    * @return color array
    */
-  public java.awt.Color[] getLineColors() {
+  @Override
+public java.awt.Color[] getLineColors() {
     return new Color[] {Color.BLACK, lineColor};
   }
 
@@ -514,7 +519,8 @@ private Shape myShape;
    *
    * @return String
    */
-  public String getName() {
+  @Override
+public String getName() {
     return name;
   }
 
@@ -523,7 +529,8 @@ private Shape myShape;
    * This method is used by Data displaying tools to create as many pages as needed.
    * @return a list of Data objects, or null if this object contains data
    */
-  public java.util.List<Data> getDataList() {
+  @Override
+public java.util.List<Data> getDataList() {
     return null;
   }
 
@@ -531,7 +538,8 @@ private Shape myShape;
    * The column names to be used in the data tool
    * @return array of names
    */
-  public String[] getColumnNames() {
+  @Override
+public String[] getColumnNames() {
     return new String[] {xColumnName, yColumnName};
   }
 
@@ -542,7 +550,8 @@ private Shape myShape;
    * @return    <code>true<\code> if measure is valid
    *
    */
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     if(visible) {
       return ymin<Double.MAX_VALUE; // changed by D.Brown
       // return index >= 1;
@@ -555,7 +564,8 @@ private Shape myShape;
    *
    * @return    xmin
    */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return xmin;
   }
 
@@ -564,7 +574,8 @@ private Shape myShape;
    *
    * @return    xmax
    */
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return xmax;
   }
 
@@ -573,7 +584,8 @@ private Shape myShape;
    *
    * @return    ymin
    */
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return ymin;
   }
 
@@ -582,7 +594,8 @@ private Shape myShape;
    *
    * @return    ymax
    */
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return ymax;
   }
 
@@ -590,7 +603,8 @@ private Shape myShape;
    * Gets the minimum x needed to draw this object on a log scale.
    * @return minimum
    */
-  public double getXMinLogscale() {
+  @Override
+public double getXMinLogscale() {
     return xminLogscale;
   }
 
@@ -598,7 +612,8 @@ private Shape myShape;
    * Gets the maximum x needed to draw this object on a log scale.
    * @return maximum
    */
-  public double getXMaxLogscale() {
+  @Override
+public double getXMaxLogscale() {
     return xmaxLogscale;
   }
 
@@ -606,7 +621,8 @@ private Shape myShape;
    * Gets the minimum y needed to draw this object on a log scale.
    * @return minimum
    */
-  public double getYMinLogscale() {
+  @Override
+public double getYMinLogscale() {
     return yminLogscale;
   }
 
@@ -614,7 +630,8 @@ private Shape myShape;
    * Gets the maximum y needed to draw this object on a log scale on a log scale.
    * @return maximum
    */
-  public double getYMaxLogscale() {
+  @Override
+public double getYMaxLogscale() {
     return ymaxLogscale;
   }
 
@@ -640,7 +657,8 @@ private Shape myShape;
    *
    * @return a double[2][index] array of data
    */
-  public double[][] getData2D() {
+  @Override
+public double[][] getData2D() {
     double[][] data = new double[2][index];
     data[0] = getXPoints();
     data[1] = getYPoints();
@@ -652,7 +670,8 @@ private Shape myShape;
    *
    * @return null
    */
-  public double[][][] getData3D() {
+  @Override
+public double[][][] getData3D() {
     return null;
   }
 
@@ -661,7 +680,8 @@ private Shape myShape;
    *
    * @return ArrayList
    */
-  public ArrayList<Dataset> getDatasets() {
+  @Override
+public ArrayList<Dataset> getDatasets() {
     ArrayList<Dataset> list = new ArrayList<Dataset>();
     list.add(this);
     return list;
@@ -734,7 +754,8 @@ private Shape myShape;
    *
    * @return    the count
    */
-  public int getColumnCount() {
+  @Override
+public int getColumnCount() {
     return Dataset.countColumnsVisible(colVisible);
   }
 
@@ -756,7 +777,8 @@ private Shape myShape;
    *
    * @return    the count
    */
-  public int getRowCount() {
+  @Override
+public int getRowCount() {
     return(index+stride-1)/stride;
   }
 
@@ -766,7 +788,8 @@ private Shape myShape;
    * @param  columnIndex
    * @return              the name
    */
-  public String getColumnName(int columnIndex) {
+  @Override
+public String getColumnName(int columnIndex) {
     columnIndex = Dataset.convertTableColumnIndex(colVisible, columnIndex);
     if(columnIndex==0) {
       return xColumnName;
@@ -781,7 +804,8 @@ private Shape myShape;
    * @param  columnIndex
    * @return              the datum
    */
-  public Object getValueAt(int rowIndex, int columnIndex) {
+  @Override
+public Object getValueAt(int rowIndex, int columnIndex) {
     columnIndex = Dataset.convertTableColumnIndex(colVisible, columnIndex);
     rowIndex = rowIndex*stride;
     double[] xValues = getXPoints();
@@ -803,7 +827,8 @@ private Shape myShape;
    * @param  columnIndex
    * @return              the class
    */
-  public Class<?> getColumnClass(int columnIndex) {
+  @Override
+public Class<?> getColumnClass(int columnIndex) {
     return Double.class;
   }
 
@@ -1004,7 +1029,8 @@ private Shape myShape;
    * @param  drawingPanel
    * @param  g
    */
-  public void draw(DrawingPanel drawingPanel, Graphics g) {
+  @Override
+public void draw(DrawingPanel drawingPanel, Graphics g) {
     if(!visible) {
       return;
     }
@@ -1037,7 +1063,8 @@ private Shape myShape;
    *
    * @return    the data
    */
-  public String toString() {
+  @Override
+public String toString() {
     if(index==0) {
       return "No data in dataset."; //$NON-NLS-1$
     }
@@ -1529,7 +1556,8 @@ private Shape myShape;
     * @param panel
     * @param g
     */
-    public void draw(DrawingPanel panel, Graphics g) {
+    @Override
+	public void draw(DrawingPanel panel, Graphics g) {
       // changed by D.Brown
       if(Double.isNaN(y)) {
         return;
@@ -1564,7 +1592,8 @@ private Shape myShape;
    * A class to save and load Dataset data in an XMLControl.
    */
   protected static class Loader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       Dataset data = (Dataset) obj;
       control.setValue("points", data.getPoints());            //$NON-NLS-1$
       control.setValue("index", data.index);                   //$NON-NLS-1$
@@ -1587,7 +1616,8 @@ private Shape myShape;
       control.setValue("visible", data.colVisible);            //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       Class<?> type = control.getObjectClass();
       // handle subclasses separately
       if(Dataset.class.isAssignableFrom(type)&&!Dataset.class.equals(type)) {
@@ -1599,7 +1629,8 @@ private Shape myShape;
       return new Dataset();
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       Dataset data = (Dataset) obj;
       double[][] points = (double[][]) control.getObject("points"); //$NON-NLS-1$
       if((points!=null)&&(points.length>0)&&(points[0]!=null)) {

@@ -26,7 +26,6 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeSet;
 
@@ -125,7 +124,8 @@ public class DataTable extends JTable implements ActionListener {
     decorator = new SortDecorator(getModel());
     setModel(decorator);
     header.addMouseListener(new MouseAdapter() {
-      public void mouseClicked(MouseEvent e) {
+      @Override
+	public void mouseClicked(MouseEvent e) {
         if(!OSPRuntime.isPopupTrigger(e)
         		&& !e.isControlDown()
         		&& !e.isShiftDown()
@@ -366,7 +366,8 @@ public class DataTable extends JTable implements ActionListener {
    * @param  column  Description of Parameter
    * @return         The cellRenderer value
    */
-  public TableCellRenderer getCellRenderer(int row, int column) {
+  @Override
+public TableCellRenderer getCellRenderer(int row, int column) {
     int i = convertColumnIndexToModel(column);
     if((i==0)&&dataTableModel.isRowNumberVisible()) {
       return rowNumberRenderer;
@@ -463,7 +464,8 @@ public class DataTable extends JTable implements ActionListener {
       refreshTimer.start();
     } else {
     	OSPRuntime.postEvent(new Runnable() {
-        public synchronized void run() {
+        @Override
+		public synchronized void run() {
           actionPerformed(null);
         }
 
@@ -477,7 +479,8 @@ public class DataTable extends JTable implements ActionListener {
    *
    * @param  evt
    */
-  public void actionPerformed(ActionEvent evt) {
+  @Override
+public void actionPerformed(ActionEvent evt) {
   	// code added by D Brown to update decimal separator Jan 2018
     try {
     	// try block needed to catch occasional ConcurrentModificationException
@@ -755,7 +758,8 @@ public class DataTable extends JTable implements ActionListener {
      * @param  columnIndex
      * @param  b
      */
-    public void setColumnVisible(TableModel tableModel, int columnIndex, boolean b) {
+    @Override
+	public void setColumnVisible(TableModel tableModel, int columnIndex, boolean b) {
       DataTableElement dte = findElementContaining(tableModel);
       dte.setColumnVisible(columnIndex, b);
     }
@@ -766,7 +770,8 @@ public class DataTable extends JTable implements ActionListener {
      * @param  tableModel
      * @param  stride
      */
-    public void setStride(TableModel tableModel, int stride) {
+    @Override
+	public void setStride(TableModel tableModel, int stride) {
       DataTableElement dte = findElementContaining(tableModel);
       dte.setStride(stride);
     }
@@ -776,7 +781,8 @@ public class DataTable extends JTable implements ActionListener {
      *
      * @param  _rowNumberVisible
      */
-    public void setRowNumberVisible(boolean _rowNumberVisible) {
+    @Override
+	public void setRowNumberVisible(boolean _rowNumberVisible) {
       rowNumberVisible = _rowNumberVisible;
     }
 
@@ -787,7 +793,8 @@ public class DataTable extends JTable implements ActionListener {
      * @param  rowIndex
      * @param  columnIndex
      */
-    public void setValueAt(Object value, int rowIndex, int columnIndex) {
+    @Override
+	public void setValueAt(Object value, int rowIndex, int columnIndex) {
       if(dataTableElements.size()==0) {
         return;
       }
@@ -811,7 +818,8 @@ public class DataTable extends JTable implements ActionListener {
      *
      * @return
      */
-    public boolean isRowNumberVisible() {
+    @Override
+	public boolean isRowNumberVisible() {
       return rowNumberVisible;
     }
 
@@ -821,7 +829,8 @@ public class DataTable extends JTable implements ActionListener {
      * @param  columnIndex
      * @return the name
      */
-    public String getColumnName(int columnIndex) {
+    @Override
+	public String getColumnName(int columnIndex) {
       if((dataTableElements.size()==0)&&!rowNumberVisible) {
         return null;
       }
@@ -841,7 +850,8 @@ public class DataTable extends JTable implements ActionListener {
      *
      * @return
      */
-    public int getRowCount() {
+    @Override
+	public int getRowCount() {
       int rowCount = 0;
       for(int i = 0; i<dataTableElements.size(); i++) {
         DataTableElement dte = dataTableElements.get(i);
@@ -856,7 +866,8 @@ public class DataTable extends JTable implements ActionListener {
      *
      * @return
      */
-    public int getColumnCount() {
+    @Override
+	public int getColumnCount() {
       int columnCount = 0;
       for(int i = 0; i<dataTableElements.size(); i++) {
         DataTableElement dte = dataTableElements.get(i);
@@ -875,7 +886,8 @@ public class DataTable extends JTable implements ActionListener {
      * @param  columnIndex
      * @return
      */
-    public Object getValueAt(int rowIndex, int columnIndex) {
+    @Override
+	public Object getValueAt(int rowIndex, int columnIndex) {
       if(dataTableElements.size()==0) {
         return null;
       }
@@ -900,7 +912,8 @@ public class DataTable extends JTable implements ActionListener {
      * @param  columnIndex
      * @return
      */
-    public Class<?> getColumnClass(int columnIndex) {
+    @Override
+	public Class<?> getColumnClass(int columnIndex) {
       if(rowNumberVisible) {
         if(columnIndex==0) {
           return Integer.class;
@@ -921,7 +934,8 @@ public class DataTable extends JTable implements ActionListener {
      * @param  columnIndex
      * @return true if editable
      */
-    public boolean isCellEditable(int rowIndex, int columnIndex) {
+    @Override
+	public boolean isCellEditable(int rowIndex, int columnIndex) {
       return false;
     }
 
@@ -930,7 +944,8 @@ public class DataTable extends JTable implements ActionListener {
      *
      * @param  tableModel
      */
-    public void remove(TableModel tableModel) {
+    @Override
+	public void remove(TableModel tableModel) {
       DataTableElement dte = findElementContaining(tableModel);
       dataTableElements.remove(dte);
     }
@@ -938,7 +953,8 @@ public class DataTable extends JTable implements ActionListener {
     /**
      *  Method clear
      */
-    public void clear() {
+    @Override
+	public void clear() {
       dataTableElements.clear();
     }
 
@@ -947,7 +963,8 @@ public class DataTable extends JTable implements ActionListener {
      *
      * @param  tableModel
      */
-    public void add(TableModel tableModel) {
+    @Override
+	public void add(TableModel tableModel) {
       dataTableElements.add(new DataTableElement(tableModel));
     }
 
@@ -956,14 +973,16 @@ public class DataTable extends JTable implements ActionListener {
      *
      * @param  l
      */
-    public void addTableModelListener(TableModelListener l) {}
+    @Override
+	public void addTableModelListener(TableModelListener l) {}
 
     /**
      *  Method removeTableModelListener
      *
      * @param  l
      */
-    public void removeTableModelListener(TableModelListener l) {}
+    @Override
+	public void removeTableModelListener(TableModelListener l) {}
 
     /**
      *  returns the DataTableElement that contains the specified TableModel
@@ -1040,7 +1059,8 @@ public class DataTable extends JTable implements ActionListener {
      * @param  columnIndex
      * @return
      */
-    public TableColumn getColumn(int columnIndex) {
+    @Override
+	public TableColumn getColumn(int columnIndex) {
       TableColumn tableColumn;
       try {
         tableColumn = super.getColumn(columnIndex);
@@ -1176,7 +1196,8 @@ public class DataTable extends JTable implements ActionListener {
      * @param  column
      * @return
      */
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    @Override
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
       if(table.isRowSelected(row)) {
         int[] i = table.getSelectedColumns();
         if((i.length==1)&&(table.convertColumnIndexToModel(i[0])==0)) {
@@ -1228,7 +1249,8 @@ public class DataTable extends JTable implements ActionListener {
     /**
      * Returns the rendered component.
      */
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {      
+    @Override
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {      
     	Component c = baseRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
     	if (c instanceof JLabel && units!=null) {
     		JLabel label = (JLabel)c;
@@ -1261,19 +1283,22 @@ public class DataTable extends JTable implements ActionListener {
       // create buttons
       closeButton = new JButton(DisplayRes.getString("Dialog.Button.Close.Text")); //$NON-NLS-1$
       closeButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           setVisible(false);
         }
       });
       applyButton = new JButton(DisplayRes.getString("Dialog.Button.Apply.Text")); //$NON-NLS-1$
       applyButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
         	patternField.getAction().actionPerformed(e);
         }
       });
       cancelButton = new JButton(DisplayRes.getString("GUIUtils.Cancel")); //$NON-NLS-1$
       cancelButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           for(String displayedName : displayedNames) {
           	String name = realNames.get(displayedName);
             setFormatPattern(name, prevPatterns.get(name));
@@ -1284,7 +1309,8 @@ public class DataTable extends JTable implements ActionListener {
       });
       helpButton = new JButton(DisplayRes.getString("GUIUtils.Help")); //$NON-NLS-1$
       helpButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           String tab = "      ";                                                                                          //$NON-NLS-1$
           String nl = System.getProperty("line.separator", "/n");                                                         //$NON-NLS-1$ //$NON-NLS-2$
           JOptionPane.showMessageDialog(formatDialog, DisplayRes.getString("DataTable.NumberFormat.Help.Message1")+nl+nl+ //$NON-NLS-1$
@@ -1303,7 +1329,8 @@ public class DataTable extends JTable implements ActionListener {
       sampleLabel = new JLabel(DisplayRes.getString("DataTable.NumberFormat.Dialog.Label.Sample"));  //$NON-NLS-1$
       patternField = new JTextField(6);
       patternField.setAction(new AbstractAction() {
-      	public void actionPerformed(ActionEvent e) {
+      	@Override
+		public void actionPerformed(ActionEvent e) {
           String pattern = patternField.getText();
           if (pattern.indexOf(NO_PATTERN)>-1)
           	pattern = ""; //$NON-NLS-1$
@@ -1333,14 +1360,16 @@ public class DataTable extends JTable implements ActionListener {
 
       });
       patternField.addKeyListener(new KeyAdapter() {
-        public void keyPressed(KeyEvent e) {
+        @Override
+		public void keyPressed(KeyEvent e) {
           if(e.getKeyCode()==KeyEvent.VK_ENTER) {
             patternField.setBackground(Color.white);
           } else {
             patternField.setBackground(Color.yellow);
             // refresh sample format after text changes
             Runnable runner = new Runnable() {
-              public void run() {
+              @Override
+			public void run() {
                 String pattern = patternField.getText();
                 if (pattern.indexOf(NO_PATTERN)>-1)
                 	pattern = ""; //$NON-NLS-1$
@@ -1375,7 +1404,8 @@ public class DataTable extends JTable implements ActionListener {
 
       });
       patternField.addFocusListener(new FocusAdapter() {
-        public void focusLost(FocusEvent e) {
+        @Override
+		public void focusLost(FocusEvent e) {
           patternField.setBackground(Color.white);
           patternField.getAction().actionPerformed(null);
         }
@@ -1483,7 +1513,8 @@ public class DataTable extends JTable implements ActionListener {
       columnList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
       columnList.setVisibleRowCount(-1);
       columnList.addListSelectionListener(new ListSelectionListener() {
-      	public void valueChanged(ListSelectionEvent e) {
+      	@Override
+		public void valueChanged(ListSelectionEvent e) {
       		showNumberFormatAndSample(columnList.getSelectedIndices());
       	}
       });
@@ -1533,7 +1564,8 @@ public class DataTable extends JTable implements ActionListener {
     	return renderer;
     }
 
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+    @Override
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
       // value is column name
       String name = (value==null) ? "" : value.toString(); //$NON-NLS-1$
       textLine.setText(name);

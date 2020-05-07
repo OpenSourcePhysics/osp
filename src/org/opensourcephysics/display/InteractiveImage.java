@@ -9,8 +9,6 @@ package org.opensourcephysics.display;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
 import java.awt.image.ImageObserver;
 
 /**
@@ -48,7 +46,8 @@ public class InteractiveImage extends InteractiveShape implements ImageObserver 
  * @param ypix int
  * @return boolean
  */
-  public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
     if((image==null)||!enabled) {
       return false;
     }
@@ -65,6 +64,7 @@ public class InteractiveImage extends InteractiveShape implements ImageObserver 
 	 * @param panel the world in which the image is viewed
 	 * @param g     the graphics context upon which to draw
 	 */
+	@Override
 	public void draw(DrawingPanel panel, Graphics g) {
 		getPixelPt(panel);
 		Graphics2D g2 = (Graphics2D) g;
@@ -76,7 +76,8 @@ public class InteractiveImage extends InteractiveShape implements ImageObserver 
 		g2.translate(-pixelPt.x, -pixelPt.y);
 	}
 
-  public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
+  @Override
+public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
     if((infoflags&ImageObserver.WIDTH)==1) {
       this.width = width;
     }

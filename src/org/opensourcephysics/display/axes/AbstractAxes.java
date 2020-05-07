@@ -48,7 +48,8 @@ public abstract class AbstractAxes implements DrawableAxes {
     resizeFonts(FontSizer.getFactor(FontSizer.getLevel()), drawingPanel);
     // Changes font size
     FontSizer.addPropertyChangeListener("level", new PropertyChangeListener() { //$NON-NLS-1$
-      public void propertyChange(PropertyChangeEvent e) {
+      @Override
+	public void propertyChange(PropertyChangeEvent e) {
         resizeFonts(FontSizer.getFactor(FontSizer.getLevel()), AbstractAxes.this.drawingPanel);
       }
 
@@ -78,7 +79,8 @@ public abstract class AbstractAxes implements DrawableAxes {
    *
    * @param isVisible true if the axes are visible
    */
-  public void setVisible(boolean isVisible) {
+  @Override
+public void setVisible(boolean isVisible) {
     visible = isVisible;
   }
 
@@ -96,7 +98,8 @@ public abstract class AbstractAxes implements DrawableAxes {
    *
    * @param  color  The new interiorBackground value
    */
-  public void setInteriorBackground(Color color) {
+  @Override
+public void setInteriorBackground(Color color) {
     interiorColor = color;
   }
 
@@ -105,7 +108,8 @@ public abstract class AbstractAxes implements DrawableAxes {
    *
    * @return Color
    */
-  public Color getInteriorBackground() {
+  @Override
+public Color getInteriorBackground() {
     return interiorColor;
   }
 
@@ -115,7 +119,8 @@ public abstract class AbstractAxes implements DrawableAxes {
    * @param factor the factor
    * @param panel the drawing panel on which these axes are drawn
    */
-  public void resizeFonts(double factor, DrawingPanel panel) {
+  @Override
+public void resizeFonts(double factor, DrawingPanel panel) {
     labelFont = FontSizer.getResizedFont(labelFont, factor);
     superscriptFont = FontSizer.getResizedFont(superscriptFont, factor);
     titleFont = FontSizer.getResizedFont(titleFont, factor);
@@ -127,7 +132,8 @@ public abstract class AbstractAxes implements DrawableAxes {
    *
    * @return String
    */
-  public String getTitle() {
+  @Override
+public String getTitle() {
     return titleLine.getText();
   }
 
@@ -139,7 +145,8 @@ public abstract class AbstractAxes implements DrawableAxes {
    * @param  s the label
    * @param font_name an optional font name
    */
-  public void setTitle(String s, String font_name) {
+  @Override
+public void setTitle(String s, String font_name) {
     titleLine.setText(s);
     if((font_name==null)||font_name.equals("")) { //$NON-NLS-1$
       return;

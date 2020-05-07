@@ -9,8 +9,6 @@ package org.opensourcephysics.display;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.geom.AffineTransform;
-
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.axes.CartesianAxes;
@@ -21,7 +19,6 @@ import org.opensourcephysics.display.axes.PolarAxes;
 import org.opensourcephysics.display.axes.PolarType2;
 import org.opensourcephysics.display.axes.XYAxis;
 import org.opensourcephysics.numerics.FunctionTransform;
-import org.opensourcephysics.numerics.InvertibleFunction;
 import org.opensourcephysics.numerics.LogBase10Function;
 
 /**
@@ -97,7 +94,8 @@ public class PlottingPanel extends InteractivePanel {
    *
    * @return the interactive object
    */
-  public Interactive getInteractive() {
+  @Override
+public Interactive getInteractive() {
     Interactive iad = null;
     iad = super.getInteractive();
     if((iad==null)&&(axes instanceof Interactive)) {
@@ -292,7 +290,8 @@ public class PlottingPanel extends InteractivePanel {
    * Gutters are usually set by the axes to insure that there is enough space for axes labels.  Other objects
    * can, however, perform this function by implementing the Dimensioned interface.
    */
-  protected void computeGutters() {
+  @Override
+protected void computeGutters() {
     resetGutters();
     Dimension interiorDimension = null;
     // dimensionSetter specifies the size of the drawable area
@@ -318,7 +317,8 @@ public class PlottingPanel extends InteractivePanel {
    * Paints before the panel iterates through its list of Drawables.
    * @param g Graphics
    */
-  protected void paintFirst(Graphics g) {
+  @Override
+protected void paintFirst(Graphics g) {
     g.setColor(getBackground());
     g.fillRect(0, 0, getWidth(), getHeight()); // fill the component with the background color
     g.setColor(Color.black);                   // restore the default drawing color
@@ -333,7 +333,8 @@ public class PlottingPanel extends InteractivePanel {
    * @param  pix
    * @return      x panel units
    */
-  public double pixToX(int pix) {
+  @Override
+public double pixToX(int pix) {
     if(logScaleX) {
       return Math.pow(10, super.pixToX(pix));
     }
@@ -346,7 +347,8 @@ public class PlottingPanel extends InteractivePanel {
    * @param  x
    * @return    the pixel value of the x coordinate
    */
-  public int xToPix(double x) {
+  @Override
+public int xToPix(double x) {
     if(logScaleX) {
       if(x<=0) {
         x = Math.max(Float.MIN_VALUE, xmin);
@@ -361,7 +363,8 @@ public class PlottingPanel extends InteractivePanel {
    * @param x
    * @return the graphics device value of the x coordinate
    */
-  public float xToGraphics(double x) {
+  @Override
+public float xToGraphics(double x) {
     if(logScaleX) {
       if(x<=0) {
         x = Math.max(Float.MIN_VALUE, xmin);
@@ -377,7 +380,8 @@ public class PlottingPanel extends InteractivePanel {
    * @param  pix
    * @return      x panel units
    */
-  public double pixToY(int pix) {
+  @Override
+public double pixToY(int pix) {
     if(logScaleY) {
       return Math.pow(10, super.pixToY(pix));
     }
@@ -390,7 +394,8 @@ public class PlottingPanel extends InteractivePanel {
    * @param  y
    * @return    the pixel value of the y coordinate
    */
-  public int yToPix(double y) {
+  @Override
+public int yToPix(double y) {
     if(logScaleY) {
       if(y<=0) {
         y = Math.max(Float.MIN_VALUE, ymin);
@@ -405,7 +410,8 @@ public class PlottingPanel extends InteractivePanel {
    * @param y
    * @return the graphics device value of the x coordinate
    */
-  public float yToGraphics(double y) {
+  @Override
+public float yToGraphics(double y) {
     if(logScaleY) {
       if(y<=0) {
         y = Math.max(Float.MIN_VALUE, ymin);
@@ -420,7 +426,8 @@ public class PlottingPanel extends InteractivePanel {
    *
    * @return bottom gutter
    */
-  public int getBottomGutter() {
+  @Override
+public int getBottomGutter() {
     return Math.max(bottomGutter, bottomGutterPreferred);
   }
 
@@ -429,7 +436,8 @@ public class PlottingPanel extends InteractivePanel {
    *
    * @return right gutter
    */
-  public int getTopGutter() {
+  @Override
+public int getTopGutter() {
     return Math.max(topGutter, topGutterPreferred);
   }
 
@@ -441,7 +449,8 @@ public class PlottingPanel extends InteractivePanel {
    *  Calculates min and max values and the affine transformation based on the
    *  current size of the panel and the squareAspect boolean.
    */
-  public void setPixelScale() {
+  @Override
+public void setPixelScale() {
     xmin = xminPreferred; // start with the preferred values.
     xmax = xmaxPreferred;
     ymin = yminPreferred;
@@ -526,6 +535,7 @@ public class PlottingPanel extends InteractivePanel {
 	 * Recomputes the pixel transformation based on the current minimum and maximum
 	 * values and the gutters.
 	 */
+	@Override
 	public void recomputeTransform() {
 		xPixPerUnit = Math.max(width - leftGutter - rightGutter, 1) / (xmax - xmin);
 		yPixPerUnit = Math.max(height - bottomGutter - topGutter, 1) / (ymax - ymin); // the y scale in pixels
@@ -582,7 +592,8 @@ public class PlottingPanel extends InteractivePanel {
      * @param control the control
      * @param obj the DrawingPanel to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       PlottingPanel panel = (PlottingPanel) obj;
       control.setValue("title", panel.axes.getTitle());         //$NON-NLS-1$
       control.setValue("x axis label", panel.axes.getXLabel()); //$NON-NLS-1$
@@ -596,7 +607,8 @@ public class PlottingPanel extends InteractivePanel {
      * @param control the control
      * @return the newly created panel
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       String title = control.getString("title");         //$NON-NLS-1$
       String xlabel = control.getString("x axis label"); //$NON-NLS-1$
       String ylabel = control.getString("y axis label"); //$NON-NLS-1$
@@ -610,7 +622,8 @@ public class PlottingPanel extends InteractivePanel {
      * @param obj the object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       PlottingPanel panel = (PlottingPanel) obj;
       panel.setTitle(control.getString("title"));         //$NON-NLS-1$
       panel.setXLabel(control.getString("x axis label")); //$NON-NLS-1$

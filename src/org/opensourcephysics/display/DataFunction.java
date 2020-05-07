@@ -17,6 +17,7 @@ import org.opensourcephysics.controls.XMLLoader;
 import org.opensourcephysics.numerics.ParsedMultiVarFunction;
 import org.opensourcephysics.numerics.ParserException;
 import org.opensourcephysics.tools.ToolsRes;
+import org.opensourcephysics.tools.FunctionEditor.FObject;
 
 /**
  * This is a dataset whose values are determined by a multivariable function
@@ -24,11 +25,15 @@ import org.opensourcephysics.tools.ToolsRes;
  *
  * @author Douglas Brown
  */
-public class DataFunction extends Dataset {
-  // instance fields
+public class DataFunction extends Dataset implements FObject {
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+// instance fields
   DatasetManager inputData;
-  ParsedMultiVarFunction function;
-  String functionString;
+  ParsedMultiVarFunction myFunction;
+  String expression;
   String inputString; // recent attempted function string, successful or not
   int varCount;
   ArrayList<double[]> data = new ArrayList<double[]>();
@@ -69,8 +74,8 @@ public class DataFunction extends Dataset {
     // set the variable count for refresh purposes
     varCount = getVarCount();
     try {
-      function = new ParsedMultiVarFunction(e, getVarNames());
-      functionString = e;
+      myFunction = new ParsedMultiVarFunction(e, getVarNames());
+      expression = e;
       inputString = e;
       refreshFunctionData();
     } catch(ParserException ex) {
@@ -86,7 +91,7 @@ public class DataFunction extends Dataset {
    * @return the expression string
    */
   public String getExpression() {
-    return functionString;
+    return expression;
   }
 
   /**
@@ -116,7 +121,7 @@ public class DataFunction extends Dataset {
    */
   public void refreshFunctionData() {
     super.clear();
-    if(function==null) {
+    if(myFunction==null) {
       return;
     }
     // watch for change in inputs
@@ -139,9 +144,9 @@ public class DataFunction extends Dataset {
         }
       }
       double val = Double.NaN;
-      if(!"0".equals(functionString)||"0".equals(inputString)) { //$NON-NLS-1$ //$NON-NLS-2$
-      	val = function.evaluate(fData);
-      	if (function.evaluatedToNaN()) {
+      if(!"0".equals(expression)||"0".equals(inputString)) { //$NON-NLS-1$ //$NON-NLS-2$
+      	val = myFunction.evaluate(fData);
+      	if (myFunction.evaluatedToNaN()) {
           val = Double.NaN;
       	}
 //        String[] names = getVarNames();
@@ -158,34 +163,40 @@ public class DataFunction extends Dataset {
   /**
    * @return the name of this DataFunction
    */
-  public String toString() {
+  @Override
+public String toString() {
     return getYColumnName();
   }
 
   /**
    * Overrides Dataset methods. DatasetFunction manages its own data.
    */
-  public void append(double x, double y) {
+  @Override
+public void append(double x, double y) {
 
   /** empty block */
   }
 
-  public void append(double x, double y, double dx, double dy) {
+  @Override
+public void append(double x, double y, double dx, double dy) {
 
   /** empty block */
   }
 
-  public void append(double[] x, double[] y) {
+  @Override
+public void append(double[] x, double[] y) {
 
   /** empty block */
   }
 
-  public void append(double[] x, double[] y, double[] dx, double[] dy) {
+  @Override
+public void append(double[] x, double[] y, double[] dx, double[] dy) {
 
   /** empty block */
   }
 
-  public void clear() {
+  @Override
+public void clear() {
 
   /** empty block */
   }
@@ -266,7 +277,8 @@ public class DataFunction extends Dataset {
    * A class to save and load DataFunction data in an XMLControl.
    */
   protected static class Loader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       DataFunction data = (DataFunction) obj;
       control.setValue("function_name", data.getYColumnName()); //$NON-NLS-1$
       control.setValue("function", data.getInputString());      //$NON-NLS-1$
@@ -274,12 +286,14 @@ public class DataFunction extends Dataset {
       XML.getLoader(Dataset.class).saveObject(control, obj);
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       // must be instantiated with DatasetManager
       return null;
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       DataFunction data = (DataFunction) obj;
       data.setYColumnName(control.getString("function_name")); //$NON-NLS-1$
       data.setExpression(control.getString("function"));       //$NON-NLS-1$

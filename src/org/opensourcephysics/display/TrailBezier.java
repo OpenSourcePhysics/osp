@@ -38,7 +38,8 @@ public class TrailBezier extends AbstractTrail {
    * @param x double
    * @param y double
    */
-  public synchronized void addPoint(double x, double y) {
+  @Override
+public synchronized void addPoint(double x, double y) {
     if(closed) {
       throw new IllegalStateException("Cannot add points to a closed trail."); //$NON-NLS-1$
     }
@@ -94,7 +95,8 @@ public class TrailBezier extends AbstractTrail {
   /**
    * Closes the trail by connecting the first point to the last point.
    */
-  public void closeTrail() {
+  @Override
+public void closeTrail() {
     addPoint(x0, y0);
     addPoint(x1, y1);
     addPoint(x2, y2);
@@ -107,7 +109,8 @@ public class TrailBezier extends AbstractTrail {
   /**
    * Clears all points from the trail.
    */
-  public synchronized void clear() {
+  @Override
+public synchronized void clear() {
     numpts = 0;
     xmin = Double.MAX_VALUE;
     xmax = -Double.MAX_VALUE;
@@ -123,7 +126,8 @@ public class TrailBezier extends AbstractTrail {
    * Draw the trail on the panel.
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(numpts==0) {
       return;
     }
@@ -165,7 +169,8 @@ public class TrailBezier extends AbstractTrail {
    *
    * @return boolean
    */
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return enableMeasure&&(this.numpts>0);
   }
 
@@ -173,7 +178,8 @@ public class TrailBezier extends AbstractTrail {
    * Gets the minimum x value in the trail.
    * @return double
    */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return xmin;
   }
 
@@ -181,7 +187,8 @@ public class TrailBezier extends AbstractTrail {
    * Gets the maximum x value in the trail.
    * @return double
    */
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return xmax;
   }
 
@@ -189,7 +196,8 @@ public class TrailBezier extends AbstractTrail {
    * Gets the minimum y value in the trail.
    * @return double
    */
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return ymin;
   }
 
@@ -197,7 +205,8 @@ public class TrailBezier extends AbstractTrail {
    * Gets the maximum y value in the trail.
    * @return double
    */
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return ymax;
   }
 
@@ -205,7 +214,8 @@ public class TrailBezier extends AbstractTrail {
    * A class to save and load Dataset data in an XMLControl.
    */
   private static class Loader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       TrailBezier trail = (TrailBezier) obj;
       control.setValue("closed", trail.closed);        //$NON-NLS-1$
       control.setValue("color", trail.color);          //$NON-NLS-1$
@@ -213,11 +223,13 @@ public class TrailBezier extends AbstractTrail {
       //control.setValue("general path", trail.generalPath);
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new TrailBezier();
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       TrailBezier trail = (TrailBezier) obj;
       trail.closed = control.getBoolean("closed");      //$NON-NLS-1$
       trail.color = (Color) control.getObject("color"); //$NON-NLS-1$

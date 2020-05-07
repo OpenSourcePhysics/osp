@@ -62,7 +62,8 @@ public abstract class AxisFactory {
 }
 
 class CartesianType1Factory extends AxisFactory {
-  public DrawableAxes createAxes(PlottingPanel panel) {
+  @Override
+public DrawableAxes createAxes(PlottingPanel panel) {
 //  	return new CartesianType1(panel);
   	// axes changed to interactive by default. D Brown 2012-01-27
     return new CartesianInteractive(panel);

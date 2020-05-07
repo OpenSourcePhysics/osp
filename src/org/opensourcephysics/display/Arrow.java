@@ -158,7 +158,8 @@ public class Arrow implements Drawable {
    * @param panel  the drawing panel in which the arrow is viewed
    * @param g  the graphics context upon which to draw
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     Graphics2D g2 = (Graphics2D) g;
     AffineTransform tr = panel.getPixelTransform();
     g2.setPaint(color);

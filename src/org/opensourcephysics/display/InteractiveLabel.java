@@ -11,7 +11,6 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Shape;
 
 public class InteractiveLabel extends MeasuredCircle implements Interactive {
   public static final int TOP_LEFT_LOCATION = 0;
@@ -45,7 +44,8 @@ public class InteractiveLabel extends MeasuredCircle implements Interactive {
     text = TeXParser.parseTeX(str);
   }
 
-  public void setXY(double _x, double _y) {
+  @Override
+public void setXY(double _x, double _y) {
     x = _x;
     y = _y;
   }
@@ -107,7 +107,8 @@ public class InteractiveLabel extends MeasuredCircle implements Interactive {
     return box.yoffset;
   }
 
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     String tempText = text; // local reference for thread safety
     if(tempText==null) {
       return;
@@ -122,7 +123,8 @@ public class InteractiveLabel extends MeasuredCircle implements Interactive {
     box.draw(panel, g);
   }
 
-  public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
     if(box.isInside(panel, xpix, ypix)) {
       return box;
     }
@@ -145,7 +147,8 @@ public class InteractiveLabel extends MeasuredCircle implements Interactive {
    * Enables mouse interactions
    * @param enabled boolean
    */
-  public void setEnabled(boolean enabled) {
+  @Override
+public void setEnabled(boolean enabled) {
     this.enabled = enabled;
     box.setEnabled(enabled);
   }
@@ -154,7 +157,8 @@ public class InteractiveLabel extends MeasuredCircle implements Interactive {
    * Gets the mouse interaction enabled property.
    * @return boolean
    */
-  public boolean isEnabled() {
+  @Override
+public boolean isEnabled() {
     return enabled;
   }
 
@@ -172,7 +176,8 @@ public class InteractiveLabel extends MeasuredCircle implements Interactive {
      * @param panel DrawingPanel
      * @param g Graphics
      */
-    public void draw(DrawingPanel panel, Graphics g) {
+    @Override
+	public void draw(DrawingPanel panel, Graphics g) {
       this.panel = panel;
       String tempText = text; // local reference for thread safety
       if(tempText==null) {
@@ -221,7 +226,8 @@ public class InteractiveLabel extends MeasuredCircle implements Interactive {
       g2.setFont(oldFont);
     }
 
-    public void setXY(double x, double y) {
+    @Override
+	public void setXY(double x, double y) {
       if(panel==null) {
         return;
       }
@@ -233,7 +239,8 @@ public class InteractiveLabel extends MeasuredCircle implements Interactive {
       yoffset = y2-y1;
     }
 
-    public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
+    @Override
+	public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
       if((xpix>=leftPix)&&(xpix<=leftPix+boxWidth)&&(ypix>=topPix)&&(ypix<=topPix+boxHeight)) {
         return true;
       }

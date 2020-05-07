@@ -9,7 +9,6 @@ package org.opensourcephysics.display;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Shape;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -211,7 +210,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    *
    * @return    A String with the number of occurrences for each bin.
    */
-  public String toString() {
+  @Override
+public String toString() {
     Set<Integer> set = bins.keySet();
     Iterator<Integer> keys = set.iterator();
     String s = "x\tx"; //$NON-NLS-1$
@@ -319,7 +319,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    * @param  drawingPanel
    * @param  g
    */
-  public synchronized void draw(DrawingPanel drawingPanel, Graphics g) {
+  @Override
+public synchronized void draw(DrawingPanel drawingPanel, Graphics g) {
     if(bins.size()==0 || !visible) {
       return;
     }
@@ -419,7 +420,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    * Line colors for Data interface.
    * @return
    */
-  public java.awt.Color[] getLineColors() {
+  @Override
+public java.awt.Color[] getLineColors() {
     return new Color[] {binEdgeColor, binEdgeColor};
   }
 
@@ -435,7 +437,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    * Fill colors for Data interface.
    * @return
    */
-  public java.awt.Color[] getFillColors() {
+  @Override
+public java.awt.Color[] getFillColors() {
     return new Color[] {binFillColor, binFillColor};
   }
 
@@ -483,7 +486,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    *
    * @return String
    */
-  public String getName() {
+  @Override
+public String getName() {
     return name;
   }
 
@@ -491,7 +495,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    * The column names to be used in the data display tool
    * @return
    */
-  public String[] getColumnNames() {
+  @Override
+public String[] getColumnNames() {
     return new String[] {xColumnName, yColumnName};
   }
 
@@ -500,7 +505,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    * This method is used by Data displaying tools to create as many pages as needed.
    * @return A list of DataInformation elements, null if the element itself is a DataInformation
    */
-  public java.util.List<Data> getDataList() {
+  @Override
+public java.util.List<Data> getDataList() {
     return null;
   }
 
@@ -560,7 +566,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    *
    * @return    xmin
    */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return(discrete&&(bins.size()>1)) ? xmin-binWidth : xmin;
   }
 
@@ -569,7 +576,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    *
    * @return    xmax
    */
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return xmax;
   }
 
@@ -578,7 +586,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    *
    * @return    minimum y value
    */
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return YMIN;
   }
 
@@ -587,7 +596,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    *
    * @return    xmax
    */
-  public double getYMax() {
+  @Override
+public double getYMax() {
     double max = (normalizedToOne ? ymax/sum : ymax);
     if(adjustForWidth) {
       max = max/getBinWidth();
@@ -602,7 +612,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    * Gets the minimum x needed to draw this object on a log scale.
    * @return minimum
    */
-  public double getXMinLogscale() {
+  @Override
+public double getXMinLogscale() {
     double xmin = getXMin();
     if(xmin>0) {
       return xmin;
@@ -614,7 +625,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    * Gets the maximum x needed to draw this object on a log scale.
    * @return maximum
    */
-  public double getXMaxLogscale() {
+  @Override
+public double getXMaxLogscale() {
     double xmax = getXMax();
     if(xmax>0) {
       return xmax;
@@ -626,7 +638,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    * Gets the minimum y needed to draw this object on a log scale.
    * @return minimum
    */
-  public double getYMinLogscale() {
+  @Override
+public double getYMinLogscale() {
     return 1;
   }
 
@@ -634,7 +647,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    * Gets the maximum y needed to draw this object on a log scale on a log scale.
    * @return maximum
    */
-  public double getYMaxLogscale() {
+  @Override
+public double getYMaxLogscale() {
     return Math.max(10, getYMax()); // make sure we have at least one decade on log scale
   }
 
@@ -644,7 +658,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    *
    * @return    <code>true<\code> if measure is valid.
    */
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return bins.size()>0 && measured; // Paco
   }
 
@@ -662,7 +677,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    * @param  column  the column whose value is to be queried
    * @return         the name
    */
-  public String getColumnName(int column) {
+  @Override
+public String getColumnName(int column) {
     if(column==0) {
       return binColumnName;
     } else if(column==1) {
@@ -677,7 +693,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    *
    * @return    the count
    */
-  public int getRowCount() {
+  @Override
+public int getRowCount() {
     return bins.size();
   }
 
@@ -686,7 +703,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    *
    * @return    the name
    */
-  public int getColumnCount() {
+  @Override
+public int getColumnCount() {
     return 3;
   }
 
@@ -697,7 +715,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    * @param  column  the column whose value is to be queried
    * @return         the datum
    */
-  public Object getValueAt(int row, int column) {
+  @Override
+public Object getValueAt(int row, int column) {
     updateEntries();
     Map.Entry<?, ?> entry = entries[row];
     if(column==0) {
@@ -719,7 +738,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    * @param  columnIndex  the column whose value is to be queried
    * @return              the class
    */
-  public Class<?> getColumnClass(int columnIndex) {
+  @Override
+public Class<?> getColumnClass(int columnIndex) {
     return((columnIndex==0) ? Integer.class : Double.class);
   }
 
@@ -728,7 +748,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    *
    * @param id the ID number
    */
-  public void setID(int id) {
+  @Override
+public void setID(int id) {
     datasetID = id;
   }
 
@@ -737,7 +758,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    *
    * @return the ID number
    */
-  public int getID() {
+  @Override
+public int getID() {
     return datasetID;
   }
 
@@ -915,16 +937,19 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
     }
   }
 
-  public double[][] getData2D() {
+  @Override
+public double[][] getData2D() {
     double[][] data = (logScale) ? getLogPoints() : getPoints();
     return data;
   }
 
-  public double[][][] getData3D() {
+  @Override
+public double[][][] getData3D() {
     return null;
   }
 
-  public ArrayList<Dataset> getDatasets() {
+  @Override
+public ArrayList<Dataset> getDatasets() {
     double[][] data = (logScale) ? getLogPoints() : getPoints();
     double[] bins = data[0];
     double[] vals = data[1];
@@ -963,7 +988,8 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
    * A class to save and load Dataset data in an XMLControl.
    */
   protected static class HistogramLoader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       Histogram his = (Histogram) obj;
       double[][] points = (his.logScale) ? his.getLogPoints() : his.getPoints();
       double[] bins = points[0];
@@ -984,11 +1010,13 @@ public class Histogram extends AbstractTableModel implements Measurable, LogMeas
       control.setValue("vals", vals);                           //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new Histogram();
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       Histogram his = (Histogram) obj;
       double[] bins = (double[]) control.getObject("bins"); //$NON-NLS-1$
       double[] vals = (double[]) control.getObject("vals"); //$NON-NLS-1$

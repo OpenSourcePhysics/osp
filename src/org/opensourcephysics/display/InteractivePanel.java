@@ -12,8 +12,6 @@ import java.util.ArrayList;
 
 import javax.swing.event.MouseInputAdapter;
 
-import org.opensourcephysics.media.core.Trackable;
-
 /**
  * InteractivePanel is a drawing panel that invokes the handleMouseAction method in
  * Interactive objects.
@@ -64,7 +62,8 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
    * Adds a drawable object to the drawable list.
    * @param drawable
    */
-  public void addDrawable(Drawable drawable) {
+  @Override
+public void addDrawable(Drawable drawable) {
     super.addDrawable(drawable);
     if(drawable instanceof Interactive) {
       containsInteractive = true;
@@ -74,7 +73,8 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
   /**
    * Removes all drawable objects from the drawable list.
    */
-  public void clear() {
+  @Override
+public void clear() {
     super.clear();
     containsInteractive = false;
   }
@@ -83,7 +83,8 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
    * Sets the x axis scale based on the max and min values of all measurable objects.
    * Autoscale flag is not respected.
    */
-  protected void scaleX(ArrayList<Drawable> tempList) {
+  @Override
+protected void scaleX(ArrayList<Drawable> tempList) {
     double tempmin = xminPreferred;
     double tempmax = xmaxPreferred;
     super.scaleX(tempList);
@@ -102,7 +103,8 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
    * Sets the y axis scale based on the max and min values of all measurable objects.
    * Autoscale flag is not respected.
    */
-  protected void scaleY(ArrayList<Drawable> tempList) {
+  @Override
+protected void scaleY(ArrayList<Drawable> tempList) {
     double tempmin = yminPreferred;
     double tempmax = ymaxPreferred;
     super.scaleY(tempList);
@@ -134,7 +136,8 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
    * @param panel
    * @param evt
    */
-  public void handleMouseAction(InteractivePanel panel, MouseEvent evt) {
+  @Override
+public void handleMouseAction(InteractivePanel panel, MouseEvent evt) {
     switch(panel.getMouseAction()) {
        case InteractivePanel.MOUSE_CLICKED :
          Interactive clickedIA = getInteractive();
@@ -228,7 +231,8 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
    *
    * @param show
    */
-  public void setShowCoordinates(boolean show) {
+  @Override
+public void setShowCoordinates(boolean show) {
     showCoordinates = show;
   }
 
@@ -316,7 +320,8 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
      * Handle the mouse pressed event.
      * @param e
      */
-    public void mousePressed(MouseEvent e) {
+    @Override
+	public void mousePressed(MouseEvent e) {
       mouseEvent = e;
       mouseAction = MOUSE_PRESSED;
       if(interactive!=null) { // is there an object available to hande the mouse event
@@ -343,7 +348,8 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
      * Handles the mouse released event.
      * @param e
      */
-    public void mouseReleased(MouseEvent e) {
+    @Override
+	public void mouseReleased(MouseEvent e) {
       mouseEvent = e;
       mouseAction = MOUSE_RELEASED;
       if(interactive!=null) {
@@ -362,7 +368,8 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
      * Handles the mouse entered event.
      * @param e
      */
-    public void mouseEntered(MouseEvent e) {
+    @Override
+	public void mouseEntered(MouseEvent e) {
       if(showCoordinates) {
         setMouseCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
       }
@@ -377,7 +384,8 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
      * Handles the mouse exited event.
      * @param e
      */
-    public void mouseExited(MouseEvent e) {
+    @Override
+	public void mouseExited(MouseEvent e) {
       setMouseCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
       mouseEvent = e;
       mouseAction = MOUSE_EXITED;
@@ -390,7 +398,8 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
      * Handles the mouse clicked event.
      * @param e
      */
-    public void mouseClicked(MouseEvent e) {
+    @Override
+	public void mouseClicked(MouseEvent e) {
       mouseEvent = e;
       mouseAction = MOUSE_CLICKED;
       if(interactive==null) {
@@ -403,7 +412,8 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
      * Handles the mouse dragged event.
      * @param e
      */
-    public void mouseDragged(MouseEvent e) {
+    @Override
+	public void mouseDragged(MouseEvent e) {
       mouseEvent = e;
       mouseAction = MOUSE_DRAGGED;
       if(interactive!=null) {
@@ -421,7 +431,8 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
      * Handles the mouse moved event.
      * @param e
      */
-    public void mouseMoved(MouseEvent e) {
+    @Override
+	public void mouseMoved(MouseEvent e) {
       mouseEvent = e;
       mouseAction = MOUSE_MOVED;
       iaDraggable = null;

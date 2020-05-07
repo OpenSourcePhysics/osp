@@ -12,7 +12,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
@@ -159,11 +158,13 @@ public class BoundedShape extends InteractiveShape implements Selectable {
     return new BoundedShape(shape, x, y);
   }
 
-  public void setSelected(boolean selected) {
+  @Override
+public void setSelected(boolean selected) {
     this.selected = selected;
   }
 
-  public boolean isSelected() {
+  @Override
+public boolean isSelected() {
     return selected;
   }
 
@@ -236,7 +237,8 @@ public class BoundedShape extends InteractiveShape implements Selectable {
     return heightDrag;
   }
 
-  public java.awt.Cursor getPreferredCursor() {
+  @Override
+public java.awt.Cursor getPreferredCursor() {
     if(xyDrag&&(hotspot==CENTER)) {
       return java.awt.Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
     } else if(rotateDrag&&(hotspot==CORNER)) { // need better cursors!
@@ -256,11 +258,13 @@ public class BoundedShape extends InteractiveShape implements Selectable {
     }
   }
 
-  public void toggleSelected() {
+  @Override
+public void toggleSelected() {
     selected = !selected;
   }
 
-  public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
     if(isInside(panel, xpix, ypix)) {
       return xyDelegate;
     }
@@ -275,7 +279,8 @@ public class BoundedShape extends InteractiveShape implements Selectable {
    * @param ypix int
    * @return boolean
    */
-  public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
     hotspot = NONE;
     if(!enabled) {
       return false;
@@ -423,6 +428,7 @@ public class BoundedShape extends InteractiveShape implements Selectable {
 	 * @param panel the drawing panel
 	 * @param g     the graphics context
 	 */
+	@Override
 	public void draw(DrawingPanel panel, Graphics g) {
 		super.draw(panel, g);
 		// these methods also set pixelBounds
@@ -554,7 +560,8 @@ public class BoundedShape extends InteractiveShape implements Selectable {
    * Gets a description of this object.
    * @return String
    */
-  public String toString() {
+  @Override
+public String toString() {
     return "BoundedShape:"+"\n \t shape="+shapeClass+"\n \t x="+x+"\n \t y="+y+"\n \t width="+width+"\n \t height="+height+"\n \t theta="+theta; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
   }
 
@@ -570,7 +577,8 @@ public class BoundedShape extends InteractiveShape implements Selectable {
    *  A class to save and load BoundedShape in an XMLControl.
    */
   protected static class BoundedShapeLoader extends InteractiveShapeLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       super.saveObject(control, obj);
       BoundedShape boundedShape = (BoundedShape) obj;
       control.setValue("xy drag", boundedShape.isXYDrag());         //$NON-NLS-1$
@@ -579,11 +587,13 @@ public class BoundedShape extends InteractiveShape implements Selectable {
       control.setValue("rotate drag", boundedShape.isRotateDrag()); //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new BoundedShape(new Rectangle2D.Double(0, 0, 0, 0), 0, 0); // default shape is a rectangle for now
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       BoundedShape boundedShape = (BoundedShape) obj;
       boundedShape.setXYDrag(control.getBoolean("xy drag"));         //$NON-NLS-1$
       boundedShape.setWidthDrag(control.getBoolean("width drag"));   //$NON-NLS-1$
@@ -596,29 +606,36 @@ public class BoundedShape extends InteractiveShape implements Selectable {
   }
 
   class XYDelegate extends AbstractInteractive implements Selectable {
-    public void draw(DrawingPanel panel, Graphics g) {}
+    @Override
+	public void draw(DrawingPanel panel, Graphics g) {}
 
-    public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
+    @Override
+	public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
       return BoundedShape.this.isInside(panel, xpix, ypix);
     }
 
-    public void setXY(double x, double y) {
+    @Override
+	public void setXY(double x, double y) {
       BoundedShape.this.setHotSpotXY(x, y);
     }
 
-    public void setSelected(boolean selectable) {
+    @Override
+	public void setSelected(boolean selectable) {
       BoundedShape.this.setSelected(selectable);
     }
 
-    public void toggleSelected() {
+    @Override
+	public void toggleSelected() {
       BoundedShape.this.toggleSelected();
     }
 
-    public boolean isSelected() {
+    @Override
+	public boolean isSelected() {
       return BoundedShape.this.isSelected();
     }
 
-    public Cursor getPreferredCursor() {
+    @Override
+	public Cursor getPreferredCursor() {
       return BoundedShape.this.getPreferredCursor();
     }
 

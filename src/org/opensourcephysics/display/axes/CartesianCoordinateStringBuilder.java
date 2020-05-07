@@ -33,7 +33,8 @@ public class CartesianCoordinateStringBuilder extends CoordinateStringBuilder {
     this.yLabel = yLabel;
   }
 
-  public void setCoordinateLabels(String xLabel, String yLabel) {
+  @Override
+public void setCoordinateLabels(String xLabel, String yLabel) {
     this.xLabel = xLabel;
     this.yLabel = yLabel;
   }
@@ -45,7 +46,8 @@ public class CartesianCoordinateStringBuilder extends CoordinateStringBuilder {
    * @param e the mouse event
    * @return the coordinate string
    */
-  public String getCoordinateString(DrawingPanel panel, MouseEvent e) {
+  @Override
+public String getCoordinateString(DrawingPanel panel, MouseEvent e) {
     double x = panel.pixToX(e.getPoint().x);
     double y = panel.pixToY(e.getPoint().y);
     if((panel instanceof InteractivePanel)&&((InteractivePanel) panel).getCurrentDraggable()!=null) {

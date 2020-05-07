@@ -63,7 +63,8 @@ public interface PolarAxes extends DrawableAxes {
   /**
    * Sets the interior background color.
    */
-  public void setInteriorBackground(Color color);
+  @Override
+public void setInteriorBackground(Color color);
 
 }
 

@@ -33,7 +33,6 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -57,7 +56,6 @@ import org.opensourcephysics.display.axes.CoordinateStringBuilder;
 import org.opensourcephysics.display.dialogs.DrawingPanelInspector;
 import org.opensourcephysics.display.dialogs.ScaleInspector;
 import org.opensourcephysics.display.dialogs.XMLDrawingPanelInspector;
-import org.opensourcephysics.media.core.Trackable;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ToolsRes;
 import org.opensourcephysics.tools.VideoTool;
@@ -205,6 +203,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		addOptionController();
 		// invalidate the buffered image if the size changes
 		addComponentListener(new java.awt.event.ComponentAdapter() {
+			@Override
 			public void componentResized(ComponentEvent e) {
 				invalidateImage(); // validImage = false;
 			}
@@ -215,6 +214,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		refreshTimer.setCoalesce(true);
 		setFontLevel(FontSizer.getLevel());
 		zoomTimer = new javax.swing.Timer(zoomDelay, new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				// reset and hide the zoom box
 				zoomBox.xlast = zoomBox.xstop = zoomBox.xstart = 0;
@@ -241,6 +241,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		// create guiChangeListener to change font size and refresh GUI
 		// added by D Brown 29 mar 2016
 		guiChangeListener = new PropertyChangeListener() {
+			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				if (e.getPropertyName().equals("level")) { //$NON-NLS-1$
 					int level = ((Integer) e.getNewValue()).intValue();
@@ -525,6 +526,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	}
 
 	private Runnable runImageCheck = new Runnable() {
+		@Override
 		public void run() {
 			workingImage();
 		}
@@ -581,6 +583,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 *
 	 * @param evt
 	 */
+	@Override
 	public void actionPerformed(ActionEvent evt) {
 		if (!isValidImage()) {
 			render();
@@ -608,6 +611,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 *
 	 * @return the image buffer
 	 */
+	@Override
 	public BufferedImage render() {
 		if (!isShowing() || isIconified()) {
 			return offscreenImage; // no need to draw if the frame is not visible
@@ -622,6 +626,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		}
 		// always update a Swing component from the event thread
 		OSPRuntime.dispatchEventWait(new Runnable() {
+			@Override
 			public void run() {
 				computeVisibleRect(visibleRect);
 				paintImmediately(visibleRect);
@@ -647,6 +652,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 * @param image
 	 * @return the image buffer
 	 */
+	@Override
 	public BufferedImage render(BufferedImage image) {
 		Graphics osg = image.getGraphics();
 		imageRatio = ((float) getWidth() <= 0) ? 1 : image.getWidth() / (float) getWidth(); // ratio of image to panel
@@ -675,10 +681,12 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		return image;
 	}
 
+	@Override
 	public int getWidth() {
 		return (int) (imageRatio * super.getWidth()); // effective width when rendering images
 	}
 
+	@Override
 	public int getHeight() {
 		return (int) (imageRatio * super.getHeight()); // effective height when rendering images
 	}
@@ -711,6 +719,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		return validImage;
 	}
 
+	@Override
 	public void paint(Graphics g) {
 		boolean resetBuffered = buffered;
 		super.paint(g);
@@ -723,6 +732,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 * 
 	 * @param g
 	 */
+	@Override
 	public void paintComponent(Graphics g) {
 		if (OSPRuntime.disableAllDrawing) {
 			g.setColor(bgColor);
@@ -979,6 +989,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 * @param width  The new <code>width</code> of this component.
 	 * @param height The new <code>height</code> of this component.
 	 */
+	@Override
 	public void setBounds(int x, int y, int width, int height) {
 		if ((getBounds().x == x) && (getBounds().y == y) && (getBounds().width == width)
 				&& (getBounds().height == height)) {
@@ -988,6 +999,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		invalidateImage(); // validImage = false;
 	}
 
+	@Override
 	public void setBounds(Rectangle r) {
 		if (getBounds().equals(r)) {
 			return;
@@ -1030,6 +1042,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 *
 	 * @param vis true to make the component visible; false to make it invisible
 	 */
+	@Override
 	public void setVisible(boolean vis) {
 		if (this.isVisible() == vis) {
 			return;
@@ -2200,6 +2213,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		return glassPanel;
 	}
 
+	@Override
 	public void setIgnoreRepaint(boolean ignoreRepaint) {
 		super.setIgnoreRepaint(ignoreRepaint);
 		if (glassPanel != null)
@@ -2629,6 +2643,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		 * 
 		 * @param e
 		 */
+		@Override
 		public void mousePressed(MouseEvent e) {
 			String s = coordinateStrBuilder.getCoordinateString(DrawingPanel.this, e);
 			System.err.println(" pressed coortd==" + s);
@@ -2643,6 +2658,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		 * 
 		 * @param e
 		 */
+		@Override
 		public void mouseReleased(MouseEvent e) {
 			blMessageBox.setText(null);
 			messages.setMessage(null, 0);
@@ -2654,6 +2670,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		 * 
 		 * @param e
 		 */
+		@Override
 		public void mouseEntered(MouseEvent e) {
 			if (showCoordinates) {
 				setMouseCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
@@ -2665,6 +2682,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		 * 
 		 * @param e
 		 */
+		@Override
 		public void mouseExited(MouseEvent e) {
 			setMouseCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
@@ -2674,6 +2692,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		 * 
 		 * @param e
 		 */
+		@Override
 		public void mouseDragged(MouseEvent e) {
 			String s = coordinateStrBuilder.getCoordinateString(DrawingPanel.this, e);
 			System.err.println(" pressed coortd==" + s);
@@ -2807,6 +2826,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	}
 
 	class PopupmenuListener implements ActionListener {
+		@Override
 		public void actionPerformed(ActionEvent evt) {
 			zoomBox.visible = false;
 			repaint();
@@ -2847,6 +2867,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		 * 
 		 * @param e
 		 */
+		@Override
 		public void mousePressed(MouseEvent e) {
 			if (isZoomEvent(e)) {
 				zoomBox.startZoom(e.getX(), e.getY());
@@ -2861,6 +2882,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		 * 
 		 * @param e
 		 */
+		@Override
 		public void mouseDragged(MouseEvent e) {
 			zoomBox.drag(e.getX(), e.getY());
 		}
@@ -2870,6 +2892,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		 *
 		 * @param e
 		 */
+		@Override
 		public void mouseReleased(MouseEvent e) {
 			if (isZoomEvent(e) && (popupmenu != null) && popupmenu.isEnabled()) {
 				if (isZoom() && !zoomBox.isDragged() && zoomBox.showUndraggedBox) {
@@ -2898,6 +2921,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		 *
 		 * @param e
 		 */
+		@Override
 		public void mouseMoved(MouseEvent e) {
 			KeyboardFocusManager focuser = KeyboardFocusManager.getCurrentKeyboardFocusManager();
 			Component focusOwner = focuser.getFocusOwner();
@@ -2944,6 +2968,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		 * @param control the control
 		 * @param obj     the DrawingPanel to save
 		 */
+		@Override
 		public void saveObject(XMLControl control, Object obj) {
 			DrawingPanel panel = (DrawingPanel) obj;
 			control.setValue("preferred x min", panel.getPreferredXMin()); //$NON-NLS-1$
@@ -2962,6 +2987,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		 * @param control the control
 		 * @return the newly created panel
 		 */
+		@Override
 		public Object createObject(XMLControl control) {
 			DrawingPanel panel = new DrawingPanel();
 			double xmin = control.getDouble("preferred x min"); //$NON-NLS-1$
@@ -2985,6 +3011,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		 * @param obj     the object
 		 * @return the loaded object
 		 */
+		@Override
 		public Object loadObject(XMLControl control, Object obj) {
 			DrawingPanel panel = (DrawingPanel) obj;
 			double xmin = control.getDouble("preferred x min"); //$NON-NLS-1$

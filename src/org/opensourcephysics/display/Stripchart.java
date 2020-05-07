@@ -62,7 +62,8 @@ public class Stripchart extends Dataset {
    * @param  x
    * @param  y
    */
-  public void append(double x, double y) {
+  @Override
+public void append(double x, double y) {
     if(!enabled) {
       super.append(x, y);
       return;
@@ -81,7 +82,8 @@ public class Stripchart extends Dataset {
    * @param  _xpoints
    * @param  _ypoints
    */
-  public void append(double[] _xpoints, double[] _ypoints) {
+  @Override
+public void append(double[] _xpoints, double[] _ypoints) {
     if(!enabled) {
       super.append(_xpoints, _ypoints);
       return;
@@ -103,7 +105,8 @@ public class Stripchart extends Dataset {
   /**
    *  Clears all data from this Dataset.
    */
-  public void clear() {
+  @Override
+public void clear() {
     super.clear();
     lastx = xpoints[0];
   }
@@ -153,7 +156,8 @@ public class Stripchart extends Dataset {
   }
 
   protected static class StripchartLoader extends Loader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       super.saveObject(control, obj);
       Stripchart dataset = (Stripchart) obj;
       control.setValue("x_range", dataset.xrange);            //$NON-NLS-1$
@@ -162,7 +166,8 @@ public class Stripchart extends Dataset {
       control.setValue("right_to_left", dataset.rightToLeft); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       Stripchart dataset = (Stripchart) obj;
       dataset.xrange = control.getDouble("x_range");             //$NON-NLS-1$
       dataset.yrange = control.getDouble("y_range");             //$NON-NLS-1$

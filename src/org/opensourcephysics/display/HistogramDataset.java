@@ -49,7 +49,8 @@ public class HistogramDataset extends Dataset {
    * @param  x
    * @param  y
    */
-  public void append(double x, double y) {
+  @Override
+public void append(double x, double y) {
     int index = (int) ((x-min)/binSize);
     if((index<0)||(index>=n)) {
       missedCounts++;
@@ -72,7 +73,8 @@ public class HistogramDataset extends Dataset {
    * @param  xpoints
    * @param  ypoints
    */
-  public void append(double[] xpoints, double[] ypoints) {
+  @Override
+public void append(double[] xpoints, double[] ypoints) {
     for(int j = 0, nj = xpoints.length; j<nj; j++) { // bin all the points
       int index = (int) ((xpoints[j]-min)/binSize);
       if((index<0)||(index>=n)) {
@@ -96,7 +98,8 @@ public class HistogramDataset extends Dataset {
    *
    * @return    xmin
    */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return min;
   }
 
@@ -105,7 +108,8 @@ public class HistogramDataset extends Dataset {
    *
    * @return    xmax
    */
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return max;
   }
 
@@ -130,7 +134,8 @@ public class HistogramDataset extends Dataset {
   /**
    *  Clears data from the histogram.
    */
-  public void clear() {
+  @Override
+public void clear() {
     for(int i = 0; i<n; i++) {
       binVals[i] = 0;
     }
@@ -158,7 +163,8 @@ public class HistogramDataset extends Dataset {
   }
 
   protected static class HistogramDatasetLoader extends Loader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       super.saveObject(control, obj);
       HistogramDataset dataset = (HistogramDataset) obj;
       control.setValue("min", dataset.min);                    //$NON-NLS-1$
@@ -171,7 +177,8 @@ public class HistogramDataset extends Dataset {
       control.setValue("missed_counts", dataset.missedCounts); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       HistogramDataset dataset = (HistogramDataset) obj;
       dataset.setBinWidth(control.getDouble("min"), control.getDouble("max"), control.getDouble("bin_size")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$

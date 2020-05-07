@@ -70,7 +70,8 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
    * @deprecated  use <code>OSPRuntime.getChooser()<\code>.
    * @return the chooser
    */
-  public static JFileChooser getChooser() {
+  @Deprecated
+public static JFileChooser getChooser() {
     return OSPRuntime.getChooser();
   }
 
@@ -92,14 +93,16 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
     // Changes font size to current level
     setFontLevel(FontSizer.getLevel());
     FontSizer.addPropertyChangeListener("level", new PropertyChangeListener() { //$NON-NLS-1$
-      public void propertyChange(PropertyChangeEvent e) {
+      @Override
+	public void propertyChange(PropertyChangeEvent e) {
         int level = ((Integer) e.getNewValue()).intValue();
         setFontLevel(level);
       }
 
     });
     ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
-      public void propertyChange(PropertyChangeEvent e) {
+      @Override
+	public void propertyChange(PropertyChangeEvent e) {
         refreshGUI();
       }
 
@@ -116,7 +119,8 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
       /**
        * Closes and disposes child windows when this window is about to be closed.
        */
-      public void windowClosed(WindowEvent e) {
+      @Override
+	public void windowClosed(WindowEvent e) {
         disposeChildWindows();
       }
 
@@ -164,7 +168,8 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
    *              is treated as an empty string, "".
    * @see      #getTitle
    */
-  public void setTitle(String title) {
+  @Override
+public void setTitle(String title) {
     super.setTitle(TeXParser.parseTeX(title));
   }
 
@@ -298,7 +303,8 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
    */
   public void clearDataAndRepaint() {}
 
-  public void setSize(int width, int height) {
+  @Override
+public void setSize(int width, int height) {
     super.setSize(width, height);
     validate();
   }
@@ -308,7 +314,9 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
    *
    * @deprecated
    */
-  public void show() {
+  @Deprecated
+@Override
+public void show() {
     if(!keepHidden) {
       super.show();
     }
@@ -317,7 +325,8 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
   /**
    * Disposes all resources.
    */
-  public void dispose() {
+  @Override
+public void dispose() {
     keepHidden = true;
     this.clearData();
     disposeChildWindows();
@@ -332,7 +341,8 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
    *
    * @param b
    */
-  public void setVisible(boolean b) {
+  @Override
+public void setVisible(boolean b) {
     if(!keepHidden) {
       boolean shouldRender = (!isVisible())&&animated; // render animated frames when made visible
       super.setVisible(b);
@@ -347,7 +357,8 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
    *
    * @param _keepHidden
    */
-  public void setKeepHidden(boolean _keepHidden) {
+  @Override
+public void setKeepHidden(boolean _keepHidden) {
     keepHidden = _keepHidden;
     if(keepHidden) {
       super.setVisible(false);
@@ -358,7 +369,8 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
    * Reads the keepHidden flag.
    *
    */
-  public boolean isKeepHidden() {
+  @Override
+public boolean isKeepHidden() {
     return keepHidden;
   }
 
@@ -519,7 +531,8 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
     try {   
       final java.lang.reflect.Method m = target.getClass().getMethod(methodName, parameters); 
       b.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           Object[] args = {};
           try {
             m.invoke(target, args);
@@ -573,7 +586,8 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
    *
    * @param  operation the operation
    */
-  public void setDefaultCloseOperation(int operation) {
+  @Override
+public void setDefaultCloseOperation(int operation) {
     if((operation==JFrame.EXIT_ON_CLOSE)&&OSPRuntime.launchingInSingleVM) {
       operation = WindowConstants.DISPOSE_ON_CLOSE;
       wishesToExit = true;
@@ -591,7 +605,8 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
    *
    * @return true if this frame wishes to exit
    */
-  public boolean wishesToExit() {
+  @Override
+public boolean wishesToExit() {
     return wishesToExit;
   }
 

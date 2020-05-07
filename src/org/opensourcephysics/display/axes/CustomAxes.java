@@ -49,7 +49,8 @@ public class CustomAxes extends AbstractAxes implements DrawableAxes {
    * @param  s the label
    * @param font_name an optional font name
    */
-  public void setXLabel(String s, String font_name) {}
+  @Override
+public void setXLabel(String s, String font_name) {}
 
   /**
    * Sets the y label of the axes.
@@ -59,14 +60,16 @@ public class CustomAxes extends AbstractAxes implements DrawableAxes {
    * @param  s the label
    * @param font_name an optional font name
    */
-  public void setYLabel(String s, String font_name) {}
+  @Override
+public void setYLabel(String s, String font_name) {}
 
   /**
  * Gets the x axis label.
  *
  * @return String
  */
-  public String getXLabel() {
+  @Override
+public String getXLabel() {
     return ""; //$NON-NLS-1$
   }
 
@@ -75,7 +78,8 @@ public class CustomAxes extends AbstractAxes implements DrawableAxes {
    *
    * @return String
    */
-  public String getYLabel() {
+  @Override
+public String getYLabel() {
     return ""; //$NON-NLS-1$
   }
 
@@ -84,7 +88,8 @@ public class CustomAxes extends AbstractAxes implements DrawableAxes {
    *
    * @return String
    */
-  public String getTitle() {
+  @Override
+public String getTitle() {
     return titleLine.getText();
   }
 
@@ -96,7 +101,8 @@ public class CustomAxes extends AbstractAxes implements DrawableAxes {
    * @param  s the label
    * @param font_name an optional font name
    */
-  public void setTitle(String s, String font_name) {
+  @Override
+public void setTitle(String s, String font_name) {
     titleLine.setText(s);
     if((font_name==null)||font_name.equals("")) { //$NON-NLS-1$
       return;
@@ -123,7 +129,8 @@ public class CustomAxes extends AbstractAxes implements DrawableAxes {
    *
    * @param isVisible true if the axes are visible
    */
-  public void setVisible(boolean isVisible) {
+  @Override
+public void setVisible(boolean isVisible) {
     visible = isVisible;
   }
 
@@ -131,7 +138,8 @@ public class CustomAxes extends AbstractAxes implements DrawableAxes {
    * Sets the interior background color.
    * @param color
    */
-  public void setInteriorBackground(Color color) {
+  @Override
+public void setInteriorBackground(Color color) {
     interiorColor = color;
   }
 
@@ -139,25 +147,29 @@ public class CustomAxes extends AbstractAxes implements DrawableAxes {
    * Shows a grid line for every x axis major tickmark.
    * @param showGrid
    */
-  public void setShowMajorXGrid(boolean showGrid) {}
+  @Override
+public void setShowMajorXGrid(boolean showGrid) {}
 
   /**
    * Shows a grid line for every x axis minor tickmark.
    * @param showGrid
    */
-  public void setShowMinorXGrid(boolean showGrid) {}
+  @Override
+public void setShowMinorXGrid(boolean showGrid) {}
 
   /**
    * Shows a grid line for every y axis major tickmark.
    * @param showGrid
    */
-  public void setShowMajorYGrid(boolean showGrid) {}
+  @Override
+public void setShowMajorYGrid(boolean showGrid) {}
 
   /**
    * Shows a grid line for every y axis minor tickmark.
    * @param showGrid
    */
-  public void setShowMinorYGrid(boolean showGrid) {}
+  @Override
+public void setShowMinorYGrid(boolean showGrid) {}
 
   /**
    * Adds a drawable object to the drawable list.
@@ -174,7 +186,8 @@ public class CustomAxes extends AbstractAxes implements DrawableAxes {
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible) {
       return;
     }

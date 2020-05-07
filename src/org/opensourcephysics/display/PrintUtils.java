@@ -97,16 +97,20 @@ public class PrintUtils {
     JDialog dialog = pane.createDialog(c, DisplayRes.getString("PrintUtils.PrintDialog.Title")); //$NON-NLS-1$
     // This listener object updates the dialog as the status changes
     job.addPrintJobListener(new PrintJobAdapter() {
-      public void printJobCompleted(PrintJobEvent e) {
+      @Override
+	public void printJobCompleted(PrintJobEvent e) {
         pane.setMessage(DisplayRes.getString("PrintUtils.PrintComplete.Message")); //$NON-NLS-1$
       }
-      public void printDataTransferCompleted(PrintJobEvent e) {
+      @Override
+	public void printDataTransferCompleted(PrintJobEvent e) {
         pane.setMessage(DisplayRes.getString("PrintUtils.PrintTransferred.Message")); //$NON-NLS-1$
       }
-      public void printJobRequiresAttention(PrintJobEvent e) {
+      @Override
+	public void printJobRequiresAttention(PrintJobEvent e) {
         pane.setMessage(DisplayRes.getString("PrintUtils.OutOfPaper.Message")); //$NON-NLS-1$
       }
-      public void printJobFailed(PrintJobEvent e) {
+      @Override
+	public void printJobFailed(PrintJobEvent e) {
         pane.setMessage(DisplayRes.getString("PrintUtils.PrintFailed.Message")); //$NON-NLS-1$
       }
 
@@ -151,7 +155,8 @@ public class PrintUtils {
     // pages of the print job.  If pagenum is greater than the last page,
     // it should return NO_SUCH_PAGE to indicate that it is done.  The
     // printing system may call this method multiple times per page.
-    public int print(Graphics g, PageFormat format, int pagenum) {
+    @Override
+	public int print(Graphics g, PageFormat format, int pagenum) {
       // This implemenation is always a single page
       if(pagenum>0) {
         return Printable.NO_SUCH_PAGE;

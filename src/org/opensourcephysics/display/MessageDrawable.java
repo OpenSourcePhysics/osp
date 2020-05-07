@@ -45,6 +45,7 @@ public class MessageDrawable implements Drawable {
 	public MessageDrawable() {
 		font = new Font(fontname, fontstyle, fontsize);
 		guiChangeListener = new PropertyChangeListener() {
+			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				if (e.getPropertyName().equals("level")) { //$NON-NLS-1$
 					int level = ((Integer) e.getNewValue()).intValue();
@@ -115,6 +116,7 @@ public class MessageDrawable implements Drawable {
 	 * @param panel DrawingPanel
 	 * @param g     Graphics
 	 */
+	@Override
 	public void draw(DrawingPanel panel, Graphics g) {
 		g = g.create();
 //		/** @j2sNative g.unclip$I(-3); */

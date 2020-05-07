@@ -9,15 +9,12 @@ package org.opensourcephysics.display;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.EventQueue;
-import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import javax.swing.JLabel;
 import javax.swing.JTable;
-import javax.swing.JViewport;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -75,7 +72,8 @@ public class DataRowTable extends JTable implements ActionListener {
 		setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		setColumnSelectionAllowed(true);
 	    rowModel.addTableModelListener(new TableModelListener() {
-	      public void tableChanged(TableModelEvent e) {
+	      @Override
+		public void tableChanged(TableModelEvent e) {
 	    	  //showChange(e);
 	    	  DataRowTable.this.firePropertyChange("cell", null, e); //$NON-NLS-1$
 	      }
@@ -248,6 +246,7 @@ public class DataRowTable extends JTable implements ActionListener {
 	 * @param column the column number
 	 * @return the cell renderer
 	 */
+	@Override
 	public TableCellRenderer getCellRenderer(int row, int column) {
 		//System.out.println("DRT.getCellRenderer " + row + " " + column);
 		int i = convertColumnIndexToModel(column);
@@ -265,6 +264,7 @@ public class DataRowTable extends JTable implements ActionListener {
 	 *
 	 * @param evt
 	 */
+	@Override
 	public void actionPerformed(ActionEvent evt) {
 //    tableChanged(new TableModelEvent(getModel(), TableModelEvent.HEADER_ROW));
 	}
@@ -292,6 +292,7 @@ public class DataRowTable extends JTable implements ActionListener {
 		 * @param column
 		 * @return
 		 */
+		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 				int row, int column) {
 			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -360,6 +361,7 @@ public class DataRowTable extends JTable implements ActionListener {
 		 * @param column
 		 * @return
 		 */
+		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 				int row, int column) {
 			if (table.isRowSelected(row)) {
@@ -389,6 +391,7 @@ public class DataRowTable extends JTable implements ActionListener {
 		 * @param columnIndex
 		 * @return
 		 */
+		@Override
 		public TableColumn getColumn(int columnIndex) {
 			TableColumn tableColumn;
 			try {

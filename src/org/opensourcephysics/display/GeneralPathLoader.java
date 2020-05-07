@@ -15,7 +15,8 @@ import org.opensourcephysics.controls.XMLLoader;
  * A class that saves and loads a GeneralPath in an XMLControl.
  */
 public class GeneralPathLoader extends XMLLoader {
-  public void saveObject(XMLControl control, Object obj) {
+  @Override
+public void saveObject(XMLControl control, Object obj) {
     GeneralPath shape = (GeneralPath) obj;
     // iterator with line flatness better than 0.001
     PathIterator it = shape.getPathIterator(null, 0.001);
@@ -23,7 +24,8 @@ public class GeneralPathLoader extends XMLLoader {
     control.setValue("segments", savePathSegments(it));    //$NON-NLS-1$
   }
 
-  public Object createObject(XMLControl control) {
+  @Override
+public Object createObject(XMLControl control) {
     return new GeneralPath(); // default shape is a GeneralPath
   }
 
@@ -81,7 +83,8 @@ public class GeneralPathLoader extends XMLLoader {
     }
   }
 
-  public Object loadObject(XMLControl control, Object obj) {
+  @Override
+public Object loadObject(XMLControl control, Object obj) {
     GeneralPath path = (GeneralPath) obj;
     path.reset();
     path.setWindingRule(control.getInt("winding rule"));   //$NON-NLS-1$

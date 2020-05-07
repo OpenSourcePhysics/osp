@@ -17,7 +17,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import java.awt.geom.Point2D.Double;
 import java.awt.geom.Rectangle2D;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
@@ -66,7 +65,8 @@ public class InteractiveCenteredArrow extends BoundedShape {
    * @param ypix int
    * @return boolean
    */
-  public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
     hotspot = NONE;
     if(!enabled) {
       return false;
@@ -86,7 +86,8 @@ public class InteractiveCenteredArrow extends BoundedShape {
    *
    * @param theta
    */
-  public void setTheta(double theta) {
+  @Override
+public void setTheta(double theta) {
     double len = Math.sqrt(width*width+height*height)/2.0;
     double dx = len*Math.cos(theta);
     double dy = len*Math.sin(theta);
@@ -102,7 +103,8 @@ public class InteractiveCenteredArrow extends BoundedShape {
    *
    * @param y
    */
-  void setHotSpotXY(double x, double y) {
+  @Override
+void setHotSpotXY(double x, double y) {
     if(hideBounds) {
       setXY(x, y);
       return;
@@ -142,7 +144,8 @@ public class InteractiveCenteredArrow extends BoundedShape {
    * @param panel  the world in which the arrow is viewed
    * @param g  the graphics context upon which to draw
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     Graphics2D g2 = (Graphics2D) g;
     getPixelPt(panel);
     pixelBounds = computePixelBounds(pixelPt);
@@ -197,7 +200,8 @@ public class InteractiveCenteredArrow extends BoundedShape {
    *
    * @return Cursor
    */
-  public java.awt.Cursor getPreferredCursor() {
+  @Override
+public java.awt.Cursor getPreferredCursor() {
     if(xyDrag&&(hotspot==CENTER)) {
       return java.awt.Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
     } else if(rotateDrag&&(hotspot==HEAD)) {
@@ -234,7 +238,8 @@ public class InteractiveCenteredArrow extends BoundedShape {
   * A class to save and load InteractiveArrow in an XMLControl.
   */
   protected static class InteractiveCenteredArrowLoader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       InteractiveCenteredArrow arrow = (InteractiveCenteredArrow) obj;
       control.setValue("x", arrow.x);                      //$NON-NLS-1$
       control.setValue("y", arrow.y);                      //$NON-NLS-1$
@@ -245,11 +250,13 @@ public class InteractiveCenteredArrow extends BoundedShape {
       control.setValue("color", arrow.color);              //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new InteractiveCenteredArrow(0, 0, 0, 0);
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       InteractiveCenteredArrow arrow = (InteractiveCenteredArrow) obj;
       double x = control.getDouble("x");      //$NON-NLS-1$
       double y = control.getDouble("y");      //$NON-NLS-1$

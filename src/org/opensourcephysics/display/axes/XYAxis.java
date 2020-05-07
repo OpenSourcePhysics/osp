@@ -74,7 +74,8 @@ abstract public class XYAxis implements Interactive {
    * @param panel
    * @param g
    */
-  abstract public void draw(DrawingPanel panel, Graphics g);
+  @Override
+abstract public void draw(DrawingPanel panel, Graphics g);
 
   /**
    * Method setLabelFormat
@@ -334,7 +335,8 @@ abstract public class XYAxis implements Interactive {
    * Gets the minimum x needed to draw this object.
    * @return minimum
    */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return 0;
   }
 
@@ -342,7 +344,8 @@ abstract public class XYAxis implements Interactive {
    * Gets the maximum x needed to draw this object.
    * @return maximum
    */
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return 0;
   }
 
@@ -350,7 +353,8 @@ abstract public class XYAxis implements Interactive {
    * Gets the minimum y needed to draw this object.
    * @return minimum
    */
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return 0;
   }
 
@@ -358,7 +362,8 @@ abstract public class XYAxis implements Interactive {
    * Gets the maximum y needed to draw this object.
    * @return minimum
    */
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return 0;
   }
 
@@ -368,34 +373,43 @@ abstract public class XYAxis implements Interactive {
    *
    * @return true if min/max values are valid
    */
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return false;
   }
 
   // implements interactive drawable interface
-  public Interactive findInteractive(DrawingPanel panel, int _xpix, int _ypix) {
+  @Override
+public Interactive findInteractive(DrawingPanel panel, int _xpix, int _ypix) {
     return null;
   }
 
-  public void setEnabled(boolean _enabled) {
+  @Override
+public void setEnabled(boolean _enabled) {
     enabled = _enabled;
   }
 
-  public boolean isEnabled() {
+  @Override
+public boolean isEnabled() {
     return enabled;
   }
 
-  public void setXY(double x, double y) {}
+  @Override
+public void setXY(double x, double y) {}
 
-  public void setX(double x) {}
+  @Override
+public void setX(double x) {}
 
-  public void setY(double y) {}
+  @Override
+public void setY(double y) {}
 
-  public double getX() {
+  @Override
+public double getX() {
     return x;
   }
 
-  public double getY() {
+  @Override
+public double getY() {
     return y;
   }
 

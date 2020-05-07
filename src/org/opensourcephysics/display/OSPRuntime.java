@@ -710,7 +710,7 @@ public class OSPRuntime {
 		if (launchJarPath == null) {
 			return null;
 		}
-		boolean isWebFile = ResourceLoader.isHTTP(launchJarPath); //$NON-NLS-1$
+		boolean isWebFile = ResourceLoader.isHTTP(launchJarPath); 
 		if (!isWebFile) {
 			launchJarPath = ResourceLoader.getNonURIPath(launchJarPath);
 		}
@@ -1324,8 +1324,8 @@ public class OSPRuntime {
 	 * @param extensions  an array of allowed extensions
 	 * @return the JFileChooser
 	 */
-	static public javax.swing.JFileChooser createChooser(String title, String description, String[] extensions) {
-		javax.swing.JFileChooser chooser = createChooser(description, extensions, null);
+	static public AsyncFileChooser createChooser(String title, String description, String[] extensions) {
+		AsyncFileChooser chooser = createChooser(description, extensions, null);
 		chooser.setDialogTitle(title);
 		return chooser;
 	}
@@ -1337,7 +1337,7 @@ public class OSPRuntime {
 	 * @param extensions  String[] An array of allowed extensions
 	 * @return JFileChooser
 	 */
-	static public javax.swing.JFileChooser createChooser(String description, String[] extensions) {
+	static public AsyncFileChooser createChooser(String description, String[] extensions) {
 		return createChooser(description, extensions, null);
 	}
 
@@ -1350,8 +1350,8 @@ public class OSPRuntime {
 	 *                    icon
 	 * @return JFileChooser
 	 */
-	static public javax.swing.JFileChooser createChooser(String description, String[] extensions, final File homeDir) {
-		javax.swing.JFileChooser chooser = new javax.swing.JFileChooser(new File(chooserDir));
+	static public AsyncFileChooser createChooser(String description, String[] extensions, final File homeDir) {
+		AsyncFileChooser chooser = new AsyncFileChooser(new File(chooserDir));
 		ExtensionFileFilter filter = new ExtensionFileFilter();
 		for (int i = 0; i < extensions.length; i++) {
 			filter.addExtension(extensions[i]);

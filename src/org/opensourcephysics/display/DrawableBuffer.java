@@ -152,7 +152,8 @@ public class DrawableBuffer implements Drawable, Measurable {
    * @param drawingPanel
    * @param g
    */
-  public void draw(DrawingPanel drawingPanel, Graphics g) {
+  @Override
+public void draw(DrawingPanel drawingPanel, Graphics g) {
     if(!visible) {
       return;
     }
@@ -170,7 +171,8 @@ public class DrawableBuffer implements Drawable, Measurable {
    *
    * @return x min
    */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return xmin;
   }
 
@@ -180,7 +182,8 @@ public class DrawableBuffer implements Drawable, Measurable {
    *
    * @return x max
    */
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return xmax;
   }
 
@@ -190,7 +193,8 @@ public class DrawableBuffer implements Drawable, Measurable {
    *
    * @return ymin
    */
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return ymin;
   }
 
@@ -200,7 +204,8 @@ public class DrawableBuffer implements Drawable, Measurable {
    *
    * @return ymax
    */
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return ymax;
   }
 
@@ -209,7 +214,8 @@ public class DrawableBuffer implements Drawable, Measurable {
    *
    * @return true if any object in the drawable list is measured
    */
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return measured;
   }
 
