@@ -276,11 +276,13 @@ public final class Integral {
       f = _f;
     }
 
-    public double[] getState() {
+    @Override
+	public double[] getState() {
       return state;
     }
 
-    public void getRate(double[] state, double rate[]) {
+    @Override
+	public void getRate(double[] state, double rate[]) {
       rate[0] = f.evaluate(state[1]); // integral
       rate[1] = 1;                    // indepenent variable
     }

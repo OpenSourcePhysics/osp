@@ -160,6 +160,7 @@ public class DataRaster implements Measurable {
 	 * @param panel the panel containing this data raster
 	 * @param g     the graphics context upon which to draw
 	 */
+	@Override
 	public void draw(DrawingPanel panel, Graphics g) {
 		if (!visible || primaryDrawingPanel != panel) {
 			return; // can only draw on one panel for now.
@@ -185,7 +186,8 @@ public class DataRaster implements Measurable {
 		}
 	}
 
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return true;
   }
 
@@ -222,19 +224,23 @@ public class DataRaster implements Measurable {
 	    yrange = (ymax-ymin);	
   }
 
+@Override
 public double getXMin() {
     return xmin;
   }
 
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return xmax;
   }
 
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return ymin;
   }
 
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return ymax;
   }
 

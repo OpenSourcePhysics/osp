@@ -33,8 +33,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -108,6 +106,7 @@ import org.opensourcephysics.tools.LibraryResource.Metadata;
  *
  * @author Douglas Brown
  */
+@SuppressWarnings("serial")
 public class LibraryTreePanel extends JPanel {
 
 	// static constants
@@ -133,6 +132,7 @@ public class LibraryTreePanel extends JPanel {
 		String imageFile = "/org/opensourcephysics/resources/tools/images/open.gif"; //$NON-NLS-1$
 		openFileIcon = new ImageIcon(ResourceLoader.getImageZipResource(imageFile));
 		hyperlinkListener = new HyperlinkListener() {
+			@Override
 			public void hyperlinkUpdate(HyperlinkEvent e) {
 				if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
 					OSPDesktop.displayURL(e.getURL().toString());
@@ -569,6 +569,7 @@ public class LibraryTreePanel extends JPanel {
 		popup = new JPopupMenu();
 		// create actions
 		addCollectionAction = new AbstractAction() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				LibraryTreeNode node = getSelectedNode();
 				htmlPanesByNode.remove(node);
@@ -585,6 +586,7 @@ public class LibraryTreePanel extends JPanel {
 			}
 		};
 		addResourceAction = new AbstractAction() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				LibraryTreeNode node = getSelectedNode();
 				htmlPanesByNode.remove(node);
@@ -601,6 +603,7 @@ public class LibraryTreePanel extends JPanel {
 			}
 		};
 		copyAction = new AbstractAction() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				LibraryTreeNode node = getSelectedNode();
 				if (node != null) {
@@ -618,6 +621,7 @@ public class LibraryTreePanel extends JPanel {
 			}
 		};
 		cutAction = new AbstractAction() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				LibraryTreeNode node = getSelectedNode();
 				if (node != null) {
@@ -629,6 +633,7 @@ public class LibraryTreePanel extends JPanel {
 			}
 		};
 		pasteAction = new AbstractAction() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				LibraryTreeNode parent = getSelectedNode();
 				if (parent == null || !(parent.record instanceof LibraryCollection))
@@ -661,6 +666,7 @@ public class LibraryTreePanel extends JPanel {
 			}
 		};
 		moveUpAction = new AbstractAction() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				LibraryTreeNode node = getSelectedNode();
 				if (node != null) {
@@ -683,6 +689,7 @@ public class LibraryTreePanel extends JPanel {
 			}
 		};
 		moveDownAction = new AbstractAction() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				LibraryTreeNode node = getSelectedNode();
 				if (node != null) {
@@ -706,6 +713,7 @@ public class LibraryTreePanel extends JPanel {
 			}
 		};
 		metadataAction = new AbstractAction() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				boolean select = !metadataButton.isSelected();
 				metadataButton.setSelected(select);
@@ -726,6 +734,7 @@ public class LibraryTreePanel extends JPanel {
 		};
 
 		convertPathMouseListener = new MouseAdapter() {
+			@Override
 			public void mouseClicked(MouseEvent e) {
 				EntryField field = (EntryField) e.getSource();
 				String path = field.getText();
@@ -745,6 +754,7 @@ public class LibraryTreePanel extends JPanel {
 						JMenuItem item = new JMenuItem(ToolsRes.getString("LibraryTreePanel.MenuItem.SetToRelative")); //$NON-NLS-1$
 						popup.add(item);
 						item.addActionListener(new ActionListener() {
+							@Override
 							public void actionPerformed(ActionEvent e) {
 								if (isTarget)
 									node.setTarget(relPath);
@@ -756,6 +766,7 @@ public class LibraryTreePanel extends JPanel {
 						JMenuItem item = new JMenuItem(ToolsRes.getString("LibraryTreePanel.MenuItem.SetToAbsolute")); //$NON-NLS-1$
 						popup.add(item);
 						item.addActionListener(new ActionListener() {
+							@Override
 							public void actionPerformed(ActionEvent e) {
 								if (isTarget)
 									node.setTarget(absPath);
@@ -772,6 +783,7 @@ public class LibraryTreePanel extends JPanel {
 
 		// create tree listeners
 		treeSelectionListener = new TreeSelectionListener() {
+			@Override
 			public void valueChanged(TreeSelectionEvent e) {
 				emptyMetadata.clearData();
 				metadataModel.dataChanged();
@@ -781,6 +793,7 @@ public class LibraryTreePanel extends JPanel {
 			}
 		};
 		treeMouseListener = new MouseAdapter() {
+			@Override
 			public void mouseClicked(MouseEvent e) {
 				// select node and show popup menu
 				TreePath path = tree.getPathForLocation(e.getX(), e.getY());
@@ -855,6 +868,7 @@ public class LibraryTreePanel extends JPanel {
 		nameField = new EntryField();
 		entryFields.add(nameField);
 		nameField.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				LibraryTreeNode node = getSelectedNode();
 				if (node != null) {
@@ -872,6 +886,7 @@ public class LibraryTreePanel extends JPanel {
 
 		// create typeField (really a label that looks like a field)
 		typeField = new JLabel(" ") { //$NON-NLS-1$
+			@Override
 			public Dimension getPreferredSize() {
 				Dimension dim = nameField.getPreferredSize();
 				dim.width = typeFieldWidth;
@@ -883,11 +898,13 @@ public class LibraryTreePanel extends JPanel {
 		typeField.setFont(nameField.getFont());
 		typeField.setOpaque(true);
 		typeField.addMouseListener(new MouseAdapter() {
+			@Override
 			public void mousePressed(MouseEvent e) {
 				final LibraryTreeNode node = getSelectedNode();
 				if (node != null && !(node.record instanceof LibraryCollection)) {
 					JPopupMenu popup = new JPopupMenu();
 					ActionListener typeListener = new ActionListener() {
+						@Override
 						public void actionPerformed(ActionEvent e) {
 							String type = e.getActionCommand();
 							if (!type.equals(node.record.getType())) {
@@ -905,6 +922,7 @@ public class LibraryTreePanel extends JPanel {
 					};
 					for (String next : LibraryResource.RESOURCE_TYPES) {
 						JMenuItem item = new JMenuItem(ToolsRes.getString("LibraryResource.Type." + next)) { //$NON-NLS-1$
+							@Override
 							public Dimension getPreferredSize() {
 								Dimension dim = typeField.getPreferredSize();
 								dim.width -= 2;
@@ -923,6 +941,7 @@ public class LibraryTreePanel extends JPanel {
 		htmlField = new EntryField();
 		entryFields.add(htmlField);
 		htmlField.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				LibraryTreeNode node = getSelectedNode();
 				if (node != null) {
@@ -935,6 +954,7 @@ public class LibraryTreePanel extends JPanel {
 		openHTMLButton = new JButton(openFileIcon);
 		openHTMLButton.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 2));
 		openHTMLButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				LibraryTreeNode node = getSelectedNode();
 				if (node != null) {
@@ -966,6 +986,7 @@ public class LibraryTreePanel extends JPanel {
 		basePathField = new EntryField();
 		entryFields.add(basePathField);
 		basePathField.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				// special handling to prevent setting base path if same as inherited
 				LibraryTreeNode node = getSelectedNode();
@@ -985,6 +1006,7 @@ public class LibraryTreePanel extends JPanel {
 			}
 		});
 		basePathField.addFocusListener(new FocusAdapter() {
+			@Override
 			public void focusGained(FocusEvent e) {
 				LibraryTreeNode node = getSelectedNode();
 				if ("".equals(node.record.getBasePath())) { //$NON-NLS-1$
@@ -997,6 +1019,7 @@ public class LibraryTreePanel extends JPanel {
 		openBasePathButton = new JButton(openFileIcon);
 		openBasePathButton.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 2));
 		openBasePathButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				LibraryTreeNode node = getSelectedNode();
 				if (node != null) {
@@ -1030,6 +1053,7 @@ public class LibraryTreePanel extends JPanel {
 		targetField = new EntryField();
 		entryFields.add(targetField);
 		targetField.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				LibraryTreeNode node = getSelectedNode();
 				if (node != null && !(node.record instanceof LibraryCollection)) {
@@ -1042,6 +1066,7 @@ public class LibraryTreePanel extends JPanel {
 		openFileButton = new JButton(openFileIcon);
 		openFileButton.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 2));
 		openFileButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				LibraryTreeNode node = getSelectedNode();
 				if (node != null) {
@@ -1119,6 +1144,7 @@ public class LibraryTreePanel extends JPanel {
 
 		// metadata
 		metadataFieldListener = new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				LibraryTreeNode node = getSelectedNode();
 				if (node != null) {
@@ -1327,6 +1353,7 @@ public class LibraryTreePanel extends JPanel {
 	protected void createTree(LibraryTreeNode root) {
 		treeModel = new DefaultTreeModel(root);
 		tree = new JTree(treeModel) {
+			@Override
 			public JToolTip createToolTip() {
 				return new JMultiLineToolTip(100, new Color(0xCCCCFF)); // Meta L&F
 			}
@@ -1397,6 +1424,7 @@ public class LibraryTreePanel extends JPanel {
 				popup.addSeparator();
 				popup.add(item);
 				item.addActionListener(new ActionListener() {
+					@Override
 					public void actionPerformed(ActionEvent e) {
 						String path = node.record.getCollectionPath();
 						browser.loadTab(path, node.record.treePath);
@@ -1726,6 +1754,7 @@ public class LibraryTreePanel extends JPanel {
 			document.getStyleSheet().addRule(LibraryResource.getH2Style());
 		}
 
+		@Override
 		public void paintComponent(Graphics g) {
 			if (OSPRuntime.antiAliasText) {
 				Graphics2D g2 = (Graphics2D) g;
@@ -1748,10 +1777,12 @@ public class LibraryTreePanel extends JPanel {
 		public MetadataComboBoxRenderer() {
 			super(BoxLayout.X_AXIS);
 			keyField = new JTextField() {
+				@Override
 				public Dimension getMaximumSize() {
 					return getPreferredSize();
 				}
 
+				@Override
 				public Dimension getPreferredSize() {
 					return keyEditField.getPreferredSize();
 				}
@@ -1760,10 +1791,12 @@ public class LibraryTreePanel extends JPanel {
 			keyField.setFont(keyField.getFont().deriveFont(Font.BOLD));
 
 			valueField = new JTextField() {
+				@Override
 				public Dimension getMaximumSize() {
 					return valueEditField.getMaximumSize();
 				}
 
+				@Override
 				public Dimension getPreferredSize() {
 					return getMinimumSize();
 				}
@@ -1781,6 +1814,7 @@ public class LibraryTreePanel extends JPanel {
 			add(valueField);
 		}
 
+		@Override
 		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
 				boolean cellHasFocus) {
 			boolean empty = false;
@@ -1818,6 +1852,7 @@ public class LibraryTreePanel extends JPanel {
 	 * A ComboBoxModel for metadata.
 	 */
 	protected class MetadataComboBoxModel extends AbstractListModel implements ComboBoxModel {
+		@Override
 		public int getSize() {
 			LibraryTreeNode node = getSelectedNode();
 			if (node == null)
@@ -1828,6 +1863,7 @@ public class LibraryTreePanel extends JPanel {
 			return data.size() + 1; // extra one for empty metadata
 		}
 
+		@Override
 		public Object getElementAt(int index) {
 			LibraryTreeNode node = getSelectedNode();
 			if (node == null)
@@ -1844,6 +1880,7 @@ public class LibraryTreePanel extends JPanel {
 			return emptyMetadata;
 		}
 
+		@Override
 		public void setSelectedItem(Object obj) {
 			if (obj == null || !(obj instanceof Metadata))
 				return;
@@ -1854,6 +1891,7 @@ public class LibraryTreePanel extends JPanel {
 			node.selectedMetadata = metadata;
 		}
 
+		@Override
 		public Object getSelectedItem() {
 			LibraryTreeNode node = getSelectedNode();
 			if (node == null)
@@ -1888,14 +1926,17 @@ public class LibraryTreePanel extends JPanel {
 		MetadataComboBoxEditor() {
 			super(BoxLayout.X_AXIS);
 			keyEditField = new MetadataEditField(keyFieldWidth) {
+				@Override
 				protected String getDefaultText() {
 					return metadata == emptyMetadata ? ToolsRes.getString("LibraryTreePanel.Metadata.Name") : null; //$NON-NLS-1$
 				}
 
+				@Override
 				protected Font getEmptyFont() {
 					return font.deriveFont(Font.BOLD + Font.ITALIC);
 				}
 
+				@Override
 				protected Font getDefaultFont() {
 					return font.deriveFont(Font.BOLD);
 				}
@@ -1906,14 +1947,17 @@ public class LibraryTreePanel extends JPanel {
 			keyEditField.setFont(keyEditField.getDefaultFont());
 
 			valueEditField = new MetadataEditField(0) {
+				@Override
 				protected String getDefaultText() {
 					return metadata == emptyMetadata ? ToolsRes.getString("LibraryTreePanel.Metadata.Value") : null; //$NON-NLS-1$
 				}
 
+				@Override
 				protected Font getEmptyFont() {
 					return font.deriveFont(Font.ITALIC);
 				}
 
+				@Override
 				protected Font getDefaultFont() {
 					return font.deriveFont(Font.PLAIN);
 				}
@@ -1932,10 +1976,12 @@ public class LibraryTreePanel extends JPanel {
 			add(valueEditField);
 		}
 
+		@Override
 		public Component getEditorComponent() {
 			return this;
 		}
 
+		@Override
 		public void setItem(Object obj) {
 			if (obj == null)
 				return;
@@ -1963,16 +2009,20 @@ public class LibraryTreePanel extends JPanel {
 			valueEditField.setBackground(Color.white);
 		}
 
+		@Override
 		public Object getItem() {
 			return metadata;
 		}
 
+		@Override
 		public void selectAll() {
 		}
 
+		@Override
 		public void addActionListener(ActionListener l) {
 		}
 
+		@Override
 		public void removeActionListener(ActionListener l) {
 		}
 	}
@@ -2004,6 +2054,7 @@ public class LibraryTreePanel extends JPanel {
 
 				// make property change listener to daisy-chain loading of the nodes
 				PropertyChangeListener listener = new PropertyChangeListener() {
+					@Override
 					public void propertyChange(PropertyChangeEvent e) {
 						NodeLoader nodeLoader = (NodeLoader) e.getSource();
 						if (nodeLoader.isDone()) {
@@ -2161,6 +2212,7 @@ public class LibraryTreePanel extends JPanel {
 			String htmlPathFinal = htmlPath;
 
 			Runnable onDone = new Runnable() {
+				@Override
 				public void run() {
 
 					// clear description for non-ComPADRE nodes with no HTML path
@@ -2193,6 +2245,7 @@ public class LibraryTreePanel extends JPanel {
 			};
 
 			Runnable onSuccess = new Runnable() {
+				@Override
 				public void run() {
 					hasNewChildren = true;
 					onDone.run();
@@ -2397,21 +2450,25 @@ public class LibraryTreePanel extends JPanel {
 		}
 
 		static DocumentListener documentListener = new DocumentListener() {
+			@Override
 			public void insertUpdate(DocumentEvent e) {
 				EntryField field = (EntryField) e.getDocument().getProperty("parent"); //$NON-NLS-1$
 				field.setBackground(Color.yellow);
 			}
 
+			@Override
 			public void removeUpdate(DocumentEvent e) {
 				EntryField field = (EntryField) e.getDocument().getProperty("parent"); //$NON-NLS-1$
 				field.setBackground(Color.yellow);
 			}
 
+			@Override
 			public void changedUpdate(DocumentEvent e) {
 			}
 		};
 
 		static FocusListener focusListener = new FocusAdapter() {
+			@Override
 			public void focusGained(FocusEvent e) {
 				EntryField field = (EntryField) e.getSource();
 				if (field.getDefaultText() != null) {
@@ -2423,6 +2480,7 @@ public class LibraryTreePanel extends JPanel {
 				field.setBackground(Color.white);
 			}
 
+			@Override
 			public void focusLost(FocusEvent e) {
 				EntryField field = (EntryField) e.getSource();
 				field.processEntry();
@@ -2430,6 +2488,7 @@ public class LibraryTreePanel extends JPanel {
 		};
 
 		static ActionListener actionListener = new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				EntryField field = (EntryField) e.getSource();
 				field.setBackground(Color.white);
@@ -2450,6 +2509,7 @@ public class LibraryTreePanel extends JPanel {
 			addActionListener(metadataFieldListener);
 		}
 
+		@Override
 		public Dimension getMaximumSize() {
 			Dimension dim = super.getMaximumSize();
 			dim.height = getPreferredSize().height;
@@ -2458,6 +2518,7 @@ public class LibraryTreePanel extends JPanel {
 			return dim;
 		}
 
+		@Override
 		public Dimension getMinimumSize() {
 			Dimension dim = super.getMinimumSize();
 			if (preferredWidth > 0)
@@ -2465,6 +2526,7 @@ public class LibraryTreePanel extends JPanel {
 			return dim;
 		}
 
+		@Override
 		public Dimension getPreferredSize() {
 			Dimension dim = super.getPreferredSize();
 			if (preferredWidth > 0)
@@ -2533,6 +2595,7 @@ public class LibraryTreePanel extends JPanel {
 			chooser = (chooserDir == null) ? new JFileChooser() : new JFileChooser(new File(chooserDir));
 			htmlFilter = new FileFilter() {
 				// accept directories and html files
+				@Override
 				public boolean accept(File f) {
 					if (f == null)
 						return false;
@@ -2547,18 +2610,21 @@ public class LibraryTreePanel extends JPanel {
 					return false;
 				}
 
+				@Override
 				public String getDescription() {
 					return ToolsRes.getString("LibraryTreePanel.HTMLFileFilter.Description"); //$NON-NLS-1$
 				}
 			};
 			folderFilter = new FileFilter() {
 				// accept directories only
+				@Override
 				public boolean accept(File f) {
 					if (f != null && f.isDirectory())
 						return true;
 					return false;
 				}
 
+				@Override
 				public String getDescription() {
 					return ToolsRes.getString("LibraryTreePanel.FolderFileFilter.Description"); //$NON-NLS-1$
 				}

@@ -214,7 +214,8 @@ public class ControlUtils {
     chooser = new JFileChooser(new File(OSPRuntime.chooserDir));
     javax.swing.filechooser.FileFilter filter = new javax.swing.filechooser.FileFilter() {
       // accept all directories and *.xml or *.osp files.
-      public boolean accept(File f) {
+      @Override
+	public boolean accept(File f) {
         if(f==null) {
           return false;
         }
@@ -233,7 +234,8 @@ public class ControlUtils {
         return false;
       }
       // the description of this filter
-      public String getDescription() {
+      @Override
+	public String getDescription() {
         return "XML files"; //$NON-NLS-1$
       }
 

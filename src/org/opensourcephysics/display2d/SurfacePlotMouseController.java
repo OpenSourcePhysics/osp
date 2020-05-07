@@ -25,15 +25,18 @@ public class SurfacePlotMouseController implements MouseListener, MouseMotionLis
     this.drawingPanel = drawingPanel;
   }
 
-  public void mouseEntered(MouseEvent e) {
+  @Override
+public void mouseEntered(MouseEvent e) {
     // empty 
   }
 
-  public void mouseExited(MouseEvent e) {
+  @Override
+public void mouseExited(MouseEvent e) {
     // empty 
   }
 
-  public void mouseReleased(MouseEvent e) {
+  @Override
+public void mouseReleased(MouseEvent e) {
     if(surfacePlot instanceof SurfacePlot) {
       ((SurfacePlot) surfacePlot).mouseReleased(e, drawingPanel);
     } else if(surfacePlot instanceof ComplexSurfacePlot) {
@@ -41,11 +44,13 @@ public class SurfacePlotMouseController implements MouseListener, MouseMotionLis
     }
   }
 
-  public void mouseClicked(MouseEvent e) {
+  @Override
+public void mouseClicked(MouseEvent e) {
     // empty 
   }
 
-  public void mousePressed(MouseEvent e) {
+  @Override
+public void mousePressed(MouseEvent e) {
     if(surfacePlot instanceof SurfacePlot) {
       ((SurfacePlot) surfacePlot).mousePressed(e, drawingPanel);
     } else if(surfacePlot instanceof ComplexSurfacePlot) {
@@ -53,9 +58,11 @@ public class SurfacePlotMouseController implements MouseListener, MouseMotionLis
     }
   }
 
-  public void mouseMoved(MouseEvent e) {}
+  @Override
+public void mouseMoved(MouseEvent e) {}
 
-  public void mouseDragged(MouseEvent e) {
+  @Override
+public void mouseDragged(MouseEvent e) {
     if(surfacePlot instanceof SurfacePlot) {
       ((SurfacePlot) surfacePlot).mouseDragged(e, drawingPanel);
     } else if(surfacePlot instanceof ComplexSurfacePlot) {

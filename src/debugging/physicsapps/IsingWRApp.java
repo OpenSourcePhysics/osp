@@ -36,7 +36,8 @@ public class IsingWRApp extends IsingApp implements Embeddable{
      *
      * @param control
      */
-    public void setControl(Control control){
+    @Override
+	public void setControl(Control control){
         stopAnimation();  // make sure the animation is stopped.
         this.control=control;
         if(this.control==null) return;
@@ -52,7 +53,8 @@ public class IsingWRApp extends IsingApp implements Embeddable{
     /**
      * Gets the Control for this applet.
      */
-    public Control getControl(){
+    @Override
+	public Control getControl(){
         return control;
     }
 
@@ -61,7 +63,8 @@ public class IsingWRApp extends IsingApp implements Embeddable{
    *
    * @return
    */
-  public ObjectManager getManager(){ return viewManager;}
+  @Override
+public ObjectManager getManager(){ return viewManager;}
 
   /**
    * The main entry point for the program.

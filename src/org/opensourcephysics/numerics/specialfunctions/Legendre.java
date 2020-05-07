@@ -102,7 +102,8 @@ public class Legendre {
     /**
      * Evaluates the associated Legendre function.
      */
-    public double evaluate(final double x) {
+    @Override
+	public double evaluate(final double x) {
       double val = Math.pow((1-x*x), m/2)*p.evaluate(x); // power function is more efficient with integer values
       return oddPower ? val*Math.sqrt(1-x*x) : val;
     }

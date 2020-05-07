@@ -108,7 +108,8 @@ public abstract class Filter {
 
     // set up menu items
     enabledAction = new AbstractAction(MediaRes.getString("Filter.MenuItem.Enabled")) { //$NON-NLS-1$
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         Filter.this.setEnabled(enabledItem.isSelected());
         refresh();
       }
@@ -118,7 +119,8 @@ public abstract class Filter {
     enabledItem.setSelected(isEnabled());
     propertiesItem = new JMenuItem(MediaRes.getString("Filter.MenuItem.Properties")); //$NON-NLS-1$
     propertiesItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         JDialog inspector = getInspector();
         if(inspector!=null) {
           inspector.setVisible(true);
@@ -128,13 +130,15 @@ public abstract class Filter {
     });
     copyItem = new JMenuItem(MediaRes.getString("Filter.MenuItem.Copy")); //$NON-NLS-1$
     copyItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         copy();
       }
     });
     closeButton = new JButton();
     closeButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         JDialog inspector = getInspector();
         if(inspector!=null) {
           if (isChanged() && previousState!=null) {
@@ -149,7 +153,8 @@ public abstract class Filter {
     });
     ableButton = new JButton();
     ableButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         enabledItem.setSelected(!enabledItem.isSelected());
         enabledAction.actionPerformed(null);
       }
@@ -157,7 +162,8 @@ public abstract class Filter {
     });
     clearButton = new JButton();
     clearButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         clear();
       }
 
@@ -329,7 +335,8 @@ public abstract class Filter {
       deleteItem = new JMenuItem(MediaRes.getString("Filter.MenuItem.Delete")); //$NON-NLS-1$
       final FilterStack filterStack = video.getFilterStack();
       deleteItem.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           filterStack.removeFilter(Filter.this);
         }
 

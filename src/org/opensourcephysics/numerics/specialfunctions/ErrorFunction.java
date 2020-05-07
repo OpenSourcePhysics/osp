@@ -21,7 +21,8 @@ public class ErrorFunction implements Function {
    * @param x
    * @return error function at x
    */
-  public double evaluate(double x) {
+  @Override
+public double evaluate(double x) {
     return errf(x);
   }
 

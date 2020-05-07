@@ -267,9 +267,11 @@ public interface DrawingPanel3D extends org.opensourcephysics.display3d.core.int
   // XML loader
   // ----------------------------------------------------
   static abstract class Loader implements org.opensourcephysics.controls.XML.ObjectLoader {
-    abstract public Object createObject(XMLControl control);
+    @Override
+	abstract public Object createObject(XMLControl control);
 
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       DrawingPanel3D panel = (DrawingPanel3D) obj;
       control.setValue("preferred x min", panel.getPreferredMinX());          //$NON-NLS-1$
       control.setValue("preferred x max", panel.getPreferredMaxX());          //$NON-NLS-1$
@@ -282,7 +284,8 @@ public interface DrawingPanel3D extends org.opensourcephysics.display3d.core.int
       control.setValue("elements", panel.getElements());                      //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       DrawingPanel3D panel = (DrawingPanel3D) obj;
       double minX = control.getDouble("preferred x min"); //$NON-NLS-1$
       double maxX = control.getDouble("preferred x max"); //$NON-NLS-1$

@@ -12,7 +12,6 @@ import java.util.Collection;
 
 import javax.swing.JFrame;
 
-import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPFrame;
 
 import javajs.async.SwingJSUtils;
@@ -38,13 +37,14 @@ public abstract class AbstractAnimation implements Animation, Runnable, StateMac
   /** Field decimalFormat can be used to display time and other numeric values. */
   protected DecimalFormat sciFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00E0"); // default numeric format for messages //$NON-NLS-1$
   /** Field decimalFormat can be used to display time and other numeric values. */
-  protected DecimalFormat decimalFormat = sciFormat; // default numeric format for messages //$NON-NLS-1$
+  protected DecimalFormat decimalFormat = sciFormat; // default numeric format for messages 
   /**
    * Sets the Control for this model and initializes the control's values.
    *
    * @param control
    */
-  public void setControl(Control control) {
+  @Override
+public void setControl(Control control) {
     this.control = control;
     mainFrame = null;
     if(control!=null) {
@@ -138,7 +138,8 @@ public abstract class AbstractAnimation implements Animation, Runnable, StateMac
   /**
    * Initializes the animation by reading parameters from the control.
    */
-  public void initializeAnimation() {
+  @Override
+public void initializeAnimation() {
     control.clearMessages();
   }
 
@@ -152,7 +153,8 @@ public abstract class AbstractAnimation implements Animation, Runnable, StateMac
    *
    * Sets animationThread to null and waits for a join with the animation thread.
    */
-  public synchronized void stopAnimation() {
+  @Override
+public synchronized void stopAnimation() {
   	if(stateHelper!=null)stateHelper.setState(STATE_DONE);
     if(animationThread==null) { // animation thread is already dead
       return;
@@ -184,7 +186,8 @@ public abstract class AbstractAnimation implements Animation, Runnable, StateMac
   /**
    * Steps the animation.
    */
-  public synchronized void stepAnimation() {
+  @Override
+public synchronized void stepAnimation() {
     if(animationThread!=null) {
       stopAnimation();
       return;
@@ -198,7 +201,8 @@ public abstract class AbstractAnimation implements Animation, Runnable, StateMac
    *
    * Use this method to start a timer or a thread.
    */
-  public synchronized void startAnimation() {
+  @Override
+public synchronized void startAnimation() {
     if(animationThread!=null) {
       return; // animation is running
     }
@@ -214,7 +218,8 @@ public abstract class AbstractAnimation implements Animation, Runnable, StateMac
   /**
    * Resets the animation to a predefined state.
    */
-  public void resetAnimation() {
+  @Override
+public void resetAnimation() {
     if(animationThread!=null) {
       stopAnimation(); // make sure animation is stopped
     }
@@ -227,6 +232,7 @@ public abstract class AbstractAnimation implements Animation, Runnable, StateMac
 	private final static int STATE_LOOP = 1;
   final static int STATE_DONE = 2;
   
+	@Override
 	public boolean stateLoop() {
 		while (animationThread != null && !animationThread.isInterrupted() && stateHelper.isAlive()) {
 			switch (stateHelper.getState()) {
@@ -251,7 +257,8 @@ public abstract class AbstractAnimation implements Animation, Runnable, StateMac
   /**
    * Implementation of Runnable interface.  DO NOT access this method directly.
    */
-  public void run() {
+  @Override
+public void run() {
 
   	stateHelper = new SwingJSUtils.StateHelper(this);  
   	stateHelper.setState(STATE_INIT);
@@ -289,7 +296,8 @@ public abstract class AbstractAnimation implements Animation, Runnable, StateMac
      * @param control the control
      * @param obj the object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       ((Animation) obj).initializeAnimation();
       return obj;
     }

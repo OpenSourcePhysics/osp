@@ -83,7 +83,8 @@ public class GridPointData implements GridData {
    * @param i int the component index
    * @param name String
    */
-  public void setComponentName(int i, String name) {
+  @Override
+public void setComponentName(int i, String name) {
     names[i] = name;
   }
 
@@ -92,7 +93,8 @@ public class GridPointData implements GridData {
    * @param i int the component index
    * @return String the name
    */
-  public String getComponentName(int i) {
+  @Override
+public String getComponentName(int i) {
     return names[i];
   }
 
@@ -101,7 +103,8 @@ public class GridPointData implements GridData {
    *
    * @return int
    */
-  public int getComponentCount() {
+  @Override
+public int getComponentCount() {
     return data[0][0].length-2;
   }
 
@@ -113,7 +116,8 @@ public class GridPointData implements GridData {
    * @param _bottom
    * @param _top
    */
-  public void setScale(double _left, double _right, double _bottom, double _top) {
+  @Override
+public void setScale(double _left, double _right, double _bottom, double _top) {
     cellData = false;
     left = _left;
     right = _right;
@@ -151,7 +155,8 @@ public class GridPointData implements GridData {
    * @param _bottom
    * @param _top
    */
-  public void setCellScale(double _left, double _right, double _bottom, double _top) {
+  @Override
+public void setCellScale(double _left, double _right, double _bottom, double _top) {
     cellData = true;
     int nx = data.length;
     int ny = data[0].length;
@@ -189,7 +194,8 @@ public class GridPointData implements GridData {
    * @param ymin
    * @param ymax
    */
-  public void setCenteredCellScale(double xmin, double xmax, double ymin, double ymax) {
+  @Override
+public void setCenteredCellScale(double xmin, double xmax, double ymin, double ymax) {
     int nx = data.length;
     int ny = data[0].length;
     double delta = (nx>1) ? (xmax-xmin)/(nx-1)/2 : 0;
@@ -206,7 +212,8 @@ public class GridPointData implements GridData {
    *
    * @return true if cell data.
    */
-  public boolean isCellData() {
+  @Override
+public boolean isCellData() {
     return cellData;
   }
 
@@ -218,7 +225,8 @@ public class GridPointData implements GridData {
    * @param component
    * @return the value.
    */
-  public double getValue(int ix, int iy, int component) {
+  @Override
+public double getValue(int ix, int iy, int component) {
     return data[ix][iy][component+2];
   }
 
@@ -230,7 +238,8 @@ public class GridPointData implements GridData {
    * @param component
    * @param value
    */
-  public void setValue(int ix, int iy, int component, double value) {
+  @Override
+public void setValue(int ix, int iy, int component, double value) {
     data[ix][iy][component+2] = value;
   }
 
@@ -238,7 +247,8 @@ public class GridPointData implements GridData {
    * Gets the number of x entries.
    * @return nx
    */
-  public int getNx() {
+  @Override
+public int getNx() {
     return data.length;
   }
 
@@ -246,7 +256,8 @@ public class GridPointData implements GridData {
    * Gets the number of y entries.
    * @return ny
    */
-  public int getNy() {
+  @Override
+public int getNy() {
     return data[0].length;
   }
 
@@ -256,6 +267,7 @@ public class GridPointData implements GridData {
    * @param n the component
    * @return {zmin,zmax}
    */
+	@Override
 	public double[] getZRange(int n) {
 		return getZRange(n, new double[2]);
 	}
@@ -267,6 +279,7 @@ public class GridPointData implements GridData {
 	 * @param minmax array to fill
 	 * @return minmax
 	 */
+	@Override
 	public double[] getZRange(int n, double[] minmax) {
 		int index = 2 + n;
 		double zmin = data[0][0][index];
@@ -315,7 +328,8 @@ public class GridPointData implements GridData {
    * @param index the component index
    * @return the interpolated sample
    */
-  public double interpolate(double x, double y, int index) {
+  @Override
+public double interpolate(double x, double y, int index) {
     int ix = (int) ((x-data[0][0][0])/dx);
     ix = Math.max(0, ix);
     ix = Math.min(data.length-2, ix);
@@ -341,7 +355,8 @@ public class GridPointData implements GridData {
    * @param values array will contain the interpolated values
    * @return the interpolated array
    */
-  public double[] interpolate(double x, double y, int[] indexes, double[] values) {
+  @Override
+public double[] interpolate(double x, double y, int[] indexes, double[] values) {
     int ix = (int) ((x-data[0][0][0])/dx);
     ix = Math.max(0, ix);
     ix = Math.min(data.length-2, ix);
@@ -362,7 +377,8 @@ public class GridPointData implements GridData {
    *
    * @return the data
    */
-  public double[][][] getData() {
+  @Override
+public double[][][] getData() {
     return data;
   }
 
@@ -389,7 +405,8 @@ public class GridPointData implements GridData {
    * Gets the x value for the first column in the grid.
    * @return  the leftmost x value
    */
-  public final double getLeft() {
+  @Override
+public final double getLeft() {
     return left;
   }
 
@@ -397,7 +414,8 @@ public class GridPointData implements GridData {
    * Gets the x value for the right column in the grid.
    * @return  the rightmost x value
    */
-  public final double getRight() {
+  @Override
+public final double getRight() {
     return right;
   }
 
@@ -405,7 +423,8 @@ public class GridPointData implements GridData {
    * Gets the y value for the first row of the grid.
    * @return  the topmost y value
    */
-  public final double getTop() {
+  @Override
+public final double getTop() {
     return top;
   }
 
@@ -413,7 +432,8 @@ public class GridPointData implements GridData {
    * Gets the y value for the last row of the grid.
    * @return the bottommost y value
    */
-  public final double getBottom() {
+  @Override
+public final double getBottom() {
     return bottom;
   }
 
@@ -421,7 +441,8 @@ public class GridPointData implements GridData {
    * Gets the change in x between grid columns.
    * @return the bottommost y value
    */
-  public final double getDx() {
+  @Override
+public final double getDx() {
     return dx;
   }
 
@@ -429,7 +450,8 @@ public class GridPointData implements GridData {
    * Gets the change in y between grid rows.
    * @return the bottommost y value
    */
-  public final double getDy() {
+  @Override
+public final double getDy() {
     return dy;
   }
 
@@ -439,7 +461,8 @@ public class GridPointData implements GridData {
    * @param i int
    * @return double the x coordinate
    */
-  public double indexToX(int i) {
+  @Override
+public double indexToX(int i) {
     return((data==null)||(i>=data.length)) ? Double.NaN : data[i][0][0]; // use stored x value from first row
   }
 
@@ -449,7 +472,8 @@ public class GridPointData implements GridData {
    * @param i int
    * @return double the y coordinate
    */
-  public double indexToY(int i) {
+  @Override
+public double indexToY(int i) {
     return((data==null)||(i>=data[0].length)) ? Double.NaN : data[0][i][1]; // use stored y value from first column
   }
 
@@ -459,7 +483,8 @@ public class GridPointData implements GridData {
    * @param x double the coordinate
    * @return int the index
    */
-  public int xToIndex(double x) {
+  @Override
+public int xToIndex(double x) {
     if(data==null) {
       return 0;
     }
@@ -481,7 +506,8 @@ public class GridPointData implements GridData {
    * @param y double the coordinate
    * @return int the index
    */
-  public int yToIndex(double y) {
+  @Override
+public int yToIndex(double y) {
     if(data==null) {
       return 0;
     }
@@ -510,7 +536,8 @@ public class GridPointData implements GridData {
    * A class to save and load Dataset data in an XMLControl.
    */
   private static class Loader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       GridPointData gpd = (GridPointData) obj;
       control.setValue("left", gpd.left);             //$NON-NLS-1$
       control.setValue("right", gpd.right);           //$NON-NLS-1$
@@ -522,11 +549,13 @@ public class GridPointData implements GridData {
       control.setValue("data", gpd.data);             //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new GridPointData(1, 1, 1);
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       GridPointData gpd = (GridPointData) obj;
       double[][][] data = (double[][][]) control.getObject("data"); //$NON-NLS-1$
       gpd.data = data;

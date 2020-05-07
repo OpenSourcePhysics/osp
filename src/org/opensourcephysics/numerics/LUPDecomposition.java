@@ -240,7 +240,8 @@ public class LUPDecomposition {
    * Returns a String that represents the value of this object.
    * @return a string representation of the receiver
    */
-  public String toString() {
+  @Override
+public String toString() {
     StringBuffer sb = new StringBuffer();
     char[] separator = {'[', ' '};
     int n = rows.length;

@@ -339,7 +339,8 @@ public class Polynomial implements Function {
   /**
    * Converts this polynomial to a String.
    */
-  public String toString() {
+  @Override
+public String toString() {
     if((coefficients==null)||(coefficients.length<1)) {
       return "Polynomial coefficients are undefined."; //$NON-NLS-1$
     }
@@ -372,7 +373,8 @@ public class Polynomial implements Function {
    * @param x double    value at which the polynomial is evaluated
    * @return double polynomial value.
    */
-  public double evaluate(double x) {
+  @Override
+public double evaluate(double x) {
     int n = coefficients.length;
     double answer = coefficients[--n];
     while(n>0) {

@@ -21,11 +21,13 @@ public abstract class AbstractEmbeddableSimulation  extends AbstractSimulation i
   protected double timeMax=Float.MAX_VALUE;
   protected String timeMsg="Done";
 
-  public Control getControl() {
+  @Override
+public Control getControl() {
     return control;
   }
 
-  public ObjectManager getManager() {
+  @Override
+public ObjectManager getManager() {
     return objectManager;
   }
 
@@ -34,6 +36,7 @@ public abstract class AbstractEmbeddableSimulation  extends AbstractSimulation i
  *
  * @param control
  */
+@Override
 public void setControl (Control control) {
   if(this.control!=null)stopSimulation();
   super.setControl(control);

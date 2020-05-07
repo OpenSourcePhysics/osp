@@ -7,7 +7,6 @@
 
 package org.opensourcephysics.numerics;
 import java.text.DecimalFormat;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -208,7 +207,8 @@ public final class Util {
    */
   public static Function constantFunction(final double c) {
     return new Function() {
-      public double evaluate(final double x) {
+      @Override
+	public double evaluate(final double x) {
         return c;
       }
 
@@ -224,7 +224,8 @@ public final class Util {
    */
   public static Function linearFunction(final double m, final double b) {
     return new Function() {
-      public double evaluate(final double x) {
+      @Override
+	public double evaluate(final double x) {
         return m*x+b;
       }
 
@@ -244,7 +245,8 @@ public final class Util {
   public static Function gaussian(final double x0, final double sigma) {
     final double s2 = 2*sigma*sigma;
     return new Function() {
-      public double evaluate(double x) {
+      @Override
+	public double evaluate(double x) {
         return Math.exp(-(x-x0)*(x-x0)/s2)/sigma/SQRT2PI;
       }
 

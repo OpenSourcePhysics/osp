@@ -96,7 +96,8 @@ public class GrayScaleFilter extends Filter {
    * @param sourceImage the source image
    * @return the filtered image
    */
-  public BufferedImage getFilteredImage(BufferedImage sourceImage) {
+  @Override
+public BufferedImage getFilteredImage(BufferedImage sourceImage) {
     if(!isEnabled()) {
       return sourceImage;
     }
@@ -115,7 +116,8 @@ public class GrayScaleFilter extends Filter {
    *
    * @return the inspector
    */
-  public synchronized JDialog getInspector() {
+  @Override
+public synchronized JDialog getInspector() {
   	Inspector myInspector = inspector;
     if (myInspector==null) {
     	myInspector = new Inspector();
@@ -147,7 +149,8 @@ public class GrayScaleFilter extends Filter {
   /**
    * Refreshes this filter's GUI
    */
-  public void refresh() {
+  @Override
+public void refresh() {
     super.refresh();
     if(inspector!=null) {
       inspector.setTitle(MediaRes.getString("Filter.GrayScale.Title")); //$NON-NLS-1$
@@ -261,16 +264,19 @@ public class GrayScaleFilter extends Filter {
         colorFields[i].setMaxValue(1.0);
         colorFields[i].setMinValue(0.0);
         colorFields[i].addActionListener(new AbstractAction() {
-          public void actionPerformed(ActionEvent e) {
+          @Override
+		public void actionPerformed(ActionEvent e) {
             readFields((NumberField) e.getSource());
           }
 
         });
         colorFields[i].addFocusListener(new FocusListener() {
-          public void focusGained(FocusEvent e) {
+          @Override
+		public void focusGained(FocusEvent e) {
             ((NumberField) e.getSource()).selectAll();
           }
-          public void focusLost(FocusEvent e) {
+          @Override
+		public void focusLost(FocusEvent e) {
             readFields((NumberField) e.getSource());
           }
 
@@ -305,7 +311,8 @@ public class GrayScaleFilter extends Filter {
       buttons.add(flatButton);
       buttons.add(customButton);
       ActionListener select = new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           if(buttons.isSelected(vidButton.getModel())) {
             setWeights(WT_R_VID, WT_G_VID, WT_B_VID);
           } else if(buttons.isSelected(flatButton.getModel())) {
@@ -392,7 +399,8 @@ public class GrayScaleFilter extends Filter {
      * @param control the control to save to
      * @param obj the filter to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       GrayScaleFilter filter = (GrayScaleFilter) obj;
       control.setValue("weights", filter.getWeights()); //$NON-NLS-1$
       if((filter.frame!=null)&&(filter.inspector!=null)&&filter.inspector.isVisible()) {
@@ -409,7 +417,8 @@ public class GrayScaleFilter extends Filter {
      * @param control the control
      * @return the new filter
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new GrayScaleFilter();
     }
 
@@ -420,7 +429,8 @@ public class GrayScaleFilter extends Filter {
      * @param obj the filter
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       final GrayScaleFilter filter = (GrayScaleFilter) obj;
       if(control.getPropertyNames().contains("weights")) {          //$NON-NLS-1$
         filter.setWeights((double[]) control.getObject("weights")); //$NON-NLS-1$

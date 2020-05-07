@@ -86,7 +86,8 @@ public class LaunchClassChooser extends JDialog {
     okButton = new JButton(LaunchRes.getString("ClassChooser.Button.Accept")); //$NON-NLS-1$
     okButton.setEnabled(false);
     okButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         applyChanges = true;
         setVisible(false);
       }
@@ -94,7 +95,8 @@ public class LaunchClassChooser extends JDialog {
     });
     JButton cancelButton = new JButton(LaunchRes.getString("ClassChooser.Button.Cancel")); //$NON-NLS-1$
     cancelButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         setVisible(false);
       }
 
@@ -102,7 +104,8 @@ public class LaunchClassChooser extends JDialog {
     // create the search field
     searchField = new JTextField(defaultSearch);
     searchField.addKeyListener(new KeyAdapter() {
-      public void keyReleased(KeyEvent e) {
+      @Override
+	public void keyReleased(KeyEvent e) {
         Object obj = choices.getSelectedValue();
         if("model".equals(searchField.getName())) { //$NON-NLS-1$
           searchForModel();
@@ -442,14 +445,16 @@ public class LaunchClassChooser extends JDialog {
     choices.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     choices.setFont(searchField.getFont());
     choices.addListSelectionListener(new ListSelectionListener() {
-      public void valueChanged(ListSelectionEvent e) {
+      @Override
+	public void valueChanged(ListSelectionEvent e) {
         JList theList = (JList) e.getSource();
         okButton.setEnabled(!theList.isSelectionEmpty());
       }
 
     });
     choices.addMouseListener(new MouseAdapter() {
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
         JList theList = (JList) e.getSource();
         if((e.getClickCount()==2)&&!theList.isSelectionEmpty()) {
           okButton.doClick();
@@ -489,14 +494,16 @@ public class LaunchClassChooser extends JDialog {
     choices.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     choices.setFont(searchField.getFont());
     choices.addListSelectionListener(new ListSelectionListener() {
-      public void valueChanged(ListSelectionEvent e) {
+      @Override
+	public void valueChanged(ListSelectionEvent e) {
         JList theList = (JList) e.getSource();
         okButton.setEnabled(!theList.isSelectionEmpty());
       }
 
     });
     choices.addMouseListener(new MouseAdapter() {
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
         JList theList = (JList) e.getSource();
         if((e.getClickCount()==2)&&!theList.isSelectionEmpty()) {
           okButton.doClick();

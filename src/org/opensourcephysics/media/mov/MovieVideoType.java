@@ -73,7 +73,8 @@ public abstract class MovieVideoType implements VideoType, MovieVideoI {
    *
    * @return true by default (set recordable to change)
    */
-  public boolean canRecord() {
+  @Override
+public boolean canRecord() {
     return recordable;
   }
 
@@ -91,7 +92,8 @@ public abstract class MovieVideoType implements VideoType, MovieVideoI {
    *
    * @return an array of file filters
    */
-  public VideoFileFilter[] getFileFilters() {
+  @Override
+public VideoFileFilter[] getFileFilters() {
   	if (singleTypeFilter!=null)
   		return new VideoFileFilter[] {singleTypeFilter};
     return movieFileFilters.toArray(new VideoFileFilter[0]);
@@ -102,7 +104,8 @@ public abstract class MovieVideoType implements VideoType, MovieVideoI {
    *
    * @return the default file filter
    */
-  public VideoFileFilter getDefaultFileFilter() {
+  @Override
+public VideoFileFilter getDefaultFileFilter() {
   	if (singleTypeFilter!=null)
   		return singleTypeFilter;
   	return null;
@@ -113,7 +116,8 @@ public abstract class MovieVideoType implements VideoType, MovieVideoI {
    *
    * @return a description
    */
-  public String getDescription() {
+  @Override
+public String getDescription() {
   	return (singleTypeFilter == null ? null : singleTypeFilter.getDescription());
   }
 
@@ -122,7 +126,8 @@ public abstract class MovieVideoType implements VideoType, MovieVideoI {
    *
    * @return an extension
    */
-  public String getDefaultExtension() {
+  @Override
+public String getDefaultExtension() {
   	if (singleTypeFilter!=null) {
   		return singleTypeFilter.getDefaultExtension();
   	}

@@ -82,7 +82,8 @@ public class HistogramFrame extends DrawingFrame {
   /**
    * Adds Views menu items on the menu bar.
    */
-  protected void addMenuItems() {
+  @Override
+protected void addMenuItems() {
     JMenuBar menuBar = getJMenuBar();
     if(menuBar==null) {
       return;
@@ -103,7 +104,8 @@ public class HistogramFrame extends DrawingFrame {
     JMenuItem tableItem = new JMenuItem(DisplayRes.getString("DrawingFrame.DataTable_menu_item")); //$NON-NLS-1$
     tableItem.setAccelerator(KeyStroke.getKeyStroke('T', MENU_SHORTCUT_KEY_MASK));
     ActionListener tableListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         showDataTable(true);
       }
 
@@ -114,7 +116,8 @@ public class HistogramFrame extends DrawingFrame {
     menu.addSeparator();
     logItem = new JCheckBoxMenuItem(DisplayRes.getString("HistogramFrame.MenuItem.LogScale"), false); //$NON-NLS-1$
     logItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         histogram.logScale = logItem.isSelected();
         drawingPanel.repaint();
       }
@@ -133,7 +136,8 @@ public class HistogramFrame extends DrawingFrame {
    * Adds launchable tools to the specified menu.
    *
    */
-  protected JMenu loadToolsMenu() {
+  @Override
+protected JMenu loadToolsMenu() {
 	if(org.opensourcephysics.js.JSUtil.isJS) {  // external tools not supported in JavaScript.
 		  return null;
 	}
@@ -172,7 +176,8 @@ public class HistogramFrame extends DrawingFrame {
     }
     final Class<?> finalDatasetToolClass = datasetToolClass; // class must be final for action listener
     datasetItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         try {
           Method m = finalDatasetToolClass.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
           Tool tool = (Tool) m.invoke(null, (Object[]) null);
@@ -227,7 +232,8 @@ public class HistogramFrame extends DrawingFrame {
   /**
    * Removes drawable objects added by the user from this frame.
    */
-  public void clearDrawables() {
+  @Override
+public void clearDrawables() {
     drawingPanel.clear();                // removes all drawables
     drawingPanel.addDrawable(histogram); // puts complex dataset back into panel
     showDataTable(false);
@@ -238,7 +244,8 @@ public class HistogramFrame extends DrawingFrame {
    *
    * @return the list
    */
-  public synchronized ArrayList<Drawable> getDrawables() {
+  @Override
+public synchronized ArrayList<Drawable> getDrawables() {
 	    return super.getDrawablesExcept(null, histogram);
   }
 
@@ -252,14 +259,16 @@ public class HistogramFrame extends DrawingFrame {
    *
    * @see #getObjectOfClass(Class c)
    */
-  public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
+  @Override
+public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
 	return getDrawablesExcept(c, histogram);
   }
 
   /**
    * Clears all the data stored.
    */
-  public void clearData() {
+  @Override
+public void clearData() {
     histogram.clear();
     dataTable.refreshTable();
     if(drawingPanel!=null) {
@@ -429,7 +438,8 @@ public class HistogramFrame extends DrawingFrame {
      * @param control XMLControl
      * @return Object
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       HistogramFrame frame = new HistogramFrame("x", "y", //$NON-NLS-1$ //$NON-NLS-2$
         DisplayRes.getString("HistogramFrame.Title"));    //$NON-NLS-1$
       return frame;
@@ -442,7 +452,8 @@ public class HistogramFrame extends DrawingFrame {
      * @param obj Object
      * @return Object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       HistogramFrame frame = ((HistogramFrame) obj);
       ArrayList<?> list = frame.getObjectOfClass(Histogram.class);

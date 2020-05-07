@@ -382,7 +382,8 @@ public class Library {
      * @param control the control to save to
      * @param obj the object to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
     	Library library = (Library)obj;
     	control.setValue("name", library.getName()); //$NON-NLS-1$
     	if (!library.pathList.isEmpty()) {
@@ -430,7 +431,8 @@ public class Library {
      * @param control the XMLControl with the object data
      * @return the newly created object
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new Library();
     }
 
@@ -441,7 +443,8 @@ public class Library {
      * @param obj the object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
     	final Library library = (Library)obj;
     	library.setName(control.getString("name")); //$NON-NLS-1$
     	String[] paths = (String[])control.getObject("collection_paths"); //$NON-NLS-1$

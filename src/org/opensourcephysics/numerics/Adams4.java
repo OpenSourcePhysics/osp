@@ -32,7 +32,8 @@ public class Adams4 extends RK4 {
    *
    * @param stepSize
    */
-  public void initialize(double stepSize) {
+  @Override
+public void initialize(double stepSize) {
     super.initialize(stepSize);
     fn = new double[numEqn];
     fn1 = new double[numEqn];
@@ -53,7 +54,8 @@ public class Adams4 extends RK4 {
    *
    * @return the step size
    */
-  public double step() {
+  @Override
+public double step() {
     double state[] = ode.getState();
     if(state==null) {
       return stepSize;

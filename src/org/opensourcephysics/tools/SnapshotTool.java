@@ -108,7 +108,8 @@ public class SnapshotTool implements Tool {
    * @param replyTo the tool to notify when the job is complete (may be null)
    * @throws RemoteException
    */
-  public void send(Job job, Tool replyTo) throws RemoteException {}
+  @Override
+public void send(Job job, Tool replyTo) throws RemoteException {}
 
   /**
    * Saves the image produced by a component
@@ -386,7 +387,8 @@ public class SnapshotTool implements Tool {
       * @param pageIndex the page number
       * @return status code
       */
-    public int print(Graphics g, PageFormat pageFormat, int pageIndex) {
+    @Override
+	public int print(Graphics g, PageFormat pageFormat, int pageIndex) {
       if(pageIndex>=1) { // only one page available
         return Printable.NO_SUCH_PAGE;
       }
@@ -420,15 +422,18 @@ public class SnapshotTool implements Tool {
       this.image = image;
     }
 
-    public DataFlavor[] getTransferDataFlavors() {
+    @Override
+	public DataFlavor[] getTransferDataFlavors() {
       return new DataFlavor[] {DataFlavor.imageFlavor};
     }
 
-    public boolean isDataFlavorSupported(DataFlavor flavor) {
+    @Override
+	public boolean isDataFlavorSupported(DataFlavor flavor) {
       return DataFlavor.imageFlavor.equals(flavor);
     }
 
-    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
+    @Override
+	public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
       if(!isDataFlavorSupported(flavor)) {
         throw new UnsupportedFlavorException(flavor);
       }

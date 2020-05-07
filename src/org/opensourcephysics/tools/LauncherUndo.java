@@ -102,7 +102,8 @@ public class LauncherUndo extends UndoManager {
       prev[1] = (prevArgs.length<2) ? "" : prevArgs[1]; //$NON-NLS-1$
     }
 
-    public void undo() throws CannotUndoException {
+    @Override
+	public void undo() throws CannotUndoException {
       super.undo();
       launcher.postEdits = false;
       launcher.open(prev);
@@ -114,7 +115,8 @@ public class LauncherUndo extends UndoManager {
       launcher.postEdits = true;
     }
 
-    public void redo() throws CannotUndoException {
+    @Override
+	public void redo() throws CannotUndoException {
       super.redo();
       launcher.postEdits = false;
       launcher.open(args);
@@ -122,7 +124,8 @@ public class LauncherUndo extends UndoManager {
       launcher.postEdits = true;
     }
 
-    public String getPresentationName() {
+    @Override
+	public String getPresentationName() {
       return "Link"; //$NON-NLS-1$
     }
 
@@ -173,7 +176,8 @@ public class LauncherUndo extends UndoManager {
       }
     }
 
-    public void undo() throws CannotUndoException {
+    @Override
+	public void undo() throws CannotUndoException {
       super.undo();
       // set file, node, page and/or URL
       if((undoFile!=null)&&!undoFile.equals(redoFile)) {
@@ -185,7 +189,8 @@ public class LauncherUndo extends UndoManager {
       launcher.postEdits = true;
     }
 
-    public void redo() throws CannotUndoException {
+    @Override
+	public void redo() throws CannotUndoException {
       super.redo();
       // set file, node, page and/or URL
       if((redoFile!=null)&&!redoFile.equals(undoFile)) {
@@ -197,7 +202,8 @@ public class LauncherUndo extends UndoManager {
       launcher.postEdits = true;
     }
 
-    public String getPresentationName() {
+    @Override
+	public String getPresentationName() {
       return "Navigation"; //$NON-NLS-1$
     }
 

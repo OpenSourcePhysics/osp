@@ -2502,7 +2502,7 @@ public class LaunchBuilder extends Launcher {
 					File file = getXMLChooser().getSelectedFile();
 					String fileName = file.getAbsolutePath();
 					OSPRuntime.chooserDir = XML.getDirectoryPath(file.getPath());
-					XMLControlElement control = new XMLControlElement(fileName);
+					XMLControlElement control = new XMLControlElement(file);
 					if (control.failedToRead()) {
 						OSPLog.info(LaunchRes.getString("Log.Message.InvalidXML") + " " + fileName); //$NON-NLS-1$//$NON-NLS-2$
 						JOptionPane.showMessageDialog(null,

@@ -36,7 +36,8 @@ public class ElementCone extends AbstractTile implements org.opensourcephysics.d
   // -------------------------------------
   // Configuration
   // -------------------------------------
-  public void setTruncationHeight(double height) {
+  @Override
+public void setTruncationHeight(double height) {
     if(height<0) {
       height = Double.NaN;
     }
@@ -45,74 +46,88 @@ public class ElementCone extends AbstractTile implements org.opensourcephysics.d
     changeNTiles = true;
   }
 
-  public double getTruncationHeight() {
+  @Override
+public double getTruncationHeight() {
     return truncationHeight;
   }
 
-  public void setClosedBottom(boolean close) {
+  @Override
+public void setClosedBottom(boolean close) {
     this.closedBottom = close;
     setElementChanged(true);
     changeNTiles = true;
   }
 
-  public boolean isClosedBottom() {
+  @Override
+public boolean isClosedBottom() {
     return this.closedBottom;
   }
 
-  public void setClosedTop(boolean close) {
+  @Override
+public void setClosedTop(boolean close) {
     this.closedTop = close;
     setElementChanged(true);
     changeNTiles = true;
   }
 
-  public boolean isClosedTop() {
+  @Override
+public boolean isClosedTop() {
     return this.closedTop;
   }
 
-  public void setClosedLeft(boolean close) {
+  @Override
+public void setClosedLeft(boolean close) {
     this.closedLeft = close;
     setElementChanged(true);
     changeNTiles = true;
   }
 
-  public boolean isClosedLeft() {
+  @Override
+public boolean isClosedLeft() {
     return this.closedLeft;
   }
 
-  public void setClosedRight(boolean close) {
+  @Override
+public void setClosedRight(boolean close) {
     this.closedRight = close;
     setElementChanged(true);
     changeNTiles = true;
   }
 
-  public boolean isClosedRight() {
+  @Override
+public boolean isClosedRight() {
     return this.closedRight;
   }
 
-  public void setMinimumAngle(int angle) {
+  @Override
+public void setMinimumAngle(int angle) {
     this.minAngle = angle;
     setElementChanged(true);
     changeNTiles = true;
   }
 
-  public int getMinimumAngle() {
+  @Override
+public int getMinimumAngle() {
     return this.minAngle;
   }
 
-  public void setMaximumAngle(int angle) {
+  @Override
+public void setMaximumAngle(int angle) {
     this.maxAngle = angle;
     setElementChanged(true);
     changeNTiles = true;
   }
 
-  public int getMaximumAngle() {
+  @Override
+public int getMaximumAngle() {
     return this.maxAngle;
   }
 
   // -------------------------------------
   // Private or protected methods
   // -------------------------------------
-  protected synchronized void computeCorners() {
+  @Override
+protected synchronized void computeCorners() {
     int theNr = 1, theNu = 1, theNz = 1;
     double angle1 = minAngle, angle2 = maxAngle;
     if(Math.abs(angle2-angle1)>360) {
@@ -171,7 +186,8 @@ public class ElementCone extends AbstractTile implements org.opensourcephysics.d
   }
 
   static protected class Loader extends org.opensourcephysics.display3d.core.ElementCone.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ElementCone();
     }
 

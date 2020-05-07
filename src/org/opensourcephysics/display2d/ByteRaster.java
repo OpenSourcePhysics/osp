@@ -82,7 +82,8 @@ public class ByteRaster extends MeasuredImage implements Dimensioned, ByteLattic
    * @param nx the number of x entries
    * @param ny the number of y entries
    */
-  public void resizeLattice(int nx, int ny) {
+  @Override
+public void resizeLattice(int nx, int ny) {
     resizeRaster(nx, ny);
     xmin = 0;
     xmax = nx;
@@ -116,7 +117,8 @@ public class ByteRaster extends MeasuredImage implements Dimensioned, ByteLattic
    * Gets the number of x entries.
    * @return nx
    */
-  public int getNx() {
+  @Override
+public int getNx() {
     return nx;
   }
 
@@ -124,7 +126,8 @@ public class ByteRaster extends MeasuredImage implements Dimensioned, ByteLattic
    * Gets the number of y entries.
    * @return ny
    */
-  public int getNy() {
+  @Override
+public int getNy() {
     return ny;
   }
   
@@ -132,7 +135,8 @@ public class ByteRaster extends MeasuredImage implements Dimensioned, ByteLattic
   /**
    * Randomizes the lattice values.
    */
-  public void randomize() {
+  @Override
+public void randomize() {
     Random random = new Random();
     random.nextBytes(packedData);
   }
@@ -143,7 +147,8 @@ public class ByteRaster extends MeasuredImage implements Dimensioned, ByteLattic
    * @param panel
    * @return the dimension
    */
-  public Dimension getInterior(DrawingPanel panel) {
+  @Override
+public Dimension getInterior(DrawingPanel panel) {
 	if(allowRescale) return null;
     float availableWidth = panel.getWidth()-panel.getLeftGutter()-panel.getRightGutter()-1;
     float availableHeight = panel.getHeight()-panel.getTopGutter()-panel.getBottomGutter()-1;
@@ -161,7 +166,8 @@ public class ByteRaster extends MeasuredImage implements Dimensioned, ByteLattic
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible) {
       return;
     }
@@ -222,7 +228,8 @@ public class ByteRaster extends MeasuredImage implements Dimensioned, ByteLattic
    * @param ymin double
    * @param ymax double
    */
-  public void setAll(byte val[][], double xmin, double xmax, double ymin, double ymax) {
+  @Override
+public void setAll(byte val[][], double xmin, double xmax, double ymin, double ymax) {
     setAll(val);
     setMinMax(xmin, xmax, ymin, ymax);
   }
@@ -233,7 +240,8 @@ public class ByteRaster extends MeasuredImage implements Dimensioned, ByteLattic
    * A pixel is set to 1 if the value is >0; the cell is set to zero otherwise
    * @param val
    */
-  public void setBlock(byte val[][]) {
+  @Override
+public void setBlock(byte val[][]) {
     setBlock(0, 0, val);
   }
 
@@ -245,7 +253,8 @@ public class ByteRaster extends MeasuredImage implements Dimensioned, ByteLattic
    * @param iy_offset
    * @param val
    */
-  public void setBlock(int ix_offset, int iy_offset, byte val[][]) {
+  @Override
+public void setBlock(int ix_offset, int iy_offset, byte val[][]) {
     if((iy_offset<0)||(iy_offset+val[0].length>ny)) {
       throw new IllegalArgumentException("Row index out of range in byte raster setBlock."); //$NON-NLS-1$
     }
@@ -288,7 +297,8 @@ public class ByteRaster extends MeasuredImage implements Dimensioned, ByteLattic
    * @param iy_offset the y offset in the column
    * @param val values in column
    */
-  public void setCol(int ix, int iy_offset, byte val[]) {
+  @Override
+public void setCol(int ix, int iy_offset, byte val[]) {
     if((iy_offset<0)||(iy_offset+val.length>ny)) {
       throw new IllegalArgumentException("Row index out of range in byte raster setCol."); //$NON-NLS-1$
     }
@@ -309,7 +319,8 @@ public class ByteRaster extends MeasuredImage implements Dimensioned, ByteLattic
    * @param ix_offset  the offset
    * @param val the value
    */
-  public void setRow(int iy, int ix_offset, byte val[]) {
+  @Override
+public void setRow(int iy, int ix_offset, byte val[]) {
     if((iy<0)||(iy>=ny)) {
       throw new IllegalArgumentException("Row index out of range in binary lattice setRow."); //$NON-NLS-1$
     }
@@ -328,7 +339,8 @@ public class ByteRaster extends MeasuredImage implements Dimensioned, ByteLattic
    * @param iy
    * @param val
    */
-  public void setValue(int ix, int iy, byte val) {
+  @Override
+public void setValue(int ix, int iy, byte val) {
     packedData[(ny-iy-1)*nx+ix] = val;
   }
 
@@ -339,7 +351,8 @@ public class ByteRaster extends MeasuredImage implements Dimensioned, ByteLattic
    * @param iy
    * @return the cell value.
    */
-  public byte getValue(int ix, int iy) {
+  @Override
+public byte getValue(int ix, int iy) {
     return packedData[(ny-iy-1)*nx+ix];
   }
 
@@ -359,7 +372,8 @@ public class ByteRaster extends MeasuredImage implements Dimensioned, ByteLattic
    *
    * @param colors
    */
-  public void setColorPalette(Color[] colors) {
+  @Override
+public void setColorPalette(Color[] colors) {
     int numColors = colors.length;
     reds = new byte[numColors];
     greens = new byte[numColors];
@@ -388,7 +402,8 @@ public class ByteRaster extends MeasuredImage implements Dimensioned, ByteLattic
   /**
    * Sets the default palette.
    */
-  public void createDefaultColors() {
+  @Override
+public void createDefaultColors() {
     colorModel = createColorModel();
     image = new BufferedImage(colorModel, raster, false, null);
   }
@@ -399,7 +414,8 @@ public class ByteRaster extends MeasuredImage implements Dimensioned, ByteLattic
    * @param i
    * @param color
    */
-  public void setIndexedColor(int i, Color color) {
+  @Override
+public void setIndexedColor(int i, Color color) {
     // i         = i % reds.length;
     i = (i+256)%reds.length;
     reds[i] = (byte) color.getRed();
@@ -412,7 +428,8 @@ public class ByteRaster extends MeasuredImage implements Dimensioned, ByteLattic
   /**
    * Shows the color associated with each value.
    */
-  public JFrame showLegend() {
+  @Override
+public JFrame showLegend() {
     InteractivePanel dp = new InteractivePanel();
     dp.setPreferredSize(new java.awt.Dimension(300, 80));
     dp.setPreferredGutters(0, 0, 0, 35);
@@ -453,7 +470,8 @@ public class ByteRaster extends MeasuredImage implements Dimensioned, ByteLattic
    *
    * @param showGridLines
    */
-  public void setShowGridLines(boolean showGridLines) {
+  @Override
+public void setShowGridLines(boolean showGridLines) {
     showGrid = showGridLines;
   }
 
@@ -462,7 +480,8 @@ public class ByteRaster extends MeasuredImage implements Dimensioned, ByteLattic
    *
    * @param  c
    */
-  public void setGridLineColor(Color c) {
+  @Override
+public void setGridLineColor(Color c) {
     gridColor = c;
   }
 
@@ -498,7 +517,8 @@ public class ByteRaster extends MeasuredImage implements Dimensioned, ByteLattic
    * @param y
    * @return index
    */
-  public int indexFromPoint(double x, double y) {
+  @Override
+public int indexFromPoint(double x, double y) {
     int nx = getNx();
     int ny = getNy();
     double xMin = getXMin();
@@ -521,7 +541,8 @@ public class ByteRaster extends MeasuredImage implements Dimensioned, ByteLattic
    * @param x double the coordinate
    * @return int the index
    */
-  public int xToIndex(double x) {
+  @Override
+public int xToIndex(double x) {
     int nx = getNx();
     double xMin = getXMin();
     double xMax = getXMax();
@@ -554,7 +575,8 @@ public class ByteRaster extends MeasuredImage implements Dimensioned, ByteLattic
    * @param y double the coordinate
    * @return int the index
    */
-  public int yToIndex(double y) {
+  @Override
+public int yToIndex(double y) {
     int ny = getNy();
     double yMin = getYMin();
     double yMax = getYMax();

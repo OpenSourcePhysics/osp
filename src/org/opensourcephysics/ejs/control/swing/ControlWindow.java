@@ -73,7 +73,8 @@ public abstract class ControlWindow extends ControlContainer implements NeedsUpd
     }
   }
 
-  public void destroy() {
+  @Override
+public void destroy() {
     dispose();
     super.destroy();
   }
@@ -85,7 +86,8 @@ public abstract class ControlWindow extends ControlContainer implements NeedsUpd
     }
   }
 
-  public void reset() {
+  @Override
+public void reset() {
     startingup = false;
     if(shouldShow) {
       show(); // ((Window) getComponent()).show();
@@ -95,12 +97,14 @@ public abstract class ControlWindow extends ControlContainer implements NeedsUpd
     super.reset();
   }
 
-  public void update() { // Ensure it will be updated
+  @Override
+public void update() { // Ensure it will be updated
     startingup = false;
     // super.update();
   }
 
-  public void adjustSize() { // overrides its super
+  @Override
+public void adjustSize() { // overrides its super
     String size = getProperty("size"); //$NON-NLS-1$
     ((Window) getComponent()).validate();
     if((size!=null)&&size.trim().toLowerCase().equals("pack")) { //$NON-NLS-1$
@@ -115,7 +119,8 @@ public abstract class ControlWindow extends ControlContainer implements NeedsUpd
   // ------------------------------------------------
   static private java.util.ArrayList<String> infoList = null;
 
-  public java.util.ArrayList<String> getPropertyList() {
+  @Override
+public java.util.ArrayList<String> getPropertyList() {
     if(infoList==null) {
       infoList = new java.util.ArrayList<String>();
       infoList.add("layout");       //$NON-NLS-1$
@@ -126,7 +131,8 @@ public abstract class ControlWindow extends ControlContainer implements NeedsUpd
     return infoList;
   }
 
-  public String getPropertyInfo(String _property) {
+  @Override
+public String getPropertyInfo(String _property) {
     if(_property.equals("location")) { //$NON-NLS-1$
       return "Point|Object";           //$NON-NLS-1$
     }
@@ -145,7 +151,8 @@ public abstract class ControlWindow extends ControlContainer implements NeedsUpd
   // ------------------------------------------------
   // Set and Get the values of the properties
   // ------------------------------------------------
-  public void setValue(int _index, Value _value) {
+  @Override
+public void setValue(int _index, Value _value) {
     switch(_index) {
        case 0 :                                                                   // layout
          if(_value.getObject() instanceof LayoutManager) {
@@ -204,7 +211,8 @@ public abstract class ControlWindow extends ControlContainer implements NeedsUpd
     }
   }
 
-  public void setDefaultValue(int _index) {
+  @Override
+public void setDefaultValue(int _index) {
     switch(_index) {
        case 0 :
          getContainer().setLayout(myLayout = new BorderLayout());
@@ -235,7 +243,8 @@ public abstract class ControlWindow extends ControlContainer implements NeedsUpd
     }
   }
 
-  public Value getValue(int _index) {
+  @Override
+public Value getValue(int _index) {
     switch(_index) {
        case 0 :
          return internalValue;

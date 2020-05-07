@@ -58,6 +58,7 @@ import org.opensourcephysics.tools.ResourceLoader;
  * @author Douglas Brown
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class BaselineFilter extends Filter {
   // instance fields
   private BufferedImage baseline;
@@ -156,7 +157,8 @@ public class BaselineFilter extends Filter {
    * @param sourceImage the source image
    * @return the filtered image
    */
-  public BufferedImage getFilteredImage(BufferedImage sourceImage) {
+  @Override
+public BufferedImage getFilteredImage(BufferedImage sourceImage) {
     if(!isEnabled()) {
       return sourceImage;
     }
@@ -175,7 +177,8 @@ public class BaselineFilter extends Filter {
    *
    * @return the inspector
    */
-  public synchronized JDialog getInspector() {
+  @Override
+public synchronized JDialog getInspector() {
   	Inspector myInspector = inspector;
     if (myInspector==null) {
     	myInspector = new Inspector();
@@ -194,14 +197,16 @@ public class BaselineFilter extends Filter {
   /**
    * Clears this filter
    */
-  public void clear() {
+  @Override
+public void clear() {
     setBaselineImage(null);
   }
 
   /**
    * Refreshes this filter's GUI
    */
-  public void refresh() {
+  @Override
+public void refresh() {
     super.refresh();
     loadButton.setText(MediaRes.getString("Filter.Baseline.Button.Load"));       //$NON-NLS-1$
     captureButton.setText(MediaRes.getString("Filter.Baseline.Button.Capture")); //$NON-NLS-1$
@@ -291,7 +296,8 @@ public class BaselineFilter extends Filter {
       // create buttons
       loadButton = new JButton();
       loadButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           load();
         }
 
@@ -299,7 +305,8 @@ public class BaselineFilter extends Filter {
       // create buttons
       captureButton = new JButton();
       captureButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           capture();
         }
 
@@ -342,7 +349,8 @@ public class BaselineFilter extends Filter {
      * @param control the control to save to
      * @param obj the filter to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       BaselineFilter filter = (BaselineFilter) obj;
       if(filter.imagePath!=null) {
         control.setValue("imagepath", filter.imagePath); //$NON-NLS-1$
@@ -361,7 +369,8 @@ public class BaselineFilter extends Filter {
      * @param control the control
      * @return the new filter
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new BaselineFilter();
     }
 
@@ -372,7 +381,8 @@ public class BaselineFilter extends Filter {
      * @param obj the filter
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       final BaselineFilter filter = (BaselineFilter) obj;
       if(control.getPropertyNames().contains("imagepath")) { //$NON-NLS-1$
         filter.load(control.getString("imagepath"));         //$NON-NLS-1$

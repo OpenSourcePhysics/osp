@@ -109,7 +109,8 @@ public class DataTrackSupport {
 		// start timer to look for remoteTool and send handshake message
 		if (timer==null) {
 			timer = new Timer(500, new ActionListener() {
-	      public void actionPerformed(ActionEvent e) {
+	      @Override
+		public void actionPerformed(ActionEvent e) {
 	      	if (getRemoteTool()!=null) {
 	      		timer.stop();
 	      		sendHandshake(id);
@@ -264,6 +265,7 @@ public class DataTrackSupport {
   private static void startProcess(final ProcessBuilder builder) {
 		// start the process and wait for it to finish
 		Runnable runner = new Runnable() {
+			@Override
 			public void run() {
 				try {
 					Process process = builder.start();

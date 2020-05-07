@@ -51,23 +51,28 @@ public class ElementText extends Element implements org.opensourcephysics.displa
     setText(text);
   }
 
-  public void setText(String text) {
+  @Override
+public void setText(String text) {
     textLine.setText(text);
   }
 
-  public String getText() {
+  @Override
+public String getText() {
     return textLine.getText();
   }
 
-  public void setFont(Font font) {
+  @Override
+public void setFont(Font font) {
     textLine.setFont(font);
   }
 
-  public Font getFont() {
+  @Override
+public Font getFont() {
     return textLine.getFont();
   }
 
-  public void setJustification(int justification) {
+  @Override
+public void setJustification(int justification) {
     this.justify = justification;
     switch(justification) {
        default :
@@ -83,22 +88,26 @@ public class ElementText extends Element implements org.opensourcephysics.displa
     }
   }
 
-  public int getJustification() {
+  @Override
+public int getJustification() {
     return this.justify;
   }
 
-  public void setRotationAngle(double angle) {
+  @Override
+public void setRotationAngle(double angle) {
     this.angle = angle;
   }
 
-  public double getRotationAngle() {
+  @Override
+public double getRotationAngle() {
     return this.angle;
   }
 
   // -------------------------------------
   // Abstract part of Element or Parent methods overwritten
   // -------------------------------------
-  Object3D[] getObjects3D() {
+  @Override
+Object3D[] getObjects3D() {
     if(!isReallyVisible()) {
       return null;
     }
@@ -108,13 +117,15 @@ public class ElementText extends Element implements org.opensourcephysics.displa
     return objects;
   }
 
-  void draw(Graphics2D _g2, int _index) {
+  @Override
+void draw(Graphics2D _g2, int _index) {
     // Allow the panel to adjust color according to depth
     Color theColor = getDrawingPanel3D().projectColor(getRealStyle().getLineColor(), objects[0].getDistance());
     drawIt(_g2, theColor);
   }
 
-  void drawQuickly(Graphics2D _g2) {
+  @Override
+void drawQuickly(Graphics2D _g2) {
     if(!isReallyVisible()) {
       return;
     }
@@ -124,7 +135,8 @@ public class ElementText extends Element implements org.opensourcephysics.displa
     drawIt(_g2, getRealStyle().getLineColor());
   }
 
-  void getExtrema(double[] min, double[] max) {
+  @Override
+void getExtrema(double[] min, double[] max) {
     min[0] = 0;
     max[0] = 0;
     min[1] = 0;
@@ -138,7 +150,8 @@ public class ElementText extends Element implements org.opensourcephysics.displa
   // -------------------------------------
   // Interaction
   // -------------------------------------
-  protected InteractionTarget getTargetHit(int x, int y) {
+  @Override
+protected InteractionTarget getTargetHit(int x, int y) {
     if(!isReallyVisible()) {
       return null;
     }
@@ -190,7 +203,8 @@ public class ElementText extends Element implements org.opensourcephysics.displa
   }
 
   static private class Loader extends org.opensourcephysics.display3d.core.ElementText.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ElementText();
     }
 

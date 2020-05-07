@@ -44,7 +44,6 @@ import javax.swing.event.SwingPropertyChangeSupport;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
-import org.opensourcephysics.controls.XMLProperty;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.ResourceLoader;
 
@@ -179,7 +178,7 @@ public class VideoClip {
     
     if(prevStart!=start) {
 	  	isDefaultState = false;
-    	support.firePropertyChange(PROPERTY_VIDEOCLIP_STARTFRAME, null, Integer.valueOf(start)); //$NON-NLS-1$
+    	support.firePropertyChange(PROPERTY_VIDEOCLIP_STARTFRAME, null, Integer.valueOf(start)); 
     }
     return prevStart!=start;
   }
@@ -219,7 +218,7 @@ public class VideoClip {
     // set stepCount to near value
     stepCount = 1+(endFrame-getStartFrameNumber())/stepSize;
     updateArray();
-    support.firePropertyChange(PROPERTY_VIDEOCLIP_STEPSIZE, null, Integer.valueOf(size)); //$NON-NLS-1$
+    support.firePropertyChange(PROPERTY_VIDEOCLIP_STEPSIZE, null, Integer.valueOf(size)); 
     
     // reset end frame
     setEndFrameNumber(endFrame);
@@ -268,7 +267,7 @@ public class VideoClip {
     Integer prev = Integer.valueOf(stepCount);
     stepCount = count;
     updateArray();
-    support.firePropertyChange(PROPERTY_VIDEOCLIP_STEPCOUNT, prev, Integer.valueOf(stepCount)); //$NON-NLS-1$
+    support.firePropertyChange(PROPERTY_VIDEOCLIP_STEPCOUNT, prev, Integer.valueOf(stepCount)); 
   }
 
   /**
@@ -333,7 +332,7 @@ public class VideoClip {
     }
     isDefaultStartTime = Double.isNaN(t0);
     startTime = Double.isNaN(t0) ? 0.0 : t0;
-    support.firePropertyChange(PROPERTY_VIDEOCLIP_STARTTIME, null, new Double(startTime)); //$NON-NLS-1$
+    support.firePropertyChange(PROPERTY_VIDEOCLIP_STARTTIME, null, new Double(startTime)); 
   }
 
   /**
@@ -502,7 +501,7 @@ public class VideoClip {
   	if (isAdjusting==adjusting)
   		return;
   	isAdjusting = adjusting;
-		support.firePropertyChange(PROPERTY_VIDEOCLIP_ADJUSTING, null, adjusting); //$NON-NLS-1$
+		support.firePropertyChange(PROPERTY_VIDEOCLIP_ADJUSTING, null, adjusting); 
   }
 
   /**
@@ -576,7 +575,7 @@ public class VideoClip {
 	protected void trimFrameCount() {
 		if (video == null || video.getFrameCount() == 1) {
 			nullVideoFrameCount = getEndFrameNumber() + 1;
-			support.firePropertyChange(VideoClip.PROPERTY_VIDEOCLIP_FRAMECOUNT, null, Integer.valueOf(nullVideoFrameCount)); //$NON-NLS-1$
+			support.firePropertyChange(VideoClip.PROPERTY_VIDEOCLIP_FRAMECOUNT, null, Integer.valueOf(nullVideoFrameCount)); 
 		}
 	}
   
@@ -628,7 +627,8 @@ public class VideoClip {
      * @param control the control to save to
      * @param obj the object to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       VideoClip clip = (VideoClip) obj;
       Video video = clip.getVideo();
       if(video!=null) {
@@ -658,6 +658,7 @@ public class VideoClip {
 		 * @param control the XMLControl with the object data
 		 * @return the newly created object
 		 */
+		@Override
 		public Object createObject(XMLControl control) {
 			// load the video and return a new clip
 			boolean hasVideo = control.getPropertyNames().contains("video"); //$NON-NLS-1$
@@ -749,7 +750,8 @@ public class VideoClip {
      * @param obj the object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       VideoClip clip = (VideoClip) obj;
       // set total frame count first so start frame will not be limited
       int start = control.getInt("startframe"); //$NON-NLS-1$

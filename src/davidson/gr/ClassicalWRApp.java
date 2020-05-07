@@ -38,7 +38,8 @@ public class ClassicalWRApp extends EjsControlFrame {
       addPropertyChangeListener(model); // loading an XML data file will a fire property change event
       getMainFrame().addWindowListener(new WindowAdapter() {
 
-         public final void windowClosing(WindowEvent e) {
+         @Override
+		public final void windowClosing(WindowEvent e) {
             ClassicalWRApp.this.model.stopSimulation();
             getControl("runButton").setProperty("text", "Start");
          }
@@ -50,10 +51,12 @@ public class ClassicalWRApp extends EjsControlFrame {
       model.inspector.enableInteraction(getBoolean("editable inspector"));
       model.inspector.addPropertyChangeListener(model);
       model.inspector.plot.addWindowListener(new WindowAdapter() {
-         public void windowClosing(WindowEvent e) {
+         @Override
+		public void windowClosing(WindowEvent e) {
             setValue("showInspector", false);
          }
-         public void windowOpened(WindowEvent e) {
+         @Override
+		public void windowOpened(WindowEvent e) {
             setValue("showInspector", true);
          }
       });
@@ -62,7 +65,8 @@ public class ClassicalWRApp extends EjsControlFrame {
    /**
     * Renders the drawing panel.
     */
-   public void render() {
+   @Override
+public void render() {
       drawingPanel.render();
    }
 
@@ -79,7 +83,8 @@ public class ClassicalWRApp extends EjsControlFrame {
    /**
     * Clears the current XML default.
     */
-   public void clearDefaultXML() {
+   @Override
+public void clearDefaultXML() {
  	  if(xmlDefault==null || model==null) return;
        xmlDefault = null;
        clearItem.setEnabled(false);
@@ -107,7 +112,8 @@ public class ClassicalWRApp extends EjsControlFrame {
     * Stops the animation and prints a message.
     * @param message String
     */
-   public void calculationDone(String message) {
+   @Override
+public void calculationDone(String message) {
      model.stopSimulation();
      getControl("runButton").setProperty("text", "Start");
      super.calculationDone(message);

@@ -227,7 +227,8 @@ public class LibraryResource implements Comparable<LibraryResource> {
   		else if (path.endsWith(".ZIP")) { //$NON-NLS-1$
   			final String base = getBasePath();
 		    Runnable runner = new Runnable() {
-		      public void run() {
+		      @Override
+			public void run() {
 	  				String zipPath = XML.getResolvedPath(target, base);
 						Map<String, ZipEntry> files = ResourceLoader.getZipContents(zipPath);
 						for (String next: files.keySet()) {
@@ -551,6 +552,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
    * @param resource the resource to compare 
    * @return 0 if equal, otherwise alphabetical name order
    */
+	@Override
 	public int compareTo(LibraryResource resource) {
 		final int BEFORE = -1;
     final int EQUAL = 0;
@@ -912,6 +914,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 		}
 		
 
+		@Override
 		public int compareTo(Metadata meta) {
 			int result = data[0].compareTo(meta.data[0]);
 			return result==0? data[1].compareTo(meta.data[1]): result;
@@ -943,7 +946,8 @@ public class LibraryResource implements Comparable<LibraryResource> {
      * @param control the control to save to
      * @param obj the object to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
     	LibraryResource res = (LibraryResource)obj;
     	control.setValue("name", res.name); //$NON-NLS-1$
     	if (!"".equals(res.description)) //$NON-NLS-1$
@@ -983,7 +987,8 @@ public class LibraryResource implements Comparable<LibraryResource> {
      * @param control the XMLControl with the object data
      * @return the newly created object
      */
-    public Object createObject(XMLControl control){
+    @Override
+	public Object createObject(XMLControl control){
     	String name = control.getString("name"); //$NON-NLS-1$
       return new LibraryResource(name);
     }
@@ -995,6 +1000,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
      * @param obj the object
      * @return the loaded object
      */
+		@Override
 		public Object loadObject(XMLControl control, Object obj) {
     	LibraryResource res = (LibraryResource)obj;
     	// name is loaded in createObject() method

@@ -52,7 +52,8 @@ public class TristateCheckBox extends JCheckBox {
     super(text, icon);
     // Add a listener for when the mouse is pressed
     super.addMouseListener(new MouseAdapter() {
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
         grabFocus();
         model.nextState();
       }
@@ -61,7 +62,8 @@ public class TristateCheckBox extends JCheckBox {
     // Reset the keyboard action map
     ActionMap map = new ActionMapUIResource();
     map.put("pressed", new AbstractAction() { //$NON-NLS-1$
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         grabFocus();
         model.nextState();
       }
@@ -100,7 +102,8 @@ public class TristateCheckBox extends JCheckBox {
   }
 
   /** No one may add mouse listeners, not even Swing! */
-  public void addMouseListener(MouseListener l) {
+  @Override
+public void addMouseListener(MouseListener l) {
     /** empty block */
   }
 
@@ -118,7 +121,8 @@ public class TristateCheckBox extends JCheckBox {
     return model.getState();
   }
 
-  public void setSelected(boolean b) {
+  @Override
+public void setSelected(boolean b) {
     if(b) {
       setState(SELECTED);
     } else {
@@ -190,96 +194,118 @@ public class TristateCheckBox extends JCheckBox {
     }
 
     /** Filter: No one may change the armed status except us. */
-    public void setArmed(boolean b) {
+    @Override
+	public void setArmed(boolean b) {
       /** empty block */
     }
 
     /** We disable focusing on the component when it is not
      * enabled. */
-    public void setEnabled(boolean b) {
+    @Override
+	public void setEnabled(boolean b) {
       setFocusable(b);
       other.setEnabled(b);
     }
 
     /** All these methods simply delegate to the "other" model
      * that is being decorated. */
-    public boolean isArmed() {
+    @Override
+	public boolean isArmed() {
       return other.isArmed();
     }
 
-    public boolean isSelected() {
+    @Override
+	public boolean isSelected() {
       return other.isSelected();
     }
 
-    public boolean isEnabled() {
+    @Override
+	public boolean isEnabled() {
       return other.isEnabled();
     }
 
-    public boolean isPressed() {
+    @Override
+	public boolean isPressed() {
       return other.isPressed();
     }
 
-    public boolean isRollover() {
+    @Override
+	public boolean isRollover() {
       return other.isRollover();
     }
 
-    public void setSelected(boolean b) {
+    @Override
+	public void setSelected(boolean b) {
       other.setSelected(b);
     }
 
-    public void setPressed(boolean b) {
+    @Override
+	public void setPressed(boolean b) {
       other.setPressed(b);
     }
 
-    public void setRollover(boolean b) {
+    @Override
+	public void setRollover(boolean b) {
       other.setRollover(b);
     }
 
-    public void setMnemonic(int key) {
+    @Override
+	public void setMnemonic(int key) {
       other.setMnemonic(key);
     }
 
-    public int getMnemonic() {
+    @Override
+	public int getMnemonic() {
       return other.getMnemonic();
     }
 
-    public void setActionCommand(String s) {
+    @Override
+	public void setActionCommand(String s) {
       other.setActionCommand(s);
     }
 
-    public String getActionCommand() {
+    @Override
+	public String getActionCommand() {
       return other.getActionCommand();
     }
 
-    public void setGroup(ButtonGroup group) {
+    @Override
+	public void setGroup(ButtonGroup group) {
       other.setGroup(group);
     }
 
-    public void addActionListener(ActionListener l) {
+    @Override
+	public void addActionListener(ActionListener l) {
       other.addActionListener(l);
     }
 
-    public void removeActionListener(ActionListener l) {
+    @Override
+	public void removeActionListener(ActionListener l) {
       other.removeActionListener(l);
     }
 
-    public void addItemListener(ItemListener l) {
+    @Override
+	public void addItemListener(ItemListener l) {
       other.addItemListener(l);
     }
 
-    public void removeItemListener(ItemListener l) {
+    @Override
+	public void removeItemListener(ItemListener l) {
       other.removeItemListener(l);
     }
 
-    public void addChangeListener(ChangeListener l) {
+    @Override
+	public void addChangeListener(ChangeListener l) {
       other.addChangeListener(l);
     }
 
-    public void removeChangeListener(ChangeListener l) {
+    @Override
+	public void removeChangeListener(ChangeListener l) {
       other.removeChangeListener(l);
     }
 
-    public Object[] getSelectedObjects() {
+    @Override
+	public Object[] getSelectedObjects() {
       return other.getSelectedObjects();
     }
 

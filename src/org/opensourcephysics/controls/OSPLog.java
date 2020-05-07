@@ -71,10 +71,13 @@ import org.opensourcephysics.tools.FontSizer;
  * @author Wolfgang Christian
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class OSPLog extends JFrame {
 
-	protected static boolean logToJSConsole = true; // BH 2020.04.06 set to false for production
+	private final static PrintStream realSysout = System.out;
 
+	private StringBuffer logBuffer = new StringBuffer();
+	
 	public static class LoggerPrintStream extends PrintStream {
 
 		protected boolean isErr;
@@ -197,6 +200,7 @@ public class OSPLog extends JFrame {
 	 *
 	 * @param true to set visible
 	 */
+	@Override
 	public void setVisible(boolean visible) {
 		try {
 			if (visible && logPane == null) {
@@ -228,6 +232,7 @@ public class OSPLog extends JFrame {
 	 *
 	 * @return true if visible
 	 */
+	@Override
 	public boolean isVisible() {
 		if (useMessageFrame()) {
 			return org.opensourcephysics.controls.MessageFrame.isLogVisible();
@@ -259,6 +264,7 @@ public class OSPLog extends JFrame {
 	 */
 	public static void showLogInvokeLater() {
 		Runnable doLater = new Runnable() {
+			@Override
 			public void run() {
 				showLog();
 			}
@@ -540,10 +546,6 @@ public class OSPLog extends JFrame {
 		}
 	}
 
-	private StringBuffer logBuffer = new StringBuffer();
-
-	private static PrintStream realSysout;
-
 	/**
 	 * Allows getting the text from the logBuffer
 	 * 
@@ -730,6 +732,7 @@ public class OSPLog extends JFrame {
 	/**
 	 * Fires a property change event. Needed to expose protected method.
 	 */
+	@Override
 	protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
 		super.firePropertyChange(propertyName, oldValue, newValue);
 	}
@@ -768,6 +771,7 @@ public class OSPLog extends JFrame {
 		gray = textPane.addStyle("gray", black); //$NON-NLS-1$
 		StyleConstants.setForeground(gray, Color.GRAY);
 		textPane.addMouseListener(new MouseAdapter() {
+			@Override
 			public void mousePressed(MouseEvent e) {
 				try {
 					if (OSPRuntime.isPopupTrigger(e)) {
@@ -871,6 +875,7 @@ public class OSPLog extends JFrame {
 			}
 			item.setActionCommand(levels[i].getName());
 			item.addActionListener(new ActionListener() {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					logger.setLevel(Level.parse(e.getActionCommand()));
 					Enumeration<AbstractButton> e2 = menubarGroup.getElements();
@@ -887,6 +892,7 @@ public class OSPLog extends JFrame {
 		}
 		popup.addSeparator();
 		Action openAction = new AbstractAction(ControlsRes.getString("OSPLog.Open_popup")) { //$NON-NLS-1$
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				open();
 			}
@@ -895,6 +901,7 @@ public class OSPLog extends JFrame {
 		openAction.setEnabled(!useMessageFrame());
 		popup.add(openAction);
 		Action saveAsAction = new AbstractAction(ControlsRes.getString("OSPLog.SaveAs_popup")) { //$NON-NLS-1$
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveLogAs();
 			}
@@ -904,6 +911,7 @@ public class OSPLog extends JFrame {
 		popup.add(saveAsAction);
 		popup.addSeparator();
 		Action clearAction = new AbstractAction(ControlsRes.getString("OSPLog.Clear_popup")) { //$NON-NLS-1$
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				clear();
 			}
@@ -932,6 +940,7 @@ public class OSPLog extends JFrame {
 			}
 			item.setActionCommand(levels[i].getName());
 			item.addActionListener(new ActionListener() {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					logger.setLevel(Level.parse(e.getActionCommand()));
 					Enumeration<AbstractButton> e2 = popupGroup.getElements();
@@ -952,6 +961,7 @@ public class OSPLog extends JFrame {
 		logToFileItem.setSelected(false);
 		logToFileItem.setEnabled(!useMessageFrame());
 		logToFileItem.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				setLogToFileAction(((JCheckBoxMenuItem) e.getSource()).isSelected());
 			}
@@ -1015,18 +1025,13 @@ public class OSPLog extends JFrame {
 		createGUI();
 		System.err.println("OSPLog installed in System.out and System.err");
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-		LoggerOutputStream loggerOut = new LoggerOutputStream(ConsoleLevel.OUT_CONSOLE, realSysout = System.out);
+		LoggerOutputStream loggerOut = new LoggerOutputStream(ConsoleLevel.OUT_CONSOLE, System.out);
 		LoggerOutputStream loggerErr = new LoggerOutputStream(ConsoleLevel.ERR_CONSOLE, System.err);
 		LoggerPrintStream loggerOutPrint = new LoggerPrintStream(loggerOut, false);
 		LoggerPrintStream loggerErrPrint = new LoggerPrintStream(loggerErr, true);
 		try {
-			if (!OSPRuntime.isJS) {
-			
-				System.setOut(loggerOutPrint);
+			System.setOut(loggerOutPrint);
 			System.setErr(loggerErrPrint);
-			
-			
-			}
 		} catch (SecurityException ex) {
 			/** empty block */
 		}
@@ -1040,9 +1045,6 @@ public class OSPLog extends JFrame {
 		String className = null, methodName = null;
 		if (OSPRuntime.isJS) {
 			
-			if (logToJSConsole && realSysout != null)
-				realSysout.println("OSPLog[" + level + "] " + msg);
-
 			OSPRuntime.showStatus("OSPLog[" + level + "] " + msg);
 			
 			try {
@@ -1090,6 +1092,7 @@ public class OSPLog extends JFrame {
 		 * @param record LogRecord
 		 * @return String
 		 */
+		@Override
 		public String format(LogRecord record) {
 			String message = formatMessage(record);
 			if ((record.getLevel().intValue() == ConsoleLevel.OUT_CONSOLE.intValue())
@@ -1128,17 +1131,17 @@ public class OSPLog extends JFrame {
 		StringBuffer buffer = new StringBuffer();
 		OutputStream oldStream;
 		ConsoleLevel level;
-		private LoggerPrintStream jsPrintStream;
+//		private LoggerPrintStream jsPrintStream;
 
 		LoggerOutputStream(ConsoleLevel level, OutputStream oldStream) {
 			this.level = level;
 			this.oldStream = oldStream;
 		}
 
-		public void setJSPrintStream(LoggerPrintStream loggerPrintStream) {
-			jsPrintStream = loggerPrintStream;
-
-		}
+//		public void setJSPrintStream(LoggerPrintStream loggerPrintStream) {
+//			jsPrintStream = loggerPrintStream;
+//
+//		}
 
 		public void print(String msg) {
 			buffer.append(msg);
@@ -1153,6 +1156,7 @@ public class OSPLog extends JFrame {
 		 * Write a character to the buffer. This method is not called from within OSP.
 		 * 
 		 */
+		@Override
 		public void write(int c) throws IOException {
 			oldStream.write(c);
 			if (c == '\n') {
@@ -1195,6 +1199,7 @@ public class OSPLog extends JFrame {
 			logPane = textPane;
 		}
 
+		@Override
 		public void publish(LogRecord record) {
 			if (!isLoggable(record)) {
 				return;
@@ -1243,10 +1248,12 @@ public class OSPLog extends JFrame {
 			}
 		}
 
+		@Override
 		public void flush() {
 			/** empty block */
 		}
 
+		@Override
 		public void close() {
 			/** empty block */
 		}
@@ -1254,7 +1261,7 @@ public class OSPLog extends JFrame {
 	}
 
 	public static void debug(String msg) {
-		finest(msg);
+		realSysout.println("OSPLog.debug " +msg);
 	}
 }
 
@@ -1270,6 +1277,7 @@ class OSPLogFormatter extends java.util.logging.Formatter {
 	 * @param record the log record to be formatted
 	 * @return the formatted log record
 	 */
+	@Override
 	public String format(LogRecord record) {
 		control.saveObject(record);
 		return control.toXML();
@@ -1282,18 +1290,21 @@ class OSPLogFormatter extends java.util.logging.Formatter {
  * very primitive state for testing only
  */
 class OSPLogRecordLoader extends XMLLoader {
+	@Override
 	public void saveObject(XMLControl control, Object obj) {
 		LogRecord record = (LogRecord) obj;
 		control.setValue("message", record.getMessage()); //$NON-NLS-1$
 		control.setValue("level", record.getLevel().toString()); //$NON-NLS-1$
 	}
 
+	@Override
 	public Object createObject(XMLControl control) {
 		String message = control.getString("message"); //$NON-NLS-1$
 		String level = control.getString("level"); //$NON-NLS-1$
 		return new LogRecord(Level.parse(level), message);
 	}
 
+	@Override
 	public Object loadObject(XMLControl control, Object obj) {
 		return obj;
 	}

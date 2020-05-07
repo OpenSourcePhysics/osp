@@ -12,19 +12,23 @@ import org.opensourcephysics.display.Data;
 public class Set extends Group implements org.opensourcephysics.display3d.core.Set {
   private String xLabel = "x", yLabel = "y", zLabel = "z"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
-  public void setXLabel(String label) {
+  @Override
+public void setXLabel(String label) {
     xLabel = label;
   }
 
-  public void setYLabel(String label) {
+  @Override
+public void setYLabel(String label) {
     yLabel = label;
   }
 
-  public void setZLabel(String label) {
+  @Override
+public void setZLabel(String label) {
     zLabel = label;
   }
 
-  public String[] getColumnNames() {
+  @Override
+public String[] getColumnNames() {
     for(org.opensourcephysics.display3d.core.Element el : getElements()) {
       if(el instanceof Data) {
         return((Data) el).getColumnNames();
@@ -33,7 +37,8 @@ public class Set extends Group implements org.opensourcephysics.display3d.core.S
     return new String[] {xLabel, yLabel, zLabel};
   }
 
-  public double[][] getData2D() {
+  @Override
+public double[][] getData2D() {
     List<org.opensourcephysics.display3d.core.Element> list = getElements();
     double[][] data = new double[list.size()][2];
     int index = 0;

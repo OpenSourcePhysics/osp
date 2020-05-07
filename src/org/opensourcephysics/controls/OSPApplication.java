@@ -77,7 +77,8 @@ public class OSPApplication {
      * @param xmlControl the xml control to save to
      * @param obj the object to save
      */
-    public void saveObject(XMLControl xmlControl, Object obj) {
+    @Override
+	public void saveObject(XMLControl xmlControl, Object obj) {
       OSPApplication app = (OSPApplication) obj;
       xmlControl.setValue("control", app.control); //$NON-NLS-1$
       xmlControl.setValue("model", app.model);     //$NON-NLS-1$
@@ -89,7 +90,8 @@ public class OSPApplication {
      * @param xmlControl the xml control
      * @return the newly created object
      */
-    public Object createObject(XMLControl xmlControl) {
+    @Override
+	public Object createObject(XMLControl xmlControl) {
       Object model = xmlControl.getObject("model");                //$NON-NLS-1$
       Control control = (Control) xmlControl.getObject("control"); //$NON-NLS-1$
       return new OSPApplication(control, model);
@@ -102,7 +104,8 @@ public class OSPApplication {
      * @param obj the object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl xmlControl, Object obj) {
+    @Override
+	public Object loadObject(XMLControl xmlControl, Object obj) {
       OSPApplication app = (OSPApplication) obj;
       app.loadedControlClass = null;
       app.loadedModelClass = null;
@@ -136,6 +139,8 @@ public class OSPApplication {
         cControl.loadObject(app.control);
       } else {
         // auto-import compatible models
+        // BH! THIS METHOD COULD FAIL IN JAVASCRIPT if importAll (compatibleModels) is false
+
         cControl.loadObject(app.control, true, compatibleModels);
       }
       Collection<String> appNames = app.control.getPropertyNames();
@@ -153,6 +158,8 @@ public class OSPApplication {
         mControl.loadObject(app.model);
       } else {
         // mismatched model class: auto-import with chooser
+    	  
+    	  // BH! false for importAll here could fail in JavaScript
         mControl.loadObject(app.model, true, false);
       }
       GUIUtils.repaintOSPFrames(); // make sure frames are up to date

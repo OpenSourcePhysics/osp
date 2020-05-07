@@ -72,7 +72,8 @@ public class OSPCombo extends JPopupMenu {
   public void showPopup(final JTextField display) {
     //display = field;
     Action selectAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         int prev = selected;
         selected = Integer.parseInt(e.getActionCommand());
         display.setText(items[selected]);
@@ -99,7 +100,8 @@ public class OSPCombo extends JPopupMenu {
    *
    * @return the currently selected String
    */
-  public String toString() {
+  @Override
+public String toString() {
     return items[selected];
   }
 
@@ -116,19 +118,22 @@ public class OSPCombo extends JPopupMenu {
    * A class to save and load XML data for this class.
    */
   static class Loader implements XML.ObjectLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       OSPCombo combo = (OSPCombo) obj;
       control.setValue("items", combo.items);    //$NON-NLS-1$
       control.setValue("index", combo.selected); //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       String[] items = (String[]) control.getObject("items"); //$NON-NLS-1$
       int index = control.getInt("index");                    //$NON-NLS-1$
       return new OSPCombo(items, index);
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       //OSPCombo combo =(OSPCombo)obj;
       //combo.selected=control.getInt("index");//$NON-NLS-1$
       //combo.items=(String[])control.getObject("items"); //$NON-NLS-1$

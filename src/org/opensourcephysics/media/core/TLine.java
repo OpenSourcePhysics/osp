@@ -96,7 +96,8 @@ public class TLine extends TShape {
    *
    * @param stroke the desired stroke
    */
-  public void setStroke(BasicStroke stroke) {
+  @Override
+public void setStroke(BasicStroke stroke) {
     if(stroke!=null) {
       this.stroke = stroke;
     }
@@ -108,7 +109,8 @@ public class TLine extends TShape {
    * @param x the x position
    * @param y the y position
    */
-  public void setXY(double x, double y) {
+  @Override
+public void setXY(double x, double y) {
     double dx = x-getX();
     double dy = y-getY();
     end1.translate(dx, dy);
@@ -124,7 +126,8 @@ public class TLine extends TShape {
    * @param ypix the y pixel position on the panel
    * @return the interactive drawable object
    */
-  public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
     if(end1Rect.contains(xpix, ypix)) {
       return end1;
     }
@@ -146,7 +149,8 @@ public class TLine extends TShape {
    * @param vidPanel the video panel
    * @return the line shape
    */
-  protected Shape getShape(VideoPanel vidPanel) {
+  @Override
+protected Shape getShape(VideoPanel vidPanel) {
     this.center(end1, end2);
     Point p1 = end1.getScreenPosition(vidPanel);
     Point p2 = end2.getScreenPosition(vidPanel);
@@ -164,7 +168,8 @@ public class TLine extends TShape {
      * @param vidPanel the video panel
      * @return the bounding rectangle
      */
-    public Rectangle getBounds(VideoPanel vidPanel) {
+    @Override
+	public Rectangle getBounds(VideoPanel vidPanel) {
       return TLine.this.getBounds(vidPanel);
     }
 

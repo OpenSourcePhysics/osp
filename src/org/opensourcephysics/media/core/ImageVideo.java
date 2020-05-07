@@ -126,12 +126,13 @@ public class ImageVideo extends VideoAdapter {
    *
    * @param n the desired frame number
    */
-  public void setFrameNumber(int n) {
+  @Override
+public void setFrameNumber(int n) {
     super.setFrameNumber(n);
     rawImage = getImageAtFrame(getFrameNumber(), rawImage);
     isValidImage = false;
     isValidFilteredImage = false;
-    firePropertyChange(Video.PROPERTY_VIDEO_FRAMENUMBER, null, Integer.valueOf(getFrameNumber())); //$NON-NLS-1$
+    firePropertyChange(Video.PROPERTY_VIDEO_FRAMENUMBER, null, Integer.valueOf(getFrameNumber())); 
   }
   
   /**
@@ -139,7 +140,8 @@ public class ImageVideo extends VideoAdapter {
    *
    * @return the current time in milliseconds, or -1 if not known
    */
-  public double getTime() {
+  @Override
+public double getTime() {
     return getFrameNumber()*deltaT;
   }
 
@@ -157,7 +159,8 @@ public class ImageVideo extends VideoAdapter {
    *
    * @param millis the desired time in milliseconds
    */
-  public void setTime(double millis) {  	
+  @Override
+public void setTime(double millis) {  	
   	int frameNum = (int)(millis/deltaT);
   	frameNum = Math.max(frameNum, 0);
   	frameNum = Math.min(frameNum, getFrameCount()-1);
@@ -169,7 +172,8 @@ public class ImageVideo extends VideoAdapter {
    *
    * @return the start time in milliseconds, or -1 if not known
    */
-  public double getStartTime() {
+  @Override
+public double getStartTime() {
     return 0;
   }
 
@@ -179,7 +183,8 @@ public class ImageVideo extends VideoAdapter {
    *
    * @param millis the desired start time in milliseconds
    */
-  public void setStartTime(double millis) {
+  @Override
+public void setStartTime(double millis) {
   	/** not implemented */
   }
 
@@ -188,7 +193,8 @@ public class ImageVideo extends VideoAdapter {
    *
    * @return the end time in milliseconds, or -1 if not known
    */
-  public double getEndTime() {
+  @Override
+public double getEndTime() {
     return getDuration();
   }
 
@@ -198,7 +204,8 @@ public class ImageVideo extends VideoAdapter {
    *
    * @param millis the desired end time in milliseconds
    */
-  public void setEndTime(double millis) {
+  @Override
+public void setEndTime(double millis) {
   	/** not implemented */
   }
 
@@ -218,7 +225,8 @@ public class ImageVideo extends VideoAdapter {
    * @param n the frame number
    * @return the start time of the frame in milliseconds, or -1 if not known
    */
-  public double getFrameTime(int n) {
+  @Override
+public double getFrameTime(int n) {
     return n*deltaT;
   }
 
@@ -333,7 +341,7 @@ public class ImageVideo extends VideoAdapter {
     endFrameNumber = frameCount-1;
     Dimension newDim = getSize();
     if((newDim.height!=size.height)||(newDim.width!=size.width)) {
-      this.firePropertyChange(PROPERTY_VIDEO_SIZE, size, newDim); //$NON-NLS-1$
+      this.firePropertyChange(PROPERTY_VIDEO_SIZE, size, newDim); 
       size = newDim;
       refreshBufferedImage();
     }
@@ -704,7 +712,8 @@ private int length() {
      * @param control the control to save to
      * @param obj the ImageVideo object to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       ImageVideo video = (ImageVideo) obj;
       String base = (String) video.getProperty("base"); //$NON-NLS-1$
       String[] paths = video.getValidPathsRelativeTo(base);
@@ -724,6 +733,7 @@ private int length() {
 		 * @param control the control
 		 * @return the new ImageVideo
 		 */
+		@Override
 		public Object createObject(XMLControl control) {
 			String[] paths = (String[]) control.getObject("paths"); //$NON-NLS-1$
 			// legacy code that opens single image or sequence
@@ -800,7 +810,7 @@ private int length() {
 			}
 			String path = paths[0];
 			String ext = XML.getExtension(path);
-			VideoType type = VideoIO.getVideoType(ImageVideoType.TYPE_IMAGE, ext); //$NON-NLS-1$
+			VideoType type = VideoIO.getVideoType(ImageVideoType.TYPE_IMAGE, ext); 
 			if (type != null)
 				vid.setProperty("video_type", type); //$NON-NLS-1$
 			vid.deltaT = control.getDouble("delta_t"); //$NON-NLS-1$
@@ -814,7 +824,8 @@ private int length() {
      * @param obj the ImageVideo object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       return obj;
     }
 

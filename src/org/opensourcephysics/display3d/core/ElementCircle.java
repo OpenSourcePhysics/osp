@@ -37,13 +37,15 @@ public interface ElementCircle extends Element {
   // XML loader
   // ----------------------------------------------------
   static abstract class Loader extends Element.Loader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       super.saveObject(control, obj);
       ElementCircle element = (ElementCircle) obj;
       control.setValue("rotation angle", element.getRotationAngle()); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       ElementCircle element = (ElementCircle) obj;
       element.setRotationAngle(control.getDouble("rotation angle")); //$NON-NLS-1$

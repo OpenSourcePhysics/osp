@@ -116,7 +116,8 @@ public class SumFilter extends Filter {
    *
    * @param enabled <code>true</code> to enable this filter.
    */
-  public void setEnabled(boolean enabled) {
+  @Override
+public void setEnabled(boolean enabled) {
     super.setEnabled(enabled);
     refresh();
   }
@@ -127,7 +128,8 @@ public class SumFilter extends Filter {
    * @param sourceImage the source image
    * @return the filtered image
    */
-  public BufferedImage getFilteredImage(BufferedImage sourceImage) {
+  @Override
+public BufferedImage getFilteredImage(BufferedImage sourceImage) {
     if(!isEnabled()) {
       return sourceImage;
     }
@@ -150,7 +152,8 @@ public class SumFilter extends Filter {
    *
    * @return the inspector
    */
-  public synchronized JDialog getInspector() {
+  @Override
+public synchronized JDialog getInspector() {
   	Inspector myInspector = inspector;
     if (myInspector==null) {
     	myInspector = new Inspector();
@@ -169,7 +172,8 @@ public class SumFilter extends Filter {
   /**
    * Clears this filter
    */
-  public void clear() {
+  @Override
+public void clear() {
     if(source!=null) {
       SumFilter.this.initialize(source);
       brightness = 1;
@@ -181,7 +185,8 @@ public class SumFilter extends Filter {
   /**
    * Refreshes this filter's GUI
    */
-  public void refresh() {
+  @Override
+public void refresh() {
     super.refresh();
     percentLabel.setText(MediaRes.getString("Filter.Sum.Label.Percent"));           //$NON-NLS-1$
     percentField.setToolTipText(MediaRes.getString("Filter.Sum.ToolTip.Percent"));  //$NON-NLS-1$
@@ -312,7 +317,8 @@ public class SumFilter extends Filter {
       percentField.setMaxValue(100);
       percentField.setMinValue(0);
       percentField.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           setBrightness(percentField.getValue()/100);
           refresh();
           percentField.selectAll();
@@ -320,10 +326,12 @@ public class SumFilter extends Filter {
 
       });
       percentField.addFocusListener(new FocusListener() {
-        public void focusGained(FocusEvent e) {
+        @Override
+		public void focusGained(FocusEvent e) {
           percentField.selectAll();
         }
-        public void focusLost(FocusEvent e) {
+        @Override
+		public void focusLost(FocusEvent e) {
           setBrightness(percentField.getValue()/100);
           refresh();
         }
@@ -331,7 +339,8 @@ public class SumFilter extends Filter {
       });
       percentSlider = new JSlider(0, 100, 100);
       percentSlider.addChangeListener(new ChangeListener() {
-        public void stateChanged(ChangeEvent e) {
+        @Override
+		public void stateChanged(ChangeEvent e) {
           if(percentSlider.isEnabled()&&(percentSlider.getValue()!=Math.round((float) brightness*100))) {
             setBrightness(percentSlider.getValue()/100.0);
             refresh();
@@ -341,7 +350,8 @@ public class SumFilter extends Filter {
       });
       showMeanCheckBox = new JCheckBox();
       showMeanCheckBox.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           setMean(showMeanCheckBox.isSelected());
           refresh();
         }
@@ -428,7 +438,8 @@ public class SumFilter extends Filter {
      * @param control the control to save to
      * @param obj the filter to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       SumFilter filter = (SumFilter) obj;
       if((filter.frame!=null)&&(filter.inspector!=null)&&filter.inspector.isVisible()) {
         int x = filter.inspector.getLocation().x-filter.frame.getLocation().x;
@@ -444,7 +455,8 @@ public class SumFilter extends Filter {
      * @param control the control
      * @return the new filter
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new SumFilter();
     }
 
@@ -455,7 +467,8 @@ public class SumFilter extends Filter {
      * @param obj the filter
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       final SumFilter filter = (SumFilter) obj;
       filter.inspectorX = control.getInt("inspector_x"); //$NON-NLS-1$
       filter.inspectorY = control.getInt("inspector_y"); //$NON-NLS-1$

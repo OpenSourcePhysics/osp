@@ -90,7 +90,8 @@ public class OSPTableInspector extends JDialog implements PropertyChangeListener
    *
    * @param e the property change event
    */
-  public void propertyChange(PropertyChangeEvent e) {
+  @Override
+public void propertyChange(PropertyChangeEvent e) {
     // forward event to listeners
     firePropertyChange(e.getPropertyName(), e.getOldValue(), e.getNewValue());
   }
@@ -119,7 +120,8 @@ public class OSPTableInspector extends JDialog implements PropertyChangeListener
     panel.add(closeButton);
     getContentPane().add(panel, BorderLayout.SOUTH);
     closeButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         setVisible(false);
         dispose();
       }

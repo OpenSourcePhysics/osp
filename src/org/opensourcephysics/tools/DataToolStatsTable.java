@@ -18,7 +18,6 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -89,19 +88,24 @@ public class DataToolStatsTable extends JTable {
    */
   protected void init() {
     dataTable.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
-      public void columnAdded(TableColumnModelEvent e) {
+      @Override
+	public void columnAdded(TableColumnModelEvent e) {
         /** empty block */
       }
-      public void columnRemoved(TableColumnModelEvent e) {
+      @Override
+	public void columnRemoved(TableColumnModelEvent e) {
         /** empty block */
       }
-      public void columnSelectionChanged(ListSelectionEvent e) {
+      @Override
+	public void columnSelectionChanged(ListSelectionEvent e) {
         /** empty block */
       }
-      public void columnMarginChanged(ChangeEvent e) {
+      @Override
+	public void columnMarginChanged(ChangeEvent e) {
         refreshTable();
       }
-      public void columnMoved(TableColumnModelEvent e) {
+      @Override
+	public void columnMoved(TableColumnModelEvent e) {
         refreshTable();
       }
 
@@ -116,7 +120,8 @@ public class DataToolStatsTable extends JTable {
     setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
     ListSelectionModel selectionModel = dataTable.getSelectionModel();
     selectionModel.addListSelectionListener(new ListSelectionListener() {
-      public void valueChanged(ListSelectionEvent e) {
+      @Override
+	public void valueChanged(ListSelectionEvent e) {
         // workaround to prevent exceptions
         if(e.getFirstIndex()>-1) {
           refreshStatistics();
@@ -179,7 +184,8 @@ public class DataToolStatsTable extends JTable {
    */
   public void refreshTable() {
   	OSPRuntime.postEvent(new Runnable() {
-  		public synchronized void run() {
+  		@Override
+		public synchronized void run() {
         tableChanged(new TableModelEvent(statsModel, TableModelEvent.HEADER_ROW));
         refreshCellWidths();
       }
@@ -264,7 +270,8 @@ public class DataToolStatsTable extends JTable {
    * @param column the column number
    * @return the cell renderer
    */
-  public TableCellRenderer getCellRenderer(int row, int column) {
+  @Override
+public TableCellRenderer getCellRenderer(int row, int column) {
     int i = dataTable.convertColumnIndexToModel(column);
     if(i==0) {
       return labelRenderer;
@@ -272,7 +279,8 @@ public class DataToolStatsTable extends JTable {
     return numberRenderer;
   }
 
-  public void setFont(Font font) {
+  @Override
+public void setFont(Font font) {
     super.setFont(font);
     if(numberRenderer!=null) {
       numberRenderer.font = font;
@@ -284,28 +292,34 @@ public class DataToolStatsTable extends JTable {
    * A class to provide model data for this table.
    */
   class StatsTableModel extends AbstractTableModel {
-    public String getColumnName(int col) {
+    @Override
+	public String getColumnName(int col) {
       return dataTable.getColumnName(col);
     }
 
-    public int getRowCount() {
+    @Override
+	public int getRowCount() {
       return statsData[0].length;
     }
 
-    public int getColumnCount() {
+    @Override
+	public int getColumnCount() {
       return dataTable.getModel().getColumnCount();
     }
 
-    public Object getValueAt(int row, int col) {
+    @Override
+	public Object getValueAt(int row, int col) {
       int i = dataTable.convertColumnIndexToModel(col);
       return statsData[i][row];
     }
 
-    public boolean isCellEditable(int row, int col) {
+    @Override
+	public boolean isCellEditable(int row, int col) {
       return false;
     }
 
-    public Class<?> getColumnClass(int c) {
+    @Override
+	public Class<?> getColumnClass(int c) {
       return getValueAt(0, c).getClass();
     }
 
@@ -330,11 +344,12 @@ public class DataToolStatsTable extends JTable {
           pattern += "0";       //$NON-NLS-1$
         }
         pattern += "E0";        //$NON-NLS-1$
-        ((DecimalFormat) format).applyPattern(pattern);
+        format.applyPattern(pattern);
       }
     }
 
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    @Override
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
       if(font==null) {
         font = getDefaultRenderer(String.class).getTableCellRendererComponent(DataToolStatsTable.this, "", false, false, 0, 0).getFont(); //$NON-NLS-1$
       }

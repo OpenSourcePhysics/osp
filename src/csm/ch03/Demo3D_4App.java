@@ -41,7 +41,8 @@ public class Demo3D_4App extends AbstractSimulation {
     createElectrons();
   }
 
-  public void doStep() {
+  @Override
+public void doStep() {
     moveElectrons(0.02);
   }
 

@@ -254,7 +254,8 @@ public class Scalar2DFrame extends DrawingFrame {
   /**
    * Adds Views menu items on the menu bar.
    */
-  protected void addMenuItems() {
+  @Override
+protected void addMenuItems() {
     JMenuBar menuBar = getJMenuBar();
     if(menuBar==null) {
       return;
@@ -277,7 +278,8 @@ public class Scalar2DFrame extends DrawingFrame {
     menubarGroup.add(gridItem);
     gridItem.setSelected(true);
     ActionListener tableListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToGridPlot();
       }
 
@@ -288,7 +290,8 @@ public class Scalar2DFrame extends DrawingFrame {
     contourItem = new JRadioButtonMenuItem(DisplayRes.getString("2DFrame.MenuItem.ContourPlot")); //$NON-NLS-1$
     menubarGroup.add(contourItem);
     tableListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToContourPlot();
       }
 
@@ -299,7 +302,8 @@ public class Scalar2DFrame extends DrawingFrame {
     surfaceItem = new JRadioButtonMenuItem(DisplayRes.getString("2DFrame.MenuItem.SurfacePlot")); //$NON-NLS-1$
     menubarGroup.add(surfaceItem);
     tableListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToSurfacePlot();
       }
 
@@ -310,7 +314,8 @@ public class Scalar2DFrame extends DrawingFrame {
     interpolatedItem = new JRadioButtonMenuItem(DisplayRes.getString("2DFrame.MenuItem.InterpolatedPlot")); //$NON-NLS-1$
     menubarGroup.add(interpolatedItem);
     tableListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToInterpolatedPlot();
       }
 
@@ -321,7 +326,8 @@ public class Scalar2DFrame extends DrawingFrame {
     grayscaleItem = new JRadioButtonMenuItem(DisplayRes.getString("2DFrame.MenuItem.GrayscalePlot")); //$NON-NLS-1$
     menubarGroup.add(grayscaleItem);
     tableListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToGrayscalePlot();
       }
 
@@ -333,7 +339,8 @@ public class Scalar2DFrame extends DrawingFrame {
     JMenuItem tableItem = new JMenuItem(DisplayRes.getString("DrawingFrame.DataTable_menu_item")); //$NON-NLS-1$
     tableItem.setAccelerator(KeyStroke.getKeyStroke('T', MENU_SHORTCUT_KEY_MASK));
     ActionListener actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         showDataTable(true);
       }
 
@@ -351,7 +358,8 @@ public class Scalar2DFrame extends DrawingFrame {
   /**
    * Clears drawable objects added by the user from this frame.
    */
-  public void clearDrawables() {
+  @Override
+public void clearDrawables() {
     drawingPanel.clear(); // removes all drawables
     drawingPanel.addDrawable(plot);
   }
@@ -361,7 +369,8 @@ public class Scalar2DFrame extends DrawingFrame {
    *
    * @return the list
    */
-  public synchronized ArrayList<Drawable> getDrawables() {
+  @Override
+public synchronized ArrayList<Drawable> getDrawables() {
 	    return super.getDrawablesExcept(null, plot);
   }
 
@@ -375,14 +384,16 @@ public class Scalar2DFrame extends DrawingFrame {
    *
    * @see #getObjectOfClass(Class c)
    */
-  public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
+  @Override
+public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
 		return getDrawablesExcept(c, plot);
   }
 
   /**
    * Sets the scalar field to zero.
    */
-  public void clearData() {
+  @Override
+public void clearData() {
     if(gridData!=null) {
       setAll(new double[gridData.getNx()][gridData.getNy()]);
     }

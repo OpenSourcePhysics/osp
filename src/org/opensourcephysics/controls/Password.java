@@ -97,7 +97,8 @@ public class Password extends JDialog {
     passwordField = new JPasswordField(20);
     passwordField.setToolTipText(ControlsRes.getString("Password.Tooltip")); //$NON-NLS-1$
     passwordField.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         String input = String.copyValueOf(passwordField.getPassword());
         if((password!=null)&&!input.equals(password)) {
           Toolkit.getDefaultToolkit().beep();
@@ -110,7 +111,8 @@ public class Password extends JDialog {
 
     });
     passwordField.addKeyListener(new KeyAdapter() {
-      public void keyPressed(KeyEvent e) {
+      @Override
+	public void keyPressed(KeyEvent e) {
         if(e.getKeyCode()==KeyEvent.VK_ESCAPE) {
           passwordField.requestFocusInWindow();
           setVisible(false);
@@ -121,7 +123,8 @@ public class Password extends JDialog {
     // create buttons
     JButton cancelButton = new JButton(ControlsRes.getString("Password.Button.Cancel")); //$NON-NLS-1$
     cancelButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         passwordField.requestFocusInWindow();
         setVisible(false);
       }
@@ -129,7 +132,8 @@ public class Password extends JDialog {
     });
     JButton okButton = new JButton(ControlsRes.getString("Password.Button.Enter")); //$NON-NLS-1$
     okButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         String input = String.copyValueOf(passwordField.getPassword());
         if((password!=null)&&!input.equals(password)) {
           Toolkit.getDefaultToolkit().beep();

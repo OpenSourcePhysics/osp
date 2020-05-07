@@ -29,7 +29,8 @@ public class ProjectileApp extends AbstractSimulation {
   /**
    * Initializes the simulation.
    */
-  public void initialize() {
+  @Override
+public void initialize() {
     double dt = control.getDouble("dt");
     double x = control.getDouble("initial x");
     double vx = control.getDouble("initial vx");
@@ -44,7 +45,8 @@ public class ProjectileApp extends AbstractSimulation {
   /**
    * Does a time step.
    */
-  public void doStep() {
+  @Override
+public void doStep() {
     plotFrame.append(0, projectile.state[4], projectile.state[0]); // x vs time data added
     plotFrame.append(1, projectile.state[4], projectile.state[2]); // y vs time data added
     animationFrame.append(0, projectile.state[0], projectile.state[2]); // trajectory data added
@@ -54,7 +56,8 @@ public class ProjectileApp extends AbstractSimulation {
   /**
    * Resets the simulation.
    */
-  public void reset() {
+  @Override
+public void reset() {
     control.setValue("initial x", 0);
     control.setValue("initial vx", 10);
     control.setValue("initial y", 0);

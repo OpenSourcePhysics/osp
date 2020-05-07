@@ -153,7 +153,8 @@ public class XMLTable extends JTable {
    * @param col the column index
    * @return true if editable
    */
-  public boolean isCellEditable(int row, int col) {
+  @Override
+public boolean isCellEditable(int row, int col) {
     return tableModel.editable&&tableModel.isCellEditable(row, col);
   }
 
@@ -162,14 +163,16 @@ public class XMLTable extends JTable {
    *
    * @param font the font
    */
-  public void setFont(Font font) {
+  @Override
+public void setFont(Font font) {
     super.setFont(font);
     if(xmlRenderer!=null) {
       xmlRenderer.setFont(font);
       valueEditor.field.setFont(font);
       // resize row heights after revalidation
       Runnable runner = new Runnable() {
-        public void run() {
+        @Override
+		public void run() {
           if(getTableHeader().getHeight()>0) { // changed by W. Christian
             setRowHeight(getTableHeader().getHeight());
           }
@@ -253,7 +256,8 @@ public class XMLTable extends JTable {
    * @param column the column number
    * @return the cell renderer
    */
-  public TableCellRenderer getCellRenderer(int row, int column) {
+  @Override
+public TableCellRenderer getCellRenderer(int row, int column) {
     return xmlRenderer;
   }
 
@@ -264,7 +268,8 @@ public class XMLTable extends JTable {
    * @param column the column number
    * @return the cell editor
    */
-  public TableCellEditor getCellEditor(int row, int column) {
+  @Override
+public TableCellEditor getCellEditor(int row, int column) {
     return valueEditor;
   }
 
@@ -289,7 +294,8 @@ public class XMLTable extends JTable {
     }
 
     // Returns a label for the specified cell.
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    @Override
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
       setForeground(Color.BLACK);
       if(value==null) {
         value = ""; // changed by W. Christian to trap for null values //$NON-NLS-1$
@@ -398,14 +404,16 @@ public class XMLTable extends JTable {
       field.setBorder(BorderFactory.createLineBorder(new Color(128, 128, 128), 1));
       //field.setBorder(BorderFactory.createEmptyBorder(0, 1, 1, 0));
       field.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           stopCellEditing();
           keepFocus = -2;
         }
 
       });
       field.addKeyListener(new KeyAdapter() {
-        public void keyPressed(KeyEvent e) {
+        @Override
+		public void keyPressed(KeyEvent e) {
           if(e.getKeyCode()==KeyEvent.VK_ENTER) {
             stopCellEditing();
             keepFocus = -2;
@@ -416,7 +424,8 @@ public class XMLTable extends JTable {
 
       });
       field.addFocusListener(new FocusAdapter() {
-        public void focusLost(FocusEvent e) {
+        @Override
+		public void focusLost(FocusEvent e) {
           if(e.isTemporary()) {
             return;
           }
@@ -434,7 +443,8 @@ public class XMLTable extends JTable {
       });
       // OSPCombo case
       field.addMouseListener(new MouseAdapter() {
-        public void mousePressed(MouseEvent e) {
+        @Override
+		public void mousePressed(MouseEvent e) {
           if(combo!=null) {
             if(combo.getPropertyChangeListeners("index").length>0) {      //$NON-NLS-1$
               combo.removePropertyChangeListener("index", comboListener); //$NON-NLS-1$
@@ -453,7 +463,8 @@ public class XMLTable extends JTable {
     }
 
     // Gets the component to be displayed while editing.
-    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+    @Override
+	public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
       combo = null;
       String propName = (String) tableModel.getValueAt(row, 0);
       field.setBackground(defaultBackgroundColor);
@@ -499,7 +510,8 @@ public class XMLTable extends JTable {
           field.setText(bool.toString());
           field.setEditable(false);
           combo.addPropertyChangeListener("value", new PropertyChangeListener() { //$NON-NLS-1$
-            public void propertyChange(PropertyChangeEvent e) {
+            @Override
+			public void propertyChange(PropertyChangeEvent e) {
               OSPCombo combo = (OSPCombo) e.getSource();
               Boolean bool = new Boolean(combo.getSelectedIndex()==0);
               childControl.saveObject(bool);
@@ -511,7 +523,8 @@ public class XMLTable extends JTable {
         XMLTableInspector inspector = new XMLTableInspector(childControl, isEditable());
         // listen for "xmlData" changes in inspector
         inspector.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-          public void propertyChange(PropertyChangeEvent e) {
+          @Override
+		public void propertyChange(PropertyChangeEvent e) {
             // signal listeners when inspector closes and xml data is changed
             if(e.getPropertyName().equals("xmlData")) { //$NON-NLS-1$
               tableModel.fireTableCellUpdated(rowNumber, colNumber);
@@ -568,7 +581,8 @@ public class XMLTable extends JTable {
           arrayInspector.setEditable(tableModel.editable);
           // listen for "cell" and "arrayData" changes in the array inspector
           arrayInspector.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
+            @Override
+			public void propertyChange(PropertyChangeEvent e) {
               if(e.getPropertyName().equals("cell")) {                                       //$NON-NLS-1$
                 // set new value in array control
                 arrayControl.setValue(arrayName, arrayObj);
@@ -598,7 +612,8 @@ public class XMLTable extends JTable {
     }
 
     // Determines when editing starts.
-    public boolean isCellEditable(EventObject e) {
+    @Override
+	public boolean isCellEditable(EventObject e) {
       if(e instanceof MouseEvent) {
         MouseEvent me = (MouseEvent) e;
         XMLTable table = (XMLTable) me.getSource();
@@ -623,7 +638,8 @@ public class XMLTable extends JTable {
     }
 
     // Called when editing is completed.
-    public Object getCellEditorValue() {
+    @Override
+	public Object getCellEditorValue() {
       XMLTable.this.requestFocusInWindow();
       if(field.getBackground()!=defaultBackgroundColor) {
         field.setBackground(defaultBackgroundColor);
@@ -637,13 +653,15 @@ public class XMLTable extends JTable {
   // refreshes the table
   public void refresh() {
 	  OSPRuntime.postEvent(new Runnable() {
-      public synchronized void run() {
+      @Override
+	public synchronized void run() {
         tableChanged(new TableModelEvent(tableModel, TableModelEvent.HEADER_ROW));
       }
     });
   }
 
-  public void tableChanged(TableModelEvent e) {
+  @Override
+public void tableChanged(TableModelEvent e) {
     // pass the tablemodel event to property change listeners
     firePropertyChange("tableData", null, e); //$NON-NLS-1$
     super.tableChanged(e);
@@ -676,7 +694,8 @@ public class XMLTable extends JTable {
       final java.lang.reflect.Method m = target.getClass().getMethod(methodName, parameters);
       tableModel.addTableModelListener(new TableModelListener() {
         final String par = parameterName;
-        public void tableChanged(TableModelEvent e) {
+        @Override
+		public void tableChanged(TableModelEvent e) {
           if((e.getType()!=TableModelEvent.UPDATE)||(e.getColumn()!=1)||(e.getFirstRow()<0)) {
             return;
           }
@@ -713,7 +732,8 @@ public class XMLTable extends JTable {
     if (key != null) {
      Action prevTabAction = getActionMap().get(key); 
      Action tabAction = new AbstractAction() { 
-       public void actionPerformed(ActionEvent e) {
+       @Override
+	public void actionPerformed(ActionEvent e) {
         // tab to the next editable cell
         prevTabAction.actionPerformed(e);
         JTable table = (JTable) e.getSource();
@@ -743,7 +763,8 @@ public class XMLTable extends JTable {
 
     // enter key starts editing
     Action enterAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         // start editing
         JTable table = (JTable) e.getSource();
         int row = table.getSelectedRow();
@@ -766,7 +787,8 @@ public class XMLTable extends JTable {
                 int n = bool.booleanValue() ? 0 : 1;
                 combo = new OSPCombo(new String[] {"true", "false"}, n);                //$NON-NLS-1$//$NON-NLS-2$
                 combo.addPropertyChangeListener("value", new PropertyChangeListener() { //$NON-NLS-1$
-                  public void propertyChange(PropertyChangeEvent e) {
+                  @Override
+				public void propertyChange(PropertyChangeEvent e) {
                     OSPCombo combo = (OSPCombo) e.getSource();
                     Boolean bool = new Boolean(combo.getSelectedIndex()==0);
                     control.saveObject(bool);
@@ -795,7 +817,8 @@ public class XMLTable extends JTable {
     getActionMap().put(im.get(enter), enterAction);
     // create OSPCombo listener
     comboListener = new PropertyChangeListener() {
-      public void propertyChange(PropertyChangeEvent e) {
+      @Override
+	public void propertyChange(PropertyChangeEvent e) {
         OSPCombo combo = (OSPCombo) e.getSource();
         int n = ((Integer) e.getOldValue()).intValue();
         if(n!=combo.getSelectedIndex()) {

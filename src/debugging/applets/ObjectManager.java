@@ -107,7 +107,7 @@ public class ObjectManager {
    * @return the views
    */
    public Collection getViews (){
-     return (Collection) myViews.values();
+     return myViews.values();
    }
 
    /**
@@ -137,7 +137,7 @@ public class ObjectManager {
  * @return the collection
  */
 public Collection getObjects() {
-  return (Collection) myObjects.values();
+  return myObjects.values();
 }
 
 

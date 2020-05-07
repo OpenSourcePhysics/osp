@@ -12,6 +12,7 @@ public class GrayscalePlotTest {
 	int numpts=128;
 	ArrayData griddata = new ArrayData(numpts, numpts, 3);
 	GrayscalePlot grayscalePlot = new GrayscalePlot(griddata) {
+		@Override
 		public void draw(DrawingPanel panel, Graphics g) {
 			setRandomVals();
 			super.draw(panel, g);

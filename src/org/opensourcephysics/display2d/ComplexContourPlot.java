@@ -61,7 +61,8 @@ public class ComplexContourPlot extends ComplexInterpolatedPlot {
    * @param floor
    * @param ceil
    */
-  public void setAutoscaleZ(boolean isAutoscale, double floor, double ceil) {
+  @Override
+public void setAutoscaleZ(boolean isAutoscale, double floor, double ceil) {
     super.setAutoscaleZ(isAutoscale, ceil);
     contour.setAutoscaleZ(isAutoscale, floor, ceil);
   }
@@ -69,7 +70,8 @@ public class ComplexContourPlot extends ComplexInterpolatedPlot {
   /**
    * Updates the buffered image using the data array.
    */
-  public void update() {
+  @Override
+public void update() {
     super.update();
     if((contour!=null)&&showContours) {
       contour.update();
@@ -81,7 +83,8 @@ public class ComplexContourPlot extends ComplexInterpolatedPlot {
    *
    * @param griddata
    */
-  public void setGridData(GridData griddata) {
+  @Override
+public void setGridData(GridData griddata) {
     super.setGridData(griddata);
     super.setShowGridLines(false);
     contour.setGridData(griddata);
@@ -92,7 +95,8 @@ public class ComplexContourPlot extends ComplexInterpolatedPlot {
    *
    * @param indexes the sample-component
    */
-  public void setIndexes(int[] indexes) {
+  @Override
+public void setIndexes(int[] indexes) {
     super.setIndexes(indexes);
     contour.setIndexes(indexes);
   }
@@ -103,14 +107,16 @@ public class ComplexContourPlot extends ComplexInterpolatedPlot {
    *
    * @param isVisible
    */
-  public void setVisible(boolean isVisible) {
+  @Override
+public void setVisible(boolean isVisible) {
     visible = isVisible;
   }
 
   /**
    * Shows how values map to colors.
    */
-  public JFrame showLegend() {
+  @Override
+public JFrame showLegend() {
     return colorMap.showLegend();
   }
 
@@ -119,7 +125,8 @@ public class ComplexContourPlot extends ComplexInterpolatedPlot {
    *
    * @param show
    */
-  public void setShowGridLines(boolean show) {
+  @Override
+public void setShowGridLines(boolean show) {
     contour.setShowGridLines(show);
   }
 
@@ -127,13 +134,15 @@ public class ComplexContourPlot extends ComplexInterpolatedPlot {
    * Setting the color palette is not supported.  The complex palette always maps phase to color.
    * @param colors
    */
-  public void setColorPalette(Color[] colors) {}
+  @Override
+public void setColorPalette(Color[] colors) {}
 
   /**
    * Setting the palette is not supported.   The complex palette always maps phase to color.
    * @param type
    */
-  public void setPaletteType(int type) {}
+  @Override
+public void setPaletteType(int type) {}
 
   /**
    * Sets the floor and ceiling colors.
@@ -141,7 +150,8 @@ public class ComplexContourPlot extends ComplexInterpolatedPlot {
    * @param floorColor
    * @param ceilColor
    */
-  public void setFloorCeilColor(Color floorColor, Color ceilColor) {
+  @Override
+public void setFloorCeilColor(Color floorColor, Color ceilColor) {
     super.setFloorCeilColor(floorColor, ceilColor);
   }
 
@@ -150,7 +160,8 @@ public class ComplexContourPlot extends ComplexInterpolatedPlot {
    * The default line color is dark green.
    * @param color
    */
-  public void setGridLineColor(Color color) {
+  @Override
+public void setGridLineColor(Color color) {
     contour.setGridLineColor(color);
   }
 
@@ -159,7 +170,8 @@ public class ComplexContourPlot extends ComplexInterpolatedPlot {
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible) {
       return;
     }

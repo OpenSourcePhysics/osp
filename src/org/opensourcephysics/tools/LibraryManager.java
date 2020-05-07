@@ -143,16 +143,19 @@ public class LibraryManager extends JDialog {
 
 		// create collections list
 		ListModel collectionListModel = new AbstractListModel() {
-      public int getSize() {
+      @Override
+	public int getSize() {
       	return library.pathList.size();
       }
-      public Object getElementAt(int i) { 
+      @Override
+	public Object getElementAt(int i) { 
       	String path = library.pathList.get(i);
       	return library.pathToNameMap.get(path);
       }
     };
 		collectionList = new JList(collectionListModel);
 		collectionList.addListSelectionListener(new ListSelectionListener() {
+			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				refreshGUI();
 			}
@@ -163,16 +166,19 @@ public class LibraryManager extends JDialog {
 
 		// create import list
 		ListModel importListModel = new AbstractListModel() {
-      public int getSize() {
+      @Override
+	public int getSize() {
       	return library.importedPathList.size();
       }
-      public Object getElementAt(int i) { 
+      @Override
+	public Object getElementAt(int i) { 
       	String path = library.importedPathList.get(i);
       	return library.importedPathToLibraryMap.get(path).getName();
       }
     };
 		guestList = new JList(importListModel);
 		guestList.addListSelectionListener(new ListSelectionListener() {
+			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				refreshGUI();
 			}
@@ -183,7 +189,8 @@ public class LibraryManager extends JDialog {
 
 		// create name action, field and label
 		nameAction = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	String path = pathField.getText();
   			String prev = library.pathToNameMap.get(path);
       	String input = nameField.getText().trim();
@@ -199,10 +206,12 @@ public class LibraryManager extends JDialog {
   	nameField = new LibraryTreePanel.EntryField();
   	nameField.addActionListener(nameAction);
   	nameField.addFocusListener(new FocusAdapter() {
-      public void focusGained(FocusEvent e) {
+      @Override
+	public void focusGained(FocusEvent e) {
       	nameField.selectAll();
       }
-      public void focusLost(FocusEvent e) {
+      @Override
+	public void focusLost(FocusEvent e) {
       	nameAction.actionPerformed(null);
       }
     });
@@ -254,7 +263,8 @@ public class LibraryManager extends JDialog {
     // create buttons
     okButton = new JButton();
     okButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	setVisible(false);
       }
     });
@@ -263,7 +273,8 @@ public class LibraryManager extends JDialog {
     moveUpButton.setOpaque(false);
     moveUpButton.setBorder(LibraryBrowser.buttonBorder);
     moveUpButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	boolean isImports = tabbedPane.getSelectedComponent()==importsPanel;
       	JList list = isImports? guestList: collectionList;
       	ArrayList<String> paths = isImports? library.importedPathList: library.pathList;
@@ -280,7 +291,8 @@ public class LibraryManager extends JDialog {
     moveDownButton.setOpaque(false);
     moveDownButton.setBorder(LibraryBrowser.buttonBorder);
     moveDownButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	boolean isImports = tabbedPane.getSelectedComponent()==importsPanel;
       	JList list = isImports? guestList: collectionList;
       	ArrayList<String> paths = isImports? library.importedPathList: library.pathList;
@@ -297,82 +309,80 @@ public class LibraryManager extends JDialog {
     addButton.setOpaque(false);
     addButton.setBorder(LibraryBrowser.buttonBorder);
     addButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-      	boolean imported = tabbedPane.getSelectedComponent()==importsPanel;
-      	String message = imported? 
-      			ToolsRes.getString("LibraryBrowser.Dialog.AddLibrary.Message"): //$NON-NLS-1$
-      			ToolsRes.getString("LibraryBrowser.Dialog.AddCollection.Message"); //$NON-NLS-1$
-        String title = imported? 
-          	ToolsRes.getString("LibraryBrowser.Dialog.AddLibrary.Title"): //$NON-NLS-1$
-          	ToolsRes.getString("LibraryBrowser.Dialog.AddCollection.Title"); //$NON-NLS-1$
-        
-        Object input = JOptionPane.showInputDialog(browser, 
-        		message, title, JOptionPane.QUESTION_MESSAGE, null, null, null);
-        
-        if(input==null || input.equals("")) {                            //$NON-NLS-1$
-          return;
-        }
-        String path = input.toString();
-        path = XML.forwardSlash(path);
-        path = ResourceLoader.getNonURIPath(path);
-        
-        if (tabbedPane.getSelectedComponent()==collectionsPanel) {
-        	boolean isResource = false;
-	        if (!ResourceLoader.isHTTP(path) && new File(path).isDirectory()) {
-	        	isResource = true;
-	        }
-	        else {
-	    			XMLControl control = new XMLControlElement(path);
-	    			if (!control.failedToRead() && control.getObjectClass()==LibraryCollection.class) { 
-	    				isResource = true;
-	    			}	        	
-	        }
-	        if (isResource) {
-	      		browser.addToCollections(path);
-	      		ListModel model = collectionList.getModel();
-	      		collectionList.setModel(model);
-	      		refreshGUI();
-	      		collectionList.repaint();
-	      		collectionList.setSelectedIndex(library.pathList.size()-1);
-	        	browser.refreshCollectionsMenu();
-						return;
-	        }
-        }
-        if (tabbedPane.getSelectedComponent()==importsPanel) {
-        	boolean isLibrary = false;
-    			XMLControl control = new XMLControlElement(path);
-    			if (!control.failedToRead() && control.getObjectClass()==Library.class) { 
-    				isLibrary = true;
-    			}	        	
-	        if (isLibrary) {
-  			  	Library newLibrary = new Library();
-  			  	newLibrary.browser = LibraryManager.this.browser;
-  			  	control.loadObject(newLibrary);
-  					if (library.importLibrary(path, newLibrary)) {
-  	      		ListModel model = guestList.getModel();
-  	      		guestList.setModel(model);
-  	      		refreshGUI();
-  	      		guestList.repaint();
-  	        	guestList.setSelectedIndex(library.importedPathList.size()-1);
-  	        	browser.refreshCollectionsMenu();
-  					}
-  					return;	        	
-	        }
-        }
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				boolean imported = tabbedPane.getSelectedComponent() == importsPanel;
+				String message = imported ? ToolsRes.getString("LibraryBrowser.Dialog.AddLibrary.Message") : //$NON-NLS-1$
+				ToolsRes.getString("LibraryBrowser.Dialog.AddCollection.Message"); //$NON-NLS-1$
+				String title = imported ? ToolsRes.getString("LibraryBrowser.Dialog.AddLibrary.Title") : //$NON-NLS-1$
+				ToolsRes.getString("LibraryBrowser.Dialog.AddCollection.Title"); //$NON-NLS-1$
 
-		  	String s = ToolsRes.getString("LibraryBrowser.Dialog.CollectionNotFound.Message"); //$NON-NLS-1$
-		  	JOptionPane.showMessageDialog(LibraryManager.this, 
-		  			s+":\n"+path, //$NON-NLS-1$
+				Object input = JOptionPane.showInputDialog(browser, message, title, JOptionPane.QUESTION_MESSAGE, null,
+						null, null);
+
+				if (input == null || input.equals("")) { //$NON-NLS-1$
+					return;
+				}
+				String path = input.toString();
+				path = XML.forwardSlash(path);
+				path = ResourceLoader.getNonURIPath(path);
+
+				if (tabbedPane.getSelectedComponent() == collectionsPanel) {
+					boolean isResource = false;
+					if (!ResourceLoader.isHTTP(path) && new File(path).isDirectory()) {
+						isResource = true;
+					} else {
+						XMLControl control = new XMLControlElement(path);
+						if (!control.failedToRead() && control.getObjectClass() == LibraryCollection.class) {
+							isResource = true;
+						}
+					}
+					if (isResource) {
+						browser.addToCollections(path);
+						ListModel model = collectionList.getModel();
+						collectionList.setModel(model);
+						refreshGUI();
+						collectionList.repaint();
+						collectionList.setSelectedIndex(library.pathList.size() - 1);
+						browser.refreshCollectionsMenu();
+						return;
+					}
+				}
+				if (tabbedPane.getSelectedComponent() == importsPanel) {
+					boolean isLibrary = false;
+					XMLControl control = new XMLControlElement(path);
+					if (!control.failedToRead() && control.getObjectClass() == Library.class) {
+						isLibrary = true;
+					}
+					if (isLibrary) {
+						Library newLibrary = new Library();
+						newLibrary.browser = LibraryManager.this.browser;
+						control.loadObject(newLibrary);
+						if (library.importLibrary(path, newLibrary)) {
+							ListModel model = guestList.getModel();
+							guestList.setModel(model);
+							refreshGUI();
+							guestList.repaint();
+							guestList.setSelectedIndex(library.importedPathList.size() - 1);
+							browser.refreshCollectionsMenu();
+						}
+						return;
+					}
+				}
+
+				String s = ToolsRes.getString("LibraryBrowser.Dialog.CollectionNotFound.Message"); //$NON-NLS-1$
+				JOptionPane.showMessageDialog(LibraryManager.this, s + ":\n" + path, //$NON-NLS-1$
 						ToolsRes.getString("LibraryBrowser.Dialog.CollectionNotFound.Title"), //$NON-NLS-1$
-						JOptionPane.WARNING_MESSAGE);  		
-        
-     	}
+						JOptionPane.WARNING_MESSAGE);
+
+			}
     });
     removeButton = new JButton();
     removeButton.setOpaque(false);
     removeButton.setBorder(LibraryBrowser.buttonBorder);
     removeButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	boolean isImports = tabbedPane.getSelectedComponent()==importsPanel;
       	JList list = isImports? guestList: collectionList;
       	ArrayList<String> paths = isImports? library.importedPathList: library.pathList;
@@ -397,7 +407,8 @@ public class LibraryManager extends JDialog {
     allButton.setOpaque(false);
     allButton.setBorder(LibraryBrowser.buttonBorder);
     allButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
   			for (SearchCheckBox next: checkboxes) {
   				next.setSelected(true);
   			}
@@ -407,7 +418,8 @@ public class LibraryManager extends JDialog {
     noneButton.setOpaque(false);
     noneButton.setBorder(LibraryBrowser.buttonBorder);
     noneButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
   			for (SearchCheckBox next: checkboxes) {
   				next.setSelected(false);
   			}
@@ -418,7 +430,8 @@ public class LibraryManager extends JDialog {
     clearCacheButton.setOpaque(false);
     clearCacheButton.setBorder(LibraryBrowser.buttonBorder);
     clearCacheButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	File cache = ResourceLoader.getOSPCache();
       	ResourceLoader.clearOSPCache(cache, false);
       	refreshCacheTab();
@@ -430,7 +443,8 @@ public class LibraryManager extends JDialog {
     setCacheButton.setOpaque(false);
     setCacheButton.setBorder(LibraryBrowser.buttonBorder);
     setCacheButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	File newCache = ResourceLoader.chooseOSPCache(browser);
     		ResourceLoader.setOSPCache(newCache);
     		refreshCacheTab();
@@ -530,7 +544,8 @@ public class LibraryManager extends JDialog {
 
     // add change listener last
 		tabbedPane.addChangeListener(new ChangeListener() {
-      public void stateChanged(ChangeEvent e) {
+      @Override
+	public void stateChanged(ChangeEvent e) {
       	if (tabbedPane.getSelectedComponent()==collectionsPanel) {
       		collectionsPanel.add(libraryButtonbar, BorderLayout.NORTH);
       		collectionsPanel.add(libraryEditBox, BorderLayout.SOUTH);
@@ -650,7 +665,7 @@ public class LibraryManager extends JDialog {
 				pathField.setCaretPosition(0);
 				String name = library.importedPathToLibraryMap.get(path).getName();
 				nameField.setText(name);
-				boolean unavailable = ResourceLoader.isHTTP(path) && !LibraryBrowser.webConnected; //$NON-NLS-1$
+				boolean unavailable = ResourceLoader.isHTTP(path) && !LibraryBrowser.webConnected; 
 	      Resource res = unavailable? null: ResourceLoader.getResourceZipURLsOK(path);
 	      if (res==null) {
 	      	pathField.setForeground(LibraryTreePanel.darkRed);
@@ -846,7 +861,8 @@ public class LibraryManager extends JDialog {
       setBorder(BorderFactory.createEmptyBorder(0, 0, 0, space));
     }
     
-    public Dimension getMaximumSize() {
+    @Override
+	public Dimension getMaximumSize() {
     	return getPreferredSize();
     }
     
@@ -872,17 +888,20 @@ public class LibraryManager extends JDialog {
   		setBorderPainted(false);
   		setContentAreaFilled(false);
       addMouseListener(new MouseAdapter() {
-      	public void mouseEntered(MouseEvent e) {
+      	@Override
+		public void mouseEntered(MouseEvent e) {
       		setBorderPainted(true);
       		setContentAreaFilled(true);
       	}
-      	public void mouseExited(MouseEvent e) {
+      	@Override
+		public void mouseExited(MouseEvent e) {
       		setBorderPainted(false);
       		setContentAreaFilled(false);
       	}
       });
       addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
         	File file = ResourceLoader.getSearchCacheFile(urlPath);
         	file.delete();
         	refreshSearchTab();
@@ -917,17 +936,20 @@ public class LibraryManager extends JDialog {
   		setBorderPainted(false);
   		setContentAreaFilled(false);
       addMouseListener(new MouseAdapter() {
-      	public void mouseEntered(MouseEvent e) {
+      	@Override
+		public void mouseEntered(MouseEvent e) {
       		setBorderPainted(true);
       		setContentAreaFilled(true);
       	}
-      	public void mouseExited(MouseEvent e) {
+      	@Override
+		public void mouseExited(MouseEvent e) {
       		setBorderPainted(false);
       		setContentAreaFilled(false);
       	}
       });
       addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
         	ResourceLoader.clearOSPCacheHost(hostCacheDir);
         	refreshCacheTab();
         	tabbedPane.repaint();

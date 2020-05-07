@@ -38,7 +38,6 @@ import javax.swing.SpinnerListModel;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -101,6 +100,7 @@ final public class DataToolPropsTable extends JTable {
 		dataTable = table;
 		propsModel = new PropsTableModel();
 		addMouseMotionListener(new MouseInputAdapter() {
+			@Override
 			public void mouseMoved(MouseEvent e) {
 				int col = columnAtPoint(e.getPoint());
 				int labelCol = convertColumnIndexToView(0);
@@ -127,22 +127,27 @@ final public class DataToolPropsTable extends JTable {
 	 */
 	protected void init() {
 		dataTable.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
+			@Override
 			public void columnAdded(TableColumnModelEvent e) {
 				/** empty block */
 			}
 
+			@Override
 			public void columnRemoved(TableColumnModelEvent e) {
 				/** empty block */
 			}
 
+			@Override
 			public void columnSelectionChanged(ListSelectionEvent e) {
 				/** empty block */
 			}
 
+			@Override
 			public void columnMarginChanged(ChangeEvent e) {
 				refreshTable();
 			}
 
+			@Override
 			public void columnMoved(TableColumnModelEvent e) {
 				refreshTable();
 			}
@@ -175,6 +180,7 @@ final public class DataToolPropsTable extends JTable {
 	 */
 	public void refreshTable() {
     	OSPRuntime.postEvent(new Runnable() {
+			@Override
 			public synchronized void run() {
 				tableChanged(new TableModelEvent(propsModel, TableModelEvent.HEADER_ROW));
 				refreshCellWidths();
@@ -183,6 +189,7 @@ final public class DataToolPropsTable extends JTable {
 		});
 	}
 
+	@Override
 	public void addColumn(TableColumn aColumn) {
 		int modelColumn = aColumn.getModelIndex();
 		if (aColumn.getHeaderValue() == null) {
@@ -246,6 +253,7 @@ final public class DataToolPropsTable extends JTable {
 	 * @param column the column number
 	 * @return the cell renderer
 	 */
+	@Override
 	public TableCellRenderer getCellRenderer(int row, int column) {
 		int i = dataTable.convertColumnIndexToModel(column);
 		if (i == 0) {
@@ -265,6 +273,7 @@ final public class DataToolPropsTable extends JTable {
 	 * @param column the column number
 	 * @return the cell editor
 	 */
+	@Override
 	public TableCellEditor getCellEditor(int row, int column) {
 		if (row == styleRow) {
 			return markerEditor;
@@ -272,6 +281,7 @@ final public class DataToolPropsTable extends JTable {
 		return getDefaultEditor(Boolean.class);
 	}
 
+	@Override
 	public void setFont(Font font) {
 		super.setFont(font);
 		setRowHeight(font.getSize() + 4);
@@ -287,6 +297,7 @@ final public class DataToolPropsTable extends JTable {
 			styleDialog = new JDialog(frame, true);
 			closeButton = new JButton();
 			closeButton.addActionListener(new ActionListener() {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					styleDialog.setVisible(false);
 					markerEditor.stopCellEditing();
@@ -304,6 +315,7 @@ final public class DataToolPropsTable extends JTable {
 			// create shape spinner
 			SpinnerModel model = new SpinnerListModel(shapeNames);
 			shapeSpinner = new JSpinner(model) {
+				@Override
 				public Dimension getPreferredSize() {
 					Dimension dim = super.getPreferredSize();
 					dim.height = markerColorButton.getPreferredSize().height;
@@ -314,6 +326,7 @@ final public class DataToolPropsTable extends JTable {
 			};
 			shapeSpinner.setToolTipText(ToolsRes.getString("Spinner.MarkerShape.ToolTip")); //$NON-NLS-1$
 			shapeSpinner.addChangeListener(new ChangeListener() {
+				@Override
 				public void stateChanged(ChangeEvent e) {
 					String shape = shapeSpinner.getValue().toString();
 					for (int i = 0; i < shapeNames.length; i++) {
@@ -334,6 +347,7 @@ final public class DataToolPropsTable extends JTable {
 			// create size spinner
 			SpinnerModel sizemodel = new SpinnerNumberModel(2, 1, 6, 1);
 			sizeSpinner = new JSpinner(sizemodel) {
+				@Override
 				public Dimension getPreferredSize() {
 					return shapeSpinner.getPreferredSize();
 				}
@@ -341,6 +355,7 @@ final public class DataToolPropsTable extends JTable {
 			};
 			sizeSpinner.setToolTipText(ToolsRes.getString("Spinner.MarkerSize.ToolTip")); //$NON-NLS-1$
 			sizeSpinner.addChangeListener(new ChangeListener() {
+				@Override
 				public void stateChanged(ChangeEvent e) {
 					int size = ((Integer) sizeSpinner.getValue()).intValue();
 					WorkingDataset working = dataTable.workingMap.get(styleDialog.getName());
@@ -358,6 +373,7 @@ final public class DataToolPropsTable extends JTable {
 			markerVisCheckbox = new JCheckBox(ToolsRes.getString("DataToolPropsTable.Dialog.Checkbox.Visible")); //$NON-NLS-1$
 			markerVisCheckbox.setHorizontalAlignment(SwingConstants.CENTER);
 			markerVisCheckbox.addActionListener(new ActionListener() {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					WorkingDataset working = dataTable.workingMap.get(styleDialog.getName());
 					if (working != null) {
@@ -372,6 +388,7 @@ final public class DataToolPropsTable extends JTable {
 			lineVisCheckbox = new JCheckBox(ToolsRes.getString("DataToolPropsTable.Dialog.Checkbox.Visible")); //$NON-NLS-1$
 			lineVisCheckbox.setHorizontalAlignment(SwingConstants.CENTER);
 			lineVisCheckbox.addActionListener(new ActionListener() {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					WorkingDataset working = dataTable.workingMap.get(styleDialog.getName());
 					if (working != null) {
@@ -385,6 +402,7 @@ final public class DataToolPropsTable extends JTable {
 			});
 			// create marker and line plots
 			final DrawingPanel markerPlot = new DrawingPanel() {
+				@Override
 				public Dimension getPreferredSize() {
 					Dimension dim = markerColorButton.getPreferredSize();
 					dim.width -= 20;
@@ -400,6 +418,7 @@ final public class DataToolPropsTable extends JTable {
 			markerPlot.addDrawable(markerDataset);
 			// create line plot
 			DrawingPanel linePlot = new DrawingPanel() {
+				@Override
 				public Dimension getPreferredSize() {
 					return markerPlot.getPreferredSize();
 				}
@@ -420,6 +439,7 @@ final public class DataToolPropsTable extends JTable {
 			// create color chooser
 			final JColorChooser cc = new JColorChooser();
 			cc.getSelectionModel().addChangeListener(new ChangeListener() {
+				@Override
 				public void stateChanged(ChangeEvent e) {
 					Color color = cc.getColor();
 					WorkingDataset working = dataTable.workingMap.get(styleDialog.getName());
@@ -446,6 +466,7 @@ final public class DataToolPropsTable extends JTable {
 			colorPopup.getContentPane().add(cc.getChooserPanels()[0]);
 			colorPopup.pack();
 			ActionListener colorAction = new ActionListener() {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					JButton b = (JButton) e.getSource();
 					colorPopup.setName((b == markerColorButton) ? "marker" : "line"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -523,6 +544,7 @@ final public class DataToolPropsTable extends JTable {
 	 * A class to provide model data for this table.
 	 */
 	class PropsTableModel extends AbstractTableModel {
+		@Override
 		public String getColumnName(int col) {
 			String name = dataTable.getColumnName(col);
 			if (name.endsWith(DataToolTab.SHIFTED)) {
@@ -531,14 +553,17 @@ final public class DataToolPropsTable extends JTable {
 			return name;
 		}
 
+		@Override
 		public int getRowCount() {
 			return 4;
 		}
 
+		@Override
 		public int getColumnCount() {
 			return dataTable.getModel().getColumnCount();
 		}
 
+		@Override
 		public Object getValueAt(int row, int col) {
 			int labelCol = dataTable.convertColumnIndexToView(0);
 			if (col == labelCol) {
@@ -583,6 +608,7 @@ final public class DataToolPropsTable extends JTable {
 			return data;
 		}
 
+		@Override
 		public boolean isCellEditable(int row, int col) {
 			if (row == axisRow) {
 				return false;
@@ -599,11 +625,13 @@ final public class DataToolPropsTable extends JTable {
 			return true;
 		}
 
+		@Override
 		public Class<?> getColumnClass(int c) {
 			return getValueAt(0, c).getClass();
 		}
 
 		// changes the value of a cell
+		@Override
 		public void setValueAt(Object value, int row, int col) {
 			if (value instanceof Boolean) {
 				dataTable.dataToolTab.tabChanged(true);
@@ -726,6 +754,7 @@ final public class DataToolPropsTable extends JTable {
 	 */
 	class MarkerEditor extends AbstractCellEditor implements TableCellEditor {
 		// Gets the component to be displayed while editing.
+		@Override
 		public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int col) {
 			JDialog dialog = getStyleDialog();
 			String name = getColumnName(col);
@@ -746,6 +775,7 @@ final public class DataToolPropsTable extends JTable {
 					ToolsRes.getString("Shape.Post") //$NON-NLS-1$
 			};
 			SpinnerModel model = new SpinnerListModel(shapeNames) {
+				@Override
 				public Object getNextValue() {
 					Object value = super.getNextValue();
 					if ((value == null) && (getList().size() > 0)) {
@@ -754,6 +784,7 @@ final public class DataToolPropsTable extends JTable {
 					return value;
 				}
 
+				@Override
 				public Object getPreviousValue() {
 					Object value = super.getPreviousValue();
 					int n = getList().size();
@@ -787,6 +818,7 @@ final public class DataToolPropsTable extends JTable {
 		}
 
 		// Called when editing is completed.
+		@Override
 		public Object getCellEditorValue() {
 			return null;
 		}

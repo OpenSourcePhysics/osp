@@ -53,7 +53,8 @@ public class DiagnosticsForThreads extends JPanel {
     tableModel.stopRequest();
   }
 
-  protected void finalize() throws Throwable {
+  @Override
+protected void finalize() throws Throwable {
     dispose();
   }
 
@@ -137,7 +138,8 @@ private final Class[] columnClass;
 
     noStopRequested = true;
     Runnable r = new Runnable() {
-      public void run() {
+      @Override
+	public void run() {
         try {
           runWork();
         } catch (Exception x) {
@@ -159,7 +161,8 @@ private final Class[] columnClass;
 
   private void runWork() {
     Runnable transferPending = new Runnable() {
-      public void run() {
+      @Override
+	public void run() {
         transferPendingCellData();
         fireTableDataChanged();
       }
@@ -216,23 +219,28 @@ private final Class[] columnClass;
     }
   }
 
-  public int getRowCount() {
+  @Override
+public int getRowCount() {
     return rowCount;
   }
 
-  public Object getValueAt(int row, int col) {
+  @Override
+public Object getValueAt(int row, int col) {
     return cellData[row][col];
   }
 
-  public int getColumnCount() {
+  @Override
+public int getColumnCount() {
     return columnCount;
   }
 
-  public Class<?> getColumnClass(int columnIdx) {
+  @Override
+public Class<?> getColumnClass(int columnIdx) {
     return columnClass[columnIdx];
   }
 
-  public String getColumnName(int columnIdx) {
+  @Override
+public String getColumnName(int columnIdx) {
     return columnName[columnIdx];
   }
 

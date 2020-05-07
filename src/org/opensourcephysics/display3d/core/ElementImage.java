@@ -53,14 +53,16 @@ public interface ElementImage extends Element {
   // XML loader
   // ----------------------------------------------------
   static abstract class Loader extends Element.Loader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       super.saveObject(control, obj);
       ElementImage element = (ElementImage) obj;
       control.setValue("image file", element.getImageFile());         //$NON-NLS-1$
       control.setValue("rotation angle", element.getRotationAngle()); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       ElementImage element = (ElementImage) obj;
       element.setImageFile(control.getString("image file"));         //$NON-NLS-1$

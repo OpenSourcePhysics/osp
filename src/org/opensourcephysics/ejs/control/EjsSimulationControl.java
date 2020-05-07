@@ -77,7 +77,8 @@ public class EjsSimulationControl extends EjsControlFrame {
    * Unlike repaint, the render method is draws the panel within the calling method's thread.
    * This method is called automatically if the frame is animated.
    */
-  public void render() {
+  @Override
+public void render() {
     if(drawingPanel!=null) {
       drawingPanel.render(); // simulations should render their panels at every time step
     }
@@ -86,7 +87,8 @@ public class EjsSimulationControl extends EjsControlFrame {
   /**
    * Clears the current XML default.
    */
-  public void clearDefaultXML() {
+  @Override
+public void clearDefaultXML() {
     if((xmlDefault==null)||(model==null)) {
       return;
     }
@@ -141,7 +143,8 @@ public class EjsSimulationControl extends EjsControlFrame {
   /**
    * Does the calculation.
    */
-  public void initialize() {
+  @Override
+public void initialize() {
     model.stopAnimation();
     getControl("runButton").setProperty("image", "/org/opensourcephysics/resources/controls/images/play.gif"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     GUIUtils.clearDrawingFrameData(true);

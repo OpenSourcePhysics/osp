@@ -122,7 +122,8 @@ public class ExportTool implements Tool, PropertyChangeListener {
 	    setChooserFormats();
 	  }*/
 
-  public void propertyChange(PropertyChangeEvent evt) {
+  @Override
+public void propertyChange(PropertyChangeEvent evt) {
     FileFilter filter = fc.getFileFilter();
     if(filter==null) {
       return;
@@ -185,10 +186,12 @@ public class ExportTool implements Tool, PropertyChangeListener {
     for(Enumeration<String> e = formats.keys(); e.hasMoreElements(); ) {
       final String desc = e.nextElement();
       fc.addChoosableFileFilter(new javax.swing.filechooser.FileFilter() {
-        public boolean accept(File f) {
+        @Override
+		public boolean accept(File f) {
           return f!=null;
         }
-        public String getDescription() {
+        @Override
+		public String getDescription() {
           return desc;
         }
 
@@ -279,7 +282,8 @@ public class ExportTool implements Tool, PropertyChangeListener {
   /*
   * Displays the export dialog with a given XML file.
   */
-  public void send(Job job, Tool replyTo) throws RemoteException {
+  @Override
+public void send(Job job, Tool replyTo) throws RemoteException {
   	if(JSUtil.isJS) {
   		exportJS(job);
   		return;

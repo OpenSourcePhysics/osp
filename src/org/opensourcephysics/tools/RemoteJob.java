@@ -37,7 +37,8 @@ public class RemoteJob extends UnicastRemoteObject implements Job {
    * @return the xml string
    * @throws RemoteException
    */
-  public String getXML() throws RemoteException {
+  @Override
+public String getXML() throws RemoteException {
     return wrappedJob.getXML();
   }
 
@@ -47,7 +48,8 @@ public class RemoteJob extends UnicastRemoteObject implements Job {
    * @param xml the xml string
    * @throws RemoteException
    */
-  public void setXML(String xml) throws RemoteException {
+  @Override
+public void setXML(String xml) throws RemoteException {
     wrappedJob.setXML(xml);
   }
 

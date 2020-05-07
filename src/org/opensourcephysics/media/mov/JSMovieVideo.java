@@ -83,6 +83,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	}
   
 	
+	@Override
 	public Object getProperty(String name) {
 		return super.getProperty(name);
 	}
@@ -109,8 +110,8 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		Frame[] frames = Frame.getFrames();
 		for (int i = 0, n = frames.length; i < n; i++) {
 			if (frames[i].getName().equals("Tracker")) { //$NON-NLS-1$
-				addPropertyChangeListener(PROPERTY_VIDEO_PROGRESS, (PropertyChangeListener) frames[i]); //$NON-NLS-1$
-				addPropertyChangeListener(PROPERTY_VIDEO_STALLED, (PropertyChangeListener) frames[i]); //$NON-NLS-1$
+				addPropertyChangeListener(PROPERTY_VIDEO_PROGRESS, (PropertyChangeListener) frames[i]); 
+				addPropertyChangeListener(PROPERTY_VIDEO_STALLED, (PropertyChangeListener) frames[i]); 
 				break;
 			}
 		}
@@ -133,6 +134,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 * Plays the video at the current rate. Overrides VideoAdapter method.
 	 * pig this and stop below overrides may not be needed--needs testing
 	 */
+	@Override
 	public void play() {
 		if (getFrameCount() == 1) {
 			return;
@@ -146,12 +148,14 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	/**
 	 * Stops the video.
 	 */
+	@Override
 	public void stop() {
 		playing = false;
 		support.firePropertyChange("playing", null, new Boolean(false)); //$NON-NLS-1$
 	}
 
 
+	@Override
 	public BufferedImage getImage() {
 		return (rawImage == null ? null : super.getImage());
 	}
@@ -162,6 +166,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 *
 	 * @param n the desired frame number
 	 */
+	@Override
 	public void setFrameNumber(int n) {
 		super.setFrameNumber(n);
 //		OSPLog.finest("JSMovieVideo.setFrameNumber " + n + " " + getFrameNumber());
@@ -174,6 +179,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 * @param n the frame number
 	 * @return the start time of the frame in milliseconds, or -1 if not known
 	 */
+	@Override
 	public double getFrameTime(int n) {
 		if ((n >= frameTimesMillis.length) || (n < 0)) {
 			return -1;
@@ -186,6 +192,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 *
 	 * @return the current time in milliseconds, or -1 if not known
 	 */
+	@Override
 	public double getTime() {
 		return getFrameTime(getFrameNumber());
 	}
@@ -195,6 +202,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 *
 	 * @param millis the desired time in milliseconds
 	 */
+	@Override
 	public void setTime(double millis) {
 		millis = Math.abs(millis);
 		for (int i = 0; i < frameTimesMillis.length; i++) {
@@ -211,6 +219,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 *
 	 * @return the start time in milliseconds, or -1 if not known
 	 */
+	@Override
 	public double getStartTime() {
 		return getFrameTime(getStartFrameNumber());
 	}
@@ -220,6 +229,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 *
 	 * @param millis the desired start time in milliseconds
 	 */
+	@Override
 	public void setStartTime(double millis) {
 		millis = Math.abs(millis);
 		for (int i = 0; i < frameTimesMillis.length; i++) {
@@ -236,6 +246,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 *
 	 * @return the end time in milliseconds, or -1 if not known
 	 */
+	@Override
 	public double getEndTime() {
 		int n = getEndFrameNumber();
 		if (n < getFrameCount() - 1)
@@ -248,6 +259,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 *
 	 * @param millis the desired end time in milliseconds
 	 */
+	@Override
 	public void setEndTime(double millis) {
 		millis = Math.abs(millis);
 		millis = Math.min(getDuration(), millis);
@@ -265,6 +277,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 *
 	 * @return the duration of the video in milliseconds, or -1 if not known
 	 */
+	@Override
 	public double getDuration() {
 		return HTML5Video.getDuration(jsvideo);
 	}
@@ -274,6 +287,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 *
 	 * @param rate the relative play rate.
 	 */
+	@Override
 	public void setRate(double rate) {
 		super.setRate(rate);
 		if (isPlaying()) {
@@ -284,6 +298,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	/**
 	 * Disposes of this video.
 	 */
+	@Override
 	public void dispose() {
 		super.dispose();
 		DOMNode.dispose(jsvideo);
@@ -380,7 +395,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 			// else path is relative to user directory
 			setProperty("path", XML.getRelativePath(fileName)); //$NON-NLS-1$
 		}
-		firePropertyChange(PROPERTY_VIDEO_PROGRESS, fileName, 0); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_VIDEO_PROGRESS, fileName, 0); 
 		frame = 0;
 		//failDetectTimer.start();
 		if (state == null)
@@ -540,7 +555,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 				case STATE_FIND_FRAMES_READY:
 					if (VideoIO.isCanceled()) {
 						// failDetectTimer.stop();
-						v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, null); //$NON-NLS-1$
+						v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, null); 
 						// clean up temporary objects
 						dispose();
 						v.err = "Canceled by user"; //$NON-NLS-1$
@@ -549,7 +564,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					t = HTML5Video.getCurrentTime(v.jsvideo);
 					// frameTimeStamps.put(frame, Long.valueOf((long) (t * 1000)));
 					seconds.add(Double.valueOf(t));
-					v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, v.frame); //$NON-NLS-1$
+					v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, v.frame); 
 					v.frame++;
 					//OSPLog.finest("JSMovieVideo frame " + frame + " " + t);
 					helper.setState(STATE_FIND_FRAMES_LOOP);
@@ -560,7 +575,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					// clean up temporary objects
 					// throw IOException if no frames were loaded
 					if (seconds.size() == 0) {
-						v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, null); //$NON-NLS-1$
+						v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, null); 
 						dispose();
 						v.err = "no frames"; //$NON-NLS-1$
 					}
@@ -577,7 +592,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					}
 					seconds = null;
 
-					v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, null); //$NON-NLS-1$ // to TFrame
+					v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, null); // to TFrame
 					thisFrame = -1;
 					v.setFrameNumber(0);
 					// failDetectTimer.stop();
@@ -603,10 +618,11 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 							return true;
 						}
 							v.rawImage = bi;
-							v.firePropertyChange(Video.PROPERTY_VIDEO_FRAMENUMBER, null, new Integer(thisFrame)); //$NON-NLS-1$
-							v.firePropertyChange(AsyncVideoI.PROPERTY_VIDEO_IMAGE_READY, null, bi); //$NON-NLS-1$
+							v.firePropertyChange(Video.PROPERTY_VIDEO_FRAMENUMBER, null, new Integer(thisFrame)); 
+							v.firePropertyChange(AsyncVideoI.PROPERTY_VIDEO_IMAGE_READY, null, bi); 
 							if (v.isPlaying()) {
 								Runnable runner = new Runnable() {
+								@Override
 								public void run() {
 									v.continuePlaying();
 								}

@@ -54,7 +54,8 @@ public class LocalJob implements Job, Serializable {
    *
    * @return the xml string
    */
-  public String getXML() {
+  @Override
+public String getXML() {
     return xml;
   }
 
@@ -63,7 +64,8 @@ public class LocalJob implements Job, Serializable {
    *
    * @param xml the xml string
    */
-  public void setXML(String xml) {
+  @Override
+public void setXML(String xml) {
     if(xml!=null) {
       this.xml = xml;
     }

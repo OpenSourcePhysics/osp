@@ -33,8 +33,6 @@ package org.opensourcephysics.media.core;
 import java.io.File;
 import java.util.TreeSet;
 
-import javax.swing.filechooser.FileFilter;
-
 /**
  * This is a FileFilter that accepts video files. Filters for single
  * container types (eg, gif, mov, avi, mp4, etc) are created by specifying
@@ -78,6 +76,7 @@ public class VideoFileFilter extends VideoIO.SingleExtFileFilter implements Comp
 	 * @param checkIfDir
 	 * @return
 	 */
+	@Override
 	public boolean accept(File f, boolean checkIfDir) {
 		if (checkIfDir && f.isDirectory()) {
 			return true;
@@ -105,7 +104,8 @@ public class VideoFileFilter extends VideoIO.SingleExtFileFilter implements Comp
 	   * 
 	   * @return the description
 	   */
-	  public String getDescription() {
+	  @Override
+	public String getDescription() {
 	    // BH 2020.02.09 Java inefficiency during compare operation
 		if (desc != null)
 			return desc;
@@ -169,7 +169,8 @@ public class VideoFileFilter extends VideoIO.SingleExtFileFilter implements Comp
 	   * @param filter the filter to compare
 	   * @return the comparison of their descriptions
 	   */
-	  public int compareTo(VideoFileFilter filter) {  	
+	  @Override
+	public int compareTo(VideoFileFilter filter) {  	
 	  	return getDescription().compareTo(filter.getDescription());
 	  }
 	  

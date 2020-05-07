@@ -16,7 +16,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -130,7 +129,8 @@ public class VideoGrabber extends VideoCaptureTool {
   /**
    * Clear the video from the tool in preparation for a new video.
    */
-  public void clear() {
+  @Override
+public void clear() {
     //     setRecording(false);
     clearAction.actionPerformed(null);
   }
@@ -141,7 +141,8 @@ public class VideoGrabber extends VideoCaptureTool {
    * @param image the frame to be added
    * @return true if frame was added
    */
-  public boolean addFrame(BufferedImage image) {
+  @Override
+public boolean addFrame(BufferedImage image) {
     if(isRecording()) {
       try {
         int w = image.getWidth();
@@ -196,7 +197,8 @@ public class VideoGrabber extends VideoCaptureTool {
           // give recorderPanel extra room so whole video is visible
           final Dimension dim = new Dimension(image.getWidth()+4, image.getHeight()+4);
           Runnable runner = new Runnable() {
-            public void run() {
+            @Override
+			public void run() {
               recorderPanel.setPreferredSize(dim);
               recorderFrame.pack();
             }
@@ -218,7 +220,8 @@ public class VideoGrabber extends VideoCaptureTool {
    *
    * @param visible true to set this visible
    */
-  public void setVisible(boolean visible) {
+  @Override
+public void setVisible(boolean visible) {
     recorderFrame.setVisible(visible);
   }
 
@@ -227,7 +230,8 @@ public class VideoGrabber extends VideoCaptureTool {
    *
    * @return true if visible
    */
-  public boolean isVisible() {
+  @Override
+public boolean isVisible() {
     return recorderFrame.isVisible();
   }
 
@@ -236,7 +240,8 @@ public class VideoGrabber extends VideoCaptureTool {
    *
    * @param record true to record rendered images
    */
-  public void setRecording(boolean record) {
+  @Override
+public void setRecording(boolean record) {
     recording = record;
     refreshGUI();
   }
@@ -246,7 +251,8 @@ public class VideoGrabber extends VideoCaptureTool {
    *
    * @return true if recording rendered images
    */
-  public boolean isRecording() {
+  @Override
+public boolean isRecording() {
     return recording&&(recorder!=null);
   }
 
@@ -255,7 +261,8 @@ public class VideoGrabber extends VideoCaptureTool {
    *
    * @param type the video type
    */
-  public void setVideoType(VideoType type) {
+  @Override
+public void setVideoType(VideoType type) {
     if((type==null)||(type==videoType)) {
       return;
     }
@@ -269,7 +276,8 @@ public class VideoGrabber extends VideoCaptureTool {
    *
    * @param fps the frame rate in frames per second
    */
-  public void setFrameRate(double fps) {
+  @Override
+public void setFrameRate(double fps) {
     fps = Math.max(fps, 1);
     fps = Math.min(fps, 60);
     fps = Math.round(100*fps)/100; // round to nearest .01 fps
@@ -333,7 +341,8 @@ public class VideoGrabber extends VideoCaptureTool {
                       "12", "10", "8", "6",     //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
                       "5", "4", "3", "2", "1"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
     fpsDropDown = new JComboBox(rates) {
-      public Dimension getMaximumSize() {
+      @Override
+	public Dimension getMaximumSize() {
         return getMinimumSize();
       }
 
@@ -341,7 +350,8 @@ public class VideoGrabber extends VideoCaptureTool {
     fpsDropDown.addActionListener(fpsAction);
     // video type dropdown
     vidTypeDropDown = new JComboBox() {
-      public Dimension getMaximumSize() {
+      @Override
+	public Dimension getMaximumSize() {
         return getMinimumSize();
       }
     };
@@ -360,7 +370,8 @@ public class VideoGrabber extends VideoCaptureTool {
     recorderFrame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
     recorderFrame.setName("VideoCaptureTool"); //$NON-NLS-1$
     recorderFrame.addWindowListener(new WindowAdapter() {
-      public void windowClosing(WindowEvent e) {
+      @Override
+	public void windowClosing(WindowEvent e) {
         if(recorder instanceof ScratchVideoRecorder) {
           ScratchVideoRecorder svr = (ScratchVideoRecorder) recorder;
           if(svr.scratchFile!=null) {
@@ -425,7 +436,8 @@ public class VideoGrabber extends VideoCaptureTool {
    */
   protected void createActions() {
     clearAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         recorderPanel.setVideo(null);
         recorderPanel.getPlayer().getVideoClip().setStepCount(1);
         if(recorder!=null) {
@@ -449,7 +461,8 @@ public class VideoGrabber extends VideoCaptureTool {
 
     };
     saveAsAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         if(recorder!=null) {
           try {
             String name = recorder.saveVideoAs();
@@ -481,14 +494,16 @@ public class VideoGrabber extends VideoCaptureTool {
 
     };
     recordAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         recording = !recording;
         refreshGUI();
       }
 
     };
     vidTypeAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         Object desc = vidTypeDropDown.getSelectedItem();
         VideoType vidType = vidTypes.get(desc);
         if(vidType!=null) {
@@ -498,7 +513,8 @@ public class VideoGrabber extends VideoCaptureTool {
 
     };
     fpsAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         clearAction.actionPerformed(null);
       }
 
@@ -544,7 +560,8 @@ public class VideoGrabber extends VideoCaptureTool {
       setShowCoordinates(false);
     }
 
-    protected void scale(ArrayList<Drawable> drawables) {
+    @Override
+	protected void scale(ArrayList<Drawable> drawables) {
       // set image border so video size remains fixed
       double w = imageWidth;
       double wBorder = (getWidth()-w-1)*0.5/w;

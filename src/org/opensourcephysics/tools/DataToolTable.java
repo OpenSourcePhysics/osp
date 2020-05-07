@@ -78,6 +78,7 @@ import org.opensourcephysics.js.JSUtil;
  * @author Douglas Brown
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class DataToolTable extends DataTable {
   // static fields and constants
   protected final static int RENAME_COLUMN_EDIT = 0;
@@ -140,7 +141,8 @@ public class DataToolTable extends DataTable {
     // selection listener for table
     ListSelectionModel selectionModel = getSelectionModel();
     selectionModel.addListSelectionListener(new ListSelectionListener() {
-      public void valueChanged(ListSelectionEvent e) {
+      @Override
+	public void valueChanged(ListSelectionEvent e) {
       	if (e.getFirstIndex()==-1) {
       		return;
       	}
@@ -160,7 +162,8 @@ public class DataToolTable extends DataTable {
     // selection listener for column header
     selectionModel = getColumnModel().getSelectionModel();
     selectionModel.addListSelectionListener(new ListSelectionListener() {
-      public void valueChanged(ListSelectionEvent e) {
+      @Override
+	public void valueChanged(ListSelectionEvent e) {
         getTableHeader().repaint();
         dataToolTab.refreshPlot();
       }
@@ -168,7 +171,8 @@ public class DataToolTable extends DataTable {
     });
     // create actions
     clearCellsAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         // clear selected cells by replacing with NaN
         HashMap<String, double[]> values = new HashMap<String, double[]>();
         int[] rows = getSelectedModelRows();
@@ -185,7 +189,8 @@ public class DataToolTable extends DataTable {
 
     };
     pasteCellsAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         int[] rows = getSelectedModelRows();
         if(!pasteValues.isEmpty()&&((rows.length==1)||(pasteH==rows.length))) {
           int[] pasteRows = new int[pasteH];
@@ -214,7 +219,8 @@ public class DataToolTable extends DataTable {
 
     };
     pasteInsertCellsAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         int[] rows = getSelectedModelRows();
         if(!pasteValues.isEmpty()&&((rows.length==1)||(pasteH==rows.length))) {
           int[] pasteRows = new int[pasteH];
@@ -243,7 +249,8 @@ public class DataToolTable extends DataTable {
 
     };
     cantPasteCellsAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         JOptionPane.showMessageDialog(dataToolTab, ToolsRes.getString("DataToolTable.Dialog.CantPasteCells.Message1") //$NON-NLS-1$
                                       +" "+pasteW+" x "+pasteH+"\n"                                        //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                                       +ToolsRes.getString("DataToolTable.Dialog.CantPasteCells.Message2"), //$NON-NLS-1$
@@ -253,7 +260,8 @@ public class DataToolTable extends DataTable {
 
     };
     cantPasteRowsAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         JOptionPane.showMessageDialog(dataToolTab, ToolsRes.getString("DataToolTable.Dialog.CantPasteRows.Message1") //$NON-NLS-1$
                                       +" "+pasteH+"\n"                                                    //$NON-NLS-1$ //$NON-NLS-2$
                                       +ToolsRes.getString("DataToolTable.Dialog.CantPasteRows.Message2"), //$NON-NLS-1$
@@ -263,7 +271,8 @@ public class DataToolTable extends DataTable {
 
     };
     getPasteDataAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         pasteValues.clear();
         pasteData = null;
         // put clipboard data into pasteValues map
@@ -289,7 +298,8 @@ public class DataToolTable extends DataTable {
     };
     // mouse motion listener for table header
     getTableHeader().addMouseMotionListener(new MouseInputAdapter() {
-      public void mouseMoved(MouseEvent e) {
+      @Override
+	public void mouseMoved(MouseEvent e) {
         int n = getTableHeader().columnAtPoint(e.getPoint());
         n = convertColumnIndexToModel(n);
         if(n==0) {
@@ -303,7 +313,8 @@ public class DataToolTable extends DataTable {
     // mouse listener for table header
     getTableHeader().addMouseListener(new MouseAdapter() {
     	
-      public void mouseClicked(MouseEvent e) {
+      @Override
+	public void mouseClicked(MouseEvent e) {
       	if (getRowCount()==0) return;        	
         final java.awt.Point mousePt = e.getPoint();
         final int col = columnAtPoint(mousePt);
@@ -335,7 +346,8 @@ public class DataToolTable extends DataTable {
             text = ToolsRes.getString("DataToolTable.Popup.MenuItem.RenameColumn");                                                    //$NON-NLS-1$
             renameColumnItem = new JMenuItem(text);
             renameColumnItem.addActionListener(new ActionListener() {
-              public void actionPerformed(ActionEvent e) {
+              @Override
+			public void actionPerformed(ActionEvent e) {
                 if(data instanceof DataFunction) {
                   showDataBuilder();
                   return;
@@ -371,7 +383,8 @@ public class DataToolTable extends DataTable {
           text = ToolsRes.getString("DataToolTable.Popup.MenuItem.CopyColumns"); //$NON-NLS-1$
           copyColumnsItem = new JMenuItem(text);
           copyColumnsItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            @Override
+			public void actionPerformed(ActionEvent e) {
               dataToolTab.copyTableDataToClipboard();
             }
 
@@ -389,7 +402,8 @@ public class DataToolTable extends DataTable {
             cutColumnsItem = new JMenuItem(text);
             cutColumnsItem.setActionCommand(String.valueOf(col));
             cutColumnsItem.addActionListener(new ActionListener() {
-              public void actionPerformed(ActionEvent e) {
+              @Override
+			public void actionPerformed(ActionEvent e) {
                 copyColumnsItem.doClick();
                 deleteSelectedColumns(); // also posts undoable edits
               }
@@ -402,7 +416,8 @@ public class DataToolTable extends DataTable {
             text = ToolsRes.getString("DataToolTable.Popup.MenuItem.PasteColumns"); //$NON-NLS-1$
             pasteColumnsItem = new JMenuItem(text);
             pasteColumnsItem.addActionListener(new ActionListener() {
-              public void actionPerformed(ActionEvent e) {
+              @Override
+			public void actionPerformed(ActionEvent e) {
                 dataToolTab.dataTool.pasteColumnsItem.doClick(0);
               }
 
@@ -414,7 +429,8 @@ public class DataToolTable extends DataTable {
           text = ToolsRes.getString("DataToolTable.Popup.MenuItem.CloneColumns"); //$NON-NLS-1$
           cloneColumnsItem = new JMenuItem(text);
           cloneColumnsItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            @Override
+			public void actionPerformed(ActionEvent e) {
               ArrayList<String> colNames = getSelectedColumnNames();
               for(int i = 0; i<colNames.size(); i++) {
                 Dataset data = getDataset(colNames.get(i));
@@ -450,7 +466,8 @@ public class DataToolTable extends DataTable {
           text = ToolsRes.getString("DataToolTable.Popup.MenuItem.NumberFormat"); //$NON-NLS-1$
           numberFormatItem = new JMenuItem(text);
           numberFormatItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            @Override
+			public void actionPerformed(ActionEvent e) {
             	// get list of all column names
 	            int colCount = getColumnCount();
 	            String[] names = new String[colCount-1];
@@ -545,7 +562,8 @@ public class DataToolTable extends DataTable {
     });
     // mouse motion listener for table
     addMouseMotionListener(new MouseInputAdapter() {
-      public void mouseMoved(MouseEvent e) {
+      @Override
+	public void mouseMoved(MouseEvent e) {
         if(!popup.isVisible()) {
           int row = rowAtPoint(e.getPoint());
           int col = columnAtPoint(e.getPoint());
@@ -565,7 +583,8 @@ public class DataToolTable extends DataTable {
         }
         requestFocusInWindow();
       }
-      public void mouseDragged(MouseEvent e) {
+      @Override
+	public void mouseDragged(MouseEvent e) {
         int col = columnAtPoint(e.getPoint());
         int row = rowAtPoint(e.getPoint());
         mouseRow = row;
@@ -586,14 +605,16 @@ public class DataToolTable extends DataTable {
     });
     // mouse listener for table
     tableMouseListener = new MouseAdapter() {
-      public void mouseExited(MouseEvent e) {
+      @Override
+	public void mouseExited(MouseEvent e) {
         if(!popup.isVisible()) {
           mouseRow = -1;
           dataRenderer.showFocus = true;
           dorepaint(1);
         }
       }
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
         final int col = columnAtPoint(e.getPoint());
         final int row = rowAtPoint(e.getPoint());
         int labelCol = convertColumnIndexToView(0);
@@ -638,7 +659,8 @@ public class DataToolTable extends DataTable {
             text = ToolsRes.getString("DataToolTable.Popup.MenuItem.SelectAll");        //$NON-NLS-1$
             selectAllItem = new JMenuItem(text);
             selectAllItem.addActionListener(new ActionListener() {
-              public void actionPerformed(ActionEvent e) {
+              @Override
+			public void actionPerformed(ActionEvent e) {
               	selectAllCells();
               }
             });
@@ -646,7 +668,8 @@ public class DataToolTable extends DataTable {
             text = ToolsRes.getString("DataToolTable.Popup.MenuItem.SelectNone");        //$NON-NLS-1$
             selectNoneItem = new JMenuItem(text);
             selectNoneItem.addActionListener(new ActionListener() {
-              public void actionPerformed(ActionEvent e) {
+              @Override
+			public void actionPerformed(ActionEvent e) {
               	clearSelection();
               }
             });
@@ -659,7 +682,8 @@ public class DataToolTable extends DataTable {
               insertCellsItem = new JMenuItem(text);
               insertCellsItem.setActionCommand(String.valueOf(col));
               insertCellsItem.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+                @Override
+				public void actionPerformed(ActionEvent e) {
                   HashMap<String, double[]> emptyRow = new HashMap<String, double[]>();
                   Iterator<String> it = getSelectedColumnNames().iterator();
                   while(it.hasNext()) {
@@ -687,7 +711,8 @@ public class DataToolTable extends DataTable {
               deleteCellsItem = new JMenuItem(text);
               deleteCellsItem.setActionCommand(String.valueOf(col));
               deleteCellsItem.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+                @Override
+				public void actionPerformed(ActionEvent e) {
                   Iterator<String> it = getSelectedColumnNames().iterator();
                   while(it.hasNext()) {
                     pasteValues.put(it.next(), null);
@@ -712,7 +737,8 @@ public class DataToolTable extends DataTable {
                 copyCellsItem = new JMenuItem(text);
                 copyCellsItem.setActionCommand(String.valueOf(col));
                 copyCellsItem.addActionListener(new ActionListener() {
-                  public void actionPerformed(ActionEvent e) {
+                  @Override
+				public void actionPerformed(ActionEvent e) {
                     dataToolTab.copyTableDataToClipboard();
                   }
 
@@ -724,7 +750,8 @@ public class DataToolTable extends DataTable {
                   cutCellsItem = new JMenuItem(text);
                   cutCellsItem.setActionCommand(String.valueOf(col));
                   cutCellsItem.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
+                    @Override
+					public void actionPerformed(ActionEvent e) {
                       copyCellsItem.doClick();
                       clearCellsAction.actionPerformed(e);
                     }
@@ -734,7 +761,8 @@ public class DataToolTable extends DataTable {
                   text = ToolsRes.getString("DataToolTable.Popup.MenuItem.DeleteContents");        //$NON-NLS-1$
                   clearContentsItem = new JMenuItem(text);
                   clearContentsItem.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
+                    @Override
+					public void actionPerformed(ActionEvent e) {
                     	clearCellsAction.actionPerformed(null);
                     }
                   });
@@ -760,7 +788,8 @@ public class DataToolTable extends DataTable {
               text = ToolsRes.getString("DataToolTable.Popup.MenuItem.InsertRows"); //$NON-NLS-1$
               insertRowItem = new JMenuItem(text);
               insertRowItem.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+                @Override
+				public void actionPerformed(ActionEvent e) {
                   HashMap<String, double[]> prev = insertRows(rows, null);
                   // post edit: target is rows, value is map
                   TableEdit edit = new TableEdit(INSERT_ROWS_EDIT, null, rows, prev);
@@ -784,7 +813,8 @@ public class DataToolTable extends DataTable {
                 text = ToolsRes.getString("DataToolTable.Popup.MenuItem.PasteInsertRows"); //$NON-NLS-1$
                 pasteRowsItem = new JMenuItem(text);
                 pasteRowsItem.addActionListener(new ActionListener() {
-                  public void actionPerformed(ActionEvent e) {
+                  @Override
+				public void actionPerformed(ActionEvent e) {
                     if((rows.length!=1)&&(pasteH!=rows.length)) {
                       cantPasteRowsAction.actionPerformed(e);
                       return;
@@ -814,7 +844,8 @@ public class DataToolTable extends DataTable {
             text = ToolsRes.getString("DataToolTable.Popup.MenuItem.CopyRows"); //$NON-NLS-1$
             copyRowsItem = new JMenuItem(text);
             copyRowsItem.addActionListener(new ActionListener() {
-              public void actionPerformed(ActionEvent e) {
+              @Override
+			public void actionPerformed(ActionEvent e) {
                 OSPLog.finest("copying rows"); //$NON-NLS-1$
                 String data = dataToolTab.getSelectedTableData();
                 DataTool.copy(data);
@@ -827,7 +858,8 @@ public class DataToolTable extends DataTable {
               text = ToolsRes.getString("DataToolTable.Popup.MenuItem.CutRows"); //$NON-NLS-1$
               cutRowsItem = new JMenuItem(text);
               cutRowsItem.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+                @Override
+				public void actionPerformed(ActionEvent e) {
                   copyRowsItem.doClick();
                   int[] rows = getSelectedModelRows();
                   HashMap<String, double[]> removed = deleteRows(rows);
@@ -844,7 +876,8 @@ public class DataToolTable extends DataTable {
               text = ToolsRes.getString("DataToolTable.Popup.MenuItem.AddEndRow"); //$NON-NLS-1$
               addEndRowItem = new JMenuItem(text);
               addEndRowItem.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+                @Override
+				public void actionPerformed(ActionEvent e) {
                   insertRows(new int[] {getRowCount()}, null);
                 }
 
@@ -855,7 +888,8 @@ public class DataToolTable extends DataTable {
                 text = ToolsRes.getString("DataToolTable.Popup.MenuItem.TrimRows"); //$NON-NLS-1$
                 trimRowsItem = new JMenuItem(text);
                 trimRowsItem.addActionListener(new ActionListener() {
-                  public void actionPerformed(ActionEvent e) {
+                  @Override
+				public void actionPerformed(ActionEvent e) {
                     trimEmptyRows(0);
                   }
 
@@ -928,7 +962,8 @@ public class DataToolTable extends DataTable {
     // override default enter action
     InputMap im = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     Action enterAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         // start editing focused cell
         editCellAt(focusRow, focusCol, e);
         editor.field.requestFocus();
@@ -939,7 +974,8 @@ public class DataToolTable extends DataTable {
     getActionMap().put(im.get(enter), enterAction);
     // override default copy action
     Action copyAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         dataToolTab.copyTableDataToClipboard();
       }
 
@@ -949,7 +985,8 @@ public class DataToolTable extends DataTable {
     getActionMap().put(im.get(copy), copyAction);
     // override default paste action
     Action pasteAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         getPasteDataAction.actionPerformed(e);
         pasteCellsAction.actionPerformed(e);
       }
@@ -1448,7 +1485,7 @@ public class DataToolTable extends DataTable {
       FunctionTool tool = dataToolTab.getDataBuilder();
       FunctionPanel panel = tool.getPanel(dataToolTab.getName());
       // next line posts undo edit to FunctionPanel
-      panel.functionEditor.removeObject(data, true);
+      panel.functionEditor.removeObject((DataFunction) data, true);
     } else {
       dataManager.removeDataset(index);
       workingMap.remove(colName);
@@ -1945,7 +1982,8 @@ public class DataToolTable extends DataTable {
   /**
    * Deselects all selected columns and rows. Overrides JTable method.
    */
-  public void clearSelection() {
+  @Override
+public void clearSelection() {
     if(workingData!=null) {
       workingData.clearHighlights();
     }
@@ -1966,7 +2004,8 @@ public class DataToolTable extends DataTable {
   /**
    * Refreshes the data in the table. Overrides DataTable method.
    */
-  public void refreshTable() {
+  @Override
+public void refreshTable() {
     // save model column order
     int[] modelColumns = getModelColumnOrder();
     // save selected rows and columns
@@ -2104,7 +2143,8 @@ public class DataToolTable extends DataTable {
     }
   }
 
-  public void setFont(Font font) {
+  @Override
+public void setFont(Font font) {
     super.setFont(font);
     if(labelRenderer!=null) {
       Font labelFont = labelRenderer.getFont();
@@ -2131,7 +2171,8 @@ public class DataToolTable extends DataTable {
    * @param col the column number
    * @return the cell editor
    */
-  public TableCellRenderer getCellRenderer(int row, int col) {
+  @Override
+public TableCellRenderer getCellRenderer(int row, int col) {
     TableCellRenderer renderer = super.getCellRenderer(row, col);
     if(renderer==rowNumberRenderer) {
       return labelRenderer;
@@ -2147,7 +2188,8 @@ public class DataToolTable extends DataTable {
    * @param col the column number
    * @return the cell editor
    */
-  public TableCellEditor getCellEditor(int row, int col) {
+  @Override
+public TableCellEditor getCellEditor(int row, int col) {
     editor.setColumn(col);
     return editor;
   }
@@ -2181,7 +2223,8 @@ public class DataToolTable extends DataTable {
       panel.addDrawable(textLine);
     }
 
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+    @Override
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
       // value is data column name
       String realname = (value==null) ? "" : value.toString(); //$NON-NLS-1$
       String name = realname;
@@ -2374,17 +2417,20 @@ public class DataToolTable extends DataTable {
       yData.setLineColor(lineColor);
     }
 
-    public void setConnected(boolean connected) {
+    @Override
+	public void setConnected(boolean connected) {
       super.setConnected(connected);
       yData.setConnected(connected);
     }
 
-    public void setMarkerSize(int size) {
+    @Override
+	public void setMarkerSize(int size) {
       super.setMarkerSize(size);
       yData.setMarkerSize(size);
     }
 
-    public void setMarkerShape(int shape) {
+    @Override
+	public void setMarkerShape(int shape) {
       super.setMarkerShape(shape);
       if(shape!=Dataset.NO_MARKER) {
         yData.setMarkerShape(shape);
@@ -2428,7 +2474,8 @@ public class DataToolTable extends DataTable {
     boolean showFocus = false;
     Color unlockedBG = Color.WHITE, lockedBG = new Color(255, 220, 0, 30);
 
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+    @Override
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
       int modelCol = convertColumnIndexToModel(col);
       if((hasFocus || isSelected) && modelCol>0) {
         focusRow = row;
@@ -2471,7 +2518,8 @@ public class DataToolTable extends DataTable {
       setHorizontalAlignment(SwingConstants.RIGHT);
     }
 
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+    @Override
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
       setText((value==null) ? null : value.toString());
       setEnabled(true);
       boolean selected = false;
@@ -2501,7 +2549,8 @@ public class DataToolTable extends DataTable {
       this.tab = tab;
     }
 
-    public String getColumnName(int col) {
+    @Override
+	public String getColumnName(int col) {
       if(col==0) {
         return rowName;
       }
@@ -2525,7 +2574,8 @@ public class DataToolTable extends DataTable {
 //    	return super.getValueAt(row, col);
 //    }
 //
-    public void setValueAt(Object value, int row, int col) {
+    @Override
+	public void setValueAt(Object value, int row, int col) {
       if(value==null) {
         return;
       }
@@ -2552,7 +2602,8 @@ public class DataToolTable extends DataTable {
       tab.undoSupport.postEdit(edit);
     }
 
-    public boolean isCellEditable(int row, int col) {
+    @Override
+	public boolean isCellEditable(int row, int col) {
       return (col>0 && tab.isUserEditable());
     }
 
@@ -2572,11 +2623,13 @@ public class DataToolTable extends DataTable {
       field.setBorder(BorderFactory.createEmptyBorder(0, 1, 1, 0));
       field.setSelectionColor(new Color(204, 255, 255));
       field.addKeyListener(new KeyAdapter() {
-        public void keyPressed(final KeyEvent e) {
+        @Override
+		public void keyPressed(final KeyEvent e) {
           if(e.getKeyCode()==KeyEvent.VK_ENTER) {
             stopCellEditing();
             Runnable runner = new Runnable() {
-              public synchronized void run() {
+              @Override
+			public synchronized void run() {
                 int row = getModelRow(focusRow)+1;
                 // add empty row if needed
                 if(row==getRowCount()) {
@@ -2597,18 +2650,21 @@ public class DataToolTable extends DataTable {
 
       });
       field.addFocusListener(new FocusAdapter() {
-        public void focusLost(FocusEvent e) {
+        @Override
+		public void focusLost(FocusEvent e) {
           if(field.getBackground()!=Color.white) {
             stopCellEditing();
           }
         }
-        public void focusGained(FocusEvent e) {
+        @Override
+		public void focusGained(FocusEvent e) {
           field.selectAll();
         }
 
       });
       field.addMouseListener(new MouseAdapter() {
-        public void mousePressed(MouseEvent e) {
+        @Override
+		public void mousePressed(MouseEvent e) {
           // right-click: pass e to the table mouse listener
           if(OSPRuntime.isPopupTrigger(e)) {
             stopCellEditing();
@@ -2627,7 +2683,8 @@ public class DataToolTable extends DataTable {
     }
 
     // Gets the component to be displayed while editing.
-    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int col) {
+    @Override
+	public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int col) {
       // if editing a function, simply show function builder
       if(isFunction) {
         showDataBuilder();
@@ -2639,7 +2696,8 @@ public class DataToolTable extends DataTable {
     }
 
     // Determines when editing starts.
-    public boolean isCellEditable(EventObject e) {
+    @Override
+	public boolean isCellEditable(EventObject e) {
       if((e instanceof MouseEvent)&&((MouseEvent) e).getClickCount()==2) {
         return true;
       }
@@ -2653,7 +2711,8 @@ public class DataToolTable extends DataTable {
     }
 
     // Called when editing is completed.
-    public Object getCellEditorValue() {
+    @Override
+	public Object getCellEditorValue() {
       DataToolTable.this.requestFocusInWindow();
       field.setBackground(Color.white);
       return field.getText();
@@ -2691,7 +2750,8 @@ public class DataToolTable extends DataTable {
     }
 
     // undoes the change
-    @SuppressWarnings("unchecked")
+    @Override
+	@SuppressWarnings("unchecked")
     public void undo() throws CannotUndoException {
       super.undo();
       OSPLog.finer("undoing "+editTypes[editType]); //$NON-NLS-1$
@@ -2753,7 +2813,8 @@ public class DataToolTable extends DataTable {
     }
 
     // redoes the change
-    @SuppressWarnings("unchecked")
+    @Override
+	@SuppressWarnings("unchecked")
     public void redo() throws CannotUndoException {
       super.redo();
       OSPLog.finer("redoing "+editTypes[editType]); //$NON-NLS-1$
@@ -2814,7 +2875,8 @@ public class DataToolTable extends DataTable {
     }
 
     // returns the presentation name
-    public String getPresentationName() {
+    @Override
+	public String getPresentationName() {
       return "Edit"; //$NON-NLS-1$
     }
 

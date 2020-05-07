@@ -11,9 +11,6 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -126,7 +123,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
    * Gets this frame.  Implementation of MainFrame interface.
    * @return OSPFrame
    */
-  public OSPFrame getMainFrame() {
+  @Override
+public OSPFrame getMainFrame() {
     return this;
   }
 
@@ -135,7 +133,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
    *
    * @return the display menu
    */
-  protected JMenu loadDisplayMenu() {
+  @Override
+protected JMenu loadDisplayMenu() {
     JMenuBar menuBar = getJMenuBar();
     if(menuBar==null) {
       return null;
@@ -146,7 +145,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
     // changed by D Brown 2007-10-17
     if(OSPRuntime.getTranslator()!=null) {
       translateItem.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           OSPRuntime.getTranslator().showProperties(model.getClass());
           if(OSPRuntime.getTranslator() instanceof Hidable) {
             ((Hidable) OSPRuntime.getTranslator()).setKeepHidden(false);
@@ -168,7 +168,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
   /**
    * Refreshes the user interface in response to display changes such as Language.
    */
-  protected void refreshGUI() {
+  @Override
+protected void refreshGUI() {
     if(messageLabel==null) {
       return;
     }
@@ -184,7 +185,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
    *
    * @param e the property change event
    */
-  public void propertyChange(PropertyChangeEvent e) {
+  @Override
+public void propertyChange(PropertyChangeEvent e) {
     String name = e.getPropertyName();
     if(name.equals("translation")||name.equals("locale")) {//$NON-NLS-1$ //$NON-NLS-2$
       refreshGUI(); 
@@ -233,7 +235,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
    *
    * @param lock boolean
    */
-  public void setLockValues(boolean lock) {
+  @Override
+public void setLockValues(boolean lock) {
     table.setLockValues(true);
   }
 
@@ -242,7 +245,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
    *
    * @return    the control parameters
    */
-  public String toString() {
+  @Override
+public String toString() {
 	//System.out.println("Table to string: "+table); // xxx debug
 	if(table==null) return "";
     return table.toString();
@@ -254,7 +258,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
    * @param  par  the parameter name
    * @param  val  the initial parameter value
    */
-  public void setValue(String par, Object val) {
+  @Override
+public void setValue(String par, Object val) {
     table.setValue(par, val);
   }
 
@@ -264,7 +269,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
    * @param  par  the parameter name
    * @param  val  the initial parameter value
    */
-  public void setValue(String par, boolean val) {
+  @Override
+public void setValue(String par, boolean val) {
     table.setValue(par, val);
   }
 
@@ -274,7 +280,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
    * @param  par  the parameter name
    * @param  val  the initial parameter value
    */
-  public void setValue(String par, double val) {
+  @Override
+public void setValue(String par, double val) {
     table.setValue(par, Double.toString(val));
   }
 
@@ -284,7 +291,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
    * @param  par  the parameter name
    * @param  val  the initial parameter value
    */
-  public void setValue(String par, int val) {
+  @Override
+public void setValue(String par, int val) {
     table.setValue(par, Integer.toString(val));
   }
 
@@ -303,7 +311,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
    * @param  par
    * @return      double the value of of the parameter
    */
-  public double getDouble(String par) {
+  @Override
+public double getDouble(String par) {
     return table.getDouble(par);
   }
 
@@ -313,7 +322,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
    * @param  par
    * @return      int the value of of the parameter
    */
-  public int getInt(String par) {
+  @Override
+public int getInt(String par) {
     return table.getInt(par);
   }
 
@@ -324,7 +334,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
    * @param  par
    * @return the object
    */
-  public Object getObject(String par) throws UnsupportedOperationException {
+  @Override
+public Object getObject(String par) throws UnsupportedOperationException {
     return table.getObject(par);
   }
 
@@ -334,7 +345,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
    * @param  par  the parameter name
    * @return      String the value of of the parameter
    */
-  public String getString(String par) {
+  @Override
+public String getString(String par) {
     return table.getString(par);
   }
 
@@ -344,7 +356,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
    * @param  par  the parameter name
    * @return      the value of of the parameter
    */
-  public boolean getBoolean(String par) {
+  @Override
+public boolean getBoolean(String par) {
     return table.getBoolean(par);
   }
 
@@ -353,7 +366,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
    *
    * @return      the property names
    */
-  public Collection<String> getPropertyNames() {
+  @Override
+public Collection<String> getPropertyNames() {
     return table.getPropertyNames();
   }
 
@@ -404,7 +418,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
     try {
       final java.lang.reflect.Method m = target.getClass().getMethod(methodName, parameters);
       table.tableModel.addTableModelListener(new TableModelListener() {
-        public void tableChanged(TableModelEvent e) {
+        @Override
+		public void tableChanged(TableModelEvent e) {
           if((e.getType()!=TableModelEvent.UPDATE)||(e.getColumn()!=1)||(e.getFirstRow()<0)) {
             return;
           }
@@ -427,14 +442,16 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
    *
    * @param  s
    */
-  public void println(String s) {
+  @Override
+public void println(String s) {
     print(s+"\n"); //$NON-NLS-1$
   }
 
   /**
    *  Prints a blank line in the message area.
    */
-  public void println() {
+  @Override
+public void println() {
     print("\n"); //$NON-NLS-1$
   }
 
@@ -443,13 +460,15 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
    *
    * @param  s
    */
-  public void print(final String s) {
+  @Override
+public void print(final String s) {
     if(SwingUtilities.isEventDispatchThread()||Thread.currentThread().getName().equals("main")) { //$NON-NLS-1$
       messageTextArea.append(s);
       return;
     }
     Runnable doLater = new Runnable() {
-      public void run() {
+      @Override
+	public void run() {
         messageTextArea.append(s);
       }
 
@@ -461,13 +480,15 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
   /**
    *  Remove all text from the message area.
    */
-  public void clearMessages() {
+  @Override
+public void clearMessages() {
     if(SwingUtilities.isEventDispatchThread()||Thread.currentThread().getName().equals("main")) { //$NON-NLS-1$
       messageTextArea.setText("");                                                                //$NON-NLS-1$
       return;
     }
     Runnable doLater = new Runnable() {
-      public void run() {
+      @Override
+	public void run() {
         messageTextArea.setText(""); //$NON-NLS-1$
       }
 
@@ -479,7 +500,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
   /**
    *  Remove all text from the data input area.
    */
-  public void clearValues() {
+  @Override
+public void clearValues() {
     table.clearValues();
   }
 
@@ -488,7 +510,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
    *
    * @param  message
    */
-  public void calculationDone(String message) {
+  @Override
+public void calculationDone(String message) {
     // not implemented
     if(message!=null) {
       println(message);
@@ -501,7 +524,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
      *
      * @param evt
      */
-    public void mousePressed(java.awt.event.MouseEvent evt) {
+    @Override
+	public void mousePressed(java.awt.event.MouseEvent evt) {
       clearMessages();
     }
 
@@ -510,7 +534,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
      *
      * @param evt
      */
-    public void mouseEntered(java.awt.event.MouseEvent evt) {
+    @Override
+	public void mouseEntered(java.awt.event.MouseEvent evt) {
       clearLabel.setFont(new Font(clearLabel.getFont().getFamily(), Font.BOLD, 10));
       clearLabel.setText(ControlsRes.getString("OSPControl.Click_to_clear_message")); //$NON-NLS-1$
     }
@@ -520,7 +545,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
      *
      * @param evt
      */
-    public void mouseExited(java.awt.event.MouseEvent evt) {
+    @Override
+	public void mouseExited(java.awt.event.MouseEvent evt) {
       clearLabel.setFont(new Font(clearLabel.getFont().getFamily(), Font.PLAIN, 9));
       clearLabel.setText(ControlsRes.getString("OSPControl.Clear")); //$NON-NLS-1$
     }
@@ -546,7 +572,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
      * @param prefsXMLControl the control to save to
      * @param obj the object to save
      */
-    public void saveObject(XMLControl xmlControl, Object obj) {
+    @Override
+	public void saveObject(XMLControl xmlControl, Object obj) {
       OSPControl ospControl = (OSPControl) obj;
       saveControlProperites(xmlControl, ospControl);
       // save the model if the control is the top level
@@ -588,7 +615,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
      * @param control the control
      * @return the newly created object
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new OSPControl(null);
     }
 
@@ -599,7 +627,8 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
      * @param obj the object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       OSPControl cf = (OSPControl) obj;
       // iterate over properties and add them to table model
       Iterator<String> it = control.getPropertyNames().iterator();

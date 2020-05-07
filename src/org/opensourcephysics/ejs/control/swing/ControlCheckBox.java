@@ -34,7 +34,8 @@ public class ControlCheckBox extends ControlSwingElement {
     super(_visual);
   }
 
-  protected java.awt.Component createVisual(Object _visual) {
+  @Override
+protected java.awt.Component createVisual(Object _visual) {
     if(_visual instanceof JCheckBox) {
       checkbox = (JCheckBox) _visual;
     } else {
@@ -43,7 +44,8 @@ public class ControlCheckBox extends ControlSwingElement {
     defaultStateSet = false;
     internalValue = new BooleanValue(defaultState = checkbox.isSelected());
     checkbox.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent _e) {
+      @Override
+	public void actionPerformed(java.awt.event.ActionEvent _e) {
         setInternalValue(checkbox.isSelected());
       }
 
@@ -51,7 +53,8 @@ public class ControlCheckBox extends ControlSwingElement {
     return checkbox;
   }
 
-  public void reset() {
+  @Override
+public void reset() {
     if(defaultStateSet) {
       checkbox.setSelected(defaultState);
       setInternalValue(defaultState); // This can cause cyclic behaviour
@@ -75,7 +78,8 @@ public class ControlCheckBox extends ControlSwingElement {
   // ------------------------------------------------
   static private java.util.ArrayList<String> infoList = null;
 
-  public java.util.ArrayList<String> getPropertyList() {
+  @Override
+public java.util.ArrayList<String> getPropertyList() {
     if(infoList==null) {
       infoList = new java.util.ArrayList<String>();
       infoList.add("text");          //$NON-NLS-1$
@@ -92,7 +96,8 @@ public class ControlCheckBox extends ControlSwingElement {
     return infoList;
   }
 
-  public String getPropertyInfo(String _property) {
+  @Override
+public String getPropertyInfo(String _property) {
     if(_property.equals("text")) {             //$NON-NLS-1$
       return "String NotTrimmed TRANSLATABLE"; //$NON-NLS-1$
     }
@@ -129,7 +134,8 @@ public class ControlCheckBox extends ControlSwingElement {
   // ------------------------------------------------
   // Set and Get the values of the properties
   // ------------------------------------------------
-  public void setValue(int _index, Value _value) {
+  @Override
+public void setValue(int _index, Value _value) {
     switch(_index) {
        case 0 :
          checkbox.setText(_value.getString());
@@ -177,7 +183,8 @@ public class ControlCheckBox extends ControlSwingElement {
     }
   }
 
-  public void setDefaultValue(int _index) {
+  @Override
+public void setDefaultValue(int _index) {
     switch(_index) {
        case 0 :
          checkbox.setText("");                                                   //$NON-NLS-1$
@@ -213,7 +220,8 @@ public class ControlCheckBox extends ControlSwingElement {
     }
   }
 
-  public Value getValue(int _index) {
+  @Override
+public Value getValue(int _index) {
     switch(_index) {
        case VARIABLE :
          return internalValue;

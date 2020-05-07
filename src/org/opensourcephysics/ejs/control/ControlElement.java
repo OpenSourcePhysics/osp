@@ -664,7 +664,8 @@ public abstract class ControlElement {
    *  Reports its  name, if it has been set. If not, returns
    *  a standard value.
    */
-  public String toString() {
+  @Override
+public String toString() {
     String name = myPropertiesTable.get("name"); //$NON-NLS-1$
     if(name!=null) {
       return name;

@@ -30,13 +30,15 @@ public interface ElementObject extends Element {
   // XML loader
   // ----------------------------------------------------
   static abstract class Loader extends Element.Loader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       super.saveObject(control, obj);
       ElementObject element = (ElementObject) obj;
       control.setValue("load file", element.getObjectFile()); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       ElementObject element = (ElementObject) obj;
       element.setObjectFile(control.getString("load file")); //$NON-NLS-1$

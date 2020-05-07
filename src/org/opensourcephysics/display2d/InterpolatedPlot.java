@@ -73,7 +73,8 @@ protected byte[] pixelData;
    * Gets the GridData object.
    * @return GridData
    */
-  public GridData getGridData() {
+  @Override
+public GridData getGridData() {
     return griddata;
   }
 
@@ -83,7 +84,8 @@ protected byte[] pixelData;
    * @param i int
    * @return double the x coordinate
    */
-  public double indexToX(int i) {
+  @Override
+public double indexToX(int i) {
     return griddata.indexToX(i);
   }
 
@@ -93,7 +95,8 @@ protected byte[] pixelData;
    * @param i int
    * @return double the y coordinate
    */
-  public double indexToY(int i) {
+  @Override
+public double indexToY(int i) {
     return griddata.indexToY(i);
   }
 
@@ -103,7 +106,8 @@ protected byte[] pixelData;
    * @param x double the coordinate
    * @return int the index
    */
-  public int xToIndex(double x) {
+  @Override
+public int xToIndex(double x) {
     return griddata.xToIndex(x);
   }
 
@@ -113,7 +117,8 @@ protected byte[] pixelData;
    * @param y double the coordinate
    * @return int the index
    */
-  public int yToIndex(double y) {
+  @Override
+public int yToIndex(double y) {
     return griddata.yToIndex(y);
   }
 
@@ -124,7 +129,8 @@ protected byte[] pixelData;
    *
    * @param obj
    */
-  public void setAll(Object obj) {
+  @Override
+public void setAll(Object obj) {
     double[][] val = (double[][]) obj;
     copyData(val);
     update();
@@ -141,7 +147,8 @@ protected byte[] pixelData;
    * @param ymin double
    * @param ymax double
    */
-  public void setAll(Object obj, double xmin, double xmax, double ymin, double ymax) {
+  @Override
+public void setAll(Object obj, double xmin, double xmax, double ymin, double ymax) {
     double[][] val = (double[][]) obj;
     copyData(val);
     if(griddata.isCellData()) {
@@ -172,7 +179,8 @@ protected byte[] pixelData;
    *
    * @param _griddata
    */
-  public void setGridData(GridData _griddata) {
+  @Override
+public void setGridData(GridData _griddata) {
     griddata = _griddata;
     if(this.griddata==null) {
       return;
@@ -200,7 +208,8 @@ protected byte[] pixelData;
    * @param floor
    * @param ceil
    */
-  public void setAutoscaleZ(boolean isAutoscale, double floor, double ceil) {
+  @Override
+public void setAutoscaleZ(boolean isAutoscale, double floor, double ceil) {
     autoscaleZ = isAutoscale;
     if(!autoscaleZ) {
       colorMap.setScale(floor, ceil);
@@ -214,14 +223,16 @@ protected byte[] pixelData;
    *
    * @param symmetric
    */
-  public void setSymmetricZ(boolean symmetric){
+  @Override
+public void setSymmetricZ(boolean symmetric){
 	  symmetricZ=symmetric;
   }
   
   /**
    * Gets the symmetric z flag.  
    */
-  public boolean isSymmetricZ(){
+  @Override
+public boolean isSymmetricZ(){
 	  return symmetricZ;
   }
 
@@ -230,7 +241,8 @@ protected byte[] pixelData;
    *
    * @return boolean
    */
-  public boolean isAutoscaleZ() {
+  @Override
+public boolean isAutoscaleZ() {
     return autoscaleZ;
   }
 
@@ -238,7 +250,8 @@ protected byte[] pixelData;
    * Gets the floor for scaling the z data.
    * @return double
    */
-  public double getFloor() {
+  @Override
+public double getFloor() {
     return colorMap.getFloor();
   }
 
@@ -246,7 +259,8 @@ protected byte[] pixelData;
    * Gets the ceiling for scaling the z data.
    * @return double
    */
-  public double getCeiling() {
+  @Override
+public double getCeiling() {
     return colorMap.getCeil();
   }
 
@@ -255,7 +269,8 @@ protected byte[] pixelData;
    *
    * @param  showGrid
    */
-  public void setShowGridLines(boolean showGrid) {
+  @Override
+public void setShowGridLines(boolean showGrid) {
     grid.setVisible(showGrid);
   }
 
@@ -264,7 +279,8 @@ protected byte[] pixelData;
    *
    * @param  c
    */
-  public void setGridLineColor(Color c) {
+  @Override
+public void setGridLineColor(Color c) {
     grid.setColor(c);
   }
 
@@ -273,7 +289,8 @@ protected byte[] pixelData;
    *
    * @param indexes the sample-component
    */
-  public void setIndexes(int[] indexes) {
+  @Override
+public void setIndexes(int[] indexes) {
     ampIndex = indexes[0];
   }
 
@@ -281,7 +298,8 @@ protected byte[] pixelData;
    * Determines the palette type that will be used.
    * @param type
    */
-  public void setPaletteType(int type) {
+  @Override
+public void setPaletteType(int type) {
     colorMap.setPaletteType(type);
   }
 
@@ -290,7 +308,8 @@ protected byte[] pixelData;
    *
    * @param colors
    */
-  public void setColorPalette(Color[] colors) {
+  @Override
+public void setColorPalette(Color[] colors) {
     colorMap.setColorPalette(colors);
   }
 
@@ -300,7 +319,8 @@ protected byte[] pixelData;
    * @param floorColor
    * @param ceilColor
    */
-  public void setFloorCeilColor(Color floorColor, Color ceilColor) {
+  @Override
+public void setFloorCeilColor(Color floorColor, Color ceilColor) {
     colorMap.setFloorCeilColor(floorColor, ceilColor);
   }
 
@@ -310,7 +330,8 @@ protected byte[] pixelData;
  * @param expanded boolean
  * @param expansionFactor double
  */
-  public void setExpandedZ(boolean expanded, double expansionFactor) {
+  @Override
+public void setExpandedZ(boolean expanded, double expansionFactor) {
     if(expanded&&(expansionFactor>0)) {
       ZExpansion zMap = new ZExpansion(expansionFactor);
       colorMap.setZMap(zMap);
@@ -322,7 +343,8 @@ protected byte[] pixelData;
   /**
    * Updates the buffered image using the data array.
    */
-  public synchronized void update() {
+  @Override
+public synchronized void update() {
     if(griddata==null) {
       return;
     }
@@ -474,11 +496,13 @@ protected byte[] pixelData;
 /**
    * Shows how values map to colors.
    */
-  public JFrame showLegend() {
+  @Override
+public JFrame showLegend() {
     return colorMap.showLegend();
   }
 
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return griddata!=null;
   }
 
@@ -487,7 +511,8 @@ protected byte[] pixelData;
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible||(griddata==null)) {
       return;
     }
@@ -506,15 +531,18 @@ protected byte[] pixelData;
    */
   public static XML.ObjectLoader getLoader() {
     return new Plot2DLoader() {
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
         return new InterpolatedPlot(null);
       }
-      public void saveObject(XMLControl control, Object obj) {
+      @Override
+	public void saveObject(XMLControl control, Object obj) {
         super.saveObject(control, obj);
         InterpolatedPlot plot = (InterpolatedPlot) obj;
         control.setValue("color map", plot.colorMap); //$NON-NLS-1$
       }
-      public Object loadObject(XMLControl control, Object obj) {
+      @Override
+	public Object loadObject(XMLControl control, Object obj) {
         super.loadObject(control, obj);
         InterpolatedPlot plot = (InterpolatedPlot) obj;
         plot.colorMap = (ColorMapper) control.getObject("color map"); //$NON-NLS-1$

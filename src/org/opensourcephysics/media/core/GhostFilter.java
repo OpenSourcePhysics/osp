@@ -109,7 +109,8 @@ public class GhostFilter extends Filter {
    *
    * @param enabled <code>true</code> if this is enabled.
    */
-  public void setEnabled(boolean enabled) {
+  @Override
+public void setEnabled(boolean enabled) {
     if(isEnabled()==enabled) {
       return;
     }
@@ -123,7 +124,8 @@ public class GhostFilter extends Filter {
    * @param sourceImage the source image
    * @return the filtered image
    */
-  public BufferedImage getFilteredImage(BufferedImage sourceImage) {
+  @Override
+public BufferedImage getFilteredImage(BufferedImage sourceImage) {
     if(!isEnabled()) {
       return sourceImage;
     }
@@ -142,7 +144,8 @@ public class GhostFilter extends Filter {
    *
    * @return the inspector
    */
-  public synchronized JDialog getInspector() {
+  @Override
+public synchronized JDialog getInspector() {
   	Inspector myInspector = inspector;
     if (myInspector==null) {
     	myInspector = new Inspector();
@@ -161,7 +164,8 @@ public class GhostFilter extends Filter {
   /**
    * Clears ghosts.
    */
-  public void clear() {
+  @Override
+public void clear() {
     source = null;
     support.firePropertyChange("image", null, null); //$NON-NLS-1$
   }
@@ -169,7 +173,8 @@ public class GhostFilter extends Filter {
   /**
    * Refreshes this filter's GUI
    */
-  public void refresh() {
+  @Override
+public void refresh() {
     super.refresh();
     if(inspector!=null) {
       inspector.setTitle(MediaRes.getString("Filter.Ghost.Title")); //$NON-NLS-1$
@@ -270,7 +275,8 @@ public class GhostFilter extends Filter {
       fadeField.setMaxValue(0.5);
       fadeField.setMinValue(0);
       fadeField.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           setFade(fadeField.getValue());
           updateDisplay();
           fadeField.selectAll();
@@ -278,10 +284,12 @@ public class GhostFilter extends Filter {
 
       });
       fadeField.addFocusListener(new FocusListener() {
-        public void focusGained(FocusEvent e) {
+        @Override
+		public void focusGained(FocusEvent e) {
           fadeField.selectAll();
         }
-        public void focusLost(FocusEvent e) {
+        @Override
+		public void focusLost(FocusEvent e) {
           setFade(fadeField.getValue());
           updateDisplay();
         }
@@ -292,7 +300,8 @@ public class GhostFilter extends Filter {
       fadeSlider.setMinimum(0);
       fadeSlider.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
       fadeSlider.addChangeListener(new ChangeListener() {
-        public void stateChanged(ChangeEvent e) {
+        @Override
+		public void stateChanged(ChangeEvent e) {
           int i = fadeSlider.getValue();
           if(i!=(int) (getFade()*100)) {
             setFade(i/100.0);
@@ -370,7 +379,8 @@ public class GhostFilter extends Filter {
      * @param control the control to save to
      * @param obj the filter to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       GhostFilter filter = (GhostFilter) obj;
       control.setValue("fade", filter.getFade()); //$NON-NLS-1$
       if((filter.frame!=null)&&(filter.inspector!=null)&&filter.inspector.isVisible()) {
@@ -387,7 +397,8 @@ public class GhostFilter extends Filter {
      * @param control the control
      * @return the new filter
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new GhostFilter();
     }
 
@@ -398,7 +409,8 @@ public class GhostFilter extends Filter {
      * @param obj the filter
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       final GhostFilter filter = (GhostFilter) obj;
       if(control.getPropertyNames().contains("fade")) { //$NON-NLS-1$
         filter.setFade(control.getDouble("fade"));      //$NON-NLS-1$

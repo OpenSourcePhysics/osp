@@ -372,7 +372,8 @@ public class Bessel {
     /**
      * Evaluates the Bessel function.
      */
-    public double evaluate(final double x) {
+    @Override
+	public double evaluate(final double x) {
       if(n==0) {
         return Bessel.bessel0(x);
       }
@@ -398,7 +399,8 @@ public class Bessel {
     /**
      * Evaluates the derivative of the Bessel function.
      */
-    public double evaluate(final double x) {
+    @Override
+	public double evaluate(final double x) {
       return Bessel.besselnDerivative(n, x);
     }
 

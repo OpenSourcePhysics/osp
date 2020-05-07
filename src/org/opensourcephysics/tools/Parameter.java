@@ -12,6 +12,7 @@ import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.numerics.MultiVarFunction;
 import org.opensourcephysics.numerics.ParsedMultiVarFunction;
 import org.opensourcephysics.numerics.ParserException;
+import org.opensourcephysics.tools.FunctionEditor.FObject;
 
 /**
  * This represents a parameter expression that is parsed and
@@ -20,7 +21,7 @@ import org.opensourcephysics.numerics.ParserException;
  *
  * @author Douglas Brown
  */
-public class Parameter {
+public class Parameter implements FObject {
   final String paramName;    // name of this parameter
   final String expression;   // Suryono parser expression
   String description;        // optional description of this parameter
@@ -138,7 +139,8 @@ public class Parameter {
    * @param obj another object
    * @return true if equal
    */
-  public boolean equals(Object obj) {
+  @Override
+public boolean equals(Object obj) {
     if(obj instanceof Parameter) {
       Parameter p = (Parameter) obj;
       return p.getName().equals(paramName)&&p.getExpression().equals(expression)&&(p.isExpressionEditable()==expressionEditable)&&(p.isNameEditable()==nameEditable);
@@ -215,7 +217,8 @@ public class Parameter {
      * @param control the control to save to
      * @param obj the object to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       Parameter p = (Parameter) obj;
       control.setValue("name", p.getName());                  //$NON-NLS-1$
       control.setValue("function", p.getExpression());        //$NON-NLS-1$
@@ -230,7 +233,8 @@ public class Parameter {
      * @param control the control with the object data
      * @return the newly created object
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       String name = control.getString("name");  //$NON-NLS-1$
       String f = control.getString("function"); //$NON-NLS-1$
       return new Parameter(name, f);
@@ -243,7 +247,8 @@ public class Parameter {
      * @param obj the object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       Parameter p = (Parameter) obj;
       if(control.getPropertyNames().contains("editable")) {      //$NON-NLS-1$
         p.setExpressionEditable(control.getBoolean("editable")); //$NON-NLS-1$
@@ -256,6 +261,12 @@ public class Parameter {
     }
 
   }
+
+
+	@Override
+	public String toString() {
+		return "[Parameter " + paramName + "=" + expression + " = " + value + "]";
+	}
 
 }
 

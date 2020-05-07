@@ -17,8 +17,6 @@ import java.io.FileWriter;
 import java.io.LineNumberReader;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -420,6 +418,7 @@ public class EjsTool {
 		final String theModel = relativeDir + (_model.startsWith("./") ? _model.substring(2) : _model); //$NON-NLS-1$
 		final File theDir = ejsRootDirectory;
 		Runnable runner = new Runnable() {
+			@Override
 			public void run() {
 				try {
 					final Vector<String> cmd = new Vector<String>();
@@ -494,7 +493,8 @@ public static java.util.List<Object> ejsConfirmList(Component _target, Dimension
     scrollPane.setPreferredSize(_size);
     final JDialog dialog = new JDialog();
     java.awt.event.MouseAdapter mouseListener = new java.awt.event.MouseAdapter() {
-      public void mousePressed(java.awt.event.MouseEvent evt) {
+      @Override
+	public void mousePressed(java.awt.event.MouseEvent evt) {
         AbstractButton button = (AbstractButton) (evt.getSource());
         String aCmd = button.getActionCommand();
         if(aCmd.equals("ok")) {                //$NON-NLS-1$ 
@@ -550,7 +550,8 @@ public static java.util.List<Object> ejsConfirmList(Component _target, Dimension
     dialog.getContentPane().add(topPanel, java.awt.BorderLayout.CENTER);
     dialog.getContentPane().add(southPanel, java.awt.BorderLayout.SOUTH);
     dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-      public void windowClosing(java.awt.event.WindowEvent event) {
+      @Override
+	public void windowClosing(java.awt.event.WindowEvent event) {
         returnValue.value = false;
       }
 

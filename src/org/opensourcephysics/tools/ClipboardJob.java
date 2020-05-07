@@ -51,7 +51,8 @@ public class ClipboardJob extends LocalJob {
    *
    * @return the xml string
    */
-  public String getXML() {
+  @Override
+public String getXML() {
     // this is the paste function
     try {
       Transferable data = clipboard.getContents(null);
@@ -68,7 +69,8 @@ public class ClipboardJob extends LocalJob {
    *
    * @param xml the xml string
    */
-  public void setXML(String xml) {
+  @Override
+public void setXML(String xml) {
     // this is the copy function
     if(xml!=null) {
       StringSelection data = new StringSelection(xml);

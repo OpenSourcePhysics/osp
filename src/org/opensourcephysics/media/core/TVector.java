@@ -152,7 +152,8 @@ public class TVector extends TShape {
    * @param x the x position
    * @param y the y position
    */
-  public void setXY(double x, double y) {
+  @Override
+public void setXY(double x, double y) {
     double dx = x-getX();
     double dy = y-getY();
     tip.translate(dx, dy);
@@ -193,7 +194,8 @@ public class TVector extends TShape {
    *
    * @param stroke the desired stroke
    */
-  public void setStroke(BasicStroke stroke) {
+  @Override
+public void setStroke(BasicStroke stroke) {
     if(stroke==null) {
       return;
     }
@@ -209,7 +211,8 @@ public class TVector extends TShape {
    * @param ypix the y pixel position on the panel
    * @return the interactive drawable object
    */
-  public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
     if(!(panel instanceof VideoPanel)) {
       return null;
     }
@@ -234,7 +237,8 @@ public class TVector extends TShape {
    * @param vidPanel the video panel
    * @return the line shape
    */
-  protected Shape getShape(VideoPanel vidPanel) {
+  @Override
+protected Shape getShape(VideoPanel vidPanel) {
     this.center(tip, tail);
     Point p1 = tail.getScreenPosition(vidPanel); // tail
     Point p2 = tip.getScreenPosition(vidPanel);  // tip
@@ -279,7 +283,8 @@ public class TVector extends TShape {
      * @param vidPanel the video panel
      * @return the bounding rectangle
      */
-    public Rectangle getBounds(VideoPanel vidPanel) {
+    @Override
+	public Rectangle getBounds(VideoPanel vidPanel) {
       return TVector.this.getBounds(vidPanel);
     }
 
@@ -289,7 +294,8 @@ public class TVector extends TShape {
       * @param vidPanel the video panel
       * @return the frame number
       */
-    public int getFrameNumber(VideoPanel vidPanel) {
+    @Override
+	public int getFrameNumber(VideoPanel vidPanel) {
       return TVector.this.getFrameNumber(vidPanel);
     }
 

@@ -286,6 +286,7 @@ public class LaunchPanel extends JPanel {
 							Launcher.HTMLPane html = launcher.getHTMLTab(tabCount);
 							java.net.URL theURL = ((tabNumber == tabCount) && (url != null)) ? url : displayTab.url;
 							OSPRuntime.postEvent(new Runnable() {
+								@Override
 								public void run() {
 									launchHtml(html, theURL, displayTab.hyperlinksEnabled && node.enabled);
 								}
@@ -368,7 +369,8 @@ public class LaunchPanel extends JPanel {
         	if (FontSizer.getLevel()>0) {
             	// invoke scrollToReference again later at high font levels
               Timer timer = new Timer(100, new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+                @Override
+				public void actionPerformed(ActionEvent e) {
                 	html.editorPane.scrollToReference(theURL.getRef());
                 }
               });
@@ -395,7 +397,8 @@ public class LaunchPanel extends JPanel {
     // create the tabbed pane
     tabbedPane = new JTabbedPane(SwingConstants.TOP);
     tabbedPane.addChangeListener(new ChangeListener() {
-      public void stateChanged(ChangeEvent e) {
+      @Override
+	public void stateChanged(ChangeEvent e) {
         LaunchNode node = getSelectedNode();
         if((node!=null)&&(node==launcher.selectedNode)) {
         	if (rebuildingTabs && node.htmlURL != null) return;
@@ -424,7 +427,8 @@ public class LaunchPanel extends JPanel {
 
     });
     tabbedPane.addMouseListener(new MouseAdapter() {
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
         LaunchNode node = getSelectedNode();
         if((node!=null)&&launcher.postEdits) {
           String nodePath = node.getPathString();
@@ -463,7 +467,8 @@ public class LaunchPanel extends JPanel {
     else
     	tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
     tree.addTreeSelectionListener(new TreeSelectionListener() {
-      public void valueChanged(TreeSelectionEvent e) {
+      @Override
+	public void valueChanged(TreeSelectionEvent e) {
         LaunchNode node = launcher.getSelectedNode();
         if(launcher.postEdits) {
           // post undoable NavEdit if prev treePath is not null
@@ -537,7 +542,8 @@ public class LaunchPanel extends JPanel {
       super(root);
     }
 
-    public Object getChild(Object parent, int index) {
+    @Override
+	public Object getChild(Object parent, int index) {
       if(showAllNodes) {
         return super.getChild(parent, index);
       }
@@ -551,7 +557,8 @@ public class LaunchPanel extends JPanel {
       return null;
     }
 
-    public int getChildCount(Object parent) {
+    @Override
+	public int getChildCount(Object parent) {
       if(showAllNodes) {
         return super.getChildCount(parent);
       }
@@ -562,7 +569,8 @@ public class LaunchPanel extends JPanel {
       return 0;
     }
 
-    public int getIndexOfChild(Object parent, Object child) {
+    @Override
+	public int getIndexOfChild(Object parent, Object child) {
       if(showAllNodes) {
         return super.getIndexOfChild(parent, child);
       }

@@ -65,7 +65,8 @@ public class TLineProfile extends TLine {
    * @param panel the drawing panel requesting the drawing
    * @param g the graphics context on which to draw
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!(panel instanceof VideoPanel)) {
       return;
     }
@@ -143,7 +144,8 @@ public class TLineProfile extends TLine {
      * @param x the x position
      * @param y the y position
      */
-    public void setXY(double x, double y) {
+    @Override
+	public void setXY(double x, double y) {
       setLocation(x, getY());
     }
 
@@ -154,7 +156,8 @@ public class TLineProfile extends TLine {
      * @param dx the x displacement
      * @param dy the y displacement
      */
-    public void translate(double dx, double dy) {
+    @Override
+	public void translate(double dx, double dy) {
       setLocation(getX()+dx, getY()+dy);
     }
 
@@ -164,7 +167,8 @@ public class TLineProfile extends TLine {
      * @param vidPanel the video panel
      * @return the bounding rectangle
      */
-    public Rectangle getBounds(VideoPanel vidPanel) {
+    @Override
+	public Rectangle getBounds(VideoPanel vidPanel) {
       return TLineProfile.this.getBounds(vidPanel);
     }
 

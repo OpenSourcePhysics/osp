@@ -82,7 +82,8 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
    * @return the video
    * @throws IOException
    */
-  public Video getVideo() throws IOException {
+  @Override
+public Video getVideo() throws IOException {
     if (saveFile!=null) {
 	    if (!isSaved) saveScratch();
 	    if (savedFilePaths!=null && savedFilePaths.length>0) {
@@ -101,7 +102,8 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
    * @return the full path of the first image in the sequence
    * @throws IOException
    */
-  public String saveVideo(String fileName) throws IOException {
+  @Override
+public String saveVideo(String fileName) throws IOException {
     if(fileName==null) {
       return saveVideoAs();
     }
@@ -147,7 +149,8 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
   /**
    * Required by ScratchVideoRecorder, but unused.
    */
-  protected void saveScratch() throws IOException {
+  @Override
+protected void saveScratch() throws IOException {
 		if (!hasContent) return;
 		// if chooser was used, check the fileFilter for video type
 		if (chosenExtension!=null && !(chooser.getFileFilter() instanceof VideoFileFilter))
@@ -200,7 +203,8 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
    *
    * @return true if video recording successfully started
    */
-  protected boolean startRecording() {
+  @Override
+protected boolean startRecording() {
     if(dim==null) {
       if(frameImage!=null) {
         dim = new Dimension(frameImage.getWidth(null), frameImage.getHeight(null));
@@ -281,7 +285,8 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
    * @param file the file selected with the chooser
    * @return the file (or first file) to be saved
    */
-  protected File getFileToBeSaved(File file) {
+  @Override
+protected File getFileToBeSaved(File file) {
     // determine number of digits to append to file names
     int n = frameCount>0? frameCount: tempFiles.size();
     // if single or no image, return file itself

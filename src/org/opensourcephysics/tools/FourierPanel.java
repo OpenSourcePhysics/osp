@@ -173,7 +173,8 @@ public class FourierPanel extends JPanel {
   		icon = new ColorIcon(fillColor, outlineColor, 13, 13);
   		setIcon(icon);
       addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
         	JCheckBox checkBox = (JCheckBox)e.getSource();
         	setSelected(checkBox.isSelected());
           refreshPlot();
@@ -181,7 +182,8 @@ public class FourierPanel extends JPanel {
       });
   	}
   	
-  	public void setSelected(boolean select) {
+  	@Override
+	public void setSelected(boolean select) {
       icon.setColor(select? outlineColor: fillColor);
   		super.setSelected(select);
   	}

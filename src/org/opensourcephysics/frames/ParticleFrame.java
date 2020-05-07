@@ -93,7 +93,8 @@ public class ParticleFrame extends DrawingFrame {
   /**
    * Cleares drawable objects added by the user from this frame and clears the particles.
    */
-  public void clearDrawables() {
+  @Override
+public void clearDrawables() {
     clearData();
     drawingPanel.clear(); // removes drawables added by user
   }
@@ -101,7 +102,8 @@ public class ParticleFrame extends DrawingFrame {
   /**
    * Clears all particles from this frame.
    */
-  public void clearData() {
+  @Override
+public void clearData() {
     Iterator<Particles> it = partlist.iterator();
     while(it.hasNext()) { // clears the data from the arrays
       Particles p = it.next();
@@ -164,7 +166,8 @@ public class ParticleFrame extends DrawingFrame {
      * @param panel DrawingPanel
      * @param g Graphics
      */
-    public void draw(DrawingPanel panel, Graphics g) {
+    @Override
+	public void draw(DrawingPanel panel, Graphics g) {
       synchronized(pointList) {
         Iterator<Point2D> it = pointList.iterator();
         while(it.hasNext()) {
@@ -180,7 +183,8 @@ public class ParticleFrame extends DrawingFrame {
      *
      * @return double
      */
-    public double getXMax() {
+    @Override
+	public double getXMax() {
       return xmax;
     }
 
@@ -189,7 +193,8 @@ public class ParticleFrame extends DrawingFrame {
      *
      * @return double
      */
-    public double getXMin() {
+    @Override
+	public double getXMin() {
       return xmin;
     }
 
@@ -198,7 +203,8 @@ public class ParticleFrame extends DrawingFrame {
      *
      * @return double
      */
-    public double getYMax() {
+    @Override
+	public double getYMax() {
       return ymax;
     }
 
@@ -207,7 +213,8 @@ public class ParticleFrame extends DrawingFrame {
      *
      * @return double
      */
-    public double getYMin() {
+    @Override
+	public double getYMin() {
       return ymin;
     }
 
@@ -216,7 +223,8 @@ public class ParticleFrame extends DrawingFrame {
      *
      * @return boolean
      */
-    public boolean isMeasured() {
+    @Override
+	public boolean isMeasured() {
       synchronized(pointList) {
         return(pointList.size()>0) ? true : false;
       }

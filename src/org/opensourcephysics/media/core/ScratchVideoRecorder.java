@@ -95,7 +95,7 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 	protected String chosenExtension;
   
   static {
-    tempDirectory = OSPRuntime.tempDir; //$NON-NLS-1$
+    tempDirectory = OSPRuntime.tempDir; 
   }
 
   /**
@@ -118,7 +118,8 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
     if(chooser==null) {
       chooser = new JFileChooser(new File(OSPRuntime.chooserDir));
       chooser.addPropertyChangeListener(JFileChooser.FILE_FILTER_CHANGED_PROPERTY, new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent e) {
+        @Override
+		public void propertyChange(PropertyChangeEvent e) {
           if(!ignoreChooser) {
             FileFilter filter = (FileFilter) e.getNewValue();
             if (filter instanceof VideoFileFilter) {
@@ -142,7 +143,8 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
    *
    * @throws IOException
    */
-  public void createVideo() throws IOException {
+  @Override
+public void createVideo() throws IOException {
     // create scratch file if none
     if(scratchFile==null) {
       createScratch();
@@ -174,7 +176,8 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
    * @param fileName name of the file to which the video will be written
    * @throws IOException
    */
-  public void createVideo(String fileName) throws IOException {
+  @Override
+public void createVideo(String fileName) throws IOException {
     File file = null;
     if (fileName==null) {
     	file = selectFile();
@@ -191,7 +194,8 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
    *
    * @param dimension the dimensions of the new video
    */
-  public void setSize(Dimension dimension) {
+  @Override
+public void setSize(Dimension dimension) {
     dim = dimension;
   }
 
@@ -200,7 +204,8 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
    *
    * @param millis the duration per frame in milliseconds
    */
-  public void setFrameDuration(double millis) {
+  @Override
+public void setFrameDuration(double millis) {
     frameDuration = millis;
   }
 
@@ -210,7 +215,8 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
    * @param image the image to be drawn on the video frame.
    * @throws IOException
    */
-  public void addFrame(Image image) throws IOException {
+  @Override
+public void addFrame(Image image) throws IOException {
     if(image==null) {
       return;
     }
@@ -238,7 +244,8 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
    * @return the video
    * @throws IOException
    */
-  public Video getVideo() throws IOException {
+  @Override
+public Video getVideo() throws IOException {
     if(isSaved && saveFile!=null) {
       return videoType.getVideo(saveFile.getAbsolutePath());
     }
@@ -252,7 +259,8 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
    * @return the full path to the saved file
    * @throws IOException
    */
-  public String saveVideo() throws IOException {
+  @Override
+public String saveVideo() throws IOException {
     if(saveFile!=null) {
       return saveVideo(saveFile.getAbsolutePath());
     }
@@ -266,7 +274,8 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
    * @return the full path of the saved file
    * @throws IOException
    */
-  public String saveVideo(String fileName) throws IOException {
+  @Override
+public String saveVideo(String fileName) throws IOException {
     if(scratchFile==null) {
       return null;
     }
@@ -307,7 +316,8 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
    * @return the full path of the saved file
    * @throws IOException
    */
-  public String saveVideoAs() throws IOException {
+  @Override
+public String saveVideoAs() throws IOException {
     File file = selectFile();
     if(file!=null) {
       return saveVideo(file.getAbsolutePath());
@@ -319,7 +329,8 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
    * Gets the file name of the destination video.
    * @return the file name
    */
-  public String getFileName() {
+  @Override
+public String getFileName() {
     return (saveFile==null) ? null : saveFile.getAbsolutePath();
   }
 
@@ -327,7 +338,8 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
    * Sets the file name. May be null.
    * @param path the file name
    */
-  public void setFileName(String path) {
+  @Override
+public void setFileName(String path) {
     if(saveFile!=null && saveFile.getAbsolutePath().equals(path)) {
       return;
     }
@@ -350,7 +362,8 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
   /**
    * Discards the current video and resets the recorder to a ready state.
    */
-  public void reset() {
+  @Override
+public void reset() {
     if(scratchFile!=null) {
       try {
         saveScratch();
@@ -373,7 +386,8 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
     	final String name = (chooserField==null)? 
     			"*."+ext: XML.stripExtension(chooserField.getText())+"."+ext; //$NON-NLS-1$ //$NON-NLS-2$
       Runnable runner = new Runnable() {
-        public void run() {
+        @Override
+		public void run() {
           if(chooserField!=null) {
             chooserField.setText(name);
           } else {
@@ -558,7 +572,8 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
    * A class to delete all scratch files on shutdown.
    */
   class ShutdownHook extends Thread {
-    public void run() {
+    @Override
+	public void run() {
       if(scratchFile!=null) {
         try {
           saveScratch();

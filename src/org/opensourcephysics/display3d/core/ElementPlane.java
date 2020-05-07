@@ -44,14 +44,16 @@ public interface ElementPlane extends Element {
   // XML loader
   // ----------------------------------------------------
   static abstract class ElementPlaneLoader extends Element.Loader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       super.saveObject(control, obj);
       ElementPlane element = (ElementPlane) obj;
       control.setValue("first direction", element.getFirstDirection());   //$NON-NLS-1$
       control.setValue("second direction", element.getSecondDirection()); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       ElementPlane element = (ElementPlane) obj;
       element.setFirstDirection((double[]) control.getObject("first direction"));   //$NON-NLS-1$

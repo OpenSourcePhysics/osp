@@ -37,7 +37,8 @@ public class RK45MultiStep extends RK45 {
    *
    * @return the step size
    */
-  public double step() {
+  @Override
+public double step() {
     error_code = NO_ERROR;
     if(fixedStepSize>0) {
       return fixedStepSize-plus();
@@ -157,7 +158,8 @@ public class RK45MultiStep extends RK45 {
    *
    * @param stepSize
    */
-  public void initialize(double stepSize) {
+  @Override
+public void initialize(double stepSize) {
     fixedStepSize = stepSize;
     super.initialize(stepSize/2); // be conservative with the adaptive solver
   }
@@ -167,7 +169,8 @@ public class RK45MultiStep extends RK45 {
    *
    * @param stepSize
    */
-  public void setStepSize(double stepSize) {
+  @Override
+public void setStepSize(double stepSize) {
     maxMessages = 4;          // reset the message counter
     fixedStepSize = stepSize; // the fixed step size
     if(stepSize<0) {
@@ -185,7 +188,8 @@ public class RK45MultiStep extends RK45 {
    *
    * @return the step size
    */
-  public double getStepSize() {
+  @Override
+public double getStepSize() {
     return fixedStepSize;
   }
 
@@ -196,7 +200,8 @@ public class RK45MultiStep extends RK45 {
    *   ODEAdaptiveSolver.DID_NOT_CONVERGE
    * @return int
    */
-  public int getErrorCode() {
+  @Override
+public int getErrorCode() {
     return error_code;
   }
 

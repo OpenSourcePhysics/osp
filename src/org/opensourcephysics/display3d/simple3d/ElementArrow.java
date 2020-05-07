@@ -21,7 +21,8 @@ public class ElementArrow extends ElementSegment implements org.opensourcephysic
   // -------------------------------------
   // Super methods overwritten
   // -------------------------------------
-  void draw(Graphics2D _g2, int _index) {
+  @Override
+void draw(Graphics2D _g2, int _index) {
     // Allow the panel to adjust color according to depth
     Color theColor = getDrawingPanel3D().projectColor(getRealStyle().getLineColor(), objects[_index].getDistance());
     if(_index<(div-1)) {
@@ -34,7 +35,8 @@ public class ElementArrow extends ElementSegment implements org.opensourcephysic
     }
   }
 
-  synchronized void drawQuickly(Graphics2D _g2) {
+  @Override
+synchronized void drawQuickly(Graphics2D _g2) {
     if(!isReallyVisible()) {
       return;
     }
@@ -55,7 +57,8 @@ public class ElementArrow extends ElementSegment implements org.opensourcephysic
   private int headPoints = 0;
   private int headA[] = new int[10], headB[] = new int[10]; // Used to display the head
 
-  void projectPoints() {
+  @Override
+void projectPoints() {
     super.projectPoints();
     // Now compute the head
     double a = aCoord[div]-aCoord[0];
@@ -120,7 +123,8 @@ public class ElementArrow extends ElementSegment implements org.opensourcephysic
   }
 
   static private class Loader extends org.opensourcephysics.display3d.core.ElementArrow.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ElementArrow();
     }
 

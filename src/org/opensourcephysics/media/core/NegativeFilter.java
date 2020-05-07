@@ -56,7 +56,8 @@ public class NegativeFilter extends Filter {
    * @param sourceImage the source image
    * @return the filtered image
    */
-  public BufferedImage getFilteredImage(BufferedImage sourceImage) {
+  @Override
+public BufferedImage getFilteredImage(BufferedImage sourceImage) {
     if(!isEnabled()) {
       return sourceImage;
     }
@@ -75,7 +76,8 @@ public class NegativeFilter extends Filter {
    *
    * @return the inspector
    */
-  public JDialog getInspector() {
+  @Override
+public JDialog getInspector() {
     return null;
   }
 

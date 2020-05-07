@@ -29,7 +29,8 @@ public class ControlLabel extends ControlSwingElement {
     super(_visual);
   }
 
-  protected java.awt.Component createVisual(Object _visual) {
+  @Override
+protected java.awt.Component createVisual(Object _visual) {
     if(_visual instanceof JLabel) {
       label = (JLabel) _visual;
     } else {
@@ -43,7 +44,8 @@ public class ControlLabel extends ControlSwingElement {
   // ------------------------------------------------
   static private java.util.ArrayList<String> infoList = null;
 
-  public java.util.ArrayList<String> getPropertyList() {
+  @Override
+public java.util.ArrayList<String> getPropertyList() {
     if(infoList==null) {
       infoList = new java.util.ArrayList<String>();
       infoList.add("text");      //$NON-NLS-1$
@@ -54,7 +56,8 @@ public class ControlLabel extends ControlSwingElement {
     return infoList;
   }
 
-  public String getPropertyInfo(String _property) {
+  @Override
+public String getPropertyInfo(String _property) {
     if(_property.equals("text")) {             //$NON-NLS-1$
       return "String NotTrimmed TRANSLATABLE"; //$NON-NLS-1$
     }
@@ -70,7 +73,8 @@ public class ControlLabel extends ControlSwingElement {
   // ------------------------------------------------
   // Set and Get the values of the properties
   // ------------------------------------------------
-  public void setValue(int _index, Value _value) {
+  @Override
+public void setValue(int _index, Value _value) {
     switch(_index) {
        case 0 :
          label.setText(_value.getString());
@@ -90,7 +94,8 @@ public class ControlLabel extends ControlSwingElement {
     }
   }
 
-  public void setDefaultValue(int _index) {
+  @Override
+public void setDefaultValue(int _index) {
     switch(_index) {
        case 0 :
          label.setText(""); //$NON-NLS-1$
@@ -108,7 +113,8 @@ public class ControlLabel extends ControlSwingElement {
     }
   }
 
-  public Value getValue(int _index) {
+  @Override
+public Value getValue(int _index) {
     switch(_index) {
        case 0 :
        case 1 :

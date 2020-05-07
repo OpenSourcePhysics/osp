@@ -321,7 +321,8 @@ public class LaunchSaver extends JDialog {
     toolbar.add(label);
     pathField = new JTextField();
     pathField.addKeyListener(new KeyAdapter() {
-      public void keyPressed(KeyEvent e) {
+      @Override
+	public void keyPressed(KeyEvent e) {
         if(e.getKeyCode()==KeyEvent.VK_ENTER) {
           setTabSetBasePath(pathField.getText());
         } else {
@@ -331,7 +332,8 @@ public class LaunchSaver extends JDialog {
 
     });
     pathField.addFocusListener(new FocusAdapter() {
-      public void focusLost(FocusEvent e) {
+      @Override
+	public void focusLost(FocusEvent e) {
         setTabSetBasePath(pathField.getText());
       }
 
@@ -340,7 +342,8 @@ public class LaunchSaver extends JDialog {
     // choose button
     chooseButton = new JButton(LaunchRes.getString("Saver.Button.Choose")); //$NON-NLS-1$
     chooseButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         chooseTabSet();
       }
 
@@ -348,7 +351,8 @@ public class LaunchSaver extends JDialog {
     // inspect button
     inspectButton = new JButton(LaunchRes.getString("MenuItem.Inspect")); //$NON-NLS-1$
     inspectButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         inspectSelectedNode();
       }
 
@@ -372,7 +376,8 @@ public class LaunchSaver extends JDialog {
     JButton saveButton = new JButton(LaunchRes.getString("Saver.Button.Save")); //$NON-NLS-1$
     buttons.add(saveButton);
     saveButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         approved = true;
         setVisible(false);
       }
@@ -382,14 +387,16 @@ public class LaunchSaver extends JDialog {
     JButton cancelButton = new JButton(LaunchRes.getString("Saver.Button.Cancel")); //$NON-NLS-1$
     buttons.add(cancelButton);
     cancelButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         revert();
         setVisible(false);
       }
 
     });
     addWindowListener(new WindowAdapter() {
-      public void windowClosing(WindowEvent e) {
+      @Override
+	public void windowClosing(WindowEvent e) {
         if(!isApproved()) {
           revert();
         }
@@ -438,7 +445,8 @@ public class LaunchSaver extends JDialog {
     tree.setShowsRootHandles(true);
     tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
     tree.addMouseListener(new MouseAdapter() {
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
         TreePath path = tree.getPathForLocation(e.getX(), e.getY());
         if(path==null) {
           editor.stopCellEditing();
@@ -448,7 +456,8 @@ public class LaunchSaver extends JDialog {
     });
     tree.addTreeWillExpandListener(new ExpansionListener());
     tree.addTreeSelectionListener(new TreeSelectionListener() {
-      public void valueChanged(TreeSelectionEvent e) {
+      @Override
+	public void valueChanged(TreeSelectionEvent e) {
         if(inspector.isVisible()) {
           inspectSelectedNode();
         }
@@ -575,7 +584,8 @@ public class LaunchSaver extends JDialog {
     }
 
     // returns the text displayed.
-    public String toString() {
+    @Override
+	public String toString() {
       if(node==null) {
         return LaunchRes.getString("Saver.Tree.TabSet")+":";                 //$NON-NLS-1$ //$NON-NLS-2$
       } else if(node.isRoot()) {
@@ -610,7 +620,8 @@ public class LaunchSaver extends JDialog {
     }
 
     // Gets the component to be displayed.
-    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+    @Override
+	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
       Node node = (Node) value;
       String name = (node!=root) ? node.node.getFileName() : builder.tabSetName;
       field.setText(name);
@@ -643,13 +654,15 @@ public class LaunchSaver extends JDialog {
       field.setEditable(true);
       field.setColumns(30);
       field.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           stopCellEditing();
         }
 
       });
       field.addKeyListener(new KeyAdapter() {
-        public void keyPressed(KeyEvent e) {
+        @Override
+		public void keyPressed(KeyEvent e) {
           if(e.getKeyCode()==KeyEvent.VK_ENTER) {
             stopCellEditing();
           } else {
@@ -659,7 +672,8 @@ public class LaunchSaver extends JDialog {
 
       });
       field.addFocusListener(new FocusAdapter() {
-        public void focusLost(FocusEvent e) {
+        @Override
+		public void focusLost(FocusEvent e) {
           stopCellEditing();
         }
 
@@ -667,7 +681,8 @@ public class LaunchSaver extends JDialog {
     }
 
     // Gets the component to be displayed while editing.
-    public Component getTreeCellEditorComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row) {
+    @Override
+	public Component getTreeCellEditorComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row) {
       Node node = (Node) value;
       String name = (node!=root) ? node.node.getFileName() : builder.tabSetName;
       field.setText(name);
@@ -680,7 +695,8 @@ public class LaunchSaver extends JDialog {
     }
 
     // Determines when editing starts.
-    public boolean isCellEditable(EventObject e) {
+    @Override
+	public boolean isCellEditable(EventObject e) {
       if(e instanceof MouseEvent) {
         return true;
       }
@@ -688,7 +704,8 @@ public class LaunchSaver extends JDialog {
     }
 
     // Called when editing is completed.
-    public Object getCellEditorValue() {
+    @Override
+	public Object getCellEditorValue() {
       field.setBackground(Color.white);
       Node node = getSelectedNode();
       String name = field.getText();
@@ -715,12 +732,14 @@ public class LaunchSaver extends JDialog {
   }
 
   private class ExpansionListener implements TreeWillExpandListener {
-    public void treeWillExpand(TreeExpansionEvent e) {
+    @Override
+	public void treeWillExpand(TreeExpansionEvent e) {
       TreePath path = e.getPath();
       set(path, false);
     }
 
-    public void treeWillCollapse(TreeExpansionEvent e) {
+    @Override
+	public void treeWillCollapse(TreeExpansionEvent e) {
       TreePath path = e.getPath();
       set(path, true);
     }

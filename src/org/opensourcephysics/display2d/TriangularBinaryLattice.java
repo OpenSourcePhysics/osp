@@ -8,7 +8,6 @@
 package org.opensourcephysics.display2d;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Shape;
 import java.util.Random;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.Measurable;
@@ -83,23 +82,28 @@ public class TriangularBinaryLattice implements Measurable {
     this.visible = _vis;  
   }
   
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return true;
   }
 
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return xmin;
   }
 
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return ymin;
   }
 
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return xmax;
   }
 
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return ymax;
   }
 
@@ -142,7 +146,8 @@ public class TriangularBinaryLattice implements Measurable {
    * @param  panel
    * @param  g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible) {
       return;
     }
@@ -441,7 +446,8 @@ public class TriangularBinaryLattice implements Measurable {
     }
   }
 
-  public String toString() {
+  @Override
+public String toString() {
     StringBuffer sb = new StringBuffer(nrow*ncol+nrow);
     //int row = 0;
     int column = 0;

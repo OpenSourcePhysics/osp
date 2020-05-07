@@ -95,7 +95,8 @@ public class TCircle extends TShape {
    * @param vidPanel the video panel drawing this circle
    * @return the frame number
    */
-  public int getFrameNumber(VideoPanel vidPanel) {
+  @Override
+public int getFrameNumber(VideoPanel vidPanel) {
     return n;
   }
 
@@ -108,7 +109,8 @@ public class TCircle extends TShape {
    * @param ypix the y pixel position on the panel
    * @return this if enabled and hit, otherwise null
    */
-  public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
     if(!(panel instanceof VideoPanel)) {
       return null;
     }
@@ -130,7 +132,8 @@ public class TCircle extends TShape {
    * @param vidPanel the video panel
    * @return the circle shape
    */
-  protected Shape getShape(VideoPanel vidPanel) {
+  @Override
+protected Shape getShape(VideoPanel vidPanel) {
     Point p = getScreenPosition(vidPanel);
     double xpix = p.x-radius;
     double ypix = p.y-radius;

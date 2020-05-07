@@ -102,7 +102,8 @@ public class RotateFilter extends Filter {
    * @param sourceImage the source image
    * @return the filtered image
    */
-  public BufferedImage getFilteredImage(BufferedImage sourceImage) {
+  @Override
+public BufferedImage getFilteredImage(BufferedImage sourceImage) {
     if(!isEnabled()) {
       return sourceImage;
     }
@@ -134,7 +135,8 @@ public class RotateFilter extends Filter {
    *
    * @return the inspector
    */
-  public synchronized JDialog getInspector() {
+  @Override
+public synchronized JDialog getInspector() {
   	Inspector myInspector = inspector;
     if (myInspector==null) {
     	myInspector = new Inspector();
@@ -153,7 +155,8 @@ public class RotateFilter extends Filter {
   /**
    * Refreshes this filter's GUI
    */
-  public void refresh() {
+  @Override
+public void refresh() {
     super.refresh();
     if(inspector!=null) {
       inspector.setTitle(MediaRes.getString("Filter.Rotate.Title")); //$NON-NLS-1$
@@ -281,7 +284,8 @@ public class RotateFilter extends Filter {
       rotationPanel = Box.createVerticalBox();
       buttonGroup = new ButtonGroup();
       ActionListener selector = new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
         	for (int i = 0; i<buttons.length; i++) {
         		if (buttons[i].isSelected()) {
         			setRotationType(types[i]);
@@ -307,7 +311,8 @@ public class RotateFilter extends Filter {
       reversePanel = Box.createVerticalBox();
       reverseCheckbox = new JCheckBox();
       reverseCheckbox.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
         	reverse = reverseCheckbox.isSelected();
           support.firePropertyChange("rotate", null, null); //$NON-NLS-1$
         }
@@ -360,7 +365,8 @@ public class RotateFilter extends Filter {
      * @param control the control to save to
      * @param obj the filter to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       RotateFilter filter = (RotateFilter) obj;
       if (filter.rotationType>NONE)
       	control.setValue("rotation", RotateFilter.typeNames[filter.rotationType+1]); //$NON-NLS-1$
@@ -379,7 +385,8 @@ public class RotateFilter extends Filter {
      * @param control the control
      * @return the new filter
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new RotateFilter();
     }
 
@@ -390,7 +397,8 @@ public class RotateFilter extends Filter {
      * @param obj the filter
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       final RotateFilter filter = (RotateFilter) obj;
       String typeName = control.getString("rotation"); //$NON-NLS-1$ // could be null
       for (int i = 0; i<RotateFilter.typeNames.length; i++) {

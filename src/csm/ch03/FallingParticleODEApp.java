@@ -19,7 +19,8 @@ public class FallingParticleODEApp extends AbstractCalculation {
   /**
    * Calculates the time required for an falling particle to reach the ground and prints the result.
    */
-  public void calculate() {
+  @Override
+public void calculate() {
     // gets initial conditions
     double y0 = control.getDouble("Initial y");
     double v0 = control.getDouble("Initial v");
@@ -39,7 +40,8 @@ public class FallingParticleODEApp extends AbstractCalculation {
   /**
    * Resets the program to its initial state.
    */
-  public void reset() {
+  @Override
+public void reset() {
     control.setValue("Initial y", 10); // sets default input values
     control.setValue("Initial v", 0);
     control.setValue("dt", 0.01);

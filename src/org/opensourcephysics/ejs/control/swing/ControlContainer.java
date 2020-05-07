@@ -145,14 +145,16 @@ public abstract class ControlContainer extends ControlSwingElement {
   // ------------------------------------------------
   // Properties
   // ------------------------------------------------
-  public String getPropertyInfo(String _property) {
+  @Override
+public String getPropertyInfo(String _property) {
     if(_property.equals("visible")) { //$NON-NLS-1$
       return "boolean";               // not HIDDEN //$NON-NLS-1$
     }
     return super.getPropertyInfo(_property);
   }
 
-  public ControlElement setProperty(String _property, String _value) {
+  @Override
+public ControlElement setProperty(String _property, String _value) {
     ControlElement returnValue = super.setProperty(_property, _value);
     if(_property.equals("font")||_property.equals("foreground")||_property.equals("background")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
       propagateProperty(_property, _value);

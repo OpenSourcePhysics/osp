@@ -69,7 +69,8 @@ public class IsingApp extends AbstractEmbeddableAnimation implements Animation {
     * Sets the Control for this model.
     * @param control
     */
-   public void setControl(Control control) {
+   @Override
+public void setControl(Control control) {
       stopAnimation();
       this.control = control;
       if(control==null) {
@@ -95,7 +96,8 @@ public class IsingApp extends AbstractEmbeddableAnimation implements Animation {
    /**
     * Resets the calculation.
     */
-   public void resetAnimation() {
+   @Override
+public void resetAnimation() {
       stopAnimation();
       control.clearMessages();
       drawingPanel.invalidateImage();
@@ -145,7 +147,8 @@ public class IsingApp extends AbstractEmbeddableAnimation implements Animation {
    /**
     * Set the parameters in the calculation.
     */
-   public void initializeAnimation() {
+   @Override
+public void initializeAnimation() {
       stopAnimation();
       int newSize = control.getInt("grid size");
       if(newSize!=size) {
@@ -261,7 +264,8 @@ public class IsingApp extends AbstractEmbeddableAnimation implements Animation {
     *
     * @param  evt
     */
-   protected void doStep() {
+   @Override
+protected void doStep() {
       stepIsingModel();
       drawingPanel.render();
       enPanel.render();

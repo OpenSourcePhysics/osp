@@ -29,7 +29,8 @@ public class DrawingApp extends AbstractCalculation {
   /**
    * Creates a rectangle and adds it to the DisplayFrame.
    */
-  public void calculate() {
+  @Override
+public void calculate() {
     // gets rectangle location
     int left = control.getInt("xleft");
     int top = control.getInt("ytop");
@@ -44,7 +45,8 @@ public class DrawingApp extends AbstractCalculation {
   /**
    * Resets the program to its initial state.
    */
-  public void reset() {
+  @Override
+public void reset() {
     frame.clearDrawables();        // removes drawables added by the user
     control.setValue("xleft", 60); // sets default input values
     control.setValue("ytop", 70);

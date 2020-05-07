@@ -99,12 +99,14 @@ public class NumberField extends JTextField {
     setDisabledTextColor(DISABLED_COLOR);
     setText("0"); //$NON-NLS-1$
     addKeyListener(new KeyAdapter() {
-      public void keyPressed(KeyEvent e) {
+      @Override
+	public void keyPressed(KeyEvent e) {
       	if (!isEditable()) return;
         if(e.getKeyCode()==KeyEvent.VK_ENTER) {
           // delay background change so other listeners can look for yellow
           Runnable runner = new Runnable() {
-            public synchronized void run() {
+            @Override
+			public synchronized void run() {
               setBackground(Color.white);
               setValue(getValue());
             }
@@ -118,11 +120,13 @@ public class NumberField extends JTextField {
 
     });
     addFocusListener(new FocusAdapter() {
-      public void focusLost(FocusEvent e) {
+      @Override
+	public void focusLost(FocusEvent e) {
       	if (!isEditable()) return;
         // delay background change so other listeners can look for yellow
         Runnable runner = new Runnable() {
-          public synchronized void run() {
+          @Override
+		public synchronized void run() {
             setBackground(Color.white);
             setValue(getValue());
           }
@@ -133,7 +137,8 @@ public class NumberField extends JTextField {
 
     });
     addMouseListener(new MouseAdapter() {
-      public void mouseClicked(MouseEvent e) {
+      @Override
+	public void mouseClicked(MouseEvent e) {
       	if (!isEditable()) return;
         if(e.getClickCount()==2) {
           selectAll();

@@ -18,6 +18,7 @@ public class ComplexCarpet extends ComplexInterpolatedPlot implements ICarpet {
 		setShowGridLines(false);
 	}
 
+	@Override
 	public void clearData() {
 		if (griddata instanceof ArrayData) {
 			double[][][] data = griddata.getData();
@@ -41,6 +42,7 @@ public class ComplexCarpet extends ComplexInterpolatedPlot implements ICarpet {
 		update();
 	}
 
+	@Override
 	public void setTopRow(double[][] line) {
 		if (image == null) {
 			return;
@@ -95,6 +97,7 @@ public class ComplexCarpet extends ComplexInterpolatedPlot implements ICarpet {
 	 * @param floor
 	 * @param ceil
 	 */
+	@Override
 	public void setAutoscaleZ(boolean isAutoscale, double floor, double ceil) {
 		setAutoscaleZ(isAutoscale, ceil);
 	}

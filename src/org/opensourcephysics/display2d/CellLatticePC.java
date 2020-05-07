@@ -92,7 +92,8 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
 /**
    * Creates a new SiteLattice containing the same data as this lattice.
    */
-  public SiteLattice createSiteLattice() {
+  @Override
+public SiteLattice createSiteLattice() {
     SiteLattice lattice = new SiteLattice(nx, ny);
     lattice.setBlock(data);
     lattice.setMinMax(getXMin(), getXMax(), getYMin(), getYMax());
@@ -109,26 +110,31 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
    * @param _nx the number of x entries
    * @param _ny the number of y entries
    */
-  public void resizeLattice(int _nx, int _ny) {
+  @Override
+public void resizeLattice(int _nx, int _ny) {
     init(_nx, _ny);
   }
   
-  public void setXMin(double _value) {
+  @Override
+public void setXMin(double _value) {
     super.setXMin(_value);
 	grid.setMinMax(xmin, xmax, ymin, ymax);
   }
 
-  public void setXMax(double _value) {
+  @Override
+public void setXMax(double _value) {
 	super.setXMax(_value);
     grid.setMinMax(xmin, xmax, ymin, ymax);
   }
 
-  public void setYMin(double _value) {
+  @Override
+public void setYMin(double _value) {
 	super.setYMin(_value);
     grid.setMinMax(xmin, xmax, ymin, ymax);
   }
 
-  public void setYMax(double _value) {
+  @Override
+public void setYMax(double _value) {
     super.setYMax(_value);
 	grid.setMinMax(xmin, xmax, ymin, ymax);
   }
@@ -137,7 +143,8 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
    * Gets the number of x entries.
    * @return nx
    */
-  public int getNx() {
+  @Override
+public int getNx() {
     return nx;
   }
 
@@ -145,7 +152,8 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
    * Gets the number of y entries.
    * @return ny
    */
-  public int getNy() {
+  @Override
+public int getNy() {
     return ny;
   }
 
@@ -159,7 +167,8 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
    * @param ymin
    * @param ymax
    */
-  public void setMinMax(double xmin, double xmax, double ymin, double ymax) {
+  @Override
+public void setMinMax(double xmin, double xmax, double ymin, double ymax) {
     super.setMinMax(xmin, xmax, ymin, ymax);
     grid.setMinMax(xmin, xmax, ymin, ymax);
   }
@@ -169,7 +178,8 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible) {
       return;
     }
@@ -202,7 +212,8 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
    * @param ymin double
    * @param ymax double
    */
-  public void setAll(byte val[][], double xmin, double xmax, double ymin, double ymax) {
+  @Override
+public void setAll(byte val[][], double xmin, double xmax, double ymin, double ymax) {
     setAll(val);
     setMinMax(xmin, xmax, ymin, ymax);
   }
@@ -212,7 +223,8 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
    *
    * @param val
    */
-  public void setBlock(byte val[][]) {
+  @Override
+public void setBlock(byte val[][]) {
     setBlock(0, 0, val);
   }
 
@@ -223,6 +235,7 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
 	 * @param iy_offset the y offset into the lattice
 	 * @param val       the new values
 	 */
+	@Override
 	public void setBlock(int ix_offset, int iy_offset, byte val[][]) {
 		if ((iy_offset < 0) || (iy_offset + val[0].length > ny)) {
 			throw new IllegalArgumentException("Y index out of range in byte lattice setSiteBlock."); //$NON-NLS-1$
@@ -247,6 +260,7 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
 	 * @param iy_offset the y offset into the lattice
 	 * @param val       the new values
 	 */
+	@Override
 	public void setBlock(int ix_offset, int iy_offset, int val[][]) {
 		if ((iy_offset < 0) || (iy_offset + val[0].length > ny)) {
 			throw new IllegalArgumentException("Y index out of range in byte lattice setSiteBlock."); //$NON-NLS-1$
@@ -271,6 +285,7 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
 	 * @param iy_offset the y offset in the column
 	 * @param val       values in column
 	 */
+	@Override
 	public void setCol(int ix, int iy_offset, byte val[]) {
 		if ((iy_offset < 0) || (iy_offset + val.length > ny)) {
 			throw new IllegalArgumentException("Y offset out of range in binary lattice setCol."); //$NON-NLS-1$
@@ -294,7 +309,8 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
    * @param ix_offset the x offset in the row
    * @param val
    */
-  public void setRow(int iy, int ix_offset, byte val[]) {
+  @Override
+public void setRow(int iy, int ix_offset, byte val[]) {
     if((iy<0)||(iy>=ny)) {
       throw new IllegalArgumentException("Y index out of range in binary lattice setRow."); //$NON-NLS-1$
     }
@@ -316,7 +332,8 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
    * @param iy
    * @param val
    */
-  public void setValue(int ix, int iy, byte val) {
+  @Override
+public void setValue(int ix, int iy, byte val) {
     data[ix][iy] = val;
 	int pt = (ny - iy - 1) * nx + ix;
 	rasterData[pt] = rgb[data[ix][iy] & 0xFF];
@@ -330,7 +347,8 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
    * @param iy
    * @return the value.
    */
-  public byte getValue(int ix, int iy) {
+  @Override
+public byte getValue(int ix, int iy) {
     return data[ix][iy];
   }
 
@@ -342,7 +360,8 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
  * @param y
  * @return index
  */
-  public int indexFromPoint(double x, double y) {
+  @Override
+public int indexFromPoint(double x, double y) {
     int nx = getNx();
     int ny = getNy();
     double xMin = getXMin();
@@ -365,7 +384,8 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
    * @param x double the coordinate
    * @return int the index
    */
-  public int xToIndex(double x) {
+  @Override
+public int xToIndex(double x) {
     int nx = getNx();
     double xMin = getXMin();
     double xMax = getXMax();
@@ -386,7 +406,8 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
    * @param y double the coordinate
    * @return int the index
    */
-  public int yToIndex(double y) {
+  @Override
+public int yToIndex(double y) {
     int ny = getNy();
     double yMin = getYMin();
     double yMax = getYMax();
@@ -406,13 +427,15 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
    *
    * @param showGridLines
    */
-  public void setShowGridLines(boolean showGridLines) {
+  @Override
+public void setShowGridLines(boolean showGridLines) {
     grid.setVisible(showGridLines);
   }
 
 	/**
 	 * Randomizes the lattice values.
 	 */
+	@Override
 	public void randomize() {
 		Random random = new Random();
 		for (int iy = 0; iy < ny; iy++) {
@@ -429,7 +452,8 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
    * Shows the color associated with each value.
    * @return the JFrame containing the legend
    */
-  public JFrame showLegend() {
+  @Override
+public JFrame showLegend() {
     InteractivePanel dp = new InteractivePanel();
     dp.setPreferredSize(new java.awt.Dimension(300, 66));
     dp.setPreferredGutters(0, 0, 0, 35);
@@ -468,7 +492,8 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
    *
    * @param colors
    */
-  public void setColorPalette(Color[] colors) {
+  @Override
+public void setColorPalette(Color[] colors) {
     for(int i = 0, n = Math.min(256, colors.length); i<n; i++) {
     	rgb[i] = colors[i].getRGB();
     }
@@ -483,7 +508,8 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
    * Sets the grid color.
    * @param color
    */
-  public void setGridLineColor(Color color) {
+  @Override
+public void setGridLineColor(Color color) {
     grid.setColor(color);
   }
 
@@ -492,7 +518,8 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
    * @param i
    * @param color
    */
-  public void setIndexedColor(int i, Color color) {
+  @Override
+public void setIndexedColor(int i, Color color) {
     // i = i % rgb.length;
     i = (i+256)%rgb.length;
     rgb[i] = color.getRGB();
@@ -513,6 +540,7 @@ public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattic
 	/**
 	 * Creates the default palette.
 	 */
+	@Override
 	public void createDefaultColors() {
 		for (int i = 0; i < 256; i++) {
 			double x = (i < 128 ? (i - 100) / 255.0 : -1);

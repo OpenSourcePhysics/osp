@@ -95,7 +95,8 @@ public class Display3DFrame extends DrawingFrame3D {
    * software by the AWT, unless they are an immediate response to an
    * OS-level paint message.
    */
-  public void setIgnoreRepaint(boolean ignoreRepaint) {
+  @Override
+public void setIgnoreRepaint(boolean ignoreRepaint) {
     super.setIgnoreRepaint(ignoreRepaint);
     ((JPanel) drawingPanel).setIgnoreRepaint(ignoreRepaint);
     // glassPanel.setIgnoreRepaint(ignoreRepaint);

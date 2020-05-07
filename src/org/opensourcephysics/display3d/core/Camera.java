@@ -221,9 +221,11 @@ public interface Camera {
   // XML loader
   // ----------------------------------------------------
   abstract static class Loader implements org.opensourcephysics.controls.XML.ObjectLoader {
-    abstract public Object createObject(XMLControl control);
+    @Override
+	abstract public Object createObject(XMLControl control);
 
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       Camera camera = (Camera) obj;
       control.setValue("projection mode", camera.getProjectionMode());      //$NON-NLS-1$
       control.setValue("x", camera.getX());                                 //$NON-NLS-1$
@@ -236,7 +238,8 @@ public interface Camera {
       control.setValue("distance to screen", camera.getDistanceToScreen()); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       Camera camera = (Camera) obj;
       camera.setProjectionMode(control.getInt("projection mode")); //$NON-NLS-1$
       double x = control.getDouble("x"); //$NON-NLS-1$

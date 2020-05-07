@@ -1,7 +1,6 @@
 package test;
 
 import org.opensourcephysics.media.core.*;
-import org.opensourcephysics.media.mov.MovieFactory;
 
 
 public class PlayVideoTest {

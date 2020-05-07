@@ -21,7 +21,8 @@ import org.opensourcephysics.display.OSPRuntime;
 import java.awt.event.WindowListener;
 
 public class QMSuperpositionWRApp extends QMSuperpositionApp {
-  public void resetAnimation() {
+  @Override
+public void resetAnimation() {
     super.resetAnimation();
     if(control instanceof EjsControlFrame) {
       ((EjsControlFrame) control).loadDefaultXML();
@@ -38,10 +39,12 @@ public class QMSuperpositionWRApp extends QMSuperpositionApp {
   /**
    * Switch to the WRApp user interface.
    */
-  public void switchGUI() {
+  @Override
+public void switchGUI() {
     stopAnimation();
     Runnable runner = new Runnable() {
-      public synchronized void run() {
+      @Override
+	public synchronized void run() {
         OSPRuntime.disableAllDrawing = true;
         EjsControlFrame ejsFrame = ((EjsControlFrame) control);
         XMLControlElement xml = new XMLControlElement(ejsFrame.getOSPApp());
@@ -70,13 +73,15 @@ public class QMSuperpositionWRApp extends QMSuperpositionApp {
     t.start();
   }
 
-  void customize() {
+  @Override
+void customize() {
     QMSuperpositionControl c = (QMSuperpositionControl) control;
     JMenu menu = c.getMainFrame().getMenu("Display");
     JMenuItem item = new JMenuItem("Switch GUI");
     menu.add(item);
     item.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         switchGUI();
       }
     });
@@ -161,7 +166,8 @@ class QMSuperpositionStyleControl extends QMSuperpositionControl {
     super(model, args);
   }
 
-  protected void customize() {
+  @Override
+protected void customize() {
     add("Panel", "name=checkPanel;parent=controlPanel;position=east;layout=flow:left,0,0");
     add("Label",
       "position=west; parent=checkPanel;text= Phase Color = ;horizontalAlignment=right;tooltip=Change wave function representation.");

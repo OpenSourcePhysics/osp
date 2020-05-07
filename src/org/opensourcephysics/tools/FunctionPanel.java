@@ -12,9 +12,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -47,6 +44,7 @@ import org.opensourcephysics.display.GUIUtils;
  *
  * @author Douglas Brown
  */
+@SuppressWarnings("serial")
 public class FunctionPanel extends JPanel implements PropertyChangeListener {
   // instance fields
   protected FunctionTool functionTool;
@@ -135,7 +133,8 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
    *
    * @return the preferred size
    */
-  public Dimension getPreferredSize() {
+  @Override
+public Dimension getPreferredSize() {
     Dimension dim = super.getPreferredSize();
     dim.width = paramEditor.buttonPanel.getPreferredSize().width;
     return dim;
@@ -160,7 +159,8 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
    *
    * @param e the event
    */
-  public void propertyChange(PropertyChangeEvent e) {
+  @Override
+public void propertyChange(PropertyChangeEvent e) {
     if(e.getPropertyName().equals("edit")) {                                 //$NON-NLS-1$
       // Parameter or Function has been edited
       if((e.getNewValue() instanceof UndoableEdit)) {
@@ -224,7 +224,8 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
     StyleConstants.setBold(red, true);
     StyleConstants.setForeground(red, Color.red);
     instructions.addMouseListener(new MouseAdapter() {
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
         if(varEnd==0) {
           return;
         }
@@ -233,7 +234,8 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
         tableEditorField.replaceSelection(instructions.getSelectedText());
         tableEditorField.setBackground(Color.yellow);
       }
-      public void mouseExited(MouseEvent e) {
+      @Override
+	public void mouseExited(MouseEvent e) {
         if(!hasCircularErrors()&&!hasInvalidExpressions()) {
           StyledDocument doc = instructions.getStyledDocument();
           Style blue = doc.getStyle("blue"); //$NON-NLS-1$
@@ -244,7 +246,8 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 
     });
     instructions.addMouseMotionListener(new MouseMotionAdapter() {
-      public void mouseMoved(MouseEvent e) {
+      @Override
+	public void mouseMoved(MouseEvent e) {
         varBegin = varEnd = 0;
         // select and highlight the variable under mouse
         String text = instructions.getText();
@@ -302,7 +305,8 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
     functionEditor.addPropertyChangeListener(this);
     functionEditor.addPropertyChangeListener(paramEditor);
     JScrollPane scroller = new JScrollPane(instructions) {
-      public Dimension getPreferredSize() {
+      @Override
+	public Dimension getPreferredSize() {
         Dimension dim = super.getPreferredSize();
         Font font = instructions.getFont();
         dim.height = Math.max(dim.height, font.getSize()*4);
@@ -317,14 +321,16 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
     undoSupport.addUndoableEditListener(undoManager);
     undoButton = new JButton();
     undoButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         undoManager.undo();
       }
 
     });
     redoButton = new JButton();
     redoButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         undoManager.redo();
       }
 
@@ -485,9 +491,9 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
     return functionEditor.containsInvalidExpressions()||paramEditor.containsInvalidExpressions();
   }
 
-  protected boolean hasCircularErrors() {
-    return !(functionEditor.circularErrors.isEmpty()&&paramEditor.circularErrors.isEmpty());
-  }
+	protected boolean hasCircularErrors() {
+		return !functionEditor.circularErrors.isEmpty() || !paramEditor.circularErrors.isEmpty();
+	}
 
   /**
    * Disposes of this panel.

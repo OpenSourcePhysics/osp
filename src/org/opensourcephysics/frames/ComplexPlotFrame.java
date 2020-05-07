@@ -66,7 +66,8 @@ public class ComplexPlotFrame extends DrawingFrame {
   /**
    * Adds Views menu items on the menu bar.
    */
-  protected void addMenuItems() {
+  @Override
+protected void addMenuItems() {
     JMenuBar menuBar = getJMenuBar();
     if(menuBar==null) {
       return;
@@ -89,7 +90,8 @@ public class ComplexPlotFrame extends DrawingFrame {
     menubarGroup.add(ampPhaseItem);
     ampPhaseItem.setSelected(true);
     ActionListener actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToAmpAndPhaseView();
       }
 
@@ -100,7 +102,8 @@ public class ComplexPlotFrame extends DrawingFrame {
     postItem = new JRadioButtonMenuItem(DisplayRes.getString("ComplexPlotFrame.MenuItem.PostView")); //$NON-NLS-1$
     menubarGroup.add(postItem);
     actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToPostView();
       }
 
@@ -111,7 +114,8 @@ public class ComplexPlotFrame extends DrawingFrame {
     barItem = new JRadioButtonMenuItem(DisplayRes.getString("ComplexPlotFrame.MenuItem.BarView")); //$NON-NLS-1$
     menubarGroup.add(barItem);
     actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToPhaseBarView();
       }
 
@@ -122,7 +126,8 @@ public class ComplexPlotFrame extends DrawingFrame {
     reImItem = new JRadioButtonMenuItem(DisplayRes.getString("ComplexPlotFrame.MenuItem.RealImaginary")); //$NON-NLS-1$
     menubarGroup.add(reImItem);
     actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToReImView();
       }
 
@@ -134,7 +139,8 @@ public class ComplexPlotFrame extends DrawingFrame {
     JMenuItem tableItem = new JMenuItem(DisplayRes.getString("DrawingFrame.DataTable_menu_item")); //$NON-NLS-1$
     tableItem.setAccelerator(KeyStroke.getKeyStroke('T', MENU_SHORTCUT_KEY_MASK));
     actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         showDataTable(true);
       }
 
@@ -143,7 +149,8 @@ public class ComplexPlotFrame extends DrawingFrame {
     menu.add(tableItem);
     JMenuItem legendItem = new JMenuItem(DisplayRes.getString("GUIUtils.PhaseLegend")); //$NON-NLS-1$
     actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         complexDataset.showLegend();
       }
 
@@ -251,7 +258,8 @@ public class ComplexPlotFrame extends DrawingFrame {
   /**
    * Clears drawable objects added by the user from this frame.
    */
-  public void clearDrawables() {
+  @Override
+public void clearDrawables() {
     drawingPanel.clear(); // removes all drawables
     drawingPanel.addDrawable(complexDataset);
   }
@@ -261,7 +269,8 @@ public class ComplexPlotFrame extends DrawingFrame {
    *
    * @return the list
    */
-  public synchronized ArrayList<Drawable> getDrawables() {
+  @Override
+public synchronized ArrayList<Drawable> getDrawables() {
 	    return super.getDrawablesExcept(null, complexDataset);
   }
 
@@ -275,7 +284,8 @@ public class ComplexPlotFrame extends DrawingFrame {
    *
    * @see #getObjectOfClass(Class c)
    */
-  public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
+  @Override
+public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
 		return getDrawablesExcept(c, complexDataset);
   }
 
@@ -284,7 +294,8 @@ public class ComplexPlotFrame extends DrawingFrame {
    *
    * Dataset properties are preserved because only the data is cleared.
    */
-  public void clearData() {
+  @Override
+public void clearData() {
     complexDataset.clear();
     if(dataTable!=null) {
       dataTable.refreshTable();
@@ -325,7 +336,8 @@ public class ComplexPlotFrame extends DrawingFrame {
     * @param  control XMLControl
     * @return Object
     */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       ComplexPlotFrame frame = new ComplexPlotFrame("x", "y", DisplayRes.getString("ComplexPlotFrame.Title")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
       return frame;
     }
@@ -337,7 +349,8 @@ public class ComplexPlotFrame extends DrawingFrame {
      * @param obj Object
      * @return Object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       ComplexPlotFrame frame = ((ComplexPlotFrame) obj);
       ArrayList<ComplexDataset> list = frame.getObjectOfClass(ComplexDataset.class);

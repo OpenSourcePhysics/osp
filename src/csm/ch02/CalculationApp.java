@@ -21,7 +21,8 @@ public class CalculationApp extends AbstractCalculation {
   /**
    * Does a calculation.
    */
-  public void calculate() { // Does a calculation
+  @Override
+public void calculate() { // Does a calculation
     control.println("Calculation button pressed.");
     double x = control.getDouble("x value"); // String must match argument of setValue
     control.println("x*x = "+(x*x));
@@ -31,7 +32,8 @@ public class CalculationApp extends AbstractCalculation {
   /**
    * Resets the program to its initial state.
    */
-  public void reset() {
+  @Override
+public void reset() {
     control.setValue("x value", 10.0); // describes parameter and sets its value
   }
   

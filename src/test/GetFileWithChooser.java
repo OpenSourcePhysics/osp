@@ -1,7 +1,5 @@
 package test;
 
-import javax.swing.JFileChooser;
-
 import org.opensourcephysics.display.OSPRuntime;
 
 import javajs.async.AsyncFileChooser;

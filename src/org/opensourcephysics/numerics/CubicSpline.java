@@ -107,7 +107,8 @@ public class CubicSpline implements Function {
    * @param  x
    * @return interpolated y value.
    */
-  public double evaluate(double x) {
+  @Override
+public double evaluate(double x) {
     int n1 = 0;
     int n2 = xd.length-1;
     if(n2<1) {
@@ -194,6 +195,7 @@ public class CubicSpline implements Function {
   // Computes the first derivative using the spline coefficients.
   class splineFirstDerivate implements Function{
 
+	@Override
 	public double evaluate(double x) {
 	    int n1 = 0;
 	    int n2 = xd.length-1;
@@ -234,6 +236,7 @@ public class CubicSpline implements Function {
   // Computes the second derivative using the spline coefficients.
   class splineSecondDerivate implements Function{
 
+	@Override
 	public double evaluate(double x) {
 	    int n1 = 0;
 	    int n2 = xd.length-1;

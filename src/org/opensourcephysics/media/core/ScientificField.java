@@ -72,7 +72,8 @@ public class ScientificField extends NumberField {
    *
    * @param value the value to be entered
    */
-  public void setValue(double value) {
+  @Override
+public void setValue(double value) {
     if(Math.abs(value)<zeroLimit) {
       value = 0;
     }
@@ -80,7 +81,8 @@ public class ScientificField extends NumberField {
   }
 
   // Override NumberField methods so pattern cannot change
-  public void setSigFigs(int sigfigs) {
+  @Override
+public void setSigFigs(int sigfigs) {
     if(this.sigfigs==sigfigs) {
       return;
     }
@@ -88,7 +90,8 @@ public class ScientificField extends NumberField {
     this.sigfigs = Math.min(sigfigs, 6);
   }
 
-  public void setExpectedRange(double lower, double upper) {}
+  @Override
+public void setExpectedRange(double lower, double upper) {}
 
 }
 

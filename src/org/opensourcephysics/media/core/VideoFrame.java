@@ -103,7 +103,8 @@ public class VideoFrame extends DrawingFrame {
     saveAsItem = new JMenuItem(MediaRes.getString("VideoFrame.MenuItem.SaveAs")); //$NON-NLS-1$
     fileMenu.insert(saveAsItem, 1);
     saveAsItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         VideoIO.save(null, (VideoPanel) drawingPanel);
       }
 
@@ -120,7 +121,8 @@ public class VideoFrame extends DrawingFrame {
     fileMenu.add(exitItem);
     exitItem.setAccelerator(KeyStroke.getKeyStroke('Q', keyMask));
     exitItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         System.exit(0);
       }
 
@@ -130,13 +132,15 @@ public class VideoFrame extends DrawingFrame {
 
   protected void createActions() {
     openAction = new AbstractAction(MediaRes.getString("VideoFrame.MenuItem.Open"), null) { //$NON-NLS-1$
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         VideoIO.openVideoPanelFileAsync(null, (VideoPanel) drawingPanel);
       }
 
     };
     saveAction = new AbstractAction(MediaRes.getString("VideoFrame.MenuItem.Save"), null) { //$NON-NLS-1$
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         VideoPanel vidPanel = (VideoPanel) drawingPanel;
         VideoIO.save(vidPanel.getDataFile(), vidPanel);
       }

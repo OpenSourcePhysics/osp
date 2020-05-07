@@ -8,7 +8,6 @@
 package org.opensourcephysics.display2d;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Shape;
 import java.util.Random;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
@@ -96,7 +95,8 @@ public class TriangularByteLattice implements Measurable {
    * @param  panel
    * @param  g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible) {
       return;
     }
@@ -294,23 +294,28 @@ public class TriangularByteLattice implements Measurable {
     colors[i] = color;
   }
 
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return true;
   }
 
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return xmin;
   }
 
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return ymin;
   }
 
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return xmax;
   }
 
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return ymax;
   }
 

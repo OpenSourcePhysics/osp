@@ -148,7 +148,8 @@ public class TableFrame extends OSPFrame {
    * @param vis  if <code>true</code>, shows this component;
    * otherwise, hides this component
    */
-  public void setVisible(boolean vis) {
+  @Override
+public void setVisible(boolean vis) {
     boolean wasVisible = super.isVisible();
     super.setVisible(vis);
     if(vis&&!wasVisible) {      // refresh if the table was NOT visible and is now visible.
@@ -173,7 +174,8 @@ public class TableFrame extends OSPFrame {
    * The default method does nothing.
    * Override this method to select the object(s) and the data to be cleared.
    */
-  public synchronized void clearData() {
+  @Override
+public synchronized void clearData() {
     tableData.clearData();
   }
 

@@ -312,7 +312,7 @@ public class SwingJSUtils {
 		 * @author Bob Hanson hansonr@stolaf.edu
 		 */
 		public boolean next(int state, int level) {
-			return nextStatePriv((Object) this, state, level);
+			return nextStatePriv(this, state, level);
 		}
 
 		private static boolean nextStatePriv(Object oThis, int state, int level) {

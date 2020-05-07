@@ -10,7 +10,8 @@ public class QMSuperpositionLoader implements XML.ObjectLoader {
    * @param element XMLControl
    * @return Object
    */
-  public Object createObject(XMLControl element) {
+  @Override
+public Object createObject(XMLControl element) {
     QMSuperpositionApp app = new QMSuperpositionApp();
     //AnimationControl c = new AnimationControl(app);
     //app.setControl(c);
@@ -23,7 +24,8 @@ public class QMSuperpositionLoader implements XML.ObjectLoader {
    * @param element XMLControl
    * @param obj Object
    */
-  public void saveObject(XMLControl control, Object obj) {
+  @Override
+public void saveObject(XMLControl control, Object obj) {
   }
 
   /**
@@ -33,7 +35,8 @@ public class QMSuperpositionLoader implements XML.ObjectLoader {
    * @param obj Object
    * @return Object
    */
-  public Object loadObject(XMLControl control, Object obj) {
+  @Override
+public Object loadObject(XMLControl control, Object obj) {
     QMSuperpositionApp app = (QMSuperpositionApp) obj;
     app.stopAnimation();
     app.initializeAnimation();

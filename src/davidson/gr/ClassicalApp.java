@@ -55,7 +55,8 @@ public class ClassicalApp extends AbstractSimulation implements InteractiveMouse
     *
     * @param evt PropertyChangeEvent
     */
-   public void propertyChange(PropertyChangeEvent evt) {
+   @Override
+public void propertyChange(PropertyChangeEvent evt) {
       boolean running = isRunning();
       if(evt.getPropertyName().equals("inspectorChange")) {
          if(!running) {
@@ -78,7 +79,8 @@ public class ClassicalApp extends AbstractSimulation implements InteractiveMouse
    /**
     * Does an animation step.
     */
-   protected void doStep() {
+   @Override
+protected void doStep() {
      if(inspector!=null && inspector.newInspectorData) {
         inspector.initializeParticle(defaultTrajectory);
       }
@@ -104,7 +106,8 @@ public class ClassicalApp extends AbstractSimulation implements InteractiveMouse
    /**
     * Resets the animation into a predefined state.
     */
-   public void reset() {
+   @Override
+public void reset() {
       // set the parameters
       control.setValue("M", 1);
       control.setValue("dt", 0.1);
@@ -119,6 +122,7 @@ public class ClassicalApp extends AbstractSimulation implements InteractiveMouse
    /**
  * Initializes the animation;
  */
+@Override
 public void initialize() {
    plottingPanel.setMessage(null, PlottingPanel.TOP_LEFT);
    // clears all trajectories
@@ -155,7 +159,8 @@ public void initialize() {
     * @param panel InteractivePanel
     * @param evt MouseEvent
     */
-   public void handleMouseAction(InteractivePanel panel, MouseEvent evt) {
+   @Override
+public void handleMouseAction(InteractivePanel panel, MouseEvent evt) {
       if(evt.getClickCount()>1) {
          if((inspector==null)||!inspector.plot.isDisplayable() && defaultTrajectory!=null) {
             inspector = new ClassicalInspector(this, defaultTrajectory);
@@ -198,7 +203,8 @@ public void createMarker() {
    final Control control = editor.getControl();
    editor.addWindowListener(new java.awt.event.WindowAdapter() {
    
-      public void windowClosed(WindowEvent e) {
+      @Override
+	public void windowClosed(WindowEvent e) {
          marker.setEnabled(control.getBoolean("draggable state"));
          marker.label = control.getString("label");
          double r = control.getDouble("r");
@@ -238,7 +244,8 @@ public void createParticle() {
    final Control control = editor.getControl();
    editor.addWindowListener(new java.awt.event.WindowAdapter() {
 
-      public void windowClosed(WindowEvent e) {
+      @Override
+	public void windowClosed(WindowEvent e) {
          particle.setEnabled(control.getBoolean("draggable state"));
          particle.trackPoints = control.getInt("track points");
          particle.label = control.getString("label");
@@ -291,7 +298,8 @@ class ClassicalLoader implements XML.ObjectLoader {
     * @param element XMLControl
     * @return Object
     */
-   public Object createObject(XMLControl element) {
+   @Override
+public Object createObject(XMLControl element) {
       ClassicalApp app = new ClassicalApp();
       SimulationControl c = new SimulationControl(app);
       app.setControl(c);
@@ -304,7 +312,8 @@ class ClassicalLoader implements XML.ObjectLoader {
     * @param element XMLControl
     * @param obj Object
     */
-   public void saveObject(XMLControl control, Object obj) {
+   @Override
+public void saveObject(XMLControl control, Object obj) {
       ClassicalApp app = (ClassicalApp) obj;
       control.setValue("trajectories", app.trajectories);
       control.setValue("markers", app.markers);
@@ -317,7 +326,8 @@ class ClassicalLoader implements XML.ObjectLoader {
     * @param obj Object
     * @return Object
     */
-   public Object loadObject(XMLControl control, Object obj) {
+   @Override
+public Object loadObject(XMLControl control, Object obj) {
       ClassicalApp app = (ClassicalApp) obj;
       app.initialize();
       app.trajectories = (ArrayList) control.getObject("trajectories");

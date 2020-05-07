@@ -109,7 +109,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    * @param x double the coordinate
    * @return int the index
    */
-  public int xToIndex(double x) {
+  @Override
+public int xToIndex(double x) {
     return griddata.xToIndex(x);
   }
 
@@ -119,7 +120,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    * @param y double the coordinate
    * @return int the index
    */
-  public int yToIndex(double y) {
+  @Override
+public int yToIndex(double y) {
     return griddata.yToIndex(y);
   }
 
@@ -129,7 +131,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    * @param i int
    * @return double the x coordinate
    */
-  public double indexToX(int i) {
+  @Override
+public double indexToX(int i) {
     return griddata.indexToX(i);
   }
 
@@ -139,7 +142,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    * @param i int
    * @return double the y coordinate
    */
-  public double indexToY(int i) {
+  @Override
+public double indexToY(int i) {
     return griddata.indexToY(i);
   }
 
@@ -150,7 +154,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    *
    * @param obj
    */
-  public void setAll(Object obj) {
+  @Override
+public void setAll(Object obj) {
     double[][][] val = (double[][][]) obj;
     copyComplexData(val);
     update();
@@ -167,7 +172,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    * @param ymin double
    * @param ymax double
    */
-  public void setAll(Object obj, double xmin, double xmax, double ymin, double ymax) {
+  @Override
+public void setAll(Object obj, double xmin, double xmax, double ymin, double ymax) {
     double[][][] val = (double[][][]) obj;
     copyComplexData(val);
     if(griddata.isCellData()) {
@@ -204,7 +210,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    * Gets the GridData object.
    * @return GridData
    */
-  public GridData getGridData() {
+  @Override
+public GridData getGridData() {
     return griddata;
   }
 
@@ -213,7 +220,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    *
    * @param _griddata
    */
-  public void setGridData(GridData _griddata) throws IllegalArgumentException {
+  @Override
+public void setGridData(GridData _griddata) throws IllegalArgumentException {
     griddata = _griddata;
     if(griddata==null) {
       return;
@@ -294,7 +302,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    *
    * @param indexes the sample-component indexes
    */
-  public void setIndexes(int[] indexes) {
+  @Override
+public void setIndexes(int[] indexes) {
     ampIndex = indexes[0];
     reIndex = indexes[1];
     imIndex = indexes[2];
@@ -319,7 +328,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    * Not implemented.   Color always maps to phase.
    * @param colors
    */
-  public void setColorPalette(Color[] colors) {
+  @Override
+public void setColorPalette(Color[] colors) {
     // Not implemented.   Color always maps to phase.
   }
 
@@ -329,14 +339,16 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    *
    * @param isVisible
    */
-  public void setVisible(boolean isVisible) {
+  @Override
+public void setVisible(boolean isVisible) {
     visible = isVisible;
   }
 
   /**
    * Shows a legend of phase angle and color.
    */
-  public JFrame showLegend() {
+  @Override
+public JFrame showLegend() {
     return colorMap.showLegend();
   }
 
@@ -345,7 +357,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    *
    * @param show
    */
-  public void setShowGridLines(boolean show) {
+  @Override
+public void setShowGridLines(boolean show) {
     isMesh = show;
   }
 
@@ -354,7 +367,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    *
    * @param  c
    */
-  public void setGridLineColor(Color c) {
+  @Override
+public void setGridLineColor(Color c) {
     line_color = c;
   }
 
@@ -363,7 +377,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible||(griddata==null)) {
       return;
     }
@@ -1078,7 +1093,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    * Determines the palette type that will be used.
    * @param type
    */
-  public void setPaletteType(int type) {
+  @Override
+public void setPaletteType(int type) {
     plot_mode = type;
   }
 
@@ -1104,7 +1120,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    * @param floor
    * @param ceil
    */
-  public void setAutoscaleZ(boolean isAutoscale, double floor, double ceil) {
+  @Override
+public void setAutoscaleZ(boolean isAutoscale, double floor, double ceil) {
     autoscaleZ = isAutoscale;
     if(autoscaleZ) {
       update();
@@ -1123,14 +1140,16 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    *
    * @param symmetric
    */
-  public void setSymmetricZ(boolean symmetric){
+  @Override
+public void setSymmetricZ(boolean symmetric){
 	  symmetricZ=symmetric;
   }
   
   /**
    * Gets the symmetric z flag.  
    */
-  public boolean isSymmetricZ(){
+  @Override
+public boolean isSymmetricZ(){
 	  return symmetricZ;
   }
 
@@ -1139,7 +1158,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    *
    * @return boolean
    */
-  public boolean isAutoscaleZ() {
+  @Override
+public boolean isAutoscaleZ() {
     return autoscaleZ;
   }
 
@@ -1147,7 +1167,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    * Gets the floor for scaling the z data.
    * @return double
    */
-  public double getFloor() {
+  @Override
+public double getFloor() {
     return zmin;
   }
 
@@ -1155,7 +1176,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    * Gets the ceiling for scaling the z data.
    * @return double
    */
-  public double getCeiling() {
+  @Override
+public double getCeiling() {
     return zmax;
   }
 
@@ -1165,7 +1187,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    * @param floorColor
    * @param ceilColor
    */
-  public void setFloorCeilColor(Color floorColor, Color ceilColor) {
+  @Override
+public void setFloorCeilColor(Color floorColor, Color ceilColor) {
     colorMap.setCeilColor(ceilColor);
   }
 
@@ -1175,7 +1198,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    * @param expanded boolean
    * @param expansionFactor double
    */
-  public void setExpandedZ(boolean expanded, double expansionFactor) {
+  @Override
+public void setExpandedZ(boolean expanded, double expansionFactor) {
     if(expanded&&(expansionFactor>0)) {
       zMap = new ZExpansion(expansionFactor);
       zMap.setMinMax(zmin, zmax);
@@ -1189,7 +1213,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
   /**
    * Updates the surface plot using the current data.
    */
-  public synchronized void update() {
+  @Override
+public synchronized void update() {
     if(griddata==null) {
       return;
     }
@@ -1340,7 +1365,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    * Gets the minimum x needed to draw this object.
    * @return minimum
    */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return 0;
   }
 
@@ -1348,7 +1374,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    * Gets the maximum x needed to draw this object.
    * @return maximum
    */
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return 0;
   }
 
@@ -1356,7 +1383,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    * Gets the minimum y needed to draw this object.
    * @return minimum
    */
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return 0;
   }
 
@@ -1364,7 +1392,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    * Gets the maximum y needed to draw this object.
    * @return minimum
    */
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return 0;
   }
 
@@ -1374,7 +1403,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    *
    * @return false
    */
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return false;
   }
 
@@ -1385,7 +1415,8 @@ public class ComplexSurfacePlot implements Plot2D, False3D {
    */
   public static XML.ObjectLoader getLoader() {
     return new Plot2DLoader() {
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
         return new ComplexSurfacePlot(null);
       }
 

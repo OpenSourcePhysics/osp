@@ -246,9 +246,11 @@ public interface Element extends org.opensourcephysics.display3d.core.interactio
    * A class to save and load Element data.
    */
   static abstract class Loader implements XML.ObjectLoader {
-    public abstract Object createObject(XMLControl control);
+    @Override
+	public abstract Object createObject(XMLControl control);
 
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       Element element = (Element) obj;
       if(element.getName().length()>0) {
         control.setValue("name", element.getName()); //$NON-NLS-1$
@@ -264,7 +266,8 @@ public interface Element extends org.opensourcephysics.display3d.core.interactio
       control.setValue("transformation", element.getTransformation()); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       Element element = (Element) obj;
       String name = control.getString("name"); //$NON-NLS-1$
       if(name!=null) {

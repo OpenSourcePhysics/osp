@@ -55,7 +55,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
     color = Color.lightGray;
   }
 
-  public void resizeLattice(int _nx, int _ny) {
+  @Override
+public void resizeLattice(int _nx, int _ny) {
     sx = _nx;
     sy = _ny;
     nx = sx-1; // in Grid
@@ -79,7 +80,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    * Gets the number of x entries.
    * @return nx
    */
-  public int getNx() {
+  @Override
+public int getNx() {
     return sx; // number of sites, not number of grids
   }
 
@@ -87,7 +89,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    * Gets the number of y entries.
    * @return ny
    */
-  public int getNy() {
+  @Override
+public int getNy() {
     return sy; // number of sites, not number of grids
   }
 
@@ -97,7 +100,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    *
    * @param isVisible
    */
-  public void setVisible(boolean isVisible) {
+  @Override
+public void setVisible(boolean isVisible) {
     visible = isVisible;
   }
 
@@ -107,7 +111,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    * @param  panel
    * @param  g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible) {
       return;
     }
@@ -159,7 +164,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    * @param ymin double
    * @param ymax double
    */
-  public void setAll(byte val[][], double xmin, double xmax, double ymin, double ymax) {
+  @Override
+public void setAll(byte val[][], double xmin, double xmax, double ymin, double ymax) {
     setAll(val);
     setMinMax(xmin, xmax, ymin, ymax);
   }
@@ -171,7 +177,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    * @param iy_offset int
    * @param val byte[][]
    */
-  public void setBlock(int ix_offset, int iy_offset, byte val[][]) {
+  @Override
+public void setBlock(int ix_offset, int iy_offset, byte val[][]) {
     if((iy_offset<0)||(iy_offset+val[0].length>sy)) {
       throw new IllegalArgumentException("Row offset "+iy_offset+" out of range."); //$NON-NLS-1$ //$NON-NLS-2$
     }
@@ -211,7 +218,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    *
    * @param  val
    */
-  public void setBlock(byte val[][]) {
+  @Override
+public void setBlock(byte val[][]) {
     setBlock(0, 0, val);
   }
 
@@ -222,7 +230,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    * @param iy_offset the y offset in the column
    * @param val values in column
    */
-  public void setCol(int ix, int iy_offset, byte val[]) {
+  @Override
+public void setCol(int ix, int iy_offset, byte val[]) {
     if((iy_offset<0)||(iy_offset+val.length>sy)) {
       throw new IllegalArgumentException("Row offset "+iy_offset+" out of range."); //$NON-NLS-1$ //$NON-NLS-2$
     }
@@ -241,7 +250,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    * @param ix_offset the x offset in the row
    * @param val
    */
-  public void setRow(int iy, int ix_offset, byte val[]) {
+  @Override
+public void setRow(int iy, int ix_offset, byte val[]) {
     if((iy<0)||(iy>=sy)) {
       throw new IllegalArgumentException("Y index out of range in binary lattice setRow."); //$NON-NLS-1$
     }
@@ -260,7 +270,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    * @param iy
    * @param val
    */
-  public void setValue(int ix, int iy, byte val) {
+  @Override
+public void setValue(int ix, int iy, byte val) {
     if((iy<0)||(iy>=sy)) {
       throw new IllegalArgumentException("Row index "+iy+" out of range."); //$NON-NLS-1$ //$NON-NLS-2$
     }
@@ -277,7 +288,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    * @param  col
    * @return      the cell value.
    */
-  public byte getValue(int col, int row) {
+  @Override
+public byte getValue(int col, int row) {
     return data[col][row];
   }
 
@@ -289,7 +301,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    * @param y
    * @return index
    */
-  public int indexFromPoint(double x, double y) {
+  @Override
+public int indexFromPoint(double x, double y) {
     int nx = getNx();
     int ny = getNy();
     double xMin = getXMin();
@@ -312,7 +325,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    * @param x double the coordinate
    * @return int the index
    */
-  public int xToIndex(double x) {
+  @Override
+public int xToIndex(double x) {
     int nx = getNx();
     double xMin = getXMin();
     double xMax = getXMax();
@@ -333,7 +347,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    * @param y double the coordinate
    * @return int the index
    */
-  public int yToIndex(double y) {
+  @Override
+public int yToIndex(double y) {
     int ny = getNy();
     double yMin = getYMin();
     double yMax = getYMax();
@@ -364,12 +379,14 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    *
    * @param  showGridLines
    */
-  public void setShowGridLines(boolean showGridLines) {
+  @Override
+public void setShowGridLines(boolean showGridLines) {
     super.visible = showGridLines;
   }
 
   /** Randomizes the lattice values. */
-  public void randomize() {
+  @Override
+public void randomize() {
     Random random = new Random();
     for(int rindex = 0, nr = data[0].length; rindex<nr; rindex++) {
       for(int cindex = 0, nc = data.length; cindex<nc; cindex++) {
@@ -382,7 +399,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    * Shows the color associated with each value.
    * @return the JFrame containing the legend
    */
-  public JFrame showLegend() {
+  @Override
+public JFrame showLegend() {
     InteractivePanel dp = new InteractivePanel();
     dp.setPreferredSize(new java.awt.Dimension(300, 66));
     dp.setPreferredGutters(0, 0, 0, 35);
@@ -416,7 +434,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    *
    * @param  _colors
    */
-  public void setColorPalette(Color[] _colors) {
+  @Override
+public void setColorPalette(Color[] _colors) {
     int n = Math.min(256, _colors.length);
     for(int i = 0; i<n; i++) {
       colors[i] = _colors[i];
@@ -431,7 +450,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    *
    * @param  _color
    */
-  public void setGridLineColor(Color _color) {
+  @Override
+public void setGridLineColor(Color _color) {
     color = _color;
   }
 
@@ -441,7 +461,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    * @param  i
    * @param  color
    */
-  public void setIndexedColor(int i, Color color) {
+  @Override
+public void setIndexedColor(int i, Color color) {
     // i = i % colors.length;
     i = (i+256)%colors.length;
     colors[i] = color;
@@ -452,7 +473,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    *
    * @return measured flag
    */
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return true; // we always have data
   }
 
@@ -460,7 +482,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    * Method getXMin
    * @return x min
    */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return xmin-dx/2;
   }
 
@@ -468,7 +491,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    * Method getXMax
    * @return x max
    */
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return xmax+dx/2;
   }
 
@@ -476,7 +500,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    * Method getYMin
    * @return y min
    */
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return ymin-dy/2;
   }
 
@@ -484,26 +509,31 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
    * Method getYMax
    * @return y max
    */
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return ymax+dy/2;
   }
 
-  public void setXMin(double _value) {
+  @Override
+public void setXMin(double _value) {
     xmin = _value+dy/2;
     setMinMax(xmin, xmax, ymin, ymax);
   }
 
-  public void setXMax(double _value) {
+  @Override
+public void setXMax(double _value) {
     xmax = _value-dy/2;
     setMinMax(xmin, xmax, ymin, ymax);
   }
 
-  public void setYMin(double _value) {
+  @Override
+public void setYMin(double _value) {
     ymin = _value+dy/2;
     setMinMax(xmin, xmax, ymin, ymax);
   }
 
-  public void setYMax(double _value) {
+  @Override
+public void setYMax(double _value) {
     ymax = _value-dy/2;
     setMinMax(xmin, xmax, ymin, ymax);
   }
@@ -511,7 +541,8 @@ public class SiteLattice extends Grid implements Measurable, ByteLattice {
   /**
    * Creates the default palette.
    */
-  public void createDefaultColors() {
+  @Override
+public void createDefaultColors() {
     for(int i = 0; i<256; i++) {
       double x = (i<128) ? (i-100)/255.0 : -1;
       double val = Math.exp(-x*x*8);

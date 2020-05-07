@@ -25,23 +25,28 @@ public class IntegerValue extends Value {
     value = _val;
   }
 
-  public boolean getBoolean() {
+  @Override
+public boolean getBoolean() {
     return(value!=0);
   }
 
-  public int getInteger() {
+  @Override
+public int getInteger() {
     return value;
   }
 
-  public double getDouble() {
+  @Override
+public double getDouble() {
     return value;
   }
 
-  public String getString() {
+  @Override
+public String getString() {
     return String.valueOf(value);
   }
 
-  public Object getObject() {
+  @Override
+public Object getObject() {
     return null;
   }
 

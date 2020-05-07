@@ -64,14 +64,16 @@ public interface ElementPolygon extends Element {
   // XML loader
   // ----------------------------------------------------
   static abstract class ElementPolygonLoader extends Element.Loader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       super.saveObject(control, obj);
       ElementPolygon element = (ElementPolygon) obj;
       control.setValue("closed", element.isClosed()); //$NON-NLS-1$
       control.setValue("data", element.getData());    //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       ElementPolygon element = (ElementPolygon) obj;
       element.setClosed(control.getBoolean("closed"));         //$NON-NLS-1$

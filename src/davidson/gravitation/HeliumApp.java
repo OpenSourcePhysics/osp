@@ -32,7 +32,8 @@ public class HeliumApp extends AbstractAnimation {
   /**
    * Does an animation step.
    */
-  protected void doStep() {
+  @Override
+protected void doStep() {
     trajectory.stepTime();
     plottingPanel.setMessage("t="+sciFormat.format(trajectory.state[4]));
     plottingPanel.repaint();
@@ -41,7 +42,8 @@ public class HeliumApp extends AbstractAnimation {
   /**
    * Resets the animation into a predefined state.
    */
-  public void resetAnimation() {
+  @Override
+public void resetAnimation() {
     super.resetAnimation();
     control.setValue("x1_init",3);
     control.setValue("vy1_init",0.4);
@@ -54,7 +56,8 @@ public class HeliumApp extends AbstractAnimation {
   /**
    * Initializes the animation;
    */
-  public void initializeAnimation(){
+  @Override
+public void initializeAnimation(){
     super.initializeAnimation();
     double x1=control.getDouble("x1_init");  // x
     double vy1=control.getDouble("vy1_init");  // vx

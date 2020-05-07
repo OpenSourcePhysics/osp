@@ -37,7 +37,8 @@ public class XMLTableModel extends AbstractTableModel {
    *
    * @return the column count
    */
-  public int getColumnCount() {
+  @Override
+public int getColumnCount() {
     return 2;
   }
 
@@ -47,7 +48,8 @@ public class XMLTableModel extends AbstractTableModel {
    * @param column the column index
    * @return the column name
    */
-  public String getColumnName(int column) {
+  @Override
+public String getColumnName(int column) {
     return (column==0) ? ControlsRes.XML_NAME : ControlsRes.XML_VALUE;
   }
 
@@ -56,7 +58,8 @@ public class XMLTableModel extends AbstractTableModel {
    *
    * @return the row count
    */
-  public int getRowCount() {
+  @Override
+public int getRowCount() {
     return control.getPropertyContent().size();
   }
 
@@ -70,7 +73,8 @@ public class XMLTableModel extends AbstractTableModel {
    * @param column the column index
    * @return the value
    */
-  public Object getValueAt(int row, int column) {
+  @Override
+public Object getValueAt(int row, int column) {
     try {
       XMLProperty val = (XMLProperty) control.getPropertyContent().get(row);
       Object content = val.getPropertyContent().get(0);
@@ -90,7 +94,8 @@ public class XMLTableModel extends AbstractTableModel {
    * @param col the column index
    * @return true if editable
    */
-  public boolean isCellEditable(int row, int col) {
+  @Override
+public boolean isCellEditable(int row, int col) {
     // not editable if column 0
     if(col==0) {
       return false;
@@ -127,7 +132,8 @@ public class XMLTableModel extends AbstractTableModel {
    * @param row the row index
    * @param col the column index
    */
-  public void setValueAt(Object value, int row, int col) {
+  @Override
+public void setValueAt(Object value, int row, int col) {
     if(value==null) {
       return;
     }

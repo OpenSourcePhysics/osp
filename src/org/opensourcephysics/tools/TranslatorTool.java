@@ -115,7 +115,9 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
    *
    * @deprecated
    */
-  public void show() {
+  @Deprecated
+@Override
+public void show() {
     if(!keepHidden) {
       super.show();
     }
@@ -124,7 +126,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
   /**
    * Disposes all resources.
    */
-  public void dispose() {
+  @Override
+public void dispose() {
     keepHidden = true;
     super.dispose();
   }
@@ -137,7 +140,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
    *
    * @param b
    */
-  public void setVisible(boolean b) {
+  @Override
+public void setVisible(boolean b) {
     if(!keepHidden) {
       super.setVisible(b);
     }
@@ -148,7 +152,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
    *
    * @param _keepHidden
    */
-  public void setKeepHidden(boolean _keepHidden) {
+  @Override
+public void setKeepHidden(boolean _keepHidden) {
     keepHidden = _keepHidden;
     if(keepHidden) {
       super.setVisible(false);
@@ -159,7 +164,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
    * Reads the keepHidden flag.
    *
    */
-  public boolean isKeepHidden() {
+  @Override
+public boolean isKeepHidden() {
     return keepHidden;
   }
 
@@ -187,7 +193,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
    * @param job the Job
    * @param replyTo the tool to notify when the job is complete (may be null)
    */
-  public void send(Job job, Tool replyTo) {
+  @Override
+public void send(Job job, Tool replyTo) {
     /** not implemented */
   }
 
@@ -196,7 +203,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
    *
    * @param locale the locale
    */
-  public void setLocale(Locale locale) {
+  @Override
+public void setLocale(Locale locale) {
     if(locale==this.locale) {
       return;
     }
@@ -233,7 +241,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
    * @param obj the object needing translations
    * @param type the class
    */
-  public synchronized void associate(Object obj, Class<?> type) {
+  @Override
+public synchronized void associate(Object obj, Class<?> type) {
     if(obj==null) {
       return;
     }
@@ -245,7 +254,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
    *
    * @param type the class
    */
-  public void showProperties(Class<?> type) {
+  @Override
+public void showProperties(Class<?> type) {
     if(type==null) {
       return;
     }
@@ -302,7 +312,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
    * @param key the string to localize
    * @return the localized string
    */
-  public String getProperty(Class<?> type, String key) {
+  @Override
+public String getProperty(Class<?> type, String key) {
     return getProperty(type, key, key, ToolsRes.resourceLocale);
   }
 
@@ -315,7 +326,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
    * @param defaultValue the default if no localized value found
    * @return the localized string
    */
-  public String getProperty(Class<?> type, String key, String defaultValue) {
+  @Override
+public String getProperty(Class<?> type, String key, String defaultValue) {
     return getProperty(type, key, defaultValue, ToolsRes.resourceLocale);
   }
 
@@ -328,7 +340,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
    * @param key the string to localize
    * @return the localized string
    */
-  public String getProperty(Object obj, String key) {
+  @Override
+public String getProperty(Object obj, String key) {
     return getProperty(obj, key, key);
   }
 
@@ -342,7 +355,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
    * @param defaultValue the default if no localized value found
    * @return the localized string
    */
-  public String getProperty(Object obj, String key, String defaultValue) {
+  @Override
+public String getProperty(Object obj, String key, String defaultValue) {
     if(obj==null) {
       return(defaultValue==null) ? key : defaultValue;
     }
@@ -745,7 +759,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
    */
   private void createGUI() {
     XMLTableModel model = new XMLTableModel(control) {
-      public String getColumnName(int column) {
+      @Override
+	public String getColumnName(int column) {
         return(column==0) ? ToolsRes.getString("TranslatorTool.ColumnTitle.Property") : //$NON-NLS-1$
           ToolsRes.getString("TranslatorTool.ColumnTitle.PropValue");                   //$NON-NLS-1$
       }
@@ -758,7 +773,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
     // create the XMLTable
     table = new XMLTable(model);
     table.addMouseListener(new MouseAdapter() {
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
         if(OSPRuntime.isPopupTrigger(e)) {
           // find clicked row
           for(int i = 0; i<table.getRowCount(); i++) {
@@ -772,7 +788,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
                 +" \""+name+"\""); //$NON-NLS-1$ //$NON-NLS-2$
               popup.add(removeItem);
               removeItem.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent ae) {
+                @Override
+				public void actionPerformed(ActionEvent ae) {
                   removeProperty(classType, name);
                 }
 
@@ -809,7 +826,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
     localeDropDown.setSelectedItem(selectedItem);
     localeDropDown.setEditable(true);
     localeDropDown.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         Object next = localeDropDown.getSelectedItem();
         if(next==null) {
           return;
@@ -850,7 +868,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
     // create buttons
     helpButton = new JButton();
     helpButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         TextFrame frame;
         // show helpURL if available
         if(ResourceLoader.getResource(helpURL)!=null) {
@@ -869,7 +888,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
     saveIcon = ResourceLoader.getIcon(imageFile);
     saveButton = new JButton(saveIcon);
     saveButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         save(getPath(classType)+fileExtension);
       }
 
@@ -879,7 +899,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
     buttonbar.add(saveButton);
     closeButton = new JButton();
     closeButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         setVisible(false);
       }
 
@@ -893,7 +914,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
     setLocation(x, y);
     // listen to ToolsRes for locale changes
     ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
-      public void propertyChange(PropertyChangeEvent e) {
+      @Override
+	public void propertyChange(PropertyChangeEvent e) {
         Locale locale = (Locale) e.getNewValue();
         if(locale!=null) {
           setLocale(locale);
@@ -902,7 +924,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
 
     });
     table.addPropertyChangeListener(new PropertyChangeListener() {
-      public void propertyChange(PropertyChangeEvent e) {
+      @Override
+	public void propertyChange(PropertyChangeEvent e) {
         // update current properties map
         Object val = e.getNewValue();
         if(val instanceof TableModelEvent) {
@@ -995,7 +1018,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
       }
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
       return language;
     }
 

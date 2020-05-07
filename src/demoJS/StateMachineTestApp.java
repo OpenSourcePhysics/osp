@@ -39,6 +39,7 @@ public class StateMachineTestApp extends AbstractCalculation implements Runnable
 		/** @j2sNative debugger; */
 	}
 
+	@Override
 	public void run() {
 		stateHelper = new SwingJSUtils.StateHelper(this);
 		stateHelper.setState(STATE_INIT);
@@ -75,6 +76,7 @@ public class StateMachineTestApp extends AbstractCalculation implements Runnable
 	/**
 	 * Do a calculation.
 	 */
+	@Override
 	public void calculate() { // Does a calculation
 		/** @j2sNative debugger; */
 		control.println("Calculate pressed");
@@ -85,6 +87,7 @@ public class StateMachineTestApp extends AbstractCalculation implements Runnable
 	/**
 	 * Reset the program to its initial state.
 	 */
+	@Override
 	public void reset() {
 		counter=0;
 		dt=0;

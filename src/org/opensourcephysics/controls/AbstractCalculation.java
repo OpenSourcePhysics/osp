@@ -33,7 +33,8 @@ public abstract class AbstractCalculation implements Calculation {
    *
    * @param control
    */
-  public void setControl(Control control) {
+  @Override
+public void setControl(Control control) {
     this.control = control;
     mainFrame = null;
     if(control!=null) {
@@ -102,12 +103,14 @@ public abstract class AbstractCalculation implements Calculation {
   /**
    * Does the calculation.
    */
-  public abstract void calculate();
+  @Override
+public abstract void calculate();
 
   /**
    * Resets the calculation to a predefined state.
    */
-  public void resetCalculation() {
+  @Override
+public void resetCalculation() {
     control.clearMessages();
     reset();
   }
@@ -138,7 +141,8 @@ public abstract class AbstractCalculation implements Calculation {
      * @param control the control
      * @param obj the object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       ((Calculation) obj).calculate();
       return obj;
     }

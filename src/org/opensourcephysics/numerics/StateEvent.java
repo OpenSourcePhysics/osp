@@ -43,7 +43,8 @@ public interface StateEvent extends MultiVarFunction {
    * @param state The current state of the ODE
    * @return the value for this state
    */
-  public double evaluate(double[] state);
+  @Override
+public double evaluate(double[] state);
 
   /**
    * What to do when the event has taken place.

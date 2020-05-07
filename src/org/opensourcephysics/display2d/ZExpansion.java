@@ -51,7 +51,8 @@ public class ZExpansion implements Function {
     }
   }
 
-  public double evaluate(double z) {
+  @Override
+public double evaluate(double z) {
     z = z-center; // shift
     if(z>=0) {
       return a1*(1-Math.exp(-k*z));

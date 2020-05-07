@@ -13,8 +13,6 @@ import java.io.FileOutputStream;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.OSPRuntime;
 
-import com.sun.javafx.fxml.LoadListener;
-
 /**
  * OSPDesktop invokes the java.awt.Desktop API using reflection for Java 1.5 compatibility.
  *

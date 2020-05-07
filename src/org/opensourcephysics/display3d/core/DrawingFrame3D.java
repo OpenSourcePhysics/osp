@@ -55,7 +55,8 @@ public interface DrawingFrame3D {
   // XML loader
   // ----------------------------------------------------
   static class Loader implements org.opensourcephysics.controls.XML.ObjectLoader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       DrawingFrame frame = new DrawingFrame();
       frame.setTitle(control.getString("title"));                                    //$NON-NLS-1$
       frame.setLocation(control.getInt("location x"), control.getInt("location y")); //$NON-NLS-1$ //$NON-NLS-2$
@@ -66,7 +67,8 @@ public interface DrawingFrame3D {
       return frame;
     }
 
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       DrawingFrame3D frame3D = (DrawingFrame3D) obj;
       javax.swing.JFrame frame = frame3D.getJFrame();
       control.setValue("title", frame.getTitle());                    //$NON-NLS-1$
@@ -78,7 +80,8 @@ public interface DrawingFrame3D {
       control.setValue("drawing panel", frame3D.getDrawingPanel3D()); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       DrawingFrame3D frame3D = ((DrawingFrame3D) obj);
       javax.swing.JFrame frame = frame3D.getJFrame();
       DrawingPanel3D panel = frame3D.getDrawingPanel3D();

@@ -30,7 +30,8 @@ public class ClassicalTrajectory extends AbstractTrajectory {
    *
    * @return an array containing {x, v, t}
    */
-  public double[] getState() {
+  @Override
+public double[] getState() {
     return state;
   }
 
@@ -42,7 +43,8 @@ public class ClassicalTrajectory extends AbstractTrajectory {
    * @param state  the state
    * @param rate   the rate
    */
-  public void getRate(double[] state, double[] rate) {
+  @Override
+public void getRate(double[] state, double[] rate) {
     // state = {r, dr/dt, phi, dphi/dt, t}
     double r = state[0]; // define local variable for readability
     rate[0] = state[1];                   // dr/dt
@@ -60,7 +62,8 @@ public class ClassicalTrajectory extends AbstractTrajectory {
    * @param x
    * @param y
    */
-  public void setXY(double x, double y) {
+  @Override
+public void setXY(double x, double y) {
     super.setXY(x, y);
     state[0]=Math.sqrt(x*x+y*y);   // set r
     //state[1]=0;                    // set dr/dt=0
@@ -76,6 +79,7 @@ public class ClassicalTrajectory extends AbstractTrajectory {
    * @param newState state array
    *
    */
+@Override
 public void initialize(double[] newState) {
   if(newState!=state) System.arraycopy(newState,0,state, 0, newState.length);
   System.arraycopy(newState,0,stateInitial, 0, newState.length);
@@ -85,6 +89,7 @@ public void initialize(double[] newState) {
   trail.moveToPoint(x, y); // add first point to trail
 }
 
+@Override
 public void resetInitial(){
   initialize(stateInitial);
 }
@@ -93,6 +98,7 @@ public void resetInitial(){
  * Displays the Schwarzschild particle's initial conditions in an editor.
  * @return OSPControl
  */
+@Override
 public OSPTableInspector edit(){
   OSPTableInspector inspector = new OSPTableInspector(true, true);
   Control control=inspector.getControl();
@@ -117,7 +123,8 @@ public OSPTableInspector edit(){
   /**
    * Steps the time using an ode solver.
    */
-  public void stepTime() {
+  @Override
+public void stepTime() {
     ode_solver.step();
     x = state[0]*Math.cos(state[2]);
     y = state[0]*Math.sin(state[2]);
@@ -130,7 +137,8 @@ public OSPTableInspector edit(){
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     trail.draw(panel, g);
     super.draw(panel, g);
   }
@@ -149,7 +157,8 @@ public OSPTableInspector edit(){
        * @param control XMLControl
        * @param obj Object
        */
-      public void saveObject(XMLControl control, Object obj) {
+      @Override
+	public void saveObject(XMLControl control, Object obj) {
         super.saveObject(control, obj);
         //ClassicalTrajectory trajectory = (ClassicalTrajectory) obj;
     }
@@ -159,7 +168,8 @@ public OSPTableInspector edit(){
        * @param control XMLControl
        * @return Object
        */
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
         return new ClassicalTrajectory();
       }
 
@@ -169,7 +179,8 @@ public OSPTableInspector edit(){
        * @param obj Object
        * @return Object
        */
-      public Object loadObject(XMLControl control, Object obj) {
+      @Override
+	public Object loadObject(XMLControl control, Object obj) {
         super.loadObject(control, obj);
         return obj;
     }

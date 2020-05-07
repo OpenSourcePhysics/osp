@@ -46,14 +46,16 @@ public class VideoCaptureTool implements Tool, VideoTool {
    * @param image the frame to be added
    * @return true if frame was added
    */
-  public boolean addFrame(BufferedImage image) {
+  @Override
+public boolean addFrame(BufferedImage image) {
     return getGrabber().addFrame(image);
   }
 
   /**
    * Clear the video from the tool in preparation for a new video.
    */
-  public void clear() {
+  @Override
+public void clear() {
     getGrabber().clear();
   }
 
@@ -71,7 +73,8 @@ public class VideoCaptureTool implements Tool, VideoTool {
    *
    * @return true if recording rendered images
    */
-  public boolean isRecording() {
+  @Override
+public boolean isRecording() {
     return getGrabber().isRecording();
   }
 
@@ -80,7 +83,8 @@ public class VideoCaptureTool implements Tool, VideoTool {
    *
    * @param visible true to set this visible
    */
-  public void setVisible(boolean visible) {
+  @Override
+public void setVisible(boolean visible) {
     getGrabber().setVisible(visible);
   }
 
@@ -127,7 +131,8 @@ public class VideoCaptureTool implements Tool, VideoTool {
    * @param replyTo the tool to reply to
    * @throws RemoteException
    */
-  public void send(Job job, Tool replyTo) throws RemoteException {
+  @Override
+public void send(Job job, Tool replyTo) throws RemoteException {
     if(job==null) {
       return;
     }

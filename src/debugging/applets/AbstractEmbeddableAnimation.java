@@ -21,11 +21,13 @@ public abstract class AbstractEmbeddableAnimation  extends AbstractAnimation imp
   protected double timeMax=Float.MAX_VALUE;
   protected String timeMsg="Done";
 
-  public Control getControl() {
+  @Override
+public Control getControl() {
     return control;
   }
 
-  public ObjectManager getManager() {
+  @Override
+public ObjectManager getManager() {
     return objectManager;
   }
 
@@ -34,6 +36,7 @@ public abstract class AbstractEmbeddableAnimation  extends AbstractAnimation imp
  *
  * @param control
  */
+@Override
 public void setControl (Control control) {
   stopAnimation();
   this.control = control;

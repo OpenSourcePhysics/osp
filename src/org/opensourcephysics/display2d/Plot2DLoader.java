@@ -13,14 +13,17 @@ import org.opensourcephysics.controls.XMLLoader;
  * A class to save and load a Plot2D object in an XMLControl.
  */
 abstract public class Plot2DLoader extends XMLLoader {
-  public void saveObject(XMLControl control, Object obj) {
+  @Override
+public void saveObject(XMLControl control, Object obj) {
     Plot2D p2d = (Plot2D) obj;
     control.setValue("grid data", p2d.getGridData()); //$NON-NLS-1$
   }
 
-  abstract public Object createObject(XMLControl control);
+  @Override
+abstract public Object createObject(XMLControl control);
 
-  public Object loadObject(XMLControl control, Object obj) {
+  @Override
+public Object loadObject(XMLControl control, Object obj) {
     Plot2D p2d = (Plot2D) obj;
     XMLControl child = control.getChildControl("grid data"); //$NON-NLS-1$
     p2d.setGridData((GridData) child.loadObject(p2d.getGridData()));

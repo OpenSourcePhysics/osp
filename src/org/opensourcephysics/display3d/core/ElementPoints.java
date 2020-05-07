@@ -32,13 +32,15 @@ public interface ElementPoints extends Element {
   // XML loader
   // ----------------------------------------------------
   static abstract class ElementPointsLoader extends Element.Loader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       super.saveObject(control, obj);
       ElementPoints element = (ElementPoints) obj;
       control.setValue("data", element.getData()); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       ElementPoints element = (ElementPoints) obj;
       element.setData((double[][]) control.getObject("data")); //$NON-NLS-1$

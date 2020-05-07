@@ -2,7 +2,6 @@ package davidson.qm;
 import org.opensourcephysics.controls.*;
 import org.opensourcephysics.display.*;
 import org.opensourcephysics.numerics.*;
-import java.text.DecimalFormat;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import org.opensourcephysics.ejs.control.EjsControlFrame;
@@ -43,7 +42,8 @@ public class QMSuperpositionApp extends AbstractAnimation implements PropertyCha
       psiDataset.setXYColumnNames("x", "Re[$\\Psi$]", "Im[$\\Psi$]", "$\\Psi$(x,t)");
    }
 
-   public void initializeAnimation() {
+   @Override
+public void initializeAnimation() {
       super.initializeAnimation();
       if(control.getBoolean("hide frame")) {
          psiFrame.setKeepHidden(true);
@@ -193,7 +193,8 @@ public class QMSuperpositionApp extends AbstractAnimation implements PropertyCha
       }
    }
 
-   public void doStep() {
+   @Override
+public void doStep() {
       time += dt;
       superposition.update(time);
       superposition.getPsi(psiDataset);
@@ -207,7 +208,8 @@ public class QMSuperpositionApp extends AbstractAnimation implements PropertyCha
       }
    }
 
-   public void resetAnimation() {
+   @Override
+public void resetAnimation() {
       super.resetAnimation();
       setValues();
       if(control instanceof EjsControlFrame) {
@@ -244,7 +246,8 @@ public class QMSuperpositionApp extends AbstractAnimation implements PropertyCha
       return new QMSuperpositionLoader();
    }
 
-   public void propertyChange(PropertyChangeEvent evt) {
+   @Override
+public void propertyChange(PropertyChangeEvent evt) {
       boolean running = isRunning();
       if(running) {
          stopAnimation();
@@ -261,7 +264,8 @@ public class QMSuperpositionApp extends AbstractAnimation implements PropertyCha
    public void switchGUI() {
      stopAnimation();
      Runnable runner = new Runnable() {
-       public synchronized void run() {
+       @Override
+	public synchronized void run() {
          OSPRuntime.disableAllDrawing=true;
          ControlFrame controlFrame = ( (ControlFrame) control);
          XMLControlElement xml = new XMLControlElement(controlFrame.getOSPApp());
@@ -301,7 +305,8 @@ public class QMSuperpositionApp extends AbstractAnimation implements PropertyCha
       JMenuItem item = new JMenuItem("Switch GUI");
       item.addActionListener(new ActionListener() {
 
-         public void actionPerformed(ActionEvent e) {
+         @Override
+		public void actionPerformed(ActionEvent e) {
             switchGUI();
          }
       });

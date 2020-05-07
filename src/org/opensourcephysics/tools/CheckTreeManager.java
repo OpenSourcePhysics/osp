@@ -49,7 +49,8 @@ public class CheckTreeManager extends MouseAdapter implements TreeSelectionListe
    *
    * @param e the mouse event
    */
-  public void mouseMoved(MouseEvent e) {
+  @Override
+public void mouseMoved(MouseEvent e) {
     TreePath path = tree.getPathForLocation(e.getX(), e.getY());
     if(path==null) {
       return;
@@ -66,7 +67,8 @@ public class CheckTreeManager extends MouseAdapter implements TreeSelectionListe
    *
    * @param e the mouse event
    */
-  public void mouseClicked(MouseEvent e) {
+  @Override
+public void mouseClicked(MouseEvent e) {
     TreePath path = tree.getPathForLocation(e.getX(), e.getY());
     if(path==null) {
       return;
@@ -92,13 +94,15 @@ public class CheckTreeManager extends MouseAdapter implements TreeSelectionListe
     return selectionModel;
   }
 
-  public void valueChanged(TreeSelectionEvent e) {
+  @Override
+public void valueChanged(TreeSelectionEvent e) {
     if(!ignoreEvents) {
       tree.treeDidChange();
     }
   }
 
-  public void mouseDragged(MouseEvent e) {
+  @Override
+public void mouseDragged(MouseEvent e) {
     /** empty block */
   }
 

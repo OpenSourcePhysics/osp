@@ -30,13 +30,15 @@ public interface ElementSpring extends Element {
   // XML loader
   // ----------------------------------------------------
   static abstract class Loader extends Element.Loader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       super.saveObject(control, obj);
       ElementSpring element = (ElementSpring) obj;
       control.setValue("radius", element.getRadius()); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       ElementSpring element = (ElementSpring) obj;
       element.setRadius(control.getDouble("radius")); //$NON-NLS-1$

@@ -48,11 +48,13 @@ class TriggerODE implements ODE {
   }
 
   // Masking the real ODE
-  public double[] getState() {
+  @Override
+public double[] getState() {
     return state;
   }
 
-  public void getRate(double[] _state, double[] _rate) {
+  @Override
+public void getRate(double[] _state, double[] _rate) {
     ode.getRate(_state, _rate); // Defer to the real ODE
   }
 

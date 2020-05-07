@@ -136,7 +136,8 @@ public class XMLPropertyElement implements XMLProperty {
    *
    * @return a name
    */
-  public String getPropertyName() {
+  @Override
+public String getPropertyName() {
     return name;
   }
 
@@ -145,7 +146,8 @@ public class XMLPropertyElement implements XMLProperty {
    *
    * @return the type
    */
-  public String getPropertyType() {
+  @Override
+public String getPropertyType() {
     return type;
   }
 
@@ -154,7 +156,8 @@ public class XMLPropertyElement implements XMLProperty {
    *
    * @return the class
    */
-  public Class<?> getPropertyClass() {
+  @Override
+public Class<?> getPropertyClass() {
     if(type.equals("int")) {            //$NON-NLS-1$
       return Integer.TYPE;
     } else if(type.equals("double")) {  //$NON-NLS-1$
@@ -176,7 +179,8 @@ public class XMLPropertyElement implements XMLProperty {
    *
    * @return the type
    */
-  public XMLProperty getParentProperty() {
+  @Override
+public XMLProperty getParentProperty() {
     return parent;
   }
 
@@ -185,7 +189,8 @@ public class XMLPropertyElement implements XMLProperty {
    *
    * @return the non-negative integer level
    */
-  public int getLevel() {
+  @Override
+public int getLevel() {
     return parent.getLevel()+1;
   }
 
@@ -195,7 +200,8 @@ public class XMLPropertyElement implements XMLProperty {
    *
    * @return a list of content items
    */
-  public List<Object> getPropertyContent() {
+  @Override
+public List<Object> getPropertyContent() {
     return content;
   }
 
@@ -205,7 +211,8 @@ public class XMLPropertyElement implements XMLProperty {
    * @param name the property name
    * @return the XMLControl
    */
-  public XMLControl getChildControl(String name) {
+  @Override
+public XMLControl getChildControl(String name) {
     XMLControl[] children = getChildControls();
     for(int i = 0; i<children.length; i++) {
       if(children[i].getPropertyName().equals(name)) {
@@ -222,7 +229,8 @@ public class XMLPropertyElement implements XMLProperty {
    *
    * @return an XMLControl array
    */
-  public XMLControl[] getChildControls() {
+  @Override
+public XMLControl[] getChildControls() {
     if(type.equals("object") && !getPropertyContent().isEmpty()) {                       //$NON-NLS-1$
       XMLControl child = (XMLControl) getPropertyContent().get(0);
       return new XMLControl[] {child};
@@ -246,7 +254,8 @@ public class XMLPropertyElement implements XMLProperty {
    *
    * @param stringValue the string value of a primitive or string property
    */
-  public void setValue(String stringValue) {
+  @Override
+public void setValue(String stringValue) {
     boolean valid = true;
     try {
       if(type.equals("int")) {                                           //$NON-NLS-1$
@@ -274,7 +283,8 @@ public class XMLPropertyElement implements XMLProperty {
    *
    * @return the xml string
    */
-  public String toString() {
+  @Override
+public String toString() {
     // write the opening tag with attributes
     StringBuffer xml = new StringBuffer(XML.NEW_LINE+indent(getLevel())+"<property name=\""+name+"\" type=\""+type+"\""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     if("arraycollection".indexOf(type)!=-1) { //$NON-NLS-1$

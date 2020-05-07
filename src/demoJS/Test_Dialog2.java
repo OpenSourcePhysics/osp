@@ -237,7 +237,7 @@ public class Test_Dialog2 extends JFrame {
 						// note that e.getID() is Color.getRGB();
 						Color value = (e.getID() == 0 ? null : ((AsyncColorChooser) e.getSource()).getSelectedColor());
 						if(value != null) {
-							colorButton.setBackground((Color) value);
+							colorButton.setBackground(value);
 							status.setText(value.toString());
 						}
 						System.out.println("ColorChooser returned " + value + (value == null ? "" : " = " + new Color(e.getID())));

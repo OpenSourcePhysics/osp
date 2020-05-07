@@ -80,7 +80,8 @@ public class GifVideo extends VideoAdapter {
    * @param panel the drawing panel requesting the drawing
    * @param g the graphics context on which to draw
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     panels.add(panel);
     super.draw(panel, g);
   }
@@ -88,14 +89,16 @@ public class GifVideo extends VideoAdapter {
   /**
    * Called by the garbage collector when this video is no longer in use.
    */
-  protected void finalize() {
+  @Override
+protected void finalize() {
     //    System.out.println("gif garbage");
   }
 
   /**
    * Plays the video at the current rate.
    */
-  public void play() {
+  @Override
+public void play() {
     if(getFrameCount()==1) {
       return;
     }
@@ -111,7 +114,8 @@ public class GifVideo extends VideoAdapter {
   /**
    * Stops the video.
    */
-  public void stop() {
+  @Override
+public void stop() {
     if(timer.isRunning()) {
       timer.stop();
       support.firePropertyChange("playing", null, Boolean.FALSE); //$NON-NLS-1$
@@ -123,14 +127,15 @@ public class GifVideo extends VideoAdapter {
    *
    * @param n the desired frame number
    */
-  public void setFrameNumber(int n) {
+  @Override
+public void setFrameNumber(int n) {
     super.setFrameNumber(n);
     n = getFrameNumber();
     int index = Math.min(n, decoder.getFrameCount()-1);
     rawImage = decoder.getFrame(index);
     isValidImage = false;
     isValidFilteredImage = false;
-    support.firePropertyChange(Video.PROPERTY_VIDEO_FRAMENUMBER, null, Integer.valueOf(n)); //$NON-NLS-1$
+    support.firePropertyChange(Video.PROPERTY_VIDEO_FRAMENUMBER, null, Integer.valueOf(n)); 
     // repaint panels in case they don't listen
     Iterator<DrawingPanel> it = panels.iterator();
     while(it.hasNext()) {
@@ -145,7 +150,8 @@ public class GifVideo extends VideoAdapter {
    * @param n the frame number
    * @return the start time of the frame in milliseconds, or -1 if not known
    */
-  public double getFrameTime(int n) {
+  @Override
+public double getFrameTime(int n) {
     if((n>=startTimes.length)||(n<0)) {
       return -1;
     }
@@ -157,7 +163,8 @@ public class GifVideo extends VideoAdapter {
    *
    * @return the current time in milliseconds, or -1 if not known
    */
-  public double getTime() {
+  @Override
+public double getTime() {
     return getFrameTime(getFrameNumber());
   }
 
@@ -166,7 +173,8 @@ public class GifVideo extends VideoAdapter {
    *
    * @param millis the desired time in milliseconds
    */
-  public void setTime(double millis) {
+  @Override
+public void setTime(double millis) {
     millis = Math.abs(millis);
     for(int i = 0; i<startTimes.length; i++) {
       int t = startTimes[i];
@@ -182,7 +190,8 @@ public class GifVideo extends VideoAdapter {
    *
    * @return the start time in milliseconds, or -1 if not known
    */
-  public double getStartTime() {
+  @Override
+public double getStartTime() {
     return getFrameTime(getStartFrameNumber());
   }
 
@@ -192,7 +201,8 @@ public class GifVideo extends VideoAdapter {
    *
    * @param millis the desired start time in milliseconds
    */
-  public void setStartTime(double millis) {
+  @Override
+public void setStartTime(double millis) {
     millis = Math.abs(millis);
     for(int i = 0; i<startTimes.length; i++) {
       int t = startTimes[i];
@@ -208,7 +218,8 @@ public class GifVideo extends VideoAdapter {
    *
    * @return the end time in milliseconds, or -1 if not known
    */
-  public double getEndTime() {
+  @Override
+public double getEndTime() {
     int n = getEndFrameNumber();
     return getFrameTime(n)+decoder.getDelay(n);
   }
@@ -219,7 +230,8 @@ public class GifVideo extends VideoAdapter {
    *
    * @param millis the desired end time in milliseconds
    */
-  public void setEndTime(double millis) {
+  @Override
+public void setEndTime(double millis) {
     millis = Math.abs(millis);
     millis = Math.min(getDuration(), millis);
     for(int i = 0; i<startTimes.length; i++) {
@@ -236,7 +248,8 @@ public class GifVideo extends VideoAdapter {
    *
    * @return the duration of the video in milliseconds, or -1 if not known
    */
-  public double getDuration() {
+  @Override
+public double getDuration() {
     int n = getFrameCount()-1;
     return getFrameTime(n)+decoder.getDelay(n);
   }
@@ -302,7 +315,8 @@ public class GifVideo extends VideoAdapter {
   private void createTimer() {
     int delay = decoder.getDelay(0);
     timer = new javax.swing.Timer(delay, new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         if(getFrameNumber()<getEndFrameNumber()) {
           int delay = decoder.getDelay(getFrameNumber()+1);
           timer.setDelay((int) (delay/getRate()));
@@ -333,9 +347,10 @@ public class GifVideo extends VideoAdapter {
    */
   static class Loader extends VideoAdapter.Loader {
 
+		@Override
 		protected VideoAdapter createVideo(String path) throws IOException {
 	      	GifVideo video = new GifVideo(path);
-	        VideoType gifType = VideoIO.getVideoType(GifVideoType.TYPE_GIF, null); //$NON-NLS-1$
+	        VideoType gifType = VideoIO.getVideoType(GifVideoType.TYPE_GIF, null); 
 	        if (gifType!=null)
 	        	video.setProperty("video_type", gifType); //$NON-NLS-1$
 	        return video;

@@ -17,7 +17,6 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -130,7 +129,8 @@ public class JarTool implements Tool, Runnable {
   private OverwriteValue instancePolicy;
   private Frame instanceOwnerFrame;
 
-  public void run() {
+  @Override
+public void run() {
     compressList(instanceSources, instanceParent, instanceTarget, instanceManifest, instancePolicy, instanceOwnerFrame);
   }
 
@@ -400,7 +400,7 @@ public class JarTool implements Tool, Runnable {
 		int flen = (fileName.endsWith("/") ? fileName.length() : 0);
 		FileOutputStream fos = null;
 		try (FileInputStream fis = new FileInputStream(source);
-				ZipInputStream zis = (ZipInputStream) new ZipInputStream(fis);) {
+				ZipInputStream zis = new ZipInputStream(fis);) {
 			ZipEntry ze;
 			while ((ze = zis.getNextEntry()) != null && flen >= 0) {
 				String name = ze.getName();
@@ -555,7 +555,7 @@ public class JarTool implements Tool, Runnable {
         inputStream=OSPRuntime.applet.getClass().getResourceAsStream(filename);
       }
       if(inputStream==null) {  // use resource loader when not an applet
-        if(ResourceLoader.isHTTP(filename)) {  //$NON-NLS-1$
+        if(ResourceLoader.isHTTP(filename)) {  
           int n = filename.toLowerCase().indexOf(".zip!/"); //$NON-NLS-1$
           if (n==-1) n = filename.toLowerCase().indexOf(".jar!/");     //$NON-NLS-1$
           if (n==-1) n = filename.toLowerCase().indexOf(".trz!/");     //$NON-NLS-1$
@@ -911,7 +911,8 @@ public class JarTool implements Tool, Runnable {
     final JDialog dialog = new JDialog();
     final OverwriteValue returnValue = new OverwriteValue(NO);
     java.awt.event.MouseAdapter mouseListener = new java.awt.event.MouseAdapter() {
-      public void mousePressed(java.awt.event.MouseEvent evt) {
+      @Override
+	public void mousePressed(java.awt.event.MouseEvent evt) {
         AbstractButton button = (AbstractButton) (evt.getSource());
         String aCmd = button.getActionCommand();
         if(aCmd.equals("yes")) {             //$NON-NLS-1$   
@@ -959,7 +960,8 @@ public class JarTool implements Tool, Runnable {
     dialog.getContentPane().add(label, java.awt.BorderLayout.CENTER);
     dialog.getContentPane().add(buttonPanel, java.awt.BorderLayout.SOUTH);
     dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-      public void windowClosing(java.awt.event.WindowEvent event) {
+      @Override
+	public void windowClosing(java.awt.event.WindowEvent event) {
         returnValue.value = NO;
       }
 
@@ -1289,7 +1291,8 @@ public class JarTool implements Tool, Runnable {
       setModal(false);
       getContentPane().setLayout(new java.awt.BorderLayout());
       JPanel progressPanel = new JPanel() {
-        public Insets getInsets() {
+        @Override
+		public Insets getInsets() {
           return new Insets(15, 10, 5, 10);
         }
 

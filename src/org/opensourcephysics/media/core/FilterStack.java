@@ -164,7 +164,8 @@ public class FilterStack extends Filter implements PropertyChangeListener {
   /**
    * Clears the filter stack.
    */
-  public void clear() {
+  @Override
+public void clear() {
   	for (Filter filter: filters) {
   		filter.dispose();
   	}
@@ -198,7 +199,8 @@ public class FilterStack extends Filter implements PropertyChangeListener {
    * @param image the image to filter
    * @return the filtered image
    */
-  public BufferedImage getFilteredImage(BufferedImage image) {
+  @Override
+public BufferedImage getFilteredImage(BufferedImage image) {
     if(!isEnabled()) {
       return image;
     }
@@ -218,7 +220,8 @@ public class FilterStack extends Filter implements PropertyChangeListener {
    *
    * @return the inspector
    */
-  public JDialog getInspector() {
+  @Override
+public JDialog getInspector() {
     return null;
   }
 
@@ -250,7 +253,8 @@ public class FilterStack extends Filter implements PropertyChangeListener {
   /**
    * Refreshes this filter's GUI
    */
-  public void refresh() {
+  @Override
+public void refresh() {
     Iterator<Filter> it = getFilters().iterator();
     while(it.hasNext()) {
       it.next().refresh();
@@ -263,7 +267,8 @@ public class FilterStack extends Filter implements PropertyChangeListener {
    *
    * @param e the property change event
    */
-  public void propertyChange(PropertyChangeEvent e) {
+  @Override
+public void propertyChange(PropertyChangeEvent e) {
   	if (e.getPropertyName().equals("filterChanged")) { //$NON-NLS-1$
   		support.firePropertyChange("filterChanged", e.getOldValue(), e.getNewValue()); //$NON-NLS-1$
   	}

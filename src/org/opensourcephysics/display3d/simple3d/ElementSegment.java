@@ -33,7 +33,8 @@ public class ElementSegment extends Element implements org.opensourcephysics.dis
   // -------------------------------------
   // Abstract part of Element or Parent methods overwritten
   // -------------------------------------
-  Object3D[] getObjects3D() {
+  @Override
+Object3D[] getObjects3D() {
     if(!isReallyVisible()) {
       return null;
     }
@@ -46,7 +47,8 @@ public class ElementSegment extends Element implements org.opensourcephysics.dis
     return objects;
   }
 
-  void draw(Graphics2D _g2, int _index) {
+  @Override
+void draw(Graphics2D _g2, int _index) {
     // Allow the panel to adjust color according to depth
     Color theColor = getDrawingPanel3D().projectColor(getRealStyle().getLineColor(), objects[_index].getDistance());
     _g2.setStroke(getRealStyle().getLineStroke());
@@ -54,7 +56,8 @@ public class ElementSegment extends Element implements org.opensourcephysics.dis
     _g2.drawLine(aCoord[_index], bCoord[_index], aCoord[_index+1], bCoord[_index+1]);
   }
 
-  synchronized void drawQuickly(Graphics2D _g2) {
+  @Override
+synchronized void drawQuickly(Graphics2D _g2) {
     if(!isReallyVisible()) {
       return;
     }
@@ -69,7 +72,8 @@ public class ElementSegment extends Element implements org.opensourcephysics.dis
     _g2.drawLine(aCoord[0], bCoord[0], aCoord[div], bCoord[div]);
   }
 
-  void getExtrema(double[] min, double[] max) {
+  @Override
+void getExtrema(double[] min, double[] max) {
     min[0] = 0;
     max[0] = 1;
     min[1] = 0;
@@ -83,7 +87,8 @@ public class ElementSegment extends Element implements org.opensourcephysics.dis
   // -------------------------------------
   // Interaction
   // -------------------------------------
-  protected InteractionTarget getTargetHit(int x, int y) {
+  @Override
+protected InteractionTarget getTargetHit(int x, int y) {
     if(!isReallyVisible()) {
       return null;
     }
@@ -186,7 +191,8 @@ public class ElementSegment extends Element implements org.opensourcephysics.dis
   }
 
   static private class Loader extends org.opensourcephysics.display3d.core.ElementSegment.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ElementSegment();
     }
 

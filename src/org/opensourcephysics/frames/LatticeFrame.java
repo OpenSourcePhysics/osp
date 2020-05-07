@@ -89,7 +89,8 @@ public class LatticeFrame extends DrawingFrame {
   /**
  * Adds Views menu items on the menu bar.
 */
-  protected void addMenuItems() {
+  @Override
+protected void addMenuItems() {
     JMenuBar menuBar = getJMenuBar();
     if(menuBar==null) {
       return;
@@ -112,7 +113,8 @@ public class LatticeFrame extends DrawingFrame {
     menubarGroup.add(cellItem);
     cellItem.setSelected(true);
     ActionListener tableListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToCellLattice();
       }
 
@@ -123,7 +125,8 @@ public class LatticeFrame extends DrawingFrame {
     siteItem = new JRadioButtonMenuItem(DisplayRes.getString("LatticeFrame.MenuItem.SiteLattice")); //$NON-NLS-1$
     menubarGroup.add(siteItem);
     tableListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToSiteLattice();
       }
 
@@ -161,7 +164,8 @@ public class LatticeFrame extends DrawingFrame {
   /**
    * Clears drawable objects added by the user from this frame.
    */
-  public void clearDrawables() {
+  @Override
+public void clearDrawables() {
     drawingPanel.clear(); // removes all drawables
     drawingPanel.addDrawable(lattice);
   }
@@ -171,7 +175,8 @@ public class LatticeFrame extends DrawingFrame {
    *
    * @return the list
    */
-  public synchronized ArrayList<Drawable> getDrawables() {
+  @Override
+public synchronized ArrayList<Drawable> getDrawables() {
 	    return super.getDrawablesExcept(null, lattice);
   }
 
@@ -185,14 +190,16 @@ public class LatticeFrame extends DrawingFrame {
    *
    * @see #getObjectOfClass(Class c)
    */
-  public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
+  @Override
+public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
 	return getDrawablesExcept(c, lattice);
   }
 
   /**
    * Clears the lattice data by setting all values to zero.
    */
-  public void clearData() {
+  @Override
+public void clearData() {
     lattice.setBlock(0, 0, new byte[lattice.getNx()][lattice.getNy()]);
     if(drawingPanel!=null) {
       drawingPanel.invalidateImage();
@@ -415,10 +422,12 @@ public class LatticeFrame extends DrawingFrame {
   synchronized MouseInputAdapter getMouseAdapter() {
     if(mouseAdapter==null) {
       return new MouseInputAdapter() {
-        public void mousePressed(MouseEvent e) {
+        @Override
+		public void mousePressed(MouseEvent e) {
           mouse(e, true);
         }
-        public void mouseDragged(MouseEvent e) {
+        @Override
+		public void mouseDragged(MouseEvent e) {
           mouse(e, false);
         }
 

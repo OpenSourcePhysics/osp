@@ -41,7 +41,8 @@ public class PixelRectangle implements Drawable {
    * @param panel DrawingPanel
    * @param g Graphics
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     // this method implements the Drawable interface
     g.setColor(Color.RED);                // set drawing color to red
     g.fillRect(left, top, width, height); // draws rectangle

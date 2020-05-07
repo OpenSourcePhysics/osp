@@ -198,7 +198,8 @@ public class MethodWithOneParameter {
     return methodName.equals(_name);
   }
 
-  public String toString() {
+  @Override
+public String toString() {
     return methodName;
   }
 
@@ -228,7 +229,7 @@ public class MethodWithOneParameter {
         	try {
         	  m= _target.getClass().getMethod(_name, parameters); 
         	}catch(NoSuchMethodException nsme) {
-        	      System.err.println("Error resolving method"+_name); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        	      System.err.println("Error resolving method"+_name); //$NON-NLS-1$ 
             }
         	return m;    		
     	}

@@ -26,12 +26,14 @@ public class InterpretedValue extends Value {
   
   //public String getExpression() { return expression; }
 
-  public boolean getBoolean() {
+  @Override
+public boolean getBoolean() {
     try { return ((Boolean) getObject()).booleanValue(); }
     catch (Exception exc) { return false; }
   }
 
-  public int getInteger() { 
+  @Override
+public int getInteger() { 
     try { return ((Integer) getObject()).intValue(); }
     catch (Exception exc) {
       try { return (int) Math.round(((Double) getObject()).doubleValue()); }
@@ -39,21 +41,26 @@ public class InterpretedValue extends Value {
     }
   }
   
-  public double  getDouble()  {
+  @Override
+public double  getDouble()  {
     try { return ((Double) getObject()).doubleValue(); }
     catch (Exception exc) { return 0.0; }
   }
 
-  public String  getString()  { return getObject().toString(); }
+  @Override
+public String  getString()  { return getObject().toString(); }
 
-  public Object  getObject()  { return myEjsPropertyEditor.evaluateExpression(expression); }
+  @Override
+public Object  getObject()  { return myEjsPropertyEditor.evaluateExpression(expression); }
 
-  public void copyValue(Value _source) {
+  @Override
+public void copyValue(Value _source) {
     if (_source instanceof InterpretedValue) expression = new String(((InterpretedValue)_source).expression);
     else expression = new String(_source.getString());
   }
 
-  public Value cloneValue() { return new InterpretedValue(expression,myEjsPropertyEditor); }
+  @Override
+public Value cloneValue() { return new InterpretedValue(expression,myEjsPropertyEditor); }
 
 }
 

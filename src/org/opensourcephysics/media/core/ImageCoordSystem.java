@@ -1060,7 +1060,8 @@ public class ImageCoordSystem {
      * @param control the control to save to
      * @param obj the ImageCoordSystem object to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       ImageCoordSystem coords = (ImageCoordSystem) obj;
       control.setValue("fixedorigin", coords.isFixedOrigin()); //$NON-NLS-1$
       control.setValue("fixedangle", coords.isFixedAngle());   //$NON-NLS-1$
@@ -1087,7 +1088,8 @@ public class ImageCoordSystem {
      * @param control the control
      * @return the new ImageCoordSystem
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ImageCoordSystem();
     }
 
@@ -1098,7 +1100,8 @@ public class ImageCoordSystem {
      * @param obj the ImageCoordSystem object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       ImageCoordSystem coords = (ImageCoordSystem) obj;
       coords.setLocked(false);
       // load fixed origin, angle and scale
@@ -1215,7 +1218,8 @@ public class ImageCoordSystem {
    * A class to save and load a FrameData.
    */
   private static class FrameDataLoader implements XML.ObjectLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       FrameData data = (FrameData) obj;
       control.setValue("xorigin", data.xo); //$NON-NLS-1$
       control.setValue("yorigin", data.yo); //$NON-NLS-1$
@@ -1224,11 +1228,13 @@ public class ImageCoordSystem {
       control.setValue("yscale", data.ys);  //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new FrameData();
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       FrameData data = (FrameData) obj;
       data.xo = control.getDouble("xorigin");           //$NON-NLS-1$
       data.yo = control.getDouble("yorigin");           //$NON-NLS-1$

@@ -85,7 +85,8 @@ class Object3D {
    * A comparator class to be used by DrawingPanel3D to sort Object3D s
    */
   static class Comparator3D implements java.util.Comparator<Object3D> {
-    public int compare(Object3D o1, Object3D o2) {
+    @Override
+	public int compare(Object3D o1, Object3D o2) {
       // try {
       if(o1.distance>o2.distance) {
         return -1;

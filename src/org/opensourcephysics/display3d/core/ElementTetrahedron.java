@@ -62,7 +62,8 @@ public interface ElementTetrahedron extends Element {
   // XML loader
   // ----------------------------------------------------
   static abstract class Loader extends Element.Loader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       super.saveObject(control, obj);
       ElementTetrahedron element = (ElementTetrahedron) obj;
       if(Double.isNaN(element.getTruncationHeight())) {
@@ -74,7 +75,8 @@ public interface ElementTetrahedron extends Element {
       control.setValue("closed bottom", element.isClosedBottom()); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       ElementTetrahedron element = (ElementTetrahedron) obj;
       element.setTruncationHeight(control.getDouble("truncation height")); //$NON-NLS-1$

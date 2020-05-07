@@ -65,6 +65,7 @@ public class MovieFactory {
 
 	private static PropertyChangeListener[] errorListener = new PropertyChangeListener[] {
 		new PropertyChangeListener() {
+			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				if (e.getPropertyName().equals("xuggle_error")) { //$NON-NLS-1$
 					hadXuggleError = true;

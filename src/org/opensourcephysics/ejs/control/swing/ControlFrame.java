@@ -32,7 +32,8 @@ public class ControlFrame extends ControlWindow {
     super(_visual);
   }
 
-  protected java.awt.Component createVisual(Object _visual) {
+  @Override
+protected java.awt.Component createVisual(Object _visual) {
     startingup = true;
     if(_visual instanceof JFrame) {
       frame = (JFrame) _visual;
@@ -44,7 +45,8 @@ public class ControlFrame extends ControlWindow {
     internalValue = new BooleanValue(true);
     // setProperty ("visible","true");
     frame.addWindowListener(new java.awt.event.WindowAdapter() {
-      public void windowClosing(java.awt.event.WindowEvent evt) {
+      @Override
+	public void windowClosing(java.awt.event.WindowEvent evt) {
         internalValue.setValue(false);
         variableChanged(ControlWindow.VISIBLE+4, internalValue);
         if(frame.getDefaultCloseOperation()==JFrame.EXIT_ON_CLOSE) {
@@ -57,11 +59,13 @@ public class ControlFrame extends ControlWindow {
     return frame.getContentPane();
   }
 
-  public java.awt.Component getComponent() {
+  @Override
+public java.awt.Component getComponent() {
     return frame;
   }
 
-  public java.awt.Container getContainer() {
+  @Override
+public java.awt.Container getContainer() {
     return frame.getContentPane();
   }
 
@@ -70,7 +74,8 @@ public class ControlFrame extends ControlWindow {
   // ------------------------------------------------
   static private java.util.ArrayList<String> infoList = null;
 
-  public java.util.ArrayList<String> getPropertyList() {
+  @Override
+public java.util.ArrayList<String> getPropertyList() {
     if(infoList==null) {
       infoList = new java.util.ArrayList<String>();
       infoList.add("title");     //$NON-NLS-1$
@@ -82,7 +87,8 @@ public class ControlFrame extends ControlWindow {
     return infoList;
   }
 
-  public String getPropertyInfo(String _property) {
+  @Override
+public String getPropertyInfo(String _property) {
     if(_property.equals("title")) { //$NON-NLS-1$
       return "String TRANSLATABLE"; //$NON-NLS-1$
     }
@@ -101,7 +107,8 @@ public class ControlFrame extends ControlWindow {
   // ------------------------------------------------
   // Set and Get the values of the properties
   // ------------------------------------------------
-  public void setValue(int _index, Value _value) {
+  @Override
+public void setValue(int _index, Value _value) {
     switch(_index) {
        case 0 :                                                      // title
          String ejsWindow = getProperty("_ejs_window_");             //$NON-NLS-1$
@@ -144,7 +151,8 @@ public class ControlFrame extends ControlWindow {
     }
   }
 
-  public void setDefaultValue(int _index) {
+  @Override
+public void setDefaultValue(int _index) {
     switch(_index) {
        case 0 :                                                      // title
          String ejsWindow = getProperty("_ejs_window_");             //$NON-NLS-1$
@@ -176,7 +184,8 @@ public class ControlFrame extends ControlWindow {
     }
   }
 
-  public Value getValue(int _index) {
+  @Override
+public Value getValue(int _index) {
     switch(_index) {
        case 0 :
        case 1 :

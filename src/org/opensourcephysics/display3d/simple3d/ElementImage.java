@@ -37,7 +37,8 @@ public class ElementImage extends Element implements org.opensourcephysics.displ
   // -------------------------------------
   // New configuration methods
   // -------------------------------------
-  public void setImageFile(String file) {
+  @Override
+public void setImageFile(String file) {
     this.imageFile = file;
     if(file!=null) {
       resource = ResourceLoader.getResource(file);
@@ -47,27 +48,32 @@ public class ElementImage extends Element implements org.opensourcephysics.displ
     }
   }
 
-  public String getImageFile() {
+  @Override
+public String getImageFile() {
     return this.imageFile;
   }
 
-  public void setImage(java.awt.Image image) {
+  @Override
+public void setImage(java.awt.Image image) {
     this.imageFile = null;
     this.image = image;
   }
 
-  public void setRotationAngle(double angle) {
+  @Override
+public void setRotationAngle(double angle) {
     this.angle = angle;
   }
 
-  public double getRotationAngle() {
+  @Override
+public double getRotationAngle() {
     return this.angle;
   }
 
   // -------------------------------------
   // Abstract part of Element or Parent methods overwritten
   // -------------------------------------
-  Object3D[] getObjects3D() {
+  @Override
+Object3D[] getObjects3D() {
     if(!isReallyVisible()) {
       return null;
     }
@@ -77,11 +83,13 @@ public class ElementImage extends Element implements org.opensourcephysics.displ
     return objects;
   }
 
-  void draw(Graphics2D _g2, int _index) {
+  @Override
+void draw(Graphics2D _g2, int _index) {
     drawIt(_g2);
   }
 
-  void drawQuickly(Graphics2D _g2) {
+  @Override
+void drawQuickly(Graphics2D _g2) {
     if(!isReallyVisible()) {
       return;
     }
@@ -94,7 +102,8 @@ public class ElementImage extends Element implements org.opensourcephysics.displ
   // -------------------------------------
   // Interaction
   // -------------------------------------
-  protected InteractionTarget getTargetHit(int x, int y) {
+  @Override
+protected InteractionTarget getTargetHit(int x, int y) {
     if(!isReallyVisible()) {
       return null;
     }
@@ -152,7 +161,8 @@ public class ElementImage extends Element implements org.opensourcephysics.displ
   }
 
   static private class Loader extends org.opensourcephysics.display3d.core.ElementImage.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ElementImage();
     }
 

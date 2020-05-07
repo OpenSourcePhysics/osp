@@ -41,7 +41,8 @@ public class Demo3D_5App extends AbstractSimulation {
     frame.addElement(trail);
   }
 
-  public void initialize() {
+  @Override
+public void initialize() {
     x = (max-min)*(Math.random()-0.5);
     y = (max-min)*(Math.random()-0.5);
     z = (max-min)*(Math.random()-0.5);
@@ -55,7 +56,8 @@ public class Demo3D_5App extends AbstractSimulation {
   /**
    * Does an animation step.
    */
-  protected void doStep() {
+  @Override
+protected void doStep() {
     x += vx*dt;
     y += vy*dt;
     z += vz*dt;

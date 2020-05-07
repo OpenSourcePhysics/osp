@@ -252,9 +252,10 @@ public abstract class ClipControl implements PropertyChangeListener {
    *
    * @param e the property change event
    */
-  public void propertyChange(PropertyChangeEvent e) {
+  @Override
+public void propertyChange(PropertyChangeEvent e) {
     switch (e.getPropertyName()) {
-    case Video.PROPERTY_VIDEO_STARTFRAME: //$NON-NLS-1$
+    case Video.PROPERTY_VIDEO_STARTFRAME: 
     	// from video clip
     	int n = getFrameNumber();
 	    stepNumber = clip.frameToStep(n);
@@ -361,7 +362,8 @@ public abstract class ClipControl implements PropertyChangeListener {
      * @param control the control to save to
      * @param obj the object to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       ClipControl clipControl = (ClipControl) obj;
       control.setValue("rate", clipControl.getRate());                 //$NON-NLS-1$
       control.setValue("delta_t", clipControl.getTimeSource()!=null?   //$NON-NLS-1$
@@ -378,7 +380,8 @@ public abstract class ClipControl implements PropertyChangeListener {
      * @param control the XMLControl with the object data
      * @return the newly created object
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return null;
     }
 
@@ -389,7 +392,8 @@ public abstract class ClipControl implements PropertyChangeListener {
      * @param obj the object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       ClipControl clipControl = (ClipControl) obj;
       // set rate
       double rate = control.getDouble("rate"); //$NON-NLS-1$

@@ -48,7 +48,8 @@ public class RemoteTool extends UnicastRemoteObject implements Tool {
    * @param replyTo the tool interested in the job (may be null)
    * @throws RemoteException
    */
-  public void send(Job job, Tool replyTo) throws RemoteException {
+  @Override
+public void send(Job job, Tool replyTo) throws RemoteException {
     save(job, replyTo);
     job = convert(job);
     if(child.equals(replyTo)) { // job comes from child, so send replies

@@ -31,7 +31,8 @@ public class ElementPlane extends AbstractTile implements org.opensourcephysics.
   // -------------------------------------
   // Configuration
   // -------------------------------------
-  public void setFirstDirection(double[] vector) {
+  @Override
+public void setFirstDirection(double[] vector) {
     vectorU[0] = vector[0];
     vectorU[1] = vector[1];
     vectorU[2] = vector[2];
@@ -39,11 +40,13 @@ public class ElementPlane extends AbstractTile implements org.opensourcephysics.
     setElementChanged(true);
   }
 
-  public double[] getFirstDirection() {
+  @Override
+public double[] getFirstDirection() {
     return new double[] {vectorU[0], vectorU[1], vectorU[2]};
   }
 
-  public void setSecondDirection(double[] vector) {
+  @Override
+public void setSecondDirection(double[] vector) {
     vectorV[0] = vector[0];
     vectorV[1] = vector[1];
     vectorV[2] = vector[2];
@@ -51,14 +54,16 @@ public class ElementPlane extends AbstractTile implements org.opensourcephysics.
     setElementChanged(true);
   }
 
-  public double[] getSecondDirection() {
+  @Override
+public double[] getSecondDirection() {
     return new double[] {vectorV[0], vectorV[1], vectorV[2]};
   }
 
   // -------------------------------------
   // Private or protected methods
   // -------------------------------------
-  protected synchronized void computeCorners() {
+  @Override
+protected synchronized void computeCorners() {
     int theNu = 1, theNv = 1;
     org.opensourcephysics.display3d.core.Resolution res = getRealStyle().getResolution();
     if(res!=null) {
@@ -120,7 +125,8 @@ public class ElementPlane extends AbstractTile implements org.opensourcephysics.
   }
 
   static private class Loader extends org.opensourcephysics.display3d.core.ElementPlane.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ElementPlane();
     }
 

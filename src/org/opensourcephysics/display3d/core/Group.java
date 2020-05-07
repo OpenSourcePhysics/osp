@@ -54,13 +54,15 @@ public interface Group extends Element, Data {
   // XML loader
   // ----------------------------------------------------
   static abstract class Loader extends Element.Loader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       super.saveObject(control, obj);
       Group group = (Group) obj;
       control.setValue("elements", group.getElements()); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       Group group = (Group) obj;
       java.util.Collection<?> elements = (java.util.Collection<?>) control.getObject("elements"); //$NON-NLS-1$

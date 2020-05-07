@@ -228,7 +228,8 @@ public class Test_Dialog extends JFrame implements PropertyChangeListener {
 			public void actionPerformed(ActionEvent e) {
 
 				JDialog d = new ImportExportJDialog(null, "Export Dialog") {
-				    public void setFocusableWindowState(boolean focusableWindowState) {
+				    @Override
+					public void setFocusableWindowState(boolean focusableWindowState) {
 				    	super.setFocusableWindowState(focusableWindowState);
 				    }
 

@@ -18,7 +18,6 @@ import java.beans.PropertyChangeListener;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.*;
-import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import javax.swing.table.*;
 
 import org.opensourcephysics.display.*;
@@ -411,7 +410,8 @@ public class DatasetCurveFitter extends JPanel {
     return null;
   }
 
-  public Dimension getMinimumSize() {
+  @Override
+public Dimension getMinimumSize() {
   	Dimension dim = fitBar.getPreferredSize();
   	dim.height += eqnBar.getPreferredSize().height;
   	dim.height += rmsBar.getPreferredSize().height+1;
@@ -432,7 +432,8 @@ public class DatasetCurveFitter extends JPanel {
     autofitCheckBox = new JCheckBox("", true); //$NON-NLS-1$
     autofitCheckBox.setOpaque(false);
     autofitCheckBox.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         spinCellEditor.stopCellEditing();
         paramTable.clearSelection();
         fit(fit);
@@ -451,14 +452,16 @@ public class DatasetCurveFitter extends JPanel {
     fitDropDown = new JComboBox() {
     	
     	// override getPreferredSize method so has same height as buttons
-      public Dimension getPreferredSize() {
+      @Override
+	public Dimension getPreferredSize() {
         Dimension dim = super.getPreferredSize();
         dim.height = DataTool.buttonHeight-2;
         return dim;
       }
       
     	// override addItem method so items are in alphabetical order
-      public void addItem(Object obj) {
+      @Override
+	public void addItem(Object obj) {
       	if (obj==null) return;
       	String name = FitBuilder.localize((String)obj);
       	int count = getItemCount();
@@ -492,7 +495,8 @@ public class DatasetCurveFitter extends JPanel {
     fitDropDown.setSelectedItem(getLineFitName());
     
     fitDropDown.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	if (refreshing || fitBuilder.getSelectedCurveFitter()!=DatasetCurveFitter.this) return;
       	String selection = (String)fitDropDown.getSelectedItem();
         if(selection!=null && fit!=null && !selection.equals(fit.getName())) {
@@ -515,6 +519,7 @@ public class DatasetCurveFitter extends JPanel {
 			setBorder(new EmptyBorder(1, 1, 1, 1));
 		}
 
+		@Override
 		public Dimension getPreferredSize() {
 			Dimension size;
 
@@ -529,7 +534,8 @@ public class DatasetCurveFitter extends JPanel {
 			return size;
 		}
 			
-      public Component getListCellRendererComponent(JList list, Object value,
+      @Override
+	public Component getListCellRendererComponent(JList list, Object value,
           int index, boolean isSelected, boolean cellHasFocus) {
         if (isSelected) {
           setBackground(list.getSelectionBackground());
@@ -554,7 +560,8 @@ public class DatasetCurveFitter extends JPanel {
 
     // create equation field
     eqnField = new JTextField() {
-      public Dimension getPreferredSize() {
+      @Override
+	public Dimension getPreferredSize() {
         Dimension dim = super.getPreferredSize();
         dim.height = DataTool.buttonHeight-2;
         return dim;
@@ -565,7 +572,8 @@ public class DatasetCurveFitter extends JPanel {
     eqnField.setEnabled(true);
     eqnField.setBackground(Color.white);
     eqnField.addMouseListener(new MouseAdapter() {
-      public void mouseClicked(MouseEvent e) {
+      @Override
+	public void mouseClicked(MouseEvent e) {
         // create clone or open user function if double-clicked
         if(e.getClickCount() == 2) {
           String name = fitDropDown.getSelectedItem().toString();
@@ -588,7 +596,8 @@ public class DatasetCurveFitter extends JPanel {
     colorButton = DataTool.createButton(""); //$NON-NLS-1$
     colorButton.setToolTipText(ToolsRes.getString("DatasetCurveFitter.Button.Color.Tooltip")); //$NON-NLS-1$
     colorButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         JDialog dialog = getColorDialog();
         closeButton.setText(ToolsRes.getString("Button.OK"));                                  //$NON-NLS-1$
         dialog.setTitle(ToolsRes.getString("DatasetCurveFitter.Dialog.Color.Title"));          //$NON-NLS-1$
@@ -598,7 +607,8 @@ public class DatasetCurveFitter extends JPanel {
     });
     // create rms field
     rmsField = new NumberField(6) {
-      public Dimension getPreferredSize() {
+      @Override
+	public Dimension getPreferredSize() {
         Dimension dim = super.getPreferredSize();
         dim.height = DataTool.buttonHeight-2;
         return dim;
@@ -614,7 +624,8 @@ public class DatasetCurveFitter extends JPanel {
     paramModel = new ParamTableModel();
     paramTable = new ParamTable(paramModel);
     paramTable.addMouseListener(new MouseAdapter() {
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
         // clear selection if pressed on the name column
         if(paramTable.getSelectedColumn()==0) {
           paramTable.clearSelection();
@@ -623,7 +634,8 @@ public class DatasetCurveFitter extends JPanel {
 
     });
     JScrollPane scroller = new JScrollPane(paramTable) {
-    	public Dimension getMinimumSize() {
+    	@Override
+		public Dimension getMinimumSize() {
     		Dimension dim = spinCellEditor.spinner.getPreferredSize();
     		dim.width += cellRenderer.fieldFont.getSize()*7;
     		return dim;
@@ -634,7 +646,8 @@ public class DatasetCurveFitter extends JPanel {
     // create fit builder button
     fitBuilderButton = DataTool.createButton(ToolsRes.getString("DatasetCurveFitter.Button.Define.Text")); //$NON-NLS-1$
     fitBuilderButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         autofitCheckBox.setSelected(false);
         String fitName = fit.getName();
         if (fitName!=null && fitBuilder.getPanelNames().contains(fitName)) {
@@ -650,7 +663,8 @@ public class DatasetCurveFitter extends JPanel {
     });
     // create fit listener
     fitListener = new PropertyChangeListener() {
-      public void propertyChange(PropertyChangeEvent e) {
+      @Override
+	public void propertyChange(PropertyChangeEvent e) {
         if(refreshing) return;
 
         String prop = e.getPropertyName();
@@ -796,7 +810,8 @@ public class DatasetCurveFitter extends JPanel {
    */
   protected void refreshFitDropDown() {
     Runnable runner = new Runnable() {
-      public synchronized void run() {
+      @Override
+	public synchronized void run() {
 
         refreshFitMap();
       	fitBuilder.defaultFitName = getLineFitName();
@@ -1086,7 +1101,8 @@ public class DatasetCurveFitter extends JPanel {
       final Frame frame = JOptionPane.getFrameForComponent(this);
       final JColorChooser cc = new JColorChooser();
       cc.getSelectionModel().addChangeListener(new ChangeListener() {
-        public void stateChanged(ChangeEvent e) {
+        @Override
+		public void stateChanged(ChangeEvent e) {
           color = cc.getColor();
           setColor(color);
           frame.repaint();
@@ -1096,7 +1112,8 @@ public class DatasetCurveFitter extends JPanel {
       colorDialog = new JDialog(frame, false);
       closeButton = new JButton();
       closeButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           colorDialog.setVisible(false);
         }
 
@@ -1136,16 +1153,19 @@ public class DatasetCurveFitter extends JPanel {
       header.setForeground(Color.blue);
     }
 
-    public TableCellRenderer getCellRenderer(int row, int column) {
+    @Override
+	public TableCellRenderer getCellRenderer(int row, int column) {
       return cellRenderer;
     }
 
-    public TableCellEditor getCellEditor(int row, int column) {
+    @Override
+	public TableCellEditor getCellEditor(int row, int column) {
       spinCellEditor.rowNumber = row;
       return spinCellEditor;
     }
 
-    public void setFont(Font font) {
+    @Override
+	public void setFont(Font font) {
       super.setFont(font);
       if(cellRenderer!=null) {
         Font aFont = cellRenderer.labelFont;
@@ -1172,31 +1192,37 @@ public class DatasetCurveFitter extends JPanel {
    * A class to provide model data for the parameters table.
    */
   class ParamTableModel extends AbstractTableModel {
-    public String getColumnName(int col) {
+    @Override
+	public String getColumnName(int col) {
       return (col==0)? ToolsRes.getString("Table.Heading.Parameter"): //$NON-NLS-1$
       	ToolsRes.getString("Table.Heading.Value"); //$NON-NLS-1$
     }
 
-    public int getRowCount() {
+    @Override
+	public int getRowCount() {
       return (fit==null)? 0: fit.getParameterCount();
     }
 
-    public int getColumnCount() {
+    @Override
+	public int getColumnCount() {
       return 2;
     }
 
-    public Object getValueAt(int row, int col) {
+    @Override
+	public Object getValueAt(int row, int col) {
       if(col==0) {
         return fit.getParameterName(row);
       }
       return new Double(fit.getParameterValue(row));	
     }
 
-    public boolean isCellEditable(int row, int col) {
+    @Override
+	public boolean isCellEditable(int row, int col) {
       return col==1;
     }
 
-    public Class<?> getColumnClass(int c) {
+    @Override
+	public Class<?> getColumnClass(int c) {
       return getValueAt(0, c).getClass();
     }
 
@@ -1223,7 +1249,8 @@ public class DatasetCurveFitter extends JPanel {
     }
 
     // Returns a label for the specified cell.
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+    @Override
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
       int row, int col) {
       setHorizontalAlignment(SwingConstants.LEFT);
       setBorder(new CellBorder(new Color(240, 240, 240)));
@@ -1247,7 +1274,7 @@ public class DatasetCurveFitter extends JPanel {
                       ? Color.red
                       : table.isEnabled()? Color.black
                       : Color.gray);
-        DecimalFormat format = (DecimalFormat)spinCellEditor.field.format;
+        DecimalFormat format = spinCellEditor.field.format;
         format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
         setText(format.format(value));
         if (!autofitCheckBox.isSelected()) {
@@ -1289,7 +1316,8 @@ public class DatasetCurveFitter extends JPanel {
       spinner = new JSpinner(crawlerModel);
       spinner.setToolTipText(ToolsRes.getString("Table.Spinner.ToolTip")); //$NON-NLS-1$
       spinner.addChangeListener(new ChangeListener() {
-        public void stateChanged(ChangeEvent e) {
+        @Override
+		public void stateChanged(ChangeEvent e) {
           autofitCheckBox.setSelected(false);
           double val = ((Double) spinner.getValue()).doubleValue();
           field.setValue(val);
@@ -1330,10 +1358,12 @@ public class DatasetCurveFitter extends JPanel {
       spinner.setBorder(BorderFactory.createEmptyBorder(0, 1, 1, 0));
       spinner.setEditor(field);
       stepSizeLabel.addMouseListener(new MouseInputAdapter() {
-        public void mousePressed(MouseEvent e) {
+        @Override
+		public void mousePressed(MouseEvent e) {
           JPopupMenu popup = new JPopupMenu();
           ActionListener listener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            @Override
+			public void actionPerformed(ActionEvent e) {
               // set the percent delta
               double percent = Double.parseDouble(e.getActionCommand());
               crawlerModel.setPercentDelta(percent);
@@ -1355,7 +1385,8 @@ public class DatasetCurveFitter extends JPanel {
 
       });
       field.addKeyListener(new KeyAdapter() {
-        public void keyPressed(KeyEvent e) {
+        @Override
+		public void keyPressed(KeyEvent e) {
           JComponent comp = (JComponent) e.getSource();
           if(e.getKeyCode()==KeyEvent.VK_ENTER) {
             spinner.setValue(new Double(field.getValue()));
@@ -1372,14 +1403,16 @@ public class DatasetCurveFitter extends JPanel {
     }
 
     // Gets the component to be displayed while editing.
-    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+    @Override
+	public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
       spinner.setValue(value);
       crawlerModel.refreshDelta();
       return panel;
     }
 
     // Determines when editing starts.
-    public boolean isCellEditable(EventObject e) {
+    @Override
+	public boolean isCellEditable(EventObject e) {
       if(e instanceof MouseEvent) {
         return true;
       } else if(e instanceof ActionEvent) {
@@ -1389,7 +1422,8 @@ public class DatasetCurveFitter extends JPanel {
     }
 
     // Called when editing is completed.
-    public Object getCellEditorValue() {
+    @Override
+	public Object getCellEditorValue() {
       if(field.getBackground()==Color.yellow) {
         fit.setParameterValue(rowNumber, field.getValue());
         drawer.functionChanged = true;
@@ -1418,19 +1452,23 @@ public class DatasetCurveFitter extends JPanel {
       delta = initialDelta;
     }
 
-    public Object getValue() {
+    @Override
+	public Object getValue() {
       return new Double(val);
     }
 
-    public Object getNextValue() {
+    @Override
+	public Object getNextValue() {
       return new Double(val+delta);
     }
 
-    public Object getPreviousValue() {
+    @Override
+	public Object getPreviousValue() {
       return new Double(val-delta);
     }
 
-    public void setValue(Object value) {
+    @Override
+	public void setValue(Object value) {
       if(value!=null) {
         val = ((Double) value).doubleValue();
         fireStateChanged();
@@ -1472,7 +1510,8 @@ public class DatasetCurveFitter extends JPanel {
     }
 
     // Evaluates the function
-    public double evaluate(double[] params) {
+    @Override
+	public double evaluate(double[] params) {
       System.arraycopy(params, 0, vars, 1, 4);
       double sum = 0.0;
       for(int i = 0, n = x.length; i<n; i++) {
@@ -1504,7 +1543,8 @@ public class DatasetCurveFitter extends JPanel {
     }
 
     // Evaluates this function
-    public double evaluate(double[] params) {
+    @Override
+	public double evaluate(double[] params) {
       // set the parameter values of the user function
       for(int i = 0; i<params.length; i++) {
         f.setParameterValue(i, params[i]);
@@ -1568,7 +1608,7 @@ public class DatasetCurveFitter extends JPanel {
       if (format instanceof DecimalFormat) {
         try {
         	// catch occasional exceptions thrown when opening a trk file...
-					((DecimalFormat) format).applyPattern(pattern);
+					format.applyPattern(pattern);
 					this.pattern = pattern;
 				} catch (Exception e) {
 				}

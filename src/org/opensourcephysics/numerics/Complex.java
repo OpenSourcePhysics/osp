@@ -166,7 +166,8 @@ public class Complex {
    * Returns the value of this complex number as a string in the format:
    * <pre>(real, imaginary)</pre>.
    */
-  public String toString() {
+  @Override
+public String toString() {
     return "("+re+", "+im+")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
   }
 

@@ -54,7 +54,8 @@ public class ShellParticle extends AbstractTrajectory {
    /**
     * Resets the trajectory to its initial state.
     */
-   public void resetInitial() {
+   @Override
+public void resetInitial() {
      super.resetInitial();
      x=x0;
      y=y0;
@@ -69,7 +70,8 @@ public class ShellParticle extends AbstractTrajectory {
     * @param newState state array
     *
     */
-   public void initialize(double[] newState) {
+   @Override
+public void initialize(double[] newState) {
       super.initialize(newState);
       if((datasets!=null)||(dataTable!=null)) {
          datasets.clear();
@@ -79,7 +81,8 @@ public class ShellParticle extends AbstractTrajectory {
       tau=state[1];
    }
 
-   public void setXY(double x, double y){
+   @Override
+public void setXY(double x, double y){
      double x0=this.x, y0=this.y; // save current value
      super.setXY(x,y); // set value
      double dx=this.x-x0, dy=this.y-y0;
@@ -97,7 +100,8 @@ public class ShellParticle extends AbstractTrajectory {
     * Displays the shell particle's initial conditions in an editor.
     * @return OSPControl
     */
-   public OSPTableInspector edit() {
+   @Override
+public OSPTableInspector edit() {
       OSPTableInspector inspector = new OSPTableInspector(true, true);
       Control control=inspector.getControl();
       inspector.setTitle("Shell Particle");
@@ -119,7 +123,8 @@ public class ShellParticle extends AbstractTrajectory {
     * @param state  the state
     * @param rate   the rate
     */
-   public void getRate(double[] state, double[] rate) {
+   @Override
+public void getRate(double[] state, double[] rate) {
      double r=Math.sqrt(x*x+y*y);
       if(r<=2*M) { // too close to horizon to compute
          return;
@@ -149,7 +154,8 @@ public class ShellParticle extends AbstractTrajectory {
    /**
     * Steps the time using an ode solver.
     */
-   public void stepTime() {
+   @Override
+public void stepTime() {
       ode_solver.step();
       tau=state[1];
    }
@@ -199,7 +205,8 @@ public class ShellParticle extends AbstractTrajectory {
        * @param control XMLControl
        * @param obj Object
        */
-      public void saveObject(XMLControl control, Object obj) {
+      @Override
+	public void saveObject(XMLControl control, Object obj) {
          super.saveObject(control, obj);
          //ShellParticle trajectory = (ShellParticle) obj;
       }
@@ -209,7 +216,8 @@ public class ShellParticle extends AbstractTrajectory {
        * @param control XMLControl
        * @return Object
        */
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
          return new ShellParticle();
       }
 
@@ -219,7 +227,8 @@ public class ShellParticle extends AbstractTrajectory {
        * @param obj Object
        * @return Object
        */
-      public Object loadObject(XMLControl control, Object obj) {
+      @Override
+	public Object loadObject(XMLControl control, Object obj) {
          super.loadObject(control, obj);
          //ShellParticle trajectory = (ShellParticle) obj;
          return obj;

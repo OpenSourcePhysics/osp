@@ -56,7 +56,8 @@ public class LagrangeInterpolator implements Function {
    * @param  x value
    * @return interpolated y value
    */
-  public double evaluate(double x) {
+  @Override
+public double evaluate(double x) {
     int n = hornerCoef.length;
     double answer = hornerCoef[--n];
     while(--n>=0) {

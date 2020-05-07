@@ -37,7 +37,8 @@ public class ParsedEjsControl extends EjsControl implements SimControl {
    * @param var String
    * @return double
    */
-  public double getDouble(String var) {
+  @Override
+public double getDouble(String var) {
     Value value = getValue(var);
     if(value instanceof DoubleValue) {
       return super.getDouble(var);
@@ -58,7 +59,8 @@ public class ParsedEjsControl extends EjsControl implements SimControl {
    * @param var String
    * @return Object
    */
-  public Object getObject(String var) {
+  @Override
+public Object getObject(String var) {
     Value value = getValue(var);
     if(value==null) {
       return null;
@@ -82,7 +84,8 @@ public class ParsedEjsControl extends EjsControl implements SimControl {
    * @param var String
    * @return double
    */
-  public int getInt(String var) {
+  @Override
+public int getInt(String var) {
     Value value = getValue(var);
     if(value instanceof IntegerValue) {
       return super.getInt(var);
@@ -99,28 +102,34 @@ public class ParsedEjsControl extends EjsControl implements SimControl {
   }
 
   // Ejs Control properties are set within the model.  Variables can be changed at any time.
-  public void removeParameter(String name) {
+  @Override
+public void removeParameter(String name) {
     setValue(name, (Object) null);
     variableTable.remove(name);
   }
 
-  public void setAdjustableValue(String name, boolean val) {
+  @Override
+public void setAdjustableValue(String name, boolean val) {
     setValue(name, val);
   }
 
-  public void setAdjustableValue(String name, double val) {
+  @Override
+public void setAdjustableValue(String name, double val) {
     setValue(name, val);
   }
 
-  public void setAdjustableValue(String name, int val) {
+  @Override
+public void setAdjustableValue(String name, int val) {
     setValue(name, val);
   }
 
-  public void setAdjustableValue(String name, Object val) {
+  @Override
+public void setAdjustableValue(String name, Object val) {
     setValue(name, val);
   }
 
-  public void setParameterToFixed(String name, boolean fixed) {
+  @Override
+public void setParameterToFixed(String name, boolean fixed) {
     //  Do nothing here.  Model should set visual element's enabled and editable property.
   }
 

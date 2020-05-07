@@ -30,7 +30,8 @@ public class Ralston2 extends AbstractODESolver {
    *
    * @param stepSize
    */
-  public void initialize(double stepSize) {
+  @Override
+public void initialize(double stepSize) {
     super.initialize(stepSize);
     rate1 = new double[numEqn];
     rate2 = new double[numEqn];
@@ -47,7 +48,8 @@ public class Ralston2 extends AbstractODESolver {
    *
    * @return the step size
    */
-  public double step() {
+  @Override
+public double step() {
     double state[] = ode.getState();
     if(state.length!=numEqn) {
       initialize(stepSize);

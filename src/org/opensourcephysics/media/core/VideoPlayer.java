@@ -191,7 +191,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
   public VideoPlayer(VideoPanel panel) {
     vidPanel = panel;
     vidPanel.addComponentListener(new ComponentAdapter() {
-      public void componentResized(ComponentEvent e) {
+      @Override
+	public void componentResized(ComponentEvent e) {
         if(vidPanel.isPlayerVisible()) {
           setBounds();
           vidPanel.repaint();
@@ -269,7 +270,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
       updateLoopButton(clipControl.isLooping());
       updateReadout();
       updateSlider();
-      firePropertyChange(PROPERTY_VIDEOPLAYER_VIDEOCLIP, oldClip, clip); //$NON-NLS-1$
+      firePropertyChange(PROPERTY_VIDEOPLAYER_VIDEOCLIP, oldClip, clip); 
       System.gc();
     }
   }
@@ -509,7 +510,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     }
     inspectorButtonVisible = visible;
     Runnable runner = new Runnable() {
-      public void run() {
+      @Override
+	public void run() {
         if(visible) {
           toolbar.add(inspectorButton);
         } else {
@@ -535,7 +537,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
    */
   public void setLoopingButtonVisible(final boolean visible) {
     Runnable runner = new Runnable() {
-      public void run() {
+      @Override
+	public void run() {
         if(visible) {
           toolbar.add(loopButton);
         } else {
@@ -559,6 +562,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	 *
 	 * @param e the property change event
 	 */
+	@Override
 	public void propertyChange(PropertyChangeEvent e) {
 		switch (e.getPropertyName()) {
 		case ClipControl.PROPERTY_VIDEO_STEPNUMBER:
@@ -621,7 +625,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     }
   }
   
-  public void setLocale(Locale locale) {
+  @Override
+public void setLocale(Locale locale) {
   	timeFormat = NumberFormat.getNumberInstance(locale);
   }
   
@@ -663,7 +668,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     playButton = new PlayerButton(playIcon, pauseIcon);
     playButton.setDisabledIcon(grayPlayIcon);
     playButton.addMouseListener(new MouseAdapter() {
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
       	if (disabled || !playButton.isEnabled()) return;
         if(playButton.isSelected()) {
           stop();
@@ -675,7 +681,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 
     });
     playButton.addKeyListener(new KeyAdapter() {
-      public void keyPressed(KeyEvent e) {
+      @Override
+	public void keyPressed(KeyEvent e) {
       	if (disabled || !playButton.isEnabled()) return;
         if(e.getKeyCode()==KeyEvent.VK_SPACE) {
           if(playButton.isSelected()) {
@@ -692,7 +699,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     resetButton = new PlayerButton(resetIcon);
     resetButton.setPressedIcon(resetIcon);
     resetButton.addMouseListener(new MouseAdapter() {
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
       	if (disabled) return;
       	stop();
         clipControl.setStepNumber(0);
@@ -705,16 +713,19 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     final SpinnerNumberModel model = new SpinnerNumberModel(1, minRate, maxRate, 0.1);
     rateSpinner = new JSpinner(model) {
       // override size methods so has same height as buttons
-      public Dimension getPreferredSize() {
+      @Override
+	public Dimension getPreferredSize() {
         return getMinimumSize();
       }
-      public Dimension getMinimumSize() {
+      @Override
+	public Dimension getMinimumSize() {
         Dimension dim = super.getMinimumSize();
         dim.height = Math.max(playButton.getPreferredSize().height, dim.height);
         dim.width = 5*getFont().getSize()-10*FontSizer.getLevel();
         return dim;
       }
-      public Dimension getMaximumSize() {
+      @Override
+	public Dimension getMaximumSize() {
         return getMinimumSize();
       }
     };
@@ -723,14 +734,16 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     editor.getTextField().setFont(new Font("Dialog", Font.PLAIN, 12)); //$NON-NLS-1$
     rateSpinner.setEditor(editor);
     rateSpinner.addChangeListener(new ChangeListener() {
-      public void stateChanged(ChangeEvent e) {
+      @Override
+	public void stateChanged(ChangeEvent e) {
       	Double rate = (Double)rateSpinner.getValue();
       	setRate(rate);
       	model.setStepSize(rate>=2? 0.5: rate>=0.2? 0.1: 0.01);
       }
     });
     editor.getTextField().addKeyListener(new java.awt.event.KeyAdapter() {
-      public void keyPressed(KeyEvent e) {
+      @Override
+	public void keyPressed(KeyEvent e) {
       	if (e.getKeyCode()==KeyEvent.VK_ENTER) {
       		double prev = ((Double)rateSpinner.getValue()).doubleValue();
       		try {
@@ -760,7 +773,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     stepButton = new PlayerButton(stepIcon);
     stepButton.setDisabledIcon(grayStepIcon);
     stepButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	if (disabled) return;
       	if ((e.getModifiers() & ActionEvent.SHIFT_MASK)==1) {
         	stop();
@@ -774,7 +788,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     backButton = new PlayerButton(backIcon);
     backButton.setDisabledIcon(grayBackIcon);
     backButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	if (disabled) return;
       	if ((e.getModifiers() & ActionEvent.SHIFT_MASK)==1) {
         	stop();
@@ -786,7 +801,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     });
     // create mouse listener and add to step and back buttons
     MouseListener stepListener = new MouseAdapter() {
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
       	if (disabled) return;
         if(e.getSource()==stepButton) {
           firePropertyChange("stepbutton", null, Boolean.TRUE); //$NON-NLS-1$
@@ -794,7 +810,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
           firePropertyChange("backbutton", null, Boolean.TRUE); //$NON-NLS-1$
         }
       }
-      public void mouseExited(MouseEvent e) {
+      @Override
+	public void mouseExited(MouseEvent e) {
       	if (disabled) return;
         if(e.getSource()==stepButton) {
           firePropertyChange("stepbutton", null, Boolean.FALSE); //$NON-NLS-1$
@@ -809,17 +826,20 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     // create listeners
     // inner popup menu listener classes
     readoutListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         setReadoutType(e.getActionCommand());
       }
     };
     goToListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	showGoToDialog();
       }
     };
     timeSetListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
     		VideoClip clip = getVideoClip();
       	Object response = JOptionPane.showInputDialog(vidPanel, 
       			MediaRes.getString("VideoPlayer.Dialog.SetTime.Message"), //$NON-NLS-1$
@@ -851,7 +871,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     slider.setSnapToTicks(true);
     slider.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
     slider.addChangeListener(new ChangeListener() {
-      public void stateChanged(ChangeEvent e) {
+      @Override
+	public void stateChanged(ChangeEvent e) {
         VideoClip clip = getVideoClip();
         int i = slider.getValue(); // frame number
         if (i<clip.getStartFrameNumber()) {
@@ -889,6 +910,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     	int x;
     	int maxEndFrame;
     	
+			@Override
 			public void mousePressed(MouseEvent e) {
 				if (disabled)
 					return;
@@ -897,6 +919,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 				if (OSPRuntime.isPopupTrigger(e)) {
 					// inner popup menu listener classes
 					ActionListener listener = new ActionListener() {
+						@Override
 						public void actionPerformed(ActionEvent e) {
 							VideoClip clip = getVideoClip();
 							int val = clipControl.getFrameNumber();
@@ -918,6 +941,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 					JPopupMenu popup = new JPopupMenu();
 					JMenuItem item = new JMenuItem(MediaRes.getString("ClipInspector.Title") + "..."); //$NON-NLS-1$ //$NON-NLS-2$
 					item.addActionListener(new ActionListener() {
+						@Override
 						public void actionPerformed(ActionEvent e) {
 							if (disabled)
 								return;
@@ -957,6 +981,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 						String s = MediaRes.getString("VideoPlayer.Slider.Popup.Menu.TrimFrames"); //$NON-NLS-1$
 						item = new JMenuItem(s);
 						item.addActionListener(new ActionListener() {
+							@Override
 							public void actionPerformed(ActionEvent e) {
 								getVideoClip().trimFrameCount();
 							}
@@ -996,6 +1021,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 							String s = MediaRes.getString("VideoPlayer.Popup.Menu.SetTimeToZero"); //$NON-NLS-1$
 							item = new JMenuItem(s);
 							item.addActionListener(new ActionListener() {
+								@Override
 								public void actionPerformed(ActionEvent e) {
 									if (disabled)
 										return;
@@ -1032,6 +1058,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 				e.consume();
 		}
     	
+			@Override
 			public void mouseReleased(MouseEvent e) {
 				if (disabled)
 					return;
@@ -1045,6 +1072,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 				clip.setAdjusting(false);
 			}
     	
+			@Override
 			public void mouseExited(MouseEvent e) {
 				vidPanel.setMouseCursor(Cursor.getDefaultCursor());
 				if (disabled)
@@ -1053,6 +1081,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 				firePropertyChange("slider", null, Boolean.FALSE); //$NON-NLS-1$
 			}
     	
+			@Override
 			public void mouseMoved(MouseEvent e) {
 				active = null;
 				if (disabled)
@@ -1089,6 +1118,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 				}
 			}
     	
+			@Override
 			public void mouseDragged(MouseEvent e) {
 				if (disabled)
 					return;
@@ -1154,7 +1184,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     am.put(im.get(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0)), null);
     }
     slider.addKeyListener(new KeyAdapter() {
-      public void keyPressed(KeyEvent e) {
+      @Override
+	public void keyPressed(KeyEvent e) {
       	if (disabled) return;
         switch(e.getKeyCode()) {
            case KeyEvent.VK_PAGE_UP :
@@ -1170,17 +1201,20 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     // create readout
     readout = new PlayerButton() {
       // override size methods so has same height as other buttons
-      public Dimension getPreferredSize() {
+      @Override
+	public Dimension getPreferredSize() {
         Dimension dim = super.getPreferredSize();
         dim.height = rateSpinner.getPreferredSize().height;
         return dim;
       }
-      public Dimension getMinimumSize() {
+      @Override
+	public Dimension getMinimumSize() {
         Dimension dim = super.getMinimumSize();
         dim.height = rateSpinner.getPreferredSize().height;
         return dim;
       }
-      public Dimension getMaximumSize() {
+      @Override
+	public Dimension getMaximumSize() {
         Dimension dim = super.getMaximumSize();
         dim.height = rateSpinner.getPreferredSize().height;
         return dim;
@@ -1189,7 +1223,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     };
     readout.setForeground(new Color(204, 51, 51));
     readout.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	if (disabled) return;
         if(readoutTypes.length<2) {
           return;
@@ -1219,7 +1254,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		        	String s = MediaRes.getString("VideoPlayer.Popup.Menu.SetTimeToZero"); //$NON-NLS-1$
 		        	item = new JMenuItem(s); 
 		          item.addActionListener(new ActionListener() {
-		            public void actionPerformed(ActionEvent e) {
+		            @Override
+					public void actionPerformed(ActionEvent e) {
 		            	if (disabled) return;
 									double t0 = -clipControl.getTime();
 									getVideoClip().setStartTime(t0);
@@ -1281,7 +1317,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
       }
     });
     readout.addMouseListener(new MouseAdapter() {
-      public void mouseClicked(MouseEvent e) {
+      @Override
+	public void mouseClicked(MouseEvent e) {
         if (OSPRuntime.isPopupTrigger(e))
         	readout.doClick(0);
       }
@@ -1289,17 +1326,20 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     // create stepSize button
     stepSizeButton = new PlayerButton() {
       // override size methods so has same height as other buttons
-      public Dimension getPreferredSize() {
+      @Override
+	public Dimension getPreferredSize() {
         Dimension dim = super.getPreferredSize();
         dim.height = rateSpinner.getPreferredSize().height;
         return dim;
       }
-      public Dimension getMinimumSize() {
+      @Override
+	public Dimension getMinimumSize() {
         Dimension dim = super.getMinimumSize();
         dim.height = rateSpinner.getPreferredSize().height;
         return dim;
       }
-      public Dimension getMaximumSize() {
+      @Override
+	public Dimension getMaximumSize() {
         Dimension dim = super.getMaximumSize();
         dim.height = rateSpinner.getPreferredSize().height;
         return dim;
@@ -1308,11 +1348,13 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     };
     stepSizeButton.setForeground(new Color(204, 51, 51));
     stepSizeButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	if (disabled) return;
         // inner popup menu listener class
         ActionListener listener = new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
+          @Override
+		public void actionPerformed(ActionEvent e) {
           	int frameNumber = getFrameNumber();
           	VideoClip clip = getVideoClip();
           	try {
@@ -1352,7 +1394,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
       }
     });
     stepSizeButton.addMouseListener(new MouseAdapter() {
-      public void mouseClicked(MouseEvent e) {
+      @Override
+	public void mouseClicked(MouseEvent e) {
         if (OSPRuntime.isPopupTrigger(e))
         	stepSizeButton.doClick(0);
       }
@@ -1360,7 +1403,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     // create inspector button
     inspectorButton = new PlayerButton(videoClipIcon);
     inspectorButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	if (disabled) return;
         Frame frame = null;
         Container c = vidPanel.getTopLevelAncestor();
@@ -1388,13 +1432,15 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
     // create loop button
     loopButton = new PlayerButton(noloopIcon, loopIcon);
     loopButton.addMouseListener(new MouseAdapter() {
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
         setLooping(!loopButton.isSelected());
       }
 
     });
     loopButton.addKeyListener(new KeyAdapter() {
-      public void keyPressed(KeyEvent e) {
+      @Override
+	public void keyPressed(KeyEvent e) {
         if(e.getKeyCode()==KeyEvent.VK_SPACE) {
           setLooping(!loopButton.isSelected());
         }
@@ -1423,6 +1469,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
    */
   private void updatePlayButtons(final boolean playing) {
   	OSPRuntime.postEvent(new Runnable() {
+			@Override
 			public void run() {
 				int stepCount = getVideoClip().getStepCount();
 				boolean canPlay = stepCount > 1;
@@ -1586,11 +1633,13 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
   		setOpaque(false);
   		setBorderPainted(false);
       addMouseListener(new MouseAdapter() {
-      	public void mouseEntered(MouseEvent e) {
+      	@Override
+		public void mouseEntered(MouseEvent e) {
       		setBorderPainted(true);
       	}
 
-      	public void mouseExited(MouseEvent e) {
+      	@Override
+		public void mouseExited(MouseEvent e) {
       		setBorderPainted(false);
       	}
 
@@ -1645,7 +1694,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
       // create buttons
   		okButton = new JButton(DisplayRes.getString("GUIUtils.Ok")); //$NON-NLS-1$
   		okButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
         	String input = stepField.getText();
         	if (input!=null && !input.equals("")) try { //$NON-NLS-1$
   					int n = Integer.parseInt(input);
@@ -1658,14 +1708,16 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
       });
       cancelButton = new JButton(DisplayRes.getString("GUIUtils.Cancel")); //$NON-NLS-1$
       cancelButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           setVisible(false);
         }
       });
 
       // create key and focus listeners
       keyListener = new KeyAdapter() {
-        public void keyPressed(KeyEvent e) {
+        @Override
+		public void keyPressed(KeyEvent e) {
         	JTextField field = (JTextField)e.getSource();
           if(e.getKeyCode()==KeyEvent.VK_ENTER) {
           	okButton.doClick(0);
@@ -1674,7 +1726,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
           	field.setBackground(Color.white);
           }
         }
-        public void keyReleased(KeyEvent e) {
+        @Override
+		public void keyReleased(KeyEvent e) {
         	JTextField field = (JTextField)e.getSource();
           if(e.getKeyCode()!=KeyEvent.VK_ENTER) {
           	setValues(field);
@@ -1683,7 +1736,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 
       };
       focusListener = new FocusAdapter() {
-        public void focusLost(FocusEvent e) {
+        @Override
+		public void focusLost(FocusEvent e) {
     			JTextField field = (JTextField)e.getSource();
     			field.setBackground(Color.white);
         }
@@ -1847,7 +1901,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 			stepField.setText(prevStep);
   	}
   	
-  	public void setVisible(boolean vis) {
+  	@Override
+	public void setVisible(boolean vis) {
   		if (vis) {
   	    prevFrame = ""; //$NON-NLS-1$
   	    prevTime = ""; //$NON-NLS-1$

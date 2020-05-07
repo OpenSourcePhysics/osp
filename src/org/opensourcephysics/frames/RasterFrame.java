@@ -68,7 +68,8 @@ public class RasterFrame extends DrawingFrame {
   /**
    * Adds Views menu items on the menu bar.
    */
-  protected void addMenuItems() {
+  @Override
+protected void addMenuItems() {
     JMenuBar menuBar = getJMenuBar();
     if(menuBar==null) {
       return;
@@ -88,7 +89,8 @@ public class RasterFrame extends DrawingFrame {
     // add a menu item to show the data table
     JMenuItem menuItem = new JMenuItem(DisplayRes.getString("RasterFrame.MenuItem.Color")); //$NON-NLS-1$
     ActionListener actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         setColorPalette();
       }
 
@@ -98,7 +100,8 @@ public class RasterFrame extends DrawingFrame {
     // add a menu item to show the data table
     menuItem = new JMenuItem(DisplayRes.getString("RasterFrame.MenuItem.B&W")); //$NON-NLS-1$
     actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         setBWPalette();
       }
 
@@ -142,7 +145,8 @@ public class RasterFrame extends DrawingFrame {
   /**
  * Clears drawable objects added by the user from this frame.
  */
-  public void clearDrawables() {
+  @Override
+public void clearDrawables() {
     drawingPanel.clear(); // removes all drawables
     drawingPanel.addDrawable(raster);
   }
@@ -152,7 +156,8 @@ public class RasterFrame extends DrawingFrame {
    *
    * @return the list
    */
-  public synchronized ArrayList<Drawable> getDrawables() {
+  @Override
+public synchronized ArrayList<Drawable> getDrawables() {
 	    return super.getDrawablesExcept(null, raster);
   }
 
@@ -166,14 +171,16 @@ public class RasterFrame extends DrawingFrame {
    *
    * @see #getObjectOfClass(Class c)
    */
-  public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
+  @Override
+public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
 		return getDrawablesExcept(c, raster);
   }
 
   /**
    * Clears the lattice data by setting all values to zero.
    */
-  public void clearData() {
+  @Override
+public void clearData() {
     raster.setBlock(0, 0, new byte[raster.getNx()][raster.getNy()]);
     drawingPanel.invalidateImage();
   }
@@ -462,10 +469,12 @@ public class RasterFrame extends DrawingFrame {
   synchronized MouseInputAdapter getMouseAdapter() {
     if(mouseAdapter==null) {
       return new MouseInputAdapter() {
-        public void mousePressed(MouseEvent e) {
+        @Override
+		public void mousePressed(MouseEvent e) {
           mouse(e, true);
         }
-        public void mouseDragged(MouseEvent e) {
+        @Override
+		public void mouseDragged(MouseEvent e) {
           mouse(e, false);
         }
 

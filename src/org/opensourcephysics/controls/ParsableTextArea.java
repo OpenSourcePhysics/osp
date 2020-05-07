@@ -99,7 +99,8 @@ public class ParsableTextArea extends JTextArea {
    */
   public void setValue(String variable, String val) {
     Runnable doLater = new Runnable() {
-      public void run() {
+      @Override
+	public void run() {
         updateText();
       }
 
@@ -185,7 +186,8 @@ public class ParsableTextArea extends JTextArea {
      * @param control the control to save to
      * @param obj the object to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       Map<CharSequence, CharSequence> map = ((ParsableTextArea) obj).getCurrentMap();
       Iterator<CharSequence> it = map.keySet().iterator();
       while(it.hasNext()) {
@@ -200,7 +202,8 @@ public class ParsableTextArea extends JTextArea {
      * @param control the control
      * @return the newly created object
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ParsableTextArea();
     }
 
@@ -211,7 +214,8 @@ public class ParsableTextArea extends JTextArea {
      * @param obj the object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       ParsableTextArea pta = (ParsableTextArea) obj;
       // iterate over properties and add them to pts
       Iterator<String> it = control.getPropertyNames().iterator();

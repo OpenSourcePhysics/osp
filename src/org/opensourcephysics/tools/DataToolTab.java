@@ -140,7 +140,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 	static {
 		if (correlationFormat instanceof DecimalFormat) {
-			DecimalFormat format = (DecimalFormat) correlationFormat;
+			DecimalFormat format = correlationFormat;
 			format.applyPattern("0.000"); //$NON-NLS-1$
 		}
 		// create cursors
@@ -543,6 +543,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		}
 		if (dataBuilder == null) { // create new tool if none exists
 			dataBuilder = new FunctionTool(this) {
+				@Override
 				protected void refreshGUI() {
 					super.refreshGUI();
 					dropdown.setToolTipText(ToolsRes.getString("DataTool.DataBuilder.Dropdown.Tooltip")); //$NON-NLS-1$
@@ -562,6 +563,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 *
 	 * @param e the event
 	 */
+	@Override
 	public void propertyChange(PropertyChangeEvent e) {
 		String name = e.getPropertyName();
 		if (name.equals("function")) { //$NON-NLS-1$
@@ -597,6 +599,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 * @param replyTo the tool to notify when the job is complete (may be null)
 	 * @throws RemoteException
 	 */
+	@Override
 	public void send(Job job, Tool replyTo) throws RemoteException {
 		XMLControlElement control = new XMLControlElement(job.getXML());
 		if (control.failedToRead() || (control.getObjectClass() == Object.class)) {
@@ -906,6 +909,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		// millisecond!
 		propsAndStatsAction.actionPerformed(null);
 		Timer timer = new Timer(1, new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				propsAndStatsAction.actionPerformed(null);
 			}
@@ -1205,6 +1209,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 */
 	protected void createGUI() {
 		ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
+			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				refreshGUI();
 			}
@@ -1223,6 +1228,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		splitPanes[1].setDividerSize(0);
 		// splitPanes[2] is stats/props tables on top, data table on bottom
 		splitPanes[2] = new JSplitPane(JSplitPane.VERTICAL_SPLIT) {
+			@Override
 			public Dimension getPreferredSize() {
 				Dimension dim = super.getPreferredSize();
 				dim.width = dataTable.getMinimumTableWidth() + 6;
@@ -1239,6 +1245,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 		// add ancestor listener to initialize
 		this.addAncestorListener(new AncestorListener() {
+			@Override
 			public void ancestorAdded(AncestorEvent e) {
 				OSPLog.getOSPLog(); // workaround needed for consistent initialization!
 				if (getSize().width > 0) {
@@ -1246,15 +1253,18 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				}
 			}
 
+			@Override
 			public void ancestorRemoved(AncestorEvent event) {
 			}
 
+			@Override
 			public void ancestorMoved(AncestorEvent event) {
 			}
 
 		});
 		// add component listener for resizing
 		addComponentListener(new ComponentAdapter() {
+			@Override
 			public void componentResized(ComponentEvent e) {
 				fitterAction.actionPerformed(null);
 			}
@@ -1262,6 +1272,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		});
 		// add window listener to dataTool to display curvefitter properly
 		dataTool.addWindowListener(new java.awt.event.WindowAdapter() {
+			@Override
 			public void windowOpened(java.awt.event.WindowEvent e) {
 				fitterAction.actionPerformed(null);
 			}
@@ -1271,30 +1282,37 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		dataScroller = new JScrollPane(dataTable);
 		dataTable.refreshTable();
 		dataTable.addPropertyChangeListener("format", new PropertyChangeListener() { //$NON-NLS-1$
+			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				refreshShiftFields();
 			}
 		});
 
 		dataScroller.addMouseListener(new MouseAdapter() {
+			@Override
 			public void mousePressed(MouseEvent e) {
 				dataTable.clearSelection();
 			}
 		});
 		dataScroller.setToolTipText(ToolsRes.getString("DataToolTab.Scroller.Tooltip")); //$NON-NLS-1$
 		dataTable.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
+			@Override
 			public void columnAdded(TableColumnModelEvent e) {
 			}
 
+			@Override
 			public void columnRemoved(TableColumnModelEvent e) {
 			}
 
+			@Override
 			public void columnSelectionChanged(ListSelectionEvent e) {
 			}
 
+			@Override
 			public void columnMarginChanged(ChangeEvent e) {
 			}
 
+			@Override
 			public void columnMoved(TableColumnModelEvent e) {
 				Dataset prev = dataTable.workingData;
 				Dataset working = getWorkingData();
@@ -1312,6 +1330,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		});
 		// create bottom pane action, fit and fourier checkboxes
 		fitterAction = new AbstractAction() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (fitterCheckbox == null) {
 					return;
@@ -1344,11 +1363,13 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		fourierCheckbox = new JCheckBoxMenuItem();
 		fourierCheckbox.setSelected(false);
 		fourierCheckbox.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (fourierPanel == null && dataTool != null) {
 					// create fourier panel
 					fourierPanel = new FourierPanel();
 					fourierDialog = new JDialog(dataTool, false) {
+						@Override
 						public void setVisible(boolean vis) {
 							super.setVisible(vis);
 							fourierCheckbox.setSelected(vis);
@@ -1368,6 +1389,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		originShiftCheckbox = new JCheckBoxMenuItem();
 		originShiftCheckbox.setSelected(originShiftEnabled);
 		originShiftCheckbox.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				boolean previouslyEnabled = originShiftEnabled;
 				originShiftEnabled = originShiftCheckbox.isSelected();
@@ -1431,6 +1453,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		measureFitCheckbox = new JCheckBoxMenuItem();
 		measureFitCheckbox.setSelected(false);
 		measureFitCheckbox.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				measureFit = measureFitCheckbox.isSelected();
 				if (areaVisible) {
@@ -1443,6 +1466,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		// create newColumnButton button
 		newColumnButton = DataTool.createButton(""); //$NON-NLS-1$
 		newColumnButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(final ActionEvent e) {
 				DataColumn column = createDataColumn();
 				String proposed = ToolsRes.getString("DataToolTab.NewColumn.Name"); //$NON-NLS-1$
@@ -1477,6 +1501,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				undoSupport.postEdit(edit);
 				dataTable.refreshUndoItems();
 				Runnable runner = new Runnable() {
+					@Override
 					public synchronized void run() {
 						int col = dataTable.getColumnCount() - 1;
 						dataTable.changeSelection(0, col, false, false);
@@ -1510,6 +1535,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		dataBuilderButton = DataTool.createButton(ToolsRes.getString("DataToolTab.Button.DataBuilder.Text")); //$NON-NLS-1$
 		dataBuilderButton.setToolTipText(ToolsRes.getString("DataToolTab.Button.DataBuilder.Tooltip")); //$NON-NLS-1$
 		dataBuilderButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				getDataBuilder().setSelectedPanel(getName());
 				getDataBuilder().setVisible(true);
@@ -1520,6 +1546,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		refreshDataButton = DataTool.createButton(ToolsRes.getString("DataToolTab.Button.Refresh.Text")); //$NON-NLS-1$
 		refreshDataButton.setToolTipText(ToolsRes.getString("DataToolTab.Button.Refresh.Tooltip")); //$NON-NLS-1$
 		refreshDataButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				refreshData();
 			}
@@ -1529,6 +1556,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		helpButton = DataTool.createButton(ToolsRes.getString("Tool.Button.Help")); //$NON-NLS-1$
 		helpButton.setToolTipText(ToolsRes.getString("Tool.Button.Help.ToolTip")); //$NON-NLS-1$
 		helpButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				DataTool.showHelp();
 			}
@@ -1539,6 +1567,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		valueCheckbox.setSelected(false);
 		valueCheckbox.setToolTipText(ToolsRes.getString("DataToolTab.Checkbox.Position.Tooltip")); //$NON-NLS-1$
 		valueCheckbox.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				freezeMeasurement = false;
 				positionVisible = valueCheckbox.isSelected();
@@ -1553,6 +1582,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		slopeCheckbox.setToolTipText(ToolsRes.getString("DataToolTab.Checkbox.Slope.Tooltip")); //$NON-NLS-1$
 		slopeCheckbox.setSelected(false);
 		slopeCheckbox.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				freezeMeasurement = false;
 				slopeVisible = slopeCheckbox.isSelected();
@@ -1566,6 +1596,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		areaCheckbox.setToolTipText(ToolsRes.getString("DataToolTab.Checkbox.Area.Tooltip")); //$NON-NLS-1$
 		areaCheckbox.setSelected(false);
 		areaCheckbox.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				plot.setAreaVisible(areaCheckbox.isSelected());
 			}
@@ -1574,6 +1605,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		// create measureButton
 		measureButton = DataTool.createButton(ToolsRes.getString("DataToolTab.Button.Measure.Label")); //$NON-NLS-1$
 		measureButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				// build a popup menu with measure items
 				JPopupMenu popup = new JPopupMenu();
@@ -1591,6 +1623,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		// create analyzeButton
 		analyzeButton = DataTool.createButton(ToolsRes.getString("DataToolTab.Button.Analyze.Label")); //$NON-NLS-1$
 		analyzeButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				// build a popup menu with analyze items
 				JPopupMenu popup = new JPopupMenu();
@@ -1605,6 +1638,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		// create propsAndStatsAction
 		propsAndStatsAction = new AbstractAction() {
 
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				// lay out the table bar split panes
 				boolean statsVis = statsCheckbox.isSelected();
@@ -1655,6 +1689,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		fitBuilder.removePropertyChangeListener(curveFitter.fitListener);
 		fitBuilder.addPropertyChangeListener(curveFitter.fitListener);
 		curveFitter.addPropertyChangeListener(new PropertyChangeListener() {
+			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				if (e.getPropertyName().equals("changed")) { //$NON-NLS-1$
 					tabChanged(true);
@@ -1926,6 +1961,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					return;
 				selectionBoxChanged = false;
 				Runnable runner = new Runnable() {
+					@Override
 					public void run() {
 						HighlightableDataset data = dataTable.workingData;
 						Map<Integer, Integer> workingRows = dataTable.workingRows;
@@ -2012,6 +2048,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		// create statistics table
 		statsTable = new DataToolStatsTable(dataTable);
 		statsScroller = new JScrollPane(statsTable) {
+			@Override
 			public Dimension getPreferredSize() {
 				Dimension dim = statsTable.getPreferredSize();
 				return dim;
@@ -2023,6 +2060,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		// create properties table
 		propsTable = new DataToolPropsTable(dataTable);
 		propsTable.addPropertyChangeListener(new PropertyChangeListener() {
+			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				if (e.getPropertyName().equals("display")) { //$NON-NLS-1$
 					refreshPlot();
@@ -2030,6 +2068,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			}
 		});
 		propsScroller = new JScrollPane(propsTable) {
+			@Override
 			public Dimension getPreferredSize() {
 				Dimension dim = propsTable.getPreferredSize();
 				return dim;
@@ -2079,6 +2118,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		// create shift spinner and field listeners
 		shiftEditListener = new ShiftEditListener();
 		KeyAdapter numberFieldKeyListener = new KeyAdapter() {
+			@Override
 			public void keyPressed(KeyEvent e) {
 				JComponent comp = (JComponent) e.getSource();
 				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
@@ -2089,6 +2129,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			}
 		};
 		FocusAdapter numberFieldFocusListener = new FocusAdapter() {
+			@Override
 			public void focusLost(FocusEvent e) {
 				NumberField field = (NumberField) e.getSource();
 				if (field.getBackground() != Color.white) {
@@ -2097,6 +2138,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				}
 			}
 
+			@Override
 			public void focusGained(FocusEvent e) {
 				NumberField field = (NumberField) e.getSource();
 				field.selectAll();
@@ -2165,6 +2207,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		};
 		shiftXSpinner.setEditor(shiftXField);
 		ChangeListener xChangeListener = new ChangeListener() {
+			@Override
 			public void stateChanged(ChangeEvent e) {
 				Dataset data = dataTable.getDataset(plot.xVar);
 				if (data != null && data instanceof DataColumn) {
@@ -2241,6 +2284,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		shiftYSpinner.setEditor(shiftYField);
 
 		ChangeListener yChangeListener = new ChangeListener() {
+			@Override
 			public void stateChanged(ChangeEvent e) {
 				Dataset data = dataTable.getDataset(plot.yVar);
 				if (data != null && data instanceof DataColumn) {
@@ -2333,6 +2377,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 */
 	protected void refreshGUI() {
 		OSPRuntime.postEvent(new Runnable() {
+			@Override
 			public void run() {
 				refreshGUIAsync();
 			}
@@ -2445,6 +2490,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		if (setVarAction == null) {
 			// create action to set axis variable
 			setVarAction = new AbstractAction() {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					JMenuItem item = (JMenuItem) e.getSource();
 					// get desired variable for targeted axis
@@ -4155,18 +4201,22 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		double delta = 1;
 		double percentDelta = 1;
 
+		@Override
 		public Object getValue() {
 			return new Double(val);
 		}
 
+		@Override
 		public Object getNextValue() {
 			return new Double(val + delta);
 		}
 
+		@Override
 		public Object getPreviousValue() {
 			return new Double(val - delta);
 		}
 
+		@Override
 		public void setValue(Object value) {
 			if (value != null) {
 				val = ((Double) value).doubleValue();
@@ -4219,12 +4269,14 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			repeatTimer.start();
 		}
 
+		@Override
 		public void stateChanged(ChangeEvent e) {
 			valueChanged = true;
 			lastChange = System.currentTimeMillis();
 		}
 
 		// action called by timer
+		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (valueChanged && (System.currentTimeMillis() - lastChange) > MIN_TIME) {
 				valueChanged = false;
@@ -4503,6 +4555,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			// load origin_shited
 			final boolean origin_shifted = control.getBoolean("origin_shifted"); //$NON-NLS-1$
 			Runnable runner = new Runnable() {
+				@Override
 				public synchronized void run() {
 					tab.fitterAction.actionPerformed(null);
 					tab.propsAndStatsAction.actionPerformed(null);

@@ -37,7 +37,8 @@ public class ControlTextField extends ControlSwingElement {
     super(_visual);
   }
 
-  protected java.awt.Component createVisual(Object _visual) {
+  @Override
+protected java.awt.Component createVisual(Object _visual) {
     if(_visual instanceof JTextField) {
       textfield = (JTextField) _visual;
     } else {
@@ -53,7 +54,8 @@ public class ControlTextField extends ControlSwingElement {
     return textfield;
   }
 
-  public void reset() {
+  @Override
+public void reset() {
     if(defaultValueSet) {
       setTheValue(defaultValue);
       setInternalValue(defaultValue);
@@ -79,7 +81,8 @@ public class ControlTextField extends ControlSwingElement {
   // ------------------------------------------------
   static private java.util.ArrayList<String> infoList = null;
 
-  public java.util.ArrayList<String> getPropertyList() {
+  @Override
+public java.util.ArrayList<String> getPropertyList() {
     if(infoList==null) {
       infoList = new java.util.ArrayList<String>();
       infoList.add("variable"); //$NON-NLS-1$
@@ -91,7 +94,8 @@ public class ControlTextField extends ControlSwingElement {
     return infoList;
   }
 
-  public String getPropertyInfo(String _property) {
+  @Override
+public String getPropertyInfo(String _property) {
     if(_property.equals("variable")) {   //$NON-NLS-1$
       return "String VARIABLE_EXPECTED"; //$NON-NLS-1$
     }
@@ -110,7 +114,8 @@ public class ControlTextField extends ControlSwingElement {
   // ------------------------------------------------
   // Set and Get the values of the properties
   // ------------------------------------------------
-  public void setValue(int _index, Value _value) {
+  @Override
+public void setValue(int _index, Value _value) {
     switch(_index) {
        case VARIABLE :
          setTheValue(_value.getString());
@@ -139,7 +144,8 @@ public class ControlTextField extends ControlSwingElement {
     }
   }
 
-  public void setDefaultValue(int _index) {
+  @Override
+public void setDefaultValue(int _index) {
     switch(_index) {
        case VARIABLE :
          break;                                                      // Do nothing
@@ -162,7 +168,8 @@ public class ControlTextField extends ControlSwingElement {
     }
   }
 
-  public Value getValue(int _index) {
+  @Override
+public Value getValue(int _index) {
     switch(_index) {
        case VARIABLE :
          return internalValue;
@@ -197,7 +204,8 @@ public class ControlTextField extends ControlSwingElement {
   }
 
   private class MyActionListener implements java.awt.event.ActionListener {
-    public void actionPerformed(java.awt.event.ActionEvent _e) {
+    @Override
+	public void actionPerformed(java.awt.event.ActionEvent _e) {
       setInternalValue(textfield.getText());
       setColor(defaultColor);
     }
@@ -205,15 +213,18 @@ public class ControlTextField extends ControlSwingElement {
   }
 
   private class MyKeyListener implements java.awt.event.KeyListener {
-    public void keyPressed(java.awt.event.KeyEvent _e) {
+    @Override
+	public void keyPressed(java.awt.event.KeyEvent _e) {
       processKeyEvent(_e, 0);
     }
 
-    public void keyReleased(java.awt.event.KeyEvent _e) {
+    @Override
+	public void keyReleased(java.awt.event.KeyEvent _e) {
       processKeyEvent(_e, 1);
     }
 
-    public void keyTyped(java.awt.event.KeyEvent _e) {
+    @Override
+	public void keyTyped(java.awt.event.KeyEvent _e) {
       processKeyEvent(_e, 2);
     }
 

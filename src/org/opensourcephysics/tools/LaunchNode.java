@@ -234,7 +234,8 @@ public class LaunchNode extends DefaultMutableTreeNode {
    *
    * @return the string name of this node
    */
-  public String toString() {
+  @Override
+public String toString() {
     // return name, if any
     if((name!=null)&&!name.equals("")) { //$NON-NLS-1$
       return name;
@@ -1190,7 +1191,8 @@ public class LaunchNode extends DefaultMutableTreeNode {
         item.setToolTipText(child.tooltip);
         item.setActionCommand(child.getID());
         item.addActionListener(new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
+          @Override
+		public void actionPerformed(ActionEvent e) {
             String id = e.getActionCommand();
             LaunchNode root = (LaunchNode) LaunchNode.this.getRoot();
             Enumeration<?> e2 = root.postorderEnumeration();
@@ -1296,7 +1298,8 @@ public class LaunchNode extends DefaultMutableTreeNode {
         return null;
       }
       JPanel panel = new JPanel(new OSPLayout()) {
-        public Dimension getPreferredSize() {
+        @Override
+		public Dimension getPreferredSize() {
           Dimension dim = content.getPreferredSize();
           dim.width += 8;
           dim.height += 8;
@@ -1324,7 +1327,8 @@ public class LaunchNode extends DefaultMutableTreeNode {
    * A class to save and load LaunchNode data in an XMLControl.
    */
   private static class Loader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       LaunchNode node = (LaunchNode) obj;
       node.setMinimumArgLength(1); // trim args if nec
       if(!node.name.equals("")) {            //$NON-NLS-1$
@@ -1437,7 +1441,8 @@ public class LaunchNode extends DefaultMutableTreeNode {
       }
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       String name = control.getString("name"); //$NON-NLS-1$
       if(name==null) {
         name = LaunchRes.getString("NewNode.Name"); //$NON-NLS-1$
@@ -1445,7 +1450,8 @@ public class LaunchNode extends DefaultMutableTreeNode {
       return new LaunchNode(name);
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       LaunchNode node = (LaunchNode) obj;
       String name = control.getString("name"); //$NON-NLS-1$
       if(name!=null) {
@@ -1815,7 +1821,8 @@ public class LaunchNode extends DefaultMutableTreeNode {
       final JComponent content = getModelPane();
       if((modelScroller==null)&&(content!=null)) {
         JPanel panel = new JPanel(new OSPLayout()) {
-          public Dimension getPreferredSize() {
+          @Override
+		public Dimension getPreferredSize() {
             Dimension dim = content.getPreferredSize();
             dim.width += 8;
             dim.height += 8;
@@ -1908,7 +1915,8 @@ public class LaunchNode extends DefaultMutableTreeNode {
    * Adds an HTML tab with the specified title and relative path.
    * @deprecated replaced by addDisplayTab
    */
-  @SuppressWarnings("javadoc")
+  @Deprecated
+@SuppressWarnings("javadoc")
 	public DisplayTab addHTML(String title, String path) {
     return addDisplayTab(title, path, null);
   }
@@ -1917,7 +1925,8 @@ public class LaunchNode extends DefaultMutableTreeNode {
    * Inserts an HTML tab with the specified title and relative path.
    * @deprecated replaced by insertDisplayTab
    */
-  @SuppressWarnings("javadoc")
+  @Deprecated
+@SuppressWarnings("javadoc")
 	public DisplayTab insertHTML(int n, String title, String path) {
     return insertDisplayTab(n, title, path, null);
   }
@@ -1926,7 +1935,8 @@ public class LaunchNode extends DefaultMutableTreeNode {
    * Removes an HTML tab.
    * @deprecated replaced by removeDisplayTab
    */
-  @SuppressWarnings("javadoc")
+  @Deprecated
+@SuppressWarnings("javadoc")
 	public DisplayTab removeHTML(int n) {
     return removeDisplayTab(n);
   }
@@ -1935,7 +1945,8 @@ public class LaunchNode extends DefaultMutableTreeNode {
    * Gets an HTML tab.
    * @deprecated replaced by getDisplayTab
    */
-  @SuppressWarnings("javadoc")
+  @Deprecated
+@SuppressWarnings("javadoc")
 	public DisplayTab getHTML(int n) {
     return getDisplayTab(n);
   }
@@ -1944,7 +1955,8 @@ public class LaunchNode extends DefaultMutableTreeNode {
    * Returns the number of html objects in the list.
    * @deprecated replaced by getDisplayTabCount
    */
-  @SuppressWarnings("javadoc")
+  @Deprecated
+@SuppressWarnings("javadoc")
 	public int getHTMLCount() {
     return getDisplayTabCount();
   }
@@ -1953,7 +1965,8 @@ public class LaunchNode extends DefaultMutableTreeNode {
    * Sets the specified HTML tab title and url path.
    * @deprecated replaced by setDisplayTab
    */
-  @SuppressWarnings("javadoc")
+  @Deprecated
+@SuppressWarnings("javadoc")
 	public DisplayTab setHTML(int n, String title, String path) {
     return setDisplayTab(n, title, path, null);
   }

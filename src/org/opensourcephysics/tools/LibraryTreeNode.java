@@ -12,7 +12,6 @@ import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -81,6 +80,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 	 * @param object the object
 	 * @return <code>true</code> if this equals the specified object
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		if (obj == this)
 			return true;
@@ -103,6 +103,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 	 * @param node the node to compare
 	 * @return 0 if equal, otherwise alphabetical name order
 	 */
+	@Override
 	public int compareTo(LibraryTreeNode node) {
 		final int BEFORE = -1;
 		final int EQUAL = 0;
@@ -449,6 +450,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 				setType(LibraryResource.EJS_TYPE);
 			} else if (path.toLowerCase().endsWith(".zip")) { //$NON-NLS-1$
 				Runnable libNodeSetZipTypeRunner = new Runnable() {
+					@Override
 					public void run() {
 						String zipPath = getAbsoluteTarget();
 						Map<String, ZipEntry> files = ResourceLoader.getZipContents(zipPath);

@@ -51,7 +51,8 @@ public class JarTreeModel implements TreeModel {
    *
    * @return the root file
    */
-  public Object getRoot() {
+  @Override
+public Object getRoot() {
     return root;
   }
 
@@ -61,7 +62,8 @@ public class JarTreeModel implements TreeModel {
    * @param node the tree node
    * @return true if node is a leaf
    */
-  public boolean isLeaf(Object node) {
+  @Override
+public boolean isLeaf(Object node) {
     if(node instanceof File) {
       File file = (File) node;
       if(file.getName().endsWith(".jar")) { //$NON-NLS-1$
@@ -81,7 +83,8 @@ public class JarTreeModel implements TreeModel {
    * @param parent the parent node
    * @return the number of child nodes
    */
-  public int getChildCount(Object parent) {
+  @Override
+public int getChildCount(Object parent) {
     if(parent instanceof File) {
       File parentFile = (File) parent;
       if(parentFile.getName().endsWith(".jar")) { //$NON-NLS-1$
@@ -105,7 +108,8 @@ public class JarTreeModel implements TreeModel {
    * @param index the index
    * @return the child node
    */
-  public Object getChild(Object parent, int index) {
+  @Override
+public Object getChild(Object parent, int index) {
     if(parent instanceof File) {
       File parentFile = (File) parent;
       // if parent is the launch jar, return a JarNode
@@ -121,7 +125,8 @@ public class JarTreeModel implements TreeModel {
         return null;
       }
       return new File(parentFile, children[index]) {
-        public String toString() {
+        @Override
+		public String toString() {
           return getName();
         }
 
@@ -140,7 +145,8 @@ public class JarTreeModel implements TreeModel {
    * @param child the child node
    * @return the index of the child
    */
-  public int getIndexOfChild(Object parent, Object child) {
+  @Override
+public int getIndexOfChild(Object parent, Object child) {
     if(parent instanceof File) {
       File parentFile = (File) parent;
       if(parentFile.getName().endsWith(".jar")) { //$NON-NLS-1$
@@ -173,15 +179,18 @@ public class JarTreeModel implements TreeModel {
 
   // methods required by TreeModel
   // these methods are empty since this is not an editable model
-  public void valueForPathChanged(TreePath path, Object newvalue) {
+  @Override
+public void valueForPathChanged(TreePath path, Object newvalue) {
     /** empty method */
   }
 
-  public void addTreeModelListener(TreeModelListener l) {
+  @Override
+public void addTreeModelListener(TreeModelListener l) {
     /** empty method */
   }
 
-  public void removeTreeModelListener(TreeModelListener l) {
+  @Override
+public void removeTreeModelListener(TreeModelListener l) {
     /** empty method */
   }
 
@@ -212,7 +221,8 @@ public class JarTreeModel implements TreeModel {
         for(int i = 0; i<children.length; i++) {
           if(children[i].toString().equals(name)) {
             return new File(parentFile, children[i]) {
-              public String toString() {
+              @Override
+			public String toString() {
                 return getName();
               }
 
@@ -272,7 +282,8 @@ public class JarTreeModel implements TreeModel {
       }
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
       return name;
     }
 

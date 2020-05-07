@@ -130,7 +130,8 @@ public class LibraryCollection extends LibraryResource {
      * @param control the control to save to
      * @param obj the object to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
     	XML.getLoader(LibraryResource.class).saveObject(control, obj);
     	LibraryCollection collection = (LibraryCollection)obj;
     	if (!collection.resources.isEmpty()) {
@@ -144,7 +145,8 @@ public class LibraryCollection extends LibraryResource {
      * @param control the XMLControl with the object data
      * @return the newly created object
      */
-    public Object createObject(XMLControl control){
+    @Override
+	public Object createObject(XMLControl control){
     	String name = control.getString("name"); //$NON-NLS-1$
       return new LibraryCollection(name);
     }
@@ -156,7 +158,8 @@ public class LibraryCollection extends LibraryResource {
      * @param obj the object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
     	XML.getLoader(LibraryResource.class).loadObject(control, obj);
     	LibraryCollection collection = (LibraryCollection)obj;
     	collection.resources.clear();

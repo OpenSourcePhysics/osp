@@ -119,17 +119,17 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
     setName("VideoPanel");
     setSquareAspect(true);
     player = new VideoPlayer(this);
-    player.addPropertyChangeListener(VideoPlayer.PROPERTY_VIDEOPLAYER_VIDEOCLIP, this);     //$NON-NLS-1$
-    player.addPropertyChangeListener(VideoPlayer.PROPERTY_VIDEO_STEPNUMBER, this);    //$NON-NLS-1$
-    player.addPropertyChangeListener(VideoPlayer.PROPERTY_VIDEO_FRAMEDURATION, this); //$NON-NLS-1$
+    player.addPropertyChangeListener(VideoPlayer.PROPERTY_VIDEOPLAYER_VIDEOCLIP, this);     
+    player.addPropertyChangeListener(VideoPlayer.PROPERTY_VIDEO_STEPNUMBER, this);    
+    player.addPropertyChangeListener(VideoPlayer.PROPERTY_VIDEO_FRAMEDURATION, this); 
     add(player, BorderLayout.SOUTH);
     VideoClip clip = player.getVideoClip();
-    clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STARTFRAME, this); //$NON-NLS-1$
-    clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STEPSIZE, this);   //$NON-NLS-1$
-    clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STEPCOUNT, this);  //$NON-NLS-1$
-    clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_FRAMECOUNT, this);  //$NON-NLS-1$
-    clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STARTTIME, this);  //$NON-NLS-1$
-    clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_ADJUSTING, this);          //$NON-NLS-1$
+    clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STARTFRAME, this); 
+    clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STEPSIZE, this);   
+    clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STEPCOUNT, this);  
+    clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_FRAMECOUNT, this);  
+    clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STARTTIME, this);  
+    clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_ADJUSTING, this);          
     // define mousePanel and messagePanel
     mousePanel = blMessageBox;
     messagePanel = brMessageBox;
@@ -171,13 +171,13 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 
 				@Override
 				public void run() {
-					newVideo.removePropertyChangeListener(AsyncVideoI.PROPERTY_VIDEO_ASYNC_READY, VideoPanel.this); //$NON-NLS-1$
+					newVideo.removePropertyChangeListener(AsyncVideoI.PROPERTY_VIDEO_ASYNC_READY, VideoPanel.this); 
 					initializePlayer(prev, newVideo, playAllSteps);
 					repaint();
 				}
 
 			};
-			newVideo.addPropertyChangeListener(AsyncVideoI.PROPERTY_VIDEO_ASYNC_READY, this); //$NON-NLS-1$
+			newVideo.addPropertyChangeListener(AsyncVideoI.PROPERTY_VIDEO_ASYNC_READY, this); 
 		} else {
 			initializePlayer(prev, newVideo, playAllSteps);
 		}
@@ -613,10 +613,10 @@ public synchronized void clear() {
 				asyncReady = null;
 			}
 			break;
-		case ClipControl.PROPERTY_VIDEO_STEPNUMBER: // from VideoPlayer //$NON-NLS-1$
+		case ClipControl.PROPERTY_VIDEO_STEPNUMBER: // from VideoPlayer 
 			repaint();
 			break;
-		case VideoPlayer.PROPERTY_VIDEOPLAYER_VIDEOCLIP: // from VideoPlayer //$NON-NLS-1$
+		case VideoPlayer.PROPERTY_VIDEOPLAYER_VIDEOCLIP: // from VideoPlayer 
 			// update property change listeners
 			VideoClip oldClip = (VideoClip) e.getOldValue();
 			oldClip.removePropertyChangeListener(Video.PROPERTY_VIDEO_STARTFRAME, this); 

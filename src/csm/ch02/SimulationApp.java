@@ -22,7 +22,8 @@ public class SimulationApp extends AbstractSimulation {
   /**
    * Does a simulation step by decrementing the counter.
    */
-  public void doStep() { // does a simulation step
+  @Override
+public void doStep() { // does a simulation step
     control.println("Counter = "+(counter--));
     control.setAdjustableValue("counter", counter);
   }
@@ -30,7 +31,8 @@ public class SimulationApp extends AbstractSimulation {
   /**
    * Initializes the simulation by setting the counter variable
    */
-  public void initialize() {
+  @Override
+public void initialize() {
     counter = control.getInt("counter");
     OSPLog.info("Initializing SumulationApp");
   }
@@ -38,7 +40,8 @@ public class SimulationApp extends AbstractSimulation {
   /**
    * Resets the simulation parameters to their initial state.
    */
-  public void reset() { // invoked when reset button is pressed
+  @Override
+public void reset() { // invoked when reset button is pressed
 	  control.setValue("a", 10.0); // unused parameter
     control.setAdjustableValue("counter", 90); // allows counter to be changed after initialization
     initialize();

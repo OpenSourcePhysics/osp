@@ -77,7 +77,8 @@ public class FourierSinCosAnalysis implements Data {
    * This method is used by Data displaying tools to create as many pages as needed.
    * @return A list of DataInformation elements, null if the element itself is a DataInformation
    */
-  public java.util.List<Data> getDataList() {
+  @Override
+public java.util.List<Data> getDataList() {
     return null;
   }
 
@@ -160,7 +161,8 @@ public class FourierSinCosAnalysis implements Data {
    *
    * @return list of Datasets
    */
-  public java.util.ArrayList<Dataset> getDatasets() {
+  @Override
+public java.util.ArrayList<Dataset> getDatasets() {
     java.util.ArrayList<Dataset> list = new java.util.ArrayList<Dataset>();
     if(fftData==null) {
       return list;
@@ -229,7 +231,8 @@ public class FourierSinCosAnalysis implements Data {
    * The column names to be used in the data display tool
    * @return
    */
-  public String[] getColumnNames() {
+  @Override
+public String[] getColumnNames() {
     return new String[] {name};
   }
 
@@ -238,7 +241,8 @@ public class FourierSinCosAnalysis implements Data {
    *
    * @return String
    */
-  public String getName() {
+  @Override
+public String getName() {
     return name;
   }
 
@@ -246,7 +250,8 @@ public class FourierSinCosAnalysis implements Data {
    * Line colors for Data interface.
    * @return
    */
-  public java.awt.Color[] getLineColors() {
+  @Override
+public java.awt.Color[] getLineColors() {
     return null;
   }
 
@@ -254,7 +259,8 @@ public class FourierSinCosAnalysis implements Data {
    * Fill colors for Data interface.
    * @return
    */
-  public java.awt.Color[] getFillColors() {
+  @Override
+public java.awt.Color[] getFillColors() {
     return null;
   }
 
@@ -262,7 +268,8 @@ public class FourierSinCosAnalysis implements Data {
    * Gets the frequencies, power, cos, and sin coefficients.
    * @return double[][]
    */
-  public double[][] getData2D() {
+  @Override
+public double[][] getData2D() {
     if(fftData==null) {
       return null;
     }
@@ -290,7 +297,8 @@ public class FourierSinCosAnalysis implements Data {
    *
    * @return double[][][]
    */
-  public double[][][] getData3D() {
+  @Override
+public double[][][] getData3D() {
     return null;
   }
 
@@ -299,7 +307,8 @@ public class FourierSinCosAnalysis implements Data {
    *
    * @param id the ID number
    */
-  public void setID(int id) {
+  @Override
+public void setID(int id) {
     datasetID = id;
   }
 
@@ -308,7 +317,8 @@ public class FourierSinCosAnalysis implements Data {
    *
    * @return the ID number
    */
-  public int getID() {
+  @Override
+public int getID() {
     return datasetID;
   }
 

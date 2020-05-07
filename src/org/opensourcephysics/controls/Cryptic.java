@@ -168,7 +168,8 @@ public class Cryptic {
      * @param control the control to save to
      * @param obj the object to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       Cryptic cryptic = (Cryptic) obj;
       control.setValue("cryptic", cryptic.getCryptic()); //$NON-NLS-1$
     }
@@ -179,7 +180,8 @@ public class Cryptic {
      * @param control the control
      * @return the newly created object
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new Cryptic();
     }
 
@@ -190,7 +192,8 @@ public class Cryptic {
      * @param obj the object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       Cryptic cryptic = (Cryptic) obj;
       cryptic.setCryptic(control.getString("cryptic")); //$NON-NLS-1$
       return obj;

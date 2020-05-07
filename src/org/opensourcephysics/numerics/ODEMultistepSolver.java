@@ -81,7 +81,8 @@ public class ODEMultistepSolver implements ODEAdaptiveSolver {
    * Sets the tolerance of the adaptive ODE solver.
    * @param tol the tolerance
    */
-  public void setTolerance(double tol) {
+  @Override
+public void setTolerance(double tol) {
     tol = Math.abs(tol);
     odeEngine.setTolerance(tol);
   }
@@ -90,7 +91,8 @@ public class ODEMultistepSolver implements ODEAdaptiveSolver {
    * Gets the tolerance of the adaptive ODE solver.
    * @return
    */
-  public double getTolerance() {
+  @Override
+public double getTolerance() {
     return odeEngine.getTolerance();
   }
 
@@ -102,7 +104,8 @@ public class ODEMultistepSolver implements ODEAdaptiveSolver {
    *   ODEAdaptiveSolver.BISECTION_EVENT_NOT_FOUND=2;
    * @return int
    */
-  public int getErrorCode() {
+  @Override
+public int getErrorCode() {
     return err_code;
   }
 
@@ -115,7 +118,8 @@ public class ODEMultistepSolver implements ODEAdaptiveSolver {
    *
    * @return the actual step
    */
-  public double step() {
+  @Override
+public double step() {
     err_code = NO_ERROR;
     internalODE.setInitialConditions(); // stores the ode's initial conditions
     double remainder = 0;
@@ -224,7 +228,8 @@ public class ODEMultistepSolver implements ODEAdaptiveSolver {
    *
    * @param stepSize
    */
-  public void initialize(double stepSize) {
+  @Override
+public void initialize(double stepSize) {
     maxMessages = 4; // reset the message counter to produce more messages
     err_msg = "";    //$NON-NLS-1$
     err_code = NO_ERROR;
@@ -239,7 +244,8 @@ public class ODEMultistepSolver implements ODEAdaptiveSolver {
    *
    * @param stepSize
    */
-  public void setStepSize(double stepSize) {
+  @Override
+public void setStepSize(double stepSize) {
     maxMessages = 4;          // reset the message counter to produce more messages
     fixedStepSize = stepSize; // the fixed step size
     if(stepSize<0) {
@@ -263,7 +269,8 @@ public class ODEMultistepSolver implements ODEAdaptiveSolver {
    *
    * @return the step size
    */
-  public double getStepSize() {
+  @Override
+public double getStepSize() {
     return fixedStepSize;
   }
 
@@ -286,7 +293,8 @@ public class ODEMultistepSolver implements ODEAdaptiveSolver {
      * @param state double[]
      * @param rate double[]
      */
-    public void getRate(double[] state, double[] rate) {
+    @Override
+	public void getRate(double[] state, double[] rate) {
       ode.getRate(state, rate);
     }
 
@@ -295,7 +303,8 @@ public class ODEMultistepSolver implements ODEAdaptiveSolver {
      *
      * @return double[]
      */
-    public double[] getState() {
+    @Override
+	public double[] getState() {
       return engineState;
     }
 

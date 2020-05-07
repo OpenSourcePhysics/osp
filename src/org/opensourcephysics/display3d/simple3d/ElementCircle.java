@@ -36,18 +36,21 @@ public class ElementCircle extends Element implements org.opensourcephysics.disp
   // -------------------------------------
   // New configuration methods
   // -------------------------------------
-  public void setRotationAngle(double angle) {
+  @Override
+public void setRotationAngle(double angle) {
     this.angle = angle;
   }
 
-  public double getRotationAngle() {
+  @Override
+public double getRotationAngle() {
     return this.angle;
   }
 
   // -------------------------------------
   // Abstract part of Element
   // -------------------------------------
-  Object3D[] getObjects3D() {
+  @Override
+Object3D[] getObjects3D() {
     if(!isReallyVisible()) {
       return null;
     }
@@ -57,14 +60,16 @@ public class ElementCircle extends Element implements org.opensourcephysics.disp
     return objects;
   }
 
-  void draw(Graphics2D _g2, int _index) {
+  @Override
+void draw(Graphics2D _g2, int _index) {
     // Allow the panel to adjust color according to depth
     Color theColor = getDrawingPanel3D().projectColor(getRealStyle().getLineColor(), objects[0].getDistance());
     Color theFillColor = getDrawingPanel3D().projectColor(getRealStyle().getFillColor(), objects[0].getDistance());
     drawIt(_g2, theColor, theFillColor);
   }
 
-  void drawQuickly(Graphics2D _g2) {
+  @Override
+void drawQuickly(Graphics2D _g2) {
     if(!isReallyVisible()) {
       return;
     }
@@ -77,7 +82,8 @@ public class ElementCircle extends Element implements org.opensourcephysics.disp
   // -------------------------------------
   // Interaction
   // -------------------------------------
-  protected InteractionTarget getTargetHit(int x, int y) {
+  @Override
+protected InteractionTarget getTargetHit(int x, int y) {
     if(!isReallyVisible()) {
       return null;
     }
@@ -141,7 +147,8 @@ public class ElementCircle extends Element implements org.opensourcephysics.disp
   }
 
   static private class Loader extends org.opensourcephysics.display3d.core.ElementCircle.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ElementCircle();
     }
 

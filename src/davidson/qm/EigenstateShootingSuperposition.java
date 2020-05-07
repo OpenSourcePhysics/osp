@@ -50,7 +50,8 @@ public class EigenstateShootingSuperposition implements QMSuperposition {
    *
    * @param scale double
    */
-  public void setEnergyScale(double scale) {
+  @Override
+public void setEnergyScale(double scale) {
     energyScale = scale;
   }
 
@@ -59,7 +60,8 @@ public class EigenstateShootingSuperposition implements QMSuperposition {
    *
    * @return the scale
    */
-  public double getEnergyScale() {
+  @Override
+public double getEnergyScale() {
     return energyScale;
   }
 
@@ -68,7 +70,8 @@ public class EigenstateShootingSuperposition implements QMSuperposition {
    * Gets the real coefficients.
    * @return the coefficients
    */
-  public double[] getReCoef() {
+  @Override
+public double[] getReCoef() {
     return recoef;
   }
 
@@ -76,7 +79,8 @@ public class EigenstateShootingSuperposition implements QMSuperposition {
    * Gets the imaginary coefficients.
    * @return the coefficients
    */
-  public double[] getImCoef() {
+  @Override
+public double[] getImCoef() {
     return imcoef;
   }
 
@@ -87,7 +91,8 @@ public class EigenstateShootingSuperposition implements QMSuperposition {
    * @param im double[]
    * @return boolean
    */
-  public boolean setCoef(double[] re, double[] im) {
+  @Override
+public boolean setCoef(double[] re, double[] im) {
     if((re!=null && re.length>MAX_STATES)  || (im!=null && im.length>MAX_STATES) )
     JOptionPane.showMessageDialog(null,
         "The number of engenstates cannot be larger than "+MAX_STATES+". You are obviously a theorist who needs help.",
@@ -138,7 +143,7 @@ public class EigenstateShootingSuperposition implements QMSuperposition {
       }
       if(converge){
         vals[i]=qmsystem.energy;
-        states[i]=(double[])qmsystem.psi.clone();
+        states[i]=qmsystem.psi.clone();
         //System.out.println("state n="+i+" energy="+vals[i]);
       }else{
         System.out.println("state did not converge. n="+i);
@@ -152,12 +157,14 @@ public class EigenstateShootingSuperposition implements QMSuperposition {
    * Gets the energy eigenvalue for the i-th eigenstate.
    * @return double[][]
    */
-  public double getEigenValue(int i) {
+  @Override
+public double getEigenValue(int i) {
      return vals[i]*energyScale;
   }
 
 
-  public void update(double time){
+  @Override
+public void update(double time){
     System.arraycopy(zeroArray,0,rePsi,0,rePsi.length);
     System.arraycopy(zeroArray,0,imPsi,0,imPsi.length);
     for(int i=0; i<numstates; i++){
@@ -178,7 +185,8 @@ public class EigenstateShootingSuperposition implements QMSuperposition {
   }
 
 
-  public Dataset getRho(Dataset dataset){
+  @Override
+public Dataset getRho(Dataset dataset){
     if(dataset==null) dataset=new Dataset();
     else dataset.clear();
     for(int j=0, n=rePsi.length; j<n; j++){
@@ -192,7 +200,8 @@ public class EigenstateShootingSuperposition implements QMSuperposition {
    * Gets the number of points used to approximate the wave function.
    * @return int
    */
-  public int getNumpts() {
+  @Override
+public int getNumpts() {
     return x.length;
   }
 
@@ -200,7 +209,8 @@ public class EigenstateShootingSuperposition implements QMSuperposition {
    * Gets the value of x at the first data point.
    * @return double xmin
    */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return x[0];
   }
 
@@ -208,7 +218,8 @@ public class EigenstateShootingSuperposition implements QMSuperposition {
    * Gets the value of x at the last data point.
    * @return double xmax
    */
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return x[x.length - 1];
   }
 
@@ -216,7 +227,8 @@ public class EigenstateShootingSuperposition implements QMSuperposition {
    * Gets the array containing the real component of the wavefunction;
    * @return double[]
    */
-  public double[] getRePsi() {
+  @Override
+public double[] getRePsi() {
     return rePsi;
   }
 
@@ -224,7 +236,8 @@ public class EigenstateShootingSuperposition implements QMSuperposition {
    * Gets the array containing the imaginary component of the wavefunction;
    * @return double[]
    */
-  public double[] getImPsi() {
+  @Override
+public double[] getImPsi() {
     return imPsi;
   }
 
@@ -232,7 +245,8 @@ public class EigenstateShootingSuperposition implements QMSuperposition {
    * Gets the array containing the x values of the wavefunction;
    * @return double[]
    */
-  public double[] getX() {
+  @Override
+public double[] getX() {
     return x;
   }
 
@@ -240,14 +254,16 @@ public class EigenstateShootingSuperposition implements QMSuperposition {
    * Gets the Eigenstates.
    * @return double[][]
    */
-  public double[][] getEigenstates() {
+  @Override
+public double[][] getEigenstates() {
     return states;
   }
 
 
 
 
-  public ComplexDataset getPsi(ComplexDataset dataset){
+  @Override
+public ComplexDataset getPsi(ComplexDataset dataset){
     if(dataset==null) dataset=new ComplexDataset();
     else dataset.clear();
     dataset.append(x,rePsi,imPsi);

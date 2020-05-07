@@ -64,7 +64,8 @@ public abstract class ControlDrawable extends ControlElement {
     return myParent;
   }
 
-  public void destroy() {
+  @Override
+public void destroy() {
     super.destroy();
     if(myParent!=null) {
       ((DrawingPanel) myParent.getVisual()).render();
@@ -76,7 +77,8 @@ public abstract class ControlDrawable extends ControlElement {
   // ------------------------------------------------
   static private java.util.ArrayList<String> infoList = null;
 
-  public java.util.ArrayList<String> getPropertyList() { // This eliminates any previous property
+  @Override
+public java.util.ArrayList<String> getPropertyList() { // This eliminates any previous property
     if(infoList==null) {
       infoList = new java.util.ArrayList<String>();
       infoList.add("name");   //$NON-NLS-1$
@@ -85,7 +87,8 @@ public abstract class ControlDrawable extends ControlElement {
     return infoList;
   }
 
-  public String getPropertyInfo(String _property) {
+  @Override
+public String getPropertyInfo(String _property) {
     if(_property.equals("name")) {             //$NON-NLS-1$
       return "String         CONSTANT HIDDEN"; //$NON-NLS-1$
     }
@@ -98,7 +101,8 @@ public abstract class ControlDrawable extends ControlElement {
   // ------------------------------------------------
   // Variables
   // ------------------------------------------------
-  public void setValue(int _index, Value _value) {
+  @Override
+public void setValue(int _index, Value _value) {
     switch(_index) {
        case NAME :
          super.setValue(ControlElement.NAME, _value);
@@ -124,7 +128,8 @@ public abstract class ControlDrawable extends ControlElement {
     }
   }
 
-  public void setDefaultValue(int _index) {
+  @Override
+public void setDefaultValue(int _index) {
     switch(_index) {
        case NAME :
          super.setDefaultValue(ControlElement.NAME);
@@ -141,7 +146,8 @@ public abstract class ControlDrawable extends ControlElement {
     }
   }
 
-  public Value getValue(int _index) {
+  @Override
+public Value getValue(int _index) {
     switch(_index) {
        default :
          return null;

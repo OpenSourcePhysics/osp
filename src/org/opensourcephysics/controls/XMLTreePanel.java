@@ -11,10 +11,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -219,7 +216,8 @@ public class XMLTreePanel extends JPanel {
     JMenuItem item = new JMenuItem(ControlsRes.getString("XMLTreePanel.Popup.MenuItem.Inspect")); //$NON-NLS-1$
     popup.add(item);
     item.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         XMLTreeNode node = (XMLTreeNode) tree.getLastSelectedPathComponent();
         if(node!=null) {
           showInspector(node);
@@ -239,7 +237,8 @@ public class XMLTreePanel extends JPanel {
     input = new JTextField(20);
     input.setVisible(false);
     input.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         property.setValue(input.getText());
         Object obj = control.loadObject(null);
         if(obj instanceof Component) {
@@ -255,7 +254,8 @@ public class XMLTreePanel extends JPanel {
 
     });
     input.addKeyListener(new KeyAdapter() {
-      public void keyPressed(KeyEvent e) {
+      @Override
+	public void keyPressed(KeyEvent e) {
         if(!editable) {
           return;
         }
@@ -269,7 +269,8 @@ public class XMLTreePanel extends JPanel {
 
     });
     input.addFocusListener(new FocusAdapter() {
-      public void focusLost(FocusEvent e) {
+      @Override
+	public void focusLost(FocusEvent e) {
         JComponent comp = (JComponent) e.getSource();
         comp.setBackground(Color.white);
       }
@@ -302,7 +303,8 @@ public class XMLTreePanel extends JPanel {
     tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
     // listen for tree selections and display the property data
     tree.addTreeSelectionListener(new TreeSelectionListener() {
-      public void valueChanged(TreeSelectionEvent e) {
+      @Override
+	public void valueChanged(TreeSelectionEvent e) {
         XMLTreeNode node = (XMLTreeNode) tree.getLastSelectedPathComponent();
         if(node!=null) {
           displayProperty(node, editable);
@@ -312,7 +314,8 @@ public class XMLTreePanel extends JPanel {
     });
     // listen for mouse events to display array tables
     tree.addMouseListener(new MouseAdapter() {
-      public void mouseClicked(MouseEvent e) {
+      @Override
+	public void mouseClicked(MouseEvent e) {
         if(OSPRuntime.isPopupTrigger(e)) {
           // select node and show popup menu
           TreePath path = tree.getPathForLocation(e.getX(), e.getY());
@@ -356,7 +359,8 @@ public class XMLTreePanel extends JPanel {
         inspector.setEditable(editable);
         // listen for changes in the table array
         inspector.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-          public void propertyChange(PropertyChangeEvent e) {
+          @Override
+		public void propertyChange(PropertyChangeEvent e) {
             if(e.getPropertyName().equals("cell")) {           //$NON-NLS-1$
               // set new array value in array control (creates new XMLProperty)
               arrayControl.setValue(arrayName, arrayObj);
@@ -402,7 +406,8 @@ public class XMLTreePanel extends JPanel {
    * A cell renderer to show xml nodes.
    */
   private class XMLRenderer extends DefaultTreeCellRenderer {
-    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+    @Override
+	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
       super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
       XMLTreeNode node = (XMLTreeNode) value;
       if(node.isLeaf()) {

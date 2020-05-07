@@ -112,7 +112,8 @@ public class LauncherApplet extends JApplet {
   }
 
   /** Initialize the applet */
-  public void init() {
+  @Override
+public void init() {
     String simClass = null;
     String windowToCapture = null;
     try {
@@ -138,7 +139,8 @@ public class LauncherApplet extends JApplet {
     }
   }
 
-  public String[][] getParameterInfo() {
+  @Override
+public String[][] getParameterInfo() {
     String[][] pinfo = {
       {"simulation", "String", "The simulation"},                        //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
       {"capture", "String", "The name of the component to be captured"}, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$

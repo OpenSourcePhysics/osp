@@ -53,6 +53,7 @@ import org.opensourcephysics.display.OSPRuntime;
  *
  * @author Douglas Brown
  */
+@SuppressWarnings("serial")
 public abstract class AbstractAutoloadManager extends JDialog {
 	
 	SearchPathDialog searchPathDialog;
@@ -168,13 +169,15 @@ public abstract class AbstractAutoloadManager extends JDialog {
     // create buttons and buttonbar
     closeButton = new JButton();
     closeButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	setVisible(false);
       }
     });
     searchPathsButton = new JButton();
     searchPathsButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	// show search dialog
       	if (searchPathDialog==null) {
       		searchPathDialog = new SearchPathDialog();
@@ -376,7 +379,8 @@ public abstract class AbstractAutoloadManager extends JDialog {
     	setOpaque(false);
     	setToolTipText(ToolsRes.getString("AutoloadManager.FunctionCheckbox.Tooltip")); //$NON-NLS-1$
       addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
         	setFunctionSelected(filePath, function, AutoloadFunctionCheckbox.this.isSelected());
        	}
       });
@@ -409,7 +413,8 @@ public abstract class AbstractAutoloadManager extends JDialog {
     	setToolTipText(ToolsRes.getString("AutoloadManager.FileCheckbox.Tooltip")); //$NON-NLS-1$
     	// must use ChangeListener instead of ActionListener for TristateCheckbox
       addChangeListener(new ChangeListener() {
-      	public void stateChanged(ChangeEvent e) {
+      	@Override
+		public void stateChanged(ChangeEvent e) {
       		if (refreshing) return;
       		if (getState()==TristateCheckBox.PART_SELECTED) {
       			refreshing = true;
@@ -446,8 +451,8 @@ public abstract class AbstractAutoloadManager extends JDialog {
   	HashSet<File> addedFiles =  new HashSet<File>();
   	TreeSet<String> directoryPaths = new TreeSet<String>();
     JButton okButton, addButton, removeButton;
-    JList directoryList;
-    DefaultListModel directoryListModel;
+    JList<String> directoryList;
+    DefaultListModel<String> directoryListModel;
   	
   	/**
   	 * Constructor
@@ -470,11 +475,12 @@ public abstract class AbstractAutoloadManager extends JDialog {
       setContentPane(contentPane);
       
       // directory list
-      directoryListModel = new DefaultListModel();
-      directoryList = new JList(directoryListModel);
+      directoryListModel = new DefaultListModel<>();
+      directoryList = new JList<>(directoryListModel);
       directoryList.addListSelectionListener(new ListSelectionListener() {
+				@Override
 				public void valueChanged(ListSelectionEvent e) {
-		      String dir = (String)directoryList.getSelectedValue();
+		      String dir = directoryList.getSelectedValue();
 		      removeButton.setEnabled(dir!=null);
 				}      	
       });
@@ -486,7 +492,8 @@ public abstract class AbstractAutoloadManager extends JDialog {
       JPanel buttonbar = new JPanel();
       addButton = new JButton();
       addButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
         	// show file chooser to add folders
         	File file = chooseSearchDirectory(SearchPathDialog.this);
         	if (file==null) return; // cancelled by user
@@ -499,8 +506,9 @@ public abstract class AbstractAutoloadManager extends JDialog {
       });
       removeButton = new JButton();
       removeButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-        	String name = (String)directoryList.getSelectedValue();
+        @Override
+		public void actionPerformed(ActionEvent e) {
+        	String name = directoryList.getSelectedValue();
       		if (name!=null) {
           	for (Iterator<File> it = addedFiles.iterator(); it.hasNext();) {
           		File next = it.next();
@@ -518,7 +526,8 @@ public abstract class AbstractAutoloadManager extends JDialog {
       });
       okButton = new JButton();
       okButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           setVisible(false);
         }
       });
@@ -544,11 +553,13 @@ public abstract class AbstractAutoloadManager extends JDialog {
       	chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
       javax.swing.filechooser.FileFilter folderFilter = new javax.swing.filechooser.FileFilter() {
         // accept directories only
-        public boolean accept(File f) {
+        @Override
+		public boolean accept(File f) {
         	if (f==null) return false;
           return f.isDirectory();
         }
-        public String getDescription() {
+        @Override
+		public String getDescription() {
           return ToolsRes.getString("LibraryTreePanel.FolderFileFilter.Description"); //$NON-NLS-1$
         } 	     	
       };
@@ -573,7 +584,7 @@ public abstract class AbstractAutoloadManager extends JDialog {
       okButton.setText(ToolsRes.getString("Button.OK")); //$NON-NLS-1$
       addButton.setText(ToolsRes.getString("LibraryManager.Button.Add")+"..."); //$NON-NLS-1$ //$NON-NLS-2$
       removeButton.setText(ToolsRes.getString("LibraryManager.Button.Remove")); //$NON-NLS-1$
-      String dir = (String)directoryList.getSelectedValue();
+      String dir = directoryList.getSelectedValue();
       removeButton.setEnabled(dir!=null);
   	}
   	

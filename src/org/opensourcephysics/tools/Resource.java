@@ -12,21 +12,15 @@ import java.applet.AudioClip;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.function.Function;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
@@ -340,6 +334,7 @@ public class Resource {
 		return clip;
 	}
 
+	@Override
 	public String toString() {
 		return "[resource " + (file != null ? file.toString() : url != null ? url.toString() : null) + "]";
 	}

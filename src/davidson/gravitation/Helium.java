@@ -26,7 +26,8 @@ public class Helium implements Drawable, ODE {
    *
    * @return the state
    */
-  public double[] getState() {
+  @Override
+public double[] getState() {
     return state;
   }
 
@@ -38,7 +39,8 @@ public class Helium implements Drawable, ODE {
    * @param state  the state
    * @param rate   the rate
    */
-  public void getRate(double[] state, double[] rate) {
+  @Override
+public void getRate(double[] state, double[] rate) {
     // state[]: x1, vx1, y1, vy1, x2, vx2, y2, vy2, t
     double deltaX=(state[4]-state[0]);                  // x12 separation
     double deltaY=(state[6]-state[2]);                  // y12 separation
@@ -101,7 +103,8 @@ public class Helium implements Drawable, ODE {
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     trail_1.draw(panel,g);
     trail_2.draw(panel,g);
     int xpix = panel.xToPix(state[0]) - pixRadius;

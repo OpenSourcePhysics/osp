@@ -135,9 +135,11 @@ public interface VisualizationHints {
   // XML loader
   // ----------------------------------------------------
   abstract static class Loader extends XMLLoader {
-    abstract public Object createObject(XMLControl control);
+    @Override
+	abstract public Object createObject(XMLControl control);
 
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       VisualizationHints hints = (VisualizationHints) obj;
       control.setValue("decoration type", hints.getDecorationType());       //$NON-NLS-1$
       control.setValue("cursor type", hints.getCursorType());               //$NON-NLS-1$
@@ -151,7 +153,8 @@ public interface VisualizationHints {
       control.setValue("axes labels", hints.getAxesLabels());               //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       VisualizationHints hints = (VisualizationHints) obj;
       hints.setDecorationType(control.getInt("decoration type"));            //$NON-NLS-1$
       hints.setCursorType(control.getInt("cursor type"));                    //$NON-NLS-1$

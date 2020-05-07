@@ -37,7 +37,8 @@ public abstract class AbstractODESolver extends Object implements ODESolver {
    *
    * @return the step size
    */
-  abstract public double step();
+  @Override
+abstract public double step();
 
   /**
    * Sets the step size.
@@ -46,7 +47,8 @@ public abstract class AbstractODESolver extends Object implements ODESolver {
    *
    * @param _stepSize
    */
-  public void setStepSize(double _stepSize) {
+  @Override
+public void setStepSize(double _stepSize) {
     stepSize = _stepSize;
   }
 
@@ -58,7 +60,8 @@ public abstract class AbstractODESolver extends Object implements ODESolver {
    *
    * @param _stepSize
    */
-  public void initialize(double _stepSize) {
+  @Override
+public void initialize(double _stepSize) {
     stepSize = _stepSize;
     double state[] = ode.getState();
     if(state==null) { // state vector not defined
@@ -75,7 +78,8 @@ public abstract class AbstractODESolver extends Object implements ODESolver {
    *
    * @return the step size
    */
-  public double getStepSize() {
+  @Override
+public double getStepSize() {
     return stepSize;
   }
 

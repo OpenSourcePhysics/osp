@@ -6,7 +6,6 @@
  */
 
 package org.opensourcephysics.display3d.simple3d;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
@@ -59,113 +58,133 @@ public class VisualizationHints implements org.opensourcephysics.display3d.core.
     this.panel = aPanel;
   }
 
-  public void setCursorType(int _type) {
+  @Override
+public void setCursorType(int _type) {
     this.cursorType = _type;
     if(panel!=null) {
       panel.hintChanged(HINT_CURSOR_TYPE);
     }
   }
 
-  final public int getCursorType() {
+  @Override
+final public int getCursorType() {
     return this.cursorType;
   }
 
-  public void setDecorationType(int _value) {
+  @Override
+public void setDecorationType(int _value) {
     this.decorationType = _value;
     if(panel!=null) {
       panel.hintChanged(HINT_DECORATION_TYPE);
     }
   }
 
-  final public int getDecorationType() {
+  @Override
+final public int getDecorationType() {
     return this.decorationType;
   }
 
-  final public void setAxesLabels(String[] labels) {
+  @Override
+final public void setAxesLabels(String[] labels) {
     axesLabels = labels;
     if(panel!=null) {
       panel.hintChanged(HINT_AXES_LABELS);
     }
   }
 
-  final public String[] getAxesLabels() {
+  @Override
+final public String[] getAxesLabels() {
     return axesLabels;
   }
 
-  public void setRemoveHiddenLines(boolean _value) {
+  @Override
+public void setRemoveHiddenLines(boolean _value) {
     this.removeHiddenLines = _value;
     if(panel!=null) {
       panel.hintChanged(HINT_REMOVE_HIDDEN_LINES);
     }
   }
 
-  final public boolean isRemoveHiddenLines() {
+  @Override
+final public boolean isRemoveHiddenLines() {
     return this.removeHiddenLines;
   }
 
-  public void setAllowQuickRedraw(boolean _value) {
+  @Override
+public void setAllowQuickRedraw(boolean _value) {
     this.allowQuickRedraw = _value;
     if(panel!=null) {
       panel.hintChanged(HINT_ALLOW_QUICK_REDRAW);
     }
   }
 
-  final public boolean isAllowQuickRedraw() {
+  @Override
+final public boolean isAllowQuickRedraw() {
     return this.allowQuickRedraw;
   }
 
-  public void setUseColorDepth(boolean _value) {
+  @Override
+public void setUseColorDepth(boolean _value) {
     this.useColorDepth = _value;
     if(panel!=null) {
       panel.hintChanged(HINT_USE_COLOR_DEPTH);
     }
   }
 
-  final public boolean isUseColorDepth() {
+  @Override
+final public boolean isUseColorDepth() {
     return this.useColorDepth;
   }
 
-  public void setShowCoordinates(int location) {
+  @Override
+public void setShowCoordinates(int location) {
     showCoordinates = location;
     if(panel!=null) {
       panel.hintChanged(HINT_SHOW_COORDINATES);
     }
   }
 
-  public int getShowCoordinates() {
+  @Override
+public int getShowCoordinates() {
     return showCoordinates;
   }
 
-  public void setXFormat(String format) {
+  @Override
+public void setXFormat(String format) {
     formatX = format;
     if(formatX!=null) {
       theFormatX = new java.text.DecimalFormat(formatX);
     }
   }
 
-  public String getXFormat() {
+  @Override
+public String getXFormat() {
     return formatX;
   }
 
-  public void setYFormat(String format) {
+  @Override
+public void setYFormat(String format) {
     formatY = format;
     if(formatY!=null) {
       theFormatY = new java.text.DecimalFormat(formatY);
     }
   }
 
-  public String getYFormat() {
+  @Override
+public String getYFormat() {
     return formatY;
   }
 
-  public void setZFormat(String format) {
+  @Override
+public void setZFormat(String format) {
     formatZ = format;
     if(formatZ!=null) {
       theFormatZ = new java.text.DecimalFormat(formatZ);
     }
   }
 
-  public String getZFormat() {
+  @Override
+public String getZFormat() {
     return formatZ;
   }
 
@@ -221,7 +240,8 @@ public class VisualizationHints implements org.opensourcephysics.display3d.core.
     panel.setMessage(text, showCoordinates);
   }
 
-  public void copyFrom(org.opensourcephysics.display3d.core.VisualizationHints hints) {
+  @Override
+public void copyFrom(org.opensourcephysics.display3d.core.VisualizationHints hints) {
     decorationType = hints.getDecorationType();
     cursorType = hints.getCursorType();
     axesLabels = hints.getAxesLabels();
@@ -252,7 +272,8 @@ public class VisualizationHints implements org.opensourcephysics.display3d.core.
   }
 
   protected static class VisualizationHintsLoader extends org.opensourcephysics.display3d.core.VisualizationHints.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new VisualizationHints((DrawingPanel3D) null);
     }
 

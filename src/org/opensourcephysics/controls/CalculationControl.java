@@ -20,6 +20,7 @@ import org.opensourcephysics.display.OSPFrame;
  * @author       Joshua Gould
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class CalculationControl extends OSPControl {
   protected Calculation calculation;
   final static String resetToolTipText = ControlsRes.CALCULATION_RESET_TIP;
@@ -56,14 +57,16 @@ public class CalculationControl extends OSPControl {
  * Gets this frame.  Implementation of MainFrame interface.
  * @return OSPFrame
  */
-  public OSPFrame getMainFrame() {
+  @Override
+public OSPFrame getMainFrame() {
     return this;
   }
 
   /**
    * Refreshes the user interface in response to display changes such as the Language.
    */
-  protected void refreshGUI() {
+  @Override
+protected void refreshGUI() {
     super.refreshGUI();
     if(calcBtn==null) {
       return;
@@ -78,7 +81,8 @@ public class CalculationControl extends OSPControl {
      *
      * @param  e
      */
-    public void actionPerformed(ActionEvent e) {
+    @Override
+	public void actionPerformed(ActionEvent e) {
       GUIUtils.clearDrawingFrameData(false);
       if(calculation==null) {
         println("The CalculationControl's model is null."); //$NON-NLS-1$
@@ -96,7 +100,8 @@ public class CalculationControl extends OSPControl {
      *
      * @param  e
      */
-    public void actionPerformed(ActionEvent e) {
+    @Override
+	public void actionPerformed(ActionEvent e) {
       GUIUtils.clearDrawingFrameData(true);
       if(calculation==null) {
         println("The CalculationControl's model is null."); //$NON-NLS-1$

@@ -94,7 +94,8 @@ public class Demo3D_3App extends AbstractSimulation {
     frame.addElement(cone);
   }
 
-  public void doStep() {
+  @Override
+public void doStep() {
     // Rotate the elements
     angle += 0.1;
     trihedron.setTransformation(Matrix3DTransformation.rotation(angle, axis));

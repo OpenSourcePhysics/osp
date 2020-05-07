@@ -36,7 +36,8 @@ public class VidCartesianCoordinateStringBuilder
    * @param e the mouse event
    * @return the coordinate string
    */
-  public String getCoordinateString(DrawingPanel panel, MouseEvent e) {
+  @Override
+public String getCoordinateString(DrawingPanel panel, MouseEvent e) {
     if(!(panel instanceof VideoPanel)) {
       return super.getCoordinateString(panel, e);
     }
@@ -52,7 +53,8 @@ public class VidCartesianCoordinateStringBuilder
    * @param y the y
    * @return the coordinate string
    */
-  public String getCoordinateString(VideoPanel panel, double x, double y) {
+  @Override
+public String getCoordinateString(VideoPanel panel, double x, double y) {
     String msg;
     if((Math.abs(x)>100)||(Math.abs(x)<0.01)||(Math.abs(y)>100)||(Math.abs(y)<0.01)) {
 	  	scientificFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());

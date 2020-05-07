@@ -65,7 +65,8 @@ public class PlotFrame extends DrawingFrame {
   /**
    *  Sets the name of this component and the Dataset Manager.
    */
-  public void setName(String name) {
+  @Override
+public void setName(String name) {
     name = TeXParser.parseTeX(name);
     super.setName(name);
     datasetManager.setName(name);
@@ -74,7 +75,8 @@ public class PlotFrame extends DrawingFrame {
   /**
    * Adds Views menu items on the menu bar.
    */
-  protected void addMenuItems() {
+  @Override
+protected void addMenuItems() {
     JMenuBar menuBar = getJMenuBar();
     if(menuBar==null) {
       return;
@@ -94,7 +96,8 @@ public class PlotFrame extends DrawingFrame {
     // add a scale option
     JMenuItem scaleItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Scale_menu_item")); //$NON-NLS-1$
     ActionListener actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         scale();
       }
 
@@ -104,7 +107,8 @@ public class PlotFrame extends DrawingFrame {
     // add a log scale option
     JMenuItem logItem = new JMenuItem(DisplayRes.getString("DrawingFrame.LogAxes_menu_item")); //$NON-NLS-1$
     actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         logAxes();
       }
 
@@ -116,7 +120,8 @@ public class PlotFrame extends DrawingFrame {
     JMenuItem tableItem = new JMenuItem(DisplayRes.getString("DrawingFrame.DataTable_menu_item")); //$NON-NLS-1$
     tableItem.setAccelerator(KeyStroke.getKeyStroke('T', MENU_SHORTCUT_KEY_MASK));
     actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         showDataTable(true);
       }
 
@@ -307,7 +312,8 @@ public class PlotFrame extends DrawingFrame {
   /**
    * Sets the background color of this component.
    */
-  public void setBackground(Color color) {
+  @Override
+public void setBackground(Color color) {
     super.setBackground(color);
     if(drawingPanel!=null) {
       drawingPanel.setBackground(color);
@@ -402,7 +408,8 @@ public class PlotFrame extends DrawingFrame {
   /**
    * Clears drawable objects added by the user to this frame.
    */
-  public void clearDrawables() {
+  @Override
+public void clearDrawables() {
 	  if(drawingPanel!=null) {
         drawingPanel.clear(); // removes all drawables
         drawingPanel.addDrawable(datasetManager);
@@ -435,7 +442,8 @@ public class PlotFrame extends DrawingFrame {
    *
    * @return the list
    */
-  public synchronized ArrayList<Drawable> getDrawables() {
+  @Override
+public synchronized ArrayList<Drawable> getDrawables() {
 	    return super.getDrawablesExcept(null, datasetManager);
   }
 
@@ -449,7 +457,8 @@ public class PlotFrame extends DrawingFrame {
    *
    * @see #getObjectOfClass(Class c)
    */
-  public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
+  @Override
+public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
 	return getDrawablesExcept(c, datasetManager);
   }
 
@@ -457,7 +466,8 @@ public class PlotFrame extends DrawingFrame {
    * Clears the data from all datasets.
    * Dataset properties are preserved because only the data is cleared.
    */
-  public void clearData() {
+  @Override
+public void clearData() {
     datasetManager.clear();
     dataTable.refreshTable();
     if(drawingPanel!=null) {
@@ -517,7 +527,8 @@ public class PlotFrame extends DrawingFrame {
     * @param control XMLControl
     * @return Object
     */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       PlotFrame frame = new PlotFrame("x", "y", DisplayRes.getString("PlotFrame.Title")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
       return frame;
     }
@@ -529,7 +540,8 @@ public class PlotFrame extends DrawingFrame {
      * @param obj Object
      * @return Object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       PlotFrame frame = ((PlotFrame) obj);
       ArrayList<?> list = frame.getObjectOfClass(DatasetManager.class);

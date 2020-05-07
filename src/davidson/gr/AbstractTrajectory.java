@@ -100,7 +100,8 @@ public abstract class AbstractTrajectory extends InteractiveCircle implements Tr
     * Initializes the state array.
     * @param initialState double[]
     */
-   public void initialize(double[] initialState) {
+   @Override
+public void initialize(double[] initialState) {
       if((state==null)||(state.length!=initialState.length)) { // state arrays should be allocated in constructor.
          throw(new IllegalArgumentException());
       }
@@ -116,7 +117,8 @@ public abstract class AbstractTrajectory extends InteractiveCircle implements Tr
    /**
     * Resets the trajectory to its initial state.
     */
-   public void resetInitial() {
+   @Override
+public void resetInitial() {
       initialize(stateInitial);
    }
 
@@ -126,7 +128,8 @@ public abstract class AbstractTrajectory extends InteractiveCircle implements Tr
     * @param x
     * @param y
    */
-   public void setXY(double x, double y) {
+   @Override
+public void setXY(double x, double y) {
      double r = Math.sqrt(x * x + y * y);
      if (r==0 && minR>0) {
        super.setXY(minR, 0);
@@ -181,13 +184,16 @@ public abstract class AbstractTrajectory extends InteractiveCircle implements Tr
     * Sets the solution tolerance.
     * @param tol double
     */
-   public void setTolerance(double tol) {
+   @Override
+public void setTolerance(double tol) {
       this.tol = tol;
    }
 
-   public abstract void stepTime();
+   @Override
+public abstract void stepTime();
 
-   public double[] getState() {
+   @Override
+public double[] getState() {
       return state;
    }
 
@@ -197,7 +203,8 @@ public abstract class AbstractTrajectory extends InteractiveCircle implements Tr
 
    protected abstract OSPTableInspector edit();
 
-   public abstract void getRate(double[] state, double[] rate);
+   @Override
+public abstract void getRate(double[] state, double[] rate);
 
    /**
     * Sets the highlight property.
@@ -235,7 +242,8 @@ public abstract class AbstractTrajectory extends InteractiveCircle implements Tr
       return highlight;
    }
 
-   public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+   @Override
+public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
      if(dragPosition){
        Interactive interactive = super.findInteractive(panel, xpix, ypix);
        if (interactive != null)return interactive;
@@ -250,7 +258,8 @@ public abstract class AbstractTrajectory extends InteractiveCircle implements Tr
     * @param panel
     * @param g
     */
-   public void draw(DrawingPanel panel, Graphics g) {
+   @Override
+public void draw(DrawingPanel panel, Graphics g) {
       if(showTrail) {
          trail.draw(panel, g);
       }
@@ -319,7 +328,8 @@ public abstract class AbstractTrajectory extends InteractiveCircle implements Tr
     * Gets the minimum x needed to draw this object.
     * @return minimum
     */
-   public double getXMin() {
+   @Override
+public double getXMin() {
       return Math.min(super.getXMin(), trail.getXMin());
    }
 
@@ -327,7 +337,8 @@ public abstract class AbstractTrajectory extends InteractiveCircle implements Tr
     * Gets the maximum x needed to draw this object.
     * @return maximum
     */
-   public double getXMax() {
+   @Override
+public double getXMax() {
       return Math.max(super.getXMax(), trail.getXMax());
    }
 
@@ -335,7 +346,8 @@ public abstract class AbstractTrajectory extends InteractiveCircle implements Tr
     * Gets the minimum y needed to draw this object.
     * @return minimum
     */
-   public double getYMin() {
+   @Override
+public double getYMin() {
       return Math.min(super.getYMin(), trail.getYMin());
    }
 
@@ -343,7 +355,8 @@ public abstract class AbstractTrajectory extends InteractiveCircle implements Tr
     * Gets the maximum y needed to draw this object.
     * @return minimum
     */
-   public double getYMax() {
+   @Override
+public double getYMax() {
       return Math.max(super.getYMax(), trail.getYMax());
    }
 
@@ -361,7 +374,8 @@ public abstract class AbstractTrajectory extends InteractiveCircle implements Tr
        * @param control XMLControl
        * @param obj Object
        */
-      public void saveObject(XMLControl control, Object obj) {
+      @Override
+	public void saveObject(XMLControl control, Object obj) {
          super.saveObject(control, obj);
          AbstractTrajectory trajectory = (AbstractTrajectory) obj;
          control.setValue("M", trajectory.M);
@@ -382,7 +396,8 @@ public abstract class AbstractTrajectory extends InteractiveCircle implements Tr
        * @param control XMLControl
        * @return Object
        */
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
          return null; // cannot create an abstract object.
       }
 
@@ -392,7 +407,8 @@ public abstract class AbstractTrajectory extends InteractiveCircle implements Tr
        * @param obj Object
        * @return Object
        */
-      public Object loadObject(XMLControl control, Object obj) {
+      @Override
+	public Object loadObject(XMLControl control, Object obj) {
          super.loadObject(control, obj);
          AbstractTrajectory trajectory = (AbstractTrajectory) obj;
          trajectory.M = control.getDouble("M");

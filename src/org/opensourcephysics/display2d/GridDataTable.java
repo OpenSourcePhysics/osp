@@ -13,7 +13,6 @@ import java.awt.event.ActionListener;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -62,7 +61,8 @@ public class GridDataTable extends JTable implements ActionListener {
    *
    * @param  evt
    */
-  public void actionPerformed(ActionEvent evt) {
+  @Override
+public void actionPerformed(ActionEvent evt) {
     tableChanged(new TableModelEvent(tableModel, TableModelEvent.HEADER_ROW));
   }
 
@@ -76,7 +76,8 @@ public class GridDataTable extends JTable implements ActionListener {
       refreshTimer.start();
     } else {
     	OSPRuntime.postEvent(new Runnable() {
-        public synchronized void run() {
+        @Override
+		public synchronized void run() {
           tableChanged(new TableModelEvent(tableModel, TableModelEvent.HEADER_ROW));
         }
 
@@ -97,7 +98,8 @@ public class GridDataTable extends JTable implements ActionListener {
    * @param  column  Description of Parameter
    * @return         The cellRenderer value
    */
-  public TableCellRenderer getCellRenderer(int row, int column) {
+  @Override
+public TableCellRenderer getCellRenderer(int row, int column) {
     int i = convertColumnIndexToModel(column);
     if(i==0) {
       return rowNumberRenderer;
@@ -133,7 +135,8 @@ public class GridDataTable extends JTable implements ActionListener {
      * @param  column
      * @return
      */
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    @Override
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
       if(column==0) {
         setBackground(PANEL_BACKGROUND);
       }

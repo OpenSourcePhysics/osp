@@ -25,15 +25,18 @@ import org.opensourcephysics.controls.XMLControlElement;
  * @version 1.0
  */
 public class ExportXMLFormat implements ExportFormat {
-  public String description() {
+  @Override
+public String description() {
     return "XML"; //$NON-NLS-1$
   }
 
-  public String extension() {
+  @Override
+public String extension() {
     return "xml"; //$NON-NLS-1$
   }
 
-  public void export(File file, List<Object> data) {
+  @Override
+public void export(File file, List<Object> data) {
     OSPLog.finer("Exporting XML data to file="+file);
     FileWriter fw = null;
     try {

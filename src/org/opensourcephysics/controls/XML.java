@@ -22,8 +22,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.opensourcephysics.display.OSPRuntime;
-
 /**
  * This defines the ObjectLoader interface and static methods for managing and
  * accessing ObjectLoader implementations.
@@ -592,21 +590,24 @@ public class XML {
   // static initializer defines loaders for commonly used classes
   static {
     setLoader(Color.class, new XML.ObjectLoader() {
-      public void saveObject(XMLControl control, Object obj) {
+      @Override
+	public void saveObject(XMLControl control, Object obj) {
         java.awt.Color color = (java.awt.Color) obj;
         control.setValue("red", color.getRed());     //$NON-NLS-1$
         control.setValue("green", color.getGreen()); //$NON-NLS-1$
         control.setValue("blue", color.getBlue());   //$NON-NLS-1$
         control.setValue("alpha", color.getAlpha()); //$NON-NLS-1$
       }
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
         int r = control.getInt("red");               //$NON-NLS-1$
         int g = control.getInt("green");             //$NON-NLS-1$
         int b = control.getInt("blue");              //$NON-NLS-1$
         int a = control.getInt("alpha");             //$NON-NLS-1$
         return new java.awt.Color(r, g, b, a);
       }
-      public Object loadObject(XMLControl control, Object obj) {
+      @Override
+	public Object loadObject(XMLControl control, Object obj) {
         int r = control.getInt("red");   //$NON-NLS-1$
         int g = control.getInt("green"); //$NON-NLS-1$
         int b = control.getInt("blue");  //$NON-NLS-1$
@@ -615,15 +616,18 @@ public class XML {
       }
     });
     setLoader(Double.class, new XML.ObjectLoader() {
-      public void saveObject(XMLControl control, Object obj) {
+      @Override
+	public void saveObject(XMLControl control, Object obj) {
         Double dbl = (Double) obj;
         control.setValue("value", dbl.doubleValue()); //$NON-NLS-1$
       }
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
         double val = control.getDouble("value"); //$NON-NLS-1$
         return new Double(val);
       }
-      public Object loadObject(XMLControl control, Object obj) {
+      @Override
+	public Object loadObject(XMLControl control, Object obj) {
         Double dbl = (Double) obj;
         double val = control.getDouble("value"); //$NON-NLS-1$
         if(dbl.doubleValue()==val) {
@@ -633,15 +637,18 @@ public class XML {
       }
     });
     setLoader(Integer.class, new XML.ObjectLoader() {
-      public void saveObject(XMLControl control, Object obj) {
+      @Override
+	public void saveObject(XMLControl control, Object obj) {
         Integer i = (Integer) obj;
         control.setValue("value", i.intValue()); //$NON-NLS-1$
       }
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
         int val = control.getInt("value"); //$NON-NLS-1$
         return Integer.valueOf(val);
       }
-      public Object loadObject(XMLControl control, Object obj) {
+      @Override
+	public Object loadObject(XMLControl control, Object obj) {
         Integer i = (Integer) obj;
         int val = control.getInt("value"); //$NON-NLS-1$
         if(i.intValue()==val) {
@@ -651,15 +658,18 @@ public class XML {
       }
     });
     setLoader(Boolean.class, new XML.ObjectLoader() {
-      public void saveObject(XMLControl control, Object obj) {
+      @Override
+	public void saveObject(XMLControl control, Object obj) {
         Boolean bool = (Boolean) obj;
         control.setValue("value", bool.booleanValue()); //$NON-NLS-1$
       }
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
         boolean val = control.getBoolean("value"); //$NON-NLS-1$
         return new Boolean(val);
       }
-      public Object loadObject(XMLControl control, Object obj) {
+      @Override
+	public Object loadObject(XMLControl control, Object obj) {
         Boolean bool = (Boolean) obj;
         boolean val = control.getBoolean("value"); //$NON-NLS-1$
         if(bool.booleanValue()==val) {
@@ -669,14 +679,17 @@ public class XML {
       }
     });
     setLoader(Dimension.class, new XML.ObjectLoader() {
-      public void saveObject(XMLControl control, Object obj) {
+      @Override
+	public void saveObject(XMLControl control, Object obj) {
       	Dimension dim = (Dimension) obj;
         control.setValue("dimensions", new int[] {dim.width, dim.height});     //$NON-NLS-1$
       }
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
         return new Dimension();
       }
-      public Object loadObject(XMLControl control, Object obj) {
+      @Override
+	public Object loadObject(XMLControl control, Object obj) {
       	Dimension dim = (Dimension) obj;
       	int[] dimensions = (int[]) control.getObject("dimensions"); //$NON-NLS-1$
         dim.width = dimensions[0];
@@ -685,14 +698,17 @@ public class XML {
       }
     });
     setLoader(Point.class, new XML.ObjectLoader() {
-      public void saveObject(XMLControl control, Object obj) {
+      @Override
+	public void saveObject(XMLControl control, Object obj) {
       	Point p = (Point) obj;
         control.setValue("location", new int[] {p.x, p.y});     //$NON-NLS-1$
       }
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
         return new Point();
       }
-      public Object loadObject(XMLControl control, Object obj) {
+      @Override
+	public Object loadObject(XMLControl control, Object obj) {
       	Point p = (Point) obj;
       	int[] location = (int[]) control.getObject("location"); //$NON-NLS-1$
       	p.x = location[0];

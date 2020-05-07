@@ -30,7 +30,8 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
    * Gets the parameter count.
    * @return the number of parameters
    */
-  public int getParameterCount() {
+  @Override
+public int getParameterCount() {
     return coefficients.length;
   }
 
@@ -40,7 +41,8 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
    * @param i the parameter index
    * @return the name of the parameter
    */
-  public String getParameterName(int i) {
+  @Override
+public String getParameterName(int i) {
     return paramNames[i];
   }
 
@@ -50,7 +52,8 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
    * @param i the parameter index
    * @return the description of the parameter (may be null)
    */
-  public String getParameterDescription(int i) {
+  @Override
+public String getParameterDescription(int i) {
   	if (paramDescriptions!=null && paramDescriptions.length>i) {
   		return paramDescriptions[i];
   	}
@@ -67,7 +70,8 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
    * @param i the parameter index
    * @return the value of the parameter
    */
-  public double getParameterValue(int i) {
+  @Override
+public double getParameterValue(int i) {
     return coefficients[coefficients.length-i-1];
   }
 
@@ -77,7 +81,8 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
    * @param i the parameter index
    * @param value the value
    */
-  public void setParameterValue(int i, double value) {
+  @Override
+public void setParameterValue(int i, double value) {
   	if (Double.isNaN(value)) return;
     coefficients[coefficients.length-i-1] = value;
   }
@@ -89,7 +94,8 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
    * @param values the parameter values (may be null)
    * @param descriptions the parameter descriptions (may be null)
    */
-  public void setParameters(String[] names, double[] values, String[] descriptions) {
+  @Override
+public void setParameters(String[] names, double[] values, String[] descriptions) {
   	if (names!=null) {
 			for (int i=0; i<Math.min(names.length, getParameterCount()); i++) {
 				if (names[i]==null || "".equals(names[i].trim())) continue; //$NON-NLS-1$
@@ -110,7 +116,8 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
    * @param indepVarName the name of the independent variable
    * @return the equation expression
    */
-  public String getExpression(String indepVarName) {
+  @Override
+public String getExpression(String indepVarName) {
     StringBuffer eqn = new StringBuffer();
     int end = coefficients.length-1;
     for(int i = 0; i<=end; i++) {
@@ -133,7 +140,8 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
    *
    * @return the name
    */
-  public String getName() {
+  @Override
+public String getName() {
   	if (name!=null) return name;
     return "Poly"+(getParameterCount()-1); //$NON-NLS-1$
   }
@@ -143,7 +151,8 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
    *
    * @param aName the name
    */
-  public void setName(String aName) {
+  @Override
+public void setName(String aName) {
   	if (aName!=null && !"".equals(aName.trim())) { //$NON-NLS-1$
   		name = aName;
   	}
@@ -154,7 +163,8 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
    *
    * @return the description
    */
-  public String getDescription() {
+  @Override
+public String getDescription() {
   	if (description!=null && !"".equals(description.trim())) return description; //$NON-NLS-1$
   	return ToolsRes.getString("KnownPolynomial.Description")+" "+(getParameterCount()-1); //$NON-NLS-1$ //$NON-NLS-2$
   }
@@ -164,7 +174,8 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
    *
    * @param aDescription the description
    */
-  public void setDescription(String aDescription) {
+  @Override
+public void setDescription(String aDescription) {
   	description = aDescription;
   }
 
@@ -173,7 +184,8 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
    *
    * @return the clone
    */
-  public KnownPolynomial clone() {
+  @Override
+public KnownPolynomial clone() {
   	KnownPolynomial clone = new KnownPolynomial(coefficients);
   	
   	// set name and description

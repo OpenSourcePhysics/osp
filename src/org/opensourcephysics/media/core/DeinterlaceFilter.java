@@ -95,7 +95,8 @@ public class DeinterlaceFilter extends Filter {
    * @param sourceImage the source image
    * @return the filtered image
    */
-  public BufferedImage getFilteredImage(BufferedImage sourceImage) {
+  @Override
+public BufferedImage getFilteredImage(BufferedImage sourceImage) {
     if(!isEnabled()) {
       return sourceImage;
     }
@@ -114,7 +115,8 @@ public class DeinterlaceFilter extends Filter {
    *
    * @return the inspector
    */
-  public synchronized JDialog getInspector() {
+  @Override
+public synchronized JDialog getInspector() {
   	Inspector myInspector = inspector;
     if (myInspector==null) {
     	myInspector = new Inspector();
@@ -133,7 +135,8 @@ public class DeinterlaceFilter extends Filter {
   /**
    * Refreshes this filter's GUI
    */
-  public void refresh() {
+  @Override
+public void refresh() {
     super.refresh();
     odd.setText(MediaRes.getString("Filter.Deinterlace.Button.Odd"));   //$NON-NLS-1$
     even.setText(MediaRes.getString("Filter.Deinterlace.Button.Even")); //$NON-NLS-1$
@@ -227,7 +230,8 @@ public class DeinterlaceFilter extends Filter {
       group.add(odd);
       group.add(even);
       ActionListener select = new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           setOdd(group.isSelected(odd.getModel()));
         }
 
@@ -285,7 +289,8 @@ public class DeinterlaceFilter extends Filter {
      * @param control the control to save to
      * @param obj the filter to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       DeinterlaceFilter filter = (DeinterlaceFilter) obj;
       if(filter.isOdd()) {
         control.setValue("field", "odd");  //$NON-NLS-1$ //$NON-NLS-2$
@@ -306,7 +311,8 @@ public class DeinterlaceFilter extends Filter {
      * @param control the control
      * @return the new filter
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new DeinterlaceFilter();
     }
 
@@ -317,7 +323,8 @@ public class DeinterlaceFilter extends Filter {
      * @param obj the filter
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       final DeinterlaceFilter filter = (DeinterlaceFilter) obj;
       if(control.getPropertyNames().contains("field")) { //$NON-NLS-1$
         if(control.getString("field").equals("odd")) { //$NON-NLS-1$ //$NON-NLS-2$

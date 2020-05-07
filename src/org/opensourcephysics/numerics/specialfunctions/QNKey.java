@@ -20,14 +20,16 @@ public class QNKey {
     this.k = k;
   }
 
-  public boolean equals(Object key) {
+  @Override
+public boolean equals(Object key) {
     if(key==null) {
       return false;
     }
     return(((QNKey) key).n==n)&&(((QNKey) key).k==k);
   }
 
-  public int hashCode() {
+  @Override
+public int hashCode() {
     return 1031*n+k;
   }
 

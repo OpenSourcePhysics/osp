@@ -182,7 +182,8 @@ public class ArrayInspector extends JDialog implements PropertyChangeListener {
    *
    * @param e the property change event
    */
-  public void propertyChange(PropertyChangeEvent e) {
+  @Override
+public void propertyChange(PropertyChangeEvent e) {
     // forward event to listeners
     changed = true;
     firePropertyChange(e.getPropertyName(), e.getOldValue(), e.getNewValue());
@@ -223,7 +224,8 @@ public class ArrayInspector extends JDialog implements PropertyChangeListener {
       editor.getTextField().setFont(tables[0].getFont());
       spinner.setEditor(editor);
       spinner.addChangeListener(new ChangeListener() {
-        public void stateChanged(ChangeEvent e) {
+        @Override
+		public void stateChanged(ChangeEvent e) {
           int i = ((Integer) spinner.getValue()).intValue();
           scrollpane.setViewportView(tables[i]);
         }
@@ -248,7 +250,8 @@ public class ArrayInspector extends JDialog implements PropertyChangeListener {
   private ArrayInspector() {
     super((Frame) null, true); // modal dialog
     addWindowListener(new java.awt.event.WindowAdapter() {
-      public void windowClosing(java.awt.event.WindowEvent e) {
+      @Override
+	public void windowClosing(java.awt.event.WindowEvent e) {
         if(changed) {
           firePropertyChange("arrayData", null, null); //$NON-NLS-1$
         }

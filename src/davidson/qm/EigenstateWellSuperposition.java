@@ -34,7 +34,8 @@ public class EigenstateWellSuperposition implements QMSuperposition{
     setCoef(new double[0], new double[0]);
   }
 
-  public Dataset getRho(Dataset dataset){
+  @Override
+public Dataset getRho(Dataset dataset){
     if(dataset==null) dataset=new Dataset();
     else dataset.clear();
     for(int j=0, n=rePsi.length; j<n; j++){
@@ -48,13 +49,15 @@ public class EigenstateWellSuperposition implements QMSuperposition{
  * Gets the Eigenstates.
  * @return double[][]
  */
+@Override
 public double[][] getEigenstates() {
   return eigenstates;
 }
 
 
 
-  public ComplexDataset getPsi(ComplexDataset dataset){
+  @Override
+public ComplexDataset getPsi(ComplexDataset dataset){
     if(dataset==null) dataset=new ComplexDataset();
     else dataset.clear();
     dataset.append(x,rePsi,imPsi);
@@ -65,7 +68,8 @@ public double[][] getEigenstates() {
    * Gets the number of points used to approximate the wave function.
    * @return int
    */
-  public int getNumpts() {
+  @Override
+public int getNumpts() {
     return x.length;
   }
 
@@ -73,7 +77,8 @@ public double[][] getEigenstates() {
    * Gets the value of x at the first data point.
    * @return double xmin
    */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return x[0];
   }
 
@@ -81,7 +86,8 @@ public double[][] getEigenstates() {
    * Gets the value of x at the last data point.
    * @return double xmax
    */
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return x[x.length - 1];
   }
 
@@ -89,7 +95,8 @@ public double[][] getEigenstates() {
    * Gets the array containing the real component of the wavefunction;
    * @return double[]
    */
-  public double[] getRePsi() {
+  @Override
+public double[] getRePsi() {
     return rePsi;
   }
 
@@ -97,7 +104,8 @@ public double[][] getEigenstates() {
    * Gets the array containing the imaginary component of the wavefunction;
    * @return double[]
    */
-  public double[] getImPsi() {
+  @Override
+public double[] getImPsi() {
     return imPsi;
   }
 
@@ -105,7 +113,8 @@ public double[][] getEigenstates() {
    * Gets the array containing the x values of the wavefunction;
    * @return double[]
    */
-  public double[] getX() {
+  @Override
+public double[] getX() {
     return x;
   }
 
@@ -117,7 +126,8 @@ public double[][] getEigenstates() {
    *
    * @param scale double
    */
-  public void setEnergyScale(double scale) {
+  @Override
+public void setEnergyScale(double scale) {
     energyScale = scale;
   }
 
@@ -126,6 +136,7 @@ public double[][] getEigenstates() {
  *
  * @return the scale
  */
+@Override
 public double getEnergyScale() {
   return energyScale;
 }
@@ -135,7 +146,8 @@ public double getEnergyScale() {
    * Gets the real coefficients.
    * @return the coefficients
    */
-  public double[] getReCoef() {
+  @Override
+public double[] getReCoef() {
     return recoef;
   }
 
@@ -143,7 +155,8 @@ public double getEnergyScale() {
    * Gets the imaginary coefficients.
    * @return the coefficients
    */
-  public double[] getImCoef() {
+  @Override
+public double[] getImCoef() {
     return imcoef;
   }
 
@@ -154,7 +167,8 @@ public double getEnergyScale() {
    * @param im double[]
    * @return boolean
    */
-  public boolean setCoef(double[] re, double[] im) {
+  @Override
+public boolean setCoef(double[] re, double[] im) {
     if (re != null && im == null)
       im = new double[re.length];
     if (im != null && re == null)
@@ -195,11 +209,13 @@ public double getEnergyScale() {
    * Gets the energy eigenvalue for the i-th eigenstate.
    * @return double[][]
    */
-  public double getEigenValue(int i) {
+  @Override
+public double getEigenValue(int i) {
      return (i+1)*(i+1)*PISQR*energyScale/L/L;
   }
 
-  public void update(double time){
+  @Override
+public void update(double time){
     System.arraycopy(zeroArray,0,rePsi,0,rePsi.length);
     System.arraycopy(zeroArray,0,imPsi,0,imPsi.length);
     if(eigenstates.length==0) return;

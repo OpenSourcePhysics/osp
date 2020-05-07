@@ -75,7 +75,8 @@ public class DataRefreshTool implements Tool {
    * @param replyTo the tool requesting refreshed data
    * @throws RemoteException
    */
-  public void send(Job job, Tool replyTo) throws RemoteException {
+  @Override
+public void send(Job job, Tool replyTo) throws RemoteException {
     XMLControlElement control = new XMLControlElement(job.getXML());
     if(control.failedToRead()||(replyTo==null)||!Data.class.isAssignableFrom(control.getObjectClass())) {
       return;

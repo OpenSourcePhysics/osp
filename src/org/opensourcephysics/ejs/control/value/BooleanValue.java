@@ -35,10 +35,12 @@ public class BooleanValue extends Value {
 	   return value = _value.getBoolean();
 	}
 	
+	@Override
 	public boolean getBoolean() {
 		return value;
 	}
 
+	@Override
 	public int getInteger() {
 		if (value) {
 			return 1;
@@ -46,6 +48,7 @@ public class BooleanValue extends Value {
 		return 0;
 	}
 
+	@Override
 	public double getDouble() {
 		if (value) {
 			return 1.0;
@@ -53,6 +56,7 @@ public class BooleanValue extends Value {
 		return 0.0;
 	}
 
+	@Override
 	public String getString() {
 		if (value) {
 			return "true"; //$NON-NLS-1$

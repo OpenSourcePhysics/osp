@@ -80,7 +80,8 @@ public class TCoordAxes extends TShape {
    * @param panel the drawing panel requesting the drawing
    * @param g the graphics context on which to draw
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(panel==vidPanel) {
       super.draw(panel, g);
     }
@@ -92,7 +93,8 @@ public class TCoordAxes extends TShape {
    * @param x the x position
    * @param y the y position
    */
-  public void setXY(double x, double y) {
+  @Override
+public void setXY(double x, double y) {
     super.setXY(x, y);
     double cos = origin.cos(this);
     double sin = origin.sin(this);
@@ -105,7 +107,8 @@ public class TCoordAxes extends TShape {
    *
    * @param stroke the desired stroke
    */
-  public void setStroke(BasicStroke stroke) {
+  @Override
+public void setStroke(BasicStroke stroke) {
     if(stroke!=null) {
       this.stroke = stroke;
     }
@@ -155,7 +158,8 @@ public class TCoordAxes extends TShape {
    * @param ypix the y pixel position on the panel
    * @return the interactive drawable object
    */
-  public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
     if(panel!=vidPanel) {
       return null;
     }
@@ -177,7 +181,8 @@ public class TCoordAxes extends TShape {
    *
    * @return a descriptive string
    */
-  public String toString() {
+  @Override
+public String toString() {
     return "Coordinate axes"; //$NON-NLS-1$
   }
 
@@ -189,7 +194,8 @@ public class TCoordAxes extends TShape {
    * @param vidPanel the video panel
    * @return the axes shape
    */
-  protected Shape getShape(VideoPanel vidPanel) {
+  @Override
+protected Shape getShape(VideoPanel vidPanel) {
     ImageCoordSystem coords = vidPanel.getCoords();
     int n = getFrameNumber(vidPanel);
     int w = vidPanel.getWidth();
@@ -246,7 +252,8 @@ public class TCoordAxes extends TShape {
      * @param x the x position
      * @param y the y position
      */
-    public void setXY(double x, double y) {
+    @Override
+	public void setXY(double x, double y) {
       super.setXY(x, y);
       int n = getFrameNumber(vidPanel);
       vidPanel.getCoords().setOriginXY(n, x, y);

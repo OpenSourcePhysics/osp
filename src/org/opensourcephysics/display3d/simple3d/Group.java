@@ -34,7 +34,8 @@ public class Group extends Element implements org.opensourcephysics.display3d.co
   // ----------------------------------------------------
   // Implementation of core.Group
   // ----------------------------------------------------
-  public void addElement(org.opensourcephysics.display3d.core.Element element) {
+  @Override
+public void addElement(org.opensourcephysics.display3d.core.Element element) {
     if(!(element instanceof Element)) {
       throw new UnsupportedOperationException("Can't add element to group (incorrect implementation)"); //$NON-NLS-1$
     }
@@ -56,19 +57,23 @@ public class Group extends Element implements org.opensourcephysics.display3d.co
     }
   }
 
-  public void removeElement(org.opensourcephysics.display3d.core.Element element) {
+  @Override
+public void removeElement(org.opensourcephysics.display3d.core.Element element) {
     elementList.remove(element);
   }
 
-  public void removeAllElements() {
+  @Override
+public void removeAllElements() {
     elementList.clear();
   }
 
-  public synchronized List<org.opensourcephysics.display3d.core.Element> getElements() {
+  @Override
+public synchronized List<org.opensourcephysics.display3d.core.Element> getElements() {
     return new ArrayList<org.opensourcephysics.display3d.core.Element>(elementList);
   }
 
-  public org.opensourcephysics.display3d.core.Element getElement(int index) {
+  @Override
+public org.opensourcephysics.display3d.core.Element getElement(int index) {
     try {
       return elementList.get(index);
     } catch(IndexOutOfBoundsException exc) {
@@ -79,7 +84,8 @@ public class Group extends Element implements org.opensourcephysics.display3d.co
   // ----------------------------------------------------
   // Abstract part of Element
   // ----------------------------------------------------
-  Object3D[] getObjects3D() {
+  @Override
+Object3D[] getObjects3D() {
     if(!isReallyVisible()) {
       return null;
     }
@@ -99,11 +105,13 @@ public class Group extends Element implements org.opensourcephysics.display3d.co
     return list3D.toArray(minimalObjects);
   }
 
-  void draw(java.awt.Graphics2D _g2, int _index) {
+  @Override
+void draw(java.awt.Graphics2D _g2, int _index) {
     System.out.println("Group draw (i): I should not be called!"); //$NON-NLS-1$
   }
 
-  void drawQuickly(java.awt.Graphics2D _g2) {
+  @Override
+void drawQuickly(java.awt.Graphics2D _g2) {
     for(Iterator<Element> it = elementList.iterator(); it.hasNext(); ) {
       (it.next()).drawQuickly(_g2);
     }
@@ -111,13 +119,15 @@ public class Group extends Element implements org.opensourcephysics.display3d.co
   }
 
   // Overwrites its parent
-  void setNeedToProject(boolean _need) {
+  @Override
+void setNeedToProject(boolean _need) {
     for(Iterator<Element> it = elementList.iterator(); it.hasNext(); ) {
       (it.next()).setNeedToProject(_need);
     }
   }
 
-  public void getExtrema(double[] min, double[] max) {
+  @Override
+public void getExtrema(double[] min, double[] max) {
     double minX = Double.POSITIVE_INFINITY, maxX = Double.NEGATIVE_INFINITY;
     double minY = Double.POSITIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY;
     double minZ = Double.POSITIVE_INFINITY, maxZ = Double.NEGATIVE_INFINITY;
@@ -140,7 +150,8 @@ public class Group extends Element implements org.opensourcephysics.display3d.co
     max[2] = maxZ;
   }
 
-  public InteractionTarget getTargetHit(int x, int y) {
+  @Override
+public InteractionTarget getTargetHit(int x, int y) {
     if(!isReallyVisible()) {
       return null;
     }
@@ -154,7 +165,8 @@ public class Group extends Element implements org.opensourcephysics.display3d.co
     return null;
   }
 
-  boolean getElementChanged() {
+  @Override
+boolean getElementChanged() {
     for(Iterator<org.opensourcephysics.display3d.simple3d.Element> it = elementList.iterator(); it.hasNext(); ) {
       if((it.next()).getElementChanged()) {
         return true;
@@ -175,7 +187,8 @@ public class Group extends Element implements org.opensourcephysics.display3d.co
    *
    * @param id the ID number
    */
-  public void setID(int id) {
+  @Override
+public void setID(int id) {
     datasetID = id;
   }
 
@@ -184,19 +197,23 @@ public class Group extends Element implements org.opensourcephysics.display3d.co
    *
    * @return the ID number
    */
-  public int getID() {
+  @Override
+public int getID() {
     return datasetID;
   }
 
-  public double[][] getData2D() {
+  @Override
+public double[][] getData2D() {
     return null;
   }
 
-  public double[][][] getData3D() {
+  @Override
+public double[][][] getData3D() {
     return null;
   }
 
-  public String[] getColumnNames() {
+  @Override
+public String[] getColumnNames() {
     for(Element el : elementList) {
       if(el instanceof Data) {
         return((Data) el).getColumnNames();
@@ -205,15 +222,18 @@ public class Group extends Element implements org.opensourcephysics.display3d.co
     return null;
   }
 
-  public Color[] getLineColors() {
+  @Override
+public Color[] getLineColors() {
     return new Color[] {DisplayColors.getLineColor(0), DisplayColors.getLineColor(1), DisplayColors.getLineColor(2)};
   }
 
-  public Color[] getFillColors() {
+  @Override
+public Color[] getFillColors() {
     return new Color[] {getStyle().getFillColor(), getStyle().getFillColor(), getStyle().getFillColor()};
   }
 
-  public java.util.List<Data> getDataList() {
+  @Override
+public java.util.List<Data> getDataList() {
     java.util.List<Data> list = new java.util.ArrayList<Data>();
     for(Element el : elementList) {
       if(el instanceof Data) {
@@ -223,7 +243,8 @@ public class Group extends Element implements org.opensourcephysics.display3d.co
     return list;
   }
 
-  public java.util.ArrayList<Dataset> getDatasets() {
+  @Override
+public java.util.ArrayList<Dataset> getDatasets() {
     return null;
   }
 
@@ -235,7 +256,8 @@ public class Group extends Element implements org.opensourcephysics.display3d.co
   }
 
   protected static class Loader extends org.opensourcephysics.display3d.core.Group.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new Group();
     }
 

@@ -88,7 +88,8 @@ public class Resolution {
   }
 
   public static class ResolutionLoader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       Resolution res = (Resolution) obj;
       control.setValue("type", res.type);            //$NON-NLS-1$
       control.setValue("max length", res.maxLength); //$NON-NLS-1$
@@ -97,11 +98,13 @@ public class Resolution {
       control.setValue("n3", res.n3);                //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new Resolution(1, 1, 1);
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       Resolution res = (Resolution) obj;
       res.type = control.getInt("type");               //$NON-NLS-1$
       res.maxLength = control.getDouble("max length"); //$NON-NLS-1$

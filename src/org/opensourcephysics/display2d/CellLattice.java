@@ -62,62 +62,77 @@ public class CellLattice implements ByteLattice {
 		lattice = (isMac? new CellLatticeOSX(nx, ny) : new CellLatticePC(nx, ny));
 	}
 
+	@Override
 	public double getXMin() {
 		return lattice.getXMin();
 	}
 
+	@Override
 	public double getXMax() {
 		return lattice.getXMax();
 	}
 
+	@Override
 	public double getYMin() {
 		return lattice.getYMin();
 	}
 
+	@Override
 	public double getYMax() {
 		return lattice.getYMax();
 	}
 
+	@Override
 	public boolean isMeasured() {
 		return lattice.isMeasured();
 	}
 
+	@Override
 	public void draw(DrawingPanel panel, Graphics g) {
 		lattice.draw(panel, g);
 	}
 
+	@Override
 	public int getNx() {
 		return lattice.getNx();
 	}
 
+	@Override
 	public int getNy() {
 		return lattice.getNy();
 	}
 
+	@Override
 	public int indexFromPoint(double x, double y) {
 		return lattice.indexFromPoint(x, y);
 	}
 
+	@Override
 	public int xToIndex(double x) {
 		return lattice.xToIndex(x);
 	}
 
+	@Override
 	public int yToIndex(double y) {
 		return lattice.yToIndex(y);
 	}
 
+	@Override
 	public byte getValue(int ix, int iy) {
 		return lattice.getValue(ix, iy);
 	}
 
+	@Override
 	public void setValue(int ix, int iy, byte val) {
 		lattice.setValue(ix, iy, val);
 	}
 
+	@Override
 	public void randomize() {
 		lattice.randomize();
 	}
 
+	@Override
 	public void resizeLattice(int nx, int ny) {
 		lattice.resizeLattice(nx, ny);
 	}
@@ -133,50 +148,62 @@ public class CellLattice implements ByteLattice {
 	 * @param ymin double
 	 * @param ymax double
 	 */
+	@Override
 	public void setAll(byte val[][], double xmin, double xmax, double ymin, double ymax) {
 		lattice.setAll(val, xmin, xmax, ymin, ymax);
 	}
 
+	@Override
 	public void setBlock(int ix_offset, int iy_offset, byte[][] val) {
 		lattice.setBlock(ix_offset, iy_offset, val);
 	}
 
+	@Override
 	public void setBlock(byte[][] val) {
 		lattice.setBlock(val);
 	}
 
+	@Override
 	public void setCol(int ix, int iy_offset, byte[] val) {
 		lattice.setCol(ix, iy_offset, val);
 	}
 
+	@Override
 	public void setRow(int iy, int ix_offset, byte[] val) {
 		lattice.setRow(iy, ix_offset, val);
 	}
 
+	@Override
 	public void setShowGridLines(boolean show) {
 		lattice.setShowGridLines(show);
 	}
 
+	@Override
 	public void setGridLineColor(Color c) {
 		lattice.setGridLineColor(c);
 	}
 
+	@Override
 	public JFrame showLegend() {
 		return lattice.showLegend();
 	}
 
+	@Override
 	public void setVisible(boolean isVisible) {
 		lattice.setVisible(isVisible);
 	}
 
+	@Override
 	public void setColorPalette(Color[] colors) {
 		lattice.setColorPalette(colors);
 	}
 
+	@Override
 	public void setIndexedColor(int i, Color color) {
 		lattice.setIndexedColor(i, color);
 	}
 
+	@Override
 	public void setMinMax(double xmin, double xmax, double ymin, double ymax) {
 		lattice.setMinMax(xmin, xmax, ymin, ymax);
 	}
@@ -199,22 +226,27 @@ public class CellLattice implements ByteLattice {
 		lattice.setBlock(ix_offset, iy_offset, val);
 	}
 
+	@Override
 	public void setXMin(double xmin) {
 		lattice.setXMin(xmin);
 	}
 
+	@Override
 	public void setXMax(double xmax) {
 		lattice.setXMax(xmax);
 	}
 
+	@Override
 	public void setYMin(double ymin) {
 		lattice.setYMin(ymin);
 	}
 
+	@Override
 	public void setYMax(double ymax) {
 		lattice.setYMax(ymax);
 	}
 
+	@Override
 	public void createDefaultColors() {
 		lattice.createDefaultColors();
 	}

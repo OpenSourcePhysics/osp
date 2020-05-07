@@ -53,7 +53,8 @@ public class DormandPrince45 implements ODEAdaptiveSolver {
    *
    * @param _stepSize
    */
-  public void initialize(double _stepSize) {
+  @Override
+public void initialize(double _stepSize) {
     stepSize = _stepSize;
     double state[] = ode.getState();
     if(state==null) { // state vector not defined.
@@ -75,7 +76,8 @@ public class DormandPrince45 implements ODEAdaptiveSolver {
    *
    * @return the step size
    */
-  public double step() {
+  @Override
+public double step() {
     error_code = ODEAdaptiveSolver.NO_ERROR;
     int iterations = 10;
     double currentStep = stepSize, error = 0;
@@ -147,7 +149,8 @@ public class DormandPrince45 implements ODEAdaptiveSolver {
    *
    * @param stepSize
    */
-  public void setStepSize(double stepSize) {
+  @Override
+public void setStepSize(double stepSize) {
     this.stepSize = stepSize;
   }
 
@@ -158,7 +161,8 @@ public class DormandPrince45 implements ODEAdaptiveSolver {
    *
    * @return the step size
    */
-  public double getStepSize() {
+  @Override
+public double getStepSize() {
     return stepSize;
   }
 
@@ -167,7 +171,8 @@ public class DormandPrince45 implements ODEAdaptiveSolver {
    *
    * @param _tol
    */
-  public void setTolerance(double _tol) {
+  @Override
+public void setTolerance(double _tol) {
     tol = Math.abs(_tol);
     if(tol<1.0E-12) {
       String err_msg = "Error: Dormand-Prince ODE solver tolerance cannot be smaller than 1.0e-12."; //$NON-NLS-1$
@@ -185,7 +190,8 @@ public class DormandPrince45 implements ODEAdaptiveSolver {
    *
    * @return
    */
-  public double getTolerance() {
+  @Override
+public double getTolerance() {
     return tol;
   }
 
@@ -196,7 +202,8 @@ public class DormandPrince45 implements ODEAdaptiveSolver {
    *   ODEAdaptiveSolver.DID_NOT_CONVERGE
    * @return int
    */
-  public int getErrorCode() {
+  @Override
+public int getErrorCode() {
     return error_code;
   }
 

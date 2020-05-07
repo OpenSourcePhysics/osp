@@ -115,7 +115,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
   /**
    * Renders the drawing panel if the frame is showing and not iconified.
    */
-  public void render() {
+  @Override
+public void render() {
     drawingPanel.render();
   }
 
@@ -148,7 +149,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
    *
    * @return    the drawingPanel
    */
-  public org.opensourcephysics.display3d.core.DrawingPanel3D getDrawingPanel3D() {
+  @Override
+public org.opensourcephysics.display3d.core.DrawingPanel3D getDrawingPanel3D() {
     return drawingPanel;
   }
 
@@ -158,7 +160,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
    *
    * @param  _drawingPanel
    */
-  public void setDrawingPanel3D(org.opensourcephysics.display3d.core.DrawingPanel3D _drawingPanel) {
+  @Override
+public void setDrawingPanel3D(org.opensourcephysics.display3d.core.DrawingPanel3D _drawingPanel) {
     if(drawingPanel!=null) { // remove the old drawing panel.
       getContentPane().remove((JPanel) drawingPanel);
     }
@@ -173,7 +176,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
    * Getting the pointer to the real JFrame in it
    * @return JFrame
    */
-  public javax.swing.JFrame getJFrame() {
+  @Override
+public javax.swing.JFrame getJFrame() {
     return this;
   }
 
@@ -263,7 +267,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
    * @param clipboard Clipboard
    * @param contents Transferable
    */
-  public void lostOwnership(Clipboard clipboard, Transferable contents) {}
+  @Override
+public void lostOwnership(Clipboard clipboard, Transferable contents) {}
 
   /**
    * Enables the copy edit menu item.
@@ -298,7 +303,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     JMenuItem printItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Print_menu_item")); //$NON-NLS-1$
     if(!org.opensourcephysics.js.JSUtil.isJS)  printItem.setAccelerator(KeyStroke.getKeyStroke('P', MENU_SHORTCUT_KEY_MASK));
     if(!org.opensourcephysics.js.JSUtil.isJS) printItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         PrinterJob printerJob = PrinterJob.getPrinterJob();
         printerJob.setPrintable((Printable) drawingPanel);
         if(printerJob.printDialog()) {
@@ -316,7 +322,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     JMenuItem saveXMLItem = new JMenuItem(DisplayRes.getString("DrawingFrame.SaveXML_menu_item")); //$NON-NLS-1$
     saveXMLItem.setAccelerator(KeyStroke.getKeyStroke('S', MENU_SHORTCUT_KEY_MASK));
     saveXMLItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         saveXML();
       }
 
@@ -324,7 +331,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     JMenuItem exportItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Export_menu_item")); //$NON-NLS-1$
     exportItem.setAccelerator(KeyStroke.getKeyStroke('E', MENU_SHORTCUT_KEY_MASK));
     exportItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         try {
           ExportTool.getTool().send(new LocalJob(drawingPanel), null);
         } catch(RemoteException ex) {}
@@ -333,7 +341,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     });
     JMenuItem saveAsPSItem = new JMenuItem(DisplayRes.getString("DrawingFrame.SaveFrameAsEPS_menu_item")); //$NON-NLS-1$
     saveAsPSItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         // GUIUtils.saveImage(drawingPanel.getComponent(), "eps", DrawingFrame3D.this);
         GUIUtils.saveImage((JPanel) drawingPanel.getComponent(), "eps", DrawingFrame3D.this); //$NON-NLS-1$
       }
@@ -342,7 +351,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     JMenuItem inspectItem = new JMenuItem(DisplayRes.getString("DrawingFrame.InspectMenuItem")); //$NON-NLS-1$
     inspectItem.setAccelerator(KeyStroke.getKeyStroke('I', MENU_SHORTCUT_KEY_MASK));
     inspectItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         inspectXML(); // cannot use a static method here because of run-time binding
       }
 
@@ -357,7 +367,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     menuBar.add(editMenu);
     copyItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Copy_menu_item")); //$NON-NLS-1$
     copyItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         copyAction();
       }
 
@@ -365,7 +376,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     editMenu.add(copyItem);
     pasteItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Paste_menu_item")); //$NON-NLS-1$
     pasteItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         pasteAction();
       }
 
@@ -374,7 +386,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     editMenu.add(pasteItem);
     replaceItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Replace_menu_item")); //$NON-NLS-1$
     replaceItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         replaceAction();
       }
 
@@ -384,7 +397,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     setJMenuBar(menuBar);
     cameraItem = new JMenuItem(DisplayRes.getString("DrawingFrame3D.Camera_menu_item")); //$NON-NLS-1$
     cameraItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         if(drawingPanel!=null) {
           if(cameraInspectorFrame==null) {
             cameraInspectorFrame = CameraInspector.createFrame(drawingPanel);
@@ -397,7 +411,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     if(supportsLightInspectors()) {
       lightItem = new JMenuItem(DisplayRes.getString("DrawingFrame3D.Light_menu_item")); //$NON-NLS-1$
       lightItem.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           if(drawingPanel!=null) {
             if(lightInspectorFrame==null) {
               lightInspectorFrame = createLightInspectorFrame(drawingPanel);
@@ -411,7 +426,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     decorationMenu = new JMenu(DisplayRes.getString("DrawingFrame3D.Decoration_menu"));                  //$NON-NLS-1$
     decorationNoneItem = new JMenuItem(DisplayRes.getString("DrawingFrame3D.DecorationNone_menu_item")); //$NON-NLS-1$
     decorationNoneItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         if(drawingPanel!=null) {
           drawingPanel.getVisualizationHints().setDecorationType(org.opensourcephysics.display3d.core.VisualizationHints.DECORATION_NONE);
           drawingPanel.repaint();
@@ -422,7 +438,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     decorationMenu.add(decorationNoneItem);
     decorationCubeItem = new JMenuItem(DisplayRes.getString("DrawingFrame3D.DecorationCube_menu_item")); //$NON-NLS-1$
     decorationCubeItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         if(drawingPanel!=null) {
           drawingPanel.getVisualizationHints().setDecorationType(org.opensourcephysics.display3d.core.VisualizationHints.DECORATION_CUBE);
           drawingPanel.repaint();
@@ -433,7 +450,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     decorationMenu.add(decorationCubeItem);
     decorationAxesItem = new JMenuItem(DisplayRes.getString("DrawingFrame3D.DecorationAxes_menu_item")); //$NON-NLS-1$
     decorationAxesItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         if(drawingPanel!=null) {
           drawingPanel.getVisualizationHints().setDecorationType(org.opensourcephysics.display3d.core.VisualizationHints.DECORATION_AXES);
           drawingPanel.repaint();
@@ -445,7 +463,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     cursorMenu = new JMenu(DisplayRes.getString("DrawingFrame3D.Cursor_menu"));                  //$NON-NLS-1$
     cursorNoneItem = new JMenuItem(DisplayRes.getString("DrawingFrame3D.CursorNone_menu_item")); //$NON-NLS-1$
     cursorNoneItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         if(drawingPanel!=null) {
           drawingPanel.getVisualizationHints().setCursorType(org.opensourcephysics.display3d.core.VisualizationHints.CURSOR_NONE);
           drawingPanel.repaint();
@@ -456,7 +475,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     cursorMenu.add(cursorNoneItem);
     cursorCubeItem = new JMenuItem(DisplayRes.getString("DrawingFrame3D.CursorCube_menu_item")); //$NON-NLS-1$
     cursorCubeItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         if(drawingPanel!=null) {
           drawingPanel.getVisualizationHints().setCursorType(org.opensourcephysics.display3d.core.VisualizationHints.CURSOR_CUBE);
           drawingPanel.repaint();
@@ -467,7 +487,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     cursorMenu.add(cursorCubeItem);
     cursorXYZItem = new JMenuItem(DisplayRes.getString("DrawingFrame3D.CursorXYZ_menu_item")); //$NON-NLS-1$
     cursorXYZItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         if(drawingPanel!=null) {
           drawingPanel.getVisualizationHints().setCursorType(org.opensourcephysics.display3d.core.VisualizationHints.CURSOR_XYZ);
           drawingPanel.repaint();
@@ -478,7 +499,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     cursorMenu.add(cursorXYZItem);
     cursorCrosshairItem = new JMenuItem(DisplayRes.getString("DrawingFrame3D.CursorCrosshair_menu_item")); //$NON-NLS-1$
     cursorCrosshairItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         if(drawingPanel!=null) {
           drawingPanel.getVisualizationHints().setCursorType(org.opensourcephysics.display3d.core.VisualizationHints.CURSOR_CROSSHAIR);
           drawingPanel.repaint();
@@ -489,7 +511,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     cursorMenu.add(cursorCrosshairItem);
     zoomToFitItem = new JMenuItem(DisplayRes.getString("DrawingFrame3D.ZoomToFit_menu_item")); //$NON-NLS-1$
     zoomToFitItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         if(drawingPanel!=null) {
           drawingPanel.zoomToFit();
           drawingPanel.repaint();
@@ -511,7 +534,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     menuBar.add(helpMenu);
     JMenuItem aboutItem = new JMenuItem(DisplayRes.getString("DrawingFrame.AboutOSP_menu_item")); //$NON-NLS-1$
     aboutItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         OSPRuntime.showAboutDialog(DrawingFrame3D.this);
       }
 
@@ -522,7 +546,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
   /**
  * Adds a Tools menu to the menu bar.
  */
-  protected JMenu loadToolsMenu() {
+  @Override
+protected JMenu loadToolsMenu() {
 	if(org.opensourcephysics.js.JSUtil.isJS) {  // external tools not supported in JavaScript.
 		  return null;
 	}
@@ -536,7 +561,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     JMenuItem snapshotItem = new JMenuItem(DisplayRes.getString("DisplayPanel.Snapshot_menu_item")); //$NON-NLS-1$
     toolsMenu.add(snapshotItem);
     snapshotItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         SnapshotTool tool = SnapshotTool.getTool();
         if(drawingPanel!=null) {
           tool.saveImage(null, drawingPanel.getComponent());
@@ -561,7 +587,8 @@ public class DrawingFrame3D extends OSPFrame implements ClipboardOwner, org.open
     }
     final Class<?> finalVideoToolClass = videoToolClass; // class must be final for action listener
     videoItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         if(drawingPanel.getVideoTool()==null) {
           try {
             Method m = finalVideoToolClass.getMethod("getTool", (Class[]) null); //$NON-NLS-1$

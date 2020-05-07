@@ -76,7 +76,8 @@ public class TrackableCircle extends Circle implements Trackable {
    * @param panel the drawing panel requesting the drawing
    * @param g the graphics context on which to draw
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!(panel instanceof VideoPanel)) {
       return;
     }

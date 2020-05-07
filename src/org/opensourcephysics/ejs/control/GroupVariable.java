@@ -48,7 +48,8 @@ public class GroupVariable {
     return name;
   }
 
-  public String toString() {
+  @Override
+public String toString() {
     return name;
   }
 

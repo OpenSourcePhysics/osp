@@ -114,7 +114,8 @@ public interface ElementTrail extends Element, org.opensourcephysics.display.Dat
   // XML loader
   // ----------------------------------------------------
   static abstract class Loader extends Element.Loader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       super.saveObject(control, obj);
       ElementTrail element = (ElementTrail) obj;
       control.setValue("maximum", element.getMaximumPoints()); //$NON-NLS-1$
@@ -122,7 +123,8 @@ public interface ElementTrail extends Element, org.opensourcephysics.display.Dat
       // Don't save the points since loadObject will clear the trail
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       ElementTrail element = (ElementTrail) obj;
       element.setMaximumPoints(control.getInt("maximum"));   //$NON-NLS-1$

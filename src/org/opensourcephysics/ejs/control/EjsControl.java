@@ -50,7 +50,8 @@ public class EjsControl extends GroupControl implements org.opensourcephysics.co
   // ----------------------------------------------
   // Creation of particular control elements
   // ----------------------------------------------
-  public ControlElement addObject(Object _object, String _classname, String _propList) {
+  @Override
+public ControlElement addObject(Object _object, String _classname, String _propList) {
     ControlElement control = super.addObject(_object, _classname, _propList);
     if(control instanceof ControlTextArea) {
       messageArea = (ControlTextArea) control;
@@ -60,7 +61,8 @@ public class EjsControl extends GroupControl implements org.opensourcephysics.co
     return control;
   }
 
-  public void reset() {
+  @Override
+public void reset() {
     clearValues();
     clearMessages();
     super.reset();
@@ -77,39 +79,46 @@ public class EjsControl extends GroupControl implements org.opensourcephysics.co
  *
  * @param lock boolean
  */
-  public void setLockValues(boolean lock) {}
+  @Override
+public void setLockValues(boolean lock) {}
 
   /**
  *  Reads the current property names.
  *
  * @return      the property names
  */
-  public Collection<String> getPropertyNames() {
+  @Override
+public Collection<String> getPropertyNames() {
     return variableTable.keySet();
   }
 
-  public void clearValues() {
+  @Override
+public void clearValues() {
     if(inputArea!=null) {
       inputArea.setText(""); //$NON-NLS-1$
       inputArea.setCaretPosition(inputArea.getText().length());
     }
   }
 
-  public void clearMessages() {
+  @Override
+public void clearMessages() {
     if(messageArea!=null) {
       messageArea.clear();
     }
   }
 
-  public void println(String s) {
+  @Override
+public void println(String s) {
     print(s+_RETURN_);
   }
 
-  public void println() {
+  @Override
+public void println() {
     println(""); //$NON-NLS-1$
   }
 
-  public void print(String s) {
+  @Override
+public void print(String s) {
     if(messageArea!=null) {
       messageArea.print(s);
     } else {
@@ -117,12 +126,14 @@ public class EjsControl extends GroupControl implements org.opensourcephysics.co
     }
   }
 
-  public void calculationDone(String message) {
+  @Override
+public void calculationDone(String message) {
     println(message);
   }
 
   // Set and get values
-  public void setValue(String _variable, Value _value) {
+  @Override
+public void setValue(String _variable, Value _value) {
     if(!isVariableRegistered(_variable)&&(inputArea!=null)) {
       inputArea.setValue(_variable, _value.getString());
     } else {
@@ -130,7 +141,8 @@ public class EjsControl extends GroupControl implements org.opensourcephysics.co
     }
   }
 
-  public Value getValue(String _variable) {
+  @Override
+public Value getValue(String _variable) {
     if(!isVariableRegistered(_variable)&&(inputArea!=null)) {
       try {
         strValue.value = inputArea.getValue(_variable);

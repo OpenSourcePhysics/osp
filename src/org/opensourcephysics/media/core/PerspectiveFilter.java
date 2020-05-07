@@ -128,7 +128,8 @@ public class PerspectiveFilter extends Filter {
     refresh();
     hasInspector = true;
     videoListener = new PropertyChangeListener() {
-    	public void propertyChange(PropertyChangeEvent e) {
+    	@Override
+		public void propertyChange(PropertyChangeEvent e) {
     		int n = (Integer)e.getNewValue();
     		refreshCorners(n);
     	}
@@ -141,7 +142,8 @@ public class PerspectiveFilter extends Filter {
    * @param sourceImage the source image
    * @return the filtered image
    */
-  public BufferedImage getFilteredImage(BufferedImage sourceImage) {
+  @Override
+public BufferedImage getFilteredImage(BufferedImage sourceImage) {
     if(!isEnabled()) {
       return sourceImage;
     }
@@ -184,7 +186,8 @@ public class PerspectiveFilter extends Filter {
    *
    * @return the inspector
    */
-  public synchronized JDialog getInspector() {
+  @Override
+public synchronized JDialog getInspector() {
   	Inspector myInspector = inspector;
     if (myInspector==null) {
     	myInspector = new Inspector();
@@ -202,7 +205,8 @@ public class PerspectiveFilter extends Filter {
   /**
    * Refreshes this filter's GUI
    */
-  public void refresh() {
+  @Override
+public void refresh() {
     super.refresh();
     if(inspector!=null) {
       inspector.setTitle(MediaRes.getString("Filter.Perspective.Title")); //$NON-NLS-1$
@@ -226,8 +230,8 @@ public class PerspectiveFilter extends Filter {
   	if (vidPanel!=null && vidPanel.getVideo()!=null) {
     	vidPanel.removePropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 	  	Video video = vidPanel.getVideo();
-	  	video.removePropertyChangeListener(Video.PROPERTY_VIDEO_NEXTFRAME, videoListener); //$NON-NLS-1$
-    	removePropertyChangeListener(Filter.PROPERTY_VISIBLE, vidPanel); //$NON-NLS-1$
+	  	video.removePropertyChangeListener(Video.PROPERTY_VIDEO_NEXTFRAME, videoListener); 
+    	removePropertyChangeListener(Filter.PROPERTY_VISIBLE, vidPanel); 
   	}
   	source = input = output = null;
   	pixelsOut = null;
@@ -239,21 +243,22 @@ public class PerspectiveFilter extends Filter {
    * 
    * @param panel the video panel
    */
-  public void setVideoPanel(VideoPanel panel) {
+  @Override
+public void setVideoPanel(VideoPanel panel) {
   	VideoPanel prevPanel = vidPanel;
   	super.setVideoPanel(panel);
   	if (vidPanel!=null) {
 	  	// filter added
 	  	Video video = vidPanel.getVideo();
-	  	video.removePropertyChangeListener(Video.PROPERTY_VIDEO_NEXTFRAME, videoListener); //$NON-NLS-1$
-	  	video.addPropertyChangeListener(Video.PROPERTY_VIDEO_NEXTFRAME, videoListener); //$NON-NLS-1$
+	  	video.removePropertyChangeListener(Video.PROPERTY_VIDEO_NEXTFRAME, videoListener); 
+	  	video.addPropertyChangeListener(Video.PROPERTY_VIDEO_NEXTFRAME, videoListener); 
 	  	vidPanel.propertyChange(new PropertyChangeEvent(this, "perspective", null, this)); //$NON-NLS-1$
   	}
   	else if (prevPanel!=null) {
   		// filter removed
   		prevPanel.removeDrawable(quad);
 	  	Video video = prevPanel.getVideo();
-	  	video.removePropertyChangeListener(Video.PROPERTY_VIDEO_NEXTFRAME, videoListener); //$NON-NLS-1$
+	  	video.removePropertyChangeListener(Video.PROPERTY_VIDEO_NEXTFRAME, videoListener); 
 	  	prevPanel.propertyChange(new PropertyChangeEvent(this, "perspective", this, null)); //$NON-NLS-1$
   	}
   }
@@ -796,7 +801,8 @@ public class PerspectiveFilter extends Filter {
     	tabbedPane.setSelectedComponent(inputEditor);
     	// add change listener after adding tabs to prevent start-up event firing
     	tabbedPane.addChangeListener(new ChangeListener() {
-        public void stateChanged(ChangeEvent e) {
+        @Override
+		public void stateChanged(ChangeEvent e) {
         	if (disposing) return;
         	refresh();
           PerspectiveFilter.this.support.firePropertyChange("image", null, null); //$NON-NLS-1$
@@ -805,7 +811,8 @@ public class PerspectiveFilter extends Filter {
       });
     	helpButton = new JButton();
     	helpButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
         	String s = MediaRes.getString("PerspectiveFilter.Help.Message1") //$NON-NLS-1$
     			+"\n"+MediaRes.getString("PerspectiveFilter.Help.Message2") //$NON-NLS-1$ //$NON-NLS-2$
     			+"\n"+MediaRes.getString("PerspectiveFilter.Help.Message3") //$NON-NLS-1$ //$NON-NLS-2$
@@ -822,7 +829,8 @@ public class PerspectiveFilter extends Filter {
       });
     	colorButton = new JButton();
     	colorButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           // show color chooser dialog with color of this filter's quad
           Color newColor = JColorChooser.showDialog(null, 
           		MediaRes.getString("PerspectiveFilter.Dialog.Color.Title"),  //$NON-NLS-1$
@@ -835,7 +843,8 @@ public class PerspectiveFilter extends Filter {
       });
     	// ableButton already has action listener to enable/disable this filter
     	ableButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
         	// refresh button state  
         	boolean enable = !PerspectiveFilter.super.isEnabled();
         	colorButton.setEnabled(enable);
@@ -882,15 +891,15 @@ public class PerspectiveFilter extends Filter {
     	if (vidPanel!=null) {
 	    	if (vis) {
 	    		vidPanel.addDrawable(quad);
-		      support.firePropertyChange(PROPERTY_VISIBLE, null, null); //$NON-NLS-1$
-	      	PerspectiveFilter.this.removePropertyChangeListener(PROPERTY_VISIBLE, vidPanel); //$NON-NLS-1$
-	      	PerspectiveFilter.this.addPropertyChangeListener(PROPERTY_VISIBLE, vidPanel); //$NON-NLS-1$
+		      support.firePropertyChange(PROPERTY_VISIBLE, null, null); 
+	      	PerspectiveFilter.this.removePropertyChangeListener(PROPERTY_VISIBLE, vidPanel); 
+	      	PerspectiveFilter.this.addPropertyChangeListener(PROPERTY_VISIBLE, vidPanel); 
 	      	vidPanel.removePropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 	      	vidPanel.addPropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 	    	}
 	    	else {
-	    		support.firePropertyChange(PROPERTY_VISIBLE, null, null); //$NON-NLS-1$
-	      	PerspectiveFilter.this.removePropertyChangeListener(PROPERTY_VISIBLE, vidPanel); //$NON-NLS-1$
+	    		support.firePropertyChange(PROPERTY_VISIBLE, null, null); 
+	      	PerspectiveFilter.this.removePropertyChangeListener(PROPERTY_VISIBLE, vidPanel); 
 	      	vidPanel.removePropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 	    		vidPanel.removeDrawable(quad);
 	      	// fire MOUSE_RELEASED event to ensure full deselection in Tracker
@@ -923,7 +932,8 @@ public class PerspectiveFilter extends Filter {
      * @param x the x coordinate
      * @param y the y coordinate
      */
-    public void setXY(double x, double y) {
+    @Override
+	public void setXY(double x, double y) {
     	super.setXY(x, y);
     	boolean in = !PerspectiveFilter.this.isEnabled();
     	Corner[] corners = in? quad.inCorners: quad.outCorners;
@@ -998,7 +1008,8 @@ public class PerspectiveFilter extends Filter {
      *
      * @param e the property change event
      */
-    public void propertyChange(PropertyChangeEvent e) {
+    @Override
+	public void propertyChange(PropertyChangeEvent e) {
     	Corner prev = selectedCorner;
     	selectedCorner = null;
       for (int i=0; i<4; i++) {
@@ -1011,7 +1022,8 @@ public class PerspectiveFilter extends Filter {
       	vidPanel.repaint();
     }
     
-    public void draw(DrawingPanel panel, Graphics g) {
+    @Override
+	public void draw(DrawingPanel panel, Graphics g) {
     	if (!PerspectiveFilter.super.isEnabled()) return;
     	VideoPanel vidPanel = (VideoPanel)panel;
     	Corner[] corners = PerspectiveFilter.this.isEnabled()? outCorners: inCorners;
@@ -1057,7 +1069,8 @@ public class PerspectiveFilter extends Filter {
      * @param ypix the y pixel position on the panel
      * @return the first corner that is hit
      */
-    public Interactive findInteractive(
+    @Override
+	public Interactive findInteractive(
            DrawingPanel panel, int xpix, int ypix) {
     	if (!PerspectiveFilter.super.isEnabled()) return null;
       if (!(panel instanceof VideoPanel) || !isEnabled()) return null;
@@ -1076,7 +1089,8 @@ public class PerspectiveFilter extends Filter {
      *
      * @return 0
      */
-    public double getX () {
+    @Override
+	public double getX () {
       return 0;
     }
 
@@ -1085,7 +1099,8 @@ public class PerspectiveFilter extends Filter {
      *
      * @return 0
      */
-    public double getY () {
+    @Override
+	public double getY () {
       return 0;
     }
 
@@ -1094,14 +1109,16 @@ public class PerspectiveFilter extends Filter {
      *
      * @param x the x position
      */
-    public void setX(double x) {}
+    @Override
+	public void setX(double x) {}
 
     /**
      * Empty setY method.
      *
      * @param y the y position
      */
-    public void setY(double y) {}
+    @Override
+	public void setY(double y) {}
 
     /**
      * Empty setXY method.
@@ -1109,14 +1126,16 @@ public class PerspectiveFilter extends Filter {
      * @param x the x position
      * @param y the y position
      */
-    public void setXY(double x, double y) {}
+    @Override
+	public void setXY(double x, double y) {}
 
     /**
      * Sets whether this responds to mouse hits.
      *
      * @param enabled <code>true</code> if this responds to mouse hits.
      */
-    public void setEnabled(boolean enabled) {
+    @Override
+	public void setEnabled(boolean enabled) {
     }
 
     /**
@@ -1124,7 +1143,8 @@ public class PerspectiveFilter extends Filter {
      *
      * @return <code>true</code> if this responds to mouse hits.
      */
-    public boolean isEnabled() {
+    @Override
+	public boolean isEnabled() {
       return true;
     }
 
@@ -1133,7 +1153,8 @@ public class PerspectiveFilter extends Filter {
      *
      * @return <code>false</code> since Quadrilateral knows only image coordinates
      */
-    public boolean isMeasured() {
+    @Override
+	public boolean isMeasured() {
       return false;
     }
 
@@ -1142,7 +1163,8 @@ public class PerspectiveFilter extends Filter {
      *
      * @return 0
      */
-    public double getXMin() {
+    @Override
+	public double getXMin() {
       return getX();
     }
 
@@ -1151,7 +1173,8 @@ public class PerspectiveFilter extends Filter {
      *
      * @return 0
      */
-    public double getXMax() {
+    @Override
+	public double getXMax() {
       return getX();
     }
 
@@ -1160,7 +1183,8 @@ public class PerspectiveFilter extends Filter {
      *
      * @return 0
      */
-    public double getYMin() {
+    @Override
+	public double getYMin() {
       return getY();
     }
 
@@ -1169,7 +1193,8 @@ public class PerspectiveFilter extends Filter {
      *
      * @return 0
      */
-    public double getYMax() {
+    @Override
+	public double getYMax() {
       return getY();
     }
     
@@ -1193,7 +1218,8 @@ public class PerspectiveFilter extends Filter {
   		super(new BorderLayout());
   		isInput = input;
   		ActionListener cornerSetter = new AbstractAction() {
-  			public void actionPerformed(ActionEvent e) {
+  			@Override
+			public void actionPerformed(ActionEvent e) {
   				TPoint[] corners = isInput? quad.inCorners: quad.outCorners;
   	  		for (int i=0; i< fields.length; i++) {
   	  			if (e.getSource()==fields[i][0]
@@ -1231,7 +1257,8 @@ public class PerspectiveFilter extends Filter {
 			shapeLabel.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 4));			
 			shapeDropdown.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 8));			
   		shapeDropdown.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent e) {
+  			@Override
+			public void actionPerformed(ActionEvent e) {
   				if (refreshing) return;
   				selectedShapeIndex = shapeDropdown.getSelectedIndex();
   	    	if (shapes[selectedShapeIndex].equals("Rectangle")) { //$NON-NLS-1$
@@ -1247,7 +1274,8 @@ public class PerspectiveFilter extends Filter {
   		fixedCheckbox = new JCheckBox();
 //  		fixedCheckbox.setSelected(isFixed(isInput));
   		fixedCheckbox.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent e) {
+  			@Override
+			public void actionPerformed(ActionEvent e) {
   				if (refreshing || isFixed(isInput)==fixedCheckbox.isSelected()) return;
   				setFixed(fixedCheckbox.isSelected(), isInput);
   			}
@@ -1290,7 +1318,8 @@ public class PerspectiveFilter extends Filter {
     	}
   	}
   	
-  	public void setEnabled(boolean b) {
+  	@Override
+	public void setEnabled(boolean b) {
   		shapeDropdown.setEnabled(b);
   		shapeLabel.setEnabled(b);
   		fixedCheckbox.setEnabled(b);
@@ -1322,7 +1351,8 @@ public class PerspectiveFilter extends Filter {
      * @param control the control to save to
      * @param obj the filter to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
     	PerspectiveFilter filter = (PerspectiveFilter) obj;
     	
     	filter.trimCornerPoints();
@@ -1366,7 +1396,8 @@ public class PerspectiveFilter extends Filter {
      * @param control the control
      * @return the new filter
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new PerspectiveFilter();
     }
 
@@ -1377,7 +1408,8 @@ public class PerspectiveFilter extends Filter {
      * @param obj the filter
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       final PerspectiveFilter filter = (PerspectiveFilter) obj;
       
       if (control.getPropertyNames().contains("fixed_out")) { //$NON-NLS-1$

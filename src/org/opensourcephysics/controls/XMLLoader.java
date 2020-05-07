@@ -22,7 +22,8 @@ public class XMLLoader implements XML.ObjectLoader {
    * @param control the control
    * @param obj the object
    */
-  public void saveObject(XMLControl control, Object obj) {
+  @Override
+public void saveObject(XMLControl control, Object obj) {
 
   /** empty block */
   }
@@ -33,7 +34,8 @@ public class XMLLoader implements XML.ObjectLoader {
    * @param control the control
    * @return the new object
    */
-  public Object createObject(XMLControl control) {
+  @Override
+public Object createObject(XMLControl control) {
     try {
       return control.getObjectClass().newInstance();
     } catch(Exception ex) {
@@ -49,7 +51,8 @@ public class XMLLoader implements XML.ObjectLoader {
    * @param control the control
    * @param obj the object
    */
-  public Object loadObject(XMLControl control, Object obj) {
+  @Override
+public Object loadObject(XMLControl control, Object obj) {
     return obj;
   }
 

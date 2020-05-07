@@ -35,7 +35,8 @@ public class FallingParticleODE implements ODE {
    *
    * @return double[]
    */
-  public double[] getState() { // required to implement ODE interface
+  @Override
+public double[] getState() { // required to implement ODE interface
     return state;
   }
 
@@ -46,7 +47,8 @@ public class FallingParticleODE implements ODE {
    * @param state double[]
    * @param rate double[]
    */
-  public void getRate(double[] state, double[] rate) {
+  @Override
+public void getRate(double[] state, double[] rate) {
     rate[0] = state[1]; // rate of change of y is v
     rate[1] = -g;
     rate[2] = 1;        // rate of change of time is 1

@@ -113,13 +113,15 @@ public class ResourceLoader {
   
   static {
   	OSP_CACHE_FILTER = new FileFilter() {
-  		public boolean accept(File file) {
+  		@Override
+		public boolean accept(File file) {
   			return file.isDirectory() && file.getName().startsWith("osp-"); //$NON-NLS-1$
   		}
   	};
   	Runnable runner = new Runnable() {
-  		public void run() {
-	  		webConnected = isWebConnected();//.http://www.opensourcephysics.org"); //$NON-NLS-1$
+  		@Override
+		public void run() {
+	  		webConnected = isWebConnected();//.http://www.opensourcephysics.org"); 
   		}
   	};
   	new Thread(runner).start();
@@ -727,12 +729,14 @@ public class ResourceLoader {
     	chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
     javax.swing.filechooser.FileFilter folderFilter = new javax.swing.filechooser.FileFilter() {
       // accept directories only
-      public boolean accept(File f) {
+      @Override
+	public boolean accept(File f) {
 				if (f == null)
 					return false;
         return f.isDirectory();
       }
-      public String getDescription() {
+      @Override
+	public String getDescription() {
         return ToolsRes.getString("LibraryTreePanel.FolderFileFilter.Description"); //$NON-NLS-1$
       } 	     	
     };
@@ -759,7 +763,7 @@ public class ResourceLoader {
 	public static boolean isOSPCachePath(String path) {
 		File cacheDir = getOSPCache();
 		if (cacheDir == null)
-			cacheDir = new File(OSPRuntime.tempDir); //$NON-NLS-1$
+			cacheDir = new File(OSPRuntime.tempDir); 
 		String cachePath = XML.forwardSlash(cacheDir.getAbsolutePath()) + "/osp-"; //$NON-NLS-1$
 		if (XML.forwardSlash(path).contains(cachePath))
 			return true;
@@ -786,7 +790,7 @@ public class ResourceLoader {
   public static File getOSPCacheFile(String urlPath, String name) {
   	File cacheDir = getOSPCache();
   	if (cacheDir==null)
-			cacheDir = new File(OSPRuntime.tempDir); //$NON-NLS-1$	
+			cacheDir = new File(OSPRuntime.tempDir); 
   	return getCacheFile(cacheDir, urlPath, name);
   }
 
@@ -1069,7 +1073,7 @@ public class ResourceLoader {
 	  	
 	  	// if separate stylesheet is used, copy to cache and replace in HTML code
 	  	String css = getStyleSheetFromHTMLCode(htmlCode);
-	  	if (css!=null && !isHTTP(css)) { //$NON-NLS-1$
+	  	if (css!=null && !isHTTP(css)) { 
 	  		res = getResourceZipURLsOK(XML.getResolvedPath(css, htmlBasePath));
 	  		if (res!=null) {
 	  			String cssName = XML.getName(css);
@@ -1442,7 +1446,7 @@ public class ResourceLoader {
 			return null;
   	// compare urlPath with previous attempt and, if identical, check web connection
   	if (!webConnected || downloadURL.equals(urlPath)) {
-  		webConnected = isWebConnected(); //$NON-NLS-1$
+  		webConnected = isWebConnected(); 
   	}
   	if (!webConnected) {
 			JOptionPane.showMessageDialog(null, ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
@@ -1800,7 +1804,7 @@ public class ResourceLoader {
     if((OSPRuntime.applet==null)||(name==null)||name.trim().equals("")) { //$NON-NLS-1$
       return null;
     }
-		if (isHTTP(name)) { // $NON-NLS-1$ //$NON-NLS-2$ // open a direct connection for http and https
+		if (isHTTP(name)) { // $NON-NLS-1$ // open a direct connection for http and https
 							// resources
     	try {
 			return new java.net.URL(name);
@@ -2240,7 +2244,7 @@ public class ResourceLoader {
 			n = path.toLowerCase().indexOf(".jar!/"); //$NON-NLS-1$
 		if (n == -1)
 			n = path.toLowerCase().indexOf(".trz!/"); //$NON-NLS-1$
-		if (n > -1 && isHTTP(path)) { //$NON-NLS-1$
+		if (n > -1 && isHTTP(path)) { 
 			// check that url is accessible
 			content = path.substring(n + 6);
 			working = new URL(path.substring(0, n + 4));
@@ -2416,7 +2420,7 @@ public class ResourceLoader {
 			int flen = (fileName.endsWith("/") ? fileName.length() : 0);
 			FileOutputStream fos = null;
 			try (FileInputStream fis = new FileInputStream(source);
-					ZipInputStream zis = (ZipInputStream) new ZipInputStream(fis);) {
+					ZipInputStream zis = new ZipInputStream(fis);) {
 				ZipEntry ze;
 				while ((ze = zis.getNextEntry()) != null && flen >= 0) {
 					String name = ze.getName();
@@ -2624,7 +2628,8 @@ public class ResourceLoader {
 	    final JDialog dialog = new JDialog();
 	    final OverwriteValue returnValue = new OverwriteValue(NO);
 	    java.awt.event.MouseAdapter mouseListener = new java.awt.event.MouseAdapter() {
-	      public void mousePressed(java.awt.event.MouseEvent evt) {
+	      @Override
+		public void mousePressed(java.awt.event.MouseEvent evt) {
 	        AbstractButton button = (AbstractButton) (evt.getSource());
 	        String aCmd = button.getActionCommand();
 	        if(aCmd.equals("yes")) {             //$NON-NLS-1$   
@@ -2673,7 +2678,8 @@ public class ResourceLoader {
 	    dialog.getContentPane().add(label, java.awt.BorderLayout.CENTER);
 	    dialog.getContentPane().add(buttonPanel, java.awt.BorderLayout.SOUTH);
 	    dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-	      public void windowClosing(java.awt.event.WindowEvent event) {
+	      @Override
+		public void windowClosing(java.awt.event.WindowEvent event) {
 	        returnValue.value = NO;
 	      }
 

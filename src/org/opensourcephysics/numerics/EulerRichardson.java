@@ -43,7 +43,8 @@ public class EulerRichardson extends AbstractODESolver {
    *
    * @param stepSize
    */
-  public void initialize(double stepSize) {
+  @Override
+public void initialize(double stepSize) {
     super.initialize(stepSize);
     rate = new double[numEqn];
     midstate = new double[numEqn];
@@ -58,7 +59,8 @@ public class EulerRichardson extends AbstractODESolver {
    *
    * @return the step size
    */
-  public double step() {
+  @Override
+public double step() {
     double[] state = ode.getState();
     ode.getRate(state, rate); // get the rate at the start
     double dt2 = stepSize/2;

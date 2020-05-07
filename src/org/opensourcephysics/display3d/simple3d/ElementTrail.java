@@ -34,35 +34,43 @@ public class ElementTrail extends Element implements org.opensourcephysics.displ
   // -------------------------------------
   // New configuration methods
   // -------------------------------------
-  public void addPoint(double x, double y, double z) {
+  @Override
+public void addPoint(double x, double y, double z) {
     addPoint(x, y, z, this.connected);
   }
 
-  public void addPoint(double[] point) {
+  @Override
+public void addPoint(double[] point) {
     addPoint(point[0], point[1], point[2], this.connected);
   }
 
-  public void moveToPoint(double x, double y, double z) {
+  @Override
+public void moveToPoint(double x, double y, double z) {
     addPoint(x, y, z, false);
   }
 
-  public void setMaximumPoints(int maximum) {
+  @Override
+public void setMaximumPoints(int maximum) {
     this.maximum = maximum;
   }
 
-  public int getMaximumPoints() {
+  @Override
+public int getMaximumPoints() {
     return this.maximum;
   }
 
-  public void setConnected(boolean connected) {
+  @Override
+public void setConnected(boolean connected) {
     this.connected = connected;
   }
 
-  public boolean isConnected() {
+  @Override
+public boolean isConnected() {
     return this.connected;
   }
 
-  public synchronized void clear() {
+  @Override
+public synchronized void clear() {
     synchronized(list) {
       list.clear();
     }
@@ -70,15 +78,18 @@ public class ElementTrail extends Element implements org.opensourcephysics.displ
     ghostPoint.xp = Double.NaN;
   }
 
-  public void setXLabel(String _label) {
+  @Override
+public void setXLabel(String _label) {
     inputLabels[0] = _label;
   }
 
-  public void setYLabel(String _label) {
+  @Override
+public void setYLabel(String _label) {
     inputLabels[1] = _label;
   }
 
-  public void setZLabel(String _label) {
+  @Override
+public void setZLabel(String _label) {
     inputLabels[2] = _label;
   }
 
@@ -99,7 +110,8 @@ public class ElementTrail extends Element implements org.opensourcephysics.displ
     return list.size();
   }
 
-  public void setGhostPoint(double[] _point, boolean _connected) {
+  @Override
+public void setGhostPoint(double[] _point, boolean _connected) {
     if(_point==null) {
       ghostPoint.xp = Double.NaN;
     } else {
@@ -132,7 +144,8 @@ public class ElementTrail extends Element implements org.opensourcephysics.displ
     }
   }
 
-  Object3D[] getObjects3D() {
+  @Override
+Object3D[] getObjects3D() {
     synchronized(list) {
       if(!isReallyVisible()||(list.size()<=0)) {
         return null;
@@ -147,7 +160,8 @@ public class ElementTrail extends Element implements org.opensourcephysics.displ
     return points;
   }
 
-  void draw(Graphics2D _g2, int _index) {
+  @Override
+void draw(Graphics2D _g2, int _index) {
     TrailPoint point = points[_index];
     Color theColor = getDrawingPanel3D().projectColor(getRealStyle().getLineColor(), point.getDistance());
     _g2.setStroke(getRealStyle().getLineStroke());
@@ -160,7 +174,8 @@ public class ElementTrail extends Element implements org.opensourcephysics.displ
     }
   }
 
-  void drawQuickly(Graphics2D _g2) {
+  @Override
+void drawQuickly(Graphics2D _g2) {
     synchronized(list) {
       if(!isReallyVisible()||(list.size()<=0)) {
         return;
@@ -189,7 +204,8 @@ public class ElementTrail extends Element implements org.opensourcephysics.displ
     }
   }
 
-  public void getExtrema(double[] min, double[] max) {
+  @Override
+public void getExtrema(double[] min, double[] max) {
     double minX = Double.POSITIVE_INFINITY, maxX = Double.NEGATIVE_INFINITY;
     double minY = Double.POSITIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY;
     double minZ = Double.POSITIVE_INFINITY, maxZ = Double.NEGATIVE_INFINITY;
@@ -244,15 +260,18 @@ public class ElementTrail extends Element implements org.opensourcephysics.displ
   protected int datasetID = hashCode();
   //  private Dataset dataset = null;
 
-  public void setID(int id) {
+  @Override
+public void setID(int id) {
     datasetID = id;
   }
 
-  public int getID() {
+  @Override
+public int getID() {
     return datasetID;
   }
 
-  public double[][] getData2D() {
+  @Override
+public double[][] getData2D() {
     synchronized(list) {
       preparePoints();
     }
@@ -265,27 +284,33 @@ public class ElementTrail extends Element implements org.opensourcephysics.displ
     return data;
   }
 
-  public double[][][] getData3D() {
+  @Override
+public double[][][] getData3D() {
     return null;
   }
 
-  public String[] getColumnNames() {
+  @Override
+public String[] getColumnNames() {
     return inputLabels;
   }
 
-  public Color[] getLineColors() {
+  @Override
+public Color[] getLineColors() {
     return new Color[] {DisplayColors.getLineColor(0), DisplayColors.getLineColor(1), DisplayColors.getLineColor(2)};
   }
 
-  public Color[] getFillColors() {
+  @Override
+public Color[] getFillColors() {
     return new Color[] {getStyle().getFillColor(), getStyle().getFillColor(), getStyle().getFillColor()};
   }
 
-  public java.util.List<Data> getDataList() {
+  @Override
+public java.util.List<Data> getDataList() {
     return null;
   }
 
-  public java.util.ArrayList<Dataset> getDatasets() {
+  @Override
+public java.util.ArrayList<Dataset> getDatasets() {
     return null;
   }
   //    double[][] data = getData2D();
@@ -377,7 +402,8 @@ public class ElementTrail extends Element implements org.opensourcephysics.displ
   }
 
   static private class Loader extends org.opensourcephysics.display3d.core.ElementTrail.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ElementTrail();
     }
 

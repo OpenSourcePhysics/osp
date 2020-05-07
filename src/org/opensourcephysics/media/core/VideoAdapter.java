@@ -105,6 +105,7 @@ public abstract class VideoAdapter implements Video {
 	 * @param panel the drawing panel requesting the drawing
 	 * @param g     the graphics context on which to draw
 	 */
+	@Override
 	public void draw(DrawingPanel panel, Graphics g) {
 		if (!visible) {
 			return;
@@ -150,9 +151,10 @@ public abstract class VideoAdapter implements Video {
    *
    * @param visible <code>true</code> to show the video
    */
-  public void setVisible(boolean visible) {
+  @Override
+public void setVisible(boolean visible) {
     this.visible = visible;
-    firePropertyChange(PROPERTY_VIDEO_VIDEOVISIBLE, null, new Boolean(visible)); //$NON-NLS-1$
+    firePropertyChange(PROPERTY_VIDEO_VIDEOVISIBLE, null, new Boolean(visible)); 
   }
 
   /**
@@ -160,7 +162,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return <code>true</code> if the video is visible
    */
-  public boolean isVisible() {
+  @Override
+public boolean isVisible() {
     return visible;
   }
 
@@ -169,7 +172,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return minimum x
    */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     if(!isValidMeasure) {
       findMinMaxValues();
     }
@@ -181,7 +185,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return maximum x
    */
-  public double getXMax() {
+  @Override
+public double getXMax() {
     if(!isValidMeasure) {
       findMinMaxValues();
     }
@@ -193,7 +198,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return minimum y
    */
-  public double getYMin() {
+  @Override
+public double getYMin() {
     if(!isValidMeasure) {
       findMinMaxValues();
     }
@@ -205,7 +211,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return maximum y
    */
-  public double getYMax() {
+  @Override
+public double getYMax() {
     if(!isValidMeasure) {
       findMinMaxValues();
     }
@@ -217,7 +224,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return <code>true</code> if min/max values are valid
    */
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return isMeasured;
   }
 
@@ -226,6 +234,7 @@ public abstract class VideoAdapter implements Video {
 	 *
 	 * @return the current video image with filters applied
 	 */
+	@Override
 	public BufferedImage getImage() {
 		refreshBufferedImage();
 		if (!isValidImage) { // bufferedImage needs refreshing
@@ -252,7 +261,8 @@ public abstract class VideoAdapter implements Video {
    * @param ypix the y coordinate in pixels
    * @return this if enabled, otherwise null
    */
-  public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
     if(!mouseEnabled) {
       return null;
     }
@@ -264,7 +274,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @param enabled <code>true</code> if this responds to mouse hits.
    */
-  public void setEnabled(boolean enabled) {
+  @Override
+public void setEnabled(boolean enabled) {
     mouseEnabled = enabled;
   }
 
@@ -273,7 +284,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return <code>true</code> if this responds to mouse hits.
    */
-  public boolean isEnabled() {
+  @Override
+public boolean isEnabled() {
     return mouseEnabled;
   }
 
@@ -284,7 +296,8 @@ public abstract class VideoAdapter implements Video {
    * @param n the video frame number
    * @param x the world x position
    */
-  public void setFrameX(int n, double x) {
+  @Override
+public void setFrameX(int n, double x) {
     setFrameXY(n, x, coords.imageToWorldY(n, 0, 0));
   }
 
@@ -294,7 +307,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @param x the world x position
    */
-  public void setX(double x) {
+  @Override
+public void setX(double x) {
     for(int n = 0; n<frameCount; n++) {
       setFrameX(n, x);
     }
@@ -307,7 +321,8 @@ public abstract class VideoAdapter implements Video {
    * @param n the video frame number
    * @param y the world y position
    */
-  public void setFrameY(int n, double y) {
+  @Override
+public void setFrameY(int n, double y) {
     setFrameXY(n, coords.imageToWorldX(n, 0, 0), y);
   }
 
@@ -317,7 +332,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @param y the world y position
    */
-  public void setY(double y) {
+  @Override
+public void setY(double y) {
     for(int n = 0; n<frameCount; n++) {
       setFrameY(n, y);
     }
@@ -329,7 +345,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return the world x position
    */
-  public double getX() {
+  @Override
+public double getX() {
     return coords.imageToWorldX(frameNumber, 0, 0);
   }
 
@@ -339,7 +356,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return the world y position
    */
-  public double getY() {
+  @Override
+public double getY() {
     return coords.imageToWorldY(frameNumber, 0, 0);
   }
 
@@ -351,7 +369,8 @@ public abstract class VideoAdapter implements Video {
    * @param x the world x position
    * @param y the world y position
    */
-  public void setFrameXY(int n, double x, double y) {
+  @Override
+public void setFrameXY(int n, double x, double y) {
     double sin = coords.getSine(n);
     double cos = coords.getCosine(n);
     double tx = coords.getScaleX(n)*(y*sin-x*cos);
@@ -366,7 +385,8 @@ public abstract class VideoAdapter implements Video {
    * @param x the world x position
    * @param y the world y position
    */
-  public void setXY(double x, double y) {
+  @Override
+public void setXY(double x, double y) {
     for(int n = 0; n<frameCount; n++) {
       setFrameXY(n, x, y);
     }
@@ -385,7 +405,8 @@ public abstract class VideoAdapter implements Video {
    * @param n the video frame number
    * @param relativeAspect the desired relative aspect
    */
-  public void setFrameRelativeAspect(int n, double relativeAspect) {
+  @Override
+public void setFrameRelativeAspect(int n, double relativeAspect) {
     if((relativeAspect<0.001)||(relativeAspect>1000)) {
       return;
     }
@@ -411,7 +432,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @param relativeAspect the desired relative aspect
    */
-  public void setRelativeAspect(double relativeAspect) {
+  @Override
+public void setRelativeAspect(double relativeAspect) {
     for(int n = 0; n<frameCount; n++) {
       setFrameRelativeAspect(n, relativeAspect);
     }
@@ -422,7 +444,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return the relative aspect of the current image.
    */
-  public double getRelativeAspect() {
+  @Override
+public double getRelativeAspect() {
     return aspects.get(frameNumber);
   }
 
@@ -434,7 +457,8 @@ public abstract class VideoAdapter implements Video {
    * @param width the width in world units
    * @see #setRelativeAspect
    */
-  public void setFrameWidth(int n, double width) {
+  @Override
+public void setFrameWidth(int n, double width) {
     if(width==0) {
       return;
     }
@@ -457,7 +481,8 @@ public abstract class VideoAdapter implements Video {
    * @param width the width in world units
    * @see #setRelativeAspect
    */
-  public void setWidth(double width) {
+  @Override
+public void setWidth(double width) {
     for(int n = 0; n<frameCount; n++) {
       setFrameWidth(n, width);
     }
@@ -468,7 +493,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return the width of the video image
    */
-  public double getWidth() {
+  @Override
+public double getWidth() {
     return size.width/coords.getScaleX(frameNumber);
   }
 
@@ -480,7 +506,8 @@ public abstract class VideoAdapter implements Video {
    * @param height the height in world units
    * @see #setRelativeAspect
    */
-  public void setFrameHeight(int n, double height) {
+  @Override
+public void setFrameHeight(int n, double height) {
     if(height==0) {
       return;
     }
@@ -503,7 +530,8 @@ public abstract class VideoAdapter implements Video {
    * @param height the height in world units
    * @see #setRelativeAspect
    */
-  public void setHeight(double height) {
+  @Override
+public void setHeight(double height) {
     for(int n = 0; n<frameCount; n++) {
       setFrameHeight(n, height);
     }
@@ -514,7 +542,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return the height of the video image
    */
-  public double getHeight() {
+  @Override
+public double getHeight() {
     return size.height/coords.getScaleY(frameNumber);
   }
 
@@ -525,7 +554,8 @@ public abstract class VideoAdapter implements Video {
    * @param n the video frame number
    * @param theta the angle in radians
    */
-  public void setFrameAngle(int n, double theta) {
+  @Override
+public void setFrameAngle(int n, double theta) {
     // save x and y since setting angle invalidates them
     double x = coords.imageToWorldX(n, 0, 0);
     double y = coords.imageToWorldY(n, 0, 0);
@@ -541,7 +571,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @param theta the angle in radians
    */
-  public void setAngle(double theta) {
+  @Override
+public void setAngle(double theta) {
     for(int n = 0; n<frameCount; n++) {
       setFrameAngle(n, theta);
     }
@@ -553,14 +584,16 @@ public abstract class VideoAdapter implements Video {
    *
    * @return the angle in radians
    */
-  public double getAngle() {
+  @Override
+public double getAngle() {
     return -coords.getAngle(frameNumber);
   }
 
   /**
    * Steps the video forward one frame.
    */
-  public void step() {
+  @Override
+public void step() {
     stop();
     setFrameNumber(frameNumber+1);
   }
@@ -568,7 +601,8 @@ public abstract class VideoAdapter implements Video {
   /**
    * Steps the video back one frame.
    */
-  public void back() {
+  @Override
+public void back() {
     stop();
     setFrameNumber(frameNumber-1);
   }
@@ -578,7 +612,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return the number of video frames
    */
-  public int getFrameCount() {
+  @Override
+public int getFrameCount() {
     return frameCount;
   }
 
@@ -587,7 +622,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return the current frame number
    */
-  public int getFrameNumber() {
+  @Override
+public int getFrameNumber() {
     return frameNumber;
   }
 
@@ -596,13 +632,14 @@ public abstract class VideoAdapter implements Video {
    *
    * @param n the desired frame number
    */
-  public void setFrameNumber(int n) {
+  @Override
+public void setFrameNumber(int n) {
     if(n==frameNumber) {
       return;
     }
     n = Math.min(n, endFrameNumber);
     n = Math.max(n, startFrameNumber);
-    firePropertyChange(PROPERTY_VIDEO_NEXTFRAME, null, n); //$NON-NLS-1$
+    firePropertyChange(PROPERTY_VIDEO_NEXTFRAME, null, n); 
     frameNumber = n;
   }
 
@@ -612,7 +649,8 @@ public abstract class VideoAdapter implements Video {
    * @return the start frame number
    * @see #getEndFrameNumber
    */
-  public int getStartFrameNumber() {
+  @Override
+public int getStartFrameNumber() {
     return startFrameNumber;
   }
 
@@ -622,13 +660,14 @@ public abstract class VideoAdapter implements Video {
    * @param n the desired start frame number
    * @see #setEndFrameNumber
    */
-  public void setStartFrameNumber(int n) {
+  @Override
+public void setStartFrameNumber(int n) {
     if(n==startFrameNumber) {
       return;
     }
     n = Math.max(0, n);
     startFrameNumber = Math.min(endFrameNumber, n);
-    firePropertyChange(PROPERTY_VIDEO_STARTFRAME, null, Integer.valueOf(startFrameNumber)); //$NON-NLS-1$
+    firePropertyChange(PROPERTY_VIDEO_STARTFRAME, null, Integer.valueOf(startFrameNumber)); 
   }
   
 
@@ -638,7 +677,8 @@ public abstract class VideoAdapter implements Video {
    * @return the end frame number
    * @see #getStartFrameNumber
    */
-  public int getEndFrameNumber() {
+  @Override
+public int getEndFrameNumber() {
     return endFrameNumber;
   }
 
@@ -648,7 +688,8 @@ public abstract class VideoAdapter implements Video {
    * @param n the desired end frame number,
    * @see #setStartFrameNumber
    */
-  public void setEndFrameNumber(int n) {
+  @Override
+public void setEndFrameNumber(int n) {
     if(n==endFrameNumber) {
       return;
     }
@@ -656,7 +697,7 @@ public abstract class VideoAdapter implements Video {
       n = Math.min(frameCount-1, n);
     }
     endFrameNumber = Math.max(startFrameNumber, n);
-    firePropertyChange(PROPERTY_VIDEO_ENDFRAME, null, Integer.valueOf(endFrameNumber)); //$NON-NLS-1$
+    firePropertyChange(PROPERTY_VIDEO_ENDFRAME, null, Integer.valueOf(endFrameNumber)); 
   }
 
   /**
@@ -665,7 +706,8 @@ public abstract class VideoAdapter implements Video {
    * @param n the frame number
    * @return the start time of the frame in milliseconds, or -1 if not known
    */
-  public double getFrameTime(int n) {
+  @Override
+public double getFrameTime(int n) {
     return -1;
   }
 
@@ -675,7 +717,8 @@ public abstract class VideoAdapter implements Video {
    * @param n the frame number
    * @return the duration of the frame in milliseconds
    */
-  public double getFrameDuration(int n) {
+  @Override
+public double getFrameDuration(int n) {
     if(frameCount==1) {
       return getDuration();
     }
@@ -688,21 +731,24 @@ public abstract class VideoAdapter implements Video {
   /**
    * Plays the video at the current rate.
    */
-  public void play() {
+  @Override
+public void play() {
     playing = true;
   }
 
   /**
    * Stops the video.
    */
-  public void stop() {
+  @Override
+public void stop() {
     playing = false;
   }
 
   /**
    * Stops the video and resets it to the start time.
    */
-  public void reset() {
+  @Override
+public void reset() {
     stop();
     setFrameNumber(startFrameNumber);
   }
@@ -712,7 +758,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return the current time in milliseconds, or -1 if not known
    */
-  public double getTime() {
+  @Override
+public double getTime() {
     return -1;
   }
 
@@ -721,7 +768,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @param millis the desired time in milliseconds
    */
-  public void setTime(double millis) {
+  @Override
+public void setTime(double millis) {
 
   /** implemented by subclasses */
   }
@@ -731,7 +779,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return the start time in milliseconds, or -1 if not known
    */
-  public double getStartTime() {
+  @Override
+public double getStartTime() {
     return -1;
   }
 
@@ -741,7 +790,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @param millis the desired start time in milliseconds
    */
-  public void setStartTime(double millis) {
+  @Override
+public void setStartTime(double millis) {
 
   /** implemented by subclasses */
   }
@@ -751,7 +801,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return the end time in milliseconds, or -1 if not known
    */
-  public double getEndTime() {
+  @Override
+public double getEndTime() {
     return -1;
   }
 
@@ -761,7 +812,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @param millis the desired end time in milliseconds
    */
-  public void setEndTime(double millis) {
+  @Override
+public void setEndTime(double millis) {
 
   /** implemented by subclasses */
   }
@@ -771,21 +823,24 @@ public abstract class VideoAdapter implements Video {
    *
    * @return the duration of the video in milliseconds, or -1 if not known
    */
-  public double getDuration() {
+  @Override
+public double getDuration() {
     return -1;
   }
 
   /**
    * Sets the frame number to the start frame.
    */
-  public void goToStart() {
+  @Override
+public void goToStart() {
     setFrameNumber(startFrameNumber);
   }
 
   /**
    * Sets the frame number to the end frame.
    */
-  public void goToEnd() {
+  @Override
+public void goToEnd() {
     setFrameNumber(endFrameNumber);
   }
 
@@ -795,7 +850,8 @@ public abstract class VideoAdapter implements Video {
    * @param playing <code>true</code> starts the video, and
    * <code>false</code> stops it
    */
-  public void setPlaying(boolean playing) {
+  @Override
+public void setPlaying(boolean playing) {
     if(playing) {
       play();
     } else {
@@ -808,7 +864,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return <code>true</code> if the video is playing
    */
-  public boolean isPlaying() {
+  @Override
+public boolean isPlaying() {
     return playing;
   }
 
@@ -818,12 +875,13 @@ public abstract class VideoAdapter implements Video {
    *
    * @param loops <code>true</code> if the video loops
    */
-  public void setLooping(boolean loops) {
+  @Override
+public void setLooping(boolean loops) {
     if(looping==loops) {
       return;
     }
     looping = loops;
-    firePropertyChange(PROPERTY_VIDEO_LOOPING, null, new Boolean(looping)); //$NON-NLS-1$
+    firePropertyChange(PROPERTY_VIDEO_LOOPING, null, new Boolean(looping)); 
   }
 
   /**
@@ -832,7 +890,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return <code>true</code> if the video loops
    */
-  public boolean isLooping() {
+  @Override
+public boolean isLooping() {
     return looping;
   }
 
@@ -842,7 +901,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @param rate the relative play rate.
    */
-  public void setRate(double rate) {
+  @Override
+public void setRate(double rate) {
     rate = Math.abs(rate);
     if((rate==this.rate)||(rate==0)) {
       return;
@@ -856,7 +916,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return the relative play rate.
    */
-  public double getRate() {
+  @Override
+public double getRate() {
     return rate;
   }
 
@@ -866,6 +927,7 @@ public abstract class VideoAdapter implements Video {
 	 *
 	 * @param newCoords the image coordinate system
 	 */
+	@Override
 	public void setCoords(ImageCoordSystem newCoords) {
 		if (newCoords == coords) {
 			return;
@@ -877,7 +939,7 @@ public abstract class VideoAdapter implements Video {
 		coords = newCoords;
 		isMeasured = true;
 		isValidMeasure = false;
-		firePropertyChange(PROPERTY_VIDEO_COORDS, null, newCoords); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_VIDEO_COORDS, null, newCoords); 
 	}
 
   /**
@@ -885,7 +947,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return the image coordinate system
    */
-  public ImageCoordSystem getCoords() {
+  @Override
+public ImageCoordSystem getCoords() {
     return coords;
   }
 
@@ -894,7 +957,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @param stack the new filter stack
    */
-  public void setFilterStack(FilterStack stack) {
+  @Override
+public void setFilterStack(FilterStack stack) {
     filterStack.removePropertyChangeListener(this);
     filterStack = stack;
     filterStack.addPropertyChangeListener(this);
@@ -905,7 +969,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return the filter stack
    */
-  public FilterStack getFilterStack() {
+  @Override
+public FilterStack getFilterStack() {
     return filterStack;
   }
 
@@ -915,7 +980,8 @@ public abstract class VideoAdapter implements Video {
    * @param name the name of the property
    * @param value the value of the property
    */
-  public void setProperty(String name, Object value) {
+  @Override
+public void setProperty(String name, Object value) {
     if(name.equals("measure")) { //$NON-NLS-1$
       isValidMeasure = false;
     } else {
@@ -929,7 +995,8 @@ public abstract class VideoAdapter implements Video {
    * @param name the name of the property
    * @return the value of the property
    */
-  public Object getProperty(String name) {
+  @Override
+public Object getProperty(String name) {
     return properties.get(name);
   }
 
@@ -938,7 +1005,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @return a collection of property names
    */
-  public Collection<String> getPropertyNames() {
+  @Override
+public Collection<String> getPropertyNames() {
     return properties.keySet();
   }
 
@@ -947,7 +1015,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @param listener the object requesting property change notification
    */
-  public void addPropertyChangeListener(PropertyChangeListener listener) {
+  @Override
+public void addPropertyChangeListener(PropertyChangeListener listener) {
     support.addPropertyChangeListener(listener);
   }
 
@@ -957,7 +1026,8 @@ public abstract class VideoAdapter implements Video {
    * @param property the name of the property of interest to the listener
    * @param listener the object requesting property change notification
    */
-  public void addPropertyChangeListener(String property, PropertyChangeListener listener) {
+  @Override
+public void addPropertyChangeListener(String property, PropertyChangeListener listener) {
     support.addPropertyChangeListener(property, listener);
   }
 
@@ -966,7 +1036,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @param listener the listener requesting removal
    */
-  public void removePropertyChangeListener(PropertyChangeListener listener) {
+  @Override
+public void removePropertyChangeListener(PropertyChangeListener listener) {
     support.removePropertyChangeListener(listener);
   }
 
@@ -976,14 +1047,16 @@ public abstract class VideoAdapter implements Video {
    * @param property the name of the property
    * @param listener the listener to remove
    */
-  public void removePropertyChangeListener(String property, PropertyChangeListener listener) {
+  @Override
+public void removePropertyChangeListener(String property, PropertyChangeListener listener) {
     support.removePropertyChangeListener(property, listener);
   }
 
   /**
    * Disposes of this video.
    */
-  public void dispose() {
+  @Override
+public void dispose() {
   	if (coords!=null)
   		coords.removePropertyChangeListener(this);
     getFilterStack().setInspectorsVisible(false);
@@ -996,7 +1069,8 @@ public abstract class VideoAdapter implements Video {
    *
    * @param e the property change event
    */
-  public void propertyChange(PropertyChangeEvent e) {
+  @Override
+public void propertyChange(PropertyChangeEvent e) {
     if(e.getSource()==coords) {             // "transform"
       isMeasured = true;
       isValidMeasure = false;
@@ -1028,6 +1102,7 @@ public abstract class VideoAdapter implements Video {
 		 * @param control the control to save to
 		 * @param obj     the Video object to save
 		 */
+		@Override
 		public void saveObject(XMLControl control, Object obj) {
 			VideoAdapter video = (VideoAdapter) obj;
 			String base = (String) video.getProperty("base"); //$NON-NLS-1$
@@ -1049,6 +1124,7 @@ public abstract class VideoAdapter implements Video {
 		 * @param control the control
 		 * @return the new Video
 		 */
+		@Override
 		public Object createObject(XMLControl control) {
 			try {
 				String path = control.getString("path"); //$NON-NLS-1$
@@ -1068,6 +1144,7 @@ public abstract class VideoAdapter implements Video {
 		 * @param obj     the Video object
 		 * @return the loaded object
 		 */
+		@Override
 		public Object loadObject(XMLControl control, Object obj) {
 			VideoAdapter video = (VideoAdapter) obj;
 			Collection<?> filters = (Collection<?>) control.getObject("filters"); //$NON-NLS-1$

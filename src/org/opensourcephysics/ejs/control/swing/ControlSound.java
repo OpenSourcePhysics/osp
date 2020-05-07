@@ -27,7 +27,8 @@ public class ControlSound extends ControlCheckBox {
   public ControlSound(Object _visual) {
     super(_visual);
     checkbox.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent _e) {
+      @Override
+	public void actionPerformed(java.awt.event.ActionEvent _e) {
         if(checkbox.isSelected()) {
           play();
         } else {
@@ -66,7 +67,8 @@ public class ControlSound extends ControlCheckBox {
     }
   }
 
-  public void destroy() {
+  @Override
+public void destroy() {
     if(clip!=null) {
       clip.stop();
     }
@@ -92,7 +94,8 @@ public class ControlSound extends ControlCheckBox {
   // ------------------------------------------------
   static private java.util.ArrayList<String> infoList = null;
 
-  public java.util.ArrayList<String> getPropertyList() {
+  @Override
+public java.util.ArrayList<String> getPropertyList() {
     if(infoList==null) {
       infoList = new java.util.ArrayList<String>();
       infoList.add("audiofile"); //$NON-NLS-1$
@@ -101,7 +104,8 @@ public class ControlSound extends ControlCheckBox {
     return infoList;
   }
 
-  public String getPropertyInfo(String _property) {
+  @Override
+public String getPropertyInfo(String _property) {
     if(_property.equals("audiofile")) { //$NON-NLS-1$
       return "File|String";             //$NON-NLS-1$
     }
@@ -111,7 +115,8 @@ public class ControlSound extends ControlCheckBox {
   // ------------------------------------------------
   // Set and Get the values of the properties
   // ------------------------------------------------
-  public void setValue(int _index, Value _value) {
+  @Override
+public void setValue(int _index, Value _value) {
     switch(_index) {
        case 0 :
          setAudioFile(_value.getString());
@@ -133,7 +138,8 @@ public class ControlSound extends ControlCheckBox {
     }
   }
 
-  public void setDefaultValue(int _index) {
+  @Override
+public void setDefaultValue(int _index) {
     switch(_index) {
        case 0 :
          setAudioClip(null, null);
@@ -145,7 +151,8 @@ public class ControlSound extends ControlCheckBox {
     }
   }
 
-  public Value getValue(int _index) {
+  @Override
+public Value getValue(int _index) {
     switch(_index) {
        case 0 :
          return null;

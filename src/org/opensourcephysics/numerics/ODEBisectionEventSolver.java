@@ -68,7 +68,8 @@ public class ODEBisectionEventSolver implements ODEEventSolver, ODEAdaptiveSolve
    *  Adds a StateEvent to the list of events
    * @param event The event to be added
    */
-  public void addEvent(StateEvent event) {
+  @Override
+public void addEvent(StateEvent event) {
     eventList.add(event);
   }
 
@@ -76,12 +77,14 @@ public class ODEBisectionEventSolver implements ODEEventSolver, ODEAdaptiveSolve
    *  Removes a StateEvent from the list of events
    * @param event The event to be removed
    */
-  public void removeEvent(StateEvent event) {
+  @Override
+public void removeEvent(StateEvent event) {
     eventList.remove(event);
   }
 
   // --- Implementation of ODESolver
-  public void initialize(double stepSize) {
+  @Override
+public void initialize(double stepSize) {
     // This is for solvers that copy the state, such as ODEInterpolationSolvers
     triggerOde.readRealState();
     // Reserve my own space
@@ -90,21 +93,25 @@ public class ODEBisectionEventSolver implements ODEEventSolver, ODEAdaptiveSolve
     solver.initialize(stepSize); // Defer to the real solver
   }
 
-  public void setStepSize(double stepSize) {
+  @Override
+public void setStepSize(double stepSize) {
     solver.setStepSize(stepSize); // Defer to the real solver
   }
 
-  public double getStepSize() {
+  @Override
+public double getStepSize() {
     return solver.getStepSize(); // Defer to the real solver
   }
 
-  public void setTolerance(double tol) {
+  @Override
+public void setTolerance(double tol) {
     if(solver instanceof ODEAdaptiveSolver) {
       ((ODEAdaptiveSolver) solver).setTolerance(tol);
     }
   }
 
-  public double getTolerance() {
+  @Override
+public double getTolerance() {
     if(solver instanceof ODEAdaptiveSolver) {
       return((ODEAdaptiveSolver) solver).getTolerance();
     }
@@ -124,7 +131,8 @@ public class ODEBisectionEventSolver implements ODEEventSolver, ODEAdaptiveSolve
    * Then it finds the event point and applies the actions
    * @return The actual step taken
    */
-  public double step() { // Step from t=a to t=b(=a+dt)
+  @Override
+public double step() { // Step from t=a to t=b(=a+dt)
     errorCode = ODEAdaptiveSolver.NO_ERROR;
     eventHappened = false;
     double t = 0, origDt = solver.getStepSize();
@@ -255,7 +263,8 @@ public class ODEBisectionEventSolver implements ODEEventSolver, ODEAdaptiveSolve
    *   ODEAdaptiveSolver.BISECTION_EVENT_NOT_FOUND=2;
    * @return int
    */
-  public int getErrorCode() {
+  @Override
+public int getErrorCode() {
     return errorCode;
   }
 

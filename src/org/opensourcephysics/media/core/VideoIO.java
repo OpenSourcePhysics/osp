@@ -87,6 +87,7 @@ public class VideoIO {
 		 * @param f the file
 		 * @return true if accepted
 		 */
+		@Override
 		public boolean accept(File f) {
 			return (f != null && accept(f, true));
 		}
@@ -174,6 +175,7 @@ public class VideoIO {
 		filter = new VideoFileFilter("png", new String[] { "png" }); //$NON-NLS-1$ //$NON-NLS-2$
 		addVideoType(new ImageVideoType(filter));
 		imageFileFilter = new SingleExtFileFilter(null, MediaRes.getString("VideoIO.ImageFileFilter.Description")) { //$NON-NLS-1$
+			@Override
 			public boolean accept(File f, boolean checkDir) {
 				String ext = VideoIO.getExtension(f); 
 				return (checkDir && f.isDirectory()
@@ -351,6 +353,7 @@ public class VideoIO {
 			output = out;
 		}
 
+		@Override
 		public void run() {
 			try {
 				final byte[] buffer = new byte[1024];

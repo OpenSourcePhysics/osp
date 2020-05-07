@@ -68,7 +68,8 @@ public class FFTFrame extends DrawingFrame {
   /**
    * Adds Views menu items on the menu bar.
    */
-  protected void addMenuItems() {
+  @Override
+protected void addMenuItems() {
     JMenuBar menuBar = getJMenuBar();
     if(menuBar==null) {
       return;
@@ -91,7 +92,8 @@ public class FFTFrame extends DrawingFrame {
     menubarGroup.add(postItem);
     postItem.setSelected(true);
     ActionListener actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToPostView();
       }
 
@@ -102,7 +104,8 @@ public class FFTFrame extends DrawingFrame {
     barItem = new JRadioButtonMenuItem(DisplayRes.getString("ComplexPlotFrame.MenuItem.BarView")); //$NON-NLS-1$
     menubarGroup.add(barItem);
     actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToPhaseBarView();
       }
 
@@ -113,7 +116,8 @@ public class FFTFrame extends DrawingFrame {
     ampPhaseItem = new JRadioButtonMenuItem(DisplayRes.getString("ComplexPlotFrame.MenuItem.AmpPhase")); //$NON-NLS-1$
     menubarGroup.add(ampPhaseItem);
     actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToAmpAndPhaseView();
       }
 
@@ -124,7 +128,8 @@ public class FFTFrame extends DrawingFrame {
     JMenuItem tableItem = new JMenuItem(DisplayRes.getString("DrawingFrame.DataTable_menu_item")); //$NON-NLS-1$
     tableItem.setAccelerator(KeyStroke.getKeyStroke('T', MENU_SHORTCUT_KEY_MASK));
     ActionListener tableListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         showDataTable(true);
       }
 
@@ -140,7 +145,8 @@ public class FFTFrame extends DrawingFrame {
     menu.addSeparator();
     tableItem = new JMenuItem(DisplayRes.getString("GUIUtils.PhaseLegend")); //$NON-NLS-1$
     tableListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         complexDataset.showLegend();
       }
 
@@ -367,14 +373,16 @@ public class FFTFrame extends DrawingFrame {
    *
    * @return the list
    */
-  public synchronized ArrayList<Drawable> getDrawables() {
+  @Override
+public synchronized ArrayList<Drawable> getDrawables() {
 	    return super.getDrawablesExcept(null, complexDataset);
   }
 
   /**
    * Removes drawable objects added by the user from this frame.
    */
-  public void clearDrawables() {
+  @Override
+public void clearDrawables() {
     drawingPanel.clear();                     // removes all drawables
     drawingPanel.addDrawable(complexDataset); // puts complex dataset back into panel
     showDataTable(false);
@@ -390,14 +398,16 @@ public class FFTFrame extends DrawingFrame {
    *
    * @see #getObjectOfClass(Class c)
    */
-  public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
+  @Override
+public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
 		return getDrawablesExcept(c, complexDataset);
   }
 
   /**
    * Clears all the stored complex data.
    */
-  public void clearData() {
+  @Override
+public void clearData() {
     complexDataset.clear();
     dataTable.refreshTable();
     drawingPanel.invalidateImage();
@@ -406,7 +416,8 @@ public class FFTFrame extends DrawingFrame {
   /**
    * Sets the axes to use a logarithmetic scale.
    */
-  public void setLogScale(boolean xlog, boolean ylog) {
+  @Override
+public void setLogScale(boolean xlog, boolean ylog) {
     if(drawingPanel instanceof PlottingPanel) {
       ((PlottingPanel) drawingPanel).setLogScale(xlog, ylog);
     }

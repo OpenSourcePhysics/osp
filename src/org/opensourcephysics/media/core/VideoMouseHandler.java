@@ -55,7 +55,8 @@ public class VideoMouseHandler implements InteractiveMouseHandler {
    * @param panel the video panel
    * @param e the mouse event
    */
-  public void handleMouseAction(InteractivePanel panel, MouseEvent e) {
+  @Override
+public void handleMouseAction(InteractivePanel panel, MouseEvent e) {
     if(!(panel instanceof VideoPanel)) {
       return;
     }

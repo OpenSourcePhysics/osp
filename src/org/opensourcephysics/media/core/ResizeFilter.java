@@ -133,7 +133,8 @@ public class ResizeFilter extends Filter {
    * @param sourceImage the source image
    * @return the filtered image
    */
-  public BufferedImage getFilteredImage(BufferedImage sourceImage) {
+  @Override
+public BufferedImage getFilteredImage(BufferedImage sourceImage) {
     if(!isEnabled()) {
       return sourceImage;
     }
@@ -152,7 +153,8 @@ public class ResizeFilter extends Filter {
    *
    * @return the inspector
    */
-  public synchronized JDialog getInspector() {
+  @Override
+public synchronized JDialog getInspector() {
   	Inspector myInspector = inspector;
     if (myInspector==null) {
     	myInspector = new Inspector();
@@ -171,7 +173,8 @@ public class ResizeFilter extends Filter {
   /**
    * Refreshes this filter's GUI
    */
-  public void refresh() {
+  @Override
+public void refresh() {
     super.refresh();
     widthLabel.setText(MediaRes.getString("Filter.Resize.Label.Width"));   //$NON-NLS-1$
     heightLabel.setText(MediaRes.getString("Filter.Resize.Label.Height")); //$NON-NLS-1$
@@ -265,7 +268,8 @@ public class ResizeFilter extends Filter {
 //      widthOutField.setMaxValue(2000);
 //      widthOutField.setMinValue(10);
       widthOutField.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           setWidthFactor(1.0*widthOutField.getIntValue()/w);
           refresh();
           widthOutField.selectAll();
@@ -273,10 +277,12 @@ public class ResizeFilter extends Filter {
 
       });
       widthOutField.addFocusListener(new FocusListener() {
-        public void focusGained(FocusEvent e) {
+        @Override
+		public void focusGained(FocusEvent e) {
           widthOutField.selectAll();
         }
-        public void focusLost(FocusEvent e) {
+        @Override
+		public void focusLost(FocusEvent e) {
           setWidthFactor(1.0*widthOutField.getIntValue()/w);
           refresh();
         }
@@ -291,7 +297,8 @@ public class ResizeFilter extends Filter {
 //      heightOutField.setMaxValue(1000);
 //      heightOutField.setMinValue(100);
       heightOutField.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           setHeightFactor(1.0*heightOutField.getIntValue()/h);
           refresh();
           heightOutField.selectAll();
@@ -299,10 +306,12 @@ public class ResizeFilter extends Filter {
 
       });
       heightOutField.addFocusListener(new FocusListener() {
-        public void focusGained(FocusEvent e) {
+        @Override
+		public void focusGained(FocusEvent e) {
           heightOutField.selectAll();
         }
-        public void focusLost(FocusEvent e) {
+        @Override
+		public void focusLost(FocusEvent e) {
           setHeightFactor(1.0*heightOutField.getIntValue()/h);
           refresh();
         }
@@ -390,7 +399,8 @@ public class ResizeFilter extends Filter {
      * @param control the control to save to
      * @param obj the filter to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       ResizeFilter filter = (ResizeFilter) obj;
       control.setValue("width_factor", filter.widthFactor);   //$NON-NLS-1$
       control.setValue("height_factor", filter.heightFactor); //$NON-NLS-1$
@@ -408,7 +418,8 @@ public class ResizeFilter extends Filter {
      * @param control the control
      * @return the new filter
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ResizeFilter();
     }
 
@@ -419,7 +430,8 @@ public class ResizeFilter extends Filter {
      * @param obj the filter
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       final ResizeFilter filter = (ResizeFilter) obj;
       if(control.getPropertyNames().contains("width_factor")) {   //$NON-NLS-1$
         filter.setWidthFactor(control.getDouble("width_factor")); //$NON-NLS-1$

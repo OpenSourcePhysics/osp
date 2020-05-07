@@ -21,11 +21,13 @@ public class EigenstateSHO implements Function{
    * @param x double
    * @return double
    */
-  public double evaluate(double x) {
+  @Override
+public double evaluate(double x) {
     return Math.exp(-x*x/2)*hermite.evaluate(x);
   }
 
-  public String toString(){
+  @Override
+public String toString(){
     return "exp(-x*x)*("+hermite.toString()+")";
   }
 

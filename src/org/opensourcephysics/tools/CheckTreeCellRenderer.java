@@ -39,7 +39,8 @@ public class CheckTreeCellRenderer extends JPanel implements TreeCellRenderer {
     checkBox.setOpaque(false);
   }
 
-  public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+  @Override
+public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
     Component renderer = delegate.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
     TreePath path = tree.getPathForRow(row);
     if(path!=null) {

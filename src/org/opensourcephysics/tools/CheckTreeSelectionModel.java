@@ -72,7 +72,8 @@ public class CheckTreeSelectionModel extends DefaultTreeSelectionModel {
     return path!=null;
   }
 
-  public void setSelectionPaths(TreePath[] paths) {
+  @Override
+public void setSelectionPaths(TreePath[] paths) {
     super.clearSelection();
     addSelectionPaths(paths);
   }
@@ -82,7 +83,8 @@ public class CheckTreeSelectionModel extends DefaultTreeSelectionModel {
    *
    * @param paths the paths to add
    */
-  public void addSelectionPaths(TreePath[] paths) {
+  @Override
+public void addSelectionPaths(TreePath[] paths) {
     if(paths==null) {
       return;
     }
@@ -135,7 +137,8 @@ public class CheckTreeSelectionModel extends DefaultTreeSelectionModel {
    *
    * @param paths the paths to remove
    */
-  public void removeSelectionPaths(TreePath[] paths) {
+  @Override
+public void removeSelectionPaths(TreePath[] paths) {
     if(isSelectionEmpty()) {
       return; // nothing to remove
     }
@@ -160,7 +163,8 @@ public class CheckTreeSelectionModel extends DefaultTreeSelectionModel {
    *
    * @param listener the object requesting property change notification
    */
-  public void addPropertyChangeListener(PropertyChangeListener listener) {
+  @Override
+public void addPropertyChangeListener(PropertyChangeListener listener) {
     support.addPropertyChangeListener(listener);
   }
 
@@ -169,7 +173,8 @@ public class CheckTreeSelectionModel extends DefaultTreeSelectionModel {
    *
    * @param listener the listener requesting removal
    */
-  public void removePropertyChangeListener(PropertyChangeListener listener) {
+  @Override
+public void removePropertyChangeListener(PropertyChangeListener listener) {
     support.removePropertyChangeListener(listener);
   }
 

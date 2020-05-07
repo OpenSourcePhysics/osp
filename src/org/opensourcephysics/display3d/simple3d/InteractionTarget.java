@@ -47,7 +47,8 @@ public class InteractionTarget implements org.opensourcephysics.display3d.core.i
    * Enables/Disables the target
    * @param value boolean
    */
-  final public void setEnabled(boolean value) {
+  @Override
+final public void setEnabled(boolean value) {
     enabled = value;
   }
 
@@ -55,7 +56,8 @@ public class InteractionTarget implements org.opensourcephysics.display3d.core.i
    * Returns the enabled status of the target
    * @return boolean
    */
-  final public boolean isEnabled() {
+  @Override
+final public boolean isEnabled() {
     return enabled;
   }
 
@@ -63,7 +65,8 @@ public class InteractionTarget implements org.opensourcephysics.display3d.core.i
    * Returns the action command of this target
    * @return String
    */
-  final public String getActionCommand() {
+  @Override
+final public String getActionCommand() {
     return command;
   }
 
@@ -71,7 +74,8 @@ public class InteractionTarget implements org.opensourcephysics.display3d.core.i
    * Sets the action commmand for this target
    * @param command String
    */
-  final public void setActionCommand(String command) {
+  @Override
+final public void setActionCommand(String command) {
     this.command = command;
   }
 
@@ -81,7 +85,8 @@ public class InteractionTarget implements org.opensourcephysics.display3d.core.i
    * Default is false.
    * @param value boolean
    */
-  final public void setAffectsGroup(boolean value) {
+  @Override
+final public void setAffectsGroup(boolean value) {
     affectsGroup = value;
   }
 
@@ -89,7 +94,8 @@ public class InteractionTarget implements org.opensourcephysics.display3d.core.i
    * Whether the target affects the top-level group
    * @return boolean
    */
-  final public boolean getAffectsGroup() {
+  @Override
+final public boolean getAffectsGroup() {
     return affectsGroup;
   }
 

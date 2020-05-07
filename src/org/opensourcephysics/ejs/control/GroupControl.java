@@ -924,7 +924,8 @@ public class GroupControl {
      * @param control the control to save to
      * @param obj the object to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       GroupControl groupcontrol = (GroupControl) obj;
       Hashtable<String, GroupVariable> table = groupcontrol.variableTable;
       Iterator<String> it = table.keySet().iterator();
@@ -946,7 +947,8 @@ public class GroupControl {
      * @param control the control
      * @return the newly created object
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new GroupControl(null);
     }
 
@@ -957,7 +959,8 @@ public class GroupControl {
      * @param obj the object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       GroupControl groupcontrol = (GroupControl) obj;
       Hashtable<String, GroupVariable> table = groupcontrol.variableTable;
       Iterator<String> it = table.keySet().iterator();

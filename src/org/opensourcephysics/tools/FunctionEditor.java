@@ -38,12 +38,11 @@ import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.BitSet;
 import java.util.EventObject;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -97,7 +96,10 @@ import org.opensourcephysics.display.TeXParser;
  * @author Douglas Brown
  */
 @SuppressWarnings("serial")
-public class FunctionEditor extends JPanel implements PropertyChangeListener {
+public abstract class FunctionEditor extends JPanel implements PropertyChangeListener {
+	
+	public interface FObject{}
+		
 	// static constants
 	@SuppressWarnings("javadoc")
 	public final static String THETA = TeXParser.parseTeX("$\\theta$"); //$NON-NLS-1$
@@ -125,14 +127,14 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 
 	// instance fields
 	protected ParamEditor paramEditor;
-	protected ArrayList<Object> objects = new ArrayList<Object>();
+	protected ArrayList<FObject> objects = new ArrayList<>();
 	protected String[] names = new String[0];
-	protected ArrayList<Object> sortedObjects = new ArrayList<Object>();
+	//BH unnec protected ArrayList<FObject> sortedObjects = new ArrayList<FObject>();
 	protected HashSet<String> forbiddenNames = new HashSet<String>();
 	protected boolean removablesAtTop = false;
-	protected Collection<Object> circularErrors = new HashSet<Object>();
-	protected Collection<Object> errors = new HashSet<Object>();
-	protected List<Object> evaluate = new ArrayList<Object>();
+	protected BitSet circularErrors = new BitSet();
+	protected BitSet errors = new BitSet();
+	protected List<FObject> evaluate = new ArrayList<FObject>();
 	protected Table table;
 	protected TableModel tableModel = new TableModel();
 	protected CellEditor tableCellEditor = new CellEditor();
@@ -197,7 +199,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	 *
 	 * @param newObjects a list of objects
 	 */
-	public void setObjects(java.util.List<Object> newObjects) {
+	public void setObjects(java.util.List<FObject> newObjects) {
 		// determine row and column selected
 		int row = table.getSelectedRow();
 		int col = table.getSelectedColumn();
@@ -219,8 +221,8 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	 *
 	 * @return a list of objects
 	 */
-	public List<Object> getObjects() {
-		return new ArrayList<Object>(objects);
+	public List<FObject> getObjects() {
+		return new ArrayList<FObject>(objects);
 	}
 
 	/**
@@ -238,19 +240,15 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	 * @param obj the object
 	 * @return the name
 	 */
-	public String getName(Object obj) {
-		return null;
-	}
-
+	abstract public String getName(FObject obj);
+	
 	/**
 	 * Returns the expression of the object.
 	 *
 	 * @param obj the object
 	 * @return the expression
 	 */
-	public String getExpression(Object obj) {
-		return null;
-	}
+	abstract public String getExpression(FObject obj);
 
 	/**
 	 * Returns the description of the object.
@@ -258,9 +256,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	 * @param obj the object
 	 * @return the description
 	 */
-	public String getDescription(Object obj) {
-		return null;
-	}
+	abstract public String getDescription(FObject obj);
 
 	/**
 	 * Sets the description of the object. Subclasses should override and call this
@@ -269,7 +265,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	 * @param obj  the object
 	 * @param desc the description
 	 */
-	public void setDescription(Object obj, String desc) {
+	public void setDescription(FObject obj, String desc) {
 		if (obj instanceof Parameter) {
 			firePropertyChange("param_description", null, null); //$NON-NLS-1$
 		}
@@ -282,9 +278,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	 * @param obj the object
 	 * @return the tooltip
 	 */
-	public String getTooltip(Object obj) {
-		return null;
-	}
+	abstract public String getTooltip(FObject obj);
 
 	/**
 	 * Gets an existing object with specified name. May return null.
@@ -292,16 +286,13 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	 * @param name the name
 	 * @return the object
 	 */
-	public Object getObject(String name) {
+	public FObject getObject(String name) {
 		if ((name == null) || name.equals("")) { //$NON-NLS-1$
 			return null;
 		}
-		Iterator<Object> it = objects.iterator();
-		while (it.hasNext()) {
-			Object next = it.next();
-			if (name.equals(getName(next))) {
-				return next;
-			}
+		for (int i = objects.size(); --i >= 0;) {
+			if (name.equals(getName(objects.get(i))))
+					return objects.get(i);
 		}
 		return null;
 	}
@@ -318,25 +309,27 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 			return;
 		}
 		for (int row = 0; row < objects.size(); row++) {
-			Object obj = objects.get(row);
-			if (name.equals(getName(obj)) && !getExpression(obj).equals(expression)) {
-				String prev = getExpression(obj);
-				obj = createObject(name, expression, obj);
-				objects.remove(row);
-				objects.add(row, obj);
-				evaluateAll();
-				tableModel.fireTableStructureChanged();
-				// select row
-				if (row >= 0) {
-					table.changeSelection(row, 1, false, false);
-				}
-				// inform and pass undoable edit to listeners
-				UndoableEdit edit = null;
-				if (postEdit && undoEditsEnabled) {
-					edit = getUndoableEdit(EXPRESSION_EDIT, expression, row, 1, prev, row, 1, getName(obj));
-				}
-				firePropertyChange("edit", getName(obj), edit); //$NON-NLS-1$
+			FObject obj = objects.get(row);
+			String prev;
+			if (!name.equals(getName(obj)) || (prev  = getExpression(obj)).equals(expression)) {
+				continue;
 			}
+			obj = createObject(name, expression, obj);
+			objects.remove(row);
+			objects.add(row, obj);
+			evaluateAll();
+			tableModel.fireTableStructureChanged();
+			// select row
+			if (row >= 0) {
+				table.changeSelection(row, 1, false, false);
+			}
+			// inform and pass undoable edit to listeners
+			UndoableEdit edit = null;
+			if (postEdit && undoEditsEnabled) {
+				edit = getUndoableEdit(EXPRESSION_EDIT, expression, row, 1, prev, row, 1, getName(obj));
+			}
+			firePropertyChange("edit", getName(obj), edit); //$NON-NLS-1$
+			break;
 		}
 	}
 
@@ -365,7 +358,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	 * @param postEdit true to post an undoable edit
 	 * @return the added object
 	 */
-	public Object addObject(Object obj, boolean postEdit) {
+	public FObject addObject(FObject obj, boolean postEdit) {
 		if (obj == null) {
 			return null;
 		}
@@ -390,14 +383,14 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	 * @param firePropertyChange true to fire a property change event
 	 * @return the added object
 	 */
-	public Object addObject(Object obj, int row, boolean postEdit, boolean firePropertyChange) {
+	public FObject addObject(FObject obj, int row, boolean postEdit, boolean firePropertyChange) {
 		obj = createUniqueObject(obj, getName(obj), confirmChanges);
 		if (obj == null) {
 			return null;
 		}
 		int undoRow = table.getSelectedRow();
 		int undoCol = table.getSelectedColumn();
-		java.util.List<Object> newObjects = new ArrayList<Object>(objects);
+		java.util.List<FObject> newObjects = new ArrayList<FObject>(objects);
 		newObjects.add(row, obj);
 		setObjects(newObjects);
 		// select new object
@@ -424,32 +417,33 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	 * @param postEdit true to post an undoable edit
 	 * @return the removed object
 	 */
-	public Object removeObject(Object obj, boolean postEdit) {
+	public FObject removeObject(FObject obj, boolean postEdit) {
 		if ((obj == null) || !isRemovable(obj)) {
 			return null;
 		}
 		int undoCol = table.getSelectedColumn();
 		for (int undoRow = 0; undoRow < objects.size(); undoRow++) {
-			Object next = objects.get(undoRow);
-			if (next.equals(obj)) {
-				objects.remove(obj);
-				tableModel.fireTableStructureChanged();
-				// select new row
-				int row = (undoRow == objects.size()) ? undoRow - 1 : undoRow;
-				if (row >= 0) {
-					table.changeSelection(row, 0, false, false);
-				}
-				// inform and pass undoable edit to listeners
-				UndoableEdit edit = null;
-				if (postEdit) {
-					edit = getUndoableEdit(REMOVE_EDIT, obj, row, 0, obj, undoRow, undoCol, getName(obj));
-				}
-				evaluateAll();
-				firePropertyChange("edit", getName(obj), edit); //$NON-NLS-1$
-				refreshGUI();
+			FObject next = objects.get(undoRow);
+			if (!next.equals(obj))
+				continue;
+			objects.remove(obj);
+			tableModel.fireTableStructureChanged();
+			// select new row
+			int row = (undoRow == objects.size()) ? undoRow - 1 : undoRow;
+			if (row >= 0) {
+				table.changeSelection(row, 0, false, false);
 			}
+			// inform and pass undoable edit to listeners
+			UndoableEdit edit = null;
+			if (postEdit) {
+				edit = getUndoableEdit(REMOVE_EDIT, obj, row, 0, obj, undoRow, undoCol, getName(obj));
+			}
+			evaluateAll();
+			firePropertyChange("edit", getName(obj), edit); //$NON-NLS-1$
+			refreshGUI();
+			return obj;
 		}
-		return obj;
+		return null;
 	}
 
 	/**
@@ -541,7 +535,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	 * @param obj the object
 	 * @return true if the name is editable
 	 */
-	public boolean isNameEditable(Object obj) {
+	public boolean isNameEditable(FObject obj) {
 		return true;
 	}
 
@@ -551,7 +545,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	 * @param obj the object
 	 * @return true if the expression is editable
 	 */
-	public boolean isExpressionEditable(Object obj) {
+	public boolean isExpressionEditable(FObject obj) {
 		return true;
 	}
 
@@ -561,7 +555,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	 * @param obj the object
 	 * @return true if removable
 	 */
-	protected boolean isRemovable(Object obj) {
+	protected boolean isRemovable(FObject obj) {
 		return !isImportant(obj) && isNameEditable(obj) && isExpressionEditable(obj);
 	}
 
@@ -571,9 +565,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	 * @param obj the object
 	 * @return true if important
 	 */
-	protected boolean isImportant(Object obj) {
-		return false;
-	}
+	abstract protected boolean isImportant(FObject obj);
 
 	/**
 	 * Sets the anglesInDegrees flag. Angles are displayed in degrees when true,
@@ -589,73 +581,117 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	/**
 	 * Evaluates all current objects.
 	 */
-	public void evaluateAll() {
+	abstract public void evaluateAll();
+	
+	protected void setArrays() {
+		OSPLog.debug("FunctionEditor setArrays " + this.getClass().getName() + " " + objects.size());
 		// refresh names array
-		if (names.length != objects.size()) {
-			names = new String[objects.size()];
+		evaluate.clear();
+		circularErrors.clear();
+		//sortedObjects.clear();
+		errors.clear();
+		int nObj = objects.size();
+		if (names.length != nObj) {
+			names = new String[nObj];
 		}
 		for (int i = 0; i < names.length; i++) {
 			names[i] = getName(objects.get(i));
 		}
 		// sort the objects by name length
-		sortedObjects.clear();
-		if (objects.size() > 0) {
-			sortedObjects.add(objects.get(0));
-			for (int i = 1; i < objects.size(); i++) {
-				int size = sortedObjects.size();
-				for (int j = 0; j < size; j++) {
-					Object obj = objects.get(i);
-					String name = getName(obj);
-					if (name.length() > getName(sortedObjects.get(j)).length()) {
-						sortedObjects.add(j, obj);
+		if (nObj == 0)
+			return;
+//		sortedObjects.add(objects.get(0));
+//		for (int i = 1; i < nObj; i++) {
+//			int size = sortedObjects.size();
+//			for (int j = 0; j < size; j++) {
+//				FObject obj = objects.get(i);
+//				String name = getName(obj);
+//				if (name.length() > getName(sortedObjects.get(j)).length()) {
+//					sortedObjects.add(j, obj);
+//					break;
+//				} else if (j == size - 1) {
+//					sortedObjects.add(obj);
+//				}
+//			}
+//		}
+		// check for circular references
+		for (int i = 0; i < nObj; i++) {
+			if (hasReference(i, i)) {
+				circularErrors.set(i);
+			}
+		}
+		// find all functions that reference circular errors
+		if (!circularErrors.isEmpty()) {
+			for (int j = circularErrors.nextSetBit(0); j >= 0; j = circularErrors.nextSetBit(j + 1)) {
+				for (int i = 0; i < nObj; i++) {
+					if (hasReference(i, j)) {
+						errors.set(i);
 						break;
-					} else if (j == size - 1) {
-						sortedObjects.add(obj);
 					}
 				}
 			}
 		}
-		// check for circular references
-		circularErrors.clear();
-		for (int io = 0, no = objects.size(); io < no; io++) {
-			Object next = objects.get(io);
-			String name = getName(next);
-			if (getReferences(name, null).contains(name)) {
-				circularErrors.add(next);
-			}
-		}
-		// find all functions that reference circular errors
-		errors.clear();
-		for (Iterator<Object> it2 = circularErrors.iterator(); it2.hasNext();) {
-			String badName = getName(it2.next());
-			for (int io = 0, no = objects.size(); io < no; io++) {
-				Object next = objects.get(io);
-				String name = getName(next);
-				if (getReferences(name, null).contains(badName)) {
-					errors.add(next);
-					break;
-				}
-			}
-		}
 		// establish evaluation order
-		evaluate.clear();
-		ArrayList<Object> temp = new ArrayList<Object>(objects);
-		temp.removeAll(errors);
-		ArrayList<String> names = new ArrayList<String>();
+		BitSet temp = new BitSet(nObj);
+		temp.set(0, nObj);
+		// ArrayList<FObject> temp = new ArrayList<FObject>(objects);
+		temp.andNot(errors);
+		BitSet names = new BitSet(nObj);
 		while (!temp.isEmpty()) {
-			for (int i = temp.size(); --i >= 0;) {
-				Object next = temp.get(i);
-				String name = getName(next);
-				Set<String> references = getReferences(name, null);
-				if (names.containsAll(references)) {
+			for (int i = temp.nextSetBit(0); i >= 0; i = temp.nextSetBit(i + 1)) {
+				FObject next = objects.get(i);
+				BitSet references = getReferences(i, null);
+				int n = references.cardinality();
+				if (n > 0)
+					references.or(names);
+				// The idea here is that "A contains B" iff (A or B) == A. 
+				// That is, if no more bits were added. So we do a fast cardinality test
+				// rather than a full equivalence test. BitSets are GREAT!!
+				if (n == 0 || references.cardinality() == names.cardinality()) {
 					evaluate.add(next);
-					names.add(name);
-					temp.remove(i);
+					names.set(i);
+					temp.clear(i);
 				}
 			}
-			temp.removeAll(evaluate);
 		}
 	}
+
+	private boolean hasReference(int i1, int i2) {
+		return getReferences(i1, null).get(i2);
+	}
+
+	/**
+	 * Gets the BitSet of indexes in objects of this class referenced in a
+	 * function expression of this class either directly or indirectly.
+	 *
+	 * @param iObj the objects index of this item * @param references a BitSet to
+	 *             add references to (may be null)
+	 * @return the BitSet of referenced objects
+	 */
+	private BitSet getReferences(int iObj, BitSet references) {
+		FObject obj = objects.get(iObj);
+		int nObj = objects.size();
+		if (references == null) {
+			references = new BitSet(nObj);
+		}
+		String eqn = UserFunction.padNames(getExpression(obj));
+		BitSet directReferences = new BitSet();
+		for (int i = 0; i < nObj; i++) {
+			if (i == iObj)
+				continue;
+			if (UserFunction.containsWord(eqn, getName(objects.get(i)))) {
+				directReferences.set(i);
+				if (!references.get(i)) {
+					references.set(i);
+					references.or(getReferences(i, references));
+				}
+			}
+		}
+		setReferences(obj, directReferences);
+		return references;
+	}
+
+
 
 	/**
 	 * Determines if a test expression is valid.
@@ -671,7 +707,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 			return !Double.isNaN(p.evaluate(new Parameter[0]));
 		}
 		String[] names = s.substring(start.length()).split(" "); //$NON-NLS-1$
-		ArrayList<Object> temp = new ArrayList<Object>();
+		ArrayList<FObject> temp = new ArrayList<FObject>();
 		for (String name : names) {
 			Parameter next = new Parameter(name, "1"); //$NON-NLS-1$
 			temp.add(next);
@@ -680,55 +716,32 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	}
 
 	/**
-	 * Gets the names of functions referenced in a named function expression either
-	 * directly or indirectly.
-	 *
-	 * @param name       the name of the function
-	 * @param references a Set to add references to (may be null)
-	 * @return the set filled with names of referenced functions
+	 * Just check for any reference
+	 * 
+	 * @param name
+	 * @return
 	 */
-	protected Set<String> getReferences(String name, Set<String> references) {
-		if (references == null) {
-			references = new HashSet<String>();
-		}
-		Object obj = getObject(name);
-		if (obj != null) {
-			String eqn = getExpression(obj);
-			List<Object> directReferences = new ArrayList<Object>();
-			for (int is = 0, ns = sortedObjects.size(); is < ns; is++) {
-				Object next = sortedObjects.get(is);
-				if (next == obj) {
-					continue;
-				}
-				name = getName(next);
-				if (obj instanceof UserFunction) {
-					// replace function names with # to prevent finding "x" in "exp", etc
-					UserFunction func = (UserFunction) obj;
-					String[] functionNames = func.getFunctionNames();
-					for (int in = functionNames.length; --in >= 0;) {
-						eqn = eqn.replaceAll(functionNames[in], "#"); //$NON-NLS-1$
-					}
-				}
-				if (eqn.indexOf(name) > -1) {
-					directReferences.add(next);
-					if (!references.contains(name)) {
-						references.add(name);
-						references.addAll(getReferences(name, references));
-					}
-				}
+	protected boolean references(String name) {
+		FObject obj = getObject(name);
+		if (obj == null)
+			return false;
+		String eqn = UserFunction.padNames(getExpression(obj));
+		for (int i = 0, n = objects.size(); i < n; i++) {
+			FObject next = objects.get(i);
+			if (next == obj) {
+				continue;
 			}
-			setReferences(obj, directReferences);
+			name = getName(next);
+			if (UserFunction.containsWord(eqn, name) || references(name))
+				return true;
 		}
-		return references;
+		return false;
 	}
 
 	/**
 	 * Subclasses implement to set objects referenced in an object's expression.
 	 */
-	protected void setReferences(Object obj, List<Object> referencedObjects) {
-		/** empty block */
-	}
-
+	abstract protected void setReferences(FObject obj, BitSet directRefrences);
 	/**
 	 * Creates the GUI.
 	 */
@@ -746,7 +759,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String name = getDefaultName();
-				Object obj = createUniqueObject(null, name, false);
+				FObject obj = createUniqueObject(null, name, false);
 				addObject(obj, true);
 			}
 
@@ -755,7 +768,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		cutButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Object[] array = getSelectedObjects();
+				FObject[] array = getSelectedObjects();
 				copy(array);
 				for (int i = array.length; i > 0; i--) {
 					removeObject(array[i - 1], true);
@@ -895,7 +908,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	 */
 	protected String getVariablesString(String separator) {
 		StringBuffer vars = new StringBuffer(""); //$NON-NLS-1$
-		int init = vars.length();
+		int len0 = vars.length();
 		boolean firstItem = true;
 		String nameToSkip = getName(getSelectedObject());
 		for (int i = 0; i < names.length; i++) {
@@ -908,7 +921,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 			vars.append(names[i]);
 			firstItem = false;
 		}
-		if (vars.length() == init) {
+		if (vars.length() == len0) {
 			return ToolsRes.getString("FunctionPanel.Instructions.Help"); //$NON-NLS-1$
 		}
 		return ToolsRes.getString("FunctionPanel.Instructions.ValueCell") //$NON-NLS-1$
@@ -919,43 +932,39 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	 * Returns the number of removable rows.
 	 */
 	private int getRemovableRowCount() {
-		int i = 0;
-		for (Iterator<Object> it = objects.iterator(); it.hasNext();) {
-			Object obj = it.next();
-			if (isRemovable(obj)) {
-				i++;
-			}
+		int n = 0;
+		for (int i = objects.size(); --i >= 0;) {
+			if (isRemovable(objects.get(i)))
+				n++;
 		}
-		return i;
+		return n;
 	}
 
 	/**
 	 * Returns the number of editable rows.
 	 */
 	protected int getPartlyEditableRowCount() {
-		int i = 0;
-		for (Iterator<Object> it = objects.iterator(); it.hasNext();) {
-			Object obj = it.next();
+		int n = 0;
+		for (int i = objects.size(); --i >= 0;) {
+			FObject obj = objects.get(i);
 			if (isNameEditable(obj) || isExpressionEditable(obj)) {
-				i++;
+				n++;
 			}
 		}
-		return i;
+		return n;
 	}
 
 	/**
 	 * Returns true if the object expression is invalid.
 	 */
-	protected boolean isInvalidExpression(Object obj) {
-		return false;
-	}
+	abstract protected boolean isInvalidExpression(FObject obj);
 
 	/**
 	 * Returns true if any objects have invalid expressions.
 	 */
 	public boolean containsInvalidExpressions() {
-		for (Iterator<Object> it = objects.iterator(); it.hasNext();) {
-			if (isInvalidExpression(it.next())) {
+		for (int i = objects.size(); --i >= 0;) {
+			if (isInvalidExpression(objects.get(i))) {
 				return true;
 			}
 		}
@@ -989,7 +998,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		}
 		for (int i = 0; i < controls.length; i++) {
 			// create a new object
-			Object obj = controls[i].loadObject(null);
+			FObject obj = (FObject) controls[i].loadObject(null);
 			addObject(obj, true);
 		}
 		evaluateAll();
@@ -1029,7 +1038,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	/**
 	 * Returns the currently selected object, if any.
 	 */
-	protected Object getSelectedObject() {
+	protected FObject getSelectedObject() {
 		int row = table.getSelectedRow();
 		if (row == -1) {
 			return null;
@@ -1040,9 +1049,9 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	/**
 	 * Returns the currently selected objects, if any.
 	 */
-	protected Object[] getSelectedObjects() {
+	protected FObject[] getSelectedObjects() {
 		int[] rows = table.getSelectedRows();
-		Object[] selected = new Object[rows.length];
+		FObject[] selected = new FObject[rows.length];
 		for (int i = 0; i < rows.length; i++) {
 			selected[i] = objects.get(rows[i]);
 		}
@@ -1059,9 +1068,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	 * @param obj        an object to assign values (may be null)
 	 * @return the object
 	 */
-	protected Object createObject(String name, String expression, Object obj) {
-		return null;
-	}
+	abstract protected FObject createObject(String name, String expression, FObject obj);
 
 	/**
 	 * Returns true if a name is forbidden or in use.
@@ -1070,13 +1077,13 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	 * @param name the proposed name for the object
 	 * @return true if disallowed
 	 */
-	protected boolean isDisallowedName(Object obj, String name) {
+	protected boolean isDisallowedName(FObject obj, String name) {
 		if (forbiddenNames.contains(name)) {
 			return true;
 		}
-		Iterator<Object> it = objects.iterator();
+		Iterator<FObject> it = objects.iterator();
 		while (it.hasNext()) {
-			Object next = it.next();
+			FObject next = it.next();
 			if (next == obj) {
 				continue;
 			}
@@ -1190,7 +1197,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 	 * @param confirmChanges true to require user to confirm changes
 	 * @return the object
 	 */
-	protected Object createUniqueObject(Object obj, String proposedName, boolean confirmChanges) {
+	protected FObject createUniqueObject(FObject obj, String proposedName, boolean confirmChanges) {
 		// construct a unique name from that proposed if nec
 		proposedName = getValidName(proposedName);
 		if (proposedName == null || proposedName.trim().equals("")) { //$NON-NLS-1$
@@ -1281,7 +1288,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 						int row = rowAtPoint(e.getPoint());
 						if (tableModel.isCellEditable(row, col)) {
 							String name = (String) table.getValueAt(row, col);
-							Object obj = getObject(name);
+							FObject obj = getObject(name);
 							String desc = getDescription(obj);
 							String message = ToolsRes.getString("FunctionEditor.Dialog.SetDescription.Message"); //$NON-NLS-1$
 							message += " \"" + name + "\""; //$NON-NLS-1$ //$NON-NLS-2$
@@ -1450,7 +1457,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		// gets the value in a cell
 		@Override
 		public Object getValueAt(int row, int col) {
-			Object obj = objects.get(row);
+			FObject obj = objects.get(row);
 			String name = getName(obj);
 			if (col == 0)
 				return name;
@@ -1498,7 +1505,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 				// get previous state for undoable edit
 				String prev = null;
 				int type = 0;
-				Object obj = objects.get(row);
+				FObject obj = objects.get(row);
 				if (col == 0) { // name
 					prev = getName(obj);
 					type = NAME_EDIT;
@@ -1551,7 +1558,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		// determines if a cell is editable
 		@Override
 		public boolean isCellEditable(int row, int col) {
-			Object obj = objects.get(row);
+			FObject obj = objects.get(row);
 			return ((col == 0) && isNameEditable(obj)) || ((col == 1) && isExpressionEditable(obj));
 		}
 
@@ -1570,7 +1577,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 		JButton revertButton;
 		ValueMouseControl valueMouseController;
 		int minPopupWidth, varBegin, varEnd;
-		Object prevObject;
+		FObject prevObject;
 		String prevName, prevExpression;
 
 		// Constructor.
@@ -2020,7 +2027,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 			}
 			setText(val);
 
-			Object obj = objects.get(row);
+			FObject obj = objects.get(row);
 			String tooltip = getTooltip(obj);
 			String tooltipText = (col == 0 && tooltip != null) ? tooltip
 					: (col == 0) ? ToolsRes.getString("FunctionEditor.Table.Cell.Name.Tooltip") : //$NON-NLS-1$
@@ -2030,7 +2037,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 			}
 			setToolTipText(tooltipText);
 
-			if ((col == 1) && circularErrors.contains(obj)) {
+			if ((col == 1) && circularErrors.get(row)) {
 				setToolTipText(ToolsRes.getString("FunctionEditor.Table.Cell.CircularErrors.Tooltip")); //$NON-NLS-1$
 				setForeground(DARK_RED);
 				if (isSelected) {
@@ -2273,15 +2280,15 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 			undoEditsEnabled = false;
 			switch (editType) {
 			case ADD_EDIT: {
-				removeObject(undoObj, false);
+				removeObject((FObject) undoObj, false);
 				break;
 			}
 			case REMOVE_EDIT: {
-				addObject(undoObj, undoRow, false, true);
+				addObject((FObject) undoObj, undoRow, false, true);
 				break;
 			}
 			case NAME_EDIT: {
-				Object obj = objects.get(undoRow);
+				FObject obj = objects.get(undoRow);
 				String expression = getExpression(obj);
 				name = undoObj.toString();
 				String prevName = redoObj.toString();
@@ -2293,7 +2300,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 				break;
 			}
 			case EXPRESSION_EDIT: {
-				Object obj = objects.get(undoRow);
+				FObject obj = objects.get(undoRow);
 				Object[] undoArray = (Object[]) undoObj; // array is {expression, buttons}
 				obj = createObject(name, undoArray[0].toString(), obj);
 				objects.remove(undoRow);
@@ -2318,15 +2325,15 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 			undoEditsEnabled = false;
 			switch (editType) {
 			case ADD_EDIT: {
-				addObject(redoObj, redoRow, false, true);
+				addObject((FObject) redoObj, redoRow, false, true);
 				break;
 			}
 			case REMOVE_EDIT: {
-				removeObject(redoObj, false);
+				removeObject((FObject) redoObj, false);
 				break;
 			}
 			case NAME_EDIT: {
-				Object obj = objects.get(redoRow);
+				FObject obj = objects.get(redoRow);
 				String expression = getExpression(obj);
 				name = redoObj.toString();
 				String prevName = undoObj.toString();
@@ -2338,7 +2345,7 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
 				break;
 			}
 			case EXPRESSION_EDIT: {
-				Object obj = objects.get(redoRow);
+				FObject obj = objects.get(redoRow);
 				Object[] redoArray = (Object[]) redoObj; // array is {expression, buttons}
 				ArrayList<?> buttons = (ArrayList<?>) redoArray[1];
 				for (Object next : buttons) {

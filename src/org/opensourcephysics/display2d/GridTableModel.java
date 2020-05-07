@@ -28,7 +28,8 @@ public class GridTableModel extends AbstractTableModel {
    *
    * @return int
    */
-  public int getColumnCount() {
+  @Override
+public int getColumnCount() {
     return griddata.getNx()+1;
   }
 
@@ -37,7 +38,8 @@ public class GridTableModel extends AbstractTableModel {
    *
    * @return int
    */
-  public String getColumnName(int c) {
+  @Override
+public String getColumnName(int c) {
     if(c==0) {
       return "j\\i"; //$NON-NLS-1$
     }
@@ -49,7 +51,8 @@ public class GridTableModel extends AbstractTableModel {
    *
    * @return int
    */
-  public int getRowCount() {
+  @Override
+public int getRowCount() {
     return griddata.getNx();
   }
 
@@ -60,7 +63,8 @@ public class GridTableModel extends AbstractTableModel {
    * @param columnIndex int
    * @return Object
    */
-  public Object getValueAt(int rowIndex, int columnIndex) {
+  @Override
+public Object getValueAt(int rowIndex, int columnIndex) {
     // return new Double(griddata.getValue(rowIndex,columnIndex,0));
     if(columnIndex==0) {
       return Integer.valueOf(rowIndex);

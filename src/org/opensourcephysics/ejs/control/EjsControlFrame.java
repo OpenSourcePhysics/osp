@@ -210,7 +210,8 @@ public OSPFrame getMainFrame() {
    * @deprecated
    * @return
    */
-  public OSPFrame getFrame() {
+  @Deprecated
+public OSPFrame getFrame() {
     return mainFrame;
   }
 

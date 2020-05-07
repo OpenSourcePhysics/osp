@@ -22,7 +22,8 @@ public class Gamma implements Function {
    * @param x
    * @return gamma function at x
    */
-  public double evaluate(double x) {
+  @Override
+public double evaluate(double x) {
     return gamma(x);
   }
 

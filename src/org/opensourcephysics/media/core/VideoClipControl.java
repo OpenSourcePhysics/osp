@@ -54,21 +54,24 @@ public class VideoClipControl extends ClipControl {
   /**
    * Plays the clip.
    */
-  public void play() {
+  @Override
+public void play() {
     video.play();
   }
 
   /**
    * Stops at the next step.
    */
-  public void stop() {
+  @Override
+public void stop() {
     video.stop();
   }
 
   /**
    * Steps forward one step.
    */
-  public void step() {
+  @Override
+public void step() {
     video.stop();
     setStepNumber(stepNumber+1);
   }
@@ -76,7 +79,8 @@ public class VideoClipControl extends ClipControl {
   /**
    * Steps back one step.
    */
-  public void back() {
+  @Override
+public void back() {
     video.stop();
     setStepNumber(stepNumber-1);
   }
@@ -86,14 +90,16 @@ public class VideoClipControl extends ClipControl {
    *
    * @param n the desired step number
    */
-  public void setStepNumber(int n) {
+  @Override
+public void setStepNumber(int n) {
     if(n==stepNumber && clip.stepToFrame(n)==getFrameNumber()) {
       return;
     }
     n = Math.max(0, n);
     final int stepNum = Math.min(clip.getStepCount()-1, n);
     Runnable runner = new Runnable() {
-      public void run() {
+      @Override
+	public void run() {
         int m = clip.stepToFrame(stepNum);
         video.setFrameNumber(m);
       }
@@ -107,7 +113,8 @@ public class VideoClipControl extends ClipControl {
    *
    * @return the current step number
    */
-  public int getStepNumber() {
+  @Override
+public int getStepNumber() {
     return clip.frameToStep(video.getFrameNumber());
   }
 
@@ -116,7 +123,8 @@ public class VideoClipControl extends ClipControl {
    *
    * @param newRate the desired rate
    */
-  public void setRate(double newRate) {
+  @Override
+public void setRate(double newRate) {
     if((newRate==0)||(newRate==rate)) {
       return;
     }
@@ -129,7 +137,8 @@ public class VideoClipControl extends ClipControl {
    *
    * @return the current rate
    */
-  public double getRate() {
+  @Override
+public double getRate() {
     return video.getRate();
   }
 
@@ -138,7 +147,8 @@ public class VideoClipControl extends ClipControl {
    *
    * @param loops <code>true</code> to turn looping on
    */
-  public void setLooping(boolean loops) {
+  @Override
+public void setLooping(boolean loops) {
     if(loops==isLooping()) {
       return;
     }
@@ -150,7 +160,8 @@ public class VideoClipControl extends ClipControl {
    *
    * @return <code>true</code> if looping is on
    */
-  public boolean isLooping() {
+  @Override
+public boolean isLooping() {
     return video.isLooping();
   }
 
@@ -159,7 +170,8 @@ public class VideoClipControl extends ClipControl {
    *
    * @return the frame number
    */
-  public int getFrameNumber() {
+  @Override
+public int getFrameNumber() {
   	int n = video.getFrameNumber();
   	n = Math.max(0, n); // can't be negative
   	return n;
@@ -170,7 +182,8 @@ public class VideoClipControl extends ClipControl {
    *
    * @return <code>true</code> if playing
    */
-  public boolean isPlaying() {
+  @Override
+public boolean isPlaying() {
     return video.isPlaying();
   }
 
@@ -179,7 +192,8 @@ public class VideoClipControl extends ClipControl {
    *
    * @return the current time
    */
-  public double getTime() {
+  @Override
+public double getTime() {
     int n = video.getFrameNumber();
     return(video.getFrameTime(n)-video.getStartTime())*timeStretch;
   }
@@ -190,7 +204,8 @@ public class VideoClipControl extends ClipControl {
    * @param stepNumber the step number
    * @return the step time
    */
-  public double getStepTime(int stepNumber) {
+  @Override
+public double getStepTime(int stepNumber) {
     int n = clip.stepToFrame(stepNumber);
     return(video.getFrameTime(n)-video.getStartTime())*timeStretch;
   }
@@ -200,7 +215,8 @@ public class VideoClipControl extends ClipControl {
    *
    * @param duration the desired frame duration in milliseconds
    */
-  public void setFrameDuration(double duration) {
+  @Override
+public void setFrameDuration(double duration) {
     if(duration==0) {
       return;
     }
@@ -211,7 +227,7 @@ public class VideoClipControl extends ClipControl {
     if(count!=0) {
       timeStretch = duration*count/(tf-ti);
     }
-    support.firePropertyChange(ClipControl.PROPERTY_VIDEO_FRAMEDURATION, null, new Double(duration)); //$NON-NLS-1$
+    support.firePropertyChange(ClipControl.PROPERTY_VIDEO_FRAMEDURATION, null, new Double(duration)); 
   }
 
   /**
@@ -219,7 +235,8 @@ public class VideoClipControl extends ClipControl {
    *
    * @return the frame duration in milliseconds
    */
-  public double getMeanFrameDuration() {
+  @Override
+public double getMeanFrameDuration() {
     int count = video.getEndFrameNumber()-video.getStartFrameNumber();
     if(count!=0) {
       double ti = video.getFrameTime(video.getStartFrameNumber());
@@ -235,6 +252,7 @@ public class VideoClipControl extends ClipControl {
 	 *
 	 * @param e the property change event
 	 */
+	@Override
 	public void propertyChange(PropertyChangeEvent e) {
 		switch (e.getPropertyName()) {
 		case Video.PROPERTY_VIDEO_FRAMENUMBER:
@@ -258,7 +276,8 @@ public class VideoClipControl extends ClipControl {
   /**
    * Removes this listener from the video so it can be garbage collected.
    */
-  public void dispose() {
+  @Override
+public void dispose() {
     video.removePropertyChangeListener(this);
   }
 

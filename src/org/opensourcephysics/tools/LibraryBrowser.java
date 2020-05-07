@@ -93,6 +93,7 @@ import org.opensourcephysics.tools.LibraryResource.Metadata;
  *
  * @author Douglas Brown
  */
+@SuppressWarnings("serial")
 public class LibraryBrowser extends JPanel {
 	
   // static constants
@@ -252,6 +253,7 @@ public class LibraryBrowser extends JPanel {
 			externalDialog.setContentPane(browser);
 			externalDialog.setJMenuBar(menubar);
 			externalDialog.addWindowListener(new WindowAdapter() {
+				@Override
 				public void windowClosing(WindowEvent e) {
 					browser.exit();
 				}
@@ -263,6 +265,7 @@ public class LibraryBrowser extends JPanel {
 			frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 			// add window listener to exit
 			frame.addWindowListener(new WindowAdapter() {
+				@Override
 				public void windowClosing(WindowEvent e) {
 					browser.exit();
 				}
@@ -316,6 +319,7 @@ public class LibraryBrowser extends JPanel {
    */
 	public void importLibrary(final String path) {		
 		Runnable runner = new Runnable() {
+			@Override
 			public void run() {
 		  	library.importLibrary(path);		
         refreshCollectionsMenu();
@@ -331,6 +335,7 @@ public class LibraryBrowser extends JPanel {
    */
 	public void addOSPLibrary(final String path) {		
 		Runnable runner = new Runnable() {
+			@Override
 			public void run() {
 		  	library.addOSPLibrary(path);		
         refreshCollectionsMenu();
@@ -534,6 +539,7 @@ public class LibraryBrowser extends JPanel {
 		refreshCollectionsMenu();
 		editButton.requestFocusInWindow();
 		ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
+			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				refreshGUI(true);
 				refreshCollectionsMenu();
@@ -678,6 +684,7 @@ public class LibraryBrowser extends JPanel {
 		if (tabAdder == null)
 			return null;
 		tabAdder.addPropertyChangeListener(new PropertyChangeListener() {
+			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				if ("progress".equals(e.getPropertyName())) { //$NON-NLS-1$
 					Integer n = (Integer) e.getNewValue();
@@ -751,24 +758,29 @@ public class LibraryBrowser extends JPanel {
 	 */
 	protected LibraryResource loadResource(String path) {
 		isRecentPathXML = false;
-		
+
 		// BH moving this forward; Java was looking at an "https://..." file
-		// path to check if it was a directory?? SwingJS was allowing it to be a directory
+		// path to check if it was a directory?? SwingJS was allowing it to be a
+		// directory
 		if (LibraryComPADRE.isComPADREPath(path)) {
 			return LibraryComPADRE.getCollection(path);
 		}
-		
+
 		// was first:
-		File targetFile = new File(path);		
+		File targetFile = new File(path);
 		if (targetFile.isDirectory()) {
 			return createCollectionFromDirectory(targetFile, targetFile, dlFileFilter);
 		}
-		
-		XMLControlElement control = new XMLControlElement(path);
-		if (!control.failedToRead() && control.getObjectClass() != null
-				&& LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
-			isRecentPathXML = true;
-			return (LibraryResource) control.loadObject(null);
+
+		if (!path.endsWith(".trk") && dlFileFilter.accept(targetFile)) {
+			OSPLog.warning("BH NOTE! LibraryBrowser was going to try to parse a ZIP file as XML!");
+		} else {
+			XMLControlElement control = new XMLControlElement(targetFile);
+			if (!control.failedToRead() && control.getObjectClass() != null
+					&& LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
+				isRecentPathXML = true;
+				return (LibraryResource) control.loadObject(null);
+			}
 		}
 		return createResource(targetFile, targetFile.getParentFile(), dlFileFilter);
 	}
@@ -912,7 +924,7 @@ public class LibraryBrowser extends JPanel {
   	if (path==null) return null;
 		File cachedFile = ResourceLoader.getSearchCacheFile(path);
   	boolean isCachePath = cachedFile.exists();
-  	if (!isCachePath && !isWebConnected() && ResourceLoader.isHTTP(path)) { //$NON-NLS-1$
+  	if (!isCachePath && !isWebConnected() && ResourceLoader.isHTTP(path)) { 
   		JOptionPane.showMessageDialog(this, 
   				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
   				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
@@ -946,7 +958,8 @@ public class LibraryBrowser extends JPanel {
 	  	tabTitle.iconLabel.setToolTipText(primary? ToolsRes.getString("LibraryBrowser.Tooltip.Expand"): //$NON-NLS-1$
 	  			ToolsRes.getString("LibraryBrowser.Tooltip.Contract")); //$NON-NLS-1$
     	Action action = new AbstractAction() {
-  		  public void actionPerformed(ActionEvent e) {
+  		  @Override
+		public void actionPerformed(ActionEvent e) {
   		  	boolean primaryOnly = tabTitle.normalIcon==contractIcon;
   		  	int index = getTabIndexFromTitle(tabTitle.titleLabel.getText());
   		  	if (index>-1) {
@@ -982,14 +995,16 @@ public class LibraryBrowser extends JPanel {
     setPreferredSize(new Dimension(w, h));
 
     loadCollectionAction = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         loadTab(e.getActionCommand(), null);
       }
     };
     
     // create command action, label, field and button
 		commandAction = new AbstractAction() {
-		  public void actionPerformed(ActionEvent e) {
+		  @Override
+		public void actionPerformed(ActionEvent e) {
 		  	if (e==null) return;
       	commandField.setBackground(Color.white);
       	commandField.setForeground(LibraryTreePanel.defaultForeground);
@@ -1059,7 +1074,8 @@ public class LibraryBrowser extends JPanel {
     commandLabel.setAlignmentX(CENTER_ALIGNMENT);
     commandLabel.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 2));
     commandField = new JTextField() {
-    	public Dimension getPreferredSize() {
+    	@Override
+		public Dimension getPreferredSize() {
     		Dimension dim = super.getPreferredSize();
     		dim.width = Math.max(dim.width, 400);
     		return dim;
@@ -1068,7 +1084,8 @@ public class LibraryBrowser extends JPanel {
     LibraryTreePanel.defaultForeground = commandField.getForeground();
     commandField.addActionListener(commandAction);
     commandField.getDocument().addDocumentListener(new DocumentListener() {   
-      public void insertUpdate(DocumentEvent e) {
+      @Override
+	public void insertUpdate(DocumentEvent e) {
       	String text = commandField.getText();
         commandButton.setEnabled(!"".equals(text)); //$NON-NLS-1$
         textChanged = keyPressed;
@@ -1084,7 +1101,8 @@ public class LibraryBrowser extends JPanel {
         	commandField.setForeground(LibraryTreePanel.defaultForeground);
         }
       }
-      public void removeUpdate(DocumentEvent e) {
+      @Override
+	public void removeUpdate(DocumentEvent e) {
         commandButton.setEnabled(!"".equals(commandField.getText())); //$NON-NLS-1$
         textChanged = keyPressed;
         LibraryTreePanel treePanel = getSelectedTreePanel();
@@ -1096,13 +1114,16 @@ public class LibraryBrowser extends JPanel {
         	commandField.setForeground(LibraryTreePanel.defaultForeground);
         }
       }
+			@Override
 			public void changedUpdate(DocumentEvent e) {}
   	});
     commandField.addKeyListener(new KeyAdapter() {
-      public void keyPressed(KeyEvent e) {
+      @Override
+	public void keyPressed(KeyEvent e) {
         keyPressed = true;
       }
-      public void keyReleased(KeyEvent e) {
+      @Override
+	public void keyReleased(KeyEvent e) {
         LibraryTreePanel treePanel = getSelectedTreePanel();
         if (treePanel!=null && textChanged && e.getKeyCode()!=KeyEvent.VK_ENTER) {
         	commandField.setBackground(Color.yellow);
@@ -1113,7 +1134,8 @@ public class LibraryBrowser extends JPanel {
       }
     });
     commandField.addFocusListener(new FocusAdapter() {
-      public void focusGained(FocusEvent e) {
+      @Override
+	public void focusGained(FocusEvent e) {
       	commandField.selectAll();
       }
     });
@@ -1124,7 +1146,8 @@ public class LibraryBrowser extends JPanel {
     
     // create search action, label, field and button
 		searchAction = new AbstractAction() {
-		  public void actionPerformed(ActionEvent e) {
+		  @Override
+		public void actionPerformed(ActionEvent e) {
 		  	searchTerm = searchField.getText();
 		  	if ("".equals(searchTerm.trim())) return; //$NON-NLS-1$
 		  	searchField.selectAll();
@@ -1157,6 +1180,7 @@ public class LibraryBrowser extends JPanel {
 								searchField.setBackground(Color.white);
 								if (searchTimer == null) {
 									searchTimer = new Timer(1000, new ActionListener() {
+										@Override
 										public void actionPerformed(ActionEvent e) {
 											searchField.setText(searchTerm);
 											searchField.setForeground(color);
@@ -1199,13 +1223,15 @@ public class LibraryBrowser extends JPanel {
     searchLabel.setAlignmentX(CENTER_ALIGNMENT);
     searchLabel.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 2));
     searchField = new LibraryTreePanel.EntryField() {
-  		public Dimension getMaximumSize() {	
+  		@Override
+		public Dimension getMaximumSize() {	
   			Dimension dim = super.getMaximumSize();
   			dim.width = (int)(120*(1+FontSizer.getLevel()*0.25));
   			return dim;
   		}
   		
-  		public Dimension getPreferredSize() {
+  		@Override
+		public Dimension getPreferredSize() {
   			Dimension dim = super.getPreferredSize();
   			dim.width = (int)(120*(1+FontSizer.getLevel()*0.25));
   			return dim;
@@ -1217,7 +1243,8 @@ public class LibraryBrowser extends JPanel {
     refreshButton = new JButton(refreshIcon);
     refreshButton.setBorder(buttonBorder);
     refreshButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	LibraryTreePanel treePanel = getSelectedTreePanel();
       	if (treePanel!=null) {
 	        LibraryTreeNode node = treePanel.getSelectedNode();
@@ -1286,7 +1313,8 @@ public class LibraryBrowser extends JPanel {
     	}
     };
     tabbedPane.addChangeListener(new ChangeListener() {
-      public void stateChanged(ChangeEvent e) {
+      @Override
+	public void stateChanged(ChangeEvent e) {
       	refreshGUI();
       	LibraryTreePanel treePanel = getSelectedTreePanel();
       	if (treePanel!=null) {
@@ -1308,14 +1336,16 @@ public class LibraryBrowser extends JPanel {
       }
     });
     tabbedPane.addMouseListener(new MouseAdapter() {
-      public void mousePressed(MouseEvent e) {
+      @Override
+	public void mousePressed(MouseEvent e) {
         if(OSPRuntime.isPopupTrigger(e)) {
           // make popup and add items
           JPopupMenu popup = new JPopupMenu();
           // close this tab
           JMenuItem item = new JMenuItem(ToolsRes.getString("MenuItem.Close")); //$NON-NLS-1$
           item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            @Override
+			public void actionPerformed(ActionEvent e) {
               int i = tabbedPane.getSelectedIndex();
               closeTab(i);
             }
@@ -1326,7 +1356,8 @@ public class LibraryBrowser extends JPanel {
           if (!"".equals(treePanel.pathToRoot) && !library.containsPath(treePanel.pathToRoot, false)) { //$NON-NLS-1$
 	          item = new JMenuItem(ToolsRes.getString("LibraryBrowser.MenuItem.AddToLibrary")); //$NON-NLS-1$
 	          item.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent e) {
+	            @Override
+				public void actionPerformed(ActionEvent e) {
 	              addToCollections(treePanel.pathToRoot);
 	           }
 	          });
@@ -1341,6 +1372,7 @@ public class LibraryBrowser extends JPanel {
     
     // create property change listener for treePanels
     treePanelListener = new PropertyChangeListener() {
+			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				String propertyName = e.getPropertyName();
 				if (propertyName.equals("collection_edit")) { //$NON-NLS-1$
@@ -1406,7 +1438,8 @@ public class LibraryBrowser extends JPanel {
     editButton.setOpaque(false);
 	  editButton.setBorder(buttonBorder);
     editButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	final LibraryTreePanel treePanel = getSelectedTreePanel();
       	if (!treePanel.isEditing()) {
         	treePanel.setEditing(true);
@@ -1421,7 +1454,8 @@ public class LibraryBrowser extends JPanel {
           JMenuItem item = new JMenuItem(ToolsRes.getString("LibraryBrowser.MenuItem.SaveEdits")); //$NON-NLS-1$
           popup.add(item);
           item.addActionListener(new ActionListener() {
-      		  public void actionPerformed(ActionEvent e) {
+      		  @Override
+			public void actionPerformed(ActionEvent e) {
             	String path = save();
             	if (path==null) return;
             	treePanel.setEditing(false);
@@ -1431,7 +1465,8 @@ public class LibraryBrowser extends JPanel {
           item = new JMenuItem(ToolsRes.getString("LibraryBrowser.MenuItem.Discard")); //$NON-NLS-1$
           popup.add(item);
           item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            @Override
+			public void actionPerformed(ActionEvent e) {
             	treePanel.setEditing(false);
             	treePanel.revert();
             	refreshGUI();
@@ -1469,7 +1504,8 @@ public class LibraryBrowser extends JPanel {
     int mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
     newItem.setAccelerator(KeyStroke.getKeyStroke('N', mask));
     newItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	String path = createNewCollection();
     		library.addRecent(path, false);
     		refreshRecentMenu();
@@ -1478,13 +1514,15 @@ public class LibraryBrowser extends JPanel {
     openItem = new JMenuItem();
     openItem.setAccelerator(KeyStroke.getKeyStroke('O', mask));
     openItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         open();
       }
     });
     closeItem = new JMenuItem();
     closeItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         int i = tabbedPane.getSelectedIndex();
         if (closeTab(i)) {
           refreshGUI();
@@ -1493,7 +1531,8 @@ public class LibraryBrowser extends JPanel {
     });
     closeAllItem = new JMenuItem();
     closeAllItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	for (int i=tabbedPane.getTabCount()-1; i>=0; i--) {
       		if (!closeTab(i)) break;
       	}
@@ -1505,13 +1544,15 @@ public class LibraryBrowser extends JPanel {
     saveItem = new JMenuItem();
     saveItem.setAccelerator(KeyStroke.getKeyStroke('S', mask));
     saveItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	save();
       }
     });
     saveAsItem = new JMenuItem();
     saveAsItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	String path = saveAs();
     		library.addRecent(path, false);
     		refreshRecentMenu();
@@ -1521,7 +1562,8 @@ public class LibraryBrowser extends JPanel {
     exitItem = new JMenuItem();
     exitItem.setAccelerator(KeyStroke.getKeyStroke('Q', mask));
     exitItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	exit();
       }
     });
@@ -1534,7 +1576,8 @@ public class LibraryBrowser extends JPanel {
     collectionsItem = new JMenuItem();
     manageMenu.add(collectionsItem);
     collectionsItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	LibraryManager manager = browser.getManager();
       	manager.tabbedPane.setSelectedComponent(manager.collectionsPanel);
       	manager.setVisible(true);
@@ -1543,7 +1586,8 @@ public class LibraryBrowser extends JPanel {
     searchItem = new JMenuItem();
     manageMenu.add(searchItem);
     searchItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	LibraryManager manager = browser.getManager();
       	manager.tabbedPane.setSelectedComponent(manager.searchPanel);
       	manager.setVisible(true);
@@ -1552,7 +1596,8 @@ public class LibraryBrowser extends JPanel {
     cacheItem = new JMenuItem();
     manageMenu.add(cacheItem);
     cacheItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
       	LibraryManager manager = browser.getManager();
       	manager.tabbedPane.setSelectedComponent(manager.cachePanel);
       	manager.setVisible(true);
@@ -1564,7 +1609,8 @@ public class LibraryBrowser extends JPanel {
     helpItem = new JMenuItem();
     helpItem.setAccelerator(KeyStroke.getKeyStroke('H', mask));
     helpItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         showHelp();
       }
     });
@@ -1573,7 +1619,8 @@ public class LibraryBrowser extends JPanel {
     logItem = new JMenuItem();
     logItem.setAccelerator(KeyStroke.getKeyStroke('L', mask));
     logItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         Point p0 = new Frame().getLocation();
         JFrame frame = OSPLog.getOSPLog();
         if((frame.getLocation().x==p0.x)&&(frame.getLocation().y==p0.y)) {
@@ -1587,7 +1634,8 @@ public class LibraryBrowser extends JPanel {
     aboutItem = new JMenuItem();
     aboutItem.setAccelerator(KeyStroke.getKeyStroke('A', mask));
     aboutItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         showAboutDialog();
       }
     });
@@ -1601,14 +1649,16 @@ public class LibraryBrowser extends JPanel {
 		
     if (externalDialog!=null) {
     	externalDialog.addWindowListener(new java.awt.event.WindowAdapter() {
-        public void windowOpened(WindowEvent e) {
+        @Override
+		public void windowOpened(WindowEvent e) {
       		new LibraryLoader().execute();
         }
       });
     }
     else {
     	frame.addWindowListener(new java.awt.event.WindowAdapter() {
-        public void windowOpened(WindowEvent e) {
+        @Override
+		public void windowOpened(WindowEvent e) {
       		new LibraryLoader().execute();
         }
       });    	
@@ -1740,6 +1790,7 @@ public class LibraryBrowser extends JPanel {
   		recentMenu.setEnabled(!library.recentTabs.isEmpty());
 	  	if (openRecentAction==null) {
 		  	openRecentAction = new AbstractAction() {
+					@Override
 					public void actionPerformed(ActionEvent e) {
 						String path = e.getActionCommand();
 						library.addRecent(path, false);
@@ -1893,7 +1944,7 @@ public class LibraryBrowser extends JPanel {
 		FileFilter xmlFilter = new XMLFilter();
 		List<File> xmlFiles = ResourceLoader.getFiles(cache, xmlFilter);
 		for (File file: xmlFiles) {
-			XMLControl control = new XMLControlElement(file.getAbsolutePath());
+			XMLControl control = new XMLControlElement(file);
 			if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
 				LibraryResource resource = (LibraryResource)control.loadObject(null);
 				resource.collectionPath = control.getString("real_path"); //$NON-NLS-1$
@@ -2374,15 +2425,18 @@ public class LibraryBrowser extends JPanel {
   		iconLabel = new JLabel();
   		iconLabel.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 0));
   		iconLabel.addMouseListener(new MouseAdapter() {
-        public void mouseClicked(MouseEvent e) {
+        @Override
+		public void mouseClicked(MouseEvent e) {
         	int i = getTabIndexFromTitle(titleLabel.getText());
         	if (i>-1 && tabbedPane.getSelectedIndex()!=i) tabbedPane.setSelectedIndex(i);
         	action.actionPerformed(null);
         }
-        public void mouseEntered(MouseEvent e) {
+        @Override
+		public void mouseEntered(MouseEvent e) {
       		iconLabel.setIcon(boldIcon);
         }
-        public void mouseExited(MouseEvent e) {
+        @Override
+		public void mouseExited(MouseEvent e) {
       		iconLabel.setIcon(normalIcon);
         }
   		});
@@ -2418,9 +2472,10 @@ public class LibraryBrowser extends JPanel {
 			return library;
 		
  	  	Runnable runner = new Runnable() {
- 	  		public void run() {
+ 	  		@Override
+			public void run() {
  	  			
-		  		webConnected = ResourceLoader.isWebConnected(); //$NON-NLS-1$
+		  		webConnected = ResourceLoader.isWebConnected(); 
 		    	if (!webConnected) {
 		    		JOptionPane.showMessageDialog(LibraryBrowser.this, 
 		    				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
@@ -2429,7 +2484,7 @@ public class LibraryBrowser extends JPanel {
 		    	}
  	  		}
  	  	};
-    	if (libraryPath == null || !ResourceLoader.isHTTP(libraryPath)) { //$NON-NLS-1$  //$NON-NLS-2$
+    	if (libraryPath == null || !ResourceLoader.isHTTP(libraryPath)) { 
 		    // load library
 	    	library.load(libraryPath);
      	  // add previously open tabs that are available
@@ -2453,7 +2508,7 @@ public class LibraryBrowser extends JPanel {
 			  		for (String path: paths) {
 			  			// check for local resource
 			      	Resource res = ResourceLoader.getResource(path);
-			    		if (res!=null && !ResourceLoader.isHTTP(path)) { //$NON-NLS-1$
+			    		if (res!=null && !ResourceLoader.isHTTP(path)) { 
 			    			TabLoader tabAdder = addTab(path, null);
 			    			if (tabAdder!=null) tabAdder.execute();  	
 			  			}
@@ -2483,7 +2538,7 @@ public class LibraryBrowser extends JPanel {
      	  // add previously open tabs not available for loading in doInBackground method
 	 	  	if (library.openTabPaths!=null) {  	  		
 		  		for (final String path: library.openTabPaths) {
-		  			boolean available = isWebConnected() && ResourceLoader.isHTTP(path); //$NON-NLS-1$
+		  			boolean available = isWebConnected() && ResourceLoader.isHTTP(path); 
 		  			if (available) {
 		    			TabLoader tabAdder = addTab(path, null);
 		    			if (tabAdder!=null) tabAdder.execute();  	
@@ -2533,7 +2588,7 @@ public class LibraryBrowser extends JPanel {
 			if (resource != null) {
 				LibraryTreePanel treePanel = index < 0 ? createLibraryTreePanel() : getTreePanel(index);
 				// tab is editable only if it is a local XML file
-				boolean editable = !ResourceLoader.isHTTP(path) && path.toLowerCase().endsWith(".xml"); //$NON-NLS-1$ //$NON-NLS-2$
+				boolean editable = !ResourceLoader.isHTTP(path) && path.toLowerCase().endsWith(".xml"); //$NON-NLS-1$ 
 				treePanel.setRootResource(resource, path, editable, isRecentPathXML);
 				return treePanel;
 			}
@@ -2666,7 +2721,8 @@ public class LibraryBrowser extends JPanel {
    */
   static class TrackerDLFilter implements FileFilter {
   	
-    public boolean accept(File file) {
+    @Override
+	public boolean accept(File file) {
     	if (file==null || file.isDirectory()) return false;
     	String name = file.getName();
     	if (name.startsWith("_")) return false; //$NON-NLS-1$
@@ -2694,7 +2750,8 @@ public class LibraryBrowser extends JPanel {
    * A FileFilter that accepts only directories with names that do NOT start with underscore.
    */
   static class DirectoryFilter implements FileFilter {  	
-    public boolean accept(File file) {
+    @Override
+	public boolean accept(File file) {
     	if (file.getName().startsWith("_")) return false; //$NON-NLS-1$
     	return file.isDirectory();
     }
@@ -2704,7 +2761,8 @@ public class LibraryBrowser extends JPanel {
    * A FileFilter that accepts html files with names that do NOT start with underscore.
    */
   static class HTMLFilter implements FileFilter {  	
-    public boolean accept(File file) {
+    @Override
+	public boolean accept(File file) {
     	if (file==null || file.isDirectory()) return false;
     	String name = file.getName();
     	if (name.startsWith("_")) return false; //$NON-NLS-1$
@@ -2719,7 +2777,8 @@ public class LibraryBrowser extends JPanel {
    * A FileFilter that accepts xml files and directories.
    */
   static class XMLFilter implements FileFilter {  	
-    public boolean accept(File file) {
+    @Override
+	public boolean accept(File file) {
     	if (file==null) return false;
     	if (file.isDirectory()) return true;
     	String ext = XML.getExtension(file.getName());
@@ -2734,11 +2793,13 @@ public class LibraryBrowser extends JPanel {
    */
   static class FilesAndFoldersFilter extends javax.swing.filechooser.FileFilter {
     // accept all directories and files.
-    public boolean accept(File f) {
+    @Override
+	public boolean accept(File f) {
       return f!=null;
     }
     // the description of this filter
-    public String getDescription() {
+    @Override
+	public String getDescription() {
       return ToolsRes.getString("LibraryBrowser.FilesAndFoldersFilter.Description"); //$NON-NLS-1$
     }
 

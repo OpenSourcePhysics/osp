@@ -230,20 +230,23 @@ public class ClassicalInspector {
 
    class EffectivePotential implements Function {
 
-      public double evaluate(double r) {
+      @Override
+	public double evaluate(double r) {
          return(r==0) ? 0 : ((-M/r)+((L*L)/(2*r*r)));
       }
    }
 
    class Mass extends InteractiveCircle {
 
-      public void draw(DrawingPanel panel, Graphics g) {
+      @Override
+	public void draw(DrawingPanel panel, Graphics g) {
          x = r;
          y = E;
          super.draw(panel, g);
       }
 
-      public void setXY(double rr, double pot) {
+      @Override
+	public void setXY(double rr, double pot) {
          E = (L==0) ? pot : Math.max(pot, (-M*M)/2/L/L);
          controlTable.setValue("E", E);
          r = Math.max(rr, Float.MIN_VALUE);
@@ -256,13 +259,15 @@ public class ClassicalInspector {
 
    class EnergyLine extends AbstractInteractive {
 
-      public void draw(DrawingPanel panel, Graphics g) {
+      @Override
+	public void draw(DrawingPanel panel, Graphics g) {
          g.setColor(Color.RED);
          int ypix = panel.yToPix(E);
          g.drawLine(0, ypix, panel.getWidth(), ypix);
       }
 
-      public void setXY(double r, double pot) {
+      @Override
+	public void setXY(double r, double pot) {
          E = Math.max(pot, (-M*M)/2/L/L);
          controlTable.setValue("E", E);
          setScale();
@@ -270,7 +275,8 @@ public class ClassicalInspector {
          support.firePropertyChange("inspectorChange", null, null);
       }
 
-      public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
+      @Override
+	public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
          int pix = panel.yToPix(E);
          if(Math.abs(ypix-pix)<3) {
             return true;

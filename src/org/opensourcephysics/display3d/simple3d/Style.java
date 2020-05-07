@@ -63,7 +63,8 @@ public class Style implements org.opensourcephysics.display3d.core.Style {
     this.element = _element;
   }
 
-  public void setLineColor(Color _color) {
+  @Override
+public void setLineColor(Color _color) {
     if(_color==null) {
       return; // Ignore null colors
     }
@@ -73,11 +74,13 @@ public class Style implements org.opensourcephysics.display3d.core.Style {
     }
   }
 
-  final public Color getLineColor() {
+  @Override
+final public Color getLineColor() {
     return this.lineColor;
   }
 
-  public void setLineWidth(float _width) {
+  @Override
+public void setLineWidth(float _width) {
     if(this.lineWidth==_width) {
       return;
     }
@@ -87,7 +90,8 @@ public class Style implements org.opensourcephysics.display3d.core.Style {
     }
   }
 
-  final public float getLineWidth() {
+  @Override
+final public float getLineWidth() {
     return this.lineWidth;
   }
 
@@ -100,7 +104,8 @@ public class Style implements org.opensourcephysics.display3d.core.Style {
     return this.lineStroke;
   }
 
-  public void setFillColor(Color _color) {
+  @Override
+public void setFillColor(Color _color) {
     if(_color==null) {
       return; // Ignore null colors
     }
@@ -110,11 +115,13 @@ public class Style implements org.opensourcephysics.display3d.core.Style {
     }
   }
 
-  final public Color getFillColor() {
+  @Override
+final public Color getFillColor() {
     return this.fillColor;
   }
 
-  public void setResolution(org.opensourcephysics.display3d.core.Resolution _res) {
+  @Override
+public void setResolution(org.opensourcephysics.display3d.core.Resolution _res) {
     this.resolution = _res; // No need to clone. Resolution is unmutable
     if(element!=null) {
       element.styleChanged(STYLE_RESOLUTION);
@@ -122,15 +129,18 @@ public class Style implements org.opensourcephysics.display3d.core.Style {
   }
   // No danger. Resolution is unmutable
 
-  final public org.opensourcephysics.display3d.core.Resolution getResolution() {
+  @Override
+final public org.opensourcephysics.display3d.core.Resolution getResolution() {
     return this.resolution;
   }
 
-  public boolean isDrawingFill() {
+  @Override
+public boolean isDrawingFill() {
     return drawsFill;
   }
 
-  public void setDrawingFill(boolean _drawsFill) {
+  @Override
+public void setDrawingFill(boolean _drawsFill) {
     this.drawsFill = _drawsFill;
     drawFillsSet = true;
     if(element!=null) {
@@ -138,11 +148,13 @@ public class Style implements org.opensourcephysics.display3d.core.Style {
     }
   }
 
-  public boolean isDrawingLines() {
+  @Override
+public boolean isDrawingLines() {
     return drawsLines;
   }
 
-  public void setDrawingLines(boolean _drawsLines) {
+  @Override
+public void setDrawingLines(boolean _drawsLines) {
     this.drawsLines = _drawsLines;
     drawLinesSet = true;
     if(element!=null) {
@@ -150,45 +162,54 @@ public class Style implements org.opensourcephysics.display3d.core.Style {
     }
   }
 
-  public void setDepthFactor(double factor) {
+  @Override
+public void setDepthFactor(double factor) {
     this.depthFactor = factor;
   }
 
-  public double getDepthFactor() {
+  @Override
+public double getDepthFactor() {
     return this.depthFactor;
   }
 
   //CJB
-  public void setTexture(String file1, String file2, double transparency, boolean combine) {
+  @Override
+public void setTexture(String file1, String file2, double transparency, boolean combine) {
     textureFile1 = file1;
     textureFile2 = file2;
     this.transpTexture = transparency;
     this.combineTexture = combine;
   }
 
-  public String[] getTextures() {
+  @Override
+public String[] getTextures() {
     return new String[] {textureFile1, textureFile2};
   }
 
-  public double getTransparency() {
+  @Override
+public double getTransparency() {
     return transpTexture;
   }
 
-  public boolean getCombine() {
+  @Override
+public boolean getCombine() {
     return combineTexture;
   }
   //CJB
 
-  final public void setRelativePosition(int _position) {
+  @Override
+final public void setRelativePosition(int _position) {
     this.position = _position;
     element.styleChanged(STYLE_RELATIVE_POSITION);
   }
 
-  final public int getRelativePosition() {
+  @Override
+final public int getRelativePosition() {
     return this.position;
   }
 
-  public void copyTo(org.opensourcephysics.display3d.core.Style target) {
+  @Override
+public void copyTo(org.opensourcephysics.display3d.core.Style target) {
     target.setDrawingFill(drawsFill);
     target.setDrawingLines(drawsLines);
     target.setLineColor(lineColor);
@@ -207,11 +228,13 @@ public class Style implements org.opensourcephysics.display3d.core.Style {
   }
 
   protected static class StyleLoader extends org.opensourcephysics.display3d.core.Style.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new Style((Element) null);
     }
 
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       Style style = (Style) obj;
       control.setValue("line color", style.getLineColor());  //$NON-NLS-1$
       control.setValue("line width", style.getLineWidth());  //$NON-NLS-1$
@@ -225,7 +248,8 @@ public class Style implements org.opensourcephysics.display3d.core.Style {
       }
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       Style style = (Style) obj;
       style.setLineColor((Color) control.getObject("line color"));                                            //$NON-NLS-1$
       style.setLineWidth((float) control.getDouble("line width"));                                            //$NON-NLS-1$

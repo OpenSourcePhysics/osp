@@ -1,12 +1,9 @@
 package test;
 
-import java.awt.Color;
 import java.awt.Dimension;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.border.LineBorder;
-
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.controls.XMLTreePanel;
 

@@ -36,19 +36,22 @@ public class ElementSpring extends Element implements org.opensourcephysics.disp
   // -------------------------------------
   // New configuration methods
   // -------------------------------------
-  public void setRadius(double radius) {
+  @Override
+public void setRadius(double radius) {
     this.radius = radius;
     setElementChanged(true);
   }
 
-  public double getRadius() {
+  @Override
+public double getRadius() {
     return this.radius;
   }
 
   // -------------------------------------
   // Abstract part of Element or Parent methods overwritten
   // -------------------------------------
-  Object3D[] getObjects3D() {
+  @Override
+Object3D[] getObjects3D() {
     if(!isReallyVisible()) {
       return null;
     }
@@ -61,7 +64,8 @@ public class ElementSpring extends Element implements org.opensourcephysics.disp
     return objects;
   }
 
-  void draw(Graphics2D _g2, int _index) {
+  @Override
+void draw(Graphics2D _g2, int _index) {
     // Allow the panel to adjust color according to depth
     Color theColor = getDrawingPanel3D().projectColor(getRealStyle().getLineColor(), objects[_index].getDistance());
     _g2.setColor(theColor);
@@ -69,7 +73,8 @@ public class ElementSpring extends Element implements org.opensourcephysics.disp
     _g2.drawLine(aPoints[_index], bPoints[_index], aPoints[_index+1], bPoints[_index+1]);
   }
 
-  void drawQuickly(Graphics2D _g2) {
+  @Override
+void drawQuickly(Graphics2D _g2) {
     if(!isReallyVisible()) {
       return;
     }
@@ -84,7 +89,8 @@ public class ElementSpring extends Element implements org.opensourcephysics.disp
     _g2.drawPolyline(aPoints, bPoints, segments+1);
   }
 
-  void getExtrema(double[] min, double[] max) {
+  @Override
+void getExtrema(double[] min, double[] max) {
     min[0] = 0;
     max[0] = 1;
     min[1] = 0;
@@ -98,7 +104,8 @@ public class ElementSpring extends Element implements org.opensourcephysics.disp
   // -------------------------------------
   // Interaction
   // -------------------------------------
-  protected InteractionTarget getTargetHit(int x, int y) {
+  @Override
+protected InteractionTarget getTargetHit(int x, int y) {
     if(!isReallyVisible()) {
       return null;
     }
@@ -199,7 +206,8 @@ public class ElementSpring extends Element implements org.opensourcephysics.disp
   }
 
   static private class Loader extends org.opensourcephysics.display3d.core.ElementSpring.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ElementSpring();
     }
 

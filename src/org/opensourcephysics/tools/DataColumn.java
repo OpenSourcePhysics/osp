@@ -50,7 +50,8 @@ public class DataColumn extends Dataset {
    * @param xName ignored
    * @param yName the y-column name
    */
-  public void setXYColumnNames(String xName, String yName) {
+  @Override
+public void setXYColumnNames(String xName, String yName) {
     super.setXYColumnNames("row", yName); //$NON-NLS-1$
   }
 
@@ -61,7 +62,8 @@ public class DataColumn extends Dataset {
    * @param yName the y-column name
    * @param name the dataset name
    */
-  public void setXYColumnNames(String xName, String yName, String name) {
+  @Override
+public void setXYColumnNames(String xName, String yName, String name) {
     super.setXYColumnNames("row", yName, name); //$NON-NLS-1$
   }
 
@@ -70,7 +72,8 @@ public class DataColumn extends Dataset {
    *
    * @param b ignored
    */
-  public void setXColumnVisible(boolean b) {}
+  @Override
+public void setXColumnVisible(boolean b) {}
   
   /**
    * Gets a copy of the ypoints array, with shift added if shifted.
@@ -147,7 +150,8 @@ public class DataColumn extends Dataset {
    * A class to save and load DataColumn data in an XMLControl.
    */
   protected static class Loader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       DataColumn column = (DataColumn) obj;
       double shift = column.getShift();
       if (shift!=0) {
@@ -162,11 +166,13 @@ public class DataColumn extends Dataset {
       }
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new DataColumn();
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       DataColumn column = (DataColumn) obj;
       Dataset.getLoader().loadObject(control, column);
       if (control.getPropertyNames().contains("shift")) { //$NON-NLS-1$

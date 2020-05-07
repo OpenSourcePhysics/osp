@@ -130,7 +130,7 @@ public class ComplexColorMapper {
    */
   public Color phaseToColor(double phi) {
     double b = 1; // brightness
-    double h = (double) ((Math.PI+phi)/PI2);
+    double h = (Math.PI+phi)/PI2;
     int index = ((int) (255*h));
     return new Color((int) (b*reds[index]), (int) (b*greens[index]), (int) (b*blues[index]));
   }
@@ -143,7 +143,7 @@ public class ComplexColorMapper {
    */
   public Color complexToColor(double re, double im) {
     double b = 1; // brightness
-    double h = (double) ((Math.PI+Math.atan2(im, re))/PI2);
+    double h = (Math.PI+Math.atan2(im, re))/PI2;
     int index = ((int) (255*h));
     return new Color((int) (b*reds[index]), (int) (b*greens[index]), (int) (b*blues[index]));
   }
@@ -169,8 +169,8 @@ public class ComplexColorMapper {
 		} else {
 			zval = Math.min(zval, ceil);
 		}
-		double bb = (double) (zval / ceil); // brightness
-		double h = (double) ((Math.PI + Math.atan2(samples[2], samples[1])) / PI2); // hue
+		double bb = zval / ceil; // brightness
+		double h = (Math.PI + Math.atan2(samples[2], samples[1])) / PI2; // hue
 		int index = ((int) (255 * h));
 		int r = (int) (bb * reds[index]);
 		int g = (int) (bb * greens[index]);
@@ -213,8 +213,8 @@ public class ComplexColorMapper {
 		if ((zMap == null) && (zval > ceil + COLOR_ERR)) {
 			return rgbCeil;
 		}
-		double bb = (double) (Math.min(zval, ceil) / ceil); // brightness
-		double h = (double) ((Math.PI + Math.atan2(samples[2], samples[1])) / PI2); // hue
+		double bb = Math.min(zval, ceil) / ceil; // brightness
+		double h = (Math.PI + Math.atan2(samples[2], samples[1])) / PI2; // hue
 		int index = ((int) (255 * h));
 		retRGB[0] = (byte) (bb * reds[index]);
 		retRGB[1] = (byte) (bb * greens[index]);
@@ -240,8 +240,8 @@ public class ComplexColorMapper {
     } else if(zval>ceil+COLOR_ERR) {
       return ceilColor;
     }
-    double b = (double) (zval/ceil);
-    double h = (double) ((Math.PI+Math.atan2(vertex[4], vertex[3]))/PI2);
+    double b = zval/ceil;
+    double h = (Math.PI+Math.atan2(vertex[4], vertex[3]))/PI2;
     int index = ((int) (255*h));
     return new Color((int) (b*reds[index]), (int) (b*greens[index]), (int) (b*blues[index]));
     // return  Color.getHSBColor(h,1,b);

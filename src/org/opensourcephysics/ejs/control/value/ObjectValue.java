@@ -23,6 +23,7 @@ public class ObjectValue extends Value {
 		value = _val;
 	}
 
+	@Override
 	public boolean getBoolean() {
 		if (value == null || value == Boolean.FALSE) {
 			return false;
@@ -34,12 +35,14 @@ public class ObjectValue extends Value {
 		return value.toString().equals("true"); //$NON-NLS-1$
 	}
 
+	@Override
 	public int getInteger() {
 		if (value instanceof Number)
 			return ((Number) value).intValue();
 		return (int) Math.round(getDouble());
 	}
 
+	@Override
 	public double getDouble() {
 		try {
 			if (value instanceof Number)
@@ -50,6 +53,7 @@ public class ObjectValue extends Value {
 		}
 	}
 
+	@Override
 	public String getString() {
 		if (value == null)
 			return null;
@@ -165,6 +169,7 @@ public class ObjectValue extends Value {
 		return value.toString();
 	}
 
+	@Override
 	public Object getObject() {
 		return value;
 	}

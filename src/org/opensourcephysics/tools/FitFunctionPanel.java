@@ -77,59 +77,53 @@ public class FitFunctionPanel extends FunctionPanel {
    *
    * @return a label string
    */
-  public String getLabel() {
+  @Override
+public String getLabel() {
     return ToolsRes.getString("FitFunctionPanel.Label"); //$NON-NLS-1$
   }
 
-  /**
-   * Listens for property change "edit".
-   *
-   * @param e the event
-   */
-  public void propertyChange(PropertyChangeEvent e) {
-    if (e.getPropertyName().equals("edit") && functionTool!=null) { //$NON-NLS-1$
-      UserFunctionEditor ufe = (UserFunctionEditor) functionEditor;
-      UserFunction[] functions = ufe.getMainFunctions();
-      if (functions!=null && functions.length>0) {
-	      if (e.getSource()==functionEditor
-	      		&& functions[0].getName().equals(e.getOldValue())) {
-	        // rename this panel
-	        functionTool.renamePanel(this.getName(), getFitFunction().getName());
-	        if(e.getNewValue() instanceof FunctionEditor.DefaultEdit) {
-	          FunctionEditor.DefaultEdit edit = (FunctionEditor.DefaultEdit) e.getNewValue();
-	          functionEditor.getTable().selectCell(edit.undoRow, edit.undoCol);
-	        }
-		      functionTool.refreshGUI();
-	      }
-	      super.propertyChange(e);
+	/**
+	 * Listens for property change "edit".
+	 *
+	 * @param e the event
+	 */
+	@Override
+	public void propertyChange(PropertyChangeEvent e) {
+		if (e.getPropertyName().equals("edit") && functionTool != null) { //$NON-NLS-1$
+			UserFunctionEditor ufe = (UserFunctionEditor) functionEditor;
+			UserFunction[] functions = ufe.getMainFunctions();
+			if (functions != null && functions.length > 0) {
+				if (e.getSource() == functionEditor && functions[0].getName().equals(e.getOldValue())) {
+					// rename this panel
+					functionTool.renamePanel(this.getName(), getFitFunction().getName());
+					if (e.getNewValue() instanceof FunctionEditor.DefaultEdit) {
+						FunctionEditor.DefaultEdit edit = (FunctionEditor.DefaultEdit) e.getNewValue();
+						functionEditor.getTable().selectCell(edit.undoRow, edit.undoCol);
+					}
+					functionTool.refreshGUI();
+				}
+				super.propertyChange(e);
 
-	      if (functions[0].polynomial!=null) {
-	        functionTool.firePropertyChange("function", null, functions[0].getName()); //$NON-NLS-1$
-	      }
-	      return;
-      }
-    }
-    else if (e.getPropertyName().equals("description") && functionTool!=null) { //$NON-NLS-1$
-      super.propertyChange(e);
-      functionTool.firePropertyChange("function", null, getFitFunction().getName()); //$NON-NLS-1$
-      return;
-    }
-    super.propertyChange(e);
-  }
+				if (functions[0].polynomial != null) {
+					functionTool.firePropertyChange("function", null, functions[0].getName()); //$NON-NLS-1$
+				}
+				return;
+			}
+		} else if (e.getPropertyName().equals("description") && functionTool != null) { //$NON-NLS-1$
+			super.propertyChange(e);
+			functionTool.firePropertyChange("function", null, getFitFunction().getName()); //$NON-NLS-1$
+			return;
+		}
+		super.propertyChange(e);
+	}
 
   /**
    * Refreshes the functions.
    */
-  protected void refreshFunctions() {
+  @Override
+protected void refreshFunctions() {
     if(paramEditor!=null) {
-      UserFunction[] functions = ((UserFunctionEditor) functionEditor).getMainFunctions();
-      for(int i = 0; i<functions.length; i++) {
-        functions[i].setParameters(paramEditor.getNames(), paramEditor.getValues(), paramEditor.getDescriptions());
-      }
-      functions = ((UserFunctionEditor) functionEditor).getSupportFunctions();
-      for(int i = 0; i<functions.length; i++) {
-        functions[i].setParameters(paramEditor.getNames(), paramEditor.getValues(), paramEditor.getDescriptions());
-      }
+    	((UserFunctionEditor) functionEditor).updateAllFunctions(paramEditor); 
     }
     // evaluate the functions 
     functionEditor.evaluateAll();
@@ -160,7 +154,8 @@ public class FitFunctionPanel extends FunctionPanel {
    * A class to save and load data for this class.
    */
   static class Loader implements XML.ObjectLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       FitFunctionPanel panel = (FitFunctionPanel) obj;
       // add name and description for list chooser
       control.setValue("name", panel.getName()); //$NON-NLS-1$
@@ -172,12 +167,14 @@ public class FitFunctionPanel extends FunctionPanel {
       control.setValue("original_name", panel.originalName); //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       UserFunctionEditor editor = (UserFunctionEditor) control.getObject("function_editor"); //$NON-NLS-1$
       return new FitFunctionPanel(editor);
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       FitFunctionPanel panel = (FitFunctionPanel) obj;
       Parameter[] params = (Parameter[]) control.getObject("user_parameters"); //$NON-NLS-1$
       panel.getParamEditor().setParameters(params);

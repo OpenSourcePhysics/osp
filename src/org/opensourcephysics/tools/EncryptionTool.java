@@ -153,7 +153,8 @@ public class EncryptionTool extends JFrame implements Tool {
    * @param replyTo the tool to notify when the job is complete (may be null)
    * @throws RemoteException
    */
-  public void send(Job job, Tool replyTo) throws RemoteException {
+  @Override
+public void send(Job job, Tool replyTo) throws RemoteException {
     // read xml into XMLControl and display the control
     XMLControlElement control = new XMLControlElement();
     control.setDecryptPolicy(XMLControlElement.NEVER_DECRYPT);
@@ -421,7 +422,8 @@ public class EncryptionTool extends JFrame implements Tool {
     openIcon = ResourceLoader.getIcon(imageFile);
     openButton = new JButton(openIcon);
     openButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         open();
       }
 
@@ -431,7 +433,8 @@ public class EncryptionTool extends JFrame implements Tool {
     saveIcon = ResourceLoader.getIcon(imageFile);
     saveButton = new JButton(saveIcon);
     saveButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         save(fileName);
       }
 
@@ -442,7 +445,8 @@ public class EncryptionTool extends JFrame implements Tool {
     passwordLabel.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
     passwordField = new JTextField(20);
     passwordField.addKeyListener(new KeyAdapter() {
-      public void keyPressed(KeyEvent e) {
+      @Override
+	public void keyPressed(KeyEvent e) {
         if(e.getKeyCode()==KeyEvent.VK_ENTER) {
           passwordField.setBackground(Color.white);
           setPassword(passwordField.getText());
@@ -453,7 +457,8 @@ public class EncryptionTool extends JFrame implements Tool {
 
     });
     passwordField.addFocusListener(new FocusAdapter() {
-      public void focusLost(FocusEvent e) {
+      @Override
+	public void focusLost(FocusEvent e) {
         if(passwordField.getBackground()==Color.yellow) {
           passwordField.setBackground(Color.white);
           setPassword(passwordField.getText());
@@ -466,7 +471,8 @@ public class EncryptionTool extends JFrame implements Tool {
     encryptedCheckBox = new JCheckBox(""); //$NON-NLS-1$
     encryptedCheckBox.setEnabled(false);
     encryptedCheckBox.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         // if selected, set password to current passwordField text
         if(encryptedCheckBox.isSelected()) {
           setPassword(passwordField.getText());
@@ -490,7 +496,8 @@ public class EncryptionTool extends JFrame implements Tool {
     previewCheckBox.setOpaque(false);
     previewCheckBox.setEnabled(false);
     previewCheckBox.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         XMLControlElement control = getCurrentControl();
         if(previewCheckBox.isSelected()) {
           displayXML(encrypt(control));
@@ -511,7 +518,8 @@ public class EncryptionTool extends JFrame implements Tool {
     openItem = new JMenuItem();
     openItem.setAccelerator(KeyStroke.getKeyStroke('O', keyMask));
     openItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         open();
       }
 
@@ -522,7 +530,8 @@ public class EncryptionTool extends JFrame implements Tool {
     saveItem = new JMenuItem();
     saveItem.setAccelerator(KeyStroke.getKeyStroke('S', keyMask));
     saveItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         save(fileName);
       }
 
@@ -532,7 +541,8 @@ public class EncryptionTool extends JFrame implements Tool {
     // save as item
     saveAsItem = new JMenuItem();
     saveAsItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         saveAs();
       }
 
@@ -542,7 +552,8 @@ public class EncryptionTool extends JFrame implements Tool {
     exitItem = new JMenuItem(ToolsRes.getString("MenuItem.Exit")); //$NON-NLS-1$
     exitItem.setAccelerator(KeyStroke.getKeyStroke('Q', keyMask));
     exitItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         System.exit(0);
       }
 
@@ -556,7 +567,8 @@ public class EncryptionTool extends JFrame implements Tool {
     logItem = new JMenuItem();
     logItem.setAccelerator(KeyStroke.getKeyStroke('L', keyMask));
     logItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         Point p0 = new Frame().getLocation();
         JFrame frame = OSPLog.showLog();
         if((frame.getLocation().x==p0.x)&&(frame.getLocation().y==p0.y)) {
@@ -572,7 +584,8 @@ public class EncryptionTool extends JFrame implements Tool {
     aboutItem = new JMenuItem();
     aboutItem.setAccelerator(KeyStroke.getKeyStroke('A', keyMask));
     aboutItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         String toolname = ToolsRes.getString("EncryptionTool.About.ToolName");                                             //$NON-NLS-1$
         String aboutString = toolname+OSPRuntime.VERSION+XML.NEW_LINE+ToolsRes.getString("EncryptionTool.About.OSPName")+XML.NEW_LINE //$NON-NLS-1$
                              +"www.opensourcephysics.org";                                                                //$NON-NLS-1$

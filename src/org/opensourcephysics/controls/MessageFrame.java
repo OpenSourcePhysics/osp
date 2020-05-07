@@ -106,7 +106,8 @@ public class MessageFrame extends JFrame {
     final JMenuItem clearItem = new JMenuItem(ControlsRes.getString("MessageFrame.Clear_menu_item")); //$NON-NLS-1$
     editMenu.add(clearItem);
     clearItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         APPLET_MESSAGEFRAME.textPane.setText(""); //$NON-NLS-1$
       }
 
@@ -124,7 +125,8 @@ public class MessageFrame extends JFrame {
       }
       item.setActionCommand(OSPLog.levels[i].getName());
       item.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           setLevel(Level.parse(e.getActionCommand()));
         }
 
@@ -133,6 +135,7 @@ public class MessageFrame extends JFrame {
     
 	FontSizer.setFonts(APPLET_MESSAGEFRAME.textPane, FontSizer.getLevel());
 	FontSizer.addPropertyChangeListener("level", new PropertyChangeListener() { //$NON-NLS-1$
+		@Override
 		public void propertyChange(PropertyChangeEvent e) {
 			int level = ((Integer) e.getNewValue()).intValue();
 			FontSizer.setFonts(menuBar, level);
@@ -141,7 +144,8 @@ public class MessageFrame extends JFrame {
 
 	});
     ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() {           //$NON-NLS-1$
-      public void propertyChange(PropertyChangeEvent e) {
+      @Override
+	public void propertyChange(PropertyChangeEvent e) {
         APPLET_MESSAGEFRAME.setTitle(ControlsRes.getString("MessageFrame.DefaultTitle")); //$NON-NLS-1$
         editMenu.setText(ControlsRes.getString("MessageFrame.Edit_menu"));                //$NON-NLS-1$
         clearItem.setText(ControlsRes.getString("MessageFrame.Clear_menu"));              //$NON-NLS-1$
@@ -269,7 +273,8 @@ public class MessageFrame extends JFrame {
     }
 
     Runnable refreshText = new Runnable() {
-      public synchronized void run() {
+      @Override
+	public synchronized void run() {
         try {
           Document doc = APPLET_MESSAGEFRAME.textPane.getDocument();
           doc.insertString(doc.getLength(), msg+'\n', style);

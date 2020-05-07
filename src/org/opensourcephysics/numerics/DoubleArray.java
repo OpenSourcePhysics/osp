@@ -88,7 +88,8 @@ public class DoubleArray {
    *
    * @return string
    */
-  public String toString() {
+  @Override
+public String toString() {
     if(errorcode>0) {
       return defaultString;
     }
@@ -223,7 +224,8 @@ public class DoubleArray {
      * @param control the control
      * @param obj the DrawingPanel to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       DoubleArray array = (DoubleArray) obj;
       control.setValue("data", array.getArray()); //$NON-NLS-1$
     }
@@ -234,7 +236,8 @@ public class DoubleArray {
      * @param control the control
      * @return the newly created panel
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new DoubleArray((double[]) control.getObject("data")); //$NON-NLS-1$
     }
 
@@ -245,7 +248,8 @@ public class DoubleArray {
      * @param obj the object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       DoubleArray dataArray = (DoubleArray) obj;
       double[] data = (double[]) control.getObject("data"); //$NON-NLS-1$
       dataArray.array = data;

@@ -328,9 +328,15 @@ public class FitBuilder extends FunctionTool {
 		Class<?> type = control.getObjectClass();
 		if (FitBuilder.class.isAssignableFrom(type)) {
 			// choose fits to load
-			if (loadAll || chooseFitFunctions(control, "Load")) { //$NON-NLS-1$
-				control.loadObject(this);
-			}
+			if (!loadAll)
+				return;
+			chooseFitFunctions(control, "Load", new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					control.loadObject(FitBuilder.this);
+				}
+			});
 		} else {
 			JOptionPane.showMessageDialog(FitBuilder.this,
 					ToolsRes.getString("DatasetCurveFitter.FitBuilder.Dialog.WrongType.Message"), //$NON-NLS-1$
@@ -344,38 +350,42 @@ public class FitBuilder extends FunctionTool {
 	 * 
 	 * @return the path to the file saved, or null if cancelled or failed
 	 */
-	private String saveFits() {
+	private void saveFits() {
 		XMLControl control = new XMLControlElement(this);
 		// choose fits to save
-		if (chooseFitFunctions(control, "Save")) { //$NON-NLS-1$
-			if (chooser == null) {
-				chooser = OSPRuntime.getChooser();
-				for (FileFilter filter : chooser.getChoosableFileFilters()) {
-					if (filter.getDescription().toLowerCase().indexOf("xml") > -1) { //$NON-NLS-1$
-						chooser.setFileFilter(filter);
-						break;
+		chooseFitFunctions(control, "Save", new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (chooser == null) {
+					chooser = OSPRuntime.getChooser();
+					for (FileFilter filter : chooser.getChoosableFileFilters()) {
+						if (filter.getDescription().toLowerCase().indexOf("xml") > -1) { //$NON-NLS-1$
+							chooser.setFileFilter(filter);
+							break;
+						}
 					}
 				}
-			}
-			FontSizer.setFonts(chooser, FontSizer.getLevel());
-			int result = chooser.showSaveDialog(FitBuilder.this);
-			if (result == JFileChooser.APPROVE_OPTION) {
-				OSPRuntime.chooserDir = chooser.getCurrentDirectory().toString();
-				File file = chooser.getSelectedFile();
-				// check to see if file already exists
-				if (file.exists()) {
-					int isSelected = JOptionPane.showConfirmDialog(FitBuilder.this,
-							ToolsRes.getString("Tool.Dialog.ReplaceFile.Message") + " " + file.getName() + "?", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-							ToolsRes.getString("Tool.Dialog.ReplaceFile.Title"), //$NON-NLS-1$
-							JOptionPane.YES_NO_CANCEL_OPTION);
-					if (isSelected != JOptionPane.YES_OPTION) {
-						return null;
+				FontSizer.setFonts(chooser, FontSizer.getLevel());
+				int result = chooser.showSaveDialog(FitBuilder.this);
+				if (result == JFileChooser.APPROVE_OPTION) {
+					OSPRuntime.chooserDir = chooser.getCurrentDirectory().toString();
+					File file = chooser.getSelectedFile();
+					// check to see if file already exists
+					if (file.exists()) {
+						int isSelected = JOptionPane.showConfirmDialog(FitBuilder.this,
+								ToolsRes.getString("Tool.Dialog.ReplaceFile.Message") + " " + file.getName() + "?", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+								ToolsRes.getString("Tool.Dialog.ReplaceFile.Title"), //$NON-NLS-1$
+								JOptionPane.YES_NO_CANCEL_OPTION);
+						if (isSelected != JOptionPane.YES_OPTION) {
+							return;
+						}
 					}
+					saveFits(file.getAbsolutePath(), control);
 				}
-				return saveFits(file.getAbsolutePath(), control);
 			}
-		}
-		return null;
+		}); 
+		
 	}
 
 	/**
@@ -383,11 +393,12 @@ public class FitBuilder extends FunctionTool {
 	 * 
 	 * @param path    the file path
 	 * @param control a FitBuilder XMLControl
-	 * @return the path to the file saved
 	 */
-	private String saveFits(String path, XMLControl control) {
-		if (path == null)
-			return saveFits();
+	private void saveFits(String path, XMLControl control) {
+		if (path == null) {
+			saveFits();
+			return;
+		}
 		// add .xml extension if none but don't replace other extensions
 		if (XML.getExtension(path) == null) {
 			path += ".xml"; //$NON-NLS-1$
@@ -396,7 +407,6 @@ public class FitBuilder extends FunctionTool {
 			control = new XMLControlElement(this);
 		}
 		control.write(path);
-		return path;
 	}
 
 	/**
@@ -598,11 +608,7 @@ public class FitBuilder extends FunctionTool {
 	 * @param description a description of the purpose (ie load or save)
 	 * @return true if not cancelled by the user
 	 */
-	protected boolean chooseFitFunctions(XMLControl control, String description) {
-		ListChooser listChooser = new ListChooser(
-				ToolsRes.getString("DatasetCurveFitter.FitBuilder." + description + ".Title"), //$NON-NLS-1$ //$NON-NLS-2$
-				ToolsRes.getString("DatasetCurveFitter.FitBuilder." + description + ".Message"), //$NON-NLS-1$ //$NON-NLS-2$
-				this);
+	protected void chooseFitFunctions(XMLControl control, String description, ActionListener listener) {
 		// choose the elements and load the function tool
 		ArrayList<XMLControl> originals = new ArrayList<XMLControl>();
 		ArrayList<XMLControl> choices = new ArrayList<XMLControl>();
@@ -629,18 +635,28 @@ public class FitBuilder extends FunctionTool {
 		for (int i = 0; i < selected.length; i++) {
 			selected[i] = true;
 		}
-		if (listChooser.choose(choices, names, expressions, selected)) {
-			// compare choices with originals and remove unwanted object content
-			for (XMLControl next : originals) {
-				if (!choices.contains(next)) {
-					XMLProperty prop = next.getParentProperty();
-					XMLProperty parent = prop.getParentProperty();
-					parent.getPropertyContent().remove(prop);
-				}
-			}
-			return true;
-		}
-		return false;
+		ListChooser listChooser = new ListChooser(
+				ToolsRes.getString("DatasetCurveFitter.FitBuilder." + description + ".Title"), //$NON-NLS-1$ //$NON-NLS-2$
+				ToolsRes.getString("DatasetCurveFitter.FitBuilder." + description + ".Message"), //$NON-NLS-1$ //$NON-NLS-2$
+				this, new ActionListener() {
+
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						if (e.getID() == ActionEvent.ACTION_PERFORMED) {
+							// compare choices with originals and remove unwanted object content
+							for (XMLControl next : originals) {
+								if (!choices.contains(next)) {
+									XMLProperty prop = next.getParentProperty();
+									XMLProperty parent = prop.getParentProperty();
+									parent.getPropertyContent().remove(prop);
+								}
+							}
+						}
+						listener.actionPerformed(e);						
+					}
+					
+				});
+		listChooser.choose(choices, names, expressions, selected);
 	}
 
 	/**

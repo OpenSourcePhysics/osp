@@ -26,8 +26,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-import org.opensourcephysics.js.JSUtil;
-
 /**
  * This modal dialog lets the user choose items from a tree view of an XMLControl.
  */
@@ -77,20 +75,23 @@ public class XMLTreeChooser extends JDialog {
     JButton okButton = new JButton(ControlsRes.getString("Chooser.Button.OK"));               //$NON-NLS-1$
     JButton selectAllButton = new JButton(ControlsRes.getString("Chooser.Button.SelectAll")); //$NON-NLS-1$
     cancelButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         setVisible(false);
       }
 
     });
     okButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         applyChanges = true;
         setVisible(false);
       }
 
     });
     selectAllButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         tree.selectHighlightedProperties();
       }
 

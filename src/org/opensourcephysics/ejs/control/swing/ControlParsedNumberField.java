@@ -31,7 +31,8 @@ public class ControlParsedNumberField extends ControlNumberField {
     super(_visual);
   }
 
-  protected java.awt.Component createVisual(Object _visual) {
+  @Override
+protected java.awt.Component createVisual(Object _visual) {
     if(_visual instanceof JTextField) {
       textfield = (JTextField) _visual;
     } else {
@@ -52,7 +53,8 @@ public class ControlParsedNumberField extends ControlNumberField {
   // Private methods and inner classes
   // -------------------------------------
   private class MyActionListener implements java.awt.event.ActionListener {
-    public void actionPerformed(java.awt.event.ActionEvent _e) {
+    @Override
+	public void actionPerformed(java.awt.event.ActionEvent _e) {
       // System.out.println ("Action for "+textfield.getText());
       setColor(defaultColor);
       String text = textfield.getText().trim(); // remove whitespace

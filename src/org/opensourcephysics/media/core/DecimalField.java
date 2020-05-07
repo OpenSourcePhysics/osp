@@ -74,7 +74,8 @@ public class DecimalField extends NumberField {
   }
 
   // Override NumberField methods so pattern cannot change
-  public void setSigFigs(int sigfigs) {}
+  @Override
+public void setSigFigs(int sigfigs) {}
 
   @Override
   public void setExpectedRange(double lower, double upper) {}

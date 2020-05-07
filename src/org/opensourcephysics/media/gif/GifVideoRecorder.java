@@ -58,7 +58,8 @@ public class GifVideoRecorder extends ScratchVideoRecorder {
    *
    * @param millis the duration per frame in milliseconds
    */
-  public void setFrameDuration(double millis) {
+  @Override
+public void setFrameDuration(double millis) {
     super.setFrameDuration(millis);
     encoder.setDelay((int) frameDuration);
   }
@@ -79,7 +80,8 @@ public class GifVideoRecorder extends ScratchVideoRecorder {
   /**
    * Saves the video to the current scratchFile.
    */
-  protected void saveScratch() {
+  @Override
+protected void saveScratch() {
     encoder.finish();
   }
 
@@ -88,7 +90,8 @@ public class GifVideoRecorder extends ScratchVideoRecorder {
    *
    * @return true if video recording successfully started
    */
-  protected boolean startRecording() {
+  @Override
+protected boolean startRecording() {
     if((dim==null)&&(frameImage!=null)) {
       dim = new Dimension(frameImage.getWidth(null), frameImage.getHeight(null));
     }
@@ -105,7 +108,8 @@ public class GifVideoRecorder extends ScratchVideoRecorder {
    * @param image the image to append
    * @return true if image successfully appended
    */
-  protected boolean append(Image image) {
+  @Override
+protected boolean append(Image image) {
     BufferedImage bi;
     if(image instanceof BufferedImage) {
       bi = (BufferedImage) image;

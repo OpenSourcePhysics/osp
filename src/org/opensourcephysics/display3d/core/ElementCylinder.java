@@ -93,7 +93,8 @@ public interface ElementCylinder extends Element {
   // XML loader
   // ----------------------------------------------------
   static abstract class Loader extends Element.Loader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       super.saveObject(control, obj);
       ElementCylinder element = (ElementCylinder) obj;
       control.setValue("closed top", element.isClosedTop());        //$NON-NLS-1$
@@ -104,7 +105,8 @@ public interface ElementCylinder extends Element {
       control.setValue("maximum angle", element.getMaximumAngle()); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       ElementCylinder element = (ElementCylinder) obj;
       element.setClosedTop(control.getBoolean("closed top"));       //$NON-NLS-1$

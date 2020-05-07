@@ -25,15 +25,18 @@ public class StringValue extends Value {
     value = _val;
   }
 
-  public boolean getBoolean() {
+  @Override
+public boolean getBoolean() {
     return value.equals("true"); //$NON-NLS-1$
   }
 
-  public int getInteger() {
+  @Override
+public int getInteger() {
     return(int) Math.round(getDouble());
   }
 
-  public double getDouble() {
+  @Override
+public double getDouble() {
     try {
       return Double.valueOf(value).doubleValue();
     } catch(NumberFormatException exc) {
@@ -41,11 +44,13 @@ public class StringValue extends Value {
     }
   }
 
-  public String getString() {
+  @Override
+public String getString() {
     return value;
   }
 
-  public Object getObject() {
+  @Override
+public Object getObject() {
     return null;
   }
 

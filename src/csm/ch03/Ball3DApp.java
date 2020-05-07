@@ -52,7 +52,8 @@ public class Ball3DApp extends AbstractSimulation {
    * Does an animation step by moving the ball.
    *
    */
-  protected void doStep() {
+  @Override
+protected void doStep() {
     time += 0.1;
     double z = ball.getZ()+vz*dt-4.9*dt*dt;
     vz -= 9.8*dt;

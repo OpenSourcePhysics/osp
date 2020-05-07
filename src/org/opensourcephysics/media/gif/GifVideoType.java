@@ -57,7 +57,8 @@ public class GifVideoType implements VideoType {
    * @param name the name of the image
    * @return a new image video
    */
-  public Video getVideo(String name) {
+  @Override
+public Video getVideo(String name) {
 	  return getVideo(name, null);
   }
 
@@ -78,7 +79,8 @@ public class GifVideoType implements VideoType {
    *
    * @return the video recorder
    */
-  public VideoRecorder getRecorder() {
+  @Override
+public VideoRecorder getRecorder() {
     return new GifVideoRecorder();
   }
 
@@ -87,7 +89,8 @@ public class GifVideoType implements VideoType {
    *
    * @return true if this can record videos
    */
-  public boolean canRecord() {
+  @Override
+public boolean canRecord() {
     return true;
   }
 
@@ -96,7 +99,8 @@ public class GifVideoType implements VideoType {
    *
    * @return a description
    */
-  public String getDescription() {
+  @Override
+public String getDescription() {
     return gifFilter.getDescription();
   }
 
@@ -105,7 +109,8 @@ public class GifVideoType implements VideoType {
    *
    * @return a description
    */
-  public String getDefaultExtension() {
+  @Override
+public String getDefaultExtension() {
     return gifFilter.getDefaultExtension();
   }
 
@@ -114,7 +119,8 @@ public class GifVideoType implements VideoType {
    *
    * @return a file filter
    */
-  public VideoFileFilter[] getFileFilters() {
+  @Override
+public VideoFileFilter[] getFileFilters() {
     return new VideoFileFilter[] {gifFilter};
   }
 
@@ -123,7 +129,8 @@ public class GifVideoType implements VideoType {
    *
    * @return the default file filter
    */
-  public VideoFileFilter getDefaultFileFilter() {
+  @Override
+public VideoFileFilter getDefaultFileFilter() {
   	return gifFilter;
   }
 
@@ -133,7 +140,8 @@ public class GifVideoType implements VideoType {
    * @param video the video
    * @return true if the video is this type
    */
-  public boolean isType(Video video) {
+  @Override
+public boolean isType(Video video) {
     return video instanceof GifVideo;
   }
   

@@ -27,7 +27,8 @@ public class ElementTetrahedron extends AbstractTile implements org.opensourceph
   // -------------------------------------
   // Configuration
   // -------------------------------------
-  public void setTruncationHeight(double height) {
+  @Override
+public void setTruncationHeight(double height) {
     if(height<0) {
       height = Double.NaN;
     }
@@ -36,31 +37,37 @@ public class ElementTetrahedron extends AbstractTile implements org.opensourceph
     changeNTiles = true;
   }
 
-  public double getTruncationHeight() {
+  @Override
+public double getTruncationHeight() {
     return truncationHeight;
   }
 
-  public void setClosedBottom(boolean close) {
+  @Override
+public void setClosedBottom(boolean close) {
     this.closedBottom = close;
     setElementChanged(true);
     changeNTiles = true;
   }
 
-  public boolean isClosedBottom() {
+  @Override
+public boolean isClosedBottom() {
     return this.closedBottom;
   }
 
-  public void setClosedTop(boolean close) {
+  @Override
+public void setClosedTop(boolean close) {
     this.closedTop = close;
     setElementChanged(true);
     changeNTiles = true;
   }
 
-  public boolean isClosedTop() {
+  @Override
+public boolean isClosedTop() {
     return this.closedTop;
   }
 
-  protected void computeCorners() {
+  @Override
+protected void computeCorners() {
     if(changeNTiles) { // Reallocate arrays
       changeNTiles = false;
       double height = truncationHeight/getSizeZ();
@@ -92,7 +99,8 @@ public class ElementTetrahedron extends AbstractTile implements org.opensourceph
   }
 
   static private class Loader extends org.opensourcephysics.display3d.core.ElementTetrahedron.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ElementTetrahedron();
     }
 

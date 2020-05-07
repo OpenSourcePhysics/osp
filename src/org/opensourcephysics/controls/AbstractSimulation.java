@@ -55,7 +55,8 @@ abstract public class AbstractSimulation extends AbstractAnimation implements Si
    *
    * @param control
    */
-  public void setControl(Control control) {
+  @Override
+public void setControl(Control control) {
     if(control instanceof SimControl) {
       this.control = (SimControl) control;
     } else {
@@ -80,7 +81,8 @@ abstract public class AbstractSimulation extends AbstractAnimation implements Si
    * Gets this simulation's control.
    * @return Control
    */
-  public Control getControl() {
+  @Override
+public Control getControl() {
     return control;
   }
 
@@ -101,7 +103,9 @@ abstract public class AbstractSimulation extends AbstractAnimation implements Si
    *
    * @deprecated
    */
-  public void startAnimation() {
+  @Deprecated
+@Override
+public void startAnimation() {
     if(showStepsPerDisplay) {
       stepsPerDisplay = control.getInt("steps per display"); //$NON-NLS-1$
     }
@@ -114,7 +118,8 @@ abstract public class AbstractSimulation extends AbstractAnimation implements Si
    * Starts the simulation thread.  Unlike the startAnimation method cannot be overridden so it
    * is not deprecated.
    */
-  final public void startSimulation() {
+  @Override
+final public void startSimulation() {
     startAnimation();
   }
 
@@ -131,7 +136,9 @@ abstract public class AbstractSimulation extends AbstractAnimation implements Si
    *
    * @deprecated
    */
-  public void stopAnimation() {
+  @Deprecated
+@Override
+public void stopAnimation() {
     super.stopAnimation();
     stopRunning();
     stop();
@@ -141,7 +148,8 @@ abstract public class AbstractSimulation extends AbstractAnimation implements Si
    * Stops the simulation thread.  This method cannot be overridden so it
    * is not deprecated.
    */
-  final public void stopSimulation() {
+  @Override
+final public void stopSimulation() {
     stopAnimation();
   }
 
@@ -159,7 +167,8 @@ abstract public class AbstractSimulation extends AbstractAnimation implements Si
    * and stopRunning() in the correct order.
    *
    */
-  public final void stepAnimation() {
+  @Override
+public final void stepAnimation() {
     if(showStepsPerDisplay) {
       stepsPerDisplay = control.getInt("steps per display"); //$NON-NLS-1$
     }
@@ -176,7 +185,9 @@ abstract public class AbstractSimulation extends AbstractAnimation implements Si
    *
    * @deprecated
    */
-  public void initializeAnimation() {
+  @Deprecated
+@Override
+public void initializeAnimation() {
     if(control==null) {
       return; // control can be null in applet mode so check for this
     }
@@ -207,7 +218,9 @@ abstract public class AbstractSimulation extends AbstractAnimation implements Si
    *
    * @deprecated
    */
-  public void resetAnimation() {
+  @Deprecated
+@Override
+public void resetAnimation() {
     if(control==null) {
       return; // control can be null in applet mode so check for this
     }
@@ -269,6 +282,7 @@ abstract public class AbstractSimulation extends AbstractAnimation implements Si
 	private final static int STATE_LOOP = 1;
 	private final static int STATE_DONE = 2;
   
+	@Override
 	public boolean stateLoop() {
 		while (animationThread != null && !animationThread.isInterrupted() && stateHelper.isAlive()) {
 			switch (stateHelper.getState()) {
@@ -296,7 +310,8 @@ abstract public class AbstractSimulation extends AbstractAnimation implements Si
   /**
    * Implementation of Runnable interface.  DO NOT access this method directly.
    */
-  public void run() {
+  @Override
+public void run() {
   	stateHelper = new SwingJSUtils.StateHelper(this);  
   	stateHelper.setState(STATE_INIT);
   	stateHelper.sleep(0);
@@ -333,95 +348,118 @@ abstract public class AbstractSimulation extends AbstractAnimation implements Si
       this.control = control;
     }
 
-    public void setAdjustableValue(String name, boolean val) {
+    @Override
+	public void setAdjustableValue(String name, boolean val) {
       control.setValue(name, val);
     }
 
-    public void setAdjustableValue(String name, double val) {
+    @Override
+	public void setAdjustableValue(String name, double val) {
       control.setValue(name, val);
     }
 
-    public void setAdjustableValue(String name, int val) {
+    @Override
+	public void setAdjustableValue(String name, int val) {
       control.setValue(name, val);
     }
 
-    public void setAdjustableValue(String name, Object val) {
+    @Override
+	public void setAdjustableValue(String name, Object val) {
       control.setValue(name, val);
     }
 
-    public void removeParameter(String name) {
+    @Override
+	public void removeParameter(String name) {
       // not implemented
     }
 
-    public void setLockValues(boolean lock) {
+    @Override
+	public void setLockValues(boolean lock) {
       control.setLockValues(lock);
     }
 
-    public void setValue(String name, Object val) {
+    @Override
+	public void setValue(String name, Object val) {
       control.setValue(name, val);
     }
 
-    public void setValue(String name, double val) {
+    @Override
+	public void setValue(String name, double val) {
       control.setValue(name, val);
     }
 
-    public void setValue(String name, int val) {
+    @Override
+	public void setValue(String name, int val) {
       control.setValue(name, val);
     }
 
-    public void setValue(String name, boolean val) {
+    @Override
+	public void setValue(String name, boolean val) {
       control.setValue(name, val);
     }
 
-    public int getInt(String name) {
+    @Override
+	public int getInt(String name) {
       return control.getInt(name);
     }
 
-    public double getDouble(String name) {
+    @Override
+	public double getDouble(String name) {
       return control.getDouble(name);
     }
 
-    public Object getObject(String name) {
+    @Override
+	public Object getObject(String name) {
       return control.getObject(name);
     }
 
-    public String getString(String name) {
+    @Override
+	public String getString(String name) {
       return control.getString(name);
     }
 
-    public boolean getBoolean(String name) {
+    @Override
+	public boolean getBoolean(String name) {
       return control.getBoolean(name);
     }
 
-    public Collection<String> getPropertyNames() {
+    @Override
+	public Collection<String> getPropertyNames() {
       return control.getPropertyNames();
     }
 
-    public void println(String s) {
+    @Override
+	public void println(String s) {
       control.println(s);
     }
 
-    public void println() {
+    @Override
+	public void println() {
       control.println();
     }
 
-    public void print(String s) {
+    @Override
+	public void print(String s) {
       control.print(s);
     }
 
-    public void clearMessages() {
+    @Override
+	public void clearMessages() {
       control.clearMessages();
     }
 
-    public void clearValues() {
+    @Override
+	public void clearValues() {
       control.clearValues();
     }
 
-    public void calculationDone(String message) {
+    @Override
+	public void calculationDone(String message) {
       control.calculationDone(message);
     }
 
-    public void setParameterToFixed(String name, boolean fixed) {
+    @Override
+	public void setParameterToFixed(String name, boolean fixed) {
       // not implemented
     }
 
@@ -446,7 +484,8 @@ abstract public class AbstractSimulation extends AbstractAnimation implements Si
      * @param control the control
      * @param obj the object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       ((Simulation) obj).initializeAnimation();
       return obj;
     }

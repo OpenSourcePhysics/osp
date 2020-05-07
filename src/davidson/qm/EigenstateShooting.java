@@ -212,11 +212,13 @@ private void estimateStartStopIndex(double en) {
    * The state for the ode solver is: psi, d psi/dx, x.
    * @return
    */
-  public double[] getState(){
+  @Override
+public double[] getState(){
     return state;
   }
 
-  public void getRate(double[] state, double[] rate ){
+  @Override
+public void getRate(double[] state, double[] rate ){
      rate[0]=state[1];
      rate[1]=(-energy+pot.evaluate(state[2]))*state[0];
      rate[2]=1;

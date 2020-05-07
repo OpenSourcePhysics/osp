@@ -23,11 +23,13 @@ import org.opensourcephysics.display2d.GridData;
 * @version 1.0
 */
 public class ExportGnuplotFormat implements ExportFormat {
-  public String description() {
+  @Override
+public String description() {
     return "Text"; //$NON-NLS-1$
   }
 
-  public String extension() {
+  @Override
+public String extension() {
     return "txt"; //$NON-NLS-1$
   }
 
@@ -81,7 +83,8 @@ public class ExportGnuplotFormat implements ExportFormat {
     }
   }
 
-  public void export(File file, List<Object> data) {
+  @Override
+public void export(File file, List<Object> data) {
     try {
       FileWriter fw = new FileWriter(file);
       PrintWriter pw = new PrintWriter(fw);

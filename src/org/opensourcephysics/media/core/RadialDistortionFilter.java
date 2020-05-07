@@ -149,7 +149,8 @@ public class RadialDistortionFilter extends Filter {
    * @param sourceImage the source image
    * @return the filtered image
    */
-  public BufferedImage getFilteredImage(BufferedImage sourceImage) {
+  @Override
+public BufferedImage getFilteredImage(BufferedImage sourceImage) {
     if(!isEnabled()) {
       return sourceImage;
     }
@@ -168,7 +169,8 @@ public class RadialDistortionFilter extends Filter {
    *
    * @return the inspector
    */
-  public synchronized JDialog getInspector() {
+  @Override
+public synchronized JDialog getInspector() {
   	Inspector myInspector = inspector;
     if (myInspector==null) {
     	myInspector = new Inspector();
@@ -187,7 +189,8 @@ public class RadialDistortionFilter extends Filter {
   /**
    * Refreshes this filter's GUI
    */
-  public void refresh() {
+  @Override
+public void refresh() {
     super.refresh();
     ableButton.setText(isEnabled()? 
     		MediaRes.getString("Filter.Button.Disable"): //$NON-NLS-1$
@@ -664,7 +667,8 @@ public class RadialDistortionFilter extends Filter {
     void createGUI() {
     	helpButton = new JButton();
     	helpButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
         	String s = MediaRes.getString("RadialDistortionFilter.Help.Message1") //$NON-NLS-1$
 		    			+"\n"+MediaRes.getString("RadialDistortionFilter.Help.Message2") //$NON-NLS-1$ //$NON-NLS-2$
 		    			+"\n"+MediaRes.getString("RadialDistortionFilter.Help.Message3") //$NON-NLS-1$ //$NON-NLS-2$
@@ -690,7 +694,8 @@ public class RadialDistortionFilter extends Filter {
       });
     	colorButton = new JButton();
     	colorButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           // show color chooser dialog with color of this track
           Color newColor = JColorChooser.showDialog(null, 
           		MediaRes.getString("PerspectiveFilter.Dialog.Color.Title"),  //$NON-NLS-1$
@@ -710,7 +715,8 @@ public class RadialDistortionFilter extends Filter {
       sourceTypeDropdown.setSelectedItem(MediaRes.getString("RadialDistortionFilter.ProjectionType."+sourceProjectionType)); //$NON-NLS-1$
       sourceTypeDropdown.setBorder(space);
       sourceTypeDropdown.addItemListener(new ItemListener() {
-      	public void itemStateChanged(ItemEvent e) {
+      	@Override
+		public void itemStateChanged(ItemEvent e) {
       		String desired = sourceTypeDropdown.getSelectedItem().toString();
           String[] types = getProjectionTypeDescriptions();
           for (int i = 0; i<types.length; i++) {
@@ -725,7 +731,8 @@ public class RadialDistortionFilter extends Filter {
       outputTypeDropdown.setSelectedItem(MediaRes.getString("RadialDistortionFilter.ProjectionType."+outputProjectionType)); //$NON-NLS-1$
       outputTypeDropdown.setBorder(space);
       outputTypeDropdown.addItemListener(new ItemListener() {
-      	public void itemStateChanged(ItemEvent e) {
+      	@Override
+		public void itemStateChanged(ItemEvent e) {
       		String desired = outputTypeDropdown.getSelectedItem().toString();
           String[] types = getProjectionTypeDescriptions();
           for (int i = 0; i<types.length; i++) {
@@ -741,7 +748,8 @@ public class RadialDistortionFilter extends Filter {
       sourceAngleSlider = new JSlider(5, 180, 90);
       sourceAngleSlider.setBorder(space);
       sourceAngleSlider.addChangeListener(new ChangeListener() {
-        public void stateChanged(ChangeEvent e) {
+        @Override
+		public void stateChanged(ChangeEvent e) {
           int n = sourceAngleSlider.getValue();
           setSourceFOV(n*Math.PI/180);
         }       
@@ -754,14 +762,16 @@ public class RadialDistortionFilter extends Filter {
     	radiusSlider = new JSlider(rMin, rMax, rFixed);
       radiusSlider.setBorder(space);
       radiusSlider.addChangeListener(new ChangeListener() {
-        public void stateChanged(ChangeEvent e) {
+        @Override
+		public void stateChanged(ChangeEvent e) {
           int i = radiusSlider.getValue();
           i = Math.max(i, lowerRadiusLimit);
           setFixedRadius(i/100.0);         	
         }       
       });
       radiusSlider.addMouseListener(new MouseAdapter() {
-        public void mouseReleased(MouseEvent e) {
+        @Override
+		public void mouseReleased(MouseEvent e) {
         	updateDisplay();
         }
       });
@@ -783,7 +793,8 @@ public class RadialDistortionFilter extends Filter {
       sourceAngleField.setMinValue(5);
       sourceAngleField.setUnits("\u00B0"); //$NON-NLS-1$
       sourceAngleField.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           int n = sourceAngleField.getIntValue();
           setSourceFOV(n*Math.PI/180);
           updateDisplay();
@@ -792,10 +803,12 @@ public class RadialDistortionFilter extends Filter {
 
       });
       sourceAngleField.addFocusListener(new FocusListener() {
-        public void focusGained(FocusEvent e) {
+        @Override
+		public void focusGained(FocusEvent e) {
         	sourceAngleField.selectAll();
         }
-        public void focusLost(FocusEvent e) {
+        @Override
+		public void focusLost(FocusEvent e) {
           int n = sourceAngleField.getIntValue();
           setSourceFOV(n*Math.PI/180);
           updateDisplay();
@@ -814,7 +827,8 @@ public class RadialDistortionFilter extends Filter {
       radiusField.setMinValue(rMin);
       radiusField.setUnits("%"); //$NON-NLS-1$
       radiusField.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
         	int n = radiusField.getIntValue();
           setFixedRadius(n/100.0);
           updateDisplay();
@@ -823,10 +837,12 @@ public class RadialDistortionFilter extends Filter {
 
       });
       radiusField.addFocusListener(new FocusListener() {
-        public void focusGained(FocusEvent e) {
+        @Override
+		public void focusGained(FocusEvent e) {
         	radiusField.selectAll();
         }
-        public void focusLost(FocusEvent e) {
+        @Override
+		public void focusLost(FocusEvent e) {
         	int n = radiusField.getIntValue();
           setFixedRadius(n/100.0);
           updateDisplay();
@@ -985,7 +1001,8 @@ public class RadialDistortionFilter extends Filter {
   	Ellipse2D ellipse = new Ellipse2D.Double(); 
   	Stroke stroke = new BasicStroke(2);
   	
-    public void draw(DrawingPanel panel, Graphics g) {
+    @Override
+	public void draw(DrawingPanel panel, Graphics g) {
     	if (!RadialDistortionFilter.super.isEnabled()) return;
     	VideoPanel vidPanel = (VideoPanel)panel;
     	BufferedImage img = vidPanel.getVideo().getImage();
@@ -1029,7 +1046,8 @@ public class RadialDistortionFilter extends Filter {
      * @param control the control to save to
      * @param obj the filter to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
     	RadialDistortionFilter filter = (RadialDistortionFilter) obj;
     	
     	control.setValue("fixed_radius", filter.fixedRadius); //$NON-NLS-1$
@@ -1052,7 +1070,8 @@ public class RadialDistortionFilter extends Filter {
      * @param control the control
      * @return the new filter
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new RadialDistortionFilter();
     }
 
@@ -1063,7 +1082,8 @@ public class RadialDistortionFilter extends Filter {
      * @param obj the filter
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       final RadialDistortionFilter filter = (RadialDistortionFilter) obj;
       
       filter.setFixedRadius(control.getDouble("fixed_radius")); //$NON-NLS-1$

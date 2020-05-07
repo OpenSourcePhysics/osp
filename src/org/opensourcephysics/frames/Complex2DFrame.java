@@ -124,7 +124,8 @@ public class Complex2DFrame extends DrawingFrame {
   /**
    * Adds Views menu items on the menu bar.
    */
-  protected void addMenuItems() {
+  @Override
+protected void addMenuItems() {
     JMenuBar menuBar = getJMenuBar();
     if(menuBar==null) {
       return;
@@ -147,7 +148,8 @@ public class Complex2DFrame extends DrawingFrame {
     menubarGroup.add(gridItem);
     gridItem.setSelected(true);
     ActionListener actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToGridPlot();
       }
 
@@ -158,7 +160,8 @@ public class Complex2DFrame extends DrawingFrame {
     surfaceItem = new JRadioButtonMenuItem(DisplayRes.getString("2DFrame.MenuItem.SurfacePlot")); //$NON-NLS-1$
     menubarGroup.add(surfaceItem);
     actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToSurfacePlot();
       }
 
@@ -169,7 +172,8 @@ public class Complex2DFrame extends DrawingFrame {
     interpolatedItem = new JRadioButtonMenuItem(DisplayRes.getString("2DFrame.MenuItem.InterpolatedPlot")); //$NON-NLS-1$
     menubarGroup.add(interpolatedItem);
     actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToInterpolatedPlot();
       }
 
@@ -180,7 +184,8 @@ public class Complex2DFrame extends DrawingFrame {
     menu.addSeparator();
     JMenuItem legendItem = new JMenuItem(DisplayRes.getString("GUIUtils.PhaseLegend")); //$NON-NLS-1$
     actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         ComplexColorMapper.showPhaseLegend();
       }
 
@@ -191,7 +196,8 @@ public class Complex2DFrame extends DrawingFrame {
     JMenuItem tableItem = new JMenuItem(DisplayRes.getString("DrawingFrame.DataTable_menu_item")); //$NON-NLS-1$
     tableItem.setAccelerator(KeyStroke.getKeyStroke('T', MENU_SHORTCUT_KEY_MASK));
     actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         showDataTable(true);
       }
 
@@ -211,7 +217,8 @@ public class Complex2DFrame extends DrawingFrame {
    *
    * @return the list
    */
-  public synchronized ArrayList<Drawable> getDrawables() {
+  @Override
+public synchronized ArrayList<Drawable> getDrawables() {
 	  return super.getDrawablesExcept(null, plot);
   }
 
@@ -225,14 +232,16 @@ public class Complex2DFrame extends DrawingFrame {
    *
    * @see #getObjectOfClass(Class c)
    */
-  public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
+  @Override
+public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
 	return getDrawablesExcept(c, plot);
   }
 
   /**
    * Removes drawable objects added by the user from this frame.
    */
-  public void clearDrawables() {
+  @Override
+public void clearDrawables() {
     drawingPanel.clear(); // removes all drawables
     drawingPanel.addDrawable(plot);
   }
@@ -240,7 +249,8 @@ public class Complex2DFrame extends DrawingFrame {
   /**
    * Clears data by setting the scalar field to zero.
    */
-  public void clearData() {
+  @Override
+public void clearData() {
     if(gridData!=null) {
       setAll(new double[2][gridData.getNx()][gridData.getNy()]);
     }

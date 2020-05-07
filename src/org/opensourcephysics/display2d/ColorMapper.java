@@ -462,7 +462,8 @@ public class ColorMapper {
      * @param control XMLControl
      * @param obj Object
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       ColorMapper mapper = (ColorMapper) obj;
       control.setValue("palette type", mapper.paletteType);   //$NON-NLS-1$
       control.setValue("number of colors", mapper.numColors); //$NON-NLS-1$
@@ -480,7 +481,8 @@ public class ColorMapper {
      * @param control XMLControl
      * @return Object
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ColorMapper(100, -1, 1, ColorMapper.SPECTRUM);
     }
 
@@ -490,7 +492,8 @@ public class ColorMapper {
      * @param obj Object
      * @return Object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       ColorMapper mapper = (ColorMapper) obj;
       int paletteType = control.getInt("palette type");   //$NON-NLS-1$
       int numColors = control.getInt("number of colors"); //$NON-NLS-1$

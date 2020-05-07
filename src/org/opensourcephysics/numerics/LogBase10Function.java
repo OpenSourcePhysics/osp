@@ -12,14 +12,16 @@ package org.opensourcephysics.numerics;
  *
 */
 public final class LogBase10Function implements InvertibleFunction {
-  public final double evaluate(double x) {
+  @Override
+public final double evaluate(double x) {
     if(x<=0) {
       x = Float.MIN_VALUE;
     }
     return Math.log(x)/Util.LOG10;
   }
 
-  public final double getInverse(double y) {
+  @Override
+public final double getInverse(double y) {
     return Math.pow(10, y);
   }
 

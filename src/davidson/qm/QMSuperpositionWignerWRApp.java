@@ -23,10 +23,12 @@ public class QMSuperpositionWignerWRApp extends QMSuperpositionWignerApp {
   /**
    * Switch to the App user interface.
    */
-  public void switchGUI() {
+  @Override
+public void switchGUI() {
     stopAnimation();
     Runnable runner = new Runnable() {
-      public synchronized void run() {
+      @Override
+	public synchronized void run() {
         OSPRuntime.disableAllDrawing = true;
         EjsControlFrame ejsFrame = ((EjsControlFrame) control);
         control.setValue("time", 0);
@@ -57,12 +59,14 @@ public class QMSuperpositionWignerWRApp extends QMSuperpositionWignerApp {
     t.start();
   }
 
-  void customize() {
+  @Override
+void customize() {
 	QMWignerControl c = (QMWignerControl) control;
     JMenu menu = c.getMainFrame().getMenu("Display");
     JMenuItem item = new JMenuItem("Switch GUI");
     item.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         switchGUI();
       }
 
@@ -87,7 +91,8 @@ public class QMSuperpositionWignerWRApp extends QMSuperpositionWignerApp {
     GUIUtils.repaintOSPFrames();
   }
 
-  public void doStep() {
+  @Override
+public void doStep() {
     super.doStep();
     control.setValue("time", time);
   }

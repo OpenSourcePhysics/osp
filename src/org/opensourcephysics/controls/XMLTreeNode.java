@@ -99,7 +99,8 @@ public class XMLTreeNode extends DefaultMutableTreeNode {
    *
    * @return the display name of the node
    */
-  public String toString() {
+  @Override
+public String toString() {
     // return the child "name" property of a control element, if any
     if(prop instanceof XMLControl) {
       XMLControl control = (XMLControl) prop;

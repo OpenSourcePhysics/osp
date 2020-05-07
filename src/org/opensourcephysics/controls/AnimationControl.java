@@ -10,7 +10,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
 import javax.swing.JButton;
-import javax.swing.SwingUtilities;
 import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPRuntime;
 
@@ -67,7 +66,8 @@ public class AnimationControl extends OSPControl {
   /**
    * Refreshes the user interface in response to display changes such as Language.
    */
-  protected void refreshGUI() {
+  @Override
+protected void refreshGUI() {
     super.refreshGUI();
     resetToolTipText = ControlsRes.ANIMATION_RESET_TIP;
     initToolTipText = ControlsRes.ANIMATION_INIT_TIP;
@@ -107,7 +107,8 @@ public class AnimationControl extends OSPControl {
   /**
    * Disposes all resources.
    */
-  public void dispose() {
+  @Override
+public void dispose() {
     if(model instanceof AbstractAnimation) {
       // stops the animation
       ((AbstractAnimation) model).animationThread = null;
@@ -125,13 +126,15 @@ public class AnimationControl extends OSPControl {
    *
    * @param  message
    */
-  public void calculationDone(final String message) {
+  @Override
+public void calculationDone(final String message) {
     // always update a Swing component from the event thread
     if(model instanceof Animation) {
       ((Animation) model).stopAnimation();
     }
     OSPRuntime.dispatchEventWait(new Runnable() {
-      public void run() {
+      @Override
+	public void run() {
         startBtnActionPerformed(new ActionEvent(this, 0, stopText));
         resetBtnActionPerformed(new ActionEvent(this, 0, newText));
         resetBtn.setEnabled(true);
@@ -247,7 +250,8 @@ public class AnimationControl extends OSPControl {
      *
      * @param e
      */
-    public void actionPerformed(ActionEvent e) {
+    @Override
+	public void actionPerformed(ActionEvent e) {
       startBtnActionPerformed(e);
     }
 
@@ -262,7 +266,8 @@ public class AnimationControl extends OSPControl {
      *
      * @param e
      */
-    public void actionPerformed(ActionEvent e) {
+    @Override
+	public void actionPerformed(ActionEvent e) {
       resetBtnActionPerformed(e);
     }
 
@@ -277,7 +282,8 @@ public class AnimationControl extends OSPControl {
      *
      * @param e
      */
-    public void actionPerformed(ActionEvent e) {
+    @Override
+	public void actionPerformed(ActionEvent e) {
       stepBtnActionPerformed(e);
     }
 
@@ -302,7 +308,8 @@ public class AnimationControl extends OSPControl {
      * @param control the control to save to
      * @param obj the object to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       AnimationControl ac = (AnimationControl) obj;
       if(ac.startBtn.getText().equals(ac.stopText)) {
         ac.startBtn.doClick(); // stop the animation if it is running
@@ -317,7 +324,8 @@ public class AnimationControl extends OSPControl {
      * @param control the control
      * @return the newly created object
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new AnimationControl(null);
     }
 
@@ -328,7 +336,8 @@ public class AnimationControl extends OSPControl {
      * @param obj the object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       AnimationControl ac = (AnimationControl) obj;
       if(ac.startBtn.getText().equals(ac.stopText)) {
         ac.startBtn.doClick(); // stop the animation if it is running

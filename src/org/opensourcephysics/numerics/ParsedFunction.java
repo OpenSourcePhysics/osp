@@ -52,7 +52,8 @@ public final class ParsedFunction implements Function {
    *
    * @return the value of the function
    */
-  public double evaluate(double x) {
+  @Override
+public double evaluate(double x) {
     return function.evaluate(x);
   }
 
@@ -61,7 +62,8 @@ public final class ParsedFunction implements Function {
    *
    * @return the string
    */
-  public String toString() {
+  @Override
+public String toString() {
     return "f(x) = "+fStr; //$NON-NLS-1$
   }
 

@@ -21,7 +21,8 @@ public class QMSuperpositionWignerApp extends QMSuperpositionApp {
     wigner.wignerFrame.setTitle("Wigner Function");
   }
 
-  void setValues() {
+  @Override
+void setValues() {
   control.setValue("numpts", 48);
   control.setValue("gutter points", 24);        // number of extra points
   control.setValue("psi range", 1.0);
@@ -43,7 +44,8 @@ public class QMSuperpositionWignerApp extends QMSuperpositionApp {
 }
 
 
-  public void initializeAnimation() {
+  @Override
+public void initializeAnimation() {
     super.initializeAnimation();
     wigner.decimalFormat=sciFormat;
     wigner.prange=control.getDouble("p range");
@@ -51,7 +53,8 @@ public class QMSuperpositionWignerApp extends QMSuperpositionApp {
     wigner.initialize(superposition, control.getInt("gutter points"));
   }
 
-  public void doStep() {
+  @Override
+public void doStep() {
     super.doStep();
     if(dataPanel!=null && showDataPanelTime) {
         dataPanel.setMessage("t="+sciFormat.format(time));
@@ -63,10 +66,12 @@ public class QMSuperpositionWignerApp extends QMSuperpositionApp {
   /**
    * Switch to the WRApp user interface.
    */
-  public void switchGUI() {
+  @Override
+public void switchGUI() {
     stopAnimation();
     Runnable runner = new Runnable() {
-      public synchronized void run() {
+      @Override
+	public synchronized void run() {
         OSPRuntime.disableAllDrawing=true;
         ControlFrame controlFrame = ( (ControlFrame) control);
         XMLControlElement xml = new XMLControlElement(controlFrame.getOSPApp());
@@ -94,7 +99,8 @@ public class QMSuperpositionWignerApp extends QMSuperpositionApp {
     t.start();
   }
   
-  void customize() {
+  @Override
+void customize() {
 	  super.customize();
 	  addChildFrame(wigner.wignerFrame);
   }

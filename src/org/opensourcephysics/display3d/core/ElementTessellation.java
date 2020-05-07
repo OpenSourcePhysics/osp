@@ -32,13 +32,15 @@ public interface ElementTessellation extends Element {
   // XML loader
   // ----------------------------------------------------
   static abstract class Loader extends Element.Loader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       super.saveObject(control, obj);
       ElementTessellation element = (ElementTessellation) obj;
       control.setValue("tiles", element.getTiles()); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       ElementTessellation element = (ElementTessellation) obj;
       element.setTiles((double[][][]) control.getObject("tiles")); //$NON-NLS-1$

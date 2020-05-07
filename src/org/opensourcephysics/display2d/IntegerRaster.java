@@ -162,7 +162,8 @@ public class IntegerRaster extends MeasuredImage implements Dimensioned {
    * @param panel
    * @return the dimension
    */
-  public Dimension getInterior(DrawingPanel panel) {
+  @Override
+public Dimension getInterior(DrawingPanel panel) {
     float availableWidth = panel.getWidth()-panel.getLeftGutter()-panel.getRightGutter()-1;
     float availableHeight = panel.getHeight()-panel.getTopGutter()-panel.getBottomGutter()-1;
     scaleFactor = Math.min(availableWidth/dimension.width, availableHeight/dimension.height);
@@ -178,7 +179,8 @@ public class IntegerRaster extends MeasuredImage implements Dimensioned {
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(scaleFactor<1) {
       g.drawImage(image.getScaledInstance((int) (scaleFactor*image.getWidth()), (int) (scaleFactor*image.getHeight()), java.awt.Image.SCALE_REPLICATE), panel.getLeftGutter(), panel.getTopGutter(), panel);
     } else {

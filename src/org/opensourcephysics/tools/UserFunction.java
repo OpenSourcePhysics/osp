@@ -7,21 +7,20 @@
 
 package org.opensourcephysics.tools;
 
-import java.util.TreeMap;
-
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
 import org.opensourcephysics.numerics.MultiVarFunction;
 import org.opensourcephysics.numerics.ParsedMultiVarFunction;
 import org.opensourcephysics.numerics.ParserException;
+import org.opensourcephysics.tools.FunctionEditor.FObject;
 
 /**
  * A known function for which the expression and parameters are user-editable.
  *
  * @author Douglas Brown
  */
-public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable {
+public class UserFunction implements FObject, KnownFunction, MultiVarFunction, Cloneable {
 	// static constants
 	protected final static String[] dummyVars = { "'", "@", //$NON-NLS-1$ //$NON-NLS-2$
 			"`", "~", "#" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -87,6 +86,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 	 *
 	 * @return the name
 	 */
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -96,6 +96,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 	 *
 	 * @param name the name
 	 */
+	@Override
 	public void setName(String name) {
 		if (!isNameEditable()) {
 			return;
@@ -170,6 +171,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 	 * @param indepVarName the name of the independent variable
 	 * @return the expression
 	 */
+	@Override
 	public String getExpression(String indepVarName) {
 		vars = new String[] { indepVarName };
 		return getExpression();
@@ -194,7 +196,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 	 * @return the expression
 	 */
 	public String getFullExpression(String[] varNames) {
-		String s = getExpression(varNames);
+		String s = padNames(getExpression(varNames));
 		for (int i = 0, n = references.length; i < n; i++) {
 			UserFunction f = references[i];
 			s = replaceAllWords(s, f.getName(), "(" + f.getFullExpression(varNames) + ")"); //$NON-NLS-1$//$NON-NLS-2$
@@ -303,6 +305,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 	 * 
 	 * @return the number of parameters
 	 */
+	@Override
 	public int getParameterCount() {
 		return paramNames.length;
 	}
@@ -313,6 +316,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 	 * @param i the parameter index
 	 * @return the name of the parameter
 	 */
+	@Override
 	public String getParameterName(int i) {
 		return paramNames[i];
 	}
@@ -323,6 +327,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 	 * @param i the parameter index
 	 * @return the value of the parameter
 	 */
+	@Override
 	public double getParameterValue(int i) {
 		return paramValues[i];
 	}
@@ -333,6 +338,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 	 * @param i     the parameter index
 	 * @param value the value
 	 */
+	@Override
 	public void setParameterValue(int i, double value) {
 		paramValues[i] = value;
 	}
@@ -355,6 +361,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 	 * @param values       the parameter values
 	 * @param descriptions the parameter descriptions
 	 */
+	@Override
 	public void setParameters(String[] names, double[] values, String[] descriptions) {
 		paramNames = names;
 		paramValues = values;
@@ -388,6 +395,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 	 *
 	 * @return the description
 	 */
+	@Override
 	public String getDescription() {
 		return description;
 	}
@@ -397,6 +405,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 	 *
 	 * @param desc the description
 	 */
+	@Override
 	public void setDescription(String desc) {
 		description = desc;
 	}
@@ -407,6 +416,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 	 * @param i the parameter index
 	 * @return the description of the parameter (may be null)
 	 */
+	@Override
 	public String getParameterDescription(int i) {
 		if (i >= paramDescriptions.length)
 			return null;
@@ -428,6 +438,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 	 * @param x
 	 * @return f(x)
 	 */
+	@Override
 	public double evaluate(double x) {
 		if (myFunction == null) {
 			return Double.NaN;
@@ -452,6 +463,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 	 * @param x
 	 * @return f(x)
 	 */
+	@Override
 	public double evaluate(double[] x) {
 		if (myFunction == null) {
 			return Double.NaN;
@@ -488,6 +500,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 	 *
 	 * @return the clone
 	 */
+	@Override
 	public UserFunction clone() {
 		UserFunction f = new UserFunction(name);
 		f.setDescription(description);
@@ -558,7 +571,8 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 	 * @return the modified expression, or null if failed
 	 */
 	protected String replaceParameterNameInExpression(String oldName, String newName) {
-		String exp = replaceAllWords(getInputString(), oldName, newName);
+		String exp = replaceAllWords(padNames(getInputString()), oldName, newName);
+		return (exp != null && setExpression(exp, getIndependentVariables()) ? exp : null);
 
 //		String[] varNames = getIndependentVariables();
 //		TreeMap<String, String> replacements = new TreeMap<String, String>();
@@ -574,28 +588,34 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 //			exp = replaceAllWords(exp, key, replacements.get(key));
 //		}
 //		
-		return (exp != null && setExpression(exp, getIndependentVariables()) ? exp : null);
 	}
 
+	static String padNames(String exp) {
+		return exp.replaceAll("([A-Za-z_]\\w*)", " $1 ");
+
+	}
+	
+    static String unpadNames(String paddedExp) {
+		return paddedExp.replaceAll(" ", "");
+	}
 	/**
 	 * Safe replaceAll for expressions.
 	 * 
 	 * Pad full words (starting with a letter or _ and continuing with letter,
 	 * number, or _) with spaces, replace full words, remove all spaces.
 	 * 
-	 * @param exp
+	 * @param paddedExp
 	 * @param key
 	 * @param rep
 	 * @return
 	 */
-	private static String replaceAllWords(String exp, String key, String rep) {
-		// add padding around all names
-		exp = exp.replaceAll("([A-Za-z_]\\w*)", " $1 ");
+	private static String replaceAllWords(String paddedExp, String key, String rep) {
 		// replace full words
-		exp = exp.replaceAll(" " + key + " ", " " + rep + " ");
-		// remove padding
-		exp = exp.replaceAll(" ", "");
-		return exp;
+		return paddedExp.replaceAll(" " + key + " ", " " + rep + " ");
+	}
+
+	public static boolean containsWord(String paddedExp, String key) {
+		return (paddedExp.indexOf(" " + key + " ") >= 0);
 	}
 
 // BH not necessary if using full-word RegExp replacement?
@@ -648,6 +668,7 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 	 * A class to save and load UserFunction data in an XMLControl.
 	 */
 	protected static class Loader extends XMLLoader {
+		@Override
 		public void saveObject(XMLControl control, Object obj) {
 			UserFunction f = (UserFunction) obj;
 			control.setValue("name", f.getName()); //$NON-NLS-1$
@@ -663,11 +684,13 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 			}
 		}
 
+		@Override
 		public Object createObject(XMLControl control) {
 			String name = control.getString("name"); //$NON-NLS-1$
 			return new UserFunction(name);
 		}
 
+		@Override
 		public Object loadObject(XMLControl control, Object obj) {
 			UserFunction f = (UserFunction) obj;
 			f.setName(control.getString("name")); //$NON-NLS-1$
@@ -696,8 +719,9 @@ public class UserFunction implements KnownFunction, MultiVarFunction, Cloneable 
 
 	}
 
+	@Override
 	public String toString() {
-		return "[UserFunction " + myFunction.toString() + "]";
+		return "[UserFunction " + name + " = " + myFunction.toString() + "]";
 	}
 }
 

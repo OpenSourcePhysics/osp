@@ -59,7 +59,8 @@ public class JSMovieVideoType extends MovieVideoType {
    *
    * @return a description
    */
-  public String getDescription() {
+  @Override
+public String getDescription() {
   	if (singleTypeFilter!=null)
   		return singleTypeFilter.getDescription();
     return MediaRes.getString("JSVideoType.Description"); //$NON-NLS-1$
@@ -71,7 +72,8 @@ public class JSMovieVideoType extends MovieVideoType {
    * @param video the video
    * @return true if the video is this type
    */
-  public boolean isType(Video video) {
+  @Override
+public boolean isType(Video video) {
   	if (!(video.getClass() == JSMovieVideo.class)) return false;
   	if (singleTypeFilter==null) return true;
   	String name = (String)video.getProperty("name"); //$NON-NLS-1$

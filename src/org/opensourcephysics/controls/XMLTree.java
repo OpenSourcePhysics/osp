@@ -155,7 +155,8 @@ public class XMLTree {
    * A cell renderer to show launchable nodes.
    */
   private class HighlightRenderer extends DefaultTreeCellRenderer {
-    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+    @Override
+	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
       super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
       XMLTreeNode node = (XMLTreeNode) value;
       XMLProperty prop = node.getProperty();

@@ -74,9 +74,11 @@ public interface Style {
   // XML loader
   // ----------------------------------------------------
   static abstract class Loader extends XMLLoader {
-    abstract public Object createObject(XMLControl control);
+    @Override
+	abstract public Object createObject(XMLControl control);
 
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       Style style = (Style) obj;
       control.setValue("line color", style.getLineColor());      //$NON-NLS-1$
       control.setValue("line width", style.getLineWidth());      //$NON-NLS-1$
@@ -86,7 +88,8 @@ public interface Style {
       control.setValue("drawing lines", style.isDrawingLines()); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       Style style = (Style) obj;
       style.setLineColor((Color) control.getObject("line color"));                                            //$NON-NLS-1$
       style.setLineWidth((float) control.getDouble("line width"));                                            //$NON-NLS-1$

@@ -109,7 +109,8 @@ public interface KnownFunction extends Function {
    * @param f the Object to test
    * @return true if equal
    */
-  public boolean equals(Object f);
+  @Override
+public boolean equals(Object f);
 
 }
 

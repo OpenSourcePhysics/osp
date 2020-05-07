@@ -29,7 +29,8 @@ public abstract class ControlDrawablesParent extends ControlSwingElement impleme
     super(_visual);
   }
 
-  public void update() { // Ensure it will be updated
+  @Override
+public void update() { // Ensure it will be updated
     // First prepare children that need to do something
     for(Enumeration<NeedsPreUpdate> e = preupdateList.elements(); e.hasMoreElements(); ) {
       e.nextElement().preupdate();

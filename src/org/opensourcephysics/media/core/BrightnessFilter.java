@@ -163,7 +163,8 @@ public class BrightnessFilter extends Filter {
    * @param sourceImage the source image
    * @return the filtered image
    */
-  public BufferedImage getFilteredImage(BufferedImage sourceImage) {
+  @Override
+public BufferedImage getFilteredImage(BufferedImage sourceImage) {
     if(!isEnabled()) {
       return sourceImage;
     }
@@ -182,7 +183,8 @@ public class BrightnessFilter extends Filter {
    *
    * @return the inspector
    */
-  public synchronized JDialog getInspector() {
+  @Override
+public synchronized JDialog getInspector() {
   	Inspector myInspector = inspector;
     if (myInspector==null) {
     	myInspector = new Inspector();
@@ -200,7 +202,8 @@ public class BrightnessFilter extends Filter {
   /**
    * Clears this filter
    */
-  public void clear() {
+  @Override
+public void clear() {
     setBrightness(defaultBrightness);
     setContrast(defaultContrast);
     if(inspector!=null) {
@@ -211,7 +214,8 @@ public class BrightnessFilter extends Filter {
   /**
    * Refreshes this filter's GUI
    */
-  public void refresh() {
+  @Override
+public void refresh() {
     super.refresh();
     brightnessLabel.setText(MediaRes.getString("Filter.Brightness.Label.Brightness"));           //$NON-NLS-1$
     brightnessSlider.setToolTipText(MediaRes.getString("Filter.Brightness.ToolTip.Brightness")); //$NON-NLS-1$
@@ -340,7 +344,8 @@ public class BrightnessFilter extends Filter {
       brightnessField.setMaxValue(128);
       brightnessField.setMinValue(-128);
       brightnessField.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           setBrightness(brightnessField.getIntValue());
           updateDisplay();
           brightnessField.selectAll();
@@ -348,10 +353,12 @@ public class BrightnessFilter extends Filter {
 
       });
       brightnessField.addFocusListener(new FocusListener() {
-        public void focusGained(FocusEvent e) {
+        @Override
+		public void focusGained(FocusEvent e) {
           brightnessField.selectAll();
         }
-        public void focusLost(FocusEvent e) {
+        @Override
+		public void focusLost(FocusEvent e) {
           setBrightness(brightnessField.getIntValue());
           updateDisplay();
         }
@@ -362,7 +369,8 @@ public class BrightnessFilter extends Filter {
       brightnessSlider.setMinimum(-128);
       brightnessSlider.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
       brightnessSlider.addChangeListener(new ChangeListener() {
-        public void stateChanged(ChangeEvent e) {
+        @Override
+		public void stateChanged(ChangeEvent e) {
           int i = brightnessSlider.getValue();
           if(i!=getBrightness()) {
             setBrightness(i);
@@ -377,7 +385,8 @@ public class BrightnessFilter extends Filter {
       contrastField.setMaxValue(100);
       contrastField.setMinValue(0);
       contrastField.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           setContrast(contrastField.getValue());
           updateDisplay();
           contrastField.selectAll();
@@ -385,10 +394,12 @@ public class BrightnessFilter extends Filter {
 
       });
       contrastField.addFocusListener(new FocusListener() {
-        public void focusGained(FocusEvent e) {
+        @Override
+		public void focusGained(FocusEvent e) {
           contrastField.selectAll();
         }
-        public void focusLost(FocusEvent e) {
+        @Override
+		public void focusLost(FocusEvent e) {
           setContrast(contrastField.getValue());
           updateDisplay();
         }
@@ -398,7 +409,8 @@ public class BrightnessFilter extends Filter {
       contrastSlider.setMaximum(100);
       contrastSlider.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
       contrastSlider.addChangeListener(new ChangeListener() {
-        public void stateChanged(ChangeEvent e) {
+        @Override
+		public void stateChanged(ChangeEvent e) {
           int i = contrastSlider.getValue();
           if(i!=(int) getContrast()) {
             setContrast(i);
@@ -485,7 +497,8 @@ public class BrightnessFilter extends Filter {
      * @param control the control to save to
      * @param obj the filter to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       BrightnessFilter filter = (BrightnessFilter) obj;
       control.setValue("brightness", filter.getBrightness()); //$NON-NLS-1$
       control.setValue("contrast", filter.getContrast());     //$NON-NLS-1$
@@ -503,7 +516,8 @@ public class BrightnessFilter extends Filter {
      * @param control the control
      * @return the new filter
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new BrightnessFilter();
     }
 
@@ -514,7 +528,8 @@ public class BrightnessFilter extends Filter {
      * @param obj the filter
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       final BrightnessFilter filter = (BrightnessFilter) obj;
       if(control.getPropertyNames().contains("brightness")) { //$NON-NLS-1$
         filter.setBrightness(control.getInt("brightness"));   //$NON-NLS-1$

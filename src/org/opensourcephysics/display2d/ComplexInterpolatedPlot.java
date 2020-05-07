@@ -71,7 +71,8 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
    * @param x double the coordinate
    * @return int the index
    */
-  public int xToIndex(double x) {
+  @Override
+public int xToIndex(double x) {
     return griddata.xToIndex(x);
   }
 
@@ -81,7 +82,8 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
    * @param y double the coordinate
    * @return int the index
    */
-  public int yToIndex(double y) {
+  @Override
+public int yToIndex(double y) {
     return griddata.yToIndex(y);
   }
 
@@ -91,7 +93,8 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
    * @param i int
    * @return double the x coordinate
    */
-  public double indexToX(int i) {
+  @Override
+public double indexToX(int i) {
     return griddata.indexToX(i);
   }
 
@@ -101,7 +104,8 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
    * @param i int
    * @return double the y coordinate
    */
-  public double indexToY(int i) {
+  @Override
+public double indexToY(int i) {
     return griddata.indexToY(i);
   }
 
@@ -112,7 +116,8 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
    *
    * @param obj
    */
-  public void setAll(Object obj) {
+  @Override
+public void setAll(Object obj) {
     double[][][] val = (double[][][]) obj;
     copyComplexData(val);
     update();
@@ -129,7 +134,8 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
    * @param ymin double
    * @param ymax double
    */
-  public void setAll(Object obj, double xmin, double xmax, double ymin, double ymax) {
+  @Override
+public void setAll(Object obj, double xmin, double xmax, double ymin, double ymax) {
     double[][][] val = (double[][][]) obj;
     copyComplexData(val);
     if(griddata.isCellData()) {
@@ -166,7 +172,8 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
    * Gets the GridData object.
    * @return GridData
    */
-  public GridData getGridData() {
+  @Override
+public GridData getGridData() {
     return griddata;
   }
 
@@ -175,7 +182,8 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
    *
    * @param _griddata the new data storage
    */
-  public void setGridData(GridData _griddata) {
+  @Override
+public void setGridData(GridData _griddata) {
     griddata = _griddata;
     if(griddata==null) {
       return;
@@ -199,7 +207,8 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
    *
    * @param indexes the sample-component indexes
    */
-  public void setIndexes(int[] indexes) {
+  @Override
+public void setIndexes(int[] indexes) {
     ampIndex = indexes[0];
     reIndex = indexes[1];
     imIndex = indexes[2];
@@ -238,7 +247,8 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
    * @param floor
    * @param ceil
    */
-  public void setAutoscaleZ(boolean isAutoscale, double floor, double ceil) {
+  @Override
+public void setAutoscaleZ(boolean isAutoscale, double floor, double ceil) {
     setAutoscaleZ(isAutoscale, ceil);
   }
   
@@ -248,14 +258,16 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
    *
    * @param symmetric
    */
-  public void setSymmetricZ(boolean symmetric){
+  @Override
+public void setSymmetricZ(boolean symmetric){
 	  
   }
   
   /**
    * Gets the symmetric z flag.  
    */
-  public boolean isSymmetricZ(){
+  @Override
+public boolean isSymmetricZ(){
 	  return false;
   }
 
@@ -264,7 +276,8 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
    *
    * @return boolean
    */
-  public boolean isAutoscaleZ() {
+  @Override
+public boolean isAutoscaleZ() {
     return autoscaleZ;
   }
 
@@ -272,7 +285,8 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
    * Gets the floor for scaling the z data.
    * @return double
    */
-  public double getFloor() {
+  @Override
+public double getFloor() {
     return 0;
   }
 
@@ -280,7 +294,8 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
    * Gets the ceiling for scaling the z data.
    * @return double
    */
-  public double getCeiling() {
+  @Override
+public double getCeiling() {
     return colorMap.getCeil();
   }
 
@@ -290,7 +305,8 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
    * @param floorColor
    * @param ceilColor
    */
-  public void setFloorCeilColor(Color floorColor, Color ceilColor) {
+  @Override
+public void setFloorCeilColor(Color floorColor, Color ceilColor) {
     colorMap.setCeilColor(ceilColor);
   }
 
@@ -299,7 +315,8 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
    *
    * @param  showGrid
    */
-  public void setShowGridLines(boolean showGrid) {
+  @Override
+public void setShowGridLines(boolean showGrid) {
     grid.setVisible(showGrid);
   }
 
@@ -308,14 +325,16 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
    *
    * @param  c
    */
-  public void setGridLineColor(Color c) {
+  @Override
+public void setGridLineColor(Color c) {
     grid.setColor(c);
   }
 
   /**
    * Updates the buffered image using the data array.
    */
-  public synchronized void update() {
+  @Override
+public synchronized void update() {
     if(autoscaleZ&&(griddata!=null)) {
       griddata.getZRange(ampIndex, minmax);
       colorMap.setScale(minmax[1]);
@@ -329,7 +348,8 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
  * @param expanded boolean
  * @param expansionFactor double
  */
-  public void setExpandedZ(boolean expanded, double expansionFactor) {
+  @Override
+public void setExpandedZ(boolean expanded, double expansionFactor) {
     if(expanded&&(expansionFactor>0)) {
       ZExpansion zMap = new ZExpansion(expansionFactor);
       colorMap.setZMap(zMap);
@@ -497,7 +517,8 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
    * Not implemented.   Only one palette type.
    * @param type
    */
-  public void setPaletteType(int type) {
+  @Override
+public void setPaletteType(int type) {
     // Not implemented.   Only one palette type.
   }
 
@@ -506,18 +527,21 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
    * Not implemented.   Color always maps to phase.
    * @param colors
    */
-  public void setColorPalette(Color[] colors) {
+  @Override
+public void setColorPalette(Color[] colors) {
     // Not implemented.   Color always maps to phase.
   }
 
   /**
    * Shows a legend of phase angle and color.
    */
-  public JFrame showLegend() {
+  @Override
+public JFrame showLegend() {
     return colorMap.showLegend();
   }
 
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return true; // image will always be created
   }
 
@@ -526,7 +550,8 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
    * @param panel
    * @param g
    */
-  public synchronized void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public synchronized void draw(DrawingPanel panel, Graphics g) {
     if(!visible||(griddata==null)) {
       return;
     }
@@ -545,7 +570,8 @@ public class ComplexInterpolatedPlot extends MeasuredImage implements Plot2D {
    */
   public static XML.ObjectLoader getLoader() {
     return new Plot2DLoader() {
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
         return new ComplexInterpolatedPlot(null);
       }
 

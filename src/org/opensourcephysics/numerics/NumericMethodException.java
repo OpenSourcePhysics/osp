@@ -53,7 +53,8 @@ public final class NumericMethodException extends RuntimeException {
    *
    *
    */
-  public String getMessage() {
+  @Override
+public String getMessage() {
     return super.getMessage()+"\n error code="+error_code+"  error value="+error_value; //$NON-NLS-1$ //$NON-NLS-2$
   }
 

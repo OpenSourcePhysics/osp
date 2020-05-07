@@ -49,7 +49,8 @@ public class OSPControlTable extends XMLTable implements Control {
    *
    * @param lock boolean
    */
-  public void setLockValues(boolean lock) {
+  @Override
+public void setLockValues(boolean lock) {
     tableModel.control.setLockValues(lock);
     lockValues = lock;
     if(!lockValues) {
@@ -63,7 +64,8 @@ public class OSPControlTable extends XMLTable implements Control {
    * @param  par  the parameter name
    * @param  val  the initial parameter value
    */
-  public void setValue(String par, Object val) {
+  @Override
+public void setValue(String par, Object val) {
     if(getBackgroundColor(par)==ERROR_COLOR) {
       setBackgroundColor(par, Color.WHITE);
     }
@@ -91,7 +93,8 @@ public class OSPControlTable extends XMLTable implements Control {
    * @param  par  the parameter name
    * @param  val  the initial parameter value
    */
-  public void setValue(String par, double val) {
+  @Override
+public void setValue(String par, double val) {
     if(format==null) {
       setValue(par, Double.toString(val));
     } else {
@@ -108,12 +111,14 @@ public class OSPControlTable extends XMLTable implements Control {
    * @param  par  the parameter name
    * @param  val  the initial parameter value
    */
-  public void setValue(String par, int val) {
+  @Override
+public void setValue(String par, int val) {
     setValue(par, Integer.toString(val));
     valueCache.put(par, new Double(val)); // store last good value
   }
 
-  public void setValue(String par, boolean val) {
+  @Override
+public void setValue(String par, boolean val) {
     if(getBackgroundColor(par)==ERROR_COLOR) {
       setBackgroundColor(par, Color.WHITE);
     }
@@ -126,7 +131,8 @@ public class OSPControlTable extends XMLTable implements Control {
    * @param  par
    * @return int the value of of the parameter
    */
-  public int getInt(String par) {
+  @Override
+public int getInt(String par) {
     String str = tableModel.control.getString(par);
     if(str==null) {
       str = getObject(par).toString();
@@ -209,7 +215,8 @@ public class OSPControlTable extends XMLTable implements Control {
    * @param    par String the parameter key
    * @return   double the value of of the parameter
    */
-  public double getDouble(String par) {
+  @Override
+public double getDouble(String par) {
     String str = tableModel.control.getString(par);
     if(str==null) {
       str = getObject(par).toString();
@@ -262,19 +269,23 @@ public class OSPControlTable extends XMLTable implements Control {
    * @param  par
    * @return the object
    */
-  public Object getObject(String par) throws UnsupportedOperationException {
+  @Override
+public Object getObject(String par) throws UnsupportedOperationException {
     return tableModel.control.getObject(par);
   }
 
-  public String getString(String par) {
+  @Override
+public String getString(String par) {
     return tableModel.control.getString(par);
   }
 
-  public boolean getBoolean(String par) {
+  @Override
+public boolean getBoolean(String par) {
     return tableModel.control.getBoolean(par);
   }
 
-  public Collection<String> getPropertyNames() {
+  @Override
+public Collection<String> getPropertyNames() {
     return tableModel.control.getPropertyNames();
   }
 
@@ -288,27 +299,33 @@ public class OSPControlTable extends XMLTable implements Control {
     setBackgroundColor(par, Color.WHITE);
   }
 
-  public void println(String s) {
+  @Override
+public void println(String s) {
     tableModel.control.println(s);
   }
 
-  public void println() {
+  @Override
+public void println() {
     tableModel.control.println();
   }
 
-  public void print(String s) {
+  @Override
+public void print(String s) {
     tableModel.control.print(s);
   }
 
-  public void clearMessages() {
+  @Override
+public void clearMessages() {
     tableModel.control.clearMessages();
   }
 
-  public void clearValues() {
+  @Override
+public void clearValues() {
     tableModel.control.clearValues();
   }
 
-  public void calculationDone(String message) {
+  @Override
+public void calculationDone(String message) {
     if(message!=null) {
       tableModel.control.calculationDone(message);
     }
@@ -333,7 +350,8 @@ public class OSPControlTable extends XMLTable implements Control {
      * @param prefsXMLControl the control to save to
      * @param obj the object to save
      */
-    public void saveObject(XMLControl xmlControl, Object obj) {
+    @Override
+	public void saveObject(XMLControl xmlControl, Object obj) {
       OSPControlTable controlTable = (OSPControlTable) obj;
       Iterator<String> it = controlTable.getPropertyNames().iterator();
       while(it.hasNext()) {
@@ -363,7 +381,8 @@ public class OSPControlTable extends XMLTable implements Control {
      * @param control the control
      * @return the newly created object
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new OSPControlTable();
     }
 
@@ -374,7 +393,8 @@ public class OSPControlTable extends XMLTable implements Control {
      * @param obj the object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       OSPControlTable controlTable = (OSPControlTable) obj;
       // iterate over properties and add them to table model
       Iterator<String> it = control.getPropertyNames().iterator();

@@ -133,7 +133,8 @@ public class FFTRealFrame extends PlotFrame {
    *
    * @param xlabel String
    */
-  public void setXLabel(String xlabel) {
+  @Override
+public void setXLabel(String xlabel) {
     setXYColumnNames(0, xlabel, DisplayRes.getString("FourierSinCosAnalysis.Column.Power"), //$NON-NLS-1$
       DisplayRes.getString("FourierSinCosAnalysis.PowerSpectrum"));                         //$NON-NLS-1$
     if(drawingPanel instanceof PlottingPanel) {
@@ -144,7 +145,8 @@ public class FFTRealFrame extends PlotFrame {
   /**
    * Adds Views menu items on the menu bar.
    */
-  protected void addMenuItems() {
+  @Override
+protected void addMenuItems() {
     super.addMenuItems();
     JMenuBar menuBar = getJMenuBar();
     if(menuBar==null) {
@@ -164,7 +166,8 @@ public class FFTRealFrame extends PlotFrame {
     menubarGroup.add(postItem);
     postItem.setSelected(true);
     ActionListener actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToPostView();
       }
 
@@ -175,7 +178,8 @@ public class FFTRealFrame extends PlotFrame {
     connectedItem = new JRadioButtonMenuItem(DisplayRes.getString("FFTRealFrame.MenuItem.ConnectedView")); //$NON-NLS-1$
     menubarGroup.add(connectedItem);
     actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToConnectedView();
       }
 
@@ -269,7 +273,8 @@ public class FFTRealFrame extends PlotFrame {
   /**
    * Sets the axes to use a logarithmetic scale.
    */
-  public void setLogScale(boolean xlog, boolean ylog) {
+  @Override
+public void setLogScale(boolean xlog, boolean ylog) {
     if(drawingPanel instanceof PlottingPanel) {
       ((PlottingPanel) drawingPanel).setLogScale(xlog, ylog);
     }

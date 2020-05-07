@@ -229,7 +229,7 @@ public abstract class AsyncSwingWorker extends SwingWorker<Void, Void> implement
 		n = (max > min ? Math.max(min, Math.min(n, max))
 				: Math.max(max, Math.min(n, min)));
 		progressAsync = n;
-		n = (int) ((n - min) * 100 / (max - min));
+		n = (n - min) * 100 / (max - min);
 		n = (n < 0 ? 0 : n > 100 ? 100 : n);
 		progressPercent = n;
 	}

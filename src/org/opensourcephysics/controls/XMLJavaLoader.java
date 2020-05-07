@@ -40,7 +40,8 @@ public class XMLJavaLoader implements XML.ObjectLoader {
    * @param control the control
    * @param obj the object
    */
-  public void saveObject(XMLControl control, Object obj) {
+  @Override
+public void saveObject(XMLControl control, Object obj) {
     // buf.flush();
     XMLEncoder enc = new XMLEncoder(buf);
     enc.writeObject(obj);
@@ -55,7 +56,8 @@ public class XMLJavaLoader implements XML.ObjectLoader {
    * @param control the control
    * @return the new object
    */
-  public Object createObject(XMLControl control) {
+  @Override
+public Object createObject(XMLControl control) {
     String xml = control.getString("java_xml"); //$NON-NLS-1$
     InputStream in;
     try {
@@ -75,7 +77,8 @@ public class XMLJavaLoader implements XML.ObjectLoader {
    * @param control the control
    * @param obj the object
    */
-  public Object loadObject(XMLControl control, Object obj) {
+  @Override
+public Object loadObject(XMLControl control, Object obj) {
     return createObject(control);
   }
 

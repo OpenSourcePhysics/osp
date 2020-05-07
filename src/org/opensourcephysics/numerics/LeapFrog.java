@@ -56,7 +56,8 @@ public class LeapFrog extends AbstractODESolver {
    *
    * @param stepSize
    */
-  public void initialize(double stepSize) {
+  @Override
+public void initialize(double stepSize) {
     super.initialize(stepSize);
     rate = new double[numEqn];
     priorState = new double[numEqn];
@@ -71,7 +72,8 @@ public class LeapFrog extends AbstractODESolver {
    *
    * @param stepSize
    */
-  public void setStepSize(double stepSize) {
+  @Override
+public void setStepSize(double stepSize) {
     initialize(stepSize);
   }
 
@@ -105,7 +107,8 @@ public class LeapFrog extends AbstractODESolver {
    *
    * @return the step size
    */
-  public double step() {
+  @Override
+public double step() {
     // state[]: x1, d x1/dt, x2, d x2/dt .... xN, d xN/dt, t
     double[] state = ode.getState();
     if(state.length!=numEqn) {

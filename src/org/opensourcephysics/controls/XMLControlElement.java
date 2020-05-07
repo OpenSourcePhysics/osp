@@ -7,6 +7,8 @@
 
 package org.opensourcephysics.controls;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -163,6 +165,8 @@ public class XMLControlElement implements XMLControl {
 	}
 
 	private void readData(String input) {
+		if (input.startsWith("PK"))
+			System.out.println("XMLControlElement reading ZIP data??????");
 		if (input.startsWith("<?xml")) { //$NON-NLS-1$
 			readXML(input);
 		} else {
@@ -902,6 +906,11 @@ public class XMLControlElement implements XMLControl {
 	}
 
 	/**
+	 * BH! THIS METHOD COULD FAIL IN JAVASCRIPT because importAll is false
+	 * 
+	 * 111 references !!!
+	 * 
+	 * 
 	 * Loads an object with data from this element. This asks the user for approval
 	 * and review before importing data from mismatched classes.
 	 *
@@ -914,6 +923,12 @@ public class XMLControlElement implements XMLControl {
 	}
 
 	/**
+	 * BH! THIS METHOD WILL FAIL IN JAVASCRIPT when autoImport is false
+	 * 
+	 * (not called in OSP or Tracker?)
+	 * 
+	 * 
+	 * 
 	 * Loads an object with data from this element. This asks the user to review
 	 * data from mismatched classes before importing it.
 	 *
@@ -927,6 +942,9 @@ public class XMLControlElement implements XMLControl {
 
 	/**
 	 * Loads an object with data from this element.
+	 * 
+	 * false for BOTH parameters autoImport and importAll will FAIL IN JAVASCRIPT
+	 * 
 	 *
 	 * @param obj        the object to load
 	 * @param autoImport true to automatically import data from mismatched classes
@@ -936,26 +954,29 @@ public class XMLControlElement implements XMLControl {
 	public Object loadObject(Object obj, boolean autoImport, boolean importAll) {
 		Class<?> type = getObjectClass();
 		if (type == null) {
-			if (obj != null) {
-				if (!autoImport) {
-					int result = JOptionPane.showConfirmDialog(null,
-							ControlsRes.getString("XMLControlElement.Dialog.UnknownClass.Message") + " \"" + className //$NON-NLS-1$ //$NON-NLS-2$
-									+ "\"" + XML.NEW_LINE //$NON-NLS-1$
-									+ ControlsRes.getString("XMLControlElement.Dialog.MismatchedClass.Query") + " \"" //$NON-NLS-1$ //$NON-NLS-2$
-									+ obj.getClass().getName() + "\"", //$NON-NLS-1$
-							ControlsRes.getString("XMLControlElement.Dialog.MismatchedClass.Title"), //$NON-NLS-1$
-							JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-					if (result != JOptionPane.YES_OPTION) {
-						return obj;
-					}
-				}
-				if (!importInto(obj, importAll)) {
-					return obj;
-				}
-				type = obj.getClass();
-			} else {
+			if (obj == null) {
 				return null;
 			}
+			if (!autoImport) {
+				int result = JOptionPane.showConfirmDialog(null,
+						ControlsRes.getString("XMLControlElement.Dialog.UnknownClass.Message") + " \"" + className //$NON-NLS-1$ //$NON-NLS-2$
+								+ "\"" + XML.NEW_LINE //$NON-NLS-1$
+								+ ControlsRes.getString("XMLControlElement.Dialog.MismatchedClass.Query") + " \"" //$NON-NLS-1$ //$NON-NLS-2$
+								+ obj.getClass().getName() + "\"", //$NON-NLS-1$
+						ControlsRes.getString("XMLControlElement.Dialog.MismatchedClass.Title"), //$NON-NLS-1$
+						JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+				if (result != JOptionPane.YES_OPTION) {
+					return obj;
+				}
+			}
+			
+			
+			// BH - 
+			
+			if (!importInto(obj, importAll)) {
+				return obj;
+			}
+			type = obj.getClass();
 		}
 		try {
 			// BH 2020.02.13 adding check for null obj
@@ -1381,42 +1402,67 @@ public class XMLControlElement implements XMLControl {
 				values.add(prop.getPropertyContent().get(0));
 			}
 		}
-		// choose the properties to import
-		ListChooser chooser = new ListChooser(ControlsRes.getString("XMLControlElement.Chooser.ImportObjects.Title"), //$NON-NLS-1$
-				ControlsRes.getString("XMLControlElement.Chooser.ImportObjects.Label")); //$NON-NLS-1$
-		if (names.isEmpty() || importAll || chooser.choose(names, names, values)) {
-			// names list now contains property names to keep
-			Iterator<XMLProperty> it = props.iterator();
-			while (it.hasNext()) {
-				XMLProperty prop = it.next();
-				if (!names.contains(prop.getPropertyName())) {
-					it.remove();
-					propNames.remove(prop.getPropertyName());
-				}
-			}
-			// add object properties not in the names list to this control
-			Iterator<String> it2 = control.getPropertyNames().iterator();
-			while (it2.hasNext()) {
-				String name = it2.next();
-				if (names.contains(name)) {
-					continue;
-				}
-				String propType = control.getPropertyType(name);
-				if (propType.equals("int")) { //$NON-NLS-1$
-					setValue(name, control.getInt(name));
-				} else if (propType.equals("double")) { //$NON-NLS-1$
-					setValue(name, control.getDouble(name));
-				} else if (propType.equals("boolean")) { //$NON-NLS-1$
-					setValue(name, control.getBoolean(name));
-				} else if (propType.equals("string")) { //$NON-NLS-1$
-					setValue(name, control.getString(name));
-				} else {
-					setValue(name, control.getObject(name));
-				}
-			}
-			return true;
+		if (names.isEmpty() || importAll) {
+			return processImport(control, names);
 		}
-		return false;
+
+		// BH! This next call will return FALSE FOR JAVASCRIPT because we can't make this central method asynchronous. :(
+
+		// choose the properties to import
+		// BH This one has to be synchronous and so will fail in JavaScript.
+		
+		boolean[] isOK = new boolean[1];
+		
+		ListChooser chooser = new ListChooser(ControlsRes.getString("XMLControlElement.Chooser.ImportObjects.Title"), //$NON-NLS-1$
+				ControlsRes.getString("XMLControlElement.Chooser.ImportObjects.Label"), 
+				new ActionListener() {
+
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						if (e.getID() == ActionEvent.ACTION_PERFORMED) {
+							processImport(control, names);
+							isOK[0] = true;
+						}
+					}
+			
+		});		
+		chooser.choose(names, names, values, null, new boolean[names.size()], new boolean[names.size()]);
+		// beween these two statements in Java, the above actionPerformed will occur.
+		// but JavaScript is going to return prior to that. 
+		return isOK[0];
+	}
+
+	private boolean processImport(XMLControl control, Collection<String> names) {
+		// names list now contains property names to keep
+		Iterator<XMLProperty> it = props.iterator();
+		while (it.hasNext()) {
+			XMLProperty prop = it.next();
+			if (!names.contains(prop.getPropertyName())) {
+				it.remove();
+				propNames.remove(prop.getPropertyName());
+			}
+		}
+		// add object properties not in the names list to this control
+		Iterator<String> it2 = control.getPropertyNames().iterator();
+		while (it2.hasNext()) {
+			String name = it2.next();
+			if (names.contains(name)) {
+				continue;
+			}
+			String propType = control.getPropertyType(name);
+			if (propType.equals("int")) { //$NON-NLS-1$
+				setValue(name, control.getInt(name));
+			} else if (propType.equals("double")) { //$NON-NLS-1$
+				setValue(name, control.getDouble(name));
+			} else if (propType.equals("boolean")) { //$NON-NLS-1$
+				setValue(name, control.getBoolean(name));
+			} else if (propType.equals("string")) { //$NON-NLS-1$
+				setValue(name, control.getString(name));
+			} else {
+				setValue(name, control.getObject(name));
+			}
+		}
+		return true;	
 	}
 
 	/**

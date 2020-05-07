@@ -38,6 +38,7 @@ public class FontResizeTest {
 		menuBar.add(fontMenu);
 		JMenuItem sizeUpItem = new JMenuItem("Increase"); //$NON-NLS-1$
 		sizeUpItem.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				FontSizer.levelUp();
 			}
@@ -49,6 +50,7 @@ public class FontResizeTest {
 
 		FontSizer.setFonts(table, FontSizer.getLevel());
 		FontSizer.addPropertyChangeListener("level", new PropertyChangeListener() { //$NON-NLS-1$
+			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				int level = ((Integer) e.getNewValue()).intValue();
 				FontSizer.setFonts(menuBar, level);

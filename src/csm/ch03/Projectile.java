@@ -55,7 +55,8 @@ public class Projectile implements Drawable, ODE {
    * Gets the state.  Required for ODE interface.
    * @return double[] the state
    */
-  public double[] getState() {
+  @Override
+public double[] getState() {
     return state;
   }
 
@@ -64,7 +65,8 @@ public class Projectile implements Drawable, ODE {
    * @param state double[] the state
    * @param rate double[]  the computed rate
    */
-  public void getRate(double[] state, double[] rate) {
+  @Override
+public void getRate(double[] state, double[] rate) {
     rate[0] = state[1]; // rate of change of x
     rate[1] = 0;        // rate of change of vx
     rate[2] = state[3]; // rate of change of y
@@ -78,7 +80,8 @@ public class Projectile implements Drawable, ODE {
    * @param drawingPanel
    * @param g
    */
-  public void draw(DrawingPanel drawingPanel, Graphics g) {
+  @Override
+public void draw(DrawingPanel drawingPanel, Graphics g) {
     int xpix = drawingPanel.xToPix(state[0]);
     int ypix = drawingPanel.yToPix(state[2]);
     g.setColor(Color.red);

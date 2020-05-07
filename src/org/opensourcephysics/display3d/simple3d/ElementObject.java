@@ -19,11 +19,13 @@ public class ElementObject extends ElementBox implements org.opensourcephysics.d
   private String file = null;
   private double angle = 0.0;
 
-  public void setObjectFile(String file) {
+  @Override
+public void setObjectFile(String file) {
     this.file = file;
   }
 
-  public String getObjectFile() {
+  @Override
+public String getObjectFile() {
     return this.file;
   }
 
@@ -48,7 +50,8 @@ public class ElementObject extends ElementBox implements org.opensourcephysics.d
   }
 
   static private class Loader extends org.opensourcephysics.display3d.core.ElementObject.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ElementObject();
     }
 

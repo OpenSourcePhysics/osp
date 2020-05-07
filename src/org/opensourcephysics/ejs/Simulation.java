@@ -108,6 +108,7 @@ public abstract class Simulation implements java.lang.Runnable, StateMachine {
 	private final static int STATE_LOOP = 1;
 	private final static int STATE_DONE = 2;
 
+	@Override
 	public boolean stateLoop() {
 		while (thread != null && !thread.isInterrupted() && stateHelper.isAlive()) {
 			switch (stateHelper.getState()) {
@@ -130,6 +131,7 @@ public abstract class Simulation implements java.lang.Runnable, StateMachine {
 	/**
 	 * Implementation of the Runnable interface
 	 */
+	@Override
 	public void run() {
 		stateHelper = new SwingJSUtils.StateHelper(this);
 		stateHelper.setState(STATE_INIT);
@@ -601,7 +603,7 @@ public abstract class Simulation implements java.lang.Runnable, StateMachine {
 				String url = _filename.substring(4);
 				// System.out.println ("url = "+url);
 				// System.out.println ("codebase = "+_codebase);
-				if ((_codebase == null) || ResourceLoader.isHTTP(url)) { //$NON-NLS-1$
+				if ((_codebase == null) || ResourceLoader.isHTTP(url)) { 
 					// Do nothing
 				} else {
 					url = _codebase + url;

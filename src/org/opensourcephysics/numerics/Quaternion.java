@@ -164,7 +164,8 @@ public class Quaternion implements MatrixTransformation {
 * @param mat double[] optional matrix
 * @return double[] the matrix
 */
-  public final double[] getFlatMatrix(double[] mat) {
+  @Override
+public final double[] getFlatMatrix(double[] mat) {
     double q0q0 = q0*q0, q0q1 = q0*q1, q0q2 = q0*q2, q0q3 = q0*q3;
     double q1q1 = q1*q1, q1q2 = q1*q2, q1q3 = q1*q3;
     double q2q2 = q2*q2, q2q3 = q2*q3;
@@ -337,7 +338,8 @@ public class Quaternion implements MatrixTransformation {
    * Instaniates a quaterion whose components are identical to this quaterion.
    * @return Object
    */
-  public Object clone() {
+  @Override
+public Object clone() {
     Quaternion q = new Quaternion(q0, q1, q2, q3);
     q.setOrigin(ox, oy, oz);
     return q;
@@ -349,7 +351,8 @@ public class Quaternion implements MatrixTransformation {
    * @param p double[]
    * @return double[]
    */
-  public double[] direct(double[] p) { // assumes quaternion is normalized
+  @Override
+public double[] direct(double[] p) { // assumes quaternion is normalized
     p[0] -= ox;
     p[1] -= oy;
     p[2] -= oz;
@@ -364,7 +367,8 @@ public class Quaternion implements MatrixTransformation {
     return p;
   }
 
-  public double[] inverse(double[] p) throws UnsupportedOperationException { // assumes quaternion is normalized
+  @Override
+public double[] inverse(double[] p) throws UnsupportedOperationException { // assumes quaternion is normalized
     p[0] -= ox;
     p[1] -= oy;
     p[2] -= oz;
@@ -384,7 +388,8 @@ public class Quaternion implements MatrixTransformation {
   }
 
   protected static class QuaternionLoader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       Quaternion qr = (Quaternion) obj;
       control.setValue("q0", qr.q0); //$NON-NLS-1$
       control.setValue("q1", qr.q1); //$NON-NLS-1$
@@ -395,11 +400,13 @@ public class Quaternion implements MatrixTransformation {
       control.setValue("oz", qr.oz); //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new Quaternion();
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       Quaternion qr = (Quaternion) obj;
       double q0 = control.getDouble("q0"); //$NON-NLS-1$
       double q1 = control.getDouble("q0"); //$NON-NLS-1$

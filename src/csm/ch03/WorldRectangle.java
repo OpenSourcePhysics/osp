@@ -41,7 +41,8 @@ public class WorldRectangle implements Drawable {
    * @param panel DrawingPanel
    * @param g Graphics
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     // This method implements the Drawable interface
     g.setColor(Color.RED); // set drawing color to red
     // convert from world to pixel coordinates

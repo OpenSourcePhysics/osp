@@ -325,7 +325,8 @@ public class Airy {
     /**
      * Evaluates the Airy function.
      */
-    public double evaluate(final double x) {
+    @Override
+	public double evaluate(final double x) {
       return Airy.airy(x);
     }
 
@@ -340,7 +341,8 @@ public class Airy {
     /**
      * Evaluates the derivative of the Airy function.
      */
-    public double evaluate(final double x) {
+    @Override
+	public double evaluate(final double x) {
       return Airy.airyDerivative(x);
     }
 

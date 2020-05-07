@@ -77,7 +77,8 @@ public class Matrix2DTransformation implements MatrixTransformation {
   /**
    * Provides a copy of this transformation.
    */
-  public Object clone() {
+  @Override
+public Object clone() {
     return new Matrix2DTransformation(internalTransform);
   }
 
@@ -90,7 +91,8 @@ public class Matrix2DTransformation implements MatrixTransformation {
 * @param mat double[] optional matrix
 * @return double[] the matrix
 */
-  public final double[] getFlatMatrix(double[] mat) {
+  @Override
+public final double[] getFlatMatrix(double[] mat) {
     if(mat==null) {
       mat = new double[6];
     }
@@ -168,7 +170,8 @@ public class Matrix2DTransformation implements MatrixTransformation {
    *
    * @param point the coordinates to be transformed
    */
-  public double[] direct(double[] point) {
+  @Override
+public double[] direct(double[] point) {
     totalTransform.transform(point, 0, point, 0, 1);
     return point;
   }
@@ -181,7 +184,8 @@ public class Matrix2DTransformation implements MatrixTransformation {
    *
    * @param point the coordinates to be transformed
    */
-  public double[] inverse(double[] point) throws UnsupportedOperationException {
+  @Override
+public double[] inverse(double[] point) throws UnsupportedOperationException {
     try {
       totalTransform.inverseTransform(point, 0, point, 0, 1);
       return point;
@@ -195,17 +199,20 @@ public class Matrix2DTransformation implements MatrixTransformation {
   }
 
   protected static class Matrix2DTransformationLoader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       Matrix2DTransformation transf = (Matrix2DTransformation) obj;
       control.setValue("matrix", transf.getFlatMatrix(null)); //$NON-NLS-1$
       control.setValue("origin x", transf.origin);            //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new Matrix2DTransformation(new AffineTransform());
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       Matrix2DTransformation transf = (Matrix2DTransformation) obj;
       transf.internalTransform.setTransform(new AffineTransform((double[]) control.getObject("matrix"))); //$NON-NLS-1$
       transf.setOrigin((double[]) control.getObject("origin"));                                           //$NON-NLS-1$
