@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <http://www.opensourcephysics.org/>
+ * <https://www.compadre.org/osp/>
  */
 
 package org.opensourcephysics.controls;
@@ -17,8 +17,6 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
 import java.lang.reflect.Array;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -110,32 +108,7 @@ public class XMLControlElement implements XMLControl {
     level = parent.getLevel();
   }
 
-
   /**
-   * BH we need to read the File object directly, as it will have the data in it already.
-   * 
-   * @param xmlFile
-   */
-  public XMLControlElement(File xmlFile) {
-	    this();
-	    readData(getFileData(xmlFile));
-  }
-  
-  /**
-   * BH by far the simplest way to read a file in its entirety as byte[] or String
-   * 
-   * @param xmlFile
-   * @return
-   */
-  private String getFileData(File xmlFile) {
-	  try {
-		return new String(Files.readAllBytes(Paths.get(xmlFile.toURI())), "UTF-8");
-	} catch (IOException e) {
-		return "";
-	}
-  }
-
-/**
    * Constructs a control and reads the specified input.
    * Input may be a file name or an xml string
    *
@@ -143,18 +116,14 @@ public class XMLControlElement implements XMLControl {
    */
   public XMLControlElement(String input) {
     this();
-    readData(input);
+    if(input.startsWith("<?xml")) { //$NON-NLS-1$
+      readXML(input);
+    } else {
+      read(input);
+    }
   }
 
-	private void readData(String input) {
-		if (input.startsWith("<?xml")) { //$NON-NLS-1$
-			readXML(input);
-		} else {
-			read(input);
-		}
-	}
-
-/**
+  /**
    * Constructs a copy of the specified XMLControl.
    *
    * @param control the XMLControl to copy.
@@ -1407,7 +1376,7 @@ public class XMLControlElement implements XMLControl {
     try {
       // get document root tag
       String xml = input.readLine();
-      while((xml!=null)&&(xml.indexOf("<object")==-1)) {        //$NON-NLS-1$
+      while (xml!=null && xml.indexOf("<object")==-1) {        //$NON-NLS-1$
         xml = input.readLine();
       }
       // check class name
@@ -1504,7 +1473,11 @@ public class XMLControlElement implements XMLControl {
       xml = input.readLine();
       while(xml.indexOf("<property")!=-1) {                                                    //$NON-NLS-1$
         prop.content.add(readProperty(new XMLPropertyElement(prop), xml));
-        xml = input.readLine();
+        String line = input.readLine();
+        if (line==null) {
+        	throw(new IOException("reached end of file with no closing tag")); //$NON-NLS-1$
+        }
+        xml = line;
       }
     } else if(prop.type.equals("object")) {                                                    //$NON-NLS-1$
     	// add XMLControl unless value is null
@@ -1517,13 +1490,21 @@ public class XMLControlElement implements XMLControl {
       if(xml.indexOf(XML.CDATA_PRE)!=-1) {
         String s = xml.substring(xml.indexOf(XML.CDATA_PRE));
         while(s.indexOf(XML.CDATA_POST+"</property>")==-1) {                                   // look for end tag //$NON-NLS-1$
-          s += XML.NEW_LINE+input.readLine();
+          String line = input.readLine();
+          if (line==null) {
+          	throw(new IOException("reached end of file with no closing tag")); //$NON-NLS-1$
+          }
+        	s += XML.NEW_LINE+line;
         }
         xml = s.substring(0, s.indexOf(XML.CDATA_POST+"</property>")+XML.CDATA_POST.length()); //$NON-NLS-1$
       } else {
         String s = xml.substring(xml.indexOf(">")+1);                                          //$NON-NLS-1$
         while(s.indexOf("</property>")==-1) {                                                  // look for end tag //$NON-NLS-1$
-          s += XML.NEW_LINE+input.readLine();
+          String line = input.readLine();
+          if (line==null) {
+          	throw(new IOException("reached end of file with no closing tag")); //$NON-NLS-1$
+          }
+        	s += XML.NEW_LINE+line;
         }
         xml = s.substring(0, s.indexOf("</property>"));                                        //$NON-NLS-1$
       }
@@ -1699,94 +1680,101 @@ public class XMLControlElement implements XMLControl {
    * @return the array
    */
   private Object arrayValue(String arrayString, Class<?> componentType) {
-    if(!(arrayString.startsWith("{")&&arrayString.endsWith("}"))) { //$NON-NLS-1$ //$NON-NLS-2$
+    if(!(arrayString.startsWith("{") && arrayString.endsWith("}"))) { //$NON-NLS-1$ //$NON-NLS-2$
       return null;
     }
     // trim the outer braces
     String trimmed = arrayString.substring(1, arrayString.length()-1);
-    if(componentType.isArray()) {
-      // create and collect the array elements from substrings
-      ArrayList<Object> list = new ArrayList<Object>();
-      ArrayList<Boolean> isNull = new ArrayList<Boolean>();
-      Class<?> arrayType = componentType.getComponentType();
-             
-      int i = trimmed.indexOf("{"); //$NON-NLS-1$
-      int j = indexOfClosingBrace(trimmed, i);
-      int k = trimmed.indexOf(","); //$NON-NLS-1$
-      while(j>0) {
-//        if (k<i) { // first comma is before opening brace
-        if (k>-1 && k<i) { // first comma is before opening brace
-        	isNull.add(true);
-          trimmed = trimmed.substring(k+1);
-        }
-        else {
-	        String nextArray = trimmed.substring(i, j+1);
-	        Object obj = arrayValue(nextArray, arrayType);
-	        list.add(obj);
-        	isNull.add(false);
-	        trimmed = trimmed.substring(j+1);
-	        if (trimmed.startsWith(",")) // comma following closing brace //$NON-NLS-1$
-		        trimmed = trimmed.substring(1);
-        }
-        i = trimmed.indexOf("{"); //$NON-NLS-1$
-//        j = trimmed.indexOf("}"); //$NON-NLS-1$
-        j = indexOfClosingBrace(trimmed, i);
-        k = trimmed.indexOf(","); //$NON-NLS-1$
-      }
-      // look for trailing null elements
-      while (k>-1) {
-      	isNull.add(true);
-        trimmed = trimmed.substring(k+1);
-        k = trimmed.indexOf(","); //$NON-NLS-1$
-      }
-      if (trimmed.length()>0) { // last element (after final comma) is null
-      	isNull.add(true);      	
-      }
-      // create the array
-      Object array = Array.newInstance(componentType, isNull.size());
-      // populate the array
-      Boolean[] hasNoElement = isNull.toArray(new Boolean[0]);
-      Iterator<Object> it = list.iterator();
-      for (int n=0; n<hasNoElement.length; n++) {
-        if (!hasNoElement[n] && it.hasNext()) {
-          Object obj = it.next();
-          Array.set(array, n, obj);
-        }
+    // break into chunks
+  	String[] chunks = trimmed.split(","); //$NON-NLS-1$
+  	// get array from chunks
+  	return arrayValueFromChunks(chunks, componentType);
+  }
+
+  /**
+   * Returns the array value of the chunks obtained by splitting an array string at commas. May return null.
+   *
+   * @param chunks the chunks
+   * @param componentType the component type of the array
+   * @return the array
+   */
+  private Object arrayValueFromChunks(String[] chunks, Class<?> componentType) {
+
+  	// handle multi-dimensional arrays 
+    if (componentType.isArray()) {
+    	
+	  	int level = 0; // keep track of subarray levels
+	    ArrayList<Object> subarrays = new ArrayList<Object>(); // collect level 0 subarrays
+	    ArrayList<Object> subarrayChunks = new ArrayList<Object>();
+	
+	    for (String next: chunks) {
+	    	
+	    	// look for null elements
+	  		if (level==0 && next.equals("null")) { //$NON-NLS-1$
+	      	subarrays.add(null);
+	      	continue;
+	  		}
+	  		// look for opening brace that defines a new subarray
+				if (level==0 && next.startsWith("{")) { //$NON-NLS-1$
+					subarrayChunks.clear(); // ready for new chunks
+					next = next.substring(1); // trim brace from first chunk
+					level = 1; // now working at level 1
+				}
+				// determine the level of the chunk from leading and trailing braces, if any
+	    	String temp = next;
+				while (temp.startsWith("{")) { //$NON-NLS-1$
+					temp = temp.substring(1);
+					level++;
+				}
+				while (temp.endsWith("}")) { //$NON-NLS-1$
+					temp = temp.substring(0, temp.length()-1);
+					level--;
+				}	
+				// look for closing brace of the subarray
+				if (level==0 && next.endsWith("}")) { //$NON-NLS-1$
+					// add the last chunk
+					next = next.substring(0, next.length()-1); // trim trailing brace
+					subarrayChunks.add(next);
+					// call this method recursively to get subarray
+					String[] subchunks = subarrayChunks.toArray(new String[subarrayChunks.size()]);
+		      Class<?> arrayType = componentType.getComponentType();
+	        Object obj = arrayValueFromChunks(subchunks, arrayType);
+	        // add subarray to the collection
+	        subarrays.add(obj);
+	        continue;
+				}
+				subarrayChunks.add(next);
+	  	}
+      // create and populate the array with the collected arrays
+    	Object[] elements = subarrays.toArray(new Object[subarrays.size()]);
+      Object array = Array.newInstance(componentType, elements.length);
+      for (int n=0; n<elements.length; n++) {
+        Array.set(array, n, elements[n]);
       }
       return array;
     }
-    // collect element substrings separated by commas
-    ArrayList<String> list = new ArrayList<String>();
-    while(!trimmed.equals("")) {    //$NON-NLS-1$
-      int i = trimmed.indexOf(","); //$NON-NLS-1$
-      if(i>-1) {
-        list.add(trimmed.substring(0, i));
-        trimmed = trimmed.substring(i+1);
-      } else {
-        list.add(trimmed);
-        break;
-      }
+    
+    // handle double, int and boolean arrays
+    else {
+	    // create and populate the array by parsing the chunks directly
+	    Object array = Array.newInstance(componentType, chunks.length);
+	    for (int n=0; n<chunks.length; n++) {
+	      if(componentType==Integer.TYPE) {
+	        int i = Integer.parseInt(chunks[n]);
+	        Array.setInt(array, n, i);
+	      } else if(componentType==Double.TYPE) {
+	        double x = Double.parseDouble(chunks[n]);
+	        Array.setDouble(array, n, x);
+	      } else if(componentType==Boolean.TYPE) {
+	        boolean bool = chunks[n].equals("true"); //$NON-NLS-1$
+	        Array.setBoolean(array, n, bool);
+	      }
+	    }
+	    return array;
     }
-    // create the array
-    Object array = Array.newInstance(componentType, list.size());
-    // populate the array
-    Iterator<String> it = list.iterator();
-    int n = 0;
-    while(it.hasNext()) {
-      if(componentType==Integer.TYPE) {
-        int i = Integer.parseInt(it.next());
-        Array.setInt(array, n++, i);
-      } else if(componentType==Double.TYPE) {
-        double x = Double.parseDouble(it.next());
-        Array.setDouble(array, n++, x);
-      } else if(componentType==Boolean.TYPE) {
-        boolean bool = it.next().equals("true"); //$NON-NLS-1$
-        Array.setBoolean(array, n++, bool);
-      }
-    }
-    return array;
   }
-
+  	
+  	
   /**
    * Returns the collection value of the specified property. May return null.
    *
@@ -1825,35 +1813,6 @@ public class XMLControlElement implements XMLControl {
     return null;
   }
   
-  /**
-   * Returns the index of the closing brace corresponding to the opening
-   * brace at the given index in an array string.
-   *
-   * @param arrayString the array string
-   * @param indexOfOpeningBrace the index of the opening brace
-   * @return the index of the closing brace
-   */
-  private int indexOfClosingBrace(String arrayString, int indexOfOpeningBrace) {
-    int pointer = indexOfOpeningBrace+1;
-    int n = 1; // count up/down for opening/closing braces
-    int opening = arrayString.indexOf("{", pointer); //$NON-NLS-1$
-    int closing = arrayString.indexOf("}", pointer); //$NON-NLS-1$
-    while (n>0) {
-    	if (opening>-1 && opening<closing) {
-    		n++;
-    		pointer = opening+1;
-        opening = arrayString.indexOf("{", pointer); //$NON-NLS-1$
-    	}
-    	else if (closing>-1) {
-    		n--;
-    		pointer = closing+1;
-        closing = arrayString.indexOf("}", pointer);  //$NON-NLS-1$
-    	}
-    	else return -1;
-    }
-    return pointer-1;
-  }
-
 }
 
 /*
@@ -1876,6 +1835,6 @@ public class XMLControlElement implements XMLControl {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017  The Open Source Physics project
- *                     http://www.opensourcephysics.org
+ * Copyright (c) 2019  The Open Source Physics project
+ *                     https://www.compadre.org/osp
  */

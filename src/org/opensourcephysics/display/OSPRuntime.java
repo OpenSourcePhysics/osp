@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <http://www.opensourcephysics.org/>
+ * <https://www.compadre.org/osp/>
  */
 
 package org.opensourcephysics.display;
@@ -38,10 +38,9 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.tools.FontSizer;
+import org.opensourcephysics.tools.JREFinder;
 import org.opensourcephysics.tools.ResourceLoader;
 import org.opensourcephysics.tools.Translator;
-
-import javajs.async.AsyncFileChooser;
 
 /**
  * This class defines static methods related to the runtime environment.
@@ -51,10 +50,10 @@ import javajs.async.AsyncFileChooser;
  * @version 1.0
  */
 public class OSPRuntime {
-  public static final String VERSION = "4.0.1";                                                                            //$NON-NLS-1$
+  public static final String VERSION = "5.1.0";                                                                            //$NON-NLS-1$
+  public static final String COMMA_DECIMAL_SEPARATOR = ",";                                                                            //$NON-NLS-1$
+  public static final String PERIOD_DECIMAL_SEPARATOR = ".";                                                                            //$NON-NLS-1$
 
-  public static boolean isJS = /** @j2sNative true || */ false;
-  
   /** Disables drawing for faster start-up and to avoid screen flash in Drawing Panels. */
   volatile public static boolean disableAllDrawing = false;
 
@@ -85,7 +84,7 @@ public class OSPRuntime {
 
   /** Portuguese locale */
   public static final Locale PORTUGUESE = new Locale("pt", "PT"); //$NON-NLS-1$ //$NON-NLS-2$
-  
+
   /** Set <I>true</I> if a program is being run within Launcher. */
   protected static boolean launcherMode = false;
 
@@ -120,7 +119,7 @@ public class OSPRuntime {
   private static String buildDate;
 
   /** The default decimal separator */
-  private static char defaultDecimalSeparator;
+  private static char defaultDecimalSeparator = ',';
 
   /** The preferred decimal separator, if any */
   private static String preferredDecimalSeparator;
@@ -173,14 +172,14 @@ public class OSPRuntime {
    * Sets default properties for OSP.
    */
   static {
+    chooserDir = ""; //$NON-NLS-1$
     try { // set the user home and default directory for the chooser                                                                             // system properties may not be readable in some contexts
-      OSPRuntime.chooserDir = System.getProperty("user.dir", null);                            //$NON-NLS-1$
+      chooserDir = System.getProperty("user.dir", null);                            //$NON-NLS-1$
       String userhome = getUserHome();
       if (userhome!=null) {
       	userhomeDir = XML.forwardSlash(userhome);
       }
     } catch(Exception ex) {
-      OSPRuntime.chooserDir = null;
     }
     // fill the look and feel map
     LOOK_AND_FEEL_TYPES.put(METAL_LF, "javax.swing.plaf.metal.MetalLookAndFeel");              //$NON-NLS-1$
@@ -192,12 +191,12 @@ public class OSPRuntime {
     LOOK_AND_FEEL_TYPES.put(SYSTEM_LF, UIManager.getSystemLookAndFeelClassName());
     LOOK_AND_FEEL_TYPES.put(DEFAULT_LF, DEFAULT_LOOK_AND_FEEL.getClass().getName());
 
-    NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
+    NumberFormat format = NumberFormat.getNumberInstance(Locale.getDefault());
     if (format instanceof DecimalFormat) {
-      defaultDecimalSeparator = ((DecimalFormat)format).getDecimalFormatSymbols().getDecimalSeparator();
+      setDefaultDecimalSeparator(((DecimalFormat)format).getDecimalFormatSymbols().getDecimalSeparator());
     }
     else {
-      defaultDecimalSeparator = new DecimalFormat().getDecimalFormatSymbols().getDecimalSeparator();
+    	setDefaultDecimalSeparator(new DecimalFormat().getDecimalFormatSymbols().getDecimalSeparator());
     }
 
 //	try {
@@ -282,7 +281,7 @@ public class OSPRuntime {
 			vers += " released "+date; //$NON-NLS-1$
 		}
     String aboutString = vers+"\n"           //$NON-NLS-1$
-                         +"Open Source Physics Project \n"+"www.opensourcephysics.org"; //$NON-NLS-1$ //$NON-NLS-2$
+                         +"Open Source Physics Project \n"+"www.compadre.org/osp"; //$NON-NLS-1$ //$NON-NLS-2$
     JOptionPane.showMessageDialog(parent, aboutString, "About Open Source Physics", JOptionPane.INFORMATION_MESSAGE); //$NON-NLS-1$
   }
 
@@ -582,7 +581,7 @@ public class OSPRuntime {
     if(launchJarPath==null) {
       return null;
     }
-    boolean isWebFile = launchJarPath.startsWith("http:"); //$NON-NLS-1$
+    boolean isWebFile = launchJarPath.startsWith("http"); //$NON-NLS-1$
     if (!isWebFile) {
     	launchJarPath = ResourceLoader.getNonURIPath(launchJarPath);
     }
@@ -643,7 +642,8 @@ public class OSPRuntime {
     		file = file.getParentFile();
     	}
 	  	if (OSPRuntime.isWindows()) {
-	  		// typical jdk: Program Files\Java\jdkX.X.X_XX\jre\bin\java.exe
+	  		// typical jdk: Program Files\Java\jdkX.X.X_XX\jre\bin\java.exe 
+	  		//					 or Program Files\Java\jdkXX.X.X\bin\java.exe
 	  		// typical jre: Program Files\Java\jreX.X.X_XX\bin\java.exe
 	  		//           or Program Files\Java\jreX\bin\java.exe
 	  		// typical 32-bit jdk in 64-bit Windows: Program Files(x86)\Java\jdkX.X.X_XX\jre\bin\java.exe
@@ -655,8 +655,15 @@ public class OSPRuntime {
 	  				&& file.getParentFile().getName().indexOf("jdk")>-1) { //$NON-NLS-1$
 	  			file = file.getParentFile();
 	  		}
-	  		if (file.getName().indexOf("jdk")>-1) //$NON-NLS-1$
-	  			file = new File(file, "jre/bin/java.exe"); //$NON-NLS-1$
+	  		if (file.getName().indexOf("jdk")>-1) { //$NON-NLS-1$
+	  			File jreFile = new File(file, "jre/bin/java.exe"); //$NON-NLS-1$
+	  			if (jreFile.exists()) file = jreFile;
+	  			else {
+	  				// newer jdks do NOT have a jre included so just use them directly
+	  				jreFile = new File(file, "bin/java.exe"); //$NON-NLS-1$
+		  			if (jreFile.exists()) file = jreFile;
+	  			}
+	  		}
 	  		else if (file.getName().indexOf("jre")>-1) { //$NON-NLS-1$
 	  			file = new File(file, "bin/java.exe"); //$NON-NLS-1$
 	  		}
@@ -714,7 +721,8 @@ public class OSPRuntime {
 				file = null;
 			}
   	}
-  	if (file!=null && file.exists()) return file;
+  	if (file!=null && file.exists()
+				&& JREFinder.JAVA_FILTER.accept(file.getParentFile(), file.getName())) return file;
   	return null;
   }
   
@@ -756,12 +764,11 @@ public class OSPRuntime {
 
   /**
    * Gets Locales for languages that have properties files in the core library.
-   * Locales are returned with English first, then in alphabetical order.
+   * Locales are returned with english first, then in alphabetical order.
    * @return Locale[]
    */
   public static Locale[] getInstalledLocales() {
     ArrayList<Locale> list = new ArrayList<Locale>();
-    if(org.opensourcephysics.js.JSUtil.isJS) return list.toArray(new Locale[0]);
     java.util.TreeMap<String, Locale> languages = new java.util.TreeMap<String, Locale>();
     list.add(Locale.ENGLISH); // english is first in list
     if(getLaunchJarPath()!=null) {
@@ -821,7 +828,6 @@ public class OSPRuntime {
    * @return the display language
    */
   public static String getDisplayLanguage(Locale locale) {
-	if(org.opensourcephysics.js.JSUtil.isJS) return "English";
   	if (locale.equals(Locale.CHINA))
   		return "\u7b80\u4f53\u4e2d\u6587"; //$NON-NLS-1$
   	if (locale.equals(Locale.TAIWAN))
@@ -836,12 +842,13 @@ public class OSPRuntime {
 	 * @return the DecimalFormatSymbols
 	 */
   public static DecimalFormatSymbols getDecimalFormatSymbols() {
-  	DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
+  	DecimalFormatSymbols decimalFormatSymbols = DecimalFormatSymbols.getInstance();
   	char c = defaultDecimalSeparator;
     if (preferredDecimalSeparator!=null && preferredDecimalSeparator.length()>0) {
   		c = preferredDecimalSeparator.charAt(0);
   	}
-    decimalFormatSymbols.setDecimalSeparator(c); 	
+    decimalFormatSymbols.setDecimalSeparator(c);    
+    decimalFormatSymbols.setMinusSign('-');
   	return decimalFormatSymbols;
   }
   
@@ -851,7 +858,10 @@ public class OSPRuntime {
 	 * @param c a decimal separator
 	 */
   public static void setDefaultDecimalSeparator(char c) {
-  	defaultDecimalSeparator = c;
+  	String s = String.valueOf(c);
+  	if (COMMA_DECIMAL_SEPARATOR.equals(s) || PERIOD_DECIMAL_SEPARATOR.equals(s)) {
+  		defaultDecimalSeparator = c;
+  	}
   }
   
 	/**
@@ -860,7 +870,9 @@ public class OSPRuntime {
 	 * @param separator a decimal separator
 	 */
   public static void setPreferredDecimalSeparator(String separator) {
-  	preferredDecimalSeparator = separator;
+  	if (separator==null || COMMA_DECIMAL_SEPARATOR.equals(separator) || PERIOD_DECIMAL_SEPARATOR.equals(separator)) {
+    	preferredDecimalSeparator = separator;
+  	}
   }
   
 	/**
@@ -1013,10 +1025,6 @@ public class OSPRuntime {
    * @return translator, or null if none available
    */
   public static Translator getTranslator() {
-	  
-	 if(org.opensourcephysics.js.JSUtil.isJS) { // translator tool not supported in JavaScript.
-		 return null;
-	 }
     if((translator==null)&&loadTranslatorTool) {
       // creates the shared Translator
       try {
@@ -1031,12 +1039,7 @@ public class OSPRuntime {
     return translator;
   }
 
-  /**
-   * BH AsyncFileChooser extends JFileChooser, so all of the methods of JFileChooser are still available. In particular,
-   * the SAVE action needs no changes. But File reading requires asynchronous action in SwingJS. 
-   * 
-   */
-  private static AsyncFileChooser chooser;
+  private static JFileChooser chooser;
 
   /**
    * Gets a file chooser.
@@ -1044,13 +1047,13 @@ public class OSPRuntime {
    *
    * @return the chooser
    */
-  public static AsyncFileChooser getChooser() {
+  public static JFileChooser getChooser() {
     if(chooser!=null) {
     	FontSizer.setFonts(chooser, FontSizer.getLevel());
       return chooser;
     }
     try {
-      chooser = (OSPRuntime.chooserDir==null) ? new AsyncFileChooser() : new AsyncFileChooser(new File(OSPRuntime.chooserDir));
+      chooser = (OSPRuntime.chooserDir==null) ? new JFileChooser() : new JFileChooser(new File(OSPRuntime.chooserDir));
     } catch(Exception e) {
       System.err.println("Exception in OSPFrame getChooser="+e); //$NON-NLS-1$
       return null;
@@ -1302,6 +1305,6 @@ public class OSPRuntime {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017  The Open Source Physics project
- *                     http://www.opensourcephysics.org
+ * Copyright (c) 2019  The Open Source Physics project
+ *                     https://www.compadre.org/osp
  */

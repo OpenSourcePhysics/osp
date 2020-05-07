@@ -213,19 +213,19 @@ public class OSPLog extends JFrame {
    * Shows the log.
    */
   public static void showLogInvokeLater() {
-    Runnable doLater = new Runnable() {
-      public void run() {
-        Timer timer = new Timer(500, new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
-            showLog();
-          }
-        });
-    		timer.setRepeats(false);
-    		timer.start();
-      }
+    Timer timer = new Timer(500, new ActionListener() {
+  	  public void actionPerformed(ActionEvent e) {
+  	    Runnable doLater = new Runnable() {
+  	      public void run() {
+  	        showLog();
+  	      }
 
-    };
-    java.awt.EventQueue.invokeLater(doLater);
+  	    };
+  	    java.awt.EventQueue.invokeLater(doLater);
+  	  }
+  	});
+  	timer.setRepeats(false);
+  	timer.start();
   }
 
   /**

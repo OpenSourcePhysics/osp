@@ -1885,8 +1885,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    * @return the name of the opened file
    */
   protected String open() {
-    @SuppressWarnings("deprecation")
-	int result = OSPRuntime.getChooser().showOpenDialog(null);
+    int result = OSPRuntime.getChooser().showOpenDialog(null);
     if(result==JFileChooser.APPROVE_OPTION) {
       OSPRuntime.chooserDir = OSPRuntime.getChooser().getCurrentDirectory().toString();
       String fileName = OSPRuntime.getChooser().getSelectedFile().getAbsolutePath();
@@ -1903,8 +1902,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
    * @return the name of the imported file
    */
   protected String importFileIntoTab(DataToolTab tab) {
-    @SuppressWarnings("deprecation")
-	int result = OSPRuntime.getChooser().showOpenDialog(tab);
+    int result = OSPRuntime.getChooser().showOpenDialog(tab);
     if(result==JFileChooser.APPROVE_OPTION) {
       OSPRuntime.chooserDir = OSPRuntime.getChooser().getCurrentDirectory().toString();
       String fileName = OSPRuntime.getChooser().getSelectedFile().getAbsolutePath();
