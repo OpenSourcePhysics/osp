@@ -2753,8 +2753,15 @@ public class ResourceLoader {
 	    return(res==null) ? null : res.getImage();
 	  }
 
-	  final static String myPath = "/org/opensourcephysics/resources/";
-	  final static String imagezipPath = myPath + "images.zip";
+	  static String myPath = "/org/opensourcephysics/resources/";
+	  static String imagezipPath = myPath + "images.zip";
+	  
+	  public static void setAssetPath(String filePath, String assetsZip) {
+	  	myPath=filePath;
+	  	imagezipPath=myPath+assetsZip;
+			OSPLog.debug("imagezipPath="+imagezipPath);
+	  }
+		  
 	  
 	public static URL getImageZipResource(String imagePath) {
 		

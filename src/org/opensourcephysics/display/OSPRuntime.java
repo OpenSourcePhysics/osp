@@ -61,6 +61,9 @@ public class OSPRuntime {
 	public static final String VERSION = "5.0.0"; //$NON-NLS-1$
 
 	private static boolean isMac;
+	private static String assetsPath;
+	private static String assetsFile;
+	
 
 	static {
 		try {
@@ -78,6 +81,25 @@ public class OSPRuntime {
 			false;
 
 	public static JSUtilI jsutil;
+	
+	static {
+		try {
+			if (isJS) {
+				Object o=OSPRuntime.jsutil.getAppletInfo("assets");
+				if(o != null) { // assets parameter define in Info block
+					String filePath=o.toString();
+					int index=filePath.lastIndexOf('/');
+					assetsPath=filePath.substring(0, index+1);
+					assetsFile=filePath.substring(index+1, filePath.length());
+					OSPLog.debug("assetsPath="+assetsPath);
+					OSPLog.debug("assetsFile="+assetsFile);
+					ResourceLoader.setAssetPath( assetsPath, assetsFile);
+				}
+			}
+		} catch (Exception e) {
+			OSPLog.warning("Error reading assets path. ");
+		}
+	}
 	
 	static {
 		try {
@@ -126,7 +148,6 @@ public class OSPRuntime {
 	public static boolean skipDisplayOfPDF = true;//isJS; // for TrackerIO, for now.
 
 	public static boolean embedVideoAsObject = isJS;
-	
 
 	public static boolean unzipFiles = !isJS; // for TrackerIO
 	
