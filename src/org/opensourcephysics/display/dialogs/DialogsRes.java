@@ -38,7 +38,7 @@ public class DialogsRes {
   // static fields
   static final String BUNDLE_NAME = "org.opensourcephysics.resources.display.dialogs_res"; //$NON-NLS-1$
   static Locale resourceLocale = Locale.ENGLISH;
-  static ResourceBundle res;
+  static org.opensourcephysics.tools.ResourceLoader.Bundle res;
 
   static {
     String language = Locale.getDefault().getLanguage();
@@ -81,7 +81,6 @@ public class DialogsRes {
       return;
     }
     resourceLocale = loc;
-    // get the new resource bundle
     res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME, resourceLocale);
     setLocalStrings();
   }
@@ -92,23 +91,23 @@ public class DialogsRes {
   * Static strings are used for speed to avoid having to call the resource object.  This may no longer be necessary on fast machines.
   */
   private static void setLocalStrings() {
-    AUTOSCALE_AUTOSCALE = getString(res, "AUTOSCALE_AUTOSCALE");       //$NON-NLS-1$
-    AUTOSCALE_AUTO = getString(res, "AUTOSCALE_AUTO");                 //$NON-NLS-1$
-    AUTOSCALE_OK = getString(res, "AUTOSCALE_OK");                     //$NON-NLS-1$
-    AUTOSCALE_ZOOM_WARNING = getString(res, "AUTOSCALE_ZOOM_WARNING"); //$NON-NLS-1$
-    SCALE_SCALE = getString(res, "SCALE_SCALE");                       //$NON-NLS-1$
-    SCALE_MIN = getString(res, "SCALE_MIN");                           //$NON-NLS-1$
-    SCALE_MAX = getString(res, "SCALE_MAX");                           //$NON-NLS-1$
-    SCALE_AUTO = getString(res, "SCALE_AUTO");                         //$NON-NLS-1$
-    SCALE_CANCEL = getString(res, "SCALE_CANCEL");                     //$NON-NLS-1$
-    SCALE_OK = getString(res, "SCALE_OK");                             //$NON-NLS-1$
-    SCALE_HORIZONTAL = getString(res, "SCALE_HORIZONTAL");             //$NON-NLS-1$
-    SCALE_VERTICAL = getString(res, "SCALE_VERTICAL");                 //$NON-NLS-1$
-    LOG_SCALE = getString(res, "LOG_SCALE");                           //$NON-NLS-1$
-    LOG_X = getString(res, "LOG_X");                                   //$NON-NLS-1$
-    LOG_Y = getString(res, "LOG_Y");                                   //$NON-NLS-1$
-    LOG_OK = getString(res, "LOG_OK");                                 //$NON-NLS-1$
-    LOG_WARNING = getString(res, "LOG_WARNING");                       //$NON-NLS-1$
+    AUTOSCALE_AUTOSCALE = res.getString("AUTOSCALE_AUTOSCALE");       //$NON-NLS-1$
+    AUTOSCALE_AUTO = res.getString("AUTOSCALE_AUTO");                 //$NON-NLS-1$
+    AUTOSCALE_OK = res.getString("AUTOSCALE_OK");                     //$NON-NLS-1$
+    AUTOSCALE_ZOOM_WARNING = res.getString("AUTOSCALE_ZOOM_WARNING"); //$NON-NLS-1$
+    SCALE_SCALE = res.getString("SCALE_SCALE");                       //$NON-NLS-1$
+    SCALE_MIN = res.getString("SCALE_MIN");                           //$NON-NLS-1$
+    SCALE_MAX = res.getString("SCALE_MAX");                           //$NON-NLS-1$
+    SCALE_AUTO = res.getString("SCALE_AUTO");                         //$NON-NLS-1$
+    SCALE_CANCEL = res.getString("SCALE_CANCEL");                     //$NON-NLS-1$
+    SCALE_OK = res.getString("SCALE_OK");                             //$NON-NLS-1$
+    SCALE_HORIZONTAL = res.getString("SCALE_HORIZONTAL");             //$NON-NLS-1$
+    SCALE_VERTICAL = res.getString("SCALE_VERTICAL");                 //$NON-NLS-1$
+    LOG_SCALE = res.getString("LOG_SCALE");                           //$NON-NLS-1$
+    LOG_X = res.getString("LOG_X");                                   //$NON-NLS-1$
+    LOG_Y = res.getString("LOG_Y");                                   //$NON-NLS-1$
+    LOG_OK = res.getString("LOG_OK");                                 //$NON-NLS-1$
+    LOG_WARNING = res.getString("LOG_WARNING");                       //$NON-NLS-1$
   }
 
   static {

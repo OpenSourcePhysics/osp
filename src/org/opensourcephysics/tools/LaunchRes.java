@@ -21,7 +21,7 @@ public class LaunchRes {
   // static fields
   static Locale resourceLocale = Locale.ENGLISH;
   static final String BUNDLE_NAME = "org.opensourcephysics.resources.tools.launcher"; //$NON-NLS-1$
-  static ResourceBundle res;
+  static org.opensourcephysics.tools.ResourceLoader.Bundle res;
   static PropertyChangeSupport support = new SwingPropertyChangeSupport(new LaunchRes());
 
   static {

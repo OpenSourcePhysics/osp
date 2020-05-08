@@ -18,7 +18,7 @@ import java.util.ResourceBundle;
  */
 public class DisplayRes {
   private static String BUNDLE_NAME = "org.opensourcephysics.resources.display.display_res"; //$NON-NLS-1$
-  private static ResourceBundle res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME);
+  private static org.opensourcephysics.tools.ResourceLoader.Bundle res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME);
 
   private DisplayRes() {}
 

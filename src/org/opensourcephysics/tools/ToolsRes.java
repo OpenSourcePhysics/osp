@@ -30,7 +30,7 @@ public class ToolsRes {
   // static fields
   static final String BUNDLE_NAME = "org.opensourcephysics.resources.tools.tools"; //$NON-NLS-1$
   static Locale resourceLocale = Locale.getDefault();
-  static ResourceBundle res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME, resourceLocale);
+  static org.opensourcephysics.tools.ResourceLoader.Bundle res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME, resourceLocale);
   static Object resObj = new ToolsRes();
   static PropertyChangeSupport support = new SwingPropertyChangeSupport(resObj);
 

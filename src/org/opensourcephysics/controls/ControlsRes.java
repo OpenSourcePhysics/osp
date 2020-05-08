@@ -11,6 +11,7 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.ResourceLoader;
+import org.opensourcephysics.tools.ResourceLoader.Bundle;
 
 /**
  * ControlsRes provides access to internationalized string resources for OSPControls.
@@ -39,7 +40,7 @@ public class ControlsRes {
   public static String XML_NAME;
   public static String XML_VALUE;
   static final String BUNDLE_NAME = "org.opensourcephysics.resources.controls.controls_res"; //$NON-NLS-1$
-  static ResourceBundle res;
+  static org.opensourcephysics.tools.ResourceLoader.Bundle res;
 
   // private constructor because all methods are static
   private ControlsRes() {}
@@ -90,24 +91,24 @@ public class ControlsRes {
   * Gets the local strings.  Static strings are used for speed to avoid having to call the resource object.
   */
   private static void setLocalStrings() {
-    ANIMATION_NEW = getString(res, "ANIMATION_NEW");                 //$NON-NLS-1$
-    ANIMATION_INIT = getString(res, "ANIMATION_INIT");               //$NON-NLS-1$
-    ANIMATION_STEP = getString(res, "ANIMATION_STEP");               //$NON-NLS-1$
-    ANIMATION_RESET = getString(res, "ANIMATION_RESET");             //$NON-NLS-1$
-    ANIMATION_START = getString(res, "ANIMATION_START");             //$NON-NLS-1$
-    ANIMATION_STOP = getString(res, "ANIMATION_STOP");               //$NON-NLS-1$
-    ANIMATION_RESET_TIP = getString(res, "ANIMATION_RESET_TIP");     //$NON-NLS-1$
-    ANIMATION_INIT_TIP = getString(res, "ANIMATION_INIT_TIP");       //$NON-NLS-1$
-    ANIMATION_START_TIP = getString(res, "ANIMATION_START_TIP");     //$NON-NLS-1$
-    ANIMATION_STOP_TIP = getString(res, "ANIMATION_STOP_TIP");       //$NON-NLS-1$
-    ANIMATION_NEW_TIP = getString(res, "ANIMATION_NEW_TIP");         //$NON-NLS-1$
-    ANIMATION_STEP_TIP = getString(res, "ANIMATION_STEP_TIP");       //$NON-NLS-1$
-    CALCULATION_CALC = getString(res, "CALCULATION_CALC");           //$NON-NLS-1$
-    CALCULATION_RESET = getString(res, "CALCULATION_RESET");         //$NON-NLS-1$
-    CALCULATION_CALC_TIP = getString(res, "CALCULATION_CALC_TIP");   //$NON-NLS-1$
-    CALCULATION_RESET_TIP = getString(res, "CALCULATION_RESET_TIP"); //$NON-NLS-1$
-    XML_NAME = getString(res, "XML_NAME");                           //$NON-NLS-1$
-    XML_VALUE = getString(res, "XML_VALUE");                         //$NON-NLS-1$
+    ANIMATION_NEW = res.getString("ANIMATION_NEW");                 //$NON-NLS-1$
+    ANIMATION_INIT = res.getString("ANIMATION_INIT");               //$NON-NLS-1$
+    ANIMATION_STEP = res.getString("ANIMATION_STEP");               //$NON-NLS-1$
+    ANIMATION_RESET = res.getString("ANIMATION_RESET");             //$NON-NLS-1$
+    ANIMATION_START = res.getString("ANIMATION_START");             //$NON-NLS-1$
+    ANIMATION_STOP = res.getString("ANIMATION_STOP");               //$NON-NLS-1$
+    ANIMATION_RESET_TIP = res.getString("ANIMATION_RESET_TIP");     //$NON-NLS-1$
+    ANIMATION_INIT_TIP = res.getString("ANIMATION_INIT_TIP");       //$NON-NLS-1$
+    ANIMATION_START_TIP = res.getString("ANIMATION_START_TIP");     //$NON-NLS-1$
+    ANIMATION_STOP_TIP = res.getString("ANIMATION_STOP_TIP");       //$NON-NLS-1$
+    ANIMATION_NEW_TIP = res.getString("ANIMATION_NEW_TIP");         //$NON-NLS-1$
+    ANIMATION_STEP_TIP = res.getString("ANIMATION_STEP_TIP");       //$NON-NLS-1$
+    CALCULATION_CALC = res.getString("CALCULATION_CALC");           //$NON-NLS-1$
+    CALCULATION_RESET = res.getString("CALCULATION_RESET");         //$NON-NLS-1$
+    CALCULATION_CALC_TIP = res.getString("CALCULATION_CALC_TIP");   //$NON-NLS-1$
+    CALCULATION_RESET_TIP = res.getString("CALCULATION_RESET_TIP"); //$NON-NLS-1$
+    XML_NAME = res.getString("XML_NAME");                           //$NON-NLS-1$
+    XML_VALUE = res.getString("XML_VALUE");                         //$NON-NLS-1$
   }
 
 }

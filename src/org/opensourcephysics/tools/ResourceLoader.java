@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.ResourceBundle.Control;
 import java.util.Set;
@@ -2595,18 +2596,84 @@ public class ResourceLoader {
 	    return confirmOverwrite(filename, false);
 	  }
 
+	  static public class Bundle {
+		  
+		  private ResourceBundle res;
+		private Properties props;
+
+		Bundle(ResourceBundle res) {
+			  this.res = res;
+		  }
+		
+		Bundle(Properties props) {
+			this.props = props;
+		}
+		
+		public String getString(String name) {
+			return props == null ? res.getString(name) : props.getProperty(name);
+		}
+		
+	  }
+	  
+	  static String eclipseOSPPrefix, eclipseTrackerPrefix; 
+
 	  // ---- Localization
 	  static private final String JAR_TOOL_BUNDLE_NAME = "org.opensourcephysics.resources.tools.tools"; //$NON-NLS-1$
 	  
-		public static ResourceBundle getBundle(String bundleName, Locale resourceLocale) {
-			return ResourceBundle.getBundle(bundleName, resourceLocale, ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES));
+		public static Bundle getBundle(String bundleName, Locale resourceLocale) {
+			
+			  
+			if (Locale.getDefault().getLanguage() == "en") {
+				Properties p = new Properties();
+				String name = bundleName.replaceAll("\\.","/") + ".properties";
+				String prefix = null;
+				try {
+					prefix = (name.indexOf("tracker") >= 0 ? 
+							eclipseTrackerPrefix : eclipseOSPPrefix);
+					String fname = prefix == null ? name : prefix + name;
+					File f = new File(fname);
+					InputStream fis = new FileInputStream(f);
+					p.load(fis);
+					return new Bundle(p);
+				} catch (Exception e) {
+					if (!OSPRuntime.isJS && eclipseOSPPrefix == null) {
+						name = "src/" + name;
+						eclipseOSPPrefix = "";
+						try {
+							File f = new File(name);
+							OSPLog.debug("ResourceLoader trying " + f.getAbsolutePath());
+							InputStream is = new FileInputStream(f);
+							p.load(is);
+							eclipseOSPPrefix = "src/";
+							eclipseTrackerPrefix = "../tracker/";
+							return new Bundle(p);
+						} catch (Exception e1) {
+							name = "../osp/" + name;
+							try {
+								File f = new File(name);
+								OSPLog.debug("ResourceLoader trying " + f.getAbsolutePath());
+								InputStream is = new FileInputStream(f);
+								p.load(is);
+								eclipseOSPPrefix = "../osp/src/";
+								eclipseTrackerPrefix = "src/";
+								OSPLog.debug("ResourceLoader success!");
+								return new Bundle(p);
+							} catch (Exception e2) {
+							}
+						}
+					}
+				}	
+			}
+			OSPLog.debug("ResourceLoader could not find resource " + bundleName);
+			OSPLog.warning("ResourceLoader could not find resource " + bundleName);
+			return new Bundle(ResourceBundle.getBundle(bundleName, resourceLocale, ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES)));
 		}
 
-		public static ResourceBundle getBundle(String bundleName) {
-			return ResourceBundle.getBundle(bundleName, Locale.getDefault(), ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES));
+		public static Bundle getBundle(String bundleName) {
+			return getBundle(bundleName, Locale.getDefault());
 		}
 
-	  static private ResourceBundle res = getBundle(JAR_TOOL_BUNDLE_NAME);
+	  static private Bundle res = getBundle(JAR_TOOL_BUNDLE_NAME);
 
 	  static public void setLocale(Locale locale) {
 		  res = getBundle(JAR_TOOL_BUNDLE_NAME, locale);

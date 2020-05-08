@@ -13,7 +13,7 @@ import org.opensourcephysics.display.OSPRuntime;
 
 public class EjsRes {
   private static final String BUNDLE_NAME = "org.opensourcephysics.resources.ejs.ejs_res"; //$NON-NLS-1$
-  static ResourceBundle res;
+  static org.opensourcephysics.tools.ResourceLoader.Bundle res;
 
   private EjsRes() {}
 
