@@ -12,7 +12,11 @@ import javax.swing.JPanel;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.ResourceLoader;
 
-
+/**
+ * Test the zip asset loader API.
+ * @author Wolfgang Christian
+ *
+ */
 public class AssetsTest {
 
 	AssetsTest() {
@@ -22,13 +26,20 @@ public class AssetsTest {
 	*/
 		Object obj =OSPRuntime.jsutil.getAppletInfo("assets");
 		System.out.println("obj="+obj);
-		//String imageName = "/org/opensourcephysics/resources/controls/images/inspect.gif"; //$NON-NLS-1$
-		String imageName = "cover.gif"; //$NON-NLS-1$
+		
+		//Pick an image to load from an asset archive.
+		//Use asset: 'ospassets/osp_respources.zip'
+		//String imageName = "/org/opensourcephysics/resources/controls/images/inspect.gif";
+		
+	  //Use asset: 'ospassets/physlet_respources.zip'
+		//String imageName = "/opticsimages/bear1.gif";
+		String imageName = "/cover.gif";
+		
 		URL url=ResourceLoader.getImageZipResource(imageName);
 		System.out.println("url="+url);
 		ImageIcon icon = new ImageIcon(url);
 		
-		JFrame frame = new JFrame("Zip Resource Loader Example");
+		JFrame frame = new JFrame("Asset Loader Example");
 		IconPanel imagePanel = new IconPanel(icon);
 		imagePanel.setLayout(new BorderLayout());
 		frame.add(imagePanel);
