@@ -775,7 +775,8 @@ public class LibraryBrowser extends JPanel {
 		if (!path.endsWith(".trk") && dlFileFilter.accept(targetFile)) {
 			OSPLog.warning("BH NOTE! LibraryBrowser was going to try to parse a ZIP file as XML!");
 		} else {
-			XMLControlElement control = new XMLControlElement(targetFile);
+			XMLControlElement control = (ResourceLoader.isHTTP(path) ? new XMLControlElement(path)
+					: new XMLControlElement(targetFile));
 			if (!control.failedToRead() && control.getObjectClass() != null
 					&& LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
 				isRecentPathXML = true;

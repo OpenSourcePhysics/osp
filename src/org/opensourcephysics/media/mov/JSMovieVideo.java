@@ -43,8 +43,10 @@ import org.opensourcephysics.media.core.DoubleArray;
 import org.opensourcephysics.media.core.ImageCoordSystem;
 import org.opensourcephysics.media.core.Video;
 import org.opensourcephysics.media.core.VideoAdapter;
+import org.opensourcephysics.media.core.VideoClip;
 import org.opensourcephysics.media.core.VideoFileFilter;
 import org.opensourcephysics.media.core.VideoIO;
+import org.opensourcephysics.media.core.VideoIO.FinalizableLoader;
 import org.opensourcephysics.media.core.VideoType;
 import org.opensourcephysics.tools.Resource;
 import org.opensourcephysics.tools.ResourceLoader;
@@ -65,6 +67,11 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	
 	public static boolean registered;
 
+
+	State state;
+	public String err;
+
+	
 	/**
 	 * Registers HTML5 video types with VideoIO class for file reading
 	 *
@@ -141,7 +148,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		}
 		int n = getFrameNumber() + 1;
 		playing = true;
-		support.firePropertyChange("playing", null, new Boolean(true)); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_VIDEO_PLAYING, null, new Boolean(true)); //$NON-NLS-1$
 		startPlayingAtFrame(n);
 	}
 
@@ -151,7 +158,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	@Override
 	public void stop() {
 		playing = false;
-		support.firePropertyChange("playing", null, new Boolean(false)); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_VIDEO_PLAYING, null, new Boolean(false)); //$NON-NLS-1$
 	}
 
 
@@ -168,6 +175,10 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 */
 	@Override
 	public void setFrameNumber(int n) {
+		if (n < 0) {
+			this.frameNumber = n;
+			n = 0;
+		}
 		super.setFrameNumber(n);
 //		OSPLog.finest("JSMovieVideo.setFrameNumber " + n + " " + getFrameNumber());
 		state.getImage(getFrameNumber());
@@ -279,7 +290,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 */
 	@Override
 	public double getDuration() {
-		return HTML5Video.getDuration(jsvideo);
+		return jsvideo == null ? 0 : HTML5Video.getDuration(jsvideo);
 	}
 
 	/**
@@ -373,15 +384,10 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 * @throws IOException
 	 */
 	private void load(String fileName, String basePath) throws IOException {
-		this.baseDir = XML.getDirectoryPath(basePath);
+		this.baseDir = basePath;
 		this.fileName = fileName;
-		Resource res = ResourceLoader.getResource(getAbsolutePath(fileName));
-		if (res == null) {
-			throw new IOException("unable to create resource for " + fileName); //$NON-NLS-1$
-		}
-		url = res.getURL();
-		//file = res.getFile();
-		
+		Resource res = new Resource(new File(getAbsolutePath(fileName)));
+		url = res.getURL();		
 		boolean isLocal = url.getProtocol().toLowerCase().indexOf("file") > -1; //$NON-NLS-1$
 		String path = isLocal ? res.getAbsolutePath() : url.toExternalForm();
 		OSPLog.finest("JSMovieVideo loading " + path + " local?: " + isLocal); //$NON-NLS-1$ //$NON-NLS-2$
@@ -403,9 +409,6 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		state.load(path);
 		
 	}
-
-	State state;
-	public String err;
 
 	private class State implements StateMachine {
 		
@@ -566,7 +569,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					seconds.add(Double.valueOf(t));
 					v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, v.frame); 
 					v.frame++;
-					//OSPLog.finest("JSMovieVideo frame " + frame + " " + t);
+					OSPLog.debug("JSMovieVideo frame " + v.frame + " " + t);
 					helper.setState(STATE_FIND_FRAMES_LOOP);
 					continue;
 				case STATE_FIND_FRAMES_DONE:
@@ -575,7 +578,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					// clean up temporary objects
 					// throw IOException if no frames were loaded
 					if (seconds.size() == 0) {
-						v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, null); 
+						v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, v.frame); 
 						dispose();
 						v.err = "no frames"; //$NON-NLS-1$
 					}
@@ -592,15 +595,12 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					}
 					seconds = null;
 
-					v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, null); // to TFrame
+					v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, v.frame); // to TFrame
 					thisFrame = -1;
-					v.setFrameNumber(0);
-					// failDetectTimer.stop();
-//					if (img == null) {
-//						dispose();
-//						throw new IOException("No images"); //$NON-NLS-1$
-//					}
-//					setImage(img);
+					v.frameNumber = -1;
+					v.firePropertyChange(PROPERTY_VIDEO_READY, v.fileName, v.frame); // to TFrame
+					((VideoClip) getProperty("videoclip")).videoReady();
+					v.setFrameNumber(-99);
 					continue;
 				case STATE_GET_IMAGE_INIT:
 					helper.setState(STATE_GET_IMAGE_READY);
@@ -614,12 +614,12 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 						v.isValidFilteredImage = false;
 						if (v.rawImage == null) {
 							v.rawImage = bi;
-							v.firePropertyChange(PROPERTY_VIDEO_ASYNC_READY, null, Integer.valueOf(v.frameCount));
+							v.firePropertyChange(PROPERTY_ASYNCVIDEOI_READY, null, Integer.valueOf(v.frameCount));
 							return true;
 						}
 							v.rawImage = bi;
 							v.firePropertyChange(Video.PROPERTY_VIDEO_FRAMENUMBER, null, new Integer(thisFrame)); 
-							v.firePropertyChange(AsyncVideoI.PROPERTY_VIDEO_IMAGE_READY, null, bi); 
+							v.firePropertyChange(AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGE_READY, null, bi); 
 							if (v.isPlaying()) {
 								Runnable runner = new Runnable() {
 								@Override
@@ -694,6 +694,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	public String getTypeName() {
 		return MovieFactory.ENGINE_JS;
 	}
+
 }
 
 /*

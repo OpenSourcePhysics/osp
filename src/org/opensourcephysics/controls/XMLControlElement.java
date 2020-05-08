@@ -1017,8 +1017,7 @@ public class XMLControlElement implements XMLControl {
 			return null; // unable to create new obj
 		}
 		if (type.isInstance(obj)) {
-			obj = loader.loadObject(this, obj);
-			object = obj;
+			object = obj = loader.loadObject(this, obj);
 		}
 		return obj;
 	}

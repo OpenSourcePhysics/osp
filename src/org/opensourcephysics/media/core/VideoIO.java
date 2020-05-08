@@ -71,6 +71,12 @@ import javajs.async.AsyncFileChooser;
  */
 public class VideoIO {
 
+	public interface FinalizableLoader {
+		
+		public void finalizeLoading();
+
+	}
+
 	public static class SingleExtFileFilter extends FileFilter {
 
 		private String ext;

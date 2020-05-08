@@ -30,6 +30,7 @@
  * please see <http://www.opensourcephysics.org/>.
  */
 package org.opensourcephysics.media.core;
+
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -41,6 +42,7 @@ import java.awt.image.DataBufferInt;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -66,38 +68,39 @@ import swingjs.api.JSUtilI;
  */
 public abstract class VideoAdapter implements Video {
 // instance fields
-  protected Image rawImage;              // raw image from video source
-  protected Dimension size;              // image pixel dimensions
-  protected BufferedImage bufferedImage; // offscreen buffered image copy
-  protected BufferedImage filteredImage; // filtered image
-  protected String baseDir;
-  protected int frameCount;
-  protected int frameNumber;
-  protected int startFrameNumber;
-  protected int endFrameNumber;
-  protected double rate = 1;
-  protected boolean playing = false;
-  protected boolean looping = false;
-  protected double minX, maxX, minY, maxY;
-  protected boolean mouseEnabled = false;
-  protected boolean visible = true;
-  protected boolean isMeasured = false;
-  protected boolean isValidMeasure = false;
-  protected boolean widthDominates = true;
-  protected boolean isValidImage = false;
-  protected boolean isValidFilteredImage = false;
-  protected ImageCoordSystem coords;
-  protected DoubleArray aspects;
-  protected PropertyChangeSupport support;
-  protected HashMap<String, Object> properties = new HashMap<String, Object>();
-  protected FilterStack filterStack = new FilterStack();
-  protected DataBufferInt clearRaster;
-/**
-   * Protected constructor creates an empty VideoAdapter
-   */
-  protected VideoAdapter() {
-    initialize();
-  }
+	protected Image rawImage; // raw image from video source
+	protected Dimension size; // image pixel dimensions
+	protected BufferedImage bufferedImage; // offscreen buffered image copy
+	protected BufferedImage filteredImage; // filtered image
+	protected String baseDir;
+	protected int frameCount;
+	protected int frameNumber;
+	protected int startFrameNumber;
+	protected int endFrameNumber;
+	protected double rate = 1;
+	protected boolean playing = false;
+	protected boolean looping = false;
+	protected double minX, maxX, minY, maxY;
+	protected boolean mouseEnabled = false;
+	protected boolean visible = true;
+	protected boolean isMeasured = false;
+	protected boolean isValidMeasure = false;
+	protected boolean widthDominates = true;
+	protected boolean isValidImage = false;
+	protected boolean isValidFilteredImage = false;
+	protected ImageCoordSystem coords;
+	protected DoubleArray aspects;
+	protected PropertyChangeSupport support;
+	protected HashMap<String, Object> properties = new HashMap<String, Object>();
+	protected FilterStack filterStack = new FilterStack();
+	protected DataBufferInt clearRaster;
+
+	/**
+	 * Protected constructor creates an empty VideoAdapter
+	 */
+	protected VideoAdapter() {
+		initialize();
+	}
 
 	/**
 	 * Draws the video image on the panel.
@@ -146,88 +149,88 @@ public abstract class VideoAdapter implements Video {
 		}
 	}
 
-  /**
-   * Shows or hides the video.
-   *
-   * @param visible <code>true</code> to show the video
-   */
-  @Override
-public void setVisible(boolean visible) {
-    this.visible = visible;
-    firePropertyChange(PROPERTY_VIDEO_VIDEOVISIBLE, null, new Boolean(visible)); 
-  }
+	/**
+	 * Shows or hides the video.
+	 *
+	 * @param visible <code>true</code> to show the video
+	 */
+	@Override
+	public void setVisible(boolean visible) {
+		this.visible = visible;
+		firePropertyChange(PROPERTY_VIDEO_VIDEOVISIBLE, null, new Boolean(visible));
+	}
 
-  /**
-   * Gets the visibility of the video.
-   *
-   * @return <code>true</code> if the video is visible
-   */
-  @Override
-public boolean isVisible() {
-    return visible;
-  }
+	/**
+	 * Gets the visibility of the video.
+	 *
+	 * @return <code>true</code> if the video is visible
+	 */
+	@Override
+	public boolean isVisible() {
+		return visible;
+	}
 
-  /**
-   * Gets the minimum x needed to draw this object.
-   *
-   * @return minimum x
-   */
-  @Override
-public double getXMin() {
-    if(!isValidMeasure) {
-      findMinMaxValues();
-    }
-    return minX;
-  }
+	/**
+	 * Gets the minimum x needed to draw this object.
+	 *
+	 * @return minimum x
+	 */
+	@Override
+	public double getXMin() {
+		if (!isValidMeasure) {
+			findMinMaxValues();
+		}
+		return minX;
+	}
 
-  /**
-   * Gets the maximum x needed to draw this object.
-   *
-   * @return maximum x
-   */
-  @Override
-public double getXMax() {
-    if(!isValidMeasure) {
-      findMinMaxValues();
-    }
-    return maxX;
-  }
+	/**
+	 * Gets the maximum x needed to draw this object.
+	 *
+	 * @return maximum x
+	 */
+	@Override
+	public double getXMax() {
+		if (!isValidMeasure) {
+			findMinMaxValues();
+		}
+		return maxX;
+	}
 
-  /**
-   * Gets the minimum y needed to draw this object.
-   *
-   * @return minimum y
-   */
-  @Override
-public double getYMin() {
-    if(!isValidMeasure) {
-      findMinMaxValues();
-    }
-    return minY;
-  }
+	/**
+	 * Gets the minimum y needed to draw this object.
+	 *
+	 * @return minimum y
+	 */
+	@Override
+	public double getYMin() {
+		if (!isValidMeasure) {
+			findMinMaxValues();
+		}
+		return minY;
+	}
 
-  /**
-   * Gets the maximum y needed to draw this object.
-   *
-   * @return maximum y
-   */
-  @Override
-public double getYMax() {
-    if(!isValidMeasure) {
-      findMinMaxValues();
-    }
-    return maxY;
-  }
+	/**
+	 * Gets the maximum y needed to draw this object.
+	 *
+	 * @return maximum y
+	 */
+	@Override
+	public double getYMax() {
+		if (!isValidMeasure) {
+			findMinMaxValues();
+		}
+		return maxY;
+	}
 
-  /**
-   * Reports whether information is available to set min/max values.
-   *
-   * @return <code>true</code> if min/max values are valid
-   */
-  @Override
-public boolean isMeasured() {
-    return isMeasured;
-  }
+	/**
+	 * Reports whether information is available to set min/max values.
+	 *
+	 * @return <code>true</code> if min/max values are valid
+	 */
+	@Override
+	public boolean isMeasured() {
+		return isMeasured;
+	}
 
 	/**
 	 * Gets the current video image after applying enabled filters.
@@ -240,7 +243,7 @@ public boolean isMeasured() {
 		if (!isValidImage) { // bufferedImage needs refreshing
 			isValidImage = true;
 			Graphics g = bufferedImage.createGraphics();
-		     // bufferedImage.setData(clearRaster);
+			// bufferedImage.setData(clearRaster);
 			g.drawImage(rawImage, 0, 0, null);
 			g.dispose();
 		}
@@ -253,673 +256,668 @@ public boolean isMeasured() {
 		return filteredImage;
 	}
 
-  /**
-   * Returns this video if enabled.
-   *
-   * @param panel the drawing panel
-   * @param xpix the x coordinate in pixels
-   * @param ypix the y coordinate in pixels
-   * @return this if enabled, otherwise null
-   */
-  @Override
-public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
-    if(!mouseEnabled) {
-      return null;
-    }
-    return this;
-  }
+	/**
+	 * Returns this video if enabled.
+	 *
+	 * @param panel the drawing panel
+	 * @param xpix  the x coordinate in pixels
+	 * @param ypix  the y coordinate in pixels
+	 * @return this if enabled, otherwise null
+	 */
+	@Override
+	public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+		if (!mouseEnabled) {
+			return null;
+		}
+		return this;
+	}
 
-  /**
-   * Sets whether this responds to mouse hits.
-   *
-   * @param enabled <code>true</code> if this responds to mouse hits.
-   */
-  @Override
-public void setEnabled(boolean enabled) {
-    mouseEnabled = enabled;
-  }
+	/**
+	 * Sets whether this responds to mouse hits.
+	 *
+	 * @param enabled <code>true</code> if this responds to mouse hits.
+	 */
+	@Override
+	public void setEnabled(boolean enabled) {
+		mouseEnabled = enabled;
+	}
 
-  /**
-   * Gets whether this responds to mouse hits.
-   *
-   * @return <code>true</code> if this responds to mouse hits.
-   */
-  @Override
-public boolean isEnabled() {
-    return mouseEnabled;
-  }
+	/**
+	 * Gets whether this responds to mouse hits.
+	 *
+	 * @return <code>true</code> if this responds to mouse hits.
+	 */
+	@Override
+	public boolean isEnabled() {
+		return mouseEnabled;
+	}
 
-  /**
-   * Sets x position of upper left corner of the specified video frame
-   * in world units.
-   *
-   * @param n the video frame number
-   * @param x the world x position
-   */
-  @Override
-public void setFrameX(int n, double x) {
-    setFrameXY(n, x, coords.imageToWorldY(n, 0, 0));
-  }
+	/**
+	 * Sets x position of upper left corner of the specified video frame in world
+	 * units.
+	 *
+	 * @param n the video frame number
+	 * @param x the world x position
+	 */
+	@Override
+	public void setFrameX(int n, double x) {
+		setFrameXY(n, x, coords.imageToWorldY(n, 0, 0));
+	}
 
-  /**
-   * Sets x position of upper left corner of all video frames
-   * in world units.
-   *
-   * @param x the world x position
-   */
-  @Override
-public void setX(double x) {
-    for(int n = 0; n<frameCount; n++) {
-      setFrameX(n, x);
-    }
-  }
+	/**
+	 * Sets x position of upper left corner of all video frames in world units.
+	 *
+	 * @param x the world x position
+	 */
+	@Override
+	public void setX(double x) {
+		for (int n = 0; n < frameCount; n++) {
+			setFrameX(n, x);
+		}
+	}
 
-  /**
-   * Sets y position of upper left corner of the specified video frame
-   * in world units.
-   *
-   * @param n the video frame number
-   * @param y the world y position
-   */
-  @Override
-public void setFrameY(int n, double y) {
-    setFrameXY(n, coords.imageToWorldX(n, 0, 0), y);
-  }
+	/**
+	 * Sets y position of upper left corner of the specified video frame in world
+	 * units.
+	 *
+	 * @param n the video frame number
+	 * @param y the world y position
+	 */
+	@Override
+	public void setFrameY(int n, double y) {
+		setFrameXY(n, coords.imageToWorldX(n, 0, 0), y);
+	}
 
-  /**
-   * Sets y position of upper left corner of all video frames
-   * in world units.
-   *
-   * @param y the world y position
-   */
-  @Override
-public void setY(double y) {
-    for(int n = 0; n<frameCount; n++) {
-      setFrameY(n, y);
-    }
-  }
+	/**
+	 * Sets y position of upper left corner of all video frames in world units.
+	 *
+	 * @param y the world y position
+	 */
+	@Override
+	public void setY(double y) {
+		for (int n = 0; n < frameCount; n++) {
+			setFrameY(n, y);
+		}
+	}
 
-  /**
-   * Gets x position of upper left corner of the current video frame
-   * in world units.
-   *
-   * @return the world x position
-   */
-  @Override
-public double getX() {
-    return coords.imageToWorldX(frameNumber, 0, 0);
-  }
+	/**
+	 * Gets x position of upper left corner of the current video frame in world
+	 * units.
+	 *
+	 * @return the world x position
+	 */
+	@Override
+	public double getX() {
+		return coords.imageToWorldX(frameNumber, 0, 0);
+	}
 
-  /**
-   * Gets y position of upper left corner of the current video frame
-   * in world units.
-   *
-   * @return the world y position
-   */
-  @Override
-public double getY() {
-    return coords.imageToWorldY(frameNumber, 0, 0);
-  }
+	/**
+	 * Gets y position of upper left corner of the current video frame in world
+	 * units.
+	 *
+	 * @return the world y position
+	 */
+	@Override
+	public double getY() {
+		return coords.imageToWorldY(frameNumber, 0, 0);
+	}
 
-  /**
-   * Sets the x and y position of the UL corner of the specified video
-   * frame in world units.
-   *
-   * @param n the video frame number
-   * @param x the world x position
-   * @param y the world y position
-   */
-  @Override
-public void setFrameXY(int n, double x, double y) {
-    double sin = coords.getSine(n);
-    double cos = coords.getCosine(n);
-    double tx = coords.getScaleX(n)*(y*sin-x*cos);
-    double ty = coords.getScaleY(n)*(y*cos+x*sin);
-    coords.setOriginXY(n, tx, ty);
-  }
+	/**
+	 * Sets the x and y position of the UL corner of the specified video frame in
+	 * world units.
+	 *
+	 * @param n the video frame number
+	 * @param x the world x position
+	 * @param y the world y position
+	 */
+	@Override
+	public void setFrameXY(int n, double x, double y) {
+		double sin = coords.getSine(n);
+		double cos = coords.getCosine(n);
+		double tx = coords.getScaleX(n) * (y * sin - x * cos);
+		double ty = coords.getScaleY(n) * (y * cos + x * sin);
+		coords.setOriginXY(n, tx, ty);
+	}
 
-  /**
-   * Sets the x and y position of the UL corner of all video frames
-   * in world units.
-   *
-   * @param x the world x position
-   * @param y the world y position
-   */
-  @Override
-public void setXY(double x, double y) {
-    for(int n = 0; n<frameCount; n++) {
-      setFrameXY(n, x, y);
-    }
-  }
+	/**
+	 * Sets the x and y position of the UL corner of all video frames in world
+	 * units.
+	 *
+	 * @param x the world x position
+	 * @param y the world y position
+	 */
+	@Override
+	public void setXY(double x, double y) {
+		for (int n = 0; n < frameCount; n++) {
+			setFrameXY(n, x, y);
+		}
+	}
 
-  /**
-   * Sets the relative aspect of the specified video frame. Relative
-   * aspect is the ratio of the world aspect to the pixel aspect of
-   * the image. The pixel aspect is the ratio of image width to height
-   * in pixels, and world aspect is the ratio of world width to height
-   * in world units. For example, a 320 x 240 pixel movie has a pixel
-   * aspect of 1.33. If relative aspect is 2, then the world aspect
-   * will be 2.67. So if the video's width is 16 wu, its height will
-   * be 6 wu. Or if its height is 10 wu, its width will be 26.67 wu.
-   *
-   * @param n the video frame number
-   * @param relativeAspect the desired relative aspect
-   */
-  @Override
-public void setFrameRelativeAspect(int n, double relativeAspect) {
-    if((relativeAspect<0.001)||(relativeAspect>1000)) {
-      return;
-    }
-    aspects.set(n, Math.abs(relativeAspect));
-    if(isMeasured) {
-      if(widthDominates) {
-        setFrameWidth(n, size.width/coords.getScaleX(n));
-      } else {
-        setFrameHeight(n, size.height/coords.getScaleY(n));
-      }
-    }
-  }
+	/**
+	 * Sets the relative aspect of the specified video frame. Relative aspect is the
+	 * ratio of the world aspect to the pixel aspect of the image. The pixel aspect
+	 * is the ratio of image width to height in pixels, and world aspect is the
+	 * ratio of world width to height in world units. For example, a 320 x 240 pixel
+	 * movie has a pixel aspect of 1.33. If relative aspect is 2, then the world
+	 * aspect will be 2.67. So if the video's width is 16 wu, its height will be 6
+	 * wu. Or if its height is 10 wu, its width will be 26.67 wu.
+	 *
+	 * @param n              the video frame number
+	 * @param relativeAspect the desired relative aspect
+	 */
+	@Override
+	public void setFrameRelativeAspect(int n, double relativeAspect) {
+		if ((relativeAspect < 0.001) || (relativeAspect > 1000)) {
+			return;
+		}
+		aspects.set(n, Math.abs(relativeAspect));
+		if (isMeasured) {
+			if (widthDominates) {
+				setFrameWidth(n, size.width / coords.getScaleX(n));
+			} else {
+				setFrameHeight(n, size.height / coords.getScaleY(n));
+			}
+		}
+	}
 
-  /**
-   * Sets the relative aspect of all video frames. Relative
-   * aspect is the ratio of the world aspect to the pixel aspect of
-   * the image. The pixel aspect is the ratio of image width to height
-   * in pixels, and world aspect is the ratio of world width to height
-   * in world units. For example, a 320 x 240 pixel movie has a pixel
-   * aspect of 1.33. If relative aspect is 2, then the world aspect
-   * will be 2.67. So if the video's width is 16 wu, its height will
-   * be 6 wu. Or if its height is 10 wu, its width will be 26.67 wu.
-   *
-   * @param relativeAspect the desired relative aspect
-   */
-  @Override
-public void setRelativeAspect(double relativeAspect) {
-    for(int n = 0; n<frameCount; n++) {
-      setFrameRelativeAspect(n, relativeAspect);
-    }
-  }
+	/**
+	 * Sets the relative aspect of all video frames. Relative aspect is the ratio of
+	 * the world aspect to the pixel aspect of the image. The pixel aspect is the
+	 * ratio of image width to height in pixels, and world aspect is the ratio of
+	 * world width to height in world units. For example, a 320 x 240 pixel movie
+	 * has a pixel aspect of 1.33. If relative aspect is 2, then the world aspect
+	 * will be 2.67. So if the video's width is 16 wu, its height will be 6 wu. Or
+	 * if its height is 10 wu, its width will be 26.67 wu.
+	 *
+	 * @param relativeAspect the desired relative aspect
+	 */
+	@Override
+	public void setRelativeAspect(double relativeAspect) {
+		for (int n = 0; n < frameCount; n++) {
+			setFrameRelativeAspect(n, relativeAspect);
+		}
+	}
 
-  /**
-   * Gets the relative aspect of the current video frame.
-   *
-   * @return the relative aspect of the current image.
-   */
-  @Override
-public double getRelativeAspect() {
-    return aspects.get(frameNumber);
-  }
+	/**
+	 * Gets the relative aspect of the current video frame.
+	 *
+	 * @return the relative aspect of the current image.
+	 */
+	@Override
+	public double getRelativeAspect() {
+		return aspects.get(frameNumber);
+	}
 
-  /**
-   * Sets the width of the specified video frame in world units. Also sets
-   * the height using the relative aspect.
-   *
-   * @param n the video frame number
-   * @param width the width in world units
-   * @see #setRelativeAspect
-   */
-  @Override
-public void setFrameWidth(int n, double width) {
-    if(width==0) {
-      return;
-    }
-    width = Math.abs(width);
-    // save x and y since setting width invalidates them
-    double x = coords.imageToWorldX(n, 0, 0);
-    double y = coords.imageToWorldY(n, 0, 0);
-    double scaleX = size.width/width;
-    coords.setScaleX(n, scaleX);
-    coords.setScaleY(n, scaleX*aspects.get(n));
-    widthDominates = true;
-    // restore x and y to their correct values
-    setFrameXY(n, x, y);
-  }
+	/**
+	 * Sets the width of the specified video frame in world units. Also sets the
+	 * height using the relative aspect.
+	 *
+	 * @param n     the video frame number
+	 * @param width the width in world units
+	 * @see #setRelativeAspect
+	 */
+	@Override
+	public void setFrameWidth(int n, double width) {
+		if (width == 0) {
+			return;
+		}
+		width = Math.abs(width);
+		// save x and y since setting width invalidates them
+		double x = coords.imageToWorldX(n, 0, 0);
+		double y = coords.imageToWorldY(n, 0, 0);
+		double scaleX = size.width / width;
+		coords.setScaleX(n, scaleX);
+		coords.setScaleY(n, scaleX * aspects.get(n));
+		widthDominates = true;
+		// restore x and y to their correct values
+		setFrameXY(n, x, y);
+	}
 
-  /**
-   * Sets the width of all video frames in world units. Also sets
-   * the heights using the relative aspect.
-   *
-   * @param width the width in world units
-   * @see #setRelativeAspect
-   */
-  @Override
-public void setWidth(double width) {
-    for(int n = 0; n<frameCount; n++) {
-      setFrameWidth(n, width);
-    }
-  }
+	/**
+	 * Sets the width of all video frames in world units. Also sets the heights
+	 * using the relative aspect.
+	 *
+	 * @param width the width in world units
+	 * @see #setRelativeAspect
+	 */
+	@Override
+	public void setWidth(double width) {
+		for (int n = 0; n < frameCount; n++) {
+			setFrameWidth(n, width);
+		}
+	}
 
-  /**
-   * Gets the current width of the video frame.
-   *
-   * @return the width of the video image
-   */
-  @Override
-public double getWidth() {
-    return size.width/coords.getScaleX(frameNumber);
-  }
+	/**
+	 * Gets the current width of the video frame.
+	 *
+	 * @return the width of the video image
+	 */
+	@Override
+	public double getWidth() {
+		return size.width / coords.getScaleX(frameNumber);
+	}
 
-  /**
-   * Sets the height of the specified video frame in world units. Also sets
-   * the width using the relative aspect.
-   *
-   * @param n the video frame number
-   * @param height the height in world units
-   * @see #setRelativeAspect
-   */
-  @Override
-public void setFrameHeight(int n, double height) {
-    if(height==0) {
-      return;
-    }
-    height = Math.abs(height);
-    // save x and y since setting width invalidates them
-    double x = coords.imageToWorldX(n, 0, 0);
-    double y = coords.imageToWorldY(n, 0, 0);
-    double scaleY = size.height/height;
-    coords.setScaleY(n, scaleY);
-    coords.setScaleX(n, scaleY/aspects.get(n));
-    widthDominates = false;
-    // restore x and y to their correct values
-    setFrameXY(n, x, y);
-  }
+	/**
+	 * Sets the height of the specified video frame in world units. Also sets the
+	 * width using the relative aspect.
+	 *
+	 * @param n      the video frame number
+	 * @param height the height in world units
+	 * @see #setRelativeAspect
+	 */
+	@Override
+	public void setFrameHeight(int n, double height) {
+		if (height == 0) {
+			return;
+		}
+		height = Math.abs(height);
+		// save x and y since setting width invalidates them
+		double x = coords.imageToWorldX(n, 0, 0);
+		double y = coords.imageToWorldY(n, 0, 0);
+		double scaleY = size.height / height;
+		coords.setScaleY(n, scaleY);
+		coords.setScaleX(n, scaleY / aspects.get(n));
+		widthDominates = false;
+		// restore x and y to their correct values
+		setFrameXY(n, x, y);
+	}
 
-  /**
-   * Sets the height of all video frames in world units. Also sets
-   * the widths using the relative aspect.
-   *
-   * @param height the height in world units
-   * @see #setRelativeAspect
-   */
-  @Override
-public void setHeight(double height) {
-    for(int n = 0; n<frameCount; n++) {
-      setFrameHeight(n, height);
-    }
-  }
+	/**
+	 * Sets the height of all video frames in world units. Also sets the widths
+	 * using the relative aspect.
+	 *
+	 * @param height the height in world units
+	 * @see #setRelativeAspect
+	 */
+	@Override
+	public void setHeight(double height) {
+		for (int n = 0; n < frameCount; n++) {
+			setFrameHeight(n, height);
+		}
+	}
 
-  /**
-   * Gets the current height of the video frame.
-   *
-   * @return the height of the video image
-   */
-  @Override
-public double getHeight() {
-    return size.height/coords.getScaleY(frameNumber);
-  }
+	/**
+	 * Gets the current height of the video frame.
+	 *
+	 * @return the height of the video image
+	 */
+	@Override
+	public double getHeight() {
+		return size.height / coords.getScaleY(frameNumber);
+	}
 
-  /**
-   * Sets the angle in radians of the specified video frame measured ccw
-   * from the world x-axis. This results in a rotation only.
-   *
-   * @param n the video frame number
-   * @param theta the angle in radians
-   */
-  @Override
-public void setFrameAngle(int n, double theta) {
-    // save x and y since setting angle invalidates them
-    double x = coords.imageToWorldX(n, 0, 0);
-    double y = coords.imageToWorldY(n, 0, 0);
-    double cos = Math.cos(theta);
-    double sin = Math.sin(theta);
-    coords.setCosineSine(n, cos, -sin);
-    setFrameXY(n, x, y); // restore x and y to their correct values
-  }
+	/**
+	 * Sets the angle in radians of the specified video frame measured ccw from the
+	 * world x-axis. This results in a rotation only.
+	 *
+	 * @param n     the video frame number
+	 * @param theta the angle in radians
+	 */
+	@Override
+	public void setFrameAngle(int n, double theta) {
+		// save x and y since setting angle invalidates them
+		double x = coords.imageToWorldX(n, 0, 0);
+		double y = coords.imageToWorldY(n, 0, 0);
+		double cos = Math.cos(theta);
+		double sin = Math.sin(theta);
+		coords.setCosineSine(n, cos, -sin);
+		setFrameXY(n, x, y); // restore x and y to their correct values
+	}
 
-  /**
-   * Sets the angle in radians of all video frames measured ccw
-   * from the world x-axis. This results in a rotation only.
-   *
-   * @param theta the angle in radians
-   */
-  @Override
-public void setAngle(double theta) {
-    for(int n = 0; n<frameCount; n++) {
-      setFrameAngle(n, theta);
-    }
-  }
+	/**
+	 * Sets the angle in radians of all video frames measured ccw from the world
+	 * x-axis. This results in a rotation only.
+	 *
+	 * @param theta the angle in radians
+	 */
+	@Override
+	public void setAngle(double theta) {
+		for (int n = 0; n < frameCount; n++) {
+			setFrameAngle(n, theta);
+		}
+	}
 
-  /**
-   * Gets the angle in radians of the curent video frame measured ccw
-   * from the world x-axis.
-   *
-   * @return the angle in radians
-   */
-  @Override
-public double getAngle() {
-    return -coords.getAngle(frameNumber);
-  }
+	/**
+	 * Gets the angle in radians of the curent video frame measured ccw from the
+	 * world x-axis.
+	 *
+	 * @return the angle in radians
+	 */
+	@Override
+	public double getAngle() {
+		return -coords.getAngle(frameNumber);
+	}
 
-  /**
-   * Steps the video forward one frame.
-   */
-  @Override
-public void step() {
-    stop();
-    setFrameNumber(frameNumber+1);
-  }
+	/**
+	 * Steps the video forward one frame.
+	 */
+	@Override
+	public void step() {
+		stop();
+		setFrameNumber(frameNumber + 1);
+	}
 
-  /**
-   * Steps the video back one frame.
-   */
-  @Override
-public void back() {
-    stop();
-    setFrameNumber(frameNumber-1);
-  }
+	/**
+	 * Steps the video back one frame.
+	 */
+	@Override
+	public void back() {
+		stop();
+		setFrameNumber(frameNumber - 1);
+	}
 
-  /**
-   * Gets the total number of video frames.
-   *
-   * @return the number of video frames
-   */
-  @Override
-public int getFrameCount() {
-    return frameCount;
-  }
+	/**
+	 * Gets the total number of video frames.
+	 *
+	 * @return the number of video frames
+	 */
+	@Override
+	public int getFrameCount() {
+		return frameCount;
+	}
 
-  /**
-   * Gets the current video frame number.
-   *
-   * @return the current frame number
-   */
-  @Override
-public int getFrameNumber() {
-    return frameNumber;
-  }
+	/**
+	 * Gets the current video frame number.
+	 *
+	 * @return the current frame number
+	 */
+	@Override
+	public int getFrameNumber() {
+		return frameNumber;
+	}
 
-  /**
-   * Sets the video frame number.
-   *
-   * @param n the desired frame number
-   */
-  @Override
-public void setFrameNumber(int n) {
-    if(n==frameNumber) {
-      return;
-    }
-    n = Math.min(n, endFrameNumber);
-    n = Math.max(n, startFrameNumber);
-    firePropertyChange(PROPERTY_VIDEO_NEXTFRAME, null, n); 
-    frameNumber = n;
-  }
+	/**
+	 * Sets the video frame number.
+	 *
+	 * @param n the desired frame number
+	 */
+	@Override
+	public void setFrameNumber(int n) {
+		if (n == frameNumber) {
+			return;
+		}
+		n = Math.min(n, endFrameNumber);
+		n = Math.max(n, startFrameNumber);
+		firePropertyChange(PROPERTY_VIDEO_NEXTFRAME, null, n);
+		frameNumber = n;
+	}
 
-  /**
-   * Gets the start frame number.
-   *
-   * @return the start frame number
-   * @see #getEndFrameNumber
-   */
-  @Override
-public int getStartFrameNumber() {
-    return startFrameNumber;
-  }
+	/**
+	 * Gets the start frame number.
+	 *
+	 * @return the start frame number
+	 * @see #getEndFrameNumber
+	 */
+	@Override
+	public int getStartFrameNumber() {
+		return startFrameNumber;
+	}
 
-  /**
-   * Sets the start frame number.
-   *
-   * @param n the desired start frame number
-   * @see #setEndFrameNumber
-   */
-  @Override
-public void setStartFrameNumber(int n) {
-    if(n==startFrameNumber) {
-      return;
-    }
-    n = Math.max(0, n);
-    startFrameNumber = Math.min(endFrameNumber, n);
-    firePropertyChange(PROPERTY_VIDEO_STARTFRAME, null, Integer.valueOf(startFrameNumber)); 
-  }
-  
+	/**
+	 * Sets the start frame number.
+	 *
+	 * @param n the desired start frame number
+	 * @see #setEndFrameNumber
+	 */
+	@Override
+	public void setStartFrameNumber(int n) {
+		if (n == startFrameNumber) {
+			return;
+		}
+		n = Math.max(0, n);
+		startFrameNumber = Math.min(endFrameNumber, n);
+		firePropertyChange(PROPERTY_VIDEO_STARTFRAME, null, Integer.valueOf(startFrameNumber));
+	}
 
-  /**
-   * Gets the end frame number.
-   *
-   * @return the end frame number
-   * @see #getStartFrameNumber
-   */
-  @Override
-public int getEndFrameNumber() {
-    return endFrameNumber;
-  }
+	/**
+	 * Gets the end frame number.
+	 *
+	 * @return the end frame number
+	 * @see #getStartFrameNumber
+	 */
+	@Override
+	public int getEndFrameNumber() {
+		return endFrameNumber;
+	}
 
-  /**
-   * Sets the end frame number.
-   *
-   * @param n the desired end frame number,
-   * @see #setStartFrameNumber
-   */
-  @Override
-public void setEndFrameNumber(int n) {
-    if(n==endFrameNumber) {
-      return;
-    }
-    if(frameCount>1) {
-      n = Math.min(frameCount-1, n);
-    }
-    endFrameNumber = Math.max(startFrameNumber, n);
-    firePropertyChange(PROPERTY_VIDEO_ENDFRAME, null, Integer.valueOf(endFrameNumber)); 
-  }
+	/**
+	 * Sets the end frame number.
+	 *
+	 * @param n the desired end frame number,
+	 * @see #setStartFrameNumber
+	 */
+	@Override
+	public void setEndFrameNumber(int n) {
+		if (n == endFrameNumber) {
+			return;
+		}
+		if (frameCount > 1) {
+			n = Math.min(frameCount - 1, n);
+		}
+		endFrameNumber = Math.max(startFrameNumber, n);
+		firePropertyChange(PROPERTY_VIDEO_ENDFRAME, null, Integer.valueOf(endFrameNumber));
+	}
 
-  /**
-   * Gets the start time of the specified frame in milliseconds.
-   *
-   * @param n the frame number
-   * @return the start time of the frame in milliseconds, or -1 if not known
-   */
-  @Override
-public double getFrameTime(int n) {
-    return -1;
-  }
+	/**
+	 * Gets the start time of the specified frame in milliseconds.
+	 *
+	 * @param n the frame number
+	 * @return the start time of the frame in milliseconds, or -1 if not known
+	 */
+	@Override
+	public double getFrameTime(int n) {
+		return -1;
+	}
 
-  /**
-   * Gets the duration of the specified frame in milliseconds.
-   *
-   * @param n the frame number
-   * @return the duration of the frame in milliseconds
-   */
-  @Override
-public double getFrameDuration(int n) {
-    if(frameCount==1) {
-      return getDuration();
-    }
-    if(n==frameCount-1) {
-      return getDuration()-getFrameTime(n);
-    }
-    return getFrameTime(n+1)-getFrameTime(n);
-  }
+	/**
+	 * Gets the duration of the specified frame in milliseconds.
+	 *
+	 * @param n the frame number
+	 * @return the duration of the frame in milliseconds
+	 */
+	@Override
+	public double getFrameDuration(int n) {
+		if (frameCount == 1) {
+			return getDuration();
+		}
+		if (n == frameCount - 1) {
+			return getDuration() - getFrameTime(n);
+		}
+		return getFrameTime(n + 1) - getFrameTime(n);
+	}
 
-  /**
-   * Plays the video at the current rate.
-   */
-  @Override
-public void play() {
-    playing = true;
-  }
+	/**
+	 * Plays the video at the current rate.
+	 */
+	@Override
+	public void play() {
+		playing = true;
+	}
 
-  /**
-   * Stops the video.
-   */
-  @Override
-public void stop() {
-    playing = false;
-  }
+	/**
+	 * Stops the video.
+	 */
+	@Override
+	public void stop() {
+		playing = false;
+	}
 
-  /**
-   * Stops the video and resets it to the start time.
-   */
-  @Override
-public void reset() {
-    stop();
-    setFrameNumber(startFrameNumber);
-  }
+	/**
+	 * Stops the video and resets it to the start time.
+	 */
+	@Override
+	public void reset() {
+		stop();
+		setFrameNumber(startFrameNumber);
+	}
 
-  /**
-   * Gets the current video time in milliseconds.
-   *
-   * @return the current time in milliseconds, or -1 if not known
-   */
-  @Override
-public double getTime() {
-    return -1;
-  }
+	/**
+	 * Gets the current video time in milliseconds.
+	 *
+	 * @return the current time in milliseconds, or -1 if not known
+	 */
+	@Override
+	public double getTime() {
+		return -1;
+	}
 
-  /**
-   * Sets the video time in milliseconds.
-   *
-   * @param millis the desired time in milliseconds
-   */
-  @Override
-public void setTime(double millis) {
+	/**
+	 * Sets the video time in milliseconds.
+	 *
+	 * @param millis the desired time in milliseconds
+	 */
+	@Override
+	public void setTime(double millis) {
 
-  /** implemented by subclasses */
-  }
+		/** implemented by subclasses */
+	}
 
-  /**
-   * Gets the start time in milliseconds.
-   *
-   * @return the start time in milliseconds, or -1 if not known
-   */
-  @Override
-public double getStartTime() {
-    return -1;
-  }
+	/**
+	 * Gets the start time in milliseconds.
+	 *
+	 * @return the start time in milliseconds, or -1 if not known
+	 */
+	@Override
+	public double getStartTime() {
+		return -1;
+	}
 
-  /**
-   * Sets the start time in milliseconds. NOTE: the actual start time
-   * is normally set to the beginning of a frame.
-   *
-   * @param millis the desired start time in milliseconds
-   */
-  @Override
-public void setStartTime(double millis) {
+	/**
+	 * Sets the start time in milliseconds. NOTE: the actual start time is normally
+	 * set to the beginning of a frame.
+	 *
+	 * @param millis the desired start time in milliseconds
+	 */
+	@Override
+	public void setStartTime(double millis) {
 
-  /** implemented by subclasses */
-  }
+		/** implemented by subclasses */
+	}
 
-  /**
-   * Gets the end time in milliseconds.
-   *
-   * @return the end time in milliseconds, or -1 if not known
-   */
-  @Override
-public double getEndTime() {
-    return -1;
-  }
+	/**
+	 * Gets the end time in milliseconds.
+	 *
+	 * @return the end time in milliseconds, or -1 if not known
+	 */
+	@Override
+	public double getEndTime() {
+		return -1;
+	}
 
-  /**
-   * Sets the end time in milliseconds. NOTE: the actual end time
-   * is set to the end of a frame.
-   *
-   * @param millis the desired end time in milliseconds
-   */
-  @Override
-public void setEndTime(double millis) {
+	/**
+	 * Sets the end time in milliseconds. NOTE: the actual end time is set to the
+	 * end of a frame.
+	 *
+	 * @param millis the desired end time in milliseconds
+	 */
+	@Override
+	public void setEndTime(double millis) {
 
-  /** implemented by subclasses */
-  }
+		/** implemented by subclasses */
+	}
 
-  /**
-   * Gets the duration of the video.
-   *
-   * @return the duration of the video in milliseconds, or -1 if not known
-   */
-  @Override
-public double getDuration() {
-    return -1;
-  }
+	/**
+	 * Gets the duration of the video.
+	 *
+	 * @return the duration of the video in milliseconds, or -1 if not known
+	 */
+	@Override
+	public double getDuration() {
+		return -1;
+	}
 
-  /**
-   * Sets the frame number to the start frame.
-   */
-  @Override
-public void goToStart() {
-    setFrameNumber(startFrameNumber);
-  }
+	/**
+	 * Sets the frame number to the start frame.
+	 */
+	@Override
+	public void goToStart() {
+		setFrameNumber(startFrameNumber);
+	}
 
-  /**
-   * Sets the frame number to the end frame.
-   */
-  @Override
-public void goToEnd() {
-    setFrameNumber(endFrameNumber);
-  }
+	/**
+	 * Sets the frame number to the end frame.
+	 */
+	@Override
+	public void goToEnd() {
+		setFrameNumber(endFrameNumber);
+	}
 
-  /**
-   * Starts and stops the video.
-   *
-   * @param playing <code>true</code> starts the video, and
-   * <code>false</code> stops it
-   */
-  @Override
-public void setPlaying(boolean playing) {
-    if(playing) {
-      play();
-    } else {
-      stop();
-    }
-  }
+	/**
+	 * Starts and stops the video.
+	 *
+	 * @param playing <code>true</code> starts the video, and <code>false</code>
+	 *                stops it
+	 */
+	@Override
+	public void setPlaying(boolean playing) {
+		if (playing) {
+			play();
+		} else {
+			stop();
+		}
+	}
 
-  /**
-   * Gets the playing state of this video.
-   *
-   * @return <code>true</code> if the video is playing
-   */
-  @Override
-public boolean isPlaying() {
-    return playing;
-  }
+	/**
+	 * Gets the playing state of this video.
+	 *
+	 * @return <code>true</code> if the video is playing
+	 */
+	@Override
+	public boolean isPlaying() {
+		return playing;
+	}
 
-  /**
-   * Sets the looping state of this video.
-   * If true, the video restarts when reaching the end.
-   *
-   * @param loops <code>true</code> if the video loops
-   */
-  @Override
-public void setLooping(boolean loops) {
-    if(looping==loops) {
-      return;
-    }
-    looping = loops;
-    firePropertyChange(PROPERTY_VIDEO_LOOPING, null, new Boolean(looping)); 
-  }
+	/**
+	 * Sets the looping state of this video. If true, the video restarts when
+	 * reaching the end.
+	 *
+	 * @param loops <code>true</code> if the video loops
+	 */
+	@Override
+	public void setLooping(boolean loops) {
+		if (looping == loops) {
+			return;
+		}
+		looping = loops;
+		firePropertyChange(PROPERTY_VIDEO_LOOPING, null, new Boolean(looping));
+	}
 
-  /**
-   * Gets the looping state of the video.
-   * If true, the video restarts when reaching the end.
-   *
-   * @return <code>true</code> if the video loops
-   */
-  @Override
-public boolean isLooping() {
-    return looping;
-  }
+	/**
+	 * Gets the looping state of the video. If true, the video restarts when
+	 * reaching the end.
+	 *
+	 * @return <code>true</code> if the video loops
+	 */
+	@Override
+	public boolean isLooping() {
+		return looping;
+	}
 
-  /**
-   * Sets the relative play rate. Relative play rate is the ratio
-   * of a video's play rate to its preferred ("normal") play rate.
-   *
-   * @param rate the relative play rate.
-   */
-  @Override
-public void setRate(double rate) {
-    rate = Math.abs(rate);
-    if((rate==this.rate)||(rate==0)) {
-      return;
-    }
-    this.rate = rate;
-  }
+	/**
+	 * Sets the relative play rate. Relative play rate is the ratio of a video's
+	 * play rate to its preferred ("normal") play rate.
+	 *
+	 * @param rate the relative play rate.
+	 */
+	@Override
+	public void setRate(double rate) {
+		rate = Math.abs(rate);
+		if ((rate == this.rate) || (rate == 0)) {
+			return;
+		}
+		this.rate = rate;
+	}
 
-  /**
-   * Gets the relative play rate. Relative play rate is the ratio
-   * of a video's play rate to its preferred ("normal") play rate.
-   *
-   * @return the relative play rate.
-   */
-  @Override
-public double getRate() {
-    return rate;
-  }
+	/**
+	 * Gets the relative play rate. Relative play rate is the ratio of a video's
+	 * play rate to its preferred ("normal") play rate.
+	 *
+	 * @return the relative play rate.
+	 */
+	@Override
+	public double getRate() {
+		return rate;
+	}
 
 	/**
 	 * Sets the image coordinate system used to convert from imagespace to
@@ -939,163 +937,164 @@ public double getRate() {
 		coords = newCoords;
 		isMeasured = true;
 		isValidMeasure = false;
-		firePropertyChange(PROPERTY_VIDEO_COORDS, null, newCoords); 
+		firePropertyChange(PROPERTY_VIDEO_COORDS, null, newCoords);
 	}
 
-  /**
-   * Gets the image coordinate system.
-   *
-   * @return the image coordinate system
-   */
-  @Override
-public ImageCoordSystem getCoords() {
-    return coords;
-  }
-
-  /**
-   * Sets the filter stack.
-   *
-   * @param stack the new filter stack
-   */
-  @Override
-public void setFilterStack(FilterStack stack) {
-    filterStack.removePropertyChangeListener(this);
-    filterStack = stack;
-    filterStack.addPropertyChangeListener(this);
-  }
-
-  /**
-   * Gets the filter stack.
-   *
-   * @return the filter stack
-   */
-  @Override
-public FilterStack getFilterStack() {
-    return filterStack;
-  }
-
-  /**
-   * Sets a user property of the video.
-   *
-   * @param name the name of the property
-   * @param value the value of the property
-   */
-  @Override
-public void setProperty(String name, Object value) {
-    if(name.equals("measure")) { //$NON-NLS-1$
-      isValidMeasure = false;
-    } else {
-      properties.put(name, value);
-    }
-  }
-
-  /**
-   * Gets a user property of the video. May return null.
-   *
-   * @param name the name of the property
-   * @return the value of the property
-   */
-  @Override
-public Object getProperty(String name) {
-    return properties.get(name);
-  }
-
-  /**
-   * Gets a collection of user property names for the video.
-   *
-   * @return a collection of property names
-   */
-  @Override
-public Collection<String> getPropertyNames() {
-    return properties.keySet();
-  }
-
-  /**
-   * Adds a PropertyChangeListener to this video.
-   *
-   * @param listener the object requesting property change notification
-   */
-  @Override
-public void addPropertyChangeListener(PropertyChangeListener listener) {
-    support.addPropertyChangeListener(listener);
-  }
-
-  /**
-   * Adds a PropertyChangeListener to this video.
-   *
-   * @param property the name of the property of interest to the listener
-   * @param listener the object requesting property change notification
-   */
-  @Override
-public void addPropertyChangeListener(String property, PropertyChangeListener listener) {
-    support.addPropertyChangeListener(property, listener);
-  }
-
-  /**
-   * Removes a PropertyChangeListener from this video.
-   *
-   * @param listener the listener requesting removal
-   */
-  @Override
-public void removePropertyChangeListener(PropertyChangeListener listener) {
-    support.removePropertyChangeListener(listener);
-  }
-
-  /**
-   * Removes a PropertyChangeListener for a specified property.
-   *
-   * @param property the name of the property
-   * @param listener the listener to remove
-   */
-  @Override
-public void removePropertyChangeListener(String property, PropertyChangeListener listener) {
-    support.removePropertyChangeListener(property, listener);
-  }
-
-  /**
-   * Disposes of this video.
-   */
-  @Override
-public void dispose() {
-  	if (coords!=null)
-  		coords.removePropertyChangeListener(this);
-    getFilterStack().setInspectorsVisible(false);
-  }
-
-  /**
-   * Responds to property change events. VideoAdapter listens for the following
-   * events: "transform" from ImageCoordSystem and "image" from
-   * FilterStack.
-   *
-   * @param e the property change event
-   */
-  @Override
-public void propertyChange(PropertyChangeEvent e) {
-    if(e.getSource()==coords) {             // "transform"
-      isMeasured = true;
-      isValidMeasure = false;
-    } else if(e.getSource()==filterStack) { // "image"
-      isValidFilteredImage = false;
-      support.firePropertyChange(e);
-    }
-  }
-  
 	/**
-	 * A class to save and load and save  VideoAdapter data.
+	 * Gets the image coordinate system.
+	 *
+	 * @return the image coordinate system
+	 */
+	@Override
+	public ImageCoordSystem getCoords() {
+		return coords;
+	}
+
+	/**
+	 * Sets the filter stack.
+	 *
+	 * @param stack the new filter stack
+	 */
+	@Override
+	public void setFilterStack(FilterStack stack) {
+		filterStack.removePropertyChangeListener(this);
+		filterStack = stack;
+		filterStack.addPropertyChangeListener(this);
+	}
+
+	/**
+	 * Gets the filter stack.
+	 *
+	 * @return the filter stack
+	 */
+	@Override
+	public FilterStack getFilterStack() {
+		return filterStack;
+	}
+
+	/**
+	 * Sets a user property of the video.
+	 *
+	 * @param name  the name of the property
+	 * @param value the value of the property
+	 */
+	@Override
+	public void setProperty(String name, Object value) {
+		if (name.equals("measure")) { //$NON-NLS-1$
+			isValidMeasure = false;
+		} else {
+			properties.put(name, value);
+		}
+	}
+
+	/**
+	 * Gets a user property of the video. May return null.
+	 *
+	 * @param name the name of the property
+	 * @return the value of the property
+	 */
+	@Override
+	public Object getProperty(String name) {
+		return properties.get(name);
+	}
+
+	/**
+	 * Gets a collection of user property names for the video.
+	 *
+	 * @return a collection of property names
+	 */
+	@Override
+	public Collection<String> getPropertyNames() {
+		return properties.keySet();
+	}
+
+	/**
+	 * Adds a PropertyChangeListener to this video.
+	 *
+	 * @param listener the object requesting property change notification
+	 */
+	@Override
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		support.addPropertyChangeListener(listener);
+	}
+
+	/**
+	 * Adds a PropertyChangeListener to this video.
+	 *
+	 * @param property the name of the property of interest to the listener
+	 * @param listener the object requesting property change notification
+	 */
+	@Override
+	public void addPropertyChangeListener(String property, PropertyChangeListener listener) {
+		support.addPropertyChangeListener(property, listener);
+	}
+
+	/**
+	 * Removes a PropertyChangeListener from this video.
+	 *
+	 * @param listener the listener requesting removal
+	 */
+	@Override
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		support.removePropertyChangeListener(listener);
+	}
+
+	/**
+	 * Removes a PropertyChangeListener for a specified property.
+	 *
+	 * @param property the name of the property
+	 * @param listener the listener to remove
+	 */
+	@Override
+	public void removePropertyChangeListener(String property, PropertyChangeListener listener) {
+		support.removePropertyChangeListener(property, listener);
+	}
+
+	/**
+	 * Disposes of this video.
+	 */
+	@Override
+	public void dispose() {
+		if (coords != null)
+			coords.removePropertyChangeListener(this);
+		getFilterStack().setInspectorsVisible(false);
+	}
+
+	/**
+	 * Responds to property change events. VideoAdapter listens for the following
+	 * events: "transform" from ImageCoordSystem and "image" from FilterStack.
+	 *
+	 * @param e the property change event
+	 */
+	@Override
+	public void propertyChange(PropertyChangeEvent e) {
+		if (e.getSource() == coords) { // "transform"
+			isMeasured = true;
+			isValidMeasure = false;
+		} else if (e.getSource() == filterStack) { // "image"
+			isValidFilteredImage = false;
+			support.firePropertyChange(e);
+		}
+	}
+
+	/**
+	 * A class to save and load and save VideoAdapter data.
 	 */
 	abstract public static class Loader implements XML.ObjectLoader {
-		
+
 		protected Loader() {
 			// only created by a VideoAdapter
 		}
+
 		/**
 		 * subclassed to GifVideo, ImageVideo, JSMovieVideo, and XuggleVideo
+		 * 
 		 * @param path
 		 * @return
 		 * @throws IOException
 		 */
 		protected abstract VideoAdapter createVideo(String path) throws IOException;
-		
+
 		/**
 		 * Saves video data to an XMLControl.
 		 *
@@ -1161,37 +1160,34 @@ public void propertyChange(PropertyChangeEvent e) {
 
 	}
 
+	// ____________________________ protected methods ____________________________
 
+	/**
+	 * Sends a PropertyChangeEvent to registered listeners. No event is sent if
+	 * oldVal and newVal are equal, unless they are both null.
+	 *
+	 * @param property the name of the property that has changed
+	 * @param oldVal   the value of the property before the change (may be null)
+	 * @param newVal   the value of the property after the change (may be null)
+	 */
+	protected void firePropertyChange(String property, Object oldVal, Object newVal) {
+		support.firePropertyChange(property, oldVal, newVal);
+	}
 
-  //____________________________ protected methods ____________________________
+	@Override
+	protected void finalize() {
+		OSPLog.finer(getClass().getSimpleName() + " resources released by garbage collector"); //$NON-NLS-1$
+	}
 
-  /**
-   * Sends a PropertyChangeEvent to registered listeners. No event is sent
-   * if oldVal and newVal are equal, unless they are both null.
-   *
-   * @param property the name of the property that has changed
-   * @param oldVal the value of the property before the change (may be null)
-   * @param newVal the value of the property after the change (may be null)
-   */
-  protected void firePropertyChange(String property, Object oldVal, Object newVal) {
-    support.firePropertyChange(property, oldVal, newVal);
-  }
+	// _______________________________ protected methods _________________________
 
-
-@Override
-  protected void finalize() {
-  	OSPLog.finer(getClass().getSimpleName()+" resources released by garbage collector"); //$NON-NLS-1$
-  }
-
-  //_______________________________ protected methods _________________________
-
-  /**
-   * Initialize this video.
-   */
-  protected void initialize() {
-    support = new SwingPropertyChangeSupport(this);
-    filterStack.addPropertyChangeListener(this);
-  }
+	/**
+	 * Initialize this video.
+	 */
+	protected void initialize() {
+		support = new SwingPropertyChangeSupport(this);
+		filterStack.addPropertyChangeListener(this);
+	}
 
 	/**
 	 * Refreshes the BufferedImage based on current size. Creates a new image if
@@ -1201,96 +1197,110 @@ public void propertyChange(PropertyChangeEvent e) {
 		if ((bufferedImage == null) || (bufferedImage.getWidth() != size.width)
 				|| (bufferedImage.getHeight() != size.height)) {
 			OSPLog.finest("VideoAdapter.refreshBufferedImage " + size);
-			bufferedImage = new BufferedImage(size.width, size.height, OSPRuntime.isJS ? JSUtilI.TYPE_4BYTE_HTML5 : BufferedImage.TYPE_INT_RGB);
-			//			clearRaster = (DataBufferInt) bufferedImage.getRaster().getDataBuffer();
+			bufferedImage = new BufferedImage(size.width, size.height,
+					OSPRuntime.isJS ? JSUtilI.TYPE_4BYTE_HTML5 : BufferedImage.TYPE_INT_RGB);
+			// clearRaster = (DataBufferInt) bufferedImage.getRaster().getDataBuffer();
 //			int clear = new Color(0, 0, 0, 0).getRGB();
 //			int[] rgb = new int[size.width * size.height];
 //			for (int i = 0; i < rgb.length; i++) {
 //				rgb[i] = clear;
 //			}
 //			bufferedImage.setRGB(0, 0, size.width, size.height, rgb, 0, size.width);
-			//clearRaster = bufferedImage.getData();
+			// clearRaster = bufferedImage.getData();
 			isValidImage = false;
 		}
 	}
 
-  /**
-   * Finds the min and max values of x and y.
-   */
-  protected void findMinMaxValues() {
-    VideoClip clip = (VideoClip) getProperty("videoclip"); //$NON-NLS-1$
-    // check all four corner positions of every frame in the current clip
-    Point2D corner = new Point2D.Double(0, 0);             // top left
-    int start = 0;
-    if(clip!=null) {
-      start = clip.getStartFrameNumber();
-    }
-    AffineTransform at = coords.getToWorldTransform(start);
-    at.transform(corner, corner);
-    maxX = minX = corner.getX();
-    maxY = minY = corner.getY();
-    int stepCount = frameCount;
-    if(clip!=null) {
-      stepCount = clip.getStepCount();
-    }
-    for(int n = 0; n<stepCount; n++) {
-      if(clip==null) {
-        at = coords.getToWorldTransform(n);
-      } else {
-        at = coords.getToWorldTransform(clip.stepToFrame(n));
-      }
-      for(int i = 0; i<4; i++) {
-        switch(i) {
-           case 0 :
-             corner.setLocation(0, 0);
-             break;
-           case 1 :
-             corner.setLocation(size.width, 0);
-             break;
-           case 2 :
-             corner.setLocation(0, size.height);
-             break;
-           case 3 :
-             corner.setLocation(size.width, size.height);
-        }
-        at.transform(corner, corner);
-        minX = Math.min(corner.getX(), minX);
-        maxX = Math.max(corner.getX(), maxX);
-        minY = Math.min(corner.getY(), minY);
-        maxY = Math.max(corner.getY(), maxY);
-      }
-    }
-    isValidMeasure = true;
-  }
+	/**
+	 * Finds the min and max values of x and y.
+	 */
+	protected void findMinMaxValues() {
+		VideoClip clip = (VideoClip) getProperty("videoclip"); //$NON-NLS-1$
+		// check all four corner positions of every frame in the current clip
+		Point2D corner = new Point2D.Double(0, 0); // top left
+		int start = 0;
+		if (clip != null) {
+			start = clip.getStartFrameNumber();
+		}
+		AffineTransform at = coords.getToWorldTransform(start);
+		at.transform(corner, corner);
+		maxX = minX = corner.getX();
+		maxY = minY = corner.getY();
+		int stepCount = frameCount;
+		if (clip != null) {
+			stepCount = clip.getStepCount();
+		}
+		for (int n = 0; n < stepCount; n++) {
+			if (clip == null) {
+				at = coords.getToWorldTransform(n);
+			} else {
+				at = coords.getToWorldTransform(clip.stepToFrame(n));
+			}
+			for (int i = 0; i < 4; i++) {
+				switch (i) {
+				case 0:
+					corner.setLocation(0, 0);
+					break;
+				case 1:
+					corner.setLocation(size.width, 0);
+					break;
+				case 2:
+					corner.setLocation(0, size.height);
+					break;
+				case 3:
+					corner.setLocation(size.width, size.height);
+				}
+				at.transform(corner, corner);
+				minX = Math.min(corner.getX(), minX);
+				maxX = Math.max(corner.getX(), maxX);
+				minY = Math.min(corner.getY(), minY);
+				maxY = Math.max(corner.getY(), maxY);
+			}
+		}
+		isValidMeasure = true;
+	}
 
-  protected String getAbsolutePath(String path) {
-	  if (baseDir == null)
-		  baseDir = XML.getDirectoryPath((String) getProperty("absolutePath"));	  		  
-	  return baseDir + "/" + XML.getName(path);
-  }
+	protected String getAbsolutePath(String path) {
+		if (baseDir == null)
+			baseDir = XML.getDirectoryPath((String) getProperty("absolutePath"));
+		path = XML.getAbsolutePath(new File(baseDir + "/" + path));
+		return path;
+	}
+
+	protected void notifySize(Dimension newDim) {
+		if ((newDim.height != size.height) || (newDim.width != size.width)) {
+			this.firePropertyChange(PROPERTY_VIDEO_SIZE, size, newDim); // $NON-NLS-1$
+			size = newDim;
+			refreshBufferedImage();
+		}
+	}
+
+	protected void notifyFrame() {
+		firePropertyChange(Video.PROPERTY_VIDEO_FRAMENUMBER, null, Integer.valueOf(getFrameNumber()));
+	}
 
 }
 
 /*
- * Open Source Physics software is free software; you can redistribute
- * it and/or modify it under the terms of the GNU General Public License (GPL) as
+ * Open Source Physics software is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License (GPL) as
  * published by the Free Software Foundation; either version 2 of the License,
  * or(at your option) any later version.
-
+ * 
  * Code that uses any portion of the code in the org.opensourcephysics package
- * or any subpackage (subdirectory) of this package must must also be be released
- * under the GNU GPL license.
+ * or any subpackage (subdirectory) of this package must must also be be
+ * released under the GNU GPL license.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
- * or view the license online at http://www.gnu.org/copyleft/gpl.html
+ * You should have received a copy of the GNU General Public License along with
+ * this; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
+ * Suite 330, Boston MA 02111-1307 USA or view the license online at
+ * http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017  The Open Source Physics project
- *                     http://www.opensourcephysics.org
+ * Copyright (c) 2017 The Open Source Physics project
+ * http://www.opensourcephysics.org
  */
