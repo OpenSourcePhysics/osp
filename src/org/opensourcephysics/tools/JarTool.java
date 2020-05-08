@@ -75,10 +75,10 @@ public class JarTool implements Tool, Runnable {
   
   // ---- Localization
   static private final String JAR_TOOL_BUNDLE_NAME = "org.opensourcephysics.resources.tools.tools"; //$NON-NLS-1$
-  static private ResourceBundle res = ResourceBundle.getBundle(JAR_TOOL_BUNDLE_NAME);
+  static private ResourceBundle res = org.opensourcephysics.tools.ResourceLoader.getBundle(JAR_TOOL_BUNDLE_NAME);
 
   static private void setLocale(Locale locale) {
-    res = ResourceBundle.getBundle(JAR_TOOL_BUNDLE_NAME, locale);
+    res = org.opensourcephysics.tools.ResourceLoader.getBundle(JAR_TOOL_BUNDLE_NAME, locale);
   }
 
   static private String getString(String key) {

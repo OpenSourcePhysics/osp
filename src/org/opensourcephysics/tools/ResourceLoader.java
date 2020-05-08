@@ -46,6 +46,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
+import java.util.ResourceBundle.Control;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -2596,10 +2597,19 @@ public class ResourceLoader {
 
 	  // ---- Localization
 	  static private final String JAR_TOOL_BUNDLE_NAME = "org.opensourcephysics.resources.tools.tools"; //$NON-NLS-1$
-	  static private ResourceBundle res = ResourceBundle.getBundle(JAR_TOOL_BUNDLE_NAME);
+	  
+		public static ResourceBundle getBundle(String bundleName, Locale resourceLocale) {
+			return ResourceBundle.getBundle(bundleName, resourceLocale, ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES));
+		}
+
+		public static ResourceBundle getBundle(String bundleName) {
+			return ResourceBundle.getBundle(bundleName, Locale.getDefault(), ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES));
+		}
+
+	  static private ResourceBundle res = getBundle(JAR_TOOL_BUNDLE_NAME);
 
 	  static public void setLocale(Locale locale) {
-	    res = ResourceBundle.getBundle(JAR_TOOL_BUNDLE_NAME, locale);
+		  res = getBundle(JAR_TOOL_BUNDLE_NAME, locale);
 	  }
 
 	  static public final int YES = 0;
@@ -2935,6 +2945,7 @@ public class ResourceLoader {
 			return null;
 		}
 	}
+
 
 }
 

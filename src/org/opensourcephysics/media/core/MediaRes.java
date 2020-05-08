@@ -44,7 +44,7 @@ public class MediaRes {
   // static fields
   private static String BUNDLE_NAME = "org.opensourcephysics.resources.media.video"; //$NON-NLS-1$
   static Locale resourceLocale = Locale.getDefault();
-  static ResourceBundle res = ResourceBundle.getBundle(BUNDLE_NAME, resourceLocale);
+  static ResourceBundle res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME, resourceLocale);
 
   /**
    * Private constructor to prevent instantiation.
@@ -75,7 +75,7 @@ public class MediaRes {
    */
   public static void setLocale(Locale locale) {
   	resourceLocale = locale;
-    res = ResourceBundle.getBundle(BUNDLE_NAME, locale);
+    res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME, locale);
   }
 
 }

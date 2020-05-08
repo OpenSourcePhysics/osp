@@ -49,7 +49,7 @@ public class DialogsRes {
         break;
       }
     }
-    res = ResourceBundle.getBundle(BUNDLE_NAME, resourceLocale);
+    res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME, resourceLocale);
     setLocalStrings();
   }
 
@@ -82,7 +82,7 @@ public class DialogsRes {
     }
     resourceLocale = loc;
     // get the new resource bundle
-    res = ResourceBundle.getBundle(BUNDLE_NAME, resourceLocale);
+    res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME, resourceLocale);
     setLocalStrings();
   }
 

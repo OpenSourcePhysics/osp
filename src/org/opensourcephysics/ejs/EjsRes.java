@@ -26,11 +26,11 @@ public class EjsRes {
         break;
       }
     }
-    res = ResourceBundle.getBundle(BUNDLE_NAME, resourceLocale);
+    res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME, resourceLocale);
   }
 
   public static void setLocale(Locale locale) {
-    res = ResourceBundle.getBundle(BUNDLE_NAME, locale);
+    res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME, locale);
   }
 
   public static String getString(String key) {

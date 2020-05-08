@@ -18,12 +18,12 @@ import java.util.ResourceBundle;
  */
 public class DisplayRes {
   private static String BUNDLE_NAME = "org.opensourcephysics.resources.display.display_res"; //$NON-NLS-1$
-  private static ResourceBundle res = ResourceBundle.getBundle(BUNDLE_NAME);
+  private static ResourceBundle res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME);
 
   private DisplayRes() {}
 
   public static void setLocale(Locale locale) {
-    res = ResourceBundle.getBundle(BUNDLE_NAME, locale);
+    res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME, locale);
   }
 
   public static String getString(String key) {

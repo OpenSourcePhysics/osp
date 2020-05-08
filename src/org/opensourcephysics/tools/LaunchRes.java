@@ -33,7 +33,7 @@ public class LaunchRes {
         break;
       }
     }
-    res = ResourceBundle.getBundle(BUNDLE_NAME, resourceLocale);
+    res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME, resourceLocale);
   }
 
   /**
@@ -69,7 +69,7 @@ public class LaunchRes {
     Locale prev = resourceLocale;
     resourceLocale = loc;
     // get the new resource bundle
-    res = ResourceBundle.getBundle("org.opensourcephysics.resources.tools.launcher", resourceLocale); //$NON-NLS-1$
+    res = org.opensourcephysics.tools.ResourceLoader.getBundle("org.opensourcephysics.resources.tools.launcher", resourceLocale); //$NON-NLS-1$
     support.firePropertyChange("locale", prev, resourceLocale); //$NON-NLS-1$
     ToolsRes.setLocale(loc);
   }

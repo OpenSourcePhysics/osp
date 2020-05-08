@@ -49,10 +49,10 @@ import org.opensourcephysics.media.gif.GIFEncoder;
 public class SnapshotTool implements Tool {
   // ---- Localization
   static private final String BUNDLE_NAME = "org.opensourcephysics.resources.tools.tools"; //$NON-NLS-1$
-  static private ResourceBundle res = ResourceBundle.getBundle(BUNDLE_NAME);
+  static private ResourceBundle res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME);
 
   static public void setLocale(Locale locale) {
-    res = ResourceBundle.getBundle(BUNDLE_NAME, locale);
+    res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME, locale);
   }
 
   static public String getString(String key) {
