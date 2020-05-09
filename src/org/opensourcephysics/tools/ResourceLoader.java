@@ -2621,15 +2621,10 @@ public class ResourceLoader {
 	  static private final String JAR_TOOL_BUNDLE_NAME = "org.opensourcephysics.resources.tools.tools"; //$NON-NLS-1$
 	  
 		public static Bundle getBundle(String bundleName, Locale resourceLocale) {
-			
-			if (Locale.getDefault().getLanguage() == "en") {
-			  OSPLog.debug("ResourceLoader getting Bundle "+bundleName+" for locale "+resourceLocale);
+						  
+			if (resourceLocale.getLanguage() == "en") {
 				Properties p = new Properties();
-				String name = bundleName.replaceAll("\\.","/");
-				if (resourceLocale.getLanguage() != "en" ) {
-					name +=  "_" + resourceLocale;
-				}
-				name += ".properties";
+				String name = bundleName.replaceAll("\\.","/") + ".properties";
 				String prefix = null;
 				try {
 					prefix = (name.indexOf("tracker") >= 0 ? 
