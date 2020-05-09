@@ -2622,10 +2622,14 @@ public class ResourceLoader {
 	  
 		public static Bundle getBundle(String bundleName, Locale resourceLocale) {
 			
-			  
 			if (Locale.getDefault().getLanguage() == "en") {
+			  OSPLog.debug("ResourceLoader getting Bundle "+bundleName+" for locale "+resourceLocale);
 				Properties p = new Properties();
-				String name = bundleName.replaceAll("\\.","/") + ".properties";
+				String name = bundleName.replaceAll("\\.","/");
+				if (resourceLocale.getLanguage() != "en" ) {
+					name +=  "_" + resourceLocale;
+				}
+				name += ".properties";
 				String prefix = null;
 				try {
 					prefix = (name.indexOf("tracker") >= 0 ? 
