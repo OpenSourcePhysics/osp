@@ -107,7 +107,7 @@ public void play() {
         setFrameNumber(getStartFrameNumber());
       }
       timer.restart();
-      support.firePropertyChange("playing", null, Boolean.TRUE); //$NON-NLS-1$
+      firePropertyChange(Video.PROPERTY_VIDEO_PLAYING, null, Boolean.TRUE); //$NON-NLS-1$
     }
   }
 
@@ -118,7 +118,7 @@ public void play() {
 public void stop() {
     if(timer.isRunning()) {
       timer.stop();
-      support.firePropertyChange("playing", null, Boolean.FALSE); //$NON-NLS-1$
+      firePropertyChange(Video.PROPERTY_VIDEO_PLAYING, null, Boolean.FALSE); //$NON-NLS-1$
     }
   }
 
@@ -135,7 +135,7 @@ public void setFrameNumber(int n) {
     rawImage = decoder.getFrame(index);
     isValidImage = false;
     isValidFilteredImage = false;
-    support.firePropertyChange(Video.PROPERTY_VIDEO_FRAMENUMBER, null, Integer.valueOf(n)); 
+    firePropertyChange(Video.PROPERTY_VIDEO_FRAMENUMBER, null, Integer.valueOf(n)); 
     // repaint panels in case they don't listen
     Iterator<DrawingPanel> it = panels.iterator();
     while(it.hasNext()) {

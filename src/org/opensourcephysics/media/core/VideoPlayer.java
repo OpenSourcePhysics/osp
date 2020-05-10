@@ -110,36 +110,43 @@ import org.opensourcephysics.tools.ResourceLoader;
 public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	
 	public static final String PROPERTY_VIDEOPLAYER_BACKBUTTON = "backbutton"; //$NON-NLS-1$
-	public static final String PROPERTY_VIDEOPLAYER_FRAMEDURATION = "frameduration"; //$NON-NLS-1$
 	public static final String PROPERTY_VIDEOPLAYER_PLAYING = "playing"; //$NON-NLS-1$
 	public static final String PROPERTY_VIDEOPLAYER_SLIDER = "slider"; //$NON-NLS-1$
 	public static final String PROPERTY_VIDEOPLAYER_STEPBUTTON = "stepbutton"; //$NON-NLS-1$
+	
+	public static final String PROPERTY_VIDEOPLAYER_FRAMEDURATION = "frameduration"; //$NON-NLS-1$
 	public static final String PROPERTY_VIDEOPLAYER_STEPNUMBER = "stepnumber"; //$NON-NLS-1$
 	public static final String PROPERTY_VIDEOPLAYER_VIDEOCLIP = "videoclip"; //$NON-NLS-1$
 	
 
-public void removeListener(PropertyChangeListener c) {
-	removePropertyChangeListener(PROPERTY_VIDEOPLAYER_BACKBUTTON, c); 
-	removePropertyChangeListener(PROPERTY_VIDEOPLAYER_FRAMEDURATION, c); 
-	removePropertyChangeListener(PROPERTY_VIDEOPLAYER_PLAYING, c); 
-	removePropertyChangeListener(PROPERTY_VIDEOPLAYER_SLIDER, c); 
-	removePropertyChangeListener(PROPERTY_VIDEOPLAYER_STEPBUTTON, c); 
-	removePropertyChangeListener(PROPERTY_VIDEOPLAYER_STEPNUMBER, c); 
-	removePropertyChangeListener(PROPERTY_VIDEOPLAYER_VIDEOCLIP, c); 
-//	removePropertyChangeListener("inframe", c); 
-//	removePropertyChangeListener("outframe", c); 
-}
 
-public void addListener(PropertyChangeListener c) {
+public void addActionListener(PropertyChangeListener c) {
 	addPropertyChangeListener(PROPERTY_VIDEOPLAYER_BACKBUTTON, c); 
-	addPropertyChangeListener(PROPERTY_VIDEOPLAYER_FRAMEDURATION, c); 
 	addPropertyChangeListener(PROPERTY_VIDEOPLAYER_PLAYING, c); 
 	addPropertyChangeListener(PROPERTY_VIDEOPLAYER_SLIDER, c); 
 	addPropertyChangeListener(PROPERTY_VIDEOPLAYER_STEPBUTTON, c); 
+}
+
+public void removeActionListener(PropertyChangeListener c) {
+	removePropertyChangeListener(PROPERTY_VIDEOPLAYER_BACKBUTTON, c); 
+	removePropertyChangeListener(PROPERTY_VIDEOPLAYER_PLAYING, c); 
+	removePropertyChangeListener(PROPERTY_VIDEOPLAYER_SLIDER, c); 
+	removePropertyChangeListener(PROPERTY_VIDEOPLAYER_STEPBUTTON, c); 
+//	removePropertyChangeListener("inframe", c); 
+//	removePropertyChangeListener("outframe", c); 
+}
+public void addFrameListener(PropertyChangeListener c) {
+	addPropertyChangeListener(PROPERTY_VIDEOPLAYER_FRAMEDURATION, c); 
 	addPropertyChangeListener(PROPERTY_VIDEOPLAYER_STEPNUMBER, c); 
 	addPropertyChangeListener(PROPERTY_VIDEOPLAYER_VIDEOCLIP, c); 
+}
+
+public void removeFrameListener(PropertyChangeListener c) {
+	removePropertyChangeListener(PROPERTY_VIDEOPLAYER_FRAMEDURATION, c); 
+	removePropertyChangeListener(PROPERTY_VIDEOPLAYER_STEPNUMBER, c); 
+	removePropertyChangeListener(PROPERTY_VIDEOPLAYER_VIDEOCLIP, c); 
 //	addPropertyChangeListener("inframe", c); 
-//	addPropertyChangeListener("outframe", c); 
+//	addPropertyChangeListener("outframe", c); 	
 }
 
 	

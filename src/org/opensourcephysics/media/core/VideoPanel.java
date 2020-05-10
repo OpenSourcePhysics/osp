@@ -122,17 +122,10 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		setName("VideoPanel");
 		setSquareAspect(true);
 		player = new VideoPlayer(this);
-		player.addPropertyChangeListener(VideoPlayer.PROPERTY_VIDEOPLAYER_VIDEOCLIP, this);
-		player.addPropertyChangeListener(VideoPlayer.PROPERTY_VIDEOPLAYER_STEPNUMBER, this);
-		player.addPropertyChangeListener(VideoPlayer.PROPERTY_VIDEOPLAYER_FRAMEDURATION, this);
+		player.addFrameListener(this);
 		add(player, BorderLayout.SOUTH);
 		VideoClip clip = player.getVideoClip();
-		clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STARTFRAME, this);
-		clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STEPSIZE, this);
-		clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STEPCOUNT, this);
-		clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_FRAMECOUNT, this);
-		clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STARTTIME, this);
-		clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_ADJUSTING, this);
+		clip.addListener(this);
 		// define mousePanel and messagePanel
 		mousePanel = blMessageBox;
 		messagePanel = brMessageBox;
@@ -629,20 +622,12 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 //      clip.addPropertyChangeListener("frameshift", this);          
 			// replace current video with new clip's video
 			if (video != null) {
-				video.removePropertyChangeListener(Video.PROPERTY_VIDEO_COORDS, this);
-				video.removePropertyChangeListener(Video.PROPERTY_VIDEO_IMAGE, this);
-				video.removePropertyChangeListener(Video.PROPERTY_VIDEO_FILTERCHANGED, this);
-				video.removePropertyChangeListener(Video.PROPERTY_VIDEO_VIDEOVISIBLE, this);
-				video.removePropertyChangeListener(Video.PROPERTY_VIDEO_SIZE, this);
+				video.removeListener(this);
 				super.removeDrawable(video);
 			}
 			video = clip.getVideo();
 			if (video != null) {
-				video.addPropertyChangeListener(Video.PROPERTY_VIDEO_COORDS, this);
-				video.addPropertyChangeListener(Video.PROPERTY_VIDEO_IMAGE, this);
-				video.addPropertyChangeListener(Video.PROPERTY_VIDEO_FILTERCHANGED, this);
-				video.addPropertyChangeListener(Video.PROPERTY_VIDEO_VIDEOVISIBLE, this);
-				video.addPropertyChangeListener(Video.PROPERTY_VIDEO_SIZE, this);
+				video.addListener(this);
 				// synchronize coords
 				if (video.isMeasured()) {
 					coords = video.getCoords();
