@@ -171,7 +171,7 @@ public void setGridData(GridData _griddata) {
     }
     int nx = griddata.getNx(); // columns, so width
     int ny = griddata.getNy(); // rows, so height
-    int size = nx*ny;
+    //int size = nx*ny;
     Grid newgrid = new Grid(nx, ny, xmin, xmax, ymin, ymax);
     if(grid!=null) {
       newgrid.setColor(grid.getColor());

@@ -125,14 +125,14 @@ public void initializeAnimation() {
       } else if(control.getString("V(x)").trim().equals("sho")) {
          superposition = new EigenstateSHOSuperposition(numpts, xmin, xmax);
       } else {
-         Function potential;
-         try {
-            potential = new ParsedFunction(control.getString("V(x)"));
-         } catch(ParserException ex) {
-        	parseError=true;
-            control.println("Error parsing potential function. Potential set to zero.");
-            potential = Util.constantFunction(0);
-         }
+//         Function potential;
+//         try {
+//            potential = new ParsedFunction(control.getString("V(x)"));
+//         } catch(ParserException ex) {
+//        	parseError=true;
+//            control.println("Error parsing potential function. Potential set to zero.");
+//            potential = Util.constantFunction(0);
+//         }
 //         if(control.getObject("shooting tolerance")!=null) {
 //            double tol = control.getDouble("shooting tolerance");
 //            superposition = new EigenstateShootingSuperposition(potential, numpts, xmin, xmax, tol, tol);
