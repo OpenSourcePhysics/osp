@@ -24,6 +24,7 @@ import org.opensourcephysics.controls.XMLLoader;
  * @created    Dec 14 2005
  * @version    1.0
  */
+@SuppressWarnings("serial")
 public class HighlightableDataset extends Dataset implements Interactive {
   // instance fields
   boolean[] highlighted = new boolean[1]; // true if highlighted

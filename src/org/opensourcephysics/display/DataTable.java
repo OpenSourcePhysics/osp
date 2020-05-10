@@ -69,6 +69,7 @@ import org.opensourcephysics.tools.DataToolTab;
  * @created    February 21, 2002
  * @version    1.0
  */
+@SuppressWarnings("serial")
 public class DataTable extends JTable implements ActionListener {
 	
   static final Color PANEL_BACKGROUND = javax.swing.UIManager.getColor("Panel.background"); //$NON-NLS-1$
@@ -1271,7 +1272,7 @@ public void actionPerformed(ActionEvent evt) {
     String[] displayedNames;
     Map<String, String> realNames = new HashMap<String, String>();
     Map<String, String> prevPatterns = new HashMap<String, String>();
-    JList columnList;
+    JList<String> columnList;
     JScrollPane columnScroller;
 
     protected NumberFormatDialog() {
@@ -1345,7 +1346,7 @@ public void actionPerformed(ActionEvent evt) {
           try {
             showNumberFormatAndSample(pattern);
             // apply pattern to all selected columns
-            Object[] selectedColumns = columnList.getSelectedValues();
+            java.util.List<String> selectedColumns = columnList.getSelectedValuesList();
             for(Object displayedName : selectedColumns) {
             	String name = realNames.get(displayedName.toString());
               setFormatPattern(name, pattern);
@@ -1509,7 +1510,7 @@ public void actionPerformed(ActionEvent evt) {
         prevPatterns.put(name, getFormatPattern(name));
       }
       // create column list and add to scroller
-      columnList = new JList(displayedNames);
+      columnList = new JList<String>(displayedNames);
       columnList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
       columnList.setVisibleRowCount(-1);
       columnList.addListSelectionListener(new ListSelectionListener() {

@@ -33,6 +33,7 @@ import javax.swing.KeyStroke;
  * @created    August 16, 2002
  * @version    1.0
  */
+@SuppressWarnings("serial")
 public class DataTableFrame extends OSPFrame {
   protected JMenuBar menuBar;
   protected JMenu fileMenu;

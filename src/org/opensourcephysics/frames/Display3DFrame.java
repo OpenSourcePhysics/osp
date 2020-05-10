@@ -13,6 +13,7 @@ import javax.swing.*;
 import org.opensourcephysics.display3d.core.interaction.InteractionListener;
 import org.opensourcephysics.display3d.core.Camera;
 
+@SuppressWarnings("serial")
 public class Display3DFrame extends DrawingFrame3D {
   public Display3DFrame(String title) {
     super(title, new DrawingPanel3D());

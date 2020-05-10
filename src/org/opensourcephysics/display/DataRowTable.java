@@ -36,6 +36,7 @@ import javax.swing.table.TableColumn;
  * @author Wolfgang Christian
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class DataRowTable extends JTable implements ActionListener {
 	static final Color PANEL_BACKGROUND = javax.swing.UIManager.getColor("Panel.background"); //$NON-NLS-1$
 	static final Color LIGHT_BLUE = new Color(204, 204, 255);
@@ -78,22 +79,22 @@ public class DataRowTable extends JTable implements ActionListener {
 	    	  DataRowTable.this.firePropertyChange("cell", null, e); //$NON-NLS-1$
 	      }
 
-		private void showChange(TableModelEvent e) {
-	        // forward the table model event to property change listeners
-	    	  String type = "" + e.getType();
-	    	  switch (e.getType()) {
-	    	  case 0:
-	    		  type = "UPDATE";
-	    		  break;
-	    	  case 1:
-	    		 type = "INSERT";
-	    		 break;
-	    	  case -1:
-	    		  type = "DELETE";
-	    		  break;
-	    	  }
-	    	  System.out.println("DataRowTable model listener tableChanged type " + type);	    		
-		}
+//		private void showChange(TableModelEvent e) {
+//	        // forward the table model event to property change listeners
+//	    	  String type = "" + e.getType();
+//	    	  switch (e.getType()) {
+//	    	  case 0:
+//	    		  type = "UPDATE";
+//	    		  break;
+//	    	  case 1:
+//	    		 type = "INSERT";
+//	    		 break;
+//	    	  case -1:
+//	    		  type = "DELETE";
+//	    		  break;
+//	    	  }
+//	    	  System.out.println("DataRowTable model listener tableChanged type " + type);	    		
+//		}
 	
 	    });
 		setDefaultRenderer(Object.class, cellRenderer);

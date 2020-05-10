@@ -34,7 +34,12 @@ import org.opensourcephysics.controls.XMLLoader;
  * @version    1.1
  */
 public class Histogram extends AbstractTableModel implements Measurable, LogMeasurable, Data {
-  HistogramDataset histogramDataset;
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = 3629110034722325967L;
+
+HistogramDataset histogramDataset;
 
   /** draw point at top of bin */
   public final static int DRAW_POINT = 0;

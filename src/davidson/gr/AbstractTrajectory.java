@@ -32,10 +32,10 @@ public abstract class AbstractTrajectory extends InteractiveCircle implements Tr
    public boolean highlight = false;
    public boolean dragPosition = true;
    public Color highlightColor = Color.PINK.darker();
-   public ArrayList colNames = new ArrayList();
+   public ArrayList<String> colNames = new ArrayList<>();
    public DecimalFormat f = new DecimalFormat("#0.00");
    public InteractiveLabel tauBox = new InteractiveLabel(tauStr+f.format(0));
-   public ArrayList cluster=new ArrayList();
+   public ArrayList<AbstractTrajectory> cluster=new ArrayList<>();
 
    public AbstractTrajectory(){
      id=nextID;
@@ -83,7 +83,7 @@ public abstract class AbstractTrajectory extends InteractiveCircle implements Tr
     * Gets the cluster to which this trajectory belongs.
     * @return ArrayList
     */
-   public ArrayList getCluster(){
+   public ArrayList<AbstractTrajectory> getCluster(){
      return cluster;
    }
 
@@ -91,7 +91,7 @@ public abstract class AbstractTrajectory extends InteractiveCircle implements Tr
     * Sets the cluster to which this trajectory belongs.
     * @return ArrayList
     */
-   public void setCluster(ArrayList cluster) {
+   public void setCluster(ArrayList<AbstractTrajectory> cluster) {
       this.cluster=cluster;
    }
 

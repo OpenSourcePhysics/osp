@@ -26,6 +26,7 @@ import org.opensourcephysics.numerics.LogBase10Function;
  *
  * @author Wolfgang Christian
  */
+@SuppressWarnings("serial")
 public class PlottingPanel extends InteractivePanel {
 	protected DrawableAxes axes;
 	protected final static double log10 = Math.log(10);

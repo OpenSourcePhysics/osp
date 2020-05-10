@@ -39,6 +39,7 @@ import org.opensourcephysics.display.OSPRuntime;
  * @author Douglas Brown
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class DataToolStatsTable extends JTable {
   // instance fields
   DataToolTable dataTable;

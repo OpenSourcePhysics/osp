@@ -21,6 +21,7 @@ import org.opensourcephysics.display.OSPRuntime;
  * @author       Joshua Gould
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class AnimationControl extends OSPControl {
   String resetToolTipText = ControlsRes.ANIMATION_RESET_TIP;
   String initToolTipText = ControlsRes.ANIMATION_INIT_TIP;

@@ -16,6 +16,7 @@ import org.opensourcephysics.display.OSPFrame;
  * @author Wolfgang Christian
  *
  */
+@SuppressWarnings("serial")
 public class ArrayFrame extends OSPFrame {
   ArrayPanel arrayPanel;
 

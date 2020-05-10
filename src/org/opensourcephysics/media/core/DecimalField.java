@@ -38,6 +38,7 @@ package org.opensourcephysics.media.core;
  * @author Douglas Brown
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class DecimalField extends NumberField {
 	
 	protected String defaultPattern;

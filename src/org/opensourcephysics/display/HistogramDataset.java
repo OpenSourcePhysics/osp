@@ -15,6 +15,7 @@ import org.opensourcephysics.controls.XMLControl;
  * @author Wolfgang Christian
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class HistogramDataset extends Dataset {
   double min, max;
   double binSize = 1;

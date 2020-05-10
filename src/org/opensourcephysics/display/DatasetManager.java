@@ -37,6 +37,7 @@ import org.opensourcephysics.controls.XMLLoader;
  * @created    February 17, 2002
  *
  */
+@SuppressWarnings("serial")
 public class DatasetManager extends AbstractTableModel implements Measurable, LogMeasurable, Data {
   ArrayList<Dataset> datasets = new ArrayList<Dataset>();
   boolean connected;      // default values for new datasets

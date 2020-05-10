@@ -26,6 +26,7 @@ import org.opensourcephysics.display.TeXParser;
  * 
  * @author Doug Brown
  */
+@SuppressWarnings("serial")
 public class FourierPanel extends JPanel {
   
 	// instance fields

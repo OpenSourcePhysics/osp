@@ -14,6 +14,7 @@ import org.opensourcephysics.display.DataPanel;
  * @author Wolfgang Christian
  *
  */
+@SuppressWarnings("serial")
 public class DiagnosticsForSystem extends DataPanel{
 
   public static void aboutSystem(Frame owner) {

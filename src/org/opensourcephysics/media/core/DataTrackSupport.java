@@ -37,6 +37,7 @@ import org.opensourcephysics.tools.Tool;
  *
  * @author Douglas Brown
  */
+@SuppressWarnings("serial")
 public class DataTrackSupport {
 
 	public static final String HOST = "localhost"; //$NON-NLS-1$

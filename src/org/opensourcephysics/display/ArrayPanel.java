@@ -33,6 +33,7 @@ import javax.swing.event.ChangeListener;
  * @author Wolfgang Christian
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
   JTabbedPane tabbedPane = new JTabbedPane();
   ArrayTable[] tables;

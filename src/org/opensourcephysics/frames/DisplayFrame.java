@@ -19,6 +19,7 @@ import org.opensourcephysics.display.PlottingPanel;
  * @author W. Christian
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class DisplayFrame extends DrawingFrame {
   /**
    * Constructs the DisplayFrame with the given title.

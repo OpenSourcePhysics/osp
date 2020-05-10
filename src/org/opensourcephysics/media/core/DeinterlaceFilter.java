@@ -54,6 +54,7 @@ import org.opensourcephysics.controls.XMLControl;
  * @author Douglas Brown
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class DeinterlaceFilter extends Filter {
   // instance fields
   private int[] pixels;

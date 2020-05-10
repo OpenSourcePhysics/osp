@@ -17,6 +17,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
+@SuppressWarnings("serial")
 public class DiagnosticsForThreads extends JPanel {
   private ThreadViewerTableModel tableModel = new ThreadViewerTableModel();
 
@@ -99,9 +100,8 @@ protected void finalize() throws Throwable {
       }
     }
   }
-}
 
-class ThreadViewerTableModel extends AbstractTableModel {
+static class ThreadViewerTableModel extends AbstractTableModel {
   private Object dataLock;
 
   private int rowCount;
@@ -244,24 +244,25 @@ public String getColumnName(int columnIdx) {
     return columnName[columnIdx];
   }
 
-  public static Thread[] findAllThreads() {
-    ThreadGroup group = Thread.currentThread().getThreadGroup();
+		public static Thread[] findAllThreads() {
+			ThreadGroup group = Thread.currentThread().getThreadGroup();
 
-    ThreadGroup topGroup = group;
+			ThreadGroup topGroup = group;
 
-    while (group != null) {
-      topGroup = group;
-      group = group.getParent();
-    }
+			while (group != null) {
+				topGroup = group;
+				group = group.getParent();
+			}
 
-    int estimatedSize = topGroup.activeCount() * 2;
-    Thread[] slackList = new Thread[estimatedSize];
+			int estimatedSize = topGroup.activeCount() * 2;
+			Thread[] slackList = new Thread[estimatedSize];
 
-    int actualSize = topGroup.enumerate(slackList);
+			int actualSize = topGroup.enumerate(slackList);
 
-    Thread[] list = new Thread[actualSize];
-    System.arraycopy(slackList, 0, list, 0, actualSize);
+			Thread[] list = new Thread[actualSize];
+			System.arraycopy(slackList, 0, list, 0, actualSize);
 
-    return list;
-  }
+			return list;
+		}
+}
 }

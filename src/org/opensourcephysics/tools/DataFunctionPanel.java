@@ -87,7 +87,7 @@ public class DataFunctionPanel extends FunctionPanel {
 			refreshGUI();
 			if (functionTool != null) {
 				functionTool.refreshGUI();
-				functionTool.firePropertyChange("function", e.getOldValue(), e.getNewValue()); //$NON-NLS-1$
+				functionTool.firePropertyChange(FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION, e.getOldValue(), e.getNewValue()); //$NON-NLS-1$
 			}
 		}
 	}

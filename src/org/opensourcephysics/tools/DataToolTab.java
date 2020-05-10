@@ -131,6 +131,7 @@ import org.opensourcephysics.tools.DatasetCurveFitter.NumberField;
  * @author Douglas Brown
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class DataToolTab extends JPanel implements Tool, PropertyChangeListener {
 
 	// static fields

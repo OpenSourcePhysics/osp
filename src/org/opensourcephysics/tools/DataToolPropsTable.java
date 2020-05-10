@@ -65,6 +65,7 @@ import org.opensourcephysics.tools.DataToolTable.WorkingDataset;
  * @author Bob Hanson
  * @version 2.0
  */
+@SuppressWarnings("serial")
 final public class DataToolPropsTable extends JTable {
 	// static fields
 	final static Color LIGHT_RED = new Color(255, 153, 153);

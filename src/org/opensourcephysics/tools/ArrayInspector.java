@@ -33,6 +33,7 @@ import org.opensourcephysics.display.ArrayTable;
  * @author Douglas Brown
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class ArrayInspector extends JDialog implements PropertyChangeListener {
   // instance fields
   JTabbedPane tabbedPane = new JTabbedPane();

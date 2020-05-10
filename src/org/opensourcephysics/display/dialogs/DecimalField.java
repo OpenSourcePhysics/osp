@@ -17,6 +17,7 @@ import javax.swing.JTextField;
  * @author Douglas Brown
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class DecimalField extends JTextField {
   // instance fields
   private NumberFormat format = NumberFormat.getInstance();

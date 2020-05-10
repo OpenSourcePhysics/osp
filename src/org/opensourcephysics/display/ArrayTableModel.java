@@ -17,6 +17,7 @@ import javax.swing.table.AbstractTableModel;
  * @author Wolfgang Christian
  * @version 1.1
  */
+@SuppressWarnings("serial")
 public class ArrayTableModel extends AbstractTableModel {
   double[] doubleArray1;
   double[][] doubleArray2;
