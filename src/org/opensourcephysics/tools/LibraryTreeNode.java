@@ -470,7 +470,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 		  		}
 				}
   		}
-  		LibraryTreePanel.htmlPanesByNode.remove(this);
+	  	LibraryTreePanel.removeHTMLPaneForNode(this);
   		record.setThumbnail(null);
 			treePanel.showInfo(this);
   		treePanel.setChanged();
@@ -500,7 +500,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
    */
   protected void setBasePath(String path) {
 		if (record.setBasePath(path)) {
-  		LibraryTreePanel.htmlPanesByNode.remove(this);      			
+	  	LibraryTreePanel.removeHTMLPaneForNode(this);
   		record.setThumbnail(null);
 			treePanel.showInfo(this);
   		treePanel.setChanged();
@@ -515,7 +515,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
    */
   protected void setType(String type) {
   	if (record.setType(type)) {
-  		LibraryTreePanel.htmlPanesByNode.remove(this);      			
+	  	LibraryTreePanel.removeHTMLPaneForNode(this);
   		treePanel.showInfo(this);
   		treePanel.setChanged();
 			tooltip = null; // triggers new tooltip
@@ -819,7 +819,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
        record.setThumbnail(thumbFile==null || !thumbFile.exists()? null: thumbFile.getAbsolutePath());
        
        if (record.getThumbnail()!=null) {
-      	 LibraryTreePanel.htmlPanesByNode.remove(LibraryTreeNode.this);      			
+ 		  	 LibraryTreePanel.removeHTMLPaneForNode(LibraryTreeNode.this);
       	 treePanel.showInfo(treePanel.getSelectedNode());
        }
       } catch (Exception ignore) {

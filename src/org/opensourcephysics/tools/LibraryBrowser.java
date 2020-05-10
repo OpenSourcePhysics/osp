@@ -45,7 +45,6 @@ import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.display.TextFrame;
 import org.opensourcephysics.media.core.VideoIO;
-import org.opensourcephysics.tools.LibraryCollection;
 import org.opensourcephysics.tools.LibraryTreePanel;
 import org.opensourcephysics.tools.LibraryResource.Metadata;
 
@@ -511,7 +510,9 @@ public class LibraryBrowser extends JPanel {
         refreshCollectionsMenu();
         if (libraryManager!=null)
         	libraryManager.refreshGUI();
-        LibraryTreePanel.htmlPanesByNode.clear();
+    		synchronized(LibraryTreePanel.htmlPanesByNode) {
+    			LibraryTreePanel.htmlPanesByNode.clear();
+    		}
         LibraryTreePanel treePanel = getSelectedTreePanel();
         if (treePanel!=null)
         	treePanel.showInfo(treePanel.getSelectedNode());
@@ -980,7 +981,9 @@ public class LibraryBrowser extends JPanel {
     		if (cachedFile.exists()) {
     			cachedFile.delete();
     		}	        		
-      	LibraryTreePanel.htmlPanesByURL.remove(url);
+	  		synchronized (LibraryTreePanel.htmlPanesByURL) {
+	  			LibraryTreePanel.htmlPanesByURL.remove(url);
+	  		}
     	}
 
       // delete thumbnail image, if any
@@ -1315,7 +1318,7 @@ public class LibraryBrowser extends JPanel {
 					    	tabbedPane.setTabComponentAt(i, tabTitle);
    							tabbedPane.setTitleAt(i, title);
   						}
-      				LibraryTreePanel.htmlPanesByNode.remove(results.rootNode);  
+      		  	LibraryTreePanel.removeHTMLPaneForNode(results.rootNode);
       		  	results.showInfo(results.rootNode);
 
   						refreshGUI();
@@ -1445,7 +1448,7 @@ public class LibraryBrowser extends JPanel {
   	  		  		return;
   	  				}
   	  				node.createChildNodes();
-  	  				LibraryTreePanel.htmlPanesByNode.remove(node);
+      		  	LibraryTreePanel.removeHTMLPaneForNode(node);
   	  		    LibraryTreeNode lastChild = (LibraryTreeNode)node.getLastChild();
   	  		  	TreePath path = new TreePath(lastChild.getPath());
   	  		  	getSelectedTreePanel().tree.scrollPathToVisible(path);

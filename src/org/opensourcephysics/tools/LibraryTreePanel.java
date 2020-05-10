@@ -143,6 +143,14 @@ public class LibraryTreePanel extends JPanel {
     };
 	}
 	
+	// synchronized block removes node from map
+  protected static void removeHTMLPaneForNode(LibraryTreeNode node) {
+  	synchronized(htmlPanesByNode) {
+  		htmlPanesByNode.remove(node);
+  	}
+  }
+
+	
   // instance fields
 	protected LibraryBrowser browser;
 	protected LibraryResource rootResource; // the root resource or collection displayed by this panel
@@ -188,7 +196,7 @@ public class LibraryTreePanel extends JPanel {
   protected Metadata emptyMetadata = new Metadata();
   protected MetadataLoader metadataLoader;
   protected Set<EntryField> entryFields = new HashSet<EntryField>();
-
+  
   /**
    * Constructs an empty LibraryTreePanel.
    * 
@@ -314,7 +322,9 @@ public class LibraryTreePanel extends JPanel {
 		LibraryResource.h2Font = FontSizer.getResizedFont(LibraryResource.h2Font, level);
 		
 		// clear htmlPanesByNode to force new HTML code with new stylesheets
-		htmlPanesByNode.clear();
+		synchronized(htmlPanesByNode) {
+			htmlPanesByNode.clear();
+		}
 		
 		// refresh the tree structure
 		TreeModel model = tree.getModel();
@@ -558,8 +568,11 @@ public class LibraryTreePanel extends JPanel {
    * 
    * @param node the node
    */
-  protected void showHTMLPane(final LibraryTreeNode node) {  	
-  	HTMLPane htmlPane = htmlPanesByNode.get(node);
+  protected void showHTMLPane(final LibraryTreeNode node) { 
+  	HTMLPane htmlPane = null;
+		synchronized(htmlPanesByNode) {
+			htmlPane = htmlPanesByNode.get(node);
+		}
   	if (htmlPane!=null && htmlPane==htmlScroller.getViewport().getView()) 
   		return;
   	new HTMLDisplayer(node).execute();
@@ -575,7 +588,7 @@ public class LibraryTreePanel extends JPanel {
 		addCollectionAction = new AbstractAction() {
 	    public void actionPerformed(ActionEvent e) {
 	    	LibraryTreeNode node = getSelectedNode();
-    		htmlPanesByNode.remove(node);
+		  	removeHTMLPaneForNode(node);
 	    	LibraryCollection collection = (LibraryCollection)node.record;
       	LibraryCollection newCollection = new LibraryCollection(null);
       	collection.addResource(newCollection);
@@ -591,7 +604,7 @@ public class LibraryTreePanel extends JPanel {
 		addResourceAction = new AbstractAction() {
 	    public void actionPerformed(ActionEvent e) {
 	    	LibraryTreeNode node = getSelectedNode();
-    		htmlPanesByNode.remove(node);
+		  	removeHTMLPaneForNode(node);
 	    	LibraryCollection collection = (LibraryCollection)node.record;
 	    	LibraryResource record = new LibraryResource(null);
 	    	collection.addResource(record);
@@ -645,7 +658,7 @@ public class LibraryTreePanel extends JPanel {
 		        XMLControlElement control = new XMLControlElement();
 		        control.readXML(dataString);
 		        if (LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
-		      		htmlPanesByNode.remove(parent);
+      		  	removeHTMLPaneForNode(parent);
 		        	LibraryResource record =(LibraryResource) control.loadObject(null);
 		      		LibraryCollection collection = (LibraryCollection)parent.record;
 	          	collection.addResource(record);
@@ -671,7 +684,7 @@ public class LibraryTreePanel extends JPanel {
 	        if(parent!=null) {
 		        int i = parent.getIndex(node);
 		        if(i>0) {
-		      		htmlPanesByNode.remove(parent);
+      		  	removeHTMLPaneForNode(parent);
 		        	treeModel.removeNodeFromParent(node);
 		        	treeModel.insertNodeInto(node, parent, i-1);
 		        	LibraryCollection collection = (LibraryCollection)parent.record;
@@ -694,7 +707,7 @@ public class LibraryTreePanel extends JPanel {
 	          int i = parent.getIndex(node);
 	          int end = parent.getChildCount();
 		        if(i<end-1) {
-		      		htmlPanesByNode.remove(parent);
+      		  	removeHTMLPaneForNode(parent);
 		        	treeModel.removeNodeFromParent(node);
 		        	treeModel.insertNodeInto(node, parent, i+1);
 		        	LibraryCollection collection = (LibraryCollection)parent.record;
@@ -861,9 +874,11 @@ public class LibraryTreePanel extends JPanel {
       public void actionPerformed(ActionEvent e) {
       	LibraryTreeNode node = getSelectedNode();
       	if (node!=null) {
-      		htmlPanesByNode.remove(node);
+  		  	removeHTMLPaneForNode(node);
       		LibraryTreeNode parent = (LibraryTreeNode)node.getParent();
-      		if (parent!=null) htmlPanesByNode.remove(parent);
+      		if (parent!=null) {
+    		  	LibraryTreePanel.removeHTMLPaneForNode(parent);
+      		}
       		node.setName(nameField.getText());
       		if (node.isRoot()) {
       			browser.refreshTabTitle(pathToRoot, rootResource);
@@ -893,9 +908,11 @@ public class LibraryTreePanel extends JPanel {
       		  public void actionPerformed(ActionEvent e) {
       		  	String type = e.getActionCommand();
       		  	if (!type.equals(node.record.getType())) {
-            		htmlPanesByNode.remove(node);
+        		  	removeHTMLPaneForNode(node);
             		LibraryTreeNode parent = (LibraryTreeNode)node.getParent();
-            		if (parent!=null) htmlPanesByNode.remove(parent);
+            		if (parent!=null) {
+          		  	LibraryTreePanel.removeHTMLPaneForNode(parent);
+            		}
       		  		node.setType(type);
       		  		type = ToolsRes.getString("LibraryResource.Type."+node.record.getType()); //$NON-NLS-1$
       		  		typeField.setText(type);
@@ -975,9 +992,11 @@ public class LibraryTreePanel extends JPanel {
       	}
       	if (node!=null) {
       		if (!basePathField.getText().equals(node.record.getBasePath())) {
-        		htmlPanesByNode.remove(node);
+    		  	removeHTMLPaneForNode(node);
         		LibraryTreeNode parent = (LibraryTreeNode)node.getParent();
-        		if (parent!=null) htmlPanesByNode.remove(parent);
+        		if (parent!=null) {
+      		  	LibraryTreePanel.removeHTMLPaneForNode(parent);
+        		}
         		node.setBasePath(basePathField.getText());
           	setChanged();
         	}
@@ -1014,9 +1033,11 @@ public class LibraryTreePanel extends JPanel {
           if(result==JFileChooser.APPROVE_OPTION) {
             browser.library.chooserDir = chooser.getCurrentDirectory().toString();
         		if (file!=null) {
-          		htmlPanesByNode.remove(node);
+      		  	removeHTMLPaneForNode(node);
           		LibraryTreeNode parent = (LibraryTreeNode)node.getParent();
-          		if (parent!=null) htmlPanesByNode.remove(parent);
+          		if (parent!=null) {
+        		  	LibraryTreePanel.removeHTMLPaneForNode(parent);
+          		}
         			node.setBasePath(XML.forwardSlash(file.getAbsolutePath()));
         			setChanged();
         			showInfo(node);
@@ -1475,8 +1496,8 @@ public class LibraryTreePanel extends JPanel {
   protected void removeNode(LibraryTreeNode node) {
   	if (rootNode==null || node==rootNode) return;
   	LibraryTreeNode parent = (LibraryTreeNode)node.getParent();
-		htmlPanesByNode.remove(parent);
-		htmlPanesByNode.remove(node);
+  	removeHTMLPaneForNode(parent);
+  	removeHTMLPaneForNode(node);
   	LibraryCollection collection = (LibraryCollection)parent.record;
   	collection.removeResource(node.record);
   	DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
@@ -1968,6 +1989,7 @@ public class LibraryTreePanel extends JPanel {
     		// make property change listener to daisy-chain loading of the nodes
     		PropertyChangeListener listener = new PropertyChangeListener() {
           public void propertyChange(PropertyChangeEvent e) {
+          	if (e.getNewValue()!=SwingWorker.StateValue.DONE) return;
           	NodeLoader nodeLoader = (NodeLoader)e.getSource();
           	if (nodeLoader.isDone()) {
           		if (canceled) {
@@ -1994,7 +2016,7 @@ public class LibraryTreePanel extends JPanel {
 	              	LibraryTreeNode node = (LibraryTreeNode)en.nextElement();
 	              	if (node.record instanceof LibraryCollection) {
 	              		node.record.setDescription(null);
-	               	 	LibraryTreePanel.htmlPanesByNode.remove(node);      			
+	          		  	removeHTMLPaneForNode(node);
 	              	}
 	              }
         				// inform library manager
@@ -2041,14 +2063,16 @@ public class LibraryTreePanel extends JPanel {
   	  	
     @Override
     public Void doInBackground() {
-    	
 	  	String htmlPath = node.getHTMLPath();
 	  	String target = node.getAbsoluteTarget();		
 	  	boolean isZip = target!=null && 
 	  			(target.toLowerCase().endsWith(".zip") || target.toLowerCase().endsWith(".trz")); //$NON-NLS-1$ //$NON-NLS-2$
 			// if target is TRZ or ZIP, look for HTML and title inside
 			if (isZip) {
-				URL targetURL = node.getTargetURL();  // returns cached target URL, if any
+				URL targetURL = node.getTargetURL();  // returns cached target URL or null if target is missing
+				if (targetURL==null) {
+					return null;
+				}
 				String targetURLPath = targetURL.toExternalForm();
 				String targetName = ResourceLoader.getNonURIPath(XML.getName(targetURLPath));
 		  	String ext = "."+XML.getExtension(target); //$NON-NLS-1$		  	
@@ -2130,12 +2154,10 @@ public class LibraryTreePanel extends JPanel {
 	  	if (htmlPath==null) {
 	  		if (urlPath==null) node.record.setDescription(null);
 			} 
-			else { // htmlPath not null
+	  	else {
 				// copy HTML to cache if required
 				boolean requiresCache = htmlPath.contains("!/"); //$NON-NLS-1$  // file in zip
-				// not for local trz files
-				// maybe never for JS?
-				requiresCache = requiresCache && htmlPath.startsWith("http");
+//				requiresCache = requiresCache && htmlPath.startsWith("http"); // not for local trz files
 				if (requiresCache) {
 					File cachedFile = ResourceLoader.getOSPCacheFile(htmlPath);
 					boolean foundInCache = cachedFile.exists();					
@@ -2143,7 +2165,6 @@ public class LibraryTreePanel extends JPanel {
 				}
 			}
 	  	
-      htmlPanesByNode.remove(node);
       LibraryTreeNode.htmlURLs.remove(htmlPath);
 	  	
 	  	// load metadata into node
@@ -2154,8 +2175,11 @@ public class LibraryTreePanel extends JPanel {
 
     @Override
     protected void done() {
-  		LibraryTreePanel.htmlPanesByNode.remove(node);
-  		LibraryTreePanel.htmlPanesByURL.remove(node.getHTMLURL());
+
+    	removeHTMLPaneForNode(node);
+    	synchronized (htmlPanesByURL) {
+	  		htmlPanesByURL.remove(node.getHTMLURL());
+    	}
   		if (hasNewChildren) {
   			node.createChildNodes();
 		  	treeModel.nodeStructureChanged(node);
@@ -2187,8 +2211,10 @@ public class LibraryTreePanel extends JPanel {
   	  	
     @Override
     public HTMLPane doInBackground() {
-    	
-			HTMLPane htmlPane = htmlPanesByNode.get(node);
+    	HTMLPane htmlPane = null;
+    	synchronized(htmlPanesByNode) {
+    		htmlPane = htmlPanesByNode.get(node);
+    	}
 			if (htmlPane==null) {
 		  	URL url = node.getHTMLURL(); // returns URL of original (if available) or cached (if it exists) HTML file
 		  	
@@ -2226,7 +2252,9 @@ public class LibraryTreePanel extends JPanel {
 	  	    document.getStyleSheet().addRule(LibraryResource.getH1Style());  	
 	  	    document.getStyleSheet().addRule(LibraryResource.getH2Style());  
 		  	}
-	  		htmlPanesByNode.put(node, htmlPane);
+	  		synchronized (htmlPanesByNode) {
+	  			htmlPanesByNode.put(node, htmlPane);
+	  		}
 				htmlPane.setCaretPosition(0);
 			}
   		
