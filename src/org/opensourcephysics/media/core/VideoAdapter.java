@@ -90,7 +90,7 @@ public abstract class VideoAdapter implements Video {
 	protected boolean isValidFilteredImage = false;
 	protected ImageCoordSystem coords;
 	protected DoubleArray aspects;
-	protected PropertyChangeSupport support;
+	private PropertyChangeSupport support;
 	protected HashMap<String, Object> properties = new HashMap<String, Object>();
 	protected FilterStack filterStack = new FilterStack();
 	protected DataBufferInt clearRaster;
@@ -933,7 +933,7 @@ public abstract class VideoAdapter implements Video {
 		if (coords != null) {
 			coords.removePropertyChangeListener(this);
 		}
-		newCoords.addPropertyChangeListener(this);
+		newCoords.addPropertyChangeListener(ImageCoordSystem.PROPERTY_COORDS_TRANSFORM, this);
 		coords = newCoords;
 		isMeasured = true;
 		isValidMeasure = false;
@@ -1068,12 +1068,18 @@ public abstract class VideoAdapter implements Video {
 	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent e) {
-		if (e.getSource() == coords) { // "transform"
+		switch (e.getPropertyName()) {
+		case ImageCoordSystem.PROPERTY_COORDS_TRANSFORM:
+//		}
+//		if (e.getSource() == coords) { // "transform" BH! also "locked" and "adjusting"
 			isMeasured = true;
 			isValidMeasure = false;
-		} else if (e.getSource() == filterStack) { // "image"
+			break;
+		case Filter.PROPERTY_FILTER_IMAGE:
+//		} else if (e.getSource() == filterStack) { // "image" BH! also "visible", "color", and "tab"
 			isValidFilteredImage = false;
 			support.firePropertyChange(e);
+			break;
 		}
 	}
 
@@ -1186,7 +1192,7 @@ public abstract class VideoAdapter implements Video {
 	 */
 	protected void initialize() {
 		support = new SwingPropertyChangeSupport(this);
-		filterStack.addPropertyChangeListener(this);
+		filterStack.addPropertyChangeListener(Filter.PROPERTY_FILTER_IMAGE, this);
 	}
 
 	/**
