@@ -27,6 +27,7 @@ public class AsyncFileChooser extends JFileChooser implements PropertyChangeList
 
 	private int optionSelected;
 	private Runnable ok, cancel; // sorry, no CANCEL in JavaScript for file open
+	@SuppressWarnings("unused")
 	private boolean isAsyncSave = true;
 	private static boolean notified;
 

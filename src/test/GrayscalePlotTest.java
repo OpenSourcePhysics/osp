@@ -36,8 +36,8 @@ public class GrayscalePlotTest {
 	public void setRandomVals() {
 		double[][][] data=griddata.getData();
 		double[][] dataR = data[0];
-		double[][] dataG = data[1];
-		double[][] dataB = data[2];
+//		double[][] dataG = data[1];
+//		double[][] dataB = data[2];
 		double r = Math.random();
 		for(int i=0; i<numpts; i++ ) {
 			for(int j=0; j<numpts; j++ ) {

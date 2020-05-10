@@ -32,7 +32,6 @@
 package org.opensourcephysics.media.core;
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 
 /**
  * String resources for media classes.

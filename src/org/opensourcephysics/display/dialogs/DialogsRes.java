@@ -7,8 +7,7 @@
 
 package org.opensourcephysics.display.dialogs;
 import java.util.Locale;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+
 import org.opensourcephysics.display.OSPRuntime;
 
 /**
@@ -55,21 +54,21 @@ public class DialogsRes {
 
   private DialogsRes() {}
 
-  /**
-   * Gets a localized resource string.
-   *
-   * @param bundle ResourceBundle
-   * @param key String
-   * @return String
-   */
-  private static String getString(final ResourceBundle bundle, final String key) {
-    try {
-      return bundle.getString(key);
-    } catch(final MissingResourceException ex) {
-      // assert(false) : ex.getMessage();
-      return '|'+key+'|';
-    }
-  }
+//  /**
+//   * Gets a localized resource string.
+//   *
+//   * @param bundle ResourceBundle
+//   * @param key String
+//   * @return String
+//   */
+//  private static String getString(final ResourceBundle bundle, final String key) {
+//    try {
+//      return bundle.getString(key);
+//    } catch(final MissingResourceException ex) {
+//      // assert(false) : ex.getMessage();
+//      return '|'+key+'|';
+//    }
+//  }
 
   /**
    * Sets the locale.

@@ -10,8 +10,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+
 import javax.swing.event.SwingPropertyChangeSupport;
+
 import org.opensourcephysics.display.OSPRuntime;
 
 /**

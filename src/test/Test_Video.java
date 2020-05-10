@@ -47,6 +47,7 @@ public class Test_Video {
 
 		
 		
+		@SuppressWarnings("unused")
 		boolean testRemote = false;// setting this true requires Java 9
 		boolean isJS = /** @j2sNative true || */
 				false;

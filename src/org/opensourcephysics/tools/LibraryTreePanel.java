@@ -180,7 +180,7 @@ public class LibraryTreePanel extends JPanel {
 	protected JLabel authorLabel, contactLabel, keywordsLabel, metadataLabel;
 	protected Box authorBox, contactBox, keywordsBox, metadataBox;
 	protected MetadataComboBoxModel metadataModel;
-	protected JComboBox metadataDropdown;
+	protected JComboBox<Metadata> metadataDropdown;
 	protected MetadataEditField keyEditField, valueEditField;
 	protected JLabel typeLabel, typeField;
 	protected JButton openHTMLButton, openBasePathButton, openFileButton;
@@ -1210,7 +1210,7 @@ public class LibraryTreePanel extends JPanel {
 		entryFields.add(keywordsField);
 		keywordsField.addActionListener(metadataFieldListener);
 		metadataModel = new MetadataComboBoxModel();
-		metadataDropdown = new JComboBox(metadataModel);
+		metadataDropdown = new JComboBox<>(metadataModel);
 		metadataDropdown.setRenderer(new MetadataComboBoxRenderer());
 		metadataDropdown.setEditor(new MetadataComboBoxEditor());
 		metadataDropdown.setEditable(true);
@@ -1770,7 +1770,7 @@ public class LibraryTreePanel extends JPanel {
 	/**
 	 * A renderer for Metadata objects.
 	 */
-	protected class MetadataComboBoxRenderer extends Box implements ListCellRenderer {
+	protected class MetadataComboBoxRenderer extends Box implements ListCellRenderer<Metadata> {
 		JTextField keyField, valueField;
 		JLabel spacer;
 
@@ -1815,7 +1815,7 @@ public class LibraryTreePanel extends JPanel {
 		}
 
 		@Override
-		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+		public Component getListCellRendererComponent(JList<? extends Metadata> list, Metadata value, int index, boolean isSelected,
 				boolean cellHasFocus) {
 			boolean empty = false;
 			if (value != null && value instanceof Metadata) {
@@ -1851,7 +1851,7 @@ public class LibraryTreePanel extends JPanel {
 	/**
 	 * A ComboBoxModel for metadata.
 	 */
-	protected class MetadataComboBoxModel extends AbstractListModel implements ComboBoxModel {
+	protected class MetadataComboBoxModel extends AbstractListModel<Metadata> implements ComboBoxModel<Metadata> {
 		@Override
 		public int getSize() {
 			LibraryTreeNode node = getSelectedNode();
@@ -1864,10 +1864,10 @@ public class LibraryTreePanel extends JPanel {
 		}
 
 		@Override
-		public Object getElementAt(int index) {
+		public Metadata getElementAt(int index) {
 			LibraryTreeNode node = getSelectedNode();
 			if (node == null)
-				return 0;
+				return emptyMetadata; // BH! this was 0
 			Set<Metadata> data = node.record.getMetadata();
 			if (data == null)
 				return emptyMetadata;

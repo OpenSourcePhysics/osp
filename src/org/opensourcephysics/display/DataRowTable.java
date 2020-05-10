@@ -9,15 +9,14 @@ package org.opensourcephysics.display;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
+
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -414,18 +413,18 @@ public class DataRowTable extends JTable implements ActionListener {
 	}
 
 	public void scrollToEnd() {
-		if (false) // this did not work so well in JavaScript
-		SwingUtilities.invokeLater(new Runnable() {
-
-			@Override
-			public void run() {
-		        Rectangle cellRect = getCellRect(getRowCount() -1, 0, false);
-		        if (cellRect != null) {
-		            scrollRectToVisible(cellRect);
-		        }
-			}
-			
-		});
+//		if (false) // this did not work so well in JavaScript
+//		SwingUtilities.invokeLater(new Runnable() {
+//
+//			@Override
+//			public void run() {
+//		        Rectangle cellRect = getCellRect(getRowCount() -1, 0, false);
+//		        if (cellRect != null) {
+//		            scrollRectToVisible(cellRect);
+//		        }
+//			}
+//			
+//		});
 	}
 }
 

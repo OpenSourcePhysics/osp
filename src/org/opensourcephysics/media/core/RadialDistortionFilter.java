@@ -638,7 +638,7 @@ public void refresh() {
     JButton helpButton, colorButton;
   	JPanel contentPane;
   	JSlider radiusSlider, sourceAngleSlider;
-  	JComboBox sourceTypeDropdown, outputTypeDropdown;
+  	JComboBox<String> sourceTypeDropdown, outputTypeDropdown;
   	JLabel radiusLabel, sourceAngleLabel, outputAngleLabel, sourceTypeLabel, outputTypeLabel;
   	IntegerField radiusField, sourceAngleField, outputAngleField;
   	TitledBorder sourceBorder, outputBorder, circleBorder;
@@ -711,7 +711,7 @@ public void refresh() {
 
       String[] types = getProjectionTypeDescriptions();
 
-      sourceTypeDropdown = new JComboBox(types);
+      sourceTypeDropdown = new JComboBox<>(types);
       sourceTypeDropdown.setSelectedItem(MediaRes.getString("RadialDistortionFilter.ProjectionType."+sourceProjectionType)); //$NON-NLS-1$
       sourceTypeDropdown.setBorder(space);
       sourceTypeDropdown.addItemListener(new ItemListener() {
@@ -727,7 +727,7 @@ public void refresh() {
       	}
       });
       
-      outputTypeDropdown = new JComboBox(types);
+      outputTypeDropdown = new JComboBox<>(types);
       outputTypeDropdown.setSelectedItem(MediaRes.getString("RadialDistortionFilter.ProjectionType."+outputProjectionType)); //$NON-NLS-1$
       outputTypeDropdown.setBorder(space);
       outputTypeDropdown.addItemListener(new ItemListener() {

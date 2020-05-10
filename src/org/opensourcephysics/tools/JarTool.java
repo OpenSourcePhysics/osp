@@ -18,10 +18,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
 import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,12 +27,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
@@ -77,17 +71,17 @@ public class JarTool implements Tool, Runnable {
   static private final String JAR_TOOL_BUNDLE_NAME = "org.opensourcephysics.resources.tools.tools"; //$NON-NLS-1$
   static private org.opensourcephysics.tools.ResourceLoader.Bundle res = org.opensourcephysics.tools.ResourceLoader.getBundle(JAR_TOOL_BUNDLE_NAME);
 
-  static private void setLocale(Locale locale) {
-    res = org.opensourcephysics.tools.ResourceLoader.getBundle(JAR_TOOL_BUNDLE_NAME, locale);
-  }
+//  static private void setLocale(Locale locale) {
+//    res = org.opensourcephysics.tools.ResourceLoader.getBundle(JAR_TOOL_BUNDLE_NAME, locale);
+//  }
 
-  static private String getString(String key) {
-    try {
-      return res.getString(key);
-    } catch(MissingResourceException e) {
-      return '!'+key+'!';
-    }
-  }
+//  static private String getString(String key) {
+//    try {
+//      return res.getString(key);
+//    } catch(MissingResourceException e) {
+//      return '!'+key+'!';
+//    }
+//  }
 
   // --- End of localization
 
@@ -294,40 +288,40 @@ public void run() {
     }
   }
 
-  /**
-   * Appends to an existing compressed file the list of contents provided.
-   * Works similarly to create(), but uses an existing compressed file
-   * and respects its manifest (if a JAR file).
-   * @param sources ArrayList The list of content files to add.
-   * Each item in the list is a String with the relative name of a
-   * file or directory under the current parent directory, or of
-   * a compressed file anywhere in the hard disk.
-   * @param parent File The parent directory for all relative filenames
-   * @param target String The name of an existing compressed file, relative
-   * to the parent directory.
-   */
-  private File append(ArrayList<String> sources, File parent, String target) {
-    OverwriteValue policy = new OverwriteValue(overwritePolicy);
-    overwritePolicy = NO;
-    if(sources.size()<=0) {
-      return null;
-    }
-    try {
-      File targetFile = new File(parent, target);
-      if(!targetFile.exists()) {
-        String[] message = new String[] {res.getString("JarTool.JarNotCreated"), res.getString("JarTool.FileDoesntExist")+" "+target}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        JOptionPane.showMessageDialog((JFrame) null, message, res.getString("JarTool.Error"), JOptionPane.WARNING_MESSAGE); //$NON-NLS-1$
-        return null;
-      }
-      if(!sources.contains(target)) {
-        sources.add(0, target);
-      }
-      return compressList(sources, parent, targetFile, getManifest(targetFile), policy, ownerFrame);
-    } catch(Exception exception) {
-      exception.printStackTrace();
-      return null;
-    }
-  }
+//  /**
+//   * Appends to an existing compressed file the list of contents provided.
+//   * Works similarly to create(), but uses an existing compressed file
+//   * and respects its manifest (if a JAR file).
+//   * @param sources ArrayList The list of content files to add.
+//   * Each item in the list is a String with the relative name of a
+//   * file or directory under the current parent directory, or of
+//   * a compressed file anywhere in the hard disk.
+//   * @param parent File The parent directory for all relative filenames
+//   * @param target String The name of an existing compressed file, relative
+//   * to the parent directory.
+//   */
+//  private File append(ArrayList<String> sources, File parent, String target) {
+//    OverwriteValue policy = new OverwriteValue(overwritePolicy);
+//    overwritePolicy = NO;
+//    if(sources.size()<=0) {
+//      return null;
+//    }
+//    try {
+//      File targetFile = new File(parent, target);
+//      if(!targetFile.exists()) {
+//        String[] message = new String[] {res.getString("JarTool.JarNotCreated"), res.getString("JarTool.FileDoesntExist")+" "+target}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+//        JOptionPane.showMessageDialog((JFrame) null, message, res.getString("JarTool.Error"), JOptionPane.WARNING_MESSAGE); //$NON-NLS-1$
+//        return null;
+//      }
+//      if(!sources.contains(target)) {
+//        sources.add(0, target);
+//      }
+//      return compressList(sources, parent, targetFile, getManifest(targetFile), policy, ownerFrame);
+//    } catch(Exception exception) {
+//      exception.printStackTrace();
+//      return null;
+//    }
+//  }
 
 /**
    * From LaunchBuilder save jar
@@ -364,21 +358,21 @@ public void run() {
     }
   }
 
-  /**
-   * Gets the Manifest of an existing JAR file
-   * @param file File the jar file from which to obtain the manifest
-   * @return Manifest the manifest found, null if failed.
-   */
-  static private Manifest getManifest(File file) {
-    try {
-      JarFile jar = new JarFile(file);
-      Manifest manifest = jar.getManifest();
-      jar.close();
-      return manifest;
-    } catch(Exception exc) {
-      return null;
-    } // Do not complain
-  }
+//  /**
+//   * Gets the Manifest of an existing JAR file
+//   * @param file File the jar file from which to obtain the manifest
+//   * @return Manifest the manifest found, null if failed.
+//   */
+//  static private Manifest getManifest(File file) {
+//    try {
+//      JarFile jar = new JarFile(file);
+//      Manifest manifest = jar.getManifest();
+//      jar.close();
+//      return manifest;
+//    } catch(Exception exc) {
+//      return null;
+//    } // Do not complain
+//  }
 
   /**
    * From ResourceLoader 
@@ -393,39 +387,39 @@ public void run() {
   static public File extract(File source, String filename, String destination) {
     return extract0(source, filename, new File(destination));
   }
-  
-	static private File extract2(File source, String fileName, File target) {
-		String targetName = target.toString();
-		System.out.println("extracting " + fileName + " " + targetName + " from " + source);
-		int flen = (fileName.endsWith("/") ? fileName.length() : 0);
-		FileOutputStream fos = null;
-		try (FileInputStream fis = new FileInputStream(source);
-				ZipInputStream zis = new ZipInputStream(fis);) {
-			ZipEntry ze;
-			while ((ze = zis.getNextEntry()) != null && flen >= 0) {
-				String name = ze.getName();
-				if (flen == 0 && name.equals(fileName)) {
-					flen = -1;
-					break;
-				} else if (flen > 0 && name.startsWith(fileName)) {
-					target = new File(targetName + name.substring(flen));
-				} else {
-					continue;
-				}
-				File parent = target.getParentFile();
-				if (parent != null) {
-					parent.mkdirs();
-				}
-				fos = new FileOutputStream(target);
-				ResourceLoader.getLimitedStreamBytes(zis, ze.getSize(), fos);
-				fos.close();
-				System.out.println("extracted " + targetName + " " + target.length());
-			}
-		} catch (IOException e2) {
-		}
-		return target;
-	}
-  
+//  
+//	static private File extract2(File source, String fileName, File target) {
+//		String targetName = target.toString();
+//		System.out.println("extracting " + fileName + " " + targetName + " from " + source);
+//		int flen = (fileName.endsWith("/") ? fileName.length() : 0);
+//		FileOutputStream fos = null;
+//		try (FileInputStream fis = new FileInputStream(source);
+//				ZipInputStream zis = new ZipInputStream(fis);) {
+//			ZipEntry ze;
+//			while ((ze = zis.getNextEntry()) != null && flen >= 0) {
+//				String name = ze.getName();
+//				if (flen == 0 && name.equals(fileName)) {
+//					flen = -1;
+//					break;
+//				} else if (flen > 0 && name.startsWith(fileName)) {
+//					target = new File(targetName + name.substring(flen));
+//				} else {
+//					continue;
+//				}
+//				File parent = target.getParentFile();
+//				if (parent != null) {
+//					parent.mkdirs();
+//				}
+//				fos = new FileOutputStream(target);
+//				ResourceLoader.getLimitedStreamBytes(zis, ze.getSize(), fos);
+//				fos.close();
+//				System.out.println("extracted " + targetName + " " + target.length());
+//			}
+//		} catch (IOException e2) {
+//		}
+//		return target;
+//	}
+//  
   /**
    * Extracts a given file from a compressed (ZIP, JAR or TRZ) file
    * Extensive changes by D Brown 2007-10-31
@@ -500,41 +494,41 @@ public void run() {
     return null;
   }
 
-  /**
-   * 
-   * BH No references
-   * 
-   * Extracts a file using the given class loader
-   * @param _classLoader ClassLoader The class loader to extract the files from
-   * @param filename String The path of the file to extract
-   * @param target File The target file for the extracted file
-   * @return File The extracted file, null if failed
-   */
-  static private File extract(ClassLoader classLoader, String filename, File target) {
-    if((filename==null)||(filename.trim().length()<=0)||(target==null)) {
-      return null;
-    }
-    try {
-      URL url = classLoader.getResource(filename);
-      if(url==null) {
-        return null;
-      }
-      target.getParentFile().mkdirs();
-      int bytesRead;
-      byte[] buffer = new byte[1024];
-      FileOutputStream output = new FileOutputStream(target);
-      BufferedInputStream input = new BufferedInputStream(url.openStream());
-      while((bytesRead = input.read(buffer))!=-1) {
-        output.write(buffer, 0, bytesRead);
-      }
-      output.close();
-      input.close();
-      return target;
-    } catch(Exception exc) {
-      exc.printStackTrace();
-      return null;
-    }
-  }
+//  /**
+//   * 
+//   * BH No references
+//   * 
+//   * Extracts a file using the given class loader
+//   * @param _classLoader ClassLoader The class loader to extract the files from
+//   * @param filename String The path of the file to extract
+//   * @param target File The target file for the extracted file
+//   * @return File The extracted file, null if failed
+//   */
+//  static private File extract(ClassLoader classLoader, String filename, File target) {
+//    if((filename==null)||(filename.trim().length()<=0)||(target==null)) {
+//      return null;
+//    }
+//    try {
+//      URL url = classLoader.getResource(filename);
+//      if(url==null) {
+//        return null;
+//      }
+//      target.getParentFile().mkdirs();
+//      int bytesRead;
+//      byte[] buffer = new byte[1024];
+//      FileOutputStream output = new FileOutputStream(target);
+//      BufferedInputStream input = new BufferedInputStream(url.openStream());
+//      while((bytesRead = input.read(buffer))!=-1) {
+//        output.write(buffer, 0, bytesRead);
+//      }
+//      output.close();
+//      input.close();
+//      return target;
+//    } catch(Exception exc) {
+//      exc.printStackTrace();
+//      return null;
+//    }
+//  }
 
   /**
    * Extracts a file using the ResourceLoader utility
@@ -590,69 +584,69 @@ public void run() {
     }
   }
 
-  /**
-   * 
-   * BH No references
-   * 
-   * Extract a list of files (given by their relative names) to the given target directory.
-   * If files exist, the user will be warned.
-   * @param source Object Either a compressed java.io.File with the given resources,
-   * a ClassLoader object which will be used to extract the files, or null, in which case,
-   * the ResourceLoader will be used.
-   * @param files AbstractList The list of String with the relative names of the files to extract
-   * @param targetDirectory File The target directory where to extract the files
-   * @return boolean
-   */
-  static private boolean extract(Object source, java.util.List<?> files, File targetDirectory) {
-    if(files.size()<=0) {
-      return true;
-    }
-    if(!((source==null)||(source instanceof File)||(source instanceof ClassLoader))) {
-      String[] message = new String[] {res.getString("JarTool.FileNotExtracted"), res.getString("JarTool.SourceRequirement")+" null, java.io.File, java.lang.ClassLoader."}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-      JOptionPane.showMessageDialog((JFrame) null, message, res.getString("JarTool.Error"), JOptionPane.WARNING_MESSAGE); //$NON-NLS-1$
-      return false;
-    }
-    if(!(targetDirectory.exists()&&targetDirectory.isDirectory())) {
-      String[] message = new String[] {res.getString("JarTool.FileNotExtracted"), res.getString("JarTool.FileDoesntExist")+" "+targetDirectory.getName()}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-      JOptionPane.showMessageDialog((JFrame) null, message, res.getString("JarTool.Error"), JOptionPane.WARNING_MESSAGE); //$NON-NLS-1$
-      return false;
-    }
-    int policy = NO;
-    for(Iterator<?> it = files.iterator(); it.hasNext(); ) {                                                                                                // Copy or uncompress all sources to the temporary directory
-      String filename = it.next().toString();
-      File targetFile = new File(targetDirectory, filename);
-      if(targetFile.exists()) {
-        switch(policy) {
-           case NO_TO_ALL :
-             continue;
-           case YES_TO_ALL :
-             break;                                                                                                                                         // will overwrite
-           default :
-             switch(policy = confirmOverwrite(filename)) {
-                case NO_TO_ALL :
-                case NO :
-                  continue;
-//                case CANCEL : return false;
-                default :                                                                                                                                   // Do nothing, i.e., will overwrite the file
-             }
-        }
-      }
-      File result = null;
-      if(source==null) {
-        result = extract(filename, targetFile);                                                                                                             // Use the ResourceLoader
-      } else if(source instanceof File) {
-        result = extract0((File) source, filename, targetFile);
-      } else if(source instanceof ClassLoader) {
-        result = extract((ClassLoader) source, filename, targetFile);
-      }
-      if(result==null) {
-        String[] message = new String[] {res.getString("JarTool.FileNotExtracted"), filename+" "+res.getString("JarTool.FileNotExtractedFrom")+" "+source}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-        JOptionPane.showMessageDialog((JFrame) null, message, res.getString("JarTool.Error"), JOptionPane.WARNING_MESSAGE); //$NON-NLS-1$
-        return false;
-      }
-    }
-    return true;
-  }
+//  /**
+//   * 
+//   * BH No references
+//   * 
+//   * Extract a list of files (given by their relative names) to the given target directory.
+//   * If files exist, the user will be warned.
+//   * @param source Object Either a compressed java.io.File with the given resources,
+//   * a ClassLoader object which will be used to extract the files, or null, in which case,
+//   * the ResourceLoader will be used.
+//   * @param files AbstractList The list of String with the relative names of the files to extract
+//   * @param targetDirectory File The target directory where to extract the files
+//   * @return boolean
+//   */
+//  static private boolean extract(Object source, java.util.List<?> files, File targetDirectory) {
+//    if(files.size()<=0) {
+//      return true;
+//    }
+//    if(!((source==null)||(source instanceof File)||(source instanceof ClassLoader))) {
+//      String[] message = new String[] {res.getString("JarTool.FileNotExtracted"), res.getString("JarTool.SourceRequirement")+" null, java.io.File, java.lang.ClassLoader."}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+//      JOptionPane.showMessageDialog((JFrame) null, message, res.getString("JarTool.Error"), JOptionPane.WARNING_MESSAGE); //$NON-NLS-1$
+//      return false;
+//    }
+//    if(!(targetDirectory.exists()&&targetDirectory.isDirectory())) {
+//      String[] message = new String[] {res.getString("JarTool.FileNotExtracted"), res.getString("JarTool.FileDoesntExist")+" "+targetDirectory.getName()}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+//      JOptionPane.showMessageDialog((JFrame) null, message, res.getString("JarTool.Error"), JOptionPane.WARNING_MESSAGE); //$NON-NLS-1$
+//      return false;
+//    }
+//    int policy = NO;
+//    for(Iterator<?> it = files.iterator(); it.hasNext(); ) {                                                                                                // Copy or uncompress all sources to the temporary directory
+//      String filename = it.next().toString();
+//      File targetFile = new File(targetDirectory, filename);
+//      if(targetFile.exists()) {
+//        switch(policy) {
+//           case NO_TO_ALL :
+//             continue;
+//           case YES_TO_ALL :
+//             break;                                                                                                                                         // will overwrite
+//           default :
+//             switch(policy = confirmOverwrite(filename)) {
+//                case NO_TO_ALL :
+//                case NO :
+//                  continue;
+////                case CANCEL : return false;
+//                default :                                                                                                                                   // Do nothing, i.e., will overwrite the file
+//             }
+//        }
+//      }
+//      File result = null;
+//      if(source==null) {
+//        result = extract(filename, targetFile);                                                                                                             // Use the ResourceLoader
+//      } else if(source instanceof File) {
+//        result = extract0((File) source, filename, targetFile);
+//      } else if(source instanceof ClassLoader) {
+//        result = extract((ClassLoader) source, filename, targetFile);
+//      }
+//      if(result==null) {
+//        String[] message = new String[] {res.getString("JarTool.FileNotExtracted"), filename+" "+res.getString("JarTool.FileNotExtractedFrom")+" "+source}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+//        JOptionPane.showMessageDialog((JFrame) null, message, res.getString("JarTool.Error"), JOptionPane.WARNING_MESSAGE); //$NON-NLS-1$
+//        return false;
+//      }
+//    }
+//    return true;
+//  }
 
   // -----------------------------------
   // Different public File-based utilities

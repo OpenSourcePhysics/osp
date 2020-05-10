@@ -19,8 +19,8 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 import java.util.Vector;
+
 import javax.swing.AbstractButton;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -38,6 +38,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.OSPRuntime;
 
@@ -481,11 +482,11 @@ public static java.util.List<Object> ejsConfirmList(Component _target, Dimension
 
     }
     final ReturnValue returnValue = new ReturnValue();
-    final DefaultListModel listModel = new DefaultListModel();
+    final DefaultListModel<Object> listModel = new DefaultListModel<Object>();
     for(int i = 0, n = _list.size(); i<n; i++) {
       listModel.addElement(_list.get(i));
     }
-    final JList list = new JList(listModel);
+    final JList<Object> list = new JList<Object>(listModel);
     list.setEnabled(true);
     list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
     list.setSelectionInterval(0, listModel.getSize()-1);

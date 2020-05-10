@@ -5,6 +5,7 @@ class Testx {
 	// It will get its own .js file.
 }
 
+@SuppressWarnings("unused")
 public class Test_ {
 
 	static public boolean j2sHeadless = true;

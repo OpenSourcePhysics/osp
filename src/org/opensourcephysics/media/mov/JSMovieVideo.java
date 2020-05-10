@@ -46,7 +46,6 @@ import org.opensourcephysics.media.core.VideoAdapter;
 import org.opensourcephysics.media.core.VideoClip;
 import org.opensourcephysics.media.core.VideoFileFilter;
 import org.opensourcephysics.media.core.VideoIO;
-import org.opensourcephysics.media.core.VideoIO.FinalizableLoader;
 import org.opensourcephysics.media.core.VideoType;
 import org.opensourcephysics.tools.Resource;
 import org.opensourcephysics.tools.ResourceLoader;
@@ -97,8 +96,8 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 
 	// array of frame start times in milliseconds
 	private double[] frameTimesMillis;
-	private long systemStartPlayTime;
-	private double frameStartPlayTime;
+//	private long systemStartPlayTime;
+//	private double frameStartPlayTime;
 	private int frame;
 	//private Timer failDetectTimer;
 
@@ -325,9 +324,9 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	 */
 	private void startPlayingAtFrame(int frameNumber) {
 		// systemStartPlayTime is the system time when play starts
-		systemStartPlayTime = System.currentTimeMillis();
-		// frameStartPlayTime is the frame time where play starts
-		frameStartPlayTime = getFrameTime(frameNumber);
+//		systemStartPlayTime = System.currentTimeMillis();
+//		// frameStartPlayTime is the frame time where play starts
+//		frameStartPlayTime = getFrameTime(frameNumber);
 		setFrameNumber(frameNumber);
 	}
 
@@ -357,25 +356,25 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		}
 	}
 
-	/**
-	 * Gets the number of the last frame before the specified time.
-	 *
-	 * @param time the time in milliseconds
-	 * @return the frame number, or -1 if not found
-	 */
-	private int getFrameNumberBefore(double time) {
-		for (int i = 0; i < frameTimesMillis.length; i++) {
-			if (time < frameTimesMillis[i])
-				return i - 1;
-		}
-		// if not found, see if specified time falls in last frame
-		int n = frameTimesMillis.length - 1;
-		// assume last and next-to-last frames have same duration
-		double endTime = 2 * frameTimesMillis[n] - frameTimesMillis[n - 1];
-		if (time < endTime)
-			return n;
-		return -1;
-	}
+//	/**
+//	 * Gets the number of the last frame before the specified time.
+//	 *
+//	 * @param time the time in milliseconds
+//	 * @return the frame number, or -1 if not found
+//	 */
+//	private int getFrameNumberBefore(double time) {
+//		for (int i = 0; i < frameTimesMillis.length; i++) {
+//			if (time < frameTimesMillis[i])
+//				return i - 1;
+//		}
+//		// if not found, see if specified time falls in last frame
+//		int n = frameTimesMillis.length - 1;
+//		// assume last and next-to-last frames have same duration
+//		double endTime = 2 * frameTimesMillis[n] - frameTimesMillis[n - 1];
+//		if (time < endTime)
+//			return n;
+//		return -1;
+//	}
 
 	/**
 	 * Loads a video specified by name.
@@ -427,7 +426,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		
 		static final int STATE_GET_IMAGE_INIT    = 20;
 		static final int STATE_GET_IMAGE_READY   = 22;
-		static final int STATE_GET_IMAGE_READY2  = 23;
+//		static final int STATE_GET_IMAGE_READY2  = 23;
 		
 		
 		private StateHelper helper;
@@ -445,8 +444,6 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		private Object[] readyListener;
 		private double duration;
 		private int thisFrame = 0;
-
-		public Runnable whenReady;
 
 		private boolean debugging = false; // voluminous event information
 		
@@ -639,16 +636,16 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 
 		}
 	}	
-	/**
-	 * Sets the initial image.
-	 *
-	 * @param image the image
-	 */
-	private void setImage(BufferedImage image) {
-		rawImage = image;
-		size = new Dimension(image.getWidth(), image.getHeight());
-		refreshBufferedImage();
-	}
+//	/**
+//	 * Sets the initial image.
+//	 *
+//	 * @param image the image
+//	 */
+//	private void setImage(BufferedImage image) {
+//		rawImage = image;
+//		size = new Dimension(image.getWidth(), image.getHeight());
+//		refreshBufferedImage();
+//	}
 
 	private void setFrameCount(int n) {
 		frameCount = n;

@@ -8,7 +8,6 @@
 package org.opensourcephysics.display;
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 
 /**
  * DisplayRes provides access to internationalized string resources for objects in the display package.

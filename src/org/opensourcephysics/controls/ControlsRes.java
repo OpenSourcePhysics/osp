@@ -8,10 +8,9 @@
 package org.opensourcephysics.controls;
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.ResourceLoader;
-import org.opensourcephysics.tools.ResourceLoader.Bundle;
 
 /**
  * ControlsRes provides access to internationalized string resources for OSPControls.
@@ -58,13 +57,13 @@ public class ControlsRes {
     setLocalStrings();
   }
 
-  private static String getString(final ResourceBundle bundle, final String key) {
-    try {
-      return bundle.getString(key);
-    } catch(final MissingResourceException ex) {
-      return '|'+key+'|';
-    }
-  }
+//  private static String getString(final ResourceBundle bundle, final String key) {
+//    try {
+//      return bundle.getString(key);
+//    } catch(final MissingResourceException ex) {
+//      return '|'+key+'|';
+//    }
+//  }
 
   public static void setLocale(Locale locale) {
 	if(org.opensourcephysics.js.JSUtil.isJS) return;

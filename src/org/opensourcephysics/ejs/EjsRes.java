@@ -8,7 +8,7 @@
 package org.opensourcephysics.ejs;
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+
 import org.opensourcephysics.display.OSPRuntime;
 
 public class EjsRes {

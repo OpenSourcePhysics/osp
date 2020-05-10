@@ -25,7 +25,7 @@ import java.io.File;
 import java.rmi.RemoteException;
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -34,6 +34,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
 import org.jibble.epsgraphics.EpsGraphics2D;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.Renderable;

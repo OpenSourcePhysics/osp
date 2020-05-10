@@ -21,8 +21,8 @@ import java.awt.Container;
  * @version 1.0
  */
 public class ObjectManager {
-    Map myObjects = new HashMap();
-    Map myViews = new HashMap();
+    Map<String, Object> myObjects = new HashMap<>();
+    Map<String, Object> myViews = new HashMap<>();
 
    /**
     * Stores a reference to an object.
@@ -106,7 +106,7 @@ public class ObjectManager {
    *
    * @return the views
    */
-   public Collection getViews (){
+   public Collection<Object> getViews (){
      return myViews.values();
    }
 
@@ -119,9 +119,9 @@ public class ObjectManager {
     * @param c the type of object
     * @return the collection
     */
-   public Collection getObjects(Class c) {
-     HashMap map = new HashMap(myObjects); // clone the object map
-     Iterator it = map.values().iterator();
+   public Collection<Object> getObjects(Class<?> c) {
+     HashMap<String, Object> map = new HashMap<String, Object>(myObjects); // clone the object map
+     Iterator<Object> it = map.values().iterator();
      while (it.hasNext()) { // copy only the objects of the correct type
        Object obj = it.next();
        if (!c.isInstance(obj)) {
@@ -136,7 +136,7 @@ public class ObjectManager {
  *
  * @return the collection
  */
-public Collection getObjects() {
+public Collection<Object> getObjects() {
   return myObjects.values();
 }
 
@@ -146,9 +146,9 @@ public Collection getObjects() {
    *
    * @param c the type of object
    */
-  public void removeObjects(Class c) {
-    HashMap map = new HashMap(myObjects); // clone the object map
-    Iterator it = map.values().iterator();
+  public void removeObjects(Class<?> c) {
+    HashMap<String, Object> map = new HashMap<>(myObjects); // clone the object map
+    Iterator<Object> it = map.values().iterator();
     while (it.hasNext()) { // copy only the obejcts of the correct type
       Object obj = it.next();
       if (!c.isInstance(obj)) {
@@ -171,7 +171,7 @@ public Collection getObjects() {
    * @return the collection
    */
   public void printObjectsAndViews() {
-    Iterator it = myObjects.keySet().iterator();
+    Iterator<String> it = myObjects.keySet().iterator();
     System.out.println("Objects");
     while (it.hasNext()) { // copy only the obejcts of the correct type
       System.out.println(it.next().toString());

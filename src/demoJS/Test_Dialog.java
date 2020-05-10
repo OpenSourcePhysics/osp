@@ -29,6 +29,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.plaf.UIResource;
 
+@SuppressWarnings("deprecation")
 public class Test_Dialog extends JFrame implements PropertyChangeListener {
 
 	public static int ii;
@@ -76,7 +77,7 @@ public class Test_Dialog extends JFrame implements PropertyChangeListener {
 				File file = (File) val;
 				byte[] array = (val == null ? null : /** @j2sNative file.秘bytes || */
 						null);
-				onDialogReturn("fileName is '" + file.getName() + " size=" + array.length);
+				onDialogReturn("fileName is '" + file.getName() + " size=" + (array == null ? null : array.length));
 				return;
 			}
 			break;
@@ -263,7 +264,6 @@ public class Test_Dialog extends JFrame implements PropertyChangeListener {
 
 	}
 
-}
 
 class ImportExportDialog extends Dialog
 {
@@ -392,84 +392,85 @@ class ImportExportJDialog extends JDialog
   protected Label label;
   public TextArea textArea;
 
-  public ImportExportJDialog(JFrame parent, String title) {
+		public ImportExportJDialog(JFrame parent, String title) {
 
-    super(parent, title, true);
+			super(parent, title, true);
 
-    this.setLayout(new BorderLayout(15, 0));
+			this.setLayout(new BorderLayout(15, 0));
 
-    if (title.equals("Import Dialog"))
-    	add("North", new Label("Import using CTRL + V"));
-    else
-    	add("North", new Label("Export using CTRL + C"));
+			if (title.equals("Import Dialog"))
+				add("North", new Label("Import using CTRL + V"));
+			else
+				add("North", new Label("Export using CTRL + C"));
 
-    textArea = new TextArea() {
-    	@Override
-		public Dimension getPreferredSize() {
-    		Dimension d = super.getPreferredSize();
-    		System.out.println(this.getRows() + " " + this.getColumns());
-    		System.out.println("export dialog textarea pref d = " + d);
-    		return d;
-    	}
-    	@Override
-		public Dimension preferredSize() {
-    		Dimension d = super.preferredSize();
-    		System.out.println("export dialog pref textarea pref d = " + d);
-    		return d;
-    	}
+			textArea = new TextArea() {
+				@Override
+				public Dimension getPreferredSize() {
+					Dimension d = super.getPreferredSize();
+					System.out.println(this.getRows() + " " + this.getColumns());
+					System.out.println("export dialog textarea pref d = " + d);
+					return d;
+				}
 
-    	@Override
-		public Dimension minimumSize() {
-    		Dimension d = super.minimumSize();
-    		System.out.println("export dialog min textarea min d = " + d);
-    		return d;
-    	}
+				@Override
+				public Dimension preferredSize() {
+					Dimension d = super.preferredSize();
+					System.out.println("export dialog pref textarea pref d = " + d);
+					return d;
+				}
 
-    	@Override
-		public Dimension getMinimumSize() {
-    		Dimension d = super.getMinimumSize();
-    		System.out.println("export dialog textarea min d = " + d);
-    		return d;
-    	}
-   
-    };
-    textArea.setText("this is a test of the system and this is a test of the system\nthis is a test of the system\nthis is a test of the system\nthis is a test of the system\nthis is a test of the system\n");
-    textArea.setFont(new Font(Font.DIALOG, Font.PLAIN, 18));
-    this.add("Center", textArea);
-    
-    copyPasteButton = new Button("Copy");
-    if (title.equals("Import Dialog"))
-    	copyPasteButton.setLabel("Paste");
+				@Override
+				public Dimension minimumSize() {
+					Dimension d = super.minimumSize();
+					System.out.println("export dialog min textarea min d = " + d);
+					return d;
+				}
 
-    importButton = new Button("Import");
+				@Override
+				public Dimension getMinimumSize() {
+					Dimension d = super.getMinimumSize();
+					System.out.println("export dialog textarea min d = " + d);
+					return d;
+				}
 
-    closeButton = new Button("Close");
-    if (title.equals("Import Dialog"))
-    	closeButton.setLabel("Close");
-    closeButton.addActionListener(new ActionListener() {
+			};
+			textArea.setText(
+					"this is a test of the system and this is a test of the system\nthis is a test of the system\nthis is a test of the system\nthis is a test of the system\nthis is a test of the system\n");
+			textArea.setFont(new Font(Font.DIALOG, Font.PLAIN, 18));
+			this.add("Center", textArea);
 
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			hide();
-			dispose();
-		}
-    	
-    });
+			copyPasteButton = new Button("Copy");
+			if (title.equals("Import Dialog"))
+				copyPasteButton.setLabel("Paste");
 
+			importButton = new Button("Import");
 
-    Panel p = new Panel();
-    p.setLayout(new FlowLayout(FlowLayout.CENTER, 15, 10));
+			closeButton = new Button("Close");
+			if (title.equals("Import Dialog"))
+				closeButton.setLabel("Close");
+			closeButton.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					hide();
+					dispose();
+				}
+
+			});
+
+			Panel p = new Panel();
+			p.setLayout(new FlowLayout(FlowLayout.CENTER, 15, 10));
 //    p.add(copyPasteButton);
-    if (title.equals("Import Dialog"))
-	    p.add(importButton);
-    p.add(closeButton);
-    this.add("South", p);
-    setLocation(430,0);
-    this.pack();
-    System.out.println(textArea.getPreferredSize());
-    setResizable(false);
-    validate();
-    repaint();
-  }
+			if (title.equals("Import Dialog"))
+				p.add(importButton);
+			p.add(closeButton);
+			this.add("South", p);
+			setLocation(430, 0);
+			this.pack();
+			System.out.println(textArea.getPreferredSize());
+			setResizable(false);
+			validate();
+			repaint();
+		}
 
-}
+}}

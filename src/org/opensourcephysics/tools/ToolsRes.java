@@ -11,7 +11,6 @@ import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Method;
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 
 import javax.swing.event.SwingPropertyChangeSupport;
 
