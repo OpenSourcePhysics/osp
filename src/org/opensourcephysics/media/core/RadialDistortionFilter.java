@@ -978,13 +978,13 @@ public void refresh() {
     	if (vidPanel!=null) {
 	    	if (vis) {
 	    		vidPanel.addDrawable(circle);
-	      	support.firePropertyChange("visible", null, null); //$NON-NLS-1$
-	      	RadialDistortionFilter.this.addPropertyChangeListener("visible", vidPanel); //$NON-NLS-1$
+	      	support.firePropertyChange(PROPERTY_FILTER_VISIBLE, null, null); //$NON-NLS-1$
+	      	RadialDistortionFilter.this.addPropertyChangeListener(PROPERTY_FILTER_VISIBLE, vidPanel); //$NON-NLS-1$
 	    	}
 	    	else {
 	    		vidPanel.removeDrawable(circle);
-	      	support.firePropertyChange("visible", null, null); //$NON-NLS-1$
-	      	RadialDistortionFilter.this.removePropertyChangeListener("visible", vidPanel); //$NON-NLS-1$
+	      	support.firePropertyChange(PROPERTY_FILTER_VISIBLE, null, null); //$NON-NLS-1$
+	      	RadialDistortionFilter.this.removePropertyChangeListener(PROPERTY_FILTER_VISIBLE, vidPanel); //$NON-NLS-1$
 	    	}
     	}
     	support.firePropertyChange("image", null, null); //$NON-NLS-1$

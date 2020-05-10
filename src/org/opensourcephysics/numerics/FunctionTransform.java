@@ -22,6 +22,7 @@ import java.awt.geom.Point2D;
  * Class description
  *
 */
+@SuppressWarnings("serial")
 public final class FunctionTransform extends AffineTransform {
   double m00;
   double m10 = 1; // identity transform by default

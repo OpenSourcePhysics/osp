@@ -105,13 +105,13 @@ public String getLabel() {
 				super.propertyChange(e);
 
 				if (functions[0].polynomial != null) {
-					functionTool.firePropertyChange("function", null, functions[0].getName()); //$NON-NLS-1$
+					functionTool.firePropertyChange(FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION, null, functions[0].getName()); //$NON-NLS-1$
 				}
 				return;
 			}
 		} else if (e.getPropertyName().equals("description") && functionTool != null) { //$NON-NLS-1$
 			super.propertyChange(e);
-			functionTool.firePropertyChange("function", null, getFitFunction().getName()); //$NON-NLS-1$
+			functionTool.firePropertyChange(FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION, null, getFitFunction().getName()); //$NON-NLS-1$
 			return;
 		}
 		super.propertyChange(e);

@@ -180,7 +180,7 @@ public void propertyChange(PropertyChangeEvent e) {
         } else if (e.getNewValue() instanceof String) {
           prevName = e.getNewValue().toString();
         }
-        functionTool.firePropertyChange("function", prevName, functionName); //$NON-NLS-1$
+        functionTool.firePropertyChange(FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION, prevName, functionName); //$NON-NLS-1$
       }
     } else if(e.getPropertyName().equals("function")) {                      //$NON-NLS-1$
       // function has been added or removed       
@@ -188,10 +188,10 @@ public void propertyChange(PropertyChangeEvent e) {
       refreshGUI();
       if(functionTool!=null) {
       	functionTool.refreshGUI();
-        functionTool.firePropertyChange("function", null, null);             //$NON-NLS-1$
+        functionTool.firePropertyChange(FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION, null, null);             //$NON-NLS-1$
       }
     } else if (e.getPropertyName().equals("description") && functionTool!=null) {   //$NON-NLS-1$
-      functionTool.firePropertyChange("description", null, null);    //$NON-NLS-1$
+      functionTool.firePropertyChange(FunctionTool.PROPERTY_FUNCTIONTOOL_DESCRIPTION, null, null);    //$NON-NLS-1$
     }
   }
 

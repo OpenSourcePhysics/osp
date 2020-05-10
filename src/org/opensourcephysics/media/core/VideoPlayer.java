@@ -109,11 +109,39 @@ import org.opensourcephysics.tools.ResourceLoader;
 @SuppressWarnings("serial")
 public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	
+	public static final String PROPERTY_VIDEOPLAYER_BACKBUTTON = "backbutton"; //$NON-NLS-1$
+	public static final String PROPERTY_VIDEOPLAYER_FRAMEDURATION = "frameduration"; //$NON-NLS-1$
+	public static final String PROPERTY_VIDEOPLAYER_PLAYING = "playing"; //$NON-NLS-1$
+	public static final String PROPERTY_VIDEOPLAYER_SLIDER = "slider"; //$NON-NLS-1$
+	public static final String PROPERTY_VIDEOPLAYER_STEPBUTTON = "stepbutton"; //$NON-NLS-1$
+	public static final String PROPERTY_VIDEOPLAYER_STEPNUMBER = "stepnumber"; //$NON-NLS-1$
 	public static final String PROPERTY_VIDEOPLAYER_VIDEOCLIP = "videoclip"; //$NON-NLS-1$
+	
 
-	public static final String PROPERTY_VIDEO_STEPNUMBER = "stepnumber"; //$NON-NLS-1$
+public void removeListener(PropertyChangeListener c) {
+	removePropertyChangeListener(PROPERTY_VIDEOPLAYER_BACKBUTTON, c); 
+	removePropertyChangeListener(PROPERTY_VIDEOPLAYER_FRAMEDURATION, c); 
+	removePropertyChangeListener(PROPERTY_VIDEOPLAYER_PLAYING, c); 
+	removePropertyChangeListener(PROPERTY_VIDEOPLAYER_SLIDER, c); 
+	removePropertyChangeListener(PROPERTY_VIDEOPLAYER_STEPBUTTON, c); 
+	removePropertyChangeListener(PROPERTY_VIDEOPLAYER_STEPNUMBER, c); 
+	removePropertyChangeListener(PROPERTY_VIDEOPLAYER_VIDEOCLIP, c); 
+//	removePropertyChangeListener("inframe", c); 
+//	removePropertyChangeListener("outframe", c); 
+}
 
-	public static final String PROPERTY_VIDEO_FRAMEDURATION = "frameduration"; //$NON-NLS-1$
+public void addListener(PropertyChangeListener c) {
+	addPropertyChangeListener(PROPERTY_VIDEOPLAYER_BACKBUTTON, c); 
+	addPropertyChangeListener(PROPERTY_VIDEOPLAYER_FRAMEDURATION, c); 
+	addPropertyChangeListener(PROPERTY_VIDEOPLAYER_PLAYING, c); 
+	addPropertyChangeListener(PROPERTY_VIDEOPLAYER_SLIDER, c); 
+	addPropertyChangeListener(PROPERTY_VIDEOPLAYER_STEPBUTTON, c); 
+	addPropertyChangeListener(PROPERTY_VIDEOPLAYER_STEPNUMBER, c); 
+	addPropertyChangeListener(PROPERTY_VIDEOPLAYER_VIDEOCLIP, c); 
+//	addPropertyChangeListener("inframe", c); 
+//	addPropertyChangeListener("outframe", c); 
+}
+
 	
 // static fields
   protected static Icon inOutIcon, playIcon, grayPlayIcon, pauseIcon;
@@ -565,27 +593,27 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	@Override
 	public void propertyChange(PropertyChangeEvent e) {
 		switch (e.getPropertyName()) {
-		case ClipControl.PROPERTY_VIDEO_STEPNUMBER:
+		case ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER:
 			updateReadout();
 			updatePlayButtons(clipControl.isPlaying());
-			firePropertyChange(PROPERTY_VIDEO_STEPNUMBER, null, e.getNewValue()); 
+			firePropertyChange(PROPERTY_VIDEOPLAYER_STEPNUMBER, null, e.getNewValue()); 
 			// to VideoPanel
 			break;
-		case ClipControl.PROPERTY_VIDEO_FRAMEDURATION:
+		case ClipControl.PROPERTY_CLIPCONTROL_FRAMEDURATION:
 			updateReadout();
-			firePropertyChange(PROPERTY_VIDEO_FRAMEDURATION, null, e.getNewValue()); 
+			firePropertyChange(PROPERTY_VIDEOPLAYER_FRAMEDURATION, null, e.getNewValue()); 
 			// to VideoPanel //$NON-NLS-1$
 			break;
-		case ClipControl.PROPERTY_VIDEO_LOOPING:
+		case ClipControl.PROPERTY_CLIPCONTROL_LOOPING:
 			boolean looping = ((Boolean) e.getNewValue()).booleanValue();
 			updateLoopButton(looping);
 			break;
-		case ClipControl.PROPERTY_VIDEO_PLAYING:
+		case ClipControl.PROPERTY_CLIPCONTROL_PLAYING:
 			boolean playing = ((Boolean) e.getNewValue()).booleanValue();
 			updatePlayButtons(playing);
-			firePropertyChange(ClipControl.PROPERTY_VIDEO_PLAYING, null, e.getNewValue()); // to VideoPanel 
+			firePropertyChange(PROPERTY_VIDEOPLAYER_PLAYING, null, e.getNewValue()); // to VideoPanel 
 			break;
-		case ClipControl.PROPERTY_VIDEO_RATE: // from ClipControl 
+		case ClipControl.PROPERTY_CLIPCONTROL_RATE: // from ClipControl 
 			rateSpinner.setValue(new Double(getRate()));
 			break;
 		case VideoClip.PROPERTY_VIDEOCLIP_STEPCOUNT: // from VideoClip
@@ -805,18 +833,18 @@ public void setLocale(Locale locale) {
 	public void mousePressed(MouseEvent e) {
       	if (disabled) return;
         if(e.getSource()==stepButton) {
-          firePropertyChange("stepbutton", null, Boolean.TRUE); //$NON-NLS-1$
+          firePropertyChange(PROPERTY_VIDEOPLAYER_STEPBUTTON, null, Boolean.TRUE); //$NON-NLS-1$
         } else {
-          firePropertyChange("backbutton", null, Boolean.TRUE); //$NON-NLS-1$
+          firePropertyChange(PROPERTY_VIDEOPLAYER_BACKBUTTON, null, Boolean.TRUE); //$NON-NLS-1$
         }
       }
       @Override
 	public void mouseExited(MouseEvent e) {
       	if (disabled) return;
         if(e.getSource()==stepButton) {
-          firePropertyChange("stepbutton", null, Boolean.FALSE); //$NON-NLS-1$
+          firePropertyChange(PROPERTY_VIDEOPLAYER_STEPBUTTON, null, Boolean.FALSE); //$NON-NLS-1$
         } else {
-          firePropertyChange("backbutton", null, Boolean.FALSE); //$NON-NLS-1$
+          firePropertyChange(PROPERTY_VIDEOPLAYER_BACKBUTTON, null, Boolean.FALSE); //$NON-NLS-1$
         }
       }
 
@@ -1078,7 +1106,7 @@ public void setLocale(Locale locale) {
 				if (disabled)
 					return;
 				//slideMouseListener.mouseExited(e);
-				firePropertyChange("slider", null, Boolean.FALSE); //$NON-NLS-1$
+				firePropertyChange(PROPERTY_VIDEOPLAYER_SLIDER, null, Boolean.FALSE); //$NON-NLS-1$
 			}
     	
 			@Override

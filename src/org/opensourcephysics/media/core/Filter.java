@@ -61,8 +61,11 @@ import org.opensourcephysics.tools.DataTool;
  * @version 1.0
  */
 public abstract class Filter {
-	
-  public static final String PROPERTY_VISIBLE = "visible";
+
+  public static final String PROPERTY_FILTER_VISIBLE = "filter_visible";
+  public static final String PROPERTY_FILTER_COLOR = "filter_color";
+  public static final String PROPERTY_FILTER_TAB = "tab";
+  public static final String PROPERTY_FILTER_IMAGE = "image";
 
 // instance fields
   /** true if the filter inspector is visible */
@@ -97,7 +100,8 @@ public abstract class Filter {
   /**
    * Constructs a Filter object.
    */
-  protected Filter() {
+  @SuppressWarnings("serial")
+protected Filter() {
     support = new SwingPropertyChangeSupport(this);
     // get the name of this filter from the simple class name
     name = getClass().getSimpleName();

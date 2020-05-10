@@ -59,7 +59,7 @@ public interface Video extends InteractiveImage, Playable, Trackable, PropertyCh
 	public static final String PROPERTY_VIDEO_FILTERCHANGED = "filterChanged"; //$NON-NLS-1$
 
 	/**
-	 * Steps forward in the video.
+	 * Steps forward in the 
 	 */
 	public void step();
 
@@ -217,6 +217,16 @@ public interface Video extends InteractiveImage, Playable, Trackable, PropertyCh
 	 * Returns the VideoType name of this video.
 	 */
 	public String getTypeName();
+
+    public default void removeListener(PropertyChangeListener c) {
+		
+		removePropertyChangeListener("coords", this); //$NON-NLS-1$
+		removePropertyChangeListener("image", this); //$NON-NLS-1$
+		removePropertyChangeListener("filterChanged", this); //$NON-NLS-1$
+		removePropertyChangeListener("videoVisible", this); //$NON-NLS-1$
+		removePropertyChangeListener("size", this); //$NON-NLS-1$
+
+	}
 
 }
 

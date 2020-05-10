@@ -227,7 +227,7 @@ public void setFrameDuration(double duration) {
     if(count!=0) {
       timeStretch = duration*count/(tf-ti);
     }
-    support.firePropertyChange(ClipControl.PROPERTY_VIDEO_FRAMEDURATION, null, new Double(duration)); 
+    support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_FRAMEDURATION, null, new Double(duration)); 
   }
 
   /**
@@ -260,7 +260,7 @@ public double getMeanFrameDuration() {
 			boolean changed = (n != videoFrameNumber);
 			super.setFrameNumber(n);
 			if (changed)
-				support.firePropertyChange(ClipControl.PROPERTY_VIDEO_STEPNUMBER, null, stepNumber); // to VideoPlayer
+				support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, stepNumber); // to VideoPlayer
 			break;
 		case Video.PROPERTY_VIDEO_RATE: 
 		case Video.PROPERTY_VIDEO_PLAYING:

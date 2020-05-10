@@ -102,7 +102,7 @@ public void play() {
     } else {
       step();
     }
-    support.firePropertyChange(ClipControl.PROPERTY_VIDEO_PLAYING, null, Boolean.TRUE); 
+    support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_PLAYING, null, Boolean.TRUE); 
   }
 
   /**
@@ -164,7 +164,7 @@ public void setStepNumber(int n) {
     if (video==null) {
       super.setStepNumber(n);
       stepDisplayed = true;
-      support.firePropertyChange(ClipControl.PROPERTY_VIDEO_STEPNUMBER, null, Integer.valueOf(n)); 
+      support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, Integer.valueOf(n)); 
     } 
     else {
       int end = video.getEndFrameNumber();
@@ -174,7 +174,7 @@ public void setStepNumber(int n) {
         super.setStepNumber(n);
         video.setVisible(false);
         stepDisplayed = true;
-        support.firePropertyChange(ClipControl.PROPERTY_VIDEO_STEPNUMBER, null, Integer.valueOf(n)); 
+        support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, Integer.valueOf(n)); 
       }
       else {
         video.setVisible(videoVisible);
@@ -188,7 +188,7 @@ public void setStepNumber(int n) {
 	            if (video.getFrameNumber()==m) { // setting frame number will have no effect
 	              StepperClipControl.super.setStepNumber(stepNum);
 	              stepDisplayed = true;
-	              support.firePropertyChange(ClipControl.PROPERTY_VIDEO_STEPNUMBER, null, Integer.valueOf(stepNum)); 
+	              support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, Integer.valueOf(stepNum)); 
 	            }
 	            else {
 	            	video.setFrameNumber(m);
@@ -219,7 +219,7 @@ public void setRate(double newRate) {
 //	    delay = Math.max(delay, minDelay);
 	    timer.setInitialDelay(getTimerDelay());
 //    }
-    support.firePropertyChange(ClipControl.PROPERTY_VIDEO_RATE, null, new Double(rate)); 
+    support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_RATE, null, new Double(rate)); 
   }
 
   /**
@@ -270,7 +270,7 @@ public void setFrameDuration(double duration) {
 	    frameDuration = duration;
 	    timer.setInitialDelay(getTimerDelay());
     }
-    support.firePropertyChange(ClipControl.PROPERTY_VIDEO_FRAMEDURATION, null, new Double(duration)); 
+    support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_FRAMEDURATION, null, new Double(duration)); 
   }
 
   /**
@@ -284,7 +284,7 @@ public void setLooping(boolean loops) {
       return;
     }
     looping = loops;
-    support.firePropertyChange(ClipControl.PROPERTY_VIDEO_LOOPING, null, new Boolean(loops)); 
+    support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_LOOPING, null, new Boolean(loops)); 
   }
 
   /**
@@ -337,30 +337,35 @@ public double getStepTime(int stepNumber) {
     return stepNumber*frameDuration*clip.getStepSize();
   }
 
-  /**
-   * Responds to property change events.
-   *
-   * @param e the property change event
-   */
-  @Override
-public void propertyChange(PropertyChangeEvent e) {
-    String name = e.getPropertyName();
-    if(name.equals("stepsize")) {    								// from video clip //$NON-NLS-1$
-      timer.setInitialDelay(getTimerDelay());
-    } 
-    else if(name.equals(Video.PROPERTY_VIDEO_FRAMENUMBER)) {           // from video 
-    	int n = ((Integer) e.getNewValue()).intValue();
-      stepDisplayed = true;
-      if(n!=videoFrameNumber) {
-        super.setFrameNumber(n);
-        support.firePropertyChange(ClipControl.PROPERTY_VIDEO_STEPNUMBER, null, Integer.valueOf(stepNumber)); 
-      }
-      if(playing) {
-        step();
-      }
-    }
-    else super.propertyChange(e);
-  }
+	/**
+	 * Responds to property change events.
+	 *
+	 * @param e the property change event
+	 */
+	@Override
+	public void propertyChange(PropertyChangeEvent e) {
+		String name = e.getPropertyName();
+		switch (name) {
+		case VideoClip.PROPERTY_VIDEOCLIP_STEPSIZE:
+			timer.setInitialDelay(getTimerDelay());
+			break;
+		case Video.PROPERTY_VIDEO_FRAMENUMBER:
+			int n = ((Integer) e.getNewValue()).intValue();
+			stepDisplayed = true;
+			if (n != videoFrameNumber) {
+				super.setFrameNumber(n);
+				support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null,
+						Integer.valueOf(stepNumber));
+			}
+			if (playing) {
+				step();
+			}
+			break;
+		default:
+			super.propertyChange(e);
+			break;
+		}
+	}
 
   /**
    * Gets the timer delay.

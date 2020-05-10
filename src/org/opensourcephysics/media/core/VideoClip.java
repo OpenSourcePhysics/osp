@@ -56,17 +56,31 @@ import org.opensourcephysics.tools.ResourceLoader;
  */
 public class VideoClip {
 
-	public final static String PROPERTY_VIDEOCLIP_STARTFRAME = "startframe";//$NON-NLS-1$
-
+	public static final String PROPERTY_VIDEOCLIP_ADJUSTING = "adjusting";//$NON-NLS-1$
 	public final static String PROPERTY_VIDEOCLIP_FRAMECOUNT = "framecount";//$NON-NLS-1$
-
+	public final static String PROPERTY_VIDEOCLIP_STARTFRAME = "startframe";//$NON-NLS-1$
+	public static final String PROPERTY_VIDEOCLIP_STARTTIME = "starttime";//$NON-NLS-1$
+	public static final String PROPERTY_VIDEOCLIP_STEPCOUNT = "stepcount";//$NON-NLS-1$
 	public static final String PROPERTY_VIDEOCLIP_STEPSIZE = "stepsize";//$NON-NLS-1$
 
-	public static final String PROPERTY_VIDEOCLIP_STEPCOUNT = "stepcount";//$NON-NLS-1$
+	public void addListener(PropertyChangeListener c) {
+		addPropertyChangeListener(PROPERTY_VIDEOCLIP_ADJUSTING, c); 
+		addPropertyChangeListener(PROPERTY_VIDEOCLIP_FRAMECOUNT, c); 
+		addPropertyChangeListener(PROPERTY_VIDEOCLIP_STARTFRAME, c); 
+		addPropertyChangeListener(PROPERTY_VIDEOCLIP_STARTTIME, c); 
+		addPropertyChangeListener(PROPERTY_VIDEOCLIP_STEPCOUNT, c); 
+		addPropertyChangeListener(PROPERTY_VIDEOCLIP_STEPSIZE, c); 
+	}
 
-	public static final String PROPERTY_VIDEOCLIP_STARTTIME = "starttime";//$NON-NLS-1$
+	public void removeListener(PropertyChangeListener c) {
+		removePropertyChangeListener(PROPERTY_VIDEOCLIP_ADJUSTING, c); 
+		removePropertyChangeListener(PROPERTY_VIDEOCLIP_FRAMECOUNT, c); 
+		removePropertyChangeListener(PROPERTY_VIDEOCLIP_STARTFRAME, c); 
+		removePropertyChangeListener(PROPERTY_VIDEOCLIP_STARTTIME, c); 
+		removePropertyChangeListener(PROPERTY_VIDEOCLIP_STEPCOUNT, c); 
+		removePropertyChangeListener(PROPERTY_VIDEOCLIP_STEPSIZE, c); 
+	}
 
-	public static final String PROPERTY_VIDEOCLIP_ADJUSTING = "adjusting";//$NON-NLS-1$
 
 	// instance fields
 	public boolean changeEngine; // signals that user wishes to change preferred video engine

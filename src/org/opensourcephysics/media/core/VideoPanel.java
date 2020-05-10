@@ -79,6 +79,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	protected final static int defaultHeight = 480;
 
 	public static final String PROPERTY_VIDEOPANEL_DATAFILE = "datafile";
+	public static final String PROPERTY_VIDEOPANEL_IMAGESPACE = "imagespace";
 
 	// instance fields
 
@@ -122,8 +123,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		setSquareAspect(true);
 		player = new VideoPlayer(this);
 		player.addPropertyChangeListener(VideoPlayer.PROPERTY_VIDEOPLAYER_VIDEOCLIP, this);
-		player.addPropertyChangeListener(VideoPlayer.PROPERTY_VIDEO_STEPNUMBER, this);
-		player.addPropertyChangeListener(VideoPlayer.PROPERTY_VIDEO_FRAMEDURATION, this);
+		player.addPropertyChangeListener(VideoPlayer.PROPERTY_VIDEOPLAYER_STEPNUMBER, this);
+		player.addPropertyChangeListener(VideoPlayer.PROPERTY_VIDEOPLAYER_FRAMEDURATION, this);
 		add(player, BorderLayout.SOUTH);
 		VideoClip clip = player.getVideoClip();
 		clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STARTFRAME, this);
@@ -358,7 +359,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			setAutoscaleX(true);
 			setAutoscaleY(true);
 		}
-		firePropertyChange("imagespace", null, new Boolean(imagespace)); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_VIDEOPANEL_IMAGESPACE, null, new Boolean(imagespace)); //$NON-NLS-1$
 		repaint();
 	}
 
@@ -615,26 +616,16 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 				asyncReady = null;
 			}
 			break;
-		case ClipControl.PROPERTY_VIDEO_STEPNUMBER: // from VideoPlayer
+		case ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER: // from VideoPlayer
 			repaint();
 			break;
 		case VideoPlayer.PROPERTY_VIDEOPLAYER_VIDEOCLIP: // from VideoPlayer
 			// update property change listeners
 			VideoClip oldClip = (VideoClip) e.getOldValue();
-			oldClip.removePropertyChangeListener(Video.PROPERTY_VIDEO_STARTFRAME, this);
-			oldClip.removePropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STEPSIZE, this);
-			oldClip.removePropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STEPCOUNT, this);
-			oldClip.removePropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_FRAMECOUNT, this);
-			oldClip.removePropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STARTTIME, this);
-			oldClip.removePropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_ADJUSTING, this);
+			oldClip.removeListener(this);
 //      oldClip.removePropertyChangeListener("frameshift", this);          
 			VideoClip clip = (VideoClip) e.getNewValue();
-			clip.addPropertyChangeListener(Video.PROPERTY_VIDEO_STARTFRAME, this);
-			clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STEPSIZE, this);
-			clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STEPCOUNT, this);
-			clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_FRAMECOUNT, this);
-			clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_STARTTIME, this);
-			clip.addPropertyChangeListener(VideoClip.PROPERTY_VIDEOCLIP_ADJUSTING, this);
+			clip.addListener(this);
 //      clip.addPropertyChangeListener("frameshift", this);          
 			// replace current video with new clip's video
 			if (video != null) {

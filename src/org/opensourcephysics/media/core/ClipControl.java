@@ -59,12 +59,12 @@ public abstract class ClipControl implements PropertyChangeListener {
   protected DataTrack timeSource;
   protected double savedFrameDuration;
   public boolean videoVisible = true;
-	public final static String PROPERTY_VIDEO_LOOPING = "looping"; //$NON-NLS-1$
-	public final static String PROPERTY_VIDEO_PLAYING = "playing"; //$NON-NLS-1$
-	public final static String PROPERTY_VIDEO_RATE = "rate"; //$NON-NLS-1$
+	public final static String PROPERTY_CLIPCONTROL_LOOPING = "looping"; //$NON-NLS-1$
+	public final static String PROPERTY_CLIPCONTROL_PLAYING = "playing"; //$NON-NLS-1$
+	public final static String PROPERTY_CLIPCONTROL_RATE = "rate"; //$NON-NLS-1$
    
-	  public static final String PROPERTY_VIDEO_STEPNUMBER = "stepnumber"; //$NON-NLS-1$
-	  public static final String PROPERTY_VIDEO_FRAMEDURATION = "frameduration"; //$NON-NLS-1$
+	  public static final String PROPERTY_CLIPCONTROL_STEPNUMBER = "stepnumber"; //$NON-NLS-1$
+	  public static final String PROPERTY_CLIPCONTROL_FRAMEDURATION = "frameduration"; //$NON-NLS-1$
 
   /**
    * Returns an instance of ClipControl.
@@ -417,7 +417,6 @@ public void propertyChange(PropertyChangeEvent e) {
     }
 
   }
-
 }
 
 /*
