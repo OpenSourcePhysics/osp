@@ -1366,16 +1366,16 @@ public class ResourceLoader {
   	if (uriPath==null) return null;
   	String path = uriPath;
 //		String path = XML.forwardSlash(uriPath.trim());
-  	boolean isJarOrFile = false;
+//  	boolean isJarOrFile = false;
   	// remove jar protocol, if any
     if (path.startsWith("jar:")) {                     //$NON-NLS-1$
       path = path.substring(4);
-      isJarOrFile = true;
+//      isJarOrFile = true;
     }
   	// remove file protocol, if any
     if (path.startsWith("file:")) {                     //$NON-NLS-1$
       path = path.substring(5); // don't remove leading slashes yet
-      isJarOrFile = true;
+//      isJarOrFile = true;
     }
     // remove all but one leading slash
     // commented out by DB 2016-07-08 to enable opening local network files
@@ -1384,9 +1384,10 @@ public class ResourceLoader {
 //	      path = path.substring(1);
 //	    }
 //    }
+    
     // remove all but 2 leading slashes
     // should enable opening local network files?
-    if (isJarOrFile) {
+//    if (isJarOrFile) {
 	    while (path.startsWith("///")) { //$NON-NLS-1$
 	      path = path.substring(1);
 	    }
@@ -1397,7 +1398,6 @@ public class ResourceLoader {
 	    		path = XML.forwardSlash(file.getAbsolutePath());
 	    	}
 	    }
-    }
     // remove last leading slash if drive is specified
     if (path.startsWith("/") && path.indexOf(":")>-1) { //$NON-NLS-1$ //$NON-NLS-2$
       path = path.substring(1);
