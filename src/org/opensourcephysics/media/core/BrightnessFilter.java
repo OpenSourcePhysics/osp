@@ -531,10 +531,10 @@ public void refresh() {
     @Override
 	public Object loadObject(XMLControl control, Object obj) {
       final BrightnessFilter filter = (BrightnessFilter) obj;
-      if(control.getPropertyNames().contains("brightness")) { //$NON-NLS-1$
+      if(control.getPropertyNamesRaw().contains("brightness")) { //$NON-NLS-1$
         filter.setBrightness(control.getInt("brightness"));   //$NON-NLS-1$
       }
-      if(control.getPropertyNames().contains("contrast")) { //$NON-NLS-1$
+      if(control.getPropertyNamesRaw().contains("contrast")) { //$NON-NLS-1$
         filter.setContrast(control.getDouble("contrast"));  //$NON-NLS-1$
       }
       filter.inspectorX = control.getInt("inspector_x"); //$NON-NLS-1$

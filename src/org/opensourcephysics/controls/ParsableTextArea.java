@@ -218,7 +218,7 @@ public class ParsableTextArea extends JTextArea {
 	public Object loadObject(XMLControl control, Object obj) {
       ParsableTextArea pta = (ParsableTextArea) obj;
       // iterate over properties and add them to pts
-      Iterator<String> it = control.getPropertyNames().iterator();
+      Iterator<String> it = control.getPropertyNamesRaw().iterator();
       pta.setLockValues(true);
       while(it.hasNext()) {
         String variable = it.next();

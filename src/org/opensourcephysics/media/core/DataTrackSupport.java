@@ -342,7 +342,7 @@ public class DataTrackSupport {
   	if (messageControl==null) {
   		messageControl = new XMLControlElement(new Message());
   	}
-  	for (String name: messageControl.getPropertyNames()) {
+  	for (String name: messageControl.getPropertyNamesRaw()) {
   		messageControl.setValue(name, null);
   	}
   	messageControl.setValue("sourceID", id); //$NON-NLS-1$

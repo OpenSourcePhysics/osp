@@ -3077,13 +3077,13 @@ public class Launcher {
       LaunchSet tabset = (LaunchSet) obj;
       final Launcher launcher = tabset.launcher;
       // load a different launch set
-      if(control.getPropertyNames().contains("launchset")) {         //$NON-NLS-1$
+      if(control.getPropertyNamesRaw().contains("launchset")) {         //$NON-NLS-1$
         String path = launcher.open(control.getString("launchset")); //$NON-NLS-1$
         tabset.failedToLoad = path==null;
         return obj;
       }
       // load static properties
-      if(control.getPropertyNames().contains("classpath")) { //$NON-NLS-1$
+      if(control.getPropertyNamesRaw().contains("classpath")) { //$NON-NLS-1$
         classPath = control.getString("classpath");          //$NON-NLS-1$
       }
       final String lookAndFeel = control.getString("look_and_feel"); //$NON-NLS-1$
@@ -3098,7 +3098,7 @@ public class Launcher {
         SwingUtilities.invokeLater(runner);
       }
       // read memory size
-      if (control.getPropertyNames().contains("memory_size")) //$NON-NLS-1$
+      if (control.getPropertyNamesRaw().contains("memory_size")) //$NON-NLS-1$
       	launcher.xsetMemorySize = control.getInt("memory_size"); //$NON-NLS-1$
       else
       	launcher.xsetMemorySize = 0;
@@ -3182,20 +3182,20 @@ public class Launcher {
       }
       launcher.title = control.getString("title"); //$NON-NLS-1$
       // load security items
-      if(control.getPropertyNames().contains("editor_enabled")) {      //$NON-NLS-1$
+      if(control.getPropertyNamesRaw().contains("editor_enabled")) {      //$NON-NLS-1$
         launcher.editorEnabled = control.getBoolean("editor_enabled"); //$NON-NLS-1$
       }
       launcher.password = control.getString("xml_password");                     //$NON-NLS-1$
       launcher.pwRequiredToLoad = control.getBoolean("pw_required_by_launcher"); //$NON-NLS-1$
       // load dimensions
-      if(control.getPropertyNames().contains("width")&&control.getPropertyNames().contains("height")) { //$NON-NLS-1$//$NON-NLS-2$
+      if(control.getPropertyNamesRaw().contains("width")&&control.getPropertyNamesRaw().contains("height")) { //$NON-NLS-1$//$NON-NLS-2$
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         dim.width = Math.min((8*dim.width)/10, control.getInt("width"));    //$NON-NLS-1$
         dim.height = Math.min((8*dim.height)/10, control.getInt("height")); //$NON-NLS-1$
         launcher.setSize(dim);
       }
       // load divider position
-      if(control.getPropertyNames().contains("divider")) { //$NON-NLS-1$
+      if(control.getPropertyNamesRaw().contains("divider")) { //$NON-NLS-1$
         launcher.divider = control.getInt("divider");      //$NON-NLS-1$
         launcher.refreshGUI();
       }
@@ -3585,7 +3585,7 @@ public class Launcher {
       String jarBase = OSPRuntime.getLaunchJarDirectory();
       String path = XML.getResolvedPath(xset, jarBase);
       XMLControl control = new XMLControlElement(path);
-      if (!control.failedToRead() && control.getPropertyNames().contains("memory_size")) { //$NON-NLS-1$
+      if (!control.failedToRead() && control.getPropertyNamesRaw().contains("memory_size")) { //$NON-NLS-1$
       	memorySize = control.getInt("memory_size"); //$NON-NLS-1$
       }
     }

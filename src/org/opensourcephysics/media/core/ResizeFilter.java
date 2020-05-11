@@ -433,10 +433,10 @@ public void refresh() {
     @Override
 	public Object loadObject(XMLControl control, Object obj) {
       final ResizeFilter filter = (ResizeFilter) obj;
-      if(control.getPropertyNames().contains("width_factor")) {   //$NON-NLS-1$
+      if(control.getPropertyNamesRaw().contains("width_factor")) {   //$NON-NLS-1$
         filter.setWidthFactor(control.getDouble("width_factor")); //$NON-NLS-1$
       }
-      if(control.getPropertyNames().contains("height_factor")) {    //$NON-NLS-1$
+      if(control.getPropertyNamesRaw().contains("height_factor")) {    //$NON-NLS-1$
         filter.setHeightFactor(control.getDouble("height_factor")); //$NON-NLS-1$
       }
       filter.inspectorX = control.getInt("inspector_x"); //$NON-NLS-1$

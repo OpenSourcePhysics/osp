@@ -101,6 +101,11 @@ public java.util.Collection<String> getPropertyNames() {
     return map.keySet();
   }
 
+  @Override
+public java.util.Collection<String> getPropertyNamesRaw() {
+    return map.keySet();
+  }
+
   /**
    *  Read a parameter value from the input display.
    *

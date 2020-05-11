@@ -429,6 +429,11 @@ public void run() {
     }
 
     @Override
+	public Collection<String> getPropertyNamesRaw() {
+      return control.getPropertyNamesRaw();
+    }
+
+    @Override
 	public void println(String s) {
       control.println(s);
     }

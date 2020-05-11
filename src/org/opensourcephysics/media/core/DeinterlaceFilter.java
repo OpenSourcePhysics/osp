@@ -327,7 +327,7 @@ public void refresh() {
     @Override
 	public Object loadObject(XMLControl control, Object obj) {
       final DeinterlaceFilter filter = (DeinterlaceFilter) obj;
-      if(control.getPropertyNames().contains("field")) { //$NON-NLS-1$
+      if(control.getPropertyNamesRaw().contains("field")) { //$NON-NLS-1$
         if(control.getString("field").equals("odd")) { //$NON-NLS-1$ //$NON-NLS-2$
           filter.setOdd(true);                           
         } else {

@@ -199,14 +199,14 @@ void startBtnActionPerformed(ActionEvent e) {
         table.setBackgroundColor(par, Control.NOT_EDITABLE_BACKGROUND);
       }
     } else if(e.getActionCommand().equals(startText)) {
-      Iterator<String> it = table.getPropertyNames().iterator();
+      Iterator<String> it = table.getPropertyNamesRaw().iterator();
       while(it.hasNext()) {
         String par = it.next();
         table.setEditable(par, false);
         table.setBackgroundColor(par, Control.NOT_EDITABLE_BACKGROUND);
       }
     } else if(e.getActionCommand().equals(stopText)) {
-      Iterator<String> it = table.getPropertyNames().iterator();
+      Iterator<String> it = table.getPropertyNamesRaw().iterator();
       while(it.hasNext()) {
         String par = it.next();
         if(fixedParameters.contains(par)) {
@@ -260,7 +260,7 @@ void startBtnActionPerformed(ActionEvent e) {
       for(int i = 0, n = fixedParm.length; i<n; i++) {
         sc.fixedParameters.add(fixedParm[i]);
       }
-      Iterator<String> it = sc.table.getPropertyNames().iterator();
+      Iterator<String> it = sc.table.getPropertyNamesRaw().iterator();
       while(it.hasNext()) {
         String parm = it.next();
         if(sc.fixedParameters.contains(parm)) {

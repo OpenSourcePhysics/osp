@@ -465,7 +465,7 @@ public void refresh() {
     @Override
 	public Object loadObject(XMLControl control, Object obj) {
       StrobeFilter filter = (StrobeFilter) obj;
-      if(control.getPropertyNames().contains("fade")) { //$NON-NLS-1$
+      if(control.getPropertyNamesRaw().contains("fade")) { //$NON-NLS-1$
         filter.setFade(control.getDouble("fade"));      //$NON-NLS-1$
       }
       filter.setBrightTrails(control.getBoolean("bright_trails"));      //$NON-NLS-1$

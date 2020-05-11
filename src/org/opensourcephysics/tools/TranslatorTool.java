@@ -275,7 +275,7 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
 		}
 		fileExtension += ".properties"; //$NON-NLS-1$
 		// initialize control with default values
-		Collection<String> names = control.getPropertyNames();
+		Collection<String> names = control.getPropertyNamesRaw();
 		Iterator<String> it = names.iterator();
 		while (it.hasNext()) {
 			String next = it.next();
@@ -722,7 +722,7 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
 		StringBuffer content = new StringBuffer();
 		String s = XML.stripExtension(fileName);
 		content.append("# This is the " + s + ".properties file" + XML.NEW_LINE + XML.NEW_LINE); //$NON-NLS-1$ //$NON-NLS-2$
-		Iterator<String> it = control.getPropertyNames().iterator();
+		Iterator<String> it = control.getPropertyNamesRaw().iterator();
 		while (it.hasNext()) {
 			String key = it.next();
 			String alias = control.getString(key);

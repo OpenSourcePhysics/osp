@@ -119,9 +119,16 @@ public interface Control {
   /**
    * Gets the names of all properties stored in this control.
    *
-   * @return List
+   * @return a clone of the properties List
    */
   public java.util.Collection<String> getPropertyNames();
+
+  /**
+   * Gets the names of all properties stored in this control.
+   *
+   * @return the actual property list
+   */
+  public java.util.Collection<String> getPropertyNamesRaw();
 
   /**
    * Prints a string in the control's message area followed by a CR and LF.

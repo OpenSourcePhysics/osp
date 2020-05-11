@@ -595,8 +595,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, v.frame); // to TFrame
 					thisFrame = -1;
 					v.frameNumber = -1;
-					v.firePropertyChange(PROPERTY_VIDEO_READY, v.fileName, v.frame); // to TFrame
-					((VideoClip) getProperty("videoclip")).videoReady();
+					v.firePropertyChange(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, v.fileName, v); // to VideoPanel aka TrackerPanel
 					v.setFrameNumber(-99);
 					continue;
 				case STATE_GET_IMAGE_INIT:
@@ -616,7 +615,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 						}
 							v.rawImage = bi;
 							v.firePropertyChange(Video.PROPERTY_VIDEO_FRAMENUMBER, null, new Integer(thisFrame)); 
-							v.firePropertyChange(AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGE_READY, null, bi); 
+							v.firePropertyChange(AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY, null, bi); 
 							if (v.isPlaying()) {
 								Runnable runner = new Runnable() {
 								@Override

@@ -1415,7 +1415,7 @@ public class PerspectiveFilter extends Filter {
 		public Object loadObject(XMLControl control, Object obj) {
 			final PerspectiveFilter filter = (PerspectiveFilter) obj;
 
-			if (control.getPropertyNames().contains("fixed_out")) { //$NON-NLS-1$
+			if (control.getPropertyNamesRaw().contains("fixed_out")) { //$NON-NLS-1$
 				filter.fixedIn = control.getBoolean("fixed_in"); //$NON-NLS-1$
 				filter.fixedOut = control.getBoolean("fixed_out"); //$NON-NLS-1$
 			}
@@ -1443,7 +1443,7 @@ public class PerspectiveFilter extends Filter {
 				filter.refreshCorners(filter.vidPanel.getFrameNumber());
 			}
 
-			if (control.getPropertyNames().contains("color")) { //$NON-NLS-1$
+			if (control.getPropertyNamesRaw().contains("color")) { //$NON-NLS-1$
 				filter.quad.color = (Color) control.getObject("color"); //$NON-NLS-1$
 			}
 

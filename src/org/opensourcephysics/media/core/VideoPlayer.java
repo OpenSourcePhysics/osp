@@ -249,66 +249,65 @@ public void removeFrameListener(PropertyChangeListener c) {
     refresh();
   }
 
-  /**
-   * Sets the video clip.
-   *
-   * @param clip the video clip
-   */
-  public void setVideoClip(VideoClip clip) {
-    boolean playing = clipControl.isPlaying();
-    stop();
-    if(getVideoClip()==clip) {
-      // save current control state
-      boolean looping = clipControl.isLooping();
-      double rate = clipControl.getRate();
-      double duration = clipControl.getMeanFrameDuration();
-      // replace clip control
-      clipControl.removePropertyChangeListener(this);
-      clipControl.dispose();
-      clipControl = ClipControl.getControl(clip);
-      clipControl.addPropertyChangeListener(this);
-      // set state of new control
-      clipControl.setLooping(looping);
-      clipControl.setRate(rate);
-      clipControl.setFrameDuration(duration);
-      if(playing) {
-        clipControl.play();
-      }
-      ClipInspector inspector = getVideoClip().inspector;
-      if(inspector!=null) {
-        inspector.clipControl = clipControl;
-      }
-    } 
-    else {
-      // clean up and replace old clip
-      VideoClip oldClip = getVideoClip();
-      oldClip.removePropertyChangeListener(this);
-      oldClip.hideClipInspector();
-      // dispose of old video, if any
-      Video video = oldClip.getVideo();
-      if(video!=null) {
-        video.dispose();
-      }
-      oldClip.video = null;
-      if(clip==null) {
-        clip = new VideoClip(null);
-      }
-      clip.addPropertyChangeListener(this);
-      // clean up and replace old clip control
-      clipControl.removePropertyChangeListener(this);
-      clipControl.dispose();
-      clipControl = ClipControl.getControl(clip);
-      clipControl.addPropertyChangeListener(this);
-      // update display
-      setReadoutTypes("frame time step", clip.readoutType); //$NON-NLS-1$
-      updatePlayButtons(clipControl.isPlaying());
-      updateLoopButton(clipControl.isLooping());
-      updateReadout();
-      updateSlider();
-      firePropertyChange(PROPERTY_VIDEOPLAYER_VIDEOCLIP, oldClip, clip); 
-      System.gc();
-    }
-  }
+	/**
+	 * Sets the video clip.
+	 *
+	 * @param clip the video clip
+	 */
+	public void setVideoClip(VideoClip clip) {
+		boolean playing = clipControl.isPlaying();
+		stop();
+		if (getVideoClip() == clip) {
+			// save current control state
+			boolean looping = clipControl.isLooping();
+			double rate = clipControl.getRate();
+			double duration = clipControl.getMeanFrameDuration();
+			// replace clip control
+			clipControl.removePropertyChangeListener(this);
+			clipControl.dispose();
+			clipControl = ClipControl.getControl(clip);
+			clipControl.addPropertyChangeListener(this);
+			// set state of new control
+			clipControl.setLooping(looping);
+			clipControl.setRate(rate);
+			clipControl.setFrameDuration(duration);
+			if (playing) {
+				clipControl.play();
+			}
+			ClipInspector inspector = getVideoClip().inspector;
+			if (inspector != null) {
+				inspector.clipControl = clipControl;
+			}
+		} else {
+			// clean up and replace old clip
+			VideoClip oldClip = getVideoClip();
+			oldClip.removePropertyChangeListener(this);
+			oldClip.hideClipInspector();
+			// dispose of old video, if any
+			Video video = oldClip.getVideo();
+			if (video != null) {
+				video.dispose();
+			}
+			oldClip.video = null;
+			if (clip == null) {
+				clip = new VideoClip(null);
+			}
+			clip.addPropertyChangeListener(this);
+			// clean up and replace old clip control
+			clipControl.removePropertyChangeListener(this);
+			clipControl.dispose();
+			clipControl = ClipControl.getControl(clip);
+			clipControl.addPropertyChangeListener(this);
+			// update display
+			setReadoutTypes("frame time step", clip.readoutType); //$NON-NLS-1$
+			updatePlayButtons(clipControl.isPlaying());
+			updateLoopButton(clipControl.isLooping());
+			updateReadout();
+			updateSlider();
+			firePropertyChange(PROPERTY_VIDEOPLAYER_VIDEOCLIP, oldClip, clip);
+			System.gc();
+		}
+	}
 
   /**
    * Gets the video clip.

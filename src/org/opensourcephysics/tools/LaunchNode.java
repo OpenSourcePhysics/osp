@@ -1476,7 +1476,7 @@ public String toString() {
           {null, url}
         });
       } else {
-        if(control.getPropertyNames().contains("html")) {                      //$NON-NLS-1$ pre-September 2009 files
+        if(control.getPropertyNamesRaw().contains("html")) {                      //$NON-NLS-1$ pre-September 2009 files
           node.setDisplayData((String[][]) control.getObject("html"));         //$NON-NLS-1$
         } else {                                                               // post-September 2009 files
           node.setDisplayData((String[][]) control.getObject("display_tabs")); //$NON-NLS-1$

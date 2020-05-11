@@ -250,10 +250,10 @@ public boolean equals(Object obj) {
     @Override
 	public Object loadObject(XMLControl control, Object obj) {
       Parameter p = (Parameter) obj;
-      if(control.getPropertyNames().contains("editable")) {      //$NON-NLS-1$
+      if(control.getPropertyNamesRaw().contains("editable")) {      //$NON-NLS-1$
         p.setExpressionEditable(control.getBoolean("editable")); //$NON-NLS-1$
       }
-      if(control.getPropertyNames().contains("name_editable")) { //$NON-NLS-1$
+      if(control.getPropertyNamesRaw().contains("name_editable")) { //$NON-NLS-1$
         p.setNameEditable(control.getBoolean("name_editable"));  //$NON-NLS-1$
       }
       p.setDescription(control.getString("description")); //$NON-NLS-1$

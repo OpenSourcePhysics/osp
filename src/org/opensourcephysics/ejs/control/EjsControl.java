@@ -93,6 +93,11 @@ public Collection<String> getPropertyNames() {
   }
 
   @Override
+public Collection<String> getPropertyNamesRaw() {
+    return variableTable.keySet();
+  }
+
+  @Override
 public void clearValues() {
     if(inputArea!=null) {
       inputArea.setText(""); //$NON-NLS-1$

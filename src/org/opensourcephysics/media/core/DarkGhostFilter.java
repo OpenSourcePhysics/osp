@@ -412,7 +412,7 @@ public void refresh() {
     @Override
 	public Object loadObject(XMLControl control, Object obj) {
       final DarkGhostFilter filter = (DarkGhostFilter) obj;
-      if(control.getPropertyNames().contains("fade")) { //$NON-NLS-1$
+      if(control.getPropertyNamesRaw().contains("fade")) { //$NON-NLS-1$
         filter.setFade(control.getDouble("fade"));      //$NON-NLS-1$
       }
       filter.inspectorX = control.getInt("inspector_x"); //$NON-NLS-1$

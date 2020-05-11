@@ -432,7 +432,7 @@ public void refresh() {
     @Override
 	public Object loadObject(XMLControl control, Object obj) {
       final GrayScaleFilter filter = (GrayScaleFilter) obj;
-      if(control.getPropertyNames().contains("weights")) {          //$NON-NLS-1$
+      if(control.getPropertyNamesRaw().contains("weights")) {          //$NON-NLS-1$
         filter.setWeights((double[]) control.getObject("weights")); //$NON-NLS-1$
       }
       filter.inspectorX = control.getInt("inspector_x"); //$NON-NLS-1$

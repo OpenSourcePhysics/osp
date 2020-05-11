@@ -120,29 +120,15 @@ public class VideoClip {
 			return;
 		}
 		video.setProperty("videoclip", this); //$NON-NLS-1$
-		if (!(video instanceof AsyncVideoI)) {
-			whenReady.run();
+		setStartFrameNumber(video.getStartFrameNumber());
+		if (video.getFrameCount() > 1) {
+			setStepCount(video.getEndFrameNumber() - startFrame + 1);
 		}
+		updateArray();
+		isDefaultState = true;
 	}
-
-	Runnable whenReady = new Runnable() {
-
-		@Override
-		public void run() {
-			setStartFrameNumber(video.getStartFrameNumber());
-			if (video.getFrameCount() > 1) {
-				setStepCount(video.getEndFrameNumber() - startFrame + 1);
-			}
-			updateArray();
-			isDefaultState = true;
-		}
-	};
 
 	public FinalizableLoader loader;
-
-	public void videoReady() {
-		whenReady.run();
-	}
 
 	/**
 	 * Gets the video.
@@ -725,9 +711,9 @@ public class VideoClip {
 		@Override
 		public Object loadObject(XMLControl control, Object obj) {
 			// load the video and return a new clip
-			boolean hasVideo = control.getPropertyNames().contains("video"); //$NON-NLS-1$
+			boolean hasVideo = control.getPropertyNamesRaw().contains("video"); //$NON-NLS-1$
 			if (!hasVideo) {
-				return new VideoClip(null);
+				return (VideoClip) obj;
 			}
 			base = control.getString("basepath"); //$NON-NLS-1$ ;
 			ResourceLoader.addSearchPath(base);
@@ -741,7 +727,7 @@ public class VideoClip {
 			stepCount = control.getInt("stepcount"); //$NON-NLS-1$
 			frameCount = -1;
 			// set total frame count first so start frame will not be limited
-			if (control.getPropertyNames().contains("video_framecount")) { //$NON-NLS-1$
+			if (control.getPropertyNamesRaw().contains("video_framecount")) { //$NON-NLS-1$
 				frameCount = control.getInt("video_framecount"); //$NON-NLS-1$
 			} else if (start != Integer.MIN_VALUE && stepSize != Integer.MIN_VALUE && stepCount != Integer.MIN_VALUE) {
 				frameCount = start + stepCount * stepSize;
@@ -749,7 +735,7 @@ public class VideoClip {
 			startTime = control.getDouble("starttime"); //$NON-NLS-1$
 			readoutType = control.getString("readout"); //$NON-NLS-1$
 			playAllSteps = true;
-			if (control.getPropertyNames().contains("playallsteps")) { //$NON-NLS-1$
+			if (control.getPropertyNamesRaw().contains("playallsteps")) { //$NON-NLS-1$
 				playAllSteps = control.getBoolean("playallsteps"); //$NON-NLS-1$
 			}
 			path = child.getString("path"); //$NON-NLS-1$
@@ -823,6 +809,7 @@ public class VideoClip {
 
 		@Override
 		public void finalizeLoading() {
+			clip.loader = null;
 			if (frameCount == -1) 
 				frameCount = clip.getFrameCount();
 			clip.setStepCount(frameCount); // this should equal or exceed the actual frameCount

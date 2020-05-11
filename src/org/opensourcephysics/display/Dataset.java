@@ -1647,10 +1647,10 @@ public String toString() {
         data.append(xPoints, yPoints);
       }
       data.index = control.getInt("index"); //$NON-NLS-1$
-      if(control.getPropertyNames().contains("marker_shape")) { //$NON-NLS-1$
+      if(control.getPropertyNamesRaw().contains("marker_shape")) { //$NON-NLS-1$
         data.setMarkerShape(control.getInt("marker_shape"));    //$NON-NLS-1$
       }
-      if(control.getPropertyNames().contains("marker_size")) { //$NON-NLS-1$
+      if(control.getPropertyNamesRaw().contains("marker_size")) { //$NON-NLS-1$
         data.setMarkerSize(control.getInt("marker_size"));     //$NON-NLS-1$
       }
       data.setSorted(control.getBoolean("sorted"));       //$NON-NLS-1$

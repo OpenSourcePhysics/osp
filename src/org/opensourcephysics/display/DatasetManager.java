@@ -1086,7 +1086,7 @@ public String toString() {
       dsm.xColumnName = control.getString("x_column_name"); //$NON-NLS-1$
       dsm.yColumnName = control.getString("y_column_name"); //$NON-NLS-1$
       dsm.setName(control.getString("data_name")); //$NON-NLS-1$
-      if (control.getPropertyNames().contains("id")) { //$NON-NLS-1$
+      if (control.getPropertyNamesRaw().contains("id")) { //$NON-NLS-1$
       	dsm.setID(control.getInt("id")); //$NON-NLS-1$
       }
       dsm.removeDatasets();

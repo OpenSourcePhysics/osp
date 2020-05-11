@@ -300,10 +300,10 @@ public void clear() {
       data.setYColumnDescription(control.getString("y_description")); //$NON-NLS-1$
       data.setID(control.getInt("datasetID"));                 //$NON-NLS-1$
       // load Dataset display properties but not data itself
-      if(control.getPropertyNames().contains("marker_shape")) { //$NON-NLS-1$
+      if(control.getPropertyNamesRaw().contains("marker_shape")) { //$NON-NLS-1$
         data.setMarkerShape(control.getInt("marker_shape"));    //$NON-NLS-1$
       }
-      if(control.getPropertyNames().contains("marker_size")) { //$NON-NLS-1$
+      if(control.getPropertyNamesRaw().contains("marker_size")) { //$NON-NLS-1$
         data.setMarkerSize(control.getInt("marker_size"));     //$NON-NLS-1$
       }
       data.setSorted(control.getBoolean("sorted"));       //$NON-NLS-1$

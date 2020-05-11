@@ -289,6 +289,11 @@ public Collection<String> getPropertyNames() {
     return tableModel.control.getPropertyNames();
   }
 
+  @Override
+public Collection<String> getPropertyNamesRaw() {
+    return tableModel.control.getPropertyNamesRaw();
+  }
+
   /**
    *  Removes a parameter from the table.
    *
@@ -353,7 +358,7 @@ public void calculationDone(String message) {
     @Override
 	public void saveObject(XMLControl xmlControl, Object obj) {
       OSPControlTable controlTable = (OSPControlTable) obj;
-      Iterator<String> it = controlTable.getPropertyNames().iterator();
+      Iterator<String> it = controlTable.getPropertyNamesRaw().iterator();
       while(it.hasNext()) {
         String name = it.next();
         Object val = controlTable.getObject(name);
@@ -397,7 +402,7 @@ public void calculationDone(String message) {
 	public Object loadObject(XMLControl control, Object obj) {
       OSPControlTable controlTable = (OSPControlTable) obj;
       // iterate over properties and add them to table model
-      Iterator<String> it = control.getPropertyNames().iterator();
+      Iterator<String> it = control.getPropertyNamesRaw().iterator();
       controlTable.setLockValues(true);
       while(it.hasNext()) {
         String name = it.next();

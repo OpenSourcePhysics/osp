@@ -175,7 +175,7 @@ public void setXColumnVisible(boolean b) {}
 	public Object loadObject(XMLControl control, Object obj) {
       DataColumn column = (DataColumn) obj;
       Dataset.getLoader().loadObject(control, column);
-      if (control.getPropertyNames().contains("shift")) { //$NON-NLS-1$
+      if (control.getPropertyNamesRaw().contains("shift")) { //$NON-NLS-1$
       	column.shift = control.getDouble("shift"); //$NON-NLS-1$
       }
       column.deletable = control.getBoolean("deletable"); //$NON-NLS-1$

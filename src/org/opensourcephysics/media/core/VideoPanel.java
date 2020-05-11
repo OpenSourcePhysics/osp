@@ -100,11 +100,12 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	protected ImageCoordSystem coords; // image <--> world transforms
 	protected Point2D pt = new Point2D.Double();
 	protected File dataFile;
-	protected Map<String, Class<? extends Filter>> filterClasses = new TreeMap<String, Class<? extends Filter>>(); // maps
-																													// filter
-																													// names
-																													// to
-																													// classes
+	/**
+	 * map filter names to classes
+	 */
+	protected Map<String, Class<? extends Filter>> filterClasses = new TreeMap<String, Class<? extends Filter>>(); 
+
+	protected FinalizableLoader loader; // for asynchronous loading
 
 	/**
 	 * Constructs a blank VideoPanel with a player.
@@ -148,8 +149,6 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		coords.setAllOriginsXY(imageWidth / 2, imageHeight / 2);
 	}
 
-	private Runnable asyncReady;
-
 	/**
 	 * Sets the video.
 	 *
@@ -160,23 +159,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		if (newVideo == video) {
 			return;
 		}
-		Video prev = video;
-		if (newVideo instanceof AsyncVideoI) {
-			// wait for "asyncVideoReady" property event
-			asyncReady = new Runnable() {
-
-				@Override
-				public void run() {
-					newVideo.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, VideoPanel.this);
-					initializePlayer(prev, newVideo, playAllSteps);
-					repaint();
-				}
-
-			};
-			newVideo.addPropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, this);
-		} else {
-			initializePlayer(prev, newVideo, playAllSteps);
-		}
+		initializePlayer(video, newVideo, playAllSteps);
 	}
 
 	private void initializePlayer(Video prev, Video newVideo, boolean playAllSteps) {
@@ -600,14 +583,14 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			break;
 		case Video.PROPERTY_VIDEO_IMAGE:
 		case Video.PROPERTY_VIDEO_VIDEOVISIBLE:
-		case AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGE_READY:
+		case AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY:
 			repaint();
 			break;
 		case AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY:
-			if (asyncReady != null) {
-				asyncReady.run();
-				asyncReady = null;
-			}
+			Video newVideo = (Video) e.getNewValue();
+			newVideo.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, this);
+			loader.finalizeLoading();
+			repaint();
 			break;
 		case ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER: // from VideoPlayer
 			repaint();
@@ -762,11 +745,91 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	/**
 	 * A class to save and load data for this object.
 	 */
-	static class Loader implements XML.ObjectLoader, FinalizableLoader {
-		private VideoClip clip;
-		private ImageCoordSystem coords;
-		private Collection<?> drawables;
-		private VideoPanel videoPanel;
+	public static class Loader implements XML.ObjectLoader, FinalizableLoader {
+		protected VideoClip clip;
+		protected VideoPanel videoPanel;
+		protected XMLControl control;
+
+		/**
+		 * Return a new VideoPanel.
+		 *
+		 * @param control the control
+		 * @return the newly created object
+		 */
+		@Override
+		public Object createObject(XMLControl control) {
+			return new VideoPanel();
+		}
+
+		/**
+		 * Loads an object with data from an XMLControl.
+		 *
+		 * @param control the control
+		 * @param obj     the VideoPanel from createObject
+		 * 
+		 * @return the final VideoPanel (not necessarily obj)
+		 */
+		@Override
+		public Object loadObject(XMLControl control, Object obj) {
+			
+			this.control = control;
+			videoPanel = (VideoPanel) obj;
+			// load the video clip
+			return getClipAndFinalize(control);
+		}
+
+		/**
+		 * Common to both VideoPanel and TrackerPanel, this method obtains the VideoClip
+		 * and possibly its basePath, then either finalizes the panel or schedules that 
+		 * finalization for when an asynchronous video (SwingJS) is ready.
+		 * @param control
+		 * @return
+		 */
+		public VideoPanel getClipAndFinalize(XMLControl control) {
+			clip = (VideoClip) control.getObject("videoclip"); //$NON-NLS-1$
+			XMLControl child = control.getChildControl("videoclip"); //$NON-NLS-1$
+			if (child != null) {
+				if (!OSPRuntime.unzipFiles) {
+					child.setBasepath(control.getBasepath());
+				}
+			}
+			if (clip != null) {
+				Video video = clip.getVideo();
+				if (video instanceof AsyncVideoI) {
+					videoPanel.loader = this;
+					video.addPropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, videoPanel);
+					return videoPanel;
+				}
+			}			
+			finalizeLoading();
+			return videoPanel;
+		}
+		
+		public Video finalizeClip() {
+			Video video = (clip == null ? null : clip.getVideo());
+			if (clip != null) {
+				if (video instanceof AsyncVideoI) {
+					clip.loader.finalizeLoading();
+				}
+				videoPanel.getPlayer().setVideoClip(clip);
+			}
+			return video;
+		}
+		
+		@Override
+		public void finalizeLoading() {
+			videoPanel.loader = null;
+			finalizeClip();
+			videoPanel.setCoords((ImageCoordSystem) control.getObject("coords")); //$NON-NLS-1$
+			Collection<?> drawables = (Collection<?>) control.getObject("drawables"); //$NON-NLS-1$			
+			if (drawables != null) {
+				Iterator<?> it = drawables.iterator();
+				while (it.hasNext()) {
+					videoPanel.addDrawable((Drawable) it.next());
+				}
+			}
+		}
+
 
 		/**
 		 * Saves object data to an XMLControl.
@@ -788,58 +851,6 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			}
 		}
 
-		/**
-		 * Creates an object using data from an XMLControl.
-		 *
-		 * @param control the control
-		 * @return the newly created object
-		 */
-		@Override
-		public Object createObject(XMLControl control) {
-			return new VideoPanel();
-		}
-
-		/**
-		 * Loads an object with data from an XMLControl.
-		 *
-		 * @param control the control
-		 * @param obj     the object
-		 * @return the loaded object
-		 */
-		@Override
-		public Object loadObject(XMLControl control, Object obj) {
-			// not called?
-			videoPanel = (VideoPanel) obj;
-			coords = (ImageCoordSystem) control.getObject("coords");
-			drawables = (Collection<?>) control.getObject("drawables"); //$NON-NLS-1$			
-			// load the video clip
-			clip = (VideoClip) control.getObject("videoclip"); //$NON-NLS-1$
-			if (clip.getVideo() instanceof AsyncVideoI) {
-				clip.loader = this;
-			}
-			finalizeLoading();
-			return videoPanel;
-		}
-
-		@Override
-		public void finalizeLoading() {			
-			if (clip != null) {
-				if (clip.loader != null) {
-					clip.loader.finalizeLoading();
-					clip.loader = null;
-				}
-				videoPanel.getPlayer().setVideoClip(clip);
-			}
-			// load the coords
-			videoPanel.setCoords(coords); //$NON-NLS-1$
-			// load the drawables
-			if (drawables != null) {
-				Iterator<?> it = drawables.iterator();
-				while (it.hasNext()) {
-					videoPanel.addDrawable((Drawable) it.next());
-				}
-			}
-		}
 
 	}
 

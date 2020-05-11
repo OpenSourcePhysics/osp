@@ -143,8 +143,8 @@ public class OSPApplication {
 
         cControl.loadObject(app.control, true, compatibleModels);
       }
-      Collection<String> appNames = app.control.getPropertyNames();
-      Iterator<String> it = cControl.getPropertyNames().iterator();
+      Collection<String> appNames = app.control.getPropertyNamesRaw();
+      Iterator<String> it = cControl.getPropertyNamesRaw().iterator();
       while(it.hasNext()) {
         String name = it.next();
         if(!appNames.contains(name)) { // remove names that are not currently in the app

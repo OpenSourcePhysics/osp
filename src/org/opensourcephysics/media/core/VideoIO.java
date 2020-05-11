@@ -71,6 +71,11 @@ import javajs.async.AsyncFileChooser;
  */
 public class VideoIO {
 
+	// static constants
+	public static final String[] JS_VIDEO_EXTENSIONS = { "ogg", "mov", "mp4" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	public static final String DEFAULT_PREFERRED_EXPORT_EXTENSION = "mp4"; //$NON-NLS-1$
+	public static final String DEFAULT_VIDEO_EXTENSION = "jpg"; //$NON-NLS-1$
+
 	public interface FinalizableLoader {
 		
 		public void finalizeLoading();
@@ -116,11 +121,6 @@ public class VideoIO {
 		}
 
 	}
-
-	// static constants
-	public static final String[] JS_VIDEO_EXTENSIONS = { "ogg", "mov", "mp4" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-	public static final String DEFAULT_PREFERRED_EXPORT_EXTENSION = "mp4"; //$NON-NLS-1$
-
 
 	public static MovieVideoType getMovieType(String extension) {
 		if (!MovieFactory.hasVideoEngine())

@@ -695,7 +695,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 			UserFunction f = (UserFunction) obj;
 			f.setName(control.getString("name")); //$NON-NLS-1$
 			f.setDescription(control.getString("description")); //$NON-NLS-1$
-			if (control.getPropertyNames().contains("name_editable")) { //$NON-NLS-1$
+			if (control.getPropertyNamesRaw().contains("name_editable")) { //$NON-NLS-1$
 				f.setNameEditable(control.getBoolean("name_editable")); //$NON-NLS-1$
 			}
 			String[] names = (String[]) control.getObject("parameter_names"); //$NON-NLS-1$

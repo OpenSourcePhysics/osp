@@ -421,6 +421,10 @@ public class XMLControlElement implements XMLControl {
 		}
 	}
 
+	public Collection<String> getPropertyNamesRaw() {
+		return propNames;
+	}
+
 	/**
 	 * Gets the type of the specified property. Returns null if the property is not
 	 * found.
@@ -1384,7 +1388,7 @@ public class XMLControlElement implements XMLControl {
 		// get the list of importable properties
 		XMLControl control = new XMLControlElement(obj);
 		Collection<String> list = control.getPropertyNames();
-		list.retainAll(this.getPropertyNames());
+		list.retainAll(this.getPropertyNamesRaw());
 		// add property values
 		Collection<String> names = new ArrayList<String>();
 		Collection<Object> values = new ArrayList<Object>();
@@ -1442,7 +1446,7 @@ public class XMLControlElement implements XMLControl {
 			}
 		}
 		// add object properties not in the names list to this control
-		Iterator<String> it2 = control.getPropertyNames().iterator();
+		Iterator<String> it2 = control.getPropertyNamesRaw().iterator();
 		while (it2.hasNext()) {
 			String name = it2.next();
 			if (names.contains(name)) {

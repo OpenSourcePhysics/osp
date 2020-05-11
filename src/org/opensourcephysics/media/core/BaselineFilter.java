@@ -388,7 +388,7 @@ public class BaselineFilter extends Filter {
 		@Override
 		public Object loadObject(XMLControl control, Object obj) {
 			final BaselineFilter filter = (BaselineFilter) obj;
-			if (control.getPropertyNames().contains("imagepath")) { //$NON-NLS-1$
+			if (control.getPropertyNamesRaw().contains("imagepath")) { //$NON-NLS-1$
 				filter.load(control.getString("imagepath")); //$NON-NLS-1$
 			}
 			filter.inspectorX = control.getInt("inspector_x"); //$NON-NLS-1$

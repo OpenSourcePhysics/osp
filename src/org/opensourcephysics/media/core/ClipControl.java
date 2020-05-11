@@ -408,7 +408,7 @@ public void propertyChange(PropertyChangeEvent e) {
       // set looping and playing
       clipControl.setLooping(control.getBoolean("looping")); //$NON-NLS-1$
       // set frame number
-      if (control.getPropertyNames().contains("frame")) { //$NON-NLS-1$
+      if (control.getPropertyNamesRaw().contains("frame")) { //$NON-NLS-1$
       	int n = control.getInt("frame"); //$NON-NLS-1$
       	n = clipControl.getVideoClip().frameToStep(n);
       	clipControl.setStepNumber(n);
