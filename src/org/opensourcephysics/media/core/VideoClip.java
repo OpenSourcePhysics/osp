@@ -713,7 +713,7 @@ public class VideoClip {
 			// load the video and return a new clip
 			boolean hasVideo = control.getPropertyNamesRaw().contains("video"); //$NON-NLS-1$
 			if (!hasVideo) {
-				return (VideoClip) obj;
+				return obj;
 			}
 			base = control.getString("basepath"); //$NON-NLS-1$ ;
 			ResourceLoader.addSearchPath(base);

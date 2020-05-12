@@ -584,7 +584,6 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	abstract public void evaluateAll();
 	
 	protected void setArrays() {
-		OSPLog.debug("FunctionEditor setArrays " + this.getClass().getName() + " " + objects.size());
 		// refresh names array
 		evaluate.clear();
 		circularErrors.clear();

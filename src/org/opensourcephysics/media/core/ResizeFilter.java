@@ -44,8 +44,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
-
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -62,8 +60,6 @@ import org.opensourcephysics.controls.XMLControl;
  */
 public class ResizeFilter extends Filter {
   // instance fields
-  private double widthFactor = 1.0;
-  private double heightFactor = 1.0;
   private Graphics2D gOut;
   // inspector fields
   private Inspector inspector;
@@ -81,6 +77,7 @@ public class ResizeFilter extends Filter {
    */
   public ResizeFilter() {
     hasInspector = true;
+    autoScale720x480 = true;
   }
 
   /**
@@ -127,28 +124,25 @@ public class ResizeFilter extends Filter {
     return heightFactor;
   }
 
-  /**
-   * Applies the filter to a source image and returns the result.
-   *
-   * @param sourceImage the source image
-   * @return the filtered image
-   */
-  @Override
-public BufferedImage getFilteredImage(BufferedImage sourceImage) {
-    if(!isEnabled()) {
-      return sourceImage;
-    }
-    if(sourceImage!=source) {
-      initialize(sourceImage);
-    }
-    if(sourceImage!=input) {
-      gIn.drawImage(source, 0, 0, null);
-    }
-    gOut.drawImage(input, 0, 0, null);
-    return output;
-  }
+	/**
+	 * Creates and initializes the input and output images.
+	 *
+	 * @param image a new source image
+	 */
+	@Override
+	protected void initializeSubclass() {
+		// nothing to do
+	}
 
-  /**
+	@Override
+	protected void setOutputPixels() {
+	    AffineTransform transform = AffineTransform.getScaleInstance(widthFactor, heightFactor);
+	    gOut = output.createGraphics();
+	    gOut.setTransform(transform);
+		gOut.drawImage(input, 0, 0, null);
+	}
+
+/**
    * Implements abstract Filter method.
    *
    * @return the inspector
@@ -202,33 +196,6 @@ public void refresh() {
   }
 
   //_____________________________ private methods _______________________
-
-  /**
-   * Creates and initializes the input and output images.
-   *
-   * @param sourceImage a new source image
-   */
-  private void initialize(BufferedImage sourceImage) {
-    source = sourceImage;
-    w = source.getWidth();
-    h = source.getHeight();
-    // look for DV format and resize for square pixels by default
-    if((w==720)&&(h==480)&&(widthFactor==1.0)&&(heightFactor==1.0)) {
-      widthFactor = 0.889;
-    }
-    int wOut = (int) (w*widthFactor);
-    int hOut = (int) (h*heightFactor);
-    if(source.getType()==BufferedImage.TYPE_INT_RGB) {
-      input = source;
-    } else {
-      input = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-      gIn = input.createGraphics();
-    }
-    output = new BufferedImage(wOut, hOut, BufferedImage.TYPE_INT_RGB);
-    AffineTransform transform = AffineTransform.getScaleInstance(widthFactor, heightFactor);
-    gOut = output.createGraphics();
-    gOut.setTransform(transform);
-  }
 
   /**
    * Inner Inspector class to control filter parameters

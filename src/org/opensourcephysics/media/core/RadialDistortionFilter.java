@@ -106,7 +106,6 @@ public class RadialDistortionFilter extends Filter {
   protected static double minFOV = Math.PI/18, maxFOV = Math.PI-.001;
   
   // instance fields
-  private int[] pixelsIn, pixelsOut; // pixel color values
   private double[] xOut, yOut, xIn, yIn; // pixel positions on input and output images
   private double pixelsToCorner; // half image diagonal in pixels
   private boolean isValidTransform = false, updatingDisplay = false;
@@ -141,27 +140,6 @@ public class RadialDistortionFilter extends Filter {
   	circle = new Circle();
     refresh();
     hasInspector = true;
-  }
-  
-  /**
-   * Applies the filter to a source image and returns the result.
-   *
-   * @param sourceImage the source image
-   * @return the filtered image
-   */
-  @Override
-public BufferedImage getFilteredImage(BufferedImage sourceImage) {
-    if(!isEnabled()) {
-      return sourceImage;
-    }
-    if(sourceImage!=source) {
-      initialize(sourceImage);
-    }
-    if(sourceImage!=input) {
-      gIn.drawImage(source, 0, 0, null);
-    }
-    setOutputToTransformed(input);
-    return output;
   }
 
   /**
@@ -315,50 +293,42 @@ public void refresh() {
    *
    * @param image a new input image
    */
-  private void initialize(BufferedImage image) {
-    source = image;
-    w = source.getWidth();
-    h = source.getHeight();
+  @Override
+protected void initializeSubclass() {
     pixelsToCorner = Math.sqrt(w*w + h*h)/2;
-    output = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-    pixelsIn = new int[w*h];
-    pixelsOut = new int[w*h];    
-    xIn = new double[w*h];
-    yIn = new double[w*h];
-    // output positions are integer pixel positions
-    xOut = new double[w*h];
-    yOut = new double[w*h];    
-    for (int i=0; i<w; i++) {
-    	for (int j=0; j<h; j++) {
-    		xOut[j*w+i] = i;
-    		yOut[j*w+i] = j;
-    	}
-    }
-    if(source.getType()==BufferedImage.TYPE_INT_RGB) {
-      input = source;
-    } else {
-      input = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-      gIn = input.createGraphics();
-    } 
     isValidTransform = false;
   }
 
-  /**
-   * Sets the output image pixels to a transformed version of the input pixels.
-   *
-   * @param image the input image
-   */
-  private void setOutputToTransformed(BufferedImage image) {
-    // if needed, map the output (corrected) pixel positions to input pixel positions
-  	if (!isValidTransform) transform(xOut, yOut, xIn, yIn);    
-    
-    // find output pixel color values by interpolating input pixel colors
-    image.getRaster().getDataElements(0, 0, w, h, pixelsIn);
-    for (int i=0; i<pixelsOut.length; i++) {
-    	pixelsOut[i] = getColor(xIn[i], yIn[i], w, h, pixelsIn);
-    }
-  	output.getRaster().setDataElements(0, 0, w, h, pixelsOut);
-  }
+	/**
+	 * Sets the output image pixels to a transformed version of the input pixels.
+	 *
+	 * @param input the input image
+	 */
+	@Override
+	protected void setOutputPixels() {
+		getPixelsIn();
+		getPixelsOut();
+		xIn = new double[w * h];
+		yIn = new double[w * h];
+		// output positions are integer pixel positions
+		xOut = new double[w * h];
+		yOut = new double[w * h];
+		for (int i = 0; i < w; i++) {
+			for (int j = 0; j < h; j++) {
+				xOut[j * w + i] = i;
+				yOut[j * w + i] = j;
+			}
+		}
+		// if needed, map the output (corrected) pixel positions to input pixel
+		// positions
+		if (!isValidTransform)
+			transform(xOut, yOut, xIn, yIn);
+
+		// find output pixel color values by interpolating input pixel colors
+		for (int i = 0; i < nPixelsIn; i++) {
+			pixelsOut[i] = getColor(xIn[i], yIn[i], w, h, pixelsIn);
+		}
+	}
   
   /**
    * Transforms arrays of pixel position coordinates for source to output conversion.
@@ -569,54 +539,54 @@ public void refresh() {
   	return rSource/rOut;
   }
   
-  /**
-   * Get the interpolated color at a non-integer position (between pixels points).
-   * 
-   * @param x the x-coordinate of the position
-   * @param y the y-coordinate of the position
-   * @param w the width of the image
-   * @param h the height of the image
-   * @param pixelValues the color values of the pixels in the image
-   */
-  private int getColor(double x, double y, int w, int h, int[] pixelValues) {
-  	// get base pixel position
-  	int col = (int)Math.floor(x);
-  	int row = (int)Math.floor(y);
-  	if (col<0 || col>=w || row<0 || row>=h) {
-  		return 0;  // black if not in image
-  	}
-  	if (col+1==w || row+1==h) {
-  		return pixelValues[row*w+col];
-  	}
-  	  	
-		double u = col==0? x: x%col;
-		double v = row==0? y: y%row;
+	/**
+	 * Get the interpolated color at a non-integer position (between pixels points).
+	 * 
+	 * @param x           the x-coordinate of the position
+	 * @param y           the y-coordinate of the position
+	 * @param w           the width of the image
+	 * @param h           the height of the image
+	 * @param pixelValues the color values of the pixels in the image
+	 */
+	private int getColor(double x, double y, int w, int h, int[] pixelValues) {
+		// get base pixel position
+		int col = (int) Math.floor(x);
+		int row = (int) Math.floor(y);
+		if (col < 0 || col >= w || row < 0 || row >= h) {
+			return 0; // black if not in image
+		}
+		if (col + 1 == w || row + 1 == h) {
+			return pixelValues[row * w + col];
+		}
 
-  	if (interpolation==2) {
-    	// get 2x2 neighborhood pixel values
-  		int[] values = new int[] {pixelValues[row*w+col], pixelValues[row*w+col+1], 
-  				pixelValues[(row+1)*w+col], pixelValues[(row+1)*w+col+1]};
-  		
-      int[] rgb = new int[4];
-      for (int j=0; j<4; j++) {
-      	rgb[j] = (values[j]>>16)&0xff; // red
-      }
-      int r = bilinearInterpolation(u, v, rgb);
-      for (int j=0; j<4; j++) {
-      	rgb[j] = (values[j]>>8)&0xff;  // green
-      }
-      int g = bilinearInterpolation(u, v, rgb);
-      for (int j=0; j<4; j++) {
-      	rgb[j] = (values[j])&0xff;     // blue
-      }
-      int b = bilinearInterpolation(u, v, rgb);
-      return (r<<16)|(g<<8)|b;
-  	}
-  	
-		// if not interpolating, return value of nearest neighbor  		
-		return u<0.5? v<0.5? pixelValues[row*w+col]: pixelValues[(row+1)*w+col]:
-			v<0.5? pixelValues[row*w+col+1]: pixelValues[(row+1)*w+col+1];
-  }
+		double u = col == 0 ? x : x % col;
+		double v = row == 0 ? y : y % row;
+
+		if (interpolation == 2) {
+			// get 2x2 neighborhood pixel values
+			int[] values = new int[] { pixelValues[row * w + col], pixelValues[row * w + col + 1],
+					pixelValues[(row + 1) * w + col], pixelValues[(row + 1) * w + col + 1] };
+
+			int[] rgb = new int[4];
+			for (int j = 0; j < 4; j++) {
+				rgb[j] = (values[j] >> 16) & 0xff; // red
+			}
+			int r = bilinearInterpolation(u, v, rgb);
+			for (int j = 0; j < 4; j++) {
+				rgb[j] = (values[j] >> 8) & 0xff; // green
+			}
+			int g = bilinearInterpolation(u, v, rgb);
+			for (int j = 0; j < 4; j++) {
+				rgb[j] = (values[j]) & 0xff; // blue
+			}
+			int b = bilinearInterpolation(u, v, rgb);
+			return (r << 16) | (g << 8) | b;
+		}
+
+		// if not interpolating, return value of nearest neighbor
+		return u < 0.5 ? v < 0.5 ? pixelValues[row * w + col] : pixelValues[(row + 1) * w + col]
+				: v < 0.5 ? pixelValues[row * w + col + 1] : pixelValues[(row + 1) * w + col + 1];
+	}
   
   /**
    * Returns a bilinear interpolated pixel color (int value) at a given point relative to (0,0).
@@ -702,7 +672,7 @@ public void refresh() {
           		color);
           if (newColor != null) {
           	color = newColor;
-            support.firePropertyChange("color", null, newColor); //$NON-NLS-1$
+            support.firePropertyChange(PROPERTY_FILTER_COLOR, null, newColor); 
           }
         }
       });
@@ -978,13 +948,13 @@ public void refresh() {
     	if (vidPanel!=null) {
 	    	if (vis) {
 	    		vidPanel.addDrawable(circle);
-	      	support.firePropertyChange(PROPERTY_FILTER_VISIBLE, null, null); //$NON-NLS-1$
-	      	RadialDistortionFilter.this.addPropertyChangeListener(PROPERTY_FILTER_VISIBLE, vidPanel); //$NON-NLS-1$
+	      	support.firePropertyChange(PROPERTY_FILTER_VISIBLE, null, null); 
+	      	RadialDistortionFilter.this.addPropertyChangeListener(PROPERTY_FILTER_VISIBLE, vidPanel); 
 	    	}
 	    	else {
 	    		vidPanel.removeDrawable(circle);
-	      	support.firePropertyChange(PROPERTY_FILTER_VISIBLE, null, null); //$NON-NLS-1$
-	      	RadialDistortionFilter.this.removePropertyChangeListener(PROPERTY_FILTER_VISIBLE, vidPanel); //$NON-NLS-1$
+	      	support.firePropertyChange(PROPERTY_FILTER_VISIBLE, null, null); 
+	      	RadialDistortionFilter.this.removePropertyChangeListener(PROPERTY_FILTER_VISIBLE, vidPanel); 
 	    	}
     	}
     	support.firePropertyChange("image", null, null); //$NON-NLS-1$

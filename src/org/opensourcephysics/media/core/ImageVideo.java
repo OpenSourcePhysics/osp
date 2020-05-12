@@ -33,6 +33,7 @@ package org.opensourcephysics.media.core;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -132,6 +133,7 @@ public class ImageVideo extends VideoAdapter {
 	public void setFrameNumber(int n) {
 		super.setFrameNumber(n);
 		rawImage = getImageAtFrame(getFrameNumber(), rawImage);
+		updateBufferedImage(); // For SwingJS
 		isValidImage = false;
 		isValidFilteredImage = false;
 		notifyFrame();
@@ -649,7 +651,9 @@ public class ImageVideo extends VideoAdapter {
 				int w = im.getWidth(null);
 				int h = im.getHeight(null);
 				buf[i] = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-				buf[i].createGraphics().drawImage(im, 0, 0, null);
+				Graphics2D g = buf[i].createGraphics();
+				g.drawImage(im, 0, 0, null);
+				g.dispose();
 			}
 		}
 		// insert new images

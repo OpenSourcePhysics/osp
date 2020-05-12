@@ -38,7 +38,6 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 import java.io.File;
 
 import javax.swing.JButton;
@@ -63,7 +62,7 @@ import org.opensourcephysics.tools.ResourceLoader;
 public class BaselineFilter extends Filter {
 	// instance fields
 	private BufferedImage baseline;
-	private int[] pixels;
+	
 	private int[] baselinePixels;
 	private Inspector inspector;
 	private String imagePath;
@@ -133,7 +132,7 @@ public class BaselineFilter extends Filter {
 			int wi = image.getWidth();
 			int ht = image.getHeight();
 			if ((wi >= w) && (ht >= h)) {
-				image.getRaster().getDataElements(0, 0, w, h, baselinePixels);
+				getRaster(image).getDataElements(0, 0, w, h, baselinePixels);
 			} else {
 				JOptionPane.showMessageDialog(vidPanel,
 						MediaRes.getString("Filter.Baseline.Dialog.SmallImage.Message1") + " (" + wi + "x" + ht + ") " + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
@@ -153,27 +152,6 @@ public class BaselineFilter extends Filter {
 	 */
 	public BufferedImage getBaselineImage() {
 		return baseline;
-	}
-
-	/**
-	 * Applies the filter to a source image and returns the result.
-	 *
-	 * @param sourceImage the source image
-	 * @return the filtered image
-	 */
-	@Override
-	public BufferedImage getFilteredImage(BufferedImage sourceImage) {
-		if (!isEnabled()) {
-			return sourceImage;
-		}
-		if (sourceImage != source) {
-			initialize(sourceImage);
-		}
-		if (sourceImage != input) {
-			gIn.drawImage(source, 0, 0, null);
-		}
-		subtractBaseline();
-		return output;
 	}
 
 	/**
@@ -230,31 +208,22 @@ public class BaselineFilter extends Filter {
 	 *
 	 * @param image a new source image
 	 */
-	private void initialize(BufferedImage image) {
-		source = image;
-		w = source.getWidth();
-		h = source.getHeight();
-		pixels = new int[w * h];
-		baselinePixels = new int[w * h];
-		output = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-		if (source.getType() == BufferedImage.TYPE_INT_RGB) {
-			input = source;
-		} else {
-			input = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-			gIn = input.createGraphics();
-		}
+	@Override
+	protected void initializeSubclass() {
+		baselinePixels = new int[nPixelsIn];
 	}
 
 	/**
 	 * Sets the output to an image-subtracted version of the input.
 	 */
-	private void subtractBaseline() {
-		int[] pixels = ((DataBufferInt) input.getRaster().getDataBuffer()).getData();
-		input.getRaster().getDataElements(0, 0, w, h, pixels);
+	@Override
+	protected void setOutputPixels() {
+		getPixelsIn();
+		getPixelsOut();
 		if (baseline != null) {
 			int pixel, base, r, g, b;
-			for (int i = 0; i < pixels.length; i++) {
-				pixel = pixels[i];
+			for (int i = 0; i < nPixelsIn; i++) {
+				pixel = pixelsIn[i];
 				base = baselinePixels[i];
 				r = (pixel >> 16) & 0xff; // red
 				r = r - ((base >> 16) & 0xff);
@@ -265,10 +234,9 @@ public class BaselineFilter extends Filter {
 				b = pixel & 0xff; // blue
 				b = b - (base & 0xff);
 				b = Math.max(b, 0);
-				pixels[i] = (r << 16) | (g << 8) | b;
+				pixelsOut[i] = (r << 16) | (g << 8) | b;
 			}
 		}
-		// output.getRaster().setDataElements(0, 0, w, h, pixels);
 	}
 
 	/**

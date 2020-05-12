@@ -135,9 +135,10 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		// create coords and put origin at center of panel
 		coords = new ImageCoordSystem();
 		setVideo(video);
-		if ((video != null) && (video.getImage().getWidth() > 0)) {
-			setImageWidth(video.getImage().getWidth());
-			setImageHeight(video.getImage().getHeight());
+		BufferedImage img;
+		if ((video != null) && ((img = video.getImage()).getWidth() > 0)) {
+			setImageWidth(img.getWidth());
+			setImageHeight(img.getHeight());
 		} else {
 			setImageWidth(defaultWidth);
 			setImageHeight(defaultHeight);
@@ -335,7 +336,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			setAutoscaleX(true);
 			setAutoscaleY(true);
 		}
-		firePropertyChange(PROPERTY_VIDEOPANEL_IMAGESPACE, null, new Boolean(imagespace)); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_VIDEOPANEL_IMAGESPACE, null, new Boolean(imagespace)); 
 		repaint();
 	}
 

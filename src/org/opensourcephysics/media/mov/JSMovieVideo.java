@@ -606,7 +606,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					HTML5Video.setCurrentTime(v.jsvideo, t);
 					return true;
 				case STATE_GET_IMAGE_READY:
-					BufferedImage bi = HTML5Video.getImage(v.jsvideo);
+					BufferedImage bi = HTML5Video.getImage(v.jsvideo, BufferedImage.TYPE_INT_RGB);
 					if (bi != null) {
 						v.isValidImage = false;
 						v.isValidFilteredImage = false;

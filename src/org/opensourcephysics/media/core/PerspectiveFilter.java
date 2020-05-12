@@ -55,7 +55,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.TreeSet;
@@ -100,7 +99,6 @@ public class PerspectiveFilter extends Filter {
 			false); // no fractional metrics
 
 	// instance fields
-	private int[] pixelsIn, pixelsOut; // pixel color values
 	private double[][] matrix = new double[3][3]; // perspective transform matrix
 	private double[][] temp1 = new double[3][3]; // intermediate matrix
 	private double[][] temp2 = new double[3][3]; // intermediate matrix
@@ -108,8 +106,8 @@ public class PerspectiveFilter extends Filter {
 	private int interpolation = 2; // neighborhood size for color interpolation
 	private Quadrilateral quad;
 	private QuadEditor inputEditor, outputEditor;
-	private Point2D[][] inCornerPoints = new Point2D[10][];
-	private Point2D[][] outCornerPoints = new Point2D[10][];
+	private Point2D.Double[][] inCornerPoints = new Point2D.Double[10][];
+	private Point2D.Double[][] outCornerPoints = new Point2D.Double[10][];
 	private TreeSet<Integer> inKeyFrames = new TreeSet<Integer>();
 	private TreeSet<Integer> outKeyFrames = new TreeSet<Integer>();
 	private boolean fixedIn = false, fixedOut = true;
@@ -134,27 +132,6 @@ public class PerspectiveFilter extends Filter {
 				refreshCorners(n);
 			}
 		};
-	}
-
-	/**
-	 * Applies the filter to a source image and returns the result.
-	 *
-	 * @param sourceImage the source image
-	 * @return the filtered image
-	 */
-	@Override
-	public BufferedImage getFilteredImage(BufferedImage sourceImage) {
-		if (!isEnabled()) {
-			return sourceImage;
-		}
-		if (sourceImage != source) {
-			initialize(sourceImage);
-		}
-		if (sourceImage != input) {
-			gIn.drawImage(source, 0, 0, null);
-		}
-		setOutputToTransformed(input);
-		return output;
 	}
 
 	/**
@@ -231,11 +208,8 @@ public class PerspectiveFilter extends Filter {
 			vidPanel.removePropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 			Video video = vidPanel.getVideo();
 			video.removePropertyChangeListener(Video.PROPERTY_VIDEO_NEXTFRAME, videoListener);
-			removePropertyChangeListener(Filter.PROPERTY_FILTER_VISIBLE, vidPanel);
+			removePropertyChangeListener(PROPERTY_FILTER_VISIBLE, vidPanel);
 		}
-		source = input = output = null;
-		pixelsOut = null;
-		pixelsIn = null;
 	}
 
 	/**
@@ -415,29 +389,18 @@ public class PerspectiveFilter extends Filter {
 	 *
 	 * @param image a new input image
 	 */
-	private void initialize(BufferedImage image) {
-		source = image;
-		w = source.getWidth();
-		h = source.getHeight();
-		output = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-		pixelsIn = new int[w * h];
-		pixelsOut = new int[w * h];
-		xIn = new double[w * h];
-		yIn = new double[w * h];
+	@Override
+	protected void initializeSubclass() {
+		xIn = new double[nPixelsIn];
+		yIn = new double[nPixelsIn];
 		// output positions are integer pixels
-		xOut = new double[w * h];
-		yOut = new double[w * h];
-		for (int i = 0; i < w; i++) {
-			for (int j = 0; j < h; j++) {
-				xOut[j * w + i] = i;
-				yOut[j * w + i] = j;
+		xOut = new double[nPixelsIn];
+		yOut = new double[nPixelsIn];
+		for (int j = 0, p = 0; j < h; j++) {
+			for (int i = 0; i < w; i++, p++) {
+				yOut[p] = j;
+				xOut[p] = i;
 			}
-		}
-		if (source.getType() == BufferedImage.TYPE_INT_RGB) {
-			input = source;
-		} else {
-			input = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-			gIn = input.createGraphics();
 		}
 		// initialize corner positions
 		if (inKeyFrames.isEmpty()) {
@@ -457,21 +420,23 @@ public class PerspectiveFilter extends Filter {
 	/**
 	 * Sets the output image pixels to a rotated version of the input pixels.
 	 *
-	 * @param image the input image
+	 * @param input the input image
 	 */
-	private void setOutputToTransformed(BufferedImage image) {
-		image.getRaster().getDataElements(0, 0, w, h, pixelsIn);
+	@Override
+	protected void setOutputPixels() {
+		getPixelsIn();
+		getPixelsOut();
 		// set up transform matrix based on quad input/output corners
 
 		// set temp1 to transform output to square
-		getQuadToSquare(temp1, quad.outCorners[0].getX(), quad.outCorners[0].getY(), quad.outCorners[1].getX(),
-				quad.outCorners[1].getY(), quad.outCorners[2].getX(), quad.outCorners[2].getY(),
-				quad.outCorners[3].getX(), quad.outCorners[3].getY());
+		getQuadToSquare(temp1, quad.outCorners[0].x, quad.outCorners[0].y, quad.outCorners[1].x,
+				quad.outCorners[1].y, quad.outCorners[2].x, quad.outCorners[2].y,
+				quad.outCorners[3].x, quad.outCorners[3].y);
 
 		// set temp2 to transform square to input
-		getSquareToQuad(temp2, quad.inCorners[0].getX(), quad.inCorners[0].getY(), quad.inCorners[1].getX(),
-				quad.inCorners[1].getY(), quad.inCorners[2].getX(), quad.inCorners[2].getY(), quad.inCorners[3].getX(),
-				quad.inCorners[3].getY());
+		getSquareToQuad(temp2, quad.inCorners[0].x, quad.inCorners[0].y, quad.inCorners[1].x,
+				quad.inCorners[1].y, quad.inCorners[2].x, quad.inCorners[2].y, quad.inCorners[3].x,
+				quad.inCorners[3].y);
 		// concatenate temp2 to temp1 to obtain transform matrix output->input
 		concatenate(temp1, temp2);
 
@@ -479,10 +444,9 @@ public class PerspectiveFilter extends Filter {
 		transform(xOut, yOut, xIn, yIn);
 
 		// find output pixel values by interpolating input pixels
-		for (int i = 0; i < pixelsOut.length; i++) {
+		for (int i = 0; i < nPixelsIn; i++) {
 			pixelsOut[i] = getColor(xIn[i], yIn[i], w, h, pixelsIn);
 		}
-		output.getRaster().setDataElements(0, 0, w, h, pixelsOut);
 	}
 
 	/**
@@ -507,6 +471,8 @@ public class PerspectiveFilter extends Filter {
 
 		}
 	}
+
+	private	int[] rgb = new int[4], values = new int[4];
 
 	/**
 	 * Get the interpolated color at a non-integer position (between pixels points).
@@ -533,10 +499,12 @@ public class PerspectiveFilter extends Filter {
 
 		if (interpolation == 2) {
 			// get 2x2 neighborhood pixel values
-			int[] values = new int[] { pixelValues[row * w + col], pixelValues[row * w + col + 1],
-					pixelValues[(row + 1) * w + col], pixelValues[(row + 1) * w + col + 1] };
+			values[0] = pixelValues[row * w + col];
+			values[1] = pixelValues[row * w + col + 1];
+			values[2] =	pixelValues[(row + 1) * w + col];
+			values[3] = pixelValues[(row + 1) * w + col + 1];
+			
 
-			int[] rgb = new int[4];
 			for (int j = 0; j < 4; j++) {
 				rgb[j] = (values[j] >> 16) & 0xff; // red
 			}
@@ -657,20 +625,22 @@ public class PerspectiveFilter extends Filter {
 		matrix[2][2] = m1[0][2] * m2[2][0] + m1[1][2] * m2[2][1] + m1[2][2] * m2[2][2];
 	}
 
-	private double[][] getCornerData(Point2D[] cornerPoints) {
+	private double[][] getCornerData(Point2D.Double[] cornerPoints) {
 		double[][] data = new double[4][2];
 		for (int i = 0; i < 4; i++) {
-			data[i][0] = cornerPoints[i].getX();
-			data[i][1] = cornerPoints[i].getY();
+			data[i][0] = cornerPoints[i].x;
+			data[i][1] = cornerPoints[i].y;
 		}
 		return data;
 	}
 
 	private void refreshCorners(int frameNumber) {
-		// gIn can be null if memory limit was exceeded when trying to instantiate with
-		// large images
-		if (gIn == null && source != null && input != source)
-			return;
+//		// gIn can be null if memory limit was exceeded when trying to instantiate with
+//		// large images
+//		
+//		// BH -- but we are not necessarily going to use gIn
+//		if (gIn == null && source != null && input != source)
+//			return;
 
 		int key = getKeyFrame(frameNumber, true); // input
 		for (int i = 0; i < 4; i++) {
@@ -687,11 +657,11 @@ public class PerspectiveFilter extends Filter {
 			frameNumber = fixedKey;
 		ensureCornerCapacity(frameNumber);
 		TreeSet<Integer> keyFrames = in ? inKeyFrames : outKeyFrames;
-		Point2D[][] cornerPoints = in ? inCornerPoints : outCornerPoints;
+		Point2D.Double[][] cornerPoints = in ? inCornerPoints : outCornerPoints;
 		Corner[] corners = in ? quad.inCorners : quad.outCorners;
 		keyFrames.add(frameNumber);
 		if (cornerPoints[frameNumber] == null) {
-			cornerPoints[frameNumber] = new Point2D[4];
+			cornerPoints[frameNumber] = new Point2D.Double[4];
 			for (int i = 0; i < 4; i++) {
 				cornerPoints[frameNumber][i] = new Point2D.Double();
 			}
@@ -705,13 +675,13 @@ public class PerspectiveFilter extends Filter {
 		ensureCornerCapacity(cornerData.length);
 		TreeSet<Integer> keyFrames = in ? inKeyFrames : outKeyFrames;
 		keyFrames.clear();
-		Point2D[][] cornerPoints = in ? inCornerPoints : outCornerPoints;
+		Point2D.Double[][] cornerPoints = in ? inCornerPoints : outCornerPoints;
 		for (int j = 0; j < cornerData.length; j++) {
 			if (cornerData[j] == null)
 				continue;
 			keyFrames.add(j);
 			if (cornerPoints[j] == null) {
-				cornerPoints[j] = new Point2D[4];
+				cornerPoints[j] = new Point2D.Double[4];
 				for (int i = 0; i < 4; i++) {
 					cornerPoints[j][i] = new Point2D.Double();
 				}
@@ -725,13 +695,13 @@ public class PerspectiveFilter extends Filter {
 	private void ensureCornerCapacity(int index) {
 		int length = inCornerPoints.length;
 		if (length < index + 1) {
-			Point2D[][] newArray = new Point2D[index + 10][];
+			Point2D.Double[][] newArray = new Point2D.Double[index + 10][];
 			System.arraycopy(inCornerPoints, 0, newArray, 0, length);
 			inCornerPoints = newArray;
 		}
 		length = outCornerPoints.length;
 		if (length < index + 1) {
-			Point2D[][] newArray = new Point2D[index + 10][];
+			Point2D.Double[][] newArray = new Point2D.Double[index + 10][];
 			System.arraycopy(outCornerPoints, 0, newArray, 0, length);
 			outCornerPoints = newArray;
 		}
@@ -741,7 +711,7 @@ public class PerspectiveFilter extends Filter {
 		int length = inCornerPoints.length;
 		for (int i = length; i > 0; i--) {
 			if (inCornerPoints[i - 1] != null) {
-				Point2D[][] newArray = new Point2D[i][];
+				Point2D.Double[][] newArray = new Point2D.Double[i][];
 				System.arraycopy(inCornerPoints, 0, newArray, 0, i);
 				inCornerPoints = newArray;
 				break;
@@ -750,7 +720,7 @@ public class PerspectiveFilter extends Filter {
 		length = outCornerPoints.length;
 		for (int i = length; i > 0; i--) {
 			if (outCornerPoints[i - 1] != null) {
-				Point2D[][] newArray = new Point2D[i][];
+				Point2D.Double[][] newArray = new Point2D.Double[i][];
 				System.arraycopy(outCornerPoints, 0, newArray, 0, i);
 				outCornerPoints = newArray;
 				break;
@@ -815,8 +785,8 @@ public class PerspectiveFilter extends Filter {
 					if (disposing)
 						return;
 					refresh();
-					support.firePropertyChange(Filter.PROPERTY_FILTER_IMAGE, null, null); // $NON-NLS-1$
-					support.firePropertyChange(Filter.PROPERTY_FILTER_TAB, null, null); // $NON-NLS-1$
+					support.firePropertyChange(PROPERTY_FILTER_IMAGE, null, null); // $NON-NLS-1$
+					support.firePropertyChange(PROPERTY_FILTER_TAB, null, null); // $NON-NLS-1$
 				}
 			});
 			helpButton = new JButton();
@@ -847,7 +817,7 @@ public class PerspectiveFilter extends Filter {
 							quad.color);
 					if (newColor != null) {
 						quad.color = newColor;
-						support.firePropertyChange("color", null, newColor); //$NON-NLS-1$
+						support.firePropertyChange(PROPERTY_FILTER_COLOR, null, newColor); 
 					}
 				}
 			});
@@ -926,7 +896,6 @@ public class PerspectiveFilter extends Filter {
 		}
 	}
 
-	@SuppressWarnings("javadoc")
 	public class Corner extends TPoint {
 
 		/**
@@ -979,7 +948,7 @@ public class PerspectiveFilter extends Filter {
 
 		private Corner[] inCorners = new Corner[4]; // input image corner positions (image units)
 		private Corner[] outCorners = new Corner[4]; // output image corner positions
-		private Point2D[] screenPts = new Point2D[4];
+		private Point2D.Double[] screenPts = new Point2D.Double[4];
 		private GeneralPath path = new GeneralPath();
 		private Stroke stroke = new BasicStroke(2);
 		private Stroke cornerStroke = new BasicStroke();
@@ -1028,18 +997,19 @@ public class PerspectiveFilter extends Filter {
 			VideoPanel vidPanel = (VideoPanel) panel;
 			Corner[] corners = PerspectiveFilter.this.isEnabled() ? outCorners : inCorners;
 			for (int i = 0; i < 4; i++) {
-				screenPts[i] = corners[i].getScreenPosition(vidPanel);
-				transform.setToTranslation(screenPts[i].getX(), screenPts[i].getY());
+				Point pt = corners[i].getScreenPosition(vidPanel);
+				screenPts[i].setLocation(pt.x, pt.y);
+				transform.setToTranslation(screenPts[i].x, screenPts[i].y);
 				Shape s = corners[i] == selectedCorner ? selectionShape : cornerShape;
 				Stroke sk = corners[i] == selectedCorner ? stroke : cornerStroke;
 				hitShapes[i] = transform.createTransformedShape(s);
 				drawShapes[i] = sk.createStrokedShape(hitShapes[i]);
 			}
 			path.reset();
-			path.moveTo((float) screenPts[0].getX(), (float) screenPts[0].getY());
-			path.lineTo((float) screenPts[1].getX(), (float) screenPts[1].getY());
-			path.lineTo((float) screenPts[2].getX(), (float) screenPts[2].getY());
-			path.lineTo((float) screenPts[3].getX(), (float) screenPts[3].getY());
+			path.moveTo((float) screenPts[0].x, (float) screenPts[0].y);
+			path.lineTo((float) screenPts[1].x, (float) screenPts[1].y);
+			path.lineTo((float) screenPts[2].x, (float) screenPts[2].y);
+			path.lineTo((float) screenPts[3].x, (float) screenPts[3].y);
 			path.closePath();
 			drawShapes[4] = stroke.createStrokedShape(path);
 			Graphics2D g2 = (Graphics2D) g;
@@ -1052,7 +1022,7 @@ public class PerspectiveFilter extends Filter {
 				g2.fill(drawShapes[i]);
 			}
 			for (int i = 0; i < textLayouts.length; i++) {
-				p.setLocation(screenPts[i].getX() - 4 - font.getSize(), screenPts[i].getY() - 6);
+				p.setLocation(screenPts[i].x - 4 - font.getSize(), screenPts[i].y - 6);
 				textLayouts[i].draw(g2, p.x, p.y);
 			}
 			g2.setFont(gfont);

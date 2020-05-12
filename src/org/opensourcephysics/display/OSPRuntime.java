@@ -10,6 +10,8 @@ package org.opensourcephysics.display;
 import java.awt.Component;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -85,25 +87,6 @@ public class OSPRuntime {
 	static {
 		try {
 			if (isJS) {
-				Object o=OSPRuntime.jsutil.getAppletInfo("assets");
-				if(o != null) { // assets parameter define in Info block
-					String filePath=o.toString();
-					int index=filePath.lastIndexOf('/');
-					assetsPath=filePath.substring(0, index+1);
-					assetsFile=filePath.substring(index+1, filePath.length());
-					OSPLog.debug("assetsPath="+assetsPath);
-					OSPLog.debug("assetsFile="+assetsFile);
-					ResourceLoader.setAssetPath( assetsPath, assetsFile);
-				}
-			}
-		} catch (Exception e) {
-			OSPLog.warning("Error reading assets path. ");
-		}
-	}
-	
-	static {
-		try {
-			if (isJS) {
 				jsutil = ((JSUtilI) Class.forName("swingjs.JSUtil").newInstance());
 
 				// note - this is only for https
@@ -120,6 +103,25 @@ public class OSPRuntime {
 
 		} catch (Exception e) {
 			OSPLog.warning("OSPRuntime could not create jsutil");
+		}
+	}
+	
+	static {
+		try {
+			if (isJS) {
+				Object o=OSPRuntime.jsutil.getAppletInfo("assets");
+				if(o != null) { // assets parameter define in Info block
+					String filePath=o.toString();
+					int index=filePath.lastIndexOf('/');
+					assetsPath=filePath.substring(0, index+1);
+					assetsFile=filePath.substring(index+1, filePath.length());
+					OSPLog.debug("assetsPath="+assetsPath);
+					OSPLog.debug("assetsFile="+assetsFile);
+					ResourceLoader.setAssetPath( assetsPath, assetsFile);
+				}
+			}
+		} catch (Exception e) {
+			OSPLog.warning("Error reading assets path. ");
 		}
 	}
 	
@@ -1536,6 +1538,21 @@ public class OSPRuntime {
 			} catch (InvocationTargetException | InterruptedException e) {
 				e.printStackTrace();
 			}
+	}
+	
+	
+	
+	/**
+	 * We have to ensure that the image actually has a raster in SwingJS
+	 * 
+	 * @param image
+	 * @return
+	 */
+	public static Raster getRaster(BufferedImage image) {
+		if (isJS) {
+			image.getRGB(0, 0);
+		} 
+		return image.getRaster();
 	}
 
 }

@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import javax.swing.SwingUtilities;
 import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.opensourcephysics.controls.OSPLog;
@@ -128,6 +129,8 @@ public abstract class VideoAdapter implements Video {
 				// use this video's coords for vid to world transform
 				g2.transform(coords.getToWorldTransform(frameNumber));
 			}
+			
+			OSPLog.debug("VideoAdapter draw video " + ++ntest2);
 			// draw the video or filtered image
 			if (filterStack.isEmpty() || !filterStack.isEnabled()) {
 				g2.drawImage(rawImage, 0, 0, panel);
@@ -135,7 +138,7 @@ public abstract class VideoAdapter implements Video {
 				g2.drawImage(getImage(), 0, 0, panel);
 			}
 			g2.dispose();
-		} else { // center image in panel if not measured
+		} else { // center image in pa	nel if not measured
 			double centerX = (panel.getXMax() + panel.getXMin()) / 2;
 			double centerY = (panel.getYMax() + panel.getYMin()) / 2;
 			int xoffset = panel.xToPix(centerX) - size.width / 2;
@@ -232,6 +235,8 @@ public abstract class VideoAdapter implements Video {
 		return isMeasured;
 	}
 
+	static int ntest = 0, ntest1 = 0, ntest2 = 0;
+	
 	/**
 	 * Gets the current video image after applying enabled filters.
 	 *
@@ -239,6 +244,19 @@ public abstract class VideoAdapter implements Video {
 	 */
 	@Override
 	public BufferedImage getImage() {
+		updateBufferedImage();
+		OSPLog.debug("VideoAdapter getImage " + ++ntest1);
+		if (filterStack.isEmpty() || !filterStack.isEnabled()) {
+			return bufferedImage;
+		} else if (!isValidFilteredImage) { // filteredImage needs refreshing
+			isValidFilteredImage = true;
+			filteredImage = filterStack.getFilteredImage(bufferedImage);
+			OSPLog.debug("VideoAdapter filtering image " + ++ntest);
+		}
+		return filteredImage;
+	}
+
+	protected void updateBufferedImage() {
 		refreshBufferedImage();
 		if (!isValidImage) { // bufferedImage needs refreshing
 			isValidImage = true;
@@ -247,13 +265,6 @@ public abstract class VideoAdapter implements Video {
 			g.drawImage(rawImage, 0, 0, null);
 			g.dispose();
 		}
-		if (filterStack.isEmpty() || !filterStack.isEnabled()) {
-			return bufferedImage;
-		} else if (!isValidFilteredImage) { // filteredImage needs refreshing
-			isValidFilteredImage = true;
-			filteredImage = filterStack.getFilteredImage(bufferedImage);
-		}
-		return filteredImage;
 	}
 
 	/**
@@ -1203,9 +1214,8 @@ public abstract class VideoAdapter implements Video {
 		if ((bufferedImage == null) || (bufferedImage.getWidth() != size.width)
 				|| (bufferedImage.getHeight() != size.height)) {
 			OSPLog.finest("VideoAdapter.refreshBufferedImage " + size);
-			bufferedImage = new BufferedImage(size.width, size.height,
-					OSPRuntime.isJS ? JSUtilI.TYPE_4BYTE_HTML5 : BufferedImage.TYPE_INT_RGB);
-			// clearRaster = (DataBufferInt) bufferedImage.getRaster().getDataBuffer();
+			bufferedImage = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_RGB);
+			// clearRaster = (DataBufferInt) bufferedgetRaster(image).getDataBuffer();
 //			int clear = new Color(0, 0, 0, 0).getRGB();
 //			int[] rgb = new int[size.width * size.height];
 //			for (int i = 0; i < rgb.length; i++) {
@@ -1282,7 +1292,14 @@ public abstract class VideoAdapter implements Video {
 	}
 
 	protected void notifyFrame() {
-		firePropertyChange(Video.PROPERTY_VIDEO_FRAMENUMBER, null, Integer.valueOf(getFrameNumber()));
+		SwingUtilities.invokeLater(new Runnable() {
+
+			@Override
+			public void run() {
+				firePropertyChange(Video.PROPERTY_VIDEO_FRAMENUMBER, null, Integer.valueOf(getFrameNumber()));				
+			}
+			
+		});
 	}
 
 }

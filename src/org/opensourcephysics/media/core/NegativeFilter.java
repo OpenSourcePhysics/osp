@@ -30,7 +30,7 @@
  * please see <http://www.opensourcephysics.org/>.
  */
 package org.opensourcephysics.media.core;
-import java.awt.image.BufferedImage;
+
 import javax.swing.JDialog;
 
 /**
@@ -40,108 +40,77 @@ import javax.swing.JDialog;
  * @version 1.0
  */
 public class NegativeFilter extends Filter {
-  // instance fields
-  private int[] pixels;
+	// instance fields
 
-  /**
-   * Constructs a NegativeFilter object.
-   */
-  public NegativeFilter() {
-    refresh();
-  }
+	/**
+	 * Constructs a NegativeFilter object.
+	 */
+	public NegativeFilter() {
+		refresh();
+	}
 
-  /**
-   * Applies the filter to a source image and returns the result.
-   *
-   * @param sourceImage the source image
-   * @return the filtered image
-   */
-  @Override
-public BufferedImage getFilteredImage(BufferedImage sourceImage) {
-    if(!isEnabled()) {
-      return sourceImage;
-    }
-    if(sourceImage!=source) {
-      initialize(sourceImage);
-    }
-    if(sourceImage!=input) {
-      gIn.drawImage(source, 0, 0, null);
-    }
-    setOutputToNegative(input);
-    return output;
-  }
+	/**
+	 * Implements abstract Filter method.
+	 *
+	 * @return the inspector
+	 */
+	@Override
+	public JDialog getInspector() {
+		return null;
+	}
 
-  /**
-   * Implements abstract Filter method.
-   *
-   * @return the inspector
-   */
-  @Override
-public JDialog getInspector() {
-    return null;
-  }
+	// _____________________________ private methods _______________________
 
-  //_____________________________ private methods _______________________
+	/**
+	 * Creates the input and output images and ColorConvertOp.
+	 *
+	 * @param image a new input image
+	 */
+	@Override
+	protected void initializeSubclass() {
+		// nothing to do
+	}
 
-  /**
-   * Creates the input and output images and ColorConvertOp.
-   *
-   * @param image a new input image
-   */
-  private void initialize(BufferedImage image) {
-    source = image;
-    w = source.getWidth();
-    h = source.getHeight();
-    pixels = new int[w*h];
-    output = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-    if(source.getType()==BufferedImage.TYPE_INT_RGB) {
-      input = source;
-    } else {
-      input = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-      gIn = input.createGraphics();
-    }
-  }
-
-  /**
-   * Sets the output image pixels to the negative of the input pixels.
-   *
-   * @param image the input image
-   */
-  private void setOutputToNegative(BufferedImage image) {
-    image.getRaster().getDataElements(0, 0, w, h, pixels);
-    int pixel, r, g, b;
-    for(int i = 0; i<pixels.length; i++) {
-      pixel = pixels[i];
-      r = 255-((pixel>>16)&0xff); // neg red
-      g = 255-((pixel>>8)&0xff);  // neg green
-      b = 255-((pixel)&0xff);     // neg blue
-      pixels[i] = (r<<16)|(g<<8)|b;
-    }
-    output.getRaster().setDataElements(0, 0, w, h, pixels);
-  }
+	/**
+	 * Sets the output image pixels to the negative of the input pixels.
+	 *
+	 * @param input the input image
+	 */
+	@Override
+	protected void setOutputPixels() {
+		getPixelsIn();
+		getPixelsOut();
+		for (int i = 0; i < pixelsIn.length; i++) {
+			int pixel = pixelsIn[i];
+			int r = 255 - ((pixel >> 16) & 0xff); // neg red
+			int g = 255 - ((pixel >> 8) & 0xff); // neg green
+			int b = 255 - ((pixel) & 0xff); // neg blue
+			pixelsOut[i] = (r << 16) | (g << 8) | b;
+		}
+	}
 
 }
 
 /*
- * Open Source Physics software is free software; you can redistribute
- * it and/or modify it under the terms of the GNU General Public License (GPL) as
+ * Open Source Physics software is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License (GPL) as
  * published by the Free Software Foundation; either version 2 of the License,
  * or(at your option) any later version.
-
+ * 
  * Code that uses any portion of the code in the org.opensourcephysics package
- * or any subpackage (subdirectory) of this package must must also be be released
- * under the GNU GPL license.
+ * or any subpackage (subdirectory) of this package must must also be be
+ * released under the GNU GPL license.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
- * or view the license online at http://www.gnu.org/copyleft/gpl.html
+ * You should have received a copy of the GNU General Public License along with
+ * this; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
+ * Suite 330, Boston MA 02111-1307 USA or view the license online at
+ * http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017  The Open Source Physics project
- *                     http://www.opensourcephysics.org
+ * Copyright (c) 2017 The Open Source Physics project
+ * http://www.opensourcephysics.org
  */

@@ -34,6 +34,7 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import org.opensourcephysics.display.DrawingPanel;
+import org.opensourcephysics.display.OSPRuntime;
 
 /**
  * This obtains line profile data from a video image.
@@ -108,7 +109,7 @@ public void draw(DrawingPanel panel, Graphics g) {
       try {
         int x = Math.min((int) end1.getX(), (int) end2.getX());
         int y = (int) end1.getY();
-        image.getRaster().getDataElements(x, y, length, 1, pixels);
+        OSPRuntime.getRaster(image).getDataElements(x, y, length, 1, pixels);
         for(int i = 0; i<pixels.length; i++) {
           int pixel = pixels[i];
           int r = (pixel>>16)&0xff; // red

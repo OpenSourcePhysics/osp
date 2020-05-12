@@ -50,19 +50,19 @@ public interface Video extends InteractiveImage, Playable, Trackable, PropertyCh
 
 	
     public default void removeListener(PropertyChangeListener c) {
-		removePropertyChangeListener(PROPERTY_VIDEO_COORDS, c); //$NON-NLS-1$
-		removePropertyChangeListener(PROPERTY_VIDEO_FILTERCHANGED, c); //$NON-NLS-1$
-		removePropertyChangeListener(PROPERTY_VIDEO_IMAGE, c); //$NON-NLS-1$
-		removePropertyChangeListener(PROPERTY_VIDEO_SIZE, c); //$NON-NLS-1$
-		removePropertyChangeListener(PROPERTY_VIDEO_VIDEOVISIBLE, c); //$NON-NLS-1$
+		removePropertyChangeListener(PROPERTY_VIDEO_COORDS, c); 
+		removePropertyChangeListener(PROPERTY_VIDEO_FILTERCHANGED, c); 
+		removePropertyChangeListener(PROPERTY_VIDEO_IMAGE, c); 
+		removePropertyChangeListener(PROPERTY_VIDEO_SIZE, c); 
+		removePropertyChangeListener(PROPERTY_VIDEO_VIDEOVISIBLE, c); 
 	}
 
     public default void addListener(PropertyChangeListener c) {
-		addPropertyChangeListener(PROPERTY_VIDEO_COORDS, c); //$NON-NLS-1$
-		addPropertyChangeListener(PROPERTY_VIDEO_FILTERCHANGED, c); //$NON-NLS-1$
-		addPropertyChangeListener(PROPERTY_VIDEO_IMAGE, c); //$NON-NLS-1$
-		addPropertyChangeListener(PROPERTY_VIDEO_SIZE, c); //$NON-NLS-1$
-		addPropertyChangeListener(PROPERTY_VIDEO_VIDEOVISIBLE, c); //$NON-NLS-1$
+		addPropertyChangeListener(PROPERTY_VIDEO_COORDS, c); 
+		addPropertyChangeListener(PROPERTY_VIDEO_FILTERCHANGED, c); 
+		addPropertyChangeListener(PROPERTY_VIDEO_IMAGE, c); 
+		addPropertyChangeListener(PROPERTY_VIDEO_SIZE, c); 
+		addPropertyChangeListener(PROPERTY_VIDEO_VIDEOVISIBLE, c); 
 	}
 
 	public final static String PROPERTY_VIDEO_FRAMENUMBER = "framenumber"; //$NON-NLS-1$

@@ -35,6 +35,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.display.Drawable;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.gif.GifVideoRecorder;
 import org.opensourcephysics.tools.VideoCaptureTool;
 
@@ -169,7 +170,7 @@ public class VideoGrabber extends VideoCaptureTool {
 					newScratch = true;
 				}
 				BufferedImage copy = previewAll ? new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB) : scratch;
-				image.getRaster().getDataElements(0, 0, w, h, pixels);
+				OSPRuntime.getRaster(image).getDataElements(0, 0, w, h, pixels);
 				copy.getRaster().setDataElements(0, 0, w, h, pixels);
 				Video video = recorderPanel.getVideo();
 				if (video == null) { // first frame added
@@ -284,7 +285,7 @@ public class VideoGrabber extends VideoCaptureTool {
 		fps = Math.round(100 * fps) / 100; // round to nearest .01 fps
 		int n = fpsDropDown.getItemCount();
 		for (int i = 0; i < n; i++) {
-			String item = (String) fpsDropDown.getItemAt(i);
+			String item = fpsDropDown.getItemAt(i);
 			double dropdownValue = Double.parseDouble(item);
 			if (fps == dropdownValue) {
 				fpsDropDown.setSelectedIndex(i);

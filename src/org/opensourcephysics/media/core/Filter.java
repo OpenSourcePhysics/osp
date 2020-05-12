@@ -36,6 +36,8 @@ import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
+import java.awt.image.Raster;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
@@ -52,6 +54,7 @@ import javax.swing.event.SwingPropertyChangeSupport;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.DataTool;
 
 /**
@@ -63,10 +66,26 @@ import org.opensourcephysics.tools.DataTool;
  */
 public abstract class Filter {
 
+	protected static final int ROTATE_NONE = -1, ROTATE_CCW_90 = 0, ROTATE_CW_90 = 1, ROTATE_180 = 2;
+
 	public static final String PROPERTY_FILTER_VISIBLE = "filter_visible";
 	public static final String PROPERTY_FILTER_COLOR = "filter_color";
 	public static final String PROPERTY_FILTER_TAB = "tab";
 	public static final String PROPERTY_FILTER_IMAGE = "image";
+	public static final String PROPERTY_FILTER_FILTER = "filter";
+	public static final String PROPERTY_FILTER_BRIGHTNESS = "brightness";
+	public static final String PROPERTY_FILTER_MEAN = "mean";
+	public static final String PROPERTY_FILTER_RESET = "reset";
+
+
+	
+	protected int rotationType = ROTATE_NONE;
+	protected boolean autoScale720x480 = false;
+
+
+	protected int[] pixelsIn, pixelsOut;
+
+	protected double widthFactor = 1.0, heightFactor = 1.0;
 
 // instance fields
 	/** true if the filter inspector is visible */
@@ -80,7 +99,6 @@ public abstract class Filter {
 
 	protected BufferedImage source, input, output;
 	protected int w, h;
-	protected Graphics2D gIn;
 
 	private boolean enabled = true;
 	private String name;
@@ -97,6 +115,9 @@ public abstract class Filter {
 	protected JButton ableButton;
 	protected JButton clearButton;
 	protected FilterStack stack; // set by stack when filter added
+	protected boolean doCreateOutput = true;
+
+	protected int nPixelsIn;
 
 	/**
 	 * Constructs a Filter object.
@@ -174,15 +195,6 @@ public abstract class Filter {
 
 		});
 	}
-
-	/**
-	 * Applies the filter to a source image and returns the result. If the filter is
-	 * not enabled, the source image should be returned.
-	 *
-	 * @param sourceImage the source image
-	 * @return the filtered image
-	 */
-	public abstract BufferedImage getFilteredImage(BufferedImage sourceImage);
 
 	/**
 	 * Returns a JDialog inspector for controlling filter properties.
@@ -277,14 +289,13 @@ public abstract class Filter {
 			inspector.dispose();
 		}
 		setVideoPanel(null);
-		if (gIn != null)
-			gIn.dispose();
 		if (source != null)
 			source.flush();
 		if (input != null)
 			input.flush();
 		if (output != null)
 			output.flush();
+		pixelsIn = pixelsOut = null;
 	}
 
 	/**
@@ -357,6 +368,82 @@ public abstract class Filter {
 		return menu;
 	}
 
+	
+	/**
+	 * The issue here is that in SwingJS we may or may not have an actual raster. The act of getting the 
+	 * raster does NOT ensure that it is actually filled with data. 
+	 * 
+	 * @param image
+	 * @return
+	 */
+	protected Raster getRaster(BufferedImage image) {
+		return image.getRaster();
+	}
+	
+	
+	protected void getPixels(BufferedImage image, int[] pixels) {
+		image.getRaster().getDataElements(0, 0, w, h, pixels);
+	}
+
+	public void getPixelsIn() {
+		pixelsIn = ((DataBufferInt) input.getRaster().getDataBuffer()).getData();
+	}
+
+	public void getPixelsOut() {
+		pixelsOut = ((DataBufferInt) output.getRaster().getDataBuffer()).getData();
+	}
+	
+	protected void initializeSource(BufferedImage image) {
+		source = image;
+		w = source.getWidth();
+		h = source.getHeight();
+		nPixelsIn = w * h;
+		if (source.getType() == BufferedImage.TYPE_INT_RGB) {
+			input = source;
+		} else {
+			input = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+			Graphics2D gIn = input.createGraphics();
+			gIn.drawImage(source, 0, 0, null);
+			gIn.dispose();
+		}
+		if (doCreateOutput ) {
+			if (autoScale720x480 && w == 720 && h == 480 && widthFactor == 1.0 && heightFactor == 1.0) {
+			    // look for DV format and resize for square pixels by default
+				widthFactor = 0.889;
+			}
+			int wOut = (int) (w * widthFactor);
+			int hOut = (int) (h * heightFactor);
+			if (rotationType == ROTATE_CW_90 || rotationType == ROTATE_CCW_90) {
+				int w0 = wOut;
+				wOut = hOut;
+				hOut = w0;
+			}
+			output = new BufferedImage(wOut, hOut, BufferedImage.TYPE_INT_RGB);
+		}
+	}
+
+
+	/**
+	 * Applies the filter to a source image and returns the result. If the filter is
+	 * not enabled, the source image should be returned.
+	 *
+	 * @param sourceImage the source image
+	 * @return the filtered image
+	 */
+	protected BufferedImage getFilteredImage(BufferedImage sourceImage) {
+		if (!isEnabled()) {
+			return sourceImage;
+		}
+		if (sourceImage != source) {
+			initializeSource(sourceImage);
+		}
+		setOutputPixels();
+		return output;
+	}
+
+	abstract protected void initializeSubclass();
+
+	abstract protected void setOutputPixels();
 }
 
 /*

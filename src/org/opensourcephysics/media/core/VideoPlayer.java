@@ -839,18 +839,18 @@ public void setLocale(Locale locale) {
 	public void mousePressed(MouseEvent e) {
       	if (disabled) return;
         if(e.getSource()==stepButton) {
-          firePropertyChange(PROPERTY_VIDEOPLAYER_STEPBUTTON, null, Boolean.TRUE); //$NON-NLS-1$
+          firePropertyChange(PROPERTY_VIDEOPLAYER_STEPBUTTON, null, Boolean.TRUE); 
         } else {
-          firePropertyChange(PROPERTY_VIDEOPLAYER_BACKBUTTON, null, Boolean.TRUE); //$NON-NLS-1$
+          firePropertyChange(PROPERTY_VIDEOPLAYER_BACKBUTTON, null, Boolean.TRUE); 
         }
       }
       @Override
 	public void mouseExited(MouseEvent e) {
       	if (disabled) return;
         if(e.getSource()==stepButton) {
-          firePropertyChange(PROPERTY_VIDEOPLAYER_STEPBUTTON, null, Boolean.FALSE); //$NON-NLS-1$
+          firePropertyChange(PROPERTY_VIDEOPLAYER_STEPBUTTON, null, Boolean.FALSE); 
         } else {
-          firePropertyChange(PROPERTY_VIDEOPLAYER_BACKBUTTON, null, Boolean.FALSE); //$NON-NLS-1$
+          firePropertyChange(PROPERTY_VIDEOPLAYER_BACKBUTTON, null, Boolean.FALSE); 
         }
       }
 
@@ -1112,7 +1112,7 @@ public void setLocale(Locale locale) {
 				if (disabled)
 					return;
 				//slideMouseListener.mouseExited(e);
-				firePropertyChange(PROPERTY_VIDEOPLAYER_SLIDER, null, Boolean.FALSE); //$NON-NLS-1$
+				firePropertyChange(PROPERTY_VIDEOPLAYER_SLIDER, null, Boolean.FALSE); 
 			}
     	
 			@Override

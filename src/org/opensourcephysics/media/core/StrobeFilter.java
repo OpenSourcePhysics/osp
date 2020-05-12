@@ -39,8 +39,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.image.BufferedImage;
-
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JDialog;
@@ -63,7 +61,7 @@ import org.opensourcephysics.controls.XMLControl;
  */
 public class StrobeFilter extends Filter {
   // instance fields
-  protected int[] pixels, prevPixels;
+  protected int[] prevPixels;
   private double fade;
   private double defaultFade = 0;
   private boolean brightTrails = false;
@@ -141,26 +139,6 @@ public void setEnabled(boolean enabled) {
     super.setEnabled(enabled);
   }
 
-  /**
-   * Applies the filter to a source image and returns the result.
-   *
-   * @param sourceImage the source image
-   * @return the filtered image
-   */
-  @Override
-public BufferedImage getFilteredImage(BufferedImage sourceImage) {
-    if(!isEnabled()) {
-      return sourceImage;
-    }
-    if(sourceImage!=source) {
-      initialize(sourceImage);
-    }
-    if(sourceImage!=input) {
-      gIn.drawImage(source, 0, 0, null);
-    }
-    setOutputToStrobe();
-    return output;
-  }
 
   /**
    * Implements abstract Filter method.
@@ -219,71 +197,63 @@ public void refresh() {
     }
   }
 
-  //_____________________________ private methods _______________________
+	// _____________________________ private methods _______________________
 
-  /**
-   * Creates and initializes the input and output images.
-   *
-   * @param sourceImage a new source image
-   */
-  private void initialize(BufferedImage sourceImage) {
-    source = sourceImage;
-    w = source.getWidth();
-    h = source.getHeight();
-    pixels = new int[w*h];
-    prevPixels = new int[w*h];
-    if(source.getType()==BufferedImage.TYPE_INT_RGB) {
-      input = source;
-    } else {
-      input = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-      gIn = input.createGraphics();
-    }
-    output = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-    output.createGraphics().drawImage(source, 0, 0, null);
-    output.getRaster().getDataElements(0, 0, w, h, pixels);
-    for(int i = 0; i<prevPixels.length; i++) {
-      prevPixels[i] = pixels[i]; // value
-    }
-  }
+	/**
+	 * Creates and initializes the input and output images.
+	 *
+	 * @param image a new source image
+	 */
+	@Override
+	protected void initializeSubclass() {
+		if (prevPixels == null || prevPixels.length != nPixelsIn)
+			prevPixels = new int[nPixelsIn];
+		getPixelsIn();
+		System.arraycopy(pixelsIn, 0, prevPixels, 0, nPixelsIn);
+	}
 
-  /**
-   * Sets the output image pixels to a strobe of the input pixels.
-   */
-  private void setOutputToStrobe() {
-    input.getRaster().getDataElements(0, 0, w, h, pixels);
-    int pixel, r, g, b, val, rprev, gprev, bprev, valprev;
-    for(int i = 0; i<pixels.length; i++) {
-      pixel = pixels[i];
-      r = (pixel>>16)&0xff;                       // red
-      g = (pixel>>8)&0xff;                        // green
-      b = (pixel)&0xff;                           // blue
-      val = (r+g+b)/3;                            // value of current input pixel
-      rprev = (prevPixels[i]>>16)&0xff;           // previous red
-      gprev = (prevPixels[i]>>8)&0xff;            // previous green
-      bprev = (prevPixels[i])&0xff;               // previous blue
-      valprev = (rprev+gprev+bprev)/3;            // previous value
-      if (brightTrails) { // bright trails fade to black
-      	valprev = (int) ((1-fade)*valprev);         // faded previous value
-        if(valprev>val) {
-          rprev = (int) ((1-fade)*rprev);           // faded red
-          gprev = (int) ((1-fade)*gprev);           // faded green
-          bprev = (int) ((1-fade)*bprev);           // faded blue
-          pixels[i] = (rprev<<16)|(gprev<<8)| bprev; 
-        }
-      }
-      else { // dark trails fade to white
-      	valprev = (int) (255-(1-fade)*(255-valprev)); // faded previous value
-        if(val>valprev) {
-          rprev = (int) (255-(1-fade)*(255-rprev));   // faded red
-          gprev = (int) (255-(1-fade)*(255-gprev));   // faded green
-          bprev = (int) (255-(1-fade)*(255-bprev));   // faded blue
-          pixels[i] = (rprev<<16)|(gprev<<8)| bprev; 
-        }
-      }
-      prevPixels[i] = pixels[i];
-    }
-    output.getRaster().setDataElements(0, 0, w, h, pixels);
-  }
+	/**
+	 * Sets the output image pixels to a strobe of the input pixels.
+	 */
+	@Override
+	protected void setOutputPixels() {
+		getPixelsIn();
+		getPixelsOut();
+		int pixel, r, g, b, val, rprev, gprev, bprev, valprev;
+		for (int i = 0; i < pixelsIn.length; i++) {
+			pixel = pixelsIn[i];
+			r = (pixel >> 16) & 0xff; // red
+			g = (pixel >> 8) & 0xff; // green
+			b = (pixel) & 0xff; // blue
+			val = (r + g + b) / 3; // value of current input pixel
+			rprev = (prevPixels[i] >> 16) & 0xff; // previous red
+			gprev = (prevPixels[i] >> 8) & 0xff; // previous green
+			bprev = (prevPixels[i]) & 0xff; // previous blue
+			valprev = (rprev + gprev + bprev) / 3; // previous value
+			if (brightTrails) { // bright trails fade to black
+				valprev = (int) ((1 - fade) * valprev); // faded previous value
+				if (valprev > val) {
+					rprev = (int) ((1 - fade) * rprev); // faded red
+					gprev = (int) ((1 - fade) * gprev); // faded green
+					bprev = (int) ((1 - fade) * bprev); // faded blue
+					pixelsOut[i] = (rprev << 16) | (gprev << 8) | bprev;
+				} else {
+					pixelsOut[i] = pixel;
+				}				
+			} else { // dark trails fade to white
+				valprev = (int) (255 - (1 - fade) * (255 - valprev)); // faded previous value
+				if (val > valprev) {
+					rprev = (int) (255 - (1 - fade) * (255 - rprev)); // faded red
+					gprev = (int) (255 - (1 - fade) * (255 - gprev)); // faded green
+					bprev = (int) (255 - (1 - fade) * (255 - bprev)); // faded blue
+					pixelsOut[i] = (rprev << 16) | (gprev << 8) | bprev;
+				} else {
+					pixelsOut[i] = pixel;
+				}
+			}
+			prevPixels[i] = pixelsOut[i];
+		}
+	}
 
   /**
    * Inner Inspector class to control filter parameters
