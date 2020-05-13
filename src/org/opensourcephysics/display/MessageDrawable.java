@@ -69,6 +69,15 @@ public class MessageDrawable implements Drawable {
 	}
 
 	/**
+	 * Sets the font factor.
+	 *
+	 * @param factor the factor
+	 */
+	public void setMessageFont(Font aFont) {
+		if (aFont!=null) font = aFont;
+	}
+
+	/**
 	 * Sets the font level.
 	 *
 	 * @param level the level
