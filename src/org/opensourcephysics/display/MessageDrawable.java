@@ -93,6 +93,9 @@ public class MessageDrawable implements Drawable {
 	 * @param msg
 	 */
 	public void setMessage(String msg) {
+		if(msg!=null && !msg.equals("")) {
+			msg=TeXParser.parseTeX(msg);
+		}
 		brStr = msg;
 	}
 
@@ -106,6 +109,9 @@ public class MessageDrawable implements Drawable {
 	 * @param location
 	 */
 	public void setMessage(String msg, int location) {
+		if(msg!=null && !msg.equals("")) {
+			msg=TeXParser.parseTeX(msg);
+		}
 		switch (location) {
 		case 0: // usually used for mouse coordinates
 			blStr = msg;
