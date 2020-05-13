@@ -6,6 +6,7 @@
  */
 
 package org.opensourcephysics.tools;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -39,7 +40,6 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.controls.XMLLoader;
-import org.opensourcephysics.display.OSPLayout;
 import org.opensourcephysics.display.OSPRuntime;
 
 /**
@@ -1297,18 +1297,18 @@ public String toString() {
       if(content==null) {
         return null;
       }
-      JPanel panel = new JPanel(new OSPLayout()) {
+      JPanel panel = new JPanel() {
         @Override
-		public Dimension getPreferredSize() {
+	       public Dimension getPreferredSize() {
           Dimension dim = content.getPreferredSize();
           dim.width += 8;
           dim.height += 8;
           return dim;
         }
-
       };
+      panel.setLayout(new BorderLayout());
       panel.setBackground(java.awt.Color.white);
-      panel.add(content, OSPLayout.CENTERED);
+      panel.add(content, BorderLayout.CENTER);
       launchModelScroller = new JScrollPane(panel);
     }
     return launchModelScroller;
@@ -1820,7 +1820,7 @@ public String toString() {
     protected JScrollPane getModelScroller() {
       final JComponent content = getModelPane();
       if((modelScroller==null)&&(content!=null)) {
-        JPanel panel = new JPanel(new OSPLayout()) {
+        JPanel panel = new JPanel() {
           @Override
 		public Dimension getPreferredSize() {
             Dimension dim = content.getPreferredSize();
@@ -1830,8 +1830,9 @@ public String toString() {
           }
 
         };
+        panel.setLayout(new BorderLayout());
         panel.setBackground(java.awt.Color.white);
-        panel.add(content, OSPLayout.CENTERED);
+        panel.add(content, BorderLayout.CENTER);
         modelScroller = new JScrollPane(panel);
       }
       return modelScroller;

@@ -22,7 +22,6 @@ import javax.swing.JPanel;
 import org.opensourcephysics.display.Dimensioned;
 import org.opensourcephysics.display.DrawableTextLine;
 import org.opensourcephysics.display.DrawingPanel;
-import org.opensourcephysics.display.OSPLayout;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.PlottingPanel;
 import org.opensourcephysics.display.TextLine;
@@ -520,7 +519,7 @@ public void resizeFonts(double factor, DrawingPanel panel) {
     int halflabelheight = labelheight/2;
     // NOTE: 5 pixel padding on bottom.
     int yStartPosition = panelHeight-5;                 // starting position for axes, for y axis top, for x axis right
-    int xStartPosition = panelWidth-5-OSPLayout.macOffset;
+    int xStartPosition = panelWidth-5-OSPRuntime.macOffset;
     if(xlog) {
       xExponent = (int) Math.floor(xtickMin);
     }

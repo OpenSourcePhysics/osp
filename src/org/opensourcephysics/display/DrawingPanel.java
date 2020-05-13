@@ -133,10 +133,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	protected BufferedImage workingImage = offscreenImage;
 	private boolean buffered = false; // true will draw this component using an off-screen image
 	protected MessageDrawable messages = new MessageDrawable();
-	protected TextPanel trMessageBox = new TextPanel(); // text box in top right hand corner for message
-	protected TextPanel tlMessageBox = new TextPanel(); // text box in top left hand corner for message
-	protected TextPanel brMessageBox = new TextPanel(); // text box in lower right hand corner for message
-	protected TextPanel blMessageBox = new TextPanel(); // text box in lower left hand corner for mouse coordinates
+
 	protected DecimalFormat scientificFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.###E0"); // coordinate //$NON-NLS-1$
 																												// display
 																												// format
@@ -161,8 +158,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	// CoordinateStringBuilder converts a mouse event into a string that displays
 	// world coordinates.
 	protected CoordinateStringBuilder coordinateStrBuilder = CoordinateStringBuilder.createCartesian();
-	protected GlassPanel glassPanel;
-	protected OSPLayout glassPanelLayout = new OSPLayout();
 	protected int refreshDelay = 100; // time in ms to delay refresh events
 	protected javax.swing.Timer refreshTimer = new javax.swing.Timer(refreshDelay, this); // delay before for refreshing
 																							// panel
@@ -182,19 +177,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 */
 	public DrawingPanel() {
 		setName("DrawingPanel");
-		if (OSPRuntime.isJS) {
-			// no glassPanel
-		} else {
-			glassPanel = new GlassPanel();
-			glassPanel.setLayout(glassPanelLayout);
-			super.setLayout(new BorderLayout());
-			glassPanel.add(trMessageBox, OSPLayout.TOP_RIGHT_CORNER);
-			glassPanel.add(tlMessageBox, OSPLayout.TOP_LEFT_CORNER);
-			glassPanel.add(brMessageBox, OSPLayout.BOTTOM_RIGHT_CORNER);
-			glassPanel.add(blMessageBox, OSPLayout.BOTTOM_LEFT_CORNER);
-			glassPanel.setOpaque(false);
-			add(glassPanel, BorderLayout.CENTER);
-		}
 		setBackground(bgColor);
 		setPreferredSize(new Dimension(300, 300));
 		showCoordinates = true; // show coordinates by default
@@ -212,7 +194,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		buildPopupmenu();
 		refreshTimer.setRepeats(false);
 		refreshTimer.setCoalesce(true);
-		setFontLevel(FontSizer.getLevel());
 		zoomTimer = new javax.swing.Timer(zoomDelay, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -259,6 +240,26 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		FontSizer.addPropertyChangeListener("level", guiChangeListener); //$NON-NLS-1$
 		ToolsRes.addPropertyChangeListener("locale", guiChangeListener); //$NON-NLS-1$
 	}
+	
+	/**
+	 * Sets the font level.
+	 *
+	 * @param level the level
+	 */
+	protected void setFontLevel(int level) {
+		invalidateImage(); // validImage = false;
+		repaint();
+	}
+
+	/**
+	 * Sets the font factor.
+	 *
+	 * @param factor the factor
+	 */
+	public void setFontFactor(double factor) {
+		invalidateImage(); // validImage = false;
+		repaint();
+	}
 
 	/**
 	 * Refreshes the user interface in response to display changes such as Language.
@@ -278,36 +279,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	protected void refreshDecimalSeparators() {
 		scientificFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
 		decimalFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
-	}
-
-	/**
-	 * Sets the font level.
-	 *
-	 * @param level the level
-	 */
-	protected void setFontLevel(int level) {
-		Font font = FontSizer.getResizedFont(trMessageBox.font, level);
-		trMessageBox.font = font;
-		tlMessageBox.font = font;
-		brMessageBox.font = font;
-		blMessageBox.font = font;
-		invalidateImage(); // validImage = false;
-		repaint();
-	}
-
-	/**
-	 * Sets the font factor.
-	 *
-	 * @param factor the factor
-	 */
-	public void setFontFactor(double factor) {
-		Font font = FontSizer.getResizedFont(trMessageBox.font, factor);
-		trMessageBox.font = font;
-		tlMessageBox.font = font;
-		brMessageBox.font = font;
-		blMessageBox.font = font;
-		invalidateImage(); // validImage = false;
-		repaint();
 	}
 
 	/**
@@ -662,19 +633,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 			if (image == workingImage) {
 				zoomBox.paint(osg); // paint the zoom
 			}
-			if (glassPanel != null) { // do not use glassPanel in JS
-				Rectangle viewRect = this.viewRect; // reference for thread safety
-				if (viewRect != null) {
-					Rectangle r = new Rectangle(0, 0, image.getWidth(null), image.getHeight(null));
-					glassPanel.setBounds(r);
-					glassPanelLayout.checkLayoutRect(glassPanel, r);
-					glassPanel.render(osg);
-					glassPanel.setBounds(viewRect);
-					glassPanelLayout.checkLayoutRect(glassPanel, viewRect);
-				} else {
-					glassPanel.render(osg);
-				}
-			}
 			osg.dispose();
 		}
 		imageRatio = 1.00;
@@ -783,10 +741,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		while (c != null) {
 			if (c instanceof JViewport) {
 				rect = ((JViewport) c).getViewRect();
-				if (glassPanel != null) {
-					glassPanel.setBounds(rect);
-					glassPanelLayout.checkLayoutRect(glassPanel, rect);
-				}
 				break;
 			}
 			c = c.getParent();
@@ -2196,28 +2150,8 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 				tempList.get(i).draw(this, g2);
 			}
 		}
-//    if(!JSUtil.isJS)
-		messages.draw(this, g2); // do not use Glass Panel in JS
+		messages.draw(this, g2);
 		g2.dispose(); // BH 2020.02.26
-	}
-
-	/**
-	 * Gets the glass panel.
-	 *
-	 * The glass panel is a trasparent panel that contians the messages boxes and
-	 * other compotnents.
-	 * 
-	 * @return JPanel
-	 */
-	public JPanel getGlassPanel() {
-		return glassPanel;
-	}
-
-	@Override
-	public void setIgnoreRepaint(boolean ignoreRepaint) {
-		super.setIgnoreRepaint(ignoreRepaint);
-		if (glassPanel != null)
-			glassPanel.setIgnoreRepaint(ignoreRepaint);
 	}
 
 	/**
@@ -2571,7 +2505,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 * @param msg
 	 */
 	public void setMessage(String msg) {
-		brMessageBox.setText(msg); // the default message box
 		messages.setMessage(msg);
 	}
 
@@ -2587,19 +2520,15 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	public void setMessage(String msg, int location) {
 		switch (location) {
 		case 0: // usually used for mouse coordinates
-			blMessageBox.setText(msg);
 			messages.setMessage(msg, 0);
 			break;
 		case 1:
-			brMessageBox.setText(msg);
 			messages.setMessage(msg, 1);
 			break;
 		case 2:
-			trMessageBox.setText(msg);
 			messages.setMessage(msg, 2);
 			break;
 		case 3:
-			tlMessageBox.setText(msg);
 			messages.setMessage(msg, 3);
 			break;
 		}
@@ -2647,7 +2576,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		public void mousePressed(MouseEvent e) {
 			String s = coordinateStrBuilder.getCoordinateString(DrawingPanel.this, e);
 			System.err.println(" pressed coortd==" + s);
-			blMessageBox.setText(s);
 			messages.setMessage(s, 0);
 			invalidateImage(); // validImage = false;
 			repaint();
@@ -2660,7 +2588,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		 */
 		@Override
 		public void mouseReleased(MouseEvent e) {
-			blMessageBox.setText(null);
 			messages.setMessage(null, 0);
 			repaint();
 		}
@@ -2696,7 +2623,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		public void mouseDragged(MouseEvent e) {
 			String s = coordinateStrBuilder.getCoordinateString(DrawingPanel.this, e);
 			System.err.println(" pressed coortd==" + s);
-			blMessageBox.setText(s);
 			messages.setMessage(s, 0);
 			repaint();
 		}
@@ -2930,23 +2856,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 			}
 		}
 
-	}
-
-	class GlassPanel extends JPanel {
-		public void render(Graphics g) {
-			try {
-				Component[] c = glassPanelLayout.getComponents();
-				for (int i = 0, n = c.length; i < n; i++) {
-					if (c[i] == null) {
-						continue;
-					}
-					g.translate(c[i].getX(), c[i].getY());
-					c[i].paint(g);
-					g.translate(-c[i].getX(), -c[i].getY());
-				}
-			} catch (Exception ex) {
-				/* do nothing if drawing fails */ }
-		}
 	}
 
 	/**

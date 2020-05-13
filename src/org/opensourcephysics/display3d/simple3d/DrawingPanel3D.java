@@ -35,7 +35,7 @@ import javax.swing.JViewport;
 import javax.swing.event.MouseInputAdapter;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
-import org.opensourcephysics.display.OSPLayout;
+import org.opensourcephysics.display.MessageDrawable;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TextPanel;
 import org.opensourcephysics.display3d.core.interaction.InteractionEvent;
@@ -101,13 +101,8 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
   private javax.swing.Timer updateTimer = new javax.swing.Timer(100, this); // delay before updating the panel
   private boolean needResize = true, needsToRecompute = true;
   // Variables for Messages
-  protected TextPanel trMessageBox = new TextPanel();                       // text box in top right hand corner for message
-  protected TextPanel tlMessageBox = new TextPanel();                       // text box in top left hand corner for message
-  protected TextPanel brMessageBox = new TextPanel();                       // text box in lower right hand corner for message
-  protected TextPanel blMessageBox = new TextPanel();                       // text box in lower left hand corner for mouse coordinates
-  protected GlassPanel glassPanel = new GlassPanel();
-  protected OSPLayout glassPanelLayout = new OSPLayout();
   protected Rectangle viewRect = null;                                      // the clipping rectangle within a scroll pane viewport
+  protected MessageDrawable messages = new MessageDrawable();
   //CJB
   //Scale factor
   private double factorX = 1.0;
@@ -198,15 +193,7 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
    * Constructor DrawingPanel3D
    */
   public DrawingPanel3D() {
-    // GlassPanel for messages
-    glassPanel.setLayout(glassPanelLayout);
     super.setLayout(new BorderLayout());
-    glassPanel.add(trMessageBox, OSPLayout.TOP_RIGHT_CORNER);
-    glassPanel.add(tlMessageBox, OSPLayout.TOP_LEFT_CORNER);
-    glassPanel.add(brMessageBox, OSPLayout.BOTTOM_RIGHT_CORNER);
-    glassPanel.add(blMessageBox, OSPLayout.BOTTOM_LEFT_CORNER);
-    glassPanel.setOpaque(false);
-    super.add(glassPanel, BorderLayout.CENTER);
     setBackground(bgColor);
     setPreferredSize(new Dimension(300, 300));
     visHints = new VisualizationHints(this);
@@ -265,12 +252,6 @@ public void actionPerformed(ActionEvent evt) { // render a new image if the curr
     }
   }
 
-  @Override
-public void setIgnoreRepaint(boolean ignoreRepaint) {
-    super.setIgnoreRepaint(ignoreRepaint);
-    glassPanel.setIgnoreRepaint(ignoreRepaint);
-  }
-
   /**
    * Update the panel's buffered image from within a separate timer thread.
    */
@@ -295,8 +276,6 @@ public void paintComponent(Graphics g) {
     while(c!=null) {
       if(c instanceof JViewport) {
         viewRect = ((JViewport) c).getViewRect();
-        glassPanel.setBounds(viewRect);
-        glassPanelLayout.checkLayoutRect(glassPanel, viewRect);
         break;
       }
       c = c.getParent();
@@ -329,16 +308,6 @@ public BufferedImage render(BufferedImage image) {
     Graphics g = image.getGraphics();
     paintEverything(g, image.getWidth(null), image.getHeight(null));
     Rectangle viewRect = this.viewRect; // reference for thread safety
-    if(viewRect!=null) {
-      Rectangle r = new Rectangle(0, 0, image.getWidth(null), image.getHeight(null));
-      glassPanel.setBounds(r);
-      glassPanelLayout.checkLayoutRect(glassPanel, r);
-      glassPanel.render(g);
-      glassPanel.setBounds(viewRect);
-      glassPanelLayout.checkLayoutRect(glassPanel, viewRect);
-    } else {
-      glassPanel.render(g);
-    }
     g.dispose(); // Disposes of the graphics context and releases any system resources that it is using.
     return image;
   }
@@ -736,7 +705,7 @@ public int getAxesMode() {
    * @param msg
    */
   public void setMessage(String msg) {
-    brMessageBox.setText(msg); // the default message box
+    messages.setMessage(msg, 1);  // BR message box
   }
 
   /**
@@ -754,17 +723,17 @@ public int getAxesMode() {
   public void setMessage(String msg, int location) {
     switch(location) {
        case BOTTOM_LEFT :
-         blMessageBox.setText(msg);
+         messages.setMessage(msg, 0); // BL message box
          break;
        default :
        case BOTTOM_RIGHT :
-         brMessageBox.setText(msg);
+      	 messages.setMessage(msg, 1);  // BR message box
          break;
        case TOP_RIGHT :
-         trMessageBox.setText(msg);
+      	 messages.setMessage(msg, 2);  // TR message box
          break;
        case TOP_LEFT :
-         tlMessageBox.setText(msg);
+      	 messages.setMessage(msg, 3);  // TL message box
          break;
     }
   }
@@ -855,6 +824,7 @@ public void removeInteractionListener(InteractionListener listener) {
 			Object3D obj = objects[i];
 			obj.getElement().draw(g2, obj.getIndex());
 		}
+		messages.drawOn3D(this, g2);
 	}
 
   // ----------------------------------------------------
@@ -1541,21 +1511,6 @@ public int print(Graphics g, PageFormat pageFormat, int pageIndex) throws Printe
         setMouseCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
       }
       targetEntered = target;
-    }
-
-  }
-
-  private class GlassPanel extends javax.swing.JPanel {
-    public void render(Graphics g) {
-      Component[] c = glassPanelLayout.getComponents();
-      for(int i = 0, n = c.length; i<n; i++) {
-        if(c[i]==null) {
-          continue;
-        }
-        g.translate(c[i].getX(), c[i].getY());
-        c[i].print(g);
-        g.translate(-c[i].getX(), -c[i].getY());
-      }
     }
 
   }

@@ -81,12 +81,7 @@ public class TextPanel extends JPanel {
 		OSPRuntime.postEvent(new Runnable() {
 			@Override
 			public synchronized void run() {
-				if (c.getLayout() instanceof OSPLayout) {
-					((OSPLayout) c.getLayout()).quickLayout(c, TextPanel.this);
-					repaint();
-				} else {
 					c.validate();
-				}
 			}
 
 		});

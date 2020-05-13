@@ -870,10 +870,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 */
 	protected void setFontLevel(int level) {
 		FontSizer.setFonts(this, level);
-		plot.setFontLevel(level);
 
-		FontSizer.setFonts(statsTable, level);
-		FontSizer.setFonts(propsTable, level);
+		//FontSizer.setFonts(statsTable, level);
+		//FontSizer.setFonts(propsTable, level);
 
 		curveFitter.setFontLevel(level);
 
@@ -3622,11 +3621,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			label = ToolsRes.getString("DataToolTab.Selection.Label") + ":  "; //$NON-NLS-1$ //$NON-NLS-2$
 			selectedXLabel.setText(label + xVar);
 			selectedYLabel.setText(yVar);
-		}
-
-		@Override
-		protected void setFontLevel(int level) {
-			super.setFontLevel(level);
 		}
 
 		/**
