@@ -701,9 +701,14 @@ public class FunctionEditor extends JPanel implements PropertyChangeListener {
         if (obj instanceof UserFunction) {
         	// replace function names with # to prevent finding "x" in "exp", etc
           UserFunction func = (UserFunction)obj;
+          // remove spaces
+      		eqn = eqn.replaceAll(" ", "");  //$NON-NLS-1$//$NON-NLS-2$
+      		// add padding around all names
+      		eqn = eqn.replaceAll("([A-Za-z_]\\w*)", " $1 "); //$NON-NLS-1$ //$NON-NLS-2$
           String[] functionNames = func.getFunctionNames();
           for (String s: functionNames) {
-            eqn = eqn.replaceAll(s, "#"); //$NON-NLS-1$
+          	// only replace function names with padding
+          	eqn = eqn.replaceAll(" " + s + " ", " # "); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
           }
         }
         if(eqn.indexOf(name)>-1) {
