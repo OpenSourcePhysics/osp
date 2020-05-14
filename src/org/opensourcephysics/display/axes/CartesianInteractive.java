@@ -99,9 +99,6 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
     scaleSetterPanel = new javax.swing.JPanel(null);
     scaleSetterPanel.setOpaque(false);
     scaleSetterPanel.add(scaleSetter);
-    if (plot.getGlassPanel() != null) {
-    	plot.getGlassPanel().add(scaleSetterPanel, BorderLayout.CENTER);
-    }
     
   }
 

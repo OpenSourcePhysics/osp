@@ -89,8 +89,6 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	/** default file name used for initial saveAs */
 	public String defaultFileName;
 	protected VideoPlayer player;
-	protected TextPanel mousePanel;
-	protected TextPanel messagePanel;
 	protected Video video = null;
 	protected boolean playerVisible = true;
 	protected boolean drawingInImageSpace = false;
@@ -128,8 +126,6 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		VideoClip clip = player.getVideoClip();
 		clip.addListener(this);
 		// define mousePanel and messagePanel
-		mousePanel = blMessageBox;
-		messagePanel = brMessageBox;
 		// make new CoordinateStringBuilder
 		setCoordinateStringBuilder(new VidCartesianCoordinateStringBuilder());
 		// create coords and put origin at center of panel
@@ -556,9 +552,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	 * Hides the mouse box
 	 */
 	public void hideMouseBox() {
-		if (mousePanel.isVisible()) {
-			mousePanel.setText(null);
-		}
+			messages.setMessage(null, 0);  // BL message box
 	}
 
 	/**

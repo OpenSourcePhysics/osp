@@ -338,7 +338,6 @@ public void setShowCoordinates(boolean show) {
       }
       if(showCoordinates) {
         String s = coordinateStrBuilder.getCoordinateString(InteractivePanel.this, e);
-        blMessageBox.setText(s);
         messages.setMessage(s, 0);
         repaint();
       }
@@ -357,7 +356,6 @@ public void setShowCoordinates(boolean show) {
       }
       iaDraggable = null;
       if(showCoordinates) {
-        blMessageBox.setText(null);
         messages.setMessage(null, 0);
         repaint();
       }
@@ -421,7 +419,6 @@ public void setShowCoordinates(boolean show) {
       }
       if(showCoordinates) {
         String s = coordinateStrBuilder.getCoordinateString(InteractivePanel.this, e);
-        blMessageBox.setText(s);
         messages.setMessage(s, 0);
         repaint();
       }

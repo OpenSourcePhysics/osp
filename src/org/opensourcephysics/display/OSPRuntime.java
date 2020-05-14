@@ -65,23 +65,25 @@ public class OSPRuntime {
 	private static boolean isMac;
 	private static String assetsPath;
 	private static String assetsFile;
+  public static int macOffset;  // shifts LR message box on Mac to avoid drag hot spot.
 	
-
-	static {
-		try {
-			// system properties may not be readable in some environments
-			isMac = (/** @j2sNative 1 ? false : */
-			(System.getProperty("os.name", "").toLowerCase().startsWith("mac"))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		} catch (SecurityException ex) {
-		}
-
-	}
 
 	// BH note: Cannot use "final" here because then the constant will be set before the
 	// transpiler ever sees it.
 	public static boolean isJS = /** @j2sNative true || */
 			false;
 
+	static {
+		try {
+			// system properties may not be readable in some environments
+			isMac = (/** @j2sNative 1 ? false : */
+			(System.getProperty("os.name", "").toLowerCase().startsWith("mac"))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			macOffset = (isMac && !isJS) ? 16 : 0;
+		} catch (SecurityException ex) {
+		}
+
+	}
+	
 	public static JSUtilI jsutil;
 	
 	static {

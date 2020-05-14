@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.net.URL;
+import java.util.Map;
+import java.util.zip.ZipEntry;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -30,11 +32,10 @@ public class AssetsTest {
 
 		// Pick an image to load from an asset archive.
 		// Use asset: 'ospassets/osp_respources.zip'
-		// String imageName =
-		// "/org/opensourcephysics/resources/controls/images/inspect.gif";
+		//String imageName ="/org/opensourcephysics/resources/controls/images/inspect.gif";
 
 		// Use asset: 'ospassets/physlet_respources.zip'
-		// String imageName = "/opticsimages/bear1.gif";
+		//String imageName = "/opticsimages/bear1.gif";
 		String imageName = "/cover.gif";
 
 		URL url = ResourceLoader.getImageZipResource(imageName);
@@ -46,9 +47,25 @@ public class AssetsTest {
 		imagePanel.setLayout(new BorderLayout());
 		frame.add(imagePanel);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setSize(300, 300);
+		frame.setSize(400, 400);
 		frame.setVisible(true);
+		
+		getFileList();
 
+	}
+	
+	public void getFileList() {
+		//String zipFile="/ospassets/physlet_respources.zip"; // fails
+		String zipFile="physlet_respources.zip";              // also fails
+		Map<String, ZipEntry>  map=ResourceLoader.getZipContents(zipFile);
+		if(map==null) {
+			System.err.println("Map is null: "+zipFile);
+			return;
+		}
+    for (Map.Entry<String,ZipEntry> entry : map.entrySet()) {  
+      System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue()); 
+  		// OSPRuntime.jsutil.getZipBytes(entry.getValue());  //to read zip entry
+    }
 	}
 
 	class IconPanel extends JPanel {
@@ -64,7 +81,7 @@ public class AssetsTest {
 		@Override
 		public void paintComponent(Graphics g) {
 			super.paintComponent(g);
-			icon.paintIcon(this, g, 100, 100);
+			icon.paintIcon(this, g, 10, 10);
 		}
 	}
 
