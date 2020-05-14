@@ -153,16 +153,7 @@ public interface HTML5Video extends DOMNode {
 			image = new BufferedImage(d.width, d.height, imageType == Integer.MIN_VALUE ? JSUtilI.TYPE_4BYTE_HTML5 : imageType);
 			HTML5Video.setProperty(v, "_image", image);
 		}
-		Graphics g = image.createGraphics();
-		/**
-		 * @j2sNative
-		 * 
-		 * 			var ctx = g.canvas.getContext('2d');
-		 * 			ctx.drawImage(v, 0, 0, d.width, d.height);
-		 * 			image.秘imgNode = g.canvas;
-		 * 
-		 */
-		g.dispose();
+		HTML5Canvas.setImageNode(v, image);
 		return image;
 	}
 
@@ -250,7 +241,8 @@ public interface HTML5Video extends DOMNode {
 					null;
 			listeners.add(events[i]);
 			listeners.add(func);
-			jsvideo.addEventListener(events[i], func);
+			if (jsvideo != null)
+				jsvideo.addEventListener(events[i], func);
 
 		}
 		return listeners.toArray(new Object[listeners.size()]);

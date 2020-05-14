@@ -43,6 +43,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.OSPRuntime;
@@ -473,6 +475,8 @@ public class ImageVideo extends VideoAdapter {
 		if (readOnly && frameNumber < paths.length) {
 			if (!paths[frameNumber].equals("")) {//$NON-NLS-1$
 				Image image = ResourceLoader.getImage(getAbsolutePath(paths[frameNumber]));
+				OSPLog.debug("ImageVideo new image " + image);
+
 				if (image != null)
 					return image;
 			}

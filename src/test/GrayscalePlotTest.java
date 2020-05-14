@@ -34,6 +34,7 @@ public class GrayscalePlotTest {
 	}
 	
 	public void setRandomVals() {
+		System.out.println("GSPlotTest.setRandomVals");
 		double[][][] data=griddata.getData();
 		double[][] dataR = data[0];
 //		double[][] dataG = data[1];

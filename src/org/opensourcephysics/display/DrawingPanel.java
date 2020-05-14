@@ -177,6 +177,11 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	protected double dxmin, dxmax, dymin, dymax;
 	protected PropertyChangeListener guiChangeListener;
 
+	public void repaint() {
+		if (getTopLevelAncestor() != null && getTopLevelAncestor().isVisible())
+			super.repaint();
+		}
+	
 	/**
 	 * DrawingPanel constructor.
 	 */
@@ -3003,6 +3008,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 			}
 			return panel;
 		}
+		
 
 		/**
 		 * Loads a DrawingPanel with data from an XMLControl.

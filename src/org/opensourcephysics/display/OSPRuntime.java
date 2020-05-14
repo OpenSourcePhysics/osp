@@ -1522,7 +1522,7 @@ public class OSPRuntime {
 	}
 
 	public static void postEvent(Runnable runner) {
-		if (isJS || SwingUtilities.isEventDispatchThread())
+		if (!isJS && SwingUtilities.isEventDispatchThread())
 			runner.run();
 		else
 			SwingUtilities.invokeLater(runner);
