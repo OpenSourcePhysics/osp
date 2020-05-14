@@ -39,7 +39,13 @@ import org.opensourcephysics.display.ResizableIcon;
  */
 public class FontSizer {
 	
-  /** Base font for text fields */
+  public interface IconOwner {
+
+	Icon getIcon();
+
+	}
+
+/** Base font for text fields */
   public static final Font TEXT_FONT = new JTextField().getFont();
 
   /** Base font for buttons */
@@ -367,6 +373,11 @@ public class FontSizer {
 			if (icon != null && icon instanceof ResizableIcon) {
 				((ResizableIcon) icon).resize(getIntegerFactor());
 			}
+		} else if (c instanceof IconOwner) {
+			Icon icon = ((IconOwner) c).getIcon();
+			if (icon != null && icon instanceof ResizableIcon) {
+				((ResizableIcon) icon).resize(getIntegerFactor());
+			}			
 		}
 //		} catch (Exception e) {
 //		}

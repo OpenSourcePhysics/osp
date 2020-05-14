@@ -40,7 +40,7 @@ import org.opensourcephysics.media.core.VideoIO;
  * @author Douglas Brown
  * @version 1.0
  */
-public class LibraryResource implements Comparable<LibraryResource> {
+public class LibraryResource implements FontSizer.IconOwner, Comparable<LibraryResource> {
 	
   // static constants
   @SuppressWarnings("javadoc")
