@@ -19,6 +19,7 @@ import java.util.Map;
 import javax.swing.AbstractButton;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JTextField;
@@ -358,18 +359,19 @@ public class FontSizer {
 					setFontFactor(item, factor);
 				}
 			}
-		} else if (c instanceof AbstractButton) {
+		} else if (c instanceof JLabel) {
+    	JLabel b = (JLabel)c;
+    	Icon icon = b.getIcon();
+			if (icon!=null && icon instanceof ResizableIcon) {
+				((ResizableIcon)icon).resize(getIntegerFactor());
+			}
+    } else if (c instanceof AbstractButton) {
 			// BH SwingJS "getIcon" is a method in AbstractButton, JFileChooser,
-			// JOptionPane,
-			// JLabel, and DefaultTreeCellRenderer.
+			// JOptionPane, JLabel, and DefaultTreeCellRenderer.
 			// It is fair to assume we can just check for AbstractButton?
-			// Otherwise we are depending upon throwing an Exception, which is
-			// OK, but not really good form.
+    	// DB testing for AbstractButton and JLabel covers all the cases I know of
+    	// so we don't need the IconOwner interface
 			Icon icon = ((AbstractButton) c).getIcon();
-// formerly:
-//			Method m = c.getClass().getMethod("getIcon", (Class<?>[])null); //$NON-NLS-1$
-//			if (m != null) {
-//				Icon icon = (Icon)m.invoke(c, (Object[])null);
 			if (icon != null && icon instanceof ResizableIcon) {
 				((ResizableIcon) icon).resize(getIntegerFactor());
 			}
@@ -379,8 +381,6 @@ public class FontSizer {
 				((ResizableIcon) icon).resize(getIntegerFactor());
 			}			
 		}
-//		} catch (Exception e) {
-//		}
 		// end of code added by Doug
 
 		c.repaint();
