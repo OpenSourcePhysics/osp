@@ -712,7 +712,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 		fileMenu = new JMenu(DisplayRes.getString("DrawingFrame.File_menu_item")); //$NON-NLS-1$
 		JMenu printMenu = new JMenu(DisplayRes.getString("DrawingFrame.Print_menu_title")); //$NON-NLS-1$
 		JMenuItem printItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Print_menu_item")); //$NON-NLS-1$
-		if (!JSUtil.isJS) { // cannot print from within browser
+		if (!OSPRuntime.isJS) { // cannot print from within browser
 			printMenu.add(printItem);
 			printItem.setAccelerator(KeyStroke.getKeyStroke('P', MENU_SHORTCUT_KEY_MASK));
 			printItem.addActionListener(new ActionListener() {

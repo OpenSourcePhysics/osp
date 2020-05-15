@@ -45,7 +45,7 @@ import org.opensourcephysics.display.GUIUtils;
  * @author Douglas Brown
  */
 @SuppressWarnings("serial")
-public class FunctionPanel extends JPanel implements FontSizer.IconOwner, PropertyChangeListener {
+public class FunctionPanel extends JPanel implements PropertyChangeListener {
   // instance fields
   protected FunctionTool functionTool;
   protected ParamEditor paramEditor;

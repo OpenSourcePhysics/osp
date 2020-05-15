@@ -129,7 +129,7 @@ public class OSPRuntime {
 	
 	public static boolean isBHTest = isJS;
 	
-	public static boolean allowSetFonts = !isBHTest; // for testing
+	public static boolean allowSetFonts = true;//!isBHTest; // for testing
 
 	public static boolean allowAsyncURL = isJS; // for OSPRuntime and Library SwingWorkers
 	

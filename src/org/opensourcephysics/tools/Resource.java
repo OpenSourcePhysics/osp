@@ -34,7 +34,7 @@ import org.opensourcephysics.display.ResizableIcon;
  * @author Douglas Brown
  * @version 1.0
  */
-public class Resource implements FontSizer.IconOwner {
+public class Resource {
 
 	private URL url;
 	private File file;

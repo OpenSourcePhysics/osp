@@ -107,11 +107,15 @@ public class ResizableIcon implements Icon {
 	 * Magnifies the icon by a specified integer factor.
 	 * 
 	 * @param factor the factor
+	 * @return 
 	 */
-	public void resize(int factor) {
+	public boolean resize(int factor) {
 		int n = Math.max(factor, 1);
+		if (w == n * baseWidth)
+			return false;
 		w = n * baseWidth;
 		h = n * baseHeight;
+		return true;
 	}
   
 }
