@@ -131,11 +131,17 @@ public class OSPLog extends JFrame {
 	private String bundleName;
 	private JMenuItem logToFileItem;
 	private boolean hasPermission = true;
+
+	private int myFontLevel;
+
+	protected int myPopupFontLevel;
 	private static LogRecord[] messageStorage = new LogRecord[128];
 	private static int messageIndex = 0;
 	static String eol = "\n"; //$NON-NLS-1$
 	static String logdir = "."; //$NON-NLS-1$
 	static String slash = "/"; //$NON-NLS-1$
+
+	private static int myChooserFontLevel;
 
 	private static boolean useMessageFrame() {
 		return (OSPRuntime.appletMode || OSPRuntime.applet != null);
@@ -777,7 +783,7 @@ public class OSPLog extends JFrame {
 					if (OSPRuntime.isPopupTrigger(e)) {
 						// show popup menu
 						if (popup != null) {
-							FontSizer.setFonts(popup, FontSizer.getLevel());
+							FontSizer.setFonts(popup);
 							popup.show(logPane, e.getX(), e.getY() + 8);
 						}
 					}
@@ -979,7 +985,7 @@ public class OSPLog extends JFrame {
 		if (chooser == null) {
 			chooser = new JFileChooser(new File(OSPRuntime.chooserDir));
 		}
-		FontSizer.setFonts(chooser, FontSizer.getLevel());
+	    FontSizer.setFonts(chooser);
 		return chooser;
 	}
 
@@ -1262,6 +1268,11 @@ public class OSPLog extends JFrame {
 
 	public static void debug(String msg) {
 		realSysout.println("OSPLog.debug " +msg);
+	}
+
+	public static void setFonts(int level) {
+		OSPLog log = getOSPLog();
+		FontSizer.setFonts(log);
 	}
 }
 

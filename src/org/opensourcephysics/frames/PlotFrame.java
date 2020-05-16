@@ -16,10 +16,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
-import javax.swing.event.MenuEvent;
-import javax.swing.event.MenuListener;
-
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.DataTable;
@@ -66,9 +62,6 @@ public class PlotFrame extends DrawingFrame {
     addMenuItems();
   }
 
-  public void repaint() {
-	  super.repaint();
-  }
   /**
    *  Sets the name of this component and the Dataset Manager.
    */
@@ -100,24 +93,6 @@ protected void addMenuItems() {
     if(helpMenu!=null) {
       menuBar.add(helpMenu);
     }
-    menu.addMenuListener(new MenuListener() {
-
-		@Override
-		public void menuSelected(MenuEvent e) {
-			OSPLog.debug("PlotFrame menu seleted " + e.getSource().toString());
-		}
-
-		@Override
-		public void menuDeselected(MenuEvent e) {
-			OSPLog.debug("PlotFrame menu deseleted " + e.getSource().toString());
-		}
-
-		@Override
-		public void menuCanceled(MenuEvent e) {
-			OSPLog.debug("PlotFrame menu canceled " + e.getSource().toString());
-		}
-    	
-    });
     // add a scale option
     JMenuItem scaleItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Scale_menu_item")); //$NON-NLS-1$
     ActionListener actionListener = new ActionListener() {

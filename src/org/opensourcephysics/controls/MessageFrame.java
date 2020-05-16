@@ -45,15 +45,20 @@ import org.opensourcephysics.tools.ToolsRes;
  * @version 1.0
  */
 public class MessageFrame extends JFrame {
+	
+	
   static final Color DARK_GREEN = new Color(0, 128, 0), DARK_BLUE = new Color(0, 0, 128), DARK_RED = new Color(128, 0, 0);
   static Style black, red, blue, green, magenta, gray;
   static volatile MessageFrame APPLET_MESSAGEFRAME;
   //static Level levelOSP = Level.CONFIG;
   static int levelOSP = Level.CONFIG.intValue();
+  
   private static int SEVERE = Level.SEVERE.intValue(), WARNING = Level.WARNING.intValue(), INFO = Level.INFO.intValue(), CONFIG = Level.CONFIG.intValue(), FINE = Level.FINE.intValue(), FINER = Level.FINER.intValue(), FINEST = Level.FINEST.intValue();
   private static ArrayList<JRadioButtonMenuItem> buttonList = new ArrayList<JRadioButtonMenuItem>();
   private JTextPane textPane = new JTextPane();
 
+  private int myFontLevel = 0;
+  
   private MessageFrame() {
     // create the panel, text pane and scroller
     setTitle(ControlsRes.getString("MessageFrame.DefaultTitle")); //$NON-NLS-1$
@@ -133,24 +138,22 @@ public class MessageFrame extends JFrame {
       });
     }
     
-	FontSizer.setFonts(APPLET_MESSAGEFRAME.textPane, FontSizer.getLevel());
-	FontSizer.addPropertyChangeListener("level", new PropertyChangeListener() { //$NON-NLS-1$
+	FontSizer.setFonts(APPLET_MESSAGEFRAME, FontSizer.getLevel());
+	FontSizer.addPropertyChangeListener(FontSizer.PROPERTY_LEVEL, new PropertyChangeListener() { //$NON-NLS-1$
 		@Override
 		public void propertyChange(PropertyChangeEvent e) {
-			int level = ((Integer) e.getNewValue()).intValue();
-			FontSizer.setFonts(menuBar, level);
-			FontSizer.setFonts(APPLET_MESSAGEFRAME.textPane, level);
+			FontSizer.setFonts(APPLET_MESSAGEFRAME);
 		}
 
 	});
     ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() {           //$NON-NLS-1$
-      @Override
-	public void propertyChange(PropertyChangeEvent e) {
-        APPLET_MESSAGEFRAME.setTitle(ControlsRes.getString("MessageFrame.DefaultTitle")); //$NON-NLS-1$
-        editMenu.setText(ControlsRes.getString("MessageFrame.Edit_menu"));                //$NON-NLS-1$
-        clearItem.setText(ControlsRes.getString("MessageFrame.Clear_menu"));              //$NON-NLS-1$
-        levelMenu.setText(ControlsRes.getString("MessageFrame.Level_menu"));              //$NON-NLS-1$
-      }
+			@Override
+			public void propertyChange(PropertyChangeEvent e) {
+				APPLET_MESSAGEFRAME.setTitle(ControlsRes.getString("MessageFrame.DefaultTitle")); //$NON-NLS-1$
+				editMenu.setText(ControlsRes.getString("MessageFrame.Edit_menu")); //$NON-NLS-1$
+				clearItem.setText(ControlsRes.getString("MessageFrame.Clear_menu")); //$NON-NLS-1$
+				levelMenu.setText(ControlsRes.getString("MessageFrame.Level_menu")); //$NON-NLS-1$
+			}
 
     });
   }

@@ -29,6 +29,8 @@ public class FontResizeTest {
 	JMenuBar menuBar;
 	JTable table;
 
+	protected int level;
+
 	@SuppressWarnings("deprecation")
 	FontResizeTest() {
 	    menuBar = new JMenuBar();
@@ -48,13 +50,10 @@ public class FontResizeTest {
 
 		table = new JTable(data, columnNames);
 
-		FontSizer.setFonts(table, FontSizer.getLevel());
-		FontSizer.addPropertyChangeListener("level", new PropertyChangeListener() { //$NON-NLS-1$
+		FontSizer.addPropertyChangeListener(FontSizer.PROPERTY_LEVEL, new PropertyChangeListener() { //$NON-NLS-1$
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
-				int level = ((Integer) e.getNewValue()).intValue();
-				FontSizer.setFonts(menuBar, level);
-				FontSizer.setFonts(table, level);
+				FontSizer.setFonts(frame);
 			}
 
 		});

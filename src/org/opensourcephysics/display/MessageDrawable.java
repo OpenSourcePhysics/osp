@@ -55,13 +55,13 @@ public class MessageDrawable implements Drawable {
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				System.err.println("Property changed ="+e);
-				if (e.getPropertyName().equals("level")) { //$NON-NLS-1$
+				if (e.getPropertyName().equals(FontSizer.PROPERTY_LEVEL)) { //$NON-NLS-1$
 					int level = ((Integer) e.getNewValue()).intValue();
 					setFontLevel(level);
 				}
 			}
 		};
-		FontSizer.addPropertyChangeListener("level", guiChangeListener); //$NON-NLS-1$
+		FontSizer.addPropertyChangeListener(FontSizer.PROPERTY_LEVEL, guiChangeListener); //$NON-NLS-1$
 	}
 	
 	public void setIgnoreRepaint(boolean ignore){

@@ -167,6 +167,7 @@ public class LibraryBrowser extends JPanel {
   protected FileFilter dlFileFilter = TRACKER_FILTER;
   protected boolean isRecentPathXML; 
 	protected LibraryManager libraryManager;
+	private int myFontLevel;
 
 	/**
 	 * Gets the shared singleton browser.
@@ -295,7 +296,9 @@ public class LibraryBrowser extends JPanel {
    * @param level the desired font level
    */
   public void setFontLevel(int level) {
-		FontSizer.setFonts(this.getTopLevelAncestor(), level);
+	    if (myFontLevel == level)
+	    	return;
+	  	FontSizer.setFonts(frame);
 		Font font = tabbedPane.getFont();	
 		tabbedPane.setFont(FontSizer.getResizedFont(font, level));
 		for (int i=0; i<tabbedPane.getTabCount(); i++) {
@@ -309,7 +312,7 @@ public class LibraryBrowser extends JPanel {
 		for (ResizableIcon next: icons) {
 			next.resize(FontSizer.getIntegerFactor());
 		}    
-		FontSizer.setFonts(OSPLog.getOSPLog(), level);
+		FontSizer.setFonts(OSPLog.getOSPLog());
   }
   
   /**
@@ -409,7 +412,7 @@ public class LibraryBrowser extends JPanel {
 	  		}
 	  	}
   	}
-  	FontSizer.setFonts(collectionsMenu, FontSizer.getLevel());
+  	FontSizer.setFonts(collectionsMenu);
   }
   
 	/**
@@ -955,7 +958,7 @@ public class LibraryBrowser extends JPanel {
     	Icon icon = primary? expandIcon: contractIcon;
     	Icon heavyIcon = primary? heavyExpandIcon: heavyContractIcon;
     	final TabTitle tabTitle = new TabTitle(icon, heavyIcon);
-    	FontSizer.setFonts(tabTitle, FontSizer.getLevel());
+    	FontSizer.setFont(tabTitle);
 	  	tabTitle.iconLabel.setToolTipText(primary? ToolsRes.getString("LibraryBrowser.Tooltip.Expand"): //$NON-NLS-1$
 	  			ToolsRes.getString("LibraryBrowser.Tooltip.Contract")); //$NON-NLS-1$
     	Action action = new AbstractAction() {
@@ -1825,7 +1828,7 @@ public class LibraryBrowser extends JPanel {
 	    	recentMenu.add(item);
 	    }
   	}
-  	FontSizer.setFonts(recentMenu, FontSizer.getLevel());
+  	FontSizer.setFonts(recentMenu);
   }
 
   /**

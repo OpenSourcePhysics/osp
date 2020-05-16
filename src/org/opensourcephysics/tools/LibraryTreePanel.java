@@ -294,6 +294,9 @@ public class LibraryTreePanel extends JPanel {
 		}
 	}
 
+	
+	private int myFontLevel;
+	
 	/**
 	 * Sets the font level.
 	 *
@@ -301,8 +304,12 @@ public class LibraryTreePanel extends JPanel {
 	 */
 	protected void setFontLevel(int level) {
 
+		if (myFontLevel == level)
+			return;
+		myFontLevel = level;
 		Object[] toSize = new Object[] { splitPane, editorPanel, editorbar, authorField, contactField, keywordsField,
 				authorLabel, contactLabel, keywordsLabel, metadataLabel, metadataDropdown };
+
 		FontSizer.setFonts(toSize, level);
 		EntryField.font = authorField.getFont();
 

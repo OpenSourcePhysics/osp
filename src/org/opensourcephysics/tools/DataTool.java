@@ -160,6 +160,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
   protected boolean isLoading = false;
   protected JButton loadDataFunctionsButton, saveDataFunctionsButton;
   protected boolean slopeExtended = false;
+protected int myPopupFontLevel;
+protected int myCopyMenuFontLevel;
 
   static {
     DATATOOL = new DataTool();
@@ -1794,41 +1796,41 @@ public void clearData() {
     removeAllTabs();
   }
 
-  /**
-   * Sets the font level.
-   *
-   * @param level the level
-   */
-  @Override
-public void setFontLevel(int level) {
-  	if (getJMenuBar()==null) return;
-    super.setFontLevel(level);
+	/**
+	 * Sets the font level.
+	 *
+	 * @param level the level
+	 */
+	@Override
+	public void setFontLevel(int level) {
+		if (getJMenuBar() == null)
+			return;
+		super.setFontLevel(level);
 		FontSizer.setFonts(emptyMenubar, level);
 		FontSizer.setFonts(fileMenu, level);
- 		FontSizer.setFonts(editMenu, level);
-    double factor = FontSizer.getFactor(level);
-    buttonHeight = (int) (factor*defaultButtonHeight);
-    if(tabbedPane!=null) {
-      for(int i = 0; i<getTabCount(); i++) {
-        getTab(i).setFontLevel(level);
-      }
-    }
-    if(dataBuilder!=null) {
-      dataBuilder.setFontLevel(level);
-    }
-    if (fontSizeGroup!=null) {
-	    Enumeration<AbstractButton> e = fontSizeGroup.getElements();
-	    for (; e.hasMoreElements();) {
-	      AbstractButton button = e.nextElement();
-	      int i = Integer.parseInt(button.getActionCommand());
-	      if(i==FontSizer.getLevel()) {
-	        button.setSelected(true);
-	      }
-	    }
-    }
-
-		FontSizer.setFonts(OSPLog.getOSPLog(), level);
-  }
+		FontSizer.setFonts(editMenu, level);
+		double factor = FontSizer.getFactor(level);
+		buttonHeight = (int) (factor * defaultButtonHeight);
+		if (tabbedPane != null) {
+			for (int i = 0; i < getTabCount(); i++) {
+				getTab(i).setFontLevel(level);
+			}
+		}
+		if (dataBuilder != null) {
+			dataBuilder.setFontLevel(level);
+		}
+		if (fontSizeGroup != null) {
+			Enumeration<AbstractButton> e = fontSizeGroup.getElements();
+			for (; e.hasMoreElements();) {
+				AbstractButton button = e.nextElement();
+				int i = Integer.parseInt(button.getActionCommand());
+				if (i == FontSizer.getLevel()) {
+					button.setSelected(true);
+				}
+			}
+		}
+		OSPLog.setFonts(level);
+	}
 
   @Override
   public void setVisible(boolean vis) {
@@ -2429,7 +2431,7 @@ public void finalize() throws Throwable {
             }
 
           });
-          FontSizer.setFonts(popup, FontSizer.getLevel());
+          FontSizer.setFonts(popup);
           popup.show(tabbedPane, e.getX(), e.getY()+8);
         }
       }
@@ -2626,7 +2628,7 @@ public void finalize() throws Throwable {
           }
         }
         copyMenu.add(copyImageItem);
-        FontSizer.setFonts(copyMenu, FontSizer.getLevel());
+        FontSizer.setFonts(copyMenu);
       }
 
     };
@@ -2971,7 +2973,9 @@ public void finalize() throws Throwable {
     emptyPasteMenu.add(emptyPasteTabItem);
     refreshGUI();
     refreshMenubar();
-    setFontLevel(FontSizer.getLevel());
+    int level = FontSizer.getLevel();
+    if (level != 0)
+    	setFontLevel(level);
     pack();
     // center this on the screen
     Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();

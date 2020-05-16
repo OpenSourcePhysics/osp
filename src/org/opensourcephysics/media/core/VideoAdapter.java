@@ -58,8 +58,6 @@ import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.Interactive;
 import org.opensourcephysics.display.OSPRuntime;
 
-import swingjs.api.JSUtilI;
-
 /**
  * This provides basic implementations of all Video methods. Subclasses should
  * provide a raw image for display--see ImageVideo or GifVideo for an example.
@@ -114,10 +112,12 @@ public abstract class VideoAdapter implements Video {
 		if (!visible) {
 			return;
 		}
-		Graphics2D g2 = (Graphics2D) g;
+		int xoffset = 0, yoffset = 0;
+		Graphics2D g2 = null;
 		if (((panel instanceof VideoPanel) && ((VideoPanel) panel).isDrawingInImageSpace()) || isMeasured) {
-			g2 = (Graphics2D) g2.create();
-			g2.transform(panel.getPixelTransform()); // world to screen
+			g2 = (Graphics2D) g.create();
+			AffineTransform at = panel.getPixelTransform();
+			g2.transform(at); // world to screen
 			if (panel instanceof VideoPanel) {
 				VideoPanel vidPanel = (VideoPanel) panel;
 				if (!vidPanel.isDrawingInImageSpace()) {
@@ -129,27 +129,22 @@ public abstract class VideoAdapter implements Video {
 				// use this video's coords for vid to world transform
 				g2.transform(coords.getToWorldTransform(frameNumber));
 			}
-			
-			OSPLog.debug("VideoAdapter draw video " + ++ntest2);
-			// draw the video or filtered image
-			if (filterStack.isEmpty() || !filterStack.isEnabled()) {
-				g2.drawImage(rawImage, 0, 0, panel);
-			} else {
-				g2.drawImage(getImage(), 0, 0, panel);
-			}
-			g2.dispose();
-		} else { // center image in pa	nel if not measured
+		} else { // center image in panel if not measured
 			double centerX = (panel.getXMax() + panel.getXMin()) / 2;
 			double centerY = (panel.getYMax() + panel.getYMin()) / 2;
-			int xoffset = panel.xToPix(centerX) - size.width / 2;
-			int yoffset = panel.yToPix(centerY) - size.height / 2;
-			// draw the video or filtered image
-			if (filterStack.isEmpty() || !filterStack.isEnabled()) {
-				g2.drawImage(rawImage, xoffset, yoffset, panel);
-			} else {
-				g2.drawImage(getImage(), xoffset, yoffset, panel);
-			}
+			xoffset = panel.xToPix(centerX) - size.width / 2;
+			yoffset = panel.yToPix(centerY) - size.height / 2;
 		}
+		OSPLog.debug("VideoAdapter draw video " + ++ntest2);
+		// draw the video or filtered image
+		if (filterStack.isEmpty() || !filterStack.isEnabled()) {
+			g2.drawImage(rawImage, xoffset, yoffset, panel);
+		} else {
+			g2.drawImage(getImage(), xoffset, yoffset, panel);
+		}
+		if (g2 != null)
+			g2.dispose();
+
 	}
 
 	/**

@@ -171,11 +171,25 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	protected javax.swing.Timer zoomTimer;
 	protected double dxmin, dxmax, dymin, dymax;
 	protected PropertyChangeListener guiChangeListener;
+	private int myFontLevel;
 
+	protected void dispose() {
+		//FontSizer.removePropertyChangeListener(FontSizer.PROPERTY_LEVEL, guiChangeListener); //$NON-NLS-1$
+		ToolsRes.removePropertyChangeListener("locale", guiChangeListener); //$NON-NLS-1$
+
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
 	public void repaint() {
-		if (getTopLevelAncestor() != null && getTopLevelAncestor().isVisible())
+		Component top = getTopLevelAncestor();
+		if (top == null || !top.isVisible()) {
+			//OSPLog.debug("DrawingPanel needless repaint!");
+		} else {
 			super.repaint();
-		}
+		}	
+	}
 	
 	/**
 	 * DrawingPanel constructor.
@@ -229,7 +243,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		guiChangeListener = new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
-				if (e.getPropertyName().equals("level")) { //$NON-NLS-1$
+				if (e.getPropertyName().equals(FontSizer.PROPERTY_LEVEL)) { //$NON-NLS-1$
 					int level = ((Integer) e.getNewValue()).intValue();
 					setFontLevel(level);
 				} else if (e.getPropertyName().equals("locale")) { //$NON-NLS-1$
@@ -242,7 +256,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 				}
 			}
 		};
-		FontSizer.addPropertyChangeListener("level", guiChangeListener); //$NON-NLS-1$
+//		FontSizer.addPropertyChangeListener(FontSizer.PROPERTY_LEVEL, guiChangeListener); //$NON-NLS-1$
 		ToolsRes.addPropertyChangeListener("locale", guiChangeListener); //$NON-NLS-1$
 	}
 	
@@ -252,8 +266,11 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 * @param level the level
 	 */
 	protected void setFontLevel(int level) {
+		if (level == myFontLevel)
+			return;
+		myFontLevel = level;
 		invalidateImage(); // validImage = false;
-		repaint();
+		// BH should not be necesssary repaint();
 	}
 
 	/**

@@ -58,6 +58,8 @@ import org.opensourcephysics.display.InteractivePanel;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TextPanel;
 import org.opensourcephysics.media.core.VideoIO.FinalizableLoader;
+import org.opensourcephysics.tools.FontSizer;
+import org.opensourcephysics.tools.ToolsRes;
 
 /**
  * This is an interactive drawing panel with a video player. It can draw videos

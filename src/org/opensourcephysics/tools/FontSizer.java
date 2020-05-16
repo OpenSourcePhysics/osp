@@ -21,7 +21,9 @@ import javax.swing.AbstractButton;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
@@ -29,6 +31,7 @@ import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.SwingPropertyChangeSupport;
 
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.ResizableIcon;
 
@@ -40,6 +43,8 @@ import org.opensourcephysics.display.ResizableIcon;
  */
 public class FontSizer {
 
+	public static final String PROPERTY_LEVEL = "level";
+	
 	/** Base font for text fields */
 	public static final Font TEXT_FONT = new JTextField().getFont();
 
@@ -92,14 +97,72 @@ public class FontSizer {
 		/** empty block */
 	}
 
+	public static int setFontsIfNot(int oldLevel, Object c) {
+        if (level != oldLevel) 
+      	  	setFonts(c, level);
+        return level;
+	}
+	
+	
+	public static int setMenuFonts(JMenu c) {
+		Font f = c.getMenuComponent(0).getFont();
+		Font newFont = (f == null ? null : getResizedFont(f, level));
+		if (f != null && newFont != f && !newFont.equals(f))
+			setFonts(c, level);
+		return level;
+	}
+
+
+	public static int setFonts(Object[] objectsToSize) {
+		Font f = ((Component)objectsToSize[0]).getFont();
+		Font newFont = (f == null ? null : getResizedFont(f, level));
+		if (f != null && newFont != f && !newFont.equals(f))
+			setFonts(objectsToSize, level);
+		return level;
+	}
+
+	public static int setFonts(Container c) {
+		Font f = c.getFont();
+		Font newFont = (f == null ? null : getResizedFont(f, level));
+		if (f != null && newFont != f && !newFont.equals(f))
+			setFonts(c, level);
+		return level;
+	}
+
+	
+	public static int setFont(Component c) {
+		Font f = c.getFont();
+		Font newFont = (f == null ? null : getResizedFont(f, level));
+		if (f != null && newFont != f && !newFont.equals(f))
+			c.setFont(newFont);
+		return level;
+	}
+
+	public static int setFont(AbstractButton button) {
+		Font f = button.getFont();
+		Font newFont = (f == null ? null : getResizedFont(f, level));
+		if (f != null && newFont != f && !newFont.equals(f)) {
+			button.setFont(newFont);
+			resizeIcon(button.getIcon());
+		    resizeIcon(button.getSelectedIcon());
+			resizeIcon(button.getRolloverIcon());
+			resizeIcon(button.getRolloverSelectedIcon());
+		}
+		return level;
+	}
+
+
+
 	/**
 	 * Sets the font level and informs all listeners.
 	 *
 	 * @param n a non-negative integer level
 	 */
 	public static void setLevel(int n) {
-		n = Math.min(n, MAX_LEVEL);
-		level = Math.max(n, 0);
+		n = Math.max(0, Math.min(n, MAX_LEVEL));
+		if (level == n)
+			return;
+		level = n;
 		factor = getFactor(level);
 		integerFactor = getIntegerFactor(level);
 
@@ -121,7 +184,7 @@ public class FontSizer {
 		font = getResizedFont(BUTTON_FONT, level);
 		UIManager.put("OptionPane.buttonFont", font); //$NON-NLS-1$
 
-		support.firePropertyChange("level", null, Integer.valueOf(level)); //$NON-NLS-1$
+		support.firePropertyChange(PROPERTY_LEVEL, null, Integer.valueOf(level)); //$NON-NLS-1$
 	}
 
 	/**
@@ -170,24 +233,25 @@ public class FontSizer {
 	 *
 	 * @param obj   the object
 	 * @param level the level
+	 * @return 
 	 */
-	public static void setFonts(Object obj, int level) {
+	public static int setFonts(Object obj, int level) {
 
 		if (obj == null || !OSPRuntime.allowSetFonts)
-			return; // BH 2020.04.23 may be the case for missing buttons in Tracker
+			return level; // BH 2020.04.23 may be the case for missing buttons in Tracker
 		
 		if (obj instanceof Object[]) {
 			for (Object next : ((Object[]) obj)) {
 				setFonts(next, level);
 			}
-			return;
+			return level;
 		}
 		
 		if (obj instanceof Collection) {
 			for (Object next : ((Collection<?>) obj)) {
 				setFonts(next, level);
 			}
-			return;
+			return level;
 		}
 		
 		double factor = getFactor(level);
@@ -199,6 +263,7 @@ public class FontSizer {
 		} else if (obj instanceof Component) {
 			setFontFactor((Component) obj, factor);
 		}
+		return level;
 	}
 
 	/**
@@ -221,7 +286,7 @@ public class FontSizer {
 	 */
 	public static Font getResizedFont(Font font, double factor) {
 		if (font == null) {
-			return null;
+			return font;
 		}
 		// get base font for this font
 		Font base = fontMap.get(font);
@@ -268,7 +333,7 @@ public class FontSizer {
 	 * @param listener the object requesting property change notification
 	 */
 	public static void addPropertyChangeListener(String property, PropertyChangeListener listener) {
-		if (property.equals("level")) { //$NON-NLS-1$
+		if (property.equals(PROPERTY_LEVEL)) { //$NON-NLS-1$
 			support.addPropertyChangeListener(property, listener);
 		}
 	}
@@ -301,11 +366,8 @@ public class FontSizer {
 			// get resized container font
 			Font font = getResizedFont(c.getFont(), factor);
 			Icon icon = null;
-			boolean resized = false;
 
-			// Only the top ancestor needs a call to repaint.
-
-			Component top = null;
+			// There should be no need to call repaint.
 
 			if (c instanceof JComponent) {
 				if (c instanceof JPopupMenu.Separator) {
@@ -316,23 +378,19 @@ public class FontSizer {
 				if (border instanceof TitledBorder) {
 					setFontFactor((TitledBorder) border, factor);
 				}
-				top = jc.getTopLevelAncestor();
-
 				// added by Doug Brown June 2015 to resize icons along with fonts
 				if (c instanceof AbstractButton) {
 					AbstractButton button = (AbstractButton) c;
 					icon = button.getIcon();
-					resized = fixIcon(button.getSelectedIcon());
-					resized = fixIcon(button.getRolloverIcon()) || resized;
-					resized = fixIcon(button.getRolloverSelectedIcon()) | resized;
+				    resizeIcon(button.getSelectedIcon());
+					resizeIcon(button.getRolloverIcon());
+					resizeIcon(button.getRolloverSelectedIcon());
 					if (c instanceof JMenu) {
 						JMenu m = (JMenu) c;
 						icon = m.getIcon();
 						setFontFactor(m.getPopupMenu(), factor);
 					}
 				}
-			} else {
-				top = c;
 			}
 			// iterate through child components
 			for (int i = 0, n = c.getComponentCount(); i < n; i++) {
@@ -357,74 +415,41 @@ public class FontSizer {
 						}
 					} catch (Exception e) {
 					}
+					
+					
 				}
 			}
+
 			// set the component font and its icon here
 
-			if (c != null && !font.equals(c.getFont())) {
+
+			if (font != null) {
+				if (font.equals(c.getFont())) {
+					if (c instanceof JLabel) {
+						OSPLog.debug("FS ???? " + ((JLabel) c).getText());
+						OSPLog.debug(font.toString());
+					} else 					if (c instanceof AbstractButton) {
+						OSPLog.debug("FS ???? " + ((AbstractButton) c).getText());
+						OSPLog.debug(font.toString());
+					} else {
+						OSPLog.debug("FontSizer already set! " + c.toString() + " " + c.hashCode());
+					}
+
+				}
 				c.setFont(font);
-				resized = true;
 			}
-
-			resized = (icon != null && fixIcon(icon)) || resized;
-
-			// BH actually, there is no need for a repaint
-//			if (resized && c != null && c.isVisible() && top != null && top.isVisible()) {
-//				scheduleRepaint(top);
-//			}
+			resizeIcon(icon);
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 	}
-//	private static boolean setMenuFont(JMenu m, Font font) {
-//		if (font.equals(m.getFont())) {
-//			// go no further if a menu
-//			return false;
-//		}
-//		m.setFont(font);
-//		for (int i = 0, n = m.getMenuComponentCount(); i < n; i++) {
-//			Component mc = m.getMenuComponent(i);
-//			if (!font.equals(mc.getFont())) {
-//				mc.setFont(font);
-//			}
-//			if (mc instanceof JMenu) {
-//				setMenuFont((JMenu) mc, font);
-//			} else if (mc instanceof JMenuItem){
-//				setFontFactor(mc, factor);				
-//			}
-//		}
-//		return true;
-//	}
 
-// BH turns out there is no need to schedule a repaint -- this is Swing!	
-//	
-//	private static Stack<Component> repaintSet = new Stack<Component>();
-//	private static Timer repaintTimer = new Timer(100, new ActionListener() {
-//
-//		@Override
-//		public void actionPerformed(ActionEvent e) {
-//			if (repaintSet.isEmpty())
-//				return;
-//			repaintSet.pop().repaint();
-//			repaintTimer.restart();
-//		}
-//		
-//	});
-//	
-//	private static void scheduleRepaint(Component top) {
-//		if (repaintSet.contains(top)) {
-//			return;
-//		}
-//		repaintTimer.stop();
-//		repaintSet.add(top);
-//		repaintTimer.restart();
-//	}
-
-	private static boolean fixIcon(Icon icon) {
-		return (icon != null && icon instanceof ResizableIcon
-				&& ((ResizableIcon) icon).resize(integerFactor));
+	private static int resizeIcon(Icon icon) {
+		if (icon != null && icon instanceof ResizableIcon)
+				((ResizableIcon) icon).resize(integerFactor);
+		return integerFactor;
 	}
 
 	/**
@@ -461,6 +486,8 @@ public class FontSizer {
 		}
 		b.setTitleFont(getResizedFont(font, factor));
 	}
+
+
 
 }
 

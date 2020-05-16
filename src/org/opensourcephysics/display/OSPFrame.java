@@ -63,6 +63,7 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
   protected BufferStrategy strategy;
   protected JPanel buttonPanel = new JPanel();
   protected Collection<JFrame> childFrames = new ArrayList<JFrame>();
+protected int myFontLevel;
 
   /**
    * Gets a file chooser that is the same for all OSPFrames.
@@ -91,12 +92,10 @@ public static JFileChooser getChooser() {
     topy = Math.min(topy+20, (int) d.getHeight()-100);
     setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
     // Changes font size to current level
-    setFontLevel(FontSizer.getLevel());
-    FontSizer.addPropertyChangeListener("level", new PropertyChangeListener() { //$NON-NLS-1$
+    FontSizer.addPropertyChangeListener(FontSizer.PROPERTY_LEVEL, new PropertyChangeListener() { //$NON-NLS-1$
       @Override
 	public void propertyChange(PropertyChangeEvent e) {
-        int level = ((Integer) e.getNewValue()).intValue();
-        setFontLevel(level);
+    	 FontSizer.setFonts(OSPFrame.this);
       }
 
     });
@@ -224,7 +223,8 @@ public void setTitle(String title) {
    */
   protected void setFontLevel(int level) {
     try {
-    	FontSizer.setFonts(getJMenuBar(), level);
+    	FontSizer.setFonts(this);
+//    	FontSizer.setFonts(getJMenuBar(), level);
         //FontSizer.setFonts(getContentPane(), level);   //WC: Bug in JS
     }catch(Exception ex) {
      	System.err.println("Err: OSPFrame line 220.");

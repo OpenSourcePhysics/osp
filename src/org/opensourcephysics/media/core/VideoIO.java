@@ -221,7 +221,7 @@ public class VideoIO {
 					: new File(OSPRuntime.chooserDir);
 			chooser = new AsyncFileChooser(dir);
 		}
-		FontSizer.setFonts(chooser, FontSizer.getLevel());
+		FontSizer.setFonts(chooser);
 		return chooser;
 	}
 

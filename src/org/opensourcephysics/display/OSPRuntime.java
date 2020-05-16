@@ -143,6 +143,10 @@ public class OSPRuntime {
 
 	public static boolean doCacheZipContents = true;//isJS; // for ResourceLoader
 
+	public static boolean drawDontFillAxes = true; // isJS for CoordAxesStep -- don't understand
+    // why this is not working now in Java; never worked in JavaScript
+
+
 	public static boolean logToJ2SMonitor = isJS; // for OSPRuntime
 
 	public static boolean resCacheEnabled = isJS; // for ResourceLoader 

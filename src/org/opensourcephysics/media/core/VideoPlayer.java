@@ -206,6 +206,7 @@ public void removeFrameListener(PropertyChangeListener c) {
   private ActionListener readoutListener, timeSetListener, goToListener;
   private String active;
   private boolean disabled = false;
+private int myFontLevel;
 
   /**
    * Constructs a VideoPlayer to play the specified video clip.
@@ -1606,15 +1607,13 @@ public void setLocale(Locale locale) {
     // update stepSizeButton
     stepSizeButton.setText(""+getVideoClip().getStepSize()); //$NON-NLS-1$
     // set font sizes
-    FontSizer.setFonts(readout, FontSizer.getLevel());
-    FontSizer.setFonts(rateSpinner, FontSizer.getLevel());
-    FontSizer.setFonts(stepSizeButton, FontSizer.getLevel());
     // update tooltips
     stepSizeButton.setToolTipText(MediaRes.getString("VideoPlayer.Button.StepSize.ToolTip")); //$NON-NLS-1$
     rateSpinner.setToolTipText(MediaRes.getString("VideoPlayer.Spinner.Rate.ToolTip")); //$NON-NLS-1$
     // if at last step, update play button
     if (stepNumber==getVideoClip().getStepCount()-1)
     	updatePlayButtons(clipControl.isPlaying());
+    FontSizer.setFonts(toolbar);
   }
 
   /**

@@ -372,9 +372,9 @@ public void propertyChange(PropertyChangeEvent e) {
    * @param level the level
    */
   protected void setFontLevel(int level) {
-    FontSizer.setFonts(this, level);
-    FontSizer.setFonts(undoButton, level);
-    FontSizer.setFonts(redoButton, level);
+    FontSizer.setFonts(this);
+//    FontSizer.setFonts(undoButton, level);
+//    FontSizer.setFonts(redoButton, level);
   }
 
   /**
