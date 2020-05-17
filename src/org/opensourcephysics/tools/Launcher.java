@@ -2887,7 +2887,7 @@ public class Launcher {
      */
     private LauncherFrame() {
       setName("LauncherTool"); //$NON-NLS-1$
-      try { // gets the image directly without using the resource loader
+      try { 
         java.net.URL url = ResourceLoader.getImageZipResource(OSPRuntime.OSP_ICON_FILE);
         ImageIcon icon = new ImageIcon(url);
         setIconImage(icon.getImage());

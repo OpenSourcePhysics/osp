@@ -48,6 +48,7 @@ import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ResourceLoader;
 import org.opensourcephysics.tools.Translator;
 
+import javajs.async.Assets;
 import javajs.async.AsyncFileChooser;
 import swingjs.api.JSUtilI;
 
@@ -63,9 +64,8 @@ public class OSPRuntime {
 	public static final String VERSION = "5.0.0"; //$NON-NLS-1$
 
 	private static boolean isMac;
-	private static String assetsPath;
-	private static String assetsFile;
-  public static int macOffset;  // shifts LR message box on Mac to avoid drag hot spot.
+
+	public static int macOffset;  // shifts LR message box on Mac to avoid drag hot spot.
 	
 
 	// BH note: Cannot use "final" here because then the constant will be set before the
@@ -74,6 +74,7 @@ public class OSPRuntime {
 			false;
 
 	static {
+
 		try {
 			// system properties may not be readable in some environments
 			isMac = (/** @j2sNative 1 ? false : */
@@ -91,18 +92,17 @@ public class OSPRuntime {
 			if (isJS) {
 				jsutil = ((JSUtilI) Class.forName("swingjs.JSUtil").newInstance());
 
+
 				// note - this is only for https
-				String[] corsEnabled = new String[] { 
-						"www.physlets.org", 
-						"https://physlets.org",
+				String[] corsEnabled = new String[] { "www.physlets.org", "https://physlets.org",
 						// "www.opensourcephysics.org",
-						"www.compadre.org/osp",
-						"www.compadre.org/profiles" };
+						"www.compadre.org/osp", "www.compadre.org/profiles" };
 				for (int i = corsEnabled.length; --i >= 0;) {
 					jsutil.addDirectDatabaseCall(corsEnabled[i]);
 				}
 			}
 
+			
 		} catch (Exception e) {
 			OSPLog.warning("OSPRuntime could not create jsutil");
 		}
@@ -110,23 +110,20 @@ public class OSPRuntime {
 	
 	static {
 		try {
-			if (isJS) {
-				Object o=OSPRuntime.jsutil.getAppletInfo("assets");
-				if(o != null) { // assets parameter define in Info block
-					String filePath=o.toString();
-					int index=filePath.lastIndexOf('/');
-					assetsPath=filePath.substring(0, index+1);
-					assetsFile=filePath.substring(index+1, filePath.length());
-					OSPLog.debug("assetsPath="+assetsPath);
-					OSPLog.debug("assetsFile="+assetsFile);
-					ResourceLoader.setAssetPath( assetsPath, assetsFile);
-				}
+			Assets.add(new Assets.Asset("osp", "osp-assets.zip", "org/opensourcephysics/resources"));
+			Assets.add(new Assets.Asset("tracker", "tracker-assets.zip",
+					"org/opensourcephysics/cabrillo/tracker/resources"));
+			Assets.add(new Assets.Asset("physlets", "physlet-assets.zip", new String[] { "opticsimages", "images" }));
+			// add the Info.assets last so that it can override these defaults
+			if (OSPRuntime.isJS) {
+				Assets.add(OSPRuntime.jsutil.getAppletInfo("assets"));
 			}
 		} catch (Exception e) {
 			OSPLog.warning("Error reading assets path. ");
 		}
+
 	}
-	
+		
 	public static boolean isBHTest = isJS;
 	
 	public static boolean allowSetFonts = true;//!isBHTest; // for testing
