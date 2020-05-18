@@ -2601,8 +2601,6 @@ public class ResourceLoader {
 
 	}
 
-	static String eclipseOSPPrefix, eclipseTrackerPrefix;
-
 	// ---- Localization
 	static private final String JAR_TOOL_BUNDLE_NAME = "org.opensourcephysics.resources.tools.tools"; //$NON-NLS-1$
 
@@ -2611,45 +2609,17 @@ public class ResourceLoader {
 		if (resourceLocale.getLanguage() == "en") {
 			Properties p = new Properties();
 			String name = bundleName.replaceAll("\\.", "/") + ".properties";
-			String prefix = null;
 			try {
-				prefix = (name.indexOf("tracker") >= 0 ? eclipseTrackerPrefix : eclipseOSPPrefix);
-				String fname = prefix == null ? name : prefix + name;
-				File f = new File(fname);
-				InputStream fis = new FileInputStream(f);
-				p.load(fis);
+				p.load(Assets.getAssetStream(name));
+				OSPLog.debug("ResourceLoader found " + p.size() 
+				    + " properties in\n" + Assets.getURLFromPath(name).toString());
 				return new Bundle(p);
+				
 			} catch (Exception e) {
-				if (!OSPRuntime.isJS && eclipseOSPPrefix == null) {
-					name = "src/" + name;
-					eclipseOSPPrefix = "";
-					try {
-						File f = new File(name);
-						OSPLog.debug("ResourceLoader trying " + f.getAbsolutePath());
-						InputStream is = new FileInputStream(f);
-						p.load(is);
-						eclipseOSPPrefix = "src/";
-						eclipseTrackerPrefix = "../tracker/";
-						return new Bundle(p);
-					} catch (Exception e1) {
-						name = "../osp/" + name;
-						try {
-							File f = new File(name);
-							OSPLog.debug("ResourceLoader trying " + f.getAbsolutePath());
-							InputStream is = new FileInputStream(f);
-							p.load(is);
-							eclipseOSPPrefix = "../osp/src/";
-							eclipseTrackerPrefix = "src/";
-							OSPLog.debug("ResourceLoader success!");
-							return new Bundle(p);
-						} catch (Exception e2) {
-						}
-					}
-				}
 			}
+			OSPLog.debug("ResourceLoader could not find resource " + bundleName);
+			OSPLog.warning("ResourceLoader could not find resource " + bundleName);
 		}
-		OSPLog.debug("ResourceLoader could not find resource " + bundleName);
-		OSPLog.warning("ResourceLoader could not find resource " + bundleName);
 		return new Bundle(ResourceBundle.getBundle(bundleName, resourceLocale,
 				ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES)));
 	}
@@ -2661,7 +2631,7 @@ public class ResourceLoader {
 	private static Locale myLocale = null;
 	static private Bundle myResourceBundle;
 
-	private static void getResourceBundle() {
+	private static void getMyResourceBundle() {
 		myResourceBundle = (myLocale == null ? getBundle(JAR_TOOL_BUNDLE_NAME) : getBundle(JAR_TOOL_BUNDLE_NAME, myLocale));
 	}
 
@@ -2714,7 +2684,7 @@ public class ResourceLoader {
 
 		};
 
-		getResourceBundle();
+		getMyResourceBundle();
 		JButton yesButton = new JButton(myResourceBundle.getString("JarTool.Yes")); //$NON-NLS-1$
 		yesButton.setActionCommand("yes"); //$NON-NLS-1$
 		yesButton.addMouseListener(mouseListener);
@@ -2840,9 +2810,7 @@ public class ResourceLoader {
 	 * @return
 	 */
 	public static URL getImageZipResource(String imagePath) {
-		if (true || OSPRuntime.isJS)
-			return getAssetURL(imagePath);
-		return ResourceLoader.class.getResource(imagePath);
+		return Assets.getURLFromPath(imagePath);
 	}
 
 
