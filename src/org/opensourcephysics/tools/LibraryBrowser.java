@@ -168,6 +168,7 @@ public class LibraryBrowser extends JPanel {
   protected boolean isRecentPathXML; 
 	protected LibraryManager libraryManager;
 	private int myFontLevel;
+	public static final String PROPERTY_LIBRARY_TARGET = "target";
 
 	/**
 	 * Gets the shared singleton browser.
@@ -1071,7 +1072,7 @@ public class LibraryBrowser extends JPanel {
 	    		record = new LibraryResource(""); //$NON-NLS-1$
 	    		record.setTarget(path);
 	    	}
-	    	LibraryBrowser.this.firePropertyChange("target", null, record); //$NON-NLS-1$
+	    	LibraryBrowser.this.firePropertyChange(PROPERTY_LIBRARY_TARGET, null, record); //$NON-NLS-1$
 		  }		
 		};
     commandLabel = new JLabel();
@@ -1379,12 +1380,14 @@ public class LibraryBrowser extends JPanel {
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				String propertyName = e.getPropertyName();
-				if (propertyName.equals("collection_edit")) { //$NON-NLS-1$
+				switch (propertyName) {
+				default:
+					return;
+				case "collection_edit":
 					refreshGUI();
 					return;
-				}
-				if (!propertyName.equals("target")) { //$NON-NLS-1$
-					return;
+				case PROPERTY_LIBRARY_TARGET:
+					break;
 				}
 
 				LibraryResource record = null;
@@ -1682,7 +1685,7 @@ public class LibraryBrowser extends JPanel {
 			setCursor(Cursor.getDefaultCursor());
 		} else {
 			// forward the event to browser listeners
-			firePropertyChange("target", oldTarget, record); //$NON-NLS-1$
+			firePropertyChange(PROPERTY_LIBRARY_TARGET, oldTarget, record); //$NON-NLS-1$
 		}
 }
 

@@ -812,7 +812,7 @@ public class LibraryTreePanel extends JPanel {
 				if (OSPRuntime.isPopupTrigger(e)) {
 					getPopup(node).show(tree, e.getX(), e.getY() + 8);
 				} else if (e.getClickCount() == 2 && node.getTarget() != null) {
-					firePropertyChange("target", null, node); //$NON-NLS-1$
+					firePropertyChange(LibraryBrowser.PROPERTY_LIBRARY_TARGET, null, node); //$NON-NLS-1$
 				}
 			}
 		};

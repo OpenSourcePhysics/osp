@@ -140,6 +140,8 @@ public class LibraryComPADRE {
 	 * @return true if one or more ComPADRE records were successfully loaded
 	 */
 	protected static void loadResources(LibraryTreeNode treeNode, Runnable onSuccess, Runnable onFailure) {
+		if (!(treeNode.record instanceof LibraryCollection))
+			return;
 		LibraryCollection collection = (LibraryCollection) treeNode.record;
 		boolean[] success = new boolean[1];
 		int[] index = new int[1];
@@ -179,10 +181,10 @@ public class LibraryComPADRE {
 					} catch (SAXException | IOException | ParserConfigurationException e) {
 					}
 					if (n == 0) {
-					collection.setDescription(null);
-					collection.setTarget(null);
-					onFailure.run();
-					return null;
+						collection.setDescription(null);
+						collection.setTarget(null);
+						onFailure.run();
+						return null;
 					}
 
 					Runnable[] nextIndex = new Runnable[1];
@@ -207,7 +209,7 @@ public class LibraryComPADRE {
 					};
 
 					int ni = n;
-					
+
 					NodeList l = list;
 					nextIndex[0] = new Runnable() {
 
@@ -222,11 +224,11 @@ public class LibraryComPADRE {
 						}
 
 					};
-					
+
 					start(nextIndex[0]);
 					return null;
 				}
-				
+
 			});
 
 		} catch (Exception e) {
@@ -276,7 +278,7 @@ public class LibraryComPADRE {
 		} else {
 			onNothingNew.run();
 		}
-		
+
 	}
 
 	/**
@@ -321,7 +323,7 @@ public class LibraryComPADRE {
 			}
 		} catch (Exception e) {
 		}
-			}
+	}
 
 	/**
 	 * Reloads a ComPADRE record into a LibraryTreeNode.
