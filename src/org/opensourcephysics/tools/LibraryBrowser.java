@@ -302,7 +302,7 @@ public class LibraryBrowser extends JPanel {
 	public void setFontLevel(int level) {
 		if (myFontLevel == level)
 			return;
-		FontSizer.setFonts(frame);
+		myFontLevel = FontSizer.setFonts(frame);
 		Font font = tabbedPane.getFont();
 		tabbedPane.setFont(FontSizer.getResizedFont(font, level));
 		for (int i = 0; i < tabbedPane.getTabCount(); i++) {
@@ -416,7 +416,7 @@ public class LibraryBrowser extends JPanel {
 				}
 			}
 		}
-		FontSizer.setFonts(collectionsMenu);
+		FontSizer.setMenuFonts(collectionsMenu);
 	}
 
 	/**
@@ -1879,7 +1879,7 @@ public class LibraryBrowser extends JPanel {
 				recentMenu.add(item);
 			}
 		}
-		FontSizer.setFonts(recentMenu);
+		FontSizer.setMenuFonts(recentMenu);
 	}
 
 	/**

@@ -105,10 +105,12 @@ public class FontSizer {
 	
 	
 	public static int setMenuFonts(JMenu c) {
-		Font f = c.getMenuComponent(0).getFont();
-		Font newFont = (f == null ? null : getResizedFont(f, level));
-		if (f != null && newFont != f && !newFont.equals(f))
-			setFonts(c, level);
+		if (c.getMenuComponentCount() > 0) {
+			Font f = c.getMenuComponent(0).getFont();
+			Font newFont = (f == null ? null : getResizedFont(f, level));
+			if (f != null && newFont != f && !newFont.equals(f))
+				setFonts(c, level);
+		}
 		return level;
 	}
 
