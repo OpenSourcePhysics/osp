@@ -40,6 +40,12 @@ import java.io.File;
  * @version 1.0
  */
 public interface VideoType {
+	
+	public static final String TYPE_GIF = "Gif"; //$NON-NLS-1$
+	public static final String TYPE_IMAGE = "Image"; //$NON-NLS-1$
+
+
+
   /**
    * Opens a new video with the specified name.
    *
@@ -121,6 +127,15 @@ public interface VideoType {
 			  return true;
 	  return false;
   }
+  
+  default String _toString() {
+	  String s = "";
+	  for (VideoFileFilter f : getFileFilters()) {
+		  s += " " + f;
+	  }
+		return "[" + getTypeName() + " "  + s + "]";
+	}
+
 
 }
 

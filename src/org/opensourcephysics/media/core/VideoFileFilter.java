@@ -31,6 +31,7 @@
  */
 package org.opensourcephysics.media.core;
 import java.io.File;
+import java.util.Arrays;
 import java.util.TreeSet;
 
 /**
@@ -174,6 +175,12 @@ public class VideoFileFilter extends VideoIO.SingleExtFileFilter implements Comp
 	  	return getDescription().compareTo(filter.getDescription());
 	  }
 	  
+	  
+	  @Override
+	  public String toString() {
+		  String s = Arrays.toString(extensions);
+		  return s.substring(1, s.length() - 1);
+	  }
 
 }
 

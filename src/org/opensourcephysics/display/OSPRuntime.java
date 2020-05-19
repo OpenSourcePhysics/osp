@@ -134,6 +134,8 @@ public class OSPRuntime {
 
 	public static boolean canRecordMovieFiles = !isJS; // MovieVideoType.recordable default
 
+	public static final boolean checkImages = false; // LibraryTreeNode
+
 	public static boolean checkTempDirCache = isJS; // for ResourceLoader.
 
 	public static boolean checkZipLoaders = !isJS;  // for ResourceLloader
@@ -159,7 +161,7 @@ public class OSPRuntime {
 	static {
 		if (!isJS && !unzipFiles)
 			OSPLog.warning("OSPRuntime.unzipFiles setting is false for BH testing");
-		if (!isJS && skipDisplayOfPDF)
+		if (skipDisplayOfPDF)
 			OSPLog.warning("OSPRuntime.skipDisplayOfPDF true for BH testing");
 	}
 	public static final String tempDir = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$  // BH centralized

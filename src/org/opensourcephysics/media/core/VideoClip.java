@@ -35,6 +35,7 @@ import java.awt.Frame;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -738,41 +739,60 @@ public class VideoClip {
 			if (control.getPropertyNamesRaw().contains("playallsteps")) { //$NON-NLS-1$
 				playAllSteps = control.getBoolean("playallsteps"); //$NON-NLS-1$
 			}
-			path = child.getString("path"); //$NON-NLS-1$
-			video = VideoIO.getVideo(path, base, null);
-			if (video == null && path != null && !VideoIO.isCanceled()) {
-				if (OSPRuntime.isJS) {
-					if (ResourceLoader.getResource(path) != null) { // resource exists but not loaded
-						OSPLog.info("\"" + path + "\" could not be opened"); //$NON-NLS-1$ //$NON-NLS-2$
-					}
-					JOptionPane.showMessageDialog(null, "\"" + path + "\" could not be opened");
-				}
+			String childPath = child.getString("path");
+			path = XML.getResolvedPath(childPath, base); // Critical here for TrackerSampler Mechanics
+																		// FreeFall MotionDiagram video
+			base = XML.getDirectoryPath(path);
+			path = XML.getName(path);
+			
+			ArrayList<VideoType> types = VideoIO.getVideoTypesForPath(path);
+			switch (types.size()) {
+			case 0:
+				break;
+			case 1:
+				video = VideoIO.getVideo(path, base, types.get(0));
+				break;
+			default:
+				video = VideoIO.getVideo(path, base, null);
+				break;
+			}
 
-				/**
-				 * Java only -- transpiler can skip this
-				 * 
-				 * @j2sNative
-				 */
-				{
-					if (ResourceLoader.getResource(path) != null) { // resource exists but not loaded
-						OSPLog.info("\"" + path + "\" could not be opened"); //$NON-NLS-1$ //$NON-NLS-2$
-					} else {
-						int response = JOptionPane.showConfirmDialog(null, "\"" + path + "\" " //$NON-NLS-1$ //$NON-NLS-2$
-								+ MediaRes.getString("VideoClip.Dialog.VideoNotFound.Message"), //$NON-NLS-1$
-								MediaRes.getString("VideoClip.Dialog.VideoNotFound.Title"), //$NON-NLS-1$
-								JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-						if (response == JOptionPane.YES_OPTION) {
-							VideoIO.getChooser().setSelectedFile(new File(path));
-							@SuppressWarnings("deprecation")
-							File[] files = VideoIO.getChooserFiles("open");
-							if (files != null && files.length > 0) {
-								String path = XML.getAbsolutePath(files[0]);
-								video = VideoIO.getVideo(path, null);
-							}
-						}
-
-					}
+			if (video == null && !VideoIO.isCanceled()) {
+				if (ResourceLoader.getResource(path) != null) { // resource exists but not loaded
+					OSPLog.info("\"" + path + "\" could not be opened"); //$NON-NLS-1$ //$NON-NLS-2$
 				}
+				JOptionPane.showMessageDialog(null,
+						"\"" + XML.getName(path) + "\" could not be opened" + (types.size() == 0
+								? " because no video adapter for this type of video is available on your computer."
+								: "."));
+//				}
+//
+//				/**
+//				 * Java only -- transpiler can skip this
+//				 * 
+//				 * @j2sNative
+//				 */
+//				{
+//					if (ResourceLoader.getResource(path) != null) { // resource exists but not loaded
+//						OSPLog.info("\"" + path + "\" could not be opened"); //$NON-NLS-1$ //$NON-NLS-2$
+//					} else {
+//
+//						int response = JOptionPane.showConfirmDialog(null, "\"" + path + "\" " //$NON-NLS-1$ //$NON-NLS-2$
+//								+ MediaRes.getString("VideoClip.Dialog.VideoNotFound.Message"), //$NON-NLS-1$
+//								MediaRes.getString("VideoClip.Dialog.VideoNotFound.Title"), //$NON-NLS-1$
+//								JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+//						if (response == JOptionPane.YES_OPTION) {
+//							VideoIO.getChooser().setSelectedFile(new File(path));
+//							@SuppressWarnings("deprecation")
+//							File[] files = VideoIO.getChooserFiles("open");
+//							if (files != null && files.length > 0) {
+//								String path = XML.getAbsolutePath(files[0]);
+//								video = VideoIO.getVideo(path, null);
+//							}
+//						}
+//
+//					}
+//				}
 			}
 			if (video != null) {
 				if (filters != null) {
@@ -788,7 +808,6 @@ public class VideoClip {
 						((ImageVideo) video).setFrameDuration(dt);
 					}
 				}
-
 			}
 			clip = new VideoClip(video);
 			if (path != null) {
@@ -803,6 +822,7 @@ public class VideoClip {
 			} else {
 				finalizeLoading();
 			}
+
 			return clip;
 		}
 

@@ -811,9 +811,22 @@ public class LibraryTreePanel extends JPanel {
 				LibraryTreeNode node = (LibraryTreeNode) tree.getLastSelectedPathComponent();
 				if (OSPRuntime.isPopupTrigger(e)) {
 					getPopup(node).show(tree, e.getX(), e.getY() + 8);
-				} else if (e.getClickCount() == 2 && node.getTarget() != null) {
-					firePropertyChange(LibraryBrowser.PROPERTY_LIBRARY_TARGET, null, node); //$NON-NLS-1$
+				} else if (node.getTarget() != null && isSelect(e)) {
+					// to LibraryBrowser
+					firePropertyChange(LibraryBrowser.PROPERTY_LIBRARY_TARGET, null, node);
 				}
+			}
+
+			/**
+			 * BH allowing for single-click on icon. Double clicks are 
+			 * difficult to handle.
+			 * 
+			 * @param e
+			 * @return
+			 */
+			private boolean isSelect(MouseEvent e) {
+				return (/** @j2sNative e.bdata.jqevent.target.id.indexOf("icon")>=0 || */
+						e.getClickCount() == 2);
 			}
 		};
 		// create toolbar and buttons
@@ -1531,7 +1544,7 @@ public class LibraryTreePanel extends JPanel {
 		if (ignoreChanges)
 			return;
 		isChanged = true;
-		firePropertyChange("collection_edit", null, null); //$NON-NLS-1$
+		firePropertyChange(LibraryBrowser.PROPERTY_LIBRARY_EDITED, null, null); //$NON-NLS-1$
 	}
 
 	/**

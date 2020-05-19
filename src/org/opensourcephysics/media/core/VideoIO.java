@@ -496,14 +496,16 @@ public class VideoIO {
 		return null;
 	}
 
+	private ArrayList<VideoType> found = new ArrayList<VideoType>();
+
 	/**
 	 * Gets an array of video types that can open files with a given extension.
 	 *
 	 * @param ext the extension
 	 * @return the video types
 	 */
-	private static ArrayList<VideoType> getVideoTypesForExtension(String ext) {
-		ext = ext.toLowerCase();
+	public static ArrayList<VideoType> getVideoTypesForPath(String path) {
+		String ext = (path.indexOf(".") >= 0 ? XML.getExtension(path) : path).toLowerCase();
 		ArrayList<VideoType> found = new ArrayList<VideoType>();
 		// first add types for which ext is the default extension
 		ArrayList<VideoType> vidTypes = getVideoTypes(false);
@@ -525,7 +527,7 @@ public class VideoIO {
 		}
 		return found;
 	}
-
+	
 	/**
 	 * Gets an array of available video types
 	 *
@@ -590,8 +592,7 @@ public class VideoIO {
 			return null;
 
 		// try other allowed video types for the file extension
-		String extension = XML.getExtension(path);
-		ArrayList<VideoType> allTypes = getVideoTypesForExtension(extension);
+		ArrayList<VideoType> allTypes = getVideoTypesForPath(path);
 //		ArrayList<VideoType> allowedTypes = new ArrayList<VideoType>();
 //		boolean skipMovies = !MovieFactory.hasVideoEngine();
 //		for (int i = 0; i < allTypes.size(); i++) {

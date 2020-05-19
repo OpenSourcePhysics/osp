@@ -15,23 +15,19 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
-import java.util.zip.ZipEntry;
 
 import javax.imageio.ImageIO;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.display.OSPRuntime;
-import org.opensourcephysics.media.core.VideoFileFilter;
 import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.media.gif.GifDecoder;
 import org.opensourcephysics.media.mov.MovieFactory;
@@ -440,58 +436,8 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 	 * @return true if changed
 	 */
 	protected boolean setTarget(String path) {
-		if (record.setTarget(path)) {
-			// target has changed
-			if (path == null)
-				path = ""; //$NON-NLS-1$
-			if (path.toLowerCase().endsWith(".trk") || path.toLowerCase().endsWith(".trz")) //$NON-NLS-1$ //$NON-NLS-2$
-				setType(LibraryResource.TRACKER_TYPE);
-			else if (path.indexOf("EJS") > -1) { //$NON-NLS-1$
-				setType(LibraryResource.EJS_TYPE);
-			} else if (path.toLowerCase().endsWith(".zip")) { //$NON-NLS-1$
-				Runnable libNodeSetZipTypeRunner = new Runnable() {
-					@Override
-					public void run() {
-						String zipPath = getAbsoluteTarget();
-						Map<String, ZipEntry> files = ResourceLoader.getZipContents(zipPath);
-						for (String next : files.keySet()) {
-							if (next.endsWith(".trk")) { //$NON-NLS-1$
-								setType(LibraryResource.TRACKER_TYPE);
-								break;
-							}
-						}
-					}
-				};
-				Thread libNodeSetZipType = new Thread(libNodeSetZipTypeRunner);
-				libNodeSetZipType.setName("libNodeSetZipType");
-				libNodeSetZipType.start();
-			} else if (path.equals("")) { //$NON-NLS-1$
-				if (getHTMLPath() == null)
-					setType(LibraryResource.UNKNOWN_TYPE);
-				else
-					setType(LibraryResource.HTML_TYPE);
-			} else {
-				boolean found = false;
-				for (FileFilter next : LibraryResource.imageFilters) {
-					if (found)
-						break;
-					VideoFileFilter filter = (VideoFileFilter) next;
-					for (String ext : filter.getExtensions()) {
-						if (path.toUpperCase().endsWith("." + ext.toUpperCase())) { //$NON-NLS-1$
-							setType(LibraryResource.IMAGE_TYPE);
-							found = true;
-						}
-					}
-				}
-				for (String ext : VideoIO.getVideoExtensions()) {
-					if (found)
-						break;
-					if (path.toUpperCase().endsWith("." + ext.toUpperCase())) { //$NON-NLS-1$
-						setType(LibraryResource.VIDEO_TYPE);
-						found = true;
-					}
-				}
-			}
+		if (record.setTarget(path)) {			
+			setType(LibraryResource.getTypeFromPath(path, getHTMLPath()));
 			LibraryTreePanel.htmlPanesByNode.remove(this);
 			record.setThumbnail(null);
 			treePanel.showInfo(this);
@@ -762,8 +708,6 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 		return VideoIO.writeImageFile(thumbnailImage, path);
 	}
 
-	static boolean checkImages = !OSPRuntime.isJS;
-
 	/**
 	 * A SwingWorker class to create new thumbnails.
 	 */
@@ -786,20 +730,22 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 			if (ext != null && "GIF".equals(ext.toUpperCase())) { //$NON-NLS-1$
 				// GIF files
 				int status = GifDecoder.STATUS_OK;
-				if (checkImages) {
-					GifDecoder decoder = new GifDecoder();
-					status = decoder.read(sourcePath);
+				try {
+					if (OSPRuntime.checkImages) {
+						GifDecoder decoder = new GifDecoder();
+						status = decoder.read(sourcePath);
+					}
+				} catch (Exception e) {
 				}
 				if (status != GifDecoder.STATUS_OK) { // error
 					OSPLog.fine("failed to create thumbnail for GIF " + thumbPath); //$NON-NLS-1$
 					doneAsync(null);
 					return null;
 				}
-				// fall through
 			} else if (ext != null && ("PNG".equals(ext.toUpperCase()) || ext.toUpperCase().contains("JP"))) { //$NON-NLS-1$ //$NON-NLS-2$
 				// PNG and JPEG files
 				try {
-					if (checkImages) {
+					if (OSPRuntime.checkImages) {
 						URL url = new URL(ResourceLoader.getURIPath(sourcePath));
 						ImageIO.read(url);
 					}
@@ -808,29 +754,29 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 					doneAsync(null);
 					return null;
 				}
-				// fall through
 			} else if (ext != null && ("ZIP".equals(ext.toUpperCase()) || "TRZ".equals(ext.toUpperCase()))) { //$NON-NLS-1$ //$NON-NLS-2$
 				// ZIP files
 				// look for image file in zip with name that includes "_thumbnail"
-					thumbFile = new File(thumbPath);
-					ResourceLoader.getZipEntryBytesAsync(sourcePath + "!/*_thumbnail", thumbFile, new Function<byte[], Void>() {
+				thumbFile = new File(thumbPath);
+				ResourceLoader.getZipEntryBytesAsync(sourcePath + "!/*_thumbnail", thumbFile,
+						new Function<byte[], Void>() {
 
-						@Override
-						public Void apply(byte[] bytes) {
-							if (bytes == null)
-							OSPLog.fine("failed to create thumbnail for " + thumbPath); //$NON-NLS-1$
-							doneAsync(bytes == null ? null : thumbFile);
-							return null;
-						}
-						
-					});
+							@Override
+							public Void apply(byte[] bytes) {
+								if (bytes == null)
+									OSPLog.fine("failed to create thumbnail for " + thumbPath); //$NON-NLS-1$
+								doneAsync(bytes == null ? null : thumbFile);
+								return null;
+							}
+
+						});
 				return null;
 			} else {
 				// This better be a movie! - not implemented yet for JS?
 				thumbFile = MovieFactory.createThumbnailFile(defaultThumbnailDimension, sourcePath, thumbPath);
 				doneAsync(thumbFile);
 				return null;
-			}			
+			}
 			// Gif and JPG only
 			ResourceLoader.copyURLtoFileAsync(sourcePath, thumbPath, new Function<File, Void>() {
 
@@ -839,7 +785,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 					doneAsync(thumbFile);
 					return null;
 				}
-				
+
 			});
 			return null;
 		}

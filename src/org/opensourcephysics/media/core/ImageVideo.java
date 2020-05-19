@@ -99,7 +99,7 @@ public class ImageVideo extends VideoAdapter {
 		readOnly = fileBased;
 		if (basePath != null) {
 			baseDir = basePath; // could be .....trz!
-			setProperty("absolutePath", basePath + "/" + imageName);
+			setProperty("absolutePath", (imageName.startsWith(basePath) ? imageName : basePath + "/" + imageName));
 		}
 		append(imageName, sequence);
 	}
@@ -840,6 +840,11 @@ public class ImageVideo extends VideoAdapter {
 	@Override
 	public String getTypeName() {
 		return ImageVideoType.TYPE_IMAGE;
+	}
+	
+	@Override
+	public String toString() {
+		return this.getTypeName() + " " + this.frameCount;
 	}
 
 }

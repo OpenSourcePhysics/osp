@@ -81,7 +81,7 @@ public class Assets {
 			}
 
 		} catch (Exception e) {
-			System.err.println("AssetInfo could not create swinjs.JSUtil instance");
+			System.err.println("Assets could not create swinjs.JSUtil instance");
 		}
 	}
 
@@ -197,7 +197,7 @@ public class Assets {
 			Asset a = (Asset) o;
 			if (a.name == null || a.zipPath == null || a.classPath == null && a.classPaths == null
 					|| a.classPath != null && a.classPaths != null) {
-				throw new NullPointerException("AssetInfo could not parse " + o);
+				throw new NullPointerException("Assets could not parse " + o);
 			}
 			if (a.classPaths == null) {
 				// not possible in Java, but JavaScript may be passing an array of class paths
@@ -516,7 +516,7 @@ public class Assets {
 			fileNames.put(fileName, zipEntry); // Java has no use for the ZipEntry, but JavaScript can read it.
 		}
 		input.close();
-		System.out.println("AssetInfo: " + n + " zip entries found in " + url); //$NON-NLS-1$
+		System.out.println("Assets: " + n + " zip entries found in " + url); //$NON-NLS-1$
 		return fileNames;
 	}
 

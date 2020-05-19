@@ -46,8 +46,6 @@ import org.opensourcephysics.media.core.VideoType;
  */
 public class GifVideoType implements VideoType {
 	
-	public static final String TYPE_GIF = "Gif"; //$NON-NLS-1$
-	
   protected static VideoFileFilter gifFilter
   	= new VideoFileFilter("gif", new String[] {"gif"}); //$NON-NLS-1$ //$NON-NLS-2$
 

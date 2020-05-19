@@ -30,9 +30,9 @@
  * please see <http://www.opensourcephysics.org/>.
  */
 package org.opensourcephysics.media.core;
+
 import java.io.File;
 import java.io.IOException;
-import java.util.TreeSet;
 
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
@@ -45,183 +45,178 @@ import org.opensourcephysics.controls.XMLControlElement;
  * @version 1.0
  */
 public class ImageVideoType implements VideoType {
-	
-	public static final String TYPE_IMAGE = "Image"; //$NON-NLS-1$
-	
-  protected static TreeSet<VideoFileFilter> imageFileFilters 
-			= new TreeSet<VideoFileFilter>();
 
-  private VideoFileFilter singleTypeFilter; // null for general type
+	private VideoFileFilter[] fileFilters;
 
-  /**
-   * Default constructor uses all available file types.
-   */
-  public ImageVideoType() {  	
-  }
-  
-  /**
-   * Constructor with a file filter for a specific image type.
-   * 
-   * @param filter the file filter 
-   */
-  public ImageVideoType(VideoFileFilter filter) {
-  	this();
-  	if (filter!=null) {
-			singleTypeFilter = filter;
-			imageFileFilters.add(filter);
-  	}
-  }
-
-  /**
-   * Opens a video file as an ImageVideo.
-   *
-   * @param file the video file
-   * @return a new image video
-   */
-  public Video getVideo(File file) {
-    try {
-    	Video video = new ImageVideo(file.getAbsolutePath(), null, true);
-      video.setProperty("video_type", this); //$NON-NLS-1$
-      return video;
-    } catch(IOException ex) {
-      return null;
-    }
-  }
-  /**
-   * Opens a named image as an ImageVideo.
-   *
-   * @param name the name of the image
-   * @return a new image video
-   */
-  @Override
-public Video getVideo(String name) { 
-	  return getVideo(name, null);
-  }
-
-  @Override
-public Video getVideo(String name, String basePath) {
-	
-	   	// if an XML file with the image name is found, load it in order to get frame duration
-  	String xmlName = XML.stripExtension(basePath == null ? name : basePath + "/" + name)+".xml"; //$NON-NLS-1$
-  	XMLControl control = new XMLControlElement(new File(xmlName));
-	if (!control.failedToRead() && control.getObjectClass()==ImageVideo.class) {
-		return (Video)control.loadObject(null);
+	/**
+	 * Default constructor uses all available file types.
+	 */
+	public ImageVideoType() {
 	}
 
-	// else load image(s) directly
-  	try {
-    	Video video = new ImageVideo(name, basePath, true);
-      video.setProperty("video_type", this); //$NON-NLS-1$
-      return video;
-    } catch(IOException ex) {
-      return null;
-    }
-  }
+	/**
+	 * Constructor with a file filter for a specific image type.
+	 * 
+	 * @param filter the file filter
+	 */
+	public ImageVideoType(VideoFileFilter filter) {
+		this();
+		if (filter != null) {
+			fileFilters = new VideoFileFilter[] { filter };
+		}
+	}
 
-  /**
-   * Gets a video recorder.
-   *
-   * @return the video recorder
-   */
-  @Override
-public VideoRecorder getRecorder() {
-    return new ImageVideoRecorder(this);
-  }
+	/**
+	 * Opens a video file as an ImageVideo.
+	 *
+	 * @param file the video file
+	 * @return a new image video
+	 */
+	public Video getVideo(File file) {
+		try {
+			Video video = new ImageVideo(file.getAbsolutePath(), null, true);
+			video.setProperty("video_type", this); //$NON-NLS-1$
+			return video;
+		} catch (IOException ex) {
+			return null;
+		}
+	}
 
-  /**
-   * Reports whether this type can record videos
-   *
-   * @return true if this can record videos
-   */
-  @Override
-public boolean canRecord() {
-    return true;
-  }
+	/**
+	 * Opens a named image as an ImageVideo.
+	 *
+	 * @param name the name of the image
+	 * @return a new image video
+	 */
+	@Override
+	public Video getVideo(String name) {
+		return getVideo(name, null);
+	}
 
-  /**
-   * Gets the name and/or description of this type.
-   *
-   * @return a description
-   */
-  @Override
-public String getDescription() {
-  	if (singleTypeFilter!=null)
-  		return singleTypeFilter.getDescription();
-    return MediaRes.getString("ImageVideoType.Description"); //$NON-NLS-1$
-  }
+	@Override
+	public Video getVideo(String name, String basePath) {
 
-  /**
-   * Gets the default extension for this type.
-   *
-   * @return a description
-   */
-  @Override
-public String getDefaultExtension() {
-  	if (singleTypeFilter!=null) {
-  		return singleTypeFilter.getDefaultExtension();
-  	}
-    return null;
-  }
+		// if an XML file with the image name is found, load it in order to get frame
+		// duration
+		String xmlName = XML.stripExtension(basePath == null ? name : basePath + "/" + name) + ".xml"; //$NON-NLS-1$
+		XMLControl control = new XMLControlElement(new File(xmlName));
+		if (!control.failedToRead() && control.getObjectClass() == ImageVideo.class) {
+			return (Video) control.loadObject(null);
+		}
 
-  /**
-   * Gets the file filters for this type.
-   *
-   * @return a file filter
-   */
-  @Override
-public VideoFileFilter[] getFileFilters() {
-    return imageFileFilters.toArray(new VideoFileFilter[0]);
-  }
+		// else load image(s) directly
+		try {
+			Video video = new ImageVideo(name, basePath, true);
+			video.setProperty("video_type", this); //$NON-NLS-1$
+			return video;
+		} catch (IOException ex) {
+			return null;
+		}
+	}
 
-  /**
-   * Gets the default file filter for this type. May return null.
-   *
-   * @return the default file filter
-   */
-  @Override
-public VideoFileFilter getDefaultFileFilter() {
-  	if (singleTypeFilter!=null)
-  		return singleTypeFilter;
-  	return null;
-  }
+	/**
+	 * Gets a video recorder.
+	 *
+	 * @return the video recorder
+	 */
+	@Override
+	public VideoRecorder getRecorder() {
+		return new ImageVideoRecorder(this);
+	}
 
-  /**
-   * Return true if the specified video is this type.
-   *
-   * @param video the video
-   * @return true if the video is this type
-   */
-  @Override
-public boolean isType(Video video) {
-    return video instanceof ImageVideo;
-  }
+	/**
+	 * Reports whether this type can record videos
+	 *
+	 * @return true if this can record videos
+	 */
+	@Override
+	public boolean canRecord() {
+		return true;
+	}
+
+	/**
+	 * Gets the name and/or description of this type.
+	 *
+	 * @return a description
+	 */
+	@Override
+	public String getDescription() {
+			return fileFilters[0].getDescription();
+	}
+
+	/**
+	 * Gets the default extension for this type.
+	 *
+	 * @return a description
+	 */
+	@Override
+	public String getDefaultExtension() {
+			return fileFilters[0].getDefaultExtension();
+	}
+
+	/**
+	 * Gets the file filters for this type.
+	 *
+	 * @return a file filter
+	 */
+	@Override
+	public VideoFileFilter[] getFileFilters() {
+		return fileFilters;
+	}
+
+	/**
+	 * Gets the default file filter for this type. May return null.
+	 *
+	 * @return the default file filter
+	 */
+	@Override
+	public VideoFileFilter getDefaultFileFilter() {
+		return fileFilters[0];
+	}
+
+	/**
+	 * Return true if the specified video is this type.
+	 *
+	 * @param video the video
+	 * @return true if the video is this type
+	 */
+	@Override
+	public boolean isType(Video video) {
+		return video instanceof ImageVideo;
+	}
 
 	@Override
 	public String getTypeName() {
 		return TYPE_IMAGE;
 	}
+
+	@Override
+	public String toString() {
+		return _toString();
+	}
+
 }
 
 /*
- * Open Source Physics software is free software; you can redistribute
- * it and/or modify it under the terms of the GNU General Public License (GPL) as
+ * Open Source Physics software is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License (GPL) as
  * published by the Free Software Foundation; either version 2 of the License,
  * or(at your option) any later version.
-
+ * 
  * Code that uses any portion of the code in the org.opensourcephysics package
- * or any subpackage (subdirectory) of this package must must also be be released
- * under the GNU GPL license.
+ * or any subpackage (subdirectory) of this package must must also be be
+ * released under the GNU GPL license.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
- * or view the license online at http://www.gnu.org/copyleft/gpl.html
+ * You should have received a copy of the GNU General Public License along with
+ * this; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
+ * Suite 330, Boston MA 02111-1307 USA or view the license online at
+ * http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017  The Open Source Physics project
- *                     http://www.opensourcephysics.org
+ * Copyright (c) 2017 The Open Source Physics project
+ * http://www.opensourcephysics.org
  */

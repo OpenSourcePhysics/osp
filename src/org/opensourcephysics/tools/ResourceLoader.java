@@ -1256,9 +1256,11 @@ public class ResourceLoader {
 	 * allows us to retrieve the file data directly from the ZipEntry using
 	 * jsutil.getZipBytes(zipEntry).
 	 * 
+	 * Names starting with "." are taken as case-insensitive extensions
+	 * 
 	 * 
 	 * @param zipFile
-	 * @param fileName
+	 * @param fileName zip entry name or lower-case extension starting with "."
 	 * @param isContains fileName is a fragment of the entry name, not the other way
 	 *                   around
 	 * @return the ZipEntry for this file, possibly cached.
@@ -1267,8 +1269,10 @@ public class ResourceLoader {
 		if (!isContains) {
 			return getZipContents(zipFile).get(fileName);
 		}
+		boolean isLCExt = fileName.startsWith(".");
 		for (Entry<String, ZipEntry> entry : getZipContents(zipFile).entrySet()) {
-			if (entry.getKey().indexOf(fileName) >= 0)
+			String key = entry.getKey();
+			if ((isLCExt ? key.toLowerCase() : key).indexOf(fileName) >= 0)
 				return entry.getValue();
 		}
 		return null;
@@ -1763,8 +1767,8 @@ public class ResourceLoader {
 		if (!path.equals("") //$NON-NLS-1$
 				&& XML.getExtension(path) == null && !path.endsWith("/")) //$NON-NLS-1$
 			path += "/"; //$NON-NLS-1$
-		// replace spaces with "%20
-		if (path.indexOf(" ") >= 0)
+		// replace spaces with "%20, but not if file: (as for thumbnails)
+		if (isHTTP(path) && path.indexOf(" ") >= 0)
 			path = path.replaceAll(" ", "%20");
 		// add file protocol if path to local file
 		if (path.startsWith("/"))
@@ -1953,30 +1957,16 @@ public class ResourceLoader {
 		// get separate zip base and relative file name
 		String base = null;
 		String fileName = path;
-		// look for zip or jar base path
-		int i = path.indexOf("zip!/"); //$NON-NLS-1$
-		if (i == -1) {
-			i = path.indexOf("jar!/"); //$NON-NLS-1$
-		}
-		if (i == -1) {
-			i = path.indexOf("exe!/"); //$NON-NLS-1$
-		}
-		if (i == -1) {
-			i = path.indexOf("trz!/"); //$NON-NLS-1$
-		}
-		if (i > -1) {
-			base = path.substring(0, i + 3);
-			fileName = path.substring(i + 5);
+		int i = isZipEntry(path, true);
+		if (i >= 0) {	
+			base = path.substring(0, i);
+			fileName = path.substring(i + 2);
 		}
 
 		if (base == null) {
-			if (path.endsWith(".zip") //$NON-NLS-1$
-					|| path.endsWith(".trz") //$NON-NLS-1$
-					|| path.endsWith(".jar") //$NON-NLS-1$
-					|| path.endsWith(".exe")) { //$NON-NLS-1$
-				String name = XML.stripExtension(XML.getName(path));
+			if (isZipEntry(path + "!/", true) >= 0) { //$NON-NLS-1$
 				base = path;
-				fileName = name + ".xset"; //$NON-NLS-1$
+				fileName = XML.stripExtension(XML.getName(path)) + ".xset"; //$NON-NLS-1$
 			} else if (path.endsWith(".xset")) { //$NON-NLS-1$
 				base = path.substring(0, path.length() - 4) + "zip"; //$NON-NLS-1$
 			}
@@ -2225,41 +2215,43 @@ public class ResourceLoader {
 		if (url == null) {
 			return null;
 		}
-		String path = url.toExternalForm();
 		URL working = url;
-		String content = null;
-
-		// web-based zip files require special handling
-		int n = path.toLowerCase().indexOf(".zip!/"); //$NON-NLS-1$
-		if (n == -1)
-			n = path.toLowerCase().indexOf(".jar!/"); //$NON-NLS-1$
-		if (n == -1)
-			n = path.toLowerCase().indexOf(".trz!/"); //$NON-NLS-1$
-		if (n > -1 && isHTTP(path)) {
+		String path = url.toExternalForm();
+		String entryPath = null;
+		int n;
+		if (isHTTP(path) && (n = isZipEntry(path, true)) >= 0) { // should exclude exe here?
 			// check that url is accessible
-			content = path.substring(n + 6);
-			working = new URL(path.substring(0, n + 4));
-			InputStream stream = working.openStream();
-			if (stream.read() == -1) {
-				stream.close();
-				return null;
-			}
-			stream.close();
+			entryPath = path.substring(n + 2);
+			working = new URL(path.substring(0, n));
 		}
 
 		// BH 2020.03.28 URLs are checked when created; only a URI might not have a
-		// target at this point. 2020.04.02 DB added following to check for target
+		// target at this point, and oddly enough, URI.toURL() does not check. 
+		// 2020.04.02 DB added following to check for target
 
-		// check that url is a real target
-		InputStream stream = working.openStream();
-		if (stream.read() == -1) {
-			stream.close();
-			return null;
+		return (streamExists(working) ? new Resource(working, entryPath) : null);
+	}
+
+	/**
+	 * Check that a byte can be read from a stream.
+	 * 
+	 * @param working
+	 * @return
+	 */
+	private static boolean streamExists(URL working) {
+		InputStream stream = null;
+		try {
+			stream = working.openStream();
+			return (stream.read() > 0);
+		} catch (IOException e) {
+			return false;
+		} finally {
+			if (stream != null)
+				try {
+					stream.close();
+				} catch (IOException e) {
+				}
 		}
-		stream.close();
-
-		Resource res = new Resource(working, content);
-		return res;
 	}
 
 	private static Resource findResource(String path, Class<?> type, boolean searchFiles) {
@@ -2286,10 +2278,14 @@ public class ResourceLoader {
 			}
 		}
 
-		if (OSPRuntime.checkTempDirCache && !ResourceLoader.isHTTP(path) && new File(OSPRuntime.tempDir + path).exists()
-				|| createOnly) {
-			res = createClassResource(path = OSPRuntime.tempDir + path, type);
-		} else if ((searchFiles && (res = createFileResource(path)) != null) || (res = createURLResource(path)) != null
+//		String s;
+//		if (OSPRuntime.checkTempDirCache path.indexOf(":/") < 0)
+//				&& new File(s = pathOSPRuntime.tempDir + path).exists()
+//				|| createOnly) {
+//			res = createClassResource(path = OSPRuntime.tempDir + path, type);
+//		} else 
+			
+			if ((searchFiles && (res = createFileResource(path)) != null) || (res = createURLResource(path)) != null
 				|| (res = createZipResource(path)) != null || (res = createClassResource(path, type)) != null) {
 			// res is not null;
 		}
@@ -2538,20 +2534,15 @@ public class ResourceLoader {
 			}
 			if (inputStream == null) { // use resource loader when not an applet
 				if (isHTTP(filename)) { // $NON-NLS-1$
-					int n = filename.toLowerCase().indexOf(".zip!/"); //$NON-NLS-1$
-					if (n == -1)
-						n = filename.toLowerCase().indexOf(".jar!/"); //$NON-NLS-1$
-					if (n == -1)
-						n = filename.toLowerCase().indexOf(".trz!/"); //$NON-NLS-1$
-					if (n > -1) {
+					if (isZipEntry(filename, true) >= 0) {
 						File extracted = extractFileFromZIP(filename, target, false, forceFileCreation);
 						if (extracted != null)
 							return extracted;
 					}
-				} else {
-					Resource is = getResource(filename, false);
-					inputStream = (is == null ? null : is.openInputStream());
-				}
+					return null;
+				} 
+				Resource is = getResource(filename, false);
+				inputStream = (is == null ? null : is.openInputStream());
 			}
 			if (inputStream == null) {
 				return null;
@@ -2577,6 +2568,11 @@ public class ResourceLoader {
 	// -----------------------------------
 	// Private methods
 	// -----------------------------------
+
+	private static int isZipEntry(String filename, boolean checkExt) {
+		int n = filename.indexOf("!/");
+		return (n >= 4 && (!checkExt || ".exe.zip.jar.trz".indexOf(filename.substring(n - 4, n)) >= 0) ? n : -1);
+	}
 
 	static public int confirmOverwrite(String filename) {
 		return confirmOverwrite(filename, false);
@@ -2913,13 +2909,13 @@ public class ResourceLoader {
 		return f;
 	}
 
-	public static void copyURLtoFileAsync(String urlPath, String filePath, Function<File, Void> whenDone) {
+	public static void copyURLtoFileAsync(String webPath, String filePath, Function<File, Void> whenDone) {
 
 		File f = new File(filePath);
 
 		try {
 			if (OSPRuntime.isJS) {
-				getURLContentsAsync(new URL(urlPath), new Function<byte[], Void>() {
+				getURLContentsAsync(new URL(webPath), new Function<byte[], Void>() {
 
 					@Override
 					public Void apply(byte[] bytes) {
@@ -2938,9 +2934,8 @@ public class ResourceLoader {
 			} else {
 				Path path = f.toPath();
 				Files.createDirectories(path.getParent());
-				Files.write(path, getURLContents(new URL(urlPath)));
+				Files.write(path, getURLContents(new URL(getURIPath(webPath))));
 			}
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

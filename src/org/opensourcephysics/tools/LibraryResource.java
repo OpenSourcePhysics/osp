@@ -19,20 +19,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.zip.ZipEntry;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.filechooser.FileFilter;
 
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.ResizableIcon;
-import org.opensourcephysics.media.core.ImageVideoType;
-import org.opensourcephysics.media.core.VideoFileFilter;
 import org.opensourcephysics.media.core.VideoIO;
+import org.opensourcephysics.media.core.VideoType;
+import org.opensourcephysics.media.mov.MovieFactory;
 
 /**
  * This represents a library resource.
@@ -73,7 +71,6 @@ public class LibraryResource implements Comparable<LibraryResource> {
   // static fields
   protected static List<String> allResourceTypes = new ArrayList<String>();
   protected static ResizableIcon htmlIcon, videoIcon, trackerIcon, ejsIcon, pdfIcon, unknownIcon, imageIcon;
-  protected static FileFilter[] imageFilters = new ImageVideoType().getFileFilters();
   protected static DecimalFormat megabyteFormat;
   protected static Font bodyFont = new JButton().getFont().deriveFont(12f);
   protected static Font h1Font = bodyFont.deriveFont(24f);
@@ -205,73 +202,58 @@ public class LibraryResource implements Comparable<LibraryResource> {
   	return XML.getResolvedPath(target, getInheritedBasePath());
 	}
 	  	
-  /**
-   * Sets the target of this resource.
-   * 
-   * @param path the target path
-   * @return true if changed
-   */
+	/**
+	 * Sets the target of this resource.
+	 * 
+	 * @param path the target path
+	 * @return true if changed
+	 */
 	public boolean setTarget(String path) {
-		path = path==null? "": path.trim(); //$NON-NLS-1$
-		if (!path.equals(target)) {
-			thumbnail = null;
-			target = path;
-			path = path.toUpperCase();
-			if (path.endsWith(".TRK") || path.endsWith(".TRZ")) //$NON-NLS-1$ //$NON-NLS-2$
-				setType(LibraryResource.TRACKER_TYPE);
-			else if (path.endsWith(".PDF")) //$NON-NLS-1$
-				setType(LibraryResource.PDF_TYPE);
-			else if (path.indexOf("EJS")>-1) { //$NON-NLS-1$
-				setType(LibraryResource.EJS_TYPE);
-  		}
-  		else if (path.endsWith(".ZIP")) { //$NON-NLS-1$
-  			final String base = getBasePath();
-		    Runnable runner = new Runnable() {
-		      @Override
-			public void run() {
-	  				String zipPath = XML.getResolvedPath(target, base);
-						Map<String, ZipEntry> files = ResourceLoader.getZipContents(zipPath);
-						for (String next: files.keySet()) {
-							if (next.toUpperCase().endsWith(".TRK")) { //$NON-NLS-1$
-								setType(LibraryResource.TRACKER_TYPE);
-								break;
-							}
-						}
-		      }
-		    };
-	      new Thread(runner).start();
-			}
-  		else if (path.equals("")) { //$NON-NLS-1$
-  			if (getHTMLPath()==null)
-  				setType(LibraryResource.UNKNOWN_TYPE);
-  			else setType(LibraryResource.HTML_TYPE);
-  		}
-  		else {
-  			boolean found = false;
-  			for (FileFilter next: imageFilters) {
-  				if (found) break;
-    			VideoFileFilter filter = (VideoFileFilter)next;
-    			for (String ext: filter.getExtensions()) {  				
-  					if (path.endsWith("."+ext.toUpperCase())) { //$NON-NLS-1$
-  						setType(LibraryResource.IMAGE_TYPE);
-  						found = true;
-  		  		}
-    			}
-  			}
-	  		for (String ext: VideoIO.getVideoExtensions()) {
-  				if (found) break;
-					if (path.endsWith("."+ext.toUpperCase())) { //$NON-NLS-1$
-						setType(LibraryResource.VIDEO_TYPE);
-						found = true;
-		  		}
-				}
-  		}
-			return true;
+		path = path == null ? "" : path.trim(); //$NON-NLS-1$
+		if (path.equals(target)) {
+			return false;
 		}
-		return false;
+		thumbnail = null;
+		target = path;
+		setType(getTypeFromPath(path, getHTMLPath()));
+		return true;
 	}
-	
-  /**
+
+
+	static String getTypeFromPath(String path, String htmlPath) {
+		if (path == null)
+			path = "";
+		String ext = (path.length() >= 4 ? XML.getExtension(path).toLowerCase()
+				: htmlPath == null ? "" : "html");
+		switch (ext) {
+		case "html" : 
+			return LibraryResource.HTML_TYPE;
+		case "trk":
+		case "trz":
+		case "zip":
+			return LibraryResource.TRACKER_TYPE;
+		case "pdf":
+			return LibraryResource.PDF_TYPE;
+		case "ejs":
+			return LibraryResource.EJS_TYPE;
+		default:
+			ArrayList<VideoType> types = VideoIO.getVideoTypesForPath(ext);
+			switch (types.size() == 0 ? "" : types.get(0).getTypeName()) {
+			default:
+				break;
+			case VideoType.TYPE_IMAGE:
+				return LibraryResource.IMAGE_TYPE;
+			case MovieFactory.ENGINE_XUGGLE:
+			case MovieFactory.ENGINE_JS:
+				return LibraryResource.VIDEO_TYPE;
+			}
+			// fall through //
+		case "":
+			return LibraryResource.UNKNOWN_TYPE;
+		}
+	}
+
+/**
    * Gets the path to the html page displayed in the browser.
    *
    * @return the html path
@@ -631,37 +613,37 @@ public class LibraryResource implements Comparable<LibraryResource> {
 		return compareTo((LibraryResource)obj)==0;
 	}
 	
-  /**
-   * Gets a clone of this resource.
-   *
-   * @return the clone
-   */
+	/**
+	 * Gets a clone of this resource.
+	 *
+	 * @return the clone
+	 */
 	public LibraryResource getClone() {
 		boolean isCollection = this instanceof LibraryCollection;
-		LibraryResource resource = isCollection? new LibraryCollection(getName()): new LibraryResource(getName());
-  	resource.setBasePath(getBasePath());
-  	resource.setTarget(getTarget());
-  	resource.setHTMLPath(getHTMLPath());
-  	resource.setDescription(getDescription());
-  	resource.setType(getType());
-  	for (String next: getPropertyNames()) {
-  		resource.setProperty(next, getProperty(next));
-  	}
-  	if (getMetadata()!=null) {
-  		for (Metadata next: getMetadata()) {
-  			resource.addMetadata(new Metadata(next.getData()[0], next.getData()[1]));
-  		}
-  	}
-  	if (isCollection) {
-  		LibraryCollection thisCollection = (LibraryCollection)this;
-    	for (LibraryResource next: thisCollection.getResources()) {
-    		((LibraryCollection)resource).addResource(next.getClone());
-    	}
+		LibraryResource resource = isCollection ? new LibraryCollection(getName()) : new LibraryResource(getName());
+		resource.setBasePath(getBasePath());
+		resource.setTarget(getTarget());
+		resource.setHTMLPath(getHTMLPath());
+		resource.setDescription(getDescription());
+		resource.setType(getType());
+		for (String next : getPropertyNames()) {
+			resource.setProperty(next, getProperty(next));
+		}
+		if (getMetadata() != null) {
+			for (Metadata next : getMetadata()) {
+				resource.addMetadata(new Metadata(next.getData()[0], next.getData()[1]));
+			}
+		}
+		if (isCollection) {
+			LibraryCollection thisCollection = (LibraryCollection) this;
+			for (LibraryResource next : thisCollection.getResources()) {
+				((LibraryCollection) resource).addResource(next.getClone());
+			}
 
-  	}
-  	// lines below are for search results
-  	resource.collectionPath = getCollectionPath();
-  	resource.treePath = getTreePath(null);
+		}
+		// lines below are for search results
+		resource.collectionPath = getCollectionPath();
+		resource.treePath = getTreePath(null);
 		return resource;
 	}
 	
@@ -732,83 +714,78 @@ public class LibraryResource implements Comparable<LibraryResource> {
     return buffer.toString();
 	}
 	  	
-  /**
-   * Gets html <body> code for a resource with specified properties.
-   * @param title the name of the resource
-   * @param resourceType one of the LibraryResource defined types
-   * @param thumbnailPath path to the thumbnail image file
-   * @param description a description of the resource
-   * @param authors authors
-   * @param contact author contact information or institution
-   * @param moreInfoURL link to external HTML with more information about the resource 
-   * @param attachment String[] {downloadURL, filename, sizeInBytes} (used for ComPADRE)
-   *
-   * @return the html path
-   */
+	/**
+	 * Gets html <body> code for a resource with specified properties.
+	 * 
+	 * @param title         the name of the resource
+	 * @param resourceType  one of the LibraryResource defined types
+	 * @param thumbnailPath path to the thumbnail image file
+	 * @param description   a description of the resource
+	 * @param authors       authors
+	 * @param contact       author contact information or institution
+	 * @param moreInfoURL   link to external HTML with more information about the
+	 *                      resource
+	 * @param attachment    String[] {downloadURL, filename, sizeInBytes} (used for
+	 *                      ComPADRE)
+	 *
+	 * @return the html path
+	 */
 	protected static String getHTMLBody(String title, String resourceType, String thumbnailPath, String description,
 			String authors, String contact, String moreInfoURL, String[] attachment) {
-  	StringBuffer buffer = new StringBuffer();
-    if (title!=null && !title.equals("")) { //$NON-NLS-1$
-    	buffer.append(
-    		"\n      <h2>"+title+"</h2>"); //$NON-NLS-1$ //$NON-NLS-2$
-    }
-    buffer.append(
-    		"\n      <blockquote>"); //$NON-NLS-1$ 
-    if (resourceType!=null && !resourceType.equals("")) { //$NON-NLS-1$
-  		if (allResourceTypes.contains(resourceType)) {
-  			resourceType = ToolsRes.getString("LibraryResource.Type."+resourceType); //$NON-NLS-1$
-  		}
-	    buffer.append (
-	    	"\n        <b>"+resourceType+"</b>"); //$NON-NLS-1$ //$NON-NLS-2$ 
-    }
-    if (thumbnailPath!=null && !thumbnailPath.equals("")) { //$NON-NLS-1$
-	    thumbnailPath = "<p><img src=\""+thumbnailPath+"\""; //$NON-NLS-1$ //$NON-NLS-2$
-	    if (title!=null && !title.equals("")) { //$NON-NLS-1$
-	    	thumbnailPath += " alt=\""+title+"\""; //$NON-NLS-1$ //$NON-NLS-2$
-	    }
-	    buffer.append (
-	    	"\n        "+thumbnailPath+"></p>"); //$NON-NLS-1$ //$NON-NLS-2$    	
-    }
-    
-    
-    if (description!=null && !description.equals("")) { //$NON-NLS-1$
-    	if (!description.startsWith("<p>")) { //$NON-NLS-1$
-    		description = "<p>"+insertLineBreaks(description)+"</p>"; //$NON-NLS-1$ //$NON-NLS-2$
-    	}
-    	buffer.append(
-    		"\n        "+description); //$NON-NLS-1$ 
-    }
-    if (authors!=null && !authors.equals("")) { //$NON-NLS-1$
-	    String authorTitle = ToolsRes.getString("LibraryTreePanel.Label.Author"); //$NON-NLS-1$
-    	buffer.append(
-    		"\n        <p><b>"+authorTitle+":  </b>"+authors+"</p>"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-    }
-    if (contact!=null && !contact.equals("")) { //$NON-NLS-1$
-	    String contactTitle = ToolsRes.getString("LibraryTreePanel.Label.Contact"); //$NON-NLS-1$
-    	buffer.append(
-    		"\n        <p><b>"+contactTitle+":  </b>"+contact+"</p>"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-    }
-    if (attachment!=null && attachment[1]!=null) {
-    	String filename = attachment[1];
-      String resTitle = ToolsRes.getString("LibraryResource.Description.Resource"); //$NON-NLS-1$
-      int bytes = Integer.parseInt(attachment[2]);    	
-    	megabyteFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
-      String size = " ("+megabyteFormat.format(bytes/1048576.0)+"MB)"; //$NON-NLS-1$ //$NON-NLS-2$
-    	buffer.append(
-      		"\n        <p><b>"+resTitle+":  </b>"+filename+size+"</p>"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-    }
-    if (moreInfoURL!=null && !moreInfoURL.equals("")) { //$NON-NLS-1$
-    	try {
+		StringBuffer buffer = new StringBuffer();
+		
+		if (title != null && !title.equals("")) { //$NON-NLS-1$
+			buffer.append("\n      <h2>" + title + "</h2>"); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+		buffer.append("\n      <blockquote>"); //$NON-NLS-1$
+		if (resourceType != null && !resourceType.equals("")) { //$NON-NLS-1$
+			if (allResourceTypes.contains(resourceType)) {
+				resourceType = ToolsRes.getString("LibraryResource.Type." + resourceType); //$NON-NLS-1$
+			}
+			buffer.append("\n        <b>" + resourceType + "</b>"); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+		if (thumbnailPath != null && !thumbnailPath.equals("")) { //$NON-NLS-1$
+			
+			thumbnailPath = "<p><img src=\"" + thumbnailPath + "\""; //$NON-NLS-1$ //$NON-NLS-2$
+			if (title != null && !title.equals("")) { //$NON-NLS-1$
+				thumbnailPath += " alt=\"" + title + "\""; //$NON-NLS-1$ //$NON-NLS-2$
+			}
+			buffer.append("\n        " + thumbnailPath + "></p>"); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+
+		if (description != null && !description.equals("")) { //$NON-NLS-1$
+			if (!description.startsWith("<p>")) { //$NON-NLS-1$
+				description = "<p>" + insertLineBreaks(description) + "</p>"; //$NON-NLS-1$ //$NON-NLS-2$
+			}
+			buffer.append("\n        " + description); //$NON-NLS-1$
+		}
+		if (authors != null && !authors.equals("")) { //$NON-NLS-1$
+			String authorTitle = ToolsRes.getString("LibraryTreePanel.Label.Author"); //$NON-NLS-1$
+			buffer.append("\n        <p><b>" + authorTitle + ":  </b>" + authors + "</p>"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		}
+		if (contact != null && !contact.equals("")) { //$NON-NLS-1$
+			String contactTitle = ToolsRes.getString("LibraryTreePanel.Label.Contact"); //$NON-NLS-1$
+			buffer.append("\n        <p><b>" + contactTitle + ":  </b>" + contact + "</p>"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		}
+		if (attachment != null && attachment[1] != null) {
+			String filename = attachment[1];
+			String resTitle = ToolsRes.getString("LibraryResource.Description.Resource"); //$NON-NLS-1$
+			int bytes = Integer.parseInt(attachment[2]);
+			megabyteFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+			String size = " (" + megabyteFormat.format(bytes / 1048576.0) + "MB)"; //$NON-NLS-1$ //$NON-NLS-2$
+			buffer.append("\n        <p><b>" + resTitle + ":  </b>" + filename + size + "</p>"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		}
+		if (moreInfoURL != null && !moreInfoURL.equals("")) { //$NON-NLS-1$
+			try {
 				new URL(moreInfoURL); // throws exception if malformed
-	      String infoTitle = ToolsRes.getString("LibraryComPADRE.Description.InfoField"); //$NON-NLS-1$
-	      buffer.append(
-	      "\n        <p><b>"+infoTitle+"  </b><a href=\""+moreInfoURL+"\">"+moreInfoURL+"</a></p>"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+				String infoTitle = ToolsRes.getString("LibraryComPADRE.Description.InfoField"); //$NON-NLS-1$
+				buffer.append("\n        <p><b>" + infoTitle + "  </b><a href=\"" + moreInfoURL + "\">" + moreInfoURL //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+						+ "</a></p>"); //$NON-NLS-1$
 			} catch (MalformedURLException e) {
 			}
-    }
-    buffer.append(
-    		"\n      </blockquote>"); //$NON-NLS-1$
-    return buffer.toString();
+		}
+		buffer.append("\n      </blockquote>"); //$NON-NLS-1$
+		return buffer.toString();
 	}
 	  	
   /**

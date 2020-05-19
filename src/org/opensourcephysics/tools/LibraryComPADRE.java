@@ -244,6 +244,7 @@ public class LibraryComPADRE {
 
 	private static void loadNode(Node node, LibraryCollection collection, LibraryTreeNode treeNode, String urlPath,
 			Runnable onFound, Runnable onNothingNew) {
+		try {
 		boolean found = false;
 		String[] attachment = null;
 		if (isDesiredOSPType(node)) {
@@ -270,6 +271,7 @@ public class LibraryComPADRE {
 
 			if (loadResource(record, node, attachment, treeNode)) {
 				found = true;
+				OSPRuntime.showStatus(name);
 				record.setProperty("reload_url", urlPath); //$NON-NLS-1$
 			}
 		}
@@ -277,6 +279,10 @@ public class LibraryComPADRE {
 			onFound.run();
 		} else {
 			onNothingNew.run();
+		}
+		
+		} catch (Exception e) {
+			OSPLog.debug("LibraryComPADRE exception " + e.getMessage());
 		}
 
 	}
@@ -355,7 +361,7 @@ public class LibraryComPADRE {
 
 			String description = getChildValue(node, "description"); //$NON-NLS-1$
 			String infoURL = getChildValue(node, "information-url"); //$NON-NLS-1$
-			String sourceURL = getChildValue(node, "thumbnail-url"); //$NON-NLS-1$
+			String thumbnailURL = getChildValue(node, "thumbnail-url"); //$NON-NLS-1$
 			String authors = ""; //$NON-NLS-1$
 			for (Node next : getAllChildren(getFirstChild(node, "contributors"), "contributor")) { //$NON-NLS-1$ //$NON-NLS-2$
 				Element el = (Element) next;
@@ -366,21 +372,21 @@ public class LibraryComPADRE {
 				authors = authors.substring(0, authors.length() - 2);
 
 			// cache the thumbnail
-			File cachedFile = ResourceLoader.getOSPCacheFile(sourceURL);
+			File cachedFile = ResourceLoader.getOSPCacheFile(thumbnailURL);
 			String cachePath = cachedFile.getAbsolutePath();
 			record.setThumbnail(cachePath);
 			if (!cachedFile.exists()) {
-				treeNode.new ThumbnailLoader(sourceURL, cachePath).execute();
+				treeNode.new ThumbnailLoader(thumbnailURL, cachePath).execute();
 			}
 
 			if (!OSPRuntime.isJS) {
 				// BH no need to do this, and we can't access a local image this way in HTML,
 				// anyway.
-				sourceURL = ResourceLoader.getURIPath(cachePath);
+				thumbnailURL = ResourceLoader.getURIPath(cachePath);
 			}
 
 			// get the html code and set the description
-			String htmlCode = LibraryResource.getHTMLBody(name, type, sourceURL, description, authors, null, infoURL,
+			String htmlCode = LibraryResource.getHTMLBody(name, type, thumbnailURL, description, authors, null, infoURL,
 					attachment);
 			record.setDescription(htmlCode);
 
