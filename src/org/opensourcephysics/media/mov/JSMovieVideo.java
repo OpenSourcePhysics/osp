@@ -166,7 +166,6 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		return (rawImage == null ? null : super.getImage());
 	}
 	
-
 	/**
 	 * Sets the frame number. Overrides VideoAdapter setFrameNumber method.
 	 *
@@ -527,7 +526,9 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					return true;
 				case STATE_LOAD_VIDEO_READY:
 					v.videoDialog.setVisible(true);
-					v.size = HTML5Video.getSize(v.jsvideo);
+					Dimension d = HTML5Video.getSize(v.jsvideo);
+					v.size.width = d.width;
+					v.size.height = d.height;
 					duration = HTML5Video.getDuration(v.jsvideo);
 					int n = HTML5Video.getFrameCount(v.jsvideo);
 					v.setFrameCount(n);

@@ -1545,21 +1545,6 @@ public class OSPRuntime {
 			}
 	}
 	
-	
-	
-	/**
-	 * We have to ensure that the image actually has a raster in SwingJS
-	 * 
-	 * @param image
-	 * @return
-	 */
-	public static Raster getRaster(BufferedImage image) {
-		if (isJS) {
-			image.getRGB(0, 0);
-		} 
-		return image.getRaster();
-	}
-
 }
 /*
  * Open Source Physics software is free software; you can redistribute it and/or

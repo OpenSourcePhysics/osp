@@ -133,10 +133,10 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		// create coords and put origin at center of panel
 		coords = new ImageCoordSystem();
 		setVideo(video);
-		BufferedImage img;
-		if ((video != null) && ((img = video.getImage()).getWidth() > 0)) {
-			setImageWidth(img.getWidth());
-			setImageHeight(img.getHeight());
+		Dimension d;
+		if ((video != null) && ((d = video.getImageSize()).width > 0)) {
+			setImageWidth(d.width);
+			setImageHeight(d.height);
 		} else {
 			setImageWidth(defaultWidth);
 			setImageHeight(defaultHeight);
@@ -212,10 +212,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	public void setImageWidth(double w) {
 		// don't allow widths smaller than the video
 		if (video != null) {
-			BufferedImage vidImage = video.getImage();
-			if (vidImage != null) {
-				w = Math.max(w, vidImage.getWidth());
-			}
+			w = Math.max(w, video.getImageSize().width);
 		}
 		imageWidth = w;
 	}
@@ -237,10 +234,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	public void setImageHeight(double h) {
 		// don't allow heights smaller than the video
 		if (video != null) {
-			BufferedImage vidImage = video.getImage();
-			if (vidImage != null) {
-				h = Math.max(h, vidImage.getHeight());
-			}
+			h = Math.max(h, video.getImageSize().height);
 		}
 		imageHeight = h;
 	}
@@ -617,10 +611,10 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 				synchronized (drawableList) {
 					drawableList.add(0, video); // put video at back
 				}
-				BufferedImage vidImage = video.getImage();
-				if (vidImage != null) {
-					setImageWidth(vidImage.getWidth());
-					setImageHeight(vidImage.getHeight());
+				Dimension d = video.getImageSize();
+				if (d.width > 0) {
+					setImageWidth(d.width);
+					setImageHeight(d.height);
 				}
 				break;
 			}

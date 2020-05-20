@@ -31,6 +31,7 @@
  */
 package org.opensourcephysics.media.core;
 
+import java.awt.Dimension;
 import java.beans.PropertyChangeListener;
 
 /**
@@ -74,6 +75,9 @@ public interface Video extends InteractiveImage, Playable, Trackable, PropertyCh
 	public final static String PROPERTY_VIDEO_LOOPING = "looping"; //$NON-NLS-1$
 	public final static String PROPERTY_VIDEO_PLAYING = "playing"; //$NON-NLS-1$
 	public final static String PROPERTY_VIDEO_RATE = "rate"; //$NON-NLS-1$
+
+	
+	public Dimension getImageSize();
 
 
 	/**

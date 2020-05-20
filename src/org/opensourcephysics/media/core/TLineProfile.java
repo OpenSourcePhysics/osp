@@ -109,7 +109,7 @@ public void draw(DrawingPanel panel, Graphics g) {
       try {
         int x = Math.min((int) end1.getX(), (int) end2.getX());
         int y = (int) end1.getY();
-        OSPRuntime.getRaster(image).getDataElements(x, y, length, 1, pixels);
+        image.getRaster().getDataElements(x, y, length, 1, pixels);
         for(int i = 0; i<pixels.length; i++) {
           int pixel = pixels[i];
           int r = (pixel>>16)&0xff; // red

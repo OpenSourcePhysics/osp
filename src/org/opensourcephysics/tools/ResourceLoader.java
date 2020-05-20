@@ -2814,7 +2814,7 @@ public class ResourceLoader {
 	 * Just get the URL contents as a byte array
 	 * 
 	 * @param url
-	 * @return byte[]
+	 * @return byte[] or null
 	 * 
 	 * @author hansonr
 	 */

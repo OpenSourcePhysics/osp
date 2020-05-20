@@ -975,8 +975,8 @@ protected void initializeSubclass() {
 	public void draw(DrawingPanel panel, Graphics g) {
     	if (!RadialDistortionFilter.super.isEnabled()) return;
     	VideoPanel vidPanel = (VideoPanel)panel;
-    	BufferedImage img = vidPanel.getVideo().getImage();
-    	double x = img.getWidth()/2, y = img.getHeight()/2;
+    	Dimension d = vidPanel.getVideo().getImageSize();
+    	double x = d.width/2, y = d.height/2;
     	double r = fixedRadius*pixelsToCorner;
       center.setLocation(x, y);
       corner.setLocation(x-r, y-r);

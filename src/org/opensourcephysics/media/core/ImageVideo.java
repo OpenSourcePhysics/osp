@@ -71,7 +71,28 @@ public class ImageVideo extends VideoAdapter {
 	protected double deltaT = 100; // frame duration in milliseconds
 
 	/**
-	 * Creates an ImageVideo and loads a named image or image sequence, asking the user if necessary.
+	 * Creates a read-only ImageVideo and loads a named image or image sequence.
+	 * 
+	 * The standard constructor.
+	 *
+	 * @param imageName the name of the image file
+	 * @param sequence  true to automatically load image sequence, if any
+	 * @throws IOException
+	 */
+	public ImageVideo(String imageName, String basePath, boolean sequence) throws IOException {
+		readOnly = true;
+		if (basePath != null) {
+			baseDir = basePath; // could be .....trz!
+			setProperty("absolutePath", (imageName.startsWith(basePath) ? imageName : basePath + "/" + imageName));
+		}
+		append(imageName, sequence);
+	}
+
+	/**
+	 * Creates a read-only ImageVideo and loads a named image or image sequence, asking the
+	 * user if they want just the first image or all, if numbers are found.
+	 * 
+	 * No reference to this constructor in osp, ejs, or tracker
 	 *
 	 * @param imageName the name of the image file
 	 * @throws IOException
@@ -82,7 +103,7 @@ public class ImageVideo extends VideoAdapter {
 	}
 
 	/**
-	 * Creates an ImageVideo from an image.
+	 * Creates an editable ImageVideo from an image pasted from the clipboard. No questions are asked. 
 	 *
 	 * @param clipBoardImage the image
 	 */
@@ -95,11 +116,13 @@ public class ImageVideo extends VideoAdapter {
 	}
 
 	/**
-	 * Creates an ImageVideo from another ImageVideo
+	 * Creates an editable ImageVideo from another ImageVideo
 	 *
 	 * Replaces ImageVideo(BufferedImage[])
 	 * 
-	 * Called by VideoIO.clone, which is not used?, untested.
+	 * BH: Code moved here from VideoIO
+	 * 
+	 * Called by VideoIO.clone (which is not referenced?), untested.
 	 *
 	 * @param images the image array
 	 */
@@ -111,38 +134,10 @@ public class ImageVideo extends VideoAdapter {
 		}
 		rawImage = images[0];
 		filterStack.addFilters(video.filterStack);
-		// BH Q Should set readOnly = true? 
+		// BH Q Should set readOnly = true? We only have an image stack and a filter.
 	}
+	
 	/**
-	 * Creates an ImageVideo and loads a named image or image sequence.
-	 *
-	 * @param imageName the name of the image file
-	 * @param sequence  true to automatically load image sequence, if any
-	 * @throws IOException
-	 */
-	public ImageVideo(String imageName, String basePath, boolean sequence) throws IOException {
-		this(imageName, basePath, sequence, true);
-	}
-
-	/**
-	 * Creates an ImageVideo and loads a named image or image sequence.
-	 *
-	 * @param imageName the name of the image file
-	 * @param sequence  true to automatically load image sequence, if any
-	 * @param readOnly true if images will be loaded from files only as needed
-	 * @throws IOException
-	 */
-	private ImageVideo(String imageName, String basePath, boolean sequence, boolean readOnly) throws IOException {
-		this.readOnly = readOnly;
-		if (basePath != null) {
-			baseDir = basePath; // could be .....trz!
-			setProperty("absolutePath", (imageName.startsWith(basePath) ? imageName : basePath + "/" + imageName));
-		}
-		append(imageName, sequence);
-	}
-
-	/**
-	 * Overrides VideoAdapter setFrameNumber method.
 	 *
 	 * @param n the desired frame number
 	 */
@@ -735,7 +730,8 @@ public class ImageVideo extends VideoAdapter {
 		frameCount = length();
 		endFrameNumber = frameCount - 1;
 		if (coords == null) {
-			size = new Dimension(rawImage.getWidth(observer), rawImage.getHeight(observer));
+			size.width = rawImage.getWidth(observer);
+			size.height = rawImage.getHeight(observer);
 			refreshBufferedImage();
 			// create coordinate system and relativeAspects
 			coords = new ImageCoordSystem(frameCount);

@@ -301,7 +301,8 @@ public double getDuration() {
    */
   private void setImage(BufferedImage image) {
     rawImage = image;
-    size = new Dimension(image.getWidth(), image.getHeight());
+    size.width = image.getWidth();
+    size.height = image.getHeight();
     refreshBufferedImage();
     // create coordinate system and relativeAspects
     coords = new ImageCoordSystem(frameCount);

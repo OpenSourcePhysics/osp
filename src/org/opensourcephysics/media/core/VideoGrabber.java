@@ -170,7 +170,7 @@ public class VideoGrabber extends VideoCaptureTool {
 					newScratch = true;
 				}
 				BufferedImage copy = previewAll ? new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB) : scratch;
-				OSPRuntime.getRaster(image).getDataElements(0, 0, w, h, pixels);
+				image.getRaster().getDataElements(0, 0, w, h, pixels);
 				copy.getRaster().setDataElements(0, 0, w, h, pixels);
 				Video video = recorderPanel.getVideo();
 				if (video == null) { // first frame added

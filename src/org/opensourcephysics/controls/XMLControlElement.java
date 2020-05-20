@@ -21,6 +21,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
 import java.lang.reflect.Array;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -89,6 +90,15 @@ public class XMLControlElement implements XMLControl {
 	private int decryptPolicy = ALWAYS_DECRYPT;
 
 	/**
+	 * something being passed to the nascent control
+	 */
+	private Object data;
+	
+	public Object getData() {
+		return data;
+	}
+
+	/**
 	 * Constructs an empty control for the Object class.
 	 */
 	public XMLControlElement() {
@@ -136,7 +146,16 @@ public class XMLControlElement implements XMLControl {
 	 */
 	public XMLControlElement(File xmlFile) {
 		this();
-		readData(getFileData(xmlFile));
+		try {
+			String data = getFileData(xmlFile);
+			if (data != null) {
+				readData(data);
+				return;
+			}
+		} catch (Exception ex) {
+			OSPLog.warning("Failed to read xml: " + xmlFile + ex.getMessage()); //$NON-NLS-1$
+		}
+		readFailed = true;
 	}
 
 	/**
@@ -146,11 +165,12 @@ public class XMLControlElement implements XMLControl {
 	 * @return
 	 */
 	private String getFileData(File xmlFile) {
+		byte[] bytes = null;
 		try {
-			return new String(Files.readAllBytes(Paths.get(xmlFile.toURI())), "UTF-8");
-		} catch (IOException e) {
-			return "";
+			bytes = ResourceLoader.getURLContents(xmlFile.toURI().toURL());
+		} catch (MalformedURLException e) {
 		}
+		return (bytes == null ? null : new String(bytes));
 	}
 
 	/**
@@ -923,6 +943,12 @@ public class XMLControlElement implements XMLControl {
 	 */
 	@Override
 	public Object loadObject(Object obj) {
+		return loadObject(obj, false, false);
+	}
+
+
+	public Object loadObject(Object obj, Object data) {
+		this.data = data;
 		return loadObject(obj, false, false);
 	}
 

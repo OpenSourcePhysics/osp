@@ -68,7 +68,7 @@ import org.opensourcephysics.display.OSPRuntime;
 public abstract class VideoAdapter implements Video {
 // instance fields
 	protected Image rawImage; // raw image from video source
-	protected Dimension size; // image pixel dimensions
+	protected final Dimension size = new Dimension(); // image pixel dimensions
 	protected BufferedImage bufferedImage; // offscreen buffered image copy
 	protected BufferedImage filteredImage; // filtered image
 	protected String baseDir;
@@ -550,6 +550,11 @@ public abstract class VideoAdapter implements Video {
 	@Override
 	public double getHeight() {
 		return size.height / coords.getScaleY(frameNumber);
+	}
+	
+	@Override
+	public Dimension getImageSize() {
+		return size;
 	}
 
 	/**
@@ -1206,20 +1211,23 @@ public abstract class VideoAdapter implements Video {
 	 * needed.
 	 */
 	protected void refreshBufferedImage() {
-		if ((bufferedImage == null) || (bufferedImage.getWidth() != size.width)
-				|| (bufferedImage.getHeight() != size.height)) {
-			OSPLog.finest("VideoAdapter.refreshBufferedImage " + size);
-			bufferedImage = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_RGB);
-			// clearRaster = (DataBufferInt) bufferedgetRaster(image).getDataBuffer();
+		if (bufferedImage != null && bufferedImage.getWidth() == size.width
+				&& bufferedImage.getHeight() == size.height)
+			return;
+		OSPLog.finest("VideoAdapter.refreshBufferedImage " + size);
+		bufferedImage = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_RGB);
+		isValidImage = false;
+
+		// BH removed - a new buffer will be set up correctly, in this case as 0x00000000, since it has no alpha
+// new Color(0, 0, 0, 0).getRGB() is just 0. 
+//			// clearRaster = (DataBufferInt) bufferedgetRaster(image).getDataBuffer();
 //			int clear = new Color(0, 0, 0, 0).getRGB();
 //			int[] rgb = new int[size.width * size.height];
 //			for (int i = 0; i < rgb.length; i++) {
 //				rgb[i] = clear;
 //			}
 //			bufferedImage.setRGB(0, 0, size.width, size.height, rgb, 0, size.width);
-			// clearRaster = bufferedImage.getData();
-			isValidImage = false;
-		}
+//			// clearRaster = bufferedImage.getData();
 	}
 
 	/**
@@ -1280,9 +1288,11 @@ public abstract class VideoAdapter implements Video {
 
 	protected void notifySize(Dimension newDim) {
 		if ((newDim.height != size.height) || (newDim.width != size.width)) {
-			this.firePropertyChange(PROPERTY_VIDEO_SIZE, size, newDim); // $NON-NLS-1$
-			size = newDim;
+			Dimension oldSize = new Dimension(size);
+			size.width = newDim.width;
+			size.height = newDim.height;
 			refreshBufferedImage();
+			firePropertyChange(PROPERTY_VIDEO_SIZE, oldSize, size); // $NON-NLS-1$
 		}
 	}
 
