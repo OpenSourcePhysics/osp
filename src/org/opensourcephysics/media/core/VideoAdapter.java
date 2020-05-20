@@ -963,9 +963,9 @@ public abstract class VideoAdapter implements Video {
 	 */
 	@Override
 	public void setFilterStack(FilterStack stack) {
-		filterStack.removePropertyChangeListener(this);
+		stack.removePropertyChangeListener(this);
+		stack.addPropertyChangeListener(this);
 		filterStack = stack;
-		filterStack.addPropertyChangeListener(this);
 	}
 
 	/**

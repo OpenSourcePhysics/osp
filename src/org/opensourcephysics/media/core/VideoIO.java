@@ -670,6 +670,7 @@ public class VideoIO {
 //
 	/**
 	 * Returns a clone of the specified video.
+	 * Never called.
 	 *
 	 * @param video the video to clone
 	 * @return the clone
@@ -680,18 +681,7 @@ public class VideoIO {
 		}
 		// ImageVideo is special case since may have pasted images
 		if (video instanceof ImageVideo) {
-			ImageVideo oldVid = (ImageVideo) video;
-			ImageVideo newVid = new ImageVideo(oldVid.getImages());
-			newVid.rawImage = newVid.images[0];
-			Collection<Filter> filters = video.getFilterStack().getFilters();
-			if (filters != null) {
-				Iterator<Filter> it = filters.iterator();
-				while (it.hasNext()) {
-					Filter filter = it.next();
-					newVid.getFilterStack().addFilter(filter);
-				}
-			}
-			return newVid;
+			return new ImageVideo((ImageVideo) video);
 		}
 		XMLControl control = new XMLControlElement(video);
 		return (Video) new XMLControlElement(control).loadObject(null);

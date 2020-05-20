@@ -35,12 +35,15 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.function.Function;
+
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -50,6 +53,8 @@ import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.Resource;
 import org.opensourcephysics.tools.ResourceLoader;
+
+import javajs.async.AsyncDialog;
 
 /**
  * This is a Video assembled from one or more still images.
@@ -62,20 +67,52 @@ public class ImageVideo extends VideoAdapter {
 	protected Component observer = new JPanel(); // image observer
 	protected BufferedImage[] images = new BufferedImage[0]; // image array
 	protected String[] paths = new String[0]; // relative image paths
-	protected boolean readOnly = false; // true if images are only loaded from files as needed
+	protected boolean readOnly; // true if images are only loaded from files as needed
 	protected double deltaT = 100; // frame duration in milliseconds
 
 	/**
-	 * Creates an ImageVideo and loads a named image or image sequence.
+	 * Creates an ImageVideo and loads a named image or image sequence, asking the user if necessary.
 	 *
 	 * @param imageName the name of the image file
 	 * @throws IOException
 	 */
 	public ImageVideo(String imageName) throws IOException {
 		readOnly = true;
-		append(imageName);
+		insert(imageName, 0);
 	}
 
+	/**
+	 * Creates an ImageVideo from an image.
+	 *
+	 * @param clipBoardImage the image
+	 */
+	public ImageVideo(Image clipBoardImage) {
+		readOnly = false; 
+		if (clipBoardImage != null) {
+			insert(new Image[] { clipBoardImage }, 0, null);
+		}
+		// BH Q Should set readOnly = true? 
+	}
+
+	/**
+	 * Creates an ImageVideo from another ImageVideo
+	 *
+	 * Replaces ImageVideo(BufferedImage[])
+	 * 
+	 * Called by VideoIO.clone, which is not used?, untested.
+	 *
+	 * @param images the image array
+	 */
+	public ImageVideo(ImageVideo video) {
+		readOnly = false;
+		BufferedImage[] images = video.images;
+		if ((images != null && images.length > 0 && images[0] != null)) {
+			insert(images, 0, null);
+		}
+		rawImage = images[0];
+		filterStack.addFilters(video.filterStack);
+		// BH Q Should set readOnly = true? 
+	}
 	/**
 	 * Creates an ImageVideo and loads a named image or image sequence.
 	 *
@@ -92,38 +129,16 @@ public class ImageVideo extends VideoAdapter {
 	 *
 	 * @param imageName the name of the image file
 	 * @param sequence  true to automatically load image sequence, if any
-	 * @param fileBased true if images will be loaded from files only as needed
+	 * @param readOnly true if images will be loaded from files only as needed
 	 * @throws IOException
 	 */
-	public ImageVideo(String imageName, String basePath, boolean sequence, boolean fileBased) throws IOException {
-		readOnly = fileBased;
+	private ImageVideo(String imageName, String basePath, boolean sequence, boolean readOnly) throws IOException {
+		this.readOnly = readOnly;
 		if (basePath != null) {
 			baseDir = basePath; // could be .....trz!
 			setProperty("absolutePath", (imageName.startsWith(basePath) ? imageName : basePath + "/" + imageName));
 		}
 		append(imageName, sequence);
-	}
-
-	/**
-	 * Creates an ImageVideo from an image.
-	 *
-	 * @param image the image
-	 */
-	public ImageVideo(Image image) {
-		if (image != null) {
-			insert(new Image[] { image }, 0, null);
-		}
-	}
-
-	/**
-	 * Creates an ImageVideo from an image array.
-	 *
-	 * @param images the image array
-	 */
-	public ImageVideo(Image[] images) {
-		if ((images != null) && (images.length > 0) && (images[0] != null)) {
-			insert(images, 0, null);
-		}
 	}
 
 	/**
@@ -276,13 +291,21 @@ public class ImageVideo extends VideoAdapter {
 	 * @throws IOException
 	 */
 	public void insert(String imageName, int index) throws IOException {
-		Object[] array = loadImages(imageName, true, // ask user for confirmation
-				true); // allow sequences, if any
-		Image[] images = (Image[]) array[0];
-		if (images.length > 0) {
-			String[] paths = (String[]) array[1];
-			insert(images, index, paths);
-		}
+		loadImages(imageName, false, new Function<Object[], Void>() {
+
+			@Override
+			public Void apply(Object[] array) {
+				if (array != null) {
+					Image[] images = (Image[]) array[0];
+					if (images.length > 0) {
+						String[] paths = (String[]) array[1];
+						insert(images, index, paths);
+					}
+				}
+				return null;
+			}
+			
+		});
 	}
 
 	/**
@@ -294,8 +317,7 @@ public class ImageVideo extends VideoAdapter {
 	 * @throws IOException
 	 */
 	public void insert(String imageName, int index, boolean sequence) throws IOException {
-		Object[] images_paths = loadImages(imageName, false, // don't ask user for confirmation
-				sequence);
+		Object[] images_paths = loadImages(imageName, sequence, null);
 		// from a TRZ file
 		Image[] images = (Image[]) images_paths[0];
 		if (images.length > 0) {
@@ -497,12 +519,13 @@ public class ImageVideo extends VideoAdapter {
 	 * containing an Image[] at index 0 and a String[] at index 1.
 	 *
 	 * @param imagePath the image path
-	 * @param alwaysAsk true to always ask for sequence confirmation
-	 * @param sequence  true to automatically load sequences (if not alwaysAsk)
+	 * @param sequence  true to automatically load sequences (if whenDone is not null, TRUE signals that we have already asked)
+	 * @param whenDone Aynchronous option, indicating that we want to ask about this
 	 * @return an array of loaded images and their corresponding paths
 	 * @throws IOException
 	 */
-	private Object[] loadImages(String imagePath, boolean alwaysAsk, boolean sequence) throws IOException {
+	private Object[] loadImages(String imagePath, boolean sequence, Function<Object[], Void> whenDone) throws IOException {
+		String path0 = imagePath;
 		Resource res = ResourceLoader.getResource(getAbsolutePath(imagePath));
 		if (res == null) {
 			throw new IOException("Image " + imagePath + " not found"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -516,7 +539,9 @@ public class ImageVideo extends VideoAdapter {
 			setProperty("path", imagePath); //$NON-NLS-1$
 			setProperty("absolutePath", res.getAbsolutePath()); //$NON-NLS-1$
 		}
-		if (!alwaysAsk && !sequence) {
+		// if whenDone != null, then sequence is TRUE, but when whenDone is null, sequence may be true or false.
+		// and if numbers are found, sequence is ignored.
+		if (whenDone == null && !sequence) {
 			Image[] images = new Image[] { image };
 			String[] paths = new String[] { imagePath };
 			return new Object[] { images, paths };
@@ -527,7 +552,7 @@ public class ImageVideo extends VideoAdapter {
 		String name = XML.getName(imagePath);
 		String extension = ""; //$NON-NLS-1$
 		int i = imagePath.lastIndexOf('.');
-		if ((i > 0) && (i < imagePath.length() - 1)) {
+		if (i > 0 && i < imagePath.length() - 1) {
 			extension = imagePath.substring(i).toLowerCase();
 			imagePath = imagePath.substring(0, i); // now free of extension
 		}
@@ -542,18 +567,56 @@ public class ImageVideo extends VideoAdapter {
 			// no number found, so load single image
 			Image[] images = new Image[] { image };
 			String[] paths = new String[] { imagePath + extension };
-			return new Object[] { images, paths };
+			Object[] ret = new Object[] { images, paths };
+			if (whenDone != null)
+				whenDone.apply(ret);
+			return ret;
 		default:
 			// 1 -> 10, 2 -> 100, etc.
 			limit = (int) Math.pow(10, digits);
 		}
-		// image name ends with number, so look for sequence
-		String root = imagePath.substring(0, ++len);
-		int n = Integer.parseInt(imagePath.substring(len));
 		ArrayList<Image> imageList = new ArrayList<Image>();
 		imageList.add(image);
+		// image name ends with number, so look for sequence
+		if (!sequence && whenDone != null) {
+			// strip path from image name
+			new AsyncDialog().showOptionDialog(null, "\"" + name + "\" " //$NON-NLS-1$ //$NON-NLS-2$
+					+ MediaRes.getString("ImageVideo.Dialog.LoadSequence.Message") + XML.NEW_LINE + //$NON-NLS-1$
+					MediaRes.getString("ImageVideo.Dialog.LoadSequence.Query"), //$NON-NLS-1$
+					MediaRes.getString("ImageVideo.Dialog.LoadSequence.Title"), //$NON-NLS-1$
+					JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+					new String[] { MediaRes.getString("ImageVideo.Dialog.LoadSequence.Button.SingleImage"), //$NON-NLS-1$
+							MediaRes.getString("ImageVideo.Dialog.LoadSequence.Button.AllImages") }, //$NON-NLS-1$
+					MediaRes.getString("ImageVideo.Dialog.LoadSequence.Button.AllImages"), new ActionListener() {
+
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							int sel = ((AsyncDialog) e.getSource()).getOption();
+							switch (sel) {
+							case JOptionPane.YES_OPTION:
+								Image[] images = imageList.toArray(new Image[0]);
+								String[] paths = pathList.toArray(new String[0]);
+								whenDone.apply(new Object[] { images, paths });
+								return;
+							case JOptionPane.CANCEL_OPTION:
+								whenDone.apply(new Object[] { new Image[0], new String[0] });
+								return;
+							case JOptionPane.NO_OPTION:
+								try {
+									loadImages(path0, true, whenDone);
+								} catch (IOException e1) {
+									whenDone.apply(null);
+								}
+								return;
+							}
+
+						}
+			});
+			return null;
+		}
+		String root = imagePath.substring(0, ++len);
+		int n = Integer.parseInt(imagePath.substring(len));
 		try {
-			boolean asked = false;
 			while (++n < limit) {
 				// fill with leading zeros if nec
 				String num = "000" + n;
@@ -564,24 +627,9 @@ public class ImageVideo extends VideoAdapter {
 					if (image == null) {
 						break;
 					}
-				}
-				// if loading as needed, just check that the resource exists
-				else if (ResourceLoader.getResource(getAbsolutePath(imagePath)) == null)
+				} else if (ResourceLoader.getResource(getAbsolutePath(imagePath)) == null) {
+					// if loading as needed, just check that the resource exists. It did not
 					break;
-				if (!asked && alwaysAsk) {
-					asked = true;
-					// strip path from image name
-					int response = JOptionPane.showOptionDialog(null, "\"" + name + "\" " //$NON-NLS-1$ //$NON-NLS-2$
-							+ MediaRes.getString("ImageVideo.Dialog.LoadSequence.Message") + XML.NEW_LINE + //$NON-NLS-1$
-							MediaRes.getString("ImageVideo.Dialog.LoadSequence.Query"), //$NON-NLS-1$
-							MediaRes.getString("ImageVideo.Dialog.LoadSequence.Title"), //$NON-NLS-1$
-							JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null,
-							new String[] { MediaRes.getString("ImageVideo.Dialog.LoadSequence.Button.SingleImage"), //$NON-NLS-1$
-									MediaRes.getString("ImageVideo.Dialog.LoadSequence.Button.AllImages") }, //$NON-NLS-1$
-							MediaRes.getString("ImageVideo.Dialog.LoadSequence.Button.AllImages")); //$NON-NLS-1$
-					if (response == JOptionPane.YES_OPTION) {
-						break;
-					}
 				}
 				// always add first image to list, but later images only if not loading as
 				// needed
@@ -595,7 +643,10 @@ public class ImageVideo extends VideoAdapter {
 		}
 		Image[] images = imageList.toArray(new Image[0]);
 		String[] paths = pathList.toArray(new String[0]);
-		return new Object[] { images, paths };
+		Object[] ret = new Object[] { images, paths };
+		if (whenDone != null)
+			whenDone.apply(ret);
+		return ret;
 	}
 
 	/**
@@ -727,8 +778,8 @@ public class ImageVideo extends VideoAdapter {
 				control.setValue("paths", paths); //$NON-NLS-1$
 				control.setValue("path", paths[0]); //$NON-NLS-1$
 			}
-			if (!video.getFilterStack().isEmpty()) {
-				control.setValue("filters", video.getFilterStack().getFilters()); //$NON-NLS-1$
+			if (!video.filterStack.isEmpty()) {
+				control.setValue("filters", video.filterStack.getFilters()); //$NON-NLS-1$
 			}
 			control.setValue("delta_t", video.deltaT); //$NON-NLS-1$
 		}
@@ -739,6 +790,7 @@ public class ImageVideo extends VideoAdapter {
 		 * @param control the control
 		 * @return the new ImageVideo
 		 */
+		@SuppressWarnings("unchecked")
 		@Override
 		public Object createObject(XMLControl control) {
 			String[] paths = (String[]) control.getObject("paths"); //$NON-NLS-1$
@@ -805,15 +857,7 @@ public class ImageVideo extends VideoAdapter {
 				return null;
 			}
 			vid.rawImage = vid.images[0];
-			Collection<?> filters = Collection.class.cast(control.getObject("filters")); //$NON-NLS-1$
-			if (filters != null) {
-				vid.getFilterStack().clear();
-				Iterator<?> it = filters.iterator();
-				while (it.hasNext()) {
-					Filter filter = (Filter) it.next();
-					vid.getFilterStack().addFilter(filter);
-				}
-			}
+			vid.filterStack.addFilters((Collection<Filter>) control.getObject("filters")); //$NON-NLS-1$
 			String path = paths[0];
 			String ext = XML.getExtension(path);
 			VideoType type = VideoIO.getVideoType(ImageVideoType.TYPE_IMAGE, ext);

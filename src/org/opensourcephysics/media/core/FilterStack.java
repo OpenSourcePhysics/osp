@@ -75,6 +75,18 @@ public class FilterStack extends Filter implements PropertyChangeListener {
 		notifyUpdate(null, filter);
 	}
 
+	public void addFilters(Collection<Filter> stack) {
+		for (Filter f : stack) {
+			addFilter(f);			
+		}
+	}
+
+	public void addFilters(FilterStack stack) {
+		for (Filter f : stack.filters) {
+			addFilter(f);			
+		}
+	}
+
 	private void notifyUpdate(Filter oldFilter, Filter newFilter) {
 		support.firePropertyChange(PROPERTY_FILTER_IMAGE, null, null); // $NON-NLS-1$
 		support.firePropertyChange(PROPERTY_FILTER_FILTER, oldFilter, newFilter); // $NON-NLS-1$
@@ -296,7 +308,6 @@ public class FilterStack extends Filter implements PropertyChangeListener {
 	protected void initializeSubclass() {
 		// n/a
 	}
-
 
 }
 
