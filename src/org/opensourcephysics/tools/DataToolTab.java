@@ -4463,9 +4463,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 						tab.dataManager.setConstant(name, val, expression);
 				}
 			}
-			Iterator<?> it = control.getPropertyContent().iterator();
+			Iterator<XMLProperty> it = control.getPropsRaw().iterator();
 			while (it.hasNext()) {
-				XMLProperty prop = (XMLProperty) it.next();
+				XMLProperty prop = it.next();
 				if (prop.getPropertyName().equals("data_functions")) { //$NON-NLS-1$
 					XMLControl[] children = prop.getChildControls();
 					for (int i = 0; i < children.length; i++) {
@@ -4490,8 +4490,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			// load user fit function panels
 			ArrayList<?> fits = (ArrayList<?>) control.getObject("fits"); //$NON-NLS-1$
 			if (fits != null) {
-				for (it = fits.iterator(); it.hasNext();) {
-					FitFunctionPanel panel = (FitFunctionPanel) it.next();
+				for (Iterator<?> iter = fits.iterator(); iter.hasNext();) {
+					FitFunctionPanel panel = (FitFunctionPanel) iter.next();
 					tab.dataTool.fitBuilder.addPanel(panel.getName(), panel);
 				}
 			}
@@ -4542,8 +4542,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			// load format patterns
 			ArrayList<?> patterns = (ArrayList<?>) control.getObject("format_patterns"); //$NON-NLS-1$
 			if (patterns != null) {
-				for (it = patterns.iterator(); it.hasNext();) {
-					String[] next = (String[]) it.next();
+				for (Iterator<?> iter = patterns.iterator(); iter.hasNext();) {
+					String[] next = (String[]) iter.next();
 					tab.dataTable.setFormatPattern(next[0], next[1]);
 				}
 			}

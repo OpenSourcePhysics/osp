@@ -29,7 +29,10 @@ public class XMLTreeNode extends DefaultMutableTreeNode {
   public XMLTreeNode(XMLProperty property) {
     prop = property;
     setUserObject(this);
-    Iterator<?> it = property.getPropertyContent().iterator();
+    Iterator<?> it = (property instanceof XMLControl ? 
+    		((XMLControl) property).getPropsRaw() 
+    		: property.getPropertyContent())
+    		.iterator();
     while(it.hasNext()) {
       Object next = it.next();
       if(next instanceof XMLProperty) {

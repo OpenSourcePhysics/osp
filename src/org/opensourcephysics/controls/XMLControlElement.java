@@ -22,8 +22,6 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.lang.reflect.Array;
 import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,13 +35,15 @@ import javax.swing.JOptionPane;
 import org.opensourcephysics.tools.Resource;
 import org.opensourcephysics.tools.ResourceLoader;
 
+import javajs.async.SwingJSUtils.Performance;
+
 /**
  * This is a basic xml control for storing data.
  *
  * @author Douglas Brown
  * @version 1.0
  */
-public class XMLControlElement implements XMLControl {
+public final class XMLControlElement extends XMLNode implements XMLControl {
 	// static constants
 
 	public static final int ALWAYS_DECRYPT = 0;
@@ -57,15 +57,14 @@ public class XMLControlElement implements XMLControl {
 	protected static String encoding = "UTF-8"; //$NON-NLS-1$
 
 	// instance fields
-	protected String className = "java.lang.Object"; //$NON-NLS-1$ //changed by W. Christian
 	protected Class<?> theClass = null;
-	protected String name;
+
 	protected Map<String, Integer> counts = new HashMap<String, Integer>(); // maps numbered names to counts
 	protected Object object;
-	protected XMLProperty parent;
+
 	protected int level;
-	protected ArrayList<String> propNames = new ArrayList<String>();
-	protected ArrayList<XMLProperty> props = new ArrayList<XMLProperty>();
+	private ArrayList<String> propNames = new ArrayList<String>();
+	private ArrayList<XMLProperty> props = new ArrayList<XMLProperty>();
 	protected BufferedReader input;
 	protected BufferedWriter output;
 
@@ -93,6 +92,12 @@ public class XMLControlElement implements XMLControl {
 	 * something being passed to the nascent control
 	 */
 	private Object data;
+	
+	private Map<String, XMLControl> childMap;
+
+	private XMLControl[] childControls;
+
+	private Map<String, XMLProperty> propMap;
 	
 	public Object getData() {
 		return data;
@@ -185,8 +190,6 @@ public class XMLControlElement implements XMLControl {
 	}
 
 	private void readData(String input) {
-		if (input.startsWith("PK"))
-			System.out.println("XMLControlElement reading ZIP data??????");
 		if (input.startsWith("<?xml")) { //$NON-NLS-1$
 			readXML(input);
 		} else {
@@ -283,14 +286,24 @@ public class XMLControlElement implements XMLControl {
 		}
 		// clear the property if obj is null
 		if (obj == null) {
-			Iterator<XMLProperty> it = props.iterator();
-			while (it.hasNext()) {
-				XMLProperty prop = it.next();
-				if (name.equals(prop.getPropertyName())) {
-					it.remove();
-					propNames.remove(name);
-					break;
+			boolean childRemoved = false;
+			if (getPropMap().containsKey(name)) {
+				Iterator<XMLProperty> it = props.iterator();
+				while (it.hasNext()) {
+					XMLProperty prop = it.next();
+					if (name.equals(prop.getPropertyName())) {
+						it.remove();
+						propNames.remove(name);
+						getPropMap().remove(name);
+						if (getChildMap().remove(name) != null) {
+							childRemoved = true;
+						}
+						break;
+					}
 				}
+			}
+			if (childRemoved) {
+				childControls = null;
 			}
 			return;
 		}
@@ -400,7 +413,7 @@ public class XMLControlElement implements XMLControl {
 	}
 
 	/**
-	 * Gets the object value of the specified named property.
+	 * Gets the object value of the specified named profperty.
 	 *
 	 * @param name the name
 	 * @return the object, or null if not found
@@ -409,20 +422,20 @@ public class XMLControlElement implements XMLControl {
 	public Object getObject(String name) {
 		XMLProperty prop = getXMLProperty(name);
 		if (prop != null) {
-			String type = prop.getPropertyType();
-			if (type.equals("object")) { //$NON-NLS-1$
+			switch (prop.getPropertyType()) { 
+			case "object": //$NON-NLS-1$
 				return objectValue(prop);
-			} else if (type.equals("array")) { //$NON-NLS-1$
+			case "array": //$NON-NLS-1$
 				return arrayValue(prop);
-			} else if (type.equals("collection")) { //$NON-NLS-1$
+			case "collection": //$NON-NLS-1$
 				return collectionValue(prop);
-			} else if (type.equals("int")) { //$NON-NLS-1$
+			case "int": //$NON-NLS-1$
 				return Integer.valueOf(intValue(prop));
-			} else if (type.equals("double")) { //$NON-NLS-1$
+			case "double": //$NON-NLS-1$
 				return new Double(doubleValue(prop));
-			} else if (type.equals("boolean")) { //$NON-NLS-1$
+			case "boolean": //$NON-NLS-1$
 				return new Boolean(booleanValue(prop));
-			} else if (type.equals("string")) { //$NON-NLS-1$
+			case "string": //$NON-NLS-1$
 				return stringValue(prop);
 			}
 		}
@@ -441,6 +454,7 @@ public class XMLControlElement implements XMLControl {
 		}
 	}
 
+	@Override
 	public Collection<String> getPropertyNamesRaw() {
 		return propNames;
 	}
@@ -1059,6 +1073,12 @@ public class XMLControlElement implements XMLControl {
 	public void clearValues() {
 		props.clear();
 		propNames.clear();
+		if (propMap != null)
+			propMap.clear();
+		if (childMap != null) {
+			childMap.clear();
+			childControls = null;
+		}
 	}
 
 	/**
@@ -1155,15 +1175,6 @@ public class XMLControlElement implements XMLControl {
 		}
 	}
 
-	/**
-	 * Gets the property type.
-	 *
-	 * @return the type
-	 */
-	@Override
-	public String getPropertyType() {
-		return "object"; //$NON-NLS-1$
-	}
 
 	/**
 	 * Gets the property class.
@@ -1173,16 +1184,6 @@ public class XMLControlElement implements XMLControl {
 	@Override
 	public Class<?> getPropertyClass() {
 		return getObjectClass();
-	}
-
-	/**
-	 * Gets the immediate parent property, if any.
-	 *
-	 * @return the parent
-	 */
-	@Override
-	public XMLProperty getParentProperty() {
-		return parent;
 	}
 
 	/**
@@ -1206,6 +1207,16 @@ public class XMLControlElement implements XMLControl {
 	}
 
 	/**
+	 * Gets the property content of this control.
+	 *
+	 * @return a list of XMLProperties
+	 */
+	@Override
+	public List<XMLProperty> getPropsRaw() {
+		return props;
+	}
+
+	/**
 	 * Gets the named XMLControl child of this property. May return null.
 	 *
 	 * @param name the property name
@@ -1213,13 +1224,7 @@ public class XMLControlElement implements XMLControl {
 	 */
 	@Override
 	public XMLControl getChildControl(String name) {
-		XMLControl[] children = getChildControls();
-		for (int i = 0; i < children.length; i++) {
-			if (children[i].getPropertyName().equals(name)) {
-				return children[i];
-			}
-		}
-		return null;
+		return getChildMap().get(name);
 	}
 
 	/**
@@ -1230,15 +1235,18 @@ public class XMLControlElement implements XMLControl {
 	 */
 	@Override
 	public XMLControl[] getChildControls() {
-		ArrayList<XMLControl> list = new ArrayList<XMLControl>();
-		Iterator<XMLProperty> it = props.iterator();
-		while (it.hasNext()) {
-			XMLProperty prop = it.next();
-			if (prop.getPropertyType().equals("object")) { //$NON-NLS-1$
-				list.add((XMLControl) prop.getPropertyContent().get(0));
+		if (childControls == null) {
+			ArrayList<XMLControl> list = new ArrayList<XMLControl>();
+			Iterator<XMLProperty> it = props.iterator();
+			while (it.hasNext()) {
+				XMLProperty prop = it.next();
+				if (prop.getPropertyType().equals("object")) { //$NON-NLS-1$
+					list.add((XMLControl) prop.getPropertyContent().get(0));
+				}
 			}
+			childControls = list.toArray(new XMLControl[list.size()]);
 		}
-		return list.toArray(new XMLControl[0]);
+		return childControls;
 	}
 
 	/**
@@ -1277,16 +1285,6 @@ public class XMLControlElement implements XMLControl {
 		return name + " " + count.toString(); //$NON-NLS-1$
 	}
 
-	/**
-	 * This does nothing since the property type is "object".
-	 *
-	 * @param stringValue the string value of a primitive or string property
-	 */
-	@Override
-	public void setValue(String stringValue) {
-
-		/** empty block */
-	}
 
 	/**
 	 * Returns the string xml representation.
@@ -1465,10 +1463,11 @@ public class XMLControlElement implements XMLControl {
 		// names list now contains property names to keep
 		Iterator<XMLProperty> it = props.iterator();
 		while (it.hasNext()) {
-			XMLProperty prop = it.next();
-			if (!names.contains(prop.getPropertyName())) {
+			String name = it.next().getPropertyName();
+			if (!names.contains(name)) {
 				it.remove();
-				propNames.remove(prop.getPropertyName());
+				propNames.remove(name);
+				getPropMap().remove(name);
 			}
 		}
 		// add object properties not in the names list to this control
@@ -1478,20 +1477,25 @@ public class XMLControlElement implements XMLControl {
 			if (names.contains(name)) {
 				continue;
 			}
-			String propType = control.getPropertyType(name);
-			if (propType.equals("int")) { //$NON-NLS-1$
+			switch (control.getPropertyType(name)) {
+			case "int": //$NON-NLS-1$
 				setValue(name, control.getInt(name));
-			} else if (propType.equals("double")) { //$NON-NLS-1$
+				break;
+			case "double": //$NON-NLS-1$
 				setValue(name, control.getDouble(name));
-			} else if (propType.equals("boolean")) { //$NON-NLS-1$
+				break;
+			case "boolean": //$NON-NLS-1$
 				setValue(name, control.getBoolean(name));
-			} else if (propType.equals("string")) { //$NON-NLS-1$
+				break;
+			case "string": //$NON-NLS-1$
 				setValue(name, control.getString(name));
-			} else {
+				break;
+			default:
 				setValue(name, control.getObject(name));
+				break;
 			}
 		}
-		return true;	
+		return true;
 	}
 
 	/**
@@ -1505,25 +1509,40 @@ public class XMLControlElement implements XMLControl {
 	 */
 	private void setXMLProperty(String name, String type, Object value, boolean writeNullFinalArrayElement) {
 		// remove any previous property with the same name
+		XMLPropertyElement prop = new XMLPropertyElement(this, name, type, value, writeNullFinalArrayElement);
 		int i = -1;
-		if (propNames.contains(name)) {
-			Iterator<XMLProperty> it = props.iterator();
-			while (it.hasNext()) {
-				i++;
-				XMLProperty prop = it.next();
-				if (prop.getPropertyName().equals(name)) {
-					it.remove();
-					break;
-				}
-			}
-		} else {
+		XMLProperty old = getProperty(name);
+		if (old == null) {
 			propNames.add(name);
+		} else {
+			props.remove(old);			
 		}
 		if (i > -1) {
-			props.add(i, new XMLPropertyElement(this, name, type, value, writeNullFinalArrayElement));
+			props.add(i,prop);
 		} else {
-			props.add(new XMLPropertyElement(this, name, type, value, writeNullFinalArrayElement));
+			props.add(prop);
 		}
+		setProperty(name, prop);
+	}
+
+	private XMLProperty getProperty(String name) {
+		return getPropMap().get(name);
+	}
+
+	private void setProperty(String name, XMLProperty prop) {
+		getPropMap().put(name, prop);
+		if (prop.getPropertyType().equals("object")) { //$NON-NLS-1$
+			getChildMap().put(name, ((XMLControl) prop.getPropertyContent().get(0)));
+			childControls = null;
+		}
+
+	}
+
+	private Map<String, XMLProperty> getPropMap() {
+		if (propMap == null) {
+			propMap = new HashMap<String, XMLProperty>();
+		}
+		return propMap;
 	}
 
 	/**
@@ -1533,23 +1552,16 @@ public class XMLControlElement implements XMLControl {
 	 * @return the XMLProperty
 	 */
 	private XMLProperty getXMLProperty(String name) {
-		if (name == null) {
-			return null;
-		}
-		Iterator<XMLProperty> it = props.iterator();
-		while (it.hasNext()) {
-			XMLProperty prop = it.next();
-			if (name.equals(prop.getPropertyName())) {
-				return prop;
-			}
-		}
-		return null;
+		return (name == null ? null : getPropMap().get(name));
 	}
 
 	/**
 	 * Reads this control from the current input.
 	 */
 	private void readInput() {
+
+		long t0 = Performance.now(0);
+
 		readFailed = false;
 		try {
 			// get document root opening tag line
@@ -1616,6 +1628,7 @@ public class XMLControlElement implements XMLControl {
 			theClass = null;
 			readXML(xml);
 		}
+		OSPLog.debug("!!! " + Performance.now(t0) + " XMLControlElement.readData");
 	}
 
 	/**
@@ -1681,12 +1694,29 @@ public class XMLControlElement implements XMLControl {
 			// opening property tag
 			else if (xml.indexOf("<property") != -1) { //$NON-NLS-1$
 				XMLProperty child = readProperty(new XMLPropertyElement(prop), xml);
-				control.props.add(child);
-				control.propNames.add(child.getPropertyName());
+				control.addProperty(child);
 			}
 			xml = input.readLine();
 		}
 		return control;
+	}
+
+	private void addProperty(XMLProperty child) {
+		String name = child.getPropertyName();
+		props.add(child);
+		propNames.add(name);
+		setProperty(name, child);
+	}
+
+	private Map<String, XMLControl> getChildMap() {
+		if (childMap == null) {
+//			XMLControl[] children = getChildControls();
+			childMap = new HashMap<String, XMLControl>();
+//			for (int i = 0; i < children.length; i++) {
+//				childMap.put(children[i].getPropertyName(), children[i]);
+//			}
+		}
+		return childMap;
 	}
 
 	/**
@@ -1874,35 +1904,43 @@ public class XMLControlElement implements XMLControl {
 			index = next.getPropertyName();
 			n = Integer.parseInt(index.substring(1, index.indexOf("]"))); //$NON-NLS-1$
 			String type = next.getPropertyType();
-			if (type.equals("object")) { //$NON-NLS-1$
+			switch (type) {
+			case "object":
 				Array.set(array, n, objectValue(next));
-			} else if (type.equals("int")) { //$NON-NLS-1$
+				break;
+			case "int":
 				int val = intValue(next);
 				if (Object.class.isAssignableFrom(componentType)) {
 					Array.set(array, n, Integer.valueOf(val));
 				} else {
 					Array.setInt(array, n, val);
 				}
-			} else if (type.equals("double")) { //$NON-NLS-1$
-				double val = doubleValue(next);
+				break;
+			case "double":
+				double d = doubleValue(next);
 				if (Object.class.isAssignableFrom(componentType)) {
-					Array.set(array, n, new Double(val));
+					Array.set(array, n, new Double(d));
 				} else {
-					Array.setDouble(array, n, val);
+					Array.setDouble(array, n, d);
 				}
-			} else if (type.equals("boolean")) { //$NON-NLS-1$
-				boolean val = booleanValue(next);
+				break;
+			case "boolean":
+				boolean b = booleanValue(next);
 				if (Object.class.isAssignableFrom(componentType)) {
-					Array.set(array, n, new Boolean(val));
+					Array.set(array, n, Boolean.valueOf(b));
 				} else {
-					Array.setBoolean(array, n, val);
+					Array.setBoolean(array, n, b);
 				}
-			} else if (type.equals("string")) { //$NON-NLS-1$
+				break;
+			case "string":
 				Array.set(array, n, stringValue(next));
-			} else if (type.equals("array")) { //$NON-NLS-1$
+				break;
+			case "array":
 				Array.set(array, n, arrayValue(next));
-			} else if (type.equals("collection")) { //$NON-NLS-1$
+				break;
+			case "collection":
 				Array.set(array, n, collectionValue(next));
+				break;
 			}
 		}
 		return array;
@@ -2070,6 +2108,7 @@ public class XMLControlElement implements XMLControl {
 		}
 		return pointer - 1;
 	}
+
 
 }
 

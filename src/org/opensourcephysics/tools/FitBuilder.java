@@ -474,10 +474,10 @@ public class FitBuilder extends FunctionTool {
 					ArrayList<String[]> functions = new ArrayList<String[]>();
 
 					// look through XMLControl for fit functions
-					for (Object next : control.getPropertyContent()) {
-						if (next instanceof XMLProperty && ((XMLProperty) next).getPropertyName().equals("functions")) { //$NON-NLS-1$
+					for (XMLProperty next : control.getPropsRaw()) {
+						if (next.getPropertyName().equals("functions")) { //$NON-NLS-1$
 							// found FitFunctionPanels
-							XMLControl[] panels = ((XMLProperty) next).getChildControls();
+							XMLControl[] panels = next.getChildControls();
 							for (XMLControl panelControl : panels) {
 								String name = panelControl.getString("name"); //$NON-NLS-1$
 								String expression = panelControl.getString("description"); //$NON-NLS-1$
@@ -532,8 +532,8 @@ public class FitBuilder extends FunctionTool {
 	 * @param filePath          the path to the XML file read by the XMLControl
 	 */
 	protected void eliminateExcludedFunctions(XMLControl fitBuilderControl, String filePath) {
-		for (Object obj : fitBuilderControl.getPropertyContent()) {
-			if (obj instanceof XMLProperty && ((XMLProperty) obj).getPropertyName().equals("functions")) { //$NON-NLS-1$
+		for (XMLProperty obj : fitBuilderControl.getPropsRaw()) {
+			if (obj.getPropertyName().equals("functions")) { //$NON-NLS-1$
 				// found fitFunctionPanels
 				XMLProperty prop = (XMLProperty) obj;
 				List<Object> items = prop.getPropertyContent();
@@ -614,9 +614,7 @@ public class FitBuilder extends FunctionTool {
 		ArrayList<XMLControl> choices = new ArrayList<XMLControl>();
 		ArrayList<String> names = new ArrayList<String>();
 		ArrayList<String> expressions = new ArrayList<String>();
-		for (Object next : control.getPropertyContent()) {
-			if (next instanceof XMLProperty) {
-				XMLProperty prop = (XMLProperty) next;
+		for (XMLProperty prop : control.getPropsRaw()) {
 				for (Object obj : prop.getPropertyContent()) {
 					if (obj instanceof XMLProperty) {
 						XMLProperty f = (XMLProperty) obj;
@@ -628,7 +626,6 @@ public class FitBuilder extends FunctionTool {
 						expressions.add(desc);
 					}
 				}
-			}
 		}
 		// select all by default
 		boolean[] selected = new boolean[choices.size()];

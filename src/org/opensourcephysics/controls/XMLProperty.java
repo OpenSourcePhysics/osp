@@ -51,7 +51,7 @@ public interface XMLProperty {
   public int getLevel();
 
   /**
-   * Gets the property content of this property.
+   * Clone the property content of this property.
    *
    * @return a list of strings and XMLProperties
    */

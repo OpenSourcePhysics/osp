@@ -1015,14 +1015,11 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				XMLControlElement control = new XMLControlElement();
 				control.readXML(dataString);
 				if (control.getObjectClass() == this.getClass()) {
-					java.util.List<Object> list = control.getPropertyContent();
-					for (int i = 0; i < list.size(); i++) {
-						Object next = list.get(i);
-						if (next instanceof XMLProperty) {
-							XMLProperty prop = (XMLProperty) next;
-							if (prop.getPropertyName().equals("selected")) { //$NON-NLS-1$
-								return prop.getChildControls();
-							}
+					List<XMLProperty> list = control.getPropsRaw();
+					for (int i = 0, n = list.size(); i < n; i++) {
+						XMLProperty prop = list.get(i);
+						if (prop.getPropertyName().equals("selected")) { //$NON-NLS-1$
+							return prop.getChildControls();
 						}
 					}
 					return null;

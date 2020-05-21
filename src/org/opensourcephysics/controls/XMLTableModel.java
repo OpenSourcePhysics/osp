@@ -60,7 +60,7 @@ public String getColumnName(int column) {
    */
   @Override
 public int getRowCount() {
-    return control.getPropertyContent().size();
+    return control.getPropsRaw().size();
   }
 
   /**
@@ -76,7 +76,7 @@ public int getRowCount() {
   @Override
 public Object getValueAt(int row, int column) {
     try {
-      XMLProperty val = (XMLProperty) control.getPropertyContent().get(row);
+      XMLProperty val = control.getPropsRaw().get(row);
       Object content = val.getPropertyContent().get(0);
       if(content.toString().indexOf("![CDATA[")>-1) { //$NON-NLS-1$
         content = control.getString(val.getPropertyName());
@@ -141,7 +141,7 @@ public void setValueAt(Object value, int row, int col) {
     if(value instanceof String) {
       String s = (String) value;
       // determine class type at row and column
-      XMLProperty prop = (XMLProperty) control.getPropertyContent().get(row);
+      XMLProperty prop = (XMLProperty) control.getPropsRaw().get(row);
       changed = !s.equals(control.getString(prop.getPropertyName()));
       String type = prop.getPropertyType();
       if(type.equals("string")) {                       //$NON-NLS-1$

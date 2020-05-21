@@ -8,6 +8,7 @@
 package org.opensourcephysics.controls;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.List;
 
 /**
  * This defines methods for storing data in an xml control element.
@@ -108,6 +109,8 @@ public interface XMLControl extends Control, XMLProperty {
   	public String getBasepath();
 
 	public void setBasepath(String basepath);
+
+	List<XMLProperty> getPropsRaw();
 	
 }
 
