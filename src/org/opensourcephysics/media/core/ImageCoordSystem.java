@@ -154,7 +154,7 @@ public class ImageCoordSystem {
 	 */
 	public void setLocked(boolean locked) {
 		this.locked = locked;
-		support.firePropertyChange("locked", null, new Boolean(locked)); //$NON-NLS-1$
+		support.firePropertyChange(PROPERTY_COORDS_LOCKED, null, new Boolean(locked)); //$NON-NLS-1$
 	}
 
 	/**
