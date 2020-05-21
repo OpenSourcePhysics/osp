@@ -126,6 +126,9 @@ public class OSPRuntime {
 		
 	public static boolean isBHTest = isJS;
 	
+	public static boolean dontLog = isBHTest; // for OSPLog
+
+
 	public static boolean allowSetFonts = true;//!isBHTest; // for testing
 
 	public static boolean allowAsyncURL = isJS; // for OSPRuntime and Library SwingWorkers
@@ -297,8 +300,6 @@ public class OSPRuntime {
 	private static String prefsFileName = "osp.prefs"; //$NON-NLS-1$
 
 	public static boolean isApplet;
-
-
 
 
 	/**

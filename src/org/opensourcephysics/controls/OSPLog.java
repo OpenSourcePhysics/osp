@@ -74,6 +74,8 @@ import org.opensourcephysics.tools.FontSizer;
 @SuppressWarnings("serial")
 public class OSPLog extends JFrame {
 
+	private static int nLog;
+	
 	private final static PrintStream realSysout = System.out;
 
 	private StringBuffer logBuffer = new StringBuffer();
@@ -1046,6 +1048,8 @@ public class OSPLog extends JFrame {
 	}
 
 	private static void log(Level level, String msg) {
+		if (OSPRuntime.dontLog)
+			return;
 		LogRecord record = new LogRecord(level, msg);
 		
 		String className = null, methodName = null;
