@@ -492,7 +492,7 @@ public class ImageVideo extends VideoAdapter {
 		if (readOnly && frameNumber < paths.length) {
 			if (!paths[frameNumber].equals("")) {//$NON-NLS-1$
 				Image image = ResourceLoader.getImage(getAbsolutePath(paths[frameNumber]));
-				OSPLog.debug("ImageVideo new image " + image);
+				OSPLog.debug("ImageVideo new image");
 
 				if (image != null)
 					return image;
@@ -612,23 +612,25 @@ public class ImageVideo extends VideoAdapter {
 		String root = imagePath.substring(0, ++len);
 		int n = Integer.parseInt(imagePath.substring(len));
 		try {
+			
 			while (++n < limit) {
+				boolean precacheImage = (!readOnly || imageList.isEmpty());
 				// fill with leading zeros if nec
 				String num = "000" + n;
 				imagePath = root + (num.substring(num.length() - digits)) + extension;
 				// load images only if not loading as needed
-				if (!readOnly || imageList.isEmpty()) {
+				if (precacheImage) {
 					image = ResourceLoader.getImage(getAbsolutePath(imagePath));
 					if (image == null) {
 						break;
 					}
-				} else if (ResourceLoader.getResource(getAbsolutePath(imagePath)) == null) {
+				} else if (!ResourceLoader.checkExists(getAbsolutePath(imagePath))) {
 					// if loading as needed, just check that the resource exists. It did not
 					break;
 				}
 				// always add first image to list, but later images only if not loading as
 				// needed
-				if (!readOnly || imageList.isEmpty()) {
+				if (precacheImage) {
 					imageList.add(image);
 				}
 				pathList.add(imagePath);

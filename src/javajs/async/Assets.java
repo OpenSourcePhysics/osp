@@ -400,8 +400,12 @@ public class Assets {
 			for (int i = sortedList.length; --i >= 0;) {
 				if (fullPath.startsWith(sortedList[i])) {
 					url = assetsByPath.get(sortedList[i]).getURL(fullPath);
-					if (findZipEntry(url) == null)
+					ZipEntry ze = findZipEntry(url);
+					if (ze == null)
 						break;
+					if (isJS) {
+						jsutil.setURLBytes(url, jsutil.getZipBytes(ze));
+					}
 					return url;
 				}
 			}

@@ -1247,6 +1247,15 @@ public class ResourceLoader {
 	public static void clearZipCache() {
 		htZipContents.clear();
 	}
+	
+	public static boolean checkExists(String path) {
+		String[] parts = getJarURLParts(path);
+		if (parts != null) {
+			Map<String, ZipEntry> map = getZipContents(parts[0]);
+			return (map != null && map.containsKey(parts[1]));
+		}
+		return getResource(path) != null;
+	}
 
 	/**
 	 * Retrieve the ZipEntry for a file in a given zip file.
