@@ -54,7 +54,6 @@ import javax.swing.event.SwingPropertyChangeSupport;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
-import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.DataTool;
 
 /**
