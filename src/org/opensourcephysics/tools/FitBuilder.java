@@ -691,7 +691,7 @@ public class FitBuilder extends FunctionTool {
 
 	public static String localize(String functionName) {
 		String s = ToolsRes.getString("Function." + functionName + ".Name"); //$NON-NLS-1$ //$NON-NLS-2$
-		if (!s.startsWith("!")) //$NON-NLS-1$
+		if (s != null && !s.startsWith("!")) //$NON-NLS-1$
 			return s;
 		return functionName;
 	}
