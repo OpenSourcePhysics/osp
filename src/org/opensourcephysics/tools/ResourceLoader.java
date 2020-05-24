@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -2600,8 +2601,14 @@ public class ResourceLoader {
 			this.props = props;
 		}
 
-		public String getString(String name) {
-			return props == null ? res.getString(name) : props.getProperty(name);
+		public String getString(String key) throws MissingResourceException {
+			String ret = (props == null ? res.getString(key) : props.getProperty(key));
+			if (ret == null) {
+				String cname = (res == null ? props : res).getClass().getName();
+				throw new MissingResourceException("Can't find resource for bundle " + cname + ", key " + key, cname,
+						key);
+			}
+			return ret;
 		}
 
 	}
