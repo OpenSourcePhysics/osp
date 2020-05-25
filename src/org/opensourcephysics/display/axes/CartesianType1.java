@@ -241,8 +241,9 @@ public void draw(DrawingPanel panel, Graphics g) {
       leftGutter = Math.max(leftGutter, getLeftGutter(panel));
       if(leftGutter!=panel.getLeftGutter()) {
         panel.setGutters(leftGutter, topGutter, rightGutter, bottomGutter);
-        panel.recomputeTransform();
       }
+      panel.setPixelScale();
+//      panel.recomputeTransform();
     }
     numberFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
     scientificFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());

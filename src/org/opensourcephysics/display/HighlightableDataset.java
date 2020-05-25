@@ -199,8 +199,8 @@ public void draw(DrawingPanel drawingPanel, Graphics g) {
       g2.clipRect(viewRect.x, viewRect.y, viewRect.x+viewRect.width, viewRect.y+viewRect.height);
     }
     hitShapes = new Shape[index];
-    double[] xValues = getXPoints();
-    double[] yValues = getYPoints();
+    double[] xValues = getXPointsRaw();
+    double[] yValues = getYPointsRaw(); // can't be shifted
     if (screenCoordinates[0]==null || screenCoordinates[0].length!=index) {
     	screenCoordinates[0] = new double[index];
     	screenCoordinates[1] = new double[index];

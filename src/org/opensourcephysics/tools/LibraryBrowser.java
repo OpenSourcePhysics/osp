@@ -496,7 +496,7 @@ public class LibraryBrowser extends JPanel {
 					public void run() {
 						c.toFront();
 					}
-					
+
 				});
 			}
 		}
@@ -1549,7 +1549,7 @@ public class LibraryBrowser extends JPanel {
 	}
 
 	protected void processTargetCollection(LibraryTreeNode node) {
-		
+
 		Runnable onSuccess = new Runnable() {
 
 			@Override
@@ -2472,16 +2472,22 @@ public class LibraryBrowser extends JPanel {
 		String code = imageCode + "<h1>Open Source Physics Digital Library Browser</h1>" + //$NON-NLS-1$
 				"<p>The OSP Digital Library Browser enables you to browse, organize and access collections of digital library resources " //$NON-NLS-1$
 				+ "such as EJS models and Tracker experiments. Collections and resources may be on a local drive or remote server.</p>"
-				+ "<ul>" + "  <li>Open a collection by choosing from the <strong>Collections</strong> menu or entering a URL directly in the toolbar "
-				+ "as with a web browser.</li>" + "	 <li>Collections are organized and displayed in a tree. Each tree node is a resource or sub-collection. "
+				+ "<ul>"
+				+ "  <li>Open a collection by choosing from the <strong>Collections</strong> menu or entering a URL directly in the toolbar "
+				+ "as with a web browser.</li>"
+				+ "	 <li>Collections are organized and displayed in a tree. Each tree node is a resource or sub-collection. "
 				+ "Click a node to learn about the resource or double-click to download and/or open it in EJS or Tracker.</li>"
 				+ "	 <li>Build and organize your own local collection by clicking the <strong>Open Editor</strong> button. "
-				+ "Collections are stored as xml documents that contain references to the actual resource files. " + "For more information, see the Help menu.</li>" + "	 <li>Share your collections by uploading all files to the web or a local network. For more information, see the Help menu.</li>"
-				+ "</ul>" + "<h2>ComPADRE Digital Library</h2>" + "<p>The ComPADRE Pathway, a part of the National Science Digital Library, is a growing network of educational resource "
+				+ "Collections are stored as xml documents that contain references to the actual resource files. "
+				+ "For more information, see the Help menu.</li>"
+				+ "	 <li>Share your collections by uploading all files to the web or a local network. For more information, see the Help menu.</li>"
+				+ "</ul>" + "<h2>ComPADRE Digital Library</h2>"
+				+ "<p>The ComPADRE Pathway, a part of the National Science Digital Library, is a growing network of educational resource "
 				+ "collections supporting teachers and students in Physics and Astronomy. As a user you may explore collections designed to meet "
 				+ "your specific needs and help build the network by recommending resources, commenting on resources, and starting or joining "
 				+ "discussions. For more information, see &lt;<b><a href=\"https://www.compadre.org/osp/\">http://www.compadre.org/osp/</a></b>&gt;. "
-				+ "To recommend an OSP resource for ComPADRE, visit the Suggest a Resource page at &lt;<b><a href=" + "\"https://www.compadre.org/osp/items/suggest.cfm\">http://www.compadre.org/osp/items/suggest.cfm</a></b>&gt;.&nbsp; "
+				+ "To recommend an OSP resource for ComPADRE, visit the Suggest a Resource page at &lt;<b><a href="
+				+ "\"https://www.compadre.org/osp/items/suggest.cfm\">http://www.compadre.org/osp/items/suggest.cfm</a></b>&gt;.&nbsp; "
 				+ "Contact the OSP Collection editor, Wolfgang Christian, for additional information.</p>";
 		return code;
 	}
@@ -2662,7 +2668,7 @@ public class LibraryBrowser extends JPanel {
 			// BH 2020.04.14 added to speed up zip file checking
 			boolean doCache = OSPRuntime.doCacheZipContents;
 			OSPRuntime.doCacheZipContents = true;
-			LibraryResource resource = loadResource(realPath); 
+			LibraryResource resource = loadResource(realPath);
 			OSPRuntime.doCacheZipContents = doCache;
 			if (!doCache)
 				ResourceLoader.clearZipCache();
@@ -2816,8 +2822,9 @@ public class LibraryBrowser extends JPanel {
 				// This is a massive test just to find out if we might have an appropriate file
 				// It is used, for example, to see if a control could be NOT an XML file.
 				Map<String, ZipEntry> files = ResourceLoader.getZipContents(file.getAbsolutePath());
-				for (String next: files.keySet()) {
-					if (next.toLowerCase().endsWith(".trk")) return true; //$NON-NLS-1$
+				for (String next : files.keySet()) {
+					if (next.toLowerCase().endsWith(".trk")) //$NON-NLS-1$
+						return true;
 				}
 				return true;
 			case "htm": //$NON-NLS-1$

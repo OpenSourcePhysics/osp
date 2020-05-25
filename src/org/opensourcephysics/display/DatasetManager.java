@@ -830,11 +830,14 @@ public double[][] getData2D() {
         index = Math.max(index, next.getIndex());
       }
       double[][] data = new double[count+1][index];
-      double[] d = datasets.get(0).getXPoints();
-      System.arraycopy(d, 0, data[0], 0, d.length);
+      Dataset src = datasets.get(0);
+      double[] d = src.getXPointsRaw();
+      int n = src.getIndex();
+      System.arraycopy(d, 0, data[0], 0, n);
       for(int i = 0; i<count; i++) {
-        d = datasets.get(i).getYPoints();
-        System.arraycopy(d, 0, data[i+1], 0, d.length);
+        src = datasets.get(i);
+        d = (src.isShifted() ? src.getYPoints() : src.getYPointsRaw());
+        System.arraycopy(d, 0, data[i+1], 0, n);
       }
       return data;
     }

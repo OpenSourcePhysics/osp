@@ -1554,7 +1554,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			column.setMarkerColor(source.getFillColor(), source.getLineColor());
 			column.setID(source.getID());
 			column.setColumnID(i);
-			column.setPoints((i == 0) ? source.getXPoints() : source.getYPoints());
+			column.setPoints((i == 0) ? source.getXPointsRaw()
+					: source.isShifted() ? source.getYPoints() : source.getYPointsRaw(), source.getIndex());
 			column.setXColumnVisible(false);
 			columns.add(column);
 		}
@@ -1593,7 +1594,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		}
 		column.setID(source.getID());
 		column.setColumnID(columnID);
-		column.setPoints(data);
+		column.setPoints(data, data.length);
 		return column;
 	}
 
@@ -1650,9 +1651,9 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		}
 		if (includeDataAndID) {
 			target.clear();
-			double[] x = source.getXPoints();
-			double[] y = source.getYPoints();
-			target.append(x, y);
+			double[] x = source.getXPointsRaw();
+			double[] y = (source.isShifted() ? source.getYPoints() : source.getYPointsRaw());
+			target.append(x, y, source.getIndex());
 			target.setID(source.getID());
 		}
 		target.setName(source.getName());

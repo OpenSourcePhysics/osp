@@ -1786,11 +1786,12 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 * values and the gutters.
 	 */
 	public void recomputeTransform() {
-		xPixPerUnit = Math.max(width - leftGutter - rightGutter, 1) / (xmax - xmin);
-		yPixPerUnit = Math.max(height - bottomGutter - topGutter, 1) / (ymax - ymin); // the y scale in pixels
-		pixelTransform.setTransform(xPixPerUnit, 0, 0, -yPixPerUnit, -xmin * xPixPerUnit + leftGutter,
-				ymax * yPixPerUnit + topGutter);
-		pixelTransform.getMatrix(pixelMatrix); // puts the transformation into the pixel matrix
+		setPixelScale();
+//		xPixPerUnit = Math.max(width - leftGutter - rightGutter, 1) / (xmax - xmin);
+//		yPixPerUnit = Math.max(height - bottomGutter - topGutter, 1) / (ymax - ymin); // the y scale in pixels
+//		pixelTransform.setTransform(xPixPerUnit, 0, 0, -yPixPerUnit, -xmin * xPixPerUnit + leftGutter,
+//				ymax * yPixPerUnit + topGutter);
+//		pixelTransform.getMatrix(pixelMatrix); // puts the transformation into the pixel matrix
 	}
 
 	/**

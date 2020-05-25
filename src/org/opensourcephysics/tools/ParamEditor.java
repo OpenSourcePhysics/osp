@@ -428,7 +428,7 @@ public class ParamEditor extends FunctionEditor {
 	@Override
 	protected void setReferences(FObject obj, BitSet directRefrences) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

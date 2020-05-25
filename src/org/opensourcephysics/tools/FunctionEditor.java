@@ -97,9 +97,10 @@ import org.opensourcephysics.display.TeXParser;
  */
 @SuppressWarnings("serial")
 public abstract class FunctionEditor extends JPanel implements PropertyChangeListener {
-	
-	public interface FObject{}
-		
+
+	public interface FObject {
+	}
+
 	// static constants
 	@SuppressWarnings("javadoc")
 	public final static String THETA = TeXParser.parseTeX("$\\theta$"); //$NON-NLS-1$
@@ -129,7 +130,8 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	protected ParamEditor paramEditor;
 	protected ArrayList<FObject> objects = new ArrayList<>();
 	protected String[] names = new String[0];
-	//BH unnec protected ArrayList<FObject> sortedObjects = new ArrayList<FObject>();
+	// BH unnec protected ArrayList<FObject> sortedObjects = new
+	// ArrayList<FObject>();
 	protected HashSet<String> forbiddenNames = new HashSet<String>();
 	protected boolean removablesAtTop = false;
 	protected BitSet circularErrors = new BitSet();
@@ -241,7 +243,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	 * @return the name
 	 */
 	abstract public String getName(FObject obj);
-	
+
 	/**
 	 * Returns the expression of the object.
 	 *
@@ -292,7 +294,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		}
 		for (int i = objects.size(); --i >= 0;) {
 			if (name.equals(getName(objects.get(i))))
-					return objects.get(i);
+				return objects.get(i);
 		}
 		return null;
 	}
@@ -311,7 +313,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		for (int row = 0; row < objects.size(); row++) {
 			FObject obj = objects.get(row);
 			String prev;
-			if (!name.equals(getName(obj)) || (prev  = getExpression(obj)).equals(expression)) {
+			if (!name.equals(getName(obj)) || (prev = getExpression(obj)).equals(expression)) {
 				continue;
 			}
 			obj = createObject(name, expression, obj);
@@ -582,12 +584,12 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	 * Evaluates all current objects.
 	 */
 	abstract public void evaluateAll();
-	
+
 	protected void setArrays() {
 		// refresh names array
 		evaluate.clear();
 		circularErrors.clear();
-		//sortedObjects.clear();
+		// sortedObjects.clear();
 		errors.clear();
 		int nObj = objects.size();
 		if (names.length != nObj) {
@@ -643,7 +645,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				int n = references.cardinality();
 				if (n > 0)
 					references.or(names);
-				// The idea here is that "A contains B" iff (A or B) == A. 
+				// The idea here is that "A contains B" iff (A or B) == A.
 				// That is, if no more bits were added. So we do a fast cardinality test
 				// rather than a full equivalence test. BitSets are GREAT!!
 				if (n == 0 || references.cardinality() == names.cardinality()) {
@@ -660,8 +662,8 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	}
 
 	/**
-	 * Gets the BitSet of indexes in objects of this class referenced in a
-	 * function expression of this class either directly or indirectly.
+	 * Gets the BitSet of indexes in objects of this class referenced in a function
+	 * expression of this class either directly or indirectly.
 	 *
 	 * @param iObj the objects index of this item * @param references a BitSet to
 	 *             add references to (may be null)
@@ -689,8 +691,6 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		setReferences(obj, directReferences);
 		return references;
 	}
-
-
 
 	/**
 	 * Determines if a test expression is valid.
@@ -741,6 +741,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	 * Subclasses implement to set objects referenced in an object's expression.
 	 */
 	abstract protected void setReferences(FObject obj, BitSet directRefrences);
+
 	/**
 	 * Creates the GUI.
 	 */
@@ -1109,8 +1110,9 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	}
 
 	/**
-	 * before we test for a NFE, at least check that it COULD be a number. 
-	 * I is for "Infinity"
+	 * before we test for a NFE, at least check that it COULD be a number. I is for
+	 * "Infinity"
+	 * 
 	 * @param n
 	 * @return
 	 */
@@ -1684,7 +1686,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		}
 
 		void setInitialValue(final String stringValue) {
-	    	OSPRuntime.postEvent(new Runnable() {
+			OSPRuntime.postEvent(new Runnable() {
 				@Override
 				public void run() {
 					setInitialValuesAsync(stringValue);

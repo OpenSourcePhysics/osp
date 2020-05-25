@@ -85,7 +85,9 @@ public class ResourceLoader {
 
 	static {
 		// ensures that OSPRuntime has initialized Assets
-		if (OSPRuntime.isJS) {};
+		if (OSPRuntime.isJS) {
+		}
+		;
 	}
 	private final static String encoding = "UTF-8"; //$NON-NLS-1$
 	final static Charset defaultCharset = Charset.forName(encoding);
@@ -1248,7 +1250,7 @@ public class ResourceLoader {
 	public static void clearZipCache() {
 		htZipContents.clear();
 	}
-	
+
 	public static boolean checkExists(String path) {
 		String[] parts = getJarURLParts(path);
 		if (parts != null) {
@@ -1270,7 +1272,7 @@ public class ResourceLoader {
 	 * 
 	 * 
 	 * @param zipFile
-	 * @param fileName zip entry name or lower-case extension starting with "."
+	 * @param fileName   zip entry name or lower-case extension starting with "."
 	 * @param isContains fileName is a fragment of the entry name, not the other way
 	 *                   around
 	 * @return the ZipEntry for this file, possibly cached.
@@ -1968,7 +1970,7 @@ public class ResourceLoader {
 		String base = null;
 		String fileName = path;
 		int i = isZipEntry(path, true);
-		if (i >= 0) {	
+		if (i >= 0) {
 			base = path.substring(0, i);
 			fileName = path.substring(i + 2);
 		}
@@ -2236,7 +2238,7 @@ public class ResourceLoader {
 		}
 
 		// BH 2020.03.28 URLs are checked when created; only a URI might not have a
-		// target at this point, and oddly enough, URI.toURL() does not check. 
+		// target at this point, and oddly enough, URI.toURL() does not check.
 		// 2020.04.02 DB added following to check for target
 
 		return (streamExists(working) ? new Resource(working, entryPath) : null);
@@ -2294,8 +2296,8 @@ public class ResourceLoader {
 //				|| createOnly) {
 //			res = createClassResource(path = OSPRuntime.tempDir + path, type);
 //		} else 
-			
-			if ((searchFiles && (res = createFileResource(path)) != null) || (res = createURLResource(path)) != null
+
+		if ((searchFiles && (res = createFileResource(path)) != null) || (res = createURLResource(path)) != null
 				|| (res = createZipResource(path)) != null || (res = createClassResource(path, type)) != null) {
 			// res is not null;
 		}
@@ -2550,7 +2552,7 @@ public class ResourceLoader {
 							return extracted;
 					}
 					return null;
-				} 
+				}
 				Resource is = getResource(filename, false);
 				inputStream = (is == null ? null : is.openInputStream());
 			}
@@ -2623,10 +2625,10 @@ public class ResourceLoader {
 			String name = bundleName.replaceAll("\\.", "/") + ".properties";
 			try {
 				p.load(Assets.getAssetStream(name));
-				OSPLog.debug("ResourceLoader found " + p.size() 
-				    + " properties in\n" + Assets.getURLFromPath(name).toString());
+				OSPLog.debug("ResourceLoader found " + p.size() + " properties in\n"
+						+ Assets.getURLFromPath(name).toString());
 				return new Bundle(p);
-				
+
 			} catch (Exception e) {
 			}
 			OSPLog.debug("ResourceLoader could not find resource " + bundleName);
@@ -2644,7 +2646,8 @@ public class ResourceLoader {
 	static private Bundle myResourceBundle;
 
 	private static void getMyResourceBundle() {
-		myResourceBundle = (myLocale == null ? getBundle(JAR_TOOL_BUNDLE_NAME) : getBundle(JAR_TOOL_BUNDLE_NAME, myLocale));
+		myResourceBundle = (myLocale == null ? getBundle(JAR_TOOL_BUNDLE_NAME)
+				: getBundle(JAR_TOOL_BUNDLE_NAME, myLocale));
 	}
 
 	static public void setLocale(Locale locale) {
@@ -2804,8 +2807,9 @@ public class ResourceLoader {
 	}
 
 	/**
-	 * Get the asset URL, either as a jar: URL or an absolute path to the assetPath given.
-	 * Note that in Eclipse, you must set the default working directory to {workspace:name}/bin.
+	 * Get the asset URL, either as a jar: URL or an absolute path to the assetPath
+	 * given. Note that in Eclipse, you must set the default working directory to
+	 * {workspace:name}/bin.
 	 * 
 	 * @param assetPath
 	 * @return
@@ -2813,7 +2817,6 @@ public class ResourceLoader {
 	public static URL getAssetURL(String assetPath) {
 		return Assets.getURLFromPath(assetPath);
 	}
-
 
 	/**
 	 * Same as getAssetURL now.
@@ -2824,7 +2827,6 @@ public class ResourceLoader {
 	public static URL getImageZipResource(String imagePath) {
 		return Assets.getURLFromPath(imagePath);
 	}
-
 
 	/**
 	 * Just get the URL contents as a byte array

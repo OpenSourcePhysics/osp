@@ -40,6 +40,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -871,8 +872,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	protected void setFontLevel(int level) {
 		FontSizer.setFonts(this, level);
 
-		//FontSizer.setFonts(statsTable, level);
-		//FontSizer.setFonts(propsTable, level);
+		// FontSizer.setFonts(statsTable, level);
+		// FontSizer.setFonts(propsTable, level);
 
 		curveFitter.setFontLevel(level);
 
@@ -1056,7 +1057,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 	private static boolean arrayContains(String[] s, String name) {
 		for (int i = s.length; --i >= 0;) {
-			if (s[i].equals(name)) 
+			if (s[i].equals(name))
 				return true;
 		}
 		return false;
@@ -1108,7 +1109,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		int rowCount = Math.max(1, dataTable.getRowCount());
 		double[] y = new double[rowCount];
 		Arrays.fill(y, Double.NaN);
-		column.setPoints(y);
+		column.setPoints(y, rowCount);
 		column.setXColumnVisible(false);
 		return column;
 	}
@@ -2731,9 +2732,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				toolbar.add(selectedXField, 7);
 				toolbar.add(selectedYLabel, 8);
 				toolbar.add(selectedYField, 9);
-				selectedXField.setValue(selectedData.getXPoints()[0]);
+				selectedXField.setValue(selectedData.getXPointsRaw()[0]);
 				selectedXField.refreshPreferredWidth();
-				selectedYField.setValue(selectedData.getYPoints()[0]);
+				selectedYField.setValue(selectedData.getY(0));
 				selectedYField.refreshPreferredWidth();
 				toolbar.revalidate();
 			} else {
@@ -3305,8 +3306,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					areaLimits[0].x = data.getXMin();
 					areaLimits[1].x = data.getXMax();
 					// set initial point indices
-					double[] pts = data.getXPoints();
-					for (int i = 0; i < pts.length; i++) {
+					double[] pts = data.getXPointsRaw();
+					int n = data.getIndex();
+					for (int i = 0; i < n; i++) {
 						if (pts[i] == areaLimits[0].x) {
 							areaLimits[0].pointIndex = i;
 						}
@@ -3338,8 +3340,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			}
 
 			plot.slope = plot.value = Double.NaN;
-			double[] xpoints = null;
-			double[] ypoints = null;
 			int j = measurementIndex;
 			double x = plot.pixToX(measurementX);
 			if (data != null && (positionVisible || slopeVisible || areaVisible)) {
@@ -3347,8 +3347,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					measurementIndex = j = plot.findIndexNearestX(x, data);
 				}
 
-				xpoints = data.getXPoints();
-				ypoints = data.getYPoints();
+				double[] xpoints = data.getXPointsRaw();
+				double[] ypoints = data.getYPointsRaw();
+
 				boolean measureData = !fitterCheckbox.isSelected() || (measureFit && toggleMeasurement)
 						|| (!measureFit && !toggleMeasurement);
 				FunctionDrawer drawer = curveFitter.getDrawer();
@@ -3413,43 +3414,63 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				upper += del;
 			}
 
-			double[] xpoints, ypoints;
+			double[] xpoints, ypoints, xp, yp;
+			int numpts;
 			if (measureData) {
-				xpoints = data.getXPoints();
-				ypoints = data.getYPoints();
+				numpts = data.getIndex();
+				xp = data.getXPointsRaw();
+				yp = data.isShifted() ? data.getYPoints() : data.getYPointsRaw();
 			} else {
-				int numpts = plot.xToPix(upper) - plot.xToPix(lower);
+				numpts = plot.xToPix(upper) - plot.xToPix(lower);
 				double delta = (upper - lower) / numpts;
-				xpoints = new double[numpts];
-				ypoints = new double[numpts];
+				xp = new double[numpts];
+				yp = new double[numpts];
 				for (int i = 0; i < numpts; i++) {
-					xpoints[i] = lower + i * delta;
-					ypoints[i] = drawer.evaluate(xpoints[i]);
+					xp[i] = lower + i * delta;
+					yp[i] = drawer.evaluate(xp[i]);
 				}
 			}
 
 			areaDataset.clear();
 
-			// find data points within range
-			ArrayList<Double> x = new ArrayList<Double>();
-			ArrayList<Double> y = new ArrayList<Double>();
-			for (int i = 0; i < xpoints.length; i++) {
-				if (xpoints[i] >= lower && xpoints[i] <= upper && !Double.isNaN(ypoints[i])) {
-					x.add(xpoints[i]);
-					y.add(ypoints[i]);
+			BitSet x = new BitSet(numpts);
+			int n = 0;
+			for (int i = 0; i < numpts; i++) {
+				if (xp[i] >= lower && xp[i] <= upper && !Double.isNaN(yp[i])) {
+					x.set(i);
+					n++;
 				}
 			}
+
+//			
+//			// find data points within range
+//			ArrayList<Double> x = new ArrayList<Double>();
+//			ArrayList<Double> y = new ArrayList<Double>();
+//			for (int i = 0; i < numpts; i++) {
+//				if (xpoints[i] >= lower && xpoints[i] <= upper && !Double.isNaN(ypoints[i])) {
+//					x.add(xpoints[i]);
+//					y.add(ypoints[i]);
+//				}
+//			}
 			if (!x.isEmpty()) {
-				xpoints = new double[x.size()];
-				ypoints = new double[x.size()];
-				for (int i = 0; i < xpoints.length; i++) {
-					xpoints[i] = x.get(i);
-					ypoints[i] = y.get(i);
+
+				xpoints = new double[n];
+				ypoints = new double[n];
+				for (int p = 0, i = x.nextSetBit(0); i >= 0; i = x.nextSetBit(i + 1), p++) {
+					xpoints[p] = xp[i];
+					ypoints[p] = yp[i];
 				}
+//				
+//				
+//				xpoints = new double[x.size()];
+//				ypoints = new double[x.size()];
+//				for (int i = 0; i < numpts; i++) {
+//					xpoints[i] = x.get(i);
+//					ypoints[i] = y.get(i);
+//				}
 				areaDataset.append(xpoints[0], 0);
 				areaDataset.append(xpoints, ypoints);
-				areaDataset.append(xpoints[xpoints.length - 1], 0);
-				int n = xpoints.length;
+				areaDataset.append(xpoints[n - 1], 0);
 				if (n > 1) {
 					plot.addDrawable(areaDataset);
 					// determine area under the curve
@@ -3478,58 +3499,17 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			if (data == null) {
 				return -1; // no dataset
 			}
-			int last = data.getIndex() - 1;
-			if (last == -1) {
+			int len = data.getIndex();
+			if (len == 0) {
 				return -1; // dataset has no points
 			}
+			double[] xpoints = data.getXPointsRaw();
+			double[] ypoints = data.getYPointsRaw();
 			// limit x to plot area
-			x = Math.max(plot.getXMin(), x);
-			x = Math.min(plot.getXMax(), x);
+			double min = plot.getXMin();
+			double max = plot.getXMax();
 
-			double[] xpoints = data.getXPoints();
-			double[] ypoints = data.getYPoints();
-
-			// sort x data, keeping only points for which the y-value is not NaN
-			ArrayList<Double> valid = new ArrayList<Double>();
-			for (int i = 0; i < xpoints.length; i++) {
-				if (Double.isNaN(ypoints[i]))
-					continue;
-				valid.add(xpoints[i]);
-			}
-			Double[] sorted = valid.toArray(new Double[valid.size()]);
-			java.util.Arrays.sort(sorted);
-			last = sorted.length - 1;
-
-			// check if pixel outside data range
-			if (x < sorted[0]) {
-				return 0;
-			}
-			if (x >= sorted[last]) {
-				return last;
-			}
-
-			// look thru sorted data to find point nearest x
-			for (int i = 1; i < sorted.length; i++) {
-				if (x >= sorted[i - 1] && x < sorted[i]) {
-					// found it
-					if (sorted[i - 1] < plot.getXMin()) {
-						x = sorted[i];
-					} else if (sorted[i] > plot.getXMax()) {
-						x = sorted[i - 1];
-					} else {
-						x = (Math.abs(x - sorted[i - 1]) < Math.abs(x - sorted[i])) ? sorted[i - 1] : sorted[i];
-					}
-
-					// find index of first data point with this value of x
-					for (int j = 0; j < xpoints.length; j++) {
-						if (xpoints[j] == x && !Double.isNaN(ypoints[j])) {
-							return j;
-						}
-					}
-					return -1;
-				}
-			}
-			return -1; // none found (should never get here)
+			return findNearestXIndex(x, xpoints, ypoints, len, min, max);
 		}
 
 		/**
@@ -3797,7 +3777,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				if (mouseEvent != null && mouseEvent.isShiftDown()) {
 					pointIndex = findIndexNearestX(x, data);
 				}
-				this.x = (pointIndex == -1) ? x : data.getXPoints()[pointIndex];
+				this.x = (pointIndex == -1) ? x : data.getXPointsRaw()[pointIndex];
 				refreshArea();
 				createMessage();
 				plot.setMessage(message);
@@ -3850,8 +3830,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			 * refreshes the value of x based on current pointIndex.
 			 */
 			public void refreshX() {
-				double[] data = dataTable.workingData.getXPoints();
-				if (pointIndex > -1 && pointIndex < data.length && !java.lang.Double.isNaN(data[pointIndex])) {
+				double[] data = dataTable.workingData.getXPointsRaw();
+				int n = dataTable.workingData.getIndex();
+				if (pointIndex > -1 && pointIndex < n && !java.lang.Double.isNaN(data[pointIndex])) {
 					x = data[pointIndex];
 				}
 			}
@@ -4295,6 +4276,104 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 */
 	public static XML.ObjectLoader getLoader() {
 		return new Loader();
+	}
+
+//	public static int findNearestXIndex(double x, double[] xpoints, double[] ypoints, int len, double min, double max) {
+//
+//		x = Math.min(max, Math.max(min, x));
+//
+//
+//		// sort x data, keeping only points for which the y-value is not NaN
+//		ArrayList<Double> valid = new ArrayList<Double>();
+//		for (int i = 0; i < len; i++) {
+//			if (Double.isNaN(ypoints[i]))
+//				continue;
+//			valid.add(xpoints[i]);
+//		}
+//		Double[] sorted = valid.toArray(new Double[valid.size()]);
+//		java.util.Arrays.sort(sorted);
+//		int last = sorted.length - 1;
+//
+//		// check if pixel outside data range
+//		if (x < sorted[0]) {
+//			return 0;
+//		}
+//		if (x >= sorted[last]) {
+//			return last;
+//		}
+//
+//		// look thru sorted data to find point nearest x
+//		for (int i = 1; i < sorted.length; i++) {
+//			if (x >= sorted[i - 1] && x < sorted[i]) {
+//				// found it
+//				if (sorted[i - 1] < min) {
+//					x = sorted[i];
+//				} else if (sorted[i] > max) {
+//					x = sorted[i - 1];
+//				} else {
+//					x = (Math.abs(x - sorted[i - 1]) < Math.abs(x - sorted[i])) ? sorted[i - 1] : sorted[i];
+//				}
+//
+//				// find index of first data point with this value of x
+//				for (int j = 0; j < xpoints.length; j++) {
+//					if (xpoints[j] == x && !Double.isNaN(ypoints[j])) {
+//						return j;
+//					}
+//				}
+//				return -1;
+//			}
+//		}
+//		return -1; // none found (should never get here)
+//}
+
+	/**
+	 * Far more efficient method of searching a sparse array. Just track the closest
+	 * point, running linearly through the array.
+	 * 
+	 * See test.PerformanceTests.findNearestXIndex.
+	 * 
+	 * @param x
+	 * @param xpoints
+	 * @param ypoints
+	 * @param len
+	 * @param min
+	 * @param max
+	 * @return
+	 */
+	public static int findNearestXIndex(double x, double[] xpoints, double[] ypoints, int len, double min, double max) {
+
+		x = Math.min(max, Math.max(min, x));
+
+		int imin = -1;
+		double dxmin = Double.MAX_VALUE;
+		for (int i = 0; i < len; i++) {
+			if (Double.isNaN(ypoints[i]))
+				continue;
+			double dx = Math.abs(x - xpoints[i]);
+			if (dx < dxmin) {
+				dxmin = dx;
+				imin = i;
+			}
+		}
+		if (xpoints[imin] < min)
+			imin++;
+		if (imin == len || xpoints[imin] > max)
+			imin = len - 1;
+		return imin;
+	}
+
+	static {
+		double[] xp = new double[] { 1, 2, 3, 4, 5, 6, 0, 0, 0 };
+		double[] yp = new double[] { 0, 0, Double.NaN, 0, 0, 0 };
+		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 0, 10) == 3);
+		System.out.println(findNearestXIndex(3.1, xp, yp, 3, 0, 10) == 2);
+		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 0, 3) == 2);
+		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 5, 10) == 2);
+		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 0, 10) == 3);
+		System.out.println(findNearestXIndex(3.1, xp, yp, 3, 0, 10) == 2);
+		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 0, 3) == 2);
+		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 5, 10) == 2);
+		System.out.println("");
 	}
 
 	/**

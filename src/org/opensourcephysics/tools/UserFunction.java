@@ -189,8 +189,8 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	}
 
 	/**
-	 * Gets the full expression using the current variables,
-	 *  replacing all references with their full expressions in parentheses
+	 * Gets the full expression using the current variables, replacing all
+	 * references with their full expressions in parentheses
 	 *
 	 * @param varNames the name of the independent variables
 	 * @return the expression
@@ -594,10 +594,11 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 		return exp.replaceAll("([A-Za-z_]\\w*)", " $1 ");
 
 	}
-	
-    static String unpadNames(String paddedExp) {
+
+	static String unpadNames(String paddedExp) {
 		return paddedExp.replaceAll(" ", "");
 	}
+
 	/**
 	 * Safe replaceAll for expressions.
 	 * 

@@ -277,7 +277,8 @@ public class UserFunctionEditor extends FunctionEditor {
 
 	void updateAllFunctions(ParamEditor paramEditor) {
 		for (int i = 0, n = objects.size(); i < n; i++) {
-			((UserFunction) objects.get(i)).setParameters(paramEditor.getNames(), paramEditor.getValues(), paramEditor.getDescriptions());
+			((UserFunction) objects.get(i)).setParameters(paramEditor.getNames(), paramEditor.getValues(),
+					paramEditor.getDescriptions());
 		}
 	}
 

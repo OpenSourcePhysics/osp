@@ -180,7 +180,7 @@ final public class DataToolPropsTable extends JTable {
 	 * Refresh the data display in this table.
 	 */
 	public void refreshTable() {
-    	OSPRuntime.postEvent(new Runnable() {
+		OSPRuntime.postEvent(new Runnable() {
 			@Override
 			public synchronized void run() {
 				tableChanged(new TableModelEvent(propsModel, TableModelEvent.HEADER_ROW));

@@ -15,32 +15,32 @@ import org.opensourcephysics.display.DataPanel;
  *
  */
 @SuppressWarnings("serial")
-public class DiagnosticsForSystem extends DataPanel{
+public class DiagnosticsForSystem extends DataPanel {
 
-  public static void aboutSystem(Frame owner) {
-		    JDialog dialog = new JDialog(owner,"System Properties");  //$NON-NLS-1$
-		    DiagnosticsForSystem viewer = new DiagnosticsForSystem();
-		    dialog.setContentPane(viewer);
-		    dialog.setSize(500, 300);
-		    dialog.setVisible(true);	  
-  }
-  
-  public  DiagnosticsForSystem(){
-	setColumnNames(new String[]{"#","property","value"});   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
-    Enumeration<?> propEnum = System.getProperties().propertyNames();
-    while(propEnum.hasMoreElements()) {
-      String next = (String) propEnum.nextElement();
-      String val = System.getProperty(next);
-      appendRow(new String[]{next,val}) ; 
-    }
-	refreshTable("DiagnosticsForSystem"); // make sure the table shows the current values
-	setRowNumberVisible(false);
-	setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-  }
-  
+	public static void aboutSystem(Frame owner) {
+		JDialog dialog = new JDialog(owner, "System Properties"); //$NON-NLS-1$
+		DiagnosticsForSystem viewer = new DiagnosticsForSystem();
+		dialog.setContentPane(viewer);
+		dialog.setSize(500, 300);
+		dialog.setVisible(true);
+	}
+
+	public DiagnosticsForSystem() {
+		setColumnNames(new String[] { "#", "property", "value" }); //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
+		Enumeration<?> propEnum = System.getProperties().propertyNames();
+		while (propEnum.hasMoreElements()) {
+			String next = (String) propEnum.nextElement();
+			String val = System.getProperty(next);
+			appendRow(new String[] { next, val });
+		}
+		refreshTable("DiagnosticsForSystem"); // make sure the table shows the current values
+		setRowNumberVisible(false);
+		setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+	}
+
 	// test program
 	public static void main(String[] args) {
 		aboutSystem(null);
-  }
-	
+	}
+
 }

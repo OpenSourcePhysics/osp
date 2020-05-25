@@ -436,7 +436,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 	 * @return true if changed
 	 */
 	protected boolean setTarget(String path) {
-		if (record.setTarget(path)) {			
+		if (record.setTarget(path)) {
 			setType(LibraryResource.getTypeFromPath(path, getHTMLPath()));
 			LibraryTreePanel.htmlPanesByNode.remove(this);
 			record.setThumbnail(null);
@@ -797,7 +797,8 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 				public void run() {
 					try {
 						// File thumbFile = get();
-						record.setThumbnail(thumbFile == null || !thumbFile.exists() ? null : thumbFile.getAbsolutePath());
+						record.setThumbnail(
+								thumbFile == null || !thumbFile.exists() ? null : thumbFile.getAbsolutePath());
 
 						if (record.getThumbnail() != null) {
 							LibraryTreePanel.htmlPanesByNode.remove(LibraryTreeNode.this);
@@ -806,7 +807,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 					} catch (Exception ignore) {
 					}
 				}
-				
+
 			});
 		}
 

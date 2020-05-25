@@ -294,9 +294,8 @@ public class LibraryTreePanel extends JPanel {
 		}
 	}
 
-	
 	private int myFontLevel;
-	
+
 	/**
 	 * Sets the font level.
 	 *
@@ -818,15 +817,14 @@ public class LibraryTreePanel extends JPanel {
 			}
 
 			/**
-			 * BH allowing for single-click on icon. Double clicks are 
-			 * difficult to handle.
+			 * BH allowing for single-click on icon. Double clicks are difficult to handle.
 			 * 
 			 * @param e
 			 * @return
 			 */
 			private boolean isSelect(MouseEvent e) {
 				return (/** @j2sNative e.bdata.jqevent.target.id.indexOf("icon")>=0 || */
-						e.getClickCount() == 2);
+				e.getClickCount() == 2);
 			}
 		};
 		// create toolbar and buttons
@@ -1544,7 +1542,7 @@ public class LibraryTreePanel extends JPanel {
 		if (ignoreChanges)
 			return;
 		isChanged = true;
-		firePropertyChange(LibraryBrowser.PROPERTY_LIBRARY_EDITED, null, null); //$NON-NLS-1$
+		firePropertyChange(LibraryBrowser.PROPERTY_LIBRARY_EDITED, null, null); // $NON-NLS-1$
 	}
 
 	/**
@@ -1835,8 +1833,8 @@ public class LibraryTreePanel extends JPanel {
 		}
 
 		@Override
-		public Component getListCellRendererComponent(JList<? extends Metadata> list, Metadata value, int index, boolean isSelected,
-				boolean cellHasFocus) {
+		public Component getListCellRendererComponent(JList<? extends Metadata> list, Metadata value, int index,
+				boolean isSelected, boolean cellHasFocus) {
 			boolean empty = false;
 			if (value != null && value instanceof Metadata) {
 				Metadata metadata = (Metadata) value;
@@ -2164,7 +2162,7 @@ public class LibraryTreePanel extends JPanel {
 					// look inside zip for html with same name as zip or trk
 					name = XML.stripExtension(name);
 					String targetName = name;
-					
+
 					ResourceLoader.getZipContentsAsync(targetURLPath, new Function<Map<String, ZipEntry>, Void>() {
 
 						@Override
@@ -2304,7 +2302,7 @@ public class LibraryTreePanel extends JPanel {
 						browser.refreshTabTitle(pathToRoot, rootResource);
 					}
 				}
-				
+
 			});
 		}
 

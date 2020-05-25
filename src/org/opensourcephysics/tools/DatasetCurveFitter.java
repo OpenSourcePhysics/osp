@@ -540,8 +540,8 @@ public class DatasetCurveFitter extends JPanel {
 			}
 
 			@Override
-			public Component getListCellRendererComponent(@SuppressWarnings("rawtypes") JList list, String value, int index, boolean isSelected,
-					boolean cellHasFocus) {
+			public Component getListCellRendererComponent(@SuppressWarnings("rawtypes") JList list, String value,
+					int index, boolean isSelected, boolean cellHasFocus) {
 				if (isSelected) {
 					setBackground(list.getSelectionBackground());
 					setForeground(list.getSelectionForeground());

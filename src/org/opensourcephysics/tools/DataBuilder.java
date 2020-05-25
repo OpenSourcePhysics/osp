@@ -187,8 +187,8 @@ public class DataBuilder extends FunctionTool {
 	 * @param selectedFunctions collection of DataFunction choices
 	 * @return true if user clicked OK
 	 */
-	protected void chooseDataFunctions(XMLControl control, String description,
-			Collection<String[]> selectedFunctions, ActionListener listener) {
+	protected void chooseDataFunctions(XMLControl control, String description, Collection<String[]> selectedFunctions,
+			ActionListener listener) {
 		// choose the elements and save
 		ArrayList<Object> originals = new ArrayList<Object>();
 		ArrayList<Object> choices = new ArrayList<Object>();
@@ -226,8 +226,8 @@ public class DataBuilder extends FunctionTool {
 						}
 						listener.actionPerformed(e);
 					}
-			
-		});
+
+				});
 		listChooser.setSeparator(" = "); //$NON-NLS-1$
 		listChooser.choose(choices, names, expressions, selected);
 	}

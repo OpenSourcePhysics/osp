@@ -247,42 +247,42 @@ public class LibraryComPADRE {
 	private static void loadNode(Node node, LibraryCollection collection, LibraryTreeNode treeNode, String urlPath,
 			Runnable onFound, Runnable onNothingNew) {
 		try {
-		boolean found = false;
-		String[] attachment = null;
-		if (isDesiredOSPType(node)) {
-			if ("EJS".equals(desiredOSPType)) { //$NON-NLS-1$
-				attachment = getAttachment(node, "Source Code"); //$NON-NLS-1$
-			} else {
-				attachment = getAttachment(node, "Main"); //$NON-NLS-1$
-				if (attachment == null) {
-					attachment = getAttachment(node, "Supplemental"); //$NON-NLS-1$
+			boolean found = false;
+			String[] attachment = null;
+			if (isDesiredOSPType(node)) {
+				if ("EJS".equals(desiredOSPType)) { //$NON-NLS-1$
+					attachment = getAttachment(node, "Source Code"); //$NON-NLS-1$
+				} else {
+					attachment = getAttachment(node, "Main"); //$NON-NLS-1$
+					if (attachment == null) {
+						attachment = getAttachment(node, "Supplemental"); //$NON-NLS-1$
+					}
 				}
 			}
-		}
-		if (attachment == null) {
-			onNothingNew.run();
-			return;
-		}
-		// ignore if there is no associated attachment
-		if (attachment != null) {
-
-			// create and add a new record to this node's collection
-			String name = getChildValue(node, "title"); //$NON-NLS-1$
-			LibraryResource record = new LibraryResource(name);
-			collection.addResource(record);
-
-			if (loadResource(record, node, attachment, treeNode)) {
-				found = true;
-				OSPRuntime.showStatus(name);
-				record.setProperty("reload_url", urlPath); //$NON-NLS-1$
+			if (attachment == null) {
+				onNothingNew.run();
+				return;
 			}
-		}
-		if (found) {
-			onFound.run();
-		} else {
-			onNothingNew.run();
-		}
-		
+			// ignore if there is no associated attachment
+			if (attachment != null) {
+
+				// create and add a new record to this node's collection
+				String name = getChildValue(node, "title"); //$NON-NLS-1$
+				LibraryResource record = new LibraryResource(name);
+				collection.addResource(record);
+
+				if (loadResource(record, node, attachment, treeNode)) {
+					found = true;
+					OSPRuntime.showStatus(name);
+					record.setProperty("reload_url", urlPath); //$NON-NLS-1$
+				}
+			}
+			if (found) {
+				onFound.run();
+			} else {
+				onNothingNew.run();
+			}
+
 		} catch (Exception e) {
 			OSPLog.debug("LibraryComPADRE exception " + e.getMessage());
 		}

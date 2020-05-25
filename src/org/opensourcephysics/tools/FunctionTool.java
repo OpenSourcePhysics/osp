@@ -68,7 +68,6 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	public static final String PROPERTY_FUNCTIONTOOL_VISIBLE = "ft_visible";
 	public static final String PROPERTY_FUNCTIONTOOL_DESCRIPTION = "description";
 
-
 	protected static String[] parserNames = new String[] { "e", "pi", "min", "mod", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			"sin", "cos", "abs", "log", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			"acos", "acosh", "ceil", "cosh", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
@@ -311,7 +310,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 			super.setVisible(vis);
 		else
 			contentPane.getTopLevelAncestor().setVisible(vis);
-		firePropertyChange(PROPERTY_FUNCTIONTOOL_VISIBLE, null, new Boolean(vis)); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_FUNCTIONTOOL_VISIBLE, null, new Boolean(vis)); // $NON-NLS-1$
 	}
 
 	/**
@@ -776,7 +775,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		c.validate();
 		refreshGUI();
 		c.repaint();
-		firePropertyChange(PROPERTY_FUNCTIONTOOL_PANEL, prev, panel); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_FUNCTIONTOOL_PANEL, prev, panel); // $NON-NLS-1$
 	}
 
 	/**

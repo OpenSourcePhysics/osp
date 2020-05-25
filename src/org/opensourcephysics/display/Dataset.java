@@ -93,8 +93,6 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 
 	protected double shift;
 
-	protected boolean shifted = false;
-
 	protected GeneralPath generalPath;
 	// path used to draw line plots
 
@@ -676,37 +674,7 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 	}
 
 	/**
-	 * Gets a copy of the ypoints array, with shift added if shifted.
-	 *
-	 * @return the y points (may be shifted)
-	 */
-	public double[] getYPoints() {
-		double[] temp = new double[index];
-		if (isShifted()) {
-			for (int i = 0; i < index; i++) {
-				temp[i] = ypoints[i] + shift;
-			}
-		} else {
-			System.arraycopy(ypoints, 0, temp, 0, index);
-		}
-
-		return temp;
-	}
-
-	/**
-	 * CAUTION -- could be a shift
-	 * @return
-	 */
-	public final double[] getYPointsRaw() {
-		return ypoints;
-	}
-
-	public double getY(int i) {
-		return ypoints[i];
-	}
-
-	/**
-	 * Gets the shifted property.
+	 * Gets the shifted property. DataColumn only.
 	 *
 	 * @return true if values are shifted
 	 */
@@ -716,7 +684,8 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 
 	/**
 	 * Sets the shifted property to shift the values of all elements.
-	 *
+	 * DataColumn only.
+	 * 
 	 * @param shift true to shift the values
 	 */
 	public void setShifted(boolean shifted) {
@@ -725,7 +694,8 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 
 	/**
 	 * Sets the shift used to shift the values of all elements.
-	 *
+	 * DataColumn only.
+	 * 
 	 * @param shift the shift
 	 * @return true if shift was changed
 	 */
@@ -735,7 +705,8 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 
 	/**
 	 * Gets the shift used to shift the values of all elements.
-	 *
+	 * DataColumn only.
+	 * 
 	 * @return the shift
 	 */
 	public double getShift() {
@@ -785,7 +756,7 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 	/**
 	 * Gets a copy of the xpoints array.
 	 *
-	 * @return xpoints[]
+	 * @return xpoints clone
 	 */
 	public final double[] getXPoints() {
 		double[] temp = new double[index];
@@ -793,8 +764,45 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 		return temp;
 	}
 
+	/**
+	 * Get xpoints; CAUTION: You must use getIndex() to get the meaningful length of the array data.
+	 * 
+	 * 
+	 * @return uncloned xpoints
+	 */
 	public final double[] getXPointsRaw() {
 		return xpoints;
+	}
+
+	/**
+	 * Gets a copy of the ypoints array, with shift added if shifted.
+	 *
+	 * @return a clone of the y points (may be shifted)
+	 */
+	public double[] getYPoints() {
+		double[] temp = new double[index];
+		if (isShifted()) {
+			for (int i = 0; i < index; i++) {
+				temp[i] = ypoints[i] + shift;
+			}
+		} else {
+			System.arraycopy(ypoints, 0, temp, 0, index);
+		}
+
+		return temp;
+	}
+
+	/**
+	 * CAUTION -- could be a shift in DataColumn set
+	 * 
+	 * @return uncloned ypoints
+	 */
+	public final double[] getYPointsRaw() {
+		return ypoints;
+	}
+
+	public double getY(int i) {
+		return ypoints[i];
 	}
 
 	/**

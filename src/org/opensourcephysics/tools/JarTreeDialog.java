@@ -406,8 +406,8 @@ public class JarTreeDialog extends JDialog {
 
 						}
 					}
-			
-		});
+
+				});
 		// show the list chooser for user input
 		dialog.choose(choices, names, null, selected, disabled);
 	}

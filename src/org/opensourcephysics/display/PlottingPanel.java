@@ -532,19 +532,15 @@ public void setPixelScale() {
     pixelTransform.getMatrix(pixelMatrix);
   }
 
-	/**
-	 * Recomputes the pixel transformation based on the current minimum and maximum
-	 * values and the gutters.
-	 */
-	@Override
-	public void recomputeTransform() {
-		xPixPerUnit = Math.max(width - leftGutter - rightGutter, 1) / (xmax - xmin);
-		yPixPerUnit = Math.max(height - bottomGutter - topGutter, 1) / (ymax - ymin); // the y scale in pixels
-		pixelTransform.setTransform(xPixPerUnit, 0, 0, -yPixPerUnit, -xmin * xPixPerUnit + leftGutter,
-				ymax * yPixPerUnit + topGutter);
-		setXYFunction(logScaleX, logScaleY);
-		pixelTransform.getMatrix(pixelMatrix);
-	}
+//	/**
+//	 * Recomputes the pixel transformation based on the current minimum and maximum
+//	 * values and the gutters.
+//	 */
+//	@Override
+//	public void recomputeTransform() {
+//		super.recomputeTransform();
+//		setXYFunction(logScaleX, logScaleY);
+//	}
 
 //  /**
 //   * Gets the affine transformation that converts from world to pixel coordinates.

@@ -299,7 +299,7 @@ public class FitBuilder extends FunctionTool {
 				OSPRuntime.chooserDir = chooser.getCurrentDirectory().toString();
 				loadFits(chooser.getSelectedFile(), false);
 			}
-			
+
 		}, null);
 		return null;
 	}
@@ -384,8 +384,8 @@ public class FitBuilder extends FunctionTool {
 					saveFits(file.getAbsolutePath(), control);
 				}
 			}
-		}); 
-		
+		});
+
 	}
 
 	/**
@@ -615,17 +615,17 @@ public class FitBuilder extends FunctionTool {
 		ArrayList<String> names = new ArrayList<String>();
 		ArrayList<String> expressions = new ArrayList<String>();
 		for (XMLProperty prop : control.getPropsRaw()) {
-				for (Object obj : prop.getPropertyContent()) {
-					if (obj instanceof XMLProperty) {
-						XMLProperty f = (XMLProperty) obj;
-						XMLControl function = f.getChildControls()[0];
-						originals.add(function);
-						choices.add(function);
-						names.add(function.getString("name")); //$NON-NLS-1$
-						String desc = function.getString("description"); //$NON-NLS-1$
-						expressions.add(desc);
-					}
+			for (Object obj : prop.getPropertyContent()) {
+				if (obj instanceof XMLProperty) {
+					XMLProperty f = (XMLProperty) obj;
+					XMLControl function = f.getChildControls()[0];
+					originals.add(function);
+					choices.add(function);
+					names.add(function.getString("name")); //$NON-NLS-1$
+					String desc = function.getString("description"); //$NON-NLS-1$
+					expressions.add(desc);
 				}
+			}
 		}
 		// select all by default
 		boolean[] selected = new boolean[choices.size()];
@@ -649,9 +649,9 @@ public class FitBuilder extends FunctionTool {
 								}
 							}
 						}
-						listener.actionPerformed(e);						
+						listener.actionPerformed(e);
 					}
-					
+
 				});
 		listChooser.choose(choices, names, expressions, selected);
 	}

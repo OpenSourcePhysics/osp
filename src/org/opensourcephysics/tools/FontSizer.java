@@ -44,7 +44,7 @@ import org.opensourcephysics.display.ResizableIcon;
 public class FontSizer {
 
 	public static final String PROPERTY_LEVEL = "level";
-	
+
 	/** Base font for text fields */
 	public static final Font TEXT_FONT = new JTextField().getFont();
 
@@ -98,12 +98,11 @@ public class FontSizer {
 	}
 
 	public static int setFontsIfNot(int oldLevel, Object c) {
-        if (level != oldLevel) 
-      	  	setFonts(c, level);
-        return level;
+		if (level != oldLevel)
+			setFonts(c, level);
+		return level;
 	}
-	
-	
+
 	public static int setMenuFonts(JMenu c) {
 		if (c.getMenuComponentCount() > 0) {
 			Font f = c.getMenuComponent(0).getFont();
@@ -114,9 +113,8 @@ public class FontSizer {
 		return level;
 	}
 
-
 	public static int setFonts(Object[] objectsToSize) {
-		Font f = ((Component)objectsToSize[0]).getFont();
+		Font f = ((Component) objectsToSize[0]).getFont();
 		Font newFont = (f == null ? null : getResizedFont(f, level));
 		if (f != null && newFont != f && !newFont.equals(f))
 			setFonts(objectsToSize, level);
@@ -131,7 +129,6 @@ public class FontSizer {
 		return level;
 	}
 
-	
 	public static int setFont(Component c) {
 		Font f = c.getFont();
 		Font newFont = (f == null ? null : getResizedFont(f, level));
@@ -146,14 +143,12 @@ public class FontSizer {
 		if (f != null && newFont != f && !newFont.equals(f)) {
 			button.setFont(newFont);
 			resizeIcon(button.getIcon());
-		    resizeIcon(button.getSelectedIcon());
+			resizeIcon(button.getSelectedIcon());
 			resizeIcon(button.getRolloverIcon());
 			resizeIcon(button.getRolloverSelectedIcon());
 		}
 		return level;
 	}
-
-
 
 	/**
 	 * Sets the font level and informs all listeners.
@@ -186,7 +181,7 @@ public class FontSizer {
 		font = getResizedFont(BUTTON_FONT, level);
 		UIManager.put("OptionPane.buttonFont", font); //$NON-NLS-1$
 
-		support.firePropertyChange(PROPERTY_LEVEL, null, Integer.valueOf(level)); //$NON-NLS-1$
+		support.firePropertyChange(PROPERTY_LEVEL, null, Integer.valueOf(level)); // $NON-NLS-1$
 	}
 
 	/**
@@ -235,27 +230,27 @@ public class FontSizer {
 	 *
 	 * @param obj   the object
 	 * @param level the level
-	 * @return 
+	 * @return
 	 */
 	public static int setFonts(Object obj, int level) {
 
 		if (obj == null || !OSPRuntime.allowSetFonts)
 			return level; // BH 2020.04.23 may be the case for missing buttons in Tracker
-		
+
 		if (obj instanceof Object[]) {
 			for (Object next : ((Object[]) obj)) {
 				setFonts(next, level);
 			}
 			return level;
 		}
-		
+
 		if (obj instanceof Collection) {
 			for (Object next : ((Collection<?>) obj)) {
 				setFonts(next, level);
 			}
 			return level;
 		}
-		
+
 		double factor = getFactor(level);
 
 		if (obj instanceof Container) {
@@ -335,7 +330,7 @@ public class FontSizer {
 	 * @param listener the object requesting property change notification
 	 */
 	public static void addPropertyChangeListener(String property, PropertyChangeListener listener) {
-		if (property.equals(PROPERTY_LEVEL)) { //$NON-NLS-1$
+		if (property.equals(PROPERTY_LEVEL)) { // $NON-NLS-1$
 			support.addPropertyChangeListener(property, listener);
 		}
 	}
@@ -384,7 +379,7 @@ public class FontSizer {
 				if (c instanceof AbstractButton) {
 					AbstractButton button = (AbstractButton) c;
 					icon = button.getIcon();
-				    resizeIcon(button.getSelectedIcon());
+					resizeIcon(button.getSelectedIcon());
 					resizeIcon(button.getRolloverIcon());
 					resizeIcon(button.getRolloverSelectedIcon());
 					if (c instanceof JMenu) {
@@ -417,20 +412,18 @@ public class FontSizer {
 						}
 					} catch (Exception e) {
 					}
-					
-					
+
 				}
 			}
 
 			// set the component font and its icon here
-
 
 			if (font != null) {
 				if (font.equals(c.getFont())) {
 					if (c instanceof JLabel) {
 						OSPLog.debug("FS ???? " + ((JLabel) c).getText());
 						OSPLog.debug(font.toString());
-					} else 					if (c instanceof AbstractButton) {
+					} else if (c instanceof AbstractButton) {
 						OSPLog.debug("FS ???? " + ((AbstractButton) c).getText());
 						OSPLog.debug(font.toString());
 					} else {
@@ -450,7 +443,7 @@ public class FontSizer {
 
 	private static int resizeIcon(Icon icon) {
 		if (icon != null && icon instanceof ResizableIcon)
-				((ResizableIcon) icon).resize(integerFactor);
+			((ResizableIcon) icon).resize(integerFactor);
 		return integerFactor;
 	}
 
@@ -475,7 +468,8 @@ public class FontSizer {
 
 	/**
 	 * Increases a titled border's normal font size by the specified factor.
-	 * @param c 
+	 * 
+	 * @param c
 	 *
 	 * @param b      a titled border
 	 * @param factor the factor
@@ -488,8 +482,6 @@ public class FontSizer {
 		}
 		b.setTitleFont(getResizedFont(font, factor));
 	}
-
-
 
 }
 
