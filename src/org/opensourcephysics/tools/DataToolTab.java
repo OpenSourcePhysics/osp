@@ -4361,20 +4361,20 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			imin = len - 1;
 		return imin;
 	}
-
-	static {
-		double[] xp = new double[] { 1, 2, 3, 4, 5, 6, 0, 0, 0 };
-		double[] yp = new double[] { 0, 0, Double.NaN, 0, 0, 0 };
-		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 0, 10) == 3);
-		System.out.println(findNearestXIndex(3.1, xp, yp, 3, 0, 10) == 1);
-		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 0, 3) == 1);
-		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 5, 10) == 1);
-		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 0, 10) == 3);
-		System.out.println(findNearestXIndex(3.1, xp, yp, 3, 0, 10) == 1);
-		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 0, 3) == 1);
-		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 5, 10) == 1);
-		System.out.println("");
-	}
+//
+//	static {
+//		double[] xp = new double[] { 1, 2, 3, 4, 5, 6, 0, 0, 0 };
+//		double[] yp = new double[] { 0, 0, Double.NaN, 0, 0, 0 };
+//		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 0, 10) == 3);
+//		System.out.println(findNearestXIndex(3.1, xp, yp, 3, 0, 10) == 1);
+//		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 0, 3) == 1);
+//		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 5, 10) == 1);
+//		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 0, 10) == 3);
+//		System.out.println(findNearestXIndex(3.1, xp, yp, 3, 0, 10) == 1);
+//		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 0, 3) == 1);
+//		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 5, 10) == 1);
+//		System.out.println("");
+//	}
 
 	/**
 	 * A class to save and load data for this class.
