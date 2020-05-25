@@ -1802,18 +1802,17 @@ public class DataToolTable extends DataTable {
 			shifted = column.isShifted();
 			column.setShifted(false);
 		}
-		double[] x = dataset.getXPoints();
 		// determine required row count
-		int count = x.length;
+		int count = dataset.getIndex();
 		for (int i = 0; i < rows.length; i++) {
 			count = Math.max(count, rows[i] + 1);
 		}
 		// add rows if required
-		while (count > x.length) {
-			int[] row = new int[] { x.length };
+		for (int len = dataset.getIndex(); count > len; len = dataset.getIndex()) {
+			int[] row = new int[] { len };
 			insertRows(row, null);
-			x = dataset.getXPoints();
 		}
+		double[] x = dataset.getXPoints();
 		double[] y = dataset.getYPoints();
 		for (int i = 0; i < rows.length; i++) {
 			replaced[i] = y[rows[i]];
