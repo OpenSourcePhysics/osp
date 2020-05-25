@@ -24,18 +24,15 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
 import java.util.Iterator;
 import java.util.StringTokenizer;
+
 import javax.swing.table.AbstractTableModel;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
-
-import javajs.async.SwingJSUtils.Performance;
 
 /**
  * Dataset stores and plots (x,y) points. Dataset is Drawable and can be
@@ -664,8 +661,8 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 	 */
 	public double[][] getPoints() {
 		double[][] temp = new double[index][2];
-		double[] xValues = getXPointsRaw();
-		double[] yValues = getYPointsRaw();
+		double[] xValues = xpoints;
+		double[] yValues = ypoints;
 		double shift = (isShifted() ? this.shift : 0); 
 		for (int i = 0; i < index; i++) {
 			temp[i] = new double[] { xValues[i], yValues[i] + shift };
@@ -764,6 +761,8 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 		return temp;
 	}
 
+	static int nRaw = 0;
+	
 	/**
 	 * Get xpoints; CAUTION: You must use getIndex() to get the meaningful length of the array data.
 	 * 
@@ -771,6 +770,8 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 	 * @return uncloned xpoints
 	 */
 	public final double[] getXPointsRaw() {
+		
+		OSPLog.debug("getXPointsRaw " + ++nRaw);
 		return xpoints;
 	}
 
@@ -798,7 +799,8 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 	 * @return uncloned ypoints
 	 */
 	public final double[] getYPointsRaw() {
-		return ypoints;
+		OSPLog.debug("getYPointsRaw " + ++nRaw);
+			return ypoints;
 	}
 
 	public double getY(int i) {
@@ -812,7 +814,7 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 	 * @return valid xpoints[]
 	 */
 	public double[] getValidXPoints() {
-		return getValidPoints(getXPointsRaw(), index);
+		return getValidPoints(xpoints, index);
 	}
 
 	/**
@@ -822,7 +824,7 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 	 * @return valid ypoints[]
 	 */
 	public double[] getValidYPoints() {
-		return getValidPoints(getYPointsRaw(), index);
+		return getValidPoints(ypoints, index);
 	}
 
 	/**
@@ -904,17 +906,13 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 	public Object getValueAt(int rowIndex, int columnIndex) {
 		columnIndex = Dataset.convertTableColumnIndex(colVisible, columnIndex);
 		rowIndex = rowIndex * stride;
-		double[] xValues = getXPointsRaw();
-		double[] yValues = (isShifted() ? getYPoints() : getYPointsRaw());
+		double[] xValues = xpoints;
 		// conversionFactor added by D Brown Dec 2010
 		if (columnIndex == 0) {
-			return new Double(xValues[rowIndex]);
+			return Double.valueOf(xValues[rowIndex]);
 		}
-		// changed by D.Brown
-		if (Double.isNaN(yValues[rowIndex])) {
-			return null;
-		}
-		return new Double(yValues[rowIndex]);
+		double y = ypoints[rowIndex];
+		return (Double.isNaN(y) ? null : Double.valueOf(y + shift));
 	}
 
 	/**
@@ -1071,7 +1069,7 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 			insertionSort();
 		}
 		if (increasedCapacity) {
-			resetXYMinMax();
+			resetXYMinMax(false);
 		}
 	}
 
@@ -1171,7 +1169,7 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 		ypoints = new double[initialSize];
 		generalPath.reset();
 		errorBars.clear();
-		resetXYMinMax();
+		resetXYMinMax(true);
 		myShape = null;
 	}
 
@@ -1337,8 +1335,8 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 			return;
 		}
 		int i = 0;
-		double[] xValues = getXPointsRaw();
-		double[] yValues = getYPointsRaw();
+		double[] xValues = xpoints;
+		double[] yValues = ypoints;
 		double shift = (isShifted() ? this.shift : 0);
 		for (; i < index; i++) {
 			if (!Double.isNaN(yValues[i])) {
@@ -1608,7 +1606,7 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 		System.arraycopy(tempy, index - newIndex, ypoints, 0, newIndex);
 		if (index != newIndex) { // data was dropped
 			index = newIndex;
-			resetXYMinMax();
+			resetXYMinMax(false);
 			recalculatePath();
 		}
 		index = newIndex;
@@ -1617,13 +1615,18 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 	/**
 	 * Reset the minimum and maximum values.
 	 */
-	private void resetXYMinMax() {
-		xmax = xmaxLogscale = -Double.MAX_VALUE;
-		ymax = ymaxLogscale = -Double.MAX_VALUE;
-		xmin = xminLogscale = Double.MAX_VALUE;
-		ymin = yminLogscale = Double.MAX_VALUE;
-		double[] xValues = getXPointsRaw();
-		double[] yValues = getYPointsRaw();
+	private void resetXYMinMax(boolean isCleared) {
+		xmaxLogscale = ymaxLogscale = -Double.MAX_VALUE;
+		xminLogscale = yminLogscale = Double.MAX_VALUE;
+		if (isCleared) {
+			xmin = xmax = ymin = ymax = 0;
+			return;
+		}
+		xmax = ymax = -Double.MAX_VALUE;
+		xmin = ymin = Double.MAX_VALUE;
+
+		double[] xValues = xpoints;
+		double[] yValues = ypoints;
 		double shift = (isShifted() ? this.shift : 0);
 		for (int i = 0; i < index; i++) {
 			if (Double.isNaN(xValues[i]) || Double.isInfinite(xValues[i]) || Double.isInfinite(yValues[i])) {
