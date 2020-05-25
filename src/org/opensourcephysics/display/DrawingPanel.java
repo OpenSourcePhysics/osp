@@ -7,13 +7,11 @@
 
 package org.opensourcephysics.display;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -60,6 +58,8 @@ import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ToolsRes;
 import org.opensourcephysics.tools.VideoTool;
 
+import javajs.async.SwingJSUtils.Performance;
+
 /**
  * DrawingPanel renders drawable objects on its canvas. DrawingPanel provides
  * drawable objects with methods that transform from world coordinates to pixel
@@ -94,12 +94,12 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	public static final int TOP_LEFT = 3;
 	
 	protected JPopupMenu popupmenu = new JPopupMenu(); // right mouse click popup menu
-	protected JMenuItem propertiesItem, autoscaleItem, scaleItem, zoomInItem, zoomOutItem, snapshotItem; // the menu
-																											// item for
-																											// the
-																											// properites
-																											// dialog
-																											// box
+	/**
+	 * 
+	 * the menu items for the box
+	 * 
+	 */
+	protected JMenuItem propertiesItem, autoscaleItem, scaleItem, zoomInItem, zoomOutItem, snapshotItem; 
 	protected int leftGutter = 0, topGutter = 0, rightGutter = 0, bottomGutter = 0;
 	protected int leftGutterPreferred = 0, topGutterPreferred = 0, rightGutterPreferred = 0, bottomGutterPreferred = 0;
 	protected boolean clipAtGutter = true; // clips the drawing at the gutter if true
@@ -813,9 +813,8 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		RECORD_PAINT_TIMES = false;
 
 		if (RECORD_PAINT_TIMES) {
-			long time = System.currentTimeMillis();
-			System.out.println("DrawingPanel elapsed time(s)=" + ((int) (time - currentTime) / 1000.0)); //$NON-NLS-1$
-			currentTime = time;
+			System.out.println("DrawingPanel elapsed time(s)=" + (Performance.now(currentTime) / 1000.0)); //$NON-NLS-1$
+			currentTime = Performance.now(0);
 		}
 		// the following statement has been moved to paintComponent
 		// viewRect = findViewRect(); // finds the clipping rectangle within a scroll
