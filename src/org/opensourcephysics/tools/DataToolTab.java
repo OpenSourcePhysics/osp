@@ -4368,11 +4368,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 //		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 0, 10) == 3);
 //		System.out.println(findNearestXIndex(3.1, xp, yp, 3, 0, 10) == 1);
 //		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 0, 3) == 1);
-//		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 5, 10) == 1);
+//		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 5, 10) == 4);
 //		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 0, 10) == 3);
 //		System.out.println(findNearestXIndex(3.1, xp, yp, 3, 0, 10) == 1);
 //		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 0, 3) == 1);
-//		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 5, 10) == 1);
+//		System.out.println(findNearestXIndex(3.1, xp, yp, 6, 5, 10) == 4);
 //		System.out.println("");
 //	}
 
