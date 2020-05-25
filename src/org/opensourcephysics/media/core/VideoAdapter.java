@@ -968,9 +968,14 @@ public abstract class VideoAdapter implements Video {
 	 */
 	@Override
 	public void setFilterStack(FilterStack stack) {
-		stack.removePropertyChangeListener(this);
-		stack.addPropertyChangeListener(this);
+		if (stack==filterStack) return;
+		if (filterStack!=null) {
+			filterStack.removePropertyChangeListener(Filter.PROPERTY_FILTER_IMAGE, this);
+			filterStack.removePropertyChangeListener(Filter.PROPERTY_FILTER_TAB, this);
+		}
 		filterStack = stack;
+		filterStack.addPropertyChangeListener(Filter.PROPERTY_FILTER_IMAGE, this);
+		filterStack.addPropertyChangeListener(Filter.PROPERTY_FILTER_TAB, this);
 	}
 
 	/**
@@ -1087,6 +1092,7 @@ public abstract class VideoAdapter implements Video {
 			isValidMeasure = false;
 			break;
 		case Filter.PROPERTY_FILTER_IMAGE:
+		case Filter.PROPERTY_FILTER_TAB:
 //		} else if (e.getSource() == filterStack) { // "image" BH! also "visible", "color", and "tab"
 			isValidFilteredImage = false;
 			support.firePropertyChange(e);
@@ -1204,6 +1210,7 @@ public abstract class VideoAdapter implements Video {
 	protected void initialize() {
 		support = new SwingPropertyChangeSupport(this);
 		filterStack.addPropertyChangeListener(Filter.PROPERTY_FILTER_IMAGE, this);
+		filterStack.addPropertyChangeListener(Filter.PROPERTY_FILTER_TAB, this);
 	}
 
 	/**
