@@ -1573,7 +1573,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				freezeMeasurement = false;
 				positionVisible = valueCheckbox.isSelected();
 				plot.setMessage(plot.createMessage());
-				plot.repaint();
 				refreshStatusBar(null);
 			}
 
@@ -1588,7 +1587,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				freezeMeasurement = false;
 				slopeVisible = slopeCheckbox.isSelected();
 				plot.setMessage(plot.createMessage());
-				plot.repaint();
 				refreshStatusBar(null);
 			}
 		});
@@ -3271,20 +3269,15 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		@Override
 		protected void paintDrawableList(Graphics g, ArrayList<Drawable> tempList) {
 			super.paintDrawableList(g, tempList);
+			String s = message;
 			if (tempList.contains(curveFitter.getDrawer())) {
 				double[] ylimits = curveFitter.getDrawer().getYRange();
 				if ((ylimits[0] >= this.getYMax()) || (ylimits[1] <= this.getYMin())) {
-					String s = ToolsRes.getString("DataToolTab.Plot.Message.FitNotVisible"); //$NON-NLS-1$
-					if (message != null && !"".equals(message)) { //$NON-NLS-1$
-						s += "  " + message; //$NON-NLS-1$
-					}
-					setMessage(s);
-				} else {
-					setMessage(message);
+					s = ToolsRes.getString("DataToolTab.Plot.Message.FitNotVisible")
+					 + (message == null || s == "" ? "" : "  " + s);
 				}
-			} else {
-				setMessage(message);
 			}
+			setMessage(s);
 			slopeLine.draw(g);
 			valueCrossbars.draw(g);
 		}

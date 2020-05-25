@@ -482,45 +482,45 @@ public void setPixelScale() {
         ymax = Math.max(ymin+0.00000001, 0.00000001);
       }
     }
-    width = getWidth();
-    height = getHeight();
+    lastWidth = getWidth();
+    lastHeight = getHeight();
     if(fixedPixelPerUnit) { // the user has specified a fixed pixel scale
-      xmin = (xmaxPreferred+xminPreferred)/2-Math.max(width-leftGutter-rightGutter-1, 1)/xPixPerUnit/2;
-      xmax = (xmaxPreferred+xminPreferred)/2+Math.max(width-leftGutter-rightGutter-1, 1)/xPixPerUnit/2;
-      ymin = (ymaxPreferred+yminPreferred)/2-Math.max(height-bottomGutter-topGutter-1, 1)/yPixPerUnit/2;
-      ymax = (ymaxPreferred+yminPreferred)/2+Math.max(height-bottomGutter-topGutter-1, 1)/yPixPerUnit/2;
+      xmin = (xmaxPreferred+xminPreferred)/2-Math.max(lastWidth-leftGutter-rightGutter-1, 1)/xPixPerUnit/2;
+      xmax = (xmaxPreferred+xminPreferred)/2+Math.max(lastWidth-leftGutter-rightGutter-1, 1)/xPixPerUnit/2;
+      ymin = (ymaxPreferred+yminPreferred)/2-Math.max(lastHeight-bottomGutter-topGutter-1, 1)/yPixPerUnit/2;
+      ymax = (ymaxPreferred+yminPreferred)/2+Math.max(lastHeight-bottomGutter-topGutter-1, 1)/yPixPerUnit/2;
       pixelTransform.setTransform(xPixPerUnit, 0, 0, -yPixPerUnit, -xmin*xPixPerUnit+leftGutter, ymax*yPixPerUnit+topGutter);
       setXYFunction(false, false);
       pixelTransform.getMatrix(pixelMatrix); // puts the transformation into the pixel matrix
       return;
     }
-    xPixPerUnit = (width-leftGutter-rightGutter)/(xmax-xmin);
-    yPixPerUnit = (height-bottomGutter-topGutter)/(ymax-ymin); // the y scale in pixels
+    xPixPerUnit = (lastWidth-leftGutter-rightGutter)/(xmax-xmin);
+    yPixPerUnit = (lastHeight-bottomGutter-topGutter)/(ymax-ymin); // the y scale in pixels
     if(squareAspect&&!adjustableGutter) {
       double stretch = Math.abs(xPixPerUnit/yPixPerUnit);
       if(stretch>=1) {                                               // make the x range bigger so that aspect ratio is one
-        stretch = Math.min(stretch, width);                          // limit the stretch
+        stretch = Math.min(stretch, lastWidth);                          // limit the stretch
         xmin = xminPreferred-(xmaxPreferred-xminPreferred)*(stretch-1)/2.0;
         xmax = xmaxPreferred+(xmaxPreferred-xminPreferred)*(stretch-1)/2.0;
-        xPixPerUnit = (width-leftGutter-rightGutter)/(xmax-xmin);  // the x scale in pixels per unit
+        xPixPerUnit = (lastWidth-leftGutter-rightGutter)/(xmax-xmin);  // the x scale in pixels per unit
       } else {                                                       // make the y range bigger so that aspect ratio is one
-        stretch = Math.max(stretch, 1.0/height);                     // limit the stretch
+        stretch = Math.max(stretch, 1.0/lastHeight);                     // limit the stretch
         ymin = yminPreferred-(ymaxPreferred-yminPreferred)*(1.0/stretch-1)/2.0;
         ymax = ymaxPreferred+(ymaxPreferred-yminPreferred)*(1.0/stretch-1)/2.0;
-        yPixPerUnit = (height-bottomGutter-topGutter)/(ymax-ymin); // the y scale in pixels per unit
+        yPixPerUnit = (lastHeight-bottomGutter-topGutter)/(ymax-ymin); // the y scale in pixels per unit
       }
     }
     if(squareAspect&&adjustableGutter) {         // axis min-max do not change but gutters change
       if(Math.abs(xPixPerUnit/yPixPerUnit)>=1) { // x range is smaller so make the x gutters bigger
         xPixPerUnit = yPixPerUnit;
-        float gutter = (width-(float) Math.abs((xmax-xmin)*xPixPerUnit));
+        float gutter = (lastWidth-(float) Math.abs((xmax-xmin)*xPixPerUnit));
         leftGutter = (int) (gutter/2.0f+leftGutterPreferred-rightGutterPreferred+0.5f);
         rightGutter = (int) (gutter-leftGutter-0.5);
         leftGutter = Math.max(0, leftGutter);
         rightGutter = Math.max(0, rightGutter);
       } else {                                   // make the y gutters bigger
         yPixPerUnit = xPixPerUnit;
-        float gutter = height-(float) Math.abs((ymax-ymin)*yPixPerUnit);
+        float gutter = lastHeight-(float) Math.abs((ymax-ymin)*yPixPerUnit);
         topGutter = (int) (gutter/2.0f+topGutterPreferred-bottomGutterPreferred+0.5f);
         bottomGutter = (int) (gutter-topGutter);
         topGutter = Math.max(0, topGutter);

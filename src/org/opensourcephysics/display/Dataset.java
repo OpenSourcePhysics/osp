@@ -34,6 +34,8 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
 
+import javajs.async.SwingJSUtils.Performance;
+
 /**
  * Dataset stores and plots (x,y) points. Dataset is Drawable and can be
  * rendered on a DrawingPanel. Dataset extends AbstractTableModel and can be
@@ -761,7 +763,7 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 		return temp;
 	}
 
-	static int nRaw = 0;
+	//static int nRaw = 0;
 	
 	/**
 	 * Get xpoints; CAUTION: You must use getIndex() to get the meaningful length of the array data.
@@ -771,7 +773,7 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 	 */
 	public final double[] getXPointsRaw() {
 		
-		OSPLog.debug("getXPointsRaw " + ++nRaw);
+		//OSPLog.debug("getXPointsRaw " + ++nRaw);
 		return xpoints;
 	}
 
@@ -799,7 +801,7 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 	 * @return uncloned ypoints
 	 */
 	public final double[] getYPointsRaw() {
-		OSPLog.debug("getYPointsRaw " + ++nRaw);
+		//OSPLog.debug("getYPointsRaw " + ++nRaw);
 			return ypoints;
 	}
 
@@ -1149,7 +1151,7 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 		}
 		try {
 			Graphics2D g2 = (Graphics2D) g;
-			OSPLog.debug("Dataset.draw " + ++testCount);
+			OSPLog.debug(Performance.timeCheckStr("Dataset.draw " + ++testCount + " " + (/** @j2sNative drawingPanel.ui.id || */null), Performance.TIME_MARK));
 			if (markerShape != NO_MARKER) {
 				drawScatterPlot(drawingPanel, g2);
 			}

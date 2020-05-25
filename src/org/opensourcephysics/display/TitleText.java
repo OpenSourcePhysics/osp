@@ -103,11 +103,11 @@ public void draw(DrawingPanel panel, Graphics g) {
     int xpix = 0, ypix = 0;
     switch(location) {
        case CENTER :
-         xpix = panel.getLeftGutter()+(panel.width-panel.getLeftGutter()-panel.getRightGutter())/2;
-         ypix = panel.getTopGutter()+(panel.height-panel.getTopGutter()-panel.getBottomGutter())/2;
+         xpix = panel.getLeftGutter()+(panel.lastWidth-panel.getLeftGutter()-panel.getRightGutter())/2;
+         ypix = panel.getTopGutter()+(panel.lastHeight-panel.getTopGutter()-panel.getBottomGutter())/2;
          break;
        case BOTTOM :
-         xpix = panel.getLeftGutter()+(panel.width-panel.leftGutter-panel.rightGutter)/2;
+         xpix = panel.getLeftGutter()+(panel.lastWidth-panel.leftGutter-panel.rightGutter)/2;
          ypix = (panel.getBottomGutter()>height+yoff) ?       // is gutter large enough?
            panel.getHeight()-panel.bottomGutter+yoff+height : // draw in bottom gutter
              panel.getHeight()-panel.bottomGutter-yoff;       // draw in display area
@@ -116,20 +116,20 @@ public void draw(DrawingPanel panel, Graphics g) {
          xpix = (panel.leftGutter>height+xoff) ?              // is left gutter large enought?
            panel.leftGutter-xoff :                            // draw in left of gutter
              panel.leftGutter+xoff+height;                    // draw in display area
-         ypix = panel.getTopGutter()+(panel.height-panel.getTopGutter()-panel.getBottomGutter())/2;
+         ypix = panel.getTopGutter()+(panel.lastHeight-panel.getTopGutter()-panel.getBottomGutter())/2;
          break;
        default :
        case TOP :
-         xpix = panel.getLeftGutter()+(panel.width-panel.leftGutter-panel.rightGutter)/2;
+         xpix = panel.getLeftGutter()+(panel.lastWidth-panel.leftGutter-panel.rightGutter)/2;
          ypix = (panel.getTopGutter()>ascent+yoff) ?          // is gutter large enough?
            panel.getTopGutter()-yoff-descent-1 :              // draw in gutter
              panel.getTopGutter()+yoff+ascent+1;              // draw in display area
          break;
        case RIGHT :
          xpix = (panel.rightGutter>height+xoff) ?             // is right gutter large enought?
-           panel.width-panel.leftGutter+xoff+height :         // draw in left of gutter
-             panel.width-panel.leftGutter-xoff;               // draw in display area
-         ypix = panel.getTopGutter()+(panel.height-panel.getTopGutter()-panel.getBottomGutter())/2;
+           panel.lastWidth-panel.leftGutter+xoff+height :         // draw in left of gutter
+             panel.lastWidth-panel.leftGutter-xoff;               // draw in display area
+         ypix = panel.getTopGutter()+(panel.lastHeight-panel.getTopGutter()-panel.getBottomGutter())/2;
          break;
        case CUSTOM :
          xpix = xoff;

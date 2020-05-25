@@ -492,7 +492,7 @@ public class ImageVideo extends VideoAdapter {
 		if (readOnly && frameNumber < paths.length) {
 			if (!paths[frameNumber].equals("")) {//$NON-NLS-1$
 				Image image = ResourceLoader.getImage(getAbsolutePath(paths[frameNumber]));
-				OSPLog.debug("ImageVideo new image");
+				OSPLog.debug("ImageVideo.getImageAtFrame new image");
 
 				if (image != null)
 					return image;

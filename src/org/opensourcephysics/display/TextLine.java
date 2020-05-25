@@ -618,7 +618,7 @@ public class TextLine {
 					break;
 				}
 			}
-			Vector<TextState> vec; // added by W. Christian in case a parse is called during drawing.
+			//Vector<TextState> vec; // added by W. Christian in case a parse is called during drawing.
 			synchronized (list) {
 				vec = new Vector<TextState>(list);
 			} // added by W. Christian
@@ -673,7 +673,7 @@ public class TextLine {
     drawText(g, x, y);
   }
 
-	Vector<TextState> vec; // added by W. Christian in case a parse is called during drawing.
+	Vector<TextState> vec = new Vector<TextState>(); // added by W. Christian in case a parse is called during drawing.
 
 	/**
 	 * Parse the text then draw it without any rotation.

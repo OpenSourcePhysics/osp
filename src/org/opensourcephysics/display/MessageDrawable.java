@@ -102,10 +102,7 @@ public class MessageDrawable implements Drawable {
 	 * @param msg
 	 */
 	public void setMessage(String msg) {
-		if(msg!=null && !msg.equals("")) {
-			msg=TeXParser.parseTeX(msg);
-		}
-		brStr = msg;
+		setMessage(msg, DrawingPanel.BOTTOM_RIGHT);
 	}
 
 	/**
@@ -118,20 +115,23 @@ public class MessageDrawable implements Drawable {
 	 * @param location
 	 */
 	public void setMessage(String msg, int location) {
-		if(msg!=null && !msg.equals("")) {
-			msg=TeXParser.parseTeX(msg);
+		if (msg != null) {
+			if (msg.length() == 0)
+				msg = null;
+			else
+				msg = TeXParser.parseTeX(msg);
 		}
 		switch (location) {
-		case 0: // usually used for mouse coordinates
+		case DrawingPanel.BOTTOM_LEFT: // usually used for mouse coordinates
 			blStr = msg;
 			break;
-		case 1:
+		case DrawingPanel.BOTTOM_RIGHT:
 			brStr = msg;
 			break;
-		case 2:
+		case DrawingPanel.TOP_RIGHT:
 			trStr = msg;
 			break;
-		case 3:
+		case DrawingPanel.TOP_LEFT:
 			tlStr = msg;
 			break;
 		}
@@ -173,7 +173,7 @@ public class MessageDrawable implements Drawable {
 			g.drawString(tlStr, x + 4, y + height - vertOffset);
 		}
 
-		if (trStr != null && !trStr.equals("")) { // draw tr message
+		if (trStr != null) { // draw tr message
 			g.setColor(Color.YELLOW);
 			width = fm.stringWidth(trStr) + 8; // current string width
 			int x = port==null? panel.getWidth() - width: port.x + port.width - width;
@@ -183,7 +183,7 @@ public class MessageDrawable implements Drawable {
 			g.drawRect(x - 1, y, width, height); // fills rectangle
 			g.drawString(trStr, x + 4, y + height - vertOffset);
 		}
-		if (blStr != null && !blStr.equals("")) { // draw bl message
+		if (blStr != null) { // draw bl message
 			g.setColor(Color.YELLOW);
 			width = fm.stringWidth(blStr) + 6; // current string width
 			int x = port==null? 0: port.x;
@@ -193,7 +193,7 @@ public class MessageDrawable implements Drawable {
 			g.drawRect(x, y - 1, width, height);
 			g.drawString(blStr, x + 4, y + height - vertOffset - 1);
 		}
-		if (brStr != null && !brStr.equals("")) { // draw br message
+		if (brStr != null) { // draw br message
 			g.setColor(Color.YELLOW);
 			width = fm.stringWidth(brStr) + 8; // current string width
 			int x = port==null? panel.getWidth() - width: port.x + port.width - width;
@@ -234,7 +234,7 @@ public class MessageDrawable implements Drawable {
 		int width = 0; // string width
 		g.setClip(0, 0, panel.getWidth(), panel.getHeight());
 		// this method implements the Drawable interface
-		if (tlStr != null && !tlStr.equals("")) { // draw tl message
+		if (tlStr != null) { // draw tl message
 			g.setColor(Color.YELLOW);
 			width = fm.stringWidth(tlStr) + 6; // current string width
 			int x = port==null? 0: port.x;
@@ -245,7 +245,7 @@ public class MessageDrawable implements Drawable {
 			g.drawString(tlStr, x + 4, y + height - vertOffset);
 		}
 
-		if (trStr != null && !trStr.equals("")) { // draw tr message
+		if (trStr != null) { // draw tr message
 			g.setColor(Color.YELLOW);
 			width = fm.stringWidth(trStr) + 8; // current string width
 			int x = port==null? panel.getWidth() - width: port.x + port.width - width;
@@ -255,7 +255,7 @@ public class MessageDrawable implements Drawable {
 			g.drawRect(x - 1, y, width, height); // fills rectangle
 			g.drawString(trStr, x + 4, y + height - vertOffset);
 		}
-		if (blStr != null && !blStr.equals("")) { // draw bl message
+		if (blStr != null) { // draw bl message
 			g.setColor(Color.YELLOW);
 			width = fm.stringWidth(blStr) + 14; // current string width
 			int x = port==null? 0: port.x;
@@ -265,7 +265,7 @@ public class MessageDrawable implements Drawable {
 			g.drawRect(x, y - 1, width, height);
 			g.drawString(blStr, x + 4, y + height - vertOffset - 1);
 		}
-		if (brStr != null && !brStr.equals("")) { // draw br message
+		if (brStr != null) { // draw br message
 			g.setColor(Color.YELLOW);
 			width = fm.stringWidth(brStr) + 8; // current string width
 			int x = port==null? panel.getWidth() - width: port.x + port.width - width;

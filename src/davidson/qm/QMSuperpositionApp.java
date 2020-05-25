@@ -169,8 +169,6 @@ public void initializeAnimation() {
       if(dataPanel!=null && showDataPanelTime) {
          dataPanel.setMessage("t="+sciFormat.format(time));
       }
-      psiPanel.repaint();
-      //psiFrame.setVisible(true);
    }
 
    void normCoef() {

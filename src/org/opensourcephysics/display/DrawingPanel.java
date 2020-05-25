@@ -92,6 +92,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 
 	/** Message box location */
 	public static final int TOP_LEFT = 3;
+	
 	protected JPopupMenu popupmenu = new JPopupMenu(); // right mouse click popup menu
 	protected JMenuItem propertiesItem, autoscaleItem, scaleItem, zoomInItem, zoomOutItem, snapshotItem; // the menu
 																											// item for
@@ -103,7 +104,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	protected int leftGutterPreferred = 0, topGutterPreferred = 0, rightGutterPreferred = 0, bottomGutterPreferred = 0;
 	protected boolean clipAtGutter = true; // clips the drawing at the gutter if true
 	protected boolean adjustableGutter = false; // adjust gutter depending on panel size
-	protected int width, height; // the size of the panel the last time it was painted.
+	protected int lastWidth, lastHeight; // the size of the panel the last time it was painted.
 	protected Color bgColor = new Color(239, 239, 255); // background color
 	protected boolean antialiasTextOn = false;
 	protected boolean antialiasShapeOn = false;
@@ -184,7 +185,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	@Override
 	public void repaint() {
 		Component top = getTopLevelAncestor();
-		if (top == null || !top.isVisible()) {
+		if (super.getHeight() <= 0 || top == null || !top.isVisible() || top.getIgnoreRepaint()) {
 			//OSPLog.debug("DrawingPanel needless repaint!");
 		} else {
 			super.repaint();
@@ -228,12 +229,11 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 					double ymin = getYMin() + dymin / steps;
 					double ymax = getYMax() + dymax / steps;
 					setPreferredMinMax(xmin, xmax, ymin, ymax);
-					repaint(); // repaint the panel with the new scale
 				} else {
 					zoomTimer.stop();
 					invalidateImage();
-					repaint();
 				}
+				repaintForZoom(); // repaint the panel with the new scale
 			}
 
 		});
@@ -1742,37 +1742,37 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		topGutter = topGutterPreferred;
 		rightGutter = rightGutterPreferred;
 		bottomGutter = bottomGutterPreferred;
-		width = getWidth();
-		height = getHeight();
+		lastWidth = getWidth();
+		lastHeight = getHeight();
 		if (fixedPixelPerUnit) { // the user has specified a fixed pixel scale
 			xmin = (xmaxPreferred + xminPreferred) / 2
-					- Math.max(width - leftGutter - rightGutter - 1, 1) / xPixPerUnit / 2;
+					- Math.max(lastWidth - leftGutter - rightGutter - 1, 1) / xPixPerUnit / 2;
 			xmax = (xmaxPreferred + xminPreferred) / 2
-					+ Math.max(width - leftGutter - rightGutter - 1, 1) / xPixPerUnit / 2;
+					+ Math.max(lastWidth - leftGutter - rightGutter - 1, 1) / xPixPerUnit / 2;
 			ymin = (ymaxPreferred + yminPreferred) / 2
-					- Math.max(height - bottomGutter - topGutter - 1, 1) / yPixPerUnit / 2;
+					- Math.max(lastHeight - bottomGutter - topGutter - 1, 1) / yPixPerUnit / 2;
 			ymax = (ymaxPreferred + yminPreferred) / 2
-					+ Math.max(height - bottomGutter - topGutter - 1, 1) / yPixPerUnit / 2;
+					+ Math.max(lastHeight - bottomGutter - topGutter - 1, 1) / yPixPerUnit / 2;
 			pixelTransform.setTransform(xPixPerUnit, 0, 0, -yPixPerUnit, -xmin * xPixPerUnit + leftGutter,
 					ymax * yPixPerUnit + topGutter);
 			pixelTransform.getMatrix(pixelMatrix); // puts the transformation into the pixel matrix
 			return;
 		}
-		xPixPerUnit = Math.max(width - leftGutter - rightGutter, 1) / (xmax - xmin);
-		yPixPerUnit = Math.max(height - bottomGutter - topGutter, 1) / (ymax - ymin); // the y scale in pixels
+		xPixPerUnit = Math.max(lastWidth - leftGutter - rightGutter, 1) / (xmax - xmin);
+		yPixPerUnit = Math.max(lastHeight - bottomGutter - topGutter, 1) / (ymax - ymin); // the y scale in pixels
 		if (squareAspect) {
 			double stretch = Math.abs(xPixPerUnit / yPixPerUnit);
 			if (stretch >= 1) { // make the x range bigger so that aspect ratio is one
-				stretch = Math.min(stretch, width); // limit the stretch
+				stretch = Math.min(stretch, lastWidth); // limit the stretch
 				xmin = xminPreferred - (xmaxPreferred - xminPreferred) * (stretch - 1) / 2.0;
 				xmax = xmaxPreferred + (xmaxPreferred - xminPreferred) * (stretch - 1) / 2.0;
-				xPixPerUnit = Math.max(width - leftGutter - rightGutter, 1) / (xmax - xmin); // the x scale in pixels
+				xPixPerUnit = Math.max(lastWidth - leftGutter - rightGutter, 1) / (xmax - xmin); // the x scale in pixels
 																								// per unit
 			} else { // make the y range bigger so that aspect ratio is one
-				stretch = Math.max(stretch, 1.0 / height); // limit the stretch
+				stretch = Math.max(stretch, 1.0 / lastHeight); // limit the stretch
 				ymin = yminPreferred - (ymaxPreferred - yminPreferred) * (1.0 / stretch - 1) / 2.0;
 				ymax = ymaxPreferred + (ymaxPreferred - yminPreferred) * (1.0 / stretch - 1) / 2.0;
-				yPixPerUnit = Math.max(height - bottomGutter - topGutter, 1) / (ymax - ymin); // the y scale in pixels
+				yPixPerUnit = Math.max(lastHeight - bottomGutter - topGutter, 1) / (ymax - ymin); // the y scale in pixels
 																								// per unit
 			}
 		}
@@ -2528,9 +2528,11 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 * @param msg
 	 */
 	public void setMessage(String msg) {
-		messages.setMessage(msg);
+		setMessage(msg, BOTTOM_RIGHT);
 	}
 
+	
+	private String[] lastMessage = new String[4];
 	/**
 	 * Shows a message in a yellow text box.
 	 *
@@ -2541,20 +2543,13 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 * @param location
 	 */
 	public void setMessage(String msg, int location) {
-		switch (location) {
-		case 0: // usually used for mouse coordinates
-			messages.setMessage(msg, 0);
-			break;
-		case 1:
-			messages.setMessage(msg, 1);
-			break;
-		case 2:
-			messages.setMessage(msg, 2);
-			break;
-		case 3:
-			messages.setMessage(msg, 3);
-			break;
+		if (msg != null && msg.length() == 0)
+			msg = null;
+		messages.setMessage(msg, location);
+		if (msg == null ? lastMessage == null : msg.equals(lastMessage[location])) {
+			return;
 		}
+		lastMessage[location] = msg;
 		repaint();
 	}
 
@@ -2599,9 +2594,8 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		public void mousePressed(MouseEvent e) {
 			String s = coordinateStrBuilder.getCoordinateString(DrawingPanel.this, e);
 			System.err.println(" pressed coortd==" + s);
-			messages.setMessage(s, 0);
 			invalidateImage(); // validImage = false;
-			repaint();
+			messages.setMessage(s, 0);
 		}
 
 		/**
@@ -2612,7 +2606,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		@Override
 		public void mouseReleased(MouseEvent e) {
 			messages.setMessage(null, 0);
-			repaint();
 		}
 
 		/**
@@ -2778,7 +2771,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		@Override
 		public void actionPerformed(ActionEvent evt) {
 			zoomBox.visible = false;
-			repaint();
+			//repaint();
 			String cmd = evt.getActionCommand();
 			if (cmd.equals(DisplayRes.getString("DrawingFrame.InspectMenuItem"))) { //$NON-NLS-1$
 				showInspector();
@@ -2820,7 +2813,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		public void mousePressed(MouseEvent e) {
 			if (isZoomEvent(e)) {
 				zoomBox.startZoom(e.getX(), e.getY());
-			} else {
+			} else if (zoomBox.isVisible()) {
 				zoomBox.visible = false;
 				repaint();
 			}
@@ -2853,7 +2846,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 					zoomBox.ystart = e.getY() - dim.height / 4;
 					zoomBox.ystop = e.getY() + dim.height / 4;
 					zoomBox.visible = true;
-					repaint();
+					repaintForZoom();
 				}
 				JPopupMenu popup = getPopupMenu();
 				if (popup != null)
@@ -2888,6 +2881,11 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 */
 	public static XML.ObjectLoader getLoader() {
 		return new DrawingPanelLoader();
+	}
+
+	public void repaintForZoom() {
+		if (getPopupMenu() == null)
+			repaint();
 	}
 
 	/**

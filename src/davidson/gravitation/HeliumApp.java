@@ -36,7 +36,6 @@ public class HeliumApp extends AbstractAnimation {
 protected void doStep() {
     trajectory.stepTime();
     plottingPanel.setMessage("t="+sciFormat.format(trajectory.state[4]));
-    plottingPanel.repaint();
   }
 
   /**

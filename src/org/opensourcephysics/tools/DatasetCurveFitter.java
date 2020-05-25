@@ -1002,7 +1002,7 @@ public class DatasetCurveFitter extends JPanel {
 		if (tab != null) {
 			if (fitEvaluatedToNaN) {
 				String s = ToolsRes.getString("DatasetCurveFitter.Warning.FunctionError"); //$NON-NLS-1$
-				tab.plot.setMessage(s, 2);
+				tab.plot.setMessage(s, DrawingPanel.TOP_RIGHT);
 			} else {
 				tab.plot.setMessage("", 2); //$NON-NLS-1$
 			}

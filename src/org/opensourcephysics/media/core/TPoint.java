@@ -297,7 +297,7 @@ public class TPoint extends Point2D.Double implements Interactive, Trackable {
 			getWorldPosition(vidPanel);
 			XYCoordinateStringBuilder builder = vidPanel.getXYCoordinateStringBuilder(this);
 			String s = builder.getCoordinateString(vidPanel, worldPt.x, worldPt.y);
-			vidPanel.setMessage(s, 0);
+			vidPanel.setMessage(s, DrawingPanel.BOTTOM_LEFT);
 		}
 	}
 
