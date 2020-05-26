@@ -67,7 +67,7 @@ public class FontSizer {
 	// static fields
 	static Object levelObj = new FontSizer();
 	static PropertyChangeSupport support = new SwingPropertyChangeSupport(levelObj);
-	static int level, integerFactor;
+	static int level, integerFactor = 1;
 	static double levelFactor = 1.25; // size ratio per level
 	static double factor;
 	static Map<Font, Font> fontMap = new HashMap<Font, Font>();
