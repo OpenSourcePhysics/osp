@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.rmi.RemoteException;
 import java.util.Iterator;
 
 import javax.swing.JDialog;
@@ -331,10 +330,8 @@ public void lostOwnership(Clipboard clipboard, Transferable contents) {}
     exportItem.setAccelerator(KeyStroke.getKeyStroke('E', MENU_SHORTCUT_KEY_MASK));
     exportItem.addActionListener(new ActionListener() {
       @Override
-	public void actionPerformed(ActionEvent e) {
-        try {
-          ExportTool.getTool().send(new LocalJob(drawingPanel), null);
-        } catch(RemoteException ex) {}
+      public void actionPerformed(ActionEvent e) {
+        ExportTool.getTool().send(new LocalJob(drawingPanel), null);
       }
 
     });

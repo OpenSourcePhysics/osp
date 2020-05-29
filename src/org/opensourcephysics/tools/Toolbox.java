@@ -7,13 +7,8 @@
 
 package org.opensourcephysics.tools;
 
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.swing.JOptionPane;
 
 import org.opensourcephysics.controls.OSPLog;
 
@@ -24,11 +19,7 @@ import org.opensourcephysics.controls.OSPLog;
  * @version 0.1
  */
 public class Toolbox {
-	private static final String HOST = "localhost"; //$NON-NLS-1$
-	private static final int PORT = 1099;
 	protected static Map<String, Tool> tools = new HashMap<String, Tool>();
-	protected static Registry registry;
-	protected static int allowRMI = -1; // flag to determine if RMI should be allowed.
 
 	protected Toolbox() {
 		/** empty block */
@@ -44,22 +35,6 @@ public class Toolbox {
 		}
 	}
 
-	public static boolean addRMITool(String name, Tool tool) {
-		initRMI();
-		if (allowRMI == 0) { // user has choosen not to allow RMI
-			return false;
-		}
-		try {
-			Tool remote = new RemoteTool(tool);
-			registry.bind(name, remote);
-			OSPLog.fine("Added to RMI registry: " + name); //$NON-NLS-1$
-			return true;
-		} catch (Exception ex) {
-			OSPLog.warning("RMI registration failed: " + name + " [" + ex + "]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-			return false;
-		}
-	}
-
 	public static Tool getTool(String name) {
 		if (tools.containsKey(name)) {
 			// look for local tool
@@ -67,52 +42,7 @@ public class Toolbox {
 			OSPLog.fine("Found local tool: " + name); //$NON-NLS-1$
 			return tool;
 		}
-		initRMI();
-		if (allowRMI == 0) { // user has chosen not to allow RMI
-			return null;
-		}
-		// look for RMI tool
-		try {
-			Tool tool = (Tool) registry.lookup(name);
-			OSPLog.fine("Found RMI tool " + name); //$NON-NLS-1$
-			return new RemoteTool(tool);
-		} catch (Exception ex) {
-			OSPLog.info("RMI lookup failed: " + name + " [" + ex + "]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-			System.out.println("RMI lookup failed: " + name + " [" + ex + "]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		}
 		return null;
-	}
-
-	private static void initRMI() {
-		if (org.opensourcephysics.js.JSUtil.isJS) { // RMI not supported in JavaScript.
-			return;
-		}
-		if (allowRMI == 0) { // user has chosen not to allow RMI
-			return;
-		}
-		if (allowRMI < 0) {
-			int selection = JOptionPane.showConfirmDialog(null, ToolsRes.getString("Toolbox.Dialog.UseRemote.Query"), //$NON-NLS-1$
-					ToolsRes.getString("Toolbox.Dialog.UseRemote.Title"), JOptionPane.YES_NO_OPTION, //$NON-NLS-1$
-					JOptionPane.QUESTION_MESSAGE);
-			if (selection == JOptionPane.YES_OPTION) {
-				allowRMI = 1;
-			} else {
-				allowRMI = 0;
-				return;
-			}
-		}
-		if (registry == null) {
-			try {
-				registry = LocateRegistry.getRegistry(HOST, PORT);
-			} catch (RemoteException ex) {
-				OSPLog.info(ex.getMessage());
-				try {
-					registry = LocateRegistry.createRegistry(PORT);
-				} catch (RemoteException ex1) {
-					OSPLog.info(ex1.getMessage());
-				}
-			}
-		}
 	}
 
 }

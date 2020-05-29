@@ -23,7 +23,6 @@ import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.File;
-import java.rmi.RemoteException;
 import java.util.Locale;
 import java.util.MissingResourceException;
 
@@ -109,10 +108,9 @@ public class SnapshotTool implements Tool {
 	 *
 	 * @param job     the Job
 	 * @param replyTo the tool to notify when the job is complete (may be null)
-	 * @throws RemoteException
 	 */
 	@Override
-	public void send(Job job, Tool replyTo) throws RemoteException {
+	public void send(Job job, Tool replyTo) {
 	}
 
 	/**

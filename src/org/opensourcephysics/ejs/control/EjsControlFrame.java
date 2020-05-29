@@ -24,7 +24,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -134,14 +133,12 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
     // responds to data from the DatasetTool
     reply = new Tool() {
       @Override
-	public void send(Job job, Tool replyTo) throws RemoteException {
+	public void send(Job job, Tool replyTo) {
         if(defaultDrawingPanel==null) {
           return;
         }
         XMLControlElement control = new XMLControlElement();
-        try {
-          control.readXML(job.getXML());
-        } catch(RemoteException ex) {}
+        control.readXML(job.getXML());
         ArrayList<?> datasets = defaultDrawingPanel.getObjectOfClass(Dataset.class);
         Iterator<?> it = control.getObjects(Dataset.class).iterator();
         while(it.hasNext()) {

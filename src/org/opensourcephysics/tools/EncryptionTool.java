@@ -20,8 +20,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
-import java.rmi.RemoteException;
-
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -102,7 +100,6 @@ public class EncryptionTool extends JFrame implements Tool {
 		createGUI();
 		refreshGUI();
 		Toolbox.addTool(name, this);
-		// Toolbox.addRMITool(name, this);
 	}
 
 	/**
@@ -152,10 +149,9 @@ public class EncryptionTool extends JFrame implements Tool {
 	 *
 	 * @param job     the Job
 	 * @param replyTo the tool to notify when the job is complete (may be null)
-	 * @throws RemoteException
 	 */
 	@Override
-	public void send(Job job, Tool replyTo) throws RemoteException {
+	public void send(Job job, Tool replyTo) {
 		// read xml into XMLControl and display the control
 		XMLControlElement control = new XMLControlElement();
 		control.setDecryptPolicy(XMLControlElement.NEVER_DECRYPT);

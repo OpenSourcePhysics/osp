@@ -7,24 +7,20 @@
 
 package org.opensourcephysics.tools;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-
 /**
- * This is a Remote Tool interface for osp data transfers via XML and RMI.
+ * This is a Tool interface for osp data transfers via XML.
  *
  * @author Wolfgang Christian and Doug Brown
  * @version 0.1
  */
-public interface Tool extends Remote {
+public interface Tool {
 	/**
 	 * Sends a job to this tool and specifies a tool to reply to.
 	 *
 	 * @param job     the Job
 	 * @param replyTo the tool to notify when the job is complete (may be null)
-	 * @throws RemoteException
 	 */
-	public void send(Job job, Tool replyTo) throws RemoteException;
+	public void send(Job job, Tool replyTo);
 
 }
 

@@ -7,7 +7,6 @@
 
 package org.opensourcephysics.tools;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -73,10 +72,9 @@ public class DataRefreshTool implements Tool {
 	 *
 	 * @param job     the Job
 	 * @param replyTo the tool requesting refreshed data
-	 * @throws RemoteException
 	 */
 	@Override
-	public void send(Job job, Tool replyTo) throws RemoteException {
+	public void send(Job job, Tool replyTo) {
 		XMLControlElement control = new XMLControlElement(job.getXML());
 		if (control.failedToRead() || (replyTo == null) || !Data.class.isAssignableFrom(control.getObjectClass())) {
 			return;
@@ -223,7 +221,7 @@ public class DataRefreshTool implements Tool {
 	private void padDataset(Dataset dataset, double[] newXArray) {
 		double[] xA = dataset.getXPointsRaw();
 		double[] yA = dataset.getYPointsRaw();
-		double shift = dataset.getShift();
+//		double shift = dataset.getShift();
 		// BH ! As written, if the data are shifted, then
 		// then since getYPoints() adds the shift, 
 		// we are then replacing the y values with shifted ones;

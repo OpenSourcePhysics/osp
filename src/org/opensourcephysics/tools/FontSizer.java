@@ -23,7 +23,6 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
@@ -62,14 +61,15 @@ public class FontSizer {
 	public static final ResizableIcon ARROW_ICON;
 
 	/** maximum font level */
+	public static final int MIN_LEVEL = 0;
 	public static final int MAX_LEVEL = 9;
 
 	// static fields
 	static Object levelObj = new FontSizer();
 	static PropertyChangeSupport support = new SwingPropertyChangeSupport(levelObj);
-	static int level, integerFactor = 1;
+	static int level = MIN_LEVEL, integerFactor = 1;
 	static double levelFactor = 1.25; // size ratio per level
-	static double factor;
+	static double factor = 1;
 	static Map<Font, Font> fontMap = new HashMap<Font, Font>();
 
 	static {
@@ -156,7 +156,7 @@ public class FontSizer {
 	 * @param n a non-negative integer level
 	 */
 	public static void setLevel(int n) {
-		n = Math.max(0, Math.min(n, MAX_LEVEL));
+		n = Math.max(MIN_LEVEL, Math.min(n, MAX_LEVEL));
 		if (level == n)
 			return;
 		level = n;
