@@ -8,7 +8,6 @@
 package org.opensourcephysics.tools;
 
 import java.awt.image.BufferedImage;
-import java.rmi.RemoteException;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.media.core.VideoGrabber;
@@ -129,10 +128,9 @@ public class VideoCaptureTool implements Tool, VideoTool {
 	 *
 	 * @param job     the job
 	 * @param replyTo the tool to reply to
-	 * @throws RemoteException
 	 */
 	@Override
-	public void send(Job job, Tool replyTo) throws RemoteException {
+	public void send(Job job, Tool replyTo) {
 		if (job == null) {
 			return;
 		}

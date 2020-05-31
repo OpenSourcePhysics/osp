@@ -35,7 +35,6 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -601,10 +600,9 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 *
 	 * @param job     the Job
 	 * @param replyTo the tool to notify when the job is complete (may be null)
-	 * @throws RemoteException
 	 */
 	@Override
-	public void send(Job job, Tool replyTo) throws RemoteException {
+	public void send(Job job, Tool replyTo) {
 		XMLControlElement control = new XMLControlElement(job.getXML());
 		if (control.failedToRead() || (control.getObjectClass() == Object.class)) {
 			return;

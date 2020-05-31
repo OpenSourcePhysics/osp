@@ -35,7 +35,6 @@ import java.awt.geom.Line2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.rmi.RemoteException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -599,10 +598,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 *
 	 * @param job     the Job
 	 * @param replyTo the tool to notify when the job is complete (may be null)
-	 * @throws RemoteException
 	 */
 	@Override
-	public void send(Job job, Tool replyTo) throws RemoteException {
+	public void send(Job job, Tool replyTo) {
 		XMLControlElement control = new XMLControlElement(job.getXML());
 		if (control.failedToRead() || (control.getObjectClass() == Object.class)) {
 			return;

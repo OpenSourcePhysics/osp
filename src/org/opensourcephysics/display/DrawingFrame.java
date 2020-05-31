@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -123,12 +122,9 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 		// responds to data from the Data Tool
 		reply = new Tool() {
 			@Override
-			public void send(Job job, Tool replyTo) throws RemoteException {
+			public void send(Job job, Tool replyTo) {
 				XMLControlElement control = new XMLControlElement();
-				try {
-					control.readXML(job.getXML());
-				} catch (RemoteException ex) {
-				}
+				control.readXML(job.getXML());
 				ArrayList<?> datasets = drawingPanel.getObjectOfClass(Dataset.class);
 				Iterator<?> it = control.getObjects(Dataset.class).iterator();
 				while (it.hasNext()) {
@@ -747,9 +743,10 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 		 * JMenuItem(DisplayRes.getString("DrawingFrame.Export_menu_item"));
 		 * //$NON-NLS-1$ exportItem.setAccelerator(KeyStroke.getKeyStroke('E',
 		 * MENU_SHORTCUT_KEY_MASK)); exportItem.addActionListener(new ActionListener() {
-		 * public void actionPerformed(ActionEvent e) { try {
-		 * ExportTool.getTool().send(new LocalJob(drawingPanel), null); }
-		 * catch(RemoteException ex) {} } });
+		 *   public void actionPerformed(ActionEvent e) {
+		 *     ExportTool.getTool().send(new LocalJob(drawingPanel), null);
+		 *   }
+		 * });
 		 */
 		// create export tool menu item if the tool exists in classpath
 		JMenuItem exportItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Export_menu_item")); //$NON-NLS-1$

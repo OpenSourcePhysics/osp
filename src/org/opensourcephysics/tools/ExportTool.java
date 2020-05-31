@@ -13,7 +13,6 @@ import java.awt.GridLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -276,16 +275,13 @@ public class ExportTool implements Tool, PropertyChangeListener {
 	 * Displays the export dialog with a given XML file.
 	 */
 	@Override
-	public void send(Job job, Tool replyTo) throws RemoteException {
+	public void send(Job job, Tool replyTo) {
 		if (JSUtil.isJS) {
 			exportJS(job);
 			return;
 		}
 		XMLControlElement control = new XMLControlElement();
-		try {
-			control.readXML(job.getXML());
-		} catch (RemoteException ex) {
-		}
+		control.readXML(job.getXML());
 		OSPLog.finest(control.toXML());
 		// Load all data objects into 'data'
 		List<Object> data = getDataObjects(control);

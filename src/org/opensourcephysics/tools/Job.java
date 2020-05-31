@@ -7,31 +7,26 @@
 
 package org.opensourcephysics.tools;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-
 /**
- * This is a Remote interface for osp data transfers via XML and RMI.
+ * This is an interface for osp data transfers via XML.
  *
  * @author Douglas Brown
  * @version 1.0
  */
-public interface Job extends Remote {
+public interface Job {
 	/**
 	 * Gets the xml string.
 	 *
 	 * @return the xml string
-	 * @throws RemoteException
 	 */
-	public String getXML() throws RemoteException;
+	public String getXML();
 
 	/**
 	 * Sets the xml string.
 	 *
 	 * @param xml the xml string
-	 * @throws RemoteException
 	 */
-	public void setXML(String xml) throws RemoteException;
+	public void setXML(String xml);
 
 }
 

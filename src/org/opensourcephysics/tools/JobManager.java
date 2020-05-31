@@ -7,7 +7,6 @@
 
 package org.opensourcephysics.tools;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -138,11 +137,7 @@ public class JobManager {
 		XMLControl control = new XMLControlElement(obj);
 		String xml = control.toXML();
 		for (int i = 0; i < jobs.length; i++) {
-			try {
-				jobs[i].setXML(xml);
-			} catch (RemoteException ex) {
-				ex.printStackTrace();
-			}
+			jobs[i].setXML(xml);
 			sendReplies(jobs[i]);
 		}
 	}
@@ -158,13 +153,9 @@ public class JobManager {
 			return;
 		}
 		Iterator<Tool> it = tools.iterator();
-		try {
-			while (it.hasNext()) {
-				Tool tool = it.next();
-				tool.send(job, localTool);
-			}
-		} catch (RemoteException ex) {
-			ex.printStackTrace();
+		while (it.hasNext()) {
+			Tool tool = it.next();
+			tool.send(job, localTool);
 		}
 	}
 
