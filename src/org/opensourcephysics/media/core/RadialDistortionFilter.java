@@ -75,6 +75,7 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.GUIUtils;
+import org.opensourcephysics.display.OSPRuntime;
 
 /**
  * This is a Filter that applies radial transformations to an image.
@@ -987,7 +988,8 @@ protected void initializeSubclass() {
 			Graphics2D g2 = (Graphics2D)g;
       Color gcolor = g2.getColor();
       g2.setColor(color);
-      g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+      if (OSPRuntime.setRenderingHints)
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                          RenderingHints.VALUE_ANTIALIAS_ON);
       g2.fill(shape);
 

@@ -82,6 +82,7 @@ import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.Interactive;
+import org.opensourcephysics.display.OSPRuntime;
 
 /**
  * This is a Filter that corrects perspective in the source image.
@@ -1017,6 +1018,7 @@ public class PerspectiveFilter extends Filter {
 			g2.setColor(color);
 			Font gfont = g.getFont();
 			g2.setFont(font);
+			if (OSPRuntime.setRenderingHints)
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			for (int i = 0; i < drawShapes.length; i++) {
 				g2.fill(drawShapes[i]);
