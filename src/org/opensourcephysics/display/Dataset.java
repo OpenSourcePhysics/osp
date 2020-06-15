@@ -1145,13 +1145,13 @@ public class Dataset extends AbstractTableModel implements Measurable, LogMeasur
 		if (!visible) {
 			return;
 		}
+//		OSPLog.debug(Performance.timeCheckStr("Dataset.draw " + ++testCount + " " + (/** @j2sNative drawingPanel.ui.id || */null), Performance.TIME_MARK));
 		if (!drawingPanel.getPixelTransform().equals(pixelTransform)) {
 			myShape = null;
 			pixelTransform = drawingPanel.getPixelTransform();
 		}
 		try {
 			Graphics2D g2 = (Graphics2D) g;
-			OSPLog.debug(Performance.timeCheckStr("Dataset.draw " + ++testCount + " " + (/** @j2sNative drawingPanel.ui.id || */null), Performance.TIME_MARK));
 			if (markerShape != NO_MARKER) {
 				drawScatterPlot(drawingPanel, g2);
 			}

@@ -1139,13 +1139,11 @@ public class OSPLog extends JFrame {
 	 */
 	class LoggerOutputStream extends OutputStream {
 		StringBuffer buffer = new StringBuffer();
-		OutputStream oldStream;
 		ConsoleLevel level;
 //		private LoggerPrintStream jsPrintStream;
 
 		LoggerOutputStream(ConsoleLevel level, OutputStream oldStream) {
 			this.level = level;
-			this.oldStream = oldStream;
 		}
 
 //		public void setJSPrintStream(LoggerPrintStream loggerPrintStream) {
@@ -1168,7 +1166,6 @@ public class OSPLog extends JFrame {
 		 */
 		@Override
 		public void write(int c) throws IOException {
-			oldStream.write(c);
 			if (c == '\n') {
 				logMsg();
 			} else {

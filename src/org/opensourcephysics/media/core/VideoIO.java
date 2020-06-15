@@ -126,9 +126,6 @@ public class VideoIO {
 		if (!MovieFactory.hasVideoEngine())
 			return null;
 		MovieVideoType mtype = null;
-		if (videoTypes == null) {
-			System.out.println("????"); //$NON-NLS-1$
-		}
 		synchronized (videoTypes) {
 			for (VideoType next : videoTypes) {
 				if (next instanceof MovieVideoI) {

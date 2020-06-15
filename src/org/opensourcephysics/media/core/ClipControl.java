@@ -209,9 +209,7 @@ public abstract class ClipControl implements PropertyChangeListener {
    * @return the frame number
    */
   public int getFrameNumber() {
-  	int n = videoFrameNumber;
-  	n = Math.max(0, n); // can't be negative
-  	return n;
+  	return Math.max(0, videoFrameNumber);
   }
 
   /**

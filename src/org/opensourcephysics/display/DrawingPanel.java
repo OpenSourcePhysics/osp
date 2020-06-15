@@ -722,9 +722,12 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		}
 		viewRect = findViewRect(); // find the clipping rectangle within a scroll pane viewport
 		if (buffered) { // paint bufferImage onto screen
-			if (!validImage || (getWidth() != offscreenImage.getWidth())
-					|| (getHeight() != offscreenImage.getHeight())) {
-				if ((getWidth() != offscreenImage.getWidth()) || (getHeight() != offscreenImage.getHeight())) {
+			boolean isResized = (getWidth() != offscreenImage.getWidth()
+					|| getHeight() != offscreenImage.getHeight());
+			if (validImage && !isResized) {
+				g.drawImage(offscreenImage, 0, 0, null); // copy image to the screen
+			} else {
+				if (isResized) {
 					g.setColor(Color.WHITE);
 					g.setColor(Color.CYAN);
 					g.fillRect(0, 0, getWidth(), getHeight());
@@ -732,8 +735,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 					g.drawImage(offscreenImage, 0, 0, null); // copy old image to the screen for now
 				}
 				refreshTimer.start(); // image is not valid so start refresh timer
-			} else { // current image is valid and has correct size
-				g.drawImage(offscreenImage, 0, 0, null); // copy image to the screen
 			}
 		} else { // paint directly onto the graphics buffer
 			validImage = true; // painting everything gives a valid onscreen image
@@ -2169,7 +2170,10 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 				if (!validImage) {
 					break; // abort drawing
 				}
-				tempList.get(i).draw(this, g2);
+				Drawable d = tempList.get(i);
+				OSPLog.debug(Performance.timeCheckStr("DrawingPanel.draw " + d.getClass().getName(), Performance.TIME_MARK));
+
+				d.draw(this, g2);
 			}
 		}
 		messages.draw(this, g2);
@@ -2532,6 +2536,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 
 	
 	private String[] lastMessage = new String[4];
+
 	/**
 	 * Shows a message in a yellow text box.
 	 *
@@ -2541,15 +2546,16 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 * @param msg
 	 * @param location
 	 */
-	public void setMessage(String msg, int location) {
+	public boolean setMessage(String msg, int location) {
 		if (msg != null && msg.length() == 0)
 			msg = null;
 		messages.setMessage(msg, location);
-		if (msg == null ? lastMessage == null : msg.equals(lastMessage[location])) {
-			return;
+		if (msg == null ? lastMessage[location] == null : msg.equals(lastMessage[location])) {
+			return false;
 		}
 		lastMessage[location] = msg;
-		repaint();
+		OSPLog.debug("DrawingPanel not repainting for message " + msg + " " + location);
+		return true;
 	}
 
 	/**

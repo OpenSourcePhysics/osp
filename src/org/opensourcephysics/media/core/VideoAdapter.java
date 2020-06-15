@@ -58,6 +58,8 @@ import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.Interactive;
 import org.opensourcephysics.display.OSPRuntime;
 
+import javajs.async.SwingJSUtils.Performance;
+
 /**
  * This provides basic implementations of all Video methods. Subclasses should
  * provide a raw image for display--see ImageVideo or GifVideo for an example.
@@ -117,16 +119,20 @@ public abstract class VideoAdapter implements Video {
 		if (((panel instanceof VideoPanel) && ((VideoPanel) panel).isDrawingInImageSpace()) || isMeasured) {
 			g2 = (Graphics2D) g.create();
 			AffineTransform at = panel.getPixelTransform();
+			OSPLog.debug("VideoAdapter.draw " +  g2.getClip());
 			g2.transform(at); // world to screen
+			ImageCoordSystem coords = null;
 			if (panel instanceof VideoPanel) {
 				VideoPanel vidPanel = (VideoPanel) panel;
 				if (!vidPanel.isDrawingInImageSpace()) {
 					// use video panel's coords for vid to world transform
-					ImageCoordSystem coords = vidPanel.getCoords();
-					g2.transform(coords.getToWorldTransform(frameNumber));
+					coords = vidPanel.getCoords();
 				}
 			} else { // not a video panel, so draw in world space
 				// use this video's coords for vid to world transform
+				coords = this.coords;
+			}
+			if (coords != null) {
 				g2.transform(coords.getToWorldTransform(frameNumber));
 			}
 		} else { // center image in panel if not measured
@@ -135,7 +141,8 @@ public abstract class VideoAdapter implements Video {
 			xoffset = panel.xToPix(centerX) - size.width / 2;
 			yoffset = panel.yToPix(centerY) - size.height / 2;
 		}
-		OSPLog.debug("VideoAdapter draw video " + ++ntest2);
+
+		OSPLog.debug(Performance.timeCheckStr("VideoAdapter draw video " + ++ntest2, Performance.TIME_MARK));
 		// draw the video or filtered image
 		if (filterStack.isEmpty() || !filterStack.isEnabled()) {
 			g2.drawImage(rawImage, xoffset, yoffset, panel);
@@ -144,6 +151,7 @@ public abstract class VideoAdapter implements Video {
 		}
 		if (g2 != null)
 			g2.dispose();
+		OSPLog.debug(Performance.timeCheckStr("VideoAdapter draw video done", Performance.TIME_MARK));
 
 	}
 
@@ -242,12 +250,15 @@ public abstract class VideoAdapter implements Video {
 		updateBufferedImage();
 		OSPLog.debug("VideoAdapter getImage " + ++ntest1);
 		if (filterStack.isEmpty() || !filterStack.isEnabled()) {
+			OSPLog.debug("VA.getImage returning bufferedImage");
 			return bufferedImage;
 		} else if (!isValidFilteredImage) { // filteredImage needs refreshing
 			isValidFilteredImage = true;
+			OSPLog.debug("VA.getImage get filtered image");
 			filteredImage = filterStack.getFilteredImage(bufferedImage);
 			OSPLog.debug("VideoAdapter filtering image " + ++ntest);
 		}
+		OSPLog.debug("VA.getImage returning filteredImage");
 		return filteredImage;
 	}
 
