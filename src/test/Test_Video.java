@@ -2,6 +2,7 @@ package test;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -9,15 +10,22 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
@@ -25,6 +33,7 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
 
+import swingjs.api.JSUtilI;
 import swingjs.api.js.HTML5Video;
 
 /**
@@ -38,40 +47,41 @@ public class Test_Video {
 	public static void main(String[] args) {
 		new Test_Video();
 	}
+	
 	private HTML5Video jsvideo;
+	private JLabel imageLabel;
+	private BufferedImage image;
+	private int w;
+	private int h;
+	private int vw;
+	private int vh;
 
+	@SuppressWarnings("unused")
 	public Test_Video() {
 		JFrame main = new JFrame();
 		main.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		ImageIcon icon;
 
-		
-		
-		@SuppressWarnings("unused")
 		boolean testRemote = false;// setting this true requires Java 9
 		boolean isJS = /** @j2sNative true || */
 				false;
 		boolean asBytes = true;
 
 		isDiscrete = true;
-		
-		
-		
+
 		String video = (
 		// "test/jmoljana_960x540.png");
 		// fails"test/EnergyTransfer.mp4"
-		//"test/jmoljana.mp4",
+		// "test/jmoljana.mp4",
 		"test/duet.mp4");
-		
-		
-//		URL videoURL;
-//		try {
-//			videoURL = new URL("https://chemapps.stolaf.edu/test/duet.mp4");
-//		} catch (MalformedURLException e1) {
-//			videoURL = null;
-//		}
-		
-		
+
+		URL videoURL;
+		try {
+			videoURL = new URL("https://chemapps.stolaf.edu/test/duet.mp4");
+		} catch (MalformedURLException e1) {
+			videoURL = null;
+		}
+
 		if (!isJS) {
 			icon = new ImageIcon("src/test/video_image.png");
 		} else if (asBytes) {
@@ -80,23 +90,45 @@ public class Test_Video {
 //				if (testRemote) {
 //					bytes = videoURL.openStream().readAllBytes();// Argh! Java 9!
 //				} else {
-					bytes = Files.readAllBytes(new File(video).toPath());
+				bytes = Files.readAllBytes(new File(video).toPath());
 //				}
 				icon = new ImageIcon(bytes, "jsvideo");
 			} catch (IOException e1) {
 				icon = null;
 			}
-//		} else if (testRemote) {
-//			icon = new ImageIcon(videoURL, "jsvideo");
+		} else if (testRemote) {
+			icon = new ImageIcon(videoURL, "jsvideo");
 		} else {
 			icon = new ImageIcon(video, "jsvideo");
 		}
 		JLabel label = new JLabel(icon);
 		
-		int w = 1920 / 4;
+		// A little trick to allow "final" self reference in a Runnable parameter
+		JDialog[] dialog = new JDialog[1];
+		dialog[0] = HTML5Video.createDialog(null, label, 500, new Function<HTML5Video, Void>() {
+
+			@Override
+			public Void apply(HTML5Video video) {
+				dialog[0].setVisible(true);
+				return null;
+			}
+			
+		});
+		//dialog[0].setOpaque(true);
+		vw = 1920;
+		vh = vw * 9/16;
+		w = 1920 / 4;
+		h = w * 9 / 16;
 		Dimension dim = new Dimension(w, w * 9 / 16);
-		
-		addLayerPane(label, main, dim);
+
+		JPanel videoPanel = getLayerPane(label, dim);
+		imageLabel = new JLabel();
+		imageLabel.setAlignmentX(0.5f);
+		int type = (isJS? JSUtilI.TYPE_4BYTE_HTML5 : BufferedImage.TYPE_4BYTE_ABGR);
+		image = new BufferedImage(w, h,type);
+		ImageIcon imageicon = new ImageIcon(image);
+		imageLabel.setIcon(imageicon);
+
 		jsvideo = (HTML5Video) label.getClientProperty("jsvideo");
 		HTML5Video.addActionListener(jsvideo, new ActionListener() {
 
@@ -108,7 +140,7 @@ public class Test_Video {
 				Object jsevent = sources[1];
 				System.out.println(event + " " + target + " " + jsevent);
 			}
-			 
+
 		});
 
 //		try {
@@ -117,10 +149,21 @@ public class Test_Video {
 //			System.out.println("couldn't play (yet)" + e);
 //		}
 //
-		addControls(label, main);
+
+		Container cp = main.getContentPane();
+		cp.setLayout(new BoxLayout(cp, BoxLayout.Y_AXIS));
+		cp.add(videoPanel);
+		videoPanel.setAlignmentX(0.5f);
+		JPanel controls = getControls(label);
+		controls.setAlignmentX(0.5f);
+		cp.add(controls);
+		cp.add(imageLabel);
 		main.pack();
 		main.setVisible(true);
-
+		//main.setBackground(Color.orange);
+		//main.getRootPane().setOpaque(true);
+		System.out.println(main.isOpaque() + " " + Integer.toHexString(main.getBackground().getRGB()));
+//		cp.setBackground(Color.red);
 		HTML5Video.setProperty(jsvideo, "currentTime", 0);
 
 		showAllProperties();
@@ -181,11 +224,11 @@ public class Test_Video {
 	};
 	
 	
-	double vt, vt0;
+	double vt, vt0, vt1;
 	long t0 = 0;
 	double duration;
 	int totalTime;
-	int delay = 33;
+	int delay = 33334;
 	Timer timer;
 	Object[] playListener;
 	
@@ -202,15 +245,17 @@ public class Test_Video {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				if (cbCapture.isSelected()) {
+					grabImage();
+				}
 				System.out.print("\0");
-				vt += delay/1000.0;
+				vt += delay / 1000000.0;
 				System.out.println("setting time to " + vt);
 				HTML5Video.setCurrentTime(v, vt);
 				long dt = System.currentTimeMillis() - t0;
-				double dtv = vt-vt0;
-				System.out.println((dtv - dt/1000.) + 
-						" " + HTML5Video.getProperty(jsvideo, "paused") +
-						" " + HTML5Video.getProperty(jsvideo, "seeking"));
+				double dtv = vt - vt0;
+				System.out.println((dtv - dt / 1000.) + " " + HTML5Video.getProperty(jsvideo, "paused") + " "
+						+ HTML5Video.getProperty(jsvideo, "seeking"));
 				if (vt >= duration) {
 					playing = false;
 					removePlayListener(v);
@@ -223,6 +268,14 @@ public class Test_Video {
 		listener.actionPerformed(null);
 	}
 	
+	protected void grabImage() {
+		BufferedImage img = HTML5Video.getImage(jsvideo, Integer.MIN_VALUE);
+		Graphics g = image.getGraphics();
+		g.drawImage(img, 0, 0, w, h, 0, 0, vw, vh, null);
+		g.dispose();
+		imageLabel.repaint();
+	}
+
 	protected void removePlayListener(HTML5Video v) {
 		if (playListener != null)
 			HTML5Video.removeActionListener(v, playListener);
@@ -240,11 +293,15 @@ public class Test_Video {
 
 	protected boolean playing;
 
+
+	private JCheckBox cbCapture;
+
+
+	private JCheckBox cbDiscrete;
+
 	
-	private void addLayerPane(JLabel label, JFrame main, Dimension dim) {
-		label.setPreferredSize(dim);
-		label.setMinimumSize(dim);
-		label.setMaximumSize(dim);
+	private JPanel getLayerPane(JLabel label, Dimension dim) {
+		lockDim(label, dim);
 		label.setBounds(0,0, dim.width, dim.height);
 
 		
@@ -280,32 +337,44 @@ public class Test_Video {
 		});
 
 		layerPane = new JLayeredPane();
-		layerPane.setMinimumSize(dim);
-		layerPane.setPreferredSize(dim);
-		layerPane.setMaximumSize(dim);
-
+		lockDim(layerPane, dim);
 		layerPane.add(drawLayer, JLayeredPane.PALETTE_LAYER);
 		layerPane.add(label, JLayeredPane.DEFAULT_LAYER);
 
 		JPanel p = new JPanel();
 		p.add(layerPane, BorderLayout.CENTER);
-		main.add(p, BorderLayout.CENTER);
-		System.out.println(main.getLayeredPane());
-		System.out.println(layerPane);
+		lockDim(p, dim);
+		
+		return p;
 	}
 
-	private void addControls(JLabel label, JFrame main) {
+	private void lockDim(JComponent c, Dimension dim) {
+		c.setPreferredSize(dim);
+		c.setMinimumSize(dim);
+		c.setMaximumSize(dim);
+	}
 
-		JCheckBox discrete = new JCheckBox("discrete");
+	private JPanel getControls(JLabel label) {
+
+		cbCapture = new JCheckBox("capture");
+		cbCapture.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				grabImage();
+			}
+			
+		});
+		cbDiscrete = new JCheckBox("discrete");
 
 		JButton play = new JButton("play");
 		play.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (playing)
+				if (playing || jsvideo == null)
 					return;
-				isDiscrete = discrete.isSelected();
+				isDiscrete = cbDiscrete.isSelected();
 				try {
 					playing = true;
 					if (isDiscrete) {
@@ -325,11 +394,50 @@ public class Test_Video {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				if (jsvideo == null)
+					return;
 				try {
 					playing = false;
 					duration = 0; // turns off timer 
 					jsvideo.pause();
 					removePlayListener(jsvideo);
+				} catch (Throwable e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+
+		});
+		
+		boolean canSeek = HTML5Video.getProperty(jsvideo, "seekToNextFrame") != null;
+		System.out.println("canSeek = " + canSeek);
+		
+		
+		JButton next = new JButton("next");
+		next.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (playing || jsvideo == null)
+					return;
+				double t = HTML5Video.getCurrentTime(jsvideo);
+				System.out.println(t + "  "+ (t - vt0));
+				vt0 = t;
+				HTML5Video.nextFrame(jsvideo, 0.03334);
+			}
+
+		});
+
+		JButton reset = new JButton("reset");
+		reset.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (jsvideo == null)
+					return;
+				vt0 = 0;
+				try {
+					HTML5Video.setCurrentTime(jsvideo,  0);
 				} catch (Throwable e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -374,13 +482,16 @@ public class Test_Video {
 
 		JPanel controls = new JPanel();
 		controls.add(new JLabel("click to mark     "));
-		controls.add(discrete);
+		controls.add(cbDiscrete);
+		controls.add(cbCapture);
 		controls.add(play);
 		controls.add(pause);
+		controls.add(next);
+		controls.add(reset);
 		controls.add(undo);
 		controls.add(clear);
 		controls.add(show);
-		main.add(controls, BorderLayout.SOUTH);
+		return controls;
 	}
 	
 //	Event Name 	Fired When

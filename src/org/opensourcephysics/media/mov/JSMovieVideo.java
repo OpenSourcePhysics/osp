@@ -618,6 +618,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 //						}
 						v.rawImage = bi;
 						v.firePropertyChange(Video.PROPERTY_VIDEO_FRAMENUMBER, null, new Integer(thisFrame));
+						// just repaints VideoPanel
 						v.firePropertyChange(AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY, null, bi);
 						if (v.isPlaying()) {
 							Runnable runner = new Runnable() {
