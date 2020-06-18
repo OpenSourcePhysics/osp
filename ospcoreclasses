@@ -161,6 +161,7 @@ java/io/InputStream.js
 java/io/OutputStream.js
 java/io/OutputStreamWriter.js
 java/io/PrintStream.js
+java/io/PushbackInputStream.js
 java/io/Reader.js
 java/io/StringReader.js
 java/io/StringWriter.js
@@ -198,6 +199,14 @@ java/net/URL.js
 java/net/URLConnection.js
 java/net/URLStreamHandler.js
 java/net/URLStreamHandlerFactory.js
+
+java/nio/Bits.js
+java/nio/Buffer.js
+java/nio/ByteBuffer.js
+java/nio/ByteOrder.js
+java/nio/CharBuffer.js
+java/nio/HeapByteBuffer.js
+java/nio/HeapCharBuffer.js
 java/nio/channels/ByteChannel.js
 java/nio/channels/Channel.js
 java/nio/channels/FileChannel.js
@@ -210,6 +219,9 @@ java/nio/channels/SeekableByteChannel.js
 java/nio/channels/WritableByteChannel.js
 java/nio/channels/spi/AbstractInterruptibleChannel.js
 java/nio/charset/Charset.js
+java/nio/charset/CharsetDecoder.js
+java/nio/charset/CoderResult.js
+java/nio/charset/CodingErrorAction.js
 java/nio/file/FileSystem.js
 java/nio/file/FileSystems.js
 java/nio/file/OpenOption.js
@@ -737,10 +749,13 @@ sun/java2d/StateTrackable.js
 sun/java2d/StateTrackableDelegate.js
 sun/misc/Unsafe.js
 sun/net/www/ParseUtil.js
+sun/nio/cs/ArrayDecoder.js
 sun/nio/cs/HistoricallyNamedCharset.js
 sun/nio/cs/StandardCharsets.js
+sun/nio/cs/ThreadLocalCoders.js
 sun/nio/cs/UTF_8.js
 sun/nio/cs/Unicode.js
+sun/nio/cs/ThreadLocalCoders.js
 sun/reflect/Reflection.js
 sun/security/action/GetPropertyAction.js
 sun/swing/DefaultLookup.js

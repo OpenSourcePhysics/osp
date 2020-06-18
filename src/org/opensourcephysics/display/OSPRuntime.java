@@ -109,21 +109,24 @@ public class OSPRuntime {
 	}
 	
 	static {
-		try {
-			Assets.add(new Assets.Asset("osp", "osp-assets.zip", "org/opensourcephysics/resources"));
-			Assets.add(new Assets.Asset("tracker", "tracker-assets.zip",
-					"org/opensourcephysics/cabrillo/tracker/resources"));
-			Assets.add(new Assets.Asset("physlets", "physlet-assets.zip", new String[] { "opticsimages", "images" }));
-			// add the Info.assets last so that it can override these defaults
-			if (OSPRuntime.isJS) {
-				Assets.add(OSPRuntime.jsutil.getAppletInfo("assets"));
-			}
-		} catch (Exception e) {
-			OSPLog.warning("Error reading assets path. ");
-		}
-
-	}
-		
+    try {
+        Object val=null;
+        if (OSPRuntime.isJS) { // Applet Info block only defined in JS
+          val=OSPRuntime.jsutil.getAppletInfo("assets");
+        }
+        if(val==null || val.toString().equalsIgnoreCase("NONE")) {
+            // do nothing
+        } else if(val.toString().equalsIgnoreCase("DEFAULT")) { // load OSP default
+          Assets.add(new Assets.Asset("osp", "osp-assets.zip", "org/opensourcephysics/resources"));
+        }else { // assets parameter defined
+            Assets.add(OSPRuntime.jsutil.getAppletInfo("assets"));
+        }
+    } catch (Exception e) {
+        OSPLog.warning("Error reading assets path. ");
+        System.err.println("Error reading assets path.");
+    }
+  }
+	
 	public static boolean isBHTest = isJS;
 	
 	public static boolean dontLog = isBHTest; // for OSPLog
