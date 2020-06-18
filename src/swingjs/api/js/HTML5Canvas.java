@@ -34,7 +34,7 @@ public interface HTML5Canvas extends DOMNode {
 		/**
 		 * @j2sNative
 		 * 
-		 * 			image._setImageNode$O(sourceNode, false);
+		 * 			image._setImageNode$O$Z(sourceNode, false);
 		 * 
 		 */		{
 			//image._setImageNode(sourceNode, false);
