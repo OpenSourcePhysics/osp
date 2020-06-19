@@ -134,7 +134,7 @@ public class OSPRuntime {
 
 	public static boolean allowAsyncURL = isJS; // for OSPRuntime and Library SwingWorkers
 	
-	public static boolean autoAddLibrary = !isJS; // for ResourceLoader
+	public static boolean autoAddLibrary = !isJS; // for TrackerIO
 
 	public static boolean canRecordMovieFiles = !isJS; // MovieVideoType.recordable default
 
