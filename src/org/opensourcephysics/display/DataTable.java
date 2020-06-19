@@ -727,7 +727,8 @@ public class DataTable extends JTable {
 	 *
 	 * @param tableModel
 	 */
-	public void add(OSPTableModel tableModel) {
+	//public void add(OSPTableModel tableModel) {
+	public void add(TableModel tableModel) {
 		dataTableModel.add(tableModel);
 	}
 
@@ -752,7 +753,7 @@ public class DataTable extends JTable {
 	 *
 	 */
 	private static class DataTableElement {
-		OSPTableModel tableModel;
+		TableModel tableModel;
 		boolean columnVisibilities[]; // boolean values indicating if a column is visible
 		int stride = 1; // data stride in the DataTable view
 
@@ -761,7 +762,7 @@ public class DataTable extends JTable {
 		 *
 		 * @param t
 		 */
-		public DataTableElement(OSPTableModel t) {
+		public DataTableElement(TableModel t) {
 			tableModel = t;
 		}
 
@@ -1159,7 +1160,7 @@ public class DataTable extends JTable {
 		 * @param tableModel
 		 */
 //		@Override
-		public void add(OSPTableModel tableModel) {
+		public void add(TableModel tableModel) {
 			dataTableElements.add(new DataTableElement(tableModel));
 		}
 
