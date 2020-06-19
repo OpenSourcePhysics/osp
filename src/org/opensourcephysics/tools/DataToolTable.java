@@ -27,6 +27,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.EventObject;
 import java.util.HashMap;
@@ -108,8 +109,8 @@ public class DataToolTable extends DataTable {
 	LabelRenderer labelRenderer = new LabelRenderer();
 	DataCellRenderer dataRenderer = new DataCellRenderer();
 	DataEditor editor = new DataEditor();
-	TreeSet<Integer> selectedRows = new TreeSet<Integer>(); // selected model rows--used when sorting
-	TreeSet<Integer> selectedColumns = new TreeSet<Integer>(); // selected model columns--used when selecting rows
+	BitSet selectedModelRows = new BitSet(); // selected model rows--used when sorting
+	BitSet selectedColumns = new BitSet(); // selected model columns--used when selecting rows
 	JPopupMenu popup = new JPopupMenu();
 	JMenuItem renameColumnItem, copyColumnsItem, cutColumnsItem, pasteColumnsItem, cloneColumnsItem, numberFormatItem;
 	JMenuItem insertRowItem, pasteRowsItem, copyRowsItem, cutRowsItem;
@@ -150,11 +151,10 @@ public class DataToolTable extends DataTable {
 				if (e.getFirstIndex() == -1) {
 					return;
 				}
-				selectedRows.clear();
+				selectedModelRows.clear();
 				int[] rows = getSelectedRows(); // selected view rows
 				for (int i = 0; i < rows.length; i++) {
-					int modelRow = getModelRow(rows[i]);
-					selectedRows.add(modelRow);
+					selectedModelRows.set(getModelRow(rows[i]));
 				}
 				if (!e.getValueIsAdjusting()) {
 					int labelCol = convertColumnIndexToView(0);
@@ -532,7 +532,7 @@ public class DataToolTable extends DataTable {
 					if (col != labelCol && isColumnSelected(col)) {
 						removeColumnSelectionInterval(col, col);
 					} else {
-						if (!selectedRows.isEmpty())
+						if (!selectedModelRows.isEmpty())
 							addColumnSelectionInterval(col, col);
 						if (getSelectedColumns().length == 1) {
 							leadCol = col;
@@ -540,7 +540,7 @@ public class DataToolTable extends DataTable {
 					}
 				}
 				// shift-click: extend selection
-				else if (e.isShiftDown() && !selectedRows.isEmpty()) {
+				else if (e.isShiftDown() && !selectedModelRows.isEmpty()) {
 					if (leadCol < getColumnCount()) {
 						setColumnSelectionInterval(col, leadCol);
 					}
@@ -563,7 +563,7 @@ public class DataToolTable extends DataTable {
 						continue;
 					}
 					int modelCol = convertColumnIndexToModel(selected[i]);
-					selectedColumns.add(modelCol);
+					selectedColumns.set(modelCol);
 				}
 				if (selectedColumns.isEmpty()) {
 					clearSelection();
@@ -927,7 +927,8 @@ public class DataToolTable extends DataTable {
 					// shift-click: extend row selection
 					else if (e.isShiftDown() && (leadRow < getRowCount())) {
 						setRowSelectionInterval(leadRow, row);
-						for (int i : selectedColumns) {
+						for (int i = selectedColumns.nextSetBit(0); i >= 0;
+								i= selectedColumns.nextSetBit(i + 1)) {
 							int n = convertColumnIndexToView(i);
 							addColumnSelectionInterval(n, n);
 						}
@@ -962,9 +963,9 @@ public class DataToolTable extends DataTable {
 						continue;
 					}
 					int modelCol = convertColumnIndexToModel(selected[i]);
-					selectedColumns.add(modelCol);
+					selectedColumns.set(modelCol);
 				}
-				if (selectedColumns.isEmpty() || selectedRows.isEmpty()) {
+				if (selectedColumns.isEmpty() || selectedModelRows.isEmpty()) {
 					clearSelection();
 				}
 			}
@@ -1206,14 +1207,13 @@ public class DataToolTable extends DataTable {
 				yValues[i] = (i < y.length) ? y[i] : Double.NaN;
 			}
 		} else {
-			xValues = new double[selectedRows.size()];
-			yValues = new double[selectedRows.size()];
+			xValues = new double[selectedModelRows.size()];
+			yValues = new double[selectedModelRows.size()];
 			int i = 0;
 			int index = 0; // model row index
 			workingIndex = -1; // index in working data
-			Iterator<Integer> it = selectedRows.iterator();
-			while (it.hasNext()) {
-				int row = it.next().intValue();
+			for (int row = selectedModelRows.nextSetBit(0); row >= 0;
+					row = selectedModelRows.nextSetBit(row + 1)) {
 				xValues[i] = (row >= x.length) ? Double.NaN : x[row];
 				yValues[i] = (row >= y.length) ? Double.NaN : y[row];
 				i++;
@@ -1274,13 +1274,22 @@ public class DataToolTable extends DataTable {
 	 * @return the selected rows
 	 */
 	protected int[] getSelectedModelRows() {
-		Integer[] a = selectedRows.toArray(new Integer[0]);
-		int[] rows = new int[a.length];
-		for (int i = 0; i < a.length; i++) {
-			rows[i] = a[i];
+		int[] rows = new int[selectedModelRows.cardinality()];
+		for (int pt = 0, i = selectedModelRows.nextSetBit(0); i >= 0; i = selectedModelRows.nextSetBit(i + 1)) {
+			rows[pt++] = i;
 		}
 		return rows;
 	}
+
+
+	public BitSet getSelectedModelRowsBS() {
+		return selectedModelRows;
+	}
+
+	public void setSelectedModelRowsBS(BitSet rows) {
+		selectedModelRows = rows;
+	}
+
 
 	/**
 	 * Sets the selected model rows.

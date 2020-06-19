@@ -1760,32 +1760,17 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					if (!e.isControlDown()) {
 						dataTable.setSelectedModelRows(new int[] { index });
 					} else {
-						int[] rows = dataTable.getSelectedModelRows();
-						boolean needsAdding = true;
-						for (int row : rows) {
-							if (row == index) {
-								needsAdding = false;
-							}
-						}
-						int[] newRows = new int[needsAdding ? rows.length + 1 : rows.length - 1];
-						if (needsAdding) {
-							System.arraycopy(rows, 0, newRows, 0, rows.length);
-							newRows[rows.length] = index;
+						BitSet rows = dataTable.getSelectedModelRowsBS();
+						boolean needsAdding = !rows.get(index);
+						if (rows.get(index)) {
+							rows.clear(index);
 						} else {
-							int j = 0;
-							for (int row : rows) {
-								if (row == index) {
-									continue;
-								}
-								newRows[j] = row;
-								j++;
-							}
+							rows.set(index);
 						}
 						if (!JSUtil.isJS)
-							dataTable.setSelectedModelRows(newRows);
+							dataTable.setSelectedModelRowsBS(rows);
 					}
 					dataTable.getSelectedData();
-
 					plot.repaint();
 					boxActive = false;
 					selectionChanged = true;
@@ -1812,7 +1797,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					}
 					// prefill rowsInside with currently selected rows
 					rowsInside.clear();
-					for (int row : dataTable.getSelectedModelRows()) {
+					BitSet bs = dataTable.getSelectedModelRowsBS();
+					for (int row = bs.nextSetBit(0); row >= 0; row = bs.nextSetBit(row + 1)) {
 						rowsInside.add(row);
 					}
 					recent.clear();

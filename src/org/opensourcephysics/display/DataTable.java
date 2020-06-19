@@ -26,6 +26,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,9 +52,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableColumnModel;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -570,8 +571,51 @@ public class DataTable extends JTable {
 
 	protected void refreshTableNow(int mode) {
 		// BH every sort of refresh goes through here
-
 		OSPLog.debug("DataTable.refreshTableNow " + Integer.toHexString(mode));
+
+
+		switch (mode) {
+		default:
+		case MODE_CANCEL: // 0x00;
+		case MODE_MASK_REBUILD: // 0x0F;
+		case MODE_CREATE: // 0x01;
+		case MODE_CLEAR: // 0x02;
+		case MODE_FRAME: // 0x03;
+		case MODE_MODEL: // 0x04;
+		case MODE_TAB: // 0x05;
+			rebuild();
+			dataTableModel.fireTableChanged(null);
+			break;
+		case MODE_HEADER: // 0x10;
+			repaint();
+			break;
+		case MODE_MASK_ROWCOL: // 0x2F00;
+		case MODE_APPEND: // 0x2000;
+		case MODE_INSERT: // 0x2100;
+		case MODE_DELETE: // 0x2200;
+		case MODE_COLUMN: // 0x2300;
+		case MODE_CELLS: // 0x2400;
+			rebuild();
+			dataTableModel.fireTableChanged(null);
+			break;
+		case MODE_VALUES: // 0x4000;
+			repaint();
+			break;
+		case MODE_MASK_STYLE: // 0x8F0000;
+		case MODE_PATTERN: // 0x810000;
+		case MODE_FUNCTION: // 0x820000;
+		case MODE_FORMAT: // 0x830000;
+		case MODE_SELECT: // 0x1000000;
+			repaint();
+			break;
+		case MODE_SHOW: // 0x2000000;
+			rebuild();
+			repaint();
+			break;
+		}
+	}
+
+	private void rebuild() {
 
 		// code added by D Brown to update decimal separator Jan 2018
 		try {
@@ -585,7 +629,7 @@ public class DataTable extends JTable {
 		}
 
 		// code added by D Brown to maintain column order and widths (Mar 2014)
-		TableColumnModel model = this.getColumnModel();
+		TableColumnModel model = getColumnModel();
 		int colCount = model.getColumnCount();
 		int[] modelIndexes = new int[colCount];
 		int[] columnWidths = new int[colCount];
@@ -609,23 +653,21 @@ public class DataTable extends JTable {
 			newColumnNames.add(column.getHeaderValue());
 		}
 		// determine which column(s) were removed
-		TreeSet<Integer> removedIndexes = new TreeSet<Integer>();
+		BitSet bsRemoved = new BitSet();
 		for (int i = 0; i < colCount; i++) {
 			if (!newColumnNames.contains(columnNames.get(i))) {
-				removedIndexes.add(modelIndexes[i]);
+				bsRemoved.set(modelIndexes[i]);
 			}
 		}
 		// determine which column(s) were added
-		TreeSet<Integer> addedIndexes = new TreeSet<Integer>();
+		BitSet bsAdded = new BitSet();
 		for (int i = 0; i < newCount; i++) {
 			if (!columnNames.contains(newColumnNames.get(i))) {
-				addedIndexes.add(i);
+				bsAdded.set(i);
 			}
 		}
 		// rebuild modelIndex and columnWidth arrays
-		while (!removedIndexes.isEmpty()) {
-			int n = removedIndexes.last();
-			removedIndexes.remove(n);
+		for (int n = bsRemoved.nextSetBit(0); n >= 0; n = bsRemoved.nextSetBit(n + 1)) {
 			int[] newModelIndexes = new int[colCount - 1];
 			int[] newColumnWidths = new int[colCount - 1];
 			int k = 0;
@@ -644,9 +686,7 @@ public class DataTable extends JTable {
 			columnWidths = newColumnWidths;
 			colCount = modelIndexes.length;
 		}
-		while (!addedIndexes.isEmpty()) {
-			int n = addedIndexes.first();
-			addedIndexes.remove(n);
+		for (int n = bsAdded.nextSetBit(0); n >= 0; n = bsAdded.nextSetBit(n + 1)) {
 			int[] newModelIndexes = new int[colCount + 1];
 			int[] newColumnWidths = new int[colCount + 1];
 			for (int i = 0; i < colCount; i++) {
@@ -679,6 +719,7 @@ public class DataTable extends JTable {
 			model.getColumn(i).setPreferredWidth(columnWidths[i]);
 			model.getColumn(i).setWidth(columnWidths[i]);
 		}
+		dataTableModel.fireTableDataChanged();
 	}
 
 	/**
@@ -843,7 +884,7 @@ public class DataTable extends JTable {
 	 * 
 	 * @created February 21, 2002
 	 */
-	protected class OSPDataTableModel extends DefaultTableModel {// BH trying this implements DataTableModel {
+	protected class OSPDataTableModel extends AbstractTableModel {// BH trying this implements DataTableModel {
 
 
 		ArrayList<DataTableElement> dataTableElements;
@@ -891,8 +932,7 @@ public class DataTable extends JTable {
 		 */
 //		@Override
 		public void setColumnVisible(TableModel tableModel, int columnIndex, boolean b) {
-			DataTableElement dte = findElementContaining(tableModel);
-			dte.setColumnVisible(columnIndex, b);
+			findElementContaining(tableModel).setColumnVisible(columnIndex, b);
 		}
 
 		/**
@@ -903,8 +943,7 @@ public class DataTable extends JTable {
 		 */
 //		@Override
 		public void setStride(TableModel tableModel, int stride) {
-			DataTableElement dte = findElementContaining(tableModel);
-			dte.setStride(stride);
+			findElementContaining(tableModel).setStride(stride);
 		}
 
 		/**
