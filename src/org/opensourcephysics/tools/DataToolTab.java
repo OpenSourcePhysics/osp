@@ -300,7 +300,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			}
 		}
 		if (updatedColumns || !loadedColumns.isEmpty()) {
-			dataTable.refreshTable();
+			dataTable.refreshTable(DataTable.MODE_COLUMN);
 			statsTable.refreshStatistics();
 			refreshPlot();
 			refreshGUI();
@@ -569,7 +569,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		String name = e.getPropertyName();
 		if (name.equals("function")) { //$NON-NLS-1$
 			tabChanged(true);
-			dataTable.refreshTable();
+			dataTable.refreshTable(DataTable.MODE_FUNCTION);
 			statsTable.refreshStatistics();
 			if (e.getNewValue() instanceof DataFunction) { // new function has been created
 				String funcName = e.getNewValue().toString();
@@ -1279,7 +1279,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		// configure data table
 		dataTable.setRowNumberVisible(true);
 		dataScroller = new JScrollPane(dataTable);
-		dataTable.refreshTable();
+		dataTable.refreshTable(DataTable.MODE_CREATE);
 		dataTable.addPropertyChangeListener("format", new PropertyChangeListener() { //$NON-NLS-1$
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
@@ -1444,7 +1444,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					}
 				}
 				toolbar.validate();
-				refreshAll();
+				refreshAll(DataTable.MODE_VALUES);
 				prevShiftX = -shiftXField.getValue();
 				prevShiftY = -shiftYField.getValue();
 			}
@@ -1866,7 +1866,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 						col.setShift(shiftY);
 						tabChanged(true);
 					}
-					refreshAll();
+					refreshAll(DataTable.MODE_VALUES);
 					plot.lockedXMin = plot.mouseDownXMin + deltaX;
 					plot.lockedXMax = plot.mouseDownXMax + deltaX;
 					plot.lockedYMin = plot.mouseDownYMin + deltaY;
@@ -2169,7 +2169,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 							plot.areaLimits[1].setX(plot.areaLimits[1].getX() + shiftX - prevX);
 						}
 
-						refreshAll();
+						refreshAll(DataTable.MODE_VALUES);
 						((CrawlerSpinnerModel) shiftXSpinner.getModel()).refreshDelta();
 					}
 				}
@@ -2222,7 +2222,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 							plot.areaLimits[1].setX(plot.areaLimits[1].getX() + shiftX - prevX);
 						}
 
-						refreshAll();
+						refreshAll(DataTable.MODE_VALUES);
 					}
 				}
 			}
@@ -2246,7 +2246,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					DataColumn col = (DataColumn) data;
 					if (col.setShift(-shiftYField.getValue())) {
 						tabChanged(true);
-						refreshAll();
+						refreshAll(DataTable.MODE_VALUES);
 						((CrawlerSpinnerModel) shiftYSpinner.getModel()).refreshDelta();
 					}
 				}
@@ -2289,7 +2289,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					double shiftY = -(Double) shiftYSpinner.getValue();
 					if (col.setShift(shiftY)) {
 						tabChanged(true);
-						refreshAll();
+						refreshAll(DataTable.MODE_VALUES);
 					}
 				}
 			}
@@ -2324,7 +2324,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 							plot.areaLimits[0].setX(plot.areaLimits[0].getX() + shift - prev);
 							plot.areaLimits[1].setX(plot.areaLimits[1].getX() + shift - prev);
 						}
-						refreshAll();
+						refreshAll(DataTable.MODE_SELECT);
 						((CrawlerSpinnerModel) shiftXSpinner.getModel()).refreshDelta();
 					}
 				}
@@ -2354,7 +2354,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					double val = selectedYField.getValue();
 					if (col.setShiftedValue(selectedDataIndex, val)) {
 						tabChanged(true);
-						refreshAll();
+						refreshAll(DataTable.MODE_SELECT);
 						((CrawlerSpinnerModel) shiftYSpinner.getModel()).refreshDelta();
 					}
 				}
@@ -2458,7 +2458,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		plot.fixedFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
 		plot.stringBuilder.refreshFormats();
 		correlationFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
-		dataTable.refreshTable();
+		dataTable.refreshTable(DataTable.MODE_FORMAT);
 	}
 
 	/**
@@ -2967,13 +2967,13 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	/**
 	 * Refreshes all.
 	 */
-	public void refreshAll() {
+	public void refreshAll(int mode) {
 		refreshShiftFields();
 		refreshPlot();
 		curveFitter.fit(curveFitter.fit);
 		plot.refreshArea();
 		plot.refreshMeasurements();
-		dataTable.refreshTable();
+		dataTable.refreshTable(mode);
 	}
 
 	/**
@@ -3198,7 +3198,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 								tabChanged(true);
 							}
 						}
-						refreshAll();
+						refreshAll(DataTable.MODE_VALUES);
 						((CrawlerSpinnerModel) shiftXSpinner.getModel()).refreshDelta();
 						((CrawlerSpinnerModel) shiftYSpinner.getModel()).refreshDelta();
 					}
@@ -4131,7 +4131,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					}
 				}
 			}
-			refreshAll();
+			refreshAll(DataTable.MODE_VALUES);
 			shiftEditListener.valueChanged = false;
 		}
 
@@ -4155,7 +4155,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					}
 				}
 			}
-			refreshAll();
+			refreshAll(DataTable.MODE_VALUES);
 			shiftEditListener.valueChanged = false;
 		}
 	}
@@ -4551,7 +4551,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 							((DataFunction) datasets.get(i)).refreshFunctionData();
 						}
 					}
-					tab.dataTable.refreshTable();
+					tab.dataTable.refreshTable(DataTable.MODE_CREATE);
 					break;
 				}
 			}
@@ -4634,7 +4634,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 							}
 						}
 					}
-					tab.dataTable.refreshTable();
+					tab.dataTable.refreshTable(DataTable.MODE_VALUES);
 					tab.propsTable.refreshTable();
 					tab.tabChanged(false);
 				}

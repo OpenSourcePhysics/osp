@@ -18,6 +18,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.border.EtchedBorder;
 import org.opensourcephysics.analysis.FourierSinCosAnalysis;
+import org.opensourcephysics.display.DataTable;
 import org.opensourcephysics.display.Dataset;
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.PlottingPanel;
@@ -65,7 +66,7 @@ public class FFTRealFrame extends PlotFrame {
     setXYColumnNames(2, DisplayRes.getString("FourierAnalysis.Column.Frequency"), //$NON-NLS-1$ 
       DisplayRes.getString("FourierAnalysis.Column.Imaginary"),                   //$NON-NLS-1$  
         DisplayRes.getString("FourierAnalysis.ImaginaryCoefficients"));           //$NON-NLS-1$
-    dataTable.setRowNumberVisible(true);
+    getDataTable().setRowNumberVisible(true);
     buildUserInterface();
     showPower();
   }
@@ -263,9 +264,7 @@ protected void addMenuItems() {
     append(0, arrayData[0], arrayData[1]); // power
     append(1, arrayData[0], arrayData[2]); // cos coef
     append(2, arrayData[0], arrayData[3]); // sin coef
-    if((tableFrame!=null)&&tableFrame.isShowing()) {
-      dataTable.refreshTable();
-    }
+    updateTable(DataTable.MODE_CREATE);
     invalidateImage();
     repaint();
   }

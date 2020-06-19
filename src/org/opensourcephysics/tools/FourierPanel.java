@@ -86,7 +86,7 @@ public class FourierPanel extends JPanel {
 		for (Dataset next : datasets) {
 			fourierManager.addDataset(next);
 		}
-		table.refreshTable();
+		table.refreshTable(DataTable.MODE_CREATE);
 		name = TeXParser.removeSubscripting(name);
 		String x = TeXParser.removeSubscripting(data.getXColumnName());
 		String y = TeXParser.removeSubscripting(data.getYColumnName());

@@ -270,7 +270,7 @@ public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
   @Override
 public void clearData() {
     histogram.clear();
-    dataTable.refreshTable();
+    dataTable.refreshTable(DataTable.MODE_CLEAR);
     if(drawingPanel!=null) {
       drawingPanel.invalidateImage();
     }
@@ -284,7 +284,7 @@ public void clearData() {
     histogram.append(v);
     // this may be slow if the table is large
     if((tableFrame!=null)&&tableFrame.isShowing()) {
-      dataTable.refreshTable();
+      dataTable.refreshTable(DataTable.MODE_APPEND);
     }
   }
 
@@ -297,7 +297,7 @@ public void clearData() {
   public void append(double value, double numberOfOccurences) {
     histogram.append(value, numberOfOccurences);
     if((tableFrame!=null)&&tableFrame.isShowing()) {
-      dataTable.refreshTable();
+      dataTable.refreshTable(DataTable.MODE_APPEND);
     }
   }
 
@@ -310,7 +310,7 @@ public void clearData() {
     histogram.append(values);
     // this may be slow if the table is large
     if((tableFrame!=null)&&tableFrame.isShowing()) {
-      dataTable.refreshTable();
+      dataTable.refreshTable(DataTable.MODE_APPEND);
     }
   }
 
@@ -417,7 +417,7 @@ public void clearData() {
         tableFrame = new DataTableFrame(getTitle()+" "+DisplayRes.getString("TableFrame.TitleAddOn.Data"), dataTable); //$NON-NLS-1$ //$NON-NLS-2$
         tableFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
       }
-      dataTable.refreshTable();
+      dataTable.refreshTable(DataTable.MODE_SHOW);
       dataTable.sort(0);
       tableFrame.setVisible(true);
     } else {

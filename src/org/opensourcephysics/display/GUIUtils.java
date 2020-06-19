@@ -123,7 +123,7 @@ public class GUIUtils {
 			}
 			if (OSPFrame.class.isInstance(frames[i])) {
 				if (DataTableFrame.class.isInstance(frames[i])) {
-					((DataTableFrame) frames[i]).refreshTable();
+					((DataTableFrame) frames[i]).refreshTable(DataTable.MODE_MODEL);
 				}
 				frames[i].setVisible(true);
 				((OSPFrame) frames[i]).invalidateImage(); // make sure buffers are up to date

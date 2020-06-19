@@ -1099,7 +1099,7 @@ public class DataToolTable extends DataTable {
 		}
 		workingMap.remove(colName);
 		setFormatPattern(colName, null);
-		refreshTable();
+		refreshTable(DataTable.MODE_COLUMN);
 	}
 
 	protected void deleteSelectedColumns() {
@@ -1132,7 +1132,7 @@ public class DataToolTable extends DataTable {
 			setFormatPattern(colName, null);
 		}
 		workingMap.clear();
-		refreshTable();
+		refreshTable(DataTable.MODE_CLEAR);
 	}
 
 	/**
@@ -1420,7 +1420,7 @@ public class DataToolTable extends DataTable {
 			getWorkingData(data.getYColumnName());
 		}
 		// refresh table and set column order
-		DataToolTable.super.refreshTable();
+		DataToolTable.super.refreshTable(DataTable.MODE_INSERT);
 		// for each view column i
 		for (int i = 0; i < modelColumns.length; i++) {
 			// find its current model column and move it if nec
@@ -1442,7 +1442,7 @@ public class DataToolTable extends DataTable {
 		// restore selected columns but include inserted column
 		cols.add(data.getYColumnName());
 		setSelectedColumnNames(cols);
-		refreshTable();
+		refreshTable(DataTable.MODE_COLUMN);
 		refreshDataFunctions();
 		dataToolTab.statsTable.refreshStatistics();
 		dataToolTab.propsTable.refreshTable();
@@ -1507,7 +1507,7 @@ public class DataToolTable extends DataTable {
 			dataToolTab.refreshGUI();
 		} else {
 			// refresh table and set column order
-			DataToolTable.super.refreshTable();
+			DataToolTable.super.refreshTable(MODE_DELETE);
 			// for each view column i
 			for (int i = 0; i < modelColumns.length; i++) {
 				// find its current model column and move it if nec
@@ -1526,7 +1526,7 @@ public class DataToolTable extends DataTable {
 				setSelectedColumnNames(cols);
 			}
 		}
-		refreshTable();
+		refreshTable(DataTable.MODE_COLUMN);
 		refreshDataFunctions();
 		dataToolTab.refreshPlot();
 		dataToolTab.propsTable.refreshTable();
@@ -1572,7 +1572,7 @@ public class DataToolTable extends DataTable {
 			}
 		}
 		refreshDataFunctions();
-		refreshTable();
+		refreshTable(DataTable.MODE_CELLS);
 		setSelectedModelRows(rows);
 		setSelectedColumnNames(values.keySet());
 		dataToolTab.refreshPlot();
@@ -1610,7 +1610,7 @@ public class DataToolTable extends DataTable {
 		// trim empty rows
 		trimEmptyRows(startFillRow - 1);
 		refreshDataFunctions();
-		refreshTable();
+		refreshTable(DataTable.MODE_CELLS);
 		setSelectedColumnNames(values.keySet());
 		setSelectedModelRows(rows);
 		dataToolTab.refreshPlot();
@@ -1640,7 +1640,7 @@ public class DataToolTable extends DataTable {
 			cols[i++] = convertColumnIndexToView(index + 1);
 		}
 		refreshDataFunctions();
-		refreshTable();
+		refreshTable(DataTable.MODE_VALUES);
 		setSelectedModelRows(rows);
 		setSelectedColumnNames(values.keySet());
 		refreshUndoItems();
@@ -1701,7 +1701,7 @@ public class DataToolTable extends DataTable {
 			double[] cells = deletePoints(next, rows);
 			removed.put(next.getYColumnName(), cells);
 		}
-		refreshTable();
+		refreshTable(DataTable.MODE_DELETE);
 		refreshDataFunctions();
 		clearSelection();
 		setSelectedColumnNames(removed.keySet());
@@ -1953,7 +1953,7 @@ public class DataToolTable extends DataTable {
 		data.setXYColumnNames(data.getXColumnName(), newName);
 		refreshDataFunctions();
 		dataToolTab.columnNameChanged(oldName, newName);
-		refreshTable();
+		refreshTable(DataTable.MODE_HEADER);
 		refreshUndoItems();
 	}
 
@@ -2013,7 +2013,7 @@ public class DataToolTable extends DataTable {
 	 * Refreshes the data in the table. Overrides DataTable method.
 	 */
 	@Override
-	public void refreshTable() {
+	public void refreshTable(int mode) {
 		// save model column order
 		int[] modelColumns = getModelColumnOrder();
 		// save selected rows and columns
@@ -2021,7 +2021,7 @@ public class DataToolTable extends DataTable {
 		ArrayList<String> cols = getSelectedColumnNames();
 		boolean noView = convertColumnIndexToView(0) == -1;
 		// refresh table
-		super.refreshTable();
+		super.refreshTable(mode);
 		if (noView) {
 			return;
 		}

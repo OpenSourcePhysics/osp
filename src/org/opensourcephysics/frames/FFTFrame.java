@@ -409,7 +409,7 @@ public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
   @Override
 public void clearData() {
     complexDataset.clear();
-    dataTable.refreshTable();
+    dataTable.refreshTable(DataTable.MODE_CLEAR);
     drawingPanel.invalidateImage();
   }
 
@@ -441,7 +441,7 @@ public void setLogScale(boolean xlog, boolean ylog) {
         tableFrame = new DataTableFrame(getTitle()+" "+DisplayRes.getString("TableFrame.TitleAddOn.Data"), dataTable); //$NON-NLS-1$ //$NON-NLS-2$
         tableFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
       }
-      dataTable.refreshTable();
+      dataTable.refreshTable(DataTable.MODE_SHOW);
       dataTable.sort(0);
       tableFrame.setVisible(true);
     } else {

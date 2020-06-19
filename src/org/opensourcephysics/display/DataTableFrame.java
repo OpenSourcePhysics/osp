@@ -149,7 +149,7 @@ protected JMenu loadDisplayMenu() {
     digits = Integer.parseInt(str);
     digits = Math.max(digits, 1);
     table.setMaximumFractionDigits(Math.min(digits, 16));
-    table.refreshTable();
+    table.refreshTable(DataTable.MODE_FORMAT);
   }
 
   /** Copies the data in the table to the system clipboard */
@@ -167,8 +167,8 @@ protected JMenu loadDisplayMenu() {
    *  such as row number visibility. Changes to the TableModels displayed in the
    *  table will not be visible until this method is called.
    */
-  public void refreshTable() {
-    table.refreshTable();
+  public void refreshTable(int mode) {
+    table.refreshTable(mode);
   }
 
   /**

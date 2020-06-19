@@ -75,7 +75,7 @@ public class ShellParticle extends AbstractTrajectory {
 		super.initialize(newState);
 		if ((datasets != null) || (dataTable != null)) {
 			datasets.clear();
-			dataTable.refreshTable();
+			dataTable.refreshTable(DataTable.MODE_CLEAR);
 		}
 		E = computeE(state);
 		tau = state[1];
@@ -172,7 +172,7 @@ public class ShellParticle extends AbstractTrajectory {
 	public void clearDataTable() {
 		if (tableFrame != null) {
 			datasets.clear();
-			dataTable.refreshTable();
+			dataTable.refreshTable(DataTable.MODE_CLEAR);
 		}
 	}
 
@@ -187,7 +187,7 @@ public class ShellParticle extends AbstractTrajectory {
 		datasets.append(0, state[0], state[1]); // tau
 		tableFrame.setVisible(true);
 		tableFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		dataTable.refreshTable();
+		dataTable.refreshTable(DataTable.MODE_CREATE);
 		datasets.setStride(stride);
 		return tableFrame;
 	}

@@ -209,7 +209,7 @@ protected void addMenuItems() {
   public void append(double x, double re, double im) {
     complexDataset.append(x, re, im);
     if((tableFrame!=null)&&tableFrame.isShowing()) {
-      dataTable.refreshTable();
+      dataTable.refreshTable(DataTable.MODE_APPEND);
     }
   }
 
@@ -228,7 +228,7 @@ protected void addMenuItems() {
   public void append(double[] x, double[] z) {
     complexDataset.append(x, z);
     if((tableFrame!=null)&&tableFrame.isShowing()) {
-      dataTable.refreshTable();
+      dataTable.refreshTable(DataTable.MODE_APPEND);
     }
   }
 
@@ -242,7 +242,7 @@ protected void addMenuItems() {
   public void append(double[] xpoints, double[] re, double[] im) {
     complexDataset.append(xpoints, re, im);
     if((tableFrame!=null)&&tableFrame.isShowing()) {
-      dataTable.refreshTable();
+      dataTable.refreshTable(DataTable.MODE_APPEND);
     }
   }
 
@@ -298,7 +298,7 @@ public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
 public void clearData() {
     complexDataset.clear();
     if(dataTable!=null) {
-      dataTable.refreshTable();
+      dataTable.refreshTable(DataTable.MODE_CLEAR);
     }
     if(drawingPanel!=null) {
       drawingPanel.invalidateImage();
@@ -316,7 +316,7 @@ public void clearData() {
         tableFrame = new DataTableFrame(getTitle()+" "+DisplayRes.getString("TableFrame.TitleAddOn.Data"), dataTable); //$NON-NLS-1$ //$NON-NLS-2$
         tableFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
       }
-      dataTable.refreshTable();
+      dataTable.refreshTable(DataTable.MODE_SHOW);
       tableFrame.setVisible(true);
     } else {
       tableFrame.setVisible(false);

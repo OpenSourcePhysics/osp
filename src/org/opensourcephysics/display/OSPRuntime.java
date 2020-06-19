@@ -10,8 +10,6 @@ package org.opensourcephysics.display;
 import java.awt.Component;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -129,7 +127,7 @@ public class OSPRuntime {
 	
 	public static boolean isBHTest = isJS;
 	
-	public static boolean dontLog = isBHTest; // for OSPLog
+	public static boolean dontLog = isJS; // for OSPLog
 
 
 	public static boolean allowSetFonts = true;//!isBHTest; // for testing
