@@ -521,6 +521,15 @@ public class DataTable extends JTable {
 		clear();
 		setRefreshDelay(-1);
 	}
+	
+	/*
+	 * @deprecated
+	 * Refresh the table by rebuilding everything.
+	 * 
+	 */
+	public void refreshTable() {
+		 refreshTable(MODE_MASK_REBUILD);
+	}
 
 	
     /*
