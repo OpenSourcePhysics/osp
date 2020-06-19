@@ -58,6 +58,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.media.core.NumberField;
 import org.opensourcephysics.tools.DataToolTab;
 
@@ -533,6 +534,10 @@ public class DataTable extends JTable {
 	 */
 
 	protected void refreshTableNow(int mode) {
+		// BH every sort of refresh goes through here
+		
+		OSPLog.debug("DataTable.refreshTableNow " + Integer.toHexString(mode));
+		
 		// code added by D Brown to update decimal separator Jan 2018
 		try {
 			// try block needed to catch occasional ConcurrentModificationException

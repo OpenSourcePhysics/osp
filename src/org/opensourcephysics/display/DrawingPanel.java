@@ -2171,7 +2171,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 					break; // abort drawing
 				}
 				Drawable d = tempList.get(i);
-				OSPLog.debug(Performance.timeCheckStr("DrawingPanel.draw " + d.getClass().getName(), Performance.TIME_MARK));
+				//OSPLog.debug(Performance.timeCheckStr("DrawingPanel.draw " + d.getClass().getName(), Performance.TIME_MARK));
 
 				d.draw(this, g2);
 			}
