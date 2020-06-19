@@ -542,11 +542,6 @@ public class DataTable extends JTable {
 
       */
 
-     public void refreshTable() {
-
-                     refreshTable(MODE_MASK_REBUILD);
-
-     }
 	/**
 	 * Refresh the data in the DataTable, as well as other changes to the table,
 	 * such as row number visibility. Changes to the TableModels displayed in the
