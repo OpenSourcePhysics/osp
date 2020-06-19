@@ -133,7 +133,8 @@ public class DataToolTable extends DataTable {
 	 * @param tab
 	 */
 	public DataToolTable(DataToolTab tab) {
-		super(new DataToolTableModel(tab));
+		super();
+		init(new DataToolTableModel(tab));
 		dataToolTab = tab;
 		dataManager = tab.dataManager;
 		add(dataManager);
@@ -519,7 +520,7 @@ public class DataToolTable extends DataTable {
 					sort(0);
 				}
 				// single click label column: refresh selected rows
-				else if (col == labelCol && getSortedColumn() == col) {
+				else if (col == labelCol && dataTableModel.getSortedColumn() == col) {
 					if (col != prevSortedColumn) {
 						int[] rows = getSelectedModelRows();
 						setSelectedModelRows(rows);
@@ -1463,7 +1464,7 @@ public class DataToolTable extends DataTable {
 		int deletedCol = convertColumnIndexToView(index + 1);
 		Dataset data = dataManager.getDataset(index);
 		// determine if sort column is to be deleted
-		boolean sortColDeleted = getSortedColumn() == index + 1;
+		boolean sortColDeleted = dataTableModel.getSortedColumn() == index + 1;
 		if (sortColDeleted) {
 			sort(0);
 		}
@@ -2030,7 +2031,7 @@ public class DataToolTable extends DataTable {
 		setModelColumnOrder(modelColumns);
 		dataToolTab.tabChanged(changed);
 		// re-sort to restore row order
-		sort(getSortedColumn());
+		super.sort(dataTableModel.getSortedColumn());
 		// restore selected rows and columns
 		// important to select columns first!
 		if (!cols.isEmpty()) {
@@ -2274,11 +2275,11 @@ public class DataToolTable extends DataTable {
 			Font font;
 			Dataset data = getDataset(realname);
 			if (!dataToolTab.isDeletable(data)) {
-				font = getSortedColumn() != convertColumnIndexToModel(col)
+				font = dataTableModel.getSortedColumn() != convertColumnIndexToModel(col)
 						? headerFont.deriveFont(Font.PLAIN + Font.ITALIC)
 						: headerFont.deriveFont(Font.BOLD + Font.ITALIC);
 			} else {
-				font = getSortedColumn() != convertColumnIndexToModel(col) ? headerFont.deriveFont(Font.PLAIN)
+				font = dataTableModel.getSortedColumn() != convertColumnIndexToModel(col) ? headerFont.deriveFont(Font.PLAIN)
 						: headerFont.deriveFont(Font.BOLD);
 			}
 			int[] cols = getSelectedColumns();
@@ -2554,7 +2555,7 @@ public class DataToolTable extends DataTable {
 	/**
 	 * A table model for this table.
 	 */
-	protected static class DataToolTableModel extends DataTable.DefaultDataTableModel {
+	protected class DataToolTableModel extends DataTable.OSPDataTableModel {
 		DataToolTab tab;
 
 		DataToolTableModel(DataToolTab tab) {
@@ -2563,6 +2564,9 @@ public class DataToolTable extends DataTable {
 
 		@Override
 		public String getColumnName(int col) {
+			if (col >= getColumnCount()) {
+				return "unknown";
+			} // from SortDecorator
 			if (col == 0) {
 				return rowName;
 			}
@@ -2615,7 +2619,7 @@ public class DataToolTable extends DataTable {
 		}
 
 		@Override
-		public boolean isCellEditable(int row, int col) {
+		public boolean isElementEditable(int row, int col) {
 			return (col > 0 && tab.isUserEditable());
 		}
 

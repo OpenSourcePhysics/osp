@@ -18,6 +18,7 @@ import javax.swing.table.AbstractTableModel;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
+import org.opensourcephysics.display.DataTable.OSPTableModel;
 
 /**
  *
@@ -38,7 +39,7 @@ import org.opensourcephysics.controls.XMLLoader;
  *
  */
 @SuppressWarnings("serial")
-public class DatasetManager extends AbstractTableModel implements Measurable, LogMeasurable, Data {
+public class DatasetManager extends OSPTableModel implements Measurable, LogMeasurable, Data {
   ArrayList<Dataset> datasets = new ArrayList<Dataset>();
   boolean connected;      // default values for new datasets
   boolean sorted;

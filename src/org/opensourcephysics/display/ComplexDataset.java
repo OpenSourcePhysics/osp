@@ -20,6 +20,7 @@ import javax.swing.table.AbstractTableModel;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
+import org.opensourcephysics.display.DataTable.OSPTableModel;
 import org.opensourcephysics.display.axes.XAxis;
 import org.opensourcephysics.display.axes.XYAxis;
 
@@ -35,7 +36,7 @@ import org.opensourcephysics.display.axes.XYAxis;
  * @author Wolfgang Christian
  * @version 1.0
  */
-public class ComplexDataset extends AbstractTableModel implements Drawable, Measurable, Data {
+public class ComplexDataset extends OSPTableModel implements Drawable, Measurable, Data {
   static final double PI2 = Math.PI*2;
 
   /** AMP height equal to |z|..          */

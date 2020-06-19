@@ -12,50 +12,50 @@ import javax.swing.table.TableModel;
  * Interface DataTableModel
  */
 public interface DataTableModel extends TableModel {
-  /**
-   * Sets the visibility of a column of a TableModel in the DataTable.
-   * @param tableModel
-   * @param columnIndex
-   * @param b
-   */
-  public void setColumnVisible(TableModel tableModel, int columnIndex, boolean b);
-
-  /**
-   * Remove a TableModel object from the table model list.
-   * @param tableModel
-   */
-  public void remove(TableModel tableModel);
-
-  /**
-   * Remove all TableModels from the table model list.
-   */
-  public void clear();
-
-  /**
-   * Add a TableModel object to the table model list.
-   * @param tableModel
-   */
-  public void add(TableModel tableModel);
-
-  /**
-   * Sets the stride of a TableModel in the DataTable.
-   * @param tableModel
-   * @param stride
-   */
-  public void setStride(TableModel tableModel, int stride);
-
-  /**
-   * Sets the display row number flag.  Table displays row number.
-   * @param rowNumberVisible
-   */
-  public void setRowNumberVisible(boolean rowNumberVisible);
-
-  /**
-   * Gets the display row number flag.
-   *
-   * @return visible flag
-   */
-  public boolean isRowNumberVisible();
+//  /**
+//   * Sets the visibility of a column of a TableModel in the DataTable.
+//   * @param tableModel
+//   * @param columnIndex
+//   * @param b
+//   */
+//  public void setColumnVisible(TableModel tableModel, int columnIndex, boolean b);
+//
+//  /**
+//   * Remove a TableModel object from the table model list.
+//   * @param tableModel
+//   */
+//  public void remove(TableModel tableModel);
+//
+//  /**
+//   * Remove all TableModels from the table model list.
+//   */
+//  public void clear();
+//
+//  /**
+//   * Add a TableModel object to the table model list.
+//   * @param tableModel
+//   */
+//  public void add(TableModel tableModel);
+//
+//  /**
+//   * Sets the stride of a TableModel in the DataTable.
+//   * @param tableModel
+//   * @param stride
+//   */
+//  public void setStride(TableModel tableModel, int stride);
+//
+//  /**
+//   * Sets the display row number flag.  Table displays row number.
+//   * @param rowNumberVisible
+//   */
+//  public void setRowNumberVisible(boolean rowNumberVisible);
+//
+//  /**
+//   * Gets the display row number flag.
+//   *
+//   * @return visible flag
+//   */
+//  public boolean isRowNumberVisible();
 
 }
 
