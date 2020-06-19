@@ -2839,7 +2839,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		languageMenu = new JMenu();
 		// get jar resource before installed locales so that launch jar is not null
 		String imagePath = "/org/opensourcephysics/resources/tools/images/open.gif"; //$NON-NLS-1$
-		ResourceLoader.getResource(imagePath);
+	  if(org.opensourcephysics.js.JSUtil.isJS) ResourceLoader.getAssetURL(imagePath);
+	  else ResourceLoader.getResource(imagePath);
 		final Locale[] locales = OSPRuntime.getInstalledLocales();
 		Action languageAction = new AbstractAction() {
 			@Override
