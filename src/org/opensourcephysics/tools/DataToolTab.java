@@ -1280,7 +1280,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		dataTable.setRowNumberVisible(true);
 		dataScroller = new JScrollPane(dataTable);
 		dataTable.refreshTable(DataTable.MODE_CREATE);
-		dataTable.addPropertyChangeListener("format", new PropertyChangeListener() { //$NON-NLS-1$
+		dataTable.addPropertyChangeListener(DataTable.PROPERTY_DATATABLE_FORMAT, new PropertyChangeListener() { // $NON-NLS-1$
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				refreshShiftFields();

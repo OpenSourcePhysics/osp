@@ -47,7 +47,7 @@ import javajs.async.SwingJSUtils.Performance;
  * @version 1.0
  */
 @SuppressWarnings("serial")
-public class Dataset extends AbstractTableModel implements Measurable, LogMeasurable, Data {
+public class Dataset extends DataTable.OSPTableModel implements Measurable, LogMeasurable, Data {
 	/** Field datasetID: an integer ID that identifies this object */
 	protected int datasetID = hashCode();
 

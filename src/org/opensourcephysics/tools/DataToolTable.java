@@ -1430,7 +1430,7 @@ public class DataToolTable extends DataTable {
 			getWorkingData(data.getYColumnName());
 		}
 		// refresh table and set column order
-		DataToolTable.super.refreshTable(DataTable.MODE_INSERT);
+		DataToolTable.super.refreshTable(DataTable.MODE_INSERT_ROW);
 		// for each view column i
 		for (int i = 0; i < modelColumns.length; i++) {
 			// find its current model column and move it if nec
@@ -1517,7 +1517,7 @@ public class DataToolTable extends DataTable {
 			dataToolTab.refreshGUI();
 		} else {
 			// refresh table and set column order
-			DataToolTable.super.refreshTable(MODE_DELETE);
+			DataToolTable.super.refreshTable(MODE_DELETE_ROW);
 			// for each view column i
 			for (int i = 0; i < modelColumns.length; i++) {
 				// find its current model column and move it if nec
@@ -1711,7 +1711,7 @@ public class DataToolTable extends DataTable {
 			double[] cells = deletePoints(next, rows);
 			removed.put(next.getYColumnName(), cells);
 		}
-		refreshTable(DataTable.MODE_DELETE);
+		refreshTable(DataTable.MODE_DELETE_ROW);
 		refreshDataFunctions();
 		clearSelection();
 		setSelectedColumnNames(removed.keySet());

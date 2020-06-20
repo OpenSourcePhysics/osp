@@ -30,7 +30,6 @@ import java.util.BitSet;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -47,7 +46,6 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -95,24 +93,33 @@ public class DataTable extends JTable {
 
 		@Override
 		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+			// TableTrackView.TextColumnTableModel only
 		}
 
+		/**
+		 * The OSPDataTableModel associated with this data. TODO
+		 * 
+		 */
+		private TableModelListener listener; 
+
+		/**
+		 * Allowing only one listener
+		 */
 		@Override
 		final public void addTableModelListener(TableModelListener l) {
+			listener = l;
 		}
 
 		@Override
 		final public void removeTableModelListener(TableModelListener l) {
+			listener = null;
 		}
 
 	}
 
-	/**
-	 * Unique refresh modes can be OR'd
-	 */
-	public static final int MODE_CANCEL = 0x00;
+	public static final String PROPERTY_DATATABLE_FORMAT = "format";
 
-	public static final int MODE_MASK_REBUILD = 0x0F;
+	static final int MODE_MASK_NEW = 0xF;
 	public static final int MODE_CREATE = 0x01;
 	public static final int MODE_CLEAR = 0x02;
 	public static final int MODE_FRAME = 0x03;
@@ -121,16 +128,18 @@ public class DataTable extends JTable {
 
 	public static final int MODE_HEADER = 0x10;
 
-	public static final int MODE_MASK_ROWCOL = 0x2F00;
-	public static final int MODE_APPEND = 0x2000;
-	public static final int MODE_INSERT = 0x2100;
-	public static final int MODE_DELETE = 0x2200;
-	public static final int MODE_COLUMN = 0x2300;
-	public static final int MODE_CELLS = 0x2400;
+	private static final int MODE_MASK_ROW = 0x2300;
+	public static final int MODE_APPEND_ROW = 0x2100;
+	public static final int MODE_INSERT_ROW = 0x2200;
+	public static final int MODE_DELETE_ROW = 0x2300;
+
+	private static final int MODE_MASK_COL = 0x2C00;
+	public static final int MODE_COLUMN = 0x2400;
+	public static final int MODE_CELLS = 0x2800;
 
 	public static final int MODE_VALUES = 0x4000;
 
-	public static final int MODE_MASK_STYLE = 0x8F0000;
+	private static final int MODE_MASK_STYLE = 0x8F0000;
 	public static final int MODE_PATTERN = 0x810000;
 	public static final int MODE_FUNCTION = 0x820000;
 	public static final int MODE_FORMAT = 0x830000;
@@ -139,24 +148,36 @@ public class DataTable extends JTable {
 
 	public static final int MODE_SHOW = 0x2000000;
 
-	static final Color PANEL_BACKGROUND = javax.swing.UIManager.getColor("Panel.background"); //$NON-NLS-1$
-	final static Color LIGHT_BLUE = new Color(204, 204, 255);
-	static final String NO_PATTERN = DisplayRes.getString("DataTable.FormatDialog.NoFormat"); //$NON-NLS-1$
-	public final static String rowName = DisplayRes.getString("DataTable.Header.Row"); //$NON-NLS-1$
-	private final static DoubleRenderer defaultDoubleRenderer = new DoubleRenderer();
+	private static final int MODE_MASK_REBUILD = //
+			MODE_MASK_NEW | MODE_MASK_ROW | MODE_MASK_COL | MODE_MASK_STYLE //
+					| MODE_HEADER | MODE_VALUES | MODE_SELECT | MODE_SHOW;
 
-	protected HashMap<String, PrecisionRenderer> precisionRenderersByColumnName = new HashMap<String, PrecisionRenderer>();
-	protected HashMap<String, UnitRenderer> unitRenderersByColumnName = new HashMap<String, UnitRenderer>();
+	public static final int MODE_CANCEL = 0;
+	public static final int MODE_UNKNOWN = MODE_MASK_REBUILD;
+
+	private static final Color PANEL_BACKGROUND = javax.swing.UIManager.getColor("Panel.background"); //$NON-NLS-1$
+	private static final Color LIGHT_BLUE = new Color(204, 204, 255);
+	
+	protected static final String NO_PATTERN = DisplayRes.getString("DataTable.FormatDialog.NoFormat"); //$NON-NLS-1$
+	public static final String rowName = DisplayRes.getString("DataTable.Header.Row"); //$NON-NLS-1$
+	
+	private static final DoubleRenderer defaultDoubleRenderer = new DoubleRenderer();
+	private HashMap<String, PrecisionRenderer> precisionRenderersByColumnName = new HashMap<String, PrecisionRenderer>();
+	private HashMap<String, UnitRenderer> unitRenderersByColumnName = new HashMap<String, UnitRenderer>();
+
 	protected OSPDataTableModel dataTableModel;
+	
 	protected RowNumberRenderer rowNumberRenderer;
-	int maximumFractionDigits = 3;
-	int refreshDelay = 0; // time in ms to delay refresh events
-	int mode;
 
-	Timer refreshTimer;
+	//	int refreshDelay = 0; // time in ms to delay refresh events
+	//	Timer refreshTimer;
+	
+	protected int maximumFractionDigits = 3;
 	protected int labelColumnWidth = 40, minimumDataColumnWidth = 24;
 	protected NumberFormatDialog formatDialog;
 	protected int clickCountToSort = 1;
+
+	protected int mode;
 
 	/**
 	 * Constructs a DataTable with a default data model
@@ -177,14 +198,15 @@ public class DataTable extends JTable {
 	}
 
 	protected void init(OSPDataTableModel model) {
-		refreshTimer = new Timer(refreshDelay, new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				refreshTableNow(mode);
-			}
-		});
-		refreshTimer.setRepeats(false);
-		refreshTimer.setCoalesce(true);
+// BH Let Table UI do its thing
+//		refreshTimer = new Timer(refreshDelay, new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent evt) {
+//				refreshTableNow(mode);
+//			}
+//		});
+//		refreshTimer.setRepeats(false);
+//		refreshTimer.setCoalesce(true);
 		setModel(model);
 		setColumnSelectionAllowed(true);
 		setGridColor(Color.blue);
@@ -197,7 +219,6 @@ public class DataTable extends JTable {
 		setColumnModel(new DataTableColumnModel());
 		setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		setColumnSelectionAllowed(true);
-		dataTableModel.decorator.allocate();
 
 		// add column sorting using a SortDecorator
 		header.addMouseListener(new MouseAdapter() {
@@ -239,7 +260,7 @@ public class DataTable extends JTable {
 		} else {
 			precisionRenderersByColumnName.put(columnName, new PrecisionRenderer(pattern));
 		}
-		firePropertyChange("format", null, columnName); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_DATATABLE_FORMAT, null, columnName); //$NON-NLS-1$
 	}
 
 	/**
@@ -502,15 +523,16 @@ public class DataTable extends JTable {
 	 * dispose
 	 *
 	 * @param delay the delay in millisecond
+	 * @deprecated
 	 */
 	public void setRefreshDelay(int delay) {
-		if (delay > 0) {
-			refreshTimer.setDelay(delay);
-			refreshTimer.setInitialDelay(delay);
-		} else {
-			refreshTimer.stop();
-		}
-		refreshDelay = delay;
+//		if (delay > 0) {
+//			refreshTimer.setDelay(delay);
+//			refreshTimer.setInitialDelay(delay);
+//		} else {
+//			refreshTimer.stop();
+//		}
+//		refreshDelay = delay;
 	}
 
 	/**
@@ -520,28 +542,16 @@ public class DataTable extends JTable {
 	 */
 	public void dispose() {
 		clear();
-		setRefreshDelay(-1);
+//		setRefreshDelay(-1);
 	}
-	
+
 	/*
-	 * @deprecated
-	 * Refresh the table by rebuilding everything.
+	 * @deprecated Refresh the table by rebuilding everything.
 	 * 
 	 */
 	public void refreshTable() {
-		 refreshTable(MODE_MASK_REBUILD);
+		refreshTable(MODE_UNKNOWN);
 	}
-
-	
-    /*
-
-     * @deprecated
-
-     * Refresh the table by rebuilding everything.
-
-     *
-
-      */
 
 	/**
 	 * Refresh the data in the DataTable, as well as other changes to the table,
@@ -549,17 +559,17 @@ public class DataTable extends JTable {
 	 * table will not be visible until this method is called.
 	 */
 	public void refreshTable(int mode) {
-		if (refreshDelay > 0) {
-			refreshTimer.start();
-		} else {
-			OSPRuntime.postEvent(new Runnable() {
-				@Override
-				public synchronized void run() {
-					refreshTableNow(mode);
-				}
-
-			});
-		}
+//		if (refreshDelay > 0) {
+//			refreshTimer.start();
+//		} else {
+//			OSPRuntime.postEvent(new Runnable() {
+//				@Override
+//				public synchronized void run() {
+		refreshTableNow(mode);
+//				}
+//
+//			});
+//		}
 	}
 
 	/**
@@ -573,153 +583,39 @@ public class DataTable extends JTable {
 		// BH every sort of refresh goes through here
 		OSPLog.debug("DataTable.refreshTableNow " + Integer.toHexString(mode));
 
-
+		int mask = this.mode = mode;
 		switch (mode) {
 		default:
 		case MODE_CANCEL: // 0x00;
-		case MODE_MASK_REBUILD: // 0x0F;
+			return;
 		case MODE_CREATE: // 0x01;
 		case MODE_CLEAR: // 0x02;
 		case MODE_FRAME: // 0x03;
 		case MODE_MODEL: // 0x04;
 		case MODE_TAB: // 0x05;
-			rebuild();
-			dataTableModel.fireTableChanged(null);
+			mask = MODE_MASK_NEW;
 			break;
-		case MODE_HEADER: // 0x10;
-			repaint();
+		case MODE_INSERT_ROW: // 0x2100;
+		case MODE_DELETE_ROW: // 0x2200;
+		case MODE_APPEND_ROW: // 0x2300;
+			mask = MODE_MASK_ROW;
 			break;
-		case MODE_MASK_ROWCOL: // 0x2F00;
-		case MODE_APPEND: // 0x2000;
-		case MODE_INSERT: // 0x2100;
-		case MODE_DELETE: // 0x2200;
-		case MODE_COLUMN: // 0x2300;
-		case MODE_CELLS: // 0x2400;
-			rebuild();
-			dataTableModel.fireTableChanged(null);
+		case MODE_COLUMN: // 0x2400;
+		case MODE_CELLS: // 0x2800;
+			mask = MODE_MASK_COL;
 			break;
-		case MODE_VALUES: // 0x4000;
-			repaint();
-			break;
-		case MODE_MASK_STYLE: // 0x8F0000;
 		case MODE_PATTERN: // 0x810000;
 		case MODE_FUNCTION: // 0x820000;
 		case MODE_FORMAT: // 0x830000;
+			mode = MODE_MASK_STYLE;
+			break;
+		case MODE_HEADER: // 0x10;
+		case MODE_VALUES: // 0x4000;
 		case MODE_SELECT: // 0x1000000;
-			repaint();
-			break;
 		case MODE_SHOW: // 0x2000000;
-			rebuild();
-			repaint();
 			break;
 		}
-	}
-
-	private void rebuild() {
-
-		// code added by D Brown to update decimal separator Jan 2018
-		try {
-			// try block needed to catch occasional ConcurrentModificationException
-			for (String key : precisionRenderersByColumnName.keySet()) {
-				PrecisionRenderer renderer = precisionRenderersByColumnName.get(key);
-				renderer.numberFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
-			}
-			defaultDoubleRenderer.getFormat().setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
-		} catch (Exception e) {
-		}
-
-		// code added by D Brown to maintain column order and widths (Mar 2014)
-		TableColumnModel model = getColumnModel();
-		int colCount = model.getColumnCount();
-		int[] modelIndexes = new int[colCount];
-		int[] columnWidths = new int[colCount];
-		ArrayList<Object> columnNames = new ArrayList<Object>();
-		// save current order, widths and column names
-		for (int i = 0; i < colCount; i++) {
-			TableColumn column = model.getColumn(i);
-			modelIndexes[i] = column.getModelIndex();
-			columnWidths[i] = column.getWidth();
-			columnNames.add(column.getHeaderValue());
-		}
-		// refresh table--this lays out columns in default order and widths
-		tableChanged(new TableModelEvent(dataTableModel, TableModelEvent.HEADER_ROW));
-
-		// deal with added and/or removed columns
-		int newCount = model.getColumnCount();
-		// create list of new column names
-		ArrayList<Object> newColumnNames = new ArrayList<Object>();
-		for (int i = 0; i < newCount; i++) {
-			TableColumn column = model.getColumn(i);
-			newColumnNames.add(column.getHeaderValue());
-		}
-		// determine which column(s) were removed
-		BitSet bsRemoved = new BitSet();
-		for (int i = 0; i < colCount; i++) {
-			if (!newColumnNames.contains(columnNames.get(i))) {
-				bsRemoved.set(modelIndexes[i]);
-			}
-		}
-		// determine which column(s) were added
-		BitSet bsAdded = new BitSet();
-		for (int i = 0; i < newCount; i++) {
-			if (!columnNames.contains(newColumnNames.get(i))) {
-				bsAdded.set(i);
-			}
-		}
-		// rebuild modelIndex and columnWidth arrays
-		for (int n = bsRemoved.nextSetBit(0); n >= 0; n = bsRemoved.nextSetBit(n + 1)) {
-			int[] newModelIndexes = new int[colCount - 1];
-			int[] newColumnWidths = new int[colCount - 1];
-			int k = 0;
-			for (int i = 0; i < colCount; i++) {
-				if (modelIndexes[i] == n)
-					continue;
-				if (modelIndexes[i] > n) {
-					newModelIndexes[k] = modelIndexes[i] - 1;
-				} else {
-					newModelIndexes[k] = modelIndexes[i];
-				}
-				newColumnWidths[k] = columnWidths[i];
-				k++;
-			}
-			modelIndexes = newModelIndexes;
-			columnWidths = newColumnWidths;
-			colCount = modelIndexes.length;
-		}
-		for (int n = bsAdded.nextSetBit(0); n >= 0; n = bsAdded.nextSetBit(n + 1)) {
-			int[] newModelIndexes = new int[colCount + 1];
-			int[] newColumnWidths = new int[colCount + 1];
-			for (int i = 0; i < colCount; i++) {
-				if (modelIndexes[i] >= n) {
-					newModelIndexes[i] = modelIndexes[i] + 1;
-				} else {
-					newModelIndexes[i] = modelIndexes[i];
-				}
-				newColumnWidths[i] = columnWidths[i];
-			}
-			// add new columns at end and assign them the default width
-			newModelIndexes[colCount] = n;
-			newColumnWidths[colCount] = model.getColumn(n).getWidth();
-			modelIndexes = newModelIndexes;
-			columnWidths = newColumnWidths;
-			colCount = modelIndexes.length;
-		}
-		// restore column order
-		outer: for (int targetIndex = 0; targetIndex < colCount; targetIndex++) {
-			// find column with modelIndex and move to targetIndex
-			for (int i = 0; i < colCount; i++) {
-				if (model.getColumn(i).getModelIndex() == modelIndexes[targetIndex]) {
-					model.moveColumn(i, targetIndex);
-					continue outer;
-				}
-			}
-		}
-		// restore column widths
-		for (int i = 0; i < columnWidths.length; i++) {
-			model.getColumn(i).setPreferredWidth(columnWidths[i]);
-			model.getColumn(i).setWidth(columnWidths[i]);
-		}
-		dataTableModel.fireTableDataChanged();
+		dataTableModel.refresh(mask);
 	}
 
 	/**
@@ -727,7 +623,6 @@ public class DataTable extends JTable {
 	 *
 	 * @param tableModel
 	 */
-	//public void add(OSPTableModel tableModel) {
 	public void add(TableModel tableModel) {
 		dataTableModel.add(tableModel);
 	}
@@ -885,12 +780,14 @@ public class DataTable extends JTable {
 	 * 
 	 * @created February 21, 2002
 	 */
-	protected class OSPDataTableModel extends AbstractTableModel {// BH trying this implements DataTableModel {
-
+	protected class OSPDataTableModel extends AbstractTableModel implements TableModelListener {// BH trying this
+																								// implements
+																								// DataTableModel {
 
 		ArrayList<DataTableElement> dataTableElements;
 		boolean rowNumberVisible;
 		private SortDecorator decorator;
+		protected TableModelEvent lastModelEvent;
 
 		public OSPDataTableModel() {
 			dataTableElements = new ArrayList<DataTableElement>();
@@ -1130,7 +1027,6 @@ public class DataTable extends JTable {
 			return (columnIndex < getColumnCount() && isElementEditable(rowIndex, columnIndex));
 		}
 
-
 		public boolean isElementEditable(int row, int col) {
 			return false;
 		}
@@ -1162,25 +1058,8 @@ public class DataTable extends JTable {
 //		@Override
 		public void add(TableModel tableModel) {
 			dataTableElements.add(new DataTableElement(tableModel));
+			tableModel.addTableModelListener(this);
 		}
-
-//		/**
-//		 * Method addTableModelListener
-//		 *
-//		 * @param l
-//		 */
-//		@Override
-//		public void addTableModelListener(TableModelListener l) {
-//		}
-//
-//		/**
-//		 * Method removeTableModelListener
-//		 *
-//		 * @param l
-//		 */
-//		@Override
-//		public void removeTableModelListener(TableModelListener l) {
-//		}
 
 		/**
 		 * returns the DataTableElement that contains the specified TableModel
@@ -1350,6 +1229,54 @@ public class DataTable extends JTable {
 				sortedColumn = -1;
 			}
 
+		}
+
+		/**
+		 * This will be from the DataSet sub-TableModels, specifically for APPEND for
+		 * now.
+		 * 
+		 */
+		@Override
+		public void tableChanged(TableModelEvent e) {
+			lastModelEvent = e;
+		}
+
+		protected void refresh(int mask) {
+			updateFormats();
+			updateColumnModel(getColumnModel());
+			String type;
+			switch (mask) {
+			default:
+			case MODE_MASK_REBUILD:
+				type = "rebuild";
+				break;
+			case MODE_MASK_NEW:
+				type = "new";
+				break;
+			case MODE_HEADER:
+				type = "header";
+				break;
+			case MODE_MASK_ROW:
+				type = "row";
+				break;
+			case MODE_MASK_COL:
+				type = "col";
+				break;
+			case MODE_VALUES:
+				type = "values";
+				break;
+			case MODE_MASK_STYLE:
+				type = "style";
+				break;
+			case MODE_SELECT:
+				type = "select";
+				break;
+			case MODE_SHOW:
+				type = "show";
+				break;
+			}
+			OSPLog.debug("OSPDataTableModel rebuild " + type);
+			fireTableStructureChanged();
 		}
 
 	}
@@ -1655,8 +1582,8 @@ public class DataTable extends JTable {
 						String name = realNames.get(displayedName);
 						setFormatPattern(name, prevPatterns.get(name));
 					}
-					refreshTableNow(MODE_CANCEL);
 					setVisible(false);
+					refreshTableNow(MODE_CANCEL);
 				}
 			});
 			helpButton = new JButton(DisplayRes.getString("GUIUtils.Help")); //$NON-NLS-1$
@@ -1960,6 +1887,111 @@ public class DataTable extends JTable {
 
 	public void sort(int col) {
 		dataTableModel.sort(col);
+	}
+
+	protected static void updateColumnModel(TableColumnModel model) {
+		// code added by D Brown to maintain column order and widths (Mar 2014)
+		int colCount = model.getColumnCount();
+		int[] modelIndexes = new int[colCount];
+		int[] columnWidths = new int[colCount];
+		ArrayList<Object> columnNames = new ArrayList<Object>();
+		// save current order, widths and column names
+		for (int i = 0; i < colCount; i++) {
+			TableColumn column = model.getColumn(i);
+			modelIndexes[i] = column.getModelIndex();
+			columnWidths[i] = column.getWidth();
+			columnNames.add(column.getHeaderValue());
+		}
+		// refresh table--this lays out columns in default order and widths
+
+		// deal with added and/or removed columns
+		int newCount = model.getColumnCount();
+		// create list of new column names
+		ArrayList<Object> newColumnNames = new ArrayList<Object>();
+		for (int i = 0; i < newCount; i++) {
+			TableColumn column = model.getColumn(i);
+			newColumnNames.add(column.getHeaderValue());
+		}
+		// determine which column(s) were removed
+		BitSet bsRemoved = new BitSet();
+		for (int i = 0; i < colCount; i++) {
+			if (!newColumnNames.contains(columnNames.get(i))) {
+				bsRemoved.set(modelIndexes[i]);
+			}
+		}
+		// determine which column(s) were added
+		BitSet bsAdded = new BitSet();
+		for (int i = 0; i < newCount; i++) {
+			if (!columnNames.contains(newColumnNames.get(i))) {
+				bsAdded.set(i);
+			}
+		}
+		// rebuild modelIndex and columnWidth arrays
+		for (int n = bsRemoved.nextSetBit(0); n >= 0; n = bsRemoved.nextSetBit(n + 1)) {
+			int[] newModelIndexes = new int[colCount - 1];
+			int[] newColumnWidths = new int[colCount - 1];
+			int k = 0;
+			for (int i = 0; i < colCount; i++) {
+				if (modelIndexes[i] == n)
+					continue;
+				if (modelIndexes[i] > n) {
+					newModelIndexes[k] = modelIndexes[i] - 1;
+				} else {
+					newModelIndexes[k] = modelIndexes[i];
+				}
+				newColumnWidths[k] = columnWidths[i];
+				k++;
+			}
+			modelIndexes = newModelIndexes;
+			columnWidths = newColumnWidths;
+			colCount = modelIndexes.length;
+		}
+		for (int n = bsAdded.nextSetBit(0); n >= 0; n = bsAdded.nextSetBit(n + 1)) {
+			int[] newModelIndexes = new int[colCount + 1];
+			int[] newColumnWidths = new int[colCount + 1];
+			for (int i = 0; i < colCount; i++) {
+				if (modelIndexes[i] >= n) {
+					newModelIndexes[i] = modelIndexes[i] + 1;
+				} else {
+					newModelIndexes[i] = modelIndexes[i];
+				}
+				newColumnWidths[i] = columnWidths[i];
+			}
+			// add new columns at end and assign them the default width
+			newModelIndexes[colCount] = n;
+			newColumnWidths[colCount] = model.getColumn(n).getWidth();
+			modelIndexes = newModelIndexes;
+			columnWidths = newColumnWidths;
+			colCount = modelIndexes.length;
+		}
+		// restore column order
+		outer: for (int targetIndex = 0; targetIndex < colCount; targetIndex++) {
+			// find column with modelIndex and move to targetIndex
+			for (int i = 0; i < colCount; i++) {
+				if (model.getColumn(i).getModelIndex() == modelIndexes[targetIndex]) {
+					model.moveColumn(i, targetIndex);
+					continue outer;
+				}
+			}
+		}
+		// restore column widths
+		for (int i = 0; i < columnWidths.length; i++) {
+			model.getColumn(i).setPreferredWidth(columnWidths[i]);
+			model.getColumn(i).setWidth(columnWidths[i]);
+		}
+	}
+
+	protected void updateFormats() {
+		// code added by D Brown to update decimal separator Jan 2018
+		try {
+			// try block needed to catch occasional ConcurrentModificationException
+			for (String key : precisionRenderersByColumnName.keySet()) {
+				PrecisionRenderer renderer = precisionRenderersByColumnName.get(key);
+				renderer.numberFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+			}
+			defaultDoubleRenderer.getFormat().setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+		} catch (Exception e) {
+		}
 	}
 
 	public int getSortedRow(int i) {

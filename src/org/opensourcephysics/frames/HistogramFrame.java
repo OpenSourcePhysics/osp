@@ -284,7 +284,7 @@ public void clearData() {
     histogram.append(v);
     // this may be slow if the table is large
     if((tableFrame!=null)&&tableFrame.isShowing()) {
-      dataTable.refreshTable(DataTable.MODE_APPEND);
+      dataTable.refreshTable(DataTable.MODE_APPEND_ROW);
     }
   }
 
@@ -297,7 +297,7 @@ public void clearData() {
   public void append(double value, double numberOfOccurences) {
     histogram.append(value, numberOfOccurences);
     if((tableFrame!=null)&&tableFrame.isShowing()) {
-      dataTable.refreshTable(DataTable.MODE_APPEND);
+      dataTable.refreshTable(DataTable.MODE_APPEND_ROW);
     }
   }
 
@@ -310,7 +310,7 @@ public void clearData() {
     histogram.append(values);
     // this may be slow if the table is large
     if((tableFrame!=null)&&tableFrame.isShowing()) {
-      dataTable.refreshTable(DataTable.MODE_APPEND);
+      dataTable.refreshTable(DataTable.MODE_APPEND_ROW);
     }
   }
 

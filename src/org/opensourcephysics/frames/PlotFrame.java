@@ -195,7 +195,7 @@ public class PlotFrame extends DrawingFrame {
 	public void append(int datasetIndex, double x, double y) {
 		datasetManager.append(datasetIndex, x, y);
 		// may be too slow if lots of data is being added to the table
-		updateTable(DataTable.MODE_APPEND);
+		updateTable(DataTable.MODE_APPEND_ROW);
 	}
 
 	/**
@@ -210,7 +210,7 @@ public class PlotFrame extends DrawingFrame {
 	 */
 	public void append(int datasetIndex, double x, double y, double delx, double dely) {
 		datasetManager.append(datasetIndex, x, y, delx, dely);
-		updateTable(DataTable.MODE_APPEND);
+		updateTable(DataTable.MODE_APPEND_ROW);
 	}
 
 
@@ -223,7 +223,7 @@ public class PlotFrame extends DrawingFrame {
 	 */
 	public void append(int datasetIndex, double[] xpoints, double[] ypoints) {
 		datasetManager.append(datasetIndex, xpoints, ypoints);
-		updateTable(DataTable.MODE_APPEND);
+		updateTable(DataTable.MODE_APPEND_ROW);
 	}
 
 	/**
@@ -237,7 +237,7 @@ public class PlotFrame extends DrawingFrame {
 	 */
 	public void append(int datasetIndex, double[] xpoints, double[] ypoints, double[] delx, double[] dely) {
 		datasetManager.append(datasetIndex, xpoints, ypoints, delx, dely);
-		updateTable(DataTable.MODE_APPEND);
+		updateTable(DataTable.MODE_APPEND_ROW);
 	}
 
 	/**

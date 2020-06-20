@@ -208,12 +208,16 @@ protected void addMenuItems() {
    */
   public void append(double x, double re, double im) {
     complexDataset.append(x, re, im);
-    if((tableFrame!=null)&&tableFrame.isShowing()) {
-      dataTable.refreshTable(DataTable.MODE_APPEND);
-    }
+    updateTableAppend();
   }
 
-  /**
+	private void updateTableAppend() {
+		if ((tableFrame != null) && tableFrame.isShowing()) {
+			dataTable.refreshTable(DataTable.MODE_APPEND_ROW);
+		}
+	}
+
+/**
    * Appends x and z data to the Dataset.
    *
    * Z array has length twice that of x array.
@@ -226,11 +230,8 @@ protected void addMenuItems() {
    * @param z
    */
   public void append(double[] x, double[] z) {
-    complexDataset.append(x, z);
-    if((tableFrame!=null)&&tableFrame.isShowing()) {
-      dataTable.refreshTable(DataTable.MODE_APPEND);
+	  complexDataset.append(x, z);
     }
-  }
 
   /**
    * Appends (x, re, im) arrays to the Dataset.
@@ -242,7 +243,7 @@ protected void addMenuItems() {
   public void append(double[] xpoints, double[] re, double[] im) {
     complexDataset.append(xpoints, re, im);
     if((tableFrame!=null)&&tableFrame.isShowing()) {
-      dataTable.refreshTable(DataTable.MODE_APPEND);
+      dataTable.refreshTable(DataTable.MODE_APPEND_ROW);
     }
   }
 
