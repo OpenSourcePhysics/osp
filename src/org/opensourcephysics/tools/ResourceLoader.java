@@ -131,7 +131,7 @@ public class ResourceLoader {
 		Runnable runner = new Runnable() {
 			@Override
 			public void run() {
-				webConnected = isWebConnected();// .http://www.opensourcephysics.org");
+				webConnected = isWebConnected();
 			}
 		};
 		new Thread(runner).start();
@@ -599,11 +599,17 @@ public class ResourceLoader {
 		if (url != null) {
 			return new ImageIcon(url);
 		}
-		url = getImageZipResource(path);
-		if (url != null)
-			return new ImageIcon(url);
-		Resource res = getResource(path);
-		return (res == null) ? null : res.getIcon();
+		try {
+			url = Assets.getURLFromPath(path, true);
+			return (url == null ? 
+					new ImageIcon(path) : 
+						new ImageIcon(url));
+		} catch (Exception e) {
+			OSPLog.warning("ResourceLoader could not find " + url + "\nEclipse not pointing to correct project?");
+			return new ImageIcon((URL) null);
+		}
+//		Resource res = getResource(path);
+//		return (res == null) ? null : res.getIcon();
 	}
 
 	/**
@@ -1702,6 +1708,7 @@ public class ResourceLoader {
 			// BH 2020.03.02 trying this to see if it is reasonable
 			// This specific URL will be replaced with a known CORS server by j2sApplet.js
 			urlPath = "https://INTERNET.TEST";
+		} else {
 		}
 		try {
 			// make a URL, open a connection, get content
