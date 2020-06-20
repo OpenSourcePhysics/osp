@@ -1628,7 +1628,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			theClass = null;
 			readXML(xml);
 		}
-		OSPLog.debug("!!! " + Performance.now(t0) + " XMLControlElement.readData");
+		OSPLog.debug("!!! " + Performance.now(t0) + " XMLControlElement.readData " + className);
 	}
 
 	/**
