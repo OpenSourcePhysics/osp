@@ -63,7 +63,6 @@ public class ImageCoordSystem {
 	public static final String PROPERTY_COORDS_TRANSFORM = "transform";
 
 	public static final String PROPERTY_COORDS_LOCKED = "locked";
-	public static final String PROPERTY_COORDS_ADJUSTING = "adjusting";
 
 	protected boolean ignoreUpdateRequests;// for tracker ReferenceFrame
 
@@ -1018,7 +1017,7 @@ public class ImageCoordSystem {
 		if (isAdjusting == adjusting)
 			return;
 		isAdjusting = adjusting;
-		support.firePropertyChange(PROPERTY_COORDS_ADJUSTING, null, adjusting); // $NON-NLS-1$
+		support.firePropertyChange(TPoint.PROPERTY_ADJUSTING, null, adjusting); // $NON-NLS-1$
 	}
 
 	/**
@@ -1142,7 +1141,7 @@ public class ImageCoordSystem {
 			}
 			firePropChange = true;
 			// fire property change for overall updates
-			support.firePropertyChange("transform", null, null); //$NON-NLS-1$
+			support.firePropertyChange(PROPERTY_COORDS_TRANSFORM, null, null); //$NON-NLS-1$
 		} catch (NoninvertibleTransformException ex) {
 			ex.printStackTrace();
 		}
@@ -1171,7 +1170,7 @@ public class ImageCoordSystem {
 		toWorld.get(n).setTransform(at.createInverse());
 		// fire property change
 		if (firePropChange) {
-			support.firePropertyChange("transform", null, Integer.valueOf(n)); //$NON-NLS-1$
+			support.firePropertyChange(PROPERTY_COORDS_TRANSFORM, null, Integer.valueOf(n)); //$NON-NLS-1$
 		}
 	}
 
@@ -1190,7 +1189,7 @@ public class ImageCoordSystem {
 			}
 			firePropChange = true;
 			// fire property change for overall updates
-			support.firePropertyChange("transform", null, null); //$NON-NLS-1$
+			support.firePropertyChange(PROPERTY_COORDS_TRANSFORM, null, null); //$NON-NLS-1$
 		} catch (NoninvertibleTransformException ex) {
 			ex.printStackTrace();
 		}

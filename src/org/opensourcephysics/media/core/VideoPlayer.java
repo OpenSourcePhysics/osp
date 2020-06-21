@@ -590,10 +590,7 @@ private int myFontLevel;
   }
 
 	/**
-	 * Responds to property change events. VideoPlayer listens for the following
-	 * events: "playing", "stepnumber", "frameduration", and "looping" from
-	 * ClipControl, and "startframe", "stepsize", "stepcount" and "starttime" from
-	 * VideoClip.
+	 * Responds to property change events.
 	 *
 	 * @param e the property change event
 	 */
