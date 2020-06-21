@@ -123,6 +123,7 @@ public class DataTable extends JTable {
 	public static final int MODE_TRACK_TRANSFORM = 0x1B00;
 	public static final int MODE_TRACK_DATA = 0x1C00;
 	public static final int MODE_TRACK_FUNCTION = 0x1D00;
+	public static final int MODE_TRACK_PLOTCOUNT = 0x1E00;
 
 	private static final int MODE_MASK_ROW = 0x2000;
 	public static final int MODE_APPEND_ROW = 0x2100;
@@ -159,6 +160,7 @@ public class DataTable extends JTable {
 	public static final String rowName = DisplayRes.getString("DataTable.Header.Row"); //$NON-NLS-1$
 
 	private static final DoubleRenderer defaultDoubleRenderer = new DoubleRenderer();
+
 
 	private HashMap<String, PrecisionRenderer> precisionRenderersByColumnName = new HashMap<String, PrecisionRenderer>();
 	private HashMap<String, UnitRenderer> unitRenderersByColumnName = new HashMap<String, UnitRenderer>();
@@ -642,6 +644,7 @@ public class DataTable extends JTable {
 		case MODE_TRACK_TRANSFORM: // 0x1B00;
 		case MODE_TRACK_DATA: // 0x1C00;
 		case MODE_TRACK_FUNCTION: // 0x1D00;
+		case MODE_TRACK_PLOTCOUNT: // 0x1E00
 			mask = MODE_MASK_TRACK; // 0x1000;
 			break;
 		case MODE_INSERT_ROW: // 0x2100;
