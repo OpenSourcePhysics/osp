@@ -1179,8 +1179,11 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	 */
 	@Override
 	public String toString() {
+		
+		String name =  "(" + xColumnName + "," +  yColumnName + ") " + colVisible + " " ;
+
 		if (index == 0) {
-			return "No data in dataset."; //$NON-NLS-1$
+			return name + "No data in dataset."; //$NON-NLS-1$
 		}
 		String s = xpoints[0] + " " + ypoints[0] + "\n"; //$NON-NLS-1$ //$NON-NLS-2$
 		StringBuffer b = new StringBuffer(index * s.length());
@@ -1201,7 +1204,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 			b.append(eol);
 			// s += xpoints[i] + "\t" + ypoints[i] + "\n";
 		}
-		return b.toString();
+		return name + b.toString();
 	}
 
 	/**

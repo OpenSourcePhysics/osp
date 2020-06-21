@@ -100,38 +100,54 @@ public class DataTable extends JTable {
 
 	public static final String PROPERTY_DATATABLE_FORMAT = "format";
 
+	
+
 	static final int MODE_MASK_NEW = 0xF;
 	public static final int MODE_CREATE = 0x01;
 	public static final int MODE_CLEAR = 0x02;
-	public static final int MODE_FRAME = 0x03;
-	public static final int MODE_MODEL = 0x04;
-	public static final int MODE_TAB = 0x05;
+	public static final int MODE_MODEL = 0x03;
+	public static final int MODE_TAB = 0x04;
 
-	public static final int MODE_HEADER = 0x10;
 
-	private static final int MODE_MASK_ROW = 0x2300;
+	private static final int MODE_MASK_TRACK = 0x1000;
+	public static final int MODE_TRACK_REFRESH = 0x1100;
+	public static final int MODE_TRACK_STATE   = 0x1200;
+	public static final int MODE_TRACK_STEP = 0x1300;
+	public static final int MODE_TRACK_SELECTEDPOINT = 0x1400;
+	public static final int MODE_TRACK_STEPS = 0x1500;
+	public static final int MODE_TRACK_LOADED = 0x1600;
+	public static final int MODE_TRACK_SETVISIBLE = 0x1700;
+	public static final int MODE_TRACK_LOADER = 0x1800;
+	public static final int MODE_TRACK_CHOOSE = 0x1900;
+	public static final int MODE_TRACK_SELECT = 0x1A00;
+	public static final int MODE_TRACK_TRANSFORM = 0x1B00;
+	public static final int MODE_TRACK_DATA = 0x1C00;
+	public static final int MODE_TRACK_FUNCTION = 0x1D00;
+
+	private static final int MODE_MASK_ROW = 0x2000;
 	public static final int MODE_APPEND_ROW = 0x2100;
 	public static final int MODE_INSERT_ROW = 0x2200;
 	public static final int MODE_DELETE_ROW = 0x2300;
 
-	private static final int MODE_MASK_COL = 0x2C00;
-	public static final int MODE_COLUMN = 0x2400;
-	public static final int MODE_CELLS = 0x2800;
+	private static final int MODE_MASK_COL = 0x4000;
+	public static final int MODE_COLUMN = 0x4100;
+	public static final int MODE_CELLS = 0x4200;
 
-	public static final int MODE_VALUES = 0x4000;
+	public static final int MODE_VALUES = 0x8000;
 
-	private static final int MODE_MASK_STYLE = 0x8F0000;
+	private static final int MODE_MASK_STYLE = 0x800000;
 	public static final int MODE_PATTERN = 0x810000;
 	public static final int MODE_FUNCTION = 0x820000;
 	public static final int MODE_FORMAT = 0x830000;
 
 	public static final int MODE_SELECT = 0x1000000;
-	public static final int MODE_SHOW = 0x4000000;
-	public static final int MODE_NOFIRE = 0x8000000;
+	public static final int MODE_HEADER = 0x2000000;
+	public static final int MODE_SHOW   = 0x4000000;
 
 	private static final int MODE_MASK_REBUILD = //
-			MODE_MASK_NEW | MODE_MASK_ROW | MODE_MASK_COL | MODE_MASK_STYLE //
-					| MODE_HEADER | MODE_VALUES | MODE_SELECT | MODE_SHOW;
+			MODE_MASK_NEW | MODE_MASK_TRACK | //
+			MODE_MASK_ROW | MODE_MASK_COL | MODE_MASK_STYLE | //
+			MODE_HEADER | MODE_VALUES | MODE_SELECT | MODE_SHOW;
 
 	public static final int MODE_CANCEL = 0;
 	public static final int MODE_UNKNOWN = MODE_MASK_REBUILD;
@@ -143,9 +159,14 @@ public class DataTable extends JTable {
 	public static final String rowName = DisplayRes.getString("DataTable.Header.Row"); //$NON-NLS-1$
 
 	private static final DoubleRenderer defaultDoubleRenderer = new DoubleRenderer();
+
 	private HashMap<String, PrecisionRenderer> precisionRenderersByColumnName = new HashMap<String, PrecisionRenderer>();
 	private HashMap<String, UnitRenderer> unitRenderersByColumnName = new HashMap<String, UnitRenderer>();
 
+	/**
+	 * aka JTable.dataModel
+	 * 
+	 */
 	protected OSPDataTableModel dataTableModel;
 
 	protected RowNumberRenderer rowNumberRenderer;
@@ -599,15 +620,29 @@ public class DataTable extends JTable {
 
 		int mask = this.mode = mode;
 		switch (mode) {
-		default:
 		case MODE_CANCEL: // 0x00;
 			return;
+		default:
 		case MODE_CREATE: // 0x01;
 		case MODE_CLEAR: // 0x02;
-		case MODE_FRAME: // 0x03;
 		case MODE_MODEL: // 0x04;
 		case MODE_TAB: // 0x05;
 			mask = MODE_MASK_NEW;
+			break;
+		case MODE_TRACK_REFRESH: // 0x1100;
+		case MODE_TRACK_STATE: // 0x1200;
+		case MODE_TRACK_STEP: // 0x1300;
+		case MODE_TRACK_SELECTEDPOINT: // 0x1400;
+		case MODE_TRACK_STEPS: // 0x1500;
+		case MODE_TRACK_LOADED: // 0x1600;
+		case MODE_TRACK_SETVISIBLE: // 0x1700;
+		case MODE_TRACK_LOADER: // 0x1800;
+		case MODE_TRACK_CHOOSE: // 0x1900;
+		case MODE_TRACK_SELECT: // 0x1A00;
+		case MODE_TRACK_TRANSFORM: // 0x1B00;
+		case MODE_TRACK_DATA: // 0x1C00;
+		case MODE_TRACK_FUNCTION: // 0x1D00;
+			mask = MODE_MASK_TRACK; // 0x1000;
 			break;
 		case MODE_INSERT_ROW: // 0x2100;
 		case MODE_DELETE_ROW: // 0x2200;
@@ -767,6 +802,11 @@ public class DataTable extends JTable {
 		public int getRowCount() {
 			return tableModel.getRowCount();
 		}
+		
+		@Override
+		public String toString() {
+			return "DataTableElement " + tableModel.getRowCount() + "x" + tableModel.getColumnCount() + " vis=" + bsColVis;
+		}
 	}
 
 	/*
@@ -871,12 +911,20 @@ public class DataTable extends JTable {
 		 * Method setColumnVisible
 		 *
 		 * @param tableModel
-		 * @param columnIndex
+		 * @param columnIndex If negative, update to all columns visible
 		 * @param b
 		 */
 //		@Override
 		public void setColumnVisible(TableModel tableModel, int columnIndex, boolean b) {
-			findElementContaining(tableModel).setColumnVisible(columnIndex, b);
+			DataTableElement dte = findElementContaining(tableModel);
+			if (columnIndex >= 0) {
+				dte.setColumnVisible(columnIndex, b);
+			} else {
+				dte.bsColVis.clear();
+				int n = dte.tableModel.getColumnCount();
+				dte.bsColVis.set(0, n);
+				//OSPLog.debug("DataTable n=" +n + " " + dte);
+			}
 		}
 
 		/**
@@ -1171,7 +1219,13 @@ public class DataTable extends JTable {
 				if (indexes.length <= row) {
 					allocate();
 				}
-				return getElementValue(indexes[row], column);
+				Object o = getElementValue(indexes[row], column);
+//				OSPLog.debug("DataTable getValueAt " + row + " "+ column 
+//						+ " = " + o 
+//						+ " " + getColumnModel().getColumnCount()
+//						+ " " + getColumnModel().getColumn(column).getWidth()
+//						+ " " + getColumnModel().getTotalColumnWidth());
+				return o;
 			}
 
 			public void setValueAt(Object aValue, int row, int column) {
@@ -1274,6 +1328,9 @@ public class DataTable extends JTable {
 			case MODE_MASK_NEW:
 				type = "new";
 				break;
+			case MODE_MASK_TRACK:
+				type = "track";
+				break;
 			case MODE_HEADER:
 				type = "header";
 				break;
@@ -1338,7 +1395,7 @@ public class DataTable extends JTable {
 		 * @author hansonr
 		 */
 		protected void updateColumnModel() {
-
+			
 			// create a map of the current column set (actually displayed)
 
 			Vector<TableColumn> newColumns = new Vector<>();
@@ -2086,7 +2143,7 @@ public class DataTable extends JTable {
 		int[] rows = getSelectedRows();
 		int[] cols = getSelectedColumns();
 		// refresh table
-		refreshTable(mode);
+		refreshTableNow(mode);
 		// sort if needed
 		if (col > -1)
 			sort(col);
@@ -2102,6 +2159,7 @@ public class DataTable extends JTable {
 	}
 
 	public void updateColumnModel(int[] modelColumns) {
+		dataTableModel.setTainted();
 		((DataTableColumnModel) getColumnModel()).updateColumnModel();
 //		if (modelColumns != null)
 //			updateColumnOrder(modelColumns);
@@ -2123,6 +2181,7 @@ public class DataTable extends JTable {
 					: a[0] != null ? 1 : b[0] != null ? -1 : 0);
 		}
 	};
+	
 }
 
 /*

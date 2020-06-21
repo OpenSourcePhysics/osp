@@ -119,7 +119,7 @@ public abstract class VideoAdapter implements Video {
 		if (((panel instanceof VideoPanel) && ((VideoPanel) panel).isDrawingInImageSpace()) || isMeasured) {
 			g2 = (Graphics2D) g.create();
 			AffineTransform at = panel.getPixelTransform();
-			OSPLog.debug("VideoAdapter.draw " +  g2.getClip());
+			//OSPLog.debug("VideoAdapter.draw " +  g2.getClip());
 			g2.transform(at); // world to screen
 			ImageCoordSystem coords = null;
 			if (panel instanceof VideoPanel) {
@@ -142,7 +142,7 @@ public abstract class VideoAdapter implements Video {
 			yoffset = panel.yToPix(centerY) - size.height / 2;
 		}
 
-		OSPLog.debug(Performance.timeCheckStr("VideoAdapter draw video " + ++ntest2, Performance.TIME_MARK));
+//		OSPLog.debug(Performance.timeCheckStr("VideoAdapter draw video " + ++ntest2, Performance.TIME_MARK));
 		// draw the video or filtered image
 		if (filterStack.isEmpty() || !filterStack.isEnabled()) {
 			g2.drawImage(rawImage, xoffset, yoffset, panel);
@@ -151,7 +151,7 @@ public abstract class VideoAdapter implements Video {
 		}
 		if (g2 != null)
 			g2.dispose();
-		OSPLog.debug(Performance.timeCheckStr("VideoAdapter draw video done", Performance.TIME_MARK));
+//		OSPLog.debug(Performance.timeCheckStr("VideoAdapter draw video done", Performance.TIME_MARK));
 
 	}
 
@@ -248,17 +248,17 @@ public abstract class VideoAdapter implements Video {
 	@Override
 	public BufferedImage getImage() {
 		updateBufferedImage();
-		OSPLog.debug("VideoAdapter getImage " + ++ntest1);
+//		OSPLog.debug("VideoAdapter getImage " + ++ntest1);
 		if (filterStack.isEmpty() || !filterStack.isEnabled()) {
-			OSPLog.debug("VA.getImage returning bufferedImage");
+//			OSPLog.debug("VA.getImage returning bufferedImage");
 			return bufferedImage;
 		} else if (!isValidFilteredImage) { // filteredImage needs refreshing
 			isValidFilteredImage = true;
-			OSPLog.debug("VA.getImage get filtered image");
+//			OSPLog.debug("VA.getImage get filtered image");
 			filteredImage = filterStack.getFilteredImage(bufferedImage);
-			OSPLog.debug("VideoAdapter filtering image " + ++ntest);
+//			OSPLog.debug("VideoAdapter filtering image " + ++ntest);
 		}
-		OSPLog.debug("VA.getImage returning filteredImage");
+//		OSPLog.debug("VA.getImage returning filteredImage");
 		return filteredImage;
 	}
 
@@ -1232,7 +1232,7 @@ public abstract class VideoAdapter implements Video {
 		if (bufferedImage != null && bufferedImage.getWidth() == size.width
 				&& bufferedImage.getHeight() == size.height)
 			return;
-		OSPLog.finest("VideoAdapter.refreshBufferedImage " + size);
+//		OSPLog.debug("VideoAdapter.refreshBufferedImage " + size);
 		bufferedImage = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_RGB);
 		isValidImage = false;
 
