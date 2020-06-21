@@ -34,7 +34,6 @@ package org.opensourcephysics.media.core;
 import java.awt.Frame;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -45,7 +44,6 @@ import javax.swing.event.SwingPropertyChangeSupport;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
-import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.core.VideoIO.FinalizableLoader;
 import org.opensourcephysics.tools.ResourceLoader;
 
@@ -57,7 +55,6 @@ import org.opensourcephysics.tools.ResourceLoader;
  */
 public class VideoClip {
 
-	public static final String PROPERTY_VIDEOCLIP_ADJUSTING = "adjusting";//$NON-NLS-1$
 	public final static String PROPERTY_VIDEOCLIP_FRAMECOUNT = "framecount";//$NON-NLS-1$
 	public final static String PROPERTY_VIDEOCLIP_STARTFRAME = "startframe";//$NON-NLS-1$
 	public static final String PROPERTY_VIDEOCLIP_STARTTIME = "starttime";//$NON-NLS-1$
@@ -65,7 +62,7 @@ public class VideoClip {
 	public static final String PROPERTY_VIDEOCLIP_STEPSIZE = "stepsize";//$NON-NLS-1$
 
 	public void addListener(PropertyChangeListener c) {
-		addPropertyChangeListener(PROPERTY_VIDEOCLIP_ADJUSTING, c); 
+		addPropertyChangeListener(TPoint.PROPERTY_ADJUSTING, c); 
 		addPropertyChangeListener(PROPERTY_VIDEOCLIP_FRAMECOUNT, c); 
 		addPropertyChangeListener(PROPERTY_VIDEOCLIP_STARTFRAME, c); 
 		addPropertyChangeListener(PROPERTY_VIDEOCLIP_STARTTIME, c); 
@@ -74,7 +71,7 @@ public class VideoClip {
 	}
 
 	public void removeListener(PropertyChangeListener c) {
-		removePropertyChangeListener(PROPERTY_VIDEOCLIP_ADJUSTING, c); 
+		removePropertyChangeListener(TPoint.PROPERTY_ADJUSTING, c); 
 		removePropertyChangeListener(PROPERTY_VIDEOCLIP_FRAMECOUNT, c); 
 		removePropertyChangeListener(PROPERTY_VIDEOCLIP_STARTFRAME, c); 
 		removePropertyChangeListener(PROPERTY_VIDEOCLIP_STARTTIME, c); 
@@ -519,7 +516,7 @@ public class VideoClip {
 		if (isAdjusting == adjusting)
 			return;
 		isAdjusting = adjusting;
-		support.firePropertyChange(PROPERTY_VIDEOCLIP_ADJUSTING, null, adjusting);
+		support.firePropertyChange(TPoint.PROPERTY_ADJUSTING, null, adjusting);
 	}
 
 	/**

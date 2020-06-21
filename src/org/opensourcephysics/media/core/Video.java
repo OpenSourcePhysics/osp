@@ -67,7 +67,6 @@ public interface Video extends InteractiveImage, Playable, Trackable, PropertyCh
 	}
 
 	public final static String PROPERTY_VIDEO_FRAMENUMBER = "framenumber"; //$NON-NLS-1$
-	public final static String PROPERTY_VIDEO_STARTFRAME = "startframe";//$NON-NLS-1$
 	public final static String PROPERTY_VIDEO_NEXTFRAME = "nextframe";//$NON-NLS-1$
 	public final static String PROPERTY_VIDEO_ENDFRAME = "endframe";//$NON-NLS-1$
 

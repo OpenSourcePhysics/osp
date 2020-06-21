@@ -253,7 +253,7 @@ public abstract class ClipControl implements PropertyChangeListener {
   @Override
 public void propertyChange(PropertyChangeEvent e) {
     switch (e.getPropertyName()) {
-    case Video.PROPERTY_VIDEO_STARTFRAME: 
+    case VideoClip.PROPERTY_VIDEOCLIP_STARTFRAME: 
     	// from video clip
     	int n = getFrameNumber();
 	    stepNumber = clip.frameToStep(n);

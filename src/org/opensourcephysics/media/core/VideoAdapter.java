@@ -688,7 +688,7 @@ public abstract class VideoAdapter implements Video {
 		}
 		n = Math.max(0, n);
 		startFrameNumber = Math.min(endFrameNumber, n);
-		firePropertyChange(PROPERTY_VIDEO_STARTFRAME, null, Integer.valueOf(startFrameNumber));
+		firePropertyChange(VideoClip.PROPERTY_VIDEOCLIP_STARTFRAME, null, Integer.valueOf(startFrameNumber));
 	}
 
 	/**
@@ -1088,8 +1088,7 @@ public abstract class VideoAdapter implements Video {
 	}
 
 	/**
-	 * Responds to property change events. VideoAdapter listens for the following
-	 * events: "transform" from ImageCoordSystem and "image" from FilterStack.
+	 * Responds to property change events.
 	 *
 	 * @param e the property change event
 	 */
