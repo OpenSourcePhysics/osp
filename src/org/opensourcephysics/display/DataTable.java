@@ -30,6 +30,8 @@ import java.util.BitSet;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Vector;
+import java.util.function.IntBinaryOperator;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -77,44 +79,23 @@ import org.opensourcephysics.tools.DataToolTab;
 public class DataTable extends JTable {
 
 	/**
-	 * A TableModel with no listeners that is by default uneditable.
-	 * TableTrackView.TextColumnTableModel allows editing if the track is not locked
-	 * as well as editing
+	 * A marker type for TableModels that are associated with DataTable. 
 	 * 
 	 * @author hansonr
 	 *
 	 */
-	public static abstract class OSPTableModel implements TableModel {
-
-		@Override
-		public boolean isCellEditable(int rowIndex, int columnIndex) {
-			return false;
-		}
-
-		@Override
-		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-			// TableTrackView.TextColumnTableModel only
-		}
-
-		/**
-		 * The OSPDataTableModel associated with this data. TODO
-		 * 
-		 */
-		private TableModelListener listener; 
-
-		/**
-		 * Allowing only one listener
-		 */
-		@Override
-		final public void addTableModelListener(TableModelListener l) {
-			listener = l;
-		}
-
-		@Override
-		final public void removeTableModelListener(TableModelListener l) {
-			listener = null;
-		}
-
+	public static abstract class OSPTableModel extends AbstractTableModel {
+//
+//		@Override
+//		public boolean isCellEditable(int rowIndex, int columnIndex) {
+//			// TableTrackView.TextColumnTableModel only
+//			return false;
+//		}
+//
+//		@Override
+//		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+//			// TableTrackView.TextColumnTableModel only
+//		}
 	}
 
 	public static final String PROPERTY_DATATABLE_FORMAT = "format";
@@ -145,8 +126,8 @@ public class DataTable extends JTable {
 	public static final int MODE_FORMAT = 0x830000;
 
 	public static final int MODE_SELECT = 0x1000000;
-
-	public static final int MODE_SHOW = 0x2000000;
+	public static final int MODE_SHOW = 0x4000000;
+	public static final int MODE_NOFIRE = 0x8000000;
 
 	private static final int MODE_MASK_REBUILD = //
 			MODE_MASK_NEW | MODE_MASK_ROW | MODE_MASK_COL | MODE_MASK_STYLE //
@@ -157,21 +138,21 @@ public class DataTable extends JTable {
 
 	private static final Color PANEL_BACKGROUND = javax.swing.UIManager.getColor("Panel.background"); //$NON-NLS-1$
 	private static final Color LIGHT_BLUE = new Color(204, 204, 255);
-	
+
 	protected static final String NO_PATTERN = DisplayRes.getString("DataTable.FormatDialog.NoFormat"); //$NON-NLS-1$
 	public static final String rowName = DisplayRes.getString("DataTable.Header.Row"); //$NON-NLS-1$
-	
+
 	private static final DoubleRenderer defaultDoubleRenderer = new DoubleRenderer();
 	private HashMap<String, PrecisionRenderer> precisionRenderersByColumnName = new HashMap<String, PrecisionRenderer>();
 	private HashMap<String, UnitRenderer> unitRenderersByColumnName = new HashMap<String, UnitRenderer>();
 
 	protected OSPDataTableModel dataTableModel;
-	
+
 	protected RowNumberRenderer rowNumberRenderer;
 
-	//	int refreshDelay = 0; // time in ms to delay refresh events
-	//	Timer refreshTimer;
-	
+	// int refreshDelay = 0; // time in ms to delay refresh events
+	// Timer refreshTimer;
+
 	protected int maximumFractionDigits = 3;
 	protected int labelColumnWidth = 40, minimumDataColumnWidth = 24;
 	protected NumberFormatDialog formatDialog;
@@ -198,6 +179,8 @@ public class DataTable extends JTable {
 	}
 
 	protected void init(OSPDataTableModel model) {
+		setAutoCreateColumnsFromModel(false);
+		setColumnModel(new DataTableColumnModel());
 // BH Let Table UI do its thing
 //		refreshTimer = new Timer(refreshDelay, new ActionListener() {
 //			@Override
@@ -216,7 +199,6 @@ public class DataTable extends JTable {
 		TableCellRenderer headerRenderer = new HeaderRenderer(getTableHeader().getDefaultRenderer());
 		getTableHeader().setDefaultRenderer(headerRenderer);
 		setSelectionForeground(Color.red); // foreground color for selected cells
-		setColumnModel(new DataTableColumnModel());
 		setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		setColumnSelectionAllowed(true);
 
@@ -236,6 +218,12 @@ public class DataTable extends JTable {
 			}
 
 		});
+	}
+
+	@Override
+	public int convertColumnIndexToModel(int viewIndex) {
+		return (viewIndex < 0 ? viewIndex
+				: ((DataTableColumnModel) getColumnModel()).getColumn(viewIndex).getModelIndex());
 	}
 
 	/**
@@ -260,7 +248,7 @@ public class DataTable extends JTable {
 		} else {
 			precisionRenderersByColumnName.put(columnName, new PrecisionRenderer(pattern));
 		}
-		firePropertyChange(PROPERTY_DATATABLE_FORMAT, null, columnName); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_DATATABLE_FORMAT, null, columnName); // $NON-NLS-1$
 	}
 
 	/**
@@ -379,16 +367,42 @@ public class DataTable extends JTable {
 	}
 
 	/**
+	 * Returns the minimum table width.
+	 * 
+	 * @return minimum table width.
+	 */
+	public int getMinimumTableWidth() {
+		int n = getColumnCount();
+		return (dataTableModel.rowNumberVisible ? labelColumnWidth - minimumDataColumnWidth : 0)
+				+ n * minimumDataColumnWidth;
+	}
+
+	/**
+	 * Sets the label column width
+	 * 
+	 * @param w the width
+	 */
+	public void setLabelColumnWidth(int w) {
+		labelColumnWidth = w;
+		((DataTableColumnModel) getColumnModel()).invalidateWidths();
+	}
+
+	@Override
+	public void resizeAndRepaint() {
+		super.resizeAndRepaint();
+	}
+
+	/**
 	 * Sets the display row number flag. Table displays row number.
 	 *
-	 * @param _rowNumberVisible <code>true<\code> if table display row number
+	 * @param b <code>true<\code> if table display row number
 	 */
-	public void setRowNumberVisible(boolean _rowNumberVisible) {
-		if (dataTableModel.isRowNumberVisible() != _rowNumberVisible) {
-			if (_rowNumberVisible && (rowNumberRenderer == null)) {
+	public void setRowNumberVisible(boolean b) {
+		if (dataTableModel.isRowNumberVisible() != b) {
+			if (b && (rowNumberRenderer == null)) {
 				rowNumberRenderer = new RowNumberRenderer(this);
 			}
-			dataTableModel.setRowNumberVisible(_rowNumberVisible);
+			dataTableModel.setRowNumberVisible(b);
 		}
 	}
 
@@ -615,6 +629,7 @@ public class DataTable extends JTable {
 		case MODE_SHOW: // 0x2000000;
 			break;
 		}
+		updateFormats();
 		dataTableModel.refresh(mask);
 	}
 
@@ -648,9 +663,23 @@ public class DataTable extends JTable {
 	 *
 	 */
 	private static class DataTableElement {
-		TableModel tableModel;
-		boolean columnVisibilities[]; // boolean values indicating if a column is visible
-		int stride = 1; // data stride in the DataTable view
+
+		final TableModel tableModel;
+
+		/**
+		 * the column "return" value from find
+		 */
+		int foundColumn = -1;
+
+		/**
+		 * indicating if a column is visible
+		 */
+		final BitSet bsColVis = new BitSet();
+
+		/**
+		 * The number of actual rows per visible row
+		 */
+		int stride = 1;
 
 		/**
 		 * Constructor DataTableElement
@@ -659,6 +688,7 @@ public class DataTable extends JTable {
 		 */
 		public DataTableElement(TableModel t) {
 			tableModel = t;
+			bsColVis.set(0, t.getColumnCount());
 		}
 
 		/**
@@ -677,8 +707,7 @@ public class DataTable extends JTable {
 		 * @param visible
 		 */
 		public void setColumnVisible(int columnIndex, boolean visible) {
-			ensureCapacity(columnIndex + 1);
-			columnVisibilities[columnIndex] = visible;
+			bsColVis.set(columnIndex, visible);
 		}
 
 		/**
@@ -691,30 +720,12 @@ public class DataTable extends JTable {
 		}
 
 		/**
-		 * Method getColumnVisibilities
-		 *
-		 * @return
-		 */
-		public boolean[] getColumnVisibilities() {
-			return columnVisibilities;
-		}
-
-		/**
 		 * Method getColumnCount
 		 *
 		 * @return
 		 */
-		public int getColumnCount() {
-			int count = 0;
-			int numberOfColumns = tableModel.getColumnCount();
-			ensureCapacity(numberOfColumns);
-			for (int i = 0; i < numberOfColumns; i++) {
-				boolean visible = columnVisibilities[i];
-				if (visible) {
-					count++;
-				}
-			}
-			return count;
+		public int getVisibleColumnCount() {
+			return bsColVis.cardinality();
 		}
 
 		/**
@@ -756,19 +767,6 @@ public class DataTable extends JTable {
 		public int getRowCount() {
 			return tableModel.getRowCount();
 		}
-
-		private void ensureCapacity(int minimumCapacity) {
-			if (columnVisibilities == null) {
-				columnVisibilities = new boolean[(minimumCapacity * 3) / 2 + 1];
-				Arrays.fill(columnVisibilities, true);
-			} else if (columnVisibilities.length < minimumCapacity) {
-				boolean[] temp = columnVisibilities;
-				columnVisibilities = new boolean[(minimumCapacity * 3) / 2 + 1];
-				System.arraycopy(temp, 0, columnVisibilities, 0, temp.length);
-				Arrays.fill(columnVisibilities, temp.length, columnVisibilities.length, true);
-			}
-		}
-
 	}
 
 	/*
@@ -780,23 +778,71 @@ public class DataTable extends JTable {
 	 * 
 	 * @created February 21, 2002
 	 */
-	protected class OSPDataTableModel extends AbstractTableModel implements TableModelListener {// BH trying this
-																								// implements
-																								// DataTableModel {
+	protected class OSPDataTableModel extends AbstractTableModel implements TableModelListener {
 
-		ArrayList<DataTableElement> dataTableElements;
+		final private ArrayList<DataTableElement> dataTableElements;
 		boolean rowNumberVisible;
 		private SortDecorator decorator;
 		protected TableModelEvent lastModelEvent;
 
+		private int columnCount;
+		private int rowCount;
+
+		/**
+		 * The TableModelListener will clue us in
+		 */
+		protected void setTainted() {
+			columnCount = rowCount = -1;
+		}
+
 		public OSPDataTableModel() {
 			dataTableElements = new ArrayList<DataTableElement>();
 			decorator = new SortDecorator();
-			addTableModelListener(decorator);
+			addTableModelListener(new TableModelListener() {
+				@Override
+				public void tableChanged(TableModelEvent e) {
+					setTainted();
+					decorator.allocate();
+				}
+
+			});
 		}
 
 		/**
-		 * Sorts the table using the given column.
+		 * Find the dataTableElement associated with this column.
+		 *
+		 * @param rowNumberVisible
+		 * @param dataTableElements
+		 * @param icol
+		 * @return
+		 */
+		private DataTableElement find(int icol) {
+			if (rowNumberVisible) {
+				icol--;
+			}
+			for (int i = 0, ncol = 0, n = dataTableElements.size(); i < n; i++) {
+				DataTableElement dte = dataTableElements.get(i);
+				int nvis = dte.getVisibleColumnCount();
+				if (ncol + nvis > icol) {
+					i = icol - ncol;
+					BitSet bs = dte.bsColVis;
+					// have undercounted by the number of hidden columns in this element
+					// up to this column
+					for (int j = ncol; j < icol; j++) {
+						if (!bs.get(j)) {
+							i++;
+						}
+					}
+					dte.foundColumn = i;
+					return dte;
+				}
+				ncol += nvis;
+			}
+			return null; // this shouldn't happen
+		}
+
+		/**
+		 * Sorts the table rows using the given column.
 		 * 
 		 * @param col int
 		 */
@@ -847,11 +893,11 @@ public class DataTable extends JTable {
 		/**
 		 * Method setRowNumberVisible
 		 *
-		 * @param _rowNumberVisible
+		 * @param b
 		 */
 //		@Override
-		public void setRowNumberVisible(boolean _rowNumberVisible) {
-			rowNumberVisible = _rowNumberVisible;
+		public void setRowNumberVisible(boolean b) {
+			rowNumberVisible = b;
 		}
 
 		/**
@@ -867,22 +913,16 @@ public class DataTable extends JTable {
 		}
 
 		protected void setElementValue(Object value, int rowIndex, int columnIndex) {
-			if (dataTableElements.size() == 0) {
+			if (dataTableElements.size() == 0 || rowNumberVisible && columnIndex == 0) {
 				return;
 			}
-			if (rowNumberVisible) {
-				if (columnIndex == 0) {
-					return;
-				}
-			}
-			ModelFilterResult mfr = ModelFilterResult.find(rowNumberVisible, dataTableElements, columnIndex);
-			DataTableElement dte = mfr.tableElement;
+			DataTableElement dte = find(columnIndex);
 			int stride = dte.getStride();
 			rowIndex = rowIndex * stride;
 			if (rowIndex >= dte.getRowCount()) {
 				return;
 			}
-			dte.tableModel.setValueAt(value, rowIndex, mfr.column);
+			dte.tableModel.setValueAt(value, rowIndex, dte.foundColumn);
 		}
 
 		/**
@@ -916,10 +956,8 @@ public class DataTable extends JTable {
 					return rowName;
 				}
 			}
-			ModelFilterResult mfr = ModelFilterResult.find(rowNumberVisible, dataTableElements, columnIndex);
-			DataTableElement dte = mfr.tableElement;
-			String name = dte.getColumnName(mfr.column);
-			return name;
+			DataTableElement dte = find(columnIndex);
+			return dte.getColumnName(dte.foundColumn);
 		}
 
 		/**
@@ -928,34 +966,32 @@ public class DataTable extends JTable {
 		 * @return
 		 */
 		@Override
-		public int getRowCount() {
-			int rowCount = 0;
-			if (dataTableElements != null)
-				for (int i = 0; i < dataTableElements.size(); i++) {
-					DataTableElement dte = dataTableElements.get(i);
-					int stride = dte.getStride();
-					rowCount = Math.max(rowCount, (dte.getRowCount() + stride - 1) / stride);
-				}
-			return rowCount;
+		public synchronized int getRowCount() {
+			if (rowCount >= 0)
+				return rowCount;
+			int n = 0;
+			for (int i = dataTableElements.size(); --i >= 0;) {
+				DataTableElement dte = dataTableElements.get(i);
+				int stride = dte.getStride();
+				n = Math.max(n, (dte.getRowCount() + stride - 1) / stride);
+			}
+			return rowCount = n;
 		}
 
 		/**
 		 * Method getColumnCount
 		 *
-		 * @return
+		 * @return the number of VISIBLE columns
 		 */
 		@Override
-		public int getColumnCount() {
-			int columnCount = 0;
-			if (dataTableElements != null)
-				for (int i = 0; i < dataTableElements.size(); i++) {
-					DataTableElement dte = dataTableElements.get(i);
-					columnCount += dte.getColumnCount();
-				}
-			if (rowNumberVisible) {
-				columnCount++;
+		public synchronized int getColumnCount() {
+			if (columnCount >= 0)
+				return columnCount;
+			int n = 0;
+			for (int i = dataTableElements.size(); --i >= 0;) {
+				n += dataTableElements.get(i).getVisibleColumnCount();
 			}
-			return columnCount;
+			return columnCount = (rowNumberVisible ? n + 1 : n);
 		}
 
 		/**
@@ -979,15 +1015,37 @@ public class DataTable extends JTable {
 					return Integer.valueOf(rowIndex);
 				}
 			}
-			ModelFilterResult mfr = ModelFilterResult.find(rowNumberVisible, dataTableElements, columnIndex);
-			DataTableElement dte = mfr.tableElement;
+			DataTableElement dte = find(columnIndex);
 			int stride = dte.getStride();
 			rowIndex = rowIndex * stride;
 			if (rowIndex >= dte.getRowCount()) {
 				return null;
 			}
-			return dte.getValueAt(rowIndex, mfr.column);
+			return dte.getValueAt(rowIndex, dte.foundColumn);
 		}
+		
+
+		/**
+		 * Get an array of column values ready for sorting.
+		 * 
+		 * @param columnIndex
+		 * @param objects
+		 * @return
+		 */
+		public Object[] getElementValues(int columnIndex, Object[] objects) {
+			if (dataTableElements.size() > 0) {
+				boolean asRow = (rowNumberVisible && columnIndex == 0);
+				DataTableElement dte = find(columnIndex);
+				int stride = dte.getStride();
+				for (int i = 0, rowIndex = 0, n = objects.length, nr = dte.getRowCount(); i < n
+						&& rowIndex < nr; i++, rowIndex += stride) {
+					objects[i] = (asRow ? Integer.valueOf(rowIndex) : dte.getValueAt(rowIndex, dte.foundColumn));
+				}
+			}
+			return objects;
+		}
+
+
 
 		/**
 		 * Method getColumnClass
@@ -1010,9 +1068,8 @@ public class DataTable extends JTable {
 			if ((columnIndex == 0) && rowNumberVisible) {
 				columnIndex--;
 			}
-			ModelFilterResult mfr = ModelFilterResult.find(rowNumberVisible, dataTableElements, columnIndex);
-			DataTableElement dte = mfr.tableElement;
-			return dte.getColumnClass(mfr.column);
+			DataTableElement dte = find(columnIndex);
+			return dte.getColumnClass(dte.foundColumn);
 		}
 
 		/**
@@ -1038,8 +1095,8 @@ public class DataTable extends JTable {
 		 */
 //		@Override
 		public void remove(TableModel tableModel) {
-			DataTableElement dte = findElementContaining(tableModel);
-			dataTableElements.remove(dte);
+			tableModel.removeTableModelListener(this);
+			dataTableElements.remove(findElementContaining(tableModel));
 		}
 
 		/**
@@ -1047,6 +1104,8 @@ public class DataTable extends JTable {
 		 */
 //		@Override
 		public void clear() {
+			for (int i = dataTableElements.size(); --i >= 0;)
+				dataTableElements.get(i).tableModel.removeTableModelListener(this);
 			dataTableElements.clear();
 		}
 
@@ -1057,6 +1116,7 @@ public class DataTable extends JTable {
 		 */
 //		@Override
 		public void add(TableModel tableModel) {
+			setTainted();
 			dataTableElements.add(new DataTableElement(tableModel));
 			tableModel.addTableModelListener(this);
 		}
@@ -1068,7 +1128,7 @@ public class DataTable extends JTable {
 		 * @return Description of the Returned Value
 		 */
 		private DataTableElement findElementContaining(TableModel tableModel) {
-			for (int i = 0; i < dataTableElements.size(); i++) {
+			for (int i = dataTableElements.size(); --i >= 0;) {
 				DataTableElement dte = dataTableElements.get(i);
 				if (dte.tableModel == tableModel) {
 					return dte;
@@ -1077,7 +1137,7 @@ public class DataTable extends JTable {
 			return null;
 		}
 
-		protected class SortDecorator implements TableModelListener {
+		protected class SortDecorator {
 			private int indexes[];
 			private int sortedColumn; // added by D Brown 2010-10-24
 
@@ -1121,11 +1181,6 @@ public class DataTable extends JTable {
 				setElementValue(aValue, indexes[row], column);
 			}
 
-			@Override
-			public void tableChanged(TableModelEvent e) {
-				allocate();
-			}
-
 			public void sort(int column) {
 				sortedColumn = column;
 				int rowCount = getRowCount();
@@ -1135,39 +1190,20 @@ public class DataTable extends JTable {
 
 				// new faster sort method added by D Brown 2015-05-16
 				try {
-					if (getColumnClass(column) == Double.class || getColumnClass(column) == Integer.class) {
-						Double[][] sortArray = new Double[rowCount][2];
-						if (getColumnClass(column) == Double.class) {
-							for (int i = 0; i < rowCount; i++) {
-								sortArray[i][0] = (Double) getElementValue(i, column);
-								sortArray[i][1] = 1.0 * indexes[i];
-							}
-						} else {
-							for (int i = 0; i < rowCount; i++) {
-								sortArray[i][0] = ((Integer) getElementValue(i, column)).doubleValue();
-								sortArray[i][1] = 1.0 * indexes[i];
-							}
-						}
-						Arrays.sort(sortArray, new Comparator<Double[]>() {
-							@Override
-							public int compare(Double[] a, Double[] b) {
-								if (a[0] == null || b[0] == null) {
-									return b[0] == a[0] ? 0 : b[0] == null ? -1 : 1;
-								}
-								return (b[0] < a[0]) ? 1 : ((b[0] > a[0]) ? -1 : 0);
-							}
-						});
-						for (int i = 0; i < rowCount; i++) {
-							indexes[i] = sortArray[i][1].intValue();
-						}
-					} else { // use older sort method for String data
-						for (int i = 0; i < rowCount; i++) {
-							for (int j = i + 1; j < rowCount; j++) {
-								if (compare(indexes[i], indexes[j], column) < 0) {
-									swap(i, j);
-								}
-							}
-						}
+					Object[] data = getElementValues(column, new Object[rowCount]);
+					Object[][] sortArray = new Object[rowCount][2];
+					for (int i = 0; i < rowCount; i++) {
+						sortArray[i][0] = data[i];
+						sortArray[i][1] = Integer.valueOf(indexes[i]);
+					}
+					// Comparators can be static; either Number or String, depending upon the column type
+					if (Number.class.isAssignableFrom(getColumnClass(column))) {
+						Arrays.sort(sortArray, nCompare);
+					} else { 
+						Arrays.sort(sortArray, sCompare);					
+					}
+					for (int i = 0; i < rowCount; i++) {
+						indexes[i] = ((Integer)sortArray[i][1]).intValue();
 					}
 				} catch (Exception e) {
 				}
@@ -1178,45 +1214,32 @@ public class DataTable extends JTable {
 				return sortedColumn;
 			}
 
-			public void swap(int i, int j) {
-				int tmp = indexes[i];
-				indexes[i] = indexes[j];
-				indexes[j] = tmp;
-			}
-
-			public int compare(int i, int j, int column) {
-				Object io = getElementValue(i, column);
-				Object jo = getElementValue(j, column);
-				if ((io != null) && (jo == null)) {
-					return 1;
-				}
-				if ((io == null) && (jo != null)) {
-					return -1;
-				}
-				if ((io == null) && (jo == null)) {
-					return 0;
-				}
-				if ((io instanceof Integer) && (jo instanceof Integer)) {
-					int a = ((Integer) io).intValue();
-					int b = ((Integer) jo).intValue();
-					return (b < a) ? -1 : ((b > a) ? 1 : 0);
-				} else if ((io instanceof Double) && (jo instanceof Double)) {
-					double a = ((Double) io).doubleValue();
-					double b = ((Double) jo).doubleValue();
-					return (b < a) ? -1 : ((b > a) ? 1 : 0);
-				} else if ((io instanceof Integer) && (jo instanceof Double)) {
-					int a = ((Integer) io).intValue();
-					double b = ((Double) jo).doubleValue();
-					return (b < a) ? -1 : ((b > a) ? 1 : 0);
-				} else if ((io instanceof Double) && (jo instanceof Integer)) {
-					double a = ((Double) io).doubleValue();
-					int b = ((Integer) jo).intValue();
-					return (b < a) ? -1 : ((b > a) ? 1 : 0);
-				}
-				int c = jo.toString().compareTo(io.toString());
-				return (c < 0) ? -1 : ((c > 0) ? 1 : 0);
-			}
-
+//			public void swap(int i, int j) {
+//				int tmp = indexes[i];
+//				indexes[i] = indexes[j];
+//				indexes[j] = tmp;
+//			}
+//
+//			public int compare(int i, int j, int column) {
+//				Object io = getElementValue(i, column);
+//				Object jo = getElementValue(j, column);
+//				if ((io != null) && (jo == null)) {
+//					return 1;
+//				}
+//				if ((io == null) && (jo != null)) {
+//					return -1;
+//				}
+//				if ((io == null) && (jo == null)) {
+//					return 0;
+//				}
+//				if ((io instanceof Number) && (jo instanceof Number)) {
+//					double a = ((Number) io).doubleValue();
+//					double b = ((Number) jo).doubleValue();
+//					return (b < a) ? -1 : ((b > a) ? 1 : 0);
+//				}
+//				return jo.toString().compareTo(io.toString());
+//			}
+//
 			private void allocate() {
 				indexes = new int[getRowCount()];
 				for (int i = 0; i < indexes.length; ++i) {
@@ -1242,8 +1265,6 @@ public class DataTable extends JTable {
 		}
 
 		protected void refresh(int mask) {
-			updateFormats();
-			updateColumnModel(getColumnModel());
 			String type;
 			switch (mask) {
 			default:
@@ -1275,64 +1296,107 @@ public class DataTable extends JTable {
 				type = "show";
 				break;
 			}
+			updateColumnModel(null);
 			OSPLog.debug("OSPDataTableModel rebuild " + type);
 			fireTableStructureChanged();
 		}
 
 	}
 
-	private static class ModelFilterResult {
-		DataTableElement tableElement;
-		int column;
+	protected class DataTableColumnModel extends DefaultTableColumnModel {
 
-		/**
-		 * Constructor ModelFilterResult
-		 *
-		 * @param _tableElement
-		 * @param _column
-		 */
-		public ModelFilterResult(DataTableElement _tableElement, int _column) {
-			tableElement = _tableElement;
-			column = _column;
+		protected class DataTableColumn extends TableColumn {
+
+			public boolean isSizeSet;
+
+			public DataTableColumn(int modelIndex) {
+				super(modelIndex);
+				setHeaderValue(getModel().getColumnName(modelIndex));
+			}
+
 		}
 
 		/**
-		 * Method find
-		 *
-		 * @param rowNumberVisible
-		 * @param dataTableElements
-		 * @param tableColumnIndex
-		 * @return
+		 * New labelColumnWidth requires resetting min/max widths.
 		 */
-		public static ModelFilterResult find(boolean rowNumberVisible, ArrayList<DataTableElement> dataTableElements,
-				int tableColumnIndex) {
-			if (rowNumberVisible) {
-				tableColumnIndex--;
+		public void invalidateWidths() {
+			for (int i = tableColumns.size(); --i >= 0;) {
+				((DataTableColumn) tableColumns.get(i)).isSizeSet = false;
 			}
-			int totalColumns = 0;
-			for (int i = 0; i < dataTableElements.size(); i++) {
-				DataTableElement dte = dataTableElements.get(i);
-				dte.ensureCapacity(tableColumnIndex);
-				int columnCount = dte.getColumnCount();
-				totalColumns += columnCount;
-				if (totalColumns > tableColumnIndex) {
-					// int columnIndex = Math.abs(totalColumns - columnCount - tableColumnIndex);
-					int columnIndex = (columnCount + tableColumnIndex) - totalColumns;
-					boolean visible[] = dte.getColumnVisibilities();
-					for (int j = 0; j < tableColumnIndex; j++) {
-						if (!visible[j]) {
-							columnIndex++;
-						}
-					}
-					return new ModelFilterResult(dte, columnIndex);
+		}
+
+		/**
+		 * Read DataTableModel.dataElements into DataTableColumnModel.tableColumns.
+		 * 
+		 * This method has full control over the column model. It does not call any
+		 * methods in JTable. Specifically, we do not need to fire any events or call
+		 * JTable.createDefaultColumnsFromModel().
+		 * 
+		 * We do not need to recreate any table columns from scratch. We just need to
+		 * adjust them as necessary.
+		 * 
+		 * @author hansonr
+		 */
+		protected void updateColumnModel() {
+
+			// create a map of the current column set (actually displayed)
+
+			Vector<TableColumn> newColumns = new Vector<>();
+			Map<String, DataTableColumn> map = new HashMap<>();
+			for (int i = tableColumns.size(); --i >= 0;) {
+				DataTableColumn tc = (DataTableColumn) tableColumns.get(i);
+				map.put((String) tc.getHeaderValue(), tc);
+			}
+
+			// run through the updated TableModel, creating new columns
+			// only when necessary. No events are fired.
+
+			int n = dataTableModel.getColumnCount();
+			for (int i = 0; i < n; i++) {
+				String name = dataTableModel.getColumnName(i);
+				DataTableColumn tc = map.get(name);
+				if (tc == null) {
+					tc = new DataTableColumn(i);
+					tc.addPropertyChangeListener(this);
+					totalColumnWidth = -1;
+				} else {
+					tc.setModelIndex(i);
+					tableColumns.remove(tc);
 				}
+				tc.isSizeSet = false;
+				newColumns.add(tc);
 			}
-			return null; // this shouldn't happen
+			// any columns remaining in tableColumns are disposable
+			// because they are no longer being shown.
+			for (int i = tableColumns.size(); --i >= 0;) {
+				TableColumn tc = tableColumns.get(i);
+				tc.removePropertyChangeListener(this);
+				totalColumnWidth = -1;
+			}
+			tableColumns = newColumns;
+			selectionModel.clearSelection();
 		}
 
-	}
+//		public void createDefaultColumns() {
+//
+//			selectionModel.clearSelection();
+//			// remove and dispose of all table columns
+//			while (getColumnCount() > 0) {
+//				TableColumn column = getColumn(0);
+//				int columnIndex = tableColumns.indexOf(column);
+//				if (columnIndex >= 0) {
+//					column.removePropertyChangeListener(this);
+//					tableColumns.removeElementAt(columnIndex);
+//					totalColumnWidth = -1;
+//				}
+//			}
+//			// recreate tableColumns with columns from dataTableModel
+//			int n = dataTableModel.getColumnCount();
+//			for (int i = 0; i < n; i++) {
+//				addColumn(new DataTableColumn(i));
+//			}
+//		}
 
-	private class DataTableColumnModel extends DefaultTableColumnModel {
 		/**
 		 * Method getColumn
 		 *
@@ -1341,23 +1405,76 @@ public class DataTable extends JTable {
 		 */
 		@Override
 		public TableColumn getColumn(int columnIndex) {
-			TableColumn tableColumn;
-			try {
-				tableColumn = super.getColumn(columnIndex);
-			} catch (Exception ex) { // return an empty column if the columnIndex is not valid.
-				return new TableColumn();
-			}
-			String headerValue = (String) tableColumn.getHeaderValue();
-			if (headerValue == null) {
+			if (columnIndex < 0 || columnIndex >= tableColumns.size())
+				return new TableColumn(0);
+			DataTableColumn tableColumn = (DataTableColumn) tableColumns.elementAt(columnIndex);
+			if (tableColumn.isSizeSet)
 				return tableColumn;
-			} else if (headerValue.equals(rowName) && (tableColumn.getModelIndex() == 0)) {
-				tableColumn.setMaxWidth(labelColumnWidth);
-				tableColumn.setMinWidth(labelColumnWidth);
-				tableColumn.setResizable(false);
-			} else {
-				tableColumn.setMinWidth(minimumDataColumnWidth);
+			tableColumn.isSizeSet = true;
+			String headerValue = (String) tableColumn.getHeaderValue();
+			if (headerValue != null) {
+				if (headerValue.equals(rowName) && (tableColumn.getModelIndex() == 0)) {
+					tableColumn.setMaxWidth(labelColumnWidth);
+					tableColumn.setMinWidth(labelColumnWidth);
+					tableColumn.setResizable(false);
+				} else {
+					tableColumn.setMinWidth(minimumDataColumnWidth);
+				}
 			}
 			return tableColumn;
+		}
+
+//		public void moveColumnQuietly(int oldI, int newI) {
+//			if (oldI == newI) {
+//				return;
+//			}
+//			TableColumn aColumn = tableColumns.elementAt(oldI);
+//			tableColumns.removeElementAt(oldI);
+//			tableColumns.insertElementAt(aColumn, newI);
+//			boolean selected = selectionModel.isSelectedIndex(oldI);
+//			selectionModel.removeIndexInterval(oldI, oldI);
+//			selectionModel.insertIndexInterval(newI, 1, true);
+//			if (selected) {
+//				selectionModel.addSelectionInterval(newI, newI);
+//			} else {
+//				selectionModel.removeSelectionInterval(newI, newI);
+//			}
+//		}
+
+		public void setModelColumnOrder(int[] modelColumns) {
+			selectionModel.clearSelection();
+			int[] current = getModelColumnOrder();
+			if (Arrays.equals(current, modelColumns))
+				return;
+			int max = 0;
+			for (int i = current.length; --i >= 0;) {
+				if (current[i] > max)
+					max = current[i];
+			}
+			int map[] = new int[max + 1];
+			for (int i = current.length; --i >= 0;) {
+				map[current[i]] = i + 1; // so 0 is undefined
+			}
+			Vector<TableColumn> newCols = new Vector<>();
+			for (int i = 0, n = modelColumns.length; i < n; i++) {
+				int j = (modelColumns[i] > max ? 0 : map[modelColumns[i]]);
+				if (j > 0)
+					newCols.add(tableColumns.get(j - 1));
+			}
+			tableColumns = newCols;
+		}
+
+		/**
+		 * Get modelIndex array for currently visible columns.
+		 * 
+		 * @return
+		 */
+		public int[] getModelColumnOrder() {
+			int[] modelColumns = new int[getModel().getColumnCount()];
+			for (int i = modelColumns.length; --i >= 0;) {
+				modelColumns[i] = getColumn(i).getModelIndex();
+			}
+			return modelColumns;
 		}
 
 	}
@@ -1889,96 +2006,54 @@ public class DataTable extends JTable {
 		dataTableModel.sort(col);
 	}
 
-	protected static void updateColumnModel(TableColumnModel model) {
-		// code added by D Brown to maintain column order and widths (Mar 2014)
-		int colCount = model.getColumnCount();
-		int[] modelIndexes = new int[colCount];
-		int[] columnWidths = new int[colCount];
-		ArrayList<Object> columnNames = new ArrayList<Object>();
-		// save current order, widths and column names
-		for (int i = 0; i < colCount; i++) {
-			TableColumn column = model.getColumn(i);
-			modelIndexes[i] = column.getModelIndex();
-			columnWidths[i] = column.getWidth();
-			columnNames.add(column.getHeaderValue());
-		}
-		// refresh table--this lays out columns in default order and widths
+	/**
+	 * from DataToolTable Sets the model column order -- for DataToolTab Loader only
+	 *
+	 * @param modelColumns array of model column numbers in view column order
+	 */
+	public void setModelColumnOrder(int[] modelColumns) {
+		// for each view column i
+		((DataTableColumnModel) getColumnModel()).setModelColumnOrder(modelColumns);
+	}
 
-		// deal with added and/or removed columns
-		int newCount = model.getColumnCount();
-		// create list of new column names
-		ArrayList<Object> newColumnNames = new ArrayList<Object>();
-		for (int i = 0; i < newCount; i++) {
-			TableColumn column = model.getColumn(i);
-			newColumnNames.add(column.getHeaderValue());
-		}
-		// determine which column(s) were removed
-		BitSet bsRemoved = new BitSet();
-		for (int i = 0; i < colCount; i++) {
-			if (!newColumnNames.contains(columnNames.get(i))) {
-				bsRemoved.set(modelIndexes[i]);
-			}
-		}
-		// determine which column(s) were added
-		BitSet bsAdded = new BitSet();
-		for (int i = 0; i < newCount; i++) {
-			if (!columnNames.contains(newColumnNames.get(i))) {
-				bsAdded.set(i);
-			}
-		}
-		// rebuild modelIndex and columnWidth arrays
-		for (int n = bsRemoved.nextSetBit(0); n >= 0; n = bsRemoved.nextSetBit(n + 1)) {
-			int[] newModelIndexes = new int[colCount - 1];
-			int[] newColumnWidths = new int[colCount - 1];
-			int k = 0;
-			for (int i = 0; i < colCount; i++) {
-				if (modelIndexes[i] == n)
-					continue;
-				if (modelIndexes[i] > n) {
-					newModelIndexes[k] = modelIndexes[i] - 1;
-				} else {
-					newModelIndexes[k] = modelIndexes[i];
-				}
-				newColumnWidths[k] = columnWidths[i];
-				k++;
-			}
-			modelIndexes = newModelIndexes;
-			columnWidths = newColumnWidths;
-			colCount = modelIndexes.length;
-		}
-		for (int n = bsAdded.nextSetBit(0); n >= 0; n = bsAdded.nextSetBit(n + 1)) {
-			int[] newModelIndexes = new int[colCount + 1];
-			int[] newColumnWidths = new int[colCount + 1];
-			for (int i = 0; i < colCount; i++) {
-				if (modelIndexes[i] >= n) {
-					newModelIndexes[i] = modelIndexes[i] + 1;
-				} else {
-					newModelIndexes[i] = modelIndexes[i];
-				}
-				newColumnWidths[i] = columnWidths[i];
-			}
-			// add new columns at end and assign them the default width
-			newModelIndexes[colCount] = n;
-			newColumnWidths[colCount] = model.getColumn(n).getWidth();
-			modelIndexes = newModelIndexes;
-			columnWidths = newColumnWidths;
-			colCount = modelIndexes.length;
-		}
-		// restore column order
-		outer: for (int targetIndex = 0; targetIndex < colCount; targetIndex++) {
-			// find column with modelIndex and move to targetIndex
-			for (int i = 0; i < colCount; i++) {
-				if (model.getColumn(i).getModelIndex() == modelIndexes[targetIndex]) {
-					model.moveColumn(i, targetIndex);
-					continue outer;
-				}
-			}
-		}
-		// restore column widths
-		for (int i = 0; i < columnWidths.length; i++) {
-			model.getColumn(i).setPreferredWidth(columnWidths[i]);
-			model.getColumn(i).setWidth(columnWidths[i]);
-		}
+	/**
+	 * Gets the model column order. -- for DataToolTab Loader
+	 *
+	 * @return array of model column numbers in view column order
+	 */
+	public int[] getModelColumnOrder() {
+		return ((DataTableColumnModel) getColumnModel()).getModelColumnOrder();
+	}
+
+//	public void setModelColumnOrder(int[] modelColumns) {
+//		if (modelColumns == null) {
+//			return;
+//		}
+//		// for each model column i
+//		for (int i = 0; i < modelColumns.length; i++) {
+//			// find its current view column and move it if needed
+//			for (int j = i; j < modelColumns.length; j++) {
+//				if (convertColumnIndexToModel(j) == modelColumns[i]) {
+//					if (j != i) {
+//						moveColumn(j, i);
+//					}
+//					break;
+//				}
+//			}
+//		}
+//	}
+//
+
+	/**
+	 * This method, called by Jtable.tableChanged(TableModelEvent), is never called,
+	 * because we have set autoCreateColumnsFromModel false.
+	 * 
+	 * All updating is handled exclusively by
+	 * DataTableColumnModel.updateColumnModel().
+	 */
+	@Deprecated
+	@Override
+	public void createDefaultColumnsFromModel() {
 	}
 
 	protected void updateFormats() {
@@ -2002,6 +2077,52 @@ public class DataTable extends JTable {
 		dataTableModel.resetSort();
 	}
 
+	protected void refreshTable(int mode, boolean resortAndReselect) {
+		// model for this table assumed to be a SortDecorator
+		// always reset the decorator before changing table structure
+		int col = dataTableModel.getSortedColumn();
+		dataTableModel.resetSort();
+		// save selected rows and columns
+		int[] rows = getSelectedRows();
+		int[] cols = getSelectedColumns();
+		// refresh table
+		refreshTable(mode);
+		// sort if needed
+		if (col > -1)
+			sort(col);
+		// restore selected rows and columns
+		for (int i = 0; i < rows.length; i++) {
+			if (rows[i] < getRowCount())
+				addRowSelectionInterval(rows[i], rows[i]);
+		}
+		for (int i = 0; i < cols.length; i++) {
+			if (cols[i] < getColumnCount())
+				addColumnSelectionInterval(cols[i], cols[i]);
+		}
+	}
+
+	public void updateColumnModel(int[] modelColumns) {
+		((DataTableColumnModel) getColumnModel()).updateColumnModel();
+//		if (modelColumns != null)
+//			updateColumnOrder(modelColumns);
+	}
+
+	private static Comparator<Object[]> nCompare = new Comparator<Object[]>() {
+		@Override
+		public int compare(Object[] a, Object[] b) {
+			return (a[0] != null && b[0] != null
+					? Double.compare(((Number)a[0]).doubleValue(), ((Number)b[0]).doubleValue())
+					: a[0] != null ? 1 : b[0] != null ? -1 : 0);
+		}
+	};
+	private static Comparator<Object[]> sCompare = new Comparator<Object[]>() {
+		@Override
+		public int compare(Object[] a, Object[] b) {
+			return (a[0] != null && b[0] != null
+					? a[0].toString().compareTo(b[0].toString())
+					: a[0] != null ? 1 : b[0] != null ? -1 : 0);
+		}
+	};
 }
 
 /*

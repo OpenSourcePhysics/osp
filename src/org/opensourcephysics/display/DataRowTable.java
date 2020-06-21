@@ -397,7 +397,7 @@ public class DataRowTable extends JTable implements ActionListener {
 			try {
 				tableColumn = super.getColumn(columnIndex);
 			} catch (Exception ex) { // return an empty column if the columnIndex is not valid.
-				return new TableColumn();
+				return new TableColumn(0);
 			}
 			String headerValue = (String) tableColumn.getHeaderValue();
 			if (headerValue == null) {

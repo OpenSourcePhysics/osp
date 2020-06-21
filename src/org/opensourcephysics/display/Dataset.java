@@ -24,17 +24,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
-import javax.swing.table.AbstractTableModel;
-
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
-
-import javajs.async.SwingJSUtils.Performance;
+import org.opensourcephysics.display.DataTable.OSPTableModel;
 
 /**
  * Dataset stores and plots (x,y) points. Dataset is Drawable and can be
@@ -47,7 +44,7 @@ import javajs.async.SwingJSUtils.Performance;
  * @version 1.0
  */
 @SuppressWarnings("serial")
-public class Dataset extends DataTable.OSPTableModel implements Measurable, LogMeasurable, Data {
+public class Dataset extends OSPTableModel implements Measurable, LogMeasurable, Data {
 	/** Field datasetID: an integer ID that identifies this object */
 	protected int datasetID = hashCode();
 
@@ -83,7 +80,11 @@ public class Dataset extends DataTable.OSPTableModel implements Measurable, LogM
 
 	/** defaultMaxPoints: the default maxPoints */
 	private static int defaultMaxPoints = 16 * 1024;
-
+	
+	// See DatasetManager.find
+	
+	int foundColumn = 0;
+	
 	protected double[] xpoints;
 	// array of x points
 
@@ -164,7 +165,7 @@ public class Dataset extends DataTable.OSPTableModel implements Measurable, LogM
 	protected String yColumnDescription;
 	// a description of the y data
 
-	private boolean[] colVisible = new boolean[2];
+	private BitSet colVisible = new BitSet();
 	// column visibilities for table view
 
 	protected boolean visible = true;
@@ -219,7 +220,7 @@ public class Dataset extends DataTable.OSPTableModel implements Measurable, LogM
 		yColumnName = "y"; //$NON-NLS-1$
 		generalPath = new GeneralPath();
 		index = 0;
-		java.util.Arrays.fill(colVisible, true);
+		colVisible.set(0, 2);
 		clear();
 	}
 
@@ -856,7 +857,7 @@ public class Dataset extends DataTable.OSPTableModel implements Measurable, LogM
 	 */
 	@Override
 	public int getColumnCount() {
-		return Dataset.countColumnsVisible(colVisible);
+		return colVisible.cardinality();
 	}
 
 	/**
@@ -890,11 +891,7 @@ public class Dataset extends DataTable.OSPTableModel implements Measurable, LogM
 	 */
 	@Override
 	public String getColumnName(int columnIndex) {
-		columnIndex = Dataset.convertTableColumnIndex(colVisible, columnIndex);
-		if (columnIndex == 0) {
-			return xColumnName;
-		}
-		return yColumnName;
+		return (convertTableColumnIndex(colVisible, columnIndex) == 0 ? xColumnName : yColumnName);
 	}
 
 	/**
@@ -906,7 +903,7 @@ public class Dataset extends DataTable.OSPTableModel implements Measurable, LogM
 	 */
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		columnIndex = Dataset.convertTableColumnIndex(colVisible, columnIndex);
+		columnIndex = convertTableColumnIndex(colVisible, columnIndex);
 		rowIndex = rowIndex * stride;
 		double[] xValues = xpoints;
 		// conversionFactor added by D Brown Dec 2010
@@ -1212,6 +1209,7 @@ public class Dataset extends DataTable.OSPTableModel implements Measurable, LogM
 	 *
 	 * @param visible array of column visibilities
 	 * @return number of visible columns
+	 * @deprecated
 	 */
 	public static int countColumnsVisible(boolean visible[]) {
 		int count = 0;
@@ -1224,21 +1222,39 @@ public class Dataset extends DataTable.OSPTableModel implements Measurable, LogM
 	}
 
 	/**
-	 * Converts a table column in a table model to the appropriate table column. For
-	 * example, if the x points are hidden in a Dataset, and the column index is 0,
-	 * then this method will return 1.
-	 *
+	 * Converts a table column in a table model to the appropriate table column. 
+	 * 
+	 * <code>
+	 * x   y  index  ret
+	 * 
+	 * 0   1    0     1 (1 when !x)
+	 * 0   1    1     1 (1 when !x)
+	 * 1   0    0     0 (0 when !y)
+	 * 1   0    1     0 (0 when !y)
+	 * 1   1    0     0 (index)
+	 * 1   1    1     1 (index)
+	 * 
+	 * same as original:
+	 * 0   1    0     1 (1 when index==0 and !x)
+	 * 1   0    1     0 (0 when index==1 and !y)
+	 * 1   0    0     0 (index)
+	 * 0   1    1     1 (index)
+	 * 1   1    0     0 (index)
+	 * 1   1    1     1 (index)
+	 * </code>
+	 * 
 	 * @param visible     array of column visibilities
 	 * @param columnIndex table column index to convert
 	 * @return converted table column index
 	 */
-	public static int convertTableColumnIndex(boolean visible[], int columnIndex) {
-		if ((columnIndex == 0) && !visible[0]) {
-			columnIndex++;
-		} else if ((columnIndex == 1) && !visible[1]) {
-			columnIndex--;
-		}
-		return columnIndex;
+	public static int convertTableColumnIndex(BitSet visible, int columnIndex) {
+		return (!visible.get(0) ? 1 : visible.get(1) ? columnIndex : 0);
+//		if (columnIndex == 0 && !visible.get(0)) {
+//			columnIndex++;
+//		} else if (columnIndex == 1 && !visible.get(1)) {
+//			columnIndex--;
+//		}
+//		return columnIndex;
 	}
 
 	/**
@@ -1247,7 +1263,7 @@ public class Dataset extends DataTable.OSPTableModel implements Measurable, LogM
 	 * @param b new visibility
 	 */
 	public void setXColumnVisible(boolean b) {
-		colVisible[0] = b;
+		colVisible.set(0, b);
 	}
 
 	/**
@@ -1256,7 +1272,7 @@ public class Dataset extends DataTable.OSPTableModel implements Measurable, LogM
 	 * @param b new visibility
 	 */
 	public void setYColumnVisible(boolean b) {
-		colVisible[1] = b;
+		colVisible.set(1, b);
 	}
 
 	/**
@@ -1293,7 +1309,7 @@ public class Dataset extends DataTable.OSPTableModel implements Measurable, LogM
 	 * @return the x column visibility
 	 */
 	public boolean isXColumnVisible() {
-		return colVisible[0];
+		return colVisible.get(0);
 	}
 
 	/**
@@ -1302,7 +1318,7 @@ public class Dataset extends DataTable.OSPTableModel implements Measurable, LogM
 	 * @return the x column visibility
 	 */
 	public boolean isYColumnVisible() {
-		return colVisible[1];
+		return colVisible.get(1);
 	}
 
 	/**
@@ -1755,7 +1771,7 @@ public class Dataset extends DataTable.OSPTableModel implements Measurable, LogM
 			control.setValue("edge_color", data.edgeColor); //$NON-NLS-1$
 			control.setValue("errorbar_color", data.errorBarColor); //$NON-NLS-1$
 			control.setValue("datasetID", data.datasetID); //$NON-NLS-1$
-			control.setValue("visible", data.colVisible); //$NON-NLS-1$
+			control.setValue("visible", toBoolArray(data.colVisible)); //$NON-NLS-1$
 		}
 
 		@Override
@@ -1822,11 +1838,19 @@ public class Dataset extends DataTable.OSPTableModel implements Measurable, LogM
 			data.setID(control.getInt("datasetID")); //$NON-NLS-1$
 			boolean[] colVisible = (boolean[]) control.getObject("visible"); //$NON-NLS-1$
 			if (colVisible != null) {
-				data.colVisible = colVisible;
+				for (int i = 0; i < colVisible.length; i++)
+					data.colVisible.set(i, colVisible[i]);
 			}
 			return obj;
 		}
 
+	}
+
+	public static boolean[] toBoolArray(BitSet bs) {
+		boolean[] b = new boolean[bs.length()];
+		for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1))
+			b[i] = true;
+		return b;
 	}
 
 	

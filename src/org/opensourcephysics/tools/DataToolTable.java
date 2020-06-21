@@ -56,6 +56,7 @@ import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
@@ -99,12 +100,27 @@ public class DataToolTable extends DataTable {
 	protected static Color yAxisColor = new Color(204, 255, 204); // light green
 
 	// instance fields
-	DataToolTab dataToolTab; // tab that displays this table
-	DatasetManager dataManager; // manages datasets for table
-	WorkingDataset workingData; // first two table columns in x-y order
-	HashMap<String, WorkingDataset> workingMap = new HashMap<String, WorkingDataset>(); // maps column name to working
-																						// dataset
-	HighlightableDataset selectedData = new HighlightableDataset(); // selected rows of working data
+	/**
+	 * tab that displays this table
+	 */
+	DataToolTab dataToolTab;
+	/**
+	 * manages datasets for table
+	 */
+	DatasetManager dataManager;
+	/**
+	 * first two table columns in x-y order
+	 */
+	WorkingDataset workingData;
+	/**
+	 * maps column name to working dataset
+	 */
+	HashMap<String, WorkingDataset> workingMap = new HashMap<String, WorkingDataset>(); 
+	/**
+	 *  selected rows of working data
+	 */
+	HighlightableDataset selectedData = new HighlightableDataset();
+	
 	HeaderRenderer headerRenderer;
 	LabelRenderer labelRenderer = new LabelRenderer();
 	DataCellRenderer dataRenderer = new DataCellRenderer();
@@ -1376,6 +1392,11 @@ public class DataToolTable extends DataTable {
 	 * @param col  the insertion view column number
 	 */
 	protected void insertColumn(Dataset data, int col) {
+		// save selected rows and columns
+		BitSet rows = getSelectedModelRowsBS();
+		ArrayList<String> cols = getSelectedColumnNames();
+		// clear selection
+		clearSelection();
 		data.setXColumnVisible(false);
 		ArrayList<Dataset> datasets = dataManager.getDatasets();
 		// data, if added, will be last dataset
@@ -1384,39 +1405,34 @@ public class DataToolTable extends DataTable {
 			dataToolTab.originatorID = data.getID();
 		}
 		// determine model and view columns of data
-		int dataModelCol = index + 1; // default if not yet added
-		int dataViewCol = index + 1; // default if not yet added
-		// save selected rows and columns
-		int[] rows = getSelectedModelRows();
-		ArrayList<String> cols = getSelectedColumnNames();
-		// clear selection
-		clearSelection();
+//		int dataModelCol = index + 1; // default if not yet added
+//		int dataViewCol = index + 1; // default if not yet added
 		// save desired model column order
-		TableModel model = getModel();
-		// modelColumns index is view column and value is model column
-		int len = model.getColumnCount();
-		int[] modelColumns = new int[len + 1];
-		modelColumns[col] = dataModelCol;
-		for (int j = 0; j < model.getColumnCount(); j++) {
-			// j is current view column number
-			// modelCol is current model column number
-			int modelCol = convertColumnIndexToModel(j);
-			if (modelCol == dataModelCol) {
-				continue;
-			}
-			// viewCol is desired view column number
-			int viewCol = j;
-			if (j < dataViewCol) {
-				if (j >= col) {
-					viewCol++;
-				}
-			} else {
-				if (j <= col) {
-					viewCol--;
-				}
-			}
-			modelColumns[viewCol] = modelCol;
-		}
+//		OSPDataTableModel model = (OSPDataTableModel) getModel();
+//		int len = model.getColumnCount();
+//		int[] modelColumns = new int[len + 1];
+//		modelColumns[col] = dataModelCol;
+//		// modelColumns index is view column and value is model column
+//		for (int j = 0; j < len; j++) {
+//			// j is current view column number
+//			// modelCol is current model column number
+//			int modelCol = convertColumnIndexToModel(j);
+//			if (modelCol == dataModelCol) {
+//				continue;
+//			}
+//			// viewCol is desired view column number
+//			int viewCol = j;
+//			if (j < dataViewCol) {
+//				if (j >= col) {
+//					viewCol++;
+//				}
+//			} else {
+//				if (j <= col) {
+//					viewCol--;
+//				}
+//			}
+//			modelColumns[viewCol] = modelCol;
+//		}
 		// add data if not present
 		if (data instanceof DataFunction) {
 			FunctionTool tool = dataToolTab.getDataBuilder();
@@ -1430,24 +1446,13 @@ public class DataToolTable extends DataTable {
 			getWorkingData(data.getYColumnName());
 		}
 		// refresh table and set column order
-		DataToolTable.super.refreshTable(DataTable.MODE_INSERT_ROW);
-		// for each view column i
-		for (int i = 0; i < modelColumns.length; i++) {
-			// find its current model column and move it if nec
-			for (int j = i; j < modelColumns.length; j++) {
-				if (convertColumnIndexToModel(j) == modelColumns[i]) {
-					if (j != i) {
-						moveColumn(j, i);
-					}
-					break;
-				}
-			}
-		}
+		
+		updateColumnModel(null);
 		// restore selected rows or select all rows if none selected
-		if (rows.length == 0) {
+		if (rows.cardinality() == 0) {
 			setRowSelectionInterval(0, getRowCount() - 1);
 		} else {
-			setSelectedModelRows(rows);
+			setSelectedModelRowsBS(rows);
 		}
 		// restore selected columns but include inserted column
 		cols.add(data.getYColumnName());
@@ -1461,7 +1466,6 @@ public class DataToolTable extends DataTable {
 		dataToolTab.tabChanged(true);
 		refreshUndoItems();
 	}
-
 	/**
 	 * Deletes a column.
 	 *
@@ -1478,7 +1482,7 @@ public class DataToolTable extends DataTable {
 			sort(0);
 		}
 		// save selected rows and columns
-		int[] rows = getSelectedModelRows();
+		BitSet rows = getSelectedModelRowsBS();
 		ArrayList<String> cols = getSelectedColumnNames();
 		// clear selection
 		clearSelection();
@@ -1517,22 +1521,10 @@ public class DataToolTable extends DataTable {
 			dataToolTab.refreshGUI();
 		} else {
 			// refresh table and set column order
-			DataToolTable.super.refreshTable(MODE_DELETE_ROW);
-			// for each view column i
-			for (int i = 0; i < modelColumns.length; i++) {
-				// find its current model column and move it if nec
-				for (int j = i; j < modelColumns.length; j++) {
-					if (convertColumnIndexToModel(j) == modelColumns[i]) {
-						if (j != i) {
-							moveColumn(j, i);
-						}
-						break;
-					}
-				}
-			}
+			updateColumnModel(null);
 			// restore selection unless deleted column was only one selected
 			if (!((cols.size() == 1) && cols.contains(colName))) {
-				setSelectedModelRows(rows);
+				setSelectedModelRowsBS(rows);
 				setSelectedColumnNames(cols);
 			}
 		}
@@ -1705,11 +1697,10 @@ public class DataToolTable extends DataTable {
 	protected HashMap<String, double[]> deleteRows(int[] rows) {
 		HashMap<String, double[]> removed = new HashMap<String, double[]>();
 		// remove points from every dataset
-		Iterator<Dataset> it = dataManager.getDatasets().iterator();
-		while (it.hasNext()) {
-			Dataset next = it.next();
-			double[] cells = deletePoints(next, rows);
-			removed.put(next.getYColumnName(), cells);
+		ArrayList<Dataset> dataSets = dataManager.getDatasets();
+		for (int i = dataSets.size(); --i >= 0;) {
+			Dataset ds = dataSets.get(i);
+			removed.put(ds.getYColumnName(), deletePoints(ds, rows));
 		}
 		refreshTable(DataTable.MODE_DELETE_ROW);
 		refreshDataFunctions();
@@ -2024,23 +2015,23 @@ public class DataToolTable extends DataTable {
 	 */
 	@Override
 	public void refreshTable(int mode) {
-		// save model column order
-		int[] modelColumns = getModelColumnOrder();
+		boolean noView = convertColumnIndexToView(0) == -1;
+		if (noView) {
+			updateColumnModel(null);
+			return;
+		}
+		//		// save model column order
+//		int[] modelColumns = getModelColumnOrder();
 		// save selected rows and columns
 		int[] rows = getSelectedModelRows();
 		ArrayList<String> cols = getSelectedColumnNames();
-		boolean noView = convertColumnIndexToView(0) == -1;
-		// refresh table
-		super.refreshTable(mode);
-		if (noView) {
-			return;
-		}
-		// restore column order--but keep "tabChanged" unchanged
+		updateColumnModel(null);
+	// restore column order--but keep "tabChanged" unchanged
 		boolean changed = dataToolTab.tabChanged;
-		setModelColumnOrder(modelColumns);
+//		setModelColumnOrder(modelColumns);
 		dataToolTab.tabChanged(changed);
 		// re-sort to restore row order
-		super.sort(dataTableModel.getSortedColumn());
+		sort(dataTableModel.getSortedColumn());
 		// restore selected rows and columns
 		// important to select columns first!
 		if (!cols.isEmpty()) {
@@ -2059,42 +2050,6 @@ public class DataToolTable extends DataTable {
 			}
 		}
 		return super.getFormatDialog(names, selected);
-	}
-
-	/**
-	 * Gets the model column order.
-	 *
-	 * @return array of model column numbers in view column order
-	 */
-	public int[] getModelColumnOrder() {
-		int[] modelColumns = new int[getModel().getColumnCount()];
-		for (int i = 0; i < modelColumns.length; i++) {
-			modelColumns[i] = convertColumnIndexToModel(i);
-		}
-		return modelColumns;
-	}
-
-	/**
-	 * Sets the model column order.
-	 *
-	 * @param modelColumns array of model column numbers in view column order
-	 */
-	public void setModelColumnOrder(int[] modelColumns) {
-		if (modelColumns == null) {
-			return;
-		}
-		// for each model column i
-		for (int i = 0; i < modelColumns.length; i++) {
-			// find its current view column and move it if needed
-			for (int j = i; j < modelColumns.length; j++) {
-				if (convertColumnIndexToModel(j) == modelColumns[i]) {
-					if (j != i) {
-						moveColumn(j, i);
-					}
-					break;
-				}
-			}
-		}
 	}
 
 	/**
@@ -2173,15 +2128,6 @@ public class DataToolTable extends DataTable {
 	}
 
 	/**
-	 * Sets the label column width
-	 * 
-	 * @param w the width
-	 */
-	protected void setLabelColumnWidth(int w) {
-		labelColumnWidth = w;
-	}
-
-	/**
 	 * Overrides DataTable getCellRenderer() method.
 	 *
 	 * @param row the row number
@@ -2211,15 +2157,6 @@ public class DataToolTable extends DataTable {
 		return editor;
 	}
 
-	/**
-	 * Returns the minimum table width.
-	 * 
-	 * @return minimum table width.
-	 */
-	protected int getMinimumTableWidth() {
-		int n = getColumnCount() - 1;
-		return labelColumnWidth + n * minimumDataColumnWidth;
-	}
 
 	/**
 	 * A header cell renderer that identifies sorted and selected columns.
