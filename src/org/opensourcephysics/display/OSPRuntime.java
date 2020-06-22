@@ -108,23 +108,32 @@ public class OSPRuntime {
 	
 	static {
 		try {
-			Object val = null;
-			if (isJS) { // Applet Info block only defined in JS
-				val = jsutil.getAppletInfo("assets");
+			Object val = (isJS ? jsutil.getAppletInfo("assets") : null);
+			if (val == null)
+				val = "DEFAULT";
+			if ((val instanceof String)) {
+				// assets String parameter defined - JavaScript only
+				switch (((String) val).toUpperCase()) {
+				case "DEFAULT":
+					// Java and JavaScript; Eclipse DEFINITELY needs these
+					Assets.add(new Assets.Asset("osp", "osp-assets.zip", "org/opensourcephysics/resources"));
+					Assets.add(new Assets.Asset("tracker", "tracker-assets.zip",
+							"org/opensourcephysics/cabrillo/tracker/resources"));
+					Assets.add(
+							new Assets.Asset("physlets", "physlet-assets.zip", new String[] { "opticsimages", "images" }));
+					break;
+				case "NONE":
+					// JavaScript only
+					break;
+				default:
+					// JavaScript only
+					Assets.add(val);				
+					break;
+				}
+			} else {
+				Assets.add(val);				
 			}
-			if (val == null || val.toString().equalsIgnoreCase("NONE")) {
-				// do nothing; Java will be here
-			} else if (val.toString().equalsIgnoreCase("DEFAULT")) { // load OSP default
-				// JavaScript only
-				Assets.add(new Assets.Asset("osp", "osp-assets.zip", "org/opensourcephysics/resources"));
-				Assets.add(new Assets.Asset("tracker", "tracker-assets.zip",
-						"org/opensourcephysics/cabrillo/tracker/resources"));
-				Assets.add(
-						new Assets.Asset("physlets", "physlet-assets.zip", new String[] { "opticsimages", "images" }));
-			} else { // assets parameter defined - JavaScript only
-				Assets.add(val);
-			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			OSPLog.warning("Error reading assets path. ");
 			System.err.println("Error reading assets path.");
 		}
