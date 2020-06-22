@@ -468,6 +468,7 @@ javax/swing/event/ChangeListener.js
 javax/swing/event/DocumentEvent.js
 javax/swing/event/DocumentListener.js
 javax/swing/event/EventListenerList.js
+javax/swing/event/ListSelectionEvent.js
 javax/swing/event/ListSelectionListener.js
 javax/swing/event/MenuEvent.js
 javax/swing/event/MenuKeyListener.js
@@ -706,6 +707,9 @@ org/opensourcephysics/tools/DataToolTab.js
 org/opensourcephysics/tools/DataToolTable.js
 org/opensourcephysics/tools/DatasetCurveFitter.js
 org/opensourcephysics/tools/ExportTool.js
+org/opensourcephysics/tools/ExportFormat.js
+org/opensourcephysics/tools/ExportGnuplotFormat.js
+org/opensourcephysics/tools/ExportXMLFormat.js
 org/opensourcephysics/tools/FitBuilder.js
 org/opensourcephysics/tools/FitFunctionPanel.js
 org/opensourcephysics/tools/FontSizer.js

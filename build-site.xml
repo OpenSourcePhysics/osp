@@ -28,7 +28,7 @@
   	<!-- location of third-party jar contents as precompiled zipped .js files to copy to site/ -->
   	<property name="libjs.dir" value="libjs" />
  
-  	<!-- non-Java resources to copy to site/ -->
+  	<!-- non-Java resources to copy to SwingJS library in site/ -->
     <property name="resource.dir" value="resources" />  	
   	
   	<!-- non-Java resources to copy to site/ -->
