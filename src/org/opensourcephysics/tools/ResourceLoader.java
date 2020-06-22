@@ -600,7 +600,7 @@ public class ResourceLoader {
 			return new ImageIcon(url);
 		}
 		try {
-			url = Assets.getURLFromPath(path, true);
+			url = Assets.getURLFromPath(path, false);
 			return (url == null ? 
 					new ImageIcon(path) : 
 						new ImageIcon(url));
