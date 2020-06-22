@@ -141,14 +141,15 @@ public class DataTable extends JTable {
 	public static final int MODE_FUNCTION = 0x820000;
 	public static final int MODE_FORMAT = 0x830000;
 
-	public static final int MODE_SELECT = 0x1000000;
-	public static final int MODE_HEADER = 0x2000000;
-	public static final int MODE_SHOW   = 0x4000000;
+	public static final int MODE_SELECT  = 0x1000000;
+	public static final int MODE_HEADER  = 0x2000000;
+	public static final int MODE_SHOW    = 0x4000000;
+	public static final int MODE_REFRESH = 0x8000000;
 
 	private static final int MODE_MASK_REBUILD = //
 			MODE_MASK_NEW | MODE_MASK_TRACK | //
 			MODE_MASK_ROW | MODE_MASK_COL | MODE_MASK_STYLE | //
-			MODE_HEADER | MODE_VALUES | MODE_SELECT | MODE_SHOW;
+			MODE_HEADER | MODE_VALUES | MODE_SELECT | MODE_SHOW | MODE_REFRESH;
 
 	public static final int MODE_CANCEL = 0;
 	public static final int MODE_UNKNOWN = MODE_MASK_REBUILD;
@@ -661,10 +662,11 @@ public class DataTable extends JTable {
 		case MODE_FORMAT: // 0x830000;
 			mode = MODE_MASK_STYLE;
 			break;
-		case MODE_HEADER: // 0x10;
-		case MODE_VALUES: // 0x4000;
-		case MODE_SELECT: // 0x1000000;
-		case MODE_SHOW: // 0x2000000;
+		case MODE_VALUES:  // 0x4000;
+		case MODE_SELECT:  // 0x1000000;
+		case MODE_HEADER:  // 0x2000000;
+		case MODE_SHOW:    // 0x4000000;
+		case MODE_REFRESH: // 0x8000000;
 			break;
 		}
 		updateFormats();
