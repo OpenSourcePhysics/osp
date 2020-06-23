@@ -7,6 +7,7 @@
 
 package org.opensourcephysics.numerics;
 
+import java.util.Arrays;
 /*----------------------------------------------------------------------------------------*
  * Parser.java version 1.0                                                    Jun 16 1996 *
  * Parser.java version 2.0                                                    Aug 25 1996 *
@@ -39,6 +40,8 @@ package org.opensourcephysics.numerics;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.opensourcephysics.controls.OSPLog;
+
 /**
  * The class <code>Parser</code> is a mathematical expression parser.
  * <p>
@@ -69,7 +72,7 @@ public final class SuryonoParser extends MathExpParser {
 	private double var_value[]; // value of variables
 	private double number[]; // numeric constants in defined function
 	private String function = ""; // function definition //$NON-NLS-1$
-	private String postfix_code = ""; // the postfix code //$NON-NLS-1$
+	private int[] postfix_code = new int[100]; // the postfix code //$NON-NLS-1$
 	private boolean valid = false; // postfix code status
 	private int error; // error code of last process
 	private boolean ISBOOLEAN = false; // boolean flag
@@ -78,7 +81,7 @@ public final class SuryonoParser extends MathExpParser {
 	private int position; // parsing pointer
 	private int start; // starting position of identifier
 	private int num; // number of numeric constants
-	private char character; // current character
+	private char ch; // current character
 	// variables used during evaluating
 	private boolean radian; // radian unit flag
 	private int numberindex; // pointer to numbers/constants bank
@@ -97,7 +100,7 @@ public final class SuryonoParser extends MathExpParser {
 	private static final double DEGTORAD = Math.PI / 180;
 	private static final double LOG10 = Math.log(10);
 	// references - version 3.0
-	private Hashtable<String, String> references = null;
+	private Hashtable<String, int[]> references = null;
 	private Vector<String> refnames = null;
 	// error codes
 
@@ -189,34 +192,34 @@ public final class SuryonoParser extends MathExpParser {
 	private static final int EXT_FUNC_OFFSET = FUNC_OFFSET + NO_FUNCS;
 	private static final int VAR_OFFSET = 2000;
 	private static final int REF_OFFSET = 3000;
-	private static final char PI_CODE = (char) 253;
-	private static final char E_CODE = (char) 254;
-	private static final char NUMERIC = (char) 255;
+	private static final int PI_CODE = (int) 253;
+	private static final int E_CODE = (int) 254;
+	private static final int NUMERIC = (int) 255;
 	// Jump, followed by n : Displacement
-	private static final char JUMP_CODE = (char) 1;
+	private static final int JUMP_CODE = (int) 1;
 	// Relation less than (<)
-	private static final char LESS_THAN = (char) 2;
+	private static final int LESS_THAN = (int) 2;
 	// Relation greater than (>)
-	private static final char GREATER_THAN = (char) 3;
+	private static final int GREATER_THAN = (int) 3;
 	// Relation less than or equal (<=)
-	private static final char LESS_EQUAL = (char) 4;
+	private static final int LESS_EQUAL = (int) 4;
 	// Relation greater than or equal (>=)
-	private static final char GREATER_EQUAL = (char) 5;
+	private static final int GREATER_EQUAL = (int) 5;
 	// Relation not equal (<>)
-	private static final char NOT_EQUAL = (char) 6;
+	private static final int NOT_EQUAL = (int) 6;
 	// Relation equal (=)
-	private static final char EQUAL = (char) 7;
+	private static final int EQUAL = (int) 7;
 	// Conditional statement IF, followed by a conditional block :
 	// * Displacement (Used to jump to condition FALSE code)
 	// * Condition TRUE code
 	// * Jump to next code outside conditional block
 	// * Condition FALSE code
 	// * ENDIF
-	private static final char IF_CODE = (char) 8;
-	private static final char ENDIF = (char) 9;
-	private static final char AND_CODE = (char) 10; // Boolean AND
-	private static final char OR_CODE = (char) 11; // Boolean OR
-	private static final char NOT_CODE = (char) 12; // Boolean NOT
+	private static final int IF_CODE = (int) 8;
+	private static final int ENDIF = (int) 9;
+	private static final int AND_CODE = (int) 10; // Boolean AND
+	private static final int OR_CODE = (int) 11; // Boolean OR
+	private static final int NOT_CODE = (int) 12; // Boolean NOT
 	// built in functions
 	private final static String funcname[] = { 
 			"sin", "cos", "tan", "ln", "log",          //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ 
@@ -320,7 +323,7 @@ public final class SuryonoParser extends MathExpParser {
 	 */
 	public SuryonoParser(int variablecount) {
 		var_count = variablecount;
-		references = new Hashtable<String, String>();
+		references = new Hashtable<>();
 		refnames = new Vector<String>();
 		radian = true;
 		// arrays are much faster than vectors (IMHO)
@@ -493,8 +496,8 @@ public final class SuryonoParser extends MathExpParser {
 	 * Parses defined function.
 	 */
 	public void parse() {
-		String allFunction = new String(function);
-		String orgFunction = new String(function);
+		String allFunction = function;
+		String orgFunction = function;
 		int index;
 		if (valid) {
 			return;
@@ -605,7 +608,7 @@ public final class SuryonoParser extends MathExpParser {
 		error = NO_ERROR;
 		numberindex = 0;
 		if (size != 0) {
-			String orgPFC = postfix_code;
+			int[] orgPFC = postfix_code;
 			refvalue = new double[size];
 			for (int i = 0; i < refnames.size(); i++) {
 				String name = refnames.elementAt(i);
@@ -799,7 +802,7 @@ public final class SuryonoParser extends MathExpParser {
 			while (function.charAt(position - 1) == ' ') {
 				position++;
 			}
-			character = function.charAt(position - 1);
+			ch = function.charAt(position - 1);
 		} catch (StringIndexOutOfBoundsException e) {
 			throw new ParserException(PAREN_NOT_MATCH);
 		}
@@ -810,10 +813,10 @@ public final class SuryonoParser extends MathExpParser {
 	 *
 	 * @exception ParserException
 	 */
-	private void getNextCharacter() throws ParserException {
+	private void getNextch() throws ParserException {
 		position++;
 		try {
-			character = function.charAt(position - 1);
+			ch = function.charAt(position - 1);
 		} catch (StringIndexOutOfBoundsException e) {
 			throw new ParserException(PAREN_NOT_MATCH);
 		}
@@ -824,8 +827,19 @@ public final class SuryonoParser extends MathExpParser {
 	 *
 	 * @param code the postfix code to append
 	 */
-	private void addCode(char code) {
-		postfix_code += code;
+	private void addCode(int code) {
+		postfix_code[++postfix_code[0]] = code;
+	}
+
+	private static void addCode(int[] a, int code) {
+		a[a[0]++] = code;
+	}
+
+	private static void addCodes(int[] a, int[] b) {
+		int n = b[0];
+		int pt = a[0];
+		a[0] += n;
+		System.arraycopy(b, 1, a, pt, n);
 	}
 
 	/**
@@ -840,31 +854,31 @@ public final class SuryonoParser extends MathExpParser {
 		if (num == MAX_NUM) {
 			throw new ParserException(TOO_MANY_CONSTS);
 		}
-		if (character != '.') { // added by W. Christian
+		if (ch != '.') { // added by W. Christian
 			do {
-				numstr += character;
-				getNextCharacter();
-			} while ((character >= '0') && (character <= '9'));
+				numstr += ch;
+				getNextch();
+			} while ((ch >= '0') && (ch <= '9'));
 		} else {
 			numstr += '0';
 		} // added by W. Christian
-		if (character == '.') {
+		if (ch == '.') {
 			do {
-				numstr += character;
-				getNextCharacter();
-			} while ((character >= '0') && (character <= '9'));
+				numstr += ch;
+				getNextch();
+			} while ((ch >= '0') && (ch <= '9'));
 		}
-		// if(character=='e') {
-		if ((character == 'e') || (character == 'E')) { // changed by Doug Brown May 2007
-			numstr += character;
-			getNextCharacter();
-			if ((character == '+') || (character == '-')) {
-				numstr += character;
-				getNextCharacter();
+		// if(ch=='e') {
+		if ((ch == 'e') || (ch == 'E')) { // changed by Doug Brown May 2007
+			numstr += ch;
+			getNextch();
+			if ((ch == '+') || (ch == '-')) {
+				numstr += ch;
+				getNextch();
 			}
-			while ((character >= '0') && (character <= '9')) {
-				numstr += character;
-				getNextCharacter();
+			while ((ch >= '0') && (ch <= '9')) {
+				numstr += ch;
+				getNextch();
 			}
 		}
 		value = getNumber(numstr);
@@ -905,18 +919,18 @@ public final class SuryonoParser extends MathExpParser {
 	 */
 	private void scanNonNumeric() throws ParserException {
 		String stream = ""; //$NON-NLS-1$
-		if ((character == '*') || (character == '/') || (character == '^') || (character == ')') || (character == ',')
-				|| (character == '<') || (character == '>') || (character == '=') || (character == '&')
-				|| (character == '|')) {
+		if ((ch == '*') || (ch == '/') || (ch == '^') || (ch == ')') || (ch == ',')
+				|| (ch == '<') || (ch == '>') || (ch == '=') || (ch == '&')
+				|| (ch == '|')) {
 			throw new ParserException(SYNTAX_ERROR);
 		}
 		do {
-			stream += character;
-			getNextCharacter();
-		} while (!((character == ' ') || (character == '+') || (character == '-') || (character == '*')
-				|| (character == '/') || (character == '^') || (character == '(') || (character == ')')
-				|| (character == ',') || (character == '<') || (character == '>') || (character == '=')
-				|| (character == '&') || (character == '|')));
+			stream += ch;
+			getNextch();
+		} while (!((ch == ' ') || (ch == '+') || (ch == '-') || (ch == '*')
+				|| (ch == '/') || (ch == '^') || (ch == '(') || (ch == ')')
+				|| (ch == ',') || (ch == '<') || (ch == '>') || (ch == '=')
+				|| (ch == '&') || (ch == '|')));
 		if (stream.equals("pi")) { //$NON-NLS-1$
 			addCode(PI_CODE);
 			return;
@@ -927,47 +941,47 @@ public final class SuryonoParser extends MathExpParser {
 		// if
 		if (stream.equals("if")) { //$NON-NLS-1$
 			skipSpaces();
-			if (character != '(') {
+			if (ch != '(') {
 				throw new ParserException(PAREN_EXPECTED);
 			}
 			scanAndParse();
-			if (character != ',') {
+			if (ch != ',') {
 				throw new ParserException(COMMA_EXPECTED);
 			}
 			addCode(IF_CODE);
-			String savecode = new String(postfix_code);
-			postfix_code = ""; //$NON-NLS-1$
+			int[] savecode = Arrays.copyOf(postfix_code, postfix_code.length);
+			postfix_code[0] = 0; //$NON-NLS-1$
 			scanAndParse();
-			if (character != ',') {
+			if (ch != ',') {
 				throw new ParserException(COMMA_EXPECTED);
 			}
 			addCode(JUMP_CODE);
-			savecode += (char) (postfix_code.length() + 2);
-			savecode += postfix_code;
-			postfix_code = ""; //$NON-NLS-1$
+			addCode(savecode, postfix_code[0] + 2);
+			addCodes(savecode, postfix_code);
+			postfix_code[0] = 0; //$NON-NLS-1$
 			scanAndParse();
-			if (character != ')') {
+			if (ch != ')') {
 				throw new ParserException(PAREN_EXPECTED);
 			}
-			savecode += (char) (postfix_code.length() + 1);
-			savecode += postfix_code;
-			postfix_code = new String(savecode);
-			getNextCharacter();
+			addCode(savecode, postfix_code.length + 1);
+			addCodes(savecode, postfix_code);
+			postfix_code = Arrays.copyOf(savecode, savecode.length);
+			getNextch();
 			return;
 		}
 		// built-in function
 		for (int i = 0; i < NO_FUNCS; i++) {
 			if (stream.equals(funcname[i])) {
 				skipSpaces();
-				if (character != '(') {
+				if (ch != '(') {
 					throw new ParserException(PAREN_EXPECTED);
 				}
 				scanAndParse();
-				if (character != ')') {
+				if (ch != ')') {
 					throw new ParserException(PAREN_EXPECTED);
 				}
-				getNextCharacter();
-				addCode((char) (i + FUNC_OFFSET));
+				getNextch();
+				addCode((int) (i + FUNC_OFFSET));
 				return;
 			}
 		}
@@ -975,37 +989,37 @@ public final class SuryonoParser extends MathExpParser {
 		for (int i = 0; i < NO_EXT_FUNCS; i++) {
 			if (stream.equals(extfunc[i])) {
 				skipSpaces();
-				if (character != '(') {
+				if (ch != '(') {
 					throw new ParserException(PAREN_EXPECTED);
 				}
 				scanAndParse();
-				if (character != ',') {
+				if (ch != ',') {
 					throw new ParserException(COMMA_EXPECTED);
 				}
-				String savecode = new String(postfix_code);
-				postfix_code = ""; //$NON-NLS-1$
+				int[] savecode = Arrays.copyOf(postfix_code, postfix_code.length);
+				postfix_code[0] = 0; //$NON-NLS-1$
 				scanAndParse();
-				if (character != ')') {
+				if (ch != ')') {
 					throw new ParserException(PAREN_EXPECTED);
 				}
-				getNextCharacter();
-				savecode += postfix_code;
-				postfix_code = new String(savecode);
-				addCode((char) (i + EXT_FUNC_OFFSET));
+				getNextch();
+				addCodes(savecode, postfix_code);
+				postfix_code = Arrays.copyOf(savecode, savecode.length);
+				addCode((int) (i + EXT_FUNC_OFFSET));
 				return;
 			}
 		}
 		// registered variables
 		for (int i = 0; i < var_count; i++) {
 			if (stream.equals(var_name[i])) {
-				addCode((char) (i + VAR_OFFSET));
+				addCode((int) (i + VAR_OFFSET));
 				return;
 			}
 		}
 		// references
 		int index = refnames.indexOf(stream);
 		if (index != -1) {
-			addCode((char) (index + REF_OFFSET));
+			addCode( (index + REF_OFFSET));
 			return;
 		}
 		// appendVariables option added by W. Christian
@@ -1030,7 +1044,7 @@ public final class SuryonoParser extends MathExpParser {
 		// System.out.println("appended=" + stream);
 		for (int i = 0; i < var_count; i++) {
 			if (stream.equals(var_name[i])) {
-				addCode((char) (i + VAR_OFFSET));
+				addCode( (i + VAR_OFFSET));
 				return true;
 			}
 		}
@@ -1045,41 +1059,41 @@ public final class SuryonoParser extends MathExpParser {
 	 */
 	private boolean getIdentifier() throws ParserException {
 		boolean negate = false;
-		getNextCharacter();
+		getNextch();
 		skipSpaces();
-		if (character == '!') {
-			getNextCharacter();
+		if (ch == '!') {
+			getNextch();
 			skipSpaces();
-			if (character != '(') {
+			if (ch != '(') {
 				throw new ParserException(PAREN_EXPECTED);
 			}
 			scanAndParse();
-			if (character != ')') {
+			if (ch != ')') {
 				throw new ParserException(PAREN_EXPECTED);
 			}
 			if (!ISBOOLEAN) {
 				throw new ParserException(INVALID_OPERAND);
 			}
 			addCode(NOT_CODE);
-			getNextCharacter();
+			getNextch();
 			return false;
 		}
 		ISBOOLEAN = false;
-		while ((character == '+') || (character == '-')) {
-			if (character == '-') {
+		while ((ch == '+') || (ch == '-')) {
+			if (ch == '-') {
 				negate = !negate;
 			}
-			getNextCharacter();
+			getNextch();
 			skipSpaces();
 		}
 		start = position;
-		// if ((character >= '0') && (character <= '9')) changed be W. Christian to
+		// if ((ch >= '0') && (ch <= '9')) changed be W. Christian to
 		// handle leanding zeros.
-		if (((character >= '0') && (character <= '9')) || (character == '.')) {
+		if (((ch >= '0') && (ch <= '9')) || (ch == '.')) {
 			scanNumber();
-		} else if (character == '(') {
+		} else if (ch == '(') {
 			scanAndParse();
-			getNextCharacter();
+			getNextch();
 		} else {
 			scanNonNumeric();
 		}
@@ -1101,7 +1115,7 @@ public final class SuryonoParser extends MathExpParser {
 		if (ISBOOLEAN) {
 			throw new ParserException(INVALID_OPERAND);
 		}
-		if (character == '^') {
+		if (ch == '^') {
 			arithmeticLevel3();
 		}
 		addCode('^');
@@ -1121,19 +1135,19 @@ public final class SuryonoParser extends MathExpParser {
 			throw new ParserException(INVALID_OPERAND);
 		}
 		do {
-			char operator = character;
+			char operator = ch;
 			negate = getIdentifier();
 			if (ISBOOLEAN) {
 				throw new ParserException(INVALID_OPERAND);
 			}
-			if (character == '^') {
+			if (ch == '^') {
 				arithmeticLevel3();
 			}
 			if (negate) {
 				addCode('_');
 			}
 			addCode(operator);
-		} while ((character == '*') || (character == '/'));
+		} while ((ch == '*') || (ch == '/'));
 	}
 
 	/**
@@ -1147,24 +1161,24 @@ public final class SuryonoParser extends MathExpParser {
 			throw new ParserException(INVALID_OPERAND);
 		}
 		do {
-			char operator = character;
+			char operator = ch;
 			negate = getIdentifier();
 			if (ISBOOLEAN) {
 				throw new ParserException(INVALID_OPERAND);
 			}
-			if (character == '^') {
+			if (ch == '^') {
 				arithmeticLevel3();
 				if (negate) {
 					addCode('_');
 				}
-			} else if ((character == '*') || (character == '/')) {
+			} else if ((ch == '*') || (ch == '/')) {
 				if (negate) {
 					addCode('_');
 				}
 				arithmeticLevel2();
 			}
 			addCode(operator);
-		} while ((character == '+') || (character == '-'));
+		} while ((ch == '+') || (ch == '-'));
 	}
 
 	/**
@@ -1173,7 +1187,7 @@ public final class SuryonoParser extends MathExpParser {
 	 * @exception ParserException
 	 */
 	private void relationLevel() throws ParserException {
-		char code = (char) 0;
+		char code =  0;
 		if (INRELATION) {
 			throw new ParserException(INVALID_OPERATOR);
 		}
@@ -1181,16 +1195,16 @@ public final class SuryonoParser extends MathExpParser {
 		if (ISBOOLEAN) {
 			throw new ParserException(INVALID_OPERAND);
 		}
-		switch (character) {
+		switch (ch) {
 		case '=':
 			code = EQUAL;
 			break;
 		case '<':
 			code = LESS_THAN;
-			getNextCharacter();
-			if (character == '>') {
+			getNextch();
+			if (ch == '>') {
 				code = NOT_EQUAL;
-			} else if (character == '=') {
+			} else if (ch == '=') {
 				code = LESS_EQUAL;
 			} else {
 				position--;
@@ -1198,8 +1212,8 @@ public final class SuryonoParser extends MathExpParser {
 			break;
 		case '>':
 			code = GREATER_THAN;
-			getNextCharacter();
-			if (character == '=') {
+			getNextch();
+			if (ch == '=') {
 				code = GREATER_EQUAL;
 			} else {
 				position--;
@@ -1224,7 +1238,7 @@ public final class SuryonoParser extends MathExpParser {
 		if (!ISBOOLEAN) {
 			throw new ParserException(INVALID_OPERAND);
 		}
-		char operator = character;
+		char operator = ch;
 		scanAndParse();
 		if (!ISBOOLEAN) {
 			throw new ParserException(INVALID_OPERAND);
@@ -1247,11 +1261,11 @@ public final class SuryonoParser extends MathExpParser {
 	private void scanAndParse() throws ParserException {
 		boolean negate;
 		negate = getIdentifier();
-		if ((character != '^') && (negate)) {
+		if ((ch != '^') && (negate)) {
 			addCode('_');
 		}
 		do {
-			switch (character) {
+			switch (ch) {
 			case '+':
 			case '-':
 				arithmeticLevel1();
@@ -1289,14 +1303,14 @@ public final class SuryonoParser extends MathExpParser {
 	 */
 	private void parseSubFunction() {
 		position = 0;
-		postfix_code = ""; //$NON-NLS-1$
+		postfix_code[0] = 0; //$NON-NLS-1$
 		INRELATION = false;
 		ISBOOLEAN = false;
 		try {
 			scanAndParse();
 		} catch (ParserException e) {
 			error = e.getErrorCode();
-			if ((error == SYNTAX_ERROR) && (postfix_code == "")) { //$NON-NLS-1$
+			if ((error == SYNTAX_ERROR) && (postfix_code[0] == 0)) { //$NON-NLS-1$
 				error = EXPRESSION_EXPECTED;
 			}
 		}
@@ -1406,16 +1420,16 @@ public final class SuryonoParser extends MathExpParser {
 		int stack_pointer = -1;
 		int code_pointer = 0;
 		int destination;
-		char code;
+		int code;
 		// stack = new double[STACK_SIZE]; moved by W. Christian
-		int codeLength = postfix_code.length(); // added bt W. Christian to check the length.
+		int codeLength = postfix_code[0]; // added bt W. Christian to check the length.
 		while (true) {
 			try {
 				if (code_pointer == codeLength) {
 					return stack[0]; // added by W. Christian. Do not use doing an Exception!
 				}
-				code = postfix_code.charAt(code_pointer++);
-			} catch (StringIndexOutOfBoundsException e) {
+				code = postfix_code[++code_pointer];
+			} catch (ArrayIndexOutOfBoundsException e) {
 				return stack[0];
 			}
 			try {
@@ -1448,9 +1462,9 @@ public final class SuryonoParser extends MathExpParser {
 					stack[stack_pointer] = -stack[stack_pointer];
 					break;
 				case JUMP_CODE:
-					destination = code_pointer + postfix_code.charAt(code_pointer++);
+					destination = code_pointer + postfix_code[++code_pointer];
 					while (code_pointer < destination) {
-						if (postfix_code.charAt(code_pointer++) == NUMERIC) {
+						if (postfix_code[++code_pointer] == NUMERIC) {
 							numberindex++;
 						}
 					}
@@ -1481,9 +1495,9 @@ public final class SuryonoParser extends MathExpParser {
 					break;
 				case IF_CODE:
 					if (stack[stack_pointer--] == 0.0) {
-						destination = code_pointer + postfix_code.charAt(code_pointer++);
+						destination = code_pointer + postfix_code[++code_pointer];
 						while (code_pointer < destination) {
-							if (postfix_code.charAt(code_pointer++) == NUMERIC) {
+							if (postfix_code[++code_pointer] == NUMERIC) {
 								numberindex++;
 							}
 						}
