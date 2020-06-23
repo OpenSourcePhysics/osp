@@ -116,11 +116,7 @@ public class OSPRuntime {
 				switch (((String) val).toUpperCase()) {
 				case "DEFAULT":
 					// Java and JavaScript; Eclipse DEFINITELY needs these
-					Assets.add(new Assets.Asset("osp", "osp-assets.zip", "org/opensourcephysics/resources"));
-					Assets.add(new Assets.Asset("tracker", "tracker-assets.zip",
-							"org/opensourcephysics/cabrillo/tracker/resources"));
-					Assets.add(
-							new Assets.Asset("physlets", "physlet-assets.zip", new String[] { "opticsimages", "images" }));
+					Assets.add(new Assets.Asset("osp", "ospall-assets.zip", "org/opensourcephysics"));
 					break;
 				case "NONE":
 					// JavaScript only
