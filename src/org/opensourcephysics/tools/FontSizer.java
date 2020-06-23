@@ -420,18 +420,19 @@ public class FontSizer {
 
 			if (font != null) {
 				if (font.equals(c.getFont())) {
-					if (c instanceof JLabel) {
-						OSPLog.debug("FS ???? " + ((JLabel) c).getText());
-						OSPLog.debug(font.toString());
-					} else if (c instanceof AbstractButton) {
-						OSPLog.debug("FS ???? " + ((AbstractButton) c).getText());
-						OSPLog.debug(font.toString());
-					} else {
-						OSPLog.debug("FontSizer already set! " + c.toString() + " " + c.hashCode());
-					}
+//					if (c instanceof JLabel) {
+//						OSPLog.debug("FS ???? " + ((JLabel) c).getText());
+//						OSPLog.debug(font.toString());
+//					} else if (c instanceof AbstractButton) {
+//						OSPLog.debug("FS ???? " + ((AbstractButton) c).getText());
+//						OSPLog.debug(font.toString());
+//					} else {
+//						OSPLog.debug("FontSizer already set! " + c.toString() + " " + c.hashCode());
+//					}
 
+				} else {
+					c.setFont(font);
 				}
-				c.setFont(font);
 			}
 			resizeIcon(icon);
 
