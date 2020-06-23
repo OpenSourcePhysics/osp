@@ -619,58 +619,82 @@ public class DataTable extends JTable {
 
 	protected void refreshTableNow(int mode) {
 		// BH every sort of refresh goes through here
-		OSPLog.debug("DataTable.refreshTableNow " + Integer.toHexString(mode));
-
+		boolean columnsChanged;
+		
 		int mask = this.mode = mode;
 		switch (mode) {
 		case MODE_CANCEL: // 0x00;
 			return;
+			//
+			// column (structure) changes
+			//
 		default:
 		case MODE_CREATE: // 0x01;
 		case MODE_CLEAR: // 0x02;
 		case MODE_MODEL: // 0x04;
 		case MODE_TAB: // 0x05;
 			mask = MODE_MASK_NEW;
-			break;
+			columnsChanged = true;
+		break;
 		case MODE_TRACK_REFRESH: // 0x1100;
 		case MODE_TRACK_STATE: // 0x1200;
-		case MODE_TRACK_STEP: // 0x1300;
-		case MODE_TRACK_SELECTEDPOINT: // 0x1400;
 		case MODE_TRACK_STEPS: // 0x1500;
 		case MODE_TRACK_LOADED: // 0x1600;
-		case MODE_TRACK_SETVISIBLE: // 0x1700;
 		case MODE_TRACK_LOADER: // 0x1800;
-		case MODE_TRACK_CHOOSE: // 0x1900;
-		case MODE_TRACK_SELECT: // 0x1A00;
+			mask = MODE_MASK_TRACK; // 0x1000;
+			columnsChanged = true;
+			break;
+		case MODE_COLUMN: // 0x2400;
+		case MODE_CELLS: // 0x2800;
+			mask = MODE_MASK_COL;
+			columnsChanged = true;
+			break;
+		case MODE_REFRESH: // 0x8000000;
+			columnsChanged = true;
+			break;
+			//  row/rendering changes
+		case MODE_TRACK_SETVISIBLE: // 0x1700;
+		case MODE_TRACK_STEP: // 0x1300;
+		case MODE_TRACK_SELECTEDPOINT: // 0x1400;
 		case MODE_TRACK_TRANSFORM: // 0x1B00;
 		case MODE_TRACK_DATA: // 0x1C00;
 		case MODE_TRACK_FUNCTION: // 0x1D00;
 		case MODE_TRACK_PLOTCOUNT: // 0x1E00
+		case MODE_TRACK_CHOOSE: // 0x1900;
+		case MODE_TRACK_SELECT: // 0x1A00;
 			mask = MODE_MASK_TRACK; // 0x1000;
+			columnsChanged = false;
 			break;
 		case MODE_INSERT_ROW: // 0x2100;
 		case MODE_DELETE_ROW: // 0x2200;
 		case MODE_APPEND_ROW: // 0x2300;
 			mask = MODE_MASK_ROW;
-			break;
-		case MODE_COLUMN: // 0x2400;
-		case MODE_CELLS: // 0x2800;
-			mask = MODE_MASK_COL;
+			columnsChanged = false;
 			break;
 		case MODE_PATTERN: // 0x810000;
 		case MODE_FUNCTION: // 0x820000;
 		case MODE_FORMAT: // 0x830000;
 			mode = MODE_MASK_STYLE;
+			columnsChanged = false;
 			break;
 		case MODE_VALUES:  // 0x4000;
 		case MODE_SELECT:  // 0x1000000;
 		case MODE_HEADER:  // 0x2000000;
 		case MODE_SHOW:    // 0x4000000;
-		case MODE_REFRESH: // 0x8000000;
+			columnsChanged = false;
 			break;
 		}
-		updateFormats();
+
+		OSPLog.debug(">>>>DataTable.refreshTableNow " + Integer.toHexString(mode) + " " + columnsChanged);
+
+
+//		columnsChanged = true;
 		dataTableModel.refresh(mask);
+		if (columnsChanged) {
+			dataTableModel.fireTableStructureChanged();
+		} else {
+			repaint();
+		}
 	}
 
 	/**
@@ -1358,9 +1382,9 @@ public class DataTable extends JTable {
 				type = "show";
 				break;
 			}
+			updateFormats();
 			updateColumnModel(null);
 			OSPLog.debug("OSPDataTableModel rebuild " + type);
-			fireTableStructureChanged();
 		}
 
 	}
@@ -2166,8 +2190,6 @@ public class DataTable extends JTable {
 	public void updateColumnModel(int[] modelColumns) {
 		dataTableModel.setTainted();
 		((DataTableColumnModel) getColumnModel()).updateColumnModel();
-//		if (modelColumns != null)
-//			updateColumnOrder(modelColumns);
 	}
 
 	private static Comparator<Object[]> nCompare = new Comparator<Object[]>() {
