@@ -188,10 +188,12 @@ public final class SuryonoParser extends MathExpParser {
 	 */
 	public static final int REF_NAME_EXPECTED = 15;
 	// postfix codes
-	private static final int FUNC_OFFSET = 1000;
-	private static final int EXT_FUNC_OFFSET = FUNC_OFFSET + NO_FUNCS;
-	private static final int VAR_OFFSET = 2000;
-	private static final int REF_OFFSET = 3000;
+
+	private static final int OFFSET_MASK     = 0xF000;
+	private static final int FUNC_OFFSET     = 0x1000;
+	private static final int EXT_FUNC_OFFSET = 0x2000;// FUNC_OFFSET + NO_FUNCS;
+	private static final int VAR_OFFSET      = 0x4000;
+	private static final int REF_OFFSET		 = 0x8000;
 	private static final int PI_CODE = (int) 253;
 	private static final int E_CODE = (int) 254;
 	private static final int NUMERIC = (int) 255;
@@ -981,7 +983,7 @@ public final class SuryonoParser extends MathExpParser {
 					throw new ParserException(PAREN_EXPECTED);
 				}
 				getNextch();
-				addCode((int) (i + FUNC_OFFSET));
+				addCode(i | FUNC_OFFSET);
 				return;
 			}
 		}
@@ -1005,21 +1007,21 @@ public final class SuryonoParser extends MathExpParser {
 				getNextch();
 				addCodes(savecode, postfix_code);
 				postfix_code = Arrays.copyOf(savecode, savecode.length);
-				addCode((int) (i + EXT_FUNC_OFFSET));
+				addCode(i | EXT_FUNC_OFFSET);
 				return;
 			}
 		}
 		// registered variables
 		for (int i = 0; i < var_count; i++) {
 			if (stream.equals(var_name[i])) {
-				addCode((int) (i + VAR_OFFSET));
+				addCode(i | VAR_OFFSET);
 				return;
 			}
 		}
 		// references
 		int index = refnames.indexOf(stream);
 		if (index != -1) {
-			addCode( (index + REF_OFFSET));
+			addCode(index | REF_OFFSET);
 			return;
 		}
 		// appendVariables option added by W. Christian
@@ -1044,7 +1046,7 @@ public final class SuryonoParser extends MathExpParser {
 		// System.out.println("appended=" + stream);
 		for (int i = 0; i < var_count; i++) {
 			if (stream.equals(var_name[i])) {
-				addCode( (i + VAR_OFFSET));
+				addCode(i | VAR_OFFSET);
 				return true;
 			}
 		}
@@ -1536,17 +1538,22 @@ public final class SuryonoParser extends MathExpParser {
 					stack[++stack_pointer] = Math.E;
 					break;
 				default:
-					if (code >= REF_OFFSET) {
-						stack[++stack_pointer] = refvalue[code - REF_OFFSET];
-					} else if (code >= VAR_OFFSET) {
-						stack[++stack_pointer] = var_value[code - VAR_OFFSET];
-					} else if (code >= EXT_FUNC_OFFSET) {
-						stack[stack_pointer - 1] = builtInExtFunction(code - EXT_FUNC_OFFSET, stack[stack_pointer - 1],
-								stack[stack_pointer]);
-						stack_pointer--;
-					} else if (code >= FUNC_OFFSET) {
-						stack[stack_pointer] = builtInFunction(code - FUNC_OFFSET, stack[stack_pointer]);
-					} else {
+					int val = code & ~OFFSET_MASK;
+					switch (code & OFFSET_MASK) {
+					case REF_OFFSET:
+						stack[++stack_pointer] = refvalue[val];
+						break;
+					case VAR_OFFSET:
+						stack[++stack_pointer] = var_value[val];
+						break;
+					case EXT_FUNC_OFFSET:
+						stack[--stack_pointer] = builtInExtFunction(val, stack[stack_pointer],
+								stack[stack_pointer + 1]);
+						break;
+					case FUNC_OFFSET:
+						stack[stack_pointer] = builtInFunction(val, stack[stack_pointer]);
+						break;
+					default:
 						error = CODE_DAMAGED;
 						return Double.NaN;
 					}
