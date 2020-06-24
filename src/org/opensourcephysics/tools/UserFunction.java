@@ -7,6 +7,7 @@
 
 package org.opensourcephysics.tools;
 
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
@@ -38,6 +39,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	protected boolean nameEditable = true;
 	protected String description;
 	protected KnownPolynomial polynomial;
+	private double myval = Double.NaN;
 
 	/**
 	 * Constructor.
@@ -465,19 +467,48 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	 */
 	@Override
 	public double evaluate(double[] x) {
+		// no longer called?
+		// only called from DynamicParticle.getXYForces?
 		if (myFunction == null) {
 			return Double.NaN;
 		}
-		// produce an
-		ensureBufferLength(x.length);
-		System.arraycopy(x, 0, temp, 0, x.length);
-		System.arraycopy(paramValues, 0, temp, x.length, paramValues.length);
-		for (int pt = x.length + paramValues.length, n = references.length, i = 0; i < n;) {
-			temp[pt++] = references[i++].evaluate(x);
-		}
-		return myFunction.evaluate(temp);
+//			OSPLog.debug("UserFunction.evaluate " + name + " = " + myFunction);
+			ensureBufferLength(x.length);
+			System.arraycopy(x, 0, temp, 0, x.length);
+			System.arraycopy(paramValues, 0, temp, x.length, paramValues.length);
+			for (int pt = x.length + paramValues.length, n = references.length, i = 0; i < n;) {
+				temp[pt++] = references[i++].evaluate(x);
+			}
+			return myFunction.evaluate(temp);
 	}
 
+	public double evaluateMyVal(double[] x) {
+		// only called from DynamicParticle.getXYForces?
+		if (myFunction == null) {
+			return Double.NaN;
+		}
+		// BH 2020.06.24 allow for precalculated value. 
+		if (Double.isNaN(myval)) {
+//			OSPLog.debug("UserFunction.evaluate " + name + " = " + myFunction);
+			ensureBufferLength(x.length);
+			System.arraycopy(x, 0, temp, 0, x.length);
+			System.arraycopy(paramValues, 0, temp, x.length, paramValues.length);
+			for (int pt = x.length + paramValues.length, n = references.length, i = 0; i < n;) {
+				temp[pt++] = references[i++].evaluateMyVal(x);
+			}
+			myval = myFunction.evaluate(temp);
+		}
+//		OSPLog.debug("UserFunction.evaluate " + name + " = " + myval);
+		return myval;
+	}
+
+	public void clear() {
+		myval  = Double.NaN;
+		for (int i = references.length; --i >= 0;) {
+			 references[i].clear();
+		}
+
+	}
 	private double[] temp;
 
 	private void ensureBufferLength(int xLen) {
