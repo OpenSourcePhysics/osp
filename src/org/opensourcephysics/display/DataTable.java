@@ -65,6 +65,8 @@ import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.media.core.NumberField;
 import org.opensourcephysics.tools.DataToolTab;
 
+import javajs.async.SwingJSUtils.Performance;
+
 /**
  * DataTable displays multiple TableModels in a table. The first TableModel
  * usually contains the independent variable for the other TableModel so that
@@ -102,7 +104,7 @@ public class DataTable extends JTable {
 
 	
 
-	static final int MODE_MASK_NEW = 0xF;
+	private static final int MODE_MASK_NEW = 0xF;
 	public static final int MODE_CREATE = 0x01;
 	public static final int MODE_CLEAR = 0x02;
 	public static final int MODE_MODEL = 0x03;
@@ -604,7 +606,7 @@ public class DataTable extends JTable {
 //				@Override
 //				public synchronized void run() {
 		refreshTableNow(mode);
-//				}
+
 //
 //			});
 //		}
@@ -618,6 +620,8 @@ public class DataTable extends JTable {
 	 */
 
 	protected void refreshTableNow(int mode) {
+		OSPLog.debug(Performance.timeCheckStr("DataTable.refreshTable0 " + mode,
+				Performance.TIME_MARK));
 		// BH every sort of refresh goes through here
 		boolean columnsChanged;
 		
@@ -695,6 +699,8 @@ public class DataTable extends JTable {
 		} else {
 			repaint();
 		}
+		OSPLog.debug(Performance.timeCheckStr("DataTable.refreshTable1 " + mode,
+		Performance.TIME_MARK));
 	}
 
 	/**
@@ -1215,7 +1221,7 @@ public class DataTable extends JTable {
 		}
 
 		protected class SortDecorator {
-			private int indexes[];
+			private int[] indexes = new int[0];
 			private int sortedColumn; // added by D Brown 2010-10-24
 
 			/**
