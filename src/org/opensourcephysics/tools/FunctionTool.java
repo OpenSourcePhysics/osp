@@ -66,7 +66,6 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	public static final String PROPERTY_FUNCTIONTOOL_PANEL = "panel";
 	public static final String PROPERTY_FUNCTIONTOOL_FUNCTION = "function";
 	public static final String PROPERTY_FUNCTIONTOOL_VISIBLE = "ft_visible";
-	public static final String PROPERTY_FUNCTIONTOOL_DESCRIPTION = "description";
 
 	protected static String[] parserNames = new String[] { "e", "pi", "min", "mod", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			"sin", "cos", "abs", "log", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$

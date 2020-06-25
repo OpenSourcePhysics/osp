@@ -163,7 +163,8 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent e) {
-		if (e.getPropertyName().equals("edit")) { //$NON-NLS-1$
+		switch (e.getPropertyName()) {
+		case FunctionEditor.PROPERTY_FUNCTIONEDITOR_EDIT:
 			// Parameter or Function has been edited
 			if ((e.getNewValue() instanceof UndoableEdit)) {
 				// post undo edit
@@ -184,7 +185,8 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 				}
 				functionTool.firePropertyChange(FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION, prevName, functionName); // $NON-NLS-1$
 			}
-		} else if (e.getPropertyName().equals("function")) { //$NON-NLS-1$
+			break;
+		case FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION:
 			// function has been added or removed
 			refreshFunctions();
 			refreshGUI();
@@ -192,8 +194,10 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 				functionTool.refreshGUI();
 				functionTool.firePropertyChange(FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION, null, null); // $NON-NLS-1$
 			}
-		} else if (e.getPropertyName().equals("description") && functionTool != null) { //$NON-NLS-1$
-			functionTool.firePropertyChange(FunctionTool.PROPERTY_FUNCTIONTOOL_DESCRIPTION, null, null); // $NON-NLS-1$
+		case FunctionEditor.PROPERTY_FUNCTIONEDITOR_DESCRIPTION:
+			if (functionTool != null) {
+				functionTool.firePropertyChange(FunctionEditor.PROPERTY_FUNCTIONEDITOR_DESCRIPTION, null, null); // $NON-NLS-1$
+			}
 		}
 	}
 
@@ -346,6 +350,10 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 	 * Refreshes the GUI.
 	 */
 	protected void refreshGUI() {
+		if (functionTool == null) {
+			OSPLog.debug("FunctionPanel skipping refreshGUI");
+			return;
+		}
 		undoButton.setText(ToolsRes.getString("DataFunctionPanel.Button.Undo")); //$NON-NLS-1$
 		undoButton.setToolTipText(ToolsRes.getString("DataFunctionPanel.Button.Undo.Tooltip")); //$NON-NLS-1$
 		redoButton.setText(ToolsRes.getString("DataFunctionPanel.Button.Redo")); //$NON-NLS-1$

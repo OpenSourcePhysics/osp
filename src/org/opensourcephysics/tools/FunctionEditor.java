@@ -98,6 +98,13 @@ import org.opensourcephysics.display.TeXParser;
 @SuppressWarnings("serial")
 public abstract class FunctionEditor extends JPanel implements PropertyChangeListener {
 
+	public static final String PROPERTY_FUNCTIONEDITOR_EDIT = "edit";
+	public static final String PROPERTY_FUNCTIONEDITOR_CLIPBOARD = "clipboard";
+	public static final String PROPERTY_FUNCTIONEDITOR_PARAM_DESCRIPTION = "param_description";
+	public static final String PROPERTY_FUNCTIONEDITOR_DESCRIPTION = "description";
+	public static final String PROPERTY_FUNCTIONEDITOR_FOCUS = "focus";
+	public static final String PROPERTY_FUNCTIONEDITOR_ANGLESINRADIANS = "angles_in_radians";
+
 	public interface FObject {
 	}
 
@@ -115,7 +122,6 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	final static Color LIGHT_RED = new Color(255, 180, 200);
 	final static Color LIGHT_GRAY = javax.swing.UIManager.getColor("Panel.background"); //$NON-NLS-1$
 	final static Color DARK_RED = new Color(220, 0, 0);
-
 	// static fields
 	static DecimalFormat decimalFormat;
 	static DecimalFormat sciFormat0000;
@@ -269,9 +275,9 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	 */
 	public void setDescription(FObject obj, String desc) {
 		if (obj instanceof Parameter) {
-			firePropertyChange("param_description", null, null); //$NON-NLS-1$
+			firePropertyChange(PROPERTY_FUNCTIONEDITOR_PARAM_DESCRIPTION, null, null); //$NON-NLS-1$
 		}
-		firePropertyChange("description", null, null); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_FUNCTIONEDITOR_DESCRIPTION, null, null); //$NON-NLS-1$
 	}
 
 	/**
@@ -330,7 +336,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			if (postEdit && undoEditsEnabled) {
 				edit = getUndoableEdit(EXPRESSION_EDIT, expression, row, 1, prev, row, 1, getName(obj));
 			}
-			firePropertyChange("edit", getName(obj), edit); //$NON-NLS-1$
+			firePropertyChange(PROPERTY_FUNCTIONEDITOR_EDIT, getName(obj), edit); //$NON-NLS-1$
 			break;
 		}
 	}
@@ -406,7 +412,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			edit = getUndoableEdit(ADD_EDIT, obj, row, 0, obj, undoRow, undoCol, getName(obj));
 		}
 		if (firePropertyChange) {
-			firePropertyChange("edit", getName(obj), edit); //$NON-NLS-1$
+			firePropertyChange(PROPERTY_FUNCTIONEDITOR_EDIT, getName(obj), edit); //$NON-NLS-1$
 		}
 		refreshGUI();
 		return obj;
@@ -441,7 +447,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				edit = getUndoableEdit(REMOVE_EDIT, obj, row, 0, obj, undoRow, undoCol, getName(obj));
 			}
 			evaluateAll();
-			firePropertyChange("edit", getName(obj), edit); //$NON-NLS-1$
+			firePropertyChange(PROPERTY_FUNCTIONEDITOR_EDIT, getName(obj), edit); //$NON-NLS-1$
 			refreshGUI();
 			return obj;
 		}
@@ -657,7 +663,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		}
 	}
 
-	private boolean hasReference(int i1, int i2) {
+	public boolean hasReference(int i1, int i2) {
 		return getReferences(i1, null).get(i2);
 	}
 
@@ -984,7 +990,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 			clipboard.setContents(ss, ss);
 			pasteButton.setEnabled(true);
-			firePropertyChange("clipboard", null, null); //$NON-NLS-1$
+			firePropertyChange(PROPERTY_FUNCTIONEDITOR_CLIPBOARD, null, null); //$NON-NLS-1$
 		}
 	}
 
@@ -1259,7 +1265,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 								@Override
 								public void actionPerformed(ActionEvent e) {
 									setAnglesInDegrees(!anglesInDegrees);
-									FunctionEditor.this.firePropertyChange("angles_in_radians", null, !anglesInDegrees); //$NON-NLS-1$
+									FunctionEditor.this.firePropertyChange(PROPERTY_FUNCTIONEDITOR_ANGLESINRADIANS, null, !anglesInDegrees); //$NON-NLS-1$
 								}
 							});
 							popup.add(item);
@@ -1724,7 +1730,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		@Override
 		public boolean isCellEditable(EventObject e) {
 			if (e instanceof MouseEvent) {
-				firePropertyChange("focus", null, null); //$NON-NLS-1$
+				firePropertyChange(PROPERTY_FUNCTIONEDITOR_FOCUS, null, null); //$NON-NLS-1$
 				MouseEvent me = (MouseEvent) e;
 				if (me.getClickCount() == 2) {
 					mouseClicked = true;
