@@ -37,6 +37,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -686,6 +687,13 @@ public void setLocale(Locale locale) {
     setBounds(0, y, w, height);
     toolbar.revalidate();
   }
+
+	@Override
+	protected void paintChildren(Graphics g) {
+		if (!OSPRuntime.isJS)
+			super.paintChildren(g);
+		
+	}
 
   /**
    * Creates the visible components of this player.
