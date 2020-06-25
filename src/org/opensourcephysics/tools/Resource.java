@@ -45,6 +45,7 @@ public class Resource {
 	private BufferedImage image;
 	private String zipContent;
 	private URL contentURL;
+	private boolean isBytes;
 
 	/**
 	 * Gets the character set used for reading input streams.
@@ -158,7 +159,7 @@ public class Resource {
 	 */
 	public Object getObject(Class<?> type) {
 		if (ImageIcon.class.equals(type)) {
-			return getIcon();
+			return getResizableIcon();
 		}
 		if (String.class.equals(type)) {
 			return getString();
@@ -217,7 +218,7 @@ public class Resource {
 	 *
 	 * @return the icon
 	 */
-	public Icon getIcon() {
+	public ResizableIcon getResizableIcon() {
 		if ((icon == null) && isAnImage) {
 			icon = new ImageIcon(getURL());
 			if (icon.getIconWidth() < 1) {
@@ -235,13 +236,10 @@ public class Resource {
 	 * @return the image
 	 */
 	public Image getImage() {
-		Icon icon = getIcon();
-		if (icon != null) {
-			ResizableIcon ico = (ResizableIcon) icon;
-			ImageIcon imageIcon = (ImageIcon) ico.getBaseIcon();
-			return imageIcon.getImage();
-		}
-		return null;
+		if (isBytes)
+			return icon.getImage();
+		ResizableIcon ri = getResizableIcon();
+		return (ri == null ? null : ((ImageIcon) ((ResizableIcon) ri).getBaseIcon()).getImage());
 	}
 
 	/**
@@ -337,6 +335,18 @@ public class Resource {
 	@Override
 	public String toString() {
 		return "[resource " + (file != null ? file.toString() : url != null ? url.toString() : null) + "]";
+	}
+
+	/**
+	 * Just for a Video image
+	 * @param bytes
+	 * @return
+	 */
+	public static Resource newImageResource(byte[] bytes) {
+		Resource res = new Resource((URL) null);
+		res.icon = new ImageIcon(bytes);
+		res.isBytes = true;
+		return res;
 	}
 }
 

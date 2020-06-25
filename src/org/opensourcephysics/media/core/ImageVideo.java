@@ -55,6 +55,7 @@ import org.opensourcephysics.tools.Resource;
 import org.opensourcephysics.tools.ResourceLoader;
 
 import javajs.async.AsyncDialog;
+import javajs.async.SwingJSUtils.Performance;
 
 /**
  * This is a Video assembled from one or more still images.
@@ -491,8 +492,14 @@ public class ImageVideo extends VideoAdapter {
 
 		if (readOnly && frameNumber < paths.length) {
 			if (!paths[frameNumber].equals("")) {//$NON-NLS-1$
-				Image image = ResourceLoader.getImage(getAbsolutePath(paths[frameNumber]));
-				OSPLog.debug("ImageVideo.getImageAtFrame new image");
+				
+				OSPLog.debug(Performance.timeCheckStr("ImageVideo.getImageAtFrame0 " + frameNumber,
+						Performance.TIME_MARK));
+
+				Image image = ResourceLoader.getVideoImage(getAbsolutePath(paths[frameNumber]));
+
+				OSPLog.debug(Performance.timeCheckStr("ImageVideo.getImageAtFrame1 " + frameNumber,
+						Performance.TIME_MARK));
 
 				if (image != null)
 					return image;

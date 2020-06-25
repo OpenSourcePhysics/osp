@@ -2977,6 +2977,31 @@ public class ResourceLoader {
 		}
 	}
 
+	/**
+	 * If we are in ImageVideo, we know we already have the image, we just need it in resource form for caching.
+	 * 
+	 * @param path
+	 * @return
+	 */
+	public static Image getVideoImage(String path) {
+		Resource res = null;
+		if (OSPRuntime.isJS && isZipEntry(path, false) >= 0) {
+			res = resources.get(path);
+			if (res == null) {
+				try {
+					byte[] bytes = getZipEntryBytes(path, null);
+					if (bytes != null)
+						res = Resource.newImageResource(bytes);
+				} catch (IOException e) {
+				}
+				if (res != null) {
+					resources.put(path, res);
+				}
+			}
+		}
+		return (res == null ? getImage(path) : res.getImage());
+	}
+
 }
 
 /*
