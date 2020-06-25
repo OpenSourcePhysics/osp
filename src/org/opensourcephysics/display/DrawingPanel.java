@@ -2554,7 +2554,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 			return false;
 		}
 		lastMessage[location] = msg;
-		OSPLog.debug("DrawingPanel not repainting for message " + msg + " " + location);
+//		OSPLog.debug("DrawingPanel not repainting for message " + msg + " " + location);
 		return true;
 	}
 

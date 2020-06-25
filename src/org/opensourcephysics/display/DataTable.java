@@ -699,7 +699,7 @@ public class DataTable extends JTable {
 		} else {
 			repaint();
 		}
-		OSPLog.debug(Performance.timeCheckStr("DataTable.refreshTable1 " + mode,
+		OSPLog.debug(Performance.timeCheckStr("DataTable.refreshTable1 " + Integer.toHexString(mode),
 		Performance.TIME_MARK));
 	}
 
