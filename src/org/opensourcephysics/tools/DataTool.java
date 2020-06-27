@@ -163,22 +163,20 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	protected int myPopupFontLevel;
 	protected int myCopyMenuFontLevel;
 
-	static {
-		DATATOOL = new DataTool();
-	}
-
 	/**
 	 * A shared data tool.
 	 */
-	final static DataTool DATATOOL;
+	private static DataTool tool;
 
 	/**
 	 * Gets the shared DataTool.
 	 *
 	 * @return the shared DataTool
 	 */
-	public static DataTool getTool() {
-		return DATATOOL;
+	public static DataTool getTool(boolean forceNew) {
+		if (tool == null && !forceNew)
+			return null;
+		return (tool == null ? (tool = new DataTool()) : tool);
 	}
 
 	/**
@@ -187,23 +185,23 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * @param args args[0] may be a data or xml file name
 	 */
 	public static void main(String[] args) {
-		DATATOOL.exitOnClose = true;
-		DATATOOL.saveChangesOnClose = true;
+		tool.exitOnClose = true;
+		tool.saveChangesOnClose = true;
 		if ((args != null) && (args.length > 0) && (args[0] != null)) {
-			DATATOOL.setVisible(true);
-			DATATOOL.open(new File(args[0]));
+			tool.setVisible(true);
+			tool.open(new File(args[0]));
 		} else {
-			DATATOOL.addWindowListener(new WindowAdapter() {
+			tool.addWindowListener(new WindowAdapter() {
 				@Override
 				public void windowOpened(WindowEvent e) {
-					if (DATATOOL.getTabCount() == 0) {
-						DataToolTab tab = DATATOOL.createTab(null);
+					if (tool.getTabCount() == 0) {
+						DataToolTab tab = tool.createTab(null);
 						tab.setUserEditable(true);
-						DATATOOL.addTab(tab);
+						tool.addTab(tab);
 					}
 				}
 			});
-			DATATOOL.setVisible(true);
+			tool.setVisible(true);
 		}
 
 	}

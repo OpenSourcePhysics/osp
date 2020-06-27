@@ -127,7 +127,12 @@ public class DataToolTable extends DataTable {
 	DataEditor editor = new DataEditor();
 	BitSet selectedModelRows = new BitSet(); // selected model rows--used when sorting
 	BitSet selectedColumns = new BitSet(); // selected model columns--used when selecting rows
-	JPopupMenu popup = new JPopupMenu();
+	JPopupMenu popup;
+
+	JPopupMenu getPopup() {
+		return (popup == null ? (popup = new JPopupMenu()) : popup);	
+	}
+	
 	JMenuItem renameColumnItem, copyColumnsItem, cutColumnsItem, pasteColumnsItem, cloneColumnsItem, numberFormatItem;
 	JMenuItem insertRowItem, pasteRowsItem, copyRowsItem, cutRowsItem;
 	JMenuItem insertCellsItem, deleteCellsItem, copyCellsItem, cutCellsItem, pasteInsertCellsItem, pasteCellsItem;
@@ -358,6 +363,7 @@ public class DataToolTable extends DataTable {
 						setColumnSelectionInterval(col, col);
 						leadCol = col;
 					}
+					getPopup();
 					setRowSelectionInterval(0, getRowCount() - 1);
 					popup.removeAll();
 					String text;
@@ -649,6 +655,7 @@ public class DataToolTable extends DataTable {
 				int labelCol = convertColumnIndexToView(0);
 				// right-click: show popup menu
 				if (OSPRuntime.isPopupTrigger(e)) {
+					getPopup();
 					editor.stopCellEditing();
 					// select appropriate cells
 					if (col == labelCol) {

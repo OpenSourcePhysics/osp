@@ -93,7 +93,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	/** Message box location */
 	public static final int TOP_LEFT = 3;
 	
-	protected JPopupMenu popupmenu = new JPopupMenu(); // right mouse click popup menu
+	protected JPopupMenu popupmenu; // right mouse click popup menu
 	/**
 	 * 
 	 * the menu items for the box
@@ -211,7 +211,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 			}
 
 		});
-		buildPopupmenu();
+		//buildPopupmenu();
 		refreshTimer.setRepeats(false);
 		refreshTimer.setCoalesce(true);
 		zoomTimer = new javax.swing.Timer(zoomDelay, new ActionListener() {
@@ -287,12 +287,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 * Refreshes the user interface in response to display changes such as Language.
 	 */
 	protected void refreshGUI() {
-		zoomInItem.setText(DisplayRes.getString("DisplayPanel.Zoom_in_menu_item")); //$NON-NLS-1$
-		zoomOutItem.setText(DisplayRes.getString("DisplayPanel.Zoom_out_menu_item")); //$NON-NLS-1$
-		scaleItem.setText(DisplayRes.getString("DrawingFrame.Scale_menu_item")); //$NON-NLS-1$
-		autoscaleItem.setText(DisplayRes.getString("DrawingFrame.Autoscale_menu_item")); //$NON-NLS-1$
-		snapshotItem.setText(DisplayRes.getString("DisplayPanel.Snapshot_menu_item")); //$NON-NLS-1$
-		propertiesItem.setText(DisplayRes.getString("DrawingFrame.InspectMenuItem")); //$NON-NLS-1$
+		popupmenu = null;
 	}
 
 	/**
@@ -307,32 +302,41 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 * Builds the default popup menu for this panel.
 	 */
 	protected void buildPopupmenu() {
-		popupmenu.removeAll();
-		popupmenu.setEnabled(true);
+		if (popupmenu == null) {
+			popupmenu = new JPopupMenu();
+		} else {
+			popupmenu.removeAll();
+		}
 		ActionListener listener = new PopupmenuListener();
 		if (isZoom()) {
 			zoomInItem = new JMenuItem(DisplayRes.getString("DisplayPanel.Zoom_in_menu_item")); //$NON-NLS-1$
 			zoomInItem.addActionListener(listener);
+			zoomInItem.setText(DisplayRes.getString("DisplayPanel.Zoom_in_menu_item")); //$NON-NLS-1$
 			popupmenu.add(zoomInItem);
 			zoomOutItem = new JMenuItem(DisplayRes.getString("DisplayPanel.Zoom_out_menu_item")); //$NON-NLS-1$
 			zoomOutItem.addActionListener(listener);
+			zoomOutItem.setText(DisplayRes.getString("DisplayPanel.Zoom_out_menu_item")); //$NON-NLS-1$
 			popupmenu.add(zoomOutItem);
 		}
 		if (!isFixedScale()) {
 			autoscaleItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Autoscale_menu_item")); //$NON-NLS-1$
 			autoscaleItem.addActionListener(listener);
+			autoscaleItem.setText(DisplayRes.getString("DrawingFrame.Autoscale_menu_item")); //$NON-NLS-1$
 			popupmenu.add(autoscaleItem);
 			scaleItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Scale_menu_item")); //$NON-NLS-1$
 			scaleItem.addActionListener(listener);
+			scaleItem.setText(DisplayRes.getString("DrawingFrame.Scale_menu_item")); //$NON-NLS-1$
 			popupmenu.add(scaleItem);
 			popupmenu.addSeparator();
 		}
 		snapshotItem = new JMenuItem(DisplayRes.getString("DisplayPanel.Snapshot_menu_item")); //$NON-NLS-1$
 		snapshotItem.addActionListener(listener);
+		snapshotItem.setText(DisplayRes.getString("DisplayPanel.Snapshot_menu_item")); //$NON-NLS-1$
 		popupmenu.add(snapshotItem);
 		popupmenu.addSeparator();
 		propertiesItem = new JMenuItem(DisplayRes.getString("DrawingFrame.InspectMenuItem")); //$NON-NLS-1$
 		propertiesItem.addActionListener(listener);
+		propertiesItem.setText(DisplayRes.getString("DrawingFrame.InspectMenuItem")); //$NON-NLS-1$
 		popupmenu.add(propertiesItem);
 	}
 
@@ -597,6 +601,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	}
 
 	private Rectangle visibleRect = new Rectangle();
+	private boolean popupmenuIsEnabled = true;
 
 	/**
 	 * Paints all drawables onto an offscreen image buffer and copies this image
@@ -1317,7 +1322,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 			return;
 		}
 		fixedScale = fixed;
-		buildPopupmenu();
+		popupmenu = null; // forces rebuild next time it is needed
 	}
 
 	/**
@@ -1339,7 +1344,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 			return;
 		}
 		enableZoom = _enableZoom;
-		buildPopupmenu();
+		popupmenu = null; // forces rebuild next time it is needed
 	}
 
 	/**
@@ -1431,7 +1436,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 * @return <code>true<\code> if inspector is enabled
 	 */
 	public boolean hasInspector() {
-		return (popupmenu != null) && popupmenu.isEnabled();
+		return popupmenu != null && popupmenuIsEnabled;
 	}
 
 	/**
@@ -1442,13 +1447,19 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 *                  <code>false<\code> otherwise
 	 */
 	public void enableInspector(boolean isEnabled) {
-		popupmenu.setEnabled(isEnabled);
+		popupmenuIsEnabled = isEnabled;
+//		getPopupMenu().setEnabled(isEnabled);
 	}
 
 	/**
 	 * Gets the popup menu.
 	 */
 	public JPopupMenu getPopupMenu() {
+		if (!popupmenuIsEnabled)
+			return null;
+		if (popupmenu == null) {
+			buildPopupmenu();
+		}
 		return popupmenu;
 	}
 
@@ -2841,7 +2852,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		 */
 		@Override
 		public void mouseReleased(MouseEvent e) {
-			if (isZoomEvent(e) && (popupmenu != null) && popupmenu.isEnabled()) {
+			if (isZoomEvent(e) && popupmenuIsEnabled) {
 				if (isZoom() && !zoomBox.isDragged() && zoomBox.showUndraggedBox) {
 					Dimension dim = viewRect == null ? getSize() : viewRect.getSize();
 					dim.width -= getLeftGutter() + getRightGutter();
@@ -2853,11 +2864,9 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 					zoomBox.visible = true;
 					repaintForZoom();
 				}
-				JPopupMenu popup = getPopupMenu();
-				if (popup != null)
-					popup.show(e.getComponent(), e.getX(), e.getY());
+				 getPopupMenu().show(e.getComponent(), e.getX(), e.getY());
 				return;
-			} else if (OSPRuntime.isPopupTrigger(e) && (popupmenu == null) && (customInspector != null)) {
+			} else if (OSPRuntime.isPopupTrigger(e) && !popupmenuIsEnabled && (customInspector != null)) {
 				customInspector.setVisible(true);
 				return;
 			}
@@ -2889,8 +2898,9 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	}
 
 	public void repaintForZoom() {
-		if (getPopupMenu() == null)
-			repaint();
+		OSPLog.debug("DrawingPanel.repaintForZoom ignored - Bob??");
+//		if (popupmenu == null) // BH could not ever happen
+//			repaint();
 	}
 
 	/**

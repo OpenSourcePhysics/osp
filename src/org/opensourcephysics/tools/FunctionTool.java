@@ -92,8 +92,15 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	protected FunctionPanel selectedPanel;
 	protected JScrollPane selectedPanelScroller;
 	protected JButton helpButton, closeButton, fontButton, undoButton, redoButton;
+	
 	protected JPopupMenu popup;
+	
+	protected JPopupMenu getPopup() {
+		return (popup == null ? (popup = createPopup()) : popup);
+	}
+	
 	protected JMenuItem defaultFontSizeItem;
+	
 	protected JPanel buttonbar = new JPanel(new FlowLayout());
 	protected Component[] toolbarComponents; // may be null
 	protected String helpPath = ""; //$NON-NLS-1$
@@ -368,7 +375,6 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		setVisible(false);
 		FontSizer.setFonts(this, level);
 		FontSizer.setFonts(contentPane, level);
-		FontSizer.setFonts(popup, level);
 		FontSizer.setFonts(fontButton, level);
 		for (Iterator<FunctionPanel> it = panels.values().iterator(); it.hasNext();) {
 			FunctionPanel next = it.next();
@@ -377,7 +383,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 			}
 			next.setFontLevel(level);
 		}
-		if (level < popup.getSubElements().length) {
+		if (popup != null && level < popup.getSubElements().length) {
 			MenuElement[] e = popup.getSubElements();
 			JRadioButtonMenuItem item = (JRadioButtonMenuItem) e[level];
 			item.setSelected(true);
@@ -588,33 +594,11 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		redoButton = new JButton(ToolsRes.getString("DataFunctionPanel.Button.Redo")); //$NON-NLS-1$
 		// create font sizer button and popup
 		fontButton = new JButton(ToolsRes.getString("Tool.Menu.FontSize")); //$NON-NLS-1$
-		popup = new JPopupMenu();
-		ButtonGroup group = new ButtonGroup();
-		Action fontSizeAction = new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				int i = Integer.parseInt(e.getActionCommand());
-				setFontLevel(i);
-			}
-
-		};
-		for (int i = 0; i < 4; i++) {
-			JMenuItem item = new JRadioButtonMenuItem("+" + i); //$NON-NLS-1$
-			if (i == 0) {
-				defaultFontSizeItem = item;
-			}
-			item.addActionListener(fontSizeAction);
-			item.setActionCommand("" + i); //$NON-NLS-1$
-			popup.add(item);
-			group.add(item);
-			if (i == fontLevel) {
-				item.setSelected(true);
-			}
-		}
+		
 		fontButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				popup.show(fontButton, 0, fontButton.getHeight());
+				getPopup().show(fontButton, 0, fontButton.getHeight());
 			}
 
 		});
@@ -644,6 +628,35 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		int y = (dim.height - getBounds().height) / 2;
 		setLocation(x, y);
 	}
+	
+	private JPopupMenu createPopup() {
+		popup = new JPopupMenu();
+		FontSizer.setFonts(popup); // BH needs testing
+		ButtonGroup group = new ButtonGroup();
+		Action fontSizeAction = new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int i = Integer.parseInt(e.getActionCommand());
+				setFontLevel(i);
+			}
+
+		};
+		for (int i = 0; i < 4; i++) {
+			JMenuItem item = new JRadioButtonMenuItem("+" + i); //$NON-NLS-1$
+			if (i == 0) {
+				defaultFontSizeItem = item;
+			}
+			item.addActionListener(fontSizeAction);
+			item.setActionCommand("" + i); //$NON-NLS-1$
+			popup.add(item);
+			group.add(item);
+			if (i == fontLevel) {
+				item.setSelected(true);
+			}
+		}
+		defaultFontSizeItem.setText(ToolsRes.getString("Tool.MenuItem.DefaultFontSize")); //$NON-NLS-1$
+		return popup;
+	}
 
 	/**
 	 * Refreshes the GUI.
@@ -669,7 +682,6 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		helpButton.setToolTipText(ToolsRes.getString("Tool.Button.Help.ToolTip")); //$NON-NLS-1$
 		fontButton.setText(ToolsRes.getString("Tool.Menu.FontSize")); //$NON-NLS-1$
 		fontButton.setToolTipText(ToolsRes.getString("FunctionTool.Button.Display.Tooltip")); //$NON-NLS-1$
-		defaultFontSizeItem.setText(ToolsRes.getString("Tool.MenuItem.DefaultFontSize")); //$NON-NLS-1$
 		Iterator<FunctionPanel> it = panels.values().iterator();
 		while (it.hasNext()) {
 			FunctionPanel panel = it.next();

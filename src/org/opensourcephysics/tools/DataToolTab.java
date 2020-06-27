@@ -2470,6 +2470,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 * Builds the axis variables popup menu.
 	 */
 	protected void buildVarPopup() {
+		// from action listener
 		if (setVarAction == null) {
 			// create action to set axis variable
 			setVarAction = new AbstractAction() {

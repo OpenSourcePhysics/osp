@@ -185,7 +185,10 @@ public class LibraryTreePanel extends JPanel {
 	protected JLabel typeLabel, typeField;
 	protected JButton openHTMLButton, openBasePathButton, openFileButton;
 	protected ArrayList<JLabel> labels = new ArrayList<JLabel>();
+
 	protected JPopupMenu popup;
+
+	
 	protected MouseAdapter treeMouseListener, convertPathMouseListener;
 	protected TreeSelectionListener treeSelectionListener;
 	protected XMLControl pasteControl;
@@ -571,9 +574,8 @@ public class LibraryTreePanel extends JPanel {
 	 * Creates the GUI and listeners.
 	 */
 	protected void createGUI() {
-		// create popup menu
-		popup = new JPopupMenu();
-		// create actions
+		// don't create popup menu
+	// create actions
 		addCollectionAction = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -1431,6 +1433,8 @@ public class LibraryTreePanel extends JPanel {
 	 * @return the popup menu
 	 */
 	protected JPopupMenu getPopup(final LibraryTreeNode node) {
+		if (popup == null)
+			popup = new JPopupMenu();
 		popup.removeAll();
 		if (!isEditing()) {
 			JMenuItem item = new JMenuItem(ToolsRes.getString("LibraryTreePanel.Button.Copy")); //$NON-NLS-1$

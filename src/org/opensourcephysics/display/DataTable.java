@@ -125,8 +125,7 @@ public class DataTable extends JTable {
 	public static final int MODE_TRACK_TRANSFORM = 0x1B00;
 	public static final int MODE_TRACK_DATA = 0x1C00;
 	public static final int MODE_TRACK_FUNCTION = 0x1D00;
-	public static final int MODE_TRACK_PLOTCOUNT = 0x1E00;
-
+	
 	private static final int MODE_MASK_ROW = 0x2000;
 	public static final int MODE_APPEND_ROW = 0x2100;
 	public static final int MODE_INSERT_ROW = 0x2200;
@@ -635,8 +634,8 @@ public class DataTable extends JTable {
 		default:
 		case MODE_CREATE: // 0x01;
 		case MODE_CLEAR: // 0x02;
-		case MODE_MODEL: // 0x04;
-		case MODE_TAB: // 0x05;
+		case MODE_MODEL: // 0x03;
+		case MODE_TAB: // 0x04;
 			mask = MODE_MASK_NEW;
 			columnsChanged = true;
 		break;
@@ -663,7 +662,6 @@ public class DataTable extends JTable {
 		case MODE_TRACK_TRANSFORM: // 0x1B00;
 		case MODE_TRACK_DATA: // 0x1C00;
 		case MODE_TRACK_FUNCTION: // 0x1D00;
-		case MODE_TRACK_PLOTCOUNT: // 0x1E00
 		case MODE_TRACK_CHOOSE: // 0x1900;
 		case MODE_TRACK_SELECT: // 0x1A00;
 			mask = MODE_MASK_TRACK; // 0x1000;

@@ -74,12 +74,12 @@ import org.opensourcephysics.tools.FontSizer;
 @SuppressWarnings("serial")
 public class OSPLog extends JFrame {
 
-	private static int nLog;
-	
+	static int nLog;
+
 	private final static PrintStream realSysout = System.out;
 
 	private StringBuffer logBuffer = new StringBuffer();
-	
+
 	public static class LoggerPrintStream extends PrintStream {
 
 		protected boolean isErr;
@@ -134,16 +134,13 @@ public class OSPLog extends JFrame {
 	private JMenuItem logToFileItem;
 	private boolean hasPermission = true;
 
-	private int myFontLevel;
-
 	protected int myPopupFontLevel;
+
 	private static LogRecord[] messageStorage = new LogRecord[128];
 	private static int messageIndex = 0;
 	static String eol = "\n"; //$NON-NLS-1$
 	static String logdir = "."; //$NON-NLS-1$
 	static String slash = "/"; //$NON-NLS-1$
-
-	private static int myChooserFontLevel;
 
 	private static boolean useMessageFrame() {
 		return (OSPRuntime.appletMode || OSPRuntime.applet != null);
@@ -211,12 +208,14 @@ public class OSPLog extends JFrame {
 	@Override
 	public void setVisible(boolean visible) {
 		try {
-			if (visible && logPane == null) {
-				logPane = getTextPane();
-				postAllRecords();
-				pack();
+			if (visible) {
+				createGUI();
+				if (logPane == null) {
+					logPane = getTextPane();
+					postAllRecords();
+					pack();
+				}
 			}
-
 			if (useMessageFrame()) {
 				org.opensourcephysics.controls.MessageFrame.showLog(visible);
 			} else {
@@ -521,6 +520,7 @@ public class OSPLog extends JFrame {
 	 * @return a JPanel containing the log
 	 */
 	public JPanel getLogPanel() {
+		createGUI();
 		return logPanel;
 	}
 
@@ -652,17 +652,17 @@ public class OSPLog extends JFrame {
 	 * Opens a text file selected with a chooser and writes the contents to the log.
 	 */
 	public void open() {
-	    OSPRuntime.getChooser().showOpenDialog(null, new Runnable() {
+		OSPRuntime.getChooser().showOpenDialog(null, new Runnable() {
 
 			@Override
 			public void run() {
 				File file = OSPRuntime.getChooser().getSelectedFile();
-			    String fileName =  XML.getRelativePath(file.getAbsolutePath());
-			    fileName = XML.getRelativePath(fileName);
-			    open(fileName);
+				String fileName = XML.getRelativePath(file.getAbsolutePath());
+				fileName = XML.getRelativePath(fileName);
+				open(fileName);
 			}
-	    	
-	    }, null);
+
+		}, null);
 	}
 
 	/**
@@ -708,7 +708,7 @@ public class OSPLog extends JFrame {
 			// BH 2020.04.05 -- don't we want to close it so we can look at it then?
 			fileHandler.close();
 			fileHandler = null;
-			logger.log(Level.INFO, tempFileName + " closed" ); //$NON-NLS-1$"
+			logger.log(Level.INFO, tempFileName + " closed"); //$NON-NLS-1$ "
 
 		}
 	}
@@ -749,14 +749,15 @@ public class OSPLog extends JFrame {
 	 * Creates the GUI.
 	 */
 	protected void createGUI() {
+		if (logPanel != null)
+			return;
 		// create the panel, text pane and scroller
 		logPanel = new JPanel(new BorderLayout());
 		logPanel.setPreferredSize(new Dimension(480, 240));
 		setContentPane(logPanel);
-		// create the logger
-		createLogger();
 		// create the menus
 		createMenus();
+		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 	}
 
 	private JTextPane getTextPane() {
@@ -987,7 +988,7 @@ public class OSPLog extends JFrame {
 		if (chooser == null) {
 			chooser = new JFileChooser(new File(OSPRuntime.chooserDir));
 		}
-	    FontSizer.setFonts(chooser);
+		FontSizer.setFonts(chooser);
 		return chooser;
 	}
 
@@ -1030,9 +1031,9 @@ public class OSPLog extends JFrame {
 		bundleName = resourceBundleName;
 		pkgName = name;
 		ConsoleLevel.class.getName(); // force ConsoleLevel to load static constants
-		createGUI();
 		System.err.println("OSPLog installed in System.out and System.err");
-		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+		// create the logger
+		createLogger();
 		LoggerOutputStream loggerOut = new LoggerOutputStream(ConsoleLevel.OUT_CONSOLE, System.out);
 		LoggerOutputStream loggerErr = new LoggerOutputStream(ConsoleLevel.ERR_CONSOLE, System.err);
 		LoggerPrintStream loggerOutPrint = new LoggerPrintStream(loggerOut, false);
@@ -1051,18 +1052,17 @@ public class OSPLog extends JFrame {
 		if (OSPRuntime.dontLog)
 			return;
 		LogRecord record = new LogRecord(level, msg);
-		
+
 		String className = null, methodName = null;
 		if (OSPRuntime.isJS) {
-			
+
 			OSPRuntime.showStatus("OSPLog[" + level + "] " + msg);
-			
+
 			try {
-			/** @j2sNative 
-			 * var o = arguments.callee.caller.caller;
-			 * methodName = o && o.exName;
-			 * className = o && o.exClazz && o.exClazz.__CLASS_NAME__;
-			 */
+				/**
+				 * @j2sNative var o = arguments.callee.caller.caller; methodName = o &&
+				 *            o.exName; className = o && o.exClazz && o.exClazz.__CLASS_NAME__;
+				 */
 			} catch (Throwable t) {
 				// ignore -- something went wrong
 			}
@@ -1083,7 +1083,7 @@ public class OSPLog extends JFrame {
 			record.setSourceClassName(className);
 			record.setSourceMethodName(methodName);
 		}
-		
+
 		if (OSPLOG != null) {
 			OSPLOG.getLogger().log(record);
 		} else {
@@ -1268,7 +1268,7 @@ public class OSPLog extends JFrame {
 	}
 
 	public static void debug(String msg) {
-		realSysout.println("OSPLog.debug " +msg);
+		realSysout.println("OSPLog.debug " + msg);
 	}
 
 	public static void setFonts(int level) {
