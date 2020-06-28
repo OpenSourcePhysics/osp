@@ -43,6 +43,9 @@ import org.opensourcephysics.display.GUIUtils;
 /**
  * This is a JPanel for managing Functions and supporting Parameters.
  *
+ * subclassed as DataFunctionPanel, FitFunctionPanel, and ModelFunctionPanel (as AnalyticFunctionPanel, 
+ * DynamicFunctionPanel, and ParticleDataTrackFunctionPanel
+ * 
  * @author Douglas Brown
  */
 @SuppressWarnings("serial")
@@ -51,16 +54,26 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 	protected FunctionTool functionTool;
 	protected ParamEditor paramEditor;
 	protected FunctionEditor functionEditor;
-	protected Container box;
-	protected JTextPane instructions;
-	private JButton undoButton;
-	private JButton redoButton;
+
 	private UndoableEditSupport undoSupport;
 	protected UndoManager undoManager;
-	private int varBegin, varEnd;
-	protected JTextField tableEditorField;
 	protected String prevName, description;
+
+	// GUI
+	
+	protected Container box;
+	protected JTextPane instructions;
+	protected JTextField tableEditorField;
+
+	private JButton undoButton;
+	private JButton redoButton;
+	private int varBegin, varEnd;
 	private Icon icon;
+	private boolean haveGUI;
+	
+	protected boolean haveGUI() {
+		return haveGUI;
+	}
 
 	/**
 	 * Constructor FunctionPanel
@@ -71,149 +84,41 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 		super(new BorderLayout());
 		functionEditor = editor;
 		editor.functionPanel = this;
-		createGUI();
-		refreshGUI();
+		init();
+		//createGUI();
+		//refreshGUI();
+//		OSPLog.debug("???Temp FunctionPanel.checkGUI");
+//		checkGUI();
 	}
 
-	/**
-	 * Gets the ParamEditor.
-	 *
-	 * @return the param editor
-	 */
-	public ParamEditor getParamEditor() {
-		return paramEditor;
+	protected void init() {
+		if (functionEditor instanceof DataFunctionEditor) {
+			paramEditor = new ParamEditor(((DataFunctionEditor) functionEditor).getData());
+		} else {
+			paramEditor = new ParamEditor();
+		}
+		paramEditor.functionPanel = this;
+		functionEditor.setParamEditor(paramEditor);
+		paramEditor.setFunctionEditors(new FunctionEditor[] { functionEditor });
+		paramEditor.addPropertyChangeListener(this);
+		paramEditor.addPropertyChangeListener(functionEditor);
+		functionEditor.addPropertyChangeListener(this);
+		functionEditor.addPropertyChangeListener(paramEditor);
 	}
 
-	/**
-	 * Gets the function editor.
-	 *
-	 * @return the function editor
-	 */
-	public FunctionEditor getFunctionEditor() {
-		return functionEditor;
-	}
-
-	/**
-	 * Gets the function table.
-	 *
-	 * @return the table
-	 */
-	public FunctionEditor.Table getFunctionTable() {
-		return functionEditor.getTable();
-	}
-
-	/**
-	 * Gets the parameter table.
-	 *
-	 * @return the table
-	 */
-	public FunctionEditor.Table getParamTable() {
-		return paramEditor.getTable();
-	}
-
-	/**
-	 * Gets an appropriate label for the FunctionTool dropdown.
-	 *
-	 * @return a label string
-	 */
-	public String getLabel() {
-		return ToolsRes.getString("FunctionPanel.Label"); //$NON-NLS-1$
-	}
-
-	/**
-	 * Gets the display name for the FunctionTool dropdown. By default, this returns
-	 * the name of this panel.
-	 *
-	 * @return the display name
-	 */
-	public String getDisplayName() {
-		return getName();
-	}
-
-	/**
-	 * Override getPreferredSize().
-	 *
-	 * @return the preferred size
-	 */
-	@Override
-	public Dimension getPreferredSize() {
-		Dimension dim = super.getPreferredSize();
-		dim.width = paramEditor.buttonPanel.getPreferredSize().width;
-		return dim;
-	}
-
-	/**
-	 * Adds names to the forbidden set.
-	 * 
-	 * @param names the names
-	 */
-	protected void addForbiddenNames(String[] names) {
-		for (int i = 0; i < names.length; i++) {
-			functionEditor.forbiddenNames.add(names[i]);
-			if (paramEditor != null) {
-				paramEditor.forbiddenNames.add(names[i]);
-			}
+	public void checkGUI() {
+		if (!haveGUI) {
+			createGUI();
+			refreshGUI();
 		}
 	}
-
-	/**
-	 * Listens for property changes "edit" and "function"
-	 *
-	 * @param e the event
-	 */
-	@Override
-	public void propertyChange(PropertyChangeEvent e) {
-		switch (e.getPropertyName()) {
-		case FunctionEditor.PROPERTY_FUNCTIONEDITOR_EDIT:
-			// Parameter or Function has been edited
-			if ((e.getNewValue() instanceof UndoableEdit)) {
-				// post undo edit
-				undoSupport.postEdit((UndoableEdit) e.getNewValue());
-			}
-			refreshFunctions();
-			refreshGUI();
-			if (functionTool != null && functionEditor.getObjects().size() > 0) {
-				String functionName = (String) e.getOldValue();
-				String prevName = null;
-				if (e.getNewValue() instanceof FunctionEditor.DefaultEdit) {
-					FunctionEditor.DefaultEdit edit = (FunctionEditor.DefaultEdit) e.getNewValue();
-					if (edit.editType == FunctionEditor.NAME_EDIT) {
-						prevName = edit.undoObj.toString();
-					}
-				} else if (e.getNewValue() instanceof String) {
-					prevName = e.getNewValue().toString();
-				}
-				functionTool.firePropertyChange(FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION, prevName, functionName); // $NON-NLS-1$
-			}
-			break;
-		case FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION:
-			// function has been added or removed
-			refreshFunctions();
-			refreshGUI();
-			if (functionTool != null) {
-				functionTool.refreshGUI();
-				functionTool.firePropertyChange(FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION, null, null); // $NON-NLS-1$
-			}
-		case FunctionEditor.PROPERTY_FUNCTIONEDITOR_DESCRIPTION:
-			if (functionTool != null) {
-				functionTool.firePropertyChange(FunctionEditor.PROPERTY_FUNCTIONEDITOR_DESCRIPTION, null, null); // $NON-NLS-1$
-			}
-		}
-	}
-
-	/**
-	 * Clears the selection.
-	 */
-	protected void clearSelection() {
-		getFunctionTable().clearSelection();
-		getParamTable().clearSelection();
-		refreshInstructions(null, false, -1);
-	}
+	
 
 	/**
 	 * Creates the GUI.
 	 */
 	protected void createGUI() {
+		haveGUI = true;
 		// create textpane and color styles for instructions
 		instructions = GUIUtils.newJTextPane();
 		instructions.setEditable(false);
@@ -299,20 +204,8 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 		// create box and function editors
 		box = Box.createVerticalBox();
 		add(box, BorderLayout.CENTER);
-		if (functionEditor instanceof DataFunctionEditor) {
-			DataFunctionEditor dfEditor = (DataFunctionEditor) functionEditor;
-			paramEditor = new ParamEditor(dfEditor.getData());
-		} else
-			paramEditor = new ParamEditor();
-		paramEditor.functionPanel = this;
-		functionEditor.setParamEditor(paramEditor);
-		paramEditor.setFunctionEditors(new FunctionEditor[] { functionEditor });
 		box.add(paramEditor);
 		box.add(functionEditor);
-		paramEditor.addPropertyChangeListener(this);
-		paramEditor.addPropertyChangeListener(functionEditor);
-		functionEditor.addPropertyChangeListener(this);
-		functionEditor.addPropertyChangeListener(paramEditor);
 		JScrollPane scroller = new JScrollPane(instructions) {
 			@Override
 			public Dimension getPreferredSize() {
@@ -350,10 +243,8 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 	 * Refreshes the GUI.
 	 */
 	protected void refreshGUI() {
-		if (functionTool == null) {
-			OSPLog.debug("FunctionPanel skipping refreshGUI");
+		if (!haveGUI)
 			return;
-		}
 		undoButton.setText(ToolsRes.getString("DataFunctionPanel.Button.Undo")); //$NON-NLS-1$
 		undoButton.setToolTipText(ToolsRes.getString("DataFunctionPanel.Button.Undo.Tooltip")); //$NON-NLS-1$
 		redoButton.setText(ToolsRes.getString("DataFunctionPanel.Button.Redo")); //$NON-NLS-1$
@@ -361,23 +252,153 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 		undoButton.setEnabled(undoManager.canUndo());
 		redoButton.setEnabled(undoManager.canRedo());
 		if (functionTool != null && functionTool.getSelectedPanel() == this) {
-			boolean needsButtons = true;
-			for (Component c : functionTool.buttonbar.getComponents()) {
-				if (c == undoButton)
-					needsButtons = false;
-			}
-			if (needsButtons) {
-				functionTool.buttonbar.removeAll();
-				functionTool.buttonbar.add(functionTool.helpButton);
-				functionTool.buttonbar.add(undoButton);
-				functionTool.buttonbar.add(redoButton);
-				functionTool.buttonbar.add(functionTool.fontButton);
-				functionTool.buttonbar.add(functionTool.closeButton);
+			if (!functionTool.hasButton(undoButton)) {
+				functionTool.setButtonBar(new Object[] {
+						"help", undoButton, redoButton, "font", "close"});
 			}
 			paramEditor.refreshGUI();
 			functionEditor.refreshGUI();
 		}
 //    refreshInstructions(null, false, -1);
+	}
+
+	/**
+	 * Gets the ParamEditor.
+	 *
+	 * @return the param editor
+	 */
+	public ParamEditor getParamEditor() {
+		return paramEditor;
+	}
+
+	/**
+	 * Gets the function editor.
+	 *
+	 * @return the function editor
+	 */
+	public FunctionEditor getFunctionEditor() {
+		return functionEditor;
+	}
+
+	/**
+	 * Gets the function table.
+	 *
+	 * @return the table
+	 */
+	public FunctionEditor.Table getFunctionTable() {
+		return functionEditor.getTable();
+	}
+
+	/**
+	 * Gets the parameter table.
+	 *
+	 * @return the table
+	 */
+	public FunctionEditor.Table getParamTable() {
+		return paramEditor.getTable();
+	}
+
+	/**
+	 * Gets an appropriate label for the FunctionTool dropdown.
+	 *
+	 * @return a label string
+	 */
+	public String getLabel() {
+		return ToolsRes.getString("FunctionPanel.Label"); //$NON-NLS-1$
+	}
+
+	/**
+	 * Gets the display name for the FunctionTool dropdown. By default, this returns
+	 * the name of this panel.
+	 *
+	 * @return the display name
+	 */
+	public String getDisplayName() {
+		return getName();
+	}
+
+	/**
+	 * Override getPreferredSize().
+	 *
+	 * @return the preferred size
+	 */
+	@Override
+	public Dimension getPreferredSize() {
+		Dimension dim = super.getPreferredSize();
+		JPanel bp = paramEditor.getButtonPanel();
+		dim.width = bp.getPreferredSize().width;
+		return dim;
+	}
+
+	/**
+	 * Adds names to the forbidden set.
+	 * 
+	 * @param names the names
+	 */
+	protected void addForbiddenNames(String[] names) {
+		for (int i = 0; i < names.length; i++) {
+			functionEditor.forbiddenNames.add(names[i]);
+			if (paramEditor != null) {
+				paramEditor.forbiddenNames.add(names[i]);
+			}
+		}
+	}
+
+	/**
+	 * Listens for property changes "edit" and "function"
+	 *
+	 * @param e the event
+	 */
+	@Override
+	public void propertyChange(PropertyChangeEvent e) {
+		switch (e.getPropertyName()) {
+		case FunctionEditor.PROPERTY_FUNCTIONEDITOR_EDIT:
+			// Parameter or Function has been edited
+			if ((e.getNewValue() instanceof UndoableEdit)) {
+				// post undo edit
+				undoSupport.postEdit((UndoableEdit) e.getNewValue());
+			}
+			refreshFunctions();
+			refreshGUI();
+			if (functionEditor.getObjects().size() > 0) {
+				String functionName = (String) e.getOldValue();
+				String prevName = null;
+				if (e.getNewValue() instanceof FunctionEditor.DefaultEdit) {
+					FunctionEditor.DefaultEdit edit = (FunctionEditor.DefaultEdit) e.getNewValue();
+					if (edit.editType == FunctionEditor.NAME_EDIT) {
+						prevName = edit.undoObj.toString();
+					}
+				} else if (e.getNewValue() instanceof String) {
+					prevName = e.getNewValue().toString();
+				}
+				if (functionTool != null)
+					functionTool.firePropertyChange(FunctionEditor.PROPERTY_FUNCTIONTOOL_FUNCTION, prevName, functionName); // $NON-NLS-1$
+			}
+			break;
+		case FunctionEditor.PROPERTY_FUNCTIONEDITOR_FUNCTION:
+			// function has been added or removed
+			refreshFunctions();
+			refreshGUI();
+			if (functionTool != null) {
+				functionTool.refreshGUI();
+				functionTool.firePropertyChange(FunctionEditor.PROPERTY_FUNCTIONTOOL_FUNCTION, null, null); // $NON-NLS-1$
+			}
+		case FunctionEditor.PROPERTY_FUNCTIONEDITOR_DESCRIPTION:
+			if (functionTool != null) {
+				functionTool.firePropertyChange(FunctionEditor.PROPERTY_FUNCTIONEDITOR_DESCRIPTION, null, null); // $NON-NLS-1$
+			}
+		}
+	}
+
+	/**
+	 * Clears the selection.
+	 */
+	protected void clearSelection() {
+		if (!haveGUI())
+			return;
+		getFunctionTable().clearSelection();
+		getParamTable().clearSelection();
+		refreshInstructions(null, false, -1);
 	}
 
 	/**
@@ -450,10 +471,12 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 	 * @param editor the current editor
 	 */
 	protected void tabToNext(FunctionEditor editor) {
+		if (!haveGUI())
+			return;
 		if (editor == functionEditor) {
-			functionTool.helpButton.requestFocusInWindow();
+			functionTool.focusHelp();
 		} else {
-			functionEditor.newButton.requestFocusInWindow();
+			functionEditor.tabToNext();
 		}
 	}
 
@@ -465,6 +488,8 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 	 * @param selectedColumn the selected table column, or -1 if none
 	 */
 	protected void refreshInstructions(FunctionEditor source, boolean editing, int selectedColumn) {
+		  if (instructions == null) 
+			  return;
 		StyledDocument doc = instructions.getStyledDocument();
 		Style style = doc.getStyle("blue"); //$NON-NLS-1$
 		String s = isEmpty() ? ToolsRes.getString("FunctionPanel.Instructions.GetStarted") //$NON-NLS-1$

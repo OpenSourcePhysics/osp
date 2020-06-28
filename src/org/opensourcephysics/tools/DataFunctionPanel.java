@@ -70,11 +70,13 @@ public class DataFunctionPanel extends FunctionPanel {
 	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent e) {
-		if (e.getPropertyName().equals("edit")) { //$NON-NLS-1$
+	  switch (e.getPropertyName()) {
+	  case FunctionEditor.PROPERTY_FUNCTIONEDITOR_EDIT:
 			refreshFunctions();
 			super.propertyChange(e);
-		} else if (e.getPropertyName().equals("function")) { //$NON-NLS-1$
-			// function has been added or removed
+			break;
+	  case FunctionEditor.PROPERTY_FUNCTIONEDITOR_FUNCTION:
+	    // function has been added or removed
 			if (e.getNewValue() != null) { // added
 				DataFunction f = (DataFunction) e.getNewValue();
 				getData().addDataset(f);
@@ -87,9 +89,10 @@ public class DataFunctionPanel extends FunctionPanel {
 			refreshGUI();
 			if (functionTool != null) {
 				functionTool.refreshGUI();
-				functionTool.firePropertyChange(FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION, e.getOldValue(),
+				functionTool.firePropertyChange(FunctionEditor.PROPERTY_FUNCTIONTOOL_FUNCTION, e.getOldValue(),
 						e.getNewValue()); // $NON-NLS-1$
 			}
+			break;
 		}
 	}
 

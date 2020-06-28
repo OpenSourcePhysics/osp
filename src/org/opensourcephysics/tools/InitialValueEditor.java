@@ -24,6 +24,7 @@ public class InitialValueEditor extends ParamEditor {
 	 */
 	public InitialValueEditor(ParamEditor editor) {
 		super();
+		skipAllName = "t";
 		paramEditor = editor;
 		setFunctionPanel(editor.getFunctionPanel());
 	}
@@ -37,28 +38,6 @@ public class InitialValueEditor extends ParamEditor {
 	@Override
 	public boolean isNameEditable(FObject obj) {
 		return false;
-	}
-
-	/**
-	 * Override getPreferredSize().
-	 *
-	 * @return the table size, with adjustments
-	 */
-	@Override
-	public Dimension getPreferredSize() {
-		boolean hasButtons = false;
-		for (java.awt.Component c : getComponents()) {
-			if (c == buttonPanel) {
-				hasButtons = true;
-			}
-		}
-		if (hasButtons) {
-			return super.getPreferredSize();
-		}
-		Dimension dim = table.getPreferredSize();
-		dim.height += table.getTableHeader().getHeight();
-		dim.height += 1.25 * table.getRowHeight() + 14;
-		return dim;
 	}
 
 	@Override
@@ -100,45 +79,14 @@ public class InitialValueEditor extends ParamEditor {
 	 */
 	@Override
 	protected void createGUI() {
+		addButtonPanel = false;
 		super.createGUI();
-		remove(buttonPanel);
 	}
 
-	/**
-	 * Refreshes the GUI.
-	 */
 	@Override
-	public void refreshGUI() {
-		super.refreshGUI();
-		titledBorder.setTitle(ToolsRes.getString("InitialValueEditor.Border.Title")); //$NON-NLS-1$
-	}
-
-	/**
-	 * Returns a String with the names of variables available for expressions. Only
-	 * parameter names are available to initial values.
-	 */
-	@Override
-	protected String getVariablesString(String separator) {
-		StringBuffer vars = new StringBuffer(""); //$NON-NLS-1$
-		int init = vars.length();
-		int row = table.getSelectedRow();
-		if (!"t".equals(table.getValueAt(row, 0))) { //$NON-NLS-1$
-			// add parameters, if any
-			boolean firstItem = true;
-			String[] paramNames = paramEditor.getNames();
-			for (int i = 0; i < paramNames.length; i++) {
-				if (!firstItem) {
-					vars.append(" "); //$NON-NLS-1$
-				}
-				vars.append(paramNames[i]);
-				firstItem = false;
-			}
-		}
-		if (vars.length() == init) {
-			return ToolsRes.getString("FunctionPanel.Instructions.Help"); //$NON-NLS-1$
-		}
-		return ToolsRes.getString("FunctionPanel.Instructions.ValueCell") //$NON-NLS-1$
-				+ separator + vars.toString();
+	protected void setTitles() {
+		newButtonTipText = ToolsRes.getString("ParamEditor.Button.New.Tooltip"); //$NON-NLS-1$
+		titledBorderText = ToolsRes.getString("InitialValueEditor.Border.Title");
 	}
 
 }

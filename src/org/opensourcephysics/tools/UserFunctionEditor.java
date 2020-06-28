@@ -35,6 +35,12 @@ public class UserFunctionEditor extends FunctionEditor {
 		super();
 	}
 
+
+	@Override
+	protected void setTitles() {
+		// nothing to do?
+	}
+
 	/**
 	 * Returns the main user functions.
 	 *
@@ -194,7 +200,7 @@ public class UserFunctionEditor extends FunctionEditor {
 	public FObject addObject(FObject obj, int row, boolean postEdit, boolean firePropertyChange) {
 		obj = super.addObject(obj, row, postEdit, firePropertyChange);
 		if (obj != null) {
-			firePropertyChange("function", null, obj); //$NON-NLS-1$
+			firePropertyChange(PROPERTY_FUNCTIONEDITOR_FUNCTION, null, obj); //$NON-NLS-1$
 		}
 		return obj;
 	}
@@ -210,7 +216,7 @@ public class UserFunctionEditor extends FunctionEditor {
 	public FObject removeObject(FObject obj, boolean postEdit) {
 		obj = super.removeObject(obj, postEdit);
 		if (obj != null) {
-			firePropertyChange("function", obj, null); //$NON-NLS-1$
+			firePropertyChange(PROPERTY_FUNCTIONEDITOR_FUNCTION, obj, null); //$NON-NLS-1$
 		}
 		return obj;
 	}
@@ -365,17 +371,12 @@ public class UserFunctionEditor extends FunctionEditor {
 	@Override
 	protected String getVariablesString(String separator) {
 		StringBuffer vars = new StringBuffer(""); //$NON-NLS-1$
-		int init = vars.length();
-		boolean firstItem = true;
 		UserFunction f = (UserFunction) getSelectedObject();
 		if (f != null) {
 			String[] s = f.getIndependentVariables();
 			for (int i = 0; i < s.length; i++) {
-				if (!firstItem) {
-					vars.append(" "); //$NON-NLS-1$
-				}
+				vars.append(" "); //$NON-NLS-1$
 				vars.append(s[i]);
-				firstItem = false;
 			}
 		}
 		List<String> namesToSkip = new ArrayList<String>();
@@ -387,26 +388,16 @@ public class UserFunctionEditor extends FunctionEditor {
 			if (namesToSkip.contains(names[i])) {
 				continue;
 			}
-			if (!firstItem) {
-				vars.append(" "); //$NON-NLS-1$
-			}
+			vars.append(" "); //$NON-NLS-1$
 			vars.append(names[i]);
-			firstItem = false;
 		}
 		// add parameters, if any
 		String[] paramNames = paramEditor.getNames();
 		for (int i = 0; i < paramNames.length; i++) {
-			if (!firstItem) {
-				vars.append(" "); //$NON-NLS-1$
-			}
+			vars.append(" "); //$NON-NLS-1$
 			vars.append(paramNames[i]);
-			firstItem = false;
 		}
-		if (vars.length() == init) {
-			return ToolsRes.getString("FunctionPanel.Instructions.Help"); //$NON-NLS-1$
-		}
-		return ToolsRes.getString("FunctionPanel.Instructions.ValueCell") //$NON-NLS-1$
-				+ separator + vars.toString();
+		return getVariablesString(vars, separator);
 	}
 
 	/**

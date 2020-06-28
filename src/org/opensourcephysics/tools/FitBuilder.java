@@ -244,7 +244,9 @@ public class FitBuilder extends FunctionTool {
 		deleteFitButton.setEnabled(!getPanelNames().isEmpty());
 		if (getPanelNames().isEmpty()) {
 			String label = ToolsRes.getString("FitFunctionPanel.Label"); //$NON-NLS-1$
-			dropdownLabel.setText(label + ":"); //$NON-NLS-1$
+			dropdownLabelText = (label + ":"); //$NON-NLS-1$
+		} else {
+			dropdownLabelText = null;
 		}
 		super.refreshDropdown(name);
 	}
@@ -573,17 +575,26 @@ public class FitBuilder extends FunctionTool {
 		return false;
 	}
 
+
+	@Override 
+	protected void setTitles() {
+		if (getPanelNames().isEmpty()) {
+			String label = ToolsRes.getString("FitFunctionPanel.Label"); //$NON-NLS-1$
+			dropdownLabelText = (label + ":"); //$NON-NLS-1$
+		} else {
+			dropdownLabelText = null;
+		}
+	    titleText = ToolsRes.getString("DatasetCurveFitter.FitBuilder.Title");
+	}
+	
 	/**
 	 * Refreshes the GUI.
 	 */
 	@Override
 	protected void refreshGUI() {
+		if (!haveGUI())
+			return;
 		super.refreshGUI();
-		setTitle(ToolsRes.getString("DatasetCurveFitter.FitBuilder.Title")); //$NON-NLS-1$
-		if (getPanelNames().isEmpty()) {
-			String label = ToolsRes.getString("FitFunctionPanel.Label"); //$NON-NLS-1$
-			dropdownLabel.setText(label + ":"); //$NON-NLS-1$
-		}
 		if (saveButton != null) {
 			saveButton.setEnabled(!getPanelNames().isEmpty());
 			loadButton.setToolTipText(ToolsRes.getString("DatasetCurveFitter.FitBuilder.Button.Load.Tooltip")); //$NON-NLS-1$
