@@ -100,6 +100,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 * 
 	 */
 	protected JMenuItem propertiesItem, autoscaleItem, scaleItem, zoomInItem, zoomOutItem, snapshotItem; 
+
 	protected int leftGutter = 0, topGutter = 0, rightGutter = 0, bottomGutter = 0;
 	protected int leftGutterPreferred = 0, topGutterPreferred = 0, rightGutterPreferred = 0, bottomGutterPreferred = 0;
 	protected boolean clipAtGutter = true; // clips the drawing at the gutter if true

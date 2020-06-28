@@ -32,15 +32,11 @@
 package org.opensourcephysics.media.core;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import javax.swing.ButtonGroup;
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
@@ -89,24 +85,13 @@ public class DeinterlaceFilter extends Filter {
 		return isOdd;
 	}
 
-	/**
-	 * Implements abstract Filter method.
-	 *
-	 * @return the inspector
-	 */
 	@Override
-	public synchronized JDialog getInspector() {
-		Inspector myInspector = inspector;
-		if (myInspector == null) {
-			myInspector = new Inspector();
-		}
-		if (myInspector.isModal() && vidPanel != null) {
-			frame = JOptionPane.getFrameForComponent(vidPanel);
-			myInspector.setVisible(false);
-			myInspector.dispose();
-			myInspector = new Inspector();
-		}
-		inspector = myInspector;
+	protected InspectorDlg newInspector() {
+		return inspector = new Inspector();
+	}
+
+	@Override
+	protected InspectorDlg initInspector() {
 		inspector.initialize();
 		return inspector;
 	}
@@ -145,7 +130,7 @@ public class DeinterlaceFilter extends Filter {
 	 */
 	@Override
 	protected void setOutputPixels() {
-		
+
 		// ...in...odd/out...even/out
 		// .........n==w....n==0
 		// ...4......4.......4
@@ -174,7 +159,7 @@ public class DeinterlaceFilter extends Filter {
 	/**
 	 * Inner Inspector class to control filter parameters
 	 */
-	private class Inspector extends JDialog {
+	private class Inspector extends InspectorDlg {
 		// instance fields
 		ButtonGroup group;
 
@@ -182,24 +167,13 @@ public class DeinterlaceFilter extends Filter {
 		 * Constructs the Inspector.
 		 */
 		public Inspector() {
-			super(frame, !(frame instanceof org.opensourcephysics.display.OSPFrame));
-			setTitle(MediaRes.getString("Filter.Deinterlace.Title")); //$NON-NLS-1$
-			setResizable(false);
-			createGUI();
-			initialize();
-			refresh();
-			pack();
-			// center on screen
-			Rectangle rect = getBounds();
-			Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-			int x = (dim.width - rect.width) / 2;
-			int y = (dim.height - rect.height) / 2;
-			setLocation(x, y);
+			super("Filter.Deinterlace.Title");
 		}
 
 		/**
 		 * Creates the visible components.
 		 */
+		@Override
 		void createGUI() {
 			// create radio buttons
 			odd = new JRadioButton();

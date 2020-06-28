@@ -31,25 +31,19 @@
  */
 package org.opensourcephysics.media.core;
 
-import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.OSPRuntime;
-import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ResourceLoader;
 
 import javajs.async.AsyncFileChooser;
@@ -60,11 +54,10 @@ import javajs.async.AsyncFileChooser;
  * @author Douglas Brown
  * @version 1.0
  */
-@SuppressWarnings("serial")
 public class BaselineFilter extends Filter {
 	// instance fields
 	private BufferedImage baseline;
-	
+
 	private int[] baselinePixels;
 	private Inspector inspector;
 	private String imagePath;
@@ -112,13 +105,13 @@ public class BaselineFilter extends Filter {
 	public void load() {
 		AsyncFileChooser chooser = OSPRuntime.getChooser();
 //		FontSizer.setFonts(chooser, FontSizer.getLevel());
-    chooser.showOpenDialog(null, new Runnable() {
-    	@Override
+		chooser.showOpenDialog(null, new Runnable() {
+			@Override
 			public void run() {
-			File file = chooser.getSelectedFile();
-			load(file.getAbsolutePath());
-		}
-    }, null);
+				File file = chooser.getSelectedFile();
+				load(file.getAbsolutePath());
+			}
+		}, null);
 	}
 
 	/**
@@ -160,18 +153,12 @@ public class BaselineFilter extends Filter {
 	 * @return the inspector
 	 */
 	@Override
-	public synchronized JDialog getInspector() {
-		Inspector myInspector = inspector;
-		if (myInspector == null) {
-			myInspector = new Inspector();
-		}
-		if (myInspector.isModal() && vidPanel != null) {
-			frame = JOptionPane.getFrameForComponent(vidPanel);
-			myInspector.setVisible(false);
-			myInspector.dispose();
-			myInspector = new Inspector();
-		}
-		inspector = myInspector;
+	protected InspectorDlg newInspector() {
+		return inspector = new Inspector();
+	}
+
+	@Override
+	protected InspectorDlg initInspector() {
 		inspector.initialize();
 		return inspector;
 	}
@@ -242,28 +229,18 @@ public class BaselineFilter extends Filter {
 	/**
 	 * Inner Inspector class to control filter parameters
 	 */
-	private class Inspector extends JDialog {
+	private class Inspector extends InspectorDlg {
 		/**
 		 * Constructs the Inspector.
 		 */
 		public Inspector() {
-			super(frame, !(frame instanceof org.opensourcephysics.display.OSPFrame));
-			setTitle(MediaRes.getString("Filter.Baseline.Title")); //$NON-NLS-1$
-			setResizable(false);
-			createGUI();
-			refresh();
-			pack();
-			// center on screen
-			Rectangle rect = getBounds();
-			Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-			int x = (dim.width - rect.width) / 2;
-			int y = (dim.height - rect.height) / 2;
-			setLocation(x, y);
+			super("Filter.Baseline.Title"); //$NON-NLS-1$
 		}
 
 		/**
 		 * Creates the visible components.
 		 */
+		@Override
 		void createGUI() {
 			// create buttons
 			loadButton = new JButton();
@@ -327,12 +304,7 @@ public class BaselineFilter extends Filter {
 			if (filter.imagePath != null) {
 				control.setValue("imagepath", filter.imagePath); //$NON-NLS-1$
 			}
-			if ((filter.frame != null) && (filter.inspector != null) && filter.inspector.isVisible()) {
-				int x = filter.inspector.getLocation().x - filter.frame.getLocation().x;
-				int y = filter.inspector.getLocation().y - filter.frame.getLocation().y;
-				control.setValue("inspector_x", x); //$NON-NLS-1$
-				control.setValue("inspector_y", y); //$NON-NLS-1$
-			}
+			filter.addLocation(control);
 		}
 
 		/**

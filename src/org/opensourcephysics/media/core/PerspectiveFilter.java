@@ -34,7 +34,6 @@ import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -45,7 +44,6 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -65,7 +63,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -92,6 +89,9 @@ import org.opensourcephysics.display.OSPRuntime;
 @SuppressWarnings("serial")
 public class PerspectiveFilter extends Filter {
 
+	public static final String PROPERTY_PERSPECTIVEFILTER_CORNERLOCATION = "cornerlocation";
+	public static final String PROPERTY_PERSPECTIVEFILTER_FIXED = "fixed";
+	
 	// static fields
 	private static Color defaultColor = Color.RED;
 	// instance fields
@@ -154,26 +154,17 @@ public class PerspectiveFilter extends Filter {
 		return super.isEnabled();
 	}
 
-	/**
-	 * Gets the inspector for this filter.
-	 *
-	 * @return the inspector
-	 */
 	@Override
-	public synchronized JDialog getInspector() {
-		Inspector myInspector = inspector;
-		if (myInspector == null) {
-			myInspector = new Inspector();
-		}
-		if (myInspector.isModal() && vidPanel != null) {
-			frame = JOptionPane.getFrameForComponent(vidPanel);
-			myInspector.dispose();
-			myInspector = new Inspector();
-		}
-		inspector = myInspector;
+	protected InspectorDlg newInspector() {
+		return inspector = new Inspector();
+	}
+
+	@Override
+	protected InspectorDlg initInspector() {
 		inspector.initialize();
 		return inspector;
 	}
+	
 
 	/**
 	 * Refreshes this filter's GUI
@@ -252,7 +243,7 @@ public class PerspectiveFilter extends Filter {
 				keyFrames.clear();
 				saveCorners(fixedKey, in); // save input corners
 			}
-			support.firePropertyChange("fixed", filterState, null); //$NON-NLS-1$
+			support.firePropertyChange(PROPERTY_PERSPECTIVEFILTER_FIXED, filterState, null); //$NON-NLS-1$
 		}
 	}
 
@@ -739,7 +730,7 @@ public class PerspectiveFilter extends Filter {
 	/**
 	 * Inner Inspector class to control filter parameters
 	 */
-	private class Inspector extends JDialog {
+	private class Inspector extends InspectorDlg {
 
 		JButton helpButton, colorButton;
 		JTabbedPane tabbedPane;
@@ -749,23 +740,13 @@ public class PerspectiveFilter extends Filter {
 		 * Constructs the Inspector.
 		 */
 		public Inspector() {
-			super(frame, !(frame instanceof org.opensourcephysics.display.OSPFrame));
-			inspector = this;
-			setResizable(false);
-			createGUI();
-			refresh();
-			pack();
-			// center on screen
-			Rectangle rect = getBounds();
-			Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-			int x = (dim.width - rect.width) / 2;
-			int y = (dim.height - rect.height) / 2;
-			setLocation(x, y);
+			super("Filter.Perspective.Title");
 		}
 
 		/**
 		 * Creates the visible components.
 		 */
+		@Override
 		void createGUI() {
 			tabbedPane = new JTabbedPane();
 			inputEditor = new QuadEditor(true);
@@ -928,7 +909,7 @@ public class PerspectiveFilter extends Filter {
 			}
 
 			// fire cornerlocation event
-			PerspectiveFilter.this.support.firePropertyChange("cornerlocation", null, this); //$NON-NLS-1$
+			PerspectiveFilter.this.support.firePropertyChange(PROPERTY_PERSPECTIVEFILTER_CORNERLOCATION, null, this); //$NON-NLS-1$
 
 			if (vidPanel != null)
 				vidPanel.repaint();
@@ -1348,13 +1329,7 @@ public class PerspectiveFilter extends Filter {
 			if (!filter.quad.color.equals(defaultColor)) {
 				control.setValue("color", filter.quad.color); //$NON-NLS-1$
 			}
-
-			if ((filter.frame != null) && (filter.inspector != null) && filter.inspector.isVisible()) {
-				int x = filter.inspector.getLocation().x - filter.frame.getLocation().x;
-				int y = filter.inspector.getLocation().y - filter.frame.getLocation().y;
-				control.setValue("inspector_x", x); //$NON-NLS-1$
-				control.setValue("inspector_y", y); //$NON-NLS-1$
-			}
+			filter.addLocation(control);
 			control.setValue("disabled", !filter.isSuperEnabled()); //$NON-NLS-1$
 			control.setValue("fixed_in", filter.fixedIn); //$NON-NLS-1$
 			control.setValue("fixed_out", filter.fixedOut); //$NON-NLS-1$

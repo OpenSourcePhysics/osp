@@ -31,7 +31,7 @@
  */
 package org.opensourcephysics.media.core;
 
-import javax.swing.JDialog;
+
 
 /**
  * This is a Filter that produces a negative version of the source.
@@ -49,16 +49,16 @@ public class NegativeFilter extends Filter {
 		refresh();
 	}
 
-	/**
-	 * Implements abstract Filter method.
-	 *
-	 * @return the inspector
-	 */
 	@Override
-	public JDialog getInspector() {
+	protected InspectorDlg newInspector() {
 		return null;
 	}
 
+	@Override
+	protected InspectorDlg initInspector() {
+		return null;
+	}
+	
 	// _____________________________ private methods _______________________
 
 	/**

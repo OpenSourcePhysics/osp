@@ -31,8 +31,9 @@
  */
 package org.opensourcephysics.media.core;
 
-import java.awt.Frame;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -46,6 +47,7 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -65,6 +67,39 @@ import org.opensourcephysics.tools.DataTool;
  */
 public abstract class Filter {
 
+
+	protected boolean haveGUI;
+
+	abstract protected class InspectorDlg extends JDialog {
+
+		protected InspectorDlg(String title) {
+			super(frame, !(frame instanceof org.opensourcephysics.display.OSPFrame));
+			setTitle(MediaRes.getString(title));
+		}
+
+		/**
+		 * delayed GUI construction
+		 */
+		abstract void createGUI();
+		
+		@Override
+		public void setVisible(boolean b) {
+			if (b && !haveGUI) {
+				haveGUI = true;
+				setResizable(false);
+				createGUI();
+				refresh();
+				pack();
+				// center on screen
+				Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+				int x = Math.max(0, (dim.width - getWidth()) / 2);
+				int y = Math.max(0, (dim.height - getHeight()) / 2);
+				setLocation(x, y);
+			}
+			super.setVisible(b);
+		}
+	}
+
 	protected static final int ROTATE_NONE = -1, ROTATE_CCW_90 = 0, ROTATE_CW_90 = 1, ROTATE_180 = 2;
 
 	public static final String PROPERTY_FILTER_VISIBLE = "filter_visible";
@@ -75,7 +110,7 @@ public abstract class Filter {
 	public static final String PROPERTY_FILTER_BRIGHTNESS = "brightness";
 	public static final String PROPERTY_FILTER_MEAN = "mean";
 	public static final String PROPERTY_FILTER_RESET = "reset";
-
+	public static final String PROPERTY_FILTER_ENABLED = "enabled";
 
 	
 	protected int rotationType = ROTATE_NONE;
@@ -115,12 +150,15 @@ public abstract class Filter {
 
 	// GUI
 	
+	protected JFrame frame;
+
 	protected JCheckBoxMenuItem enabledItem;
 	protected JMenuItem deleteItem, propertiesItem, copyItem;
-	protected Frame frame;
 	protected JButton closeButton;
 	protected JButton ableButton;
 	protected JButton clearButton;
+
+	protected InspectorDlg inspectorDlg;
 
 	
 	/**
@@ -135,69 +173,6 @@ public abstract class Filter {
 		if ((i > 0) && (i < name.length() - 1)) {
 			name = name.substring(0, i);
 		}
-
-		// set up menu items
-		enabledAction = new AbstractAction(MediaRes.getString("Filter.MenuItem.Enabled")) { //$NON-NLS-1$
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Filter.this.setEnabled(enabledItem.isSelected());
-				refresh();
-			}
-
-		};
-		enabledItem = new JCheckBoxMenuItem(enabledAction);
-		enabledItem.setSelected(isEnabled());
-		propertiesItem = new JMenuItem(MediaRes.getString("Filter.MenuItem.Properties")); //$NON-NLS-1$
-		propertiesItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				JDialog inspector = getInspector();
-				if (inspector != null) {
-					inspector.setVisible(true);
-				}
-			}
-
-		});
-		copyItem = new JMenuItem(MediaRes.getString("Filter.MenuItem.Copy")); //$NON-NLS-1$
-		copyItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				copy();
-			}
-		});
-		closeButton = new JButton();
-		closeButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				JDialog inspector = getInspector();
-				if (inspector != null) {
-					if (isChanged() && previousState != null) {
-						changed = false;
-						support.firePropertyChange("filterChanged", previousState, Filter.this); //$NON-NLS-1$
-						previousState = null;
-					}
-					inspector.setVisible(false);
-				}
-			}
-
-		});
-		ableButton = new JButton();
-		ableButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				enabledItem.setSelected(!enabledItem.isSelected());
-				enabledAction.actionPerformed(null);
-			}
-
-		});
-		clearButton = new JButton();
-		clearButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				clear();
-			}
-
-		});
 	}
 
 	/**
@@ -205,8 +180,29 @@ public abstract class Filter {
 	 *
 	 * @return the inspector
 	 */
-	public abstract JDialog getInspector();
+	public JDialog getInspector() {
+		JDialog myInspector = inspectorDlg;
+		if (myInspector == null) {
+			myInspector = newInspector();
+			if (myInspector == null)
+				return null;
+		}
+		if (myInspector.isModal() && vidPanel != null) {
+			frame = (JFrame) JOptionPane.getFrameForComponent(vidPanel);
+			myInspector.setVisible(false);
+			myInspector.dispose();
+			myInspector = newInspector();
+		}
+		return inspectorDlg = initInspector();
+	}
+	
+	protected abstract InspectorDlg newInspector();
 
+	protected abstract InspectorDlg initInspector();
+
+
+	
+	
 	/**
 	 * Clears the filter. This default method does nothing.
 	 */
@@ -230,7 +226,7 @@ public abstract class Filter {
 	 */
 	public void setVideoPanel(VideoPanel panel) {
 		vidPanel = panel;
-		frame = vidPanel == null ? null : JOptionPane.getFrameForComponent(vidPanel);
+		frame = (JFrame) (vidPanel == null ? null : JOptionPane.getFrameForComponent(vidPanel));
 	}
 
 	/**
@@ -261,7 +257,7 @@ public abstract class Filter {
 			return;
 		}
 		this.enabled = enabled;
-		support.firePropertyChange("enabled", null, new Boolean(enabled)); //$NON-NLS-1$
+		support.firePropertyChange(PROPERTY_FILTER_ENABLED, null, new Boolean(enabled)); //$NON-NLS-1$
 	}
 
 	/**
@@ -349,6 +345,72 @@ public abstract class Filter {
 	 */
 	public JMenu getMenu(Video video) {
 		JMenu menu = new JMenu(MediaRes.getString("VideoFilter." + name)); //$NON-NLS-1$
+		
+
+		// set up menu items
+		enabledAction = new AbstractAction(MediaRes.getString("Filter.MenuItem.Enabled")) { //$NON-NLS-1$
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Filter.this.setEnabled(enabledItem.isSelected());
+				refresh();
+			}
+
+		};
+		enabledItem = new JCheckBoxMenuItem(enabledAction);
+		enabledItem.setSelected(isEnabled());
+		propertiesItem = new JMenuItem(MediaRes.getString("Filter.MenuItem.Properties")); //$NON-NLS-1$
+		propertiesItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JDialog inspector = getInspector();
+				if (inspector != null) {
+					inspector.setVisible(true);
+				}
+			}
+
+		});
+		copyItem = new JMenuItem(MediaRes.getString("Filter.MenuItem.Copy")); //$NON-NLS-1$
+		copyItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				copy();
+			}
+		});
+		closeButton = new JButton();
+		closeButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JDialog inspector = getInspector();
+				if (inspector != null) {
+					if (isChanged() && previousState != null) {
+						changed = false;
+						support.firePropertyChange("filterChanged", previousState, Filter.this); //$NON-NLS-1$
+						previousState = null;
+					}
+					inspector.setVisible(false);
+				}
+			}
+
+		});
+		ableButton = new JButton();
+		ableButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				enabledItem.setSelected(!enabledItem.isSelected());
+				enabledAction.actionPerformed(null);
+			}
+
+		});
+		clearButton = new JButton();
+		clearButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				clear();
+			}
+
+		});
+
+		
 		if (hasInspector) {
 			menu.add(propertiesItem);
 			menu.addSeparator();
@@ -369,6 +431,7 @@ public abstract class Filter {
 			});
 			menu.add(deleteItem);
 		}
+		refresh();
 		return menu;
 	}
 
@@ -448,6 +511,15 @@ public abstract class Filter {
 	abstract protected void initializeSubclass();
 
 	abstract protected void setOutputPixels();
+
+	public void addLocation(XMLControl control) {
+		if (frame != null && inspectorDlg != null && inspectorDlg.isVisible()) {
+			int x = inspectorDlg.getLocation().x - frame.getLocation().x;
+			int y = inspectorDlg.getLocation().y - frame.getLocation().y;
+			control.setValue("inspector_x", x); //$NON-NLS-1$
+			control.setValue("inspector_y", y); //$NON-NLS-1$
+		}
+	}
 }
 
 /*

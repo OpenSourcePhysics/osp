@@ -32,25 +32,21 @@
 package org.opensourcephysics.media.core;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
@@ -90,24 +86,13 @@ public class GrayScaleFilter extends Filter {
 		hasInspector = true;
 	}
 
-	/**
-	 * Gets the inspector for this filter.
-	 *
-	 * @return the inspector
-	 */
 	@Override
-	public synchronized JDialog getInspector() {
-		Inspector myInspector = inspector;
-		if (myInspector == null) {
-			myInspector = new Inspector();
-		}
-		if (myInspector.isModal() && vidPanel != null) {
-			frame = JOptionPane.getFrameForComponent(vidPanel);
-			myInspector.setVisible(false);
-			myInspector.dispose();
-			myInspector = new Inspector();
-		}
-		inspector = myInspector;
+	protected InspectorDlg newInspector() {
+		return inspector = new Inspector();
+	}
+
+	@Override
+	protected InspectorDlg initInspector() {
 		inspector.initialize();
 		return inspector;
 	}
@@ -202,28 +187,18 @@ public class GrayScaleFilter extends Filter {
 	/**
 	 * Inner Inspector class to control filter parameters
 	 */
-	private class Inspector extends JDialog {
+	private class Inspector extends InspectorDlg {
 		/**
 		 * Constructs the Inspector.
 		 */
 		public Inspector() {
-			super(frame, !(frame instanceof org.opensourcephysics.display.OSPFrame));
-			setResizable(false);
-			createGUI();
-			setTitle(MediaRes.getString("Filter.GrayScale.Title")); //$NON-NLS-1$
-			refresh();
-			pack();
-			// center on screen
-			Rectangle rect = getBounds();
-			Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-			int x = (dim.width - rect.width) / 2;
-			int y = (dim.height - rect.height) / 2;
-			setLocation(x, y);
+			super("Filter.GrayScale.Title"); //$NON-NLS-1$
 		}
 
 		/**
 		 * Creates the visible components.
 		 */
+		@Override
 		void createGUI() {
 			// create components
 			for (int i = 0; i < 3; i++) {
@@ -372,12 +347,7 @@ public class GrayScaleFilter extends Filter {
 		public void saveObject(XMLControl control, Object obj) {
 			GrayScaleFilter filter = (GrayScaleFilter) obj;
 			control.setValue("weights", filter.getWeights()); //$NON-NLS-1$
-			if ((filter.frame != null) && (filter.inspector != null) && filter.inspector.isVisible()) {
-				int x = filter.inspector.getLocation().x - filter.frame.getLocation().x;
-				int y = filter.inspector.getLocation().y - filter.frame.getLocation().y;
-				control.setValue("inspector_x", x); //$NON-NLS-1$
-				control.setValue("inspector_y", y); //$NON-NLS-1$
-			}
+			filter.addLocation(control);
 		}
 
 		/**

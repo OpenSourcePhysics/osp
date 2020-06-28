@@ -39,7 +39,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.swing.JDialog;
+
 
 /**
  * This is a Filter that contains and manages a series of Filters.
@@ -246,10 +246,15 @@ public class FilterStack extends Filter implements PropertyChangeListener {
 	 * @return the inspector
 	 */
 	@Override
-	public JDialog getInspector() {
+	public InspectorDlg newInspector() {
 		return null;
 	}
 
+	@Override
+	protected InspectorDlg initInspector() {
+		return null;
+	}
+	
 	/**
 	 * Shows/hides all inspectors.
 	 *
@@ -260,7 +265,7 @@ public class FilterStack extends Filter implements PropertyChangeListener {
 		Iterator<Filter> it = filters.iterator();
 		while (it.hasNext()) {
 			Filter filter = it.next();
-			JDialog inspector = filter.getInspector();
+			InspectorDlg inspector = (InspectorDlg) filter.getInspector();
 			if (inspector != null) {
 				if (!vis) {
 					// set the inspector's current visibility flag
