@@ -54,8 +54,7 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 	// instance fields
 	Rectangle hitRect = new Rectangle();
 	boolean drawHitRect;
-	ScaleSetter scaleSetter;
-	JPanel scaleSetterPanel;
+	
 	AxisMouseListener axisListener;
 	int mouseRegion;
 	Point mouseLoc;
@@ -64,6 +63,10 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 	boolean enabled = true;
 	boolean altDown;
 	Cursor horzCenter, horzRight, horzLeft, vertCenter, vertUp, vertDown, move;
+
+	ScaleSetter scaleSetter;
+	JPanel scaleSetterPanel;
+
 
 	java.util.List<ActionListener> axisListeners = new java.util.ArrayList<ActionListener>(); // Paco
 
@@ -101,12 +104,12 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 			}
 
 		});
-		scaleSetter = new ScaleSetter();
-		// create transparent scaleSetterPanel with no LayoutManager
-		scaleSetterPanel = new javax.swing.JPanel(null);
-		scaleSetterPanel.setOpaque(false);
-		scaleSetterPanel.add(scaleSetter);
-
+//		scaleSetter = new ScaleSetter();
+//		// create transparent scaleSetterPanel with no LayoutManager
+//		scaleSetterPanel = new javax.swing.JPanel(null);
+//		scaleSetterPanel.setOpaque(false);
+//		scaleSetterPanel.add(scaleSetter);
+//
 	}
 
 	/**
@@ -117,6 +120,18 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 	public int getMouseRegion() {
 		return mouseRegion;
 	}
+
+	ScientificField scaleField = new ScientificField(6, 3) {
+		@Override
+		public Dimension getPreferredSize() {
+			Dimension dim = super.getPreferredSize();
+			dim.width -= 4;
+			return dim;
+		}
+
+	};
+	Dimension fieldDim = scaleField.getPreferredSize();
+
 
 	/**
 	 * Draws the axes.
@@ -130,23 +145,23 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 		if (drawHitRect) {
 			g.drawRect(hitRect.x, hitRect.y, hitRect.width, hitRect.height);
 		}
-		if (!panel.isFixedScale() && scaleSetter.isVisible()
-				&& (scaleSetter.scaleField.getBackground() != Color.yellow)) {
+		if (!panel.isFixedScale() && scaleSetter != null && scaleSetter.isVisible()
+				&& (scaleField.getBackground() != Color.yellow)) {
 			switch (scaleSetter.region) {
 			case HORZ_MIN:
-				scaleSetter.scaleField.setValue(drawingPanel.getXMin());
+				scaleField.setValue(drawingPanel.getXMin());
 				scaleSetter.autoscaleCheckbox.setSelected(drawingPanel.isAutoscaleXMin());
 				break;
 			case HORZ_MAX:
-				scaleSetter.scaleField.setValue(drawingPanel.getXMax());
+				scaleField.setValue(drawingPanel.getXMax());
 				scaleSetter.autoscaleCheckbox.setSelected(drawingPanel.isAutoscaleXMax());
 				break;
 			case VERT_MIN:
-				scaleSetter.scaleField.setValue(drawingPanel.getYMin());
+				scaleField.setValue(drawingPanel.getYMin());
 				scaleSetter.autoscaleCheckbox.setSelected(drawingPanel.isAutoscaleYMin());
 				break;
 			case VERT_MAX:
-				scaleSetter.scaleField.setValue(drawingPanel.getYMax());
+				scaleField.setValue(drawingPanel.getYMax());
 				scaleSetter.autoscaleCheckbox.setSelected(drawingPanel.isAutoscaleYMax());
 			}
 		}
@@ -339,7 +354,7 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 	public void resizeFonts(double factor, DrawingPanel panel) {
 		super.resizeFonts(factor, panel);
 		if (scaleSetter != null) {
-			scaleSetter.scaleField.setFont(FontSizer.getResizedFont(scaleSetter.scaleField.getFont(), factor));
+			scaleField.setFont(FontSizer.getResizedFont(scaleField.getFont(), factor));
 			scaleSetter.autoscaleCheckbox
 					.setFont(FontSizer.getResizedFont(scaleSetter.autoscaleCheckbox.getFont(), factor));
 		}
@@ -393,7 +408,7 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 	 * @param p the point
 	 * @return one of the static regions defined by CartesianInteractive
 	 */
-	protected int findRegion(Point p) {
+	protected int findRegion(Point p, boolean isPress) {
 		int l = drawingPanel.getLeftGutter();
 		int r = drawingPanel.getRightGutter();
 		int t = drawingPanel.getTopGutter();
@@ -467,9 +482,7 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 				reg = INSIDE;
 				break;
 			}
-			// scale setter regions
-			ScientificField field = scaleSetter.scaleField;
-			Dimension fieldDim = field.getPreferredSize();
+			// scale setter regions 1 - 4
 			hitRect.setSize(fieldDim);
 			double xmin = drawingPanel.getXMin();
 			double xmax = drawingPanel.getXMax();
@@ -479,53 +492,69 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 			// horizontal min
 			hitRect.setLocation(l - 12, plotDim.height - b + 6 + offset);
 			if (hitRect.contains(p)) {
-				Point hitLoc = hitRect.getLocation(); // relative to plotPanel
-				scaleSetter.add(scaleSetter.autoscaleCheckbox, BorderLayout.NORTH);
-				scaleSetter.validate();
-				Point fieldLoc = field.getLocation(); // relative to scaleSetter
-				Dimension size = scaleSetter.getPreferredSize();
-				scaleSetter.setBounds(hitLoc.x - fieldLoc.x, hitLoc.y - fieldLoc.y - offset, size.width, size.height);
+				if (isPress) {
+					getScaleSetter();
+					Point hitLoc = hitRect.getLocation(); // relative to plotPanel
+					scaleSetter.add(scaleSetter.autoscaleCheckbox, BorderLayout.NORTH);
+					scaleSetter.validate();
+					Point fieldLoc = scaleField.getLocation(); // relative to scaleSetter
+					Dimension size = scaleSetter.getPreferredSize();
+					scaleSetter.setBounds(hitLoc.x - fieldLoc.x, hitLoc.y - fieldLoc.y - offset, size.width,
+							size.height);
+				}
 				reg = HORZ_MIN;
 				break;
 			}
 			// horizontal max
 			hitRect.setLocation(plotDim.width - r - fieldDim.width + 12, plotDim.height - b + 6 + offset);
 			if (hitRect.contains(p)) {
-				field.setExpectedRange(xmin, xmax);
-				Point hitLoc = hitRect.getLocation(); // relative to plotPanel
-				scaleSetter.add(scaleSetter.autoscaleCheckbox, BorderLayout.NORTH);
-				scaleSetter.validate();
-				Point fieldLoc = field.getLocation(); // relative to scaleSetter
-				Dimension size = scaleSetter.getPreferredSize();
-				scaleSetter.setBounds(hitLoc.x - fieldLoc.x, hitLoc.y - fieldLoc.y - offset, size.width, size.height);
+				if (isPress) {
+					getScaleSetter();
+					scaleField.setExpectedRange(xmin, xmax);
+					Point hitLoc = hitRect.getLocation(); // relative to plotPanel
+					scaleSetter.add(scaleSetter.autoscaleCheckbox, BorderLayout.NORTH);
+					scaleSetter.validate();
+					Point fieldLoc = scaleField.getLocation(); // relative to scaleSetter
+					Dimension size = scaleSetter.getPreferredSize();
+					scaleSetter.setBounds(hitLoc.x - fieldLoc.x, hitLoc.y - fieldLoc.y - offset, size.width,
+							size.height);
+				}
 				reg = HORZ_MAX;
 				break;
 			}
 			// vertical min
 			hitRect.setLocation(l - fieldDim.width - 1 - offset, plotDim.height - b - fieldDim.height + 8);
 			if (hitRect.contains(p)) {
-				field.setExpectedRange(ymin, ymax);
-				Point hitLoc = hitRect.getLocation(); // relative to plotPanel
-				scaleSetter.add(scaleSetter.autoscaleCheckbox, BorderLayout.EAST);
-				scaleSetter.validate();
-				Point fieldLoc = field.getLocation(); // relative to scaleSetter
-				int minLoc = hitLoc.x - fieldLoc.x;
-				Dimension size = scaleSetter.getPreferredSize();
-				scaleSetter.setBounds(Math.max(minLoc, 1 - fieldLoc.x), hitLoc.y - fieldLoc.y, size.width, size.height);
+				if (isPress) {
+					getScaleSetter();
+					scaleField.setExpectedRange(ymin, ymax);
+					Point hitLoc = hitRect.getLocation(); // relative to plotPanel
+					scaleSetter.add(scaleSetter.autoscaleCheckbox, BorderLayout.EAST);
+					scaleSetter.validate();
+					Point fieldLoc = scaleField.getLocation(); // relative to scaleSetter
+					int minLoc = hitLoc.x - fieldLoc.x;
+					Dimension size = scaleSetter.getPreferredSize();
+					scaleSetter.setBounds(Math.max(minLoc, 1 - fieldLoc.x), hitLoc.y - fieldLoc.y, size.width,
+							size.height);
+				}
 				reg = VERT_MIN;
 				break;
 			}
 			// vertical max
 			hitRect.setLocation(l - fieldDim.width - 1 - offset, t - 8);
 			if (hitRect.contains(p)) {
-				field.setExpectedRange(ymin, ymax);
-				Point hitLoc = hitRect.getLocation(); // relative to plotPanel
-				scaleSetter.add(scaleSetter.autoscaleCheckbox, BorderLayout.EAST);
-				scaleSetter.validate();
-				Point fieldLoc = field.getLocation(); // relative to scaleSetter
-				int minLoc = hitLoc.x - fieldLoc.x;
-				Dimension size = scaleSetter.getPreferredSize();
-				scaleSetter.setBounds(Math.max(minLoc, 1 - fieldLoc.x), hitLoc.y - fieldLoc.y, size.width, size.height);
+				if (isPress) {
+					getScaleSetter();
+					scaleField.setExpectedRange(ymin, ymax);
+					Point hitLoc = hitRect.getLocation(); // relative to plotPanel
+					scaleSetter.add(scaleSetter.autoscaleCheckbox, BorderLayout.EAST);
+					scaleSetter.validate();
+					Point fieldLoc = scaleField.getLocation(); // relative to scaleSetter
+					int minLoc = hitLoc.x - fieldLoc.x;
+					Dimension size = scaleSetter.getPreferredSize();
+					scaleSetter.setBounds(Math.max(minLoc, 1 - fieldLoc.x), hitLoc.y - fieldLoc.y, size.width,
+							size.height);
+				}
 				reg = VERT_MAX;
 				break;
 			}
@@ -540,6 +569,14 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 	 * @return the ScaleSetter dialog
 	 */
 	public ScaleSetter getScaleSetter() {
+		if (scaleSetter == null) {
+			scaleSetter = new ScaleSetter();
+			// create transparent scaleSetterPanel with no LayoutManager
+			scaleSetterPanel = new JPanel(null);
+			scaleSetterPanel.setOpaque(false);
+			scaleSetterPanel.add(scaleSetter);
+		}
+			
 		// refresh autoscale checkbox text if needed (eg, new Locale)
 		String s = DialogsRes.SCALE_AUTO;
 		if (!s.equals(scaleSetter.autoscaleCheckbox.getText())) {
@@ -554,7 +591,6 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 	public class ScaleSetter extends JPanel {
 		Action scaleAction;
 		JCheckBox autoscaleCheckbox;
-		ScientificField scaleField;
 		int region; // determines which axis and end are active
 		boolean pinned = false; // prevents hiding this when true
 
@@ -602,15 +638,6 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 			autoscaleCheckbox.setBackground(drawingPanel.getBackground());
 			autoscaleCheckbox.setHorizontalTextPosition(SwingConstants.RIGHT);
 			autoscaleCheckbox.addActionListener(scaleAction);
-			scaleField = new ScientificField(6, 3) {
-				@Override
-				public Dimension getPreferredSize() {
-					Dimension dim = super.getPreferredSize();
-					dim.width -= 4;
-					return dim;
-				}
-
-			};
 			scaleField.addActionListener(new AbstractAction() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -674,15 +701,27 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 				return; // Paco
 			altDown = e.isAltDown();
 			Point p = e.getPoint();
-			mouseRegion = findRegion(p);
-			if ((mouseRegion > INSIDE) && (mouseRegion < HORZ_AXIS) && !drawingPanel.isFixedScale()) {
-				getScaleSetter().setRegion(mouseRegion);
-				scaleSetter.validate();
-				scaleSetter.setVisible(true);
-			} else {
-				scaleSetter.hideIfInactive();
+			mouseRegion = findRegion(p, false);
+			switch (mouseRegion) {
+			case HORZ_MIN:
+			case HORZ_MAX:
+			case VERT_MIN:
+			case VERT_MAX:
+				if (!drawingPanel.isFixedScale() && scaleSetter != null) {
+					getScaleSetter().setRegion(mouseRegion);
+					scaleSetter.validate();
+					scaleSetter.setVisible(true);
+				}
+				return;
+			case HORZ_VAR:
+			case VERT_VAR:
+				drawHitRect = true;
+				break;
+			default:
+				break;
 			}
-			drawHitRect = ((mouseRegion == HORZ_VAR) || (mouseRegion == VERT_VAR));
+			if (scaleSetter != null)
+				scaleSetter.hideIfInactive();
 		}
 
 		@Override
@@ -758,21 +797,29 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 			mouseLoc = e.getPoint();
 			mouseX = plot.pixToX(plot.getMouseIntX());
 			mouseY = plot.pixToY(plot.getMouseIntY());
-			mouseRegion = findRegion(mouseLoc);
+			mouseRegion = findRegion(mouseLoc, true);
 			if (scaleSetter == null) {
 				return;
 			}
-			if ((mouseRegion > INSIDE) && (mouseRegion < HORZ_AXIS) && !drawingPanel.isFixedScale()) {
-				scaleSetter.setVisible(true);
+			switch (mouseRegion) {
+			case HORZ_MIN:
+			case HORZ_MAX:
+			case VERT_MIN:
+			case VERT_MAX:
+				if (!drawingPanel.isFixedScale()) {
+					scaleSetter.setVisible(true);
+				}
 				return;
-			}
-			hideScaleSetter();
-			if (mouseRegion == HORZ_VAR) {
+			case HORZ_VAR:
 				drawHitRect = false;
 				getHorzVariablesPopup().show(plot, mouseLoc.x - 20, mouseLoc.y - 12);
-			} else if (mouseRegion == VERT_VAR) {
+				break;
+			case VERT_VAR:
 				drawHitRect = false;
 				getVertVariablesPopup().show(plot, mouseLoc.x - 20, mouseLoc.y - 12);
+				break;
+			default:
+				break;
 			}
 			plot.repaint();
 		}
@@ -790,6 +837,7 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 			if (!enabled)
 				return; // Paco
 			Point p = e.getPoint();
+			// BH should not be necessary to convert modifiers to text. 
 			if (!new Rectangle(plot.getSize()).contains(p) && (scaleSetter != null)
 					&& "".equals(InputEvent.getModifiersExText(e.getModifiersEx()))) { //$NON-NLS-1$
 				hideScaleSetter();

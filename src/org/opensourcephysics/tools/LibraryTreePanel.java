@@ -27,7 +27,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -1308,9 +1307,8 @@ public class LibraryTreePanel extends JPanel {
 		// adjust size of labels so they right-align
 		int w = 0, h = 0;
 		Font font = nameLabel.getFont();
-		FontRenderContext frc = new FontRenderContext(null, false, false);
 		for (JLabel next : labels) {
-			Rectangle2D rect = font.getStringBounds(next.getText() + " ", frc); //$NON-NLS-1$
+			Rectangle2D rect = font.getStringBounds(next.getText() + " ", OSPRuntime.frc); //$NON-NLS-1$
 			w = Math.max(w, (int) rect.getWidth() + 4);
 			h = Math.max(h, (int) rect.getHeight() + 4);
 		}
@@ -1324,7 +1322,7 @@ public class LibraryTreePanel extends JPanel {
 		typeFieldWidth = 0;
 		for (String next : LibraryResource.RESOURCE_TYPES) {
 			next = ToolsRes.getString("LibraryResource.Type." + next); //$NON-NLS-1$
-			Rectangle2D rect = font.getStringBounds(next + " ", frc); //$NON-NLS-1$
+			Rectangle2D rect = font.getStringBounds(next + " ", OSPRuntime.frc); //$NON-NLS-1$
 			typeFieldWidth = Math.max(typeFieldWidth, (int) rect.getWidth() + 24);
 		}
 	}

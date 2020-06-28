@@ -49,7 +49,6 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
@@ -95,10 +94,6 @@ public class PerspectiveFilter extends Filter {
 
 	// static fields
 	private static Color defaultColor = Color.RED;
-	private static FontRenderContext frc = new FontRenderContext(null, // no AffineTransform
-			false, // no antialiasing
-			false); // no fractional metrics
-
 	// instance fields
 	private double[][] matrix = new double[3][3]; // perspective transform matrix
 	private double[][] temp1 = new double[3][3]; // intermediate matrix
@@ -968,7 +963,7 @@ public class PerspectiveFilter extends Filter {
 			for (int i = 0; i < inCorners.length; i++) {
 				inCorners[i] = new Corner();
 				outCorners[i] = new Corner();
-				textLayouts[i] = new TextLayout(String.valueOf(i), font, frc);
+				textLayouts[i] = new TextLayout(String.valueOf(i), font, OSPRuntime.frc);
 			}
 		}
 

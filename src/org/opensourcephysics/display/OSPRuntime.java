@@ -10,6 +10,7 @@ package org.opensourcephysics.display;
 import java.awt.Component;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
+import java.awt.font.FontRenderContext;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -356,6 +357,11 @@ public class OSPRuntime {
 //	  J3D=  false; 
 //	}
 	}
+
+	public static FontRenderContext frc = new FontRenderContext(//
+	null, // no AffineTransform
+	false, // no antialiasing
+	false); // no fractional metrics
 
 	/**
 	 * Private constructor to prevent instantiation.

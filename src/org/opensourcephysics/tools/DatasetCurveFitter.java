@@ -7,22 +7,84 @@
 
 package org.opensourcephysics.tools;
 
-import java.text.*;
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.font.FontRenderContext;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EventObject;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
-import javax.swing.*;
+import javax.swing.AbstractCellEditor;
+import javax.swing.AbstractSpinnerModel;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
+import javax.swing.JSplitPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.JToolBar;
+import javax.swing.ListCellRenderer;
+import javax.swing.LookAndFeel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.*;
-import javax.swing.table.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.MouseInputAdapter;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
 
-import org.opensourcephysics.display.*;
-import org.opensourcephysics.numerics.*;
+import org.opensourcephysics.display.CellBorder;
+import org.opensourcephysics.display.ColorIcon;
+import org.opensourcephysics.display.Dataset;
+import org.opensourcephysics.display.DrawingPanel;
+import org.opensourcephysics.display.FunctionDrawer;
+import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.display.TeXParser;
+import org.opensourcephysics.numerics.Function;
+import org.opensourcephysics.numerics.HessianMinimize;
+import org.opensourcephysics.numerics.LevenbergMarquardt;
+import org.opensourcephysics.numerics.MultiVarFunction;
 
 /**
  * A panel that displays and controls functional curve fits to a Dataset.
@@ -1625,8 +1687,7 @@ public class DatasetCurveFitter extends JPanel {
 
 		protected void refreshPreferredWidth() {
 			// determine preferred width of field
-			FontRenderContext frc = new FontRenderContext(null, false, false);
-			Rectangle2D rect = getFont().getStringBounds(getText(), frc);
+			Rectangle2D rect = getFont().getStringBounds(getText(), OSPRuntime.frc);
 			preferredWidth = (int) rect.getWidth() + 8;
 		}
 

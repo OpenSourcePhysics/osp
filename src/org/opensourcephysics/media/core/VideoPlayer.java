@@ -1830,14 +1830,13 @@ public void setLocale(Locale locale) {
       ArrayList<JLabel> labels = new ArrayList<JLabel>();
       labels.add(frameLabel);
       labels.add(timeLabel);
-      labels.add(stepLabel);
-      FontRenderContext frc = new FontRenderContext(null, false, false); 
+      labels.add(stepLabel); 
       Font font = frameLabel.getFont();
       //display panel labels
       int w = 0;
       for(Iterator<JLabel> it = labels.iterator(); it.hasNext(); ) {
         JLabel next = it.next();
-        Rectangle2D rect = font.getStringBounds(next.getText()+" ", frc); //$NON-NLS-1$
+        Rectangle2D rect = font.getStringBounds(next.getText()+" ", OSPRuntime.frc); //$NON-NLS-1$
         w = Math.max(w, (int) rect.getWidth()+1);
       }
       Dimension labelSize = new Dimension(w, 20);

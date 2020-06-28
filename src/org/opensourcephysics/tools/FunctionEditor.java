@@ -32,7 +32,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
-import java.awt.font.FontRenderContext;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
@@ -128,9 +127,6 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	protected static boolean undoEditsEnabled = true;
 	protected static String[] editTypes = { "add row", //$NON-NLS-1$
 			"delete row", "edit name", "edit expression" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-	static FontRenderContext frc = new FontRenderContext(null, // no AffineTransform
-			false, // no antialiasing
-			false); // no fractional metrics
 
 	// instance fields
 	protected ParamEditor paramEditor;
@@ -275,9 +271,9 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	 */
 	public void setDescription(FObject obj, String desc) {
 		if (obj instanceof Parameter) {
-			firePropertyChange(PROPERTY_FUNCTIONEDITOR_PARAM_DESCRIPTION, null, null); //$NON-NLS-1$
+			firePropertyChange(PROPERTY_FUNCTIONEDITOR_PARAM_DESCRIPTION, null, null); // $NON-NLS-1$
 		}
-		firePropertyChange(PROPERTY_FUNCTIONEDITOR_DESCRIPTION, null, null); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_FUNCTIONEDITOR_DESCRIPTION, null, null); // $NON-NLS-1$
 	}
 
 	/**
@@ -336,7 +332,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			if (postEdit && undoEditsEnabled) {
 				edit = getUndoableEdit(EXPRESSION_EDIT, expression, row, 1, prev, row, 1, getName(obj));
 			}
-			firePropertyChange(PROPERTY_FUNCTIONEDITOR_EDIT, getName(obj), edit); //$NON-NLS-1$
+			firePropertyChange(PROPERTY_FUNCTIONEDITOR_EDIT, getName(obj), edit); // $NON-NLS-1$
 			break;
 		}
 	}
@@ -412,7 +408,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			edit = getUndoableEdit(ADD_EDIT, obj, row, 0, obj, undoRow, undoCol, getName(obj));
 		}
 		if (firePropertyChange) {
-			firePropertyChange(PROPERTY_FUNCTIONEDITOR_EDIT, getName(obj), edit); //$NON-NLS-1$
+			firePropertyChange(PROPERTY_FUNCTIONEDITOR_EDIT, getName(obj), edit); // $NON-NLS-1$
 		}
 		refreshGUI();
 		return obj;
@@ -447,7 +443,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				edit = getUndoableEdit(REMOVE_EDIT, obj, row, 0, obj, undoRow, undoCol, getName(obj));
 			}
 			evaluateAll();
-			firePropertyChange(PROPERTY_FUNCTIONEDITOR_EDIT, getName(obj), edit); //$NON-NLS-1$
+			firePropertyChange(PROPERTY_FUNCTIONEDITOR_EDIT, getName(obj), edit); // $NON-NLS-1$
 			refreshGUI();
 			return obj;
 		}
@@ -990,7 +986,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 			clipboard.setContents(ss, ss);
 			pasteButton.setEnabled(true);
-			firePropertyChange(PROPERTY_FUNCTIONEDITOR_CLIPBOARD, null, null); //$NON-NLS-1$
+			firePropertyChange(PROPERTY_FUNCTIONEDITOR_CLIPBOARD, null, null); // $NON-NLS-1$
 		}
 	}
 
@@ -1265,7 +1261,8 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 								@Override
 								public void actionPerformed(ActionEvent e) {
 									setAnglesInDegrees(!anglesInDegrees);
-									FunctionEditor.this.firePropertyChange(PROPERTY_FUNCTIONEDITOR_ANGLESINRADIANS, null, !anglesInDegrees); //$NON-NLS-1$
+									FunctionEditor.this.firePropertyChange(PROPERTY_FUNCTIONEDITOR_ANGLESINRADIANS,
+											null, !anglesInDegrees); // $NON-NLS-1$
 								}
 							});
 							popup.add(item);
@@ -1730,7 +1727,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		@Override
 		public boolean isCellEditable(EventObject e) {
 			if (e instanceof MouseEvent) {
-				firePropertyChange(PROPERTY_FUNCTIONEDITOR_FOCUS, null, null); //$NON-NLS-1$
+				firePropertyChange(PROPERTY_FUNCTIONEDITOR_FOCUS, null, null); // $NON-NLS-1$
 				MouseEvent me = (MouseEvent) e;
 				if (me.getClickCount() == 2) {
 					mouseClicked = true;
@@ -1771,7 +1768,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		private Dimension resizePopupEditor() {
 			String s = popupField.getText();
 			Font font = popupField.getFont();
-			Rectangle rect = font.getStringBounds(s, frc).getBounds();
+			Rectangle rect = font.getStringBounds(s, OSPRuntime.frc).getBounds();
 			int h = rect.height;
 			int w = Math.max(minPopupWidth, rect.width + 32);
 			if (table.columnToSelect == 1) {
@@ -1779,7 +1776,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				int n = s.indexOf("\n"); //$NON-NLS-1$
 				s = s.substring(n + 1);
 				font = variablesPane.getFont().deriveFont(Font.BOLD);
-				rect = font.getStringBounds(s, frc).getBounds();
+				rect = font.getStringBounds(s, OSPRuntime.frc).getBounds();
 				w = Math.max(w, rect.width);
 			}
 			Dimension dim = new Dimension(w, h);

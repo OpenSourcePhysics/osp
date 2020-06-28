@@ -17,7 +17,6 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.util.ArrayList;
@@ -51,6 +50,7 @@ import javax.swing.event.ListSelectionListener;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
+import org.opensourcephysics.display.OSPRuntime;
 
 /**
  * A GUI for managing My Library, search targets, and the OSP cache.
@@ -715,11 +715,10 @@ public class LibraryManager extends JDialog {
 			return;
 
 		// set label sizes
-		FontRenderContext frc = new FontRenderContext(null, false, false);
 		Font font = labels.get(0).getFont();
 		int w = 0;
 		for (JLabel next : labels) {
-			Rectangle2D rect = font.getStringBounds(next.getText(), frc);
+			Rectangle2D rect = font.getStringBounds(next.getText(), OSPRuntime.frc);
 			w = Math.max(w, (int) rect.getWidth());
 		}
 		Dimension labelSize = new Dimension(w + 48, 20);
@@ -775,11 +774,10 @@ public class LibraryManager extends JDialog {
 		}
 
 		// set label sizes
-		FontRenderContext frc = new FontRenderContext(null, false, false);
 		Font font = labels.get(0).getFont();
 		int w = 0;
 		for (JLabel next : labels) {
-			Rectangle2D rect = font.getStringBounds(next.getText(), frc);
+			Rectangle2D rect = font.getStringBounds(next.getText(), OSPRuntime.frc);
 			w = Math.max(w, (int) rect.getWidth());
 		}
 		Dimension labelSize = new Dimension(w + 48, 20);
@@ -808,10 +806,9 @@ public class LibraryManager extends JDialog {
 		// adjust size of labels so they right-align
 		int w = 0;
 		Font font = nameLabel.getFont();
-		FontRenderContext frc = new FontRenderContext(null, false, false);
-		Rectangle2D rect = font.getStringBounds(nameLabel.getText() + " ", frc); //$NON-NLS-1$
+		Rectangle2D rect = font.getStringBounds(nameLabel.getText() + " ", OSPRuntime.frc); //$NON-NLS-1$
 		w = Math.max(w, (int) rect.getWidth() + 4);
-		rect = font.getStringBounds(pathLabel.getText() + " ", frc); //$NON-NLS-1$
+		rect = font.getStringBounds(pathLabel.getText() + " ", OSPRuntime.frc); //$NON-NLS-1$
 		w = Math.max(w, (int) rect.getWidth() + 4);
 
 		Dimension labelSize = new Dimension(w, 20);

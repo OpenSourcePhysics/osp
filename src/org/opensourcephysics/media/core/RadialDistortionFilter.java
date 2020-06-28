@@ -99,10 +99,6 @@ public class RadialDistortionFilter extends Filter {
   
   // static fields
   protected final static ArrayList<String> PROJECTION_TYPES = new ArrayList<String>();
-  protected static FontRenderContext frc
-		  = new FontRenderContext(null,   // no AffineTransform
-		                          false,  // no antialiasing
-		                          false); // no fractional metrics
   protected static double minRadius = 0.20, maxRadius = 1.0;
   protected static double minFOV = Math.PI/18, maxFOV = Math.PI-.001;
   
