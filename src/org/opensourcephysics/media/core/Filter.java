@@ -106,18 +106,23 @@ public abstract class Filter {
 	protected VideoPanel vidPanel;
 	protected PropertyChangeSupport support;
 	protected Action enabledAction;
-	protected JCheckBoxMenuItem enabledItem;
-	protected JMenuItem deleteItem, propertiesItem, copyItem;
 	protected boolean hasInspector;
-	protected Frame frame;
-	protected JButton closeButton;
-	protected JButton ableButton;
-	protected JButton clearButton;
+
 	protected FilterStack stack; // set by stack when filter added
 	protected boolean doCreateOutput = true;
 
 	protected int nPixelsIn;
 
+	// GUI
+	
+	protected JCheckBoxMenuItem enabledItem;
+	protected JMenuItem deleteItem, propertiesItem, copyItem;
+	protected Frame frame;
+	protected JButton closeButton;
+	protected JButton ableButton;
+	protected JButton clearButton;
+
+	
 	/**
 	 * Constructs a Filter object.
 	 */

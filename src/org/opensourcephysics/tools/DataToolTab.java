@@ -134,7 +134,10 @@ import org.opensourcephysics.tools.DatasetCurveFitter.NumberField;
 @SuppressWarnings("serial")
 public class DataToolTab extends JPanel implements Tool, PropertyChangeListener {
 
+	private static final String PROPERTY_DATATOOLTAB_FUNCTION = "function";
+
 	// static fields
+
 	public final static String SHIFTED = "'"; //$NON-NLS-1$
 	protected static DecimalFormat correlationFormat = (DecimalFormat) NumberFormat.getInstance();
 	private static final Cursor SELECT_CURSOR, SELECT_REMOVE_CURSOR, SELECT_ZOOM_CURSOR;
@@ -544,16 +547,17 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		}
 		if (dataBuilder == null) { // create new tool if none exists
 			dataBuilder = new FunctionTool(this) {
-				@Override
-				protected void refreshGUI() {
-					super.refreshGUI();
-					dropdown.setToolTipText(ToolsRes.getString("DataTool.DataBuilder.Dropdown.Tooltip")); //$NON-NLS-1$
-					setTitle(ToolsRes.getString("DataTool.DataBuilder.Title")); //$NON-NLS-1$
+				
+				@Override 
+				protected void setTitles() {
+			         dropdownTipText = (ToolsRes.getString("DataTool.DataBuilder.Dropdown.Tooltip")); //$NON-NLS-1$
+			         titleText = (ToolsRes.getString("DataTool.DataBuilder.Title")); //$NON-NLS-1$
 				}
+
 			};
 			dataBuilder.setFontLevel(FontSizer.getLevel());
 			dataBuilder.setHelpPath("data_builder_help.html"); //$NON-NLS-1$
-			dataBuilder.addPropertyChangeListener("function", this); //$NON-NLS-1$
+			dataBuilder.addPropertyChangeListener(PROPERTY_DATATOOLTAB_FUNCTION, this); // $NON-NLS-1$
 		}
 		refreshDataBuilder();
 		return dataBuilder;
@@ -566,8 +570,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent e) {
-		String name = e.getPropertyName();
-		if (name.equals("function")) { //$NON-NLS-1$
+		switch (e.getPropertyName()) {
+		case FunctionEditor.PROPERTY_FUNCTIONEDITOR_FUNCTION:
 			tabChanged(true);
 			dataTable.refreshTable(DataTable.MODE_FUNCTION);
 			statsTable.refreshStatistics();
@@ -590,6 +594,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			}
 			refreshPlot();
 			varPopup = null;
+			break;
 		}
 	}
 
@@ -3259,7 +3264,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				double[] ylimits = curveFitter.getDrawer().getYRange();
 				if ((ylimits[0] >= this.getYMax()) || (ylimits[1] <= this.getYMin())) {
 					s = ToolsRes.getString("DataToolTab.Plot.Message.FitNotVisible")
-					 + (message == null || s == "" ? "" : "  " + s);
+							+ (message == null || s == "" ? "" : "  " + s);
 				}
 			}
 			setMessage(s);

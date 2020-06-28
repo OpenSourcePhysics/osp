@@ -141,10 +141,15 @@ public class DataBuilder extends FunctionTool {
 	}
 
 	@Override
+	protected void setTitles() {
+		dropdownTipText = ToolsRes.getString("DataTool.DataBuilder.Dropdown.Tooltip"); //$NON-NLS-1$
+		titleText = ToolsRes.getString("DataTool.DataBuilder.Title");
+	}
+	@Override
 	protected void refreshGUI() {
+		if (!haveGUI())
+			return;
 		super.refreshGUI();
-		dropdown.setToolTipText(ToolsRes.getString("DataTool.DataBuilder.Dropdown.Tooltip")); //$NON-NLS-1$
-		setTitle(ToolsRes.getString("DataTool.DataBuilder.Title")); //$NON-NLS-1$
 		if (loadButton != null) {
 			FunctionPanel panel = getSelectedPanel();
 			loadButton.setEnabled(panel != null);
@@ -162,8 +167,7 @@ public class DataBuilder extends FunctionTool {
 			DataToolTab tab = dataTool.getTab(i);
 			tabNames.add(tab.getName());
 			if (getPanel(tab.getName()) == null) {
-				FunctionPanel panel = new DataFunctionPanel(tab.dataManager);
-				addPanel(tab.getName(), panel);
+				addPanel(tab.getName(), new DataFunctionPanel(tab.dataManager));
 			}
 		}
 		ArrayList<String> remove = new ArrayList<String>();

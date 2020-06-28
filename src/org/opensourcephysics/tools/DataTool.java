@@ -92,6 +92,9 @@ import org.opensourcephysics.display.TextFrame;
  */
 @SuppressWarnings("serial")
 public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
+
+	private static final String PROPERTY_DATATOOL_FUNCTION = "function";
+
 	// static fields
 	@SuppressWarnings("javadoc")
 	public static boolean loadClass = false;
@@ -174,7 +177,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * @return the shared DataTool
 	 */
 	public static DataTool getTool(boolean forceNew) {
-		if (tool == null && !forceNew)
+		//OSPLog.debug("???Temp DataTool always get tool");
+		if ( tool == null && !forceNew)
 			return null;
 		return (tool == null ? (tool = new DataTool()) : tool);
 	}
@@ -672,33 +676,34 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent e) {
-		String name = e.getPropertyName();
-		if (name.equals("function")) { //$NON-NLS-1$
+		switch (e.getPropertyName()) {
+		case FunctionEditor.PROPERTY_FUNCTIONEDITOR_FUNCTION:
 			DataToolTab tab = getSelectedTab();
-			if (tab != null) {
-				tab.tabChanged(true);
-				tab.dataTable.refreshTable(DataTable.MODE_FUNCTION);
-				tab.statsTable.refreshStatistics();
-				if (e.getNewValue() instanceof DataFunction) { // new function has been created
-					String funcName = e.getNewValue().toString();
+			if (tab == null)
+				return;
+			tab.tabChanged(true);
+			tab.dataTable.refreshTable(DataTable.MODE_FUNCTION);
+			tab.statsTable.refreshStatistics();
+			if (e.getNewValue() instanceof DataFunction) { // new function has been created
+				String funcName = e.getNewValue().toString();
+				tab.dataTable.getWorkingData(funcName);
+			}
+			if (e.getOldValue() instanceof DataFunction) { // function has been deleted
+				String funcName = e.getOldValue().toString();
+				tab.dataTable.removeWorkingData(funcName);
+			}
+			if (e.getNewValue() instanceof String) {
+				String funcName = e.getNewValue().toString();
+				if (e.getOldValue() instanceof String) { // function name has changed
+					String prevName = e.getOldValue().toString();
+					tab.columnNameChanged(prevName, funcName);
+				} else {
 					tab.dataTable.getWorkingData(funcName);
 				}
-				if (e.getOldValue() instanceof DataFunction) { // function has been deleted
-					String funcName = e.getOldValue().toString();
-					tab.dataTable.removeWorkingData(funcName);
-				}
-				if (e.getNewValue() instanceof String) {
-					String funcName = e.getNewValue().toString();
-					if (e.getOldValue() instanceof String) { // function name has changed
-						String prevName = e.getOldValue().toString();
-						tab.columnNameChanged(prevName, funcName);
-					} else {
-						tab.dataTable.getWorkingData(funcName);
-					}
-				}
-				tab.refreshPlot();
-				tab.varPopup = null;
 			}
+			tab.refreshPlot();
+			tab.varPopup = null;
+			break;
 		}
 	}
 
@@ -2167,7 +2172,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		if (dataBuilder == null) { // create new tool if none exists
 			dataBuilder = new DataBuilder(this);
 			dataBuilder.setFontLevel(FontSizer.getLevel());
-			dataBuilder.addPropertyChangeListener("function", this); //$NON-NLS-1$
+			dataBuilder.addPropertyChangeListener(PROPERTY_DATATOOL_FUNCTION, this); //$NON-NLS-1$
 		}
 		refreshDataBuilder();
 		return dataBuilder;

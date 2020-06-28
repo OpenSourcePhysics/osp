@@ -92,6 +92,11 @@ import org.opensourcephysics.display.TeXParser;
 /**
  * A JPanel that manages a table of objects with editable names and expressions.
  *
+ * Main component of FunctionTool.
+ * 
+ * subclassed as DataFunctionEditor, ParamEditor (incl. InitialValueEditor), and
+ * UserFunctionEditor
+ * 
  * @author Douglas Brown
  */
 @SuppressWarnings("serial")
@@ -103,6 +108,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	public static final String PROPERTY_FUNCTIONEDITOR_DESCRIPTION = "description";
 	public static final String PROPERTY_FUNCTIONEDITOR_FOCUS = "focus";
 	public static final String PROPERTY_FUNCTIONEDITOR_ANGLESINRADIANS = "angles_in_radians";
+	public static final String PROPERTY_FUNCTIONEDITOR_FUNCTION = "function";
 
 	public interface FObject {
 	}
@@ -130,6 +136,10 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 
 	// instance fields
 	protected ParamEditor paramEditor;
+	protected FunctionPanel functionPanel;
+
+	// data model
+
 	protected ArrayList<FObject> objects = new ArrayList<>();
 	protected String[] names = new String[0];
 	// BH unnec protected ArrayList<FObject> sortedObjects = new
@@ -139,23 +149,34 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	protected BitSet circularErrors = new BitSet();
 	protected BitSet errors = new BitSet();
 	protected List<FObject> evaluate = new ArrayList<FObject>();
-	protected Table table;
-	protected TableModel tableModel = new TableModel();
-	protected CellEditor tableCellEditor = new CellEditor();
-	protected CellRenderer tableCellRenderer = new CellRenderer();
-	protected JScrollPane tableScroller;
-	protected JButton newButton;
-	protected JButton cutButton;
-	protected JButton copyButton;
-	protected JButton pasteButton;
-	protected JPanel buttonPanel;
-	protected JLabel dragLabel;
-	protected TitledBorder titledBorder;
-	protected FunctionPanel functionPanel;
-	protected AbstractButton[] customButtons;
+
 	protected boolean anglesInDegrees;
 	protected boolean usePopupEditor = true;
 	protected boolean confirmChanges = true;
+
+	/**
+	 * set to "t" in InitialValueEditor for getVariablesString
+	 */
+	protected String skipAllName;
+
+	// GUI
+
+	private Table table;
+	private TableModel tableModel = new TableModel();
+	private CellEditor tableCellEditor = new CellEditor();
+	private CellRenderer tableCellRenderer = new CellRenderer();
+	private JScrollPane tableScroller;
+	private JButton newButton;
+	private JButton cutButton;
+	private JButton copyButton;
+	private JButton pasteButton;
+	private JPanel buttonPanel;
+	private JLabel dragLabel;
+	private TitledBorder titledBorder;
+	private AbstractButton[] customButtons;
+
+	protected int selectedRow;
+	protected int selectedCol;
 
 	static {
 		decimalFormat = new DecimalFormat();
@@ -171,8 +192,21 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	 */
 	public FunctionEditor() {
 		super(new BorderLayout());
-		createGUI();
-		refreshGUI();
+		// createGUI();
+		// refreshGUI();
+//		OSPLog.debug("???Temp FunctionEditor.checkGUI");
+//		checkGUI();
+	}
+
+	public void checkGUI() {
+		if (!haveGUI) {
+			createGUI();
+			refreshGUI();
+			if (functionPanel != null)
+				functionPanel.checkGUI();
+			if (paramEditor != null)
+				paramEditor.checkGUI();
+		}
 	}
 
 	/**
@@ -193,7 +227,8 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	public Dimension getPreferredSize() {
 		Dimension dim = table.getPreferredSize();
 		dim.height += table.getTableHeader().getHeight();
-		dim.height += buttonPanel.getPreferredSize().height;
+		if (buttonPanel != null && buttonPanel.getParent() == this)
+			dim.height += buttonPanel.getPreferredSize().height;
 		dim.height += 1.25 * table.getRowHeight() + 14;
 		return dim;
 	}
@@ -203,18 +238,21 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	 *
 	 * @param newObjects a list of objects
 	 */
-	public void setObjects(java.util.List<FObject> newObjects) {
-		// determine row and column selected
-		int row = table.getSelectedRow();
-		int col = table.getSelectedColumn();
+	public void setObjects(List<FObject> newObjects) {
 		objects.clear();
 		objects.addAll(newObjects);
 		evaluateAll();
+	}
+
+	protected void updateTable() {
+		// save row and column selected
+		selectedRow = table.getSelectedRow();
+		selectedCol = table.getSelectedColumn();
 		tableModel.fireTableStructureChanged();
 		// select same cell
-		if (row < table.getRowCount()) {
-			table.rowToSelect = row;
-			table.columnToSelect = col;
+		if (selectedRow < table.getRowCount()) {
+			table.rowToSelect = selectedRow;
+			table.columnToSelect = selectedCol;
 		}
 		table.requestFocusInWindow();
 		refreshGUI();
@@ -392,11 +430,12 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		if (obj == null) {
 			return null;
 		}
-		int undoRow = table.getSelectedRow();
-		int undoCol = table.getSelectedColumn();
-		java.util.List<FObject> newObjects = new ArrayList<FObject>(objects);
+		List<FObject> newObjects = new ArrayList<FObject>(objects);
 		newObjects.add(row, obj);
 		setObjects(newObjects);
+		if (!haveGUI)
+			return obj;
+		updateTable();
 		// select new object
 		table.columnToSelect = 0;
 		table.rowToSelect = row;
@@ -405,7 +444,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		// inform and pass undoable edit to listeners
 		UndoableEdit edit = null;
 		if (postEdit && undoEditsEnabled) {
-			edit = getUndoableEdit(ADD_EDIT, obj, row, 0, obj, undoRow, undoCol, getName(obj));
+			edit = getUndoableEdit(ADD_EDIT, obj, row, 0, obj, selectedRow, selectedCol, getName(obj));
 		}
 		if (firePropertyChange) {
 			firePropertyChange(PROPERTY_FUNCTIONEDITOR_EDIT, getName(obj), edit); // $NON-NLS-1$
@@ -488,11 +527,19 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			remove(buttonPanel);
 			return;
 		}
-		buttonPanel.removeAll();
+		if (buttonPanel == null) {
+			buttonPanel = new JPanel(new FlowLayout());
+		} else {
+			buttonPanel.removeAll();
+		}
 		for (int i = 0; i < buttons.length; i++) {
 			buttonPanel.add(buttons[i]);
 		}
 		add(buttonPanel, BorderLayout.NORTH);
+	}
+
+	JPanel getButtonPanel() {
+		return buttonPanel;
 	}
 
 	/**
@@ -579,6 +626,8 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	 */
 	public void setAnglesInDegrees(boolean degrees) {
 		anglesInDegrees = degrees;
+		if (!haveGUI())
+			return;
 		table.repaint();
 	}
 
@@ -744,6 +793,28 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	 */
 	abstract protected void setReferences(FObject obj, BitSet directRefrences);
 
+	protected boolean addButtonPanel = true;
+
+	MouseListener tableFocuser = new MouseAdapter() {
+		@Override
+		public void mousePressed(MouseEvent e) {
+			table.requestFocusInWindow();
+			functionPanel.clearSelection();
+		}
+
+	};
+
+	protected String newButtonTipText;
+	protected String titledBorderText;
+	private boolean haveGUI;
+	public static final String PROPERTY_FUNCTIONTOOL_FUNCTION = "function";
+	
+	protected boolean haveGUI() { 
+		return haveGUI;
+	}
+
+	abstract protected void setTitles();
+
 	/**
 	 * Creates the GUI.
 	 */
@@ -755,70 +826,68 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		tableScroller = new JScrollPane(table);
 		tableScroller.createHorizontalScrollBar();
 		add(tableScroller, BorderLayout.CENTER);
-		buttonPanel = new JPanel(new FlowLayout());
-		newButton = new JButton();
-		newButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String name = getDefaultName();
-				FObject obj = createUniqueObject(null, name, false);
-				addObject(obj, true);
-			}
-
-		});
-		cutButton = new JButton();
-		cutButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				FObject[] array = getSelectedObjects();
-				copy(array);
-				for (int i = array.length; i > 0; i--) {
-					removeObject(array[i - 1], true);
+		if (addButtonPanel) {
+			buttonPanel = new JPanel(new FlowLayout());
+			newButton = new JButton();
+			newButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					String name = getDefaultName();
+					FObject obj = createUniqueObject(null, name, false);
+					addObject(obj, true);
 				}
-				evaluateAll();
-			}
 
-		});
-		copyButton = new JButton();
-		copyButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				copy(getSelectedObjects());
-			}
+			});
+			cutButton = new JButton();
+			cutButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					FObject[] array = getSelectedObjects();
+					copy(array);
+					for (int i = array.length; i > 0; i--) {
+						removeObject(array[i - 1], true);
+					}
+					evaluateAll();
+				}
 
-		});
-		pasteButton = new JButton();
-		pasteButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				paste();
-			}
+			});
+			copyButton = new JButton();
+			copyButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					copy(getSelectedObjects());
+				}
 
-		});
-		buttonPanel.add(newButton);
-		buttonPanel.add(copyButton);
-		buttonPanel.add(cutButton);
-		buttonPanel.add(pasteButton);
-		add(buttonPanel, BorderLayout.NORTH);
-		MouseListener tableFocuser = new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent e) {
-				table.requestFocusInWindow();
-				functionPanel.clearSelection();
-			}
+			});
+			pasteButton = new JButton();
+			pasteButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					paste();
+				}
 
-		};
+			});
+			buttonPanel.add(newButton);
+			buttonPanel.add(copyButton);
+			buttonPanel.add(cutButton);
+			buttonPanel.add(pasteButton);
+			add(buttonPanel, BorderLayout.NORTH);
+			buttonPanel.addMouseListener(tableFocuser);
+//BH twice?		buttonPanel.addMouseListener(tableFocuser);
+		}
 		table.getTableHeader().addMouseListener(tableFocuser);
 		tableScroller.addMouseListener(tableFocuser);
-		buttonPanel.addMouseListener(tableFocuser);
-		buttonPanel.addMouseListener(tableFocuser);
 		addMouseListener(tableFocuser);
+		haveGUI = true;
 	}
 
 	/**
 	 * Refreshes the GUI.
 	 */
-	protected void refreshGUI() {
+	public void refreshGUI() {
+		if (!haveGUI)
+			return;
+		setTitles();
 		sciFormat0000.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
 		decimalFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
 		int[] rows = table.getSelectedRows();
@@ -832,16 +901,20 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			table.setColumnSelectionInterval(col, col);
 			table.requestFocusInWindow();
 		}
-		newButton.setText(ToolsRes.getString("FunctionEditor.Button.New")); //$NON-NLS-1$
-		newButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.New.Tooltip")); //$NON-NLS-1$
-		cutButton.setText(ToolsRes.getString("FunctionEditor.Button.Cut")); //$NON-NLS-1$
-		cutButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Cut.Tooltip")); //$NON-NLS-1$
-		copyButton.setText(ToolsRes.getString("FunctionEditor.Button.Copy")); //$NON-NLS-1$
-		copyButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Copy.Tooltip")); //$NON-NLS-1$
-		pasteButton.setText(ToolsRes.getString("FunctionEditor.Button.Paste")); //$NON-NLS-1$
-		pasteButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Paste.Tooltip")); //$NON-NLS-1$
-		titledBorder.setTitle(ToolsRes.getString("FunctionEditor.Border.Title")); //$NON-NLS-1$
-		refreshButtons();
+		titledBorder.setTitle(
+				titledBorderText == null ? ToolsRes.getString("FunctionEditor.Border.Title") : titledBorderText); //$NON-NLS-1$
+		if (addButtonPanel) {
+			cutButton.setText(ToolsRes.getString("FunctionEditor.Button.Cut")); //$NON-NLS-1$
+			cutButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Cut.Tooltip")); //$NON-NLS-1$
+			copyButton.setText(ToolsRes.getString("FunctionEditor.Button.Copy")); //$NON-NLS-1$
+			copyButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Copy.Tooltip")); //$NON-NLS-1$
+			pasteButton.setText(ToolsRes.getString("FunctionEditor.Button.Paste")); //$NON-NLS-1$
+			pasteButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Paste.Tooltip")); //$NON-NLS-1$
+			newButton.setText(ToolsRes.getString("FunctionEditor.Button.New")); //$NON-NLS-1$
+			newButton.setToolTipText(newButtonTipText == null ? ToolsRes.getString("FunctionEditor.Button.New.Tooltip") //$NON-NLS-1$
+					: newButtonTipText);
+			refreshButtons();
+		}
 	}
 
 	/**
@@ -855,6 +928,8 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	 * Refreshes button states.
 	 */
 	protected void refreshButtons() {
+		if (!addButtonPanel)
+			return;
 		boolean b = getSelectedObject() != null;
 		copyButton.setEnabled(b);
 		cutButton.setEnabled(b && isRemovable(getSelectedObject()));
@@ -907,27 +982,29 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	 * Returns a String with the names of variables available for expressions. This
 	 * default returns the names of all objects in this panel except the selected
 	 * object.
+	 * 
+	 * @param separator
+	 * @return
 	 */
 	protected String getVariablesString(String separator) {
+		String selectedName = getName(getSelectedObject());
 		StringBuffer vars = new StringBuffer(""); //$NON-NLS-1$
-		int len0 = vars.length();
-		boolean firstItem = true;
-		String nameToSkip = getName(getSelectedObject());
-		for (int i = 0; i < names.length; i++) {
-			if (names[i].equals(nameToSkip)) {
-				continue;
+		if (skipAllName == null || !skipAllName.equals(selectedName)) { // $NON-NLS-1$
+			for (int i = 0; i < names.length; i++) {
+				if (names[i].equals(selectedName)) {
+					continue;
+				}
+				vars.append(" ");
+				vars.append(names[i]);
 			}
-			if (!firstItem) {
-				vars.append(" "); //$NON-NLS-1$
-			}
-			vars.append(names[i]);
-			firstItem = false;
 		}
-		if (vars.length() == len0) {
-			return ToolsRes.getString("FunctionPanel.Instructions.Help"); //$NON-NLS-1$
-		}
-		return ToolsRes.getString("FunctionPanel.Instructions.ValueCell") //$NON-NLS-1$
-				+ separator + vars.toString();
+		return getVariablesString(vars, separator);
+	}
+
+	public String getVariablesString(StringBuffer vars, String separator) {
+		return (vars.length() == 0 ? ToolsRes.getString("FunctionPanel.Instructions.Help")
+				: ToolsRes.getString("FunctionPanel.Instructions.ValueCell") //$NON-NLS-1$
+						+ separator + vars.substring(1));
 	}
 
 	/**
@@ -2450,6 +2527,10 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		}
 		value = Math.round(value);
 		return multiplier * value / Math.pow(10, power);
+	}
+
+	public void tabToNext() {
+		newButton.requestFocusInWindow();
 	}
 
 }

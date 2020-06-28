@@ -74,6 +74,9 @@ public class ParamEditor extends FunctionEditor {
 			list.add(params[i]);
 		}
 		setObjects(list);
+		if (haveGUI())
+			updateTable();
+
 	}
 
 	/**
@@ -360,14 +363,11 @@ public class ParamEditor extends FunctionEditor {
 		return p;
 	}
 
-	/**
-	 * Refreshes the GUI.
-	 */
+
 	@Override
-	protected void refreshGUI() {
-		super.refreshGUI();
-		newButton.setToolTipText(ToolsRes.getString("ParamEditor.Button.New.Tooltip")); //$NON-NLS-1$
-		titledBorder.setTitle(ToolsRes.getString("ParamEditor.Border.Title")); //$NON-NLS-1$
+	protected void setTitles() {
+		newButtonTipText = ToolsRes.getString("ParamEditor.Button.New.Tooltip"); //$NON-NLS-1$
+		titledBorderText = ToolsRes.getString("ParamEditor.Border.Title"); //$NON-NLS-1$
 	}
 
 	/**
@@ -427,8 +427,6 @@ public class ParamEditor extends FunctionEditor {
 
 	@Override
 	protected void setReferences(FObject obj, BitSet directRefrences) {
-		// TODO Auto-generated method stub
-
 	}
 
 }

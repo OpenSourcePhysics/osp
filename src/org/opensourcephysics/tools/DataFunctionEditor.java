@@ -11,9 +11,6 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.BitSet;
 
-import javax.swing.border.Border;
-import javax.swing.border.TitledBorder;
-
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.DataFunction;
 import org.opensourcephysics.display.Dataset;
@@ -39,6 +36,10 @@ public class DataFunctionEditor extends FunctionEditor {
 	 */
 	public DataFunctionEditor(DatasetManager data) {
 		this.data = data;
+		init();
+	}
+
+	private void init() {
 		// load existing DataFunctions, if any
 		ArrayList<Dataset> sets = data.getDatasets();
 		for (int i = 0, n = sets.size(); i < n; i++) {
@@ -49,6 +50,11 @@ public class DataFunctionEditor extends FunctionEditor {
 		}
 	}
 
+
+	@Override
+	protected void setTitles() {
+		titledBorderText = ToolsRes.getString("DataFunctionEditor.Border.Title"); //$NON-NLS-1$
+	}
 	/**
 	 * Returns the DatasetManager.
 	 *
@@ -163,7 +169,7 @@ public class DataFunctionEditor extends FunctionEditor {
 	public FObject addObject(FObject obj, int row, boolean postEdit, boolean firePropertyChange) {
 		obj = super.addObject(obj, row, postEdit, firePropertyChange);
 		if (obj != null) {
-			firePropertyChange("function", null, obj); //$NON-NLS-1$
+			firePropertyChange(PROPERTY_FUNCTIONEDITOR_FUNCTION, null, obj); //$NON-NLS-1$
 		}
 		return obj;
 	}
@@ -179,21 +185,9 @@ public class DataFunctionEditor extends FunctionEditor {
 	public FObject removeObject(FObject obj, boolean postEdit) {
 		obj = super.removeObject(obj, postEdit);
 		if (obj != null) {
-			firePropertyChange("function", obj, null); //$NON-NLS-1$
+			firePropertyChange(PROPERTY_FUNCTIONEDITOR_FUNCTION, obj, null); //$NON-NLS-1$
 		}
 		return obj;
-	}
-
-	/**
-	 * Refreshes the GUI.
-	 */
-	@Override
-	protected void refreshGUI() {
-		super.refreshGUI();
-		Border border = getBorder();
-		if ((border != null) && (border instanceof TitledBorder)) {
-			((TitledBorder) border).setTitle(ToolsRes.getString("DataFunctionEditor.Border.Title")); //$NON-NLS-1$
-		}
 	}
 
 	/**
@@ -227,17 +221,12 @@ public class DataFunctionEditor extends FunctionEditor {
 	@Override
 	protected String getVariablesString(String separator) {
 		StringBuffer vars = new StringBuffer(""); //$NON-NLS-1$
-		int init = vars.length();
-		boolean firstItem = true;
 		// add parameters, if any
 		if (paramEditor != null) {
 			Parameter[] parameters = paramEditor.getParameters();
 			for (int i = 0; i < parameters.length; i++) {
-				if (!firstItem) {
-					vars.append(" "); //$NON-NLS-1$
-				}
+				vars.append(" "); //$NON-NLS-1$
 				vars.append(parameters[i].getName());
-				firstItem = false;
 			}
 		}
 		String nameToSkip = getName(getSelectedObject());
@@ -246,27 +235,16 @@ public class DataFunctionEditor extends FunctionEditor {
 			Dataset next = datasets.get(i);
 			if (i == 0) {
 				String name = next.getXColumnName();
-				if (!firstItem) {
-					vars.append(" "); //$NON-NLS-1$
-				}
+				vars.append(" "); //$NON-NLS-1$
 				vars.append(TeXParser.removeSubscripting(name));
-				firstItem = false;
 			}
 			String name = next.getYColumnName();
 			if (name.equals(nameToSkip)) {
 				continue;
 			}
-			if (!firstItem) {
-				vars.append(" "); //$NON-NLS-1$
-			}
 			vars.append(TeXParser.removeSubscripting(name));
-			firstItem = false;
 		}
-		if (vars.length() == init) {
-			return ToolsRes.getString("FunctionPanel.Instructions.Help"); //$NON-NLS-1$
-		}
-		return ToolsRes.getString("FunctionPanel.Instructions.ValueCell") //$NON-NLS-1$
-				+ separator + vars.toString();
+		return getVariablesString(vars, separator);
 	}
 
 	/**
