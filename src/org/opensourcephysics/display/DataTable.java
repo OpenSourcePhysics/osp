@@ -118,7 +118,7 @@ public class DataTable extends JTable {
 	public static final int MODE_TRACK_SELECTEDPOINT = 0x1400;
 	public static final int MODE_TRACK_STEPS = 0x1500;
 	public static final int MODE_TRACK_LOADED = 0x1600;
-	public static final int MODE_TRACK_SETVISIBLE = 0x1700;
+	public static final int MODE_COL_SETVISIBLE = 0x1700;
 	public static final int MODE_TRACK_LOADER = 0x1800;
 	public static final int MODE_TRACK_CHOOSE = 0x1900;
 	public static final int MODE_TRACK_SELECT = 0x1A00;
@@ -656,7 +656,7 @@ public class DataTable extends JTable {
 			columnsChanged = true;
 			break;
 			//  row/rendering changes
-		case MODE_TRACK_SETVISIBLE: // 0x1700;
+		case MODE_COL_SETVISIBLE: // 0x1700;
 		case MODE_TRACK_STEP: // 0x1300;
 		case MODE_TRACK_SELECTEDPOINT: // 0x1400;
 		case MODE_TRACK_TRANSFORM: // 0x1B00;
