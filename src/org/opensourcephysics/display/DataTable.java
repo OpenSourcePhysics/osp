@@ -2030,9 +2030,11 @@ public class DataTable extends JTable {
 	 * 2010-10-24
 	 */
 	public class HeaderRenderer implements TableCellRenderer {
-		DrawingPanel panel = new DrawingPanel();
+		//DrawingPanel panel = new DrawingPanel();
 		TableCellRenderer renderer;
-		protected DrawableTextLine textLine = new DrawableTextLine("", 0, -6); //$NON-NLS-1$
+//		protected JLabel textLine = new JLabel();
+		String text = "";
+		//DrawableTextLine textLine = new DrawableTextLine("", 0, -6); //$NON-NLS-1$
 
 		/**
 		 * Constructor HeaderRenderer
@@ -2041,8 +2043,8 @@ public class DataTable extends JTable {
 		 */
 		public HeaderRenderer(TableCellRenderer renderer) {
 			this.renderer = renderer;
-			textLine.setJustification(TextLine.CENTER);
-			panel.addDrawable(textLine);
+			//textLine.setJustification(TextLine.CENTER);
+			//panel.addDrawable(textLine);
 		}
 
 		public TableCellRenderer getBaseRenderer() {
@@ -2054,10 +2056,10 @@ public class DataTable extends JTable {
 				int row, int col) {
 			// value is column name
 			String name = (value == null) ? "" : value.toString(); //$NON-NLS-1$
-			textLine.setText(name);
-			if (OSPRuntime.isMac()) {
-				name = TeXParser.removeSubscripting(name);
-			}
+//			textLine.setText(name);
+//			if (OSPRuntime.isMac()) {
+//				name = TeXParser.removeSubscripting(name);
+//			}
 			Component c = renderer.getTableCellRendererComponent(table, name, isSelected, hasFocus, row, col);
 			if (!(c instanceof JComponent)) {
 				return c;
@@ -2065,30 +2067,35 @@ public class DataTable extends JTable {
 			JComponent comp = (JComponent) c;
 			int sortCol = dataTableModel.getSortedColumn();
 			Font font = comp.getFont();
-			if (OSPRuntime.isMac()) {
+//			if (OSPRuntime.isMac()) {
 				// textline doesn't work on OSX
 				comp.setFont((sortCol != convertColumnIndexToModel(col)) ? font.deriveFont(Font.PLAIN)
 						: font.deriveFont(Font.BOLD));
 				if (comp instanceof JLabel) {
-					((JLabel) comp).setHorizontalAlignment(SwingConstants.CENTER);
+					JLabel label = (JLabel) comp;
+					label.setHorizontalAlignment(SwingConstants.CENTER);
+					if (label.getText().indexOf("{") >= 0) {
+						String s = TeXParser.toHTML(label.getText());
+						label.setText(s);
+					}
 				}
 				return comp;
 			}
-			java.awt.Dimension dim = comp.getPreferredSize();
-			dim.height += 1;
-			panel.setPreferredSize(dim);
-			javax.swing.border.Border border = comp.getBorder();
-			if (border instanceof javax.swing.border.EmptyBorder) {
-				border = BorderFactory.createLineBorder(Color.LIGHT_GRAY);
-			}
-			panel.setBorder(border);
-			// set font: bold if sorted column
-			textLine.setFont((sortCol != convertColumnIndexToModel(col)) ? font : font.deriveFont(Font.BOLD));
-			textLine.setColor(comp.getForeground());
-			textLine.setBackground(comp.getBackground());
-			panel.setBackground(comp.getBackground());
-			return panel;
-		}
+//			java.awt.Dimension dim = comp.getPreferredSize();
+//			dim.height += 1;
+//			panel.setPreferredSize(dim);
+//			javax.swing.border.Border border = comp.getBorder();
+//			if (border instanceof javax.swing.border.EmptyBorder) {
+//				border = BorderFactory.createLineBorder(Color.LIGHT_GRAY);
+//			}
+//			panel.setBorder(border);
+//			// set font: bold if sorted column
+//			textLine.setFont((sortCol != convertColumnIndexToModel(col)) ? font : font.deriveFont(Font.BOLD));
+//			textLine.setFore(comp.getForeground());
+//			textLine.setBackground(comp.getBackground());
+//			panel.setBackground(comp.getBackground());
+//			return panel;
+//		}
 
 	}
 

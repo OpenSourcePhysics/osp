@@ -116,7 +116,33 @@ public class TeXParser {
 //		}
 //		return outStr;
 	}
+
 	
+
+	public static String toHTML(String s) {
+		return toHTML(toHTML(s, "_{", "sub"), "^{", "sup"); 
+	}
+	
+	public static String toHTML(String s, String tex, String html) {
+		int pt;
+		if (s == null || (pt = s.indexOf(tex)) < 0) {
+			return s;
+		}
+		boolean ishtml = false;
+		while (pt >= 0) {
+			int pt1 = s.indexOf("}", pt + 1);
+			if (pt1 < 0) {
+				break;
+			}
+			s = s.substring(0, pt) + "<" + html + ">" 
+			+ s.substring(pt + 2, pt1) 
+			+ "</" + html + ">"
+			+ s.substring(pt1 + 1);
+			ishtml = true;
+		}
+		return (ishtml ? "<html>" + s + "</html>" : s);
+	}
+
 //	
 //	static {
 //
