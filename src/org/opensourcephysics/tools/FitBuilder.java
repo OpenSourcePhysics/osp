@@ -94,7 +94,7 @@ public class FitBuilder extends FunctionTool {
 	 * @param c a component to determine the dialog owner
 	 */
 	public FitBuilder(Component c) {
-		super(c);
+		super(c, true);
 		parent = c;
 		newFitButton = new JButton(ToolsRes.getString("DatasetCurveFitter.Button.NewFit.Text")); //$NON-NLS-1$
 		newFitButton.setToolTipText(ToolsRes.getString("DatasetCurveFitter.Button.NewFit.Tooltip")); //$NON-NLS-1$

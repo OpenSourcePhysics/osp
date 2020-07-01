@@ -9,6 +9,7 @@ package org.opensourcephysics.tools;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Toolkit;
@@ -118,14 +119,21 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	private JDialog helpDialog;
 	private boolean haveGUI;
 
+	private boolean isFitBuilder;
+	
 	/**
 	 * Constructs a tool for the specified component (may be null)
 	 *
 	 * @param comp Component used to get Frame owner of this Dialog
 	 */
 	public FunctionTool(Component comp) {
+		this(comp, false);
+	}
+	 
+	public FunctionTool(Component comp, boolean isFitBuilder) {
 		// modal if no owner (ie if comp is null)
 		super(JOptionPane.getFrameForComponent(comp), comp == null);
+		this.isFitBuilder = isFitBuilder;
 		addForbiddenNames(parserNames);
 		addForbiddenNames(UserFunction.dummyVars);
 		setName("FunctionTool"); //$NON-NLS-1$
@@ -205,29 +213,24 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 				Object[] array = (Object[]) obj;
 				String name = array.length > 2 ? (String) array[2] : (String) array[1];
 				// substitute localized name if this tool is a FitBuilder
-				if (FunctionTool.this instanceof FitBuilder) {
+				if (isFitBuilder) {
 					name = FitBuilder.localize(name);
 				}
 
-				boolean added = false;
 				for (int i = 0; i < count; i++) {
 					Object[] nextArray = (Object[]) getItemAt(i);
 					String next = nextArray.length > 2 ? (String) nextArray[2] : (String) nextArray[1];
 					// substitute localized name if this tool is a FitBuilder
-					if (FunctionTool.this instanceof FitBuilder) {
+					if (isFitBuilder) {
 						next = FitBuilder.localize(next);
 					}
 					if (name.compareToIgnoreCase(next) < 0) {
 						// next comes after name, so insert object here
 						insertItemAt(obj, i);
-						added = true;
-						break;
+						return;
 					}
 				}
-				if (!added) {
-					// add at end
-					super.addItem(obj);
-				}
+				super.addItem(obj);
 			}
 
 		};
@@ -321,10 +324,9 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		myContentPane.add(noData, BorderLayout.CENTER);
 		myContentPane.add(buttonbar, BorderLayout.SOUTH);
 		setContentPane(myContentPane);
+		Dimension dim = getPreferredSize();
+		setPreferredSize(new Dimension(dim.width, Math.max(400, dim.height))); // BH was 360, but that was too short
 		pack();
-		Dimension dim = getSize();
-		dim.height = Math.max(360, dim.height);
-		setSize(dim);
 		buttonbar.remove(undoButton);
 		buttonbar.remove(redoButton);
 		buttonbar.remove(fontButton);
@@ -577,7 +579,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		if (!haveGUI())
 			return;
 		refreshGUI();
-		if (FunctionTool.this instanceof FitBuilder) {
+		if (isFitBuilder) {
 			// refresh dropdown since localized names change
 			refreshDropdown(null);
 		}
@@ -603,14 +605,15 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	public void setVisible(boolean vis) {
 		if (!vis && !haveGUI())
 			return;
-		checkGUI();
 		if (vis) {
+			checkGUI();
 			setFontLevel(FontSizer.getLevel());
 		}
-		if (myContentPane.getTopLevelAncestor() == this)
+		Container top = myContentPane.getTopLevelAncestor();
+		if (top == null || top == this)
 			super.setVisible(vis);
 		else
-			myContentPane.getTopLevelAncestor().setVisible(vis);
+			top.setVisible(vis);
 		firePropertyChange(PROPERTY_FUNCTIONTOOL_VISIBLE, null, new Boolean(vis)); // $NON-NLS-1$
 	}
 
@@ -621,9 +624,8 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	 */
 	@Override
 	public boolean isVisible() {
-		if (myContentPane.getTopLevelAncestor() == this)
-			return super.isVisible();
-		return myContentPane.getTopLevelAncestor().isVisible();
+		Container top = myContentPane.getTopLevelAncestor();
+		return (top == null ? false : top == this ? super.isVisible() : top.isVisible());
 	}
 
 	/**
@@ -886,7 +888,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 				setIcon((Icon) array[0]);
 				String val = array.length > 2 ? (String) array[2] : (String) array[1];
 				// substitute localized name if this tool is a FitBuilder
-				if (FunctionTool.this instanceof FitBuilder) {
+				if (isFitBuilder) {
 					val = FitBuilder.localize(val);
 				}
 				setText(val);
