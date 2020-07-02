@@ -1033,6 +1033,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 					}
 					((JFrame) tool).setVisible(true);
 				} catch (Exception ex) {
+					ex.printStackTrace();
 				}
 			}
 

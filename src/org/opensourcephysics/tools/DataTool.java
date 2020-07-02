@@ -171,6 +171,9 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 */
 	private static DataTool tool;
 
+	public static DataTool getTool() {
+		return getTool(true);
+	}
 	/**
 	 * Gets the shared DataTool.
 	 *
