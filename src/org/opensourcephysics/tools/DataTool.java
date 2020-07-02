@@ -192,6 +192,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * @param args args[0] may be a data or xml file name
 	 */
 	public static void main(String[] args) {
+		getTool(true);
 		tool.exitOnClose = true;
 		tool.saveChangesOnClose = true;
 		if ((args != null) && (args.length > 0) && (args[0] != null)) {
