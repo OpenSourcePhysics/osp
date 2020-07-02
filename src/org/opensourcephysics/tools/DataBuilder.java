@@ -37,15 +37,22 @@ public class DataBuilder extends FunctionTool {
 	private JButton loadButton, saveButton;
 
 	public DataBuilder(DataTool tool) {
-		super(tool);
-		dataTool = tool;
-		setHelpPath("data_builder_help.html"); //$NON-NLS-1$
-		createButtons();
-		setToolbarComponents(new Component[] { loadButton, saveButton });
+		this(tool, false);
 	}
 
-	private void createButtons() {
-		checkGUI();
+	public DataBuilder(DataTool tool, boolean lazyGUI) {
+		super(tool, false, lazyGUI);
+		dataTool = tool;
+		setHelpPath("data_builder_help.html"); //$NON-NLS-1$
+		if (!lazyGUI)
+			createGUI();
+	}
+
+	@Override
+	protected void createGUI() {
+		if (haveGUI())
+			return;
+		super.createGUI();
 		String imageFile = "/org/opensourcephysics/resources/tools/images/open.gif"; //$NON-NLS-1$
 		Icon openIcon = ResourceLoader.getIcon(imageFile);
 		loadButton = new JButton(openIcon);
@@ -139,6 +146,7 @@ public class DataBuilder extends FunctionTool {
 
 		});
 
+		setToolbarComponents(new Component[] { loadButton, saveButton });
 	}
 
 	@Override

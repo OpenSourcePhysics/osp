@@ -94,13 +94,20 @@ public class FitBuilder extends FunctionTool {
 	 * @param c a component to determine the dialog owner
 	 */
 	public FitBuilder(Component c) {
-		super(c, true);
+		this(c, false);
+	}
+
+	public FitBuilder(Component c, boolean lazyGUI) {
+		super(c, true, lazyGUI);
 		parent = c;
-		checkGUI();
+		if (!lazyGUI)
+			createGUI();
 	}
 
 	@Override
 	protected void createGUI() {
+		if (haveGUI())
+			return;
 		super.createGUI();
 		newFitButton = new JButton(ToolsRes.getString("DatasetCurveFitter.Button.NewFit.Text")); //$NON-NLS-1$
 		newFitButton.setToolTipText(ToolsRes.getString("DatasetCurveFitter.Button.NewFit.Tooltip")); //$NON-NLS-1$

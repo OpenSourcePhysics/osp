@@ -4554,7 +4554,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			if (fits != null) {
 				for (Iterator<?> iter = fits.iterator(); iter.hasNext();) {
 					FitFunctionPanel panel = (FitFunctionPanel) iter.next();
-					tab.dataTool.fitBuilder.addPanel(panel.getName(), panel);
+					tab.dataTool.getFitBuilder().addPanel(panel.getName(), panel);
 				}
 			}
 

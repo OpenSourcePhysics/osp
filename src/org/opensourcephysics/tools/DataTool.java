@@ -370,7 +370,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 				return null;
 			}
 			DataToolTab tab = getTab(index);
-			fitBuilder.curveFitters.remove(tab.curveFitter);
+			getFitBuilder().curveFitters.remove(tab.curveFitter);
 			fitBuilder.removePropertyChangeListener(tab.curveFitter.fitListener);
 			String title = tabbedPane.getTitleAt(index);
 			OSPLog.finer("removing tab " + title); //$NON-NLS-1$
@@ -1870,7 +1870,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 */
 	public FitBuilder getFitBuilder() {
 		if (fitBuilder == null) {
-			fitBuilder = new FitBuilder(this);
+			fitBuilder = new FitBuilder(this, true);
 			fitBuilder.setFontLevel(FontSizer.getLevel());
 			fitBuilder.setHelpPath("fit_builder_help.html"); //$NON-NLS-1$
 		}
@@ -2109,7 +2109,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			String title = tabbedPane.getTitleAt(i);
 			OSPLog.finer("removing tab " + title); //$NON-NLS-1$
 			DataToolTab tab = getTab(i);
-			fitBuilder.curveFitters.remove(tab.curveFitter);
+			getFitBuilder().curveFitters.remove(tab.curveFitter);
 			fitBuilder.removePropertyChangeListener(tab.curveFitter.fitListener);
 			tabbedPane.removeTabAt(i);
 		}
@@ -2131,7 +2131,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			String title = tabbedPane.getTitleAt(i);
 			OSPLog.finer("removing tab " + title); //$NON-NLS-1$
 			DataToolTab tab = getTab(i);
-			fitBuilder.curveFitters.remove(tab.curveFitter);
+			getFitBuilder().curveFitters.remove(tab.curveFitter);
 			fitBuilder.removePropertyChangeListener(tab.curveFitter.fitListener);
 			tabbedPane.removeTabAt(i);
 		}
@@ -2328,7 +2328,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 					if (tab.dataTable.workingData != null) {
 						String var = tab.dataTable.workingData.getXColumnName();
 						var = TeXParser.removeSubscripting(var);
-						fitBuilder.setDefaultVariables(new String[] { var });
+						getFitBuilder().setDefaultVariables(new String[] { var });
 					}
 				}
 			}

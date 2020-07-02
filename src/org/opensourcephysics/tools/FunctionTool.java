@@ -172,10 +172,19 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	 * @param comp Component used to get Frame owner of this Dialog
 	 */
 	public FunctionTool(Component comp) {
-		this(comp, false);
+		this(comp, false, false);
 	}
-	 
-	public FunctionTool(Component comp, boolean isFitBuilder) {
+	
+	/**
+	 * Constructor allowing for a fitBuilder flag and lazyGUI option
+	 * @param comp
+	 * @param isFitBuilder
+	 * @param lazyGUI
+	 */
+	public FunctionTool(Component comp, boolean isFitBuilder, boolean lazyGUI) {
+
+		
+		
 		// modal if no owner (ie if comp is null)
 		super(JOptionPane.getFrameForComponent(comp), comp == null);
 		this.isFitBuilder = isFitBuilder;
@@ -183,8 +192,8 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		addForbiddenNames(UserFunction.dummyVars);
 		setName("FunctionTool"); //$NON-NLS-1$
 		init();
-//		OSPLog.debug("???Temp FunctionTool.checkGUI");
-//		createGUI();
+		if (!lazyGUI)
+			createGUI();
 	}
 
 	public void checkGUI() {
