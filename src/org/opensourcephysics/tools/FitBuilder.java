@@ -95,6 +95,7 @@ public class FitBuilder extends FunctionTool {
 	 */
 	public FitBuilder(Component c) {
 		super(c, true);
+		checkGUI();
 		parent = c;
 		newFitButton = new JButton(ToolsRes.getString("DatasetCurveFitter.Button.NewFit.Text")); //$NON-NLS-1$
 		newFitButton.setToolTipText(ToolsRes.getString("DatasetCurveFitter.Button.NewFit.Tooltip")); //$NON-NLS-1$

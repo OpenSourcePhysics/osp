@@ -597,7 +597,7 @@ public class DataToolTable extends DataTable {
 		addMouseMotionListener(new MouseInputAdapter() {
 			@Override
 			public void mouseMoved(MouseEvent e) {
-				if (!popup.isVisible()) {
+				if (popup == null || !popup.isVisible()) {
 					int row = rowAtPoint(e.getPoint());
 					int col = columnAtPoint(e.getPoint());
 					int labelCol = convertColumnIndexToView(0);
@@ -641,7 +641,7 @@ public class DataToolTable extends DataTable {
 		tableMouseListener = new MouseAdapter() {
 			@Override
 			public void mouseExited(MouseEvent e) {
-				if (!popup.isVisible()) {
+				if (popup == null || !popup.isVisible()) {
 					mouseRow = -1;
 					dataRenderer.showFocus = true;
 					dorepaint(1);
