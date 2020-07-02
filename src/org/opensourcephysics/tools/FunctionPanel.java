@@ -9,7 +9,6 @@ package org.opensourcephysics.tools;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -394,7 +393,7 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 	 * Clears the selection.
 	 */
 	protected void clearSelection() {
-		if (!haveGUI())
+		if (!haveGUI)
 			return;
 		getFunctionTable().clearSelection();
 		getParamTable().clearSelection();
@@ -471,7 +470,7 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 	 * @param editor the current editor
 	 */
 	protected void tabToNext(FunctionEditor editor) {
-		if (!haveGUI())
+		if (!haveGUI)
 			return;
 		if (editor == functionEditor) {
 			functionTool.focusHelp();

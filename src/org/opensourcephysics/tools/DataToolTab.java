@@ -860,7 +860,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			FunctionPanel panel = new DataFunctionPanel(dataManager);
 			dataBuilder.addPanel(getName(), panel);
 		}
-		for (String name : dataBuilder.panels.keySet()) {
+		for (String name : dataBuilder.trackFunctionPanels.keySet()) {
 			if (!name.equals(getName())) {
 				dataBuilder.removePanel(name);
 			}

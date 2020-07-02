@@ -171,7 +171,7 @@ public class DataBuilder extends FunctionTool {
 			}
 		}
 		ArrayList<String> remove = new ArrayList<String>();
-		for (Iterator<String> it = panels.keySet().iterator(); it.hasNext();) {
+		for (Iterator<String> it = trackFunctionPanels.keySet().iterator(); it.hasNext();) {
 			String name = it.next().toString();
 			if (!tabNames.contains(name)) {
 				remove.add(name);

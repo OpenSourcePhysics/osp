@@ -54,6 +54,7 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.display.TextFrame;
+import org.opensourcephysics.media.core.Trackable;
 
 /**
  * This tool allows users to create and manage editable Functions.
@@ -68,6 +69,35 @@ import org.opensourcephysics.display.TextFrame;
 public class FunctionTool extends JDialog implements PropertyChangeListener {
 	// static fields
 
+	public static class FTObject {
+
+		public Icon icon; //[0]
+		public String name; //[1]
+		public String displayName; //[2]
+		public Trackable track;
+		
+		public FTObject(Icon icon, String name, String displayName) {
+			this.icon = icon;
+			this.name = name;
+			this.displayName = displayName;
+		}
+
+		public FTObject(Icon icon, Trackable track, String displayName) {
+			this.icon = icon;
+			this.track = track;
+			this.displayName = displayName;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			FTObject fto = (FTObject) o;
+			return fto != null 
+					&& (name == null ? fto.name == null : name.equals(fto.name))
+					&& (track == null ? fto.track == null : track.equals(fto.track))			
+					&& (displayName == null ? fto.displayName == null : displayName.equals(fto.displayName))
+					&& (icon == null ? fto.icon == null : icon.equals(fto.icon));
+		}
+	}
 	public static final String PROPERTY_FUNCTIONTOOL_PANEL = "panel";
 	public static final String PROPERTY_FUNCTIONTOOL_VISIBLE = "ft_visible";
 
@@ -85,10 +115,11 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 			"&", "|", "(", ")" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ ;
 	// instance fields
 
-	protected Set<DatasetCurveFitter> curveFitters = new HashSet<DatasetCurveFitter>();
-	protected Map<String, FunctionPanel> panels = new TreeMap<String, FunctionPanel>(); // maps name to FunctionPanel
-	protected FunctionPanel selectedPanel;
 	protected HashSet<String> forbiddenNames = new HashSet<String>();
+
+	protected Set<DatasetCurveFitter> curveFitters = new HashSet<DatasetCurveFitter>();
+	protected Map<String, FunctionPanel> trackFunctionPanels = new TreeMap<String, FunctionPanel>(); // maps name to FunctionPanel
+	protected FunctionPanel selectedPanel;
 
 	protected String helpPath = ""; //$NON-NLS-1$
 	protected String helpBase = "https://www.compadre.org/online_help/tools/"; //$NON-NLS-1$
@@ -98,28 +129,42 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 
 	// GUI
 
+	// toolbars 
+	
 	private JPanel myContentPane = new JPanel(new BorderLayout());
 	private JPanel noData;
-	private JToolBar toolbar, dropdownbar;
+	
+	private JToolBar toolbar;
+	private Component[] toolbarComponents; // may be null
+	
+	private JToolBar dropdownbar;
 	private JLabel dropdownLabel;
-	private JComboBox<Object> dropdown;
+	private JComboBox<FTObject> dropdown;
+	
+	private JPanel buttonbar = new JPanel(new FlowLayout());
+	private JButton helpButton, closeButton, fontButton, undoButton, redoButton;
+
 	private JPanel north = new JPanel(new BorderLayout());
 	private JScrollPane selectedPanelScroller;
-	private JButton helpButton, closeButton, fontButton, undoButton, redoButton;
-	private JPopupMenu popup;
 
+	private TextFrame helpFrame;
+	private JDialog helpDialog;
+
+	protected String dropdownTipText;
+	protected String titleText;
+	protected String dropdownLabelText;	
+	
+	private boolean haveGUI;
+	private boolean isFitBuilder;
+
+	// popup
+
+	private JPopupMenu popup;
 	private JPopupMenu getPopup() {
 		return (popup == null ? (popup = createPopup()) : popup);
 	}
-
 	private JMenuItem defaultFontSizeItem;
-	private JPanel buttonbar = new JPanel(new FlowLayout());
-	private Component[] toolbarComponents; // may be null
-	private TextFrame helpFrame;
-	private JDialog helpDialog;
-	private boolean haveGUI;
 
-	private boolean isFitBuilder;
 	
 	/**
 	 * Constructs a tool for the specified component (may be null)
@@ -146,6 +191,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		if (haveGUI)
 			return;
 		createGUI();
+		refreshDropdown(null);
 		refreshGUI();
 	}
 
@@ -178,7 +224,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 			public void mousePressed(MouseEvent e) {
 				String name = getSelectedName();
 				if (name != null) {
-					FunctionPanel panel = panels.get(name);
+					FunctionPanel panel = trackFunctionPanels.get(name);
 					panel.clearSelection();
 				}
 			}
@@ -186,12 +232,12 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		});
 		dropdownbar.add(dropdownLabel);
 		// create dropdown
-		dropdown = new JComboBox<Object>() {
+		dropdown = new JComboBox<FTObject>() {
 			// override getMaximumSize method so has same height as buttons
 			@Override
 			public Dimension getMaximumSize() {
 				Dimension dim = super.getMaximumSize();
-				if (toolbarComponents != null
+			if (toolbarComponents != null
 						&& toolbarComponents.length > 0 & toolbarComponents[0] instanceof JButton) {
 					JButton button = (JButton) toolbarComponents[0];
 					dim.height = button.getHeight();
@@ -201,7 +247,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 
 			// override addItem method to alphabetize added items
 			@Override
-			public void addItem(Object obj) {
+			public void addItem(FTObject obj) {
 				if (obj == null)
 					return;
 				int count = getItemCount();
@@ -210,21 +256,21 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 						return;
 				}
 				// add in alphabetical order, ignoring case
-				Object[] array = (Object[]) obj;
-				String name = array.length > 2 ? (String) array[2] : (String) array[1];
+				String displayName = obj.displayName;
+				//array.length > 2 ? (String) array[2] : (String) array[1];
 				// substitute localized name if this tool is a FitBuilder
 				if (isFitBuilder) {
-					name = FitBuilder.localize(name);
+					displayName = FitBuilder.localize(displayName);
 				}
 
 				for (int i = 0; i < count; i++) {
-					Object[] nextArray = (Object[]) getItemAt(i);
-					String next = nextArray.length > 2 ? (String) nextArray[2] : (String) nextArray[1];
+					FTObject fto = getItemAt(i);
+					String dname = fto.displayName;
 					// substitute localized name if this tool is a FitBuilder
 					if (isFitBuilder) {
-						next = FitBuilder.localize(next);
+						dname = FitBuilder.localize(dname);
 					}
-					if (name.compareToIgnoreCase(next) < 0) {
+					if (displayName.compareToIgnoreCase(dname) < 0) {
 						// next comes after name, so insert object here
 						insertItemAt(obj, i);
 						return;
@@ -242,11 +288,11 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		dropdown.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Object item = dropdown.getSelectedItem();
+				FTObject item = (FTObject) dropdown.getSelectedItem();
 				if (item != null) {
-					String name = ((Object[]) item)[1].toString();
+					String name = item.name;
 					select(name);
-					FunctionPanel panel = panels.get(name);
+					FunctionPanel panel = trackFunctionPanels.get(name);
 					if (panel != null && panel.haveGUI()) {
 						panel.getFunctionTable().clearSelection();
 						panel.getFunctionTable().selectOnFocus = false;
@@ -368,10 +414,6 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		return popup;
 	}
 
-	protected String dropdownTipText;
-	protected String titleText;
-	protected String dropdownLabelText;
-
 	protected void setTitles() {
 		// subclasses only will do this
 	}
@@ -381,6 +423,8 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	 */
 	protected void refreshGUI() {
 		// refresh toolbar
+		if (!haveGUI)
+			return;
 		if (toolbarComponents == null) {
 			north.remove(toolbar);
 		} else {
@@ -406,7 +450,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		helpButton.setToolTipText(ToolsRes.getString("Tool.Button.Help.ToolTip")); //$NON-NLS-1$
 		fontButton.setText(ToolsRes.getString("Tool.Menu.FontSize")); //$NON-NLS-1$
 		fontButton.setToolTipText(ToolsRes.getString("FunctionTool.Button.Display.Tooltip")); //$NON-NLS-1$
-		Iterator<FunctionPanel> it = panels.values().iterator();
+		Iterator<FunctionPanel> it = trackFunctionPanels.values().iterator();
 		while (it.hasNext()) {
 			FunctionPanel panel = it.next();
 			panel.refreshGUI();
@@ -448,7 +492,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		panel.setFontLevel(fontLevel);
 		panel.setName(name);
 		panel.setFunctionTool(this);
-		panels.put(name, panel);
+		trackFunctionPanels.put(name, panel);
 		panel.addForbiddenNames(forbiddenNames.toArray(new String[0]));
 		panel.clearSelection();
 		refreshDropdown(name);
@@ -462,10 +506,10 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	 * @return the removed panel, if any
 	 */
 	public FunctionPanel removePanel(String name) {
-		FunctionPanel panel = panels.get(name);
+		FunctionPanel panel = trackFunctionPanels.get(name);
 		if (panel != null) {
 			OSPLog.finest("removing panel " + name); //$NON-NLS-1$
-			panels.remove(name);
+			trackFunctionPanels.remove(name);
 			panel.dispose();
 			refreshDropdown(null);
 			firePropertyChange(PROPERTY_FUNCTIONTOOL_PANEL, panel, null); // $NON-NLS-1$
@@ -486,8 +530,8 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 			return panel;
 		}
 		OSPLog.finest("renaming panel " + prevName + " to " + newName); //$NON-NLS-1$ //$NON-NLS-2$
-		panels.remove(prevName);
-		panels.put(newName, panel);
+		trackFunctionPanels.remove(prevName);
+		trackFunctionPanels.put(newName, panel);
 		panel.prevName = prevName;
 		panel.setName(newName);
 		refreshDropdown(newName);
@@ -502,7 +546,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	public void setSelectedPanel(String name) {
 		if (!haveGUI())
 			return;
-		Object item = getDropdownItem(name);
+		FTObject item = getDropdownItem(name);
 		if (item != null)
 			dropdown.setSelectedItem(item);
 	}
@@ -516,10 +560,10 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		if (selectedPanel == null) {
 			return null;
 		}
-		Iterator<String> it = panels.keySet().iterator();
+		Iterator<String> it = trackFunctionPanels.keySet().iterator();
 		while (it.hasNext()) {
 			String name = it.next();
-			if (panels.get(name) == selectedPanel) {
+			if (trackFunctionPanels.get(name) == selectedPanel) {
 				return name;
 			}
 		}
@@ -542,7 +586,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	 * @return the FunctionPanel
 	 */
 	public FunctionPanel getPanel(String name) {
-		return (name == null) ? null : panels.get(name);
+		return (name == null) ? null : trackFunctionPanels.get(name);
 	}
 
 	/**
@@ -551,7 +595,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	 * @return a set of names
 	 */
 	public Set<String> getPanelNames() {
-		return panels.keySet();
+		return trackFunctionPanels.keySet();
 	}
 
 	/**
@@ -559,7 +603,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	 */
 	public void clearPanels() {
 		OSPLog.finest("clearing panels"); //$NON-NLS-1$
-		panels.clear();
+		trackFunctionPanels.clear();
 		refreshDropdown(null);
 	}
 
@@ -654,7 +698,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	 * @return true if empty
 	 */
 	public boolean isEmpty() {
-		return panels.isEmpty();
+		return trackFunctionPanels.isEmpty();
 	}
 
 	/**
@@ -673,7 +717,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		FontSizer.setFonts(this, level);
 		FontSizer.setFonts(myContentPane, level);
 		FontSizer.setFonts(fontButton, level);
-		for (Iterator<FunctionPanel> it = panels.values().iterator(); it.hasNext();) {
+		for (Iterator<FunctionPanel> it = trackFunctionPanels.values().iterator(); it.hasNext();) {
 			FunctionPanel next = it.next();
 			if (next == getSelectedPanel()) {
 				continue;
@@ -687,11 +731,11 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		}
 
 		int n = dropdown.getSelectedIndex();
-		Object[] items = new Object[dropdown.getItemCount()];
+		FTObject[] items = new FTObject[dropdown.getItemCount()];
 		for (int i = 0; i < items.length; i++) {
 			items[i] = dropdown.getItemAt(i);
 		}
-		DefaultComboBoxModel<Object> model = new DefaultComboBoxModel<>(items);
+		DefaultComboBoxModel<FTObject> model = new DefaultComboBoxModel<>(items);
 		dropdown.setModel(model);
 		dropdown.setSelectedItem(n);
 
@@ -730,7 +774,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 			editor.repaint();
 		}
 	}
-
+	
 	/**
 	 * Fires a property change. This makes this method visible to the tools package.
 	 */
@@ -745,10 +789,10 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	 * @param name the name
 	 * @return the dropdown item
 	 */
-	private Object getDropdownItem(String name) {
+	private FTObject getDropdownItem(String name) {
 		for (int i = 0; i < dropdown.getItemCount(); i++) {
-			Object item = dropdown.getItemAt(i);
-			String itemName = ((Object[]) item)[1].toString();
+			FTObject item = dropdown.getItemAt(i);
+			String itemName = item.name;
 			if (itemName.equals(name))
 				return item;
 		}
@@ -766,24 +810,24 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 			return;
 		refreshing = true; // prevents selecting items while adding to dropdown
 		if (name == null) {
-			Object item = dropdown.getSelectedItem();
+			FTObject item = (FTObject) dropdown.getSelectedItem();
 			if (item != null)
-				name = ((Object[]) item)[1].toString();
+				name = item.name;
 		}
-		Object[] toSelect = null;
+		FTObject toSelect = null;
 		dropdown.removeAllItems();
-		for (String next : panels.keySet()) {
-			FunctionPanel panel = panels.get(next);
+		for (String next : trackFunctionPanels.keySet()) {
+			FunctionPanel panel = trackFunctionPanels.get(next);
 			String displayName = panel.getDisplayName();
 			Icon icon = panel.getIcon();
 			if (icon != null && icon instanceof ResizableIcon) {
 				int factor = FontSizer.getIntegerFactor(FontSizer.getLevel());
 				((ResizableIcon) icon).resize(factor);
 			}
-			Object item = new Object[] { icon, next, displayName };
+			FTObject item = new FTObject(icon, next, displayName);
 			dropdown.addItem(item);
 			if (toSelect == null || next.equals(name)) {
-				toSelect = (Object[]) item;
+				toSelect = item;
 			}
 		}
 		refreshing = false;
@@ -812,7 +856,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	private void select(String name) {
 		if (refreshing)
 			return;
-		FunctionPanel panel = (name == null) ? null : panels.get(name);
+		FunctionPanel panel = (name == null) ? null : trackFunctionPanels.get(name);
 		FunctionPanel prev = selectedPanel;
 		if (selectedPanel != null) {
 			myContentPane.remove(selectedPanelScroller);
@@ -838,7 +882,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		c.repaint();
 		firePropertyChange(PROPERTY_FUNCTIONTOOL_PANEL, prev, panel); // $NON-NLS-1$
 	}
-
+	
 	/**
 	 * Gets a unique name.
 	 *
@@ -854,7 +898,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 			i++;
 			name = name + i;
 		}
-		while (panels.keySet().contains(name) || forbiddenNames.contains(name)) {
+		while (trackFunctionPanels.keySet().contains(name) || forbiddenNames.contains(name)) {
 			i++;
 			name = proposedName + i;
 		}
@@ -884,14 +928,14 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 				setForeground(list.getForeground());
 			}
 			if (value != null) {
-				Object[] array = (Object[]) value;
-				setIcon((Icon) array[0]);
-				String val = array.length > 2 ? (String) array[2] : (String) array[1];
+				FTObject obj = (FTObject) value;
+				setIcon(obj.icon);
+				String displayName = obj.displayName;
 				// substitute localized name if this tool is a FitBuilder
 				if (isFitBuilder) {
-					val = FitBuilder.localize(val);
+					displayName = FitBuilder.localize(displayName);
 				}
-				setText(val);
+				setText(displayName);
 			} else {
 				setIcon(null);
 				setText(null);
@@ -918,7 +962,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		@Override
 		public void saveObject(XMLControl control, Object obj) {
 			FunctionTool tool = (FunctionTool) obj;
-			ArrayList<FunctionPanel> functions = new ArrayList<FunctionPanel>(tool.panels.values());
+			ArrayList<FunctionPanel> functions = new ArrayList<FunctionPanel>(tool.trackFunctionPanels.values());
 			control.setValue("functions", functions); //$NON-NLS-1$
 		}
 

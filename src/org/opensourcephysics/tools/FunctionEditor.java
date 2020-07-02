@@ -215,6 +215,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	 * @return the table
 	 */
 	public Table getTable() {
+		checkGUI();
 		return table;
 	}
 
@@ -225,6 +226,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	 */
 	@Override
 	public Dimension getPreferredSize() {
+		checkGUI();
 		Dimension dim = table.getPreferredSize();
 		dim.height += table.getTableHeader().getHeight();
 		if (buttonPanel != null && buttonPanel.getParent() == this)
@@ -539,6 +541,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	}
 
 	JPanel getButtonPanel() {
+		checkGUI();
 		return buttonPanel;
 	}
 
@@ -921,6 +924,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	 * Sets the border title.
 	 */
 	public void setBorderTitle(String title) {
+		checkGUI();
 		titledBorder.setTitle(title);
 	}
 
