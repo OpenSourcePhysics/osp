@@ -95,8 +95,13 @@ public class FitBuilder extends FunctionTool {
 	 */
 	public FitBuilder(Component c) {
 		super(c, true);
-		checkGUI();
 		parent = c;
+		checkGUI();
+	}
+
+	@Override
+	protected void createGUI() {
+		super.createGUI();
 		newFitButton = new JButton(ToolsRes.getString("DatasetCurveFitter.Button.NewFit.Text")); //$NON-NLS-1$
 		newFitButton.setToolTipText(ToolsRes.getString("DatasetCurveFitter.Button.NewFit.Tooltip")); //$NON-NLS-1$
 		newFitButton.addActionListener(new ActionListener() {
@@ -596,7 +601,7 @@ public class FitBuilder extends FunctionTool {
 		if (!haveGUI())
 			return;
 		super.refreshGUI();
-		if (saveButton != null) {
+		if (deleteFitButton != null) {
 			saveButton.setEnabled(!getPanelNames().isEmpty());
 			loadButton.setToolTipText(ToolsRes.getString("DatasetCurveFitter.FitBuilder.Button.Load.Tooltip")); //$NON-NLS-1$
 			saveButton.setToolTipText(ToolsRes.getString("DatasetCurveFitter.FitBuilder.Button.Save.Tooltip")); //$NON-NLS-1$

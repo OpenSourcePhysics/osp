@@ -45,6 +45,7 @@ public class DataBuilder extends FunctionTool {
 	}
 
 	private void createButtons() {
+		checkGUI();
 		String imageFile = "/org/opensourcephysics/resources/tools/images/open.gif"; //$NON-NLS-1$
 		Icon openIcon = ResourceLoader.getIcon(imageFile);
 		loadButton = new JButton(openIcon);
