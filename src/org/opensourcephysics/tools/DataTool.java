@@ -1870,7 +1870,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 */
 	public FitBuilder getFitBuilder() {
 		if (fitBuilder == null) {
-			fitBuilder = new FitBuilder(this, true);
+			// BH for now we set lazyGUI false; room for improvement!
+			fitBuilder = new FitBuilder(this, false);
 			fitBuilder.setFontLevel(FontSizer.getLevel());
 			fitBuilder.setHelpPath("fit_builder_help.html"); //$NON-NLS-1$
 		}
