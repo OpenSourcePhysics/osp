@@ -31,7 +31,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
-import java.util.function.IntBinaryOperator;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -145,7 +144,9 @@ public class DataTable extends JTable {
 	public static final int MODE_SELECT  = 0x1000000;
 	public static final int MODE_HEADER  = 0x2000000;
 	public static final int MODE_SHOW    = 0x4000000;
-	public static final int MODE_REFRESH = 0x8000000;
+	public static final int MODE_REFRESH     = 0x8000000;
+
+	public static final int MODE_SET_TAINTED = 0x10000000;
 
 	private static final int MODE_MASK_REBUILD = //
 			MODE_MASK_NEW | MODE_MASK_TRACK | //
@@ -246,9 +247,14 @@ public class DataTable extends JTable {
 	}
 
 	@Override
+	public void addColumn(TableColumn c) {
+		super.addColumn(c);
+	}
+	
+	@Override
 	public int convertColumnIndexToModel(int viewIndex) {
 		return (viewIndex < 0 ? viewIndex
-				: ((DataTableColumnModel) getColumnModel()).getColumn(viewIndex).getModelIndex());
+				: ((DataTableColumnModel) getColumnModel()).convertColumnIndexToModel(viewIndex));
 	}
 
 	/**
@@ -628,6 +634,10 @@ public class DataTable extends JTable {
 		switch (mode) {
 		case MODE_CANCEL: // 0x00;
 			return;
+		case MODE_SET_TAINTED: // 0x10000000
+			dataTableModel.columnCount = -1;
+			dataTableModel.rowCount = -1;
+			return;
 			//
 			// column (structure) changes
 			//
@@ -824,7 +834,7 @@ public class DataTable extends JTable {
 		 * @return
 		 */
 		public Class<?> getColumnClass(int columnIndex) {
-			return tableModel.getColumnClass(columnIndex);
+			return ((OSPDataTableModel) tableModel).getColumnClass(columnIndex);
 		}
 
 		/**
@@ -858,8 +868,9 @@ public class DataTable extends JTable {
 		private SortDecorator decorator;
 		protected TableModelEvent lastModelEvent;
 
-		private int columnCount;
+		protected int columnCount;
 		private int rowCount;
+		protected boolean useDefaultColumnClass;
 
 		/**
 		 * The TableModelListener will clue us in
@@ -1141,6 +1152,10 @@ public class DataTable extends JTable {
 				return Object.class;
 			}
 
+			if (!useDefaultColumnClass)
+			{
+				return super.getColumnClass(columnIndex);
+			}
 			if (rowNumberVisible) {
 				if (columnIndex == 0) {
 					return Integer.class;
@@ -1149,6 +1164,8 @@ public class DataTable extends JTable {
 			if ((columnIndex == 0) && rowNumberVisible) {
 				columnIndex--;
 			}
+			
+			
 			DataTableElement dte = find(columnIndex);
 			return dte.getColumnClass(dte.foundColumn);
 		}
@@ -1392,14 +1409,18 @@ public class DataTable extends JTable {
 		}
 
 	}
+	
+	private class DataTableColumnModel extends DefaultTableColumnModel {
 
-	protected class DataTableColumnModel extends DefaultTableColumnModel {
+		private DataTableColumnModel() {
+			super();
+		}
+		
+		private class DataTableColumn extends TableColumn {
 
-		protected class DataTableColumn extends TableColumn {
+			private boolean isSizeSet;
 
-			public boolean isSizeSet;
-
-			public DataTableColumn(int modelIndex) {
+			private DataTableColumn(int modelIndex) {
 				super(modelIndex);
 				setHeaderValue(getModel().getColumnName(modelIndex));
 			}
@@ -1409,7 +1430,7 @@ public class DataTable extends JTable {
 		/**
 		 * New labelColumnWidth requires resetting min/max widths.
 		 */
-		public void invalidateWidths() {
+		private void invalidateWidths() {
 			for (int i = tableColumns.size(); --i >= 0;) {
 				((DataTableColumn) tableColumns.get(i)).isSizeSet = false;
 			}
@@ -1427,7 +1448,7 @@ public class DataTable extends JTable {
 		 * 
 		 * @author hansonr
 		 */
-		protected void updateColumnModel() {
+		private void updateColumnModel() {
 			
 			// create a map of the current column set (actually displayed)
 
@@ -1467,6 +1488,13 @@ public class DataTable extends JTable {
 			selectionModel.clearSelection();
 		}
 
+		public int convertColumnIndexToModel(int viewIndex) {
+			if (dataTableModel.getColumnCount() != tableColumns.size())
+				updateColumnModel();
+				
+			return getColumn(viewIndex).getModelIndex();
+		}
+
 //		public void createDefaultColumns() {
 //
 //			selectionModel.clearSelection();
@@ -1487,6 +1515,12 @@ public class DataTable extends JTable {
 //			}
 //		}
 
+	    @Override
+		public void addColumn(TableColumn c) {
+	    	super.addColumn(c);
+	    	dataTableModel.columnCount = -1;
+	    }
+	    
 		/**
 		 * Method getColumn
 		 *
@@ -1531,7 +1565,7 @@ public class DataTable extends JTable {
 //			}
 //		}
 
-		public void setModelColumnOrder(int[] modelColumns) {
+		private void setModelColumnOrder(int[] modelColumns) {
 			selectionModel.clearSelection();
 			int[] current = getModelColumnOrder();
 			if (Arrays.equals(current, modelColumns))
@@ -1559,7 +1593,7 @@ public class DataTable extends JTable {
 		 * 
 		 * @return
 		 */
-		public int[] getModelColumnOrder() {
+		private int[] getModelColumnOrder() {
 			int[] modelColumns = new int[getModel().getColumnCount()];
 			for (int i = modelColumns.length; --i >= 0;) {
 				modelColumns[i] = getColumn(i).getModelIndex();
@@ -1572,7 +1606,7 @@ public class DataTable extends JTable {
 	/**
 	 * A default double renderer for the table
 	 */
-	protected static class DoubleRenderer extends DefaultTableCellRenderer {
+	private static class DoubleRenderer extends DefaultTableCellRenderer {
 		NumberField numberField;
 
 		/**
@@ -1607,7 +1641,7 @@ public class DataTable extends JTable {
 	/**
 	 * A settable precision double renderer for the table
 	 */
-	protected static class PrecisionRenderer extends DefaultTableCellRenderer {
+	private static class PrecisionRenderer extends DefaultTableCellRenderer {
 		DecimalFormat numberFormat;
 		String pattern;
 
@@ -1616,7 +1650,7 @@ public class DataTable extends JTable {
 		 *
 		 * @param precision - maximum number of fraction digits to display
 		 */
-		public PrecisionRenderer(int precision) {
+		private PrecisionRenderer(int precision) {
 			super();
 			numberFormat = (DecimalFormat) NumberFormat.getInstance();
 			numberFormat.setMaximumFractionDigits(precision);
@@ -1629,7 +1663,7 @@ public class DataTable extends JTable {
 		 *
 		 * @param pattern a formatting pattern
 		 */
-		public PrecisionRenderer(String pattern) {
+		private PrecisionRenderer(String pattern) {
 			super();
 			numberFormat = (DecimalFormat) NumberFormat.getInstance();
 			numberFormat.applyPattern(pattern);
@@ -1661,7 +1695,7 @@ public class DataTable extends JTable {
 		 *
 		 * @param _table Description of Parameter
 		 */
-		public RowNumberRenderer(JTable _table) {
+		private RowNumberRenderer(JTable _table) {
 			super();
 			table = _table;
 			setHorizontalAlignment(SwingConstants.RIGHT);
@@ -1704,10 +1738,10 @@ public class DataTable extends JTable {
 	 * A cell renderer that adds units to displayed values. Added by D Brown Dec
 	 * 2010
 	 */
-	protected static class UnitRenderer implements TableCellRenderer {
-		TableCellRenderer baseRenderer;
-		String units;
-		String tooltip;
+	private static class UnitRenderer implements TableCellRenderer {
+		private TableCellRenderer baseRenderer;
+		private String units;
+		private String tooltip;
 
 		/**
 		 * UnitRenderer constructor
@@ -1715,7 +1749,7 @@ public class DataTable extends JTable {
 		 * @param renderer a TableCellRenderer
 		 * @param factor   a conversion factor
 		 */
-		public UnitRenderer(TableCellRenderer renderer, String units, String tooltip) {
+		private UnitRenderer(TableCellRenderer renderer, String units, String tooltip) {
 			super();
 			this.units = units;
 			this.tooltip = tooltip;
@@ -1727,7 +1761,7 @@ public class DataTable extends JTable {
 		 * 
 		 * @param renderer the base renderer
 		 */
-		public void setBaseRenderer(TableCellRenderer renderer) {
+		private void setBaseRenderer(TableCellRenderer renderer) {
 			this.baseRenderer = renderer;
 		}
 
@@ -1749,7 +1783,7 @@ public class DataTable extends JTable {
 
 	}
 
-	public class NumberFormatDialog extends JDialog {
+	protected class NumberFormatDialog extends JDialog {
 		JButton closeButton, cancelButton, helpButton, applyButton;
 		JLabel patternLabel, sampleLabel;
 		JTextField patternField, sampleField;
@@ -1760,7 +1794,7 @@ public class DataTable extends JTable {
 		JList<String> columnList;
 		JScrollPane columnScroller;
 
-		protected NumberFormatDialog() {
+		private NumberFormatDialog() {
 			super(JOptionPane.getFrameForComponent(DataTable.this), true);
 			setLayout(new BorderLayout());
 			setTitle(DisplayRes.getString("DataTable.NumberFormat.Dialog.Title")); //$NON-NLS-1$
@@ -1974,7 +2008,7 @@ public class DataTable extends JTable {
 			}
 		}
 
-		void setColumns(String[] names, String[] selected) {
+		private void setColumns(String[] names, String[] selected) {
 			displayedNames = new String[names.length];
 			realNames.clear();
 			for (int i = 0; i < names.length; i++) {
@@ -2029,7 +2063,7 @@ public class DataTable extends JTable {
 	 * A header cell renderer that identifies sorted columns. Added by D Brown
 	 * 2010-10-24
 	 */
-	public class HeaderRenderer implements TableCellRenderer {
+	private class HeaderRenderer implements TableCellRenderer {
 		//DrawingPanel panel = new DrawingPanel();
 		TableCellRenderer renderer;
 //		protected JLabel textLine = new JLabel();
@@ -2041,13 +2075,13 @@ public class DataTable extends JTable {
 		 * 
 		 * @param renderer
 		 */
-		public HeaderRenderer(TableCellRenderer renderer) {
+		private HeaderRenderer(TableCellRenderer renderer) {
 			this.renderer = renderer;
 			//textLine.setJustification(TextLine.CENTER);
 			//panel.addDrawable(textLine);
 		}
 
-		public TableCellRenderer getBaseRenderer() {
+		private TableCellRenderer getBaseRenderer() {
 			return renderer;
 		}
 
@@ -2153,7 +2187,7 @@ public class DataTable extends JTable {
 	public void createDefaultColumnsFromModel() {
 	}
 
-	protected void updateFormats() {
+	private void updateFormats() {
 		// code added by D Brown to update decimal separator Jan 2018
 		try {
 			// try block needed to catch occasional ConcurrentModificationException

@@ -20,6 +20,7 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
 import org.opensourcephysics.display.DataTable.OSPTableModel;
+import org.opensourcephysics.tools.DataColumn;
 
 /**
  *
@@ -867,12 +868,17 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 	 * @return the index of the added dataset
 	 */
 	public int addDataset(Dataset dataset) {
+		return addDataset(dataset, false);
+	}
+	
+	public int addDataset(Dataset dataset, boolean b) {
 		if (linked && !datasets.isEmpty()) {
 			dataset.setXColumnVisible(false);
 		}
 		datasets.add(dataset);
 		return datasets.size() - 1;
 	}
+
 
 	/**
 	 * Removes the dataset at the specified index. Method added by Doug Brown
@@ -1106,6 +1112,7 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 		}
 
 	}
+
 
 }
 

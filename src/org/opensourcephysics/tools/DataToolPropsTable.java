@@ -49,6 +49,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 
 import org.opensourcephysics.display.CellBorder;
 import org.opensourcephysics.display.Dataset;
@@ -198,12 +199,12 @@ final public class DataToolPropsTable extends JTable {
 			aColumn.setHeaderValue(columnName);
 		}
 		// workaround to prevent adding multiple columns with same model index
-		for (int i = 0; i < getColumnModel().getColumnCount(); i++) {
-			int index = getColumnModel().getColumn(i).getModelIndex();
-			if (index == modelColumn)
+		TableColumnModel m = getColumnModel();
+		for (int i = m.getColumnCount(); --i >= 0;) {
+			if (m.getColumn(i).getModelIndex() == modelColumn)
 				return;
 		}
-		getColumnModel().addColumn(aColumn);
+		m.addColumn(aColumn);
 	}
 
 	/**

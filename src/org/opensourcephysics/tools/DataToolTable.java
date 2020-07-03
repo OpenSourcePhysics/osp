@@ -1110,6 +1110,7 @@ public class DataToolTable extends DataTable {
 			String yName = getColumnName(yCol);
 			workingData = getWorkingData(yName);
 		}
+		System.out.println("DataToolTable??");
 		return workingData;
 	}
 
@@ -2022,6 +2023,11 @@ public class DataToolTable extends DataTable {
 	 */
 	@Override
 	public void refreshTable(int mode) {
+//		if (mode == DataTable.MODE_SET_TAINTED) {
+//			super.refreshTable(mode);
+//			updateColumnModel(null);
+//			return;
+//		}
 		boolean noView = convertColumnIndexToView(0) == -1;
 		if (noView) {
 			updateColumnModel(null);
@@ -2513,6 +2519,23 @@ public class DataToolTable extends DataTable {
 
 		DataToolTableModel(DataToolTab tab) {
 			this.tab = tab;
+			useDefaultColumnClass = false;
+		}
+
+		@Override
+		public synchronized int getColumnCount() {
+			return (columnCount >= 0 ? columnCount
+					: (columnCount = 1 + dataManager.getColumnCount()));
+		}
+		
+		
+		public Object getValueAt(int row, int column) {
+			if (column >= getColumnCount()) {
+				return null;
+			}
+			if (column == 0)
+				return row + 1;
+			return dataManager.getValueAt(row, column - 1);
 		}
 
 		@Override

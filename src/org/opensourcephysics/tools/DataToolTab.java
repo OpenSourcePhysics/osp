@@ -219,7 +219,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	public DataToolTab(Data data, DataTool tool) {
 		dataTool = tool;
 		dataTable = new DataToolTable(this);
-		createGUI();
 		String name = ToolsRes.getString("DataToolTab.DefaultName"); //$NON-NLS-1$
 		if (data != null) {
 			String s = data.getName();
@@ -230,6 +229,19 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		setName(name);
 		loadData(data, false);
 		tabChanged(false);
+	}
+
+	public void addNotify() {
+		checkGUI();
+		super.addNotify();
+	}
+	
+	boolean haveGUI = false;
+	
+	public void checkGUI() {
+		if (haveGUI)
+			return;
+		createGUI();
 	}
 
 	/**
@@ -302,7 +314,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				loadedColumns.add(next);
 			}
 		}
-		if (updatedColumns || !loadedColumns.isEmpty()) {
+		if (haveGUI && (updatedColumns || !loadedColumns.isEmpty())) {
 			dataTable.refreshTable(DataTable.MODE_COLUMN);
 			statsTable.refreshStatistics();
 			refreshPlot();
@@ -805,7 +817,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			column.setMarkerColor(Color.BLACK);
 			column.setLineColor(Color.BLACK);
 		}
-		dataManager.addDataset(column);
+		dataManager.addDataset(column, true);
 		dataTable.getWorkingData(yName);
 	}
 
@@ -909,6 +921,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		toolbar.revalidate();
 
 		refreshStatusBar(null);
+		// BH ????
 		// kludge to display tables correctly: do propsAndStatsAction now, again after a
 		// millisecond!
 		propsAndStatsAction.actionPerformed(null);
@@ -1212,6 +1225,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 * Creates the GUI.
 	 */
 	protected void createGUI() {
+		if (haveGUI)
+			return;
+		haveGUI = true;
 		ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
@@ -2746,8 +2762,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 * Refreshes the plot.
 	 */
 	protected void refreshPlot() {
+		if (!haveGUI)
+			return;
 		// refresh data for curve fitting and plotting
-		setSelectedData(dataTable.getSelectedData());
+		HighlightableDataset d = dataTable.getSelectedData();
+		setSelectedData(d);
 		plot.removeDrawables(Dataset.class);
 		WorkingDataset workingData = getWorkingData();
 		valueCheckbox.setEnabled((workingData != null) && (workingData.getIndex() > 0));
