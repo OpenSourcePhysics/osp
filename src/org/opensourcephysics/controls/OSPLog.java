@@ -776,7 +776,7 @@ public class OSPLog extends JFrame {
 		green = textPane.addStyle("green", black); //$NON-NLS-1$
 		StyleConstants.setForeground(green, DARK_GREEN);
 		magenta = textPane.addStyle("magenta", black); //$NON-NLS-1$
-		StyleConstants.setForeground(magenta, Color.MAGENTA);
+		StyleConstants.setForeground(magenta, new Color(155, 0, 155));// darker than Color.MAGENTA);
 		gray = textPane.addStyle("gray", black); //$NON-NLS-1$
 		StyleConstants.setForeground(gray, Color.GRAY);
 		textPane.addMouseListener(new MouseAdapter() {
