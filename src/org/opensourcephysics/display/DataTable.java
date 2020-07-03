@@ -740,7 +740,7 @@ public class DataTable extends JTable {
 	 * A wrapper for a TableModel
 	 *
 	 */
-	private static class DataTableElement {
+	protected static class DataTableElement {
 
 		final TableModel tableModel;
 
@@ -861,7 +861,7 @@ public class DataTable extends JTable {
 	 * 
 	 * @created February 21, 2002
 	 */
-	protected class OSPDataTableModel extends AbstractTableModel implements TableModelListener {
+	public class OSPDataTableModel extends AbstractTableModel implements TableModelListener {
 
 		final private ArrayList<DataTableElement> dataTableElements;
 		boolean rowNumberVisible;
@@ -1235,7 +1235,7 @@ public class DataTable extends JTable {
 			return null;
 		}
 
-		protected class SortDecorator {
+		public class SortDecorator {
 			private int[] indexes = new int[0];
 			private int sortedColumn; // added by D Brown 2010-10-24
 
@@ -1410,13 +1410,13 @@ public class DataTable extends JTable {
 
 	}
 	
-	private class DataTableColumnModel extends DefaultTableColumnModel {
+	public class DataTableColumnModel extends DefaultTableColumnModel {
 
 		private DataTableColumnModel() {
 			super();
 		}
 		
-		private class DataTableColumn extends TableColumn {
+		public class DataTableColumn extends TableColumn {
 
 			private boolean isSizeSet;
 
@@ -1606,7 +1606,7 @@ public class DataTable extends JTable {
 	/**
 	 * A default double renderer for the table
 	 */
-	private static class DoubleRenderer extends DefaultTableCellRenderer {
+	protected static class DoubleRenderer extends DefaultTableCellRenderer {
 		NumberField numberField;
 
 		/**
@@ -1641,7 +1641,7 @@ public class DataTable extends JTable {
 	/**
 	 * A settable precision double renderer for the table
 	 */
-	private static class PrecisionRenderer extends DefaultTableCellRenderer {
+	protected static class PrecisionRenderer extends DefaultTableCellRenderer {
 		DecimalFormat numberFormat;
 		String pattern;
 
@@ -1738,7 +1738,7 @@ public class DataTable extends JTable {
 	 * A cell renderer that adds units to displayed values. Added by D Brown Dec
 	 * 2010
 	 */
-	private static class UnitRenderer implements TableCellRenderer {
+	protected static class UnitRenderer implements TableCellRenderer {
 		private TableCellRenderer baseRenderer;
 		private String units;
 		private String tooltip;
@@ -1783,7 +1783,7 @@ public class DataTable extends JTable {
 
 	}
 
-	protected class NumberFormatDialog extends JDialog {
+	public class NumberFormatDialog extends JDialog {
 		JButton closeButton, cancelButton, helpButton, applyButton;
 		JLabel patternLabel, sampleLabel;
 		JTextField patternField, sampleField;
@@ -2063,7 +2063,7 @@ public class DataTable extends JTable {
 	 * A header cell renderer that identifies sorted columns. Added by D Brown
 	 * 2010-10-24
 	 */
-	private class HeaderRenderer implements TableCellRenderer {
+	public class HeaderRenderer implements TableCellRenderer {
 		//DrawingPanel panel = new DrawingPanel();
 		TableCellRenderer renderer;
 //		protected JLabel textLine = new JLabel();
@@ -2075,13 +2075,13 @@ public class DataTable extends JTable {
 		 * 
 		 * @param renderer
 		 */
-		private HeaderRenderer(TableCellRenderer renderer) {
+		public HeaderRenderer(TableCellRenderer renderer) {
 			this.renderer = renderer;
 			//textLine.setJustification(TextLine.CENTER);
 			//panel.addDrawable(textLine);
 		}
 
-		private TableCellRenderer getBaseRenderer() {
+		public TableCellRenderer getBaseRenderer() {
 			return renderer;
 		}
 
