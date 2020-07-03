@@ -2844,6 +2844,10 @@ public class ResourceLoader {
 	 * @author hansonr
 	 */
 	public static byte[] getURLContents(URL url) {
+		return getURLContents(url, true);
+	}
+
+	public static byte[] getURLContents(URL url, boolean showErr) {		
 		try {
 			if (OSPRuntime.isJS) {
 				// Java 9! return new String(url.openStream().readAllBytes());
@@ -2851,7 +2855,8 @@ public class ResourceLoader {
 			}
 			return ResourceLoader.getLimitedStreamBytes(url.openStream(), -1, null);
 		} catch (IOException e) {
-			e.printStackTrace();
+			if (showErr)
+				e.printStackTrace();
 		}
 		return null;
 	}

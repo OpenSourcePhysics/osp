@@ -172,7 +172,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	private String getFileData(File xmlFile) {
 		byte[] bytes = null;
 		try {
-			bytes = ResourceLoader.getURLContents(xmlFile.toURI().toURL());
+			bytes = ResourceLoader.getURLContents(xmlFile.toURI().toURL(), false);
 		} catch (MalformedURLException e) {
 		}
 		return (bytes == null ? null : new String(bytes));
