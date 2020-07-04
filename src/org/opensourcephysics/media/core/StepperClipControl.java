@@ -34,12 +34,11 @@ package org.opensourcephysics.media.core;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
+
 import javax.swing.SwingUtilities;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
-
-import javajs.async.SwingJSUtils.Performance;
 
 /**
  * This is a ClipControl that displays every step in a video clip.
@@ -163,9 +162,8 @@ public class StepperClipControl extends ClipControl {
 	 * @param n the desired step number
 	 */
 	@Override
-	public void setStepNumber(int n) {
-		n = Math.max(0, n);
-		n = Math.min(clip.getStepCount() - 1, n);
+	public void setStepNumber(int n0) {
+		int n = Math.min(Math.max(0, n0), clip.getStepCount() - 1);
 		if (n == stepNumber && clip.stepToFrame(n) == getFrameNumber()) {
 			return;
 		}
@@ -175,8 +173,7 @@ public class StepperClipControl extends ClipControl {
 			support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, Integer.valueOf(n));
 		} else {
 			int end = video.getEndFrameNumber();
-			final int m = clip.stepToFrame(n);
-			final int stepNum = n;
+			int m = clip.stepToFrame(n);
 			if (m > end) {
 				super.setStepNumber(n);
 				video.setVisible(false);
@@ -187,23 +184,24 @@ public class StepperClipControl extends ClipControl {
 				Runnable runner = new Runnable() {
 					@Override
 					public void run() {
-						if (videoFrameNumber == m) {
-							stepDisplayed = true;
-						} else {
-							if (video.getFrameNumber() == m) { // setting frame number will have no effect
-								StepperClipControl.super.setStepNumber(stepNum);
-								stepDisplayed = true;
-								support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null,
-										Integer.valueOf(stepNum));
-							} else {
-								video.setFrameNumber(m);
-							}
-						}
+						setStepNumberLater(m, n);
 					}
 
 				};
 				SwingUtilities.invokeLater(runner);
 			}
+		}
+	}
+
+	protected void setStepNumberLater(int m, int stepNum) {
+		if (videoFrameNumber == m) {
+			stepDisplayed = true;
+		} else if (video.getFrameNumber() == m) { // setting frame number will have no effect
+			setStepNumber(stepNum);
+			stepDisplayed = true;
+			support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, Integer.valueOf(stepNum));
+		} else {
+			video.setFrameNumber(m);
 		}
 	}
 

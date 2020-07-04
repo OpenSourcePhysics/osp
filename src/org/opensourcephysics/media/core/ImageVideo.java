@@ -178,10 +178,7 @@ public class ImageVideo extends VideoAdapter {
 	 */
 	@Override
 	public void setTime(double millis) {
-		int frameNum = (int) (millis / deltaT);
-		frameNum = Math.max(frameNum, 0);
-		frameNum = Math.min(frameNum, getFrameCount() - 1);
-		setFrameNumber(frameNum);
+		setFrameNumber(Math.min(Math.max((int) (millis / deltaT), 0), getFrameCount() - 1));
 	}
 
 	/**

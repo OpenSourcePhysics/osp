@@ -445,6 +445,8 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		private int thisFrame = 0;
 
 		private boolean debugging = false; // voluminous event information
+
+		private boolean canSeek = true;
 		
 		State() {
 			helper = new StateHelper(this);
@@ -476,7 +478,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		}
 		
 		private void seekToNextFrame() {
-			if (dt == 0) {
+			if (canSeek) {
 				try {
 					jsvideo.seekToNextFrame();
 				} catch (Throwable e) {
@@ -526,6 +528,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					return true;
 				case STATE_LOAD_VIDEO_READY:
 					v.videoDialog.setVisible(true);
+					canSeek = (DOMNode.getAttr(v.jsvideo, "seekToNextFrame") != null);
 					Dimension d = HTML5Video.getSize(v.jsvideo);
 					v.size.width = d.width;
 					v.size.height = d.height;
@@ -541,7 +544,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					setReadyListener();
 					duration = HTML5Video.getDuration(v.jsvideo);
 					t = 0.0;
-					dt = (DOMNode.getAttr(v.jsvideo, "seekToNextFrame") == null ? 0.033334 : 0.0);
+					dt = (canSeek  ? 0.0 : 0.033334);
 					seconds = new ArrayList<Double>();
 					helper.setState(STATE_FIND_FRAMES_LOOP);
 					continue;

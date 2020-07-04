@@ -94,6 +94,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
 
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.FontSizer;
@@ -207,6 +208,9 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	private boolean disabled = false;
 	private int myFontLevel;
 	private boolean updatePosted;
+	
+	
+	static private int ntest;
 
 	/**
 	 * Constructs a VideoPlayer to play the specified video clip.
@@ -914,6 +918,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 
 		// create slider
 		slider = new JSlider(0, 0, 0);
+		slider.setName("slider" + ++ntest);
 		slider.setOpaque(false);
 		slider.setMinorTickSpacing(1);
 		slider.setSnapToTicks(true);
@@ -1652,6 +1657,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		sliderLabels.clear();
 		sliderLabels.put(Integer.valueOf(clip.getStartFrameNumber()), inLabel);
 		sliderLabels.put(Integer.valueOf(clip.getEndFrameNumber()), outLabel);
+		OSPLog.debug("VideoPlayer.updateSlider " + slider.getName() + " " + clip.getStartFrameNumber() + " " + clip.getEndFrameNumber() );
 		slider.repaint();
 	}
 
