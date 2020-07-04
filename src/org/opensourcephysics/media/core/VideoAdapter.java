@@ -111,7 +111,7 @@ public abstract class VideoAdapter implements Video {
 	 */
 	@Override
 	public void draw(DrawingPanel panel, Graphics g) {
-		if (!visible) {
+		if (rawImage == null || !visible) {
 			return;
 		}
 		int xoffset = 0, yoffset = 0;
