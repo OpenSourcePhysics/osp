@@ -2144,12 +2144,7 @@ public class LaunchBuilder extends Launcher {
 						item.addActionListener(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								LaunchPanel tab = getSelectedTab();
-								LaunchNode root = tab.getRootNode();
-								LaunchBuilder.super.removeSelectedTab();
-								tabbedPane.insertTab(getDisplayName(root.getFileName()), null, tab, null, i + 1);
-								tabbedPane.setSelectedComponent(tab);
-								tabs.add(i + 1, tab);
+								move(i + 1);
 							}
 
 						});
@@ -2160,12 +2155,7 @@ public class LaunchBuilder extends Launcher {
 						item.addActionListener(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								LaunchPanel tab = getSelectedTab();
-								LaunchNode root = tab.getRootNode();
-								LaunchBuilder.super.removeSelectedTab();
-								tabbedPane.insertTab(getDisplayName(root.getFileName()), null, tab, null, i - 1);
-								tabbedPane.setSelectedComponent(tab);
-								tabs.add(i - 1, tab);
+								move(i - 1);
 							}
 
 						});
@@ -2179,6 +2169,21 @@ public class LaunchBuilder extends Launcher {
 		tabbedPane.addMouseListener(tabListener);
 		frame.pack();
 		displaySplitPane.setDividerLocation(0.7);
+	}
+
+
+	/**
+	 * Move selected tab up or down one position.
+	 * 
+	 * @param newPos
+	 */
+	protected void move(int newPos) {
+		LaunchPanel tab = getSelectedTab();
+		LaunchNode root = tab.getRootNode();
+		super.removeSelectedTab();
+		tabbedPane.insertTab(getDisplayName(root.getFileName()), null, tab, null, newPos);
+		tabbedPane.setSelectedComponent(tab);
+		tabs.add(newPos, tab);
 	}
 
 	/**

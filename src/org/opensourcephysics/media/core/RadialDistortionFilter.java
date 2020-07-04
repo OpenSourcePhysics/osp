@@ -957,7 +957,7 @@ public class RadialDistortionFilter extends Filter {
 
 		@Override
 		public void draw(DrawingPanel panel, Graphics g) {
-			if (!RadialDistortionFilter.super.isEnabled())
+			if (!superIsEnabled())
 				return;
 			VideoPanel vidPanel = (VideoPanel) panel;
 			Dimension d = vidPanel.getVideo().getImageSize();
@@ -979,6 +979,14 @@ public class RadialDistortionFilter extends Filter {
 			g2.setColor(gcolor);
 
 		}
+	}
+	
+	/**
+	 * for inner anonymous class; could use qualified super
+	 * @return
+	 */
+	public boolean superIsEnabled() {
+		return super.isEnabled();
 	}
 
 	/**

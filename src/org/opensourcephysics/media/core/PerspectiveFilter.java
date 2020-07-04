@@ -137,7 +137,7 @@ public class PerspectiveFilter extends Filter {
 	 */
 	@Override
 	public boolean isEnabled() {
-		boolean disabled = !super.isEnabled();
+		boolean disabled = !superIsEnabled();
 		boolean editingInput = inspector != null && inspector.isVisible()
 				&& inspector.tabbedPane.getSelectedComponent() == inputEditor;
 		if (disabled || editingInput)
@@ -803,7 +803,7 @@ public class PerspectiveFilter extends Filter {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					// refresh button state
-					boolean enable = !PerspectiveFilter.super.isEnabled();
+					boolean enable = !superIsEnabled();
 					colorButton.setEnabled(enable);
 					tabbedPane.setEnabled(enable);
 					inputEditor.setEnabled(enable);
@@ -864,7 +864,7 @@ public class PerspectiveFilter extends Filter {
 							MouseEvent.MOUSE_RELEASED, 0, MouseEvent.BUTTON1_MASK, -100, -100, 1, false));
 				}
 			}
-			boolean enable = PerspectiveFilter.super.isEnabled();
+			boolean enable = superIsEnabled();
 			colorButton.setEnabled(enable);
 			tabbedPane.setEnabled(enable);
 			inputEditor.setEnabled(enable);
@@ -969,7 +969,7 @@ public class PerspectiveFilter extends Filter {
 
 		@Override
 		public void draw(DrawingPanel panel, Graphics g) {
-			if (!PerspectiveFilter.super.isEnabled())
+			if (!superIsEnabled())
 				return;
 			VideoPanel vidPanel = (VideoPanel) panel;
 			Corner[] corners = PerspectiveFilter.this.isEnabled() ? outCorners : inCorners;
@@ -1018,7 +1018,7 @@ public class PerspectiveFilter extends Filter {
 		 */
 		@Override
 		public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
-			if (!PerspectiveFilter.super.isEnabled())
+			if (!superIsEnabled())
 				return null;
 			if (!(panel instanceof VideoPanel) || !isEnabled())
 				return null;
@@ -1402,6 +1402,9 @@ public class PerspectiveFilter extends Filter {
 
 	}
 
+	public boolean superIsEnabled() {
+		return super.isEnabled();
+	}
 }
 
 /*
