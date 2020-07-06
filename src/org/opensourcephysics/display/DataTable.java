@@ -30,6 +30,7 @@ import java.util.BitSet;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
@@ -101,8 +102,6 @@ public class DataTable extends JTable {
 
 	public static final String PROPERTY_DATATABLE_FORMAT = "format";
 
-	
-
 	private static final int MODE_MASK_NEW = 0xF;
 	public static final int MODE_CREATE = 0x01;
 	public static final int MODE_CLEAR = 0x02;
@@ -164,7 +163,6 @@ public class DataTable extends JTable {
 
 	private static final DoubleRenderer defaultDoubleRenderer = new DoubleRenderer();
 
-
 	private HashMap<String, PrecisionRenderer> precisionRenderersByColumnName = new HashMap<String, PrecisionRenderer>();
 	private HashMap<String, UnitRenderer> unitRenderersByColumnName = new HashMap<String, UnitRenderer>();
 
@@ -184,6 +182,9 @@ public class DataTable extends JTable {
 	protected NumberFormatDialog formatDialog;
 	protected int clickCountToSort = 1;
 
+	private BitSet selectedModelRows = new BitSet();
+	private BitSet selectedColumns = new BitSet();
+	
 	protected int mode;
 
 	/**
@@ -191,20 +192,29 @@ public class DataTable extends JTable {
 	 */
 	public DataTable() {
 		super();
-		init(new OSPDataTableModel());
+		init();
 	}
 
 	/**
-	 * Constructs a DatTable with the specified data model
-	 *
-	 * @param model data model
+	 * Called by JTable's default constructor.
+	 * 
 	 */
-	public DataTable(OSPDataTableModel model) {
-		super();
-		init(model);
-	}
+    @Override
+	public void setModel(TableModel dataModel) {
+    	// totally ignore JTable's default
+    	super.setModel(dataTableModel = createTableModel());
+    }
 
-	protected void init(OSPDataTableModel model) {
+    protected OSPDataTableModel createTableModel() {
+    	return new OSPDataTableModel();
+	}
+    
+    @Override
+	public void addColumnSelectionInterval(int index0, int index1) {
+       dataTableModel.addColumnSelectionInterval(boundColumn(index0), boundColumn(index1));
+    }
+    
+	protected void init() {
 		setAutoCreateColumnsFromModel(false);
 		setColumnModel(new DataTableColumnModel());
 // BH Let Table UI do its thing
@@ -216,7 +226,6 @@ public class DataTable extends JTable {
 //		});
 //		refreshTimer.setRepeats(false);
 //		refreshTimer.setCoalesce(true);
-		setModel(model);
 		setColumnSelectionAllowed(true);
 		setGridColor(Color.blue);
 		setSelectionBackground(LIGHT_BLUE);
@@ -435,16 +444,6 @@ public class DataTable extends JTable {
 			}
 			dataTableModel.setRowNumberVisible(b);
 		}
-	}
-
-	/**
-	 * Sets the model for this data table;
-	 *
-	 * @param _model
-	 */
-	public void setModel(OSPDataTableModel _model) {
-		super.setModel(_model);
-		dataTableModel = _model;
 	}
 
 	/**
@@ -878,6 +877,23 @@ public class DataTable extends JTable {
 		protected void setTainted() {
 			columnCount = rowCount = -1;
 		}
+
+	    public void addColumnSelectionInterval(int coli, int colj) {
+	        columnModel.getSelectionModel().addSelectionInterval(coli, colj);
+			int labelCol = convertColumnIndexToView(0);
+			selectedColumns.clear();
+			int[] selected = getSelectedColumns(); // selected view columns
+			for (int i = 0; i < selected.length; i++) {
+				if (selected[i] == labelCol) {
+					continue;
+				}
+				int modelCol = convertColumnIndexToModel(selected[i]);
+				selectedColumns.set(modelCol);
+			}
+			if (selectedColumns.isEmpty()) {
+				clearSelection();
+			}
+	    }
 
 		public OSPDataTableModel() {
 			dataTableElements = new ArrayList<DataTableElement>();
@@ -2208,7 +2224,14 @@ public class DataTable extends JTable {
 		dataTableModel.resetSort();
 	}
 
-	protected void refreshTable(int mode, boolean resortAndReselect) {
+
+    @Override
+	public int getRowCount() {
+    	// no sortManager -- we do that ourselves
+        return dataTableModel.getRowCount();
+    }
+    
+    protected void refreshTable(int mode, boolean resortAndReselect) {
 		// model for this table assumed to be a SortDecorator
 		// always reset the decorator before changing table structure
 		int col = dataTableModel.getSortedColumn();
@@ -2222,12 +2245,12 @@ public class DataTable extends JTable {
 		if (col > -1)
 			sort(col);
 		// restore selected rows and columns
-		for (int i = 0; i < rows.length; i++) {
-			if (rows[i] < getRowCount())
+		for (int i = 0, n =  getRowCount(); i < rows.length; i++) {
+			if (rows[i] < n)
 				addRowSelectionInterval(rows[i], rows[i]);
 		}
-		for (int i = 0; i < cols.length; i++) {
-			if (cols[i] < getColumnCount())
+		for (int i = 0, n =  getColumnCount(); i < cols.length; i++) {
+			if (cols[i] < n)
 				addColumnSelectionInterval(cols[i], cols[i]);
 		}
 	}
@@ -2253,7 +2276,139 @@ public class DataTable extends JTable {
 					: a[0] != null ? 1 : b[0] != null ? -1 : 0);
 		}
 	};
-	
+
+    private int boundColumn(int col) {
+        if (col< 0 || col >= getColumnCount()) {
+            throw new IllegalArgumentException("Column index out of range");
+        }
+        return col;
+    }
+
+	public void setSelectedColumnsFromBitSet() {
+		// we can use i and j to pick up a block of columns at a time
+		for (int i = selectedColumns.nextSetBit(0), j = 0; i >= 0; i = selectedColumns.nextSetBit(j + 1)) {
+			j = selectedColumns.nextClearBit(i + 1);
+			addColumnSelectionInterval(convertColumnIndexToView(i), convertColumnIndexToView(j));
+		}
+	}
+
+	protected void setColumnSelectionFromJTable() {
+		selectedColumns.clear();
+		int[] selected = getSelectedColumns(); // selected view columns
+		int labelCol = convertColumnIndexToView(0);
+		for (int i = 0; i < selected.length; i++) {
+			if (selected[i] == labelCol) {
+				continue;
+			}
+			int modelCol = convertColumnIndexToModel(selected[i]);
+			selectedColumns.set(modelCol);
+		}
+		if (selectedColumns.isEmpty() || selectedModelRows.isEmpty()) {
+			clearSelection();
+		}
+	}
+
+	/**
+	 * Gets the selected model rows in ascending order.
+	 *
+	 * @return the selected rows
+	 */
+	protected int[] getSelectedModelRows() {
+		int[] rows = new int[selectedModelRows.cardinality()];
+		for (int pt = 0, i = selectedModelRows.nextSetBit(0); i >= 0; i = selectedModelRows.nextSetBit(i + 1)) {
+			rows[pt++] = i;
+		}
+		return rows;
+	}
+
+
+	/**
+	 * Converts a model row index (i.e., displayed in the "row" column) to the
+	 * corresponding table row number.
+	 *
+	 * @param row the table row
+	 * @return the model row
+	 */
+	protected int getViewRow(int row) {
+		int col = convertColumnIndexToView(0);
+		for (int i = 0, n = getRowCount(); i < n; i++) {
+			if (row == (Integer) getValueAt(i, col)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	/**
+	 * Sets the selected model rows.
+	 *
+	 * @param rows the model rows to select
+	 */
+	public void setSelectedModelRows(int[] rows) {
+		int n = getRowCount();
+		if (n < 1) {
+			return;
+		}
+		removeRowSelectionInterval(0, n - 1);
+		TreeSet<Integer> viewRows = new TreeSet<Integer>();
+		for (int i = 0; i < rows.length; i++) {
+			int row = getViewRow(rows[i]);
+			if (row > -1) {
+				viewRows.add(row);
+			}
+		}
+		int start = -1, end = -1;
+		for (int next : viewRows) {
+			if (start == -1) {
+				start = next;
+				end = start;
+				continue;
+			}
+			if (next == end + 1) {
+				end = next;
+				continue;
+			}
+			addRowSelectionInterval(start, end);
+			start = next;
+			end = next;
+		}
+		if (start > -1) {
+			addRowSelectionInterval(start, end);
+		}
+	}
+
+	protected void setSelectedRowsFromJTable() {
+		selectedModelRows.clear();
+		int[] rows = getSelectedRows(); // selected view rows
+		for (int i = 0; i < rows.length; i++) {
+			selectedModelRows.set(getModelRow(rows[i]));
+		}
+	}
+
+	protected boolean haveSelectedRows() {
+		return !selectedModelRows.isEmpty();
+	}
+
+	public BitSet getSelectedModelRowsBS() {
+		return selectedModelRows;
+	}
+
+	public void setSelectedModelRowsBS(BitSet rows) {
+		selectedModelRows = rows;
+	}
+
+	/**
+	 * Converts a table row index to the corresponding model row number (i.e.,
+	 * displayed in the "row" column).
+	 *
+	 * @param row the table row
+	 * @return the model row
+	 */
+	protected int getModelRow(int row) {
+		int labelCol = convertColumnIndexToView(0);
+		return (Integer) getValueAt(row, labelCol);
+	}
+
 }
 
 /*

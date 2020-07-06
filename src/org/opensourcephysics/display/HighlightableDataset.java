@@ -14,6 +14,8 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
+import java.util.BitSet;
+
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
@@ -28,13 +30,14 @@ import org.opensourcephysics.controls.XMLLoader;
 @SuppressWarnings("serial")
 public class HighlightableDataset extends Dataset implements Interactive {
 	// instance fields
-	boolean[] highlighted = new boolean[1]; // true if highlighted
-	boolean[] previous;
+	BitSet highlighted = new BitSet(); // true if highlighted
+	BitSet previous;
 	Color highlightColor = new Color(255, 255, 0, 128);
 	Shape highlightShape;
 	Rectangle2D.Double[] hitShapes = new Rectangle2D.Double[16];
 	int hitIndex = -1;
 	double[][] screenCoordinates = new double[2][];
+	private int previousLen;
 
 	/**
 	 * Default constructor.
@@ -73,7 +76,7 @@ public class HighlightableDataset extends Dataset implements Interactive {
 	@Override
 	public void append(double x, double y) {
 		super.append(x, y);
-		adjustCapacity(xpoints.length);
+//		adjustCapacity(xpoints.length);
 	}
 
 	/**
@@ -85,7 +88,7 @@ public class HighlightableDataset extends Dataset implements Interactive {
 	@Override
 	public void append(double[] xarray, double[] yarray) {
 		super.append(xarray, yarray);
-		adjustCapacity(xpoints.length);
+//		adjustCapacity(xpoints.length);
 	}
 
 	/**
@@ -95,14 +98,15 @@ public class HighlightableDataset extends Dataset implements Interactive {
 	public void clear() {
 		super.clear();
 		previous = highlighted;
-		highlighted = new boolean[xpoints.length];
+		previousLen = xpoints.length;
+		highlighted = new BitSet();
 	}
 
 	/**
 	 * Restores previous highlights.
 	 */
 	public void restoreHighlights() {
-		if ((previous != null) && (previous.length == highlighted.length)) {
+		if (previous != null && previousLen == xpoints.length) {
 			highlighted = previous;
 		}
 	}
@@ -111,9 +115,7 @@ public class HighlightableDataset extends Dataset implements Interactive {
 	 * Clears highlights.
 	 */
 	public void clearHighlights() {
-		for (int i = 0; i < index; i++) {
-			highlighted[i] = false;
-		}
+		highlighted.clear();
 	}
 
 	/**
@@ -123,10 +125,7 @@ public class HighlightableDataset extends Dataset implements Interactive {
 	 * @param highlight true to highlight the point
 	 */
 	public void setHighlighted(int i, boolean highlight) {
-		if (i >= highlighted.length) {
-			adjustCapacity(i + 1);
-		}
-		highlighted[i] = highlight;
+		highlighted.set(i);
 	}
 
 	/**
@@ -136,10 +135,7 @@ public class HighlightableDataset extends Dataset implements Interactive {
 	 * @return true if point is highlighted
 	 */
 	public boolean isHighlighted(int n) {
-		if (n >= highlighted.length) {
-			adjustCapacity(n + 1);
-		}
-		return highlighted[n];
+		return highlighted.get(n);
 	}
 
 	/**
@@ -161,21 +157,21 @@ public class HighlightableDataset extends Dataset implements Interactive {
 		super.moveDatum(loc);
 	}
 
-	/**
-	 * Sets the highlighted array size to larger of xpoints.length and minLength.
-	 *
-	 * @param minLength minimum capacity required
-	 */
-	private synchronized void adjustCapacity(int minLength) {
-		int len = Math.max(xpoints.length, minLength);
-		if (highlighted.length >= len) {
-			return;
-		}
-		boolean[] temp = highlighted;
-		highlighted = new boolean[len];
-		int count = Math.min(temp.length, len);
-		System.arraycopy(temp, 0, highlighted, 0, count);
-	}
+//	/**
+//	 * Sets the highlighted array size to larger of xpoints.length and minLength.
+//	 *
+//	 * @param minLength minimum capacity required
+//	 */
+//	private synchronized void adjustCapacity(int minLength) {
+//		int len = Math.max(xpoints.length, minLength);
+//		if (highlighted.length >= len) {
+//			return;
+//		}
+//		boolean[] temp = highlighted;
+//		highlighted = new boolean[len];
+//		int count = Math.min(temp.length, len);
+//		System.arraycopy(temp, 0, highlighted, 0, count);
+//	}
 
 	/**
 	 * Draw this Dataset in the drawing panel.
@@ -357,6 +353,13 @@ public class HighlightableDataset extends Dataset implements Interactive {
 		return Double.NaN;
 	}
 
+	protected boolean[] getHighlighted() {
+		boolean[] b = new boolean[highlighted.length()];
+		for (int i = highlighted.nextSetBit(0); i >= 0; i = highlighted.nextSetBit(i + 1)) 
+			b[i] = true;
+		return b;
+	}
+
 	/**
 	 * Returns the XML.ObjectLoader for this class.
 	 *
@@ -374,7 +377,7 @@ public class HighlightableDataset extends Dataset implements Interactive {
 		public void saveObject(XMLControl control, Object obj) {
 			XML.getLoader(Dataset.class).saveObject(control, obj);
 			HighlightableDataset data = (HighlightableDataset) obj;
-			control.setValue("highlighted", data.highlighted); //$NON-NLS-1$
+			control.setValue("highlighted", data.getHighlighted()); //$NON-NLS-1$
 		}
 
 		@Override
@@ -388,7 +391,8 @@ public class HighlightableDataset extends Dataset implements Interactive {
 			HighlightableDataset data = (HighlightableDataset) obj;
 			boolean[] highlighted = (boolean[]) control.getObject("highlighted"); //$NON-NLS-1$
 			if (highlighted != null) {
-				data.highlighted = highlighted;
+				for (int i = highlighted.length; --i >= 0;)
+				data.highlighted.set(i, highlighted[i]);
 			}
 			return data;
 		}

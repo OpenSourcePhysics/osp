@@ -230,48 +230,46 @@ public void propertyChange(PropertyChangeEvent e) {
     }
   }
 
-  /**
-   * Sets the alignment of the contents of the given column along the X axis.
-   * The alignment constants are defined in the SwingConstants class.
-   *
-   * @param ncol the column
-   * @param align  One of the following constants defined in <code>SwingConstants</code>:
-   *           <code>LEFT</code>,
-   *           <code>CENTER</code> (the default for image-only labels),
-   *           <code>RIGHT</code>,
-   *           <code>LEADING</code> (the default for text-only labels) or
-   *           <code>TRAILING</code>.
-   */
-  public void setColumnAlignment(int ncol, int align) {
-    for(int table = 0; table<tables.length; table++) {
-      for(int row = 0; row<tables[table].getRowCount(); row++) {
-        javax.swing.table.TableCellRenderer renderer = tables[table].getCellRenderer(row, ncol);
-        ((JLabel) renderer).setHorizontalAlignment(align);
-      }
-    }
-  }
+	/**
+	 * Sets the alignment of the contents of the given column along the X axis. The
+	 * alignment constants are defined in the SwingConstants class.
+	 *
+	 * @param ncol  the column
+	 * @param align One of the following constants defined in
+	 *              <code>SwingConstants</code>: <code>LEFT</code>,
+	 *              <code>CENTER</code> (the default for image-only labels),
+	 *              <code>RIGHT</code>, <code>LEADING</code> (the default for
+	 *              text-only labels) or <code>TRAILING</code>.
+	 */
+	public void setColumnAlignment(int ncol, int align) {
+		for (int table = 0; table < tables.length; table++) {
+			for (int row = 0, n = tables[table].getRowCount(); row < n; row++) {
+				javax.swing.table.TableCellRenderer renderer = tables[table].getCellRenderer(row, ncol);
+				((JLabel) renderer).setHorizontalAlignment(align);
+			}
+		}
+	}
 
-  /**
-   * Sets the alignment of the contents of all table columns along the X axis.
-   * The alignment constants are defined in the SwingConstants class.
-   *
-   * @param align  One of the following constants defined in <code>SwingConstants</code>:
-   *           <code>LEFT</code>,
-   *           <code>CENTER</code> (the default for image-only labels),
-   *           <code>RIGHT</code>,
-   *           <code>LEADING</code> (the default for text-only labels) or
-   *           <code>TRAILING</code>.
-   */
-  public void setColumnAlignment(int align) {
-    for(int table = 0; table<tables.length; table++) {
-      for(int row = 0; row<tables[table].getRowCount(); row++) {
-        for(int col = 0; col<tables[table].getColumnCount(); col++) {
-          javax.swing.table.TableCellRenderer renderer = tables[table].getCellRenderer(row, col);
-          ((JLabel) renderer).setHorizontalAlignment(align);
-        }
-      }
-    }
-  }
+	/**
+	 * Sets the alignment of the contents of all table columns along the X axis. The
+	 * alignment constants are defined in the SwingConstants class.
+	 *
+	 * @param align One of the following constants defined in
+	 *              <code>SwingConstants</code>: <code>LEFT</code>,
+	 *              <code>CENTER</code> (the default for image-only labels),
+	 *              <code>RIGHT</code>, <code>LEADING</code> (the default for
+	 *              text-only labels) or <code>TRAILING</code>.
+	 */
+	public void setColumnAlignment(int align) {
+		for (int table = 0; table < tables.length; table++) {
+			for (int row = 0, n = tables[table].getRowCount(); row < n; row++) {
+				for (int col = 0; col < tables[table].getColumnCount(); col++) {
+					javax.swing.table.TableCellRenderer renderer = tables[table].getCellRenderer(row, col);
+					((JLabel) renderer).setHorizontalAlignment(align);
+				}
+			}
+		}
+	}
 
   // End of changes by Willy Gerber
   public int getFirstRowIndex() {

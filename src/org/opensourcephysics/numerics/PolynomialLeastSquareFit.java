@@ -94,6 +94,8 @@ public class PolynomialLeastSquareFit extends Polynomial {
     }
     LUPDecomposition lupSystem = new LUPDecomposition(systemMatrix);
     double[][] components = lupSystem.inverseMatrixComponents();
+    if (components == null)
+    	return;
     LUPDecomposition.symmetrizeComponents(components);
     coefficients = lupSystem.solve(systemConstants);
   }
