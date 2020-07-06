@@ -235,9 +235,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		checkGUI();
 		super.addNotify();
 	}
-	
+
 	boolean haveGUI = false;
-	
+
 	public void checkGUI() {
 		if (haveGUI)
 			return;
@@ -559,11 +559,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		}
 		if (dataBuilder == null) { // create new tool if none exists
 			dataBuilder = new FunctionTool(this) {
-				
-				@Override 
+
+				@Override
 				protected void setTitles() {
-			         dropdownTipText = (ToolsRes.getString("DataTool.DataBuilder.Dropdown.Tooltip")); //$NON-NLS-1$
-			         titleText = (ToolsRes.getString("DataTool.DataBuilder.Title")); //$NON-NLS-1$
+					dropdownTipText = (ToolsRes.getString("DataTool.DataBuilder.Dropdown.Tooltip")); //$NON-NLS-1$
+					titleText = (ToolsRes.getString("DataTool.DataBuilder.Title")); //$NON-NLS-1$
 				}
 
 			};
@@ -582,6 +582,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent e) {
+		stopFitTimer();
 		switch (e.getPropertyName()) {
 		case FunctionEditor.PROPERTY_FUNCTIONEDITOR_FUNCTION:
 			tabChanged(true);
@@ -1895,6 +1896,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				selectionBoxChanged = true;
 				removeHits = e.isShiftDown() && e.isControlDown();
 				plot.setMouseCursor(removeHits ? SELECT_REMOVE_CURSOR : SELECT_CURSOR);
+				refreshFit();
 				plot.repaint();
 			}
 
@@ -2724,8 +2726,12 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 * 
 	 * @param selectedData the Dataset to pass to the fitter and fourier panel
 	 */
-	protected void setSelectedData(Dataset selectedData) {
+	protected void setSelectedData(Dataset selectedData, boolean dofit) {
+		boolean isActive = curveFitter.isActive;
+		if (!dofit)
+			curveFitter.isActive = false;
 		curveFitter.setData(selectedData);
+		curveFitter.isActive = isActive;
 		if (fourierPanel != null) {
 			fourierPanel.refreshFourierData(selectedData, getName());
 		}
@@ -2758,15 +2764,20 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		}
 	}
 
+	protected void refreshPlot() {
+		refreshPlot(false);
+	}
+	
 	/**
 	 * Refreshes the plot.
 	 */
-	protected void refreshPlot() {
+	protected void refreshPlot(boolean andFit) {
 		if (!haveGUI)
 			return;
+		OSPLog.debug("refreshPlot " + andFit);
 		// refresh data for curve fitting and plotting
 		HighlightableDataset d = dataTable.getSelectedData();
-		setSelectedData(d);
+		setSelectedData(d, andFit);
 		plot.removeDrawables(Dataset.class);
 		WorkingDataset workingData = getWorkingData();
 		valueCheckbox.setEnabled((workingData != null) && (workingData.getIndex() > 0));
@@ -2860,7 +2871,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			plot.refreshArea();
 		}
 		// BH was this.repaint?
-		plot.repaint();
+		if (fitTimer == null || !fitTimer.isRunning())
+			plot.repaint();
+		refreshFit();
 	}
 
 	/**
@@ -2981,10 +2994,43 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	public void refreshAll(int mode) {
 		refreshShiftFields();
 		refreshPlot();
-		curveFitter.fit(curveFitter.fit);
-		plot.refreshArea();
-		plot.refreshMeasurements();
 		dataTable.refreshTable(mode);
+	}
+
+	Timer fitTimer;
+
+	private ActionListener fitTimerAction = new ActionListener() {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (fitTimer != null) {
+				OSPLog.debug("DataToolTab.refreshFit");
+				curveFitter.fit(curveFitter.fit);
+				plot.refreshArea();
+				plot.refreshMeasurements();
+				plot.repaint();
+			}
+		}
+
+	};
+
+	private static final int fitDelayMS = 250;
+
+	void refreshFit() {
+		if (fitTimer == null) {
+			fitTimer = new Timer(fitDelayMS, fitTimerAction);
+			fitTimer.setRepeats(false);
+			fitTimer.start();
+		} else {
+			fitTimer.restart();
+		}
+	}
+
+	private void stopFitTimer() {
+		if (fitTimer != null) {
+			fitTimer.stop();
+			fitTimer = null;
+		}
 	}
 
 	/**
@@ -3332,13 +3378,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		 */
 		protected void refreshMeasurements() {
 			HighlightableDataset data = dataTable.workingData;
-			try {
-				// catch exception thrown if mouseEvent is null
+			if (mouseEvent != null) {
 				Interactive ia = plot.getInteractive();
 				if (ia instanceof HighlightableDataset) {
 					data = (HighlightableDataset) ia;
 				}
-			} catch (Exception e) {
 			}
 
 			plot.slope = plot.value = Double.NaN;

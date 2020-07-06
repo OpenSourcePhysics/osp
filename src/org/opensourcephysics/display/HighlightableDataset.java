@@ -16,6 +16,7 @@ import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.util.BitSet;
 
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
@@ -126,6 +127,7 @@ public class HighlightableDataset extends Dataset implements Interactive {
 	 */
 	public void setHighlighted(int i, boolean highlight) {
 		highlighted.set(i);
+		//OSPLog.debug("HighlightedDataset " + highlighted);
 	}
 
 	/**
@@ -205,6 +207,7 @@ public class HighlightableDataset extends Dataset implements Interactive {
 			screenCoordinates[0] = new double[index];
 			screenCoordinates[1] = new double[index];
 		}
+//		OSPLog.debug("HDS.draw " + index + " "+  highlighted);
 		for (int i = 0; i < index; i++) {
 			if (Double.isNaN(yValues[i])) {
 				screenCoordinates[1][i] = Double.NaN;
@@ -218,7 +221,6 @@ public class HighlightableDataset extends Dataset implements Interactive {
 				hitShapes[i] = new Rectangle2D.Double(xp - offset, yp - offset, edge, edge);
 			else
 				hitShapes[i].setRect(xp - offset, yp - offset, edge, edge);
-
 			if (!isHighlighted(i)) {
 				continue;
 			}

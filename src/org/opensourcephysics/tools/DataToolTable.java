@@ -180,7 +180,7 @@ public class DataToolTable extends DataTable {
 				if (!e.getValueIsAdjusting()) {
 					int labelCol = convertColumnIndexToView(0);
 					addColumnSelectionInterval(labelCol, labelCol);
-					dataToolTab.setSelectedData(getSelectedData());
+					dataToolTab.setSelectedData(getSelectedData(), false);
 				}
 			}
 		});
@@ -190,7 +190,7 @@ public class DataToolTable extends DataTable {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				getTableHeader().repaint();
-				dataToolTab.refreshPlot();
+				dataToolTab.refreshPlot(false);
 			}
 
 		});
@@ -387,7 +387,8 @@ public class DataToolTable extends DataTable {
 				}
 				dataRenderer.showFocus = false;
 				// update selected data in curve fitter and plot
-				dataToolTab.setSelectedData(getSelectedData());
+				dataToolTab.setSelectedData(getSelectedData(), false);
+				dataToolTab.refreshFit();
 				dataToolTab.plot.repaint();
 			}
 
@@ -1100,7 +1101,6 @@ public class DataToolTable extends DataTable {
 			String yName = getColumnName(yCol);
 			workingData = getWorkingData(yName);
 		}
-		System.out.println("DataToolTable??");
 		return workingData;
 	}
 

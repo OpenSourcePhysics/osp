@@ -820,7 +820,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 */
 	protected void paintEverything(Graphics g) {
 		RECORD_PAINT_TIMES = false;
-		OSPLog.debug("??DrawingPanel.drawEverything " + getBounds() + this.getClass().getName());
+		//OSPLog.debug("??DrawingPanel.drawEverything " + getBounds() + this.getClass().getName());
 
 		if (RECORD_PAINT_TIMES) {
 			System.out.println("DrawingPanel elapsed time(s)=" + (Performance.now(currentTime) / 1000.0)); //$NON-NLS-1$
@@ -976,10 +976,10 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 */
 	@Override
 	public void setBounds(int x, int y, int width, int height) {
-		if (x < 0)
-		OSPLog.debug("??DrawingPanel.setBounds(" + x + " " + y  + " " + width + " " + height + " " + this.getClass().getName());
+		//if (x < 0)
+		//OSPLog.debug("??DrawingPanel.setBounds(" + x + " " + y  + " " + width + " " + height + " " + this.getClass().getName());
 		
-		if (getX() == x && getY() == y && getWidth() == width
+		if (x < 0 || getX() == x && getY() == y && getWidth() == width
 				&& getHeight() == height) {
 			return;
 		}

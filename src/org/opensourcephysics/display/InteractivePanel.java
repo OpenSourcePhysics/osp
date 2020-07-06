@@ -194,37 +194,38 @@ public void handleMouseAction(InteractivePanel panel, MouseEvent evt) {
     return iaDraggable;
   }
 
-  /**
-   * Gets the interactive object that was accessed by the last mouse event.
-   * @return Interactive
-   */
-  public Interactive getInteractive() {
-    if(!containsInteractive) {
-      return null; // don't check unless we have a least one Interactive
-    }
-    if(iaDraggable!=null) {
-      return iaDraggable;
-    }
-    if((iaSelectable!=null)&&iaSelectable.isSelected()) {
-      // check only selected object
-      Interactive iad = ((Interactive) iaSelectable).findInteractive(this, mouseEvent.getX(), mouseEvent.getY());
-      return iad;
-    }
-    Object[] array = null;
-    synchronized(drawableList) {
-      array = drawableList.toArray();
-    }
-    for(int i = array.length-1; i>=0; i--) {
-      Object obj = array[i];
-      if(obj instanceof Interactive) {
-        Interactive iad = ((Interactive) obj).findInteractive(this, mouseEvent.getX(), mouseEvent.getY());
-        if(iad!=null) {
-          return iad;
-        }
-      }
-    }
-    return null;
-  }
+	/**
+	 * Gets the interactive object that was accessed by the last mouse event.
+	 * 
+	 * @return Interactive
+	 */
+	public Interactive getInteractive() {
+		if (!containsInteractive) {
+			return null; // don't check unless we have a least one Interactive
+		}
+		if (iaDraggable != null) {
+			return iaDraggable;
+		}
+		if ((iaSelectable != null) && iaSelectable.isSelected()) {
+			// check only selected object
+			Interactive iad = ((Interactive) iaSelectable).findInteractive(this, mouseEvent.getX(), mouseEvent.getY());
+			return iad;
+		}
+		Object[] array = null;
+		synchronized (drawableList) {
+			array = drawableList.toArray();
+			for (int i = array.length - 1; i >= 0; i--) {
+				Object obj = array[i];
+				if (obj instanceof Interactive) {
+					Interactive iad = ((Interactive) obj).findInteractive(this, mouseEvent.getX(), mouseEvent.getY());
+					if (iad != null) {
+						return iad;
+					}
+				}
+			}
+		}
+		return null;
+	}
 
   /**
    * Shows the coordinates in the text box in the lower left hand corner.

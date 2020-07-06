@@ -2324,7 +2324,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 					tab.dataTable.refreshTable(DataTable.MODE_TAB);
 					tab.statsTable.refreshStatistics();
 					tab.propsTable.refreshTable();
-					tab.refreshPlot();
+					tab.refreshPlot(true);
 					refreshGUI();
 					tab.dataTable.requestFocusInWindow();
 					if (tab.dataTable.workingData != null) {
