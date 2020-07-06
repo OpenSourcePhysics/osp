@@ -358,7 +358,7 @@ public class UserFunctionEditor extends FunctionEditor {
 					if (disallowed) {
 						return true;
 					}
-					disallowed = next.fitMap.keySet().contains(name);
+					disallowed = next.hasFit(name);
 				}
 			}
 		}

@@ -773,8 +773,6 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	 * @return uncloned xpoints
 	 */
 	public final double[] getXPointsRaw() {
-		
-		//OSPLog.debug("getXPointsRaw " + ++nRaw);
 		return xpoints;
 	}
 
@@ -802,7 +800,6 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	 * @return uncloned ypoints
 	 */
 	public final double[] getYPointsRaw() {
-		//OSPLog.debug("getYPointsRaw " + ++nRaw);
 			return ypoints;
 	}
 
@@ -1128,8 +1125,8 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 			System.err.println("Error writing file " + outputFile); //$NON-NLS-1$
 		}
 	}
-
-	private static int testCount = 0;
+//
+//	private static int testCount = 0;
 
 	/**
 	 * Draw this Dataset in the drawing panel.
@@ -1681,7 +1678,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	private double[] getValidPoints(double[] pts, int len) {
 		// eliminate NaN values, if any
 		int nans = 0;
-		for (int i = 0; i < pts.length; i++) {
+		for (int i = 0; i < index; i++) {
 			if (nans > 0) {
 				pts[i - nans] = pts[i];
 			}
@@ -1689,7 +1686,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 				nans++;
 			}
 		}
-		if (nans == 0) {
+		if (nans == 0 && index == pts.length) {
 			return pts;
 		}
 		double[] temp = new double[index - nans];

@@ -126,8 +126,7 @@ public class HighlightableDataset extends Dataset implements Interactive {
 	 * @param highlight true to highlight the point
 	 */
 	public void setHighlighted(int i, boolean highlight) {
-		highlighted.set(i);
-		//OSPLog.debug("HighlightedDataset " + highlighted);
+		highlighted.set(i, highlight);
 	}
 
 	/**
@@ -399,6 +398,11 @@ public class HighlightableDataset extends Dataset implements Interactive {
 			return data;
 		}
 
+	}
+
+	public void setHighlights(BitSet bs) {
+	//	OSPLog.debug("HDT set " + bs);
+		highlighted.or(bs);
 	}
 
 }

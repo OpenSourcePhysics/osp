@@ -235,6 +235,10 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return "KnownPolynomial: " + getExpression("<x>"); 
+	}
 }
 
 /*

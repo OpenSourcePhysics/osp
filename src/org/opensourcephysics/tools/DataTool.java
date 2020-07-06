@@ -372,7 +372,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			}
 			DataToolTab tab = getTab(index);
 			getFitBuilder().curveFitters.remove(tab.curveFitter);
-			fitBuilder.removePropertyChangeListener(tab.curveFitter.fitListener);
+			tab.curveFitter.notifyTabRemoved();
 			String title = tabbedPane.getTitleAt(index);
 			OSPLog.finer("removing tab " + title); //$NON-NLS-1$
 			tabbedPane.removeTabAt(index);
@@ -2112,7 +2112,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			OSPLog.finer("removing tab " + title); //$NON-NLS-1$
 			DataToolTab tab = getTab(i);
 			getFitBuilder().curveFitters.remove(tab.curveFitter);
-			fitBuilder.removePropertyChangeListener(tab.curveFitter.fitListener);
+			tab.curveFitter.notifyTabRemoved();
 			tabbedPane.removeTabAt(i);
 		}
 		refreshTabTitles();
@@ -2134,7 +2134,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			OSPLog.finer("removing tab " + title); //$NON-NLS-1$
 			DataToolTab tab = getTab(i);
 			getFitBuilder().curveFitters.remove(tab.curveFitter);
-			fitBuilder.removePropertyChangeListener(tab.curveFitter.fitListener);
+			tab.curveFitter.notifyTabRemoved();
 			tabbedPane.removeTabAt(i);
 		}
 		refreshMenubar();

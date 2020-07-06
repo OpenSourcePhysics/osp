@@ -148,13 +148,7 @@ public class FitBuilder extends FunctionTool {
 				final Map<String, KnownFunction> fits = new HashMap<String, KnownFunction>();
 				final ArrayList<String> fitnames = new ArrayList<String>();
 				for (DatasetCurveFitter fitter : curveFitters) {
-					for (int i = 0; i < fitter.fitDropDown.getItemCount(); i++) {
-						String name = fitter.fitDropDown.getItemAt(i).toString();
-						if (!fitnames.contains(name)) {
-							fitnames.add(name);
-							fits.put(name, fitter.fitMap.get(name));
-						}
-					}
+					fitter.getFits(fits, fitnames);
 				}
 				// inner popup menu listener class
 				ActionListener listener = new ActionListener() {

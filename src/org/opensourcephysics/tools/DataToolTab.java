@@ -161,6 +161,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	}
 
 	// instance fields
+
+	DatasetCurveFitter curveFitter;
+
 	protected DataTool dataTool; // the DataTool that displays this tab
 	protected int originatorID = 0; // the ID of the Data object that owns this tab
 	protected DatasetManager dataManager = new DatasetManager(); // datasets in this tab
@@ -172,7 +175,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	protected JScrollPane dataScroller, statsScroller, propsScroller, tableScroller;
 	protected JToolBar toolbar;
 	protected JCheckBoxMenuItem statsCheckbox, fitterCheckbox, propsCheckbox, fourierCheckbox;
-	protected DatasetCurveFitter curveFitter;
 	protected FourierPanel fourierPanel;
 	protected JDialog fourierDialog;
 	protected JButton measureButton, analyzeButton, dataBuilderButton, newColumnButton, refreshDataButton;
@@ -231,6 +233,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		tabChanged(false);
 	}
 
+	@Override
 	public void addNotify() {
 		checkGUI();
 		super.addNotify();
@@ -1138,7 +1141,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 */
 	protected String saveTableDataToFile() {
 		String tabName = getName();
-		OSPLog.finest("saving tabe data from " + tabName); //$NON-NLS-1$
+		OSPLog.finest("saving table data from " + tabName); //$NON-NLS-1$
 		JFileChooser chooser = OSPRuntime.getChooser();
 		chooser.setSelectedFile(new File(tabName + ".txt")); //$NON-NLS-1$
 		FontSizer.setFonts(chooser, FontSizer.getLevel());
@@ -1268,7 +1271,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		this.addAncestorListener(new AncestorListener() {
 			@Override
 			public void ancestorAdded(AncestorEvent e) {
-				OSPLog.getOSPLog(); // workaround needed for consistent initialization!
+//				OSPLog.getOSPLog(); // workaround needed for consistent initialization!
 				if (getSize().width > 0) {
 					init();
 				}
@@ -1705,22 +1708,22 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		curveFitter = new DatasetCurveFitter(getWorkingData(), fitBuilder);
 		curveFitter.setDataToolTab(this);
 		fitBuilder.curveFitters.add(curveFitter);
-		fitBuilder.removePropertyChangeListener(curveFitter.fitListener);
-		fitBuilder.addPropertyChangeListener(curveFitter.fitListener);
 		curveFitter.addPropertyChangeListener(new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
-				if (e.getPropertyName().equals("changed")) { //$NON-NLS-1$
+				switch (e.getPropertyName()) {
+				case DatasetCurveFitter.PROPERTY_DATASETCURVEFITTER_CHANGED:
 					tabChanged(true);
-					return;
+					break;
+				case DatasetCurveFitter.PROPERTY_DATASETCURVEFITTER_DRAWER:
+					if (fitterCheckbox != null && fitterCheckbox.isSelected()) {
+						plot.removeDrawables(FunctionDrawer.class);
+						// add fit drawer to plot drawable
+						plot.addDrawable((FunctionDrawer) e.getNewValue());
+						plot.repaint();
+					}
+					break;
 				}
-				if (e.getPropertyName().equals("drawer") //$NON-NLS-1$
-						&& fitterCheckbox != null && fitterCheckbox.isSelected()) {
-					plot.removeDrawables(FunctionDrawer.class);
-					// add fit drawer to plot drawable
-					plot.addDrawable((FunctionDrawer) e.getNewValue());
-				}
-				plot.repaint();
 			}
 		});
 
@@ -1783,7 +1786,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 						dataTable.setSelectedModelRows(new int[] { index });
 					} else {
 						BitSet rows = dataTable.getSelectedModelRowsBS();
-						boolean needsAdding = !rows.get(index);
 						if (rows.get(index)) {
 							rows.clear(index);
 						} else {
@@ -1874,6 +1876,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 						col.setShift(shiftY);
 						tabChanged(true);
 					}
+					
 					refreshAll(DataTable.MODE_VALUES);
 					plot.lockedXMin = plot.mouseDownXMin + deltaX;
 					plot.lockedXMax = plot.mouseDownXMax + deltaX;
@@ -1926,11 +1929,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 						HighlightableDataset data = (HighlightableDataset) ia;
 						TableModel tableModel = dataTable.getModel();
 						int yCol = dataTable.getYColumn();
-						for (int i = 1; i < tableModel.getColumnCount(); i++) {
+						ListSelectionModel model = dataTable.getColumnModel().getSelectionModel();
+						for (int i = tableModel.getColumnCount(); --i >= 1;) {
 							if (data.getYColumnName().equals(dataTable.getColumnName(i)) && yCol != i) {
-								data.clearHighlights();
+								//data.clearHighlights();
 								data.setHighlightColor(Color.YELLOW);
-								ListSelectionModel model = dataTable.getColumnModel().getSelectionModel();
 								model.removeSelectionInterval(i, i);
 								break;
 							}
@@ -2774,7 +2777,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	protected void refreshPlot(boolean andFit) {
 		if (!haveGUI)
 			return;
-		OSPLog.debug("refreshPlot " + andFit);
 		// refresh data for curve fitting and plotting
 		HighlightableDataset d = dataTable.getSelectedData();
 		setSelectedData(d, andFit);
@@ -2810,7 +2812,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					continue;
 				}
 				if (next.isMarkersVisible() || next.isConnected()) {
-					next.clearHighlights();
+					//next.clearHighlights();
 					if (!next.isMarkersVisible()) {
 						next.setMarkerShape(Dataset.NO_MARKER);
 					}
@@ -2846,14 +2848,10 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					depVar += DataToolTab.SHIFTED;
 					indepVar += DataToolTab.SHIFTED;
 				}
-
-				if (curveFitter.fit instanceof UserFunction) {
-					curveFitter.eqnField.setText(depVar + " = " + //$NON-NLS-1$
-							((UserFunction) curveFitter.fit).getFullExpression(new String[] { indepVar }));
-				} else {
-					curveFitter.eqnField.setText(depVar + " = " + //$NON-NLS-1$
-							curveFitter.fit.getExpression(indepVar));
-				}
+				curveFitter.setText(depVar + " = " + //$NON-NLS-1$
+						(curveFitter.fit instanceof UserFunction
+								? ((UserFunction) curveFitter.fit).getFullExpression(new String[] { indepVar })
+								: curveFitter.fit.getExpression(indepVar)));
 			}
 		} else { // working data is null
 			plot.setXLabel(""); //$NON-NLS-1$
@@ -2993,7 +2991,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 */
 	public void refreshAll(int mode) {
 		refreshShiftFields();
-		refreshPlot();
+		refreshPlot(false);
 		dataTable.refreshTable(mode);
 	}
 
@@ -3004,7 +3002,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (fitTimer != null) {
-				OSPLog.debug("DataToolTab.refreshFit");
 				curveFitter.fit(curveFitter.fit);
 				plot.refreshArea();
 				plot.refreshMeasurements();
@@ -3479,11 +3476,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 			areaDataset.clear();
 
-			BitSet x = new BitSet(numpts);
+			BitSet bsPoints = new BitSet(numpts);
 			int n = 0;
 			for (int i = 0; i < numpts; i++) {
 				if (xp[i] >= lower && xp[i] <= upper && !Double.isNaN(yp[i])) {
-					x.set(i);
+					bsPoints.set(i);
 					n++;
 				}
 			}
@@ -3498,11 +3495,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 //					y.add(ypoints[i]);
 //				}
 //			}
-			if (!x.isEmpty()) {
+			if (!bsPoints.isEmpty()) {
 
 				xpoints = new double[n];
 				ypoints = new double[n];
-				for (int p = 0, i = x.nextSetBit(0); i >= 0; i = x.nextSetBit(i + 1), p++) {
+				for (int p = 0, i = bsPoints.nextSetBit(0); i >= 0; i = bsPoints.nextSetBit(i + 1), p++) {
 					xpoints[p] = xp[i];
 					ypoints[p] = yp[i];
 				}
@@ -4499,7 +4496,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			// save selected fit name
 			control.setValue("selected_fit", tab.curveFitter.fit.getName()); //$NON-NLS-1$
 			// save autofit status
-			control.setValue("autofit", tab.curveFitter.autofitCheckBox.isSelected()); //$NON-NLS-1$
+			control.setValue("autofit", tab.curveFitter.isAutoFit()); //$NON-NLS-1$
 			// save fit parameters
 //      if (!tab.curveFitter.autofitCheckBox.isSelected()) {
 			double[] params = new double[tab.curveFitter.paramModel.getRowCount()];
@@ -4520,7 +4517,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			// save splitPane locations
 			int loc = tab.splitPanes[0].getDividerLocation();
 			control.setValue("split_pane", loc); //$NON-NLS-1$
-			loc = tab.curveFitter.splitPane.getDividerLocation();
+			loc = tab.curveFitter.getSplitPane().getDividerLocation();
 			control.setValue("fit_split_pane", loc); //$NON-NLS-1$
 			// save model column order
 			int[] cols = tab.dataTable.getModelColumnOrder();
@@ -4623,7 +4620,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 			// select fit
 			String fitName = control.getString("selected_fit"); //$NON-NLS-1$
-			tab.curveFitter.fitDropDown.setSelectedItem(fitName);
+			tab.curveFitter.setSelectedItem(fitName);
 			tab.curveFitter.selectFit(fitName);
 			// load fit parameters
 			final double[] params = (double[]) control.getObject("fit_parameters"); //$NON-NLS-1$
@@ -4634,7 +4631,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			}
 			// load autofit
 			boolean autofit = control.getBoolean("autofit"); //$NON-NLS-1$
-			tab.curveFitter.autofitCheckBox.setSelected(autofit);
+			tab.curveFitter.setAutoFit(autofit);
 			// load fit color
 			Color color = (Color) control.getObject("fit_color"); //$NON-NLS-1$
 			tab.curveFitter.setColor(color);
@@ -4680,7 +4677,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					tab.fitterAction.actionPerformed(null);
 					tab.propsAndStatsAction.actionPerformed(null);
 					tab.splitPanes[0].setDividerLocation(loc);
-					tab.curveFitter.splitPane.setDividerLocation(fitLoc);
+					tab.curveFitter.getSplitPane().setDividerLocation(fitLoc);
 					if (origin_shifted) {
 						tab.originShiftCheckbox.doClick(0);
 						if (params != null) {

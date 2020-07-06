@@ -70,7 +70,6 @@ import org.opensourcephysics.display.HighlightableDataset;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.display.TextLine;
-import org.opensourcephysics.display.DataTable.OSPDataTableModel;
 import org.opensourcephysics.js.JSUtil;
 
 /**
@@ -185,15 +184,15 @@ public class DataToolTable extends DataTable {
 			}
 		});
 		// selection listener for column header
-		selectionModel = getColumnModel().getSelectionModel();
-		selectionModel.addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent e) {
-				getTableHeader().repaint();
-				dataToolTab.refreshPlot(false);
-			}
-
-		});
+//		selectionModel = getTableHeader().getColumnModel().getSelectionModel();
+//		selectionModel.addListSelectionListener(new ListSelectionListener() {
+//			@Override
+//			public void valueChanged(ListSelectionEvent e) {
+//				getTableHeader().repaint();
+//				//dataToolTab.refreshPlot(false);
+//			}
+//
+//		});
 		// create actions
 		clearCellsAction = new AbstractAction() {
 			@Override
@@ -1198,13 +1197,13 @@ public class DataToolTable extends DataTable {
 		double[] y = workingData.getYSource().getYPoints();
 		// map working index to row index
 		int workingIndex = 0; // index in working data
+		workingData.clearHighlights();
 		for (int i = 0; i < x.length; i++) {
 			if (Double.isNaN(x[i])) {
 				continue;
 			}
 			workingRows.put(Integer.valueOf(workingIndex++), Integer.valueOf(i));
 		}
-		workingData.clearHighlights();
 		// is x- or y-source column selected?
 		int labelCol = convertColumnIndexToView(0);
 		int xCol = (labelCol == 0) ? 1 : 0;
@@ -1214,42 +1213,38 @@ public class DataToolTable extends DataTable {
 		for (int k = 0; k < cols.length; k++) {
 			colSelected = colSelected || (cols[k] == xCol) || (cols[k] == yCol);
 		}
-		if (!colSelected || (getSelectedRowCount() == 0)) { // nothing selected
+		BitSet bs = (BitSet) getSelectedModelRowsBS().clone();
+		int nsel;
+		if (!colSelected || (nsel = bs.cardinality()) == 0) { // nothing selected
 			xValues = x;
 			yValues = new double[x.length];
 			for (int i = 0; i < yValues.length; i++) {
 				yValues[i] = (i < y.length) ? y[i] : Double.NaN;
 			}
+			bs.clear();
 		} else {
-			BitSet bs = getSelectedModelRowsBS();
-			xValues = new double[bs.size()];
-			yValues = new double[bs.size()];
-			int i = 0;
-			int index = 0; // model row index
-			workingIndex = -1; // index in working data
-			for (int row = bs.nextSetBit(0); row >= 0;
-					row = bs.nextSetBit(row + 1)) {
+			xValues = new double[nsel];
+			yValues = new double[nsel];
+			BitSet bsNew = new BitSet();
+			bsNew.set(0, nsel);
+			for (int i = 0, row = bs.nextSetBit(0); row >= 0;
+					row = bs.nextSetBit(row + 1), i++) {
 				xValues[i] = (row >= x.length) ? Double.NaN : x[row];
 				yValues[i] = (row >= y.length) ? Double.NaN : y[row];
-				i++;
-				// find working index of added point
-				for (; index <= row; index++) {
-					if (index >= x.length) {
-						continue;
-					}
-					if (Double.isNaN(x[index])) {
-						continue;
-					}
-					workingIndex++;
-				}
-				// highlight point if not NaN
-				if ((workingIndex > -1) && (index <= x.length) && !Double.isNaN(x[index - 1])) {
-					workingData.setHighlighted(workingIndex, true);
+				boolean ignore = Double.isNaN(xValues[i]);
+				if (ignore) {
+					bsNew.clear(i);
+				} else {
+					workingData.setHighlighted(row, true);
+					if (Double.isNaN(yValues[i]))
+					bsNew.clear(i);
 				}
 			}
+			bs = bsNew;
 		}
 		DataTool.copyDataset(workingData, selectedData, false);
 		selectedData.clear();
+		selectedData.setHighlights(bs);
 		selectedData.append(xValues, yValues);
 		return selectedData;
 	}
