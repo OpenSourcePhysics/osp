@@ -491,7 +491,8 @@ public class DataToolTable extends DataTable {
 			// shift-click: extend row selection
 			else if (e.isShiftDown() && (leadRow < getRowCount())) {
 				setRowSelectionInterval(leadRow, row);
-				setSelectedColumnsFromBitSet();
+				setColumnSelectionInterval(0, getColumnCount() - 1);
+//				setSelectedColumnsFromBitSet();
 			}
 			// control-click: select/deselect rows
 			else if (e.isControlDown() || e.isShiftDown()) {
