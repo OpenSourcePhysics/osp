@@ -814,7 +814,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	 * @return valid xpoints, trimmed to index length
 	 */
 	public double[] getValidXPoints() {
-		return getValidPoints(xpoints, index);
+		return getValidPoints(xpoints);
 	}
 
 	/**
@@ -824,7 +824,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	 * @return valid ypoints[], trimmed to index length
 	 */
 	public double[] getValidYPoints() {
-		return getValidPoints(ypoints, index);
+		return getValidPoints(ypoints);
 	}
 
 	/**
@@ -1670,12 +1670,14 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	}
 
 	/**
-	 * Returns an array of valid points. A point is valid if the ypoint for that
+	 * Returns an array of valid points. 
+	 * 
+	 * A point is valid if the ypoint for that
 	 * index is not Double.NaN.
 	 *
 	 * @return valid points
 	 */
-	private double[] getValidPoints(double[] pts, int len) {
+	private double[] getValidPoints(double[] pts) {
 		// eliminate NaN values, if any
 		int nans = 0;
 		for (int i = 0; i < index; i++) {
