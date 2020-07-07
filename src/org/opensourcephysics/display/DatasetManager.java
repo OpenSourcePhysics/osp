@@ -16,6 +16,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.swing.event.TableModelEvent;
+
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
@@ -46,7 +48,7 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 	boolean connected; // default values for new datasets
 	boolean sorted;
 	int markerShape;
-	int stride = 1;
+	private int stride = 1;
 	boolean linked = false; // whether x data in datasets is linked. If set to true, then x data for
 							// datasets > 0 will not be shown in a table view.
 	String xColumnName = "x", yColumnName = "y"; // default names for new datasets //$NON-NLS-1$ //$NON-NLS-2$
@@ -213,6 +215,11 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 		for (int i = 0; i < datasets.size(); i++) {
 			(datasets.get(i)).setStride(stride);
 		}
+	}
+
+	@Override
+	public int getStride() {
+		return stride;
 	}
 
 	/**
@@ -770,6 +777,8 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 	public void removeDatasets() {
 		clear();
 		datasets.clear();
+		// for DataTable
+		fireTableChanged(new TableModelEvent(this, 0, Integer.MAX_VALUE, -1, TableModelEvent.DELETE));		
 	}
 
 	/**
@@ -868,15 +877,14 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 	 * @return the index of the added dataset
 	 */
 	public int addDataset(Dataset dataset) {
-		return addDataset(dataset, false);
-	}
-	
-	public int addDataset(Dataset dataset, boolean b) {
 		if (linked && !datasets.isEmpty()) {
 			dataset.setXColumnVisible(false);
 		}
+		int n = datasets.size();
 		datasets.add(dataset);
-		return datasets.size() - 1;
+		// for DataTable
+		fireTableChanged(new TableModelEvent(this, 0, Integer.MAX_VALUE, n, TableModelEvent.INSERT));
+		return n;
 	}
 
 
@@ -891,7 +899,10 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 		if ((index < 0) || (index > datasets.size() - 1)) {
 			return null;
 		}
-		return datasets.remove(index);
+		Dataset d = datasets.remove(index);
+		// for DataTable
+		fireTableChanged(new TableModelEvent(this, 0, Integer.MAX_VALUE, index, TableModelEvent.DELETE));		
+		return d;
 	}
 
 	/**

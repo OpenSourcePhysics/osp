@@ -28,6 +28,8 @@ import java.util.BitSet;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
+import javax.swing.event.TableModelEvent;
+
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
@@ -1301,6 +1303,13 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	 */
 	public void setStride(int _stride) {
 		stride = _stride;
+		// for DataTable
+		fireTableChanged(new TableModelEvent(this, 0, Integer.MAX_VALUE, stride, TableModelEvent.HEADER_ROW));		
+	}
+
+	@Override
+	public int getStride() {
+		return stride;
 	}
 
 	/**

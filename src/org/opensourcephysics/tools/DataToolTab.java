@@ -47,7 +47,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractSpinnerModel;
@@ -211,6 +210,17 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	protected JLabel shiftXLabel, shiftYLabel, selectedXLabel, selectedYLabel;
 	protected int selectedDataIndex = -1;
 	protected boolean toggleMeasurement, freezeMeasurement;
+
+
+	// drag box action
+	
+	private BitSet rowsInside = new BitSet(); // points inside selectionBox
+	private BitSet recent = new BitSet(); // points recently added or removed
+	private boolean boxActive, selectionChanged, readyToFindHits, selectionBoxChanged;
+	private Interactive mouseDrawable;
+	private Timer timerToFindHits;
+	private boolean removeHits;
+
 
 	/**
 	 * Constructs a DataToolTab for the specified Data.
@@ -821,7 +831,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			column.setMarkerColor(Color.BLACK);
 			column.setLineColor(Color.BLACK);
 		}
-		dataManager.addDataset(column, true);
+		dataManager.addDataset(column); // was true here - for vis?
 		dataTable.getWorkingData(yName);
 	}
 
@@ -1741,12 +1751,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 		// create mouse listener for selecting data points in plot
 		MouseInputListener mouseSelector = new MouseInputAdapter() {
-			TreeSet<Integer> rowsInside = new TreeSet<Integer>(); // points inside selectionBox
-			TreeSet<Integer> recent = new TreeSet<Integer>(); // points recently added or removed
-			boolean boxActive, selectionChanged, readyToFindHits, selectionBoxChanged;
-			Interactive ia;
-			Timer timerToFindHits;
-			boolean removeHits;
 
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -1755,202 +1759,17 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					plot.setMouseCursor(SELECT_ZOOM_CURSOR);
 					return;
 				}
-				ia = plot.getInteractive();
-				if (ia == plot.origin) {
-					plot.selectionBox.visible = false;
-					plot.origin.mouseDownPt = e.getPoint();
-					plot.lockScale(true);
-					return;
-				}
-				// add or remove point if Interactive is dataset
-				if (ia instanceof HighlightableDataset) {
-
-					HighlightableDataset data = (HighlightableDataset) ia;
-					int index = data.getHitIndex();
-					ListSelectionModel model = dataTable.getColumnModel().getSelectionModel();
-					int col = dataTable.getXColumn();
-					model.setSelectionInterval(col, col);
-					col = dataTable.getYColumn();
-					model.addSelectionInterval(col, col);
-					TableModel tableModel = dataTable.getModel();
-					for (int i = 1; i < tableModel.getColumnCount(); i++) {
-						if (data.getYColumnName().equals(dataTable.getColumnName(i))) {
-							model.addSelectionInterval(i, i);
-							if (col != i)
-								data.setHighlightColor(data.getFillColor());
-							data.setHighlighted(index, true);
-							break;
-						}
-					}
-					if (!e.isControlDown()) {
-						dataTable.setSelectedModelRows(new int[] { index });
-					} else {
-						BitSet rows = dataTable.getSelectedModelRowsBS();
-						if (rows.get(index)) {
-							rows.clear(index);
-						} else {
-							rows.set(index);
-						}
-						if (!JSUtil.isJS)
-							dataTable.setSelectedModelRowsBS(rows);
-					}
-					dataTable.getSelectedData();
-					plot.repaint();
-					boxActive = false;
-					selectionChanged = true;
-					return;
-				} else if (ia != null) {
-					boxActive = false;
-					return;
-				}
-				boxActive = !OSPRuntime.isPopupTrigger(e);
-				if (boxActive) {
-					if (timerToFindHits == null && !JSUtil.isJS) { // BH 2020.02.14
-						timerToFindHits = new Timer(200, new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								findHits(removeHits, !JSUtil.isJS);
-								timerToFindHits.restart();
-							}
-						});
-						timerToFindHits.setRepeats(false); // BH 2020.02.14
-					}
-					// prepare to drag
-					if (!(e.isControlDown() || e.isShiftDown())) {
-						dataTable.clearSelection();
-					}
-					// prefill rowsInside with currently selected rows
-					rowsInside.clear();
-					BitSet bs = dataTable.getSelectedModelRowsBS();
-					for (int row = bs.nextSetBit(0); row >= 0; row = bs.nextSetBit(row + 1)) {
-						rowsInside.add(row);
-					}
-					recent.clear();
-					Point p = e.getPoint();
-					plot.selectionBox.xstart = p.x;
-					plot.selectionBox.ystart = p.y;
-					readyToFindHits = true;
-					removeHits = e.isShiftDown() && e.isControlDown();
-					if (timerToFindHits != null)
-						timerToFindHits.start();
-					plot.setMouseCursor(removeHits ? SELECT_REMOVE_CURSOR : SELECT_CURSOR);
-				}
+				mousePressedAction(e.getPoint(), e.isControlDown(), e.isShiftDown());
 			}
 
 			@Override
 			public void mouseDragged(MouseEvent e) {
-				selectionChanged = true;
-				if (ia == plot.origin) {
-					plot.selectionBox.visible = false;
-					double deltaX = 0, deltaY = 0;
-					int dx = plot.origin.mouseDownPt.x - e.getPoint().x;
-					int dy = plot.origin.mouseDownPt.y - e.getPoint().y;
-					if (e.isShiftDown()) {
-						if (Math.abs(dx) >= Math.abs(dy))
-							dy = 0;
-						else
-							dx = 0;
-					}
-					Dataset data = dataTable.getDataset(plot.xVar);
-					if (data != null && data instanceof DataColumn && plot.origin.isVertHit) {
-						deltaX = dx / plot.getXPixPerUnit();
-						double shift = prevShiftX + deltaX;
-						DataColumn col = (DataColumn) data;
-						double prev = col.getShift();
-						col.setShift(shift);
-						tabChanged(true);
-						// shift area limits
-						if (plot.areaLimits[0].pointIndex > -1 && plot.areaLimits[1].pointIndex > -1) {
-							plot.areaLimits[0].refreshX();
-							plot.areaLimits[1].refreshX();
-						} else {
-							plot.areaLimits[0].setX(plot.areaLimits[0].getX() + shift - prev);
-							plot.areaLimits[1].setX(plot.areaLimits[1].getX() + shift - prev);
-						}
-					}
-					data = dataTable.getDataset(plot.yVar);
-					if (data != null && data instanceof DataColumn && plot.origin.isHorzHit) {
-						deltaY = -dy / plot.getYPixPerUnit();
-						double shiftY = prevShiftY + deltaY;
-						DataColumn col = (DataColumn) data;
-						col.setShift(shiftY);
-						tabChanged(true);
-					}
-					
-					refreshAll(DataTable.MODE_VALUES);
-					plot.lockedXMin = plot.mouseDownXMin + deltaX;
-					plot.lockedXMax = plot.mouseDownXMax + deltaX;
-					plot.lockedYMin = plot.mouseDownYMin + deltaY;
-					plot.lockedYMax = plot.mouseDownYMax + deltaY;
-					plot.repaint();
-					return;
-				}
-
-				if (!boxActive) {
-					return;
-				}
-				Dataset data = getWorkingData();
-				if (data == null) {
-					return;
-				}
-				Point mouse = e.getPoint();
-				plot.selectionBox.visible = true;
-				int dx = mouse.x - plot.selectionBox.xstart;
-				int dy = mouse.y - plot.selectionBox.ystart;
-				plot.selectionBox.setSize(dx, dy);
-				selectionBoxChanged = true;
-				removeHits = e.isShiftDown() && e.isControlDown();
-				plot.setMouseCursor(removeHits ? SELECT_REMOVE_CURSOR : SELECT_CURSOR);
-				refreshFit();
-				plot.repaint();
+				mouseDraggedAction(e.getPoint(), e.isControlDown(), e.isShiftDown());
 			}
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				if (!selectionChanged && freezeMeasurement) {
-					freezeMeasurement = false;
-					plot.measurementX = e.getX();
-					plot.measurementIndex = -1;
-					plot.refreshMeasurements();
-				}
-				selectionChanged = false;
-				plot.lockScale(false);
-				plot.selectionBox.visible = false;
-				if (ia != null) {
-					if (ia == plot.origin) {
-						postShiftEdit();
-						((CrawlerSpinnerModel) shiftXSpinner.getModel()).refreshDelta();
-						((CrawlerSpinnerModel) shiftYSpinner.getModel()).refreshDelta();
-					}
-					if (ia instanceof Selectable) {
-						plot.setMouseCursor(((Selectable) ia).getPreferredCursor());
-					} else {
-						plot.setMouseCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-					}
-					if (ia instanceof HighlightableDataset) {
-						HighlightableDataset data = (HighlightableDataset) ia;
-						TableModel tableModel = dataTable.getModel();
-						int yCol = dataTable.getYColumn();
-						ListSelectionModel model = dataTable.getColumnModel().getSelectionModel();
-						for (int i = tableModel.getColumnCount(); --i >= 1;) {
-							if (data.getYColumnName().equals(dataTable.getColumnName(i)) && yCol != i) {
-								//data.clearHighlights();
-								data.setHighlightColor(Color.YELLOW);
-								model.removeSelectionInterval(i, i);
-								break;
-							}
-						}
-					}
-				}
-				plot.repaint();
-				if (timerToFindHits != null) {
-					timerToFindHits.stop();
-					timerToFindHits = null; // BH 2020.02.14
-				}
-				if (selectionBoxChanged) {
-					findHits(removeHits, true);
-					selectionBoxChanged = false;
-				}
+				mouseReleasedAction(e.getPoint(), e.isControlDown(), e.isShiftDown());
 			}
 
 			@Override
@@ -1967,78 +1786,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				dataTable.dataToolTab.refreshStatusBar(null);
 			}
 
-			void findHits(final boolean subtract, boolean showInTable) {
-				if (!readyToFindHits || showInTable && !selectionBoxChanged)
-					return;
-				selectionBoxChanged = false;
-				Runnable runner = new Runnable() {
-					@Override
-					public void run() {
-						HighlightableDataset data = dataTable.workingData;
-						Map<Integer, Integer> workingRows = dataTable.workingRows;
-						if (data == null || workingRows == null)
-							return;
-						double[][] screenPoints = data.getScreenCoordinates();
-						ListSelectionModel columnSelectionModel = dataTable.getColumnModel().getSelectionModel();
-						for (int i = 0; i < screenPoints[0].length; i++) {
-							Integer row = workingRows.get(i);
-							if (row == null) {
-								readyToFindHits = true;
-								return;
-							}
-							// if a data point is inside the box, add/remove it
-							if (!Double.isNaN(screenPoints[1][i])
-									&& plot.selectionBox.contains(screenPoints[0][i], screenPoints[1][i])) {
-								if (rowsInside.isEmpty()) {
-									columnSelectionModel.setSelectionInterval(1, 2);
-								}
-								if (subtract) {
-									rowsInside.remove(row);
-								} else {
-									rowsInside.add(row);
-								}
-								recent.add(row);
-							}
-							// if a recently added data point is outside the box, remove it
-							else if (recent.contains(row)) {
-								if (subtract) {
-									rowsInside.add(row);
-								} else {
-									rowsInside.remove(row);
-								}
-								recent.remove(row);
-							}
-						}
-						if (showInTable) {
-							if (rowsInside.isEmpty()) {
-								if (dataTable.getSelectedRowCount() > 0) {
-									columnSelectionModel.removeSelectionInterval(0, dataTable.getColumnCount() - 1);
-									dataTable.getSelectionModel().clearSelection();
-									dataTable.getSelectedData(); // updates highlights
-								}
-							} else {
-								int[] rows = new int[rowsInside.size()];
-								int i = 0;
-								for (int next : rowsInside) {
-									rows[i] = next;
-									i++;
-								}
-								dataTable.setSelectedModelRows(rows);
-								Rectangle r = dataTable.getCellRect(rows[0], 0, false);
-								if (r != null) {
-									r.height += (rows[rows.length - 1] - rows[0]) * dataTable.getRowHeight();
-									dataTable.scrollRectToVisible(r);
-								}
-							}
-						}
-						plot.repaint();
-						readyToFindHits = true;
-					}
-				};
-				// should this be in separate thread?
-				runner.run();
-//      	new Thread(runner).start();
-			}
 
 		};
 		plot.addMouseListener(mouseSelector);
@@ -2381,6 +2128,268 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		selectedYField.addKeyListener(numberFieldKeyListener);
 		selectedYField.addFocusListener(numberFieldFocusListener);
 
+	}
+
+	protected void mouseDraggedAction(Point point, boolean controlDown, boolean shiftDown) {
+		selectionChanged = true;
+		if (mouseDrawable == plot.origin) {
+			plot.selectionBox.visible = false;
+			double deltaX = 0, deltaY = 0;
+			int dx = plot.origin.mouseDownPt.x - point.x;
+			int dy = plot.origin.mouseDownPt.y - point.y;
+			if (shiftDown) {
+				if (Math.abs(dx) >= Math.abs(dy))
+					dy = 0;
+				else
+					dx = 0;
+			}
+			Dataset data = dataTable.getDataset(plot.xVar);
+			if (data != null && data instanceof DataColumn && plot.origin.isVertHit) {
+				deltaX = dx / plot.getXPixPerUnit();
+				double shift = prevShiftX + deltaX;
+				DataColumn col = (DataColumn) data;
+				double prev = col.getShift();
+				col.setShift(shift);
+				tabChanged(true);
+				// shift area limits
+				if (plot.areaLimits[0].pointIndex > -1 && plot.areaLimits[1].pointIndex > -1) {
+					plot.areaLimits[0].refreshX();
+					plot.areaLimits[1].refreshX();
+				} else {
+					plot.areaLimits[0].setX(plot.areaLimits[0].getX() + shift - prev);
+					plot.areaLimits[1].setX(plot.areaLimits[1].getX() + shift - prev);
+				}
+			}
+			data = dataTable.getDataset(plot.yVar);
+			if (data != null && data instanceof DataColumn && plot.origin.isHorzHit) {
+				deltaY = -dy / plot.getYPixPerUnit();
+				double shiftY = prevShiftY + deltaY;
+				DataColumn col = (DataColumn) data;
+				col.setShift(shiftY);
+				tabChanged(true);
+			}
+
+			refreshAll(DataTable.MODE_VALUES);
+			plot.lockedXMin = plot.mouseDownXMin + deltaX;
+			plot.lockedXMax = plot.mouseDownXMax + deltaX;
+			plot.lockedYMin = plot.mouseDownYMin + deltaY;
+			plot.lockedYMax = plot.mouseDownYMax + deltaY;
+			plot.repaint();
+			return;
+		}
+
+		if (!boxActive) {
+			return;
+		}
+		Dataset data = getWorkingData();
+		if (data == null) {
+			return;
+		}
+		plot.selectionBox.visible = true;
+		int dx = point.x - plot.selectionBox.xstart;
+		int dy = point.y - plot.selectionBox.ystart;
+		plot.selectionBox.setSize(dx, dy);
+		selectionBoxChanged = true;
+		removeHits = shiftDown && controlDown;
+		plot.setMouseCursor(removeHits ? SELECT_REMOVE_CURSOR : SELECT_CURSOR);
+		refreshFit();
+		plot.repaint();
+	}
+
+	protected void mouseReleasedAction(Point point, boolean controlDown, boolean shiftDown) {
+		if (!selectionChanged && freezeMeasurement) {
+			freezeMeasurement = false;
+			plot.measurementX = point.x;
+			plot.measurementIndex = -1;
+			plot.refreshMeasurements();
+		}
+		selectionChanged = false;
+		plot.lockScale(false);
+		plot.selectionBox.visible = false;
+		if (mouseDrawable != null) {
+			if (mouseDrawable == plot.origin) {
+				postShiftEdit();
+				((CrawlerSpinnerModel) shiftXSpinner.getModel()).refreshDelta();
+				((CrawlerSpinnerModel) shiftYSpinner.getModel()).refreshDelta();
+			}
+			if (mouseDrawable instanceof Selectable) {
+				plot.setMouseCursor(((Selectable) mouseDrawable).getPreferredCursor());
+			} else {
+				plot.setMouseCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+			}
+			if (mouseDrawable instanceof HighlightableDataset) {
+				HighlightableDataset data = (HighlightableDataset) mouseDrawable;
+				TableModel tableModel = dataTable.getModel();
+				int yCol = dataTable.getYColumn();
+				ListSelectionModel model = dataTable.getColumnModel().getSelectionModel();
+				for (int i = tableModel.getColumnCount(); --i >= 1;) {
+					if (data.getYColumnName().equals(dataTable.getColumnName(i)) && yCol != i) {
+						// data.clearHighlights();
+						data.setHighlightColor(Color.YELLOW);
+						model.removeSelectionInterval(i, i);
+						break;
+					}
+				}
+			}
+		}
+		plot.repaint();
+		if (timerToFindHits != null) {
+			timerToFindHits.stop();
+			timerToFindHits = null; // BH 2020.02.14
+		}
+		if (selectionBoxChanged) {
+			findHits(removeHits, true);
+			selectionBoxChanged = false;
+		}
+
+	}
+
+	protected void mousePressedAction(Point point, boolean controlDown, boolean shiftDown) {
+		mouseDrawable = plot.getInteractive();
+		if (mouseDrawable == plot.origin) {
+			plot.selectionBox.visible = false;
+			plot.origin.mouseDownPt = point;
+			plot.lockScale(true);
+			return;
+		}
+		// add or remove point if Interactive is dataset
+		if (mouseDrawable instanceof HighlightableDataset) {
+
+			HighlightableDataset data = (HighlightableDataset) mouseDrawable;
+			int index = data.getHitIndex();
+			ListSelectionModel model = dataTable.getColumnModel().getSelectionModel();
+			int col = dataTable.getXColumn();
+			model.setSelectionInterval(col, col);
+			col = dataTable.getYColumn();
+			model.addSelectionInterval(col, col);
+			TableModel tableModel = dataTable.getModel();
+			for (int i = 1; i < tableModel.getColumnCount(); i++) {
+				if (data.getYColumnName().equals(dataTable.getColumnName(i))) {
+					model.addSelectionInterval(i, i);
+					if (col != i)
+						data.setHighlightColor(data.getFillColor());
+					data.setHighlighted(index, true);
+					break;
+				}
+			}
+			if (!controlDown) {
+				dataTable.selectModelRows(new int[] { index });
+			} else {
+				BitSet rows = dataTable.getSelectedModelRowsBS();
+				if (rows.get(index)) {
+					rows.clear(index);
+				} else {
+					rows.set(index);
+				}
+				if (!JSUtil.isJS)
+					dataTable.setSelectedModelRowsBS(rows);
+			}
+			dataTable.getSelectedData();
+			plot.repaint();
+			boxActive = false;
+			selectionChanged = true;
+			return;
+		}
+		if (mouseDrawable != null) {
+			boxActive = false;
+			return;
+		}
+		boxActive = true;
+		if (timerToFindHits == null && !JSUtil.isJS) { // BH 2020.02.14
+			timerToFindHits = new Timer(200, new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					findHits(removeHits, !JSUtil.isJS);
+					timerToFindHits.restart();
+				}
+			});
+			timerToFindHits.setRepeats(false); // BH 2020.02.14
+		}
+		// prepare to drag
+		if (!controlDown && !shiftDown) {
+			dataTable.clearSelection();
+		}
+		// prefill rowsInside with currently selected rows
+		rowsInside.clear();
+		rowsInside.or(dataTable.getSelectedModelRowsBS());
+		recent.clear();
+		plot.selectionBox.xstart = point.x;
+		plot.selectionBox.ystart = point.y;
+		readyToFindHits = true;
+		removeHits = shiftDown && controlDown;
+		if (timerToFindHits != null)
+			timerToFindHits.start();
+		plot.setMouseCursor(removeHits ? SELECT_REMOVE_CURSOR : SELECT_CURSOR);
+	}
+
+	private void findHits(final boolean subtract, boolean showInTable) {
+		if (!readyToFindHits || showInTable && !selectionBoxChanged)
+			return;
+		selectionBoxChanged = false;
+		Runnable runner = new Runnable() {
+			@Override
+			public void run() {
+				findHitsRun(subtract, showInTable);
+			}
+		};
+		// should this be in separate thread?
+		runner.run();
+//	new Thread(runner).start();
+	}
+
+	private void findHitsRun(boolean subtract, boolean showInTable) {
+		if (dataTable.workingData == null || dataTable.workingRowToModelRow == null)
+			return;
+		double[][] screenPoints = dataTable.workingData.getScreenCoordinates();
+		ListSelectionModel columnSelectionModel = dataTable.getColumnModel().getSelectionModel();
+		for (int i = 0; i < screenPoints[0].length; i++) {
+			Integer row = dataTable.workingRowToModelRow.get(i);
+			if (row == null) {
+				readyToFindHits = true;
+				return;
+			}
+			int irow = row.intValue();
+			// if a data point is inside the box, add/remove it
+			if (!Double.isNaN(screenPoints[1][i])
+					&& plot.selectionBox.contains(screenPoints[0][i], screenPoints[1][i])) {
+				if (rowsInside.isEmpty()) {
+					columnSelectionModel.setSelectionInterval(1, 2);
+				}
+				if (subtract) {
+					rowsInside.clear(irow);
+				} else {
+					rowsInside.set(irow);
+				}
+				recent.set(irow);
+			} else if (recent.get(irow)) {
+				// if a recently added data point is outside the box, remove it
+				if (subtract) {
+					rowsInside.set(irow);
+				} else {
+					rowsInside.clear(irow);
+				}
+				recent.clear(irow);
+			}
+		}
+		if (showInTable) {
+			if (rowsInside.isEmpty()) {
+				if (dataTable.getSelectedRowCount() > 0) {
+					columnSelectionModel.removeSelectionInterval(0, dataTable.getColumnCount() - 1);
+					dataTable.getSelectionModel().clearSelection();
+					dataTable.getSelectedData(); // updates highlights
+				}
+			} else {
+				dataTable.selectModelRowsBS(rowsInside);
+				int r0 = rowsInside.nextSetBit(0);
+				Rectangle r = dataTable.getCellRect(r0, 0, false);
+				if (r != null) {
+					r.height += (rowsInside.length() - 1 - r0) * dataTable.getRowHeight();
+					dataTable.scrollRectToVisible(r);
+				}
+			}
+		}
+		readyToFindHits = true;
+		plot.repaint();
 	}
 
 	/**
@@ -2768,7 +2777,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	protected void refreshPlot() {
 		refreshPlot(false);
 	}
-	
+
 	/**
 	 * Refreshes the plot.
 	 */
@@ -2810,7 +2819,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					continue;
 				}
 				if (next.isMarkersVisible() || next.isConnected()) {
-					//next.clearHighlights();
+					// next.clearHighlights();
 					if (!next.isMarkersVisible()) {
 						next.setMarkerShape(Dataset.NO_MARKER);
 					}
@@ -2868,7 +2877,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		}
 		// BH was this.repaint?
 		if (fitTimer == null || !fitTimer.isRunning())
-			plot.repaint();    
+			plot.repaint();
 		refreshFit();
 	}
 
@@ -3320,7 +3329,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		protected void paintDrawableList(Graphics g, ArrayList<Drawable> tempList) {
 			String s = message;
 			if (tempList.contains(curveFitter.getDrawer())) {
-					curveFitter.getDrawer().setEnabled(dataTable.isFitDrawable(curveFitter.fit));
+				curveFitter.getDrawer().setEnabled(dataTable.isFitDrawable(curveFitter.fit));
 				double[] ylimits = curveFitter.getDrawer().getYRange();
 				if ((ylimits[0] >= this.getYMax()) || (ylimits[1] <= this.getYMin())) {
 					s = ToolsRes.getString("DataToolTab.Plot.Message.FitNotVisible")

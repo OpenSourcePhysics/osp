@@ -143,7 +143,7 @@ public class DataToolTable extends DataTable {
 	int pasteW, pasteH;
 	HashMap<String, double[]> pasteValues = new HashMap<String, double[]>();
 	DatasetManager pasteData = null;
-	HashMap<Integer, Integer> workingRows = new HashMap<Integer, Integer>(); // maps working row to model row
+	HashMap<Integer, Integer> workingRowToModelRow = new HashMap<Integer, Integer>(); // maps working row to model row
     @Override
 	protected OSPDataTableModel createTableModel() {
     	return new DataToolTableModel();
@@ -173,7 +173,7 @@ public class DataToolTable extends DataTable {
 				if (e.getFirstIndex() == -1) {
 					return;
 				}
-				setSelectedRowsFromJTable();
+				dataTableModel.setSelectedRowsFromJTable();
 				if (!e.getValueIsAdjusting()) {
 					int labelCol = convertColumnIndexToView(0);
 					addColumnSelectionInterval(labelCol, labelCol);
@@ -192,17 +192,22 @@ public class DataToolTable extends DataTable {
 //			}
 //
 //		});
+		
+		installActions();
+	}
+
+	private void installActions() {
 		// create actions
 		clearCellsAction = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// clear selected cells by replacing with NaN
 				HashMap<String, double[]> values = new HashMap<String, double[]>();
-				int[] rows = getSelectedModelRows();
 				Iterator<String> it = getSelectedColumnNames().iterator();
 				while (it.hasNext()) {
 					values.put(it.next(), null);
 				}
+				int[] rows = getSelectedModelRows();
 				HashMap<String, double[]> prev = replaceCells(rows, values);
 				// post edit: target is rows, value is HashMap[] {undo, redo}
 				TableEdit edit = new TableEdit(REPLACE_CELLS_EDIT, null, rows, new HashMap[] { prev, values });
@@ -450,6 +455,20 @@ public class DataToolTable extends DataTable {
 		getActionMap().put(im.get(delete), clearCellsAction);
 	}
 
+	@Override
+	protected void updateRowSelection(int firstIndex, boolean isAdjusting) {
+		if (firstIndex == -1) {
+			return;
+		}
+		dataTableModel.setSelectedRowsFromJTable();
+		if (!isAdjusting) {
+			int labelCol = convertColumnIndexToView(0);
+			addColumnSelectionInterval(labelCol, labelCol);
+			dataToolTab.setSelectedData(getSelectedData(), true);
+			
+		}
+	}
+
 	protected void doTableMousePressed(MouseEvent e) {
 		final int col = columnAtPoint(e.getPoint());
 		final int row = rowAtPoint(e.getPoint());
@@ -495,7 +514,7 @@ public class DataToolTable extends DataTable {
 		// save selected columns
 		
 		addColumnSelectionInterval(labelCol, labelCol);
-		setColumnSelectionFromJTable();
+		dataTableModel.setColumnSelectionFromJTable();
 		getSelectedData();
 		dataToolTab.plot.repaint();
 	}
@@ -823,7 +842,7 @@ public class DataToolTable extends DataTable {
 		else if (col == labelCol && dataTableModel.getSortedColumn() == col) {
 			if (col != prevSortedColumn) {
 				int[] rows = getSelectedModelRows();
-				setSelectedModelRows(rows);
+				selectModelRows(rows);
 				prevSortedColumn = col;
 			}
 		}
@@ -849,7 +868,7 @@ public class DataToolTable extends DataTable {
 		else {
 			if (col != prevSortedColumn) {
 				int[] rows = getSelectedModelRows();
-				setSelectedModelRows(rows);
+				selectModelRows(rows);
 				prevSortedColumn = col;
 			}
 		}
@@ -1205,7 +1224,7 @@ public class DataToolTable extends DataTable {
 			if (Double.isNaN(x[i])) {
 				continue;
 			}
-			workingRows.put(Integer.valueOf(workingIndex++), Integer.valueOf(i));
+			workingRowToModelRow.put(Integer.valueOf(workingIndex++), Integer.valueOf(i));
 		}
 		// is x- or y-source column selected?
 		int labelCol = convertColumnIndexToView(0);
@@ -1483,7 +1502,7 @@ public class DataToolTable extends DataTable {
 		}
 		refreshDataFunctions();
 		refreshTable(DataTable.MODE_CELLS);
-		setSelectedModelRows(rows);
+		selectModelRows(rows);
 		setSelectedColumnNames(values.keySet());
 		dataToolTab.refreshPlot();
 		refreshUndoItems();
@@ -1522,7 +1541,7 @@ public class DataToolTable extends DataTable {
 		refreshDataFunctions();
 		refreshTable(DataTable.MODE_CELLS);
 		setSelectedColumnNames(values.keySet());
-		setSelectedModelRows(rows);
+		selectModelRows(rows);
 		dataToolTab.refreshPlot();
 		refreshUndoItems();
 		return deleted;
@@ -1551,7 +1570,7 @@ public class DataToolTable extends DataTable {
 		}
 		refreshDataFunctions();
 		refreshTable(DataTable.MODE_VALUES);
-		setSelectedModelRows(rows);
+		selectModelRows(rows);
 		setSelectedColumnNames(values.keySet());
 		refreshUndoItems();
 		dataToolTab.refreshPlot();
@@ -1614,7 +1633,7 @@ public class DataToolTable extends DataTable {
 		refreshDataFunctions();
 		clearSelection();
 		setSelectedColumnNames(removed.keySet());
-		setSelectedModelRows(rows);
+		selectModelRows(rows);
 		refreshUndoItems();
 		dataToolTab.refreshPlot();
 		return removed;
@@ -1958,7 +1977,7 @@ public class DataToolTable extends DataTable {
 			setSelectedColumnNames(cols);
 		}
 		if (rows.length > 0) {
-			setSelectedModelRows(rows);
+			selectModelRows(rows);
 		}
 	}
 
@@ -2425,31 +2444,42 @@ public class DataToolTable extends DataTable {
 		DataToolTab tab;
 
 		DataToolTableModel() {
-			useDefaultColumnClass = false;
+		//	haveColumnClasses = false;
 		}
-
+//
+//		@Override
+//		protected int getModelRow(int row) {
+//			return super.getModelRow(row);
+//		}
+		
 		@Override
 		public synchronized int getColumnCount() {
 			return (columnCount >= 0 ? columnCount
 					: (columnCount = 1 + dataManager.getColumnCount()));
 		}
 		
-		
+		@Override
+		public Class<?> getColumnClass(int col) {
+			return (col == 0 ? Integer.class : Double.class);
+		}
+
+		/**
+		 * @param row    - an actual table row, zero-based
+		 * @param column - a logical column, zero-based, always the same number for a
+		 *               column no matter how the columns are sorted.
+		 */
 		@Override
 		public Object getValueAt(int row, int column) {
-			if (column >= getColumnCount()) {
-				return null;
-			}
-			if (column == 0)
-				return row + 1;
-			return dataManager.getValueAt(row, column - 1);
+			return (column >= getColumnCount() ? null 
+					: column == 0 ? Integer.valueOf(getModelRow(row) + 1)
+							: super.getValueAt(row,  column));
 		}
 
 		@Override
 		public String getColumnName(int col) {
 			if (col >= getColumnCount()) {
 				return "unknown";
-			} // from SortDecorator
+			}
 			if (col == 0) {
 				return rowName;
 			}
@@ -2464,7 +2494,7 @@ public class DataToolTable extends DataTable {
 //    public Object getValueAt(int row, int col) {
 //    	if (tab.offsetOriginVisible && col>0) {
 //		    double val = (Double)super.getValueAt(row, col);		    	
-// 		    DataColumn dataCol = (DataColumn)tab.dataTable.getDataset(getColumnName(col));
+// 		    DataColumn dataCol = (DataColumn)getDataset(getColumnName(col));
 //    		if (dataCol!=null) {
 //    			val -= dataCol.getShift();
 //    		}
@@ -2478,7 +2508,7 @@ public class DataToolTable extends DataTable {
 			if (value == null) {
 				return;
 			}
-			Dataset data = tab.dataTable.dataManager.getDataset(col - 1);
+			Dataset data = dataManager.getDataset(col - 1);
 			double[] y = data.getYPoints();
 			double val = Double.NaN;
 			try {
@@ -2495,9 +2525,9 @@ public class DataToolTable extends DataTable {
 			int[] rows = new int[] { row };
 			HashMap<String, double[]> map = new HashMap<String, double[]>();
 			map.put(name, new double[] { val });
-			HashMap<String, double[]> old = tab.dataTable.replaceCells(rows, map);
+			HashMap<String, double[]> old = replaceCells(rows, map);
 			// post edit: target is rows, value is HashMap[] {undo, redo}
-			TableEdit edit = tab.dataTable.new TableEdit(REPLACE_CELLS_EDIT, name, rows, new HashMap[] { old, map });
+			TableEdit edit = new TableEdit(REPLACE_CELLS_EDIT, name, rows, new HashMap[] { old, map });
 			tab.undoSupport.postEdit(edit);
 		}
 
