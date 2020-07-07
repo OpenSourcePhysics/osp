@@ -2783,9 +2783,7 @@ public class DataToolTable extends DataTable {
 	public boolean isFitDrawable(KnownFunction fit) {
 		int n = selectedData.getRowCount();
 		int nparam = fit.getParameterCount();
-		boolean ok = (n >= nparam && (nparam == 2 || n < getRowCount()));
-		OSPLog.debug("DTT = " + n + " " + nparam + " " + ok);
-		return ok;
+		return (n >= nparam);
 	}
 
 }
