@@ -98,9 +98,9 @@ public class DatasetCurveFitter extends JPanel {
 
 	public static final String PROPERTY_DATASETCURVEFITTER_CHANGED = "changed";
 	public static final String PROPERTY_DATASETCURVEFITTER_DRAWER = "drawer";
-			
+	public static final String PROPERTY_DATASETCURVEFITTER_FIT = "fit";
 
-	//static fields
+	// static fields
 	/** defaultFits are available in every instance */
 	static ArrayList<KnownFunction> defaultFits = new ArrayList<KnownFunction>();
 	private static NumberFormat SEFormat = NumberFormat.getInstance();
@@ -140,13 +140,13 @@ public class DatasetCurveFitter extends JPanel {
 	}
 
 	// instance fields
-	
+
 	private FitBuilder fitBuilder;
 	private PropertyChangeListener fitListener;
-	
+
 	private DataToolTab tab;
 
-	KnownFunction fit; // the function to fit to the data	
+	KnownFunction fit; // the function to fit to the data
 	/** fitMap maps localized names to all available fits */
 	Color color = Color.MAGENTA;
 	ParamTableModel paramModel;
@@ -160,13 +160,25 @@ public class DatasetCurveFitter extends JPanel {
 	private Map<String, KnownFunction> fitMap = new TreeMap<String, KnownFunction>();
 
 	int fitNumber = 1;
-	boolean refreshing = false, isActive, neverBeenActive = true;
+	boolean refreshing = false;
+	private boolean isActive;
+
+	public void setActiveNoFit(boolean b) {
+		isActive = b;
+	}
+
+	public boolean isActive() {
+		return isActive;
+	}
+
+	boolean neverBeenActive = true;
 	int fontLevel;
 	double correlation = Double.NaN;
 	double[] uncertainties = new double[2];
 	boolean fitEvaluatedToNaN = false;
 
 	private boolean autofit;
+
 	/**
 	 * Sets the autofit flag.
 	 *
@@ -187,10 +199,8 @@ public class DatasetCurveFitter extends JPanel {
 		autofitCheckBox.setSelected(autofit);
 	}
 
-	
-	
 	// GUI
-	
+
 	private JButton colorButton, closeButton;
 	private JCheckBox autofitCheckBox;
 	private JLabel fitLabel, eqnLabel, rmsLabel;
@@ -204,12 +214,11 @@ public class DatasetCurveFitter extends JPanel {
 	private JButton fitBuilderButton;
 
 	private JSplitPane splitPane;
+
 	public JSplitPane getSplitPane() {
 		return splitPane;
 	}
 
-
-	
 	private JDialog colorDialog;
 
 	/**
@@ -250,13 +259,13 @@ public class DatasetCurveFitter extends JPanel {
 	 *
 	 * @param data the dataset - if null, then just initializing
 	 */
-	public void setData(Dataset data) {
+	public void setData(Dataset data, boolean doFit) {
 		dataset = data;
-		if (isActive)
+		if (doFit)
 			fit(fit);
 		if (dataset != null) {
 			fitBuilder.setDefaultVariables(new String[] { TeXParser.removeSubscripting(dataset.getXColumnName()) });
-			if (!isActive) { 
+			if (!this.isActive) {
 				// if active, regression done in fit method
 				double[] x = dataset.getValidXPoints();
 				double[] y = dataset.getValidYPoints();
@@ -282,16 +291,20 @@ public class DatasetCurveFitter extends JPanel {
 			} else {
 				colorButton.setBackground(color);
 			}
-			firePropertyChange(PROPERTY_DATASETCURVEFITTER_CHANGED, null, null); //$NON-NLS-1$
+			firePropertyChange(PROPERTY_DATASETCURVEFITTER_CHANGED, null, null); // $NON-NLS-1$
 		}
-	}	
+	}
 
 	/**
-	 * Sets the active flag.
+	 * Sets the active flag if not already this flag and does a fit if setting it to
+	 * true
 	 *
 	 * @param active true
 	 */
-	public void setActive(boolean active) {
+	public void setActiveAndFit(boolean active) {
+		OSPLog.debug("DCF setActive " + active);
+		if (isActive == active)
+			return;
 		isActive = active;
 		if (active) {
 			if (neverBeenActive) {
@@ -309,7 +322,7 @@ public class DatasetCurveFitter extends JPanel {
 	 * @return the rms deviation
 	 */
 	public double fit(KnownFunction fit) {
-		//osplog.debug("DatasetCurveFit " + fit);
+		// osplog.debug("DatasetCurveFit " + fit);
 		if (drawer == null) {
 			selectFit((String) fitDropDown.getSelectedItem());
 		}
@@ -402,7 +415,7 @@ public class DatasetCurveFitter extends JPanel {
 			rmsField.setValue(rmsDev);
 		}
 		refreshStatusBar();
-		firePropertyChange("fit", null, null); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_DATASETCURVEFITTER_FIT, null, null);
 		return rmsDev;
 	}
 
@@ -529,7 +542,7 @@ public class DatasetCurveFitter extends JPanel {
 				spinCellEditor.stopCellEditing();
 				paramTable.clearSelection();
 				fit(fit);
-				firePropertyChange(PROPERTY_DATASETCURVEFITTER_CHANGED, null, null); //$NON-NLS-1$
+				firePropertyChange(PROPERTY_DATASETCURVEFITTER_CHANGED, null, null); // $NON-NLS-1$
 			}
 
 		});
@@ -594,7 +607,7 @@ public class DatasetCurveFitter extends JPanel {
 					return;
 				String selection = (String) fitDropDown.getSelectedItem();
 				if (selection != null && fit != null && !selection.equals(fit.getName())) {
-					firePropertyChange(PROPERTY_DATASETCURVEFITTER_CHANGED, null, null); //$NON-NLS-1$
+					firePropertyChange(PROPERTY_DATASETCURVEFITTER_CHANGED, null, null); // $NON-NLS-1$
 				}
 				selectFit(selection);
 				fitDropDown.setToolTipText(fit == null ? null : fit.getDescription());
@@ -866,7 +879,7 @@ public class DatasetCurveFitter extends JPanel {
 		default:
 			return;
 		}
-		firePropertyChange(PROPERTY_DATASETCURVEFITTER_CHANGED, null, null); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_DATASETCURVEFITTER_CHANGED, null, null); // $NON-NLS-1$
 		refreshGUI();
 	}
 
@@ -1004,7 +1017,7 @@ public class DatasetCurveFitter extends JPanel {
 			} else {
 				eqnField.setText(depVar + " = " + fit.getExpression(indepVar)); //$NON-NLS-1$
 			}
-			firePropertyChange(PROPERTY_DATASETCURVEFITTER_DRAWER, prev, drawer); //$NON-NLS-1$
+			firePropertyChange(PROPERTY_DATASETCURVEFITTER_DRAWER, prev, drawer); // $NON-NLS-1$
 			if (isActive)
 				fit(fit);
 			if (fitBuilder.isVisible()) {
@@ -1108,7 +1121,6 @@ public class DatasetCurveFitter extends JPanel {
 	 */
 	public void doLinearRegression(double[] xd, double[] yd, boolean isLinearFit) {
 		int n = xd.length;
-
 		// set Double.NaN defaults
 		correlation = Double.NaN;
 		for (int i = 0; i < uncertainties.length; i++)
@@ -1433,7 +1445,7 @@ public class DatasetCurveFitter extends JPanel {
 					}
 					drawer.functionChanged = true;
 					fit(fit);
-					firePropertyChange(PROPERTY_DATASETCURVEFITTER_CHANGED, null, null); //$NON-NLS-1$
+					firePropertyChange(PROPERTY_DATASETCURVEFITTER_CHANGED, null, null); // $NON-NLS-1$
 				}
 
 			});
@@ -1499,12 +1511,7 @@ public class DatasetCurveFitter extends JPanel {
 		// Determines when editing starts.
 		@Override
 		public boolean isCellEditable(EventObject e) {
-			if (e instanceof MouseEvent) {
-				return true;
-			} else if (e instanceof ActionEvent) {
-				return true;
-			}
-			return false;
+			return (e instanceof MouseEvent || e instanceof ActionEvent);
 		}
 
 		// Called when editing is completed.
@@ -1513,9 +1520,10 @@ public class DatasetCurveFitter extends JPanel {
 			if (field.getBackground() == Color.yellow) {
 				fit.setParameterValue(rowNumber, field.getValue());
 				drawer.functionChanged = true;
-				DatasetCurveFitter.this.firePropertyChange("fit", null, null); //$NON-NLS-1$
+				// no such listener?
+				firePropertyChange(PROPERTY_DATASETCURVEFITTER_FIT, null, null); // $NON-NLS-1$
 				field.setBackground(Color.white);
-				firePropertyChange(PROPERTY_DATASETCURVEFITTER_CHANGED, null, null); //$NON-NLS-1$
+				firePropertyChange(PROPERTY_DATASETCURVEFITTER_CHANGED, null, null); // $NON-NLS-1$
 			}
 			return null;
 		}
@@ -1762,8 +1770,9 @@ public class DatasetCurveFitter extends JPanel {
 	}
 
 	void notifyTabRemoved() {
-	      fitBuilder.removePropertyChangeListener(fitListener);
+		fitBuilder.removePropertyChangeListener(fitListener);
 	}
+
 
 }
 

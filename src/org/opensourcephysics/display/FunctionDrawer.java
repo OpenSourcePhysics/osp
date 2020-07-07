@@ -33,7 +33,11 @@ public class FunctionDrawer implements Drawable, Measurable, Function {
   protected boolean measured = false; // set to true if function has been initialized.
   public Color color = Color.black;
   public boolean functionChanged = false;
+  private boolean enabled = true;
 
+  public void setEnabled(boolean b) {
+	  enabled = b;
+  }
   /**
    * Contstucts a FunctionDrawer with optimum resolution.
    *
@@ -190,6 +194,8 @@ public double evaluate(double x) {
    */
   @Override
 public void draw(DrawingPanel panel, Graphics g) {
+	  if (!enabled )
+		  return;
     if(!measured) {
       checkRange(panel);
     }

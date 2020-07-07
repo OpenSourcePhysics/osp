@@ -144,8 +144,6 @@ public class DataToolTable extends DataTable {
 	HashMap<String, double[]> pasteValues = new HashMap<String, double[]>();
 	DatasetManager pasteData = null;
 	HashMap<Integer, Integer> workingRows = new HashMap<Integer, Integer>(); // maps working row to model row
-
-
     @Override
 	protected OSPDataTableModel createTableModel() {
     	return new DataToolTableModel();
@@ -179,7 +177,8 @@ public class DataToolTable extends DataTable {
 				if (!e.getValueIsAdjusting()) {
 					int labelCol = convertColumnIndexToView(0);
 					addColumnSelectionInterval(labelCol, labelCol);
-					dataToolTab.setSelectedData(getSelectedData(), false);
+					dataToolTab.setSelectedData(getSelectedData(), true);
+					
 				}
 			}
 		});
@@ -457,286 +456,7 @@ public class DataToolTable extends DataTable {
 		int labelCol = convertColumnIndexToView(0);
 		// right-click: show popup menu
 		if (OSPRuntime.isPopupTrigger(e)) {
-			getPopup();
-			editor.stopCellEditing();
-			// select appropriate cells
-			if (col == labelCol) {
-				if (!isRowSelected(row)) {
-					setRowSelectionInterval(row, row);
-				}
-				setColumnSelectionInterval(0, getColumnCount() - 1);
-			} else if (!isCellSelected(row, col)) {
-				setRowSelectionInterval(row, row);
-				setColumnSelectionInterval(col, col);
-				leadCol = col;
-				leadRow = row;
-			}
-			dorepaint(3);
-			getPasteDataAction.actionPerformed(null);
-			final int[] rows = getSelectedModelRows();
-			// determine if selection is all empty cells
-			boolean isEmptyCells = true;
-			int[] selectedRows = getSelectedRows();
-			ArrayList<String> selectedColumns = getSelectedColumnNames();
-			for (int i = 0; i < selectedRows.length; i++) {
-				if (!isEmptyCells(selectedRows[i], selectedColumns)) {
-					isEmptyCells = false;
-					break;
-				}
-			}
-			popup.removeAll();
-			String text;
-			// data cell clicked: show cells popup
-			if (col != labelCol) {
-				int index = convertColumnIndexToModel(col) - 1;
-				final Dataset data = dataManager.getDataset(index);
-				mouseRow = row;
-				mouseCol = col;
-				dorepaint(4);
-
-				text = ToolsRes.getString("DataToolTable.Popup.MenuItem.SelectAll"); //$NON-NLS-1$
-				selectAllItem = new JMenuItem(text);
-				selectAllItem.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						selectAllCells();
-					}
-				});
-				popup.add(selectAllItem);
-				text = ToolsRes.getString("DataToolTable.Popup.MenuItem.SelectNone"); //$NON-NLS-1$
-				selectNoneItem = new JMenuItem(text);
-				selectNoneItem.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						clearSelection();
-					}
-				});
-				popup.add(selectNoneItem);
-				popup.addSeparator();
-
-				if (dataToolTab.isUserEditable() && !(data instanceof DataFunction)) {
-					// insert cells item
-					text = ToolsRes.getString("DataToolTable.Popup.MenuItem.InsertCells"); //$NON-NLS-1$
-					insertCellsItem = new JMenuItem(text);
-					insertCellsItem.setActionCommand(String.valueOf(col));
-					insertCellsItem.addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							HashMap<String, double[]> emptyRow = new HashMap<String, double[]>();
-							Iterator<String> it = getSelectedColumnNames().iterator();
-							while (it.hasNext()) {
-								emptyRow.put(it.next(), null);
-							}
-							insertCells(rows, emptyRow);
-							// post edit: target is rows, value is HashMap
-							TableEdit edit = new TableEdit(INSERT_CELLS_EDIT, null, rows, emptyRow);
-							dataToolTab.undoSupport.postEdit(edit);
-							refreshUndoItems();
-						}
-
-					});
-					popup.add(insertCellsItem);
-					// paste insert cells item
-					if (pasteData != null) {
-						text = ToolsRes.getString("DataToolTable.Popup.MenuItem.PasteInsertCells"); //$NON-NLS-1$
-						pasteInsertCellsItem = new JMenuItem(text);
-						pasteInsertCellsItem.setActionCommand(String.valueOf(col));
-						pasteInsertCellsItem.addActionListener(pasteInsertCellsAction);
-						popup.add(pasteInsertCellsItem);
-					}
-					// delete cells item
-					text = ToolsRes.getString("DataToolTable.Popup.MenuItem.DeleteCells"); //$NON-NLS-1$
-					deleteCellsItem = new JMenuItem(text);
-					deleteCellsItem.setActionCommand(String.valueOf(col));
-					deleteCellsItem.addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							Iterator<String> it = getSelectedColumnNames().iterator();
-							while (it.hasNext()) {
-								pasteValues.put(it.next(), null);
-							}
-							HashMap<String, double[]> prev = deleteCells(rows, pasteValues);
-							// post edit: target is rows, value is HashMap
-							TableEdit edit = new TableEdit(DELETE_CELLS_EDIT, null, rows, prev);
-							dataToolTab.undoSupport.postEdit(edit);
-							refreshUndoItems();
-						}
-
-					});
-					popup.add(deleteCellsItem);
-				}
-				if (!isEmptyCells || (pasteData != null)) {
-					if (popup.getComponentCount() > 0 && !dataToolTab.originShiftEnabled) {
-						popup.addSeparator();
-					}
-					if (!isEmptyCells) {
-						// copy cells item
-						text = ToolsRes.getString("DataToolTable.Popup.MenuItem.CopyCells"); //$NON-NLS-1$
-						copyCellsItem = new JMenuItem(text);
-						copyCellsItem.setActionCommand(String.valueOf(col));
-						copyCellsItem.addActionListener(new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								dataToolTab.copyTableDataToClipboard();
-							}
-
-						});
-						popup.add(copyCellsItem);
-						if (dataToolTab.isUserEditable() && !(data instanceof DataFunction)) {
-							// cut cells item
-							text = ToolsRes.getString("DataToolTable.Popup.MenuItem.CutCells"); //$NON-NLS-1$
-							cutCellsItem = new JMenuItem(text);
-							cutCellsItem.setActionCommand(String.valueOf(col));
-							cutCellsItem.addActionListener(new ActionListener() {
-								@Override
-								public void actionPerformed(ActionEvent e) {
-									copyCellsItem.doClick();
-									clearCellsAction.actionPerformed(e);
-								}
-
-							});
-							popup.add(cutCellsItem);
-							text = ToolsRes.getString("DataToolTable.Popup.MenuItem.DeleteContents"); //$NON-NLS-1$
-							clearContentsItem = new JMenuItem(text);
-							clearContentsItem.addActionListener(new ActionListener() {
-								@Override
-								public void actionPerformed(ActionEvent e) {
-									clearCellsAction.actionPerformed(null);
-								}
-							});
-							popup.add(clearContentsItem);
-						}
-					}
-					if (dataToolTab.isUserEditable() && pasteData != null) {
-						// paste cells item
-						text = ToolsRes.getString("DataToolTable.Popup.MenuItem.PasteCells"); //$NON-NLS-1$
-						pasteCellsItem = new JMenuItem(text);
-						pasteCellsItem.setActionCommand(String.valueOf(col));
-						pasteCellsItem.addActionListener(pasteCellsAction);
-						popup.add(pasteCellsItem);
-					}
-				}
-
-			}
-			// label cell clicked: set lead row and show row popup
-			else {
-				leadRow = row;
-				if (dataToolTab.isUserEditable()) {
-					// insert row item
-					text = ToolsRes.getString("DataToolTable.Popup.MenuItem.InsertRows"); //$NON-NLS-1$
-					insertRowItem = new JMenuItem(text);
-					insertRowItem.addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							HashMap<String, double[]> prev = insertRows(rows, null);
-							// post edit: target is rows, value is map
-							TableEdit edit = new TableEdit(INSERT_ROWS_EDIT, null, rows, prev);
-							dataToolTab.undoSupport.postEdit(edit);
-							refreshUndoItems();
-						}
-
-					});
-					popup.add(insertRowItem);
-					// determine if clipboard contains row data
-					boolean hasRows = !pasteValues.isEmpty();
-					if (hasRows) {
-						Iterator<String> it = pasteValues.keySet().iterator();
-						while (it.hasNext()) {
-							String next = it.next();
-							hasRows = hasRows && (pasteData.getDatasetIndex(next) > -1);
-						}
-					}
-					// paste rows item
-					if (hasRows) {
-						text = ToolsRes.getString("DataToolTable.Popup.MenuItem.PasteInsertRows"); //$NON-NLS-1$
-						pasteRowsItem = new JMenuItem(text);
-						pasteRowsItem.addActionListener(new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								if ((rows.length != 1) && (pasteH != rows.length)) {
-									cantPasteRowsAction.actionPerformed(e);
-									return;
-								}
-								int[] pasteRows = new int[pasteH];
-								if (pasteH == rows.length) {
-									pasteRows = rows;
-								} else if (rows.length == 1) {
-									pasteRows[0] = rows[0];
-									for (int i = 1; i < pasteH; i++) {
-										pasteRows[i] = rows[0] + i;
-									}
-								}
-								insertRows(pasteRows, pasteValues);
-								// post edit: target is rows, value is map
-								TableEdit edit = new TableEdit(INSERT_ROWS_EDIT, null, pasteRows, pasteValues);
-								dataToolTab.undoSupport.postEdit(edit);
-								refreshUndoItems();
-							}
-
-						});
-						popup.add(pasteRowsItem);
-					}
-					popup.addSeparator();
-				}
-				// copy row item
-				text = ToolsRes.getString("DataToolTable.Popup.MenuItem.CopyRows"); //$NON-NLS-1$
-				copyRowsItem = new JMenuItem(text);
-				copyRowsItem.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						OSPLog.finest("copying rows"); //$NON-NLS-1$
-						String data = dataToolTab.getSelectedTableData();
-						DataTool.copy(data);
-					}
-
-				});
-				popup.add(copyRowsItem);
-				if (dataToolTab.isUserEditable()) {
-					// cut row item
-					text = ToolsRes.getString("DataToolTable.Popup.MenuItem.CutRows"); //$NON-NLS-1$
-					cutRowsItem = new JMenuItem(text);
-					cutRowsItem.addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							copyRowsItem.doClick();
-							int[] rows = getSelectedModelRows();
-							HashMap<String, double[]> removed = deleteRows(rows);
-							// post edit: target is rows, value is map
-							TableEdit edit = new TableEdit(DELETE_ROWS_EDIT, null, rows, removed);
-							dataToolTab.undoSupport.postEdit(edit);
-							refreshUndoItems();
-						}
-
-					});
-					popup.add(cutRowsItem);
-					popup.addSeparator();
-					// addEndRow item
-					text = ToolsRes.getString("DataToolTable.Popup.MenuItem.AddEndRow"); //$NON-NLS-1$
-					addEndRowItem = new JMenuItem(text);
-					addEndRowItem.addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							insertRows(new int[] { getRowCount() }, null);
-						}
-
-					});
-					popup.add(addEndRowItem);
-					if (isEmptyRow(getRowCount() - 1)) {
-						// trimRows item
-						text = ToolsRes.getString("DataToolTable.Popup.MenuItem.TrimRows"); //$NON-NLS-1$
-						trimRowsItem = new JMenuItem(text);
-						trimRowsItem.addActionListener(new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								trimEmptyRows(0);
-							}
-
-						});
-						popup.add(trimRowsItem);
-					}
-				}
-			}
-			FontSizer.setFonts(popup, FontSizer.getLevel());
+			getTablePopup(row, col, labelCol);
 			popup.show(DataToolTable.this, e.getX(), e.getY() + 8);
 			return;
 		}
@@ -765,7 +485,6 @@ public class DataToolTable extends DataTable {
 			}
 			// single click: clear selection
 			else {
-				clearSelection();
 				leadRow = 0;
 				leadCol = 1;
 			}
@@ -773,11 +492,295 @@ public class DataToolTable extends DataTable {
 			leadRow = row;
 			leadCol = col;
 		}
-		getSelectedData();
-		dataToolTab.plot.repaint();
 		// save selected columns
+		
 		addColumnSelectionInterval(labelCol, labelCol);
 		setColumnSelectionFromJTable();
+		getSelectedData();
+		dataToolTab.plot.repaint();
+	}
+
+	private void getTablePopup(int row, int col, int labelCol) {
+		getPopup();
+		editor.stopCellEditing();
+		// select appropriate cells
+		if (col == labelCol) {
+			if (!isRowSelected(row)) {
+				setRowSelectionInterval(row, row);
+			}
+			setColumnSelectionInterval(0, getColumnCount() - 1);
+		} else if (!isCellSelected(row, col)) {
+			setRowSelectionInterval(row, row);
+			setColumnSelectionInterval(col, col);
+			leadCol = col;
+			leadRow = row;
+		}
+		dorepaint(3);
+		getPasteDataAction.actionPerformed(null);
+		final int[] rows = getSelectedModelRows();
+		// determine if selection is all empty cells
+		boolean isEmptyCells = true;
+		int[] selectedRows = getSelectedRows();
+		ArrayList<String> selectedColumns = getSelectedColumnNames();
+		for (int i = 0; i < selectedRows.length; i++) {
+			if (!isEmptyCells(selectedRows[i], selectedColumns)) {
+				isEmptyCells = false;
+				break;
+			}
+		}
+		popup.removeAll();
+		String text;
+		// data cell clicked: show cells popup
+		if (col != labelCol) {
+			int index = convertColumnIndexToModel(col) - 1;
+			final Dataset data = dataManager.getDataset(index);
+			mouseRow = row;
+			mouseCol = col;
+			dorepaint(4);
+
+			text = ToolsRes.getString("DataToolTable.Popup.MenuItem.SelectAll"); //$NON-NLS-1$
+			selectAllItem = new JMenuItem(text);
+			selectAllItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					selectAllCells();
+				}
+			});
+			popup.add(selectAllItem);
+			text = ToolsRes.getString("DataToolTable.Popup.MenuItem.SelectNone"); //$NON-NLS-1$
+			selectNoneItem = new JMenuItem(text);
+			selectNoneItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					clearSelection();
+				}
+			});
+			popup.add(selectNoneItem);
+			popup.addSeparator();
+
+			if (dataToolTab.isUserEditable() && !(data instanceof DataFunction)) {
+				// insert cells item
+				text = ToolsRes.getString("DataToolTable.Popup.MenuItem.InsertCells"); //$NON-NLS-1$
+				insertCellsItem = new JMenuItem(text);
+				insertCellsItem.setActionCommand(String.valueOf(col));
+				insertCellsItem.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						HashMap<String, double[]> emptyRow = new HashMap<String, double[]>();
+						Iterator<String> it = getSelectedColumnNames().iterator();
+						while (it.hasNext()) {
+							emptyRow.put(it.next(), null);
+						}
+						insertCells(rows, emptyRow);
+						// post edit: target is rows, value is HashMap
+						TableEdit edit = new TableEdit(INSERT_CELLS_EDIT, null, rows, emptyRow);
+						dataToolTab.undoSupport.postEdit(edit);
+						refreshUndoItems();
+					}
+
+				});
+				popup.add(insertCellsItem);
+				// paste insert cells item
+				if (pasteData != null) {
+					text = ToolsRes.getString("DataToolTable.Popup.MenuItem.PasteInsertCells"); //$NON-NLS-1$
+					pasteInsertCellsItem = new JMenuItem(text);
+					pasteInsertCellsItem.setActionCommand(String.valueOf(col));
+					pasteInsertCellsItem.addActionListener(pasteInsertCellsAction);
+					popup.add(pasteInsertCellsItem);
+				}
+				// delete cells item
+				text = ToolsRes.getString("DataToolTable.Popup.MenuItem.DeleteCells"); //$NON-NLS-1$
+				deleteCellsItem = new JMenuItem(text);
+				deleteCellsItem.setActionCommand(String.valueOf(col));
+				deleteCellsItem.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						Iterator<String> it = getSelectedColumnNames().iterator();
+						while (it.hasNext()) {
+							pasteValues.put(it.next(), null);
+						}
+						HashMap<String, double[]> prev = deleteCells(rows, pasteValues);
+						// post edit: target is rows, value is HashMap
+						TableEdit edit = new TableEdit(DELETE_CELLS_EDIT, null, rows, prev);
+						dataToolTab.undoSupport.postEdit(edit);
+						refreshUndoItems();
+					}
+
+				});
+				popup.add(deleteCellsItem);
+			}
+			if (!isEmptyCells || (pasteData != null)) {
+				if (popup.getComponentCount() > 0 && !dataToolTab.originShiftEnabled) {
+					popup.addSeparator();
+				}
+				if (!isEmptyCells) {
+					// copy cells item
+					text = ToolsRes.getString("DataToolTable.Popup.MenuItem.CopyCells"); //$NON-NLS-1$
+					copyCellsItem = new JMenuItem(text);
+					copyCellsItem.setActionCommand(String.valueOf(col));
+					copyCellsItem.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							dataToolTab.copyTableDataToClipboard();
+						}
+
+					});
+					popup.add(copyCellsItem);
+					if (dataToolTab.isUserEditable() && !(data instanceof DataFunction)) {
+						// cut cells item
+						text = ToolsRes.getString("DataToolTable.Popup.MenuItem.CutCells"); //$NON-NLS-1$
+						cutCellsItem = new JMenuItem(text);
+						cutCellsItem.setActionCommand(String.valueOf(col));
+						cutCellsItem.addActionListener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								copyCellsItem.doClick();
+								clearCellsAction.actionPerformed(e);
+							}
+
+						});
+						popup.add(cutCellsItem);
+						text = ToolsRes.getString("DataToolTable.Popup.MenuItem.DeleteContents"); //$NON-NLS-1$
+						clearContentsItem = new JMenuItem(text);
+						clearContentsItem.addActionListener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								clearCellsAction.actionPerformed(null);
+							}
+						});
+						popup.add(clearContentsItem);
+					}
+				}
+				if (dataToolTab.isUserEditable() && pasteData != null) {
+					// paste cells item
+					text = ToolsRes.getString("DataToolTable.Popup.MenuItem.PasteCells"); //$NON-NLS-1$
+					pasteCellsItem = new JMenuItem(text);
+					pasteCellsItem.setActionCommand(String.valueOf(col));
+					pasteCellsItem.addActionListener(pasteCellsAction);
+					popup.add(pasteCellsItem);
+				}
+			}
+
+		}
+		// label cell clicked: set lead row and show row popup
+		else {
+			leadRow = row;
+			if (dataToolTab.isUserEditable()) {
+				// insert row item
+				text = ToolsRes.getString("DataToolTable.Popup.MenuItem.InsertRows"); //$NON-NLS-1$
+				insertRowItem = new JMenuItem(text);
+				insertRowItem.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						HashMap<String, double[]> prev = insertRows(rows, null);
+						// post edit: target is rows, value is map
+						TableEdit edit = new TableEdit(INSERT_ROWS_EDIT, null, rows, prev);
+						dataToolTab.undoSupport.postEdit(edit);
+						refreshUndoItems();
+					}
+
+				});
+				popup.add(insertRowItem);
+				// determine if clipboard contains row data
+				boolean hasRows = !pasteValues.isEmpty();
+				if (hasRows) {
+					Iterator<String> it = pasteValues.keySet().iterator();
+					while (it.hasNext()) {
+						String next = it.next();
+						hasRows = hasRows && (pasteData.getDatasetIndex(next) > -1);
+					}
+				}
+				// paste rows item
+				if (hasRows) {
+					text = ToolsRes.getString("DataToolTable.Popup.MenuItem.PasteInsertRows"); //$NON-NLS-1$
+					pasteRowsItem = new JMenuItem(text);
+					pasteRowsItem.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							if ((rows.length != 1) && (pasteH != rows.length)) {
+								cantPasteRowsAction.actionPerformed(e);
+								return;
+							}
+							int[] pasteRows = new int[pasteH];
+							if (pasteH == rows.length) {
+								pasteRows = rows;
+							} else if (rows.length == 1) {
+								pasteRows[0] = rows[0];
+								for (int i = 1; i < pasteH; i++) {
+									pasteRows[i] = rows[0] + i;
+								}
+							}
+							insertRows(pasteRows, pasteValues);
+							// post edit: target is rows, value is map
+							TableEdit edit = new TableEdit(INSERT_ROWS_EDIT, null, pasteRows, pasteValues);
+							dataToolTab.undoSupport.postEdit(edit);
+							refreshUndoItems();
+						}
+
+					});
+					popup.add(pasteRowsItem);
+				}
+				popup.addSeparator();
+			}
+			// copy row item
+			text = ToolsRes.getString("DataToolTable.Popup.MenuItem.CopyRows"); //$NON-NLS-1$
+			copyRowsItem = new JMenuItem(text);
+			copyRowsItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					OSPLog.finest("copying rows"); //$NON-NLS-1$
+					String data = dataToolTab.getSelectedTableData();
+					DataTool.copy(data);
+				}
+
+			});
+			popup.add(copyRowsItem);
+			if (dataToolTab.isUserEditable()) {
+				// cut row item
+				text = ToolsRes.getString("DataToolTable.Popup.MenuItem.CutRows"); //$NON-NLS-1$
+				cutRowsItem = new JMenuItem(text);
+				cutRowsItem.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						copyRowsItem.doClick();
+						int[] rows = getSelectedModelRows();
+						HashMap<String, double[]> removed = deleteRows(rows);
+						// post edit: target is rows, value is map
+						TableEdit edit = new TableEdit(DELETE_ROWS_EDIT, null, rows, removed);
+						dataToolTab.undoSupport.postEdit(edit);
+						refreshUndoItems();
+					}
+
+				});
+				popup.add(cutRowsItem);
+				popup.addSeparator();
+				// addEndRow item
+				text = ToolsRes.getString("DataToolTable.Popup.MenuItem.AddEndRow"); //$NON-NLS-1$
+				addEndRowItem = new JMenuItem(text);
+				addEndRowItem.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						insertRows(new int[] { getRowCount() }, null);
+					}
+
+				});
+				popup.add(addEndRowItem);
+				if (isEmptyRow(getRowCount() - 1)) {
+					// trimRows item
+					text = ToolsRes.getString("DataToolTable.Popup.MenuItem.TrimRows"); //$NON-NLS-1$
+					trimRowsItem = new JMenuItem(text);
+					trimRowsItem.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							trimEmptyRows(0);
+						}
+
+					});
+					popup.add(trimRowsItem);
+				}
+			}
+		}
+		FontSizer.setFonts(popup, FontSizer.getLevel());
 	}
 
 	protected void doHeaderMouseClicked(MouseEvent e) {
@@ -1214,12 +1217,12 @@ public class DataToolTable extends DataTable {
 			colSelected = colSelected || (cols[k] == xCol) || (cols[k] == yCol);
 		}
 		BitSet bs = (BitSet) getSelectedModelRowsBS().clone();
-		int nsel;
-		if (!colSelected || (nsel = bs.cardinality()) == 0) { // nothing selected
+		int nsel = bs.cardinality();
+		if (!colSelected || nsel == 0) { // nothing selected
 			xValues = x;
 			yValues = new double[x.length];
 			for (int i = 0; i < yValues.length; i++) {
-				yValues[i] = (i < y.length) ? y[i] : Double.NaN;
+				yValues[i] = (i < y.length ? y[i] : Double.NaN);
 			}
 			bs.clear();
 		} else {
@@ -1893,11 +1896,16 @@ public class DataToolTable extends DataTable {
 		requestFocusInWindow();
 	}
 
+	boolean clearing = false;
 	/**
 	 * Deselects all selected columns and rows. Overrides JTable method.
 	 */
 	@Override
 	public void clearSelection() {
+		if (clearing) {
+			return;
+		}
+		clearing = true;
 		if (workingData != null) {
 			workingData.clearHighlights();
 		}
@@ -1913,6 +1921,8 @@ public class DataToolTable extends DataTable {
 		leadRow = 0;
 		super.clearSelection();
 		repaint();
+		clearing = false;
+		
 	}
 
 	/**
@@ -2768,6 +2778,14 @@ public class DataToolTable extends DataTable {
 			return "Edit"; //$NON-NLS-1$
 		}
 
+	}
+
+	public boolean isFitDrawable(KnownFunction fit) {
+		int n = selectedData.getRowCount();
+		int nparam = fit.getParameterCount();
+		boolean ok = (n >= nparam && (nparam == 2 || n < getRowCount()));
+		OSPLog.debug("DTT = " + n + " " + nparam + " " + ok);
+		return ok;
 	}
 
 }

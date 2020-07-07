@@ -2296,6 +2296,8 @@ public class DataTable extends JTable {
 		selectedColumns.clear();
 		int[] selected = getSelectedColumns(); // selected view columns
 		int labelCol = convertColumnIndexToView(0);
+		OSPLog.debug("DataTable.setColumnSelectionFromJTable " + Arrays.toString(selected));
+		
 		for (int i = 0; i < selected.length; i++) {
 			if (selected[i] == labelCol) {
 				continue;
@@ -2380,9 +2382,15 @@ public class DataTable extends JTable {
 	protected void setSelectedRowsFromJTable() {
 		selectedModelRows.clear();
 		int[] rows = getSelectedRows(); // selected view rows
+		OSPLog.debug("DataTable.setRowSelectionFromJTable " + Arrays.toString(rows));
+		
+		
 		for (int i = 0; i < rows.length; i++) {
 			selectedModelRows.set(getModelRow(rows[i]));
 		}
+		
+		OSPLog.debug("DataTable.setRowS " + selectedModelRows + Arrays.toString(rows));
+		
 	}
 
 	protected boolean haveSelectedRows() {

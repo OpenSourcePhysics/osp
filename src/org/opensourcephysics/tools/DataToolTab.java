@@ -1367,7 +1367,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				// restore if fit checkbox is checked
 				boolean fitterVis = fitterCheckbox.isSelected();
 				splitPanes[1].setEnabled(fitterVis);
-				curveFitter.setActive(fitterVis);
 				if (fitterVis) {
 					curveFitter.setFontLevel(FontSizer.getLevel());
 					splitPanes[1].setBottomComponent(curveFitter);
@@ -1375,6 +1374,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					splitPanes[1].setDividerLocation(-1);
 					plot.addDrawable(curveFitter.getDrawer());
 				}
+				curveFitter.setActiveAndFit(true);
 				if (e != null) {
 					refreshPlot();
 				}
@@ -1895,7 +1895,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				}
 				Point mouse = e.getPoint();
 				plot.selectionBox.visible = true;
-				plot.selectionBox.setSize(mouse.x - plot.selectionBox.xstart, mouse.y - plot.selectionBox.ystart);
+				int dx = mouse.x - plot.selectionBox.xstart;
+				int dy = mouse.y - plot.selectionBox.ystart;
+				plot.selectionBox.setSize(dx, dy);
 				selectionBoxChanged = true;
 				removeHits = e.isShiftDown() && e.isControlDown();
 				plot.setMouseCursor(removeHits ? SELECT_REMOVE_CURSOR : SELECT_CURSOR);
@@ -2730,11 +2732,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 * @param selectedData the Dataset to pass to the fitter and fourier panel
 	 */
 	protected void setSelectedData(Dataset selectedData, boolean dofit) {
-		boolean isActive = curveFitter.isActive;
-		if (!dofit)
-			curveFitter.isActive = false;
-		curveFitter.setData(selectedData);
-		curveFitter.isActive = isActive;
+		curveFitter.setData(selectedData, dofit);
 		if (fourierPanel != null) {
 			fourierPanel.refreshFourierData(selectedData, getName());
 		}
@@ -2870,7 +2868,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		}
 		// BH was this.repaint?
 		if (fitTimer == null || !fitTimer.isRunning())
-			plot.repaint();
+			plot.repaint();    
 		refreshFit();
 	}
 
@@ -3320,15 +3318,16 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 		@Override
 		protected void paintDrawableList(Graphics g, ArrayList<Drawable> tempList) {
-			super.paintDrawableList(g, tempList);
 			String s = message;
 			if (tempList.contains(curveFitter.getDrawer())) {
+					curveFitter.getDrawer().setEnabled(dataTable.isFitDrawable(curveFitter.fit));
 				double[] ylimits = curveFitter.getDrawer().getYRange();
 				if ((ylimits[0] >= this.getYMax()) || (ylimits[1] <= this.getYMin())) {
 					s = ToolsRes.getString("DataToolTab.Plot.Message.FitNotVisible")
 							+ (message == null || s == "" ? "" : "  " + s);
 				}
 			}
+			super.paintDrawableList(g, tempList);
 			setMessage(s);
 			slopeLine.draw(g);
 			valueCrossbars.draw(g);

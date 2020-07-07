@@ -72,26 +72,26 @@ public class TemplateMatcher {
   private int[] alphas = new int[2]; // most recent alphas {input, original}
   private int index; // for AutoTracker--not used internally
 
-  /**
-   * Constructs a TemplateMatcher object. If a mask shape is specified, then
-   * only pixels that are entirely inside the mask are included in the template.
-   * 
-   * @param image the image to match
-   * @param maskShape a shape to define inside pixels (may be null)
-   */
-  public TemplateMatcher(BufferedImage image, Shape maskShape) {
-  	mask = maskShape;
-  	setTemplate(image);
-    // set up the Gaussian curve fitter
+	/**
+	 * Constructs a TemplateMatcher object. If a mask shape is specified, then only
+	 * pixels that are entirely inside the mask are included in the template.
+	 * 
+	 * @param image     the image to match
+	 * @param maskShape a shape to define inside pixels (may be null)
+	 */
+	public TemplateMatcher(BufferedImage image, Shape maskShape) {
+		mask = maskShape;
+		setTemplate(image);
+		// set up the Gaussian curve fitter
 		dataset = new Dataset();
 		fitter = new DatasetCurveFitter(dataset, new FitBuilder(null));
-		fitter.setActive(true);
-    fitter.setAutofit(true);
-    f = new UserFunction("gaussian"); //$NON-NLS-1$
-    f.setParameters(new String[] {"a", "b", "c"}, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-    		new double[] {1, 0, 1});
-    f.setExpression("a*exp(-(x-b)^2/c)", new String[] {"x"}); //$NON-NLS-1$ //$NON-NLS-2$
-  }
+		fitter.setActiveNoFit(true);
+		f = new UserFunction("gaussian"); //$NON-NLS-1$
+		f.setParameters(new String[] { "a", "b", "c" }, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				new double[] { 1, 0, 1 });
+		f.setExpression("a*exp(-(x-b)^2/c)", new String[] { "x" }); //$NON-NLS-1$ //$NON-NLS-2$
+		fitter.setAutofit(true); // 
+	}
 
   /**
    * Sets the template to be used for the next search. 
