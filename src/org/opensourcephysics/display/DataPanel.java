@@ -15,8 +15,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 public class DataPanel extends JPanel {
-  DataRowTable table = new DataRowTable();
-  JScrollPane scrollPane = new JScrollPane(table);
+  DataRowTable dataRowTable = new DataRowTable();
+  JScrollPane scrollPane = new JScrollPane(dataRowTable);
 
   /**
    * Constructor DataRowPanel
@@ -42,7 +42,7 @@ public void paintComponent(Graphics g) {
   @Override
 public void setFont(Font font){
 	  super.setFont(font);
-	  if(table!=null)table.setFont(font);
+	  if(dataRowTable!=null)dataRowTable.setFont(font);
   }
   
   /**
@@ -56,14 +56,14 @@ public void setFont(Font font){
   @Override
 public void setForeground(Color color){
 	  super.setForeground(color);
-	  if(table!=null)table.setForeground(color);
+	  if(dataRowTable!=null)dataRowTable.setForeground(color);
   }
 
   /**
    * Refresh the data in the tables.
    */
   public void refreshTable(String from) {
-    table.refreshTable(from);
+    dataRowTable.refreshTable(from);
   }
 
   /**
@@ -71,7 +71,7 @@ public void setForeground(Color color){
    * @return
    */
   public java.awt.Component getVisual() {
-    return table;
+    return dataRowTable;
   }
 
   /**
@@ -81,7 +81,7 @@ public void setForeground(Color color){
    * @param  name
    */
   public void setColumnNames(int column, String name) {
-    if(table.rowModel.setColumnNames(column, name)) { // refresh if the table changed
+    if(dataRowTable.rowModel.setColumnNames(column, name)) { // refresh if the table changed
       refreshTable("setColumnName");
     }
   }
@@ -94,7 +94,7 @@ public void setForeground(Color color){
   public void setColumnNames(String[] names) {
     boolean changed = false;
     for(int i = 0, n = names.length; i<n; i++) {
-      if(table.rowModel.setColumnNames(i, names[i])) {
+      if(dataRowTable.rowModel.setColumnNames(i, names[i])) {
         changed = true;
       }
     }
@@ -109,7 +109,7 @@ public void setForeground(Color color){
    * @param  vis  <code>true<\code> if table display row number
    */
   public void setRowNumberVisible(boolean vis) {
-    if(table.rowModel.setRowNumberVisible(vis)) { // refresh if the table changed
+    if(dataRowTable.rowModel.setRowNumberVisible(vis)) { // refresh if the table changed
       refreshTable("setRowNumberVis " + vis);
     }
   }
@@ -120,8 +120,8 @@ public void setForeground(Color color){
    * @param index
    */
   public void setFirstRowIndex(int index) {
-    if(table.rowModel.firstRowIndex!=index) { // refresh if the table changed
-      table.rowModel.firstRowIndex = index;
+    if(dataRowTable.rowModel.firstRowIndex!=index) { // refresh if the table changed
+      dataRowTable.rowModel.firstRowIndex = index;
       refreshTable("setFirstRowIndex " + index);
     }
   }
@@ -132,7 +132,7 @@ public void setForeground(Color color){
    * @param  delay  the delay in millisecond
    */
   public void setRefreshDelay(int delay) {
-    table.setRefreshDelay(delay);
+    dataRowTable.setRefreshDelay(delay);
   }
 
   /**
@@ -195,9 +195,9 @@ public void setForeground(Color color){
    * @param x double[]
    */
   public synchronized void appendRow(double[] x) {
-    table.rowModel.appendDoubles(x);
+    dataRowTable.rowModel.appendDoubles(x);
     if(isShowing()) {
-      table.refreshTable("appendRow");
+      dataRowTable.refreshTable("appendRow");
     }
   }
 
@@ -206,9 +206,9 @@ public void setForeground(Color color){
    * @param x double[]
    */
   public synchronized void appendRow(int[] x) {
-    table.rowModel.appendInts(x);
+    dataRowTable.rowModel.appendInts(x);
     if(isShowing()) {
-      table.refreshTable("appendRow");
+      dataRowTable.refreshTable("appendRow");
     }
   }
 
@@ -217,9 +217,9 @@ public void setForeground(Color color){
    * @param x double[]
    */
   public synchronized void appendRow(Object[] x) {
-    table.rowModel.appendRow(x);
+    dataRowTable.rowModel.appendRow(x);
     if(isShowing()) {
-      table.refreshTable("appendRow");
+      dataRowTable.refreshTable("appendRow");
     }
   }
 
@@ -228,9 +228,9 @@ public void setForeground(Color color){
    * @param x double[]
    */
   public synchronized void appendRow(byte[] x) {
-    table.rowModel.appendBytes(x);
+    dataRowTable.rowModel.appendBytes(x);
     if(isShowing()) {
-      table.refreshTable("appendRow");
+      dataRowTable.refreshTable("appendRow");
     }
   }
 
@@ -239,7 +239,7 @@ public void setForeground(Color color){
    * @return
    */
   public boolean isRowNumberVisible() {
-    return table.rowModel.rowNumberVisible;
+    return dataRowTable.rowModel.rowNumberVisible;
   }
 
   /**
@@ -248,7 +248,7 @@ public void setForeground(Color color){
    * @return the column count
    */
   public int getColumnCount() {
-    return table.rowModel.getColumnCount();
+    return dataRowTable.rowModel.getColumnCount();
   }
 
   /**
@@ -257,7 +257,7 @@ public void setForeground(Color color){
    * @return the row count
    */
   public int getRowCount() {
-    return table.rowModel.getRowCount();
+    return dataRowTable.rowModel.getRowCount();
   }
 
   /**
@@ -266,7 +266,7 @@ public void setForeground(Color color){
    * @return the row count
    */
   public int getTotalRowCount() {
-    return table.rowModel.rowList.size();
+    return dataRowTable.rowModel.rowList.size();
   }
 
   /**
@@ -275,7 +275,7 @@ public void setForeground(Color color){
    * @return the stride
    */
   public int getStride() {
-    return table.rowModel.stride;
+    return dataRowTable.rowModel.stride;
   }
 
   /**
@@ -285,14 +285,14 @@ public void setForeground(Color color){
    * @param  format
    */
   public void setColumnFormat(int column, String format) {
-    table.setColumnFormat(column, format);
+    dataRowTable.setColumnFormat(column, format);
   }
 
   /**
    * Clears any previous format
    */
   public void clearFormats() {
-	table.clearFormats();
+	dataRowTable.clearFormats();
   }
   
   /**
@@ -301,7 +301,7 @@ public void setForeground(Color color){
    * @param  pattern
    */
   public void setNumericFormat(String pattern) {
-    table.setNumericFormat(pattern);
+    dataRowTable.setNumericFormat(pattern);
   }
 
   /**
@@ -310,7 +310,7 @@ public void setForeground(Color color){
    * @param  max
    */
   public void setMaxPoints(int max) {
-    table.rowModel.setMaxPoints(max);
+    dataRowTable.rowModel.setMaxPoints(max);
   }
 
   /**
@@ -322,7 +322,7 @@ public void setForeground(Color color){
   @Override
 public void setVisible(boolean vis) {
     if(vis) {
-      table.refreshTable(" vis " + vis); // make sure the table shows the current values
+      dataRowTable.refreshTable(" vis " + vis); // make sure the table shows the current values
     }
     super.setVisible(vis);
   }
@@ -334,21 +334,21 @@ public void setVisible(boolean vis) {
    * @param  stride
    */
   public void setStride(int stride) {
-    table.setStride(stride);
+    dataRowTable.setStride(stride);
   }
 
   /**
    * Clears data from this table.  Column names and format patterns are not affected.
    */
   public void clearData() {
-    table.clearData();
+    dataRowTable.clearData();
   }
 
   /**
    * Clears data, column names and format patterns.
    */
   public void clear() {
-    table.clear();
+    dataRowTable.clear();
   }
   
   /**
@@ -362,7 +362,7 @@ public void setVisible(boolean vis) {
    *                   AUTO_RESIZE_ALL_COLUMNS
    */
   public void setAutoResizeMode(int mode) {
-    table.setAutoResizeMode(mode); // make sure the table shows the current values
+    dataRowTable.setAutoResizeMode(mode); // make sure the table shows the current values
   }
 
 }

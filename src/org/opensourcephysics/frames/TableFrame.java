@@ -10,7 +10,7 @@ import org.opensourcephysics.display.DataPanel;
 import org.opensourcephysics.display.OSPFrame;
 
 public class TableFrame extends OSPFrame {
-  DataPanel tableData = new DataPanel();
+  DataPanel dataPanel = new DataPanel();
 
   /**
    * Constructs a TableFrame with the given title.
@@ -20,7 +20,7 @@ public class TableFrame extends OSPFrame {
     super(frameTitle);
     setAnimated(true);
     setAutoclear(true);
-    setContentPane(tableData);
+    setContentPane(dataPanel);
     setRowNumberVisible(true);
     setSize(400, 500);
   }
@@ -31,7 +31,7 @@ public class TableFrame extends OSPFrame {
    * @param  delay  the delay in millisecond
    */
   public void setRefreshDelay(int delay) {
-    tableData.setRefreshDelay(delay);
+    dataPanel.setRefreshDelay(delay);
   }
 
   /**
@@ -41,7 +41,7 @@ public class TableFrame extends OSPFrame {
    * @param  stride
    */
   public void setStride(int stride) {
-    tableData.setStride(stride);
+    dataPanel.setStride(stride);
   }
 
   /**
@@ -50,7 +50,7 @@ public class TableFrame extends OSPFrame {
    * @param  vis  <code>true<\code> if table display row number
    */
   public void setRowNumberVisible(boolean vis) {
-    tableData.setRowNumberVisible(vis);
+    dataPanel.setRowNumberVisible(vis);
   }
 
   /**
@@ -59,7 +59,7 @@ public class TableFrame extends OSPFrame {
    * @param names
    */
   public void setColumnNames(String[] names) {
-    tableData.setColumnNames(names);
+    dataPanel.setColumnNames(names);
   }
 
   /**
@@ -69,7 +69,7 @@ public class TableFrame extends OSPFrame {
    * @throws IllegalArgumentException
    */
   public synchronized void appendArray(Object obj) {
-    tableData.appendArray(obj);
+    dataPanel.appendArray(obj);
   }
 
   /**
@@ -77,7 +77,7 @@ public class TableFrame extends OSPFrame {
    * @param x double[]
    */
   public synchronized void appendRow(double[] x) {
-    tableData.appendRow(x);
+    dataPanel.appendRow(x);
   }
 
   /**
@@ -85,7 +85,7 @@ public class TableFrame extends OSPFrame {
    * @param x double[]
    */
   public synchronized void appendRow(int[] x) {
-    tableData.appendRow(x);
+    dataPanel.appendRow(x);
   }
 
   /**
@@ -93,7 +93,7 @@ public class TableFrame extends OSPFrame {
    * @param x double[]
    */
   public synchronized void appendRow(Object[] x) {
-    tableData.appendRow(x);
+    dataPanel.appendRow(x);
   }
 
   /**
@@ -101,7 +101,7 @@ public class TableFrame extends OSPFrame {
    * @param x double[]
    */
   public synchronized void appendRow(byte[] x) {
-    tableData.appendRow(x);
+    dataPanel.appendRow(x);
   }
 
   /**
@@ -111,7 +111,7 @@ public class TableFrame extends OSPFrame {
    * @param  name
    */
   public void setColumnNames(int column, String name) {
-    tableData.setColumnNames(column, name);
+    dataPanel.setColumnNames(column, name);
   }
 
   /**
@@ -121,7 +121,7 @@ public class TableFrame extends OSPFrame {
    * @param  format
    */
   public void setColumnFormat(int column, String format) {
-    tableData.setColumnFormat(column, format);
+    dataPanel.setColumnFormat(column, format);
   }
 
   /**
@@ -130,7 +130,7 @@ public class TableFrame extends OSPFrame {
    * @param  max
    */
   public void setMaxPoints(int max) {
-    tableData.setMaxPoints(max);
+    dataPanel.setMaxPoints(max);
   }
 
   /**
@@ -139,7 +139,7 @@ public class TableFrame extends OSPFrame {
    * @param index
    */
   public void setFirstRowIndex(int index) {
-    tableData.setFirstRowIndex(index);
+    dataPanel.setFirstRowIndex(index);
   }
 
   /**
@@ -153,7 +153,7 @@ public void setVisible(boolean vis) {
     boolean wasVisible = super.isVisible();
     super.setVisible(vis);
     if(vis&&!wasVisible) {      // refresh if the table was NOT visible and is now visible.
-      tableData.refreshTable("TF.setVis " + vis); // make sure the table shows the current values
+      dataPanel.refreshTable("TF.setVis " + vis); // make sure the table shows the current values
     }
   }
 
@@ -161,7 +161,7 @@ public void setVisible(boolean vis) {
    * Refresh the data in the table.
    */
   public void refreshTable(String from) {
-    tableData.refreshTable(from);
+    dataPanel.refreshTable(from);
   }
   
   public void refreshTable() {
@@ -176,7 +176,7 @@ public void setVisible(boolean vis) {
    */
   @Override
 public synchronized void clearData() {
-    tableData.clearData();
+    dataPanel.clearData();
   }
 
 }
