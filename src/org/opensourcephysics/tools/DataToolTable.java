@@ -485,7 +485,7 @@ public class DataToolTable extends DataTable {
 			}
 			// single click: clear selection
 			else {
-				leadRow = 0;
+				leadRow = row;
 				leadCol = 1;
 			}
 		} else if (!e.isControlDown() && !e.isShiftDown()) {
@@ -1918,7 +1918,7 @@ public class DataToolTable extends DataTable {
 			setColumnSelectionInterval(focusCol, focusCol);
 		}
 		leadCol = 0;
-		leadRow = 0;
+//		leadRow = 0;
 		super.clearSelection();
 		repaint();
 		clearing = false;
