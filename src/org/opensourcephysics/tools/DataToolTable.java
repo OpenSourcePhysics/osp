@@ -487,31 +487,33 @@ public class DataToolTable extends DataTable {
 				leadRow = row;
 				setRowSelectionInterval(row, row);
 				setColumnSelectionInterval(0, getColumnCount() - 1);
-			} else if (e.isShiftDown() && (leadRow < getRowCount())) {
-				// shift-click: extend row selection
+			}
+			// shift-click: extend row selection
+			else if (e.isShiftDown() && (leadRow < getRowCount())) {
 				setRowSelectionInterval(leadRow, row);
-				setSelectedColumnsFromModelBS();
-			} else if (!e.isControlDown() && !e.isShiftDown()) {
-////				// control-click: select/deselect rows
-////    leadRow = row;
-////    if(getSelectedRows().length==0) {
-////      clearSelection();
-////    } else {
-////      setColumnSelectionInterval(0, getColumnCount()-1);
-////    }
-//			}
-//			else {
-
-				//				// single click: clear selection
-				leadRow = 0;
+				setColumnSelectionInterval(0, getColumnCount() - 1);
+//				setSelectedColumnsFromBitSet();
+			}
+			// control-click: select/deselect rows
+			else if (e.isControlDown() || e.isShiftDown()) {
+//    leadRow = row;
+//    if(getSelectedRows().length==0) {
+//      clearSelection();
+//    } else {
+//      setColumnSelectionInterval(0, getColumnCount()-1);
+//    }
+			}
+			// single click: clear selection
+			else {
+				leadRow = row;
 				leadCol = 1;
 			}
 		} else if (!e.isControlDown() && !e.isShiftDown()) {
-			// not the row# column
 			leadRow = row;
 			leadCol = col;
 		}
 		// save selected columns
+		
 		addColumnSelectionInterval(labelCol, labelCol);
 		dataTableModel.setColumnSelectionFromJTable();
 		getSelectedData();
@@ -1936,7 +1938,7 @@ public class DataToolTable extends DataTable {
 			setColumnSelectionInterval(focusCol, focusCol);
 		}
 		leadCol = 0;
-		leadRow = 0;
+//		leadRow = 0;
 		super.clearSelection();
 		repaint();
 		clearing = false;
