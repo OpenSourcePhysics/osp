@@ -13,6 +13,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
 import org.opensourcephysics.analysis.FourierSinCosAnalysis;
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.ColorIcon;
 import org.opensourcephysics.display.Data;
 import org.opensourcephysics.display.DataTable;
@@ -81,6 +82,7 @@ public class FourierPanel extends JPanel {
 		Data fourierData = createFourierData(data);
 		if (fourierData == null)
 			return;
+		OSPLog.debug("FourierPanel.refresh");
 		ArrayList<Dataset> datasets = fourierData.getDatasets();
 		createButtons(datasets);
 		for (Dataset next : datasets) {
@@ -153,8 +155,8 @@ public class FourierPanel extends JPanel {
 		if (n % 2 == 1) { // odd number of points
 			double[] xnew = new double[n - 1];
 			double[] ynew = new double[n - 1];
-			System.arraycopy(x, 0, xnew, 0, n);
-			System.arraycopy(y, 0, ynew, 0, n);
+			System.arraycopy(x, 0, xnew, 0, n - 1);
+			System.arraycopy(y, 0, ynew, 0, n - 1);
 			dataset.clear();
 			dataset.append(xnew, ynew);
 			x = xnew;
