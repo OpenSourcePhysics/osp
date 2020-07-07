@@ -1040,19 +1040,20 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 		});
 		// create Fourier Tool menu item if the tool exists in the classpath
 		JMenuItem fourierToolItem = new JMenuItem(DisplayRes.getString("DrawingFrame.FourierTool_menu_item")); //$NON-NLS-1$
-		if (!JSUtil.isJS)
+		//if (!JSUtil.isJS)
 			toolsMenu.add(fourierToolItem);
 		Class<?> fourierToolClass = null;
 		if (OSPRuntime.loadFourierTool) {
-			try {
-				// fourierToolClass = Class.forName("org.opensourcephysics.tools.FourierTool");
-				// //$NON-NLS-1$
-			} catch (Exception ex) {
-				OSPLog.finest("Cannot instantiate Fourier analysis tool class:\n" + ex.toString()); //$NON-NLS-1$
-				OSPRuntime.loadFourierTool = false;
-				fourierToolItem.setEnabled(false);
-			}
+//			try {
+//				fourierToolClass = Class.forName("org.opensourcephysics.tools.FourierTool");
+//			} catch (Exception ex) {
+//				OSPLog.finest("Cannot instantiate Fourier analysis tool class:\n" + ex.toString()); //$NON-NLS-1$
+//				OSPRuntime.loadFourierTool = false;
+//				fourierToolItem.setEnabled(false);
+//			}
 		}
+		// there is no Fourier tool
+		fourierToolItem.setVisible(false);
 		final Class<?> finalFourierToolClass = fourierToolClass; // class must be final for action listener
 		fourierToolItem.addActionListener(new ActionListener() {
 			@Override
@@ -1066,6 +1067,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 					}
 					((JFrame) tool).setVisible(true);
 				} catch (Exception ex) {
+					fourierToolItem.setEnabled(false);
 				}
 			}
 
