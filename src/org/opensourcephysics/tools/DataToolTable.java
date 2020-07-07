@@ -487,32 +487,31 @@ public class DataToolTable extends DataTable {
 				leadRow = row;
 				setRowSelectionInterval(row, row);
 				setColumnSelectionInterval(0, getColumnCount() - 1);
-			}
-			// shift-click: extend row selection
-			else if (e.isShiftDown() && (leadRow < getRowCount())) {
+			} else if (e.isShiftDown() && (leadRow < getRowCount())) {
+				// shift-click: extend row selection
 				setRowSelectionInterval(leadRow, row);
-				setSelectedColumnsFromBitSet();
-			}
-			// control-click: select/deselect rows
-			else if (e.isControlDown() || e.isShiftDown()) {
-//    leadRow = row;
-//    if(getSelectedRows().length==0) {
-//      clearSelection();
-//    } else {
-//      setColumnSelectionInterval(0, getColumnCount()-1);
-//    }
-			}
-			// single click: clear selection
-			else {
+				setSelectedColumnsFromModelBS();
+			} else if (!e.isControlDown() && !e.isShiftDown()) {
+////				// control-click: select/deselect rows
+////    leadRow = row;
+////    if(getSelectedRows().length==0) {
+////      clearSelection();
+////    } else {
+////      setColumnSelectionInterval(0, getColumnCount()-1);
+////    }
+//			}
+//			else {
+
+				//				// single click: clear selection
 				leadRow = 0;
 				leadCol = 1;
 			}
 		} else if (!e.isControlDown() && !e.isShiftDown()) {
+			// not the row# column
 			leadRow = row;
 			leadCol = col;
 		}
 		// save selected columns
-		
 		addColumnSelectionInterval(labelCol, labelCol);
 		dataTableModel.setColumnSelectionFromJTable();
 		getSelectedData();

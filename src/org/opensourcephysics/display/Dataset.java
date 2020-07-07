@@ -904,10 +904,9 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	public Object getValueAt(int rowIndex, int columnIndex) {
 		columnIndex = convertTableColumnIndex(colVisible, columnIndex);
 		rowIndex = rowIndex * stride;
-		double[] xValues = xpoints;
 		// conversionFactor added by D Brown Dec 2010
 		if (columnIndex == 0) {
-			return Double.valueOf(xValues[rowIndex]);
+			return Double.valueOf(xpoints[rowIndex]);
 		}
 		double y = ypoints[rowIndex];
 		return (Double.isNaN(y) ? null : Double.valueOf(y + shift));
@@ -1864,7 +1863,18 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 		return b;
 	}
 
-	
+	@Override
+	public boolean isFoundOrdered() {
+		double[] data = (convertTableColumnIndex(colVisible, foundColumn) == 0 ? xpoints : ypoints);
+		double d = Double.MAX_VALUE;
+		for (int i = index; --i >= 0;) {
+			if (data[i] > d)
+				return false;
+			d = data[i];
+		}
+		return true;
+	}
+
 }
 
 /*

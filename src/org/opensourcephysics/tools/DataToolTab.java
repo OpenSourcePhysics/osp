@@ -2743,7 +2743,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	protected void setSelectedData(Dataset selectedData, boolean dofit) {
 		curveFitter.setData(selectedData, dofit);
 		if (fourierPanel != null) {
+			try {
 			fourierPanel.refreshFourierData(selectedData, getName());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 		if (originShiftEnabled && selectedData != null) {
 			if (selectedData.getIndex() == 1) {

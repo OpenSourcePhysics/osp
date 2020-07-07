@@ -91,6 +91,10 @@ public class DataTable extends JTable {
 		public int getStride() {
 			return 1;
 		}
+		
+		public boolean isFoundOrdered() {
+			return false;
+		}
 	}
 
 	public static final String PROPERTY_DATATABLE_FORMAT = "format";
@@ -824,6 +828,8 @@ public class DataTable extends JTable {
 			int n = tableModel.getColumnCount();
 			bsColVis.set(0, n);
 		}
+
+	
 	}
 
 	/*
@@ -846,8 +852,9 @@ public class DataTable extends JTable {
 		private int rowCount;
 		protected boolean haveColumnClasses = true;
 
-		private BitSet selectedRows = new BitSet();
-		private BitSet selectedColumns = new BitSet();
+		private BitSet selectedModelRows = new BitSet();
+		private BitSet selectedModelCols = new BitSet();
+		private TableModel foundModel;
 
 		/**
 		 * The TableModelListener will clue us in
@@ -857,7 +864,7 @@ public class DataTable extends JTable {
 		}
 
 		public void setColumnSelectionFromJTable() {
-			selectedColumns.clear();
+			selectedModelCols.clear();
 			int[] selected = getSelectedColumns(); // selected view columns
 			int labelCol = convertColumnIndexToView(0);
 			OSPLog.debug("DataTable.setColumnSelectionFromJTable " + Arrays.toString(selected));
@@ -866,19 +873,18 @@ public class DataTable extends JTable {
 				if (selected[i] == labelCol) {
 					continue;
 				}
-				int modelCol = convertColumnIndexToModel(selected[i]);
-				selectedColumns.set(modelCol);
+				selectedModelCols.set(convertColumnIndexToModel(selected[i]));
 			}
-			if (selectedColumns.isEmpty() || selectedRows.isEmpty()) {
+			if (selectedModelCols.isEmpty() || selectedModelRows.isEmpty()) {
 				clearSelection();
 			}
 		}
 
 		public void setSelectedRowsFromJTable() {
-			selectedRows.clear();
+			selectedModelRows.clear();
 			BitSet bs = getSelectedTableRowsBS();
 			for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1)) {
-				selectedRows.set(getModelRow(i));
+				selectedModelRows.set(getModelRow(i));
 			}
 		}
 		
@@ -898,16 +904,16 @@ public class DataTable extends JTable {
 		protected void addColumnSelectionInterval(int coli, int colj) {
 	        columnModel.getSelectionModel().addSelectionInterval(coli, colj);
 			int labelCol = convertColumnIndexToView(0);
-			selectedColumns.clear();
+			selectedModelCols.clear();
 			int[] selected = getSelectedColumns(); // selected view columns
 			for (int i = 0; i < selected.length; i++) {
 				if (selected[i] == labelCol) {
 					continue;
 				}
 				int modelCol = convertColumnIndexToModel(selected[i]);
-				selectedColumns.set(modelCol);
+				selectedModelCols.set(modelCol);
 			}
-			if (selectedColumns.isEmpty()) {
+			if (selectedModelCols.isEmpty()) {
 				clearSelection();
 			}
 	    }
@@ -951,10 +957,12 @@ public class DataTable extends JTable {
 						}
 					}
 					dte.foundColumn = i;
+					foundModel = dte.tableModel;
 					return dte;
 				}
 				ncol += nvis;
 			}
+			foundModel = null;
 			return null; // this shouldn't happen
 		}
 
@@ -964,7 +972,11 @@ public class DataTable extends JTable {
 		 * @param col int
 		 */
 		private void sort(int col) {
-			decorator.sort(col);
+			DataTableElement dte;
+			if (dataTableElements.size() == 0
+					|| (dte = find(col)) == null)
+				return;
+			decorator.sort(dte, col);
 		}
 
 		/**
@@ -1144,17 +1156,14 @@ public class DataTable extends JTable {
 		 * @param objects
 		 * @return
 		 */
-		protected Object[] getElementValues(int columnIndex, Object[] objects) {
-			if (dataTableElements.size() > 0) {
-				boolean asRow = (rowNumberVisible && columnIndex == 0);
-				DataTableElement dte = find(columnIndex);
-				int stride = dte.getStride();
-				for (int i = 0, rowIndex = 0, n = objects.length, nr = dte.tableModel.getRowCount(); i < n
-						&& rowIndex < nr; i++, rowIndex += stride) {
-					// BH note: was getValueAt(rowIndex), but datasets will multiply this by their stride
-					objects[i] = (asRow ? Integer.valueOf(rowIndex)
-							: dte.tableModel.getValueAt(i, dte.foundColumn));
-				}
+		protected Object[] getElementValues(DataTableElement dte, int columnIndex, Object[] objects) {
+			boolean asRow = (rowNumberVisible && columnIndex == 0);
+			int stride = dte.getStride();
+			for (int i = 0, rowIndex = 0, n = objects.length, nr = dte.tableModel.getRowCount(); i < n
+					&& rowIndex < nr; i++, rowIndex += stride) {
+				// BH note: was getValueAt(rowIndex), but datasets will multiply this by their
+				// stride
+				objects[i] = (asRow ? Integer.valueOf(rowIndex) : dte.tableModel.getValueAt(i, dte.foundColumn));
 			}
 			return objects;
 		}
@@ -1317,16 +1326,21 @@ public class DataTable extends JTable {
 				setElementValue(aValue, viewRowToModel[viewRow], viewCol);
 			}
 
-			protected void sort(int column) {
-				sortedColumn = column;
+			protected void sort(DataTableElement dte, int column) {
 				int rowCount = getRowCount();
+				if (dte.tableModel.isFoundOrdered()) {
+					allocate();
+					sortedColumn = column;
+					return;
+				}
+				sortedColumn = column;
 				if (viewRowToModel.length <= rowCount) {
 					allocate();
 				}
-
+				
 				// new faster sort method added by D Brown 2015-05-16
 				try {
-					Object[] data = getElementValues(column, new Object[rowCount]);
+					Object[] data = getElementValues(dte, column, new Object[rowCount]);
 					Object[][] sortArray = new Object[rowCount][2];
 					for (int i = 0; i < rowCount; i++) {
 						sortArray[i][0] = data[i];
@@ -1405,6 +1419,12 @@ public class DataTable extends JTable {
 			lastModelEvent = e;
 		}
 
+		public boolean isFoundOrdered() {
+			return (foundModel != null && foundModel 
+					instanceof Dataset && 
+					((Dataset) foundModel).isFoundOrdered());
+		}
+
 		protected void refresh(int mask) {
 			String type;
 			switch (mask) {
@@ -1446,8 +1466,8 @@ public class DataTable extends JTable {
 		}
 
 		protected int[] getSelectedModelRows() {
-			int[] rows = new int[selectedRows.cardinality()];
-			for (int pt = 0, i = selectedRows.nextSetBit(0); i >= 0; i = selectedRows.nextSetBit(i + 1)) {
+			int[] rows = new int[selectedModelRows.cardinality()];
+			for (int pt = 0, i = selectedModelRows.nextSetBit(0); i >= 0; i = selectedModelRows.nextSetBit(i + 1)) {
 				rows[pt++] = i;
 			}
 			return rows;
@@ -2274,11 +2294,13 @@ public class DataTable extends JTable {
 			sort(col);
 		// restore selected rows and columns
 		// BitSet method uses block addition
-		setSelectedTableRowsBS(rows);
-		setSelectedColsBS(cols);
+		selectTableRowsBS(rows, 0);
+		selectTableColsBS(cols);
 	}
 
-	private void setSelectedTableRowsBS(BitSet rows) {
+	public void selectTableRowsBS(BitSet rows, int nRows) {
+		if (nRows > 0)
+			removeRowSelectionInterval(0, nRows - 1);
 		for (int i = rows.nextSetBit(0), j = 0, n = getRowCount(); 
 				i >= 0; i = rows.nextSetBit(j + 1)) {
 			j = Math.min(n, rows.nextClearBit(i + 1));
@@ -2286,11 +2308,23 @@ public class DataTable extends JTable {
 		}
 	}
 
-	private void setSelectedColsBS(BitSet cols) {
+	public void selectTableColsBS(BitSet cols) {
 		for (int i = cols.nextSetBit(0), j = 0, n = getColumnCount(); 
 				i >= 0; i = cols.nextSetBit(j + 1)) {
 			j = Math.min(n, cols.nextClearBit(i + 1));
 			addColumnSelectionInterval(i, j - 1);
+		}
+	}
+
+	/**
+	 * 
+	 */
+	public void setSelectedColumnsFromModelBS() {
+		BitSet bs = dataTableModel.selectedModelCols;
+		// we can use i and j to pick up a block of columns at a time
+		for (int i = bs.nextSetBit(0), j = 0; i >= 0; i = bs.nextSetBit(j + 1)) {
+			j = bs.nextClearBit(i + 1);
+			addColumnSelectionInterval(convertColumnIndexToView(i), convertColumnIndexToView(j));
 		}
 	}
 
@@ -2322,15 +2356,6 @@ public class DataTable extends JTable {
         }
         return col;
     }
-
-	public void setSelectedColumnsFromBitSet() {
-		BitSet selectedColumns = dataTableModel.selectedColumns;
-		// we can use i and j to pick up a block of columns at a time
-		for (int i = selectedColumns.nextSetBit(0), j = 0; i >= 0; i = selectedColumns.nextSetBit(j + 1)) {
-			j = selectedColumns.nextClearBit(i + 1);
-			addColumnSelectionInterval(convertColumnIndexToView(i), convertColumnIndexToView(j));
-		}
-	}
 
 	/**
 	 * Gets the selected model rows in ascending order.
@@ -2383,8 +2408,7 @@ public class DataTable extends JTable {
 				}
 			}
 		}
-		removeRowSelectionInterval(0, n - 1);
-		setSelectedTableRowsBS(bs);
+		selectTableRowsBS(bs, n);
 	}
 
 	public void selectModelRowsBS(BitSet rows) {
@@ -2405,8 +2429,7 @@ public class DataTable extends JTable {
 				}
 			}
 		}
-		removeRowSelectionInterval(0, n - 1);
-		setSelectedTableRowsBS(bs);
+		selectTableRowsBS(bs, 0);
 	}
 
 	private BitSet getSelectedTableRowsBS() {
@@ -2431,15 +2454,15 @@ public class DataTable extends JTable {
 	}
 
 	protected boolean haveSelectedRows() {
-		return !dataTableModel.selectedRows.isEmpty();
+		return !dataTableModel.selectedModelRows.isEmpty();
 	}
 
 	public BitSet getSelectedModelRowsBS() {
-		return dataTableModel.selectedRows;
+		return dataTableModel.selectedModelRows;
 	}
 
 	public void setSelectedModelRowsBS(BitSet rows) {
-		dataTableModel.selectedRows = rows;
+		dataTableModel.selectedModelRows = rows;
 	}
 	
 	protected int getModelRow(int i) {
