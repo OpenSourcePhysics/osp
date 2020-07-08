@@ -939,7 +939,7 @@ public class DataTable extends JTable {
 		 * @param icol
 		 * @return
 		 */
-		private DataTableElement find(int icol) {
+		protected DataTableElement find(int icol) {
 			if (rowNumberVisible) {
 				icol--;
 			}
@@ -971,11 +971,13 @@ public class DataTable extends JTable {
 		 * 
 		 * @param col int
 		 */
-		private void sort(int col) {
+		protected void sort(int col) {
 			DataTableElement dte;
 			if (dataTableElements.size() == 0
 					|| (dte = find(col)) == null)
 				return;
+			// secure the data set column
+			dte.tableModel.getValueAt(0, dte.foundColumn);
 			decorator.sort(dte, col);
 		}
 
@@ -1003,12 +1005,12 @@ public class DataTable extends JTable {
 		 * @param columnIndex 
 		 * @param b
 		 */
-		private void setColumnVisible(TableModel model, int columnIndex, boolean b) {
+		protected void setColumnVisible(TableModel model, int columnIndex, boolean b) {
 			DataTableElement dte = findElementContaining(model);
 			dte.setColumnVisible(columnIndex, b);
 		}
 
-		private void refreshColumnModel() {
+		protected void refreshColumnModel() {
 			for (int i = dataTableElements.size(); --i >= 0;) {
 				dataTableElements.get(i).refresh();
 			}
@@ -1253,7 +1255,7 @@ public class DataTable extends JTable {
 		 *
 		 * @param tableModel
 		 */
-		private void add(OSPTableModel tableModel) {
+		protected void add(OSPTableModel tableModel) {
 			setTainted();
 			dataTableElements.add(new DataTableElement(tableModel));
 			tableModel.addTableModelListener(this);
@@ -1265,7 +1267,7 @@ public class DataTable extends JTable {
 		 * @param tableModel
 		 * @return Description of the Returned Value
 		 */
-		private DataTableElement findElementContaining(TableModel tableModel) {
+		protected DataTableElement findElementContaining(TableModel tableModel) {
 			for (int i = dataTableElements.size(); --i >= 0;) {
 				DataTableElement dte = dataTableElements.get(i);
 				if (dte.tableModel == tableModel) {
@@ -1327,13 +1329,13 @@ public class DataTable extends JTable {
 			}
 
 			protected void sort(DataTableElement dte, int column) {
-				int rowCount = getRowCount();
 				if (dte.tableModel.isFoundOrdered()) {
 					allocate();
 					sortedColumn = column;
 					return;
 				}
 				sortedColumn = column;
+				int rowCount = getRowCount();
 				if (viewRowToModel.length <= rowCount) {
 					allocate();
 				}

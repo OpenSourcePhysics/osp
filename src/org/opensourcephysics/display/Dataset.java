@@ -902,7 +902,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	 */
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		columnIndex = convertTableColumnIndex(colVisible, columnIndex);
+		foundColumn = columnIndex = convertTableColumnIndex(colVisible, columnIndex);
 		rowIndex = rowIndex * stride;
 		// conversionFactor added by D Brown Dec 2010
 		if (columnIndex == 0) {
@@ -1865,7 +1865,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 
 	@Override
 	public boolean isFoundOrdered() {
-		double[] data = (convertTableColumnIndex(colVisible, foundColumn) == 0 ? xpoints : ypoints);
+		double[] data = (foundColumn == 0 ? xpoints : ypoints);
 		double d = Double.MAX_VALUE;
 		for (int i = index; --i >= 0;) {
 			if (data[i] > d)

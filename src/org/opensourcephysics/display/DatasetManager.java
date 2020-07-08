@@ -58,7 +58,7 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 	Map<String, String> constantDescriptions = new TreeMap<String, String>();
 	String name = ""; //$NON-NLS-1$
 	int datasetID = hashCode();
-	private Dataset dsFound;
+    public Dataset dsFound;
 
 	/**
 	 *
@@ -647,10 +647,9 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 	@Override
 	public Object getValueAt(int rowIndex, int tableColumnIndex) {
 		if (datasets.size() == 0) {
-			return dsFound = null;
+			return null;
 		}
 		Dataset ds = find(tableColumnIndex);
-		dsFound = ds;
 		return (ds == null || rowIndex >= ds.getRowCount() ? null : ds.getValueAt(rowIndex, ds.foundColumn));
 	}
 
@@ -665,11 +664,11 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 			int nVis = ds.getColumnCount();
 			if (ncol + nVis > icol) {
 				ds.foundColumn = icol - ncol;
-				return ds;
+				return dsFound = ds;
 			}
 			ncol += nVis;
 		}
-		return null;
+		return dsFound = null;
 	}
 
 	/**
