@@ -2472,7 +2472,7 @@ public class DataToolTable extends DataTable {
 		@Override
 		public Object getValueAt(int row, int column) {
 			return (column >= getColumnCount() ? null 
-					: column == 0 ? Integer.valueOf(getModelRow(row) + 1)
+					: column == 0 ? Integer.valueOf(getModelRow(row))
 							: super.getValueAt(row,  column));
 		}
 

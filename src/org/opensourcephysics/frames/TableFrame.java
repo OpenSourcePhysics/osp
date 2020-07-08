@@ -10,7 +10,7 @@ import org.opensourcephysics.display.DataPanel;
 import org.opensourcephysics.display.OSPFrame;
 
 public class TableFrame extends OSPFrame {
-  DataPanel dataPanel = new DataPanel();
+  public DataPanel dataPanel = new DataPanel();
 
   /**
    * Constructs a TableFrame with the given title.
@@ -153,7 +153,7 @@ public void setVisible(boolean vis) {
     boolean wasVisible = super.isVisible();
     super.setVisible(vis);
     if(vis&&!wasVisible) {      // refresh if the table was NOT visible and is now visible.
-      dataPanel.refreshTable("TF.setVis " + vis); // make sure the table shows the current values
+      dataPanel.refreshTable("TF.visible"); // make sure the table shows the current values
     }
   }
 
@@ -165,7 +165,7 @@ public void setVisible(boolean vis) {
   }
   
   public void refreshTable() {
-    refreshTable("?");
+    refreshTable(null);
   }
 
   /**

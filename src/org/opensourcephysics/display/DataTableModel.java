@@ -9,8 +9,9 @@ package org.opensourcephysics.display;
 import javax.swing.table.TableModel;
 
 /**
- * Interface DataTableModel
+ * Interface DataTableModel - abandoned
  */
+@Deprecated
 public interface DataTableModel extends TableModel {
 //  /**
 //   * Sets the visibility of a column of a TableModel in the DataTable.

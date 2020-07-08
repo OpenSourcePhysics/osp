@@ -15,7 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 public class DataPanel extends JPanel {
-  DataRowTable dataRowTable = new DataRowTable();
+  public DataRowTable dataRowTable = new DataRowTable();
   JScrollPane scrollPane = new JScrollPane(dataRowTable);
 
   /**

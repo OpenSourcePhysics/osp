@@ -408,10 +408,13 @@ public class DataRowModel extends AbstractTableModel {
 	 * @param type
 	 */
 	void refreshModel(DataRowTable table, String type) {
+		if (type == null)
+			type = FINAL_UPDATE;
 		//System.out.println("DataRowModel.refreshModel " + type + " " + lastRowAppended);
 		switch (type) {
 		default:
 			updateType = "?";
+			
 			//System.out.println("DataRowModel.refreshModel " + type + " not processed");
 			return;
 		case "columnFormat":
@@ -449,6 +452,10 @@ public class DataRowModel extends AbstractTableModel {
 			// must add to application's pause button.
 			updateType = "paused";
 			return;
+		case "TF.visible":
+			updateType = "visible";
+			fireUpdate();
+			break;
 		case FINAL_UPDATE:
 			fireUpdate();
 		}
@@ -480,12 +487,14 @@ public class DataRowModel extends AbstractTableModel {
 			lastRowAppended = -2;
 			return;
 		case "?":
+		case "visible":
 		case "maxRows":
 		case "paused":
 		case "formatColumn":
 		case "setStride":
 		case "setRowNumberVis":
 		case "dataCleared":
+		case "TF.visible":
 			fireTableStructureChanged();
 			return;
 		default:

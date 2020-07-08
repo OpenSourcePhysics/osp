@@ -58,6 +58,7 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 	Map<String, String> constantDescriptions = new TreeMap<String, String>();
 	String name = ""; //$NON-NLS-1$
 	int datasetID = hashCode();
+    public Dataset dsFound;
 
 	/**
 	 *
@@ -649,8 +650,12 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 			return null;
 		}
 		Dataset ds = find(tableColumnIndex);
-		return (ds == null || rowIndex >= ds.getRowCount() ? null 
-				: ds.getValueAt(rowIndex, ds.foundColumn));
+		return (ds == null || rowIndex >= ds.getRowCount() ? null : ds.getValueAt(rowIndex, ds.foundColumn));
+	}
+
+	@Override
+	public boolean isFoundOrdered() {
+		return (dsFound == null || dsFound.isFoundOrdered());
 	}
 
 	private Dataset find(int icol) {
@@ -659,11 +664,11 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 			int nVis = ds.getColumnCount();
 			if (ncol + nVis > icol) {
 				ds.foundColumn = icol - ncol;
-				return ds;
+				return dsFound = ds;
 			}
 			ncol += nVis;
 		}
-		return null;
+		return dsFound = null;
 	}
 
 	/**
@@ -778,7 +783,7 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 		clear();
 		datasets.clear();
 		// for DataTable
-		fireTableChanged(new TableModelEvent(this, 0, Integer.MAX_VALUE, -1, TableModelEvent.DELETE));		
+		fireTableChanged(new TableModelEvent(this, 0, Integer.MAX_VALUE, -1, TableModelEvent.DELETE));
 	}
 
 	/**
@@ -887,7 +892,6 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 		return n;
 	}
 
-
 	/**
 	 * Removes the dataset at the specified index. Method added by Doug Brown
 	 * 1/15/2007.
@@ -901,7 +905,7 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 		}
 		Dataset d = datasets.remove(index);
 		// for DataTable
-		fireTableChanged(new TableModelEvent(this, 0, Integer.MAX_VALUE, index, TableModelEvent.DELETE));		
+		fireTableChanged(new TableModelEvent(this, 0, Integer.MAX_VALUE, index, TableModelEvent.DELETE));
 		return d;
 	}
 
@@ -1123,7 +1127,6 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 		}
 
 	}
-
 
 }
 
