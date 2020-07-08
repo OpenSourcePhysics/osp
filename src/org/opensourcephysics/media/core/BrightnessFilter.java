@@ -408,7 +408,6 @@ public class BrightnessFilter extends Filter {
 		 */
 		void initialize() {
 			updateDisplay();
-			refresh();
 		}
 
 		/**

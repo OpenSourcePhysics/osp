@@ -3329,7 +3329,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		protected void paintDrawableList(Graphics g, ArrayList<Drawable> tempList) {
 			String s = message;
 			if (tempList.contains(curveFitter.getDrawer())) {
-				curveFitter.getDrawer().setEnabled(dataTable.isFitDrawable(curveFitter.fit));
+				curveFitter.getDrawer().setEnabled(!curveFitter.autofitCheckBox.isSelected() ||
+						dataTable.isFitDrawable(curveFitter.fit));
 				double[] ylimits = curveFitter.getDrawer().getYRange();
 				if ((ylimits[0] >= this.getYMax()) || (ylimits[1] <= this.getYMin())) {
 					s = ToolsRes.getString("DataToolTab.Plot.Message.FitNotVisible")

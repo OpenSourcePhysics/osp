@@ -146,7 +146,6 @@ public class ResizeFilter extends Filter {
 
 	@Override
 	protected InspectorDlg initInspector() {
-		inspector.initialize();
 		return inspector;
 	}
 
@@ -316,12 +315,12 @@ public class ResizeFilter extends Filter {
 			contentPane.add(buttonbar, BorderLayout.SOUTH);
 		}
 
-		/**
-		 * Initializes this inspector
-		 */
-		void initialize() {
-			refresh();
-		}
+//		/**
+//		 * Initializes this inspector
+//		 */
+//		void initialize() {
+//			refresh();
+//		}
 
 	}
 

@@ -202,7 +202,7 @@ public class DatasetCurveFitter extends JPanel {
 	// GUI
 
 	private JButton colorButton, closeButton;
-	private JCheckBox autofitCheckBox;
+	protected JCheckBox autofitCheckBox;
 	private JLabel fitLabel, eqnLabel, rmsLabel;
 	private JToolBar fitBar, eqnBar, rmsBar;
 	private JComboBox<String> fitDropDown;
@@ -402,14 +402,16 @@ public class DatasetCurveFitter extends JPanel {
 		if (devSq == 0) {
 			devSq = getDevSquared(fit, x, y);
 		}
-		double rmsDev = Math.sqrt(devSq / x.length);
+		double rmsDev = fit.getParameterCount() > x.length? Double.NaN: Math.sqrt(devSq / x.length);
+
 		rmsField.setForeground(eqnField.getForeground());
 		if (x.length == 0 || y.length == 0) {
 			rmsField.setText(ToolsRes.getString("DatasetCurveFitter.RMSField.NoData")); //$NON-NLS-1$
 			rmsField.setForeground(Color.RED);
 		} else if (Double.isNaN(rmsDev)) {
-			rmsField.setText(ToolsRes.getString("DatasetCurveFitter.RMSField.Undefined")); //$NON-NLS-1$
-			rmsField.setForeground(Color.RED);
+//			rmsField.setText(ToolsRes.getString("DatasetCurveFitter.RMSField.Undefined")); //$NON-NLS-1$
+//			rmsField.setForeground(Color.RED);
+			rmsField.setValue(Double.NaN); //$NON-NLS-1$
 		} else {
 			rmsField.applyPattern("0.000E0"); //$NON-NLS-1$
 			rmsField.setValue(rmsDev);
@@ -1266,6 +1268,8 @@ public class DatasetCurveFitter extends JPanel {
 
 		@Override
 		public TableCellEditor getCellEditor(int row, int column) {
+			if (Double.isNaN((Double)getValueAt(row, 1)))
+				return null;
 			spinCellEditor.rowNumber = row;
 			return spinCellEditor;
 		}
@@ -1319,6 +1323,12 @@ public class DatasetCurveFitter extends JPanel {
 			if (col == 0) {
 				return fit.getParameterName(row);
 			}
+			
+			// if insufficient points to do fit return NaN
+			if (dataset == null || 
+					(autofitCheckBox.isSelected() && fit.getParameterCount() > dataset.getValidXPoints().length))
+				return Double.NaN;				
+
 			return new Double(fit.getParameterValue(row));
 		}
 

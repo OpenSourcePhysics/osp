@@ -2812,7 +2812,7 @@ public class DataToolTable extends DataTable {
 	}
 
 	public boolean isFitDrawable(KnownFunction fit) {
-		int n = selectedData.getRowCount();
+		int n = selectedData.getValidXPoints().length;
 		int nparam = fit.getParameterCount();
 		return (n >= nparam);
 	}
