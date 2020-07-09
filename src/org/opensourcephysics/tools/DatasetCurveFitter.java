@@ -937,7 +937,7 @@ public class DatasetCurveFitter extends JPanel {
 		// invoke later so UI responds
 		SwingUtilities.invokeLater(runner);
 	}
-
+	
 	/**
 	 * Refreshes the fit map with localized names.
 	 * 
@@ -1005,6 +1005,7 @@ public class DatasetCurveFitter extends JPanel {
 			return;
 		if (name == null)
 			name = getLineFitName();
+		OSPLog.debug("pig select fit "+name);
 		fit = fitMap.get(name);
 		if (fit != null) {
 			FunctionDrawer prev = drawer;
@@ -1780,6 +1781,15 @@ public class DatasetCurveFitter extends JPanel {
 				fits.put(name, fitMap.get(name));
 			}
 		}
+	}
+
+	public String[] getFitNames() {
+		int n = fitDropDown.getItemCount();
+		String[] names = new String[n];
+		for (int i = 0; i < n; i++) {
+			names[i] = fitDropDown.getItemAt(i).toString();
+		}
+		return names;
 	}
 
 	public void setSelectedItem(String fitName) {

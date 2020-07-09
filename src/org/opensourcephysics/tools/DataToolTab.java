@@ -59,6 +59,7 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -179,6 +180,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	protected JButton measureButton, analyzeButton, dataBuilderButton, newColumnButton, refreshDataButton;
 	protected JCheckBoxMenuItem valueCheckbox, slopeCheckbox, areaCheckbox;
 	protected Action fitterAction, propsAndStatsAction;
+	protected JMenu fitMenu;
 	protected String fileName, ownerName;
 	protected Map<String, String[]> ownedColumns = new TreeMap<String, String[]>();
 	protected JButton helpButton;
@@ -1265,6 +1267,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		splitPanes[1] = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		splitPanes[1].setResizeWeight(1);
 		splitPanes[1].setDividerSize(0);
+		splitPanes[1].setOneTouchExpandable(true);
 		// splitPanes[2] is stats/props tables on top, data table on bottom
 		splitPanes[2] = new JSplitPane(JSplitPane.VERTICAL_SPLIT) {
 			@Override
@@ -1373,7 +1376,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			public void actionPerformed(ActionEvent e) {
 				if (fitterCheckbox == null) {
 					return;
-				}
+				}	
+				OSPLog.debug("pig fitter action "+e);
 				// remove curveFitter
 				splitPanes[1].remove(curveFitter);
 				splitPanes[1].setDividerSize(splitPanes[2].getDividerSize());
@@ -1388,6 +1392,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					splitPanes[1].setDividerSize(splitPanes[0].getDividerSize());
 					splitPanes[1].setDividerLocation(-1);
 					plot.addDrawable(curveFitter.getDrawer());
+					if (e !=null)
+						curveFitter.setSelectedItem(e.getActionCommand());
 				}
 				curveFitter.setActiveAndFit(true);
 				if (e != null) {
@@ -1396,9 +1402,14 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			}
 
 		};
+		
+		fitMenu = new JMenu();
+		
 		fitterCheckbox = new JCheckBoxMenuItem();
-		fitterCheckbox.setSelected(false);
-		fitterCheckbox.addActionListener(fitterAction);
+		fitterCheckbox.setActionCommand("");
+		fitterCheckbox.setSelected(true);
+//		fitterCheckbox.addActionListener(fitterAction);
+		
 		fourierCheckbox = new JCheckBoxMenuItem();
 		fourierCheckbox.setSelected(false);
 		fourierCheckbox.addActionListener(new ActionListener() {
@@ -1665,7 +1676,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				// build a popup menu with analyze items
 				JPopupMenu popup = new JPopupMenu();
 				popup.add(statsCheckbox);
-				popup.add(fitterCheckbox);
+//				popup.add(fitterCheckbox);
+				popup.add(fitMenu);
 				popup.add(fourierCheckbox);
 				FontSizer.setFonts(popup, FontSizer.getLevel());
 				popup.show(analyzeButton, 0, analyzeButton.getHeight());
@@ -1863,7 +1875,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		splitPanes[0].setLeftComponent(splitPanes[1]);
 		splitPanes[0].setRightComponent(tableScroller);
 		splitPanes[1].setTopComponent(plot);
-		splitPanes[1].setBottomComponent(curveFitter);
+//		splitPanes[1].setBottomComponent(curveFitter);
 		splitPanes[2].setBottomComponent(dataScroller);
 
 		// set up the undo system
@@ -2427,6 +2439,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		analyzeButton.setToolTipText(ToolsRes.getString("DataToolTab.Button.Analyze.Tooltip")); //$NON-NLS-1$
 		statsCheckbox.setText(ToolsRes.getString("Checkbox.Statistics.Label")); //$NON-NLS-1$
 		statsCheckbox.setToolTipText(ToolsRes.getString("Checkbox.Statistics.ToolTip")); //$NON-NLS-1$
+		fitMenu.setText(ToolsRes.getString("Checkbox.Fits.Label")); //$NON-NLS-1$
 		fitterCheckbox.setText(ToolsRes.getString("Checkbox.Fits.Label")); //$NON-NLS-1$
 		fitterCheckbox.setToolTipText(ToolsRes.getString("Checkbox.Fits.ToolTip")); //$NON-NLS-1$
 		fourierCheckbox.setText(ToolsRes.getString("DataToolTab.Checkbox.Fourier.Label")); //$NON-NLS-1$
@@ -2473,6 +2486,16 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			}
 		}
 		curveFitter.refreshGUI();
+		
+		fitMenu.removeAll();
+		String[] fitNames = curveFitter.getFitNames();
+		for (int i = 0; i < fitNames.length; i++) {
+			JMenuItem item = new JMenuItem(FitBuilder.localize(fitNames[i]));
+			item.setActionCommand(fitNames[i]);
+			item.addActionListener(fitterAction);
+			fitMenu.add(item);
+		}
+		
 		statsTable.refreshGUI();
 		propsTable.refreshGUI();
 		refreshPlot();
