@@ -261,8 +261,10 @@ public class DatasetCurveFitter extends JPanel {
 	 */
 	public void setData(Dataset data, boolean doFit) {
 		dataset = data;
-		if (doFit)
+		if (doFit) {
 			fit(fit);
+			tab.repaint();
+		}
 		if (dataset != null) {
 			fitBuilder.setDefaultVariables(new String[] { TeXParser.removeSubscripting(dataset.getXColumnName()) });
 			if (!this.isActive) {
@@ -401,17 +403,18 @@ public class DatasetCurveFitter extends JPanel {
 		if (devSq == 0) {
 			devSq = getDevSquared(fit, x, y);
 		}
-		double rmsDev = Math.sqrt(devSq / x.length);
+		double rmsDev = fit.getParameterCount() > x.length && autofitCheckBox.isSelected()? 
+				Double.NaN: 
+				Math.sqrt(devSq / x.length);
+
 		rmsField.setForeground(eqnField.getForeground());
-		if (x.length == 0 || y.length == 0) {
-			rmsField.setText(ToolsRes.getString("DatasetCurveFitter.RMSField.NoData")); //$NON-NLS-1$
-			rmsField.setForeground(Color.RED);
-		} else if (Double.isNaN(rmsDev)) {
-			rmsField.setText(ToolsRes.getString("DatasetCurveFitter.RMSField.Undefined")); //$NON-NLS-1$
-			rmsField.setForeground(Color.RED);
+		if (x.length == 0 || y.length == 0 || Double.isNaN(rmsDev)) {
+			rmsField.setValue(Double.NaN); //$NON-NLS-1$
+			rmsField.setToolTipText(ToolsRes.getString("DatasetCurveFitter.InsufficientData.ToolTip"));
 		} else {
 			rmsField.applyPattern("0.000E0"); //$NON-NLS-1$
 			rmsField.setValue(rmsDev);
+			rmsField.setToolTipText(null);
 		}
 		refreshStatusBar();
 		firePropertyChange(PROPERTY_DATASETCURVEFITTER_FIT, null, null);
@@ -532,7 +535,7 @@ public class DatasetCurveFitter extends JPanel {
 		splitPane.setResizeWeight(0.8);
 		splitPane.setDividerSize(6);
 		// create autofit checkbox
-		autofitCheckBox = new JCheckBox("", true); //$NON-NLS-1$
+		autofitCheckBox = new JCheckBox("", autofit = true); //$NON-NLS-1$
 		autofitCheckBox.setOpaque(false);
 		autofitCheckBox.addActionListener(new ActionListener() {
 			@Override
@@ -542,6 +545,9 @@ public class DatasetCurveFitter extends JPanel {
 				paramTable.clearSelection();
 				fit(fit);
 				firePropertyChange(PROPERTY_DATASETCURVEFITTER_CHANGED, null, null); // $NON-NLS-1$
+				// BH check
+				paramTable.repaint();
+				tab.repaint();
 			}
 
 		});
@@ -1265,6 +1271,8 @@ public class DatasetCurveFitter extends JPanel {
 
 		@Override
 		public TableCellEditor getCellEditor(int row, int column) {
+			if (Double.isNaN((Double)getValueAt(row, 1)))
+				return null;
 			spinCellEditor.rowNumber = row;
 			return spinCellEditor;
 		}
@@ -1318,6 +1326,12 @@ public class DatasetCurveFitter extends JPanel {
 			if (col == 0) {
 				return fit.getParameterName(row);
 			}
+			
+			// if insufficient points to do fit return NaN
+			if (dataset == null || 
+					(autofitCheckBox.isSelected() && fit.getParameterCount() > dataset.getValidXPoints().length))
+				return Double.NaN;				
+
 			return new Double(fit.getParameterValue(row));
 		}
 
@@ -1384,7 +1398,10 @@ public class DatasetCurveFitter extends JPanel {
 				DecimalFormat format = spinCellEditor.field.format;
 				format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
 				setText(isApplicable() ? format.format(value) :  "     ---------------");
-				if (!autofitCheckBox.isSelected()) {
+				if (Double.isNaN((Double)value)) {
+					tooltip = ToolsRes.getString("DatasetCurveFitter.InsufficientData.ToolTip"); //$NON-NLS-1$//$NON-NLS-2$
+				}
+				else if (!autofit) {
 					tooltip += " " + ToolsRes.getString("DatasetCurveFitter.SE.Autofit"); //$NON-NLS-1$//$NON-NLS-2$
 				} else if (fit instanceof KnownPolynomial) {
 					tooltip += " " + ToolsRes.getString("DatasetCurveFitter.SE.Unknown"); //$NON-NLS-1$//$NON-NLS-2$
@@ -1782,10 +1799,10 @@ public class DatasetCurveFitter extends JPanel {
 	}
 
 	public void setFittable(boolean fittable) {
+		if (!fittable)
 			getDrawer().setEnabled(fittable);
 			cellRenderer.setNotApplicable(!fittable);
 	}
-
 
 }
 

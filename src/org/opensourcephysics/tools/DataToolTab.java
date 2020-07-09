@@ -3028,7 +3028,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 	};
 
-	private static final int fitDelayMS = 250;
+	private static final int fitDelayMS = 25;
 
 	void refreshFit() {
 		if (fitTimer == null) {

@@ -1196,7 +1196,11 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	 */
 	public void clear() {
 		index = 0;
-		updateID();
+		// BH I thought we would need this here:
+		//updateID();
+		// but with that, we lose the highlight when the 
+		// analysis curve fit panel is pulled up.
+		
 		// BH note that we do not need to clear x or y arrays
 		// because index is set to 0. It doesn't hurt to 
 		// let these arrays increase in size a bit. They will 
@@ -1777,6 +1781,16 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 		double[] temp = new double[index - nans];
 		System.arraycopy(pts, 0, temp, 0, index - nans);
 		return temp;
+	}
+
+	protected static int getNaNCount(double[] pts, int index) {
+		int nans = 0;
+		for (int i = 0; i < index; i++) {
+			if (Double.isNaN(pts[i])) {
+				nans++;
+			}
+		}
+		return nans;
 	}
 
 	/**

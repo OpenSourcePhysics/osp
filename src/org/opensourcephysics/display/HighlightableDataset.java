@@ -346,6 +346,14 @@ public class HighlightableDataset extends Dataset implements Interactive {
 		return highlighted;
 	}
 
+	public int getHighlightCount() {
+		return highlighted.cardinality();
+	}
+
+	public int getValidYCount() {
+		return index - getNaNCount(ypoints, index);
+	}
+
 }
 
 /*

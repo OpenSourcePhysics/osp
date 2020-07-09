@@ -57,6 +57,7 @@ import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.tools.DataTool;
+import org.opensourcephysics.tools.FontSizer;
 
 /**
  * This is the abstract base class for all image filters. Note: subclasses
@@ -87,8 +88,12 @@ public abstract class Filter {
 			if (b && !haveGUI) {
 				haveGUI = true;
 				setResizable(false);
+				createButtons();
 				createGUI();
+				getMenu(null);
+				initInspector();
 				refresh();
+				FontSizer.setFonts(this, FontSizer.getLevel());
 				pack();
 				// center on screen
 				Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
@@ -181,19 +186,18 @@ public abstract class Filter {
 	 * @return the inspector
 	 */
 	public JDialog getInspector() {
-		JDialog myInspector = inspectorDlg;
-		if (myInspector == null) {
-			myInspector = newInspector();
-			if (myInspector == null)
+		if (inspectorDlg == null) {
+			inspectorDlg = newInspector();
+			if (inspectorDlg == null)
 				return null;
 		}
-		if (myInspector.isModal() && vidPanel != null) {
+		if (inspectorDlg.isModal() && vidPanel != null) {
 			frame = (JFrame) JOptionPane.getFrameForComponent(vidPanel);
-			myInspector.setVisible(false);
-			myInspector.dispose();
-			myInspector = newInspector();
+			inspectorDlg.setVisible(false);
+			inspectorDlg.dispose();
+			inspectorDlg = newInspector();
 		}
-		return inspectorDlg = initInspector();
+		return inspectorDlg;
 	}
 	
 	protected abstract InspectorDlg newInspector();
@@ -233,6 +237,8 @@ public abstract class Filter {
 	 * Refreshes this filter's GUI
 	 */
 	public void refresh() {
+		if (enabledItem == null || closeButton == null)
+			return;
 		enabledItem.setText(MediaRes.getString("Filter.MenuItem.Enabled")); //$NON-NLS-1$
 		propertiesItem.setText(MediaRes.getString("Filter.MenuItem.Properties")); //$NON-NLS-1$
 		closeButton.setText(MediaRes.getString("Filter.Button.Close")); //$NON-NLS-1$
@@ -376,6 +382,32 @@ public abstract class Filter {
 				copy();
 			}
 		});
+		
+		if (hasInspector) {
+			menu.add(propertiesItem);
+			menu.addSeparator();
+		}
+		menu.add(enabledItem);
+		menu.addSeparator();
+		menu.add(copyItem);
+		if (video != null) {
+			menu.addSeparator();
+			deleteItem = new JMenuItem(MediaRes.getString("Filter.MenuItem.Delete")); //$NON-NLS-1$
+			final FilterStack filterStack = video.getFilterStack();
+			deleteItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					filterStack.removeFilter(Filter.this);
+				}
+
+			});
+			menu.add(deleteItem);
+		}
+		refresh();
+		return menu;
+	}
+
+	private void createButtons() {
 		closeButton = new JButton();
 		closeButton.addActionListener(new ActionListener() {
 			@Override
@@ -408,33 +440,8 @@ public abstract class Filter {
 				clear();
 			}
 
-		});
-
-		
-		if (hasInspector) {
-			menu.add(propertiesItem);
-			menu.addSeparator();
-		}
-		menu.add(enabledItem);
-		menu.addSeparator();
-		menu.add(copyItem);
-		if (video != null) {
-			menu.addSeparator();
-			deleteItem = new JMenuItem(MediaRes.getString("Filter.MenuItem.Delete")); //$NON-NLS-1$
-			final FilterStack filterStack = video.getFilterStack();
-			deleteItem.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					filterStack.removeFilter(Filter.this);
-				}
-
-			});
-			menu.add(deleteItem);
-		}
-		refresh();
-		return menu;
+		});		
 	}
-
 	
 	/**
 	 * The issue here is that in SwingJS we may or may not have an actual raster. The act of getting the 
