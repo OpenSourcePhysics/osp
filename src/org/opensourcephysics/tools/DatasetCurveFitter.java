@@ -355,7 +355,7 @@ public class DatasetCurveFitter extends JPanel {
 		double prevDevSq = getDevSquared(fit, x, y);
 		boolean isLinearFit = false;
 		// autofit if checkbox is selected
-		if (autofitCheckBox.isSelected() && !Double.isNaN(prevDevSq)) {
+		if (autofit && !Double.isNaN(prevDevSq)) {
 			if (fit instanceof KnownPolynomial) {
 				KnownPolynomial poly = (KnownPolynomial) fit;
 				poly.fitData(x, y);
@@ -403,7 +403,7 @@ public class DatasetCurveFitter extends JPanel {
 		if (devSq == 0) {
 			devSq = getDevSquared(fit, x, y);
 		}
-		double rmsDev = fit.getParameterCount() > x.length && autofitCheckBox.isSelected()? 
+		double rmsDev = fit.getParameterCount() > x.length && autofit? 
 				Double.NaN: 
 				Math.sqrt(devSq / x.length);
 
@@ -459,7 +459,7 @@ public class DatasetCurveFitter extends JPanel {
 	 * @return the estimated uncertainty in the parameter
 	 */
 	public double getUncertainty(int paramIndex) {
-		if (paramIndex < uncertainties.length && autofitCheckBox.isSelected()) {
+		if (paramIndex < uncertainties.length && autofit) {
 			return uncertainties[paramIndex];
 		}
 		return Double.NaN;
@@ -1799,9 +1799,8 @@ public class DatasetCurveFitter extends JPanel {
 	}
 
 	public void setFittable(boolean fittable) {
-		if (!fittable)
-			getDrawer().setEnabled(fittable);
-			cellRenderer.setNotApplicable(!fittable);
+		getDrawer().setEnabled(fittable);
+		cellRenderer.setNotApplicable(!fittable);
 	}
 
 }
