@@ -649,8 +649,7 @@ public class DataTable extends JTable {
 		case MODE_CANCEL: // 0x00;
 			return;
 		case MODE_SET_TAINTED: // 0x10000000
-			dataTableModel.columnCount = -1;
-			dataTableModel.rowCount = -1;
+			dataTableModel.setTainted();
 			return;
 			//
 			// column (structure) changes
@@ -867,8 +866,8 @@ public class DataTable extends JTable {
 			selectedModelCols.clear();
 			int[] selected = getSelectedColumns(); // selected view columns
 			int labelCol = convertColumnIndexToView(0);
-			OSPLog.debug("DataTable.setColumnSelectionFromJTable " + Arrays.toString(selected));
-			
+//			OSPLog.debug("DataTable.setColumnSelectionFromJTable " + Arrays.toString(selected));
+//			
 			for (int i = 0; i < selected.length; i++) {
 				if (selected[i] == labelCol) {
 					continue;
@@ -1312,13 +1311,7 @@ public class DataTable extends JTable {
 				if (viewRowToModel.length <= viewRow) {
 					allocate();
 				}
-				Object o = getElementValue(viewRowToModel[viewRow], viewCol);
-//				OSPLog.debug("DataTable getValueAt " + row + " "+ column 
-//						+ " = " + o 
-//						+ " " + getColumnModel().getColumnCount()
-//						+ " " + getColumnModel().getColumn(column).getWidth()
-//						+ " " + getColumnModel().getTotalColumnWidth());
-				return o;
+				return getElementValue(viewRowToModel[viewRow], viewCol);
 			}
 
 			protected void setValueAt(Object aValue, int viewRow, int viewCol) {

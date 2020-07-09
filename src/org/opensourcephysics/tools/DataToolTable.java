@@ -2826,8 +2826,7 @@ public class DataToolTable extends DataTable {
 
 	public boolean isFitDrawable(KnownFunction fit, boolean allowNone) {
 		int n = selectedData.getHighlightCount();
-		int nparam = fit.getParameterCount();
-		return (n >= nparam && (allowNone || n < workingData.getValidYCount()));
+		return (n == 0 ? allowNone : n >= fit.getParameterCount());
 	}
 
 }
