@@ -177,14 +177,9 @@ public class TeXParser {
 	 * @return the root
 	 */
 	public static String removeSubscript(String input) {
-		if (input == null) {
-			return null;
-		}
-		int n = input.indexOf("_"); //$NON-NLS-1$
-		if (n > 0) {
-			return input.substring(0, n);
-		}
-		return input;
+		int n;
+		return (input == null ? null : (n = input.indexOf("_")) > 0 //$NON-NLS-1$
+				? input.substring(0, n) : input);
 	}
 
 	/**
