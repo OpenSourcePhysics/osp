@@ -1377,14 +1377,13 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				if (fitterCheckbox == null) {
 					return;
 				}	
-				OSPLog.debug("pig fitter action "+e);
 				// remove curveFitter
 				splitPanes[1].remove(curveFitter);
 				splitPanes[1].setDividerSize(splitPanes[2].getDividerSize());
 				splitPanes[1].setDividerLocation(1.0);
 				plot.removeDrawables(FunctionDrawer.class);
 				// restore if fit checkbox is checked
-				boolean fitterVis = fitterCheckbox.isSelected();
+				boolean fitterVis = (e != null);
 				splitPanes[1].setEnabled(fitterVis);
 				if (fitterVis) {
 					curveFitter.setFontLevel(FontSizer.getLevel());
