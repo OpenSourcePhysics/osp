@@ -22,7 +22,6 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
 import org.opensourcephysics.display.DataTable.OSPTableModel;
-import org.opensourcephysics.tools.DataColumn;
 
 /**
  *

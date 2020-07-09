@@ -1168,12 +1168,10 @@ public class ComplexDataset extends OSPTableModel implements Drawable, Measurabl
 			reDataset = new Dataset(Color.RED, Color.RED, true);
 			imDataset = new Dataset(Color.BLUE, Color.BLUE, true);
 		}
-		reDataset.clear();
-		imDataset.clear();
 		reDataset.setXYColumnNames(xColumnName, reColumnName, "Re(" + name + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		imDataset.setXYColumnNames(xColumnName, imColumnName, "Im(" + name + ")"); //$NON-NLS-1$ //$NON-NLS-2$
-		reDataset.append(getXPoints(), getRePoints());
-		imDataset.append(getXPoints(), getImPoints());
+		reDataset.set(getXPoints(), getRePoints());
+		imDataset.set(getXPoints(), getImPoints());
 		ArrayList<Dataset> list = new ArrayList<Dataset>();
 		list.add(reDataset);
 		list.add(imDataset);
@@ -1194,12 +1192,10 @@ public class ComplexDataset extends OSPTableModel implements Drawable, Measurabl
 			reDataset = new Dataset(Color.RED, Color.RED, true);
 			imDataset = new Dataset(Color.BLUE, Color.BLUE, true);
 		}
-		reDataset.clear();
-		imDataset.clear();
 		reDataset.setXYColumnNames(xColumnName, reColumnName, "Re(" + name + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		imDataset.setXYColumnNames(xColumnName, imColumnName, "Im(" + name + ")"); //$NON-NLS-1$ //$NON-NLS-2$
-		reDataset.append(getXPoints(), getRePoints());
-		imDataset.append(getXPoints(), getImPoints());
+		reDataset.set(getXPoints(), getRePoints());
+		imDataset.set(getXPoints(), getImPoints());
 		ArrayList<Data> list = new ArrayList<Data>();
 		list.add(reDataset);
 		list.add(imDataset);

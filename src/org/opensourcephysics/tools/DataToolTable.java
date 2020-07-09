@@ -1097,7 +1097,8 @@ public class DataToolTable extends DataTable {
 		if (xSource == null) {
 			return null;
 		}
-		working.setXSource(xSource);
+		if (!working.isUpToDate(xSource))
+			working.setXSource(xSource);
 		// set marker and line properties of working data
 		Dataset ySource = working.getYSource();
 		working.setMarkerColor(ySource.getFillColor(), ySource.getEdgeColor());
@@ -2206,7 +2207,6 @@ public class DataToolTable extends DataTable {
 		boolean markersVisible;
 		int markerType;
 		boolean isWorkingYColumn;
-
 		/**
 		 * Constructor WorkingDataset
 		 * 
@@ -2223,6 +2223,10 @@ public class DataToolTable extends DataTable {
 			}
 			setMarkerSize(yData.getMarkerSize());
 			setConnected(yData.isConnected());
+		}
+
+		public boolean isUpToDate(Dataset xSource) {
+			return (xData != null && xSource.update == xData.update);
 		}
 
 		@Override
@@ -2347,18 +2351,25 @@ public class DataToolTable extends DataTable {
 		void setXSource(Dataset xDataset) {
 			xData = xDataset;
 			clear();
-			double[] x = xData.getYPoints();
-			double[] y = yData.getYPoints();
-			if (x.length != y.length) {
-				int n = Math.min(x.length, y.length);
-				double[] nx = new double[n];
-				System.arraycopy(x, 0, nx, 0, n);
-				double[] ny = new double[n];
-				System.arraycopy(y, 0, ny, 0, n);
-				append(nx, ny);
-			} else {
-				append(x, y);
-			}
+// BH note: We can use the raw points, because we know the
+// working length (dataset.index) in each case, and the
+// append(double[], double[], int) method will do an array
+// copy anyway. All it needs is to know the x, y, and minimum index
+//			int xlen = xData.getIndex();
+//			int ylen = yData.getIndex();
+//			double[] x = xData.getYPointsRaw();
+//			double[] y = yData.getYPointsRaw();
+//			if (xlen != ylen) {
+//				int n = Math.min(xlen, ylen);
+//				double[] nx = new double[n];
+//				System.arraycopy(x, 0, nx, 0, n);
+//				double[] ny = new double[n];
+//				System.arraycopy(y, 0, ny, 0, n);
+//				append(nx, ny, n);
+//			} else {
+			append(xData.getYPointsRaw(), yData.getYPointsRaw(), 
+					Math.min(xData.getIndex(), yData.getIndex()));
+//			}
 			setXYColumnNames(xData.getYColumnName(), yData.getYColumnName());
 		}
 
@@ -2811,10 +2822,10 @@ public class DataToolTable extends DataTable {
 
 	}
 
-	public boolean isFitDrawable(KnownFunction fit) {
+	public boolean isFitDrawable(KnownFunction fit, boolean allowNone) {
 		int n = selectedData.getRowCount();
 		int nparam = fit.getParameterCount();
-		return (n >= nparam);
+		return (n >= nparam && (allowNone || n < workingData.getRowCount()));
 	}
 
 }

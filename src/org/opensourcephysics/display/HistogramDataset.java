@@ -128,31 +128,30 @@ public double getXMax() {
       xVals[i] = x;
       x += this.binSize;
     }
-    super.clear();
-    super.append(xVals, binVals);
+    super.set(xVals, binVals);
   }
 
-  /**
-   *  Clears data from the histogram.
-   */
-  @Override
-public void clear() {
-    for(int i = 0; i<n; i++) {
-      binVals[i] = 0;
-    }
-    counts = 0;
-    missedCounts = 0;
-    //  xpoints do not change; ypoints has been set so just copy the new data
-    ymax = 0;
-    ymin = 0;
-    if(n==0) {
-      return;
-    }
-    System.arraycopy(binVals, 0, ypoints, 0, n);
-    if(isConnected()) {
-      recalculatePath();
-    }
-  }
+	/**
+	 * Clears data from the histogram.
+	 */
+	@Override
+	public void clear() {
+		for (int i = 0; i < n; i++) {
+			binVals[i] = 0;
+		}
+		counts = 0;
+		missedCounts = 0;
+		// xpoints do not change; ypoints has been set so just copy the new data
+		ymax = 0;
+		ymin = 0;
+		if (n == 0) {
+			return;
+		}
+		System.arraycopy(binVals, 0, ypoints, 0, n);
+		if (isConnected()) {
+			recalculatePath();
+		}
+	}
 
   /**
  * Returns the XML.ObjectLoader for this class.

@@ -302,7 +302,6 @@ public class DatasetCurveFitter extends JPanel {
 	 * @param active true
 	 */
 	public void setActiveAndFit(boolean active) {
-		OSPLog.debug("DCF setActive " + active);
 		if (isActive == active)
 			return;
 		isActive = active;
@@ -1354,13 +1353,22 @@ public class DatasetCurveFitter extends JPanel {
 			setBorder(BorderFactory.createEmptyBorder(2, 1, 2, 2));
 		}
 
+		private boolean notApplicable;
+	
+		private boolean isApplicable() {
+			return !(autofit && notApplicable);
+		}
+		public void setNotApplicable(boolean b) {
+			notApplicable = b;
+		}
+		
 		// Returns a label for the specified cell.
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 				int row, int col) {
 			setHorizontalAlignment(SwingConstants.LEFT);
 			setBorder(new CellBorder(new Color(240, 240, 240)));
-			String tooltip = col == 1 ? ToolsRes.getString("DatasetCurveFitter.SE.Description") : null; //$NON-NLS-1$
+			String tooltip = (col == 1 ? ToolsRes.getString("DatasetCurveFitter.SE.Description") : null); //$NON-NLS-1$
 			if (value instanceof String) { // parameter name string
 				setFont(labelFont);
 				setBackground(isSelected ? Color.LIGHT_GRAY : lightGray);
@@ -1371,11 +1379,11 @@ public class DatasetCurveFitter extends JPanel {
 				}
 			} else { // Double value
 				setFont(fieldFont);
-				setBackground(isSelected ? lightBlue : Color.white);
+				setBackground(!isApplicable() ? Color.YELLOW : isSelected ? lightBlue : Color.white);
 				setForeground(isSelected ? Color.red : table.isEnabled() ? Color.black : Color.gray);
 				DecimalFormat format = spinCellEditor.field.format;
 				format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
-				setText(format.format(value));
+				setText(isApplicable() ? format.format(value) :  "     ---------------");
 				if (!autofitCheckBox.isSelected()) {
 					tooltip += " " + ToolsRes.getString("DatasetCurveFitter.SE.Autofit"); //$NON-NLS-1$//$NON-NLS-2$
 				} else if (fit instanceof KnownPolynomial) {
@@ -1771,6 +1779,11 @@ public class DatasetCurveFitter extends JPanel {
 
 	void notifyTabRemoved() {
 		fitBuilder.removePropertyChangeListener(fitListener);
+	}
+
+	public void setFittable(boolean fittable) {
+			getDrawer().setEnabled(fittable);
+			cellRenderer.setNotApplicable(!fittable);
 	}
 
 

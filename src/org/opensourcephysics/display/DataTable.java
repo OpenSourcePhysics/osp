@@ -2431,7 +2431,7 @@ public class DataTable extends JTable {
 				}
 			}
 		}
-		selectTableRowsBS(bs, 0);
+		selectTableRowsBS(bs, n);
 	}
 
 	private BitSet getSelectedTableRowsBS() {

@@ -188,12 +188,10 @@ public void update(double time){
   @Override
 public Dataset getRho(Dataset dataset){
     if(dataset==null) dataset=new Dataset();
-    else dataset.clear();
     for(int j=0, n=rePsi.length; j<n; j++){
      rho[j]=rePsi[j]*rePsi[j]+imPsi[j]*imPsi[j];
     }
-    dataset.append(x,rho);
-    return dataset;
+    return dataset.set(x,rho);
   }
 
   /**

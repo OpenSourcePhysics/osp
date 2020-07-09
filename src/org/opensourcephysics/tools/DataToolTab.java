@@ -214,9 +214,15 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 	// drag box action
 	
+	private final static int BOX_STATE_INACTIVE = 0;
+	private final static int BOX_STATE_ARMED = 1;
+	private final static int BOX_STATE_ACTIVE   = 2;
+	
+	private int boxState = BOX_STATE_INACTIVE;
+	
 	private BitSet rowsInside = new BitSet(); // points inside selectionBox
 	private BitSet recent = new BitSet(); // points recently added or removed
-	private boolean boxActive, selectionChanged, readyToFindHits, selectionBoxChanged;
+	private boolean selectionChanged, readyToFindHits, selectionBoxChanged;
 	private Interactive mouseDrawable;
 	private Timer timerToFindHits;
 	private boolean removeHits;
@@ -471,8 +477,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 								int index = DataTool.getIndex(inputPts[i], newIndepVarPts, -1);
 								newY[index] = prevY[i];
 							}
-							d.clear();
-							d.append(rows, newY);
+							d.set(rows, newY);
 						}
 					}
 				}
@@ -1755,20 +1760,23 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			@Override
 			public void mousePressed(MouseEvent e) {
 				if (OSPRuntime.isPopupTrigger(e)) {
-					boxActive = false;
+					boxState = BOX_STATE_INACTIVE;
 					plot.setMouseCursor(SELECT_ZOOM_CURSOR);
 					return;
 				}
+				boxState = BOX_STATE_ARMED;
 				mousePressedAction(e.getPoint(), e.isControlDown(), e.isShiftDown());
 			}
 
 			@Override
 			public void mouseDragged(MouseEvent e) {
+				boxState = BOX_STATE_ACTIVE;
 				mouseDraggedAction(e.getPoint(), e.isControlDown(), e.isShiftDown());
 			}
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
+				boxState = BOX_STATE_INACTIVE;
 				mouseReleasedAction(e.getPoint(), e.isControlDown(), e.isShiftDown());
 			}
 
@@ -2178,7 +2186,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			return;
 		}
 
-		if (!boxActive) {
+		if (boxState == BOX_STATE_INACTIVE) {
 			return;
 		}
 		Dataset data = getWorkingData();
@@ -2285,16 +2293,15 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					dataTable.setSelectedModelRowsBS(rows);
 			}
 			dataTable.getSelectedData();
-			plot.repaint();
-			boxActive = false;
+			boxState = BOX_STATE_INACTIVE;
 			selectionChanged = true;
+			plot.repaint();
 			return;
 		}
 		if (mouseDrawable != null) {
-			boxActive = false;
+			boxState = BOX_STATE_INACTIVE;
 			return;
 		}
-		boxActive = true;
 		if (timerToFindHits == null && !JSUtil.isJS) { // BH 2020.02.14
 			timerToFindHits = new Timer(200, new ActionListener() {
 				@Override
@@ -2619,8 +2626,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			if (name.equals(next.getYColumnName()) && isDuplicate(data, next.getYPoints())) {
 				// next is duplicate column: add new points if any
 				if (data.length > y.length) {
-					next.clear();
-					next.append(data, data);
+					next.set(data, data);
 				}
 				return true;
 			}
@@ -3333,7 +3339,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		protected void paintDrawableList(Graphics g, ArrayList<Drawable> tempList) {
 			String s = message;
 			if (tempList.contains(curveFitter.getDrawer())) {
-				curveFitter.getDrawer().setEnabled(dataTable.isFitDrawable(curveFitter.fit));
+				curveFitter.setFittable(dataTable.isFitDrawable(curveFitter.fit, boxState == BOX_STATE_INACTIVE));
 				double[] ylimits = curveFitter.getDrawer().getYRange();
 				if ((ylimits[0] >= this.getYMax()) || (ylimits[1] <= this.getYMin())) {
 					s = ToolsRes.getString("DataToolTab.Plot.Message.FitNotVisible")
@@ -4381,7 +4387,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 //		return -1; // none found (should never get here)
 //}
 
-	/**
+/**
 	 * Far more efficient method of searching a sparse array. Just track the closest
 	 * point, running linearly through the array.
 	 * 

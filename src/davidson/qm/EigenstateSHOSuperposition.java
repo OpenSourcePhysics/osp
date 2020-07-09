@@ -32,16 +32,15 @@ public class EigenstateSHOSuperposition implements QMSuperposition{
     setCoef(new double[0], new double[0]);
   }
 
-  @Override
-public Dataset getRho(Dataset dataset){
-    if(dataset==null) dataset=new Dataset();
-    else dataset.clear();
-    for(int j=0, n=rePsi.length; j<n; j++){
-     rho[j]=rePsi[j]*rePsi[j]+imPsi[j]*imPsi[j];
-    }
-    dataset.append(x,rho);
-    return dataset;
-  }
+	@Override
+	public Dataset getRho(Dataset dataset) {
+		if (dataset == null)
+			dataset = new Dataset();
+		for (int j = 0, n = rePsi.length; j < n; j++) {
+			rho[j] = rePsi[j] * rePsi[j] + imPsi[j] * imPsi[j];
+		}
+		return dataset.set(x, rho);
+	}
 
   /**
    * Gets the number of points used to approximate the wave function.

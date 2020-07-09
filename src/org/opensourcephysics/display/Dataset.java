@@ -47,6 +47,17 @@ import org.opensourcephysics.display.DataTable.OSPTableModel;
  */
 @SuppressWarnings("serial")
 public class Dataset extends OSPTableModel implements Measurable, LogMeasurable, Data {
+
+	protected static int id = 0;
+	
+	/**
+	 * No two Datasets or updates of datasets have the same update number.
+	 * 
+	 */
+	private void updateID() {
+		update = ++id;
+	}
+
 	/** Field datasetID: an integer ID that identifies this object */
 	protected int datasetID = hashCode();
 
@@ -87,10 +98,10 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	
 	int foundColumn = 0;
 	
-	protected double[] xpoints;
+	protected double[] xpoints = new double[initialSize];
 	// array of x points
 
-	protected double[] ypoints;
+	protected double[] ypoints = new double[initialSize];
 	// array of y points\
 
 	protected double shift;
@@ -127,10 +138,15 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 
 	protected boolean sorted = false;
 	// sort the data by increasing x
+	
 
-	private int initialSize;
-	// the initial size of the points array
-
+	public int update = ++id;
+	
+	/**
+	 * the initial size of the points array
+	 */
+	private final static int initialSize = 10;
+	
 	private int markerSize = 2;
 	// the size in pixels of the marker
 
@@ -167,7 +183,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	protected String yColumnDescription;
 	// a description of the y data
 
-	private BitSet colVisible = new BitSet();
+	private BitSet bsColVis = new BitSet();
 	// column visibilities for table view
 
 	protected boolean visible = true;
@@ -217,13 +233,18 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 		lineColor = _lineColor;
 		connected = _connected;
 		markerSize = 2;
-		initialSize = 10;
 		xColumnName = "x"; //$NON-NLS-1$
 		yColumnName = "y"; //$NON-NLS-1$
 		generalPath = new GeneralPath();
 		index = 0;
-		colVisible.set(0, 2);
+		bsColVis.set(0, 2);
 		clear();
+	}
+
+	public Dataset set(double[] x, double[] y) {
+		clear();
+		append(x, y, y.length);
+		return this;
 	}
 
 	/**
@@ -856,7 +877,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	 */
 	@Override
 	public int getColumnCount() {
-		return colVisible.cardinality();
+		return bsColVis.cardinality();
 	}
 
 	/**
@@ -890,7 +911,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	 */
 	@Override
 	public String getColumnName(int columnIndex) {
-		return (convertTableColumnIndex(colVisible, columnIndex) == 0 ? xColumnName : yColumnName);
+		return (convertTableColumnIndex(bsColVis, columnIndex) == 0 ? xColumnName : yColumnName);
 	}
 
 	/**
@@ -902,7 +923,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	 */
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		foundColumn = columnIndex = convertTableColumnIndex(colVisible, columnIndex);
+		foundColumn = columnIndex = convertTableColumnIndex(bsColVis, columnIndex);
 		rowIndex = rowIndex * stride;
 		// conversionFactor added by D Brown Dec 2010
 		if (columnIndex == 0) {
@@ -947,13 +968,20 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 		if (Double.isNaN(x) || Double.isInfinite(x) || Double.isInfinite(y)) {
 			return;
 		}
+		updateID();
 		myShape = null;
-		if (index >= xpoints.length) {
-			increaseCapacity(xpoints.length * 2);
-		}
-		xpoints[index] = x;
-		ypoints[index] = y;
-		// generalPath.append(new Rectangle2D.Double(x, y, 0, 0), true);
+		if (addSorted(x, y))
+			recalculatePath();
+	}
+
+	/**
+	 * Add the point and shift the array if necessary
+	 * 
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	private boolean addSorted(double x, double y) {
 		if (!Double.isNaN(y)) {
 			Point2D curPt = generalPath.getCurrentPoint();
 			if (curPt == null) {
@@ -974,13 +1002,17 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 			xmaxLogscale = Math.max(x, xmaxLogscale);
 			xminLogscale = Math.min(x, xminLogscale);
 		}
-		index++;
-		// move the new datum if x is less than the last value.
-		if (sorted && (index > 1) && (x < xpoints[index - 2])) {
-			moveDatum(index - 1);
-			// the new datum is out of place so move it
-			recalculatePath();
+		if (index >= xpoints.length) {
+			increaseCapacity(xpoints.length * 2);
 		}
+		xpoints[index] = x;
+		ypoints[index] = y;
+		// move the new datum if x is less than the last value.
+		if (++index > 1 && sorted && xpoints[index - 2] > x) {
+			moveDatum(xpoints, ypoints, index - 1);
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -995,7 +1027,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 		for (int i = 0, n = xpoints.length; i < n; i++) {
 			errorBars.add(new ErrorBar(xpoints[i], ypoints[i], delx[i], dely[i]));
 		}
-		append(xpoints, ypoints);
+		append(xpoints, ypoints, xpoints.length);
 	}
 
 	/**
@@ -1008,16 +1040,17 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	public void append(double[] _xpoints, double[] _ypoints) { 
 		append(_xpoints, _ypoints, _xpoints.length);	
 	}
-	
+
 	/**
 	 * Allow for raw xpoints, with an index length
+	 * 
 	 * @param _xpoints
 	 * @param _ypoints
 	 * @param len
 	 */
 	public void append(double[] _xpoints, double[] _ypoints, int len) {
-
-	boolean badData = false;
+		updateID();
+		boolean badData = false;
 		myShape = null;
 		for (int i = 0; i < len; i++) {
 			double xp = _xpoints[i];
@@ -1097,6 +1130,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 					throw new IOException();
 				}
 			}
+			updateID();
 			reader.close();
 		} catch (java.io.FileNotFoundException fnfe) {
 			System.err.println("File " + inputFile + " not found."); //$NON-NLS-1$ //$NON-NLS-2$
@@ -1162,8 +1196,12 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	 */
 	public void clear() {
 		index = 0;
-		xpoints = new double[initialSize];
-		ypoints = new double[initialSize];
+		updateID();
+		// BH note that we do not need to clear x or y arrays
+		// because index is set to 0. It doesn't hurt to 
+		// let these arrays increase in size a bit. They will 
+		// never be enormous, and this clearing operation is 
+		// carried out A LOT. 
 		generalPath.reset();
 		errorBars.clear();
 		resetXYMinMax(true);
@@ -1178,7 +1216,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	@Override
 	public String toString() {
 		
-		String name =  "(" + xColumnName + "," +  yColumnName + ") " + colVisible + " " ;
+		String name =  "(" + xColumnName + "," +  yColumnName + ") " + bsColVis + " " ;
 
 		if (index == 0) {
 			return name + "No data in dataset."; //$NON-NLS-1$
@@ -1210,7 +1248,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	 *
 	 * @param visible array of column visibilities
 	 * @return number of visible columns
-	 * @deprecated
+	 * @deprecated by Bob Hanson -- see bsColVis
 	 */
 	public static int countColumnsVisible(boolean visible[]) {
 		int count = 0;
@@ -1264,7 +1302,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	 * @param b new visibility
 	 */
 	public void setXColumnVisible(boolean b) {
-		colVisible.set(0, b);
+		bsColVis.set(0, b);
 	}
 
 	/**
@@ -1273,7 +1311,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	 * @param b new visibility
 	 */
 	public void setYColumnVisible(boolean b) {
-		colVisible.set(1, b);
+		bsColVis.set(1, b);
 	}
 
 	/**
@@ -1317,7 +1355,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	 * @return the x column visibility
 	 */
 	public boolean isXColumnVisible() {
-		return colVisible.get(0);
+		return bsColVis.get(0);
 	}
 
 	/**
@@ -1326,29 +1364,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	 * @return the x column visibility
 	 */
 	public boolean isYColumnVisible() {
-		return colVisible.get(1);
-	}
-
-	/**
-	 * Perform an insertion sort of the data set. Since data will be partially
-	 * sorted this should be fast. Added by W. Christian.
-	 */
-	protected void insertionSort() {
-		boolean dataChanged = false;
-		if (index < 2) {
-			return;
-			// need at least two points to sort.
-		}
-		for (int i = 1; i < index; i++) {
-			if (xpoints[i] < xpoints[i - 1]) {
-				// is the i-th datum smaller?
-				dataChanged = true;
-				moveDatum(i);
-			}
-		}
-		if (dataChanged) {
-			recalculatePath();
-		}
+		return bsColVis.get(1);
 	}
 
 	/**
@@ -1378,30 +1394,89 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	}
 
 	/**
+	 * Perform an insertion sort of the data set. Since data will be partially
+	 * sorted this should be fast. Added by W. Christian.
+	 */
+	protected void insertionSort() {
+		// need at least two points to sort.
+		if (index >= 2 && sort(xpoints, ypoints, index)) {
+			recalculatePath();
+		}
+	}
+
+	private static boolean sort(double[] xpoints, double[] ypoints, int index) {
+		boolean dataChanged = false;
+		for (int i = 1; i < index; i++) {
+			// Move the i-th datum if it is smaller than the one before it.
+			if (xpoints[i - 1] > xpoints[i]) {
+				moveDatum(xpoints, ypoints, i);
+				dataChanged = true;
+			}
+		}
+		return dataChanged;
+	}
+
+	/**
 	 * Move an out-of-place datum into its correct position.
 	 *
 	 * @param loc the datum
 	 */
-	protected void moveDatum(int loc) {
+	private static void moveDatum(double[] xpoints, double[] ypoints, int loc) {
 		if (loc < 1) {
-			return;
 			// zero-th point cannot be out-of-place
+			return;
 		}
-		double x = xpoints[loc];
 		// save the old values
+		double x = xpoints[loc];
 		double y = ypoints[loc];
-		for (int i = 0; i < index; i++) {
-			if (xpoints[i] > x) {
-				// find the insertion point
-				System.arraycopy(xpoints, i, xpoints, i + 1, loc - i);
-				xpoints[i] = x;
-				System.arraycopy(ypoints, i, ypoints, i + 1, loc - i);
-				ypoints[i] = y;
-				return;
-			}
-		}
+		// find the insertion point
+		int i = loc;
+		while (--i >= 0 && xpoints[i] > x) {};
+		if (++i == loc)
+			return;
+		System.arraycopy(xpoints, i, xpoints, i + 1, loc - i);
+		System.arraycopy(ypoints, i, ypoints, i + 1, loc - i);
+		xpoints[i] = x;
+		ypoints[i] = y;
 	}
 
+//	static {
+//		double[] x, y;
+//		x = new double[] {1,2,3,4,5,2.6};
+//		y = new double[] {0,1,2,3,4,5};
+//		moveDatum(x, y, 5);
+//		OSPLog.debug(Arrays.toString(x));
+//		OSPLog.debug(Arrays.toString(y));
+//		OSPLog.debug("----");
+//
+//		x = new double[] {1,5,4,6,7,0};
+//		y = new double[] {0,1,2,3,4,5};
+//		moveDatum(x, y, 2);
+//		OSPLog.debug(Arrays.toString(x));
+//		OSPLog.debug(Arrays.toString(y));
+//		OSPLog.debug("----");
+//
+//		moveDatum(x, y, 5);
+//		OSPLog.debug(Arrays.toString(x));
+//		OSPLog.debug(Arrays.toString(y));
+//		OSPLog.debug("----");
+//		
+//		x = new double[] {1,5,4,3,6,0};
+//		y = new double[] {0,1,2,3,4,5};
+//		sort(x, y, 6);
+//		OSPLog.debug(Arrays.toString(x));
+//		OSPLog.debug(Arrays.toString(y));
+//		OSPLog.debug("----");
+//		
+//		x = new double[] {6,5,4,3,2,1};
+//		y = new double[] {0,1,2,3,4,5};
+//		sort(x, y, 6);
+//		OSPLog.debug(Arrays.toString(x));
+//		OSPLog.debug(Arrays.toString(y));
+//		OSPLog.debug("----");
+//	}
+	
+	
 	/**
 	 * Draw the lines connecting the data points.
 	 *
@@ -1781,7 +1856,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 			control.setValue("edge_color", data.edgeColor); //$NON-NLS-1$
 			control.setValue("errorbar_color", data.errorBarColor); //$NON-NLS-1$
 			control.setValue("datasetID", data.datasetID); //$NON-NLS-1$
-			control.setValue("visible", toBoolArray(data.colVisible)); //$NON-NLS-1$
+			control.setValue("visible", toBoolArray(data.bsColVis)); //$NON-NLS-1$
 		}
 
 		@Override
@@ -1849,7 +1924,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 			boolean[] colVisible = (boolean[]) control.getObject("visible"); //$NON-NLS-1$
 			if (colVisible != null) {
 				for (int i = 0; i < colVisible.length; i++)
-					data.colVisible.set(i, colVisible[i]);
+					data.bsColVis.set(i, colVisible[i]);
 			}
 			return obj;
 		}

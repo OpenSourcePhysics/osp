@@ -16,7 +16,6 @@ import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.util.BitSet;
 
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
@@ -31,7 +30,7 @@ import org.opensourcephysics.controls.XMLLoader;
 @SuppressWarnings("serial")
 public class HighlightableDataset extends Dataset implements Interactive {
 	// instance fields
-	BitSet highlighted = new BitSet(); // true if highlighted
+	BitSet highlighted;
 	BitSet previous;
 	Color highlightColor = new Color(255, 255, 0, 128);
 	Shape highlightShape;
@@ -57,50 +56,20 @@ public class HighlightableDataset extends Dataset implements Interactive {
 	}
 
 	/**
-	 * Constructor specifying the marker color, line color, and whether points are
-	 * connected.
-	 *
-	 * @param markerColor marker color
-	 * @param lineColor   line color
-	 * @param connected   true to connect points with line
-	 */
-	public HighlightableDataset(Color markerColor, Color lineColor, boolean connected) {
-		super(markerColor, lineColor, connected);
-	}
-
-	/**
-	 * Appends an (x,y) datum to the Dataset.
-	 *
-	 * @param x the x value
-	 * @param y the y value
-	 */
-	@Override
-	public void append(double x, double y) {
-		super.append(x, y);
-//		adjustCapacity(xpoints.length);
-	}
-
-	/**
-	 * Appends (x,y) arrays to the Dataset.
-	 *
-	 * @param xarray the x array
-	 * @param yarray the y array
-	 */
-	@Override
-	public void append(double[] xarray, double[] yarray) {
-		super.append(xarray, yarray);
-//		adjustCapacity(xpoints.length);
-	}
-
-	/**
 	 * Clear all data from this Dataset.
 	 */
 	@Override
 	public void clear() {
-		super.clear();
-		previous = highlighted;
 		previousLen = xpoints.length;
-		highlighted = new BitSet();
+		super.clear();
+		if (previous == null) {
+			// when called from super()
+			previous = new BitSet();
+			highlighted = new BitSet();
+		}
+		previous.clear();
+		previous.or(highlighted);
+		highlighted.clear();
 	}
 
 	/**
@@ -108,7 +77,8 @@ public class HighlightableDataset extends Dataset implements Interactive {
 	 */
 	public void restoreHighlights() {
 		if (previous != null && previousLen == xpoints.length) {
-			highlighted = previous;
+			highlighted.clear();
+			highlighted.or(previous);
 		}
 	}
 
@@ -149,32 +119,6 @@ public class HighlightableDataset extends Dataset implements Interactive {
 	}
 
 	/**
-	 * Move an out-of-place datum into its correct position.
-	 *
-	 * @param loc the datum
-	 */
-	@Override
-	protected void moveDatum(int loc) {
-		super.moveDatum(loc);
-	}
-
-//	/**
-//	 * Sets the highlighted array size to larger of xpoints.length and minLength.
-//	 *
-//	 * @param minLength minimum capacity required
-//	 */
-//	private synchronized void adjustCapacity(int minLength) {
-//		int len = Math.max(xpoints.length, minLength);
-//		if (highlighted.length >= len) {
-//			return;
-//		}
-//		boolean[] temp = highlighted;
-//		highlighted = new boolean[len];
-//		int count = Math.min(temp.length, len);
-//		System.arraycopy(temp, 0, highlighted, 0, count);
-//	}
-
-	/**
 	 * Draw this Dataset in the drawing panel.
 	 *
 	 * @param drawingPanel the drawing panel
@@ -186,11 +130,6 @@ public class HighlightableDataset extends Dataset implements Interactive {
 		int offset = getMarkerSize() + 4;
 		int edge = 2 * offset;
 		Graphics2D g2 = (Graphics2D) g.create();
-		// increase the clip to include the entire highlight
-//    Shape clipShape = g2.getClip();
-
-		// unclip needed here.
-
 		g2.setClip(drawingPanel.leftGutter - offset - 1, drawingPanel.topGutter - offset - 1,
 				drawingPanel.getWidth() - drawingPanel.leftGutter - drawingPanel.rightGutter + 2 + 2 * offset,
 				drawingPanel.getHeight() - drawingPanel.bottomGutter - drawingPanel.topGutter + 2 + 2 * offset);
@@ -206,7 +145,6 @@ public class HighlightableDataset extends Dataset implements Interactive {
 			screenCoordinates[0] = new double[index];
 			screenCoordinates[1] = new double[index];
 		}
-//		OSPLog.debug("HDS.draw " + index + " "+  highlighted);
 		for (int i = 0; i < index; i++) {
 			if (Double.isNaN(yValues[i])) {
 				screenCoordinates[1][i] = Double.NaN;
@@ -226,7 +164,6 @@ public class HighlightableDataset extends Dataset implements Interactive {
 			g2.setColor(highlightColor);
 			g2.fill(hitShapes[i]);
 		}
-		// g2.setClip(clipShape); // restore the original clip
 		g2.dispose(); // BH 2020.02.26
 	}
 
@@ -403,6 +340,10 @@ public class HighlightableDataset extends Dataset implements Interactive {
 	public void setHighlights(BitSet bs) {
 	//	OSPLog.debug("HDT set " + bs);
 		highlighted.or(bs);
+	}
+
+	public BitSet getHighlightedBS() {
+		return highlighted;
 	}
 
 }
