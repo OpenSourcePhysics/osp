@@ -483,6 +483,7 @@ public class DataToolTable extends DataTable {
 		dataRenderer.showFocus = true;
 		// label column clicked: clear selection or select row
 		if (col == labelCol) {
+			// double-click: select only that row
 			if (e.getClickCount() == 2) {
 				leadRow = row;
 				setRowSelectionInterval(row, row);
@@ -1932,14 +1933,14 @@ public class DataToolTable extends DataTable {
 		if (selectedData != null) {
 			selectedData.clearHighlights();
 		}
-		// select only the focus cell so it has focus
-		if ((focusRow > -1) && (focusRow < getRowCount()) && (focusCol > 0) && (focusCol < getColumnCount())) {
-			setRowSelectionInterval(focusRow, focusRow);
-			setColumnSelectionInterval(focusCol, focusCol);
-		}
+		super.clearSelection();
+//		// select only the focus cell so it has focus
+//		if ((focusRow > -1) && (focusRow < getRowCount()) && (focusCol > 0) && (focusCol < getColumnCount())) {
+//			setRowSelectionInterval(focusRow, focusRow);
+//			setColumnSelectionInterval(focusCol, focusCol);
+//		}
 		leadCol = 0;
 //		leadRow = 0;
-		super.clearSelection();
 		repaint();
 		clearing = false;
 		
