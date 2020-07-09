@@ -31,6 +31,8 @@ import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
+import javax.swing.JToolBar;
+import javax.swing.JViewport;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
@@ -420,7 +422,7 @@ public class GUIUtils {
 //					GIFEncoder encoder = new GIFEncoder(bi);
 //					encoder.Write(fos);
 //				} else {
-					ImageIO.write(bi, outputFileFormat, fos);
+				ImageIO.write(bi, outputFileFormat, fos);
 //				}
 				fos.close();
 			}
@@ -568,6 +570,18 @@ public class GUIUtils {
 		// text
 		// outside the override.
 		);
+	}
+
+	public static JToolBar getParentToolBar(Container c) {
+		while ((c = c.getParent()) != null && !(c instanceof JToolBar)) {
+		}
+		return (JToolBar) c;
+	}
+
+	public static JViewport getParentViewport(Container c) {
+		while ((c = c.getParent()) != null && !(c instanceof JViewport)) {
+		}
+		return (JViewport) c;
 	}
 
 }
