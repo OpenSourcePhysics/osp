@@ -21,7 +21,8 @@ public class QMSuperpositionApp extends AbstractAnimation implements PropertyCha
 
    String intialRe = "{0.707,0.707,0,0,0,0}";
    String intialIm = "{0,0,0,0,0,0}";
-   String potential = "x*x/2";
+   String potentialStr = "x*x/2";
+   Function potential;
    PlottingPanel dataPanel, psiPanel = new PlottingPanel("x", "|Psi|", "Psi(x)");
    DrawingFrame psiFrame = new DrawingFrame(psiPanel);
    OSPFrame dataFrame;
@@ -125,20 +126,19 @@ public void initializeAnimation() {
       } else if(control.getString("V(x)").trim().equals("sho")) {
          superposition = new EigenstateSHOSuperposition(numpts, xmin, xmax);
       } else {
-//         Function potential;
-//         try {
-//            potential = new ParsedFunction(control.getString("V(x)"));
-//         } catch(ParserException ex) {
-//        	parseError=true;
-//            control.println("Error parsing potential function. Potential set to zero.");
-//            potential = Util.constantFunction(0);
-//         }
-//         if(control.getObject("shooting tolerance")!=null) {
-//            double tol = control.getDouble("shooting tolerance");
-//            superposition = new EigenstateShootingSuperposition(potential, numpts, xmin, xmax, tol, tol);
-//         } else {
-//            superposition = new EigenstateShootingSuperposition(potential, numpts, xmin, xmax);
-//         }
+         try {
+           potential = new ParsedFunction(control.getString("V(x)"));
+        } catch(ParserException ex) {
+        	parseError=true;
+            control.println("Error parsing potential function. Potential set to zero.");
+            potential = Util.constantFunction(0);
+         }
+         if(control.getObject("shooting tolerance")!=null) {
+            double tol = control.getDouble("shooting tolerance");
+            superposition = new EigenstateShootingSuperposition(potential, numpts, xmin, xmax, tol, tol);
+        } else {
+            superposition = new EigenstateShootingSuperposition(potential, numpts, xmin, xmax);
+        }
       }
       if(!superposition.setCoef(recoef.getArray(), imcoef.getArray())) {
          control.println("Eigenfunction did not converge.");
