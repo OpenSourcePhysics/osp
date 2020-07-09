@@ -98,61 +98,62 @@ public class Utils {
     return icon(_codebase, _gifFile, true);
   }
 
-  static public javax.swing.ImageIcon icon(String _codebase, String _gifFile, boolean _verbose) {
-    if(_gifFile==null) {
-      return null;
-    }
-    // System.out.println ("Reading from "+_codebase+" :"+_gifFile);
-    javax.swing.ImageIcon icon = cacheImages.get(_gifFile);
-    if(icon!=null) {
-      return icon;
-    }
-    if(_codebase!=null) {
-      if(_codebase.startsWith("file:")) {              //$NON-NLS-1$
-        _codebase = "file:///"+_codebase.substring(6); //$NON-NLS-1$
-      }
-      if(!_codebase.endsWith("/")) {                   //$NON-NLS-1$
-        _codebase += "/";                              //$NON-NLS-1$
-      }
-    }
-    int index = _gifFile.indexOf('+');
-    if(index>=0) {
-      icon = iconJar(_codebase, _gifFile.substring(0, index), _gifFile.substring(index+1), _verbose);
-    } else if(_codebase==null) {
-      // System.out.println ("Reading from "+_codebase+" :"+_gifFile);
-      java.io.File file = new java.io.File(_gifFile);
-      if(file.exists()) {
-        icon = new javax.swing.ImageIcon(_gifFile);
-      }
-      if(icon==null) {
-      	// code modified by Doug Brown June 2015 to get ImageIcon from ResourceLoader
-      	javax.swing.Icon resIcon = ResourceLoader.getIcon(_gifFile);
-      	if (resIcon!=null && resIcon instanceof org.opensourcephysics.display.ResizableIcon) {
-      		resIcon = ((org.opensourcephysics.display.ResizableIcon)resIcon).getBaseIcon(); 
-	        icon = (ImageIcon)resIcon;
-      	}
-      }
-    } else {
-      // System.out.println ("Reading from "+_codebase+" :"+_gifFile);
-      try {
-        java.net.URL url = new java.net.URL(_codebase+_gifFile);
-        icon = new javax.swing.ImageIcon(url);
-      } catch(Exception exc) {
-        if(_verbose) {
-          exc.printStackTrace();
-        }
-        icon = null;
-      }
-    }
-    if((icon==null)||(icon.getIconHeight()<=0)) {
-      if(_verbose) {
-        System.out.println("Unable to load image "+_gifFile); //$NON-NLS-1$
-      }
-    } else {
-      cacheImages.put(_gifFile, icon);
-    }
-    return icon;
-  }
+	static public javax.swing.ImageIcon icon(String _codebase, String _gifFile, boolean _verbose) {
+		if (_gifFile == null) {
+			return null;
+		}
+		// System.out.println ("Reading from "+_codebase+" :"+_gifFile);
+		javax.swing.ImageIcon icon = cacheImages.get(_gifFile);
+		if (icon != null) {
+			return icon;
+		}
+		if (_codebase != null) {
+			if (_codebase.startsWith("file:")) { //$NON-NLS-1$
+				_codebase = "file:///" + _codebase.substring(6); //$NON-NLS-1$
+			}
+			if (!_codebase.endsWith("/")) { //$NON-NLS-1$
+				_codebase += "/"; //$NON-NLS-1$
+			}
+		}
+		int index = _gifFile.indexOf('+');
+		if (index >= 0) {
+			icon = iconJar(_codebase, _gifFile.substring(0, index), _gifFile.substring(index + 1), _verbose);
+		} else if (_codebase == null) {
+			// System.out.println ("Reading from "+_codebase+" :"+_gifFile);
+			java.io.File file = new java.io.File(_gifFile);
+			if (file.exists()) {
+				icon = new javax.swing.ImageIcon(_gifFile);
+			}
+			if (icon == null) {
+				// code modified by Doug Brown June 2015 to get ImageIcon from ResourceLoader
+				javax.swing.Icon resIcon = ResourceLoader.getIcon(_gifFile);
+				if (resIcon instanceof ImageIcon) {
+					icon = (ImageIcon) resIcon;
+				} else if (resIcon instanceof org.opensourcephysics.display.ResizableIcon) {
+					icon = (ImageIcon) ((org.opensourcephysics.display.ResizableIcon) resIcon).getBaseIcon();
+				}
+			}
+		} else {
+			// System.out.println ("Reading from "+_codebase+" :"+_gifFile);
+			try {
+				java.net.URL url = new java.net.URL(_codebase + _gifFile);
+				icon = new javax.swing.ImageIcon(url);
+			} catch (Exception exc) {
+				if (_verbose) {
+					exc.printStackTrace();
+				}
+				icon = null;
+			}
+		}
+		if ((icon == null) || (icon.getIconHeight() <= 0)) {
+			if (_verbose) {
+				System.out.println("Unable to load image " + _gifFile); //$NON-NLS-1$
+			}
+		} else {
+			cacheImages.put(_gifFile, icon);
+		}
+		return icon;
+	}
 
   static private byte[] enormous = new byte[100000]; // Maximum size for a gif file in a Jar
 
