@@ -17,11 +17,31 @@ Info = {
 	console:'sysoutdiv',
 	allowjavascript: true
 }
+
+dotest = function(cmd) {
+	switch (cmd) {
+	case "startAnimation":
+	   testApplet.app.startStopAnimation(true);
+	   break;
+	case "stopAnimation":
+	   testApplet.app.startStopAnimation(false);
+	   break;
+	}
+
+}
+
 </script>
 </head>
 <body>
 
-<div id="controlFrame-div" style="top:100px;left:400px;width:300px;height:360px;position:relative;border:3px red;border-style:solid;">application will appear here</div>
+<h3>
+<a href="javascript:dotest('startAnimation')">start animation</a>
+&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="javascript:dotest('stopAnimation')">stop animation</a>
+
+</h3>
+<div id="testApplet-controlFrame-div" style="top:100px;left:400px;width:300px;height:370px;position:relative;border:3px red;border-style:solid;background:yellow">application will appear here</div>
+<div id="controlFrame-div" style="top:400px;left:400px;width:300px;height:370px;position:relative;border:3px red;border-style:solid;background:blue">application will appear here</div>
 
 <script>
 SwingJS.getApplet('testApplet', Info)
