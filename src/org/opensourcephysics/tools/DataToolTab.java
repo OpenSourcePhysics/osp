@@ -2297,9 +2297,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					break;
 				}
 			}
-			if (!controlDown) {
-				dataTable.selectModelRows(new int[] { index });
-			} else {
+			if (controlDown) {
 				BitSet rows = dataTable.getSelectedModelRowsBS();
 				if (rows.get(index)) {
 					rows.clear(index);
@@ -2308,10 +2306,14 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				}
 				if (!JSUtil.isJS)
 					dataTable.setSelectedModelRowsBS(rows);
+			} else {
+				dataTable.selectModelRows(new int[] { index });
 			}
 			dataTable.getSelectedData();
 			boxState = BOX_STATE_INACTIVE;
 			selectionChanged = true;
+			if (curveFitter.isAutoFit())
+				refreshFit();
 			plot.repaint();
 			return;
 		}
@@ -2902,7 +2904,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			plot.refreshArea();
 		}
 		// BH was this.repaint?
-		if (fitTimer == null || !fitTimer.isRunning())
+		if (fitTimer == null || !fitTimer.isRunning() || ! curveFitter.isAutoFit())
 			plot.repaint();
 		refreshFit();
 	}
