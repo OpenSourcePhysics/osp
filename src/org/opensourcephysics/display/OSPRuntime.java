@@ -1563,6 +1563,23 @@ public class OSPRuntime {
 			}
 	}
 	
+
+	  /**
+	   * Set the "app" property of the HTML5 applet object, for example,
+	   * "testApplet.app", to point to the Jalview instance. This will be the object
+	   * that page developers use that is similar to the original Java applet object
+	   * that was accessed via LiveConnect.
+	   * 
+	   * @param j
+	   */
+	  public static void setAppClass(Object j)
+	  {
+	    if (isJS)
+	    {
+	      jsutil.setAppletAttribute("app", j);
+	    }
+	  }
+	
 }
 /*
  * Open Source Physics software is free software; you can redistribute it and/or

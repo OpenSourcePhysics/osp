@@ -2333,7 +2333,7 @@ public class DataTable extends JTable {
 		public int compare(Object[] a, Object[] b) {
 			return (a[0] != null && b[0] != null
 					? Double.compare(((Number)a[0]).doubleValue(), ((Number)b[0]).doubleValue())
-					: a[0] != null ? 1 : b[0] != null ? -1 : 0);
+					: a[0] != null ? -1 : b[0] != null ? 1 : 0);
 		}
 	};
 	private static Comparator<Object[]> sCompare = new Comparator<Object[]>() {

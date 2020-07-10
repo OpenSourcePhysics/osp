@@ -798,15 +798,12 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 			mouseX = plot.pixToX(plot.getMouseIntX());
 			mouseY = plot.pixToY(plot.getMouseIntY());
 			mouseRegion = findRegion(mouseLoc, true);
-			if (scaleSetter == null) {
-				return;
-			}
 			switch (mouseRegion) {
 			case HORZ_MIN:
 			case HORZ_MAX:
 			case VERT_MIN:
 			case VERT_MAX:
-				if (!drawingPanel.isFixedScale()) {
+				if (scaleSetter != null && !drawingPanel.isFixedScale()) {
 					scaleSetter.setVisible(true);
 				}
 				return;

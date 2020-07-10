@@ -1358,17 +1358,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 			@Override
 			public void columnMoved(TableColumnModelEvent e) {
-				Dataset prev = dataTable.workingData;
-				Dataset working = getWorkingData();
-				if (working != prev && dataTool.fitBuilder != null) {
-					tabChanged(true);
-				}
-				if ((working == null) || (working == prev)) {
-					return;
-				}
-				plot.selectionBox.setSize(0, 0);
-				refreshPlot();
-				refreshShiftFields();
+				notifyColumnMoved();
 			}
 
 		});
@@ -2162,6 +2152,22 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 	}
 
+	protected void notifyColumnMoved() {
+		Dataset prev = dataTable.workingData;
+		Dataset working = getWorkingData();
+		if (working != prev && dataTool.fitBuilder != null) {
+			tabChanged(true);
+		}
+		if (working == null)
+			return;
+//		if ((working == null) || (working == prev)) {
+//			return;
+//		}
+		plot.selectionBox.setSize(0, 0);
+		refreshPlot();
+		refreshShiftFields();
+	}
+
 	protected void mouseDraggedAction(Point point, boolean controlDown, boolean shiftDown) {
 		selectionChanged = true;
 		if (mouseDrawable == plot.origin) {
@@ -2304,9 +2310,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					break;
 				}
 			}
-			if (!controlDown) {
-				dataTable.selectModelRows(new int[] { index });
-			} else {
+			if (controlDown) {
 				BitSet rows = dataTable.getSelectedModelRowsBS();
 				if (rows.get(index)) {
 					rows.clear(index);
@@ -2315,10 +2319,14 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				}
 				if (!JSUtil.isJS)
 					dataTable.setSelectedModelRowsBS(rows);
+			} else {
+				dataTable.selectModelRows(new int[] { index });
 			}
 			dataTable.getSelectedData();
 			boxState = BOX_STATE_INACTIVE;
 			selectionChanged = true;
+			if (curveFitter.isAutoFit())
+				refreshFit();
 			plot.repaint();
 			return;
 		}
@@ -2558,28 +2566,16 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					// find specified variable and move to x or y column
 					int col = isHorzVarPopup ? dataTable.getXColumn() : dataTable.getYColumn();
 					TableModel model = dataTable.getModel();
-					for (int i = 0; i < model.getColumnCount(); i++) {
-						if (var.equals(dataTable.getColumnName(i))) {
-							if (i == col) {
-								return; // no change
-							}
-							dataTable.getColumnModel().moveColumn(i, col);
-							break;
-						}
-					}
+					dataTable.moveColumn(var,  col);
 					// restore other variable if needed
 					if (!var.equals(otherVar)) {
 						col = isHorzVarPopup ? dataTable.getYColumn() : dataTable.getXColumn();
-						for (int i = 0; i < model.getColumnCount(); i++) {
-							if (otherVar.equals(dataTable.getColumnName(i))) {
-								dataTable.getColumnModel().moveColumn(i, col);
-								break;
-							}
-						}
+						dataTable.moveColumn(otherVar, col);
 					}
 					// restore labels
 					col = dataTable.convertColumnIndexToView(0);
 					dataTable.getColumnModel().moveColumn(col, labelCol);
+					refreshPlot();
 				}
 
 			};
@@ -2914,7 +2910,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			plot.refreshArea();
 		}
 		// BH was this.repaint?
-		if (fitTimer == null || !fitTimer.isRunning())
+		if (fitTimer == null || !fitTimer.isRunning() || ! curveFitter.isAutoFit())
 			plot.repaint();
 		refreshFit();
 	}

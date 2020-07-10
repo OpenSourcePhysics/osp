@@ -34,8 +34,15 @@ public class QMSuperpositionApp extends AbstractAnimation implements PropertyCha
    boolean showDataPanelTime=true;
    boolean centeredPhase=false;
    boolean parseError=false;
-   
+     
    public QMSuperpositionApp() {
+	  
+	   // BH 2020.07.09 set testApplet.app to be this class
+	   // we use @j2sAlias to allow unqualified methods
+	   
+	  OSPRuntime.setAppClass(this);
+	  
+	  
       psiFrame.setTitle("QM Position Space Wave Function");
       psiPanel.limitAutoscaleY(-0.05, 0.05);
       psiPanel.addDrawable(psiDataset);
@@ -43,6 +50,23 @@ public class QMSuperpositionApp extends AbstractAnimation implements PropertyCha
       psiDataset.setXYColumnNames("x", "Re[$\\Psi$]", "Im[$\\Psi$]", "$\\Psi$(x,t)");
    }
 
+   /**
+    * Start or stop the animation.
+    * 
+    * see _embedded_example.html
+    * 
+    * 
+    * @j2sAlias startStopAnimation
+    * 
+    * @param start
+    */
+   public void startStopAnimation(boolean start) {
+	  if (start)
+		  startAnimation();
+	  else
+		  stopAnimation();
+   }
+   
    @Override
 public void initializeAnimation() {
       super.initializeAnimation();

@@ -10,8 +10,10 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 
 import org.opensourcephysics.controls.OSPLog;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.ejs.control.value.Value;
 import org.opensourcephysics.frames.PlotFrame;
+import org.opensourcephysics.js.JSUtil;
 
 /**
  * A simple program to test the OSP Library installation.
@@ -32,6 +34,14 @@ public class FirstPlotApp {
     frame.setVisible(true);
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     OSPLog.info("FirstPlotApp running.");
+    
+    //WC: embedding test code
+    if(JSUtil.isJS)frame.setLocation(0, 0);  // sets position to top left corner
+    System.err.println("before change="+frame.getName());
+    frame.setName("newName");
+    System.err.println("after change="+frame.getName());
+    OSPRuntime.setAppClass(frame);
+    //WC: end testing
   }
 
 }

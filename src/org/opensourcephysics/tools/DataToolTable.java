@@ -2488,7 +2488,7 @@ public class DataToolTable extends DataTable {
 					: column == 0 ? Integer.valueOf(getModelRow(row))
 							: super.getValueAt(row,  column));
 		}
-
+		
 		@Override
 		public String getColumnName(int col) {
 			if (col >= getColumnCount()) {
@@ -2829,6 +2829,16 @@ public class DataToolTable extends DataTable {
 		return (n == 0 ? allowNone : n >= fit.getParameterCount());
 	}
 
+	public void moveColumn(String var, int col) {
+		for (int i = 0, n = dataTableModel.getColumnCount(); i < n; i++) {
+			if (var.equals(getColumnName(i))) {
+				if (i != col) {
+					getColumnModel().moveColumn(i, col);
+				}
+				return;
+			}
+		}
+	}
 }
 
 /*
