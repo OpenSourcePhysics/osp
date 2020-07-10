@@ -162,8 +162,13 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 	// instance fields
 
-	DatasetCurveFitter curveFitter;
+	private DatasetCurveFitter curveFitter;
 
+	DatasetCurveFitter getCurveFitter() {
+		checkGUI();
+		return curveFitter;
+	}
+	
 	protected DataTool dataTool; // the DataTool that displays this tab
 	protected int originatorID = 0; // the ID of the Data object that owns this tab
 	protected DatasetManager dataManager = new DatasetManager(); // datasets in this tab
@@ -2559,7 +2564,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					int labelCol = dataTable.convertColumnIndexToView(0);
 					// find specified variable and move to x or y column
 					int col = isHorzVarPopup ? dataTable.getXColumn() : dataTable.getYColumn();
-					TableModel model = dataTable.getModel();
 					dataTable.moveColumn(var,  col);
 					// restore other variable if needed
 					if (!var.equals(otherVar)) {
