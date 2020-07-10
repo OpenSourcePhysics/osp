@@ -979,7 +979,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		//if (x < 0)
 		//OSPLog.debug("??DrawingPanel.setBounds(" + x + " " + y  + " " + width + " " + height + " " + this.getClass().getName());
 		
-		if (x < 0 || getX() == x && getY() == y && getWidth() == width
+		if (getX() == x && getY() == y && getWidth() == width
 				&& getHeight() == height) {
 			return;
 		}
