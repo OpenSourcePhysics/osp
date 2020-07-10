@@ -69,7 +69,7 @@ import java.util.TreeMap;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -151,9 +151,9 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	}
 
 // static fields
-	protected static Icon inOutIcon, playIcon, grayPlayIcon, pauseIcon;
-	protected static Icon resetIcon, loopIcon, noloopIcon, videoClipIcon;
-	protected static Icon stepIcon, grayStepIcon, backIcon, grayBackIcon;
+	protected static ImageIcon inOutIcon, playIcon, grayPlayIcon, pauseIcon;
+	protected static ImageIcon resetIcon, loopIcon, noloopIcon, videoClipIcon;
+	protected static ImageIcon stepIcon, grayStepIcon, backIcon, grayBackIcon;
 	private static GoToDialog goToDialog;
 	private static NumberFormat timeFormat = NumberFormat.getNumberInstance();
 	static {
@@ -1714,7 +1714,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		 *
 		 * @param icon the icon
 		 */
-		public PlayerButton(Icon icon) {
+		public PlayerButton(ImageIcon icon) {
 			this();
 			setIcon(icon);
 		}
@@ -1725,7 +1725,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		 * @param off the unselected state icon
 		 * @param on  the selected state icon
 		 */
-		public PlayerButton(Icon off, Icon on) {
+		public PlayerButton(ImageIcon off, ImageIcon on) {
 			this();
 			setIcon(off);
 			setSelectedIcon(on);
