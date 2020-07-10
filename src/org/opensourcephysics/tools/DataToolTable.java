@@ -173,12 +173,11 @@ public class DataToolTable extends DataTable {
 				if (e.getFirstIndex() == -1) {
 					return;
 				}
-				dataTableModel.setSelectedRowsFromJTable();
+//				dataTableModel.setSelectedRowsFromJTable();
 				if (!e.getValueIsAdjusting()) {
 					int labelCol = convertColumnIndexToView(0);
 					addColumnSelectionInterval(labelCol, labelCol);
-					dataToolTab.setSelectedData(getSelectedData(), true);
-					
+					dataToolTab.setSelectedData(getSelectedData(), true);					
 				}
 			}
 		});
@@ -514,7 +513,6 @@ public class DataToolTable extends DataTable {
 			leadCol = col;
 		}
 		// save selected columns
-		
 		addColumnSelectionInterval(labelCol, labelCol);
 		dataTableModel.setColumnSelectionFromJTable();
 		getSelectedData();
@@ -2824,9 +2822,9 @@ public class DataToolTable extends DataTable {
 
 	}
 
-	public boolean isFitDrawable(KnownFunction fit, boolean allowNone) {
+	public boolean isFitFittable(KnownFunction fit, boolean allowNone) {
 		int n = selectedData.getHighlightCount();
-		return (n == 0 ? allowNone : n >= fit.getParameterCount());
+		return (n == 0 ? allowNone : n >= fit.getParameterCount() );
 	}
 
 	public void moveColumn(String var, int col) {
