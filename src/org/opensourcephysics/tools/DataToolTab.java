@@ -162,8 +162,13 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 	// instance fields
 
-	DatasetCurveFitter curveFitter;
+	private DatasetCurveFitter curveFitter;
 
+	DatasetCurveFitter getCurveFitter() {
+		checkGUI();
+		return curveFitter;
+	}
+	
 	protected DataTool dataTool; // the DataTool that displays this tab
 	protected int originatorID = 0; // the ID of the Data object that owns this tab
 	protected DatasetManager dataManager = new DatasetManager(); // datasets in this tab
@@ -667,7 +672,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 * @param addToFitBuilder true to add a UserFunction to the fit builder
 	 */
 	public void addFitFunction(KnownFunction f, boolean addToFitBuilder) {
-		curveFitter.addFitFunction(f, addToFitBuilder);
+		getCurveFitter().addFitFunction(f, addToFitBuilder);
 	}
 
 	/**
@@ -911,7 +916,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		// FontSizer.setFonts(statsTable, level);
 		// FontSizer.setFonts(propsTable, level);
 
-		curveFitter.setFontLevel(level);
+		getCurveFitter().setFontLevel(level);
 
 		double factor = FontSizer.getFactor(level);
 		plot.getAxes().resizeFonts(factor, plot);
@@ -1367,7 +1372,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				splitPanes[1].setEnabled(true);
-				curveFitter.setFontLevel(FontSizer.getLevel());
+				getCurveFitter().setFontLevel(FontSizer.getLevel());
 				splitPanes[1].setBottomComponent(curveFitter);
 				splitPanes[1].setDividerSize(splitPanes[0].getDividerSize());
 				splitPanes[1].setDividerLocation(-1);
@@ -1670,7 +1675,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				}
 				else {
 					fitMenu.removeAll();
-					String[] fitNames = curveFitter.getFitNames();
+					String[] fitNames = getCurveFitter().getFitNames();
 					for (int i = 0; i < fitNames.length; i++) {
 						JMenuItem item = new JMenuItem(FitBuilder.localize(fitNames[i]));
 						item.setActionCommand(fitNames[i]);
@@ -2363,7 +2368,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	
 	private boolean isFitterVisible() {
 //		return splitPanes[1].getDividerLocation() <= splitPanes[1].getMaximumDividerLocation();
-		return splitPanes[1].getBottomComponent() == curveFitter;
+		return curveFitter != null && splitPanes[1].getBottomComponent() == curveFitter;
 	}
 
 	private void findHits(final boolean subtract, boolean showInTable) {
@@ -2565,7 +2570,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					int labelCol = dataTable.convertColumnIndexToView(0);
 					// find specified variable and move to x or y column
 					int col = isHorzVarPopup ? dataTable.getXColumn() : dataTable.getYColumn();
-					TableModel model = dataTable.getModel();
 					dataTable.moveColumn(var,  col);
 					// restore other variable if needed
 					if (!var.equals(otherVar)) {
@@ -2771,7 +2775,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 * @param selectedData the Dataset to pass to the fitter and fourier panel
 	 */
 	protected void setSelectedData(Dataset selectedData, boolean dofit) {
-		curveFitter.setData(selectedData, dofit);
+		getCurveFitter().setData(selectedData, dofit);
 		if (fourierPanel != null) {
 			try {
 			fourierPanel.refreshFourierData(selectedData, getName());
@@ -3439,7 +3443,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 				boolean measureData = !isFitterVisible() || (measureFit && toggleMeasurement)
 						|| (!measureFit && !toggleMeasurement);
-				FunctionDrawer drawer = curveFitter.getDrawer();
+				FunctionDrawer drawer = getCurveFitter().getDrawer();
 
 				if (positionVisible) {
 					if (measureData && j > -1 && !Double.isNaN(ypoints[j])) {
@@ -3490,7 +3494,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 			boolean measureData = !isFitterVisible() || (measureFit && toggleMeasurement)
 					|| (!measureFit && !toggleMeasurement);
-			FunctionDrawer drawer = curveFitter.getDrawer();
+			FunctionDrawer drawer = getCurveFitter().getDrawer();
 			areaLimits[0].refreshX();
 			areaLimits[1].refreshX();
 			double lower = Math.min(areaLimits[0].x, areaLimits[1].x);
@@ -4528,7 +4532,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			// save selected fit function panel
 			// note: as of Dec 2014, no longer save ALL fitBuilder panels since most
 			// are for default or autoloaded functions
-			if (tab.dataTool.fitBuilder != null && tab.curveFitter != null) {
+			tab.getCurveFitter();
+			if (tab.dataTool.fitBuilder != null) {
 				String fitName = tab.curveFitter.fit.getName();
 				FitFunctionPanel panel = (FitFunctionPanel) tab.dataTool.fitBuilder.getPanel(fitName);
 				if (panel != null) {
@@ -4663,6 +4668,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			}
 
 			// select fit
+			tab.getCurveFitter();
 			String fitName = control.getString("selected_fit"); //$NON-NLS-1$
 			tab.curveFitter.setSelectedItem(fitName);
 			tab.curveFitter.selectFit(fitName);

@@ -49,11 +49,12 @@ import javajs.async.AsyncFileChooser;
 @SuppressWarnings("serial")
 public class FitBuilder extends FunctionTool {
 
-	static AsyncFileChooser chooser;
-	static java.io.FileFilter xmlFilter;
-	static String[] preferredAutoloadSearchPaths;
-	static Collection<String> initialAutoloadSearchPaths = new TreeSet<String>();
-	static Map<String, String[]> autoloadMap = new TreeMap<String, String[]>();
+	private final static java.io.FileFilter xmlFilter;
+	private final static Collection<String> initialAutoloadSearchPaths = new TreeSet<String>();
+	private final static Map<String, String[]> autoloadMap = new TreeMap<String, String[]>();
+
+	private static String[] preferredAutoloadSearchPaths;
+	private static AsyncFileChooser chooser;
 
 	static {
 		xmlFilter = new java.io.FileFilter() {
@@ -232,7 +233,7 @@ public class FitBuilder extends FunctionTool {
 			DataTool dataTool = (DataTool) win;
 			DataToolTab tab = dataTool.getSelectedTab();
 			if (tab != null) {
-				return tab.curveFitter;
+				return tab.getCurveFitter();
 			}
 		}
 		return null;
