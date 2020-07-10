@@ -30,6 +30,7 @@ import java.util.StringTokenizer;
 
 import javax.swing.event.TableModelEvent;
 
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
@@ -1560,6 +1561,9 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 		}
 //		double[] tempX = getXPoints();
 //		double[] tempY = getYPoints();
+		
+
+		
 		for (int i = 0; i < index; i++) {
 			double x = xpoints[i];
 			double y = getY(i);
@@ -1574,6 +1578,10 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 			}
 			xp = drawingPanel.xToPix(x);
 			yp = drawingPanel.yToPix(y);
+			
+//			if (index < 3)OSPLog.debug("Dataset.drawScatter " 
+//			+ index + " " + x + " " + y + "/" + xp + " " + yp + " "+ g2.getTransform());
+//			
 			switch (markerShape) {
 			case BAR: // draw a bar graph.
 				double bottom = Math.min(drawingPanel.yToPix(0), drawingPanel.yToPix(drawingPanel.getYMin()));

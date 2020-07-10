@@ -14,6 +14,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -384,6 +385,7 @@ final public class DataToolPropsTable extends JTable {
 						styleDialog.repaint();
 						frame.repaint();
 					}
+					repaint();
 				}
 
 			});
@@ -399,6 +401,7 @@ final public class DataToolPropsTable extends JTable {
 						styleDialog.repaint();
 						frame.repaint();
 					}
+					repaint();
 				}
 
 			});
@@ -416,7 +419,9 @@ final public class DataToolPropsTable extends JTable {
 			markerPlot.setBorder(BorderFactory.createEtchedBorder());
 			markerPlot.setBackground(Color.white);
 			markerPlot.setAntialiasShapeOn(true);
-			markerDataset.append(0, 1);
+			markerDataset.append(0, 0); 
+			// BH don't know why this was (0,1); (0,0) centers the square
+			markerDataset.setName("marker");
 			markerPlot.addDrawable(markerDataset);
 			// create line plot
 			DrawingPanel linePlot = new DrawingPanel() {
@@ -697,9 +702,25 @@ final public class DataToolPropsTable extends JTable {
 			}
 			if (value instanceof WorkingDataset) {
 				if (panel == null) {
-					markerset = new Dataset();
+					markerset = new Dataset() 
+//					{
+//						
+//						@Override
+//						public void draw(DrawingPanel p,  Graphics g) {
+//							super.draw(p, g);
+//						}
+//						
+//					}
+							;
 					markerset.append(0, 1);
-					lineset = new Dataset();
+					lineset = new Dataset()
+//					{
+//						@Override
+//						public void draw(DrawingPanel p,  Graphics g) {
+//							super.draw(p, g);
+//						}
+//					}
+					;
 					lineset.append(-1, 2);
 					lineset.append(1, 0);
 					lineset.setMarkerShape(Dataset.NO_MARKER);
@@ -710,14 +731,15 @@ final public class DataToolPropsTable extends JTable {
 					plot = new DrawingPanel();
 					plot.setBackground(Color.white);
 					plot.setAntialiasShapeOn(true);
-					plot.addDrawable(markerset);
 					plot.addDrawable(lineset);
+					plot.addDrawable(markerset);
 					panel.add(plot);
 				}
 				WorkingDataset working = (WorkingDataset) value;
 				markerset.setMarkerColor(working.getFillColor(), working.getEdgeColor());
 				markerset.setMarkerSize(working.getMarkerSize());
 				markerset.setMarkerShape(working.markerType);
+//				markerset.setValueAt(Double.valueOf(working.markerType == Dataset.POST ? 1 : 0.5), 0, 0);
 				lineset.setLineColor(working.getLineColor());
 				Boolean markerVis = (Boolean) propsModel.getValueAt(markerRow, col);
 				Boolean lineVis = (Boolean) propsModel.getValueAt(lineRow, col);
