@@ -1005,7 +1005,6 @@ public class DatasetCurveFitter extends JPanel {
 			return;
 		if (name == null)
 			name = getLineFitName();
-		OSPLog.debug("pig select fit "+name);
 		fit = fitMap.get(name);
 		if (fit != null) {
 			FunctionDrawer prev = drawer;
