@@ -594,7 +594,7 @@ public class ResourceLoader {
 	 * @param path the path
 	 * @return the icon
 	 */
-	public static Icon getIcon(String path) {
+	public static ImageIcon getIcon(String path) {
 		URL url = getAppletResourceURL(path); // added by W. Christian
 		if (url != null) {
 			return new ImageIcon(url);
