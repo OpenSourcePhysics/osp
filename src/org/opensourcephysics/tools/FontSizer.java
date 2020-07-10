@@ -16,8 +16,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.AbstractButton;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JTextField;
@@ -333,11 +335,26 @@ public class FontSizer {
     		}
     	}
     }
+    else if (c instanceof AbstractButton) {
+    	AbstractButton b = (AbstractButton)c;
+    	Icon icon = b.getIcon();
+			if (icon!=null && icon instanceof ResizableIcon) {
+				((ResizableIcon)icon).resize(getIntegerFactor());
+			}
+    }
+    else if (c instanceof JLabel) {
+    	JLabel b = (JLabel)c;
+    	Icon icon = b.getIcon();
+			if (icon!=null && icon instanceof ResizableIcon) {
+				((ResizableIcon)icon).resize(getIntegerFactor());
+			}
+    }
     else try {
 			Method m = c.getClass().getMethod("getIcon", (Class<?>[])null); //$NON-NLS-1$
 			if (m != null) {
 				Icon icon = (Icon)m.invoke(c, (Object[])null);
 				if (icon!=null && icon instanceof ResizableIcon) {
+					System.out.println("pig "+c.getClass());
 					((ResizableIcon)icon).resize(getIntegerFactor());
 				}
  			}	
