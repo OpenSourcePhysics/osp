@@ -55,6 +55,7 @@ import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.display.Data;
 import org.opensourcephysics.display.Drawable;
 import org.opensourcephysics.display.InteractivePanel;
+import org.opensourcephysics.display.MessageDrawable;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.core.VideoIO.FinalizableLoader;
 
@@ -545,7 +546,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	 * Hides the mouse box
 	 */
 	public void hideMouseBox() {
-			messages.setMessage(null, 0);  // BL message box
+			messages.setMessage(null, MessageDrawable.BOTTOM_LEFT);  // BL message box
 	}
 
 	/**

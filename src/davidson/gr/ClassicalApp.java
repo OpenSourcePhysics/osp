@@ -99,7 +99,7 @@ public class ClassicalApp extends AbstractSimulation implements InteractiveMouse
 		if (time >= maxTime) {
 			control.calculationDone(null);
 			stopSimulation();
-			plottingPanel.setMessage("Simulation done.", DrawingPanel.TOP_LEFT);
+			plottingPanel.setMessage("Simulation done.", MessageDrawable.TOP_LEFT);
 		}
 	}
 
@@ -124,9 +124,8 @@ public class ClassicalApp extends AbstractSimulation implements InteractiveMouse
 	 */
 	@Override
 	public void initialize() {
-		plottingPanel.setMessage(null, DrawingPanel.TOP_LEFT);
+		plottingPanel.setMessage(null, MessageDrawable.TOP_LEFT);
 		// clears all trajectories
-		plottingPanel.setMessage(null, DrawingPanel.TOP_LEFT);
 		plottingPanel.removeDrawables(AbstractTrajectory.class); // XXX WC JS Bug
 		trajectories.clear();
 		markers.clear();

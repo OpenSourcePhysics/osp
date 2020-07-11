@@ -46,6 +46,7 @@ import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.Interactive;
+import org.opensourcephysics.display.MessageDrawable;
 
 /**
  * This is a Point2D that implements the Interactive and Trackable interfaces
@@ -299,7 +300,7 @@ public class TPoint extends Point2D.Double implements Interactive, Trackable {
 			getWorldPosition(vidPanel);
 			XYCoordinateStringBuilder builder = vidPanel.getXYCoordinateStringBuilder(this);
 			String s = builder.getCoordinateString(vidPanel, worldPt.x, worldPt.y);
-			vidPanel.setMessage(s, DrawingPanel.BOTTOM_LEFT);
+			vidPanel.setMessage(s, MessageDrawable.BOTTOM_LEFT);
 		}
 	}
 

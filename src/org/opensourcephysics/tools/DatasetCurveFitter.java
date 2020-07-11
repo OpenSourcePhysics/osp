@@ -80,6 +80,7 @@ import org.opensourcephysics.display.ColorIcon;
 import org.opensourcephysics.display.Dataset;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.FunctionDrawer;
+import org.opensourcephysics.display.MessageDrawable;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.numerics.Function;
@@ -1106,12 +1107,7 @@ public class DatasetCurveFitter extends JPanel {
 			total += dev * dev;
 		}
 		if (tab != null) {
-			if (fitEvaluatedToNaN) {
-				String s = ToolsRes.getString("DatasetCurveFitter.Warning.FunctionError"); //$NON-NLS-1$
-				tab.plot.setMessage(s, DrawingPanel.TOP_RIGHT);
-			} else {
-				tab.plot.setMessage("", 2); //$NON-NLS-1$
-			}
+			tab.plot.setMessage(fitEvaluatedToNaN ? ToolsRes.getString("DatasetCurveFitter.Warning.FunctionError") : "", MessageDrawable.TOP_RIGHT);
 		}
 		return fitEvaluatedToNaN ? Double.NaN : total;
 	}

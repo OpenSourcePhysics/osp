@@ -78,20 +78,21 @@ import javajs.async.SwingJSUtils.Performance;
  */
 @SuppressWarnings("serial")
 public class DrawingPanel extends JPanel implements ActionListener, Renderable {
+	
+
+	public static final boolean messagesAsJLabels = true;
+	
 	protected static boolean RECORD_PAINT_TIMES = false; // set true to test painting time
 	protected long currentTime;// = System.currentTimeMillis();
 
-	/** Message box location */
-	public static final int BOTTOM_LEFT = 0;
-
-	/** Message box location */
-	public static final int BOTTOM_RIGHT = 1;
-
-	/** Message box location */
-	public static final int TOP_RIGHT = 2;
-
-	/** Message box location */
-	public static final int TOP_LEFT = 3;
+	@Deprecated
+	public static final int BOTTOM_LEFT = MessageDrawable.BOTTOM_LEFT;
+	@Deprecated
+	public static final int BOTTOM_RIGHT = MessageDrawable.BOTTOM_RIGHT;
+	@Deprecated
+	public static final int TOP_RIGHT = MessageDrawable.TOP_RIGHT;
+	@Deprecated
+	public static final int TOP_LEFT = MessageDrawable.TOP_LEFT;
 	
 	protected JPopupMenu popupmenu; // right mouse click popup menu
 	/**
@@ -134,7 +135,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	protected BufferedImage offscreenImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
 	protected BufferedImage workingImage = offscreenImage;
 	private boolean buffered = false; // true will draw this component using an off-screen image
-	protected MessageDrawable messages = new MessageDrawable();
+	protected MessageDrawable messages = new MessageDrawable(messagesAsJLabels ? this : null);
 
 	protected DecimalFormat scientificFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.###E0"); // coordinate //$NON-NLS-1$
 																												// display
@@ -197,6 +198,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 * DrawingPanel constructor.
 	 */
 	public DrawingPanel() {
+		super(null);
 		setName("DrawingPanel");
 		setBackground(bgColor);
 		setPreferredSize(new Dimension(300, 300));
@@ -764,17 +766,9 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	/**
 	 * Finds the clipping rectangle if this panel is within a scroll pane viewport.
 	 */
-	protected Rectangle findViewRect() {
-		Rectangle rect = null;
-		Container c = getParent();
-		while (c != null) {
-			if (c instanceof JViewport) {
-				rect = ((JViewport) c).getViewRect();
-				break;
-			}
-			c = c.getParent();
-		}
-		return rect;
+	public Rectangle findViewRect() {
+		JViewport vp = GUIUtils.getParentViewport(this);
+		return (vp == null ? new Rectangle(0, 0, getWidth(), getHeight()) : vp.getViewRect());
 	}
 
 	/**
@@ -2194,7 +2188,8 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 				d.draw(this, g2);
 			}
 		}
-		messages.draw(this, g2);
+		if (!messagesAsJLabels)
+			messages.draw(this, g2);
 		g2.dispose(); // BH 2020.02.26
 	}
 
@@ -2549,7 +2544,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 * @param msg
 	 */
 	public void setMessage(String msg) {
-		setMessage(msg, BOTTOM_RIGHT);
+		setMessage(msg, MessageDrawable.BOTTOM_RIGHT);
 	}
 
 	
@@ -2618,7 +2613,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 			String s = coordinateStrBuilder.getCoordinateString(DrawingPanel.this, e);
 			System.err.println(" pressed coortd==" + s);
 			invalidateImage(); // validImage = false;
-			messages.setMessage(s, 0);
+			messages.setMessage(s, MessageDrawable.BOTTOM_LEFT);
 		}
 
 		/**
@@ -2628,7 +2623,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		 */
 		@Override
 		public void mouseReleased(MouseEvent e) {
-			messages.setMessage(null, 0);
+			messages.setMessage(null, MessageDrawable.BOTTOM_LEFT);
 		}
 
 		/**
@@ -2861,7 +2856,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		public void mouseReleased(MouseEvent e) {
 			if (isZoomEvent(e) && popupmenuIsEnabled) {
 				if (isZoom() && !zoomBox.isDragged() && zoomBox.showUndraggedBox) {
-					Dimension dim = viewRect == null ? getSize() : viewRect.getSize();
+					Dimension dim = viewRect.getSize();
 					dim.width -= getLeftGutter() + getRightGutter();
 					dim.height -= getTopGutter() + getBottomGutter();
 					zoomBox.xstart = e.getX() - dim.width / 4;
