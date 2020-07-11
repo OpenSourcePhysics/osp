@@ -3367,7 +3367,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		protected void paintDrawableList(Graphics g, ArrayList<Drawable> tempList) {
 			String s = message;
 			if (tempList.contains(curveFitter.getDrawer())) {
-				curveFitter.setFittable(dataTable.isFitDrawable(curveFitter.fit, boxState == BOX_STATE_INACTIVE));
+				boolean auto = curveFitter.isAutoFit();
+				boolean inactive = (boxState == BOX_STATE_INACTIVE);
+				curveFitter.setFitVisible(!auto || dataTable.isFitFittable(curveFitter.fit, inactive));
 				double[] ylimits = curveFitter.getDrawer().getYRange();
 				if ((ylimits[0] >= this.getYMax()) || (ylimits[1] <= this.getYMin())) {
 					s = ToolsRes.getString("DataToolTab.Plot.Message.FitNotVisible")
@@ -4684,15 +4686,15 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			Color color = (Color) control.getObject("fit_color"); //$NON-NLS-1$
 			tab.curveFitter.setColor(color);
 			// load fit visibility
-			boolean vis = control.getBoolean("fit_visible"); //$NON-NLS-1$
-//			tab.fitterCheckbox.setSelected(vis); // pig need to open fitter
+			if (control.getBoolean("fit_visible")) //$NON-NLS-1$
+			 tab.showFitterAction.actionPerformed(null);
 
 //      // don't load load props visibility: always visible!
 //      vis = control.getBoolean("props_visible"); //$NON-NLS-1$
 //      tab.propsCheckbox.setSelected(vis);
 
 			// load stats visibility
-			vis = control.getBoolean("stats_visible"); //$NON-NLS-1$
+			boolean vis = control.getBoolean("stats_visible"); //$NON-NLS-1$
 			tab.statsCheckbox.setSelected(vis);
 			// load splitPane locations
 			final int loc = control.getInt("split_pane"); //$NON-NLS-1$

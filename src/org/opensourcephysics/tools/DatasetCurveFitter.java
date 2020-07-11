@@ -1807,9 +1807,9 @@ public class DatasetCurveFitter extends JPanel {
 		fitBuilder.removePropertyChangeListener(fitListener);
 	}
 
-	public void setFittable(boolean fittable) {
-		getDrawer().setEnabled(fittable);
-		cellRenderer.setNotApplicable(!fittable);
+	public void setFitVisible(boolean vis) {
+		getDrawer().setEnabled(vis);
+//		cellRenderer.setNotApplicable(!fittable);
 	}
 
 }

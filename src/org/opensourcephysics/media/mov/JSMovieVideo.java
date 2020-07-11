@@ -138,7 +138,6 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 
 	/**
 	 * Plays the video at the current rate. Overrides VideoAdapter method.
-	 * pig this and stop below overrides may not be needed--needs testing
 	 */
 	@Override
 	public void play() {
