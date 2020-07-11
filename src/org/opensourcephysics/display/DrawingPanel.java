@@ -767,8 +767,8 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 * Finds the clipping rectangle if this panel is within a scroll pane viewport.
 	 */
 	public Rectangle findViewRect() {
-		JViewport vp = GUIUtils.getParentViewport(this);
-		return (vp == null ? new Rectangle(0, 0, getWidth(), getHeight()) : vp.getViewRect());
+		return (getParent() instanceof JViewport ?
+				((JViewport) getParent()).getViewRect() :  new Rectangle(0, 0, getWidth(), getHeight()));
 	}
 
 	/**

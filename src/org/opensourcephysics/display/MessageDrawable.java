@@ -66,13 +66,18 @@ public class MessageDrawable implements Drawable {
 	private DrawingPanel panel;
 
 	/**
-	 * Constructs a MessageDrawable.
+	 * Constructs a MessageDrawable using graphics
 	 *
 	 */
 	public MessageDrawable() {
 		this(null);
 	}
 
+	/**
+	 * Constructs a MessageDrawable optionally creating JLabels 
+	 * correctly positioned on a DrawingPanel
+	 * @param panel
+	 */
 	public MessageDrawable(DrawingPanel panel) {
 		this.panel = panel;
 		if (panel != null) {
