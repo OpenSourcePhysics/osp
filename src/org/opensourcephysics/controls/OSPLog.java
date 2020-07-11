@@ -74,6 +74,13 @@ import org.opensourcephysics.tools.FontSizer;
 @SuppressWarnings("serial")
 public class OSPLog extends JFrame {
 
+
+	/**
+	 * set to false to use standard System.out in Eclipse testing
+	 */
+	private static final boolean divertSysOut = true;
+	
+	
 	static int nLog;
 
 	private final static PrintStream realSysout = System.out;
@@ -117,6 +124,8 @@ public class OSPLog extends JFrame {
 			Level.ALL };
 	private static Level defaultLevel = ConsoleLevel.OUT_CONSOLE;
 	public static final int OUT_OF_MEMORY_ERROR = 1;
+
+	
 	protected static boolean logConsole = true;
 
 	// instance fields
@@ -1031,7 +1040,6 @@ public class OSPLog extends JFrame {
 		bundleName = resourceBundleName;
 		pkgName = name;
 		ConsoleLevel.class.getName(); // force ConsoleLevel to load static constants
-		System.err.println("OSPLog installed in System.out and System.err");
 		// create the logger
 		createLogger();
 		LoggerOutputStream loggerOut = new LoggerOutputStream(ConsoleLevel.OUT_CONSOLE, System.out);
@@ -1039,8 +1047,13 @@ public class OSPLog extends JFrame {
 		LoggerPrintStream loggerOutPrint = new LoggerPrintStream(loggerOut, false);
 		LoggerPrintStream loggerErrPrint = new LoggerPrintStream(loggerErr, true);
 		try {
-			System.setOut(loggerOutPrint);
-			System.setErr(loggerErrPrint);
+			if (divertSysOut) {
+				System.err.println("OSPLog installed in System.out and System.err");
+				System.setOut(loggerOutPrint);
+				System.setErr(loggerErrPrint);
+			} else {
+				System.err.println("OSPLog divertSysOut = false -- bypassing OSPLog.setOut");
+			}
 		} catch (SecurityException ex) {
 			/** empty block */
 		}

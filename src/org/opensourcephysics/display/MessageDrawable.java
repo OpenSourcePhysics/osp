@@ -14,15 +14,25 @@ package org.opensourcephysics.display;
  * <http://www.opensourcephysics.org/>
  */
 
-import java.awt.*; // uses Abstract Window Toolkit (awt)
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+// uses Abstract Window Toolkit (awt)
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Rectangle;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import javax.swing.JLabel;
 import javax.swing.JViewport;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 
-import org.opensourcephysics.display3d.simple3d.DrawingPanel3D;
 import org.opensourcephysics.tools.FontSizer;
 
 /**
@@ -32,6 +42,10 @@ import org.opensourcephysics.tools.FontSizer;
  * @version 1.0 05/16/05
  */
 public class MessageDrawable implements Drawable {
+	public static final int BOTTOM_LEFT = 0;
+	public static final int BOTTOM_RIGHT = 1;
+	public static final int TOP_RIGHT = 2;
+	public static final int TOP_LEFT = 3;
 	String tlStr = null; // "top left";
 	String trStr = null; // "top right";
 	String blStr = null; // "bottom left";
@@ -41,31 +55,70 @@ public class MessageDrawable implements Drawable {
 	protected String fontname = "TimesRoman"; // The logical name of the font to use //$NON-NLS-1$
 	protected int fontsize = 12; // The font size
 	protected int fontstyle = Font.PLAIN; // The font style
-	protected boolean ignoreRepaint=false;
+	protected boolean ignoreRepaint = false;
 
 	protected PropertyChangeListener guiChangeListener;
 
 	/**
-	 * Constructs a MessageDrawable.
+	 * JLabel mode uses a panel reference
+	 */
+	private JLabel[] labels;
+	private DrawingPanel panel;
+
+	/**
+	 * Constructs a MessageDrawable using graphics
 	 *
 	 */
 	public MessageDrawable() {
+		this(null);
+	}
+
+	/**
+	 * Constructs a MessageDrawable optionally creating JLabels 
+	 * correctly positioned on a DrawingPanel
+	 * @param panel
+	 */
+	public MessageDrawable(DrawingPanel panel) {
+		this.panel = panel;
+		if (panel != null) {
+			labels = new JLabel[4];
+			panel.addComponentListener(new ComponentListener() {
+
+				@Override
+				public void componentResized(ComponentEvent e) {
+					moveToView((DrawingPanel) e.getComponent());
+				}
+
+				@Override
+				public void componentMoved(ComponentEvent e) {
+					moveToView((DrawingPanel) e.getComponent());
+				}
+
+				@Override
+				public void componentShown(ComponentEvent e) {
+				}
+
+				@Override
+				public void componentHidden(ComponentEvent e) {
+				}
+			});
+		}
 		font = new Font(fontname, fontstyle, fontsize);
 		guiChangeListener = new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
-				System.err.println("Property changed ="+e);
-				if (e.getPropertyName().equals(FontSizer.PROPERTY_LEVEL)) { //$NON-NLS-1$
+				System.err.println("Property changed =" + e);
+				if (e.getPropertyName().equals(FontSizer.PROPERTY_LEVEL)) { // $NON-NLS-1$
 					int level = ((Integer) e.getNewValue()).intValue();
 					setFontLevel(level);
 				}
 			}
 		};
-		FontSizer.addPropertyChangeListener(FontSizer.PROPERTY_LEVEL, guiChangeListener); //$NON-NLS-1$
+		FontSizer.addPropertyChangeListener(FontSizer.PROPERTY_LEVEL, guiChangeListener); // $NON-NLS-1$
 	}
-	
-	public void setIgnoreRepaint(boolean ignore){
-		ignoreRepaint=ignore;
+
+	public void setIgnoreRepaint(boolean ignore) {
+		ignoreRepaint = ignore;
 	}
 
 	/**
@@ -74,7 +127,8 @@ public class MessageDrawable implements Drawable {
 	 * @param factor the factor
 	 */
 	public void setMessageFont(Font aFont) {
-		if (aFont!=null) font = aFont;
+		if (aFont != null)
+			font = aFont;
 	}
 
 	/**
@@ -84,7 +138,7 @@ public class MessageDrawable implements Drawable {
 	 */
 	protected void setFontLevel(int level) {
 		font = FontSizer.getResizedFont(font, level);
-		System.err.println("Setting front level ="+level);
+		System.err.println("Setting front level =" + level);
 	}
 
 	/**
@@ -96,13 +150,20 @@ public class MessageDrawable implements Drawable {
 		font = FontSizer.getResizedFont(font, factor);
 	}
 
+	public void refreshGUI() {
+		if (labels != null)
+			for (int i = 0; i < 4; i++) {
+				labels[i] = null;
+			}
+	}
+
 	/**
 	 * Shows a message in a yellow text box in the lower right hand corner.
 	 *
 	 * @param msg
 	 */
 	public void setMessage(String msg) {
-		setMessage(msg, DrawingPanel.BOTTOM_RIGHT);
+		setMessage(msg, BOTTOM_RIGHT);
 	}
 
 	/**
@@ -122,91 +183,70 @@ public class MessageDrawable implements Drawable {
 				msg = TeXParser.parseTeX(msg);
 		}
 		switch (location) {
-		case DrawingPanel.BOTTOM_LEFT: // usually used for mouse coordinates
+		case BOTTOM_LEFT: // usually used for mouse coordinates
 			blStr = msg;
 			break;
-		case DrawingPanel.BOTTOM_RIGHT:
+		case BOTTOM_RIGHT:
 			brStr = msg;
 			break;
-		case DrawingPanel.TOP_RIGHT:
+		case TOP_RIGHT:
 			trStr = msg;
 			break;
-		case DrawingPanel.TOP_LEFT:
+		case TOP_LEFT:
 			tlStr = msg;
 			break;
 		}
+		if (panel != null)
+			moveToView(panel);
 	}
-	
-	/**
-	 * Draws this message boxes on a DrawingPanel3D. Required to implement the
-	 * Drawable interface.
-	 *
-	 * @param panel DrawingPanel
-	 * @param g     Graphics
-	 */
-	//public void drawOn3D(DrawingPanel3D panel, Graphics g) {
-	public void drawOn3D(Component panel, Graphics g) {
-    if(ignoreRepaint) return;
-		// DB if DrawingPanel is in a scrollpane then use view rect for positioning
-		Rectangle port = null;
-		if (panel.getParent() instanceof JViewport) {
-			port = ((JViewport)panel.getParent()).getViewRect();
-		}		
-		g = g.create();
-//		/** @j2sNative g.unclip$I(-3); */
-		Font oldFont = g.getFont();
-		g.setFont(font);
-		FontMetrics fm = g.getFontMetrics();
-		int vertOffset = fm.getDescent();
-		int height = fm.getAscent() + 1 + vertOffset; // string height
-		int width = 0; // string width
-		g.setClip(0, 0, panel.getWidth(), panel.getHeight());
-		// this method implements the Drawable interface
-		if (tlStr != null && !tlStr.equals("")) { // draw tl message
-			g.setColor(Color.YELLOW);
-			width = fm.stringWidth(tlStr) + 6; // current string width
-			int x = port==null? 0: port.x;
-			int y = port==null? 0: port.y;
-			g.fillRect(x, y, width, height); // fills rectangle
-			g.setColor(Color.BLACK);
-			g.drawRect(x, y, width, height);
-			g.drawString(tlStr, x + 4, y + height - vertOffset);
+
+	protected void moveToView(DrawingPanel panel) {
+		Rectangle port = panel.findViewRect();
+		Dimension d;
+		JLabel l;
+		l = getLabel(panel, TOP_LEFT, tlStr);
+		if (l != null) {
+			d = l.getPreferredSize();
+			l.setBounds(port.x, port.y, d.width, d.height);
+			l.setVisible(true);
 		}
 
-		if (trStr != null) { // draw tr message
-			g.setColor(Color.YELLOW);
-			width = fm.stringWidth(trStr) + 8; // current string width
-			int x = port==null? panel.getWidth() - width: port.x + port.width - width;
-			int y = port==null? 0: port.y;
-			g.fillRect(x - 1, y, width, height); // fills rectangle
-			g.setColor(Color.BLACK);
-			g.drawRect(x - 1, y, width, height); // fills rectangle
-			g.drawString(trStr, x + 4, y + height - vertOffset);
+		l = getLabel(panel, TOP_RIGHT, trStr);
+		if (l != null) {
+			d = l.getPreferredSize();
+			l.setBounds(port.x + port.width - d.width, port.y, d.width, d.height);
+			l.setVisible(true);
 		}
-		if (blStr != null) { // draw bl message
-			g.setColor(Color.YELLOW);
-			width = fm.stringWidth(blStr) + 6; // current string width
-			int x = port==null? 0: port.x;
-			int y = port==null? panel.getHeight() - height: port.y + port.height - height;
-			g.fillRect(x, y - 1, width, height); // fills rectangle
-			g.setColor(Color.BLACK);
-			g.drawRect(x, y - 1, width, height);
-			g.drawString(blStr, x + 4, y + height - vertOffset - 1);
+		l = getLabel(panel, BOTTOM_LEFT, blStr);
+		if (l != null) {
+			d = l.getPreferredSize();
+			l.setBounds(port.x, port.y + port.height - d.height, d.width, d.height);
+			l.setVisible(true);
 		}
-		if (brStr != null) { // draw br message
-			g.setColor(Color.YELLOW);
-			width = fm.stringWidth(brStr) + 8; // current string width
-			int x = port==null? panel.getWidth() - width: port.x + port.width - width;
-			int y = port==null? panel.getHeight() - height: port.y + port.height - height;
-			g.fillRect(x - 1, y - 1, width, height); // fills rectangle
-			g.setColor(Color.BLACK);
-			g.drawRect(x - 1, y - 1, width, height); // outlines rectangle
-			g.drawString(brStr, x + 4, y + height - vertOffset - 1);
+		l = getLabel(panel, BOTTOM_RIGHT, brStr);
+		if (l != null) {
+			d = l.getPreferredSize();
+			l.setBounds(port.x + port.width - d.width, port.y + port.height - d.height, d.width, d.height);
+			l.setVisible(true);
 		}
-//		/** @j2sNative g.unclip$I(3); */
-		g.setFont(oldFont);
-		g.dispose();
-	
+	}
+
+	private JLabel getLabel(DrawingPanel panel, int location, String msg) {
+		JLabel l = labels[location];
+		if (l == null && msg != null) {
+			l = labels[location] = new JLabel(msg);
+			panel.add(l);
+			l.setOpaque(true);
+			l.setBackground(Color.yellow);
+			l.setBorder(new CompoundBorder(new LineBorder(Color.black, 1), new EmptyBorder(1, 2, 1, 2)));
+			FontSizer.setFont(l);
+		}
+		if (msg != null) {
+			l.setText(msg);
+		} else if (l != null) {
+			l.setVisible(false);
+		}
+		return l;
 	}
 
 	/**
@@ -218,12 +258,9 @@ public class MessageDrawable implements Drawable {
 	 */
 	@Override
 	public void draw(DrawingPanel panel, Graphics g) {
-		if(ignoreRepaint) return;
-		// DB if DrawingPanel is in a scrollpane then use view rect for positioning
-		Rectangle port = null;
-		if (panel.getParent() instanceof JViewport) {
-			port = ((JViewport)panel.getParent()).getViewRect();
-		}		
+		if (ignoreRepaint || this.panel != null)
+			return;
+		Rectangle port = panel.findViewRect();
 		g = g.create();
 //		/** @j2sNative g.unclip$I(-3); */
 		Font oldFont = g.getFont();
@@ -237,8 +274,8 @@ public class MessageDrawable implements Drawable {
 		if (tlStr != null) { // draw tl message
 			g.setColor(Color.YELLOW);
 			width = fm.stringWidth(tlStr) + 6; // current string width
-			int x = port==null? 0: port.x;
-			int y = port==null? 0: port.y;
+			int x = port.x;
+			int y = port.y;
 			g.fillRect(x, y, width, height); // fills rectangle
 			g.setColor(Color.BLACK);
 			g.drawRect(x, y, width, height);
@@ -248,8 +285,8 @@ public class MessageDrawable implements Drawable {
 		if (trStr != null) { // draw tr message
 			g.setColor(Color.YELLOW);
 			width = fm.stringWidth(trStr) + 8; // current string width
-			int x = port==null? panel.getWidth() - width: port.x + port.width - width;
-			int y = port==null? 0: port.y;
+			int x = port.x + port.width - width;
+			int y = port.y;
 			g.fillRect(x - 1, y, width, height); // fills rectangle
 			g.setColor(Color.BLACK);
 			g.drawRect(x - 1, y, width, height); // fills rectangle
@@ -258,8 +295,8 @@ public class MessageDrawable implements Drawable {
 		if (blStr != null) { // draw bl message
 			g.setColor(Color.YELLOW);
 			width = fm.stringWidth(blStr) + 14; // current string width
-			int x = port==null? 0: port.x;
-			int y = port==null? panel.getHeight() - height: port.y + port.height - height;
+			int x = port.x;
+			int y = port.y + port.height - height;
 			g.fillRect(x, y - 1, width, height); // fills rectangle
 			g.setColor(Color.BLACK);
 			g.drawRect(x, y - 1, width, height);
@@ -268,8 +305,8 @@ public class MessageDrawable implements Drawable {
 		if (brStr != null) { // draw br message
 			g.setColor(Color.YELLOW);
 			width = fm.stringWidth(brStr) + 8; // current string width
-			int x = port==null? panel.getWidth() - width: port.x + port.width - width;
-			int y = port==null? panel.getHeight() - height: port.y + port.height - height;
+			int x = port.x + port.width - width;
+			int y = port.y + port.height - height;
 			g.fillRect(x - 1, y - 1, width, height); // fills rectangle
 			g.setColor(Color.BLACK);
 			g.drawRect(x - 1, y - 1, width, height); // outlines rectangle
@@ -279,4 +316,79 @@ public class MessageDrawable implements Drawable {
 		g.setFont(oldFont);
 		g.dispose();
 	}
+
+	/**
+	 * 
+	 * Draws this message boxes on a DrawingPanel3D. Required to implement the
+	 * Drawable interface.
+	 *
+	 * @param panel DrawingPanel
+	 * @param g     Graphics
+	 */
+	// public void drawOn3D(DrawingPanel3D panel, Graphics g) {
+	public void drawOn3D(Component panel, Graphics g) {
+		if (ignoreRepaint)
+			return;
+		// DB if DrawingPanel is in a scrollpane then use view rect for positioning
+		Rectangle port = null;
+		if (panel.getParent() instanceof JViewport) {
+			port = ((JViewport) panel.getParent()).getViewRect();
+		}
+		g = g.create();
+//		/** @j2sNative g.unclip$I(-3); */
+		Font oldFont = g.getFont();
+		g.setFont(font);
+		FontMetrics fm = g.getFontMetrics();
+		int vertOffset = fm.getDescent();
+		int height = fm.getAscent() + 1 + vertOffset; // string height
+		int width = 0; // string width
+		g.setClip(0, 0, panel.getWidth(), panel.getHeight());
+		// this method implements the Drawable interface
+		if (tlStr != null && !tlStr.equals("")) { // draw tl message
+			g.setColor(Color.YELLOW);
+			width = fm.stringWidth(tlStr) + 6; // current string width
+			int x = port == null ? 0 : port.x;
+			int y = port == null ? 0 : port.y;
+			g.fillRect(x, y, width, height); // fills rectangle
+			g.setColor(Color.BLACK);
+			g.drawRect(x, y, width, height);
+			g.drawString(tlStr, x + 4, y + height - vertOffset);
+		}
+
+		if (trStr != null) { // draw tr message
+			g.setColor(Color.YELLOW);
+			width = fm.stringWidth(trStr) + 8; // current string width
+			int x = port == null ? panel.getWidth() - width : port.x + port.width - width;
+			int y = port == null ? 0 : port.y;
+			g.fillRect(x - 1, y, width, height); // fills rectangle
+			g.setColor(Color.BLACK);
+			g.drawRect(x - 1, y, width, height); // fills rectangle
+			g.drawString(trStr, x + 4, y + height - vertOffset);
+		}
+		if (blStr != null) { // draw bl message
+			g.setColor(Color.YELLOW);
+			width = fm.stringWidth(blStr) + 6; // current string width
+			int x = port == null ? 0 : port.x;
+			int y = port == null ? panel.getHeight() - height : port.y + port.height - height;
+			g.fillRect(x, y - 1, width, height); // fills rectangle
+			g.setColor(Color.BLACK);
+			g.drawRect(x, y - 1, width, height);
+			g.drawString(blStr, x + 4, y + height - vertOffset - 1);
+		}
+		if (brStr != null) { // draw br message
+			g.setColor(Color.YELLOW);
+			width = fm.stringWidth(brStr) + 8; // current string width
+			int x = port == null ? panel.getWidth() - width : port.x + port.width - width;
+			int y = port == null ? panel.getHeight() - height : port.y + port.height - height;
+			g.fillRect(x - 1, y - 1, width, height); // fills rectangle
+			g.setColor(Color.BLACK);
+			g.drawRect(x - 1, y - 1, width, height); // outlines rectangle
+			g.drawString(brStr, x + 4, y + height - vertOffset - 1);
+		}
+//		/** @j2sNative g.unclip$I(3); */
+		g.setFont(oldFont);
+		g.dispose();
+
+	}
+
 }

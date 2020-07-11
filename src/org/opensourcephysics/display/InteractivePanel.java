@@ -339,8 +339,9 @@ public void setShowCoordinates(boolean show) {
       }
       if(showCoordinates) {
         String s = coordinateStrBuilder.getCoordinateString(InteractivePanel.this, e);
-        messages.setMessage(s, 0);
-        repaint();
+        messages.setMessage(s, MessageDrawable.BOTTOM_LEFT);
+        if (!messagesAsJLabels)
+        	repaint();
       }
     }
 
@@ -357,8 +358,9 @@ public void setShowCoordinates(boolean show) {
       }
       iaDraggable = null;
       if(showCoordinates) {
-        messages.setMessage(null, 0);
-        repaint();
+        messages.setMessage(null, MessageDrawable.BOTTOM_LEFT);
+        if (!messagesAsJLabels)
+        	repaint();
       }
       setMouseCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
     }
@@ -421,7 +423,8 @@ public void setShowCoordinates(boolean show) {
       if(showCoordinates) {
         String s = coordinateStrBuilder.getCoordinateString(InteractivePanel.this, e);
         messages.setMessage(s, 0);
-        repaint();
+        if (!messagesAsJLabels)
+        	repaint();
       }
     }
 
