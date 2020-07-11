@@ -9,6 +9,7 @@ package org.opensourcephysics.display.axes;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -27,6 +28,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
@@ -106,7 +108,7 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 		});
 //		scaleSetter = new ScaleSetter();
 //		// create transparent scaleSetterPanel with no LayoutManager
-//		scaleSetterPanel = new javax.swing.JPanel(null);
+//		scaleSetterPanel = new JPanel(null);
 //		scaleSetterPanel.setOpaque(false);
 //		scaleSetterPanel.add(scaleSetter);
 //
@@ -340,7 +342,7 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 	public void hideScaleSetter() {
 		if (scaleSetter != null) {
 			scaleSetter.autoscaleCheckbox.requestFocusInWindow();
-			scaleSetter.setVisible(false);
+			scaleSetter.setVisible(null);
 		}
 	}
 
@@ -669,6 +671,29 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 			add(scaleField, BorderLayout.CENTER);
 		}
 
+
+	    public void setVisible(Point p) {
+    		Container frame = plot.getTopLevelAncestor();
+    		if (frame instanceof JFrame) {
+    			JPanel gp = (JPanel) ((JFrame) frame).getGlassPane();
+    			if (p == null) {
+    				gp.setVisible(false);
+    				return;
+    			}
+    			if (scaleSetterPanel.getParent() != gp)    			
+    				gp.add(scaleSetterPanel);    			
+	    		gp.setVisible(true);
+    		}
+	    }
+
+	    public void setVisible(boolean b) {
+	    	if (!b) {
+	    		setVisible(null);
+	    		return;
+	    	}
+	    	super.setVisible(b);
+	    }
+	    
 		void hideIfInactive() {
 			if ((scaleField.getBackground() != Color.yellow) && (scaleField.getSelectedText() == null) && !pinned) {
 				hideScaleSetter();
@@ -710,7 +735,7 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 				if (!drawingPanel.isFixedScale() && scaleSetter != null) {
 					getScaleSetter().setRegion(mouseRegion);
 					scaleSetter.validate();
-					scaleSetter.setVisible(true);
+					scaleSetter.setVisible(p);
 				}
 				return;
 			case HORZ_VAR:
