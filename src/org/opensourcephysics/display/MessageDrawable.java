@@ -33,6 +33,7 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.tools.FontSizer;
 
 /**
@@ -176,6 +177,7 @@ public class MessageDrawable implements Drawable {
 	 * @param location
 	 */
 	public void setMessage(String msg, int location) {
+		//OSPLog.debug("MessageDrawable.setMessage " + location + " " + msg);
 		if (msg != null) {
 			if (msg.length() == 0)
 				msg = null;
@@ -236,17 +238,25 @@ public class MessageDrawable implements Drawable {
 		if (l == null && msg != null) {
 			l = labels[location] = new JLabel(msg);
 			panel.add(l);
+			// BH by setting the label to be opaque,
+			// we allow SwingJS to use a standard CSS background.
+			// Otherwise it will paint itself AND force a full panel repaint.
 			l.setOpaque(true);
 			l.setBackground(Color.yellow);
-			l.setBorder(new CompoundBorder(new LineBorder(Color.black, 1), new EmptyBorder(1, 2, 1, 2)));
+			// BH If we use a border, then this also forces a 
+			// full panel repaint. 
+			//l.setBorder(new CompoundBorder(new LineBorder(Color.black, 1), new EmptyBorder(1, 2, 1, 2)));
+			l.setBorder(new EmptyBorder(0, 2, 0, 2));
 			FontSizer.setFont(l);
 		}
 		if (msg != null) {
 			l.setText(msg);
-		} else if (l != null) {
+			return l;
+		} 
+		if (l != null) {
 			l.setVisible(false);
 		}
-		return l;
+		return null;
 	}
 
 	/**
@@ -262,7 +272,6 @@ public class MessageDrawable implements Drawable {
 			return;
 		Rectangle port = panel.findViewRect();
 		g = g.create();
-//		/** @j2sNative g.unclip$I(-3); */
 		Font oldFont = g.getFont();
 		g.setFont(font);
 		FontMetrics fm = g.getFontMetrics();
@@ -312,7 +321,6 @@ public class MessageDrawable implements Drawable {
 			g.drawRect(x - 1, y - 1, width, height); // outlines rectangle
 			g.drawString(brStr, x + 4, y + height - vertOffset - 1);
 		}
-//		/** @j2sNative g.unclip$I(3); */
 		g.setFont(oldFont);
 		g.dispose();
 	}
@@ -335,7 +343,6 @@ public class MessageDrawable implements Drawable {
 			port = ((JViewport) panel.getParent()).getViewRect();
 		}
 		g = g.create();
-//		/** @j2sNative g.unclip$I(-3); */
 		Font oldFont = g.getFont();
 		g.setFont(font);
 		FontMetrics fm = g.getFontMetrics();
@@ -385,7 +392,6 @@ public class MessageDrawable implements Drawable {
 			g.drawRect(x - 1, y - 1, width, height); // outlines rectangle
 			g.drawString(brStr, x + 4, y + height - vertOffset - 1);
 		}
-//		/** @j2sNative g.unclip$I(3); */
 		g.setFont(oldFont);
 		g.dispose();
 
