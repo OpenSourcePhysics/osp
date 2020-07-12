@@ -70,6 +70,10 @@ import org.opensourcephysics.tools.DataToolTable.WorkingDataset;
 @SuppressWarnings("serial")
 final public class DataToolPropsTable extends JTable {
 	// static fields
+	
+	public static final String PROPERTY_PROPTABLE_DISPLAY = "display";
+	
+	
 	final static Color LIGHT_RED = new Color(255, 153, 153);
 	// instance fields
 	DataToolTable dataTable;
@@ -294,256 +298,256 @@ final public class DataToolPropsTable extends JTable {
 	}
 
 	protected JDialog getStyleDialog() {
-		if (styleDialog == null) {
-			// create style dialog
-			final Frame frame = JOptionPane.getFrameForComponent(dataTable);
-			styleDialog = new JDialog(frame, true);
-			closeButton = new JButton();
-			closeButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					styleDialog.setVisible(false);
-					markerEditor.stopCellEditing();
-				}
+		if (styleDialog != null)
+			return styleDialog;
+		// create style dialog
+		final Frame frame = JOptionPane.getFrameForComponent(dataTable);
+		styleDialog = new JDialog(frame, true);
+		closeButton = new JButton();
+		closeButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				styleDialog.setVisible(false);
+				markerEditor.stopCellEditing();
+			}
 
-			});
-			// create shape data and action
-			shapeNames = new String[] { ToolsRes.getString("Shape.Circle"), //$NON-NLS-1$
-					ToolsRes.getString("Shape.Square"), //$NON-NLS-1$
-					ToolsRes.getString("Shape.Pixel"), //$NON-NLS-1$
-					ToolsRes.getString("Shape.Bar"), //$NON-NLS-1$
-					ToolsRes.getString("Shape.Post") //$NON-NLS-1$
-			};
-			shapeNumbers = new int[] { Dataset.CIRCLE, Dataset.SQUARE, Dataset.PIXEL, Dataset.BAR, Dataset.POST };
-			// create shape spinner
-			SpinnerModel model = new SpinnerListModel(shapeNames);
-			shapeSpinner = new JSpinner(model) {
-				@Override
-				public Dimension getPreferredSize() {
-					Dimension dim = super.getPreferredSize();
-					dim.height = markerColorButton.getPreferredSize().height;
-					dim.width += 2;
-					return dim;
-				}
+		});
+		// create shape data and action
+		shapeNames = new String[] { ToolsRes.getString("Shape.Circle"), //$NON-NLS-1$
+				ToolsRes.getString("Shape.Square"), //$NON-NLS-1$
+				ToolsRes.getString("Shape.Pixel"), //$NON-NLS-1$
+				ToolsRes.getString("Shape.Bar"), //$NON-NLS-1$
+				ToolsRes.getString("Shape.Post") //$NON-NLS-1$
+		};
+		shapeNumbers = new int[] { Dataset.CIRCLE, Dataset.SQUARE, Dataset.PIXEL, Dataset.BAR, Dataset.POST };
+		// create shape spinner
+		SpinnerModel model = new SpinnerListModel(shapeNames);
+		shapeSpinner = new JSpinner(model) {
+			@Override
+			public Dimension getPreferredSize() {
+				Dimension dim = super.getPreferredSize();
+				dim.height = markerColorButton.getPreferredSize().height;
+				dim.width += 2;
+				return dim;
+			}
 
-			};
-			shapeSpinner.setToolTipText(ToolsRes.getString("Spinner.MarkerShape.ToolTip")); //$NON-NLS-1$
-			shapeSpinner.addChangeListener(new ChangeListener() {
-				@Override
-				public void stateChanged(ChangeEvent e) {
-					String shape = shapeSpinner.getValue().toString();
-					for (int i = 0; i < shapeNames.length; i++) {
-						if (shapeNames[i].equals(shape)) {
-							WorkingDataset working = dataTable.workingMap.get(styleDialog.getName());
-							if (working != null) {
-								dataTable.dataToolTab.tabChanged = true;
-								working.setMarkerShape(shapeNumbers[i]);
-								markerDataset.setMarkerShape(shapeNumbers[i]);
-								styleDialog.repaint();
-								frame.repaint();
-							}
+		};
+		shapeSpinner.setToolTipText(ToolsRes.getString("Spinner.MarkerShape.ToolTip")); //$NON-NLS-1$
+		shapeSpinner.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				String shape = shapeSpinner.getValue().toString();
+				for (int i = 0; i < shapeNames.length; i++) {
+					if (shapeNames[i].equals(shape)) {
+						WorkingDataset working = dataTable.workingMap.get(styleDialog.getName());
+						if (working != null) {
+							dataTable.dataToolTab.tabChanged = true;
+							working.setMarkerShape(shapeNumbers[i]);
+							markerDataset.setMarkerShape(shapeNumbers[i]);
+							styleDialog.repaint();
+							frame.repaint();
 						}
 					}
 				}
+			}
 
-			});
-			// create size spinner
-			SpinnerModel sizemodel = new SpinnerNumberModel(2, 1, 6, 1);
-			sizeSpinner = new JSpinner(sizemodel) {
-				@Override
-				public Dimension getPreferredSize() {
-					return shapeSpinner.getPreferredSize();
+		});
+		// create size spinner
+		SpinnerModel sizemodel = new SpinnerNumberModel(2, 1, 6, 1);
+		sizeSpinner = new JSpinner(sizemodel) {
+			@Override
+			public Dimension getPreferredSize() {
+				return shapeSpinner.getPreferredSize();
+			}
+
+		};
+		sizeSpinner.setToolTipText(ToolsRes.getString("Spinner.MarkerSize.ToolTip")); //$NON-NLS-1$
+		sizeSpinner.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				int size = ((Integer) sizeSpinner.getValue()).intValue();
+				WorkingDataset working = dataTable.workingMap.get(styleDialog.getName());
+				if (working != null) {
+					dataTable.dataToolTab.tabChanged = true;
+					working.setMarkerSize(size);
+					markerDataset.setMarkerSize(size);
+					styleDialog.repaint();
+					frame.repaint();
 				}
+			}
 
-			};
-			sizeSpinner.setToolTipText(ToolsRes.getString("Spinner.MarkerSize.ToolTip")); //$NON-NLS-1$
-			sizeSpinner.addChangeListener(new ChangeListener() {
-				@Override
-				public void stateChanged(ChangeEvent e) {
-					int size = ((Integer) sizeSpinner.getValue()).intValue();
-					WorkingDataset working = dataTable.workingMap.get(styleDialog.getName());
-					if (working != null) {
-						dataTable.dataToolTab.tabChanged = true;
-						working.setMarkerSize(size);
-						markerDataset.setMarkerSize(size);
-						styleDialog.repaint();
-						frame.repaint();
+		});
+		// create checkboxes
+		markerVisCheckbox = new JCheckBox(ToolsRes.getString("DataToolPropsTable.Dialog.Checkbox.Visible")); //$NON-NLS-1$
+		markerVisCheckbox.setHorizontalAlignment(SwingConstants.CENTER);
+		markerVisCheckbox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				WorkingDataset working = dataTable.workingMap.get(styleDialog.getName());
+				if (working != null) {
+					dataTable.dataToolTab.tabChanged(true);
+					working.setMarkersVisible(markerVisCheckbox.isSelected());
+					styleDialog.repaint();
+					frame.repaint();
+				}
+				repaint();
+			}
+
+		});
+		lineVisCheckbox = new JCheckBox(ToolsRes.getString("DataToolPropsTable.Dialog.Checkbox.Visible")); //$NON-NLS-1$
+		lineVisCheckbox.setHorizontalAlignment(SwingConstants.CENTER);
+		lineVisCheckbox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				WorkingDataset working = dataTable.workingMap.get(styleDialog.getName());
+				if (working != null) {
+					dataTable.dataToolTab.tabChanged(true);
+					working.setConnected(lineVisCheckbox.isSelected());
+					styleDialog.repaint();
+					frame.repaint();
+				}
+				repaint();
+			}
+
+		});
+		// create marker and line plots
+		final DrawingPanel markerPlot = new DrawingPanel() {
+			@Override
+			public Dimension getPreferredSize() {
+				Dimension dim = markerColorButton.getPreferredSize();
+				dim.width -= 20;
+				return dim;
+			}
+
+		};
+		markerPlot.setShowCoordinates(false);
+		markerPlot.setBorder(BorderFactory.createEtchedBorder());
+		markerPlot.setBackground(Color.white);
+		markerPlot.setAntialiasShapeOn(true);
+		markerDataset.append(0, 0);
+		// BH don't know why this was (0,1); (0,0) centers the square
+		markerDataset.setName("marker");
+		markerPlot.addDrawable(markerDataset);
+		// create line plot
+		DrawingPanel linePlot = new DrawingPanel() {
+			@Override
+			public Dimension getPreferredSize() {
+				return markerPlot.getPreferredSize();
+			}
+
+		};
+		linePlot.setShowCoordinates(false);
+		linePlot.setBorder(BorderFactory.createEtchedBorder());
+		linePlot.setBackground(Color.white);
+		linePlot.setAntialiasShapeOn(true);
+		lineDataset.append(-1, 1);
+		lineDataset.append(1, -1);
+		lineDataset.setMarkerShape(Dataset.NO_MARKER);
+		lineDataset.setConnected(true);
+		linePlot.addDrawable(lineDataset);
+		// create labels
+		shapeLabel = new JLabel(ToolsRes.getString("DataToolPropsTable.Dialog.Label.Shape")); //$NON-NLS-1$
+		sizeLabel = new JLabel(ToolsRes.getString("DataToolPropsTable.Dialog.Label.Size")); //$NON-NLS-1$
+		// create color chooser
+		final JColorChooser cc = new JColorChooser();
+		cc.getSelectionModel().addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				Color color = cc.getColor();
+				WorkingDataset working = dataTable.workingMap.get(styleDialog.getName());
+				if (working != null) {
+					dataTable.dataToolTab.tabChanged = true;
+					if (colorPopup.getName().equals("marker")) { //$NON-NLS-1$
+						working.setColor(color, working.getLineColor());
+					} else {
+						working.setColor(working.getEdgeColor(), color);
 					}
+					markerDataset.setMarkerColor(working.getFillColor(), working.getEdgeColor());
+					lineDataset.setLineColor(working.getLineColor());
+					colorPopup.setVisible(false);
+					styleDialog.repaint();
+					frame.repaint();
 				}
+			}
 
-			});
-			// create checkboxes
-			markerVisCheckbox = new JCheckBox(ToolsRes.getString("DataToolPropsTable.Dialog.Checkbox.Visible")); //$NON-NLS-1$
-			markerVisCheckbox.setHorizontalAlignment(SwingConstants.CENTER);
-			markerVisCheckbox.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					WorkingDataset working = dataTable.workingMap.get(styleDialog.getName());
-					if (working != null) {
-						dataTable.dataToolTab.tabChanged(true);
-						working.setMarkersVisible(markerVisCheckbox.isSelected());
-						styleDialog.repaint();
-						frame.repaint();
-					}
-					repaint();
-				}
+		});
+		// create color popup, action and buttons
+		colorPopup = new JDialog(styleDialog, true);
 
-			});
-			lineVisCheckbox = new JCheckBox(ToolsRes.getString("DataToolPropsTable.Dialog.Checkbox.Visible")); //$NON-NLS-1$
-			lineVisCheckbox.setHorizontalAlignment(SwingConstants.CENTER);
-			lineVisCheckbox.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					WorkingDataset working = dataTable.workingMap.get(styleDialog.getName());
-					if (working != null) {
-						dataTable.dataToolTab.tabChanged(true);
-						working.setConnected(lineVisCheckbox.isSelected());
-						styleDialog.repaint();
-						frame.repaint();
-					}
-					repaint();
-				}
+		colorPopup.setUndecorated(true);
+		colorPopup.getContentPane().add(cc.getChooserPanels()[0]);
+		colorPopup.pack();
+		ActionListener colorAction = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JButton b = (JButton) e.getSource();
+				colorPopup.setName((b == markerColorButton) ? "marker" : "line"); //$NON-NLS-1$ //$NON-NLS-2$
+				Point loc = b.getLocationOnScreen();
+				colorPopup.setLocation(loc.x, loc.y + b.getSize().height);
+				colorPopup.setVisible(true);
+			}
 
-			});
-			// create marker and line plots
-			final DrawingPanel markerPlot = new DrawingPanel() {
-				@Override
-				public Dimension getPreferredSize() {
-					Dimension dim = markerColorButton.getPreferredSize();
-					dim.width -= 20;
-					return dim;
-				}
+		};
+		markerColorButton = new JButton(ToolsRes.getString("DataToolPropsTable.Dialog.Button.Color")); //$NON-NLS-1$
+		markerColorButton.addActionListener(colorAction);
+		lineColorButton = new JButton(ToolsRes.getString("DataToolPropsTable.Dialog.Button.Color")); //$NON-NLS-1$
+		lineColorButton.addActionListener(colorAction);
+		// assemble dialog
+		JPanel contentPane = new JPanel(new BorderLayout());
+		Box box = Box.createVerticalBox();
+		contentPane.add(box);
+		// marker properties
+		Box markerBox = Box.createVerticalBox();
+		box.add(markerBox);
+		markerBox.setBorder(
+				BorderFactory.createTitledBorder(ToolsRes.getString("DataToolPropsTable.Dialog.Label.Markers"))); //$NON-NLS-1$
+		JPanel markerNorth = new JPanel(new GridLayout());
+		markerBox.add(markerNorth);
+		JPanel markerPlotPanel = new JPanel();
+		markerPlotPanel.add(markerPlot);
+		markerNorth.add(markerPlotPanel);
 
-			};
-			markerPlot.setShowCoordinates(false);
-			markerPlot.setBorder(BorderFactory.createEtchedBorder());
-			markerPlot.setBackground(Color.white);
-			markerPlot.setAntialiasShapeOn(true);
-			markerDataset.append(0, 0); 
-			// BH don't know why this was (0,1); (0,0) centers the square
-			markerDataset.setName("marker");
-			markerPlot.addDrawable(markerDataset);
-			// create line plot
-			DrawingPanel linePlot = new DrawingPanel() {
-				@Override
-				public Dimension getPreferredSize() {
-					return markerPlot.getPreferredSize();
-				}
+		JPanel markerButtonPanel = new JPanel();
+		markerButtonPanel.add(markerColorButton);
 
-			};
-			linePlot.setShowCoordinates(false);
-			linePlot.setBorder(BorderFactory.createEtchedBorder());
-			linePlot.setBackground(Color.white);
-			linePlot.setAntialiasShapeOn(true);
-			lineDataset.append(-1, 1);
-			lineDataset.append(1, -1);
-			lineDataset.setMarkerShape(Dataset.NO_MARKER);
-			lineDataset.setConnected(true);
-			linePlot.addDrawable(lineDataset);
-			// create labels
-			shapeLabel = new JLabel(ToolsRes.getString("DataToolPropsTable.Dialog.Label.Shape")); //$NON-NLS-1$
-			sizeLabel = new JLabel(ToolsRes.getString("DataToolPropsTable.Dialog.Label.Size")); //$NON-NLS-1$
-			// create color chooser
-			final JColorChooser cc = new JColorChooser();
-			cc.getSelectionModel().addChangeListener(new ChangeListener() {
-				@Override
-				public void stateChanged(ChangeEvent e) {
-					Color color = cc.getColor();
-					WorkingDataset working = dataTable.workingMap.get(styleDialog.getName());
-					if (working != null) {
-						dataTable.dataToolTab.tabChanged = true;
-						if (colorPopup.getName().equals("marker")) { //$NON-NLS-1$
-							working.setColor(color, working.getLineColor());
-						} else {
-							working.setColor(working.getEdgeColor(), color);
-						}
-						markerDataset.setMarkerColor(working.getFillColor(), working.getEdgeColor());
-						lineDataset.setLineColor(working.getLineColor());
-						colorPopup.setVisible(false);
-						styleDialog.repaint();
-						frame.repaint();
-					}
-				}
-
-			});
-			// create color popup, action and buttons
-			colorPopup = new JDialog(styleDialog, true);
-
-			colorPopup.setUndecorated(true);
-			colorPopup.getContentPane().add(cc.getChooserPanels()[0]);
-			colorPopup.pack();
-			ActionListener colorAction = new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					JButton b = (JButton) e.getSource();
-					colorPopup.setName((b == markerColorButton) ? "marker" : "line"); //$NON-NLS-1$ //$NON-NLS-2$
-					Point loc = b.getLocationOnScreen();
-					colorPopup.setLocation(loc.x, loc.y + b.getSize().height);
-					colorPopup.setVisible(true);
-				}
-
-			};
-			markerColorButton = new JButton(ToolsRes.getString("DataToolPropsTable.Dialog.Button.Color")); //$NON-NLS-1$
-			markerColorButton.addActionListener(colorAction);
-			lineColorButton = new JButton(ToolsRes.getString("DataToolPropsTable.Dialog.Button.Color")); //$NON-NLS-1$
-			lineColorButton.addActionListener(colorAction);
-			// assemble dialog
-			JPanel contentPane = new JPanel(new BorderLayout());
-			Box box = Box.createVerticalBox();
-			contentPane.add(box);
-			// marker properties
-			Box markerBox = Box.createVerticalBox();
-			box.add(markerBox);
-			markerBox.setBorder(
-					BorderFactory.createTitledBorder(ToolsRes.getString("DataToolPropsTable.Dialog.Label.Markers"))); //$NON-NLS-1$
-			JPanel markerNorth = new JPanel(new GridLayout());
-			markerBox.add(markerNorth);
-			JPanel markerPlotPanel = new JPanel();
-			markerPlotPanel.add(markerPlot);
-			markerNorth.add(markerPlotPanel);
-
-			JPanel markerButtonPanel = new JPanel();
-			markerButtonPanel.add(markerColorButton);
-
-			markerNorth.add(markerButtonPanel);
-			markerNorth.add(markerVisCheckbox);
-			JPanel markerCenter = new JPanel(new GridLayout());
-			markerBox.add(markerCenter);
-			JPanel sizePanel = new JPanel();
-			sizePanel.add(sizeLabel);
-			sizePanel.add(sizeSpinner);
-			markerCenter.add(sizePanel);
-			JPanel shapePanel = new JPanel();
-			shapePanel.add(shapeLabel);
-			shapePanel.add(shapeSpinner);
-			markerCenter.add(shapePanel);
-			// line properties
-			Box lineBox = Box.createVerticalBox();
-			box.add(lineBox);
-			lineBox.setBorder(
-					BorderFactory.createTitledBorder(ToolsRes.getString("DataToolPropsTable.Dialog.Label.Lines"))); //$NON-NLS-1$
-			JPanel lineNorth = new JPanel(new GridLayout());
-			lineBox.add(lineNorth);
-			JPanel linePlotPanel = new JPanel();
-			linePlotPanel.add(linePlot);
-			lineNorth.add(linePlotPanel);
-			JPanel lineButtonPanel = new JPanel();
-			lineButtonPanel.add(lineColorButton);
-			lineNorth.add(lineButtonPanel);
-			lineNorth.add(lineVisCheckbox);
-			// close button
-			JPanel buttonPanel = new JPanel();
-			buttonPanel.add(closeButton);
-			box.add(buttonPanel);
-			styleDialog.setContentPane(contentPane);
-			FontSizer.setFonts(styleDialog, FontSizer.getLevel());
-			styleDialog.pack();
-			Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-			int x = (dim.width - styleDialog.getWidth()) / 2;
-			Point p = this.getLocationOnScreen();
-			int y = Math.max(0, p.y - styleDialog.getHeight());
-			styleDialog.setLocation(x, y);
-		}
+		markerNorth.add(markerButtonPanel);
+		markerNorth.add(markerVisCheckbox);
+		JPanel markerCenter = new JPanel(new GridLayout());
+		markerBox.add(markerCenter);
+		JPanel sizePanel = new JPanel();
+		sizePanel.add(sizeLabel);
+		sizePanel.add(sizeSpinner);
+		markerCenter.add(sizePanel);
+		JPanel shapePanel = new JPanel();
+		shapePanel.add(shapeLabel);
+		shapePanel.add(shapeSpinner);
+		markerCenter.add(shapePanel);
+		// line properties
+		Box lineBox = Box.createVerticalBox();
+		box.add(lineBox);
+		lineBox.setBorder(
+				BorderFactory.createTitledBorder(ToolsRes.getString("DataToolPropsTable.Dialog.Label.Lines"))); //$NON-NLS-1$
+		JPanel lineNorth = new JPanel(new GridLayout());
+		lineBox.add(lineNorth);
+		JPanel linePlotPanel = new JPanel();
+		linePlotPanel.add(linePlot);
+		lineNorth.add(linePlotPanel);
+		JPanel lineButtonPanel = new JPanel();
+		lineButtonPanel.add(lineColorButton);
+		lineNorth.add(lineButtonPanel);
+		lineNorth.add(lineVisCheckbox);
+		// close button
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.add(closeButton);
+		box.add(buttonPanel);
+		styleDialog.setContentPane(contentPane);
+		FontSizer.setFonts(styleDialog, FontSizer.getLevel());
+		styleDialog.pack();
+		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+		int x = (dim.width - styleDialog.getWidth()) / 2;
+		Point p = this.getLocationOnScreen();
+		int y = Math.max(0, p.y - styleDialog.getHeight());
+		styleDialog.setLocation(x, y);
 		return styleDialog;
 	}
 
@@ -656,7 +660,8 @@ final public class DataToolPropsTable extends JTable {
 				if ((working.getXSource() == null) || !working.getXSource().getYColumnName().equals(xName)) {
 					working.setXSource((dataTable.workingMap.get(xName)).getYSource());
 				}
-				firePropertyChange("display", null, name); //$NON-NLS-1$
+				repaint();
+				firePropertyChange(PROPERTY_PROPTABLE_DISPLAY, null, name); //$NON-NLS-1$
 			}
 		}
 
@@ -702,7 +707,7 @@ final public class DataToolPropsTable extends JTable {
 			}
 			if (value instanceof WorkingDataset) {
 				if (panel == null) {
-					markerset = new Dataset() 
+					markerset = new Dataset()
 //					{
 //						
 //						@Override
@@ -711,7 +716,7 @@ final public class DataToolPropsTable extends JTable {
 //						}
 //						
 //					}
-							;
+					;
 					markerset.append(0, 1);
 					lineset = new Dataset()
 //					{

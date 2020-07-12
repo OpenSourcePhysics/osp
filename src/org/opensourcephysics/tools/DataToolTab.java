@@ -134,6 +134,10 @@ import org.opensourcephysics.tools.DatasetCurveFitter.NumberField;
 @SuppressWarnings("serial")
 public class DataToolTab extends JPanel implements Tool, PropertyChangeListener {
 
+	
+	public void repaint() {
+		super.repaint();
+	}
 	private static final String PROPERTY_DATATOOLTAB_FUNCTION = "function";
 
 	// static fields
@@ -1847,7 +1851,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		propsTable.addPropertyChangeListener(new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
-				if (e.getPropertyName().equals("display")) { //$NON-NLS-1$
+				if (e.getPropertyName().equals(DataToolPropsTable.PROPERTY_PROPTABLE_DISPLAY)) { //$NON-NLS-1$
 					refreshPlot();
 				}
 			}
@@ -3059,13 +3063,13 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				curveFitter.fit(curveFitter.fit);
 				plot.refreshArea();
 				plot.refreshMeasurements();
-				plot.repaint();
+//				plot.repaint();
 			}
 		}
 
 	};
 
-	private static final int fitDelayMS = 25;
+	private static final int fitDelayMS = (OSPRuntime.isJS ? 250 : 25);
 
 	void refreshFit() {
 		if (fitTimer == null) {
@@ -3449,10 +3453,10 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			}
 
 			plot.slope = plot.value = Double.NaN;
-			int j = measurementIndex;
-			double x = plot.pixToX(measurementX);
 			if (data != null && (positionVisible || slopeVisible || areaVisible)) {
-				if (data.getIndex() > 0 && j < 0) {
+				int j = measurementIndex;
+				double x = plot.pixToX(measurementX);
+					if (data.getIndex() > 0 && j < 0) {
 					measurementIndex = j = plot.findIndexNearestX(x, data);
 				}
 
@@ -3491,8 +3495,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					}
 				}
 				plot.setMessage(plot.createMessage());
+				if (!DrawingPanel.messagesAsJLabels)
+					plot.repaint();
 			}
-			plot.repaint();
 		}
 
 		/**

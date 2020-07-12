@@ -79,6 +79,7 @@ import javajs.async.SwingJSUtils.Performance;
 @SuppressWarnings("serial")
 public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	
+static int ntest;
 
 	public static final boolean messagesAsJLabels = true;
 	
@@ -184,12 +185,21 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		
 	}
 
+
+	@Override
+	public void repaint(int x, int y, int w, int h) {
+	if (true)	return;
+		OSPLog.debug("DrawingPanel.repaint "+ ntest +"!!");
+		super.repaint(x, y, w, h);
+	}
+
 	@Override
 	public void repaint() {
 		Component top = getTopLevelAncestor();
 		if (super.getHeight() <= 0 || top == null || !top.isVisible() || top.getIgnoreRepaint()) {
 			//OSPLog.debug("DrawingPanel needless repaint!");
 		} else {
+			OSPLog.debug("DrawingPanel.repaint "+ ntest);
 			super.repaint();
 		}	
 	}
@@ -711,7 +721,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	public void paint(Graphics g) {
 		boolean resetBuffered = buffered;
 		super.paint(g);
-		paintEverything(g);
+//		paintEverything(g);
 		buffered = resetBuffered;
 	}
 
@@ -814,8 +824,9 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 */
 	protected void paintEverything(Graphics g) {
 		RECORD_PAINT_TIMES = false;
-		//OSPLog.debug("??DrawingPanel.drawEverything " + getBounds() + this.getClass().getName());
-
+//		if (this.getHeight() < 100)
+//		OSPLog.debug(++ntest + "??DrawingPanel.paintEverything "+ this.getSize());
+		//new NullPointerException().printStackTrace(OSPLog.realSysout);
 		if (RECORD_PAINT_TIMES) {
 			System.out.println("DrawingPanel elapsed time(s)=" + (Performance.now(currentTime) / 1000.0)); //$NON-NLS-1$
 			currentTime = Performance.now(0);

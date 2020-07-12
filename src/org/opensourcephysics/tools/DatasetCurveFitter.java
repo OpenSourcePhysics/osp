@@ -262,13 +262,14 @@ public class DatasetCurveFitter extends JPanel {
 	 */
 	public void setData(Dataset data, boolean doFit) {
 		dataset = data;
+		if (!isActive)
+			return;
 		if (doFit) {
 			fit(fit);
-			tab.repaint();
 		}
 		if (dataset != null) {
 			fitBuilder.setDefaultVariables(new String[] { TeXParser.removeSubscripting(dataset.getXColumnName()) });
-			if (!this.isActive) {
+			if (!isActive) {
 				// if active, regression done in fit method
 				double[] x = dataset.getValidXPoints();
 				double[] y = dataset.getValidYPoints();
@@ -439,7 +440,7 @@ public class DatasetCurveFitter extends JPanel {
 			f.setName(fitBuilder.getUniqueName(f.getName()));
 		}
 
-		String selectedFitName = fit == null ? getLineFitName() : fit.getName();
+		String selectedFitName = (fit == null ? getLineFitName() : fit.getName());
 		fitBuilder.addFitFunction(f);
 		fitDropDown.setSelectedItem(selectedFitName);
 	}
@@ -607,9 +608,11 @@ public class DatasetCurveFitter extends JPanel {
 		fitDropDown.setSelectedItem(getLineFitName());
 
 		fitDropDown.addActionListener(new ActionListener() {
-			@Override
+			@Override	
 			public void actionPerformed(ActionEvent e) {
-				if (refreshing || fitBuilder.getSelectedCurveFitter() != DatasetCurveFitter.this)
+				DatasetCurveFitter f;
+				if (refreshing 
+						|| (f = fitBuilder.getSelectedCurveFitter()) == null || f != DatasetCurveFitter.this)
 					return;
 				String selection = (String) fitDropDown.getSelectedItem();
 				if (selection != null && fit != null && !selection.equals(fit.getName())) {
@@ -931,8 +934,8 @@ public class DatasetCurveFitter extends JPanel {
 					}
 					fitDropDown.addItem(name);
 				}
-				refreshing = false;
 				fitDropDown.setSelectedItem(toSelect);
+				refreshing = false;
 			}
 		};
 		// invoke later so UI responds
@@ -1004,6 +1007,7 @@ public class DatasetCurveFitter extends JPanel {
 	protected void selectFit(String name) {
 		if (refreshing)
 			return;
+		
 		if (name == null)
 			name = getLineFitName();
 		fit = fitMap.get(name);
@@ -1031,6 +1035,7 @@ public class DatasetCurveFitter extends JPanel {
 			}
 			revalidate();
 		}
+		setActiveAndFit(true);
 	}
 
 	protected UserFunction createClone(KnownFunction f, String name) {

@@ -83,7 +83,7 @@ public class OSPLog extends JFrame {
 	
 	static int nLog;
 
-	private final static PrintStream realSysout = System.out;
+	public final static PrintStream realSysout = System.out;
 
 	private StringBuffer logBuffer = new StringBuffer();
 
