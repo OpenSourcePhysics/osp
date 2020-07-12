@@ -1954,9 +1954,10 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	}
 
 	public static boolean[] toBoolArray(BitSet bs) {
-		boolean[] b = new boolean[bs.length()];
-		for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1))
-			b[i] = true;
+		// DB should always be boolean[2]: x and y-columns
+		boolean[] b = new boolean[] {false, false}; // false by default
+		for (int i = bs.nextSetBit(0); i >= 0 && i < 2; i = bs.nextSetBit(i + 1))
+			b[i] = true; // only BitSet elements are true
 		return b;
 	}
 
