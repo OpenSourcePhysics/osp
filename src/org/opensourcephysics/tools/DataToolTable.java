@@ -2355,21 +2355,23 @@ public class DataToolTable extends DataTable {
 // working length (dataset.index) in each case, and the
 // append(double[], double[], int) method will do an array
 // copy anyway. All it needs is to know the x, y, and minimum index
-//			int xlen = xData.getIndex();
-//			int ylen = yData.getIndex();
-//			double[] x = xData.getYPointsRaw();
-//			double[] y = yData.getYPointsRaw();
-//			if (xlen != ylen) {
-//				int n = Math.min(xlen, ylen);
-//				double[] nx = new double[n];
-//				System.arraycopy(x, 0, nx, 0, n);
-//				double[] ny = new double[n];
-//				System.arraycopy(y, 0, ny, 0, n);
-//				append(nx, ny, n);
-//			} else {
-			append(xData.getYPointsRaw(), yData.getYPointsRaw(), 
-					Math.min(xData.getIndex(), yData.getIndex()));
-//			}
+			
+//      double[] x = xData.getYPoints();
+//      double[] y = yData.getYPoints();
+//      if(x.length!=y.length) {
+//        int n = Math.min(x.length, y.length);
+//        double[] nx = new double[n];
+//        System.arraycopy(x, 0, nx, 0, n);
+//        double[] ny = new double[n];
+//        System.arraycopy(y, 0, ny, 0, n);
+//        append(nx, ny);
+//      } else {
+//        append(x, y);
+//      }
+     
+      double[] x = xData.isShifted()? xData.getYPoints(): xData.getYPointsRaw();
+      double[] y = yData.isShifted()? yData.getYPoints(): yData.getYPointsRaw();
+			append(x, y, Math.min(xData.getIndex(), yData.getIndex()));
 			setXYColumnNames(xData.getYColumnName(), yData.getYColumnName());
 		}
 

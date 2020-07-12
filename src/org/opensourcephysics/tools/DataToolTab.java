@@ -1959,6 +1959,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 						refreshAll(DataTable.MODE_VALUES);
 						((CrawlerSpinnerModel) shiftXSpinner.getModel()).refreshDelta();
+						dataTable.dorepaint(5);
 					}
 				}
 				shiftXField.selectAll();
@@ -2011,6 +2012,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 						}
 
 						refreshAll(DataTable.MODE_VALUES);
+						dataTable.dorepaint(5);
 					}
 				}
 			}
@@ -2036,6 +2038,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 						tabChanged(true);
 						refreshAll(DataTable.MODE_VALUES);
 						((CrawlerSpinnerModel) shiftYSpinner.getModel()).refreshDelta();
+						dataTable.dorepaint(5);
 					}
 				}
 				shiftYField.selectAll();
@@ -2078,6 +2081,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					if (col.setShift(shiftY)) {
 						tabChanged(true);
 						refreshAll(DataTable.MODE_VALUES);
+						dataTable.dorepaint(5);
 					}
 				}
 			}
@@ -2114,6 +2118,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 						}
 						refreshAll(DataTable.MODE_SELECT);
 						((CrawlerSpinnerModel) shiftXSpinner.getModel()).refreshDelta();
+						dataTable.dorepaint(5);
 					}
 				}
 				selectedXField.requestFocusInWindow();
@@ -2144,6 +2149,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 						tabChanged(true);
 						refreshAll(DataTable.MODE_SELECT);
 						((CrawlerSpinnerModel) shiftYSpinner.getModel()).refreshDelta();
+						dataTable.dorepaint(5);
 					}
 				}
 				selectedYField.requestFocusInWindow();
@@ -2218,6 +2224,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			plot.lockedYMin = plot.mouseDownYMin + deltaY;
 			plot.lockedYMax = plot.mouseDownYMax + deltaY;
 			plot.repaint();
+			
 			return;
 		}
 
@@ -2254,6 +2261,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				postShiftEdit();
 				((CrawlerSpinnerModel) shiftXSpinner.getModel()).refreshDelta();
 				((CrawlerSpinnerModel) shiftYSpinner.getModel()).refreshDelta();
+				dataTable.dorepaint(5);
 			}
 			if (mouseDrawable instanceof Selectable) {
 				plot.setMouseCursor(((Selectable) mouseDrawable).getPreferredCursor());
@@ -2827,6 +2835,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		setSelectedData(d, andFit);
 		plot.removeDrawables(Dataset.class);
 		WorkingDataset workingData = getWorkingData();
+
 		valueCheckbox.setEnabled((workingData != null) && (workingData.getIndex() > 0));
 		if (!valueCheckbox.isEnabled()) {
 			valueCheckbox.setSelected(false);
@@ -3300,6 +3309,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 						refreshAll(DataTable.MODE_VALUES);
 						((CrawlerSpinnerModel) shiftXSpinner.getModel()).refreshDelta();
 						((CrawlerSpinnerModel) shiftYSpinner.getModel()).refreshDelta();
+						dataTable.dorepaint(5);
 					}
 				}
 
@@ -3327,6 +3337,14 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 			});
 		}
+
+	  @Override
+	  public Interactive getInteractive() {
+      Interactive iad = origin.findInteractive(this, mouseEvent.getX(), mouseEvent.getY());
+      if (iad == null)
+      	iad = super.getInteractive();
+	    return iad;
+	  }
 
 		@Override
 		protected void refreshDecimalSeparators() {
