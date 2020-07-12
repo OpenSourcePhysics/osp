@@ -708,21 +708,16 @@ public class VideoClip {
 		 */
 		@Override
 		public Object loadObject(XMLControl control, Object obj) {
-			// load the video and return a new clip
-			boolean hasVideo = control.getPropertyNamesRaw().contains("video"); //$NON-NLS-1$
-			if (!hasVideo) {
-				return obj;
-			}
-			base = control.getString("basepath"); //$NON-NLS-1$ ;
-			ResourceLoader.addSearchPath(base);
-
-			XMLControl child = control.getChildControl("video"); //$NON-NLS-1$
-
-			filters = (Collection<?>) child.getObject("filters"); //$NON-NLS-1$
-			dt = child.getDouble("delta_t"); //$NON-NLS-1$
+			// load values common to all clips w or w/o video
 			start = control.getInt("startframe"); //$NON-NLS-1$
 			stepSize = control.getInt("stepsize"); //$NON-NLS-1$
 			stepCount = control.getInt("stepcount"); //$NON-NLS-1$
+			startTime = control.getDouble("starttime"); //$NON-NLS-1$
+			readoutType = control.getString("readout"); //$NON-NLS-1$
+			playAllSteps = true;
+			if (control.getPropertyNamesRaw().contains("playallsteps")) { //$NON-NLS-1$
+				playAllSteps = control.getBoolean("playallsteps"); //$NON-NLS-1$
+			}
 			frameCount = -1;
 			// set total frame count first so start frame will not be limited
 			if (control.getPropertyNamesRaw().contains("video_framecount")) { //$NON-NLS-1$
@@ -730,12 +725,23 @@ public class VideoClip {
 			} else if (start != Integer.MIN_VALUE && stepSize != Integer.MIN_VALUE && stepCount != Integer.MIN_VALUE) {
 				frameCount = start + stepCount * stepSize;
 			}
-			startTime = control.getDouble("starttime"); //$NON-NLS-1$
-			readoutType = control.getString("readout"); //$NON-NLS-1$
-			playAllSteps = true;
-			if (control.getPropertyNamesRaw().contains("playallsteps")) { //$NON-NLS-1$
-				playAllSteps = control.getBoolean("playallsteps"); //$NON-NLS-1$
+
+			// if no video, load clip passed in
+			boolean hasVideo = control.getPropertyNamesRaw().contains("video"); //$NON-NLS-1$
+			if (!hasVideo) {
+				clip = (VideoClip)obj;
+				finalizeLoading();
+				return obj;
 			}
+			
+			// otherwise open the video and make a new clip with it
+			base = control.getString("basepath"); //$NON-NLS-1$ ;
+			ResourceLoader.addSearchPath(base);
+
+			XMLControl child = control.getChildControl("video"); //$NON-NLS-1$
+
+			filters = (Collection<?>) child.getObject("filters"); //$NON-NLS-1$
+			dt = child.getDouble("delta_t"); //$NON-NLS-1$
 			String childPath = child.getString("path");
 			path = XML.getResolvedPath(childPath, base); // Critical here for TrackerSampler Mechanics
 																		// FreeFall MotionDiagram video

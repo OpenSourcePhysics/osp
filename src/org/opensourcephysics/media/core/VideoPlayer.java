@@ -230,16 +230,16 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	 */
 	public VideoPlayer(VideoPanel panel) {
 		vidPanel = panel;
-		vidPanel.addComponentListener(new ComponentAdapter() {
-			@Override
-			public void componentResized(ComponentEvent e) {
-				if (vidPanel.isDisplayable() && vidPanel.isPlayerVisible()) {
-					setBounds();
-					vidPanel.repaint();
-				}
-			}
-
-		});
+//		vidPanel.addComponentListener(new ComponentAdapter() {
+//			@Override
+//			public void componentResized(ComponentEvent e) {
+//				if (vidPanel.isDisplayable() && vidPanel.isPlayerVisible()) {
+//					setBounds();
+//					vidPanel.repaint();
+//				}
+//			}
+//
+//		});
 		timeFormat.setMinimumIntegerDigits(1);
 		timeFormat.setMaximumFractionDigits(3);
 		timeFormat.setMinimumFractionDigits(3);
@@ -680,17 +680,17 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 
 	// _________________ private methods and inner classes __________________
 
-	/**
-	 * Sets the bounds of this player.
-	 */
-	private void setBounds() {
-		toolbar.revalidate();
-		height = playButton.getPreferredSize().height + 8;
-		int y = vidPanel.getHeight() - height;
-		int w = vidPanel.getWidth();
-		setBounds(0, y, w, height);
-		toolbar.revalidate();
-	}
+//	/**
+//	 * Sets the bounds of this player.
+//	 */
+//	private void setBounds() {
+//		toolbar.revalidate();
+//		height = playButton.getPreferredSize().height + 8;
+//		int y = vidPanel.getHeight() - height;
+//		int w = vidPanel.getWidth();
+//		setBounds(0, y, w, height);
+//		toolbar.revalidate();
+//	}
 
 	@Override
 	protected void paintChildren(Graphics g) {
