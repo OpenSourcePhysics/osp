@@ -2215,7 +2215,7 @@ public class DataToolTable extends DataTable {
 		private Dataset xData;
 		boolean markersVisible;
 		int markerType;
-		boolean isWorkingYColumn;
+
 		/**
 		 * Constructor WorkingDataset
 		 * 
@@ -2237,18 +2237,23 @@ public class DataToolTable extends DataTable {
 		public boolean isUpToDate(Dataset xSource) {
 			return (xData != null && xSource.update == xData.update);
 		}
+		
+		protected boolean isWorkingYColumn() {
+			return getYColumnName().equals(dataToolTab.plot.yVar);
+		}
 
 		@Override
 		public void draw(DrawingPanel drawingPanel, java.awt.Graphics g) {
-			if (isWorkingYColumn) {
+			boolean workingY = isWorkingYColumn();
+			if (workingY) {
 				drawSurrounds(drawingPanel, (Graphics2D) g);
 			}
 			boolean vis = markersVisible;
-			if (isWorkingYColumn && !vis) {
+			if (workingY && !vis) {
 				setMarkersVisible(true);
 			}
 			super.draw(drawingPanel, g);
-			if (isWorkingYColumn && !vis) {
+			if (workingY && !vis) {
 				setMarkersVisible(false);
 			}
 		}
@@ -2307,7 +2312,7 @@ public class DataToolTable extends DataTable {
 		}
 
 		public boolean isMarkersVisible() {
-			return markersVisible || isWorkingYColumn;
+			return markersVisible || isWorkingYColumn();
 		}
 
 		public void setMarkersVisible(boolean visible) {

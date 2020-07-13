@@ -52,6 +52,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.CellBorder;
 import org.opensourcephysics.display.Dataset;
 import org.opensourcephysics.display.DrawingPanel;
@@ -595,11 +596,7 @@ final public class DataToolPropsTable extends JTable {
 			}
 			if (row == markerRow) {
 				if ((col == yCol) && (data != null)) {
-					data.isWorkingYColumn = true;
 					return Boolean.TRUE;
-				}
-				if (data != null) {
-					data.isWorkingYColumn = false;
 				}
 				if (col == 0) {
 					return Boolean.FALSE;
@@ -831,7 +828,7 @@ final public class DataToolPropsTable extends JTable {
 				}
 			}
 			markerVisCheckbox.setSelected(working.isMarkersVisible());
-			markerVisCheckbox.setEnabled(!working.isWorkingYColumn);
+			markerVisCheckbox.setEnabled(!working.isWorkingYColumn());
 			lineVisCheckbox.setSelected(working.isConnected());
 			dialog.setName(name);
 			String var = TeXParser.removeSubscripting(name);

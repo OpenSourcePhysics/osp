@@ -1659,9 +1659,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				popup.add(slopeCheckbox);
 				popup.add(areaCheckbox);
 				popup.addSeparator();
-				measureFitCheckbox.setEnabled(isFitterVisible());
-				popup.add(measureFitCheckbox);
 				popup.add(originShiftCheckbox);
+				if (isFitterVisible()) {
+					popup.addSeparator();
+					popup.add(measureFitCheckbox);
+				}
 				FontSizer.setFonts(popup, FontSizer.getLevel());
 				popup.show(measureButton, 0, measureButton.getHeight());
 			}
@@ -1673,22 +1675,21 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			public void actionPerformed(ActionEvent e) {
 				// build a popup menu with analyze items
 				JPopupMenu popup = new JPopupMenu();
+				fitMenu.removeAll();
+				String[] fitNames = getCurveFitter().getFitNames();
+				for (int i = 0; i < fitNames.length; i++) {
+					JMenuItem item = new JMenuItem(FitBuilder.localize(fitNames[i]));
+					item.setActionCommand(fitNames[i]);
+					item.addActionListener(showFitterAction);
+					fitMenu.add(item);
+				}
+				popup.add(fitMenu);
 				if (isFitterVisible()) {
 					JMenuItem item = new JMenuItem(ToolsRes.getString("DataToolTab.MenuItem.CloseFitter.Text"));
 					item.addActionListener(hideFitterAction);
 					popup.add(item);
 				}
-				else {
-					fitMenu.removeAll();
-					String[] fitNames = getCurveFitter().getFitNames();
-					for (int i = 0; i < fitNames.length; i++) {
-						JMenuItem item = new JMenuItem(FitBuilder.localize(fitNames[i]));
-						item.setActionCommand(fitNames[i]);
-						item.addActionListener(showFitterAction);
-						fitMenu.add(item);
-					}
-					popup.add(fitMenu);
-				}
+				popup.addSeparator();
 				popup.add(statsCheckbox);
 				popup.add(fourierCheckbox);
 				FontSizer.setFonts(popup, FontSizer.getLevel());
@@ -2521,7 +2522,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		}
 		curveFitter.refreshGUI();
 		statsTable.refreshGUI();
-		propsTable.refreshGUI();
+//		propsTable.refreshGUI();
 		refreshPlot();
 		refreshStatusBar(null);
 		tabChanged = changed;
