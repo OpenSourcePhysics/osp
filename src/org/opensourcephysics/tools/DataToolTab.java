@@ -1367,7 +1367,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 			@Override
 			public void columnMoved(TableColumnModelEvent e) {
-				notifyColumnMoved();
+				if (e.getFromIndex() - e.getToIndex() != 0)
+					columnOrderChanged();
 			}
 
 		});
@@ -1658,9 +1659,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				popup.add(slopeCheckbox);
 				popup.add(areaCheckbox);
 				popup.addSeparator();
-				measureFitCheckbox.setEnabled(isFitterVisible());
-				popup.add(measureFitCheckbox);
 				popup.add(originShiftCheckbox);
+				if (isFitterVisible()) {
+					popup.addSeparator();
+					popup.add(measureFitCheckbox);
+				}
 				FontSizer.setFonts(popup, FontSizer.getLevel());
 				popup.show(measureButton, 0, measureButton.getHeight());
 			}
@@ -1672,22 +1675,21 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			public void actionPerformed(ActionEvent e) {
 				// build a popup menu with analyze items
 				JPopupMenu popup = new JPopupMenu();
+				fitMenu.removeAll();
+				String[] fitNames = getCurveFitter().getFitNames();
+				for (int i = 0; i < fitNames.length; i++) {
+					JMenuItem item = new JMenuItem(FitBuilder.localize(fitNames[i]));
+					item.setActionCommand(fitNames[i]);
+					item.addActionListener(showFitterAction);
+					fitMenu.add(item);
+				}
+				popup.add(fitMenu);
 				if (isFitterVisible()) {
 					JMenuItem item = new JMenuItem(ToolsRes.getString("DataToolTab.MenuItem.CloseFitter.Text"));
 					item.addActionListener(hideFitterAction);
 					popup.add(item);
 				}
-				else {
-					fitMenu.removeAll();
-					String[] fitNames = getCurveFitter().getFitNames();
-					for (int i = 0; i < fitNames.length; i++) {
-						JMenuItem item = new JMenuItem(FitBuilder.localize(fitNames[i]));
-						item.setActionCommand(fitNames[i]);
-						item.addActionListener(showFitterAction);
-						fitMenu.add(item);
-					}
-					popup.add(fitMenu);
-				}
+				popup.addSeparator();
 				popup.add(statsCheckbox);
 				popup.add(fourierCheckbox);
 				FontSizer.setFonts(popup, FontSizer.getLevel());
@@ -2167,20 +2169,12 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 	}
 
-	protected void notifyColumnMoved() {
-		Dataset prev = dataTable.workingData;
-		Dataset working = getWorkingData();
-		if (working != prev && dataTool.fitBuilder != null) {
-			tabChanged(true);
-		}
-		if (working == null)
-			return;
-//		if ((working == null) || (working == prev)) {
-//			return;
-//		}
+	protected void columnOrderChanged() {
+		tabChanged(true);
 		plot.selectionBox.setSize(0, 0);
-		refreshPlot();
-		refreshShiftFields();
+		refreshPlot(true);
+		plot.repaint();
+		prevShiftY = refreshShiftFields();		 
 	}
 
 	protected void mouseDraggedAction(Point point, boolean controlDown, boolean shiftDown) {
@@ -2266,6 +2260,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				((CrawlerSpinnerModel) shiftXSpinner.getModel()).refreshDelta();
 				((CrawlerSpinnerModel) shiftYSpinner.getModel()).refreshDelta();
 				dataTable.dorepaint(5);
+				dataTable.refreshTable();
 			}
 			if (mouseDrawable instanceof Selectable) {
 				plot.setMouseCursor(((Selectable) mouseDrawable).getPreferredCursor());
@@ -2527,7 +2522,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		}
 		curveFitter.refreshGUI();
 		statsTable.refreshGUI();
-		propsTable.refreshGUI();
+//		propsTable.refreshGUI();
 		refreshPlot();
 		refreshStatusBar(null);
 		tabChanged = changed;
@@ -2990,8 +2985,10 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 	/**
 	 * Refreshes the origin shift fields.
+	 * 
+	 * @return the current y-field shift
 	 */
-	public void refreshShiftFields() {
+	public double refreshShiftFields() {
 		Dataset data = dataTable.getDataset(plot.xVar);
 		if (data != null && data instanceof DataColumn) {
 			// check format pattern
@@ -3030,26 +3027,28 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				selectedYField.applyPattern(pattern);
 			}
 			// set values
-			double shift = ((DataColumn) data).getShift();
-			shiftYField.setValue(shift == 0 ? 0 : -shift);
-			shiftYSpinner.setValue(shift == 0 ? 0 : -shift);
+			double currentShift = ((DataColumn) data).getShift();
+			shiftYField.setValue(currentShift == 0 ? 0 : -currentShift);
+			shiftYSpinner.setValue(currentShift == 0 ? 0 : -currentShift);
 			if (selectedDataIndex > -1) {
 				selectedYField.setValue(data.getYPoints()[selectedDataIndex]);
 			}
-			if (shift != prevShiftY || !pattern.equals(existing)) {
+			if (currentShift != prevShiftY || !pattern.equals(existing)) {
 				shiftYField.refreshPreferredWidth();
 				selectedYField.refreshPreferredWidth();
 				toolbar.revalidate();
 			}
+			return currentShift;
 		}
+		return prevShiftY;
 	}
 
 	/**
 	 * Refreshes all.
 	 */
 	public void refreshAll(int mode) {
-		refreshShiftFields();
 		refreshPlot(false);
+		refreshShiftFields();
 		dataTable.refreshTable(mode);
 	}
 
