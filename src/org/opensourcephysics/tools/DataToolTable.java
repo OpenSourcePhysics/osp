@@ -27,6 +27,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.EventObject;
@@ -378,6 +379,8 @@ public class DataToolTable extends DataTable {
 			public void mouseDragged(MouseEvent e) {
 				int col = columnAtPoint(e.getPoint());
 				int row = rowAtPoint(e.getPoint());
+				if (mouseRow == row && mouseCol == col)
+					return;
 				mouseRow = row;
 				mouseCol = col;
 				int labelCol = convertColumnIndexToView(0);
@@ -1054,6 +1057,7 @@ public class DataToolTable extends DataTable {
 		case 2:
 		case 3:
 		case 4:
+		case 5:
 		default:
 			if (!JSUtil.isJS)
 				repaint(); // BH 2020.02.14 seeing if we can avoid this
@@ -1961,15 +1965,20 @@ public class DataToolTable extends DataTable {
 			updateColumnModel(null);
 			return;
 		}
-		//		// save model column order
-//		int[] modelColumns = getModelColumnOrder();
+		
+		// DB: without this the table loses the column order	
+		// save model column order
+		int[] modelColumns = getModelColumnOrder();
+				
 		// save selected rows and columns
 		int[] rows = getSelectedModelRows();
 		ArrayList<String> cols = getSelectedColumnNames();
 		updateColumnModel(null);
 	// restore column order--but keep "tabChanged" unchanged
 		boolean changed = dataToolTab.tabChanged;
-//		setModelColumnOrder(modelColumns);
+		
+		setModelColumnOrder(modelColumns);
+		
 		dataToolTab.tabChanged(changed);
 		// re-sort to restore row order
 		sort(dataTableModel.getSortedColumn());
