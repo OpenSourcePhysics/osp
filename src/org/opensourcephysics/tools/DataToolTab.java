@@ -135,6 +135,7 @@ import org.opensourcephysics.tools.DatasetCurveFitter.NumberField;
 public class DataToolTab extends JPanel implements Tool, PropertyChangeListener {
 
 	
+	@Override
 	public void repaint() {
 		super.repaint();
 	}
@@ -3443,6 +3444,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		 * Refreshes the coordinate, slope and area measurements.
 		 */
 		protected void refreshMeasurements() {
+			
 			HighlightableDataset data = dataTable.workingData;
 			if (mouseEvent != null) {
 				Interactive ia = plot.getInteractive();
@@ -3450,9 +3452,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					data = (HighlightableDataset) ia;
 				}
 			}
-
-			plot.slope = plot.value = Double.NaN;
+			
 			if (data != null && (positionVisible || slopeVisible || areaVisible)) {
+				
 				int j = measurementIndex;
 				double x = plot.pixToX(measurementX);
 					if (data.getIndex() > 0 && j < 0) {
@@ -3466,36 +3468,62 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 						|| (!measureFit && !toggleMeasurement);
 				FunctionDrawer drawer = getCurveFitter().getDrawer();
 
+				boolean positionOrSlopeChanged = false;
 				if (positionVisible) {
+					
+					double xtemp = Double.NaN, ytemp = Double.NaN;
 					if (measureData && j > -1 && !Double.isNaN(ypoints[j])) {
-						plot.value = ypoints[j];
-						plot.valueCrossbars.x = xpoints[j];
-						plot.valueCrossbars.y = ypoints[j];
-						plot.xVar = data.getXColumnName();
-						plot.yVar = data.getYColumnName();
+						xtemp = xpoints[j];
+						ytemp = ypoints[j];
 					} else if (!measureData) {
-						plot.value = drawer.evaluate(x);
-						plot.valueCrossbars.x = x;
-						plot.valueCrossbars.y = drawer.evaluate(x);
+						xtemp = x;
+						ytemp = drawer.evaluate(x);
+					}
+					
+					positionOrSlopeChanged = (!Double.isNaN(xtemp) && !Double.isNaN(ytemp) &&
+							(xtemp != plot.valueCrossbars.x || ytemp != plot.valueCrossbars.y));
+					
+					if (positionOrSlopeChanged) {
+						plot.value = ytemp;
+						plot.valueCrossbars.x = xtemp;
+						plot.valueCrossbars.y = ytemp;
 						plot.xVar = data.getXColumnName();
-						plot.yVar = data.getYColumnName();
+						plot.yVar = data.getYColumnName();						
 					}
 				}
 				if (slopeVisible) {
+					
+					double xtemp = Double.NaN, ytemp = Double.NaN, slopetemp = Double.NaN;
 					if (measureData && j > 0 && j < data.getIndex() - 1 && !Double.isNaN(ypoints[j])) {
-						plot.slopeLine.x = xpoints[j];
-						plot.slopeLine.y = ypoints[j];
-						plot.slope = (ypoints[j + 1] - ypoints[j - 1]) / (xpoints[j + 1] - xpoints[j - 1]);
+						xtemp = xpoints[j];
+						ytemp = ypoints[j];
+						slopetemp = (ypoints[j + 1] - ypoints[j - 1]) / (xpoints[j + 1] - xpoints[j - 1]);
 					} else if (!measureData) {
-						plot.slopeLine.x = x;
-						plot.slopeLine.y = drawer.evaluate(x);
+						xtemp = x;
+						ytemp = drawer.evaluate(x);
 						double dx = 1 / plot.getXPixPerUnit();
-						plot.slope = (drawer.evaluate(x + dx) - drawer.evaluate(x - dx)) / (2 * dx);
+						slopetemp = (drawer.evaluate(x + dx) - drawer.evaluate(x - dx)) / (2 * dx);
+					}
+					
+					positionOrSlopeChanged = positionOrSlopeChanged ||
+						(!Double.isNaN(xtemp) && !Double.isNaN(ytemp) && !Double.isNaN(slopetemp) &&
+						(xtemp != plot.slopeLine.x || 
+						ytemp != plot.slopeLine.y ||  
+						slopetemp != plot.slope));
+					
+					if (positionOrSlopeChanged) {
+						plot.slopeLine.x = xtemp;
+						plot.slopeLine.y = ytemp;
+						plot.slope = slopetemp;
 					}
 				}
 				plot.setMessage(plot.createMessage());
-				if (!DrawingPanel.messagesAsJLabels)
+				
+				if (positionOrSlopeChanged || !DrawingPanel.messagesAsJLabels)
 					plot.repaint();
+			}
+			else {
+				plot.slope = plot.value = Double.NaN;				
 			}
 		}
 
@@ -3784,7 +3812,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		 */
 		protected class SlopeLine extends Line2D.Double {
 			double x, y;
-			Stroke stroke = new BasicStroke(1.5f);
+			Stroke stroke = new BasicStroke(2.5f);
 			int length = 30;
 			Color color = new Color(102, 102, 102);
 
@@ -3797,7 +3825,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				if (!slopeVisible || java.lang.Double.isNaN(slope)) {
 					return;
 				}
-				g = g.create();
+				Graphics2D g2 = (Graphics2D) g.create();
 				double dxPix = 1 * getXPixPerUnit();
 				double dyPix = slope * getYPixPerUnit();
 				double hyp = Math.sqrt(dxPix * dxPix + dyPix * dyPix);
@@ -3811,15 +3839,14 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					int w = plot.getWidth() - plot.getRightGutter() - plot.getLeftGutter();
 					int h = plot.getHeight() - plot.getTopGutter() - plot.getBottomGutter();
 					Rectangle rect = new Rectangle(plot.getLeftGutter(), plot.getTopGutter(), w, h);
-					g.setClip(rect);
+					g2.setClip(rect);
 				}
 				setLine(xCenter - len * cos + 1, yCenter + len * sin + 1, xCenter + len * cos + 1,
 						yCenter - len * sin + 1);
-				Color gcolor = g.getColor();
-				g.setColor(color);
-				((Graphics2D) g).fill(stroke.createStrokedShape(this));
-				g.setColor(gcolor);
-				g.dispose(); // BH 2020.02.26
+				g2.setColor(color);
+				g2.setStroke(stroke);
+				g2.draw(this);
+				g2.dispose(); // BH 2020.02.26
 			}
 		} // end SlopeLine class
 
