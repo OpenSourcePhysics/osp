@@ -2234,7 +2234,13 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		if (data == null) {
 			return;
 		}
-		plot.selectionBox.visible = true;
+		
+		// don't show selection box if adjusting an area limit line
+		boolean isSelectionBoxActive = 
+				mouseDrawable != plot.areaLimits[0] && 
+				mouseDrawable != plot.areaLimits[1];
+		plot.selectionBox.visible = isSelectionBoxActive;
+		
 		int dx = point.x - plot.selectionBox.xstart;
 		int dy = point.y - plot.selectionBox.ystart;
 		plot.selectionBox.setSize(dx, dy);
@@ -2263,6 +2269,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				dataTable.dorepaint(5);
 				dataTable.refreshTable();
 			}
+			if (mouseDrawable == plot.areaLimits[0])
+				plot.areaLimits[0].isAdjusting = false;
+			else if (mouseDrawable == plot.areaLimits[1])
+				plot.areaLimits[1].isAdjusting = false;
+			
 			if (mouseDrawable instanceof Selectable) {
 				plot.setMouseCursor(((Selectable) mouseDrawable).getPreferredCursor());
 			} else {
@@ -2297,12 +2308,23 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 	protected void mousePressedAction(Point point, boolean controlDown, boolean shiftDown) {
 		mouseDrawable = plot.getInteractive();
+		
 		if (mouseDrawable == plot.origin) {
 			plot.selectionBox.visible = false;
 			plot.origin.mouseDownPt = point;
 			plot.lockScale(true);
 			return;
 		}
+		
+		if (mouseDrawable == plot.areaLimits[0]) {
+			plot.areaLimits[0].setX(plot.areaLimits[0].trueLimit);
+			plot.areaLimits[0].isAdjusting = true;
+		}
+		else if (mouseDrawable == plot.areaLimits[1]) {
+			plot.areaLimits[1].setX(plot.areaLimits[1].trueLimit);
+			plot.areaLimits[1].isAdjusting = true;
+		}
+		
 		// add or remove point if Interactive is dataset
 		if (mouseDrawable instanceof HighlightableDataset) {
 
@@ -3856,11 +3878,12 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		protected class LimitLine extends Line2D.Double implements Selectable {
 			int pointIndex = -1;
 			double x, trueLimit;
-			Stroke stroke = new BasicStroke(1.0f);
+			Stroke stroke = new BasicStroke(1.5f);
 			Rectangle hitRect = new Rectangle();
 			Color color = new Color(51, 51, 51);
 			Color trueLimitColor;
 			Cursor move;
+			boolean isAdjusting;
 
 			@Override
 			public void draw(DrawingPanel panel, Graphics g) {
@@ -3870,18 +3893,26 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				if (trueLimitColor == null) {
 					trueLimitColor = color.brighter().brighter().brighter();
 				}
-				Color gcolor = g.getColor();
-				g.setColor(color);
+				Graphics2D g2 = (Graphics2D) g.create();
+				
+				// set this to current limit line position
 				int y0 = plot.getTopGutter();
 				int y1 = plot.getBounds().height - plot.getBottomGutter();
 				int x1 = plot.xToPix(x);
 				setLine(x1 + 1, y0, x1 + 1, y1);
-				((Graphics2D) g).fill(stroke.createStrokedShape(this));
-				// draw true limit
+				
+				// draw limit line if adjusting
+				if (isAdjusting) {
+					g2.setColor(color);
+					g2.setStroke(stroke);
+					g2.draw(this);
+				}
+				
+				// draw truelimit line and set hitRect
 				x1 = plot.xToPix(trueLimit);
-				g.setColor(trueLimitColor);
-				g.drawLine(x1 + 1, y0, x1 + 1, y1);
-				g.setColor(gcolor);
+				g2.setColor(trueLimitColor);
+				g2.drawLine(x1 + 1, y0, x1 + 1, y1);
+				g2.dispose();
 				hitRect.setBounds(x1 - 2, y0, 6, y1 - y0 - 20);
 			}
 
