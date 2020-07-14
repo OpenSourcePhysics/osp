@@ -271,7 +271,7 @@ final public class DataToolPropsTable extends JTable {
 		PropsRenderer pr = htCellRenderers.get(name);
 		if (pr == null)
 			htCellRenderers.put(name, pr = new PropsRenderer());
-		return pr;
+		return (row < 2 && column == 2 ? getDefaultRenderer(Boolean.class) : pr);
 	}
 
 	/**
@@ -641,6 +641,7 @@ final public class DataToolPropsTable extends JTable {
 		// changes the value of a cell
 		@Override
 		public void setValueAt(Object value, int row, int col) {
+			OSPLog.debug("DataToolPropsTable " + row + " " + col + "" + value);
 			if (value instanceof Boolean) {
 				dataTable.dataToolTab.tabChanged(true);
 				boolean selected = ((Boolean) value).booleanValue();
@@ -670,7 +671,7 @@ final public class DataToolPropsTable extends JTable {
 	class PropsRenderer implements TableCellRenderer {
 
 		JPanel panel;
-		JCheckBox checkbox;
+		JCheckBox[] checkbox;
 		DrawingPanel plot;
 		Dataset markerset;
 		Dataset lineset;
@@ -754,24 +755,25 @@ final public class DataToolPropsTable extends JTable {
 				}
 				return panel;
 			}
-			// value is Boolean
-			if (col == xCol) {
-				return null;
-			}
-			if (panel == null) {
-				panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, JSUtil.isJS ? -8 : -4));
-				panel.setBorder(new CellBorder(new Color(240, 240, 240)));
-				panel.setBackground((row != axisRow) ? Color.white : color);
-				checkbox = new JCheckBox();
-				checkbox.setHorizontalAlignment(SwingConstants.CENTER);
-				checkbox.setBackground(Color.white);
-				checkbox.setBackground(Color.white);
-				panel.add(checkbox);
-			}
-			checkbox.setSelected((Boolean) value);
-			checkbox.setEnabled(propsModel.isCellEditable(row, col));
-			checkbox.setOpaque(false);
-			return panel;
+			// booleans handled by JTable.BooleanRenderer for JavaScript compatibility
+			return null;
+//			// value is Boolean
+//			if (col == xCol) {
+//				return null;
+//			}
+//			if (checkbox == null) {
+//				checkbox = new JCheckBox[] { new JCheckBox(), new JCheckBox() };
+//				checkbox[0].setHorizontalAlignment(SwingConstants.CENTER);
+//				checkbox[1].setHorizontalAlignment(SwingConstants.CENTER);
+//			}
+//			return setCheckBox(value, row, col);
+		}
+
+		private JCheckBox setCheckBox(Object value, int row, int col) {
+			checkbox[row].setSelected(((Boolean) value).booleanValue());
+			checkbox[row].setEnabled(propsModel.isCellEditable(row, col));
+			checkbox[row].setOpaque(false);
+			return checkbox[row];
 		}
 	}
 

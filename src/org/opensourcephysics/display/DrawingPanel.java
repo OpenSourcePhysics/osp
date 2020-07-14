@@ -2613,6 +2613,8 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 
 	private String[] lastMessage = new String[4];
 
+	public boolean displayCoordsOnMouseMoved;
+
 	/**
 	 * Shows a message in a yellow text box.
 	 *
@@ -2997,7 +2999,8 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 			if (focusOwner != null && !(focusOwner instanceof JTextComponent)) {
 				requestFocusInWindow();
 			}
-			displayCoordinates(e);
+			if (displayCoordsOnMouseMoved)
+				displayCoordinates(e);
 		}
 
 	}
