@@ -134,10 +134,6 @@ import org.opensourcephysics.tools.DatasetCurveFitter.NumberField;
 @SuppressWarnings("serial")
 public class DataToolTab extends JPanel implements Tool, PropertyChangeListener {
 
-	
-	public void repaint() {
-		super.repaint();
-	}
 	private static final String PROPERTY_DATATOOLTAB_FUNCTION = "function";
 
 	// static fields
