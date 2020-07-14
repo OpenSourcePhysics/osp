@@ -1731,12 +1731,12 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	private void resetXYMinMax(boolean isCleared) {
 		xmaxLogscale = ymaxLogscale = -Double.MAX_VALUE;
 		xminLogscale = yminLogscale = Double.MAX_VALUE;
-		if (isCleared) {
-			xmin = xmax = ymin = ymax = 0;
-			return;
-		}
 		xmax = ymax = -Double.MAX_VALUE;
 		xmin = ymin = Double.MAX_VALUE;
+		if (isCleared) {
+//			xmin = xmax = ymin = ymax = 0;
+			return;
+		}
 
 		double[] xValues = xpoints;
 		double[] yValues = ypoints;
