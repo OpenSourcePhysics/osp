@@ -221,12 +221,14 @@ final public class DataToolPropsTable extends JTable {
 		if (getColumnCount() != dataTable.getColumnCount()) {
 			return;
 		}
+		refreshLabelColumnWidth();
+		htCellRenderers.clear();
 		for (int i = 0; i < getColumnCount(); i++) {
 			TableColumn propColumn = getColumnModel().getColumn(i);
-			TableColumn dataColumn = dataTable.getColumnModel().getColumn(i);
-			propColumn.setMaxWidth(dataColumn.getWidth());
-			propColumn.setMinWidth(dataColumn.getWidth());
-			propColumn.setWidth(dataColumn.getWidth());
+			int w = dataTable.getColumnModel().getColumn(i).getWidth();
+			propColumn.setMaxWidth(w);
+			propColumn.setMinWidth(w);
+			propColumn.setWidth(w);
 		}
 	}
 
@@ -249,7 +251,8 @@ final public class DataToolPropsTable extends JTable {
 		for (int i = 0; i < labels.length; i++) {
 			JLabel label = new JLabel(labels[i]);
 			label.setFont(labelRenderer.getFont());
-			w = Math.max(w, label.getMinimumSize().width);
+			int lw = label.getMinimumSize().width;
+			w = Math.max(w, lw);
 		}
 		dataTable.setLabelColumnWidth(w + 5);
 	}
@@ -267,11 +270,12 @@ final public class DataToolPropsTable extends JTable {
 		if (i == 0) {
 			return labelRenderer;
 		}
-		String name = row + " " + dataTable.getColumnModel().getColumn(column).getHeaderValue().toString();
+		TableColumn c = dataTable.getColumnModel().getColumn(column);
+		String name = row + " " + c.getHeaderValue().toString();
 		PropsRenderer pr = htCellRenderers.get(name);
-		if (pr == null)
+		if (pr == null || pr.width != c.getWidth())
 			htCellRenderers.put(name, pr = new PropsRenderer());
-		return (row < 2 && column == 2 ? getDefaultRenderer(Boolean.class) : pr);
+		return (row < 2 && column > 1 ? getDefaultRenderer(Boolean.class) : pr);
 	}
 
 	/**
@@ -670,11 +674,11 @@ final public class DataToolPropsTable extends JTable {
 	 */
 	class PropsRenderer implements TableCellRenderer {
 
-		JPanel panel;
-		JCheckBox[] checkbox;
-		DrawingPanel plot;
-		Dataset markerset;
-		Dataset lineset;
+		public int width;
+		private JPanel panel;
+		private DrawingPanel plot;
+		private Dataset markerset;
+		private Dataset lineset;
 
 		/**
 		 * Constructor PropsRenderer
@@ -705,6 +709,7 @@ final public class DataToolPropsTable extends JTable {
 			}
 			if (value instanceof WorkingDataset) {
 				if (panel == null) {
+					width = getColumnModel().getColumn(col).getWidth();
 					panel = new JPanel(new GridLayout());
 					panel.setBorder(new CellBorder(new Color(240, 240, 240)));
 					panel.setBackground((row != axisRow) ? Color.white : color);
@@ -712,19 +717,19 @@ final public class DataToolPropsTable extends JTable {
 					plot = new DrawingPanel();
 					plot.setBackground(Color.white);
 					plot.setAntialiasShapeOn(true);
-					plot.setPreferredMinMax(-1, 1, 0, 2);
-
+					// BH ensure dimension same w/ and w/o line
+					plot.setPreferredMinMax(-1, 1, 0, 2); 
 					markerset = new Dataset();
 					markerset.append(0, 1);
 
-					lineset = new Dataset();					;
+					lineset = new Dataset();
 					lineset.setMarkerShape(Dataset.NO_MARKER);
 					lineset.setConnected(true);
 					lineset.append(-1, 2);
 					lineset.append(1, 0);
 					
-					plot.addDrawable(lineset);
 					plot.addDrawable(markerset);
+					plot.addDrawable(lineset);
 					panel.add(plot);
 				}
 				WorkingDataset working = (WorkingDataset) value;
@@ -757,13 +762,13 @@ final public class DataToolPropsTable extends JTable {
 //			}
 //			return setCheckBox(value, row, col);
 		}
-
-		private JCheckBox setCheckBox(Object value, int row, int col) {
-			checkbox[row].setSelected(((Boolean) value).booleanValue());
-			checkbox[row].setEnabled(propsModel.isCellEditable(row, col));
-			checkbox[row].setOpaque(false);
-			return checkbox[row];
-		}
+//
+//		private JCheckBox setCheckBox(Object value, int row, int col) {
+//			checkbox[row].setSelected(((Boolean) value).booleanValue());
+//			checkbox[row].setEnabled(propsModel.isCellEditable(row, col));
+//			checkbox[row].setOpaque(false);
+//			return checkbox[row];
+//		}
 	}
 
 	/**
