@@ -765,10 +765,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		paintDrawables = b;
 	}
 	
-	public void setIgnoreRepaint(boolean b) {
-		
-	}
-
 	/**
 	 * Paints this component.
 	 * 
