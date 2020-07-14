@@ -23,6 +23,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
+//import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
@@ -38,6 +39,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Locale;
 
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -78,11 +80,11 @@ import javajs.async.SwingJSUtils.Performance;
  */
 @SuppressWarnings("serial")
 public class DrawingPanel extends JPanel implements ActionListener, Renderable {
-	
-static int ntest;
+
+	static int ntest;
 
 	public static final boolean messagesAsJLabels = true;
-	
+
 	protected static boolean RECORD_PAINT_TIMES = false; // set true to test painting time
 	protected long currentTime;// = System.currentTimeMillis();
 
@@ -94,14 +96,19 @@ static int ntest;
 	public static final int TOP_RIGHT = MessageDrawable.TOP_RIGHT;
 	@Deprecated
 	public static final int TOP_LEFT = MessageDrawable.TOP_LEFT;
-	
+
+	/**
+	 * BH experimental -- not needed.
+	 */
+	private JPanel glassPane;
+
 	protected JPopupMenu popupmenu; // right mouse click popup menu
 	/**
 	 * 
 	 * the menu items for the box
 	 * 
 	 */
-	protected JMenuItem propertiesItem, autoscaleItem, scaleItem, zoomInItem, zoomOutItem, snapshotItem; 
+	protected JMenuItem propertiesItem, autoscaleItem, scaleItem, zoomInItem, zoomOutItem, snapshotItem;
 
 	protected int leftGutter = 0, topGutter = 0, rightGutter = 0, bottomGutter = 0;
 	protected int leftGutterPreferred = 0, topGutterPreferred = 0, rightGutterPreferred = 0, bottomGutterPreferred = 0;
@@ -178,37 +185,17 @@ static int ntest;
 	private int myFontLevel;
 
 	protected void dispose() {
-		//FontSizer.removePropertyChangeListener(FontSizer.PROPERTY_LEVEL, guiChangeListener); //$NON-NLS-1$
+		// FontSizer.removePropertyChangeListener(FontSizer.PROPERTY_LEVEL,
+		// guiChangeListener); //$NON-NLS-1$
 		ToolsRes.removePropertyChangeListener("locale", guiChangeListener); //$NON-NLS-1$
-
-		// TODO Auto-generated method stub
-		
 	}
 
-
-	@Override
-	public void repaint(int x, int y, int w, int h) {
-	if (true)	return;
-		OSPLog.debug("DrawingPanel.repaint "+ ntest +"!!");
-		super.repaint(x, y, w, h);
-	}
-
-	@Override
-	public void repaint() {
-		Component top = getTopLevelAncestor();
-		if (super.getHeight() <= 0 || top == null || !top.isVisible() || top.getIgnoreRepaint()) {
-			//OSPLog.debug("DrawingPanel needless repaint!");
-		} else {
-			OSPLog.debug("DrawingPanel.repaint "+ ntest);
-			super.repaint();
-		}	
-	}
-	
 	/**
 	 * DrawingPanel constructor.
 	 */
 	public DrawingPanel() {
 		super(null);
+//		addGlassPane(); // BH was not helpful
 		setName("DrawingPanel");
 		setBackground(bgColor);
 		setPreferredSize(new Dimension(300, 300));
@@ -224,7 +211,7 @@ static int ntest;
 			}
 
 		});
-		//buildPopupmenu();
+		// buildPopupmenu();
 		refreshTimer.setRepeats(false);
 		refreshTimer.setCoalesce(true);
 		zoomTimer = new javax.swing.Timer(zoomDelay, new ActionListener() {
@@ -256,7 +243,7 @@ static int ntest;
 		guiChangeListener = new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
-				if (e.getPropertyName().equals(FontSizer.PROPERTY_LEVEL)) { //$NON-NLS-1$
+				if (e.getPropertyName().equals(FontSizer.PROPERTY_LEVEL)) { // $NON-NLS-1$
 					int level = ((Integer) e.getNewValue()).intValue();
 					setFontLevel(level);
 				} else if (e.getPropertyName().equals("locale")) { //$NON-NLS-1$
@@ -272,7 +259,49 @@ static int ntest;
 //		FontSizer.addPropertyChangeListener(FontSizer.PROPERTY_LEVEL, guiChangeListener); //$NON-NLS-1$
 		ToolsRes.addPropertyChangeListener("locale", guiChangeListener); //$NON-NLS-1$
 	}
-	
+
+//	private void addGlassPane() {
+//		glassPane = new JPanel(null);
+//		glassPane.setOpaque(false);
+//		glassPane.setBounds(0, 0, 0, 0);
+//		add(glassPane);
+//		addComponentListener(new ComponentListener() {
+//
+//			@Override
+//			public void componentResized(ComponentEvent e) {
+//				resizeGlassPane();
+//			}
+//
+//			@Override
+//			public void componentMoved(ComponentEvent e) {
+//				resizeGlassPane();
+//			}
+//
+//			@Override
+//			public void componentShown(ComponentEvent e) {
+//				// TODO Auto-generated method stub
+//				
+//			}
+//
+//			@Override
+//			public void componentHidden(ComponentEvent e) {
+//				// TODO Auto-generated method stub
+//				
+//			}
+//			
+//		});
+//	}
+//	protected void resizeGlassPane() {
+//		glassPane.setBounds(0, 0, getWidth(), getHeight());
+//	}
+
+	public void addMessageLabel(JLabel l) {
+		if (glassPane == null)
+			add(l);
+		else
+			glassPane.add(l);
+	}
+
 	/**
 	 * Sets the font level.
 	 *
@@ -725,6 +754,21 @@ static int ntest;
 		buffered = resetBuffered;
 	}
 
+	private boolean paintDrawables = true;
+
+	/**
+	 * A method to allow bypassing of paintEverything()
+	 * 
+	 * @param b
+	 */
+	public void setPaintDrawables(boolean b) {
+		paintDrawables = b;
+	}
+	
+	public void setIgnoreRepaint(boolean b) {
+		
+	}
+
 	/**
 	 * Paints this component.
 	 * 
@@ -732,36 +776,43 @@ static int ntest;
 	 */
 	@Override
 	public void paintComponent(Graphics g) {
-		if (OSPRuntime.disableAllDrawing) {
-			g.setColor(bgColor);
-			g.setColor(Color.RED);
-			g.fillRect(0, 0, getWidth(), getHeight());
-			return;
-		}
-		viewRect = findViewRect(); // find the clipping rectangle within a scroll pane viewport
-		if (buffered) { // paint bufferImage onto screen
-			boolean isResized = (getWidth() != offscreenImage.getWidth()
-					|| getHeight() != offscreenImage.getHeight());
-			if (validImage && !isResized) {
-				g.drawImage(offscreenImage, 0, 0, null); // copy image to the screen
-			} else {
-				if (isResized) {
-					g.setColor(Color.WHITE);
-					g.setColor(Color.CYAN);
-					g.fillRect(0, 0, getWidth(), getHeight());
-				} else {
-					g.drawImage(offscreenImage, 0, 0, null); // copy old image to the screen for now
-				}
-				refreshTimer.start(); // image is not valid so start refresh timer
+		if (!paintDrawables) {
+			// message from MessageDrawable that this is just a message drawing
+			paintDrawables = true;
+		} else {
+			if (OSPRuntime.disableAllDrawing) {
+				g.setColor(bgColor);
+				g.setColor(Color.RED);
+				g.fillRect(0, 0, getWidth(), getHeight());
+				return;
 			}
-		} else { // paint directly onto the graphics buffer
-			validImage = true; // painting everything gives a valid onscreen image
-			paintEverything(g);
+			viewRect = findViewRect(); // find the clipping rectangle within a scroll pane viewport
+			if (buffered) { // paint bufferImage onto screen
+				boolean isResized = (getWidth() != offscreenImage.getWidth()
+						|| getHeight() != offscreenImage.getHeight());
+				if (validImage && !isResized) {
+					g.drawImage(offscreenImage, 0, 0, null); // copy image to the screen
+				} else {
+					if (isResized) {
+						g.setColor(Color.WHITE);
+						g.setColor(Color.CYAN);
+						g.fillRect(0, 0, getWidth(), getHeight());
+					} else {
+						g.drawImage(offscreenImage, 0, 0, null); // copy old image to the screen for now
+					}
+					refreshTimer.start(); // image is not valid so start refresh timer
+				}
+			} else { // paint directly onto the graphics buffer
+				validImage = true; // painting everything gives a valid onscreen image
+				OSPLog.debug("DP clip " + g.getClip());
+				paintEverything(g);
+			}
+			zoomBox.paint(g);
+			// if(enableZoom||zoomMode) { // zoom box is always painted on top
+			// zoomBox.paint(g);
+			// }
 		}
-		zoomBox.paint(g);
-		// if(enableZoom||zoomMode) { // zoom box is always painted on top
-		// zoomBox.paint(g);
-		// }
+		super.paintComponents(g);
 	}
 
 	/**
@@ -777,8 +828,8 @@ static int ntest;
 	 * Finds the clipping rectangle if this panel is within a scroll pane viewport.
 	 */
 	public Rectangle findViewRect() {
-		return (getParent() instanceof JViewport ?
-				((JViewport) getParent()).getViewRect() :  new Rectangle(0, 0, getWidth(), getHeight()));
+		return (getParent() instanceof JViewport ? ((JViewport) getParent()).getViewRect()
+				: new Rectangle(0, 0, getWidth(), getHeight()));
 	}
 
 	/**
@@ -814,8 +865,6 @@ static int ntest;
 	 */
 	protected void paintLast(Graphics g) {
 	}
-	
-	
 
 	/**
 	 * Paints everything inside this component.
@@ -824,9 +873,9 @@ static int ntest;
 	 */
 	protected void paintEverything(Graphics g) {
 		RECORD_PAINT_TIMES = false;
-//		if (this.getHeight() < 100)
-//		OSPLog.debug(++ntest + "??DrawingPanel.paintEverything "+ this.getSize());
-		//new NullPointerException().printStackTrace(OSPLog.realSysout);
+		++ntest;
+		OSPLog.debug(ntest + "??DrawingPanel.paintEverything " + this.getSize() + " " + this.pixelTransform);
+		// new NullPointerException().printStackTrace(OSPLog.realSysout);
 		if (RECORD_PAINT_TIMES) {
 			System.out.println("DrawingPanel elapsed time(s)=" + (Performance.now(currentTime) / 1000.0)); //$NON-NLS-1$
 			currentTime = Performance.now(0);
@@ -981,11 +1030,11 @@ static int ntest;
 	 */
 	@Override
 	public void setBounds(int x, int y, int width, int height) {
-		//if (x < 0)
-		//OSPLog.debug("??DrawingPanel.setBounds(" + x + " " + y  + " " + width + " " + height + " " + this.getClass().getName());
-		
-		if (getX() == x && getY() == y && getWidth() == width
-				&& getHeight() == height) {
+		// if (x < 0)
+		// OSPLog.debug("??DrawingPanel.setBounds(" + x + " " + y + " " + width + " " +
+		// height + " " + this.getClass().getName());
+
+		if (getX() == x && getY() == y && getWidth() == width && getHeight() == height) {
 			return;
 		}
 		super.setBounds(x, y, width, height);
@@ -1789,14 +1838,16 @@ static int ntest;
 				stretch = Math.min(stretch, lastWidth); // limit the stretch
 				xmin = xminPreferred - (xmaxPreferred - xminPreferred) * (stretch - 1) / 2.0;
 				xmax = xmaxPreferred + (xmaxPreferred - xminPreferred) * (stretch - 1) / 2.0;
-				xPixPerUnit = Math.max(lastWidth - leftGutter - rightGutter, 1) / (xmax - xmin); // the x scale in pixels
-																								// per unit
+				xPixPerUnit = Math.max(lastWidth - leftGutter - rightGutter, 1) / (xmax - xmin); // the x scale in
+																									// pixels
+																									// per unit
 			} else { // make the y range bigger so that aspect ratio is one
 				stretch = Math.max(stretch, 1.0 / lastHeight); // limit the stretch
 				ymin = yminPreferred - (ymaxPreferred - yminPreferred) * (1.0 / stretch - 1) / 2.0;
 				ymax = ymaxPreferred + (ymaxPreferred - yminPreferred) * (1.0 / stretch - 1) / 2.0;
-				yPixPerUnit = Math.max(lastHeight - bottomGutter - topGutter, 1) / (ymax - ymin); // the y scale in pixels
-																								// per unit
+				yPixPerUnit = Math.max(lastHeight - bottomGutter - topGutter, 1) / (ymax - ymin); // the y scale in
+																									// pixels
+																									// per unit
 			}
 		}
 		pixelTransform.setTransform(xPixPerUnit, 0, 0, -yPixPerUnit, -xmin * xPixPerUnit + leftGutter,
@@ -2194,7 +2245,8 @@ static int ntest;
 					break; // abort drawing
 				}
 				Drawable d = tempList.get(i);
-				//OSPLog.debug(Performance.timeCheckStr("DrawingPanel.draw " + d.getClass().getName(), Performance.TIME_MARK));
+				// OSPLog.debug(Performance.timeCheckStr("DrawingPanel.draw " +
+				// d.getClass().getName(), Performance.TIME_MARK));
 
 				d.draw(this, g2);
 			}
@@ -2446,14 +2498,15 @@ static int ntest;
 			ArrayList<T> objects = new ArrayList<T>();
 			for (int i = 0, n = drawableList.size(); i < n; i++) {
 				Drawable d = drawableList.get(i);
-				if (allowSubtypes ? ((except == null || d != except) && (type == null || type.isInstance(d))) : d.getClass() == type) {
+				if (allowSubtypes ? ((except == null || d != except) && (type == null || type.isInstance(d)))
+						: d.getClass() == type) {
 					objects.add((T) d);
 				}
 			}
 			return objects;
 		}
 	}
-	
+
 	/**
 	 * Gets the gutters.
 	 */
@@ -2558,7 +2611,6 @@ static int ntest;
 		setMessage(msg, MessageDrawable.BOTTOM_RIGHT);
 	}
 
-	
 	private String[] lastMessage = new String[4];
 
 	/**
@@ -2607,6 +2659,57 @@ static int ntest;
 	 */
 	public boolean isZoomEvent(MouseEvent e) {
 		return OSPRuntime.isPopupTrigger(e);
+	}
+
+	@Override
+	public void repaint(int x, int y, int w, int h) {
+		// BH an experiment to solve the problem that paintEverything is always running
+		// twice.
+		if (OSPRuntime.isJS) {
+			repaintIfNecessary();
+			return;
+		}
+		;
+		super.repaint(x, y, w, h);
+		OSPLog.debug("DrawingPanel.repaint(x,y,w,h=" + h + ") " + ntest);
+	}
+
+	@Override
+	public void repaint() {
+		setPaintDrawables(true);
+		Component top = getTopLevelAncestor();
+		if (super.getHeight() <= 0 || top == null || !top.isVisible() || top.getIgnoreRepaint()) {
+			// OSPLog.debug("DrawingPanel needless repaint!");
+		} else {
+			OSPLog.debug("DrawingPanel.repaint " + ntest);
+			super.repaint();
+		}
+	}
+
+	public void repaintIfNecessary() {
+		if (!messagesAsJLabels)
+			repaintGlassPane();
+	}
+
+	private void repaintGlassPane() {
+		if (glassPane == null)
+			repaint();
+		else
+			glassPane.repaint();
+	}
+
+	public void displayCoordinates(MouseEvent e) {
+		if (showCoordinates) {
+			String s = (e == null ? null : coordinateStrBuilder.getCoordinateString(this, e));
+			messages.setMessage(s, MessageDrawable.BOTTOM_LEFT); // BL message box
+			repaintIfNecessary();
+		}
+	}
+
+	public void repaintForZoom() {
+		if (popupmenu == null) // BH could not ever happen
+			OSPLog.debug("DrawingPanel.repaintForZoom ignored - Bob??");
+//			repaint();
 	}
 
 	/**
@@ -2666,10 +2769,7 @@ static int ntest;
 		 */
 		@Override
 		public void mouseDragged(MouseEvent e) {
-			String s = coordinateStrBuilder.getCoordinateString(DrawingPanel.this, e);
-			System.err.println(" pressed coortd==" + s);
-			messages.setMessage(s, 0);
-			repaint();
+			displayCoordinates(e);
 		}
 
 	}
@@ -2800,7 +2900,7 @@ static int ntest;
 		@Override
 		public void actionPerformed(ActionEvent evt) {
 			zoomBox.visible = false;
-			//repaint();
+			// repaint();
 			String cmd = evt.getActionCommand();
 			if (cmd.equals(DisplayRes.getString("DrawingFrame.InspectMenuItem"))) { //$NON-NLS-1$
 				showInspector();
@@ -2877,7 +2977,7 @@ static int ntest;
 					zoomBox.visible = true;
 					repaintForZoom();
 				}
-				 getPopupMenu().show(e.getComponent(), e.getX(), e.getY());
+				getPopupMenu().show(e.getComponent(), e.getX(), e.getY());
 				return;
 			} else if (OSPRuntime.isPopupTrigger(e) && !popupmenuIsEnabled && (customInspector != null)) {
 				customInspector.setVisible(true);
@@ -2897,6 +2997,7 @@ static int ntest;
 			if (focusOwner != null && !(focusOwner instanceof JTextComponent)) {
 				requestFocusInWindow();
 			}
+			displayCoordinates(e);
 		}
 
 	}
@@ -2908,12 +3009,6 @@ static int ntest;
 	 */
 	public static XML.ObjectLoader getLoader() {
 		return new DrawingPanelLoader();
-	}
-
-	public void repaintForZoom() {
-		OSPLog.debug("DrawingPanel.repaintForZoom ignored - Bob??");
-//		if (popupmenu == null) // BH could not ever happen
-//			repaint();
 	}
 
 	/**
@@ -2961,7 +3056,6 @@ static int ntest;
 			}
 			return panel;
 		}
-		
 
 		/**
 		 * Loads a DrawingPanel with data from an XMLControl.
