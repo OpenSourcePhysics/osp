@@ -2669,7 +2669,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		}
 		;
 		super.repaint(x, y, w, h);
-		OSPLog.debug("DrawingPanel.repaint(x,y,w,h=" + h + ") " + ntest);
+		//OSPLog.debug("DrawingPanel.repaint(x,y,w,h=" + h + ") " + ntest);
 	}
 
 	@Override
@@ -2679,7 +2679,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		if (super.getHeight() <= 0 || top == null || !top.isVisible() || top.getIgnoreRepaint()) {
 			// OSPLog.debug("DrawingPanel needless repaint!");
 		} else {
-			OSPLog.debug("DrawingPanel.repaint " + ntest);
+			//OSPLog.debug("DrawingPanel.repaint " + ntest);
 			super.repaint();
 		}
 	}
