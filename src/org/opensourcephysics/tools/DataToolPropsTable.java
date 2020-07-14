@@ -425,6 +425,7 @@ final public class DataToolPropsTable extends JTable {
 		markerPlot.setBorder(BorderFactory.createEtchedBorder());
 		markerPlot.setBackground(Color.white);
 		markerPlot.setAntialiasShapeOn(true);
+		
 		markerDataset.append(0, 0);
 		// BH don't know why this was (0,1); (0,0) centers the square
 		markerDataset.setName("marker");
@@ -641,7 +642,6 @@ final public class DataToolPropsTable extends JTable {
 		// changes the value of a cell
 		@Override
 		public void setValueAt(Object value, int row, int col) {
-			OSPLog.debug("DataToolPropsTable " + row + " " + col + "" + value);
 			if (value instanceof Boolean) {
 				dataTable.dataToolTab.tabChanged(true);
 				boolean selected = ((Boolean) value).booleanValue();
@@ -705,35 +705,24 @@ final public class DataToolPropsTable extends JTable {
 			}
 			if (value instanceof WorkingDataset) {
 				if (panel == null) {
-					markerset = new Dataset()
-//					{
-//						
-//						@Override
-//						public void draw(DrawingPanel p,  Graphics g) {
-//							super.draw(p, g);
-//						}
-//						
-//					}
-					;
-					markerset.append(0, 1);
-					lineset = new Dataset()
-//					{
-//						@Override
-//						public void draw(DrawingPanel p,  Graphics g) {
-//							super.draw(p, g);
-//						}
-//					}
-					;
-					lineset.append(-1, 2);
-					lineset.append(1, 0);
-					lineset.setMarkerShape(Dataset.NO_MARKER);
-					lineset.setConnected(true);
 					panel = new JPanel(new GridLayout());
 					panel.setBorder(new CellBorder(new Color(240, 240, 240)));
 					panel.setBackground((row != axisRow) ? Color.white : color);
+
 					plot = new DrawingPanel();
 					plot.setBackground(Color.white);
 					plot.setAntialiasShapeOn(true);
+					plot.setPreferredMinMax(-1, 1, 0, 2);
+
+					markerset = new Dataset();
+					markerset.append(0, 1);
+
+					lineset = new Dataset();					;
+					lineset.setMarkerShape(Dataset.NO_MARKER);
+					lineset.setConnected(true);
+					lineset.append(-1, 2);
+					lineset.append(1, 0);
+					
 					plot.addDrawable(lineset);
 					plot.addDrawable(markerset);
 					panel.add(plot);
