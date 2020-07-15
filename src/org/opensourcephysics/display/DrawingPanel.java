@@ -765,10 +765,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		paintDrawables = b;
 	}
 	
-	public void setIgnoreRepaint(boolean b) {
-		
-	}
-
 	/**
 	 * Paints this component.
 	 * 
@@ -804,7 +800,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 				}
 			} else { // paint directly onto the graphics buffer
 				validImage = true; // painting everything gives a valid onscreen image
-				OSPLog.debug("DP clip " + g.getClip());
 				paintEverything(g);
 			}
 			zoomBox.paint(g);
@@ -874,7 +869,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	protected void paintEverything(Graphics g) {
 		RECORD_PAINT_TIMES = false;
 		++ntest;
-		OSPLog.debug(ntest + "??DrawingPanel.paintEverything " + this.getSize() + " " + this.pixelTransform);
+//		OSPLog.debug(ntest + "??DrawingPanel.paintEverything " + autoscaleX + " " + autoscaleY + " " + this.getSize() + " " + this.pixelTransform);
 		// new NullPointerException().printStackTrace(OSPLog.realSysout);
 		if (RECORD_PAINT_TIMES) {
 			System.out.println("DrawingPanel elapsed time(s)=" + (Performance.now(currentTime) / 1000.0)); //$NON-NLS-1$
@@ -1825,29 +1820,26 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 					- Math.max(lastHeight - bottomGutter - topGutter - 1, 1) / yPixPerUnit / 2;
 			ymax = (ymaxPreferred + yminPreferred) / 2
 					+ Math.max(lastHeight - bottomGutter - topGutter - 1, 1) / yPixPerUnit / 2;
-			pixelTransform.setTransform(xPixPerUnit, 0, 0, -yPixPerUnit, -xmin * xPixPerUnit + leftGutter,
-					ymax * yPixPerUnit + topGutter);
-			pixelTransform.getMatrix(pixelMatrix); // puts the transformation into the pixel matrix
-			return;
-		}
-		xPixPerUnit = Math.max(lastWidth - leftGutter - rightGutter, 1) / (xmax - xmin);
-		yPixPerUnit = Math.max(lastHeight - bottomGutter - topGutter, 1) / (ymax - ymin); // the y scale in pixels
-		if (squareAspect) {
-			double stretch = Math.abs(xPixPerUnit / yPixPerUnit);
-			if (stretch >= 1) { // make the x range bigger so that aspect ratio is one
-				stretch = Math.min(stretch, lastWidth); // limit the stretch
-				xmin = xminPreferred - (xmaxPreferred - xminPreferred) * (stretch - 1) / 2.0;
-				xmax = xmaxPreferred + (xmaxPreferred - xminPreferred) * (stretch - 1) / 2.0;
-				xPixPerUnit = Math.max(lastWidth - leftGutter - rightGutter, 1) / (xmax - xmin); // the x scale in
-																									// pixels
-																									// per unit
-			} else { // make the y range bigger so that aspect ratio is one
-				stretch = Math.max(stretch, 1.0 / lastHeight); // limit the stretch
-				ymin = yminPreferred - (ymaxPreferred - yminPreferred) * (1.0 / stretch - 1) / 2.0;
-				ymax = ymaxPreferred + (ymaxPreferred - yminPreferred) * (1.0 / stretch - 1) / 2.0;
-				yPixPerUnit = Math.max(lastHeight - bottomGutter - topGutter, 1) / (ymax - ymin); // the y scale in
-																									// pixels
-																									// per unit
+		} else {
+			xPixPerUnit = Math.max(lastWidth - leftGutter - rightGutter, 1) / (xmax - xmin);
+			yPixPerUnit = Math.max(lastHeight - bottomGutter - topGutter, 1) / (ymax - ymin); // the y scale in pixels
+			if (squareAspect) {
+				double stretch = Math.abs(xPixPerUnit / yPixPerUnit);
+				if (stretch >= 1) { // make the x range bigger so that aspect ratio is one
+					stretch = Math.min(stretch, lastWidth); // limit the stretch
+					xmin = xminPreferred - (xmaxPreferred - xminPreferred) * (stretch - 1) / 2.0;
+					xmax = xmaxPreferred + (xmaxPreferred - xminPreferred) * (stretch - 1) / 2.0;
+					xPixPerUnit = Math.max(lastWidth - leftGutter - rightGutter, 1) / (xmax - xmin); // the x scale in
+																										// pixels
+																										// per unit
+				} else { // make the y range bigger so that aspect ratio is one
+					stretch = Math.max(stretch, 1.0 / lastHeight); // limit the stretch
+					ymin = yminPreferred - (ymaxPreferred - yminPreferred) * (1.0 / stretch - 1) / 2.0;
+					ymax = ymaxPreferred + (ymaxPreferred - yminPreferred) * (1.0 / stretch - 1) / 2.0;
+					yPixPerUnit = Math.max(lastHeight - bottomGutter - topGutter, 1) / (ymax - ymin); // the y scale in
+																										// pixels
+																										// per unit
+				}
 			}
 		}
 		pixelTransform.setTransform(xPixPerUnit, 0, 0, -yPixPerUnit, -xmin * xPixPerUnit + leftGutter,
@@ -2673,7 +2665,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		}
 		;
 		super.repaint(x, y, w, h);
-		OSPLog.debug("DrawingPanel.repaint(x,y,w,h=" + h + ") " + ntest);
+		//OSPLog.debug("DrawingPanel.repaint(x,y,w,h=" + h + ") " + ntest);
 	}
 
 	@Override
@@ -2683,7 +2675,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		if (super.getHeight() <= 0 || top == null || !top.isVisible() || top.getIgnoreRepaint()) {
 			// OSPLog.debug("DrawingPanel needless repaint!");
 		} else {
-			OSPLog.debug("DrawingPanel.repaint " + ntest);
+			//OSPLog.debug("DrawingPanel.repaint " + ntest);
 			super.repaint();
 		}
 	}

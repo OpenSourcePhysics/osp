@@ -134,11 +134,6 @@ import org.opensourcephysics.tools.DatasetCurveFitter.NumberField;
 @SuppressWarnings("serial")
 public class DataToolTab extends JPanel implements Tool, PropertyChangeListener {
 
-	
-	@Override
-	public void repaint() {
-		super.repaint();
-	}
 	private static final String PROPERTY_DATATOOLTAB_FUNCTION = "function";
 
 	// static fields
@@ -1755,6 +1750,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				switch (e.getPropertyName()) {
 				case DatasetCurveFitter.PROPERTY_DATASETCURVEFITTER_CHANGED:
 					tabChanged(true);
+					if (isFitterVisible())
+						plot.repaint();
 					break;
 				case DatasetCurveFitter.PROPERTY_DATASETCURVEFITTER_DRAWER:
 					if (isFitterVisible()) {

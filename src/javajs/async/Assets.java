@@ -1,6 +1,5 @@
 package javajs.async;
 
-import java.awt.Toolkit;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

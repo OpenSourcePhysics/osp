@@ -143,49 +143,50 @@ public double evaluate(double x) {
     return yrange;
   }
 
-  protected void checkRange(DrawingPanel panel) {
-    // check to see if the range or function has changed
-    if((xrange[0]==panel.getXMin())&&(xrange[1]==panel.getXMax())&&(numpts==panel.getWidth())&&!functionChanged) {
-      return;
-    }
-    functionChanged = false;
-    xrange[0] = panel.getXMin();
-    xrange[1] = panel.getXMax();
-    numpts = panel.getWidth();
-    generalPath.reset();
-    if(numpts<1) {
-      return;
-    }
-    yrange[0] = function.evaluate(xrange[0]);
-    yrange[1] = yrange[0]; // starting values for ymin and ymax
-    if(filled) {
-      generalPath.moveTo((float) xrange[0], 0);
-      generalPath.lineTo((float) xrange[0], (float) yrange[0]);
-    } else {
-      generalPath.moveTo((float) xrange[0], (float) yrange[0]);
-    }
-    double x = xrange[0];
-    double dx = (xrange[1]-xrange[0])/(numpts);
-    for(int i = 0; i<numpts; i++) {
-      x = x+dx;
-      double y = function.evaluate(x);
-      if(!Double.isNaN(x)&&!Double.isNaN(y)) {
-        y = Math.min(y, 1.0e+12);
-        y = Math.max(y, -1.0e+12);
-        generalPath.lineTo((float) x, (float) y);
-        if(y<yrange[0]) {
-          yrange[0] = y; // the minimum value
-        }
-        if(y>yrange[1]) {
-          yrange[1] = y; // the maximum value
-        }
-      }
-    }
-    if(filled) {
-      generalPath.lineTo((float) x, 0);
-      generalPath.closePath();
-    }
-  }
+	protected void checkRange(DrawingPanel panel) {
+		// check to see if the range or function has changed
+		if ((xrange[0] == panel.getXMin()) && (xrange[1] == panel.getXMax()) && (numpts == panel.getWidth())
+				&& !functionChanged) {
+			return;
+		}
+		functionChanged = false;
+		xrange[0] = panel.getXMin();
+		xrange[1] = panel.getXMax();
+		numpts = panel.getWidth();
+		generalPath.reset();
+		if (numpts < 1) {
+			return;
+		}
+		yrange[0] = function.evaluate(xrange[0]);
+		yrange[1] = yrange[0]; // starting values for ymin and ymax
+		if (filled) {
+			generalPath.moveTo((float) xrange[0], 0);
+			generalPath.lineTo((float) xrange[0], (float) yrange[0]);
+		} else {
+			generalPath.moveTo((float) xrange[0], (float) yrange[0]);
+		}
+		double x = xrange[0];
+		double dx = (xrange[1] - xrange[0]) / (numpts);
+		for (int i = 0; i < numpts; i++) {
+			x = x + dx;
+			double y = function.evaluate(x);
+			if (!Double.isNaN(x) && !Double.isNaN(y)) {
+				y = Math.min(y, 1.0e+12);
+				y = Math.max(y, -1.0e+12);
+				generalPath.lineTo((float) x, (float) y);
+				if (y < yrange[0]) {
+					yrange[0] = y; // the minimum value
+				}
+				if (y > yrange[1]) {
+					yrange[1] = y; // the maximum value
+				}
+			}
+		}
+		if (filled) {
+			generalPath.lineTo((float) x, 0);
+			generalPath.closePath();
+		}
+	}
   
   /**
    * Draw the function on a drawing panel.
