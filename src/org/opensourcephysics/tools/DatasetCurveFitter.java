@@ -312,12 +312,13 @@ public class DatasetCurveFitter extends JPanel {
 		if (active) {
 			if (neverBeenActive) {
 				neverBeenActive = false;
-				autofitCheckBox.setSelected(true);
+				setAutoFit(true);
 			}
 			fit(fit);
 		}
 	}
 
+	private static int nfit = 0;
 	/**
 	 * Fits a fit function to the current data.
 	 *
@@ -325,7 +326,6 @@ public class DatasetCurveFitter extends JPanel {
 	 * @return the rms deviation
 	 */
 	public double fit(KnownFunction fit) {
-		// osplog.debug("DatasetCurveFit " + fit);
 		if (drawer == null) {
 			selectFit((String) fitDropDown.getSelectedItem());
 		}
@@ -338,7 +338,7 @@ public class DatasetCurveFitter extends JPanel {
 			} else {
 				eqnField.setText("y = " + fit.getExpression("x")); //$NON-NLS-1$ //$NON-NLS-2$
 			}
-			autofitCheckBox.setSelected(false);
+			setAutoFit(false);
 			autofitCheckBox.setEnabled(false);
 			spinCellEditor.stopCellEditing();
 			paramTable.setEnabled(false);
@@ -349,8 +349,12 @@ public class DatasetCurveFitter extends JPanel {
 		autofitCheckBox.setEnabled(true);
 		paramTable.setEnabled(true);
 
+
 		double[] x = dataset.getValidXPoints();
 		double[] y = dataset.getValidYPoints();
+		
+		OSPLog.debug("DatasetCurveFit " + ++nfit + " " + fit + " " + x.length + " " + y.length + " " + autofit);
+
 		double devSq = 0;
 		double[] prevParams = null;
 		// get deviation before fitting
@@ -393,7 +397,7 @@ public class DatasetCurveFitter extends JPanel {
 							f.setParameterValue(i, prevParams[i]);
 						}
 						devSq = prevDevSq;
-						autofitCheckBox.setSelected(false);
+						setAutoFit(false);
 //            Toolkit.getDefaultToolkit().beep();
 					}
 				}
@@ -761,7 +765,7 @@ public class DatasetCurveFitter extends JPanel {
 		fitBuilderButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				autofitCheckBox.setSelected(false);
+				setAutoFit(false);
 				String fitName = fit.getName();
 				if (fitName != null && fitBuilder.getPanelNames().contains(fitName)) {
 					fitBuilder.setSelectedPanel(fitName);
@@ -1330,7 +1334,7 @@ public class DatasetCurveFitter extends JPanel {
 			
 			// if insufficient points to do fit return NaN
 			if (dataset == null || 
-					(autofitCheckBox.isSelected() && fit.getParameterCount() > dataset.getValidXPoints().length))
+					(autofit && fit.getParameterCount() > dataset.getValidXPoints().length))
 				return Double.NaN;				
 
 			return new Double(fit.getParameterValue(row));
@@ -1441,7 +1445,7 @@ public class DatasetCurveFitter extends JPanel {
 			spinner.addChangeListener(new ChangeListener() {
 				@Override
 				public void stateChanged(ChangeEvent e) {
-					autofitCheckBox.setSelected(false);
+					setAutoFit(false);
 					double val = ((Double) spinner.getValue()).doubleValue();
 					field.setValue(val);
 					fit.setParameterValue(rowNumber, val);
@@ -1472,6 +1476,7 @@ public class DatasetCurveFitter extends JPanel {
 					drawer.functionChanged = true;
 					fit(fit);
 					firePropertyChange(PROPERTY_DATASETCURVEFITTER_CHANGED, null, null); // $NON-NLS-1$
+					
 				}
 
 			});

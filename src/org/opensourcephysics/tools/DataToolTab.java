@@ -1750,6 +1750,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				switch (e.getPropertyName()) {
 				case DatasetCurveFitter.PROPERTY_DATASETCURVEFITTER_CHANGED:
 					tabChanged(true);
+					if (isFitterVisible())
+						plot.repaint();
 					break;
 				case DatasetCurveFitter.PROPERTY_DATASETCURVEFITTER_DRAWER:
 					if (isFitterVisible()) {
