@@ -338,15 +338,17 @@ public class FitBuilder extends FunctionTool {
 		Class<?> type = control.getObjectClass();
 		if (FitBuilder.class.isAssignableFrom(type)) {
 			// choose fits to load
-			if (!loadAll)
-				return;
-			chooseFitFunctions(control, "Load", new ActionListener() {
+			if (loadAll)
+				control.loadObject(FitBuilder.this);
+			else 
+				chooseFitFunctions(control, "Load", new ActionListener() {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					control.loadObject(FitBuilder.this);
 				}
 			});
+			
 		} else {
 			JOptionPane.showMessageDialog(FitBuilder.this,
 					ToolsRes.getString("DatasetCurveFitter.FitBuilder.Dialog.WrongType.Message"), //$NON-NLS-1$
