@@ -1889,6 +1889,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			fitBuilder = new FitBuilder(this, false);
 			fitBuilder.setFontLevel(FontSizer.getLevel());
 			fitBuilder.setHelpPath("fit_builder_help.html"); //$NON-NLS-1$
+			fitBuilder.autoloadFits();
 		}
 		return fitBuilder;
 	}

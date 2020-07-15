@@ -84,7 +84,7 @@ public class FitBuilder extends FunctionTool {
 	}
 
 	protected JButton newFitButton, deleteFitButton, cloneFitButton, loadButton, saveButton, autoloadButton;
-	protected Component parent;
+	protected Component myParent;
 	protected TreeSet<String> addedFits = new TreeSet<String>();
 	protected String defaultFitName;
 	protected AutoloadManager autoloadManager;
@@ -100,7 +100,7 @@ public class FitBuilder extends FunctionTool {
 
 	public FitBuilder(Component c, boolean lazyGUI) {
 		super(c, true, lazyGUI);
-		parent = c;
+		myParent = c;
 		if (!lazyGUI)
 			createGUI();
 	}
@@ -214,12 +214,6 @@ public class FitBuilder extends FunctionTool {
 		});
 		setToolbarComponents(new Component[] { loadButton, saveButton, new JToolBar.Separator(), newFitButton,
 				cloneFitButton, deleteFitButton, Box.createHorizontalGlue(), autoloadButton });
-		// autoload fits if parent is data tool
-		if (parent != null && parent instanceof DataTool) {
-			for (String dir : getInitialSearchPaths()) {
-				autoloadFits(dir);
-			}
-		}
 	}
 
 	/**
@@ -338,15 +332,17 @@ public class FitBuilder extends FunctionTool {
 		Class<?> type = control.getObjectClass();
 		if (FitBuilder.class.isAssignableFrom(type)) {
 			// choose fits to load
-			if (!loadAll)
-				return;
-			chooseFitFunctions(control, "Load", new ActionListener() {
+			if (loadAll)
+				control.loadObject(FitBuilder.this);
+			else 
+				chooseFitFunctions(control, "Load", new ActionListener() {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					control.loadObject(FitBuilder.this);
 				}
 			});
+			
 		} else {
 			JOptionPane.showMessageDialog(FitBuilder.this,
 					ToolsRes.getString("DatasetCurveFitter.FitBuilder.Dialog.WrongType.Message"), //$NON-NLS-1$
@@ -417,6 +413,18 @@ public class FitBuilder extends FunctionTool {
 			control = new XMLControlElement(this);
 		}
 		control.write(path);
+	}
+	
+	/**
+	 * Loads fit functions from all initial search paths.
+	 */
+	protected void autoloadFits() {
+		// autoload fits if parent is data tool
+		if (myParent != null && myParent instanceof DataTool) {
+			for (String dir : getInitialSearchPaths()) {
+				autoloadFits(dir);
+			}
+		}
 	}
 
 	/**
