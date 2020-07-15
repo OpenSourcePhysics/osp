@@ -83,6 +83,7 @@ import org.opensourcephysics.display.OSPFrame;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.display.TextFrame;
+import org.opensourcephysics.js.JSUtil;
 
 /**
  * This provides a GUI for analyzing OSP Data objects.
@@ -95,6 +96,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 
 	private static final String PROPERTY_DATATOOL_FUNCTION = "function";
 
+	boolean standAlone = false;  // true when running as application
+	
 	// static fields
 	@SuppressWarnings("javadoc")
 	public static boolean loadClass = false;
@@ -186,6 +189,14 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		return (tool == null ? (tool = new DataTool()) : tool);
 	}
 
+/*
+	@Override
+	public void setName(String name) {
+	  // set custom name
+	  super.setName("DataToolTest");
+	}
+*/
+
 	/**
 	 * Main entry point when used as application.
 	 *
@@ -193,6 +204,9 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 */
 	public static void main(String[] args) {
 		getTool(true);
+		if(JSUtil.isJS)tool.standAlone=true;
+		if(tool.standAlone) tool.setLocation(0, 0);
+  	OSPRuntime.setAppClass(tool);
 		tool.exitOnClose = true;
 		tool.saveChangesOnClose = true;
 		if ((args != null) && (args.length > 0) && (args[0] != null)) {
@@ -1858,7 +1872,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 			int x = (dim.width - getBounds().width) / 2;
 			int y = (dim.height - getBounds().height) / 2;
-			setLocation(x, y);
+			if(!standAlone) setLocation(x, y);
 		}
 
 		super.setVisible(vis);
@@ -3001,7 +3015,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		int x = (dim.width - getBounds().width) / 2;
 		int y = (dim.height - getBounds().height) / 2;
-		setLocation(x, y);
+		if(!standAlone) setLocation(x, y);  // don't set location if running stand alone
 	}
 
 	/**
