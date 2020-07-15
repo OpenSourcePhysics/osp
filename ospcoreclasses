@@ -152,12 +152,14 @@ java/io/Closeable.js
 java/io/File.js
 java/io/FileDescriptor.js
 java/io/FileFilter.js
+java/io/FileInputStream.js
 java/io/FileOutputStream.js
 java/io/FileSystem.js
 java/io/FileWriter.js
 java/io/FilterInputStream.js
 java/io/FilterOutputStream.js
 java/io/InputStream.js
+java/io/InputStreamReader.js
 java/io/OutputStream.js
 java/io/OutputStreamWriter.js
 java/io/PrintStream.js
@@ -199,7 +201,6 @@ java/net/URL.js
 java/net/URLConnection.js
 java/net/URLStreamHandler.js
 java/net/URLStreamHandlerFactory.js
-
 java/nio/Bits.js
 java/nio/Buffer.js
 java/nio/ByteBuffer.js
@@ -677,6 +678,7 @@ org/opensourcephysics/numerics/Function.js
 org/opensourcephysics/numerics/FunctionTransform.js
 org/opensourcephysics/numerics/HessianMinimize.js
 org/opensourcephysics/numerics/InvertibleFunction.js
+org/opensourcephysics/numerics/LUPDecomposition.js
 org/opensourcephysics/numerics/LevenbergMarquardt.js
 org/opensourcephysics/numerics/LogBase10Function.js
 org/opensourcephysics/numerics/MathExpParser.js
@@ -709,9 +711,9 @@ org/opensourcephysics/tools/DataToolStatsTable.js
 org/opensourcephysics/tools/DataToolTab.js
 org/opensourcephysics/tools/DataToolTable.js
 org/opensourcephysics/tools/DatasetCurveFitter.js
-org/opensourcephysics/tools/ExportTool.js
 org/opensourcephysics/tools/ExportFormat.js
 org/opensourcephysics/tools/ExportGnuplotFormat.js
+org/opensourcephysics/tools/ExportTool.js
 org/opensourcephysics/tools/ExportXMLFormat.js
 org/opensourcephysics/tools/FitBuilder.js
 org/opensourcephysics/tools/FitFunctionPanel.js
@@ -723,6 +725,7 @@ org/opensourcephysics/tools/Job.js
 org/opensourcephysics/tools/JobManager.js
 org/opensourcephysics/tools/KnownFunction.js
 org/opensourcephysics/tools/KnownPolynomial.js
+org/opensourcephysics/tools/Library.js 
 org/opensourcephysics/tools/LocalJob.js
 org/opensourcephysics/tools/ParamEditor.js
 org/opensourcephysics/tools/Parameter.js
@@ -760,9 +763,9 @@ sun/nio/cs/ArrayDecoder.js
 sun/nio/cs/HistoricallyNamedCharset.js
 sun/nio/cs/StandardCharsets.js
 sun/nio/cs/ThreadLocalCoders.js
+sun/nio/cs/ThreadLocalCoders.js
 sun/nio/cs/UTF_8.js
 sun/nio/cs/Unicode.js
-sun/nio/cs/ThreadLocalCoders.js
 sun/reflect/Reflection.js
 sun/security/action/GetPropertyAction.js
 sun/swing/DefaultLookup.js
@@ -832,6 +835,7 @@ swingjs/api/js/JQueryObject.js
 swingjs/api/js/JSFunction.js
 swingjs/api/js/JSInterface.js
 swingjs/jquery/JQueryUI.js
+swingjs/jquery/j2sComboBox.js
 swingjs/jquery/j2sMenu.js
 swingjs/jquery/j2sSlider.js
 swingjs/jzlib/Adler32.js
@@ -856,6 +860,7 @@ swingjs/plaf/JSBoxUI.js
 swingjs/plaf/JSButtonUI.js
 swingjs/plaf/JSCheckBoxMenuItemUI.js
 swingjs/plaf/JSCheckBoxUI.js
+swingjs/plaf/JSComboBoxUI.js
 swingjs/plaf/JSComboPopupList.js
 swingjs/plaf/JSComponentUI.js
 swingjs/plaf/JSDialogUI.js
