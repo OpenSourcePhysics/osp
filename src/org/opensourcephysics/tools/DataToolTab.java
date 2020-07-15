@@ -2267,7 +2267,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				((CrawlerSpinnerModel) shiftXSpinner.getModel()).refreshDelta();
 				((CrawlerSpinnerModel) shiftYSpinner.getModel()).refreshDelta();
 				dataTable.dorepaint(5);
-				dataTable.refreshTable();
 			}
 			if (mouseDrawable == plot.areaLimits[0])
 				plot.areaLimits[0].isAdjusting = false;
@@ -2485,6 +2484,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	}
 
 	protected void refreshGUIAsync() {
+		if (!haveGUI)
+			return;
 		boolean changed = tabChanged;
 		newColumnButton.setText(ToolsRes.getString("DataToolTab.Button.NewColumn.Text")); //$NON-NLS-1$
 		newColumnButton.setToolTipText(ToolsRes.getString("DataToolTab.Button.NewColumn.Tooltip")); //$NON-NLS-1$
