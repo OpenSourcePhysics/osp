@@ -60,6 +60,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
+import javax.swing.TransferHandler;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -96,8 +97,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 
 	private static final String PROPERTY_DATATOOL_FUNCTION = "function";
 
-	boolean standAlone = false;  // true when running as application
-	
+	boolean standAlone = false; // true when running as application
+
 	// static fields
 	@SuppressWarnings("javadoc")
 	public static boolean loadClass = false;
@@ -177,25 +178,23 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	public static DataTool getTool() {
 		return getTool(true);
 	}
+
 	/**
 	 * Gets the shared DataTool.
 	 *
 	 * @return the shared DataTool
 	 */
 	public static DataTool getTool(boolean forceNew) {
-		//OSPLog.debug("???Temp DataTool always get tool");
-		if ( tool == null && !forceNew)
+		// OSPLog.debug("???Temp DataTool always get tool");
+		if (tool == null && !forceNew)
 			return null;
 		return (tool == null ? (tool = new DataTool()) : tool);
 	}
 
-/*
-	@Override
-	public void setName(String name) {
-	  // set custom name
-	  super.setName("DataToolTest");
-	}
-*/
+	/*
+	 * @Override public void setName(String name) { // set custom name
+	 * super.setName("DataToolTest"); }
+	 */
 
 	/**
 	 * Main entry point when used as application.
@@ -204,9 +203,11 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 */
 	public static void main(String[] args) {
 		getTool(true);
-		if(JSUtil.isJS)tool.standAlone=true;
-		if(tool.standAlone) tool.setLocation(0, 0);
-  	OSPRuntime.setAppClass(tool);
+		if (JSUtil.isJS)
+			tool.standAlone = true;
+		if (tool.standAlone)
+			tool.setLocation(0, 0);
+		OSPRuntime.setAppClass(tool);
 		tool.exitOnClose = true;
 		tool.saveChangesOnClose = true;
 		if ((args != null) && (args.length > 0) && (args[0] != null)) {
@@ -1872,7 +1873,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 			int x = (dim.width - getBounds().width) / 2;
 			int y = (dim.height - getBounds().height) / 2;
-			if(!standAlone) setLocation(x, y);
+			if (!standAlone)
+				setLocation(x, y);
 		}
 
 		super.setVisible(vis);
@@ -2107,6 +2109,9 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			}
 
 		});
+		FileDropHandler fileDropHandler = new FileDropHandler();
+		tabbedPane.setTransferHandler(fileDropHandler);
+		setTransferHandler(fileDropHandler);
 	}
 
 	/**
@@ -2192,7 +2197,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		if (dataBuilder == null) { // create new tool if none exists
 			dataBuilder = new DataBuilder(this);
 			dataBuilder.setFontLevel(FontSizer.getLevel());
-			dataBuilder.addPropertyChangeListener(PROPERTY_DATATOOL_FUNCTION, this); //$NON-NLS-1$
+			dataBuilder.addPropertyChangeListener(PROPERTY_DATATOOL_FUNCTION, this); // $NON-NLS-1$
 		}
 		refreshDataBuilder();
 		return dataBuilder;
@@ -2862,8 +2867,10 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		languageMenu = new JMenu();
 		// get jar resource before installed locales so that launch jar is not null
 		String imagePath = "/org/opensourcephysics/resources/tools/images/open.gif"; //$NON-NLS-1$
-	  if(org.opensourcephysics.js.JSUtil.isJS) ResourceLoader.getAssetURL(imagePath);
-	  else ResourceLoader.getResource(imagePath);
+		if (org.opensourcephysics.js.JSUtil.isJS)
+			ResourceLoader.getAssetURL(imagePath);
+		else
+			ResourceLoader.getResource(imagePath);
 		final Locale[] locales = OSPRuntime.getInstalledLocales();
 		Action languageAction = new AbstractAction() {
 			@Override
@@ -3016,7 +3023,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		int x = (dim.width - getBounds().width) / 2;
 		int y = (dim.height - getBounds().height) / 2;
-		if(!standAlone) setLocation(x, y);  // don't set location if running stand alone
+		if (!standAlone)
+			setLocation(x, y); // don't set location if running stand alone
 	}
 
 	/**
@@ -3172,6 +3180,42 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 
 		};
 		return button;
+	}
+
+	public class FileDropHandler extends TransferHandler {
+
+		public FileDropHandler() {
+		}
+
+		Boolean isDropOK = null;
+
+		/**
+		 * Check to see that we can import this file. It if is NOT a video-type file
+		 * (mp4, jpg, etc) then set the drop action to COPY rather than MOVE.
+		 * 
+		 */
+		@Override
+		public boolean canImport(TransferHandler.TransferSupport support) {
+			return true;
+		}
+
+		@Override
+		public boolean importData(TransferHandler.TransferSupport support) {
+			for (File f : getFileList(support.getTransferable())) {
+				open(f);
+			}
+			return true;
+		}
+
+		@SuppressWarnings("unchecked")
+		private List<File> getFileList(Transferable t) {
+			try {
+				return (List<File>) t.getTransferData(DataFlavor.javaFileListFlavor);
+			} catch (Exception e) {
+				return null;
+			}
+		}
+
 	}
 
 }
