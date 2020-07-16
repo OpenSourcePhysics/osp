@@ -494,7 +494,7 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 			// horizontal min
 			hitRect.setLocation(l - 12, plotDim.height - b + 6 + offset);
 			if (hitRect.contains(p)) {
-				if (isPress) {
+//				if (isPress) {
 					getScaleSetter();
 					Point hitLoc = hitRect.getLocation(); // relative to plotPanel
 					scaleSetter.add(scaleSetter.autoscaleCheckbox, BorderLayout.NORTH);
@@ -503,31 +503,31 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 					Dimension size = scaleSetter.getPreferredSize();
 					scaleSetter.setBounds(hitLoc.x - fieldLoc.x, hitLoc.y - fieldLoc.y - offset, size.width,
 							size.height);
-				}
+//				}
 				reg = HORZ_MIN;
 				break;
 			}
 			// horizontal max
 			hitRect.setLocation(plotDim.width - r - fieldDim.width + 12, plotDim.height - b + 6 + offset);
 			if (hitRect.contains(p)) {
-				if (isPress) {
-					getScaleSetter();
+//				if (isPress) {
 					scaleField.setExpectedRange(xmin, xmax);
 					Point hitLoc = hitRect.getLocation(); // relative to plotPanel
 					scaleSetter.add(scaleSetter.autoscaleCheckbox, BorderLayout.NORTH);
 					scaleSetter.validate();
 					Point fieldLoc = scaleField.getLocation(); // relative to scaleSetter
 					Dimension size = scaleSetter.getPreferredSize();
+					getScaleSetter();
 					scaleSetter.setBounds(hitLoc.x - fieldLoc.x, hitLoc.y - fieldLoc.y - offset, size.width,
 							size.height);
-				}
+//				}
 				reg = HORZ_MAX;
 				break;
 			}
 			// vertical min
 			hitRect.setLocation(l - fieldDim.width - 1 - offset, plotDim.height - b - fieldDim.height + 8);
 			if (hitRect.contains(p)) {
-				if (isPress) {
+//				if (isPress) {
 					getScaleSetter();
 					scaleField.setExpectedRange(ymin, ymax);
 					Point hitLoc = hitRect.getLocation(); // relative to plotPanel
@@ -538,14 +538,14 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 					Dimension size = scaleSetter.getPreferredSize();
 					scaleSetter.setBounds(Math.max(minLoc, 1 - fieldLoc.x), hitLoc.y - fieldLoc.y, size.width,
 							size.height);
-				}
+//				}
 				reg = VERT_MIN;
 				break;
 			}
 			// vertical max
 			hitRect.setLocation(l - fieldDim.width - 1 - offset, t - 8);
 			if (hitRect.contains(p)) {
-				if (isPress) {
+//				if (isPress) {
 					getScaleSetter();
 					scaleField.setExpectedRange(ymin, ymax);
 					Point hitLoc = hitRect.getLocation(); // relative to plotPanel
@@ -556,7 +556,7 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 					Dimension size = scaleSetter.getPreferredSize();
 					scaleSetter.setBounds(Math.max(minLoc, 1 - fieldLoc.x), hitLoc.y - fieldLoc.y, size.width,
 							size.height);
-				}
+//				}
 				reg = VERT_MAX;
 				break;
 			}
