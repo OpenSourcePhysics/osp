@@ -2686,7 +2686,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	}
 
 	public void repaintIfNecessary() {
-		if (!messagesAsJLabels)
+		//if (!messagesAsJLabels)
 			repaintGlassPane();
 	}
 
