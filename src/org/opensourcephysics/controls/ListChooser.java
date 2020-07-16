@@ -71,11 +71,7 @@ public class ListChooser extends JDialog {
 	 */
 	public ListChooser(String title, String text, Component owner, ActionListener listener) {
 		super(JOptionPane.getFrameForComponent(owner), true);
-		actionListener = listener;
-		setTitle(title);
-		instructions = new JLabel(" " + text); //$NON-NLS-1$
-		instructions.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 6));
-		createGUI();
+		init(title, text, listener);
 	}
 
 	/**
@@ -88,7 +84,11 @@ public class ListChooser extends JDialog {
 	 */
 	public ListChooser(String title, String text, JDialog owner, ActionListener listener) {
 		super(owner, true);
-	    actionListener = listener;
+		init(title, text, listener);
+	}
+
+	private void init(String title, String text, ActionListener listener) {
+		actionListener = listener;
 		setTitle(title);
 		instructions = new JLabel(" " + text); //$NON-NLS-1$
 		instructions.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 6));

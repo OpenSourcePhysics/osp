@@ -111,7 +111,7 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 //		scaleSetterPanel = new JPanel(null);
 //		scaleSetterPanel.setOpaque(false);
 //		scaleSetterPanel.add(scaleSetter);
-//
+
 	}
 
 	/**
@@ -574,9 +574,10 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 		if (scaleSetter == null) {
 			scaleSetter = new ScaleSetter();
 			// create transparent scaleSetterPanel with no LayoutManager
-			scaleSetterPanel = new JPanel(null);
-			scaleSetterPanel.setOpaque(false);
-			scaleSetterPanel.add(scaleSetter);
+			plot.getGlassPane().add(scaleSetter);
+			//scaleSetterPanel = new JPanel(null);
+			//scaleSetterPanel.setOpaque(false);
+			//scaleSetterPanel.add(scaleSetter);
 		}
 			
 		// refresh autoscale checkbox text if needed (eg, new Locale)
@@ -672,19 +673,19 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 		}
 
 
-	    public void setVisible(Point p) {
-    		Container frame = plot.getTopLevelAncestor();
-    		if (frame instanceof JFrame) {
-    			JPanel gp = (JPanel) ((JFrame) frame).getGlassPane();
-    			if (p == null) {
-    				gp.setVisible(false);
-    				return;
-    			}
-    			if (scaleSetterPanel.getParent() != gp)    			
-    				gp.add(scaleSetterPanel);    			
-	    		gp.setVisible(true);
-    		}
-	    }
+		public void setVisible(Point p) {
+			//JPanel gp = plot.getGlassPane();
+			if (p == null) {
+				super.setVisible(false);
+				return;
+			} 
+			super.setVisible(true);
+//			if (scaleSetterPanel.getParent() != gp) {
+//				gp.add(scaleSetterPanel);
+//			}
+//			OSPLog.debug("CartInter.scaleSetter" + scaleSetterPanel);
+//			scaleSetterPanel.setVisible(true);
+		}
 
 	    public void setVisible(boolean b) {
 	    	if (!b) {
@@ -726,6 +727,7 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 				return; // Paco
 			altDown = e.isAltDown();
 			Point p = e.getPoint();
+			drawHitRect = false;
 			mouseRegion = findRegion(p, false);
 			switch (mouseRegion) {
 			case HORZ_MIN:
@@ -734,7 +736,6 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 			case VERT_MAX:
 				if (!drawingPanel.isFixedScale() && scaleSetter != null) {
 					getScaleSetter().setRegion(mouseRegion);
-					scaleSetter.validate();
 					scaleSetter.setVisible(p);
 				}
 				return;

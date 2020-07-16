@@ -1500,7 +1500,10 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 		if (noNumbers) {
 			return;
 		}
-		g2.setColor(lineColor);
+		g2.setColor(
+				this.getYColumnName() == "y" ? 
+				Color.red :
+				lineColor);
 		if (myShape == null)
 			myShape = drawingPanel.transformPath(generalPath);
 		g2.draw(myShape);
@@ -1547,7 +1550,6 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 		}
 		double xp = 0;
 		double yp = 0;
-		Shape shape = null;
 		int size = markerSize * 2 + 1;
 		g2 = (Graphics2D) g2.create();
 		// Shape clipShape = g2.getClip();
@@ -1559,104 +1561,70 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 		if (viewRect != null) { // decrease the clip if we are in a scroll pane
 			g2.clipRect(viewRect.x, viewRect.y, viewRect.x + viewRect.width, viewRect.y + viewRect.height);
 		}
-//		double[] tempX = getXPoints();
-//		double[] tempY = getYPoints();
-		
 
 		
+//		double[] tempX = getXPoints();
+//		double[] tempY = getYPoints();
+
+		double bottom = (markerShape == BAR || markerShape == POST
+				? Math.min(drawingPanel.yToPix(0), drawingPanel.yToPix(drawingPanel.getYMin()))
+				: 0);
+
+		g2.setColor(markerShape == PIXEL ? edgeColor : fillColor);
 		for (int i = 0; i < index; i++) {
 			double x = xpoints[i];
 			double y = getY(i);
-			if (Double.isNaN(y)) {
+			if (Double.isNaN(y) || x <= 0 && drawingPanel.isLogScaleX() || y <= 0 && drawingPanel.isLogScaleY()) {
 				continue;
 			}
-			if (drawingPanel.isLogScaleX() && (x <= 0)) {
-				continue;
-			}
-			if (drawingPanel.isLogScaleY() && (y <= 0)) {
-				continue;
-			}
+			Shape shape = null;
 			xp = drawingPanel.xToPix(x);
 			yp = drawingPanel.yToPix(y);
-			
-//			if (index < 3)OSPLog.debug("Dataset.drawScatter " 
-//			+ index + " " + x + " " + y + "/" + xp + " " + yp + " "+ g2.getTransform());
+
+//		if (i < 3)OSPLog.debug("Dataset.drawScatter " + this.getYColumnName() + " " 
+//			+ i + "/" + index + " " + x + " " + y + "/" + xp + " " + yp + " ms"+ markerShape + " " + size + " " + g2.getTransform());
 //			
 			switch (markerShape) {
+			case PIXEL:
+				// draw and center the point
+				shape = new Rectangle2D.Double(xp, yp, 1, 1); // this produces a one pixel shape
+				g2.draw(shape);
+				continue;
 			case BAR: // draw a bar graph.
-				double bottom = Math.min(drawingPanel.yToPix(0), drawingPanel.yToPix(drawingPanel.getYMin()));
 				double barHeight = bottom - yp;
 				if (barHeight > 0) {
 					shape = new Rectangle2D.Double(xp - markerSize, yp, size, barHeight);
 				} else {
 					shape = new Rectangle2D.Double(xp - markerSize, bottom, size, -barHeight);
 				}
-				g2.setColor(fillColor);
-				g2.fill(shape);
-				if (edgeColor != fillColor) {
-					g2.setColor(edgeColor);
-					g2.draw(shape);
-				}
 				break;
 			case POST:
-				bottom = Math.min(drawingPanel.yToPix(0), drawingPanel.yToPix(drawingPanel.getYMin()));
 				shape = new Rectangle2D.Double(xp - markerSize, yp - markerSize, size, size);
 				g2.setColor(edgeColor);
 				g2.drawLine((int) xp, (int) yp, (int) xp, (int) bottom);
 				g2.setColor(fillColor);
-				g2.fill(shape);
-				if (edgeColor != fillColor) {
-					g2.setColor(edgeColor);
-					g2.draw(shape);
-				}
-				break;
-			case SQUARE:
-				shape = new Rectangle2D.Double(xp - markerSize, yp - markerSize, size, size);
-				g2.setColor(fillColor);
-				g2.fill(shape);
-				if (edgeColor != fillColor) {
-					g2.setColor(edgeColor);
-					g2.draw(shape);
-				}
 				break;
 			case CIRCLE:
 				shape = new Ellipse2D.Double(xp - markerSize, yp - markerSize, size, size);
-				g2.setColor(fillColor);
-				g2.fill(shape);
-				if (edgeColor != fillColor) {
-					g2.setColor(edgeColor);
-					g2.draw(shape);
-				}
-				break;
-			case PIXEL:
-				shape = new Rectangle2D.Double(xp, yp, 1, 1); // this produces a one pixel shape
-				g2.setColor(edgeColor);
-				g2.draw(shape);
-				// draw and center the point
 				break;
 			case CUSTOM:
-				Shape temp = getTranslateInstance(xp, yp).createTransformedShape(customMarker);
-				g2.setColor(fillColor);
-				g2.fill(temp);
-				if (edgeColor != fillColor) {
-					g2.setColor(edgeColor);
-					g2.draw(temp);
-				}
+				shape = getTranslateInstance(xp, yp).createTransformedShape(customMarker);
 				break;
+			case SQUARE:
 			default:
 				shape = new Rectangle2D.Double(xp - markerSize, yp - markerSize, size, size);
-				g2.setColor(fillColor);
-				g2.fill(shape);
-				if (edgeColor != fillColor) {
-					g2.setColor(edgeColor);
-					g2.draw(shape);
-				}
 				break;
 			}
+			g2.fill(shape);
+			if (edgeColor != fillColor) {
+				g2.setColor(edgeColor);
+				g2.draw(shape);
+				g2.setColor(fillColor);
+			}
 		}
-		Iterator<ErrorBar> it = errorBars.iterator();
-		while (it.hasNext()) { // copy only the obejcts of the correct type
-			(it.next()).draw(drawingPanel, g2);
+		if (errorBars.size() > 0) {
+			for (int i = errorBars.size(); --i >= 0;)
+				errorBars.get(i).draw(drawingPanel, g2);
 		}
 		g2.dispose();
 		// BH 2020.02.26 can't do this in JavaScript

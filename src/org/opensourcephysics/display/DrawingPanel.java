@@ -101,6 +101,10 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 * BH experimental -- not needed.
 	 */
 	private JPanel glassPane;
+	
+	public JPanel getGlassPane() {
+		return (glassPane == null ? this : glassPane);
+	}
 
 	protected JPopupMenu popupmenu; // right mouse click popup menu
 	/**
@@ -754,7 +758,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		buffered = resetBuffered;
 	}
 
-	private boolean paintDrawables = true;
+	protected boolean paintDrawables = true;
 
 	/**
 	 * A method to allow bypassing of paintEverything()
@@ -762,7 +766,8 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 * @param b
 	 */
 	public void setPaintDrawables(boolean b) {
-		paintDrawables = b;
+		//if (OSPRuntime.isJS)
+			paintDrawables = b;
 	}
 	
 	/**
@@ -772,6 +777,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 */
 	@Override
 	public void paintComponent(Graphics g) {
+		viewRect = findViewRect(); // find the clipping rectangle within a scroll pane viewport
 		if (!paintDrawables) {
 			// message from MessageDrawable that this is just a message drawing
 			paintDrawables = true;
@@ -782,7 +788,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 				g.fillRect(0, 0, getWidth(), getHeight());
 				return;
 			}
-			viewRect = findViewRect(); // find the clipping rectangle within a scroll pane viewport
 			if (buffered) { // paint bufferImage onto screen
 				boolean isResized = (getWidth() != offscreenImage.getWidth()
 						|| getHeight() != offscreenImage.getHeight());
@@ -2663,7 +2668,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 			repaintIfNecessary();
 			return;
 		}
-		;
+		setPaintDrawables(true);
 		super.repaint(x, y, w, h);
 		//OSPLog.debug("DrawingPanel.repaint(x,y,w,h=" + h + ") " + ntest);
 	}
