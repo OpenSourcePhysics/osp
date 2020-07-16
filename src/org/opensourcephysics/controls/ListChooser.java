@@ -325,7 +325,7 @@ public class ListChooser extends JDialog {
 
 	@Override
 	public void setVisible(boolean b) {
-		super.setVisible(false);
+		super.setVisible(b);
 		if (!b) {
 			doAction();
 		}
