@@ -75,6 +75,7 @@ public class TPoint extends Point2D.Double implements Interactive, Trackable {
 	protected Point2D.Double worldPt;
 	protected PropertyChangeSupport support;
 	protected TPoint attachedTo;
+	protected double prevX = java.lang.Double.NaN, prevY = java.lang.Double.NaN;
 
 	/**
 	 * Constructs a TPoint with image coordinates (0, 0).
@@ -589,6 +590,10 @@ public class TPoint extends Point2D.Double implements Interactive, Trackable {
 	 * @param adjusting true if being dragged
 	 */
 	public void setAdjusting(boolean adjusting) {
+		if (!isAdjusting && adjusting) {
+			prevX = x;
+			prevY = y;
+		}
 		isAdjusting = adjusting;
 	}
 
