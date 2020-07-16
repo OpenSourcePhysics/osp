@@ -40,7 +40,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.function.Function;
 
@@ -492,8 +491,8 @@ public class VideoIO {
 		}
 		return null;
 	}
-
-	private ArrayList<VideoType> found = new ArrayList<VideoType>();
+//
+//	private ArrayList<VideoType> found = new ArrayList<VideoType>();
 
 	/**
 	 * Gets an array of video types that can open files with a given extension.
@@ -684,21 +683,21 @@ public class VideoIO {
 		return (Video) new XMLControlElement(control).loadObject(null);
 	}
 
-	/**
-	 * A Stop-gap method to allow Java-only functionality.
-	 * 
-	 * @param type
-	 * @return
-	 */
-	@Deprecated
-	public static File[] getChooserFiles(String type) {
-		return getChooserFilesAsync(type, null);
-	}
+//	/**
+//	 * A Stop-gap method to allow Java-only functionality.
+//	 * 
+//	 * @param type
+//	 * @return
+//	 */
+//	@Deprecated
+//	public static File[] getChooserFiles(String type) {
+//		return getChooserFilesAsync(type, null);
+//	}
 
 	/**
 	 * Displays a file chooser and returns the chosen files.
 	 *
-	 * @param type may be "open", "open video", "save", "insert image"
+	 * @param type        only "open"; all others are in TrackerIO.getChooserFilesAsync
 	 * @param processFiles asynchronous follower method
 	 * @return the files, or null if no files chosen or asynchronous
 	 */
@@ -730,38 +729,13 @@ public class VideoIO {
 
 		};
 
-		Runnable okSave = new Runnable() {
-
-			@Override
-			public void run() {
-				File file = chooser.getSelectedFile();
-				resetChooser.run();
-//			if (canWrite(file))
-				if (processFiles != null)
-					processFiles.apply(new File[] { file });
-			}
-
-		};
-		if (type.toLowerCase().equals("open")) { // open any file //$NON-NLS-1$
+		switch (type.toLowerCase()) {
+		case "open": // open any file //$NON-NLS-1$
 			chooser.addChoosableFileFilter(videoFileFilter);
 			chooser.setFileFilter(chooser.getAcceptAllFileFilter());
 			chooser.showOpenDialog(null, okOpen, resetChooser);
-		} else if (type.toLowerCase().equals("open video")) { // open video //$NON-NLS-1$
-			chooser.addChoosableFileFilter(videoFileFilter);
-			chooser.showOpenDialog(null, okOpen, resetChooser);
-		} else if (type.toLowerCase().equals("save")) { // save any file //$NON-NLS-1$
-			// note this sets no file filters but does include acceptAll
-			// also sets file name to "untitled"
-			String filename = MediaRes.getString("VideoIO.FileName.Untitled"); //$NON-NLS-1$
-			chooser.setSelectedFile(new File(filename + "." + defaultXMLExt)); //$NON-NLS-1$
-			chooser.showSaveDialog(null, okSave, resetChooser);
-		} else if (type.toLowerCase().equals("insert image")) { //$NON-NLS-1$
-			chooser.setMultiSelectionEnabled(true);
-			chooser.setAcceptAllFileFilterUsed(false);
-			chooser.addChoosableFileFilter(imageFileFilter);
-			chooser.setSelectedFile(new File("")); //$NON-NLS-1$
-			chooser.showSaveDialog(null, okSave, resetChooser);
-		} else {
+			break;
+		default:
 			return null;
 		}
 		// Async will return null here
