@@ -22,12 +22,10 @@ import javax.swing.filechooser.FileSystemView;
  * @author Bob Hanson
  */
 
-@SuppressWarnings("serial")
 public class AsyncFileChooser extends JFileChooser implements PropertyChangeListener {
 
 	private int optionSelected;
 	private Runnable ok, cancel; // sorry, no CANCEL in JavaScript for file open
-	@SuppressWarnings("unused")
 	private boolean isAsyncSave = true;
 	private static boolean notified;
 
@@ -68,6 +66,7 @@ public class AsyncFileChooser extends JFileChooser implements PropertyChangeList
 	@Override
 	public int showSaveDialog(Component frame) {
 		isAsyncSave  = false;
+		ok = cancel = null;
 		return super.showSaveDialog(frame);
 	}
 
@@ -189,6 +188,7 @@ public class AsyncFileChooser extends JFileChooser implements PropertyChangeList
 		switch (evt.getPropertyName()) {
 		case "SelectedFile":
 		case "SelectedFiles":
+			
 			process(optionSelected = (evt.getNewValue() == null ? CANCEL_OPTION : APPROVE_OPTION));
 			break;
 		}
