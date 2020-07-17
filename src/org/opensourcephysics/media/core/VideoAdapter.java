@@ -959,7 +959,7 @@ public abstract class VideoAdapter implements Video {
 		coords = newCoords;
 		isMeasured = true;
 		isValidMeasure = false;
-//		firePropertyChange(PROPERTY_VIDEO_COORDS, null, newCoords);
+		firePropertyChange(PROPERTY_VIDEO_COORDS, null, newCoords);
 	}
 
 	/**

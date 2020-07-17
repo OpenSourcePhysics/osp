@@ -475,18 +475,18 @@ public class ImageCoordSystem {
 	 * @param valueX the x scale factor
 	 * @param valueY the y scale factor
 	 */
-	public void setScaleXY(int n, double valueX, double valueY) {
+	public boolean setScaleXY(int n, double valueX, double valueY) {
 		if (isLocked()) {
-			return;
+			return false;
 		}
 		if (isFixedScale()) {
 			setAllScalesXY(valueX, valueY);
-			return;
+			return false;
 		}
 		if (n >= length) {
 			setLength(n + 1);
 		}
-		if (updateToKeyFrames) {
+		if (updateToKeyFrames && keyFrames.size() > 0) {
 			// end frame is just before first key frame following n
 			int end = length - 1;
 			for (int next : keyFrames) {
@@ -497,7 +497,7 @@ public class ImageCoordSystem {
 			}
 			setScalesXY(n, end, valueX, valueY);
 			keyFrames.add(n);
-			return;
+			return true;
 		}
 		boolean changed = scaleX.set(n, valueX);
 		changed = scaleY.set(n, valueY) || changed;
@@ -506,8 +506,10 @@ public class ImageCoordSystem {
 				updateTransforms(n);
 			} catch (NoninvertibleTransformException ex) {
 				ex.printStackTrace();
+				return false;
 			}
 		}
+		return true;
 	}
 
 	/**
@@ -585,7 +587,7 @@ public class ImageCoordSystem {
 		if (n >= length) {
 			setLength(n + 1);
 		}
-		if (updateToKeyFrames) {
+		if (updateToKeyFrames && keyFrames.size() > 0) {
 			// end frame is just before first key frame following n
 			int end = length - 1;
 			for (int next : keyFrames) {
@@ -653,7 +655,7 @@ public class ImageCoordSystem {
 	 * @param n the frame number
 	 * @return the cosine of the angle
 	 */
-	public double getCosine(int n) {
+	public double getCosine(int n) {   
 		return cosine.get(n);
 	}
 
@@ -1109,16 +1111,19 @@ public class ImageCoordSystem {
 			// load fixed origin, angle and scale
 			coords.setFixedOrigin(control.getBoolean("fixedorigin")); //$NON-NLS-1$
 			coords.setFixedAngle(control.getBoolean("fixedangle")); //$NON-NLS-1$
-			coords.setFixedScale(control.getBoolean("fixedscale")); //$NON-NLS-1$
+			boolean isFixed = control.getBoolean("fixedscale");
+			coords.setFixedScale(isFixed); //$NON-NLS-1$
 			// load frame data
 			FrameData[] data = (FrameData[]) control.getObject("framedata"); //$NON-NLS-1$
 			coords.setLength(Math.max(coords.getLength(), data.length));
+			boolean doScale = true;
 			for (int n = 0; n < data.length; n++) {
 				if (data[n] == null)
 					continue;
 				coords.setOriginXY(n, data[n].xo, data[n].yo);
 				coords.setAngle(n, data[n].an * Math.PI / 180); // convert from degrees to radians
-				coords.setScaleXY(n, data[n].xs, data[n].ys);
+				// only one time through is necessary if the is fixed scale
+				doScale = doScale && coords.setScaleXY(n, data[n].xs, data[n].ys);
 			}
 			// load locked
 			coords.setLocked(control.getBoolean("locked")); //$NON-NLS-1$

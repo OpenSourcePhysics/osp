@@ -276,7 +276,11 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	 * @return the current image coordinate system
 	 */
 	public ImageCoordSystem getCoords() {
-		return coords;
+//		if (video != null) {
+//			return video.getCoords();
+//		} else {
+			return coords;
+//		}
 	}
 
 	/**
