@@ -51,7 +51,7 @@ public class FitBuilder extends FunctionTool {
 
 	private final static java.io.FileFilter xmlFilter;
 	private final static Collection<String> initialAutoloadSearchPaths = new TreeSet<String>();
-	private final static Map<String, String[]> autoloadMap = new TreeMap<String, String[]>();
+	private final static Map<String, String[]> autoloadExclusionsMap = new TreeMap<String, String[]>();
 
 	private static String[] preferredAutoloadSearchPaths;
 	private static AsyncFileChooser chooser;
@@ -78,7 +78,7 @@ public class FitBuilder extends FunctionTool {
 				String filePath = XML.forwardSlash(next[0]);
 				String[] functions = new String[next.length - 1];
 				System.arraycopy(next, 1, functions, 0, functions.length);
-				autoloadMap.put(filePath, functions);
+				autoloadExclusionsMap.put(filePath, functions);
 			}
 		}
 	}
@@ -330,7 +330,7 @@ public class FitBuilder extends FunctionTool {
 		}
 
 		Class<?> type = control.getObjectClass();
-		if (FitBuilder.class.isAssignableFrom(type)) {
+		if (type != null && FitBuilder.class.isAssignableFrom(type)) {
 			// choose fits to load
 			if (loadAll)
 				control.loadObject(FitBuilder.this);
@@ -579,7 +579,7 @@ public class FitBuilder extends FunctionTool {
 	 * @return true if the function is excluded
 	 */
 	private boolean isFunctionExcluded(String filePath, String functionName) {
-		String[] functions = autoloadMap.get(filePath);
+		String[] functions = autoloadExclusionsMap.get(filePath);
 		if (functions == null)
 			return false;
 		for (String name : functions) {
@@ -761,6 +761,10 @@ public class FitBuilder extends FunctionTool {
 		public void setVisible(boolean vis) {
 			super.setVisible(vis);
 			if (!vis) {
+				// reload fits
+				for (String dir : getSearchPaths()) {
+					autoloadFits(dir);
+				}
 				// save non-default search paths in preferredAutoloadSearchPaths
 				Collection<String> searchPaths = getSearchPaths();
 				Collection<String> defaultPaths = OSPRuntime.getDefaultSearchPaths();
@@ -776,7 +780,7 @@ public class FitBuilder extends FunctionTool {
 				OSPRuntime.setPreference("autoload_search_paths", preferredAutoloadSearchPaths); //$NON-NLS-1$
 
 				// clean up autoloadMap of excluded autoloadable functions
-				for (Iterator<String> it = autoloadMap.keySet().iterator(); it.hasNext();) {
+				for (Iterator<String> it = getExclusionsMap().keySet().iterator(); it.hasNext();) {
 					String filePath = it.next();
 					String parentPath = XML.getDirectoryPath(filePath);
 					boolean keep = false;
@@ -789,13 +793,13 @@ public class FitBuilder extends FunctionTool {
 				}
 
 				// save excluded autoloadable functions
-				if (autoloadMap.isEmpty()) {
+				if (getExclusionsMap().isEmpty()) {
 					OSPRuntime.setPreference("autoload_exclusions", null); //$NON-NLS-1$
 				} else {
-					String[][] autoloadData = new String[autoloadMap.size()][];
+					String[][] autoloadData = new String[getExclusionsMap().size()][];
 					int i = 0;
-					for (String filePath : autoloadMap.keySet()) {
-						String[] functions = autoloadMap.get(filePath);
+					for (String filePath : getExclusionsMap().keySet()) {
+						String[] functions = getExclusionsMap().get(filePath);
 						String[] fileAndFunctions = new String[functions.length + 1];
 						fileAndFunctions[0] = filePath;
 						System.arraycopy(functions, 0, fileAndFunctions, 1, functions.length);
@@ -809,111 +813,24 @@ public class FitBuilder extends FunctionTool {
 			}
 		}
 
-		/**
-		 * Sets the selection state of a function.
-		 *
-		 * @param filePath the path to the file defining the function
-		 * @param function the function {name, expression, optional descriptor}
-		 * @param select   true to select the function
-		 */
-		@Override
-		protected void setFunctionSelected(String filePath, String[] function, boolean select) {
-			String[] oldExclusions = autoloadMap.get(filePath);
-			String[] newExclusions = null;
-			if (!select) {
-				// create or add entry to newExclusions
-				if (oldExclusions == null) {
-					newExclusions = new String[] { function[0] };
-				} else {
-					int n = oldExclusions.length;
-					newExclusions = new String[n + 1];
-					System.arraycopy(oldExclusions, 0, newExclusions, 0, n);
-					newExclusions[n] = function[0];
-				}
-			} else if (oldExclusions != null) {
-				// remove entry
-				int n = oldExclusions.length;
-				if (n > 1) {
-					ArrayList<String> exclusions = new ArrayList<String>();
-					for (String f : oldExclusions) {
-						if (f.equals(function[0]))
-							continue;
-						exclusions.add(f);
-					}
-					newExclusions = exclusions.toArray(new String[exclusions.size()]);
-				}
-			}
+//		@Override
+//		protected void setFunctionSelected(String filePath, String[] function, boolean select) {
+//			super.setFunctionSelected(filePath, function, select);
+//			// reload fits
+//			for (String dir : getSearchPaths()) {
+//				autoloadFits(dir);
+//			}
+//		}
 
-			autoloadMap.remove(filePath);
-			if (newExclusions != null) {
-				autoloadMap.put(filePath, newExclusions);
-			}
-
-			refreshAutoloadData();
-			// reload fits
-			for (String dir : getSearchPaths()) {
-				autoloadFits(dir);
-			}
-		}
-
-		/**
-		 * Gets the selection state of a function.
-		 *
-		 * @param filePath the path to the file defining the function
-		 * @param function the function {name, expression, optional descriptor}
-		 * @return true if the function is selected
-		 */
-		@Override
-		protected boolean isFunctionSelected(String filePath, String[] function) {
-			String[] functions = autoloadMap.get(filePath);
-			if (functions == null)
-				return true;
-			for (String name : functions) {
-				if (name.equals("*")) //$NON-NLS-1$
-					return false;
-				if (name.equals(function[0]))
-					return false;
-			}
-			return true;
-		}
-
-		/**
-		 * Sets the selection state of a file.
-		 *
-		 * @param filePath the path to the file
-		 * @param select   true to select the file
-		 */
-		@Override
-		protected void setFileSelected(String filePath, boolean select) {
-			autoloadMap.remove(filePath);
-			if (!select) {
-				String[] function = new String[] { "*" }; //$NON-NLS-1$
-				autoloadMap.put(filePath, function);
-			}
-
-			refreshAutoloadData();
-			// reload fits
-			for (String dir : getSearchPaths()) {
-				autoloadFits(dir);
-			}
-		}
-
-		/**
-		 * Gets the selection state of a file.
-		 *
-		 * @param filePath the path to the file
-		 * @return TristateCheckBox.SELECTED, NOT_SELECTED or PART_SELECTED
-		 */
-		@Override
-		protected TristateCheckBox.State getFileSelectionState(String filePath) {
-			String[] functions = autoloadMap.get(filePath);
-			if (functions == null)
-				return TristateCheckBox.SELECTED;
-			if (functions[0].equals("*")) //$NON-NLS-1$
-				return TristateCheckBox.NOT_SELECTED;
-			return TristateCheckBox.PART_SELECTED;
-		}
-
+//		@Override
+//		protected void setFileSelected(String filePath, boolean select) {
+//			super.setFileSelected(filePath, select);			
+//			// reload fits
+//			for (String dir : getSearchPaths()) {
+//				autoloadFits(dir);
+//			}
+//		}
+//
 		/**
 		 * Gets the collection of search paths.
 		 * 
@@ -933,7 +850,7 @@ public class FitBuilder extends FunctionTool {
 		}
 
 		/**
-		 * Refreshes the autoload data.
+		 * Refreshes the autoload data by reading all xml files it can find
 		 */
 		@Override
 		protected void refreshAutoloadData() {
@@ -958,6 +875,11 @@ public class FitBuilder extends FunctionTool {
 					+ "\n\n" + ToolsRes.getString("FitBuilder.Instructions.WhereDefined") //$NON-NLS-1$ //$NON-NLS-2$
 					+ " " + ToolsRes.getString("FitBuilder.Instructions.HowToAddFunction") //$NON-NLS-1$ //$NON-NLS-2$
 					+ " " + ToolsRes.getString("FitBuilder.Instructions.HowToAddDirectory")); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+
+		@Override
+		protected Map<String, String[]> getExclusionsMap() {
+			return autoloadExclusionsMap;
 		}
 
 	}

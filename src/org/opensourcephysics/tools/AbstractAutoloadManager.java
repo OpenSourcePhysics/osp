@@ -38,8 +38,6 @@ import javax.swing.JTextArea;
 import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -48,7 +46,7 @@ import org.opensourcephysics.display.OSPRuntime;
 
 /**
  * A dialog for managing autoloadable functions for a FunctionTool. The
- * functions are organized by directory and fileName. Each function is described
+ * functions are organized by search directory and fileName. Each function is described
  * by a name, expression and optional descriptor (eg track type for
  * TrackDataBuilder.AutoloadManager).
  *
@@ -231,6 +229,7 @@ public abstract class AbstractAutoloadManager extends JDialog {
 			dirBox.setBorder(BorderFactory.createCompoundBorder(spacer, border));
 			functionBox.add(dirBox);
 			Map<String, ArrayList<String[]>> functionMap = autoloadData.get(dir);
+			
 
 			// display files in alphabetical order ignoring case
 			Map<String, String> lowercaseNames = new TreeMap<String, String>();
@@ -242,11 +241,11 @@ public abstract class AbstractAutoloadManager extends JDialog {
 				String fileName = lowercaseNames.get(lowercase);
 				File file = new File(dir, fileName);
 				String filePath = XML.forwardSlash(file.getAbsolutePath());
-				boolean enable = getFileSelectionState(filePath) != TristateCheckBox.NOT_SELECTED;
 
 				AutoloadFileCheckbox fileCheckbox = new AutoloadFileCheckbox(dir, fileName);
 				fileCheckbox.setBorder(BorderFactory.createEmptyBorder(top, inset1, 2, 0));
 				fileCheckbox.setFont(heavyFont);
+				fileCheckbox.setSelected(isFileSelected(filePath));
 
 				Box bar = Box.createHorizontalBox();
 				bar.add(fileCheckbox);
@@ -256,7 +255,7 @@ public abstract class AbstractAutoloadManager extends JDialog {
 				Border empty = BorderFactory.createEmptyBorder(0, 0, 0, 40);
 				ArrayList<String[]> functionList = functionMap.get(fileName);
 				if (functionList.isEmpty()) {
-					Box labelBox = getEmptyMessage(inset2, enable);
+					Box labelBox = getEmptyMessage(inset2);
 					dirBox.add(labelBox);
 				}
 
@@ -269,9 +268,9 @@ public abstract class AbstractAutoloadManager extends JDialog {
 						label.setBorder(empty);
 						label.setFont(lightFont);
 					}
-					AutoloadFunctionCheckbox checkbox = new AutoloadFunctionCheckbox(dir, fileName, f);
+					AutoloadFunctionCheckbox checkbox = new AutoloadFunctionCheckbox(fileCheckbox, f);
 					checkbox.setFont(lightFont);
-					checkbox.setEnabled(enable);
+					checkbox.setSelected(isFunctionSelected(filePath, f));
 
 					bar = Box.createHorizontalBox();
 					bar.add(checkbox);
@@ -283,13 +282,15 @@ public abstract class AbstractAutoloadManager extends JDialog {
 					dirBox.add(bar);
 				}
 
+//				fileCheckbox.reportSelectionStatus();
+
 			}
 			if (dirBox.getComponentCount() == 0) {
-				dirBox.add(getEmptyMessage(inset1, true));
+				dirBox.add(getEmptyMessage(inset1));
 			}
 		}
 		if (functionBox.getComponentCount() == 0) {
-			functionBox.add(getEmptyMessage(inset0, true));
+			functionBox.add(getEmptyMessage(inset0));
 		}
 		FontSizer.setFonts(functionBox, FontSizer.getLevel());
 		refreshing = false;
@@ -304,6 +305,17 @@ public abstract class AbstractAutoloadManager extends JDialog {
 		FontSizer.setFonts(this, level);
 		FontSizer.setFonts(instructionArea, level);
 	}
+	
+	public String[][] getAllFunctions(String filePath) {
+		String dir = XML.getDirectoryPath(filePath);
+		Map<String, ArrayList<String[]>> functionMap = autoloadData.get(dir);
+		if (functionMap == null) 
+			return null;
+		ArrayList<String[]> functionList = functionMap.get(XML.getName(filePath));
+		if (functionList == null) 
+			return null;
+		return functionList.toArray(new String[functionList.size()][]);
+	}
 
 	/**
 	 * Sets the selection state of a function.
@@ -312,7 +324,51 @@ public abstract class AbstractAutoloadManager extends JDialog {
 	 * @param function the function {name, expression, optional descriptor}
 	 * @param select   true to select the function
 	 */
-	protected abstract void setFunctionSelected(String filePath, String[] function, boolean select);
+	protected void setFunctionSelected(String filePath, String[] function, boolean select) {
+		String[] oldExclusions = getExclusionsMap().get(filePath);
+		String[] newExclusions = null;
+		if (!select) {
+			// create or add entry to newExclusions
+			if (oldExclusions == null) {
+				newExclusions = new String[] { function[0] };
+			} else {
+				int n = oldExclusions.length;
+				if (getAllFunctions(filePath).length == n + 1) {
+					newExclusions = new String[] { "*" };
+				}
+				else {
+					newExclusions = new String[n + 1];
+					System.arraycopy(oldExclusions, 0, newExclusions, 0, n);
+					newExclusions[n] = function[0];
+				}
+			}
+		} else if (oldExclusions != null) {
+			ArrayList<String> exclusions = new ArrayList<String>();
+			// if all were excluded then exclude all but this one
+			if (oldExclusions.length == 1 && oldExclusions[0].equals("*")) {
+				String[][] allFunctions = getAllFunctions(filePath);
+				for (int i = 0; i < allFunctions.length; i++) {
+					if (function[0].equals(allFunctions[i][0]))
+						continue;
+					exclusions.add(allFunctions[i][0]);
+				}
+			}
+			else {
+				for (String f : oldExclusions) {
+					if (f.equals(function[0]))
+						continue;
+					exclusions.add(f);
+				}
+			}
+			newExclusions = exclusions.toArray(new String[exclusions.size()]);
+		}
+		
+		getExclusionsMap().remove(filePath);
+		if (newExclusions != null) {
+			getExclusionsMap().put(filePath, newExclusions);
+		}
+	}
+
 
 	/**
 	 * Gets the selection state of a function.
@@ -321,7 +377,18 @@ public abstract class AbstractAutoloadManager extends JDialog {
 	 * @param function the function {name, expression, optional descriptor}
 	 * @return true if the function is selected
 	 */
-	protected abstract boolean isFunctionSelected(String filePath, String[] function);
+	protected boolean isFunctionSelected(String filePath, String[] function) {
+		String[] functions = getExclusionsMap().get(filePath);
+		if (functions == null)
+			return true;
+		for (String name : functions) {
+			if (name.equals("*")) //$NON-NLS-1$
+				return false;
+			if (name.equals(function[0]))
+				return false;
+		}
+		return true;
+	}
 
 	/**
 	 * Sets the selection state of a file.
@@ -329,26 +396,52 @@ public abstract class AbstractAutoloadManager extends JDialog {
 	 * @param filePath the path to the file
 	 * @param select   true to select the file
 	 */
-	protected abstract void setFileSelected(String filePath, boolean select);
+	protected void setFileSelected(String filePath, boolean select) {
+		getExclusionsMap().remove(filePath); // no files excluded by default
+		// if not selected, exclude all
+		if (!select) {
+			String[] function = new String[] { "*" }; //$NON-NLS-1$
+			getExclusionsMap().put(filePath, function);
+		}
+	}
+
+	/**
+	 * Gets the exclusions map, mapping filePath to array of excluded function names.
+	 */
+	protected abstract Map<String, String[]> getExclusionsMap();
 
 	/**
 	 * Gets the selection state of a file.
 	 *
 	 * @param filePath the path to the file
-	 * @return TristateCheckBox.SELECTED, NOT_SELECTED or PART_SELECTED
+	 * @return true if selected
 	 */
-	protected abstract TristateCheckBox.State getFileSelectionState(String filePath);
-
+	protected boolean isFileSelected(String filePath) {
+		String[] functions = getExclusionsMap().get(filePath);
+		if (functions == null || functions.length == 0) {
+			// no exclusions
+			return true;
+		}
+		if (functions[0].equals("*") || functions.length == getAllFunctions(filePath).length) { //$NON-NLS-1$
+			// all excluded
+			return false;
+		}
+		// some but not all excluded
+		return true;
+	}
+	
 	/**
 	 * Refreshes the autoload data.
 	 */
 	protected abstract void refreshAutoloadData();
 
-	private Box getEmptyMessage(int inset, boolean enabled) {
+	/**
+	 * Gets a  message in a Box that reports no functions found.
+	 */
+	private Box getEmptyMessage(int inset) {
 		JLabel label = new JLabel(ToolsRes.getString("AutoloadManager.Label.NoFunctionsFound")); //$NON-NLS-1$
 		label.setFont(lightFont);
 		label.setBorder(BorderFactory.createEmptyBorder(2, inset, 4, 0));
-		label.setEnabled(enabled);
 		Box bar = Box.createHorizontalBox();
 		bar.add(label);
 		bar.add(Box.createHorizontalGlue());
@@ -360,21 +453,19 @@ public abstract class AbstractAutoloadManager extends JDialog {
 	 */
 	private class AutoloadFunctionCheckbox extends JCheckBox {
 
-		String directory, fileName;
 		String[] function;
+		AutoloadFileCheckbox fileCheckBox;
 
 		/**
 		 * Constructs a AutoloadFunctionCheckbox.
 		 * 
 		 * @param identifier the function identifier
 		 */
-		private AutoloadFunctionCheckbox(String dir, String name, String[] f) {
-			directory = dir;
-			fileName = name;
+		private AutoloadFunctionCheckbox(AutoloadFileCheckbox fileCheckbox, String[] f) {
+			fileCheckBox = fileCheckbox;
 			function = f;
-			File file = new File(directory, fileName);
-			final String filePath = XML.forwardSlash(file.getAbsolutePath());
-			setSelected(isFunctionSelected(filePath, function));
+			fileCheckBox.functionCheckBoxes.add(this);
+			setSelected(isFunctionSelected(fileCheckBox.filePath, function));
 			setText(f[0] + " = " + f[1]); //$NON-NLS-1$
 			setIconTextGap(10);
 			setOpaque(false);
@@ -382,7 +473,17 @@ public abstract class AbstractAutoloadManager extends JDialog {
 			addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					setFunctionSelected(filePath, function, AutoloadFunctionCheckbox.this.isSelected());
+					boolean hasSelections = false;
+					for (int i = 0; i < fileCheckBox.functionCheckBoxes.size(); i++) {
+						hasSelections = hasSelections || fileCheckBox.functionCheckBoxes.get(i).isSelected();
+					}
+					if (hasSelections && !fileCheckBox.isSelected())
+						fileCheckBox.setSelected(true);
+					else if (!hasSelections && fileCheckBox.isSelected())
+						fileCheckBox.setSelected(false);
+
+					setFunctionSelected(fileCheckBox.filePath, function, AutoloadFunctionCheckbox.this.isSelected());
+					repaint();
 				}
 			});
 		}
@@ -390,12 +491,12 @@ public abstract class AbstractAutoloadManager extends JDialog {
 	}
 
 	/**
-	 * A tristate checkbox to indicate the status of an autoloadable file.
+	 * A checkbox to indicate the status of an autoloadable file.
 	 */
-	private class AutoloadFileCheckbox extends TristateCheckBox {
+	private class AutoloadFileCheckbox extends JCheckBox {
 
-		String directory, fileName;
-		boolean selected;
+		String fileName, filePath;
+		ArrayList<AutoloadFunctionCheckbox> functionCheckBoxes = new ArrayList<AutoloadFunctionCheckbox>();
 
 		/**
 		 * Constructs a AutoloadFileCheckbox.
@@ -403,49 +504,27 @@ public abstract class AbstractAutoloadManager extends JDialog {
 		 * @param identifier the file identifier
 		 */
 		private AutoloadFileCheckbox(String dir, String name) {
-			directory = dir;
 			fileName = name;
-			File file = new File(directory, fileName);
-			final String filePath = XML.forwardSlash(file.getAbsolutePath());
-			setState(getFileSelectionState(filePath));
+			File file = new File(dir, fileName);
+			filePath = XML.forwardSlash(file.getAbsolutePath());
 			setText(fileName);
 			setIconTextGap(10);
 			setOpaque(false);
 			setToolTipText(ToolsRes.getString("AutoloadManager.FileCheckbox.Tooltip")); //$NON-NLS-1$
-			// must use ChangeListener instead of ActionListener for TristateCheckbox
-			addChangeListener(new ChangeListener() {
+			addActionListener(new ActionListener() {
 				@Override
-				public void stateChanged(ChangeEvent e) {
-					if (refreshing)
-						return;
-					if (getState() == TristateCheckBox.PART_SELECTED) {
-						refreshing = true;
-						AutoloadFileCheckbox.this.doClick(0);
-						refreshing = false;
-						return;
+				public void actionPerformed(ActionEvent e) {
+					boolean select = AutoloadFileCheckbox.this.isSelected();
+					setFileSelected(filePath, select);
+					for (int i = 0; i < functionCheckBoxes.size(); i++) {
+						functionCheckBoxes.get(i).setSelected(select);
 					}
-					if (selected == AutoloadFileCheckbox.this.isSelected()) {
-						return;
-					}
-					selected = AutoloadFileCheckbox.this.isSelected();
-					setFileSelected(filePath, selected);
+					repaint();
 				}
 			});
+			
 		}
-
-		@Override
-		public void setState(State state) {
-			super.setState(state);
-			if (fileName == null)
-				return;
-			if (state == null)
-				selected = true;
-			else if (state == TristateCheckBox.NOT_SELECTED)
-				selected = false;
-			else
-				selected = true;
-		}
-
+		
 	}
 
 	/**
