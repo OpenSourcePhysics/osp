@@ -68,7 +68,12 @@ import org.opensourcephysics.media.core.Trackable;
 @SuppressWarnings("serial")
 public class FunctionTool extends JDialog implements PropertyChangeListener {
 	// static fields
+	
+	public static final String PROPERTY_FUNCTIONTOOL_PANEL = "panel";
+	public static final String PROPERTY_FUNCTIONTOOL_VISIBLE = "ft_visible";
+	public static final String PROPERTY_FUNCTIONTOOL_FUNCTION  = "function";
 
+	
 	public static class FTObject {
 
 		public Icon icon; //[0]
@@ -98,8 +103,6 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 					&& (icon == null ? fto.icon == null : icon.equals(fto.icon));
 		}
 	}
-	public static final String PROPERTY_FUNCTIONTOOL_PANEL = "panel";
-	public static final String PROPERTY_FUNCTIONTOOL_VISIBLE = "ft_visible";
 
 	protected static String[] parserNames = new String[] { "e", "pi", "min", "mod", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			"sin", "cos", "abs", "log", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$

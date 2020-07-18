@@ -59,9 +59,6 @@ import org.opensourcephysics.display.MessageDrawable;
  */
 @SuppressWarnings("serial")
 public class TPoint extends Point2D.Double implements Interactive, Trackable {
-	// static fields
-	public static final String PROPERTY_ADJUSTING = "adjusting";
-	
 	protected static boolean coordsVisibleInMouseBox = true;
 	protected static XYCoordinateStringBuilder xyStringBuilder = new VidCartesianCoordinateStringBuilder();
 

@@ -371,16 +371,16 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 					prevName = e.getNewValue().toString();
 				}
 				if (functionTool != null)
-					functionTool.firePropertyChange(FunctionEditor.PROPERTY_FUNCTIONTOOL_FUNCTION, prevName, functionName); // $NON-NLS-1$
+					functionTool.firePropertyChange(FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION, prevName, functionName); // $NON-NLS-1$
 			}
 			break;
-		case FunctionEditor.PROPERTY_FUNCTIONEDITOR_FUNCTION:
+		case DataFunctionEditor.PROPERTY_DATAFUNCTIONEDITOR_FUNCTION:
 			// function has been added or removed
 			refreshFunctions();
 			refreshGUI();
 			if (functionTool != null) {
 				functionTool.refreshGUI();
-				functionTool.firePropertyChange(FunctionEditor.PROPERTY_FUNCTIONTOOL_FUNCTION, null, null); // $NON-NLS-1$
+				functionTool.firePropertyChange(FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION, null, null); // $NON-NLS-1$
 			}
 		case FunctionEditor.PROPERTY_FUNCTIONEDITOR_DESCRIPTION:
 			if (functionTool != null) {

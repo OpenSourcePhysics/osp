@@ -75,7 +75,7 @@ public class DataFunctionPanel extends FunctionPanel {
 			refreshFunctions();
 			super.propertyChange(e);
 			break;
-	  case FunctionEditor.PROPERTY_FUNCTIONEDITOR_FUNCTION:
+	  case DataFunctionEditor.PROPERTY_DATAFUNCTIONEDITOR_FUNCTION:
 	    // function has been added or removed
 			if (e.getNewValue() != null) { // added
 				DataFunction f = (DataFunction) e.getNewValue();
@@ -89,7 +89,7 @@ public class DataFunctionPanel extends FunctionPanel {
 			refreshGUI();
 			if (functionTool != null) {
 				functionTool.refreshGUI();
-				functionTool.firePropertyChange(FunctionEditor.PROPERTY_FUNCTIONTOOL_FUNCTION, e.getOldValue(),
+				functionTool.firePropertyChange(FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION, e.getOldValue(),
 						e.getNewValue()); // $NON-NLS-1$
 			}
 			break;

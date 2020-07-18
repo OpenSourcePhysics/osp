@@ -134,8 +134,6 @@ import org.opensourcephysics.tools.DatasetCurveFitter.NumberField;
 @SuppressWarnings("serial")
 public class DataToolTab extends JPanel implements Tool, PropertyChangeListener {
 
-	private static final String PROPERTY_DATATOOLTAB_FUNCTION = "function";
-
 	// static fields
 
 	public final static String SHIFTED = "'"; //$NON-NLS-1$
@@ -594,7 +592,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			};
 			dataBuilder.setFontLevel(FontSizer.getLevel());
 			dataBuilder.setHelpPath("data_builder_help.html"); //$NON-NLS-1$
-			dataBuilder.addPropertyChangeListener(PROPERTY_DATATOOLTAB_FUNCTION, this); // $NON-NLS-1$
+			dataBuilder.addPropertyChangeListener(FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION, this); // $NON-NLS-1$
 		}
 		refreshDataBuilder();
 		return dataBuilder;
@@ -609,7 +607,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	public void propertyChange(PropertyChangeEvent e) {
 		stopFitTimer();
 		switch (e.getPropertyName()) {
-		case FunctionEditor.PROPERTY_FUNCTIONEDITOR_FUNCTION:
+		case DataFunctionEditor.PROPERTY_DATAFUNCTIONEDITOR_FUNCTION:
 			tabChanged(true);
 			dataTable.refreshTable(DataTable.MODE_FUNCTION);
 			statsTable.refreshStatistics();

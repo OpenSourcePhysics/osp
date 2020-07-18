@@ -62,7 +62,7 @@ public class VideoClip {
 	public static final String PROPERTY_VIDEOCLIP_STEPSIZE = "stepsize";//$NON-NLS-1$
 
 	public void addListener(PropertyChangeListener c) {
-		addPropertyChangeListener(TPoint.PROPERTY_ADJUSTING, c); 
+		addPropertyChangeListener(Trackable.PROPERTY_ADJUSTING, c); 
 		addPropertyChangeListener(PROPERTY_VIDEOCLIP_FRAMECOUNT, c); 
 		addPropertyChangeListener(PROPERTY_VIDEOCLIP_STARTFRAME, c); 
 		addPropertyChangeListener(PROPERTY_VIDEOCLIP_STARTTIME, c); 
@@ -71,7 +71,7 @@ public class VideoClip {
 	}
 
 	public void removeListener(PropertyChangeListener c) {
-		removePropertyChangeListener(TPoint.PROPERTY_ADJUSTING, c); 
+		removePropertyChangeListener(Trackable.PROPERTY_ADJUSTING, c); 
 		removePropertyChangeListener(PROPERTY_VIDEOCLIP_FRAMECOUNT, c); 
 		removePropertyChangeListener(PROPERTY_VIDEOCLIP_STARTFRAME, c); 
 		removePropertyChangeListener(PROPERTY_VIDEOCLIP_STARTTIME, c); 
@@ -516,7 +516,7 @@ public class VideoClip {
 		if (isAdjusting == adjusting)
 			return;
 		isAdjusting = adjusting;
-		support.firePropertyChange(TPoint.PROPERTY_ADJUSTING, null, adjusting);
+		support.firePropertyChange(Trackable.PROPERTY_ADJUSTING, null, adjusting);
 	}
 
 	/**

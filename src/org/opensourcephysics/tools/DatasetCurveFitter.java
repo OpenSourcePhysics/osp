@@ -846,7 +846,7 @@ public class DatasetCurveFitter extends JPanel {
 		String name;
 		String prop = e.getPropertyName();
 		switch (prop) {
-		case FunctionEditor.PROPERTY_FUNCTIONTOOL_FUNCTION:
+		case FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION:
 			name = (String) e.getNewValue(); // fit or parameter name
 			// determine old and new fit names
 			panel = (FitFunctionPanel) fitBuilder.getSelectedPanel();

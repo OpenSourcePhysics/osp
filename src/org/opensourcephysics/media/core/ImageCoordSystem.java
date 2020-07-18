@@ -64,6 +64,10 @@ public class ImageCoordSystem {
 
 	public static final String PROPERTY_COORDS_LOCKED = "locked";
 
+	public static final String PROPERTY_COORDS_FIXEDSCALE = "fixed_scale";
+
+	public static final String PROPERTY_COORDS_FIXEDORIGIN = "fixed_origin";
+
 	protected boolean ignoreUpdateRequests;// for tracker ReferenceFrame
 
 	private int length;
@@ -207,7 +211,7 @@ public class ImageCoordSystem {
 		if (fixed) {
 			setAllOriginsXY(getOriginX(n), getOriginY(n));
 		}
-		support.firePropertyChange("fixed_origin", !fixed, fixed); //$NON-NLS-1$
+		support.firePropertyChange(PROPERTY_COORDS_FIXEDORIGIN, !fixed, fixed); //$NON-NLS-1$
 	}
 
 	/**
@@ -291,7 +295,7 @@ public class ImageCoordSystem {
 		if (fixed) {
 			setAllScalesXY(getScaleX(n), getScaleY(n));
 		}
-		support.firePropertyChange("fixed_scale", !fixed, fixed); //$NON-NLS-1$
+		support.firePropertyChange(PROPERTY_COORDS_FIXEDSCALE, !fixed, fixed); //$NON-NLS-1$
 	}
 
 	/**
@@ -1019,7 +1023,7 @@ public class ImageCoordSystem {
 		if (isAdjusting == adjusting)
 			return;
 		isAdjusting = adjusting;
-		support.firePropertyChange(TPoint.PROPERTY_ADJUSTING, null, adjusting); // $NON-NLS-1$
+		support.firePropertyChange(Trackable.PROPERTY_ADJUSTING, null, adjusting); // $NON-NLS-1$
 	}
 
 	/**
