@@ -40,8 +40,6 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import org.opensourcephysics.controls.OSPLog;
-
 /**
  * The class <code>Parser</code> is a mathematical expression parser.
  * <p>

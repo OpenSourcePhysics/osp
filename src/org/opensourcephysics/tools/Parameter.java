@@ -8,6 +8,7 @@
 package org.opensourcephysics.tools;
 
 import java.util.List;
+
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.numerics.MultiVarFunction;
@@ -192,7 +193,7 @@ public class Parameter implements FObject {
 			if (express.indexOf("if") == -1) { //$NON-NLS-1$
 				express = express.replaceAll(",", "."); //$NON-NLS-1$ //$NON-NLS-2$
 			}
-			MultiVarFunction f = new ParsedMultiVarFunction(express, names);
+			MultiVarFunction f = new ParsedMultiVarFunction(express, names, false);
 			value = f.evaluate(values);
 		} catch (ParserException ex) {
 			value = Double.NaN;

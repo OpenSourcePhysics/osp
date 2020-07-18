@@ -7,7 +7,6 @@
 
 package org.opensourcephysics.tools;
 
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
@@ -49,7 +48,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	public UserFunction(String name) {
 		setName(name);
 		try {
-			myFunction = new ParsedMultiVarFunction("0", new String[0]); //$NON-NLS-1$
+			myFunction = new ParsedMultiVarFunction("0", new String[0], false); //$NON-NLS-1$
 			functionNames = myFunction.getFunctionNames();
 		} catch (ParserException ex) {
 			/** empty block */
@@ -284,7 +283,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 		inputString = exp;
 		// try to parse expression
 		try {
-			myFunction = new ParsedMultiVarFunction(exp, names);
+			myFunction = new ParsedMultiVarFunction(exp, names, false);
 			// successful, so save expression unless it contains "="
 			if (exp.indexOf("=") == -1) { //$NON-NLS-1$
 				expression = exp;
@@ -293,7 +292,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 		} catch (ParserException ex) {
 			try {
 				// Note that any constants or unidentified variables will cause this condition.
-				myFunction = new ParsedMultiVarFunction("0", names); //$NON-NLS-1$
+				myFunction = new ParsedMultiVarFunction("0", names, false); //$NON-NLS-1$
 			} catch (ParserException ex2) {
 				/** empty block */
 			}

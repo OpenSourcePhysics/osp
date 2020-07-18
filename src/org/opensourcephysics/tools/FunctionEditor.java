@@ -37,6 +37,7 @@ import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.EventObject;
 import java.util.HashSet;
@@ -99,7 +100,6 @@ import org.opensourcephysics.display.TeXParser;
  * 
  * @author Douglas Brown
  */
-@SuppressWarnings("serial")
 public abstract class FunctionEditor extends JPanel implements PropertyChangeListener {
 
 	public static final String PROPERTY_FUNCTIONEDITOR_EDIT = "edit";
@@ -114,7 +114,6 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	}
 
 	// static constants
-	@SuppressWarnings("javadoc")
 	public final static String THETA = TeXParser.parseTeX("$\\theta$"); //$NON-NLS-1$
 	public final static String OMEGA = TeXParser.parseTeX("$\\omega$"); //$NON-NLS-1$
 	public final static String DEGREES = "\u00B0"; //$NON-NLS-1$
@@ -765,7 +764,8 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			Parameter next = new Parameter(name, "1"); //$NON-NLS-1$
 			temp.add(next);
 		}
-		return !Double.isNaN(p.evaluate(temp));
+		double result = p.evaluate(temp);
+		return !Double.isNaN(result);
 	}
 
 	/**

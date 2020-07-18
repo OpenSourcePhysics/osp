@@ -15,7 +15,6 @@ import java.util.List;
  *
  * @author Douglas Brown
  */
-@SuppressWarnings("serial")
 public class InitialValueEditor extends ParamEditor {
 	/**
 	 * Default constructor
@@ -41,6 +40,28 @@ public class InitialValueEditor extends ParamEditor {
 	}
 
 	@Override
+	protected String getVariablesString(String separator) {
+		String selectedName = getName(getSelectedObject());
+		StringBuffer vars = new StringBuffer(""); //$NON-NLS-1$
+		// add parameters, if any
+		String[] paramNames = paramEditor.getNames();
+		for (int i = 0; i < paramNames.length; i++) {
+			vars.append(" "); //$NON-NLS-1$
+			vars.append(paramNames[i]);
+		}
+		if (skipAllName == null || !skipAllName.equals(selectedName)) { // $NON-NLS-1$
+			for (int i = 0; i < names.length; i++) {
+				if (names[i].equals(selectedName)) {
+					continue;
+				}
+				vars.append(" ");
+				vars.append(names[i]);
+			}
+		}
+		return getVariablesString(vars, separator);
+	}
+
+	@Override
 	public Dimension getMaximumSize() {
 		Dimension dim = super.getMaximumSize();
 		dim.height = getPreferredSize().height;
@@ -57,21 +78,16 @@ public class InitialValueEditor extends ParamEditor {
 		if (paramValues.length != nObj) {
 			paramValues = new double[nObj];
 		}
-		List<FObject> params = paramEditor.getObjects();
+		List<FObject> tempList = paramEditor.getObjects();
+		tempList.addAll(this.getObjects());
 		for (int i = 0; i < evaluate.size(); i++) {
 			Parameter p = (Parameter) evaluate.get(i);
-			p.evaluate(params);
+			p.evaluate(tempList);
 		}
 		for (int i = 0; i < nObj; i++) {
 			Parameter p = (Parameter) objects.get(i);
 			paramValues[i] = p.getValue();
 		}
-	}
-
-	@Override
-	protected boolean isValidExpression(String expression) {
-		Parameter p = new Parameter("xxzz", expression); //$NON-NLS-1$
-		return !Double.isNaN(p.evaluate(paramEditor.getObjects()));
 	}
 
 	/**
