@@ -25,9 +25,13 @@ import org.opensourcephysics.display.TeXParser;
  */
 @SuppressWarnings("serial")
 public class DataFunctionEditor extends FunctionEditor {
-	private DatasetManager data;
+
+	public static final String PROPERTY_DATAFUNCTIONEDITOR_FUNCTION = "function";
+
 	static Color[] markerColors = { Color.green.darker(), Color.red, Color.cyan.darker(), Color.yellow.darker(),
 			Color.blue };
+	
+	private DatasetManager data;
 
 	/**
 	 * Constructor.
@@ -169,7 +173,7 @@ public class DataFunctionEditor extends FunctionEditor {
 	public FObject addObject(FObject obj, int row, boolean postEdit, boolean firePropertyChange) {
 		obj = super.addObject(obj, row, postEdit, firePropertyChange);
 		if (obj != null) {
-			firePropertyChange(PROPERTY_FUNCTIONEDITOR_FUNCTION, null, obj); //$NON-NLS-1$
+			firePropertyChange(DataFunctionEditor.PROPERTY_DATAFUNCTIONEDITOR_FUNCTION, null, obj); //$NON-NLS-1$
 		}
 		return obj;
 	}
@@ -185,7 +189,7 @@ public class DataFunctionEditor extends FunctionEditor {
 	public FObject removeObject(FObject obj, boolean postEdit) {
 		obj = super.removeObject(obj, postEdit);
 		if (obj != null) {
-			firePropertyChange(PROPERTY_FUNCTIONEDITOR_FUNCTION, obj, null); //$NON-NLS-1$
+			firePropertyChange(DataFunctionEditor.PROPERTY_DATAFUNCTIONEDITOR_FUNCTION, obj, null); //$NON-NLS-1$
 		}
 		return obj;
 	}

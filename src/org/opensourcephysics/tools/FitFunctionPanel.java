@@ -105,14 +105,14 @@ public class FitFunctionPanel extends FunctionPanel {
 				super.propertyChange(e);
 
 				if (functions[0].polynomial != null) {
-					functionTool.firePropertyChange(FunctionEditor.PROPERTY_FUNCTIONTOOL_FUNCTION, null,
+					functionTool.firePropertyChange(FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION, null,
 							functions[0].getName()); // $NON-NLS-1$
 				}
 				return;
 			}
 		} else if (e.getPropertyName().equals("description") && functionTool != null) { //$NON-NLS-1$
 			super.propertyChange(e);
-			functionTool.firePropertyChange(FunctionEditor.PROPERTY_FUNCTIONTOOL_FUNCTION, null,
+			functionTool.firePropertyChange(FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION, null,
 					getFitFunction().getName()); // $NON-NLS-1$
 			return;
 		}

@@ -200,7 +200,7 @@ public class UserFunctionEditor extends FunctionEditor {
 	public FObject addObject(FObject obj, int row, boolean postEdit, boolean firePropertyChange) {
 		obj = super.addObject(obj, row, postEdit, firePropertyChange);
 		if (obj != null) {
-			firePropertyChange(PROPERTY_FUNCTIONEDITOR_FUNCTION, null, obj); //$NON-NLS-1$
+			firePropertyChange(DataFunctionEditor.PROPERTY_DATAFUNCTIONEDITOR_FUNCTION, null, obj); //$NON-NLS-1$
 		}
 		return obj;
 	}
@@ -216,7 +216,7 @@ public class UserFunctionEditor extends FunctionEditor {
 	public FObject removeObject(FObject obj, boolean postEdit) {
 		obj = super.removeObject(obj, postEdit);
 		if (obj != null) {
-			firePropertyChange(PROPERTY_FUNCTIONEDITOR_FUNCTION, obj, null); //$NON-NLS-1$
+			firePropertyChange(DataFunctionEditor.PROPERTY_DATAFUNCTIONEDITOR_FUNCTION, obj, null); //$NON-NLS-1$
 		}
 		return obj;
 	}

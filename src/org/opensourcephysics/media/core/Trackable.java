@@ -42,7 +42,11 @@ import org.opensourcephysics.display.Drawable;
  * @version 1.0
  */
 public interface Trackable extends Drawable {
-  // no methods
+
+	/**
+	 * originating from VideoClip, DataClip, and ImageCoordSystem
+	 */
+	String PROPERTY_ADJUSTING = "adjusting";
 }
 
 /*

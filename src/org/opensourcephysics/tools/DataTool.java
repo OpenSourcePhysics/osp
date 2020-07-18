@@ -95,8 +95,6 @@ import org.opensourcephysics.js.JSUtil;
 @SuppressWarnings("serial")
 public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 
-	private static final String PROPERTY_DATATOOL_FUNCTION = "function";
-
 	boolean standAlone = false; // true when running as application
 
 	// static fields
@@ -696,7 +694,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	@Override
 	public void propertyChange(PropertyChangeEvent e) {
 		switch (e.getPropertyName()) {
-		case FunctionEditor.PROPERTY_FUNCTIONEDITOR_FUNCTION:
+		case DataFunctionEditor.PROPERTY_DATAFUNCTIONEDITOR_FUNCTION:
 			DataToolTab tab = getSelectedTab();
 			if (tab == null)
 				return;
@@ -2197,7 +2195,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		if (dataBuilder == null) { // create new tool if none exists
 			dataBuilder = new DataBuilder(this);
 			dataBuilder.setFontLevel(FontSizer.getLevel());
-			dataBuilder.addPropertyChangeListener(PROPERTY_DATATOOL_FUNCTION, this); // $NON-NLS-1$
+			dataBuilder.addPropertyChangeListener(FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION, this); // $NON-NLS-1$
 		}
 		refreshDataBuilder();
 		return dataBuilder;

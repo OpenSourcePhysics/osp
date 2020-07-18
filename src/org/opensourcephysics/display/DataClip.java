@@ -37,7 +37,7 @@ import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
-import org.opensourcephysics.media.core.TPoint;
+import org.opensourcephysics.media.core.Trackable;
 
 /**
  * This defines a subset of data elements called steps. The steps are the
@@ -235,7 +235,7 @@ public class DataClip {
 		if (isAdjusting == adjusting)
 			return;
 		isAdjusting = adjusting;
-		support.firePropertyChange(TPoint.PROPERTY_ADJUSTING, null, adjusting); //$NON-NLS-1$
+		support.firePropertyChange(Trackable.PROPERTY_ADJUSTING, null, adjusting); //$NON-NLS-1$
 	}
 
 	/**

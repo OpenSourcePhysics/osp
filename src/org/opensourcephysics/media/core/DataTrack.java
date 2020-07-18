@@ -15,6 +15,8 @@ import org.opensourcephysics.display.DataClip;
  */
 public interface DataTrack extends Trackable {
 
+	String PROPERTY_DATATRACK_STARTFRAME = "startframe";
+	
 	/**
 	 * Sets the video start frame at which the first data point is displayed.
 	 * 

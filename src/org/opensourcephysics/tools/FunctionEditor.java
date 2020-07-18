@@ -108,7 +108,6 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	public static final String PROPERTY_FUNCTIONEDITOR_DESCRIPTION = "description";
 	public static final String PROPERTY_FUNCTIONEDITOR_FOCUS = "focus";
 	public static final String PROPERTY_FUNCTIONEDITOR_ANGLESINRADIANS = "angles_in_radians";
-	public static final String PROPERTY_FUNCTIONEDITOR_FUNCTION = "function";
 
 	public interface FObject {
 	}
@@ -810,8 +809,6 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	protected String newButtonTipText;
 	protected String titledBorderText;
 	private boolean haveGUI;
-	public static final String PROPERTY_FUNCTIONTOOL_FUNCTION = "function";
-	
 	protected boolean haveGUI() { 
 		return haveGUI;
 	}
