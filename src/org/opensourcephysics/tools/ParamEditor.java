@@ -19,7 +19,6 @@ import org.opensourcephysics.display.DatasetManager;
  *
  * @author Douglas Brown
  */
-@SuppressWarnings("serial")
 public class ParamEditor extends FunctionEditor {
 	protected double[] paramValues = new double[0];
 	private DatasetManager data;
@@ -304,12 +303,6 @@ public class ParamEditor extends FunctionEditor {
 			}
 		}
 		return disallowed;
-	}
-
-	@Override
-	protected boolean isValidExpression(String expression) {
-		Parameter p = new Parameter("xxzz", expression); //$NON-NLS-1$
-		return !Double.isNaN(p.evaluate(objects));
 	}
 
 	/**

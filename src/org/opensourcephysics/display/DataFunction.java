@@ -74,7 +74,7 @@ public class DataFunction extends Dataset implements FObject {
     // set the variable count for refresh purposes
     varCount = getVarCount();
     try {
-      myFunction = new ParsedMultiVarFunction(e, getVarNames());
+      myFunction = new ParsedMultiVarFunction(e, getVarNames(), false);
       expression = e;
       inputString = e;
       refreshFunctionData();

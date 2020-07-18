@@ -371,6 +371,12 @@ public class UserFunctionEditor extends FunctionEditor {
 	@Override
 	protected String getVariablesString(String separator) {
 		StringBuffer vars = new StringBuffer(""); //$NON-NLS-1$
+		// add parameters, if any
+		String[] paramNames = paramEditor.getNames();
+		for (int i = 0; i < paramNames.length; i++) {
+			vars.append(" "); //$NON-NLS-1$
+			vars.append(paramNames[i]);
+		}
 		UserFunction f = (UserFunction) getSelectedObject();
 		if (f != null) {
 			String[] s = f.getIndependentVariables();
@@ -390,12 +396,6 @@ public class UserFunctionEditor extends FunctionEditor {
 			}
 			vars.append(" "); //$NON-NLS-1$
 			vars.append(names[i]);
-		}
-		// add parameters, if any
-		String[] paramNames = paramEditor.getNames();
-		for (int i = 0; i < paramNames.length; i++) {
-			vars.append(" "); //$NON-NLS-1$
-			vars.append(paramNames[i]);
 		}
 		return getVariablesString(vars, separator);
 	}

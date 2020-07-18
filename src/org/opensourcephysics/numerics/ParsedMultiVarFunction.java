@@ -29,9 +29,9 @@ public final class ParsedMultiVarFunction implements MultiVarFunction {
    * @param var the independent variable
    * @throws ParserException
    */
-  public ParsedMultiVarFunction(String _fStr, String[] var) throws ParserException {
+  public ParsedMultiVarFunction(String _fStr, String[] var, boolean allowUnkownIdentifiers) throws ParserException {
     fStr = _fStr;
-    SuryonoParser parser = new SuryonoParser(fStr, var, true);
+    SuryonoParser parser = new SuryonoParser(fStr, var, allowUnkownIdentifiers);
     myFunction = parser;
     myFunctionNames = parser.getFunctionNames();
   }
