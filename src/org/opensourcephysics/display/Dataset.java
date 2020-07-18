@@ -1500,10 +1500,11 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 		if (noNumbers) {
 			return;
 		}
-		g2.setColor(
-				this.getYColumnName() == "y" ? 
-				Color.red :
-				lineColor);
+//		g2.setColor(
+//				this.getYColumnName() == "y" ? 
+//				Color.red :
+//				lineColor);
+		g2.setColor(lineColor);
 		if (myShape == null)
 			myShape = drawingPanel.transformPath(generalPath);
 		g2.draw(myShape);
