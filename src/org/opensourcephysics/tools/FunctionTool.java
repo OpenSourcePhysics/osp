@@ -137,7 +137,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	private JToolBar toolbar;
 	private Component[] toolbarComponents; // may be null
 	
-	private JToolBar dropdownbar;
+	protected JToolBar dropdownbar;
 	private JLabel dropdownLabel;
 	private JComboBox<FTObject> dropdown;
 	
