@@ -64,10 +64,19 @@ java/awt/color/ColorSpace.js
 java/awt/datatransfer/Clipboard.js
 java/awt/datatransfer/ClipboardOwner.js
 java/awt/datatransfer/DataFlavor.js
+java/awt/datatransfer/FlavorMap.js
+java/awt/datatransfer/FlavorTable.js
 java/awt/datatransfer/MimeType.js
 java/awt/datatransfer/MimeTypeParameterList.js
 java/awt/datatransfer/StringSelection.js
+java/awt/datatransfer/SystemFlavorMap.js
 java/awt/datatransfer/Transferable.js
+java/awt/dnd/DropTarget.js
+java/awt/dnd/DropTargetContext.js
+java/awt/dnd/DropTargetDropEvent.js
+java/awt/dnd/DropTargetEvent.js
+java/awt/dnd/DropTargetListener.js
+java/awt/dnd/peer/DropTargetContextPeer.js
 java/awt/dnd/peer/DropTargetPeer.js
 java/awt/event/AWTEventListener.js
 java/awt/event/ActionEvent.js
@@ -241,6 +250,7 @@ java/security/PrivilegedAction.js
 java/security/PrivilegedExceptionAction.js
 java/text/AttributedCharacterIterator.js
 java/text/CharacterIterator.js
+java/text/DateFormat.js
 java/text/DateFormatSymbols.js
 java/text/DecimalFormat.js
 java/text/DecimalFormatSymbols.js
@@ -250,6 +260,7 @@ java/text/FieldPosition.js
 java/text/Format.js
 java/text/NumberFormat.js
 java/text/ParsePosition.js
+java/text/SimpleDateFormat.js
 java/text/spi/BreakIteratorProvider.js
 java/text/spi/CollatorProvider.js
 java/text/spi/DateFormatProvider.js
@@ -763,7 +774,6 @@ sun/nio/cs/ArrayDecoder.js
 sun/nio/cs/HistoricallyNamedCharset.js
 sun/nio/cs/StandardCharsets.js
 sun/nio/cs/ThreadLocalCoders.js
-sun/nio/cs/ThreadLocalCoders.js
 sun/nio/cs/UTF_8.js
 sun/nio/cs/Unicode.js
 sun/reflect/Reflection.js
@@ -786,11 +796,13 @@ sun/util/calendar/CalendarSystem.js
 sun/util/calendar/CalendarUtils.js
 sun/util/calendar/Gregorian.js
 sun/util/calendar/ZoneInfo.js
+sun/util/locale/LanguageTag.js
 sun/util/locale/provider/AuxLocaleProviderAdapter.js
 sun/util/locale/provider/AvailableLanguageTags.js
 sun/util/locale/provider/CalendarDataProviderImpl.js
 sun/util/locale/provider/CalendarDataUtility.js
 sun/util/locale/provider/CalendarProviderImpl.js
+sun/util/locale/provider/DateFormatProviderImpl.js
 sun/util/locale/provider/JRELocaleProviderAdapter.js
 sun/util/locale/provider/LocaleResources.js
 sun/util/locale/provider/LocaleServiceProviderPool.js
@@ -805,6 +817,7 @@ swingjs/JSApp.js
 swingjs/JSAppletThread.js
 swingjs/JSAppletViewer.js
 swingjs/JSCharSet.js
+swingjs/JSDnD.js
 swingjs/JSDummyApplet.js
 swingjs/JSFileSystem.js
 swingjs/JSFocusPeer.js
