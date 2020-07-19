@@ -2883,6 +2883,15 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		}
 
 		/**
+		 * Sets the visibility of the zoom box.
+		 *
+		 * @param true if visible
+		 */
+		public void setVisible(boolean vis) {
+			visible = vis;
+		}
+
+		/**
 		 * Reports the zoom rectangle in pixel units.
 		 */
 		public Rectangle reportZoom() {
