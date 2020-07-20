@@ -266,6 +266,28 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			addTab(tab);
 		}
 	}
+	
+  /**
+   * Gets the main OSPFrame when DataTool is a stand alone application.
+   * 
+   *  @j2sAlias getMainFrame
+   * 
+   * @return OSPFrame
+   */
+  public OSPFrame getMainFrame() {
+    return this;
+  }
+  
+  /**
+   * Gets the DataTool frame size. 
+   * 
+   * @j2sAlias getMainFrameSize
+   * 
+   */
+  public int[] getMainFrameSize(){
+ 	 Dimension d=this.getSize();
+ 	 return new int[] {d.width,d.height};
+  }
 
 	/**
 	 * Sets the saveChangesOnClose flag.
