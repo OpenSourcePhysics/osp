@@ -6,6 +6,7 @@
  */
 
 package org.opensourcephysics.controls;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.text.DecimalFormat;
 import java.util.Collection;
@@ -76,12 +77,27 @@ public void setControl(Control control) {
     return delayTime;
   }
 
+
   /**
    * Gets the main OSPFrame.  The main frame will usually exit program when it is closed.
+   * 
+   *  @j2sAlias getMainFrame
+   * 
    * @return OSPFrame
    */
   public OSPFrame getMainFrame() {
     return mainFrame;
+  }
+  
+  /**
+   * Gets the Main Frame size. 
+   * 
+   * @j2sAlias getMainFrameSize
+   * 
+   */
+  public int[] getMainFrameSize(){
+ 	 Dimension d=mainFrame.getSize();
+ 	 return new int[] {d.width,d.height};
   }
 
   /**

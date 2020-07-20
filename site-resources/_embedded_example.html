@@ -6,15 +6,21 @@
   <meta charset="utf-8" />
   <script src="swingjs/swingjs2.js"></script>
   <script>
-    if (!self.SwingJS) alert('swingjs2.js was not found. It needs to be in swingjs folder in the same directory as ' +
-      document.location.href)
+    if (!self.SwingJS) alert('swingjs2.js was not found. It needs to be in swingjs folder in the same directory as ' + document.location.href)
+
+    function initApp() {
+      if (!testApplet.app) alert('App not found.');
+      setResize();
+      changeSize();
+    }
+
     Info = {
       code: null,
       main: "davidson.qm.QMSuperpositionWRApp",
       core: "NONE",
       width: 850,
       height: 550,
-      readyFunction: null,
+      readyFunction: initApp,
       serverURL: 'https://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php',
       j2sPath: 'swingjs/j2s',
       console: 'sysoutdiv',
@@ -34,10 +40,16 @@
     }
 
     changeSize = function () {
-      let dim = testApplet.app.getAppSize();
-      document.getElementById("testApplet-controlFrame-div").style.width = dim[0]+"px";
-      document.getElementById("testApplet-controlFrame-div").style.height = dim[1]+"px";
+      //let dim = testApplet.app.getAppSize();
+      let dim = testApplet.app.getMainFrameSize();
+      document.getElementById("testApplet-controlFrame-div").style.width = dim[0] + "px";
+      document.getElementById("testApplet-controlFrame-div").style.height = dim[1] + "px";
     }
+
+    setResize = function () {
+      testApplet.app.getMainFrame().setResizeAction('changeSize');
+    }
+
   </script>
 </head>
 
@@ -49,6 +61,8 @@
     <a href="javascript:dotest('stopAnimation')">stop animation</a>
     &nbsp;&nbsp;&nbsp;
     <a href="javascript:changeSize()">Adjust Border</a>
+    &nbsp;&nbsp;&nbsp;
+    <a href="javascript:setResize()">Enable Div Resize</a>
 
   </h3>
   <div id="testApplet-controlFrame-div"

@@ -9,6 +9,8 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowListener;
@@ -67,18 +69,7 @@ public class QMSuperpositionApp extends AbstractAnimation implements PropertyCha
 	  else
 		  stopAnimation();
    }
-  
-   
-   /**
-    * Gets the applet size. 
-    * 
-    * @j2sAlias getAppSize
-    * 
-    */
-   public int[] getAppSize(){
-  	 Dimension d=this.getMainFrame().getSize();
-  	 return new int[] {d.width,d.height};
-   }
+
    
    @Override
 public void initializeAnimation() {

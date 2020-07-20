@@ -8,7 +8,7 @@
 package org.opensourcephysics.display;
 
 /**
- * Tags stand alone programs so that the main frame does not exit the VM whne the frame is close.
+ * Tags stand alone programs so that the main frame does not exit the VM when the frame is close.
  * Used by Launcher and LaunchBuilder.
  *
  * @author Wolfgang Christian
