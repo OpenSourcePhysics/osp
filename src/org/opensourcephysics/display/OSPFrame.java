@@ -12,6 +12,8 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
@@ -141,6 +143,42 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
 
 		});
 	}
+	
+	protected String action=null;
+	private ComponentAdapter adapter=null;
+	
+  /**
+   * Sets the window resize action for JavaScript implementation. 
+   * 
+   * @j2sAlias setResizeAction
+   * 
+   */
+		public void setResizeAction(String o) {
+			if(o==null && adapter!=null){ // remove existing adapter if o=null
+				this.removeComponentListener(adapter);
+				action = o;
+				return;
+			}
+			if(o.equals(action)) return;  // no change in action
+			this.removeComponentListener(adapter); //action changed so remove old adapter
+			action =o;
+			this.addComponentListener(adapter=new ComponentAdapter() {
+				@Override
+				public void componentResized(ComponentEvent e) {
+					// This is called when the user resized the main frame
+					//  changeSize(); // direct call works
+					/**
+					* @j2sNative
+					*
+					* // find object
+					* var fn = window[o];
+					* // is object a function?
+					* if (typeof fn === "function") fn();
+					*/
+					//System.out.println("componentResized action="+action);  // for debugging
+				}
+			});
+		}
 
 	void disposeChildWindows() {
 		// if(OSPRuntime.applet!=null) return; // applets do not have a main window so
