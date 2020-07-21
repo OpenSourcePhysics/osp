@@ -2809,6 +2809,9 @@ public class ResourceLoader {
 		if (url != null) {
 			return new ImageIcon(url).getImage();
 		}
+		ImageIcon icon = getIcon(path);
+		if (icon != null)
+			return icon.getImage();
 		Resource res = getResource(path);
 		return (res == null) ? null : res.getImage();
 	}
@@ -2816,7 +2819,7 @@ public class ResourceLoader {
 	/**
 	 * Get the asset URL, either as a jar: URL or an absolute path to the assetPath
 	 * given. Note that in Eclipse, you must set the default working directory to
-	 * {workspace:name}/bin.
+	 * {projectloc}/bin.
 	 * 
 	 * @param assetPath
 	 * @return
