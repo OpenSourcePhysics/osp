@@ -163,11 +163,10 @@ public class Assets {
 	 * @param path
 	 * @return
 	 */
-	@SuppressWarnings("deprecation")
 	public static URL getAbsoluteURL(String path) {
 		URL url = null;
 		try {
-			url = (path.indexOf(":/") < 0 ? new File(new File(path).getAbsolutePath()).toURL() : new URL(path));
+			url = (path.indexOf("file:") == 0 ? new URL(path) : new File(new File(path).getAbsolutePath()).toURI().toURL());
 			if (path.indexOf("!/")>=0)
 				url = new URL("jar", null, url.toString());
 		} catch (MalformedURLException e) {
