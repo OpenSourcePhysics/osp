@@ -2293,6 +2293,13 @@ public class DataTable extends JTable {
 		selectTableColsBS(cols);
 	}
 
+    /**
+     * A standard method using BitSet blocks; reduces the number of 
+     * calls to addRowSelectionInterval.
+     * 
+     * @param rows
+     * @param nRows
+     */
 	public void selectTableRowsBS(BitSet rows, int nRows) {
 		if (nRows > 0)
 			removeRowSelectionInterval(0, nRows - 1);
@@ -2303,6 +2310,12 @@ public class DataTable extends JTable {
 		}
 	}
 
+	/**
+	 * A standard method using BitSet blocks; reduces the number of calls to
+	 * addColumnSelectionInterval.
+	 * 
+	 * @param cols
+	 */
 	public void selectTableColsBS(BitSet cols) {
 		for (int i = cols.nextSetBit(0), j = 0, n = getColumnCount(); 
 				i >= 0 && i < n; i = cols.nextSetBit(j + 1)) {
