@@ -2297,7 +2297,7 @@ public class DataTable extends JTable {
 		if (nRows > 0)
 			removeRowSelectionInterval(0, nRows - 1);
 		for (int i = rows.nextSetBit(0), j = 0, n = getRowCount(); 
-				i >= 0; i = rows.nextSetBit(j + 1)) {
+				i >= 0 && i < n; i = rows.nextSetBit(j + 1)) {
 			j = Math.min(n, rows.nextClearBit(i + 1));
 			addRowSelectionInterval(i, j - 1);
 		}
@@ -2305,7 +2305,7 @@ public class DataTable extends JTable {
 
 	public void selectTableColsBS(BitSet cols) {
 		for (int i = cols.nextSetBit(0), j = 0, n = getColumnCount(); 
-				i >= 0; i = cols.nextSetBit(j + 1)) {
+				i >= 0 && i < n; i = cols.nextSetBit(j + 1)) {
 			j = Math.min(n, cols.nextClearBit(i + 1));
 			addColumnSelectionInterval(i, j - 1);
 		}
