@@ -181,20 +181,18 @@ public final class SuryonoParser extends MathExpParser {
 		 *
 		 * @return the result of the subfunction
 		 */
-		private double evaluateSubFunction(int[] postfix_code, double[] stack) {
-			// double stack[]; moved by W. Christian
+		private double evaluateSubFunction(int[] codes, double[] stack) {
 			int stack_pointer = -1;
 			int code_pointer = 0;
 			int destination;
 			int code;
-			// stack = new double[STACK_SIZE]; moved by W. Christian
-			int codeLength = postfix_code[0]; // added bt W. Christian to check the length.
+			int codeLength = codes[0]; // added bt W. Christian to check the length.
 			while (true) {
 				try {
 					if (code_pointer == codeLength) {
 						return stack[0]; // added by W. Christian. Do not use doing an Exception!
 					}
-					code = postfix_code[++code_pointer];
+					code = codes[++code_pointer];
 				} catch (ArrayIndexOutOfBoundsException e) {
 					return stack[0];
 				}
@@ -228,9 +226,9 @@ public final class SuryonoParser extends MathExpParser {
 						stack[stack_pointer] = -stack[stack_pointer];
 						break;
 					case JUMP_CODE:
-						destination = code_pointer + postfix_code[++code_pointer];
+						destination = code_pointer + codes[++code_pointer];
 						while (code_pointer < destination) {
-							if (postfix_code[++code_pointer] == NUMERIC) {
+							if (codes[++code_pointer] == NUMERIC) {
 								numberindex++;
 							}
 						}
@@ -261,9 +259,9 @@ public final class SuryonoParser extends MathExpParser {
 						break;
 					case IF_CODE:
 						if (stack[stack_pointer--] == 0.0) {
-							destination = code_pointer + postfix_code[++code_pointer];
+							destination = code_pointer + codes[++code_pointer];
 							while (code_pointer < destination) {
-								if (postfix_code[++code_pointer] == NUMERIC) {
+								if (codes[++code_pointer] == NUMERIC) {
 									numberindex++;
 								}
 							}
