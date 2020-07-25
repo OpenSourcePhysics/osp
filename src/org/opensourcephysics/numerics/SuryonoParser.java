@@ -67,6 +67,7 @@ import java.util.Map;
  */
 public final class SuryonoParser extends MathExpParser {
 
+	
 	/**
 	 * The compiled function, for evaluation.
 	 * 
@@ -209,32 +210,51 @@ public final class SuryonoParser extends MathExpParser {
 				try {
 					switch (code) {
 					case '+':
-						stack[spt - 1] += stack[spt];
-						spt--;
+						stack[--spt] += stack[spt + 1];
 						break;
 					case '-':
-						stack[spt - 1] -= stack[spt];
-						spt--;
+						stack[--spt] -= stack[spt + 1];
 						break;
 					case '*':
-						stack[spt - 1] *= stack[spt];
-						spt--;
+						stack[--spt] *= stack[spt + 1];
 						break;
 					case '/':
-						if (stack[spt] != 0) {
-							stack[spt - 1] /= stack[spt];
+						if (stack[spt] == 0) {
+							stack[--spt] /= 1.0e-128; // added by W.Christian to trap for divide by zero.
 						} else {
-							stack[spt - 1] /= 1.0e-128; // added by W.Christian to trap for divide by zero.
+							stack[--spt] /= stack[spt + 1];
 						}
-						spt--;
 						break;
 					case '^':
-						stack[spt - 1] = Math.pow(stack[spt - 1], stack[spt]);
-						spt--;
+						stack[--spt] = Math.pow(stack[spt], stack[spt + 1]);
 						break;
 					case '_':
 						stack[spt] = -stack[spt];
 						break;
+					case LESS_THAN:
+						stack[--spt] = (stack[spt] < stack[spt + 1]) ? 1.0 : 0.0;
+						break;
+					case GREATER_THAN:
+						stack[--spt] = (stack[spt] > stack[spt + 1]) ? 1.0 : 0.0;
+						break;
+					case LESS_EQUAL:
+						stack[--spt] = (stack[spt] <= stack[spt + 1]) ? 1.0 : 0.0;
+						break;
+					case GREATER_EQUAL:
+						stack[--spt] = (stack[spt] >= stack[spt + 1]) ? 1.0 : 0.0;
+						break;
+					case EQUAL:
+						stack[--spt] = (stack[spt] == stack[spt + 1]) ? 1.0 : 0.0;
+						break;
+					case NOT_EQUAL:
+						stack[--spt] = (stack[spt] != stack[spt + 1]) ? 1.0 : 0.0;
+						break;
+					case IF_CODE:
+						if (stack[spt--] != 0) {
+							cpt++;
+							break;
+						}
+						// fall through
 					case JUMP_CODE:
 						destination = cpt + codes[++cpt];
 						while (cpt < destination) {
@@ -243,62 +263,16 @@ public final class SuryonoParser extends MathExpParser {
 							}
 						}
 						break;
-					case LESS_THAN:
-						spt--;
-						stack[spt] = (stack[spt] < stack[spt + 1]) ? 1.0 : 0.0;
-						break;
-					case GREATER_THAN:
-						spt--;
-						stack[spt] = (stack[spt] > stack[spt + 1]) ? 1.0 : 0.0;
-						break;
-					case LESS_EQUAL:
-						spt--;
-						stack[spt] = (stack[spt] <= stack[spt + 1]) ? 1.0 : 0.0;
-						break;
-					case GREATER_EQUAL:
-						spt--;
-						stack[spt] = (stack[spt] >= stack[spt + 1]) ? 1.0 : 0.0;
-						break;
-					case EQUAL:
-						spt--;
-						stack[spt] = (stack[spt] == stack[spt + 1]) ? 1.0 : 0.0;
-						break;
-					case NOT_EQUAL:
-						spt--;
-						stack[spt] = (stack[spt] != stack[spt + 1]) ? 1.0 : 0.0;
-						break;
-					case IF_CODE:
-						if (stack[spt--] == 0.0) {
-							destination = cpt + codes[++cpt];
-							while (cpt < destination) {
-								if (codes[++cpt] == NUMERIC) {
-									numberindex++;
-								}
-							}
-						} else {
-							cpt++;
-						}
-						break;
 					case ENDIF:
 						break; // same as NOP
 					case AND_CODE:
-						spt--;
-						if ((stack[spt] != 0.0) && (stack[spt + 1] != 0.0)) {
-							stack[spt] = 1.0;
-						} else {
-							stack[spt] = 0.0;
-						}
+						stack[--spt] = (stack[spt] != 0 && stack[spt + 1] != 0 ? 1 : 0);
 						break;
 					case OR_CODE:
-						spt--;
-						if ((stack[spt] != 0.0) || (stack[spt + 1] != 0.0)) {
-							stack[spt] = 1.0;
-						} else {
-							stack[spt] = 0.0;
-						}
+						stack[--spt] = (stack[spt] != 0 || stack[spt + 1] != 0 ? 1 : 0);
 						break;
 					case NOT_CODE:
-						stack[spt] = (stack[spt] == 0.0) ? 1.0 : 0.0;
+						stack[spt] = (stack[spt] == 0 ? 1 : 0);
 						break;
 					case NUMERIC:
 						stack[++spt] = number[numberindex++];
@@ -318,12 +292,12 @@ public final class SuryonoParser extends MathExpParser {
 						case VAR_OFFSET:
 							stack[++spt] = var_value[val];
 							break;
+						case FUNC_OFFSET:
+							stack[spt] = builtInFunction(val, stack[spt]);
+							break;
 						case EXT_FUNC_OFFSET:
 							stack[--spt] = builtInExtFunction(val, stack[spt],
 									stack[spt + 1]);
-							break;
-						case FUNC_OFFSET:
-							stack[spt] = builtInFunction(val, stack[spt]);
 							break;
 						default:
 							err = CODE_DAMAGED;
