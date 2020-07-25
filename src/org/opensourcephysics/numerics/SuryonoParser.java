@@ -166,7 +166,7 @@ public final class SuryonoParser extends MathExpParser {
 			if (!Double.isNaN(result))
 				result = evaluateSubFunction(postfix_code, stack);
 			// added by D Brown to flag NaN results
-			// BH note: isNaN was not being set if there was an issue in reference functions
+			// BH note! isNaN was not being set if there was an issue in reference functions
 			isNaN = Double.isNaN(result);
 			// added by W. Christian to trap for NaN
 			if (isNaN) {
