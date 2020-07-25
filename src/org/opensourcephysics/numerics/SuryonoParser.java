@@ -67,8 +67,12 @@ import java.util.Map;
  */
 public final class SuryonoParser extends MathExpParser {
 
+	/**
+	 * The compiled function, for evaluation.
+	 * 
+	 */
 	private class Func {
-		protected int var_count; // number of variables
+		protected int var_count = -1; // number of variables
 		protected String var_name[]; // variables' name
 		protected double var_value[]; // value of variables
 		protected double number[] = new double[MAX_NUM]; // numeric constants in defined function
@@ -77,26 +81,32 @@ public final class SuryonoParser extends MathExpParser {
 		protected int[] postfix_code = new int[100]; // the postfix code //$NON-NLS-1$
 		protected boolean radian = true; // radian unit flag
 
+		protected int err = NO_ERROR;
+		/**
+		 * set when evaluate() method converts NaN to zero
+		 * 
+		 * --added by D Brown 15 Sep 2010
+		 * 
+		 */
+		protected boolean isNaN;
+		
+
+		// temporary variables
 		private double[] refvalue = null; // temporary values of references
 		private double[] stack = new double[STACK_SIZE]; 
 		private int numberindex; // pointer to numbers/constants bank
 
-		protected int err = NO_ERROR;
-		private boolean isNaN;
-		
-		public Func(int variablecount) {
-			var_count = variablecount;
-			var_name = new String[variablecount];
-			var_value = new double[variablecount];
+		protected Func(int nVar) {
+			reset(nVar);
 		}
 
-		public void reset(int count) {
-			if (count != var_count) {
-				var_count = count;
+		protected void reset(int nVar) {
+			if (nVar != var_count) {
+				var_count = nVar;
+				var_name = new String[nVar];
+				var_value = new double[nVar];
 				references.clear();
 				refnames.clear();
-				var_name = new String[count];
-				var_value = new double[count];
 			}
 		}
 
@@ -182,138 +192,138 @@ public final class SuryonoParser extends MathExpParser {
 		 * @return the result of the subfunction
 		 */
 		private double evaluateSubFunction(int[] codes, double[] stack) {
-			int stack_pointer = -1;
-			int code_pointer = 0;
+			int spt = -1;
+			int cpt = 0;
 			int destination;
 			int code;
 			int codeLength = codes[0]; // added bt W. Christian to check the length.
 			while (true) {
 				try {
-					if (code_pointer == codeLength) {
+					if (cpt == codeLength) {
 						return stack[0]; // added by W. Christian. Do not use doing an Exception!
 					}
-					code = codes[++code_pointer];
+					code = codes[++cpt];
 				} catch (ArrayIndexOutOfBoundsException e) {
 					return stack[0];
 				}
 				try {
 					switch (code) {
 					case '+':
-						stack[stack_pointer - 1] += stack[stack_pointer];
-						stack_pointer--;
+						stack[spt - 1] += stack[spt];
+						spt--;
 						break;
 					case '-':
-						stack[stack_pointer - 1] -= stack[stack_pointer];
-						stack_pointer--;
+						stack[spt - 1] -= stack[spt];
+						spt--;
 						break;
 					case '*':
-						stack[stack_pointer - 1] *= stack[stack_pointer];
-						stack_pointer--;
+						stack[spt - 1] *= stack[spt];
+						spt--;
 						break;
 					case '/':
-						if (stack[stack_pointer] != 0) {
-							stack[stack_pointer - 1] /= stack[stack_pointer];
+						if (stack[spt] != 0) {
+							stack[spt - 1] /= stack[spt];
 						} else {
-							stack[stack_pointer - 1] /= 1.0e-128; // added by W.Christian to trap for divide by zero.
+							stack[spt - 1] /= 1.0e-128; // added by W.Christian to trap for divide by zero.
 						}
-						stack_pointer--;
+						spt--;
 						break;
 					case '^':
-						stack[stack_pointer - 1] = Math.pow(stack[stack_pointer - 1], stack[stack_pointer]);
-						stack_pointer--;
+						stack[spt - 1] = Math.pow(stack[spt - 1], stack[spt]);
+						spt--;
 						break;
 					case '_':
-						stack[stack_pointer] = -stack[stack_pointer];
+						stack[spt] = -stack[spt];
 						break;
 					case JUMP_CODE:
-						destination = code_pointer + codes[++code_pointer];
-						while (code_pointer < destination) {
-							if (codes[++code_pointer] == NUMERIC) {
+						destination = cpt + codes[++cpt];
+						while (cpt < destination) {
+							if (codes[++cpt] == NUMERIC) {
 								numberindex++;
 							}
 						}
 						break;
 					case LESS_THAN:
-						stack_pointer--;
-						stack[stack_pointer] = (stack[stack_pointer] < stack[stack_pointer + 1]) ? 1.0 : 0.0;
+						spt--;
+						stack[spt] = (stack[spt] < stack[spt + 1]) ? 1.0 : 0.0;
 						break;
 					case GREATER_THAN:
-						stack_pointer--;
-						stack[stack_pointer] = (stack[stack_pointer] > stack[stack_pointer + 1]) ? 1.0 : 0.0;
+						spt--;
+						stack[spt] = (stack[spt] > stack[spt + 1]) ? 1.0 : 0.0;
 						break;
 					case LESS_EQUAL:
-						stack_pointer--;
-						stack[stack_pointer] = (stack[stack_pointer] <= stack[stack_pointer + 1]) ? 1.0 : 0.0;
+						spt--;
+						stack[spt] = (stack[spt] <= stack[spt + 1]) ? 1.0 : 0.0;
 						break;
 					case GREATER_EQUAL:
-						stack_pointer--;
-						stack[stack_pointer] = (stack[stack_pointer] >= stack[stack_pointer + 1]) ? 1.0 : 0.0;
+						spt--;
+						stack[spt] = (stack[spt] >= stack[spt + 1]) ? 1.0 : 0.0;
 						break;
 					case EQUAL:
-						stack_pointer--;
-						stack[stack_pointer] = (stack[stack_pointer] == stack[stack_pointer + 1]) ? 1.0 : 0.0;
+						spt--;
+						stack[spt] = (stack[spt] == stack[spt + 1]) ? 1.0 : 0.0;
 						break;
 					case NOT_EQUAL:
-						stack_pointer--;
-						stack[stack_pointer] = (stack[stack_pointer] != stack[stack_pointer + 1]) ? 1.0 : 0.0;
+						spt--;
+						stack[spt] = (stack[spt] != stack[spt + 1]) ? 1.0 : 0.0;
 						break;
 					case IF_CODE:
-						if (stack[stack_pointer--] == 0.0) {
-							destination = code_pointer + codes[++code_pointer];
-							while (code_pointer < destination) {
-								if (codes[++code_pointer] == NUMERIC) {
+						if (stack[spt--] == 0.0) {
+							destination = cpt + codes[++cpt];
+							while (cpt < destination) {
+								if (codes[++cpt] == NUMERIC) {
 									numberindex++;
 								}
 							}
 						} else {
-							code_pointer++;
+							cpt++;
 						}
 						break;
 					case ENDIF:
 						break; // same as NOP
 					case AND_CODE:
-						stack_pointer--;
-						if ((stack[stack_pointer] != 0.0) && (stack[stack_pointer + 1] != 0.0)) {
-							stack[stack_pointer] = 1.0;
+						spt--;
+						if ((stack[spt] != 0.0) && (stack[spt + 1] != 0.0)) {
+							stack[spt] = 1.0;
 						} else {
-							stack[stack_pointer] = 0.0;
+							stack[spt] = 0.0;
 						}
 						break;
 					case OR_CODE:
-						stack_pointer--;
-						if ((stack[stack_pointer] != 0.0) || (stack[stack_pointer + 1] != 0.0)) {
-							stack[stack_pointer] = 1.0;
+						spt--;
+						if ((stack[spt] != 0.0) || (stack[spt + 1] != 0.0)) {
+							stack[spt] = 1.0;
 						} else {
-							stack[stack_pointer] = 0.0;
+							stack[spt] = 0.0;
 						}
 						break;
 					case NOT_CODE:
-						stack[stack_pointer] = (stack[stack_pointer] == 0.0) ? 1.0 : 0.0;
+						stack[spt] = (stack[spt] == 0.0) ? 1.0 : 0.0;
 						break;
 					case NUMERIC:
-						stack[++stack_pointer] = number[numberindex++];
+						stack[++spt] = number[numberindex++];
 						break;
 					case PI_CODE:
-						stack[++stack_pointer] = Math.PI;
+						stack[++spt] = Math.PI;
 						break;
 					case E_CODE:
-						stack[++stack_pointer] = Math.E;
+						stack[++spt] = Math.E;
 						break;
 					default:
 						int val = code & ~OFFSET_MASK;
 						switch (code & OFFSET_MASK) {
 						case REF_OFFSET:
-							stack[++stack_pointer] = refvalue[val];
+							stack[++spt] = refvalue[val];
 							break;
 						case VAR_OFFSET:
-							stack[++stack_pointer] = var_value[val];
+							stack[++spt] = var_value[val];
 							break;
 						case EXT_FUNC_OFFSET:
-							stack[--stack_pointer] = builtInExtFunction(val, stack[stack_pointer],
-									stack[stack_pointer + 1]);
+							stack[--spt] = builtInExtFunction(val, stack[spt],
+									stack[spt + 1]);
 							break;
 						case FUNC_OFFSET:
-							stack[stack_pointer] = builtInFunction(val, stack[stack_pointer]);
+							stack[spt] = builtInFunction(val, stack[spt]);
 							break;
 						default:
 							err = CODE_DAMAGED;
@@ -333,64 +343,64 @@ public final class SuryonoParser extends MathExpParser {
 		/**
 		 * Built-in one parameter function call.
 		 *
+		 * @param index  the function index
+		 * @param p the parameter to the function
 		 * @return the function result
-		 * @param function  the function index
-		 * @param parameter the parameter to the function
 		 */
-		private double builtInFunction(int function, double parameter) {
-			switch (function) {
+		private double builtInFunction(int index, double p) {
+			switch (index) {
 			case 0:
-				return Math.sin(radian ? parameter : parameter * DEGTORAD);
+				return Math.sin(radian ? p : p * DEGTORAD);
 			case 1:
-				return Math.cos(radian ? parameter : parameter * DEGTORAD);
+				return Math.cos(radian ? p : p * DEGTORAD);
 			case 2:
-				return Math.tan(radian ? parameter : parameter * DEGTORAD);
+				return Math.tan(radian ? p : p * DEGTORAD);
 			case 3:
-				return Math.log(parameter);
+				return Math.log(p);
 			case 4:
-				return Math.log(parameter) / LOG10;
+				return Math.log(p) / LOG10;
 			case 5:
-				return Math.abs(parameter);
+				return Math.abs(p);
 			case 6:
-				return Math.rint(parameter);
+				return Math.rint(p);
 			case 7:
-				return parameter - Math.rint(parameter);
+				return p - Math.rint(p);
 			case 8:
-				return Math.asin(parameter) / (radian ? 1 : DEGTORAD);
+				return Math.asin(p) / (radian ? 1 : DEGTORAD);
 			case 9:
-				return Math.acos(parameter) / (radian ? 1 : DEGTORAD);
+				return Math.acos(p) / (radian ? 1 : DEGTORAD);
 			case 10:
-				return Math.atan(parameter) / (radian ? 1 : DEGTORAD);
+				return Math.atan(p) / (radian ? 1 : DEGTORAD);
 			case 11:
-				return Math.sinh(parameter);// (Math.exp(parameter) - Math.exp(-parameter)) / 2;
+				return Math.sinh(p);// (Math.exp(parameter) - Math.exp(-parameter)) / 2;
 			case 12:
-				return Math.cosh(parameter);//(Math.exp(parameter) + Math.exp(-parameter)) / 2;
+				return Math.cosh(p);//(Math.exp(parameter) + Math.exp(-parameter)) / 2;
 			case 13:
-				return Math.tanh(parameter); //double a = Math.exp(parameter); double b = Math.exp(-parameter);	return (a - b) / (a + b);
+				return Math.tanh(p); //double a = Math.exp(parameter); double b = Math.exp(-parameter);	return (a - b) / (a + b);
 			case 14: // asinh
-				return Math.log(parameter + Math.sqrt(parameter * parameter + 1));
+				return Math.log(p + Math.sqrt(p * p + 1));
 			case 15: // acosh
-				return Math.log(parameter + Math.sqrt(parameter * parameter - 1));
+				return Math.log(p + Math.sqrt(p * p - 1));
 			case 16: // atanh
-				return Math.log((1 + parameter) / (1 - parameter)) / 2;
+				return Math.log((1 + p) / (1 - p)) / 2;
 			case 17:
-				return Math.ceil(parameter);
+				return Math.ceil(p);
 			case 18:
-				return Math.floor(parameter);
+				return Math.floor(p);
 			case 19:
-				return Math.round(parameter);
+				return Math.round(p);
 			case 20:
-				return Math.exp(parameter);
+				return Math.exp(p);
 			case 21:
-				return parameter * parameter;
+				return p * p;
 			case 22:
-				return Math.sqrt(parameter);
+				return Math.sqrt(p);
 			case 23:
-				return Math.signum(parameter); // {-1, 0, 1}
+				return Math.signum(p); // {-1, 0, 1}
 			case 24:
-				return (parameter < 0 ? 0 : 1); // {0, 0, 1} added by W. Christian for step function
+				return (p < 0 ? 0 : 1); // {0, 0, 1} added by W. Christian for step function
 			case 25:
-				return parameter * Math.random(); // added by W. Christian for random function
+				return p * Math.random(); // added by W. Christian for random function
 			default:
 				err = CODE_DAMAGED;
 				return Double.NaN;
@@ -400,21 +410,21 @@ public final class SuryonoParser extends MathExpParser {
 		/**
 		 * Built-in two parameters extended function call.
 		 *
+		 * @param index the function index
+		 * @param p1   the first parameter to the function
+		 * @param p2   the second parameter to the function
 		 * @return the function result
-		 * @param function the function index
-		 * @param param1   the first parameter to the function
-		 * @param param2   the second parameter to the function
 		 */
-		private double builtInExtFunction(int function, double param1, double param2) {
-			switch (function) {
+		private double builtInExtFunction(int index, double p1, double p2) {
+			switch (index) {
 			case 0:
-				return Math.min(param1, param2);
+				return Math.min(p1, p2);
 			case 1:
-				return Math.max(param1, param2);
+				return Math.max(p1, p2);
 			case 2:
-				return Math.IEEEremainder(param1, param2);
+				return Math.IEEEremainder(p1, p2);
 			case 3:
-				return Math.atan2(param1, param2);
+				return Math.atan2(p1, p2);
 			default:
 				err = CODE_DAMAGED;
 				return Double.NaN;
@@ -423,15 +433,17 @@ public final class SuryonoParser extends MathExpParser {
 
 	}
 
+	private Func f;
+	
 	/////// rest of this is just the parser itself
 	
-	private Func f;
 	private String function = ""; // function definition //$NON-NLS-1$
 	private boolean valid = false; // postfix code status
 	private int error; // error code of last process
+
+	// variables used during parsing
 	private boolean isBoolean = false; // boolean flag
 	private boolean inRelation = false; // relation flag
-	// variables used during parsing
 	private int position; // parsing pointer
 	private int start; // starting position of identifier
 	private int num; // number of numeric constants
@@ -525,34 +537,37 @@ public final class SuryonoParser extends MathExpParser {
 	private static final int EXT_FUNC_OFFSET = 0x2000;// FUNC_OFFSET + NO_FUNCS;
 	private static final int VAR_OFFSET      = 0x4000;
 	private static final int REF_OFFSET		 = 0x8000;
-	private static final int PI_CODE = (int) 253;
-	private static final int E_CODE = (int) 254;
-	private static final int NUMERIC = (int) 255;
+	private static final int PI_CODE = 253;
+	private static final int E_CODE = 254;
+	private static final int NUMERIC = 255;
 	// Jump, followed by n : Displacement
-	private static final int JUMP_CODE = (int) 1;
+	private static final int JUMP_CODE = 1;
 	// Relation less than (<)
-	private static final int LESS_THAN = (int) 2;
+	private static final int LESS_THAN = 2;
 	// Relation greater than (>)
-	private static final int GREATER_THAN = (int) 3;
+	private static final int GREATER_THAN = 3;
 	// Relation less than or equal (<=)
-	private static final int LESS_EQUAL = (int) 4;
+	private static final int LESS_EQUAL = 4;
 	// Relation greater than or equal (>=)
-	private static final int GREATER_EQUAL = (int) 5;
+	private static final int GREATER_EQUAL = 5;
 	// Relation not equal (<>)
-	private static final int NOT_EQUAL = (int) 6;
+	private static final int NOT_EQUAL = 6;
 	// Relation equal (=)
-	private static final int EQUAL = (int) 7;
-	// Conditional statement IF, followed by a conditional block :
-	// * Displacement (Used to jump to condition FALSE code)
-	// * Condition TRUE code
-	// * Jump to next code outside conditional block
-	// * Condition FALSE code
-	// * ENDIF
-	private static final int IF_CODE = (int) 8;
-	private static final int ENDIF = (int) 9;
-	private static final int AND_CODE = (int) 10; // Boolean AND
-	private static final int OR_CODE = (int) 11; // Boolean OR
-	private static final int NOT_CODE = (int) 12; // Boolean NOT
+	private static final int EQUAL = 7;
+	/**
+	 * Conditional statement IF, followed by a conditional block : <code>
+	 Displacement (Used to jump to condition FALSE code)
+	 Condition TRUE code
+	 Jump to next code outside conditional block
+	 Condition FALSE code
+	 ENDIF
+	 * </code>
+	 */
+	private static final int IF_CODE = 8;
+	private static final int ENDIF = 9;
+	private static final int AND_CODE = 10;
+	private static final int OR_CODE = 11;
+	private static final int NOT_CODE = 12;
 	// built in functions
 	private final static String funcname[] = { 
 			"sin", "cos", "tan", "ln", "log",          //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ 
@@ -564,8 +579,8 @@ public final class SuryonoParser extends MathExpParser {
 	};
 	// extended functions
 	private final static String extfunc[] = { "min", "max", "mod", "atan2" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-	// set when evaluate() method converts NaN to zero--added by D Brown 15 Sep 2010
-	private boolean allowUnknown;
+
+	private boolean allowUnknown; // always false
 
 	private static String[] allFunctions;
 	
