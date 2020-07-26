@@ -1,3 +1,4 @@
+
 demo/FirstPlotApp.js
 java/applet/AppletContext.js
 java/applet/AppletStub.js
@@ -117,6 +118,7 @@ java/awt/geom/Dimension2D.js
 java/awt/geom/Ellipse2D.js
 java/awt/geom/GeneralPath.js
 java/awt/geom/Line2D.js
+java/awt/geom/LineIterator.js
 java/awt/geom/Path2D.js
 java/awt/geom/PathIterator.js
 java/awt/geom/Point2D.js
@@ -576,6 +578,7 @@ javax/swing/undo/CompoundEdit.js
 javax/swing/undo/UndoManager.js
 javax/swing/undo/UndoableEdit.js
 javax/swing/undo/UndoableEditSupport.js
+org/opensourcephysics/analysis/FourierSinCosAnalysis.js
 org/opensourcephysics/controls/ConsoleLevel.js
 org/opensourcephysics/controls/Control.js
 org/opensourcephysics/controls/ControlUtils.js
@@ -593,8 +596,11 @@ org/opensourcephysics/controls/XMLTree.js
 org/opensourcephysics/controls/XMLTreeChooser.js
 org/opensourcephysics/controls/XMLTreeNode.js
 org/opensourcephysics/controls/XMLTreePanel.js
+org/opensourcephysics/desktop/OSPDesktop.js
 org/opensourcephysics/display/AppFrame.js
 org/opensourcephysics/display/CellBorder.js
+org/opensourcephysics/display/ColorIcon.js
+org/opensourcephysics/display/ComplexDataset.js
 org/opensourcephysics/display/Data.js
 org/opensourcephysics/display/DataTable.js
 org/opensourcephysics/display/DataTableFrame.js
@@ -685,6 +691,8 @@ org/opensourcephysics/media/mov/JSMovieVideoType.js
 org/opensourcephysics/media/mov/MovieFactory.js
 org/opensourcephysics/media/mov/MovieVideoI.js
 org/opensourcephysics/media/mov/MovieVideoType.js
+org/opensourcephysics/numerics/FFT.js
+org/opensourcephysics/numerics/FFTReal.js
 org/opensourcephysics/numerics/Function.js
 org/opensourcephysics/numerics/FunctionTransform.js
 org/opensourcephysics/numerics/HessianMinimize.js
@@ -729,6 +737,7 @@ org/opensourcephysics/tools/ExportXMLFormat.js
 org/opensourcephysics/tools/FitBuilder.js
 org/opensourcephysics/tools/FitFunctionPanel.js
 org/opensourcephysics/tools/FontSizer.js
+org/opensourcephysics/tools/FourierPanel.js
 org/opensourcephysics/tools/FunctionEditor.js
 org/opensourcephysics/tools/FunctionPanel.js
 org/opensourcephysics/tools/FunctionTool.js
