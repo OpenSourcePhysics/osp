@@ -58,6 +58,11 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 	String name = ""; //$NON-NLS-1$
 	int datasetID = hashCode();
     public Dataset dsFound;
+    
+    /**
+     * used by TableTrackView
+     */
+	private Dataset frameDataset;
 
 	/**
 	 *
@@ -886,6 +891,10 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 		}
 		int n = datasets.size();
 		datasets.add(dataset);
+		if ("frame".equals(dataset.getYColumnName())) { //$NON-NLS-1$
+			frameDataset = dataset;
+		}
+
 		// for DataTable
 		fireTableChanged(new TableModelEvent(this, 0, Integer.MAX_VALUE, n, TableModelEvent.INSERT));
 		return n;
@@ -1125,6 +1134,10 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 			return obj;
 		}
 
+	}
+
+	public Dataset getFrameDataset() {
+		return frameDataset;
 	}
 
 }

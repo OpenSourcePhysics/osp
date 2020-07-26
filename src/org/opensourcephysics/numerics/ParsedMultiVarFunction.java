@@ -27,6 +27,7 @@ public final class ParsedMultiVarFunction implements MultiVarFunction {
    *
    * @param _fStr the function
    * @param var the independent variable
+   * @param allowUnknownIdentifiers   always false
    * @throws ParserException
    */
   public ParsedMultiVarFunction(String _fStr, String[] var, boolean allowUnkownIdentifiers) throws ParserException {
