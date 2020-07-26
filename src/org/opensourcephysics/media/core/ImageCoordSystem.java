@@ -490,7 +490,7 @@ public class ImageCoordSystem {
 		if (n >= length) {
 			setLength(n + 1);
 		}
-		if (updateToKeyFrames && keyFrames.size() > 0) {
+		if (updateToKeyFrames) {
 			// end frame is just before first key frame following n
 			int end = length - 1;
 			for (int next : keyFrames) {
@@ -591,7 +591,8 @@ public class ImageCoordSystem {
 		if (n >= length) {
 			setLength(n + 1);
 		}
-		if (updateToKeyFrames && keyFrames.size() > 0) {
+		if (updateToKeyFrames) {
+//			if (updateToKeyFrames && keyFrames.size() > 0) {
 			// end frame is just before first key frame following n
 			int end = length - 1;
 			for (int next : keyFrames) {
