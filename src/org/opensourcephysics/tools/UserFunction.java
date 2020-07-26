@@ -234,52 +234,6 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 		for (int i = 0; i < vars.length; i++) {
 			exp = exp.replaceAll(" " + vars[i] + " ", " " + dummyVars[i] + " ");
 		}
-
-//    
-//    // replace indep vars with dummys starting with longest names
-//    java.util.ArrayList<String> sorted = new java.util.ArrayList<String>();
-//    sorted.add(vars[0]);
-//    // fill and sort the sorted list
-//    for(int i = 1; i<vars.length; i++) {
-//      int size = sorted.size();
-//      for(int j = 0; j<size; j++) {
-//        if(vars[i].length()>sorted.get(j).toString().length()) {
-//          sorted.add(j, vars[i]);
-//          break;
-//        } else if(j==size-1) {
-//          sorted.add(vars[i]);
-//        }
-//      }
-//    }
-//    // replace strings in both expression and names in sorted list order
-//    for(int k = 0; k<sorted.size(); k++) {
-//      String next = sorted.get(k).toString();
-//      for(int i = 0; i<vars.length; i++) {
-//        if(next.equals(vars[i])) {	
-//          exp = replaceAll(exp,vars[i], dummyVars[i]);
-//          names[i] = dummyVars[i];
-//          for(int j = vars.length; j<names.length; j++) {
-//            names[j] = replaceAll(names[j], vars[i], dummyVars[i]);
-//          }
-//          // replace modified function names with originals
-//          for(int j = 0; j<functionNames.length; j++) {
-//            String modified = replaceAll(functionNames[j], vars[i], dummyVars[i]);
-//            if(!modified.equals(functionNames[j])) {
-//              exp = replaceAll(exp, modified, functionNames[j]);
-//            }
-//          }
-//        }
-//      }
-//    }
-//    // replace modified names with originals
-//    for(int i = 0; i<paramNames.length; i++) {
-//      exp = replaceAll(exp, names[vars.length+i], paramNames[i]);
-//      names[vars.length+i] = paramNames[i];
-//    }
-//    for(int i = 0; i<references.length; i++) {
-//      exp = replaceAll(exp, names[vars.length+paramNames.length+i], references[i].getName());
-//      names[vars.length+paramNames.length+i] = references[i].getName();
-//    }
 		inputString = exp;
 		// try to parse expression
 		try {
@@ -603,21 +557,6 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	protected String replaceParameterNameInExpression(String oldName, String newName) {
 		String exp = replaceAllWords(padNames(getInputString()), oldName, newName);
 		return (exp != null && setExpression(exp, getIndependentVariables()) ? exp : null);
-
-//		String[] varNames = getIndependentVariables();
-//		TreeMap<String, String> replacements = new TreeMap<String, String>();
-//		String exp = replaceInExpression(oldName, newName, getInputString(), replacements);
-//
-//		if (exp == null)
-//			return null;
-//
-//		// restore dummy names
-//		for (String key : replacements.keySet()) {
-//			if (key.equals(newName))
-//				continue;
-//			exp = replaceAllWords(exp, key, replacements.get(key));
-//		}
-//		
 	}
 
 	static String padNames(String exp) {
@@ -648,43 +587,6 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	public static boolean containsWord(String paddedExp, String key) {
 		return (paddedExp.indexOf(" " + key + " ") >= 0);
 	}
-
-// BH not necessary if using full-word RegExp replacement?
-//
-//	/**
-//	 * Replaces a parameter name with a new one in a specified expression.
-//	 *
-//	 * @param oldName      the existing parameter name
-//	 * @param newName      the new parameter name
-//	 * @param expression   the expression to modify
-//	 * @param replacements a map of parameter replacements already made
-//	 * @return the modified expression, or null if failed
-//	 */
-//	private String replaceInExpression(String oldName, String newName, String expression,
-//			TreeMap<String, String> replacements) {
-//		if (replacements.values().contains(oldName))
-//			return expression;
-//		// check for problem with direct String.replaceAll?
-//		for (int i = 0, n = getParameterCount(); i < n; i++) {
-//			String nextParam = getParameterName(i);
-//			if (oldName.equals(nextParam) || newName.equals(nextParam) || !nextParam.contains(oldName))
-//				continue;
-//			// find the next available dummyVar
-//			int k = dummyVars.length;
-//			while (--k >= 0) {
-//				if (dummyVars[k].equals(newName)) {
-//					break;
-//				}
-//			}
-//			if (++k >= dummyVars.length)
-//				return null;
-//			expression = replaceInExpression(nextParam, dummyVars[k], expression, replacements);
-//			if (expression == null)
-//				return null;
-//		}
-//		replacements.put(newName, oldName);
-//		return replaceAllWords(expression, oldName, newName);
-//	}
 
 	/**
 	 * Returns the XML.ObjectLoader for this class.
