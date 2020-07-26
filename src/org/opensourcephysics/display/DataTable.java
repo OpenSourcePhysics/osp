@@ -768,8 +768,6 @@ public class DataTable extends JTable {
 		 */
 		protected final BitSet bsColVis = new BitSet();
 
-		protected boolean isDatasetManager;
-
 		/**
 		 * Constructor DataTableElement
 		 *
@@ -779,7 +777,6 @@ public class DataTable extends JTable {
 			tableModel = t;
 			bsColVis.set(0, t.getColumnCount());
 			if (t instanceof DatasetManager) {
-				isDatasetManager = true;
 				t.addTableModelListener(this);
 			}
 		}
@@ -1301,6 +1298,7 @@ public class DataTable extends JTable {
 			 * @return the sorted row number
 			 */
 			protected int getSortedRow(int realModelRow) {
+				allocate(realModelRow);
 				return modelToViewRow[realModelRow];
 			}
 
@@ -1308,30 +1306,23 @@ public class DataTable extends JTable {
 				if (viewCol >= getColumnCount()) {
 					return null;
 				}
-				if (viewRowToModel.length <= viewRow) {
-					allocate();
-				}
+				allocate(viewRow);
 				return getElementValue(viewRowToModel[viewRow], viewCol);
 			}
 
 			protected void setValueAt(Object aValue, int viewRow, int viewCol) {
-				if (viewRowToModel.length <= viewRow) {
-					allocate();
-				}
+				allocate(viewRow);
 				setElementValue(aValue, viewRowToModel[viewRow], viewCol);
 			}
 
 			protected void sort(DataTableElement dte, int column) {
 				if (dte.tableModel.isFoundOrdered()) {
-					allocate();
+					allocate(Integer.MAX_VALUE);
 					sortedColumn = column;
 					return;
 				}
 				sortedColumn = column;
-				int rowCount = getRowCount();
-				if (viewRowToModel.length <= rowCount) {
-					allocate();
-				}
+				allocate(Integer.MAX_VALUE);
 				
 				// new faster sort method added by D Brown 2015-05-16
 				try {
@@ -1388,17 +1379,19 @@ public class DataTable extends JTable {
 //				return jo.toString().compareTo(io.toString());
 //			}
 //
-			private void allocate() {
-				int n = getRowCount();
-				viewRowToModel = new int[n];
-				modelToViewRow = new int[n];
-				for (int i = 0; i < viewRowToModel.length; ++i) {
-					viewRowToModel[i] = modelToViewRow[i] = i;
+			private void allocate(int min) {
+				if (viewRowToModel.length <= min) {
+					int n = getRowCount();
+					viewRowToModel = new int[n];
+					modelToViewRow = new int[n];
+					for (int i = 0; i < viewRowToModel.length; ++i) {
+						viewRowToModel[i] = modelToViewRow[i] = i;
+					}
 				}
 			}
 
 			protected void reset() {
-				allocate();
+				allocate(Integer.MAX_VALUE);
 				sortedColumn = -1;
 			}
 
