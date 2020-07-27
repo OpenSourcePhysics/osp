@@ -792,8 +792,12 @@ public class OSPRuntime {
 		if (buildDate == null) {
 			try {
 				JarFile jarfile = getLaunchJar();
+				if (jarfile == null) {
+					buildDate = "<unkown>";
+				} else {
 				java.util.jar.Attributes att = jarfile.getManifest().getMainAttributes();
-				buildDate = att.getValue("Build-Date"); //$NON-NLS-1$
+					buildDate = att.getValue("Build-Date"); //$NON-NLS-1$
+				}
 			} catch (Exception ex) {
 			}
 		}
