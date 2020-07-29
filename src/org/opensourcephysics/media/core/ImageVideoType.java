@@ -98,8 +98,9 @@ public class ImageVideoType implements VideoType {
 
 		// if an XML file with the image name is found, load it in order to get frame
 		// duration
-		String xmlName = XML.stripExtension(basePath == null ? name : basePath + "/" + name) + ".xml"; //$NON-NLS-1$
+		String xmlName = XML.stripExtension(basePath == null ? name : basePath + File.separator + name) + ".xml"; //$NON-NLS-1$
 		XMLControl control = new XMLControlElement(new File(xmlName));
+		control.setBasepath(basePath);
 		if (!control.failedToRead() && control.getObjectClass() == ImageVideo.class) {
 			return (Video) control.loadObject(null);
 		}

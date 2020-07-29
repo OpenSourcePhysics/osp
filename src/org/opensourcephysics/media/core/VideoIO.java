@@ -376,6 +376,10 @@ public class VideoIO {
 	 * @return true if successfully copied
 	 */
 	public static boolean copyFile(File inFile, File outFile) {
+		if (OSPRuntime.isJS) {
+			OSPRuntime.jsutil.setFileBytes(outFile,  OSPRuntime.jsutil.getBytes(inFile));
+			return true;
+		}
 		byte[] buffer = new byte[100000];
 		try {
 			InputStream in = new FileInputStream(inFile);

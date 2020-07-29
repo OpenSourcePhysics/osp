@@ -82,6 +82,10 @@ public class ImageVideo extends VideoAdapter {
 	 */
 	public ImageVideo(String imageName, String basePath, boolean sequence) throws IOException {
 		readOnly = true;
+		if (basePath == null) {
+			basePath = XML.getDirectoryPath(imageName);
+		}
+
 		if (basePath != null) {
 			baseDir = basePath; // could be .....trz!
 			setProperty("absolutePath", (imageName.startsWith(basePath) ? imageName : basePath + "/" + imageName));
@@ -774,11 +778,12 @@ public class ImageVideo extends VideoAdapter {
 		@Override
 		public void saveObject(XMLControl control, Object obj) {
 			ImageVideo video = (ImageVideo) obj;
-			String base = (String) video.getProperty("base"); //$NON-NLS-1$
+			String base = video.baseDir; //$NON-NLS-1$
 			String[] paths = video.getValidPathsRelativeTo(base);
 			if (paths.length > 0) {
 				control.setValue("paths", paths); //$NON-NLS-1$
 				control.setValue("path", paths[0]); //$NON-NLS-1$
+				control.setBasepath(base);
 			}
 			if (!video.filterStack.isEmpty()) {
 				control.setValue("filters", video.filterStack.getFilters()); //$NON-NLS-1$
@@ -834,7 +839,7 @@ public class ImageVideo extends VideoAdapter {
 			for (int i = 0; i < paths.length; i++) {
 				try {
 					if (vid == null) {
-						vid = new ImageVideo(paths[i], null, false);
+						vid = new ImageVideo(paths[i], control.getBasepath(), false);
 					} else {
 						vid.append(paths[i], false);
 					}

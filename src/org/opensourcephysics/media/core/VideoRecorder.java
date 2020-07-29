@@ -56,6 +56,14 @@ public interface VideoRecorder {
   public void createVideo(String fileName) throws IOException;
 
   /**
+   * Creates a new video with the specified file name.
+   *
+   * @param fileName name of the file to which the video will be written
+   * @throws IOException
+   */
+  public void createVideo(String fileName, String trkPath) throws IOException;
+
+  /**
    * Sets the size of the video.
    *
    * @param dimension the dimensions of the new video

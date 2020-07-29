@@ -1299,7 +1299,8 @@ public abstract class VideoAdapter implements Video {
 	protected String getAbsolutePath(String path) {
 		if (baseDir == null)
 			baseDir = XML.getDirectoryPath((String) getProperty("absolutePath"));
-		path = XML.getAbsolutePath(new File(baseDir + "/" + path));
+		if (baseDir != "" && !path.replace('\\',  '/').startsWith(baseDir))
+			path = XML.getAbsolutePath(new File(baseDir + "/" + path));
 		return path;
 	}
 
