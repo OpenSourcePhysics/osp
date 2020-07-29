@@ -89,6 +89,7 @@ import org.opensourcephysics.controls.XMLProperty;
 import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
+import org.opensourcephysics.numerics.Util;
 
 /**
  * A JPanel that manages a table of objects with editable names and expressions.
@@ -128,6 +129,16 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	// static fields
 	static DecimalFormat decimalFormat;
 	static DecimalFormat sciFormat0000;
+	
+	static {
+		decimalFormat = new DecimalFormat();
+		decimalFormat.setMaximumFractionDigits(4);
+		decimalFormat.setMinimumFractionDigits(0);
+		decimalFormat.setMaximumIntegerDigits(3);
+		decimalFormat.setMinimumIntegerDigits(1);
+		sciFormat0000 = Util.newDecimalFormat("0.0000E0"); //$NON-NLS-1$
+	}
+
 	protected static boolean undoEditsEnabled = true;
 	protected static String[] editTypes = { "add row", //$NON-NLS-1$
 			"delete row", "edit name", "edit expression" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -140,8 +151,6 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 
 	protected ArrayList<FObject> objects = new ArrayList<>();
 	protected String[] names = new String[0];
-	// BH unnec protected ArrayList<FObject> sortedObjects = new
-	// ArrayList<FObject>();
 	protected HashSet<String> forbiddenNames = new HashSet<String>();
 	protected boolean removablesAtTop = false;
 	protected BitSet circularErrors = new BitSet();
@@ -159,11 +168,11 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 
 	// GUI
 
-	private Table table;
-	private TableModel tableModel = new TableModel();
-	private CellEditor tableCellEditor = new CellEditor();
-	private CellRenderer tableCellRenderer = new CellRenderer();
-	private JScrollPane tableScroller;
+	protected Table table;
+	protected TableModel tableModel = new TableModel();
+	protected CellEditor tableCellEditor = new CellEditor();
+	protected CellRenderer tableCellRenderer = new CellRenderer();
+	
 	private JButton newButton;
 	private JButton cutButton;
 	private JButton copyButton;
@@ -173,17 +182,8 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	private TitledBorder titledBorder;
 	private AbstractButton[] customButtons;
 
-	protected int selectedRow;
-	protected int selectedCol;
-
-	static {
-		decimalFormat = new DecimalFormat();
-		decimalFormat.setMaximumFractionDigits(4);
-		decimalFormat.setMinimumFractionDigits(0);
-		decimalFormat.setMaximumIntegerDigits(3);
-		decimalFormat.setMinimumIntegerDigits(1);
-		sciFormat0000 = org.opensourcephysics.numerics.Util.newDecimalFormat("0.0000E0"); //$NON-NLS-1$
-	}
+	private int selectedRow;
+	private int selectedCol;
 
 	/**
 	 * No-arg constructor
@@ -362,7 +362,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			evaluateAll();
 			tableModel.fireTableStructureChanged();
 			// select row
-			if (row >= 0) {
+			if (table != null && row >= 0) {
 				table.changeSelection(row, 1, false, false);
 			}
 			// inform and pass undoable edit to listeners
@@ -503,17 +503,22 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent e) {
-		String name = e.getPropertyName();
-		if (name.equals("focus") || name.equals("edit")) { //$NON-NLS-1$ //$NON-NLS-2$
+		switch (e.getPropertyName()) {
+		case "focus": //$NON-NLS-1$
+		case "edit": //$NON-NLS-1$
 			// another table gained focus or changed
-			table.clearSelection();
-			table.rowToSelect = 0;
-			table.columnToSelect = 0;
-			table.selectOnFocus = false;
+			if (haveGUI) {
+				table.clearSelection();
+				table.rowToSelect = 0;
+				table.columnToSelect = 0;
+				table.selectOnFocus = false;
+			}
 			refreshButtons();
-		} else if (e.getPropertyName().equals("clipboard")) { //$NON-NLS-1$
+			break;
+		case "clipboard": //$NON-NLS-1$
 			// clipboard contents have changed
 			refreshButtons();
+			break;
 		}
 	}
 
@@ -823,7 +828,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		setBorder(titledBorder);
 		// create table and scroller
 		table = new Table(tableModel);
-		tableScroller = new JScrollPane(table);
+		JScrollPane tableScroller = new JScrollPane(table);
 		tableScroller.createHorizontalScrollBar();
 		add(tableScroller, BorderLayout.CENTER);
 		if (addButtonPanel) {
@@ -929,7 +934,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	 * Refreshes button states.
 	 */
 	protected void refreshButtons() {
-		if (!addButtonPanel)
+		if (!addButtonPanel || !haveGUI)
 			return;
 		boolean b = getSelectedObject() != null;
 		copyButton.setEnabled(b);
@@ -1116,6 +1121,8 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	 * Returns the currently selected object, if any.
 	 */
 	protected FObject getSelectedObject() {
+		if (table == null)
+			return null;
 		int row = table.getSelectedRow();
 		if (row == -1) {
 			return null;
@@ -1127,6 +1134,8 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	 * Returns the currently selected objects, if any.
 	 */
 	protected FObject[] getSelectedObjects() {
+		if (table == null)
+			return null;
 		int[] rows = table.getSelectedRows();
 		FObject[] selected = new FObject[rows.length];
 		for (int i = 0; i < rows.length; i++) {
