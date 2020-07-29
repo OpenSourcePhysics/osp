@@ -456,34 +456,34 @@ public class XML {
     return ""; //$NON-NLS-1$
   }
 
-  /**
-   * Gets the absolute path of the specified file.
-   *
-   * @param file the file
-   * @return the absolute path, with forward slashes
-   */
-  public static String getAbsolutePath(File file) {
-    if(file==null) {
-      return null;
-    }
-    String path = forwardSlash(file.getAbsolutePath());
-    int n = path.indexOf("/../"); //$NON-NLS-1$
-    while (n>-1) {
-    	String pre = path.substring(0, n);
-    	int m = pre.lastIndexOf("/"); //$NON-NLS-1$
-    	if (m>-1) {
-      	String post = path.substring(n+3);
-    		path = pre.substring(0, m)+post;
-    		n = path.indexOf("/../"); //$NON-NLS-1$
-    	}
-    }
-    n = path.indexOf("/./"); //$NON-NLS-1$
-    while (n>-1) {
-    	path = path.substring(0, n)+path.substring(n+2);
-    	n = path.indexOf("/./"); //$NON-NLS-1$
-    }
-    return path;
-  }
+	/**
+	 * Gets the absolute path of the specified file.
+	 *
+	 * @param file the file
+	 * @return the absolute path, with forward slashes
+	 */
+	public static String getAbsolutePath(File file) {
+		if (file == null) {
+			return null;
+		}
+		String path = forwardSlash(file.getAbsolutePath());
+		int n = path.indexOf("/../"); //$NON-NLS-1$
+		while (n >= 0) {
+			String pre = path.substring(0, n);
+			int m = pre.lastIndexOf("/"); //$NON-NLS-1$
+			if (m < 0)
+				break;
+			String post = path.substring(n + 3);
+			path = pre.substring(0, m) + post;
+			n = path.indexOf("/../"); //$NON-NLS-1$
+		}
+		n = path.indexOf("/./"); //$NON-NLS-1$
+		while (n >= 0) {
+			path = path.substring(0, n) + path.substring(n + 2);
+			n = path.indexOf("/./"); //$NON-NLS-1$
+		}
+		return path;
+	}
 
   /**
    * Resolves the name of a file specified relative to a base path.
