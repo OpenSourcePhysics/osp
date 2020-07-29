@@ -2400,7 +2400,7 @@ public class ResourceLoader {
 				}
 			}
 			String originalName = resource.startsWith("./") ? modelPath + resource.substring(2) : resource; //$NON-NLS-1$
-			File result = extract(originalName, targetFile, true);
+			File result = extract(originalName, targetFile);
 			if (result == null)
 				return originalName;
 		}
@@ -2528,9 +2528,9 @@ public class ResourceLoader {
 //	    return null;
 //	  }
 //
-	static public File extract(String filename, File target) {
-		return extract(filename, target, true);
-	}
+//	static public File extract(String filename, File target) {
+//		return extract(filename, target);
+//	}
 
 	/**
 	 * Extracts a file using the ResourceLoader utility
@@ -2539,7 +2539,7 @@ public class ResourceLoader {
 	 * @param target   File The target file for the extracted file
 	 * @return File The extracted file, null if failed
 	 */
-	static public File extract(String filename, File target, boolean forceFileCreation) {
+	static public File extract(String filename, File target) {
 		// System.out.println("Extract filename="+filename); //$NON-NLS-1$
 		if ((filename == null) || (filename.trim().length() <= 0) || (target == null)) {
 			return null;
@@ -2552,16 +2552,16 @@ public class ResourceLoader {
 				inputStream = OSPRuntime.applet.getClass().getResourceAsStream(filename);
 			}
 			if (inputStream == null) { // use resource loader when not an applet
-				if (isHTTP(filename)) { // $NON-NLS-1$
-					if (isZipEntry(filename, true) >= 0) {
-						File extracted = extractFileFromZIP(filename, target, false, forceFileCreation);
-						if (extracted != null)
-							return extracted;
+				boolean isZip = (isZipEntry(filename, true) >= 0);
+				if (OSPRuntime.isJS) {
+					if (isZip) {
+						return extractFileFromZIP(filename, target, false, true);
 					}
-					return null;
+				} else if (isHTTP(filename)) {
+					return (isZip ? extractFileFromZIP(filename, target, false, true) : null);
 				}
-				Resource is = getResource(filename, false);
-				inputStream = (is == null ? null : is.openInputStream());
+				Resource res = getResource(filename, false);
+				inputStream = (res == null ? null : res.openInputStream());
 			}
 			if (inputStream == null) {
 				return null;
