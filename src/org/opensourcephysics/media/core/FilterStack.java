@@ -76,15 +76,17 @@ public class FilterStack extends Filter implements PropertyChangeListener {
 	}
 
 	public void addFilters(Collection<Filter> stack) {
-		for (Filter f : stack) {
-			addFilter(f);			
-		}
+		if (stack != null)
+			for (Filter f : stack) {
+				addFilter(f);
+			}
 	}
 
 	public void addFilters(FilterStack stack) {
-		for (Filter f : stack.filters) {
-			addFilter(f);			
-		}
+		if (stack != null)
+			for (Filter f : stack.filters) {
+				addFilter(f);
+			}
 	}
 
 	private void notifyUpdate(Filter oldFilter, Filter newFilter) {
