@@ -52,6 +52,7 @@ public class JSMovieVideoType extends MovieVideoType {
    */
   public JSMovieVideoType(VideoFileFilter filter) {
   	super(filter);
+	setRecordable(false);
   }
 
   /**

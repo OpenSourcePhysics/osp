@@ -43,7 +43,6 @@ import org.opensourcephysics.media.core.DoubleArray;
 import org.opensourcephysics.media.core.ImageCoordSystem;
 import org.opensourcephysics.media.core.Video;
 import org.opensourcephysics.media.core.VideoAdapter;
-import org.opensourcephysics.media.core.VideoClip;
 import org.opensourcephysics.media.core.VideoFileFilter;
 import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.media.core.VideoType;
@@ -80,9 +79,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		// add common video types 
 		for (String ext : VideoIO.JS_VIDEO_EXTENSIONS) { // {"mov", "ogg", "mp4"}
 			VideoFileFilter filter = new VideoFileFilter(ext, new String[] { ext });
-			MovieVideoType movieType = new JSMovieVideoType(filter);
-			movieType.setRecordable(false);
-			VideoIO.addVideoType(movieType);
+			VideoIO.addVideoType(new JSMovieVideoType(filter));
 			ResourceLoader.addExtractExtension(ext);
 		}
 		registered = true;

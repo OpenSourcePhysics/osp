@@ -534,10 +534,10 @@ public class VideoIO {
 	 * @param canRecord  true if we need a recorder (TrackerIO and VideoGrabber only)
 	 * @return the video types
 	 */
-	public static ArrayList<VideoType> getVideoTypes(boolean canRecord) {
+	public static ArrayList<VideoType> getVideoTypes(boolean mustBeWritable) {
 		ArrayList<VideoType> available = new ArrayList<VideoType>();
 		for (VideoType next : videoTypes) {
-			if (!canRecord || OSPRuntime.canRecordMovieFiles && next.canRecord())
+			if (!mustBeWritable || next.canRecord())
 				available.add(next);
 		}
 		return available;
