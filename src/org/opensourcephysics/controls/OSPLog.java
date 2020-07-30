@@ -78,7 +78,7 @@ public class OSPLog extends JFrame {
 	/**
 	 * set to false to use standard System.out in Eclipse testing
 	 */
-	private static final boolean divertSysOut = true;
+	private static final boolean divertSysOut = false;
 	
 	
 	static int nLog;
