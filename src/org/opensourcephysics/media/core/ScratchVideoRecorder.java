@@ -404,12 +404,11 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 			Runnable runner = new Runnable() {
 				@Override
 				public void run() {
+					File dir = chooser.getCurrentDirectory();
+					String path = XML.getResolvedPath(name, dir.getAbsolutePath());
+					chooser.setSelectedFile(new File(path));
 					if (chooserField != null) {
 						chooserField.setText(name);
-					} else {
-						File dir = chooser.getCurrentDirectory();
-						String path = XML.getResolvedPath(name, dir.getAbsolutePath());
-						chooser.setSelectedFile(new File(path));
 					}
 				}
 
@@ -483,9 +482,10 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 			filename += "." + ext; //$NON-NLS-1$
 		}
 		chooser.setSelectedFile(new File(filename));
-		chooserField.setText(filename); // just in case line above not enough!
+		if (chooserField != null)
+			chooserField.setText(filename); // just in case line above not enough!
 		ignoreChooser = false;
-		int result = chooser.showDialog(null, MediaRes.getString("Dialog.Button.Save")); //$NON-NLS-1$
+		int result = chooser.showSaveDialog(null);
 		if (result == JFileChooser.APPROVE_OPTION) {
 			file = chooser.getSelectedFile();
 			file = getFileToBeSaved(file);
