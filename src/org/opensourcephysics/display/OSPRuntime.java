@@ -147,7 +147,7 @@ public class OSPRuntime {
 	
 	public static boolean autoAddLibrary = !isJS; // for TrackerIO
 
-	public static boolean canRecordMovieFiles = true;//!isJS; // ImageVideoType or MovieVideoType.recordable default
+	public static boolean canRecordMovieFiles = true; // was !isJS
 
 	public static final boolean checkImages = false; // LibraryTreeNode
 
