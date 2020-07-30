@@ -1,0 +1,111 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<head>
+		<title>CCapture.js example with Conway's Game of Life in 3D</title>
+		<meta charset="utf-8">	
+		<link rel="stylesheet" href="buttons.css" type="text/css" media="screen" title="no title" charset="utf-8">
+		<style type="text/css">
+		#download-video-button{
+			display: none;
+		}
+		</style>
+	</head>
+	<body>
+	
+	<div id="title">
+		<input type="radio" name="encoder" value="webm" checked="checked" >WebM</input>
+		<input type="radio" name="encoder" value="gif" >GIF</input>
+		
+		<a class="button" href="#" id="start-capturing-button" >Capture one frame</a> <span id="frames"></span>
+		<a class="button" href="#" id="download-video-button" >Stop recording and view video</a>
+
+	</div>
+
+	<script src="gif.js"></script>
+	<script src="CCapture.js"></script>
+	<script src="webm-writer-0.2.0.js"></script>
+	<script src="download.js"></script>
+	
+	
+	<script type="text/javascript" >
+
+    var canvas = document.createElement('canvas');
+    canvas.style.position = "absolute";
+    canvas.style.width = "640px";
+    canvas.style.height = "360px";	
+    canvas.style.left = "620px";
+    canvas.style.background="yellow";
+    canvas.width = 1920;
+    canvas.height = 1080;
+    
+	var video = document.createElement( 'video' );
+    video.style.position = "absolute";
+    video.style.width = "640px";
+    video.style.height = "360px";	
+    video.style.background="#808000";
+
+	video.autoplay = true;
+	video.volume = 0;
+	video.src = '../duet.mp4';
+
+
+	var nFrames = 0;
+	var capturer;
+	var container;
+	function init() {
+
+		document.body.appendChild(video);
+		document.body.appendChild(canvas);
+
+		capturer = null;
+		
+		var sCB = document.getElementById( 'start-capturing-button' ),
+			dVB = document.getElementById( 'download-video-button' ),
+			progress = document.getElementById( 'progress' );
+		
+		sCB.addEventListener( 'click', function( e ) {
+	
+			if (!capturer){
+			  capturer = new CCapture( { 
+				verbose: true, 
+				framerate: 30,
+				motionBlurFrames: 1,
+				quality: 90,
+				format: document.querySelector('input[name="encoder"]:checked').value,
+				workersPath: 'js/',
+				onProgress: function( p ) { progress.style.width = ( p * 100 ) + '%' }
+			  } );
+			  capturer.ready();
+			  dVB.style.display = 'block';
+			}
+			
+			
+	
+			canvas.getContext("2d").drawImage(video,0,0);
+			capturer.capture(canvas);
+	
+			document.getElementById("frames").innerHTML = ++nFrames
+///			capturer.start();
+//			this.style.display = 'none';
+//			start();
+
+			e.preventDefault();
+		}, false );
+		
+		dVB.addEventListener( 'click', function( e ) {
+			capturer.stop();
+			this.style.display = 'none';
+			//this.setAttribute( 'href',  );
+			capturer.save();
+		}, false );
+
+	}
+	
+	window.addEventListener( 'load', init, false );
+
+
+	</script>
+	
+</body>
+	
+</html>
