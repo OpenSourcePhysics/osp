@@ -1131,6 +1131,14 @@ public class ResourceLoader {
 			}
 			return success;
 		}
+		if (isZipEntry(toUnix(inFile.getAbsolutePath()), false) >= 0) {
+			try {
+				getZipEntryBytes(inFile.getAbsolutePath(), outFile);
+				return true;
+			} catch (IOException e) {
+				return false;
+			}
+		}
 		byte[] buffer = new byte[16384]; // 2^14
 		try {
 			InputStream in = new FileInputStream(inFile);
@@ -1147,9 +1155,14 @@ public class ResourceLoader {
 			in.close();
 			out.close();
 		} catch (IOException ex) {
+			ex.printStackTrace();
 			return false;
 		}
 		return true;
+	}
+
+	private static String toUnix(String path) {
+		return path.replace('\\', '/');
 	}
 
 	/**
@@ -2588,6 +2601,15 @@ public class ResourceLoader {
 	// Private methods
 	// -----------------------------------
 
+	/**
+	 * Check for a zip entry format "!/" in a string filename, optionally checking to match an 
+	 * extension, one of [exe,zip,jar,trz]. For convenience, returns the position in the string
+	 * of the "!/" marker, or -1 if not found.
+	 * 
+	 * @param filename
+	 * @param checkExt
+	 * @return the position of "!/", or -1 if not found.
+	 */
 	private static int isZipEntry(String filename, boolean checkExt) {
 		int n = filename.indexOf("!/");
 		return (n >= 4 && (!checkExt || ".exe.zip.jar.trz".indexOf(filename.substring(n - 4, n)) >= 0) ? n : -1);
