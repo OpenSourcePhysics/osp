@@ -370,6 +370,8 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 		checkDatasetIndex(datasetIndex);
 		Dataset dataset = datasets.get(datasetIndex);
 		dataset.setXYColumnNames(xColumnName, yColumnName);
+		if ("frame".equals(yColumnName))
+		  frameDataset = dataset;
 	}
 
 	/**

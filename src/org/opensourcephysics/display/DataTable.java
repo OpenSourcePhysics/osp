@@ -1089,7 +1089,7 @@ public class DataTable extends JTable {
 		 */
 		@Override
 		public synchronized int getRowCount() {
-			if (rowCount >= 0)
+			if (rowCount > 0)
 				return rowCount;
 			int n = 0;
 			for (int i = dataTableElements.size(); --i >= 0;) {
@@ -2272,18 +2272,26 @@ public class DataTable extends JTable {
 		// model for this table assumed to be a SortDecorator
 		// always reset the decorator before changing table structure
 		int col = dataTableModel.getSortedColumn();
-		dataTableModel.resetSort();
 		// save selected rows and columns
 		BitSet rows = getSelectedTableRowsBS();
 		BitSet cols = getSelectedTableColumnsBS();
 		// refresh table and sort if needed
 		refreshTableNow(mode);
-		if (col >= 0)
-			sort(col);
-		// restore selected rows and columns
-		// BitSet method uses block addition
-		selectTableRowsBS(rows, 0);
-		selectTableColsBS(cols);
+		if (col >= 0) {
+			switch (mode) {
+			// TODO more here
+			case MODE_TRACK_STEP:
+				break;
+			default:
+				dataTableModel.resetSort();
+				sort(col);
+				// restore selected rows and columns
+				// BitSet method uses block addition
+				selectTableRowsBS(rows, 0);
+				selectTableColsBS(cols);
+				break;
+			}
+		}
 	}
 
     /**
@@ -2469,6 +2477,11 @@ public class DataTable extends JTable {
 	protected int getModelRow(int i) {
 		return dataTableModel.getModelRow(i);
 	}
+
+	public void scrollRowToVisible(int row) {
+		scrollRectToVisible(getCellRect(row, 0, true));
+	}
+
 
 }
 
