@@ -1453,7 +1453,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 					}
 			
 		});		
-		chooser.choose(names, names, values, null, new boolean[names.size()], new boolean[names.size()]);
+		chooser.choose(names, names, values, null, null, null);
 		// beween these two statements in Java, the above actionPerformed will occur.
 		// but JavaScript is going to return prior to that. 
 		return isOK[0];

@@ -242,7 +242,7 @@ public class DataBuilder extends FunctionTool {
 
 				});
 		listChooser.setSeparator(" = "); //$NON-NLS-1$
-		listChooser.choose(choices, names, expressions, selected);
+		listChooser.choose(choices, names, expressions, null, selected, null);
 	}
 
 }

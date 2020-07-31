@@ -680,7 +680,7 @@ public class FitBuilder extends FunctionTool {
 					}
 
 				});
-		listChooser.choose(choices, names, expressions, selected);
+		listChooser.choose(choices, names, expressions, null, selected, null);
 	}
 
 	/**

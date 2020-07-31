@@ -46,7 +46,7 @@ public class ListChooser extends JDialog {
 	private boolean[] selections;
 	private JCheckBox[] checkBoxes;
 	private JLabel instructions;
-	private boolean applyChanges = false;
+	private boolean applyChanges;
 	private String separator = ":  "; //$NON-NLS-1$
 	private Font lightFont;
 	private ActionListener actionListener;
@@ -108,6 +108,7 @@ public class ListChooser extends JDialog {
 		cancelButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				applyChanges = false;
 				setVisible(false);
 			}
 
@@ -182,86 +183,12 @@ public class ListChooser extends JDialog {
 	 * Allows the user to choose from the supplied list. Items not selected are
 	 * removed from the list.
 	 *
-	 * @param choices a collection of objects to choose from
-	 * @param names   an optional collection of descriptive names
-	 * @return <code>true</code> if OK button was clicked
-	 */
-	public void choose(Collection<?> choices, Collection<String> names) {
-		choose(choices, names, null);
-	}
-
-	/**
-	 * Allows the user to choose from the supplied list. Items not selected are
-	 * removed from the list.
-	 *
-	 * @param choices a collection of objects to choose from
-	 * @param names   an optional collection of descriptive names
-	 * @param values  an optional collection of values
-	 * @return <code>true</code> if OK button was clicked
-	 */
-	public void choose(Collection<?> choices, Collection<String> names, Collection<?> values) {
-		boolean[] selected = new boolean[choices.size()]; // all false by default
-		choose(choices, names, values, selected);
-	}
-
-	/**
-	 * Allows the user to choose from the supplied list. Items not selected are
-	 * removed from the list.
-	 *
-	 * @param choices  a collection of objects to choose from
-	 * @param names    an optional collection of descriptive names
-	 * @param values   an optional collection of values
-	 * @param selected an array of initially selected states
-	 * @return <code>true</code> if OK button was clicked
-	 */
-	public void choose(Collection<?> choices, Collection<String> names, Collection<?> values, boolean[] selected) {
-		boolean[] disabled = new boolean[choices.size()]; // all false by default
-		choose(choices, names, values, selected, disabled);
-	}
-
-	/**
-	 * Allows the user to choose from the supplied list. Items not selected are
-	 * removed from the list.
-	 *
-	 * @param choices  a collection of objects to choose from
-	 * @param names    an optional collection of descriptive names
-	 * @param values   an optional collection of values
-	 * @param selected an array of initially selected states
-	 * @param disabled an array of disabled states (true = disabled)
-	 * @return <code>true</code> if OK button was clicked
-	 */
-	public void choose(Collection<?> choices, Collection<String> names, Collection<?> values, boolean[] selected,
-			boolean[] disabled) {
-		choose(choices, names, values, null, selected, disabled);
-	}
-
-	/**
-	 * Allows the user to choose from the supplied list. Items not selected are
-	 * removed from the list.
-	 *
 	 * @param choices      a collection of objects to choose from
 	 * @param names        an optional collection of descriptive names
 	 * @param values       an optional collection of values
 	 * @param descriptions an optional collection of descriptions
-	 * @param selected     an array of initially selected states
-	 * @return <code>true</code> if OK button was clicked
-	 */
-	public void choose(Collection<?> choices, Collection<String> names, Collection<?> values,
-			Collection<String> descriptions, boolean[] selected) {
-		boolean[] disabled = new boolean[choices.size()]; // all false by default
-		choose(choices, names, values, descriptions, selected, disabled);
-	}
-
-	/**
-	 * Allows the user to choose from the supplied list. Items not selected are
-	 * removed from the list.
-	 *
-	 * @param choices      a collection of objects to choose from
-	 * @param names        an optional collection of descriptive names
-	 * @param values       an optional collection of values
-	 * @param descriptions an optional collection of descriptions
-	 * @param selected     an array of initially selected states
-	 * @param disabled     an array of disabled states (true = disabled)
+	 * @param selected     an array of initially selected states or null if none selected
+	 * @param disabled     an array of disabled states (true = disabled) or null if none disabled
 	 * @return <code>true</code> if OK button was clicked  JAVA ONLY and when actionListener field is null
  	 */
 	public boolean choose(Collection<?> choices, Collection<String> names, Collection<?> values,
@@ -297,8 +224,8 @@ public class ListChooser extends JDialog {
 				}
 				checkBoxes[i] = new JCheckBox(text);
 			}
-			checkBoxes[i].setSelected(selected[i]);
-			checkBoxes[i].setEnabled(!disabled[i]);
+			checkBoxes[i].setSelected(selected != null && selected[i]);
+			checkBoxes[i].setEnabled(disabled == null || !disabled[i]);
 			checkBoxes[i].setBackground(Color.white);
 			checkBoxes[i].setFont(lightFont);
 			checkBoxes[i].setIconTextGap(10);
@@ -332,6 +259,10 @@ public class ListChooser extends JDialog {
 
 	}
 
+	public boolean wasCanceled() {
+		return !applyChanges;
+	}
+	
 	private boolean doAction() {
 		// fire ActionListener on closing
 		if (applyChanges) {
