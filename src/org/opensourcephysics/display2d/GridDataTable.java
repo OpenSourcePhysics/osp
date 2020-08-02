@@ -10,14 +10,14 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-
-import org.opensourcephysics.display.OSPRuntime;
 
 public class GridDataTable extends JTable implements ActionListener {
   static final Color PANEL_BACKGROUND = javax.swing.UIManager.getColor("Panel.background"); //$NON-NLS-1$
@@ -66,24 +66,20 @@ public void actionPerformed(ActionEvent evt) {
     tableChanged(new TableModelEvent(tableModel, TableModelEvent.HEADER_ROW));
   }
 
-  /**
-   *  Refresh the data in the DataTable, as well as other changes to the table,
-   *  such as row number visibility. Changes to the TableModels displayed in the
-   *  table will not be visible until this method is called.
-   */
-  public void refreshTable() {
-    if(refreshDelay>0) {
-      refreshTimer.start();
-    } else {
-    	OSPRuntime.postEvent(new Runnable() {
-        @Override
-		public synchronized void run() {
-          tableChanged(new TableModelEvent(tableModel, TableModelEvent.HEADER_ROW));
-        }
-
-      });
-    }
-  }
+	/**
+	 * Refresh the data in the DataTable, as well as other changes to the table,
+	 * such as row number visibility. Changes to the TableModels displayed in the
+	 * table will not be visible until this method is called.
+	 */
+	public void refreshTable() {
+		if (refreshDelay > 0) {
+			refreshTimer.start();
+		} else {
+			SwingUtilities.invokeLater(() -> {
+				tableChanged(new TableModelEvent(tableModel, TableModelEvent.HEADER_ROW));
+			});
+		}
+	}
 
   /**
    *  Returns an appropriate renderer for the cell specified by this row and

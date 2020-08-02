@@ -2469,13 +2469,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 * Refreshes the GUI.
 	 */
 	protected void refreshGUI() {
-		OSPRuntime.postEvent(new Runnable() {
-			@Override
-			public void run() {
-				refreshGUIAsync();
-			}
+		SwingUtilities.invokeLater(() -> {
+			refreshGUIAsync();
 		});
-
 	}
 
 	protected void refreshGUIAsync() {

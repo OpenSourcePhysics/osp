@@ -650,15 +650,12 @@ public TableCellEditor getCellEditor(int row, int column) {
 
   }
 
-  // refreshes the table
-  public void refresh() {
-	  OSPRuntime.postEvent(new Runnable() {
-      @Override
-	public synchronized void run() {
-        tableChanged(new TableModelEvent(tableModel, TableModelEvent.HEADER_ROW));
-      }
-    });
-  }
+	// refreshes the table
+	public void refresh() {
+		SwingUtilities.invokeLater(() -> {
+			tableChanged(new TableModelEvent(tableModel, TableModelEvent.HEADER_ROW));
+		});
+	}
 
   @Override
 public void tableChanged(TableModelEvent e) {

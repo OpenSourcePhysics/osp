@@ -19,6 +19,7 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -189,13 +190,9 @@ public class DataToolStatsTable extends JTable {
 	 * Refresh the data display in this table.
 	 */
 	public void refreshTable() {
-		OSPRuntime.postEvent(new Runnable() {
-			@Override
-			public synchronized void run() {
-				tableChanged(new TableModelEvent(statsModel, TableModelEvent.HEADER_ROW));
-				refreshCellWidths();
-			}
-
+		SwingUtilities.invokeLater(() -> {
+			tableChanged(new TableModelEvent(statsModel, TableModelEvent.HEADER_ROW));
+			refreshCellWidths();
 		});
 	}
 

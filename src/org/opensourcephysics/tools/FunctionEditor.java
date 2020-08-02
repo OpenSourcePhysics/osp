@@ -1776,11 +1776,8 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		}
 
 		void setInitialValue(final String stringValue) {
-			OSPRuntime.postEvent(new Runnable() {
-				@Override
-				public void run() {
-					setInitialValuesAsync(stringValue);
-				}
+			SwingUtilities.invokeLater(() -> {
+				setInitialValuesAsync(stringValue);
 			});
 		}
 

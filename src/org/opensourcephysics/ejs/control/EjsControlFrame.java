@@ -665,19 +665,9 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 			return; // nothing to print
 		}
 		messageFrame.setVisible(true);
-		if (SwingUtilities.isEventDispatchThread() || Thread.currentThread().getName().equals("main")) { //$NON-NLS-1$
-			messageArea.append(s);
-			return;
-		}
-		Runnable doLater = new Runnable() {
-			@Override
-			public void run() {
+	    OSPRuntime.postEvent(() -> {
 				messageArea.append(s);
-			}
-
-		};
-		// Update from the event queue.
-		java.awt.EventQueue.invokeLater(doLater);
+		});
 	}
 
 	/**
@@ -685,19 +675,9 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 	 */
 	@Override
 	public void clearMessages() {
-		if (SwingUtilities.isEventDispatchThread() || Thread.currentThread().getName().equals("main")) { //$NON-NLS-1$
-			messageArea.setText(""); //$NON-NLS-1$
-			return;
-		}
-		Runnable doLater = new Runnable() {
-			@Override
-			public void run() {
+		OSPRuntime.postEvent(() -> {
 				messageArea.setText(""); //$NON-NLS-1$
-			}
-
-		};
-		// Update from the event queue.
-		java.awt.EventQueue.invokeLater(doLater);
+			});
 	}
 
 	// private void appendMessageX(final String str) {

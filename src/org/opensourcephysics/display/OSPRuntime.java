@@ -1538,11 +1538,22 @@ public class OSPRuntime {
 		}
 	}
 
+	/**
+	 * BH created this to consolidate all the isEventDispatchThread calls, but 
+	 * those were all using runner.run() directly, and he has had no issues with
+	 * other programs. It is Swing, after all....
+	 * 
+	 * @param runner
+	 */
+	@Deprecated
 	public static void postEvent(Runnable runner) {
-		if (!isJS && SwingUtilities.isEventDispatchThread())
+		// BH I am not seeing any posts that would use invokeLater
+		if (isJS || SwingUtilities.isEventDispatchThread()) {
 			runner.run();
-		else
+		} else {
 			SwingUtilities.invokeLater(runner);
+			
+		}
 	}
 
 	public static void dispatchEventWait(Runnable runner) {

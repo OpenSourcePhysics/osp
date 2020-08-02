@@ -585,7 +585,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 *         <code>false <\code> otherwise
 	 */
 	protected boolean checkWorkingImage() {
-		if (SwingUtilities.isEventDispatchThread()) {
+		if (OSPRuntime.isJS || SwingUtilities.isEventDispatchThread()) {
 			return workingImage();
 		}
 		try {

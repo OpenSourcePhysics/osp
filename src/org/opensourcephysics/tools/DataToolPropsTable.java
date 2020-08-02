@@ -37,6 +37,7 @@ import javax.swing.SpinnerListModel;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -53,7 +54,6 @@ import javax.swing.table.TableColumnModel;
 import org.opensourcephysics.display.CellBorder;
 import org.opensourcephysics.display.Dataset;
 import org.opensourcephysics.display.DrawingPanel;
-import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.tools.DataToolTable.WorkingDataset;
 
@@ -183,13 +183,9 @@ final public class DataToolPropsTable extends JTable {
 	 * Refresh the data display in this table.
 	 */
 	public void refreshTable() {
-		OSPRuntime.postEvent(new Runnable() {
-			@Override
-			public synchronized void run() {
-				tableChanged(new TableModelEvent(propsModel, TableModelEvent.HEADER_ROW));
-				refreshCellWidths();
-			}
-
+		SwingUtilities.invokeLater(() -> {
+			tableChanged(new TableModelEvent(propsModel, TableModelEvent.HEADER_ROW));
+			refreshCellWidths();
 		});
 	}
 

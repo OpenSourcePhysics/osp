@@ -338,7 +338,7 @@ public class HighlightableDataset extends Dataset implements Interactive {
 	}
 
 	public void setHighlights(BitSet bs) {
-	//	OSPLog.debug("HDT set " + bs);
+		highlighted.clear();
 		highlighted.or(bs);
 	}
 

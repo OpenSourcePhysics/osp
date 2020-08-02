@@ -125,6 +125,7 @@ public class DataTable extends JTable {
 	public static final int MODE_APPEND_ROW = 0x2100;
 	public static final int MODE_INSERT_ROW = 0x2200;
 	public static final int MODE_DELETE_ROW = 0x2300;
+	public static final int MODE_UPDATE_ROWS = 0x2400;
 
 	private static final int MODE_MASK_COL = 0x4000;
 	public static final int MODE_COLUMN = 0x4100;
@@ -656,6 +657,9 @@ public class DataTable extends JTable {
 			// column (structure) changes
 			//
 		default:
+		case MODE_UPDATE_ROWS: // 0x2400;
+			dataTableModel.resetSort();
+			// fall through
 		case MODE_CREATE: // 0x01;
 		case MODE_CLEAR: // 0x02;
 		case MODE_MODEL: // 0x03;
@@ -691,6 +695,7 @@ public class DataTable extends JTable {
 			mask = MODE_MASK_TRACK; // 0x1000;
 			columnsChanged = false;
 			break;
+			
 		case MODE_INSERT_ROW: // 0x2100;
 		case MODE_DELETE_ROW: // 0x2200;
 		case MODE_APPEND_ROW: // 0x2300;
@@ -711,7 +716,7 @@ public class DataTable extends JTable {
 			break;
 		}
 
-		OSPLog.debug(">>>>DataTable.refreshTableNow " + Integer.toHexString(mode) + " " + columnsChanged);
+//		OSPLog.debug(">>>>DataTable.refreshTableNow " + Integer.toHexString(mode) + " " + columnsChanged);
 
 
 		dataTableModel.refresh(mask);
@@ -720,8 +725,8 @@ public class DataTable extends JTable {
 		} else {
 			repaint();
 		}
-		OSPLog.debug(Performance.timeCheckStr("DataTable.refreshTable1 " + Integer.toHexString(mode),
-		Performance.TIME_MARK));
+//		OSPLog.debug(Performance.timeCheckStr("DataTable.refreshTable1 " + Integer.toHexString(mode),
+//		Performance.TIME_MARK));
 	}
 
 	/**
@@ -1097,8 +1102,6 @@ public class DataTable extends JTable {
 				int stride = dte.getStride();
 				n = Math.max(n, (dte.tableModel.getRowCount() + stride - 1) / stride);
 			}
-			if (n > 40)
-			System.out.println("DataTable rowCount now " + n);
 			return rowCount = n;
 		}
 
@@ -1452,7 +1455,7 @@ public class DataTable extends JTable {
 			}
 			updateFormats();
 			updateColumnModel(null);
-			OSPLog.debug("OSPDataTableModel rebuild " + type);
+//			OSPLog.debug("OSPDataTableModel rebuild " + type);
 		}
 
 		protected int[] getSelectedModelRows() {

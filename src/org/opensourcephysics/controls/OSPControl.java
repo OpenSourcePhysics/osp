@@ -479,19 +479,9 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
 	 */
 	@Override
 	public void print(final String s) {
-		if (SwingUtilities.isEventDispatchThread() || Thread.currentThread().getName().equals("main")) { //$NON-NLS-1$
-			messageTextArea.append(s);
-			return;
-		}
-		Runnable doLater = new Runnable() {
-			@Override
-			public void run() {
+	    OSPRuntime.postEvent(() -> {
 				messageTextArea.append(s);
-			}
-
-		};
-		// Update from the event queue.
-		java.awt.EventQueue.invokeLater(doLater);
+		});
 	}
 
 	/**
@@ -499,19 +489,10 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
 	 */
 	@Override
 	public void clearMessages() {
-		if (SwingUtilities.isEventDispatchThread() || Thread.currentThread().getName().equals("main")) { //$NON-NLS-1$
-			messageTextArea.setText(""); //$NON-NLS-1$
-			return;
-		}
-		Runnable doLater = new Runnable() {
-			@Override
-			public void run() {
+		OSPRuntime.postEvent(() -> {
 				messageTextArea.setText(""); //$NON-NLS-1$
-			}
 
-		};
-		// Update from the event queue.
-		java.awt.EventQueue.invokeLater(doLater);
+		});
 	}
 
 	/**

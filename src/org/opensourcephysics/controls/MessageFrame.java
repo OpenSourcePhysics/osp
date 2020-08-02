@@ -33,6 +33,7 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ToolsRes;
 
@@ -274,28 +275,18 @@ public class MessageFrame extends JFrame {
     if((APPLET_MESSAGEFRAME==null)||!APPLET_MESSAGEFRAME.isDisplayable()) {
       createAppletMessageFrame();
     }
-
-    Runnable refreshText = new Runnable() {
-      @Override
-	public synchronized void run() {
-        try {
-          Document doc = APPLET_MESSAGEFRAME.textPane.getDocument();
-          doc.insertString(doc.getLength(), msg+'\n', style);
-          // scroll to display new message
-          Rectangle rect = APPLET_MESSAGEFRAME.textPane.getBounds();
-          rect.y = rect.height;
-          APPLET_MESSAGEFRAME.textPane.scrollRectToVisible(rect);
-        } catch(BadLocationException ex) {
-          System.err.println(ex);
-        }
-      }
-
-    };
-    if(SwingUtilities.isEventDispatchThread()) {
-      refreshText.run();
-    } else {
-      SwingUtilities.invokeLater(refreshText);
-    }
+    OSPRuntime.postEvent(() -> {
+            try {
+              Document doc = APPLET_MESSAGEFRAME.textPane.getDocument();
+              doc.insertString(doc.getLength(), msg+'\n', style);
+              // scroll to display new message
+              Rectangle rect = APPLET_MESSAGEFRAME.textPane.getBounds();
+              rect.y = rect.height;
+              APPLET_MESSAGEFRAME.textPane.scrollRectToVisible(rect);
+            } catch(BadLocationException ex) {
+              System.err.println(ex);
+            }
+        });
   }
   /*
    * public static void main(String[] args) {

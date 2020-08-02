@@ -285,12 +285,8 @@ public class LaunchPanel extends JPanel {
 						if (displayTab.url.getContent() != null) {
 							Launcher.HTMLPane html = launcher.getHTMLTab(tabCount);
 							java.net.URL theURL = ((tabNumber == tabCount) && (url != null)) ? url : displayTab.url;
-							OSPRuntime.postEvent(new Runnable() {
-								@Override
-								public void run() {
-									launchHtml(html, theURL, displayTab.hyperlinksEnabled && node.enabled);
-								}
-
+							SwingUtilities.invokeLater(() -> {
+								launchHtml(html, theURL, displayTab.hyperlinksEnabled && node.enabled);
 							});
 							if (!isBuilder) {
 								String title = (displayTab.title == null) ? noTitle : displayTab.title;

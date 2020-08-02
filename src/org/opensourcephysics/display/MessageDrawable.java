@@ -57,9 +57,6 @@ public class MessageDrawable implements Drawable {
 	protected int fontsize = 12; // The font size
 	protected int fontstyle = Font.PLAIN; // The font style
 	protected boolean ignoreRepaint = false;
-
-	protected PropertyChangeListener guiChangeListener;
-
 	/**
 	 * JLabel mode uses a panel reference
 	 */
@@ -105,17 +102,13 @@ public class MessageDrawable implements Drawable {
 			});
 		}
 		font = new Font(fontname, fontstyle, fontsize);
-		guiChangeListener = new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent e) {
-				System.err.println("Property changed =" + e);
-				if (e.getPropertyName().equals(FontSizer.PROPERTY_LEVEL)) { // $NON-NLS-1$
-					int level = ((Integer) e.getNewValue()).intValue();
-					setFontLevel(level);
-				}
+		FontSizer.addPropertyChangeListener(FontSizer.PROPERTY_LEVEL, (e)-> {
+			System.err.println("Property changed =" + e);
+			if (e.getPropertyName().equals(FontSizer.PROPERTY_LEVEL)) { // $NON-NLS-1$
+				int level = ((Integer) e.getNewValue()).intValue();
+				setFontLevel(level);
 			}
-		};
-		FontSizer.addPropertyChangeListener(FontSizer.PROPERTY_LEVEL, guiChangeListener); // $NON-NLS-1$
+		}); 
 	}
 
 	public void setIgnoreRepaint(boolean ignore) {
