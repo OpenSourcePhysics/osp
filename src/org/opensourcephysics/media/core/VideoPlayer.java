@@ -43,8 +43,6 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
@@ -53,7 +51,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -249,9 +246,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		clipControl.addPropertyChangeListener(this);
 		getVideoClip().addPropertyChangeListener(this);
 		updatePlayButtons(false);
-		updateSlider();
-		setReadoutTypes("frame time step", "frame"); //$NON-NLS-1$ //$NON-NLS-2$
-		refresh();
+		updateSlider("refresh", null);
 	}
 
 	/**
@@ -308,9 +303,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 			updatePlayButtons(clipControl.isPlaying());
 			updateLoopButton(clipControl.isLooping());
 			updateReadout();
-			updateSlider();
-			firePropertyChange(PROPERTY_VIDEOPLAYER_VIDEOCLIP, oldClip, clip);
-			System.gc();
+			updateSlider("newClip", oldClip);
 		}
 	}
 
@@ -606,49 +599,51 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 			updatePlayButtons(clipControl.isPlaying());
 			firePropertyChange(PROPERTY_VIDEOPLAYER_STEPNUMBER, null, e.getNewValue());
 			// to VideoPanel
-			break;
+			return;
 		case ClipControl.PROPERTY_CLIPCONTROL_FRAMEDURATION:
 			updateReadout();
 			firePropertyChange(PROPERTY_VIDEOPLAYER_FRAMEDURATION, null, e.getNewValue());
 			// to VideoPanel //$NON-NLS-1$
-			break;
+			return;
 		case ClipControl.PROPERTY_CLIPCONTROL_LOOPING:
 			boolean looping = ((Boolean) e.getNewValue()).booleanValue();
 			updateLoopButton(looping);
-			break;
+			return;
 		case ClipControl.PROPERTY_CLIPCONTROL_PLAYING:
 			boolean playing = ((Boolean) e.getNewValue()).booleanValue();
 			updatePlayButtons(playing);
 			firePropertyChange(PROPERTY_VIDEOPLAYER_PLAYING, null, e.getNewValue()); // to VideoPanel
-			break;
+			return;
 		case ClipControl.PROPERTY_CLIPCONTROL_RATE: // from ClipControl
 			rateSpinner.setValue(new Double(getRate()));
-			break;
+			return;
 		case VideoClip.PROPERTY_VIDEOCLIP_STEPCOUNT: // from VideoClip
 			updatePlayButtons(clipControl.isPlaying());
 			updateReadout();
-			updateSlider();
 			break;
 		case VideoClip.PROPERTY_VIDEOCLIP_FRAMECOUNT: // from VideoClip
-			updateSlider();
 			break;
 		case VideoClip.PROPERTY_VIDEOCLIP_STEPSIZE: // from VideoClip
 			updateReadout();
-			updateSlider();
 			break;
 		case VideoClip.PROPERTY_VIDEOCLIP_STARTFRAME: // from VideoClip
 			updateReadout();
-			updateSlider();
 			break;
 		case VideoClip.PROPERTY_VIDEOCLIP_STARTTIME: // from VideoClip
 			updateReadout();
+			return;
+		default:
+			return;
 		}
+		updateSlider("property", e);
 	}
 
 	/**
 	 * Refreshes the GUI.
 	 */
 	public void refresh() {
+		if (readoutType == null)
+			return;
 		stepButton.setToolTipText(MediaRes.getString("VideoPlayer.Button.StepForward.ToolTip")); //$NON-NLS-1$
 		backButton.setToolTipText(MediaRes.getString("VideoPlayer.Button.StepBack.ToolTip")); //$NON-NLS-1$
 		resetButton.setToolTipText(MediaRes.getString("VideoPlayer.Button.Reset.ToolTip")); //$NON-NLS-1$
@@ -917,7 +912,14 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		};
 
 		// create slider
-		slider = new JSlider(0, 0, 0);
+		slider = new JSlider(0, 0, 0) {
+			public void setValue(int val) {
+				if (val == getModel().getValue())
+					return;
+				//System.out.println("VideoPlayer " + getName() + " setValue " + val);
+				super.setValue(val);
+			}
+		};
 		slider.setName("slider" + ++ntest);
 		slider.setOpaque(false);
 		slider.setMinorTickSpacing(1);
@@ -926,20 +928,51 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		slider.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
+//				if (slider.getValueIsAdjusting())
+//					return;
 				VideoClip clip = getVideoClip();
 				int i = slider.getValue(); // frame number
+				//System.out.println("VideoPlayer (Timeout) state changed " + i + " range " + clip.getStartFrameNumber() + " " + clip.getEndFrameNumber());
 				if (i < clip.getStartFrameNumber()) {
 					slider.setValue(clip.getStartFrameNumber());
-				} else if (i > clip.getEndFrameNumber()) {
-					slider.setValue(clip.getEndFrameNumber());
-				} else {
-					int n = clip.frameToStep(i);
-					if (n != getStepNumber() && !disabled) {
-						setStepNumber(n);
-					} else if (!clip.includesFrame(i)) {
-						slider.setValue(clip.stepToFrame(n));
-					}
+					return;
 				}
+				if (i > clip.getEndFrameNumber()) {
+					slider.setValue(clip.getEndFrameNumber());
+					return;
+				}
+				Runnable r = new Runnable() {
+
+					@Override
+					public void run() {
+						//System.out.println("VP-sliderState timeout run");
+						int stepNo = clip.frameToStep(i);
+						int frameNo = clip.stepToFrame(stepNo);
+						int currentStep = getStepNumber();
+						boolean isIncluded = clip.includesFrame(i);
+//						System.out.println("VP-sliderState timeout "
+//								+ "i=" + i 
+//								+ " stepNo=" + stepNo 
+//								+ " frameNo=" + frameNo
+//								+ " incl=" + isIncluded
+//								+ " current=" + currentStep);
+						if (stepNo != currentStep && !disabled) {
+//							System.out.println("VideoPlayer setstep " + stepNo);
+							setStepNumber(stepNo);
+							return;
+						} 
+						if (!isIncluded) {
+							//System.out.println("VideoPlayer setValue "  + frameNo);
+							slider.setValue(frameNo);
+							return;
+						}
+						//System.out.println("VP-sliderState timeout nop ");
+
+					}
+					
+				};
+				
+				OSPRuntime.setTimeout("VP-sliderState", 25, true, r);
 			}
 
 		});
@@ -1186,6 +1219,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 				else
 					val = Math.min(val, clip.getFrameCount() - 1);
 				val = Math.max(val, 0);
+				System.out.println("VideoPlayer active=" + active);
 				if (active.equals("in")) { //$NON-NLS-1$
 					int prevStart = clip.getStartFrameNumber();
 					if (clip.setStartFrameNumber(val, maxEndFrame)) {
@@ -1594,7 +1628,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		// update readout
 		int stepNumber = clipControl.getStepNumber();
 		String display;
-		if (readoutType.equals("step")) { //$NON-NLS-1$
+		if ("step".equals(readoutType)) { //$NON-NLS-1$
 			if (stepNumber < 10) {
 				display = "00" + stepNumber; //$NON-NLS-1$
 			} else if (stepNumber < 100) {
@@ -1602,7 +1636,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 			} else {
 				display = "" + stepNumber; //$NON-NLS-1$
 			}
-		} else if (readoutType.equals("frame")) { //$NON-NLS-1$
+		} else if ("frame".equals(readoutType)) { //$NON-NLS-1$
 			int n = clipControl.getFrameNumber();
 			if (n < 10) {
 				display = "00" + n; //$NON-NLS-1$
@@ -1649,16 +1683,45 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	/**
 	 * Updates the slider based on the current in and out points.
 	 */
-	private void updateSlider() {
+	private void updateSlider(String option, Object o) {
 		// update slider
-		VideoClip clip = getVideoClip();
-		slider.setMinimum(0);
-		slider.setMaximum(slider.getMinimum() + clip.getFrameCount() - 1);
-		sliderLabels.clear();
-		sliderLabels.put(Integer.valueOf(clip.getStartFrameNumber()), inLabel);
-		sliderLabels.put(Integer.valueOf(clip.getEndFrameNumber()), outLabel);
-		OSPLog.debug("VideoPlayer.updateSlider " + slider.getName() + " " + clip.getStartFrameNumber() + " " + clip.getEndFrameNumber() );
-		slider.repaint();
+		
+		//OSPLog.debug("VideoPlayer.updateSlider (Timeout) " + option );
+		Runnable r = new Runnable() {
+
+			@Override
+			public void run() {
+				//OSPLog.debug("VideoPlayer.updateSlider.Timeout.run " + option );
+				VideoClip clip = getVideoClip();
+				slider.setMinimum(0);
+				slider.setMaximum(slider.getMinimum() + clip.getFrameCount() - 1);
+				sliderLabels.clear();
+				sliderLabels.put(Integer.valueOf(clip.getStartFrameNumber()), inLabel);
+				sliderLabels.put(Integer.valueOf(clip.getEndFrameNumber()), outLabel);
+//				OSPLog.debug("VideoPlayer.updateSlider.Timeout.run "
+//				+ option + " " + o + " " + slider.getName() + " " + clip.getStartFrameNumber() + " " + clip.getEndFrameNumber() );
+				slider.repaint();
+				switch (option) {
+				case "refresh":
+					setReadoutTypes("frame time step", "frame"); //$NON-NLS-1$ //$NON-NLS-2$
+					refresh();
+					break;
+				case "property":
+					// no additional changes
+					break;
+				case "newClip":
+					firePropertyChange(PROPERTY_VIDEOPLAYER_VIDEOCLIP, (VideoClip) o, clip);
+					System.gc();
+					break;
+				}
+			}
+			
+		};
+		if (o == null) {
+			OSPRuntime.setTimeout("VP-updateSlider",  200, true, r);
+		} else { 
+			r.run();
+		}
 	}
 
 	public void showGoToDialog() {

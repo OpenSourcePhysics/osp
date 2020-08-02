@@ -50,8 +50,9 @@ import org.opensourcephysics.media.core.Trackable;
  */
 public class DataClip {
 	public static final String PROPERTY_DATACLIP_CLIPLENGTH = "clip_length";
-	private static final String PROPERTY_DATACLIP_STARTINDEX = "start_index";
-	private static final String PROPERTY_DATACLIP_STRIDE = "stride";
+	public static final String PROPERTY_DATACLIP_STARTINDEX = "clip_start";
+	public static final String PROPERTY_DATACLIP_CLIPSTRIDE = "clip_stride";
+	public static final String PROPERTY_DATACLIP_CLIPADJUSTING = "clip_adjusting";
 	private int dataLength = 2;
 	private int startIndex = 0;
 	private int clipLength = 0;
@@ -159,7 +160,7 @@ public class DataClip {
 		stride = Math.max(stride, 1);
 
 		this.stride = stride;
-		support.firePropertyChange(PROPERTY_DATACLIP_STRIDE, prev, stride); //$NON-NLS-1$
+		support.firePropertyChange(PROPERTY_DATACLIP_CLIPSTRIDE, prev, stride); //$NON-NLS-1$
 		return getStride();
 	}
 
@@ -235,7 +236,7 @@ public class DataClip {
 		if (isAdjusting == adjusting)
 			return;
 		isAdjusting = adjusting;
-		support.firePropertyChange(Trackable.PROPERTY_ADJUSTING, null, adjusting); //$NON-NLS-1$
+		support.firePropertyChange(PROPERTY_DATACLIP_CLIPADJUSTING, this, adjusting); //$NON-NLS-1$
 	}
 
 	/**

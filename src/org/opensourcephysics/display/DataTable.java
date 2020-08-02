@@ -639,7 +639,8 @@ public class DataTable extends JTable {
 	 */
 
 	protected void refreshTableNow(int mode) {
-		OSPLog.debug(Performance.timeCheckStr("DataTable.refreshTable0 " + mode,
+		OSPLog.debug(Performance.timeCheckStr("DataTable.refreshTable0 " 
+	+ Integer.toHexString(mode),
 				Performance.TIME_MARK));
 		// BH every sort of refresh goes through here
 		boolean columnsChanged;
@@ -713,7 +714,6 @@ public class DataTable extends JTable {
 		OSPLog.debug(">>>>DataTable.refreshTableNow " + Integer.toHexString(mode) + " " + columnsChanged);
 
 
-//		columnsChanged = true;
 		dataTableModel.refresh(mask);
 		if (columnsChanged) {
 			dataTableModel.fireTableStructureChanged();
@@ -1097,6 +1097,8 @@ public class DataTable extends JTable {
 				int stride = dte.getStride();
 				n = Math.max(n, (dte.tableModel.getRowCount() + stride - 1) / stride);
 			}
+			if (n > 40)
+			System.out.println("DataTable rowCount now " + n);
 			return rowCount = n;
 		}
 

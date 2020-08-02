@@ -49,6 +49,7 @@ import org.opensourcephysics.tools.Translator;
 
 import javajs.async.Assets;
 import javajs.async.AsyncFileChooser;
+import javajs.async.SwingJSUtils.Timeout;
 import swingjs.api.JSUtilI;
 
 /**
@@ -59,15 +60,15 @@ import swingjs.api.JSUtilI;
  * @version 1.0
  */
 public class OSPRuntime {
-	
+
 	public static final String VERSION = "5.0.0"; //$NON-NLS-1$
 
 	private static boolean isMac;
 
-	public static int macOffset;  // shifts LR message box on Mac to avoid drag hot spot.
-	
+	public static int macOffset; // shifts LR message box on Mac to avoid drag hot spot.
 
-	// BH note: Cannot use "final" here because then the constant will be set before the
+	// BH note: Cannot use "final" here because then the constant will be set before
+	// the
 	// transpiler ever sees it.
 	public static boolean isJS = /** @j2sNative true || */
 			false;
@@ -83,14 +84,13 @@ public class OSPRuntime {
 		}
 
 	}
-	
+
 	public static JSUtilI jsutil;
-	
+
 	static {
 		try {
 			if (isJS) {
 				jsutil = ((JSUtilI) Class.forName("swingjs.JSUtil").newInstance());
-
 
 				// note - this is only for https
 				String[] corsEnabled = new String[] { "www.physlets.org", "https://physlets.org",
@@ -101,12 +101,11 @@ public class OSPRuntime {
 				}
 			}
 
-			
 		} catch (Exception e) {
 			OSPLog.warning("OSPRuntime could not create jsutil");
 		}
 	}
-	
+
 	static {
 		try {
 			Object val = (isJS ? jsutil.getAppletInfo("assets") : null);
@@ -124,62 +123,59 @@ public class OSPRuntime {
 					break;
 				default:
 					// JavaScript only
-					Assets.add(val);				
+					Assets.add(val);
 					break;
 				}
 			} else {
-				Assets.add(val);				
+				Assets.add(val);
 			}
 		} catch (Throwable e) {
 			OSPLog.warning("Error reading assets path. ");
 			System.err.println("Error reading assets path.");
 		}
 	}
-	
+
 	public static boolean isBHTest = isJS;
-	
+
 	public static boolean dontLog = isJS; // for OSPLog
 
-
-	public static boolean allowSetFonts = true;//!isBHTest; // for testing
+	public static boolean allowSetFonts = true;// !isBHTest; // for testing
 
 	public static boolean allowAsyncURL = isJS; // for OSPRuntime and Library SwingWorkers
-	
+
 	public static boolean autoAddLibrary = !isJS; // for TrackerIO
 
 	public static final boolean checkImages = false; // LibraryTreeNode
 
 	public static boolean checkTempDirCache = isJS; // for ResourceLoader.
 
-	public static boolean checkZipLoaders = !isJS;  // for ResourceLloader
+	public static boolean checkZipLoaders = !isJS; // for ResourceLloader
 
-	public static boolean doCacheZipContents = true;//isJS; // for ResourceLoader
+	public static boolean doCacheZipContents = true;// isJS; // for ResourceLoader
 
 	public static boolean drawDontFillAxes = true; // isJS for CoordAxesStep -- don't understand
-    // why this is not working now in Java; never worked in JavaScript
-
+	// why this is not working now in Java; never worked in JavaScript
 
 	public static boolean logToJ2SMonitor = isJS; // for OSPRuntime
 
-	public static boolean resCacheEnabled = isJS; // for ResourceLoader 
-	
+	public static boolean resCacheEnabled = isJS; // for ResourceLoader
+
 	public static boolean setRenderingHints = (!isJS && !isMac);
-	
-	public static boolean skipDisplayOfPDF = true;//isJS; // for TrackerIO, for now.
+
+	public static boolean skipDisplayOfPDF = true;// isJS; // for TrackerIO, for now.
 
 	public static boolean embedVideoAsObject = isJS;
 
 	public static boolean unzipFiles = !isJS; // for TrackerIO
-	
+
 	static {
 		if (!isJS && !unzipFiles)
 			OSPLog.warning("OSPRuntime.unzipFiles setting is false for BH testing");
 		if (skipDisplayOfPDF)
 			OSPLog.warning("OSPRuntime.skipDisplayOfPDF true for BH testing");
 	}
-	public static final String tempDir = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$  // BH centralized
-	
-	
+	public static final String tempDir = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$ // BH centralized
+
 	/**
 	 * BH AsyncFileChooser extends JFileChooser, so all of the methods of
 	 * JFileChooser are still available. In particular, the SAVE action needs no
@@ -188,7 +184,8 @@ public class OSPRuntime {
 	 */
 	private static AsyncFileChooser chooser;
 
-	public static /* BH NOT final */ String WEB_CONNECTED_TEST_URL = (isJS ? "https://pubchem.ncbi.nlm.nih.gov" : "https://www.compadre.org/osp/");
+	public static /* BH NOT final */ String WEB_CONNECTED_TEST_URL = (isJS ? "https://pubchem.ncbi.nlm.nih.gov"
+			: "https://www.compadre.org/osp/");
 
 	/**
 	 * Disables drawing for faster start-up and to avoid screen flash in Drawing
@@ -294,11 +291,10 @@ public class OSPRuntime {
 	public final static String MOTIF_LF = "MOTIF"; //$NON-NLS-1$
 	public final static String WINDOWS_LF = "WINDOWS"; //$NON-NLS-1$
 	public final static String DEFAULT_LF = "DEFAULT"; //$NON-NLS-1$
-	public final static LookAndFeel DEFAULT_LOOK_AND_FEEL = UIManager.getLookAndFeel(); // save the default before we																						// change LnF
+	public final static LookAndFeel DEFAULT_LOOK_AND_FEEL = UIManager.getLookAndFeel(); // save the default before we //
+																						// change LnF
 	public final static boolean DEFAULT_LOOK_AND_FEEL_DECORATIONS = JFrame.isDefaultLookAndFeelDecorated();
 	public final static HashMap<String, String> LOOK_AND_FEEL_TYPES = new HashMap<String, String>();
-
-
 
 	/** Preferences XML control */
 	private static XMLControl prefsControl;
@@ -310,7 +306,6 @@ public class OSPRuntime {
 	private static String prefsFileName = "osp.prefs"; //$NON-NLS-1$
 
 	public static boolean isApplet;
-
 
 	/**
 	 * Sets default properties for OSP.
@@ -357,9 +352,9 @@ public class OSPRuntime {
 	}
 
 	public static FontRenderContext frc = new FontRenderContext(//
-	null, // no AffineTransform
-	false, // no antialiasing
-	false); // no fractional metrics
+			null, // no AffineTransform
+			false, // no antialiasing
+			false); // no fractional metrics
 
 	/**
 	 * Private constructor to prevent instantiation.
@@ -527,7 +522,6 @@ public class OSPRuntime {
 			return false;
 		}
 	}
-
 
 	/**
 	 * Determines if OS is Mac
@@ -754,7 +748,7 @@ public class OSPRuntime {
 		if (launchJarPath == null) {
 			return null;
 		}
-		boolean isWebFile = ResourceLoader.isHTTP(launchJarPath); 
+		boolean isWebFile = ResourceLoader.isHTTP(launchJarPath);
 		if (!isWebFile) {
 			launchJarPath = ResourceLoader.getNonURIPath(launchJarPath);
 		}
@@ -793,7 +787,7 @@ public class OSPRuntime {
 				if (jarfile == null) {
 					buildDate = "<unkown>";
 				} else {
-				java.util.jar.Attributes att = jarfile.getManifest().getMainAttributes();
+					java.util.jar.Attributes att = jarfile.getManifest().getMainAttributes();
 					buildDate = att.getValue("Build-Date"); //$NON-NLS-1$
 				}
 			} catch (Exception ex) {
@@ -1220,8 +1214,6 @@ public class OSPRuntime {
 		return translator;
 	}
 
-
-
 	/**
 	 * Gets a file chooser. The choose is static and will therefore be the same for
 	 * all OSPFrames.
@@ -1234,8 +1226,7 @@ public class OSPRuntime {
 			return chooser;
 		}
 		try {
-			chooser = (chooserDir == null) ? new AsyncFileChooser()
-					: new AsyncFileChooser(new File(chooserDir));
+			chooser = (chooserDir == null) ? new AsyncFileChooser() : new AsyncFileChooser(new File(chooserDir));
 		} catch (Exception e) {
 			System.err.println("Exception in OSPFrame getChooser=" + e); //$NON-NLS-1$
 			return null;
@@ -1342,7 +1333,8 @@ public class OSPRuntime {
 					int selected = JOptionPane.showConfirmDialog(parent,
 							DisplayRes.getString("DrawingFrame.ReplaceExisting_message") + " " + file.getName() //$NON-NLS-1$ //$NON-NLS-2$
 									+ DisplayRes.getString("DrawingFrame.QuestionMark"), //$NON-NLS-1$
-							DisplayRes.getString("DrawingFrame.ReplaceFile_option_title"), JOptionPane.YES_NO_CANCEL_OPTION);
+							DisplayRes.getString("DrawingFrame.ReplaceFile_option_title"),
+							JOptionPane.YES_NO_CANCEL_OPTION);
 					if (selected != JOptionPane.YES_OPTION) {
 						return null;
 					}
@@ -1507,13 +1499,13 @@ public class OSPRuntime {
 	public static byte[] getCachedBytes(String path) {
 		return (isJS ? jsutil.getCachedBytes(path) : null);
 	}
-	
+
 	public static byte[] addJSCachedBytes(Object URLorURIorFile) {
 		return (isJS ? jsutil.addJSCachedBytes(URLorURIorFile) : null);
 	}
 
 	public static void displayURL(String url) throws IOException {
-		
+
 		if (isJS) {
 			jsutil.displayURL(url, "_blank");
 		} else {
@@ -1522,25 +1514,25 @@ public class OSPRuntime {
 			 * 
 			 * @j2sNative
 			 * 
-			 *   
+			 * 
 			 */
 			{
 				// try the old way
 				org.opensourcephysics.desktop.ostermiller.Browser.init();
 				org.opensourcephysics.desktop.ostermiller.Browser.displayURL(url);
 			}
-			
+
 		}
 	}
 
 	public static void showStatus(String msg) {
-		if (isJS && logToJ2SMonitor) 
-			jsutil.showStatus(msg,  true);
+		if (isJS && logToJ2SMonitor)
+			jsutil.showStatus(msg, true);
 	}
 
 	public static void getURLBytesAsync(URL url, Function<byte[], Void> whenDone) {
 		if (allowAsyncURL) {
-			jsutil.getURLBytesAsync(url,  whenDone);
+			jsutil.getURLBytesAsync(url, whenDone);
 		} else {
 			whenDone.apply(jsutil.getURLBytes(url));
 		}
@@ -1553,7 +1545,6 @@ public class OSPRuntime {
 			SwingUtilities.invokeLater(runner);
 	}
 
-
 	public static void dispatchEventWait(Runnable runner) {
 		if (isJS || SwingUtilities.isEventDispatchThread())
 			runner.run();
@@ -1564,24 +1555,32 @@ public class OSPRuntime {
 				e.printStackTrace();
 			}
 	}
-	
 
-	  /**
-	   * Set the "app" property of the HTML5 applet object, for example,
-	   * "testApplet.app", to point to the Jalview instance. This will be the object
-	   * that page developers use that is similar to the original Java applet object
-	   * that was accessed via LiveConnect.
-	   * 
-	   * @param j
-	   */
-	  public static void setAppClass(Object j)
-	  {
-	    if (isJS)
-	    {
-	      jsutil.setAppletAttribute("app", j);
-	    }
-	  }
-	
+	/**
+	 * Set the "app" property of the HTML5 applet object, for example,
+	 * "testApplet.app", to point to the Jalview instance. This will be the object
+	 * that page developers use that is similar to the original Java applet object
+	 * that was accessed via LiveConnect.
+	 * 
+	 * @param j
+	 */
+	public static void setAppClass(Object j) {
+		if (isJS) {
+			jsutil.setAppletAttribute("app", j);
+		}
+	}
+
+	public static int setTimeout(String name, int msDelay, boolean cancelPending, Runnable r) {
+		return Timeout.setTimeout(name, msDelay, cancelPending, r);
+	}
+
+	/**
+	 * clean up all pending anything
+	 * 
+	 */
+	public static void exit() {
+		Timeout.cancelTimeoutsByName(null);
+	}
 }
 /*
  * Open Source Physics software is free software; you can redistribute it and/or

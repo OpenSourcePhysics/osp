@@ -590,12 +590,9 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			break;
 		case VideoPlayer.PROPERTY_VIDEOPLAYER_VIDEOCLIP: // from VideoPlayer
 			// update property change listeners
-			VideoClip oldClip = (VideoClip) e.getOldValue();
-			oldClip.removeListener(this);
-//      oldClip.removePropertyChangeListener("frameshift", this);          
+			((VideoClip) e.getOldValue()).removeListener(this);
 			VideoClip clip = (VideoClip) e.getNewValue();
 			clip.addListener(this);
-//      clip.addPropertyChangeListener("frameshift", this);          
 			// replace current video with new clip's video
 			if (video != null) {
 				video.removeListener(this);

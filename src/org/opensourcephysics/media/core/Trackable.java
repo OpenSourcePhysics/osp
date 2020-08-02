@@ -44,7 +44,7 @@ import org.opensourcephysics.display.Drawable;
 public interface Trackable extends Drawable {
 
 	/**
-	 * originating from VideoClip, DataClip, and ImageCoordSystem
+	 * originating from VideoClip, and ImageCoordSystem
 	 */
 	String PROPERTY_ADJUSTING = "adjusting";
 }

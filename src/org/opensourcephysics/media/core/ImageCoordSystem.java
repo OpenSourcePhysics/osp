@@ -61,17 +61,14 @@ public class ImageCoordSystem {
 	// instance fields
 
 	public static final String PROPERTY_COORDS_TRANSFORM = "transform";
-
 	public static final String PROPERTY_COORDS_LOCKED = "locked";
-
 	public static final String PROPERTY_COORDS_FIXEDSCALE = "fixed_scale";
-
 	public static final String PROPERTY_COORDS_FIXEDORIGIN = "fixed_origin";
 
 	protected boolean ignoreUpdateRequests;// for tracker ReferenceFrame
 
 	private int length;
-	protected PropertyChangeSupport support;
+	protected PropertyChangeSupport support; // for ReferenceFrame
 	private Point2D point = new Point2D.Double();
 	private TransformArray toImage, toWorld;
 	private DoubleArray scaleX, scaleY;
@@ -110,6 +107,16 @@ public class ImageCoordSystem {
 		sine = new DoubleArray(length, 0);
 		support = new SwingPropertyChangeSupport(this);
 		updateAllTransforms();
+	}
+
+	/**
+	 * Not at all clear why this is useful. Do the videoadapters somehow need this? 
+	 * @param frameCount
+	 * @param adapter
+	 */
+	public ImageCoordSystem(int frameCount, VideoAdapter adapter) {
+		this(frameCount);
+		addPropertyChangeListener(adapter);
 	}
 
 	/**
@@ -1024,7 +1031,7 @@ public class ImageCoordSystem {
 		if (isAdjusting == adjusting)
 			return;
 		isAdjusting = adjusting;
-		support.firePropertyChange(Trackable.PROPERTY_ADJUSTING, null, adjusting); // $NON-NLS-1$
+		support.firePropertyChange(Trackable.PROPERTY_ADJUSTING, this, adjusting); // $NON-NLS-1$
 	}
 
 	/**

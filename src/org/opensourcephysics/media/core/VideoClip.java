@@ -516,7 +516,7 @@ public class VideoClip {
 		if (isAdjusting == adjusting)
 			return;
 		isAdjusting = adjusting;
-		support.firePropertyChange(Trackable.PROPERTY_ADJUSTING, null, adjusting);
+		support.firePropertyChange(Trackable.PROPERTY_ADJUSTING, this, adjusting);
 	}
 
 	/**

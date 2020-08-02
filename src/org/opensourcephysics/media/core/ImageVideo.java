@@ -744,8 +744,7 @@ public class ImageVideo extends VideoAdapter {
 			size.height = rawImage.getHeight(observer);
 			refreshBufferedImage();
 			// create coordinate system and relativeAspects
-			coords = new ImageCoordSystem(frameCount);
-			coords.addPropertyChangeListener(this);
+			coords = new ImageCoordSystem(frameCount, (VideoAdapter) this);
 			aspects = new DoubleArray(frameCount, 1);
 		} else {
 			coords.setLength(frameCount);

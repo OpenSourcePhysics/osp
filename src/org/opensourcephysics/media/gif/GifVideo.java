@@ -30,7 +30,6 @@
  * please see <http://www.opensourcephysics.org/>.
  */
 package org.opensourcephysics.media.gif;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -305,8 +304,7 @@ public double getDuration() {
     size.height = image.getHeight();
     refreshBufferedImage();
     // create coordinate system and relativeAspects
-    coords = new ImageCoordSystem(frameCount);
-    coords.addPropertyChangeListener(this);
+    coords = new ImageCoordSystem(frameCount, this);
     aspects = new DoubleArray(frameCount, 1);
   }
 

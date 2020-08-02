@@ -652,8 +652,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	private void setFrameCount(int n) {
 		frameCount = n;
 		// create coordinate system and relativeAspects
-		coords = new ImageCoordSystem(frameCount);
-		coords.addPropertyChangeListener(JSMovieVideo.this);
+		coords = new ImageCoordSystem(frameCount, this);
 		aspects = new DoubleArray(frameCount, 1);
 
 	}
