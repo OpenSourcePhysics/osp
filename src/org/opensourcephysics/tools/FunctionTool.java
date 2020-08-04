@@ -670,7 +670,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 			super.setVisible(vis);
 		else
 			top.setVisible(vis);
-		firePropertyChange(PROPERTY_FUNCTIONTOOL_VISIBLE, null, new Boolean(vis)); // $NON-NLS-1$
+		firePropertyChange(PROPERTY_FUNCTIONTOOL_VISIBLE, null, Boolean.valueOf(vis)); // $NON-NLS-1$
 	}
 
 	/**

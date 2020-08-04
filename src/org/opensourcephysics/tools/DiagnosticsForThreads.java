@@ -200,9 +200,9 @@ public class DiagnosticsForThreads extends JPanel {
 				Object[] rowCell = cell[i];
 
 				rowCell[0] = Integer.valueOf(t.getPriority());
-				rowCell[1] = new Boolean(t.isAlive());
-				rowCell[2] = new Boolean(t.isDaemon());
-				rowCell[3] = new Boolean(t.isInterrupted());
+				rowCell[1] = Boolean.valueOf(t.isAlive());
+				rowCell[2] = Boolean.valueOf(t.isDaemon());
+				rowCell[3] = Boolean.valueOf(t.isInterrupted());
 				rowCell[4] = t.getThreadGroup().getName();
 				rowCell[5] = t.getName();
 			}

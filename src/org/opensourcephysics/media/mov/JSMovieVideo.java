@@ -143,7 +143,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		}
 		int n = getFrameNumber() + 1;
 		playing = true;
-		firePropertyChange(PROPERTY_VIDEO_PLAYING, null, new Boolean(true)); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_VIDEO_PLAYING, null, Boolean.valueOf(true)); //$NON-NLS-1$
 		startPlayingAtFrame(n);
 	}
 
@@ -153,7 +153,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	@Override
 	public void stop() {
 		playing = false;
-		firePropertyChange(PROPERTY_VIDEO_PLAYING, null, new Boolean(false)); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_VIDEO_PLAYING, null, Boolean.valueOf(false)); //$NON-NLS-1$
 	}
 
 

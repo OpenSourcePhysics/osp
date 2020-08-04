@@ -505,7 +505,7 @@ public class LaunchSaver extends JDialog {
 	private void addChildren(Node node) {
 		// save tab file name and selfContained property
 		prevNodeNames.put(node, node.node.getFileName());
-		prevNodeSelfContains.put(node, new Boolean(node.node.selfContained));
+		prevNodeSelfContains.put(node, Boolean.valueOf(node.node.selfContained));
 		treePaths.add(new TreePath(node.getPath()));
 		// add node's owned child nodes
 		LaunchNode[] nodes = node.node.getChildOwnedNodes();

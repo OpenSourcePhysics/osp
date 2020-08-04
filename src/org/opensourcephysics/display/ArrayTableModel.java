@@ -416,14 +416,14 @@ public Object getValueAt(int row, int column) {
       return stringArray2[row][col];
     }
     if(booleanArray1!=null) {
-      return new Boolean(booleanArray1[row]);
+      return Boolean.valueOf(booleanArray1[row]);
     }
     if(booleanArray2!=null) {
       int col = transposed ? column : column-offset;
       if((row>booleanArray2.length-1)||(col>booleanArray2[row].length-1)||(col<0)) {
         return null;
       }
-      return new Boolean(booleanArray2[row][col]);
+      return Boolean.valueOf(booleanArray2[row][col]);
     }
     return null;
   }

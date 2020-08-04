@@ -163,7 +163,7 @@ public abstract class VideoAdapter implements Video {
 	@Override
 	public void setVisible(boolean visible) {
 		this.visible = visible;
-		firePropertyChange(PROPERTY_VIDEO_VIDEOVISIBLE, null, new Boolean(visible));
+		firePropertyChange(PROPERTY_VIDEO_VIDEOVISIBLE, null, Boolean.valueOf(visible));
 	}
 
 	/**
@@ -901,7 +901,7 @@ public abstract class VideoAdapter implements Video {
 			return;
 		}
 		looping = loops;
-		firePropertyChange(PROPERTY_VIDEO_LOOPING, null, new Boolean(looping));
+		firePropertyChange(PROPERTY_VIDEO_LOOPING, null, Boolean.valueOf(looping));
 	}
 
 	/**

@@ -598,13 +598,13 @@ final public class DataToolPropsTable extends JTable {
 				if (col == 0) {
 					return Boolean.FALSE;
 				}
-				return (data == null) ? Boolean.FALSE : new Boolean(data.isMarkersVisible());
+				return Boolean.valueOf(data != null && data.isMarkersVisible());
 			}
 			if (row == lineRow) {
 				if (col == 0) {
 					return Boolean.FALSE;
 				}
-				return (data == null) ? false : new Boolean(data.isConnected());
+				return Boolean.valueOf(data != null && data.isConnected());
 			}
 			// row == styleRow
 			if (col == xCol) {

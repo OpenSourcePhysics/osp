@@ -666,7 +666,7 @@ public class XML {
       @Override
 	public Object createObject(XMLControl control) {
         boolean val = control.getBoolean("value"); //$NON-NLS-1$
-        return new Boolean(val);
+        return Boolean.valueOf(val);
       }
       @Override
 	public Object loadObject(XMLControl control, Object obj) {
@@ -675,7 +675,7 @@ public class XML {
         if(bool.booleanValue()==val) {
           return bool;
         }
-        return new Boolean(val);
+        return Boolean.valueOf(val);
       }
     });
     setLoader(Dimension.class, new XML.ObjectLoader() {

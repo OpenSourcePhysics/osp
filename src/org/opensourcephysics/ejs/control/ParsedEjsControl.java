@@ -69,7 +69,7 @@ public Object getObject(String var) {
     } else if(value instanceof DoubleValue) {
       return new Double(super.getDouble(var));
     } else if(value instanceof BooleanValue) {
-      return new Boolean(super.getBoolean(var));
+      return Boolean.valueOf(super.getBoolean(var));
     } else if(value instanceof StringValue) {
       return super.getString(var);
     }

@@ -79,7 +79,7 @@ public class MethodWithOneParameter {
 				parameter = value.getString();
 				parameterClass = _name.getClass(); // String
 			} else if (value instanceof BooleanValue) { // method (boolean)
-				parameter = new Boolean(value.getBoolean());
+				parameter = Boolean.valueOf(value.getBoolean());
 				parameterClass = Boolean.TYPE;
 			} else if (value instanceof DoubleValue) { // method (double)
 				parameter = new Double(value.getDouble());

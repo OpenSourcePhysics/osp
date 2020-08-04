@@ -513,7 +513,7 @@ public TableCellEditor getCellEditor(int row, int column) {
             @Override
 			public void propertyChange(PropertyChangeEvent e) {
               OSPCombo combo = (OSPCombo) e.getSource();
-              Boolean bool = new Boolean(combo.getSelectedIndex()==0);
+              Boolean bool = Boolean.valueOf(combo.getSelectedIndex()==0);
               childControl.saveObject(bool);
             }
 
@@ -787,7 +787,7 @@ public void tableChanged(TableModelEvent e) {
                   @Override
 				public void propertyChange(PropertyChangeEvent e) {
                     OSPCombo combo = (OSPCombo) e.getSource();
-                    Boolean bool = new Boolean(combo.getSelectedIndex()==0);
+                    Boolean bool = Boolean.valueOf(combo.getSelectedIndex()==0);
                     control.saveObject(bool);
                   }
 

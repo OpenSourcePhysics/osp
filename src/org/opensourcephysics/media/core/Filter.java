@@ -263,7 +263,7 @@ public abstract class Filter {
 			return;
 		}
 		this.enabled = enabled;
-		support.firePropertyChange(PROPERTY_FILTER_ENABLED, null, new Boolean(enabled)); //$NON-NLS-1$
+		support.firePropertyChange(PROPERTY_FILTER_ENABLED, null, Boolean.valueOf(enabled)); //$NON-NLS-1$
 	}
 
 	/**

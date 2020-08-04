@@ -12,7 +12,9 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.GridLayout;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -77,6 +79,11 @@ import javajs.async.SwingJSUtils.Performance;
  */
 @SuppressWarnings("serial")
 public class DataTable extends JTable {
+
+//	public void paint(Graphics g) {
+//		System.out.println("DataTable.paint clip=" + g.getClipBounds(new Rectangle()));
+//		super.paint(g);
+//	}
 
 	/**
 	 * A marker type for TableModels that are associated with DataTable. including
@@ -641,8 +648,7 @@ public class DataTable extends JTable {
 
 	protected void refreshTableNow(int mode) {
 		OSPLog.debug(Performance.timeCheckStr("DataTable.refreshTable0 " 
-	+ Integer.toHexString(mode),
-				Performance.TIME_MARK));
+				+ Integer.toHexString(mode), Performance.TIME_MARK));
 		// BH every sort of refresh goes through here
 		boolean columnsChanged;
 		

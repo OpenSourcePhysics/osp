@@ -285,7 +285,7 @@ public class StepperClipControl extends ClipControl {
 			return;
 		}
 		looping = loops;
-		support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_LOOPING, null, new Boolean(loops));
+		support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_LOOPING, null, Boolean.valueOf(loops));
 	}
 
 	/**

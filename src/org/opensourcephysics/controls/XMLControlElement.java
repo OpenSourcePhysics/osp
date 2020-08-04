@@ -434,7 +434,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			case "double": //$NON-NLS-1$
 				return new Double(doubleValue(prop));
 			case "boolean": //$NON-NLS-1$
-				return new Boolean(booleanValue(prop));
+				return Boolean.valueOf(booleanValue(prop));
 			case "string": //$NON-NLS-1$
 				return stringValue(prop);
 			}

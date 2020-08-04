@@ -330,7 +330,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			setAutoscaleX(true);
 			setAutoscaleY(true);
 		}
-		firePropertyChange(PROPERTY_VIDEOPANEL_IMAGESPACE, null, new Boolean(imagespace)); 
+		firePropertyChange(PROPERTY_VIDEOPANEL_IMAGESPACE, null, Boolean.valueOf(imagespace)); 
 		repaint();
 	}
 
