@@ -324,15 +324,10 @@ public class VideoClip {
 	 */
 	public int getFrameCount() {
 		if (video != null && video.getFrameCount() > 1) {
-			int n = video.getFrameCount() + extraFrames;
-			n = Math.min(n, n);
-			n = Math.max(1, n);
-			return n;
+			return Math.max(1, video.getFrameCount() + extraFrames);
 		}
-		int frames = getEndFrameNumber() + 1;
-		nullVideoFrameCount = Math.max(nullVideoFrameCount, frames);
-		nullVideoFrameCount = Math.min(nullVideoFrameCount, maxFrameCount);
-		return nullVideoFrameCount;
+		int frames = getEndFrameNumber();
+		return nullVideoFrameCount = Math.min(Math.max(nullVideoFrameCount, frames), maxFrameCount - 1);
 	}
 
 	/**
