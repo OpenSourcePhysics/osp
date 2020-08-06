@@ -1806,7 +1806,10 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		}
 		if (prop.getPropertyContent().isEmpty())
 			return null;
-		XMLControl control = (XMLControl) prop.getPropertyContent().get(0);
+		Object content = prop.getPropertyContent().get(0);
+		if (!(content instanceof XMLControl))
+			return null;
+		XMLControl control = (XMLControl) content;
 		return control.loadObject(null);
 	}
 
