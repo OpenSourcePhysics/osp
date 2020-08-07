@@ -124,14 +124,16 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
 			}
 
 		});
-		try {
-			URL url = ResourceLoader.getImageZipResource(OSP_ICON_FILE);
-			ImageIcon icon = new ImageIcon(url);
-			setIconImage(icon.getImage());
-			// setIconImage(ResourceLoader.getImage(OSPRuntime.OSP_ICON_FILE));
-		} catch (Exception ex) {
-			// image not found
-		}
+		if (!OSPRuntime.isJS)
+			try {
+				URL url = ResourceLoader.getImageZipResource(OSP_ICON_FILE);
+				ImageIcon icon = new ImageIcon(url);
+				setIconImage(icon.getImage());
+				// setIconImage(ResourceLoader.getImage(OSPRuntime.OSP_ICON_FILE));
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				// image not found
+			}
 		addWindowListener(new WindowAdapter() {
 			/**
 			 * Closes and disposes child windows when this window is about to be closed.

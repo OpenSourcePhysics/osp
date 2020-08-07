@@ -353,7 +353,7 @@ public class DatasetCurveFitter extends JPanel {
 		double[] x = dataset.getValidXPoints();
 		double[] y = dataset.getValidYPoints();
 		
-		OSPLog.debug("DatasetCurveFit " + ++nfit + " " + fit + " " + x.length + " " + y.length + " " + autofit);
+//		OSPLog.debug("DatasetCurveFit " + ++nfit + " " + fit + " " + x.length + " " + y.length + " " + autofit);
 
 		double devSq = 0;
 		double[] prevParams = null;

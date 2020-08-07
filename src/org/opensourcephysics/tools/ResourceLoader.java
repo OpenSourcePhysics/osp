@@ -2649,9 +2649,9 @@ public class ResourceLoader {
 
 	public static Bundle getBundle(String bundleName, Locale resourceLocale) {
 
-		if (resourceLocale.getLanguage() == "en") {
+		String name;
+		if (resourceLocale.getLanguage() == "en" && Assets.notFound(name = bundleName.replaceAll("\\.", "/") + ".properties") ) {
 			Properties p = new Properties();
-			String name = bundleName.replaceAll("\\.", "/") + ".properties";
 			try {
 				p.load(Assets.getAssetStream(name));
 				OSPLog.debug("ResourceLoader found " + p.size() + " properties in\n"
@@ -2660,8 +2660,9 @@ public class ResourceLoader {
 
 			} catch (Exception e) {
 			}
-			OSPLog.debug("ResourceLoader could not find resource " + bundleName);
-			OSPLog.warning("ResourceLoader could not find resource " + bundleName);
+			OSPLog.debug("Asset not found for resource " + name);
+			OSPLog.warning("Asset not found for resource " + name);
+			Assets.setNotFound(name);
 		}
 		return new Bundle(ResourceBundle.getBundle(bundleName, resourceLocale,
 				ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES)));
