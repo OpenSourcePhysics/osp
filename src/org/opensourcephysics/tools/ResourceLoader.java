@@ -2650,7 +2650,7 @@ public class ResourceLoader {
 	public static Bundle getBundle(String bundleName, Locale resourceLocale) {
 
 		String name;
-		if (resourceLocale.getLanguage() == "en" && Assets.notFound(name = bundleName.replaceAll("\\.", "/") + ".properties") ) {
+		if (resourceLocale.getLanguage() == "en" && !Assets.notFound(name = bundleName.replaceAll("\\.", "/") + ".properties") ) {
 			Properties p = new Properties();
 			try {
 				p.load(Assets.getAssetStream(name));
