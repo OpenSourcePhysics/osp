@@ -513,11 +513,11 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				table.columnToSelect = 0;
 				table.selectOnFocus = false;
 			}
-			refreshButtons();
+			enableMenuButtons();
 			break;
 		case "clipboard": //$NON-NLS-1$
 			// clipboard contents have changed
-			refreshButtons();
+			enableMenuButtons();
 			break;
 		}
 	}
@@ -911,14 +911,14 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		if (addButtonPanel) {
 			cutButton.setText(ToolsRes.getString("FunctionEditor.Button.Cut")); //$NON-NLS-1$
 			cutButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Cut.Tooltip")); //$NON-NLS-1$
-			copyButton.setText(ToolsRes.getString("FunctionEditor.Button.Copy")); //$NON-NLS-1$
+			copyButton.setText("???");
+			//.setText(ToolsRes.getString("FunctionEditor.Button.Copy")); //$NON-NLS-1$
 			copyButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Copy.Tooltip")); //$NON-NLS-1$
 			pasteButton.setText(ToolsRes.getString("FunctionEditor.Button.Paste")); //$NON-NLS-1$
 			pasteButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Paste.Tooltip")); //$NON-NLS-1$
 			newButton.setText(ToolsRes.getString("FunctionEditor.Button.New")); //$NON-NLS-1$
 			newButton.setToolTipText(newButtonTipText == null ? ToolsRes.getString("FunctionEditor.Button.New.Tooltip") //$NON-NLS-1$
 					: newButtonTipText);
-			refreshButtons();
 		}
 	}
 
@@ -933,13 +933,19 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	/**
 	 * Refreshes button states.
 	 */
-	protected void refreshButtons() {
+	protected void enableMenuButtons() {
 		if (!addButtonPanel || !haveGUI)
 			return;
 		boolean b = getSelectedObject() != null;
 		copyButton.setEnabled(b);
 		cutButton.setEnabled(b && isRemovable(getSelectedObject()));
 		pasteButton.setEnabled(getClipboardContents() != null);
+	}
+	
+	public void setVisible(boolean visible) {
+		super.setVisible(visible);
+		if (visible)
+			enableMenuButtons();
 	}
 
 	/**
@@ -1066,7 +1072,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			XMLControl control = new XMLControlElement(this);
 			control.setValue("selected", array); //$NON-NLS-1$
 			StringSelection ss = new StringSelection(control.toXML());
-			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+			Clipboard clipboard = OSPRuntime.getClipboard();
 			clipboard.setContents(ss, ss);
 			pasteButton.setEnabled(true);
 			firePropertyChange(PROPERTY_FUNCTIONEDITOR_CLIPBOARD, null, null); // $NON-NLS-1$
@@ -1094,7 +1100,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	 */
 	protected XMLControl[] getClipboardContents() {
 		try {
-			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+			Clipboard clipboard = OSPRuntime.getClipboard();
 			Transferable tran = clipboard.getContents(null);
 			String dataString = (String) (tran == null ? null : tran.getTransferData(DataFlavor.stringFlavor));
 			if (dataString != null) {
@@ -1432,7 +1438,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 
 			};
 			KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
-			getActionMap().put(im.get(enter), enterAction);
+			OSPRuntime.setOSPAction(im,  enter,  "enter", getActionMap(), enterAction);
 			// tab key tabs to next editable cell or component
 			KeyStroke tab = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
 			Action tabAction = new AbstractAction() {
@@ -2152,7 +2158,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				}
 			}
 			setFont(((col == 0) && isImportant(obj)) ? font.deriveFont(Font.BOLD) : font);
-			refreshButtons();
+			enableMenuButtons();
 			return this;
 		}
 
