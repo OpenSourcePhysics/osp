@@ -709,28 +709,19 @@ public class VideoIO {
 		AsyncFileChooser chooser = getChooser();
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setAcceptAllFileFilterUsed(true);
+		chooser.setAccessory(null);
 
-		Runnable resetChooser = new Runnable() {
-
-			@Override
-			public void run() {
+		Runnable resetChooser = () -> {
 				chooser.resetChoosableFileFilters();
 				if (processFiles != null)
 					chooser.setSelectedFile(null); // $NON-NLS-1$
-			}
-
 		};
 
-		Runnable okOpen = new Runnable() {
-
-			@Override
-			public void run() {
+		Runnable okOpen = () -> {
 				File file = chooser.getSelectedFile();
 				resetChooser.run();
 				if (processFiles != null)
 					processFiles.apply(new File[] { file });
-			}
-
 		};
 
 		switch (type.toLowerCase()) {
