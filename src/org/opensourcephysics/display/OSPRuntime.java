@@ -8,6 +8,8 @@
 package org.opensourcephysics.display;
 
 import java.awt.Component;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
@@ -28,11 +30,15 @@ import java.util.function.Function;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JApplet;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -1591,6 +1597,28 @@ public class OSPRuntime {
 	 */
 	public static void exit() {
 		Timeout.cancelTimeoutsByName(null);
+	}
+
+	public static Clipboard getClipboard() {
+		return Toolkit.getDefaultToolkit().getSystemClipboard();
+	}
+
+	/**
+	 * SwingJS may not have all UI actions already defined
+	 * 
+	 * @param im
+	 * @param ks
+	 * @param actionKey
+	 * @param am
+	 * @param pasteAction
+	 */
+	public static void setOSPAction(InputMap im, KeyStroke ks, String actionKey, ActionMap am,
+			Action pasteAction) {
+		Object key = im.get(ks);
+		if (key == null) {
+			im.put(ks, key = actionKey);
+		}
+		am.put(key, pasteAction);
 	}
 }
 /*

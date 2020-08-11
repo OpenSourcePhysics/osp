@@ -2462,7 +2462,7 @@ public class LaunchBuilder extends Launcher {
 						NodeSet nodeSet = new NodeSet(nodes);
 						XMLControl control = new XMLControlElement(nodeSet);
 						StringSelection data = new StringSelection(control.toXML());
-						Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+						Clipboard clipboard = OSPRuntime.getClipboard();
 						clipboard.setContents(data, data);
 					}
 				}
@@ -2473,7 +2473,7 @@ public class LaunchBuilder extends Launcher {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					Clipboard clipboard = OSPRuntime.getClipboard();
 					Transferable data = clipboard.getContents(null);
 					if (data == null)
 						return;

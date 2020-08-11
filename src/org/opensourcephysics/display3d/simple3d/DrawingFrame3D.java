@@ -193,7 +193,7 @@ public javax.swing.JFrame getJFrame() {
    */
   protected void pasteAction() {
     try {
-      Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+      Clipboard clipboard = OSPRuntime.getClipboard();
       Transferable data = clipboard.getContents(null);
       if (data == null)
     	  return;
@@ -253,7 +253,7 @@ public javax.swing.JFrame getJFrame() {
     XMLControlElement control = new XMLControlElement(DrawingFrame3D.this);
     control.saveObject(null);
     StringSelection data = new StringSelection(control.toXML());
-    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+    Clipboard clipboard = OSPRuntime.getClipboard();
     clipboard.setContents(data, this);
   }
 

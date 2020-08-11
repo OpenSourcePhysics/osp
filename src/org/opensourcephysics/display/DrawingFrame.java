@@ -660,7 +660,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 	 */
 	protected void copyAction(XMLControlElement control) {
 		StringSelection data = new StringSelection(control.toXML());
-		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		Clipboard clipboard = OSPRuntime.getClipboard();
 		clipboard.setContents(data, this);
 	}
 
@@ -845,7 +845,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					Clipboard clipboard = OSPRuntime.getClipboard();
 					Transferable data = clipboard.getContents(null);
 					if (data == null)
 						return;
@@ -866,7 +866,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					Clipboard clipboard = OSPRuntime.getClipboard();
 					Transferable data = clipboard.getContents(null);
 					XMLControlElement control = new XMLControlElement();
 					control.readXML((String) data.getTransferData(DataFlavor.stringFlavor));

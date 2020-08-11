@@ -621,7 +621,7 @@ public class LibraryTreePanel extends JPanel {
 						control.setValue("base_path", node.getBasePath()); //$NON-NLS-1$
 					}
 					StringSelection data = new StringSelection(control.toXML());
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					Clipboard clipboard = OSPRuntime.getClipboard();
 					clipboard.setContents(data, data);
 					enableButtons();
 				}
@@ -646,7 +646,7 @@ public class LibraryTreePanel extends JPanel {
 				if (parent == null || !(parent.record instanceof LibraryCollection))
 					return;
 				try {
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					Clipboard clipboard = OSPRuntime.getClipboard();
 					Transferable data = clipboard.getContents(null);
 					String dataString = data == null ? null : (String) data.getTransferData(DataFlavor.stringFlavor);
 					if (dataString != null) {
@@ -1407,7 +1407,7 @@ public class LibraryTreePanel extends JPanel {
 		clipboardAvailable = Boolean.FALSE;
 		pasteControl = null;
 		try {
-			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+			Clipboard clipboard = OSPRuntime.getClipboard();
 			Transferable data = clipboard.getContents(null);
 			String dataString = data == null ? null : (String) data.getTransferData(DataFlavor.stringFlavor);
 			if (dataString != null) {

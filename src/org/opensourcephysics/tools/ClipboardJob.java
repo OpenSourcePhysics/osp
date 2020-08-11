@@ -13,6 +13,8 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 
+import org.opensourcephysics.display.OSPRuntime;
+
 /**
  * This is a Job implementation for osp data transfers via the clipboard.
  *
@@ -20,7 +22,7 @@ import java.awt.datatransfer.Transferable;
  * @version 1.0
  */
 public class ClipboardJob extends LocalJob {
-	static private final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+	static private final Clipboard clipboard = OSPRuntime.getClipboard();
 
 	/**
 	 * Constructs a ClipboardJob.
