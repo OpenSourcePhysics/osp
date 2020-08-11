@@ -64,6 +64,8 @@ import javax.swing.TransferHandler;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 
 import org.opensourcephysics.controls.ControlsRes;
 import org.opensourcephysics.controls.OSPLog;
@@ -168,6 +170,59 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	protected int myPopupFontLevel;
 	protected int myCopyMenuFontLevel;
 
+	private MenuListener editMenuChecker = new MenuListener() {
+
+		@Override
+		public void menuSelected(MenuEvent e) {
+			DataToolTab tab = getSelectedTab();
+			// undo and redo items
+			if (tab != null) {
+				undoItem.setEnabled(tab.undoManager.canUndo());
+				redoItem.setEnabled(tab.undoManager.canRedo());
+			}
+			// enable paste menu if clipboard contains pastable data
+			boolean enabled = hasPastableData();
+			emptyPasteMenu.setEnabled(enabled);
+			pasteMenu.setEnabled(enabled);
+			// prepare copy menu
+			copyMenu.removeAll();
+			if (tab != null) {
+				ArrayList<Dataset> list = tab.dataManager.getDatasets();
+				copyDataItem.setEnabled(!list.isEmpty());
+				if (!list.isEmpty()) {
+					copyTabItem.setText(ToolsRes.getString("DataTool.MenuItem.CopyTab")); //$NON-NLS-1$
+					copyMenu.add(copyTabItem);
+					copyMenu.addSeparator();
+					String s = ToolsRes.getString("DataTool.MenuItem.CopyData"); //$NON-NLS-1$
+					int[] selectedRows = getSelectedTab().dataTable.getSelectedRows();
+					int endRow = getSelectedTab().dataTable.getRowCount() - 1;
+					boolean emptySelection = (selectedRows.length == 1) && (selectedRows[0] == endRow)
+							&& getSelectedTab().dataTable.isEmptyRow(endRow);
+					if ((selectedRows.length > 0) && !emptySelection) {
+						s = ToolsRes.getString("DataTool.MenuItem.CopySelectedData"); //$NON-NLS-1$
+					}
+					copyDataItem.setText(s);
+					copyMenu.add(copyDataItem);
+					copyMenu.addSeparator();
+				}
+			}
+			copyMenu.add(copyImageItem);
+			FontSizer.setFonts(copyMenu);
+		}
+
+		@Override
+		public void menuDeselected(MenuEvent e) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void menuCanceled(MenuEvent e) {
+			// TODO Auto-generated method stub
+
+		}
+	};
+
 	/**
 	 * A shared data tool.
 	 */
@@ -266,28 +321,28 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			addTab(tab);
 		}
 	}
-	
-  /**
-   * Gets the main OSPFrame when DataTool is a stand alone application.
-   * 
-   *  @j2sAlias getMainFrame
-   * 
-   * @return OSPFrame
-   */
-  public OSPFrame getMainFrame() {
-    return this;
-  }
-  
-  /**
-   * Gets the DataTool frame size. 
-   * 
-   * @j2sAlias getMainFrameSize
-   * 
-   */
-  public int[] getMainFrameSize(){
- 	 Dimension d=this.getSize();
- 	 return new int[] {d.width,d.height};
-  }
+
+	/**
+	 * Gets the main OSPFrame when DataTool is a stand alone application.
+	 * 
+	 * @j2sAlias getMainFrame
+	 * 
+	 * @return OSPFrame
+	 */
+	public OSPFrame getMainFrame() {
+		return this;
+	}
+
+	/**
+	 * Gets the DataTool frame size.
+	 * 
+	 * @j2sAlias getMainFrameSize
+	 * 
+	 */
+	public int[] getMainFrameSize() {
+		Dimension d = this.getSize();
+		return new int[] { d.width, d.height };
+	}
 
 	/**
 	 * Sets the saveChangesOnClose flag.
@@ -2239,7 +2294,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 */
 	public static void copy(String text) {
 		StringSelection data = new StringSelection(text);
-		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		Clipboard clipboard = OSPRuntime.getClipboard();
 		clipboard.setContents(data, data);
 	}
 
@@ -2249,7 +2304,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * @return the pasted string, or null if none
 	 */
 	public static String paste() {
-		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		Clipboard clipboard = OSPRuntime.getClipboard();
 		Transferable data = clipboard.getContents(null);
 		if ((data != null) && data.isDataFlavorSupported(DataFlavor.stringFlavor)) {
 			try {
@@ -2642,57 +2697,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		});
 		fileMenu.add(exitItem);
 		editMenu = new JMenu();
-		// create mouse listener to prepare edit menu
-		MouseAdapter editMenuChecker = new MouseAdapter() {
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				mousePressed(e);
-			}
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-				// ignore until menu is displayed
-				if (!editMenu.isPopupMenuVisible() && !emptyEditMenu.isPopupMenuVisible()) {
-					return;
-				}
-				DataToolTab tab = getSelectedTab();
-				// undo and redo items
-				if (tab != null) {
-					undoItem.setEnabled(tab.undoManager.canUndo());
-					redoItem.setEnabled(tab.undoManager.canRedo());
-				}
-				// enable paste menu if clipboard contains pastable data
-				boolean enabled = hasPastableData();
-				emptyPasteMenu.setEnabled(enabled);
-				pasteMenu.setEnabled(enabled);
-				// prepare copy menu
-				copyMenu.removeAll();
-				if (tab != null) {
-					ArrayList<Dataset> list = tab.dataManager.getDatasets();
-					copyDataItem.setEnabled(!list.isEmpty());
-					if (!list.isEmpty()) {
-						copyTabItem.setText(ToolsRes.getString("DataTool.MenuItem.CopyTab")); //$NON-NLS-1$
-						copyMenu.add(copyTabItem);
-						copyMenu.addSeparator();
-						String s = ToolsRes.getString("DataTool.MenuItem.CopyData"); //$NON-NLS-1$
-						int[] selectedRows = getSelectedTab().dataTable.getSelectedRows();
-						int endRow = getSelectedTab().dataTable.getRowCount() - 1;
-						boolean emptySelection = (selectedRows.length == 1) && (selectedRows[0] == endRow)
-								&& getSelectedTab().dataTable.isEmptyRow(endRow);
-						if ((selectedRows.length > 0) && !emptySelection) {
-							s = ToolsRes.getString("DataTool.MenuItem.CopySelectedData"); //$NON-NLS-1$
-						}
-						copyDataItem.setText(s);
-						copyMenu.add(copyDataItem);
-						copyMenu.addSeparator();
-					}
-				}
-				copyMenu.add(copyImageItem);
-				FontSizer.setFonts(copyMenu);
-			}
-
-		};
-		editMenu.addMouseListener(editMenuChecker);
+		editMenu.addMenuListener(editMenuChecker);
 		menubar.add(editMenu);
 		// undo and redo items
 		undoItem = new JMenuItem();
@@ -3026,7 +3031,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		});
 		emptyFileMenu.add(emptyExitItem);
 		emptyEditMenu = new JMenu();
-		emptyEditMenu.addMouseListener(editMenuChecker);
+		emptyEditMenu.addMenuListener(editMenuChecker);
 		emptyMenubar.add(emptyEditMenu);
 		emptyPasteMenu = new JMenu();
 		emptyEditMenu.add(emptyPasteMenu);

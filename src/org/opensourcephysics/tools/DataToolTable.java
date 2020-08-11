@@ -36,6 +36,7 @@ import java.util.Iterator;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
@@ -417,43 +418,44 @@ public class DataToolTable extends DataTable {
 		addMouseListener(tableMouseListener);
 		// override default enter action
 		InputMap im = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-		Action enterAction = new AbstractAction() {
+		ActionMap am = getActionMap();
+		int mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+
+		KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+		OSPRuntime.setOSPAction(im, enter, "enter", am, new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// start editing focused cell
-				editCellAt(focusRow, focusCol, e);
+				editCellAt(focusRow, focusCol, e); 
 				editor.field.requestFocus();
 			}
 
-		};
-		KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
-		getActionMap().put(im.get(enter), enterAction);
+		});
+
 		// override default copy action
-		Action copyAction = new AbstractAction() {
+		KeyStroke copy = KeyStroke.getKeyStroke(KeyEvent.VK_C, mask);
+		OSPRuntime.setOSPAction(im, copy, "copy", am, new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				dataToolTab.copyTableDataToClipboard();
 			}
-
-		};
-		int mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
-		KeyStroke copy = KeyStroke.getKeyStroke(KeyEvent.VK_C, mask);
-		getActionMap().put(im.get(copy), copyAction);
+		});
 		// override default paste action
-		Action pasteAction = new AbstractAction() {
+		KeyStroke paste = KeyStroke.getKeyStroke(KeyEvent.VK_V, mask);
+		OSPRuntime.setOSPAction(im, paste, "paste", getActionMap(), new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				getPasteDataAction.actionPerformed(e);
 				pasteCellsAction.actionPerformed(e);
 			}
 
-		};
-		KeyStroke paste = KeyStroke.getKeyStroke(KeyEvent.VK_V, mask);
-		getActionMap().put(im.get(paste), pasteAction);
+		});
+		
 		// associate clear cells action with delete key
 		KeyStroke delete = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0);
-		im.put(delete, clearCellsAction);
-		getActionMap().put(im.get(delete), clearCellsAction);
+		OSPRuntime.setOSPAction(im, delete, "delete", getActionMap(), clearCellsAction);
+//		im.put(delete, clearCellsAction);
+//		getActionMap().put(im.get(delete), clearCellsAction);
 	}
 
 	@Override

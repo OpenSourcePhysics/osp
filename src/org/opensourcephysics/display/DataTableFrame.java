@@ -114,13 +114,7 @@ protected JMenu loadDisplayMenu() {
     editMenu.add(copyItem);
     editMenu.add(selectAlItem);
     copyItem.setAccelerator(KeyStroke.getKeyStroke('C', DrawingFrame.MENU_SHORTCUT_KEY_MASK));
-    copyItem.addActionListener(new ActionListener() {
-      @Override
-	public void actionPerformed(ActionEvent e) {
-        copy();
-      }
-
-    });
+    copyItem.addActionListener((e) -> {copy();});
     selectAlItem.setAccelerator(KeyStroke.getKeyStroke('A', DrawingFrame.MENU_SHORTCUT_KEY_MASK));
     selectAlItem.addActionListener(new ActionListener() {
       @Override
@@ -154,7 +148,7 @@ protected JMenu loadDisplayMenu() {
 
   /** Copies the data in the table to the system clipboard */
   public void copy() {
-    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+    Clipboard clipboard = OSPRuntime.getClipboard();
     int[] selectedRows = table.getSelectedRows();
     int[] selectedColumns = table.getSelectedColumns();
     StringBuffer buf = getSelectedData(selectedRows, selectedColumns);
