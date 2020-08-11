@@ -15,8 +15,6 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.opensourcephysics.controls.OSPLog;
-
 import swingjs.api.JSUtilI;
 
 /**
