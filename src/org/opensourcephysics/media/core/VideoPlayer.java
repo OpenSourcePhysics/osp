@@ -1638,7 +1638,6 @@ System.out.println("VideoPlayer.dragging " + start + "-" + end + " " + val + " "
 			clipControl.setStepNumber(0);
 		else if (frameNumber > endFrame)
 			clipControl.setStepNumber(getVideoClip().getStepCount());
-		System.out.println("VideoPlayer.updateValue " + slider.getMaximum() + " " + slider.getLabelTable());
 		slider.setValue(clipControl.getFrameNumber());
 		// update readout
 		int stepNumber = clipControl.getStepNumber();
