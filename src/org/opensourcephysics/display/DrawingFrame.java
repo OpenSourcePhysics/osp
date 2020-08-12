@@ -34,8 +34,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.opensourcephysics.controls.ControlUtils;
 import org.opensourcephysics.controls.ControlsRes;
@@ -704,31 +702,19 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 		if (!OSPRuntime.isJS) { // cannot print from within browser
 			printMenu.add(printItem);
 			printItem.setAccelerator(KeyStroke.getKeyStroke('P', MENU_SHORTCUT_KEY_MASK));
-			printItem.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
+			printItem.addActionListener((e) -> {
 					PrintUtils.printComponent(drawingPanel);
-				}
-
 			});
 			JMenuItem printFrameItem = new JMenuItem(DisplayRes.getString("DrawingFrame.PrintFrame_menu_item")); //$NON-NLS-1$
 			printMenu.add(printFrameItem);
-			printFrameItem.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
+			printFrameItem.addActionListener((e) -> {
 					PrintUtils.printComponent(DrawingFrame.this);
-				}
-
 			});
 		}
 		JMenuItem saveXMLItem = new JMenuItem(DisplayRes.getString("DrawingFrame.SaveXML_menu_item")); //$NON-NLS-1$
 		saveXMLItem.setAccelerator(KeyStroke.getKeyStroke('S', MENU_SHORTCUT_KEY_MASK));
-		saveXMLItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+		saveXMLItem.addActionListener((e) -> {
 				saveXML();
-			}
-
 		});
 		// ExportTool menu item
 		/*
@@ -736,10 +722,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 		 * JMenuItem(DisplayRes.getString("DrawingFrame.Export_menu_item"));
 		 * //$NON-NLS-1$ exportItem.setAccelerator(KeyStroke.getKeyStroke('E',
 		 * MENU_SHORTCUT_KEY_MASK)); exportItem.addActionListener(new ActionListener() {
-		 *   public void actionPerformed(ActionEvent e) {
-		 *     ExportTool.getTool().send(new LocalJob(drawingPanel), null);
-		 *   }
-		 * });
+		 * public void actionPerformed(ActionEvent e) { ExportTool.getTool().send(new
+		 * LocalJob(drawingPanel), null); } });
 		 */
 		// create export tool menu item if the tool exists in classpath
 		JMenuItem exportItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Export_menu_item")); //$NON-NLS-1$
@@ -756,18 +740,14 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 			}
 		}
 		final Class<?> tool = exportTool;
-		exportItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+		exportItem.addActionListener((e) -> {
 				try {
 					Method m = tool.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
-					Tool tool = (Tool) m.invoke(null, (Object[]) null);
-					tool.send(new LocalJob(drawingPanel), reply);
+					Tool t = (Tool) m.invoke(null, (Object[]) null);
+					t.send(new LocalJob(drawingPanel), reply);
 				} catch (Exception ex) {
 					System.err.println("Error creating ExportTool.");
 				}
-			}
-
 		});
 		OSPLog.info("Done with Export Tool");
 		// Save menu item
@@ -834,16 +814,12 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 		});
 		editMenu.add(copyItem);
 		pasteItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Paste_menu_item")); //$NON-NLS-1$
-		pasteItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-					OSPRuntime.paste((s) -> {
-						XMLControlElement control = new XMLControlElement();
-						control.readXML(s);
-						pasteAction(control);	
-					});
-			}
-
+		pasteItem.addActionListener((e) -> {
+			OSPRuntime.paste((s) -> {
+				XMLControlElement control = new XMLControlElement();
+				control.readXML(s);
+				pasteAction(control);
+			});
 		});
 		pasteItem.setEnabled(false); // not supported yet
 		editMenu.add(pasteItem);
@@ -867,32 +843,20 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 		JMenu helpMenu = new JMenu(DisplayRes.getString("DrawingFrame.Help_menu_item")); //$NON-NLS-1$
 		menuBar.add(helpMenu);
 		JMenuItem aboutItem = new JMenuItem(DisplayRes.getString("DrawingFrame.AboutOSP_menu_item")); //$NON-NLS-1$
-		aboutItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+		aboutItem.addActionListener((e) -> {
 				OSPRuntime.showAboutDialog(DrawingFrame.this);
-			}
-
 		});
 		helpMenu.add(aboutItem);
 		JMenuItem sysItem = new JMenuItem(ControlsRes.getString("ControlFrame.System")); //$NON-NLS-1$
-		sysItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+		sysItem.addActionListener((e) -> {
 				ControlUtils.showSystemProperties(true);
-			}
-
 		});
 		helpMenu.add(sysItem);
 		helpMenu.addSeparator();
 		JMenuItem logItem = new JMenuItem(ControlsRes.getString("ControlFrame.Message_Log")); //$NON-NLS-1$
-		logItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+		logItem.addActionListener((e) -> {
 				OSPLog.showLog();
-			}
 		});
-
 		helpMenu.add(logItem);
 	}
 
@@ -910,61 +874,37 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 		JMenu fontMenu = new JMenu(DisplayRes.getString("DrawingFrame.Font_menu_title")); //$NON-NLS-1$
 		displayMenu.add(fontMenu);
 		JMenuItem sizeUpItem = new JMenuItem(DisplayRes.getString("DrawingFrame.IncreaseFontSize_menu_item")); //$NON-NLS-1$
-		sizeUpItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+		sizeUpItem.addActionListener((e) -> {
 				FontSizer.levelUp();
-			}
-
 		});
 		fontMenu.add(sizeUpItem);
 		final JMenuItem sizeDownItem = new JMenuItem(DisplayRes.getString("DrawingFrame.DecreaseFontSize_menu_item")); //$NON-NLS-1$
-		sizeDownItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+		sizeDownItem.addActionListener((e) -> {
 				FontSizer.levelDown();
-			}
-
 		});
 		fontMenu.add(sizeDownItem);
-		fontMenu.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent e) {
+		fontMenu.addChangeListener((e) -> {
 				sizeDownItem.setEnabled(FontSizer.getLevel() > 0);
-			}
-
 		});
 		JMenu aliasMenu = new JMenu(DisplayRes.getString("DrawingFrame.AntiAlias_menu_title")); //$NON-NLS-1$
 		if (!JSUtil.isJS)
 			displayMenu.add(aliasMenu);
 		final JCheckBoxMenuItem textAliasItem = new JCheckBoxMenuItem(
 				DisplayRes.getString("DrawingFrame.Text_checkbox_label"), false); //$NON-NLS-1$
-		textAliasItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+		textAliasItem.addActionListener((e) -> {
 				drawingPanel.antialiasTextOn = textAliasItem.isSelected();
 				drawingPanel.repaint();
-			}
-
 		});
 		aliasMenu.add(textAliasItem);
 		final JCheckBoxMenuItem shapeAliasItem = new JCheckBoxMenuItem(
 				DisplayRes.getString("DrawingFrame.Drawing_textbox_label"), false); //$NON-NLS-1$
-		shapeAliasItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+		shapeAliasItem.addActionListener((e) -> {
 				drawingPanel.antialiasShapeOn = shapeAliasItem.isSelected();
 				drawingPanel.repaint();
-			}
-
 		});
-		aliasMenu.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent e) {
+		aliasMenu.addChangeListener((e) -> {
 				textAliasItem.setSelected(drawingPanel.antialiasTextOn);
 				shapeAliasItem.setSelected(drawingPanel.antialiasShapeOn);
-			}
-
 		});
 		aliasMenu.add(shapeAliasItem);
 		menuBar.add(displayMenu);
