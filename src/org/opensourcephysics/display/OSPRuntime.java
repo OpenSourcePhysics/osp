@@ -145,6 +145,8 @@ public class OSPRuntime {
 
 	public static boolean dontLog = isJS; // for OSPLog
 
+	public static boolean allowAutopaste = !isJS; // for TFrame and TToolbar
+
 	public static boolean allowSetFonts = true;// !isBHTest; // for testing
 
 	public static boolean allowAsyncURL = isJS; // for OSPRuntime and Library SwingWorkers
