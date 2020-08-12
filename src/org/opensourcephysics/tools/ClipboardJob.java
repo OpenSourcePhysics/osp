@@ -11,10 +11,13 @@ import org.opensourcephysics.display.OSPRuntime;
 
 /**
  * This is a Job implementation for osp data transfers via the clipboard.
+ * 
+ * Not used.
  *
  * @author Douglas Brown
  * @version 1.0
  */
+@Deprecated
 public class ClipboardJob extends LocalJob {
 
 	/**
