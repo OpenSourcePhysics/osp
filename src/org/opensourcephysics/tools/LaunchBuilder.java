@@ -2459,11 +2459,7 @@ public class LaunchBuilder extends Launcher {
 				if (getSelectedTab() != null) {
 					ArrayList<LaunchNode> nodes = getSelectedTab().getSelectedNodes();
 					if (nodes != null) {
-						NodeSet nodeSet = new NodeSet(nodes);
-						XMLControl control = new XMLControlElement(nodeSet);
-						StringSelection data = new StringSelection(control.toXML());
-						Clipboard clipboard = OSPRuntime.getClipboard();
-						clipboard.setContents(data, data);
+						OSPRuntime.copy(new XMLControlElement(new NodeSet(nodes)).toXML(), null);
 					}
 				}
 			}
@@ -2472,13 +2468,7 @@ public class LaunchBuilder extends Launcher {
 		pasteAction = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				try {
-					Clipboard clipboard = OSPRuntime.getClipboard();
-					Transferable data = clipboard.getContents(null);
-					if (data == null)
-						return;
-
-					String dataString = (String) data.getTransferData(DataFlavor.stringFlavor);
+				OSPRuntime.paste((dataString) -> {
 					if (dataString != null) {
 						XMLControlElement control = new XMLControlElement();
 						control.readXML(dataString);
@@ -2491,10 +2481,8 @@ public class LaunchBuilder extends Launcher {
 								addChildToSelectedNode(node);
 							}
 						}
-					}
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
+					}					
+				});
 			}
 
 		};

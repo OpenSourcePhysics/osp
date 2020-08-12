@@ -10,6 +10,10 @@ package org.opensourcephysics.display;
 import java.awt.Component;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
@@ -26,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -211,7 +216,7 @@ public class OSPRuntime {
 	public static boolean loadDataTool = true;
 
 	/** Load Fourier Tool, if available. */
-	public static boolean loadFourierTool = true;
+	public static boolean loadFourierTool = true; // but the item is hidden, so no difference
 
 	/** Load Translator Tool, if available. */
 	public static boolean loadTranslatorTool = true;
@@ -1621,6 +1626,37 @@ public class OSPRuntime {
 			im.put(ks, key = actionKey);
 		}
 		am.put(key, pasteAction);
+	}
+
+	/**
+	 * Pastes from the clipboard and returns the pasted string.
+	 *
+	 * @return the pasted string, or null if none
+	 */
+	public static String paste(Consumer<String> whenDone) {
+		if (isJS) {
+			if (whenDone != null)
+				jsutil.getClipboardText(whenDone);
+			return null;
+		}
+		Clipboard clipboard = getClipboard();
+		Transferable data = clipboard.getContents(null);
+		if ((data != null) && data.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+			try {
+				String s = (String) data.getTransferData(DataFlavor.stringFlavor);
+				if (whenDone != null)
+					whenDone.accept(s);
+				return s;
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
+		return null;
+	}
+
+	public static void copy(String s, ClipboardOwner owner) {
+		StringSelection stringSelection = new StringSelection(s);
+		getClipboard().setContents(stringSelection, owner == null ? stringSelection : owner);
 	}
 }
 /*

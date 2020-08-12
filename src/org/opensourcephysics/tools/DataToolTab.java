@@ -1181,8 +1181,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 * Copies the selected table data to the clipboard.
 	 */
 	protected void copyTableDataToClipboard() {
+		OSPRuntime.copy(new XMLControlElement(getSelectedTableData()).toXML(), null);
 		OSPLog.debug("copying table data from " + getName()); //$NON-NLS-1$
-		DataTool.copy(getSelectedTableData());
 	}
 
 	/**

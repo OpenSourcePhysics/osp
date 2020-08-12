@@ -11,7 +11,6 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.BitSet;
 
-import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.DataFunction;
 import org.opensourcephysics.display.Dataset;
 import org.opensourcephysics.display.DatasetManager;
@@ -296,18 +295,20 @@ public class DataFunctionEditor extends FunctionEditor {
 	 * Pastes the clipboard contents.
 	 */
 	@Override
-	protected void paste() {
-		XMLControl[] controls = getClipboardContents();
-		if (controls == null) {
-			return;
-		}
-		for (int i = 0; i < controls.length; i++) {
-			// create a new DataFunction
-			DataFunction f = new DataFunction(data);
-			FObject obj = (FObject) controls[i].loadObject(f);
-			addObject(obj, true);
-		}
-		evaluateAll();
+	protected void pasteAction() {
+		getClipboardContentsAsync((controls) -> {
+			if (controls == null) {
+				return;
+			}
+			for (int i = 0; i < controls.length; i++) {
+				// create a new DataFunction
+				DataFunction f = new DataFunction(data);
+				FObject obj = (FObject) controls[i].loadObject(f);
+				addObject(obj, true);
+			}
+			evaluateAll();
+			
+		});
 	}
 
 	@Override

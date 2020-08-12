@@ -11,19 +11,14 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.HeadlessException;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -659,9 +654,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 	 * @param control the xml control
 	 */
 	protected void copyAction(XMLControlElement control) {
-		StringSelection data = new StringSelection(control.toXML());
-		Clipboard clipboard = OSPRuntime.getClipboard();
-		clipboard.setContents(data, this);
+		OSPRuntime.copy(control.toXML(), this);
 	}
 
 	/**
@@ -844,39 +837,25 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 		pasteItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				try {
-					Clipboard clipboard = OSPRuntime.getClipboard();
-					Transferable data = clipboard.getContents(null);
-					if (data == null)
-						return;
-					XMLControlElement control = new XMLControlElement();
-					control.readXML((String) data.getTransferData(DataFlavor.stringFlavor));
-					pasteAction(control);
-				} catch (UnsupportedFlavorException ex) {
-				} catch (IOException ex) {
-				} catch (HeadlessException ex) {
-				}
+					OSPRuntime.paste((s) -> {
+						XMLControlElement control = new XMLControlElement();
+						control.readXML(s);
+						pasteAction(control);	
+					});
 			}
 
 		});
 		pasteItem.setEnabled(false); // not supported yet
 		editMenu.add(pasteItem);
 		replaceItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Replace_menu_item")); //$NON-NLS-1$
-		replaceItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					Clipboard clipboard = OSPRuntime.getClipboard();
-					Transferable data = clipboard.getContents(null);
+		replaceItem.addActionListener((e) -> {
+			OSPRuntime.paste((s) -> {
+				if (s != null) {
 					XMLControlElement control = new XMLControlElement();
-					control.readXML((String) data.getTransferData(DataFlavor.stringFlavor));
+					control.readXML(s);
 					replaceAction(control);
-				} catch (UnsupportedFlavorException ex) {
-				} catch (IOException ex) {
-				} catch (HeadlessException ex) {
 				}
-			}
-
+			});
 		});
 		replaceItem.setEnabled(false); // not supported yet
 		editMenu.add(replaceItem);
@@ -1042,7 +1021,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 		JMenuItem fourierToolItem = new JMenuItem(DisplayRes.getString("DrawingFrame.FourierTool_menu_item")); //$NON-NLS-1$
 		//if (!JSUtil.isJS)
 			toolsMenu.add(fourierToolItem);
-		Class<?> fourierToolClass = null;
+//		Class<?> fourierToolClass = null;
 		if (OSPRuntime.loadFourierTool) {
 //			try {
 //				fourierToolClass = Class.forName("org.opensourcephysics.tools.FourierTool");
@@ -1054,24 +1033,24 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 		}
 		// there is no Fourier tool
 		fourierToolItem.setVisible(false);
-		final Class<?> finalFourierToolClass = fourierToolClass; // class must be final for action listener
-		fourierToolItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					Method m = finalFourierToolClass.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
-					Tool tool = (Tool) m.invoke(null, (Object[]) null);
-					tool.send(new LocalJob(drawingPanel), reply);
-					if (tool instanceof OSPFrame) {
-						((OSPFrame) tool).setKeepHidden(false);
-					}
-					((JFrame) tool).setVisible(true);
-				} catch (Exception ex) {
-					fourierToolItem.setEnabled(false);
-				}
-			}
-
-		});
+//		final Class<?> finalFourierToolClass = fourierToolClass; // class must be final for action listener
+//		fourierToolItem.addActionListener(new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				try {
+//					Method m = finalFourierToolClass.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
+//					Tool tool = (Tool) m.invoke(null, (Object[]) null);
+//					tool.send(new LocalJob(drawingPanel), reply);
+//					if (tool instanceof OSPFrame) {
+//						((OSPFrame) tool).setKeepHidden(false);
+//					}
+//					((JFrame) tool).setVisible(true);
+//				} catch (Exception ex) {
+//					fourierToolItem.setEnabled(false);
+//				}
+//			}
+//
+//		});
 		// create snapshot menu item
 		JMenuItem snapshotItem = new JMenuItem(DisplayRes.getString("DisplayPanel.Snapshot_menu_item")); //$NON-NLS-1$
 		if (OSPRuntime.applet == null && !JSUtil.isJS) {

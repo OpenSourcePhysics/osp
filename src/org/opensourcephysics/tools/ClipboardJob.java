@@ -7,12 +7,6 @@
 
 package org.opensourcephysics.tools;
 
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
-
 import org.opensourcephysics.display.OSPRuntime;
 
 /**
@@ -22,7 +16,6 @@ import org.opensourcephysics.display.OSPRuntime;
  * @version 1.0
  */
 public class ClipboardJob extends LocalJob {
-	static private final Clipboard clipboard = OSPRuntime.getClipboard();
 
 	/**
 	 * Constructs a ClipboardJob.
@@ -56,15 +49,7 @@ public class ClipboardJob extends LocalJob {
 	 */
 	@Override
 	public String getXML() {
-		// this is the paste function
-		try {
-			Transferable data = clipboard.getContents(null);
-			if (data != null)
-				return (String) data.getTransferData(DataFlavor.stringFlavor);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		return null;
+		return OSPRuntime.paste(null);
 	}
 
 	/**
@@ -76,8 +61,7 @@ public class ClipboardJob extends LocalJob {
 	public void setXML(String xml) {
 		// this is the copy function
 		if (xml != null) {
-			StringSelection data = new StringSelection(xml);
-			clipboard.setContents(data, data);
+			OSPRuntime.copy(xml,  null);
 		}
 	}
 

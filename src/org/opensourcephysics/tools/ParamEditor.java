@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
-import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.DatasetManager;
 
 /**
@@ -309,19 +308,20 @@ public class ParamEditor extends FunctionEditor {
 	 * Pastes the clipboard contents.
 	 */
 	@Override
-	protected void paste() {
-		XMLControl[] controls = getClipboardContents();
-		if (controls == null) {
-			return;
-		}
-		for (int i = 0; i < controls.length; i++) {
-			// create a new object
-			Parameter param = (Parameter) controls[i].loadObject(null);
-			param.setNameEditable(true);
-			param.setExpressionEditable(true);
-			addObject(param, true);
-		}
-		evaluateAll();
+	protected void pasteAction() {
+	    getClipboardContentsAsync((controls) -> {
+			if (controls == null) {
+				return;
+			}
+			for (int i = 0; i < controls.length; i++) {
+				// create a new object
+				Parameter param = (Parameter) controls[i].loadObject(null);
+				param.setNameEditable(true);
+				param.setExpressionEditable(true);
+				addObject(param, true);
+			}
+			evaluateAll();
+		});
 	}
 
 	/**

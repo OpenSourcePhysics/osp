@@ -56,7 +56,7 @@ import javax.swing.event.SwingPropertyChangeSupport;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
-import org.opensourcephysics.tools.DataTool;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.FontSizer;
 
 /**
@@ -279,8 +279,7 @@ public abstract class Filter {
 	 * Copies this filter to the clipboard.
 	 */
 	public void copy() {
-		XMLControl control = new XMLControlElement(this);
-		DataTool.copy(control.toXML());
+		OSPRuntime.copy(new XMLControlElement(this).toXML(), null);
 	}
 
 	/**

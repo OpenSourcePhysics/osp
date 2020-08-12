@@ -17,11 +17,8 @@ import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -37,12 +34,12 @@ import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.EventObject;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -129,7 +126,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	// static fields
 	static DecimalFormat decimalFormat;
 	static DecimalFormat sciFormat0000;
-	
+
 	static {
 		decimalFormat = new DecimalFormat();
 		decimalFormat.setMaximumFractionDigits(4);
@@ -172,7 +169,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	protected TableModel tableModel = new TableModel();
 	protected CellEditor tableCellEditor = new CellEditor();
 	protected CellRenderer tableCellRenderer = new CellRenderer();
-	
+
 	private JButton newButton;
 	private JButton cutButton;
 	private JButton copyButton;
@@ -814,7 +811,8 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	protected String newButtonTipText;
 	protected String titledBorderText;
 	private boolean haveGUI;
-	protected boolean haveGUI() { 
+
+	protected boolean haveGUI() {
 		return haveGUI;
 	}
 
@@ -868,7 +866,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			pasteButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					paste();
+					pasteAction();
 				}
 
 			});
@@ -912,7 +910,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			cutButton.setText(ToolsRes.getString("FunctionEditor.Button.Cut")); //$NON-NLS-1$
 			cutButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Cut.Tooltip")); //$NON-NLS-1$
 			copyButton.setText("???");
-			//.setText(ToolsRes.getString("FunctionEditor.Button.Copy")); //$NON-NLS-1$
+			// .setText(ToolsRes.getString("FunctionEditor.Button.Copy")); //$NON-NLS-1$
 			copyButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Copy.Tooltip")); //$NON-NLS-1$
 			pasteButton.setText(ToolsRes.getString("FunctionEditor.Button.Paste")); //$NON-NLS-1$
 			pasteButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Paste.Tooltip")); //$NON-NLS-1$
@@ -939,9 +937,12 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		boolean b = getSelectedObject() != null;
 		copyButton.setEnabled(b);
 		cutButton.setEnabled(b && isRemovable(getSelectedObject()));
-		pasteButton.setEnabled(getClipboardContents() != null);
+		getClipboardContentsAsync((contents) -> {
+			pasteButton.setEnabled(contents != null);
+		});
 	}
-	
+
+	@Override
 	public void setVisible(boolean visible) {
 		super.setVisible(visible);
 		if (visible)
@@ -1071,9 +1072,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		if ((array != null) && (array.length > 0)) {
 			XMLControl control = new XMLControlElement(this);
 			control.setValue("selected", array); //$NON-NLS-1$
-			StringSelection ss = new StringSelection(control.toXML());
-			Clipboard clipboard = OSPRuntime.getClipboard();
-			clipboard.setContents(ss, ss);
+			OSPRuntime.copy(control.toXML(), null);
 			pasteButton.setEnabled(true);
 			firePropertyChange(PROPERTY_FUNCTIONEDITOR_CLIPBOARD, null, null); // $NON-NLS-1$
 		}
@@ -1082,27 +1081,25 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	/**
 	 * Pastes the clipboard contents.
 	 */
-	protected void paste() {
-		XMLControl[] controls = getClipboardContents();
-		if (controls == null) {
-			return;
-		}
-		for (int i = 0; i < controls.length; i++) {
-			// create a new object
-			FObject obj = (FObject) controls[i].loadObject(null);
-			addObject(obj, true);
-		}
-		evaluateAll();
+	protected void pasteAction() {
+		getClipboardContentsAsync((controls) -> {
+			if (controls == null) {
+				return;
+			}
+			for (int i = 0; i < controls.length; i++) {
+				// create a new object
+				FObject obj = (FObject) controls[i].loadObject(null);
+				addObject(obj, true);
+			}
+			evaluateAll();
+		});
 	}
 
 	/**
 	 * Gets the clipboard contents.
 	 */
-	protected XMLControl[] getClipboardContents() {
-		try {
-			Clipboard clipboard = OSPRuntime.getClipboard();
-			Transferable tran = clipboard.getContents(null);
-			String dataString = (String) (tran == null ? null : tran.getTransferData(DataFlavor.stringFlavor));
+	protected void getClipboardContentsAsync(Consumer<XMLControl[]> c) {
+		OSPRuntime.paste((dataString) -> {
 			if (dataString != null) {
 				XMLControlElement control = new XMLControlElement();
 				control.readXML(dataString);
@@ -1111,16 +1108,13 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 					for (int i = 0, n = list.size(); i < n; i++) {
 						XMLProperty prop = list.get(i);
 						if (prop.getPropertyName().equals("selected")) { //$NON-NLS-1$
-							return prop.getChildControls();
+							c.accept(prop.getChildControls());
 						}
 					}
-					return null;
 				}
 			}
-		} catch (Exception ex) {
-			/** empty block */
-		}
-		return null;
+			c.accept(null);
+		});
 	}
 
 	/**
@@ -1438,7 +1432,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 
 			};
 			KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
-			OSPRuntime.setOSPAction(im,  enter,  "enter", getActionMap(), enterAction);
+			OSPRuntime.setOSPAction(im, enter, "enter", getActionMap(), enterAction);
 			// tab key tabs to next editable cell or component
 			KeyStroke tab = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
 			Action tabAction = new AbstractAction() {

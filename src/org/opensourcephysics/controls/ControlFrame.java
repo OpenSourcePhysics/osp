@@ -326,9 +326,7 @@ abstract public class ControlFrame extends OSPFrame implements Control {
 
 	/** Copies the data in the table to the system clipboard */
 	public void copy() {
-		Clipboard clipboard = OSPRuntime.getClipboard();
-		StringSelection stringSelection = new StringSelection(this.toString());
-		clipboard.setContents(stringSelection, stringSelection);
+		OSPRuntime.copy(this.toString(), null);
 	}
 
 	public void saveXML() {

@@ -307,23 +307,24 @@ public class DataToolTable extends DataTable {
 				pasteValues.clear();
 				pasteData = null;
 				// put clipboard data into pasteValues map
-				String dataString = DataTool.paste();
-				ArrayList<String> colNames = getSelectedColumnNames();
-				if (dataString != null) {
-					pasteData = DataTool.parseData(dataString, null);
-					if (pasteData != null) {
-						pasteW = pasteData.getDatasets().size();
-						if ((pasteW > 0) && (pasteW == colNames.size())) {
-							pasteH = pasteData.getDataset(0).getIndex();
-							if (pasteH > 0) {
-								for (int i = 0; i < pasteW; i++) {
-									double[] vals = pasteData.getDataset(i).getYPoints();
-									pasteValues.put(colNames.get(i), vals);
+				OSPRuntime.paste((dataString) -> {
+					if (dataString != null) {
+						ArrayList<String> colNames = getSelectedColumnNames();
+						pasteData = DataTool.parseData(dataString, null);
+						if (pasteData != null) {
+							pasteW = pasteData.getDatasets().size();
+							if ((pasteW > 0) && (pasteW == colNames.size())) {
+								pasteH = pasteData.getDataset(0).getIndex();
+								if (pasteH > 0) {
+									for (int i = 0; i < pasteW; i++) {
+										double[] vals = pasteData.getDataset(i).getYPoints();
+										pasteValues.put(colNames.get(i), vals);
+									}
 								}
 							}
 						}
 					}
-				}
+				});
 			}
 
 		};
@@ -751,9 +752,9 @@ public class DataToolTable extends DataTable {
 			copyRowsItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					OSPLog.debug("copying table data from " + getName()); //$NON-NLS-1$
 					OSPLog.finest("copying rows"); //$NON-NLS-1$
-					String data = dataToolTab.getSelectedTableData();
-					DataTool.copy(data);
+					OSPRuntime.copy(dataToolTab.getSelectedTableData(), null);
 				}
 
 			});

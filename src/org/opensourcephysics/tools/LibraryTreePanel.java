@@ -15,11 +15,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -620,9 +615,7 @@ public class LibraryTreePanel extends JPanel {
 					if (!isEditing() && !target.startsWith("/") && target.indexOf(":") == -1) { //$NON-NLS-1$ //$NON-NLS-2$
 						control.setValue("base_path", node.getBasePath()); //$NON-NLS-1$
 					}
-					StringSelection data = new StringSelection(control.toXML());
-					Clipboard clipboard = OSPRuntime.getClipboard();
-					clipboard.setContents(data, data);
+					OSPRuntime.copy(control.toXML(), null);
 					enableButtons();
 				}
 			}
@@ -645,10 +638,7 @@ public class LibraryTreePanel extends JPanel {
 				LibraryTreeNode parent = getSelectedNode();
 				if (parent == null || !(parent.record instanceof LibraryCollection))
 					return;
-				try {
-					Clipboard clipboard = OSPRuntime.getClipboard();
-					Transferable data = clipboard.getContents(null);
-					String dataString = data == null ? null : (String) data.getTransferData(DataFlavor.stringFlavor);
+				OSPRuntime.paste((dataString) -> {
 					if (dataString != null) {
 						XMLControlElement control = new XMLControlElement();
 						control.readXML(dataString);
@@ -665,11 +655,9 @@ public class LibraryTreePanel extends JPanel {
 							}
 							setChanged();
 						}
-					}
-				} catch (Exception ex) {
-				}
-
-				enableButtons();
+						enableButtons();
+					}				
+				});
 			}
 		};
 		moveUpAction = new AbstractAction() {
@@ -1337,7 +1325,13 @@ public class LibraryTreePanel extends JPanel {
 		addResourceButton.setEnabled(nodeIsCollection);
 		copyButton.setEnabled(node != null);
 		cutButton.setEnabled(node != null && node != rootNode);
-		pasteButton.setEnabled(nodeIsCollection && isClipboardPastable());
+		pasteButton.setEnabled(false);
+		if (nodeIsCollection) {
+			ifClipboardPastable(() -> {
+				pasteButton.setEnabled(true);	
+			}
+			);
+		}
 		boolean canMoveUp = false, canMoveDown = false;
 		if (node != null && node.getParent() != null) {
 			LibraryTreeNode parent = (LibraryTreeNode) node.getParent();
@@ -1401,27 +1395,24 @@ public class LibraryTreePanel extends JPanel {
 	 * 
 	 * @return true if the clipboard contains a LibraryTreeNode XMLControl string
 	 */
-	protected boolean isClipboardPastable() {
-		if (clipboardAvailable != null)
-			return clipboardAvailable.booleanValue();
+	protected void ifClipboardPastable(Runnable r) {
+		if (clipboardAvailable == Boolean.TRUE) {
+			r.run();
+		}
 		clipboardAvailable = Boolean.FALSE;
 		pasteControl = null;
-		try {
-			Clipboard clipboard = OSPRuntime.getClipboard();
-			Transferable data = clipboard.getContents(null);
-			String dataString = data == null ? null : (String) data.getTransferData(DataFlavor.stringFlavor);
+		OSPRuntime.paste((dataString) -> {
 			if (dataString != null) {
 				XMLControlElement control = new XMLControlElement();
 				control.readXML(dataString);
 				if (LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
 					pasteControl = control;
 					clipboardAvailable = Boolean.TRUE;
-					return true;
+					r.run();
 				}
 			}
-		} catch (Exception e) {
-		}
-		return false;
+
+		});
 	}
 
 	/**
@@ -1479,11 +1470,15 @@ public class LibraryTreePanel extends JPanel {
 		item = new JMenuItem(ToolsRes.getString("LibraryTreePanel.Button.Cut")); //$NON-NLS-1$
 		popup.add(item);
 		item.addActionListener(cutAction);
-		if (isCollection && isClipboardPastable()) {
-			item = new JMenuItem(ToolsRes.getString("LibraryTreePanel.Button.Paste")); //$NON-NLS-1$
-			popup.add(item);
-			item.addActionListener(pasteAction);
+		JMenuItem citem = new JMenuItem(ToolsRes.getString("LibraryTreePanel.Button.Paste")); //$NON-NLS-1$
+		citem.setEnabled(false);
+		if (isCollection) {
+			ifClipboardPastable(() -> {
+				citem.setEnabled(true);
+				citem.addActionListener(pasteAction);
+			});
 		}
+		popup.add(citem);
 		if (canMoveUp || canMoveDown) {
 			popup.addSeparator();
 			if (canMoveUp) {
