@@ -10,6 +10,9 @@ import java.text.DecimalFormat;
 import java.util.Hashtable;
 import java.util.Map;
 
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
+
 /**
  * A utility class for numerical analysis.
  * This class cannot be subclassed or instantiated because all methods are static.
@@ -265,6 +268,20 @@ public final class Util {
     } catch(ParserException ex) {}
     return Double.NaN;
   }
+
+
+
+public static void newSpinnerNumberModel(JSpinner spinner, int value, int min, int max, int step) {
+	SpinnerNumberModel m = (SpinnerNumberModel) spinner.getModel();
+	if (min == ((Integer) m.getMinimum()).intValue()
+			&& max == ((Integer) m.getMaximum()).intValue()
+			&& step == ((Integer) m.getMaximum()).intValue()
+			) {
+		spinner.setValue(value);
+	} else {
+    spinner.setModel(new SpinnerNumberModel(value, min, max, step));
+	}
+}
 
 }
 

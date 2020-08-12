@@ -350,8 +350,7 @@ final public class DataToolPropsTable extends JTable {
 
 		});
 		// create size spinner
-		SpinnerModel sizemodel = new SpinnerNumberModel(2, 1, 6, 1);
-		sizeSpinner = new JSpinner(sizemodel) {
+		sizeSpinner = new JSpinner(new SpinnerNumberModel(2, 1, 6, 1)) {
 			@Override
 			public Dimension getPreferredSize() {
 				return shapeSpinner.getPreferredSize();

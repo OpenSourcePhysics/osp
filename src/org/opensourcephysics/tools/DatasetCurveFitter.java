@@ -74,11 +74,9 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.CellBorder;
 import org.opensourcephysics.display.ColorIcon;
 import org.opensourcephysics.display.Dataset;
-import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.FunctionDrawer;
 import org.opensourcephysics.display.MessageDrawable;
 import org.opensourcephysics.display.OSPRuntime;

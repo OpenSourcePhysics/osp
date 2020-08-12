@@ -470,8 +470,7 @@ public void setBackground(Color color){ // Added by Paco
     scrollpane = new JScrollPane(tables[0]);
     if(tables.length>1) {
       // create spinner
-      SpinnerModel model = new SpinnerNumberModel(0, 0, tables.length-1, 1);
-      spinner = new JSpinner(model);
+      spinner = new JSpinner(new SpinnerNumberModel(0, 0, tables.length-1, 1));
       JSpinner.NumberEditor editor = new JSpinner.NumberEditor(spinner);
       editor.getTextField().setFont(tables[0].indexRenderer.getFont());
       spinner.setEditor(editor);
