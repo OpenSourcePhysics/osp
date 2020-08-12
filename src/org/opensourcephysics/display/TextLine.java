@@ -542,6 +542,8 @@ public class TextLine {
 		}
 		// BH 2020.03.04 no need to do all this if it's simple text
 		if (keepItSimple(text)) {
+			Font prevFont = g.getFont();
+			g.setFont(font);
 			FontMetrics fm = g.getFontMetrics();
 			width = fm.stringWidth(text);
 			ascent = fm.getAscent();
@@ -549,6 +551,7 @@ public class TextLine {
 			leading = fm.getLeading();
 			maxDescent = fm.getMaxDescent();
 			maxAscent = fm.getMaxAscent();
+			g.setFont(prevFont);
 		} else {
 			TextState current = new TextState();
 			char ch;
