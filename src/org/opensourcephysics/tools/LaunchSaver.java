@@ -64,6 +64,7 @@ import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.controls.XMLTreePanel;
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.display.ResizableIcon;
 
 /**
  * This is a dialog that displays a tree showing tabs to be saved.
@@ -541,7 +542,7 @@ public class LaunchSaver extends JDialog {
 		refresh();
 	}
 
-	private Icon getIcon(Node node) {
+	private ResizableIcon getIcon(Node node) {
 		File file;
 		if (node == root) {
 			String path = XML.getResolvedPath(builder.tabSetName, Launcher.tabSetBasePath);

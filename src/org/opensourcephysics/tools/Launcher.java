@@ -123,7 +123,7 @@ import org.opensourcephysics.tools.LaunchNode.DisplayTab;
 @SuppressWarnings("serial")
 public class Launcher {
 	// static constants
-	protected static final Icon defaultIcon = new DefaultIcon();
+	protected static ResizableIcon defaultIcon;
 	// static fields
 	protected static Launcher mainLauncher;
 	protected static String defaultFileName = "launcher_default"; //$NON-NLS-1$
@@ -143,17 +143,15 @@ public class Launcher {
 	protected static javax.swing.Timer splashTimer;
 	protected static float baseMenuFontSize;
 	// some of these icons are created in LaunchBuilder
-	protected static Icon launchIcon, launchedIcon, singletonIcon, whiteFolderIcon;
-	protected static Icon redFileIcon, greenFileIcon, magentaFileIcon, yellowFileIcon;
-	protected static Icon whiteFileIcon, noFileIcon, ghostFileIcon;
-	protected static Icon redFolderIcon, greenFolderIcon, yellowFolderIcon;
-	protected static Icon linkIcon, htmlIcon, launchEmptyIcon, ejsIcon;
+	protected static ResizableIcon launchIcon, launchedIcon, singletonIcon, whiteFolderIcon;
+	protected static ResizableIcon redFileIcon, greenFileIcon, magentaFileIcon, yellowFileIcon;
+	protected static ResizableIcon whiteFileIcon, noFileIcon, ghostFileIcon;
+	protected static ResizableIcon redFolderIcon, greenFolderIcon, yellowFolderIcon;
+	protected static ResizableIcon linkIcon, htmlIcon, launchEmptyIcon, ejsIcon;
 	protected static Icon navOpenIcon, navClosedIcon;
 	protected static Icon backIcon, forwardIcon, backDisabledIcon, forwardDisabledIcon;
 	@SuppressWarnings("javadoc")
 	public static boolean singleAppMode = false;
-	@SuppressWarnings("javadoc")
-	public static LaunchNode activeNode;
 	private static boolean newVMAllowed = false;
 	protected static javax.swing.Timer frameFinder;
 	protected static ArrayList<Frame> existingFrames = new ArrayList<Frame>();
@@ -245,43 +243,26 @@ public class Launcher {
 		for (String ext : extractExtensions) {
 			ResourceLoader.addExtractExtension(ext);
 		}
-		// load icons--this will also set jarpath, if any
-		String imageFile = "/org/opensourcephysics/resources/tools/images/launch.gif"; //$NON-NLS-1$
-		launchIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/launch.gif"; //$NON-NLS-1$
-		launchIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/launched.gif"; //$NON-NLS-1$
-		launchedIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/singleton.gif"; //$NON-NLS-1$
-		singletonIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/nofile.gif"; //$NON-NLS-1$
-		noFileIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/greenfile.gif"; //$NON-NLS-1$
-		greenFileIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/magentafile.gif"; //$NON-NLS-1$
-		magentaFileIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/link.gif"; //$NON-NLS-1$
-		linkIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/html.gif"; //$NON-NLS-1$
-		htmlIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/launchempty.gif"; //$NON-NLS-1$
-		launchEmptyIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/launchEJS.gif"; //$NON-NLS-1$
-		ejsIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/whitefolder.gif"; //$NON-NLS-1$
-		whiteFolderIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/nav_open.gif"; //$NON-NLS-1$
-		navOpenIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/nav_closed.gif"; //$NON-NLS-1$
-		navClosedIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/undo.gif"; //$NON-NLS-1$
-		backIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/redo.gif"; //$NON-NLS-1$
-		forwardIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/undodisabled.gif"; //$NON-NLS-1$
-		backDisabledIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/redodisabled.gif"; //$NON-NLS-1$
-		forwardDisabledIcon = loadIcon(imageFile);
+		
+		launchIcon = loadIcon("launch.gif"); //$NON-NLS-1$ 
+		launchIcon = loadIcon("launch.gif"); //$NON-NLS-1$ 
+		launchedIcon = loadIcon("launched.gif"); //$NON-NLS-1$ 
+		singletonIcon = loadIcon("singleton.gif"); //$NON-NLS-1$ 
+		noFileIcon = loadIcon("nofile.gif"); //$NON-NLS-1$ 
+		greenFileIcon = loadIcon("greenfile.gif"); //$NON-NLS-1$ 
+		magentaFileIcon = loadIcon("magentafile.gif"); //$NON-NLS-1$ 
+		linkIcon = loadIcon("link.gif"); //$NON-NLS-1$ 
+		htmlIcon = loadIcon("html.gif"); //$NON-NLS-1$ 
+		launchEmptyIcon = loadIcon("launchempty.gif"); //$NON-NLS-1$ 
+		ejsIcon = loadIcon("launchEJS.gif"); //$NON-NLS-1$ 
+		whiteFolderIcon = loadIcon("whitefolder.gif"); //$NON-NLS-1$ 
+		navOpenIcon = loadIcon("nav_open.gif"); //$NON-NLS-1$ 
+		navClosedIcon = loadIcon("nav_closed.gif"); //$NON-NLS-1$ 
+		backIcon = loadIcon("undo.gif"); //$NON-NLS-1$ 
+		forwardIcon = loadIcon("redo.gif"); //$NON-NLS-1$ 
+		backDisabledIcon = loadIcon("undodisabled.gif"); //$NON-NLS-1$ 
+		forwardDisabledIcon = loadIcon("redodisabled.gif"); //$NON-NLS-1$ 
+
 	}
 
 	/**
@@ -1096,6 +1077,7 @@ public class Launcher {
 		JPanel box = new JPanel();
 		contentPane.add(box, BorderLayout.SOUTH);
 		ActionListener openAction = new AbstractAction() {
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// open linked file and node
@@ -1116,7 +1098,9 @@ public class Launcher {
 			}
 
 		};
-		for (int i = 0; i < node.getChildCount(); i++) {
+		for (
+
+				int i = 0; i < node.getChildCount(); i++) {
 			LaunchNode child = (LaunchNode) node.getChildAt(i);
 			JButton button = new JButton(child.name);
 			button.addActionListener(openAction);
@@ -1126,8 +1110,10 @@ public class Launcher {
 			box.add(button);
 		}
 		frame.validate();
+
 		refreshGUI();
 		frame.repaint();
+
 	}
 
 	/**
@@ -2924,7 +2910,7 @@ public class Launcher {
 			setToolTipText(node.tooltip.equals("") //$NON-NLS-1$
 					? null
 					: node.tooltip);
-			Icon icon = whiteFolderIcon;
+			ResizableIcon icon = whiteFolderIcon;
 			if ((node.getFileName() != null) && (Launcher.this instanceof LaunchBuilder)) {
 				setToolTipText(LaunchRes.getString("ToolTip.FileName") + " \"" + node.getFileName() + "\""); //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
 				icon = getFileIcon(node);
@@ -2963,7 +2949,7 @@ public class Launcher {
 					icon = noFileIcon;
 				}
 			}
-			((ResizableIcon) icon).resize(FontSizer.getIntegerFactor());
+			icon.resize(FontSizer.getIntegerFactor());
 			setIcon(icon);
 			return this;
 		}
@@ -2976,7 +2962,7 @@ public class Launcher {
 	 * @param node the launch node
 	 * @return the icon
 	 */
-	protected Icon getFileIcon(LaunchNode node) {
+	protected ResizableIcon getFileIcon(LaunchNode node) {
 		if (node.getFileName().length() == 0) {
 			return null;
 		}
@@ -3219,12 +3205,14 @@ public class Launcher {
 			if (launcher.getRootNode() != null && !launcher.getRootNode().enabled) {
 				final Launcher launchr = launcher;
 				Runnable runner = new Runnable() {
+
 					@Override
 					public void run() {
 						launchr.passwordItem.doClick(0);
 					}
 				};
 				SwingUtilities.invokeLater(runner);
+
 			}
 			return obj;
 		}
@@ -3329,7 +3317,7 @@ public class Launcher {
 			final Runnable launchRunner = new Runnable() {
 				@Override
 				public void run() {
-					activeNode = node;
+					OSPRuntime.activeNode = node;
 					try {
 						Method m = type.getMethod("main", new Class[] { String[].class }); //$NON-NLS-1$
 						m.invoke(type, new Object[] { launchArgs }); // may not return!
@@ -3339,7 +3327,7 @@ public class Launcher {
 					// main method returned, so remove launchThread from node map
 					if (node != null)
 						node.threads.remove(this);
-					activeNode = null;
+					OSPRuntime.activeNode = null;
 					// find frames associated with launched app and store in node
 					if (frameFinder != null) {
 						findFramesFor(node, prevFrames, this);
@@ -3414,6 +3402,7 @@ public class Launcher {
 		// }
 		// create a launch thread for separate VM
 		Runnable launchRunner = new Runnable() {
+
 			@Override
 			public void run() {
 				OSPLog.finer(LaunchRes.getString("Log.Message.Command") + " " + cmd.toString()); //$NON-NLS-1$//$NON-NLS-2$
@@ -3955,38 +3944,34 @@ public class Launcher {
 	 * @param path the path to the icon image
 	 * @return the icon
 	 */
-	protected static Icon loadIcon(String path) {
-		Icon icon = ResourceLoader.getIcon(path);
-		if (icon == null) {
-			icon = defaultIcon;
+	protected static ResizableIcon loadIcon(String path) {
+		ImageIcon base = ResourceLoader.getIcon("/org/opensourcephysics/resources/tools/images/" + path);
+		if (base.getIconWidth() > 0) {
+			return new ResizableIcon(base);
 		}
-		return icon;
-	}
+		if (defaultIcon == null) {
+			defaultIcon = new ResizableIcon(new Icon() {
 
-	/**
-	 * A class to provide a default icon in case any images are missing
-	 */
-	static class DefaultIcon implements Icon {
-		int w = 16, h = 16; // width and height of icon
+				@Override
+				public void paintIcon(Component c, Graphics g, int x, int y) {
+					Color prev = g.getColor();
+					g.setColor(Color.BLUE);
+					g.drawOval(x + 3, y + 3, 10, 10);
+					g.setColor(prev);
+				}
 
-		@Override
-		public void paintIcon(Component c, Graphics g, int x, int y) {
-			Color prev = g.getColor();
-			g.setColor(Color.BLUE);
-			g.drawOval(x + 3, y + 3, w - 6, h - 6);
-			g.setColor(prev);
+				@Override
+				public int getIconWidth() {
+					return 16;
+				}
+
+				@Override
+				public int getIconHeight() {
+					return 16;
+				}
+			});
 		}
-
-		@Override
-		public int getIconWidth() {
-			return w;
-		}
-
-		@Override
-		public int getIconHeight() {
-			return h;
-		}
-
+		return defaultIcon;
 	}
 
 	/**

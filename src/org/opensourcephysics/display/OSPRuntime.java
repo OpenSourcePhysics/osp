@@ -55,6 +55,7 @@ import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.tools.FontSizer;
+import org.opensourcephysics.tools.LaunchNode;
 import org.opensourcephysics.tools.ResourceLoader;
 import org.opensourcephysics.tools.Translator;
 
@@ -368,6 +369,8 @@ public class OSPRuntime {
 			null, // no AffineTransform
 			false, // no antialiasing
 			false); // no fractional metrics
+
+	public static LaunchNode activeNode;
 
 	/**
 	 * Private constructor to prevent instantiation.

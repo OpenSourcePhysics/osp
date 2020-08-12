@@ -15,10 +15,6 @@ import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -71,7 +67,6 @@ import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
-import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -1433,20 +1428,13 @@ public class LaunchBuilder extends Launcher {
 
 		});
 		// create additional file and folder icons
-		String imageFile = "/org/opensourcephysics/resources/tools/images/whitefile.gif"; //$NON-NLS-1$
-		whiteFileIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/ghostfile.gif"; //$NON-NLS-1$
-		ghostFileIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/redfile.gif"; //$NON-NLS-1$
-		redFileIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/yellowfile.gif"; //$NON-NLS-1$
-		yellowFileIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/redfolder.gif"; //$NON-NLS-1$
-		redFolderIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/greenfolder.gif"; //$NON-NLS-1$
-		greenFolderIcon = loadIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/yellowfolder.gif"; //$NON-NLS-1$
-		yellowFolderIcon = loadIcon(imageFile);
+		whiteFileIcon = loadIcon("whitefile.gif");//$NON-NLS-1$
+		ghostFileIcon = loadIcon("ghostfile.gif");//$NON-NLS-1$
+		redFileIcon = loadIcon("redfile.gif");//$NON-NLS-1$
+		yellowFileIcon = loadIcon("yellowfile.gif");//$NON-NLS-1$
+		redFolderIcon = loadIcon("redfolder.gif");//$NON-NLS-1$
+		greenFolderIcon = loadIcon("greenfolder.gif");//$NON-NLS-1$
+		yellowFolderIcon = loadIcon("yellowfolder.gif");//$NON-NLS-1$
 		// create actions
 		createActions();
 		// create fields
@@ -1696,8 +1684,7 @@ public class LaunchBuilder extends Launcher {
 		modelArgBar.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 10));
 		modelArgLabel = new JLabel();
 		modelArgLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 3));
-		SpinnerModel model = new SpinnerNumberModel(0, 0, maxArgs - 1, 1);
-		modelArgSpinner = new JSpinner(model);
+		modelArgSpinner = new JSpinner(new SpinnerNumberModel(0, 0, maxArgs - 1, 1));
 		editor = new JSpinner.NumberEditor(modelArgSpinner);
 		modelArgSpinner.setEditor(editor);
 		modelArgSpinner.addChangeListener(new ChangeListener() {
@@ -1786,8 +1773,7 @@ public class LaunchBuilder extends Launcher {
 		argLabel = new JLabel();
 		labels.add(argLabel);
 		argBar.add(argLabel);
-		model = new SpinnerNumberModel(0, 0, maxArgs - 1, 1);
-		argSpinner = new JSpinner(model);
+		argSpinner = new JSpinner(new SpinnerNumberModel(0, 0, maxArgs - 1, 1));
 		editor = new JSpinner.NumberEditor(argSpinner);
 		argSpinner.setEditor(editor);
 		argSpinner.addChangeListener(new ChangeListener() {
@@ -2222,8 +2208,7 @@ public class LaunchBuilder extends Launcher {
 	 * Creates the actions.
 	 */
 	protected void createActions() {
-		String imageFile = "/org/opensourcephysics/resources/tools/images/open.gif"; //$NON-NLS-1$
-		openIcon = loadIcon(imageFile);
+		openIcon = loadIcon("open.gif"); //$NON-NLS-1$
 		openJarAction = new AbstractAction(null, openIcon) {
 			@Override
 			public void actionPerformed(ActionEvent e) {
