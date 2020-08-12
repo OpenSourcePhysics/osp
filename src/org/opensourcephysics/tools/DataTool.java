@@ -1019,11 +1019,12 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * @return DatasetManager with parsed data, or null if none found
 	 */
 	public static DatasetManager parseData(String dataString, String fileName) {
-		BufferedReader input = new BufferedReader(new StringReader(dataString));
 		final String gnuPlotComment = "#"; //$NON-NLS-1$
+		BufferedReader input = null;
 		try {
-			String textLine = input.readLine();
 			for (int i = 0; i < DataTool.delimiters.length; i++) {
+				input = new BufferedReader(new StringReader(dataString));
+				String textLine = input.readLine();
 				ArrayList<double[]> rows = new ArrayList<double[]>();
 				int columns = Integer.MAX_VALUE;
 				String[] columnNames = null;
@@ -1173,14 +1174,13 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 				}
 				// close the reader and open a new one
 				input.close();
-				input = new BufferedReader(new StringReader(dataString));
-				textLine = input.readLine();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		try {
-			input.close();
+			if (input != null)
+				input.close();
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
