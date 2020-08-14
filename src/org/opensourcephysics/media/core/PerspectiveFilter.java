@@ -945,6 +945,7 @@ public class PerspectiveFilter extends Filter {
 				inCorners[i] = new Corner();
 				outCorners[i] = new Corner();
 				textLayouts[i] = new TextLayout(String.valueOf(i), font, OSPRuntime.frc);
+				screenPts[i] = new Point2D.Double();
 			}
 		}
 
