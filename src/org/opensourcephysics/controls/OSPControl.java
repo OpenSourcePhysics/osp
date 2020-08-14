@@ -38,6 +38,7 @@ import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.Hidable;
 import org.opensourcephysics.display.OSPFrame;
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.numerics.DoubleArray;
 import org.opensourcephysics.numerics.IntegerArray;
 import org.opensourcephysics.tools.ToolsRes;
@@ -267,6 +268,7 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
 	@Override
 	public void setValue(String par, Object val) {
 		table.setValue(par, val);
+		if(JSUtil.isJS)table.refresh(); // WC: updates table view when value changes
 	}
 
 	/**
@@ -278,6 +280,7 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
 	@Override
 	public void setValue(String par, boolean val) {
 		table.setValue(par, val);
+		if(JSUtil.isJS)table.refresh(); // WC: updates table view when value changes
 	}
 
 	/**
@@ -289,6 +292,7 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
 	@Override
 	public void setValue(String par, double val) {
 		table.setValue(par, Double.toString(val));
+		if(JSUtil.isJS)table.refresh(); // WC: updates table view when value changes
 	}
 
 	/**
@@ -300,6 +304,7 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
 	@Override
 	public void setValue(String par, int val) {
 		table.setValue(par, Integer.toString(val));
+		if(JSUtil.isJS)table.refresh(); // WC: updates table view when value changes
 	}
 
 	/**
