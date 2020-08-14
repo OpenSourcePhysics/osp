@@ -1297,11 +1297,14 @@ public class ResourceLoader {
 	 * @return the ZipEntry for this file, possibly cached.
 	 */
 	public static ZipEntry findZipEntry(String zipFile, String fileName, boolean isContains) {
+		Map<String, ZipEntry> contents = getZipContents(zipFile);
+		if (contents == null)
+			return null;
 		if (!isContains) {
-			return getZipContents(zipFile).get(fileName);
+			return contents.get(fileName);
 		}
 		boolean isLCExt = fileName.startsWith(".");
-		for (Entry<String, ZipEntry> entry : getZipContents(zipFile).entrySet()) {
+		for (Entry<String, ZipEntry> entry : contents.entrySet()) {
 			String key = entry.getKey();
 			if ((isLCExt ? key.toLowerCase() : key).indexOf(fileName) >= 0)
 				return entry.getValue();
