@@ -406,8 +406,6 @@ public class PerspectiveFilter extends Filter {
 
 	/**
 	 * Sets the output image pixels to a rotated version of the input pixels.
-	 *
-	 * @param input the input image
 	 */
 	@Override
 	protected void setOutputPixels() {

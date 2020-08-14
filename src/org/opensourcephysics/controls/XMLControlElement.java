@@ -92,13 +92,13 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * something being passed to the nascent control
 	 */
 	private Object data;
-	
+
 	private Map<String, XMLControl> childMap;
 
 	private XMLControl[] childControls;
 
 	private Map<String, XMLProperty> propMap;
-	
+
 	public Object getData() {
 		return data;
 	}
@@ -117,7 +117,6 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @param type the class.
 	 */
 	public XMLControlElement(Class<?> type) {
-		this();
 		setObjectClass(type);
 	}
 
@@ -127,7 +126,6 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @param obj the object.
 	 */
 	public XMLControlElement(Object obj) {
-		this();
 		setObjectClass(obj.getClass());
 		saveObject(obj);
 	}
@@ -138,7 +136,6 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @param parent the parent.
 	 */
 	public XMLControlElement(XMLProperty parent) {
-		this();
 		this.parent = parent;
 		level = parent.getLevel();
 	}
@@ -150,7 +147,6 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @param xmlFile
 	 */
 	public XMLControlElement(File xmlFile) {
-		this();
 		try {
 			String data = getFileData(xmlFile);
 			if (data != null) {
@@ -187,14 +183,6 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	public XMLControlElement(String input) {
 		this();
 		readData(input);
-	}
-
-	private void readData(String input) {
-		if (input.startsWith("<?xml")) { //$NON-NLS-1$
-			readXML(input);
-		} else {
-			read(input);
-		}
 	}
 
 	/**
@@ -422,7 +410,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	public Object getObject(String name) {
 		XMLProperty prop = getXMLProperty(name);
 		if (prop != null) {
-			switch (prop.getPropertyType()) { 
+			switch (prop.getPropertyType()) {
 			case "object": //$NON-NLS-1$
 				return objectValue(prop);
 			case "array": //$NON-NLS-1$
@@ -521,34 +509,38 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		synchronized (sync) {
 			OSPLog.finest("reading " + name); //$NON-NLS-1$
 			Resource res = ResourceLoader.getResource(name);
-
 			if (res == null) {
-				processReader(name, null, null, null);
-				return;
-			}
-			if (res.getFile() != null) {
+				processReader(name, null, null, whenDone);
+			} else if (res.getFile() != null) {
 				// synchronous for file
 				processReader(name, res, res.openReader(), whenDone);
-				return;
-			}
-			ResourceLoader.getURLContentsAsync(res.getURL(), new Function<byte[], Void>() {
-
-				@Override
-				public Void apply(byte[] bytes) {
-
-					if (bytes == null) {
-						processReader(name, null, null, whenDone);
-					} else {
-						processReader(name, res, ResourceLoader.readerForStream(new ByteArrayInputStream(bytes), null),
-								whenDone);
+			} else {
+				ResourceLoader.getURLContentsAsync(res.getURL(), new Function<byte[], Void>() {
+	
+					@Override
+					public Void apply(byte[] bytes) {
+	
+						if (bytes == null) {
+							processReader(name, null, null, whenDone);
+						} else {
+							processReader(name, res, ResourceLoader.readerForStream(new ByteArrayInputStream(bytes), null),
+									whenDone);
+						}
+						return null;
 					}
-					return null;
-				}
-
-			});
+	
+				});
+			}
 		}
 	}
 
+	/**
+	 * Read this file resource
+	 * @param name
+	 * @param res
+	 * @param in
+	 * @param whenDone will be passed a File[] array or null
+	 */
 	protected void processReader(String name, Resource res, BufferedReader in, Function<String, Void> whenDone) {
 		if (res == null) {
 			OSPLog.warning("Could not open " + name);
@@ -557,45 +549,40 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			return;
 		}
 		read(in);
-		String path = XML.getDirectoryPath(name);
-		if (!path.equals("")) { //$NON-NLS-1$
-			ResourceLoader.addSearchPath(path);
-			basepath = path;
+		whenDone.apply(readFailed ? null : setPath(name, res));
+	}
+
+	/**
+	 * read raw data or xml
+	 * 
+	 * @param input
+	 */
+	private void readData(String input) {
+		if (input.startsWith("<?xml")) { //$NON-NLS-1$
+			readXML(input);
 		} else {
-			basepath = XML.getDirectoryPath(res.getAbsolutePath());
+			read(input);
 		}
-		File file = res.getFile();
-		canWrite = ((file != null) && file.canWrite());
-		whenDone.apply(res.getAbsolutePath());
 	}
 
 	/**
 	 * Reads data into this control from a named source.
 	 *
-	 * @param name the name
+	 * @param fileName the name
 	 * @return the path of the opened document or null if failed
 	 */
 	@Override
-	public String read(String name) {
+	public String read(String fileName) {
 		synchronized (sync) {
-			OSPLog.finest("reading " + name); //$NON-NLS-1$
-			Resource res = ResourceLoader.getResource(name);
+			OSPLog.finest("reading " + fileName); //$NON-NLS-1$
+			Resource res = ResourceLoader.getResource(fileName);
 			if (res != null) {
 				try {
 					BufferedReader in = res.openReader();
 					if (in != null) {
 						// BH just avoids the NullPointerException, particularly for prefs files
 						read(in);
-						String path = XML.getDirectoryPath(name);
-						if (path.length() == 0) {
-							basepath = XML.getDirectoryPath(res.getAbsolutePath());
-						} else {
-							ResourceLoader.addSearchPath(path);
-							basepath = path;
-						}
-						File file = res.getFile();
-						canWrite = ((file != null) && file.canWrite());
-						return res.getAbsolutePath();
+						return setPath(fileName, res);
 					}
 				} catch (Exception e) {
 				}
@@ -613,28 +600,27 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 */
 	@Override
 	public void readXML(String xml) {
-		input = new BufferedReader(new StringReader(xml));
-		readInput();
-		if (!failedToRead()) {
+		readXML(xml, null);
+	}
+	
+	private boolean readXML(String xml, String requiredType) {
+		if (readInput(xml == null ? null : new BufferedReader(new StringReader(xml)), requiredType)) {
 			canWrite = false;
 		}
+		return !readFailed;
 	}
 
 	/**
-	 * Reads the control from a Reader.
+	 * Reads the control from a Reader, setting readFailed if there are any problems.
 	 *
 	 * @param in the Reader
 	 */
 	@Override
 	public void read(Reader in) {
-		if (in instanceof BufferedReader) {
-			input = (BufferedReader) in;
-		} else {
-			input = new BufferedReader(in);
-		}
-		readInput();
+		readInput(in == null ? null : in instanceof BufferedReader ? (BufferedReader) in : new BufferedReader(in), null);
 		try {
-			input.close();
+			if (input != null)
+				input.close();
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
@@ -643,6 +629,8 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	/**
 	 * Reads data into this control from a named source if the source specifies the
 	 * same class as the current className.
+	 * 
+	 * BH: never called
 	 *
 	 * @param name the name
 	 * @param type the class
@@ -650,31 +638,33 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 */
 	public String readForClass(String name, Class<?> type) {
 		Resource res = ResourceLoader.getResource(name);
-		if (res == null) {
-			return null;
-		}
-		input = new BufferedReader(res.openReader());
-		if (!isInputForClass(type)) {
-			return null;
-		}
-		return read(name);
+		return (readInput(res == null ? null : new BufferedReader(res.openReader()), type.getName()) 
+				? setPath(name, res) : null);
 	}
 
 	/**
 	 * Reads this control from an xml string if the xml specifies the same class as
-	 * the current className.
+	 * the current className. Utilized in org.colos.ejs.library.Simulation
 	 *
 	 * @param xml  the xml string
 	 * @param type the class
 	 * @return true if successfully read
 	 */
 	public boolean readXMLForClass(String xml, Class<?> type) {
-		input = new BufferedReader(new StringReader(xml));
-		if (!isInputForClass(type)) {
-			return false;
+		return readXML(xml, type.getName());
+	}
+
+	private String setPath(String name, Resource res) {
+		String path = XML.getDirectoryPath(name);
+		if (path.length() == 0) {
+			basepath = XML.getDirectoryPath(res.getAbsolutePath());
+		} else {
+			ResourceLoader.addSearchPath(path);
+			basepath = path;
 		}
-		readXML(xml);
-		return !readFailed;
+		File file = res.getFile();
+		canWrite = ((file != null) && file.canWrite());
+		return res.getAbsolutePath();
 	}
 
 	/**
@@ -867,12 +857,12 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @param type the <code>Class</code> of the object
 	 */
 	public void setObjectClass(Class<?> type) {
-		if ((object != null) && !type.isInstance(object)) {
+		if (object != null && !type.isInstance(object)) {
 			throw new RuntimeException(
 					object + " " + ControlsRes.getString("XMLControlElement.Exception.NotInstanceOf") + " " + type); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		}
-		className = type.getName();
 		theClass = type;
+		className = type.getName();
 	}
 
 	/**
@@ -885,23 +875,20 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		if (className == null) {
 			return null;
 		}
-		if ((theClass != null) && theClass.getName().equals(className)) {
+		if (theClass != null && theClass.getName().equals(className)) {
 			return theClass;
 		}
 		theClass = null;
 		try {
 			theClass = Class.forName(className);
+			return theClass;
 		} catch (ClassNotFoundException ex) {
-
-			/** empty block */
 		}
 		ClassLoader loader = XML.getClassLoader();
-		if ((loader != null) && (theClass == null)) {
+		if (loader != null) {
 			try {
 				theClass = loader.loadClass(className);
 			} catch (ClassNotFoundException ex) {
-
-				/** empty block */
 			}
 		}
 		return theClass;
@@ -960,7 +947,6 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		return loadObject(obj, false, false);
 	}
 
-
 	public Object loadObject(Object obj, Object data) {
 		this.data = data;
 		return loadObject(obj, false, false);
@@ -1013,10 +999,9 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 					return obj;
 				}
 			}
-			
-			
-			// BH - 
-			
+
+			// BH -
+
 			if (!importInto(obj, importAll)) {
 				return obj;
 			}
@@ -1175,7 +1160,6 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		}
 	}
 
-
 	/**
 	 * Gets the property class.
 	 *
@@ -1284,7 +1268,6 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		counts.put(name, count);
 		return name + " " + count.toString(); //$NON-NLS-1$
 	}
-
 
 	/**
 	 * Returns the string xml representation.
@@ -1433,16 +1416,16 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			return processImport(control, names);
 		}
 
-		// BH! This next call will return FALSE FOR JAVASCRIPT because we can't make this central method asynchronous. :(
+		// BH! This next call will return FALSE FOR JAVASCRIPT because we can't make
+		// this central method asynchronous. :(
 
 		// choose the properties to import
 		// BH This one has to be synchronous and so will fail in JavaScript.
-		
+
 		boolean[] isOK = new boolean[1];
-		
+
 		ListChooser chooser = new ListChooser(ControlsRes.getString("XMLControlElement.Chooser.ImportObjects.Title"), //$NON-NLS-1$
-				ControlsRes.getString("XMLControlElement.Chooser.ImportObjects.Label"), 
-				new ActionListener() {
+				ControlsRes.getString("XMLControlElement.Chooser.ImportObjects.Label"), new ActionListener() {
 
 					@Override
 					public void actionPerformed(ActionEvent e) {
@@ -1451,11 +1434,11 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 							isOK[0] = true;
 						}
 					}
-			
-		});		
+
+				});
 		chooser.choose(names, names, values, null, null, null);
 		// beween these two statements in Java, the above actionPerformed will occur.
-		// but JavaScript is going to return prior to that. 
+		// but JavaScript is going to return prior to that.
 		return isOK[0];
 	}
 
@@ -1515,10 +1498,10 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		if (old == null) {
 			propNames.add(name);
 		} else {
-			props.remove(old);			
+			props.remove(old);
 		}
 		if (i > -1) {
-			props.add(i,prop);
+			props.add(i, prop);
 		} else {
 			props.add(prop);
 		}
@@ -1555,13 +1538,20 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		return (name == null ? null : getPropMap().get(name));
 	}
 
+
 	/**
-	 * Reads this control from the current input.
+	 * Reads this control from the current input, optionally require className.
+	 * 
+	 * @param in
+	 * @param className
 	 */
-	private void readInput() {
-
+	private boolean readInput(BufferedReader in, String className) {
+		if (in == null) {
+			readFailed = true;
+			return false;
+		}
 		long t0 = Performance.now(0);
-
+		this.input = in;
 		readFailed = false;
 		try {
 			// get document root opening tag line
@@ -1572,7 +1562,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 				if (count > 9) {
 					// stop reading at 10 lines
 					readFailed = true;
-					return;
+					return false;
 				}
 				openingTag = input.readLine();
 			}
@@ -1585,15 +1575,15 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 					xml = xml.substring(i + 9);
 					version = xml.substring(0, xml.indexOf("\"")); //$NON-NLS-1$
 				}
-				readObject(this, openingTag);
+				readObject(this, openingTag, className);
 			} else {
 				readFailed = true;
-				return;
+				return false;
 			}
 		} catch (Exception ex) {
 			readFailed = true;
 			OSPLog.warning("Failed to read xml: " + ex.getMessage()); //$NON-NLS-1$
-			return;
+			return false;
 		}
 		// if object class is Cryptic, decrypt and inspect
 		if (Cryptic.class.equals(getObjectClass())) {
@@ -1603,7 +1593,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			// return if decrypted xml is not readable by a test control
 			XMLControl test = new XMLControlElement(xml);
 			if (test.failedToRead()) {
-				return;
+				return false;
 			}
 			// keep current password for possible verification needs
 			String pass = password;
@@ -1612,12 +1602,13 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			// return if decrypt policy is NEVER or unverified PASSWORD
 			switch (decryptPolicy) {
 			case NEVER_DECRYPT:
-				return;
+				return false;
 			case PASSWORD_DECRYPT:
 				if ((password != null) && !password.equals("") && //$NON-NLS-1$
 						!password.equals(pass)) {
 					if (!Password.verify(password, null)) {
-						return;
+						readFailed = true; // BH Yes??? was not here
+						return false;
 					}
 				}
 			}
@@ -1626,44 +1617,48 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			object = null;
 			className = Object.class.getName();
 			theClass = null;
-			readXML(xml);
+			return readXML(xml, null);
 		}
 		OSPLog.debug("!!! " + Performance.now(t0) + " XMLControlElement.readData " + className);
+		return !readFailed;
 	}
 
-	/**
-	 * Checks to see if the input is for the specified class.
-	 */
-	private boolean isInputForClass(Class<?> type) {
-		try {
-			// get document root tag
-			String xml = input.readLine();
-			while ((xml != null) && (xml.indexOf("<object") == -1)) { //$NON-NLS-1$
-				xml = input.readLine();
-			}
-			// check class name
-			if (xml != null) {
-				xml = xml.substring(xml.indexOf("class=") + 7); //$NON-NLS-1$
-				String className = xml.substring(0, xml.indexOf("\"")); //$NON-NLS-1$
-				if (className.equals(type.getName())) {
-					return true;
-				}
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		return false;
-	}
+//	/**
+//	 * Checks to see if the input is for the specified class.
+//	 */
+//	private boolean isInputForClass(Class<?> type) {
+//		try {
+//			// get document root tag
+//			String xml = input.readLine();
+//			if (!xml.startsWith("<"))
+//				return false;
+//			while ((xml != null) && (xml.indexOf("<object") == -1)) { //$NON-NLS-1$
+//				xml = input.readLine();
+//			}
+//			// check class name
+//			if (xml != null) {
+//				xml = xml.substring(xml.indexOf("class=") + 7); //$NON-NLS-1$
+//				String className = xml.substring(0, xml.indexOf("\"")); //$NON-NLS-1$
+//				if (className.equals(type.getName())) {
+//					return true;
+//				}
+//			}
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//		}
+//		return false;
+//	}
 
 	/**
 	 * Reads the current input into an XMLcontrolElement.
 	 *
 	 * @param control the control to load
 	 * @param xml     the xml opening tag line
+	 * @param requiredType required class name or null
 	 * @return the loaded element
 	 * @throws IOException
 	 */
-	private XMLControlElement readObject(XMLControlElement control, String xml) throws IOException {
+	private XMLControlElement readObject(XMLControlElement control, String xml, String requiredType) throws IOException {
 		control.clearValues();
 		// set class name
 		xml = xml.substring(xml.indexOf("class=") + 7); //$NON-NLS-1$
@@ -1675,6 +1670,10 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			if (packageName.endsWith("org.opensourcephysics.media")) { //$NON-NLS-1$
 				className = packageName + ".core" + className.substring(i); //$NON-NLS-1$
 			}
+		}
+		if (requiredType != null && !className.equals(requiredType)) {
+			readFailed = true;
+			return null;
 		}
 		control.className = className;
 		// look for closing object tag on same line
@@ -1757,7 +1756,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		} else if (prop.type.equals("object")) { //$NON-NLS-1$
 			// add XMLControl unless value is null
 			if (xml.indexOf(">null</property") == -1) { //$NON-NLS-1$
-				XMLControlElement control = readObject(new XMLControlElement(prop), input.readLine());
+				XMLControlElement control = readObject(new XMLControlElement(prop), input.readLine(), null);
 				prop.content.add(control);
 				prop.className = control.className;
 			}
@@ -2111,7 +2110,6 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		}
 		return pointer - 1;
 	}
-
 
 }
 
