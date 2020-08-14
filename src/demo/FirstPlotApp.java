@@ -35,12 +35,11 @@ public class FirstPlotApp {
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     OSPLog.info("FirstPlotApp running.");
     
-    //WC: embedding test code
-    if(JSUtil.isJS)frame.setLocation(0, 0);  // sets position to top left corner
-    System.err.println("before change="+frame.getName());
-    frame.setName("newName");
-    System.err.println("after change="+frame.getName());
-    OSPRuntime.setAppClass(frame);
+    //WC: embedding test
+    if(JSUtil.isJS) {
+    	frame.setLocation(0, 0);       // sets position to top left corner
+      OSPRuntime.setAppClass(frame); // undecorated frame can now be embedded into html page
+    }
     //WC: end testing
   }
 

@@ -58,9 +58,9 @@ public class Cryptic {
   }
 
   /**
-   * Encrypts the input and saves in cryptic form.
+   * Encrypts the input and saves in cryptic form using a default password.
    *
-   * @param input UTF-8 String to encrypt
+   * @param content UTF-8 String to encrypt
    * @return the encrypted content
    */
   public String encrypt(String content) {
@@ -70,7 +70,8 @@ public class Cryptic {
   /**
    * Encrypts the input with a password and saves in cryptic form.
    *
-   * @param input UTF-8 String to encrypt
+   * @param content UTF-8 String to encrypt
+   * @param password password for encryption
    * @return the encrypted content
    */
   public String encrypt(String content, String password) {

@@ -10,7 +10,6 @@ package org.opensourcephysics.tools;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -753,21 +752,15 @@ public class LibraryBrowser extends JPanel {
 		}
 
 		XMLControlElement control = new XMLControlElement();
-
-		control.readAsync(path, new Function<String, Void>() {
-
-			@Override
-			public Void apply(String fullPath) {
-				if (!control.failedToRead() && control.getObjectClass() != null
-						&& LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
+		control.readAsync(path, (fullPath) -> {
+				if (control.failedToRead() || control.getObjectClass() == null
+						|| !LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
+					whenDone.apply(createResource(targetFile, targetFile.getParentFile(), dlFileFilter));
+				} else {
 					isRecentPathXML = true;
 					whenDone.apply((LibraryResource) control.loadObject(null));
-				} else {
-					whenDone.apply(createResource(targetFile, targetFile.getParentFile(), dlFileFilter));
 				}
 				return null;
-			}
-
 		});
 
 	}
