@@ -148,8 +148,8 @@ public class Launcher {
 	protected static ResizableIcon whiteFileIcon, noFileIcon, ghostFileIcon;
 	protected static ResizableIcon redFolderIcon, greenFolderIcon, yellowFolderIcon;
 	protected static ResizableIcon linkIcon, htmlIcon, launchEmptyIcon, ejsIcon;
-	protected static Icon navOpenIcon, navClosedIcon;
-	protected static Icon backIcon, forwardIcon, backDisabledIcon, forwardDisabledIcon;
+	protected static ResizableIcon navOpenIcon, navClosedIcon;
+	protected static ResizableIcon backIcon, forwardIcon, backDisabledIcon, forwardDisabledIcon;
 	@SuppressWarnings("javadoc")
 	public static boolean singleAppMode = false;
 	private static boolean newVMAllowed = false;
