@@ -142,10 +142,6 @@ public class FontSizer {
 		Font newFont = (f == null ? null : getResizedFont(f, level));
 		if (f != null && newFont != f && !newFont.equals(f)) {
 			button.setFont(newFont);
-			resizeIcon(button.getIcon());
-			resizeIcon(button.getSelectedIcon());
-			resizeIcon(button.getRolloverIcon());
-			resizeIcon(button.getRolloverSelectedIcon());
 		}
 		return level;
 	}
@@ -162,12 +158,6 @@ public class FontSizer {
 		level = n;
 		factor = getFactor(level);
 		integerFactor = getIntegerFactor(level);
-
-		CHECKBOXMENUITEM_ICON.resize(integerFactor);
-		CHECKBOX_ICON.resize(integerFactor);
-		ARROW_ICON.resize(integerFactor);
-		RADIOBUTTONMENUITEM_ICON.resize(integerFactor);
-		RADIOBUTTON_ICON.resize(integerFactor);
 
 		Font font = getResizedFont(TEXT_FONT, level);
 		UIManager.put("OptionPane.messageFont", font); //$NON-NLS-1$
@@ -356,13 +346,13 @@ public class FontSizer {
 	 */
 	private static void setFontFactor(Container c, double factor) {
 
+		if (c == null)
+			return;
+		
 		try {
-			if (c == null)
-				return;
-
 			// get resized container font
 			Font font = getResizedFont(c.getFont(), factor);
-			Icon icon = null;
+//			Icon icon = null;
 
 			// There should be no need to call repaint.
 
@@ -376,17 +366,10 @@ public class FontSizer {
 					setFontFactor((TitledBorder) border, factor);
 				}
 				// added by Doug Brown June 2015 to resize icons along with fonts
-				if (c instanceof AbstractButton) {
-					AbstractButton button = (AbstractButton) c;
-					icon = button.getIcon();
-					resizeIcon(button.getSelectedIcon());
-					resizeIcon(button.getRolloverIcon());
-					resizeIcon(button.getRolloverSelectedIcon());
-					if (c instanceof JMenu) {
-						JMenu m = (JMenu) c;
-						icon = m.getIcon();
-						setFontFactor(m.getPopupMenu(), factor);
-					}
+				if (c instanceof JMenu) {
+					JMenu m = (JMenu) c;
+//					icon = m.getIcon();
+					setFontFactor(m.getPopupMenu(), factor);
 				}
 			}
 			// iterate through child components
@@ -398,54 +381,32 @@ public class FontSizer {
 					setFontFactor(co, factor);
 				}
 			}
-			if (icon == null) {
-				if (OSPRuntime.isJS) {
-
-					// Could use reflection in SwingJS, but this is much simpler and faster
-					icon = /** @j2sNative c.getIcon$ && c.getIcon$() || */
-							null;
-				} else {
-					try {
-						Method m = c.getClass().getMethod("getIcon", (Class<?>[]) null); //$NON-NLS-1$
-						if (m != null) {
-							icon = (Icon) m.invoke(c, (Object[]) null);
-						}
-					} catch (Exception e) {
-					}
-
-				}
-			}
-
-			// set the component font and its icon here
-
-			if (font != null) {
-				if (font.equals(c.getFont())) {
-//					if (c instanceof JLabel) {
-//						OSPLog.debug("FS ???? " + ((JLabel) c).getText());
-//						OSPLog.debug(font.toString());
-//					} else if (c instanceof AbstractButton) {
-//						OSPLog.debug("FS ???? " + ((AbstractButton) c).getText());
-//						OSPLog.debug(font.toString());
-//					} else {
-//						OSPLog.debug("FontSizer already set! " + c.toString() + " " + c.hashCode());
+//			if (icon == null) {
+//				if (OSPRuntime.isJS) {
+//
+//					// Could use reflection in SwingJS, but this is much simpler and faster
+//					icon = /** @j2sNative c.getIcon$ && c.getIcon$() || */
+//							null;
+//				} else {
+//					try {
+//						Method m = c.getClass().getMethod("getIcon", (Class<?>[]) null); //$NON-NLS-1$
+//						if (m != null) {
+//							icon = (Icon) m.invoke(c, (Object[]) null);
+//						}
+//					} catch (Exception e) {
 //					}
+//
+//				}
+//			}
 
-				} else {
-					c.setFont(font);
-				}
+			if (font != null && !font.equals(c.getFont())) {
+				c.setFont(font);
 			}
-			resizeIcon(icon);
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-	}
-
-	private static int resizeIcon(Icon icon) {
-		if (icon != null && icon instanceof ResizableIcon)
-			((ResizableIcon) icon).resize(integerFactor);
-		return integerFactor;
 	}
 
 	/**

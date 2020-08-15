@@ -311,10 +311,6 @@ public class LibraryBrowser extends JPanel {
 		if (libraryManager != null) {
 			libraryManager.setFontLevel(level);
 		}
-		ResizableIcon[] icons = { expandIcon, contractIcon, heavyExpandIcon, heavyContractIcon, refreshIcon };
-		for (ResizableIcon next : icons) {
-			next.resize(FontSizer.getIntegerFactor());
-		}
 		FontSizer.setFonts(OSPLog.getOSPLog());
 	}
 

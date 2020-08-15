@@ -2091,8 +2091,6 @@ public class Launcher {
 		// set font levels of menubar and content pane
 		FontSizer.setFonts(frame.getJMenuBar(), level);
 		FontSizer.setFonts(frame.getContentPane(), level);
-		((ResizableIcon) navOpenIcon).resize(FontSizer.getIntegerFactor());
-		((ResizableIcon) navClosedIcon).resize(FontSizer.getIntegerFactor());
 		// refresh string resources to adjust label sizes
 		refreshStringResources();
 		// refresh all trees to adjust node sizes
@@ -2949,7 +2947,6 @@ public class Launcher {
 					icon = noFileIcon;
 				}
 			}
-			icon.resize(FontSizer.getIntegerFactor());
 			setIcon(icon);
 			return this;
 		}
