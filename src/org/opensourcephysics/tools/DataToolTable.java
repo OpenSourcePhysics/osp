@@ -1957,6 +1957,11 @@ public class DataToolTable extends DataTable {
 	 */
 	@Override
 	public void refreshTable(int mode) {
+		if (mode == DataTable.MODE_CELLS) {
+			super.refreshTable(mode);
+			updateColumnModel(null);
+			return;
+		}
 //		if (mode == DataTable.MODE_SET_TAINTED) {
 //			super.refreshTable(mode);
 //			updateColumnModel(null);
