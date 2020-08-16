@@ -7,12 +7,15 @@
     <property name="dir.workspace" value="${dir.buildfile}/../.."/>
     <property name="dir.jarfile" value="${dir.workspace}/OSPDistributionJars"/>
     <target name="create_run_jar">
-        <jar destfile="${dir.jarfile}/OSP_LauncherJS.jar" filesetmanifest="mergewithoutmain">
+        <jar destfile="${dir.jarfile}/OSP_LauncherJS.jar" 
+        	  filesetmanifest="mergewithoutmain" update="no">
             <manifest>
                 <attribute name="Main-Class" value="org.opensourcephysics.tools.Launcher"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
-            <fileset dir="${dir.workspace}/osp/bin"/>
+            <fileset dir="${dir.workspace}/osp/bin"
+            	excludes="test/, testing/, csm/, davidson/, demo/, debugging/, demoJS/, **/*.zip, **/*.mp4" />
+        	 
         </jar>
     </target>
 </project>
