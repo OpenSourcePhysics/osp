@@ -31,6 +31,7 @@ public class ResizableIcon implements Icon {
   private final int baseWidth, baseHeight;
   private BufferedImage baseImage;
   private final Icon icon;
+  private int sizeFactor, w, h;
 
   /**
    * Creates a <CODE>ResizableIcon</CODE> from the specified URL.
@@ -86,12 +87,14 @@ public class ResizableIcon implements Icon {
 
   @Override
   public int getIconWidth() {
-    return baseWidth * FontSizer.getIntegerFactor();
+  	setSizeFactor(FontSizer.getIntegerFactor());
+    return w;
   }
 
   @Override
   public int getIconHeight() {
-    return baseHeight * FontSizer.getIntegerFactor();
+//  	setSizeFactor(FontSizer.getIntegerFactor()); // only needed for width since called first?
+    return h;
   }
   
   /**
@@ -101,6 +104,19 @@ public class ResizableIcon implements Icon {
    */
   public Icon getBaseIcon() {
   	return icon;
+  }
+  
+  /**
+   * Sets the size factor.
+   * 
+   * @param factor the desired factor
+   */
+  private void setSizeFactor(int factor) {
+  	if (factor != sizeFactor) {
+  		sizeFactor = factor;
+  		w = baseWidth * factor;
+  		h = baseHeight * factor;
+  	}  	
   }
   
 }
