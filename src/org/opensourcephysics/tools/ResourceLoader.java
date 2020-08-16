@@ -1828,22 +1828,22 @@ static private Resource createZipResource(String path) {
       }
     }
     // if resource is found, log and set launchJarName if not yet set
-    if(res!=null) {
-      String path = XML.forwardSlash(res.getAbsolutePath());
-      // don't return resources from Java runtime system jars
-      if((path.indexOf("/jre")>-1)&&(path.indexOf("/lib")>-1)) { //$NON-NLS-1$ //$NON-NLS-2$
-        return null;
-      }
-      // don't return resources that don't contain original name
-      if(!getNonURIPath(path).contains(originalName) && !path.contains(originalName)) {
-        return null;
-      }
-      if(name.endsWith("xset")) {                                //$NON-NLS-1$
-        xsetZipLoader = null;
-      }
-      OSPLog.finer("Class resource: "+path);                      //$NON-NLS-1$
-      OSPRuntime.setLaunchJarPath(path);
-    }
+		if (res != null) {
+			String path =  getNonURIPath(XML.forwardSlash(res.getAbsolutePath()));
+			// don't return resources from Java runtime system jars
+			if ((path.indexOf("/jre") > -1) && (path.indexOf("/lib") > -1)) { //$NON-NLS-1$ //$NON-NLS-2$
+				return null;
+			}
+			// don't return resources that don't contain original name
+			if (!path.contains(originalName)) {
+				return null;
+			}
+			if (name.endsWith("xset")) { //$NON-NLS-1$
+				xsetZipLoader = null;
+			}
+			OSPLog.finer("loaded class resource: " + path); //$NON-NLS-1$
+			OSPRuntime.setLaunchJarPath(path);
+		}
     return res; // may be null
   }
 
