@@ -57,7 +57,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import javax.swing.AbstractButton;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -2206,13 +2205,13 @@ public class ResourceLoader {
 		}
 		// if resource is found, log and set launchJarName if not yet set
 		if (res != null) {
-			String path = XML.forwardSlash(res.getAbsolutePath());
+			String path =  getNonURIPath(XML.forwardSlash(res.getAbsolutePath()));
 			// don't return resources from Java runtime system jars
 			if ((path.indexOf("/jre") > -1) && (path.indexOf("/lib") > -1)) { //$NON-NLS-1$ //$NON-NLS-2$
 				return null;
 			}
 			// don't return resources that don't contain original name
-			if (!getNonURIPath(path).contains(originalName) && !path.contains(originalName)) {
+			if (!path.contains(originalName)) {
 				return null;
 			}
 			if (name.endsWith("xset")) { //$NON-NLS-1$
