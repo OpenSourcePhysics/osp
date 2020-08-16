@@ -70,6 +70,7 @@ import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.js.JSUtil;
 
 import javajs.async.Assets;
@@ -593,7 +594,7 @@ public class ResourceLoader {
 	 * @param path the path
 	 * @return the icon
 	 */
-	public static ImageIcon getIcon(String path) {
+	public static ImageIcon getImageIcon(String path) {
 		URL url = getAppletResourceURL(path); // added by W. Christian
 		if (url != null) {
 			return new ImageIcon(url);
@@ -602,13 +603,24 @@ public class ResourceLoader {
 			url = Assets.getURLFromPath(path, false);
 			return (url == null ? 
 					new ImageIcon(path) : 
-						new ImageIcon(url));
+					new ImageIcon(url));
 		} catch (Exception e) {
 			OSPLog.warning("ResourceLoader could not find " + url + "\nEclipse not pointing to correct project?");
 			return new ImageIcon((URL) null);
 		}
 //		Resource res = getResource(path);
 //		return (res == null) ? null : res.getIcon();
+	}
+
+	/**
+	 * Gets a ResizaableIcon.
+	 *
+	 * @param path the path
+	 * @return the icon
+	 */
+	public static ResizableIcon getResizableIcon(String path) {
+		ImageIcon icon = getImageIcon(path);
+		return icon == null? null: new ResizableIcon(icon);
 	}
 
 	/**
@@ -2834,7 +2846,7 @@ public class ResourceLoader {
 		if (url != null) {
 			return new ImageIcon(url).getImage();
 		}
-		ImageIcon icon = getIcon(path);
+		ImageIcon icon = getImageIcon(path);
 		if (icon != null)
 			return icon.getImage();
 		Resource res = getResource(path);

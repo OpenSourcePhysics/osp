@@ -65,9 +65,9 @@ public class RotateFilter extends Filter {
 
 	static {
 		String path = "/org/opensourcephysics/resources/media/images/cw.gif"; //$NON-NLS-1$
-		cwIcon = ResourceLoader.getIcon(path);
+		cwIcon = ResourceLoader.getImageIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/ccw.gif"; //$NON-NLS-1$
-		ccwIcon = ResourceLoader.getIcon(path);
+		ccwIcon = ResourceLoader.getImageIcon(path);
 	}
 
 	// inspector fields

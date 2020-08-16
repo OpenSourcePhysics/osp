@@ -3942,7 +3942,7 @@ public class Launcher {
 	 * @return the icon
 	 */
 	protected static ResizableIcon loadIcon(String path) {
-		ImageIcon base = ResourceLoader.getIcon("/org/opensourcephysics/resources/tools/images/" + path);
+		ImageIcon base = ResourceLoader.getImageIcon("/org/opensourcephysics/resources/tools/images/" + path);
 		if (base.getIconWidth() > 0) {
 			return new ResizableIcon(base);
 		}

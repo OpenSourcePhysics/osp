@@ -54,7 +54,7 @@ public class DataBuilder extends FunctionTool {
 			return;
 		super.createGUI();
 		String imageFile = "/org/opensourcephysics/resources/tools/images/open.gif"; //$NON-NLS-1$
-		Icon openIcon = ResourceLoader.getIcon(imageFile);
+		Icon openIcon = ResourceLoader.getImageIcon(imageFile);
 		loadButton = new JButton(openIcon);
 		loadButton.addActionListener(new ActionListener() {
 			@Override
@@ -99,7 +99,7 @@ public class DataBuilder extends FunctionTool {
 		});
 
 		imageFile = "/org/opensourcephysics/resources/tools/images/save.gif"; //$NON-NLS-1$
-		Icon saveIcon = ResourceLoader.getIcon(imageFile);
+		Icon saveIcon = ResourceLoader.getImageIcon(imageFile);
 		saveButton = new JButton(saveIcon);
 		saveButton.addActionListener(new ActionListener() {
 			@Override

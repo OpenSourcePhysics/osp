@@ -240,13 +240,13 @@ public class JarTreeDialog extends JDialog {
 		setContentPane(contentPane);
 		// create icons
 		String imageFile = "/org/opensourcephysics/resources/tools/images/jarfile.gif"; //$NON-NLS-1$
-		jarIcon = ResourceLoader.getIcon(imageFile);
+		jarIcon = ResourceLoader.getImageIcon(imageFile);
 		imageFile = "/org/opensourcephysics/resources/tools/images/jarcontent.gif"; //$NON-NLS-1$
-		jarFileIcon = ResourceLoader.getIcon(imageFile);
+		jarFileIcon = ResourceLoader.getImageIcon(imageFile);
 		imageFile = "/org/opensourcephysics/resources/tools/images/jarfolder.gif"; //$NON-NLS-1$
-		jarFolderIcon = ResourceLoader.getIcon(imageFile);
+		jarFolderIcon = ResourceLoader.getImageIcon(imageFile);
 		imageFile = "/org/opensourcephysics/resources/tools/images/whitefile.gif"; //$NON-NLS-1$
-		fileIcon = ResourceLoader.getIcon(imageFile);
+		fileIcon = ResourceLoader.getImageIcon(imageFile);
 		// create the tree model and tree
 		jarModel = new JarTreeModel(rootFile);
 		jarTree = new JTree(jarModel);

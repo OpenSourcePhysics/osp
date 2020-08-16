@@ -126,7 +126,7 @@ public class Utils {
 			}
 			if (icon == null) {
 				// code modified by Doug Brown June 2015 to get ImageIcon from ResourceLoader
-				javax.swing.Icon resIcon = ResourceLoader.getIcon(_gifFile);
+				javax.swing.Icon resIcon = ResourceLoader.getImageIcon(_gifFile);
 				if (resIcon instanceof ImageIcon) {
 					icon = (ImageIcon) resIcon;
 				} else if (resIcon instanceof org.opensourcephysics.display.ResizableIcon) {

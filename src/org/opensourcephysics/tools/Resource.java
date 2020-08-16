@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 import org.opensourcephysics.controls.OSPLog;
@@ -214,11 +213,11 @@ public class Resource {
 	}
 
 	/**
-	 * Gets an Icon.
+	 * Gets an ImageIcon.
 	 *
 	 * @return the icon
 	 */
-	public ResizableIcon getResizableIcon() {
+	public ImageIcon getImageIcon() {
 		if ((icon == null) && isAnImage) {
 			icon = new ImageIcon(getURL());
 			if (icon.getIconWidth() < 1) {
@@ -227,7 +226,17 @@ public class Resource {
 				return null;
 			}
 		}
-		return new ResizableIcon(icon);
+		return icon;
+	}
+
+	/**
+	 * Gets a ResizableIcon.
+	 *
+	 * @return the icon
+	 */
+	public ResizableIcon getResizableIcon() {
+		ImageIcon icon = getImageIcon();
+		return icon == null? null: new ResizableIcon(icon);
 	}
 
 	/**
@@ -238,8 +247,8 @@ public class Resource {
 	public Image getImage() {
 		if (isBytes)
 			return icon.getImage();
-		ResizableIcon ri = getResizableIcon();
-		return (ri == null ? null : ((ImageIcon) ((ResizableIcon) ri).getBaseIcon()).getImage());
+		ImageIcon icon = getImageIcon();
+		return (icon == null ? null : icon.getImage());
 	}
 
 	/**
