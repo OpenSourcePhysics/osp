@@ -3938,14 +3938,13 @@ public class Launcher {
 	/**
 	 * Loads an icon and substitutes default icon if not found.
 	 *
-	 * @param path the path to the icon image
+	 * @param imageName the name of the image file
 	 * @return the icon
 	 */
-	protected static ResizableIcon loadIcon(String path) {
-		ImageIcon base = ResourceLoader.getImageIcon("/org/opensourcephysics/resources/tools/images/" + path);
-		if (base.getIconWidth() > 0) {
-			return new ResizableIcon(base);
-		}
+	protected static ResizableIcon loadIcon(String imageName) {
+		ResizableIcon icon = ResourceLoader.getResizableIcon("/org/opensourcephysics/resources/tools/images/" + imageName);
+		if (icon != null) 
+			return icon;
 		if (defaultIcon == null) {
 			defaultIcon = new ResizableIcon(new Icon() {
 

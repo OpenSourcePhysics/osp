@@ -592,7 +592,7 @@ public class ResourceLoader {
 	 * Gets an icon. May return null.
 	 * 
 	 * @param path the path
-	 * @return the icon
+	 * @return the icon. May return null.
 	 */
 	public static ImageIcon getImageIcon(String path) {
 		URL url = getAppletResourceURL(path); // added by W. Christian
@@ -601,22 +601,22 @@ public class ResourceLoader {
 		}
 		try {
 			url = Assets.getURLFromPath(path, false);
-			return (url == null ? 
+			ImageIcon icon = url == null ? 
 					new ImageIcon(path) : 
-					new ImageIcon(url));
+					new ImageIcon(url);
+			return icon.getIconWidth() > 0? icon: null;
 		} catch (Exception e) {
 			OSPLog.warning("ResourceLoader could not find " + url + "\nEclipse not pointing to correct project?");
-			return new ImageIcon((URL) null);
+			return null;
+//			return new ImageIcon((URL) null);
 		}
-//		Resource res = getResource(path);
-//		return (res == null) ? null : res.getIcon();
 	}
 
 	/**
 	 * Gets a ResizaableIcon.
 	 *
 	 * @param path the path
-	 * @return the icon
+	 * @return the icon. May return null.
 	 */
 	public static ResizableIcon getResizableIcon(String path) {
 		ImageIcon icon = getImageIcon(path);
