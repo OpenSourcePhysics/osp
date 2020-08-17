@@ -595,10 +595,7 @@ public class ResourceLoader {
 	 * @return the icon. May return null.
 	 */
 	public static ImageIcon getImageIcon(String path) {
-		URL url = getAppletResourceURL(path); // added by W. Christian
-		if (url != null) {
-			return new ImageIcon(url);
-		}
+		URL url = null;
 		try {
 			url = Assets.getURLFromPath(path, false);
 			ImageIcon icon = url == null ? 
