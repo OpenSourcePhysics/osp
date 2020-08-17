@@ -12,7 +12,6 @@ import java.awt.Container;
 import java.awt.Font;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +20,6 @@ import javax.swing.AbstractButton;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
@@ -30,7 +28,6 @@ import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.SwingPropertyChangeSupport;
 
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.ResizableIcon;
 
@@ -107,8 +104,18 @@ public class FontSizer {
 		if (c.getMenuComponentCount() > 0) {
 			Font f = c.getMenuComponent(0).getFont();
 			Font newFont = (f == null ? null : getResizedFont(f, level));
-			if (f != null && newFont != f && !newFont.equals(f))
-				setFonts(c, level);
+			// DB need to look at all menu components to see if any are unsized
+			// since refreshing menu may add new components
+			if (f != null && newFont != f) {
+				for (int i = 0; i < c.getMenuComponentCount(); i++) {
+					if (newFont.getSize() != c.getMenuComponent(i).getFont().getSize()) {
+						setFonts(c, level);
+						break;
+					}
+				}
+			}
+//			if (f != null && newFont != f && !newFont.equals(f))
+//				setFonts(c, level);
 		}
 		return level;
 	}
@@ -352,10 +359,6 @@ public class FontSizer {
 		try {
 			// get resized container font
 			Font font = getResizedFont(c.getFont(), factor);
-//			Icon icon = null;
-
-			// There should be no need to call repaint.
-
 			if (c instanceof JComponent) {
 				if (c instanceof JPopupMenu.Separator) {
 					return;
@@ -365,10 +368,8 @@ public class FontSizer {
 				if (border instanceof TitledBorder) {
 					setFontFactor((TitledBorder) border, factor);
 				}
-				// added by Doug Brown June 2015 to resize icons along with fonts
 				if (c instanceof JMenu) {
 					JMenu m = (JMenu) c;
-//					icon = m.getIcon();
 					setFontFactor(m.getPopupMenu(), factor);
 				}
 			}
@@ -381,23 +382,6 @@ public class FontSizer {
 					setFontFactor(co, factor);
 				}
 			}
-//			if (icon == null) {
-//				if (OSPRuntime.isJS) {
-//
-//					// Could use reflection in SwingJS, but this is much simpler and faster
-//					icon = /** @j2sNative c.getIcon$ && c.getIcon$() || */
-//							null;
-//				} else {
-//					try {
-//						Method m = c.getClass().getMethod("getIcon", (Class<?>[]) null); //$NON-NLS-1$
-//						if (m != null) {
-//							icon = (Icon) m.invoke(c, (Object[]) null);
-//						}
-//					} catch (Exception e) {
-//					}
-//
-//				}
-//			}
 
 			if (font != null && !font.equals(c.getFont())) {
 				c.setFont(font);
