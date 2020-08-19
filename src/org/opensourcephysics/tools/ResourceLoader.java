@@ -594,18 +594,23 @@ public class ResourceLoader {
 	 * @param path the path
 	 * @return the icon. May return null.
 	 */
-	public static ImageIcon getImageIcon(String path) {
+	public static ImageIcon getImageIcon(String path) { 
+		ImageIcon icon=null;
+		if(!OSPRuntime.isJS) try {  // look for images in bin or in jar when running in Java
+			icon = new ImageIcon(ResourceLoader.class.getResource(path));
+			if(icon!=null) return icon; // image found
+		}catch (Exception e) {}
+		
 		URL url = null;
-		try {
+		try {  // look for images in assets archive if it exists
 			url = Assets.getURLFromPath(path, false);
-			ImageIcon icon = url == null ? 
-					new ImageIcon(path) : 
-					new ImageIcon(url);
+			icon = url == null ? 
+			new ImageIcon(path) : 
+			new ImageIcon(url);
 			return icon.getIconWidth() > 0? icon: null;
 		} catch (Exception e) {
 			OSPLog.warning("ResourceLoader could not find " + url + "\nEclipse not pointing to correct project?");
 			return null;
-//			return new ImageIcon((URL) null);
 		}
 	}
 
