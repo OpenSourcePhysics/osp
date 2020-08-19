@@ -587,6 +587,18 @@ public class ResourceLoader {
 		Resource res = getResource(path);
 		return (res == null) ? null : res.getString();
 	}
+	
+	/**
+	 * Gets an icon. May return null.
+	 * 
+	 * @param path the path
+	 * @return the icon. May return null.
+	 * @deprecated This method is replaced by getImageIcon(String path)
+	 */
+	@Deprecated
+	public static ImageIcon getIcon(String path) { 
+		return getImageIcon( path);
+	}
 
 	/**
 	 * Gets an icon. May return null.
