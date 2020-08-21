@@ -15,6 +15,8 @@ import java.net.URL;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
+import org.opensourcephysics.tools.FontSizer;
+
 /**
  * An <CODE>Icon</CODE> that can be resized.
  * 
@@ -29,8 +31,7 @@ public class ResizableIcon implements Icon {
   private final int baseWidth, baseHeight;
   private BufferedImage baseImage;
   private final Icon icon;
-
-  private int w, h;
+  private int sizeFactor, w, h;
 
   /**
    * Creates a <CODE>ResizableIcon</CODE> from the specified URL.
@@ -53,17 +54,17 @@ public class ResizableIcon implements Icon {
 		}
 		this.icon = icon;
 		if (icon == null) {
-			baseWidth = w = 0;
-			baseHeight = h = 0;
+			baseWidth = 0;
+			baseHeight = 0;
 		} else {
-			baseWidth = w = icon.getIconWidth();
-			baseHeight = h = icon.getIconHeight();
+			baseWidth = icon.getIconWidth();
+			baseHeight = icon.getIconHeight();
 		}
 	}
 
 	@Override
 	public synchronized void paintIcon(Component c, Graphics g, int x, int y) {
-		if (icon == null) {
+		if (icon == null || baseHeight < 0 || baseWidth < 0) {
 			return;
 		}
 		if (baseImage == null 
@@ -81,16 +82,18 @@ public class ResizableIcon implements Icon {
 		// g2.setComposite(AlphaComposite.SrcOver);
 		icon.paintIcon(c, g2, 0, 0);
 		g2.dispose();
-		g.drawImage(baseImage, x, y, w, h, c);
+		g.drawImage(baseImage, x, y, getIconWidth(), getIconHeight(), c);
 	}
 
   @Override
   public int getIconWidth() {
+  	setSizeFactor(FontSizer.getIntegerFactor());
     return w;
   }
 
   @Override
   public int getIconHeight() {
+//  	setSizeFactor(FontSizer.getIntegerFactor()); // only needed for width since called first?
     return h;
   }
   
@@ -103,19 +106,17 @@ public class ResizableIcon implements Icon {
   	return icon;
   }
   
-	/**
-	 * Magnifies the icon by a specified integer factor.
-	 * 
-	 * @param factor the factor
-	 * @return 
-	 */
-	public boolean resize(int factor) {
-		int n = Math.max(factor, 1);
-		if (w == n * baseWidth)
-			return false;
-		w = n * baseWidth;
-		h = n * baseHeight;
-		return true;
-	}
+  /**
+   * Sets the size factor.
+   * 
+   * @param factor the desired factor
+   */
+  private void setSizeFactor(int factor) {
+  	if (factor != sizeFactor) {
+  		sizeFactor = factor;
+  		w = baseWidth * factor;
+  		h = baseHeight * factor;
+  	}  	
+  }
   
 }

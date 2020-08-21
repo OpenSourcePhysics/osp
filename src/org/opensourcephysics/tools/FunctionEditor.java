@@ -2038,7 +2038,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 
 				// make revert button
 				String imageFile = "/org/opensourcephysics/resources/tools/images/close.gif"; //$NON-NLS-1$
-				Icon icon = ResourceLoader.getIcon(imageFile);
+				Icon icon = ResourceLoader.getImageIcon(imageFile);
 				revertButton = new JButton(icon);
 				line = BorderFactory.createLineBorder(Color.LIGHT_GRAY);
 				space = BorderFactory.createEmptyBorder(0, 2, 0, 2);

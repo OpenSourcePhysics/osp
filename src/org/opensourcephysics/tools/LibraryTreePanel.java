@@ -309,17 +309,6 @@ public class LibraryTreePanel extends JPanel {
 		FontSizer.setFonts(toSize, level);
 		EntryField.font = authorField.getFont();
 
-		// resize treeNodeRenderer and LibraryResource icons
-		treeNodeRenderer.resizableOpenIcon.resize(FontSizer.getIntegerFactor());
-		treeNodeRenderer.resizableClosedIcon.resize(FontSizer.getIntegerFactor());
-		LibraryResource.trackerIcon.resize(FontSizer.getIntegerFactor());
-		LibraryResource.ejsIcon.resize(FontSizer.getIntegerFactor());
-		LibraryResource.imageIcon.resize(FontSizer.getIntegerFactor());
-		LibraryResource.videoIcon.resize(FontSizer.getIntegerFactor());
-		LibraryResource.htmlIcon.resize(FontSizer.getIntegerFactor());
-		LibraryResource.pdfIcon.resize(FontSizer.getIntegerFactor());
-		LibraryResource.unknownIcon.resize(FontSizer.getIntegerFactor());
-
 		// resize LibraryResource stylesheet font sizes
 		LibraryResource.bodyFont = FontSizer.getResizedFont(LibraryResource.bodyFont, level);
 		LibraryResource.h1Font = FontSizer.getResizedFont(LibraryResource.h1Font, level);
@@ -2577,7 +2566,6 @@ public class LibraryTreePanel extends JPanel {
 			}
 			setToolTipText(node.getToolTip());
 			if (icon == null) {
-				LibraryResource.unknownIcon.resize(FontSizer.getIntegerFactor());
 				icon = LibraryResource.unknownIcon;
 			}
 			setIcon(icon);

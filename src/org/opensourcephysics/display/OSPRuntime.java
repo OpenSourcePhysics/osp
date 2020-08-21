@@ -709,6 +709,12 @@ public class OSPRuntime {
 		if (path.startsWith("jar:")) { //$NON-NLS-1$
 			path = path.substring(4, path.length());
 		}
+		if (path.startsWith("file:/")) { //$NON-NLS-1$
+			path = path.substring(5, path.length());
+			if (path.contains(":")) { //$NON-NLS-1$  // windows drive eg C:/
+				path = path.substring(1, path.length());
+			}
+		}
 		try {
 			// check that file exists and set launchJarPath to file path
 			File file = new File(path);

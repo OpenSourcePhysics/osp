@@ -57,7 +57,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import javax.swing.AbstractButton;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -71,6 +70,7 @@ import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.js.JSUtil;
 
 import javajs.async.Assets;
@@ -587,29 +587,54 @@ public class ResourceLoader {
 		Resource res = getResource(path);
 		return (res == null) ? null : res.getString();
 	}
+	
+	/**
+	 * Gets an icon. May return null.
+	 * 
+	 * @param path the path
+	 * @return the icon. May return null.
+	 * @deprecated This method is replaced by getImageIcon(String path)
+	 */
+	@Deprecated
+	public static ImageIcon getIcon(String path) { 
+		return getImageIcon( path);
+	}
 
 	/**
 	 * Gets an icon. May return null.
 	 * 
 	 * @param path the path
-	 * @return the icon
+	 * @return the icon. May return null.
 	 */
-	public static ImageIcon getIcon(String path) {
-		URL url = getAppletResourceURL(path); // added by W. Christian
-		if (url != null) {
-			return new ImageIcon(url);
-		}
-		try {
+	public static ImageIcon getImageIcon(String path) { 
+		ImageIcon icon=null;
+		if(!OSPRuntime.isJS) try {  // look for images in bin or in jar when running in Java
+			icon = new ImageIcon(ResourceLoader.class.getResource(path));
+			if(icon!=null) return icon; // image found
+		}catch (Exception e) {}
+		
+		URL url = null;
+		try {  // look for images in assets archive if it exists
 			url = Assets.getURLFromPath(path, false);
-			return (url == null ? 
-					new ImageIcon(path) : 
-						new ImageIcon(url));
+			icon = url == null ? 
+			new ImageIcon(path) : 
+			new ImageIcon(url);
+			return icon.getIconWidth() > 0? icon: null;
 		} catch (Exception e) {
 			OSPLog.warning("ResourceLoader could not find " + url + "\nEclipse not pointing to correct project?");
-			return new ImageIcon((URL) null);
+			return null;
 		}
-//		Resource res = getResource(path);
-//		return (res == null) ? null : res.getIcon();
+	}
+
+	/**
+	 * Gets a ResizaableIcon.
+	 *
+	 * @param path the path
+	 * @return the icon. May return null.
+	 */
+	public static ResizableIcon getResizableIcon(String path) {
+		ImageIcon icon = getImageIcon(path);
+		return icon == null? null: new ResizableIcon(icon);
 	}
 
 	/**
@@ -1297,11 +1322,14 @@ public class ResourceLoader {
 	 * @return the ZipEntry for this file, possibly cached.
 	 */
 	public static ZipEntry findZipEntry(String zipFile, String fileName, boolean isContains) {
+		Map<String, ZipEntry> contents = getZipContents(zipFile);
+		if (contents == null)
+			return null;
 		if (!isContains) {
-			return getZipContents(zipFile).get(fileName);
+			return contents.get(fileName);
 		}
 		boolean isLCExt = fileName.startsWith(".");
-		for (Entry<String, ZipEntry> entry : getZipContents(zipFile).entrySet()) {
+		for (Entry<String, ZipEntry> entry : contents.entrySet()) {
 			String key = entry.getKey();
 			if ((isLCExt ? key.toLowerCase() : key).indexOf(fileName) >= 0)
 				return entry.getValue();
@@ -2203,13 +2231,13 @@ public class ResourceLoader {
 		}
 		// if resource is found, log and set launchJarName if not yet set
 		if (res != null) {
-			String path = XML.forwardSlash(res.getAbsolutePath());
+			String path =  getNonURIPath(XML.forwardSlash(res.getAbsolutePath()));
 			// don't return resources from Java runtime system jars
 			if ((path.indexOf("/jre") > -1) && (path.indexOf("/lib") > -1)) { //$NON-NLS-1$ //$NON-NLS-2$
 				return null;
 			}
 			// don't return resources that don't contain original name
-			if (!getNonURIPath(path).contains(originalName) && !path.contains(originalName)) {
+			if (!path.contains(originalName)) {
 				return null;
 			}
 			if (name.endsWith("xset")) { //$NON-NLS-1$
@@ -2832,7 +2860,7 @@ public class ResourceLoader {
 		if (url != null) {
 			return new ImageIcon(url).getImage();
 		}
-		ImageIcon icon = getIcon(path);
+		ImageIcon icon = getImageIcon(path);
 		if (icon != null)
 			return icon.getImage();
 		Resource res = getResource(path);

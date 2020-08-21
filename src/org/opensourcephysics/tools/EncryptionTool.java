@@ -417,7 +417,7 @@ public class EncryptionTool extends JFrame implements Tool {
 		toolbar.setFloatable(false);
 		contentPane.add(toolbar, BorderLayout.NORTH);
 		String imageFile = "/org/opensourcephysics/resources/tools/images/open.gif"; //$NON-NLS-1$
-		openIcon = ResourceLoader.getIcon(imageFile);
+		openIcon = ResourceLoader.getImageIcon(imageFile);
 		openButton = new JButton(openIcon);
 		openButton.addActionListener(new ActionListener() {
 			@Override
@@ -428,7 +428,7 @@ public class EncryptionTool extends JFrame implements Tool {
 		});
 		toolbar.add(openButton);
 		imageFile = "/org/opensourcephysics/resources/tools/images/save.gif"; //$NON-NLS-1$
-		saveIcon = ResourceLoader.getIcon(imageFile);
+		saveIcon = ResourceLoader.getImageIcon(imageFile);
 		saveButton = new JButton(saveIcon);
 		saveButton.addActionListener(new ActionListener() {
 			@Override

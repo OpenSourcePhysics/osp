@@ -834,10 +834,6 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 			FunctionPanel panel = trackFunctionPanels.get(next);
 			String displayName = panel.getDisplayName();
 			Icon icon = panel.getIcon();
-			if (icon != null && icon instanceof ResizableIcon) {
-				int factor = FontSizer.getIntegerFactor(FontSizer.getLevel());
-				((ResizableIcon) icon).resize(factor);
-			}
 			FTObject item = new FTObject(icon, next, displayName);
 			dropdown.addItem(item);
 			if (toSelect == null || next.equals(name)) {

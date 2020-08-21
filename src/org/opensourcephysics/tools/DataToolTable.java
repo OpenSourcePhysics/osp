@@ -580,9 +580,9 @@ public class DataToolTable extends DataTable {
 				}
 			});
 			popup.add(selectNoneItem);
-			popup.addSeparator();
 
 			if (dataToolTab.isUserEditable() && !(data instanceof DataFunction)) {
+				popup.addSeparator();
 				// insert cells item
 				text = ToolsRes.getString("DataToolTable.Popup.MenuItem.InsertCells"); //$NON-NLS-1$
 				insertCellsItem = new JMenuItem(text);
@@ -1950,6 +1950,11 @@ public class DataToolTable extends DataTable {
 	 */
 	@Override
 	public void refreshTable(int mode) {
+		if (mode == DataTable.MODE_CELLS) {
+			super.refreshTable(mode);
+			updateColumnModel(null);
+			return;
+		}
 //		if (mode == DataTable.MODE_SET_TAINTED) {
 //			super.refreshTable(mode);
 //			updateColumnModel(null);

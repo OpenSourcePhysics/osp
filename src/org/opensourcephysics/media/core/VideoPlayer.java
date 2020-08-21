@@ -154,29 +154,29 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	private static NumberFormat timeFormat = NumberFormat.getNumberInstance();
 	static {
 		String path = "/org/opensourcephysics/resources/media/images/in_out.gif"; //$NON-NLS-1$
-		inOutIcon = ResourceLoader.getIcon(path);
+		inOutIcon = ResourceLoader.getImageIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/play.gif"; //$NON-NLS-1$
-		playIcon = ResourceLoader.getIcon(path);
+		playIcon = ResourceLoader.getImageIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/play_gray.gif"; //$NON-NLS-1$
-		grayPlayIcon = ResourceLoader.getIcon(path);
+		grayPlayIcon = ResourceLoader.getImageIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/pause.gif"; //$NON-NLS-1$
-		pauseIcon = ResourceLoader.getIcon(path);
+		pauseIcon = ResourceLoader.getImageIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/reset.gif"; //$NON-NLS-1$
-		resetIcon = ResourceLoader.getIcon(path);
+		resetIcon = ResourceLoader.getImageIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/looping_on.gif"; //$NON-NLS-1$
-		loopIcon = ResourceLoader.getIcon(path);
+		loopIcon = ResourceLoader.getImageIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/looping_off.gif"; //$NON-NLS-1$
-		noloopIcon = ResourceLoader.getIcon(path);
+		noloopIcon = ResourceLoader.getImageIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/video_clip.gif"; //$NON-NLS-1$
-		videoClipIcon = ResourceLoader.getIcon(path);
+		videoClipIcon = ResourceLoader.getImageIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/step.gif"; //$NON-NLS-1$
-		stepIcon = ResourceLoader.getIcon(path);
+		stepIcon = ResourceLoader.getImageIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/step_gray.gif"; //$NON-NLS-1$
-		grayStepIcon = ResourceLoader.getIcon(path);
+		grayStepIcon = ResourceLoader.getImageIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/back.gif"; //$NON-NLS-1$
-		backIcon = ResourceLoader.getIcon(path);
+		backIcon = ResourceLoader.getImageIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/back_gray.gif"; //$NON-NLS-1$
-		grayBackIcon = ResourceLoader.getIcon(path);
+		grayBackIcon = ResourceLoader.getImageIcon(path);
 	}
 
 	// instance fields

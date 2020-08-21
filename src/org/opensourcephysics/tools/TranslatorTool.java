@@ -890,7 +890,7 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
 		});
 		buttonbar.add(helpButton);
 		String imageFile = "/org/opensourcephysics/resources/tools/images/save.gif"; //$NON-NLS-1$
-		saveIcon = ResourceLoader.getIcon(imageFile);
+		saveIcon = ResourceLoader.getImageIcon(imageFile);
 		saveButton = new JButton(saveIcon);
 		saveButton.addActionListener(new ActionListener() {
 			@Override
