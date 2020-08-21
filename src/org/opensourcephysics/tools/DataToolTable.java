@@ -2182,9 +2182,12 @@ public class DataToolTable extends DataTable {
 			int[] cols = getSelectedColumns();
 			boolean selected = false;
 			for (int i = 0; i < cols.length; i++) {
-				selected = selected || (cols[i] == col);
+				if (cols[i] == col) {
+					selected = true;
+					break;
+				}
 			}
-			selected = selected && (convertColumnIndexToModel(col) > 0);
+			selected &= (convertColumnIndexToModel(col) > 0);
 			bgColor = selected ? selectedHeaderBG : bgColor;
 
 			// special case: textline doesn't work on OSX
@@ -2454,7 +2457,10 @@ public class DataToolTable extends DataTable {
 				setEnabled((row < getRowCount() - 1) || !isEmptyRow(row));
 				int[] rows = getSelectedRows();
 				for (int i = 0; i < rows.length; i++) {
-					selected = selected || (rows[i] == row);
+					if (rows[i] == row) {
+						selected = true;
+						break;
+					}
 				}
 			}
 //      setForeground(selected ? selectedFG : Color.black);
