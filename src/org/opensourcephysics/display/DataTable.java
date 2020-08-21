@@ -2280,6 +2280,7 @@ public class DataTable extends JTable {
     }
     
     protected void refreshTable(int mode, boolean resortAndReselect) {
+    	System.out.println("DataTable.refreshTable " + mode);
 		// model for this table assumed to be a SortDecorator
 		// always reset the decorator before changing table structure
 		int col = dataTableModel.getSortedColumn();

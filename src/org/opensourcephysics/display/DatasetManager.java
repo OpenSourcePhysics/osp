@@ -8,7 +8,9 @@
 package org.opensourcephysics.display;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics;
+import java.awt.HeadlessException;
 import java.awt.Shape;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,12 +18,16 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.swing.JOptionPane;
 import javax.swing.event.TableModelEvent;
 
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
 import org.opensourcephysics.display.DataTable.OSPTableModel;
+import org.opensourcephysics.numerics.SuryonoParser;
+import org.opensourcephysics.tools.FunctionTool;
+import org.opensourcephysics.tools.ToolsRes;
 
 /**
  *
@@ -57,11 +63,11 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 	Map<String, String> constantDescriptions = new TreeMap<String, String>();
 	String name = ""; //$NON-NLS-1$
 	int datasetID = hashCode();
-    public Dataset dsFound;
-    
-    /**
-     * used by TableTrackView
-     */
+	public Dataset dsFound;
+
+	/**
+	 * used by TableTrackView
+	 */
 	private Dataset frameDataset;
 
 	/**
@@ -371,7 +377,7 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 		Dataset dataset = datasets.get(datasetIndex);
 		dataset.setXYColumnNames(xColumnName, yColumnName);
 		if ("frame".equals(yColumnName))
-		  frameDataset = dataset;
+			frameDataset = dataset;
 	}
 
 	/**
@@ -1140,6 +1146,121 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 
 	public Dataset getFrameDataset() {
 		return frameDataset;
+	}
+
+	/**
+	 * Returns true if name is a duplicate of an existing dataset.
+	 *
+	 * @param d    the dataset
+	 * @param name the proposed name for the dataset
+	 * @return true if duplicate
+	 */
+	public boolean isDuplicateName(Dataset d, String name) {
+		if (getDatasets().isEmpty()) {
+			return false;
+		}
+		if (getDataset(0).getXColumnName().equals(name)) {
+			return true;
+		}
+		name = TeXParser.removeSubscripting(name);
+		ArrayList<Dataset> list = getDatasets();
+		for (int i = 0, n = list.size(); i < n; i++) {
+			Dataset next = list.get(i);
+			if (next != d && TeXParser.removeSubscripting(next.getYColumnName()).equals(name)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Returns a column name that is provided by the user and is unique to this tab,
+	 * contains no spaces, and is not reserved by the OSP parser.
+	 *
+	 * @param d        the dataset
+	 * @param proposed the proposed name to be offered to the user, or null
+	 * @return unique name
+	 */
+	public String getUniqueYColumnName(Component c, Dataset d, String proposed) {
+		proposed = showInputDialog(c, ToolsRes.getString("DataToolTab.Dialog.NameColumn.Message"), //$NON-NLS-1$
+				ToolsRes.getString("DataToolTab.Dialog.NameColumn.Title"), //$NON-NLS-1$
+				JOptionPane.QUESTION_MESSAGE, uniquifyColumnName(d, proposed));
+		if (proposed == null || (proposed = proposed.trim()).length() == 0) {
+			return null;
+		}
+		// remove all spaces
+		proposed = proposed.replaceAll(" ", ""); //$NON-NLS-1$ //$NON-NLS-2$
+		boolean containsOperators = FunctionTool.arrayContains(FunctionTool.parserOperators, proposed);
+		// check for duplicate or reserved names
+//		if (askUser || containsOperators) {
+		int tries = 0, maxTries = 3;
+		while (tries < maxTries) {
+			tries++;
+			if (isDuplicateName(d, proposed)) {
+				Object response = showInputDialog(c, "\"" + proposed + "\" " + //$NON-NLS-1$ //$NON-NLS-2$
+						ToolsRes.getString("DataFunctionPanel.Dialog.DuplicateName.Message"), //$NON-NLS-1$
+						ToolsRes.getString("DataFunctionPanel.Dialog.DuplicateName.Title"), //$NON-NLS-1$
+						JOptionPane.WARNING_MESSAGE, proposed);
+				proposed = (response == null) ? null : response.toString();
+			}
+			if ((proposed == null) || proposed.equals("")) { //$NON-NLS-1$
+				return null;
+			}
+			if (FunctionTool.isReservedName(proposed)) {
+				Object response = showInputDialog(c, "\"" + proposed + "\" " + //$NON-NLS-1$ //$NON-NLS-2$
+						ToolsRes.getString("DataToolTab.Dialog.ReservedName.Message"), //$NON-NLS-1$
+						ToolsRes.getString("DataToolTab.Dialog.ReservedName.Title"), //$NON-NLS-1$
+						JOptionPane.WARNING_MESSAGE, proposed);
+				proposed = (response == null) ? null : response.toString();
+			}
+			if ((proposed == null) || proposed.equals("")) { //$NON-NLS-1$
+				return null;
+			}
+			containsOperators = FunctionTool.arrayContains(FunctionTool.parserOperators, proposed);
+			if (containsOperators) {
+				Object response = showInputDialog(c, ToolsRes.getString("DataToolTab.Dialog.OperatorInName.Message"), //$NON-NLS-1$
+						ToolsRes.getString("DataToolTab.Dialog.OperatorInName.Title"), //$NON-NLS-1$
+						JOptionPane.WARNING_MESSAGE, proposed);
+				proposed = (response == null) ? null : response.toString();
+			}
+			if ((proposed == null) || proposed.equals("")) { //$NON-NLS-1$
+				return null;
+			}
+		}
+//		}
+		return (containsOperators ? null : uniquifyColumnName(d, proposed));
+	}
+
+	public static String showInputDialog(Component c, String message, String title, int messageType, String value)
+			throws HeadlessException {
+		// we force no listener for JavaScript -- simple prompt.
+		return (String) JOptionPane.showInputDialog(OSPRuntime.isJS ? null : c, message, title, messageType, null, null,
+				value);
+	}
+
+	public String uniquifyColumnName(Dataset d, String name) {
+		if (name == null)
+			return null;
+		int i = 0;
+		// trap for names that are numbers
+		if (!Double.isNaN(SuryonoParser.getNumber(name))) {
+			name = ToolsRes.getString("DataToolTab.NewColumn.Name"); //$NON-NLS-1$
+		}
+		// remove existing number subscripts, if any, from duplicate names
+		boolean subscriptRemoved = false;
+		if (isDuplicateName(d, name)) {
+			String subscript = TeXParser.getSubscript(name);
+			double di; // check for integer subscript
+			if ((di = SuryonoParser.getNumber(subscript)) == (int) di) {
+				name = TeXParser.removeSubscript(name);
+				subscriptRemoved = true;
+			}
+		}
+		while (subscriptRemoved || isDuplicateName(d, name) || FunctionTool.isReservedName(name)) {
+			name = TeXParser.addSubscript(name, "" + ++i);
+			subscriptRemoved = false;
+		}
+		return name;
 	}
 
 }

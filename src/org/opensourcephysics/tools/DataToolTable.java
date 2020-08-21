@@ -903,14 +903,7 @@ public class DataToolTable extends DataTable {
 						return;
 					}
 					String prevName = data.getYColumnName();
-					Object input = JOptionPane.showInputDialog(dataToolTab,
-							ToolsRes.getString("DataToolTable.Dialog.NameColumn.Message"), //$NON-NLS-1$
-							ToolsRes.getString("DataToolTable.Dialog.NameColumn.Title"), //$NON-NLS-1$
-							JOptionPane.QUESTION_MESSAGE, null, null, prevName);
-					if ((input == null) || input.equals("")) { //$NON-NLS-1$
-						return;
-					}
-					String newName = dataToolTab.getUniqueYColumnName(data, input.toString(), true);
+					String newName = dataManager.getUniqueYColumnName(DataToolTable.this, data, prevName);
 					if (newName == null) {
 						return;
 					}
@@ -1002,7 +995,7 @@ public class DataToolTable extends DataTable {
 						name = name.substring(0, n);
 					}
 					name = name + postfix;
-					name = dataToolTab.getUniqueYColumnName(clone, name, false);
+					name = dataManager.uniquifyColumnName(clone, name);
 					clone.setXYColumnNames(data.getXColumnName(), name);
 					ArrayList<DataColumn> loadedColumns = dataToolTab.loadData(clone, false);
 					if (!loadedColumns.isEmpty()) {
@@ -1992,6 +1985,7 @@ public class DataToolTable extends DataTable {
 		if (rows.length > 0) {
 			selectModelRows(rows);
 		}
+		super.refreshTable(mode);
 	}
 
 	@Override

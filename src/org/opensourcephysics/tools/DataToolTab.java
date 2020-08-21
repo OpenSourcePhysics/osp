@@ -120,10 +120,11 @@ import org.opensourcephysics.display.axes.CartesianCoordinateStringBuilder;
 import org.opensourcephysics.display.axes.CartesianInteractive;
 import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.media.core.TPoint;
-import org.opensourcephysics.numerics.SuryonoParser;
 import org.opensourcephysics.tools.DataToolTable.TableEdit;
 import org.opensourcephysics.tools.DataToolTable.WorkingDataset;
 import org.opensourcephysics.tools.DatasetCurveFitter.NumberField;
+
+import javajs.async.AsyncDialog;
 
 /**
  * This tab displays and analyzes a single Data object in a DataTool.
@@ -305,7 +306,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					String name = match.getYColumnName();
 					// temporarily set local y-column name to "" to get unique name for match
 					local.setXYColumnNames("row", ""); //$NON-NLS-1$ //$NON-NLS-2$
-					name = getUniqueYColumnName(match, name, false);
+					name = dataManager.uniquifyColumnName(match, name);
 					local.setXYColumnNames("row", localName); //$NON-NLS-1$
 					// update local if incoming points or name is different
 					if (!Arrays.equals(local.getYPoints(), match.getYPoints()) || !name.equals(localName)) {
@@ -832,7 +833,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 */
 	protected void addColumn(DataColumn column) {
 		String name = column.getYColumnName();
-		String yName = getUniqueYColumnName(column, name, false);
+		String yName = dataManager.uniquifyColumnName(column, name);
 		if (!name.equals(yName)) {
 			String xName = column.getXColumnName();
 			column.setXYColumnNames(xName, yName);
@@ -977,131 +978,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	protected WorkingDataset getWorkingData() {
 //    dataTable.getSelectedData();
 		return dataTable.workingData;
-	}
-
-	/**
-	 * Returns a column name that is unique to this tab, contains no spaces, and is
-	 * not reserved by the OSP parser.
-	 *
-	 * @param d        the dataset
-	 * @param proposed the proposed name for the column
-	 * @param askUser  true to ask user to approve changes
-	 * @return unique name
-	 */
-	protected String getUniqueYColumnName(Dataset d, String proposed, boolean askUser) {
-		if (proposed == null) {
-			return null;
-		}
-		// remove all spaces
-		proposed = proposed.replaceAll(" ", ""); //$NON-NLS-1$ //$NON-NLS-2$
-		boolean containsOperators = arrayContains(FunctionTool.parserOperators, proposed);
-		// check for duplicate or reserved names
-		if (askUser || containsOperators) {
-			int tries = 0, maxTries = 3;
-			while (tries < maxTries) {
-				tries++;
-				if (isDuplicateName(d, proposed)) {
-					Object response = JOptionPane.showInputDialog(this, "\"" + proposed + "\" " + //$NON-NLS-1$ //$NON-NLS-2$
-							ToolsRes.getString("DataFunctionPanel.Dialog.DuplicateName.Message"), //$NON-NLS-1$
-							ToolsRes.getString("DataFunctionPanel.Dialog.DuplicateName.Title"), //$NON-NLS-1$
-							JOptionPane.WARNING_MESSAGE, null, null, proposed);
-					proposed = (response == null) ? null : response.toString();
-				}
-				if ((proposed == null) || proposed.equals("")) { //$NON-NLS-1$
-					return null;
-				}
-				if (isReservedName(proposed)) {
-					Object response = JOptionPane.showInputDialog(this, "\"" + proposed + "\" " + //$NON-NLS-1$ //$NON-NLS-2$
-							ToolsRes.getString("DataToolTab.Dialog.ReservedName.Message"), //$NON-NLS-1$
-							ToolsRes.getString("DataToolTab.Dialog.ReservedName.Title"), //$NON-NLS-1$
-							JOptionPane.WARNING_MESSAGE, null, null, proposed);
-					proposed = (response == null) ? null : response.toString();
-				}
-				if ((proposed == null) || proposed.equals("")) { //$NON-NLS-1$
-					return null;
-				}
-				containsOperators = arrayContains(FunctionTool.parserOperators, proposed);
-				if (containsOperators) {
-					Object response = JOptionPane.showInputDialog(this,
-							ToolsRes.getString("DataToolTab.Dialog.OperatorInName.Message"), //$NON-NLS-1$
-							ToolsRes.getString("DataToolTab.Dialog.OperatorInName.Title"), //$NON-NLS-1$
-							JOptionPane.WARNING_MESSAGE, null, null, proposed);
-					proposed = (response == null) ? null : response.toString();
-				}
-				if ((proposed == null) || proposed.equals("")) { //$NON-NLS-1$
-					return null;
-				}
-			}
-		}
-		if (containsOperators)
-			return null;
-		int i = 0;
-		// trap for names that are numbers
-		if (!Double.isNaN(SuryonoParser.getNumber(proposed))) {
-			proposed = ToolsRes.getString("DataToolTab.NewColumn.Name"); //$NON-NLS-1$
-		}
-		// remove existing number subscripts, if any, from duplicate names
-		boolean subscriptRemoved = false;
-		if (isDuplicateName(d, proposed)) {
-			String subscript = TeXParser.getSubscript(proposed);
-			double di; // check for integer subscript
-			if ((di = SuryonoParser.getNumber(subscript)) == (int) di) {
-				proposed = TeXParser.removeSubscript(proposed);
-				subscriptRemoved = true;
-			}
-		}
-		String name = proposed;
-		while (subscriptRemoved || isDuplicateName(d, name) || isReservedName(name)) {
-			name = TeXParser.addSubscript(proposed, "" + ++i);
-			subscriptRemoved = false;
-		}
-		return name;
-	}
-
-	/**
-	 * Returns true if name is a duplicate of an existing dataset.
-	 *
-	 * @param d    the dataset
-	 * @param name the proposed name for the dataset
-	 * @return true if duplicate
-	 */
-	protected boolean isDuplicateName(Dataset d, String name) {
-		if (dataManager.getDatasets().isEmpty()) {
-			return false;
-		}
-		if (dataManager.getDataset(0).getXColumnName().equals(name)) {
-			return true;
-		}
-		name = TeXParser.removeSubscripting(name);
-		ArrayList<Dataset> list = dataManager.getDatasets();
-		for (int i = 0, n = list.size(); i < n; i++) {
-			Dataset next = list.get(i);
-			if (next != d && TeXParser.removeSubscripting(next.getYColumnName()).equals(name)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Returns true if name is reserved by the OSP parser.
-	 *
-	 * @param name the proposed name
-	 * @return true if reserved
-	 */
-	protected boolean isReservedName(String name) {
-		// check for localized "row" name
-		// check for parser terms
-		return (DataTable.rowName.equals(name) || arrayContains(FunctionTool.parserNames, name)
-				|| arrayContains(UserFunction.dummyVars, name) || !Double.isNaN(SuryonoParser.getNumber(name)));
-	}
-
-	private static boolean arrayContains(String[] s, String name) {
-		for (int i = s.length; --i >= 0;) {
-			if (s[i].equals(name))
-				return true;
-		}
-		return false;
 	}
 
 	/**
@@ -1511,24 +1387,15 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			@Override
 			public void actionPerformed(final ActionEvent e) {
 				DataColumn column = createDataColumn();
-				String proposed = ToolsRes.getString("DataToolTab.NewColumn.Name"); //$NON-NLS-1$
-				proposed = getUniqueYColumnName(column, proposed, false);
-				Object input = JOptionPane.showInputDialog(DataToolTab.this,
-						ToolsRes.getString("DataToolTab.Dialog.NameColumn.Message"), //$NON-NLS-1$
-						ToolsRes.getString("DataToolTab.Dialog.NameColumn.Title"), //$NON-NLS-1$
-						JOptionPane.QUESTION_MESSAGE, null, null, proposed);
-				if (input == null) {
-					return;
-				}
-				String newName = getUniqueYColumnName(column, input.toString(), true);
+				String newName = dataManager.getUniqueYColumnName(DataToolTab.this, column, ToolsRes.getString("DataToolTab.NewColumn.Name"));
 				if (newName == null) {
 					return;
 				}
 				if (newName.equals("")) { //$NON-NLS-1$
 					String colName = ToolsRes.getString("DataToolTab.NewColumn.Name"); //$NON-NLS-1$
-					newName = getUniqueYColumnName(column, colName, false);
+					newName = dataManager.uniquifyColumnName(column, colName);
 				}
-				OSPLog.finer("adding new column \"" + newName + "\""); //$NON-NLS-1$ //$NON-NLS-2$
+				OSPLog.debug("adding new column \"" + newName + "\""); //$NON-NLS-1$ //$NON-NLS-2$
 				column.setXYColumnNames("row", newName); //$NON-NLS-1$
 				ArrayList<DataColumn> loadedColumns = loadData(column, false);
 				if (!loadedColumns.isEmpty()) {
@@ -1536,23 +1403,17 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 						next.deletable = true;
 					}
 				}
-				int col = dataTable.getColumnCount() - 1;
 				// post edit: target is column, value is dataset
 				TableEdit edit = dataTable.new TableEdit(DataToolTable.INSERT_COLUMN_EDIT, newName,
-						Integer.valueOf(col), column);
+						Integer.valueOf(dataTable.getColumnCount() - 1), column);
 				undoSupport.postEdit(edit);
 				dataTable.refreshUndoItems();
-				Runnable runner = new Runnable() {
-					@Override
-					public synchronized void run() {
-						int col = dataTable.getColumnCount() - 1;
-						dataTable.changeSelection(0, col, false, false);
-						dataTable.editCellAt(0, col, e);
-						dataTable.editor.field.requestFocus();
-					}
-
-				};
-				SwingUtilities.invokeLater(runner);
+				SwingUtilities.invokeLater(() -> {
+					int col = dataTable.getColumnCount() - 1;
+					dataTable.changeSelection(0, col, false, false);
+					dataTable.editCellAt(0, col, e);
+					dataTable.editor.field.requestFocus();
+				});
 			}
 
 		});

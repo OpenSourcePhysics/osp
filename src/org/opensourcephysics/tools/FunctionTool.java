@@ -52,9 +52,11 @@ import javax.swing.WindowConstants;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.display.DataTable;
 import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.display.TextFrame;
 import org.opensourcephysics.media.core.Trackable;
+import org.opensourcephysics.numerics.SuryonoParser;
 
 /**
  * This tool allows users to create and manage editable Functions.
@@ -104,7 +106,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		}
 	}
 
-	protected static String[] parserNames = new String[] { "e", "pi", "min", "mod", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+	public static String[] parserNames = new String[] { "e", "pi", "min", "mod", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			"sin", "cos", "abs", "log", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			"acos", "acosh", "ceil", "cosh", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			"asin", "asinh", "atan", "atanh", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
@@ -112,7 +114,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 			"random", "round", "sign", "sinh", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			"step", "tanh", "atan2", "max", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			"sqrt", "sqr", "if", "tan" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ ;
-	protected static String[] parserOperators = new String[] { "!", ",", ".", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	public static String[] parserOperators = new String[] { "!", ",", ".", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			"+", "-", "*", "/", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			"^", "=", ">", "<", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			"&", "|", "(", ")" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ ;
@@ -1035,6 +1037,27 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 			helpDialog.dispose();
 		}
 		super.dispose();
+	}
+
+	public static boolean arrayContains(String[] s, String name) {
+		for (int i = s.length; --i >= 0;) {
+			if (s[i].equals(name))
+				return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Returns true if name is reserved by the OSP parser.
+	 *
+	 * @param name the proposed name
+	 * @return true if reserved
+	 */
+	public static boolean isReservedName(String name) {
+		// check for localized "row" name
+		// check for parser terms
+		return (DataTable.rowName.equals(name) || FunctionTool.arrayContains(parserNames, name)
+				|| FunctionTool.arrayContains(UserFunction.dummyVars, name) || !Double.isNaN(SuryonoParser.getNumber(name)));
 	}
 }
 
