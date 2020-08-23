@@ -84,6 +84,7 @@ import org.opensourcephysics.display.Dataset;
 import org.opensourcephysics.display.DatasetManager;
 import org.opensourcephysics.display.DisplayColors;
 import org.opensourcephysics.display.DisplayRes;
+import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPFrame;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
@@ -2419,10 +2420,10 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 						public void actionPerformed(ActionEvent e) {
 							DataToolTab tab = getTab(index);
 							String name = tab.getName();
-							Object input = JOptionPane.showInputDialog(DataTool.this,
+							String input = GUIUtils.showInputDialog(DataTool.this, 
 									ToolsRes.getString("DataTool.Dialog.Name.Message"), //$NON-NLS-1$
 									ToolsRes.getString("DataTool.Dialog.Name.Title"), //$NON-NLS-1$
-									JOptionPane.QUESTION_MESSAGE, null, null, name);
+									JOptionPane.QUESTION_MESSAGE, name);
 							if (input == null) {
 								return;
 							}

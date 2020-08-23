@@ -50,6 +50,7 @@ import javax.swing.event.ListSelectionListener;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
+import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPRuntime;
 
 /**
@@ -320,14 +321,11 @@ public class LibraryManager extends JDialog {
 				ToolsRes.getString("LibraryBrowser.Dialog.AddCollection.Message"); //$NON-NLS-1$
 				String title = imported ? ToolsRes.getString("LibraryBrowser.Dialog.AddLibrary.Title") : //$NON-NLS-1$
 				ToolsRes.getString("LibraryBrowser.Dialog.AddCollection.Title"); //$NON-NLS-1$
-
-				Object input = JOptionPane.showInputDialog(browser, message, title, JOptionPane.QUESTION_MESSAGE, null,
-						null, null);
-
+				String input = GUIUtils.showInputDialog(browser, message, title, JOptionPane.QUESTION_MESSAGE, null);
 				if (input == null || input.equals("")) { //$NON-NLS-1$
 					return;
 				}
-				String path = input.toString();
+				String path = input;
 				path = XML.forwardSlash(path);
 				path = ResourceLoader.getNonURIPath(path);
 

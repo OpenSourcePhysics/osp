@@ -1231,17 +1231,17 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 					n = name.indexOf(next);
 				}
 			}
-			Object input = JOptionPane.showInputDialog(FunctionEditor.this,
+			String input = GUIUtils.showInputDialog(FunctionEditor.this,
 					ToolsRes.getString("FunctionEditor.Dialog.InvalidName.Message"), //$NON-NLS-1$
 					ToolsRes.getString("FunctionEditor.Dialog.InvalidName.Title"), //$NON-NLS-1$
-					JOptionPane.WARNING_MESSAGE, null, null, name);
+					JOptionPane.WARNING_MESSAGE, name);
 			if (input == null) {
 				return null;
 			}
 			if (input.equals(name)) {
 				break;
 			}
-			name = input.toString();
+			name = input;
 			invalid = getInvalidTokens(name);
 		}
 		if (name.length() > 0 && Character.isDigit(name.charAt(0))) {
@@ -1300,17 +1300,17 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			if (!confirmChanges) {
 				break;
 			}
-			Object input = JOptionPane.showInputDialog(this, "\"" + proposedName + "\" " + //$NON-NLS-1$ //$NON-NLS-2$
+			String input = GUIUtils.showInputDialog(this, "\"" + proposedName + "\" " + //$NON-NLS-1$ //$NON-NLS-2$
 					ToolsRes.getString("FunctionEditor.Dialog.DuplicateName.Message"), //$NON-NLS-1$
 					ToolsRes.getString("FunctionEditor.Dialog.DuplicateName.Title"), //$NON-NLS-1$
-					JOptionPane.WARNING_MESSAGE, null, null, name);
+					JOptionPane.WARNING_MESSAGE, name);
 			if (input == null) {
 				return null;
 			}
 			if (input.equals("") || input.equals(name)) { //$NON-NLS-1$
 				break;
 			}
-			name = proposedName = input.toString();
+			name = proposedName = input;
 		}
 		String expression = (obj == null) ? "0" : getExpression(obj); //$NON-NLS-1$
 		return createObject(name, expression, obj);
@@ -1380,13 +1380,13 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 							String desc = getDescription(obj);
 							String message = ToolsRes.getString("FunctionEditor.Dialog.SetDescription.Message"); //$NON-NLS-1$
 							message += " \"" + name + "\""; //$NON-NLS-1$ //$NON-NLS-2$
-							Object input = JOptionPane.showInputDialog(FunctionEditor.this, message,
+							String input = GUIUtils.showInputDialog(FunctionEditor.this, message,
 									ToolsRes.getString("FunctionEditor.Dialog.SetDescription.Title"), //$NON-NLS-1$
-									JOptionPane.PLAIN_MESSAGE, null, null, desc);
+									JOptionPane.PLAIN_MESSAGE, desc);
 							if (input == null || input.equals(desc)) {
 								return;
 							}
-							desc = input.toString();
+							desc = input;
 							setDescription(obj, desc);
 						}
 					}

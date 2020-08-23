@@ -14,6 +14,7 @@ import java.awt.Cursor;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.HeadlessException;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.RenderingHints;
@@ -582,6 +583,23 @@ public class GUIUtils {
 		while ((c = c.getParent()) != null && !(c instanceof JViewport)) {
 		}
 		return (JViewport) c;
+	}
+
+	/**
+	 * Allow a simple prompt in JavaScript
+	 * @param c
+	 * @param message
+	 * @param title
+	 * @param messageType
+	 * @param value
+	 * @return
+	 * @throws HeadlessException
+	 */
+	public static String showInputDialog(Component c, String message, String title, int messageType, String value)
+			throws HeadlessException {
+		// we force no listener for JavaScript -- simple prompt.
+		return (String) JOptionPane.showInputDialog(OSPRuntime.isJS ? null : c, message, title, messageType, null, null,
+				value);
 	}
 
 }

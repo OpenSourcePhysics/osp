@@ -92,6 +92,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
 
 import org.opensourcephysics.display.DisplayRes;
+import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ResourceLoader;
@@ -890,16 +891,16 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				VideoClip clip = getVideoClip();
-				Object response = JOptionPane.showInputDialog(vidPanel,
+				String response = GUIUtils.showInputDialog(vidPanel,
 						MediaRes.getString("VideoPlayer.Dialog.SetTime.Message"), //$NON-NLS-1$
 						MediaRes.getString("VideoPlayer.Dialog.SetTime.Title") + " " + getFrameNumber(), //$NON-NLS-1$ //$NON-NLS-2$
-						JOptionPane.PLAIN_MESSAGE, null, null, getTime() / 1000);
+						JOptionPane.PLAIN_MESSAGE, "" + (getTime() / 1000));
 				if (response != null) {
 					if (response.equals("")) //$NON-NLS-1$
 						clip.setStartTime(Double.NaN);
 					else
 						try {
-							double t = Double.parseDouble(response.toString());
+							double t = Double.parseDouble(response);
 							double t0 = t * 1000 - clipControl.getTime();
 							clip.setStartTime(t0);
 						} catch (NumberFormatException ex) {
@@ -1286,12 +1287,12 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 				clip.setStepSize(Integer.parseInt(e.getActionCommand()));
 			} catch (NumberFormatException ex) {
 				String cur = String.valueOf(getVideoClip().getStepSize());
-				Object input = JOptionPane.showInputDialog(vidPanel,
+				String input = GUIUtils.showInputDialog(vidPanel,
 						MediaRes.getString("VideoPlayer.Dialog.StepSize.Message"), //$NON-NLS-1$
 						MediaRes.getString("VideoPlayer.Dialog.StepSize.Title"), //$NON-NLS-1$
-						JOptionPane.PLAIN_MESSAGE, null, null, cur);
+						JOptionPane.PLAIN_MESSAGE, cur);
 				if (input != null) {
-					int n = Integer.parseInt(input.toString());
+					int n = Integer.parseInt(input);
 					clip.setStepSize(n);
 				}
 			}

@@ -10,7 +10,6 @@ package org.opensourcephysics.display;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
-import java.awt.HeadlessException;
 import java.awt.Shape;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1183,7 +1182,7 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 	 * @return unique name
 	 */
 	public String getUniqueYColumnName(Component c, Dataset d, String proposed) {
-		proposed = showInputDialog(c, ToolsRes.getString("DataToolTab.Dialog.NameColumn.Message"), //$NON-NLS-1$
+		proposed = GUIUtils.showInputDialog(c, ToolsRes.getString("DataToolTab.Dialog.NameColumn.Message"), //$NON-NLS-1$
 				ToolsRes.getString("DataToolTab.Dialog.NameColumn.Title"), //$NON-NLS-1$
 				JOptionPane.QUESTION_MESSAGE, uniquifyColumnName(d, proposed));
 		if (proposed == null || (proposed = proposed.trim()).length() == 0) {
@@ -1198,7 +1197,7 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 		while (tries < maxTries) {
 			tries++;
 			if (isDuplicateName(d, proposed)) {
-				Object response = showInputDialog(c, "\"" + proposed + "\" " + //$NON-NLS-1$ //$NON-NLS-2$
+				Object response = GUIUtils.showInputDialog(c, "\"" + proposed + "\" " + //$NON-NLS-1$ //$NON-NLS-2$
 						ToolsRes.getString("DataFunctionPanel.Dialog.DuplicateName.Message"), //$NON-NLS-1$
 						ToolsRes.getString("DataFunctionPanel.Dialog.DuplicateName.Title"), //$NON-NLS-1$
 						JOptionPane.WARNING_MESSAGE, proposed);
@@ -1208,7 +1207,7 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 				return null;
 			}
 			if (FunctionTool.isReservedName(proposed)) {
-				Object response = showInputDialog(c, "\"" + proposed + "\" " + //$NON-NLS-1$ //$NON-NLS-2$
+				Object response = GUIUtils.showInputDialog(c, "\"" + proposed + "\" " + //$NON-NLS-1$ //$NON-NLS-2$
 						ToolsRes.getString("DataToolTab.Dialog.ReservedName.Message"), //$NON-NLS-1$
 						ToolsRes.getString("DataToolTab.Dialog.ReservedName.Title"), //$NON-NLS-1$
 						JOptionPane.WARNING_MESSAGE, proposed);
@@ -1219,7 +1218,7 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 			}
 			containsOperators = FunctionTool.arrayContains(FunctionTool.parserOperators, proposed);
 			if (containsOperators) {
-				Object response = showInputDialog(c, ToolsRes.getString("DataToolTab.Dialog.OperatorInName.Message"), //$NON-NLS-1$
+				Object response = GUIUtils.showInputDialog(c, ToolsRes.getString("DataToolTab.Dialog.OperatorInName.Message"), //$NON-NLS-1$
 						ToolsRes.getString("DataToolTab.Dialog.OperatorInName.Title"), //$NON-NLS-1$
 						JOptionPane.WARNING_MESSAGE, proposed);
 				proposed = (response == null) ? null : response.toString();
@@ -1230,13 +1229,6 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 		}
 //		}
 		return (containsOperators ? null : uniquifyColumnName(d, proposed));
-	}
-
-	public static String showInputDialog(Component c, String message, String title, int messageType, String value)
-			throws HeadlessException {
-		// we force no listener for JavaScript -- simple prompt.
-		return (String) JOptionPane.showInputDialog(OSPRuntime.isJS ? null : c, message, title, messageType, null, null,
-				value);
 	}
 
 	public String uniquifyColumnName(Dataset d, String name) {
