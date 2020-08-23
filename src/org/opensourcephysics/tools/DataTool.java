@@ -46,6 +46,7 @@ import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -55,7 +56,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.TransferHandler;
@@ -80,6 +83,7 @@ import org.opensourcephysics.display.DataTable;
 import org.opensourcephysics.display.Dataset;
 import org.opensourcephysics.display.DatasetManager;
 import org.opensourcephysics.display.DisplayColors;
+import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.OSPFrame;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
@@ -220,6 +224,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 
 		}
 	};
+
+	private JMenuItem editDataItem;
 
 	/**
 	 * A shared data tool.
@@ -2789,6 +2795,12 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 
 		});
 		pasteMenu.add(pasteColumnsItem);
+		editMenu.addSeparator();
+		editDataItem = new JMenuItem("Edit Data");
+		editDataItem.addActionListener((e) -> {
+			editDataAction();
+		});
+		editMenu.add(editDataItem);
 		displayMenu = new JMenu();
 		menubar.add(displayMenu);
 		languageMenu = new JMenu();
@@ -3035,6 +3047,11 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		}
 	}
 
+	private void editDataAction() {
+		new EditDataDialog();
+	}
+
+
 	/**
 	 * Refreshes the GUI.
 	 */
@@ -3218,6 +3235,102 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			}
 		}
 
+	}
+
+	public class EditDataDialog extends JDialog {
+		JButton closeButton, cancelButton, applyButton;
+		JTextArea dataArea;
+		boolean canceled;
+		private String data0;
+
+		EditDataDialog() {
+			super(JOptionPane.getFrameForComponent(DataTool.this), true);
+			setLayout(new BorderLayout());
+			setTitle("Data Input");//TODO DisplayRes.getString("DataTable.NumberFormat.Dialog.Title")); //$NON-NLS-1$
+			// create buttons
+			closeButton = new JButton(DisplayRes.getString("Dialog.Button.Close.Text")); //$NON-NLS-1$
+			closeButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					setVisible(false);
+				}
+			});
+			applyButton = new JButton(DisplayRes.getString("Dialog.Button.Apply.Text")); //$NON-NLS-1$
+			applyButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					setData(null);
+ 				}
+			});
+			cancelButton = new JButton(DisplayRes.getString("GUIUtils.Cancel")); //$NON-NLS-1$
+			cancelButton.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					canceled = true;
+					setVisible(false);
+				}
+			});
+			dataArea = new JTextArea(20,30);
+			add(new JScrollPane(dataArea), BorderLayout.CENTER);
+			JPanel buttonPanel = new JPanel();
+			buttonPanel.add(applyButton);
+			buttonPanel.add(closeButton);
+			buttonPanel.add(cancelButton);
+			add(buttonPanel, BorderLayout.SOUTH);
+			pack();
+			setVisible(true);
+		}
+
+
+		@Override
+		public void setVisible(boolean vis) {
+			if (vis) {
+				canceled = false;
+				initData();
+			} else if (!canceled){
+				resetData();
+				setData(null);
+			}
+			super.setVisible(vis);
+		}
+
+		void initData() {
+			getSelectedTab().dataTable.selectAll();
+			data0 = getSelectedTab().getSelectedTableData();
+			getSelectedTab().dataTable.clearSelection();
+			String data = data0;
+			data = data.substring(data0.indexOf("\n") + 1);
+			if (data.length() == 0)
+				data = "x,y\n";
+			else
+				data = data.replace('\t', ',');
+			dataArea.setText(data);
+		}
+
+		void setData(String val) {
+			try {
+				if (val == null)
+					val = dataArea.getText().replace(',', '\t');
+				else if (val.equals(data0))
+					return;
+				// if not xml, attempt to import data and add tab
+				Data data = parseData(val, "edited");
+				if (data != null) {
+					DataToolTab tab = getSelectedTab();
+					tab.clearData();
+					tab.loadData(data, false);
+					tab.tabChanged(false);
+					return;
+				}
+			} catch (Exception e) {
+				
+			}
+		}
+
+		void resetData() {
+			setData(data0);
+		}
 	}
 
 }
