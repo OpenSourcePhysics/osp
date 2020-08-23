@@ -3311,10 +3311,13 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		}
 
 		void setData(String val) {
-			if (val == null)
+			if (val == null) {
 				val = dataArea.getText();
-			else if (val.equals(currentData))
-				return;
+				if (!val.endsWith("\n"))
+					val += "\n";
+				if (val.equals(currentData))
+					return;
+			}
 			currentData = val;
 			try {
 				Data data = parseData(val.replace(',', '\t'), "edited");
