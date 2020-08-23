@@ -658,7 +658,7 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 	 */
 	@Override
 	public Object getValueAt(int rowIndex, int tableColumnIndex) {
-		if (datasets.size() == 0) {
+		if (datasets.size() == 0 || tableColumnIndex < 0) {
 			return null;
 		}
 		Dataset ds = find(tableColumnIndex);
@@ -671,15 +671,16 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 	}
 
 	private Dataset find(int icol) {
-		for (int i = 0, ncol = 0, n = datasets.size(); i < n; i++) {
-			Dataset ds = datasets.get(i);
-			int nVis = ds.getColumnCount();
-			if (ncol + nVis > icol) {
-				ds.foundColumn = icol - ncol;
-				return dsFound = ds;
+		if (icol >= 0)
+			for (int i = 0, ncol = 0, n = datasets.size(); i < n; i++) {
+				Dataset ds = datasets.get(i);
+				int nVis = ds.getColumnCount();
+				if (ncol + nVis > icol) {
+					ds.foundColumn = icol - ncol;
+					return dsFound = ds;
+				}
+				ncol += nVis;
 			}
-			ncol += nVis;
-		}
 		return dsFound = null;
 	}
 

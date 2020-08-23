@@ -979,8 +979,9 @@ public class DataTable extends JTable {
 		 * @param col int
 		 */
 		protected void sort(int col) {
+			System.out.println("DataTable.OSPDataTableModel.sort col=" + col);
 			DataTableElement dte;
-			if (dataTableElements.size() == 0
+			if (col < 0 || dataTableElements.size() == 0
 					|| (dte = find(col)) == null)
 				return;
 			// secure the data set column
