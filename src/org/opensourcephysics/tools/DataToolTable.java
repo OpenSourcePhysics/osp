@@ -427,8 +427,7 @@ public class DataToolTable extends DataTable {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// start editing focused cell
-				editCellAt(focusRow, focusCol, e); 
-				editor.field.requestFocus();
+				editor.editAction(e, false);
 			}
 
 		});
@@ -2590,27 +2589,18 @@ public class DataToolTable extends DataTable {
 				@Override
 				public void keyPressed(final KeyEvent e) {
 					if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-						stopCellEditing();
-						Runnable runner = new Runnable() {
-							@Override
-							public synchronized void run() {
-								int row = getModelRow(focusRow) + 1;
-								// add empty row if needed
-								if (row == getRowCount()) {
-									insertRows(new int[] { row }, null);
-								}
-								row = getViewRow(row);
-								changeSelection(row, column, false, false);
-								editCellAt(row, column, e);
-								field.requestFocus();
-							}
-
-						};
-						SwingUtilities.invokeLater(runner);
 					} else if (field.isEnabled()) {
 						field.setBackground(Color.yellow);
 					}
 				}
+
+			});
+			field.addActionListener((e)->{
+				SwingUtilities.invokeLater(()-> {
+					// JavaScript must do this after one clock tick
+					// because the field may not be filled at this point
+					editAction(e, true);
+				});
 
 			});
 			field.addFocusListener(new FocusAdapter() {
@@ -2640,6 +2630,27 @@ public class DataToolTable extends DataTable {
 			});
 		}
 
+		protected void editAction(EventObject e, boolean isEnd) {
+
+			int row = (isEnd ? getModelRow(focusRow) + 1 : focusRow);
+			if (isEnd) {
+				stopCellEditing();
+				System.out.println(
+						"DataToolTable.editAction frow=" + focusRow + " row=" + row + " rowCount=" + getRowCount());
+				// add empty row if needed
+				if (row == getRowCount()) {
+					insertRows(new int[] { row }, null);
+				}
+				row = getViewRow(row);
+				changeSelection(row, column, false, false);
+			}
+			int r = row;
+			SwingUtilities.invokeLater(() -> {
+				editCellAt(r, column, e);
+				field.requestFocus();
+			});
+		}
+
 		void setColumn(int col) {
 			column = col;
 			int modelCol = convertColumnIndexToModel(col);
@@ -2655,6 +2666,8 @@ public class DataToolTable extends DataTable {
 				showDataBuilder();
 				return null;
 			}
+			focusRow = row;
+			focusCol = col;
 			field.setText((value == null) ? "" : String.valueOf(value)); //$NON-NLS-1$
 			field.setFont(DataToolTable.this.getFont());
 			return field;
