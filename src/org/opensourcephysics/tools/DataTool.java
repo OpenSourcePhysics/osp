@@ -3288,8 +3288,9 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			if (vis) {
 				canceled = false;
 				initData();
-			} else if (!canceled){
+			} else if (canceled){
 				resetData();
+			} else {
 				setData(null);
 			}
 			super.setVisible(vis);
