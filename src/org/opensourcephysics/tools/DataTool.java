@@ -3241,7 +3241,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		JButton closeButton, cancelButton, applyButton;
 		JTextArea dataArea;
 		boolean canceled;
-		private String data0;
+		private String data0, currentData;
 
 		EditDataDialog() {
 			super(JOptionPane.getFrameForComponent(DataTool.this), true);
@@ -3306,17 +3306,18 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 				data = "x,y\n";
 			else
 				data = data.replace('\t', ',');
+			currentData = data;
 			dataArea.setText(data);
 		}
 
 		void setData(String val) {
+			if (val == null)
+				val = dataArea.getText();
+			else if (val.equals(currentData))
+				return;
+			currentData = val;
 			try {
-				if (val == null)
-					val = dataArea.getText().replace(',', '\t');
-				else if (val.equals(data0))
-					return;
-				// if not xml, attempt to import data and add tab
-				Data data = parseData(val, "edited");
+				Data data = parseData(val.replace(',', '\t'), "edited");
 				if (data != null) {
 					DataToolTab tab = getSelectedTab();
 					tab.clearData();
@@ -3325,7 +3326,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 					return;
 				}
 			} catch (Exception e) {
-				
+
 			}
 		}
 
