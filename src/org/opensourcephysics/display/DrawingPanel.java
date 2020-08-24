@@ -2724,7 +2724,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		@Override
 		public void mousePressed(MouseEvent e) {
 			String s = coordinateStrBuilder.getCoordinateString(DrawingPanel.this, e);
-			System.err.println(" pressed coortd==" + s);
+			//System.err.println(" pressed coortd==" + s);  // for debugging
 			invalidateImage(); // validImage = false;
 			messages.setMessage(s, MessageDrawable.BOTTOM_LEFT);
 		}

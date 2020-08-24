@@ -3279,6 +3279,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			buttonPanel.add(closeButton);
 			buttonPanel.add(cancelButton);
 			add(buttonPanel, BorderLayout.SOUTH);
+			FontSizer.setFont(dataArea);
+			this.setLocation(15, 30);
 			pack();
 			setVisible(true);
 		}

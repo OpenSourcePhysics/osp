@@ -397,6 +397,7 @@ javax/swing/CellRendererPane.js
 javax/swing/ClientPropertyKey.js
 javax/swing/ComponentInputMap.js
 javax/swing/DefaultButtonModel.js
+javax/swing/DefaultCellEditor.js
 javax/swing/DefaultListCellRenderer.js
 javax/swing/DefaultListSelectionModel.js
 javax/swing/DefaultSingleSelectionModel.js
@@ -456,6 +457,7 @@ javax/swing/Scrollable.js
 javax/swing/SingleSelectionModel.js
 javax/swing/SizeRequirements.js
 javax/swing/SortingFocusTraversalPolicy.js
+javax/swing/SpinnerListModel.js
 javax/swing/SpinnerModel.js
 javax/swing/SpinnerNumberModel.js
 javax/swing/SwingConstants.js
@@ -569,6 +571,7 @@ javax/swing/tree/DefaultTreeSelectionModel.js
 javax/swing/tree/MutableTreeNode.js
 javax/swing/tree/PathPlaceHolder.js
 javax/swing/tree/RowMapper.js
+javax/swing/tree/TreeCellEditor.js
 javax/swing/tree/TreeCellRenderer.js
 javax/swing/tree/TreeModel.js
 javax/swing/tree/TreeNode.js
