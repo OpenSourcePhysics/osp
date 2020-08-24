@@ -3321,8 +3321,29 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			} else {
 				data = data.replace('\t', ',');
 			}
-			currentData = data;
-			dataArea.setText(data);
+			//currentData = data;
+			currentData = cleanData(data); // cleaning data adds space after each comma for readability 
+			dataArea.setText(currentData);
+		}
+		
+		private String cleanData(String data) {
+			String newData="";
+			if(data==null || data.trim().equals("")) return("x,y");
+			 String[] lines=data.trim().split("\\r?\\n");
+			 newData+=lines[0]+"\n";  // append header
+			 int nCols=lines[0].split(",").length;  // number of columns in data table
+			 for (int i=1; i<lines.length; i++)  { 
+				 String[] line = lines[i].split(",");
+				 int j=0;
+				 for (j=0; j<line.length; j++) { 
+					 newData+=line[j].trim()+", ";
+				 }
+				 for (int k=j; k<nCols; k++) { 
+					 newData+= "0.0, ";
+				 }
+				 newData=newData.substring(0, newData.lastIndexOf(','))+'\n';
+			 }
+			 return newData;
 		}
 
 		void setData(String val) {
@@ -3331,7 +3352,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 				if (val.equals(currentData))
 					return;
 			}
-			currentData = val;
+			currentData= val = cleanData(val);
 			DataToolTab tab = getSelectedTab();
 			try {
 				if (val.length() == 0) {
