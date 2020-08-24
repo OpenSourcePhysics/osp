@@ -3243,6 +3243,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		JTextArea dataArea;
 		boolean canceled;
 		private String data0, currentData;
+		private JButton resetButton;
 
 		EditDataDialog() {
 			super(JOptionPane.getFrameForComponent(DataTool.this), true);
@@ -3263,6 +3264,13 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 					setData(null);
  				}
 			});
+			resetButton = new JButton("Reset");//TODO DisplayRes.getString("Dialog.Button.Apply.Text")); //$NON-NLS-1$
+			resetButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					resetData();
+ 				}
+			});
 			cancelButton = new JButton(DisplayRes.getString("GUIUtils.Cancel")); //$NON-NLS-1$
 			cancelButton.addActionListener(new ActionListener() {
 
@@ -3276,6 +3284,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			add(new JScrollPane(dataArea), BorderLayout.CENTER);
 			JPanel buttonPanel = new JPanel();
 			buttonPanel.add(applyButton);
+			buttonPanel.add(resetButton);
 			buttonPanel.add(closeButton);
 			buttonPanel.add(cancelButton);
 			add(buttonPanel, BorderLayout.SOUTH);
@@ -3289,10 +3298,13 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			if (vis) {
 				canceled = false;
 				initData();
-			} else if (canceled){
-				resetData();
 			} else {
-				setData(null);
+				if (canceled) {
+					resetData();
+				} else {
+					setData(null);
+				}
+				getSelectedTab().dataTable.refreshTable();
 			}
 			super.setVisible(vis);
 		}
@@ -3303,39 +3315,44 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			getSelectedTab().dataTable.clearSelection();
 			String data = data0;
 			data = data.substring(data0.indexOf("\n") + 1);
-			if (data.length() == 0)
+			if (data.length() == 0) {
 				data = "x,y\n";
-			else
+				data0 = "";
+			} else {
 				data = data.replace('\t', ',');
+			}
 			currentData = data;
 			dataArea.setText(data);
 		}
 
 		void setData(String val) {
 			if (val == null) {
-				val = dataArea.getText();
-				if (!val.endsWith("\n"))
-					val += "\n";
+				val = dataArea.getText().trim() + "\n";
 				if (val.equals(currentData))
 					return;
 			}
 			currentData = val;
+			DataToolTab tab = getSelectedTab();
 			try {
+				if (val.length() == 0) {
+					tab.clearData();
+					return;
+				}
 				Data data = parseData(val.replace(',', '\t'), "edited");
 				if (data != null) {
-					DataToolTab tab = getSelectedTab();
 					tab.clearData();
 					tab.loadData(data, false);
 					tab.tabChanged(false);
 					return;
 				}
 			} catch (Exception e) {
-
+				resetData();
 			}
 		}
 
 		void resetData() {
 			setData(data0);
+			initData();
 		}
 	}
 
