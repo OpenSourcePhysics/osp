@@ -1204,11 +1204,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		dataTable.setRowNumberVisible(true);
 		dataScroller = new JScrollPane(dataTable);
 		dataTable.refreshTable(DataTable.MODE_CREATE);
-		dataTable.addPropertyChangeListener(DataTable.PROPERTY_DATATABLE_FORMAT, new PropertyChangeListener() { // $NON-NLS-1$
-			@Override
-			public void propertyChange(PropertyChangeEvent e) {
+		dataTable.addPropertyChangeListener(DataTable.PROPERTY_DATATABLE_FORMAT, (e) -> {
 				refreshShiftFields();
-			}
 		});
 
 		dataScroller.addMouseListener(new MouseAdapter() {
@@ -2883,6 +2880,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 * @return the current y-field shift
 	 */
 	public double refreshShiftFields() {
+		boolean doRevalidate = false;
 		Dataset data = dataTable.getDataset(plot.xVar);
 		if (data != null && data instanceof DataColumn) {
 			// check format pattern
@@ -2905,9 +2903,10 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			if (shift != prevShiftX || !pattern.equals(existing)) {
 				shiftXField.refreshPreferredWidth();
 				selectedXField.refreshPreferredWidth();
-				toolbar.revalidate();
+				doRevalidate = true;
 			}
 		}
+		double currentShift = prevShiftY;
 		data = dataTable.getDataset(plot.yVar);
 		if (data != null && data instanceof DataColumn) {
 			// check format pattern
@@ -2921,7 +2920,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				selectedYField.applyPattern(pattern);
 			}
 			// set values
-			double currentShift = ((DataColumn) data).getShift();
+			currentShift = ((DataColumn) data).getShift();
 			shiftYField.setValue(currentShift == 0 ? 0 : -currentShift);
 			shiftYSpinner.setValue(currentShift == 0 ? 0 : -currentShift);
 			if (selectedDataIndex > -1) {
@@ -2930,11 +2929,12 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			if (currentShift != prevShiftY || !pattern.equals(existing)) {
 				shiftYField.refreshPreferredWidth();
 				selectedYField.refreshPreferredWidth();
-				toolbar.revalidate();
+				doRevalidate = true;
 			}
-			return currentShift;
 		}
-		return prevShiftY;
+		if (doRevalidate)
+			toolbar.revalidate();
+		return currentShift;
 	}
 
 	/**

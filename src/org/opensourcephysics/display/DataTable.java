@@ -12,9 +12,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.GridLayout;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -1877,7 +1875,7 @@ public class DataTable extends JTable {
 			applyButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					patternField.getAction().actionPerformed(e);
+					formatAction();
 				}
 			});
 			cancelButton = new JButton(DisplayRes.getString("GUIUtils.Cancel")); //$NON-NLS-1$
@@ -1917,75 +1915,22 @@ public class DataTable extends JTable {
 			patternField.setAction(new AbstractAction() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					String pattern = patternField.getText();
-					if (pattern.indexOf(NO_PATTERN) > -1)
-						pattern = ""; //$NON-NLS-1$
-					// substitute 0 for other digits
-					for (int i = 1; i < 10; i++) {
-						pattern = pattern.replaceAll(String.valueOf(i), "0"); //$NON-NLS-1$
-					}
-					int i = pattern.indexOf("0e0"); //$NON-NLS-1$
-					if (i > -1) {
-						pattern = pattern.substring(0, i) + "0E0" + pattern.substring(i + 3); //$NON-NLS-1$
-					}
-					try {
-						showNumberFormatAndSample(pattern);
-						// apply pattern to all selected columns
-						java.util.List<String> selectedColumns = columnList.getSelectedValuesList();
-						for (Object displayedName : selectedColumns) {
-							String name = realNames.get(displayedName.toString());
-							setFormatPattern(name, pattern);
-						}
-						refreshTableNow(MODE_PATTERN);
-					} catch (RuntimeException ex) {
-						patternField.setBackground(new Color(255, 153, 153));
-						patternField.setText(pattern);
-						return;
-					}
+					formatAction();
 				}
-
 			});
 			patternField.addKeyListener(new KeyAdapter() {
 				@Override
-				public void keyPressed(KeyEvent e) {
+				public void keyReleased(KeyEvent e) {
+					// was keyPressed
 					if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 						patternField.setBackground(Color.white);
 					} else {
 						patternField.setBackground(Color.yellow);
 						// refresh sample format after text changes
-						Runnable runner = new Runnable() {
-							@Override
-							public void run() {
-								String pattern = patternField.getText();
-								if (pattern.indexOf(NO_PATTERN) > -1)
-									pattern = ""; //$NON-NLS-1$
-								// substitute 0 for other digits
-								for (int i = 1; i < 10; i++) {
-									pattern = pattern.replaceAll(String.valueOf(i), "0"); //$NON-NLS-1$
-								}
-								int i = pattern.indexOf("0e0"); //$NON-NLS-1$
-								if (i > -1) {
-									pattern = pattern.substring(0, i) + "0E0" + pattern.substring(i + 3); //$NON-NLS-1$
-								}
-								if (pattern.equals("") || pattern.equals(NO_PATTERN)) { //$NON-NLS-1$
-									TableCellRenderer renderer = DataTable.this.getDefaultRenderer(Double.class);
-									Component c = renderer.getTableCellRendererComponent(DataTable.this, Math.PI, false,
-											false, 0, 0);
-									if (c instanceof JLabel) {
-										String text = ((JLabel) c).getText();
-										sampleField.setText(text);
-									}
-								} else {
-									try {
-										sampleFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
-										sampleFormat.applyPattern(pattern);
-										sampleField.setText(sampleFormat.format(Math.PI));
-									} catch (Exception e) {
-									}
-								}
-							}
-						};
-						SwingUtilities.invokeLater(runner);
+						SwingUtilities.invokeLater(() -> {
+							// in SwingJS this needs to be after keyReleased, not key pressed
+							updatePatternAction();
+						});
 					}
 				}
 
@@ -1994,7 +1939,7 @@ public class DataTable extends JTable {
 				@Override
 				public void focusLost(FocusEvent e) {
 					patternField.setBackground(Color.white);
-					patternField.getAction().actionPerformed(null);
+					formatAction();
 				}
 
 			});
@@ -2026,6 +1971,64 @@ public class DataTable extends JTable {
 			buttonPanel.add(cancelButton);
 			add(buttonPanel, BorderLayout.SOUTH);
 			pack();
+		}
+
+		protected void updatePatternAction() {
+			String pattern = patternField.getText();
+			if (pattern.indexOf(NO_PATTERN) > -1)
+				pattern = ""; //$NON-NLS-1$
+			// substitute 0 for other digits
+			for (int i = 1; i < 10; i++) {
+				pattern = pattern.replaceAll(String.valueOf(i), "0"); //$NON-NLS-1$
+			}
+			int i = pattern.indexOf("0e0"); //$NON-NLS-1$
+			if (i > -1) {
+				pattern = pattern.substring(0, i) + "0E0" + pattern.substring(i + 3); //$NON-NLS-1$
+			}
+			if (pattern.equals("") || pattern.equals(NO_PATTERN)) { //$NON-NLS-1$
+				TableCellRenderer renderer = DataTable.this.getDefaultRenderer(Double.class);
+				Component c = renderer.getTableCellRendererComponent(DataTable.this, Math.PI, false,
+						false, 0, 0);
+				if (c instanceof JLabel) {
+					String text = ((JLabel) c).getText();
+					sampleField.setText(text);
+				}
+			} else {
+				try {
+					sampleFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+					sampleFormat.applyPattern(pattern);
+					sampleField.setText(sampleFormat.format(Math.PI));
+				} catch (Exception e) {
+				}
+			}
+		}
+
+		protected void formatAction() {
+			
+			String pattern = patternField.getText();
+			if (pattern.indexOf(NO_PATTERN) > -1)
+				pattern = ""; //$NON-NLS-1$
+			// substitute 0 for other digits
+			for (int i = 1; i < 10; i++) {
+				pattern = pattern.replaceAll("" + i, "0"); //$NON-NLS-1$
+			}
+			int i = pattern.indexOf("0e0"); //$NON-NLS-1$
+			if (i > -1) {
+				pattern = pattern.substring(0, i) + "0E0" + pattern.substring(i + 3); //$NON-NLS-1$
+			}
+			try {
+				showNumberFormatAndSample(pattern);
+				// apply pattern to all selected columns
+				java.util.List<String> selectedColumns = columnList.getSelectedValuesList();
+				for (Object displayedName : selectedColumns) {
+					String name = realNames.get(displayedName.toString());
+					setFormatPattern(name, pattern);
+				}
+				refreshTableNow(MODE_PATTERN);
+			} catch (RuntimeException ex) {
+				patternField.setBackground(new Color(255, 153, 153));
+				patternField.setText(pattern);
+			}
 		}
 
 		private void showNumberFormatAndSample(int[] selectedIndices) {
