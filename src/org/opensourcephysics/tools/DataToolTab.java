@@ -188,6 +188,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	protected String fileName, ownerName;
 	protected Map<String, String[]> ownedColumns = new TreeMap<String, String[]>();
 	protected JButton helpButton;
+	protected JButton editDataButton;
 	protected int colorIndex = 0;
 	protected boolean tabChanged;
 	protected boolean userEditable = false;
@@ -1433,6 +1434,19 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				}
 			}
 		});
+		
+		
+		// create edit data button
+		editDataButton = DataTool.createButton("Edit Table..."); 
+		editDataButton.setToolTipText("Enter data in comma delimited format."); 
+		editDataButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dataTool.editDataAction();
+			}
+
+		});
+		
 		// create dataBuilderButton
 		dataBuilderButton = DataTool.createButton(ToolsRes.getString("DataToolTab.Button.DataBuilder.Text")); //$NON-NLS-1$
 		dataBuilderButton.setToolTipText(ToolsRes.getString("DataToolTab.Button.DataBuilder.Tooltip")); //$NON-NLS-1$
@@ -1464,6 +1478,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			}
 
 		});
+		
 		// create valueCheckbox
 		valueCheckbox = new JCheckBoxMenuItem(ToolsRes.getString("DataToolTab.Checkbox.Position")); //$NON-NLS-1$
 		valueCheckbox.setSelected(false);
@@ -1690,6 +1705,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		toolbar.add(newColumnButton);
 		toolbar.add(dataBuilderButton);
 		toolbar.add(refreshDataButton);
+		toolbar.add(editDataButton);
 		toolbar.add(helpButton);
 
 		// create statistics table
@@ -2338,6 +2354,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		if (!haveGUI)
 			return;
 		boolean changed = tabChanged;
+		editDataButton.setText("Edit Table...");
+		editDataButton.setToolTipText("Enter data in comma delimited format."); 
+		
 		newColumnButton.setText(ToolsRes.getString("DataToolTab.Button.NewColumn.Text")); //$NON-NLS-1$
 		newColumnButton.setToolTipText(ToolsRes.getString("DataToolTab.Button.NewColumn.Tooltip")); //$NON-NLS-1$
 		dataBuilderButton.setText(ToolsRes.getString("DataToolTab.Button.DataBuilder.Text")); //$NON-NLS-1$

@@ -3048,7 +3048,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		}
 	}
 
-	private void editDataAction() {
+	void editDataAction() {
 		new EditDataDialog();
 	}
 
