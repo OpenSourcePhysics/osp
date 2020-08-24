@@ -3322,6 +3322,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 					return;
 			}
 			currentData = val;
+			val=val.trim();
 			try {
 				Data data = parseData(val.replace(',', '\t'), "edited");
 				if (data != null) {
