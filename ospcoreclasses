@@ -412,6 +412,7 @@ javax/swing/JApplet.js
 javax/swing/JButton.js
 javax/swing/JCheckBox.js
 javax/swing/JCheckBoxMenuItem.js
+javax/swing/JColorChooser.js
 javax/swing/JComponent.js
 javax/swing/JDialog.js
 javax/swing/JEditorPane.js
@@ -478,6 +479,18 @@ javax/swing/border/Border.js
 javax/swing/border/CompoundBorder.js
 javax/swing/border/EmptyBorder.js
 javax/swing/border/EtchedBorder.js
+javax/swing/colorchooser/AbstractColorChooserPanel.js
+javax/swing/colorchooser/CenterLayout.js
+javax/swing/colorchooser/ColorChooserComponentFactory.js
+javax/swing/colorchooser/ColorSelectionModel.js
+javax/swing/colorchooser/DefaultColorSelectionModel.js
+javax/swing/colorchooser/DefaultPreviewPanel.js
+javax/swing/colorchooser/DefaultRGBChooserPanel.js
+javax/swing/colorchooser/DefaultSwatchChooserPanel.js
+javax/swing/colorchooser/MainSwatchPanel.js
+javax/swing/colorchooser/RecentSwatchPanel.js
+javax/swing/colorchooser/SmartGridLayout.js
+javax/swing/colorchooser/SwatchPanel.js
 javax/swing/event/AncestorListener.js
 javax/swing/event/CaretEvent.js
 javax/swing/event/CaretListener.js
@@ -882,6 +895,7 @@ swingjs/plaf/BasicComboBoxRenderer.js
 swingjs/plaf/BasicHTML.js
 swingjs/plaf/ButtonListener.js
 swingjs/plaf/CellHolder.js
+swingjs/plaf/CenterLayout.js
 swingjs/plaf/DefaultMenuLayout.js
 swingjs/plaf/HTML5LookAndFeel.js
 swingjs/plaf/JSAppletUI.js
@@ -889,6 +903,7 @@ swingjs/plaf/JSBoxUI.js
 swingjs/plaf/JSButtonUI.js
 swingjs/plaf/JSCheckBoxMenuItemUI.js
 swingjs/plaf/JSCheckBoxUI.js
+swingjs/plaf/JSColorChooserUI.js
 swingjs/plaf/JSComboBoxUI.js
 swingjs/plaf/JSComboPopupList.js
 swingjs/plaf/JSComponentUI.js
