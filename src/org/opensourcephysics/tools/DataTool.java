@@ -11,6 +11,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
@@ -3281,6 +3282,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 				}
 			});
 			dataArea = new JTextArea(20,30);
+			dataArea.setMargin(new Insets(1,1,1,1));
 			add(new JScrollPane(dataArea), BorderLayout.CENTER);
 			JPanel buttonPanel = new JPanel();
 			buttonPanel.add(applyButton);
