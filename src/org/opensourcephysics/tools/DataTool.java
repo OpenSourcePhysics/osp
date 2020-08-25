@@ -3282,6 +3282,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 				}
 			});
 			dataArea = new JTextArea(20,30);
+			dataArea.setCaretColor(Color.red);
 			dataArea.setMargin(new Insets(1,1,1,1));
 			add(new JScrollPane(dataArea), BorderLayout.CENTER);
 			JPanel buttonPanel = new JPanel();
