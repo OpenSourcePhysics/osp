@@ -31,6 +31,8 @@
 
 package test;
 
+import javax.swing.DefaultCellEditor;
+
 /*
  * SimpleTableDemo.java requires no other files.
  */
@@ -39,16 +41,26 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
+
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.EventObject;
 
 public class SimpleTableDemo extends JPanel {
     private boolean DEBUG = false;
 
+    final JTextField editor;
+    
     public SimpleTableDemo() {
         super(new GridLayout(1,0));
+
+        editor = new JTextField();
+        editor.setCaretColor(Color.red);
 
         String[] columnNames = {"First Name",
                                 "Last Name",
@@ -69,8 +81,11 @@ public class SimpleTableDemo extends JPanel {
 	     "Pool", Integer.valueOf(10), Boolean.FALSE}
         };
         
+        Class<?>[] classes = {String.class, String.class, Integer.class, Boolean.class};
+        
         final JTable table = new JTable(data, columnNames);
         System.out.println(table.getDefaultRenderer(Boolean.class));
+        table.setDefaultEditor(Object.class, new DefaultCellEditor(editor));
         table.setDefaultRenderer(Boolean.class, table.getDefaultRenderer(Boolean.class));
 //        table.setDefaultRenderer(Object.class, new TableCellRenderer() {
 //

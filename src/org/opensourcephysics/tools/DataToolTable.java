@@ -12,6 +12,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Stroke;
@@ -38,6 +39,7 @@ import javax.swing.AbstractCellEditor;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultCellEditor;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -2585,7 +2587,8 @@ public class DataToolTable extends DataTable {
 			field.setHorizontalAlignment(SwingConstants.RIGHT);
 			field.setBorder(BorderFactory.createEmptyBorder(0, 1, 1, 0));
 			field.setSelectionColor(new Color(204, 255, 255));
-			field.addKeyListener(new KeyAdapter() {
+	        field.setCaretColor(Color.red);
+	        field.addKeyListener(new KeyAdapter() {
 				@Override
 				public void keyPressed(final KeyEvent e) {
 					if (e.getKeyCode() == KeyEvent.VK_ENTER) {
