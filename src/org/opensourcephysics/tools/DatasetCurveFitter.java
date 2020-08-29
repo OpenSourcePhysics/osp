@@ -10,6 +10,7 @@ package org.opensourcephysics.tools;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
@@ -39,6 +40,7 @@ import java.util.TreeMap;
 import javax.swing.AbstractCellEditor;
 import javax.swing.AbstractSpinnerModel;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
@@ -286,14 +288,18 @@ public class DatasetCurveFitter extends JPanel {
 		color = newColor;
 		if (drawer != null) {
 			drawer.setColor(newColor);
-			LookAndFeel currentLF = UIManager.getLookAndFeel();
-			boolean nimbus = currentLF.getClass().getName().indexOf("Nimbus") > -1; //$NON-NLS-1$
-			if (nimbus) {
-				colorButton.setIcon(new ColorIcon(color, 12, DataTool.buttonHeight - 8));
-			} else {
-				colorButton.setBackground(color);
-			}
+			updateColorButton();
 			firePropertyChange(PROPERTY_DATASETCURVEFITTER_CHANGED, null, null); // $NON-NLS-1$
+		}
+	}
+
+	private void updateColorButton() {
+		LookAndFeel currentLF = UIManager.getLookAndFeel();
+		boolean nimbus = currentLF.getClass().getName().indexOf("Nimbus") > -1; //$NON-NLS-1$
+		if (nimbus) {
+			colorButton.setIcon(new ColorIcon(color, 12, DataTool.buttonHeight - 8));
+		} else {
+			colorButton.setBackground(color);
 		}
 	}
 
@@ -342,6 +348,7 @@ public class DatasetCurveFitter extends JPanel {
 			paramTable.setEnabled(false);
 			rmsField.setText(ToolsRes.getString("DatasetCurveFitter.RMSField.NoData")); //$NON-NLS-1$
 			rmsField.setForeground(Color.RED);
+//			System.out.println("!!!DatasetCurveFitter.rmsField " + rmsField.getMinimumSize() + " " + rmsField.getPreferredSize());
 			return Double.NaN;
 		}
 		autofitCheckBox.setEnabled(true);
@@ -552,6 +559,10 @@ public class DatasetCurveFitter extends JPanel {
 				// BH check
 				paramTable.repaint();
 				tab.repaint();
+				System.out.println("!!!DatasetCurveFitter.rmsField " + rmsField.getMinimumSize() 
+				+ " " + rmsField.getPreferredSize()
+				+ " " + rmsField.getSize());
+				return;
 			}
 
 		});
@@ -568,9 +579,7 @@ public class DatasetCurveFitter extends JPanel {
 			// override getPreferredSize method so has same height as buttons
 			@Override
 			public Dimension getPreferredSize() {
-				Dimension dim = super.getPreferredSize();
-				dim.height = DataTool.buttonHeight - 2;
-				return dim;
+				return fixSize(super.getPreferredSize());
 			}
 
 			// override addItem method so items are in alphabetical order
@@ -678,9 +687,7 @@ public class DatasetCurveFitter extends JPanel {
 		eqnField = new JTextField() {
 			@Override
 			public Dimension getPreferredSize() {
-				Dimension dim = super.getPreferredSize();
-				dim.height = DataTool.buttonHeight - 2;
-				return dim;
+				return fixSize(super.getPreferredSize());
 			}
 
 		};
@@ -708,7 +715,7 @@ public class DatasetCurveFitter extends JPanel {
 			}
 		});
 		// create dataBuilder button
-		colorButton = DataTool.createButton(""); //$NON-NLS-1$
+		colorButton = DataTool.createButton(" ", false); //$NON-NLS-1$
 		colorButton.setToolTipText(ToolsRes.getString("DatasetCurveFitter.Button.Color.Tooltip")); //$NON-NLS-1$
 		colorButton.addActionListener(new ActionListener() {
 			@Override
@@ -724,9 +731,7 @@ public class DatasetCurveFitter extends JPanel {
 		rmsField = new NumberField(6) {
 			@Override
 			public Dimension getPreferredSize() {
-				Dimension dim = super.getPreferredSize();
-				dim.height = DataTool.buttonHeight - 2;
-				return dim;
+				return fixSize(super.getPreferredSize());
 			}
 
 		};
@@ -820,10 +825,17 @@ public class DatasetCurveFitter extends JPanel {
 		eqnBar.add(eqnLabel);
 		eqnBar.add(eqnField);
 		eqnBar.add(colorButton);
+		// override JToolBar border for JavaScript to paint this
+		colorButton.setBorder(new EmptyBorder(1,1,1,1));
 		eqnPanel.add(eqnBar, BorderLayout.NORTH);
 		JPanel rmsPanel = new JPanel(new BorderLayout());
 		eqnPanel.add(rmsPanel, BorderLayout.CENTER);
 		rmsBar = new JToolBar();
+		rmsBar.setLayout(new BoxLayout(rmsBar, BoxLayout.X_AXIS) {
+		    public void layoutContainer(Container target) {
+		    	super.layoutContainer(target);
+		    }
+		});
 		rmsBar.setFloatable(false);
 		rmsBar.setBorder(BorderFactory.createEtchedBorder());
 		rmsBar.add(autofitCheckBox);
@@ -833,6 +845,11 @@ public class DatasetCurveFitter extends JPanel {
 		rmsPanel.add(rmsBar, BorderLayout.NORTH);
 		refreshGUI();
 //    refreshFitDropDown();
+	}
+
+	protected Dimension fixSize(Dimension dim) {
+		dim.height = DataTool.buttonHeight - 2;
+		return dim;
 	}
 
 	protected void processPropertyChange(PropertyChangeEvent e) {
@@ -904,15 +921,7 @@ public class DatasetCurveFitter extends JPanel {
 		fitBuilderButton.setToolTipText(ToolsRes.getString("DatasetCurveFitter.Button.Define.Tooltip")); //$NON-NLS-1$
 		fitLabel.setText(ToolsRes.getString("DatasetCurveFitter.Label.FitName")); //$NON-NLS-1$
 		eqnLabel.setText(ToolsRes.getString("DatasetCurveFitter.Label.Equation")); //$NON-NLS-1$
-
-		LookAndFeel currentLF = UIManager.getLookAndFeel();
-		boolean nimbus = currentLF.getClass().getName().indexOf("Nimbus") > -1; //$NON-NLS-1$
-		if (nimbus) {
-			colorButton.setIcon(new ColorIcon(color, 12, DataTool.buttonHeight - 8));
-		} else {
-			colorButton.setBackground(color);
-		}
-
+		updateColorButton();
 		refreshFitDropDown();
 	}
 
@@ -1815,7 +1824,6 @@ public class DatasetCurveFitter extends JPanel {
 		getDrawer().setEnabled(vis);
 //		cellRenderer.setNotApplicable(!fittable);
 	}
-
 }
 
 /*

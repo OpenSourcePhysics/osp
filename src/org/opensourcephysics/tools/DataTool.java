@@ -64,6 +64,8 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.TransferHandler;
 import javax.swing.WindowConstants;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
@@ -3191,6 +3193,11 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * @return the button
 	 */
 	protected static JButton createButton(String text) {
+		return createButton(text, true);
+	}
+	
+	protected static JButton createButton(String text, boolean allowBorder) {
+
 		JButton button = new JButton(text) {
 			@Override
 			public Dimension getMaximumSize() {
@@ -3199,6 +3206,11 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 				return dim;
 			}
 
+			public void setBorder(Border b) {
+				if (allowBorder || b instanceof EmptyBorder)
+				super.setBorder(b);
+				// don't do this - color button will not be painted
+			}
 		};
 		return button;
 	}
