@@ -176,7 +176,7 @@ public class OSPRuntime {
 
 	public static boolean setRenderingHints = (!isJS && !isMac);
 
-	public static boolean skipDisplayOfPDF = true;// isJS; // for TrackerIO, for now.
+	public static boolean skipDisplayOfPDF = false;//true;// isJS; // for TrackerIO, for now.
 
 	public static boolean embedVideoAsObject = isJS;
 
