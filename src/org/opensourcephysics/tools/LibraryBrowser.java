@@ -2803,6 +2803,8 @@ public class LibraryBrowser extends JPanel {
 			String name;
 			if (file == null || file.isDirectory() || (name = file.getName()).startsWith("_")) //$NON-NLS-1$
 				return false;
+			if (name.indexOf("TrackerSet=") >= 0)
+				return true;
 			String ext = ("" + XML.getExtension(name)).toLowerCase();
 			switch (ext) {
 			case "xml":

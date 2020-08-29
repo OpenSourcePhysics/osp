@@ -574,7 +574,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	@Override
 	public String read(String fileName) {
 		synchronized (sync) {
-			OSPLog.finest("reading " + fileName); //$NON-NLS-1$
+			OSPLog.debug("XMLControlElement.reading " + fileName); //$NON-NLS-1$
 			Resource res = ResourceLoader.getResource(fileName);
 			if (res != null) {
 				try {

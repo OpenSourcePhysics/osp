@@ -1795,21 +1795,8 @@ public class ResourceLoader {
 		if (path.startsWith("/") && path.indexOf(":") > -1) { //$NON-NLS-1$ //$NON-NLS-2$
 			path = path.substring(1);
 		}
-		// replace "%20" with space
-		int j = path.indexOf("%20"); //$NON-NLS-1$
-		while (j > -1) {
-			String s = path.substring(0, j);
-			path = s + " " + path.substring(j + 3); //$NON-NLS-1$
-			j = path.indexOf("%20"); //$NON-NLS-1$
-		}
-//    // replace "%26" with "&"
-//    j = path.indexOf("%26");                           //$NON-NLS-1$
-//    while(j>-1) {
-//      String s = path.substring(0, j);
-//      path = s+"&"+path.substring(j+3);                //$NON-NLS-1$
-//      j = path.indexOf("%26");                         //$NON-NLS-1$
-//    }
-		return path;
+		// replace "%20" with space, & and ? with _
+		return path.replaceAll("%20", " ").replace('&','_').replace('?','_'); //$NON-NLS-1$
 	}
 
 	/**
@@ -2345,7 +2332,8 @@ public class ResourceLoader {
 //			res = createClassResource(path = OSPRuntime.tempDir + path, type);
 //		} else 
 
-		if ((searchFiles && (res = createFileResource(path)) != null) || (res = createURLResource(path)) != null
+		if ((searchFiles && (res = createFileResource(path)) != null) 
+				|| (res = createURLResource(path)) != null
 				|| (res = createZipResource(path)) != null || (res = createClassResource(path, type)) != null) {
 			// res is not null;
 		}
@@ -2640,7 +2628,7 @@ public class ResourceLoader {
 	 */
 	private static int isZipEntry(String filename, boolean checkExt) {
 		int n = filename.indexOf("!/");
-		return (n >= 4 && (!checkExt || ".exe.zip.jar.trz".indexOf(filename.substring(n - 4, n)) >= 0) ? n : -1);
+		return (n >= 4 && (!checkExt || filename.indexOf("_TrackerSet=") >= 0 || ".exe.zip.jar.trz".indexOf(filename.substring(n - 4, n)) >= 0) ? n : -1);
 	}
 
 	static public int confirmOverwrite(String filename) {
