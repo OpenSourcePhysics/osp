@@ -310,8 +310,9 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 	 */
 	public void hideScaleSetter() {
 		if (scaleSetter != null) {
-			scaleSetter.autoscaleCheckbox.requestFocusInWindow();
+//			scaleSetter.autoscaleCheckbox.requestFocusInWindow();
 			scaleSetter.setVisible(null);
+			plot.repaint();
 		}
 	}
 
