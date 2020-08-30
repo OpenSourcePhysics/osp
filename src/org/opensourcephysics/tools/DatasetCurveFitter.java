@@ -348,7 +348,6 @@ public class DatasetCurveFitter extends JPanel {
 			paramTable.setEnabled(false);
 			rmsField.setText(ToolsRes.getString("DatasetCurveFitter.RMSField.NoData")); //$NON-NLS-1$
 			rmsField.setForeground(Color.RED);
-//			System.out.println("!!!DatasetCurveFitter.rmsField " + rmsField.getMinimumSize() + " " + rmsField.getPreferredSize());
 			return Double.NaN;
 		}
 		autofitCheckBox.setEnabled(true);
@@ -559,10 +558,6 @@ public class DatasetCurveFitter extends JPanel {
 				// BH check
 				paramTable.repaint();
 				tab.repaint();
-				System.out.println("!!!DatasetCurveFitter.rmsField " + rmsField.getMinimumSize() 
-				+ " " + rmsField.getPreferredSize()
-				+ " " + rmsField.getSize());
-				return;
 			}
 
 		});
@@ -715,7 +710,7 @@ public class DatasetCurveFitter extends JPanel {
 			}
 		});
 		// create dataBuilder button
-		colorButton = DataTool.createButton(" ", false); //$NON-NLS-1$
+		colorButton = DataTool.createButton("    ", false); //$NON-NLS-1$
 		colorButton.setToolTipText(ToolsRes.getString("DatasetCurveFitter.Button.Color.Tooltip")); //$NON-NLS-1$
 		colorButton.addActionListener(new ActionListener() {
 			@Override
@@ -727,6 +722,7 @@ public class DatasetCurveFitter extends JPanel {
 			}
 
 		});
+		colorButton.setBorder(new EmptyBorder(7,1,5,3));
 		// create rms field
 		rmsField = new NumberField(6) {
 			@Override
@@ -826,7 +822,6 @@ public class DatasetCurveFitter extends JPanel {
 		eqnBar.add(eqnField);
 		eqnBar.add(colorButton);
 		// override JToolBar border for JavaScript to paint this
-		colorButton.setBorder(new EmptyBorder(1,1,1,1));
 		eqnPanel.add(eqnBar, BorderLayout.NORTH);
 		JPanel rmsPanel = new JPanel(new BorderLayout());
 		eqnPanel.add(rmsPanel, BorderLayout.CENTER);
