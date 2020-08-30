@@ -1776,6 +1776,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		selectedYLabel.setBorder(BorderFactory.createEmptyBorder(2, 8, 2, 2));
 
 		// create shift spinner and field listeners
+		// BH TODO note that this timer runs whether or not the shifters are shown
 		shiftEditListener = new ShiftEditListener();
 		KeyAdapter numberFieldKeyListener = new KeyAdapter() {
 			@Override
@@ -3286,7 +3287,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				boolean inactive = (boxState == BOX_STATE_INACTIVE);
 				curveFitter.setFitVisible(!auto || dataTable.isFitFittable(curveFitter.fit, inactive));
 				double[] ylimits = curveFitter.getDrawer().getYRange();
-				if ((ylimits[0] >= this.getYMax()) || (ylimits[1] <= this.getYMin())) {
+				if (ylimits[0] != ylimits[1] && (ylimits[0] >= this.getYMax() || ylimits[1] <= this.getYMin())) {
 					s = ToolsRes.getString("DataToolTab.Plot.Message.FitNotVisible")
 							+ (message == null || s == "" ? "" : "  " + s);
 				}
