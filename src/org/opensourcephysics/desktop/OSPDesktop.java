@@ -52,7 +52,7 @@ public class OSPDesktop {
 		try {
 
 			if (OSPRuntime.isJS) {
-				if (url.startsWith("file")) {
+				if (url.startsWith("file") || url.startsWith("/")) {
 					// allow for data from a JAR file
 					byte[] bytes = (url.indexOf("!/") >= 0 ? ResourceLoader.getZipEntryBytes(url, null)
 							: OSPRuntime.getCachedBytes(url));
