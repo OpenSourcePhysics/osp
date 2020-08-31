@@ -9,9 +9,11 @@ package org.opensourcephysics.desktop;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.tools.ResourceLoader;
 
 /**
  * OSPDesktop invokes the java.awt.Desktop API using reflection for Java 1.5 compatibility.
@@ -51,11 +53,13 @@ public class OSPDesktop {
 
 			if (OSPRuntime.isJS) {
 				if (url.startsWith("file")) {
-					byte[] bytes = OSPRuntime.getCachedBytes(url);
+					// allow for data from a JAR file
+					byte[] bytes = (url.indexOf("!/") >= 0 ? ResourceLoader.getZipEntryBytes(url, null)
+							: OSPRuntime.getCachedBytes(url));
 					if (bytes == null) {
 						OSPLog.warning("OSPDDesktop could not display " + url);
 					} else {
-						 String name = url.toString();
+						String name = url.toString();
 						name = name.substring(name.lastIndexOf("/") + 1);
 						File fout = new File(name);
 						FileOutputStream fos = new FileOutputStream(fout);
