@@ -1,4 +1,3 @@
-
 demo/FirstPlotApp.js
 java/applet/AppletContext.js
 java/applet/AppletStub.js
@@ -152,6 +151,7 @@ java/awt/peer/FramePeer.js
 java/awt/peer/KeyboardFocusManagerPeer.js
 java/awt/peer/LightweightPeer.js
 java/awt/peer/WindowPeer.js
+java/awt/print/Printable.js
 java/beans/ChangeListenerMap.js
 java/beans/PropertyChangeEvent.js
 java/beans/PropertyChangeListener.js
@@ -710,6 +710,7 @@ org/opensourcephysics/media/mov/JSMovieVideoType.js
 org/opensourcephysics/media/mov/MovieFactory.js
 org/opensourcephysics/media/mov/MovieVideoI.js
 org/opensourcephysics/media/mov/MovieVideoType.js
+org/opensourcephysics/numerics/ArrayLib.js
 org/opensourcephysics/numerics/FFT.js
 org/opensourcephysics/numerics/FFTReal.js
 org/opensourcephysics/numerics/Function.js

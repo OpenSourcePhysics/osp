@@ -30,10 +30,13 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -329,6 +332,65 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			addTab(tab);
 		}
 	}
+	
+	/**
+	 * Replace any open tabs with a single tab loaded with the given path.
+	 * JavaScript only?
+	 * 
+	 * @j2sAlias loadDatasetURL
+	 * 
+	 * @param path
+	 */
+	public void loadDatasetURL(String path) {
+		if (getTabCount() > 0)
+			removeAllTabs();
+		File f= new File(path);
+		open(f);
+		
+	}
+	
+	public static String NEW_LINE = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
+	
+	/**
+	 * Replace any open tabs with a single tab loaded with the given path.
+	 * JavaScript only?
+	 * 
+	 * @j2sAlias loadDatasetURI
+	 * 
+	 * @param path
+	 */
+public void loadDatasetURI(String relpath) {
+	if (getTabCount() > 0)
+		removeAllTabs();
+
+	String baseURI = (/** @j2sNative document.body.baseURI || */ null); // html page that has script
+	String rootpath = (baseURI == null)? "":
+			baseURI.substring(0, baseURI.lastIndexOf('/') + 1);
+	String path = rootpath + relpath;
+
+	try {
+		System.err.println("Debugging: reading path=" + path);
+		URL url=new URL(path);
+    Object content = url.getContent();
+    if(content instanceof InputStream) {
+    	InputStream is = (InputStream) content;;
+      BufferedReader reader = new BufferedReader(new InputStreamReader((InputStream) content));
+      StringBuffer buffer = new StringBuffer(0);
+      String line;
+      while((line = reader.readLine())!=null) {
+        buffer.append(line+NEW_LINE);
+      }
+      String dataset = buffer.toString();
+ 		  System.out.print(dataset);  // for testing to see what was read
+ 		  System.err.println("Debugging: Close stream \n");
+ 		  loadDataset(dataset, path);
+ 		  is.close();
+    }			
+	} catch ( IOException e) {
+		  e.printStackTrace();
+	}
+}
+
 
 	/**
 	 * Gets the main OSPFrame when DataTool is a stand alone application.
@@ -648,6 +710,50 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 				addTab(tab);
 				refreshDataBuilder();
 				tab.fileName = file.getAbsolutePath();
+				tab.tabChanged(false);
+				return;
+			}
+		}
+		OSPLog.finest("no data found"); //$NON-NLS-1$
+	}
+	
+	/**
+	 * Loads content into DataDataTool.
+	 *
+	 * @param content  the xml or CVS dataset
+	 */
+	public void loadDataset(String content, String title) {
+		// if xml, read the file into an XML control and add tab
+		if (content.startsWith("<?xml")) { //$NON-NLS-1$
+			XMLControlElement control = new XMLControlElement(content);
+			addTabs(control, new Consumer<ArrayList<DataToolTab>>() {
+
+				@Override
+				public void accept(ArrayList<DataToolTab> tabs) {
+					if (tabs.isEmpty()) {
+						OSPLog.finest("no data found"); //$NON-NLS-1$
+					} else {
+						for (DataToolTab tab : tabs) {
+							refreshDataBuilder();
+							if (tabs.size() == 1) {
+								tab.fileName = title;
+							}
+							tab.tabChanged(false);
+						}
+					}
+				}
+
+			});
+			return;
+		}
+		if (content != null) {
+			// if not xml, attempt to import data and add tab
+			Data data = parseData(content,title);
+			if (data != null) {
+				DataToolTab tab = createTab(data);
+				addTab(tab);
+				refreshDataBuilder();
+				tab.fileName = title;
 				tab.tabChanged(false);
 				return;
 			}
