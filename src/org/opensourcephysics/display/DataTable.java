@@ -73,6 +73,14 @@ import org.opensourcephysics.tools.DataToolTab;
  */
 public class DataTable extends JTable implements ActionListener {
 	
+	//WC: Added static varibales for compatibility with swingJS branch of the osp library.
+	private static final int MODE_MASK_NEW = 0xF;
+	public static final int MODE_CREATE = 0x01;
+	public static final int MODE_CLEAR = 0x02;
+	public static final int MODE_MODEL = 0x03;
+	public static final int MODE_TAB = 0x04;
+	// end of swingJS additions
+	
   static final Color PANEL_BACKGROUND = javax.swing.UIManager.getColor("Panel.background"); //$NON-NLS-1$
   final static Color LIGHT_BLUE = new Color(204, 204, 255);
   static final String NO_PATTERN 
@@ -440,6 +448,16 @@ public class DataTable extends JTable implements ActionListener {
       refreshTimer.stop();
     }
     refreshDelay = delay;
+  }
+  
+  
+	/**
+	 * RefreshTable implemented for compatibility with swingJS branch of the osp library.
+	 * 
+	 * @param mode
+	 */
+  public void refreshTable(int mode) {
+  	refreshTable();
   }
 
   /**

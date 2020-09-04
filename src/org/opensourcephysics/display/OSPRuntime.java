@@ -508,6 +508,25 @@ public class OSPRuntime {
   public static boolean isLauncherMode() {
 	  return launcherMode || "true".equals(System.getProperty("org.osp.launcher")); //$NON-NLS-1$ //$NON-NLS-2$
   }
+ 
+  
+	/**
+	 * Set the "app" property of the HTML5 applet object, for example,
+	 * "testApplet.app", to point to the Jalview instance. This will be the object
+	 * that page developers use that is similar to the original Java applet object
+	 * that was accessed via LiveConnect.
+	 * 
+	 * Added for compatibility with swingJS branch of the osp library.
+	 * 
+	 * @param j
+	 */
+	public static void setAppClass(Object j) {
+		if (isJS) {
+			// jsutil.setAppletAttribute("app", j);  // implemented in swingJS branch
+		}
+	}
+  
+ 
 
   /**
    * Sets the launch jar path.

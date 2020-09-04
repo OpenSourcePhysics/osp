@@ -31,9 +31,12 @@ public class ColorMapper {
   public static final int NORENDER = 8;      // special SurfacePlotter palette
   public static final int REDBLUE_SHADE = 9; // special SurfacePlotter palette
   private Color[] colors;
+  private byte[][] rgbs;
   private double floor, ceil;
   private Color floorColor = Color.darkGray;
   private Color ceilColor = Color.lightGray;
+  private byte[] floorColorRGB;
+  private byte[] ceilColorRGB;
   private int numColors;
   private int paletteType;
   private JFrame legendFrame;
@@ -188,6 +191,22 @@ public class ColorMapper {
     rgb[2] = (byte) color.getBlue();
     return rgb;
   }
+  
+	/**
+	 * Converts a double to color components.
+	 *
+	 * @param value double
+	 * @return byte[]
+	 */
+	public byte[] doubleToComponents(double value) {
+		if (zMap != null) {
+			value = zMap.evaluate(value);
+		}
+		int index = doubleToIndex(value);
+		return (index < 0 ? floorColorRGB 
+				: index >= colors.length ? ceilColorRGB
+				: rgbs[index]);
+	}
 
   /**
    * Converts a double to a color.
@@ -303,8 +322,14 @@ public class ColorMapper {
    * @param _ceilColor
    */
   public void setFloorCeilColor(Color _floorColor, Color _ceilColor) {
+	  if (_floorColor == null)
+		  _floorColor = Color.DARK_GRAY;
+	  if (_ceilColor == null)
+		  _ceilColor = Color.LIGHT_GRAY;
     floorColor = _floorColor;
     ceilColor = _ceilColor;
+    floorColorRGB = toRGB(floorColor);
+    ceilColorRGB = toRGB(ceilColor);
   }
 
   /**
@@ -324,7 +349,19 @@ public class ColorMapper {
     ceilColor = Color.lightGray;
     colors = _colors;
     numColors = colors.length;
+    rgbs = new byte[numColors][];
+    for (int i = 0; i < numColors; i++) {
+    	rgbs[i] = toRGB(colors[i]);
+    }
     paletteType = CUSTOM;
+  }
+  
+  private static byte[] toRGB(Color c) {
+  	byte[] rgb = new byte[3];
+  	rgb[0] = (byte) c.getRed();
+  	rgb[1] = (byte) c.getGreen();
+  	rgb[2] = (byte) c.getBlue();
+	  return rgb;
   }
 
   /**
@@ -338,13 +375,17 @@ public class ColorMapper {
     numColors = _numColors;
     if(paletteType==CUSTOM) {
       Color newColors[] = new Color[numColors];
+      byte[][] newRGBs = new byte[numColors][3];
       for(int i = 0, n = Math.min(colors.length, numColors); i<n; i++) {
         newColors[i] = colors[i];
+        newRGBs[i] = rgbs[i];
       }
       for(int i = colors.length; i<numColors; i++) {
         newColors[i] = colors[colors.length-1];
+        newRGBs[i] = rgbs[colors.length-1];
       }
       colors = newColors;
+      rgbs = newRGBs;
     } else {
       setPaletteType(paletteType);
     }
@@ -355,16 +396,67 @@ public class ColorMapper {
    * @param _paletteType
    */
   public void setPaletteType(int _paletteType) {
-    paletteType = _paletteType;
-    floorColor = Color.darkGray;
-    ceilColor = Color.lightGray;
+    paletteType = _paletteType;    
     if((paletteType==GRAYSCALE)||(paletteType==BLACK)) {
-      floorColor = new Color(64, 64, 128);
-      ceilColor = new Color(255, 191, 191);
+    	setFloorCeilColor(new Color(64, 64, 128), new Color(255, 191, 191));
+    } else {
+    	setFloorCeilColor(null, null);    	
     }
-    colors = getColorPalette(numColors, paletteType);
     numColors = Math.max(2, numColors); // need at least 2 colors
+    colors = getColorPalette(numColors, paletteType, rgbs = new byte[numColors][]);
   }
+  
+	/**
+	 * Gets a array of colors for use in data visualization.
+	 *
+	 * Colors are similar to the colors returned by a color mapper instance.
+	 * 
+	 * @param numColors
+	 * @param paletteType
+	 * @return
+	 */
+	static public Color[] getColorPalette(int numColors, int paletteType, byte[][] rgbs) {
+		if (numColors < 2) {
+			numColors = 2;
+		}
+		Color colors[] = new Color[numColors];
+		for (int i = 0; i < numColors; i++) {
+			float level = 0.8f * i / (numColors - 1);
+			int r = 0, b = 0;
+			switch (paletteType) {
+			case ColorMapper.REDBLUE_SHADE:
+				r = (Math.max(0, -numColors - 1 + i * 2) * 255) / (numColors - 1);
+				b = (Math.max(0, numColors - 1 - i * 2) * 255) / (numColors - 1);
+				colors[i] = new Color(r, 0, b);
+				break;
+			case ColorMapper.SPECTRUM:
+				level = 0.8f - level;
+				colors[i] = Color.getHSBColor(level, 1.0f, 1.0f);
+				break;
+			case ColorMapper.GRAYSCALE:
+			case ColorMapper.BLACK:
+				colors[i] = new Color(i * 255 / (numColors - 1), i * 255 / (numColors - 1), i * 255 / (numColors - 1));
+				break;
+			case ColorMapper.RED:
+				colors[i] = new Color(i * 255 / (numColors - 1), 0, 0);
+				break;
+			case ColorMapper.GREEN:
+				colors[i] = new Color(0, i * 255 / (numColors - 1), 0);
+				break;
+			case ColorMapper.BLUE:
+				colors[i] = new Color(0, 0, i * 255 / (numColors - 1));
+				break;
+			case ColorMapper.DUALSHADE:
+			default:
+				level = (float) i / (numColors - 1);
+				colors[i] = Color.getHSBColor(0.8f * (1 - level), 1.0f, 0.2f + 1.6f * Math.abs(0.5f - level));
+				break;
+			}
+			if (rgbs != null)
+				rgbs[i] = toRGB(colors[i]);
+		}
+		return colors;
+	}
 
   /**
    * Gets a array of colors for use in data visualization.

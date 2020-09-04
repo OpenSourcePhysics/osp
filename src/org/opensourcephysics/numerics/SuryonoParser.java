@@ -220,6 +220,8 @@ public final class SuryonoParser extends MathExpParser {
   private String extfunc[] = {"min", "max", "mod", "atan2"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
   // set when evaluate() method converts NaN to zero--added by D Brown 15 Sep 2010
   private boolean isNaN;
+  
+  private boolean allowUnknown; // always false
 
   /**
    * The constructor of <code>Parser</code>.
@@ -291,6 +293,29 @@ public final class SuryonoParser extends MathExpParser {
       throw new ParserException(msg);
     }
   }
+  
+	 /**
+	  * 
+	  * @param funcStr
+	  * @param vars
+	  * @param allowUnkownIdentifiers always false
+	  * @throws ParserException
+	  */
+	 public SuryonoParser(String funcStr, String[] vars, boolean allowUnkownIdentifiers) throws ParserException {
+		this(vars.length);
+		for (int i = 0; i < vars.length; i++) {
+			defineVariable(i + 1, vars[i]);
+		}
+		allowUnknown = allowUnkownIdentifiers; // always false
+		define(funcStr);
+		parse();
+		if (getErrorCode() != NO_ERROR) {
+			String msg = "Error in function string: " + funcStr; //$NON-NLS-1$
+			msg = msg + '\n' + "Error: " + getErrorString(); //$NON-NLS-1$
+			msg = msg + '\n' + "Position: " + getErrorPosition(); //$NON-NLS-1$
+			throw new ParserException(msg);
+		}
+	}
 
   /**
    * The constructor of <code>Parser</code>.
