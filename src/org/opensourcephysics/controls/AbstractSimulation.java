@@ -294,7 +294,7 @@ public void resetAnimation() {
 				return true;
 			case STATE_LOOP:
 				long currentTime = System.currentTimeMillis();
-				doStep();
+				for(int i=0; i<stepsPerDisplay; i++) doStep();
 				int sleepTime = (int)Math.max(10, delayTime-(System.currentTimeMillis()-currentTime));
 				org.opensourcephysics.display.GUIUtils.renderAnimatedFrames(); // repaints all animated frames
 				stateHelper.sleep(sleepTime);
