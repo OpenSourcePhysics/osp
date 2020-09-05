@@ -17,8 +17,6 @@ import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -909,8 +907,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		if (addButtonPanel) {
 			cutButton.setText(ToolsRes.getString("FunctionEditor.Button.Cut")); //$NON-NLS-1$
 			cutButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Cut.Tooltip")); //$NON-NLS-1$
-			copyButton.setText("???");
-			// .setText(ToolsRes.getString("FunctionEditor.Button.Copy")); //$NON-NLS-1$
+			copyButton.setText(ToolsRes.getString("FunctionEditor.Button.Copy")); //$NON-NLS-1$
 			copyButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Copy.Tooltip")); //$NON-NLS-1$
 			pasteButton.setText(ToolsRes.getString("FunctionEditor.Button.Paste")); //$NON-NLS-1$
 			pasteButton.setToolTipText(ToolsRes.getString("FunctionEditor.Button.Paste.Tooltip")); //$NON-NLS-1$
@@ -1109,6 +1106,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 						XMLProperty prop = list.get(i);
 						if (prop.getPropertyName().equals("selected")) { //$NON-NLS-1$
 							c.accept(prop.getChildControls());
+							return;
 						}
 					}
 				}
