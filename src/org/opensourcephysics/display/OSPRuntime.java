@@ -800,14 +800,15 @@ public class OSPRuntime {
 	/**
 	 * Gets the launch jar build date.
 	 * 
-	 * @return the build date, or null if not launched from a jar or date not known
+	 * @return the build date, or "" if not launched from a jar or date not known
 	 */
 	public static String getLaunchJarBuildDate() {
 		if (buildDate == null) {
 			try {
 				JarFile jarfile = getLaunchJar();
 				if (jarfile == null) {
-					buildDate = "<unkown>";
+//					buildDate = "<unknown>";
+					buildDate = "";
 				} else {
 					java.util.jar.Attributes att = jarfile.getManifest().getMainAttributes();
 					buildDate = att.getValue("Build-Date"); //$NON-NLS-1$

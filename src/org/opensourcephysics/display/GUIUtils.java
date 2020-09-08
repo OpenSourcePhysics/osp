@@ -337,17 +337,6 @@ public class GUIUtils {
 		return file;
 	}
 
-	public static File showOpenDialog(Component parent) {
-		JFileChooser fileChooser = OSPRuntime.getChooser(); // new JFileChooser();
-		int result = fileChooser.showOpenDialog(parent);
-		if (result != JFileChooser.APPROVE_OPTION) {
-			return null;
-		}
-		OSPRuntime.chooserDir = fileChooser.getCurrentDirectory().toString();
-		File file = fileChooser.getSelectedFile();
-		return file;
-	}
-
 	/**
 	 * Returns the enabled text color.
 	 * 

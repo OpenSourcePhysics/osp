@@ -90,6 +90,8 @@ import org.opensourcephysics.display.TextFrame;
 import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.tools.LibraryResource.Metadata;
 
+import javajs.async.AsyncFileChooser;
+
 /**
  * A GUI for browsing OSP digital library collections.
  *
@@ -1872,10 +1874,12 @@ public class LibraryBrowser extends JPanel {
 	}
 
 	/**
-	 * Opens a file using a file chooser.
+	 * Opens a file using an AsyncFileChooser.
 	 */
 	protected void open() {
-		JFileChooser fileChooser = OSPRuntime.getChooser();
+		AsyncFileChooser fileChooser = OSPRuntime.getChooser();
+		if (fileChooser == null)
+			return;
 		for (javax.swing.filechooser.FileFilter filter : fileChooser.getChoosableFileFilters()) {
 			fileChooser.removeChoosableFileFilter(filter);
 		}
@@ -1884,15 +1888,23 @@ public class LibraryBrowser extends JPanel {
 		fileChooser.setAcceptAllFileFilterUsed(false);
 		fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 		fileChooser.setFileFilter(filesAndFoldersFilter);
-		File file = GUIUtils.showOpenDialog(this);
+		String oldTitle = fileChooser.getDialogTitle();
+		fileChooser.showOpenDialog(this, new Runnable() {
+
+			@Override
+			public void run() {
+				File file = fileChooser.getSelectedFile();
+				if (file != null)
+					open(file.getAbsolutePath());
+			}
+
+		}, null);
 		// reset chooser to original state
+		fileChooser.setDialogTitle(oldTitle);
 		fileChooser.removeChoosableFileFilter(filesAndFoldersFilter);
 		fileChooser.removeChoosableFileFilter(Launcher.getXMLFilter());
 		fileChooser.setAcceptAllFileFilterUsed(true);
 		fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		if (file != null) {
-			open(file.getAbsolutePath());
-		}
 	}
 
 	/**
