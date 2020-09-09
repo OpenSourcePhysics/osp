@@ -73,7 +73,7 @@ import swingjs.api.JSUtilI;
  */
 public class OSPRuntime {
 
-	public static final String VERSION = "5.0.0"; //$NON-NLS-1$
+	public static final String VERSION = "5.9.20200909"; //$NON-NLS-1$
 
 	private static boolean isMac;
 
