@@ -861,6 +861,19 @@ public class DataTable extends JTable {
 		private BitSet selectedModelCols = new BitSet();
 		private TableModel foundModel;
 
+		protected OSPDataTableModel() {
+			dataTableElements = new ArrayList<DataTableElement>();
+			decorator = new SortDecorator();
+			addTableModelListener(new TableModelListener() {
+				@Override
+				public void tableChanged(TableModelEvent e) {
+					setTainted();
+					decorator.reset();
+				}
+
+			});
+		}
+
 		/**
 		 * The TableModelListener will clue us in
 		 */
@@ -922,19 +935,6 @@ public class DataTable extends JTable {
 				clearSelection();
 			}
 	    }
-
-		protected OSPDataTableModel() {
-			dataTableElements = new ArrayList<DataTableElement>();
-			decorator = new SortDecorator();
-			addTableModelListener(new TableModelListener() {
-				@Override
-				public void tableChanged(TableModelEvent e) {
-					setTainted();
-					decorator.reset();
-				}
-
-			});
-		}
 
 		/**
 		 * Find the dataTableElement associated with this column.
