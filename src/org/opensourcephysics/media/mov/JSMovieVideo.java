@@ -280,11 +280,19 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	/**
 	 * Gets the duration of the video.
 	 *
-	 * @return the duration of the video in milliseconds, or -1 if not known
+	 * @return the duration of the video in milliseconds, or 0 if no video
 	 */
 	@Override
 	public double getDuration() {
-		return jsvideo == null ? 0 : HTML5Video.getDuration(jsvideo);
+		return jsvideo == null ? -1 : HTML5Video.getDuration(jsvideo) * 1000;
+	}
+	
+	/**
+	 * check the getDuration() > 0, but might have to tweak this?
+	 */
+	@Override
+	public boolean isValid() {
+		return super.isValid();
 	}
 
 	/**
@@ -588,7 +596,8 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					v.endFrameNumber = v.frameCount - 1;
 					// create startTimes array
 					v.frameTimesMillis = new double[v.frameCount];
-					for (int i = 1; i < v.frameTimesMillis.length; i++) {
+					// BH 2020.09.11 note: this was i=1, but then mp4 initial frame was double length
+					for (int i = 0; i < v.frameTimesMillis.length; i++) {
 						v.frameTimesMillis[i] = seconds.get(i).doubleValue() * 1000;
 					}
 					seconds = null;

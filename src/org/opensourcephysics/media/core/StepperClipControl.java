@@ -66,7 +66,7 @@ public class StepperClipControl extends ClipControl {
 		super(videoClip);
 		videoClip.addPropertyChangeListener(this);
 		if (video != null) {
-			if (video.getFrameCount() > 1 && video.getDuration() > 0) {
+			if (video.getFrameCount() > 1 && video.isValid()) {
 				double ti = video.getFrameTime(video.getStartFrameNumber());
 				double tf = video.getFrameTime(video.getEndFrameNumber());
 				int count = video.getEndFrameNumber() - video.getStartFrameNumber();
@@ -232,7 +232,7 @@ public class StepperClipControl extends ClipControl {
 	 */
 	@Override
 	public double getMeanFrameDuration() {
-		if (video != null && video.getDuration() > 0) {
+		if (video != null && video.isValid()) {
 			int count = video.getEndFrameNumber() - video.getStartFrameNumber();
 			if (count != 0) {
 				double ti = video.getFrameTime(video.getStartFrameNumber());
@@ -255,12 +255,12 @@ public class StepperClipControl extends ClipControl {
 		if (duration == 0 || duration == getMeanFrameDuration()) {
 			return;
 		}
-		if (video != null && video instanceof ImageVideo) {
+		if (video instanceof ImageVideo) {
 			ImageVideo iVideo = (ImageVideo) video;
 			iVideo.setFrameDuration(duration);
 			frameDuration = duration;
 			timer.setInitialDelay(getTimerDelay());
-		} else if (video != null && video.getDuration() > 0) {
+		} else if (video != null && video.isValid()) {
 			double ti = video.getFrameTime(video.getStartFrameNumber());
 			double tf = video.getFrameTime(video.getEndFrameNumber());
 			int count = video.getEndFrameNumber() - video.getStartFrameNumber();
@@ -305,7 +305,7 @@ public class StepperClipControl extends ClipControl {
 	 */
 	@Override
 	public double getTime() {
-		if (video != null && video.getDuration() > 0) {
+		if (video != null && video.isValid()) {
 			int n = video.getFrameNumber();
 			double videoTime = video.getFrameTime(n);
 			int m = clip.stepToFrame(getStepNumber());
@@ -326,7 +326,7 @@ public class StepperClipControl extends ClipControl {
 	 */
 	@Override
 	public double getStepTime(int stepNumber) {
-		if (video != null && video.getDuration() > 0) {
+		if (video != null && video.isValid()) {
 			int n = clip.stepToFrame(stepNumber);
 			double videoTime = video.getFrameTime(n);
 			if (n > video.getFrameCount() - 1) {
@@ -375,7 +375,7 @@ public class StepperClipControl extends ClipControl {
 	 */
 	private int getTimerDelay() {
 		double duration = frameDuration;
-		if (video != null && video.getDuration() > 0) {
+		if (video != null && video.isValid()) {
 			int count = video.getEndFrameNumber() - video.getStartFrameNumber();
 			if (count != 0) {
 				double ti = video.getFrameTime(video.getStartFrameNumber());

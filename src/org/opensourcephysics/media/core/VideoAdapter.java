@@ -1325,6 +1325,7 @@ public abstract class VideoAdapter implements Video {
 		});
 	}
 
+
 }
 
 /*
