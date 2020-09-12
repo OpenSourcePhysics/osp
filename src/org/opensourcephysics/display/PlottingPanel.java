@@ -11,6 +11,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.axes.CartesianAxes;
@@ -34,6 +35,10 @@ public class PlottingPanel extends InteractivePanel {
 	protected final static double log10 = Math.log(10);
 	protected final static LogBase10Function logBase10Function = new LogBase10Function();
 
+	static int ppid = 0;
+
+	public int id;
+	
 	/**
 	 * Constructs a new PlottingPanel that uses the given X axis label, Y axis
 	 * label, and plot title.
@@ -72,6 +77,7 @@ public class PlottingPanel extends InteractivePanel {
 //    axes = new CartesianType1(this);
 		// axes changed to interactive by default. D Brown 2012-01-27
 		initAxes();
+		this.id = ++ppid;
 		axes.setXLabel(xlabel, null);
 		axes.setYLabel(ylabel, null);
 		axes.setTitle(plotTitle, null);
@@ -191,6 +197,7 @@ public class PlottingPanel extends InteractivePanel {
 	 * @param label the label
 	 */
 	public void setYLabel(String label) {
+		OSPLog.debug("PlottingPanel " + id + " setyY " + label);
 		axes.setYLabel(label, null);
 	}
 
