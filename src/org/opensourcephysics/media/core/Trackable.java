@@ -30,7 +30,10 @@
  * please see <https://www.compadre.org/osp/>.
  */
 package org.opensourcephysics.media.core;
+import java.awt.Graphics;
+
 import org.opensourcephysics.display.Drawable;
+import org.opensourcephysics.display.DrawingPanel;
 
 /**
  * A Trackable object implements no special methods but promises

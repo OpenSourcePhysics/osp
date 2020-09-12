@@ -7,36 +7,18 @@
 
 package org.opensourcephysics.resources.tools;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.PropertyResourceBundle;
 
 /**
- * Resource loader for OSP tools.xuggle package.  Resources are obtained from properties.
- * 
- * Defining a Java resource class speeds up resource loading, particularly for applets because
- * a connection to the server is not required. 
- * 
+ * English resource loader for OSP ffmpeg package.  Resource strings are obtained from the superclass.
  * @author Wolfgang Christian
 */
-public class xuggle extends PropertyResourceBundle {
-  // relative path to strings
-  static String res = "xuggle.properties"; //$NON-NLS-1$
-
+public class ffmpeg_en extends ffmpeg {
   /**
-   * Constructor tools
+   * Constructor tools_en
    * @throws IOException
    */
-  public xuggle() throws IOException {
-    this(xuggle.class.getResourceAsStream(res));
-  }
-
-  /**
-   * Constructor tools
-   * @param stream
-   * @throws IOException
-   */
-  public xuggle(InputStream stream) throws IOException {
-    super(stream);
+  public ffmpeg_en() throws IOException {
+    super();
   }
 
 }

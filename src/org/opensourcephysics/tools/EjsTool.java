@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Vector;
+
 import javax.swing.AbstractButton;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -39,6 +40,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.OSPRuntime;
 

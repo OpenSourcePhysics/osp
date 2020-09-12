@@ -33,6 +33,8 @@ package org.opensourcephysics.media.core;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -43,7 +45,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.image.BufferedImage;
-
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -53,7 +54,6 @@ import javax.swing.JSlider;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 
@@ -471,7 +471,6 @@ public class SumFilter extends Filter {
  * it and/or modify it under the terms of the GNU General Public License (GPL) as
  * published by the Free Software Foundation; either version 2 of the License,
  * or(at your option) any later version.
-
  * Code that uses any portion of the code in the org.opensourcephysics package
  * or any subpackage (subdirectory) of this package must must also be be released
  * under the GNU GPL license.

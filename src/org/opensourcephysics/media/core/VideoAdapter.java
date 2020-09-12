@@ -44,7 +44,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Collection;
 import java.util.HashMap;
-
 import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.opensourcephysics.controls.OSPLog;
