@@ -102,8 +102,6 @@ public class ResourceLoader {
 
 	public static final String TRACKER_TEST_URL = null; // needed for tracker
 
-	protected static final String WEB_CONNECTED_TEST_URL = OSPRuntime.WEB_CONNECTED_TEST_URL;
-
 	protected static ArrayList<String> searchPaths = new ArrayList<String>(); // search paths
 	protected static ArrayList<String> appletSearchPaths = new ArrayList<String>(); // search paths for apples
 	protected static int maxPaths = 20; // max number of paths in history
@@ -1503,12 +1501,14 @@ public class ResourceLoader {
 	 * Downloads a file from the web to a target File.
 	 * 
 	 * @param urlPath         the path to the file
-	 * @param target          the target file
+	 * @param target          the target file or null to assign a cache file name
 	 * @param alwaysOverwrite true to overwrite an existing file, if any
 	 * @return the downloaded file, or null if failed
 	 */
 	public static File download(String urlPath, File target, boolean alwaysOverwrite) {
-		if (target == null || target.getParentFile() == null)
+		if (target == null)
+			target = getOSPCacheFile(urlPath);
+		if (target.getParentFile() == null)
 			return null;
 		// compare urlPath with previous attempt and, if identical, check web connection
 		if (!webConnected || downloadURL.equals(urlPath)) {
@@ -1528,15 +1528,20 @@ public class ResourceLoader {
 			downloadURL = urlPath;
 			try {
 				Resource res = getResourceZipURLsOK(urlPath);
-				InputStream reader = res.openInputStream();
-				FileOutputStream writer = new FileOutputStream(target);
-				byte[] buffer = new byte[65536]; // 2^14 = 64K
-				int bytesRead = 0;
-				while ((bytesRead = reader.read(buffer)) > 0) {
-					writer.write(buffer, 0, bytesRead);
+				InputStream is = (res == null ? new URL(urlPath).openStream() : res.openInputStream());
+				if (OSPRuntime.isJS) {
+					OSPRuntime.jsutil.streamToFile(is, target);
+				} else {
+
+					FileOutputStream writer = new FileOutputStream(target);
+					byte[] buffer = new byte[65536]; // 2^14 = 64K
+					int bytesRead = 0;
+					while ((bytesRead = is.read(buffer)) > 0) {
+						writer.write(buffer, 0, bytesRead);
+					}
+					writer.close();
 				}
-				writer.close();
-				reader.close();
+				is.close();
 			} catch (Exception ex) {
 			}
 			downloadURL = ""; //$NON-NLS-1$
@@ -1735,7 +1740,7 @@ public class ResourceLoader {
 	 * @return
 	 */
 	public static boolean isWebConnected() {
-		return isURLAvailable(WEB_CONNECTED_TEST_URL);
+		return isURLAvailable(OSPRuntime.WEB_CONNECTED_TEST_URL);
 	}
 
 	/**
@@ -1745,12 +1750,6 @@ public class ResourceLoader {
 	 * @return true if available
 	 */
 	public static boolean isURLAvailable(String urlPath) {
-		if (JSUtil.isJS) {
-			// BH 2020.03.02 trying this to see if it is reasonable
-			// This specific URL will be replaced with a known CORS server by j2sApplet.js
-			urlPath = "https://INTERNET.TEST";
-		} else {
-		}
 		try {
 			// make a URL, open a connection, get content
 			URL url = new URL(urlPath);
