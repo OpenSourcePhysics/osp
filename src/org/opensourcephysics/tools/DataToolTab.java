@@ -677,14 +677,16 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 	/**
 	 * Clears all data.
+	 * 
+	 * @param postEdit true to post an undoable edit
 	 */
-	public void clearData() {
+	public void clearData(boolean postEdit) {
 		ArrayList<String> colNames = new ArrayList<String>();
 		for (Dataset next : dataManager.getDatasets()) {
 			colNames.add(next.getYColumnName());
 		}
 		dataTable.setSelectedColumnNames(colNames);
-		dataTable.deleteSelectedColumns(); // also posts undoable edits
+		dataTable.deleteSelectedColumns(postEdit); // posts undoable edits
 	}
 
 	/**
@@ -1073,9 +1075,16 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		if (getName() != null) {
 			buf.append(getName() + "\n"); //$NON-NLS-1$
 		}
-		if ((dataTable.getColumnCount() == 1) || (dataTable.getRowCount() == 0)) {
-			return buf.toString();
+		int[] columns = null;
+		if (dataTable.getRowCount() == 0) {
+			columns = new int[dataTable.getColumnCount() - 1];
+			for (int i = 0; i < columns.length; i++) 
+				columns[i] = i + 1;
+//			return buf.toString();
 		}
+//		if ((dataTable.getColumnCount() == 1) || (dataTable.getRowCount() == 0)) {
+//			return buf.toString();
+//		}
 		dataTable.clearSelectionIfEmptyEndRow();
 		// get selected rows and columns
 		int[] rows = dataTable.getSelectedRows();
@@ -1084,7 +1093,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			dataTable.selectAllCells();
 			rows = dataTable.getSelectedRows();
 		}
-		int[] columns = dataTable.getSelectedColumns();
+		if (columns == null)
+			columns = dataTable.getSelectedColumns();
 		// copy column headings
 		for (int j = 0; j < columns.length; j++) {
 			int col = columns[j];
@@ -1434,8 +1444,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		
 		
 		// create edit data button
-		editDataButton = DataTool.createButton("Edit Table..."); 
-		editDataButton.setToolTipText("Enter data in comma delimited format."); 
+		editDataButton = DataTool.createButton("Edit Table as Text..."); 
+		editDataButton.setToolTipText("Edit data as comma-delimited text"); 
 		editDataButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -1702,7 +1712,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		toolbar.add(newColumnButton);
 		toolbar.add(dataBuilderButton);
 		toolbar.add(refreshDataButton);
-		toolbar.add(editDataButton);
+		if (isUserEditable())
+			toolbar.add(editDataButton);
 		toolbar.add(helpButton);
 
 		// create statistics table
@@ -2352,8 +2363,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		if (!haveGUI)
 			return;
 		boolean changed = tabChanged;
-		editDataButton.setText("Edit Table...");
-		editDataButton.setToolTipText("Enter data in comma delimited format."); 
+		editDataButton.setText("Edit Table as Text...");
+		editDataButton.setToolTipText("Edit data as comma-delimited text"); 
 		
 		newColumnButton.setText(ToolsRes.getString("DataToolTab.Button.NewColumn.Text")); //$NON-NLS-1$
 		newColumnButton.setToolTipText(ToolsRes.getString("DataToolTab.Button.NewColumn.Tooltip")); //$NON-NLS-1$
@@ -2666,6 +2677,47 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				return next;
 		}
 		return null;
+	}
+	
+	/**
+	 * Sets the table data to the specified delimited text. Posts an undoable
+	 * edit if prevString is given.
+	 * 
+	 * @param dataString the delimited text
+	 * @param prevString optional previous delimited text for undoable edit
+	 * @return true if an undoable edit was posted
+	 */
+	protected boolean setDelimitedData(String dataString, String prevString) throws Exception {
+		if (dataString == null) {
+			return false;
+		}
+		if (dataString.length() == 0) {
+			clearData(false); // do not post edits (one for each column!)
+//			if (prevString != null) {
+//				// post edit: target is prev data, value is ""
+//				TableEdit edit = dataTable.new TableEdit(DataToolTable.DELIMITED_TEXT_EDIT, null,
+//						prevString, dataString);
+//				undoSupport.postEdit(edit);
+//				refreshUndoItems();
+//			}
+			return false;
+		}
+		String parsableData = dataString.replace(" ", "").replace(",", "\t");
+		Data data = DataTool.parseData(parsableData, "edited");
+		clearData(false); // do not post edits
+		if (data != null) {
+			loadData(data, false);
+			tabChanged(true);
+			if (prevString != null) {
+				// post edit: target is prev data, value is new data
+				TableEdit edit = dataTable.new TableEdit(DataToolTable.DELIMITED_TEXT_EDIT, null,
+						prevString, dataString);
+				undoSupport.postEdit(edit);
+				refreshUndoItems();
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

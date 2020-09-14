@@ -63,6 +63,7 @@ import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
 
 import org.opensourcephysics.controls.OSPLog;
+import org.opensourcephysics.display.Data;
 import org.opensourcephysics.display.DataFunction;
 import org.opensourcephysics.display.DataTable;
 import org.opensourcephysics.display.Dataset;
@@ -74,6 +75,7 @@ import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.display.TextLine;
 import org.opensourcephysics.js.JSUtil;
+import org.opensourcephysics.tools.DataToolTable.TableEdit;
 
 /**
  * This is a DataTable that displays DataColumns and constructs
@@ -93,10 +95,11 @@ public class DataToolTable extends DataTable {
 	protected final static int REPLACE_CELLS_EDIT = 5;
 	protected final static int INSERT_ROWS_EDIT = 6;
 	protected final static int DELETE_ROWS_EDIT = 7;
+	protected final static int DELIMITED_TEXT_EDIT = 8;
 
 	protected static String[] editTypes = { "rename column", "insert column", //$NON-NLS-1$ //$NON-NLS-2$
 			"delete column", "insert cells", "delete cells", "replace cells", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-			"insert rows", "delete rows" }; //$NON-NLS-1$ //$NON-NLS-2$
+			"insert rows", "delete rows", "delimited text" }; //$NON-NLS-1$ //$NON-NLS-2$
 	protected static Color xAxisColor = new Color(255, 255, 153); // yellow
 	protected static Color yAxisColor = new Color(204, 255, 204); // light green
 
@@ -951,7 +954,7 @@ public class DataToolTable extends DataTable {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					copyColumnsItem.doClick();
-					deleteSelectedColumns(); // also posts undoable edits
+					deleteSelectedColumns(true); // also posts undoable edits
 				}
 
 			});
@@ -1139,8 +1142,13 @@ public class DataToolTable extends DataTable {
 		setFormatPattern(colName, null);
 		refreshTable(DataTable.MODE_COLUMN);
 	}
-
-	protected void deleteSelectedColumns() {
+	
+	/**
+	 * Deletes the selected columns
+	 * 
+	 * @param postEdit true to post an undoable edit
+	 */
+	protected void deleteSelectedColumns(boolean postEdit) {
 		ArrayList<String> colNames = getSelectedColumnNames();
 		int[] cols = getSelectedColumns();
 		for (int i = colNames.size() - 1; i > -1; i--) {
@@ -1154,9 +1162,11 @@ public class DataToolTable extends DataTable {
 				continue;
 			}
 			// post edit: target is column, value is dataset
-			Integer colInt = Integer.valueOf(cols[i]);
-			TableEdit edit = new TableEdit(DELETE_COLUMN_EDIT, name, colInt, deleted);
-			dataToolTab.undoSupport.postEdit(edit);
+			if (postEdit) {
+				Integer colInt = Integer.valueOf(cols[i]);
+				TableEdit edit = new TableEdit(DELETE_COLUMN_EDIT, name, colInt, deleted);
+				dataToolTab.undoSupport.postEdit(edit);
+			}
 		}
 		refreshUndoItems();
 	}
@@ -1845,6 +1855,7 @@ public class DataToolTable extends DataTable {
 		if (getSelectedRows().length == 0) {
 			removeColumnSelectionInterval(0, getColumnCount() - 1);
 		}
+		this.refreshTable();
 	}
 
 	/**
@@ -2065,7 +2076,7 @@ public class DataToolTable extends DataTable {
 			}
 		}
 	}
-
+	
 	@Override
 	public void setFont(Font font) {
 		super.setFont(font);
@@ -2714,12 +2725,14 @@ public class DataToolTable extends DataTable {
 		 * Contructor.
 		 *
 		 * @param type    may be RENAME_COLUMN_EDIT, DELETE_COLUMN_EDIT, ADD_CELLS_EDIT,
-		 *                DELETE_CELLS_EDIT, ADD_ROWS_EDIT, DELETE_ROWS_EDIT, VALUE_EDIT
+		 *                DELETE_CELLS_EDIT, ADD_ROWS_EDIT, DELETE_ROWS_EDIT, VALUE_EDIT,
+		 *                DELIMITED_TEXT_EDIT
 		 * @param colName the column name
-		 * @param target  the target rows or column
+		 * @param target  the target rows or column, or previous delimited data
 		 * @param value   the value
 		 */
 		public TableEdit(int type, String colName, Object target, Object value) {
+			OSPLog.debug("pig type "+type);
 			editType = type;
 			columnName = colName;
 			this.target = target;
@@ -2735,6 +2748,14 @@ public class DataToolTable extends DataTable {
 			super.undo();
 			OSPLog.finer("undoing " + editTypes[editType]); //$NON-NLS-1$
 			switch (editType) {
+			case DELIMITED_TEXT_EDIT: {
+				// target is old data, value is new data
+				try {
+					dataToolTab.setDelimitedData(target.toString(), null);
+				} catch (Exception e) {
+				}
+				break;
+			}
 			case RENAME_COLUMN_EDIT: {
 				// columnName is new name, value is undo name
 				// String newName = value.toString();
@@ -2787,8 +2808,9 @@ public class DataToolTable extends DataTable {
 				HashMap[] values = (HashMap[]) value;
 				replaceCells(rows, values[0]);
 				break;
+			}			
 			}
-			}
+			trimEmptyRows(0);
 		}
 
 		// redoes the change
@@ -2798,6 +2820,14 @@ public class DataToolTable extends DataTable {
 			super.redo();
 			OSPLog.finer("redoing " + editTypes[editType]); //$NON-NLS-1$
 			switch (editType) {
+			case DELIMITED_TEXT_EDIT: {
+				// target is undo data, value is redo data
+				try {
+					dataToolTab.setDelimitedData(value.toString(), null);
+				} catch (Exception e) {
+				}
+				break;
+			}
 			case RENAME_COLUMN_EDIT: {
 				// columnName is new name, value is undo name
 				renameColumn(value.toString(), columnName);
@@ -2851,6 +2881,7 @@ public class DataToolTable extends DataTable {
 				break;
 			}
 			}
+			trimEmptyRows(0);
 		}
 
 		// returns the presentation name

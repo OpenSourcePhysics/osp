@@ -38,6 +38,7 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -48,6 +49,7 @@ import java.util.function.Consumer;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -96,6 +98,7 @@ import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.display.TextFrame;
 import org.opensourcephysics.js.JSUtil;
+import org.opensourcephysics.tools.DataToolTable.TableEdit;
 
 /**
  * This provides a GUI for analyzing OSP Data objects.
@@ -114,7 +117,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	protected static Dimension dim = new Dimension(800, 540);
 	protected static final int defaultButtonHeight = 28;
 	protected static int buttonHeight = defaultButtonHeight;
-	protected static String[] delimiters = new String[] { " ", "\t", ",", ";" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+	protected static final String SPACE = " ";
+	protected static String[] delimiters = new String[] { "\t", ",", ";", SPACE }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 	protected static TextFrame helpFrame;
 //  protected static String helpName = "data_tool_help.html";                                 //$NON-NLS-1$
 	protected static String helpName = "datatool/datatool_help.html"; //$NON-NLS-1$
@@ -1064,9 +1068,9 @@ public void loadDatasetURI(String relpath) {
 				} catch (NumberFormatException e) {
 					// convert decimal separator commas with periods
 					if (strings[i].indexOf(",") > -1 && !delimiter.equals(",")) { //$NON-NLS-1$ //$NON-NLS-2$
-						strings[i] = strings[i].replace(",", "."); //$NON-NLS-1$ //$NON-NLS-2$
+						String temp = strings[i].replace(",", "."); //$NON-NLS-1$ //$NON-NLS-2$
 						try {
-							doubles[i] = Double.parseDouble(strings[i]);
+							doubles[i] = Double.parseDouble(temp);
 						} catch (NumberFormatException e1) {
 							doubles[i] = Double.NaN;
 						}
@@ -1119,6 +1123,14 @@ public void loadDatasetURI(String relpath) {
 			doubles[i] = row;
 		}
 		return doubles;
+	}
+	
+	private static boolean containsDelimeter(String s) {
+		for (int i = 0; i < delimiters.length; i++) {
+			if (delimiters[i] != SPACE && s.contains(delimiters[i]))
+				return true;
+		}
+		return false;
 	}
 
 	/**
@@ -1178,7 +1190,7 @@ public void loadDatasetURI(String relpath) {
 					String[] strings = DataTool.parseStrings(textLine, DataTool.delimiters[i]);
 					double[] rowData = DataTool.parseDoubles(strings, DataTool.delimiters[i]);
 					// set title if not yet set (null), String[] length > 0, all entries
-					// are NaN and only one entry is not ""
+					// are NaN, only one entry is not "" and contains no other delimiters
 					if (rows.isEmpty() && (strings.length > 0) && (title == null)) {
 						String s = ""; //$NON-NLS-1$
 						for (int k = 0; k < strings.length; k++) {
@@ -1191,7 +1203,7 @@ public void loadDatasetURI(String relpath) {
 								}
 							}
 						}
-						if (!s.equals("")) { //$NON-NLS-1$
+						if (!s.equals("") && !containsDelimeter(s)) { //$NON-NLS-1$
 							title = s;
 							textLine = input.readLine();
 							continue;
@@ -1202,7 +1214,7 @@ public void loadDatasetURI(String relpath) {
 					if (rows.isEmpty() && (strings.length > 0) && (columnNames == null)) {
 						boolean valid = true;
 						for (int k = 0; k < strings.length; k++) {
-							if (!Double.isNaN(rowData[k])) {
+							if (containsDelimeter(strings[k]) || !Double.isNaN(rowData[k])) {
 								valid = false;
 								break;
 							}
@@ -1260,7 +1272,9 @@ public void loadDatasetURI(String relpath) {
 				} // end while loop
 
 				// create datasets if data found
-				if (!rows.isEmpty() && (columns > 0)) {
+//				if (!rows.isEmpty() && (columns > 0)) {
+				// DB 2020.9.13 changed this to allow empty rows
+				if (columns > 0 && columns < Integer.MAX_VALUE) { 
 					input.close();
 					// first reassemble data from rows into columns
 					double[][] dataArray = new double[columns][rows.size()];
@@ -2906,7 +2920,7 @@ public void loadDatasetURI(String relpath) {
 		});
 		pasteMenu.add(pasteColumnsItem);
 		editMenu.addSeparator();
-		editDataItem = new JMenuItem("Edit Data");
+		editDataItem = new JMenuItem("Edit Table as Text...");
 		editDataItem.addActionListener((e) -> {
 			editDataAction();
 		});
@@ -3199,6 +3213,8 @@ public void loadDatasetURI(String relpath) {
 		languageMenu.setText(ToolsRes.getString("Tool.Menu.Language")); //$NON-NLS-1$
 		fontSizeMenu.setText(ToolsRes.getString("Tool.Menu.FontSize")); //$NON-NLS-1$
 		defaultFontSizeItem.setText(ToolsRes.getString("Tool.MenuItem.DefaultFontSize")); //$NON-NLS-1$
+		editDataItem.setText("Edit Table as Text...");
+		editDataItem.setEnabled(getSelectedTab() != null && getSelectedTab().isUserEditable());
 		helpMenu.setText(ToolsRes.getString("Menu.Help")); //$NON-NLS-1$
 		helpItem.setText(ToolsRes.getString("DataTool.MenuItem.Help")); //$NON-NLS-1$
 		logItem.setText(ToolsRes.getString("MenuItem.Log")); //$NON-NLS-1$
@@ -3357,20 +3373,26 @@ public void loadDatasetURI(String relpath) {
 
 	}
 
+	/**
+	 * A dialog to edit table data using delimited text.
+	 */
 	public class EditDataDialog extends JDialog {
-		JButton closeButton, cancelButton, applyButton;
+		JButton okButton, cancelButton, applyButton;
 		JTextArea dataArea;
+		JTextArea helpArea;
 		boolean canceled;
-		private String data0, currentData;
-		private JButton resetButton;
+		private String currentData;
+		private JButton undoButton, redoButton;
+		private String defaultColumnNameText = "x, y\n";
+		private int undoCount = 0;
 
 		EditDataDialog() {
 			super(JOptionPane.getFrameForComponent(DataTool.this), true);
 			setLayout(new BorderLayout());
-			setTitle("Data Input");//TODO DisplayRes.getString("DataTable.NumberFormat.Dialog.Title")); //$NON-NLS-1$
+			setTitle("Edit Table as Text");//TODO DisplayRes.getString("DataTable.NumberFormat.Dialog.Title")); //$NON-NLS-1$
 			// create buttons
-			closeButton = new JButton(DisplayRes.getString("Dialog.Button.Close.Text")); //$NON-NLS-1$
-			closeButton.addActionListener(new ActionListener() {
+			okButton = new JButton(DisplayRes.getString("Dialog.Button.Close.Text")); //$NON-NLS-1$
+			okButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					setVisible(false);
@@ -3381,18 +3403,31 @@ public void loadDatasetURI(String relpath) {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					setData(null);
+					refreshUndoButtons();
  				}
 			});
-			resetButton = new JButton("Reset");//TODO DisplayRes.getString("Dialog.Button.Apply.Text")); //$NON-NLS-1$
-			resetButton.addActionListener(new ActionListener() {
+			undoButton = new JButton("Undo");//TODO DisplayRes.getString("")); //$NON-NLS-1$
+			undoButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					resetData();
+					undoItem.doClick(0);
+					refreshUndoButtons();
+					undoCount--;
+					refreshDataTextFromTable(false);
+				}
+			});
+			redoButton = new JButton("Redo");//TODO DisplayRes.getString("")); //$NON-NLS-1$
+			redoButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					redoItem.doClick(0);
+					refreshUndoButtons();
+					undoCount++;
+					refreshDataTextFromTable(false);
  				}
 			});
 			cancelButton = new JButton(DisplayRes.getString("GUIUtils.Cancel")); //$NON-NLS-1$
 			cancelButton.addActionListener(new ActionListener() {
-
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					canceled = true;
@@ -3405,98 +3440,132 @@ public void loadDatasetURI(String relpath) {
 			add(new JScrollPane(dataArea), BorderLayout.CENTER);
 			JPanel buttonPanel = new JPanel();
 			buttonPanel.add(applyButton);
-			buttonPanel.add(resetButton);
-			buttonPanel.add(closeButton);
+			buttonPanel.add(undoButton);
+			buttonPanel.add(redoButton);
+			buttonPanel.add(okButton);
 			buttonPanel.add(cancelButton);
 			add(buttonPanel, BorderLayout.SOUTH);
+			helpArea = new JTextArea(2,30);
+			helpArea.setEditable(false);
+			helpArea.setLineWrap(true);
+			helpArea.setForeground(Color.green.darker());
+			helpArea.setText("Enter column names in first row, values in later rows.\nDelimit columns with commas, rows with enter key.");
+			Border line = BorderFactory.createLineBorder(Color.LIGHT_GRAY);
+			Border space = BorderFactory.createEmptyBorder(4, 6, 4, 6);
+			helpArea.setBorder(BorderFactory.createCompoundBorder(line, space));
+			add(helpArea, BorderLayout.NORTH);
+			refreshUndoButtons();
 			FontSizer.setFont(dataArea);
+			FontSizer.setFont(helpArea);
 			this.setLocation(15, 30);
 			pack();
 			setVisible(true);
 		}
-
+		
+		private void refreshUndoButtons() {
+			undoButton.setEnabled(getSelectedTab().undoManager.canUndo());
+			redoButton.setEnabled(getSelectedTab().undoManager.canRedo());			
+		}
 
 		@Override
 		public void setVisible(boolean vis) {
 			if (vis) {
 				canceled = false;
-				initData();
+				refreshDataTextFromTable(true); // initializes data0 when opened
 			} else {
 				if (canceled) {
 					resetData();
 				} else {
-					setData(null);
+					if (!dataArea.getText().equals(defaultColumnNameText))
+						setData(null); // sets data to dataArea text
 				}
 				getSelectedTab().dataTable.refreshTable();
 			}
 			super.setVisible(vis);
 		}
 
-		void initData() {
+		/**
+		 * Sets dataArea text and currentData to clean text version of the data table.
+		 * 
+		 * @param init true to initialize data0 for the cancel action
+		 */
+		void refreshDataTextFromTable(boolean init) {
 			getSelectedTab().dataTable.selectAll();
-			data0 = getSelectedTab().getSelectedTableData();
+			String data = getSelectedTab().getSelectedTableData();
 			getSelectedTab().dataTable.clearSelection();
-			String data = data0;
-			data = data.substring(data0.indexOf("\n") + 1);
-			if (data.length() == 0) {
-				data = "x,y\n";
-				data0 = "";
+			data = data.substring(data.indexOf("\n") + 1); // eliminates tab name			
+			if (data.length() == 0) { // no data
+				currentData = "";
+				dataArea.setText(init? defaultColumnNameText: "");
 			} else {
 				data = data.replace('\t', ',');
+				currentData = cleanData(data); // adds space after each comma for readability 
+				dataArea.setText(currentData);
 			}
-			//currentData = data;
-			currentData = cleanData(data); // cleaning data adds space after each comma for readability 
-			dataArea.setText(currentData);
 		}
 		
+		/**
+		 * Cleans delimited text data by trimming individual entries and separating by ", ".
+		 * 
+		 * @param data the delimited text.
+		 */
 		private String cleanData(String data) {
 			String newData="";
-			if(data==null || data.trim().equals("")) return("x,y");
-			 String[] lines=data.trim().split("\\r?\\n");
-			 newData+=lines[0]+"\n";  // append header
-			 int nCols=lines[0].split(",").length;  // number of columns in data table
-			 for (int i=1; i<lines.length; i++)  { 
-				 String[] line = lines[i].split(",");
-				 int j=0;
-				 for (j=0; j<line.length; j++) { 
-					 newData+=line[j].trim()+", ";
-				 }
-				 for (int k=j; k<nCols; k++) { 
-					 newData+= "0.0, ";
-				 }
-				 newData=newData.substring(0, newData.lastIndexOf(','))+'\n';
-			 }
-			 return newData;
+			if (data==null || data.trim().equals("")) return("");
+			String[] lines=data.trim().split("\\r?\\n");
+			String[] colNames = lines[0].split(",");
+			int j=0;
+			for (j=0; j<colNames.length; j++) { 
+				newData+=colNames[j].trim()+", ";
+			}
+			newData=newData.substring(0, newData.lastIndexOf(','))+'\n';
+			 
+			for (int i=1; i<lines.length; i++)  { 
+				String[] line = lines[i].split(",");
+				for (j=0; j<line.length; j++) {
+					newData+=line[j].trim()+", ";
+				}
+				// pad missing data with space
+				for (int k=j; k<colNames.length; k++) { 
+					newData+= ", ";
+				}
+				newData=newData.substring(0, newData.lastIndexOf(','))+'\n';
+			}
+			return newData;
 		}
 
-		void setData(String val) {
-			if (val == null) {
-				val = dataArea.getText().trim() + "\n";
-				if (val.equals(currentData))
-					return;
+		/**
+		 * Sets the table data to the specified delimited text. If dataString is null
+		 * then it is taken from the dataArea and an undoable edit is posted.
+		 * 
+		 * @param dataString the delimited text. May be null.
+		 */
+		void setData(String dataString) {
+			if (dataString == null) {
+				dataString = dataArea.getText().trim() + "\n";
 			}
-			currentData= val = cleanData(val);
+			dataString = cleanData(dataString);
+			if (dataString.equals(currentData))
+				return;
 			DataToolTab tab = getSelectedTab();
 			try {
-				if (val.length() == 0) {
-					tab.clearData();
-					return;
-				}
-				Data data = parseData(val.replace(',', '\t'), "edited");
-				if (data != null) {
-					tab.clearData();
-					tab.loadData(data, false);
-					tab.tabChanged(false);
-					return;
-				}
+				// set new currentData to dataString using existing currentData if posting edit
+				if (tab.setDelimitedData(dataString, currentData))
+					undoCount++;
+				currentData = dataString;
+				refreshDataTextFromTable(false); // don't reset data0 for cancel action
 			} catch (Exception e) {
 				resetData();
 			}
 		}
 
 		void resetData() {
-			setData(data0);
-			initData();
+			for (int i = 0; i < undoCount; i++) {
+				undoItem.doClick(0);
+			}
+			for (int i = 0; i < -undoCount; i++) {
+				redoItem.doClick(0);
+			}
 		}
 	}
 
