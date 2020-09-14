@@ -2363,9 +2363,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		if (!haveGUI)
 			return;
 		boolean changed = tabChanged;
-		editDataButton.setText("Edit Table as Text...");
-		editDataButton.setToolTipText("Edit data as comma-delimited text"); 
 		
+		editDataButton.setText(ToolsRes.getString("DataToolTab.Button.EditData.Text")+"..."); //$NON-NLS-1$
+		editDataButton.setToolTipText(ToolsRes.getString("DataToolTab.Button.EditData.Tooltip")); //$NON-NLS-1$ 		
 		newColumnButton.setText(ToolsRes.getString("DataToolTab.Button.NewColumn.Text")); //$NON-NLS-1$
 		newColumnButton.setToolTipText(ToolsRes.getString("DataToolTab.Button.NewColumn.Tooltip")); //$NON-NLS-1$
 		dataBuilderButton.setText(ToolsRes.getString("DataToolTab.Button.DataBuilder.Text")); //$NON-NLS-1$

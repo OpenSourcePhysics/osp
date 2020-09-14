@@ -800,7 +800,8 @@ public class DataToolTable extends DataTable {
 					trimRowsItem.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							trimEmptyRows(0);
+							if (trimEmptyRows(0))
+								refreshTable(DataTable.MODE_CELLS);
 						}
 
 					});
@@ -1838,8 +1839,10 @@ public class DataToolTable extends DataTable {
 	 * Trims empty rows from bottom of table up to a specified minimum.
 	 *
 	 * @param minSize the minimum row count to keep
+	 * @return true if one or mmore rows were trimmed
 	 */
-	protected void trimEmptyRows(int minSize) {
+	protected boolean trimEmptyRows(int minSize) {
+		boolean trimmed = false;
 		clearSelection();
 		int endRow = getRowCount() - 1;
 		boolean empty = true;
@@ -1849,13 +1852,14 @@ public class DataToolTable extends DataTable {
 			if (empty) {
 				rows[0] = endRow;
 				deleteRows(rows);
+				trimmed = true;
 				endRow--;
 			}
 		}
 		if (getSelectedRows().length == 0) {
 			removeColumnSelectionInterval(0, getColumnCount() - 1);
 		}
-		this.refreshTable();
+		return trimmed;
 	}
 
 	/**
@@ -2810,7 +2814,8 @@ public class DataToolTable extends DataTable {
 				break;
 			}			
 			}
-			trimEmptyRows(0);
+			if (trimEmptyRows(0))
+				refreshTable(DataTable.MODE_CELLS);
 		}
 
 		// redoes the change
@@ -2881,7 +2886,8 @@ public class DataToolTable extends DataTable {
 				break;
 			}
 			}
-			trimEmptyRows(0);
+			if (trimEmptyRows(0))
+				refreshTable(DataTable.MODE_CELLS);
 		}
 
 		// returns the presentation name
