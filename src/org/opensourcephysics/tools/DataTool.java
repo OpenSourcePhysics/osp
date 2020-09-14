@@ -2920,7 +2920,7 @@ public void loadDatasetURI(String relpath) {
 		});
 		pasteMenu.add(pasteColumnsItem);
 		editMenu.addSeparator();
-		editDataItem = new JMenuItem("Edit Table as Text...");
+		editDataItem = new JMenuItem(ToolsRes.getString("DataToolTab.Button.EditData.Text")+"..."); //$NON-NLS-1$
 		editDataItem.addActionListener((e) -> {
 			editDataAction();
 		});
@@ -3213,7 +3213,7 @@ public void loadDatasetURI(String relpath) {
 		languageMenu.setText(ToolsRes.getString("Tool.Menu.Language")); //$NON-NLS-1$
 		fontSizeMenu.setText(ToolsRes.getString("Tool.Menu.FontSize")); //$NON-NLS-1$
 		defaultFontSizeItem.setText(ToolsRes.getString("Tool.MenuItem.DefaultFontSize")); //$NON-NLS-1$
-		editDataItem.setText("Edit Table as Text...");
+		editDataItem.setText(ToolsRes.getString("DataToolTab.Button.EditData.Text")+"..."); //$NON-NLS-1$
 		editDataItem.setEnabled(getSelectedTab() != null && getSelectedTab().isUserEditable());
 		helpMenu.setText(ToolsRes.getString("Menu.Help")); //$NON-NLS-1$
 		helpItem.setText(ToolsRes.getString("DataTool.MenuItem.Help")); //$NON-NLS-1$
@@ -3389,7 +3389,7 @@ public void loadDatasetURI(String relpath) {
 		EditDataDialog() {
 			super(JOptionPane.getFrameForComponent(DataTool.this), true);
 			setLayout(new BorderLayout());
-			setTitle("Edit Table as Text");//TODO DisplayRes.getString("DataTable.NumberFormat.Dialog.Title")); //$NON-NLS-1$
+			setTitle(ToolsRes.getString("DataToolTab.Button.EditData.Text")); //$NON-NLS-1$
 			// create buttons
 			okButton = new JButton(DisplayRes.getString("Dialog.Button.Close.Text")); //$NON-NLS-1$
 			okButton.addActionListener(new ActionListener() {
@@ -3406,7 +3406,7 @@ public void loadDatasetURI(String relpath) {
 					refreshUndoButtons();
  				}
 			});
-			undoButton = new JButton("Undo");//TODO DisplayRes.getString("")); //$NON-NLS-1$
+			undoButton = new JButton(ToolsRes.getString("DataTool.MenuItem.Undo")); //$NON-NLS-1$
 			undoButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -3416,7 +3416,7 @@ public void loadDatasetURI(String relpath) {
 					refreshDataTextFromTable(false);
 				}
 			});
-			redoButton = new JButton("Redo");//TODO DisplayRes.getString("")); //$NON-NLS-1$
+			redoButton = new JButton(ToolsRes.getString("DataTool.MenuItem.Redo")); //$NON-NLS-1$
 			redoButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -3449,7 +3449,8 @@ public void loadDatasetURI(String relpath) {
 			helpArea.setEditable(false);
 			helpArea.setLineWrap(true);
 			helpArea.setForeground(Color.green.darker());
-			helpArea.setText("Enter column names in first row, values in later rows.\nDelimit columns with commas, rows with enter key.");
+			helpArea.setText(ToolsRes.getString("DataTool.Dialog.EditData.Help1") + "\n" + //$NON-NLS-1$
+					ToolsRes.getString("DataTool.Dialog.EditData.Help2")); //$NON-NLS-1$
 			Border line = BorderFactory.createLineBorder(Color.LIGHT_GRAY);
 			Border space = BorderFactory.createEmptyBorder(4, 6, 4, 6);
 			helpArea.setBorder(BorderFactory.createCompoundBorder(line, space));
