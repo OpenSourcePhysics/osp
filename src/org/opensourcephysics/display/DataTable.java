@@ -673,6 +673,7 @@ public class DataTable extends JTable {
 		break;
 		case MODE_TRACK_REFRESH: // 0x1100;
 		case MODE_TRACK_STATE: // 0x1200;
+		case MODE_TRACK_STEP: // 0x1300;
 		case MODE_TRACK_STEPS: // 0x1500;
 		case MODE_TRACK_LOADED: // 0x1600;
 		case MODE_TRACK_LOADER: // 0x1800;
@@ -689,7 +690,6 @@ public class DataTable extends JTable {
 			break;
 			//  row/rendering changes
 		case MODE_COL_SETVISIBLE: // 0x1700;
-		case MODE_TRACK_STEP: // 0x1300;
 		case MODE_TRACK_SELECTEDPOINT: // 0x1400;
 		case MODE_TRACK_TRANSFORM: // 0x1B00;
 		case MODE_TRACK_DATA: // 0x1C00;
