@@ -125,6 +125,7 @@ public class DataTable extends JTable {
 	public static final int MODE_TRACK_TRANSFORM = 0x1B00;
 	public static final int MODE_TRACK_DATA = 0x1C00;
 	public static final int MODE_TRACK_FUNCTION = 0x1D00;
+	public static final int MODE_TRACK_NEW = 0x1E00;
 	
 	private static final int MODE_MASK_ROW = 0x2000;
 	public static final int MODE_APPEND_ROW = 0x2100;
@@ -673,7 +674,6 @@ public class DataTable extends JTable {
 		break;
 		case MODE_TRACK_REFRESH: // 0x1100;
 		case MODE_TRACK_STATE: // 0x1200;
-		case MODE_TRACK_STEP: // 0x1300;
 		case MODE_TRACK_STEPS: // 0x1500;
 		case MODE_TRACK_LOADED: // 0x1600;
 		case MODE_TRACK_LOADER: // 0x1800;
@@ -690,12 +690,14 @@ public class DataTable extends JTable {
 			break;
 			//  row/rendering changes
 		case MODE_COL_SETVISIBLE: // 0x1700;
+		case MODE_TRACK_STEP: // 0x1300;
 		case MODE_TRACK_SELECTEDPOINT: // 0x1400;
 		case MODE_TRACK_TRANSFORM: // 0x1B00;
 		case MODE_TRACK_DATA: // 0x1C00;
 		case MODE_TRACK_FUNCTION: // 0x1D00;
 		case MODE_TRACK_CHOOSE: // 0x1900;
 		case MODE_TRACK_SELECT: // 0x1A00;
+		case MODE_TRACK_NEW: // 0x1A00;
 			mask = MODE_MASK_TRACK; // 0x1000;
 			columnsChanged = false;
 			break;
@@ -727,6 +729,8 @@ public class DataTable extends JTable {
 		if (columnsChanged) {
 			dataTableModel.fireTableStructureChanged();
 		} else {
+			if (mode == MODE_TRACK_NEW)
+				revalidate();
 			repaint();
 		}
 //		OSPLog.debug(Performance.timeCheckStr("DataTable.refreshTable1 " + Integer.toHexString(mode),
