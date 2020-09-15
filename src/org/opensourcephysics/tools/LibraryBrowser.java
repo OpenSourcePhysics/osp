@@ -123,7 +123,7 @@ public class LibraryBrowser extends JPanel {
 	protected static JFrame frame;
 	protected static JDialog externalDialog;
 	protected static JMenuBar menubar;
-	protected static ResizableIcon expandIcon, contractIcon, heavyExpandIcon, heavyContractIcon, refreshIcon;
+	protected static ResizableIcon expandIcon, contractIcon, heavyExpandIcon, heavyContractIcon, refreshIcon, saveIcon;
 	protected static final FileFilter TRACKER_FILTER = new TrackerDLFilter();
 	protected static javax.swing.filechooser.FileFilter filesAndFoldersFilter = new FilesAndFoldersFilter();
 	protected static Timer searchTimer;
@@ -147,6 +147,8 @@ public class LibraryBrowser extends JPanel {
 		heavyContractIcon = new ResizableIcon(new ImageIcon(ResourceLoader.getImageZipResource(imageFile)));
 		imageFile = "/org/opensourcephysics/resources/tools/images/refresh.gif"; //$NON-NLS-1$
 		refreshIcon = new ResizableIcon(new ImageIcon(ResourceLoader.getImageZipResource(imageFile)));
+		imageFile = "/org/opensourcephysics/resources/tools/images/save.gif"; //$NON-NLS-1$
+		saveIcon = new ResizableIcon(new ImageIcon(ResourceLoader.getImageZipResource(imageFile)));
 	}
 
 	// instance fields
@@ -159,7 +161,7 @@ public class LibraryBrowser extends JPanel {
 	protected JMenu fileMenu, recentMenu, collectionsMenu, manageMenu, helpMenu;
 	protected JMenuItem newItem, openItem, saveItem, saveAsItem, closeItem, closeAllItem, exitItem, deleteItem,
 			collectionsItem, searchItem, cacheItem, aboutItem, logItem, helpItem;
-	protected JButton commandButton, editButton, refreshButton;
+	protected JButton commandButton, editButton, refreshButton, downloadButton;
 	protected ActionListener loadCollectionAction;
 	protected boolean exitOnClose;
 	protected JTabbedPane tabbedPane;
@@ -1050,6 +1052,7 @@ public class LibraryBrowser extends JPanel {
 			public void insertUpdate(DocumentEvent e) {
 				String text = commandField.getText();
 				commandButton.setEnabled(!"".equals(text)); //$NON-NLS-1$
+				downloadButton.setEnabled(!"".equals(text)); //$NON-NLS-1$
 				textChanged = keyPressed;
 				LibraryTreePanel treePanel = getSelectedTreePanel();
 				if (treePanel != null) {
@@ -1058,6 +1061,7 @@ public class LibraryBrowser extends JPanel {
 					if (node != null && node.isRoot() && node.record instanceof LibraryCollection
 							&& treePanel.pathToRoot.equals(text))
 						commandButton.setEnabled(false);
+					  downloadButton.setEnabled(false);
 				} else {
 					commandField.setBackground(Color.yellow);
 					commandField.setForeground(LibraryTreePanel.defaultForeground);
@@ -1067,6 +1071,7 @@ public class LibraryBrowser extends JPanel {
 			@Override
 			public void removeUpdate(DocumentEvent e) {
 				commandButton.setEnabled(!"".equals(commandField.getText())); //$NON-NLS-1$
+				downloadButton.setEnabled(!"".equals(commandField.getText())); //$NON-NLS-1$
 				textChanged = keyPressed;
 				LibraryTreePanel treePanel = getSelectedTreePanel();
 				if (treePanel != null) {
@@ -1108,6 +1113,10 @@ public class LibraryBrowser extends JPanel {
 		commandButton = new JButton(commandAction);
 		commandButton.setOpaque(false);
 		commandButton.setBorder(buttonBorder);
+		
+		downloadButton = new JButton(saveIcon);
+		downloadButton.setOpaque(false);
+		downloadButton.setBorder(buttonBorder);
 
 		// create search action, label, field and button
 		searchAction = new AbstractAction() {
@@ -1360,6 +1369,7 @@ public class LibraryBrowser extends JPanel {
 		toolbar.add(commandLabel);
 		toolbar.add(commandField);
 		toolbar.add(commandButton);
+		toolbar.add(downloadButton);
 		toolbar.addSeparator();
 		toolbar.add(searchLabel);
 		toolbar.add(searchField);
@@ -1810,6 +1820,7 @@ public class LibraryBrowser extends JPanel {
 			treePanel.refreshGUI(andRebuild);
 		} else {
 			refreshButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Tooltip.Refresh")); //$NON-NLS-1$
+			downloadButton.setToolTipText("Download selected item to desktop"); 
 			editButton.setText(ToolsRes.getString("LibraryBrowser.Button.OpenEditor")); //$NON-NLS-1$
 			saveItem.setEnabled(false);
 			closeItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.CloseTab")); //$NON-NLS-1$
@@ -1819,6 +1830,7 @@ public class LibraryBrowser extends JPanel {
 			refreshButton.setEnabled(false);
 			commandField.setText(null);
 			commandButton.setEnabled(false);
+			downloadButton.setEnabled(false);
 			saveAsItem.setEnabled(false);
 		}
 		repaint();
