@@ -143,6 +143,7 @@ public class DataTable extends JTable {
 	public static final int MODE_PATTERN = 0x810000;
 	public static final int MODE_FUNCTION = 0x820000;
 	public static final int MODE_FORMAT = 0x830000;
+	public static final int MODE_HIGHLIGHT = 0x840000;
 
 	public static final int MODE_SELECT  = 0x1000000;
 	public static final int MODE_HEADER  = 0x2000000;
@@ -711,6 +712,7 @@ public class DataTable extends JTable {
 		case MODE_PATTERN: // 0x810000;
 		case MODE_FUNCTION: // 0x820000;
 		case MODE_FORMAT: // 0x830000;
+		case MODE_HIGHLIGHT: // 0x840000;
 			mode = MODE_MASK_STYLE;
 			columnsChanged = false;
 			break;
@@ -728,6 +730,7 @@ public class DataTable extends JTable {
 		dataTableModel.refresh(mask);
 		if (columnsChanged) {
 			dataTableModel.fireTableStructureChanged();
+//			Toolkit.getDefaultToolkit().beep();
 		} else {
 			if (mode == MODE_TRACK_NEW)
 				revalidate();
