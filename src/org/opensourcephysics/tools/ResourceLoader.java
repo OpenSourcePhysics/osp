@@ -2963,9 +2963,8 @@ public class ResourceLoader {
 		return buf;
 	}
 
-	public static File copyURLtoFile(String urlPath, String filePath) {
+	public static File copyURLtoFile(String urlPath, String filePath) throws IOException {
 		File f = new File(filePath);
-		try {
 			if (OSPRuntime.isJS) {
 				FileOutputStream fos = new FileOutputStream(f);
 				OSPRuntime.jsutil.transferTo(new URL(urlPath).openStream(), fos);
@@ -2973,10 +2972,7 @@ public class ResourceLoader {
 				Path path = f.toPath();
 				Files.createDirectories(path.getParent());
 				Files.write(path, getURLContents(new URL(urlPath)));
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+			} 
 		return f;
 	}
 
