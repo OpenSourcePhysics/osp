@@ -651,6 +651,7 @@ public class DataTable extends JTable {
 				+ Integer.toHexString(mode), Performance.TIME_MARK));
 		// BH every sort of refresh goes through here
 		boolean columnsChanged;
+		boolean rowsChanged = false;
 		
 		int mask = this.mode = mode;
 		switch (mode) {
@@ -675,7 +676,6 @@ public class DataTable extends JTable {
 		break;
 		case MODE_TRACK_REFRESH: // 0x1100;
 		case MODE_TRACK_STATE: // 0x1200;
-		case MODE_TRACK_STEPS: // 0x1500;
 		case MODE_TRACK_LOADED: // 0x1600;
 		case MODE_TRACK_LOADER: // 0x1800;
 			mask = MODE_MASK_TRACK; // 0x1000;
@@ -690,8 +690,10 @@ public class DataTable extends JTable {
 			columnsChanged = true;
 			break;
 			//  row/rendering changes
-		case MODE_COL_SETVISIBLE: // 0x1700;
 		case MODE_TRACK_STEP: // 0x1300;
+		case MODE_TRACK_STEPS: // 0x1500;
+			rowsChanged = true;
+		case MODE_COL_SETVISIBLE: // 0x1700;
 		case MODE_TRACK_SELECTEDPOINT: // 0x1400;
 		case MODE_TRACK_TRANSFORM: // 0x1B00;
 		case MODE_TRACK_DATA: // 0x1C00;
@@ -724,20 +726,22 @@ public class DataTable extends JTable {
 			break;
 		}
 
-//		OSPLog.debug(">>>>DataTable.refreshTableNow " + Integer.toHexString(mode) + " " + columnsChanged);
-
+		OSPLog.debug(">>>>DataTable.refreshTableNow:  mode" + Integer.toHexString(mode) + " cols changed?" + columnsChanged +" rows changed?"+rowsChanged);
 
 		dataTableModel.refresh(mask);
 		if (columnsChanged) {
 			dataTableModel.fireTableStructureChanged();
+//			Toolkit.getDefaultToolkit().beep();
+		} else if (rowsChanged) {
+			dataTableModel.fireTableDataChanged();
 //			Toolkit.getDefaultToolkit().beep();
 		} else {
 			if (mode == MODE_TRACK_NEW)
 				revalidate();
 			repaint();
 		}
-//		OSPLog.debug(Performance.timeCheckStr("DataTable.refreshTable1 " + Integer.toHexString(mode),
-//		Performance.TIME_MARK));
+		OSPLog.debug(Performance.timeCheckStr("DataTable.refreshTable1 " + Integer.toHexString(mode),
+		Performance.TIME_MARK));
 	}
 
 	/**
