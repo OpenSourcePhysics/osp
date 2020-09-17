@@ -85,6 +85,7 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
@@ -790,7 +791,7 @@ public class LibraryTreePanel extends JPanel {
 					getPopup(node).show(tree, e.getX(), e.getY() + 8);
 				} else if (node.getTarget() != null && isSelect(e)) {
 					// to LibraryBrowser
-					firePropertyChange(LibraryBrowser.PROPERTY_LIBRARY_TARGET, null, node);
+					firePropertyChange(LibraryBrowser.PROPERTY_LIBRARY_TARGET, LibraryBrowser.HINT_LOAD_RESOURCE, node);
 				}
 			}
 

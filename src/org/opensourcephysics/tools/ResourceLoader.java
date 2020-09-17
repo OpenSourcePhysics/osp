@@ -2965,14 +2965,14 @@ public class ResourceLoader {
 
 	public static File copyURLtoFile(String urlPath, String filePath) throws IOException {
 		File f = new File(filePath);
-			if (OSPRuntime.isJS) {
-				FileOutputStream fos = new FileOutputStream(f);
-				OSPRuntime.jsutil.transferTo(new URL(urlPath).openStream(), fos);
-			} else {
-				Path path = f.toPath();
-				Files.createDirectories(path.getParent());
-				Files.write(path, getURLContents(new URL(urlPath)));
-			} 
+		if (OSPRuntime.isJS) {
+			FileOutputStream fos = new FileOutputStream(f);
+			OSPRuntime.jsutil.transferTo(new URL(urlPath).openStream(), fos);
+		} else {
+			Path path = f.toPath();
+			Files.createDirectories(path.getParent());
+			Files.write(path, getURLContents(new URL(urlPath)));
+		} 
 		return f;
 	}
 

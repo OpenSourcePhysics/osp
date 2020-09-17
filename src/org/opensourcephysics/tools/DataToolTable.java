@@ -2736,7 +2736,6 @@ public class DataToolTable extends DataTable {
 		 * @param value   the value
 		 */
 		public TableEdit(int type, String colName, Object target, Object value) {
-			OSPLog.debug("pig type "+type);
 			editType = type;
 			columnName = colName;
 			this.target = target;

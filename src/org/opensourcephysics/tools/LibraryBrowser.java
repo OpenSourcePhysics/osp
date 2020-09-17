@@ -116,6 +116,8 @@ public class LibraryBrowser extends JPanel {
 	protected static final String LIBRARY_HELP_BASE = "https://www.compadre.org/online_help/tools/"; //$NON-NLS-1$
 	protected static final String WINDOWS_OSP_DIRECTORY = "/My Documents/OSP/"; //$NON-NLS-1$
 	protected static final String OSP_DIRECTORY = "/Documents/OSP/"; //$NON-NLS-1$
+	public static final Integer HINT_LOAD_RESOURCE = 0;
+	public static final Integer HINT_DOWNLOAD_RESOURCE = 1;
 
 	// static fields
 	private static LibraryBrowser browser;
@@ -139,17 +141,17 @@ public class LibraryBrowser extends JPanel {
 		buttonBorder = BorderFactory.createCompoundBorder(space, buttonBorder);
 		menubar = new JMenuBar();
 		String imageFile = "/org/opensourcephysics/resources/tools/images/expand.png"; //$NON-NLS-1$
-		expandIcon = new ResizableIcon(new ImageIcon(ResourceLoader.getImageZipResource(imageFile)));
+		expandIcon = ResourceLoader.getResizableIcon(imageFile);
 		imageFile = "/org/opensourcephysics/resources/tools/images/contract.png"; //$NON-NLS-1$
-		contractIcon = new ResizableIcon(new ImageIcon(ResourceLoader.getImageZipResource(imageFile)));
+		contractIcon = ResourceLoader.getResizableIcon(imageFile);
 		imageFile = "/org/opensourcephysics/resources/tools/images/expand_bold.png"; //$NON-NLS-1$
-		heavyExpandIcon = new ResizableIcon(new ImageIcon(ResourceLoader.getImageZipResource(imageFile)));
+		heavyExpandIcon = ResourceLoader.getResizableIcon(imageFile);
 		imageFile = "/org/opensourcephysics/resources/tools/images/contract_bold.png"; //$NON-NLS-1$
-		heavyContractIcon = new ResizableIcon(new ImageIcon(ResourceLoader.getImageZipResource(imageFile)));
+		heavyContractIcon = ResourceLoader.getResizableIcon(imageFile);
 		imageFile = "/org/opensourcephysics/resources/tools/images/refresh.gif"; //$NON-NLS-1$
-		refreshIcon = new ResizableIcon(new ImageIcon(ResourceLoader.getImageZipResource(imageFile)));
+		refreshIcon = ResourceLoader.getResizableIcon(imageFile);
 		imageFile = "/org/opensourcephysics/resources/tools/images/save.gif"; //$NON-NLS-1$
-		saveIcon = new ResizableIcon(new ImageIcon(ResourceLoader.getImageZipResource(imageFile)));
+		saveIcon = ResourceLoader.getResizableIcon(imageFile);
 	}
 
 	// instance fields
@@ -1041,12 +1043,15 @@ public class LibraryBrowser extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String urlPath = commandField.getText().trim();
+				if (urlPath == null)
+					return;
 				//String urlPath="https://physlets.org/tracker/library/videos/BallTossOut.mp4";  // for testing
 				System.err.println("Performing download acction with urlPath="+urlPath);
 				String filePath=getChooserSavePath(urlPath);
 				System.err.println("filePath="+filePath);
 				try {
-					ResourceLoader.copyURLtoFile(urlPath, filePath);
+					File file = ResourceLoader.copyURLtoFile(urlPath, filePath);
+					LibraryBrowser.this.firePropertyChange(PROPERTY_LIBRARY_TARGET, HINT_DOWNLOAD_RESOURCE, file); // $NON-NLS-1$
 				} catch (IOException e1) {
 					System.err.println("Failed to load urlPath="+urlPath);
 					e1.printStackTrace();
@@ -1330,7 +1335,7 @@ public class LibraryBrowser extends JPanel {
 					}
 					record = node.record.getClone();
 					record.setBasePath(node.getBasePath());
-				} else {
+				} else if (newValue instanceof LibraryResource) {
 					record = (LibraryResource) newValue;
 				}
 				processTargetSelection(record, oldValue);
@@ -1604,7 +1609,9 @@ public class LibraryBrowser extends JPanel {
 		LibraryComPADRE.loadResources(node, onSuccess, onFailure);
 	}
 
-	protected void processTargetSelection(LibraryResource record, Object oldTarget) {
+	protected void processTargetSelection(LibraryResource record, Object oldValue) {
+		if (record == null)
+			return;
 		String target = record.getTarget();
 		if (target != null && (target.toLowerCase().endsWith(".pdf") //$NON-NLS-1$
 				|| target.toLowerCase().endsWith(".html") //$NON-NLS-1$
@@ -1616,8 +1623,8 @@ public class LibraryBrowser extends JPanel {
 			setCursor(Cursor.getDefaultCursor());
 			return;
 		}
-		// forward the event to browser listeners (TFrame)
-		firePropertyChange(PROPERTY_LIBRARY_TARGET, oldTarget, record); // $NON-NLS-1$
+		// fire the event to TFrame and other listeners
+		firePropertyChange(PROPERTY_LIBRARY_TARGET, oldValue, record); // $NON-NLS-1$
 	}
 
 	protected void doSearch() {
@@ -1746,7 +1753,7 @@ public class LibraryBrowser extends JPanel {
 			return;
 		}
 
-		// send command
+		// send command via property change event
 		LibraryResource record = null;
 		LibraryTreePanel treePanel = getSelectedTreePanel();
 		if (treePanel != null && treePanel.getSelectedNode() != null) {
@@ -1756,8 +1763,8 @@ public class LibraryBrowser extends JPanel {
 			record = new LibraryResource(""); //$NON-NLS-1$
 			record.setTarget(path);
 		}
-		// forward the event to browser listeners (TFrame)
-		firePropertyChange(PROPERTY_LIBRARY_TARGET, null, record); // $NON-NLS-1$
+		// forward the event to TFrame and other listeners
+		firePropertyChange(PROPERTY_LIBRARY_TARGET, HINT_LOAD_RESOURCE, record); // $NON-NLS-1$
 	}
 
 	/**

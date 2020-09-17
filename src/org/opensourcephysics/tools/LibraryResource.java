@@ -81,19 +81,19 @@ public class LibraryResource implements Comparable<LibraryResource> {
 		for (String next : RESOURCE_TYPES)
 			allResourceTypes.add(next);
 		String imageFile = "/org/opensourcephysics/resources/tools/images/html.gif"; //$NON-NLS-1$
-		htmlIcon = new ResizableIcon(new ImageIcon(ResourceLoader.getImageZipResource(imageFile)));
+		htmlIcon = ResourceLoader.getResizableIcon(imageFile);
 		imageFile = "/org/opensourcephysics/resources/tools/images/pdf.gif"; //$NON-NLS-1$
-		pdfIcon = new ResizableIcon(new ImageIcon(ResourceLoader.getImageZipResource(imageFile)));
+		pdfIcon = ResourceLoader.getResizableIcon(imageFile);
 		imageFile = "/org/opensourcephysics/resources/tools/images/video.gif"; //$NON-NLS-1$
-		videoIcon = new ResizableIcon(new ImageIcon(ResourceLoader.getImageZipResource(imageFile)));
+		videoIcon = ResourceLoader.getResizableIcon(imageFile);
 		imageFile = "/org/opensourcephysics/resources/tools/images/portrait.gif"; //$NON-NLS-1$
-		imageIcon = new ResizableIcon(new ImageIcon(ResourceLoader.getImageZipResource(imageFile)));
+		imageIcon = ResourceLoader.getResizableIcon(imageFile);
 		imageFile = "/org/opensourcephysics/resources/tools/images/tracker_icon_16.png"; //$NON-NLS-1$
-		trackerIcon = new ResizableIcon(new ImageIcon(ResourceLoader.getImageZipResource(imageFile)));
+		trackerIcon = ResourceLoader.getResizableIcon(imageFile);
 		imageFile = "/org/opensourcephysics/resources/tools/images/ejsicon.gif"; //$NON-NLS-1$
-		ejsIcon = new ResizableIcon(new ImageIcon(ResourceLoader.getImageZipResource(imageFile)));
+		ejsIcon = ResourceLoader.getResizableIcon(imageFile);
 		imageFile = "/org/opensourcephysics/resources/tools/images/question_mark.gif"; //$NON-NLS-1$
-		unknownIcon = new ResizableIcon(new ImageIcon(ResourceLoader.getImageZipResource(imageFile)));
+		unknownIcon = ResourceLoader.getResizableIcon(imageFile);
 		try {
 			megabyteFormat = (DecimalFormat) NumberFormat.getInstance();
 			megabyteFormat.applyPattern("0.0"); //$NON-NLS-1$
