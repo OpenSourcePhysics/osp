@@ -31,6 +31,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -155,7 +156,7 @@ public class LibraryBrowser extends JPanel {
 	protected Library library = new Library();
 	protected String libraryPath;
 	protected JToolBar toolbar;
-	protected Action commandAction, searchAction, openRecentAction;
+	protected Action commandAction, searchAction, openRecentAction, downloadAction;
 	protected JLabel commandLabel, searchLabel;
 	protected JTextField commandField, searchField;
 	protected JMenu fileMenu, recentMenu, collectionsMenu, manageMenu, helpMenu;
@@ -1034,6 +1035,25 @@ public class LibraryBrowser extends JPanel {
 				doCommand();
 			}
 		};
+		
+		// create download action for button listener
+		downloadAction = new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String urlPath = commandField.getText().trim();
+				//String urlPath="https://physlets.org/tracker/library/videos/BallTossOut.mp4";  // for testing
+				System.err.println("Performing download acction with urlPath="+urlPath);
+				String filePath=getChooserSavePath(urlPath);
+				System.err.println("filePath="+filePath);
+				try {
+					ResourceLoader.copyURLtoFile(urlPath, filePath);
+				} catch (IOException e1) {
+					System.err.println("Failed to load urlPath="+urlPath);
+					e1.printStackTrace();
+				}
+			}
+		};
+		
 		commandLabel = new JLabel();
 		commandLabel.setAlignmentX(CENTER_ALIGNMENT);
 		commandLabel.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 2));
@@ -1052,7 +1072,7 @@ public class LibraryBrowser extends JPanel {
 			public void insertUpdate(DocumentEvent e) {
 				String text = commandField.getText();
 				commandButton.setEnabled(!"".equals(text)); //$NON-NLS-1$
-				downloadButton.setEnabled(!"".equals(text)); //$NON-NLS-1$
+				//downloadButton.setEnabled(!"".equals(text)); //$NON-NLS-1$
 				textChanged = keyPressed;
 				LibraryTreePanel treePanel = getSelectedTreePanel();
 				if (treePanel != null) {
@@ -1061,7 +1081,7 @@ public class LibraryBrowser extends JPanel {
 					if (node != null && node.isRoot() && node.record instanceof LibraryCollection
 							&& treePanel.pathToRoot.equals(text))
 						commandButton.setEnabled(false);
-					  downloadButton.setEnabled(false);
+					  //downloadButton.setEnabled(false);
 				} else {
 					commandField.setBackground(Color.yellow);
 					commandField.setForeground(LibraryTreePanel.defaultForeground);
@@ -1071,7 +1091,7 @@ public class LibraryBrowser extends JPanel {
 			@Override
 			public void removeUpdate(DocumentEvent e) {
 				commandButton.setEnabled(!"".equals(commandField.getText())); //$NON-NLS-1$
-				downloadButton.setEnabled(!"".equals(commandField.getText())); //$NON-NLS-1$
+				//downloadButton.setEnabled(!"".equals(commandField.getText())); //$NON-NLS-1$
 				textChanged = keyPressed;
 				LibraryTreePanel treePanel = getSelectedTreePanel();
 				if (treePanel != null) {
@@ -1114,9 +1134,11 @@ public class LibraryBrowser extends JPanel {
 		commandButton.setOpaque(false);
 		commandButton.setBorder(buttonBorder);
 		
-		downloadButton = new JButton(saveIcon);
-		downloadButton.setOpaque(false);
+		downloadButton = new JButton(downloadAction);
+		downloadButton.setIcon(saveIcon);
+		downloadButton.setOpaque(true);
 		downloadButton.setBorder(buttonBorder);
+		downloadButton.setEnabled(true);  // always enable button for testing
 
 		// create search action, label, field and button
 		searchAction = new AbstractAction() {
@@ -1830,7 +1852,7 @@ public class LibraryBrowser extends JPanel {
 			refreshButton.setEnabled(false);
 			commandField.setText(null);
 			commandButton.setEnabled(false);
-			downloadButton.setEnabled(false);
+			//downloadButton.setEnabled(false);
 			saveAsItem.setEnabled(false);
 		}
 		repaint();
