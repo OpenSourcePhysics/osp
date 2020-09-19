@@ -2111,7 +2111,7 @@ public class LibraryTreePanel extends JPanel {
 				}
 
 				// execute first node loader to start the chain
-				nodeLoaders.get(0).execute();
+//				nodeLoaders.get(0).execute();
 			}
 
 			return null;

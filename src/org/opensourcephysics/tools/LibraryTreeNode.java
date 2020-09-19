@@ -755,7 +755,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 					return null;
 				}
 			} else if (ext != null && ("ZIP".equals(ext.toUpperCase()) || "TRZ".equals(ext.toUpperCase()))) { //$NON-NLS-1$ //$NON-NLS-2$
-				// ZIP files
+				// TRZ and ZIP files
 				// look for image file in zip with name that includes "_thumbnail"
 				thumbFile = new File(thumbPath);
 				ResourceLoader.getZipEntryBytesAsync(sourcePath + "!/*_thumbnail", thumbFile,
