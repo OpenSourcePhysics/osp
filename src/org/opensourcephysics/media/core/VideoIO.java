@@ -48,6 +48,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
+import org.opensourcephysics.controls.ControlsRes;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
@@ -687,6 +688,34 @@ public class VideoIO {
 		return (Video) new XMLControlElement(control).loadObject(null);
 	}
 
+	/**
+	 * Determines if a file can be written. If the file exists, the user is prompted
+	 * for approval to overwrite.
+	 *
+	 * @param file the file to check
+	 * @return true if the file can be written
+	 */
+	public static boolean canWrite(File file) {
+		if (OSPRuntime.isJS)
+			return true;
+		if (file.exists() && !file.canWrite()) {
+			JOptionPane.showMessageDialog(null, ControlsRes.getString("Dialog.ReadOnly.Message"), //$NON-NLS-1$
+					ControlsRes.getString("Dialog.ReadOnly.Title"), //$NON-NLS-1$
+					JOptionPane.PLAIN_MESSAGE);
+			return false;
+		}
+		if (file.exists()) {
+			int selected = JOptionPane.showConfirmDialog(null, "\"" + file.getName() + "\" " //$NON-NLS-1$ //$NON-NLS-2$
+					+ MediaRes.getString("VideoIO.Dialog.FileExists.Message"), //$NON-NLS-1$
+					MediaRes.getString("VideoIO.Dialog.FileExists.Title"), //$NON-NLS-1$
+					JOptionPane.YES_NO_OPTION);
+			if (selected != JOptionPane.YES_OPTION) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 //	/**
 //	 * A Stop-gap method to allow Java-only functionality.
 //	 * 
@@ -724,11 +753,34 @@ public class VideoIO {
 					processFiles.apply(new File[] { file });
 		};
 
+		Runnable okSave = () -> {
+			File file = chooser.getSelectedFile();
+			resetChooser.run();
+			if (processFiles != null && canWrite(file))
+				processFiles.apply(new File[] { file });
+		};
+		
+		String originalFileName = "";
+		String saveVideo = "save video";
+		if (type.startsWith(saveVideo + " ")) {
+			originalFileName = type.substring(saveVideo.length() + 1);
+			type = saveVideo;
+		}
+
 		switch (type.toLowerCase()) {
 		case "open": // open any file //$NON-NLS-1$
 			chooser.addChoosableFileFilter(videoFileFilter);
 			chooser.setFileFilter(chooser.getAcceptAllFileFilter());
 			chooser.showOpenDialog(null, okOpen, resetChooser);
+			break;
+		case "save video": // save video file //$NON-NLS-1$
+//			isSave = true;
+			chooser.resetChoosableFileFilters();
+			chooser.setDialogTitle(MediaRes.getString("VideoIO.Dialog.SaveVideoAs.Title")); //$NON-NLS-1$
+//			chooser.addChoosableFileFilter(videoFileFilter);
+			chooser.setFileFilter(chooser.getAcceptAllFileFilter());
+			chooser.setSelectedFile(new File(originalFileName));
+			chooser.showSaveDialog(null, okSave, resetChooser);
 			break;
 		default:
 			return null;
