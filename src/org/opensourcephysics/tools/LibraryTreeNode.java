@@ -12,6 +12,7 @@ import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -367,16 +368,23 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 		if (targetURLs.keySet().contains(path)) {
 			url = targetURLs.get(path);
 		} else {
-			// first try to get URL with raw path
-			Resource res = ResourceLoader.getResourceZipURLsOK(workingPath);
-			if (res != null) {
-				url = res.getURL();
+			if (OSPRuntime.isJS) {
+				try {
+					url = new URL(path);
+				} catch (MalformedURLException e) {
+				}
 			} else {
-				// try with URI form of path
-				workingPath = ResourceLoader.getURIPath(workingPath);
-				res = ResourceLoader.getResourceZipURLsOK(workingPath);
+				// first try to get URL with raw path
+				Resource res = ResourceLoader.getResourceZipURLsOK(workingPath);
 				if (res != null) {
 					url = res.getURL();
+				} else {
+					// try with URI form of path
+					workingPath = ResourceLoader.getURIPath(workingPath);
+					res = ResourceLoader.getResourceZipURLsOK(workingPath);
+					if (res != null) {
+						url = res.getURL();
+					}
 				}
 			}
 		}
@@ -758,18 +766,22 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 				// ZIP files
 				// look for image file in zip with name that includes "_thumbnail"
 				thumbFile = new File(thumbPath);
-				ResourceLoader.getZipEntryBytesAsync(sourcePath + "!/*_thumbnail", thumbFile,
-						new Function<byte[], Void>() {
+				if (OSPRuntime.isJS) {
+					record.setThumbnail(thumbFile.getAbsolutePath());
+				} else {
+					ResourceLoader.getZipEntryBytesAsync(sourcePath + "!/*_thumbnail", thumbFile,
+							new Function<byte[], Void>() {
 
-							@Override
-							public Void apply(byte[] bytes) {
-								if (bytes == null)
-									OSPLog.fine("failed to create thumbnail for " + thumbPath); //$NON-NLS-1$
-								doneAsync(bytes == null ? null : thumbFile);
-								return null;
-							}
+								@Override
+								public Void apply(byte[] bytes) {
+									if (bytes == null)
+										OSPLog.fine("failed to create thumbnail for " + thumbPath); //$NON-NLS-1$
+									doneAsync(bytes == null ? null : thumbFile);
+									return null;
+								}
 
-						});
+							});
+				}
 				return null;
 			} else {
 				// This better be a movie! - not implemented yet for JS?
