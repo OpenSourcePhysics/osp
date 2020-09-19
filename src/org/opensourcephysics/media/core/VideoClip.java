@@ -740,8 +740,14 @@ public class VideoClip {
 			String childPath = child.getString("path");
 			path = XML.getResolvedPath(childPath, base); // Critical here for TrackerSampler Mechanics
 																		// FreeFall MotionDiagram video
-			base = XML.getDirectoryPath(path);
-			path = XML.getName(path);
+			if (base.endsWith("!")) { // zip or trz
+				path = XML.getPathRelativeTo(path, base); // path relative to zip
+				base = base.substring(0, base.length() - 1); // path to the zip
+			}
+			else {
+				base = XML.getDirectoryPath(path);
+				path = XML.getPathRelativeTo(path, base); // path is relative
+			}
 			
 			ArrayList<VideoType> types = VideoIO.getVideoTypesForPath(path);
 			switch (types.size()) {
