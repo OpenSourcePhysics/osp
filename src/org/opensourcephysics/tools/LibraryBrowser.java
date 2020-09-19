@@ -1046,16 +1046,35 @@ public class LibraryBrowser extends JPanel {
 				if (urlPath == null)
 					return;
 				//String urlPath="https://physlets.org/tracker/library/videos/BallTossOut.mp4";  // for testing
-				System.err.println("Performing download acction with urlPath="+urlPath);
-				String filePath=getChooserSavePath(urlPath);
-				System.err.println("filePath="+filePath);
-				try {
-					File file = ResourceLoader.copyURLtoFile(urlPath, filePath);
-					LibraryBrowser.this.firePropertyChange(PROPERTY_LIBRARY_TARGET, HINT_DOWNLOAD_RESOURCE, file); // $NON-NLS-1$
-				} catch (IOException e1) {
-					System.err.println("Failed to load urlPath="+urlPath);
-					e1.printStackTrace();
-				}
+				System.err.println("Performing download action with urlPath="+urlPath);
+				String name = XML.getName(urlPath);
+				// choose file and save resource
+				VideoIO.getChooserFilesAsync("save video "+name, //$NON-NLS-1$
+						(files) -> {
+							if (files == null) {
+								return null;
+							}
+							String filePath = files[0].getAbsolutePath();
+							System.err.println("filePath="+filePath);
+							try {
+								File file = ResourceLoader.copyURLtoFile(urlPath, filePath);
+								LibraryBrowser.this.firePropertyChange(PROPERTY_LIBRARY_TARGET, HINT_DOWNLOAD_RESOURCE, file); // $NON-NLS-1$
+							} catch (IOException e1) {
+								System.err.println("Failed to load urlPath="+urlPath);
+								e1.printStackTrace();
+							}
+							return null;
+						});
+
+//				String filePath=getChooserSavePath(urlPath);
+//				System.err.println("filePath="+filePath);
+//				try {
+//					File file = ResourceLoader.copyURLtoFile(urlPath, filePath);
+//					LibraryBrowser.this.firePropertyChange(PROPERTY_LIBRARY_TARGET, HINT_DOWNLOAD_RESOURCE, file); // $NON-NLS-1$
+//				} catch (IOException e1) {
+//					System.err.println("Failed to load urlPath="+urlPath);
+//					e1.printStackTrace();
+//				}
 			}
 		};
 		
