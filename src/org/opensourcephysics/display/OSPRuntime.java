@@ -104,13 +104,14 @@ public class OSPRuntime {
 			if (isJS) {
 				jsutil = ((JSUtilI) Class.forName("swingjs.JSUtil").newInstance());
 
-				// note - this is only for https
-				String[] corsEnabled = new String[] { "www.physlets.org", "https://physlets.org",
-						// "www.opensourcephysics.org",
-						"www.compadre.org/osp", "www.compadre.org/profiles" };
-				for (int i = corsEnabled.length; --i >= 0;) {
-					jsutil.addDirectDatabaseCall(corsEnabled[i]);
-				}
+				jsutil.addDirectDatabaseCall("."); // Assume ALL sites are CORS enabled
+//				// note - this is only for https
+//				String[] corsEnabled = new String[] { "www.physlets.org", "https://physlets.org",
+//						// "www.opensourcephysics.org",
+//						"www.compadre.org/osp", "www.compadre.org/profiles" };
+//				for (int i = corsEnabled.length; --i >= 0;) {
+//					jsutil.addDirectDatabaseCall(corsEnabled[i]);
+//				}
 			}
 
 		} catch (Exception e) {
