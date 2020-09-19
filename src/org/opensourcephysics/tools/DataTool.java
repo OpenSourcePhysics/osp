@@ -38,7 +38,6 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -3300,8 +3299,9 @@ public void loadDatasetURI(String relpath) {
 	protected void showAboutDialog() {
 		String date = OSPRuntime.getLaunchJarBuildDate();
 		if (date == null)
-			date = ""; //$NON-NLS-1$
-		String aboutString = getName() + " " + OSPRuntime.VERSION + "  " + date + "\n" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			date = "unknown"; //$NON-NLS-1$
+		
+		String aboutString = getName() + " " + OSPRuntime.VERSION + "\nCompile date " + date + "\n" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				+ "Open Source Physics Project\n" //$NON-NLS-1$
 				+ "www.opensourcephysics.org"; //$NON-NLS-1$
 		JOptionPane.showMessageDialog(this, aboutString, ToolsRes.getString("Dialog.About.Title") + " " + getName(), //$NON-NLS-1$ //$NON-NLS-2$
@@ -3328,6 +3328,7 @@ public void loadDatasetURI(String relpath) {
 				return dim;
 			}
 
+			@Override
 			public void setBorder(Border b) {
 				if (allowBorder || b instanceof EmptyBorder)
 				super.setBorder(b);
