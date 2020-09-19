@@ -26,7 +26,9 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
@@ -73,7 +75,8 @@ import swingjs.api.JSUtilI;
  */
 public class OSPRuntime {
 
-	public static final String VERSION = "5.9.20200909"; //$NON-NLS-1$
+	public static final String VERSION = "5.9.20200919"; //$NON-NLS-1$
+	public static final String COMPILE_DATE = new SimpleDateFormat("yyyy-MM-dd").format(new Date()); //$NON-NLS-1$
 
 	private static boolean isMac;
 
@@ -442,13 +445,14 @@ public class OSPRuntime {
 	 */
 	public static void showAboutDialog(Component parent) {
 		String date = getLaunchJarBuildDate();
-		date = "February 1, 2020";
+		date = COMPILE_DATE;
+
 		String vers = "JavaScript OSP Library " + VERSION; //$NON-NLS-1$
+		if (date != null) {
+			vers += "\n compiled on " + date; //$NON-NLS-1$
+		}
 		vers += "\n\nJavaScript transcription created using the\n" + "java2script/SwingJS framework developed at\n"
 				+ "St. Olaf College.\n";
-		if (date != null) {
-			vers += " released " + date; //$NON-NLS-1$
-		}
 		String aboutString = vers + "\n" //$NON-NLS-1$
 				+ "Open Source Physics Project \n" + "www.opensourcephysics.org"; //$NON-NLS-1$ //$NON-NLS-2$
 		JOptionPane.showMessageDialog(parent, aboutString, "About Open Source Physics", //$NON-NLS-1$
