@@ -449,7 +449,7 @@ public class OSPRuntime {
 
 		String vers = "JavaScript OSP Library " + VERSION; //$NON-NLS-1$
 		if (date != null) {
-			vers += "\n compiled on " + date; //$NON-NLS-1$
+			vers += "\nCompiled on " + date; //$NON-NLS-1$
 		}
 		vers += "\n\nJavaScript transcription created using the\n" + "java2script/SwingJS framework developed at\n"
 				+ "St. Olaf College.\n";
