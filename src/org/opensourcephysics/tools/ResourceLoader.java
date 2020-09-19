@@ -2968,6 +2968,7 @@ public class ResourceLoader {
 		if (OSPRuntime.isJS) {
 			FileOutputStream fos = new FileOutputStream(f);
 			OSPRuntime.jsutil.transferTo(new URL(urlPath).openStream(), fos);
+			fos.close();
 		} else {
 			Path path = f.toPath();
 			Files.createDirectories(path.getParent());
