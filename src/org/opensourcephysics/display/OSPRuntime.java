@@ -76,8 +76,6 @@ import swingjs.api.JSUtilI;
 public class OSPRuntime {
 
 	public static final String VERSION = "5.9.20200919"; //$NON-NLS-1$
-	public static final String COMPILE_DATE = new SimpleDateFormat("yyyy-MM-dd").format(new Date()); //$NON-NLS-1$
-
 	private static boolean isMac;
 
 	public static int macOffset; // shifts LR message box on Mac to avoid drag hot spot.
@@ -445,14 +443,12 @@ public class OSPRuntime {
 	 */
 	public static void showAboutDialog(Component parent) {
 		String date = getLaunchJarBuildDate();
-		date = COMPILE_DATE;
 
-		String vers = "JavaScript OSP Library " + VERSION; //$NON-NLS-1$
+		String vers = "OSP Library " + VERSION; //$NON-NLS-1$
 		if (date != null) {
-			vers += "\nCompiled on " + date; //$NON-NLS-1$
+			vers += "\njar manifest date " + date; //$NON-NLS-1$
 		}
-		vers += "\n\nJavaScript transcription created using the\n" + "java2script/SwingJS framework developed at\n"
-				+ "St. Olaf College.\n";
+		if(isJS) vers += "\n\nJavaScript transcription created using the\n" + "java2script/SwingJS framework developed at\n St. Olaf College.\n";
 		String aboutString = vers + "\n" //$NON-NLS-1$
 				+ "Open Source Physics Project \n" + "www.opensourcephysics.org"; //$NON-NLS-1$ //$NON-NLS-2$
 		JOptionPane.showMessageDialog(parent, aboutString, "About Open Source Physics", //$NON-NLS-1$

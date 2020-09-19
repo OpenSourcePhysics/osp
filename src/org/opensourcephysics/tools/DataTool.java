@@ -3298,11 +3298,10 @@ public void loadDatasetURI(String relpath) {
 	 */
 	protected void showAboutDialog() {
 		String date = OSPRuntime.getLaunchJarBuildDate();
-		date = OSPRuntime.COMPILE_DATE;
 		if (date == null)
-			date = ""; //$NON-NLS-1$
+			date = "unknown"; //$NON-NLS-1$
 		
-		String aboutString = getName() + " " + OSPRuntime.VERSION + "\nCompiled on " + date + "\n" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		String aboutString = getName() + " " + OSPRuntime.VERSION + "\nCompile date " + date + "\n" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				+ "Open Source Physics Project\n" //$NON-NLS-1$
 				+ "www.opensourcephysics.org"; //$NON-NLS-1$
 		JOptionPane.showMessageDialog(this, aboutString, ToolsRes.getString("Dialog.About.Title") + " " + getName(), //$NON-NLS-1$ //$NON-NLS-2$
