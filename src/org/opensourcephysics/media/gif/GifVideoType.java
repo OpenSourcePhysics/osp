@@ -33,6 +33,7 @@ package org.opensourcephysics.media.gif;
 import java.io.IOException;
 
 import org.opensourcephysics.controls.OSPLog;
+import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.media.core.VideoFileFilter;
 import org.opensourcephysics.media.core.Video;
 import org.opensourcephysics.media.core.VideoRecorder;
@@ -63,7 +64,7 @@ public Video getVideo(String name) {
 	@Override
 	public Video getVideo(String name, String basePath) {
     try {
-    	Video video = new GifVideo(name);
+    	Video video = new GifVideo(XML.getResolvedPath(name, basePath));
       video.setProperty("video_type", this); //$NON-NLS-1$
       return video;
     } catch(IOException ex) {
