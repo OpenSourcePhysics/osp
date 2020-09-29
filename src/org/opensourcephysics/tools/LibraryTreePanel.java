@@ -418,7 +418,7 @@ public class LibraryTreePanel extends JPanel {
 			boolean available = false;
 			if (path != null) {
 				if (ResourceLoader.isHTTP(path)) {
-					available = LibraryBrowser.isWebConnected();
+					available = browser.isWebConnected();
 					if (!available) {
 						File cachedFile = null;
 						if (isCollection) {
@@ -738,26 +738,20 @@ public class LibraryTreePanel extends JPanel {
 					if (!path.equals(relPath)) {
 						JMenuItem item = new JMenuItem(ToolsRes.getString("LibraryTreePanel.MenuItem.SetToRelative")); //$NON-NLS-1$
 						popup.add(item);
-						item.addActionListener(new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								if (isTarget)
-									node.setTarget(relPath);
-								else
-									node.setHTMLPath(relPath);
-							}
+						item.addActionListener((ev) -> {
+							if (isTarget)
+								node.setTarget(relPath);
+							else
+								node.setHTMLPath(relPath);
 						});
 					} else if (!path.equals(absPath)) {
 						JMenuItem item = new JMenuItem(ToolsRes.getString("LibraryTreePanel.MenuItem.SetToAbsolute")); //$NON-NLS-1$
 						popup.add(item);
-						item.addActionListener(new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								if (isTarget)
-									node.setTarget(absPath);
-								else
-									node.setHTMLPath(absPath);
-							}
+						item.addActionListener((ev) -> {
+							if (isTarget)
+								node.setTarget(absPath);
+							else
+								node.setHTMLPath(absPath);
 						});
 					}
 					if (popup.getComponentCount() > 0)
@@ -1419,19 +1413,28 @@ public class LibraryTreePanel extends JPanel {
 			JMenuItem item = new JMenuItem(ToolsRes.getString("LibraryTreePanel.Button.Copy")); //$NON-NLS-1$
 			popup.add(item);
 			item.addActionListener(copyAction);
-			if ("".equals(pathToRoot) && node.record.getCollectionPath() != null) { //$NON-NLS-1$ // this is a search
-																					// result tab
+			if ("".equals(pathToRoot) && node.record.getCollectionPath() != null) { //$NON-NLS-1$ 
+				// this is a search result tab
 				item = new JMenuItem(ToolsRes.getString("LibraryTreePanel.Popup.Item.OpenCollection")); //$NON-NLS-1$
 				popup.addSeparator();
 				popup.add(item);
-				item.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
+				item.addActionListener((e) -> {
 						String path = node.record.getCollectionPath();
 						browser.loadTab(path, node.record.treePath);
-					}
 				});
 			}
+	  	if (rootResource==browser.getRecentCollection()) { // this is the recent collection tab
+	   		item = new JMenuItem(ToolsRes.getString("LibraryTreePanel.Popup.Item.Remove")); //$NON-NLS-1$
+	   		popup.addSeparator();
+	      popup.add(item);
+	      item.addActionListener((e) -> {
+          removeNode(node);
+//	  			XMLControl control = new XMLControlElement(rootResource);
+//	    		control.setValue("real_path", rootResource.collectionPath); //$NON-NLS-1$
+//	    		control.write(rootResource.collectionPath);
+        });
+	  	}
+
 			FontSizer.setFonts(popup, FontSizer.getLevel());
 			return popup;
 		}
@@ -1549,7 +1552,7 @@ public class LibraryTreePanel extends JPanel {
 	protected String save() {
 		if (!isXMLPath) {
 			return browser.saveAs();
-		} else if (isEditable()) {
+		} else if (isEditable() || rootResource == browser.getRecentCollection()) {
 			XMLControl control = new XMLControlElement(rootResource);
 			control.write(pathToRoot);
 			isChanged = false;
@@ -1570,7 +1573,7 @@ public class LibraryTreePanel extends JPanel {
 	 * @return <code>false</code> if the user cancels, otherwise <code>true</code>
 	 */
 	protected boolean saveChanges(String name) {
-		if (!isChanged())
+		if (!isChanged() || OSPRuntime.isJS)
 			return true;
 		if (org.opensourcephysics.display.OSPRuntime.applet != null)
 			return true;
@@ -2111,7 +2114,8 @@ public class LibraryTreePanel extends JPanel {
 				}
 
 				// execute first node loader to start the chain
-//				nodeLoaders.get(0).execute();
+				nodeLoaders.get(0).execute();
+				OSPLog.debug("pig loading metadata for tab "+rootNode);
 			}
 
 			return null;
@@ -2138,8 +2142,7 @@ public class LibraryTreePanel extends JPanel {
 			String target = node.getAbsoluteTarget();
 			boolean isZip = target != null
 					&& (target.toLowerCase().endsWith(".zip") || target.toLowerCase().endsWith(".trz")); //$NON-NLS-1$ //$NON-NLS-2$
-			// if htmlPath is null and target is ZIP, look for HTML and title inside zip
-			// file
+			// if htmlPath is null and target is ZIP, look for HTML & title in zip file
 			if (htmlPath == null && isZip) {
 				String ext = "." + XML.getExtension(target); //$NON-NLS-1$
 				URL targetURL = node.getTargetURL(); // returns cached target URL, if any
@@ -2327,7 +2330,16 @@ public class LibraryTreePanel extends JPanel {
 					if (htmlPane == null) {
 						htmlPane = new HTMLPane();
 						htmlPanesByURL.put(url, htmlPane);
-						htmlStr = "";
+						// DB added 2020/09/26 to display trz html files correctly in Java
+						if (!OSPRuntime.isJS) {
+							htmlStr = null;
+//							htmlPane.setText("<h2>" + node + "</h2>"); //$NON-NLS-1$ //$NON-NLS-2$
+							try {
+								htmlPane.setPage(url);
+							} catch (Exception ex) {}
+						} else {
+							htmlStr = "";
+						}
 					} else if (url.equals(htmlPane.getPage())) {
 						htmlStr = null;
 					} else {

@@ -234,42 +234,43 @@ public class ResourceLoader {
 //				name = OSPRuntime.tempDir + name;
 //			}
 //		} else
-		/**
-		 * not applicable -- Tracker Java applet only
-		 * 
-		 * @j2sNative
-		 * 
-		 */
-		{
-			// removed by Transpiler
-			if (OSPRuntime.isAppletMode() || (OSPRuntime.applet != null)) {
-				// added by Paco
-				Resource appletRes = null;
-				// following code added by Doug Brown 2009/11/14
-				if (type == OSPRuntime.applet.getClass()) {
-					try {
-						URL url = getTypeResource(type, name);
-						appletRes = createResource(url);
-						if (appletRes != null) {
-							return appletRes;
-						}
-					} catch (Exception ex) {
-						// url was not found
-					}
-				} // end code added by Doug Brown 2009/11/14
-				for (Iterator<String> it = searchPaths.iterator(); it.hasNext();) {
-					String path = getPath(it.next(), name);
-					appletRes = findResourceInClass(path, type, searchFiles);
-					if (appletRes != null) {
-						return appletRes;
-					}
-				}
-				appletRes = findResourceInClass(name, type, searchFiles);
-				if (appletRes != null) {
-					return appletRes;
-				}
-			}
-		}
+		
+//		/**
+//		 * not applicable -- Tracker Java applet only
+//		 * 
+//		 * @j2sNative
+//		 * 
+//		 */
+//		{
+//			// removed by Transpiler
+//			if (OSPRuntime.isAppletMode() || (OSPRuntime.applet != null)) {
+//				// added by Paco
+//				Resource appletRes = null;
+//				// following code added by Doug Brown 2009/11/14
+//				if (type == OSPRuntime.applet.getClass()) {
+//					try {
+//						URL url = getTypeResource(type, name);
+//						appletRes = createResource(url);
+//						if (appletRes != null) {
+//							return appletRes;
+//						}
+//					} catch (Exception ex) {
+//						// url was not found
+//					}
+//				} // end code added by Doug Brown 2009/11/14
+//				for (Iterator<String> it = searchPaths.iterator(); it.hasNext();) {
+//					String path = getPath(it.next(), name);
+//					appletRes = findResourceInClass(path, type, searchFiles);
+//					if (appletRes != null) {
+//						return appletRes;
+//					}
+//				}
+//				appletRes = findResourceInClass(name, type, searchFiles);
+//				if (appletRes != null) {
+//					return appletRes;
+//				}
+//			}
+//		}
 
 		// look for resource with name only
 		Resource res = findResource(name, type, searchFiles);
@@ -2288,7 +2289,7 @@ public class ResourceLoader {
 		InputStream stream = null;
 		try {
 			stream = working.openStream();
-			return (stream.read() > 0);
+			return (stream.read() > -1);
 		} catch (IOException e) {
 			return false;
 		} finally {

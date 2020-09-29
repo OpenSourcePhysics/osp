@@ -86,11 +86,15 @@ public class LibraryCollection extends LibraryResource {
 	 *
 	 * @param resource the resource
 	 * @param index    the index
+	 * @return true if inserted
 	 */
-	public void insertResource(LibraryResource resource, int index) {
+	public boolean insertResource(LibraryResource resource, int index) {
 		if (!resources.contains(resource)) {
 			resources.add(index, resource);
-		}
+  		resource.parent = this;
+  		return true;
+  	}
+  	return false;
 	}
 
 	/**
