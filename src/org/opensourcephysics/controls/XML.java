@@ -339,6 +339,7 @@ public class XML {
     if(fileName==null) {
       return null;
     }
+    fileName = XML.forwardSlash(fileName);
     int n = XML.forwardSlash(fileName).lastIndexOf("/"); //$NON-NLS-1$
     String name = getName(fileName);
     int i = name.lastIndexOf('.');
