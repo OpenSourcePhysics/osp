@@ -767,10 +767,17 @@ public class VideoClip {
 				if (ResourceLoader.getResource(path) != null) { // resource exists but not loaded
 					OSPLog.info("\"" + path + "\" could not be opened"); //$NON-NLS-1$ //$NON-NLS-2$
 				}
-				JOptionPane.showMessageDialog(null,
-						"\"" + XML.getName(path) + "\" could not be opened" + (types.size() == 0
-								? " because no video adapter for this type of video is available on your computer."
-								: "."));
+				String message = "\"" + XML.getName(path) + "\" " +
+						MediaRes.getString("VideoClip.Dialog.FailedToLoad.Message1") + "\n";
+				if (types.size() == 0) {
+					message += MediaRes.getString("VideoClip.Dialog.FailedToLoad.Message2") + " \"" +
+							XML.getExtension(path) + "\"\n" +
+							MediaRes.getString("VideoClip.Dialog.FailedToLoad.Message3");
+				}
+				JOptionPane.showMessageDialog(null, 
+						message + ".", 
+						MediaRes.getString("VideoClip.Dialog.FailedToLoad.Title"), 
+						JOptionPane.WARNING_MESSAGE);
 //				}
 //
 //				/**
