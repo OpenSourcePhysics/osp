@@ -738,13 +738,11 @@ public class VideoClip {
 			filters = (Collection<?>) child.getObject("filters"); //$NON-NLS-1$
 			dt = child.getDouble("delta_t"); //$NON-NLS-1$
 			String childPath = child.getString("path");
-			path = XML.getResolvedPath(childPath, base); // Critical here for TrackerSampler Mechanics
-																		// FreeFall MotionDiagram video
+			path = XML.getResolvedPath(childPath, base); 
+			// above is critical for TrackerSampler Mechanics (FreeFall, MotionDiagram, video)
 
-			boolean cleanZIPBase = false; // DB true to remove ! from end of zip bases (for testing)
-			if (cleanZIPBase && base.endsWith("!")) { // zip or trz
-				path = XML.getPathRelativeTo(path, base); // path relative to zip
-				base = base.substring(0, base.length() - 1); // path to the zip
+			if (base.endsWith("!")) { // zip or trz
+				path = childPath; // base unchanged
 			}
 			else {
 				base = XML.getDirectoryPath(path);			

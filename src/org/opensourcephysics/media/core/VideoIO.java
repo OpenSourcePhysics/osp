@@ -577,7 +577,21 @@ public class VideoIO {
 		// BH! 2020.04.20 from TrackerIO, but equally useful here.
 		if (path.startsWith("file:")) //$NON-NLS-1$
 			path = ResourceLoader.getNonURIPath(path);
-		OSPLog.fine("path: " + path + " type: " + vidType); //$NON-NLS-1$ //$NON-NLS-2$
+		String fullPath = XML.getResolvedPath(path, basePath);
+		OSPLog.fine("path: " + fullPath + " type: " + vidType); //$NON-NLS-1$ //$NON-NLS-2$
+		
+		// for Xuggle videos, download web files to cache
+		String vidTypeName = vidType == null? null: vidType.getClass().getSimpleName();
+		if (vidTypeName != null && vidTypeName.contains("Xuggle")
+				&& ResourceLoader.isHTTP(fullPath)) {
+			// download to cache if doesn't exist
+			File localFile = ResourceLoader.download(fullPath, null, false);		
+			if (localFile != null) {
+				fullPath = localFile.getAbsolutePath();
+				path = XML.getName(fullPath);
+				basePath = XML.getDirectoryPath(fullPath);
+			}
+		}
 		Video video = null;
 		VideoIO.setCanceled(false);
 
