@@ -3,7 +3,6 @@ package swingjs.api.js;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Frame;
-import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -49,10 +48,6 @@ import swingjs.api.JSUtilI;
  *
  */
 public interface HTML5Video extends DOMNode {
-
-	public interface Promise {
-
-	}
 
 	final static String[] eventTypes = new String[] { "audioprocess", // The input buffer of a ScriptProcessorNode is
 																		// ready to be processed.

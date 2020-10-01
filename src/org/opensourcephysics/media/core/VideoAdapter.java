@@ -410,6 +410,13 @@ public abstract class VideoAdapter implements Video {
 		}
 	}
 
+	  protected void setFrameCount(int n) {
+		  if (frameCount != n)
+			  OSPLog.finer("VideoAdapter.setFramecount " + n);
+		  frameCount = n;
+	  }
+		
+
 	/**
 	 * Sets the relative aspect of the specified video frame. Relative aspect is the
 	 * ratio of the world aspect to the pixel aspect of the image. The pixel aspect
