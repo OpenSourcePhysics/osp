@@ -253,47 +253,47 @@ public double getDuration() {
     return getFrameTime(n)+decoder.getDelay(n);
   }
 
-  /**
-   * Loads a gif image specified by name.
-   *
-   * @param gifName the gif image name
-   * @throws IOException
-   */
-  protected void load(String gifName) throws IOException {
-    decoder = new GifDecoder();
-    int status = decoder.read(gifName);
-    if(status==GifDecoder.STATUS_OPEN_ERROR) {
-      throw new IOException("Gif "+gifName+" not found"); //$NON-NLS-1$ //$NON-NLS-2$
-    } else if(status==GifDecoder.STATUS_FORMAT_ERROR) {
-      throw new IOException("File format error");         //$NON-NLS-1$
-    }
-    setProperty("name", gifName); //$NON-NLS-1$
-    // set path to be saved in XMLControl
-    if(gifName.indexOf(":")==-1) {                       //$NON-NLS-1$
-      // if name is relative, path is name
-      setProperty("path", XML.forwardSlash(gifName));    //$NON-NLS-1$
-      Resource res = ResourceLoader.getResource(gifName);
-      if (res!=null)
-      	setProperty("absolutePath", res.getAbsolutePath());              //$NON-NLS-1$
-    } 
-    else {
-      // else path is relative to user directory
-      setProperty("path", XML.getRelativePath(gifName)); //$NON-NLS-1$
-      setProperty("absolutePath", gifName);              //$NON-NLS-1$
-    }
-    frameCount = decoder.getFrameCount();
-    startFrameNumber = 0;
-    endFrameNumber = frameCount-1;
-    // create startTimes array
-    startTimes = new int[frameCount];
-    startTimes[0] = 0;
-    for(int i = 1; i<startTimes.length; i++) {
-      startTimes[i] = startTimes[i-1]+decoder.getDelay(i-1);
-    }
-    setImage(decoder.getFrame(0));
-  }
+	/**
+	 * Loads a gif image specified by name.
+	 *
+	 * @param gifName the gif image name
+	 * @throws IOException
+	 */
+	protected void load(String gifName) throws IOException {
+		decoder = new GifDecoder();
+		int status = decoder.read(gifName);
+		if (status == GifDecoder.STATUS_OPEN_ERROR) {
+			throw new IOException("Gif " + gifName + " not found"); //$NON-NLS-1$ //$NON-NLS-2$
+		} else if (status == GifDecoder.STATUS_FORMAT_ERROR) {
+			throw new IOException("File format error"); //$NON-NLS-1$
+		}
+		setProperty("name", gifName); //$NON-NLS-1$
+		// set path to be saved in XMLControl
+		if (gifName.indexOf(":") == -1) { //$NON-NLS-1$
+			// if name is relative, path is name
+			setProperty("path", XML.forwardSlash(gifName)); //$NON-NLS-1$
+			Resource res = ResourceLoader.getResource(gifName);
+			if (res != null)
+				setProperty("absolutePath", res.getAbsolutePath()); //$NON-NLS-1$
+		} else {
+			// else path is relative to user directory
+			setProperty("path", XML.getRelativePath(gifName)); //$NON-NLS-1$
+			setProperty("absolutePath", gifName); //$NON-NLS-1$
+		}
+		setFrameCount(decoder.getFrameCount());
+		startFrameNumber = 0;
+		endFrameNumber = frameCount - 1;
+		// create startTimes array
+		startTimes = new int[frameCount];
+		startTimes[0] = 0;
+		for (int i = 1; i < startTimes.length; i++) {
+			startTimes[i] = startTimes[i - 1] + decoder.getDelay(i - 1);
+		}
+		setImage(decoder.getFrame(0));
+	}
 
-  /**
+
+/**
    * Sets the image.
    *
    * @param image the image

@@ -2288,7 +2288,7 @@ public class ResourceLoader {
 	private static boolean streamExists(URL working) {
 		InputStream stream = null;
 		try {
-			stream = working.openStream();
+			stream = working.openStream(); 
 			return (stream.read() > -1);
 		} catch (IOException e) {
 			return false;

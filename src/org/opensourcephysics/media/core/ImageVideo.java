@@ -363,7 +363,7 @@ public class ImageVideo extends VideoAdapter {
 		} else {
 			rawImage = getImageAtFrame(index - 1, rawImage);
 		}
-		frameCount = images.length;
+		setFrameCount(images.length);
 		endFrameNumber = frameCount - 1;
 		notifySize(getSize());
 		return removed;
@@ -737,7 +737,7 @@ public class ImageVideo extends VideoAdapter {
 		System.arraycopy(paths, index, newPaths, index + n, len - index);
 		paths = newPaths;
 		rawImage = getImageAtFrame(index, rawImage);
-		frameCount = length();
+		setFrameCount(length());
 		endFrameNumber = frameCount - 1;
 		if (coords == null) {
 			size.width = rawImage.getWidth(observer);
