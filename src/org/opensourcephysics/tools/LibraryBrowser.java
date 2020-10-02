@@ -363,16 +363,18 @@ public class LibraryBrowser extends JPanel {
 	synchronized public void refreshCollectionsMenu() {
 		JMenu menu = collectionsMenu;
 		menu.removeAll();
-		JMenu myLibraryMenu = new JMenu(ToolsRes.getString("Library.Name.Local")); //$NON-NLS-1$
-		menu.add(myLibraryMenu);
-		if (!library.pathList.isEmpty()) {
-			for (String path : library.pathList) {
-				String name = library.pathToNameMap.get(path);
-				JMenuItem item = new JMenuItem(name);
-				myLibraryMenu.add(item);
-				item.addActionListener(loadCollectionAction);
-				item.setToolTipText(path);
-				item.setActionCommand(path);
+		if (!OSPRuntime.isJS) {
+			JMenu myLibraryMenu = new JMenu(ToolsRes.getString("Library.Name.Local")); //$NON-NLS-1$
+			menu.add(myLibraryMenu);
+			if (!library.pathList.isEmpty()) {
+				for (String path : library.pathList) {
+					String name = library.pathToNameMap.get(path);
+					JMenuItem item = new JMenuItem(name);
+					myLibraryMenu.add(item);
+					item.addActionListener(loadCollectionAction);
+					item.setToolTipText(path);
+					item.setActionCommand(path);
+				}
 			}
 		}
 		if (!library.comPADREPathList.isEmpty()) {

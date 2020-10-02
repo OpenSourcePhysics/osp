@@ -573,7 +573,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 						value = b.toString();
 					}
 					if (buf.length() > 0)
-						buf.append("\n"); //$NON-NLS-1$
+						buf.append("; \n"); //$NON-NLS-1$
 					buf.append(key + ": " + value); //$NON-NLS-1$
 				}
 			}

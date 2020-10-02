@@ -785,6 +785,7 @@ public class LibraryTreePanel extends JPanel {
 					getPopup(node).show(tree, e.getX(), e.getY() + 8);
 				} else if (node.getTarget() != null && isSelect(e)) {
 					// to LibraryBrowser
+					
 					firePropertyChange(LibraryBrowser.PROPERTY_LIBRARY_TARGET, LibraryBrowser.HINT_LOAD_RESOURCE, node);
 				}
 			}
@@ -2138,97 +2139,115 @@ public class LibraryTreePanel extends JPanel {
 		@Override
 		public Void doInBackground() {
 
-			String htmlPath = node.getHTMLPath();
-			String target = node.getAbsoluteTarget();
+			String htmlPath = node.getHTMLPath(); // effectively final
+			String target = node.getAbsoluteTarget(); // final
 			boolean isZip = target != null
 					&& (target.toLowerCase().endsWith(".zip") || target.toLowerCase().endsWith(".trz")); //$NON-NLS-1$ //$NON-NLS-2$
-			// if htmlPath is null and target is ZIP, look for HTML & title in zip file
-			if (htmlPath == null && isZip) {
+
+			// if target is ZIP, look for html info file inside ZIP
+			if (isZip) {
 				String ext = "." + XML.getExtension(target); //$NON-NLS-1$
 				URL targetURL = node.getTargetURL(); // returns cached target URL, if any
+				if (targetURL==null) {
+					return null;
+				}
 				String targetURLPath = targetURL.toExternalForm();
-				String name = XML.getName(targetURLPath);
-				if (node.getName().equals(name)) {
-					// look inside zip for html with same name as zip or trk
-					name = XML.stripExtension(name);
-					String targetName = name;
+//				if (node.getName().equals(name)) {
+				String name = XML.stripExtension(XML.getName(targetURLPath));
+				String targetName = name;
 
-					ResourceLoader.getZipContentsAsync(targetURLPath, new Function<Map<String, ZipEntry>, Void>() {
+				ResourceLoader.getZipContentsAsync(targetURLPath, new Function<Map<String, ZipEntry>, Void>() {
 
-						@Override
-						public Void apply(Map<String, ZipEntry> files) {
-							if (files == null)
-								return null;
-							String htmlPath = node.getHTMLPath();
-							String htmlInfoPath = null;
-							for (String s : files.keySet()) {
-								String htmlName = XML.stripExtension(XML.getName(s));
-								if (s.toLowerCase().contains(".htm") //$NON-NLS-1$
-										&& (htmlName.equals(targetName + "_info"))) { //$NON-NLS-1$
-									htmlInfoPath = s;
-								}
+					@Override
+					public Void apply(Map<String, ZipEntry> files) {
+						if (files == null)
+							return null;
+						// look for base name shared by thumbnail and html info files
+						// by default the TRZ fileName is the base name but fileNames may be changed
+						// so always look for thumbnail (which uses same base name)
+						String baseName = name;
+						String htmlCodePath = htmlPath;
+						String htmlInfoPath = null;
+						// try to find baseName from thumbnail
+						for (String s : files.keySet()) {
+							String fileName = XML.getName(s);
+							int n = fileName.indexOf("_thumbnail");
+							if (n > -1) {
+								baseName = fileName.substring(0, n);	
 							}
-							if (htmlInfoPath == null) {
-								for (String s : files.keySet()) {
-									if ("trk".equals(XML.getExtension(s))) { //$NON-NLS-1$
-										String trkName = XML.stripExtension(XML.getName(s));
-										for (String ss : files.keySet()) {
-											String htmlName = XML.stripExtension(XML.getName(ss));
-											if (ss.toLowerCase().contains(".htm") //$NON-NLS-1$
-													&& (htmlName.equals(trkName + "_info"))) { //$NON-NLS-1$
-												htmlInfoPath = ss;
-											}
+						}
+						// look for html info file with base name
+						for (String s : files.keySet()) {
+							String fileName = XML.stripExtension(XML.getName(s));
+							if (s.toLowerCase().contains(".htm") //$NON-NLS-1$
+									&& (fileName.equals(baseName + "_info"))) { //$NON-NLS-1$
+								htmlInfoPath = s;
+							}
+						}
+						// older zip files may not have a thumbnail, 
+						// so look at trk name if not yet found
+						// note this does NOT work for newer multi-tab trz files
+						if (htmlInfoPath == null) {
+							for (String s : files.keySet()) {
+								if ("trk".equals(XML.getExtension(s))) { //$NON-NLS-1$
+									String trkName = XML.stripExtension(XML.getName(s));
+									for (String ss : files.keySet()) {
+										String htmlName = XML.stripExtension(XML.getName(ss));
+										if (ss.toLowerCase().contains(".htm") //$NON-NLS-1$
+												&& (htmlName.equals(trkName + "_info"))) { //$NON-NLS-1$
+											htmlInfoPath = ss;
 										}
 									}
 								}
 							}
-
-							if (htmlInfoPath != null) {
-								// set node record's HTML path to relative path
-								htmlPath = targetURLPath + "!/" + htmlInfoPath; //$NON-NLS-1$
-								String htmlCode = ResourceLoader.getHTMLCode(htmlPath);
-
-								String redirect = LibraryBrowser.getRedirectFromHTMLCode(htmlCode);
-								if (redirect != null) {
-									node.record.setHTMLPath(redirect);
-									node.metadataSource = targetName + ext + "!/" + htmlInfoPath; //$NON-NLS-1$
-								} else {
-									node.record.setHTMLPath(targetName + ext + "!/" + htmlInfoPath); //$NON-NLS-1$
-								}
-
-								String title = ResourceLoader.getTitleFromHTMLCode(htmlCode);
-								if (title != null) {
-									node.record.setName(title);
-								}
-							}
-							loadComPadreNodesAsync(htmlPath, target);
-							return null;
 						}
 
-					});
-					return null;
-				}
+						if (htmlInfoPath != null) {
+							htmlCodePath = targetURLPath + "!/" + htmlInfoPath; //$NON-NLS-1$
+							String htmlCode = ResourceLoader.getHTMLCode(htmlCodePath);
+
+							String redirect = LibraryBrowser.getRedirectFromHTMLCode(htmlCode);
+							if (redirect != null) {
+								node.record.setHTMLPath(redirect);
+								node.metadataSource = targetName + ext + "!/" + htmlInfoPath; //$NON-NLS-1$
+							} else {
+								node.record.setHTMLPath(targetName + ext + "!/" + htmlInfoPath); //$NON-NLS-1$
+							}
+
+							String title = ResourceLoader.getTitleFromHTMLCode(htmlCode);
+							if (title != null) {
+								node.record.setName(title);
+							}
+						}
+						loadNodeAsync(htmlCodePath, target);
+						return null;
+					}
+				});
 			}
-			loadComPadreNodesAsync(htmlPath, target);
+			
+			// file is NOT zip or trz
+			loadNodeAsync(htmlPath, target);
 			return null;
 		}
 
-		private void loadComPadreNodesAsync(String htmlPath, String target) {
-			// load ComPADRE nodes
-			String urlPath = node.record.getProperty("reload_url"); //$NON-NLS-1$
+		
+		private void loadNodeAsync(String htmlPath, String target) {
 
+			// get reload url (non-null for some ComPADRE nodes)
+			String reloadUrlPath = node.record.getProperty("reload_url"); //$NON-NLS-1$
 			String htmlPathFinal = htmlPath;
 
+			// make runnable to finish loading
 			Runnable onDone = new Runnable() {
 				@Override
 				public void run() {
 
 					// clear description for non-ComPADRE nodes with no HTML path
 					if (htmlPathFinal == null) {
-						if (urlPath == null)
+						if (reloadUrlPath == null) // not ComPADRE
 							node.record.setDescription(null);
 					} else { // htmlPath not null
-								// copy HTML to cache if required
+						// copy HTML to cache if required
 						boolean requiresCache = htmlPathFinal.contains("!/"); //$NON-NLS-1$ // file in zip
 						// not for local trz files
 						// maybe never for JS?
@@ -2252,6 +2271,7 @@ public class LibraryTreePanel extends JPanel {
 
 			};
 
+			// make runnable to set hasNewChildren if found by ComPADRE
 			Runnable onSuccess = new Runnable() {
 				@Override
 				public void run() {
@@ -2261,13 +2281,15 @@ public class LibraryTreePanel extends JPanel {
 			};
 
 			if (target != null && target.contains(LibraryComPADRE.HOST)) {
-
+				// load ComPADRE nodes
 				if (node.record instanceof LibraryCollection) {
 					hasNewChildren = false;
 					LibraryComPADRE.loadResources(node, onSuccess, onDone);
-				} else if ("".equals(node.record.getDescription()) && urlPath != null) { //$NON-NLS-1$
-					LibraryComPADRE.reloadResource(node, urlPath, onDone);
+				} else if ("".equals(node.record.getDescription()) && reloadUrlPath != null) { //$NON-NLS-1$
+					LibraryComPADRE.reloadResource(node, reloadUrlPath, onDone);
 				}
+			} else {
+				onDone.run();				
 			}
 
 		}
