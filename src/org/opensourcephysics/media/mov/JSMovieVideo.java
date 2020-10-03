@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.function.Function;
 
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.opensourcephysics.controls.OSPLog;
@@ -459,6 +460,10 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			BufferedImage img = HTML5Video.getImage(jsvideo, Integer.MIN_VALUE);
+			if (img == null) {
+				whenDone.apply(null);
+				return;
+			}
 			byte[] b = ((DataBufferByte) img.getRaster().getDataBuffer()).getData();
 			if (buffer == null) {
 				buffer = new byte[img.getWidth() * img.getHeight() * 4];
@@ -651,7 +656,12 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					int n = HTML5Video.getFrameCount(v.jsvideo);
 					v.setFrameCount(n);
 					OSPLog.finer("JSMovieVideo " + v.size + "\n duration:" + duration + " est. v.frameCount:" + n);
-					helper.next(STATE_FIND_FRAMES_INIT);
+					if (v.size.width == 0) {
+						cantRead();
+						helper.next(STATE_FIND_FRAMES_READY);
+					} else {
+						helper.next(STATE_FIND_FRAMES_INIT);
+					}
 					continue;
 				case STATE_FIND_FRAMES_INIT:
 					v.err = null;
@@ -779,16 +789,23 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		}
 
 		protected void setTimes(double[] times) {
-			dt = times[1];
-			offset = times[0] - dt / 2; 
-			double t = 0;
-			int nFrames = (int) ((duration - times[0])/dt + 0.0001) + 1;
-			for (int i = nFrames; --i >= 0;) {
-				t += dt;
-				frameTimes.add(t);
+			if (times == null) {
+				// format was read, but probably image size was (0,0) meaning
+				// codex wasn't read. (Have duration, just not actual images.)
+				cantRead();
+				next(STATE_FIND_FRAMES_DONE);
+			} else {
+				dt = times[1];
+				offset = times[0] - dt / 2;
+				double t = 0;
+				int nFrames = (int) ((duration - times[0]) / dt + 0.0001) + 1;
+				for (int i = nFrames; --i >= 0;) {
+					t += dt;
+					frameTimes.add(t);
+				}
+				next(STATE_FIND_FRAMES_DONE);
+				frame = nFrames;
 			}
-			next(STATE_FIND_FRAMES_DONE);
-			frame = nFrames;
 		}
 	}	
 //	/**
@@ -809,6 +826,11 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		coords = new ImageCoordSystem(frameCount, this);
 		aspects = new DoubleArray(frameCount, 1);
 
+	}
+
+	public void cantRead() {
+		VideoIO.setCanceled(true);
+		JOptionPane.showMessageDialog(null, "Video file format or compression method could not be read.");
 	}
 
 	/**
