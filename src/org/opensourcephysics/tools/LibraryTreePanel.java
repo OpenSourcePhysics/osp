@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -2203,23 +2204,47 @@ public class LibraryTreePanel extends JPanel {
 						}
 
 						if (htmlInfoPath != null) {
+							
 							htmlCodePath = targetURLPath + "!/" + htmlInfoPath; //$NON-NLS-1$
-							String htmlCode = ResourceLoader.getHTMLCode(htmlCodePath);
+							String htmlInfoPathFinal = htmlInfoPath;
+							ResourceLoader.getHTMLCodeAsync(htmlCodePath, new Function<String, Void>() {
 
-							String redirect = LibraryBrowser.getRedirectFromHTMLCode(htmlCode);
-							if (redirect != null) {
-								node.record.setHTMLPath(redirect);
-								node.metadataSource = targetName + ext + "!/" + htmlInfoPath; //$NON-NLS-1$
-							} else {
-								node.record.setHTMLPath(targetName + ext + "!/" + htmlInfoPath); //$NON-NLS-1$
-							}
+								@Override
+								public Void apply(String htmlCode) {
+									String redirect = LibraryBrowser.getRedirectFromHTMLCode(htmlCode);
+									if (redirect != null) {
+										node.record.setHTMLPath(redirect);
+										node.metadataSource = targetName + ext + "!/" + htmlInfoPathFinal; //$NON-NLS-1$
+									} else {
+										node.record.setHTMLPath(targetName + ext + "!/" + htmlInfoPathFinal); //$NON-NLS-1$
+									}
 
-							String title = ResourceLoader.getTitleFromHTMLCode(htmlCode);
-							if (title != null) {
-								node.record.setName(title);
-							}
+									String title = ResourceLoader.getTitleFromHTMLCode(htmlCode);
+									if (title != null) {
+										node.record.setName(title);
+									}
+									loadNodeAsync(htmlInfoPathFinal, target);
+									return null;
+								}
+							});
+//							String htmlCode = ResourceLoader.getHTMLCode(htmlCodePath);
+//
+//							String redirect = LibraryBrowser.getRedirectFromHTMLCode(htmlCode);
+//							if (redirect != null) {
+//								node.record.setHTMLPath(redirect);
+//								node.metadataSource = targetName + ext + "!/" + htmlInfoPath; //$NON-NLS-1$
+//							} else {
+//								node.record.setHTMLPath(targetName + ext + "!/" + htmlInfoPath); //$NON-NLS-1$
+//							}
+//
+//							String title = ResourceLoader.getTitleFromHTMLCode(htmlCode);
+//							if (title != null) {
+//								node.record.setName(title);
+//							}
 						}
-						loadNodeAsync(htmlCodePath, target);
+						else {
+							loadNodeAsync(htmlCodePath, target);							
+						}
 						return null;
 					}
 				});
