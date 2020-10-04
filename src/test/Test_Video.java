@@ -14,18 +14,17 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import javax.swing.BoxLayout;
@@ -44,160 +43,37 @@ import javax.swing.TransferHandler;
 import javax.swing.WindowConstants;
 
 import javajs.async.SwingJSUtils.StateHelper;
+import javajs.util.VideoReader;
 import swingjs.api.JSUtilI;
 import swingjs.api.js.HTML5Video;
 
 /**
  * Test of <video> tag.
  * 
- * see https://www.cimarronsystems.com/wp-content/uploads/2017/04/Elements-of-the-H.264-VideoAAC-Audio-MP4-Movie-v2_0.pdf
+ * See https://www.cimarronsystems.com/wp-content/uploads/2017/04/Elements-of-the-H.264-VideoAAC-Audio-MP4-Movie-v2_0.pdf
  * 
  * @author RM
  *
  */
 public class Test_Video {
 
-	public static class VideoReader {
-		long pt = 0;		
-		String blockType;
-		int blockLen;
-		byte[] bytes = new byte[10]; 
-		private DataInputStream is;
-		private String codec;
-		private boolean verbose;
-		
-		
-		public String getMP4Codec(InputStream stream, boolean verbose) {
-			this.verbose = verbose;
-			is = new DataInputStream(stream);
-			while (nextBlock() != -1) {
-				try {
-					newBlock();
-				} catch (IOException e) {
-					break;
-				}
-			}
-			try {
-				is.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return codec;
-		}
-		
-		private void newBlock() throws IOException {
-			blockLen = is.readInt();
-			blockType = readString(4);
-			pt += 8;
-			if (verbose)
-				System.out.println(blockType + "\t" + pt + "\t0x" + Long.toHexString(pt) + "\t" + blockLen);
-			int n = readBlock(blockType, blockLen - 8);
-			if (n < 0) {
-				pt = -1;
-				return;
-			}
-			pt += n;
-			is.skipBytes(n);
-		}
-
-		private String readString(int n) throws IOException {
-			is.read(bytes, 0, n);
-			return new String(bytes, 0, n);
-		}
-
-		private int readBlock(String blockType, int len) throws IOException {
-			switch (blockType) {
-			case "ftyp":
-				len = readFTYP(len);
-				break;
-			case "trak":
-				len = readInner(len);
-				return -1;
-			case "moov":
-			case "mdia":
-			case "minf":
-			case "stbl":
-				len = readInner(len);
-				break;
-			case "mvhd":
-				len = readMVHD(len);
-				break;
-			case "tkhd":
-				len = readTKHD(len);
-				break;
-			case "stsd":
-				len = readSTSD(len);
-				break;
-			}
-			return (int) len;
-		}
-
-		private int readFTYP(int len) throws IOException {
-			String info = "";
-			while (len > 0) {
-				String s = readString(4);
-				if (s.charAt(0) != '\0')
-					info += s + " ";
-				len -= 4;
-				pt += 4;
-			}
-			System.out.println(info);
-			return len;
-		}
-
-		private int readInner(int len) throws IOException {
-			while (len > 0) {
-				newBlock();
-				len -= blockLen;
-			}
-			return len;
-		}
-
-		private int readMVHD(int len) throws IOException {
-			return len;
-		}
-
-		private int readTKHD(int len) {
-			return len;
-		}
-
-		private int readSTSD(int len) throws IOException {
-			is.readInt(); // version+flags
-			is.readInt(); // #entries
-			is.readInt(); // size
-			if (codec == null)
-				codec = "";
-			else
-				codec += ",";
-			codec += readString(4);
-			if (verbose)
-				System.out.println("codec=" + codec);
-			return len - 16;
-		}
-
-		private long nextBlock() {
-			return pt;
-			
-		}
-
-	}
-
 	public static void main(String[] args) {
 		if (args.length > 0) {
-			getMP4Codec(args[0]);
+			System.out.println(getMP4Codec(args[0], null));
 		} else {
 			new Test_Video();
 		}
 	}
 
-	private static void getMP4Codec(String fname) {
+	private static String getMP4Codec(String fname, String name) {
 		try {
-			String info = new VideoReader().getMP4Codec(
-					fname.indexOf("://") > 0 ? new URL(fname).openStream() : new FileInputStream(fname), false);
-			System.out.println(fname + ": " + info);
+			VideoReader vr = new VideoReader(fname);
+			vr.getContents(true);
+			String info = vr.getFileType() + "|" + vr.getCodec();
+			return (name == null ? fname : name) + ": " + info;
 		} catch (IOException e) {
 			e.printStackTrace();
+			return fname + "?";
 		}
 	}
 
@@ -288,7 +164,7 @@ public class Test_Video {
 
 		// main.setBackground(Color.orange);
 		// main.getRootPane().setOpaque(true);
-		System.out.println(main.isOpaque() + " " + Integer.toHexString(main.getBackground().getRGB()));
+//		System.out.println(main.isOpaque() + " " + Integer.toHexString(main.getBackground().getRGB()));
 //		cp.setBackground(Color.red);
 		HTML5Video.setProperty(jsvideo, "currentTime", 0);
 
@@ -316,17 +192,12 @@ public class Test_Video {
 		boolean asBytes = (file != null);
 		ImageIcon icon;
 		if (!isJS) {
-			icon = new ImageIcon("src/test/video_image.png");
-			try {
-				if (!(file.toString().equals(file.getAbsolutePath()))) {
-					file = new File("site/swingjs/j2s/" + file.toString());
-				}
-				System.out.println(file.toString());
-				System.out.println(file.getAbsolutePath());
-				describeVideo(new FileInputStream(file.getAbsolutePath()), file.getName());
-			} catch (FileNotFoundException e1) {
-				System.out.println(e1);
+			icon = new ImageIcon("test/video_image.png");
+			if (!(file.toString().equals(file.getAbsolutePath()))) {
+				file = new File("site/swingjs/j2s/" + file.toString());
 			}
+			System.out.println(file.getAbsolutePath());
+			System.out.println(getMP4Codec(file.getAbsolutePath(), file.getName()));
 			return;
 		} else if (asBytes) {
 			try {
@@ -357,9 +228,8 @@ public class Test_Video {
 				Object jsevent = sources[1];
 				System.out.println(event + " " + HTML5Video.getCurrentTime(jsvideo));
 				if (cbCapture.isSelected() && event.equals("canplaythrough")) {
-						grabImage();
-					}
-
+					grabImage();
+				}
 
 			}
 
@@ -388,10 +258,11 @@ public class Test_Video {
 
 	}
 
-	private void describeVideo(FileInputStream fileInputStream, String name) {
-		String info = new VideoReader().getMP4Codec(fileInputStream, false);
-		System.out.println("codec = " + info);
-		main.setTitle(name + " " + info);
+	private void describeVideo(String resource, String name) throws IOException {
+		VideoReader vr = new VideoReader(resource);
+		List<Map<String, Object>> contents = vr.getContents(true);
+		System.out.println("codec = " + vr.getCodec());
+		main.setTitle(name + " " + vr.getFileType() + "|" + vr.getCodec());
 	}
 
 	private void showProperty(String key) {
@@ -399,6 +270,8 @@ public class Test_Video {
 	}
 
 	private void showAllProperties() {
+		if (!isJS)
+			return;
 		for (int i = 0; i < allprops.length; i++)
 			showProperty(allprops[i]);
 	}
@@ -628,9 +501,10 @@ public class Test_Video {
 
 		});
 
-		boolean canSeek = HTML5Video.getProperty(jsvideo, "seekToNextFrame") != null;
-		System.out.println("canSeek = " + canSeek);
-
+		if (isJS) {
+			boolean canSeek = HTML5Video.getProperty(jsvideo, "seekToNextFrame") != null;
+			System.out.println("canSeek = " + canSeek);
+		}
 		JButton next = new JButton("next");
 		next.addActionListener(new ActionListener() {
 
