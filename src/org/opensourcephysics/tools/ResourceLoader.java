@@ -2803,7 +2803,7 @@ public class ResourceLoader {
 	 * @throws IOException
 	 */
 	public static InputStream openZipEntryStream(URL url, URL zipURL) throws IOException {
-		
+
 		if (OSPRuntime.isJS) {
 			byte[] bytes = OSPRuntime.jsutil.getURLBytes(url);
 			if (bytes == null) {
@@ -2818,26 +2818,26 @@ public class ResourceLoader {
 			url = new URL("jar", null, url.toString());
 //		if (zipURL != null && zipURL.getProtocol() != "jar")
 //			zipURL = new URL("jar", null, zipURL.toString());
-		
-		
+
 		String entryPath = url.toString();
 		int n = entryPath.indexOf("!/");
 		if (n > -1) {
-			entryPath = entryPath.substring(n+2);
-			URL toOpen = zipURL == null? url: zipURL;
-	    BufferedInputStream bufIn = new BufferedInputStream(toOpen.openStream());
-	    ZipInputStream input = new ZipInputStream(bufIn);
-	    ZipEntry zipEntry=null;
-	    while ((zipEntry=input.getNextEntry()) != null) {
-	      if (zipEntry.isDirectory()) continue;
-	      String filename = zipEntry.getName();
-	      if (entryPath.contains(filename)) {
-	      	return input;
-	      }
-	    }
+			URL toOpen = (zipURL == null ? new URL(entryPath.substring(4, n)) : zipURL);
+			entryPath = entryPath.substring(n + 2);
+			BufferedInputStream bufIn = new BufferedInputStream(toOpen.openStream());
+			ZipInputStream input = new ZipInputStream(bufIn);
+			ZipEntry zipEntry = null;
+			while ((zipEntry = input.getNextEntry()) != null) {
+				if (zipEntry.isDirectory())
+					continue;
+				String filename = zipEntry.getName();
+				if (entryPath.contains(filename)) {
+					return input;
+				}
+			}
 		}
-    return null;
-		
+		return null;
+
 //		return url.openStream();
 //		String zipContent = url.toString();
 //		BufferedInputStream bufIn = new BufferedInputStream(url.openStream());
