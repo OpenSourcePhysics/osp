@@ -181,8 +181,10 @@ public class Resource {
 		}
 		if (url != null) {
 			try {
-				if (zipContent != null || url.toString().indexOf("!/") >= 0) {
-					return ResourceLoader.openZipEntryStream(url);
+				if (contentURL != null)
+					return ResourceLoader.openZipEntryStream(contentURL, url);
+				if (url.toString().indexOf("!/") >= 0) {
+					return ResourceLoader.openZipEntryStream(url, null);
 				}
 				return ResourceLoader.openStream(url);
 			} catch (IOException ex) {

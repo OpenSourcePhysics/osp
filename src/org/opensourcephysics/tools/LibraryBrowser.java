@@ -998,7 +998,6 @@ public class LibraryBrowser extends JPanel {
 	protected TabLoader addTab(String path, List<String> treePath) {
 		if (path == null)
 			return null;
-		OSPLog.debug("pig add tab "+path);
 		File cachedFile = ResourceLoader.getSearchCacheFile(path);
 		boolean isCachePath = cachedFile.exists();
 		if (!isCachePath && !isWebConnected() && ResourceLoader.isHTTP(path)) {
@@ -1268,7 +1267,7 @@ public class LibraryBrowser extends JPanel {
 						if (treePanel.metadataLoader != null) {
 							treePanel.metadataLoader.cancel();
 						}
-						treePanel.metadataLoader = treePanel.new MetadataLoader(true, null);
+						treePanel.metadataLoader = treePanel.new MetadataLoader(!OSPRuntime.isJS, null);
 						treePanel.metadataLoader.execute();
 						return;
 					}
@@ -2782,7 +2781,7 @@ public class LibraryBrowser extends JPanel {
 			File cachedFile = ResourceLoader.getSearchCacheFile(path);
 			if (cachedFile.exists() && ResourceLoader.isHTTP(path)) { // $NON-NLS-1$
 				realPath = cachedFile.getAbsolutePath();
-				saveToCache = false;
+//				saveToCache = false;
 			}
 
 			// BH 2020.04.14 added to speed up zip file checking
@@ -2797,14 +2796,6 @@ public class LibraryBrowser extends JPanel {
 			if (!ResourceLoader.isHTTP(realPath)) {
 	    	String ext = XML.getExtension(path.toLowerCase());
 	    	isLocalTRZ = ext.equals("trz") //$NON-NLS-1$
-//						|| ext.equals("trk") //$NON-NLS-1$
-//						|| ext.equals("jpg") //$NON-NLS-1$
-//						|| ext.equals("png") //$NON-NLS-1$
-//						|| ext.equals("jpeg") //$NON-NLS-1$
-//						|| ext.equals("pdf") //$NON-NLS-1$
-//						|| ext.equals("htm") //$NON-NLS-1$
-//						|| ext.equals("html") //$NON-NLS-1$
-//						|| ext.equals("ejs") //$NON-NLS-1$
 						|| ext.equals("zip"); //$NON-NLS-1$
 			}
 			
