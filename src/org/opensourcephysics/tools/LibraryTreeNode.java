@@ -583,16 +583,13 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 	}
 
 	/**
-	 * Returns the path to a source of metadata (usually HTML path)
+	 * Returns a source of metadata.
+	 * Source is usually HTML code itself but may be path to code
 	 * 
-	 * @return the metadata path
+	 * @return the metadata source
 	 */
-	protected String getMetadataSourcePath() {
-		String path = metadataSource;
-		if (path != null) {
-			return XML.getResolvedPath(path, getBasePath());
-		}
-		return getHTMLPath();
+	protected String getMetadataSource() {
+		return metadataSource != null? metadataSource: getHTMLPath();
 	}
 
 	/**
@@ -606,11 +603,14 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 			searchData = new TreeSet<Metadata>();
 			record.setMetadata(searchData);
 			// look for metadata in HTML code
-			String path = getMetadataSourcePath();
-			if (path != null) {
-				Resource res = ResourceLoader.getResourceZipURLsOK(path);
-				String code = res.getString();
-				if (code != null) {
+			String metaSource = getMetadataSource();
+			if (metaSource != null) {
+				String code = metaSource;
+				if (!code.startsWith("<!DOCTYPE html")) {
+					Resource res = ResourceLoader.getResourceZipURLsOK(metaSource);
+					code = res.getString();
+				}
+				if (code != null && code.startsWith("<!DOCTYPE html")) {
 					boolean[] isStandardType = new boolean[LibraryResource.META_TYPES.length];
 					String[] parts = code.split("<meta name="); //$NON-NLS-1$
 					for (int i = 1; i < parts.length; i++) { // ignore parts[0]
