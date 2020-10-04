@@ -53,6 +53,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.jar.JarInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -2823,10 +2824,10 @@ public class ResourceLoader {
 		String entryPath = url.toString();
 		int n = entryPath.indexOf("!/");
 		if (n > -1) {
+			URL toOpen = zipURL != null? zipURL: new URL("jar", null, entryPath.substring(0, n));
 			entryPath = entryPath.substring(n+2);
-			URL toOpen = zipURL == null? url: zipURL;
 	    BufferedInputStream bufIn = new BufferedInputStream(toOpen.openStream());
-	    ZipInputStream input = new ZipInputStream(bufIn);
+	    JarInputStream input = new JarInputStream(bufIn);
 	    ZipEntry zipEntry=null;
 	    while ((zipEntry=input.getNextEntry()) != null) {
 	      if (zipEntry.isDirectory()) continue;
