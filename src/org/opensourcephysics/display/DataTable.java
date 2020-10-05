@@ -709,6 +709,7 @@ public class DataTable extends JTable {
 		case MODE_DELETE_ROW: // 0x2200;
 		case MODE_APPEND_ROW: // 0x2300;
 			mask = MODE_MASK_ROW;
+			rowsChanged = true;
 			columnsChanged = false;
 			break;
 		case MODE_PATTERN: // 0x810000;
@@ -731,10 +732,10 @@ public class DataTable extends JTable {
 		dataTableModel.refresh(mask);
 		if (columnsChanged) {
 			dataTableModel.fireTableStructureChanged();
-//			Toolkit.getDefaultToolkit().beep();
 		} else if (rowsChanged) {
-			dataTableModel.fireTableDataChanged();
-//			Toolkit.getDefaultToolkit().beep();
+			// BH 2020.10.04 this isn't necessarily an inserted row. It's just
+			// a way to trigger the revalidate
+			dataTableModel.fireTableRowsInserted(getRowCount() - 1, getRowCount() - 1);
 		} else {
 			if (mode == MODE_TRACK_NEW)
 				revalidate();
@@ -744,6 +745,9 @@ public class DataTable extends JTable {
 		Performance.TIME_MARK));
 	}
 
+	public void setBounds(int x, int y, int w, int h) {
+		super.setBounds(x,  y,  w,  h);
+	}
 	/**
 	 * Add a TableModel object to the table model list.
 	 *
