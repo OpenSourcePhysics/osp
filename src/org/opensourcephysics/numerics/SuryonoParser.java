@@ -42,6 +42,8 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
+import org.opensourcephysics.controls.OSPLog;
+
 /**
  * The class <code>Parser</code> is a mathematical expression parser.
  * <p>
@@ -73,6 +75,18 @@ public final class SuryonoParser extends MathExpParser {
 	 * 
 	 */
 	private class Func {
+		
+		public String toString() {
+			if (var_count < 0) {
+				return super.toString();
+			}
+			String s = "" + function + ":\n";
+			for (int i = 0; i < var_count; i++) {
+				s += var_name[i] + "=" + var_value[i] + ";";
+			}
+			return s;
+		}
+		
 		protected int var_count = -1; // number of variables
 		protected String var_name[]; // variables' name
 		protected double var_value[]; // value of variables
@@ -198,37 +212,40 @@ public final class SuryonoParser extends MathExpParser {
 			int destination;
 			int code;
 			int codeLength = codes[0]; // added bt W. Christian to check the length.
+			//OSPLog.debug("Suryono " + toString());
 			while (true) {
 				try {
 					if (cpt == codeLength) {
+						//OSPLog.debug("Suryono result " + stack[0] + " for " + function);
 						return stack[0]; // added by W. Christian. Do not use doing an Exception!
 					}
 					code = codes[++cpt];
 				} catch (ArrayIndexOutOfBoundsException e) {
 					return stack[0];
 				}
+				//OSPLog.debug("Suryono cpt=" + cpt + " code=" + code + " " + Arrays.toString(codes));
 				try {
 					switch (code) {
-					case '+':
+					case ADD:
 						stack[--spt] += stack[spt + 1];
 						break;
-					case '-':
+					case SUB:
 						stack[--spt] -= stack[spt + 1];
 						break;
-					case '*':
+					case MUL:
 						stack[--spt] *= stack[spt + 1];
 						break;
-					case '/':
+					case DIV:
 						if (stack[spt] == 0) {
 							stack[--spt] /= 1.0e-128; // added by W.Christian to trap for divide by zero.
 						} else {
 							stack[--spt] /= stack[spt + 1];
 						}
 						break;
-					case '^':
+					case POWER:
 						stack[--spt] = Math.pow(stack[spt], stack[spt + 1]);
 						break;
-					case '_':
+					case NEGATE:
 						stack[spt] = -stack[spt];
 						break;
 					case LESS_THAN:
@@ -311,6 +328,9 @@ public final class SuryonoParser extends MathExpParser {
 					err = CODE_DAMAGED;
 					return Double.NaN;
 				}
+				
+//				OSPLog.debug("Suryono code=" + code + " spt=" + spt + " " + Arrays.toString(stack));
+
 			}
 		}
 
@@ -542,6 +562,12 @@ public final class SuryonoParser extends MathExpParser {
 	private static final int AND_CODE = 10;
 	private static final int OR_CODE = 11;
 	private static final int NOT_CODE = 12;
+	private static final int ADD = '+';
+	private static final int SUB = '-';
+	private static final int MUL = '*';
+	private static final int DIV = '/';
+	private static final int NEGATE = '_';
+	private static final int POWER = '^';
 	// built in functions
 	private final static String funcname[] = { 
 			"sin", "cos", "tan", "ln", "log",          //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ 
@@ -1105,14 +1131,14 @@ public final class SuryonoParser extends MathExpParser {
 	}
 
 	private static void addCode(int[] a, int code) {
-		a[a[0]++] = code;
+		a[++a[0]] = code;
 	}
 
 	private static void addCodes(int[] a, int[] b) {
 		int n = b[0];
 		int pt = a[0];
 		a[0] += n;
-		System.arraycopy(b, 1, a, pt, n);
+		System.arraycopy(b, 1, a, pt + 1, n);
 	}
 
 	/**
@@ -1240,7 +1266,7 @@ public final class SuryonoParser extends MathExpParser {
 			if (ch != ')') {
 				throw new ParserException(PAREN_EXPECTED);
 			}
-			addCode(savecode, f.postfix_code.length + 1);
+			addCode(savecode, f.postfix_code[0] + 1);
 			addCodes(savecode, f.postfix_code);
 			f.postfix_code = Arrays.copyOf(savecode, savecode.length);
 			getNextch();
@@ -1396,9 +1422,9 @@ public final class SuryonoParser extends MathExpParser {
 		if (ch == '^') {
 			arithmeticLevel3();
 		}
-		addCode('^');
+		addCode(POWER);
 		if (negate) {
-			addCode('_');
+			addCode(NEGATE);
 		}
 	}
 
@@ -1413,7 +1439,7 @@ public final class SuryonoParser extends MathExpParser {
 			throw new ParserException(INVALID_OPERAND);
 		}
 		do {
-			char operator = ch;
+			int operator = ch;
 			negate = getIdentifier();
 			if (isBoolean) {
 				throw new ParserException(INVALID_OPERAND);
@@ -1422,7 +1448,7 @@ public final class SuryonoParser extends MathExpParser {
 				arithmeticLevel3();
 			}
 			if (negate) {
-				addCode('_');
+				addCode(NEGATE);
 			}
 			addCode(operator);
 		} while ((ch == '*') || (ch == '/'));
@@ -1439,21 +1465,25 @@ public final class SuryonoParser extends MathExpParser {
 			throw new ParserException(INVALID_OPERAND);
 		}
 		do {
-			char operator = ch;
+			int operator = ch;
 			negate = getIdentifier();
 			if (isBoolean) {
 				throw new ParserException(INVALID_OPERAND);
 			}
-			if (ch == '^') {
+			switch (ch) {
+			case '^':
 				arithmeticLevel3();
 				if (negate) {
-					addCode('_');
+					addCode(NEGATE);
 				}
-			} else if ((ch == '*') || (ch == '/')) {
+				break;
+			case '*':
+			case '/':
 				if (negate) {
-					addCode('_');
+					addCode(NEGATE);
 				}
 				arithmeticLevel2();
+				break;
 			}
 			addCode(operator);
 		} while ((ch == '+') || (ch == '-'));
@@ -1465,7 +1495,7 @@ public final class SuryonoParser extends MathExpParser {
 	 * @exception ParserException
 	 */
 	private void relationLevel() throws ParserException {
-		char code =  0;
+		int code =  0;
 		if (inRelation) {
 			throw new ParserException(INVALID_OPERATOR);
 		}
@@ -1516,12 +1546,12 @@ public final class SuryonoParser extends MathExpParser {
 		if (!isBoolean) {
 			throw new ParserException(INVALID_OPERAND);
 		}
-		char operator = ch;
+		char c = ch;
 		scanAndParse();
 		if (!isBoolean) {
 			throw new ParserException(INVALID_OPERAND);
 		}
-		switch (operator) {
+		switch (c) {
 		case '&':
 			addCode(AND_CODE);
 			break;
@@ -1540,7 +1570,7 @@ public final class SuryonoParser extends MathExpParser {
 		boolean negate;
 		negate = getIdentifier();
 		if ((ch != '^') && (negate)) {
-			addCode('_');
+			addCode(NEGATE);
 		}
 		do {
 			switch (ch) {
@@ -1555,7 +1585,7 @@ public final class SuryonoParser extends MathExpParser {
 			case '^':
 				arithmeticLevel3();
 				if (negate) {
-					addCode('_');
+					addCode(NEGATE);
 				}
 				break;
 			case ',':

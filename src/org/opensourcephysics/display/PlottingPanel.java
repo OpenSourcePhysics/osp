@@ -197,7 +197,7 @@ public class PlottingPanel extends InteractivePanel {
 	 * @param label the label
 	 */
 	public void setYLabel(String label) {
-		OSPLog.debug("PlottingPanel " + id + " setyY " + label);
+		//OSPLog.debug("PlottingPanel " + id + " setyY " + label);
 		axes.setYLabel(label, null);
 	}
 
