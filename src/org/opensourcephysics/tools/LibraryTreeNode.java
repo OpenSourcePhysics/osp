@@ -518,7 +518,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 	}
 
 	/**
-	 * Returns the (multiline) tooltip for this node.
+	 * Returns the tooltip for this node.
 	 * 
 	 * @return tooltip String
 	 */
@@ -573,7 +573,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 						value = b.toString();
 					}
 					if (buf.length() > 0)
-						buf.append("; \n"); //$NON-NLS-1$
+						buf.append(" | "); //$NON-NLS-1$
 					buf.append(key + ": " + value); //$NON-NLS-1$
 				}
 			}

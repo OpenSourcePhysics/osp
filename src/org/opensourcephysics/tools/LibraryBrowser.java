@@ -165,7 +165,7 @@ public class LibraryBrowser extends JPanel {
 	protected JToolBar toolbar;
 	protected Action commandAction, searchAction, openRecentAction, downloadAction;
 	protected JLabel commandLabel, searchLabel;
-	protected JTextField commandField, searchField;
+	protected JTextField commandField, searchField, messageTextField;
 	protected JMenu fileMenu, recentMenu, collectionsMenu, manageMenu, helpMenu;
 	protected JMenuItem newItem, openItem, saveItem, saveAsItem, closeItem, closeAllItem, exitItem, deleteItem,
 			collectionsItem, searchItem, cacheItem, aboutItem, logItem, helpItem;
@@ -1641,7 +1641,26 @@ public class LibraryBrowser extends JPanel {
 				}
 			});
 		}
-
+		
+		messageTextField = new JTextField();
+		messageTextField.setEditable(false);
+		messageTextField.setBorder(BorderFactory.createEmptyBorder(1, 6, 1, 6));
+		add(messageTextField, BorderLayout.SOUTH);
+		
+		setMessage(null, null);
+	}
+	
+	/**
+	 * Sets a message in the message label.
+	 * 
+	 * @param message the message. Will be truncated if too long.
+	 * @param color the background color
+	 */
+	public void setMessage(String message, Color color) {
+		boolean isEmpty = message == null || "".equals(message.trim());
+		messageTextField.setText(isEmpty? " ": message);
+		messageTextField.setBackground(color != null? color: Color.WHITE);
+		messageTextField.setCaretPosition(0);
 	}
 
 	protected void processTargetCollection(LibraryTreeNode node) {
