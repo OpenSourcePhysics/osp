@@ -273,12 +273,17 @@ public final class SuryonoParser extends MathExpParser {
 						}
 						// fall through
 					case JUMP_CODE:
+						// BH note that "destination" here is 
+						// the code point PRIOR to the 
+						// code to jump to. The destination will
+						// be the end of the IF clause, for example. 
 						destination = cpt + codes[++cpt];
 						while (cpt < destination) {
 							if (codes[++cpt] == NUMERIC) {
 								numberindex++;
 							}
 						}
+						// ready for next code = codes[++cpt];
 						break;
 					case ENDIF:
 						break; // same as NOP
