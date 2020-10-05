@@ -782,6 +782,7 @@ public class LibraryTreePanel extends JPanel {
 				}
 				tree.setSelectionPath(path);
 				LibraryTreeNode node = (LibraryTreeNode) tree.getLastSelectedPathComponent();
+				browser.setMessage(node.getToolTip(), null);
 				if (OSPRuntime.isPopupTrigger(e)) {
 					getPopup(node).show(tree, e.getX(), e.getY() + 8);
 				} else if (node.getTarget() != null && isSelect(e)) {
