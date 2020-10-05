@@ -183,9 +183,9 @@ public class Resource {
 			try {
 				if (contentURL != null)
 					return ResourceLoader.openZipEntryStream(contentURL, url);
-				if (url.toString().indexOf("!/") >= 0) {
-					return ResourceLoader.openZipEntryStream(url, null);
-				}
+//				if (url.toString().indexOf("!/") >= 0) {
+//					return ResourceLoader.openZipEntryStream(url, null);
+//				}
 				return ResourceLoader.openStream(url);
 			} catch (IOException ex) {
 				OSPLog.fine("Resource file not found " + url);
