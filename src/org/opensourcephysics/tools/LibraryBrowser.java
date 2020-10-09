@@ -1298,6 +1298,8 @@ public class LibraryBrowser extends JPanel {
 					// clear metadata and description
 					node.record.setMetadata(null);
 					node.record.setDescription(null);
+					node.tooltip = null;
+					node.metadataSource = null;
 
 					treePanel.new NodeLoader(node).execute();
 				}
@@ -1326,6 +1328,7 @@ public class LibraryBrowser extends JPanel {
 					if (node != null) {
 						String path = node.isRoot() ? treePanel.pathToRoot : node.getAbsoluteTarget();
 						commandField.setText(path);
+						browser.setMessage(node.getToolTip(), null);
 						treePanel.showInfo(node);
 					} else {
 						commandField.setText(treePanel.command);
@@ -2068,6 +2071,9 @@ public class LibraryBrowser extends JPanel {
 			treePanel.save();
 		}
 		tabbedPane.removeTabAt(index);
+		if (treePanel.metadataLoader != null) {
+			treePanel.metadataLoader.cancel();
+		}
 		return true;
 	}
 
@@ -3004,6 +3010,34 @@ public class LibraryBrowser extends JPanel {
 		return null;
 	}
 	
+	/**
+	 * Returns the metadata, if any, defined in HTML code
+	 * 
+	 * @param htmlCode the HTML code
+	 * @return a list of String[] {name, value}
+	 */
+	public static ArrayList<String[]> getMetadataFromHTML(String htmlCode) {
+		ArrayList<String[]> results = new ArrayList<String[]>();
+		if (htmlCode == null)
+			return results;
+		String[] parts = htmlCode.split("<meta name=\""); //$NON-NLS-1$
+		for (int i = 1; i < parts.length; i++) { // ignore parts[0]
+			// parse metadata and add to array
+			int n = parts[i].indexOf("\">"); //$NON-NLS-1$
+			if (n > -1) {
+				parts[i] = parts[i].substring(0, n);
+				String divider = "\" content=\""; //$NON-NLS-1$
+				String[] subparts = parts[i].split(divider);
+				if (subparts.length > 1) {
+					String name = subparts[0];
+					String value = subparts[1];
+					results.add(new String[] { name, value });
+				}
+			}
+		}
+		return results;
+	}
+
   /**
    * Gets the path to the local OSP folder.
    * 

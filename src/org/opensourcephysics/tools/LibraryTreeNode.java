@@ -546,7 +546,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 					for (String metadataType : LibraryResource.META_TYPES) {
 						if (metadataType.toLowerCase().contains(key.toLowerCase()))
 							key = ToolsRes.getString("LibraryTreePanel.Label." + metadataType); //$NON-NLS-1$
-						breakLine = metadataType.equals(LibraryResource.META_KEYWORDS);
+//						breakLine = metadataType.equals(LibraryResource.META_KEYWORDS);
 					}
 					if (breakLine && value.length() > 100) {
 						int len = key.length();
@@ -574,7 +574,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 					}
 					if (buf.length() > 0)
 						buf.append(" | "); //$NON-NLS-1$
-					buf.append(key + ": " + value); //$NON-NLS-1$
+					buf.append(key + ": " + value);  //$NON-NLS-1$
 				}
 			}
 			tooltip = buf.toString();
@@ -598,53 +598,68 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 	 * @return a Set of Metadata entries
 	 */
 	protected TreeSet<Metadata> getMetadata() {
-		TreeSet<Metadata> searchData = record.getMetadata();
-		if (searchData == null) {
-			searchData = new TreeSet<Metadata>();
-			record.setMetadata(searchData);
+		TreeSet<Metadata> metaData = record.getMetadata();
+		if (metaData == null) {
+			metaData = new TreeSet<Metadata>();
+			record.setMetadata(metaData);
 			// look for metadata in HTML code
 			String metaSource = getMetadataSource();
 			if (metaSource != null) {
 				String code = metaSource;
-				if (!code.startsWith("<!DOCTYPE html")) {
+				if (!code.contains("<html>")) {
 					Resource res = ResourceLoader.getResourceZipURLsOK(metaSource);
 					code = res.getString();
 				}
-				if (code != null && code.startsWith("<!DOCTYPE html")) {
+				if (code != null && code.contains("<html>")) {
 					boolean[] isStandardType = new boolean[LibraryResource.META_TYPES.length];
-					String[] parts = code.split("<meta name="); //$NON-NLS-1$
-					for (int i = 1; i < parts.length; i++) { // ignore parts[0]
-						// parse metadata and add to HashMap
-						int n = parts[i].indexOf("\">"); //$NON-NLS-1$
-						if (n > -1) {
-							parts[i] = parts[i].substring(0, n);
-							String[] subparts = parts[i].split("content=\""); //$NON-NLS-1$
-							if (subparts.length > 1) {
-								// subparts[0] is name in quotes
-								String name = subparts[0].trim();
-								if (name.startsWith("\"")) //$NON-NLS-1$
-									name = name.substring(1);
-								if (name.endsWith("\"")) //$NON-NLS-1$
-									name = name.substring(0, name.length() - 1);
-								// assign to standard metadata type if appropriate
-								for (int k = 0; k < LibraryResource.META_TYPES.length; k++) {
-									if (!isStandardType[k] && LibraryResource.META_TYPES[k].toLowerCase()
-											.contains(name.toLowerCase())) {
-										name = LibraryResource.META_TYPES[k];
-										isStandardType[k] = true;
-									}
-								}
-								// subparts[1] is value
-								String value = subparts[1].trim();
-								record.addMetadata(new Metadata(name, value));
+					ArrayList<String[]> metaList = LibraryBrowser.getMetadataFromHTML(code);
+					for (int i = 0; i< metaList.size(); i++) {
+						String[] next = metaList.get(i);
+						String name = next[0];
+						// assign to standard metadata type if appropriate
+						for (int k = 0; k < LibraryResource.META_TYPES.length; k++) {
+							if (!isStandardType[k] && LibraryResource.META_TYPES[k].toLowerCase()
+									.contains(name.toLowerCase())) {
+								name = LibraryResource.META_TYPES[k];
+								isStandardType[k] = true;
 							}
 						}
+						record.addMetadata(new Metadata(name, next[1]));
 					}
+					
+//					String[] parts = code.split("<meta name="); //$NON-NLS-1$
+//					for (int i = 1; i < parts.length; i++) { // ignore parts[0]
+//						// parse metadata and add to HashMap
+//						int n = parts[i].indexOf("\">"); //$NON-NLS-1$
+//						if (n > -1) {
+//							parts[i] = parts[i].substring(0, n);
+//							String[] subparts = parts[i].split("content=\""); //$NON-NLS-1$
+//							if (subparts.length > 1) {
+//								// subparts[0] is name in quotes
+//								String name = subparts[0].trim();
+//								if (name.startsWith("\"")) //$NON-NLS-1$
+//									name = name.substring(1);
+//								if (name.endsWith("\"")) //$NON-NLS-1$
+//									name = name.substring(0, name.length() - 1);
+//								// assign to standard metadata type if appropriate
+//								for (int k = 0; k < LibraryResource.META_TYPES.length; k++) {
+//									if (!isStandardType[k] && LibraryResource.META_TYPES[k].toLowerCase()
+//											.contains(name.toLowerCase())) {
+//										name = LibraryResource.META_TYPES[k];
+//										isStandardType[k] = true;
+//									}
+//								}
+//								// subparts[1] is value
+//								String value = subparts[1].trim();
+//								record.addMetadata(new Metadata(name, value));
+//							}
+//						}
+//					}
 				}
 			}
 			tooltip = null;
 		}
-		return searchData;
+		return metaData;
 	}
 
 	/**

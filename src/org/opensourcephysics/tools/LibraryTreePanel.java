@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -782,7 +783,6 @@ public class LibraryTreePanel extends JPanel {
 				}
 				tree.setSelectionPath(path);
 				LibraryTreeNode node = (LibraryTreeNode) tree.getLastSelectedPathComponent();
-				browser.setMessage(node.getToolTip(), null);
 				if (OSPRuntime.isPopupTrigger(e)) {
 					getPopup(node).show(tree, e.getX(), e.getY() + 8);
 				} else if (node.getTarget() != null && isSelect(e)) {
@@ -2276,6 +2276,7 @@ public class LibraryTreePanel extends JPanel {
 					LibraryTreeNode.htmlURLs.remove(htmlPathFinal);
 
 					// load metadata into node
+					OSPLog.debug("NodeLoader loading "+node.record);
 					node.getMetadata();
 
 					doneAsync();
@@ -2364,11 +2365,27 @@ public class LibraryTreePanel extends JPanel {
 					if (htmlPane == null) {
 						htmlPane = new HTMLPane();
 						htmlPanesByURL.put(url, htmlPane);
-						// DB added 2020/09/26 to display trz html files correctly in Java
+						// DB added 2020/09/26 to display zipped html files correctly in Java
 						if (!OSPRuntime.isJS) {
 							htmlStr = null;
 //							htmlPane.setText("<h2>" + node + "</h2>"); //$NON-NLS-1$ //$NON-NLS-2$
 							try {
+								HTMLPane pane = htmlPane;
+								TreeSet<Metadata> data = node.record.getMetadata();
+								if (data == null || data.size() == 0) {
+									htmlPane.addPropertyChangeListener((e) -> {
+										if (e.getPropertyName() == "page" && node == getSelectedNode()) {
+											String htmlCode = pane.getText();
+											if (htmlCode.indexOf("<meta name=") > -1 ) {
+												node.record.setMetadata(null);
+												node.metadataSource = htmlCode;
+												node.getMetadata();
+												browser.setMessage(node.getToolTip(), null);
+											}
+										}
+	
+									});									
+								}
 								htmlPane.setPage(url);
 							} catch (Exception ex) {}
 						} else {
@@ -2434,6 +2451,7 @@ public class LibraryTreePanel extends JPanel {
 				public void run() {
 					if (htmlPane != null && node == getSelectedNode()) {
 						htmlScroller.setViewportView(htmlPane);
+						browser.setMessage(node.getToolTip(), null);
 						if (node == rootNode) {
 							browser.refreshButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Tooltip.Reload")); //$NON-NLS-1$
 						} else
