@@ -49,6 +49,8 @@ public class JMultiLineToolTip extends JToolTip {
 
 	@Override
 	public void setTipText(String tipText) {
+		if (tipText == null)
+			return;
 		super.setTipText(wrapToolTip(tipText));
 	}
 
