@@ -509,6 +509,7 @@ public abstract class Filter {
 		}
 		if (sourceImage != source) {
 			initializeSource(sourceImage);
+			initializeSubclass();
 		}
 		setOutputPixels();
 		return output;
