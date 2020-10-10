@@ -10,7 +10,7 @@ import java.net.URL;
 
 import javax.swing.ImageIcon;
 
-import org.opensourcephysics.js.JSUtil;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.ResourceLoader;
 
 /**
@@ -26,7 +26,7 @@ public class Utils {
     if(cacheImages.get(_filename)!=null) {
       return true;
     }
-    if (JSUtil.isJS && _codebase == null) {
+    if (OSPRuntime.isJS2 && _codebase == null) {
     	URL u = Utils.class.getClassLoader().getResource(_filename);
     	return (u != null);
     }

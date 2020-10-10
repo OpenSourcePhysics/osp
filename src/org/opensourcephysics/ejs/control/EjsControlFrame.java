@@ -72,7 +72,6 @@ import org.opensourcephysics.display.OSPFrame;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.PrintUtils;
 import org.opensourcephysics.ejs.EjsRes;
-import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.Job;
 import org.opensourcephysics.tools.LocalJob;
@@ -249,7 +248,7 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 		fileMenu.add(saveAsItem);
 		fileMenu.add(inspectItem);
 		fileMenu.add(clearItem);
-		if (!JSUtil.isJS)
+		if (!OSPRuntime.isJS2)
 			fileMenu.add(printMenu);
 		printMenu.add(printFrameItem);
 		printMenu.add(saveFrameAsEPSItem);
@@ -346,7 +345,7 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 	 * Adds a Tools menu to the menu bar.
 	 */
 	protected JMenu loadToolsMenu() {
-		if (org.opensourcephysics.js.JSUtil.isJS) { // external tools not supported in JavaScript.
+		if (OSPRuntime.isJS) { // external tools not supported in JavaScript.
 			return null;
 		}
 		JMenuBar menuBar = mainFrame.getJMenuBar();
@@ -469,7 +468,7 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 			});
 		}
 		translateItem.setEnabled(OSPRuntime.getTranslator() != null);
-		if (!JSUtil.isJS)
+		if (!OSPRuntime.isJS2)
 			languageMenu.add(translateItem, 0);
 		final Locale[] locales = OSPRuntime.getInstalledLocales();
 		@SuppressWarnings("serial")
@@ -501,7 +500,7 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 				languageItems[i].setSelected(true);
 			}
 		}
-		if (!JSUtil.isJS)
+		if (!OSPRuntime.isJS2)
 			displayMenu.add(languageMenu);
 		JMenu fontMenu = new JMenu(EjsRes.getString("EjsControlFrame.Font_menu")); //$NON-NLS-1$
 		displayMenu.add(fontMenu);
@@ -526,7 +525,7 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 		});
 		fontMenu.add(sizeDownItem);
 		JMenu aliasMenu = new JMenu(EjsRes.getString("EjsControlFrame.AntiAlias_menu")); //$NON-NLS-1$
-		if (!JSUtil.isJS)
+		if (!OSPRuntime.isJS2)
 			displayMenu.add(aliasMenu);
 		final JCheckBoxMenuItem textAliasItem = new JCheckBoxMenuItem(EjsRes.getString("EjsControlFrame.Text_check_box"), //$NON-NLS-1$
 				false);
@@ -556,7 +555,7 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 			}
 
 		});
-		if (!JSUtil.isJS)
+		if (!OSPRuntime.isJS2)
 			aliasMenu.addChangeListener(new ChangeListener() {
 				@Override
 				public void stateChanged(ChangeEvent e) {

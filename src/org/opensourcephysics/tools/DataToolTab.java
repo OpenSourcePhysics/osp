@@ -118,7 +118,6 @@ import org.opensourcephysics.display.Selectable;
 import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.display.axes.CartesianCoordinateStringBuilder;
 import org.opensourcephysics.display.axes.CartesianInteractive;
-import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.media.core.TPoint;
 import org.opensourcephysics.tools.DataToolTable.TableEdit;
 import org.opensourcephysics.tools.DataToolTable.WorkingDataset;
@@ -2231,7 +2230,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				} else {
 					rows.set(index);
 				}
-				if (!JSUtil.isJS)
+				if (!OSPRuntime.isJS2)
 					dataTable.setSelectedModelRowsBS(rows);
 			} else {
 				dataTable.selectModelRows(new int[] { index });
@@ -2248,11 +2247,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			boxState = BOX_STATE_INACTIVE;
 			return;
 		}
-		if (timerToFindHits == null && !JSUtil.isJS) { // BH 2020.02.14
+		if (timerToFindHits == null && !OSPRuntime.isJS2) { // BH 2020.02.14
 			timerToFindHits = new Timer(200, new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					findHits(removeHits, !JSUtil.isJS);
+					findHits(removeHits, !OSPRuntime.isJS2);
 					timerToFindHits.restart();
 				}
 			});

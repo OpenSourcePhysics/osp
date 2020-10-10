@@ -10,12 +10,16 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.tools.ResourceLoader;
 
 public class EjsRes {
-  private static final String BUNDLE_NAME = "org.opensourcephysics.resources.ejs.ejs_res"; //$NON-NLS-1$
   static org.opensourcephysics.tools.ResourceLoader.Bundle res;
 
   private EjsRes() {}
+
+  public static void setLocale(Locale locale) {
+	 res = ResourceLoader.getBundle("org.opensourcephysics.resources.ejs.ejs_res", locale); //$NON-NLS-1$
+  }
 
   static {
     String language = Locale.getDefault().getLanguage();
@@ -26,11 +30,7 @@ public class EjsRes {
         break;
       }
     }
-    res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME, resourceLocale);
-  }
-
-  public static void setLocale(Locale locale) {
-    res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME, locale);
+    setLocale(resourceLocale);
   }
 
   public static String getString(String key) {

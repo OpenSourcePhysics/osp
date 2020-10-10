@@ -96,7 +96,6 @@ import org.opensourcephysics.display.OSPFrame;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.display.TextFrame;
-import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.tools.DataToolTable.TableEdit;
 
 /**
@@ -270,7 +269,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 */
 	public static void main(String[] args) {
 		getTool(true);
-		if (JSUtil.isJS)
+		if (OSPRuntime.isJS2)
 			tool.standAlone = true;
 		if (tool.standAlone)
 			tool.setLocation(0, 0);
@@ -2772,9 +2771,9 @@ public void loadDatasetURI(String relpath) {
 			}
 
 		});
-		if (!org.opensourcephysics.js.JSUtil.isJS)
+		if (!OSPRuntime.isJS)
 			printItem.setAccelerator(KeyStroke.getKeyStroke('P', keyMask));
-		if (!org.opensourcephysics.js.JSUtil.isJS)
+		if (!OSPRuntime.isJS)
 			fileMenu.add(printItem);
 		fileMenu.addSeparator();
 		exitItem = new JMenuItem();
@@ -2929,7 +2928,7 @@ public void loadDatasetURI(String relpath) {
 		languageMenu = new JMenu();
 		// get jar resource before installed locales so that launch jar is not null
 		String imagePath = "/org/opensourcephysics/resources/tools/images/open.gif"; //$NON-NLS-1$
-		if (org.opensourcephysics.js.JSUtil.isJS)
+		if (OSPRuntime.isJS)
 			ResourceLoader.getAssetURL(imagePath);
 		else
 			ResourceLoader.getResource(imagePath);

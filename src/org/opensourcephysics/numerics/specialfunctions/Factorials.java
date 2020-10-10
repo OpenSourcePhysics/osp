@@ -7,7 +7,7 @@
 
 package org.opensourcephysics.numerics.specialfunctions;
 
-import org.opensourcephysics.js.JSUtil;
+import org.opensourcephysics.display.OSPRuntime;
 
 /**
  * Computes the factorial of an integer and functions closely related to factorials.
@@ -52,7 +52,7 @@ public class Factorials {
 	static {
 		long val = 1;
 		int maxN = 1;
-		if(JSUtil.isJS) {
+		if(OSPRuntime.isJS2) {
 			maxN=13;  
 		} else 
 		while (val * maxN >= val) {

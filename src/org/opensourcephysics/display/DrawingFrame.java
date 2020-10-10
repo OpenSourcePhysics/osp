@@ -45,7 +45,6 @@ import org.opensourcephysics.controls.XMLProperty;
 import org.opensourcephysics.controls.XMLTreeChooser;
 import org.opensourcephysics.controls.XMLTreePanel;
 import org.opensourcephysics.display.axes.DrawableAxes;
-import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.Job;
 import org.opensourcephysics.tools.LocalJob;
@@ -789,12 +788,12 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 
 		});
 		// if(OSPRuntime.applet==null) { // applets no longer supported
-		if (!JSUtil.isJS)
+		if (!OSPRuntime.isJS2)
 			fileMenu.add(printMenu);
 		fileMenu.add(saveXMLItem);
 		// if(!JSUtil.isJS)
 		fileMenu.add(exportItem);
-		if (!JSUtil.isJS)
+		if (!OSPRuntime.isJS2)
 			fileMenu.add(saveImage);
 		// }
 		fileMenu.add(inspectItem);
@@ -887,7 +886,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 				sizeDownItem.setEnabled(FontSizer.getLevel() > 0);
 		});
 		JMenu aliasMenu = new JMenu(DisplayRes.getString("DrawingFrame.AntiAlias_menu_title")); //$NON-NLS-1$
-		if (!JSUtil.isJS)
+		if (!OSPRuntime.isJS2)
 			displayMenu.add(aliasMenu);
 		final JCheckBoxMenuItem textAliasItem = new JCheckBoxMenuItem(
 				DisplayRes.getString("DrawingFrame.Text_checkbox_label"), false); //$NON-NLS-1$
@@ -916,7 +915,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 	 */
 	@Override
 	protected JMenu loadToolsMenu() {
-		if (org.opensourcephysics.js.JSUtil.isJS) { // external tools not supported in JavaScript.
+		if (OSPRuntime.isJS) { // external tools not supported in JavaScript.
 			// return null;
 		}
 		JMenuBar menuBar = getJMenuBar();
@@ -993,10 +992,10 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 //		});
 		// create snapshot menu item
 		JMenuItem snapshotItem = new JMenuItem(DisplayRes.getString("DisplayPanel.Snapshot_menu_item")); //$NON-NLS-1$
-		if (OSPRuntime.applet == null && !JSUtil.isJS) {
+		if (OSPRuntime.applet == null && !OSPRuntime.isJS2) {
 			toolsMenu.add(snapshotItem);
 		}
-		if (!JSUtil.isJS)
+		if (!OSPRuntime.isJS2)
 			snapshotItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {

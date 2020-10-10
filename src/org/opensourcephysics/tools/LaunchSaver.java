@@ -106,7 +106,7 @@ public class LaunchSaver extends JDialog {
 		if (FontSizer.getLevel() != 0) {
 			FontSizer.setFonts(getContentPane(), FontSizer.getLevel());
 		}
-		if (!org.opensourcephysics.js.JSUtil.isJS)
+		if (!OSPRuntime.isJS)
 			pack(); // WC: not supported in JavaScript
 		// center on screen
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();

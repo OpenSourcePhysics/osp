@@ -14,6 +14,7 @@ import java.util.Collection;
 import javax.swing.JFrame;
 
 import org.opensourcephysics.display.OSPFrame;
+import org.opensourcephysics.display.OSPRuntime;
 
 import javajs.async.SwingJSUtils;
 import javajs.async.SwingJSUtils.StateHelper;
@@ -184,7 +185,7 @@ public synchronized void stopAnimation() {
     }         // another thread has called this method in order to stop the animation thread
     try {                     // guard against an exception in applet mode
       tempThread.interrupt(); // get out of a sleep state
-      if(!org.opensourcephysics.js.JSUtil.isJS)tempThread.join(1000);  // wait up to 1 second for animation thread to stop
+      if(!OSPRuntime.isJS)tempThread.join(1000);  // wait up to 1 second for animation thread to stop
     } catch(Exception e) {
       // System.out.println("excetpion in stop animation"+e);
     }

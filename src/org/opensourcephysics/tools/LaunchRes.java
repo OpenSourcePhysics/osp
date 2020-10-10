@@ -15,6 +15,7 @@ import java.util.MissingResourceException;
 import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.tools.ResourceLoader.Bundle;
 
 /**
  * String resources for launcher classes.
@@ -23,7 +24,7 @@ public class LaunchRes {
 	// static fields
 	static Locale resourceLocale = Locale.ENGLISH;
 	static final String BUNDLE_NAME = "org.opensourcephysics.resources.tools.launcher"; //$NON-NLS-1$
-	static org.opensourcephysics.tools.ResourceLoader.Bundle res;
+	static Bundle res;
 	static PropertyChangeSupport support = new SwingPropertyChangeSupport(new LaunchRes());
 
 	static {
@@ -35,7 +36,24 @@ public class LaunchRes {
 				break;
 			}
 		}
-		res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME, resourceLocale);
+		res = ResourceLoader.getBundle(BUNDLE_NAME, resourceLocale);
+	}
+
+	/**
+	 * Sets the locale.
+	 *
+	 * @param loc the locale
+	 */
+	public static void setLocale(Locale loc) {
+		if (resourceLocale == loc) {
+			return;
+		}
+		Locale prev = resourceLocale;
+		resourceLocale = loc;
+		// get the new resource bundle
+		res = ResourceLoader.getBundle(BUNDLE_NAME, resourceLocale);
+		support.firePropertyChange("locale", prev, resourceLocale); //$NON-NLS-1$
+		ToolsRes.setLocale(loc);
 	}
 
 	/**
@@ -57,24 +75,6 @@ public class LaunchRes {
 		} catch (MissingResourceException ex) {
 			return "!" + key + "!"; //$NON-NLS-1$ //$NON-NLS-2$
 		}
-	}
-
-	/**
-	 * Sets the locale.
-	 *
-	 * @param loc the locale
-	 */
-	public static void setLocale(Locale loc) {
-		if (resourceLocale == loc) {
-			return;
-		}
-		Locale prev = resourceLocale;
-		resourceLocale = loc;
-		// get the new resource bundle
-		res = org.opensourcephysics.tools.ResourceLoader.getBundle("org.opensourcephysics.resources.tools.launcher", //$NON-NLS-1$
-				resourceLocale);
-		support.firePropertyChange("locale", prev, resourceLocale); //$NON-NLS-1$
-		ToolsRes.setLocale(loc);
 	}
 
 	/**

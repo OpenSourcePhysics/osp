@@ -112,7 +112,6 @@ import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.PrintUtils;
 import org.opensourcephysics.display.ResizableIcon;
-import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.tools.LaunchNode.DisplayTab;
 
 /**
@@ -281,7 +280,7 @@ public class Launcher {
 		createGUI(splash);
 		XML.setLoader(LaunchSet.class, new LaunchSet());
 		// if statement added by W. Christian
-		if (!JSUtil.isJS && OSPRuntime.applet == null) { // never allow new VM if Launcher was instantiated by an applet
+		if (!OSPRuntime.isJS2 && OSPRuntime.applet == null) { // never allow new VM if Launcher was instantiated by an applet
 			// determine whether launching in new VM is possible; may not be possible in
 			// Java Web Start
 			// create a test launch thread
@@ -306,7 +305,7 @@ public class Launcher {
 			try {
 				Thread thread = new Thread(launchRunner);
 				thread.start();
-				if (!org.opensourcephysics.js.JSUtil.isJS)
+				if (!OSPRuntime.isJS)
 					thread.join(5000); // wait for join but don't wait over 5 seconds
 			} catch (InterruptedException ex) {
 				/** empty block */
@@ -1525,7 +1524,7 @@ public class Launcher {
 					}
 				};
 				long memSize = 512;
-				if (!org.opensourcephysics.js.JSUtil.isJS) { // Added by WC.
+				if (!OSPRuntime.isJS) { // Added by WC.
 					java.lang.management.MemoryMXBean memory = java.lang.management.ManagementFactory.getMemoryMXBean();
 					memSize = memory.getHeapMemoryUsage().getMax() / (1024 * 1024);
 				}
@@ -2033,11 +2032,11 @@ public class Launcher {
 			});
 		}
 		// if launch jar not yet found, load class file as last attempt
-		if (!JSUtil.isJS && OSPRuntime.getLaunchJarPath() == null) {
+		if (!OSPRuntime.isJS2 && OSPRuntime.getLaunchJarPath() == null) {
 			ResourceLoader.getResource("/org/opensourcephysics/tools/Launcher.class"); //$NON-NLS-1$
 		}
 		// create and populate the internal xset menu
-		if (!JSUtil.isJS && OSPRuntime.getLaunchJarPath() != null) {
+		if (!OSPRuntime.isJS2 && OSPRuntime.getLaunchJarPath() != null) {
 			JarFile jar = OSPRuntime.getLaunchJar();
 			if (jar != null) {
 				Action action = new AbstractAction() {
@@ -2693,7 +2692,7 @@ public class Launcher {
 		int h = 120;
 		if (splashDialog == null) {
 			splashDialog = new JDialog(frame, false);
-			if (!org.opensourcephysics.js.JSUtil.isJS) { // added by W. Christian
+			if (!OSPRuntime.isJS) { // added by W. Christian
 				splashDialog.setUndecorated(true);
 			}
 			Color darkred = new Color(128, 0, 0);
@@ -3461,7 +3460,7 @@ public class Launcher {
 	 */
 	private static void start(String[] args, long desiredMemorySize) {
 		// get current memory size
-		if (!org.opensourcephysics.js.JSUtil.isJS) { // Added by WC.
+		if (!OSPRuntime.isJS) { // Added by WC.
 			java.lang.management.MemoryMXBean memory = java.lang.management.ManagementFactory.getMemoryMXBean();
 			long memorySize = memory.getHeapMemoryUsage().getMax() / (1024 * 1024);
 			// if memory size is not at least 90% of desired, then relaunch
@@ -3549,7 +3548,7 @@ public class Launcher {
 							JOptionPane.WARNING_MESSAGE);
 					if (mainLauncher == null) {
 						// if not yet started, start with current memory size
-						if (!org.opensourcephysics.js.JSUtil.isJS) { // WC: MemoryMXBean not supported in JavaScript
+						if (!OSPRuntime.isJS) { // WC: MemoryMXBean not supported in JavaScript
 							java.lang.management.MemoryMXBean memory = java.lang.management.ManagementFactory
 									.getMemoryMXBean();
 							long memorySize = memory.getHeapMemoryUsage().getMax() / (1024 * 1024);
@@ -3576,7 +3575,7 @@ public class Launcher {
 		// OSPLog.setLevel(ConsoleLevel.ALL);
 		// get current memory size
 		long memorySize = 512;
-		if (!org.opensourcephysics.js.JSUtil.isJS) { // Added by WC.
+		if (!OSPRuntime.isJS) { // Added by WC.
 			java.lang.management.MemoryMXBean memory = java.lang.management.ManagementFactory.getMemoryMXBean();
 			memorySize = memory.getHeapMemoryUsage().getMax() / (1024 * 1024);
 		}
@@ -3749,7 +3748,7 @@ public class Launcher {
 	protected void refreshMemoryButton() {
 		long cur = 0;
 		long max = 512;
-		if (!org.opensourcephysics.js.JSUtil.isJS) { // Added by WC.
+		if (!OSPRuntime.isJS) { // Added by WC.
 			System.gc();
 			java.lang.management.MemoryMXBean memory = java.lang.management.ManagementFactory.getMemoryMXBean();
 			cur = memory.getHeapMemoryUsage().getUsed() / (1024 * 1024);

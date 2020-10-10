@@ -32,7 +32,6 @@ import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.display.Dataset;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display2d.GridData;
-import org.opensourcephysics.js.JSUtil;
 
 import javajs.async.AsyncFileChooser;
 
@@ -276,7 +275,7 @@ public class ExportTool implements Tool, PropertyChangeListener {
 	 */
 	@Override
 	public void send(Job job, Tool replyTo) {
-		if (JSUtil.isJS) {
+		if (OSPRuntime.isJS2) {
 			exportJS(job);
 			return;
 		}

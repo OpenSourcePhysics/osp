@@ -9,6 +9,7 @@ package org.opensourcephysics.display.dialogs;
 import java.util.Locale;
 
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.tools.ResourceLoader;
 
 /**
  * String constants for Dialogs.
@@ -48,7 +49,7 @@ public class DialogsRes {
         break;
       }
     }
-    res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME, resourceLocale);
+    res = ResourceLoader.getBundle(BUNDLE_NAME, resourceLocale);
     setLocalStrings();
   }
 
@@ -80,7 +81,7 @@ public class DialogsRes {
       return;
     }
     resourceLocale = loc;
-    res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME, resourceLocale);
+    res = ResourceLoader.getBundle(BUNDLE_NAME, resourceLocale);
     setLocalStrings();
   }
 

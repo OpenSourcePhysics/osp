@@ -138,7 +138,7 @@ protected void addMenuItems() {
    */
   @Override
 protected JMenu loadToolsMenu() {
-	if(org.opensourcephysics.js.JSUtil.isJS) {  // external tools not supported in JavaScript.
+	if(OSPRuntime.isJS) {  // external tools not supported in JavaScript.
 		  return null;
 	}
     JMenuBar menuBar = getJMenuBar();

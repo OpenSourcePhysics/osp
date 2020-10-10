@@ -12,9 +12,9 @@ import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
 import org.opensourcephysics.display.InteractivePanel;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.axes.XAxis;
 import org.opensourcephysics.display.axes.XYAxis;
-import org.opensourcephysics.js.JSUtil;
 
 public class ComplexColorMapper {
   static final double PI2 = Math.PI*2;
@@ -176,7 +176,7 @@ public class ComplexColorMapper {
 		int g = (int) (bb * greens[index]);
 		int b = (int) (bb * blues[index]);
 		int v = (((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF)) | 0xFF000000;
-		Color c = (JSUtil.isJS ? colorTemp : null);
+		Color c = (OSPRuntime.isJS2 ? colorTemp : null);
 		/**
 		 * just mutate colorTemp
 		 * @j2sNative

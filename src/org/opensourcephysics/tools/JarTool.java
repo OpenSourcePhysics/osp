@@ -52,6 +52,7 @@ import javax.swing.filechooser.FileSystemView;
 
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.tools.ResourceLoader.Bundle;
 
 /**
  * This provides a simple way to package files in a single JAR or ZIP file
@@ -68,9 +69,7 @@ public class JarTool implements Tool, Runnable {
 	static private final int CANCEL = 4;
 
 	// ---- Localization
-	static private final String JAR_TOOL_BUNDLE_NAME = "org.opensourcephysics.resources.tools.tools"; //$NON-NLS-1$
-	static private org.opensourcephysics.tools.ResourceLoader.Bundle res = org.opensourcephysics.tools.ResourceLoader
-			.getBundle(JAR_TOOL_BUNDLE_NAME);
+	static private Bundle res = ResourceLoader.getBundle(null, null);
 
 //  static private void setLocale(Locale locale) {
 //    res = org.opensourcephysics.tools.ResourceLoader.getBundle(JAR_TOOL_BUNDLE_NAME, locale);
@@ -283,7 +282,7 @@ public class JarTool implements Tool, Runnable {
 					return null;
 				}
 			}
-			if (org.opensourcephysics.js.JSUtil.isJS) {
+			if (OSPRuntime.isJS) {
 				System.err.println("Warning:  JarTool not supported in JavaScript.");
 			} else {
 				JarTool builder = new JarTool(sources, parent, target, manifest, policy, ownerFrame);

@@ -39,6 +39,7 @@ import org.jibble.epsgraphics.EpsGraphics2D;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.Renderable;
 import org.opensourcephysics.media.gif.GIFEncoder;
+import org.opensourcephysics.tools.ResourceLoader.Bundle;
 
 /**
  * This provides a simple way to capture screen images.
@@ -49,12 +50,12 @@ import org.opensourcephysics.media.gif.GIFEncoder;
  */
 public class SnapshotTool implements Tool {
 	// ---- Localization
-	static private final String BUNDLE_NAME = "org.opensourcephysics.resources.tools.tools"; //$NON-NLS-1$
-	static private org.opensourcephysics.tools.ResourceLoader.Bundle res = org.opensourcephysics.tools.ResourceLoader
-			.getBundle(BUNDLE_NAME);
-
+	static private Bundle res;	
 	static public void setLocale(Locale locale) {
-		res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME, locale);
+		res = ResourceLoader.getBundle(null, locale);
+	}
+	static {
+		setLocale(null);
 	}
 
 	static public String getString(String key) {

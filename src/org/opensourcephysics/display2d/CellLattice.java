@@ -11,7 +11,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import javax.swing.JFrame;
 import org.opensourcephysics.display.DrawingPanel;
-import org.opensourcephysics.js.JSUtil;
+import org.opensourcephysics.display.OSPRuntime;
 
 /**
  * A CellLattice that displays an array where each array element can assume one
@@ -40,7 +40,7 @@ public class CellLattice implements ByteLattice {
 	static {
 		try {
 			// BH 2020.03.04 don't use CellLatticeOSX
-			isMac = ((JSUtil.isJS ? "" : System.getProperty("os.name", "")).indexOf("Mac") >= 0);
+			isMac = ((OSPRuntime.isJS2 ? "" : System.getProperty("os.name", "")).indexOf("Mac") >= 0);
 		} catch (Exception ex) {
 		}
 	}

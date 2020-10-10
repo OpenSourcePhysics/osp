@@ -6,7 +6,7 @@ import javax.swing.JFrame;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.controls.XMLTreePanel;
-import org.opensourcephysics.js.JSUtil;
+import org.opensourcephysics.display.OSPRuntime;
 
 import javajs.async.AsyncFileChooser;
 
@@ -32,7 +32,7 @@ public class ReadXMLFile {
    	 // OK
 		@Override
 		public void run() {
-			if (!JSUtil.isJS) {
+			if (!OSPRuntime.isJS2) {
 				// no directory information in HTML5
 		     org.opensourcephysics.display.OSPRuntime.chooserDir = chooser.getCurrentDirectory().toString();
 			}

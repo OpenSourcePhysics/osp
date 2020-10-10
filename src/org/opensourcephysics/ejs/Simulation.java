@@ -10,6 +10,7 @@ package org.opensourcephysics.ejs;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.ResourceLoader;
 
 import javajs.async.SwingJSUtils;
@@ -94,7 +95,7 @@ public abstract class Simulation implements java.lang.Runnable, StateMachine {
 	public void pause() {
 		thread = null;
 		isPlaying = false;
-		if (org.opensourcephysics.js.JSUtil.isJS) {
+		if (OSPRuntime.isJS) {
 			if (stateHelper != null)
 				stateHelper.setState(STATE_DONE);
 			return;

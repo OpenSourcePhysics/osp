@@ -55,7 +55,6 @@ import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
-import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.LaunchNode;
 import org.opensourcephysics.tools.ResourceLoader;
@@ -372,6 +371,9 @@ public class OSPRuntime {
 			false); // no fractional metrics
 
 	public static LaunchNode activeNode;
+	// BH would prefer we move this over to OSPRuntime
+	// sorry about the confusion!
+	static public boolean isJS2 = /** @j2sNative true || */ false;
 
 	/**
 	 * Private constructor to prevent instantiation.
@@ -957,7 +959,7 @@ public class OSPRuntime {
 	 */
 	public static Locale[] getInstalledLocales() {
 		ArrayList<Locale> list = new ArrayList<Locale>();
-		if (org.opensourcephysics.js.JSUtil.isJS)
+		if (OSPRuntime.isJS)
 			return list.toArray(new Locale[0]);
 		java.util.TreeMap<String, Locale> languages = new java.util.TreeMap<String, Locale>();
 		list.add(Locale.ENGLISH); // english is first in list
@@ -1206,7 +1208,7 @@ public class OSPRuntime {
 				}
 				File file = new File(prefsPath, prefsFileName);
 				// BH 2020.02.13 don't want to download this file.
-				if (!JSUtil.isJS)
+				if (!OSPRuntime.isJS2)
 					prefsControl.write(file.getAbsolutePath());
 			}
 		}
@@ -1220,7 +1222,7 @@ public class OSPRuntime {
 	 */
 	public static Translator getTranslator() {
 
-		if (org.opensourcephysics.js.JSUtil.isJS) { // translator tool not supported in JavaScript.
+		if (OSPRuntime.isJS) { // translator tool not supported in JavaScript.
 			return null;
 		}
 		if ((translator == null) && loadTranslatorTool) {

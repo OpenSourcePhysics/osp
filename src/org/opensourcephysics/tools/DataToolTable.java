@@ -74,7 +74,6 @@ import org.opensourcephysics.display.HighlightableDataset;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.display.TextLine;
-import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.tools.DataToolTable.TableEdit;
 
 /**
@@ -1059,7 +1058,7 @@ public class DataToolTable extends DataTable {
 		case 4:
 		case 5:
 		default:
-			if (!JSUtil.isJS)
+			if (!OSPRuntime.isJS2)
 				repaint(); // BH 2020.02.14 seeing if we can avoid this
 
 		}

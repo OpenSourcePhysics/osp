@@ -39,7 +39,6 @@ import javax.swing.WindowConstants;
 
 import org.jibble.epsgraphics.EpsGraphics2D;
 import org.opensourcephysics.controls.XML;
-import org.opensourcephysics.js.JSUtil;
 
 public class GUIUtils {
 
@@ -324,7 +323,7 @@ public class GUIUtils {
 		}
 		OSPRuntime.chooserDir = fileChooser.getCurrentDirectory().toString();
 		File file = fileChooser.getSelectedFile();
-		if (!JSUtil.isJS && file.exists()) {
+		if (!OSPRuntime.isJS2 && file.exists()) {
 			int selected = JOptionPane.showConfirmDialog(parent,
 					DisplayRes.getString("DrawingFrame.ReplaceExisting_message") + " " + file.getName() //$NON-NLS-1$ //$NON-NLS-2$
 							+ DisplayRes.getString("DrawingFrame.QuestionMark"), //$NON-NLS-1$
@@ -472,7 +471,7 @@ public class GUIUtils {
 			return;
 		}
 		File file = fixExtension(new File(fileName), extensions[0]);
-		if (!JSUtil.isJS && file.exists()) { // BH 2020.02.25
+		if (!OSPRuntime.isJS2 && file.exists()) { // BH 2020.02.25
 			int selected = JOptionPane.showConfirmDialog(null,
 					DisplayRes.getString("DrawingFrame.ReplaceExisting_message") //$NON-NLS-1$
 							+ " " + file.getName() + DisplayRes.getString("DrawingFrame.QuestionMark"), //$NON-NLS-1$ //$NON-NLS-2$

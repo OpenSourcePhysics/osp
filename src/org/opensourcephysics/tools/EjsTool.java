@@ -42,6 +42,7 @@ import javax.swing.SwingConstants;
 
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.tools.ResourceLoader.Bundle;
 
 /**
  * Utility classes to work with Ejs at a high level
@@ -55,12 +56,12 @@ public class EjsTool {
 	static public final String GET_RESOURCES_METHOD = "_getEjsResources"; //$NON-NLS-1$
 	static public final String GET_APPLET_DIMENSION_METHOD = "_getEjsAppletDimension"; //$NON-NLS-1$
 	// ---- Localization
-	static private final String BUNDLE_NAME = "org.opensourcephysics.resources.tools.tools"; //$NON-NLS-1$
-	static private org.opensourcephysics.tools.ResourceLoader.Bundle res = org.opensourcephysics.tools.ResourceLoader
-			.getBundle(BUNDLE_NAME);
-
+	static private Bundle res;
 	static public void setLocale(Locale locale) {
-		res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME, locale);
+		res = ResourceLoader.getBundle(null, locale);
+	}
+	static {
+		setLocale(null);
 	}
 
 	static public String getString(String key) {
@@ -456,7 +457,7 @@ public class EjsTool {
 			}
 
 		};
-		if (org.opensourcephysics.js.JSUtil.isJS) {
+		if (OSPRuntime.isJS) {
 			System.err.println("Warning:  EJSTool not supported in JavaScript.");
 		} else {
 			java.lang.Thread thread = new Thread(runner);

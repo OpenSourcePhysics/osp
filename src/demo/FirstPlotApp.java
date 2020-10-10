@@ -13,7 +13,6 @@ import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.ejs.control.value.Value;
 import org.opensourcephysics.frames.PlotFrame;
-import org.opensourcephysics.js.JSUtil;
 
 /**
  * A simple program to test the OSP Library installation.
@@ -36,7 +35,7 @@ public class FirstPlotApp {
     OSPLog.info("FirstPlotApp running.");
     
     //WC: embedding test
-    if(JSUtil.isJS) {
+    if(OSPRuntime.isJS2) {
     	frame.setLocation(0, 0);       // sets position to top left corner
       OSPRuntime.setAppClass(frame); // undecorated frame can now be embedded into html page
     }

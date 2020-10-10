@@ -25,7 +25,6 @@ import org.opensourcephysics.display.MeasuredImage;
 import org.opensourcephysics.display.OSPFrame;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.PrintUtils;
-import org.opensourcephysics.js.JSUtil;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.SnapshotTool;
 
@@ -69,7 +68,7 @@ public class ImageFrame extends OSPFrame {
     fileMenu = new JMenu(DisplayRes.getString("DrawingFrame.File_menu_item"));     //$NON-NLS-1$
     printItem = new JMenuItem(DisplayRes.getString("ImageFrame.Print_menu_item")); //$NON-NLS-1$
     printItem.setAccelerator(KeyStroke.getKeyStroke('P', MENU_SHORTCUT_KEY_MASK));
-    if(!org.opensourcephysics.js.JSUtil.isJS) printItem.addActionListener(new ActionListener() {
+    if(!OSPRuntime.isJS) printItem.addActionListener(new ActionListener() {
       @Override
 	public void actionPerformed(ActionEvent e) {
         PrintUtils.printComponent(drawingPanel);
@@ -123,9 +122,9 @@ public class ImageFrame extends OSPFrame {
 
     });
     if(OSPRuntime.applet==null) {
-      if(!JSUtil.isJS)fileMenu.add(saveImageMenu);
+      if(!OSPRuntime.isJS2)fileMenu.add(saveImageMenu);
       fileMenu.addSeparator();
-      if(!JSUtil.isJS)fileMenu.add(printItem);
+      if(!OSPRuntime.isJS2)fileMenu.add(printItem);
     }
     menuBar.add(fileMenu);
     // edit menu

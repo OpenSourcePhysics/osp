@@ -71,7 +71,6 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.ResizableIcon;
-import org.opensourcephysics.js.JSUtil;
 
 import javajs.async.Assets;
 
@@ -1841,7 +1840,7 @@ public class ResourceLoader {
 	 * @return URL of the Resource, or null if none found
 	 */
 	private static URL getAppletResourceURL(String name) {
-		if (JSUtil.isJS)
+		if (OSPRuntime.isJS2)
 			return null;
 		if ((OSPRuntime.applet == null) || (name == null) || name.trim().equals("")) { //$NON-NLS-1$
 			return null;
@@ -1928,7 +1927,7 @@ public class ResourceLoader {
 		}
 		Resource res = null;
 		// following added by Doug Brown 2009/11/14
-		if (!JSUtil.isJS && OSPRuntime.applet != null) {
+		if (!OSPRuntime.isJS2 && OSPRuntime.applet != null) {
 			try { // let applet class try to get it first
 				URL url = getAppletResourceURL(path);
 				res = createResource(url);
@@ -2343,15 +2342,15 @@ public class ResourceLoader {
 		return res;
 	}
 
-	/**
-	 * Never called -- was for applet only Finds the resource using only the class
-	 * resource loader
-	 */
-
-	private static Resource findResourceInClass(String path, Class<?> type, boolean searchFiles) {
-		// added by Paco
-		return findResource(path, type, searchFiles, true);
-	}
+//	/**
+//	 * Never called -- was for applet only Finds the resource using only the class
+//	 * resource loader
+//	 */
+//
+//	private static Resource findResourceInClass(String path, Class<?> type, boolean searchFiles) {
+//		// added by Paco
+//		return findResource(path, type, searchFiles, true);
+//	}
 
 	/**
 	 * Gets a path from a base path and file name.
@@ -2661,10 +2660,18 @@ public class ResourceLoader {
 	}
 
 	// ---- Localization
-	static private final String JAR_TOOL_BUNDLE_NAME = "org.opensourcephysics.resources.tools.tools"; //$NON-NLS-1$
 
+	/**
+	 * Get a bundle form org.opensourcePhysics.reosurces, for example
+	 * @param bundleName  defaults to org.opensourcephysics.resources.tools.tools
+	 * @param resourceLocale defaults to Locale.getDefault()
+	 * @return the appropriate Bundle
+	 */
 	public static Bundle getBundle(String bundleName, Locale resourceLocale) {
-
+		if (bundleName == null)
+			bundleName = "org.opensourcephysics.resources.tools.tools";
+		if (resourceLocale == null)
+			resourceLocale = Locale.getDefault();
 		String name;
 		if (resourceLocale.getLanguage() == "en" && !Assets.notFound(name = bundleName.replaceAll("\\.", "/") + ".properties") ) {
 			Properties p = new Properties();
@@ -2684,20 +2691,36 @@ public class ResourceLoader {
 				ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES)));
 	}
 
-	public static Bundle getBundle(String bundleName) {
-		return getBundle(bundleName, Locale.getDefault());
+	private final static String latinChars = "á\u00e1Á\u00c1é\u00e9É\u00c9í\u00edÍ\u00cdó\u00f3Ó\u00d3ú\u00faÚ\u00dañ\u00f1Ñ\u00d1ü\u00fcÜ\u00dc¡\u00a1¿\u00bf"; 
+	private static Map<String, String> langMap;
+
+	public static String fixLang(String ret) {
+		if (ret != null && localeChars != null) {
+			if (langMap == null)
+				langMap = new HashMap<>();
+			String s = langMap.get(ret);
+			if (s != null)
+				return s;
+			s = ret;
+			for (int i = 0, n = localeChars.length(); i < n; i++) {
+				ret = ret.replace(localeChars.charAt(i), localeChars.charAt(++i));
+			}
+			langMap.put(s, ret);
+		}
+		return ret;
 	}
 
 	private static Locale myLocale = null;
-	static private Bundle myResourceBundle;
-
-	private static void getMyResourceBundle() {
-		myResourceBundle = (myLocale == null ? getBundle(JAR_TOOL_BUNDLE_NAME)
-				: getBundle(JAR_TOOL_BUNDLE_NAME, myLocale));
-	}
+	private static String localeChars;
 
 	static public void setLocale(Locale locale) {
+		if (locale.toString().indexOf("es") == 0) {
+			localeChars = latinChars;
+		} else {
+			localeChars = null;
+		}			
 		myLocale = locale;
+		langMap = null;
 	}
 
 	static public final int YES = 0;
@@ -2744,21 +2767,20 @@ public class ResourceLoader {
 			}
 
 		};
-
-		getMyResourceBundle();
-		JButton yesButton = new JButton(myResourceBundle.getString("JarTool.Yes")); //$NON-NLS-1$
+		Bundle bundle = getBundle(null, myLocale);
+		JButton yesButton = new JButton(bundle.getString("JarTool.Yes")); //$NON-NLS-1$
 		yesButton.setActionCommand("yes"); //$NON-NLS-1$
 		yesButton.addMouseListener(mouseListener);
-		JButton noButton = new JButton(myResourceBundle.getString("JarTool.No")); //$NON-NLS-1$
+		JButton noButton = new JButton(bundle.getString("JarTool.No")); //$NON-NLS-1$
 		noButton.setActionCommand("no"); //$NON-NLS-1$
 		noButton.addMouseListener(mouseListener);
-		JButton yesToAllButton = new JButton(myResourceBundle.getString("JarTool.YesToAll")); //$NON-NLS-1$
+		JButton yesToAllButton = new JButton(bundle.getString("JarTool.YesToAll")); //$NON-NLS-1$
 		yesToAllButton.setActionCommand("yesToAll"); //$NON-NLS-1$
 		yesToAllButton.addMouseListener(mouseListener);
-		JButton noToAllButton = new JButton(myResourceBundle.getString("JarTool.NoToAll")); //$NON-NLS-1$
+		JButton noToAllButton = new JButton(bundle.getString("JarTool.NoToAll")); //$NON-NLS-1$
 		noToAllButton.setActionCommand("noToAll"); //$NON-NLS-1$
 		noToAllButton.addMouseListener(mouseListener);
-		JButton cancelButton = new JButton(myResourceBundle.getString("JarTreeDialog.Button.Cancel")); //$NON-NLS-1$
+		JButton cancelButton = new JButton(bundle.getString("JarTreeDialog.Button.Cancel")); //$NON-NLS-1$
 		cancelButton.setActionCommand("cancel"); //$NON-NLS-1$
 		cancelButton.addMouseListener(mouseListener);
 		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -2803,7 +2825,7 @@ public class ResourceLoader {
 	 * @throws IOException
 	 */
 	public static InputStream openZipEntryStream(URL url, URL zipURL) throws IOException {
-		
+
 		if (OSPRuntime.isJS) {
 			byte[] bytes = OSPRuntime.jsutil.getURLBytes(url);
 			if (bytes == null) {
@@ -2818,27 +2840,26 @@ public class ResourceLoader {
 			url = new URL("jar", null, url.toString());
 //		if (zipURL != null && zipURL.getProtocol() != "jar")
 //			zipURL = new URL("jar", null, zipURL.toString());
-		
-		
+
 		String entryPath = url.toString();
 		int n = entryPath.indexOf("!/");
 		if (n > -1) {
 			URL toOpen = (zipURL == null ? new URL(entryPath.substring(4, n)) : zipURL);
-			entryPath = entryPath.substring(n+2);
-	    BufferedInputStream bufIn = new BufferedInputStream(toOpen.openStream());
+			entryPath = entryPath.substring(n + 2);
+			BufferedInputStream bufIn = new BufferedInputStream(toOpen.openStream());
 			ZipInputStream input = new ZipInputStream(bufIn);
-	    ZipEntry zipEntry=null;
-	    while ((zipEntry=input.getNextEntry()) != null) {
+			ZipEntry zipEntry = null;
+			while ((zipEntry = input.getNextEntry()) != null) {
 				if (zipEntry.isDirectory())
 					continue;
-	      String filename = zipEntry.getName();
-	      if (entryPath.contains(filename)) {
-	      	return input;
-	      }
-	    }
+				String filename = zipEntry.getName();
+				if (entryPath.contains(filename)) {
+					return input;
+				}
+			}
 		}
-    return null;
-		
+		return null;
+
 //		return url.openStream();
 //		String zipContent = url.toString();
 //		BufferedInputStream bufIn = new BufferedInputStream(url.openStream());

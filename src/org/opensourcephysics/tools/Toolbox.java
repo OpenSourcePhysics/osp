@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.opensourcephysics.controls.OSPLog;
+import org.opensourcephysics.display.OSPRuntime;
 
 /**
  * Toolbox stores tools that can exchange data using the Tool interface.
@@ -26,7 +27,7 @@ public class Toolbox {
 	}
 
 	public static void addTool(String name, Tool tool) {
-		if (org.opensourcephysics.js.JSUtil.isJS) { // external tools not supported in JavaScript.
+		if (OSPRuntime.isJS) { // external tools not supported in JavaScript.
 			return;
 		}
 		if (tools.get(name) == null) {

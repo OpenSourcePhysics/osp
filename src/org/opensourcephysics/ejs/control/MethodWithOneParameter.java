@@ -208,7 +208,7 @@ public String toString() {
     for(int i = 0; i<allMethods.length; i++) {
       // Added by W. Christian:  SwingJS getMethods returns functions that end with $
       String jsName= _name;
-      if(org.opensourcephysics.js.JSUtil.isJS && allMethods[i].getName().endsWith("$") && !_name.endsWith("$")){jsName= _name+"$";} // append $ to name if needed
+      if(OSPRuntime.isJS && allMethods[i].getName().endsWith("$") && !_name.endsWith("$")){jsName= _name+"$";} // append $ to name if needed
       if(!allMethods[i].getName().equals(jsName)) {
         continue;
       }
@@ -224,7 +224,7 @@ public String toString() {
         }
       }
       if(fits) {
-    	if(org.opensourcephysics.js.JSUtil.isJS){
+    	if(OSPRuntime.isJS){
         	java.lang.reflect.Method m=null;
         	try {
         	  m= _target.getClass().getMethod(_name, parameters); 

@@ -16,6 +16,8 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
+import org.opensourcephysics.display.OSPRuntime;
+
 @SuppressWarnings("serial")
 public class DiagnosticsForThreads extends JPanel {
 	private ThreadViewerTableModel tableModel = new ThreadViewerTableModel();
@@ -149,7 +151,7 @@ public class DiagnosticsForThreads extends JPanel {
 				}
 			};
 
-			if (org.opensourcephysics.js.JSUtil.isJS) {
+			if (OSPRuntime.isJS) {
 				System.err.println("Warning:  Diagnostics for Threads are not supported in JavaScript.");
 			} else {
 				internalThread = new Thread(r, "ThreadViewer"); //$NON-NLS-1$

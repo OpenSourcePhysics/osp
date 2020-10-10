@@ -9,6 +9,9 @@ package org.opensourcephysics.display;
 import java.util.Locale;
 import java.util.MissingResourceException;
 
+import org.opensourcephysics.tools.ResourceLoader;
+import org.opensourcephysics.tools.ResourceLoader.Bundle;
+
 /**
  * DisplayRes provides access to internationalized string resources for objects in the display package.
  *
@@ -16,14 +19,15 @@ import java.util.MissingResourceException;
  * @version 1.0
  */
 public class DisplayRes {
-  private static String BUNDLE_NAME = "org.opensourcephysics.resources.display.display_res"; //$NON-NLS-1$
-  private static org.opensourcephysics.tools.ResourceLoader.Bundle res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME);
+  private static Bundle res;
+  public static void setLocale(Locale locale) {
+	  res = ResourceLoader.getBundle("org.opensourcephysics.resources.display.display_res", locale);  //$NON-NLS-1$
+  }
+  static {
+	  setLocale(null);
+  }
 
   private DisplayRes() {}
-
-  public static void setLocale(Locale locale) {
-    res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME, locale);
-  }
 
   public static String getString(String key) {
     try {

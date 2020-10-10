@@ -294,9 +294,9 @@ public class DrawingFrame3D extends OSPFrame
 	private void createMenuBar() {
 		fileMenu = new JMenu(DisplayRes.getString("DrawingFrame.File_menu_item")); //$NON-NLS-1$
 		JMenuItem printItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Print_menu_item")); //$NON-NLS-1$
-		if (!org.opensourcephysics.js.JSUtil.isJS)
+		if (!OSPRuntime.isJS)
 			printItem.setAccelerator(KeyStroke.getKeyStroke('P', MENU_SHORTCUT_KEY_MASK));
-		if (!org.opensourcephysics.js.JSUtil.isJS)
+		if (!OSPRuntime.isJS)
 			printItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -351,12 +351,12 @@ public class DrawingFrame3D extends OSPFrame
 			}
 
 		});
-		if (!org.opensourcephysics.js.JSUtil.isJS)
+		if (!OSPRuntime.isJS)
 			fileMenu.add(printItem);
 		fileMenu.add(saveXMLItem);
-		if (!org.opensourcephysics.js.JSUtil.isJS)
+		if (!OSPRuntime.isJS)
 			fileMenu.add(exportItem);
-		if (!org.opensourcephysics.js.JSUtil.isJS)
+		if (!OSPRuntime.isJS)
 			fileMenu.add(saveAsPSItem);
 		fileMenu.add(inspectItem);
 		menuBar.add(fileMenu);
@@ -552,7 +552,7 @@ public class DrawingFrame3D extends OSPFrame
 	 */
 	@Override
 	protected JMenu loadToolsMenu() {
-		if (org.opensourcephysics.js.JSUtil.isJS) { // external tools not supported in JavaScript.
+		if (OSPRuntime.isJS) { // external tools not supported in JavaScript.
 			return null;
 		}
 		JMenuBar menuBar = getJMenuBar();

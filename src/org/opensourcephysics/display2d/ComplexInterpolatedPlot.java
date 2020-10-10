@@ -19,7 +19,7 @@ import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.Grid;
 import org.opensourcephysics.display.MeasuredImage;
-import org.opensourcephysics.js.JSUtil;
+import org.opensourcephysics.display.OSPRuntime;
 
 import swingjs.api.JSUtilI;
 
@@ -430,7 +430,7 @@ public void setExpandedZ(boolean expanded, double expansionFactor) {
 
     
     imageType = 
-    		(JSUtil.isJS ? JSUtilI.TYPE_4BYTE_HTML5
+    		(OSPRuntime.isJS2 ? JSUtilI.TYPE_4BYTE_HTML5
     				: BufferedImage.TYPE_4BYTE_ABGR);
     image = new BufferedImage(width, height, imageType);
     pixelData = ((DataBufferByte)image.getRaster().getDataBuffer()).getData();

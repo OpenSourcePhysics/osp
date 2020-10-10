@@ -8,11 +8,12 @@
 package org.opensourcephysics.numerics.specialfunctions;
 import java.util.MissingResourceException;
 
+import org.opensourcephysics.tools.ResourceLoader;
 import org.opensourcephysics.tools.ResourceLoader.Bundle;
 
 public class Messages {
-  private static final String BUNDLE_NAME = "org.opensourcephysics.resources.numerics.specialfunctions"; //$NON-NLS-1$
-  private static final Bundle RESOURCE_BUNDLE = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME);
+
+  private static final Bundle RESOURCE_BUNDLE = ResourceLoader.getBundle("org.opensourcephysics.resources.numerics.specialfunctions", null);
 
   private Messages() {}
 

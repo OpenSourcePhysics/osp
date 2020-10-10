@@ -33,6 +33,8 @@ package org.opensourcephysics.media.core;
 import java.util.Locale;
 import java.util.MissingResourceException;
 
+import org.opensourcephysics.tools.ResourceLoader;
+
 /**
  * String resources for media classes.
  *
@@ -41,9 +43,22 @@ import java.util.MissingResourceException;
  */
 public class MediaRes {
   // static fields
-  private static String BUNDLE_NAME = "org.opensourcephysics.resources.media.video"; //$NON-NLS-1$
-  static Locale resourceLocale = Locale.getDefault();
-  static org.opensourcephysics.tools.ResourceLoader.Bundle res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME, resourceLocale);
+  static Locale resourceLocale;
+  static ResourceLoader.Bundle res;
+  
+  /**
+   * Sets the locale.
+   *
+   * @param locale the locale
+   */
+  public static void setLocale(Locale locale) {
+  	resourceLocale = locale;
+    res = ResourceLoader.getBundle("org.opensourcephysics.resources.media.video", locale); //$NON-NLS-1$
+  }
+
+  static {
+	  setLocale(Locale.getDefault());
+  }
 
   /**
    * Private constructor to prevent instantiation.
@@ -67,15 +82,6 @@ public class MediaRes {
     }
   }
 
-  /**
-   * Sets the locale.
-   *
-   * @param locale the locale
-   */
-  public static void setLocale(Locale locale) {
-  	resourceLocale = locale;
-    res = org.opensourcephysics.tools.ResourceLoader.getBundle(BUNDLE_NAME, locale);
-  }
 
 }
 
