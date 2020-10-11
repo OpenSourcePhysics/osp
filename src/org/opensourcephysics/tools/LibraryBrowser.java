@@ -114,7 +114,7 @@ public class LibraryBrowser extends JPanel {
 	protected static final String MY_COLLECTION_NAME = "my_collection.xml"; //$NON-NLS-1$
 	protected static final String RECENT_COLLECTION_NAME = "recent_collection.xml"; //$NON-NLS-1$
 	protected static final String LIBRARY_HELP_NAME = "library_browser_help.html"; //$NON-NLS-1$
-	protected static final String LIBRARY_HELP_BASE = "https://www.compadre.org/online_help/tools/"; //$NON-NLS-1$
+	protected static final String LIBRARY_HELP_BASE = "http://www.opensourcephysics.org/online_help/tools/"; //$NON-NLS-1$
 	protected static final String WINDOWS_OSP_DIRECTORY = "/My Documents/OSP/"; //$NON-NLS-1$
 	protected static final String OSP_DIRECTORY = "/Documents/OSP/"; //$NON-NLS-1$
 	public static final Integer HINT_LOAD_RESOURCE = 0;
@@ -1554,7 +1554,8 @@ public class LibraryBrowser extends JPanel {
 		menubar.add(collectionsMenu);
 
 		manageMenu = new JMenu();
-		menubar.add(manageMenu);
+		if (!OSPRuntime.isJS)
+			menubar.add(manageMenu);
 		collectionsItem = new JMenuItem();
 		manageMenu.add(collectionsItem);
 		collectionsItem.addActionListener(new ActionListener() {
