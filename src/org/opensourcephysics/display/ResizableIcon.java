@@ -34,7 +34,7 @@ public class ResizableIcon implements Icon {
 	private final Icon icon;
 	private int sizeFactor, w, h;
 
-	private boolean doClear;
+	private boolean isDrawn;
 
 	/**
 	 * Creates a <CODE>ResizableIcon</CODE> from the specified URL.
@@ -63,7 +63,7 @@ public class ResizableIcon implements Icon {
 			baseWidth = icon.getIconWidth();
 			baseHeight = icon.getIconHeight();
 		}
-		doClear = !(icon instanceof ImageIcon);
+		isDrawn = !(icon instanceof ImageIcon);
 	}
 
 	@Override
@@ -81,7 +81,10 @@ public class ResizableIcon implements Icon {
 		Graphics2D g2 = baseImage.createGraphics();
 		// BH 2020.03.25 It is not necessary to clear the image first -- image will be
 		// AlphaComposite.SrcOver by default
-		if (doClear) {
+		// BH 2020.10.11 coordinate system menu does not show proper checkbox icons
+		// after locking.
+		// If an icon is not an image icon, then we need to clear the surface.
+		if (isDrawn) {
 			g2.setComposite(AlphaComposite.Clear);
 			g2.fillRect(0, 0, baseWidth, baseHeight);
 			g2.setComposite(AlphaComposite.SrcOver);
