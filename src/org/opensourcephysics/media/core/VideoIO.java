@@ -31,6 +31,7 @@
  */
 package org.opensourcephysics.media.core;
 
+import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
@@ -46,6 +47,7 @@ import java.util.function.Function;
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 
 import org.opensourcephysics.controls.ControlsRes;
@@ -62,6 +64,7 @@ import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ResourceLoader;
 
 import javajs.async.AsyncFileChooser;
+import javajs.util.VideoReader;
 
 /**
  * This provides static methods for managing video and text input/output.
@@ -562,6 +565,22 @@ public class VideoIO {
 		return canceled;
 	}
 
+	public static boolean isLoadableMP4(String path, Runnable whenNotLoadable) {
+		try {
+			VideoReader vr = new VideoReader(path);
+			vr.getContents(false);
+			String codec = vr.getCodec();
+			OSPLog.fine("mp4 codec = "+codec);
+			if (codec.contains("avc1")) {
+				return true;
+			}
+		} catch (IOException e) {
+		}
+		Toolkit.getDefaultToolkit().beep();
+		if (whenNotLoadable != null)
+			SwingUtilities.invokeLater(whenNotLoadable);
+		return false;
+	}
 
 	/**
 	 * Returns a video from a specified path. May return null.
@@ -854,6 +873,7 @@ public class VideoIO {
 		if (videoFileFilter.accept(file, true)) { // load video
 			ArrayList<VideoType> types = getVideoTypes(false);
 			Video video = null;
+			Toolkit.getDefaultToolkit().beep();
 			String name = file.getAbsolutePath();
 			for (int i = 0; i < types.size(); i++) {
 				VideoType type = types.get(i);

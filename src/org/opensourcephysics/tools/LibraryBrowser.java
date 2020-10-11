@@ -1109,7 +1109,7 @@ public class LibraryBrowser extends JPanel {
 								File file = ResourceLoader.copyURLtoFile(urlPath, filePath);
 								LibraryBrowser.this.firePropertyChange(PROPERTY_LIBRARY_TARGET, HINT_DOWNLOAD_RESOURCE, file); // $NON-NLS-1$
 							} catch (IOException e1) {
-								System.err.println("Failed to load urlPath="+urlPath);
+								System.err.println("Failed to download urlPath="+urlPath);
 								e1.printStackTrace();
 							}
 							return null;
