@@ -91,6 +91,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
 
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPRuntime;
@@ -1712,7 +1713,7 @@ System.out.println("VideoPlayer.dragging " + start + "-" + end + " " + val + " "
 		};
 		
 		if (o == null || o == "stepcount") {
-			OSPRuntime.setTimeout("VP-updateSlider", 200, true, r);
+			OSPRuntime.setTimeout("VP-updateSlider", 200, o != null, r);
 		} else {
 			r.run();
 		}
