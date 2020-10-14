@@ -335,6 +335,26 @@ public class GUIUtils {
 		}
 		return file;
 	}
+	
+	/**
+	 * Shows a file chooser and opens a file when running in Java.
+	 * Not applicable when running in JavaScrpipt.
+	 * @param parent
+	 * @return
+	 */
+  public static File showOpenDialog(Component parent) {
+  	if(OSPRuntime.isJS) {
+  		return null;
+  	}
+    JFileChooser fileChooser = OSPRuntime.getChooser(); // new JFileChooser();
+    int result = fileChooser.showOpenDialog(parent);
+    if(result!=JFileChooser.APPROVE_OPTION) {
+      return null;
+    }
+    OSPRuntime.chooserDir = fileChooser.getCurrentDirectory().toString();
+    File file = fileChooser.getSelectedFile();
+    return file;
+  }
 
 	/**
 	 * Returns the enabled text color.
