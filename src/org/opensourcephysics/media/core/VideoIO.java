@@ -565,20 +565,24 @@ public class VideoIO {
 		return canceled;
 	}
 
-	public static boolean isLoadableMP4(String path, Runnable whenNotLoadable) {
+	public static boolean isLoadableMP4(String path, Function<String, Void> whenNotLoadable) {
+		String codec = null;
 		try {
 			VideoReader vr = new VideoReader(path);
 			vr.getContents(false);
-			String codec = vr.getCodec();
+			codec = vr.getCodec();
 			OSPLog.fine("mp4 codec = "+codec);
-			if (codec.contains("avc1")) {
+			if (codec != null && codec.contains("avc1")) {
 				return true;
 			}
 		} catch (IOException e) {
 		}
 		Toolkit.getDefaultToolkit().beep();
+		String theCodec = codec;
 		if (whenNotLoadable != null)
-			SwingUtilities.invokeLater(whenNotLoadable);
+			SwingUtilities.invokeLater(() -> {
+				whenNotLoadable.apply(theCodec);
+			});
 		return false;
 	}
 
