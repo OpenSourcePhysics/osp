@@ -1100,11 +1100,11 @@ public class LibraryBrowser extends JPanel {
 				// choose file and save resource
 				VideoIO.getChooserFilesAsync("save video "+name, //$NON-NLS-1$
 						(files) -> {
-							if (files == null) {
+							if (VideoIO.getChooser().getSelectedOption() != AsyncFileChooser.APPROVE_OPTION
+									|| files == null) {
 								return null;
 							}
 							String filePath = files[0].getAbsolutePath();
-							System.err.println("filePath="+filePath);
 							try {
 								File file = ResourceLoader.copyURLtoFile(urlPath, filePath);
 								LibraryBrowser.this.firePropertyChange(PROPERTY_LIBRARY_TARGET, HINT_DOWNLOAD_RESOURCE, file); // $NON-NLS-1$
