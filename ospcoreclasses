@@ -379,6 +379,7 @@ javajs/util/Lst.js
 javajs/util/PT.js
 javajs/util/Rdr.js
 javajs/util/SB.js
+javajs/util/VideoReader.js
 javajs/util/ZipTools.js
 javax/swing/AbstractAction.js
 javax/swing/AbstractButton.js
