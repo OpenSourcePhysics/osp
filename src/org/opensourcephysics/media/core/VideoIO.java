@@ -565,6 +565,13 @@ public class VideoIO {
 		return canceled;
 	}
 
+	/**
+	 * Determines if an MP4 video is loadable.
+	 *
+	 * @param path the path
+	 * @param whenNotLoadable a Function to apply (later) if not loadable
+	 * @return true if loadable
+	 */
 	public static boolean isLoadableMP4(String path, Function<String, Void> whenNotLoadable) {
 		String codec = null;
 		try {
@@ -572,7 +579,7 @@ public class VideoIO {
 			vr.getContents(false);
 			codec = vr.getCodec();
 			OSPLog.fine("mp4 codec = "+codec);
-			if (codec != null && codec.contains("avc1")) {
+			if (codec != null && codec.contains("avc1")) {  // H264
 				return true;
 			}
 		} catch (IOException e) {
