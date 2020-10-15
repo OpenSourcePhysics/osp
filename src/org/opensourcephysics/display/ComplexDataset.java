@@ -22,6 +22,7 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
 import org.opensourcephysics.display.DataTable.OSPTableModel;
+import org.opensourcephysics.display.Dataset.Model;
 import org.opensourcephysics.display.axes.XAxis;
 import org.opensourcephysics.display.axes.XYAxis;
 
@@ -38,7 +39,43 @@ import org.opensourcephysics.display.axes.XYAxis;
  * @author Wolfgang Christian
  * @version 1.0
  */
-public class ComplexDataset extends OSPTableModel implements Drawable, Measurable, Data {
+public class ComplexDataset extends DataTable.DataModel implements Drawable, Measurable, Data {
+	
+	final public Model model;
+	
+	public class Model extends DataTable.OSPTableModel {
+
+		@Override
+		public int getStride() {
+			return stride;
+		}
+
+		@Override
+		public int getRowCount() {
+			return ComplexDataset.this.getRowCount();
+		}
+
+		@Override
+		public int getColumnCount() {
+			return ComplexDataset.this.getColumnCount();
+		}
+
+		@Override
+		public Object getValueAt(int rowIndex, int columnIndex) {
+			return Double.valueOf(ComplexDataset.this.getValueAt(rowIndex, columnIndex));
+		}
+		
+
+		@Override
+		public Class<?> getColumnClass(int columnIndex) {
+			return Double.class;
+		}
+
+
+	}
+
+
+	
 	static final double PI2 = Math.PI * 2;
 
 	/** AMP height equal to |z|.. */
@@ -118,6 +155,7 @@ public class ComplexDataset extends OSPTableModel implements Drawable, Measurabl
 		index = 0;
 		flip = new AffineTransform(1, 0, 0, -1, 0, 0);
 		clear();
+		model = new Model();
 	}
 
 	/**
@@ -341,11 +379,6 @@ public class ComplexDataset extends OSPTableModel implements Drawable, Measurabl
 	public void setStride(int _stride) {
 		stride = _stride;
 		stride = Math.max(1, stride);
-	}
-
-	@Override
-	public int getStride() {
-		return stride;
 	}
 
 	/**
@@ -841,28 +874,17 @@ public class ComplexDataset extends OSPTableModel implements Drawable, Measurabl
 	 * @return the datum
 	 */
 	@Override
-	public Object getValueAt(int rowIndex, int columnIndex) {
+	public double getValueAt(int rowIndex, int columnIndex) {
 		rowIndex = rowIndex * stride;
 		switch (columnIndex) {
 		case 0:
-			return new Double(xpoints[rowIndex]);
+			return xpoints[rowIndex];
 		case 1:
-			return new Double(re_points[rowIndex]);
+			return re_points[rowIndex];
 		case 2:
-			return new Double(im_points[rowIndex]);
+			return im_points[rowIndex];
 		}
-		return new Double(0);
-	}
-
-	/**
-	 * Gets the type of object for JTable entry.
-	 * 
-	 * @param columnIndex
-	 * @return the class
-	 */
-	@Override
-	public Class<?> getColumnClass(int columnIndex) {
-		return Double.class;
+		return 0;
 	}
 
 	/**

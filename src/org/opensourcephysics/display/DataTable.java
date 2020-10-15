@@ -75,13 +75,24 @@ import javajs.async.SwingJSUtils.Performance;
  * @created February 21, 2002
  * @version 1.0
  */
-@SuppressWarnings("serial")
 public class DataTable extends JTable {
 
 //	public void paint(Graphics g) {
-//		System.out.println("DataTable.paint clip=" + g.getClipBounds(new Rectangle()));
-//		super.paint(g);
-//	}
+	//		System.out.println("DataTable.paint clip=" + g.getClipBounds(new Rectangle()));
+	//		super.paint(g);
+	//	}
+
+	public static abstract class DataModel {
+
+		public abstract int getRowCount();
+
+		public abstract int getColumnCount();
+		
+		public abstract String getColumnName(int column);
+		
+		public abstract double getValueAt(int row, int column);
+	
+	}
 
 	/**
 	 * A marker type for TableModels that are associated with DataTable. including
@@ -745,9 +756,6 @@ public class DataTable extends JTable {
 		Performance.TIME_MARK));
 	}
 
-	public void setBounds(int x, int y, int w, int h) {
-		super.setBounds(x,  y,  w,  h);
-	}
 	/**
 	 * Add a TableModel object to the table model list.
 	 *
@@ -800,7 +808,7 @@ public class DataTable extends JTable {
 		protected DataTableElement(OSPTableModel t) {
 			tableModel = t;
 			bsColVis.set(0, t.getColumnCount());
-			if (t instanceof DatasetManager) {
+			if (t instanceof DatasetManager.Model) {
 				t.addTableModelListener(this);
 			}
 		}
@@ -1435,7 +1443,7 @@ public class DataTable extends JTable {
 		public boolean isFoundOrdered() {
 			return (foundModel != null && foundModel 
 					instanceof Dataset && 
-					((Dataset) foundModel).isFoundOrdered());
+					((Dataset) foundModel).model.isFoundOrdered());
 		}
 
 		protected void refresh(int mask) {

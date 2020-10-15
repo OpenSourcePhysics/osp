@@ -57,7 +57,7 @@ public class FourierPanel extends JPanel {
 		fourierManager = new DatasetManager();
 		fourierManager.setXPointsLinked(true);
 		table = new DataTable();
-		table.add(fourierManager);
+		table.add(fourierManager.model);
 		plot = new PlottingPanel("", "", ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		plotPanel = new JPanel(new BorderLayout());
 		plotPanel.add(plot, BorderLayout.CENTER);

@@ -25,16 +25,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.swing.event.TableModelEvent;
 
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
-import org.opensourcephysics.display.DataTable.OSPTableModel;
 
 /**
  * Dataset stores and plots (x,y) points. Dataset is Drawable and can be
@@ -46,8 +44,65 @@ import org.opensourcephysics.display.DataTable.OSPTableModel;
  * @created February 13, 2002
  * @version 1.0
  */
-@SuppressWarnings("serial")
-public class Dataset extends OSPTableModel implements Measurable, LogMeasurable, Data {
+public class Dataset extends DataTable.DataModel implements Measurable, LogMeasurable, Data {
+
+	final public Model model;
+	
+	public class Model extends DataTable.OSPTableModel {
+
+		/**
+			stride for table view
+		*/
+		protected int stride = 1;
+
+
+		@Override
+		public boolean isFoundOrdered() {
+			double[] data = (foundColumn == 0 ? xpoints : ypoints);
+			double d = Double.MAX_VALUE;
+			for (int i = index; --i >= 0;) {
+				if (data[i] > d)
+					return false;
+				d = data[i];
+			}
+			return true;
+		}
+
+		@Override
+		public int getStride() {
+			return stride;
+		}
+
+		@Override
+		public int getRowCount() {
+			return Dataset.this.getRowCount();
+		}
+
+		@Override
+		public int getColumnCount() {
+			return Dataset.this.getColumnCount();
+		}
+
+		@Override
+		public Object getValueAt(int rowIndex, int columnIndex) {
+			return Double.valueOf(Dataset.this.getValueAt(rowIndex, columnIndex));
+		}
+		
+
+		@Override
+		public Class<?> getColumnClass(int columnIndex) {
+			return Double.class;
+		}
+
+		protected void setStride(int stride) {
+			this.stride = stride;
+			// for DataTable
+			fireTableChanged(new TableModelEvent(this, 0, Integer.MAX_VALUE, stride, TableModelEvent.HEADER_ROW));		
+		}
+
+
+	}
+
 
 	protected static int id = 0;
 	
@@ -190,9 +245,6 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	protected boolean visible = true;
 	// visible in drawing panel; only visible dataset affect autoscale
 
-	private int stride = 1;
-	// stride for table view
-
 	protected int maxPoints = defaultMaxPoints;
 	// the maximum number of points that will be saved in a dataset
 
@@ -240,6 +292,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 		index = 0;
 		bsColVis.set(0, 2);
 		clear();
+		model = new Model();
 	}
 
 	public Dataset set(double[] x, double[] y) {
@@ -901,7 +954,7 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	 */
 	@Override
 	public int getRowCount() {
-		return (index + stride - 1) / stride;
+		return (index + model.stride - 1) / model.stride;
 	}
 
 	/**
@@ -915,34 +968,34 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 		return (convertTableColumnIndex(bsColVis, columnIndex) == 0 ? xColumnName : yColumnName);
 	}
 
-	/**
-	 * Gets an x or y value for rendering in a JTable.
-	 *
-	 * @param rowIndex
-	 * @param columnIndex
-	 * @return the datum
-	 */
+//	/**
+//	 * Gets an x or y value for rendering in a JTable.
+//	 *
+//	 * @param rowIndex
+//	 * @param columnIndex
+//	 * @return the datum
+//	 */
+//	@Override
+//	public Object getValueAt(int rowIndex, int columnIndex) {
+//		foundColumn = columnIndex = convertTableColumnIndex(bsColVis, columnIndex);
+//		rowIndex = rowIndex * stride;
+//		// conversionFactor added by D Brown Dec 2010
+//		if (columnIndex == 0) {
+//			return Double.valueOf(xpoints[rowIndex]);
+//		}
+//		double y = ypoints[rowIndex];
+//		return (Double.isNaN(y) ? null : Double.valueOf(y + shift));
+//	}
+
 	@Override
-	public Object getValueAt(int rowIndex, int columnIndex) {
+	public double getValueAt(int rowIndex, int columnIndex) {
 		foundColumn = columnIndex = convertTableColumnIndex(bsColVis, columnIndex);
-		rowIndex = rowIndex * stride;
+		rowIndex = rowIndex * model.stride;
 		// conversionFactor added by D Brown Dec 2010
 		if (columnIndex == 0) {
-			return Double.valueOf(xpoints[rowIndex]);
+			return xpoints[rowIndex];
 		}
-		double y = ypoints[rowIndex];
-		return (Double.isNaN(y) ? null : Double.valueOf(y + shift));
-	}
-
-	/**
-	 * Gets the type of object for JTable entry.
-	 *
-	 * @param columnIndex
-	 * @return the class
-	 */
-	@Override
-	public Class<?> getColumnClass(int columnIndex) {
-		return Double.class;
+		return ypoints[rowIndex] + shift;
 	}
 
 	/**
@@ -1114,9 +1167,12 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	public void read(String inputFile) {
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-			String s;
-			while ((s = reader.readLine()) != null) {
-				s = s.trim();
+			List<String> lines = getLines(reader);
+			int nlines = lines.size();
+			double[][] xy = new double[2][nlines];
+			int n = 0;
+			for (int i = 0; i < nlines; i++) {
+				String s = lines.get(i).trim();
 				if ((s.length() == 0) || (s.charAt(0) == '#')) { // ignore lines beginning with #
 					continue;
 				}
@@ -1125,12 +1181,15 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 				case 0:
 					continue;
 				case 2:
-					append(Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()));
+					xy[0][n] = Double.parseDouble(st.nextToken());
+					xy[1][n] = Double.parseDouble(st.nextToken());
+					n++;
 					break;
 				default:
 					throw new IOException();
 				}
 			}
+			append(xy[0], xy[1], n);
 			updateID();
 			reader.close();
 		} catch (java.io.FileNotFoundException fnfe) {
@@ -1140,6 +1199,15 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 		} catch (NumberFormatException nfe) {
 			System.err.println("Error reading file " + inputFile); //$NON-NLS-1$
 		}
+	}
+
+	private static List<String> getLines(BufferedReader reader) throws IOException {
+		String s;
+		List<String> list = new ArrayList<>();
+		while ((s = reader.readLine()) != null) {
+			list.add(s);			
+		}
+		return list;
 	}
 
 	/**
@@ -1266,42 +1334,6 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 	}
 
 	/**
-	 * Converts a table column in a table model to the appropriate table column. 
-	 * 
-	 * <code>
-	 * x   y  index  ret
-	 * 
-	 * 0   1    0     1 (1 when !x)
-	 * 0   1    1     1 (1 when !x)
-	 * 1   0    0     0 (0 when !y)
-	 * 1   0    1     0 (0 when !y)
-	 * 1   1    0     0 (index)
-	 * 1   1    1     1 (index)
-	 * 
-	 * same as original:
-	 * 0   1    0     1 (1 when index==0 and !x)
-	 * 1   0    1     0 (0 when index==1 and !y)
-	 * 1   0    0     0 (index)
-	 * 0   1    1     1 (index)
-	 * 1   1    0     0 (index)
-	 * 1   1    1     1 (index)
-	 * </code>
-	 * 
-	 * @param visible     array of column visibilities
-	 * @param columnIndex table column index to convert
-	 * @return converted table column index
-	 */
-	public static int convertTableColumnIndex(BitSet visible, int columnIndex) {
-		return (!visible.get(0) ? 1 : visible.get(1) ? columnIndex : 0);
-//		if (columnIndex == 0 && !visible.get(0)) {
-//			columnIndex++;
-//		} else if (columnIndex == 1 && !visible.get(1)) {
-//			columnIndex--;
-//		}
-//		return columnIndex;
-	}
-
-	/**
 	 * Sets the visibility of the x column of this Dataset in a table view.
 	 * 
 	 * @param b new visibility
@@ -1340,18 +1372,9 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 
 	/**
 	 * Sets the stride of this Dataset in a table view.
-	 * 
-	 * @param _stride the stride
 	 */
-	public void setStride(int _stride) {
-		stride = _stride;
-		// for DataTable
-		fireTableChanged(new TableModelEvent(this, 0, Integer.MAX_VALUE, stride, TableModelEvent.HEADER_ROW));		
-	}
-
-	@Override
-	public int getStride() {
-		return stride;
+	public void setStride(int stride) {
+		model.setStride(stride);
 	}
 
 	/**
@@ -1868,16 +1891,21 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 		public Object loadObject(XMLControl control, Object obj) {
 			Dataset data = (Dataset) obj;
 			double[][] points = (double[][]) control.getObject("points"); //$NON-NLS-1$
-			if ((points != null) && (points.length > 0) && (points[0] != null)) {
-				data.clear();
-				for (int i = 0; i < points.length; i++) {
-					data.append(points[i][0], points[i][1]);
+			int n;
+			double[] xPoints = null, yPoints = null;
+			if (points != null && (n = points.length) > 0 && points[0] != null) {
+				xPoints = new double[n];
+				yPoints = new double[n];
+				for (int i = 0; i < n; i++) {
+					xPoints[i] = points[i][0];
+					yPoints[i] = points[i][1];
 				}
+			} else {
+				// for backward compatibility
+				xPoints = (double[]) control.getObject("x_points"); //$NON-NLS-1$
+				yPoints = (double[]) control.getObject("y_points"); //$NON-NLS-1$
 			}
-			// for backward compatibility
-			double[] xPoints = (double[]) control.getObject("x_points"); //$NON-NLS-1$
-			double[] yPoints = (double[]) control.getObject("y_points"); //$NON-NLS-1$
-			if ((xPoints != null) && (yPoints != null)) {
+			if (xPoints != null && yPoints != null) {
 				data.clear();
 				data.append(xPoints, yPoints);
 			}
@@ -1930,16 +1958,62 @@ public class Dataset extends OSPTableModel implements Measurable, LogMeasurable,
 		return b;
 	}
 
-	@Override
-	public boolean isFoundOrdered() {
-		double[] data = (foundColumn == 0 ? xpoints : ypoints);
-		double d = Double.MAX_VALUE;
-		for (int i = index; --i >= 0;) {
-			if (data[i] > d)
-				return false;
-			d = data[i];
-		}
-		return true;
+	/**
+	 * Converts a table column in a table model to the appropriate table column.
+	 * 
+	 * <code>
+	 * x   y  index  ret
+	 * 
+	 * best:
+	 * 
+	 * 1   1    0     0 (index when x)
+	 * 1   0    0     0 (index when x)
+	 * 1   1    1     1 (index when y)
+	 * 0   1    1     1 (index when y)
+	 * 0   1    0     1 (1 when !x)
+	 * 1   0    1     0 (0 when !y)
+	 * 
+	 * equivalent
+	 * 
+	 * 0   1    0     1 (1 when !x)
+	 * 0   1    1     1 (1 when !x)
+	 * 1   0    0     0 (0 when !y)
+	 * 1   0    1     0 (0 when !y)
+	 * 1   1    0     0 (index)
+	 * 1   1    1     1 (index)
+	 * 
+	 * same as original:
+	 * 0   1    0     1 (1 when index==0 and !x)
+	 * 1   0    1     0 (0 when index==1 and !y)
+	 * 1   0    0     0 (index)
+	 * 0   1    1     1 (index)
+	 * 1   1    0     0 (index)
+	 * 1   1    1     1 (index)
+	 * </code>
+	 * 
+	 * @param visible     array of column visibilities
+	 * @param columnIndex table column index to convert --- 0 or 1
+	 * @return converted table column index
+	 */
+	public static int convertTableColumnIndex(BitSet visible, int columnIndex) {
+		// simplest
+		return (visible.get(columnIndex) ? columnIndex : 1 - columnIndex);
+// original:
+//	if (columnIndex == 0 && !visible.get(0)) {
+//		columnIndex++;
+//	} else if (columnIndex == 1 && !visible.get(1)) {
+//		columnIndex--;
+//	}
+//	return columnIndex;
+
+// equivalent:
+//		if (columnIndex == 0 && !visible.get(0)) {
+//			return 1;
+//		} 
+//		if (columnIndex == 1 && !visible.get(1)) {
+//			return 0;
+//		}
+//		return columnIndex;
 	}
 
 }

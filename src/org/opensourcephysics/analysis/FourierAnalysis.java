@@ -168,51 +168,48 @@ public java.util.List<Data> getDataList() {
     return list;
   }
 
-  /**
-   * Gets the complex datasets that contain the result of the last Fourier analysis.
-   * Real coefficients are contained in the first dataset.
-   * Complex coefficients are in the second dataset.
-   *
-   * @return list of Datasets
-   */
-  @Override
-public java.util.ArrayList<Dataset> getDatasets() {
-    java.util.ArrayList<Dataset> list = new java.util.ArrayList<Dataset>();
-    if(fftData==null) {
-      return list;
-    }
-    if(realDatasets[0]==null) {
-      realDatasets[0] = new Dataset();
-      realDatasets[0].setXYColumnNames(DisplayRes.getString("FourierAnalysis.Column.Frequency"), //$NON-NLS-1$
-        DisplayRes.getString("FourierAnalysis.Column.Real"),                                     //$NON-NLS-1$
-          DisplayRes.getString("FourierAnalysis.RealCoefficients"));                             //$NON-NLS-1$
-      realDatasets[0].setLineColor(Color.RED);
-      realDatasets[1] = new Dataset();
-      realDatasets[1].setXYColumnNames(DisplayRes.getString("FourierAnalysis.Column.Frequency"), //$NON-NLS-1$
-        DisplayRes.getString("FourierAnalysis.Column.Imaginary"),                                //$NON-NLS-1$
-          DisplayRes.getString("FourierAnalysis.ImaginaryCoefficients"));                        //$NON-NLS-1$
-      realDatasets[1].setLineColor(Color.BLUE);
-    } else {
-      realDatasets[0].clear();
-      realDatasets[1].clear();
-    }
-    if(radians) {
-      for(int i = 0, nOmega = omega.length; i<nOmega; i++) {
-        double re = fftData[2*i], im = fftData[2*i+1];
-        realDatasets[0].append(omega[i], re);
-        realDatasets[1].append(omega[i], im);
-      }
-    } else {
-      for(int i = 0, nFreqs = freqs.length; i<nFreqs; i++) {
-        double re = fftData[2*i], im = fftData[2*i+1];
-        realDatasets[0].append(freqs[i], re);
-        realDatasets[1].append(freqs[i], im);
-      }
-    }
-    list.add(realDatasets[0]);
-    list.add(realDatasets[1]);
-    return list;
-  }
+	/**
+	 * Gets the complex datasets that contain the result of the last Fourier
+	 * analysis. Real coefficients are contained in the first dataset. Complex
+	 * coefficients are in the second dataset.
+	 *
+	 * @return list of Datasets
+	 */
+	@Override
+	public java.util.ArrayList<Dataset> getDatasets() {
+		java.util.ArrayList<Dataset> list = new java.util.ArrayList<Dataset>();
+		if (fftData == null) {
+			return list;
+		}
+		if (realDatasets[0] == null) {
+			realDatasets[0] = new Dataset();
+			realDatasets[0].setXYColumnNames(DisplayRes.getString("FourierAnalysis.Column.Frequency"), //$NON-NLS-1$
+					DisplayRes.getString("FourierAnalysis.Column.Real"), //$NON-NLS-1$
+					DisplayRes.getString("FourierAnalysis.RealCoefficients")); //$NON-NLS-1$
+			realDatasets[0].setLineColor(Color.RED);
+			realDatasets[1] = new Dataset();
+			realDatasets[1].setXYColumnNames(DisplayRes.getString("FourierAnalysis.Column.Frequency"), //$NON-NLS-1$
+					DisplayRes.getString("FourierAnalysis.Column.Imaginary"), //$NON-NLS-1$
+					DisplayRes.getString("FourierAnalysis.ImaginaryCoefficients")); //$NON-NLS-1$
+			realDatasets[1].setLineColor(Color.BLUE);
+		} else {
+			realDatasets[0].clear();
+			realDatasets[1].clear();
+		}
+		int n = (radians ? omega.length : freqs.length);
+		double[] re = new double[n];
+		double[] im = new double[n];
+		for (int i = 0; i < n; i++) {
+			re[i] = fftData[2 * i];
+			im[i] = fftData[2 * i + 1];
+		}
+		double[] x = (radians ? omega : freqs);
+		realDatasets[0].append(x, re);
+		realDatasets[1].append(x, im);
+		list.add(realDatasets[0]);
+		list.add(realDatasets[1]);
+		return list;
+	}
 
   /**
    * Gets the frequencies, real, and imaginary coefficients.

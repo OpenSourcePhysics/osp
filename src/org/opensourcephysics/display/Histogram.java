@@ -19,8 +19,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.event.TableModelListener;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
 import org.opensourcephysics.controls.XML;
@@ -38,11 +36,33 @@ import org.opensourcephysics.controls.XMLLoader;
  * @created June 26, 2002
  * @version 1.1
  */
-public class Histogram extends DataTable.OSPTableModel implements Measurable, LogMeasurable, Data {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 3629110034722325967L;
+public class Histogram extends DataTable.DataModel implements Measurable, LogMeasurable, Data {
+
+	final public TableModel model;
+
+	public class Model extends DataTable.OSPTableModel {
+
+		@Override
+		public int getRowCount() {
+			return Histogram.this.getRowCount();
+		}
+
+		@Override
+		public int getColumnCount() {
+			return Histogram.this.getColumnCount();
+		}
+
+		@Override
+		public Object getValueAt(int rowIndex, int columnIndex) {
+			return Double.valueOf(Histogram.this.getValueAt(rowIndex, columnIndex));
+		}
+		
+		@Override
+		public Class<?> getColumnClass(int columnIndex) {
+			return ((columnIndex == 0) ? Integer.class : Double.class);
+		}
+		
+	}
 
 	HistogramDataset histogramDataset;
 
@@ -121,7 +141,7 @@ public class Histogram extends DataTable.OSPTableModel implements Measurable, Lo
 	 * bin number-occurrences pairs in histogram, used for table model
 	 * implementation
 	 */
-	Map.Entry<?, ?>[] entries = new Map.Entry<?, ?>[0];
+	Map.Entry<Integer, Double>[] entries;
 
 	/**
 	 * whether the data has changed since the last time the entries were retrieved
@@ -149,8 +169,10 @@ public class Histogram extends DataTable.OSPTableModel implements Measurable, Lo
 		xColumnName = "x"; //$NON-NLS-1$
 		yColumnName = DisplayRes.getString("Histogram.Column.Occurrences"); //$NON-NLS-1$
 		name = DisplayRes.getString("Histogram.Title"); //$NON-NLS-1$
+		model = new Model();
 		clear();
 	}
+	
 
 	/**
 	 * Reads a file and appends the data contained in the file to this Histogram.
@@ -373,15 +395,15 @@ public class Histogram extends DataTable.OSPTableModel implements Measurable, Lo
 		dataChanged = true;
 	}
 
-	/**
-	 * Gets an array of bin number-occurrences pairs
-	 *
-	 * @return The entries.
-	 */
-	public Map.Entry<?, ?>[] entries() {
-		updateEntries();
-		return entries;
-	}
+//	/**
+//	 * Gets an array of bin number-occurrences pairs
+//	 *
+//	 * @return The entries.
+//	 */
+//	public Map.Entry<?, ?>[] entries() {
+//		updateEntries();
+//		return entries;
+//	}
 
 	/**
 	 * Sets the style for drawing this histogram. Options are DRAW_POINT, which
@@ -746,31 +768,17 @@ public class Histogram extends DataTable.OSPTableModel implements Measurable, Lo
 	 * @return the datum
 	 */
 	@Override
-	public Object getValueAt(int row, int column) {
+	public double getValueAt(int row, int column) {
 		updateEntries();
-		Map.Entry<?, ?> entry = entries[row];
+		Map.Entry<Integer, Double> entry = entries[row];
 		if (column == 0) {
-			return entry.getKey();
+			return entry.getKey().intValue();
 		}
 		if (column == 1) {
-			return new Double(((Integer) entry.getKey()).doubleValue() * binWidth + binWidth / 2.0 + binOffset);
+			return entry.getKey() * binWidth + binWidth / 2.0 + binOffset;
 		}
-		if (normalizedToOne) {
-			Double d = (Double) entry.getValue();
-			return new Double(d.doubleValue() / sum);
-		}
-		return entry.getValue();
-	}
-
-	/**
-	 * Gets the type of object for JTable entry.
-	 *
-	 * @param columnIndex the column whose value is to be queried
-	 * @return the class
-	 */
-	@Override
-	public Class<?> getColumnClass(int columnIndex) {
-		return ((columnIndex == 0) ? Integer.class : Double.class);
+		double d = entry.getValue().doubleValue();
+		return (normalizedToOne ? d / sum : d);
 	}
 
 	/**

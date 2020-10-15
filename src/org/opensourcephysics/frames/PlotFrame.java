@@ -50,7 +50,7 @@ public class PlotFrame extends DrawingFrame {
 		if (dataTable != null)
 			return dataTable;
 		dataTable = new DataTable();
-		dataTable.add(datasetManager);
+		dataTable.add(datasetManager.model);
 		return dataTable;
 	}
 	
@@ -200,6 +200,7 @@ public class PlotFrame extends DrawingFrame {
 
 	/**
 	 * Appends a data point and its uncertainty to the Dataset.
+	 * (not used)
 	 *
 	 * @param datasetIndex
 	 * @param x

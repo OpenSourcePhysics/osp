@@ -12,7 +12,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Stroke;
@@ -39,7 +38,6 @@ import javax.swing.AbstractCellEditor;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
-import javax.swing.DefaultCellEditor;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -63,7 +61,6 @@ import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
 
 import org.opensourcephysics.controls.OSPLog;
-import org.opensourcephysics.display.Data;
 import org.opensourcephysics.display.DataFunction;
 import org.opensourcephysics.display.DataTable;
 import org.opensourcephysics.display.Dataset;
@@ -74,7 +71,6 @@ import org.opensourcephysics.display.HighlightableDataset;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.display.TextLine;
-import org.opensourcephysics.tools.DataToolTable.TableEdit;
 
 /**
  * This is a DataTable that displays DataColumns and constructs
@@ -165,7 +161,7 @@ public class DataToolTable extends DataTable {
 		((DataToolTableModel) getModel()).tab = tab;
 		dataToolTab = tab;
 		dataManager = tab.dataManager;
-		add(dataManager);
+		add(dataManager.model);
 		setRowNumberVisible(true);
 		setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		headerRenderer = new HeaderRenderer(getTableHeader().getDefaultRenderer());

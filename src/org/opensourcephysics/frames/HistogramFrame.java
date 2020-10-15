@@ -61,7 +61,7 @@ public class HistogramFrame extends DrawingFrame {
     // histogram.setDiscrete(false) ;
     drawingPanel.addDrawable(histogram);
     setTitle(title);
-    dataTable.add(histogram);
+    dataTable.add(histogram.model);
     setAnimated(true);
     setAutoclear(true);
     addMenuItems();
@@ -460,7 +460,7 @@ public void clearData() {
       if(list.size()>0) { // assume the first Histogram belongs to this frame
         frame.histogram = (Histogram) list.get(0);
         frame.histogram.clear();
-        frame.dataTable.add(frame.histogram);
+        frame.dataTable.add(frame.histogram.model);
       }
       return obj;
     }

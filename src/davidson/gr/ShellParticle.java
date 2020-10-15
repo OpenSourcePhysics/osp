@@ -182,7 +182,7 @@ public class ShellParticle extends AbstractTrajectory {
 		datasets.setXYColumnNames(0, "t", "tau");
 		dataTable = new DataTable();
 		tableFrame = new DataTableFrame("Data Table", dataTable);
-		dataTable.add(datasets);
+		dataTable.add(datasets.model);
 		dataTable.setRowNumberVisible(false);
 		datasets.append(0, state[0], state[1]); // tau
 		tableFrame.setVisible(true);

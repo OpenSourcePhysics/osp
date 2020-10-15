@@ -8,6 +8,8 @@
 package org.opensourcephysics.analysis;
 
 import java.awt.Color;
+import java.util.ArrayList;
+
 import org.opensourcephysics.display.ComplexDataset;
 import org.opensourcephysics.display.Data;
 import org.opensourcephysics.display.Dataset;
@@ -173,8 +175,8 @@ public class FourierSinCosAnalysis implements Data {
 	 * @return list of Datasets
 	 */
 	@Override
-	public java.util.ArrayList<Dataset> getDatasets() {
-		java.util.ArrayList<Dataset> list = new java.util.ArrayList<Dataset>();
+	public ArrayList<Dataset> getDatasets() {
+		ArrayList<Dataset> list = new ArrayList<Dataset>();
 		if (fftData == null) {
 			return list;
 		}
@@ -207,22 +209,35 @@ public class FourierSinCosAnalysis implements Data {
 			realDatasets[0].clear();
 			realDatasets[1].clear();
 			realDatasets[2].clear();
+		}		
+		int n = (radians ? omega.length : freqs.length);
+		double[] re = new double[n]; // cos
+		double[] im = new double[n]; // sin
+		double[] cs2 = new double[n];
+		for (int i = 0; i < n; i++) {
+			re[i] = fftData[2 * i];
+			im[i] = fftData[2 * i + 1];
+			cs2[i] = re[i] * re[i] + im[i] * im[i];
 		}
-		if (radians) {
-			for (int i = 0, nOmega = omega.length; i < nOmega; i++) {
-				double cos = fftData[2 * i], sin = fftData[2 * i + 1];
-				realDatasets[0].append(omega[i], sin * sin + cos * cos);
-				realDatasets[1].append(omega[i], sin);
-				realDatasets[2].append(omega[i], cos);
-			}
-		} else {
-			for (int i = 0, nFreqs = freqs.length; i < nFreqs; i++) {
-				double sin = fftData[2 * i], cos = fftData[2 * i + 1];
-				realDatasets[0].append(freqs[i], sin * sin + cos * cos);
-				realDatasets[1].append(freqs[i], sin);
-				realDatasets[2].append(freqs[i], cos);
-			}
-		}
+		double[] x = (radians ? omega : freqs);
+		realDatasets[0].append(x, cs2);
+		realDatasets[1].append(x, radians ? im : re); // sin : cos
+		realDatasets[2].append(x, radians ? re : im); // cos : sin
+//		if (radians) {
+//			for (int i = 0, nOmega = omega.length; i < nOmega; i++) {
+//				double cos = fftData[2 * i], sin = fftData[2 * i + 1];
+//				realDatasets[0].append(omega[i], sin * sin + cos * cos);
+//				realDatasets[1].append(omega[i], sin);
+//				realDatasets[2].append(omega[i], cos);
+//			}
+//		} else {
+//			for (int i = 0, nFreqs = freqs.length; i < nFreqs; i++) {
+//				double sin = fftData[2 * i], cos = fftData[2 * i + 1];
+//				realDatasets[0].append(freqs[i], sin * sin + cos * cos);
+//				realDatasets[1].append(freqs[i], sin);
+//				realDatasets[2].append(freqs[i], cos);
+//			}
+//		}
 		list.add(realDatasets[0]);
 		list.add(realDatasets[1]);
 		list.add(realDatasets[2]);

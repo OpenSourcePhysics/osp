@@ -14,6 +14,7 @@ import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.BitSet;
 
 import javax.swing.JLabel;
 import javax.swing.JTable;
@@ -202,43 +203,44 @@ public class DataToolStatsTable extends JTable {
 	public void refreshStatistics() {
 		// assemble statistics data array
 		TableModel model = dataTable.getModel();
-		int[] rows = dataTable.getSelectedRows();
-		int[] cols = dataTable.getSelectedColumns();
-		statsData = new Object[model.getColumnCount()][0];
-		ArrayList<Double> datalist = new ArrayList<Double>();
+		int[] data = dataTable.getSelectedColumns();
+		BitSet selcols = getBS(data);
+		data = dataTable.getSelectedRows();
+		int nselrows = data.length;
+		int nrows = model.getRowCount();
+		int ncols = model.getColumnCount();
+		statsData = new Object[ncols][0];
 		// for each column, assemble valid selected data and get stats
 		statsData[0] = getStatLabels();
-		for (int j = 1; j < model.getColumnCount(); j++) {
-			datalist.clear();
-			for (int i = 0; i < model.getRowCount(); i++) {
-				Double val = (Double) model.getValueAt(i, j);
-				if (val == null) {
-					val = new Double(Double.NaN);
-				}
-				datalist.add(val);
-			}
-			double[] x = new double[datalist.size()];
-			for (int i = 0; i < x.length; i++) {
-				x[i] = datalist.get(i).doubleValue();
-			}
-			double[] selected = x;
-			if (rows.length > 0) {
+		for (int j = 1; j < ncols; j++) {
+			double[] selected = null;
+			if (nselrows > 0) {
 				// is column selected?
-				boolean colSelected = false;
-				int col = dataTable.convertColumnIndexToView(j);
-				for (int k = 0; k < cols.length; k++) {
-					colSelected = colSelected || (col == cols[k]);
-				}
-				if (colSelected) {
-					selected = new double[rows.length];
-					for (int i = 0; i < rows.length; i++) {
-						selected[i] = x[rows[i]];
+				if (selcols.get(dataTable.convertColumnIndexToView(j))) {
+					selected = new double[nselrows];
+					for (int i = 0; i < nselrows; i++) {
+						Double d = (Double) model.getValueAt(data[i], j);
+						selected[i] = (d == null ? Double.NaN : d.doubleValue());
 					}
+				}
+			} 
+			if (selected == null) {
+				selected = new double[nrows];
+				for (int i = 0; i < nrows; i++) {
+					Double d = (Double) model.getValueAt(i, j);
+					selected[i] = (d == null ? Double.NaN : d.doubleValue());
 				}
 			}
 			statsData[j] = getStatistics(selected);
 		}
 		refreshTable();
+	}
+
+	private static BitSet getBS(int[] selectedRows) {
+		BitSet bs = new BitSet();
+		for (int i = 0; i < selectedRows.length; i++)
+			bs.set(selectedRows[i]);
+		return bs;
 	}
 
 	/**

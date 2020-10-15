@@ -23,7 +23,6 @@ import javax.swing.event.TableModelEvent;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
-import org.opensourcephysics.display.DataTable.OSPTableModel;
 import org.opensourcephysics.numerics.SuryonoParser;
 import org.opensourcephysics.tools.FunctionTool;
 import org.opensourcephysics.tools.ToolsRes;
@@ -46,13 +45,51 @@ import org.opensourcephysics.tools.ToolsRes;
  * @created February 17, 2002
  *
  */
-@SuppressWarnings("serial")
-public class DatasetManager extends OSPTableModel implements Measurable, LogMeasurable, Data {
+public class DatasetManager extends DataTable.DataModel implements Measurable, LogMeasurable, Data {
+	
+	final public Model model;
+	
+	public class Model extends DataTable.OSPTableModel {
+
+		@Override
+		public boolean isFoundOrdered() {
+			return (dsFound == null || dsFound.model.isFoundOrdered());
+		}
+
+		@Override
+		public int getStride() {
+			return stride;
+		}
+
+		@Override
+		public int getRowCount() {
+			return DatasetManager.this.getRowCount();
+		}
+
+		@Override
+		public int getColumnCount() {
+			return DatasetManager.this.getColumnCount();
+		}
+
+		@Override
+		public Object getValueAt(int rowIndex, int columnIndex) {
+			return Double.valueOf(DatasetManager.this.getValueAt(rowIndex, columnIndex));
+		}
+		
+		@Override
+		public Class<Double> getColumnClass(int columnIndex) {
+			return Double.class;
+		}
+
+	}
+
+
 	ArrayList<Dataset> datasets = new ArrayList<Dataset>();
 	boolean connected; // default values for new datasets
 	boolean sorted;
 	int markerShape;
 	private int stride = 1;
+	
 	boolean linked = false; // whether x data in datasets is linked. If set to true, then x data for
 							// datasets > 0 will not be shown in a table view.
 	String xColumnName = "x", yColumnName = "y"; // default names for new datasets //$NON-NLS-1$ //$NON-NLS-2$
@@ -125,6 +162,7 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 		sorted = _sorted;
 		markerShape = _markerShape;
 		linked = _linked;
+		model = new Model();
 	}
 
 	/**
@@ -225,11 +263,6 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 		for (int i = 0; i < datasets.size(); i++) {
 			(datasets.get(i)).setStride(stride);
 		}
-	}
-
-	@Override
-	public int getStride() {
-		return stride;
 	}
 
 	/**
@@ -648,25 +681,29 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 		return (ds == null ? null : ds.getColumnName(ds.foundColumn));
 	}
 
-	/**
-	 * Gets an x or y value for rendering in a JTable.
-	 *
-	 * @param rowIndex
-	 * @param tableColumnIndex
-	 * @return the datum
-	 */
-	@Override
-	public Object getValueAt(int rowIndex, int tableColumnIndex) {
-		if (datasets.size() == 0 || tableColumnIndex < 0) {
-			return null;
-		}
-		Dataset ds = find(tableColumnIndex);
-		return (ds == null || rowIndex >= ds.getRowCount() ? null : ds.getValueAt(rowIndex, ds.foundColumn));
-	}
+//	/**
+//	 * Gets an x or y value for rendering in a JTable.
+//	 *
+//	 * @param rowIndex
+//	 * @param tableColumnIndex
+//	 * @return the datum
+//	 */
+//	@Override
+//	public Object getValueAt(int rowIndex, int tableColumnIndex) {
+//		if (datasets.size() == 0 || tableColumnIndex < 0) {
+//			return null;
+//		}
+//		Dataset ds = find(tableColumnIndex);
+//		return (ds == null || rowIndex >= ds.getRowCount() ? null : ds.getValueAt(rowIndex, ds.foundColumn));
+//	}
 
 	@Override
-	public boolean isFoundOrdered() {
-		return (dsFound == null || dsFound.isFoundOrdered());
+	public double getValueAt(int row, int col) {
+		if (datasets.size() == 0 || col < 0) {
+			return Double.NaN;
+		}
+		Dataset ds = find(col);
+		return (ds == null || row >= ds.getRowCount() ? Double.NaN : ds.getValueAt(row, ds.foundColumn));
 	}
 
 	private Dataset find(int icol) {
@@ -684,17 +721,6 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 	}
 
 	/**
-	 * Gets the type of object for JTable entry.
-	 *
-	 * @param columnIndex
-	 * @return the class
-	 */
-	@Override
-	public Class<Double> getColumnClass(int columnIndex) {
-		return Double.class;
-	}
-
-	/**
 	 * Appends an (x,y) datum to the Dataset with the given index.
 	 *
 	 * @param x
@@ -703,12 +729,13 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 	 */
 	public void append(int datasetIndex, double x, double y) {
 		checkDatasetIndex(datasetIndex);
-		Dataset dataset = datasets.get(datasetIndex);
-		dataset.append(x, y);
+		datasets.get(datasetIndex).append(x, y);
 	}
 
 	/**
 	 * Appends a data point and its uncertainty to the Dataset.
+	 * 
+	 * (not used)
 	 *
 	 * @param datasetIndex
 	 * @param x
@@ -795,7 +822,7 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 		clear();
 		datasets.clear();
 		// for DataTable
-		fireTableChanged(new TableModelEvent(this, 0, Integer.MAX_VALUE, -1, TableModelEvent.DELETE));
+		model.fireTableChanged(new TableModelEvent(model, 0, Integer.MAX_VALUE, -1, TableModelEvent.DELETE));
 	}
 
 	/**
@@ -904,7 +931,7 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 		}
 
 		// for DataTable
-		fireTableChanged(new TableModelEvent(this, 0, Integer.MAX_VALUE, n, TableModelEvent.INSERT));
+		model.fireTableChanged(new TableModelEvent(model, 0, Integer.MAX_VALUE, n, TableModelEvent.INSERT));
 		return n;
 	}
 
@@ -921,7 +948,7 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 		}
 		Dataset d = datasets.remove(index);
 		// for DataTable
-		fireTableChanged(new TableModelEvent(this, 0, Integer.MAX_VALUE, index, TableModelEvent.DELETE));
+		model.fireTableChanged(new TableModelEvent(model, 0, Integer.MAX_VALUE, index, TableModelEvent.DELETE));
 		return d;
 	}
 
@@ -1254,6 +1281,10 @@ public class DatasetManager extends OSPTableModel implements Measurable, LogMeas
 			subscriptRemoved = false;
 		}
 		return name;
+	}
+
+	public double get(String var, int row, int col) {
+		return getDataset(getDatasetIndex(var)).getValueAt(row, col);
 	}
 
 }

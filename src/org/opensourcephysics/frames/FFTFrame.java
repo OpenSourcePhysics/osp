@@ -59,7 +59,7 @@ public class FFTFrame extends DrawingFrame {
     complexDataset.setXYColumnNames(xlabel, "re", "im"); //$NON-NLS-1$ //$NON-NLS-2$
     drawingPanel.addDrawable(complexDataset);
     setTitle(title);
-    dataTable.add(complexDataset);
+    dataTable.add(complexDataset.model);
     addMenuItems();
     setAnimated(true);
     setAutoclear(true);

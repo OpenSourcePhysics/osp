@@ -49,7 +49,7 @@ public class ComplexPlotFrame extends DrawingFrame {
     super(new PlottingPanel(xlabel, ylabel, frameTitle));
     setTitle(frameTitle);
     drawingPanel.addDrawable(complexDataset);
-    dataTable.add(complexDataset);
+    dataTable.add(complexDataset.model);
     addMenuItems();
     setAnimated(true);
     setAutoclear(true);
@@ -358,7 +358,7 @@ public void clearData() {
       if(list.size()>0) { // assume the first ComplexDataset belongs to this frame
         frame.complexDataset = list.get(0);
         frame.dataTable.clear();
-        frame.dataTable.add(frame.complexDataset);
+        frame.dataTable.add(frame.complexDataset.model);
       }
       return obj;
     }
