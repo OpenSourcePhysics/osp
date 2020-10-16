@@ -42,6 +42,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.imageio.ImageIO;
@@ -569,10 +570,10 @@ public class VideoIO {
 	 * Determines if an MP4 video is loadable.
 	 *
 	 * @param path the path
-	 * @param whenNotLoadable a Function to apply (later) if not loadable
+	 * @param whenNotLoadable a Consumer to apply (later) if not loadable
 	 * @return true if loadable
 	 */
-	public static boolean isLoadableMP4(String path, Function<String, Void> whenNotLoadable) {
+	public static boolean isLoadableMP4(String path, Consumer<String> whenNotLoadable) {
 		String codec = null;
 		try {
 			VideoReader vr = new VideoReader(path);
@@ -588,7 +589,7 @@ public class VideoIO {
 		String theCodec = codec;
 		if (whenNotLoadable != null)
 			SwingUtilities.invokeLater(() -> {
-				whenNotLoadable.apply(theCodec);
+				whenNotLoadable.accept(theCodec);
 			});
 		return false;
 	}
