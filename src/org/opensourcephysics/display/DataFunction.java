@@ -32,7 +32,7 @@ public class DataFunction extends Dataset implements FObject {
 	 */
 	private static final long serialVersionUID = 1L;
 // instance fields
-	DatasetManager inputData;
+	DatasetManager datasetManager;
 	ParsedMultiVarFunction myFunction;
 	String expression;
 	String inputString; // recent attempted function string, successful or not
@@ -56,7 +56,7 @@ public class DataFunction extends Dataset implements FObject {
 	 * @param expression
 	 */
 	public DataFunction(DatasetManager input, String name, String expression) {
-		inputData = input;
+		datasetManager = input;
 		setXYColumnNames(input.getDataset(0).getXColumnName(),
 				name == null ? ToolsRes.getString("DataFunction.DefaultName") : //$NON-NLS-1$
 						name);
@@ -219,9 +219,9 @@ public class DataFunction extends Dataset implements FObject {
 	private double[][] getFunctionData() {
 		int length = 0;
 		data.clear();
-		Iterator<Dataset> it = inputData.getDatasets().iterator();
-		while (it.hasNext()) {
-			Dataset dataset = it.next();
+		ArrayList<Dataset> datasets = datasetManager.getDatasetsRaw();
+		for (int i = 0, n = datasets.size(); i < n; i++) {
+			Dataset dataset = datasets.get(i);
 			if (dataset == this) {
 				continue;
 			}
@@ -234,10 +234,10 @@ public class DataFunction extends Dataset implements FObject {
 			// add y-columns
 			data.add(dataset.getYPoints());
 		}
-		String[] names = inputData.getConstantNames();
+		ArrayList<String> names = datasetManager.getConstantNames();
 		for (String next : names) {
 			double[] points = new double[length];
-			double val = inputData.getConstantValue(next);
+			double val = datasetManager.getConstantValue(next);
 			for (int i = 0; i < length; i++) {
 				points[i] = val;
 			}
@@ -247,17 +247,17 @@ public class DataFunction extends Dataset implements FObject {
 	}
 
 	private int getVarCount() {
-		ArrayList<Dataset> list = inputData.getDatasets();
+		ArrayList<Dataset> list = datasetManager.getDatasetsRaw();
 		int count = list.contains(this) ? list.size() : list.size() + 1;
-		return count + inputData.getConstantNames().length;
+		return count + datasetManager.getConstantNames().size();
 //    return count+inputData.getProperties().size();
 	}
 
 	private String[] getVarNames() {
 		List<String> names = new ArrayList<String>();
-		Iterator<Dataset> it = inputData.getDatasets().iterator();
-		while (it.hasNext()) {
-			Dataset dataset = it.next();
+		ArrayList<Dataset> datasets = datasetManager.getDatasetsRaw();
+		for (int i = 0, n = datasets.size(); i < n; i++) {
+			Dataset dataset = datasets.get(i);
 			if (dataset == this) {
 				continue;
 			}
@@ -269,7 +269,7 @@ public class DataFunction extends Dataset implements FObject {
 			name = TeXParser.removeSubscripting(dataset.getYColumnName());
 			names.add(name);
 		}
-		for (String name : inputData.getConstantNames()) {
+		for (String name : datasetManager.getConstantNames()) {
 			names.add(name);
 		}
 //    names.addAll(inputData.getProperties().keySet());

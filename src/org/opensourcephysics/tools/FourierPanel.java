@@ -79,7 +79,7 @@ public class FourierPanel extends JPanel {
 		JDialog dialog = (JDialog) this.getTopLevelAncestor();
 		dialog.setTitle(ToolsRes.getString("DataToolTab.Dialog.Fourier.Title")); //$NON-NLS-1$
 		fourierManager.removeDatasets();
-		Data fourierData = createFourierData(data);
+		FourierSinCosAnalysis fourierData = createFourierData(data);
 		if (fourierData == null)
 			return;
 		OSPLog.debug("FourierPanel.refresh");
@@ -144,7 +144,7 @@ public class FourierPanel extends JPanel {
 	 * @param dataset the input
 	 * @return the fourier spectrum Data
 	 */
-	public static Data createFourierData(Dataset dataset) {
+	public static FourierSinCosAnalysis createFourierData(Dataset dataset) {
 		if (dataset == null)
 			return null;
 		double[] x = dataset.getXPoints();

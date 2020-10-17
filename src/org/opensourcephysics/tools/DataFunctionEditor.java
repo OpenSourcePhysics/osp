@@ -44,7 +44,7 @@ public class DataFunctionEditor extends FunctionEditor {
 
 	private void init() {
 		// load existing DataFunctions, if any
-		ArrayList<Dataset> sets = data.getDatasets();
+		ArrayList<Dataset> sets = data.getDatasetsRaw();
 		for (int i = 0, n = sets.size(); i < n; i++) {
 			Dataset next = sets.get(i);
 			if (next instanceof DataFunction) {
@@ -202,8 +202,8 @@ public class DataFunctionEditor extends FunctionEditor {
 	 */
 	@Override
 	protected boolean isDisallowedName(FObject obj, String name) {
-		ArrayList<Dataset> datasets = data.getDatasets();
-		for (int i = 0; i < datasets.size(); i++) {
+		ArrayList<Dataset> datasets = data.getDatasetsRaw();
+		for (int i = 0, n = datasets.size(); i < n; i++) {
 			Dataset next = datasets.get(i);
 			// added following line so leaving object name unchanged is not disallowed
 			if (obj != null && next == obj && getName(obj).equals(name))
@@ -233,7 +233,7 @@ public class DataFunctionEditor extends FunctionEditor {
 			}
 		}
 		String nameToSkip = getName(getSelectedObject());
-		ArrayList<Dataset> datasets = data.getDatasets();
+		ArrayList<Dataset> datasets = data.getDatasetsRaw();
 		for (int i = 0; i < datasets.size(); i++) {
 			Dataset next = datasets.get(i);
 			if (i == 0) {
