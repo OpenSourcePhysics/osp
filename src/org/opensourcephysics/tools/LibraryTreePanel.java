@@ -2276,7 +2276,7 @@ public class LibraryTreePanel extends JPanel {
 					LibraryTreeNode.htmlURLs.remove(htmlPathFinal);
 
 					// load metadata into node
-					OSPLog.debug("NodeLoader loading "+node.record);
+//					OSPLog.debug("NodeLoader loading "+node.record);
 					node.getMetadata();
 
 					doneAsync();

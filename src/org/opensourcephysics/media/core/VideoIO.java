@@ -31,6 +31,8 @@
  */
 package org.opensourcephysics.media.core;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -49,12 +51,19 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.JEditorPane;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+
 
 import org.opensourcephysics.controls.ControlsRes;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
+import org.opensourcephysics.desktop.OSPDesktop;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.gif.GifVideoType;
 import org.opensourcephysics.media.mov.MovieFactory;
@@ -63,6 +72,7 @@ import org.opensourcephysics.media.mov.MovieVideoType;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ResourceLoader;
 
+import javajs.async.AsyncDialog;
 import javajs.async.AsyncFileChooser;
 import javajs.util.VideoReader;
 
@@ -78,6 +88,10 @@ public class VideoIO {
 	public static final String[] JS_VIDEO_EXTENSIONS = { "ogg", "mov", "mp4" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	public static final String DEFAULT_PREFERRED_EXPORT_EXTENSION = "mp4"; //$NON-NLS-1$
 	public static final String DEFAULT_VIDEO_EXTENSION = "jpg"; //$NON-NLS-1$
+	public static final String[] KNOWN_VIDEO_EXTENSIONS = 
+		{"mov", "flv", "mp4", "wmv", "avi", "mts",
+			"m2ts", "mpg", "mod", "ogg", "dv" };
+	public static final String VIDEO_CONVERSION_HELP_PATH = "https://physlets.org/tracker/converting_videos.html";
 
 	public interface FinalizableLoader {
 		
@@ -592,6 +606,64 @@ public class VideoIO {
 			});
 		return false;
 	}
+	
+	public static void handleUnsupportedVideo(String path, String ext, String codec) {
+		OSPLog.debug("VideoIO.handleUnsupportedVideo "+path);
+
+		String helpLink = MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.MoreInfo")+"<br>"+
+				"<a href=\"" + VIDEO_CONVERSION_HELP_PATH + "\">" + VIDEO_CONVERSION_HELP_PATH + "</a>";
+		String message = codec != null? 
+				MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.VideoCodec")+" \""+codec+"\".":
+				MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.VideoType")+" \""+ext+"\".";
+		message += "<br><br>"+MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Fix")+":";
+		message += "<ol>";
+		
+		if (ResourceLoader.isHTTP(path)) {
+			message += "<li>"+MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Download")+"</li>";
+			message += "<li>"+MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.ConvertDownload")+"</li>";
+			message += "<li>"+MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Import")+"</li></ol>";
+			message += helpLink;
+			message += "<br><br>"+MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.DownloadNow");
+			
+			new AsyncDialog().showConfirmDialog(null, 
+				new MessageWithLink(message),
+				MediaRes.getString("VideoIO.Dialog.ConvertVideo.Title"), 
+				JOptionPane.YES_NO_OPTION, 
+				(ev) -> {
+				  int sel = ev.getID();
+					switch (sel) {
+					case JOptionPane.YES_OPTION:
+						// choose file and save resource
+						String name = XML.getName(path);
+						VideoIO.getChooserFilesAsync("save video "+name, //$NON-NLS-1$
+							(files) -> {
+								if (VideoIO.getChooser().getSelectedOption() != AsyncFileChooser.APPROVE_OPTION
+										|| files == null) {
+									return null;
+								}
+								String filePath = files[0].getAbsolutePath();
+								try {
+									File file = ResourceLoader.copyURLtoFile(path, filePath);
+								} catch (IOException e1) {
+									System.err.println("Failed to download "+path);
+									e1.printStackTrace();
+								}
+								return null;
+							});
+						}
+				});				
+		}
+		else {			
+			message += "<li>"+MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Convert")+"</li>";
+			message += "<li>"+MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Import")+"</li></ol>";
+			message += helpLink;
+			new AsyncDialog().showMessageDialog(
+					null, 
+					new MessageWithLink(message),
+					(ev) -> {}
+			);
+		}
+	}
 
 	/**
 	 * Returns a video from a specified path. May return null.
@@ -1029,6 +1101,38 @@ public class VideoIO {
 		}
 		return null;
 	}
+	
+	// class to include hyperlink in JOptionPane message
+	static class MessageWithLink extends JEditorPane {
+
+    MessageWithLink(String htmlBody) {
+      super("text/html", "<html><body style=\"" + getLabelStyle() + "\">" + htmlBody + "</body></html>");
+      addHyperlinkListener(new HyperlinkListener() {
+        @Override
+        public void hyperlinkUpdate(HyperlinkEvent e) {
+          if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
+          	OSPDesktop.displayURL(e.getURL().toString());	                    
+          }
+        }
+      });
+      setEditable(false);
+      setBorder(null);
+    }
+
+    static StringBuffer getLabelStyle() {
+      // for copying style
+      JLabel label = new JLabel();
+      Font font = label.getFont();
+      Color color = label.getBackground();
+
+      // create some css from the label's font
+      StringBuffer style = new StringBuffer("font-family:" + font.getFamily() + ";");
+      style.append("font-weight:" + (font.isBold() ? "bold" : "normal") + ";");
+      style.append("font-size:" + font.getSize() + "pt;");
+      style.append("background-color: rgb("+color.getRed()+","+color.getGreen()+","+color.getBlue()+");");
+      return style;
+    }
+	}	
 
 }
 

@@ -606,11 +606,11 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 			String metaSource = getMetadataSource();
 			if (metaSource != null) {
 				String code = metaSource;
-				if (!code.contains("<html>")) {
+				if (!code.contains("<html")) {
 					Resource res = ResourceLoader.getResourceZipURLsOK(metaSource);
 					code = res == null? code: res.getString();
 				}
-				if (code != null && code.contains("<html>")) {
+				if (code != null && code.contains("<html")) {
 					boolean[] isStandardType = new boolean[LibraryResource.META_TYPES.length];
 					ArrayList<String[]> metaList = LibraryBrowser.getMetadataFromHTML(code);
 					for (int i = 0; i< metaList.size(); i++) {
