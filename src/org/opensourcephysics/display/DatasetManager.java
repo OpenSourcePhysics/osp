@@ -843,8 +843,12 @@ public class DatasetManager extends DataTable.DataModel implements Measurable, L
 	 * @return cloned list
 	 */
 	@Override
-	public ArrayList<Dataset> getDatasets() {
+	final public ArrayList<Dataset> getDatasets() {
 		return new ArrayList<Dataset>(datasets);
+	}
+
+	final public ArrayList<Dataset> getDatasetsRaw() {
+		return datasets;
 	}
 
 	/**
@@ -969,13 +973,12 @@ public class DatasetManager extends DataTable.DataModel implements Measurable, L
 		return -1;
 	}
 
-	/**
-	 * Returns the constant names. Added by Doug Brown 3/24/2011.
-	 *
-	 * @return array of constant names
-	 */
-	public String[] getConstantNames() {
-		return constantNames.toArray(new String[constantNames.size()]);
+//	public String[] getConstantNames() {
+//		return constantNames.toArray(new String[constantNames.size()]);
+//	}
+
+	public ArrayList<String> getConstantNames() {
+		return constantNames;
 	}
 
 	/**
@@ -1183,16 +1186,15 @@ public class DatasetManager extends DataTable.DataModel implements Measurable, L
 	 * @return true if duplicate
 	 */
 	public boolean isDuplicateName(Dataset d, String name) {
-		if (getDatasets().isEmpty()) {
+		if (datasets.isEmpty()) {
 			return false;
 		}
 		if (getDataset(0).getXColumnName().equals(name)) {
 			return true;
 		}
 		name = TeXParser.removeSubscripting(name);
-		ArrayList<Dataset> list = getDatasets();
-		for (int i = 0, n = list.size(); i < n; i++) {
-			Dataset next = list.get(i);
+		for (int i = 0, n = datasets.size(); i < n; i++) {
+			Dataset next = datasets.get(i);
 			if (next != d && TeXParser.removeSubscripting(next.getYColumnName()).equals(name)) {
 				return true;
 			}

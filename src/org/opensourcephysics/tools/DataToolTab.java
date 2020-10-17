@@ -287,7 +287,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		}
 		boolean updatedColumns = false;
 		// case 1: tab contains no data
-		if (dataManager.getDatasets().isEmpty()) {
+		if (dataManager.getDatasetsRaw().isEmpty()) {
 			originatorID = data.getID();
 			for (DataColumn next : inputColumns) {
 				addColumn(next);
@@ -297,7 +297,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		// case 2: tab already contains data
 		else {
 			// for each local column, find matching input column
-			for (Dataset local : dataManager.getDatasets()) {
+			for (Dataset local : dataManager.getDatasetsRaw()) {
 				DataColumn match = getIDMatch(local, inputColumns);
 				if (match != null) {
 					// if match is found, compare with local column and remove match from input
@@ -360,7 +360,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 */
 	public void addColumns(Data source, boolean deletable, boolean addDuplicates, boolean postEdit) {
 		// look for independent variable column and duplicate input column
-		ArrayList<Dataset> datasets = dataManager.getDatasets();
+		ArrayList<Dataset> datasets = dataManager.getDatasetsRaw();
 		// independent variable column
 		Dataset indepVar = datasets.isEmpty() ? null : datasets.get(0);
 		double[] indepVarPts = (indepVar == null) ? null : indepVar.getYPoints();
@@ -681,7 +681,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 */
 	public void clearData(boolean postEdit) {
 		ArrayList<String> colNames = new ArrayList<String>();
-		for (Dataset next : dataManager.getDatasets()) {
+		for (Dataset next : dataManager.getDatasetsRaw()) {
 			colNames.add(next.getYColumnName());
 		}
 		dataTable.setSelectedColumnNames(colNames);
@@ -767,7 +767,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 * @return the tab column name, or null if not found
 	 */
 	public String getColumnName(int ID) {
-		for (Dataset column : dataManager.getDatasets()) {
+		for (Dataset column : dataManager.getDatasetsRaw()) {
 			if (column.getID() == ID)
 				return column.getYColumnName();
 		}
@@ -840,7 +840,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			String xName = column.getXColumnName();
 			column.setXYColumnNames(xName, yName);
 		}
-		if (dataManager.getDatasets().isEmpty()) {
+		if (dataManager.getDatasetsRaw().isEmpty()) {
 			column.setMarkerColor(Color.BLACK);
 			column.setLineColor(Color.BLACK);
 		}
@@ -1018,7 +1018,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	protected DataColumn createDataColumn() {
 		Color markerColor = DisplayColors.getMarkerColor(colorIndex);
 		Color lineColor = DisplayColors.getLineColor(colorIndex);
-		if (!dataManager.getDatasets().isEmpty()) {
+		if (!dataManager.getDatasetsRaw().isEmpty()) {
 			colorIndex++;
 		}
 		DataColumn column = new DataColumn();
@@ -2495,7 +2495,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		}
 		varPopup = new JPopupMenu();
 		Font font = new JTextField().getFont();
-		for (Dataset next : dataManager.getDatasets()) {
+		for (Dataset next : dataManager.getDatasetsRaw()) {
 			String s = TeXParser.removeSubscripting(next.getYColumnName());
 			JMenuItem item = new JMenuItem(s);
 			item.setActionCommand(next.getYColumnName());
@@ -2556,9 +2556,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 * @return true if a duplicate is found
 	 */
 	protected boolean isDuplicateColumn(String name, double[] data) {
-		Iterator<Dataset> it = dataManager.getDatasets().iterator();
-		while (it.hasNext()) {
-			Dataset next = it.next();
+		ArrayList<Dataset> datasets = dataManager.getDatasetsRaw();
+		for (int i = 0, n = datasets.size(); i < n; i++) {
+			Dataset next = datasets.get(i);
 			double[] y = next.getYPoints();
 			if (name.equals(next.getYColumnName()) && isDuplicate(data, next.getYPoints())) {
 				// next is duplicate column: add new points if any
@@ -2600,7 +2600,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	protected Map<DataColumn, Dataset> getColumnMatchesByID(Data data) {
 		Map<DataColumn, Dataset> matches = new HashMap<DataColumn, Dataset>();
 		ArrayList<Dataset> datasets = DataTool.getDatasets(data);
-		for (Dataset next : dataManager.getDatasets()) {
+		for (Dataset next : dataManager.getDatasetsRaw()) {
 			if (next instanceof DataColumn) {
 				DataColumn column = (DataColumn) next;
 				Dataset match = getMatchByID(column, datasets);
@@ -2622,7 +2622,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	protected Map<DataColumn, Dataset> getColumnMatchesByName(Set<String> columnNames, Data data) {
 		Map<DataColumn, Dataset> matches = new HashMap<DataColumn, Dataset>();
 		ArrayList<Dataset> datasets = DataTool.getDatasets(data);
-		for (Dataset next : dataManager.getDatasets()) {
+		for (Dataset next : dataManager.getDatasetsRaw()) {
 			if (next instanceof DataColumn) {
 				DataColumn column = (DataColumn) next;
 				if (columnNames != null && !columnNames.contains(column.getYColumnName()))
@@ -2901,7 +2901,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		} else if (statsCheckbox.isSelected()) {
 			statusLabel.setText(getCorrelationString());
 		} else {
-			if (dataManager.getDatasets().size() < 2) {
+			if (dataManager.getDatasetsRaw().size() < 2) {
 				statusLabel.setText(userEditable ? ToolsRes.getString("DataToolTab.StatusBar.Text.CreateColumns") //$NON-NLS-1$
 						: ToolsRes.getString("DataToolTab.StatusBar.Text.PasteColumns")); //$NON-NLS-1$
 			} else {
@@ -4500,8 +4500,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			// save data columns but leave out data functions
 			DatasetManager data = new DatasetManager();
 			ArrayList<Dataset> functions = new ArrayList<Dataset>();
-			for (Iterator<Dataset> it = tab.dataManager.getDatasets().iterator(); it.hasNext();) {
-				Dataset next = it.next();
+			ArrayList<Dataset> datasets = tab.dataManager.getDatasetsRaw();
+			for (int i = 0, n = datasets.size(); i < n; i++) {
+				Dataset next = datasets.get(i);
 				if (next instanceof DataFunction) {
 					functions.add(next);
 				} else {
@@ -4510,9 +4511,10 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			}
 			control.setValue("data", data); //$NON-NLS-1$
 			// save function parameters
-			String[] paramNames = tab.dataManager.getConstantNames();
-			if (paramNames.length > 0) {
-				Object[][] paramArray = new Object[paramNames.length][4];
+			ArrayList<String> paramNames = tab.dataManager.getConstantNames();
+			int n = paramNames.size();
+			if (n > 0) {
+				Object[][] paramArray = new Object[n][4];
 				int i = 0;
 				for (String name : paramNames) {
 					paramArray[i][0] = name;
@@ -4599,7 +4601,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			if (data == null) {
 				return new DataToolTab(null, dataTool);
 			}
-			for (Dataset next : data.getDatasets()) {
+			for (Dataset next : data.getDatasetsRaw()) {
 				next.setXColumnVisible(false);
 			}
 			return new DataToolTab(data, dataTool);
@@ -4649,10 +4651,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 						tab.dataManager.addDataset(f);
 					}
 					// refresh dataFunctions
-					ArrayList<Dataset> datasets = tab.dataManager.getDatasets();
+					ArrayList<Dataset> datasets = tab.dataManager.getDatasetsRaw();
 					for (int i = 0; i < datasets.size(); i++) {
-						if (datasets.get(i) instanceof DataFunction) {
-							((DataFunction) datasets.get(i)).refreshFunctionData();
+						Dataset d = datasets.get(i);
+						if (d instanceof DataFunction) {
+							((DataFunction) d).refreshFunctionData();
 						}
 					}
 					tab.dataTable.refreshTable(DataTable.MODE_CREATE);

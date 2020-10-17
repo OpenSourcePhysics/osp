@@ -122,7 +122,7 @@ public class DataRefreshTool implements Tool {
 			padDatasets(reply);
 		}
 		// send datasets to requesting tool
-		if (!reply.getDatasets().isEmpty()) {
+		if (!reply.getDatasetsRaw().isEmpty()) {
 			control = new XMLControlElement(reply);
 			job.setXML(control.toXML());
 			replyTo.send(job, this);
@@ -154,7 +154,7 @@ public class DataRefreshTool implements Tool {
 	private void padDatasets(DatasetManager datasets) {
 		// first gather all values of x
 		TreeSet<Double> tSet = new TreeSet<Double>();
-		for (Dataset dataset : datasets.getDatasets()) {
+		for (Dataset dataset : datasets.getDatasetsRaw()) {
 			int len = dataset.getIndex();
 			double[] xp = dataset.getXPointsRaw();
 			for (int i = 0; i < len; i++) {
@@ -168,7 +168,7 @@ public class DataRefreshTool implements Tool {
 			array[i] = temp[i];
 		}
 		// now pad each dataset so all share same values of x
-		for (Dataset dataset : datasets.getDatasets()) {
+		for (Dataset dataset : datasets.getDatasetsRaw()) {
 			padDataset(dataset, array);
 		}
 	}

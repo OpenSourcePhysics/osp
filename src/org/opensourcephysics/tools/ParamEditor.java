@@ -369,8 +369,7 @@ public class ParamEditor extends FunctionEditor {
 	public void loadParametersFromData() {
 		if (data == null)
 			return;
-		String[] names = data.getConstantNames();
-		for (String name : names) {
+		for (String name : data.getConstantNames()) {
 			String expression = data.getConstantExpression(name);
 			Parameter p = (Parameter) getObject(name);
 			if (p == null) {

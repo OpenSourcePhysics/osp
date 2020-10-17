@@ -312,7 +312,7 @@ public class DataToolTable extends DataTable {
 						ArrayList<String> colNames = getSelectedColumnNames();
 						pasteData = DataTool.parseData(dataString, null);
 						if (pasteData != null) {
-							pasteW = pasteData.getDatasets().size();
+							pasteW = pasteData.getDatasetsRaw().size();
 							if ((pasteW > 0) && (pasteW == colNames.size())) {
 								pasteH = pasteData.getDataset(0).getIndex();
 								if (pasteH > 0) {
@@ -1113,8 +1113,7 @@ public class DataToolTable extends DataTable {
 	 * @return the working dataset
 	 */
 	protected WorkingDataset getWorkingData() {
-		int n = dataManager.getDatasets().size();
-		if (n < 2) {
+		if (dataManager.getDatasetsRaw().size() < 2) {
 			workingData = null;
 		} else {
 			int labelCol = convertColumnIndexToView(0);
@@ -1188,17 +1187,17 @@ public class DataToolTable extends DataTable {
 	protected Dataset getDataset(String colName) {
 		if (colName == null)
 			return null;
-		int i = dataManager.getDatasetIndex(colName);
-		if (i == -1 && colName.endsWith(DataToolTab.SHIFTED)) {
-			i = dataManager.getDatasetIndex(colName.substring(0, colName.length() - DataToolTab.SHIFTED.length()));
+		int index = dataManager.getDatasetIndex(colName);
+		if (index == -1 && colName.endsWith(DataToolTab.SHIFTED)) {
+			index = dataManager.getDatasetIndex(colName.substring(0, colName.length() - DataToolTab.SHIFTED.length()));
 		}
-		if (i > -1) {
-			return dataManager.getDataset(i);
+		if (index > -1) {
+			return dataManager.getDataset(index);
 		}
 		// check all datasets in dataManager to see if subscripting removed
-		java.util.Iterator<Dataset> it = dataManager.getDatasets().iterator();
-		while (it.hasNext()) {
-			Dataset next = it.next();
+		ArrayList<Dataset> datasets = dataManager.getDatasetsRaw();
+		for (int i = 0, n = datasets.size(); i < n; i++) {
+			Dataset next = datasets.get(i);
 			if (next.getYColumnName().equals(colName)) {
 				return next;
 			}
@@ -1332,9 +1331,8 @@ public class DataToolTable extends DataTable {
 		// clear selection
 		clearSelection();
 		data.setXColumnVisible(false);
-		ArrayList<Dataset> datasets = dataManager.getDatasets();
 		// data, if added, will be last dataset
-		int index = datasets.size();
+		int index = dataManager.getDatasetsRaw().size();
 		if (index == 0) {
 			dataToolTab.originatorID = data.getID();
 		}
@@ -1449,7 +1447,7 @@ public class DataToolTable extends DataTable {
 			dataManager.removeDataset(index);
 			workingMap.remove(colName);
 		}
-		if (dataManager.getDatasets().isEmpty()) {
+		if (dataManager.getDatasetsRaw().isEmpty()) {
 			dataToolTab.originatorID = 0;
 			tableChanged(new TableModelEvent(getModel(), TableModelEvent.HEADER_ROW));
 			dataToolTab.refreshGUI();
@@ -1490,9 +1488,9 @@ public class DataToolTable extends DataTable {
 		int[] cols = new int[values.keySet().size()];
 		int k = 0;
 		HashMap<String, double[]> inserted = new HashMap<String, double[]>();
-		Iterator<Dataset> it = dataManager.getDatasets().iterator();
-		while (it.hasNext()) {
-			Dataset next = it.next();
+		ArrayList<Dataset> datasets = dataManager.getDatasetsRaw();
+		for (int i = 0, n = datasets.size(); i < n; i++) {
+			Dataset next = datasets.get(i);
 			String colName = next.getYColumnName();
 			if (values.keySet().contains(colName)) {
 				// insert cells in columns with values
@@ -1597,8 +1595,8 @@ public class DataToolTable extends DataTable {
 			values = new HashMap<String, double[]>();
 		}
 		// ensure every column is included
-		ArrayList<Dataset> datasets = dataManager.getDatasets();
-		for (int i = 0; i < datasets.size(); i++) {
+		ArrayList<Dataset> datasets = dataManager.getDatasetsRaw();
+		for (int i = 0, n = datasets.size(); i < n; i++) {
 			Dataset next = datasets.get(i);
 			String name = next.getYColumnName();
 			if (!values.keySet().contains(name)) {
@@ -1631,7 +1629,7 @@ public class DataToolTable extends DataTable {
 	protected HashMap<String, double[]> deleteRows(int[] rows) {
 		HashMap<String, double[]> removed = new HashMap<String, double[]>();
 		// remove points from every dataset
-		ArrayList<Dataset> dataSets = dataManager.getDatasets();
+		ArrayList<Dataset> dataSets = dataManager.getDatasetsRaw();
 		for (int i = dataSets.size(); --i >= 0;) {
 			Dataset ds = dataSets.get(i);
 			removed.put(ds.getYColumnName(), deletePoints(ds, rows));
@@ -1654,9 +1652,9 @@ public class DataToolTable extends DataTable {
 	 */
 	protected boolean isEmptyRow(int row) {
 		boolean empty = true;
-		Iterator<Dataset> it = dataManager.getDatasets().iterator();
-		while (it.hasNext()) {
-			Dataset data = it.next();
+		ArrayList<Dataset> datasets = dataManager.getDatasetsRaw();
+		for (int i = 0, n = datasets.size(); i < n; i++) {
+			Dataset data = datasets.get(i);
 			if (data instanceof DataFunction) {
 				continue;
 			}
@@ -1678,9 +1676,9 @@ public class DataToolTable extends DataTable {
 	 */
 	protected boolean isEmptyCells(int row, ArrayList<String> columnNames) {
 		boolean empty = true;
-		Iterator<Dataset> it = dataManager.getDatasets().iterator();
-		while (it.hasNext()) {
-			Dataset data = it.next();
+		ArrayList<Dataset> datasets = dataManager.getDatasetsRaw();
+		for (int i = 0, n = datasets.size(); i < n; i++) {
+			Dataset data = datasets.get(i);
 			String name = data.getYColumnName();
 			if ((data instanceof DataFunction) || !columnNames.contains(name)) {
 				continue;
@@ -1909,9 +1907,9 @@ public class DataToolTable extends DataTable {
 	 * Refreshes the data functions.
 	 */
 	public void refreshDataFunctions() {
-		java.util.Iterator<Dataset> it = dataManager.getDatasets().iterator();
-		while (it.hasNext()) {
-			Dataset next = it.next();
+		ArrayList<Dataset> datasets = dataManager.getDatasetsRaw();
+		for (int i = 0, n = datasets.size(); i < n; i++) {
+			Dataset next = datasets.get(i);
 			if (next instanceof DataFunction) {
 				((DataFunction) next).refreshFunctionData();
 			}
