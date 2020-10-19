@@ -41,6 +41,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.TreeSet;
@@ -54,10 +55,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-
 
 import org.opensourcephysics.controls.ControlsRes;
 import org.opensourcephysics.controls.OSPLog;
@@ -89,6 +88,8 @@ public class VideoIO {
 	public static final String[] JS_VIDEO_EXTENSIONS = { "ogg", "mov", "mp4" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	public static final String DEFAULT_PREFERRED_EXPORT_EXTENSION = "mp4"; //$NON-NLS-1$
 	public static final String DEFAULT_VIDEO_EXTENSION = "jpg"; //$NON-NLS-1$
+	public static final String[] XUGGLE_VIDEO_EXTENSIONS = 
+		{"mov", "flv", "mp4", "wmv", "avi" };
 	public static final String[] KNOWN_VIDEO_EXTENSIONS = 
 		{"mov", "flv", "mp4", "wmv", "avi", "mts",
 			"m2ts", "mpg", "mod", "ogg", "dv" };
@@ -589,6 +590,10 @@ public class VideoIO {
 	 */
 	public static boolean isLoadableMP4(String path, Consumer<String> whenNotLoadable) {
 		String codec = null;
+		// can only test local files?
+		File localFile = ResourceLoader.download(path, null, false);
+		if (localFile != null)
+			path = localFile.getAbsolutePath();
 		try {
 			VideoReader vr = new VideoReader(path);
 			vr.getContents(false);
@@ -599,7 +604,7 @@ public class VideoIO {
 			}
 		} catch (IOException e) {
 		}
-		Toolkit.getDefaultToolkit().beep();
+
 		String theCodec = codec;
 		if (whenNotLoadable != null)
 			SwingUtilities.invokeLater(() -> {
@@ -608,14 +613,61 @@ public class VideoIO {
 		return false;
 	}
 	
-	public static void handleUnsupportedVideo(String path, String ext, String codec) {
+	public static void handleUnsupportedVideo(String path, String ext, String codec, VideoPanel vidPanel) {
 		OSPLog.debug("VideoIO.handleUnsupportedVideo "+path);
+		
+		String message = codec != null? 
+				MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.VideoCodec1")+" "+
+				ext.toUpperCase()+" "+
+				MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.VideoCodec2")+" \""+codec+"\".":
+				MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.VideoType")+" \""+ext+"\".";
+
+		if (codec == null && MovieFactory.xuggleNeeds32bitVM 
+				&& vidPanel != null && vidPanel.getClass().getSimpleName().equals("TrackerPanel")) {
+			for (int i= 0; i < XUGGLE_VIDEO_EXTENSIONS.length; i++) {
+				if (XUGGLE_VIDEO_EXTENSIONS[i].equals(ext)) {
+					message += "<br><br>"+MediaRes.getString("VideoIO.Dialog.WrongVM.Message.Fix1");
+					message += "<br>"+MediaRes.getString("VideoIO.Dialog.WrongVM.Message.Fix2");
+					message += "<br><br>"+MediaRes.getString("VideoIO.Dialog.WrongVM.Message.Restart");
+					new AsyncDialog().showConfirmDialog(null, 
+							new EditorPaneMessage(message),
+							MediaRes.getString("VideoIO.Dialog.UnsupportedVideo.Title"), 
+							JOptionPane.YES_NO_OPTION, 
+							(ev) -> {
+							  int sel = ev.getID();
+								switch (sel) {
+								case JOptionPane.YES_OPTION:
+									// relaunch in 32-bit VM using Tracker PrefsDialog by reflection
+									SwingUtilities.invokeLater(() -> {
+										try {
+											// first get TFrame
+											String trackerClassPath = "org.opensourcephysics.cabrillo.tracker.TrackerPanel";
+											Class<?> type = Class.forName(trackerClassPath); //$NON-NLS-1$
+											Method m = type.getMethod("getTFrame", (Class<?>[])null); //$NON-NLS-1$
+											Object tFrame = m.invoke(vidPanel, (Object[])null);
+											// now get PrefsDialog from TFrame
+											String tframeClassPath = "org.opensourcephysics.cabrillo.tracker.TFrame";
+											type = Class.forName(tframeClassPath); //$NON-NLS-1$
+											m = type.getMethod("getPrefsDialog", (Class<?>[])null); //$NON-NLS-1$
+											Object prefsDialog = m.invoke(tFrame, (Object[])null);
+											
+											String prefsClassPath = "org.opensourcephysics.cabrillo.tracker.PrefsDialog";
+											type = Class.forName(prefsClassPath); //$NON-NLS-1$
+											m = type.getMethod("relaunch32Bit", (Class<?>[])null); //$NON-NLS-1$
+											m.invoke(prefsDialog, (Object[])null);
+										} catch (Exception e) {											
+										}
+									});
+							}
+						});				
+					return;
+				}
+			}
+			
+		}
 
 		String helpLink = MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.MoreInfo")+"<br>"+
 				"<a href=\"" + VIDEO_CONVERSION_HELP_PATH + "\">" + VIDEO_CONVERSION_HELP_PATH + "</a>";
-		String message = codec != null? 
-				MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.VideoCodec")+" \""+codec+"\".":
-				MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.VideoType")+" \""+ext+"\".";
 		message += "<br><br>"+MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Fix")+":";
 		message += "<ol>";
 		
@@ -627,8 +679,8 @@ public class VideoIO {
 			message += "<br><br>"+MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.DownloadNow");
 			
 			new AsyncDialog().showConfirmDialog(null, 
-				new MessageWithLink(message),
-				MediaRes.getString("VideoIO.Dialog.ConvertVideo.Title"), 
+				new EditorPaneMessage(message),
+				MediaRes.getString("VideoIO.Dialog.UnsupportedVideo.Title"), 
 				JOptionPane.YES_NO_OPTION, 
 				(ev) -> {
 				  int sel = ev.getID();
@@ -644,7 +696,7 @@ public class VideoIO {
 								}
 								String filePath = files[0].getAbsolutePath();
 								try {
-									File file = ResourceLoader.copyURLtoFile(path, filePath);
+									ResourceLoader.copyURLtoFile(path, filePath);
 								} catch (IOException e1) {
 									System.err.println("Failed to download "+path);
 									e1.printStackTrace();
@@ -660,7 +712,8 @@ public class VideoIO {
 			message += helpLink;
 			new AsyncDialog().showMessageDialog(
 					null, 
-					new MessageWithLink(message),
+					new EditorPaneMessage(message),
+					MediaRes.getString("VideoIO.Dialog.UnsupportedVideo.Title"),
 					(ev) -> {}
 			);
 		}
@@ -1103,10 +1156,10 @@ public class VideoIO {
 		return null;
 	}
 	
-	// class to include hyperlink in JOptionPane message
-	static class MessageWithLink extends JEditorPane {
+	// class to show message in JEditorPane and respond to hyperlinks
+	static class EditorPaneMessage extends JEditorPane {
 
-    MessageWithLink(String htmlBody) {
+    EditorPaneMessage(String htmlBody) {
       super("text/html", "<html><body style=\"" + getLabelStyle() + "\">" + htmlBody + "</body></html>");
       addHyperlinkListener(new HyperlinkListener() {
         @Override

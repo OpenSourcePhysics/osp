@@ -34,11 +34,11 @@ package org.opensourcephysics.media.core;
 import java.awt.Frame;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.swing.JOptionPane;
 import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.opensourcephysics.controls.OSPLog;
@@ -46,6 +46,8 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.media.core.VideoIO.FinalizableLoader;
 import org.opensourcephysics.tools.ResourceLoader;
+
+import javajs.util.VideoReader;
 
 /**
  * This defines a subset of video frames called steps.
@@ -752,6 +754,7 @@ public class VideoClip {
 			ArrayList<VideoType> types = VideoIO.getVideoTypesForPath(path);
 			switch (types.size()) {
 			case 0:
+				control.setValue("unsupported_video_path", path);
 				break;
 			case 1:
 				video = VideoIO.getVideo(path, base, types.get(0));
@@ -761,21 +764,35 @@ public class VideoClip {
 				break;
 			}
 
-			if (video == null && !VideoIO.isCanceled()) {
+			if (video == null && !VideoIO.isCanceled() && types.size() > 0) {
+				// video with a valid VideoType cannot be loaded--probably unsupported codec
 				if (ResourceLoader.getResource(path) != null) { // resource exists but not loaded
 					OSPLog.info("\"" + path + "\" could not be opened"); //$NON-NLS-1$ //$NON-NLS-2$
 				}
-				String message = "\"" + XML.getName(path) + "\" " +
-						MediaRes.getString("VideoClip.Dialog.FailedToLoad.Message1") + "\n";
-				if (types.size() == 0) {
-					message += MediaRes.getString("VideoClip.Dialog.FailedToLoad.Message2") + " \"" +
-							XML.getExtension(path) + "\"\n" +
-							MediaRes.getString("VideoClip.Dialog.FailedToLoad.Message3");
-				}
-				JOptionPane.showMessageDialog(null, 
-						message + ".", 
-						MediaRes.getString("VideoClip.Dialog.FailedToLoad.Title"), 
-						JOptionPane.WARNING_MESSAGE);
+//				if ((path.toLowerCase().endsWith("mp4"))
+//						&& !VideoIO.isLoadableMP4(path, (codec) -> {
+//							VideoIO.handleUnsupportedVideo(path, "mp4", codec, null);
+//						})) {					
+//				}
+//				else {
+				
+					try {
+						VideoReader vr = new VideoReader(path);
+						vr.getContents(false);
+						String codec = vr.getCodec();
+						OSPLog.warning(XML.getExtension(path)+" unsupported codec = "+codec);
+						OSPLog.debug(XML.getExtension(path)+" unsupported codec = "+codec);
+						VideoIO.handleUnsupportedVideo(path, XML.getExtension(path), codec, null);
+					} catch (IOException e) {
+					}
+//					String message = "\"" + XML.getName(path) + "\" " +
+//							MediaRes.getString("VideoClip.Dialog.FailedToLoad.Message1") + "\n";
+//					JOptionPane.showMessageDialog(null, 
+//							message + ".", 
+//							MediaRes.getString("VideoClip.Dialog.FailedToLoad.Title"), 
+//							JOptionPane.WARNING_MESSAGE);
+//					}
+			
 //				}
 //
 //				/**
