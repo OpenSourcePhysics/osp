@@ -141,17 +141,17 @@ public class GhostFilter extends Filter {
 	 */
 	@Override
 	public void refresh() {
+		if (inspector == null || !haveGUI)
+			return;
 		super.refresh();
-		if (inspector != null) {
-			inspector.setTitle(MediaRes.getString(prefix + ".Title")); //$NON-NLS-1$
-			fadeLabel.setText(MediaRes.getString(prefix + ".Label.Fade")); //$NON-NLS-1$
-			fadeSlider.setToolTipText(MediaRes.getString(prefix + ".ToolTip.Fade")); //$NON-NLS-1$
-			boolean enabled = isEnabled();
-			fadeLabel.setEnabled(enabled);
-			fadeSlider.setEnabled(enabled);
-			fadeField.setEnabled(enabled);
-			inspector.pack();
-		}
+		fadeLabel.setText(MediaRes.getString(prefix + ".Label.Fade")); //$NON-NLS-1$
+		fadeSlider.setToolTipText(MediaRes.getString(prefix + ".ToolTip.Fade")); //$NON-NLS-1$
+		boolean enabled = isEnabled();
+		fadeLabel.setEnabled(enabled);
+		fadeSlider.setEnabled(enabled);
+		fadeField.setEnabled(enabled);
+		inspector.setTitle(MediaRes.getString(prefix + ".Title")); //$NON-NLS-1$
+		inspector.pack();
 	}
 
 	// _____________________________ protected methods _______________________

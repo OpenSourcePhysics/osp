@@ -176,16 +176,16 @@ public class BaselineFilter extends Filter {
 	 */
 	@Override
 	public void refresh() {
+		if (inspector == null || !haveGUI)
+			return;
 		super.refresh();
 		loadButton.setText(MediaRes.getString("Filter.Baseline.Button.Load")); //$NON-NLS-1$
 		captureButton.setText(MediaRes.getString("Filter.Baseline.Button.Capture")); //$NON-NLS-1$
 		captureButton.setText(MediaRes.getString("Filter.Baseline.Button.Capture")); //$NON-NLS-1$
-		if (inspector != null) {
-			inspector.setTitle(MediaRes.getString("Filter.Baseline.Title")); //$NON-NLS-1$
-			inspector.pack();
-		}
 		loadButton.setEnabled(isEnabled());
 		captureButton.setEnabled(isEnabled());
+		inspector.setTitle(MediaRes.getString("Filter.Baseline.Title")); //$NON-NLS-1$
+		inspector.pack();
 	}
 
 	// _____________________________ private methods _______________________

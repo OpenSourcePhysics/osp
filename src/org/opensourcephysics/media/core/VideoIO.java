@@ -589,7 +589,20 @@ public class VideoIO {
 	 * @return true if loadable
 	 */
 	public static boolean isLoadableMP4(String path, Consumer<String> whenNotLoadable) {
-		String codec = null;
+		String codec = getVideoCodec(path);
+		OSPLog.fine("mp4 codec = "+codec);
+		if (codec != null && codec.contains("avc1")) {  // H264
+			return true;
+		}
+
+		if (whenNotLoadable != null)
+			SwingUtilities.invokeLater(() -> {
+				whenNotLoadable.accept(codec);
+			});
+		return false;
+	}
+	
+	public static String getVideoCodec(String path) {
 		// can only test local files?
 		File localFile = ResourceLoader.download(path, null, false);
 		if (localFile != null)
@@ -597,20 +610,10 @@ public class VideoIO {
 		try {
 			VideoReader vr = new VideoReader(path);
 			vr.getContents(false);
-			codec = vr.getCodec();
-			OSPLog.fine("mp4 codec = "+codec);
-			if (codec != null && codec.contains("avc1")) {  // H264
-				return true;
-			}
+			return vr.getCodec() == null? "unknown": vr.getCodec();
 		} catch (IOException e) {
 		}
-
-		String theCodec = codec;
-		if (whenNotLoadable != null)
-			SwingUtilities.invokeLater(() -> {
-				whenNotLoadable.accept(theCodec);
-			});
-		return false;
+		return null;
 	}
 	
 	public static void handleUnsupportedVideo(String path, String ext, String codec, VideoPanel vidPanel) {
@@ -734,7 +737,7 @@ public class VideoIO {
 		if (path.startsWith("file:")) //$NON-NLS-1$
 			path = ResourceLoader.getNonURIPath(path);
 		String fullPath = XML.getResolvedPath(path, basePath);
-		OSPLog.fine("path: " + fullPath + " type: " + vidType); //$NON-NLS-1$ //$NON-NLS-2$
+		OSPLog.fine("Path: " + fullPath + "    Type: " + (vidType == null? null: vidType.getTypeName())); //$NON-NLS-1$ //$NON-NLS-2$
 		
 		// for Xuggle videos, download web files to cache
 		String vidTypeName = vidType == null? null: vidType.getClass().getSimpleName();

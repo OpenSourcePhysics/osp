@@ -154,15 +154,13 @@ public class ResizeFilter extends Filter {
 	 */
 	@Override
 	public void refresh() {
+		if (inspector == null || !haveGUI)
+			return;
 		super.refresh();
 		widthLabel.setText(MediaRes.getString("Filter.Resize.Label.Width")); //$NON-NLS-1$
 		heightLabel.setText(MediaRes.getString("Filter.Resize.Label.Height")); //$NON-NLS-1$
 		inputLabel.setText(MediaRes.getString("Filter.Resize.Label.Input")); //$NON-NLS-1$
 		outputLabel.setText(MediaRes.getString("Filter.Resize.Label.Output")); //$NON-NLS-1$
-		if (inspector != null) {
-			inspector.setTitle(MediaRes.getString("Filter.Resize.Title")); //$NON-NLS-1$
-			inspector.pack();
-		}
 		boolean enabled = isEnabled();
 		inputLabel.setEnabled(enabled);
 		outputLabel.setEnabled(enabled);
@@ -177,7 +175,9 @@ public class ResizeFilter extends Filter {
 		widthInField.setIntValue(w);
 		widthOutField.setIntValue(wOut);
 		heightInField.setIntValue(h);
-		heightOutField.setIntValue(hOut);
+		heightOutField.setIntValue(hOut);			
+		inspector.setTitle(MediaRes.getString("Filter.Resize.Title")); //$NON-NLS-1$
+		inspector.pack();
 	}
 
 	// _____________________________ private methods _______________________
@@ -348,7 +348,7 @@ public class ResizeFilter extends Filter {
 			ResizeFilter filter = (ResizeFilter) obj;
 			control.setValue("width_factor", filter.widthFactor); //$NON-NLS-1$
 			control.setValue("height_factor", filter.heightFactor); //$NON-NLS-1$
-			if ((filter.frame != null) && (filter.inspector != null) && filter.inspector.isVisible()) {
+			if ((filter.getFrame() != null) && (filter.inspector != null) && filter.inspector.isVisible()) {
 				int x = filter.inspector.getLocation().x - filter.frame.getLocation().x;
 				int y = filter.inspector.getLocation().y - filter.frame.getLocation().y;
 				control.setValue("inspector_x", x); //$NON-NLS-1$

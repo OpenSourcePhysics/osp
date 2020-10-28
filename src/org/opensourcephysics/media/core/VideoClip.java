@@ -34,20 +34,23 @@ package org.opensourcephysics.media.core;
 import java.awt.Frame;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
+import javax.swing.JOptionPane;
 import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.core.VideoIO.FinalizableLoader;
 import org.opensourcephysics.tools.ResourceLoader;
 
-import javajs.util.VideoReader;
+import javajs.async.AsyncDialog;
+import javajs.async.AsyncFileChooser;
 
 /**
  * This defines a subset of video frames called steps.
@@ -731,7 +734,7 @@ public class VideoClip {
 				return obj;
 			}
 			
-			// otherwise open the video and make a new clip with it
+			// otherwise try to open the video and make a new clip with it
 			base = control.getString("basepath"); //$NON-NLS-1$ ;
 			ResourceLoader.addSearchPath(base);
 
@@ -741,6 +744,7 @@ public class VideoClip {
 			dt = child.getDouble("delta_t"); //$NON-NLS-1$
 			String childPath = child.getString("path");
 			path = XML.getResolvedPath(childPath, base); 
+			String fullPath = path;
 			// above is critical for TrackerSampler Mechanics (FreeFall, MotionDiagram, video)
 
 			if (base.endsWith("!")) { // zip or trz
@@ -754,7 +758,7 @@ public class VideoClip {
 			ArrayList<VideoType> types = VideoIO.getVideoTypesForPath(path);
 			switch (types.size()) {
 			case 0:
-				control.setValue("unsupported_video_path", path);
+//				control.setValue("unsupported_video_path", path);
 				break;
 			case 1:
 				video = VideoIO.getVideo(path, base, types.get(0));
@@ -764,64 +768,90 @@ public class VideoClip {
 				break;
 			}
 
-			if (video == null && !VideoIO.isCanceled() && types.size() > 0) {
-				// video with a valid VideoType cannot be loaded--probably unsupported codec
-				if (ResourceLoader.getResource(path) != null) { // resource exists but not loaded
-					OSPLog.info("\"" + path + "\" could not be opened"); //$NON-NLS-1$ //$NON-NLS-2$
-				}
-//				if ((path.toLowerCase().endsWith("mp4"))
-//						&& !VideoIO.isLoadableMP4(path, (codec) -> {
-//							VideoIO.handleUnsupportedVideo(path, "mp4", codec, null);
-//						})) {					
-//				}
-//				else {
+			if (video == null && !VideoIO.isCanceled()) {
 				
-					try {
-						VideoReader vr = new VideoReader(path);
-						vr.getContents(false);
-						String codec = vr.getCodec();
-						OSPLog.warning(XML.getExtension(path)+" unsupported codec = "+codec);
-						OSPLog.debug(XML.getExtension(path)+" unsupported codec = "+codec);
-						VideoIO.handleUnsupportedVideo(path, XML.getExtension(path), codec, null);
-					} catch (IOException e) {
-					}
-//					String message = "\"" + XML.getName(path) + "\" " +
-//							MediaRes.getString("VideoClip.Dialog.FailedToLoad.Message1") + "\n";
-//					JOptionPane.showMessageDialog(null, 
-//							message + ".", 
-//							MediaRes.getString("VideoClip.Dialog.FailedToLoad.Title"), 
-//							JOptionPane.WARNING_MESSAGE);
-//					}
-			
-//				}
-//
-//				/**
-//				 * Java only -- transpiler can skip this
-//				 * 
-//				 * @j2sNative
-//				 */
-//				{
-//					if (ResourceLoader.getResource(path) != null) { // resource exists but not loaded
-//						OSPLog.info("\"" + path + "\" could not be opened"); //$NON-NLS-1$ //$NON-NLS-2$
-//					} else {
-//
-//						int response = JOptionPane.showConfirmDialog(null, "\"" + path + "\" " //$NON-NLS-1$ //$NON-NLS-2$
-//								+ MediaRes.getString("VideoClip.Dialog.VideoNotFound.Message"), //$NON-NLS-1$
-//								MediaRes.getString("VideoClip.Dialog.VideoNotFound.Title"), //$NON-NLS-1$
-//								JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-//						if (response == JOptionPane.YES_OPTION) {
-//							VideoIO.getChooser().setSelectedFile(new File(path));
-//							@SuppressWarnings("deprecation")
-//							File[] files = VideoIO.getChooserFiles("open");
-//							if (files != null && files.length > 0) {
-//								String path = XML.getAbsolutePath(files[0]);
-//								video = VideoIO.getVideo(path, null);
+				boolean exists = ResourceLoader.getResource(XML.getResolvedPath(path, base)) != null; // resource exists
+				boolean supported = types.size() > 0;  // extension is supported, VideoType available
+				OSPLog.info("\"" + fullPath + "\" could not be opened. Found? "+exists+" Supported? "+supported); //$NON-NLS-1$ //$NON-NLS-2$
+				
+				if (supported) {
+					if (exists) {						
+						// found but failed to load supported video type--assume codec issue
+						String codec = VideoIO.getVideoCodec(path);
+						VideoIO.handleUnsupportedVideo(path, XML.getExtension(path), codec, null); // runs async
+						
+//						if (path.toLowerCase().endsWith("mp4")) {
+//							if (codec == null || !codec.contains("avc1")) {  // H264
+//								VideoIO.handleUnsupportedVideo(path, "mp4", codec, null); // runs async
 //							}
+//							else {
+//								// mp4 video with supported codec! Corrupt?
+//								VideoIO.handleUnsupportedVideo(path, "mp4", codec, null); // runs async
+//							}							
 //						}
-//
-//					}
-//				}
-			}
+//						else {
+//							// not mp4 video--assume unsupported codec
+//							VideoIO.handleUnsupportedVideo(path, XML.getExtension(path), codec, null); // runs async
+//						}
+					}
+					else {
+						// supported but not found
+						if (!OSPRuntime.isJS) 
+							/**
+							 * Java only -- transpiler can skip this
+							 * 
+							 * @j2sNative
+							 */
+						{
+							// let user look for it
+							String message = "\"" + path + "\" " //$NON-NLS-1$ //$NON-NLS-2$
+									+ MediaRes.getString("VideoClip.Dialog.VideoNotFound.Message"); //$NON-NLS-1$														
+							new AsyncDialog().showConfirmDialog(null, 
+									message,
+									MediaRes.getString("VideoClip.Dialog.VideoNotFound.Title"), 
+									JOptionPane.YES_NO_OPTION, 
+									JOptionPane.WARNING_MESSAGE,
+									(ev) -> {
+									  int sel = ev.getID();
+										switch (sel) {
+										case JOptionPane.YES_OPTION:
+											VideoIO.getChooser().setSelectedFile(new File(path));
+											VideoIO.getChooserFilesAsync("open", //$NON-NLS-1$
+												(files) -> {
+													if (VideoIO.getChooser().getSelectedOption() != AsyncFileChooser.APPROVE_OPTION
+															|| files == null || files.length == 0) {
+														return null;
+													}
+													String path = XML.getAbsolutePath(files[0]);
+													video = VideoIO.getVideo(path, null);
+													return null;
+												});
+									}
+								});				
+
+							
+						}
+						else {
+							// in JS, just report missing file
+							String message = MediaRes.getString("VideoClip.Dialog.VideoNotFound.Title") //$NON-NLS-1$	
+									+ ": \"" + fullPath + "\"."; //$NON-NLS-1$ //$NON-NLS-2$
+							new AsyncDialog().showMessageDialog(
+									null, 
+									message,
+									MediaRes.getString("VideoClip.Dialog.VideoNotFound.Title"),
+									(ev) -> {}
+							);
+						}
+					}
+				}
+				else {
+					// unsupported extension
+					VideoIO.handleUnsupportedVideo(path, XML.getExtension(path), null, null); // runs async
+				}
+				
+			} // done handling null video
+			
+								
 			if (video != null) {
 				if (filters != null) {
 					video.getFilterStack().clear();
@@ -883,6 +913,8 @@ public class VideoClip {
 		}
 
 	}
+	
+
 
 }
 

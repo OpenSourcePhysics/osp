@@ -152,12 +152,13 @@ public class RadialDistortionFilter extends Filter {
 	 */
 	@Override
 	public void refresh() {
+		if (inspector == null || !haveGUI)
+			return;
 		super.refresh();
-		ableButton.setText(isEnabled() ? MediaRes.getString("Filter.Button.Disable") : //$NON-NLS-1$
-				MediaRes.getString("Filter.Button.Enable")); //$NON-NLS-1$
-		if (inspector != null) {
-			inspector.refreshGUI();
-		}
+		ableButton.setText(isEnabled() ? 
+				MediaRes.getString("Filter.Button.Disable") : //$NON-NLS-1$
+				MediaRes.getString("Filter.Button.Enable")); //$NON-NLS-1$		
+		inspector.refreshGUI();
 	}
 
 	/**

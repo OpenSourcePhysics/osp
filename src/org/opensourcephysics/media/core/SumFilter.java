@@ -146,16 +146,14 @@ public class SumFilter extends Filter {
 	 */
 	@Override
 	public void refresh() {
+		if (inspector == null || !haveGUI)
+			return;
 		super.refresh();
 		percentLabel.setText(MediaRes.getString("Filter.Sum.Label.Percent")); //$NON-NLS-1$
 		percentField.setToolTipText(MediaRes.getString("Filter.Sum.ToolTip.Percent")); //$NON-NLS-1$
 		percentSlider.setToolTipText(MediaRes.getString("Filter.Sum.ToolTip.Percent")); //$NON-NLS-1$
 		showMeanCheckBox.setText(MediaRes.getString("Filter.Sum.CheckBox.ShowMean")); //$NON-NLS-1$
 		frameCountLabel.setText(MediaRes.getString("Filter.Sum.Label.FrameCount")); //$NON-NLS-1$
-		if (inspector != null) {
-			inspector.setTitle(MediaRes.getString("Filter.Sum.Title")); //$NON-NLS-1$
-			inspector.pack();
-		}
 		boolean enabled = isEnabled();
 		showMeanCheckBox.setEnabled(enabled);
 		frameCountLabel.setEnabled(enabled);
@@ -171,6 +169,8 @@ public class SumFilter extends Filter {
 			percentField.setValue(brightness * 100);
 			percentSlider.setValue(Math.round((float) brightness * 100));
 		}
+		inspector.setTitle(MediaRes.getString("Filter.Sum.Title")); //$NON-NLS-1$
+		inspector.pack();
 	}
 
 	/**

@@ -180,6 +180,8 @@ public class BrightnessFilter extends Filter {
 	 */
 	@Override
 	public void refresh() {
+		if (inspector == null || !haveGUI)
+			return;
 		super.refresh();
 		brightnessLabel.setText(MediaRes.getString("Filter.Brightness.Label.Brightness")); //$NON-NLS-1$
 		brightnessSlider.setToolTipText(MediaRes.getString("Filter.Brightness.ToolTip.Brightness")); //$NON-NLS-1$
@@ -193,11 +195,9 @@ public class BrightnessFilter extends Filter {
 		contrastSlider.setEnabled(enabled);
 		contrastField.setEnabled(enabled);
 		clearButton.setText(MediaRes.getString("Dialog.Button.Reset")); //$NON-NLS-1$
-		if (inspector != null) {
-			inspector.setTitle(MediaRes.getString("Filter.Brightness.Title")); //$NON-NLS-1$
-			inspector.updateDisplay();
-			inspector.pack();
-		}
+		inspector.setTitle(MediaRes.getString("Filter.Brightness.Title")); //$NON-NLS-1$
+		inspector.updateDisplay();
+		inspector.pack();
 	}
 
 	@Override

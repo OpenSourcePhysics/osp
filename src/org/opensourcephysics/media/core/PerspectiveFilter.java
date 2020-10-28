@@ -171,21 +171,21 @@ public class PerspectiveFilter extends Filter {
 	 */
 	@Override
 	public void refresh() {
+		if (inspector == null || !haveGUI)
+			return;
 		super.refresh();
-		if (inspector != null) {
-			inspector.setTitle(MediaRes.getString("Filter.Perspective.Title")); //$NON-NLS-1$
-			inspector.tabbedPane.setTitleAt(0, MediaRes.getString("PerspectiveFilter.Tab.Input")); //$NON-NLS-1$
-			inspector.tabbedPane.setTitleAt(1, MediaRes.getString("PerspectiveFilter.Tab.Output")); //$NON-NLS-1$
+		inspector.setTitle(MediaRes.getString("Filter.Perspective.Title")); //$NON-NLS-1$
+		inspector.tabbedPane.setTitleAt(0, MediaRes.getString("PerspectiveFilter.Tab.Input")); //$NON-NLS-1$
+		inspector.tabbedPane.setTitleAt(1, MediaRes.getString("PerspectiveFilter.Tab.Output")); //$NON-NLS-1$
 
-			inspector.helpButton.setText(MediaRes.getString("PerspectiveFilter.Button.Help")); //$NON-NLS-1$
-			inspector.colorButton.setText(MediaRes.getString("PerspectiveFilter.Button.Color")); //$NON-NLS-1$
-			ableButton.setText(super.isEnabled() ? MediaRes.getString("Filter.Button.Disable") : //$NON-NLS-1$
-					MediaRes.getString("Filter.Button.Enable")); //$NON-NLS-1$
-			inputEditor.refreshGUI();
-			outputEditor.refreshGUI();
-			inputEditor.refreshFields();
-			outputEditor.refreshFields();
-		}
+		inspector.helpButton.setText(MediaRes.getString("PerspectiveFilter.Button.Help")); //$NON-NLS-1$
+		inspector.colorButton.setText(MediaRes.getString("PerspectiveFilter.Button.Color")); //$NON-NLS-1$
+		ableButton.setText(super.isEnabled() ? MediaRes.getString("Filter.Button.Disable") : //$NON-NLS-1$
+				MediaRes.getString("Filter.Button.Enable")); //$NON-NLS-1$
+		inputEditor.refreshGUI();
+		outputEditor.refreshGUI();
+		inputEditor.refreshFields();
+		outputEditor.refreshFields();
 	}
 
 	@Override

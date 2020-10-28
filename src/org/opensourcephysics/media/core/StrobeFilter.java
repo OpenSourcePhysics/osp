@@ -161,25 +161,24 @@ public class StrobeFilter extends Filter {
 	 */
 	@Override
 	public void refresh() {
+		if (inspector == null || !haveGUI)
+			return;
 		super.refresh();
-		if (inspector != null) {
-			inspector.setTitle(MediaRes.getString("Filter.Strobe.Title")); //$NON-NLS-1$
-			fadeLabel.setText(MediaRes.getString("Filter.Ghost.Label.Fade")); //$NON-NLS-1$
-			fadeSlider.setToolTipText(MediaRes.getString("Filter.Ghost.ToolTip.Fade")); //$NON-NLS-1$
-			brightButton.setText(MediaRes.getString("Filter.Strobe.RadioButton.Bright")); //$NON-NLS-1$
-			brightButton.setToolTipText(MediaRes.getString("Filter.Strobe.RadioButton.Bright.Tooltip")); //$NON-NLS-1$
-			darkButton.setText(MediaRes.getString("Filter.Strobe.RadioButton.Dark")); //$NON-NLS-1$
-			darkButton.setToolTipText(MediaRes.getString("Filter.Strobe.RadioButton.Dark.Tooltip")); //$NON-NLS-1$
+		fadeLabel.setText(MediaRes.getString("Filter.Ghost.Label.Fade")); //$NON-NLS-1$
+		fadeSlider.setToolTipText(MediaRes.getString("Filter.Ghost.ToolTip.Fade")); //$NON-NLS-1$
+		brightButton.setText(MediaRes.getString("Filter.Strobe.RadioButton.Bright")); //$NON-NLS-1$
+		brightButton.setToolTipText(MediaRes.getString("Filter.Strobe.RadioButton.Bright.Tooltip")); //$NON-NLS-1$
+		darkButton.setText(MediaRes.getString("Filter.Strobe.RadioButton.Dark")); //$NON-NLS-1$
+		darkButton.setToolTipText(MediaRes.getString("Filter.Strobe.RadioButton.Dark.Tooltip")); //$NON-NLS-1$
 
-			boolean enabled = isEnabled();
-			brightButton.setEnabled(enabled);
-			darkButton.setEnabled(enabled);
-			fadeLabel.setEnabled(enabled);
-			fadeSlider.setEnabled(enabled);
-			fadeField.setEnabled(enabled);
-
-			inspector.pack();
-		}
+		boolean enabled = isEnabled();
+		brightButton.setEnabled(enabled);
+		darkButton.setEnabled(enabled);
+		fadeLabel.setEnabled(enabled);
+		fadeSlider.setEnabled(enabled);
+		fadeField.setEnabled(enabled);
+		inspector.setTitle(MediaRes.getString("Filter.Strobe.Title")); //$NON-NLS-1$
+		inspector.pack();
 	}
 
 	// _____________________________ private methods _______________________

@@ -108,6 +108,7 @@ public class GrayScaleFilter extends Filter {
 		redWt = r;
 		greenWt = g;
 		blueWt = b;
+		rgbWt = redWt + greenWt + blueWt;
 	}
 
 	/**
@@ -115,10 +116,9 @@ public class GrayScaleFilter extends Filter {
 	 */
 	@Override
 	public void refresh() {
+		if (inspector == null || !haveGUI)
+			return;
 		super.refresh();
-		if (inspector != null) {
-			inspector.setTitle(MediaRes.getString("Filter.GrayScale.Title")); //$NON-NLS-1$
-		}
 		typePanel.setBorder(BorderFactory.createTitledBorder(MediaRes.getString("Filter.GrayScale.Label.Type"))); //$NON-NLS-1$
 		rgbPanel.setBorder(BorderFactory.createTitledBorder(MediaRes.getString("Filter.GrayScale.Label.Weight"))); //$NON-NLS-1$
 		vidButton.setText(MediaRes.getString("Filter.GrayScale.Button.Video")); //$NON-NLS-1$
@@ -135,6 +135,8 @@ public class GrayScaleFilter extends Filter {
 			colorFields[i].setEnabled(isEnabled());
 			colorLabels[i].setEnabled(isEnabled());
 		}
+		inspector.setTitle(MediaRes.getString("Filter.GrayScale.Title")); //$NON-NLS-1$
+		inspector.pack();
 	}
 
 	// _____________________________ private methods _______________________

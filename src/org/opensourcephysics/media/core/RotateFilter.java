@@ -116,17 +116,17 @@ public class RotateFilter extends Filter {
 	 */
 	@Override
 	public void refresh() {
+		if (inspector == null || !haveGUI)
+			return;
 		super.refresh();
-		if (inspector != null) {
-			inspector.setTitle(MediaRes.getString("Filter.Rotate.Title")); //$NON-NLS-1$
-			rotationPanel.setBorder(BorderFactory.createTitledBorder(MediaRes.getString("Filter.Rotate.Label.Rotate"))); //$NON-NLS-1$
-			for (int i = 0; i < buttons.length; i++) {
-				buttons[i].setEnabled(isEnabled());
-				buttons[i].setText(MediaRes.getString("Filter.Rotate.Button." + typeNames[i])); //$NON-NLS-1$
-			}
-			reverseCheckbox.setText(MediaRes.getString("Filter.Rotate.Checkbox.Reverse")); //$NON-NLS-1$
-			reverseCheckbox.setSelected(reverse);
+		rotationPanel.setBorder(BorderFactory.createTitledBorder(MediaRes.getString("Filter.Rotate.Label.Rotate"))); //$NON-NLS-1$
+		for (int i = 0; i < buttons.length; i++) {
+			buttons[i].setEnabled(isEnabled());
+			buttons[i].setText(MediaRes.getString("Filter.Rotate.Button." + typeNames[i])); //$NON-NLS-1$
 		}
+		reverseCheckbox.setText(MediaRes.getString("Filter.Rotate.Checkbox.Reverse")); //$NON-NLS-1$
+		reverseCheckbox.setSelected(reverse);			
+		inspector.setTitle(MediaRes.getString("Filter.Rotate.Title")); //$NON-NLS-1$
 	}
 
 	// _____________________________ private methods _______________________
@@ -318,7 +318,7 @@ public class RotateFilter extends Filter {
 			if (filter.rotationType > ROTATE_NONE)
 				control.setValue("rotation", RotateFilter.typeNames[filter.rotationType + 1]); //$NON-NLS-1$
 			control.setValue("reverse", filter.reverse); //$NON-NLS-1$
-			if ((filter.frame != null) && (filter.inspector != null) && filter.inspector.isVisible()) {
+			if ((filter.getFrame() != null) && (filter.inspector != null) && filter.inspector.isVisible()) {
 				int x = filter.inspector.getLocation().x - filter.frame.getLocation().x;
 				int y = filter.inspector.getLocation().y - filter.frame.getLocation().y;
 				control.setValue("inspector_x", x); //$NON-NLS-1$

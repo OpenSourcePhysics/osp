@@ -32,6 +32,7 @@
 package org.opensourcephysics.media.core;
 
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.Graphics2D;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -74,7 +75,7 @@ public abstract class Filter {
 	abstract protected class InspectorDlg extends JDialog {
 
 		protected InspectorDlg(String title) {
-			super(frame, !(frame instanceof org.opensourcephysics.display.OSPFrame));
+			super(getFrame(), !(frame instanceof org.opensourcephysics.display.OSPFrame));
 			setTitle(MediaRes.getString(title));
 		}
 
@@ -192,7 +193,7 @@ public abstract class Filter {
 				return null;
 		}
 		if (inspectorDlg.isModal() && vidPanel != null) {
-			frame = (JFrame) JOptionPane.getFrameForComponent(vidPanel);
+			frame = getFrame();
 			inspectorDlg.setVisible(false);
 			inspectorDlg.dispose();
 			inspectorDlg = newInspector();
@@ -230,14 +231,30 @@ public abstract class Filter {
 	 */
 	public void setVideoPanel(VideoPanel panel) {
 		vidPanel = panel;
-		frame = (JFrame) (vidPanel == null ? null : JOptionPane.getFrameForComponent(vidPanel));
+	}
+
+	/**
+	 * Gets the JFrame containing the VideoPanel. May return null
+	 * 
+	 * @return the JFrame, if any
+	 */
+	public JFrame getFrame() {
+		if (vidPanel ==null)
+			return null;
+		if (frame == null) {
+			Frame test = JOptionPane.getFrameForComponent(vidPanel);
+			if (test != null && test instanceof JFrame) {
+				frame = (JFrame) test;
+			}
+		}
+		return frame;
 	}
 
 	/**
 	 * Refreshes this filter's GUI
 	 */
 	public void refresh() {
-		if (enabledItem == null || closeButton == null)
+		if (!haveGUI)
 			return;
 		enabledItem.setText(MediaRes.getString("Filter.MenuItem.Enabled")); //$NON-NLS-1$
 		propertiesItem.setText(MediaRes.getString("Filter.MenuItem.Properties")); //$NON-NLS-1$
@@ -520,7 +537,7 @@ public abstract class Filter {
 	abstract protected void setOutputPixels();
 
 	public void addLocation(XMLControl control) {
-		if (frame != null && inspectorDlg != null && inspectorDlg.isVisible()) {
+		if (getFrame() != null && inspectorDlg != null && inspectorDlg.isVisible()) {
 			int x = inspectorDlg.getLocation().x - frame.getLocation().x;
 			int y = inspectorDlg.getLocation().y - frame.getLocation().y;
 			control.setValue("inspector_x", x); //$NON-NLS-1$

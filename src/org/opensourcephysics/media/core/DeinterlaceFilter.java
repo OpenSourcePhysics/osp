@@ -101,16 +101,16 @@ public class DeinterlaceFilter extends Filter {
 	 */
 	@Override
 	public void refresh() {
+		if (inspector == null || !haveGUI)
+			return;
 		super.refresh();
 		odd.setText(MediaRes.getString("Filter.Deinterlace.Button.Odd")); //$NON-NLS-1$
 		even.setText(MediaRes.getString("Filter.Deinterlace.Button.Even")); //$NON-NLS-1$
-		if (inspector != null) {
-			inspector.setTitle(MediaRes.getString("Filter.Deinterlace.Title")); //$NON-NLS-1$
-			inspector.pack();
-		}
 		boolean enabled = isEnabled();
 		odd.setEnabled(enabled);
-		even.setEnabled(enabled);
+		even.setEnabled(enabled);			
+		inspector.setTitle(MediaRes.getString("Filter.Deinterlace.Title")); //$NON-NLS-1$
+		inspector.pack();
 	}
 
 	// _____________________________ private methods _______________________
@@ -250,7 +250,7 @@ public class DeinterlaceFilter extends Filter {
 			} else {
 				control.setValue("field", "even"); //$NON-NLS-1$ //$NON-NLS-2$
 			}
-			if ((filter.frame != null) && (filter.inspector != null) && filter.inspector.isVisible()) {
+			if ((filter.getFrame() != null) && (filter.inspector != null) && filter.inspector.isVisible()) {
 				int x = filter.inspector.getLocation().x - filter.frame.getLocation().x;
 				int y = filter.inspector.getLocation().y - filter.frame.getLocation().y;
 				control.setValue("inspector_x", x); //$NON-NLS-1$
