@@ -1730,7 +1730,8 @@ System.out.println("VideoPlayer.dragging " + start + "-" + end + " " + val + " "
 		sliderLabels.put(Integer.valueOf(clip.getEndFrameNumber()), outLabel);
 //		OSPLog.debug("VideoPlayer.updateSlider.Timeout.run "
 //		+ option + " " + o + " " + slider.getName() + " " + clip.getStartFrameNumber() + " " + clip.getEndFrameNumber() );
-		slider.paintImmediately(slider.getBounds());
+//		slider.paintImmediately(slider.getBounds());
+		slider.repaint();
 		switch (option) {
 		case "refresh":
 			setReadoutTypes("frame time step", "frame"); //$NON-NLS-1$ //$NON-NLS-2$
