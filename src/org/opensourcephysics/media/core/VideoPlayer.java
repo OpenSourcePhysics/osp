@@ -91,7 +91,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
 
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPRuntime;
