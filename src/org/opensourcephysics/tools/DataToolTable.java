@@ -183,15 +183,16 @@ public class DataToolTable extends DataTable {
 			}
 		});
 		// selection listener for column header
-//		selectionModel = getTableHeader().getColumnModel().getSelectionModel();
-//		selectionModel.addListSelectionListener(new ListSelectionListener() {
-//			@Override
-//			public void valueChanged(ListSelectionEvent e) {
-//				getTableHeader().repaint();
-//				//dataToolTab.refreshPlot(false);
-//			}
-//
-//		});
+		selectionModel = getTableHeader().getColumnModel().getSelectionModel();
+		selectionModel.addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				if (e.getValueIsAdjusting())
+					return;
+				getTableHeader().repaint();
+			}
+
+		});
 		
 		installActions();
 	}
