@@ -80,6 +80,11 @@ public class DatasetManager extends DataTable.DataModel implements Measurable, L
 		public Class<Double> getColumnClass(int columnIndex) {
 			return Double.class;
 		}
+		
+		@Override
+    public String getColumnName(int column) {
+    	return DatasetManager.this.getColumnName(column);
+    }
 
 	}
 
