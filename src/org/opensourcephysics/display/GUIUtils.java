@@ -587,6 +587,15 @@ public class GUIUtils {
 		return (JToolBar) c;
 	}
 
+	// added by DB 2020.11.02
+	public static JToolBar getParentOrSelfToolBar(Container c) {
+		if (!(c instanceof JToolBar)) {
+			while ((c = c.getParent()) != null && !(c instanceof JToolBar)) {
+			}
+		}
+		return (JToolBar) c;
+	}
+
 	public static JViewport getParentViewport(Container c) {
 		while ((c = c.getParent()) != null && !(c instanceof JViewport)) {
 		}
