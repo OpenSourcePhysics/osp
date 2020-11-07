@@ -1382,7 +1382,7 @@ public class LibraryTreePanel extends JPanel {
 	 * 
 	 */
 	protected void ifClipboardPastable(Runnable r) {
-		if (OSPRuntime.allowLibClipboardPasteCheck)
+		if (!OSPRuntime.allowLibClipboardPasteCheck)
 			return;
 		if (clipboardAvailable == Boolean.TRUE) {
 			r.run();
