@@ -66,7 +66,7 @@ import java.util.TreeMap;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -148,36 +148,36 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	}
 
 // static fields
-	protected static ImageIcon inOutIcon, playIcon, grayPlayIcon, pauseIcon;
-	protected static ImageIcon resetIcon, loopIcon, noloopIcon, videoClipIcon;
-	protected static ImageIcon stepIcon, grayStepIcon, backIcon, grayBackIcon;
+	protected static Icon inOutIcon, playIcon, grayPlayIcon, pauseIcon;
+	protected static Icon resetIcon, loopIcon, noloopIcon, videoClipIcon;
+	protected static Icon stepIcon, grayStepIcon, backIcon, grayBackIcon;
 	private static GoToDialog goToDialog;
 	private static NumberFormat timeFormat = NumberFormat.getNumberInstance();
 	static {
 		String path = "/org/opensourcephysics/resources/media/images/in_out.gif"; //$NON-NLS-1$
-		inOutIcon = ResourceLoader.getImageIcon(path);
+		inOutIcon = ResourceLoader.getResizableIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/play.gif"; //$NON-NLS-1$
-		playIcon = ResourceLoader.getImageIcon(path);
+		playIcon = ResourceLoader.getResizableIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/play_gray.gif"; //$NON-NLS-1$
-		grayPlayIcon = ResourceLoader.getImageIcon(path);
+		grayPlayIcon = ResourceLoader.getResizableIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/pause.gif"; //$NON-NLS-1$
-		pauseIcon = ResourceLoader.getImageIcon(path);
+		pauseIcon = ResourceLoader.getResizableIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/reset.gif"; //$NON-NLS-1$
-		resetIcon = ResourceLoader.getImageIcon(path);
+		resetIcon = ResourceLoader.getResizableIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/looping_on.gif"; //$NON-NLS-1$
-		loopIcon = ResourceLoader.getImageIcon(path);
+		loopIcon = ResourceLoader.getResizableIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/looping_off.gif"; //$NON-NLS-1$
-		noloopIcon = ResourceLoader.getImageIcon(path);
+		noloopIcon = ResourceLoader.getResizableIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/video_clip.gif"; //$NON-NLS-1$
-		videoClipIcon = ResourceLoader.getImageIcon(path);
+		videoClipIcon = ResourceLoader.getResizableIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/step.gif"; //$NON-NLS-1$
-		stepIcon = ResourceLoader.getImageIcon(path);
+		stepIcon = ResourceLoader.getResizableIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/step_gray.gif"; //$NON-NLS-1$
-		grayStepIcon = ResourceLoader.getImageIcon(path);
+		grayStepIcon = ResourceLoader.getResizableIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/back.gif"; //$NON-NLS-1$
-		backIcon = ResourceLoader.getImageIcon(path);
+		backIcon = ResourceLoader.getResizableIcon(path);
 		path = "/org/opensourcephysics/resources/media/images/back_gray.gif"; //$NON-NLS-1$
-		grayBackIcon = ResourceLoader.getImageIcon(path);
+		grayBackIcon = ResourceLoader.getResizableIcon(path);
 	}
 
 	// instance fields
@@ -1155,6 +1155,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 //	        popup.add(item);
 //        }
 				// show popup menu
+				FontSizer.setFonts(popup);
 				popup.show(readout, 0, readout.getHeight());
 			}
 		});
@@ -1208,6 +1209,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 				item.addActionListener(stepSizeBtnListener);
 				popup.add(item);
 				// show popup menu
+				FontSizer.setFonts(popup);
 				popup.show(stepSizeButton, 0, stepSizeButton.getHeight());
 		});
 		stepSizeButton.addMouseListener(new MouseAdapter() {
@@ -1472,6 +1474,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 				popup.add(item);
 			}
 			// show popup menu
+			FontSizer.setFonts(popup);
 			popup.show(slider, e.getX(), e.getY());
 			return;
 		}
@@ -1799,7 +1802,7 @@ System.out.println("VideoPlayer.dragging " + start + "-" + end + " " + val + " "
 		 *
 		 * @param icon the icon
 		 */
-		public PlayerButton(ImageIcon icon) {
+		public PlayerButton(Icon icon) {
 			this();
 			setIcon(icon);
 		}
@@ -1810,7 +1813,7 @@ System.out.println("VideoPlayer.dragging " + start + "-" + end + " " + val + " "
 		 * @param off the unselected state icon
 		 * @param on  the selected state icon
 		 */
-		public PlayerButton(ImageIcon off, ImageIcon on) {
+		public PlayerButton(Icon off, Icon on) {
 			this();
 			setIcon(off);
 			setSelectedIcon(on);
