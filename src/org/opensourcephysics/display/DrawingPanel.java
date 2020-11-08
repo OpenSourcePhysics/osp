@@ -347,7 +347,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	/**
 	 * Builds the default popup menu for this panel.
 	 */
-	protected void buildPopupmenu() {
+	protected void buildPopupMenu() {
 		if (popupmenu == null) {
 			popupmenu = new JPopupMenu();
 		} else {
@@ -1519,7 +1519,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		if (!popupmenuIsEnabled)
 			return null;
 		if (popupmenu == null) {
-			buildPopupmenu();
+			buildPopupMenu();
 		}
 		return popupmenu;
 	}

@@ -396,7 +396,6 @@ public class DataToolTable extends DataTable {
 				// update selected data in curve fitter and plot
 				dataToolTab.setSelectedData(getSelectedData(), false);
 				dataToolTab.refreshFit();
-				dataToolTab.plot.repaint();
 			}
 
 		});

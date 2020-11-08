@@ -61,7 +61,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollBar;
@@ -122,8 +121,6 @@ import org.opensourcephysics.media.core.TPoint;
 import org.opensourcephysics.tools.DataToolTable.TableEdit;
 import org.opensourcephysics.tools.DataToolTable.WorkingDataset;
 import org.opensourcephysics.tools.DatasetCurveFitter.NumberField;
-
-import javajs.async.AsyncDialog;
 
 /**
  * This tab displays and analyzes a single Data object in a DataTool.
@@ -3008,7 +3005,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				curveFitter.fit(curveFitter.fit);
 				plot.refreshArea();
 				plot.refreshMeasurements();
-//				plot.repaint();
+				plot.repaint();
 			}
 		}
 

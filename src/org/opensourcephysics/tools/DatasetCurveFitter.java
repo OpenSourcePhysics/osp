@@ -827,7 +827,8 @@ public class DatasetCurveFitter extends JPanel {
 		eqnPanel.add(rmsPanel, BorderLayout.CENTER);
 		rmsBar = new JToolBar();
 		rmsBar.setLayout(new BoxLayout(rmsBar, BoxLayout.X_AXIS) {
-		    public void layoutContainer(Container target) {
+		    @Override
+				public void layoutContainer(Container target) {
 		    	super.layoutContainer(target);
 		    }
 		});
