@@ -1380,9 +1380,10 @@ public class LibraryTreePanel extends JPanel {
 	/**
 	 * Determines if the clipboard can be pasted.
 	 * 
-	 * @return true if the clipboard contains a LibraryTreeNode XMLControl string
 	 */
 	protected void ifClipboardPastable(Runnable r) {
+		if (!OSPRuntime.allowLibClipboardPasteCheck)
+			return;
 		if (clipboardAvailable == Boolean.TRUE) {
 			r.run();
 		}
