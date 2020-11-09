@@ -1818,8 +1818,12 @@ public class LibraryBrowser extends JPanel {
 		path = ResourceLoader.getNonURIPath(path);
 		Resource res = null;
 		String xmlPath = path;
-		if (ResourceLoader.isHTTP(path))
+		if (ResourceLoader.isHTTP(path)) {
 			path = path.replace("/OSP/", "/osp/");
+			if (OSPRuntime.isJS) {
+				path = path.replace("http:", "https:");
+			}
+		}
 		// if path has no extension, look for xml file with same name
 		if (!path.startsWith("https://www.compadre.org/osp/") //$NON-NLS-1$
 				&& XML.getExtension(path) == null) {
