@@ -102,7 +102,8 @@ public class DataFunctionPanel extends FunctionPanel {
 	@Override
 	protected void refreshFunctions() {
 		// set the constant values in the data
-		for (String name : getData().getConstantNames()) {
+		String[] names = getData().getConstantNames().toArray(new String[0]);
+		for (String name : names) {
 			getData().clearConstant(name);
 		}
 		List<FObject> objects = paramEditor.getObjects();
