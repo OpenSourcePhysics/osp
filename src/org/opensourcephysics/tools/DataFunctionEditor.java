@@ -245,6 +245,7 @@ public class DataFunctionEditor extends FunctionEditor {
 			if (name.equals(nameToSkip)) {
 				continue;
 			}
+			vars.append(" "); //$NON-NLS-1$
 			vars.append(TeXParser.removeSubscripting(name));
 		}
 		return getVariablesString(vars, separator);
