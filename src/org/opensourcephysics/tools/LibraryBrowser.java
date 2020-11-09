@@ -594,6 +594,7 @@ public class LibraryBrowser extends JPanel {
 				libraryManager = new LibraryManager(this, LibraryBrowser.externalDialog);
 			else
 				libraryManager = new LibraryManager(this, LibraryBrowser.frame);
+			libraryManager.refreshGUI();
 			// center on screen
 			Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 			int x = (dim.width - libraryManager.getBounds().width) / 2;
