@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -87,7 +86,6 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
@@ -340,6 +338,7 @@ public class LibraryTreePanel extends JPanel {
 	protected void setEditing(boolean edit) {
 		isEditing = edit;
 		if (isEditing) {
+			refreshGUI(true);
 			displayPanel.add(editorPanel, BorderLayout.NORTH);
 			add(editorbar, BorderLayout.NORTH);
 			showInfo(getSelectedNode());

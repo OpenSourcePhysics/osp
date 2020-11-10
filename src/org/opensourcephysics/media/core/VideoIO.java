@@ -939,6 +939,11 @@ public class VideoIO {
 			originalFileName = type.substring(saveVideo.length() + 1);
 			type = saveVideo;
 		}
+		String saveResource = "save resource";
+		if (type.startsWith(saveResource + " ")) {
+			originalFileName = type.substring(saveResource.length() + 1);
+			type = saveResource;
+		}
 
 		switch (type.toLowerCase()) {
 		case "open": // open any file //$NON-NLS-1$
@@ -947,14 +952,19 @@ public class VideoIO {
 			chooser.showOpenDialog(null, okOpen, resetChooser);
 			break;
 		case "save video": // save video file //$NON-NLS-1$
-//			isSave = true;
 			chooser.resetChoosableFileFilters();
 			chooser.setDialogTitle(MediaRes.getString("VideoIO.Dialog.SaveVideoAs.Title")); //$NON-NLS-1$
-//			chooser.addChoosableFileFilter(videoFileFilter);
 			chooser.setFileFilter(chooser.getAcceptAllFileFilter());
 			chooser.setSelectedFile(new File(originalFileName));
 			chooser.showSaveDialog(null, okSave, resetChooser);
 			break;
+		case "save resource": // save video file //$NON-NLS-1$
+		chooser.resetChoosableFileFilters();
+		chooser.setDialogTitle(MediaRes.getString("VideoIO.Dialog.SaveAs.Title")); //$NON-NLS-1$
+		chooser.setFileFilter(chooser.getAcceptAllFileFilter());
+		chooser.setSelectedFile(new File(originalFileName));
+		chooser.showSaveDialog(null, okSave, resetChooser);
+		break;
 		default:
 			return null;
 		}
