@@ -169,18 +169,21 @@ public class ResourceLoader {
 
 	/**
 	 * 
-	 * Returns a String resource for TextFrame
-	 * Only called by csm.ch03 DataLoaderApp 
-	 * Gets a resource specified by name and Class. If no resource is found using
-	 * the name alone, the searchPaths are searched.
+	 * Only called by csm.ch03 DataLoaderApp to load a known text file resource from its directory.
+	 * 
+	 * Gets a resource specified by name and Class. 
+	 * 
+	 * If no resource is found using
+	 * the name alone, the searchPaths are NOT searched.
 	 *
 	 * @param name the file or URL name
 	 * @param type the Class providing default ClassLoader resource loading
 	 * @return the Resource, or null if none found
 	 */
-	@Deprecated
 	public static Resource getResource(String name, Class<?> type) {
-		return getResource(name, type, true, false);
+		// BH 2020.11.12 Why is it important for DataLoaderApp to search paths?
+		//return getResource(name, type, true, false);		
+		return findResource(name, type, false, false);
 	}
 
 	/**
@@ -1905,8 +1908,8 @@ public class ResourceLoader {
 	static private Resource createFileResource(String path) {
 		// don't create file resources when in applet mode
 		// ignore paths that refer to zip or jar files
-		return (OSPRuntime.applet != null || isHTTP(path) || path.indexOf(".zip") > -1 || path.indexOf(".jar") > -1 //$NON-NLS-1$ //$NON-NLS-2$
-				|| path.indexOf(".trz") > -1 //$NON-NLS-1$
+		return (OSPRuntime.applet != null || isHTTP(path) || 
+				isJarZipTrz(path, true)
 						? null
 						: createFileResource(new File(path)));
 	}
@@ -1942,7 +1945,7 @@ public class ResourceLoader {
 	 */
 	static private Resource createURLResource(String path, boolean zipURLsOK) {
 		// ignore paths that refer to zip or jar files unless explicitly OK
-		if (!zipURLsOK && (path.indexOf(".zip") > -1 || path.indexOf(".jar") > -1 || path.indexOf(".trz") > -1)) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		if (!zipURLsOK && isJarZipTrz(path, true)) {
 			return null;
 		}
 		Resource res = null;
@@ -2039,7 +2042,7 @@ public class ResourceLoader {
 		}
 
 		// if loading from a web file, download to OSP cache
-		boolean isZip = base != null && (base.endsWith(".zip") || base.endsWith(".jar") || base.endsWith(".trz")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		boolean isZip = (base != null && isJarZipTrz(base, false));
 		boolean deleteOnExit = ospCache == null;
 		if (isZip && isHTTP(path)) { // $NON-NLS-1$
 			String zipFileName = XML.getName(base);
@@ -2383,7 +2386,7 @@ public class ResourceLoader {
 		if (base == null) {
 			base = ""; //$NON-NLS-1$
 		}
-		if (base.endsWith(".jar") || base.endsWith(".zip") || base.endsWith(".trz")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		if (isJarZipTrz(base, false)) {
 			base += "!"; //$NON-NLS-1$
 		}
 		String path = XML.getResolvedPath(name, base);
@@ -2396,6 +2399,19 @@ public class ResourceLoader {
 			path = "file:///" + path; //$NON-NLS-1$
 		}
 		return path;
+	}
+
+	/**
+	 * Check for .zip, .jar, or .trz
+	 * @param path
+	 * @param allowEntry  true if we allow "!" jar entry 
+	 * @return
+	 */
+	private static boolean isJarZipTrz(String path, boolean allowEntry) {
+		return (allowEntry ? 
+				path.indexOf(".zip") >= 0 || path.indexOf(".jar") >= 0 //$NON-NLS-1$ //$NON-NLS-2$
+						|| path.indexOf(".trz") >= 0 //$NON-NLS-1$				
+				: path.endsWith(".jar") || path.endsWith(".zip") || path.endsWith(".trz")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
 
 	/**
@@ -2647,6 +2663,7 @@ public class ResourceLoader {
 	 */
 	private static int isZipEntry(String filename, boolean checkExt) {
 		int n = filename.indexOf("!/");
+		// BH 2020.11.12 what is the "exe" here? Not in other tests.
 		return (n >= 4 && (!checkExt || filename.indexOf("_TrackerSet=") >= 0 || ".exe.zip.jar.trz".indexOf(filename.substring(n - 4, n)) >= 0) ? n : -1);
 	}
 
