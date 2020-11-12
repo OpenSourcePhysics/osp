@@ -7,6 +7,8 @@
 
 package org.opensourcephysics.display;
 import java.io.IOException;
+import java.net.URL;
+
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
@@ -118,19 +120,19 @@ public class TextFrame extends JFrame {
   }
 
   private boolean loadTextResource(String resourceName, Class<?> type) {
-    Resource res = null;
+    URL url = null;
     try {
-      res = ResourceLoader.getResource(resourceName, type);
+      url = ResourceLoader.getTextURL(resourceName, type);
     } catch(Exception ex) {
       OSPLog.fine("Error getting resource: "+resourceName); //$NON-NLS-1$
       return false;
     }
-    if(res==null) {
+    if(url==null) {
       OSPLog.fine("Resource not found: "+resourceName); //$NON-NLS-1$
       return false;
     }
     try {
-      textPane.setPage(res.getURL());
+      textPane.setPage(url);
     } catch(IOException ex) {
       OSPLog.fine("Resource not loadeded: "+resourceName); //$NON-NLS-1$
       return false;

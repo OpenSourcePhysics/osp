@@ -170,7 +170,7 @@ public class ResourceLoader {
 	/**
 	 * 
 	 * Returns a String resource for TextFrame
-	 * Only called by TextFrame and csm.ch03 DataLoaderApp 
+	 * Only called by csm.ch03 DataLoaderApp 
 	 * Gets a resource specified by name and Class. If no resource is found using
 	 * the name alone, the searchPaths are searched.
 	 *
@@ -181,6 +181,21 @@ public class ResourceLoader {
 	@Deprecated
 	public static Resource getResource(String name, Class<?> type) {
 		return getResource(name, type, true, false);
+	}
+
+	/**
+	 * 
+	 * Returns a URL for a help frame (via TextFrame)
+	 * Gets the URL for a resource specified by name and Class. 
+	 * If no resource is found using the name alone, the searchPaths are searched.
+	 *
+	 * @param name the file or URL name
+	 * @param type the Class providing default ClassLoader resource loading
+	 * @return the URL for this resource, or null if none found
+	 */
+	public static URL getTextURL(String name, Class<?> type) {
+		Resource res = getResource(name, type, true, false);
+		return (res == null ? null : res.getURL());
 	}
 
 	/**
@@ -343,7 +358,7 @@ public class ResourceLoader {
 //	}
 
 	/**
-	 * Only called by ApplicationApplet, to get a manifest
+	 * Only called by ApplicationApplet to get a manifest
 	 * 
 	 * Gets a resource specified by base path, name and class. If base path is
 	 * relative and no resource is found using the base alone, the searchPaths are
