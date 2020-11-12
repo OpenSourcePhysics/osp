@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -87,7 +86,6 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
@@ -778,8 +776,6 @@ public class LibraryTreePanel extends JPanel {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				// select node and show popup menu
-				System.out.println("LibraryTreePanel.mouseClicked e=" + e);
-
 				TreePath path = tree.getPathForLocation(e.getX(), e.getY());
 				if (path == null) {
 					return;
