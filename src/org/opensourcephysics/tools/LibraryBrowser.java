@@ -128,7 +128,8 @@ public class LibraryBrowser extends JPanel {
 	protected static JFrame frame;
 	protected static JDialog externalDialog;
 	protected static JMenuBar menubar;
-	protected static ResizableIcon expandIcon, contractIcon, heavyExpandIcon, heavyContractIcon, refreshIcon, saveIcon;
+	protected static ResizableIcon expandIcon, contractIcon, heavyExpandIcon, heavyContractIcon;
+	protected static ResizableIcon refreshIcon, downloadIcon, downloadDisabledIcon;
 	protected static final FileFilter TRACKER_FILTER = new TrackerDLFilter();
 	protected static javax.swing.filechooser.FileFilter filesAndFoldersFilter = new FilesAndFoldersFilter();
 	protected static Timer searchTimer;
@@ -153,8 +154,10 @@ public class LibraryBrowser extends JPanel {
 		heavyContractIcon = ResourceLoader.getResizableIcon(imageFile);
 		imageFile = "/org/opensourcephysics/resources/tools/images/refresh.gif"; //$NON-NLS-1$
 		refreshIcon = ResourceLoader.getResizableIcon(imageFile);
-		imageFile = "/org/opensourcephysics/resources/tools/images/save.gif"; //$NON-NLS-1$
-		saveIcon = ResourceLoader.getResizableIcon(imageFile);
+		imageFile = "/org/opensourcephysics/resources/tools/images/download.gif"; //$NON-NLS-1$
+		downloadIcon = ResourceLoader.getResizableIcon(imageFile);
+		imageFile = "/org/opensourcephysics/resources/tools/images/downloaddisabled.gif"; //$NON-NLS-1$
+		downloadDisabledIcon = ResourceLoader.getResizableIcon(imageFile);
 	}
 
 	// instance fields
@@ -1099,7 +1102,7 @@ public class LibraryBrowser extends JPanel {
 				System.err.println("Performing download action with urlPath="+urlPath);
 				String name = XML.getName(urlPath);
 				// choose file and save resource
-				VideoIO.getChooserFilesAsync("save video "+name, //$NON-NLS-1$
+				VideoIO.getChooserFilesAsync("save resource "+name, //$NON-NLS-1$
 						(files) -> {
 							if (VideoIO.getChooser().getSelectedOption() != AsyncFileChooser.APPROVE_OPTION
 									|| files == null) {
@@ -1145,17 +1148,19 @@ public class LibraryBrowser extends JPanel {
 			@Override
 			public void insertUpdate(DocumentEvent e) {
 				String text = commandField.getText();
-				commandButton.setEnabled(!"".equals(text)); //$NON-NLS-1$
-				//downloadButton.setEnabled(!"".equals(text)); //$NON-NLS-1$
+				boolean enable = !"".equals(text);
+				commandButton.setEnabled(enable); //$NON-NLS-1$
+				downloadButton.setEnabled(enable); //$NON-NLS-1$
 				textChanged = keyPressed;
 				LibraryTreePanel treePanel = getSelectedTreePanel();
 				if (treePanel != null) {
 					treePanel.command = text;
 					LibraryTreeNode node = treePanel.getSelectedNode();
 					if (node != null && node.isRoot() && node.record instanceof LibraryCollection
-							&& treePanel.pathToRoot.equals(text))
+							&& treePanel.pathToRoot.equals(text)) {
 						commandButton.setEnabled(false);
-					  //downloadButton.setEnabled(false);
+					  downloadButton.setEnabled(false);
+					}
 				} else {
 					commandField.setBackground(Color.yellow);
 					commandField.setForeground(LibraryTreePanel.defaultForeground);
@@ -1164,8 +1169,9 @@ public class LibraryBrowser extends JPanel {
 
 			@Override
 			public void removeUpdate(DocumentEvent e) {
-				commandButton.setEnabled(!"".equals(commandField.getText())); //$NON-NLS-1$
-				//downloadButton.setEnabled(!"".equals(commandField.getText())); //$NON-NLS-1$
+				boolean enable = !"".equals(commandField.getText());
+				commandButton.setEnabled(enable); //$NON-NLS-1$
+				downloadButton.setEnabled(enable); //$NON-NLS-1$
 				textChanged = keyPressed;
 				LibraryTreePanel treePanel = getSelectedTreePanel();
 				if (treePanel != null) {
@@ -1209,10 +1215,11 @@ public class LibraryBrowser extends JPanel {
 		commandButton.setBorder(buttonBorder);
 		
 		downloadButton = new JButton(downloadAction);
-		downloadButton.setIcon(saveIcon);
+		downloadButton.setIcon(downloadIcon);
+		downloadButton.setDisabledIcon(downloadDisabledIcon);
 		downloadButton.setOpaque(true);
 		downloadButton.setBorder(buttonBorder);
-		downloadButton.setEnabled(true);  // always enable button for testing
+//		downloadButton.setEnabled(true);
 
 		// create search action, label, field and button
 		searchAction = new AbstractAction() {
@@ -1961,7 +1968,7 @@ public class LibraryBrowser extends JPanel {
 			refreshButton.setEnabled(false);
 			commandField.setText(null);
 			commandButton.setEnabled(false);
-			//downloadButton.setEnabled(false);
+			downloadButton.setEnabled(false);
 			saveAsItem.setEnabled(false);
 		}
 		repaint();
