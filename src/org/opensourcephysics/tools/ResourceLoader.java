@@ -2407,7 +2407,7 @@ public class ResourceLoader {
 	 * @param allowEntry  true if we allow "!" jar entry 
 	 * @return
 	 */
-	private static boolean isJarZipTrz(String path, boolean allowEntry) {
+	public static boolean isJarZipTrz(String path, boolean allowEntry) {
 		return (allowEntry ? 
 				path.indexOf(".zip") >= 0 || path.indexOf(".jar") >= 0 //$NON-NLS-1$ //$NON-NLS-2$
 						|| path.indexOf(".trz") >= 0 //$NON-NLS-1$				
