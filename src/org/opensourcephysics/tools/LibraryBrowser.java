@@ -836,6 +836,7 @@ public class LibraryBrowser extends JPanel {
 			return LibraryComPADRE.getCollection(path);
 		}
 
+		// BH 2020.11.12 presumes file not https here
 		path = ResourceLoader.getNonURIPath(path);
 		// was first:
 		File targetFile = new File(path);
@@ -1822,9 +1823,9 @@ public class LibraryBrowser extends JPanel {
 		if (path.equals("")) //$NON-NLS-1$
 			return;
 		path = XML.forwardSlash(path);
-		path = ResourceLoader.getNonURIPath(path);
 		Resource res = null;
-		String xmlPath = path;
+		// BH 2020.11.12 presumes file not https here
+		String xmlPath = ResourceLoader.getNonURIPath(path);
 		if (ResourceLoader.isHTTP(path)) {
 			path = path.replace("/OSP/", "/osp/");
 			if (OSPRuntime.isJS) {
