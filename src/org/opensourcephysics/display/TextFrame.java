@@ -39,19 +39,19 @@ public class TextFrame extends JFrame {
   }
 
   /**
-   * Constructs the HTMLFrame with the given html resource at the given location.
-   * The location is relative to the given class.
+   * Constructs the HTMLFrame with the given html resource of the given type.
+   * The location is relative to the given type.
    *
    * @param resourceName String
-   * @param location
+   * @param type
    */
-  public TextFrame(String resourceName, Class<?> location) {
+  public TextFrame(String resourceName, Class<?> type) {
     setSize(300, 300);
     textPane.setEditable(false);
     textScroller = new JScrollPane(textPane);
     setContentPane(textScroller);
     if(resourceName!=null) {
-      loadResource(resourceName, location);
+      loadTextResource(resourceName, type);
     }
   }
 
@@ -117,10 +117,10 @@ public class TextFrame extends JFrame {
     hyperlinkListener = null;
   }
 
-  public boolean loadResource(String resourceName, Class<?> location) {
+  private boolean loadTextResource(String resourceName, Class<?> type) {
     Resource res = null;
     try {
-      res = ResourceLoader.getResource(resourceName, location);
+      res = ResourceLoader.getResource(resourceName, type);
     } catch(Exception ex) {
       OSPLog.fine("Error getting resource: "+resourceName); //$NON-NLS-1$
       return false;
