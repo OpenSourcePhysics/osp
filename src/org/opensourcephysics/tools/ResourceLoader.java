@@ -2411,7 +2411,8 @@ public class ResourceLoader {
 		return (allowEntry ? 
 				path.indexOf(".zip") >= 0 || path.indexOf(".jar") >= 0 //$NON-NLS-1$ //$NON-NLS-2$
 						|| path.indexOf(".trz") >= 0 //$NON-NLS-1$				
-				: path.endsWith(".jar") || path.endsWith(".zip") || path.endsWith(".trz")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				: path.endsWith(".jar") || path.endsWith(".zip") || path.endsWith(".trz") //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				|| path.endsWith("TrackerSet=1"));
 	}
 
 	/**
