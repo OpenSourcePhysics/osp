@@ -340,6 +340,7 @@ public class LibraryTreePanel extends JPanel {
 	protected void setEditing(boolean edit) {
 		isEditing = edit;
 		if (isEditing) {
+			refreshGUI(true);
 			displayPanel.add(editorPanel, BorderLayout.NORTH);
 			add(editorbar, BorderLayout.NORTH);
 			showInfo(getSelectedNode());
@@ -777,6 +778,8 @@ public class LibraryTreePanel extends JPanel {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				// select node and show popup menu
+				System.out.println("LibraryTreePanel.mouseClicked e=" + e);
+
 				TreePath path = tree.getPathForLocation(e.getX(), e.getY());
 				if (path == null) {
 					return;
