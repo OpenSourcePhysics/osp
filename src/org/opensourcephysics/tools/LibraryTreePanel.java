@@ -2053,12 +2053,10 @@ public class LibraryTreePanel extends JPanel {
 	 */
 	class MetadataLoader extends SwingWorker<Void, Void> {
 
-		boolean saveToCache;
 		boolean canceled = false;
 		List<String> treePath;
 
-		MetadataLoader(boolean saveToCache, List<String> treePath) {
-			this.saveToCache = saveToCache;
+		MetadataLoader(List<String> treePath) {
 			this.treePath = treePath;
 		}
 
@@ -2088,7 +2086,7 @@ public class LibraryTreePanel extends JPanel {
 							} else {
 								canceled = true; // prevents this from executing twice
 								// finished loading all nodes, so write xml file in OSP search folder
-								if (saveToCache) {
+								if (OSPRuntime.doCacheLibaryRecord) {
 									File cacheFile = ResourceLoader.getSearchCacheFile(pathToRoot);
 									XMLControl control = new XMLControlElement(rootNode.record);
 									control.setValue("real_path", pathToRoot); //$NON-NLS-1$
