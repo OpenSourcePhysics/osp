@@ -246,8 +246,8 @@ public class LibraryComPADRE {
 
 	private static void start(Runnable runnable) {
 		// DB 11.13.20 Bob, why run this runnable in a separate thread?
-//		runnable.run();
-		new Thread(runnable).start();
+ 		runnable.run();
+		//new Thread(runnable).start();
 	}
 
 	private static void loadNode(Node node, LibraryCollection collection, LibraryTreeNode treeNode, String urlPath,
@@ -277,7 +277,7 @@ public class LibraryComPADRE {
 				LibraryResource record = new LibraryResource(name);
 				collection.addResource(record);
 
-				if (loadResource(record, node, attachment, treeNode)) {
+				if (setRecord(record, node, attachment, treeNode)) {
 					found = true;
 					OSPRuntime.showStatus(name);
 					record.setProperty("reload_url", urlPath); //$NON-NLS-1$
@@ -333,19 +333,19 @@ public class LibraryComPADRE {
 				if (!downloadURL.equals(record.getTarget()))
 					continue;
 
-				loadResource(record, node, attachment, treeNode);
+				setRecord(record, node, attachment, treeNode);
 			}
 		} catch (Exception e) {
 		}
 	}
 
 	/**
-	 * Loads a ComPADRE record into a LibraryTreeNode.
+	 * Sets a LibraryTreeNode to a ComPADRE record.
 	 * 
-	 * @param treeNode the LibraryTreeNode to reload
-	 * @return true if successfully reloaded
+	 * @param treeNode the LibraryTreeNode to set
+	 * @return true if successfully set
 	 */
-	protected static boolean loadResource(LibraryResource record, Node node, String[] attachment,
+	protected static boolean setRecord(LibraryResource record, Node node, String[] attachment,
 			LibraryTreeNode treeNode) {
 		try {
 			// get the node data and create the HTML code
@@ -379,18 +379,20 @@ public class LibraryComPADRE {
 			if (authors.endsWith(", ")) //$NON-NLS-1$
 				authors = authors.substring(0, authors.length() - 2);
 
-			// cache the thumbnail
-			File cachedFile = ResourceLoader.getOSPCacheFile(thumbnailURL);
-			String cachePath = cachedFile.getAbsolutePath();
-			record.setThumbnail(cachePath);
-			if (!cachedFile.exists()) {
-				treeNode.new ThumbnailLoader(thumbnailURL, cachePath).execute();
-			}
-
-			if (!OSPRuntime.isJS) {
-				// BH no need to do this, and we can't access a local image this way in HTML,
-				// anyway.
+			if (OSPRuntime.doCacheThumbnail) {
+				// cache the thumbnail only if Java
+				File cachedFile = ResourceLoader.getOSPCacheFile(thumbnailURL);
+				String cachePath = cachedFile.getAbsolutePath();
+				record.setThumbnail(cachePath);
+				if (!cachedFile.exists()) {
+					// asynchronously cache the thumbnail. 
+					// BH 2020.11.14 Q: Is this necessary?
+					treeNode.new ThumbnailLoader(thumbnailURL, cachePath).execute();
+				}
 				thumbnailURL = ResourceLoader.getURIPath(cachePath);
+			} else {
+				// BH no need to do this, and we can't access a local image this way in HTML, anyway.
+				record.setThumbnail(thumbnailURL);
 			}
 
 			// get the html code and set the description
