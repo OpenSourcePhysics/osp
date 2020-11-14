@@ -1508,7 +1508,11 @@ public class ResourceLoader {
 					}
 					input.closeEntry();
 					fileSet.add(file);
-				} catch (Exception e) {
+				} catch (Throwable e) {
+					OSPLog.debug("ResourceLoader.unzip could not open for write " + filename);
+					// BH 2020.11.14 If hte PDF file is already open, it will not be added
+					if (filename.indexOf("pdf") >= 0)
+						fileSet.add(file);
 					continue;
 				}
 			}
