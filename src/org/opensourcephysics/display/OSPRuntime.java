@@ -85,6 +85,12 @@ public class OSPRuntime {
 	public static boolean isJS = /** @j2sNative true || */
 			false;
 
+	// As we can, we should change these refrences to isJS. They are 
+	// here because they used to be in JSUtil. Sorry about the confusion!
+	// It's just that there are 50 references already to this!
+	@Deprecated
+	public static boolean isJS2 = /** @j2sNative true || */ false;
+
 	static {
 
 		try {
@@ -167,6 +173,10 @@ public class OSPRuntime {
 	public static boolean checkTempDirCache = isJS; // for ResourceLoader.
 
 	public static boolean checkZipLoaders = !isJS; // for ResourceLloader
+
+	public static boolean doCacheThumbnail = !isJS;
+
+	public static boolean doCacheLibaryRecord = !isJS;
 
 	public static boolean doCacheZipContents = true;// isJS; // for ResourceLoader
 
@@ -373,9 +383,6 @@ public class OSPRuntime {
 			false); // no fractional metrics
 
 	public static LaunchNode activeNode;
-	// BH would prefer we move this over to OSPRuntime
-	// sorry about the confusion!
-	static public boolean isJS2 = /** @j2sNative true || */ false;
 
 	/**
 	 * Private constructor to prevent instantiation.
