@@ -435,8 +435,7 @@ public class LibraryManager extends JDialog {
 		clearCacheButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				File cache = ResourceLoader.getOSPCache();
-				ResourceLoader.clearOSPCache(cache, false);
+				LibraryBrowser.clearCache();
 				refreshCacheTab();
 				tabbedPane.repaint();
 			}

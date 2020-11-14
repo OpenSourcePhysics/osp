@@ -32,6 +32,7 @@ import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.media.core.VideoType;
 import org.opensourcephysics.media.mov.MovieFactory;
+import org.w3c.dom.Node;
 
 /**
  * This represents a library resource.
@@ -40,6 +41,32 @@ import org.opensourcephysics.media.mov.MovieFactory;
  * @version 1.0
  */
 public class LibraryResource implements Comparable<LibraryResource> {
+	
+	static class Attachment {
+		Node node;
+		String type;
+		String url;
+		String filename;
+		int size;
+		
+		Attachment(Node node, String type, String url, String filename, int size) {
+			this.node = node;
+			this.type = type;
+			this.url = url;
+			this.filename = filename;
+			this.size = size;
+		}
+		
+		public String toString() {
+			return "[Attachment " + node 
+					+ " " + type + " " 
+					+ url + " " + 
+					filename + " " + 
+					size + "]";
+		}
+	}
+
+
 
 	// static constants
 	@SuppressWarnings("javadoc")
@@ -693,7 +720,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	 * @return the html code
 	 */
 	public static String getHTMLCode(String title, String resourceType, String thumbnailPath, String description,
-			String authors, String contact, String moreInfoURL, String[] attachment, Map<String, String> data) {
+			String authors, String contact, String moreInfoURL, Attachment attachment, Map<String, String> data) {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">"); //$NON-NLS-1$
 		buffer.append("\n  <html>"); //$NON-NLS-1$
@@ -729,13 +756,12 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	 * @param contact       author contact information or institution
 	 * @param moreInfoURL   link to external HTML with more information about the
 	 *                      resource
-	 * @param attachment    String[] {downloadURL, filename, sizeInBytes} (used for
-	 *                      ComPADRE)
+	 * @param attachment    (used for ComPADRE)
 	 *
 	 * @return the html path
 	 */
 	protected static String getHTMLBody(String title, String resourceType, String thumbnailPath, String description,
-			String authors, String contact, String moreInfoURL, String[] attachment) {
+			String authors, String contact, String moreInfoURL, Attachment attachment) {
 		StringBuffer buffer = new StringBuffer();
 
 		if (title != null && !title.equals("")) { //$NON-NLS-1$
@@ -771,10 +797,10 @@ public class LibraryResource implements Comparable<LibraryResource> {
 			String contactTitle = ToolsRes.getString("LibraryTreePanel.Label.Contact"); //$NON-NLS-1$
 			buffer.append("\n        <p><b>" + contactTitle + ":  </b>" + contact + "</p>"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		}
-		if (attachment != null && attachment[1] != null) {
-			String filename = attachment[1];
+		if (attachment != null && attachment.filename != null) {
+			String filename = attachment.filename;
 			String resTitle = ToolsRes.getString("LibraryResource.Description.Resource"); //$NON-NLS-1$
-			int bytes = Integer.parseInt(attachment[2]);
+			int bytes = attachment.size;
 			megabyteFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
 			String size = " (" + megabyteFormat.format(bytes / 1048576.0) + "MB)"; //$NON-NLS-1$ //$NON-NLS-2$
 			buffer.append("\n        <p><b>" + resTitle + ":  </b>" + filename + size + "</p>"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$

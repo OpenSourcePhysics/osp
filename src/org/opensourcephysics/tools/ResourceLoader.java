@@ -2408,13 +2408,13 @@ public class ResourceLoader {
 	/**
 	 * Check for .zip, .jar, or .trz
 	 * @param path
-	 * @param allowEntry  true if we allow "!" jar entry 
+	 * @param asEntry  true if we allow "!" jar entry 
 	 * @return
 	 */
-	public static boolean isJarZipTrz(String path, boolean allowEntry) {
-		return (allowEntry ? 
-				path.indexOf(".zip") >= 0 || path.indexOf(".jar") >= 0 //$NON-NLS-1$ //$NON-NLS-2$
-						|| path.indexOf(".trz") >= 0 //$NON-NLS-1$				
+	public static boolean isJarZipTrz(String path, boolean asEntry) {
+		return (path == null ? false : asEntry ? 
+				path.indexOf(".zip!") >= 0 || path.indexOf(".jar!") >= 0 //$NON-NLS-1$ //$NON-NLS-2$
+						|| path.indexOf(".trz!") >= 0 //$NON-NLS-1$				
 				: path.endsWith(".jar") || path.endsWith(".zip") || path.endsWith(".trz")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
 
@@ -3085,6 +3085,7 @@ public class ResourceLoader {
 					}
 
 				});
+				return;
 			} else {
 				Path path = f.toPath();
 				Files.createDirectories(path.getParent());

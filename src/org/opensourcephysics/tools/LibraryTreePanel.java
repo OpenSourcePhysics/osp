@@ -84,9 +84,11 @@ import javax.swing.text.html.HTMLDocument;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
@@ -254,9 +256,7 @@ public class LibraryTreePanel extends JPanel {
 	 * @return the selected node, or null if none
 	 */
 	protected LibraryTreeNode getSelectedNode() {
-		if (tree == null)
-			return null;
-		return (LibraryTreeNode) tree.getLastSelectedPathComponent();
+		return (tree == null ? null : (LibraryTreeNode) tree.getLastSelectedPathComponent());
 	}
 
 	/**
@@ -265,10 +265,7 @@ public class LibraryTreePanel extends JPanel {
 	 * @param node the node to select
 	 */
 	protected void setSelectedNode(LibraryTreeNode node) {
-		if (node != null) {
-			tree.setSelectionPath(new TreePath(node.getPath()));
-		} else
-			tree.setSelectionPath(null);
+		tree.setSelectionPath(node == null ? null : node.getTreePath());
 	}
 
 	/**
@@ -342,7 +339,7 @@ public class LibraryTreePanel extends JPanel {
 			refreshGUI(true);
 			displayPanel.add(editorPanel, BorderLayout.NORTH);
 			add(editorbar, BorderLayout.NORTH);
-			showInfo(getSelectedNode());
+			showInfo(getSelectedNode(), "LibraryTreePanel.setEditing");
 		} else {
 			displayPanel.remove(editorPanel);
 			remove(editorbar);
@@ -381,7 +378,8 @@ public class LibraryTreePanel extends JPanel {
 	 *
 	 * @param node the LibraryTreeNode
 	 */
-	protected void showInfo(LibraryTreeNode node) {
+	protected void showInfo(LibraryTreeNode node, String why) {
+		OSPLog.debug("LibraryTreePanel.showInfo " + why + " " + node);
 		if (node == null) {
 			htmlScroller.setViewportView(emptyHTMLPane);
 			nameField.setText(null);
@@ -543,6 +541,7 @@ public class LibraryTreePanel extends JPanel {
 			} else
 				targetField.setToolTipText(null);
 		}
+		tree.expandPath(node.getTreePath());
 		repaint();
 	}
 
@@ -553,9 +552,8 @@ public class LibraryTreePanel extends JPanel {
 	 */
 	protected void showHTMLPane(final LibraryTreeNode node) {
 		HTMLPane htmlPane = htmlPanesByNode.get(node);
-		if (htmlPane != null && htmlPane == htmlScroller.getViewport().getView())
-			return;
-		new HTMLDisplayer(node).execute();
+		if (htmlPane == null || htmlPane != htmlScroller.getViewport().getView())
+			new HTMLDisplayer(node).execute();
 	}
 
 	/**
@@ -574,9 +572,7 @@ public class LibraryTreePanel extends JPanel {
 				collection.addResource(newCollection);
 				LibraryTreeNode newNode = new LibraryTreeNode(newCollection, LibraryTreePanel.this);
 				if (insertChildAt(newNode, node, node.getChildCount())) {
-					TreePath path = new TreePath(newNode.getPath());
-					tree.scrollPathToVisible(path);
-					tree.setSelectionPath(path);
+					scrollToPath(newNode.getTreePath(), true);
 				}
 				setChanged();
 			}
@@ -591,9 +587,7 @@ public class LibraryTreePanel extends JPanel {
 				collection.addResource(record);
 				LibraryTreeNode newNode = new LibraryTreeNode(record, LibraryTreePanel.this);
 				if (insertChildAt(newNode, node, node.getChildCount())) {
-					TreePath path = new TreePath(newNode.getPath());
-					tree.scrollPathToVisible(path);
-					tree.setSelectionPath(path);
+					scrollToPath(newNode.getTreePath(), true);
 				}
 				setChanged();
 			}
@@ -643,9 +637,7 @@ public class LibraryTreePanel extends JPanel {
 							collection.addResource(record);
 							LibraryTreeNode newNode = new LibraryTreeNode(record, LibraryTreePanel.this);
 							if (insertChildAt(newNode, parent, parent.getChildCount())) {
-								TreePath path = new TreePath(newNode.getPath());
-								tree.scrollPathToVisible(path);
-								tree.setSelectionPath(path);
+								scrollToPath(newNode.getTreePath(), true);
 							}
 							setChanged();
 						}
@@ -771,7 +763,7 @@ public class LibraryTreePanel extends JPanel {
 				emptyMetadata.clearData();
 				metadataModel.dataChanged();
 				LibraryTreeNode node = getSelectedNode();
-				showInfo(node);
+				showInfo(node, "LibraryTreePanel.treeselectionlistener");
 				enableButtons();
 			}
 		};
@@ -918,7 +910,7 @@ public class LibraryTreePanel extends JPanel {
 								type = ToolsRes.getString("LibraryResource.Type." + node.record.getType()); //$NON-NLS-1$
 								typeField.setText(type);
 								setChanged();
-								showInfo(node);
+								showInfo(node, "LibraryTreePanel.typeListener");
 							}
 						}
 					};
@@ -1045,7 +1037,7 @@ public class LibraryTreePanel extends JPanel {
 								htmlPanesByNode.remove(parent);
 							node.setBasePath(XML.forwardSlash(file.getAbsolutePath()));
 							setChanged();
-							showInfo(node);
+							showInfo(node, "LibraryTreePanel.openBasePath");
 						}
 					}
 				}
@@ -1197,7 +1189,7 @@ public class LibraryTreePanel extends JPanel {
 					}
 					setChanged();
 					node.tooltip = null; // triggers new tooltip
-					showInfo(node);
+					showInfo(node, "LibraryTreePanel.metadatafield");
 				}
 			}
 		};
@@ -1366,9 +1358,7 @@ public class LibraryTreePanel extends JPanel {
 			}
 		};
 		if (root.createChildNodes()) {
-			LibraryTreeNode lastNode = (LibraryTreeNode) root.getLastChild();
-			TreePath path = new TreePath(lastNode.getPath());
-			tree.scrollPathToVisible(path);
+			scrollToPath(((LibraryTreeNode) root.getLastChild()).getTreePath(), false);
 		}
 		treeNodeRenderer = new LibraryTreeNodeRenderer();
 		tree.setCellRenderer(treeNodeRenderer);
@@ -1532,9 +1522,7 @@ public class LibraryTreePanel extends JPanel {
 		collection.removeResource(node.record);
 		DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
 		model.removeNodeFromParent(node);
-		TreePath path = new TreePath(parent.getPath());
-		tree.scrollPathToVisible(path);
-		tree.setSelectionPath(path);
+		scrollToPath(parent.getTreePath(), true);
 	}
 
 	/**
@@ -2110,7 +2098,7 @@ public class LibraryTreePanel extends JPanel {
 									browser.libraryManager.refreshSearchTab();
 								}
 
-								showInfo(getSelectedNode());
+								showInfo(getSelectedNode(), "LibraryTreePanel.propChange " + e.getPropertyName());
 							}
 						}
 					}
@@ -2340,7 +2328,7 @@ public class LibraryTreePanel extends JPanel {
 						treeModel.nodeChanged(node);
 					}
 					if (node == getSelectedNode()) {
-						showInfo(node);
+						showInfo(node, "LibraryTreePanel.NodeLoader.run");
 					}
 					if (node == rootNode) {
 						browser.refreshTabTitle(pathToRoot, rootResource);
@@ -2365,12 +2353,15 @@ public class LibraryTreePanel extends JPanel {
 		boolean hasNewChildren = false;
 
 		HTMLDisplayer(LibraryTreeNode treeNode) {
+			OSPLog.debug("LibraryTreePanel.HTMLDisplayer " + treeNode);
 			node = treeNode;
 		}
 
 		@Override
 		public HTMLPane doInBackground() {
 
+			try {
+				
 			HTMLPane htmlPane = htmlPanesByNode.get(node);
 			if (htmlPane == null) {
 				String htmlStr;
@@ -2448,6 +2439,12 @@ public class LibraryTreePanel extends JPanel {
 				htmlPane.setCaretPosition(0);
 			}
 			whenDone(htmlPane);
+			
+
+			} catch (Exception e)  {
+				e.printStackTrace();
+				System.out.println("LibraryTreePanel exc " + e);
+			}
 			return null;
 		}
 
@@ -2725,6 +2722,19 @@ public class LibraryTreePanel extends JPanel {
 		// BH needed by tracker -- what does it do?
 		// TODO Auto-generated method stub
 
+	}
+
+	protected void scrollToPath(TreePath path, boolean andSelect) {
+		OSPLog.debug("LibraryTreePanel.scrollToPath " + andSelect + " " +  path);
+		if (OSPRuntime.doScrollToPath)
+			tree.scrollPathToVisible(path);
+		if (andSelect)
+			tree.setSelectionPath(path);
+	}
+
+	public static void clearMaps() {
+		htmlPanesByURL.clear();
+		htmlPanesByNode.clear();
 	}
 
 }

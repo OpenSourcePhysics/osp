@@ -26,6 +26,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.tools.LibraryResource.Attachment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -41,6 +42,7 @@ import org.xml.sax.SAXException;
  */
 @SuppressWarnings("javadoc")
 public class LibraryComPADRE {
+
 	public static final String OSP_INFO_URL = "https://www.compadre.org/osp/online_help/EjsDL/OSPCollection.html"; //$NON-NLS-1$
 	public static final String EJS_SERVER_TREE = "https://www.compadre.org/osp/services/REST/osp_jars.cfm?verb=Identify&OSPType=EJS%20Model&AttachedDocument=Source%20Code"; //$NON-NLS-1$
 	public static final String EJS_SERVER_RECORDS = "https://www.compadre.org/osp/services/REST/osp_jars.cfm?OSPType=EJS%20Model&AttachedDocument=Source%20Code"; //$NON-NLS-1$
@@ -95,7 +97,7 @@ public class LibraryComPADRE {
 	protected static boolean loadSubtrees(LibraryCollection collection, NodeList nodeList, String attributeType,
 			String serviceParameter) {
 		boolean success = false;
-		String dblClick = ToolsRes.getString("LibraryComPADRE.Description.DoubleClick"); //$NON-NLS-1$
+		String dblClick = "...";//ToolsRes.getString("LibraryComPADRE.Description.DoubleClick"); //$NON-NLS-1$
 		for (int i = 0; i < nodeList.getLength(); i++) {
 			if (!(nodeList.item(i) instanceof Element))
 				continue;
@@ -249,12 +251,12 @@ public class LibraryComPADRE {
  		runnable.run();
 		//new Thread(runnable).start();
 	}
-
+	
 	private static void loadNode(Node node, LibraryCollection collection, LibraryTreeNode treeNode, String urlPath,
 			Runnable onFound, Runnable onNothingNew) {
 		try {
 			boolean found = false;
-			String[] attachment = null;
+			Attachment attachment = null;
 			if (isDesiredOSPType(node)) {
 				if ("EJS".equals(desiredOSPType)) { //$NON-NLS-1$
 					attachment = getAttachment(node, "Source Code"); //$NON-NLS-1$
@@ -313,7 +315,7 @@ public class LibraryComPADRE {
 			int n = list.getLength();
 			for (int i = 0; i < n; i++) { // process nodes
 				Node node = list.item(i);
-				String[] attachment = null;
+				Attachment attachment = null;
 				if (isDesiredOSPType(node)) {
 					if ("EJS".equals(desiredOSPType)) { //$NON-NLS-1$
 						attachment = getAttachment(node, "Source Code"); //$NON-NLS-1$
@@ -329,7 +331,7 @@ public class LibraryComPADRE {
 					continue;
 
 				// check to see that the target is the one desired
-				String downloadURL = processURL(attachment[0]);
+				String downloadURL = processURL(attachment.url);
 				if (!downloadURL.equals(record.getTarget()))
 					continue;
 
@@ -345,15 +347,15 @@ public class LibraryComPADRE {
 	 * @param treeNode the LibraryTreeNode to set
 	 * @return true if successfully set
 	 */
-	protected static boolean setRecord(LibraryResource record, Node node, String[] attachment,
+	protected static boolean setRecord(LibraryResource record, Node node, Attachment attachment,
 			LibraryTreeNode treeNode) {
 		try {
 			// get the node data and create the HTML code
-			String downloadURL = processURL(attachment[0]);
+			String downloadURL = processURL(attachment.url);
 			record.setTarget(downloadURL);
 			String name = getChildValue(node, "title"); //$NON-NLS-1$
 			record.setName(name);
-			record.setProperty("download_filename", attachment[1]); //$NON-NLS-1$
+			record.setProperty("download_filename", attachment.filename); //$NON-NLS-1$
 			String type = getChildValue(node, "osp-type"); //$NON-NLS-1$
 			if (isDesiredOSPType(node)) {
 				if ("EJS".equals(desiredOSPType)) { //$NON-NLS-1$
@@ -387,7 +389,7 @@ public class LibraryComPADRE {
 				if (!cachedFile.exists()) {
 					// asynchronously cache the thumbnail. 
 					// BH 2020.11.14 Q: Is this necessary?
-					treeNode.new ThumbnailLoader(thumbnailURL, cachePath).execute();
+					treeNode.new ThumbnailLoader(thumbnailURL, cachePath, "LibraryComPADR.setRecord").runMe();
 				}
 				thumbnailURL = ResourceLoader.getURIPath(cachePath);
 			} else {
@@ -438,13 +440,12 @@ public class LibraryComPADRE {
 	 * 
 	 * @param node           the DOM Node
 	 * @param attachmentType the attachment type
-	 * @return String[] {URL, filename, size in Bytes}, or null if no attachment
-	 *         found
+	 * @return Attachment, or null if no attachment found
 	 */
-	protected static String[] getAttachment(Node node, String attachmentType) {
+	protected static Attachment getAttachment(Node node, String attachmentType) {
 		String id = getChildValue(node, "file-identifier"); //$NON-NLS-1$
 		NodeList childList = node.getChildNodes();
-		String[] attachment = null;
+		Attachment attachment = null;
 		for (int i = 0, n = childList.getLength(); i < n; i++) {
 			Node child = childList.item(i);
 			if (!child.getNodeName().equals("attached-document")) //$NON-NLS-1$
@@ -457,11 +458,8 @@ public class LibraryComPADRE {
 					if (attachment == null || id.equals(getChildValue(child, "file-identifier"))) { //$NON-NLS-1$
 						String attachmentURL = getNodeValue(urlNode);
 						Element fileNode = (Element) getFirstChild(child, "file-name"); //$NON-NLS-1$
-						if (fileNode != null) {
-							attachment = new String[] { attachmentURL, getNodeValue(fileNode),
-									fileNode.getAttribute("file-size") }; //$NON-NLS-1$
-						} else
-							attachment = new String[] { attachmentURL, null, null };
+						attachment = new Attachment(node, attachmentType, attachmentURL, getNodeValue(fileNode),
+								fileNode == null ? 0 : Integer.parseInt(fileNode.getAttribute("file-size"))); //$NON-NLS-1$
 					}
 				}
 			}
@@ -511,9 +509,11 @@ public class LibraryComPADRE {
 	 * @return the value
 	 */
 	protected static String getNodeValue(Node node) {
-		for (Node child = node.getFirstChild(); child != null; child = child.getNextSibling()) {
-			if (child.getNodeType() == Node.TEXT_NODE)
-				return child.getNodeValue();
+		if (node != null) {
+			for (Node child = node.getFirstChild(); child != null; child = child.getNextSibling()) {
+				if (child.getNodeType() == Node.TEXT_NODE)
+					return child.getNodeValue();
+			}
 		}
 		return null;
 	}
@@ -527,9 +527,7 @@ public class LibraryComPADRE {
 	 */
 	protected static String getChildValue(Node parent, String name) {
 		Node node = getFirstChild(parent, name);
-		if (node != null)
-			return getNodeValue(node);
-		return null;
+		return (node == null ? null : getNodeValue(node));
 	}
 
 	/**

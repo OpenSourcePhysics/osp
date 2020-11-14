@@ -253,7 +253,7 @@ public class LibraryBrowser extends JPanel {
 			LibraryTreePanel treePanel = browser.getSelectedTreePanel();
 			if (treePanel != null) {
 				treePanel.setSelectedNode(treePanel.rootNode);
-				treePanel.showInfo(treePanel.rootNode);
+				treePanel.showInfo(treePanel.rootNode, "LibraryBrowser.getBrowser");
 			}
 			OSPLog.getOSPLog(); // instantiate log in case of exceptions, etc
 		}
@@ -579,10 +579,10 @@ public class LibraryBrowser extends JPanel {
 				refreshCollectionsMenu();
 				if (libraryManager != null)
 					libraryManager.refreshGUI();
-				LibraryTreePanel.htmlPanesByNode.clear();
+				LibraryTreePanel.clearMaps();
 				LibraryTreePanel treePanel = getSelectedTreePanel();
 				if (treePanel != null)
-					treePanel.showInfo(treePanel.getSelectedNode());
+					treePanel.showInfo(treePanel.getSelectedNode(), "LibraryBrowser locale change");
 			}
 		});
 	}
@@ -1339,7 +1339,7 @@ public class LibraryBrowser extends JPanel {
 						String path = node.isRoot() ? treePanel.pathToRoot : node.getAbsoluteTarget();
 						commandField.setText(path);
 						browser.setMessage(node.getToolTip(), null);
-						treePanel.showInfo(node);
+						treePanel.showInfo(node, "tabbedPaneChange");
 					} else {
 						commandField.setText(treePanel.command);
 						commandField.setCaretPosition(0);
@@ -1685,10 +1685,8 @@ public class LibraryBrowser extends JPanel {
 			public void run() {
 				node.createChildNodes();
 				LibraryTreePanel.htmlPanesByNode.remove(node);
-				LibraryTreeNode lastChild = (LibraryTreeNode) node.getLastChild();
-				TreePath path = new TreePath(lastChild.getPath());
-				getSelectedTreePanel().tree.scrollPathToVisible(path);
-				getSelectedTreePanel().showInfo(node);
+				getSelectedTreePanel().scrollToPath(((LibraryTreeNode) node.getLastChild()).getTreePath(), false);
+				getSelectedTreePanel().showInfo(node, "LibraryBrowser.processTargetCollection");
 				setCursor(Cursor.getDefaultCursor());
 			}
 
@@ -1792,7 +1790,7 @@ public class LibraryBrowser extends JPanel {
 					tabbedPane.setSelectedComponent(results);
 				}
 				LibraryTreePanel.htmlPanesByNode.remove(results.rootNode);
-				results.showInfo(results.rootNode);
+				results.showInfo(results.rootNode, "LibraryBrowser.Searcher.done");
 
 				refreshGUI();
 			} catch (Exception e) {
@@ -2233,9 +2231,7 @@ public class LibraryBrowser extends JPanel {
 			treePanel.insertChildAt(newNode, root, root.getChildCount());
 		}
 
-		LibraryTreeNode last = (LibraryTreeNode) root.getLastChild();
-		TreePath path = new TreePath(last.getPath());
-		treePanel.tree.scrollPathToVisible(path);
+		treePanel.scrollToPath(((LibraryTreeNode) root.getLastChild()).getTreePath(), false);
 		treePanel.isChanged = false;
 		return treePanel;
 	}
@@ -3195,6 +3191,11 @@ public class LibraryBrowser extends JPanel {
 			return ToolsRes.getString("LibraryBrowser.FilesAndFoldersFilter.Description"); //$NON-NLS-1$
 		}
 
+	}
+
+	public static void clearCache() {
+		ResourceLoader.clearOSPCache(ResourceLoader.getOSPCache(), false);
+		LibraryTreePanel.clearMaps();
 	}
 
 }

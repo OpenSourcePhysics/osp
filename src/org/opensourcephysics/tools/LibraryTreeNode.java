@@ -260,26 +260,29 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 			return record.getDescription();
 		}
 
-		boolean isImage = record.getType().equals(LibraryResource.IMAGE_TYPE) && record.getTarget() != null;
-		boolean isVideo = record.getType().equals(LibraryResource.VIDEO_TYPE) && record.getTarget() != null;
-		boolean isZip = record.getTarget() != null && (record.getTarget().toLowerCase().endsWith(".zip") //$NON-NLS-1$
-				|| record.getTarget().toLowerCase().endsWith(".trz")); //$NON-NLS-1$
-		boolean isThumbnailType = isVideo || isZip || isImage;
+		String target = record.getTarget();
+		String rtype = record.getType();
+		boolean isImage = rtype.equals(LibraryResource.IMAGE_TYPE) && target != null;
+		boolean isVideo = rtype.equals(LibraryResource.VIDEO_TYPE) && target != null;
+		boolean isThumbnailType = isVideo || isImage || ResourceLoader.isJarZipTrz(target, false);
 
-		String thumb = isThumbnailType ? record.getThumbnail() : null;
-		if (isThumbnailType && thumb == null && OSPRuntime.doCacheThumbnail) {
-			String source = getAbsoluteTarget();
-			File thumbFile = getThumbnailFile();
-			if (thumbFile.exists()) {
-				thumb = thumbFile.getAbsolutePath();
-				record.setThumbnail(thumb);
-			} else {
-				new ThumbnailLoader(source, thumbFile.getAbsolutePath()).execute();
+		String thumb = null;
+		if (isThumbnailType) {
+			thumb = record.getThumbnail();
+			if (thumb == null && OSPRuntime.doCacheThumbnail) {
+				String source = getAbsoluteTarget();
+				File thumbFile = getThumbnailFile();
+				if (thumbFile.exists()) {
+					thumb = thumbFile.getAbsolutePath();
+					record.setThumbnail(thumb);
+				} else {
+					new ThumbnailLoader(source, thumbFile.getAbsolutePath(), "LibraryTreeNode.getHTMLString").runMe();
+				}
 			}
-		}
-		if (thumb != null) {
-			thumb = XML.forwardSlash(thumb);
-			thumb = ResourceLoader.getURIPath(thumb);
+			if (thumb != null) {
+				thumb = XML.forwardSlash(thumb);
+				thumb = ResourceLoader.getURIPath(thumb);
+			}
 		}
 
 		StringBuffer buffer = new StringBuffer();
@@ -431,11 +434,15 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 	 */
 	protected void setName(String name) {
 		if (record.setName(name)) {
-			treePanel.tree.getModel().valueForPathChanged(new TreePath(getPath()), name);
-			treePanel.showInfo(this);
+			treePanel.tree.getModel().valueForPathChanged(getTreePath(), name);
+			treePanel.showInfo(this, "LibraryTreeNode.setName " + name);
 			treePanel.setChanged();
 		}
 	}
+
+	public TreePath getTreePath() {
+		return new TreePath(getPath());
+}
 
 	/**
 	 * Sets the target of this node's resource. May be absolute or relative path.
@@ -448,7 +455,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 			setType(LibraryResource.getTypeFromPath(path, getHTMLPath()));
 			LibraryTreePanel.htmlPanesByNode.remove(this);
 			record.setThumbnail(null);
-			treePanel.showInfo(this);
+			treePanel.showInfo(this, "LibraryTreeNode.setTarget " + path);
 			treePanel.setChanged();
 			tooltip = null; // triggers new tooltip
 			return true;
@@ -463,7 +470,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 	 */
 	protected void setHTMLPath(String path) {
 		if (record.setHTMLPath(path)) {
-			treePanel.showInfo(this);
+			treePanel.showInfo(this, "LibraryTreeNode.setHTMLPath " + path);
 			treePanel.setChanged();
 			tooltip = null; // triggers new tooltip
 		}
@@ -478,7 +485,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 		if (record.setBasePath(path)) {
 			LibraryTreePanel.htmlPanesByNode.remove(this);
 			record.setThumbnail(null);
-			treePanel.showInfo(this);
+			treePanel.showInfo(this, "LibraryTreeNode.setBasePath " + path);
 			treePanel.setChanged();
 		}
 	}
@@ -492,7 +499,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 	protected void setType(String type) {
 		if (record.setType(type)) {
 			LibraryTreePanel.htmlPanesByNode.remove(this);
-			treePanel.showInfo(this);
+			treePanel.showInfo(this, "LibraryTreeNode.setType");
 			treePanel.setChanged();
 			tooltip = null; // triggers new tooltip
 		}
@@ -738,7 +745,8 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 		String thumbPath, sourcePath;
 		File thumbFile;
 
-		ThumbnailLoader(String imageSource, String thumbnailPath) {
+		ThumbnailLoader(String imageSource, String thumbnailPath, String source) {
+			System.out.println("LibraryTreeNode.ThumbnailLoader " + source + " " + thumbnailPath);
 			thumbPath = thumbnailPath;
 			sourcePath = imageSource;
 
@@ -746,9 +754,12 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 
 		@Override
 		public File doInBackground() {
+			runMe();
+			return null;
+		}
 
+		public void runMe() {
 			// create a new thumbnail
-			File thumbFile;
 			String ext = XML.getExtension(sourcePath);
 			if (ext != null && "GIF".equals(ext.toUpperCase())) { //$NON-NLS-1$
 				// GIF files
@@ -763,11 +774,12 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 				if (status != GifDecoder.STATUS_OK) { // error
 					OSPLog.fine("failed to create thumbnail for GIF " + thumbPath); //$NON-NLS-1$
 					doneAsync(null);
-					return null;
+					return;
 				}
 			} else if (ext != null && ("PNG".equals(ext.toUpperCase()) || ext.toUpperCase().contains("JP"))) { //$NON-NLS-1$ //$NON-NLS-2$
 				// PNG and JPEG files
 				try {
+					int i = 0;
 					if (OSPRuntime.checkImages) {
 						URL url = new URL(ResourceLoader.getURIPath(sourcePath));
 						ImageIO.read(url);
@@ -775,12 +787,12 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 				} catch (Exception e) {
 					OSPLog.fine("failed to create thumbnail for " + thumbPath); //$NON-NLS-1$
 					doneAsync(null);
-					return null;
+					return;
 				}
 			} else if (ext != null && ("ZIP".equals(ext.toUpperCase()) || "TRZ".equals(ext.toUpperCase()))) { //$NON-NLS-1$ //$NON-NLS-2$
 				// TRZ and ZIP files
 				// look for image file in zip with name that includes "_thumbnail"
-				thumbFile = new File(thumbPath);
+				File thumbFile = new File(thumbPath);
 				if (OSPRuntime.isJS) {
 					record.setThumbnail(thumbFile.getAbsolutePath());
 				} else {
@@ -797,24 +809,19 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 
 							});
 				}
-				return null;
+				return;
 			} else {
 				// This better be a movie! - not implemented yet for JS?
-				thumbFile = MovieFactory.createThumbnailFile(defaultThumbnailDimension, sourcePath, thumbPath);
-				doneAsync(thumbFile);
-				return null;
+				doneAsync(MovieFactory.createThumbnailFile(defaultThumbnailDimension, sourcePath, thumbPath));
+				return;
 			}
 			// Gif and JPG only
-			ResourceLoader.copyURLtoFileAsync(sourcePath, thumbPath, new Function<File, Void>() {
-
-				@Override
-				public Void apply(File thumbFile) {
-					doneAsync(thumbFile);
+			ResourceLoader.copyURLtoFileAsync(sourcePath, thumbPath, (File t) -> {
+				OSPLog.debug("LibraryTreeNode.saveThumbnail\n " + sourcePath 
+						+ "\n " + thumbPath + "\n " + t);
+					doneAsync(t);
 					return null;
-				}
-
 			});
-			return null;
 		}
 
 		protected void doneAsync(File thumbFile) {
@@ -829,7 +836,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 
 						if (record.getThumbnail() != null) {
 							LibraryTreePanel.htmlPanesByNode.remove(LibraryTreeNode.this);
-							treePanel.showInfo(treePanel.getSelectedNode());
+							treePanel.showInfo(treePanel.getSelectedNode(), "LibraryTreeNode.ThumbnailDone");
 						}
 					} catch (Exception ignore) {
 					}
