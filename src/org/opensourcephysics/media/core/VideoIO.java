@@ -580,6 +580,23 @@ public class VideoIO {
 	public static boolean isCanceled() {
 		return canceled;
 	}
+	
+	/**
+	 * Determines if a path ends with a know video extension.
+	 *
+	 * @param path the path
+	 * @return true if in KNOWN_VIDEO_EXTENSIONS
+	 */
+	public static boolean isKnownVideoExtension(String path) {
+		String ext = XML.getExtension(path.toLowerCase());
+		if (ext == null)
+			return false;
+		for (int i = 0; i < KNOWN_VIDEO_EXTENSIONS.length; i++) {
+			if (ext.equals(KNOWN_VIDEO_EXTENSIONS[i]))
+				return true;
+		}
+		return false;
+	}
 
 	/**
 	 * Determines if an MP4 video is loadable.
