@@ -267,7 +267,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 		boolean isThumbnailType = isVideo || isZip || isImage;
 
 		String thumb = isThumbnailType ? record.getThumbnail() : null;
-		if (isThumbnailType && thumb == null) {
+		if (isThumbnailType && thumb == null && OSPRuntime.doCacheThumbnail) {
 			String source = getAbsoluteTarget();
 			File thumbFile = getThumbnailFile();
 			if (thumbFile.exists()) {
