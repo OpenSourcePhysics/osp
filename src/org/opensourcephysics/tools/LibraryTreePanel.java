@@ -10,6 +10,7 @@ package org.opensourcephysics.tools;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -784,9 +785,8 @@ public class LibraryTreePanel extends JPanel {
 				LibraryTreeNode node = (LibraryTreeNode) tree.getLastSelectedPathComponent();
 				if (OSPRuntime.isPopupTrigger(e)) {
 					getPopup(node).show(tree, e.getX(), e.getY() + 8);
-				} else if (node.getTarget() != null && isSelect(e)) {
-					// to LibraryBrowser
-					
+				} else if (isLoadEvent(e, node)) {
+					// to LibraryBrowser					
 					firePropertyChange(LibraryBrowser.PROPERTY_LIBRARY_TARGET, LibraryBrowser.HINT_LOAD_RESOURCE, node);
 				}
 			}
@@ -794,12 +794,19 @@ public class LibraryTreePanel extends JPanel {
 			/**
 			 * BH allowing for single-click on icon. Double clicks are difficult to handle.
 			 * 
-			 * @param e
-			 * @return
+			 * 
+			 * @param e a MouseEvent
+			 * @param node a LibraryTreeNode
+			 * @return true if event should load the node
 			 */
-			private boolean isSelect(MouseEvent e) {
+			private boolean isLoadEvent(MouseEvent e, LibraryTreeNode node) {
+				String target = node.getAbsoluteTarget();
+				if (target == null)
+					return false;
+				if (LibraryComPADRE.isComPADREPath(target))
+					return true;
 				return (/** @j2sNative e.bdata.jqevent.target.id.indexOf("icon")>=0 || */
-				e.getClickCount() == 2);
+					e.getClickCount() == 2);
 			}
 		};
 		// create toolbar and buttons
@@ -2119,7 +2126,7 @@ public class LibraryTreePanel extends JPanel {
 				}
 
 				// execute first node loader to start the chain
-				nodeLoaders.get(0).execute();
+//				nodeLoaders.get(0).execute(); // pig commented out for testing
 			}
 
 			return null;
@@ -2284,20 +2291,32 @@ public class LibraryTreePanel extends JPanel {
 
 			};
 
-			// make runnable to set hasNewChildren if found by ComPADRE
-			Runnable onSuccess = new Runnable() {
-				@Override
-				public void run() {
-					hasNewChildren = true;
-					onDone.run();
-				}
-			};
-
-			if (target != null && target.contains(LibraryComPADRE.HOST)) {
+			if (LibraryComPADRE.isComPADREPath(target)) {
 				// load ComPADRE nodes
 				if (node.record instanceof LibraryCollection) {
 					hasNewChildren = false;
-					LibraryComPADRE.loadResources(node, onSuccess, onDone);
+					// make runnable to set hasNewChildren if found by ComPADRE
+					Runnable onSuccess = new Runnable() {
+						@Override
+						public void run() {
+							hasNewChildren = true;
+							onDone.run();
+						}
+					};
+
+					// make runnable to report failure
+					Runnable onFailure = new Runnable() {
+						@Override
+						public void run() {
+							browser.setCursor(Cursor.getDefaultCursor());
+							JOptionPane.showMessageDialog(browser,
+									ToolsRes.getString("LibraryBrowser.Dialog.NoResources.Message"), //$NON-NLS-1$
+									ToolsRes.getString("LibraryBrowser.Dialog.NoResources.Title"), //$NON-NLS-1$
+									JOptionPane.PLAIN_MESSAGE);
+						}
+					};
+
+					LibraryComPADRE.loadResources(node, onSuccess, onFailure);
 				} else if ("".equals(node.record.getDescription()) && reloadUrlPath != null) { //$NON-NLS-1$
 					LibraryComPADRE.reloadResource(node, reloadUrlPath, onDone);
 				}

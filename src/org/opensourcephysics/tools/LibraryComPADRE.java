@@ -54,6 +54,7 @@ public class LibraryComPADRE {
 	public static final String GENERIC_COLLECTION_NAME = "ComPADRE OSP Collection"; //$NON-NLS-1$
 	public static final String ABOUT_OSP = "About OSP and ComPADRE"; //$NON-NLS-1$
 	public static final String HOST = "www.compadre.org"; //$NON-NLS-1$
+	public static final String COMPADRE_QUERY = "https://www.compadre.org/osp/services/REST/osp"; //$NON-NLS-1$
 	public static String desiredOSPType; // if non-null, <osp-type> must contain this string
 
 	/**
@@ -144,6 +145,7 @@ public class LibraryComPADRE {
 	protected static void loadResources(LibraryTreeNode treeNode, Runnable onSuccess, Runnable onFailure) {
 		if (!(treeNode.record instanceof LibraryCollection))
 			return;
+		OSPLog.debug("LibraryComPADRE loading resources for "+treeNode.record.getName());
 		LibraryCollection collection = (LibraryCollection) treeNode.record;
 		boolean[] success = new boolean[1];
 		int[] index = new int[1];
@@ -197,7 +199,6 @@ public class LibraryComPADRE {
 						public void run() {
 							success[0] = true;
 							start(nextIndex[0]);
-
 						}
 
 					};
@@ -241,6 +242,8 @@ public class LibraryComPADRE {
 	}
 
 	private static void start(Runnable runnable) {
+		// DB 11.13.20 Bob, why run this runnable in a separate thread?
+//		runnable.run();
 		new Thread(runnable).start();
 	}
 
@@ -334,7 +337,7 @@ public class LibraryComPADRE {
 	}
 
 	/**
-	 * Reloads a ComPADRE record into a LibraryTreeNode.
+	 * Loads a ComPADRE record into a LibraryTreeNode.
 	 * 
 	 * @param treeNode the LibraryTreeNode to reload
 	 * @return true if successfully reloaded
@@ -630,13 +633,13 @@ public class LibraryComPADRE {
 	}
 
 	/**
-	 * Determines if a path is a valid ComPADRE query.
+	 * Determines if a path is a ComPADRE query.
 	 * 
 	 * @param path the path
-	 * @return true if path is a valid ComPADRE query string
+	 * @return true if path starts with the standard partial ComPADRE query string
 	 */
 	protected static boolean isComPADREPath(String path) {
-		if (path.startsWith(EJS_SERVER_TREE) || path.startsWith(TRACKER_SERVER_TREE))
+		if (path != null && path.startsWith(COMPADRE_QUERY))
 			return true;
 		return false;
 	}
