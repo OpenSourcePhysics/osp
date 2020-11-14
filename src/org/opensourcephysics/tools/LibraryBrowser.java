@@ -185,6 +185,7 @@ public class LibraryBrowser extends JPanel {
 	protected boolean isResourcePathXML;
 	protected LibraryManager libraryManager;
 	private int myFontLevel;
+	public LibraryResource currentRecord;
 	public static final String PROPERTY_LIBRARY_TARGET = "target";
 	public static final String PROPERTY_LIBRARY_EDITED = "collection_edit";
 
@@ -836,6 +837,7 @@ public class LibraryBrowser extends JPanel {
 			return LibraryComPADRE.getCollection(path);
 		}
 
+		// BH 2020.11.12 presumes file not https here
 		path = ResourceLoader.getNonURIPath(path);
 		// was first:
 		File targetFile = new File(path);
@@ -1804,7 +1806,7 @@ public class LibraryBrowser extends JPanel {
 		commandField.setForeground(LibraryTreePanel.defaultForeground);
 		if (!commandButton.isEnabled())
 			return;
-		
+
 		// get or create LibraryResource to send to TFrame and other listeners
 		LibraryResource record = null;
 		LibraryTreePanel treePanel = getSelectedTreePanel();
@@ -1819,12 +1821,16 @@ public class LibraryBrowser extends JPanel {
 
 		// see if the command field describes a resource that can be found
 		String path = commandField.getText().trim();
+		if (currentRecord != null && path.equals(currentRecord.getAbsoluteTarget())) {
+			processTargetSelection(currentRecord, HINT_LOAD_RESOURCE);
+			return;
+		}
 		if (path.equals("")) //$NON-NLS-1$
 			return;
 		path = XML.forwardSlash(path);
-		path = ResourceLoader.getNonURIPath(path);
 		Resource res = null;
-		String xmlPath = path;
+		// BH 2020.11.12 presumes file not https here
+		String xmlPath = ResourceLoader.getNonURIPath(path);
 		if (ResourceLoader.isHTTP(path)) {
 			path = path.replace("/OSP/", "/osp/");
 			if (OSPRuntime.isJS) {
@@ -1853,7 +1859,8 @@ public class LibraryBrowser extends JPanel {
 			return;
 		}
 
-		boolean isCollection = res.getFile() != null && res.getFile().isDirectory();
+		boolean isCollection = (res.getFile() != null && res.getFile().isDirectory()
+				|| res.getURL() != null && ResourceLoader.isJarZipTrz(res.getURL().toString(), false));
 		if (!isCollection) {
 			XMLControl control = new XMLControlElement(path);
 			isCollection = !control.failedToRead() && control.getObjectClass() == LibraryCollection.class;

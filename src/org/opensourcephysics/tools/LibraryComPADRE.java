@@ -110,6 +110,9 @@ public class LibraryComPADRE {
 						Element subtree = (Element) subTrees.get(j);
 						String name = subtree.getAttribute("name"); //$NON-NLS-1$
 						String serviceParam = subtree.getAttribute("service-parameter"); //$NON-NLS-1$
+
+						// BH 2020.11.12 presumes file not https here
+
 						serviceParam = serviceParameter + "&" + ResourceLoader.getNonURIPath(serviceParam); //$NON-NLS-1$
 						if (name.equals("Unclassified")) { // unclassified node is processed last and adds //$NON-NLS-1$
 															// its records to the parent

@@ -412,10 +412,12 @@ public class LibraryTreePanel extends JPanel {
 		showHTMLPane(node);
 
 		boolean isCollection = node.record instanceof LibraryCollection;
-		String path = node.isRoot() ? pathToRoot : node.getAbsoluteTarget();
+		boolean isRoot = node.isRoot();
+		String path = (isRoot ? pathToRoot : node.getAbsoluteTarget());
 		LibraryTreePanel selected = browser.getSelectedTreePanel();
-		if (selected == this && !browser.commandField.getText().equals(path)) {
+		if (selected == this && !isRoot && !browser.commandField.getText().equals(path)) {
 			browser.commandField.setText(path);
+			browser.currentRecord = node.record;
 			// check to see if resource is available
 			boolean available = false;
 			if (path != null) {

@@ -544,63 +544,66 @@ public class JarTool implements Tool, Runnable {
 //    }
 //  }
 
-	/**
-	 * Extracts a file using the ResourceLoader utility
-	 * 
-	 * @param filename String The path of the file to extract
-	 * @param target   File The target file for the extracted file
-	 * @return File The extracted file, null if failed
-	 */
-	static public File extract(String filename, File target) {
-		// System.out.println("Extract filename="+filename); //$NON-NLS-1$
-		if ((filename == null) || (filename.trim().length() <= 0) || (target == null)) {
-			return null;
-		}
-		try {
-			InputStream inputStream = null;
-			if (OSPRuntime.applet != null) {// added by Wolfgang Christian
-				// URL url=OSPRuntime.applet.getClass().getResource(filename);
-				// inputStream=url.openStream();
-				inputStream = OSPRuntime.applet.getClass().getResourceAsStream(filename);
-			}
-			if (inputStream == null) { // use resource loader when not an applet
-				if (ResourceLoader.isHTTP(filename)) {
-					int n = filename.toLowerCase().indexOf(".zip!/"); //$NON-NLS-1$
-					if (n == -1)
-						n = filename.toLowerCase().indexOf(".jar!/"); //$NON-NLS-1$
-					if (n == -1)
-						n = filename.toLowerCase().indexOf(".trz!/"); //$NON-NLS-1$
-					if (n > -1) {
-						File extracted = ResourceLoader.extractFileFromZIP(filename, target, false, true);
-						if (extracted != null)
-							return extracted;
-					}
-				} else {
-					Resource is = ResourceLoader.getResource(filename, false);
-					inputStream = (is == null ? null : is.openInputStream());
-				}
-			}
-			if (inputStream == null) {
-				return null;
-			}
-			BufferedInputStream input = new BufferedInputStream(inputStream);
-			target.getParentFile().mkdirs();
-			int bytesRead;
-			byte[] buffer = new byte[1024];
-			FileOutputStream output = new FileOutputStream(target);
-			while ((bytesRead = input.read(buffer)) != -1) {
-				output.write(buffer, 0, bytesRead);
-			}
-			output.close();
-			input.close();
-			return target;
-		} catch (Exception exc) {
-			System.err.println("JarTool extract resource error.  Filename=" + filename); //$NON-NLS-1$
-			exc.printStackTrace();
-			return null;
-		}
-	}
-
+//	/**
+//   * 
+//   * BH No references
+//   * 
+//	 * Extracts a file using the ResourceLoader utility
+//	 * 
+//	 * @param filename String The path of the file to extract
+//	 * @param target   File The target file for the extracted file
+//	 * @return File The extracted file, null if failed
+//	 */
+//	static public File extract(String filename, File target) {
+//		// System.out.println("Extract filename="+filename); //$NON-NLS-1$
+//		if ((filename == null) || (filename.trim().length() <= 0) || (target == null)) {
+//			return null;
+//		}
+//		try {
+//			InputStream inputStream = null;
+//			if (OSPRuntime.applet != null) {// added by Wolfgang Christian
+//				// URL url=OSPRuntime.applet.getClass().getResource(filename);
+//				// inputStream=url.openStream();
+//				inputStream = OSPRuntime.applet.getClass().getResourceAsStream(filename);
+//			}
+//			if (inputStream == null) { // use resource loader when not an applet
+//				if (ResourceLoader.isHTTP(filename)) {
+//					int n = filename.toLowerCase().indexOf(".zip!/"); //$NON-NLS-1$
+//					if (n == -1)
+//						n = filename.toLowerCase().indexOf(".jar!/"); //$NON-NLS-1$
+//					if (n == -1)
+//						n = filename.toLowerCase().indexOf(".trz!/"); //$NON-NLS-1$
+//					if (n > -1) {
+//						File extracted = ResourceLoader.extractFileFromZIP(filename, target, false, true);
+//						if (extracted != null)
+//							return extracted;
+//					}
+//				} else {
+//					Resource is = ResourceLoader.getResource(filename, false);// BH 2020.11.12 adds false - don't allow zip
+//					inputStream = (is == null ? null : is.openInputStream());
+//				}
+//			}
+//			if (inputStream == null) {
+//				return null;
+//			}
+//			BufferedInputStream input = new BufferedInputStream(inputStream);
+//			target.getParentFile().mkdirs();
+//			int bytesRead;
+//			byte[] buffer = new byte[1024];
+//			FileOutputStream output = new FileOutputStream(target);
+//			while ((bytesRead = input.read(buffer)) != -1) {
+//				output.write(buffer, 0, bytesRead);
+//			}
+//			output.close();
+//			input.close();
+//			return target;
+//		} catch (Exception exc) {
+//			System.err.println("JarTool extract resource error.  Filename=" + filename); //$NON-NLS-1$
+//			exc.printStackTrace();
+//			return null;
+//		}
+//	}
+//
 //  /**
 //   * 
 //   * BH No references

@@ -149,12 +149,11 @@ public void destroy() {
       return;
     }
     String name = "META-INF/MANIFEST.MF"; //$NON-NLS-1$
-    Resource res = ResourceLoader.getResource(archive, name);
-    if(res==null) {
+    String manifest = ResourceLoader.getText(archive, name, Resource.class, true);
+    if(manifest==null) {
       OSPLog.fine("manifest not found in="+archive); //$NON-NLS-1$
       return;
     }
-    String manifest = res.getString();
     String[] lines = manifest.split("\n"); //$NON-NLS-1$
     for(int i = 0, n = Math.min(10, lines.length); i<n; i++) {
       int index = lines[i].indexOf("Main-Class:");                                 //$NON-NLS-1$

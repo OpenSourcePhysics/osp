@@ -327,6 +327,7 @@ public class LibraryManager extends JDialog {
 				}
 				String path = input;
 				path = XML.forwardSlash(path);
+				// BH 2020.11.12 presumes file not https here
 				path = ResourceLoader.getNonURIPath(path);
 
 				if (tabbedPane.getSelectedComponent() == collectionsPanel) {

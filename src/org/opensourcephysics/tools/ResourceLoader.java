@@ -114,7 +114,7 @@ public class ResourceLoader {
 	protected static Set<String> extractExtensions = new TreeSet<String>();
 	protected static ArrayList<String> pathsNotFound = new ArrayList<String>();
 	protected static File ospCache;
-	protected static boolean zipURLsOK;
+//	protected static boolean zipURLsOK;  BH 2020.11.12
 	protected static boolean webConnected;
 	protected static String downloadURL = ""; //$NON-NLS-1$
 
@@ -142,14 +142,14 @@ public class ResourceLoader {
 	}
 
 	/**
-	 * Gets a resource specified by name. If no resource is found using the name
+	 * Gets a non-zip resource specified by name. If no resource is found using the name
 	 * alone, the searchPaths are searched.
 	 *
 	 * @param name the file or URL name
 	 * @return the Resource, or null if none found
 	 */
 	public static Resource getResource(String name) {
-		return getResource(name, true);
+		return getResource(name, true, false);
 	}
 
 	/**
@@ -161,10 +161,44 @@ public class ResourceLoader {
 	 * @return the Resource, or null if none found
 	 */
 	public static Resource getResourceZipURLsOK(String name) {
-		zipURLsOK = true;
-		Resource res = getResource(name, true);
-		zipURLsOK = false;
-		return res;
+//		zipURLsOK = true;
+//		Resource res = getResource(name, true);
+//		zipURLsOK = false;
+		return getResource(name, true, true); // BH 2020.11.12
+	}
+
+	/**
+	 * 
+	 * Only called by csm.ch03 DataLoaderApp to load a known text file resource from its directory.
+	 * 
+	 * Gets a resource specified by name and Class. 
+	 * 
+	 * If no resource is found using
+	 * the name alone, the searchPaths are NOT searched.
+	 *
+	 * @param name the file or URL name
+	 * @param type the Class providing default ClassLoader resource loading
+	 * @return the Resource, or null if none found
+	 */
+	public static Resource getResource(String name, Class<?> type) {
+		// BH 2020.11.12 Why is it important for DataLoaderApp to search paths?
+		//return getResource(name, type, true, false);		
+		return findResource(name, type, false, false);
+	}
+
+	/**
+	 * 
+	 * Returns a URL for a help frame (via TextFrame)
+	 * Gets the URL for a resource specified by name and Class. 
+	 * If no resource is found using the name alone, the searchPaths are searched.
+	 *
+	 * @param name the file or URL name
+	 * @param type the Class providing default ClassLoader resource loading
+	 * @return the URL for this resource, or null if none found
+	 */
+	public static URL getTextURL(String name, Class<?> type) {
+		Resource res = getResource(name, type, true, false);
+		return (res == null ? null : res.getURL());
 	}
 
 	/**
@@ -176,7 +210,7 @@ public class ResourceLoader {
 	 * @param searchFiles true to search files
 	 * @return the Resource, or null if none found
 	 */
-	public static Resource getResource(String name, boolean searchFiles) {
+	private static Resource getResource(String name, boolean searchFiles, boolean zipURLsOK) {
 		try {
 			URL url = getAppletResourceURL(name); // added by W. Christian
 			if (url != null) {
@@ -184,19 +218,7 @@ public class ResourceLoader {
 			}
 		} catch (Exception ex) {
 		}
-		return getResource(name, Resource.class, searchFiles);
-	}
-
-	/**
-	 * Gets a resource specified by name and Class. If no resource is found using
-	 * the name alone, the searchPaths are searched.
-	 *
-	 * @param name the file or URL name
-	 * @param type the Class providing default ClassLoader resource loading
-	 * @return the Resource, or null if none found
-	 */
-	public static Resource getResource(String name, Class<?> type) {
-		return getResource(name, type, true);
+		return getResource(name, Resource.class, searchFiles, zipURLsOK);
 	}
 
 	/**
@@ -209,7 +231,7 @@ public class ResourceLoader {
 	 * @param searchFiles true to search files
 	 * @return the Resource, or null if none found
 	 */
-	private static Resource getResource(String name, Class<?> type, boolean searchFiles) {
+	private static Resource getResource(String name, Class<?> type, boolean searchFiles, boolean zipURLsOK) {
 		if ((name == null) || name.equals("")) { //$NON-NLS-1$
 			return null;
 		}
@@ -272,7 +294,7 @@ public class ResourceLoader {
 //		}
 
 		// look for resource with name only
-		Resource res = findResource(name, type, searchFiles);
+		Resource res = findResource(name, type, searchFiles, zipURLsOK);
 		if (res != null) {
 			return res;
 		}
@@ -284,7 +306,7 @@ public class ResourceLoader {
 			String path = getPath(next, name);
 			if (pathsNotFound.contains(path))
 				continue;
-			res = findResource(path, type, searchFiles);
+			res = findResource(path, type, searchFiles, zipURLsOK);
 			if (res != null) {
 				return res;
 			}
@@ -296,47 +318,51 @@ public class ResourceLoader {
 		return null;
 	}
 
-	/**
-	 * Gets a resource specified by base path and name. If base path is relative and
-	 * no resource is found using the base alone, the searchPaths are searched.
-	 *
-	 * @param basePath the base path
-	 * @param name     the file or URL name
-	 * @return the Resource, or null if none found
-	 */
-	public static Resource getResource(String basePath, String name) {
-		return getResource(basePath, name, Resource.class);
-	}
+//	/**
+//	 * Only called by ApplicationApplet
+//	 * 
+//	 * Gets a resource specified by base path and name. If base path is relative and
+//	 * no resource is found using the base alone, the searchPaths are searched.
+//	 *
+//	 * @param basePath the base path
+//	 * @param name     the file or URL name
+//	 * @return the Resource, or null if none found
+//	 */
+//	public static Resource getResource(String basePath, String name) {
+//		return getResource(basePath, name, Resource.class, true);
+//	}
+//
+//	/**
+//	 * Gets a resource specified by base path and name. If base path is relative and
+//	 * no resource is found using the base alone, the searchPaths are searched.
+//	 * Files are searched only if searchFile is true.
+//	 *
+//	 * @param basePath    the base path
+//	 * @param name        the file or URL name
+//	 * @param searchFiles true to search files
+//	 * @return the Resource, or null if none found
+//	 */
+//	public static Resource getResource(String basePath, String name, boolean searchFiles) {
+//		return getResource(basePath, name, Resource.class, searchFiles);
+//	}
+//
+//	/**
+//	 * Gets a resource specified by base path, name and class. If base path is
+//	 * relative and no resource is found using the base alone, the searchPaths are
+//	 * searched.
+//	 *
+//	 * @param basePath the base path
+//	 * @param name     the file or URL name
+//	 * @param type     the Class providing ClassLoader resource loading
+//	 * @return the Resource, or null if none found
+//	 */
+//	public static Resource getResource(String basePath, String name, Class<Resource> type) {
+//		return getResource(basePath, name, type, true);
+//	}
 
 	/**
-	 * Gets a resource specified by base path and name. If base path is relative and
-	 * no resource is found using the base alone, the searchPaths are searched.
-	 * Files are searched only if searchFile is true.
-	 *
-	 * @param basePath    the base path
-	 * @param name        the file or URL name
-	 * @param searchFiles true to search files
-	 * @return the Resource, or null if none found
-	 */
-	public static Resource getResource(String basePath, String name, boolean searchFiles) {
-		return getResource(basePath, name, Resource.class, searchFiles);
-	}
-
-	/**
-	 * Gets a resource specified by base path, name and class. If base path is
-	 * relative and no resource is found using the base alone, the searchPaths are
-	 * searched.
-	 *
-	 * @param basePath the base path
-	 * @param name     the file or URL name
-	 * @param type     the Class providing ClassLoader resource loading
-	 * @return the Resource, or null if none found
-	 */
-	public static Resource getResource(String basePath, String name, Class<Resource> type) {
-		return getResource(basePath, name, type, true);
-	}
-
-	/**
+	 * Only called by ApplicationApplet to get a manifest
+	 * 
 	 * Gets a resource specified by base path, name and class. If base path is
 	 * relative and no resource is found using the base alone, the searchPaths are
 	 * searched. Files are searched only if searchFile is true.
@@ -345,21 +371,18 @@ public class ResourceLoader {
 	 * @param name        the file or URL name
 	 * @param type        the Class providing ClassLoader resource loading
 	 * @param searchFiles true to search files
-	 * @return the Resource, or null if none found
+	 * @return the Resource text, or null if none found
 	 */
-	public static Resource getResource(String basePath, String name, Class<Resource> type, boolean searchFiles) {
-		if (basePath == null) {
-			return getResource(name, type);
-		}
+	public static String getText(String basePath, String name, Class<Resource> type, boolean searchFiles) {
 		if (name.startsWith("./")) { //$NON-NLS-1$
 			name = name.substring(2);
 		}
 		// look for resource with basePath and name
 		pathsNotFound.clear();
 		String path = getPath(basePath, name);
-		Resource res = findResource(path, type, searchFiles);
+		Resource res = findResource(path, type, searchFiles, false);
 		if (res != null) {
-			return res;
+			return res.toString();
 		}
 		// keep looking only if base path is relative
 		if (basePath.startsWith("/") || (basePath.indexOf(":/") > -1)) { //$NON-NLS-1$ //$NON-NLS-2$
@@ -373,9 +396,9 @@ public class ResourceLoader {
 			docBase = XML.getDirectoryPath(docBase) + "/"; //$NON-NLS-1$
 			path = getPath(getPath(docBase, basePath), name);
 			if (!pathsNotFound.contains(path)) {
-				res = findResource(path, type, searchFiles);
+				res = findResource(path, type, searchFiles, false);
 				if (res != null) {
-					return res;
+					return res.toString();
 				}
 				pathsNotFound.add(path);
 				err.append(";" + path); //$NON-NLS-1$
@@ -384,9 +407,9 @@ public class ResourceLoader {
 			if (!codeBase.equals(docBase)) {
 				path = getPath(getPath(codeBase, basePath), name);
 				if (!pathsNotFound.contains(path)) {
-					res = findResource(path, type, searchFiles);
+					res = findResource(path, type, searchFiles, false);
 					if (res != null) {
-						return res;
+						return res.toString();
 					}
 					pathsNotFound.add(path);
 					err.append(";" + path); //$NON-NLS-1$
@@ -398,9 +421,9 @@ public class ResourceLoader {
 			path = getPath(getPath(it.next(), basePath), name);
 			if (pathsNotFound.contains(path))
 				continue;
-			res = findResource(path, type, searchFiles);
+			res = findResource(path, type, searchFiles, false);
 			if (res != null) {
-				return res;
+				return res.toString();
 			}
 			pathsNotFound.add(path);
 			err.append(";" + path); //$NON-NLS-1$
@@ -1885,8 +1908,8 @@ public class ResourceLoader {
 	static private Resource createFileResource(String path) {
 		// don't create file resources when in applet mode
 		// ignore paths that refer to zip or jar files
-		return (OSPRuntime.applet != null || isHTTP(path) || path.indexOf(".zip") > -1 || path.indexOf(".jar") > -1 //$NON-NLS-1$ //$NON-NLS-2$
-				|| path.indexOf(".trz") > -1 //$NON-NLS-1$
+		return (OSPRuntime.applet != null || isHTTP(path) || 
+				isJarZipTrz(path, true)
 						? null
 						: createFileResource(new File(path)));
 	}
@@ -1920,9 +1943,9 @@ public class ResourceLoader {
 	 * @param path the url path
 	 * @return the resource, if any
 	 */
-	static private Resource createURLResource(String path) {
+	static private Resource createURLResource(String path, boolean zipURLsOK) {
 		// ignore paths that refer to zip or jar files unless explicitly OK
-		if (!zipURLsOK && (path.indexOf(".zip") > -1 || path.indexOf(".jar") > -1 || path.indexOf(".trz") > -1)) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		if (!zipURLsOK && isJarZipTrz(path, true)) {
 			return null;
 		}
 		Resource res = null;
@@ -2019,7 +2042,7 @@ public class ResourceLoader {
 		}
 
 		// if loading from a web file, download to OSP cache
-		boolean isZip = base != null && (base.endsWith(".zip") || base.endsWith(".jar") || base.endsWith(".trz")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		boolean isZip = (base != null && isJarZipTrz(base, false));
 		boolean deleteOnExit = ospCache == null;
 		if (isZip && isHTTP(path)) { // $NON-NLS-1$
 			String zipFileName = XML.getName(base);
@@ -2300,12 +2323,11 @@ public class ResourceLoader {
 		}
 	}
 
-	private static Resource findResource(String path, Class<?> type, boolean searchFiles) {
-		return findResource(path, type, searchFiles, false);
-	}
+	private static Resource findResource(String path, Class<?> type, 
+			boolean searchFiles, 
+			boolean zipURLsOK) {
 
-	private static Resource findResource(String path, Class<?> type, boolean searchFiles, boolean createOnly) {
-
+		// createOnly parameter here was always false; only used in commented out section below
 		if (!isHTTP(path)) {
 			// BH 2020.04.23 don't do this for https://./xxxx
 			path = path.replaceAll("/\\./", "/"); // This eliminates any embedded /./ //$NON-NLS-1$ //$NON-NLS-2$
@@ -2331,9 +2353,10 @@ public class ResourceLoader {
 //			res = createClassResource(path = OSPRuntime.tempDir + path, type);
 //		} else 
 
-		if ((searchFiles && (res = createFileResource(path)) != null) 
-				|| (res = createURLResource(path)) != null
-				|| (res = createZipResource(path)) != null || (res = createClassResource(path, type)) != null) {
+		if ((searchFiles && (res = createFileResource(path)) != null)
+				|| (res = createURLResource(path, zipURLsOK)) != null 
+				|| (res = createZipResource(path)) != null
+				|| (res = createClassResource(path, type)) != null) {
 			// res is not null;
 		}
 		if (res != null && cacheEnabled) {
@@ -2363,7 +2386,7 @@ public class ResourceLoader {
 		if (base == null) {
 			base = ""; //$NON-NLS-1$
 		}
-		if (base.endsWith(".jar") || base.endsWith(".zip") || base.endsWith(".trz")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		if (isJarZipTrz(base, false)) {
 			base += "!"; //$NON-NLS-1$
 		}
 		String path = XML.getResolvedPath(name, base);
@@ -2376,6 +2399,19 @@ public class ResourceLoader {
 			path = "file:///" + path; //$NON-NLS-1$
 		}
 		return path;
+	}
+
+	/**
+	 * Check for .zip, .jar, or .trz
+	 * @param path
+	 * @param allowEntry  true if we allow "!" jar entry 
+	 * @return
+	 */
+	public static boolean isJarZipTrz(String path, boolean allowEntry) {
+		return (allowEntry ? 
+				path.indexOf(".zip") >= 0 || path.indexOf(".jar") >= 0 //$NON-NLS-1$ //$NON-NLS-2$
+						|| path.indexOf(".trz") >= 0 //$NON-NLS-1$				
+				: path.endsWith(".jar") || path.endsWith(".zip") || path.endsWith(".trz")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
 
 	/**
@@ -2588,7 +2624,7 @@ public class ResourceLoader {
 				} else if (isHTTP(filename)) {
 					return (isZip ? extractFileFromZIP(filename, target, false, true) : null);
 				}
-				Resource res = getResource(filename, false);
+				Resource res = getResource(filename, false, false); // BH don't allow ZIP files here
 				inputStream = (res == null ? null : res.openInputStream());
 			}
 			if (inputStream == null) {
@@ -2627,6 +2663,7 @@ public class ResourceLoader {
 	 */
 	private static int isZipEntry(String filename, boolean checkExt) {
 		int n = filename.indexOf("!/");
+		// BH 2020.11.12 what is the "exe" here? Not in other tests.
 		return (n >= 4 && (!checkExt || filename.indexOf("_TrackerSet=") >= 0 || ".exe.zip.jar.trz".indexOf(filename.substring(n - 4, n)) >= 0) ? n : -1);
 	}
 

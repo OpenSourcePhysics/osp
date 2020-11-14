@@ -7,6 +7,8 @@
 
 package org.opensourcephysics.display;
 import java.io.IOException;
+import java.net.URL;
+
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
@@ -39,19 +41,19 @@ public class TextFrame extends JFrame {
   }
 
   /**
-   * Constructs the HTMLFrame with the given html resource at the given location.
-   * The location is relative to the given class.
+   * Constructs the HTMLFrame with the given html resource of the given type.
+   * The location is relative to the given type.
    *
    * @param resourceName String
-   * @param location
+   * @param type
    */
-  public TextFrame(String resourceName, Class<?> location) {
+  public TextFrame(String resourceName, Class<?> type) {
     setSize(300, 300);
     textPane.setEditable(false);
     textScroller = new JScrollPane(textPane);
     setContentPane(textScroller);
     if(resourceName!=null) {
-      loadResource(resourceName, location);
+      loadTextResource(resourceName, type);
     }
   }
 
@@ -117,20 +119,20 @@ public class TextFrame extends JFrame {
     hyperlinkListener = null;
   }
 
-  public boolean loadResource(String resourceName, Class<?> location) {
-    Resource res = null;
+  private boolean loadTextResource(String resourceName, Class<?> type) {
+    URL url = null;
     try {
-      res = ResourceLoader.getResource(resourceName, location);
+      url = ResourceLoader.getTextURL(resourceName, type);
     } catch(Exception ex) {
       OSPLog.fine("Error getting resource: "+resourceName); //$NON-NLS-1$
       return false;
     }
-    if(res==null) {
+    if(url==null) {
       OSPLog.fine("Resource not found: "+resourceName); //$NON-NLS-1$
       return false;
     }
     try {
-      textPane.setPage(res.getURL());
+      textPane.setPage(url);
     } catch(IOException ex) {
       OSPLog.fine("Resource not loadeded: "+resourceName); //$NON-NLS-1$
       return false;

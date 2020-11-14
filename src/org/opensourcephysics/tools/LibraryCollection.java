@@ -9,6 +9,7 @@ package org.opensourcephysics.tools;
 
 import java.util.ArrayList;
 
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 
@@ -60,9 +61,10 @@ public class LibraryCollection extends LibraryResource {
 	 */
 	@Override
 	public boolean setTarget(String path) {
-		path = path == null ? "" : path.trim(); //$NON-NLS-1$
+		path = (path == null ? "" : path.trim()); //$NON-NLS-1$
 		if (path.equals(target))
 			return false;
+		OSPLog.debug("LibraryCollection.setTarget " + getName() + " " + target + ">" + path);
 		target = path;
 		return true;
 	}

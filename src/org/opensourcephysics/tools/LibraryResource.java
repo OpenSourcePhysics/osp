@@ -24,6 +24,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.OSPRuntime;
@@ -166,7 +167,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	 * @return true if changed
 	 */
 	public boolean setBasePath(String path) {
-		path = path == null ? "" : path.trim(); //$NON-NLS-1$
+		path = (path == null ? "" : path.trim()); //$NON-NLS-1$
 		if (!path.equals(basePath)) {
 			basePath = path;
 			return true;
@@ -180,11 +181,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	 * @return the base path
 	 */
 	protected String getInheritedBasePath() {
-		if (!"".equals(basePath)) //$NON-NLS-1$
-			return basePath;
-		if (parent != null)
-			return parent.getInheritedBasePath();
-		return basePath;
+		return (!"".equals(basePath) ? basePath : parent != null ? parent.getInheritedBasePath() : ""); //$NON-NLS-1$
 	}
 
 	/**
@@ -193,7 +190,8 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	 * @return the target
 	 */
 	public String getTarget() {
-		return "".equals(target) ? null : target; //$NON-NLS-1$
+//		OSPLog.debug("LibraryResource.getTarget " + name + " target=" + target);
+		return ("".equals(target) ? null : target); //$NON-NLS-1$
 	}
 
 	/**
@@ -201,10 +199,8 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	 *
 	 * @return the absolute target, or empty String if none
 	 */
-	private String getAbsoluteTarget() {
-		if ("".equals(target)) //$NON-NLS-1$
-			return target;
-		return XML.getResolvedPath(target, getInheritedBasePath());
+	String getAbsoluteTarget() {
+		return ("".equals(target) ? "" : XML.getResolvedPath(target, getInheritedBasePath())); //$NON-NLS-1$
 	}
 
 	/**
@@ -293,9 +289,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	 * @return the absolute html path, or empty String if none
 	 */
 	private String getAbsoluteHTMLPath() {
-		if ("".equals(htmlPath)) //$NON-NLS-1$
-			return htmlPath;
-		return XML.getResolvedPath(htmlPath, getInheritedBasePath());
+		return ("".equals(htmlPath) ? "" : XML.getResolvedPath(htmlPath, getInheritedBasePath())); //$NON-NLS-1$
 	}
 
 	/**
@@ -556,47 +550,34 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	 */
 	@Override
 	public int compareTo(LibraryResource resource) {
-		final int BEFORE = -1;
-		final int EQUAL = 0;
-		final int AFTER = 1;
+		int BEFORE = -1;
+		int EQUAL = 0;
+		int AFTER = 1;
 
 		if (this == resource)
 			return EQUAL;
 
 		// compare names
-		int result = this.getName().compareTo(resource.getName());
-		if (result != EQUAL)
+		int result;
+		if ((result = getName().compareTo(resource.getName())) != EQUAL)
 			return result;
 
 		// compare absolute targets
-		String tar1 = this.getAbsoluteTarget();
+		String tar1 = getAbsoluteTarget();
 		String tar2 = resource.getAbsoluteTarget();
-		if (tar1 != null || tar2 != null) {
-			if (tar1 == null)
-				return AFTER;
-			if (tar2 == null)
-				return BEFORE;
-			result = tar1.compareTo(tar2);
-		}
-		if (result != EQUAL)
+		if ((result = (tar1 == null && tar2 == null ? EQUAL
+				: tar1 == null ? AFTER : tar2 == null ? BEFORE : tar1.compareTo(tar2))) != EQUAL)
 			return result;
 
 		// compare HTML paths
-		String html1 = this.getAbsoluteHTMLPath();
+		String html1 = getAbsoluteHTMLPath();
 		String html2 = resource.getAbsoluteHTMLPath();
-		if (html1 != null || html2 != null) {
-			if (html1 == null)
-				return AFTER;
-			if (html2 == null)
-				return BEFORE;
-			result = html1.compareTo(html2);
-		}
-		if (result != EQUAL)
+		if ((result = (html1 == null && html2 == null ? EQUAL :
+			html1 == null ? AFTER : html2 == null ? BEFORE : html1.compareTo(html2))) != EQUAL)
 			return result;
 
 		// compare type
-		result = this.getType().compareTo(resource.getType());
-		if (result != EQUAL)
+		if ((result = getType().compareTo(resource.getType())) != EQUAL)
 			return result;
 
 //  	// compare metadata
@@ -640,9 +621,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj == null || !(obj instanceof LibraryResource))
-			return false;
-		return compareTo((LibraryResource) obj) == 0;
+		return (obj instanceof LibraryResource && compareTo((LibraryResource) obj) == 0);
 	}
 
 	/**
@@ -1000,8 +979,10 @@ public class LibraryResource implements Comparable<LibraryResource> {
 			res.setDescription(control.getString("description")); //$NON-NLS-1$
 			res.setBasePath(control.getString("base_path")); //$NON-NLS-1$
 			String target = control.getString("target"); //$NON-NLS-1$
-			if (target != null)
+			if (target != null) {
+				OSPLog.debug("LibraryResource.loadObject " + res.name + " target=" + target);
 				res.target = target;
+			}
 			res.setHTMLPath(control.getString("html_path")); //$NON-NLS-1$
 			res.setType(control.getString("type")); //$NON-NLS-1$
 			res.setThumbnail(control.getString("thumbnail")); //$NON-NLS-1$
