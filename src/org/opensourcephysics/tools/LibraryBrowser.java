@@ -1277,7 +1277,7 @@ public class LibraryBrowser extends JPanel {
 						if (treePanel.metadataLoader != null) {
 							treePanel.metadataLoader.cancel();
 						}
-						treePanel.metadataLoader = treePanel.new MetadataLoader(!OSPRuntime.isJS, null);
+						treePanel.metadataLoader = treePanel.new MetadataLoader(null);
 						treePanel.metadataLoader.execute();
 						return;
 					}
@@ -1298,7 +1298,7 @@ public class LibraryBrowser extends JPanel {
 
 					// delete thumbnail image, if any
 					String target = node.getAbsoluteTarget();
-					if (target != null) {
+					if (OSPRuntime.doCacheThumbnail && target != null) {
 						File thumb = node.getThumbnailFile();
 						if (thumb.exists()) {
 							thumb.delete();
@@ -2811,7 +2811,6 @@ public class LibraryBrowser extends JPanel {
 		String path;
 		int index;
 		List<String> treePath;
-		boolean saveToCache = !OSPRuntime.isJS;
 
 		TabLoader(String pathToAdd, int tabIndex, List<String> treePath) {
 			path = pathToAdd;
@@ -2919,7 +2918,7 @@ public class LibraryBrowser extends JPanel {
 					if (treePanel.metadataLoader != null) {
 						treePanel.metadataLoader.cancel();
 					}
-					treePanel.metadataLoader = treePanel.new MetadataLoader(saveToCache, treePath);
+					treePanel.metadataLoader = treePanel.new MetadataLoader(treePath);
 					treePanel.metadataLoader.execute();
 					setProgress(index);
 				} else {
