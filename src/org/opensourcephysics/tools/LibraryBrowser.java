@@ -116,8 +116,8 @@ public class LibraryBrowser extends JPanel {
 	protected static final String LIBRARY_HELP_BASE = "http://www.opensourcephysics.org/online_help/tools/"; //$NON-NLS-1$
 	protected static final String WINDOWS_OSP_DIRECTORY = "/My Documents/OSP/"; //$NON-NLS-1$
 	protected static final String OSP_DIRECTORY = "/Documents/OSP/"; //$NON-NLS-1$
-	public static final Integer HINT_LOAD_RESOURCE = 0;
-	public static final Integer HINT_DOWNLOAD_RESOURCE = 1;
+	public static final String HINT_LOAD_RESOURCE = "LOAD";
+	public static final String HINT_DOWNLOAD_RESOURCE = "DOWNLOAD";
 
 	// static fields
 	private static String ospPath;
@@ -184,7 +184,7 @@ public class LibraryBrowser extends JPanel {
 	protected boolean isResourcePathXML;
 	protected LibraryManager libraryManager;
 	private int myFontLevel;
-	public LibraryResource currentRecord;
+	public LibraryTreeNode currentNode;
 	public static final String PROPERTY_LIBRARY_TARGET = "target";
 	public static final String PROPERTY_LIBRARY_EDITED = "collection_edit";
 
@@ -1402,7 +1402,7 @@ public class LibraryBrowser extends JPanel {
 					break;
 				}
 
-				Object oldValue = e.getOldValue();
+				Object hint = e.getOldValue();
 				Object newValue = e.getNewValue();
 
 				LibraryTreeNode node = null;
@@ -1421,7 +1421,7 @@ public class LibraryBrowser extends JPanel {
 				} else if (newValue instanceof LibraryResource) {
 					record = (LibraryResource) newValue;
 				}
-				processTargetSelection(record, oldValue);
+				processTargetSelection(record, hint);
 			}
 
 		};
@@ -1710,7 +1710,7 @@ public class LibraryBrowser extends JPanel {
 		LibraryComPADRE.loadResources(node, onSuccess, onFailure);
 	}
 
-	protected void processTargetSelection(LibraryResource record, Object oldValue) {
+	protected void processTargetSelection(LibraryResource record, Object hint) {
 		if (record == null)
 			return;
 		String target = record.getTarget();
@@ -1725,7 +1725,7 @@ public class LibraryBrowser extends JPanel {
 			return;
 		}
 		// fire the event to TFrame and other listeners
-		firePropertyChange(PROPERTY_LIBRARY_TARGET, oldValue, record); // $NON-NLS-1$
+		firePropertyChange(PROPERTY_LIBRARY_TARGET, hint, record); // $NON-NLS-1$
 	}
 
 	protected void doSearch() {
@@ -1821,8 +1821,8 @@ public class LibraryBrowser extends JPanel {
 
 		// see if the command field describes a resource that can be found
 		String path = commandField.getText().trim();
-		if (currentRecord != null && path.equals(currentRecord.getAbsoluteTarget())) {
-			processTargetSelection(currentRecord, HINT_LOAD_RESOURCE);
+		if (currentNode != null && path.equals(currentNode.record.getAbsoluteTarget())) {
+			processTargetSelection(currentNode.record, HINT_LOAD_RESOURCE);
 			return;
 		}
 		if (path.equals("")) //$NON-NLS-1$

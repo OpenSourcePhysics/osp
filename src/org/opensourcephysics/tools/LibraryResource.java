@@ -21,7 +21,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
 import org.opensourcephysics.controls.OSPLog;
@@ -57,6 +56,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 			this.size = size;
 		}
 		
+		@Override
 		public String toString() {
 			return "[Attachment " + node 
 					+ " " + type + " " 
@@ -69,29 +69,17 @@ public class LibraryResource implements Comparable<LibraryResource> {
 
 
 	// static constants
-	@SuppressWarnings("javadoc")
 	public static final String META_AUTHOR = "Author"; //$NON-NLS-1$
-	@SuppressWarnings("javadoc")
 	public static final String META_CONTACT = "Contact"; //$NON-NLS-1$
-	@SuppressWarnings("javadoc")
 	public static final String META_KEYWORDS = "Keywords"; //$NON-NLS-1$
-	@SuppressWarnings("javadoc")
 	public static final String[] META_TYPES = { META_AUTHOR, META_CONTACT, META_KEYWORDS };
-	@SuppressWarnings("javadoc")
 	public static final String UNKNOWN_TYPE = "Unknown"; //$NON-NLS-1$
-	@SuppressWarnings("javadoc")
 	public static final String COLLECTION_TYPE = "Collection"; //$NON-NLS-1$
-	@SuppressWarnings("javadoc")
 	public static final String TRACKER_TYPE = "Tracker"; //$NON-NLS-1$
-	@SuppressWarnings("javadoc")
 	public static final String EJS_TYPE = "EJS"; //$NON-NLS-1$
-	@SuppressWarnings("javadoc")
 	public static final String VIDEO_TYPE = "Video"; //$NON-NLS-1$
-	@SuppressWarnings("javadoc")
 	public static final String IMAGE_TYPE = "Image"; //$NON-NLS-1$
-	@SuppressWarnings("javadoc")
 	public static final String HTML_TYPE = "HTML"; //$NON-NLS-1$
-	@SuppressWarnings("javadoc")
 	public static final String PDF_TYPE = "PDF"; //$NON-NLS-1$
 	protected static final String[] RESOURCE_TYPES = { TRACKER_TYPE, EJS_TYPE, VIDEO_TYPE, IMAGE_TYPE, HTML_TYPE,
 			PDF_TYPE, UNKNOWN_TYPE };

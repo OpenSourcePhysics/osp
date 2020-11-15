@@ -339,12 +339,13 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 	 * @return the absolute target path
 	 */
 	protected String getAbsoluteTarget() {
-		if (getTarget() == null)
+		String target = getTarget();
+		if (target == null)
 			return null;
 		if (record instanceof LibraryCollection) {
-			return getBasePath() + getTarget();
+			return getBasePath() + target;
 		}
-		return XML.getResolvedPath(getTarget(), getBasePath());
+		return XML.getResolvedPath(target, getBasePath());
 	}
 
 	/**

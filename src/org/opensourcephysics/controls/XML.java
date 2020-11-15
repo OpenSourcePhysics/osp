@@ -486,41 +486,42 @@ public class XML {
 		return path;
 	}
 
-  /**
-   * Resolves the name of a file specified relative to a base path.
-   *
-   * @param relativePath the relative file name
-   * @param base the absolute base path
-   * @return the resolved file name with forward slashes
-   */
-  public static String getResolvedPath(String relativePath, String base) {
-  	if (base!=null && base.endsWith("/")) //$NON-NLS-1$
-  		base = base.substring(0, base.length()-1);
-    relativePath = forwardSlash(relativePath);
-    // return relativePath if it is really absolute
-    if(relativePath.startsWith("/")||(relativePath.indexOf(":/")!=-1)) { //$NON-NLS-1$ //$NON-NLS-2$
-      return relativePath;
-    }
-    base = forwardSlash(base);
-    while(relativePath.startsWith("../")&&!base.equals("")) { //$NON-NLS-1$ //$NON-NLS-2$
-      if(base.indexOf("/")==-1) {                             //$NON-NLS-1$
-        base = "/"+base;                                      //$NON-NLS-1$
-      }
-      relativePath = relativePath.substring(3);
-      base = base.substring(0, base.lastIndexOf("/"));        //$NON-NLS-1$
-    }
-    if (relativePath.startsWith("./")) //$NON-NLS-1$
-    	relativePath = relativePath.substring(2);
-    if (relativePath.equals(".")) //$NON-NLS-1$
-    	relativePath = ""; //$NON-NLS-1$
-    if(base.equals("")) { //$NON-NLS-1$
-      return relativePath;
-    }
-    if(base.endsWith("/")) { //$NON-NLS-1$
-      return base+relativePath;
-    }
-    return base+"/"+relativePath; //$NON-NLS-1$
-  }
+	/**
+	 * Resolves the name of a file specified relative to a base path.
+	 *
+	 * @param relativePath the relative file name
+	 * @param base         the absolute base path
+	 * @return the resolved file name with forward slashes
+	 */
+	public static String getResolvedPath(String relativePath, String base) {
+		if (base != null && base.endsWith("/")) //$NON-NLS-1$
+			base = base.substring(0, base.length() - 1);
+		relativePath = forwardSlash(relativePath);
+		// return relativePath if it is really absolute
+		if (relativePath.startsWith("/") || (relativePath.indexOf(":/") >= 0)) { //$NON-NLS-1$ //$NON-NLS-2$
+			return relativePath;
+		}
+		base = forwardSlash(base);
+		while (relativePath.startsWith("../") && !base.equals("")) { //$NON-NLS-1$ //$NON-NLS-2$
+			if (base.indexOf("/") == -1) { //$NON-NLS-1$
+				base = "/" + base; //$NON-NLS-1$
+			}
+			relativePath = relativePath.substring(3);
+			base = base.substring(0, base.lastIndexOf("/")); //$NON-NLS-1$
+		}
+		if (relativePath.startsWith("./")) //$NON-NLS-1$
+			relativePath = relativePath.substring(2);
+		if (relativePath.equals(".")) //$NON-NLS-1$
+			relativePath = ""; //$NON-NLS-1$
+		if (base.equals("")) { //$NON-NLS-1$
+			return relativePath;
+		}
+		// BH 2020.11.15 "&" check here is for https DL library calls
+		if (base.endsWith("/") || relativePath.startsWith("&")) { //$NON-NLS-1$ $NON-NLS-2$
+			return base + relativePath;
+		}
+		return base + "/" + relativePath; //$NON-NLS-1$
+	}
 
   /**
    * Creates any missing folders in the specified path.
