@@ -378,170 +378,182 @@ public class LibraryTreePanel extends JPanel {
 	 * @param node the LibraryTreeNode
 	 */
 	protected void showInfo(LibraryTreeNode node, String why) {
-		OSPLog.debug("LibraryTreePanel.showInfo " + why + " " + node);
 		if (node == null) {
-			htmlScroller.setViewportView(emptyHTMLPane);
-			nameField.setText(null);
-			typeField.setText(" "); //$NON-NLS-1$
-			basePathField.setText(null);
-			htmlField.setText(null);
-			targetField.setText(null);
-			nameField.setBackground(Color.white);
-			basePathField.setBackground(Color.white);
-			htmlField.setBackground(Color.white);
-			targetField.setBackground(Color.white);
-			nameField.setEnabled(false);
-			basePathField.setEnabled(false);
-			htmlField.setEnabled(false);
-			targetField.setEnabled(false);
-			typeField.setEnabled(false);
-			nameLabel.setEnabled(false);
-			htmlLabel.setEnabled(false);
-			basePathLabel.setEnabled(false);
-			targetLabel.setEnabled(false);
-			typeLabel.setEnabled(false);
-			openHTMLButton.setEnabled(false);
-			openBasePathButton.setEnabled(false);
-			openFileButton.setEnabled(false);
+			initGUI();
 			return;
 		}
+		OSPLog.debug("LibraryTreePanel.showInfo " + why + " " + node);
 		// show node data
-		showHTMLPane(node);
-
 		boolean isCollection = node.record instanceof LibraryCollection;
 		boolean isRoot = node.isRoot();
 		String path = (isRoot ? pathToRoot : node.getAbsoluteTarget());
 		LibraryTreePanel selected = browser.getSelectedTreePanel();
+		showHTMLPane(node);
+
 		if (selected == this && !isRoot && !browser.commandField.getText().equals(path)) {
-			browser.commandField.setText(path);
-			browser.currentRecord = node.record;
-			// check to see if resource is available
-			boolean available = false;
-			if (path != null) {
-				if (ResourceLoader.isHTTP(path)) {
-					available = browser.isWebConnected();
-					if (!available) {
-						File cachedFile = null;
-						if (isCollection) {
-							cachedFile = ResourceLoader.getSearchCacheFile(path);
-						} else {
-							String filename = node.record.getProperty("download_filename"); //$NON-NLS-1$
-							cachedFile = ResourceLoader.getOSPCacheFile(path, filename);
-						}
-						available = cachedFile.exists();
-					}
-				} else {
-					available = ResourceLoader.getResourceZipURLsOK(ResourceLoader.getURIPath(path)) != null;
-				}
-			}
-			browser.commandField.setForeground(available ? defaultForeground : darkRed);
-			browser.commandField.setCaretPosition(0);
-			if (node.isRoot())
-				browser.commandButton.setEnabled(false);
+			setCommandField(node, path, isCollection);
 		}
 		// show editor data if editing
 		if (isEditing()) {
-			if (!nameField.getText().equals(node.getName())) {
-				nameField.setText(node.getName());
-				nameField.setCaretPosition(0);
-			}
-			String base = basePathField.hasFocus() ? node.record.getBasePath() : node.getBasePath();
-			if (!basePathField.getText().equals(base)) {
-				basePathField.setText(base);
-				basePathField.setCaretPosition(0);
-			}
-			if (!htmlField.getText().equals(node.record.getHTMLPath())) {
-				htmlField.setText(node.record.getHTMLPath());
-				htmlField.setCaretPosition(0);
-			}
-			boolean isValidHTML = true;
-			if (!"".equals(node.record.getHTMLPath())) { //$NON-NLS-1$
-				isValidHTML = node.getHTMLURL() != null;
-			}
-			htmlField.setForeground(isValidHTML ? defaultForeground : darkRed);
-			htmlField.setBackground(Color.white);
-//			htmlField.setBackground(isValidHTML? Color.white: lightRed);
-			if (!targetField.getText().equals(node.getTarget())) {
-				targetField.setText(node.getTarget());
-				targetField.setCaretPosition(0);
-			}
-			boolean isValidTarget = true;
-			if (node.getTarget() != null) {
-				isValidTarget = node.getTargetURL() != null;
-			}
-			targetField.setForeground(isValidTarget ? defaultForeground : darkRed);
-			targetField.setBackground(Color.white);
-//	  	targetField.setBackground(isValidTarget? Color.white: lightRed);
-			String type = node.record.getType();
-			type = ToolsRes.getString("LibraryResource.Type." + type); //$NON-NLS-1$
-			typeField.setText(type);
-			boolean hasBasePath = !"".equals(node.record.getBasePath()); //$NON-NLS-1$
-			nameField.setEnabled(true);
-			basePathField.setEnabled(true);
-			htmlField.setEnabled(true);
-			typeField.setEnabled(true);
-			targetField.setEnabled(!isCollection);
-			nameLabel.setEnabled(true);
-			htmlLabel.setEnabled(true);
-			basePathLabel.setEnabled(true);
-			targetLabel.setEnabled(!isCollection);
-			typeLabel.setEnabled(true);
-			openHTMLButton.setEnabled(true);
-			openBasePathButton.setEnabled(true);
-			openFileButton.setEnabled(!isCollection);
-			basePathField.setForeground(hasBasePath || basePathField.hasFocus() ? defaultForeground : lightGreen);
-			nameField.setBackground(Color.white);
-			basePathField.setBackground(Color.white);
-
-			// show metadata
-			String authors = node.getMetadataValue(LibraryResource.META_AUTHOR);
-			if (authors == null)
-				authors = ""; //$NON-NLS-1$
-			if (!authorField.getText().equals(authors)) {
-				authorField.setText(authors);
-				authorField.setCaretPosition(0);
-				authorField.setBackground(Color.white);
-			}
-			String contact = node.getMetadataValue(LibraryResource.META_CONTACT);
-			if (contact == null)
-				contact = ""; //$NON-NLS-1$
-			if (!contactField.getText().equals(contact)) {
-				contactField.setText(contact);
-				contactField.setCaretPosition(0);
-				contactField.setBackground(Color.white);
-			}
-			String keys = node.getMetadataValue(LibraryResource.META_KEYWORDS);
-			if (keys == null)
-				keys = ""; //$NON-NLS-1$
-			if (!keywordsField.getText().equals(keys)) {
-				keywordsField.setText(keys);
-				keywordsField.setCaretPosition(0);
-				keywordsField.setBackground(Color.white);
-			}
-			if (node.selectedMetadata != null) {
-				metadataDropdown.getEditor().setItem(node.selectedMetadata);
-			} else {
-				metadataDropdown.getEditor().setItem(emptyMetadata);
-			}
-
-			// set tooltips
-			path = htmlField.getText();
-			if (!path.equals(XML.getPathRelativeTo(path, base))) {
-				htmlField.setToolTipText(ToolsRes.getString("LibraryTreePanel.Tooltip.Relative")); //$NON-NLS-1$
-			} else if (!path.equals(XML.getResolvedPath(path, base))) {
-				htmlField.setToolTipText(ToolsRes.getString("LibraryTreePanel.Tooltip.Absolute")); //$NON-NLS-1$
-			} else
-				htmlField.setToolTipText(null);
-			path = targetField.getText();
-			if (!path.equals(XML.getPathRelativeTo(path, base))) {
-				targetField.setToolTipText(ToolsRes.getString("LibraryTreePanel.Tooltip.Relative")); //$NON-NLS-1$
-			} else if (!path.equals(XML.getResolvedPath(path, base))) {
-				targetField.setToolTipText(ToolsRes.getString("LibraryTreePanel.Tooltip.Absolute")); //$NON-NLS-1$
-			} else
-				targetField.setToolTipText(null);
+			showEditorData(node, isCollection);
 		}
 		tree.expandPath(node.getTreePath());
-		repaint();
+//		repaint();
+	}
+
+	private void initGUI() {
+		htmlScroller.setViewportView(emptyHTMLPane);
+		nameField.setText(null);
+		typeField.setText(" "); //$NON-NLS-1$
+		basePathField.setText(null);
+		htmlField.setText(null);
+		targetField.setText(null);
+		nameField.setBackground(Color.white);
+		basePathField.setBackground(Color.white);
+		htmlField.setBackground(Color.white);
+		targetField.setBackground(Color.white);
+		nameField.setEnabled(false);
+		basePathField.setEnabled(false);
+		htmlField.setEnabled(false);
+		targetField.setEnabled(false);
+		typeField.setEnabled(false);
+		nameLabel.setEnabled(false);
+		htmlLabel.setEnabled(false);
+		basePathLabel.setEnabled(false);
+		targetLabel.setEnabled(false);
+		typeLabel.setEnabled(false);
+		openHTMLButton.setEnabled(false);
+		openBasePathButton.setEnabled(false);
+		openFileButton.setEnabled(false);
+	}
+
+	private void setCommandField(LibraryTreeNode node, String path, boolean isCollection) {
+		browser.commandField.setText(path);
+		browser.currentNode = node;
+		// check to see if resource is available
+		boolean available = false;
+		if (path != null) {
+			if (ResourceLoader.isHTTP(path)) {
+				available = browser.isWebConnected();
+				if (!available) {
+					File cachedFile = null;
+					if (isCollection) {
+						cachedFile = ResourceLoader.getSearchCacheFile(path);
+					} else {
+						String filename = node.record.getProperty("download_filename"); //$NON-NLS-1$
+						cachedFile = ResourceLoader.getOSPCacheFile(path, filename);
+					}
+					available = cachedFile.exists();
+				}
+			} else {
+				available = ResourceLoader.getResourceZipURLsOK(ResourceLoader.getURIPath(path)) != null;
+			}
+		}
+		browser.commandField.setForeground(available ? defaultForeground : darkRed);
+		browser.commandField.setCaretPosition(0);
+		if (node.isRoot())
+			browser.commandButton.setEnabled(false);
+	}
+
+	private void showEditorData(LibraryTreeNode node, boolean isCollection) {
+		if (!nameField.getText().equals(node.getName())) {
+			nameField.setText(node.getName());
+			nameField.setCaretPosition(0);
+		}
+		String base = basePathField.hasFocus() ? node.record.getBasePath() : node.getBasePath();
+		if (!basePathField.getText().equals(base)) {
+			basePathField.setText(base);
+			basePathField.setCaretPosition(0);
+		}
+		if (!htmlField.getText().equals(node.record.getHTMLPath())) {
+			htmlField.setText(node.record.getHTMLPath());
+			htmlField.setCaretPosition(0);
+		}
+		boolean isValidHTML = true;
+		if (!"".equals(node.record.getHTMLPath())) { //$NON-NLS-1$
+			isValidHTML = node.getHTMLURL() != null;
+		}
+		htmlField.setForeground(isValidHTML ? defaultForeground : darkRed);
+		htmlField.setBackground(Color.white);
+//		htmlField.setBackground(isValidHTML? Color.white: lightRed);
+		if (!targetField.getText().equals(node.getTarget())) {
+			targetField.setText(node.getTarget());
+			targetField.setCaretPosition(0);
+		}
+		boolean isValidTarget = true;
+		if (node.getTarget() != null) {
+			isValidTarget = node.getTargetURL() != null;
+		}
+		targetField.setForeground(isValidTarget ? defaultForeground : darkRed);
+		targetField.setBackground(Color.white);
+//  	targetField.setBackground(isValidTarget? Color.white: lightRed);
+		String type = node.record.getType();
+		type = ToolsRes.getString("LibraryResource.Type." + type); //$NON-NLS-1$
+		typeField.setText(type);
+		boolean hasBasePath = !"".equals(node.record.getBasePath()); //$NON-NLS-1$
+		nameField.setEnabled(true);
+		basePathField.setEnabled(true);
+		htmlField.setEnabled(true);
+		typeField.setEnabled(true);
+		targetField.setEnabled(!isCollection);
+		nameLabel.setEnabled(true);
+		htmlLabel.setEnabled(true);
+		basePathLabel.setEnabled(true);
+		targetLabel.setEnabled(!isCollection);
+		typeLabel.setEnabled(true);
+		openHTMLButton.setEnabled(true);
+		openBasePathButton.setEnabled(true);
+		openFileButton.setEnabled(!isCollection);
+		basePathField.setForeground(hasBasePath || basePathField.hasFocus() ? defaultForeground : lightGreen);
+		nameField.setBackground(Color.white);
+		basePathField.setBackground(Color.white);
+
+		// show metadata
+		String authors = node.getMetadataValue(LibraryResource.META_AUTHOR);
+		if (authors == null)
+			authors = ""; //$NON-NLS-1$
+		if (!authorField.getText().equals(authors)) {
+			authorField.setText(authors);
+			authorField.setCaretPosition(0);
+			authorField.setBackground(Color.white);
+		}
+		String contact = node.getMetadataValue(LibraryResource.META_CONTACT);
+		if (contact == null)
+			contact = ""; //$NON-NLS-1$
+		if (!contactField.getText().equals(contact)) {
+			contactField.setText(contact);
+			contactField.setCaretPosition(0);
+			contactField.setBackground(Color.white);
+		}
+		String keys = node.getMetadataValue(LibraryResource.META_KEYWORDS);
+		if (keys == null)
+			keys = ""; //$NON-NLS-1$
+		if (!keywordsField.getText().equals(keys)) {
+			keywordsField.setText(keys);
+			keywordsField.setCaretPosition(0);
+			keywordsField.setBackground(Color.white);
+		}
+		if (node.selectedMetadata != null) {
+			metadataDropdown.getEditor().setItem(node.selectedMetadata);
+		} else {
+			metadataDropdown.getEditor().setItem(emptyMetadata);
+		}
+
+		// set tooltips
+		String path = htmlField.getText();
+		if (!path.equals(XML.getPathRelativeTo(path, base))) {
+			htmlField.setToolTipText(ToolsRes.getString("LibraryTreePanel.Tooltip.Relative")); //$NON-NLS-1$
+		} else if (!path.equals(XML.getResolvedPath(path, base))) {
+			htmlField.setToolTipText(ToolsRes.getString("LibraryTreePanel.Tooltip.Absolute")); //$NON-NLS-1$
+		} else
+			htmlField.setToolTipText(null);
+		path = targetField.getText();
+		if (!path.equals(XML.getPathRelativeTo(path, base))) {
+			targetField.setToolTipText(ToolsRes.getString("LibraryTreePanel.Tooltip.Relative")); //$NON-NLS-1$
+		} else if (!path.equals(XML.getResolvedPath(path, base))) {
+			targetField.setToolTipText(ToolsRes.getString("LibraryTreePanel.Tooltip.Absolute")); //$NON-NLS-1$
+		} else
+			targetField.setToolTipText(null);
 	}
 
 	/**
@@ -549,7 +561,7 @@ public class LibraryTreePanel extends JPanel {
 	 * 
 	 * @param node the node
 	 */
-	protected void showHTMLPane(final LibraryTreeNode node) {
+	protected void showHTMLPane(LibraryTreeNode node) {
 		HTMLPane htmlPane = htmlPanesByNode.get(node);
 		if (htmlPane == null || htmlPane != htmlScroller.getViewport().getView())
 			new HTMLDisplayer(node).execute();
@@ -716,42 +728,7 @@ public class LibraryTreePanel extends JPanel {
 		convertPathMouseListener = new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				EntryField field = (EntryField) e.getSource();
-				String path = field.getText();
-				if ("".equals(path)) //$NON-NLS-1$
-					return;
-				final boolean isTarget = field == targetField;
-
-				final LibraryTreeNode node = getSelectedNode();
-				if (node != null && OSPRuntime.isPopupTrigger(e)) {
-					String base = node.getBasePath();
-					if ("".equals(base)) //$NON-NLS-1$
-						return;
-					JPopupMenu popup = new JPopupMenu();
-					final String relPath = XML.getPathRelativeTo(path, base);
-					final String absPath = XML.getResolvedPath(path, base);
-					if (!path.equals(relPath)) {
-						JMenuItem item = new JMenuItem(ToolsRes.getString("LibraryTreePanel.MenuItem.SetToRelative")); //$NON-NLS-1$
-						popup.add(item);
-						item.addActionListener((ev) -> {
-							if (isTarget)
-								node.setTarget(relPath);
-							else
-								node.setHTMLPath(relPath);
-						});
-					} else if (!path.equals(absPath)) {
-						JMenuItem item = new JMenuItem(ToolsRes.getString("LibraryTreePanel.MenuItem.SetToAbsolute")); //$NON-NLS-1$
-						popup.add(item);
-						item.addActionListener((ev) -> {
-							if (isTarget)
-								node.setTarget(absPath);
-							else
-								node.setHTMLPath(absPath);
-						});
-					}
-					if (popup.getComponentCount() > 0)
-						popup.show(field, e.getX() + 2, e.getY() + 2);
-				}
+				doMouseClick(e);
 			}
 		};
 
@@ -759,17 +736,21 @@ public class LibraryTreePanel extends JPanel {
 		treeSelectionListener = new TreeSelectionListener() {
 			@Override
 			public void valueChanged(TreeSelectionEvent e) {
+				System.out.println("LibraryTreePanel.selection listener " + e);
 				emptyMetadata.clearData();
 				metadataModel.dataChanged();
 				LibraryTreeNode node = getSelectedNode();
 				showInfo(node, "LibraryTreePanel.treeselectionlistener");
 				enableButtons();
+				if (node.record instanceof LibraryCollection && node.getTarget() != null)
+					firePropertyChange(LibraryBrowser.PROPERTY_LIBRARY_TARGET, LibraryBrowser.HINT_LOAD_RESOURCE, node);
 			}
 		};
 		treeMouseListener = new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				// select node and show popup menu
+				System.out.println("LibraryTreePanel.mouseClicked " + e);
 				TreePath path = tree.getPathForLocation(e.getX(), e.getY());
 				if (path == null) {
 					return;
@@ -893,7 +874,7 @@ public class LibraryTreePanel extends JPanel {
 		typeField.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				final LibraryTreeNode node = getSelectedNode();
+				LibraryTreeNode node = getSelectedNode();
 				if (node != null && !(node.record instanceof LibraryCollection)) {
 					JPopupMenu popup = new JPopupMenu();
 					ActionListener typeListener = new ActionListener() {
@@ -1242,6 +1223,46 @@ public class LibraryTreePanel extends JPanel {
 		metadataBox.add(metadataDropdown);
 	}
 
+	protected void doMouseClick(MouseEvent e) {
+		if (!OSPRuntime.isPopupTrigger(e))
+			return;
+		LibraryTreeNode node = getSelectedNode();
+		if (node == null)
+			return;
+		EntryField field = (EntryField) e.getSource();
+		String path = field.getText();
+		if ("".equals(path)) //$NON-NLS-1$
+			return;
+		String base = node.getBasePath();
+		if ("".equals(base)) //$NON-NLS-1$
+			return;
+		JPopupMenu popup = new JPopupMenu();
+		String relPath = XML.getPathRelativeTo(path, base);
+		String absPath = XML.getResolvedPath(path, base);
+		boolean isTarget = (field == targetField);
+		if (!path.equals(relPath)) {
+			JMenuItem item = new JMenuItem(ToolsRes.getString("LibraryTreePanel.MenuItem.SetToRelative")); //$NON-NLS-1$
+			popup.add(item);
+			item.addActionListener((ev) -> {
+				if (isTarget)
+					node.setTarget(relPath);
+				else
+					node.setHTMLPath(relPath);
+			});
+		} else if (!path.equals(absPath)) {
+			JMenuItem item = new JMenuItem(ToolsRes.getString("LibraryTreePanel.MenuItem.SetToAbsolute")); //$NON-NLS-1$
+			popup.add(item);
+			item.addActionListener((ev) -> {
+				if (isTarget)
+					node.setTarget(absPath);
+				else
+					node.setHTMLPath(absPath);
+			});
+		}
+		if (popup.getComponentCount() > 0)
+			popup.show(field, e.getX() + 2, e.getY() + 2);
+	}
+
 	/**
 	 * Refreshes the GUI including locale-dependent resource strings.
 	 */
@@ -1406,7 +1427,7 @@ public class LibraryTreePanel extends JPanel {
 	 * @param node the node
 	 * @return the popup menu
 	 */
-	protected JPopupMenu getPopup(final LibraryTreeNode node) {
+	protected JPopupMenu getPopup(LibraryTreeNode node) {
 		if (popup == null)
 			popup = new JPopupMenu();
 		popup.removeAll();
@@ -1498,9 +1519,10 @@ public class LibraryTreePanel extends JPanel {
 	 * @param index  the index
 	 * @return true if added
 	 */
-	protected boolean insertChildAt(final LibraryTreeNode child, LibraryTreeNode parent, int index) {
+	protected boolean insertChildAt(LibraryTreeNode child, LibraryTreeNode parent, int index) {
 		if (tree == null || parent.getChildCount() < index)
 			return false;
+		System.out.println("LibraryTreePanel.insertChild " + index + " " + child);
 		DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
 		model.insertNodeInto(child, parent, index);
 		return true;
@@ -2055,7 +2077,7 @@ public class LibraryTreePanel extends JPanel {
 		public Void doInBackground() {
 
 			if (!OSPRuntime.isJS) {
-				final ArrayList<NodeLoader> nodeLoaders = new ArrayList<NodeLoader>();
+				ArrayList<NodeLoader> nodeLoaders = new ArrayList<NodeLoader>();
 
 				// make property change listener to daisy-chain loading of the nodes
 				PropertyChangeListener listener = new PropertyChangeListener() {

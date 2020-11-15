@@ -760,12 +760,14 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		 * @return the final VideoPanel (not necessarily obj)
 		 */
 		@Override
-		public Object loadObject(XMLControl control, Object obj) {
-			
+		public Object loadObject(XMLControl control, Object obj) {	
 			this.control = control;
 			videoPanel = (VideoPanel) obj;
 			// load the video clip
-			return getClipAndFinalize(control);
+			if (getClip(control))
+				finalizeLoading();
+			return videoPanel;
+
 		}
 
 		/**
@@ -773,9 +775,9 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		 * and possibly its basePath, then either finalizes the panel or schedules that 
 		 * finalization for when an asynchronous video (SwingJS) is ready.
 		 * @param control
-		 * @return
+		 * @return false if deferring finalization (TrackerPanel AsyncVideo)
 		 */
-		public VideoPanel getClipAndFinalize(XMLControl control) {
+		public boolean getClip(XMLControl control) {
 			clip = (VideoClip) control.getObject("videoclip"); //$NON-NLS-1$
 			XMLControl child = control.getChildControl("videoclip"); //$NON-NLS-1$
 //			String path = child.getString("unsupported_video_path");
@@ -792,11 +794,10 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 				if (video instanceof AsyncVideoI) {
 					videoPanel.loader = this;
 					video.addPropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, videoPanel);
-					return videoPanel;
+					return false;
 				}
-			}			
-			finalizeLoading();
-			return videoPanel;
+			}
+			return true;
 		}
 		
 		public Video finalizeClip() {

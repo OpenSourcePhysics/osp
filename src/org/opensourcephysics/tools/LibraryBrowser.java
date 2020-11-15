@@ -77,6 +77,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
@@ -115,8 +116,8 @@ public class LibraryBrowser extends JPanel {
 	protected static final String LIBRARY_HELP_BASE = "http://www.opensourcephysics.org/online_help/tools/"; //$NON-NLS-1$
 	protected static final String WINDOWS_OSP_DIRECTORY = "/My Documents/OSP/"; //$NON-NLS-1$
 	protected static final String OSP_DIRECTORY = "/Documents/OSP/"; //$NON-NLS-1$
-	public static final Integer HINT_LOAD_RESOURCE = 0;
-	public static final Integer HINT_DOWNLOAD_RESOURCE = 1;
+	public static final String HINT_LOAD_RESOURCE = "LOAD";
+	public static final String HINT_DOWNLOAD_RESOURCE = "DOWNLOAD";
 
 	// static fields
 	private static String ospPath;
@@ -184,7 +185,7 @@ public class LibraryBrowser extends JPanel {
 	protected boolean isResourcePathXML;
 	protected LibraryManager libraryManager;
 	private int myFontLevel;
-	public LibraryResource currentRecord;
+	public LibraryTreeNode currentNode;
 	public static final String PROPERTY_LIBRARY_TARGET = "target";
 	public static final String PROPERTY_LIBRARY_EDITED = "collection_edit";
 
@@ -840,17 +841,21 @@ public class LibraryBrowser extends JPanel {
 			return LibraryComPADRE.getCollection(path);
 		}
 
+		boolean isHTTP = ResourceLoader.isHTTP(path);
+
 		// BH 2020.11.12 presumes file not https here
+		if (!isHTTP)
 		path = ResourceLoader.getNonURIPath(path);
 		// was first:
-		File targetFile = new File(path);
+		File targetFile = null;
+
+			targetFile = new File(path);
 		if (targetFile.isDirectory()) {
 			return createCollectionFromDirectory(targetFile, targetFile, dlFileFilter);
 		}
 		
 		if (!dlFileFilter.accept(targetFile)) {
-			XMLControlElement control = (ResourceLoader.isHTTP(path) ? new XMLControlElement(path)
-					: new XMLControlElement(targetFile));
+			XMLControlElement control = (isHTTP ? new XMLControlElement(path) : new XMLControlElement(targetFile));
 			if (!control.failedToRead() && control.getObjectClass() != null
 					&& LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
 				isResourcePathXML = true;
@@ -1357,7 +1362,8 @@ public class LibraryBrowser extends JPanel {
 		tabbedPane.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				if (OSPRuntime.isPopupTrigger(e)) {
+				if (!OSPRuntime.isPopupTrigger(e))
+					return;
 					// make popup and add items
 					JPopupMenu popup = new JPopupMenu();
 					// close this tab
@@ -1386,13 +1392,13 @@ public class LibraryBrowser extends JPanel {
 					FontSizer.setFonts(popup, FontSizer.getLevel());
 					popup.show(tabbedPane, e.getX(), e.getY() + 8);
 				}
-			}
 		});
 
 		// create property change listener for treePanels
 		treePanelListener = new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
+				System.out.println("LibraryBrower.propertyChange " + e);
 				switch (e.getPropertyName()) {
 				default:
 					return;
@@ -1403,7 +1409,7 @@ public class LibraryBrowser extends JPanel {
 					break;
 				}
 
-				Object oldValue = e.getOldValue();
+				Object hint = e.getOldValue();
 				Object newValue = e.getNewValue();
 
 				LibraryTreeNode node = null;
@@ -1422,7 +1428,7 @@ public class LibraryBrowser extends JPanel {
 				} else if (newValue instanceof LibraryResource) {
 					record = (LibraryResource) newValue;
 				}
-				processTargetSelection(record, oldValue);
+				processTargetSelection(record, hint);
 			}
 
 		};
@@ -1727,7 +1733,7 @@ public class LibraryBrowser extends JPanel {
 		LibraryComPADRE.loadResources(node, onSuccess, onFailure);
 	}
 
-	protected void processTargetSelection(LibraryResource record, Object oldValue) {
+	protected void processTargetSelection(LibraryResource record, Object hint) {
 		if (record == null)
 			return;
 		String target = record.getTarget();
@@ -1742,7 +1748,7 @@ public class LibraryBrowser extends JPanel {
 			return;
 		}
 		// fire the event to TFrame and other listeners
-		firePropertyChange(PROPERTY_LIBRARY_TARGET, oldValue, record); // $NON-NLS-1$
+		firePropertyChange(PROPERTY_LIBRARY_TARGET, hint, record); // $NON-NLS-1$
 	}
 
 	protected void doSearch() {
@@ -1826,7 +1832,7 @@ public class LibraryBrowser extends JPanel {
 
 		// get or create LibraryResource to send to TFrame and other listeners
 		LibraryResource record = null;
-		LibraryTreePanel treePanel = getSelectedTreePanel();
+//		LibraryTreePanel treePanel = getSelectedTreePanel();
 		// if tree node is selected, use its record
 //		if (treePanel != null && treePanel.getSelectedNode() != null) {
 //			record = treePanel.getSelectedNode().record.getClone();
@@ -1838,8 +1844,8 @@ public class LibraryBrowser extends JPanel {
 
 		// see if the command field describes a resource that can be found
 		String path = commandField.getText().trim();
-		if (currentRecord != null && path.equals(currentRecord.getAbsoluteTarget())) {
-			processTargetSelection(currentRecord, HINT_LOAD_RESOURCE);
+		if (currentNode != null && path.equals(currentNode.record.getAbsoluteTarget())) {
+			processTargetSelection(currentNode.record, HINT_LOAD_RESOURCE);
 			return;
 		}
 		if (path.equals("")) //$NON-NLS-1$
@@ -1883,21 +1889,23 @@ public class LibraryBrowser extends JPanel {
 			isCollection = !control.failedToRead() && control.getObjectClass() == LibraryCollection.class;
 		}
 
-		if (isCollection) {
-			loadTab(path, null);
-			refreshGUI();
-			if (treePanel != null && treePanel.pathToRoot.equals(path)) {
-				treePanel.setSelectedNode(treePanel.rootNode);
-				commandField.setBackground(Color.white);
-				commandField.repaint();
-			}
-			return;
-		}
+// BH 2020.11.15 OK?
+//		if (isCollection) {
+//			loadTab(path, null);
+//			refreshGUI();
+//			if (treePanel != null && treePanel.pathToRoot.equals(path)) {
+//				treePanel.setSelectedNode(treePanel.rootNode);
+//				commandField.setBackground(Color.white);
+//				commandField.repaint();
+//			}
+//			return;
+//		}
 
 		record = new LibraryResource(""); //$NON-NLS-1$
 		record.setTarget(path);
 		isCancelled = false;
 		// send LibraryResource via property change event to TFrame and other listeners
+		setVisible(false);
 		firePropertyChange(PROPERTY_LIBRARY_TARGET, HINT_LOAD_RESOURCE, record); // $NON-NLS-1$
 	}
 
@@ -2865,12 +2873,7 @@ public class LibraryBrowser extends JPanel {
 			if (!doCache)
 				ResourceLoader.clearZipCache();
 			
-			boolean isLocalTRZ =  false;
-			if (!ResourceLoader.isHTTP(realPath)) {
-	    	String ext = XML.getExtension(path.toLowerCase());
-	    	isLocalTRZ = ext.equals("trz") //$NON-NLS-1$
-						|| ext.equals("zip"); //$NON-NLS-1$
-			}
+			boolean isLocalTRZ =  (!ResourceLoader.isHTTP(realPath) && ResourceLoader.isJarZipTrz(path.toLowerCase(), false));
 			
 			if (resource != null) {
 				LibraryTreePanel treePanel = null;
@@ -3133,12 +3136,15 @@ public class LibraryBrowser extends JPanel {
 			case "zip": //$NON-NLS-1$
 				// This is a massive test just to find out if we might have an appropriate file
 				// It is used, for example, to see if a control could be NOT an XML file.
+				if (ResourceLoader.isHTTP(file.toString())) {
+					return true;
+				}
 				Map<String, ZipEntry> files = ResourceLoader.getZipContents(file.getAbsolutePath());
 				for (String next : files.keySet()) {
 					if (next.toLowerCase().endsWith(".trk")) //$NON-NLS-1$
 						return true;
 				}
-				return true;
+				return false;
 			case "htm": //$NON-NLS-1$
 			case "html": //$NON-NLS-1$
 			case "trk": //$NON-NLS-1$
