@@ -837,24 +837,27 @@ public class LibraryBrowser extends JPanel {
 			return LibraryComPADRE.getCollection(path);
 		}
 
+		boolean isHTTP = ResourceLoader.isHTTP(path);
+
 		// BH 2020.11.12 presumes file not https here
-		path = ResourceLoader.getNonURIPath(path);
+		if (!isHTTP)
+			path = ResourceLoader.getNonURIPath(path);
 		// was first:
-		File targetFile = new File(path);
-		if (targetFile.isDirectory()) {
-			return createCollectionFromDirectory(targetFile, targetFile, dlFileFilter);
-		}
-		
+		File targetFile = null;
+
+			targetFile = new File(path);
+			if (targetFile.isDirectory()) {
+				return createCollectionFromDirectory(targetFile, targetFile, dlFileFilter);
+			}
 		if (!dlFileFilter.accept(targetFile)) {
-			XMLControlElement control = (ResourceLoader.isHTTP(path) ? new XMLControlElement(path)
-					: new XMLControlElement(targetFile));
+			XMLControlElement control = (isHTTP ? new XMLControlElement(path) : new XMLControlElement(targetFile));
 			if (!control.failedToRead() && control.getObjectClass() != null
 					&& LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
 				isResourcePathXML = true;
 				return (LibraryResource) control.loadObject(null);
 			}
 		}
-		
+
 		return createResource(targetFile, targetFile.getParentFile(), dlFileFilter);
 	}
 
@@ -1864,16 +1867,16 @@ public class LibraryBrowser extends JPanel {
 			isCollection = !control.failedToRead() && control.getObjectClass() == LibraryCollection.class;
 		}
 
-		if (isCollection) {
-			loadTab(path, null);
-			refreshGUI();
-			if (treePanel != null && treePanel.pathToRoot.equals(path)) {
-				treePanel.setSelectedNode(treePanel.rootNode);
-				commandField.setBackground(Color.white);
-				commandField.repaint();
-			}
-			return;
-		}
+//		if (isCollection) {
+//			loadTab(path, null);
+//			refreshGUI();
+//			if (treePanel != null && treePanel.pathToRoot.equals(path)) {
+//				treePanel.setSelectedNode(treePanel.rootNode);
+//				commandField.setBackground(Color.white);
+//				commandField.repaint();
+//			}
+//			return;
+//		}
 
 		record = new LibraryResource(""); //$NON-NLS-1$
 		record.setTarget(path);
@@ -3100,12 +3103,15 @@ public class LibraryBrowser extends JPanel {
 			case "zip": //$NON-NLS-1$
 				// This is a massive test just to find out if we might have an appropriate file
 				// It is used, for example, to see if a control could be NOT an XML file.
+				if (ResourceLoader.isHTTP(file.toString())) {
+					return true;
+				}
 				Map<String, ZipEntry> files = ResourceLoader.getZipContents(file.getAbsolutePath());
 				for (String next : files.keySet()) {
 					if (next.toLowerCase().endsWith(".trk")) //$NON-NLS-1$
 						return true;
 				}
-				return true;
+				return false;
 			case "htm": //$NON-NLS-1$
 			case "html": //$NON-NLS-1$
 			case "trk": //$NON-NLS-1$

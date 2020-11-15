@@ -1954,7 +1954,7 @@ public class ResourceLoader {
 		}
 		Resource res = null;
 		// following added by Doug Brown 2009/11/14
-		if (!OSPRuntime.isJS2 && OSPRuntime.applet != null) {
+		if (!OSPRuntime.isJS && OSPRuntime.applet != null) {
 			try { // let applet class try to get it first
 				URL url = getAppletResourceURL(path);
 				res = createResource(url);
