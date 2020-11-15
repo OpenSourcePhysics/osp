@@ -1356,35 +1356,35 @@ public class LibraryBrowser extends JPanel {
 		tabbedPane.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				if (OSPRuntime.isPopupTrigger(e)) {
-					// make popup and add items
-					JPopupMenu popup = new JPopupMenu();
-					// close this tab
-					JMenuItem item = new JMenuItem(ToolsRes.getString("MenuItem.Close")); //$NON-NLS-1$
+				if (!OSPRuntime.isPopupTrigger(e))
+					return;
+				// make popup and add items
+				JPopupMenu popup = new JPopupMenu();
+				// close this tab
+				JMenuItem item = new JMenuItem(ToolsRes.getString("MenuItem.Close")); //$NON-NLS-1$
+				item.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						int i = tabbedPane.getSelectedIndex();
+						closeTab(i);
+					}
+				});
+				popup.add(item);
+				// add tab to Collections menu
+				final LibraryTreePanel treePanel = getSelectedTreePanel();
+				if (!"".equals(treePanel.pathToRoot) && !library.containsPath(treePanel.pathToRoot, false)) { //$NON-NLS-1$
+					item = new JMenuItem(ToolsRes.getString("LibraryBrowser.MenuItem.AddToLibrary")); //$NON-NLS-1$
 					item.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							int i = tabbedPane.getSelectedIndex();
-							closeTab(i);
+							addToCollections(treePanel.pathToRoot);
 						}
 					});
+					popup.addSeparator();
 					popup.add(item);
-					// add tab to Collections menu
-					final LibraryTreePanel treePanel = getSelectedTreePanel();
-					if (!"".equals(treePanel.pathToRoot) && !library.containsPath(treePanel.pathToRoot, false)) { //$NON-NLS-1$
-						item = new JMenuItem(ToolsRes.getString("LibraryBrowser.MenuItem.AddToLibrary")); //$NON-NLS-1$
-						item.addActionListener(new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								addToCollections(treePanel.pathToRoot);
-							}
-						});
-						popup.addSeparator();
-						popup.add(item);
-					}
-					FontSizer.setFonts(popup, FontSizer.getLevel());
-					popup.show(tabbedPane, e.getX(), e.getY() + 8);
 				}
+				FontSizer.setFonts(popup, FontSizer.getLevel());
+				popup.show(tabbedPane, e.getX(), e.getY() + 8);
 			}
 		});
 
@@ -1392,6 +1392,7 @@ public class LibraryBrowser extends JPanel {
 		treePanelListener = new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
+				System.out.println("LibraryBrower.propertyChange " + e);
 				switch (e.getPropertyName()) {
 				default:
 					return;

@@ -398,7 +398,7 @@ public class LibraryTreePanel extends JPanel {
 			showEditorData(node, isCollection);
 		}
 		tree.expandPath(node.getTreePath());
-		repaint();
+//		repaint();
 	}
 
 	private void initGUI() {
@@ -736,16 +736,21 @@ public class LibraryTreePanel extends JPanel {
 		treeSelectionListener = new TreeSelectionListener() {
 			@Override
 			public void valueChanged(TreeSelectionEvent e) {
+				System.out.println("LibraryTreePanel.selection listener " + e);
 				emptyMetadata.clearData();
 				metadataModel.dataChanged();
-				showInfo(getSelectedNode(), "LibraryTreePanel.treeselectionlistener");
+				LibraryTreeNode node = getSelectedNode();
+				showInfo(node, "LibraryTreePanel.treeselectionlistener");
 				enableButtons();
+				if (node.record instanceof LibraryCollection && node.getTarget() != null)
+					firePropertyChange(LibraryBrowser.PROPERTY_LIBRARY_TARGET, LibraryBrowser.HINT_LOAD_RESOURCE, node);
 			}
 		};
 		treeMouseListener = new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				// select node and show popup menu
+				System.out.println("LibraryTreePanel.mouseClicked " + e);
 				TreePath path = tree.getPathForLocation(e.getX(), e.getY());
 				if (path == null) {
 					return;
@@ -1517,6 +1522,7 @@ public class LibraryTreePanel extends JPanel {
 	protected boolean insertChildAt(LibraryTreeNode child, LibraryTreeNode parent, int index) {
 		if (tree == null || parent.getChildCount() < index)
 			return false;
+		System.out.println("LibraryTreePanel.insertChild " + index + " " + child);
 		DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
 		model.insertNodeInto(child, parent, index);
 		return true;
