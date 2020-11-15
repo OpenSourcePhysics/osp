@@ -77,8 +77,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.tree.TreePath;
-
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
@@ -166,15 +164,16 @@ public class LibraryBrowser extends JPanel {
 	protected Library library = new Library();
 	protected String libraryPath;
 	protected JToolBar toolbar;
+	protected JButton messageButton;
 	protected Action commandAction, searchAction, openRecentAction, downloadAction;
 	protected JLabel commandLabel, searchLabel;
-	protected JTextField commandField, searchField, messageTextField;
+	protected JTextField commandField, searchField;
 	protected JMenu fileMenu, recentMenu, collectionsMenu, manageMenu, helpMenu;
 	protected JMenuItem newItem, openItem, saveItem, saveAsItem, closeItem, closeAllItem, exitItem, deleteItem,
 			collectionsItem, searchItem, cacheItem, aboutItem, logItem, helpItem;
 	protected JButton commandButton, editButton, refreshButton, downloadButton;
 	protected ActionListener loadCollectionAction;
-	protected boolean exitOnClose;
+	protected boolean exitOnClose, isCancelled;
 	protected JTabbedPane tabbedPane;
 	protected JScrollPane htmlScroller;
 	protected PropertyChangeListener treePanelListener;
@@ -555,6 +554,10 @@ public class LibraryBrowser extends JPanel {
 			setVisible(false);
 		}
 		return true;
+	}
+	
+	public boolean isCancelled() {
+		return isCancelled;
 	}
 
 //____________________ private and protected methods ____________________________
@@ -1074,8 +1077,8 @@ public class LibraryBrowser extends JPanel {
 	 */
 	protected void createGUI() {
 		double factor = 1 + FontSizer.getLevel() * 0.25;
-		int w = (int) (factor * 800);
-		int h = (int) (factor * 440);
+		int w = (int) (factor * 1000);
+		int h = (int) (factor * 600);
 		setPreferredSize(new Dimension(w, h));
 
 		loadCollectionAction = new ActionListener() {
@@ -1338,7 +1341,7 @@ public class LibraryBrowser extends JPanel {
 					if (node != null) {
 						String path = node.isRoot() ? treePanel.pathToRoot : node.getAbsoluteTarget();
 						commandField.setText(path);
-						browser.setMessage(node.getToolTip(), null);
+						setMessage(node.getToolTip(), null);
 						treePanel.showInfo(node, "tabbedPaneChange");
 					} else {
 						commandField.setText(treePanel.command);
@@ -1656,10 +1659,26 @@ public class LibraryBrowser extends JPanel {
 			});
 		}
 		
-		messageTextField = new JTextField();
-		messageTextField.setEditable(false);
-		messageTextField.setBorder(BorderFactory.createEmptyBorder(1, 6, 1, 6));
-		add(messageTextField, BorderLayout.SOUTH);
+		messageButton = new JButton();
+		messageButton.addActionListener((e) -> {
+			if (messageButton.getBackground() == Color.YELLOW) {
+				isCancelled = true;
+				setMessage("Loading cancelled", Color.WHITE);
+				Timer timer = new Timer(2000, (ev) -> {
+					setComandButtonEnabled(true);
+					LibraryTreePanel treePanel = getSelectedTreePanel();
+					LibraryTreeNode node = treePanel.getSelectedNode();
+					if (node != null) {
+						setMessage(node.getToolTip(), null);
+					}
+				});
+				timer.setRepeats(false);
+				timer.start();
+			}
+		});
+		messageButton.setHorizontalAlignment(SwingConstants.LEFT);
+		messageButton.setBorder(BorderFactory.createEmptyBorder(1, 6, 1, 6));
+		add(messageButton, BorderLayout.SOUTH);
 		
 		setMessage(null, null);
 	}
@@ -1672,9 +1691,9 @@ public class LibraryBrowser extends JPanel {
 	 */
 	public void setMessage(String message, Color color) {
 		boolean isEmpty = message == null || "".equals(message.trim());
-		messageTextField.setText(isEmpty? " ": message);
-		messageTextField.setBackground(color != null? color: Color.WHITE);
-		messageTextField.setCaretPosition(0);
+		messageButton.setText(isEmpty? " ": message);
+		messageButton.setBackground(color != null? color: Color.WHITE);
+		messageButton.setFont(color != null? commandButton.getFont(): commandField.getFont());
 	}
 
 	protected void processTargetCollection(LibraryTreeNode node) {
@@ -1877,8 +1896,18 @@ public class LibraryBrowser extends JPanel {
 
 		record = new LibraryResource(""); //$NON-NLS-1$
 		record.setTarget(path);
+		isCancelled = false;
 		// send LibraryResource via property change event to TFrame and other listeners
 		firePropertyChange(PROPERTY_LIBRARY_TARGET, HINT_LOAD_RESOURCE, record); // $NON-NLS-1$
+	}
+
+	/**
+	 * Enables/disables the command button.
+	 * @param enabled true if enabled
+	 */
+	public void setComandButtonEnabled(boolean enabled) {
+		String text = commandField.getText();
+		commandButton.setEnabled(enabled && !"".equals(text)); //$NON-NLS-1$
 	}
 
 	/**
@@ -1888,6 +1917,10 @@ public class LibraryBrowser extends JPanel {
 		refreshGUI(false);
 	}
 
+	/**
+	 * Refreshes the GUI, including locale-dependent resources strings.
+	 * @param andRebuild true to refresh strings and rebuild file menu
+	 */
 	protected void refreshGUI(boolean andRebuild) {
 		if (tabbedPane.getTabCount() == 0) {
 			// BH unnecessary refresh causes flashing in JavaScript

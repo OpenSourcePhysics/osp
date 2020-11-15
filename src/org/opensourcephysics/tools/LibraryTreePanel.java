@@ -84,7 +84,6 @@ import javax.swing.text.html.HTMLDocument;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -854,7 +853,7 @@ public class LibraryTreePanel extends JPanel {
 		// create split pane
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treeScroller, displayPanel);
 		add(splitPane, BorderLayout.CENTER);
-		treeScroller.setPreferredSize(new Dimension(240, 400));
+		treeScroller.setPreferredSize(new Dimension(320, 500));
 
 		// create editorPanel and components
 		editorPanel = Box.createVerticalBox();
