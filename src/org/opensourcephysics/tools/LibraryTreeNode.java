@@ -760,37 +760,11 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 
 		public void runMe() {
 			// create a new thumbnail
-			String ext = XML.getExtension(sourcePath);
-			if (ext != null && "GIF".equals(ext.toUpperCase())) { //$NON-NLS-1$
-				// GIF files
-				int status = GifDecoder.STATUS_OK;
-				try {
-					if (OSPRuntime.checkImages) {
-						GifDecoder decoder = new GifDecoder();
-						status = decoder.read(sourcePath);
-					}
-				} catch (Exception e) {
-				}
-				if (status != GifDecoder.STATUS_OK) { // error
-					OSPLog.fine("failed to create thumbnail for GIF " + thumbPath); //$NON-NLS-1$
-					doneAsync(null);
-					return;
-				}
-			} else if (ext != null && ("PNG".equals(ext.toUpperCase()) || ext.toUpperCase().contains("JP"))) { //$NON-NLS-1$ //$NON-NLS-2$
-				// PNG and JPEG files
-				try {
-					int i = 0;
-					if (OSPRuntime.checkImages) {
-						URL url = new URL(ResourceLoader.getURIPath(sourcePath));
-						ImageIO.read(url);
-					}
-				} catch (Exception e) {
-					OSPLog.fine("failed to create thumbnail for " + thumbPath); //$NON-NLS-1$
-					doneAsync(null);
-					return;
-				}
-			} else if (ext != null && ("ZIP".equals(ext.toUpperCase()) || "TRZ".equals(ext.toUpperCase()))) { //$NON-NLS-1$ //$NON-NLS-2$
-				// TRZ and ZIP files
+			String extx = XML.getExtension(sourcePath);
+			extx = (extx == null ? "" : extx.toLowerCase());
+			switch (extx) {
+			case "zip":
+			case "trz":
 				// look for image file in zip with name that includes "_thumbnail"
 				File thumbFile = new File(thumbPath);
 				if (OSPRuntime.isJS) {
@@ -810,17 +784,45 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 							});
 				}
 				return;
-			} else {
+			default:
 				// This better be a movie! - not implemented yet for JS?
 				doneAsync(MovieFactory.createThumbnailFile(defaultThumbnailDimension, sourcePath, thumbPath));
 				return;
+			case "gif":
+				int status = GifDecoder.STATUS_OK;
+				try {
+					if (OSPRuntime.checkImages) {
+						GifDecoder decoder = new GifDecoder();
+						status = decoder.read(sourcePath);
+					}
+				} catch (Exception e) {
+				}
+				if (status != GifDecoder.STATUS_OK) { // error
+					OSPLog.fine("failed to create thumbnail for GIF " + thumbPath); //$NON-NLS-1$
+					doneAsync(null);
+					return;
+				}
+				break;
+			case "png":
+			case "jpeg":
+			case "jpg":
+				try {
+					if (OSPRuntime.checkImages) {
+						URL url = new URL(ResourceLoader.getURIPath(sourcePath));
+						ImageIO.read(url);
+					}
+				} catch (Exception e) {
+					OSPLog.fine("failed to create thumbnail for " + thumbPath); //$NON-NLS-1$
+					doneAsync(null);
+					return;
+				}
+				break;
 			}
-			// Gif and JPG only
+			// images only
 			ResourceLoader.copyURLtoFileAsync(sourcePath, thumbPath, (File t) -> {
-				OSPLog.debug("LibraryTreeNode.saveThumbnail\n " + sourcePath 
-						+ "\n " + thumbPath + "\n " + t);
-					doneAsync(t);
-					return null;
+				OSPLog.debug("LibraryTreeNode.saveThumbnail\n " + sourcePath + "\n " + thumbPath + "\n " + t);
+				doneAsync(t);
+				return null;
 			});
 		}
 

@@ -77,7 +77,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.tree.TreePath;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
@@ -1810,8 +1809,8 @@ public class LibraryBrowser extends JPanel {
 
 		// get or create LibraryResource to send to TFrame and other listeners
 		LibraryResource record = null;
-		LibraryTreePanel treePanel = getSelectedTreePanel();
-		// if tree node is selected, use its record
+//		LibraryTreePanel treePanel = getSelectedTreePanel();
+// if tree node is selected, use its record
 //		if (treePanel != null && treePanel.getSelectedNode() != null) {
 //			record = treePanel.getSelectedNode().record.getClone();
 //			record.setBasePath(treePanel.getSelectedNode().getBasePath());
@@ -1867,6 +1866,7 @@ public class LibraryBrowser extends JPanel {
 			isCollection = !control.failedToRead() && control.getObjectClass() == LibraryCollection.class;
 		}
 
+// BH 2020.11.15 OK?
 //		if (isCollection) {
 //			loadTab(path, null);
 //			refreshGUI();
@@ -1881,6 +1881,7 @@ public class LibraryBrowser extends JPanel {
 		record = new LibraryResource(""); //$NON-NLS-1$
 		record.setTarget(path);
 		// send LibraryResource via property change event to TFrame and other listeners
+		setVisible(false);
 		firePropertyChange(PROPERTY_LIBRARY_TARGET, HINT_LOAD_RESOURCE, record); // $NON-NLS-1$
 	}
 
@@ -2835,12 +2836,7 @@ public class LibraryBrowser extends JPanel {
 			if (!doCache)
 				ResourceLoader.clearZipCache();
 			
-			boolean isLocalTRZ =  false;
-			if (!ResourceLoader.isHTTP(realPath)) {
-	    	String ext = XML.getExtension(path.toLowerCase());
-	    	isLocalTRZ = ext.equals("trz") //$NON-NLS-1$
-						|| ext.equals("zip"); //$NON-NLS-1$
-			}
+			boolean isLocalTRZ =  (!ResourceLoader.isHTTP(realPath) && ResourceLoader.isJarZipTrz(path.toLowerCase(), false));
 			
 			if (resource != null) {
 				LibraryTreePanel treePanel = null;
