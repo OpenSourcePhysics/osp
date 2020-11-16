@@ -1878,16 +1878,13 @@ public class LibraryBrowser extends JPanel {
 			return;
 		}
 
-//		boolean isCollection = (res.getFile() != null && res.getFile().isDirectory()
-//				|| res.getURL() != null && ResourceLoader.isJarZipTrz(res.getURL().toString(), false));
 		boolean isCollection = res.getFile() != null && res.getFile().isDirectory();
 		if (!isCollection && !ResourceLoader.isJarZipTrz(path, false)) {
-			XMLControl control = new XMLControlElement(path);
-			isCollection = !control.failedToRead() && control.getObjectClass() == LibraryCollection.class;
+			String s = res.getString();
+			isCollection = s != null && s.length() > 120 &&
+					s.substring(0, 120).contains("<object class=\"org.opensourcephysics.tools.LibraryCollection\">");
 		}
 
-		// BH 2020.11.15 OK?
-		// DB 2020.11.16 we need this to load collections from paths entered into the command field
 		if (isCollection) {
 			loadTab(path, null);
 			refreshGUI();
