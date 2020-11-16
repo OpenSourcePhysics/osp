@@ -742,7 +742,7 @@ public class LibraryTreePanel extends JPanel {
 				LibraryTreeNode node = getSelectedNode();
 				showInfo(node, "LibraryTreePanel.treeselectionlistener");
 				enableButtons();
-				if (node.record instanceof LibraryCollection && node.getTarget() != null)
+				if (node.record != null && node.record instanceof LibraryCollection && node.getTarget() != null)
 					firePropertyChange(LibraryBrowser.PROPERTY_LIBRARY_TARGET, LibraryBrowser.HINT_LOAD_RESOURCE, node);
 			}
 		};
@@ -1411,7 +1411,8 @@ public class LibraryTreePanel extends JPanel {
 			if (dataString != null) {
 				XMLControlElement control = new XMLControlElement();
 				control.readXML(dataString);
-				if (LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
+				Class<?> type = control.getObjectClass();
+				if (type != null && LibraryResource.class.isAssignableFrom(type)) {
 					pasteControl = control;
 					clipboardAvailable = Boolean.TRUE;
 					r.run();
