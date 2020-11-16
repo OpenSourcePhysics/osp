@@ -1881,7 +1881,7 @@ public class LibraryBrowser extends JPanel {
 //		boolean isCollection = (res.getFile() != null && res.getFile().isDirectory()
 //				|| res.getURL() != null && ResourceLoader.isJarZipTrz(res.getURL().toString(), false));
 		boolean isCollection = res.getFile() != null && res.getFile().isDirectory();
-		if (!isCollection) {
+		if (!isCollection && !ResourceLoader.isJarZipTrz(path, false)) {
 			XMLControl control = new XMLControlElement(path);
 			isCollection = !control.failedToRead() && control.getObjectClass() == LibraryCollection.class;
 		}
