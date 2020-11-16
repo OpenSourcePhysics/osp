@@ -214,7 +214,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	 *
 	 * @return the absolute target, or empty String if none
 	 */
-	String getAbsoluteTarget() {
+	public String getAbsoluteTarget() {
 		return ("".equals(target) ? "" : XML.getResolvedPath(target, getInheritedBasePath())); //$NON-NLS-1$
 	}
 

@@ -382,7 +382,7 @@ public class LibraryTreePanel extends JPanel {
 			initGUI();
 			return;
 		}
-		OSPLog.debug("LibraryTreePanel.showInfo " + why + " " + node);
+		OSPLog.debug("LibraryTreePanel.showInfo " + why + " " + node + " " + Thread.currentThread());
 		// show node data
 		boolean isCollection = node.record instanceof LibraryCollection;
 		boolean isRoot = node.isRoot();
@@ -429,7 +429,6 @@ public class LibraryTreePanel extends JPanel {
 
 	private void setCommandField(LibraryTreeNode node, String path, boolean isCollection) {
 		browser.commandField.setText(path);
-		browser.currentNode = node;
 		// check to see if resource is available
 		boolean available = false;
 		if (path != null) {
@@ -740,6 +739,8 @@ public class LibraryTreePanel extends JPanel {
 				emptyMetadata.clearData();
 				metadataModel.dataChanged();
 				LibraryTreeNode node = getSelectedNode();
+				if (node == null)
+					return;
 				showInfo(node, "LibraryTreePanel.treeselectionlistener");
 				enableButtons();
 				if (node.record != null && node.record instanceof LibraryCollection && node.getTarget() != null)
