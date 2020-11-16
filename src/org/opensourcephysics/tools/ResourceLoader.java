@@ -610,6 +610,17 @@ public class ResourceLoader {
 	}
 	
 	/**
+	 * Gets the short name of the XMLControl class defined by a path. May return null.
+	 * 
+	 * @param path the path
+	 * @return the name of the XMLControl class
+	 */
+	public static String getXMLClassName(String path) {
+		Resource res = getResource(path);
+		return (res == null) ? null : res.getXMLClassName();
+	}
+	
+	/**
 	 * Gets an icon. May return null.
 	 * 
 	 * @param path the path

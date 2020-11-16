@@ -1839,7 +1839,8 @@ public class LibraryBrowser extends JPanel {
 
 		// see if the command field describes a resource that can be found
 		String path = commandField.getText().trim();
-		LibraryTreeNode node = getSelectedTreePanel().getSelectedNode();
+		LibraryTreePanel treePanel = getSelectedTreePanel();
+		LibraryTreeNode node = treePanel == null? null: treePanel.getSelectedNode();
 		if (node != null && path.equals(node.record.getAbsoluteTarget())) {
 			processTargetSelection(node.record, HINT_LOAD_RESOURCE);
 			return;
@@ -1878,17 +1879,13 @@ public class LibraryBrowser extends JPanel {
 			return;
 		}
 
-		boolean isCollection = res.getFile() != null && res.getFile().isDirectory();
-		if (!isCollection) {
-			String s = res.getString();
-			isCollection = s != null && s.length() > 120 &&
-					s.substring(0, 120).contains("<object class=\"org.opensourcephysics.tools.LibraryCollection\">");
-		}
+		boolean isCollection = (res.getFile() != null && res.getFile().isDirectory())
+				|| "LibraryCollection".equals(res.getXMLClassName());
 
 		if (isCollection) {
 			loadTab(path, null);
 			refreshGUI();
-			LibraryTreePanel treePanel = getSelectedTreePanel();
+			treePanel = getSelectedTreePanel();
 			if (treePanel != null && treePanel.pathToRoot.equals(path)) {
 				treePanel.setSelectedNode(treePanel.rootNode);
 				commandField.setBackground(Color.white);
