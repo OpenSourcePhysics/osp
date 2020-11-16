@@ -254,7 +254,7 @@ public class LibraryTreePanel extends JPanel {
 	 * 
 	 * @return the selected node, or null if none
 	 */
-	protected LibraryTreeNode getSelectedNode() {
+	public LibraryTreeNode getSelectedNode() {
 		return (tree == null ? null : (LibraryTreeNode) tree.getLastSelectedPathComponent());
 	}
 

@@ -298,6 +298,10 @@ public class LibraryBrowser extends JPanel {
 
 		return browser;
 	}
+	
+	public void setAlwaysOnTop(boolean alwaysOnTop) {
+		frame.setAlwaysOnTop(alwaysOnTop);
+	}
 
 	/**
 	 * Sets the font level.
@@ -1882,30 +1886,34 @@ public class LibraryBrowser extends JPanel {
 			return;
 		}
 
-		boolean isCollection = (res.getFile() != null && res.getFile().isDirectory()
-				|| res.getURL() != null && ResourceLoader.isJarZipTrz(res.getURL().toString(), false));
+//		boolean isCollection = (res.getFile() != null && res.getFile().isDirectory()
+//				|| res.getURL() != null && ResourceLoader.isJarZipTrz(res.getURL().toString(), false));
+		boolean isCollection = res.getFile() != null && res.getFile().isDirectory();
 		if (!isCollection) {
 			XMLControl control = new XMLControlElement(path);
 			isCollection = !control.failedToRead() && control.getObjectClass() == LibraryCollection.class;
 		}
 
-// BH 2020.11.15 OK?
-//		if (isCollection) {
-//			loadTab(path, null);
-//			refreshGUI();
-//			if (treePanel != null && treePanel.pathToRoot.equals(path)) {
-//				treePanel.setSelectedNode(treePanel.rootNode);
-//				commandField.setBackground(Color.white);
-//				commandField.repaint();
-//			}
-//			return;
-//		}
+		// BH 2020.11.15 OK?
+		// DB 2020.11.16 we need this to load collections from paths entered into the command field
+		if (isCollection) {
+			loadTab(path, null);
+			refreshGUI();
+			LibraryTreePanel treePanel = getSelectedTreePanel();
+			if (treePanel != null && treePanel.pathToRoot.equals(path)) {
+				treePanel.setSelectedNode(treePanel.rootNode);
+				commandField.setBackground(Color.white);
+				commandField.repaint();
+			}
+			return;
+		}
 
 		record = new LibraryResource(""); //$NON-NLS-1$
 		record.setTarget(path);
 		isCancelled = false;
 		// send LibraryResource via property change event to TFrame and other listeners
-		setVisible(false);
+		// DB 2020.11.15 don't hide LibraryBrowser since it has cancel button
+//		setVisible(false);
 		firePropertyChange(PROPERTY_LIBRARY_TARGET, HINT_LOAD_RESOURCE, record); // $NON-NLS-1$
 	}
 
