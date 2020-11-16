@@ -185,7 +185,6 @@ public class LibraryBrowser extends JPanel {
 	protected boolean isResourcePathXML;
 	protected LibraryManager libraryManager;
 	private int myFontLevel;
-	public LibraryTreeNode currentNode;
 	public static final String PROPERTY_LIBRARY_TARGET = "target";
 	public static final String PROPERTY_LIBRARY_EDITED = "collection_edit";
 
@@ -564,6 +563,24 @@ public class LibraryBrowser extends JPanel {
 	public boolean isCancelled() {
 		return isCancelled;
 	}
+	
+	public void setCanceled(boolean b) {
+		isCancelled = b;
+		if (isCancelled) {
+			setMessage("Loading cancelled", Color.WHITE);
+			Timer timer = new Timer(2000, (ev) -> {
+				setCanceled(false);
+			});
+			timer.setRepeats(false);
+			timer.start();
+		} else {
+			setComandButtonEnabled(true);
+			isCancelled = false;
+			LibraryTreePanel treePanel = getSelectedTreePanel();
+			LibraryTreeNode node = treePanel.getSelectedNode();
+			setMessage(node == null ? "" : node.getToolTip(), null);
+		}
+	}
 
 //____________________ private and protected methods ____________________________
 
@@ -705,6 +722,8 @@ public class LibraryBrowser extends JPanel {
 	 * @param treePath tree path to select in root-first order (may be null)
 	 */
 	protected void loadTab(String path, List<String> treePath) {
+		if (path == null)
+			return;
 		path = XML.forwardSlash(path);
 		library.addRecent(path, false);
 		refreshRecentMenu();
@@ -720,11 +739,8 @@ public class LibraryBrowser extends JPanel {
 		loadTabAndListen(path, treePath, "LoadTab");
 	}
 
-	protected TabLoader loadTabAndListen(String path, List<String> treePath, String mode) {
-		TabLoader tabAdder = addTab(path, treePath);
-		if (tabAdder == null)
-			return null;
-		tabAdder.addPropertyChangeListener(new PropertyChangeListener() {
+	protected boolean loadTabAndListen(String path, List<String> treePath, String mode) {
+		return addTabAndExecute(path, treePath, new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				if ("progress".equals(e.getPropertyName())) { //$NON-NLS-1$
@@ -748,8 +764,6 @@ public class LibraryBrowser extends JPanel {
 				}
 			}
 		});
-		tabAdder.execute();
-		return tabAdder;
 	}
 	
   /**
@@ -1011,21 +1025,22 @@ public class LibraryBrowser extends JPanel {
 	 * 
 	 * @param path     the path to the resource
 	 * @param treePath tree path to select in root-first order (may be null)
+	 * @param listener 
 	 * @return the TabLoader that adds the tab
 	 */
-	protected TabLoader addTab(String path, List<String> treePath) {
+	protected boolean addTabAndExecute(String path, List<String> treePath, PropertyChangeListener listener) {
 		if (path == null)
-			return null;
+			return false;
 		File cachedFile = ResourceLoader.getSearchCacheFile(path);
 		boolean isCachePath = cachedFile.exists();
 		if (!isCachePath && !isWebConnected() && ResourceLoader.isHTTP(path)) {
 			JOptionPane.showMessageDialog(this, ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
 					ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
 					JOptionPane.WARNING_MESSAGE);
-			return null;
+			return false;
 		}
-		TabLoader tabAdder = new TabLoader(path, -1, treePath);
-		return tabAdder;
+		loadTabAsync(path, -1, treePath, listener);
+		return true;
 	}
 
 	/**
@@ -1047,29 +1062,10 @@ public class LibraryBrowser extends JPanel {
 			boolean primary = path.contains("OSPPrimary"); //$NON-NLS-1$
 			Icon icon = primary ? expandIcon : contractIcon;
 			Icon heavyIcon = primary ? heavyExpandIcon : heavyContractIcon;
-			final TabTitle tabTitle = new TabTitle(icon, heavyIcon);
+			TabTitle tabTitle = new TabTitle(icon, heavyIcon);
 			FontSizer.setFont(tabTitle);
 			tabTitle.iconLabel.setToolTipText(primary ? ToolsRes.getString("LibraryBrowser.Tooltip.Expand") : //$NON-NLS-1$
 					ToolsRes.getString("LibraryBrowser.Tooltip.Contract")); //$NON-NLS-1$
-			Action action = new AbstractAction() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					boolean primaryOnly = tabTitle.normalIcon == contractIcon;
-					int index = getTabIndexFromTitle(tabTitle.titleLabel.getText());
-					if (index > -1) {
-						LibraryTreePanel treePanel = getTreePanel(index);
-						String path = LibraryComPADRE.getCollectionPath(treePanel.pathToRoot, primaryOnly);
-						new TabLoader(path, index, null).execute();
-
-						tabTitle.setIcons(primaryOnly ? expandIcon : contractIcon,
-								primaryOnly ? heavyExpandIcon : heavyContractIcon);
-						tabTitle.iconLabel
-								.setToolTipText(primaryOnly ? ToolsRes.getString("LibraryBrowser.Tooltip.Expand") : //$NON-NLS-1$
-						ToolsRes.getString("LibraryBrowser.Tooltip.Contract")); //$NON-NLS-1$
-					}
-				}
-			};
-			tabTitle.setAction(action);
 			tabbedPane.setTabComponentAt(n, tabTitle);
 		}
 		boolean changed = getTreePanel(n).isChanged();
@@ -1079,6 +1075,13 @@ public class LibraryBrowser extends JPanel {
 			String tabname = " '" + title + "'"; //$NON-NLS-1$ //$NON-NLS-2$
 			closeItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.CloseTab") + tabname); //$NON-NLS-1$
 		}
+	}
+
+	protected void loadTabAsync(String path, int index, List<String> treePath, PropertyChangeListener listener) {
+		TabLoader loader = new TabLoader(path, index, treePath);
+		if (listener != null)
+			loader.addPropertyChangeListener(listener);
+		loader.execute();
 	}
 
 	/**
@@ -1333,10 +1336,9 @@ public class LibraryBrowser extends JPanel {
 			@Override
 			public void setTitleAt(int i, String title) {
 				super.setTitleAt(i, title);
-				Component c = tabbedPane.getTabComponentAt(i);
-				if (c != null) {
-					TabTitle tabTitle = (TabTitle) c;
-					tabTitle.setTitle(title);
+				TabTitle tab = (TabTitle) tabbedPane.getTabComponentAt(i);
+				if (tab != null) {
+					tab.setTitle(title);
 				}
 			}
 		};
@@ -1672,18 +1674,7 @@ public class LibraryBrowser extends JPanel {
 		messageButton = new JButton();
 		messageButton.addActionListener((e) -> {
 			if (messageButton.getBackground() == Color.YELLOW) {
-				isCancelled = true;
-				setMessage("Loading cancelled", Color.WHITE);
-				Timer timer = new Timer(2000, (ev) -> {
-					setComandButtonEnabled(true);
-					LibraryTreePanel treePanel = getSelectedTreePanel();
-					LibraryTreeNode node = treePanel.getSelectedNode();
-					if (node != null) {
-						setMessage(node.getToolTip(), null);
-					}
-				});
-				timer.setRepeats(false);
-				timer.start();
+				setCanceled(true);
 			}
 		});
 		messageButton.setHorizontalAlignment(SwingConstants.LEFT);
@@ -1700,7 +1691,7 @@ public class LibraryBrowser extends JPanel {
 	 * @param color the background color
 	 */
 	public void setMessage(String message, Color color) {
-		boolean isEmpty = message == null || "".equals(message.trim());
+		boolean isEmpty = (message == null || "".equals(message.trim()));
 		messageButton.setText(isEmpty? " ": message);
 		messageButton.setBackground(color != null? color: Color.WHITE);
 		messageButton.setFont(color != null? commandButton.getFont(): commandField.getFont());
@@ -1829,10 +1820,10 @@ public class LibraryBrowser extends JPanel {
 	}
 
 	protected void doCommand() {
-		commandField.setBackground(Color.white);
-		commandField.setForeground(LibraryTreePanel.defaultForeground);
 		if (!commandButton.isEnabled())
 			return;
+		commandField.setBackground(Color.white);
+		commandField.setForeground(LibraryTreePanel.defaultForeground);
 
 		// get or create LibraryResource to send to TFrame and other listeners
 		LibraryResource record = null;
@@ -1848,8 +1839,9 @@ public class LibraryBrowser extends JPanel {
 
 		// see if the command field describes a resource that can be found
 		String path = commandField.getText().trim();
-		if (currentNode != null && path.equals(currentNode.record.getAbsoluteTarget())) {
-			processTargetSelection(currentNode.record, HINT_LOAD_RESOURCE);
+		LibraryTreeNode node = getSelectedTreePanel().getSelectedNode();
+		if (node != null && path.equals(node.record.getAbsoluteTarget())) {
+			processTargetSelection(node.record, HINT_LOAD_RESOURCE);
 			return;
 		}
 		if (path.equals("")) //$NON-NLS-1$
@@ -2049,7 +2041,7 @@ public class LibraryBrowser extends JPanel {
 							tabbedPane.setSelectedIndex(i);
 							return;
 						}
-						if (loadTabAndListen(path, null, "OpenRecent") == null) {
+						if (!loadTabAndListen(path, null, "OpenRecent")) {
 							library.recentTabs.remove(path);
 							refreshRecentMenu();
 							JOptionPane.showMessageDialog(LibraryBrowser.this,
@@ -2117,8 +2109,7 @@ public class LibraryBrowser extends JPanel {
 	 * @param path the path to the file
 	 */
 	public void open(String path) {
-		if (path == null)
-			return;
+		
 		loadTab(path, null);
 	}
 
@@ -2707,9 +2698,8 @@ public class LibraryBrowser extends JPanel {
 	 * A class to display and handle actions for a ComPADRE tab title.
 	 */
 	class TabTitle extends JPanel {
-		JLabel titleLabel, iconLabel;
-		Icon normalIcon, boldIcon;
-		Action action;
+		private JLabel titleLabel, iconLabel;
+		private Icon normalIcon, boldIcon;
 
 		TabTitle(Icon lightIcon, Icon heavyIcon) {
 			super(new BorderLayout());
@@ -2721,9 +2711,20 @@ public class LibraryBrowser extends JPanel {
 				@Override
 				public void mouseClicked(MouseEvent e) {
 					int i = getTabIndexFromTitle(titleLabel.getText());
-					if (i > -1 && tabbedPane.getSelectedIndex() != i)
+					if (i >= 0 && tabbedPane.getSelectedIndex() != i)
 						tabbedPane.setSelectedIndex(i);
-					action.actionPerformed(null);
+					boolean primaryOnly = (normalIcon == contractIcon);
+					int index = getTabIndexFromTitle(titleLabel.getText());
+					if (index >= 0) {
+						LibraryTreePanel treePanel = getTreePanel(index);
+						String path = LibraryComPADRE.getCollectionPath(treePanel.pathToRoot, primaryOnly);
+						loadTabAsync(path, index, null, null);
+
+						setIcons(primaryOnly ? expandIcon : contractIcon,
+								primaryOnly ? heavyExpandIcon : heavyContractIcon);
+						iconLabel.setToolTipText(primaryOnly ? ToolsRes.getString("LibraryBrowser.Tooltip.Expand") : //$NON-NLS-1$
+						ToolsRes.getString("LibraryBrowser.Tooltip.Contract")); //$NON-NLS-1$
+					}
 				}
 
 				@Override
@@ -2750,11 +2751,6 @@ public class LibraryBrowser extends JPanel {
 			boldIcon = heavyIcon;
 			iconLabel.setIcon(normalIcon);
 		}
-
-		void setAction(Action action) {
-			this.action = action;
-		}
-
 	}
 
 	/**
@@ -2790,9 +2786,7 @@ public class LibraryBrowser extends JPanel {
 						// first check cache
 						File cachedFile = ResourceLoader.getSearchCacheFile(path); // 
 						if (cachedFile.exists()) {
-							TabLoader tabAdder = addTab(path, null);
-							if (tabAdder != null)
-								tabAdder.execute();
+							addTabAndExecute(path, null, null);
 						} else {
 							unopenedTabs.add(path);
 						}
@@ -2804,9 +2798,7 @@ public class LibraryBrowser extends JPanel {
 							// check for local resource
 							Resource res = ResourceLoader.getResource(path);
 							if (res != null && !ResourceLoader.isHTTP(path)) {
-								TabLoader tabAdder = addTab(path, null);
-								if (tabAdder != null)
-									tabAdder.execute();
+								 addTabAndExecute(path, null, null);
 							} else {
 								unopenedTabs.add(path);
 							}
@@ -2835,9 +2827,7 @@ public class LibraryBrowser extends JPanel {
 					for (final String path : library.openTabPaths) {
 						boolean available = isWebConnected() && ResourceLoader.isHTTP(path);
 						if (available) {
-							TabLoader tabAdder = addTab(path, null);
-							if (tabAdder != null)
-								tabAdder.execute();
+							addTabAndExecute(path, null, null);
 						}
 					}
 				}
