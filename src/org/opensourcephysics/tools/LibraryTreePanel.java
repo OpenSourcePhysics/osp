@@ -254,7 +254,7 @@ public class LibraryTreePanel extends JPanel {
 	 * 
 	 * @return the selected node, or null if none
 	 */
-	protected LibraryTreeNode getSelectedNode() {
+	public LibraryTreeNode getSelectedNode() {
 		return (tree == null ? null : (LibraryTreeNode) tree.getLastSelectedPathComponent());
 	}
 
@@ -834,7 +834,7 @@ public class LibraryTreePanel extends JPanel {
 		// create split pane
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treeScroller, displayPanel);
 		add(splitPane, BorderLayout.CENTER);
-		treeScroller.setPreferredSize(new Dimension(240, 400));
+		treeScroller.setPreferredSize(new Dimension(320, 500));
 
 		// create editorPanel and components
 		editorPanel = Box.createVerticalBox();

@@ -530,7 +530,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 	 * 
 	 * @return tooltip String
 	 */
-	protected String getToolTip() {
+	public String getToolTip() {
 		if (tooltip == null) {
 			StringBuffer buf = new StringBuffer();
 
