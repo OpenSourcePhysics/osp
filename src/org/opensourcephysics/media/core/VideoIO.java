@@ -634,28 +634,25 @@ public class VideoIO {
 		return null;
 	}
 	
-	public static void handleUnsupportedVideo(String path, String ext, String codec, VideoPanel vidPanel) {
-		OSPLog.debug("VideoIO.handleUnsupportedVideo "+path);
-		
-		String message = codec != null? 
-				MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.VideoCodec1")+" "+
-				ext.toUpperCase()+" "+
-				MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.VideoCodec2")+" \""+codec+"\".":
-				MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.VideoType")+" \""+ext+"\".";
+	public static void handleUnsupportedVideo(String path, String ext, String codec, VideoPanel vidPanel, String why) {
+		OSPLog.debug("VideoIO.handleUnsupportedVideo " + path);
 
-		if (codec == null && MovieFactory.xuggleNeeds32bitVM 
-				&& vidPanel != null && vidPanel.getClass().getSimpleName().equals("TrackerPanel")) {
-			for (int i= 0; i < XUGGLE_VIDEO_EXTENSIONS.length; i++) {
+		String message = why + " " + (codec != null
+				? MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.VideoCodec1") + " " + ext.toUpperCase() + " "
+						+ MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.VideoCodec2") + " \"" + codec + "\"."
+				: MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.VideoType") + " \"" + ext + "\".");
+
+		if (codec == null && MovieFactory.xuggleNeeds32bitVM && vidPanel != null
+				&& vidPanel.getClass().getSimpleName().equals("TrackerPanel")) {
+			for (int i = 0; i < XUGGLE_VIDEO_EXTENSIONS.length; i++) {
 				if (XUGGLE_VIDEO_EXTENSIONS[i].equals(ext)) {
-					message += "<br><br>"+MediaRes.getString("VideoIO.Dialog.WrongVM.Message.Fix1");
-					message += "<br>"+MediaRes.getString("VideoIO.Dialog.WrongVM.Message.Fix2");
-					message += "<br><br>"+MediaRes.getString("VideoIO.Dialog.WrongVM.Message.Restart");
-					new AsyncDialog().showConfirmDialog(null, 
-							new EditorPaneMessage(message),
-							MediaRes.getString("VideoIO.Dialog.UnsupportedVideo.Title"), 
-							JOptionPane.YES_NO_OPTION, 
+					message += "<br><br>" + MediaRes.getString("VideoIO.Dialog.WrongVM.Message.Fix1");
+					message += "<br>" + MediaRes.getString("VideoIO.Dialog.WrongVM.Message.Fix2");
+					message += "<br><br>" + MediaRes.getString("VideoIO.Dialog.WrongVM.Message.Restart");
+					new AsyncDialog().showConfirmDialog(null, new EditorPaneMessage(message),
+							MediaRes.getString("VideoIO.Dialog.UnsupportedVideo.Title"), JOptionPane.YES_NO_OPTION,
 							(ev) -> {
-							  int sel = ev.getID();
+								int sel = ev.getID();
 								switch (sel) {
 								case JOptionPane.YES_OPTION:
 									// relaunch in 32-bit VM using Tracker PrefsDialog by reflection
@@ -663,80 +660,73 @@ public class VideoIO {
 										try {
 											// first get TFrame
 											String trackerClassPath = "org.opensourcephysics.cabrillo.tracker.TrackerPanel";
-											Class<?> type = Class.forName(trackerClassPath); //$NON-NLS-1$
-											Method m = type.getMethod("getTFrame", (Class<?>[])null); //$NON-NLS-1$
-											Object tFrame = m.invoke(vidPanel, (Object[])null);
+											Class<?> type = Class.forName(trackerClassPath); // $NON-NLS-1$
+											Method m = type.getMethod("getTFrame", (Class<?>[]) null); //$NON-NLS-1$
+											Object tFrame = m.invoke(vidPanel, (Object[]) null);
 											// now get PrefsDialog from TFrame
 											String tframeClassPath = "org.opensourcephysics.cabrillo.tracker.TFrame";
-											type = Class.forName(tframeClassPath); //$NON-NLS-1$
-											m = type.getMethod("getPrefsDialog", (Class<?>[])null); //$NON-NLS-1$
-											Object prefsDialog = m.invoke(tFrame, (Object[])null);
-											
+											type = Class.forName(tframeClassPath); // $NON-NLS-1$
+											m = type.getMethod("getPrefsDialog", (Class<?>[]) null); //$NON-NLS-1$
+											Object prefsDialog = m.invoke(tFrame, (Object[]) null);
+
 											String prefsClassPath = "org.opensourcephysics.cabrillo.tracker.PrefsDialog";
-											type = Class.forName(prefsClassPath); //$NON-NLS-1$
-											m = type.getMethod("relaunch32Bit", (Class<?>[])null); //$NON-NLS-1$
-											m.invoke(prefsDialog, (Object[])null);
-										} catch (Exception e) {											
+											type = Class.forName(prefsClassPath); // $NON-NLS-1$
+											m = type.getMethod("relaunch32Bit", (Class<?>[]) null); //$NON-NLS-1$
+											m.invoke(prefsDialog, (Object[]) null);
+										} catch (Exception e) {
 										}
 									});
-							}
-						});				
+								}
+							});
 					return;
 				}
 			}
-			
+
 		}
 
-		String helpLink = MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.MoreInfo")+"<br>"+
-				"<a href=\"" + VIDEO_CONVERSION_HELP_PATH + "\">" + VIDEO_CONVERSION_HELP_PATH + "</a>";
-		message += "<br><br>"+MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Fix")+":";
+		String helpLink = MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.MoreInfo") + "<br>" + "<a href=\""
+				+ VIDEO_CONVERSION_HELP_PATH + "\">" + VIDEO_CONVERSION_HELP_PATH + "</a>";
+		message += "<br><br>" + MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Fix") + ":";
 		message += "<ol>";
-		
+
 		if (ResourceLoader.isHTTP(path)) {
-			message += "<li>"+MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Download")+"</li>";
-			message += "<li>"+MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.ConvertDownload")+"</li>";
-			message += "<li>"+MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Import")+"</li></ol>";
+			message += "<li>" + MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Download") + "</li>";
+			message += "<li>" + MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.ConvertDownload") + "</li>";
+			message += "<li>" + MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Import") + "</li></ol>";
 			message += helpLink;
-			message += "<br><br>"+MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.DownloadNow");
-			
-			new AsyncDialog().showConfirmDialog(null, 
-				new EditorPaneMessage(message),
-				MediaRes.getString("VideoIO.Dialog.UnsupportedVideo.Title"), 
-				JOptionPane.YES_NO_OPTION, 
-				(ev) -> {
-				  int sel = ev.getID();
-					switch (sel) {
-					case JOptionPane.YES_OPTION:
-						// choose file and save resource
-						String name = XML.getName(path);
-						VideoIO.getChooserFilesAsync("save video "+name, //$NON-NLS-1$
-							(files) -> {
-								if (VideoIO.getChooser().getSelectedOption() != AsyncFileChooser.APPROVE_OPTION
-										|| files == null) {
-									return null;
-								}
-								String filePath = files[0].getAbsolutePath();
-								try {
-									ResourceLoader.copyURLtoFile(path, filePath);
-								} catch (IOException e1) {
-									System.err.println("Failed to download "+path);
-									e1.printStackTrace();
-								}
-								return null;
-							});
+			message += "<br><br>" + MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.DownloadNow");
+
+			new AsyncDialog().showConfirmDialog(null, new EditorPaneMessage(message),
+					MediaRes.getString("VideoIO.Dialog.UnsupportedVideo.Title"), JOptionPane.YES_NO_OPTION, (ev) -> {
+						int sel = ev.getID();
+						switch (sel) {
+						case JOptionPane.YES_OPTION:
+							// choose file and save resource
+							String name = XML.getName(path);
+							VideoIO.getChooserFilesAsync("save video " + name, //$NON-NLS-1$
+									(files) -> {
+										if (VideoIO.getChooser().getSelectedOption() != AsyncFileChooser.APPROVE_OPTION
+												|| files == null) {
+											return null;
+										}
+										String filePath = files[0].getAbsolutePath();
+										try {
+											ResourceLoader.copyURLtoFile(path, filePath);
+										} catch (IOException e1) {
+											System.err.println("Failed to download " + path);
+											e1.printStackTrace();
+										}
+										return null;
+									});
 						}
-				});				
-		}
-		else {			
-			message += "<li>"+MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Convert")+"</li>";
-			message += "<li>"+MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Import")+"</li></ol>";
+					});
+		} else {
+			message += "<li>" + MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Convert") + "</li>";
+			message += "<li>" + MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Import") + "</li></ol>";
 			message += helpLink;
-			new AsyncDialog().showMessageDialog(
-					null, 
-					new EditorPaneMessage(message),
-					MediaRes.getString("VideoIO.Dialog.UnsupportedVideo.Title"),
-					(ev) -> {}
-			);
+			new AsyncDialog().showMessageDialog(null, new EditorPaneMessage(message),
+					MediaRes.getString("VideoIO.Dialog.UnsupportedVideo.Title"), (ev) -> {
+					});
 		}
 	}
 
@@ -1231,7 +1221,7 @@ public class VideoIO {
 		return (!path.toLowerCase().endsWith("mp4") || VideoIO.isLoadableMP4(path, (codec) -> {
 			if (libraryBrowser != null)
 				libraryBrowser.setCanceled(false);
-			VideoIO.handleUnsupportedVideo(path, "mp4", codec, null);
+			VideoIO.handleUnsupportedVideo(path, "mp4", codec, null, "VideoIO.checkMP4");
 		}));
 	}	
 

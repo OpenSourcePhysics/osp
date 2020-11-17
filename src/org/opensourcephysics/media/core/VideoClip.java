@@ -777,9 +777,10 @@ public class VideoClip {
 				if (supported) {
 					if (exists) {						
 						// found but failed to load supported video type--assume codec issue
-						String codec = VideoIO.getVideoCodec(res.getAbsolutePath());
-						VideoIO.handleUnsupportedVideo(path, XML.getExtension(path), codec, null); // runs async
-						
+						if (!OSPRuntime.isJS) {
+							String codec = VideoIO.getVideoCodec(res.getAbsolutePath());
+							VideoIO.handleUnsupportedVideo(path, XML.getExtension(path), codec, null, "VideoClip null video"); // runs async
+						}
 //						if (path.toLowerCase().endsWith("mp4")) {
 //							if (codec == null || !codec.contains("avc1")) {  // H264
 //								VideoIO.handleUnsupportedVideo(path, "mp4", codec, null); // runs async
@@ -846,7 +847,8 @@ public class VideoClip {
 				}
 				else {
 					// unsupported extension
-					VideoIO.handleUnsupportedVideo(path, XML.getExtension(path), null, null); // runs async
+					if (!OSPRuntime.isJS)
+						VideoIO.handleUnsupportedVideo(path, XML.getExtension(path), null, null, "VideoClip not supported"); // runs async
 				}
 				
 			} // done handling null video
