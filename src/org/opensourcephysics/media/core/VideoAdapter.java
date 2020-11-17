@@ -57,6 +57,7 @@ import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.Interactive;
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.tools.ResourceLoader;
 
 import javajs.async.SwingJSUtils.Performance;
 
@@ -1306,8 +1307,11 @@ public abstract class VideoAdapter implements Video {
 	protected String getAbsolutePath(String path) {
 		if (baseDir == null)
 			baseDir = XML.getDirectoryPath((String) getProperty("absolutePath"));
-		if (baseDir != "" && !path.replace('\\',  '/').startsWith(baseDir))
-			path = XML.getAbsolutePath(new File(baseDir + "/" + path));
+		if (baseDir != "" && !path.replace('\\',  '/').startsWith(baseDir))  {
+			path = baseDir + "/" + path;
+			if (!ResourceLoader.isHTTP(baseDir))
+				path = XML.getAbsolutePath(new File(path));
+		}
 		return path;
 	}
 

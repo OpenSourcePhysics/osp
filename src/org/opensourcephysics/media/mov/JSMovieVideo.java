@@ -389,10 +389,11 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	private void load(String fileName, String basePath) throws IOException {
 		this.baseDir = basePath;
 		this.fileName = fileName;
-		Resource res = new Resource(new File(getAbsolutePath(fileName)));
+		String path = getAbsolutePath(fileName);
+		Resource res = (ResourceLoader.isHTTP(path) ? new Resource(new URL(path)) : new Resource(new File(path)));
 		url = res.getURL();		
 		boolean isLocal = (url.getProtocol().toLowerCase().indexOf("file") >= 0); //$NON-NLS-1$
-		String path = isLocal ? res.getAbsolutePath() : url.toExternalForm();
+		path = isLocal ? res.getAbsolutePath() : url.toExternalForm();
 		OSPLog.finest("JSMovieVideo loading " + path + " local?: " + isLocal); //$NON-NLS-1$ //$NON-NLS-2$
 		if (!VideoIO.checkMP4(path, null)) {
 			frameNumber = Integer.MIN_VALUE;
