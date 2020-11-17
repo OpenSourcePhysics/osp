@@ -577,7 +577,7 @@ public class LibraryBrowser extends JPanel {
 			setComandButtonEnabled(true);
 			isCancelled = false;
 			LibraryTreePanel treePanel = getSelectedTreePanel();
-			LibraryTreeNode node = treePanel.getSelectedNode();
+			LibraryTreeNode node = (treePanel == null ? null : treePanel.getSelectedNode());
 			setMessage(node == null ? "" : node.getToolTip(), null);
 		}
 	}
@@ -756,6 +756,8 @@ public class LibraryBrowser extends JPanel {
 							break;
 						case "CreateNew"://$NON-NLS-1$
 							LibraryTreePanel treePanel = getSelectedTreePanel();
+							if (treePanel == null)
+								break;
 							treePanel.setEditing(true);
 							refreshGUI();
 							break;
@@ -1447,6 +1449,8 @@ public class LibraryBrowser extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				final LibraryTreePanel treePanel = getSelectedTreePanel();
+				if (treePanel == null)
+					return;
 				if (!treePanel.isEditing()) {
 					treePanel.setEditing(true);
 					refreshGUI();
@@ -2136,6 +2140,8 @@ public class LibraryBrowser extends JPanel {
 	 */
 	protected String save() {
 		LibraryTreePanel treePanel = getSelectedTreePanel();
+		if (treePanel == null)
+			return null;
 		String path = treePanel.save();
 		refreshGUI();
 		return path;
@@ -2152,6 +2158,8 @@ public class LibraryBrowser extends JPanel {
 		if (path != null) {
 			path = XML.forwardSlash(path);
 			LibraryTreePanel treePanel = getSelectedTreePanel();
+			if (treePanel == null)
+				return null;
 			treePanel.setRootResource(treePanel.rootResource, path, true, true);
 			path = save();
 			treePanel.setEditing(true);
