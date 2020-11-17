@@ -391,13 +391,17 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		this.fileName = fileName;
 		Resource res = new Resource(new File(getAbsolutePath(fileName)));
 		url = res.getURL();		
-		boolean isLocal = url.getProtocol().toLowerCase().indexOf("file") > -1; //$NON-NLS-1$
+		boolean isLocal = (url.getProtocol().toLowerCase().indexOf("file") >= 0); //$NON-NLS-1$
 		String path = isLocal ? res.getAbsolutePath() : url.toExternalForm();
 		OSPLog.finest("JSMovieVideo loading " + path + " local?: " + isLocal); //$NON-NLS-1$ //$NON-NLS-2$
+		if (!VideoIO.checkMP4(path, null)) {
+			frameNumber = Integer.MIN_VALUE;
+			return;
+		}
 				// set properties
 		setProperty("name", XML.getName(fileName)); //$NON-NLS-1$
 		setProperty("absolutePath", res.getAbsolutePath()); //$NON-NLS-1$
-		if (fileName.indexOf(":") == -1) { //$NON-NLS-1$
+		if (fileName.indexOf(":") < 0) { //$NON-NLS-1$
 			// if name is relative, path is name
 			setProperty("path", XML.forwardSlash(fileName)); //$NON-NLS-1$
 		} else {
@@ -850,6 +854,8 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		@Override
 		protected VideoAdapter createVideo(String path) throws IOException {
 			VideoAdapter video = new JSMovieVideo(path);
+			if (video.getFrameNumber() == Integer.MIN_VALUE)
+				return null;
 			String ext = XML.getExtension(path);
 			VideoType VideoType = VideoIO.getMovieType(ext);
 			if (VideoType != null)

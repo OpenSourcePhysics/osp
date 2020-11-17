@@ -70,6 +70,7 @@ import org.opensourcephysics.media.mov.MovieFactory;
 import org.opensourcephysics.media.mov.MovieVideoI;
 import org.opensourcephysics.media.mov.MovieVideoType;
 import org.opensourcephysics.tools.FontSizer;
+import org.opensourcephysics.tools.LibraryBrowser;
 import org.opensourcephysics.tools.ResourceLoader;
 
 import javajs.async.AsyncDialog;
@@ -608,15 +609,15 @@ public class VideoIO {
 	public static boolean isLoadableMP4(String path, Consumer<String> whenNotLoadable) {
 		String codec = getVideoCodec(path);
 		OSPLog.fine("mp4 codec = "+codec);
-		if (codec != null && codec.contains("avc1")) {  // H264
-			return true;
+		if (codec == null || !codec.contains("avc1")) {  // H264
+			if (whenNotLoadable != null)
+				SwingUtilities.invokeLater(() -> {
+					whenNotLoadable.accept(codec);
+				});
+			return false;
 		}
+		return true;
 
-		if (whenNotLoadable != null)
-			SwingUtilities.invokeLater(() -> {
-				whenNotLoadable.accept(codec);
-			});
-		return false;
 	}
 	
 	public static String getVideoCodec(String path) {
@@ -1189,33 +1190,49 @@ public class VideoIO {
 	// class to show message in JEditorPane and respond to hyperlinks
 	static class EditorPaneMessage extends JEditorPane {
 
-    EditorPaneMessage(String htmlBody) {
-      super("text/html", "<html><body style=\"" + getLabelStyle() + "\">" + htmlBody + "</body></html>");
-      addHyperlinkListener(new HyperlinkListener() {
-        @Override
-        public void hyperlinkUpdate(HyperlinkEvent e) {
-          if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
-          	OSPDesktop.displayURL(e.getURL().toString());	                    
-          }
-        }
-      });
-      setEditable(false);
-      setBorder(null);
-    }
+		EditorPaneMessage(String htmlBody) {
+			super("text/html", "<html><body style=\"" + getLabelStyle() + "\">" + htmlBody + "</body></html>");
+			addHyperlinkListener(new HyperlinkListener() {
+				@Override
+				public void hyperlinkUpdate(HyperlinkEvent e) {
+					if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
+						OSPDesktop.displayURL(e.getURL().toString());
+					}
+				}
+			});
+			setEditable(false);
+			setBorder(null);
+		}
 
-    static StringBuffer getLabelStyle() {
-      // for copying style
-      JLabel label = new JLabel();
-      Font font = label.getFont();
-      Color color = label.getBackground();
+		static StringBuffer getLabelStyle() {
+			// for copying style
+			JLabel label = new JLabel();
+			Font font = label.getFont();
+			Color color = label.getBackground();
 
-      // create some css from the label's font
-      StringBuffer style = new StringBuffer("font-family:" + font.getFamily() + ";");
-      style.append("font-weight:" + (font.isBold() ? "bold" : "normal") + ";");
-      style.append("font-size:" + font.getSize() + "pt;");
-      style.append("background-color: rgb("+color.getRed()+","+color.getGreen()+","+color.getBlue()+");");
-      return style;
-    }
+			// create some css from the label's font
+			StringBuffer style = new StringBuffer("font-family:" + font.getFamily() + ";");
+			style.append("font-weight:" + (font.isBold() ? "bold" : "normal") + ";");
+			style.append("font-size:" + font.getSize() + "pt;");
+			style.append(
+					"background-color: rgb(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ");");
+			return style;
+		}
+	}
+
+	/**
+	 * Check for a valid video codec and file format.
+	 * 
+	 * @param path
+	 * @param libraryBrowser
+	 * @return true if not an mp4 or is a valid mp4
+	 */
+	public static boolean checkMP4(String path, LibraryBrowser libraryBrowser) {
+		return (!path.toLowerCase().endsWith("mp4") || VideoIO.isLoadableMP4(path, (codec) -> {
+			if (libraryBrowser != null)
+				libraryBrowser.setCanceled(false);
+			VideoIO.handleUnsupportedVideo(path, "mp4", codec, null);
+		}));
 	}	
 
 }

@@ -47,6 +47,7 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.core.VideoIO.FinalizableLoader;
+import org.opensourcephysics.tools.Resource;
 import org.opensourcephysics.tools.ResourceLoader;
 
 import javajs.async.AsyncDialog;
@@ -769,15 +770,14 @@ public class VideoClip {
 			}
 
 			if (video == null && !VideoIO.isCanceled()) {
-				
-				boolean exists = ResourceLoader.getResource(XML.getResolvedPath(path, base)) != null; // resource exists
+				Resource res = ResourceLoader.getResource(XML.getResolvedPath(path, base));
+				boolean exists = (res != null); // resource exists
 				boolean supported = types.size() > 0;  // extension is supported, VideoType available
-				OSPLog.info("\"" + fullPath + "\" could not be opened. Found? "+exists+" Supported? "+supported); //$NON-NLS-1$ //$NON-NLS-2$
-				
+				OSPLog.info("\"" + fullPath + "\" could not be opened. Found? "+exists+" Supported? "+supported); //$NON-NLS-1$ //$NON-NLS-2$			
 				if (supported) {
 					if (exists) {						
 						// found but failed to load supported video type--assume codec issue
-						String codec = VideoIO.getVideoCodec(path);
+						String codec = VideoIO.getVideoCodec(res.getAbsolutePath());
 						VideoIO.handleUnsupportedVideo(path, XML.getExtension(path), codec, null); // runs async
 						
 //						if (path.toLowerCase().endsWith("mp4")) {

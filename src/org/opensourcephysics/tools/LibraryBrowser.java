@@ -129,7 +129,7 @@ public class LibraryBrowser extends JPanel {
 	protected static JMenuBar menubar;
 	protected static ResizableIcon expandIcon, contractIcon, heavyExpandIcon, heavyContractIcon;
 	protected static ResizableIcon refreshIcon, downloadIcon, downloadDisabledIcon;
-	protected static final FileFilter TRACKER_FILTER = new TrackerDLFilter();
+	protected static final TrackerDLFilter TRACKER_FILTER = new TrackerDLFilter();
 	protected static javax.swing.filechooser.FileFilter filesAndFoldersFilter = new FilesAndFoldersFilter();
 	protected static Timer searchTimer;
 	protected static String searchTerm;
@@ -181,7 +181,7 @@ public class LibraryBrowser extends JPanel {
 	protected boolean keyPressed, textChanged;
 	protected TextFrame helpFrame;
 	protected JEditorPane htmlAboutPane;
-	protected FileFilter dlFileFilter = TRACKER_FILTER;
+	protected TrackerDLFilter dlFileFilter = TRACKER_FILTER;
 	protected boolean isResourcePathXML;
 	protected LibraryManager libraryManager;
 	private int myFontLevel;
@@ -475,14 +475,14 @@ public class LibraryBrowser extends JPanel {
 		return dlFileFilter;
 	}
 
-	/**
-	 * Sets the fileFilter used to determine which files are DL resources.
-	 * 
-	 * @param filter the file filter (may be null)
-	 */
-	public void setDLFileFilter(FileFilter filter) {
-		dlFileFilter = filter;
-	}
+//	/**
+//	 * Sets the fileFilter used to determine which files are DL resources.
+//	 * 
+//	 * @param filter the file filter (may be null)
+//	 */
+//	public void setDLFileFilter(FileFilter filter) {
+//		dlFileFilter = filter;
+//	}
 
 	/**
 	 * Sets the visibility of this browser
@@ -1839,8 +1839,8 @@ public class LibraryBrowser extends JPanel {
 
 		// see if the command field describes a resource that can be found
 		String path = commandField.getText().trim();
-		LibraryTreePanel treePanel = getSelectedTreePanel();
-		LibraryTreeNode node = treePanel == null? null: treePanel.getSelectedNode();
+		LibraryTreePanel tpanel = getSelectedTreePanel();
+		LibraryTreeNode node = (tpanel == null ? null : tpanel.getSelectedNode());
 		if (node != null && path.equals(node.record.getAbsoluteTarget())) {
 			processTargetSelection(node.record, HINT_LOAD_RESOURCE);
 			return;
@@ -1880,12 +1880,12 @@ public class LibraryBrowser extends JPanel {
 		}
 
 		boolean isCollection = (res.getFile() != null && res.getFile().isDirectory())
-				|| "LibraryCollection".equals(res.getXMLClassName());
+				|| !dlFileFilter.acceptPath(path) && "LibraryCollection".equals(res.getXMLClassName());
 
 		if (isCollection) {
 			loadTab(path, null);
 			refreshGUI();
-			treePanel = getSelectedTreePanel();
+			LibraryTreePanel treePanel = getSelectedTreePanel();
 			if (treePanel != null && treePanel.pathToRoot.equals(path)) {
 				treePanel.setSelectedNode(treePanel.rootNode);
 				commandField.setBackground(Color.white);
@@ -3114,10 +3114,9 @@ public class LibraryBrowser extends JPanel {
 	 */
 	static class TrackerDLFilter implements FileFilter {
 
-		@Override
-		public boolean accept(File file) {
-			String name;
-			if (file == null || file.isDirectory() || (name = file.getName()).startsWith("_")) //$NON-NLS-1$
+		public boolean acceptPath(String path) {
+			String name = XML.getName(path);
+			if(name.startsWith("_")) //$NON-NLS-1$
 				return false;
 			if (name.indexOf("TrackerSet=") >= 0)
 				return true;
@@ -3128,10 +3127,10 @@ public class LibraryBrowser extends JPanel {
 			case "zip": //$NON-NLS-1$
 				// This is a massive test just to find out if we might have an appropriate file
 				// It is used, for example, to see if a control could be NOT an XML file.
-				if (ResourceLoader.isHTTP(file.toString())) {
+				if (ResourceLoader.isHTTP(path)) {
 					return true;
 				}
-				Map<String, ZipEntry> files = ResourceLoader.getZipContents(file.getAbsolutePath());
+				Map<String, ZipEntry> files = ResourceLoader.getZipContents(path);
 				for (String next : files.keySet()) {
 					if (next.toLowerCase().endsWith(".trk")) //$NON-NLS-1$
 						return true;
@@ -3151,6 +3150,12 @@ public class LibraryBrowser extends JPanel {
 				return false;
 			}
 		}
+		
+		@Override
+		public boolean accept(File file) {
+			return (file == null || file.isDirectory() ? false : acceptPath(file.toString()));
+		}
+
 	}
 
 	/**
