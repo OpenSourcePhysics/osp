@@ -332,6 +332,30 @@ public class Resource {
 	}
 
 	/**
+	 * Gets the short name of the XMLControl class. May be null.
+	 *
+	 * @return the class name 
+	 */
+	public String getXMLClassName() {
+		try {
+			BufferedReader in = openReader();
+			String line = in.readLine();
+			if (line != null && line.startsWith("<?xml")) {
+				line = in.readLine();
+				if (line != null && line.startsWith("<object class=")) {
+					String[] parts = line.split("\"");
+					parts = parts[1].split("\\.");
+					return parts[parts.length - 1];
+				}
+			}
+			in.close();
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
 	 * Gets an AudioClip.
 	 *
 	 * @return the audio clip
