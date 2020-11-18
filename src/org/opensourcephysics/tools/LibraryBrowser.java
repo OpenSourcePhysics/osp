@@ -134,6 +134,7 @@ public class LibraryBrowser extends JPanel {
 	protected static String searchTerm;
 	public static boolean fireHelpEvent = false;
 	public static int maxRecentCollectionSize = 18;
+	private static int wide = 900, high = 560;
 
 	static {
 		buttonBorder = BorderFactory.createEtchedBorder();
@@ -1090,8 +1091,8 @@ public class LibraryBrowser extends JPanel {
 	 */
 	protected void createGUI() {
 		double factor = 1 + FontSizer.getLevel() * 0.25;
-		int w = (int) (factor * 1000);
-		int h = (int) (factor * 600);
+		int w = (int) (factor * wide);
+		int h = (int) (factor * high);
 		setPreferredSize(new Dimension(w, h));
 
 		loadCollectionAction = new ActionListener() {
