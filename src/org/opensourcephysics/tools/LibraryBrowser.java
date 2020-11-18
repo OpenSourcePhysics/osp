@@ -9,7 +9,6 @@ package org.opensourcephysics.tools;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -1117,9 +1116,18 @@ public class LibraryBrowser extends JPanel {
 				String urlPath = commandField.getText().trim();
 				if (urlPath == null)
 					return;
-				//String urlPath="https://physlets.org/tracker/library/videos/BallTossOut.mp4";  // for testing
 				System.err.println("Performing download action with urlPath="+urlPath);
 				String name = XML.getName(urlPath);
+				
+				// special handling for ComPADRE
+				LibraryTreePanel treePanel = getSelectedTreePanel();
+				LibraryTreeNode node = (treePanel == null ? null : treePanel.getSelectedNode());
+				LibraryResource record = node == null? null: node.record;
+				String target = record == null? null: record.getAbsoluteTarget();				
+				if (target != null && target.indexOf("document/ServeFile.cfm?") > -1) { //$NON-NLS-1$
+					name = record.getProperty("download_filename"); //$NON-NLS-1$
+				}
+				
 				// choose file and save resource
 				VideoIO.getChooserFilesAsync("save resource "+name, //$NON-NLS-1$
 						(files) -> {
@@ -1137,16 +1145,6 @@ public class LibraryBrowser extends JPanel {
 							}
 							return null;
 						});
-
-//				String filePath=getChooserSavePath(urlPath);
-//				System.err.println("filePath="+filePath);
-//				try {
-//					File file = ResourceLoader.copyURLtoFile(urlPath, filePath);
-//					LibraryBrowser.this.firePropertyChange(PROPERTY_LIBRARY_TARGET, HINT_DOWNLOAD_RESOURCE, file); // $NON-NLS-1$
-//				} catch (IOException e1) {
-//					System.err.println("Failed to load urlPath="+urlPath);
-//					e1.printStackTrace();
-//				}
 			}
 		};
 		
