@@ -36,6 +36,7 @@ import java.net.URLClassLoader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -1570,14 +1571,15 @@ public class ResourceLoader {
 				if (OSPRuntime.isJS) {
 					OSPRuntime.jsutil.streamToFile(is, target);
 				} else {
-
-					FileOutputStream writer = new FileOutputStream(target);
-					byte[] buffer = new byte[65536]; // 2^14 = 64K
-					int bytesRead = 0;
-					while ((bytesRead = is.read(buffer)) > 0) {
-						writer.write(buffer, 0, bytesRead);
-					}
-					writer.close();
+					Files.copy(is, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+//
+//					FileOutputStream writer = new FileOutputStream(target);
+//					byte[] buffer = new byte[65536]; // 2^14 = 64K
+//					int bytesRead = 0;
+//					while ((bytesRead = is.read(buffer)) > 0) {
+//						writer.write(buffer, 0, bytesRead);
+//					}
+//					writer.close();
 				}
 				is.close();
 			} catch (Exception ex) {
@@ -3067,9 +3069,20 @@ public class ResourceLoader {
 			OSPRuntime.jsutil.transferTo(new URL(urlPath).openStream(), fos);
 			fos.close();
 		} else {
+			InputStream is = new URL(urlPath).openStream();
+			try {
 			Path path = f.toPath();
 			Files.createDirectories(path.getParent());
-			Files.write(path, getURLContents(new URL(urlPath)));
+			Files.copy(is, new File(filePath).toPath(), StandardCopyOption.REPLACE_EXISTING);
+//			Files.copy(in, target, options)
+//			Files.write(path, getURLContents();
+			} catch (IOException e) {
+				try {
+					is.close();
+				} catch (IOException ee) {
+					
+				}
+			}
 		} 
 		return f;
 	}
