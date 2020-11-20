@@ -1114,38 +1114,7 @@ public class LibraryBrowser extends JPanel {
 		downloadAction = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String urlPath = commandField.getText().trim();
-				if (urlPath == null)
-					return;
-				System.err.println("Performing download action with urlPath="+urlPath);
-				String name = XML.getName(urlPath);
-				
-				// special handling for ComPADRE
-				LibraryTreePanel treePanel = getSelectedTreePanel();
-				LibraryTreeNode node = (treePanel == null ? null : treePanel.getSelectedNode());
-				LibraryResource record = node == null? null: node.record;
-				String target = record == null? null: record.getAbsoluteTarget();				
-				if (target != null && target.indexOf("document/ServeFile.cfm?") > -1) { //$NON-NLS-1$
-					name = record.getProperty("download_filename"); //$NON-NLS-1$
-				}
-				
-				// choose file and save resource
-				VideoIO.getChooserFilesAsync("save resource "+name, //$NON-NLS-1$
-						(files) -> {
-							if (VideoIO.getChooser().getSelectedOption() != AsyncFileChooser.APPROVE_OPTION
-									|| files == null) {
-								return null;
-							}
-							String filePath = files[0].getAbsolutePath();
-							try {
-								File file = ResourceLoader.copyURLtoFile(urlPath, filePath);
-								LibraryBrowser.this.firePropertyChange(PROPERTY_LIBRARY_TARGET, HINT_DOWNLOAD_RESOURCE, file); // $NON-NLS-1$
-							} catch (IOException e1) {
-								System.err.println("Failed to download urlPath="+urlPath);
-								e1.printStackTrace();
-							}
-							return null;
-						});
+				doDownload();
 			}
 		};
 		
@@ -1687,6 +1656,7 @@ public class LibraryBrowser extends JPanel {
 		setMessage(null, null);
 	}
 	
+
 	/**
 	 * Sets a message in the message label.
 	 * 
@@ -1822,6 +1792,47 @@ public class LibraryBrowser extends JPanel {
 		}
 	}
 
+	protected void doDownload() {
+		String urlPath = commandField.getText().trim();
+		if (urlPath == null)
+			return;
+		System.err.println("Performing download action with urlPath="+urlPath);
+		// special handling for ComPADRE
+		LibraryTreePanel treePanel = getSelectedTreePanel();
+		LibraryTreeNode node = (treePanel == null ? null : treePanel.getSelectedNode());
+		LibraryResource record = node == null? null: node.record;
+		String name = getDownloadName(urlPath, record);		
+		
+		// choose file and save resource
+		VideoIO.getChooserFilesAsync("save resource "+name, //$NON-NLS-1$
+				(files) -> {
+					if (VideoIO.getChooser().getSelectedOption() != AsyncFileChooser.APPROVE_OPTION
+							|| files == null) {
+						return null;
+					}
+					String filePath = files[0].getAbsolutePath();
+					try {
+						File file = ResourceLoader.copyURLtoFile(urlPath, filePath);
+						LibraryBrowser.this.firePropertyChange(PROPERTY_LIBRARY_TARGET, HINT_DOWNLOAD_RESOURCE, file); // $NON-NLS-1$
+					} catch (IOException e1) {
+						System.err.println("Failed to download urlPath="+urlPath);
+						e1.printStackTrace();
+					}
+					return null;
+				});
+	}
+
+	private String getDownloadName(String name, LibraryResource record) {
+		String target = (record == null ? name : record.getAbsoluteTarget());
+		if (target.indexOf("document/ServeFile.cfm?") >= 0) { //$NON-NLS-1$
+			target = (record == null ? null : record.getProperty("download_filename")); //$NON-NLS-1$
+			if (target != null)
+				return target;
+			name = name + ".zip";
+		}
+		return XML.getName(ResourceLoader.getNonURIPath(name));
+	}
+
 	protected void doCommand() {
 		if (!commandButton.isEnabled())
 			return;
@@ -1899,6 +1910,7 @@ public class LibraryBrowser extends JPanel {
 
 		record = new LibraryResource(""); //$NON-NLS-1$
 		record.setTarget(path);
+		record.setProperty("download_filename", getDownloadName(path, null));
 		isCancelled = false;
 		// send LibraryResource via property change event to TFrame and other listeners
 		// DB 2020.11.15 don't hide LibraryBrowser since it has cancel button
