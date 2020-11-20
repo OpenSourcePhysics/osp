@@ -635,9 +635,9 @@ public class VideoIO {
 	}
 	
 	public static void handleUnsupportedVideo(String path, String ext, String codec, VideoPanel vidPanel, String why) {
-		OSPLog.debug("VideoIO.handleUnsupportedVideo " + path);
-
-		String message = //why + " " + 
+		
+		OSPLog.warning("VideoIO.handleUnsupportedVideo " + path + " from " + why);
+		String message = //why + " " + path + "\n\n" + 
 				(codec != null
 				? MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.VideoCodec1") + " " + ext.toUpperCase() + " "
 						+ MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.VideoCodec2") + " \"" + codec + "\"."
