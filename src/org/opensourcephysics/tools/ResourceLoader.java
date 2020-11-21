@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -1434,7 +1435,7 @@ public class ResourceLoader {
 	}
 
 	private static Map<String, ZipEntry> readZipContents(InputStream is, URL url) throws IOException {
-		HashMap<String, ZipEntry> fileNames = new HashMap<String, ZipEntry>();
+		Map<String, ZipEntry> fileNames = new LinkedHashMap<String, ZipEntry>();
 		if (OSPRuntime.doCacheZipContents)
 			htZipContents.put(url.toString(), fileNames);
 		ZipInputStream input = new ZipInputStream(is);
