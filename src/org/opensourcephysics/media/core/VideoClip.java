@@ -823,8 +823,7 @@ public class VideoClip {
 															|| files == null || files.length == 0) {
 														return null;
 													}
-													String path = XML.getAbsolutePath(files[0]);
-													video = VideoIO.getVideo(path, null);
+													video = VideoIO.getVideo(XML.getAbsolutePath(files[0]), null);
 													return null;
 												});
 									}

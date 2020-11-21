@@ -1796,7 +1796,7 @@ public class LibraryBrowser extends JPanel {
 		String urlPath = commandField.getText().trim();
 		if (urlPath == null)
 			return;
-		System.err.println("Performing download action with urlPath="+urlPath);
+		System.err.println("LibraryBrowser.doDownload() urlPath="+urlPath);
 		// special handling for ComPADRE
 		LibraryTreePanel treePanel = getSelectedTreePanel();
 		LibraryTreeNode node = (treePanel == null ? null : treePanel.getSelectedNode());
