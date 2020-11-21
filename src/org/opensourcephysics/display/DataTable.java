@@ -1331,6 +1331,8 @@ public class DataTable extends JTable {
 			 * @return the sorted row number
 			 */
 			protected int getSortedRow(int realModelRow) {
+				if (realModelRow >= rowCount)
+					setTainted();
 				allocate(realModelRow);
 				return modelToViewRow[realModelRow];
 			}
