@@ -1660,17 +1660,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 */
 	private XMLControlElement readObject(XMLControlElement control, String xml, String requiredType) throws IOException {
 		control.clearValues();
-		// set class name
-		xml = xml.substring(xml.indexOf("class=") + 7); //$NON-NLS-1$
-		String className = xml.substring(0, xml.indexOf("\"")); //$NON-NLS-1$
-		// workaround for media package name change
-		int i = className.lastIndexOf("."); //$NON-NLS-1$
-		if (i > -1) {
-			String packageName = className.substring(0, i);
-			if (packageName.endsWith("org.opensourcephysics.media")) { //$NON-NLS-1$
-				className = packageName + ".core" + className.substring(i); //$NON-NLS-1$
-			}
-		}
+		String className = getClassName(xml);
 		if (requiredType != null && !className.equals(requiredType)) {
 			readFailed = true;
 			return null;
@@ -2109,6 +2099,28 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 				return -1;
 		}
 		return pointer - 1;
+	}
+
+	public static String getClassName(String xml) {
+		// set class name
+		int pt = xml.indexOf("class=");
+		if (pt < 0)
+			return "";
+		try {
+			xml = xml.substring(pt + 7); // $NON-NLS-1$
+			String className = xml.substring(0, xml.indexOf("\"")); //$NON-NLS-1$
+			// workaround for media package name change
+			int i = className.lastIndexOf("."); //$NON-NLS-1$
+			if (i >= 0) {
+				String packageName = className.substring(0, i);
+				if (packageName.endsWith("org.opensourcephysics.media")) { //$NON-NLS-1$
+					className = packageName + ".core" + className.substring(i); //$NON-NLS-1$
+				}
+			}
+			return className;
+		} catch (Exception e) {
+			return "";
+		}
 	}
 
 }
