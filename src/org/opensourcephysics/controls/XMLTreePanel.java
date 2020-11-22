@@ -149,10 +149,7 @@ public class XMLTreePanel extends JPanel {
       // display primitive properties in input field
       if(value instanceof String) {
         property = prop;
-        String content = (String) value;
-        if(content.indexOf(XML.CDATA_PRE)!=-1) {
-          content = content.substring(content.indexOf(XML.CDATA_PRE)+XML.CDATA_PRE.length(), content.length()-XML.CDATA_POST.length());
-        }
+        String content = XML.removeCDATA((String) value);
         input.setText(content);
         input.setEditable(editable);
         input.setVisible(true);
@@ -341,7 +338,7 @@ public class XMLTreePanel extends JPanel {
       return;
     }
     // show array inspector if available
-    if(node.getProperty().getPropertyType().equals("array")) { //$NON-NLS-1$
+    if(node.getProperty().getPropertyType() == "array") { //$NON-NLS-1$
       XMLProperty arrayProp = node.getProperty();
       ArrayInspector inspector = ArrayInspector.getInspector(arrayProp);
       if(inspector!=null) {

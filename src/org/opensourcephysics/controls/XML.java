@@ -35,9 +35,12 @@ public class XML {
 	public static String NEW_LINE = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
   @SuppressWarnings("javadoc")
 	public static final String CDATA_PRE = "<![CDATA["; //$NON-NLS-1$
+	public static final int CDATA_PRE_LEN = 9;
   @SuppressWarnings("javadoc")
 	public static final String CDATA_POST = "]]>";      //$NON-NLS-1$
-  @SuppressWarnings("javadoc")
+	public static final int CDATA_POST_LEN = 3;
+	public static final String CDATA_POST_PROP = XML.CDATA_POST + "</property>";
+	@SuppressWarnings("javadoc")
 	public static final int INDENT = 4;
   // static fields
   private static Map<Class<?>, ObjectLoader> loaders = new HashMap<Class<?>, ObjectLoader>();
@@ -153,15 +156,20 @@ public class XML {
     }
   }
 
+	public static String getAttr(String xml, String attr, String def) {
+		int i = xml.indexOf(attr + "=\""); //$NON-NLS-1$
+		return (i < 0 ? def : xml.substring(i = i + attr.length() + 2, xml.indexOf('"', i)));
+	}
+
+	private static String[] types;
   /**
    * Gets an array containing all supported data types.
    *
    * @return an array of types
    */
   public static String[] getDataTypes() {
-    return new String[] {
-      "object", "array", "collection", "string", "int", "double", "boolean" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
-    };
+    return (types == null ? (types = new String[] {
+      "object", "array", "collection", "string", "int", "double", "boolean"}) : types); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
   }
 
   /**
@@ -719,6 +727,11 @@ public class XML {
       }
     });
   }
+
+	public static String removeCDATA(String content) {
+		int pt = content.indexOf(XML.CDATA_PRE);
+		return (pt >= 0 ? content.substring(pt + XML.CDATA_PRE_LEN, content.indexOf(XML.CDATA_POST)) : content);
+	}
 
 }
 

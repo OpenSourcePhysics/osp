@@ -301,7 +301,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		}
 		String type = XML.getDataType(obj);
 		if (type != null) {
-			if (type.equals("int") || type.equals("double")) { //$NON-NLS-1$ //$NON-NLS-2$
+			if (type == "int" || type == "double") { //$NON-NLS-1$ //$NON-NLS-2$
 				obj = obj.toString();
 			}
 			setXMLProperty(name, type, obj, writeNullFinalElement);
@@ -381,16 +381,11 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	@Override
 	public String getString(String name) {
 		XMLProperty prop = getXMLProperty(name);
-		if ((prop != null) && prop.getPropertyType().equals("string")) { //$NON-NLS-1$
-			String content = (String) prop.getPropertyContent().get(0);
-			if (content.indexOf(XML.CDATA_PRE) != -1) {
-				content = content.substring(content.indexOf(XML.CDATA_PRE) + XML.CDATA_PRE.length(),
-						content.indexOf(XML.CDATA_POST));
-			}
-			return content;
+		if (prop != null && prop.getPropertyType() == "string") { //$NON-NLS-1$
+			return XML.removeCDATA((String) prop.getPropertyContent().get(0));
 		} else if (name.equals("basepath") && (getRootControl() != null)) { //$NON-NLS-1$
 			return getRootControl().basepath;
-		} else if ((prop != null) && prop.getPropertyType().equals("object")) { //$NON-NLS-1$
+		} else if (prop != null && prop.getPropertyType() == "object") { //$NON-NLS-1$
 			XMLControl control = (XMLControl) prop.getPropertyContent().get(0);
 			if (control.getObjectClass() == OSPCombo.class) {
 				OSPCombo combo = (OSPCombo) control.loadObject(null);
@@ -872,26 +867,20 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 */
 	@Override
 	public Class<?> getObjectClass() {
-		if (className == null) {
-			return null;
-		}
-		if (theClass != null && theClass.getName().equals(className)) {
+		if (className == null || (theClass != null && theClass.getName().equals(className))) {
 			return theClass;
 		}
 		theClass = null;
 		try {
-			theClass = Class.forName(className);
-			return theClass;
+			return theClass = Class.forName(className);
 		} catch (ClassNotFoundException ex) {
-		}
-		ClassLoader loader = XML.getClassLoader();
-		if (loader != null) {
 			try {
-				theClass = loader.loadClass(className);
-			} catch (ClassNotFoundException ex) {
+				ClassLoader loader = XML.getClassLoader();
+				return (loader == null ? null : (theClass = loader.loadClass(className)));
+			} catch (ClassNotFoundException e) {
 			}
+			return theClass;
 		}
-		return theClass;
 	}
 
 	/**
@@ -1557,7 +1546,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			// get document root opening tag line
 			String openingTag = input.readLine();
 			int count = 0;
-			while (openingTag != null && openingTag.indexOf("<object class=") == -1) { //$NON-NLS-1$
+			while (openingTag != null && openingTag.indexOf("<object class=") < 0) { //$NON-NLS-1$
 				count++;
 				if (count > 9) {
 					// stop reading at 10 lines
@@ -1569,12 +1558,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			// read this element from the root
 			if (openingTag != null) {
 				// get version, if any
-				String xml = openingTag;
-				int i = xml.indexOf("version="); //$NON-NLS-1$
-				if (i != -1) {
-					xml = xml.substring(i + 9);
-					version = xml.substring(0, xml.indexOf("\"")); //$NON-NLS-1$
-				}
+				version = XML.getAttr(openingTag, "version", version);
 				readObject(this, openingTag, className);
 			} else {
 				readFailed = true;
@@ -1623,7 +1607,8 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		return !readFailed;
 	}
 
-//	/**
+
+	//	/**
 //	 * Checks to see if the input is for the specified class.
 //	 */
 //	private boolean isInputForClass(Class<?> type) {
@@ -1676,14 +1661,13 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		xml = input.readLine();
 		while (xml != null) {
 			// closing object tag
-			if (xml.indexOf("</object>") != -1) { //$NON-NLS-1$
+			if (xml.indexOf("</object>") >= 0) { //$NON-NLS-1$
 				input.readLine();
 				return control;
 			}
 			// opening property tag
-			else if (xml.indexOf("<property") != -1) { //$NON-NLS-1$
-				XMLProperty child = readProperty(new XMLPropertyElement(prop), xml);
-				control.addProperty(child);
+			else if (xml.indexOf("<property") >= 0) { //$NON-NLS-1$
+				control.addProperty(readProperty(new XMLPropertyElement(prop), xml));
 			}
 			xml = input.readLine();
 		}
@@ -1718,53 +1702,54 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 */
 	private XMLPropertyElement readProperty(XMLPropertyElement prop, String xml) throws IOException {
 		// set property name
-		prop.name = xml.substring(xml.indexOf("name=") + 6, xml.indexOf("type=") - 2); //$NON-NLS-1$ //$NON-NLS-2$
+		prop.name = XML.getAttr(xml, "name", null); //$NON-NLS-1$
 		// set property type
-		xml = xml.substring(xml.indexOf("type=") + 6); //$NON-NLS-1$
-		prop.type = xml.substring(0, xml.indexOf("\"")); //$NON-NLS-1$
+		prop.type = XML.getAttr(xml, "type", null).intern(); //$NON-NLS-1$
 		// set property content and className
-		if (prop.type.equals("array") || prop.type.equals("collection")) { //$NON-NLS-1$ //$NON-NLS-2$
-			xml = xml.substring(xml.indexOf("class=") + 7); //$NON-NLS-1$
-			String className = xml.substring(0, xml.indexOf("\"")); //$NON-NLS-1$
-			// workaround for media package name change
-			int i = className.lastIndexOf("."); //$NON-NLS-1$
-			if (i > -1) {
-				String packageName = className.substring(0, i);
-				if (packageName.endsWith("org.opensourcephysics.media")) { //$NON-NLS-1$
-					className = packageName + ".core" + className.substring(i); //$NON-NLS-1$
-				}
-			}
-			prop.className = className;
-			if (xml.indexOf("/>") != -1) { // property closing tag on same line //$NON-NLS-1$
+		switch (prop.type) {
+		case "array": //$NON-NLS-1$
+		case "collection": //$NON-NLS-1$
+			prop.className = getClassName(xml);
+			if (xml.indexOf("/>") >= 0) { // property closing tag on same line //$NON-NLS-1$
 				return prop;
 			}
 			xml = input.readLine();
-			while (xml.indexOf("<property") != -1) { //$NON-NLS-1$
+			while (xml.indexOf("<property") >= 0) { //$NON-NLS-1$
 				prop.content.add(readProperty(new XMLPropertyElement(prop), xml));
 				xml = input.readLine();
 			}
-		} else if (prop.type.equals("object")) { //$NON-NLS-1$
+			break;
+		case "object": //$NON-NLS-1$
 			// add XMLControl unless value is null
-			if (xml.indexOf(">null</property") == -1) { //$NON-NLS-1$
+			if (xml.indexOf(">null</property") < 0) { //$NON-NLS-1$
 				XMLControlElement control = readObject(new XMLControlElement(prop), input.readLine(), null);
 				prop.content.add(control);
 				prop.className = control.className;
 			}
-		} else { // int, double, boolean or string types
-			if (xml.indexOf(XML.CDATA_PRE) != -1) {
-				String s = xml.substring(xml.indexOf(XML.CDATA_PRE));
-				while (s.indexOf(XML.CDATA_POST + "</property>") == -1) { // look for end tag //$NON-NLS-1$
+			break;
+		case "string":
+			int pt = xml.indexOf(XML.CDATA_PRE); 
+			if (pt >= 0) {
+				String s = xml.substring(pt + XML.CDATA_PRE_LEN);
+				while ((pt = s.indexOf(XML.CDATA_POST_PROP)) < 0) { // look for end tag //$NON-NLS-1$
 					s += XML.NEW_LINE + input.readLine();
 				}
-				xml = s.substring(0, s.indexOf(XML.CDATA_POST + "</property>") + XML.CDATA_POST.length()); //$NON-NLS-1$
-			} else {
-				String s = xml.substring(xml.indexOf(">") + 1); //$NON-NLS-1$
-				while (s.indexOf("</property>") == -1) { // look for end tag //$NON-NLS-1$
-					s += XML.NEW_LINE + input.readLine();
-				}
-				xml = s.substring(0, s.indexOf("</property>")); //$NON-NLS-1$
+				prop.content.add(s.substring(0, pt));
+				break;
 			}
-			prop.content.add(xml);
+			// fall through
+		default:			
+			// int, double, boolean or string types
+			// BH 2020.11.21 was 
+			//if (xml.indexOf(XML.CDATA_PRE) != -1) {
+				//String s = xml.substring(xml.indexOf(XML.CDATA_PRE));
+			// but that includes CDATA_PRE in the contents		
+				String s = xml.substring(xml.indexOf(">") + 1); //$NON-NLS-1$
+				while ((pt = s.indexOf("</property>")) < 0) { // look for end tag //$NON-NLS-1$
+					s += XML.NEW_LINE + input.readLine();
+				}
+				prop.content.add(s.substring(0, pt));
+			break;
 		}
 		return prop;
 	}
@@ -1790,7 +1775,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @return the array
 	 */
 	private Object objectValue(XMLProperty prop) {
-		if (!prop.getPropertyType().equals("object")) { //$NON-NLS-1$
+		if (prop.getPropertyType() != ("object")) { //$NON-NLS-1$
 			return null;
 		}
 		if (prop.getPropertyContent().isEmpty())
@@ -1809,7 +1794,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @return the value
 	 */
 	private double doubleValue(XMLProperty prop) {
-		if (!prop.getPropertyType().equals("double")) { //$NON-NLS-1$
+		if (prop.getPropertyType() != ("double")) { //$NON-NLS-1$
 			return Double.NaN;
 		}
 		return Double.parseDouble((String) prop.getPropertyContent().get(0));
@@ -1822,7 +1807,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @return the value
 	 */
 	private int intValue(XMLProperty prop) {
-		if (!prop.getPropertyType().equals("int")) { //$NON-NLS-1$
+		if (prop.getPropertyType() != ("int")) { //$NON-NLS-1$
 			return Integer.MIN_VALUE;
 		}
 		return Integer.parseInt((String) prop.getPropertyContent().get(0));
@@ -1845,15 +1830,8 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @return the value
 	 */
 	private String stringValue(XMLProperty prop) {
-		if (!prop.getPropertyType().equals("string")) { //$NON-NLS-1$
-			return null;
-		}
-		String content = (String) prop.getPropertyContent().get(0);
-		if (content.indexOf(XML.CDATA_PRE) != -1) {
-			content = content.substring(content.indexOf(XML.CDATA_PRE) + XML.CDATA_PRE.length(),
-					content.indexOf(XML.CDATA_POST));
-		}
-		return content;
+		return (prop.getPropertyType() == ("string") ? //$NON-NLS-1$
+				XML.removeCDATA((String) prop.getPropertyContent().get(0)) : null);
 	}
 
 	/**
@@ -1863,7 +1841,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @return the array
 	 */
 	private Object arrayValue(XMLProperty prop) {
-		if (!prop.getPropertyType().equals("array")) { //$NON-NLS-1$
+		if (prop.getPropertyType() != "array") { //$NON-NLS-1$
 			return null;
 		}
 		Class<?> componentType = prop.getPropertyClass().getComponentType();
@@ -1874,7 +1852,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		}
 		// determine the format from the first item
 		XMLProperty first = (XMLProperty) content.get(0);
-		if (first.getPropertyName().equals("array")) { //$NON-NLS-1$
+		if (first.getPropertyName() == ("array")) { //$NON-NLS-1$
 			// create the array from an array string
 			Object obj = first.getPropertyContent().get(0);
 			if (obj instanceof String) {
@@ -2043,7 +2021,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 */
 	@SuppressWarnings("unchecked")
 	private Object collectionValue(XMLProperty prop) {
-		if (!prop.getPropertyType().equals("collection")) { //$NON-NLS-1$
+		if (prop.getPropertyType() != ("collection")) { //$NON-NLS-1$
 			return null;
 		}
 		Class<?> classType = prop.getPropertyClass();
@@ -2055,15 +2033,19 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			Iterator<Object> it = content.iterator();
 			while (it.hasNext()) {
 				XMLProperty next = (XMLProperty) it.next();
-				String type = next.getPropertyType();
-				if (type.equals("object")) { //$NON-NLS-1$
+				switch (next.getPropertyType()) {
+				case "object":
 					c.add(objectValue(next));
-				} else if (type.equals("string")) { //$NON-NLS-1$
+					break;
+				case "string": //$NON-NLS-1$
 					c.add(stringValue(next));
-				} else if (type.equals("array")) { //$NON-NLS-1$
+					break;
+				case "array": //$NON-NLS-1$
 					c.add(arrayValue(next));
-				} else if (type.equals("collection")) { //$NON-NLS-1$
+					break;
+				case "collection": //$NON-NLS-1$
 					c.add(collectionValue(next));
+					break;
 				}
 			}
 			return c;
@@ -2103,13 +2085,8 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 
 	public static String getClassName(String xml) {
 		// set class name
-		int pt = xml.indexOf("class=");
-		if (pt < 0)
-			return "";
 		try {
-			xml = xml.substring(pt + 7); // $NON-NLS-1$
-			String className = xml.substring(0, xml.indexOf("\"")); //$NON-NLS-1$
-			// workaround for media package name change
+			String className = XML.getAttr(xml, "class", "");
 			int i = className.lastIndexOf("."); //$NON-NLS-1$
 			if (i >= 0) {
 				String packageName = className.substring(0, i);

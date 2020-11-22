@@ -328,7 +328,7 @@ public TableCellEditor getCellEditor(int row, int column) {
         XMLControl control = (XMLControl) parent.getParentProperty();
         childObj = control.getObject(parent.getPropertyName());
         // array type
-        if(parent.getPropertyType().equals("array")) {  //$NON-NLS-1$
+        if(parent.getPropertyType() == ("array")) {  //$NON-NLS-1$
           Object array = childObj;
           // determine if base component type is primitive and count array elements
           Class<?> baseType = array.getClass().getComponentType();
@@ -537,11 +537,11 @@ public TableCellEditor getCellEditor(int row, int column) {
         Point p = cont.getLocationOnScreen();
         inspector.setLocation(p.x+30, p.y+30);
         inspector.setVisible(true);
-        return null;
+        return null;	
       } else if(value instanceof XMLProperty) {                                              // collection or array type
         XMLProperty prop = (XMLProperty) value;
         XMLProperty parent = prop.getParentProperty();
-        if(parent.getPropertyType().equals("collection")) {                                  //$NON-NLS-1$
+        if(parent.getPropertyType() == ("collection")) {                                  //$NON-NLS-1$
           String name = parent.getPropertyName();
           parent = parent.getParentProperty();
           if(parent instanceof XMLControl) {
@@ -829,19 +829,18 @@ public void tableChanged(TableModelEvent e) {
     };
   }
 
-  // determines whether the specified property is inspectable
-  private boolean isInspectable(XMLProperty prop) {
-    if(prop.getPropertyType().equals("object")) { //$NON-NLS-1$
-      return true;
-    }
-    if(prop.getPropertyType().equals("array")) { //$NON-NLS-1$
-      return ArrayInspector.canInspect(prop);
-    }
-    if(prop.getPropertyType().equals("collection")) { //$NON-NLS-1$
-      return true;
-    }
-    return false;
-  }
+	// determines whether the specified property is inspectable
+	private boolean isInspectable(XMLProperty prop) {
+		switch (prop.getPropertyType()) {
+		case "object": //$NON-NLS-1$
+		case "collection":
+			return true;
+		case "array": //$NON-NLS-1$
+			return ArrayInspector.canInspect(prop);
+		default:
+			return false;
+		}
+	}
 
 }
 

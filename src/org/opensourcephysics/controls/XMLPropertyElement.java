@@ -65,17 +65,22 @@ public final class XMLPropertyElement extends XMLNode implements XMLProperty {
 			boolean writeNullFinalArrayElement) {
 		this(mother);
 		name = propertyName;
-		type = propertyType;
+		type = propertyType.intern();
 		writeNullFinalElement = writeNullFinalArrayElement;
-		if (type.equals("string")) { //$NON-NLS-1$
+		switch (type) {
+		case "string": //$NON-NLS-1$
 			if (XML.requiresCDATA((String) value)) {
 				content.add(XML.CDATA_PRE + value + XML.CDATA_POST);
 			} else {
 				content.add(value.toString());
 			}
-		} else if ("intdoubleboolean".indexOf(type) != -1) { //$NON-NLS-1$
+			break;
+		case "int":
+		case "double":
+		case "boolean":
 			content.add(value.toString());
-		} else if (type.equals("object")) { //$NON-NLS-1$
+			break;
+		case "object":
 			if (value == null) {
 				content.add("null"); //$NON-NLS-1$
 			} else {
@@ -84,7 +89,8 @@ public final class XMLPropertyElement extends XMLNode implements XMLProperty {
 				control.saveObject(value);
 				content.add(control);
 			}
-		} else if (type.equals("collection")) { //$NON-NLS-1$
+			break;
+		case "collection": //$NON-NLS-1$
 			className = value.getClass().getName();
 			Iterator<?> it = ((Collection<?>) value).iterator();
 			while (it.hasNext()) {
@@ -95,7 +101,8 @@ public final class XMLPropertyElement extends XMLNode implements XMLProperty {
 				}
 				content.add(new XMLPropertyElement(this, "item", type, next, writeNullFinalElement)); //$NON-NLS-1$
 			}
-		} else if (type.equals("array")) { //$NON-NLS-1$
+			break;
+		case "array": //$NON-NLS-1$
 			className = value.getClass().getName();
 			// determine if base component type is primitive and count array elements
 			Class<?> baseType = value.getClass().getComponentType();
@@ -109,7 +116,7 @@ public final class XMLPropertyElement extends XMLNode implements XMLProperty {
 				}
 				count = count * Array.getLength(array);
 			}
-			boolean primitive = "intdoubleboolean".indexOf(baseType.getName()) != -1; //$NON-NLS-1$
+			boolean primitive = (baseType == Integer.TYPE || baseType == Double.TYPE || baseType == Boolean.TYPE);
 			if (primitive && (count > XMLControlElement.compactArraySize)) {
 				// write array as string if base type is primitive
 				String s = getArrayString(value);
@@ -128,6 +135,7 @@ public final class XMLPropertyElement extends XMLNode implements XMLProperty {
 					content.add(new XMLPropertyElement(this, "[" + j + "]", type, next, writeNullFinalElement)); //$NON-NLS-1$ //$NON-NLS-2$
 				}
 			}
+			break;
 		}
 	}
 
@@ -214,15 +222,19 @@ public final class XMLPropertyElement extends XMLNode implements XMLProperty {
 	 */
 	@Override
 	public XMLControl[] getChildControls() {
-		if (type.equals("object") && !content.isEmpty()) { //$NON-NLS-1$
-			XMLControl child = (XMLControl) content.get(0);
-			return new XMLControl[] { child };
-		} else if ("arraycollection".indexOf(type) != -1) { //$NON-NLS-1$
+		switch (type) {
+		case "object":
+			if (!content.isEmpty()) {
+				return new XMLControl[] { (XMLControl) content.get(0) };				
+			}
+			break;
+		case "array":
+		case  "collection":
 			ArrayList<XMLControl> list = new ArrayList<XMLControl>();
 			Iterator<Object> it = content.iterator();
 			while (it.hasNext()) {
 				XMLProperty prop = (XMLProperty) it.next();
-				if (prop.getPropertyType().equals("object") && !prop.getPropertyContent().isEmpty()) { //$NON-NLS-1$
+				if (prop.getPropertyType() == "object" && !prop.getPropertyContent().isEmpty()) { //$NON-NLS-1$
 					list.add((XMLControl) prop.getPropertyContent().get(0));
 				}
 			}
@@ -253,11 +265,10 @@ public final class XMLPropertyElement extends XMLNode implements XMLProperty {
 			case "string":
 				stringValue = XML.CDATA_PRE + stringValue + XML.CDATA_POST;
 				break;
-			default:
-				if ("objectarraycollection".indexOf(type) != -1) { //$NON-NLS-1$
-					return;
-				}
-				break;
+			case "object":
+			case "array":
+			case "collection":
+				return;
 			}
 		} catch (NumberFormatException ex) {
 			return;
@@ -276,13 +287,13 @@ public final class XMLPropertyElement extends XMLNode implements XMLProperty {
 		// write the opening tag with attributes
 		StringBuffer xml = new StringBuffer(
 				XML.NEW_LINE + indent(getLevel()) + "<property name=\"" + name + "\" type=\"" + type + "\""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		if ("arraycollection".indexOf(type) != -1) { //$NON-NLS-1$
+		if (type == "array" || type == "collection") { //$NON-NLS-1$
 			xml.append(" class=\"" + className + "\""); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		// write the content
 		List<Object> c = content;
 		// special case: null object
-		if (c.isEmpty() && "object".equals(type)) { //$NON-NLS-1$
+		if (c.isEmpty() && type == "object") { //$NON-NLS-1$
 			// BH! Q this was getPropertyContents(), but that is NOT a clone!
 			c = new ArrayList<>();
 			c.add("null"); //$NON-NLS-1$

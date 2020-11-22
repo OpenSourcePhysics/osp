@@ -51,7 +51,7 @@ public class ArrayInspector extends JDialog implements PropertyChangeListener {
 	 * @return the array inspector
 	 */
 	public static ArrayInspector getInspector(XMLProperty arrayProp) {
-		if (!arrayProp.getPropertyType().equals("array")) { //$NON-NLS-1$
+		if (arrayProp.getPropertyType() != ("array")) { //$NON-NLS-1$
 			return null;
 		}
 		// get base component type and depth
@@ -59,10 +59,9 @@ public class ArrayInspector extends JDialog implements PropertyChangeListener {
 		while (type.getComponentType() != null) {
 			type = type.getComponentType();
 		}
-		if (type.getName().equals("double") || //$NON-NLS-1$
-				type.getName().equals("int") || //$NON-NLS-1$
-				type.getName().equals("boolean") || //$NON-NLS-1$
-				type.equals(String.class)) { // node is double, int or string array
+		if (type == Double.TYPE || type == Integer.TYPE || type == Boolean.TYPE
+				|| type == String.class) {
+			// node is double, int or string array
 			String name = arrayProp.getPropertyName();
 			XMLProperty parent = arrayProp.getParentProperty();
 			while (!(parent instanceof XMLControl)) {
@@ -139,7 +138,7 @@ public class ArrayInspector extends JDialog implements PropertyChangeListener {
 	 * @return true if it can be inspected
 	 */
 	public static boolean canInspect(XMLProperty arrayProp) {
-		if (!arrayProp.getPropertyType().equals("array")) { //$NON-NLS-1$
+		if (arrayProp.getPropertyType() != ("array")) { //$NON-NLS-1$
 			return false;
 		}
 		String name = arrayProp.getPropertyName();

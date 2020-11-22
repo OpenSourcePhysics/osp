@@ -21,63 +21,62 @@ public class XMLTreeNode extends DefaultMutableTreeNode {
   protected XMLProperty prop;
   private boolean inspectable = false;
 
-  /**
-   * Constructs a node with an XMLProperty
-   *
-   * @param property the XMLProperty
-   */
-  public XMLTreeNode(XMLProperty property) {
-    prop = property;
-    setUserObject(this);
-    Iterator<?> it = (property instanceof XMLControl ? 
-    		((XMLControl) property).getPropsRaw() 
-    		: property.getPropertyContent())
-    		.iterator();
-    while(it.hasNext()) {
-      Object next = it.next();
-      if(next instanceof XMLProperty) {
-        XMLProperty prop = (XMLProperty) next;
-        // go down one level if prop's only content is an XMLControl
-        List<?> content = prop.getPropertyContent();
-        if(content.size()==1) {
-          next = content.get(0);
-          if(next instanceof XMLControl) {
-            prop = (XMLProperty) next;
-          }
-        }
-        add(new XMLTreeNode(prop));
-      }
-    }
-    // determine if this node is inspectable
-    if(prop.getPropertyType().equals("array")) {                          //$NON-NLS-1$
-      // get base component type and depth
-      Class<?> type = prop.getPropertyClass();
-      if(type==null) {
-        return;
-      }
-      while(type.getComponentType()!=null) {
-        type = type.getComponentType();
-      }
-      if(type.getName().equals("double")||type.getName().equals("int")) { // node is double or int array //$NON-NLS-1$ //$NON-NLS-2$
-        XMLProperty proper = prop;
-        XMLProperty parent = proper.getParentProperty();
-        while(!(parent instanceof XMLControl)) {
-          proper = parent;
-          parent = parent.getParentProperty();
-        }
-        // get array depth
-        type = proper.getPropertyClass();
-        int i = 0;
-        while(type.getComponentType()!=null) {
-          type = type.getComponentType();
-          i++;
-        }
-        if(i<=3) {
-          inspectable = true;
-        }
-      }
-    }
-  }
+	/**
+	 * Constructs a node with an XMLProperty
+	 *
+	 * @param property the XMLProperty
+	 */
+	public XMLTreeNode(XMLProperty property) {
+		prop = property;
+		setUserObject(this);
+		Iterator<?> it = (property instanceof XMLControl ? ((XMLControl) property).getPropsRaw()
+				: property.getPropertyContent()).iterator();
+		while (it.hasNext()) {
+			Object next = it.next();
+			if (next instanceof XMLProperty) {
+				XMLProperty prop = (XMLProperty) next;
+				// go down one level if prop's only content is an XMLControl
+				List<?> content = prop.getPropertyContent();
+				if (content.size() == 1) {
+					next = content.get(0);
+					if (next instanceof XMLControl) {
+						prop = (XMLProperty) next;
+					}
+				}
+				add(new XMLTreeNode(prop));
+			}
+		}
+		// determine if this node is inspectable
+		if (prop.getPropertyType() == "array") { //$NON-NLS-1$
+			// get base component type and depth
+			Class<?> type = prop.getPropertyClass();
+			if (type == null) {
+				return;
+			}
+			while (type.getComponentType() != null) {
+				type = type.getComponentType();
+			}
+			if (type == Double.TYPE || type == Integer.TYPE) { 
+				// node																	// is double or int array
+				XMLProperty proper = prop;
+				XMLProperty parent = proper.getParentProperty();
+				while (!(parent instanceof XMLControl)) {
+					proper = parent;
+					parent = parent.getParentProperty();
+				}
+				// get array depth
+				type = proper.getPropertyClass();
+				int i = 0;
+				while (type.getComponentType() != null) {
+					type = type.getComponentType();
+					i++;
+				}
+				if (i <= 3) {
+					inspectable = true;
+				}
+			}
+		}
+	}
 
   /**
    * Gets the XMLProperty.

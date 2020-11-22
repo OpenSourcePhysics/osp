@@ -112,73 +112,77 @@ public boolean isCellEditable(int row, int col) {
     } else if(value instanceof XMLProperty) {
       XMLProperty prop = (XMLProperty) value;
       XMLProperty parent = prop.getParentProperty();
-      if(parent.getPropertyType().equals("array")) {      //$NON-NLS-1$
-        return ArrayInspector.canInspect(parent);
+      switch (parent.getPropertyType()) {
+      case "array":
+    	  return ArrayInspector.canInspect(parent);
+      case "collection":
+    	  return true;
+      default:
+    	  return false;
       }
-      if(parent.getPropertyType().equals("collection")) { //$NON-NLS-1$
-        return true;
-      }
-      return false;
     }
     // otherwise editable
     return true;
   }
 
-  /**
-   * Sets the value at the given cell. This method only sets values for
-   * int, double, boolean and string types.
-   *
-   * @param value the value
-   * @param row the row index
-   * @param col the column index
-   */
-  @Override
-public void setValueAt(Object value, int row, int col) {
-    if(value==null) {
-      return;
-    }
-    boolean changed = false;
-    if(value instanceof String) {
-      String s = (String) value;
-      // determine class type at row and column
-      XMLProperty prop = (XMLProperty) control.getPropsRaw().get(row);
-      changed = !s.equals(control.getString(prop.getPropertyName()));
-      String type = prop.getPropertyType();
-      if(type.equals("string")) {                       //$NON-NLS-1$
-        control.setValue(prop.getPropertyName(), s);
-      } else if(type.equals("int")) {                   //$NON-NLS-1$
-        try {
-          int i = Integer.parseInt(s);
-          control.setValue(prop.getPropertyName(), i);
-        } catch(NumberFormatException ex) {
+	/**
+	 * Sets the value at the given cell. This method only sets values for int,
+	 * double, boolean and string types.
+	 *
+	 * @param value the value
+	 * @param row   the row index
+	 * @param col   the column index
+	 */
+	@Override
+	public void setValueAt(Object value, int row, int col) {
+		if (value == null) {
+			return;
+		}
+		boolean changed = false;
+		if (value instanceof String) {
+			String s = (String) value;
+			// determine class type at row and column
+			XMLProperty prop = (XMLProperty) control.getPropsRaw().get(row);
+			changed = !s.equals(control.getString(prop.getPropertyName()));
+			switch (prop.getPropertyType()) {
+			case "string": //$NON-NLS-1$
+				control.setValue(prop.getPropertyName(), s);
+				break;
+			case "int":
+				try {
+					control.setValue(prop.getPropertyName(), Integer.parseInt(s));
+				} catch (NumberFormatException ex) {
 
-        /** empty block */
-        }
-      } else if(type.equals("double")) {                //$NON-NLS-1$
-        try {
-          double x = Double.parseDouble(s);
-          control.setValue(prop.getPropertyName(), x);
-        } catch(NumberFormatException ex) {
+					/** empty block */
+				}
+				break;
+			case "double": //$NON-NLS-1$
+				try {
+					control.setValue(prop.getPropertyName(), Double.parseDouble(s));
+				} catch (NumberFormatException ex) {
 
-        /** empty block */
-        }
-      } else if(type.equals("boolean")) {               //$NON-NLS-1$
-        boolean bool = s.toLowerCase().startsWith("t"); //$NON-NLS-1$
-        changed = bool!=control.getBoolean(prop.getPropertyName());
-        control.setValue(prop.getPropertyName(), bool);
-      } else if(type.equals("object")) {                //$NON-NLS-1$
-        XMLControl childControl = control.getChildControl(prop.getPropertyName());
-        if((childControl.getObjectClass()==Character.class)&&(s.length()==1)) {
-          Character c = new Character(s.charAt(0));
-          changed = !c.equals(control.getObject(prop.getPropertyName()));
-          control.setValue(prop.getPropertyName(), c);
-        }
-      }
-    }
-    if(changed) {
-      fireTableCellUpdated(row, col);
-    }
-  }
+					/** empty block */
+				}
+				break;
+			case "boolean": //$NON-NLS-1$
+				boolean bool = s.toLowerCase().startsWith("t"); //$NON-NLS-1$
+				changed = bool != control.getBoolean(prop.getPropertyName());
+				control.setValue(prop.getPropertyName(), bool);
+				break;
+			case "object": //$NON-NLS-1$
+				XMLControl childControl = control.getChildControl(prop.getPropertyName());
+				if ((childControl.getObjectClass() == Character.class) && (s.length() == 1)) {
+					Character c = new Character(s.charAt(0));
+					changed = !c.equals(control.getObject(prop.getPropertyName()));
+					control.setValue(prop.getPropertyName(), c);
+				}
+				break;
+			}
+		}
+		if (changed) {
+			fireTableCellUpdated(row, col);
+		}
+	}
 
 }
 
