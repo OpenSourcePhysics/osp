@@ -150,8 +150,7 @@ public void setForeground(Color color){
     while(componentType.isArray()) {
       componentType = componentType.getComponentType();
     }
-    String type = componentType.getName();
-    if(type.equals("double")) {      //$NON-NLS-1$
+    if(componentType == Double.TYPE) {      //$NON-NLS-1$
       double[][] array = (double[][]) obj;
       double[] row = new double[array.length];
       for(int i = 0, n = array[0].length; i<n; i++) {
@@ -160,7 +159,7 @@ public void setForeground(Color color){
         }
         appendRow(row);
       }
-    } else if(type.equals("int")) {  //$NON-NLS-1$
+    } else if(componentType == Integer.TYPE) {  //$NON-NLS-1$
       int[][] array = (int[][]) obj;
       int[] row = new int[array.length];
       for(int i = 0, n = array[0].length; i<n; i++) {
@@ -169,7 +168,7 @@ public void setForeground(Color color){
         }
         appendRow(row);
       }
-    } else if(type.equals("byte")) { //$NON-NLS-1$
+    } else if(componentType == Byte.TYPE) { //$NON-NLS-1$
       byte[][] array = (byte[][]) obj;
       byte[] row = new byte[array.length];
       for(int i = 0, n = array[0].length; i<n; i++) {

@@ -38,27 +38,61 @@ public interface XMLProperty {
 	};
 
 	public static String getTypeName(int type) {
-		return types[type];
+		return (type == TYPE_UNKNOWN ? "object" : types[type]);
 	}
 
 	public static int getTypeCode(String type) {
 		switch (type) {
 		case "int":
-			return 0;
+			return TYPE_INT;
 		case "double":
-			return 1;
+			return TYPE_DOUBLE;
 		case "boolean":
-			return 2;
+			return TYPE_BOOLEAN;
 		case "string":
-			return 3;
+			return TYPE_STRING;
 		case "array":
-			return 4;
+			return TYPE_ARRAY;
 		case "collection":
-			return 5;
+			return TYPE_COLLECTION;
 		case "object":
-			return 6;
+			return TYPE_OBJECT;
 		default:
-			return -1;
+			return TYPE_UNKNOWN;
+		}
+	}
+
+	/**
+	 * Gets the XMLProperty type for a Java object.
+	 *
+	 * @param obj the object
+	 * @return the type
+	 */
+	static int getDataType(Object obj) {
+		if (obj == null) {
+			return TYPE_UNKNOWN;
+		}
+		if (obj instanceof String) {
+			return TYPE_STRING; //$NON-NLS-1$
+		} else if (obj instanceof Collection<?>) {
+			return TYPE_COLLECTION; //$NON-NLS-1$
+		} else if (obj.getClass().isArray()) {
+			// make sure ultimate component class is acceptable
+			Class<?> componentType = obj.getClass().getComponentType();
+			while (componentType.isArray()) {
+				componentType = componentType.getComponentType();
+			}
+			String type = componentType.getName();
+			if ((type.indexOf(".") == -1) && ("intdoubleboolean".indexOf(type) == -1)) { //$NON-NLS-1$ //$NON-NLS-2$
+				return TYPE_UNKNOWN;
+			}
+			return TYPE_ARRAY; //$NON-NLS-1$
+		} else if (obj instanceof Double) {
+			return TYPE_DOUBLE; //$NON-NLS-1$
+		} else if (obj instanceof Integer) {
+			return TYPE_INT; //$NON-NLS-1$
+		} else {
+			return TYPE_OBJECT; //$NON-NLS-1$
 		}
 	}
 
@@ -127,39 +161,6 @@ public interface XMLProperty {
 	 */
 	public void setValue(String stringValue);
 
-	/**
-	 * Gets the datatype of the object.
-	 *
-	 * @param obj the object
-	 * @return the type
-	 */
-	static int getDataType(Object obj) {
-		if (obj == null) {
-			return TYPE_UNKNOWN;
-		}
-		if (obj instanceof String) {
-			return TYPE_STRING; //$NON-NLS-1$
-		} else if (obj instanceof Collection<?>) {
-			return TYPE_COLLECTION; //$NON-NLS-1$
-		} else if (obj.getClass().isArray()) {
-			// make sure ultimate component class is acceptable
-			Class<?> componentType = obj.getClass().getComponentType();
-			while (componentType.isArray()) {
-				componentType = componentType.getComponentType();
-			}
-			String type = componentType.getName();
-			if ((type.indexOf(".") == -1) && ("intdoubleboolean".indexOf(type) == -1)) { //$NON-NLS-1$ //$NON-NLS-2$
-				return TYPE_UNKNOWN;
-			}
-			return TYPE_ARRAY; //$NON-NLS-1$
-		} else if (obj instanceof Double) {
-			return TYPE_DOUBLE; //$NON-NLS-1$
-		} else if (obj instanceof Integer) {
-			return TYPE_INT; //$NON-NLS-1$
-		} else {
-			return TYPE_OBJECT; //$NON-NLS-1$
-		}
-	}
 }
 
 /*

@@ -504,8 +504,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	 */
 	public void addFilter(Class<? extends Filter> filterClass) {
 		if (Filter.class.isAssignableFrom(filterClass)) {
-			String name = filterClass.getName();
-			filterClasses.put(name, filterClass);
+			filterClasses.put(filterClass.getName(), filterClass);
 		}
 	}
 
@@ -516,8 +515,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	 */
 	public void removeFilter(Class<?> filterClass) {
 		if (Filter.class.isAssignableFrom(filterClass)) {
-			String name = filterClass.getName();
-			filterClasses.remove(name);
+			filterClasses.remove(filterClass.getName());
 		}
 	}
 

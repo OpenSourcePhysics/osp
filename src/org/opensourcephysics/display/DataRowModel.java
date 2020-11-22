@@ -127,14 +127,13 @@ public class DataRowModel extends AbstractTableModel {
 		}
 		// make sure ultimate component class is acceptable
 		Class<?> componentType = obj.getClass().getComponentType();
-		String type = componentType.getName();
-		if (type.equals("double")) { //$NON-NLS-1$
+		if (componentType == Double.TYPE) { //$NON-NLS-1$
 			appendDoubles((double[]) obj);
-		} else if (type.equals("int")) { //$NON-NLS-1$
+		} else if (componentType == Integer.TYPE) { //$NON-NLS-1$
 			appendInts((int[]) obj);
-		} else if (type.equals("byte")) { //$NON-NLS-1$
+		} else if (componentType == Byte.TYPE) { //$NON-NLS-1$
 			appendBytes((byte[]) obj);
-		} else if (type.equals("string")) { //$NON-NLS-1$
+		} else if (componentType == String.class) { //$NON-NLS-1$
 			appendStrings((String[]) obj);
 		} else {
 			Object[] row = (Object[]) obj;

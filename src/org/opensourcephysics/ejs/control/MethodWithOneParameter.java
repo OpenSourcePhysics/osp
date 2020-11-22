@@ -132,19 +132,16 @@ public class MethodWithOneParameter {
 	 * 
 	 */
 	private static Value inferType(Object val) {
-		switch (val.getClass().getName()) {
-		case "java.lang.String":
+		Class<?> c = val.getClass();
+		if (c == String.class)
 			return new StringValue(null);
-		case "java.lang.Float":
-		case "java.lang.Double":
+		if (c == Float.class || c == Double.class)
 			return new DoubleValue(0);
-		case "java.lang.Integer":
+		if (c == Integer.class)
 			return new IntegerValue(0);
-		case "java.lang.Boolean":
+		if (c == Boolean.class)
 			return Value.VALUE_FALSE;
-		default:
-			return new ObjectValue(null);
-		}
+		return new ObjectValue(null);
 	}
 
 	public Value invoke(int _type, Object _callingObject) { // Modified for AMAVP
