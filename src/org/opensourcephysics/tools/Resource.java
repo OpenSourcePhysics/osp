@@ -25,6 +25,7 @@ import javax.swing.ImageIcon;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
+import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.display.ResizableIcon;
 
 /**
@@ -331,28 +332,23 @@ public class Resource {
 		return string;
 	}
 
+	private String shortClassName;
+
 	/**
 	 * Gets the short name of the XMLControl class. May be null.
 	 *
-	 * @return the class name 
+	 * @return the class name
 	 */
 	public String getXMLClassName() {
+		if (shortClassName != null)
+			return shortClassName;
 		try {
-			BufferedReader in = openReader();
-			String line = in.readLine();
-			if (line != null && line.startsWith("<?xml")) {
-				line = in.readLine();
-				if (line != null && line.startsWith("<object class=")) {
-					String[] parts = line.split("\"");
-					parts = parts[1].split("\\.");
-					return parts[parts.length - 1];
-				}
-			}
-			in.close();
+			String name = XMLControlElement
+					.getClassName(new String(ResourceLoader.getLimitedStreamBytes(openInputStream(), 300, null, true)));
+			return shortClassName = name.substring(name.lastIndexOf('.') + 1);
 		} catch (IOException ex) {
-			ex.printStackTrace();
+			return null;
 		}
-		return null;
 	}
 
 	/**
