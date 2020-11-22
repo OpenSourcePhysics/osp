@@ -2522,7 +2522,7 @@ public class ResourceLoader {
 					parent.mkdirs();
 				}
 				fos = new FileOutputStream(target);
-				ResourceLoader.getLimitedStreamBytes(zis, ze.getSize(), fos);
+				ResourceLoader.getLimitedStreamBytes(zis, ze.getSize(), fos, false);
 				fos.close();
 				System.out.println("RL extracted " + targetName + " " + target.length());
 			}
@@ -2994,7 +2994,7 @@ public class ResourceLoader {
 				// Java 9! return new String(url.openStream().readAllBytes());
 				return OSPRuntime.jsutil.readAllBytes(url.openStream());
 			}
-			return ResourceLoader.getLimitedStreamBytes(url.openStream(), -1, null);
+			return ResourceLoader.getLimitedStreamBytes(url.openStream(), -1, null, true);
 		} catch (IOException e) {
 			if (showErr)
 				e.printStackTrace();
@@ -3017,7 +3017,7 @@ public class ResourceLoader {
 				OSPRuntime.getURLBytesAsync(url, whenDone);
 				return;
 			}
-			whenDone.apply(ResourceLoader.getLimitedStreamBytes(url.openStream(), -1, null));
+			whenDone.apply(ResourceLoader.getLimitedStreamBytes(url.openStream(), -1, null, true));
 			return;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -3029,7 +3029,7 @@ public class ResourceLoader {
 	 * From javajs.Rdr
 	 * 
 	 */
-	public static byte[] getLimitedStreamBytes(InputStream is, long n, OutputStream out) throws IOException {
+	public static byte[] getLimitedStreamBytes(InputStream is, long n, OutputStream out, boolean andCloseInput) throws IOException {
 
 		// Note: You cannot use InputStream.available() to reliably read
 		// zip data from the web.
@@ -3052,6 +3052,13 @@ public class ResourceLoader {
 				System.arraycopy(buf, 0, bytes, totalLen - len, len);
 				if (n != Integer.MAX_VALUE && totalLen + buflen > bytes.length)
 					buflen = bytes.length - totalLen;
+			}
+		}
+		if (andCloseInput) {
+			try {
+				is.close();
+			} catch (IOException e) {
+				// ignore
 			}
 		}
 		if (toOut)
