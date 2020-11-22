@@ -138,7 +138,7 @@ public int getInt(String par) {
       str = getObject(par).toString();
     }
     // special handling for OSPCombo
-    if(tableModel.control.getPropertyType(par).equals("object")) { //$NON-NLS-1$
+    if(tableModel.control.getPropertyType(par) == XMLProperty.TYPE_OBJECT) {
       XMLControl c = tableModel.control.getChildControl(par);
       if(c.getObjectClass()==OSPCombo.class) {
         OSPCombo combo = (OSPCombo) c.loadObject(null);
@@ -406,16 +406,22 @@ public void calculationDone(String message) {
       controlTable.setLockValues(true);
       while(it.hasNext()) {
         String name = it.next();
-        if(control.getPropertyType(name).equals("string")) {         //$NON-NLS-1$
+        switch (control.getPropertyType(name)) {
+        case XMLProperty.TYPE_STRING:
           controlTable.setValue(name, control.getString(name));
-        } else if(control.getPropertyType(name).equals("int")) {     //$NON-NLS-1$
-          controlTable.setValue(name, control.getInt(name));
-        } else if(control.getPropertyType(name).equals("double")) {  //$NON-NLS-1$
-          controlTable.setValue(name, control.getDouble(name));
-        } else if(control.getPropertyType(name).equals("boolean")) { //$NON-NLS-1$
-          controlTable.setValue(name, control.getBoolean(name));
-        } else {
-          controlTable.setValue(name, control.getObject(name));
+          break;
+        case XMLProperty.TYPE_INT:
+            controlTable.setValue(name, control.getInt(name));
+            break;
+        case XMLProperty.TYPE_DOUBLE:
+            controlTable.setValue(name, control.getDouble(name));
+            break;
+        case XMLProperty.TYPE_BOOLEAN:
+            controlTable.setValue(name, control.getBoolean(name));
+            break;
+        default:
+            controlTable.setValue(name, control.getObject(name));
+            break;
         }
       }
       controlTable.setLockValues(false);

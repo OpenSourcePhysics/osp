@@ -3,7 +3,7 @@ package org.opensourcephysics.controls;
 public abstract class XMLNode implements XMLProperty {
 
 	protected String name;
-	protected String type = "object";
+	protected int type = XMLProperty.TYPE_OBJECT;
 	protected String className = "java.lang.Object"; //$NON-NLS-1$ //changed by W. Christian
 	protected XMLProperty parent;
 	
@@ -23,7 +23,7 @@ public abstract class XMLNode implements XMLProperty {
 	 * @return the type
 	 */
 	@Override
-	public String getPropertyType() {
+	public int getPropertyType() {
 		return type;
 	}
 

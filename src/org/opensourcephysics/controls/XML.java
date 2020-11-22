@@ -17,7 +17,6 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -122,55 +121,10 @@ public class XML {
     defaultLoader = loader;
   }
 
-  /**
-   * Gets the datatype of the object.
-   *
-   * @param obj the object
-   * @return the type
-   */
-  public static String getDataType(Object obj) {
-    if(obj==null) {
-      return null;
-    }
-    if(obj instanceof String) {
-      return "string";                                                      //$NON-NLS-1$
-    } else if(obj instanceof Collection<?>) {
-      return "collection";                                                  //$NON-NLS-1$
-    } else if(obj.getClass().isArray()) {
-      // make sure ultimate component class is acceptable
-      Class<?> componentType = obj.getClass().getComponentType();
-      while(componentType.isArray()) {
-        componentType = componentType.getComponentType();
-      }
-      String type = componentType.getName();
-      if((type.indexOf(".")==-1)&&("intdoubleboolean".indexOf(type)==-1)) { //$NON-NLS-1$ //$NON-NLS-2$
-        return null;
-      }
-      return "array";                                                       //$NON-NLS-1$
-    } else if(obj instanceof Double) {
-      return "double";                                                      //$NON-NLS-1$
-    } else if(obj instanceof Integer) {
-      return "int";                                                         //$NON-NLS-1$
-    } else {
-      return "object";                                                      //$NON-NLS-1$
-    }
-  }
-
-	public static String getAttr(String xml, String attr, String def) {
+  public static String getAttr(String xml, String attr, String def) {
 		int i = xml.indexOf(attr + "=\""); //$NON-NLS-1$
 		return (i < 0 ? def : xml.substring(i = i + attr.length() + 2, xml.indexOf('"', i)));
 	}
-
-	private static String[] types;
-  /**
-   * Gets an array containing all supported data types.
-   *
-   * @return an array of types
-   */
-  public static String[] getDataTypes() {
-    return (types == null ? (types = new String[] {
-      "object", "array", "collection", "string", "int", "double", "boolean"}) : types); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
-  }
 
   /**
    * Determines whether the specified string requires CDATA tags.

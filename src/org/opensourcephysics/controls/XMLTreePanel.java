@@ -338,7 +338,7 @@ public class XMLTreePanel extends JPanel {
       return;
     }
     // show array inspector if available
-    if(node.getProperty().getPropertyType() == "array") { //$NON-NLS-1$
+    if(node.getProperty().getPropertyType() == XMLProperty.TYPE_ARRAY) { //$NON-NLS-1$
       XMLProperty arrayProp = node.getProperty();
       ArrayInspector inspector = ArrayInspector.getInspector(arrayProp);
       if(inspector!=null) {

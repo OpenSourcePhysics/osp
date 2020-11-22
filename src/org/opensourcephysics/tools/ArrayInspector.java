@@ -51,7 +51,7 @@ public class ArrayInspector extends JDialog implements PropertyChangeListener {
 	 * @return the array inspector
 	 */
 	public static ArrayInspector getInspector(XMLProperty arrayProp) {
-		if (arrayProp.getPropertyType() != ("array")) { //$NON-NLS-1$
+		if (arrayProp.getPropertyType() != XMLProperty.TYPE_ARRAY) { //$NON-NLS-1$
 			return null;
 		}
 		// get base component type and depth
@@ -138,7 +138,7 @@ public class ArrayInspector extends JDialog implements PropertyChangeListener {
 	 * @return true if it can be inspected
 	 */
 	public static boolean canInspect(XMLProperty arrayProp) {
-		if (arrayProp.getPropertyType() != ("array")) { //$NON-NLS-1$
+		if (arrayProp.getPropertyType() != XMLProperty.TYPE_ARRAY) { //$NON-NLS-1$
 			return false;
 		}
 		String name = arrayProp.getPropertyName();

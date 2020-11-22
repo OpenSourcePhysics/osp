@@ -113,9 +113,9 @@ public boolean isCellEditable(int row, int col) {
       XMLProperty prop = (XMLProperty) value;
       XMLProperty parent = prop.getParentProperty();
       switch (parent.getPropertyType()) {
-      case "array":
+      case XMLProperty.TYPE_ARRAY:
     	  return ArrayInspector.canInspect(parent);
-      case "collection":
+      case XMLProperty.TYPE_COLLECTION:
     	  return true;
       default:
     	  return false;
@@ -145,10 +145,10 @@ public boolean isCellEditable(int row, int col) {
 			XMLProperty prop = (XMLProperty) control.getPropsRaw().get(row);
 			changed = !s.equals(control.getString(prop.getPropertyName()));
 			switch (prop.getPropertyType()) {
-			case "string": //$NON-NLS-1$
+			case XMLProperty.TYPE_STRING: //$NON-NLS-1$
 				control.setValue(prop.getPropertyName(), s);
 				break;
-			case "int":
+			case XMLProperty.TYPE_INT:
 				try {
 					control.setValue(prop.getPropertyName(), Integer.parseInt(s));
 				} catch (NumberFormatException ex) {
@@ -156,7 +156,7 @@ public boolean isCellEditable(int row, int col) {
 					/** empty block */
 				}
 				break;
-			case "double": //$NON-NLS-1$
+			case XMLProperty.TYPE_DOUBLE: //$NON-NLS-1$
 				try {
 					control.setValue(prop.getPropertyName(), Double.parseDouble(s));
 				} catch (NumberFormatException ex) {
@@ -164,12 +164,12 @@ public boolean isCellEditable(int row, int col) {
 					/** empty block */
 				}
 				break;
-			case "boolean": //$NON-NLS-1$
+			case XMLProperty.TYPE_BOOLEAN: //$NON-NLS-1$
 				boolean bool = s.toLowerCase().startsWith("t"); //$NON-NLS-1$
 				changed = bool != control.getBoolean(prop.getPropertyName());
 				control.setValue(prop.getPropertyName(), bool);
 				break;
-			case "object": //$NON-NLS-1$
+			case XMLProperty.TYPE_OBJECT: //$NON-NLS-1$
 				XMLControl childControl = control.getChildControl(prop.getPropertyName());
 				if ((childControl.getObjectClass() == Character.class) && (s.length() == 1)) {
 					Character c = new Character(s.charAt(0));

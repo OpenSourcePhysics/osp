@@ -218,7 +218,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		if (name == null) {
 			return;
 		}
-		setXMLProperty(name, "boolean", String.valueOf(value), false); //$NON-NLS-1$
+		setXMLProperty(name, XMLProperty.TYPE_BOOLEAN, String.valueOf(value), false); //$NON-NLS-1$
 	}
 
 	/**
@@ -232,7 +232,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		if (name == null) {
 			return;
 		}
-		setXMLProperty(name, "double", String.valueOf(value), false); //$NON-NLS-1$
+		setXMLProperty(name, XMLProperty.TYPE_DOUBLE, String.valueOf(value), false); //$NON-NLS-1$
 	}
 
 	/**
@@ -246,7 +246,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		if (name == null) {
 			return;
 		}
-		setXMLProperty(name, "int", String.valueOf(value), false); //$NON-NLS-1$
+		setXMLProperty(name, XMLProperty.TYPE_INT, String.valueOf(value), false); //$NON-NLS-1$
 	}
 
 	/**
@@ -299,12 +299,17 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			setValue(name, ((Boolean) obj).booleanValue());
 			return;
 		}
-		String type = XML.getDataType(obj);
-		if (type != null) {
-			if (type == "int" || type == "double") { //$NON-NLS-1$ //$NON-NLS-2$
-				obj = obj.toString();
-			}
+		int type = XMLProperty.getDataType(obj);
+		switch (type) {
+		case XMLProperty.TYPE_UNKNOWN:
+			break;
+		case XMLProperty.TYPE_INT:
+		case XMLProperty.TYPE_DOUBLE:
+			obj = obj.toString();
+			// fall through
+		default:
 			setXMLProperty(name, type, obj, writeNullFinalElement);
+			break;			
 		}
 	}
 
@@ -317,9 +322,9 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	@Override
 	public boolean getBoolean(String name) {
 		XMLProperty prop = getXMLProperty(name);
-		if (prop != null && prop.getPropertyType().equals("boolean")) { //$NON-NLS-1$
+		if (prop != null && prop.getPropertyType() == XMLProperty.TYPE_BOOLEAN) { //$NON-NLS-1$
 			return "true".equals(prop.getPropertyContent().get(0)); //$NON-NLS-1$
-		} else if (prop != null && prop.getPropertyType().equals("string")) { //$NON-NLS-1$
+		} else if (prop != null && prop.getPropertyType() == XMLProperty.TYPE_STRING) { //$NON-NLS-1$
 			return "true".equals(prop.getPropertyContent().get(0)); //$NON-NLS-1$
 		}
 		return false;
@@ -334,14 +339,15 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	@Override
 	public double getDouble(String name) {
 		XMLProperty prop = getXMLProperty(name);
-		if ((prop != null) && (prop.getPropertyType().equals("double") //$NON-NLS-1$
-				|| prop.getPropertyType().equals("int") //$NON-NLS-1$
-				|| prop.getPropertyType().equals("string"))) { //$NON-NLS-1$
+		switch (prop == null ? XMLProperty.TYPE_UNKNOWN : prop.getPropertyType()) {
+		case XMLProperty.TYPE_DOUBLE:
+		case XMLProperty.TYPE_INT:
+		case XMLProperty.TYPE_STRING:
 			try {
 				return Double.parseDouble((String) prop.getPropertyContent().get(0));
 			} catch (Exception ex) {
-				return Double.NaN;
 			}
+			break;
 		}
 		return Double.NaN;
 	}
@@ -355,19 +361,21 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	@Override
 	public int getInt(String name) {
 		XMLProperty prop = getXMLProperty(name);
-		if ((prop != null) && (prop.getPropertyType().equals("int") //$NON-NLS-1$
-				|| prop.getPropertyType().equals("string"))) { //$NON-NLS-1$
+		switch (prop == null ? XMLProperty.TYPE_UNKNOWN : prop.getPropertyType()) {
+		case XMLProperty.TYPE_INT:
+		case XMLProperty.TYPE_STRING:
 			try {
 				return Integer.parseInt((String) prop.getPropertyContent().get(0));
 			} catch (Exception ex) {
-				return Integer.MIN_VALUE;
 			}
-		} else if ((prop != null) && prop.getPropertyType().equals("object")) { //$NON-NLS-1$
+			break;
+		case XMLProperty.TYPE_OBJECT:
 			XMLControl control = (XMLControl) prop.getPropertyContent().get(0);
 			if (control.getObjectClass() == OSPCombo.class) {
 				OSPCombo combo = (OSPCombo) control.loadObject(null);
 				return combo.getSelectedIndex();
 			}
+			break;
 		}
 		return Integer.MIN_VALUE;
 	}
@@ -381,11 +389,15 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	@Override
 	public String getString(String name) {
 		XMLProperty prop = getXMLProperty(name);
-		if (prop != null && prop.getPropertyType() == "string") { //$NON-NLS-1$
+		int type = (prop == null ? XMLProperty.TYPE_UNKNOWN : prop.getPropertyType());
+		
+		if (type == XMLProperty.TYPE_STRING) {
 			return XML.removeCDATA((String) prop.getPropertyContent().get(0));
-		} else if (name.equals("basepath") && (getRootControl() != null)) { //$NON-NLS-1$
+		} 
+		if (name.equals("basepath") && (getRootControl() != null)) { //$NON-NLS-1$
 			return getRootControl().basepath;
-		} else if (prop != null && prop.getPropertyType() == "object") { //$NON-NLS-1$
+		} 
+		if (type == XMLProperty.TYPE_OBJECT) {
 			XMLControl control = (XMLControl) prop.getPropertyContent().get(0);
 			if (control.getObjectClass() == OSPCombo.class) {
 				OSPCombo combo = (OSPCombo) control.loadObject(null);
@@ -406,19 +418,19 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		XMLProperty prop = getXMLProperty(name);
 		if (prop != null) {
 			switch (prop.getPropertyType()) {
-			case "object": //$NON-NLS-1$
+			case XMLProperty.TYPE_OBJECT: //$NON-NLS-1$
 				return objectValue(prop);
-			case "array": //$NON-NLS-1$
+			case XMLProperty.TYPE_ARRAY: //$NON-NLS-1$
 				return arrayValue(prop);
-			case "collection": //$NON-NLS-1$
+			case XMLProperty.TYPE_COLLECTION: //$NON-NLS-1$
 				return collectionValue(prop);
-			case "int": //$NON-NLS-1$
+			case XMLProperty.TYPE_INT: //$NON-NLS-1$
 				return Integer.valueOf(intValue(prop));
-			case "double": //$NON-NLS-1$
+			case XMLProperty.TYPE_DOUBLE: //$NON-NLS-1$
 				return new Double(doubleValue(prop));
-			case "boolean": //$NON-NLS-1$
+			case XMLProperty.TYPE_BOOLEAN: //$NON-NLS-1$
 				return Boolean.valueOf(booleanValue(prop));
-			case "string": //$NON-NLS-1$
+			case XMLProperty.TYPE_STRING: //$NON-NLS-1$
 				return stringValue(prop);
 			}
 		}
@@ -450,12 +462,9 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @return the type
 	 */
 	@Override
-	public String getPropertyType(String name) {
+	public int getPropertyType(String name) {
 		XMLProperty prop = getXMLProperty(name);
-		if (prop != null) {
-			return prop.getPropertyType();
-		}
-		return null;
+		return (prop == null ? XMLProperty.TYPE_UNKNOWN : prop.getPropertyType());
 	}
 
 	/**
@@ -1213,7 +1222,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			Iterator<XMLProperty> it = props.iterator();
 			while (it.hasNext()) {
 				XMLProperty prop = it.next();
-				if (prop.getPropertyType().equals("object")) { //$NON-NLS-1$
+				if (prop.getPropertyType() == XMLProperty.TYPE_OBJECT) { //$NON-NLS-1$
 					list.add((XMLControl) prop.getPropertyContent().get(0));
 				}
 			}
@@ -1395,7 +1404,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 				continue;
 			}
 			names.add(propName); // keeps names in same order as values
-			if (prop.getPropertyType().equals("object")) { //$NON-NLS-1$
+			if (prop.getPropertyType() == XMLProperty.TYPE_OBJECT) { //$NON-NLS-1$
 				values.add(prop.getPropertyClass().getSimpleName());
 			} else {
 				values.add(prop.getPropertyContent().get(0));
@@ -1450,16 +1459,16 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 				continue;
 			}
 			switch (control.getPropertyType(name)) {
-			case "int": //$NON-NLS-1$
+			case XMLProperty.TYPE_INT: //$NON-NLS-1$
 				setValue(name, control.getInt(name));
 				break;
-			case "double": //$NON-NLS-1$
+			case XMLProperty.TYPE_DOUBLE: //$NON-NLS-1$
 				setValue(name, control.getDouble(name));
 				break;
-			case "boolean": //$NON-NLS-1$
+			case XMLProperty.TYPE_BOOLEAN: //$NON-NLS-1$
 				setValue(name, control.getBoolean(name));
 				break;
-			case "string": //$NON-NLS-1$
+			case XMLProperty.TYPE_STRING: //$NON-NLS-1$
 				setValue(name, control.getString(name));
 				break;
 			default:
@@ -1479,10 +1488,10 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @param writeNullFinalArrayElement true to write a final null array element
 	 *                                   (if needed)
 	 */
-	private void setXMLProperty(String name, String type, Object value, boolean writeNullFinalArrayElement) {
+	private void setXMLProperty(String name, int type, Object value, boolean writeNullFinalArrayElement) {
 		// remove any previous property with the same name
 		XMLPropertyElement prop = new XMLPropertyElement(this, name, type, value, writeNullFinalArrayElement);
-		int i = -1;
+ 		int i = -1;
 		XMLProperty old = getProperty(name);
 		if (old == null) {
 			propNames.add(name);
@@ -1503,7 +1512,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 
 	private void setProperty(String name, XMLProperty prop) {
 		getPropMap().put(name, prop);
-		if (prop.getPropertyType().equals("object")) { //$NON-NLS-1$
+		if (prop.getPropertyType() == XMLProperty.TYPE_OBJECT) { //$NON-NLS-1$
 			getChildMap().put(name, ((XMLControl) prop.getPropertyContent().get(0)));
 			childControls = null;
 		}
@@ -1704,11 +1713,11 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		// set property name
 		prop.name = XML.getAttr(xml, "name", null); //$NON-NLS-1$
 		// set property type
-		prop.type = XML.getAttr(xml, "type", null).intern(); //$NON-NLS-1$
+		prop.type = XMLProperty.getTypeCode(XML.getAttr(xml, "type", null)); //$NON-NLS-1$
 		// set property content and className
 		switch (prop.type) {
-		case "array": //$NON-NLS-1$
-		case "collection": //$NON-NLS-1$
+		case XMLProperty.TYPE_ARRAY: //$NON-NLS-1$
+		case XMLProperty.TYPE_COLLECTION: //$NON-NLS-1$
 			prop.className = getClassName(xml);
 			if (xml.indexOf("/>") >= 0) { // property closing tag on same line //$NON-NLS-1$
 				return prop;
@@ -1719,7 +1728,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 				xml = input.readLine();
 			}
 			break;
-		case "object": //$NON-NLS-1$
+		case XMLProperty.TYPE_OBJECT: //$NON-NLS-1$
 			// add XMLControl unless value is null
 			if (xml.indexOf(">null</property") < 0) { //$NON-NLS-1$
 				XMLControlElement control = readObject(new XMLControlElement(prop), input.readLine(), null);
@@ -1727,7 +1736,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 				prop.className = control.className;
 			}
 			break;
-		case "string":
+		case XMLProperty.TYPE_STRING:
 			int pt = xml.indexOf(XML.CDATA_PRE); 
 			if (pt >= 0) {
 				String s = xml.substring(pt + XML.CDATA_PRE_LEN);
@@ -1775,7 +1784,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @return the array
 	 */
 	private Object objectValue(XMLProperty prop) {
-		if (prop.getPropertyType() != ("object")) { //$NON-NLS-1$
+		if (prop.getPropertyType() != XMLProperty.TYPE_OBJECT) { //$NON-NLS-1$
 			return null;
 		}
 		if (prop.getPropertyContent().isEmpty())
@@ -1794,7 +1803,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @return the value
 	 */
 	private double doubleValue(XMLProperty prop) {
-		if (prop.getPropertyType() != ("double")) { //$NON-NLS-1$
+		if (prop.getPropertyType() != XMLProperty.TYPE_DOUBLE) { //$NON-NLS-1$
 			return Double.NaN;
 		}
 		return Double.parseDouble((String) prop.getPropertyContent().get(0));
@@ -1807,7 +1816,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @return the value
 	 */
 	private int intValue(XMLProperty prop) {
-		if (prop.getPropertyType() != ("int")) { //$NON-NLS-1$
+		if (prop.getPropertyType() != XMLProperty.TYPE_INT) { //$NON-NLS-1$
 			return Integer.MIN_VALUE;
 		}
 		return Integer.parseInt((String) prop.getPropertyContent().get(0));
@@ -1830,7 +1839,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @return the value
 	 */
 	private String stringValue(XMLProperty prop) {
-		return (prop.getPropertyType() == ("string") ? //$NON-NLS-1$
+		return (prop.getPropertyType() == XMLProperty.TYPE_STRING ? //$NON-NLS-1$
 				XML.removeCDATA((String) prop.getPropertyContent().get(0)) : null);
 	}
 
@@ -1841,7 +1850,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @return the array
 	 */
 	private Object arrayValue(XMLProperty prop) {
-		if (prop.getPropertyType() != "array") { //$NON-NLS-1$
+		if (prop.getPropertyType() != XMLProperty.TYPE_ARRAY) { //$NON-NLS-1$
 			return null;
 		}
 		Class<?> componentType = prop.getPropertyClass().getComponentType();
@@ -1852,7 +1861,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		}
 		// determine the format from the first item
 		XMLProperty first = (XMLProperty) content.get(0);
-		if (first.getPropertyName() == ("array")) { //$NON-NLS-1$
+		if (first.getPropertyName().equals("array")) { //$NON-NLS-1$
 			// create the array from an array string
 			Object obj = first.getPropertyContent().get(0);
 			if (obj instanceof String) {
@@ -1873,12 +1882,11 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			XMLProperty next = (XMLProperty) it.next();
 			index = next.getPropertyName();
 			n = Integer.parseInt(index.substring(1, index.indexOf("]"))); //$NON-NLS-1$
-			String type = next.getPropertyType();
-			switch (type) {
-			case "object":
+			switch (next.getPropertyType()) {
+			case XMLProperty.TYPE_OBJECT:
 				Array.set(array, n, objectValue(next));
 				break;
-			case "int":
+			case XMLProperty.TYPE_INT:
 				int val = intValue(next);
 				if (Object.class.isAssignableFrom(componentType)) {
 					Array.set(array, n, Integer.valueOf(val));
@@ -1886,7 +1894,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 					Array.setInt(array, n, val);
 				}
 				break;
-			case "double":
+			case XMLProperty.TYPE_DOUBLE:
 				double d = doubleValue(next);
 				if (Object.class.isAssignableFrom(componentType)) {
 					Array.set(array, n, new Double(d));
@@ -1894,7 +1902,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 					Array.setDouble(array, n, d);
 				}
 				break;
-			case "boolean":
+			case XMLProperty.TYPE_BOOLEAN:
 				boolean b = booleanValue(next);
 				if (Object.class.isAssignableFrom(componentType)) {
 					Array.set(array, n, Boolean.valueOf(b));
@@ -1902,13 +1910,13 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 					Array.setBoolean(array, n, b);
 				}
 				break;
-			case "string":
+			case XMLProperty.TYPE_STRING:
 				Array.set(array, n, stringValue(next));
 				break;
-			case "array":
+			case XMLProperty.TYPE_ARRAY:
 				Array.set(array, n, arrayValue(next));
 				break;
-			case "collection":
+			case XMLProperty.TYPE_COLLECTION:
 				Array.set(array, n, collectionValue(next));
 				break;
 			}
@@ -2021,7 +2029,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 */
 	@SuppressWarnings("unchecked")
 	private Object collectionValue(XMLProperty prop) {
-		if (prop.getPropertyType() != ("collection")) { //$NON-NLS-1$
+		if (prop.getPropertyType() != XMLProperty.TYPE_COLLECTION) { //$NON-NLS-1$
 			return null;
 		}
 		Class<?> classType = prop.getPropertyClass();
@@ -2034,16 +2042,16 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			while (it.hasNext()) {
 				XMLProperty next = (XMLProperty) it.next();
 				switch (next.getPropertyType()) {
-				case "object":
+				case XMLProperty.TYPE_OBJECT:
 					c.add(objectValue(next));
 					break;
-				case "string": //$NON-NLS-1$
+				case XMLProperty.TYPE_STRING: //$NON-NLS-1$
 					c.add(stringValue(next));
 					break;
-				case "array": //$NON-NLS-1$
+				case XMLProperty.TYPE_ARRAY: //$NON-NLS-1$
 					c.add(arrayValue(next));
 					break;
-				case "collection": //$NON-NLS-1$
+				case XMLProperty.TYPE_COLLECTION: //$NON-NLS-1$
 					c.add(collectionValue(next));
 					break;
 				}

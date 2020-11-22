@@ -639,32 +639,41 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
 			while (it.hasNext()) {
 				String name = it.next();
 				// skip "model" object properties
-				if (name.equals("model") && control.getPropertyType(name).equals("object")) { //$NON-NLS-1$ //$NON-NLS-2$
-					XMLControl child = control.getChildControl("model"); //$NON-NLS-1$
-					cf.model = child.loadObject(cf.model);
-					continue;
-				}
-				if ((cf.getObject(name) instanceof OSPCombo) && control.getPropertyType(name).equals("string")) { //$NON-NLS-1$
-					OSPCombo combo = (OSPCombo) cf.getObject(name); // keep the combo but select the correct item
-					String itemName = control.getString(name);
-					String[] items = combo.items;
-					for (int i = 0, n = items.length; i < n; i++) {
-						if (itemName.equals(items[i])) {
-							combo.selected = i;
-							break;
+				switch (control.getPropertyType(name)) {
+				case XMLProperty.TYPE_STRING:
+					if (cf.getObject(name) instanceof OSPCombo) { //$NON-NLS-1$
+						OSPCombo combo = (OSPCombo) cf.getObject(name); // keep the combo but select the correct item
+						String itemName = control.getString(name);
+						String[] items = combo.items;
+						for (int i = 0, n = items.length; i < n; i++) {
+							if (itemName.equals(items[i])) {
+								combo.selected = i;
+								break;
+							}
 						}
+						cf.setValue(name, combo);
+					} else {
+						cf.setValue(name, control.getString(name));
 					}
-					cf.setValue(name, combo);
-				} else if (control.getPropertyType(name).equals("string")) { //$NON-NLS-1$
-					cf.setValue(name, control.getString(name));
-				} else if (control.getPropertyType(name).equals("int")) { //$NON-NLS-1$
+					break;
+				case XMLProperty.TYPE_INT:
 					cf.setValue(name, control.getInt(name));
-				} else if (control.getPropertyType(name).equals("double")) { //$NON-NLS-1$
+					break;
+				case XMLProperty.TYPE_DOUBLE:
 					cf.setValue(name, control.getDouble(name));
-				} else if (control.getPropertyType(name).equals("boolean")) { //$NON-NLS-1$
+					break;
+				case XMLProperty.TYPE_BOOLEAN:
 					cf.setValue(name, control.getBoolean(name));
-				} else {
+					break;
+				case XMLProperty.TYPE_OBJECT:
+					if (name.equals("model")) { //$NON-NLS-1$ //$NON-NLS-2$
+						cf.model = control.getChildControl("model").loadObject(cf.model);
+						break;
+					}
+					// fall through
+				default:
 					cf.setValue(name, control.getObject(name));
+					break;
 				}
 			}
 			cf.table.setLockValues(false);

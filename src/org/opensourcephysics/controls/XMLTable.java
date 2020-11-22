@@ -328,7 +328,7 @@ public TableCellEditor getCellEditor(int row, int column) {
         XMLControl control = (XMLControl) parent.getParentProperty();
         childObj = control.getObject(parent.getPropertyName());
         // array type
-        if(parent.getPropertyType() == ("array")) {  //$NON-NLS-1$
+        if(parent.getPropertyType() == XMLProperty.TYPE_ARRAY) {  //$NON-NLS-1$
           Object array = childObj;
           // determine if base component type is primitive and count array elements
           Class<?> baseType = array.getClass().getComponentType();
@@ -541,7 +541,7 @@ public TableCellEditor getCellEditor(int row, int column) {
       } else if(value instanceof XMLProperty) {                                              // collection or array type
         XMLProperty prop = (XMLProperty) value;
         XMLProperty parent = prop.getParentProperty();
-        if(parent.getPropertyType() == ("collection")) {                                  //$NON-NLS-1$
+        if(parent.getPropertyType() == XMLProperty.TYPE_COLLECTION) {                                  //$NON-NLS-1$
           String name = parent.getPropertyName();
           parent = parent.getParentProperty();
           if(parent instanceof XMLControl) {
@@ -832,10 +832,10 @@ public void tableChanged(TableModelEvent e) {
 	// determines whether the specified property is inspectable
 	private boolean isInspectable(XMLProperty prop) {
 		switch (prop.getPropertyType()) {
-		case "object": //$NON-NLS-1$
-		case "collection":
+		case XMLProperty.TYPE_OBJECT: //$NON-NLS-1$
+		case XMLProperty.TYPE_COLLECTION:
 			return true;
-		case "array": //$NON-NLS-1$
+		case XMLProperty.TYPE_ARRAY: //$NON-NLS-1$
 			return ArrayInspector.canInspect(prop);
 		default:
 			return false;

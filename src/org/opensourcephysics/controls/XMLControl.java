@@ -23,7 +23,7 @@ public interface XMLControl extends Control, XMLProperty {
    * @param name the property name
    * @return the type
    */
-  public String getPropertyType(String name);
+  public int getPropertyType(String name);
 
   /**
    * Gets the name of the object class for which this element stores data.

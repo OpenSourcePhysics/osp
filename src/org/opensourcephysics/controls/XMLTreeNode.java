@@ -47,7 +47,7 @@ public class XMLTreeNode extends DefaultMutableTreeNode {
 			}
 		}
 		// determine if this node is inspectable
-		if (prop.getPropertyType() == "array") { //$NON-NLS-1$
+		if (prop.getPropertyType() == XMLProperty.TYPE_ARRAY) { //$NON-NLS-1$
 			// get base component type and depth
 			Class<?> type = prop.getPropertyClass();
 			if (type == null) {

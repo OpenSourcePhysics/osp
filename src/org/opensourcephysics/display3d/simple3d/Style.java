@@ -11,6 +11,7 @@ import java.awt.Color;
 import java.awt.Stroke;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.controls.XMLProperty;
 
 public class Style implements org.opensourcephysics.display3d.core.Style {
   static final int STYLE_LINE_COLOR = 0;
@@ -248,27 +249,27 @@ public void copyTo(org.opensourcephysics.display3d.core.Style target) {
       }
     }
 
-    @Override
-	public Object loadObject(XMLControl control, Object obj) {
-      Style style = (Style) obj;
-      style.setLineColor((Color) control.getObject("line color"));                                            //$NON-NLS-1$
-      style.setLineWidth((float) control.getDouble("line width"));                                            //$NON-NLS-1$
-      style.setFillColor((Color) control.getObject("fill color"));                                            //$NON-NLS-1$
-      style.setResolution((org.opensourcephysics.display3d.core.Resolution) control.getObject("resolution")); //$NON-NLS-1$
-      if(control.getPropertyType("drawing fill")!=null) {         //$NON-NLS-1$
-        System.out.println("Reading drawFills");                  //$NON-NLS-1$
-        style.setDrawingFill(control.getBoolean("drawing fill")); //$NON-NLS-1$
-      } else {
-        System.out.println("Not reading drawFills");              //$NON-NLS-1$
-      }
-      if(control.getPropertyType("drawing lines")!=null) {          //$NON-NLS-1$
-        System.out.println("Reading drawLines");                    //$NON-NLS-1$
-        style.setDrawingLines(control.getBoolean("drawing lines")); //$NON-NLS-1$
-      } else {
-        System.out.println("Not reading drawLines");                //$NON-NLS-1$
-      }
-      return obj;
-    }
+		@Override
+		public Object loadObject(XMLControl control, Object obj) {
+			Style style = (Style) obj;
+			style.setLineColor((Color) control.getObject("line color")); //$NON-NLS-1$
+			style.setLineWidth((float) control.getDouble("line width")); //$NON-NLS-1$
+			style.setFillColor((Color) control.getObject("fill color")); //$NON-NLS-1$
+			style.setResolution((org.opensourcephysics.display3d.core.Resolution) control.getObject("resolution")); //$NON-NLS-1$
+			if (control.getPropertyType("drawing fill") != XMLProperty.TYPE_UNKNOWN) { //$NON-NLS-1$
+				System.out.println("Reading drawFills"); //$NON-NLS-1$
+				style.setDrawingFill(control.getBoolean("drawing fill")); //$NON-NLS-1$
+			} else {
+				System.out.println("Not reading drawFills"); //$NON-NLS-1$
+			}
+			if (control.getPropertyType("drawing lines") != XMLProperty.TYPE_UNKNOWN) { //$NON-NLS-1$
+				System.out.println("Reading drawLines"); //$NON-NLS-1$
+				style.setDrawingLines(control.getBoolean("drawing lines")); //$NON-NLS-1$
+			} else {
+				System.out.println("Not reading drawLines"); //$NON-NLS-1$
+			}
+			return obj;
+		}
 
   }
 
