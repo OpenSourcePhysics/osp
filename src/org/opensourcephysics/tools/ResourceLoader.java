@@ -1362,6 +1362,8 @@ public class ResourceLoader {
 		if (contents == null)
 			return null;
 		if (!isContains) {
+			if (fileName.indexOf("!/") >= 0)
+				fileName = getJarURLParts(fileName)[1];
 			return contents.get(fileName);
 		}
 		boolean isLCExt = fileName.startsWith(".");
