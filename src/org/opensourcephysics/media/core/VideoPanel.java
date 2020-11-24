@@ -580,6 +580,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		case AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY:
 			Video newVideo = (Video) e.getNewValue();
 			newVideo.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, this);
+			if (loader == null)
+				System.out.println("VideoPanel loader is null!");
 			loader.finalizeLoading();
 			repaint();
 			break;
@@ -734,7 +736,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	 * A class to save and load data for this object.
 	 */
 	public static class Loader implements XML.ObjectLoader, FinalizableLoader {
-		protected VideoClip clip;
+		public VideoClip clip;
 		protected VideoPanel videoPanel;
 		protected XMLControl control;
 
@@ -790,7 +792,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			if (clip != null) {
 				Video video = clip.getVideo();
 				if (video instanceof AsyncVideoI) {
-					videoPanel.loader = this;
+					videoPanel.setLoader(this);
 					video.addPropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, videoPanel);
 					return false;
 				}
@@ -811,7 +813,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		
 		@Override
 		public void finalizeLoading() {
-			videoPanel.loader = null;
+			videoPanel.setLoader(null);
 			finalizeClip();
 			videoPanel.setCoords((ImageCoordSystem) control.getObject("coords")); //$NON-NLS-1$
 			Collection<?> drawables = (Collection<?>) control.getObject("drawables"); //$NON-NLS-1$			
@@ -845,6 +847,10 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		}
 
 
+	}
+
+	public void setLoader(FinalizableLoader loader) {
+		this.loader = loader;
 	}
 
 }
