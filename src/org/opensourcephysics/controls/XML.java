@@ -29,7 +29,11 @@ import java.util.Map;
  * @version 1.0
  */
 public class XML {
-  // static constants
+  public interface NonStaticLoader {
+
+	}
+
+// static constants
   @SuppressWarnings("javadoc")
 	public static String NEW_LINE = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
   @SuppressWarnings("javadoc")
@@ -74,7 +78,8 @@ public class XML {
    * @param loader the ObjectLoader
    */
   public static void setLoader(Class<?> classtype, XML.ObjectLoader loader) {
-    loaders.put(classtype, loader);
+	  if (!(loader instanceof NonStaticLoader))
+		  loaders.put(classtype, loader);
   }
 
   /**

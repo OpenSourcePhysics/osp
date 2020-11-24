@@ -96,7 +96,7 @@ public class VideoIO {
 			"m2ts", "mpg", "mod", "ogg", "dv" };
 	public static final String VIDEO_CONVERSION_HELP_PATH = "https://physlets.org/tracker/converting_videos.html";
 
-	public interface FinalizableLoader {
+	public interface FinalizableLoader extends XML.NonStaticLoader {
 		
 		public void finalizeLoading();
 
