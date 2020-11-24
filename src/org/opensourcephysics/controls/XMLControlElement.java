@@ -99,6 +99,11 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 
 	private Map<String, XMLProperty> propMap;
 
+	/**
+	 * see TrackerPanel.Loader
+	 * 
+	 * @return
+	 */
 	public Object getData() {
 		return data;
 	}
@@ -980,9 +985,13 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @return the loaded object
 	 */
 	public Object loadObject(Object obj, boolean autoImport, boolean importAll) {
-		Class<?> type = getObjectClass();
-		if (type == null) {
-			if (obj == null) {
+		Class<?> myType = getObjectClass();
+		XML.ObjectLoader loader = null;
+		Class<?> oclass = (obj == null ? null : obj.getClass());
+		// we must establish relationship between the control's XML type
+		// and the object's Java type
+		if (myType == null) {
+			if (oclass == null) {
 				return null;
 			}
 			if (!autoImport) {
@@ -1003,11 +1012,16 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			if (!importInto(obj, importAll)) {
 				return obj;
 			}
-			type = obj.getClass();
+			myType = oclass;
+		} else if (obj == null) {
+			oclass = myType;
 		}
 		try {
+			loader = XML.getLoader(myType);
+
 			// BH 2020.02.13 adding check for null obj
-			if (obj != null && XML.getLoader(type).getClass() == XML.getLoader(obj.getClass()).getClass()) {
+			// type may be
+			if (myType == oclass || oclass != null && loader.getClass() == XML.getLoader(oclass).getClass()) {
 				autoImport = true;
 				importAll = true;
 			}
@@ -1015,11 +1029,11 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 
 			/** empty block */
 		}
-		if ((obj != null) && !type.isInstance(obj)) {
+		if (obj != null && myType != oclass && !myType.isInstance(obj)) {
 			if (!autoImport) {
 				int result = JOptionPane.showConfirmDialog(null,
 						ControlsRes.getString("XMLControlElement.Dialog.MismatchedClass.Message") + " \"" //$NON-NLS-1$ //$NON-NLS-2$
-								+ type.getName() + "\"" + XML.NEW_LINE //$NON-NLS-1$
+								+ myType.getName() + "\"" + XML.NEW_LINE //$NON-NLS-1$
 								+ ControlsRes.getString("XMLControlElement.Dialog.MismatchedClass.Query") + " \"" //$NON-NLS-1$ //$NON-NLS-2$
 								+ obj.getClass().getName() + "\"", //$NON-NLS-1$
 						ControlsRes.getString("XMLControlElement.Dialog.MismatchedClass.Title"), //$NON-NLS-1$
@@ -1031,22 +1045,15 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			if (!importInto(obj, importAll)) {
 				return obj;
 			}
-			type = obj.getClass();
+			loader = XML.getLoader(myType = oclass);
 		}
-		XML.ObjectLoader loader = XML.getLoader(type);
 		if (obj == null) { // if obj is null, try to create a new one
-			if (object == null) {
-				object = loader.createObject(this);
+			obj = (object == null ? loader.createObject(this) : object);
+			if (obj == null || !myType.isInstance(obj)) {
+				return obj;
 			}
-			obj = object;
 		}
-		if (obj == null) {
-			return null; // unable to create new obj
-		}
-		if (type.isInstance(obj)) {
-			object = obj = loader.loadObject(this, obj);
-		}
-		return obj;
+		return object = obj = loader.loadObject(this, obj);
 	}
 
 	/**
