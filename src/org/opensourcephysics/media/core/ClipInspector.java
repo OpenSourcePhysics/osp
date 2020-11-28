@@ -70,6 +70,7 @@ public class ClipInspector extends JDialog {
   protected int currentStart, currentCount;
   protected Box frameBox, timeBox;
   protected double dtMin = 1.0E-18, fpsMin = 1.0E-18;
+  public boolean isPositioned = false;
 
   /**
    * Constructs a non-modal ClipInspector with access to the clip control.
