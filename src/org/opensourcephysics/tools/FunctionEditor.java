@@ -179,6 +179,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 
 	private int selectedRow;
 	private int selectedCol;
+	protected HashSet<String> referencesChecked;
 
 	/**
 	 * No-arg constructor
@@ -768,15 +769,19 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	}
 
 	/**
-	 * Just check for any reference
+	 * Determines if a name is referenced by any functions in this editor
 	 * 
-	 * @param name
+	 * @param name the name to look for
+	 * @param checked a set of previously checked names (to prevent endless loops)
 	 * @return
 	 */
-	protected boolean references(String name) {
+	protected boolean references(String name, HashSet<String> checked) {
+		if (checked.contains(name))
+			return false;
 		FObject obj = getObject(name);
 		if (obj == null)
 			return false;
+		checked.add(name);
 		String eqn = UserFunction.padNames(getExpression(obj));
 		for (int i = 0, n = objects.size(); i < n; i++) {
 			FObject next = objects.get(i);
@@ -784,7 +789,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				continue;
 			}
 			name = getName(next);
-			if (UserFunction.containsWord(eqn, name) || references(name))
+			if (UserFunction.containsWord(eqn, name) || references(name, checked))
 				return true;
 		}
 		return false;
@@ -820,6 +825,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	 * Creates the GUI.
 	 */
 	protected void createGUI() {
+		referencesChecked = new HashSet<String>();
 		titledBorder = BorderFactory.createTitledBorder(""); //$NON-NLS-1$
 		setBorder(titledBorder);
 		// create table and scroller

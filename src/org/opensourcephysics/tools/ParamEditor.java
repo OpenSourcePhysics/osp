@@ -246,7 +246,8 @@ public class ParamEditor extends FunctionEditor {
 					// for each parameter, evaluate and set paramValues element
 					Parameter p = temp.get(j);
 					p.evaluate(temp);
-					if (!references(p.getName())) {
+					referencesChecked.clear();
+					if (!references(p.getName(), referencesChecked)) {
 						temp.remove(j);
 					}
 				}
