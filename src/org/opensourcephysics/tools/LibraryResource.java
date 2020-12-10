@@ -1015,6 +1015,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 					res.setProperty(next[0], next[1]);
 				}
 			}
+			LibraryBrowser.addMapResource(res);
 			return res;
 		}
 	}

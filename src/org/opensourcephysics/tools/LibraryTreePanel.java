@@ -2131,7 +2131,8 @@ public class LibraryTreePanel extends JPanel {
 				}
 
 				// execute first node loader to start the chain
-//				nodeLoaders.get(0).execute(); // pig commented out for testing
+				if (OSPRuntime.allowBackgroundNodeLoading)
+					nodeLoaders.get(0).execute(); 
 			}
 
 			return null;
@@ -2661,6 +2662,7 @@ public class LibraryTreePanel extends JPanel {
 				// the color when it has not been loaded.
 				if (node.getTarget() != null)
 					c = Color.red;
+				System.out.println("LTP " + node);
 			}
 			setToolTipText(node.getToolTip());
 			if (icon == null) {

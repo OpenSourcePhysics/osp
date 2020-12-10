@@ -154,9 +154,13 @@ public class OSPRuntime {
 		}
 	}
 
+	public static boolean useSearchMap = isJS; // does not cache 
+
 	public static boolean isBHTest = isJS;
 
 	public static boolean dontLog = isJS; // for OSPLog
+
+	public static boolean allowBackgroundNodeLoading = true; // LibraryTreePanel - do background node loading
 
 	public static boolean allowAutopaste = !isJS; // for TFrame and TToolbar
 

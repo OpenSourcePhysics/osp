@@ -614,6 +614,7 @@ public class LibraryComPADRE {
 			base += PRIMARY_ONLY;
 		collection.setBasePath(base);
 
+		LibraryBrowser.addMapResource(collection);
 		return collection;
 	}
 

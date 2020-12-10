@@ -33,6 +33,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -2216,21 +2217,44 @@ public class LibraryBrowser extends JPanel {
 		return path;
 	}
 
+	static Map<String, LibraryResource> resources;
+	
+	static void addMapResource(LibraryResource resource) {
+		if (OSPRuntime.useSearchMap) {
+			if (resources == null)
+				resources = new HashMap<>();
+			String s = resource.getBasePath();
+			if (s != null && s.length() > 0)
+				resources.put(s, resource);
+		}
+	}
+
 	/**
 	 * Returns the set of all searchable cache resources.
 	 * 
 	 * @return a set of searchable resources
 	 */
 	protected Set<LibraryResource> getSearchCacheTargets() {
-		// set up search targets
 		Set<LibraryResource> searchTargets = new TreeSet<LibraryResource>();
-		List<File> xmlFiles = ResourceLoader.getSearchFileList();
-		for (File file : xmlFiles) {
-			XMLControl control = new XMLControlElement(file);
-			if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
-				LibraryResource resource = (LibraryResource) control.loadObject(null);
-				resource.collectionPath = control.getString("real_path"); //$NON-NLS-1$
-				searchTargets.add(resource);
+		if (OSPRuntime.useSearchMap) {
+			if (resources == null)
+				return searchTargets;
+			for (LibraryResource r : resources.values()) {
+				LibraryResource rc = r.getClone();
+				rc.collectionPath = r.getBasePath();
+				if (rc.collectionPath != null)
+					searchTargets.add(rc);
+			}
+		} else {
+			// set up search targets
+			List<File> xmlFiles = ResourceLoader.getSearchFileList();
+			for (File file : xmlFiles) {
+				XMLControl control = new XMLControlElement(file);
+				if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
+					LibraryResource resource = (LibraryResource) control.loadObject(null);
+					resource.collectionPath = control.getString("real_path"); //$NON-NLS-1$
+					searchTargets.add(resource);
+				}
 			}
 		}
 		return searchTargets;
