@@ -2224,9 +2224,7 @@ public class LibraryBrowser extends JPanel {
 	protected Set<LibraryResource> getSearchCacheTargets() {
 		// set up search targets
 		Set<LibraryResource> searchTargets = new TreeSet<LibraryResource>();
-		File cache = ResourceLoader.getSearchCache();
-		FileFilter xmlFilter = new XMLFilter();
-		List<File> xmlFiles = ResourceLoader.getFiles(cache, xmlFilter);
+		List<File> xmlFiles = ResourceLoader.getSearchFileList();
 		for (File file : xmlFiles) {
 			XMLControl control = new XMLControlElement(file);
 			if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
@@ -2888,56 +2886,55 @@ public class LibraryBrowser extends JPanel {
 			OSPRuntime.doCacheZipContents = doCache;
 			if (!doCache)
 				ResourceLoader.clearZipCache();
-			
-			boolean isLocalTRZ =  (!ResourceLoader.isHTTP(realPath) && ResourceLoader.isJarZipTrz(path.toLowerCase(), false));
-			
+
+			boolean isLocalTRZ = (!ResourceLoader.isHTTP(realPath)
+					&& ResourceLoader.isJarZipTrz(path.toLowerCase(), false));
+
 			if (resource != null) {
 				LibraryTreePanel treePanel = null;
-	  		// open local files in the recentCollection instead of in their own tab
+				// open local files in the recentCollection instead of in their own tab
 				if (isLocalTRZ) {
-					String recentCollectionPath = getOSPPath()+RECENT_COLLECTION_NAME;
-	  			path = recentCollectionPath;
-	  			LibraryCollection collection = getRecentCollection();
-		    	LibraryResource child = loadResource(realPath);
-		    	if (child!=null) {
-		  			if (collection.insertResource(child, 0)) {
-		    			// remove excess nodes from recent collection
-		  				LibraryResource[] resources = collection.getResources();
-		  				int n = resources.length - maxRecentCollectionSize;
-		  				for (int i = 0; i<n; i++) {
-			  				collection.removeResource(resources[resources.length-1-i]);  					
-		  				}
-		  				child.collectionPath = recentCollectionPath;
+					String recentCollectionPath = getOSPPath() + RECENT_COLLECTION_NAME;
+					path = recentCollectionPath;
+					LibraryCollection collection = getRecentCollection();
+					LibraryResource child = loadResource(realPath);
+					if (child != null) {
+						if (collection.insertResource(child, 0)) {
+							// remove excess nodes from recent collection
+							LibraryResource[] resources = collection.getResources();
+							int n = resources.length - maxRecentCollectionSize;
+							for (int i = 0; i < n; i++) {
+								collection.removeResource(resources[resources.length - 1 - i]);
+							}
+							child.collectionPath = recentCollectionPath;
 //			  			XMLControl control = new XMLControlElement(collection);
 //			    		control.setValue("real_path", recentCollectionPath); //$NON-NLS-1$
 //			    		control.write(recentCollectionPath);
-		  			}
-		  			// name child before getting tree path
-		  			String prevName = child.getName();
+						}
+						// name child before getting tree path
+						String prevName = child.getName();
 //		  			child.setName(getNodeName(child)); // DB! in ver 5.1.5 this looked for html title in trz
-		  			treePath = child.getTreePath(null);
-		  			child.setName(prevName);
-	  		  	index = getTabIndexFromPath(recentCollectionPath);
-		    	}
-	  			resource = collection;					
+						treePath = child.getTreePath(null);
+						child.setName(prevName);
+						index = getTabIndexFromPath(recentCollectionPath);
+					}
+					resource = collection;
 				}
 				treePanel = index < 0 ? createLibraryTreePanel() : getTreePanel(index);
-    		if (isLocalTRZ) {
-	    		// tab is non-editable XML
-	    		treePanel.setRootResource(resource, path, false, true);
-    		}
-    		else {
-	    		// tab is editable only if it is a local XML file
+				if (isLocalTRZ) {
+					// tab is non-editable XML
+					treePanel.setRootResource(resource, path, false, true);
+				} else {
+					// tab is editable only if it is a local XML file
 					// and if running in Java, not the recent collection and not in the search cache
 					boolean editable = !ResourceLoader.isHTTP(path) && path.toLowerCase().endsWith(".xml"); //$NON-NLS-1$
 					if (!OSPRuntime.isJS) {
-		    		if (path.equals(getOSPPath() + RECENT_COLLECTION_NAME)) {
-		    			editable = false;
-		    			resource.collectionPath = path;
-		    		}
-		    		File searchCache = ResourceLoader.getSearchCache();
-		    		if (XML.forwardSlash(path).startsWith(XML.forwardSlash(searchCache.getPath()))) 
-		    			editable = false;
+						if (path.equals(getOSPPath() + RECENT_COLLECTION_NAME)) {
+							editable = false;
+							resource.collectionPath = path;
+						}
+						if (ResourceLoader.isSearchPath(path))
+							editable = false;
 					}
 					treePanel.setRootResource(resource, path, editable, isResourcePathXML);
 				}

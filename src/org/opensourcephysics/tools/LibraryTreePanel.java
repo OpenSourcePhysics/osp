@@ -435,14 +435,8 @@ public class LibraryTreePanel extends JPanel {
 			if (ResourceLoader.isHTTP(path)) {
 				available = browser.isWebConnected();
 				if (!available) {
-					File cachedFile = null;
-					if (isCollection) {
-						cachedFile = ResourceLoader.getSearchCacheFile(path);
-					} else {
-						String filename = node.record.getProperty("download_filename"); //$NON-NLS-1$
-						cachedFile = ResourceLoader.getOSPCacheFile(path, filename);
-					}
-					available = cachedFile.exists();
+					available = (isCollection ? ResourceLoader.getSearchCacheFile(path)
+							: ResourceLoader.getOSPCacheFile(path, node.record.getProperty("download_filename"))).exists();
 				}
 			} else {
 				available = ResourceLoader.getResourceZipURLsOK(ResourceLoader.getURIPath(path)) != null;
@@ -2097,12 +2091,12 @@ public class LibraryTreePanel extends JPanel {
 							} else {
 								canceled = true; // prevents this from executing twice
 								// finished loading all nodes, so write xml file in OSP search folder
-								if (OSPRuntime.doCacheLibaryRecord) {
+		//						if (OSPRuntime.doCacheLibaryRecord) {
 									File cacheFile = ResourceLoader.getSearchCacheFile(pathToRoot);
 									XMLControl control = new XMLControlElement(rootNode.record);
 									control.setValue("real_path", pathToRoot); //$NON-NLS-1$
 									control.write(cacheFile.getAbsolutePath());
-								}
+		//						}
 
 								setSelectionPath(treePath);
 

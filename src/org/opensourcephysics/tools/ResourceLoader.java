@@ -73,6 +73,7 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.ResizableIcon;
+import org.opensourcephysics.tools.LibraryBrowser.XMLFilter;
 
 import javajs.async.Assets;
 
@@ -864,9 +865,16 @@ public class ResourceLoader {
 	 */
 	public static File getOSPCacheFile(String urlPath, String name) {
 		File cacheDir = getOSPCache();
-		if (cacheDir == null)
-			cacheDir = new File(OSPRuntime.tempDir);
-		return getCacheFile(cacheDir, urlPath, name);
+		return getCacheFile(cacheDir == null ? new File(OSPRuntime.tempDir) : cacheDir, urlPath, name);
+	}
+
+
+	public static boolean isSearchPath(String path) {
+		return XML.forwardSlash(path).startsWith(XML.forwardSlash(getSearchCache().getPath()));
+	}
+
+	public static List<File> getSearchFileList() {
+		return getFiles(getSearchCache(), new XMLFilter());
 	}
 
 	/**
@@ -874,7 +882,9 @@ public class ResourceLoader {
 	 * 
 	 * @return the search cache
 	 */
-	public static File getSearchCache() {
+	private static File getSearchCache() {
+		if (OSPRuntime.isJS) 
+			return new File("/TEMP/Search");
 		File ospCache = getOSPCache();
 		if (ospCache == null) {
 			ospCache = getDefaultOSPCache();
@@ -887,7 +897,7 @@ public class ResourceLoader {
 	}
 
 	/**
-	 * Gets the search cache (XML) file associated with a URL path.
+	 * Gets the search cache (XML) file (path only) associated with a URL path.
 	 * 
 	 * @param urlPath the path to the file
 	 * @return the search cache file
@@ -900,8 +910,7 @@ public class ResourceLoader {
 			basename += "_" + ext; //$NON-NLS-1$
 		// following line needed to clean up long extensions associated with ComPADRE
 		// query paths
-		basename = basename.replace('&', '_').replace('?', '_').replace('=', '_');
-		filename = basename + ".xml"; //$NON-NLS-1$
+		filename = basename.replace('&', '_').replace('?', '_').replace('=', '_') + ".xml"; //$NON-NLS-1$
 		return getCacheFile(getSearchCache(), urlPath, filename);
 	}
 
@@ -966,7 +975,6 @@ public class ResourceLoader {
 	 * @param urlPath         the path to the file
 	 * @param fileName        the name to assign the downloaded file
 	 * @param alwaysOverwrite true to overwrite an existing file, if any
-	 * @return the downloaded file, or null if failed to download
 	 */
 	public static File downloadToOSPCache(String urlPath, String fileName, boolean alwaysOverwrite) {
 		if (fileName == null)
@@ -1245,8 +1253,7 @@ public class ResourceLoader {
 			success = success && deleteFile(next);
 		}
 		if (clearSearchCache) {
-			File searchCache = new File(cache, SEARCH_CACHE_SUBDIRECTORY);
-			success = success && deleteFile(searchCache);
+			success = success && deleteFile(new File(cache, SEARCH_CACHE_SUBDIRECTORY));
 		}
 		if (!success) {
 			JOptionPane.showMessageDialog(null, ToolsRes.getString("ResourceLoader.Dialog.UnableToClearCache.Message1") //$NON-NLS-1$
@@ -3167,7 +3174,6 @@ public class ResourceLoader {
 		}
 		return (res == null ? getImage(path) : res.getImage());
 	}
-
 }
 
 /*

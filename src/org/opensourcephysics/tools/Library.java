@@ -181,10 +181,8 @@ public class Library {
 	 * @param path the path to the saved file
 	 */
 	protected void save(String path) {
-		if (path == null)
-			return;
-		XMLControl control = new XMLControlElement(this);
-		control.write(path);
+		if (path != null)
+			new XMLControlElement(this).write(path);
 	}
 
 	/**
@@ -193,10 +191,8 @@ public class Library {
 	 * @param path the path to the file
 	 */
 	protected void load(String path) {
-		if (path == null)
-			return;
-		XMLControl control = new XMLControlElement(path);
-		control.loadObject(this);
+		if (path != null)
+			new XMLControlElement(path).loadObject(this);
 	}
 
 	/**
@@ -227,13 +223,9 @@ public class Library {
 	protected boolean containsPath(String path, boolean allLists) {
 		path = path.trim();
 		int n = path.indexOf(LibraryComPADRE.PRIMARY_ONLY);
-		if (n > -1)
+		if (n >= 0)
 			path = path.substring(0, n);
-		boolean containsPath = pathList.contains(path);
-		if (allLists) {
-			containsPath = containsPath || comPADREPathList.contains(path) || ospPathList.contains(path);
-		}
-		return containsPath;
+		return pathList.contains(path) || (allLists && (comPADREPathList.contains(path) || ospPathList.contains(path)));
 	}
 
 	/**
