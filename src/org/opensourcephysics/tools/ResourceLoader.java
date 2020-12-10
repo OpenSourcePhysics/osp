@@ -214,13 +214,13 @@ public class ResourceLoader {
 	 * @return the Resource, or null if none found
 	 */
 	private static Resource getResource(String name, boolean searchFiles, boolean zipURLsOK) {
-		try {
-			URL url = getAppletResourceURL(name); // added by W. Christian
-			if (url != null) {
-				return new Resource(url);
-			}
-		} catch (Exception ex) {
-		}
+//		try {
+//			URL url = getAppletResourceURL(name); // added by W. Christian
+//			if (url != null) {
+//				return new Resource(url);
+//			}
+//		} catch (Exception ex) {
+//		}
 		return getResource(name, Resource.class, searchFiles, zipURLsOK);
 	}
 
@@ -394,31 +394,31 @@ public class ResourceLoader {
 		pathsNotFound.add(path);
 		StringBuffer err = new StringBuffer("Not found: " + path); //$NON-NLS-1$
 		err.append(" [searched " + path); //$NON-NLS-1$
-		if (OSPRuntime.isApplet) { // applet mode
-			String docBase = OSPRuntime.applet.getDocumentBase().toExternalForm();
-			docBase = XML.getDirectoryPath(docBase) + "/"; //$NON-NLS-1$
-			path = getPath(getPath(docBase, basePath), name);
-			if (!pathsNotFound.contains(path)) {
-				res = findResource(path, type, searchFiles, false);
-				if (res != null) {
-					return res.toString();
-				}
-				pathsNotFound.add(path);
-				err.append(";" + path); //$NON-NLS-1$
-			}
-			String codeBase = OSPRuntime.applet.getCodeBase().toExternalForm();
-			if (!codeBase.equals(docBase)) {
-				path = getPath(getPath(codeBase, basePath), name);
-				if (!pathsNotFound.contains(path)) {
-					res = findResource(path, type, searchFiles, false);
-					if (res != null) {
-						return res.toString();
-					}
-					pathsNotFound.add(path);
-					err.append(";" + path); //$NON-NLS-1$
-				}
-			}
-		}
+//		if (OSPRuntime.isApplet) { // applet mode
+//			String docBase = OSPRuntime.applet.getDocumentBase().toExternalForm();
+//			docBase = XML.getDirectoryPath(docBase) + "/"; //$NON-NLS-1$
+//			path = getPath(getPath(docBase, basePath), name);
+//			if (!pathsNotFound.contains(path)) {
+//				res = findResource(path, type, searchFiles, false);
+//				if (res != null) {
+//					return res.toString();
+//				}
+//				pathsNotFound.add(path);
+//				err.append(";" + path); //$NON-NLS-1$
+//			}
+//			String codeBase = OSPRuntime.applet.getCodeBase().toExternalForm();
+//			if (!codeBase.equals(docBase)) {
+//				path = getPath(getPath(codeBase, basePath), name);
+//				if (!pathsNotFound.contains(path)) {
+//					res = findResource(path, type, searchFiles, false);
+//					if (res != null) {
+//						return res.toString();
+//					}
+//					pathsNotFound.add(path);
+//					err.append(";" + path); //$NON-NLS-1$
+//				}
+//			}
+//		}
 		// look for resource in searchPaths
 		for (Iterator<String> it = searchPaths.iterator(); it.hasNext();) {
 			path = getPath(getPath(it.next(), basePath), name);
@@ -1884,47 +1884,47 @@ public class ResourceLoader {
 
 	// ______________________________ private methods ___________________________
 
-	/**
-	 * Gets the resource URL using the applet's class loader. Added by Wolfgang
-	 * Christian.
-	 *
-	 * @param name of the resource
-	 * @return URL of the Resource, or null if none found
-	 */
-	private static URL getAppletResourceURL(String name) {
-		if (OSPRuntime.isJS || !OSPRuntime.isApplet || (name == null) || name.trim().equals("")) { //$NON-NLS-1$
-			return null;
-		}
-		if (isHTTP(name)) { // $NON-NLS-1$ // open a direct connection for http and https
-							// resources
-			try {
-				return new java.net.URL(name);
-			} catch (MalformedURLException e) {
-				// e.printStackTrace();
-			}
-		}
-		name = name.trim(); // remove whitespace
-		if (!name.startsWith("/")) { //$NON-NLS-1$ // try applet search paths for relative paths
-			for (Iterator<String> it = appletSearchPaths.iterator(); it.hasNext();) {
-				String path = it.next();
-				String tempName = name; // tempName may change
-				if (tempName.startsWith("../")) { //$NON-NLS-1$
-					tempName = tempName.substring(3); // remove prefix
-					path = path.substring(0, path.length() - 1); // drop trailing slash
-					int last = path.lastIndexOf("/"); //$NON-NLS-1$ // find last directory slash
-					path = (last > 0) ? path.substring(0, last) : "/"; //$NON-NLS-1$ // drop last directory if it
-																		// exists
-				} else if (tempName.startsWith("./")) { //$NON-NLS-1$
-					tempName = tempName.substring(2); // remove reference to current directory
-				}
-				URL url = OSPRuntime.applet.getClass().getResource(path + tempName);
-				if (url != null) {
-					return url;
-				}
-			}
-		}
-		return OSPRuntime.applet.getClass().getResource(name); // url not found in applet search paths
-	}
+//	/**
+//	 * Gets the resource URL using the applet's class loader. Added by Wolfgang
+//	 * Christian.
+//	 *
+//	 * @param name of the resource
+//	 * @return URL of the Resource, or null if none found
+//	 */
+//	private static URL getAppletResourceURL(String name) {
+//		if (OSPRuntime.isJS || !OSPRuntime.isApplet || (name == null) || name.trim().equals("")) { //$NON-NLS-1$
+//			return null;
+//		}
+//		if (isHTTP(name)) { // $NON-NLS-1$ // open a direct connection for http and https
+//							// resources
+//			try {
+//				return new java.net.URL(name);
+//			} catch (MalformedURLException e) {
+//				// e.printStackTrace();
+//			}
+//		}
+//		name = name.trim(); // remove whitespace
+//		if (!name.startsWith("/")) { //$NON-NLS-1$ // try applet search paths for relative paths
+//			for (Iterator<String> it = appletSearchPaths.iterator(); it.hasNext();) {
+//				String path = it.next();
+//				String tempName = name; // tempName may change
+//				if (tempName.startsWith("../")) { //$NON-NLS-1$
+//					tempName = tempName.substring(3); // remove prefix
+//					path = path.substring(0, path.length() - 1); // drop trailing slash
+//					int last = path.lastIndexOf("/"); //$NON-NLS-1$ // find last directory slash
+//					path = (last > 0) ? path.substring(0, last) : "/"; //$NON-NLS-1$ // drop last directory if it
+//																		// exists
+//				} else if (tempName.startsWith("./")) { //$NON-NLS-1$
+//					tempName = tempName.substring(2); // remove reference to current directory
+//				}
+//				URL url = OSPRuntime.applet.getClass().getResource(path + tempName);
+//				if (url != null) {
+//					return url;
+//				}
+//			}
+//		}
+//		return OSPRuntime.applet.getClass().getResource(name); // url not found in applet search paths
+//	}
 
 	/**
 	 * Creates a Resource from a file path, if it is appropriate to do so.
@@ -1935,7 +1935,9 @@ public class ResourceLoader {
 	static private Resource createFileResource(String path) {
 		// don't create file resources when in applet mode
 		// ignore paths that refer to zip or jar files
-		return (OSPRuntime.isApplet || isHTTP(path) || 
+		return (
+				//OSPRuntime.isApplet || 
+				isHTTP(path) || 
 				isJarZipTrz(path, true)
 						? null
 						: createFileResource(new File(path)));
@@ -1977,14 +1979,14 @@ public class ResourceLoader {
 		}
 		Resource res = null;
 		// following added by Doug Brown 2009/11/14
-		if (OSPRuntime.isApplet) {
-			try { // let applet class try to get it first
-				URL url = getAppletResourceURL(path);
-				res = createResource(url);
-			} catch (Exception ex) {
-				/** empty block */
-			}
-		} // end code added by Doug Brown 2009/11/14
+//		if (OSPRuntime.isApplet) {
+//			try { // let applet class try to get it first
+//				URL url = getAppletResourceURL(path);
+//				res = createResource(url);
+//			} catch (Exception ex) {
+//				/** empty block */
+//			}
+//		} // end code added by Doug Brown 2009/11/14
 		if (res == null) {
 			// if path includes protocol, use it directly
 			if (path.indexOf(":/") > -1) { //$NON-NLS-1$
@@ -1995,39 +1997,36 @@ public class ResourceLoader {
 				} catch (Exception ex) {
 					/** empty block */
 				}
-			}
-			// else if applet mode and relative path, search document and code base
-			else {
-				if (OSPRuntime.isApplet && !path.startsWith("/")) { //$NON-NLS-1$
-					// first check document base
-					URL docBase = OSPRuntime.applet.getDocumentBase();
-					try {
-						// following added by Doug Brown 2009/11/14
-						String basePath = docBase.toString();
-						// strip query, if any, from document base
-						int n = basePath.indexOf("?"); //$NON-NLS-1$
-						if (n > -1) {
-							docBase = new URL(basePath.substring(0, n));
-						}
-						// end code added by Doug Brown 2009/11/14
-						URL url = new URL(docBase, path);
-						res = createResource(url);
-					} catch (Exception ex) {
-						/** empty block */
-					}
-					if (res == null) {
-						URL codeBase = OSPRuntime.applet.getCodeBase();
-						String s = XML.getDirectoryPath(docBase.toExternalForm()) + "/"; //$NON-NLS-1$
-						if (!codeBase.toExternalForm().equals(s)) {
-							try {
-								URL url = new URL(codeBase, path);
-								res = createResource(url);
-							} catch (Exception ex) {
-								/** empty block */
-							}
-						}
-					}
-				}
+//			} else if (OSPRuntime.isApplet && !path.startsWith("/")) { //$NON-NLS-1$
+//				// else if applet mode and relative path, search document and code base
+//				// first check document base
+//				URL docBase = OSPRuntime.applet.getDocumentBase();
+//				try {
+//					// following added by Doug Brown 2009/11/14
+//					String basePath = docBase.toString();
+//					// strip query, if any, from document base
+//					int n = basePath.indexOf("?"); //$NON-NLS-1$
+//					if (n > -1) {
+//						docBase = new URL(basePath.substring(0, n));
+//					}
+//					// end code added by Doug Brown 2009/11/14
+//					URL url = new URL(docBase, path);
+//					res = createResource(url);
+//				} catch (Exception ex) {
+//					/** empty block */
+//				}
+//				if (res == null) {
+//					URL codeBase = OSPRuntime.applet.getCodeBase();
+//					String s = XML.getDirectoryPath(docBase.toExternalForm()) + "/"; //$NON-NLS-1$
+//					if (!codeBase.toExternalForm().equals(s)) {
+//						try {
+//							URL url = new URL(codeBase, path);
+//							res = createResource(url);
+//						} catch (Exception ex) {
+//							/** empty block */
+//						}
+//					}
+//				}
 			}
 		}
 		if (res != null) {
@@ -2637,12 +2636,12 @@ public class ResourceLoader {
 		}
 		try {
 			InputStream inputStream = null;
-			if (OSPRuntime.isApplet) {// added by Wolfgang Christian
-				// URL url=OSPRuntime.applet.getClass().getResource(filename);
-				// inputStream=url.openStream();
-				inputStream = OSPRuntime.applet.getClass().getResourceAsStream(filename);
-			}
-			if (inputStream == null) { // use resource loader when not an applet
+//			if (OSPRuntime.isApplet) {// added by Wolfgang Christian
+//				// URL url=OSPRuntime.applet.getClass().getResource(filename);
+//				// inputStream=url.openStream();
+//				inputStream = OSPRuntime.applet.getClass().getResourceAsStream(filename);
+//			}
+//			if (inputStream == null) { // use resource loader when not an applet
 				boolean isZip = (isZipEntry(filename, true) >= 0);
 				if (OSPRuntime.isJS) {
 					if (isZip) {
@@ -2653,7 +2652,7 @@ public class ResourceLoader {
 				}
 				Resource res = getResource(filename, false, false); // BH don't allow ZIP files here
 				inputStream = (res == null ? null : res.openInputStream());
-			}
+//			}
 			if (inputStream == null) {
 				return null;
 			}
@@ -2952,10 +2951,10 @@ public class ResourceLoader {
 	 * @return the image
 	 */
 	public static Image getImage(String path) {
-		URL url = getAppletResourceURL(path); // added by W. Christian
-		if (url != null) {
-			return new ImageIcon(url).getImage();
-		}
+//		URL url = getAppletResourceURL(path); // added by W. Christian
+//		if (url != null) {
+//			return new ImageIcon(url).getImage();
+//		}
 		ImageIcon icon = getImageIcon(path);
 		if (icon != null)
 			return icon.getImage();
