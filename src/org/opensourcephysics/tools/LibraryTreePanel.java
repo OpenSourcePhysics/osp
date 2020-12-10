@@ -2662,7 +2662,6 @@ public class LibraryTreePanel extends JPanel {
 				// the color when it has not been loaded.
 				if (node.getTarget() != null)
 					c = Color.red;
-				System.out.println("LTP " + node);
 			}
 			setToolTipText(node.getToolTip());
 			if (icon == null) {
