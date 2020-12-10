@@ -131,7 +131,6 @@ public class LibraryBrowser extends JPanel {
 	protected static final TrackerDLFilter TRACKER_FILTER = new TrackerDLFilter();
 	protected static javax.swing.filechooser.FileFilter filesAndFoldersFilter = new FilesAndFoldersFilter();
 	protected static Timer searchTimer;
-	protected static String searchTerm;
 	public static boolean fireHelpEvent = false;
 	public static int maxRecentCollectionSize = 18;
 	private static int wide = 900, high = 560;
@@ -1720,16 +1719,22 @@ public class LibraryBrowser extends JPanel {
 	}
 
 	protected void doSearch() {
-		searchTerm = searchField.getText();
-		if (searchTerm.trim().length() == 0)
+		String searchTerm = searchField.getText().trim();
+		if (searchTerm.length() == 0)
 			return;
 		searchField.selectAll();
 		searchField.setBackground(Color.white);
-		new Searcher().execute();
+		new Searcher(searchTerm).execute();
 	}
 
 	// do actual search in separate swingworker thread
 	class Searcher extends SwingWorker<LibraryTreePanel, Object> {
+		private String searchTerm;
+
+		public Searcher(String searchTerm) {
+			this.searchTerm = searchTerm;
+		}
+
 		@Override
 		public LibraryTreePanel doInBackground() {
 			// search all cache targets except those in the library no_search set
