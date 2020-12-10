@@ -40,7 +40,7 @@ public class CellLattice implements ByteLattice {
 	static {
 		try {
 			// BH 2020.03.04 don't use CellLatticeOSX
-			isMac = ((OSPRuntime.isJS2 ? "" : System.getProperty("os.name", "")).indexOf("Mac") >= 0);
+			isMac = ((OSPRuntime.isJS ? "" : System.getProperty("os.name", "")).indexOf("Mac") >= 0);
 		} catch (Exception ex) {
 		}
 	}

@@ -32,7 +32,7 @@ public class ReadXMLFile {
    	 // OK
 		@Override
 		public void run() {
-			if (!OSPRuntime.isJS2) {
+			if (!OSPRuntime.isJS) {
 				// no directory information in HTML5
 		     org.opensourcephysics.display.OSPRuntime.chooserDir = chooser.getCurrentDirectory().toString();
 			}

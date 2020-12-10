@@ -788,12 +788,12 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 
 		});
 		// if(OSPRuntime.applet==null) { // applets no longer supported
-		if (!OSPRuntime.isJS2)
+		if (!OSPRuntime.isJS)
 			fileMenu.add(printMenu);
 		fileMenu.add(saveXMLItem);
 		// if(!JSUtil.isJS)
 		fileMenu.add(exportItem);
-		if (!OSPRuntime.isJS2)
+		if (!OSPRuntime.isJS)
 			fileMenu.add(saveImage);
 		// }
 		fileMenu.add(inspectItem);
@@ -886,7 +886,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 				sizeDownItem.setEnabled(FontSizer.getLevel() > 0);
 		});
 		JMenu aliasMenu = new JMenu(DisplayRes.getString("DrawingFrame.AntiAlias_menu_title")); //$NON-NLS-1$
-		if (!OSPRuntime.isJS2)
+		if (!OSPRuntime.isJS)
 			displayMenu.add(aliasMenu);
 		final JCheckBoxMenuItem textAliasItem = new JCheckBoxMenuItem(
 				DisplayRes.getString("DrawingFrame.Text_checkbox_label"), false); //$NON-NLS-1$
@@ -992,10 +992,10 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 //		});
 		// create snapshot menu item
 		JMenuItem snapshotItem = new JMenuItem(DisplayRes.getString("DisplayPanel.Snapshot_menu_item")); //$NON-NLS-1$
-		if (OSPRuntime.applet == null && !OSPRuntime.isJS2) {
+		if (!OSPRuntime.isApplet && !OSPRuntime.isJS) {
 			toolsMenu.add(snapshotItem);
 		}
-		if (!OSPRuntime.isJS2)
+		if (!OSPRuntime.isJS)
 			snapshotItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {

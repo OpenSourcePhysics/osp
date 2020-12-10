@@ -412,7 +412,7 @@ public synchronized void update() {
     }
     OSPLog.finer("InterpolatedPlot image created with row="+height+" and col="+width); //$NON-NLS-1$ //$NON-NLS-2$
     imageType = 
-    		(OSPRuntime.isJS2 ? JSUtilI.TYPE_4BYTE_HTML5
+    		(OSPRuntime.isJS ? JSUtilI.TYPE_4BYTE_HTML5
     				: BufferedImage.TYPE_4BYTE_ABGR);
     image = new BufferedImage(width, height, imageType);
     pixelData = ((DataBufferByte)image.getRaster().getDataBuffer()).getData();

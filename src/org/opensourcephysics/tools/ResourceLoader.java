@@ -394,7 +394,7 @@ public class ResourceLoader {
 		pathsNotFound.add(path);
 		StringBuffer err = new StringBuffer("Not found: " + path); //$NON-NLS-1$
 		err.append(" [searched " + path); //$NON-NLS-1$
-		if (OSPRuntime.applet != null) { // applet mode
+		if (OSPRuntime.isApplet) { // applet mode
 			String docBase = OSPRuntime.applet.getDocumentBase().toExternalForm();
 			docBase = XML.getDirectoryPath(docBase) + "/"; //$NON-NLS-1$
 			path = getPath(getPath(docBase, basePath), name);
@@ -1892,9 +1892,7 @@ public class ResourceLoader {
 	 * @return URL of the Resource, or null if none found
 	 */
 	private static URL getAppletResourceURL(String name) {
-		if (OSPRuntime.isJS2)
-			return null;
-		if ((OSPRuntime.applet == null) || (name == null) || name.trim().equals("")) { //$NON-NLS-1$
+		if (OSPRuntime.isJS || !OSPRuntime.isApplet || (name == null) || name.trim().equals("")) { //$NON-NLS-1$
 			return null;
 		}
 		if (isHTTP(name)) { // $NON-NLS-1$ // open a direct connection for http and https
@@ -1937,7 +1935,7 @@ public class ResourceLoader {
 	static private Resource createFileResource(String path) {
 		// don't create file resources when in applet mode
 		// ignore paths that refer to zip or jar files
-		return (OSPRuntime.applet != null || isHTTP(path) || 
+		return (OSPRuntime.isApplet || isHTTP(path) || 
 				isJarZipTrz(path, true)
 						? null
 						: createFileResource(new File(path)));
@@ -1979,7 +1977,7 @@ public class ResourceLoader {
 		}
 		Resource res = null;
 		// following added by Doug Brown 2009/11/14
-		if (!OSPRuntime.isJS && OSPRuntime.applet != null) {
+		if (OSPRuntime.isApplet) {
 			try { // let applet class try to get it first
 				URL url = getAppletResourceURL(path);
 				res = createResource(url);
@@ -2000,7 +1998,7 @@ public class ResourceLoader {
 			}
 			// else if applet mode and relative path, search document and code base
 			else {
-				if ((OSPRuntime.applet != null) && !path.startsWith("/")) { //$NON-NLS-1$
+				if (OSPRuntime.isApplet && !path.startsWith("/")) { //$NON-NLS-1$
 					// first check document base
 					URL docBase = OSPRuntime.applet.getDocumentBase();
 					try {
@@ -2639,7 +2637,7 @@ public class ResourceLoader {
 		}
 		try {
 			InputStream inputStream = null;
-			if (OSPRuntime.applet != null) {// added by Wolfgang Christian
+			if (OSPRuntime.isApplet) {// added by Wolfgang Christian
 				// URL url=OSPRuntime.applet.getClass().getResource(filename);
 				// inputStream=url.openStream();
 				inputStream = OSPRuntime.applet.getClass().getResourceAsStream(filename);

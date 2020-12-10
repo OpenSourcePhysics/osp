@@ -152,7 +152,7 @@ public class OSPLog extends JFrame {
 	static String slash = "/"; //$NON-NLS-1$
 
 	private static boolean useMessageFrame() {
-		return (OSPRuntime.appletMode || OSPRuntime.applet != null);
+		return (OSPRuntime.appletMode || OSPRuntime.isApplet);
 	}
 
 	static {

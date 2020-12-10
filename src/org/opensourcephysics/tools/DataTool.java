@@ -269,7 +269,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 */
 	public static void main(String[] args) {
 		getTool(true);
-		if (OSPRuntime.isJS2)
+		if (OSPRuntime.isJS)
 			tool.standAlone = true;
 		if (tool.standAlone)
 			tool.setLocation(0, 0);

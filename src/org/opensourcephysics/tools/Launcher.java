@@ -280,7 +280,7 @@ public class Launcher {
 		createGUI(splash);
 		XML.setLoader(LaunchSet.class, new LaunchSet());
 		// if statement added by W. Christian
-		if (!OSPRuntime.isJS2 && OSPRuntime.applet == null) { // never allow new VM if Launcher was instantiated by an applet
+		if (!OSPRuntime.isJS && !OSPRuntime.isApplet) { // never allow new VM if Launcher was instantiated by an applet
 			// determine whether launching in new VM is possible; may not be possible in
 			// Java Web Start
 			// create a test launch thread
@@ -1288,7 +1288,7 @@ public class Launcher {
 		if (undoManager.canReload()) {
 			fileMenu.add(backItem);
 		}
-		if ((OSPRuntime.applet == null)) {
+		if (!OSPRuntime.isApplet) {
 			if (fileMenu.getItemCount() > 0) {
 				fileMenu.addSeparator();
 			}
@@ -1300,7 +1300,7 @@ public class Launcher {
 		if (rootDisabled) {
 			fileMenu.add(passwordItem);
 		}
-		if (OSPRuntime.applet != null) { // added by W. Christian
+		if (OSPRuntime.isApplet) { // added by W. Christian
 			fileMenu.add(hideItem);
 			return;
 		}
@@ -1404,7 +1404,7 @@ public class Launcher {
 		// create the frame
 		frame = new LauncherFrame();
 		existingFrames.add(frame);
-		if (splash && (OSPRuntime.applet == null)) {
+		if (splash && !OSPRuntime.isApplet) {
 			splash();
 		}
 		// create xml inspector
@@ -1903,7 +1903,7 @@ public class Launcher {
 		logItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (OSPRuntime.applet == null) { // not running as applet so create and position the log.
+				if (!OSPRuntime.isApplet) { // not running as applet so create and position the log.
 					Point p0 = new Frame().getLocation();
 					OSPLog log = OSPLog.getOSPLog();
 					if ((log.getLocation().x == p0.x) && (log.getLocation().y == p0.y)) {
@@ -1999,7 +1999,7 @@ public class Launcher {
 
 		});
 		helpMenu.add(authorInfoItem);
-		if (OSPRuntime.applet == null) {
+		if (!OSPRuntime.isApplet) {
 			// add window listener to exit
 			frame.addWindowListener(new WindowAdapter() {
 				@Override
@@ -2032,11 +2032,11 @@ public class Launcher {
 			});
 		}
 		// if launch jar not yet found, load class file as last attempt
-		if (!OSPRuntime.isJS2 && OSPRuntime.getLaunchJarPath() == null) {
+		if (!OSPRuntime.isJS && OSPRuntime.getLaunchJarPath() == null) {
 			ResourceLoader.getResource("/org/opensourcephysics/tools/Launcher.class"); //$NON-NLS-1$
 		}
 		// create and populate the internal xset menu
-		if (!OSPRuntime.isJS2 && OSPRuntime.getLaunchJarPath() != null) {
+		if (!OSPRuntime.isJS && OSPRuntime.getLaunchJarPath() != null) {
 			JarFile jar = OSPRuntime.getLaunchJar();
 			if (jar != null) {
 				Action action = new AbstractAction() {
@@ -2796,7 +2796,7 @@ public class Launcher {
 			return;
 		}
 		// HIDE_ON_CLOSE apps should exit
-		if ((OSPRuntime.applet == null) && (frame.getDefaultCloseOperation() == WindowConstants.HIDE_ON_CLOSE)) {
+		if (!OSPRuntime.isApplet && (frame.getDefaultCloseOperation() == WindowConstants.HIDE_ON_CLOSE)) {
 			if (canExit)
 				System.exit(0);
 			else {

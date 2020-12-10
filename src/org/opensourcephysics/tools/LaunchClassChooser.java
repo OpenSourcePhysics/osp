@@ -639,21 +639,21 @@ class LaunchableClassMap extends TreeMap<String, Class<?>> {
 		if (allLoaded) {
 			return;
 		}
-		JApplet applet = org.opensourcephysics.display.OSPRuntime.applet;
+//		JApplet applet = org.opensourcephysics.display.OSPRuntime.applet;
 		// for each jar or directory name, find launchable classes
 		for (String next : jarOrDirectoryNames) {
 			if (next.indexOf(".jar") > -1) { // next is a relative jar path //$NON-NLS-1$
 				// create a JarFile
 				JarFile jar = null;
 				try {
-					if (applet == null) { // application mode
+					if (!OSPRuntime.isApplet) { // application mode
 						String basePath = LaunchClassChooser.baseDirectoryPath;
 						if (basePath == null)
 							basePath = OSPRuntime.getLaunchJarDirectory();
 						String path = XML.getResolvedPath(next, basePath);
 						jar = new JarFile(path);
 					} else { // applet mode
-						String path = XML.getResolvedPath(next, applet.getCodeBase().toExternalForm());
+						String path = XML.getResolvedPath(next, OSPRuntime.applet.getCodeBase().toExternalForm());
 						// create a URL that refers to a jar file on the web
 						URL url = new URL("jar:" + path + "!/"); //$NON-NLS-1$ //$NON-NLS-2$
 						// get the jar

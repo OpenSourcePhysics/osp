@@ -35,7 +35,7 @@ public class FirstPlotApp {
     OSPLog.info("FirstPlotApp running.");
     
     //WC: embedding test
-    if(OSPRuntime.isJS2) {
+    if(OSPRuntime.isJS) {
     	frame.setLocation(0, 0);       // sets position to top left corner
       OSPRuntime.setAppClass(frame); // undecorated frame can now be embedded into html page
     }

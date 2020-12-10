@@ -474,7 +474,7 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
 					classes.put(type, locales);
 				}
 			}
-			if (OSPRuntime.applet == null) { // search for languages if NOT an applet
+			if (!OSPRuntime.isApplet) { // search for languages if NOT an applet
 				Set<String> langs = locales.keySet(); // loaded language codes
 				String path = getPath(type);
 				Resource res = null;

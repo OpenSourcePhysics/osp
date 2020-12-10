@@ -85,12 +85,6 @@ public class OSPRuntime {
 	public static boolean isJS = /** @j2sNative true || */
 			false;
 
-	// As we can, we should change these refrences to isJS. They are 
-	// here because they used to be in JSUtil. Sorry about the confusion!
-	// It's just that there are 50 references already to this!
-	@Deprecated
-	public static boolean isJS2 = /** @j2sNative true || */ false;
-
 	static {
 
 		try {
@@ -153,6 +147,8 @@ public class OSPRuntime {
 			System.err.println("Error reading assets path.");
 		}
 	}
+
+	public static boolean isApplet = false;
 
 	public static boolean useSearchMap = isJS; // does not cache 
 
@@ -336,8 +332,6 @@ public class OSPRuntime {
 
 	/** Preferences filename */
 	private static String prefsFileName = "osp.prefs"; //$NON-NLS-1$
-
-	public static boolean isApplet;
 
 	/**
 	 * Sets default properties for OSP.
@@ -769,7 +763,7 @@ public class OSPRuntime {
 	 * @return path to the directory containing the launch jar. May be null.
 	 */
 	public static String getLaunchJarDirectory() {
-		if (applet != null) {
+		if (OSPRuntime.isApplet) {
 			return null;
 		}
 		return (launchJarPath == null) ? null : XML.getDirectoryPath(launchJarPath);
@@ -792,7 +786,7 @@ public class OSPRuntime {
 			launchJarPath = ResourceLoader.getNonURIPath(launchJarPath);
 		}
 		try {
-			if ((applet == null) && !isWebFile) { // application mode
+			if (!isApplet && !isWebFile) { // application mode
 				launchJar = new JarFile(launchJarPath);
 			} else { // applet mode
 				URL url;
@@ -1223,7 +1217,7 @@ public class OSPRuntime {
 				}
 				File file = new File(prefsPath, prefsFileName);
 				// BH 2020.02.13 don't want to download this file.
-				if (!OSPRuntime.isJS2)
+				if (!isJS)
 					prefsControl.write(file.getAbsolutePath());
 			}
 		}

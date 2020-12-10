@@ -176,7 +176,7 @@ public class ComplexColorMapper {
 		int g = (int) (bb * greens[index]);
 		int b = (int) (bb * blues[index]);
 		int v = (((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF)) | 0xFF000000;
-		Color c = (OSPRuntime.isJS2 ? colorTemp : null);
+		Color c = (OSPRuntime.isJS ? colorTemp : null);
 		/**
 		 * just mutate colorTemp
 		 * @j2sNative

@@ -26,7 +26,7 @@ public class Utils {
     if(cacheImages.get(_filename)!=null) {
       return true;
     }
-    if (OSPRuntime.isJS2 && _codebase == null) {
+    if (OSPRuntime.isJS && _codebase == null) {
     	URL u = Utils.class.getClassLoader().getResource(_filename);
     	return (u != null);
     }

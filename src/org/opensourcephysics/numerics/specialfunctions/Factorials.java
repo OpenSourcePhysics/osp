@@ -52,7 +52,7 @@ public class Factorials {
 	static {
 		long val = 1;
 		int maxN = 1;
-		if(OSPRuntime.isJS2) {
+		if(OSPRuntime.isJS) {
 			maxN=13;  
 		} else 
 		while (val * maxN >= val) {

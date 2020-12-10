@@ -89,15 +89,15 @@ abstract public class ControlFrame extends OSPFrame implements Control {
 		printFrameItem = new JMenuItem(DisplayRes.getString("DrawingFrame.PrintFrame_menu_item")); //$NON-NLS-1$
 		saveFrameAsEPSItem = new JMenuItem(DisplayRes.getString("DrawingFrame.SaveFrameAsEPS_menu_item")); //$NON-NLS-1$
 		JMenu printMenu = new JMenu(DisplayRes.getString("DrawingFrame.Print_menu_title")); //$NON-NLS-1$
-		if (OSPRuntime.applet == null) {
+		if (!OSPRuntime.isApplet) {
 			fileMenu.add(readItem);
 		}
-		if (OSPRuntime.applet == null) {
+		if (!OSPRuntime.isApplet) {
 			fileMenu.add(saveAsItem);
 		}
 		fileMenu.add(inspectItem);
 		fileMenu.add(clearItem);
-		if (OSPRuntime.applet == null) {
+		if (!OSPRuntime.isApplet) {
 			fileMenu.add(printMenu);
 		}
 		printMenu.add(printFrameItem);

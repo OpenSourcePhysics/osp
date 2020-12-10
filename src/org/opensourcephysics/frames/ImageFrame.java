@@ -121,10 +121,10 @@ public class ImageFrame extends OSPFrame {
       }
 
     });
-    if(OSPRuntime.applet==null) {
-      if(!OSPRuntime.isJS2)fileMenu.add(saveImageMenu);
+    if(!OSPRuntime.isApplet) {
+      if(!OSPRuntime.isJS)fileMenu.add(saveImageMenu);
       fileMenu.addSeparator();
-      if(!OSPRuntime.isJS2)fileMenu.add(printItem);
+      if(!OSPRuntime.isJS)fileMenu.add(printItem);
     }
     menuBar.add(fileMenu);
     // edit menu

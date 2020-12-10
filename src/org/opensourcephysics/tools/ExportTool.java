@@ -275,7 +275,7 @@ public class ExportTool implements Tool, PropertyChangeListener {
 	 */
 	@Override
 	public void send(Job job, Tool replyTo) {
-		if (OSPRuntime.isJS2) {
+		if (OSPRuntime.isJS) {
 			exportJS(job);
 			return;
 		}

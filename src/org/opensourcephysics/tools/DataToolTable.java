@@ -1054,7 +1054,7 @@ public class DataToolTable extends DataTable {
 		case 4:
 		case 5:
 		default:
-			if (!OSPRuntime.isJS2)
+			if (!OSPRuntime.isJS)
 				repaint(); // BH 2020.02.14 seeing if we can avoid this
 
 		}

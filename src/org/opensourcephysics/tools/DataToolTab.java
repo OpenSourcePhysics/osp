@@ -2227,7 +2227,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				} else {
 					rows.set(index);
 				}
-				if (!OSPRuntime.isJS2)
+				if (!OSPRuntime.isJS)
 					dataTable.setSelectedModelRowsBS(rows);
 			} else {
 				dataTable.selectModelRows(new int[] { index });
@@ -2244,11 +2244,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			boxState = BOX_STATE_INACTIVE;
 			return;
 		}
-		if (timerToFindHits == null && !OSPRuntime.isJS2) { // BH 2020.02.14
+		if (timerToFindHits == null && !OSPRuntime.isJS) { // BH 2020.02.14
 			timerToFindHits = new Timer(200, new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					findHits(removeHits, !OSPRuntime.isJS2);
+					findHits(removeHits, !OSPRuntime.isJS);
 					timerToFindHits.restart();
 				}
 			});

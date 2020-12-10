@@ -1590,9 +1590,7 @@ public class LibraryTreePanel extends JPanel {
 	 * @return <code>false</code> if the user cancels, otherwise <code>true</code>
 	 */
 	protected boolean saveChanges(String name) {
-		if (!isChanged() || OSPRuntime.isJS)
-			return true;
-		if (org.opensourcephysics.display.OSPRuntime.applet != null)
+		if (!isChanged() || OSPRuntime.isJS || OSPRuntime.isApplet)
 			return true;
 		int i = JOptionPane.showConfirmDialog(this,
 				ToolsRes.getString("LibraryBrowser.Dialog.SaveChanges.Message") + " \"" + name + "\"?", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$

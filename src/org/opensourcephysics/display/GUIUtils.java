@@ -133,7 +133,7 @@ public class GUIUtils {
 				frames[i].toFront();
 			}
 		}
-		if ((OSPRuntime.applet != null)) {
+		if (OSPRuntime.isApplet) {
 			OSPRuntime.applet.getRootPane().repaint();
 		}
 	}
@@ -153,7 +153,7 @@ public class GUIUtils {
 				((OSPFrame) frames[i]).render();
 			}
 		}
-		if ((OSPRuntime.applet != null) && (OSPRuntime.applet instanceof Renderable)) {
+		if (OSPRuntime.isApplet && OSPRuntime.applet instanceof Renderable) {
 			((Renderable) OSPRuntime.applet).render();
 		}
 	}
@@ -323,7 +323,7 @@ public class GUIUtils {
 		}
 		OSPRuntime.chooserDir = fileChooser.getCurrentDirectory().toString();
 		File file = fileChooser.getSelectedFile();
-		if (!OSPRuntime.isJS2 && file.exists()) {
+		if (!OSPRuntime.isJS && file.exists()) {
 			int selected = JOptionPane.showConfirmDialog(parent,
 					DisplayRes.getString("DrawingFrame.ReplaceExisting_message") + " " + file.getName() //$NON-NLS-1$ //$NON-NLS-2$
 							+ DisplayRes.getString("DrawingFrame.QuestionMark"), //$NON-NLS-1$
@@ -491,7 +491,7 @@ public class GUIUtils {
 			return;
 		}
 		File file = fixExtension(new File(fileName), extensions[0]);
-		if (!OSPRuntime.isJS2 && file.exists()) { // BH 2020.02.25
+		if (!OSPRuntime.isJS && file.exists()) { // BH 2020.02.25
 			int selected = JOptionPane.showConfirmDialog(null,
 					DisplayRes.getString("DrawingFrame.ReplaceExisting_message") //$NON-NLS-1$
 							+ " " + file.getName() + DisplayRes.getString("DrawingFrame.QuestionMark"), //$NON-NLS-1$ //$NON-NLS-2$

@@ -430,7 +430,7 @@ public void setExpandedZ(boolean expanded, double expansionFactor) {
 
     
     imageType = 
-    		(OSPRuntime.isJS2 ? JSUtilI.TYPE_4BYTE_HTML5
+    		(OSPRuntime.isJS ? JSUtilI.TYPE_4BYTE_HTML5
     				: BufferedImage.TYPE_4BYTE_ABGR);
     image = new BufferedImage(width, height, imageType);
     pixelData = ((DataBufferByte)image.getRaster().getDataBuffer()).getData();
