@@ -754,6 +754,25 @@ public class OSPRuntime {
 	public static String getLaunchJarPath() {
 		return launchJarPath;
 	}
+	
+	/**
+	 * Gets the window.location.href when JavaScript code is running in an html page.
+	 * 
+	 * @return window.location.href
+	 */
+	public static String getDocbase() {
+		String base="";
+		if(!isJS) return null;
+		/** @j2sNative console.log("href="+window.location.href); 
+		 *  base=""+window.location.href;
+		 * */
+		int last=base.lastIndexOf('/');  // look for path/document.html
+		if(last<1) {
+			return base;
+		}
+		base=base.substring(0, last+1); // strip document from url
+		return base;
+	}
 
 	/**
 	 * Gets the launch jar directory, if any.
@@ -1523,7 +1542,7 @@ public class OSPRuntime {
 	}
 
 	/**
-	 * Fet bytes cached for temporary or DnD files in JavaScript.
+	 * Fetch bytes cached for temporary or DnD files in JavaScript.
 	 * 
 	 * @param path
 	 * @return
