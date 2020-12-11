@@ -52,12 +52,9 @@ public boolean isEnabled() {
     return enableInteraction;
   }
 
-  public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
-    if(findInteractive(panel, xpix, ypix)==null) {
-      return false;
-    }
-    return true;
-  }
+	public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
+		return (findInteractive(panel, xpix, ypix) != null);
+	}
 
   @Override
 public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {

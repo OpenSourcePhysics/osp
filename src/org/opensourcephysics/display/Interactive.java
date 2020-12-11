@@ -30,6 +30,10 @@ public interface Interactive extends Measurable {
   public double getX();
 
   public double getY();
+  
+  public default boolean isInteractive() {
+	  return true;
+  }
 
 }
 

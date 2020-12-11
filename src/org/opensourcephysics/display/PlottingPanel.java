@@ -107,8 +107,9 @@ public class PlottingPanel extends InteractivePanel {
 	@Override
 	public Interactive getInteractive() {
 		Interactive iad = super.getInteractive();
-		return (iad != null || !(axes instanceof Interactive) ? iad
-				: ((Interactive) axes).findInteractive(this, mouseEvent.getX(), mouseEvent.getY()));
+		return (iad == null && axes.isInteractive()
+				? ((Interactive) axes).findInteractive(this, mouseEvent.getX(), mouseEvent.getY())
+						: iad);
 	}
 
 	/**

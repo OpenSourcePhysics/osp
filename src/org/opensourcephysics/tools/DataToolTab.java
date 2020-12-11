@@ -4117,7 +4117,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				// get values to display
 				double x = panel.pixToX(e.getPoint().x);
 				double y = panel.pixToY(e.getPoint().y);
-				if ((panel instanceof InteractivePanel) && ((InteractivePanel) panel).getCurrentDraggable() != null) {
+				if ((panel.isInteractive) && ((InteractivePanel) panel).getCurrentDraggable() != null) {
 					x = ((InteractivePanel) panel).getCurrentDraggable().getX();
 					y = ((InteractivePanel) panel).getCurrentDraggable().getY();
 				}

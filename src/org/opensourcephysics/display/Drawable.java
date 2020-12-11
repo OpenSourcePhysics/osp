@@ -22,6 +22,9 @@ public interface Drawable {
    */
   public void draw(DrawingPanel panel, Graphics g);
 
+  default public boolean isInteractive() {
+	  return false;
+  }
 }
 
 /*

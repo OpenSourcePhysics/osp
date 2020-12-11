@@ -97,6 +97,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	@Deprecated
 	public static final int TOP_LEFT = MessageDrawable.TOP_LEFT;
 
+	public boolean isInteractive;
 	/**
 	 * BH experimental -- not needed.
 	 */
@@ -2454,11 +2455,27 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 * @see #getObjectOfClass(Class c)
 	 */
 	public <T extends Drawable> ArrayList<T> getDrawables(Class<T> type) {
-		return getDrawables(type, true, null);
+		return getDrawables(type, true, null, null);
 	}
 
+	@SuppressWarnings("unchecked")
+	public <T extends Drawable> T getFirstDrawable(Class<T> type) {
+		Drawable ret = null;
+		synchronized (drawableList) {
+			for (int i = 0, n = drawableList.size(); i < n; i++) {
+				Drawable d = drawableList.get(i);
+				if (type == null || type.isInstance(d)) {
+					ret = d;
+					break;
+				}
+			}
+		}
+		return (T) ret;
+	}
+
+
 	public <T extends Drawable> ArrayList<T> getDrawablesExcept(Class<T> type, Drawable except) {
-		return getDrawables(type, true, except);
+		return getDrawables(type, true, except, null);
 	}
 
 	/**
@@ -2473,7 +2490,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 * @see #getDrawables(Class c)
 	 */
 	public <T extends Drawable> ArrayList<T> getObjectOfClass(Class<T> type) {
-		return getDrawables(type, false, null);
+		return getDrawables(type, false, null, null);
 	}
 
 	public ArrayList<Drawable> getDrawablesExcept(Class<?> type) {
@@ -2490,9 +2507,9 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T extends Drawable> ArrayList<T> getDrawables(Class<T> type, boolean allowSubtypes, Drawable except) {
+	protected <T extends Drawable> ArrayList<T> getDrawables(Class<T> type, boolean allowSubtypes, Drawable except, ArrayList<T> ret) {
 		synchronized (drawableList) {
-			ArrayList<T> objects = new ArrayList<T>();
+			ArrayList<T> objects = (ret == null ? new ArrayList<T>() : ret);
 			for (int i = 0, n = drawableList.size(); i < n; i++) {
 				Drawable d = drawableList.get(i);
 				if (allowSubtypes ? ((except == null || d != except) && (type == null || type.isInstance(d)))

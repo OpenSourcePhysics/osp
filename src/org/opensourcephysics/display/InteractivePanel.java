@@ -48,6 +48,7 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
    * Constructs an InteractivePanel with an internal handler.
    */
   public InteractivePanel() {
+	  isInteractive = true;
     // remove the drawing panel mouse controller
     removeMouseListener(mouseController);
     removeMouseMotionListener(mouseController);
@@ -65,7 +66,7 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
   @Override
 public void addDrawable(Drawable drawable) {
     super.addDrawable(drawable);
-    if(drawable instanceof Interactive) {
+    if(drawable.isInteractive()) {
       containsInteractive = true;
     }
   }
@@ -194,6 +195,8 @@ public void handleMouseAction(InteractivePanel panel, MouseEvent evt) {
     return iaDraggable;
   }
 
+//  private Drawable[] darray;
+
 	/**
 	 * Gets the interactive object that was accessed by the last mouse event.
 	 * 
@@ -208,23 +211,23 @@ public void handleMouseAction(InteractivePanel panel, MouseEvent evt) {
 		}
 		if ((iaSelectable != null) && iaSelectable.isSelected()) {
 			// check only selected object
-			Interactive iad = ((Interactive) iaSelectable).findInteractive(this, mouseEvent.getX(), mouseEvent.getY());
-			return iad;
+			return ((Interactive) iaSelectable).findInteractive(this, mouseEvent.getX(), mouseEvent.getY());
 		}
-		Object[] array = null;
+		Interactive iad = null;
 		synchronized (drawableList) {
-			array = drawableList.toArray();
-			for (int i = array.length - 1; i >= 0; i--) {
-				Object obj = array[i];
-				if (obj instanceof Interactive) {
-					Interactive iad = ((Interactive) obj).findInteractive(this, mouseEvent.getX(), mouseEvent.getY());
-					if (iad != null) {
-						return iad;
-					}
+			int x = mouseEvent.getX();
+			int y = mouseEvent.getY();
+			int n = drawableList.size();
+			for (int i = n; --i >= 0;) {
+				Drawable obj = drawableList.get(i);
+				// isInteractive() true is declared default in Interactive interface,
+				// overriding default iSinteractive() false in Drawable
+				if (obj.isInteractive() && (iad = ((Interactive) obj).findInteractive(this, x, y)) != null) {
+					break;
 				}
 			}
 		}
-		return null;
+		return iad;
 	}
 
   /**

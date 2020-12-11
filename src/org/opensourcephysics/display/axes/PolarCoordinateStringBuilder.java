@@ -64,7 +64,7 @@ public void setCoordinateLabels(String rLabel, String phiLabel) {
 public String getCoordinateString(DrawingPanel panel, MouseEvent e) {
     double x = panel.pixToX(e.getPoint().x);
     double y = panel.pixToY(e.getPoint().y);
-    if((panel instanceof InteractivePanel)&&((InteractivePanel) panel).getCurrentDraggable()!=null) {
+    if((panel.isInteractive)&&((InteractivePanel) panel).getCurrentDraggable()!=null) {
       x = ((InteractivePanel) panel).getCurrentDraggable().getX();
       y = ((InteractivePanel) panel).getCurrentDraggable().getY();
     }

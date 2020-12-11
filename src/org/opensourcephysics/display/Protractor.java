@@ -105,18 +105,13 @@ public class Protractor extends InteractiveCircle implements Drawable {
     return showTheta;
   }
 
-  @Override
-public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
-    Interactive interactive = super.findInteractive(panel, xpix, ypix);
-    if(interactive!=null) {
-      return interactive;
-    }
-    interactive = tip.findInteractive(panel, xpix, ypix);
-    if(interactive!=null) {
-      return interactive;
-    }
-    return tauBox.findInteractive(panel, xpix, ypix);
-  }
+	@Override
+	public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+		Interactive o = super.findInteractive(panel, xpix, ypix);
+		return (o != null ? o 
+				: (o = tip.findInteractive(panel, xpix, ypix)) != null ? o
+				: tauBox.findInteractive(panel, xpix, ypix));
+	}
 
   /**
    * Draws the protractor on the given drawing panel.
