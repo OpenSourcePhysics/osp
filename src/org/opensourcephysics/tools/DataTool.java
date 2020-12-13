@@ -96,7 +96,6 @@ import org.opensourcephysics.display.OSPFrame;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.display.TextFrame;
-import org.opensourcephysics.tools.DataToolTable.TableEdit;
 
 /**
  * This provides a GUI for analyzing OSP Data objects.
@@ -1289,7 +1288,7 @@ public void loadDatasetURI(String relpath) {
 					for (int j = 0; j < columns; j++) {
 						Dataset dataset = data.getDataset(j);
 						String yColName = ((columnNames != null) && (columnNames.length > j)) ? columnNames[j]
-								: ((j == 0) && (title != null)) ? title : "?"; //$NON-NLS-1$
+								: (columns == 1 && title != null) ? title : "?"; //$NON-NLS-1$
 						dataset.setXYColumnNames("row", yColName); //$NON-NLS-1$
 						dataset.setXColumnVisible(false);
 						dataset.append(rowColumn, dataArray[j]);
