@@ -39,6 +39,7 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JApplet;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -46,6 +47,7 @@ import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
@@ -1695,6 +1697,18 @@ public class OSPRuntime {
 	public static void copy(String s, ClipboardOwner owner) {
 		StringSelection stringSelection = new StringSelection(s);
 		getClipboard().setContents(stringSelection, owner == null ? stringSelection : owner);
+	}
+
+	/**
+	 * Register a TransferHandler for the onpaste event for this component. 
+	 * This registration will consume the jQuery paste event. 
+	 * The returned MimeType is text/plain and will match DataFlavor.plainTextFlavor
+	 * 
+	 * @param c
+	 * @param handler
+	 */
+	public static void setJSClipboardPasteListener(Component c, TransferHandler handler) {
+		jsutil.setPasteListener(c, handler);
 	}
 }
 /*

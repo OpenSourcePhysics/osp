@@ -164,7 +164,12 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 																											// box.
 	protected MouseInputAdapter mouseController = new CMController(); // handles the coordinate display on mouse actions
 	protected boolean showCoordinates = false; // set to true when mouse listener is added
-	protected MouseInputAdapter optionController = new OptionController(); // handles optional mouse actions
+	protected MouseInputAdapter optionController = new OptionController() {
+		public void mousePressed(MouseEvent e) {
+			super.mousePressed(e);
+			requestFocus();
+		}
+	}; // handles optional mouse actions
 	protected ZoomBox zoomBox = new ZoomBox();
 	protected boolean enableZoom = true; // scale can be set via a mouse drag
 	protected boolean fixedScale = false; // scale is fixed (not user-settable)

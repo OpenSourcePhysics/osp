@@ -15,7 +15,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import javax.swing.JComponent;
+import javax.swing.TransferHandler;
 
+import swingjs.api.js.DOMNode.Promise;
 import swingjs.api.js.HTML5Applet;
 
 public interface JSUtilI {
@@ -165,6 +167,8 @@ public interface JSUtilI {
 	 * @param className
 	 */
 	void loadResourceIfClassUnknown(String resource, String className);
+
+	Promise importModule(String resource, Consumer<Object> resolve, Consumer<Object> reject);
 
 	/**
 	 * Read all applet.__Info properties  for the applet found using
@@ -348,7 +352,6 @@ public interface JSUtilI {
 	 * @return
 	 */
 	Map<String, Object> getAppletInfoAsMap();
-
 	
 	/**
 	 * Set the HTML5 applet.getApp() method to this object, for example, This will
@@ -365,5 +368,15 @@ public interface JSUtilI {
 	 * browser does not allow reading the clipboard.
 	 */
 	void getClipboardText(Consumer<String> whenDone);
+
+	/**
+	 * A more reliable paste listener sets the component's ui.domNode to contentEditable="true",
+	 * sets an onpaste listener, and converts the JavaScript event's clipboardData.getData()
+	 * DataTransfer data to a Java Transferable using JSDnD.JSTransferable.
+	 * 
+	 * @param c
+	 * @param handler
+	 */
+	void setPasteListener(Component c, TransferHandler handler);
 
 }
