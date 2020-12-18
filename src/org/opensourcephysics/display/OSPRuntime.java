@@ -150,7 +150,7 @@ public class OSPRuntime {
 
 	public static boolean isApplet = false;
 
-	public static boolean useSearchMap = isJS; // does not cache 
+//	public static boolean useSearchMap = isJS; // does not cache 
 
 	public static boolean isBHTest = isJS;
 

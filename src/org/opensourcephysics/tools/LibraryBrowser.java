@@ -116,6 +116,7 @@ public class LibraryBrowser extends JPanel {
 	protected static final String LIBRARY_HELP_BASE = "http://www.opensourcephysics.org/online_help/tools/"; //$NON-NLS-1$
 	protected static final String WINDOWS_OSP_DIRECTORY = "/My Documents/OSP/"; //$NON-NLS-1$
 	protected static final String OSP_DIRECTORY = "/Documents/OSP/"; //$NON-NLS-1$
+	protected static final String WEB_SEARCH_BASE_PATH = "https://physlets.org/tracker/library/Search/";
 	public static final String HINT_LOAD_RESOURCE = "LOAD";
 	public static final String HINT_DOWNLOAD_RESOURCE = "DOWNLOAD";
 
@@ -2235,22 +2236,58 @@ public class LibraryBrowser extends JPanel {
 		return path;
 	}
 
-	static Map<String, LibraryResource> resources;
+	static Map<String, LibraryResource> searchMap;
+	static boolean isSearchMapLoaded = false;
 	
-	static void addSearchMapResource(LibraryResource resource) {
-		if (OSPRuntime.useSearchMap) {
-			if (resources == null)
-				resources = new HashMap<>();
-//			String s = resource.getBasePath();
-			String s = resource.collectionPath;
-			if (s != null && s.length() > 0) {
-				resources.put(s, resource);
-			}
+	/**
+	 * Adds a searchable resource to the search map.
+	 */
+	protected static void addSearchResource(LibraryResource resource) {
+		if (searchMap == null)
+			searchMap = new HashMap<>();
+		String s = resource.collectionPath;
+		if (s != null && s.length() > 0) {
+			searchMap.put(s, resource);
 		}
 	}
 	
-	boolean isSearchMapLoaded = false;
-	String webSearchBasePath = "https://physlets.org/tracker/library/Search/";
+	/**
+	 * Loads searchable resources into the search map.
+	 */
+	protected void loadSearchMap() {
+		if (isSearchMapLoaded)
+			return;
+		isSearchMapLoaded = true;
+		
+		if (OSPRuntime.isJS) {
+			ArrayList<String> paths = getCollectionMenuPaths();
+			XMLControl control;
+			for (int i = 0; i < paths.size(); i++) {
+				String path = paths.get(i);
+				// determine cache path name and try to load from WEB_SEARCH_BASE_PATH
+				File f = ResourceLoader.getSearchCacheFile(path);
+				String searchPath = WEB_SEARCH_BASE_PATH + f.getName();
+				control = new XMLControlElement(searchPath);
+				if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
+					LibraryCollection collection = (LibraryCollection) control.loadObject(null);
+					collection.collectionPath = path;
+					addSearchResource(collection);
+				}
+			}			
+		} 
+		else {
+			List<File> xmlFiles = ResourceLoader.getSearchFileList();
+			for (File file : xmlFiles) {
+				XMLControl control = new XMLControlElement(file);
+				if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
+					LibraryResource resource = (LibraryResource) control.loadObject(null);
+					resource.collectionPath = control.getString("real_path"); //$NON-NLS-1$
+					addSearchResource(resource);
+				}
+			}			
+		}
+	}
+	
 
 	/**
 	 * Returns the set of all searchable cache resources.
@@ -2258,36 +2295,17 @@ public class LibraryBrowser extends JPanel {
 	 * @return a set of searchable resources
 	 */
 	protected Set<LibraryResource> getSearchCacheTargets() {
+		loadSearchMap();
 		Set<LibraryResource> searchTargets = new TreeSet<LibraryResource>();
 
-		if (OSPRuntime.useSearchMap && !isSearchMapLoaded) {
-			isSearchMapLoaded = true;
-			ArrayList<String> paths = getCollectionMenuPaths();
-			XMLControl control;
-			for (int i = 0; i < paths.size(); i++) {
-				String path = paths.get(i);
-				// determine cached path name and try to load from webSearchBasePath
-				File f = ResourceLoader.getSearchCacheFile(path);
-				String searchPath = webSearchBasePath + f.getName();
-				control = new XMLControlElement(searchPath);
-				if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
-					LibraryCollection collection = (LibraryCollection) control.loadObject(null);
-					collection.collectionPath = path;
-					addSearchMapResource(collection);
-				}
-			}
-		}
-
-		if (OSPRuntime.useSearchMap) {
-			if (resources == null)
-				return searchTargets;
-			for (LibraryResource r : resources.values()) {
+		if (searchMap != null) {
+			for (LibraryResource r : searchMap.values()) {
 				LibraryResource rc = r.getClone();				
-//				rc.collectionPath = r.getBasePath(); // DB collectionPath must be file path, not base path
 				if (rc.collectionPath != null)
 					searchTargets.add(rc);
 			}
-		} else {
+		}
+		else {
 			// set up search targets
 			List<File> xmlFiles = ResourceLoader.getSearchFileList();
 			for (File file : xmlFiles) {
