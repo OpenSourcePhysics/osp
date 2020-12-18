@@ -178,6 +178,7 @@ public class LibraryCollection extends LibraryResource {
 					collection.addResource(next);
 				}
 			}
+//			LibraryBrowser.addSearchMapResource(collection);
 			return collection;
 		}
 	}

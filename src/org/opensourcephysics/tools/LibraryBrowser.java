@@ -811,7 +811,25 @@ public class LibraryBrowser extends JPanel {
   	return null;
   }
   
-
+  public ArrayList<String> getCollectionMenuPaths() {
+  	ArrayList<String> paths = new ArrayList<String>();
+  	int n = collectionsMenu.getMenuComponentCount();
+  	for (int i = 0; i < n; i++) {
+  		Object next = collectionsMenu.getMenuComponent(i);
+  		if (next instanceof JMenu) {
+  			JMenu menu = (JMenu)next;
+  	  	int m = menu.getMenuComponentCount();
+  	  	for (int j = 0; j < m; j++) {
+  	  		next = menu.getMenuComponent(j);
+  	  		if (next instanceof JMenuItem) {
+  	  			JMenuItem item = (JMenuItem)next;
+  	  			paths.add(item.getActionCommand());
+  	  		}
+  	  	}
+  		}
+  	}
+  	return paths;
+  }
 
 	protected void loadResourceAsync(String path, Function<LibraryResource, Void> whenDone) {
 		isResourcePathXML = false;
@@ -2219,15 +2237,20 @@ public class LibraryBrowser extends JPanel {
 
 	static Map<String, LibraryResource> resources;
 	
-	static void addMapResource(LibraryResource resource) {
+	static void addSearchMapResource(LibraryResource resource) {
 		if (OSPRuntime.useSearchMap) {
 			if (resources == null)
 				resources = new HashMap<>();
-			String s = resource.getBasePath();
-			if (s != null && s.length() > 0)
+//			String s = resource.getBasePath();
+			String s = resource.collectionPath;
+			if (s != null && s.length() > 0) {
 				resources.put(s, resource);
+			}
 		}
 	}
+	
+	boolean isSearchMapLoaded = false;
+	String webSearchBasePath = "https://physlets.org/tracker/library/Search/";
 
 	/**
 	 * Returns the set of all searchable cache resources.
@@ -2236,12 +2259,31 @@ public class LibraryBrowser extends JPanel {
 	 */
 	protected Set<LibraryResource> getSearchCacheTargets() {
 		Set<LibraryResource> searchTargets = new TreeSet<LibraryResource>();
+
+		if (OSPRuntime.useSearchMap && !isSearchMapLoaded) {
+			isSearchMapLoaded = true;
+			ArrayList<String> paths = getCollectionMenuPaths();
+			XMLControl control;
+			for (int i = 0; i < paths.size(); i++) {
+				String path = paths.get(i);
+				// determine cached path name and try to load from webSearchBasePath
+				File f = ResourceLoader.getSearchCacheFile(path);
+				String searchPath = webSearchBasePath + f.getName();
+				control = new XMLControlElement(searchPath);
+				if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
+					LibraryCollection collection = (LibraryCollection) control.loadObject(null);
+					collection.collectionPath = path;
+					addSearchMapResource(collection);
+				}
+			}
+		}
+
 		if (OSPRuntime.useSearchMap) {
 			if (resources == null)
 				return searchTargets;
 			for (LibraryResource r : resources.values()) {
-				LibraryResource rc = r.getClone();
-				rc.collectionPath = r.getBasePath();
+				LibraryResource rc = r.getClone();				
+//				rc.collectionPath = r.getBasePath(); // DB collectionPath must be file path, not base path
 				if (rc.collectionPath != null)
 					searchTargets.add(rc);
 			}

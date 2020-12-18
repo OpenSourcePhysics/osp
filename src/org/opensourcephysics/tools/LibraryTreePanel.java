@@ -2088,7 +2088,7 @@ public class LibraryTreePanel extends JPanel {
 								nodeLoader.execute();
 							} else {
 								canceled = true; // prevents this from executing twice
-								// finished loading all nodes, so write xml file in OSP search folder
+								// finished loading all nodes, so write xml file in OSP search cache
 		//						if (OSPRuntime.doCacheLibaryRecord) {
 									File cacheFile = ResourceLoader.getSearchCacheFile(pathToRoot);
 									XMLControl control = new XMLControlElement(rootNode.record);
