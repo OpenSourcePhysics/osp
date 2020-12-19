@@ -1221,7 +1221,7 @@ public class VideoIO {
 	public static boolean checkMP4(String path, LibraryBrowser libraryBrowser) {
 		return (!path.toLowerCase().endsWith("mp4") || VideoIO.isLoadableMP4(path, (codec) -> {
 			if (libraryBrowser != null)
-				libraryBrowser.setCanceled(false);
+				libraryBrowser.doneLoading();
 			VideoIO.handleUnsupportedVideo(path, "mp4", codec, null, "VideoIO.checkMP4");
 		}));
 	}	

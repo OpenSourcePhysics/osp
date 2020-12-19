@@ -175,7 +175,7 @@ public class LibraryBrowser extends JPanel {
 			collectionsItem, searchItem, cacheItem, aboutItem, logItem, helpItem;
 	protected JButton commandButton, editButton, refreshButton, downloadButton;
 	protected ActionListener loadCollectionAction;
-	protected boolean exitOnClose, isCancelled;
+	protected boolean exitOnClose;
 	protected JTabbedPane tabbedPane;
 	protected JScrollPane htmlScroller;
 	protected PropertyChangeListener treePanelListener;
@@ -561,26 +561,21 @@ public class LibraryBrowser extends JPanel {
 		return true;
 	}
 	
-	public boolean isCancelled() {
-		return isCancelled;
+	public void cancelLoading() {
+		VideoIO.setCanceled(true);
+		setMessage("Loading canceled", Color.WHITE);
+		Timer timer = new Timer(2000, (ev) -> {
+			doneLoading();
+		});
+		timer.setRepeats(false);
+		timer.start();
 	}
 	
-	public void setCanceled(boolean b) {
-		isCancelled = b;
-		if (isCancelled) {
-			setMessage("Loading cancelled", Color.WHITE);
-			Timer timer = new Timer(2000, (ev) -> {
-				setCanceled(false);
-			});
-			timer.setRepeats(false);
-			timer.start();
-		} else {
-			setComandButtonEnabled(true);
-			isCancelled = false;
-			LibraryTreePanel treePanel = getSelectedTreePanel();
-			LibraryTreeNode node = (treePanel == null ? null : treePanel.getSelectedNode());
-			setMessage(node == null ? "" : node.getToolTip(), null);
-		}
+	public void doneLoading() {
+		setComandButtonEnabled(true);
+		LibraryTreePanel treePanel = getSelectedTreePanel();
+		LibraryTreeNode node = (treePanel == null ? null : treePanel.getSelectedNode());
+		setMessage(node == null ? "" : node.getToolTip(), null);
 	}
 
 //____________________ private and protected methods ____________________________
@@ -1665,7 +1660,7 @@ public class LibraryBrowser extends JPanel {
 		messageButton = new JButton();
 		messageButton.addActionListener((e) -> {
 			if (messageButton.getBackground() == Color.YELLOW) {
-				setCanceled(true);
+				cancelLoading();
 			}
 		});
 		messageButton.setHorizontalAlignment(SwingConstants.LEFT);
@@ -1936,7 +1931,7 @@ public class LibraryBrowser extends JPanel {
 		record = new LibraryResource(""); //$NON-NLS-1$
 		record.setTarget(path);
 		record.setProperty("download_filename", getDownloadName(path, null));
-		isCancelled = false;
+		VideoIO.setCanceled(false);
 		// send LibraryResource via property change event to TFrame and other listeners
 		// DB 2020.11.15 don't hide LibraryBrowser since it has cancel button
 //		setVisible(false);
