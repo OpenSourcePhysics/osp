@@ -186,7 +186,7 @@ public class Utils {
         }
         if(je.getName().equals(_gifFile)) {
           // System.out.println ("Found entry "+je.getName());
-          long size = (int) je.getSize();
+          int size = (int) je.getSize();
           // System.out.println ("Size is "+size);
           int rb = 0;
           int chunk = 0;
@@ -199,7 +199,7 @@ public class Utils {
           }
           size = rb;
           // System.out.println ("Real Size is "+size);
-          b = new byte[(int) size];
+          b = new byte[size];
           System.arraycopy(enormous, 0, b, 0, (int) size);
           done = true;
         }

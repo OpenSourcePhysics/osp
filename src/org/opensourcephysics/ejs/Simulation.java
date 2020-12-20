@@ -27,7 +27,7 @@ public abstract class Simulation implements java.lang.Runnable, StateMachine {
 	private View view = null;
 	private java.lang.Thread thread = null;
 	private boolean autoplay = false, isPlaying = false;
-	private long delay = 0;
+	private int delay = 0;
 	private java.net.URL codebase = null;
 
 	private void errorMessage(String _text) {
@@ -154,7 +154,7 @@ public abstract class Simulation implements java.lang.Runnable, StateMachine {
 		} else if (_fps >= MAXIMUM_FPS) {
 			delay = 0;
 		} else {
-			delay = (long) (1000.0 / _fps);
+			delay = (int) (1000.0 / _fps);
 		}
 	}
 
