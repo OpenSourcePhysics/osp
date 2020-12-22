@@ -583,7 +583,7 @@ public class Assets {
 	 * @return
 	 * @throws IOException
 	 */
-	private static byte[] getLimitedStreamBytes(InputStream is, long n, OutputStream out) throws IOException {
+	private static byte[] getLimitedStreamBytes(InputStream is, int n, OutputStream out) throws IOException {
 
 		// Note: You cannot use InputStream.available() to reliably read
 		// zip data from the web.
