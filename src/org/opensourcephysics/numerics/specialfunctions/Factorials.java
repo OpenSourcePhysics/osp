@@ -100,14 +100,12 @@ public class Factorials {
 		return logFactorial(n) - logFactorial(k) - logFactorial(n - k);
 	}
 
-	/*
-	 * --------------- test code --------------- public static void main(String
-	 * args[]) { System.out.println(Factorials.factorial(3));
-	 * System.out.println(Factorials.factorial(20));
-	 * System.out.println(Factorials.factorial(21));
-	 * System.out.println(Factorials.factorial(22)); }
-	 */
-
+	public static void main(String args[]) {
+		  
+		for(int i=10; i<25; i++) {
+		  System.out.println("i= "+i+"  fact(i)= "+Factorials.factorial(i));
+		}
+	}
 }
 
 /*
