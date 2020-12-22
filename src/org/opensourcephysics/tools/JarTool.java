@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
@@ -781,14 +782,14 @@ public class JarTool implements Tool, Runnable {
 	 * @return boolean
 	 */
 	static public boolean compress(ArrayList<File> sources, File target, Manifest manifest) {
+		if ((sources == null) || (sources.size() == 0)) {
+			return false;
+		}
+		ZipOutputStream output = null;
 		try {
-			if ((sources == null) || (sources.size() == 0)) {
-				return false;
-			}
-			if (target.exists()) {
+			if (!OSPRuntime.isJS && target.exists()) {
 				target.delete(); // Remove the previous JAR file
 			}
-			ZipOutputStream output = null;
 			boolean isJar = target.getName().toLowerCase().endsWith(".jar"); //$NON-NLS-1$
 			if (isJar) {
 				if (manifest != null) {
@@ -841,12 +842,19 @@ public class JarTool implements Tool, Runnable {
 				f_in.close();
 				output.closeEntry();
 			}
-			output.close();
+			return true;
 		} catch (Exception exc) {
 			exc.printStackTrace();
 			return false;
+		} finally {
+			if (output != null) {
+				try {
+					output.close();
+				} catch (IOException e) {
+				}
+			}
+
 		}
-		return true;
 	}
 
 	/**
