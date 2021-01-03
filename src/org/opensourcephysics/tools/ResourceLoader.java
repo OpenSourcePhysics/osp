@@ -101,6 +101,7 @@ public class ResourceLoader {
 	protected static final String OSX_DEFAULT_CACHE = "/Library/Caches/OSP"; //$NON-NLS-1$
 	protected static final String LINUX_DEFAULT_CACHE = "/.config/OSP/Cache"; //$NON-NLS-1$
 	protected static final String SEARCH_CACHE_SUBDIRECTORY = "Search"; //$NON-NLS-1$
+	protected static final int WEB_CONNECTION_RETRY = 1;
 
 	public static final String TRACKER_TEST_URL = null; // needed for tracker
 
@@ -118,7 +119,7 @@ public class ResourceLoader {
 	protected static ArrayList<String> pathsNotFound = new ArrayList<String>();
 	protected static File ospCache;
 //	protected static boolean zipURLsOK;  BH 2020.11.12
-	protected static boolean webConnected;
+	protected static boolean webConnected, ignoreMissingWebConnection;
 	protected static String downloadURL = ""; //$NON-NLS-1$
 
 	static {
@@ -984,10 +985,13 @@ public class ResourceLoader {
 		if (file == null && webConnected) {
 			webConnected = isWebConnected(); // $NON-NLS-1$
 			if (!webConnected) {
-				JOptionPane.showMessageDialog(null,
-						ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
-						ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
-						JOptionPane.WARNING_MESSAGE);
+				if (ResourceLoader.showWebConnectionDialog() == ResourceLoader.WEB_CONNECTION_RETRY) {
+					return downloadToOSPCache(urlPath, fileName, alwaysOverwrite);
+				}
+//				JOptionPane.showMessageDialog(null,
+//						ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
+//						ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
+//						JOptionPane.WARNING_MESSAGE);
 			} else {
 				JOptionPane.showMessageDialog(null,
 						ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Message1") //$NON-NLS-1$
@@ -1547,6 +1551,26 @@ public class ResourceLoader {
 			return null;
 		}
 	}
+	
+	static int showWebConnectionDialog() {
+		if (ignoreMissingWebConnection)
+			return 0;
+		Object[] buttonTitles = { ToolsRes.getString("Button.OK"),
+				ToolsRes.getString("LibraryBrowser.WebConnectionDialog.Button.Retry"), 
+				ToolsRes.getString("LibraryBrowser.WebConnectionDialog.Button.Ignore") };
+		int n = JOptionPane.showOptionDialog(null,
+				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"),
+				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"),
+				JOptionPane.YES_NO_CANCEL_OPTION,
+				JOptionPane.WARNING_MESSAGE,
+				null,     // no custom Icon
+				buttonTitles,
+				buttonTitles[0]); // title of the default button
+		if (n == 2) {
+			ignoreMissingWebConnection = true;
+		}
+		return n;
+	}
 
 	/**
 	 * Downloads a file from the web to a target File.
@@ -1566,9 +1590,13 @@ public class ResourceLoader {
 			webConnected = isWebConnected();
 		}
 		if (!webConnected) {
-			JOptionPane.showMessageDialog(null, ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
-					ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
-					JOptionPane.WARNING_MESSAGE);
+			if (ResourceLoader.showWebConnectionDialog() == WEB_CONNECTION_RETRY) {
+				return download(urlPath, target, alwaysOverwrite);
+			}
+
+//			JOptionPane.showMessageDialog(null, ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
+//					ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
+//					JOptionPane.WARNING_MESSAGE);
 			return null;
 		}
 

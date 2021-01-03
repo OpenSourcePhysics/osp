@@ -639,7 +639,7 @@ public class LibraryManager extends JDialog {
 				pathField.setCaretPosition(0);
 				String name = library.pathToNameMap.get(path);
 				nameField.setText(name);
-				boolean unavailable = ResourceLoader.isHTTP(path) && !browser.isWebConnected();
+				boolean unavailable = ResourceLoader.isHTTP(path) && !browser.isWebConnected(null);
 				Resource res = unavailable ? null : ResourceLoader.getResourceZipURLsOK(path);
 				if (res == null) {
 					pathField.setForeground(LibraryTreePanel.darkRed);
@@ -664,7 +664,7 @@ public class LibraryManager extends JDialog {
 				pathField.setCaretPosition(0);
 				String name = library.importedPathToLibraryMap.get(path).getName();
 				nameField.setText(name);
-				boolean unavailable = ResourceLoader.isHTTP(path) && !browser.isWebConnected();
+				boolean unavailable = ResourceLoader.isHTTP(path) && !browser.isWebConnected(null);
 				Resource res = unavailable ? null : ResourceLoader.getResourceZipURLsOK(path);
 				if (res == null) {
 					pathField.setForeground(LibraryTreePanel.darkRed);

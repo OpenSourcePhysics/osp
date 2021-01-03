@@ -124,7 +124,7 @@ public class LibraryBrowser extends JPanel {
 	private static String ospPath;
 	private static LibraryBrowser browser;
 	protected static Border buttonBorder;
-	private static boolean checkedWebConnection = false;
+	private static boolean checkedWebConnection = OSPRuntime.isJS;
 	protected static JFrame frame;
 	protected static JDialog externalDialog;
 	protected static JMenuBar menubar;
@@ -1042,17 +1042,24 @@ public class LibraryBrowser extends JPanel {
 	 * @param path     the path to the resource
 	 * @param treePath tree path to select in root-first order (may be null)
 	 * @param listener 
-	 * @return the TabLoader that adds the tab
+	 * @return true if successful
 	 */
 	protected boolean addTabAndExecute(String path, List<String> treePath, PropertyChangeListener listener) {
 		if (path == null)
 			return false;
 		File cachedFile = ResourceLoader.getSearchCacheFile(path);
 		boolean isCachePath = cachedFile.exists();
-		if (!isCachePath && !isWebConnected() && ResourceLoader.isHTTP(path)) {
-			JOptionPane.showMessageDialog(this, ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
-					ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
-					JOptionPane.WARNING_MESSAGE);
+		boolean[] isDialogShown = new boolean[] {false};
+		if (!isCachePath && ResourceLoader.isHTTP(path) 
+				&& !isWebConnected(isDialogShown) && !ResourceLoader.ignoreMissingWebConnection) {
+			if (!isDialogShown[0] && ResourceLoader.showWebConnectionDialog() == ResourceLoader.WEB_CONNECTION_RETRY) {
+				checkedWebConnection = false;
+				return addTabAndExecute(path, treePath, listener);
+			}
+			
+//			JOptionPane.showMessageDialog(this, ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
+//					ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
+//					JOptionPane.WARNING_MESSAGE);
 			return false;
 		}
 		loadTabAsync(path, -1, treePath, listener);
@@ -2861,11 +2868,16 @@ public class LibraryBrowser extends JPanel {
 			Runnable webChecker = new Runnable() {
 				@Override
 				public void run() {
-					if (!isWebConnected()) {
-						JOptionPane.showMessageDialog(LibraryBrowser.this,
-								ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
-								ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
-								JOptionPane.WARNING_MESSAGE);
+					boolean[] isDialogShown = new boolean[] {false};
+					if (!isWebConnected(isDialogShown)) {
+						if (!isDialogShown[0] && ResourceLoader.showWebConnectionDialog() == ResourceLoader.WEB_CONNECTION_RETRY) {
+							checkedWebConnection = false;
+							run();
+						}
+//						JOptionPane.showMessageDialog(LibraryBrowser.this,
+//								ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
+//								ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
+//								JOptionPane.WARNING_MESSAGE);
 					}
 				}
 			};
@@ -2906,7 +2918,7 @@ public class LibraryBrowser extends JPanel {
 				webChecker.run();
 			} else {
 				webChecker.run(); // check web connection first
-				if (isWebConnected()) {
+				if (isWebConnected(null)) {
 					library.load(libraryPath);
 				}
 			}
@@ -2920,7 +2932,7 @@ public class LibraryBrowser extends JPanel {
 				// add previously open tabs not available for loading in doInBackground method
 				if (library.openTabPaths != null) {
 					for (final String path : library.openTabPaths) {
-						boolean available = isWebConnected() && ResourceLoader.isHTTP(path);
+						boolean available = isWebConnected(null) && ResourceLoader.isHTTP(path);
 						if (available) {
 							addTabAndExecute(path, null, null);
 						}
@@ -3118,16 +3130,22 @@ public class LibraryBrowser extends JPanel {
 	 * 
 	 * @return true if web connected
 	 */
-	protected boolean isWebConnected() {
+	protected boolean isWebConnected(boolean[] isDialogShown) {
 		if (!checkedWebConnection) {
 			checkedWebConnection = true;
 			webConnected = ResourceLoader.isWebConnected();
+			webConnected = false; // pig for testing
 			if (!webConnected) {
-				JOptionPane.showMessageDialog(this,
-						ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
-						ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
-						JOptionPane.WARNING_MESSAGE);
+				if (isDialogShown != null)
+					isDialogShown[0] = true;
+				if (ResourceLoader.showWebConnectionDialog() == ResourceLoader.WEB_CONNECTION_RETRY) {
+					checkedWebConnection = false;
+					return isWebConnected(isDialogShown);
+				}
 			}
+//		JOptionPane.showMessageDialog(null, ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
+//		ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
+//		JOptionPane.WARNING_MESSAGE);
 		}
 		return webConnected;
 	}
