@@ -3134,7 +3134,6 @@ public class LibraryBrowser extends JPanel {
 		if (!checkedWebConnection) {
 			checkedWebConnection = true;
 			webConnected = ResourceLoader.isWebConnected();
-			webConnected = false; // pig for testing
 			if (!webConnected) {
 				if (isDialogShown != null)
 					isDialogShown[0] = true;
