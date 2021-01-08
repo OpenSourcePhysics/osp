@@ -1168,7 +1168,7 @@ public class VideoIO {
 	 */
 	public static boolean checkMP4(String path, LibraryBrowser libraryBrowser, VideoPanel panel) {
 		String ext = XML.getExtension(path);
-		if (!OSPRuntime.isJS && !"mp4".equals(ext) && !"mov".equals(ext))
+		if (!OSPRuntime.isJS || !"mp4".equals(ext) && !"mov".equals(ext))
 			return true;
 		String codec = getVideoCodec(path);
 		OSPLog.fine("VideoIO: " + ext + " codec = " + codec);
