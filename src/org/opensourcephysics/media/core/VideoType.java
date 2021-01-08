@@ -45,6 +45,7 @@ public interface VideoType {
 	public static final String TYPE_IMAGE = "Image"; //$NON-NLS-1$
 
 
+	public boolean isValid();
 
   /**
    * Opens a new video with the specified name.

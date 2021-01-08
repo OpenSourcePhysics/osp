@@ -853,6 +853,10 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		this.loader = loader;
 	}
 
+	protected void offerReloadVM(String ext, String message) {
+		// TrackerPanel only
+	}
+
 }
 
 /*

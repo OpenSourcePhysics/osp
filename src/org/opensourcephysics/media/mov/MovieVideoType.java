@@ -27,7 +27,6 @@ package org.opensourcephysics.media.mov;
 
 import java.util.TreeSet;
 
-import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.core.VideoFileFilter;
 import org.opensourcephysics.media.core.VideoType;
 
@@ -41,11 +40,21 @@ import org.opensourcephysics.media.core.VideoType;
 public abstract class MovieVideoType implements VideoType, MovieVideoI {
 
 	protected static TreeSet<VideoFileFilter> movieFileFilters = new TreeSet<VideoFileFilter>();
-	protected boolean recordable = true;
 
 	static {
 		MovieFactory.startMovieThumbnailTool();
 	}
+
+	protected boolean recordable = true;
+
+	protected boolean invalid;
+	
+	@Override
+	public boolean isValid() {
+		return !invalid;
+	}
+
+
 
 	protected VideoFileFilter singleTypeFilter; // null for general type
 

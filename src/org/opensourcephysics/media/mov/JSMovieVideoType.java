@@ -88,20 +88,22 @@ public boolean isType(Video video) {
 
 	@Override
 	public Video getVideo(String name, String basePath) {
+		Video video = null;
 		try {
-			Video video = new JSMovieVideo(name, basePath);
-			if (video.getFrameNumber() == Integer.MIN_VALUE)
+			video = new JSMovieVideo(name, basePath);
+			if (video.getFrameNumber() == Integer.MIN_VALUE) {
 				video = null;
-			else
+			} else {
 				video.setProperty("video_type", this); //$NON-NLS-1$
-			return video;
+			}
 		} catch (Exception e) {
 			if (name != null) {
 				OSPLog.fine(getDescription() + ": " + e.getMessage()); //$NON-NLS-1$
 			}
 			e.printStackTrace();
 		}
-		return null;
+		invalid = (video != null);
+		return video;
 	}
 
 
