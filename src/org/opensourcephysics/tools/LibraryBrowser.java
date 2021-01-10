@@ -2259,23 +2259,36 @@ public class LibraryBrowser extends JPanel {
 			return;
 		isSearchMapLoaded = true;
 		
-		if (OSPRuntime.isJS) {
-			ArrayList<String> paths = getWebCollectionPaths();
-			XMLControl control;
-			for (int i = 0; i < paths.size(); i++) {
-				String path = paths.get(i);
-				// determine cache path name and try to load from WEB_SEARCH_BASE_PATH
-				File f = ResourceLoader.getSearchCacheFile(path);
-				String searchPath = WEB_SEARCH_BASE_PATH + f.getName();
-				control = new XMLControlElement(searchPath);
-				if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
-					LibraryCollection collection = (LibraryCollection) control.loadObject(null);
-					collection.collectionPath = path;
-					addSearchResource(collection);
-				}
-			}			
-		} 
-		else {
+//		if (OSPRuntime.isJS) {
+//			ArrayList<String> paths = getWebCollectionPaths();
+//			XMLControl control;
+//			for (int i = 0; i < paths.size(); i++) {
+//				String path = paths.get(i);
+//				// determine cache path name and try to load from WEB_SEARCH_BASE_PATH
+//				File f = ResourceLoader.getSearchCacheFile(path);
+//				String searchPath = WEB_SEARCH_BASE_PATH + f.getName();
+//				control = new XMLControlElement(searchPath);
+//				if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
+//					LibraryCollection collection = (LibraryCollection) control.loadObject(null);
+//					collection.collectionPath = path;
+//					addSearchResource(collection);
+//				}
+//			}			
+//		} 
+//		else {
+//			List<File> xmlFiles = ResourceLoader.getSearchFileList();
+//			for (File file : xmlFiles) {
+//				XMLControl control = new XMLControlElement(file);
+//				if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
+//					LibraryResource resource = (LibraryResource) control.loadObject(null);
+//					resource.collectionPath = control.getString("real_path"); //$NON-NLS-1$
+//					addSearchResource(resource);
+//				}
+//			}			
+//		}
+		
+		// add searchable local files when running in Java
+		if (!OSPRuntime.isJS) {
 			List<File> xmlFiles = ResourceLoader.getSearchFileList();
 			for (File file : xmlFiles) {
 				XMLControl control = new XMLControlElement(file);
@@ -2284,8 +2297,27 @@ public class LibraryBrowser extends JPanel {
 					resource.collectionPath = control.getString("real_path"); //$NON-NLS-1$
 					addSearchResource(resource);
 				}
-			}			
+			}
 		}
+		// add searchable web files for both Java and JS
+		ArrayList<String> paths = getWebCollectionPaths();
+		XMLControl control;
+		for (int i = 0; i < paths.size(); i++) {
+			String path = paths.get(i);
+			// skip web files that duplicate a local file
+			if (searchMap != null && searchMap.keySet().contains(path))
+				continue;
+			// determine cache path name and try to load from WEB_SEARCH_BASE_PATH
+			File f = ResourceLoader.getSearchCacheFile(path);
+			String searchPath = WEB_SEARCH_BASE_PATH + f.getName();
+			control = new XMLControlElement(searchPath);
+			if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
+				LibraryCollection collection = (LibraryCollection) control.loadObject(null);
+				collection.collectionPath = path;
+				addSearchResource(collection);
+			}
+		}			
+
 	}
 	
 
