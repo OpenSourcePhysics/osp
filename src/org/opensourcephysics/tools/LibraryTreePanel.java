@@ -2114,6 +2114,10 @@ public class LibraryTreePanel extends JPanel {
 								}
 
 								showInfo(getSelectedNode(), "LibraryTreePanel.propChange " + e.getPropertyName());
+								if (browser.metadataLoaderListener != null) {
+									PropertyChangeEvent event = new PropertyChangeEvent(browser, pathToRoot, null, cacheFile);
+									browser.metadataLoaderListener.propertyChange(event);
+								}
 							}
 						}
 					}

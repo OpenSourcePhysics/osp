@@ -234,7 +234,7 @@ public class Library {
 	 * @param path the path to the collection
 	 * @param name the menu item name for the collection
 	 */
-	protected void addCollection(String path, String name) {
+	public void addCollection(String path, String name) {
 		path = path.trim();
 		// don't add duplicate paths
 		if (pathList.contains(path))
@@ -264,7 +264,7 @@ public class Library {
 	 * 
 	 * @return array of paths
 	 */
-	protected TreeSet<String> getAllPaths() {
+	public TreeSet<String> getAllPaths() {
 		TreeSet<String> paths = new TreeSet<String>();
 		paths.addAll(pathList);
 		paths.addAll(comPADREPathList);
@@ -288,7 +288,7 @@ public class Library {
 	 * 
 	 * @return path-to-name map
 	 */
-	protected HashMap<String, String> getNameMap() {
+	public HashMap<String, String> getNameMap() {
 		return allPathsToNameMap;
 	}
 

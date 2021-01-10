@@ -178,13 +178,14 @@ public class LibraryBrowser extends JPanel {
 	protected boolean exitOnClose;
 	protected JTabbedPane tabbedPane;
 	protected JScrollPane htmlScroller;
-	protected PropertyChangeListener treePanelListener;
+	protected PropertyChangeListener treePanelListener, metadataLoaderListener;
 	protected boolean keyPressed, textChanged;
 	protected TextFrame helpFrame;
 	protected JEditorPane htmlAboutPane;
 	protected TrackerDLFilter dlFileFilter = TRACKER_FILTER;
 	protected boolean isResourcePathXML;
 	protected LibraryManager libraryManager;
+	protected ArrayList<String> webCollectionPaths;
 	private int myFontLevel;
 	public static final String PROPERTY_LIBRARY_TARGET = "target";
 	public static final String PROPERTY_LIBRARY_EDITED = "collection_edit";
@@ -366,11 +367,12 @@ public class LibraryBrowser extends JPanel {
 	}
 
 	/**
-	 * Refreshes the Collections menu.
+	 * Refreshes the Collections menu and webCollectionPaths.
 	 */
 	synchronized public void refreshCollectionsMenu() {
 		JMenu menu = collectionsMenu;
 		menu.removeAll();
+		getWebCollectionPaths().clear();
 		if (!OSPRuntime.isJS) {
 			JMenu myLibraryMenu = new JMenu(ToolsRes.getString("Library.Name.Local")); //$NON-NLS-1$
 			menu.add(myLibraryMenu);
@@ -397,6 +399,7 @@ public class LibraryBrowser extends JPanel {
 //	  			path += LibraryComPADRE.PRIMARY_ONLY;
 				item.setToolTipText(path);
 				item.setActionCommand(path);
+				webCollectionPaths.add(path);
 			}
 		}
 		if (!library.ospPathList.isEmpty()) {
@@ -420,6 +423,7 @@ public class LibraryBrowser extends JPanel {
 					item.addActionListener(loadCollectionAction);
 					item.setToolTipText(next);
 					item.setActionCommand(next);
+					webCollectionPaths.add(next);
 				}
 			}
 		}
@@ -440,6 +444,7 @@ public class LibraryBrowser extends JPanel {
 			item.addActionListener(loadCollectionAction);
 			item.setToolTipText(next);
 			item.setActionCommand(next);
+			webCollectionPaths.add(next);
 		}
 		if (!lib.subPathList.isEmpty()) {
 			for (String path : lib.subPathList) {
@@ -807,24 +812,10 @@ public class LibraryBrowser extends JPanel {
   	return null;
   }
   
-  public ArrayList<String> getCollectionMenuPaths() {
-  	ArrayList<String> paths = new ArrayList<String>();
-  	int n = collectionsMenu.getMenuComponentCount();
-  	for (int i = 0; i < n; i++) {
-  		Object next = collectionsMenu.getMenuComponent(i);
-  		if (next instanceof JMenu) {
-  			JMenu menu = (JMenu)next;
-  	  	int m = menu.getMenuComponentCount();
-  	  	for (int j = 0; j < m; j++) {
-  	  		next = menu.getMenuComponent(j);
-  	  		if (next instanceof JMenuItem) {
-  	  			JMenuItem item = (JMenuItem)next;
-  	  			paths.add(item.getActionCommand());
-  	  		}
-  	  	}
-  		}
-  	}
-  	return paths;
+  public ArrayList<String> getWebCollectionPaths() {
+  	if (webCollectionPaths == null)
+  		webCollectionPaths = new ArrayList<String>();
+  	return webCollectionPaths;
   }
 
 	protected void loadResourceAsync(String path, Function<LibraryResource, Void> whenDone) {
@@ -1048,7 +1039,7 @@ public class LibraryBrowser extends JPanel {
 		if (path == null)
 			return false;
 		File cachedFile = ResourceLoader.getSearchCacheFile(path);
-		boolean isCachePath = cachedFile.exists();
+		boolean isCachePath = cachedFile.exists() && metadataLoaderListener == null;
 		boolean[] isDialogShown = new boolean[] {false};
 		if (!isCachePath && ResourceLoader.isHTTP(path) 
 				&& !isWebConnected(isDialogShown) && !ResourceLoader.ignoreMissingWebConnection) {
@@ -2144,8 +2135,7 @@ public class LibraryBrowser extends JPanel {
 	 * 
 	 * @param path the path to the file
 	 */
-	public void open(String path) {
-		
+	public void open(String path) {		
 		loadTab(path, null);
 	}
 
@@ -2155,7 +2145,7 @@ public class LibraryBrowser extends JPanel {
 	 * @param index the tab number
 	 * @return true unless cancelled by user
 	 */
-	protected boolean closeTab(int index) {
+	public boolean closeTab(int index) {
 		if (index < 0 || index >= tabbedPane.getTabCount())
 			return true;
 		LibraryTreePanel treePanel = getTreePanel(index);
@@ -2169,6 +2159,14 @@ public class LibraryBrowser extends JPanel {
 			treePanel.metadataLoader.cancel();
 		}
 		return true;
+	}
+
+	/**
+	 * Gets the current tab count.
+	 * @return tab count
+	 */
+	public int getTabCount() {
+		return tabbedPane.getTabCount();
 	}
 
 	/**
@@ -2262,7 +2260,7 @@ public class LibraryBrowser extends JPanel {
 		isSearchMapLoaded = true;
 		
 		if (OSPRuntime.isJS) {
-			ArrayList<String> paths = getCollectionMenuPaths();
+			ArrayList<String> paths = getWebCollectionPaths();
 			XMLControl control;
 			for (int i = 0; i < paths.size(); i++) {
 				String path = paths.get(i);
@@ -2886,7 +2884,8 @@ public class LibraryBrowser extends JPanel {
 				library.load(libraryPath);
 				localLibraryLoaded = true;
 				// add previously open tabs that are available
-				if (library.openTabPaths != null) {
+				// but NOT when refreshing DL search data (non-null metadataLoaderListener)
+				if (library.openTabPaths != null && metadataLoaderListener == null) {
 					ArrayList<String> unopenedTabs = new ArrayList<String>();
 					String[] paths = library.openTabPaths;
 					for (String path : paths) {
@@ -2930,7 +2929,8 @@ public class LibraryBrowser extends JPanel {
 			try {
 				Library library = get();
 				// add previously open tabs not available for loading in doInBackground method
-				if (library.openTabPaths != null) {
+				// but NOT when refreshing DL search data (non-null metadataLoaderListener)
+				if (library.openTabPaths != null && metadataLoaderListener == null) {
 					for (final String path : library.openTabPaths) {
 						boolean available = isWebConnected(null) && ResourceLoader.isHTTP(path);
 						if (available) {
@@ -2965,7 +2965,9 @@ public class LibraryBrowser extends JPanel {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			String realPath = path;
 			File cachedFile = ResourceLoader.getSearchCacheFile(path);
-			if (cachedFile.exists() && ResourceLoader.isHTTP(path)) { // $NON-NLS-1$
+			// ALWAYS open web collections if metadataLoaderListener is non-null
+			// since it is non-null only when refreshing metadata for JS
+			if (cachedFile.exists() && ResourceLoader.isHTTP(path) && metadataLoaderListener == null) {
 				realPath = cachedFile.getAbsolutePath();
 //				saveToCache = false;
 			}
@@ -3196,6 +3198,16 @@ public class LibraryBrowser extends JPanel {
 			}
 		}
 		return results;
+	}
+	
+  /**
+   * Adds a listener to be notified whenever a LibraryTreePanel.MetadataLoader finishes.
+   * This is used only for refreshing metadata for Tracker JS.
+   * 
+   * @param listener the listener
+   */
+	public void addMetadataLoaderListener(PropertyChangeListener listener) {
+		metadataLoaderListener = listener;
 	}
 
   /**
