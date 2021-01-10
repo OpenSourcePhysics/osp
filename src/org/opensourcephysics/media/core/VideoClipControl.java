@@ -97,15 +97,9 @@ public void setStepNumber(int n) {
     }
     n = Math.max(0, n);
     final int stepNum = Math.min(clip.getStepCount()-1, n);
-    Runnable runner = new Runnable() {
-      @Override
-	public void run() {
-        int m = clip.stepToFrame(stepNum);
-        video.setFrameNumber(m);
-      }
-
-    };
-    SwingUtilities.invokeLater(runner);
+    SwingUtilities.invokeLater(() -> {
+        video.setFrameNumber(clip.stepToFrame(stepNum));
+    });
   }
 
   /**
