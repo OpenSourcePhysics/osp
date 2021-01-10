@@ -227,7 +227,7 @@ public class Test_Video {
 				HTML5Video target = (HTML5Video) sources[0];
 				Object jsevent = sources[1];
 				System.out.println(event + " " + HTML5Video.getCurrentTime(jsvideo));
-				if (cbCapture.isSelected() && event.equals("canplaythrough")) {
+				if (cbCapture != null && cbCapture.isSelected() && event.equals("canplaythrough")) {
 					grabImage();
 				}
 
