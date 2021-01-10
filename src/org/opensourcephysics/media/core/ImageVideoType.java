@@ -47,6 +47,7 @@ import org.opensourcephysics.controls.XMLControlElement;
 public class ImageVideoType implements VideoType {
 
 	private VideoFileFilter[] fileFilters;
+	private boolean invalid;
 
 	/**
 	 * Default constructor uses all available file types.
@@ -96,23 +97,25 @@ public class ImageVideoType implements VideoType {
 	@Override
 	public Video getVideo(String name, String basePath) {
 
+		Video video;
 		// if an XML file with the image name is found, load it in order to get frame
 		// duration
 		String xmlName = XML.stripExtension(basePath == null ? name : basePath + File.separator + name) + ".xml"; //$NON-NLS-1$
 		XMLControl control = new XMLControlElement(new File(xmlName));
 		control.setBasepath(basePath);
 		if (!control.failedToRead() && control.getObjectClass() == ImageVideo.class) {
-			return (Video) control.loadObject(null);
+			video = (Video) control.loadObject(null);
+		} else {
+			// else load image(s) directly
+			try {
+				video = new ImageVideo(name, basePath, true);
+				video.setProperty("video_type", this); //$NON-NLS-1$
+			} catch (IOException ex) {
+				video = null;
+			}
 		}
-
-		// else load image(s) directly
-		try {
-			Video video = new ImageVideo(name, basePath, true);
-			video.setProperty("video_type", this); //$NON-NLS-1$
-			return video;
-		} catch (IOException ex) {
-			return null;
-		}
+		invalid = (video == null);
+		return video;
 	}
 
 	/**
@@ -194,6 +197,11 @@ public class ImageVideoType implements VideoType {
 	@Override
 	public String toString() {
 		return _toString();
+	}
+
+	@Override
+	public boolean isValid() {
+		return !invalid;
 	}
 
 }

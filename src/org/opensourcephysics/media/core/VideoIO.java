@@ -44,6 +44,8 @@ import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -89,8 +91,6 @@ public class VideoIO {
 	public static final String[] JS_VIDEO_EXTENSIONS = { "ogg", "mov", "mp4" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	public static final String DEFAULT_PREFERRED_EXPORT_EXTENSION = "mp4"; //$NON-NLS-1$
 	public static final String DEFAULT_VIDEO_EXTENSION = "jpg"; //$NON-NLS-1$
-	public static final String[] XUGGLE_VIDEO_EXTENSIONS = 
-		{"mov", "flv", "mp4", "wmv", "avi" };
 	public static final String[] KNOWN_VIDEO_EXTENSIONS = 
 		{"mov", "flv", "mp4", "wmv", "avi", "mts",
 			"m2ts", "mpg", "mod", "ogg", "dv" };
@@ -599,39 +599,23 @@ public class VideoIO {
 		return false;
 	}
 
-	/**
-	 * Determines if an MP4 video is loadable.
-	 *
-	 * @param path the path
-	 * @param whenNotLoadable a Consumer to apply (later) if not loadable
-	 * @return true if loadable
-	 */
-	public static boolean isLoadableMP4(String path, Consumer<String> whenNotLoadable) {
-		String codec = getVideoCodec(path);
-		OSPLog.fine("mp4 codec = "+codec);
-		if (codec == null || !codec.contains("avc1")) {  // H264
-			if (whenNotLoadable != null)
-				SwingUtilities.invokeLater(() -> {
-					whenNotLoadable.accept(codec);
-				});
-			return false;
-		}
-		return true;
-
-	}
-	
 	public static String getVideoCodec(String path) {
+		String codec = null;
 		// can only test local files?
 		File localFile = ResourceLoader.download(path, null, false);
 		if (localFile != null)
-			path = localFile.getAbsolutePath();
+			path = localFile.getAbsolutePath();	
+		if (codecMap.containsKey(path)) {
+			return codecMap.get(path);
+		} 
 		try {
 			VideoReader vr = new VideoReader(path);
 			vr.getContents(false);
-			return vr.getCodec() == null? "unknown": vr.getCodec();
+			codec = (vr.getCodec() == null? "unknown": vr.getCodec());
 		} catch (IOException e) {
 		}
-		return null;
+		codecMap.put(path, codec);
+		return codec;
 	}
 	
 	public static void handleUnsupportedVideo(String path, String ext, String codec, VideoPanel vidPanel, String why) {
@@ -642,49 +626,10 @@ public class VideoIO {
 				? MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.VideoCodec1") + " " + ext.toUpperCase() + " "
 						+ MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.VideoCodec2") + " \"" + codec + "\"."
 				: MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.VideoType") + " \"" + ext + "\".");
-
-		if (codec == null && MovieFactory.xuggleNeeds32bitVM && vidPanel != null
-				&& vidPanel.getClass().getSimpleName().equals("TrackerPanel")) {
-			for (int i = 0; i < XUGGLE_VIDEO_EXTENSIONS.length; i++) {
-				if (XUGGLE_VIDEO_EXTENSIONS[i].equals(ext)) {
-					message += "<br><br>" + MediaRes.getString("VideoIO.Dialog.WrongVM.Message.Fix1");
-					message += "<br>" + MediaRes.getString("VideoIO.Dialog.WrongVM.Message.Fix2");
-					message += "<br><br>" + MediaRes.getString("VideoIO.Dialog.WrongVM.Message.Restart");
-					new AsyncDialog().showConfirmDialog(null, new EditorPaneMessage(message),
-							MediaRes.getString("VideoIO.Dialog.UnsupportedVideo.Title"), JOptionPane.YES_NO_OPTION,
-							(ev) -> {
-								int sel = ev.getID();
-								switch (sel) {
-								case JOptionPane.YES_OPTION:
-									// relaunch in 32-bit VM using Tracker PrefsDialog by reflection
-									SwingUtilities.invokeLater(() -> {
-										try {
-											// first get TFrame
-											String trackerClassPath = "org.opensourcephysics.cabrillo.tracker.TrackerPanel";
-											Class<?> type = Class.forName(trackerClassPath); // $NON-NLS-1$
-											Method m = type.getMethod("getTFrame", (Class<?>[]) null); //$NON-NLS-1$
-											Object tFrame = m.invoke(vidPanel, (Object[]) null);
-											// now get PrefsDialog from TFrame
-											String tframeClassPath = "org.opensourcephysics.cabrillo.tracker.TFrame";
-											type = Class.forName(tframeClassPath); // $NON-NLS-1$
-											m = type.getMethod("getPrefsDialog", (Class<?>[]) null); //$NON-NLS-1$
-											Object prefsDialog = m.invoke(tFrame, (Object[]) null);
-
-											String prefsClassPath = "org.opensourcephysics.cabrillo.tracker.PrefsDialog";
-											type = Class.forName(prefsClassPath); // $NON-NLS-1$
-											m = type.getMethod("relaunch32Bit", (Class<?>[]) null); //$NON-NLS-1$
-											m.invoke(prefsDialog, (Object[]) null);
-										} catch (Exception e) {
-										}
-									});
-								}
-							});
-					return;
-				}
-			}
-
+		if (codec == null && MovieFactory.xuggleNeeds32bitVM && vidPanel != null) {
+			vidPanel.offerReloadVM(ext, message);
+			return;
 		}
-
 		String helpLink = MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.MoreInfo") + "<br>" + "<a href=\""
 				+ VIDEO_CONVERSION_HELP_PATH + "\">" + VIDEO_CONVERSION_HELP_PATH + "</a>";
 		message += "<br><br>" + MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Fix") + ":";
@@ -696,7 +641,6 @@ public class VideoIO {
 			message += "<li>" + MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Import") + "</li></ol>";
 			message += helpLink;
 			message += "<br><br>" + MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.DownloadNow");
-
 			new AsyncDialog().showConfirmDialog(null, new EditorPaneMessage(message),
 					MediaRes.getString("VideoIO.Dialog.UnsupportedVideo.Title"), JOptionPane.YES_NO_OPTION, (ev) -> {
 						int sel = ev.getID();
@@ -746,12 +690,9 @@ public class VideoIO {
 		if (path.startsWith("file:")) //$NON-NLS-1$
 			path = ResourceLoader.getNonURIPath(path);
 		String fullPath = XML.getResolvedPath(path, basePath);
-		OSPLog.fine("Path: " + fullPath + "    Type: " + (vidType == null? null: vidType.getTypeName())); //$NON-NLS-1$ //$NON-NLS-2$
-		
+		OSPLog.fine("Path: " + fullPath + "    Type: " + (vidType == null? null: vidType.getTypeName())); //$NON-NLS-1$ //$NON-NLS-2$		
 		// for Xuggle videos, download web files to cache
-		String vidTypeName = vidType == null? null: vidType.getClass().getSimpleName();
-		if (vidTypeName != null && vidTypeName.contains("Xuggle")
-				&& ResourceLoader.isHTTP(fullPath)) {
+		if (vidType != null && MovieFactory.ENGINE_XUGGLE.equals(vidType.getTypeName()) && ResourceLoader.isHTTP(fullPath)) {
 			// download to cache if doesn't exist
 			File localFile = ResourceLoader.download(fullPath, null, false);		
 			if (localFile != null) {
@@ -1179,9 +1120,9 @@ public class VideoIO {
 	}
 	
 	// class to show message in JEditorPane and respond to hyperlinks
-	static class EditorPaneMessage extends JEditorPane {
+	public static class EditorPaneMessage extends JEditorPane {
 
-		EditorPaneMessage(String htmlBody) {
+		public EditorPaneMessage(String htmlBody) {
 			super("text/html", "<html><body style=\"" + getLabelStyle() + "\">" + htmlBody + "</body></html>");
 			addHyperlinkListener(new HyperlinkListener() {
 				@Override
@@ -1211,20 +1152,31 @@ public class VideoIO {
 		}
 	}
 
+	
+	private static Map<String, String> codecMap = new HashMap<>();
+	
 	/**
-	 * Check for a valid video codec and file format.
+	 * JavaScript only.
+	 * 
+	 * Check for a valid video codec and file format. Handle it if it is an MP4 or
+	 * MOV with unsupported codec From JSMovieVideo.load, TFrame.loadVideo,
+	 * TrackerIO.AsyncLoader.loadVideo
 	 * 
 	 * @param path
 	 * @param libraryBrowser
-	 * @return true if not an mp4 or is a valid mp4
+	 * @return true if not JS or not an mp4 and not mov, or not is a valid mp4/mov
 	 */
-	public static boolean checkMP4(String path, LibraryBrowser libraryBrowser) {
-		return (!path.toLowerCase().endsWith("mp4") || VideoIO.isLoadableMP4(path, (codec) -> {
-			if (libraryBrowser != null)
-				libraryBrowser.doneLoading();
-			VideoIO.handleUnsupportedVideo(path, "mp4", codec, null, "VideoIO.checkMP4");
-		}));
-	}	
+	public static boolean checkMP4(String path, LibraryBrowser libraryBrowser, VideoPanel panel) {
+		String ext = XML.getExtension(path);
+		if (!OSPRuntime.isJS || !"mp4".equals(ext) && !"mov".equals(ext))
+			return true;
+		String codec = getVideoCodec(path);
+		OSPLog.fine("VideoIO: " + ext + " codec = " + codec);
+		if (codec != null && codec.contains("avc1"))
+			return true;
+		VideoIO.handleUnsupportedVideo(path, ext, codec, panel, "VideoIO");
+		return false;
+	}
 
 }
 

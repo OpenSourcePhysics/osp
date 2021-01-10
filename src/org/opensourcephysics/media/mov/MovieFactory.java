@@ -47,7 +47,7 @@ public class MovieFactory {
 					movieEngineName = ENGINE_JS;
 					xuggleIsPresent = false;
 				}
-			} else {
+			} else /** @j2sIgnore */ {
 				// get xuggle status code by reflection
 				Class<?> type = Class.forName(xuggleClassPath + "DiagnosticsForXuggle"); //$NON-NLS-1$
 				Method m = type.getMethod("getStatusCode", (Class<?>[])null); //$NON-NLS-1$
@@ -64,9 +64,9 @@ public class MovieFactory {
 				if (code == 7) {
 					xuggleNeeds32bitVM = true;
 					OSPLog.config("Xuggle installed but must be run in a 32-bit Java VM on Windows.");					
-				}
-				else
+				} else {
 					OSPLog.config("Xuggle not installed? " + xuggleClassPath + "XuggleVideo failed"); //$NON-NLS-1$ //$NON-NLS-2$
+				}
 				String jarPath = OSPRuntime.getLaunchJarPath();
 				xuggleIsPresent = (jarPath!=null && ResourceLoader.getResource(jarPath+"!/"+xugglePropertiesPath)!=null); //$NON-NLS-1$
 			}

@@ -395,7 +395,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		boolean isLocal = (url.getProtocol().toLowerCase().indexOf("file") >= 0); //$NON-NLS-1$
 		path = isLocal ? res.getAbsolutePath() : url.toExternalForm();
 		OSPLog.finest("JSMovieVideo loading " + path + " local?: " + isLocal); //$NON-NLS-1$ //$NON-NLS-2$
-		if (!VideoIO.checkMP4(path, null)) {
+		if (!VideoIO.checkMP4(path, null, null)) {
 			frameNumber = Integer.MIN_VALUE;
 			return;
 		}

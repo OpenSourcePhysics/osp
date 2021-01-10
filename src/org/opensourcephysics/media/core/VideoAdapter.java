@@ -71,7 +71,7 @@ import javajs.async.SwingJSUtils.Performance;
 public abstract class VideoAdapter implements Video {
 // instance fields
 	protected Image rawImage; // raw image from video source
-	protected final Dimension size = new Dimension(); // image pixel dimensions
+	protected Dimension size = new Dimension(); // image pixel dimensions
 	protected BufferedImage bufferedImage; // offscreen buffered image copy
 	protected BufferedImage filteredImage; // filtered image
 	protected String baseDir;
@@ -92,7 +92,7 @@ public abstract class VideoAdapter implements Video {
 	protected boolean isValidFilteredImage = false;
 	protected ImageCoordSystem coords;
 	protected DoubleArray aspects;
-	private PropertyChangeSupport support;
+	protected PropertyChangeSupport support;
 	protected HashMap<String, Object> properties = new HashMap<String, Object>();
 	protected FilterStack filterStack = new FilterStack();
 	protected DataBufferInt clearRaster;
