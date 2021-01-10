@@ -75,8 +75,8 @@ public abstract class VideoAdapter implements Video {
 	protected BufferedImage bufferedImage; // offscreen buffered image copy
 	protected BufferedImage filteredImage; // filtered image
 	protected String baseDir;
-	protected int frameCount;
-	protected int frameNumber;
+	protected int frameCount = -1;
+	protected int frameNumber = 0;
 	protected int startFrameNumber;
 	protected int endFrameNumber;
 	protected double rate = 1;
@@ -1326,13 +1326,8 @@ public abstract class VideoAdapter implements Video {
 	}
 
 	protected void notifyFrame() {
-		SwingUtilities.invokeLater(new Runnable() {
-
-			@Override
-			public void run() {
-				firePropertyChange(Video.PROPERTY_VIDEO_FRAMENUMBER, null, Integer.valueOf(getFrameNumber()));				
-			}
-			
+		SwingUtilities.invokeLater(() -> {
+			firePropertyChange(Video.PROPERTY_VIDEO_FRAMENUMBER, null, Integer.valueOf(getFrameNumber()));
 		});
 	}
 

@@ -106,7 +106,9 @@ public class StepperClipControl extends ClipControl {
 		} else {
 			step();
 		}
-		support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_PLAYING, null, Boolean.TRUE);
+		SwingUtilities.invokeLater(()->{
+			support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_PLAYING, null, Boolean.TRUE);
+		});
 	}
 
 	/**
@@ -163,45 +165,39 @@ public class StepperClipControl extends ClipControl {
 	 */
 	@Override
 	public void setStepNumber(int n0) {
-		int n = Math.min(Math.max(0, n0), clip.getStepCount() - 1);
-		if (n == stepNumber && clip.stepToFrame(n) == getFrameNumber()) {
+		int step = Math.min(Math.max(0, n0), clip.getStepCount() - 1);
+		if (step == stepNumber && clip.stepToFrame(step) == getFrameNumber()) {
 			return;
 		}
 		if (video == null) {
-			super.setStepNumber(n);
+			super.setStepNumber(step);
 			stepDisplayed = true;
-			support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, Integer.valueOf(n));
+			support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, Integer.valueOf(step));
 		} else {
-			int end = video.getEndFrameNumber();
-			int m = clip.stepToFrame(n);
-			if (m > end) {
-				super.setStepNumber(n);
+			int frame = clip.stepToFrame(step);
+			if (frame > video.getEndFrameNumber()) {
+				super.setStepNumber(step);
 				video.setVisible(false);
 				stepDisplayed = true;
-				support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, Integer.valueOf(n));
+				support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, Integer.valueOf(step));
 			} else {
 				video.setVisible(videoVisible);
-				Runnable runner = new Runnable() {
-					@Override
-					public void run() {
-						setStepNumberLater(m, n);
-					}
-
-				};
-				SwingUtilities.invokeLater(runner);
+				SwingUtilities.invokeLater(() -> {
+					setStepNumberLater(frame, step);
+				});
 			}
 		}
 	}
 
-	protected void setStepNumberLater(int m, int stepNum) {
-		if (videoFrameNumber == m) {
+	protected void setStepNumberLater(int frame, int step) {
+		if (videoFrameNumber == frame) {
 			stepDisplayed = true;
-		} else if (video.getFrameNumber() == m) { // setting frame number will have no effect
-			setStepNumber(stepNum);
+		} else if (video.getFrameNumber() == frame) { // setting frame number will have no effect
+			super.setStepNumber(step);
 			stepDisplayed = true;
-			support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, Integer.valueOf(stepNum));
+			support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, Integer.valueOf(step));
 		} else {
-			video.setFrameNumber(m);
+			video.setFrameNumber(frame);
 		}
 	}
 
