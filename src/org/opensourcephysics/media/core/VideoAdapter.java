@@ -75,7 +75,7 @@ public abstract class VideoAdapter implements Video {
 	protected BufferedImage bufferedImage; // offscreen buffered image copy
 	protected BufferedImage filteredImage; // filtered image
 	protected String baseDir;
-	protected int frameCount = -1;
+	protected int frameCount = 0;
 	protected int frameNumber = 0;
 	protected int startFrameNumber;
 	protected int endFrameNumber;

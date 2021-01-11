@@ -373,7 +373,7 @@ public class VideoClip {
 	 * @return the end frame
 	 */
 	public int getEndFrameNumber() {
-		endFrame = startFrame + stepSize * (stepCount - 1);
+		endFrame = Math.max(startFrame, startFrame + stepSize * (stepCount - 1));
 		return endFrame;
 	}
 
@@ -445,7 +445,7 @@ public class VideoClip {
 	 * @return the frame number
 	 */
 	public int stepToFrame(int stepNumber) {
-		return startFrame + stepNumber * stepSize;
+		return Math.max(0, startFrame + stepNumber * stepSize);
 	}
 
 	/**
@@ -628,10 +628,8 @@ public class VideoClip {
 	 * @return the frame number
 	 */
 	public int getLastFrameNumber() {
-		if (video == null || video.getFrameCount() == 1) {
-			return getEndFrameNumber();
-		}
-		return video.getFrameCount() - 1 + extraFrames;
+		return (video == null || video.getFrameCount() == 1 ? getEndFrameNumber()
+				: Math.max(0, video.getFrameCount() - 1 + extraFrames));
 	}
 
 	/**
