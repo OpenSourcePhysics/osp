@@ -87,10 +87,11 @@ import org.opensourcephysics.display.OSPRuntime;
  * @version 1.0
  */
 @SuppressWarnings("serial")
-public class PerspectiveFilter extends Filter {
+public class PerspectiveFilter extends Filter implements PropertyChangeListener {
 
 	public static final String PROPERTY_PERSPECTIVEFILTER_CORNERLOCATION = "cornerlocation";
 	public static final String PROPERTY_PERSPECTIVEFILTER_FIXED = "fixed";
+	public static final String PROPERTY_PERSPECTIVEFILTER_PERSPECTIVE = "perspective";
 	
 	// static fields
 	private static Color defaultColor = Color.RED;
@@ -108,7 +109,6 @@ public class PerspectiveFilter extends Filter {
 	private TreeSet<Integer> outKeyFrames = new TreeSet<Integer>();
 	private boolean fixedIn = false, fixedOut = true;
 	private int fixedKey = 0;
-	private PropertyChangeListener videoListener;
 
 	// inspector fields
 	private Inspector inspector;
@@ -121,13 +121,15 @@ public class PerspectiveFilter extends Filter {
 		quad = new Quadrilateral();
 		refresh();
 		hasInspector = true;
-		videoListener = new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent e) {
-				int n = (Integer) e.getNewValue();
-				refreshCorners(n);
-			}
-		};
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent e) {
+		switch (e.getPropertyName()) {
+		case Video.PROPERTY_VIDEO_NEXTFRAME:
+			refreshCorners((Integer) e.getNewValue());
+			break;
+		}
 	}
 
 	/**
@@ -194,7 +196,7 @@ public class PerspectiveFilter extends Filter {
 		if (vidPanel != null && vidPanel.getVideo() != null) {
 			vidPanel.removePropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 			Video video = vidPanel.getVideo();
-			video.removePropertyChangeListener(Video.PROPERTY_VIDEO_NEXTFRAME, videoListener);
+			video.removePropertyChangeListener(Video.PROPERTY_VIDEO_NEXTFRAME, this);
 			removePropertyChangeListener(PROPERTY_FILTER_VISIBLE, vidPanel);
 		}
 	}
@@ -211,15 +213,15 @@ public class PerspectiveFilter extends Filter {
 		if (vidPanel != null) {
 			// filter added
 			Video video = vidPanel.getVideo();
-			video.removePropertyChangeListener(Video.PROPERTY_VIDEO_NEXTFRAME, videoListener);
-			video.addPropertyChangeListener(Video.PROPERTY_VIDEO_NEXTFRAME, videoListener);
-			vidPanel.propertyChange(new PropertyChangeEvent(this, "perspective", null, this)); //$NON-NLS-1$
+			video.removePropertyChangeListener(Video.PROPERTY_VIDEO_NEXTFRAME, this);
+			video.addPropertyChangeListener(Video.PROPERTY_VIDEO_NEXTFRAME, this);
+			vidPanel.propertyChange(new PropertyChangeEvent(this, PROPERTY_PERSPECTIVEFILTER_PERSPECTIVE, null, this)); //$NON-NLS-1$
 		} else if (prevPanel != null) {
 			// filter removed
 			prevPanel.removeDrawable(quad);
 			Video video = prevPanel.getVideo();
-			video.removePropertyChangeListener(Video.PROPERTY_VIDEO_NEXTFRAME, videoListener);
-			prevPanel.propertyChange(new PropertyChangeEvent(this, "perspective", this, null)); //$NON-NLS-1$
+			video.removePropertyChangeListener(Video.PROPERTY_VIDEO_NEXTFRAME, this);
+			prevPanel.propertyChange(new PropertyChangeEvent(this, PROPERTY_PERSPECTIVEFILTER_PERSPECTIVE, this, null)); //$NON-NLS-1$
 		}
 	}
 

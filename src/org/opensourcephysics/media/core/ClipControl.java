@@ -66,19 +66,18 @@ public abstract class ClipControl implements PropertyChangeListener {
 	  public static final String PROPERTY_CLIPCONTROL_STEPNUMBER = "stepnumber"; //$NON-NLS-1$
 	  public static final String PROPERTY_CLIPCONTROL_FRAMEDURATION = "frameduration"; //$NON-NLS-1$
 
-  /**
-   * Returns an instance of ClipControl.
-   *
-   * @param clip the video clip
-   * @return an appropriate clip control
-   */
-  public static ClipControl getControl(VideoClip clip) {
-    Video video = clip.getVideo();
-    if(clip.isPlayAllSteps()||(video==null)||(video instanceof ImageVideo)) {
-      return new StepperClipControl(clip);
-    }
-    return new VideoClipControl(clip);
-  }
+	/**
+	 * Returns an instance of ClipControl.
+	 *
+	 * @param clip the video clip
+	 * @return an appropriate clip control
+	 */
+	public static ClipControl getControl(VideoClip clip) {
+		Video video = clip.getVideo();
+		return (clip.isPlayAllSteps() || video == null || video instanceof ImageVideo 
+				? new StepperClipControl(clip)
+				: new VideoClipControl(clip));
+	}
 
   /**
    * Constructs a ClipControl object. This is an abstract class that
@@ -254,10 +253,15 @@ public abstract class ClipControl implements PropertyChangeListener {
 public void propertyChange(PropertyChangeEvent e) {
     switch (e.getPropertyName()) {
     case VideoClip.PROPERTY_VIDEOCLIP_STARTFRAME: 
-    	// from video clip
-    	int n = getFrameNumber();
-	    stepNumber = clip.frameToStep(n);
+	    stepNumber = clip.frameToStep(getFrameNumber());
 	    break;
+	case Video.PROPERTY_VIDEO_FRAMENUMBER:
+		int n = ((Integer) e.getNewValue()).intValue();
+		if (n != videoFrameNumber) {
+			setFrameNumber(n);
+			support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, stepNumber); // to VideoPlayer
+		}
+		break;
     }
   }
 

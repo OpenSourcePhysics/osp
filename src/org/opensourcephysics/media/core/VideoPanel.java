@@ -104,6 +104,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	protected Map<String, Class<? extends Filter>> filterClasses = new TreeMap<String, Class<? extends Filter>>(); 
 
 	protected FinalizableLoader loader; // for asynchronous loading
+	private int lastFrame = -1;
 
 	/**
 	 * Constructs a blank VideoPanel with a player.
@@ -131,6 +132,11 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		// create coords and put origin at center of panel
 		coords = new ImageCoordSystem();
 		setVideo(video);
+		setImageSize(video, true);
+		// put origin at center of image
+	}
+
+	private void setImageSize(Video video, boolean isConstructor) {
 		Dimension d;
 		if ((video != null) && ((d = video.getImageSize()).width > 0)) {
 			setImageWidth(d.width);
@@ -139,11 +145,17 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			setImageWidth(defaultWidth);
 			setImageHeight(defaultHeight);
 		}
-		int w = (int) getImageWidth();
-		int h = (int) getImageHeight();
-		setPreferredSize(new Dimension(w, h + player.height));
-		// put origin at center of image
-		coords.setAllOriginsXY(imageWidth / 2, imageHeight / 2);
+		if (!isConstructor)
+			coords.setAllOriginsXY(0,0);
+		if (isConstructor) {
+			int w = (int) getImageWidth();
+			int h = (int) getImageHeight();
+			setPreferredSize(new Dimension(w, h + player.height));
+			coords.setAllOriginsXY(imageWidth / 2, imageHeight / 2);
+		} else {
+			coords.setAllOriginsXY(imageWidth / 2, imageHeight / 2);
+			video.setProperty("measure", "invalidate");
+		}
 	}
 
 	/**
@@ -160,7 +172,17 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	}
 
 	private void initializePlayer(Video prev, Video newVideo, boolean playAllSteps) {
-
+// testing against 1:01 v
+		if (prev != null) {
+			prev.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY, this);
+			prev.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, this);
+		}
+		if (newVideo != null) {
+			newVideo.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY, this);
+			newVideo.addPropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY, this);
+			newVideo.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, this);
+			newVideo.addPropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, this);
+		}
 		VideoClip prevClip = getPlayer().getVideoClip();
 		VideoClip newClip = new VideoClip(newVideo);
 		if (newVideo == null && prevClip != null) {
@@ -561,7 +583,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	@Override
 	public void propertyChange(PropertyChangeEvent e) {
 		String name = e.getPropertyName();
-		OSPLog.debug("VideoPanel.prop " + name);
+		//OSPLog.debug("VideoPanel.prop " + name);
 		switch (name) {
 		case Video.PROPERTY_VIDEO_SIZE:
 			Dimension dim = (Dimension) e.getNewValue();
@@ -572,20 +594,25 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			// replace current coords with video's new coords
 			coords = video.getCoords();
 			break;
+		case AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY:
+			break;
 		case Video.PROPERTY_VIDEO_IMAGE:
 		case Video.PROPERTY_VIDEO_VIDEOVISIBLE:
-		case AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY:
 			repaint();
 			break;
 		case AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY:
 			Video newVideo = (Video) e.getNewValue();
 			newVideo.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, this);
-			if (loader == null)
-				System.out.println("VideoPanel loader is null!");
-			loader.finalizeLoading();
+			if (loader == null) {
+				// video is newVideo here
+				setImageSize(newVideo, false);
+				coords = newVideo.getCoords();
+			} else {
+				loader.finalizeLoading();
+			}
 			repaint();
 			break;
-		case ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER: // from VideoPlayer
+		case VideoPlayer.PROPERTY_VIDEOPLAYER_STEPNUMBER: // from VideoPlayer
 			repaint();
 			break;
 		case VideoPlayer.PROPERTY_VIDEOPLAYER_VIDEOCLIP: // from VideoPlayer
@@ -856,6 +883,16 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	protected void offerReloadVM(String ext, String message) {
 		// TrackerPanel only
 	}
+	
+	protected void dispose() {
+		if (video != null) {
+			video.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY, this);
+			video.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, this);
+		}
+		super.dispose();
+	}
+
+
 
 }
 

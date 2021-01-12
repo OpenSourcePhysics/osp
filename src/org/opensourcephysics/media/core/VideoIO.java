@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.zip.ZipEntry;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
@@ -970,15 +971,22 @@ public class VideoIO {
 		
 	private static void openVideoPanelFileSync(File file, VideoPanel vidPanel) {
 		// BH Can this be a directory? user selects that?
+		String path = file.getAbsolutePath();
+		if (ResourceLoader.isJarZipTrz(path, false)) { 
+			// find a video
+			String p = getEmbeddedMovie(path);
+			if (p != null) {
+				file = new File(path = p);
+			}
+		}
 		if (videoFileFilter.accept(file, true)) { // load video
 			ArrayList<VideoType> types = getVideoTypes(false);
 			Video video = null;
 			Toolkit.getDefaultToolkit().beep();
-			String name = file.getAbsolutePath();
 			for (int i = 0; i < types.size(); i++) {
 				VideoType type = types.get(i);
 				if (type.accepts(file)) {
-					video = type.getVideo(name, null);
+					video = type.getVideo(path, null);
 					if (video != null) {
 						OSPLog.info(file.getName() + " opened as type " + type.getDescription()); //$NON-NLS-1$
 						break;
@@ -993,9 +1001,10 @@ public class VideoIO {
 			}
 			vidPanel.setVideo(video);
 			vidPanel.repaint();
-		} else { // load data
+		} else {
+			// load data
 			XMLControlElement control = new XMLControlElement();
-			control.read(file.getAbsolutePath());
+			control.read(path);
 			Class<?> type = control.getObjectClass();
 			if (VideoPanel.class.isAssignableFrom(type)) {
 				vidPanel.setDataFile(file);
@@ -1012,6 +1021,15 @@ public class VideoIO {
 			vidPanel.changed = false;
 		}
 
+	}
+
+	private static String getEmbeddedMovie(String path) {
+		Map<String, ZipEntry> map = ResourceLoader.getZipContents(path);
+		for (String key : map.keySet()) {
+			if (videoFileFilter.accept(new File(key), true)) { // load video
+				return path + "!/" + key;
+		}}
+		return null;
 	}
 
 	/**

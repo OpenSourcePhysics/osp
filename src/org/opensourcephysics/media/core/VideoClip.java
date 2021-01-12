@@ -32,6 +32,7 @@
 package org.opensourcephysics.media.core;
 
 import java.awt.Frame;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -60,7 +61,7 @@ import javajs.async.AsyncFileChooser;
  * @author Douglas Brown
  * @version 1.0
  */
-public class VideoClip {
+public class VideoClip implements PropertyChangeListener {
 
 	public final static String PROPERTY_VIDEOCLIP_FRAMECOUNT = "framecount";//$NON-NLS-1$
 	public final static String PROPERTY_VIDEOCLIP_STARTFRAME = "startframe";//$NON-NLS-1$
@@ -103,7 +104,7 @@ public class VideoClip {
 	private int maxFrameCount = 300000; // approx 2h45m at 30fps
 	private double startTime = 0; // start time in milliseconds
 	protected boolean isDefaultStartTime = true;
-	protected Video video = null;
+	protected VideoAdapter video = null;
 	private int[] stepFrames;
 	ClipInspector inspector;
 	private PropertyChangeSupport support;
@@ -124,20 +125,26 @@ public class VideoClip {
 	 */
 	public VideoClip(Video video) {
 		support = new SwingPropertyChangeSupport(this);
-		this.video = video;
-		if (video == null) {
-			updateArray();
-			isDefaultState = true;
-			return;
-		}
-		video.setProperty("videoclip", this); //$NON-NLS-1$
-		setStartFrameNumber(video.getStartFrameNumber());
-		if (video.getFrameCount() > 1) {
-			setStepCount(video.getEndFrameNumber() - startFrame + 1);
+		this.video = (VideoAdapter) video;
+		if (video != null) {
+			video.setProperty("videoclip", this); //$NON-NLS-1$
+			if (video instanceof AsyncVideoI) {
+				video.addPropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_HAVEFRAMES, this);
+				return;
+			}
+			initVideo();
 		}
 		updateArray();
 		isDefaultState = true;
 	}
+
+	private void initVideo() {
+		setStartFrameNumber(video.getStartFrameNumber());
+		if (video.getFrameCount() > 1) {
+			setStepCount(video.getEndFrameNumber() - startFrame + 1);
+		}
+	}
+
 
 	public FinalizableLoader loader;
 
@@ -168,8 +175,7 @@ public class VideoClip {
 	 * @return true if changed
 	 */
 	public boolean setStartFrameNumber(int start) {
-		int maxEndFrame = getLastFrameNumber();
-		return setStartFrameNumber(start, maxEndFrame);
+		return setStartFrameNumber(start, getLastFrameNumber());
 	}
 
 	/**
@@ -872,6 +878,16 @@ public class VideoClip {
 			clip.playAllSteps = playAllSteps; // by default
 		}
 
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		switch (evt.getPropertyName()) {
+		case AsyncVideoI.PROPERTY_ASYNCVIDEOI_HAVEFRAMES:
+			initVideo();
+			updateArray();
+			break;
+		}		
 	}
 	
 

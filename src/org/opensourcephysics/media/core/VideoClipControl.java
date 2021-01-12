@@ -249,13 +249,15 @@ public double getMeanFrameDuration() {
 	@Override
 	public void propertyChange(PropertyChangeEvent e) {
 		switch (e.getPropertyName()) {
-		case Video.PROPERTY_VIDEO_FRAMENUMBER:
-			int n = ((Integer) e.getNewValue()).intValue();
-			boolean changed = (n != videoFrameNumber);
-			super.setFrameNumber(n);
-			if (changed)
-				support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, stepNumber); // to VideoPlayer
-			break;
+//		case Video.PROPERTY_VIDEO_FRAMENUMBER:
+		// bh moved to super; ever so slightly different, in that
+		// it only sets the frameNumber if not changed.
+//			int n = ((Integer) e.getNewValue()).intValue();
+//			boolean changed = (n != videoFrameNumber);
+//			super.setFrameNumber(n);
+//			if (changed)
+//				support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, stepNumber); // to VideoPlayer
+//			break;
 		case Video.PROPERTY_VIDEO_RATE: 
 		case Video.PROPERTY_VIDEO_PLAYING:
 		case Video.PROPERTY_VIDEO_LOOPING:
