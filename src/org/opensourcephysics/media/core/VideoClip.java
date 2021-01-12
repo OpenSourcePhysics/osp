@@ -104,7 +104,7 @@ public class VideoClip implements PropertyChangeListener {
 	private int maxFrameCount = 300000; // approx 2h45m at 30fps
 	private double startTime = 0; // start time in milliseconds
 	protected boolean isDefaultStartTime = true;
-	protected VideoAdapter video = null;
+	protected Video video = null;
 	private int[] stepFrames;
 	ClipInspector inspector;
 	private PropertyChangeSupport support;
@@ -125,7 +125,7 @@ public class VideoClip implements PropertyChangeListener {
 	 */
 	public VideoClip(Video video) {
 		support = new SwingPropertyChangeSupport(this);
-		this.video = (VideoAdapter) video;
+		this.video = video;
 		if (video != null) {
 			video.setProperty("videoclip", this); //$NON-NLS-1$
 			if (video instanceof AsyncVideoI) {

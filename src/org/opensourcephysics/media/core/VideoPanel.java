@@ -171,32 +171,6 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		initializePlayer(video, newVideo, playAllSteps);
 	}
 
-	private void initializePlayer(Video prev, Video newVideo, boolean playAllSteps) {
-// testing against 1:01 v
-		if (prev != null) {
-			prev.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY, this);
-			prev.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, this);
-		}
-		if (newVideo != null) {
-			newVideo.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY, this);
-			newVideo.addPropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY, this);
-			newVideo.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, this);
-			newVideo.addPropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, this);
-		}
-		VideoClip prevClip = getPlayer().getVideoClip();
-		VideoClip newClip = new VideoClip(newVideo);
-		if (newVideo == null && prevClip != null) {
-			XMLControl control = new XMLControlElement(prevClip);
-			control.setValue("video", null); //$NON-NLS-1$
-			control.loadObject(newClip);
-		}
-		newClip.setPlayAllSteps(playAllSteps);
-		getPlayer().setVideoClip(newClip);
-		if (prev != null) {
-			prev.dispose();
-		}
-	}
-
 	/**
 	 * Sets the video.
 	 *
@@ -213,6 +187,32 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	 */
 	public Video getVideo() {
 		return video;
+	}
+
+	private void initializePlayer(Video prev, Video newVideo, boolean playAllSteps) {
+		// testing against 1:01 v
+		if (prev != null) {
+			prev.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY, this);
+			prev.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, this);
+		}
+		if (newVideo != null) {
+			newVideo.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY, this);
+			newVideo.addPropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY, this);
+			newVideo.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, this);
+			newVideo.addPropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, this);
+		}
+		VideoClip prevClip = getPlayer().getVideoClip();
+		VideoClip newClip = new VideoClip((Video) newVideo);
+		if (newVideo == null && prevClip != null) {
+			XMLControl control = new XMLControlElement(prevClip);
+			control.setValue("video", null); //$NON-NLS-1$
+			control.loadObject(newClip);
+		}
+		newClip.setPlayAllSteps(playAllSteps);
+		getPlayer().setVideoClip(newClip);
+		if (prev != null) {
+			prev.dispose();
+		}
 	}
 
 	/**
@@ -595,6 +595,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			coords = video.getCoords();
 			break;
 		case AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY:
+			// ignored - no longer necessary -- see PROPERTY_VIDEO_FRAMENUMBER
 			break;
 		case Video.PROPERTY_VIDEO_IMAGE:
 		case Video.PROPERTY_VIDEO_VIDEOVISIBLE:

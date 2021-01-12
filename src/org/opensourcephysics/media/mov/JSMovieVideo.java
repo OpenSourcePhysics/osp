@@ -637,10 +637,10 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 			}
 		}
 
-		private void setReadyListener() {
+		private void setReadyListener() { 
 			if (readyListener != null)
 				return;
-			readyListener = HTML5Video.addActionListener(jsvideo, canplaythrough, "canplaythrough", "ended");
+			readyListener = HTML5Video.addActionListener(jsvideo, canplaythrough, "canplaythrough"/*, "ended"*/);
 			if (debugging) {
 				HTML5Video.addActionListener(jsvideo, new ActionListener() {
 

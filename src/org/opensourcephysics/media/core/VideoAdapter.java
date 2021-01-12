@@ -59,11 +59,11 @@ import org.opensourcephysics.display.Interactive;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.ResourceLoader;
 
-import javajs.async.SwingJSUtils.Performance;
-
 /**
  * This provides basic implementations of all Video methods. Subclasses should
  * provide a raw image for display--see ImageVideo or GifVideo for an example.
+ * 
+ * All public methods implement Video
  *
  * @author Douglas Brown
  * @version 1.0
@@ -100,7 +100,7 @@ public abstract class VideoAdapter implements Video {
 	private final static Point2D.Double corner = new Point2D.Double(0, 0);
 
 	/**
-	 * Protected constructor creates an empty VideoAdapter
+	 * Protected constructor creates an empty Video
 	 */
 	protected VideoAdapter() {
 		initialize();
@@ -122,7 +122,7 @@ public abstract class VideoAdapter implements Video {
 		if (((panel instanceof VideoPanel) && ((VideoPanel) panel).isDrawingInImageSpace()) || isMeasured) {
 			g2 = (Graphics2D) g.create();
 			AffineTransform at = panel.getPixelTransform();
-			// OSPLog.debug("VideoAdapter.draw " + g2.getClip());
+			// OSPLog.debug("Video.draw " + g2.getClip());
 			g2.transform(at); // world to screen
 			ImageCoordSystem coords = null;
 			if (panel instanceof VideoPanel) {
@@ -146,9 +146,9 @@ public abstract class VideoAdapter implements Video {
 			yoffset = panel.yToPix(centerY) - size.height / 2;
 		}
 
-//		OSPLog.debug(Performance.timeCheckStr("VideoAdapter draw video " + ++ntest2, Performance.TIME_MARK));
+//		OSPLog.debug(Performance.timeCheckStr("Video draw video " + ++ntest2, Performance.TIME_MARK));
 		// draw the video or filtered image
-		//System.out.println("VideoAdapter g2 transform " + g2.getTransform());
+		//System.out.println("Video g2 transform " + g2.getTransform());
 		if (filterStack.isEmpty() || !filterStack.isEnabled()) {
 			g2.drawImage(rawImage, xoffset, yoffset, panel);
 		} else {
@@ -156,7 +156,7 @@ public abstract class VideoAdapter implements Video {
 		}
 		if (g2 != null)
 			g2.dispose();
-//		OSPLog.debug(Performance.timeCheckStr("VideoAdapter draw video done", Performance.TIME_MARK));
+//		OSPLog.debug(Performance.timeCheckStr("Video draw video done", Performance.TIME_MARK));
 
 	}
 
@@ -412,7 +412,7 @@ public abstract class VideoAdapter implements Video {
 
 	protected void setFrameCount(int n) {
 		if (frameCount != n)
-			OSPLog.finer("VideoAdapter.setFramecount " + n);
+			OSPLog.finer("Video.setFramecount " + n);
 		frameCount = n;
 	}
 
@@ -1140,12 +1140,12 @@ public abstract class VideoAdapter implements Video {
 	}
 
 	/**
-	 * A class to save and load and save VideoAdapter data.
+	 * A class to save and load and save Video data.
 	 */
 	abstract public static class Loader implements XML.ObjectLoader {
 
 		protected Loader() {
-			// only created by a VideoAdapter
+			// only created by a Video
 		}
 
 		/**
@@ -1155,7 +1155,7 @@ public abstract class VideoAdapter implements Video {
 		 * @return
 		 * @throws IOException
 		 */
-		protected abstract VideoAdapter createVideo(String path) throws IOException;
+		protected abstract Video createVideo(String path) throws IOException;
 
 		/**
 		 * Saves video data to an XMLControl.
@@ -1165,7 +1165,7 @@ public abstract class VideoAdapter implements Video {
 		 */
 		@Override
 		public void saveObject(XMLControl control, Object obj) {
-			VideoAdapter video = (VideoAdapter) obj;
+			Video video = (Video) obj;
 			String base = (String) video.getProperty("base"); //$NON-NLS-1$
 			String absPath = (String) video.getProperty("absolutePath"); //$NON-NLS-1$
 			if (base != null && absPath != null)
@@ -1207,7 +1207,7 @@ public abstract class VideoAdapter implements Video {
 		 */
 		@Override
 		public Object loadObject(XMLControl control, Object obj) {
-			VideoAdapter video = (VideoAdapter) obj;
+			Video video = (Video) obj;
 			Collection<?> filters = (Collection<?>) control.getObject("filters"); //$NON-NLS-1$
 			if (filters != null) {
 				video.getFilterStack().clear();
@@ -1259,7 +1259,7 @@ public abstract class VideoAdapter implements Video {
 	protected void refreshBufferedImage() {
 		if (bufferedImage != null && bufferedImage.getWidth() == size.width && bufferedImage.getHeight() == size.height)
 			return;
-//		OSPLog.debug("VideoAdapter.refreshBufferedImage " + size);
+//		OSPLog.debug("Video.refreshBufferedImage " + size);
 		bufferedImage = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_RGB);
 		isValidImage = false;
 
