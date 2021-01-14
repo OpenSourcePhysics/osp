@@ -44,7 +44,6 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.media.core.AsyncVideoI;
 import org.opensourcephysics.media.core.DoubleArray;
 import org.opensourcephysics.media.core.ImageCoordSystem;
-import org.opensourcephysics.media.core.Video;
 import org.opensourcephysics.media.core.VideoAdapter;
 import org.opensourcephysics.media.core.VideoFileFilter;
 import org.opensourcephysics.media.core.VideoIO;
@@ -67,6 +66,9 @@ import swingjs.api.js.JSFunction;
  */
 public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVideoI {
 	
+	private static final int FORCE_TO_START = -99;
+
+
 	public static boolean registered;
 
 
@@ -171,13 +173,31 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	@Override
 	public void setFrameNumber(int n) {
 		if (n < 0) {
+			// force super
 			this.frameNumber = n;
 			n = 0;
 		}
 		super.setFrameNumber(n);
-//		OSPLog.finest("JSMovieVideo.setFrameNumber " + n + " " + getFrameNumber());
 		state.getImage(getFrameNumber());
 	}
+	
+	public void setFrameNumberContinued(int n, double t) {
+		BufferedImage bi = HTML5Video.getImage(jsvideo, BufferedImage.TYPE_INT_RGB);
+		if (bi == null)
+			return;
+		rawImage = bi;
+		invalidateVideoAndFilter();
+		notifyFrame(n, false);
+		// just repaints VideoPanel
+		//System.out.println("JSMV imageready for " + n + " t=" + t);
+		firePropertyChange(AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY, null, n);
+		if (isPlaying()) {
+			SwingUtilities.invokeLater(() -> {
+				continuePlaying();
+			});
+		}
+	}
+
 
 	/**
 	 * Gets the start time of the specified frame in milliseconds.
@@ -204,6 +224,8 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	}
 
 	/**
+	 * not called
+	 * 
 	 * Sets the frame number to (nearly) a desired time in milliseconds.
 	 *
 	 * @param millis the desired time in milliseconds
@@ -337,7 +359,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	/**
 	 * Plays the next time-appropriate frame at the current rate.
 	 */
-	private void continuePlaying() {
+	protected void continuePlaying() {
 		int n = getFrameNumber();
 		if (n < getEndFrameNumber()) {
 //			
@@ -557,7 +579,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		};
 		private Object[] readyListener;
 		private double duration;
-		private int thisFrame = 0;
+		private int thisFrame = -1;
 
 		private boolean debugging = false; // voluminous event information
 
@@ -576,6 +598,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		}
 
 		public void getImage(int n) {
+			//System.out.println("JSMV.getImage " + thisFrame + " " + n);
 			if (thisFrame == n)
 				return;
 			thisFrame = n;
@@ -614,10 +637,10 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 			}
 		}
 
-		private void setReadyListener() {
+		private void setReadyListener() { 
 			if (readyListener != null)
 				return;
-			readyListener = HTML5Video.addActionListener(jsvideo, canplaythrough, "canplaythrough", "ended");
+			readyListener = HTML5Video.addActionListener(jsvideo, canplaythrough, "canplaythrough"/*, "ended"*/);
 			if (debugging) {
 				HTML5Video.addActionListener(jsvideo, new ActionListener() {
 
@@ -700,60 +723,27 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					seekToNextFrame();
 					return false;
 				case STATE_FIND_FRAMES_WAIT:
-					// null state - ignore
 					return false;
-	//				return true; // asynchronous
 				case STATE_FIND_FRAMES_READY:
 					if (VideoIO.isCanceled()) {
-						// failDetectTimer.stop();
 						v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, null);
-						// clean up temporary objects
 						dispose();
 						v.err = "Canceled by user"; //$NON-NLS-1$
 						return false;
 					}
 					t = HTML5Video.getCurrentTime(v.jsvideo);
-					// frameTimeStamps.put(frame, Long.valueOf((long) (t * 1000)));
 					if (t > lastT) {
 						lastT = t;
 						frameTimes.add(t);
 						v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, v.frame++);
-//						OSPLog.debug("JSMovieVideo frame " + v.frame + " " + t);
 					}
 					helper.setState(STATE_FIND_FRAMES_LOOP);
 					continue;
 				case STATE_FIND_FRAMES_DONE:
 					helper.setState(STATE_IDLE);
-					v.videoDialog.setVisible(false);
-					// clean up temporary objects
-					// throw IOException if no frames were loaded
-					if (frameTimes.size() == 0) {
-						v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, v.frame);
-						dispose();
-						v.err = "no frames"; //$NON-NLS-1$
-					}
-
-					// set initial video clip properties
-					v.setFrameCount(frameTimes.size());
-					OSPLog.debug(
-							"JSMovieVideo " + v.size + "\n duration:" + duration + " act. frameCount:" + v.frameCount);
-					v.startFrameNumber = 0;
-					v.endFrameNumber = v.frameCount - 1;
-					// create startTimes array
-					v.frameTimesMillis = new double[v.frameCount];
-					// BH 2020.09.11 note: this was i=1, but then mp4 initial frame was double
-					// length
-					for (int i = 0; i < v.frameTimesMillis.length; i++) {
-						v.frameTimesMillis[i] = frameTimes.get(i).doubleValue() * 1000;
-					}
+					v.initializeMovie(frameTimes, duration);
 					frameTimes = null;
-
-					v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, v.frame); // to TFrame
 					thisFrame = -1;
-					v.frameNumber = -1;
-					v.firePropertyChange(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, v.fileName, v); 
-					// to VideoPanel aka TrackerPanel
-					v.setFrameNumber(-99);
 					continue;
 				case STATE_GET_IMAGE_INIT:
 					helper.setState(STATE_GET_IMAGE_READY);
@@ -761,29 +751,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					HTML5Video.setCurrentTime(v.jsvideo, offset + t);
 					return true;
 				case STATE_GET_IMAGE_READY:
-					BufferedImage bi = HTML5Video.getImage(v.jsvideo, BufferedImage.TYPE_INT_RGB);
-					if (bi != null) {
-						v.isValidImage = false;
-						v.isValidFilteredImage = false;
-//						if (v.rawImage == null) {
-//							v.rawImage = bi;
-//							v.firePropertyChange(PROPERTY_ASYNCVIDEOI_READY, null, Integer.valueOf(v.frameCount));
-//							return true;
-//						}
-						v.rawImage = bi;
-						v.firePropertyChange(Video.PROPERTY_VIDEO_FRAMENUMBER, null, new Integer(thisFrame));
-						// just repaints VideoPanel
-						v.firePropertyChange(AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY, null, bi);
-						if (v.isPlaying()) {
-							Runnable runner = new Runnable() {
-								@Override
-								public void run() {
-									v.continuePlaying();
-								}
-							};
-							SwingUtilities.invokeLater(runner);
-						}
-					}
+					v.setFrameNumberContinued(thisFrame, t);
 					return false;
 				///////////////////////////////////////
 				}
@@ -832,6 +800,38 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		aspects = new DoubleArray(frameCount, 1);
 
 	}
+
+	public void initializeMovie(ArrayList<Double> frameTimes, double duration) {
+		videoDialog.setVisible(false);
+		// clean up temporary objects
+		// throw IOException if no frames were loaded
+		if (frameTimes.size() == 0) {
+			firePropertyChange(PROPERTY_VIDEO_PROGRESS, fileName, frame);
+			dispose();
+			err = "no frames"; //$NON-NLS-1$
+		}
+
+		// set initial video clip properties
+		setFrameCount(frameTimes.size());
+		OSPLog.debug(
+				"JSMovieVideo " + size + "\n duration:" + duration + " act. frameCount:" + frameCount);
+		startFrameNumber = 0;
+		endFrameNumber = frameCount - 1;
+		// create startTimes array
+		frameTimesMillis = new double[frameCount];
+		// BH 2020.09.11 note: this was i=1, but then mp4 initial frame was double
+		// length
+		for (int i = 0; i < frameTimesMillis.length; i++) {
+			frameTimesMillis[i] = frameTimes.get(i).doubleValue() * 1000;
+		}
+		firePropertyChange(PROPERTY_VIDEO_PROGRESS, fileName, frame); // to TFrame
+		frameNumber = -1;
+		// to VideoClip: time to initArray()
+		firePropertyChange(AsyncVideoI.PROPERTY_ASYNCVIDEOI_HAVEFRAMES, null, this); 
+		// to VideoPanel aka TrackerPanel: all set!
+		firePropertyChange(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, fileName, this); 
+		setFrameNumber(FORCE_TO_START);
+}
 
 	public void cantRead() {
 		VideoIO.setCanceled(true);

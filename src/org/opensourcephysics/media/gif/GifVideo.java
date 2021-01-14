@@ -121,29 +121,28 @@ public void stop() {
     }
   }
 
-  /**
-   * Overrides ImageVideo setFrameNumber method.
-   *
-   * @param n the desired frame number
-   */
-  @Override
-public void setFrameNumber(int n) {
-    super.setFrameNumber(n);
-    n = getFrameNumber();
-    int index = Math.min(n, decoder.getFrameCount()-1);
-    rawImage = decoder.getFrame(index);
-    isValidImage = false;
-    isValidFilteredImage = false;
-    firePropertyChange(Video.PROPERTY_VIDEO_FRAMENUMBER, null, Integer.valueOf(n)); 
-    // repaint panels in case they don't listen
-    Iterator<DrawingPanel> it = panels.iterator();
-    while(it.hasNext()) {
-      DrawingPanel panel = it.next();
-      panel.repaint();
-    }
-  }
-
-  /**
+	/**
+	 * Overrides ImageVideo setFrameNumber method.
+	 *
+	 * @param n the desired frame number
+	 */
+	@Override
+	public void setFrameNumber(int n) {
+		super.setFrameNumber(n);
+		n = getFrameNumber(); // may have been bounded
+		int index = Math.min(n, decoder.getFrameCount() - 1);
+		rawImage = decoder.getFrame(index);
+		invalidateVideoAndFilter();
+		notifyFrame(n, false);
+		// repaint panels in case they don't listen
+		Iterator<DrawingPanel> it = panels.iterator();
+		while (it.hasNext()) {
+			DrawingPanel panel = it.next();
+			panel.repaint();
+		}
+	}
+  
+/**
    * Gets the start time of the specified frame in milliseconds.
    *
    * @param n the frame number
@@ -168,6 +167,9 @@ public double getTime() {
   }
 
   /**
+   * 
+   * not called
+   * 
    * Sets the video time in milliseconds.
    *
    * @param millis the desired time in milliseconds

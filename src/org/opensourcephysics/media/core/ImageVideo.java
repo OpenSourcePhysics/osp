@@ -151,9 +151,8 @@ public class ImageVideo extends VideoAdapter {
 		super.setFrameNumber(n);
 		rawImage = getImageAtFrame(getFrameNumber(), rawImage);
 		updateBufferedImage(); // For SwingJS
-		isValidImage = false;
-		isValidFilteredImage = false;
-		notifyFrame();
+		invalidateVideoAndFilter();
+		notifyFrame(n, true); // only this subsclass does this asynchronously
 	}
 
 	/**
@@ -176,6 +175,7 @@ public class ImageVideo extends VideoAdapter {
 	}
 
 	/**
+	 * not called
 	 * Sets the video time in milliseconds.
 	 *
 	 * @param millis the desired time in milliseconds
@@ -744,7 +744,7 @@ public class ImageVideo extends VideoAdapter {
 			size.height = rawImage.getHeight(observer);
 			refreshBufferedImage();
 			// create coordinate system and relativeAspects
-			coords = new ImageCoordSystem(frameCount, (VideoAdapter) this);
+			coords = new ImageCoordSystem(frameCount, this);
 			aspects = new DoubleArray(frameCount, 1);
 		} else {
 			coords.setLength(frameCount);

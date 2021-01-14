@@ -108,6 +108,10 @@ import org.opensourcephysics.tools.ResourceLoader;
 @SuppressWarnings("serial")
 public class VideoPlayer extends JComponent implements PropertyChangeListener {
 
+	private static final String SLIDER_REFRESH = "refresh"; //$NON-NLS-1$
+	private static final String SLIDER_PROPERTY = "property";
+	private static final String SLIDER_NEWCLIP = "newClip";
+	
 	public static final String PROPERTY_VIDEOPLAYER_BACKBUTTON = "backbutton"; //$NON-NLS-1$
 	public static final String PROPERTY_VIDEOPLAYER_PLAYING = "playing"; //$NON-NLS-1$
 	public static final String PROPERTY_VIDEOPLAYER_SLIDER = "slider"; //$NON-NLS-1$
@@ -247,8 +251,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		clipControl = ClipControl.getControl(new VideoClip(null));
 		clipControl.addPropertyChangeListener(this);
 		getVideoClip().addPropertyChangeListener(this);
-		updatePlayButtons(false);
-		updateSlider("refresh", null);
+		updatePlayButtonsLater(false);
+		updateSlider(SLIDER_REFRESH, null);
 	}
 
 	/**
@@ -302,10 +306,9 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 			clipControl.addPropertyChangeListener(this);
 			// update display
 			setReadoutTypes("frame time step", clip.readoutType); //$NON-NLS-1$
-			updatePlayButtons(clipControl.isPlaying());
 			updateLoopButton(clipControl.isLooping());
-			updateValue();
-			updateSlider("newClip", oldClip);
+			updateValueAndPlayButtons();
+			updateSlider(SLIDER_NEWCLIP, oldClip);
 		}
 	}
 
@@ -596,48 +599,51 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	@Override
 	public void propertyChange(PropertyChangeEvent e) {
 		switch (e.getPropertyName()) {
+		
+		// fire new changes
+		
 		case ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER:
-			updateValue();
-			updatePlayButtons(clipControl.isPlaying());
+			updateValueAndPlayButtons();
 			firePropertyChange(PROPERTY_VIDEOPLAYER_STEPNUMBER, null, e.getNewValue());
-			// to VideoPanel
+			// pass to VideoPanel
 			return;
 		case ClipControl.PROPERTY_CLIPCONTROL_FRAMEDURATION:
 			updateValue();
 			firePropertyChange(PROPERTY_VIDEOPLAYER_FRAMEDURATION, null, e.getNewValue());
-			// to VideoPanel //$NON-NLS-1$
-			return;
-		case ClipControl.PROPERTY_CLIPCONTROL_LOOPING:
-			boolean looping = ((Boolean) e.getNewValue()).booleanValue();
-			updateLoopButton(looping);
+			// pass to VideoPanel
 			return;
 		case ClipControl.PROPERTY_CLIPCONTROL_PLAYING:
-			boolean playing = ((Boolean) e.getNewValue()).booleanValue();
-			updatePlayButtons(playing);
-			firePropertyChange(PROPERTY_VIDEOPLAYER_PLAYING, null, e.getNewValue()); // to VideoPanel
+			updatePlayButtonsLater((Boolean) e.getNewValue());
+			firePropertyChange(PROPERTY_VIDEOPLAYER_PLAYING, null, e.getNewValue()); 
+			// to TrackerPanel
 			return;
-		case ClipControl.PROPERTY_CLIPCONTROL_RATE: // from ClipControl
+			
+		// just handle or ignore
+			
+		case ClipControl.PROPERTY_CLIPCONTROL_LOOPING:
+			updateLoopButton((Boolean) e.getNewValue());
+			return;
+		case ClipControl.PROPERTY_CLIPCONTROL_RATE:
 			rateSpinner.setValue(new Double(getRate()));
 			return;
-		case VideoClip.PROPERTY_VIDEOCLIP_STEPCOUNT: // from VideoClip
-			updatePlayButtons(clipControl.isPlaying());
-			updateValue();
-			break;
-		case VideoClip.PROPERTY_VIDEOCLIP_FRAMECOUNT: // from VideoClip
-			break;
-		case VideoClip.PROPERTY_VIDEOCLIP_STEPSIZE: // from VideoClip
-			updateValue();
-			break;
-//		case VideoClip.PROPERTY_VIDEOCLIP_STARTFRAME: // from VideoClip
-//			updateReadout();
-//			break;
-		case VideoClip.PROPERTY_VIDEOCLIP_STARTTIME: // from VideoClip
+		case VideoClip.PROPERTY_VIDEOCLIP_STARTTIME:
 			updateValue();
 			return;
 		default:
 			return;
+			
+		// only the next three, using break, pass to updateSlider
+			
+		case VideoClip.PROPERTY_VIDEOCLIP_FRAMECOUNT:
+			break;
+		case VideoClip.PROPERTY_VIDEOCLIP_STEPSIZE:
+			updateValue();
+			break;
+		case VideoClip.PROPERTY_VIDEOCLIP_STEPCOUNT:
+			updateValueAndPlayButtons();
+			break;
 		}
-		updateSlider("property", e.getPropertyName());
+		updateSlider(SLIDER_PROPERTY, e.getPropertyName());
 	}
 
 	/**
@@ -652,7 +658,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		inspectorButton.setToolTipText(MediaRes.getString("VideoPlayer.Button.ClipSettings.ToolTip")); //$NON-NLS-1$
 		loopButton.setToolTipText(MediaRes.getString("VideoPlayer.Button.Looping.ToolTip")); //$NON-NLS-1$
 		setReadoutType(readoutType);
-		updatePlayButtons(clipControl.isPlaying());
+		updatePlayButtonsLater(clipControl.isPlaying());
 		updateLoopButton(clipControl.isLooping());
 		if (getVideoClip().inspector != null) {
 			getVideoClip().inspector.refresh();
@@ -711,28 +717,15 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		playButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				if (disabled || !playButton.isEnabled())
-					return;
-				if (playButton.isSelected()) {
-					stop();
-				} else {
-					play();
-				}
+				doPlay();
 			}
 
 		});
 		playButton.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if (disabled || !playButton.isEnabled())
-					return;
-				if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-					if (playButton.isSelected()) {
-						stop();
-					} else {
-						play();
-					}
-				}
+				if (e.getKeyCode() == KeyEvent.VK_SPACE)
+					doPlay();
 			}
 
 		});
@@ -742,11 +735,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		resetButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				if (disabled)
-					return;
-				stop();
-				clipControl.setStepNumber(0);
-				updatePlayButtons(false);
+				doReset();
 			}
 		});
 
@@ -817,57 +806,29 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		// create step button
 		stepButton = new PlayerButton(stepIcon);
 		stepButton.setDisabledIcon(grayStepIcon);
-		stepButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (disabled)
-					return;
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1) {
-					stop();
-					setStepNumber(getStepNumber() + 5);
-				} else
-					step();
-			}
-
+		stepButton.addActionListener((e) ->  {
+				doStepButton((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1);
 		});
 		// create back button
 		backButton = new PlayerButton(backIcon);
 		backButton.setDisabledIcon(grayBackIcon);
-		backButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (disabled)
-					return;
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1) {
-					stop();
-					setStepNumber(getStepNumber() - 5);
-				} else
-					back();
-			}
-
+		backButton.addActionListener((e) -> {
+			doBackButton((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1);
 		});
 		// create mouse listener and add to step and back buttons
 		MouseListener stepListener = new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				if (disabled)
-					return;
-				if (e.getSource() == stepButton) {
-					firePropertyChange(PROPERTY_VIDEOPLAYER_STEPBUTTON, null, Boolean.TRUE);
-				} else {
-					firePropertyChange(PROPERTY_VIDEOPLAYER_BACKBUTTON, null, Boolean.TRUE);
-				}
+				fireButtonEvent(e.getSource() == stepButton 
+						? PROPERTY_VIDEOPLAYER_STEPBUTTON : PROPERTY_VIDEOPLAYER_BACKBUTTON, true);
+				// to TrackerPanel
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e) {
-				if (disabled)
-					return;
-				if (e.getSource() == stepButton) {
-					firePropertyChange(PROPERTY_VIDEOPLAYER_STEPBUTTON, null, Boolean.FALSE);
-				} else {
-					firePropertyChange(PROPERTY_VIDEOPLAYER_BACKBUTTON, null, Boolean.FALSE);
-				}
+				fireButtonEvent(e.getSource() == stepButton 
+						? PROPERTY_VIDEOPLAYER_STEPBUTTON : PROPERTY_VIDEOPLAYER_BACKBUTTON, false);
+				// to TrackerPanel
 			}
 
 		};
@@ -920,45 +881,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		slider.setMinorTickSpacing(1);
 		slider.setSnapToTicks(true);
 		slider.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
-		slider.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent e) {
-//				if (slider.getValueIsAdjusting())
-//					return;
-				VideoClip clip = getVideoClip();
-				int i = slider.getValue(); // frame number
-				if (i < clip.getStartFrameNumber()) {
-					slider.setValue(clip.getStartFrameNumber());
-					return;
-				}
-				if (i > clip.getEndFrameNumber()) {
-					slider.setValue(clip.getEndFrameNumber());
-					return;
-				}
-				Runnable r = new Runnable() {
-
-					@Override
-					public void run() {
-						int stepNo = clip.frameToStep(i);
-						int frameNo = clip.stepToFrame(stepNo);
-						int currentStep = getStepNumber();
-						boolean isIncluded = clip.includesFrame(i);
-						if (stepNo != currentStep && !disabled) {
-							setStepNumber(stepNo);
-							return;
-						}
-						if (!isIncluded) {
-							slider.setValue(frameNo);
-							return;
-						}
-					}
-
-				};
-
-				OSPRuntime.setTimeout("VP-sliderState", 25, true, r);
-			}
-
-		});
+		slider.addChangeListener((e) -> { doSliderChanged(); });
 		inLabel = new JLabel(inOutIcon);
 		outLabel = new JLabel(inOutIcon);
 		sliderLabels = new Hashtable<Integer, JLabel>();
@@ -997,10 +920,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 			@Override
 			public void mouseExited(MouseEvent e) {
 				vidPanel.setMouseCursor(Cursor.getDefaultCursor());
-				if (disabled)
-					return;
-				// slideMouseListener.mouseExited(e);
-				firePropertyChange(PROPERTY_VIDEOPLAYER_SLIDER, null, Boolean.FALSE);
+				fireButtonEvent(PROPERTY_VIDEOPLAYER_SLIDER, false);
+				// to TrackerPanel
 			}
 
 		};
@@ -1022,16 +943,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		slider.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if (disabled)
-					return;
-				switch (e.getKeyCode()) {
-				case KeyEvent.VK_PAGE_UP:
-					back();
-					break;
-				case KeyEvent.VK_PAGE_DOWN:
-					step();
-					break;
-				}
+				doSliderKey(e.getKeyCode());
 			}
 
 		});
@@ -1062,102 +974,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		};
 		readout.setText("0.00");
 		readout.setForeground(new Color(204, 51, 51));
-		readout.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (disabled)
-					return;
-				if (readoutTypes.length < 2) {
-					return;
-				}
-				// create popup menu and add menu items
-				JPopupMenu popup = new JPopupMenu();
-				JMenu displayMenu = new JMenu(MediaRes.getString("VideoPlayer.Readout.Menu.Display")); //$NON-NLS-1$
-				popup.add(displayMenu);
-				JMenuItem item;
-				for (int i = 0; i < readoutTypes.length; i++) {
-					String type = readoutTypes[i];
-					if (type.equals("step")) { //$NON-NLS-1$
-						item = new JCheckBoxMenuItem(MediaRes.getString("VideoPlayer.Readout.MenuItem.Step")); //$NON-NLS-1$
-						item.setSelected(type.equals(readoutType));
-						item.setActionCommand(type);
-						item.addActionListener(readoutListener);
-						displayMenu.add(item);
-					} else if (type.equals("time")) { //$NON-NLS-1$
-						item = new JCheckBoxMenuItem(MediaRes.getString("VideoPlayer.Readout.MenuItem.Time")); //$NON-NLS-1$
-						item.setSelected(type.equals(readoutType));
-						item.setActionCommand(type);
-						item.addActionListener(readoutListener);
-						displayMenu.add(item);
-
-						popup.addSeparator();
-						if (getTime() != 0) {
-							String s = MediaRes.getString("VideoPlayer.Popup.Menu.SetTimeToZero"); //$NON-NLS-1$
-							item = new JMenuItem(s);
-							item.addActionListener(new ActionListener() {
-								@Override
-								public void actionPerformed(ActionEvent e) {
-									if (disabled)
-										return;
-									double t0 = -clipControl.getTime();
-									getVideoClip().setStartTime(t0);
-								}
-							});
-							item.addActionListener(readoutListener);
-							popup.add(item);
-						}
-
-						item = new JMenuItem(MediaRes.getString("VideoPlayer.Readout.Menu.SetTime")); //$NON-NLS-1$
-						item.setActionCommand(type);
-						item.addActionListener(timeSetListener);
-						item.addActionListener(readoutListener);
-						popup.add(item);
-						item = new JMenuItem(MediaRes.getString("VideoPlayer.Readout.Menu.GoTo") + "..."); //$NON-NLS-1$ //$NON-NLS-2$
-						item.setActionCommand(type);
-						item.addActionListener(goToListener);
-						popup.add(item);
-					} else {
-						item = new JCheckBoxMenuItem(MediaRes.getString("VideoPlayer.Readout.MenuItem.Frame")); //$NON-NLS-1$
-						item.setSelected(type.equals(readoutType));
-						item.setActionCommand(type);
-						item.addActionListener(readoutListener);
-						displayMenu.add(item);
-					}
-				}
-//      	final VideoClip clip = getVideoClip();
-//        final Video video = clip.getVideo();
-//        if (video!=null && video.getFrameCount()>1) {
-//	        item = new JMenuItem(MediaRes.getString("VideoPlayer.Readout.Menu.Renumber")); //$NON-NLS-1$
-//	        item.setActionCommand("frame"); //$NON-NLS-1$
-//	        item.addActionListener(new ActionListener() {
-//	          public void actionPerformed(ActionEvent e) {
-//	          	final int vidFrame = video.getFrameNumber();
-//	          	Object response = JOptionPane.showInputDialog(vidPanel, 
-//	          			MediaRes.getString("VideoPlayer.Dialog.SetFrameNumber.Message"), //$NON-NLS-1$
-//	          			MediaRes.getString("VideoPlayer.Dialog.SetFrameNumber.Title")+" "+vidFrame,  //$NON-NLS-1$ //$NON-NLS-2$
-//	          			JOptionPane.PLAIN_MESSAGE, 
-//	          			null, null, getFrameNumber());
-//	          	if (response!=null) {
-//	            	if (!response.equals("")) try { //$NON-NLS-1$
-//									int n = Integer.parseInt(response.toString());
-//									int shift = vidFrame-n;
-//			          	int start = clip.getStartFrameNumber();
-//			          	int count = clip.getStepCount();
-//			            clip.setFrameShift(shift, start, count);
-//			            updateSlider();
-//								} catch (NumberFormatException ex) {
-//								}          		
-//	          	}
-//	          }
-//	
-//	        });
-//	        item.addActionListener(readoutListener);
-//	        popup.add(item);
-//        }
-				// show popup menu
-				FontSizer.setFonts(popup);
-				popup.show(readout, 0, readout.getHeight());
-			}
+		readout.addActionListener((e) -> {
+			doReadoutPopup();
 		});
 		readout.addMouseListener(new MouseAdapter() {
 			@Override
@@ -1194,23 +1012,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		stepSizeButton.setText("1");
 		stepSizeButton.setForeground(new Color(204, 51, 51));
 		stepSizeButton.addActionListener((e) -> {
-				if (disabled)
-					return;
-				// inner popup menu listener class
-				// create popup menu and add menu items
-				JPopupMenu popup = new JPopupMenu();
-				for (int i = 1; i < 6; i++) {
-					JMenuItem item = new JMenuItem(String.valueOf(i));
-					item.addActionListener(stepSizeBtnListener);
-					popup.add(item);
-				}
-				popup.addSeparator();
-				JMenuItem item = new JMenuItem(MediaRes.getString("VideoPlayer.Button.StepSize.Other")); //$NON-NLS-1$
-				item.addActionListener(stepSizeBtnListener);
-				popup.add(item);
-				// show popup menu
-				FontSizer.setFonts(popup);
-				popup.show(stepSizeButton, 0, stepSizeButton.getHeight());
+			doStepSize();
 		});
 		stepSizeButton.addMouseListener(new MouseAdapter() {
 			@Override
@@ -1221,33 +1023,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		});
 		// create inspector button
 		inspectorButton = new PlayerButton(videoClipIcon);
-		inspectorButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (disabled)
-					return;
-				Frame frame = null;
-				Container c = vidPanel.getTopLevelAncestor();
-				if (c instanceof Frame) {
-					frame = (Frame) c;
-				}
-				ClipInspector inspector = getVideoClip().getClipInspector(clipControl, frame);
-				if (inspector.isVisible()) {
-					return;
-				}
-				Point p0 = new Frame().getLocation();
-				Point loc = inspector.getLocation();
-				if ((loc.x == p0.x) && (loc.y == p0.y)) {
-					// center on screen
-					Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-					int x = (dim.width - inspector.getBounds().width) / 2;
-					int y = (dim.height - inspector.getBounds().height) / 2;
-					inspector.setLocation(x, y);
-				}
-				inspector.initialize();
-				inspector.setVisible(true);
-			}
-
+		inspectorButton.addActionListener((e) ->  {
+			doInspector();
 		});
 		// create loop button
 		loopButton = new PlayerButton(noloopIcon, loopIcon);
@@ -1280,6 +1057,213 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		if (inspectorButtonVisible) {
 			toolbar.add(inspectorButton);
 		}
+	}
+
+	protected void doSliderKey(int keyCode) {
+		if (disabled)
+			return;
+		switch (keyCode) {
+		case KeyEvent.VK_PAGE_UP:
+			back();
+			break;
+		case KeyEvent.VK_PAGE_DOWN:
+			step();
+			break;
+		}
+	}
+
+	protected void doPlay() {
+		if (disabled || !playButton.isEnabled())
+			return;
+		if (playButton.isSelected()) {
+			stop();
+		} else {
+			play();
+		}
+	}
+
+	protected void doReset() {
+		if (disabled)
+			return;
+		stop();
+		clipControl.setStepNumber(0);
+		updatePlayButtonsLater(false);
+	}
+
+	protected void fireButtonEvent(String name, boolean b) {
+		if (disabled)
+			return;
+		firePropertyChange(name, null, b);
+		// to TracakerPanel
+	}
+
+	private void doBackButton(boolean isShiftDown) {
+		if (disabled)
+			return;
+		if (isShiftDown) {
+			stop();
+			setStepNumber(getStepNumber() - 5);
+		} else
+			back();
+	}
+
+	private void doStepButton(boolean isShiftDown) {
+		if (disabled)
+			return;
+		if (isShiftDown) {
+			stop();
+			setStepNumber(getStepNumber() + 5);
+		} else
+			step();
+	}
+
+	private void doStepSize() {
+		if (disabled)
+			return;
+		// inner popup menu listener class
+		// create popup menu and add menu items
+		JPopupMenu popup = new JPopupMenu();
+		for (int i = 1; i < 6; i++) {
+			JMenuItem item = new JMenuItem(String.valueOf(i));
+			item.addActionListener(stepSizeBtnListener);
+			popup.add(item);
+		}
+		popup.addSeparator();
+		JMenuItem item = new JMenuItem(MediaRes.getString("VideoPlayer.Button.StepSize.Other")); //$NON-NLS-1$
+		item.addActionListener(stepSizeBtnListener);
+		popup.add(item);
+		// show popup menu
+		FontSizer.setFonts(popup);
+		popup.show(stepSizeButton, 0, stepSizeButton.getHeight());
+	}
+
+	private void doInspector() {		
+		if (disabled)
+			return;
+		Frame frame = null;
+		Container c = vidPanel.getTopLevelAncestor();
+		if (c instanceof Frame) {
+			frame = (Frame) c;
+		}
+		ClipInspector inspector = getVideoClip().getClipInspector(clipControl, frame);
+		if (inspector.isVisible()) {
+			return;
+		}
+		Point p0 = new Frame().getLocation();
+		Point loc = inspector.getLocation();
+		if ((loc.x == p0.x) && (loc.y == p0.y)) {
+			// center on screen
+			Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+			int x = (dim.width - inspector.getBounds().width) / 2;
+			int y = (dim.height - inspector.getBounds().height) / 2;
+			inspector.setLocation(x, y);
+		}
+		inspector.initialize();
+		inspector.setVisible(true);
+	}
+
+	private void doReadoutPopup() {
+		if (disabled || readoutTypes.length < 2) {
+			return;
+		}
+		// create popup menu and add menu items
+		JPopupMenu popup = new JPopupMenu();
+		JMenu displayMenu = new JMenu(MediaRes.getString("VideoPlayer.Readout.Menu.Display")); //$NON-NLS-1$
+		popup.add(displayMenu);
+		JMenuItem item;
+		for (int i = 0; i < readoutTypes.length; i++) {
+			String type = readoutTypes[i];
+			if (type.equals("step")) { //$NON-NLS-1$
+				item = new JCheckBoxMenuItem(MediaRes.getString("VideoPlayer.Readout.MenuItem.Step")); //$NON-NLS-1$
+				item.setSelected(type.equals(readoutType));
+				item.setActionCommand(type);
+				item.addActionListener(readoutListener);
+				displayMenu.add(item);
+			} else if (type.equals("time")) { //$NON-NLS-1$
+				item = new JCheckBoxMenuItem(MediaRes.getString("VideoPlayer.Readout.MenuItem.Time")); //$NON-NLS-1$
+				item.setSelected(type.equals(readoutType));
+				item.setActionCommand(type);
+				item.addActionListener(readoutListener);
+				displayMenu.add(item);
+
+				popup.addSeparator();
+				if (getTime() != 0) {
+					String s = MediaRes.getString("VideoPlayer.Popup.Menu.SetTimeToZero"); //$NON-NLS-1$
+					item = new JMenuItem(s);
+					item.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							if (disabled)
+								return;
+							double t0 = -clipControl.getTime();
+							getVideoClip().setStartTime(t0);
+						}
+					});
+					item.addActionListener(readoutListener);
+					popup.add(item);
+				}
+
+				item = new JMenuItem(MediaRes.getString("VideoPlayer.Readout.Menu.SetTime")); //$NON-NLS-1$
+				item.setActionCommand(type);
+				item.addActionListener(timeSetListener);
+				item.addActionListener(readoutListener);
+				popup.add(item);
+				item = new JMenuItem(MediaRes.getString("VideoPlayer.Readout.Menu.GoTo") + "..."); //$NON-NLS-1$ //$NON-NLS-2$
+				item.setActionCommand(type);
+				item.addActionListener(goToListener);
+				popup.add(item);
+			} else {
+				item = new JCheckBoxMenuItem(MediaRes.getString("VideoPlayer.Readout.MenuItem.Frame")); //$NON-NLS-1$
+				item.setSelected(type.equals(readoutType));
+				item.setActionCommand(type);
+				item.addActionListener(readoutListener);
+				displayMenu.add(item);
+			}
+		}
+		// show popup menu
+		FontSizer.setFonts(popup);
+		popup.show(readout, 0, readout.getHeight());
+	}
+
+	private void doSliderChanged() {
+		if (clipControl.isPlaying()) {
+			// BH 2021.01.11
+			// nasty feedback loop here
+			// - Video gets image -- PROPERTY_VIDEO_FRAMENUMBER -->
+			// -- ClipControl -- PROPERTY_CLIPCONTROL_FRAMENUMBER -->
+			// ----- VideoPlayer.updateValue()
+			// ------ SliderUI -- JSlider.changeListener
+			// ------- VideoPlayer.doSliderChanged()
+			// --------- VideoPlayer.setStepNumber()
+			// -----------ClipControl.setStepNumber()
+			// -------------........
+			return;
+		}
+		VideoClip clip = getVideoClip();
+		int i = slider.getValue(); // frame number
+		if (i < clip.getStartFrameNumber()) {
+			slider.setValue(clip.getStartFrameNumber());
+			return;
+		}
+		if (i > clip.getEndFrameNumber()) {
+			slider.setValue(clip.getEndFrameNumber());
+			return;
+		}
+		OSPRuntime.setTimeout("VP-sliderState", 25, true, () -> {
+			int stepNo = clip.frameToStep(i);
+			int frameNo = clip.stepToFrame(stepNo);
+			int currentStep = getStepNumber();
+			boolean isIncluded = clip.includesFrame(i);
+			if (stepNo != currentStep && !disabled) {
+				setStepNumber(stepNo);
+				return;
+			}
+			if (!isIncluded) {
+				slider.setValue(frameNo);
+				return;
+			}
+		});
+
 	}
 
 	protected ActionListener stepSizeBtnListener = (e) -> {
@@ -1342,7 +1326,6 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		if (disabled)
 			return;
 		stop();
-		System.out.println("VP pressed " + sliderCaret);
 		int frameNum = clipControl.getFrameNumber();
 		maxEndFrame = getVideoClip().getEndFrameNumber();
 		int start = getVideoClip().getStartFrameNumber();
@@ -1517,7 +1500,6 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 				.round(lastFrame * (e.getX() - sliderInset) / (slider.getWidth() - 2 * sliderInset));
 		if (start == end)
 			sliderCaret = (increasing ? "out" : "in");
-System.out.println("VideoPlayer.dragging " + start + "-" + end + " " + val + " " + sliderCaret);
 		if (increasing) {
 			val = Math.min(val, lastFrame + getVideoClip().getStepSize());
 		} else {
@@ -1526,7 +1508,6 @@ System.out.println("VideoPlayer.dragging " + start + "-" + end + " " + val + " "
 		val = Math.max(val, 0);
 		switch (sliderCaret) {
 		case "in": //$NON-NLS-1$
-			System.out.println("VP dragged IN set value to " + val);
 			if (clip.setStartFrameNumber(val, maxEndFrame)) {
 				int newStart = clip.getStartFrameNumber();
 				SwingUtilities.invokeLater(() -> {
@@ -1548,7 +1529,6 @@ System.out.println("VideoPlayer.dragging " + start + "-" + end + " " + val + " "
 			}
 			break;
 		case "out": //$NON-NLS-1$
-			System.out.println("VP dragged OUT set value to " + val);
 			if (clip.setEndFrameNumber(val)) {
 				vidPanel.setMessage(MediaRes.getString("VideoPlayer.OutMarker.ToolTip") + ": " + end); //$NON-NLS-1$ //$NON-NLS-2$
 				clipControl.setStepNumber(clip.getStepCount() - 1);
@@ -1581,11 +1561,7 @@ System.out.println("VideoPlayer.dragging " + start + "-" + end + " " + val + " "
 	 *
 	 * @param playing <code>true</code> if the video is playing
 	 */
-	private void updatePlayButtons(final boolean playing) {
-//		this.playing = true;
-//		if (updatePosted)
-//			return;
-//		updatePosted = true;
+	private void updatePlayButtonsLater(final boolean playing) {
 		SwingUtilities.invokeLater(() -> {
 			updatePlayButtonsPosted(playing);
 		});
@@ -1627,6 +1603,11 @@ System.out.println("VideoPlayer.dragging " + start + "-" + end + " " + val + " "
 			loopButton.setPressedIcon(noloopIcon);
 			loopButton.setIcon(noloopIcon);
 		}
+	}
+	
+	private void updateValueAndPlayButtons() {
+		updateValue();
+		updatePlayButtonsLater(clipControl.isPlaying());
 	}
 
 	/**
@@ -1694,7 +1675,7 @@ System.out.println("VideoPlayer.dragging " + start + "-" + end + " " + val + " "
 		rateSpinner.setToolTipText(MediaRes.getString("VideoPlayer.Spinner.Rate.ToolTip")); //$NON-NLS-1$
 		// if at last step, update play button
 		if (stepNumber == getVideoClip().getStepCount() - 1)
-			updatePlayButtons(clipControl.isPlaying());
+			updatePlayButtonsLater(clipControl.isPlaying());
 		FontSizer.setFonts(toolbar);
 	}
 
@@ -1722,7 +1703,6 @@ System.out.println("VideoPlayer.dragging " + start + "-" + end + " " + val + " "
 	}
 
 	protected void updateSliderAsync(String option, Object o) {
-		//OSPLog.debug("VideoPlayer.updateSlider.Timeout.run " + option );
 		VideoClip clip = getVideoClip();
 		clip.setAdjusting(false);
 		slider.setMinimum(0);
@@ -1730,21 +1710,18 @@ System.out.println("VideoPlayer.dragging " + start + "-" + end + " " + val + " "
 		sliderLabels.clear();
 		sliderLabels.put(Integer.valueOf(clip.getStartFrameNumber()), inLabel);
 		sliderLabels.put(Integer.valueOf(clip.getEndFrameNumber()), outLabel);
-//		OSPLog.debug("VideoPlayer.updateSlider.Timeout.run "
-//		+ option + " " + o + " " + slider.getName() + " " + clip.getStartFrameNumber() + " " + clip.getEndFrameNumber() );
-//		slider.paintImmediately(slider.getBounds());
 		slider.repaint();
 		switch (option) {
-		case "refresh":
+		case SLIDER_NEWCLIP:
+			firePropertyChange(PROPERTY_VIDEOPLAYER_VIDEOCLIP, (VideoClip) o, clip);
+			System.gc();
+			break;
+		case SLIDER_REFRESH:
 			setReadoutTypes("frame time step", "frame"); //$NON-NLS-1$ //$NON-NLS-2$
 			refresh();
 			break;
-		case "property":
+		case SLIDER_PROPERTY:
 			// no additional changes
-			break;
-		case "newClip":
-			firePropertyChange(PROPERTY_VIDEOPLAYER_VIDEOCLIP, (VideoClip) o, clip);
-			System.gc();
 			break;
 		}
 	}

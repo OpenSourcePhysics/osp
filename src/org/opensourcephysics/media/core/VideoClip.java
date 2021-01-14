@@ -32,6 +32,7 @@
 package org.opensourcephysics.media.core;
 
 import java.awt.Frame;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -60,7 +61,7 @@ import javajs.async.AsyncFileChooser;
  * @author Douglas Brown
  * @version 1.0
  */
-public class VideoClip {
+public class VideoClip implements PropertyChangeListener {
 
 	public final static String PROPERTY_VIDEOCLIP_FRAMECOUNT = "framecount";//$NON-NLS-1$
 	public final static String PROPERTY_VIDEOCLIP_STARTFRAME = "startframe";//$NON-NLS-1$
@@ -125,19 +126,25 @@ public class VideoClip {
 	public VideoClip(Video video) {
 		support = new SwingPropertyChangeSupport(this);
 		this.video = video;
-		if (video == null) {
-			updateArray();
-			isDefaultState = true;
-			return;
-		}
-		video.setProperty("videoclip", this); //$NON-NLS-1$
-		setStartFrameNumber(video.getStartFrameNumber());
-		if (video.getFrameCount() > 1) {
-			setStepCount(video.getEndFrameNumber() - startFrame + 1);
+		if (video != null) {
+			video.setProperty("videoclip", this); //$NON-NLS-1$
+			if (video instanceof AsyncVideoI) {
+				video.addPropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_HAVEFRAMES, this);
+				return;
+			}
+			initVideo();
 		}
 		updateArray();
 		isDefaultState = true;
 	}
+
+	private void initVideo() {
+		setStartFrameNumber(video.getStartFrameNumber());
+		if (video.getFrameCount() > 1) {
+			setStepCount(video.getEndFrameNumber() - startFrame + 1);
+		}
+	}
+
 
 	public FinalizableLoader loader;
 
@@ -168,8 +175,7 @@ public class VideoClip {
 	 * @return true if changed
 	 */
 	public boolean setStartFrameNumber(int start) {
-		int maxEndFrame = getLastFrameNumber();
-		return setStartFrameNumber(start, maxEndFrame);
+		return setStartFrameNumber(start, getLastFrameNumber());
 	}
 
 	/**
@@ -373,7 +379,7 @@ public class VideoClip {
 	 * @return the end frame
 	 */
 	public int getEndFrameNumber() {
-		endFrame = startFrame + stepSize * (stepCount - 1);
+		endFrame = Math.max(startFrame, startFrame + stepSize * (stepCount - 1));
 		return endFrame;
 	}
 
@@ -445,7 +451,7 @@ public class VideoClip {
 	 * @return the frame number
 	 */
 	public int stepToFrame(int stepNumber) {
-		return startFrame + stepNumber * stepSize;
+		return Math.max(0, startFrame + stepNumber * stepSize);
 	}
 
 	/**
@@ -628,10 +634,8 @@ public class VideoClip {
 	 * @return the frame number
 	 */
 	public int getLastFrameNumber() {
-		if (video == null || video.getFrameCount() == 1) {
-			return getEndFrameNumber();
-		}
-		return video.getFrameCount() - 1 + extraFrames;
+		return (video == null || video.getFrameCount() == 1 ? getEndFrameNumber()
+				: Math.max(0, video.getFrameCount() - 1 + extraFrames));
 	}
 
 	/**
@@ -874,6 +878,16 @@ public class VideoClip {
 			clip.playAllSteps = playAllSteps; // by default
 		}
 
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		switch (evt.getPropertyName()) {
+		case AsyncVideoI.PROPERTY_ASYNCVIDEOI_HAVEFRAMES:
+			initVideo();
+			updateArray();
+			break;
+		}		
 	}
 	
 

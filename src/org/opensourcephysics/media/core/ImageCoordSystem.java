@@ -110,11 +110,11 @@ public class ImageCoordSystem {
 	}
 
 	/**
-	 * Not at all clear why this is useful. Do the videoadapters somehow need this? 
+	 * Not at all clear why this is useful. Do the Videos somehow need this? 
 	 * @param frameCount
 	 * @param adapter
 	 */
-	public ImageCoordSystem(int frameCount, VideoAdapter adapter) {
+	public ImageCoordSystem(int frameCount, Video adapter) {
 		this(frameCount);
 		addPropertyChangeListener(adapter);
 	}

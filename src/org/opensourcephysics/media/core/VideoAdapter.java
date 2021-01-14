@@ -59,11 +59,11 @@ import org.opensourcephysics.display.Interactive;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.ResourceLoader;
 
-import javajs.async.SwingJSUtils.Performance;
-
 /**
  * This provides basic implementations of all Video methods. Subclasses should
  * provide a raw image for display--see ImageVideo or GifVideo for an example.
+ * 
+ * All public methods implement Video
  *
  * @author Douglas Brown
  * @version 1.0
@@ -75,7 +75,7 @@ public abstract class VideoAdapter implements Video {
 	protected BufferedImage bufferedImage; // offscreen buffered image copy
 	protected BufferedImage filteredImage; // filtered image
 	protected String baseDir;
-	protected int frameCount = -1;
+	protected int frameCount = 0;
 	protected int frameNumber = 0;
 	protected int startFrameNumber;
 	protected int endFrameNumber;
@@ -97,8 +97,10 @@ public abstract class VideoAdapter implements Video {
 	protected FilterStack filterStack = new FilterStack();
 	protected DataBufferInt clearRaster;
 
+	private final static Point2D.Double corner = new Point2D.Double(0, 0);
+
 	/**
-	 * Protected constructor creates an empty VideoAdapter
+	 * Protected constructor creates an empty Video
 	 */
 	protected VideoAdapter() {
 		initialize();
@@ -120,7 +122,7 @@ public abstract class VideoAdapter implements Video {
 		if (((panel instanceof VideoPanel) && ((VideoPanel) panel).isDrawingInImageSpace()) || isMeasured) {
 			g2 = (Graphics2D) g.create();
 			AffineTransform at = panel.getPixelTransform();
-			//OSPLog.debug("VideoAdapter.draw " +  g2.getClip());
+			// OSPLog.debug("Video.draw " + g2.getClip());
 			g2.transform(at); // world to screen
 			ImageCoordSystem coords = null;
 			if (panel instanceof VideoPanel) {
@@ -134,7 +136,8 @@ public abstract class VideoAdapter implements Video {
 				coords = this.coords;
 			}
 			if (coords != null) {
-				g2.transform(coords.getToWorldTransform(frameNumber));
+				at = coords.getToWorldTransform(frameNumber);
+				g2.transform(at);
 			}
 		} else { // center image in panel if not measured
 			double centerX = (panel.getXMax() + panel.getXMin()) / 2;
@@ -143,8 +146,9 @@ public abstract class VideoAdapter implements Video {
 			yoffset = panel.yToPix(centerY) - size.height / 2;
 		}
 
-//		OSPLog.debug(Performance.timeCheckStr("VideoAdapter draw video " + ++ntest2, Performance.TIME_MARK));
+//		OSPLog.debug(Performance.timeCheckStr("Video draw video " + ++ntest2, Performance.TIME_MARK));
 		// draw the video or filtered image
+		//System.out.println("Video g2 transform " + g2.getTransform());
 		if (filterStack.isEmpty() || !filterStack.isEnabled()) {
 			g2.drawImage(rawImage, xoffset, yoffset, panel);
 		} else {
@@ -152,7 +156,7 @@ public abstract class VideoAdapter implements Video {
 		}
 		if (g2 != null)
 			g2.dispose();
-//		OSPLog.debug(Performance.timeCheckStr("VideoAdapter draw video done", Performance.TIME_MARK));
+//		OSPLog.debug(Performance.timeCheckStr("Video draw video done", Performance.TIME_MARK));
 
 	}
 
@@ -240,7 +244,7 @@ public abstract class VideoAdapter implements Video {
 	}
 
 	static int ntest = 0, ntest1 = 0, ntest2 = 0;
-	
+
 	/**
 	 * Gets the current video image after applying enabled filters.
 	 *
@@ -249,17 +253,12 @@ public abstract class VideoAdapter implements Video {
 	@Override
 	public BufferedImage getImage() {
 		updateBufferedImage();
-//		OSPLog.debug("VideoAdapter getImage " + ++ntest1);
 		if (filterStack.isEmpty() || !filterStack.isEnabled()) {
-//			OSPLog.debug("VA.getImage returning bufferedImage");
 			return bufferedImage;
 		} else if (!isValidFilteredImage) { // filteredImage needs refreshing
 			isValidFilteredImage = true;
-//			OSPLog.debug("VA.getImage get filtered image");
 			filteredImage = filterStack.getFilteredImage(bufferedImage);
-//			OSPLog.debug("VideoAdapter filtering image " + ++ntest);
 		}
-//		OSPLog.debug("VA.getImage returning filteredImage");
 		return filteredImage;
 	}
 
@@ -411,12 +410,11 @@ public abstract class VideoAdapter implements Video {
 		}
 	}
 
-	  protected void setFrameCount(int n) {
-		  if (frameCount != n)
-			  OSPLog.finer("VideoAdapter.setFramecount " + n);
-		  frameCount = n;
-	  }
-		
+	protected void setFrameCount(int n) {
+		if (frameCount != n)
+			OSPLog.finer("Video.setFramecount " + n);
+		frameCount = n;
+	}
 
 	/**
 	 * Sets the relative aspect of the specified video frame. Relative aspect is the
@@ -570,7 +568,7 @@ public abstract class VideoAdapter implements Video {
 	public double getHeight() {
 		return size.height / coords.getScaleY(frameNumber);
 	}
-	
+
 	@Override
 	public Dimension getImageSize() {
 		return size;
@@ -666,10 +664,29 @@ public abstract class VideoAdapter implements Video {
 		if (n == frameNumber) {
 			return;
 		}
-		n = Math.min(n, endFrameNumber);
-		n = Math.max(n, startFrameNumber);
-		firePropertyChange(PROPERTY_VIDEO_NEXTFRAME, null, n);
-		frameNumber = n;
+		frameNumber = Math.min(Math.max(n, startFrameNumber), endFrameNumber);
+		// for PerspectiveFilter only
+		firePropertyChange(PROPERTY_VIDEO_NEXTFRAME, null, frameNumber);
+	}
+
+	protected void invalidateVideoAndFilter() {
+		isValidImage = isValidFilteredImage = false;
+	}
+
+	protected void notifyFrame(int n, boolean isAsync) {
+		// after subclass setFrameNumber(n) - asynchronous -- ImageVideo only??
+		Runnable r = new Runnable() {
+
+			@Override
+			public void run() {
+				firePropertyChange(Video.PROPERTY_VIDEO_FRAMENUMBER, null, Integer.valueOf(n));
+			}
+			
+		};
+		if (isAsync)
+			SwingUtilities.invokeLater(r);
+		else
+			r.run();
 	}
 
 	/**
@@ -873,11 +890,14 @@ public abstract class VideoAdapter implements Video {
 	}
 
 	/**
+	 * Not used.
+	 * 
 	 * Starts and stops the video.
 	 *
 	 * @param playing <code>true</code> starts the video, and <code>false</code>
 	 *                stops it
 	 */
+	@Deprecated
 	@Override
 	public void setPlaying(boolean playing) {
 		if (playing) {
@@ -987,8 +1007,9 @@ public abstract class VideoAdapter implements Video {
 	 */
 	@Override
 	public void setFilterStack(FilterStack stack) {
-		if (stack==filterStack) return;
-		if (filterStack!=null) {
+		if (stack == filterStack)
+			return;
+		if (filterStack != null) {
 			filterStack.removePropertyChangeListener(Filter.PROPERTY_FILTER_IMAGE, this);
 			filterStack.removePropertyChangeListener(Filter.PROPERTY_FILTER_TAB, this);
 		}
@@ -1119,12 +1140,12 @@ public abstract class VideoAdapter implements Video {
 	}
 
 	/**
-	 * A class to save and load and save VideoAdapter data.
+	 * A class to save and load and save Video data.
 	 */
 	abstract public static class Loader implements XML.ObjectLoader {
 
 		protected Loader() {
-			// only created by a VideoAdapter
+			// only created by a Video
 		}
 
 		/**
@@ -1134,7 +1155,7 @@ public abstract class VideoAdapter implements Video {
 		 * @return
 		 * @throws IOException
 		 */
-		protected abstract VideoAdapter createVideo(String path) throws IOException;
+		protected abstract Video createVideo(String path) throws IOException;
 
 		/**
 		 * Saves video data to an XMLControl.
@@ -1144,7 +1165,7 @@ public abstract class VideoAdapter implements Video {
 		 */
 		@Override
 		public void saveObject(XMLControl control, Object obj) {
-			VideoAdapter video = (VideoAdapter) obj;
+			Video video = (Video) obj;
 			String base = (String) video.getProperty("base"); //$NON-NLS-1$
 			String absPath = (String) video.getProperty("absolutePath"); //$NON-NLS-1$
 			if (base != null && absPath != null)
@@ -1186,7 +1207,7 @@ public abstract class VideoAdapter implements Video {
 		 */
 		@Override
 		public Object loadObject(XMLControl control, Object obj) {
-			VideoAdapter video = (VideoAdapter) obj;
+			Video video = (Video) obj;
 			Collection<?> filters = (Collection<?>) control.getObject("filters"); //$NON-NLS-1$
 			if (filters != null) {
 				video.getFilterStack().clear();
@@ -1236,14 +1257,14 @@ public abstract class VideoAdapter implements Video {
 	 * needed.
 	 */
 	protected void refreshBufferedImage() {
-		if (bufferedImage != null && bufferedImage.getWidth() == size.width
-				&& bufferedImage.getHeight() == size.height)
+		if (bufferedImage != null && bufferedImage.getWidth() == size.width && bufferedImage.getHeight() == size.height)
 			return;
-//		OSPLog.debug("VideoAdapter.refreshBufferedImage " + size);
+//		OSPLog.debug("Video.refreshBufferedImage " + size);
 		bufferedImage = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_RGB);
 		isValidImage = false;
 
-		// BH removed - a new buffer will be set up correctly, in this case as 0x00000000, since it has no alpha
+		// BH removed - a new buffer will be set up correctly, in this case as
+		// 0x00000000, since it has no alpha
 // new Color(0, 0, 0, 0).getRGB() is just 0. 
 //			// clearRaster = (DataBufferInt) bufferedgetRaster(image).getDataBuffer();
 //			int clear = new Color(0, 0, 0, 0).getRGB();
@@ -1261,53 +1282,35 @@ public abstract class VideoAdapter implements Video {
 	protected void findMinMaxValues() {
 		VideoClip clip = (VideoClip) getProperty("videoclip"); //$NON-NLS-1$
 		// check all four corner positions of every frame in the current clip
-		Point2D corner = new Point2D.Double(0, 0); // top left
-		int start = 0;
-		if (clip != null) {
-			start = clip.getStartFrameNumber();
-		}
-		AffineTransform at = coords.getToWorldTransform(start);
-		at.transform(corner, corner);
-		maxX = minX = corner.getX();
-		maxY = minY = corner.getY();
-		int stepCount = frameCount;
-		if (clip != null) {
-			stepCount = clip.getStepCount();
-		}
-		for (int n = 0; n < stepCount; n++) {
-			if (clip == null) {
-				at = coords.getToWorldTransform(n);
-			} else {
-				at = coords.getToWorldTransform(clip.stepToFrame(n));
-			}
-			for (int i = 0; i < 4; i++) {
-				switch (i) {
-				case 0:
-					corner.setLocation(0, 0);
-					break;
-				case 1:
-					corner.setLocation(size.width, 0);
-					break;
-				case 2:
-					corner.setLocation(0, size.height);
-					break;
-				case 3:
-					corner.setLocation(size.width, size.height);
-				}
-				at.transform(corner, corner);
-				minX = Math.min(corner.getX(), minX);
-				maxX = Math.max(corner.getX(), maxX);
-				minY = Math.min(corner.getY(), minY);
-				maxY = Math.max(corner.getY(), maxY);
-			}
+		AffineTransform at = coords.getToWorldTransform(clip == null ? 0 : clip.getStartFrameNumber());
+		minX = minY = Double.MAX_VALUE;
+		maxX = maxY = -Double.MAX_VALUE;
+		addMinMax(at, 0, 0);
+		int w = size.width;
+		int h = size.height;
+		for (int i = (clip == null ? frameCount : clip.getStepCount()); --i >= 0;) {
+			at = coords.getToWorldTransform(clip == null ? i : clip.stepToFrame(i));
+			addMinMax(at, 0, 0);
+			addMinMax(at, w, 0);
+			addMinMax(at, w, h);
+			addMinMax(at, 0, h);
 		}
 		isValidMeasure = true;
+	}
+
+	private void addMinMax(AffineTransform at, int x, int y) {
+		corner.setLocation(x, y);
+		at.transform(corner, corner);
+		minX = Math.min(corner.x, minX);
+		maxX = Math.max(corner.x, maxX);
+		minY = Math.min(corner.y, minY);
+		maxY = Math.max(corner.y, maxY);
 	}
 
 	protected String getAbsolutePath(String path) {
 		if (baseDir == null)
 			baseDir = XML.getDirectoryPath((String) getProperty("absolutePath"));
-		if (baseDir != "" && !path.replace('\\',  '/').startsWith(baseDir))  {
+		if (baseDir != "" && !path.replace('\\', '/').startsWith(baseDir)) {
 			path = baseDir + "/" + path;
 			if (!ResourceLoader.isHTTP(baseDir))
 				path = XML.getAbsolutePath(new File(path));
@@ -1324,13 +1327,6 @@ public abstract class VideoAdapter implements Video {
 			firePropertyChange(PROPERTY_VIDEO_SIZE, oldSize, size); // $NON-NLS-1$
 		}
 	}
-
-	protected void notifyFrame() {
-		SwingUtilities.invokeLater(() -> {
-			firePropertyChange(Video.PROPERTY_VIDEO_FRAMENUMBER, null, Integer.valueOf(getFrameNumber()));
-		});
-	}
-
 
 }
 

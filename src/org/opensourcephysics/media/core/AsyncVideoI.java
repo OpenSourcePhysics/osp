@@ -5,6 +5,7 @@ package org.opensourcephysics.media.core;
  */
 public interface AsyncVideoI {
 
+	String PROPERTY_ASYNCVIDEOI_HAVEFRAMES = "asyncVideoHaveFrames";
 	String PROPERTY_ASYNCVIDEOI_READY = "asyncVideoReady";
 	String PROPERTY_ASYNCVIDEOI_IMAGEREADY = "asyncImageReady";
 

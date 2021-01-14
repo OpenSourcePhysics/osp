@@ -70,7 +70,7 @@ public class StepperClipControl extends ClipControl {
 				double ti = video.getFrameTime(video.getStartFrameNumber());
 				double tf = video.getFrameTime(video.getEndFrameNumber());
 				int count = video.getEndFrameNumber() - video.getStartFrameNumber();
-				if ((count != 0) && (tf - ti) > 0) {
+				if (count != 0 && (tf - ti) > 0) {
 					frameDuration = (int) (tf - ti) / count;
 				}
 			}
@@ -345,19 +345,14 @@ public class StepperClipControl extends ClipControl {
 		switch (name) {
 		case VideoClip.PROPERTY_VIDEOCLIP_STEPSIZE:
 			timer.setInitialDelay(getTimerDelay());
-			break;
+			return;
 		case Video.PROPERTY_VIDEO_FRAMENUMBER:
-			int n = ((Integer) e.getNewValue()).intValue();
 			stepDisplayed = true;
-			if (n != videoFrameNumber) {
-				super.setFrameNumber(n);
-				support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null,
-						Integer.valueOf(stepNumber));
-			}
+			super.propertyChange(e);
 			if (playing) {
 				step();
 			}
-			break;
+			return;
 		default:
 			super.propertyChange(e);
 			break;
