@@ -39,7 +39,6 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JApplet;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -80,8 +79,7 @@ public class OSPRuntime {
 	public static int macOffset; // shifts LR message box on Mac to avoid drag hot spot.
 
 	// BH note: Cannot use "final" here because then the constant will be set before
-	// the
-	// transpiler ever sees it.
+	// the transpiler ever sees it.
 	public static boolean isJS = /** @j2sNative true || */
 			false;
 

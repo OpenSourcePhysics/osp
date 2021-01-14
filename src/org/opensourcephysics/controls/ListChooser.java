@@ -51,6 +51,9 @@ public class ListChooser extends JDialog {
 	private Font lightFont;
 	private ActionListener actionListener;
 	private Collection<?> choices;
+	private JPanel buttonPane;
+	private JButton cancelButton;
+	private int fontLevel;
 
 	/**
 	 * Constructs a dialog with the specified title and text.
@@ -102,7 +105,7 @@ public class ListChooser extends JDialog {
 		// create the light font
 		lightFont = new JLabel().getFont().deriveFont(Font.PLAIN);
 		// create the buttons
-		JButton cancelButton = new JButton(ControlsRes.getString("Chooser.Button.Cancel")); //$NON-NLS-1$
+		cancelButton = new JButton(ControlsRes.getString("Chooser.Button.Cancel")); //$NON-NLS-1$
 		JButton okButton = new JButton(ControlsRes.getString("Chooser.Button.OK")); //$NON-NLS-1$
 		JButton selectAllButton = new JButton(ControlsRes.getString("Chooser.Button.SelectAll")); //$NON-NLS-1$
 		cancelButton.addActionListener(new ActionListener() {
@@ -150,7 +153,7 @@ public class ListChooser extends JDialog {
 		scrollPane.add(scroller, BorderLayout.CENTER);
 		scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		// lay out the button pane
-		JPanel buttonPane = new JPanel();
+		buttonPane = new JPanel();
 		buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.X_AXIS));
 		buttonPane.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
 		buttonPane.add(Box.createHorizontalGlue());
@@ -178,6 +181,14 @@ public class ListChooser extends JDialog {
 			this.separator = separator;
 		}
 	}
+	
+	public void includeCancelButton(boolean b) {
+		if (!b) {
+			buttonPane.remove(cancelButton);
+		} else {
+			buttonPane.add(cancelButton);			
+		}
+	}
 
 	/**
 	 * Allows the user to choose from the supplied list. Items not selected are
@@ -193,6 +204,8 @@ public class ListChooser extends JDialog {
  	 */
 	public boolean choose(Collection<?> choices, Collection<String> names, Collection<?> values,
 			Collection<String> descriptions, boolean[] selected, boolean[] disabled) {
+		boolean pack = objects == null || objects.length != choices.size() || fontLevel != FontSizer.getLevel();
+		fontLevel = FontSizer.getLevel();
 		checkPane.removeAll();
 		this.choices = choices;
 		checkBoxes = new JCheckBox[choices.size()];
@@ -245,7 +258,8 @@ public class ListChooser extends JDialog {
 			i++;
 		}
 		FontSizer.setFonts(this, FontSizer.getLevel());
-		this.pack();
+		if (pack)
+			pack();
 		setVisible(true);
 		return (actionListener == null ? doAction() : false);
 	}

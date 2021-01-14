@@ -87,8 +87,9 @@ public class LibraryJSSearchRefresher implements PropertyChangeListener {
   	 * Lets the user choose which collections to refresh.
   	 */
     void chooseCollectionsToRefresh() {
-    	nameToPathMap.put("ComPADRE Tracker Collection",
-    			LibraryComPADRE.TRACKER_SERVER_TREE + LibraryComPADRE.PRIMARY_ONLY);
+    	String query = LibraryComPADRE.TRACKER_SERVER_TREE + LibraryComPADRE.PRIMARY_ONLY;
+    	String compadreName = "ComPADRE " + LibraryComPADRE.getCollectionName(query);
+    	nameToPathMap.put(compadreName, query);
     	for (int i = 0; i < libraryPaths.length; i++) {
   			XMLControl control = new XMLControlElement(libraryPaths[i]);
 				Library lib = new Library();

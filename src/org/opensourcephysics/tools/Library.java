@@ -32,7 +32,7 @@ public class Library {
 	protected HashMap<String, String> pathToNameMap = new HashMap<String, String>();
 	protected ArrayList<String> comPADREPathList = new ArrayList<String>();
 	protected HashMap<String, String> comPADREPathToNameMap = new HashMap<String, String>();
-	protected ArrayList<String> ospPathList = new ArrayList<String>();
+	protected ArrayList<String> ospLibraryPathList = new ArrayList<String>();
 	protected HashMap<String, Library> ospPathToLibraryMap = new HashMap<String, Library>();
 	protected ArrayList<String> importedPathList = new ArrayList<String>();
 	protected HashMap<String, Library> importedPathToLibraryMap = new HashMap<String, Library>();
@@ -53,9 +53,9 @@ public class Library {
 	 * @return true if successfully added
 	 */
 	public boolean addOSPLibrary(String path) {
-		if (ospPathList.contains(path))
+		if (ospLibraryPathList.contains(path))
 			return false;
-		synchronized (ospPathList) {
+		synchronized (ospLibraryPathList) {
 			XMLControl control = new XMLControlElement(path);
 			if (control.failedToRead() || control.getObjectClass() != Library.class) {
 				return false;
@@ -63,7 +63,7 @@ public class Library {
 			Library library = new Library();
 			control.loadObject(library);
 			library.browser = this.browser;
-			ospPathList.add(path);
+			ospLibraryPathList.add(path);
 			ospPathToLibraryMap.put(path, library);
 		}
 		return true;
@@ -101,7 +101,7 @@ public class Library {
 			return false;
 		comPADREPathList.add(path);
 		comPADREPathToNameMap.put(path, name.trim());
-		allPathsToNameMap.put(path, name.trim());
+//		allPathsToNameMap.put(path, name.trim());
 		return true;
 	}
 
@@ -225,7 +225,7 @@ public class Library {
 		int n = path.indexOf(LibraryComPADRE.PRIMARY_ONLY);
 		if (n >= 0)
 			path = path.substring(0, n);
-		return pathList.contains(path) || (allLists && (comPADREPathList.contains(path) || ospPathList.contains(path)));
+		return pathList.contains(path) || (allLists && (comPADREPathList.contains(path) || ospLibraryPathList.contains(path)));
 	}
 
 	/**
@@ -260,7 +260,7 @@ public class Library {
 	}
 
 	/**
-	 * Returns all collection paths in this Library and sublibraries.
+	 * Returns all collection paths in this Library and sub-libraries.
 	 * 
 	 * @return array of paths
 	 */
@@ -268,7 +268,7 @@ public class Library {
 		TreeSet<String> paths = new TreeSet<String>();
 		paths.addAll(pathList);
 		paths.addAll(comPADREPathList);
-		paths.addAll(ospPathList);
+//		paths.addAll(ospPathList);
 
 		if (!subPathList.isEmpty()) {
 			for (String path : subPathList) {
@@ -276,7 +276,7 @@ public class Library {
 				paths.addAll(library.getAllPaths());
 			}
 		}
-		for (String path : ospPathList) {
+		for (String path : ospLibraryPathList) {
 			Library library = ospPathToLibraryMap.get(path);
 			paths.addAll(library.getAllPaths());
 		}
@@ -284,7 +284,7 @@ public class Library {
 	}
 
 	/**
-	 * Returns a Map of path-to-tab name.
+	 * Returns a Map of path-to-tabname.
 	 * 
 	 * @return path-to-name map
 	 */
@@ -292,6 +292,34 @@ public class Library {
 		return allPathsToNameMap;
 	}
 
+//	/**
+//	 * Returns a Map of path-to-tabname for this and all sub-libraries.
+//	 * 
+//	 * @return path-to-name map
+//	 */
+//	public HashMap<String, String> getNamesMap() {
+//		if (!subPathList.isEmpty()) {
+//			for (String path : subPathList) {
+//				Library library = subPathToLibraryMap.get(path);
+//				HashMap<String, String> map = library.getNameMap();
+//				for (String nextPath: library.getAllPaths()) {
+//					String name = map.get(nextPath);
+//					allPathsToNameMap.put(nextPath, name);
+//				}
+//			}
+//		}
+//		for (String path : ospPathList) {
+//			Library library = ospPathToLibraryMap.get(path);
+//			HashMap<String, String> map = library.getNameMap();
+//			for (String nextPath: library.getAllPaths()) {
+//				String name = map.get(nextPath);
+//				allPathsToNameMap.put(nextPath, name);
+//			}
+//		}
+//
+//		return allPathsToNameMap;
+//	}
+//
 	/**
 	 * Gets a clone of this library that is suitable for exporting. The exported
 	 * library has no OSP libraries, ComPADRE collections or imported libraries.

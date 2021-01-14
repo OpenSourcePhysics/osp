@@ -46,11 +46,11 @@ public class LibraryComPADRE {
 	public static final String OSP_INFO_URL = "https://www.compadre.org/osp/online_help/EjsDL/OSPCollection.html"; //$NON-NLS-1$
 	public static final String EJS_SERVER_TREE = "https://www.compadre.org/osp/services/REST/osp_jars.cfm?verb=Identify&OSPType=EJS%20Model&AttachedDocument=Source%20Code"; //$NON-NLS-1$
 	public static final String EJS_SERVER_RECORDS = "https://www.compadre.org/osp/services/REST/osp_jars.cfm?OSPType=EJS%20Model&AttachedDocument=Source%20Code"; //$NON-NLS-1$
-	public static final String EJS_COLLECTION_NAME = "EJS OSP Collection"; //$NON-NLS-1$
+	public static final String EJS_COLLECTION_NAME = "OSP EJS Collection"; //$NON-NLS-1$
 	public static final String EJS_INFO_URL = "https://www.compadre.org/osp/online_help/EjsDL/DLModels.html"; //$NON-NLS-1$
 	public static final String TRACKER_SERVER_TREE = "https://www.compadre.org/osp/services/REST/osp_tracker.cfm?verb=Identify&OSPType=Tracker"; //$NON-NLS-1$
 	public static final String TRACKER_SERVER_RECORDS = "https://www.compadre.org/osp/services/REST/osp_tracker.cfm?OSPType=Tracker"; //$NON-NLS-1$
-	public static final String TRACKER_COLLECTION_NAME = "Tracker OSP Collection"; //$NON-NLS-1$
+	public static final String TRACKER_COLLECTION_NAME = "OSP Tracker Collection"; //$NON-NLS-1$
 	public static final String TRACKER_INFO_URL = "https://physlets.org/tracker/library/comPADRE_collection.html"; //$NON-NLS-1$
 	public static final String PRIMARY_ONLY = "&OSPPrimary=Subject"; //$NON-NLS-1$
 	public static final String GENERIC_COLLECTION_NAME = "ComPADRE OSP Collection"; //$NON-NLS-1$

@@ -117,6 +117,13 @@ public class LibraryCollection extends LibraryResource {
 		return resources.toArray(new LibraryResource[resources.size()]);
 	}
 
+	/**
+	 * Clears resources.
+	 */
+	public void clearResources() {
+		resources.clear();
+	}
+
 //_____________________________  static methods  ____________________________
 
 	/**

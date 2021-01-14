@@ -31,11 +31,11 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -78,6 +78,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.opensourcephysics.controls.ListChooser;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
@@ -119,6 +120,8 @@ public class LibraryBrowser extends JPanel {
 	protected static final String WEB_SEARCH_BASE_PATH = "https://physlets.org/tracker/library/Search/";
 	public static final String HINT_LOAD_RESOURCE = "LOAD";
 	public static final String HINT_DOWNLOAD_RESOURCE = "DOWNLOAD";
+	public static final String PROPERTY_LIBRARY_TARGET = "target";
+	public static final String PROPERTY_LIBRARY_EDITED = "collection_edit";
 
 	// static fields
 	private static String ospPath;
@@ -130,6 +133,7 @@ public class LibraryBrowser extends JPanel {
 	protected static JMenuBar menubar;
 	protected static ResizableIcon expandIcon, contractIcon, heavyExpandIcon, heavyContractIcon;
 	protected static ResizableIcon refreshIcon, downloadIcon, downloadDisabledIcon;
+	protected static ResizableIcon searchTargetIcon;
 	protected static final TrackerDLFilter TRACKER_FILTER = new TrackerDLFilter();
 	protected static javax.swing.filechooser.FileFilter filesAndFoldersFilter = new FilesAndFoldersFilter();
 	protected static Timer searchTimer;
@@ -158,6 +162,8 @@ public class LibraryBrowser extends JPanel {
 		downloadIcon = ResourceLoader.getResizableIcon(imageFile);
 		imageFile = "/org/opensourcephysics/resources/tools/images/downloaddisabled.gif"; //$NON-NLS-1$
 		downloadDisabledIcon = ResourceLoader.getResizableIcon(imageFile);
+		imageFile = "/org/opensourcephysics/resources/tools/images/searchtarget.gif"; //$NON-NLS-1$
+		searchTargetIcon = ResourceLoader.getResizableIcon(imageFile);
 	}
 
 	// instance fields
@@ -173,7 +179,7 @@ public class LibraryBrowser extends JPanel {
 	protected JMenu fileMenu, recentMenu, collectionsMenu, manageMenu, helpMenu;
 	protected JMenuItem newItem, openItem, saveItem, saveAsItem, closeItem, closeAllItem, exitItem, deleteItem,
 			collectionsItem, searchItem, cacheItem, aboutItem, logItem, helpItem;
-	protected JButton commandButton, editButton, refreshButton, downloadButton;
+	protected JButton commandButton, editButton, refreshButton, downloadButton, searchTargetButton;
 	protected ActionListener loadCollectionAction;
 	protected boolean exitOnClose;
 	protected JTabbedPane tabbedPane;
@@ -185,10 +191,12 @@ public class LibraryBrowser extends JPanel {
 	protected TrackerDLFilter dlFileFilter = TRACKER_FILTER;
 	protected boolean isResourcePathXML;
 	protected LibraryManager libraryManager;
-	protected ArrayList<String> webCollectionPaths;
+	protected ListChooser searchTargetChooser;
+	protected LibraryTreePanel searchResultsTreePanel;
+	ArrayList<String> searchTargetPaths;
+	ArrayList<String> searchTargetNames;
+
 	private int myFontLevel;
-	public static final String PROPERTY_LIBRARY_TARGET = "target";
-	public static final String PROPERTY_LIBRARY_EDITED = "collection_edit";
 
 	/**
 	 * Gets the shared singleton browser.
@@ -351,10 +359,11 @@ public class LibraryBrowser extends JPanel {
 			@Override
 			public void run() {
 				library.addOSPLibrary(path);
-				refreshCollectionsMenu();
+//				refreshCollectionsMenu();
 			}
 		};
-		new Thread(runner).start();
+//		new Thread(runner).start();
+		runner.run();
 	}
 
 	/**
@@ -367,12 +376,11 @@ public class LibraryBrowser extends JPanel {
 	}
 
 	/**
-	 * Refreshes the Collections menu and webCollectionPaths.
+	 * Refreshes the Collections menu.
 	 */
 	synchronized public void refreshCollectionsMenu() {
 		JMenu menu = collectionsMenu;
 		menu.removeAll();
-		getWebCollectionPaths().clear();
 		if (!OSPRuntime.isJS) {
 			JMenu myLibraryMenu = new JMenu(ToolsRes.getString("Library.Name.Local")); //$NON-NLS-1$
 			menu.add(myLibraryMenu);
@@ -399,11 +407,11 @@ public class LibraryBrowser extends JPanel {
 //	  			path += LibraryComPADRE.PRIMARY_ONLY;
 				item.setToolTipText(path);
 				item.setActionCommand(path);
-				webCollectionPaths.add(path);
+				library.allPathsToNameMap.put(path, name);
 			}
 		}
-		if (!library.ospPathList.isEmpty()) {
-			for (String path : library.ospPathList) {
+		if (!library.ospLibraryPathList.isEmpty()) {
+			for (String path : library.ospLibraryPathList) {
 				Library lib = library.ospPathToLibraryMap.get(path);
 				JMenu submenu = new JMenu(lib.getName());
 				menu.add(submenu);
@@ -423,11 +431,12 @@ public class LibraryBrowser extends JPanel {
 					item.addActionListener(loadCollectionAction);
 					item.setToolTipText(next);
 					item.setActionCommand(next);
-					webCollectionPaths.add(next);
+					library.allPathsToNameMap.put(next, name);
 				}
 			}
 		}
 		FontSizer.setMenuFonts(collectionsMenu);
+		searchTargetButton.setEnabled(true);
 	}
 
 	/**
@@ -444,11 +453,11 @@ public class LibraryBrowser extends JPanel {
 			item.addActionListener(loadCollectionAction);
 			item.setToolTipText(next);
 			item.setActionCommand(next);
-			webCollectionPaths.add(next);
+			library.allPathsToNameMap.put(next, name);
 		}
 		if (!lib.subPathList.isEmpty()) {
 			for (String path : lib.subPathList) {
-				if (library.ospPathList.contains(path))
+				if (library.ospLibraryPathList.contains(path))
 					continue;
 				Library sublib = lib.subPathToLibraryMap.get(path);
 				JMenu submenu = new JMenu(sublib.getName());
@@ -596,7 +605,6 @@ public class LibraryBrowser extends JPanel {
 		library.browser = this;
 		createGUI();
 		refreshGUI(true);
-		refreshCollectionsMenu();
 		editButton.requestFocusInWindow();
 		ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
 			@Override
@@ -679,6 +687,8 @@ public class LibraryBrowser extends JPanel {
 	 */
 	protected String getTabTitle(int index) {
 		String title = tabbedPane.getTitleAt(index);
+		if (title == null)
+			return null;
 		if (title.endsWith("*")) //$NON-NLS-1$
 			title = title.substring(0, title.length() - 1);
 		return title;
@@ -812,12 +822,6 @@ public class LibraryBrowser extends JPanel {
   	return null;
   }
   
-  public ArrayList<String> getWebCollectionPaths() {
-  	if (webCollectionPaths == null)
-  		webCollectionPaths = new ArrayList<String>();
-  	return webCollectionPaths;
-  }
-
 	protected void loadResourceAsync(String path, Function<LibraryResource, Void> whenDone) {
 		isResourcePathXML = false;
 
@@ -1069,7 +1073,9 @@ public class LibraryBrowser extends JPanel {
 		if (n == -1)
 			return;
 
-		String title = collection.getTitle(path);
+		String title = library.getNameMap().get(path);
+		if (title == null)
+			title = collection.getTitle(path);
 
 		// add a TabTitle with expand and contract icons to ComPADRE tab
 		if (path.contains(LibraryComPADRE.TRACKER_SERVER_TREE) && tabbedPane.getTabComponentAt(n) == null) {
@@ -1247,6 +1253,15 @@ public class LibraryBrowser extends JPanel {
 
 		};
 		searchField.addActionListener(searchAction);
+		searchTargetButton = new JButton();
+		searchTargetButton.addActionListener((e) -> {
+			chooseSearchTargets();
+		});
+		searchTargetButton.setIcon(searchTargetIcon);
+		searchTargetButton.setOpaque(true);
+		searchTargetButton.setBorder(buttonBorder);
+		searchTargetButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Dialog.SearchTargets.Text"));
+		searchTargetButton.setEnabled(false); // set true when Library is fully loaded
 
 		refreshButton = new JButton(refreshIcon);
 		refreshButton.setBorder(buttonBorder);
@@ -1480,6 +1495,7 @@ public class LibraryBrowser extends JPanel {
 		toolbar.addSeparator();
 		toolbar.add(searchLabel);
 		toolbar.add(searchField);
+		toolbar.add(searchTargetButton);
 		toolbar.addSeparator();
 		toolbar.add(editButton);
 		toolbar.addSeparator();
@@ -1576,7 +1592,7 @@ public class LibraryBrowser extends JPanel {
 			}
 		});
 		searchItem = new JMenuItem();
-		manageMenu.add(searchItem);
+//		manageMenu.add(searchItem);
 		searchItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -1741,7 +1757,7 @@ public class LibraryBrowser extends JPanel {
 	}
 
 	// do actual search in separate swingworker thread
-	class Searcher extends SwingWorker<LibraryTreePanel, Object> {
+	class Searcher extends SwingWorker<LibraryTreeNode, Object> {
 		private String searchTerm;
 
 		public Searcher(String searchTerm) {
@@ -1749,22 +1765,22 @@ public class LibraryBrowser extends JPanel {
 		}
 
 		@Override
-		public LibraryTreePanel doInBackground() {
-			// search all cache targets except those in the library no_search set
-			Set<LibraryResource> searchTargets = getSearchCacheTargets();
-			for (Iterator<LibraryResource> it = searchTargets.iterator(); it.hasNext();) {
-				LibraryResource next = it.next();
-				if (library.noSearchSet.contains(next.collectionPath))
-					it.remove();
-			}
+		public LibraryTreeNode doInBackground() {
+			Set<LibraryResource> searchTargets = getSearchTargets();
+//			// skip targets in library no_search set
+//			for (Iterator<LibraryResource> it = searchTargets.iterator(); it.hasNext();) {
+//				LibraryResource next = it.next();
+//				if (library.noSearchSet.contains(next.collectionPath))
+//					it.remove();
+//			}
 			return searchFor(searchTerm.trim(), searchTargets);
 		}
 
 		@Override
 		protected void done() {
 			try {
-				LibraryTreePanel results = get();
-				if (results == null) {
+				LibraryTreeNode resultsTreeNode = get();
+				if (resultsTreeNode == null) {
 					Toolkit.getDefaultToolkit().beep();
 					// give visual cue, too
 					final Color color = searchField.getForeground();
@@ -1789,19 +1805,16 @@ public class LibraryBrowser extends JPanel {
 
 					return;
 				}
-				String title = "'" + searchTerm.trim() + "'"; //$NON-NLS-1$ //$NON-NLS-2$
+				LibraryTreePanel treePanel = getSearchResultsTreePanel();
+				String title = treePanel.getCollection().getName();
 				int i = getTabIndexFromTitle(title);
 				synchronized (tabbedPane) {
-					if (i > -1) {
-						// replace existing tab
-						tabbedPane.setComponentAt(i, results);
-					} else {
-						tabbedPane.addTab(title, results);
-					}
-					tabbedPane.setSelectedComponent(results);
+					if (i == -1)
+						tabbedPane.addTab(title, treePanel);
+					tabbedPane.setSelectedComponent(treePanel);
 				}
-				LibraryTreePanel.htmlPanesByNode.remove(results.rootNode);
-				results.showInfo(results.rootNode, "LibraryBrowser.Searcher.done");
+				LibraryTreePanel.htmlPanesByNode.remove(resultsTreeNode);
+				treePanel.showInfo(resultsTreeNode, "LibraryBrowser.Searcher.done");
 
 				refreshGUI();
 			} catch (Exception e) {
@@ -2031,7 +2044,7 @@ public class LibraryBrowser extends JPanel {
 			treePanel.refreshGUI(andRebuild);
 		} else {
 			refreshButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Tooltip.Refresh")); //$NON-NLS-1$
-			downloadButton.setToolTipText("Download selected item to desktop"); 
+			downloadButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Button.Download.Tooltip")); 
 			editButton.setText(ToolsRes.getString("LibraryBrowser.Button.OpenEditor")); //$NON-NLS-1$
 			saveItem.setEnabled(false);
 			closeItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.CloseTab")); //$NON-NLS-1$
@@ -2236,131 +2249,229 @@ public class LibraryBrowser extends JPanel {
 		return path;
 	}
 
-	static Map<String, LibraryResource> searchMap;
+	static Map<String, LibraryResource> searchResourceMap;  // path to resource
+	protected TreeMap<String, String> searchPathMap; // name to path
 	static boolean isSearchMapLoaded = false;
 	
 	/**
-	 * Adds a searchable resource to the search map.
+	 * Adds a searchable collection to the search resource map.
 	 */
 	protected static void addSearchResource(LibraryResource resource) {
-		if (searchMap == null)
-			searchMap = new HashMap<>();
+		if (searchResourceMap == null)
+			searchResourceMap = new HashMap<>();
 		String s = resource.collectionPath;
 		if (s != null && s.length() > 0) {
-			searchMap.put(s, resource);
+			searchResourceMap.put(s, resource);
 		}
 	}
 	
+	public static boolean existsOnWeb(String URLPath){
+    try {
+      HttpURLConnection.setFollowRedirects(false);
+      // note : you may also need
+      //        HttpURLConnection.setInstanceFollowRedirects(false)
+      HttpURLConnection con =
+         (HttpURLConnection) new URL(URLPath).openConnection();
+      con.setRequestMethod("HEAD");
+      return (con.getResponseCode() == HttpURLConnection.HTTP_OK);
+    }
+    catch (Exception e) {
+       e.printStackTrace();
+       return false;
+    }
+  }  
+	
+	protected TreeMap<String, String> getSearchPathMap() {
+		loadSearchPathMap();
+		return searchPathMap;
+	}
+	
 	/**
-	 * Loads searchable resources into the search map.
+	 * Loads all searchable paths into the search path map.
 	 */
-	protected void loadSearchMap() {
+	protected void loadSearchPathMap() {
 		if (isSearchMapLoaded)
 			return;
 		isSearchMapLoaded = true;
 		
-//		if (OSPRuntime.isJS) {
-//			ArrayList<String> paths = getWebCollectionPaths();
-//			XMLControl control;
-//			for (int i = 0; i < paths.size(); i++) {
-//				String path = paths.get(i);
-//				// determine cache path name and try to load from WEB_SEARCH_BASE_PATH
-//				File f = ResourceLoader.getSearchCacheFile(path);
-//				String searchPath = WEB_SEARCH_BASE_PATH + f.getName();
-//				control = new XMLControlElement(searchPath);
-//				if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
-//					LibraryCollection collection = (LibraryCollection) control.loadObject(null);
-//					collection.collectionPath = path;
-//					addSearchResource(collection);
-//				}
-//			}			
-//		} 
-//		else {
-//			List<File> xmlFiles = ResourceLoader.getSearchFileList();
-//			for (File file : xmlFiles) {
-//				XMLControl control = new XMLControlElement(file);
-//				if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
-//					LibraryResource resource = (LibraryResource) control.loadObject(null);
-//					resource.collectionPath = control.getString("real_path"); //$NON-NLS-1$
-//					addSearchResource(resource);
-//				}
-//			}			
+		List<File> temp = null;
+		if (!OSPRuntime.isJS)
+			temp = new ArrayList<File>();
+		
+		if (searchPathMap == null)
+			searchPathMap = new TreeMap<String, String>();
+		searchPathMap.clear();
+		TreeSet<String> paths = library.getAllPaths();
+		for (String path : paths) {
+			if (path.contains("EJS") || !ResourceLoader.isHTTP(path))
+				continue;
+			
+			String name = library.getNameMap().get(path);
+			if (LibraryComPADRE.isComPADREPath(path))
+				name = "ComPADRE "+name;
+  		searchPathMap.put(name, path);
+  		if (!OSPRuntime.isJS)
+  			temp.add(ResourceLoader.getSearchCacheFile(path));
+		}
+		
+		if (!OSPRuntime.isJS) {
+			// in Java, add local cached files if not included above
+			List<File> files = ResourceLoader.getSearchFileList();
+			for (int i = 0; i < files.size(); i++) {
+				File next = files.get(i);
+				if (!temp.contains(next)) {
+					XMLControl control = new XMLControlElement(next.getPath());
+					String name = control.getString("name");
+					if (name != null) {
+						String realPath = control.getString("real_path");
+			  		searchPathMap.put(name, realPath == null? next.getPath(): realPath);
+					}
+				}
+			}
+		}
+		
+		searchTargetPaths	= new ArrayList<String>();
+		searchTargetNames	= new ArrayList<String>();
+		for (String name: searchPathMap.keySet()) {
+			String path = searchPathMap.get(name);
+			searchTargetNames.add(name);
+			searchTargetPaths.add(path);
+			if (OSPRuntime.isJS) {
+				// search current tabs and ComPADRE targets by default
+				if (getTabIndexFromPath(path) > -1 || name.startsWith("ComPADRE")) {
+					library.noSearchSet.remove(path);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Shows a dialog for the user to choose search targets.
+	 */
+	private void chooseSearchTargets() {
+		loadSearchPathMap();
+		boolean firstTime = searchTargetChooser == null;
+		if (firstTime) { 
+			searchTargetChooser = new ListChooser(ToolsRes.getString("LibraryManager.Title.Search"), 
+					ToolsRes.getString("LibraryBrowser.Dialog.SearchTargets.Text")+":", null, (e) -> {
+				library.noSearchSet.clear();
+				for (int i = 0; i < searchTargetNames.size(); i++) {
+					String path = searchPathMap.get(searchTargetNames.get(i));
+					if (!searchTargetPaths.contains(path)) {
+						library.noSearchSet.add(path);
+					}
+				}
+			});
+			searchTargetChooser.includeCancelButton(false);
+			searchTargetChooser.setIconImage(((ImageIcon)searchTargetIcon.getBaseIcon()).getImage());
+		}
+		
+		searchTargetPaths.clear();
+		boolean[] selected	= new boolean[searchPathMap.size()];
+		int i = 0;
+		for (String name: searchPathMap.keySet()) {
+			String path = searchPathMap.get(name);
+			searchTargetPaths.add(path);
+			selected[i] = !library.noSearchSet.contains(path); 
+			i++;
+		}
+		searchTargetChooser.choose(searchTargetPaths, searchTargetNames, null, null, selected, null);
+	}
+	
+	/**
+	 * Loads search collections into the search resource map.
+	 * Note this loads only those collections NOT in the library.noSearchSet.
+	 * Once a collection is added to the map it stays.
+	 */
+	private void loadSearchResourceMap() {
+//		if (!isSearchMapLoaded) {
+//			chooseSearchTargets();
 //		}
 		
-		// add searchable local files when running in Java
-		if (!OSPRuntime.isJS) {
-			List<File> xmlFiles = ResourceLoader.getSearchFileList();
-			for (File file : xmlFiles) {
-				XMLControl control = new XMLControlElement(file);
-				if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
-					LibraryResource resource = (LibraryResource) control.loadObject(null);
-					resource.collectionPath = control.getString("real_path"); //$NON-NLS-1$
-					addSearchResource(resource);
+		loadSearchPathMap();
+		// add local search cache files first when running in Java
+		if (!OSPRuntime.isJS) {	
+			List<File> cacheFiles = ResourceLoader.getSearchFileList();
+			for (String nextPath: searchPathMap.values()) {
+				File cacheFile = ResourceLoader.getSearchCacheFile(nextPath);
+				if (cacheFiles.contains(cacheFile) && !library.noSearchSet.contains(nextPath) && 
+						(searchResourceMap == null || !searchResourceMap.keySet().contains(nextPath))) {
+					// cache file should be included in searchResourceMap but is not
+					XMLControl control = new XMLControlElement(cacheFile);
+					if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
+						LibraryResource resource = (LibraryResource) control.loadObject(null);
+						resource.collectionPath = control.getString("real_path"); //$NON-NLS-1$
+						addSearchResource(resource);
+					}
 				}
 			}
 		}
 		// add searchable web files for both Java and JS
-		ArrayList<String> paths = getWebCollectionPaths();
+		TreeSet<String> paths = library.getAllPaths();
 		XMLControl control;
-		for (int i = 0; i < paths.size(); i++) {
-			String path = paths.get(i);
-			// skip web files that duplicate a local file
-			if (searchMap != null && searchMap.keySet().contains(path))
+		for (String path: paths) {
+			if (library.noSearchSet.contains(path) || !ResourceLoader.isHTTP(path))
 				continue;
-			// determine cache path name and try to load from WEB_SEARCH_BASE_PATH
-			File f = ResourceLoader.getSearchCacheFile(path);
-			String searchPath = WEB_SEARCH_BASE_PATH + f.getName();
-			control = new XMLControlElement(searchPath);
-			if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
-				LibraryCollection collection = (LibraryCollection) control.loadObject(null);
-				collection.collectionPath = path;
-				addSearchResource(collection);
-			}
-		}			
 
+			if (searchResourceMap == null || !searchResourceMap.keySet().contains(path)) {
+				// determine cache path name and try to load from WEB_SEARCH_BASE_PATH
+				File f = ResourceLoader.getSearchCacheFile(path);
+				String searchPath = WEB_SEARCH_BASE_PATH + f.getName();
+				control = new XMLControlElement(searchPath);
+				if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
+					LibraryCollection collection = (LibraryCollection) control.loadObject(null);
+					collection.collectionPath = path;
+					addSearchResource(collection);
+				}
+			}
+		}
+		
 	}
-	
 
 	/**
-	 * Returns the set of all searchable cache resources.
+	 * Returns the set of searchable resources.
 	 * 
 	 * @return a set of searchable resources
 	 */
-	protected Set<LibraryResource> getSearchCacheTargets() {
-		loadSearchMap();
+	protected Set<LibraryResource> getSearchTargets() {
+		loadSearchResourceMap();
 		Set<LibraryResource> searchTargets = new TreeSet<LibraryResource>();
 
-		if (searchMap != null) {
-			for (LibraryResource r : searchMap.values()) {
-				LibraryResource rc = r.getClone();				
-				if (rc.collectionPath != null)
+		if (searchResourceMap != null) {
+			for (LibraryResource r : searchResourceMap.values()) {
+				LibraryResource rc = r.getClone();	
+				String path = rc.collectionPath;
+				if (path != null && !library.noSearchSet.contains(path)) {
 					searchTargets.add(rc);
+				}
 			}
 		}
 		else {
-			// set up search targets
+			// use only cached targets
 			List<File> xmlFiles = ResourceLoader.getSearchFileList();
 			for (File file : xmlFiles) {
 				XMLControl control = new XMLControlElement(file);
 				if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
 					LibraryResource resource = (LibraryResource) control.loadObject(null);
 					resource.collectionPath = control.getString("real_path"); //$NON-NLS-1$
-					searchTargets.add(resource);
+					String path = resource.collectionPath;
+					if (path != null && !library.noSearchSet.contains(path)) {
+						searchTargets.add(resource);
+					}
 				}
 			}
 		}
 		return searchTargets;
 	}
-
+	
 	/**
 	 * Searches a set of LibraryResources for resources matching a search phrase.
 	 * 
 	 * @param searchPhrase  the phrase to match
 	 * @param searchTargets a set of LibraryResources to search
-	 * @return a LibraryTreePanel containing the search results, or null if no nodes
-	 *         found
+	 * @return a LibraryTreeNode with the search results, or null if no matches found
 	 */
-	protected LibraryTreePanel searchFor(String searchPhrase, Set<LibraryResource> searchTargets) {
+	protected LibraryTreeNode searchFor(String searchPhrase, Set<LibraryResource> searchTargets) {
 		if (searchPhrase == null || searchPhrase.trim().equals("")) //$NON-NLS-1$
 			return null;
 
@@ -2387,25 +2498,57 @@ public class LibraryBrowser extends JPanel {
 		if (found.isEmpty())
 			return null;
 
-		// create a LibraryCollection for the search results
-		String title = "'" + searchPhrase + "'"; //$NON-NLS-1$ //$NON-NLS-2$
-		LibraryTreePanel treePanel = createLibraryTreePanel();
-		String name = ToolsRes.getString("LibraryBrowser.SearchResults") + ": " + title; //$NON-NLS-1$ //$NON-NLS-2$
-		LibraryCollection results = new LibraryCollection(name);
-		treePanel.setRootResource(results, "", false, false); //$NON-NLS-1$
+		LibraryTreePanel treePanel = getSearchResultsTreePanel();
 		LibraryTreeNode root = treePanel.rootNode;
-
+		LibraryCollection rootCollection = (LibraryCollection)treePanel.getCollection();
+		
+		String name = "'" + searchPhrase + "'"; //$NON-NLS-1$ //$NON-NLS-2$
+		// remove any child node with same name
+		for (int j = 0; j < root.getChildCount(); j++) {
+			LibraryTreeNode childNode = (LibraryTreeNode)root.getChildAt(j);
+			if (childNode.getName().equals(name)) {
+				treePanel.removeNode(childNode);
+			}
+		}
+		// create a LibraryCollection for the search results
+		LibraryCollection results = new LibraryCollection(name);
+		rootCollection.addResource(results);
+		LibraryTreeNode resultsNode = new LibraryTreeNode(results, treePanel);
+		treePanel.insertChildAt(resultsNode, root, root.getChildCount());
+		// add ComPADRE results first
 		for (LibraryResource next : found.keySet()) {
+			if (!next.collectionPath.contains("compadre.org"))
+				continue;
 			LibraryResource clone = next.getClone();
 			results.addResource(clone);
 			LibraryTreeNode newNode = new LibraryTreeNode(clone, treePanel);
 			newNode.setBasePath(next.getInheritedBasePath());
-			treePanel.insertChildAt(newNode, root, root.getChildCount());
+			treePanel.insertChildAt(newNode, resultsNode, resultsNode.getChildCount());
+		}
+		// add non-ComPADRE results
+		for (LibraryResource next : found.keySet()) {
+			if (next.collectionPath.contains("compadre.org"))
+				continue;
+			LibraryResource clone = next.getClone();
+			results.addResource(clone);
+			LibraryTreeNode newNode = new LibraryTreeNode(clone, treePanel);
+			newNode.setBasePath(next.getInheritedBasePath());
+			treePanel.insertChildAt(newNode, resultsNode, resultsNode.getChildCount());
 		}
 
-		treePanel.scrollToPath(((LibraryTreeNode) root.getLastChild()).getTreePath(), false);
+		treePanel.scrollToPath(((LibraryTreeNode) resultsNode.getLastChild()).getTreePath(), false);
 		treePanel.isChanged = false;
-		return treePanel;
+		return resultsNode;
+	}
+	
+	private LibraryTreePanel getSearchResultsTreePanel() {
+		if (searchResultsTreePanel == null) {
+			searchResultsTreePanel= createLibraryTreePanel();
+			LibraryCollection collection = new LibraryCollection("");
+			searchResultsTreePanel.setRootResource(collection, "", false, false); //$NON-NLS-1$
+		}
+		searchResultsTreePanel.getCollection().setName(ToolsRes.getString("LibraryBrowser.SearchResults"));
+		return searchResultsTreePanel;
 	}
 
 	/**
@@ -3119,7 +3262,7 @@ public class LibraryBrowser extends JPanel {
 		browser.addOSPLibrary(SHARED_LIBRARY);
 		browser.addComPADRECollection(LibraryComPADRE.EJS_SERVER_TREE + LibraryComPADRE.PRIMARY_ONLY);
 		browser.addComPADRECollection(LibraryComPADRE.TRACKER_SERVER_TREE + LibraryComPADRE.PRIMARY_ONLY);
-		browser.refreshCollectionsMenu();
+//		browser.refreshCollectionsMenu();
 
 		// code below opens Tracker when LibraryBrowser is launched as an independent
 		// application

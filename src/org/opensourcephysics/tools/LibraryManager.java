@@ -20,7 +20,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.util.ArrayList;
-
+import java.util.Set;
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -78,7 +78,7 @@ public class LibraryManager extends JDialog {
 	Font sharedFont;
 	TitledBorder collectionsTitleBorder, importsTitleBorder, searchTitleBorder, cacheTitleBorder;
 	ArrayList<SearchCheckBox> checkboxes = new ArrayList<SearchCheckBox>();
-	Dimension defaultSize = new Dimension(500, 300);
+	Dimension defaultSize = new Dimension(400, 300);
 	Border listButtonBorder;
 
 	/**
@@ -541,7 +541,7 @@ public class LibraryManager extends JDialog {
 		tabbedPane = new JTabbedPane();
 		tabbedPane.addTab("", collectionsPanel); //$NON-NLS-1$
 //		tabbedPane.addTab("", importsPanel); //$NON-NLS-1$
-		tabbedPane.addTab("", searchPanel); //$NON-NLS-1$
+//		tabbedPane.addTab("", searchPanel); //$NON-NLS-1$
 		tabbedPane.addTab("", cachePanel); //$NON-NLS-1$
 
 		// add change listener last
@@ -686,29 +686,25 @@ public class LibraryManager extends JDialog {
 		searchBox.removeAll();
 		checkboxes.clear();
 		ArrayList<JLabel> labels = new ArrayList<JLabel>();
-		for (LibraryResource next : browser.getSearchCacheTargets()) {
-			String path = next.collectionPath;
-			if (path == null)
-				continue;
-
-			String name = next.toString();
+		Set<String> names = browser.getSearchPathMap().keySet();
+		for (String name: names) {
+			String path = browser.searchPathMap.get(name);
 			JLabel label = new JLabel(name);
 			label.setToolTipText(path);
 			labels.add(label);
 
 			SearchCheckBox checkbox = new SearchCheckBox(path);
 			checkboxes.add(checkbox);
-			JButton button = new DeleteButton(path);
-
 			Box bar = Box.createHorizontalBox();
 			bar.add(label);
 			bar.add(checkbox);
-			bar.add(button);
+			if (!ResourceLoader.isHTTP(path))
+				bar.add(new DeleteButton(path));
 			bar.add(Box.createHorizontalGlue());
-
-			searchBox.add(bar);
-			FontSizer.setFonts(searchBox, FontSizer.getLevel());
+			searchBox.add(bar);			
 		}
+		FontSizer.setFonts(searchBox, FontSizer.getLevel());
+		
 		if (labels.isEmpty())
 			return;
 
@@ -906,8 +902,10 @@ public class LibraryManager extends JDialog {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					File file = ResourceLoader.getSearchCacheFile(urlPath);
-					file.delete();
-					refreshSearchTab();
+					if (file.delete()) {
+						LibraryBrowser.isSearchMapLoaded = false;
+						refreshSearchTab();
+					}
 				}
 			});
 		}
