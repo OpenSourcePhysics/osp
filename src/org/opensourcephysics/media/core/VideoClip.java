@@ -128,7 +128,8 @@ public class VideoClip implements PropertyChangeListener {
 		this.video = video;
 		if (video != null) {
 			video.setProperty("videoclip", this); //$NON-NLS-1$
-			if (video instanceof AsyncVideoI) {
+			if (video.getFrameCount() == 0 && video instanceof AsyncVideoI) {
+				// coming from loadObject, we are not ready yet; wait for the asyncVideoHaveFrames signal.
 				video.addPropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_HAVEFRAMES, this);
 				return;
 			}
@@ -613,7 +614,8 @@ public class VideoClip implements PropertyChangeListener {
 	 * Updates the list of step frames.
 	 */
 	private void updateArray() {
-		stepFrames = new int[stepCount];
+		if (stepFrames == null || stepFrames.length < stepCount)
+			stepFrames = new int[stepCount];
 		for (int i = 0; i < stepCount; i++) {
 			stepFrames[i] = stepToFrame(i);
 		}
@@ -789,6 +791,7 @@ public class VideoClip implements PropertyChangeListener {
 					invalid = true;
 					String codec = (exists ? VideoIO.getVideoCodec(res.getAbsolutePath()) : null);
 					String reason = (exists ? "VideoClip null video" : "VideoClip not supported");
+					VideoIO.handleUnsupportedVideo(path, XML.getExtension(path), codec, null, reason); // runs async
 				} else {
 					String message = "\"" + fullPath + "\" " //$NON-NLS-1$ //$NON-NLS-2$
 							+ MediaRes.getString("VideoClip.Dialog.VideoNotFound.Message"); //$NON-NLS-1$

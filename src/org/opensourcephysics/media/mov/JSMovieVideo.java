@@ -41,6 +41,7 @@ import javax.swing.SwingUtilities;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.core.AsyncVideoI;
 import org.opensourcephysics.media.core.DoubleArray;
 import org.opensourcephysics.media.core.ImageCoordSystem;
@@ -187,9 +188,9 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 			return;
 		rawImage = bi;
 		invalidateVideoAndFilter();
-		notifyFrame(n, false);
 		// just repaints VideoPanel
 		//System.out.println("JSMV imageready for " + n + " t=" + t);
+		notifyFrame(n, false);
 		firePropertyChange(AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY, null, n);
 		if (isPlaying()) {
 			SwingUtilities.invokeLater(() -> {
@@ -541,6 +542,10 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		static final int STATE_ERROR             = -99;
 
 		static final int STATE_IDLE              = -1;
+
+		static final int STATE_PLAY_ALL_INIT  = 40;
+		static final int STATE_PLAY_ALL_DONE  = 41;
+
 		static final int STATE_FIND_FRAMES_INIT  = 00;
 		static final int STATE_FIND_FRAMES_LOOP  = 01;
 		static final int STATE_FIND_FRAMES_WAIT  = 02;
@@ -565,13 +570,18 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		private double offset = 0;
 		private double lastT = -1;
 		
-		private ActionListener canplaythrough = new ActionListener() {
+		private ActionListener onevent = new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				//OSPLog.debug("JSMovieVideo.canplaythrough doing next " + e);
-				if (helper.getState() == STATE_FIND_FRAMES_WAIT) {
+				//System.out.println("JSMovieVideo.onevent state=" + helper.getState() + " " + e);
+				switch (helper.getState()) {
+				case STATE_FIND_FRAMES_WAIT:
 					helper.setState(STATE_FIND_FRAMES_READY);
+					break;
+				case STATE_PLAY_ALL_INIT:
+					helper.setState(STATE_PLAY_ALL_DONE);
+					break;
 				}
 				next(StateHelper.UNCHANGED);
 			}
@@ -608,7 +618,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		}
 
 		private void dispose()  {
-			HTML5Video.removeActionListener(jsvideo, readyListener);
+			removeReadyListener();
 		}
 		
 		private void seekToNextFrame() {
@@ -637,16 +647,17 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 			}
 		}
 
-		private void setReadyListener() { 
+		private void setReadyListener(String event) {
 			if (readyListener != null)
 				return;
-			readyListener = HTML5Video.addActionListener(jsvideo, canplaythrough, "canplaythrough"/*, "ended"*/);
+			readyListener = HTML5Video.addActionListener(jsvideo, onevent, event);
 			if (debugging) {
+				System.out.println("Setting listener to " + event);
 				HTML5Video.addActionListener(jsvideo, new ActionListener() {
 
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						OSPLog.finest("JSMovieVideo.actionPerformed " + e.getActionCommand());
+						System.out.println("JSMovieVideo.actionPerformed " + e.getActionCommand());
 					}
 
 				});
@@ -654,9 +665,14 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 			}
 		}
 
+		private void removeReadyListener() {
+			HTML5Video.removeActionListener(jsvideo, readyListener);
+			readyListener = null;
+		}
+
 		@Override
 		public boolean stateLoop() {
-			//OSPLog.debug("JSMovieVideo.stateLoop " + helper.getState());
+			// OSPLog.debug("JSMovieVideo.stateLoop " + helper.getState());
 			JSMovieVideo v = JSMovieVideo.this;
 			while (helper.isAlive()) {
 				switch (v.err == null ? helper.getState() : STATE_ERROR) {
@@ -668,6 +684,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 						@Override
 						public Void apply(HTML5Video video) {
 							v.jsvideo = video;
+							canSeek = (DOMNode.getAttr(v.jsvideo, "seekToNextFrame") != null);
 							next(STATE_LOAD_VIDEO_READY);
 							return null;
 						}
@@ -676,7 +693,6 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					return true;
 				case STATE_LOAD_VIDEO_READY:
 					v.videoDialog.setVisible(true);
-					canSeek = (DOMNode.getAttr(v.jsvideo, "seekToNextFrame") != null);
 					Dimension d = HTML5Video.getSize(v.jsvideo);
 					v.size.width = d.width;
 					v.size.height = d.height;
@@ -688,8 +704,21 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 						cantRead();
 						helper.next(STATE_FIND_FRAMES_READY);
 					} else {
-						helper.next(STATE_FIND_FRAMES_INIT);
+						helper.next(canSeek ? STATE_FIND_FRAMES_INIT : STATE_PLAY_ALL_INIT);
 					}
+					continue;
+				case STATE_PLAY_ALL_INIT:
+					setReadyListener("ended");
+					try {
+						v.jsvideo.play();
+					} catch (Throwable e) {
+						e.printStackTrace();
+					}
+					return false;
+				case STATE_PLAY_ALL_DONE:
+					removeReadyListener();
+					helper.setState(STATE_FIND_FRAMES_INIT);
+					HTML5Video.setCurrentTime(v.jsvideo, 0);
 					continue;
 				case STATE_FIND_FRAMES_INIT:
 					v.err = null;
@@ -700,18 +729,18 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					frameTimes.add(t);
 					if (!canSeek) {
 						helper.setState(STATE_FIND_FRAMES_WAIT);
-						new RateCalc().getRate(2, new Function<double[], Void> () {
+						new RateCalc().getRate(2, new Function<double[], Void>() {
 
 							@Override
 							public Void apply(double[] times) {
 								setTimes(times);
 								return null;
 							}
-							
+
 						});
 						return false;
-					}					
-					setReadyListener();
+					}
+					setReadyListener("canplaythrough");
 					helper.setState(STATE_FIND_FRAMES_LOOP);
 					continue;
 				case STATE_FIND_FRAMES_LOOP:
@@ -747,7 +776,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					continue;
 				case STATE_GET_IMAGE_INIT:
 					helper.setState(STATE_GET_IMAGE_READY);
-					setReadyListener();
+					setReadyListener("canplaythrough");
 					HTML5Video.setCurrentTime(v.jsvideo, offset + t);
 					return true;
 				case STATE_GET_IMAGE_READY:

@@ -70,6 +70,24 @@ import org.opensourcephysics.tools.ResourceLoader;
  */
 public abstract class VideoAdapter implements Video {
 // instance fields
+	
+	/**
+	 * a cache of images for fast recall; always all incomplete images and 
+	 * up to CACHE_MAX images total
+	 */
+	protected BufferedImage[] imageCache;
+
+	protected BufferedImage getCachedImage(int i) {
+		return (imageCache != null && i < imageCache.length ? imageCache[i] : null);
+	}
+
+	/**
+	 * for debugging, 0, meaning "just the incomplete frames";
+	 * for general purposes, up to CACHE_MAX images.
+	 */
+	protected static final int CACHE_MAX = 20;
+
+
 	protected Image rawImage; // raw image from video source
 	protected Dimension size = new Dimension(); // image pixel dimensions
 	protected BufferedImage bufferedImage; // offscreen buffered image copy
