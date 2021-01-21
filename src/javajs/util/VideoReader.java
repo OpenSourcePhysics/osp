@@ -46,7 +46,8 @@ public class VideoReader {
 	}
 
 	public VideoReader(String path) throws IOException {
-		getStream(path.indexOf("://") > 0 ? new URL(path).openStream() : new FileInputStream(path));
+		getStream(path.indexOf("://") > 0 
+				||path.indexOf("file:/") >= 0 ? new URL(path).openStream() : new FileInputStream(path));
 	}
 
 	public VideoReader(InputStream stream) {
