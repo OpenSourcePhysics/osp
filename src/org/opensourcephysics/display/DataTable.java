@@ -658,8 +658,8 @@ public class DataTable extends JTable {
 	 */
 
 	protected void refreshTableNow(int mode) {
-		OSPLog.debug(Performance.timeCheckStr("DataTable.refreshTable0 " 
-				+ Integer.toHexString(mode), Performance.TIME_MARK));
+		//OSPLog.debug(Performance.timeCheckStr("DataTable.refreshTable0 " 
+			//	+ Integer.toHexString(mode), Performance.TIME_MARK));
 		// BH every sort of refresh goes through here
 		boolean columnsChanged;
 		boolean rowsChanged = false;
@@ -738,7 +738,7 @@ public class DataTable extends JTable {
 			break;
 		}
 
-		OSPLog.debug(">>>>DataTable.refreshTableNow:  mode" + Integer.toHexString(mode) + " cols changed?" + columnsChanged +" rows changed?"+rowsChanged);
+		//OSPLog.debug(">>>>DataTable.refreshTableNow:  mode" + Integer.toHexString(mode) + " cols changed?" + columnsChanged +" rows changed?"+rowsChanged);
 
 		dataTableModel.refresh(mask);
 		if (columnsChanged) {
@@ -752,8 +752,8 @@ public class DataTable extends JTable {
 				revalidate();
 			repaint();
 		}
-		OSPLog.debug(Performance.timeCheckStr("DataTable.refreshTable1 " + Integer.toHexString(mode),
-		Performance.TIME_MARK));
+		//OSPLog.debug(Performance.timeCheckStr("DataTable.refreshTable1 " + Integer.toHexString(mode),
+		//Performance.TIME_MARK));
 	}
 
 	/**
