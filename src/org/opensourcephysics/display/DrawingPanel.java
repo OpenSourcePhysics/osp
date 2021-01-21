@@ -783,6 +783,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 */
 	@Override
 	public void paintComponent(Graphics g) {
+		//System.out.println(Performance.timeCheckStr("DrawingPanel.paintc00 ", Performance.TIME_MARK));
 		viewRect = findViewRect(); // find the clipping rectangle within a scroll pane viewport
 		if (!paintDrawables) {
 			// message from MessageDrawable that this is just a message drawing
@@ -819,6 +820,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 			// }
 		}
 		super.paintComponents(g);
+		//System.out.println(Performance.timeCheckStr("DrawingPanel.paintc01 ", Performance.TIME_MARK));
 	}
 
 	/**
@@ -2243,15 +2245,19 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		if (!tempList.isEmpty() && (tempList.get(0) instanceof False3D)) {
 			tempList.get(0).draw(this, g2);
 		} else {
+			
 			for (int i = 0, n = tempList.size(); i < n; i++) {
 				if (!validImage) {
 					break; // abort drawing
 				}
 				Drawable d = tempList.get(i);
-				// OSPLog.debug(Performance.timeCheckStr("DrawingPanel.draw " +
-				// d.getClass().getName(), Performance.TIME_MARK));
-
+//				System.out.println(Performance.timeCheckStr("DrawingPanel.draw1 " +i + " "+
+//				 d.getClass().getName(), Performance.TIME_MARK));
 				d.draw(this, g2);
+				
+//				System.out.println(Performance.timeCheckStr("DrawingPanel.draw2 " +
+//						 d.getClass().getName(), Performance.TIME_MARK));
+//
 			}
 		}
 		if (!messagesAsJLabels)
@@ -2644,6 +2650,9 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 * @param location
 	 */
 	public boolean setMessage(String msg, int location) {
+		
+		if (true)return false;
+		
 		if (msg != null && msg.length() == 0)
 			msg = null;
 		messages.setMessage(msg, location);
@@ -2661,6 +2670,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 * @param show
 	 */
 	public void setShowCoordinates(boolean show) {
+		show = false;
 		if (showCoordinates && !show) {
 			this.removeMouseListener(mouseController);
 			this.removeMouseMotionListener(mouseController);

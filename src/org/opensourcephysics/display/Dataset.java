@@ -1561,6 +1561,18 @@ public class Dataset extends DataTable.DataModel implements Measurable, LogMeasu
 		g2.draw(myShape);
 	}
 
+	protected static void drawClip(Graphics2D g2, DrawingPanel drawingPanel, int offset) {
+		if (!OSPRuntime.allowDatasetClip)
+			return;
+		g2.setClip(drawingPanel.leftGutter - offset - 1, drawingPanel.topGutter - offset - 1,
+				drawingPanel.getWidth() - drawingPanel.leftGutter - drawingPanel.rightGutter + 2 + 2 * offset,
+				drawingPanel.getHeight() - drawingPanel.bottomGutter - drawingPanel.topGutter + 2 + 2 * offset);
+		Rectangle viewRect = drawingPanel.getViewRect();
+		if (viewRect != null) { // decrease the clip if we are in a scroll pane
+			g2.clipRect(viewRect.x, viewRect.y, viewRect.x + viewRect.width, viewRect.y + viewRect.height);
+		}
+	}
+
 	/**
 	 * Draw the markers at the data points.
 	 *
@@ -1578,14 +1590,7 @@ public class Dataset extends DataTable.DataModel implements Measurable, LogMeasu
 		g2 = (Graphics2D) g2.create();
 		// Shape clipShape = g2.getClip();
 		// increase the clip so as to include the entire marker
-		g2.setClip(drawingPanel.leftGutter - markerSize - 1, drawingPanel.topGutter - markerSize - 1,
-				drawingPanel.getWidth() - drawingPanel.leftGutter - drawingPanel.rightGutter + 2 + 2 * markerSize,
-				drawingPanel.getHeight() - drawingPanel.bottomGutter - drawingPanel.topGutter + 2 + 2 * markerSize);
-		Rectangle viewRect = drawingPanel.getViewRect();
-		if (viewRect != null) { // decrease the clip if we are in a scroll pane
-			g2.clipRect(viewRect.x, viewRect.y, viewRect.x + viewRect.width, viewRect.y + viewRect.height);
-		}
-
+		drawClip(g2, drawingPanel, markerSize);
 		
 //		double[] tempX = getXPoints();
 //		double[] tempY = getYPoints();

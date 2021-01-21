@@ -782,6 +782,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					HTML5Video.setCurrentTime(v.jsvideo, offset + t);
 					return true;
 				case STATE_GET_IMAGE_READY:
+					//about 0.1 sec to seek OSPLog.debug(Performance.timeCheckStr("JSMovieVideo.getImage ready", Performance.TIME_MARK));
 					v.setFrameNumberContinued(thisFrame, t);
 					return false;
 				///////////////////////////////////////

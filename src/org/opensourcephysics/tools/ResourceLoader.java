@@ -1830,12 +1830,15 @@ public class ResourceLoader {
 	 * @return true if available
 	 */
 	public static boolean isURLAvailable(String urlPath) {
+		URL url = null;
 		try {
 			// make a URL, open a connection, get content
-			URL url = new URL(urlPath);
+			url = new URL(urlPath);
+			OSPLog.debug("ResourceLoader checking for " + url);
 			HttpURLConnection urlConnect = (HttpURLConnection) url.openConnection();
 			urlConnect.getContent();
 		} catch (Exception ex) {
+			OSPLog.debug("ResourceLoader failed to read " + url + " " + ex);
 			return false;
 		}
 		return true;

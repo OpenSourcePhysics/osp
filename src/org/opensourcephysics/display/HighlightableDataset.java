@@ -126,17 +126,11 @@ public class HighlightableDataset extends Dataset implements Interactive {
 	 */
 	@Override
 	public void draw(DrawingPanel drawingPanel, Graphics g) {
-		super.draw(drawingPanel, g);
+		Graphics2D g2 = (Graphics2D) g.create();
+		super.draw(drawingPanel, g2);
 		int offset = getMarkerSize() + 4;
 		int edge = 2 * offset;
-		Graphics2D g2 = (Graphics2D) g.create();
-		g2.setClip(drawingPanel.leftGutter - offset - 1, drawingPanel.topGutter - offset - 1,
-				drawingPanel.getWidth() - drawingPanel.leftGutter - drawingPanel.rightGutter + 2 + 2 * offset,
-				drawingPanel.getHeight() - drawingPanel.bottomGutter - drawingPanel.topGutter + 2 + 2 * offset);
-		Rectangle viewRect = drawingPanel.getViewRect();
-		if (viewRect != null) { // decrease the clip if we are in a scroll pane
-			g2.clipRect(viewRect.x, viewRect.y, viewRect.x + viewRect.width, viewRect.y + viewRect.height);
-		}
+		drawClip(g2, drawingPanel, offset);
 		if (hitShapes.length < index)
 			hitShapes = new Rectangle2D.Double[index];
 		double[] xValues = getXPointsRaw();
@@ -145,6 +139,7 @@ public class HighlightableDataset extends Dataset implements Interactive {
 			screenCoordinates[0] = new double[index];
 			screenCoordinates[1] = new double[index];
 		}
+
 		for (int i = 0; i < index; i++) {
 			if (Double.isNaN(yValues[i])) {
 				screenCoordinates[1][i] = Double.NaN;

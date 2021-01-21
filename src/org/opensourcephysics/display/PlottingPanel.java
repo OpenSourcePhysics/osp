@@ -10,6 +10,7 @@ package org.opensourcephysics.display;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.util.ArrayList;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
@@ -346,7 +347,7 @@ public class PlottingPanel extends InteractivePanel {
 			axes.draw(this, g); // draw the axes
 		}
 	}
-
+	
 	/**
 	 * Converts pixel to x world units.
 	 *

@@ -1000,7 +1000,6 @@ public class DataTable extends JTable {
 		 * @param col int
 		 */
 		protected void sort(int col) {
-			System.out.println("DataTable.OSPDataTableModel.sort col=" + col);
 			DataTableElement dte;
 			if (col < 0 || dataTableElements.size() == 0
 					|| (dte = find(col)) == null)
@@ -2309,7 +2308,7 @@ public class DataTable extends JTable {
     }
     
     protected void refreshTable(int mode, boolean resortAndReselect) {
-    	System.out.println("DataTable.refreshTable " + mode);
+    	//System.out.println("DataTable.refreshTable " + mode);
 		// model for this table assumed to be a SortDecorator
 		// always reset the decorator before changing table structure
 		int col = dataTableModel.getSortedColumn();
