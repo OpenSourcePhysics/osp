@@ -195,8 +195,11 @@ public class OSPRuntime {
 
 	public static boolean allowAutopaste = !isJS; // for TFrame and TToolbar
 
-	public static boolean allowDatasetClip = (getBrowserName() != "Mozilla Firefox"); // HighlightDataSet -- Firefox has problems with canvas clip getting slower and slower and slower
-
+	/**
+	 *  HighlightDataSet -- Firefox has problems with canvas clip/unclip getting slower and slower and slower
+	 */
+	public static boolean allowDatasetClip = (getBrowserName() != "Mozilla Firefox"); 
+	
 	public static boolean allowLibClipboardPasteCheck = !isJS;
 
 	public static boolean allowSetFonts = true;// !isBHTest; // for testing

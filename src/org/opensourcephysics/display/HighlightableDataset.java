@@ -11,8 +11,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.util.BitSet;
 
@@ -30,13 +28,12 @@ import org.opensourcephysics.controls.XMLLoader;
 @SuppressWarnings("serial")
 public class HighlightableDataset extends Dataset implements Interactive {
 	// instance fields
-	BitSet highlighted;
-	BitSet previous;
-	Color highlightColor = new Color(255, 255, 0, 128);
-	Shape highlightShape;
-	Rectangle2D.Double[] hitShapes = new Rectangle2D.Double[16];
-	int hitIndex = -1;
-	double[][] screenCoordinates = new double[2][];
+	private BitSet highlighted;
+	private BitSet previous;
+	private Color highlightColor = new Color(255, 255, 0, 128);
+	private Rectangle2D.Double[] hitShapes = new Rectangle2D.Double[16];
+	private int hitIndex = -1;
+	private final double[][] screenCoordinates = new double[2][];
 	private int previousLen;
 
 	/**
@@ -126,40 +123,59 @@ public class HighlightableDataset extends Dataset implements Interactive {
 	 */
 	@Override
 	public void draw(DrawingPanel drawingPanel, Graphics g) {
-		Graphics2D g2 = (Graphics2D) g.create();
-		super.draw(drawingPanel, g2);
+		if (!drawable())
+			return;
+		setScreenCoordinates(drawingPanel);
 		int offset = getMarkerSize() + 4;
-		int edge = 2 * offset;
+		setHitShapes(offset);
+		Graphics2D g2 = (Graphics2D) g.create();
 		drawClip(g2, drawingPanel, offset);
-		if (hitShapes.length < index)
-			hitShapes = new Rectangle2D.Double[index];
+		super.drawData(drawingPanel, g2);
+		g2.setColor(highlightColor);
+		for (int i = highlighted.nextSetBit(0); i >= 0; i = highlighted.nextSetBit(i + 1)) {
+			if (hitShapes[i] != null)
+				g2.fill(hitShapes[i]);
+		}
+		g2.dispose();
+	}
+
+	private void setScreenCoordinates(DrawingPanel drawingPanel) {
 		double[] xValues = getXPointsRaw();
 		double[] yValues = getYPointsRaw(); // can't be shifted
 		if (screenCoordinates[0] == null || screenCoordinates[0].length != index) {
 			screenCoordinates[0] = new double[index];
 			screenCoordinates[1] = new double[index];
 		}
-
 		for (int i = 0; i < index; i++) {
 			if (Double.isNaN(yValues[i])) {
 				screenCoordinates[1][i] = Double.NaN;
+			} else {
+				screenCoordinates[0][i] = drawingPanel.xToPix(xValues[i]);
+				screenCoordinates[1][i] = drawingPanel.yToPix(yValues[i]);
+			}
+		}
+	}
+
+	/**
+	 * Create the rectangular highlights.
+	 * @param offset
+	 */
+	private void setHitShapes(int offset) {
+		int edge = 2 * offset;
+		if (hitShapes.length < index)
+			hitShapes = new Rectangle2D.Double[index];
+		for (int i = 0; i < index; i++) {
+			double yp = screenCoordinates[1][i];
+			if (Double.isNaN(yp)) {
+				hitShapes[i] = null;
 				continue;
 			}
-			double xp = drawingPanel.xToPix(xValues[i]);
-			double yp = drawingPanel.yToPix(yValues[i]);
-			screenCoordinates[0][i] = xp;
-			screenCoordinates[1][i] = yp;
+			double xp = screenCoordinates[0][i];
 			if (hitShapes[i] == null)
 				hitShapes[i] = new Rectangle2D.Double(xp - offset, yp - offset, edge, edge);
 			else
 				hitShapes[i].setRect(xp - offset, yp - offset, edge, edge);
-			if (!isHighlighted(i)) {
-				continue;
-			}
-			g2.setColor(highlightColor);
-			g2.fill(hitShapes[i]);
 		}
-		g2.dispose(); // BH 2020.02.26
 	}
 
 	/**
@@ -174,14 +190,14 @@ public class HighlightableDataset extends Dataset implements Interactive {
 	@Override
 	public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
 		// return hits only within active plot area
+		Dimension dim = panel.getSize();
 		int l = panel.getLeftGutter();
 		int r = panel.getRightGutter();
-		int t = panel.getTopGutter();
-		int b = panel.getBottomGutter();
-		Dimension dim = panel.getSize();
 		if ((xpix < l) || (xpix > dim.width - r)) {
 			return null;
 		}
+		int t = panel.getTopGutter();
+		int b = panel.getBottomGutter();
 		if ((ypix < t) || (ypix > dim.height - b)) {
 			return null;
 		}
@@ -267,10 +283,7 @@ public class HighlightableDataset extends Dataset implements Interactive {
 	 */
 	@Override
 	public double getX() {
-		if (hitIndex > -1) {
-			return xpoints[hitIndex];
-		}
-		return Double.NaN;
+		return (hitIndex >= 0 ? xpoints[hitIndex] : Double.NaN);
 	}
 
 	/**
@@ -280,17 +293,7 @@ public class HighlightableDataset extends Dataset implements Interactive {
 	 */
 	@Override
 	public double getY() {
-		if (hitIndex > -1) {
-			return ypoints[hitIndex];
-		}
-		return Double.NaN;
-	}
-
-	protected boolean[] getHighlighted() {
-		boolean[] b = new boolean[highlighted.length()];
-		for (int i = highlighted.nextSetBit(0); i >= 0; i = highlighted.nextSetBit(i + 1)) 
-			b[i] = true;
-		return b;
+		return (hitIndex >= 0 ? ypoints[hitIndex] : Double.NaN);
 	}
 
 	/**
@@ -310,8 +313,16 @@ public class HighlightableDataset extends Dataset implements Interactive {
 		public void saveObject(XMLControl control, Object obj) {
 			XML.getLoader(Dataset.class).saveObject(control, obj);
 			HighlightableDataset data = (HighlightableDataset) obj;
-			control.setValue("highlighted", data.getHighlighted()); //$NON-NLS-1$
+			control.setValue("highlighted", toArray(data.highlighted)); //$NON-NLS-1$
 		}
+
+		protected boolean[] toArray(BitSet bs) {
+			boolean[] b = new boolean[bs.length()];
+			for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1)) 
+				b[i] = true;
+			return b;
+		}
+
 
 		@Override
 		public Object createObject(XMLControl control) {

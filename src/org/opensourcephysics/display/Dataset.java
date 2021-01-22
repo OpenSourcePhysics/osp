@@ -46,15 +46,12 @@ import org.opensourcephysics.controls.XMLLoader;
  */
 public class Dataset extends DataTable.DataModel implements Measurable, LogMeasurable, Data {
 
-	final public Model model;
-	
 	public class Model extends DataTable.OSPTableModel {
 
 		/**
 			stride for table view
 		*/
 		protected int stride = 1;
-
 
 		@Override
 		public boolean isFoundOrdered() {
@@ -103,7 +100,8 @@ public class Dataset extends DataTable.DataModel implements Measurable, LogMeasu
 
 	}
 
-
+	final public Model model;
+	
 	protected static int id = 0;
 	
 	/**
@@ -196,6 +194,8 @@ public class Dataset extends DataTable.DataModel implements Measurable, LogMeasu
 	// sort the data by increasing x
 	
 
+	private final static Rectangle2D.Double tmpRect = new Rectangle2D.Double();
+	
 	public int update = ++id;
 	
 	/**
@@ -1240,24 +1240,148 @@ public class Dataset extends DataTable.DataModel implements Measurable, LogMeasu
 	 */
 	@Override
 	public void draw(DrawingPanel drawingPanel, Graphics g) {
-		if (!visible) {
+		if (!drawable()) {
 			return;
 		}
-//		OSPLog.debug(Performance.timeCheckStr("Dataset.draw " + ++testCount + " " + (/** @j2sNative drawingPanel.ui.id || */null), Performance.TIME_MARK));
+		Graphics2D g2 = (Graphics2D) (markerShape == NO_MARKER || markerShape == AREA ? g : g.create());
+		if (markerShape != NO_MARKER && markerShape != AREA) {
+			drawClip(g2, drawingPanel, markerSize);
+		}
+		drawData(drawingPanel, g2);
+		if (g2 != g)
+			g2.dispose();
+	}
+	
+	/**
+	 * Expand the clip a bit to allow the marker to extend over the axes if necessary.
+	 * 
+	 * @param g2
+	 * @param drawingPanel
+	 * @param offset
+	 */
+	protected static void drawClip(Graphics2D g2, DrawingPanel drawingPanel, int offset) {
+		if (!OSPRuntime.allowDatasetClip)
+			return;
+		g2.setClip(drawingPanel.leftGutter - offset - 1, drawingPanel.topGutter - offset - 1,
+				drawingPanel.getWidth() - drawingPanel.leftGutter - drawingPanel.rightGutter + 2 + 2 * offset,
+				drawingPanel.getHeight() - drawingPanel.bottomGutter - drawingPanel.topGutter + 2 + 2 * offset);
+		Rectangle viewRect = drawingPanel.getViewRect();
+		if (viewRect != null) { // decrease the clip if we are in a scroll pane
+			g2.clipRect(viewRect.x, viewRect.y, viewRect.x + viewRect.width, viewRect.y + viewRect.height);
+		}
+	}
+
+	/**
+	 * 
+	 * @return true if there is something to draw
+	 */
+	protected boolean drawable() {
+		if (visible)
+			for (int i = 0; i < index; i++) {
+				if (!Double.isNaN(ypoints[i]))
+					return true;
+			}
+		return false;
+	}
+
+	/**
+	 * Draw the data in the appropriate fashion.
+	 * 
+	 * @param drawingPanel
+	 * @param g2
+	 */
+	protected void drawData(DrawingPanel drawingPanel, Graphics2D g2) {		
 		if (!drawingPanel.getPixelTransform().equals(pixelTransform)) {
 			myShape = null;
 			pixelTransform = drawingPanel.getPixelTransform();
 		}
+		// BH why the try/catch here? What kind of "bad data"?
 		try {
-			Graphics2D g2 = (Graphics2D) g;
-			if (markerShape != NO_MARKER) {
+			if (myShape == null && (connected || markerShape == AREA))
+				myShape = drawingPanel.transformPath(generalPath);
+			switch (markerShape) {
+			case NO_MARKER:
+				break;
+			case AREA:
+				g2.setColor(fillColor);
+				g2.fill(myShape);
+				g2.setColor(edgeColor);
+				g2.draw(myShape);
+				break;
+			default:
 				drawScatterPlot(drawingPanel, g2);
+				break;
 			}
 			if (connected) {
-				drawLinePlot(drawingPanel, g2);
+				g2.setColor(lineColor);
+				g2.draw(myShape);
 			}
 		} catch (Exception ex) {
 		} // abort drawing if we have bad data
+	}
+
+	/**
+	 * Draw the markers at the data points.
+	 *
+	 * @param drawingPanel
+	 * @param g2
+	 */
+	protected void drawScatterPlot(DrawingPanel drawingPanel, Graphics2D g2) {
+		g2.setColor(markerShape == PIXEL ? edgeColor : fillColor);
+		double bottom = (markerShape == BAR || markerShape == POST
+				? Math.min(drawingPanel.yToPix(0), drawingPanel.yToPix(drawingPanel.getYMin()))
+				: 0);
+		int width = markerSize * 2 + 1;
+		for (int i = 0; i < index; i++) {
+			double x = xpoints[i];
+			double y = getY(i);
+			if (Double.isNaN(y) || x <= 0 && drawingPanel.isLogScaleX() || y <= 0 && drawingPanel.isLogScaleY()) {
+				continue;
+			}
+			int xp = drawingPanel.xToPix(x);
+			int yp = drawingPanel.yToPix(y);
+			Shape shape = tmpRect;
+			switch (markerShape) {
+			case POST:
+				g2.setColor(edgeColor);
+				g2.drawLine(xp, yp, xp, (int) bottom);
+				g2.setColor(fillColor);
+				break;
+			default:
+			case SQUARE:
+				tmpRect.setRect(xp - markerSize, yp - markerSize, width, width);
+				break;
+			case PIXEL:
+				// draw and center the point
+				tmpRect.setRect(xp, yp, 1, 1);
+				g2.draw(tmpRect);
+				continue;
+			case BAR: // draw a bar graph.
+				double barHeight = bottom - yp;
+				if (barHeight > 0) {
+					tmpRect.setRect(xp - markerSize, yp, width, barHeight);
+				} else {
+					tmpRect.setRect(xp - markerSize, bottom, width, -barHeight);
+				}
+				break;
+			case CIRCLE:
+				shape = new Ellipse2D.Double(xp - markerSize, yp - markerSize, width, width);
+				break;
+			case CUSTOM:
+				shape = getTranslateInstance(xp, yp).createTransformedShape(customMarker);
+				break;
+			}
+			g2.fill(shape);
+			if (edgeColor != fillColor) {
+				g2.setColor(edgeColor);
+				g2.draw(shape);
+				g2.setColor(fillColor);
+			}
+		}
+		if (errorBars.size() > 0) {
+			for (int i = errorBars.size(); --i >= 0;)
+				errorBars.get(i).draw(drawingPanel, g2);
+		}
 	}
 
 	/**
@@ -1505,160 +1629,7 @@ public class Dataset extends DataTable.DataModel implements Measurable, LogMeasu
 //	}
 	
 	
-	/**
-	 * Draw the lines connecting the data points.
-	 *
-	 * @param drawingPanel
-	 * @param g2
-	 */
-	protected void drawLinePlot(DrawingPanel drawingPanel, Graphics2D g2) {
-		// check that at least one ypoints element is a number
-		boolean noNumbers = true;
-		for (int i = 0; i < index; i++) {
-			noNumbers = Double.isNaN(ypoints[i]);
-			if (!noNumbers) {
-				break;
-			}
-		}
-		if (noNumbers) {
-			return;
-		}
-//		g2.setColor(
-//				this.getYColumnName() == "y" ? 
-//				Color.red :
-//				lineColor);
-		g2.setColor(lineColor);
-		if (myShape == null)
-			myShape = drawingPanel.transformPath(generalPath);
-		g2.draw(myShape);
-	}
-
 	private AffineTransform trD = new AffineTransform();
-
-	/**
-	 * Fills the line connecting the data points.
-	 *
-	 * @param drawingPanel
-	 * @param g2
-	 */
-	protected void drawFilledPlot(DrawingPanel drawingPanel, Graphics2D g2) {
-		// check that at least one ypoints element is a number
-		boolean noNumbers = true;
-		for (int i = 0; i < index; i++) {
-			noNumbers = Double.isNaN(ypoints[i]);
-			if (!noNumbers) {
-				break;
-			}
-		}
-		if (noNumbers) {
-			return;
-		}
-		if (myShape == null)
-			myShape = drawingPanel.transformPath(generalPath);
-		g2.setColor(fillColor);
-		g2.fill(myShape);
-		g2.setColor(edgeColor);
-		g2.draw(myShape);
-	}
-
-	protected static void drawClip(Graphics2D g2, DrawingPanel drawingPanel, int offset) {
-		if (!OSPRuntime.allowDatasetClip)
-			return;
-		g2.setClip(drawingPanel.leftGutter - offset - 1, drawingPanel.topGutter - offset - 1,
-				drawingPanel.getWidth() - drawingPanel.leftGutter - drawingPanel.rightGutter + 2 + 2 * offset,
-				drawingPanel.getHeight() - drawingPanel.bottomGutter - drawingPanel.topGutter + 2 + 2 * offset);
-		Rectangle viewRect = drawingPanel.getViewRect();
-		if (viewRect != null) { // decrease the clip if we are in a scroll pane
-			g2.clipRect(viewRect.x, viewRect.y, viewRect.x + viewRect.width, viewRect.y + viewRect.height);
-		}
-	}
-
-	/**
-	 * Draw the markers at the data points.
-	 *
-	 * @param drawingPanel
-	 * @param g2
-	 */
-	protected void drawScatterPlot(DrawingPanel drawingPanel, Graphics2D g2) {
-		if (markerShape == AREA) {
-			this.drawFilledPlot(drawingPanel, g2);
-			return;
-		}
-		double xp = 0;
-		double yp = 0;
-		int size = markerSize * 2 + 1;
-		g2 = (Graphics2D) g2.create();
-		// Shape clipShape = g2.getClip();
-		// increase the clip so as to include the entire marker
-		drawClip(g2, drawingPanel, markerSize);
-		
-//		double[] tempX = getXPoints();
-//		double[] tempY = getYPoints();
-
-		double bottom = (markerShape == BAR || markerShape == POST
-				? Math.min(drawingPanel.yToPix(0), drawingPanel.yToPix(drawingPanel.getYMin()))
-				: 0);
-
-		g2.setColor(markerShape == PIXEL ? edgeColor : fillColor);
-		for (int i = 0; i < index; i++) {
-			double x = xpoints[i];
-			double y = getY(i);
-			if (Double.isNaN(y) || x <= 0 && drawingPanel.isLogScaleX() || y <= 0 && drawingPanel.isLogScaleY()) {
-				continue;
-			}
-			Shape shape = null;
-			xp = drawingPanel.xToPix(x);
-			yp = drawingPanel.yToPix(y);
-
-//		if (i < 3)OSPLog.debug("Dataset.drawScatter " + this.getYColumnName() + " " 
-//			+ i + "/" + index + " " + x + " " + y + "/" + xp + " " + yp + " ms"+ markerShape + " " + size + " " + g2.getTransform());
-//			
-			switch (markerShape) {
-			case PIXEL:
-				// draw and center the point
-				shape = new Rectangle2D.Double(xp, yp, 1, 1); // this produces a one pixel shape
-				g2.draw(shape);
-				continue;
-			case BAR: // draw a bar graph.
-				double barHeight = bottom - yp;
-				if (barHeight > 0) {
-					shape = new Rectangle2D.Double(xp - markerSize, yp, size, barHeight);
-				} else {
-					shape = new Rectangle2D.Double(xp - markerSize, bottom, size, -barHeight);
-				}
-				break;
-			case POST:
-				shape = new Rectangle2D.Double(xp - markerSize, yp - markerSize, size, size);
-				g2.setColor(edgeColor);
-				g2.drawLine((int) xp, (int) yp, (int) xp, (int) bottom);
-				g2.setColor(fillColor);
-				break;
-			case CIRCLE:
-				shape = new Ellipse2D.Double(xp - markerSize, yp - markerSize, size, size);
-				break;
-			case CUSTOM:
-				shape = getTranslateInstance(xp, yp).createTransformedShape(customMarker);
-				break;
-			case SQUARE:
-			default:
-				shape = new Rectangle2D.Double(xp - markerSize, yp - markerSize, size, size);
-				break;
-			}
-			g2.fill(shape);
-			if (edgeColor != fillColor) {
-				g2.setColor(edgeColor);
-				g2.draw(shape);
-				g2.setColor(fillColor);
-			}
-		}
-		if (errorBars.size() > 0) {
-			for (int i = errorBars.size(); --i >= 0;)
-				errorBars.get(i).draw(drawingPanel, g2);
-		}
-		g2.dispose();
-		// BH 2020.02.26 can't do this in JavaScript
-		// g2.setClip(clipShape); // restore the original clipping
-	}
 
 	protected AffineTransform getTranslateInstance(double tx, double ty) {
 		trD.setToTranslation(tx, ty);
