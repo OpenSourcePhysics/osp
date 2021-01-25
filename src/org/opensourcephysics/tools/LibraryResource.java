@@ -283,7 +283,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	 * @return true if changed
 	 */
 	public boolean setHTMLPath(String path) {
-		path = path == null ? "" : path.trim(); //$NON-NLS-1$
+		path = (path == null ? "" : path.trim()); //$NON-NLS-1$
 		if (!path.equals(htmlPath)) {
 			htmlPath = path;
 			if (!(this instanceof LibraryCollection) && getTarget() == null) {
@@ -546,6 +546,10 @@ public class LibraryResource implements Comparable<LibraryResource> {
 
 	@Override
 	public String toString() {
+		return getDisplayString();
+	}
+
+	public String getDisplayString() {
 		if (!getName().equals("")) //$NON-NLS-1$
 			return getName();
 		if (displayName != null)
@@ -685,7 +689,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 			pathComponents = new ArrayList<String>();
 		if (parent != null)
 			parent.getTreePath(pathComponents);
-		pathComponents.add(this.toString());
+		pathComponents.add(getDisplayString());
 		return pathComponents;
 	}
 

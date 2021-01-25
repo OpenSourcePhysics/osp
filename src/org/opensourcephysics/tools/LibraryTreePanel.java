@@ -382,7 +382,7 @@ public class LibraryTreePanel extends JPanel {
 			initGUI();
 			return;
 		}
-		OSPLog.debug("LibraryTreePanel.showInfo " + why + " " + node + " " + Thread.currentThread());
+		OSPLog.debug("LibraryTreePanel.showInfo " + why + " " + node.getDisplayString() + " " + Thread.currentThread());
 		// show node data
 		boolean isCollection = node.record instanceof LibraryCollection;
 		boolean isRoot = node.isRoot();
@@ -1371,6 +1371,13 @@ public class LibraryTreePanel extends JPanel {
 			public JToolTip createToolTip() {
 				return new JMultiLineToolTip(100, new Color(0xCCCCFF)); // Meta L&F
 			}
+			
+			@Override
+			public String convertValueToText(Object node, boolean selected,
+                                     boolean expanded, boolean leaf, int row,
+                                     boolean hasFocus) {
+				return ((LibraryTreeNode) node).record.getDisplayString();
+			}
 		};
 		if (root.createChildNodes()) {
 			scrollToPath(((LibraryTreeNode) root.getLastChild()).getTreePath(), false);
@@ -1518,7 +1525,7 @@ public class LibraryTreePanel extends JPanel {
 	protected boolean insertChildAt(LibraryTreeNode child, LibraryTreeNode parent, int index) {
 		if (tree == null || parent.getChildCount() < index)
 			return false;
-		System.out.println("LibraryTreePanel.insertChild " + index + " " + child);
+		System.out.println("LibraryTreePanel.insertChild " + index + " " + child.getDisplayString());
 		DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
 		model.insertNodeInto(child, parent, index);
 		return true;
@@ -2069,75 +2076,80 @@ public class LibraryTreePanel extends JPanel {
 
 		@Override
 		public Void doInBackground() {
-
 			if (!OSPRuntime.isJS) {
-				ArrayList<NodeLoader> nodeLoaders = new ArrayList<NodeLoader>();
+				setupAndRunLoaders();
+			}
+			return null;
+		}
 
-				// make property change listener to daisy-chain loading of the nodes
-				PropertyChangeListener listener = new PropertyChangeListener() {
-					@Override
-					public void propertyChange(PropertyChangeEvent e) {
-						NodeLoader nodeLoader = (NodeLoader) e.getSource();
-						if (nodeLoader.isDone()) {
-							if (canceled) {
-								return;
-							}
-							int i = nodeLoaders.indexOf(nodeLoader);
-							if (i + 1 < nodeLoaders.size()) {
-								nodeLoader = nodeLoaders.get(i + 1);
-								nodeLoader.execute();
-							} else {
-								canceled = true; // prevents this from executing twice
-								// finished loading all nodes, so write xml file in OSP search cache
-		//						if (OSPRuntime.doCacheLibaryRecord) {
-									File cacheFile = ResourceLoader.getSearchCacheFile(pathToRoot);
-									XMLControl control = new XMLControlElement(rootNode.record);
-									control.setValue("real_path", pathToRoot); //$NON-NLS-1$
-									control.write(cacheFile.getAbsolutePath());
-		//						}
+		private void setupAndRunLoaders() {
+			ArrayList<NodeLoader> nodeLoaders = new ArrayList<NodeLoader>();
 
-								setSelectionPath(treePath);
-
-								// clear descriptions of all collection nodes (forces refresh) since child names
-								// may have changed
-								Enumeration<?> en = rootNode.preorderEnumeration();
-								while (en.hasMoreElements()) {
-									LibraryTreeNode node = (LibraryTreeNode) en.nextElement();
-									if (node.record instanceof LibraryCollection) {
-										node.record.setDescription(null);
-										LibraryTreePanel.htmlPanesByNode.remove(node);
-									}
-								}
-								// inform library manager
-								if (browser.libraryManager != null) {
-									browser.libraryManager.refreshSearchTab();
-								}
-
-								showInfo(getSelectedNode(), "LibraryTreePanel.propChange " + e.getPropertyName());
-								if (browser.metadataLoaderListener != null) {
-									PropertyChangeEvent event = new PropertyChangeEvent(browser, pathToRoot, null, cacheFile);
-									browser.metadataLoaderListener.propertyChange(event);
-								}
-							}
-						}
-					}
-				};
-
-				// create and add NodeLoaders in top-to-bottom order
-				Enumeration<?> e = rootNode.preorderEnumeration();
-				while (e.hasMoreElements()) {
-					LibraryTreeNode node = (LibraryTreeNode) e.nextElement();
-					NodeLoader nodeLoader = new NodeLoader(node);
-					nodeLoaders.add(nodeLoader);
-					nodeLoader.addPropertyChangeListener(listener);
+			// make property change listener to daisy-chain loading of the nodes
+			PropertyChangeListener listener = new PropertyChangeListener() {
+				@Override
+				public void propertyChange(PropertyChangeEvent e) {
+					finalizeLoader((NodeLoader) e.getSource(), nodeLoaders, e.getPropertyName());
 				}
+			};
 
-				// execute first node loader to start the chain
-				if (OSPRuntime.allowBackgroundNodeLoading)
-					nodeLoaders.get(0).execute(); 
+			// create and add NodeLoaders in top-to-bottom order
+			Enumeration<?> e = rootNode.preorderEnumeration();
+			while (e.hasMoreElements()) {
+				LibraryTreeNode node = (LibraryTreeNode) e.nextElement();
+				NodeLoader nodeLoader = new NodeLoader(node);
+				nodeLoaders.add(nodeLoader);
+				nodeLoader.addPropertyChangeListener(listener);
 			}
 
-			return null;
+			// execute first node loader to start the chain
+			if (OSPRuntime.allowBackgroundNodeLoading)
+				nodeLoaders.get(0).execute(); 
+		}
+
+		protected void finalizeLoader(NodeLoader nodeLoader, ArrayList<NodeLoader> nodeLoaders, String propName) {
+			if (nodeLoader.isDone()) {
+				if (canceled) {
+					return;
+				}
+				int i = nodeLoaders.indexOf(nodeLoader);
+				if (i + 1 < nodeLoaders.size()) {
+					nodeLoader = nodeLoaders.get(i + 1);
+					nodeLoader.execute();
+				} else {
+					canceled = true; // prevents this from executing twice
+					// finished loading all nodes, so write xml file in OSP search cache
+//						if (OSPRuntime.doCacheLibaryRecord) {
+					File cacheFile = ResourceLoader.getSearchCacheFile(pathToRoot);
+					XMLControl control = new XMLControlElement(rootNode.record);
+					control.setValue("real_path", pathToRoot); //$NON-NLS-1$
+					control.write(cacheFile.getAbsolutePath());
+//						}
+
+					setSelectionPath(treePath);
+
+					// clear descriptions of all collection nodes (forces refresh) since child names
+					// may have changed
+					Enumeration<?> en = rootNode.preorderEnumeration();
+					while (en.hasMoreElements()) {
+						LibraryTreeNode node = (LibraryTreeNode) en.nextElement();
+						if (node.record instanceof LibraryCollection) {
+							node.record.setDescription(null);
+							LibraryTreePanel.htmlPanesByNode.remove(node);
+						}
+					}
+					// inform library manager
+					if (browser.libraryManager != null) {
+						browser.libraryManager.refreshSearchTab();
+					}
+
+					showInfo(getSelectedNode(), "LibraryTreePanel.propChange " + propName);
+					if (browser.metadataLoaderListener != null) {
+						PropertyChangeEvent event = new PropertyChangeEvent(browser, pathToRoot, null, cacheFile);
+						browser.metadataLoaderListener.propertyChange(event);
+					}
+				}
+			}
 		}
 
 	}
@@ -2156,151 +2168,80 @@ public class LibraryTreePanel extends JPanel {
 
 		@Override
 		public Void doInBackground() {
+			loadNodeAsync(node);
+			return null;
+		}		
 
+		public void loadNodeAsync(LibraryTreeNode node) {
 			String htmlPath = node.getHTMLPath(); // effectively final
 			String target = node.getAbsoluteTarget(); // final
 			boolean isZip = target != null
 					&& (target.toLowerCase().endsWith(".zip") || target.toLowerCase().endsWith(".trz")); //$NON-NLS-1$ //$NON-NLS-2$
 
-			// if target is ZIP, look for html info file inside ZIP
 			if (isZip) {
-				String ext = "." + XML.getExtension(target); //$NON-NLS-1$
-				URL targetURL = node.getTargetURL(); // returns cached target URL, if any
-				if (targetURL==null) {
-					return null;
+				// if target is ZIP, look for html info file inside ZIP
+				if (node.getTargetURL() != null) {
+					// returns cached target URL, if any
+					loadZipPathAsync(htmlPath, target, node.getTargetURL().toExternalForm());
 				}
-				String targetURLPath = targetURL.toExternalForm();
-				String targetName = XML.stripExtension(XML.getName(targetURLPath));
-
-				ResourceLoader.getZipContentsAsync(targetURLPath, new Function<Map<String, ZipEntry>, Void>() {
-
-					@Override
-					public Void apply(Map<String, ZipEntry> files) {
-						if (files == null)
-							return null;
-						// look for base name shared by thumbnail and html info files
-						// by default the target filename is the base name but filenames
-						// may be changed so ALWAYS look for thumbnail
-						String baseName = targetName;
-						String htmlCodePath = htmlPath;
-						String htmlRelativePath = null;
-						// try to find baseName from thumbnail
-						for (String s : files.keySet()) {
-							String fileName = XML.getName(s);
-							int n = fileName.indexOf("_thumbnail");
-							if (n > -1) {
-								baseName = fileName.substring(0, n);	
-							}
-						}
-						// look for html info file with base name
-						for (String s : files.keySet()) {
-							String fileName = XML.stripExtension(XML.getName(s));
-							if (s.toLowerCase().contains(".htm") //$NON-NLS-1$
-									&& (fileName.equals(baseName + "_info"))) { //$NON-NLS-1$
-								htmlRelativePath = s;
-							}
-						}
-						// older zip files may not have a thumbnail, 
-						// so try trk name if not yet found
-						// note this does NOT work for newer multi-tab trz files
-						if (htmlRelativePath == null) {
-							for (String s : files.keySet()) {
-								if ("trk".equals(XML.getExtension(s))) { //$NON-NLS-1$
-									String trkName = XML.stripExtension(XML.getName(s));
-									for (String ss : files.keySet()) {
-										String htmlName = XML.stripExtension(XML.getName(ss));
-										if (ss.toLowerCase().contains(".htm") //$NON-NLS-1$
-												&& (htmlName.equals(trkName + "_info"))) { //$NON-NLS-1$
-											htmlRelativePath = ss;
-										}
-									}
-								}
-							}
-						}
-
-						if (htmlRelativePath != null) {
-							
-							htmlCodePath = targetURLPath + "!/" + htmlRelativePath; //$NON-NLS-1$							
-							String htmlRelativePathFinal = htmlRelativePath;
-							String htmlCodePathFinal = htmlCodePath;
-							ResourceLoader.getHTMLCodeAsync(htmlCodePath, new Function<String, Void>() {
-
-								@Override
-								public Void apply(String htmlCode) {
-									node.metadataSource = htmlCode; //$NON-NLS-1$
-									String redirect = LibraryBrowser.getRedirectFromHTMLCode(htmlCode);
-									if (redirect != null) {
-										node.record.setHTMLPath(redirect);
-									} else {
-										node.record.setHTMLPath(targetName + ext + "!/" + htmlRelativePathFinal); //$NON-NLS-1$
-									}
-
-									String title = ResourceLoader.getTitleFromHTMLCode(htmlCode);
-									if (title != null) {
-										node.record.setName(title);
-									}
-									loadNodeAsync(htmlCodePathFinal, target);
-									return null;
-								}
-							});
-						}
-						else {
-							loadNodeAsync(htmlCodePath, target);							
-						}
-						return null;
-					}
-				});
+			} else {
+				// file is NOT zip or trz
+				loadPathAsync(htmlPath, target);
 			}
-			
-			// file is NOT zip or trz
-			loadNodeAsync(htmlPath, target);
-			return null;
 		}
 
-		
-		private void loadNodeAsync(String htmlPath, String target) {
+		private void loadZipPathAsync(String htmlPath, String target, String targetURLPath) {
+			System.out.println("LoadZipNodeAsync " + htmlPath + " -> " + target);
+			ResourceLoader.getZipContentsAsync(targetURLPath, (files) -> {
+				if (files == null)
+					return null;
+				String targetName = XML.stripExtension(XML.getName(targetURLPath));
+				// look for base name shared by thumbnail and html info files
+				// by default the target filename is the base name but filenames
+				// may be changed so ALWAYS look for thumbnail
+				String htmlRelativePath = getRelativePath(files, targetName);
 
-			// get reload url (non-null for some ComPADRE nodes)
-			String reloadUrlPath = node.record.getProperty("reload_url"); //$NON-NLS-1$
-			String htmlPathFinal = htmlPath;
-
-			// make runnable to finish loading
-			Runnable onDone = new Runnable() {
-				@Override
-				public void run() {
-
-					// clear description for non-ComPADRE nodes with no HTML path
-					if (htmlPathFinal == null) {
-						if (reloadUrlPath == null) // not ComPADRE
-							node.record.setDescription(null);
-					} else { // htmlPath not null
-						// copy HTML to cache if required
-						boolean requiresCache = htmlPathFinal.contains("!/"); //$NON-NLS-1$ // file in zip
-						// not for local trz files
-						// maybe never for JS?
-						requiresCache = requiresCache && ResourceLoader.isHTTP(htmlPathFinal);
-						if (requiresCache) {
-							File cachedFile = ResourceLoader.getOSPCacheFile(htmlPathFinal);
-							boolean foundInCache = cachedFile.exists();
-							if (!foundInCache)
-								ResourceLoader.copyHTMLToOSPCache(htmlPathFinal);
-						}
-					}
-
-					htmlPanesByNode.remove(node);
-					LibraryTreeNode.htmlURLs.remove(htmlPathFinal);
-
-					// load metadata into node
-//					OSPLog.debug("NodeLoader loading "+node.record);
-					node.getMetadata();
-
-					doneAsync();
+				if (htmlRelativePath == null) {
+					loadPathAsync(htmlPath, target);
+					return null;
 				}
+				String htmlCodePath = targetURLPath + "!/" + htmlRelativePath; //$NON-NLS-1$
+				String targetPath = targetName + "." + XML.getExtension(target) + "!/" + htmlRelativePath;
+				ResourceLoader.getHTMLCodeAsync(htmlCodePath, (htmlCode) -> {
+					loadNodeFromMetadata(htmlCodePath, htmlCode, target, targetPath);
+					return null;
+				});
+				return null;
+			});
+		}
 
-			};
+		protected void loadNodeFromMetadata(String htmlCodePath, String htmlCode, String target, String targetPath) {
+			node.metadataSource = htmlCode;
+			String redirect = LibraryBrowser.getRedirectFromHTMLCode(htmlCode);
+			if (redirect != null) {
+				node.record.setHTMLPath(redirect);
+			} else {
+				node.record.setHTMLPath(targetPath); //$NON-NLS-1$
+			}
 
-			if (LibraryComPADRE.isComPADREPath(target)) {
-				// load ComPADRE nodes
+			String title = ResourceLoader.getTitleFromHTMLCode(htmlCode);
+			if (title != null) {
+				node.record.setName(title);
+			}
+			loadPathAsync(htmlCodePath, target);
+		}
+
+		private void loadPathAsync(String htmlPath, String target) {
+			System.out.println("LoadNodeAsync " + htmlPath + " -> " + target);
+
+			if (!LibraryComPADRE.isComPADREPath(target)) {
+				processNode(htmlPath);
+				return;
+			}
+
+			// load ComPADRE nodes
+				// get reload url (non-null for some ComPADRE nodes)
+				String reloadUrlPath = node.record.getProperty("reload_url"); //$NON-NLS-1$
 				if (node.record instanceof LibraryCollection) {
 					hasNewChildren = false;
 					// make runnable to set hasNewChildren if found by ComPADRE
@@ -2308,7 +2249,7 @@ public class LibraryTreePanel extends JPanel {
 						@Override
 						public void run() {
 							hasNewChildren = true;
-							onDone.run();
+							processNode(htmlPath);
 						}
 					};
 
@@ -2326,12 +2267,39 @@ public class LibraryTreePanel extends JPanel {
 
 					LibraryComPADRE.loadResources(node, onSuccess, onFailure);
 				} else if ("".equals(node.record.getDescription()) && reloadUrlPath != null) { //$NON-NLS-1$
-					LibraryComPADRE.reloadResource(node, reloadUrlPath, onDone);
+					LibraryComPADRE.reloadResource(node, reloadUrlPath, () -> {
+						processNode(htmlPath);
+					});
 				}
-			} else {
-				onDone.run();				
-			}
 
+		}
+
+		protected void processNode(String htmlPath) {
+			// clear description for non-ComPADRE nodes with no HTML path
+			if (htmlPath != null) {
+				// copy HTML to cache if required
+				boolean requiresCache = htmlPath.contains("!/"); //$NON-NLS-1$ // file in zip
+				// not for local trz files
+				// maybe never for JS?
+				requiresCache = requiresCache && ResourceLoader.isHTTP(htmlPath);
+				if (requiresCache) {
+					File cachedFile = ResourceLoader.getOSPCacheFile(htmlPath);
+					boolean foundInCache = cachedFile.exists();
+					if (!foundInCache)
+						ResourceLoader.copyHTMLToOSPCache(htmlPath);
+				}
+			} else if (node.record.getProperty("reload_url") == null) { //$NON-NLS-1$
+				// not ComPADRE
+				node.record.setDescription(null);
+			}
+			htmlPanesByNode.remove(node);
+			LibraryTreeNode.htmlURLs.remove(htmlPath);
+
+			// load metadata into node
+
+			node.getMetadata();
+
+			doneAsync();
 		}
 
 		protected void doneAsync() {
@@ -2364,6 +2332,42 @@ public class LibraryTreePanel extends JPanel {
 		}
 	}
 
+	protected static String getRelativePath(Map<String, ZipEntry> files, String baseName) {
+		// try to find baseName from thumbnail
+		for (String s : files.keySet()) {
+			String fileName = XML.getName(s);
+			int n = fileName.indexOf("_thumbnail");
+			if (n > -1) {
+				baseName = fileName.substring(0, n);
+			}
+		}
+		// look for html info file with base name
+		for (String s : files.keySet()) {
+			String fileName = XML.stripExtension(XML.getName(s));
+			if (s.toLowerCase().contains(".htm") //$NON-NLS-1$
+					&& (fileName.equals(baseName + "_info"))) { //$NON-NLS-1$
+				return s;
+			}
+		}
+		// older zip files may not have a thumbnail,
+		// so try trk name if not yet found
+		// note this does NOT work for newer multi-tab trz files
+		for (String s : files.keySet()) {
+			if ("trk".equals(XML.getExtension(s))) { //$NON-NLS-1$
+				String trkName = XML.stripExtension(XML.getName(s));
+				for (String ss : files.keySet()) {
+					String htmlName = XML.stripExtension(XML.getName(ss));
+					if (ss.toLowerCase().contains(".htm") //$NON-NLS-1$
+							&& (htmlName.equals(trkName + "_info"))) { //$NON-NLS-1$
+						return ss;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+
 	/**
 	 * A SwingWorker class to show the HTMLPane for a node.
 	 */
@@ -2373,7 +2377,7 @@ public class LibraryTreePanel extends JPanel {
 		boolean hasNewChildren = false;
 
 		HTMLDisplayer(LibraryTreeNode treeNode) {
-			OSPLog.debug("LibraryTreePanel.HTMLDisplayer " + treeNode);
+			OSPLog.debug("LibraryTreePanel.HTMLDisplayer " + treeNode.getDisplayString());
 			node = treeNode;
 		}
 
@@ -2745,7 +2749,7 @@ public class LibraryTreePanel extends JPanel {
 	}
 
 	protected void scrollToPath(TreePath path, boolean andSelect) {
-		OSPLog.debug("LibraryTreePanel.scrollToPath " + andSelect + " " +  path);
+		//OSPLog.debug("LibraryTreePanel.scrollToPath " + andSelect + " " +  path);
 		if (OSPRuntime.doScrollToPath)
 			tree.scrollPathToVisible(path);
 		if (andSelect)

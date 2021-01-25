@@ -1401,7 +1401,7 @@ public class LibraryBrowser extends JPanel {
 		treePanelListener = new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
-				System.out.println("LibraryBrower.propertyChange " + e);
+				//System.out.println("LibraryBrower.propertyChange " + e);
 				switch (e.getPropertyName()) {
 				default:
 					return;

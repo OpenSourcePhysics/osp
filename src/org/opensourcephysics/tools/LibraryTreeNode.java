@@ -405,6 +405,10 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 	public String toString() {
 		return record.toString();
 	}
+	
+	public String getDisplayString() {
+		return record.getDisplayString();
+	}
 
 	/**
 	 * Determines if this node is editable. Note: returns true only if this and its
@@ -584,6 +588,12 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 						buf.append(" | "); //$NON-NLS-1$
 					buf.append(key + ": " + value);  //$NON-NLS-1$
 				}
+			}
+			if (buf.length() == 0) {
+				String path = record.getHTMLPath();
+				if (path == null || path.length() == 0)
+					path = record.getBasePath() + "/" + record.target;
+				buf.append(path);
 			}
 			tooltip = buf.toString();
 		}
