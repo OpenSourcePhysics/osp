@@ -1615,7 +1615,7 @@ public class LibraryBrowser extends JPanel {
 		helpMenu = new JMenu();
 		menubar.add(helpMenu);
 		helpItem = new JMenuItem();
-		helpItem.setAccelerator(KeyStroke.getKeyStroke('H', mask));
+//		helpItem.setAccelerator(KeyStroke.getKeyStroke('H', mask));
 		helpItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -1625,7 +1625,7 @@ public class LibraryBrowser extends JPanel {
 		helpMenu.add(helpItem);
 		helpMenu.addSeparator();
 		logItem = new JMenuItem();
-		logItem.setAccelerator(KeyStroke.getKeyStroke('L', mask));
+//		logItem.setAccelerator(KeyStroke.getKeyStroke('L', mask));
 		logItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -1640,7 +1640,7 @@ public class LibraryBrowser extends JPanel {
 		helpMenu.add(logItem);
 		helpMenu.addSeparator();
 		aboutItem = new JMenuItem();
-		aboutItem.setAccelerator(KeyStroke.getKeyStroke('A', mask));
+//		aboutItem.setAccelerator(KeyStroke.getKeyStroke('A', mask));
 		aboutItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
