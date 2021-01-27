@@ -1498,18 +1498,42 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	private void setXMLProperty(String name, int type, Object value, boolean writeNullFinalArrayElement) {
 		// remove any previous property with the same name
 		XMLPropertyElement prop = new XMLPropertyElement(this, name, type, value, writeNullFinalArrayElement);
- 		int i = -1;
-		XMLProperty old = getProperty(name);
-		if (old == null) {
+		
+		int i = -1;
+		if (propNames.contains(name)) {
+			Iterator<XMLProperty> it = props.iterator();
+			while (it.hasNext()) {
+				i++;
+				XMLProperty p = it.next();
+				if (p.getPropertyName().equals(name)) {
+					it.remove();
+					break;
+				}
+			}
+			if (i >= 0) {
+				props.add(i, prop);
+				return;
+			}
+		} else {
 			propNames.add(name);
-		} else {
-			props.remove(old);
-		}
-		if (i > -1) {
-			props.add(i, prop);
-		} else {
-			props.add(prop);
-		}
+		}		
+		props.add(prop);
+
+//
+//		
+//		
+// 		int i = -1;
+//		XMLProperty old = getProperty(name);
+//		if (old == null) {
+//			propNames.add(name);
+//		} else {
+//			props.remove(old);
+//		}
+//		if (i > -1) {
+//			props.add(i, prop);
+//		} else {
+//			props.add(prop);
+//		}
 		setProperty(name, prop);
 	}
 
