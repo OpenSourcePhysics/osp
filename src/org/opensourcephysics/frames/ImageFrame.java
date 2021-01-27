@@ -203,6 +203,10 @@ protected JMenu loadDisplayMenu() {
     return displayMenu;
   }
 
+	public static OSPFrame newFrame(MeasuredImage mi) {
+		return new ImageFrame(mi);
+	}
+
 }
 
 /*
