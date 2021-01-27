@@ -1499,49 +1499,27 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		// remove any previous property with the same name
 		XMLPropertyElement prop = new XMLPropertyElement(this, name, type, value, writeNullFinalArrayElement);
 		
-		int i = -1;
 		if (propNames.contains(name)) {
 			Iterator<XMLProperty> it = props.iterator();
-			while (it.hasNext()) {
-				i++;
+			for (int i = 0; it.hasNext(); i++) {
 				XMLProperty p = it.next();
 				if (p.getPropertyName().equals(name)) {
 					it.remove();
-					break;
+					setProperty(name, prop, i);
+					return;
 				}
-			}
-			if (i >= 0) {
-				props.add(i, prop);
-				return;
 			}
 		} else {
 			propNames.add(name);
 		}		
-		props.add(prop);
-
-//
-//		
-//		
-// 		int i = -1;
-//		XMLProperty old = getProperty(name);
-//		if (old == null) {
-//			propNames.add(name);
-//		} else {
-//			props.remove(old);
-//		}
-//		if (i > -1) {
-//			props.add(i, prop);
-//		} else {
-//			props.add(prop);
-//		}
-		setProperty(name, prop);
+		setProperty(name, prop, -1);
 	}
 
-	private XMLProperty getProperty(String name) {
-		return getPropMap().get(name);
-	}
-
-	private void setProperty(String name, XMLProperty prop) {
+	private void setProperty(String name, XMLProperty prop, int i) {
+		if (i < 0)
+			props.add(prop);
+		else
+			props.add(i, prop);
 		getPropMap().put(name, prop);
 		if (prop.getPropertyType() == XMLProperty.TYPE_OBJECT) { //$NON-NLS-1$
 			getChildMap().put(name, ((XMLControl) prop.getPropertyContent().get(0)));
@@ -1716,9 +1694,8 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 
 	private void addProperty(XMLProperty child) {
 		String name = child.getPropertyName();
-		props.add(child);
 		propNames.add(name);
-		setProperty(name, child);
+		setProperty(name, child, -1);
 	}
 
 	private Map<String, XMLControl> getChildMap() {
