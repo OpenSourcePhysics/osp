@@ -445,7 +445,14 @@ public TableCellEditor getCellEditor(int row, int column) {
       field.addMouseListener(new MouseAdapter() {
         @Override
 		public void mousePressed(MouseEvent e) {
-          if(combo!=null) {
+        	doOpenCombo();
+        }
+
+      });
+    }
+
+    protected void doOpenCombo() {
+        if(combo!=null) {
             if(combo.getPropertyChangeListeners("index").length>0) {      //$NON-NLS-1$
               combo.removePropertyChangeListener("index", comboListener); //$NON-NLS-1$
               combo.setVisible(false);
@@ -457,12 +464,9 @@ public TableCellEditor getCellEditor(int row, int column) {
               combo.showPopup(field);
             }
           }
-        }
+	}
 
-      });
-    }
-
-    // Gets the component to be displayed while editing.
+	// Gets the component to be displayed while editing.
     @Override
 	public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
       combo = null;
