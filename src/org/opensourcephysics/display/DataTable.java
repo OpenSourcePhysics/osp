@@ -59,7 +59,6 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.media.core.NumberField;
 import org.opensourcephysics.tools.DataToolTab;
 
@@ -703,11 +702,12 @@ public class DataTable extends JTable {
 			//  row/rendering changes
 		case MODE_TRACK_STEP: // 0x1300;
 		case MODE_TRACK_STEPS: // 0x1500;
+		// DB: MODE_TRACK_DATA must trigger row update for step size changes 
+		case MODE_TRACK_DATA: // 0x1C00;
 			rowsChanged = true;
 		case MODE_COL_SETVISIBLE: // 0x1700;
 		case MODE_TRACK_SELECTEDPOINT: // 0x1400;
 		case MODE_TRACK_TRANSFORM: // 0x1B00;
-		case MODE_TRACK_DATA: // 0x1C00;
 		case MODE_TRACK_FUNCTION: // 0x1D00;
 		case MODE_TRACK_CHOOSE: // 0x1900;
 		case MODE_TRACK_SELECT: // 0x1A00;
@@ -746,7 +746,8 @@ public class DataTable extends JTable {
 		} else if (rowsChanged) {
 			// BH 2020.10.04 this isn't necessarily an inserted row. It's just
 			// a way to trigger the revalidate
-			dataTableModel.fireTableRowsInserted(getRowCount() - 1, getRowCount() - 1);
+//			dataTableModel.fireTableRowsInserted(getRowCount() - 1, getRowCount() - 1);
+			dataTableModel.fireTableRowsInserted(getRowCount()==0? -1: 0, getRowCount() - 1);
 		} else {
 			if (mode == MODE_TRACK_NEW)
 				revalidate();
