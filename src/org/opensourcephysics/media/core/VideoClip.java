@@ -40,7 +40,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.event.SwingPropertyChangeSupport;
 
@@ -53,7 +52,6 @@ import org.opensourcephysics.tools.Resource;
 import org.opensourcephysics.tools.ResourceLoader;
 
 import javajs.async.AsyncDialog;
-import javajs.async.AsyncFileChooser;
 
 /**
  * This defines a subset of video frames called steps.
@@ -346,7 +344,7 @@ public class VideoClip implements PropertyChangeListener {
 		if (video != null && video.getFrameCount() > 1) {
 			return Math.max(1, video.getFrameCount() + extraFrames);
 		}
-		int frames = getEndFrameNumber();
+		int frames = getEndFrameNumber() - getStartFrameNumber() + 1;
 		return nullVideoFrameCount = Math.min(Math.max(nullVideoFrameCount, frames), maxFrameCount - 1);
 	}
 
