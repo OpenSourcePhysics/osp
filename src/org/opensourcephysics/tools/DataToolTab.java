@@ -2227,8 +2227,10 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				} else {
 					rows.set(index);
 				}
-				if (!OSPRuntime.isJS)
+				if (!OSPRuntime.isJS) {
 					dataTable.setSelectedModelRowsBS(rows);
+					dataTable.selectModelRowsBS(rows); // DB needed so table displays multiple selected rows
+				}
 			} else {
 				dataTable.selectModelRows(new int[] { index });
 			}
