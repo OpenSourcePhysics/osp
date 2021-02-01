@@ -205,17 +205,19 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 		add(box, BorderLayout.CENTER);
 		box.add(paramEditor);
 		box.add(functionEditor);
-		JScrollPane scroller = new JScrollPane(instructions) {
+		box.add(new JScrollPane(instructions) {
 			@Override
 			public Dimension getPreferredSize() {
 				Dimension dim = super.getPreferredSize();
 				Font font = instructions.getFont();
 				dim.height = Math.max(dim.height, font.getSize() * 4);
+				
+				System.out.println("FP.instructions.getPreferredSize " + dim);
+				
 				return dim;
 			}
 
-		};
-		box.add(scroller);
+		});
 		// set up the undo system
 		undoManager = new UndoManager();
 		undoSupport = new UndoableEditSupport();
@@ -236,6 +238,7 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 			}
 
 		});
+		clearSelection();
 	}
 
 	/**

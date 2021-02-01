@@ -190,6 +190,12 @@ public class DataBuilder extends FunctionTool {
 			String name = it.next().toString();
 			removePanel(name);
 		}
+		FunctionPanel p = getSelectedPanel();
+		if (p != null) {
+			p.getFunctionEditor().enableMenuButtons();
+			p.getParamEditor().enableMenuButtons();
+		}
+		
 	}
 
 	/**
