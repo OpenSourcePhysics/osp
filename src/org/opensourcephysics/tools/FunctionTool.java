@@ -502,14 +502,15 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	 * @return the added panel
 	 */
 	public FunctionPanel addPanel(String name, FunctionPanel panel) {
-		OSPLog.finest("adding panel " + name); //$NON-NLS-1$
+		//System.out.println("FunctionTool.addPanel " + name); //$NON-NLS-1$
 		panel.setFontLevel(fontLevel);
 		panel.setName(name);
 		panel.setFunctionTool(this);
 		trackFunctionPanels.put(name, panel);
 		panel.addForbiddenNames(forbiddenNames.toArray(new String[0]));
 		panel.clearSelection();
-		refreshDropdown(name);
+		if (this.isVisible())
+			refreshDropdown(name);
 		return panel;
 	}
 
@@ -560,6 +561,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	public void setSelectedPanel(String name) {
 		if (!haveGUI())
 			return;
+		//System.out.println("FunctionTool.setSelectedPanel " + name + " " + dropdown.getSelectedItem());
 		FTObject item = getDropdownItem(name);
 		if (item != null)
 			dropdown.setSelectedItem(item);
@@ -590,7 +592,13 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	 * @return the FunctionPanel
 	 */
 	public FunctionPanel getSelectedPanel() {
-		return getPanel(getSelectedName());
+		String name = getSelectedName();
+		FunctionPanel panel = getPanel(name);
+		if (panel == null && name != null) {
+			refreshDropdown(name);
+			panel = getPanel(name);
+		}
+		return panel;
 	}
 
 	/**
@@ -666,6 +674,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		if (vis) {
 			checkGUI();
 			setFontLevel(FontSizer.getLevel());
+			refreshDropdown(null);
 		}
 		Container top = myContentPane.getTopLevelAncestor();
 		if (top == null || top == this)

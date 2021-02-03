@@ -1456,8 +1456,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		dataBuilderButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				getDataBuilder().setSelectedPanel(getName());
 				getDataBuilder().setVisible(true);
+				getDataBuilder().setSelectedPanel(getName());
 			}
 
 		});

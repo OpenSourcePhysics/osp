@@ -616,7 +616,7 @@ public class FitBuilder extends FunctionTool {
 			loadButton.setToolTipText(ToolsRes.getString("DatasetCurveFitter.FitBuilder.Button.Load.Tooltip")); //$NON-NLS-1$
 			saveButton.setToolTipText(ToolsRes.getString("DatasetCurveFitter.FitBuilder.Button.Save.Tooltip")); //$NON-NLS-1$
 			FitFunctionPanel panel = (FitFunctionPanel) getSelectedPanel();
-			deleteFitButton.setEnabled(!getPanelNames().isEmpty() && panel.originalName == null);
+			deleteFitButton.setEnabled(panel != null && !getPanelNames().isEmpty() && panel.originalName == null);
 			newFitButton.setText(ToolsRes.getString("DatasetCurveFitter.Button.NewFit.Text")); //$NON-NLS-1$
 			newFitButton.setToolTipText(ToolsRes.getString("DatasetCurveFitter.Button.NewFit.Tooltip")); //$NON-NLS-1$
 			deleteFitButton.setText(ToolsRes.getString("DatasetCurveFitter.Button.DeleteFit.Text")); //$NON-NLS-1$

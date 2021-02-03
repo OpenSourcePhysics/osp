@@ -937,9 +937,9 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	protected void enableMenuButtons() {
 		if (!addButtonPanel || !haveGUI)
 			return;
-		boolean b = getSelectedObject() != null;
-		copyButton.setEnabled(b);
-		cutButton.setEnabled(b && isRemovable(getSelectedObject()));
+		FObject o = getSelectedObject();
+		copyButton.setEnabled(o != null);
+		cutButton.setEnabled(o != null && isRemovable(getSelectedObject()));
 		getClipboardContentsAsync((contents) -> {
 			pasteButton.setEnabled(contents != null);
 		});
