@@ -9,6 +9,8 @@ package org.opensourcephysics.controls;
 import java.util.Collection;
 import java.util.HashSet;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
+
 import org.opensourcephysics.tools.ArrayInspector;
 
 /**
@@ -39,6 +41,8 @@ public class XMLTableModel extends AbstractTableModel {
    */
   @Override
 public int getColumnCount() {
+	  if (control == null)
+		  return 0;
     return 2;
   }
 
@@ -60,6 +64,8 @@ public String getColumnName(int column) {
    */
   @Override
 public int getRowCount() {
+	  if (control == null)
+		  return 0;
     return control.getPropsRaw().size();
   }
 

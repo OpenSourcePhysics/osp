@@ -352,7 +352,7 @@ public abstract class ControlElement {
     if(constantValue!=null) { // Just set the value for this property
       // System.out.println ("property = "+_property+" = "+_value+" of the element "+this.toString()+"  is a constant!");
       if((constantValue instanceof StringValue)&&propertyIsTypeOf(_property, "TRANSLATABLE") // Apply Translator //$NON-NLS-1$
-        &&(OSPRuntime.getTranslator()!=null)) {    // added by D Brown 2007-10-17
+        &&(OSPRuntime.loadTranslatorTool)) {    // added by D Brown 2007-10-17
         Object target = null;
         if(myGroup!=null) {
           target = myGroup.getTarget("_default_"); //$NON-NLS-1$

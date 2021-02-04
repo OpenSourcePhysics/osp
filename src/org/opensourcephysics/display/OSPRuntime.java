@@ -54,10 +54,12 @@ import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
+import org.opensourcephysics.controls.XMLTable;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.LaunchNode;
 import org.opensourcephysics.tools.ResourceLoader;
 import org.opensourcephysics.tools.Translator;
+import org.opensourcephysics.tools.TranslatorTool;
 
 import javajs.async.Assets;
 import javajs.async.AsyncFileChooser;
@@ -206,6 +208,9 @@ public class OSPRuntime {
 
 	public static boolean allowAsyncURL = isJS; // for OSPRuntime and Library SwingWorkers
 
+	/** Load Translator Tool, if available. */
+	public static boolean loadTranslatorTool = !isJS; // OSPControl
+
 	public static boolean autoAddLibrary = !isJS; // for TrackerIO
 
 	public static final boolean checkImages = false; // LibraryTreeNode
@@ -273,14 +278,8 @@ public class OSPRuntime {
 	/** Load Fourier Tool, if available. */
 	public static boolean loadFourierTool = true; // but the item is hidden, so no difference
 
-	/** Load Translator Tool, if available. */
-	public static boolean loadTranslatorTool = true;
-
 	/** Load OSP Log, if available. */
 	public static boolean loadOSPLog = true;
-
-	/** Shared Translator after loading, if available. */
-	private static Translator translator; // shared Translator
 
 	/** Storage of separator value */
 	private static DecimalFormatSymbols dfs = new DecimalFormatSymbols();
@@ -1289,22 +1288,7 @@ public class OSPRuntime {
 	 * @return translator, or null if none available
 	 */
 	public static Translator getTranslator() {
-
-		if (OSPRuntime.isJS) { // translator tool not supported in JavaScript.
-			return null;
-		}
-		if ((translator == null) && loadTranslatorTool) {
-			// creates the shared Translator
-			try {
-				Class<?> translatorClass = Class.forName("org.opensourcephysics.tools.TranslatorTool"); //$NON-NLS-1$
-				Method m = translatorClass.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
-				translator = (Translator) m.invoke(null, (Object[]) null);
-			} catch (Exception ex) {
-				loadTranslatorTool = false;
-				OSPLog.finest("Cannot instantiate translator tool class:\n" + ex.toString()); //$NON-NLS-1$
-			}
-		}
-		return translator;
+		return (loadTranslatorTool ? TranslatorTool.getTool() : null);
 	}
 
 	/**

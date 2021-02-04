@@ -64,6 +64,9 @@ import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TextFrame;
 
 /**
+ * SUGGESTION: It would be good to isolate the JFrame GUI from the underlying
+ * translation functions.
+ * 
  * This provides a GUI for creating and editing string resources associated with
  * a class. Resources are stored in properties files with the same name and
  * located in the same folder as the class.
@@ -73,38 +76,11 @@ import org.opensourcephysics.display.TextFrame;
  */
 @SuppressWarnings("serial")
 public class TranslatorTool extends JFrame implements Tool, Hidable, Translator {
-	// instance fields
-	private Dimension dim = new Dimension(320, 240);
-	private Map<Class<?>, Map<String, String>> defaultProps // maps class to default properties map (name->value
-															// translations)
-			= new HashMap<Class<?>, Map<String, String>>();
-	private Map<Class<?>, Map<String, Map<String, String>>> classes // maps class to map of language->properties
-			= new HashMap<Class<?>, Map<String, Map<String, String>>>();
-	private Map<Object, Class<?>> associates = new HashMap<Object, Class<?>>(); // maps object to class
-	private Set<Map<String, String>> changed = new HashSet<Map<String, String>>(); // contains properties with unsaved
-																					// changes
-	private Locale locale = Locale.getDefault();
-	private Set<Class<?>> searched = new HashSet<Class<?>>(); // classes searched for translations
-	private Map<Class<?>, String> paths = new HashMap<Class<?>, String>(); // property file directory paths
-	private String helpURL = "https://www.compadre.org/online_help/tools/translator_tool_help.html"; //$NON-NLS-1$
-	private boolean keepHidden = false;
-	private XMLControl control = new XMLControlElement();
-	private XMLTable table;
-	private Class<?> classType;
-	private JPanel contentPane = new JPanel(new BorderLayout());
-	private String fileExtension;
-	private JLabel descriptionLabel;
-	private JComboBox<LocaleItem> localeDropDown;
-	private Icon saveIcon;
-	private JButton saveButton;
-	private JButton closeButton;
-	private JButton helpButton;
-	private String preferredTitle = null;
 
 	/**
 	 * The singleton shared translator tool.
 	 */
-	private static final TranslatorTool TOOL = new TranslatorTool();
+	private static TranslatorTool TOOL;
 
 	/**
 	 * Gets the shared TranslatorTool.
@@ -112,9 +88,60 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
 	 * @return the shared TranslatorTool
 	 */
 	public static TranslatorTool getTool() {
-		return TOOL;
+		return (TOOL == null ? (TOOL = new TranslatorTool()) : TOOL);
 	}
 
+
+	// static fields
+	
+	/**
+	 * maps class to default properties map (name->value translations)
+	 */
+	private static Map<Class<?>, Map<String, String>> defaultProps = new HashMap<Class<?>, Map<String, String>>();
+	/**
+	 * maps class to map of language->properties
+	 */
+	private static Map<Class<?>, Map<String, Map<String, String>>> classes = new HashMap<Class<?>, Map<String, Map<String, String>>>();
+	/**
+	 * maps object to class
+	 */
+	private static Map<Object, Class<?>> associates = new HashMap<Object, Class<?>>(); 
+	
+	/**
+	 * contains properties with unsaved changes
+	 */
+	private static Set<Map<String, String>> changed = new HashSet<Map<String, String>>(); 
+	private static Locale locale = Locale.getDefault();
+	/**
+	 * classes searched for translations
+	 */
+	private static Set<Class<?>> searched = new HashSet<Class<?>>(); 
+	private static Map<Class<?>, String> paths = new HashMap<Class<?>, String>(); // property file directory paths
+	private static Class<?> classType;
+	
+
+	// GUI
+
+	private static boolean haveGUI;
+
+	// instance fields
+
+	private boolean keepHidden = false;
+	private XMLControl control = new XMLControlElement();
+	private XMLTable table;
+	private Dimension dim = new Dimension(320, 240);
+	private String helpURL = "https://www.compadre.org/online_help/tools/translator_tool_help.html"; //$NON-NLS-1$
+	private String fileExtension;
+	private String preferredTitle = null;
+
+	private JLabel descriptionLabel;
+	private JComboBox<LocaleItem> localeDropDown;
+	private Icon saveIcon;
+	private JButton saveButton;
+	private JButton closeButton;
+	private JButton helpButton;
+
+	
 	/**
 	 * Shows the frame on the screen if the keep hidden flag is false.
 	 *
@@ -178,17 +205,23 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
 	 * Private constructor.
 	 */
 	private TranslatorTool() {
-		if (OSPRuntime.isJS) { // external tools not supported in JavaScript.
-			return;
-		}
 		if (OSPRuntime.appletMode) {
 			keepHidden = true;
 		}
 		String name = "TranslatorTool"; //$NON-NLS-1$
 		setName(name);
-		createGUI();
-		refreshGUI();
 		setLocale(ToolsRes.resourceLocale);
+		ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
+			@Override
+			public void propertyChange(PropertyChangeEvent e) {
+				Locale locale = (Locale) e.getNewValue();
+				if (locale != null) {
+					setLocale(locale);
+				}
+			}
+
+		});
+
 		Toolbox.addTool(name, this);
 	}
 
@@ -201,112 +234,6 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
 	@Override
 	public void send(Job job, Tool replyTo) {
 		/** not implemented */
-	}
-
-	/**
-	 * Sets the locale.
-	 *
-	 * @param locale the locale
-	 */
-	@Override
-	public void setLocale(Locale locale) {
-		if (locale == this.locale) {
-			return;
-		}
-		this.locale = locale;
-		showProperties(classType);
-		// add new item if locale is not in dropdown
-		LocaleItem item = null;
-		if (localeDropDown != null) {
-			// look for existing item
-			for (int i = 0; i < localeDropDown.getItemCount(); i++) {
-				item = (LocaleItem) localeDropDown.getItemAt(i);
-				if (item.loc.getLanguage().equals(locale.getLanguage())) {
-					break;
-				}
-				item = null;
-			}
-			// if not found, create and add new item
-			if (item == null) {
-				item = new LocaleItem(locale);
-				addDropDownItem(item);
-			}
-			localeDropDown.setSelectedItem(item);
-			// enable/disable save button
-			Map<String, String> properties = getProperties(classType, locale);
-			saveButton.setEnabled(changed.contains(properties));
-			// refresh objects associated with current class
-			refreshAssociates(classType);
-		}
-	}
-
-	/**
-	 * Associates an object with a class for property lookup purposes.
-	 *
-	 * @param obj  the object needing translations
-	 * @param type the class
-	 */
-	@Override
-	public synchronized void associate(Object obj, Class<?> type) {
-		if (obj == null) {
-			return;
-		}
-		associates.put(obj, type);
-	}
-
-	/**
-	 * Shows the properties for the specified class.
-	 *
-	 * @param type the class
-	 */
-	@Override
-	public void showProperties(Class<?> type) {
-		if (type == null) {
-			return;
-		}
-		classType = type;
-		// clear current values
-		control.clearValues();
-		// set file extension (language only)
-		fileExtension = ""; //$NON-NLS-1$
-		String addon = locale.getLanguage();
-		if (!addon.equals("")) { //$NON-NLS-1$
-			fileExtension += "_" + addon; //$NON-NLS-1$
-		}
-		fileExtension += ".properties"; //$NON-NLS-1$
-		// initialize control with default values
-		Collection<String> names = control.getPropertyNamesRaw();
-		Iterator<String> it = names.iterator();
-		while (it.hasNext()) {
-			String next = it.next();
-			control.setValue(next, next);
-		}
-		// set control values per current properties map
-		Map<String, String> properties = getProperties(type, locale);
-		Iterator<?> it2 = properties.keySet().iterator();
-		while (it2.hasNext()) {
-			String key = (String) it2.next();
-			control.setValue(key, properties.get(key));
-		}
-		// compare with defaults and flag unused properties
-		Set<String> keys = getDefaults(type).keySet();
-		it2 = properties.keySet().iterator();
-		while (it2.hasNext()) {
-			String key = (String) it2.next();
-			if (!keys.contains(key)) {
-				table.setBackgroundColor(key, Color.PINK);
-			}
-		}
-		table.refresh();
-		refreshGUI();
-	}
-
-	/**
-	 * Sets a title for the tool
-	 */
-	public void setPreferredTitle(String title) {
-		preferredTitle = title;
-		refreshGUI();
 	}
 
 	/**
@@ -323,6 +250,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
 	}
 
 	/**
+	 * effectively static
+	 * 
 	 * Gets the localized value of a property for the specified class. If no
 	 * localized value is found, the defaultValue is returned.
 	 *
@@ -370,154 +299,115 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
 	}
 
 	/**
-	 * Removes a property from those defined for the specified class.
+	 * Sets the locale.
+	 *
+	 * @param locale the locale
+	 */
+	@Override
+	public void setLocale(Locale locale) {
+		if (locale == TranslatorTool.locale) {
+			return;
+		}
+		TranslatorTool.locale = locale;
+		if (!haveGUI)
+			return;
+		showPropertiesImpl(classType);
+		// add new item if locale is not in dropdown
+		LocaleItem item = null;
+		if (localeDropDown != null) {
+			// look for existing item
+			for (int i = 0; i < localeDropDown.getItemCount(); i++) {
+				item = (LocaleItem) localeDropDown.getItemAt(i);
+				if (item.loc.getLanguage().equals(locale.getLanguage())) {
+					break;
+				}
+				item = null;
+			}
+			// if not found, create and add new item
+			if (item == null) {
+				item = new LocaleItem(locale);
+				addDropDownItem(item);
+			}
+			localeDropDown.setSelectedItem(item);
+			// enable/disable save button
+			Map<String, String> properties = getProperties(classType, locale);
+			saveButton.setEnabled(changed.contains(properties));
+			// refresh objects associated with current class
+			refreshAssociates(classType);
+		}
+	}
+
+	/**
+	 * Shows the properties for the specified class, and sets the GUI visible.
 	 *
 	 * @param type the class
-	 * @param key  the property to remove
 	 */
-	public void removeProperty(Class<?> type, String key) {
+	@Override
+	public void showProperties(Class<?> type) {
 		if (type == null) {
 			return;
 		}
-		// remove key from all properties maps for class type
-		getDefaults(type).remove(key);
-		Map<String, Map<String, String>> locales = classes.get(type);
-		if (locales != null) {
-			Iterator<String> it = locales.keySet().iterator();
-			while (it.hasNext()) {
-				Map<String, String> properties = locales.get(it.next());
-				properties.remove(key);
-				flagChange(properties);
-			}
-		}
-		TOOL.showProperties(TOOL.classType);
-		refreshAssociates(TOOL.classType);
-	}
-
+		createGUI();
+		showPropertiesImpl(type);
+		setKeepHidden(false);
+		setVisible(true);		
+	};
+	
 	/**
-	 * Removes a property from those defined for the specified object. The object
-	 * must first be associated with a class.
+	 * Shows the properties for the specified class.
 	 *
-	 * @param obj the object
-	 * @param key the property to remove
+	 * @param type the class
 	 */
-	public void removeProperty(Object obj, String key) {
-		Class<?> type = associates.get(obj);
-		removeProperty(type, key);
-	}
-
-	/**
-	 * Adds a property to those defined for the specified class.
-	 *
-	 * @param type         the class
-	 * @param key          the property to add
-	 * @param defaultValue the default value
-	 */
-	public void addProperty(Class<?> type, String key, String defaultValue) {
-		if ((type == null) || (key == null)) {
+	private void showPropertiesImpl(Class<?> type) {
+		if (type == null) {
 			return;
 		}
-		if (defaultValue == null) {
-			defaultValue = key;
+		classType = type;
+		// clear current values
+		control.clearValues();
+		// set file extension (language only)
+		fileExtension = ""; //$NON-NLS-1$
+		String addon = locale.getLanguage();
+		if (!addon.equals("")) { //$NON-NLS-1$
+			fileExtension += "_" + addon; //$NON-NLS-1$
 		}
-		// add key-value to all properties maps for class type
-		getDefaults(type).put(key, defaultValue);
-		Map<String, String> properties = getProperties(type, locale);
-		if (properties.get(key) == null) {
-			properties.put(key, defaultValue);
-			flagChange(properties);
-		}
-		Map<String, Map<String, String>> locales = classes.get(type);
-		if (locales != null) {
-			Iterator<String> it = locales.keySet().iterator();
-			while (it.hasNext()) {
-				properties = locales.get(it.next());
-				if (properties.get(key) == null) {
-					properties.put(key, defaultValue);
-					flagChange(properties);
-				}
-			}
-		}
-		TOOL.showProperties(TOOL.classType);
-		// refresh objects associated with current class
-		refreshAssociates(TOOL.classType);
-	}
-
-	/**
-	 * Gets objects associated with the specified class.
-	 */
-	public Collection<Object> getAssociates(Class<?> type) {
-		Collection<Object> c = new ArrayList<Object>();
-		Iterator<Object> it = associates.keySet().iterator();
+		fileExtension += ".properties"; //$NON-NLS-1$
+		// initialize control with default values
+		Collection<String> names = control.getPropertyNamesRaw();
+		Iterator<String> it = names.iterator();
 		while (it.hasNext()) {
-			Object obj = it.next();
-			if (associates.get(obj).equals(type)) {
-				c.add(obj);
+			String next = it.next();
+			control.setValue(next, next);
+		}
+		// set control values per current properties map
+		Map<String, String> properties = getProperties(type, locale);
+		Iterator<?> it2 = properties.keySet().iterator();
+		while (it2.hasNext()) {
+			String key = (String) it2.next();
+			control.setValue(key, properties.get(key));
+		}
+		// compare with defaults and flag unused properties
+		Set<String> keys = getDefaults(type).keySet();
+		it2 = properties.keySet().iterator();
+		while (it2.hasNext()) {
+			String key = (String) it2.next();
+			if (!keys.contains(key)) {
+				table.setBackgroundColor(key, Color.PINK);
 			}
 		}
-		return c;
+		table.refresh();
+		refreshGUI();
 	}
 
 	/**
-	 * Returns Locales for which translations exist for the specified class.
+	 * Sets a title for the tool
 	 */
-	public Locale[] getTranslatedLocales(Class<?> type) {
-		if (!searched.contains(type)) {
-			// search for and load all saved locales
-			synchronized (searched) {
-				searched.add(type);
-			}
-			Map<String, Map<String, String>> locales = classes.get(type);
-			if (locales == null) {
-				locales = new HashMap<String, Map<String, String>>();
-				synchronized (classes) {
-					classes.put(type, locales);
-				}
-			}
-			if (!OSPRuntime.isApplet) { // search for languages if NOT an applet
-				Set<String> langs = locales.keySet(); // loaded language codes
-				String path = getPath(type);
-				Resource res = null;
-				String[] languages = Locale.getISOLanguages(); // all standard language codes
-				for (int i = 0; i < languages.length; i++) {
-					if (langs.contains(languages[i])) {
-						continue;
-					}
-					res = ResourceLoader.getResource(path + "_" + languages[i] + ".properties"); //$NON-NLS-1$ //$NON-NLS-2$
-					if (res != null) {
-						Map<String, String> properties = new TreeMap<String, String>();
-						locales.put(languages[i], properties);
-						// fill properties from resource
-						OSPLog.finer(res.getAbsolutePath());
-						readProperties(res.openReader(), properties);
-					}
-				}
-			}
-		}
-		Set<String> languages = new TreeSet<String>();
-		languages.addAll(classes.get(type).keySet()); // alphabetize
-		ArrayList<Locale> locales = new ArrayList<Locale>();
-		for (Iterator<String> it = languages.iterator(); it.hasNext();) {
-			locales.add(new Locale(it.next().toString()));
-		}
-		return locales.toArray(new Locale[0]);
+	public void setPreferredTitle(String title) {
+		preferredTitle = title;
+		if (haveGUI)
+			refreshGUI();
 	}
 
-	/**
-	 * Returns true if a String is a valid 2-letter language code.
-	 *
-	 * @param lang the 2-letter code
-	 * @return true if valid 2-letter language code
-	 */
-	protected boolean isLanguage(String lang) {
-		String[] languages = Locale.getISOLanguages(); // all standard language codes
-		for (int i = 0; i < languages.length; i++) {
-			if (languages[i].equals(lang)) {
-				return true;
-			}
-		}
-		return false;
-	}
 
 	// ______________________________ private methods _____________________________
 	private void addDropDownItem(LocaleItem item) {
@@ -541,156 +431,6 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
 		}
 		for (Iterator<String> it = items.keySet().iterator(); it.hasNext();) {
 			localeDropDown.addItem(items.get(it.next()));
-		}
-	}
-
-	/**
-	 * Gets the localized value of a property.
-	 *
-	 * @param type         the class requesting the localized value
-	 * @param key          the string to localize
-	 * @param defaultValue the default if no localized value found
-	 * @param locale       the locale
-	 * @return the localized string
-	 */
-	private synchronized String getProperty(Class<?> type, String key, String defaultValue, Locale locale) {
-		if (defaultValue == null) {
-			defaultValue = key;
-		}
-		if (type == null) {
-			return defaultValue;
-		}
-		if (!getDefaults(type).keySet().contains(key)) {
-			addProperty(type, key, defaultValue);
-		}
-		return getProperties(type, locale).get(key);
-	}
-
-	/**
-	 * Gets the properties file path for a class.
-	 *
-	 * @param type the class
-	 * @return the path
-	 */
-	public String getPath(Class<?> type) {
-		if (type == null) {
-			return null;
-		}
-		String path = paths.get(type);
-		if (path != null) { // saved path always ends with forward slash
-			return path + type.getSimpleName();
-		}
-		path = type.getName();
-		// replace all "." with "/"
-		int i = path.indexOf("."); //$NON-NLS-1$
-		while (i != -1) {
-			path = path.substring(0, i) + "/" + path.substring(i + 1); //$NON-NLS-1$
-			i = path.indexOf("."); //$NON-NLS-1$
-		}
-		return path;
-	}
-
-	/**
-	 * Sets the path for a given class.
-	 *
-	 * @param type      the class
-	 * @param directory the path
-	 */
-	public void setPath(Class<?> type, String directory) {
-		directory = XML.forwardSlash(directory);
-		// add trailing slash, if none
-		if (!directory.endsWith("/")) //$NON-NLS-1$
-			directory += "/"; //$NON-NLS-1$
-		paths.put(type, directory);
-	}
-
-	/**
-	 * Gets the default properties for the specified class.
-	 *
-	 * @param type the class type
-	 * @return the default property-value map
-	 */
-	private Map<String, String> getDefaults(Class<?> type) {
-		Map<String, String> defaults = defaultProps.get(type);
-		if (defaults == null) {
-			defaults = new TreeMap<String, String>();
-			synchronized (defaultProps) {
-				defaultProps.put(type, defaults);
-			}
-		}
-		return defaults;
-	}
-
-	/**
-	 * Gets the properties for the specified class and locale.
-	 *
-	 * @param type   the class
-	 * @param locale the locale
-	 * @return the properties map <String key, String value>
-	 */
-	private Map<String, String> getProperties(Class<?> type, Locale locale) {
-		// look for properties map by class and language name
-		Map<String, Map<String, String>> locales = classes.get(type);
-		if (locales == null) {
-			locales = new HashMap<String, Map<String, String>>();
-			synchronized (classes) {
-				classes.put(type, locales);
-			}
-		}
-		Map<String, String> properties = locales.get(locale.getLanguage());
-		if (properties == null) {
-			properties = new TreeMap<String, String>();
-			locales.put(locale.getLanguage(), properties);
-			// fill properties from resource, if any
-			String path = getPath(type);
-			Resource res = null;
-			String lang = locale.getLanguage();
-			if (!lang.equals("")) { //$NON-NLS-1$
-				res = ResourceLoader.getResource(path + "_" + lang + ".properties"); //$NON-NLS-1$ //$NON-NLS-2$
-			}
-			if (res == null) {
-				res = ResourceLoader.getResource(path + ".properties"); //$NON-NLS-1$
-			}
-			if (res != null) {
-				OSPLog.finer(res.getAbsolutePath());
-				readProperties(res.openReader(), properties);
-			} else {
-				// load properties with default values
-				Map<String, String> defaults = getDefaults(type);
-				Iterator<String> it = defaults.keySet().iterator();
-				while (it.hasNext()) {
-					String key = it.next();
-					String val = defaults.get(key);
-					properties.put(key, val);
-				}
-				// add properties to changed set
-				flagChange(properties);
-			}
-		}
-		return properties;
-	}
-
-	/**
-	 * Reads the properties into the specified map.
-	 *
-	 * @param input the input reader
-	 * @param map   the map
-	 */
-	private void readProperties(BufferedReader input, Map<String, String> map) {
-		try {
-			// read properties line by line and put entries into the map
-			String next = input.readLine();
-			while (next != null) {
-				int i = next.indexOf("="); //$NON-NLS-1$
-				if (i > -1) {
-					String key = next.substring(0, i);
-					String val = next.substring(i + 1);
-					map.put(key, val);
-				}
-				next = input.readLine();
-			}
-		} catch (IOException ex) {
-			return;
 		}
 	}
 
@@ -762,6 +502,8 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
 	 * Creates the GUI.
 	 */
 	private void createGUI() {
+		if (haveGUI)
+			return;
 		XMLTableModel model = new XMLTableModel(control) {
 			@Override
 			public String getColumnName(int column) {
@@ -771,6 +513,7 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
 
 		};
 		// configure the frame
+		JPanel contentPane = new JPanel(new BorderLayout());
 		contentPane.setPreferredSize(dim);
 		setContentPane(contentPane);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
@@ -918,16 +661,6 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
 		int y = (dim.height - getBounds().height) / 2;
 		setLocation(x, y);
 		// listen to ToolsRes for locale changes
-		ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
-			@Override
-			public void propertyChange(PropertyChangeEvent e) {
-				Locale locale = (Locale) e.getNewValue();
-				if (locale != null) {
-					setLocale(locale);
-				}
-			}
-
-		});
 		table.addPropertyChangeListener(new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
@@ -958,12 +691,14 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
 			}
 
 		});
+		haveGUI = true;
 	}
 
 	/**
 	 * Refreshes the GUI.
 	 */
 	protected void refreshGUI() {
+		createGUI();
 		String fileName = XML.getName(getPath(classType));
 		if (preferredTitle == null) {
 			String title = ToolsRes.getString("TranslatorTool.Title"); //$NON-NLS-1$
@@ -985,28 +720,6 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
 		closeButton.setToolTipText(ToolsRes.getString("Tool.Button.Close.ToolTip")); //$NON-NLS-1$
 		descriptionLabel.setText(ToolsRes.getString("TranslatorTool.Label.Description")); //$NON-NLS-1$
 		table.refresh();
-	}
-
-	/**
-	 * Refreshes objects associated with the specified class.
-	 */
-	protected void refreshAssociates(Class<?> type) {
-		Iterator<Object> it = getAssociates(type).iterator();
-		while (it.hasNext()) {
-			Object obj = it.next();
-			if (obj instanceof XMLTable) {
-				((XMLTable) obj).refresh();
-			} else if (obj instanceof PropertyChangeListener) {
-				((PropertyChangeListener) obj)
-						.propertyChange(new java.beans.PropertyChangeEvent(TOOL, "translation", null, null)); //$NON-NLS-1$
-			}
-		}
-	}
-
-	private synchronized void flagChange(Map<String, String> properties) {
-		synchronized (changed) {
-			changed.add(properties);
-		}
 	}
 
 	/**
@@ -1034,6 +747,348 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
 		}
 
 	}
+
+	
+	//// nonGUI static methods //////////////////////////////////////
+	
+	/**
+	 * Gets the localized value of a property.
+	 *
+	 * @param type         the class requesting the localized value
+	 * @param key          the string to localize
+	 * @param defaultValue the default if no localized value found
+	 * @param locale       the locale
+	 * @return the localized string
+	 */
+	private static synchronized String getProperty(Class<?> type, String key, String defaultValue, Locale locale) {
+		if (defaultValue == null) {
+			defaultValue = key;
+		}
+		if (type == null) {
+			return defaultValue;
+		}
+		if (!getDefaults(type).keySet().contains(key)) {
+			addProperty(type, key, defaultValue);
+		}
+		return getProperties(type, locale).get(key);
+	}
+
+	/**
+	 * Gets the default properties for the specified class.
+	 *
+	 * @param type the class type
+	 * @return the default property-value map
+	 */
+	private static Map<String, String> getDefaults(Class<?> type) {
+		Map<String, String> defaults = defaultProps.get(type);
+		if (defaults == null) {
+			defaults = new TreeMap<String, String>();
+			synchronized (defaultProps) {
+				defaultProps.put(type, defaults);
+			}
+		}
+		return defaults;
+	}
+
+	/**
+	 * Adds a property to those defined for the specified class.
+	 *
+	 * @param type         the class
+	 * @param key          the property to add
+	 * @param defaultValue the default value
+	 */
+	public static void addProperty(Class<?> type, String key, String defaultValue) {
+		if ((type == null) || (key == null)) {
+			return;
+		}
+		if (defaultValue == null) {
+			defaultValue = key;
+		}
+		// add key-value to all properties maps for class type
+		getDefaults(type).put(key, defaultValue);
+		Map<String, String> properties = getProperties(type, locale);
+		if (properties.get(key) == null) {
+			properties.put(key, defaultValue);
+			flagChange(properties);
+		}
+		Map<String, Map<String, String>> locales = classes.get(type);
+		if (locales != null) {
+			Iterator<String> it = locales.keySet().iterator();
+			while (it.hasNext()) {
+				properties = locales.get(it.next());
+				if (properties.get(key) == null) {
+					properties.put(key, defaultValue);
+					flagChange(properties);
+				}
+			}
+		}
+		if (haveGUI)
+			getTool().showPropertiesImpl(classType);
+		// refresh objects associated with current class
+		refreshAssociates(classType);
+	}
+
+	/**
+	 * Removes a property from those defined for the specified class.
+	 *
+	 * @param type the class
+	 * @param key  the property to remove
+	 */
+	public static void removeProperty(Class<?> type, String key) {
+		if (type == null) {
+			return;
+		}
+		// remove key from all properties maps for class type
+		getDefaults(type).remove(key);
+		Map<String, Map<String, String>> locales = classes.get(type);
+		if (locales != null) {
+			Iterator<String> it = locales.keySet().iterator();
+			while (it.hasNext()) {
+				Map<String, String> properties = locales.get(it.next());
+				properties.remove(key);
+				flagChange(properties);
+			}
+		}
+		if (haveGUI)
+			getTool().showPropertiesImpl(classType);
+		refreshAssociates(classType);
+	}
+
+	/**
+	 * Removes a property from those defined for the specified object. The object
+	 * must first be associated with a class.
+	 *
+	 * @param obj the object
+	 * @param key the property to remove
+	 */
+	public static void removeProperty(Object obj, String key) {
+		Class<?> type = associates.get(obj);
+		removeProperty(type, key);
+	}
+
+	private static synchronized void flagChange(Map<String, String> properties) {
+		synchronized (changed) {
+			changed.add(properties);
+		}
+	}
+
+	/**
+	 * Gets the properties for the specified class and locale.
+	 *
+	 * @param type   the class
+	 * @param locale the locale
+	 * @return the properties map <String key, String value>
+	 */
+	private static Map<String, String> getProperties(Class<?> type, Locale locale) {
+		// look for properties map by class and language name
+		Map<String, Map<String, String>> locales = classes.get(type);
+		if (locales == null) {
+			locales = new HashMap<String, Map<String, String>>();
+			synchronized (classes) {
+				classes.put(type, locales);
+			}
+		}
+		Map<String, String> properties = locales.get(locale.getLanguage());
+		if (properties == null) {
+			properties = new TreeMap<String, String>();
+			locales.put(locale.getLanguage(), properties);
+			// fill properties from resource, if any
+			String path = getPath(type);
+			Resource res = null;
+			String lang = locale.getLanguage();
+			if (!lang.equals("")) { //$NON-NLS-1$
+				res = ResourceLoader.getResource(path + "_" + lang + ".properties"); //$NON-NLS-1$ //$NON-NLS-2$
+			}
+			if (res == null) {
+				res = ResourceLoader.getResource(path + ".properties"); //$NON-NLS-1$
+			}
+			if (res != null) {
+				OSPLog.finer(res.getAbsolutePath());
+				readProperties(res.openReader(), properties);
+			} else {
+				// load properties with default values
+				Map<String, String> defaults = getDefaults(type);
+				Iterator<String> it = defaults.keySet().iterator();
+				while (it.hasNext()) {
+					String key = it.next();
+					String val = defaults.get(key);
+					properties.put(key, val);
+				}
+				// add properties to changed set
+				flagChange(properties);
+			}
+		}
+		return properties;
+	}
+
+	/**
+	 * Reads the properties into the specified map.
+	 *
+	 * @param input the input reader
+	 * @param map   the map
+	 */
+	private static void readProperties(BufferedReader input, Map<String, String> map) {
+		try {
+			// read properties line by line and put entries into the map
+			String next = input.readLine();
+			while (next != null) {
+				int i = next.indexOf("="); //$NON-NLS-1$
+				if (i > -1) {
+					String key = next.substring(0, i);
+					String val = next.substring(i + 1);
+					map.put(key, val);
+				}
+				next = input.readLine();
+			}
+		} catch (IOException ex) {
+			return;
+		}
+	}
+
+	/**
+	 * Gets objects associated with the specified class.
+	 */
+	public static Collection<Object> getAssociates(Class<?> type) {
+		Collection<Object> c = new ArrayList<Object>();
+		Iterator<Object> it = associates.keySet().iterator();
+		while (it.hasNext()) {
+			Object obj = it.next();
+			if (associates.get(obj).equals(type)) {
+				c.add(obj);
+			}
+		}
+		return c;
+	}
+
+	/**
+	 * Refreshes objects associated with the specified class.
+	 */
+	protected static void refreshAssociates(Class<?> type) {
+		Iterator<Object> it = getAssociates(type).iterator();
+		while (it.hasNext()) {
+			Object obj = it.next();
+			if (obj instanceof XMLTable) {
+				((XMLTable) obj).refresh();
+			} else if (obj instanceof PropertyChangeListener) {
+				((PropertyChangeListener) obj)
+						.propertyChange(new java.beans.PropertyChangeEvent(getTool(), "translation", null, null)); //$NON-NLS-1$
+			}
+		}
+	}
+
+	/**
+	 * Associates an object with a class for property lookup purposes.
+	 *
+	 * @param obj  the object needing translations
+	 * @param type the class
+	 */
+	@Override
+	public synchronized void associate(Object obj, Class<?> type) {
+		if (obj == null) {
+			return;
+		}
+		associates.put(obj, type);
+	}
+
+	/**
+	 * Sets the path for a given class.
+	 *
+	 * @param type      the class
+	 * @param directory the path
+	 */
+	public static void setPath(Class<?> type, String directory) {
+		directory = XML.forwardSlash(directory);
+		// add trailing slash, if none
+		if (!directory.endsWith("/")) //$NON-NLS-1$
+			directory += "/"; //$NON-NLS-1$
+		paths.put(type, directory);
+	}
+
+	/**
+	 * Gets the properties file path for a class.
+	 *
+	 * @param type the class
+	 * @return the path
+	 */
+	public static String getPath(Class<?> type) {
+		if (type == null) {
+			return null;
+		}
+		String path = paths.get(type);
+		if (path != null) { // saved path always ends with forward slash
+			return path + type.getSimpleName();
+		}
+		path = type.getName();
+		// replace all "." with "/"
+		int i = path.indexOf("."); //$NON-NLS-1$
+		while (i != -1) {
+			path = path.substring(0, i) + "/" + path.substring(i + 1); //$NON-NLS-1$
+			i = path.indexOf("."); //$NON-NLS-1$
+		}
+		return path;
+	}
+
+	/**
+	 * Returns true if a String is a valid 2-letter language code.
+	 *
+	 * @param lang the 2-letter code
+	 * @return true if valid 2-letter language code
+	 */
+	protected static boolean isLanguage(String lang) {
+		String[] languages = Locale.getISOLanguages(); // all standard language codes
+		for (int i = 0; i < languages.length; i++) {
+			if (languages[i].equals(lang)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Returns Locales for which translations exist for the specified class.
+	 */
+	public static Locale[] getTranslatedLocales(Class<?> type) {
+		if (!searched.contains(type)) {
+			// search for and load all saved locales
+			synchronized (searched) {
+				searched.add(type);
+			}
+			Map<String, Map<String, String>> locales = classes.get(type);
+			if (locales == null) {
+				locales = new HashMap<String, Map<String, String>>();
+				synchronized (classes) {
+					classes.put(type, locales);
+				}
+			}
+			if (!OSPRuntime.isApplet) { // search for languages if NOT an applet
+				Set<String> langs = locales.keySet(); // loaded language codes
+				String path = getPath(type);
+				Resource res = null;
+				String[] languages = Locale.getISOLanguages(); // all standard language codes
+				for (int i = 0; i < languages.length; i++) {
+					if (langs.contains(languages[i])) {
+						continue;
+					}
+					res = ResourceLoader.getResource(path + "_" + languages[i] + ".properties"); //$NON-NLS-1$ //$NON-NLS-2$
+					if (res != null) {
+						Map<String, String> properties = new TreeMap<String, String>();
+						locales.put(languages[i], properties);
+						// fill properties from resource
+						OSPLog.finer(res.getAbsolutePath());
+						readProperties(res.openReader(), properties);
+					}
+				}
+			}
+		}
+		Set<String> languages = new TreeSet<String>();
+		languages.addAll(classes.get(type).keySet()); // alphabetize
+		ArrayList<Locale> locales = new ArrayList<Locale>();
+		for (Iterator<String> it = languages.iterator(); it.hasNext();) {
+			locales.add(new Locale(it.next().toString()));
+		}
+		return locales.toArray(new Locale[0]);
+	}
+
 
 }
 

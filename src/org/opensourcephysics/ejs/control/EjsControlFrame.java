@@ -454,15 +454,11 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 		translateItem = new JMenuItem();
 		translateItem.setText(EjsRes.getString("EjsControlFrame.Translate")); //$NON-NLS-1$
 		// added by D Brown 2007-10-17
-		if (OSPRuntime.getTranslator() != null) {
+		if (OSPRuntime.loadTranslatorTool) {
 			translateItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					OSPRuntime.getTranslator().showProperties(model.getClass());
-					if (OSPRuntime.getTranslator() instanceof Hidable) {
-						((Hidable) OSPRuntime.getTranslator()).setKeepHidden(false);
-					}
-					OSPRuntime.getTranslator().setVisible(true);
 				}
 
 			});

@@ -41,6 +41,7 @@ import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.numerics.DoubleArray;
 import org.opensourcephysics.numerics.IntegerArray;
 import org.opensourcephysics.tools.ToolsRes;
+import org.opensourcephysics.tools.Translator;
 
 /**
  * A Control that shows its parameters in a JTable. Custom buttons can be added.
@@ -54,7 +55,6 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
 	JTextArea messageTextArea;
 	JLabel clearLabel, messageLabel, inputLabel;
 	JSplitPane splitPane;
-	JMenuItem translateItem;
 	static final Color PANEL_BACKGROUND = javax.swing.UIManager.getColor("Panel.background"); //$NON-NLS-1$
 
 	/**
@@ -69,7 +69,7 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
 		if (model != null) {
 			// added by D Brown 2006-09-10
 			// modified by D Brown 2007-10-17
-			if (OSPRuntime.getTranslator() != null) {
+			if (OSPRuntime.loadTranslatorTool) {
 				OSPRuntime.getTranslator().associate(this, model.getClass());
 			}
 			String name = model.getClass().getName();
@@ -110,7 +110,7 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
 		controlScrollPane.setPreferredSize(new Dimension(350, 200));
 		controlScrollPane.setMinimumSize(new Dimension(0, 50));
 		messageScrollPane.setPreferredSize(new Dimension(350, 75));
-		if ((OSPRuntime.getTranslator() != null) && (model != null)) {
+		if (OSPRuntime.loadTranslatorTool && model != null) {
 			OSPRuntime.getTranslator().associate(table, model.getClass());
 		}
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
@@ -141,20 +141,12 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
 			return null;
 		}
 		JMenu menu = super.loadDisplayMenu();
-		translateItem = new JMenuItem();
-		translateItem.setText(ControlsRes.getString("OSPControl.Translate")); //$NON-NLS-1$
 		// changed by D Brown 2007-10-17
-		if (OSPRuntime.getTranslator() != null) {
-			translateItem.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					OSPRuntime.getTranslator().showProperties(model.getClass());
-					if (OSPRuntime.getTranslator() instanceof Hidable) {
-						((Hidable) OSPRuntime.getTranslator()).setKeepHidden(false);
-					}
-					OSPRuntime.getTranslator().setVisible(true);
-				}
-
+		if (OSPRuntime.loadTranslatorTool) {
+			JMenuItem translateItem = new JMenuItem();
+			translateItem.setText(ControlsRes.getString("OSPControl.Translate")); //$NON-NLS-1$
+			translateItem.addActionListener((e) -> {
+				OSPRuntime.getTranslator().showProperties(model.getClass());
 			});
 			translateItem.setEnabled(OSPRuntime.isAuthorMode());
 			languageMenu.add(translateItem, 0);

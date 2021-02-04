@@ -312,7 +312,7 @@ public TableCellEditor getCellEditor(int row, int column) {
         }
         setHorizontalAlignment(SwingConstants.LEFT);
         String text = value.toString();
-        if(OSPRuntime.getTranslator()!=null) {
+        if(OSPRuntime.loadTranslatorTool) {
           text = OSPRuntime.getTranslator().getProperty(XMLTable.this, text);
         }
         setText(text);
@@ -654,15 +654,17 @@ public TableCellEditor getCellEditor(int row, int column) {
 
   }
 
-	// refreshes the table
+	// refreshes the table BY RECREATING IT ENTIRELY
 	public void refresh() {
 		SwingUtilities.invokeLater(() -> {
+			System.out.println("XMLTable total rewrite");
 			tableChanged(new TableModelEvent(tableModel, TableModelEvent.HEADER_ROW));
 		});
 	}
 
   @Override
 public void tableChanged(TableModelEvent e) {
+	  System.out.println("XMLTable.tableChanged " + e);
     // pass the tablemodel event to property change listeners
     firePropertyChange("tableData", null, e); //$NON-NLS-1$
     super.tableChanged(e);

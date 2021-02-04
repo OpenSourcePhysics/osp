@@ -587,7 +587,7 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
 	public JButton addButton(String methodName, String text, String toolTipText, final Object target) {
 		TranslatableButton b = new TranslatableButton(text, toolTipText, target);
 		// changed to add translation tools for strings by D Brown 2007-10-17
-		if (OSPRuntime.getTranslator() != null) {
+		if (OSPRuntime.loadTranslatorTool) {
 			text = OSPRuntime.getTranslator().getProperty(target.getClass(), "custom_button." + text, text); //$NON-NLS-1$
 			toolTipText = OSPRuntime.getTranslator().getProperty(target.getClass(), "custom_button." + toolTipText, //$NON-NLS-1$
 					toolTipText);
@@ -641,7 +641,7 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
 		}
 
 		void refreshGUI() {
-			if (OSPRuntime.getTranslator() != null) {
+			if (OSPRuntime.loadTranslatorTool) {
 				setText(OSPRuntime.getTranslator().getProperty(target.getClass(), "custom_button." + text, text)); //$NON-NLS-1$
 				setToolTipText(OSPRuntime.getTranslator().getProperty(target.getClass(), "custom_button." + tip, tip)); //$NON-NLS-1$
 			}
