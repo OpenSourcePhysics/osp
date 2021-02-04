@@ -577,7 +577,7 @@ public class LibraryBrowser extends JPanel {
 	
 	public void cancelLoading() {
 		VideoIO.setCanceled(true);
-		setMessage("Loading canceled", Color.WHITE);
+		setMessage("Loading canceled", Color.PINK);
 		Timer timer = new Timer(2000, (ev) -> {
 			doneLoading();
 		});
@@ -1680,6 +1680,15 @@ public class LibraryBrowser extends JPanel {
 		messageButton.setHorizontalAlignment(SwingConstants.LEFT);
 		messageButton.setBorder(BorderFactory.createEmptyBorder(1, 6, 1, 6));
 		add(messageButton, BorderLayout.SOUTH);
+		messageButton.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+					cancelLoading();
+				}
+			}
+		});
+
 		
 		setMessage(null, null);
 	}
@@ -1696,6 +1705,8 @@ public class LibraryBrowser extends JPanel {
 		messageButton.setText(isEmpty? " ": message);
 		messageButton.setBackground(color != null? color: Color.WHITE);
 		messageButton.setFont(color != null? commandButton.getFont(): commandField.getFont());
+		if (color != null)
+			messageButton.requestFocusInWindow();
 	}
 
 	protected void processTargetCollection(LibraryTreeNode node) {
@@ -1942,7 +1953,6 @@ public class LibraryBrowser extends JPanel {
 		record = new LibraryResource(""); //$NON-NLS-1$
 		record.setTarget(path);
 		record.setProperty("download_filename", getDownloadName(path, null));
-		VideoIO.setCanceled(false);
 		// send LibraryResource via property change event to TFrame and other listeners
 		// DB 2020.11.15 don't hide LibraryBrowser since it has cancel button
 //		setVisible(false);
