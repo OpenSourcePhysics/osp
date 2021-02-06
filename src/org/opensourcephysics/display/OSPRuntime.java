@@ -258,7 +258,10 @@ public class OSPRuntime {
 	 */
 	private static AsyncFileChooser chooser;
 
+	public final static int WEB_CONNECTED_TEST_JS_TIMEOUT_MS = 1000;
 	public final static String WEB_CONNECTED_TEST_URL = "https://www.compadre.org/osp/services/REST/osp_tracker.cfm?verb=Identify&OSPType=none";
+
+	//BH test option 	public final static String WEB_CONNECTED_TEST_URL = "https://cactus.nci.nih.gov/chemical/structure/caffeine/file?format=sdf&get3d=true";
 
 	/**
 	 * Disables drawing for faster start-up and to avoid screen flash in Drawing

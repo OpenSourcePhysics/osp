@@ -1049,6 +1049,7 @@ public class LibraryBrowser extends JPanel {
 				&& !isWebConnected(isDialogShown) && !ResourceLoader.ignoreMissingWebConnection) {
 			if (!isDialogShown[0] && ResourceLoader.showWebConnectionDialog() == ResourceLoader.WEB_CONNECTION_RETRY) {
 				checkedWebConnection = false;
+				ResourceLoader.clearWebTest();
 				return addTabAndExecute(path, treePath, listener);
 			}
 			
@@ -3055,6 +3056,7 @@ public class LibraryBrowser extends JPanel {
 					if (!isWebConnected(isDialogShown)) {
 						if (!isDialogShown[0] && ResourceLoader.showWebConnectionDialog() == ResourceLoader.WEB_CONNECTION_RETRY) {
 							checkedWebConnection = false;
+							ResourceLoader.clearWebTest();
 							run();
 						}
 //						JOptionPane.showMessageDialog(LibraryBrowser.this,
@@ -3326,6 +3328,7 @@ public class LibraryBrowser extends JPanel {
 					isDialogShown[0] = true;
 				if (ResourceLoader.showWebConnectionDialog() == ResourceLoader.WEB_CONNECTION_RETRY) {
 					checkedWebConnection = false;
+					ResourceLoader.clearWebTest();
 					return isWebConnected(isDialogShown);
 				}
 			}

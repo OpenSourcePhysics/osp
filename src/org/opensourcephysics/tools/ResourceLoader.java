@@ -86,24 +86,20 @@ import javajs.async.Assets;
 public class ResourceLoader {
 
 	static {
-		// ensures that OSPRuntime has initialized Assets
 		if (OSPRuntime.isJS) {
+			// ensures that OSPRuntime has initialized Assets
 		}
-		;
 	}
 	private final static String encoding = "UTF-8"; //$NON-NLS-1$
 	final static Charset defaultCharset = Charset.forName(encoding);
 
 	@SuppressWarnings("javadoc")
-	public static final FileFilter OSP_CACHE_FILTER;
 	protected static final String WIN_XP_DEFAULT_CACHE = "/Local Settings/Application Data/OSP/Cache"; //$NON-NLS-1$
 	protected static final String WINDOWS_DEFAULT_CACHE = "/AppData/Local/OSP/Cache"; //$NON-NLS-1$
 	protected static final String OSX_DEFAULT_CACHE = "/Library/Caches/OSP"; //$NON-NLS-1$
 	protected static final String LINUX_DEFAULT_CACHE = "/.config/OSP/Cache"; //$NON-NLS-1$
 	protected static final String SEARCH_CACHE_SUBDIRECTORY = "Search"; //$NON-NLS-1$
 	protected static final int WEB_CONNECTION_RETRY = 1;
-
-	public static final String TRACKER_TEST_URL = null; // needed for tracker
 
 	protected static ArrayList<String> searchPaths = new ArrayList<String>(); // search paths
 	protected static ArrayList<String> appletSearchPaths = new ArrayList<String>(); // search paths for apples
@@ -118,9 +114,8 @@ public class ResourceLoader {
 	protected static Set<String> extractExtensions = new TreeSet<String>();
 	protected static ArrayList<String> pathsNotFound = new ArrayList<String>();
 	protected static File ospCache;
-//	protected static boolean zipURLsOK;  BH 2020.11.12
-	protected static boolean webConnected, ignoreMissingWebConnection;
-	protected static String downloadURL = ""; //$NON-NLS-1$
+	
+	public static final FileFilter OSP_CACHE_FILTER;
 
 	static {
 		OSP_CACHE_FILTER = new FileFilter() {
@@ -129,15 +124,49 @@ public class ResourceLoader {
 				return file.isDirectory() && file.getName().startsWith("osp-"); //$NON-NLS-1$
 			}
 		};
-		Runnable runner = new Runnable() {
-			@Override
-			public void run() {
-				webConnected = isWebConnected();
-			}
-		};
-		new Thread(runner).start();
 	}
 
+	
+//	protected static boolean zipURLsOK;  BH 2020.11.12
+	protected static boolean webConnected;
+
+	public static boolean ignoreMissingWebConnection = false; // see LibraryBrowser
+
+
+	protected static String downloadURL = ""; //$NON-NLS-1$
+	/**
+	 * A three-way toggele:
+	 * 
+	 * null -- untested, or retesting after clearWebTest()
+	 * TRUE -- tested and OK for any url path tried
+	 * FALSE -- tested and failed specifically for OSPRuntime.WEB_CONNCETED_TEST_URL
+	 * 
+	 */
+	private static Boolean webTestOK;// name is used unsafely in next static block
+	
+	static void clearWebTest() {
+		webTestOK = null;
+	}
+
+
+	static {
+		String url = OSPRuntime.WEB_CONNECTED_TEST_URL;
+		int ms = OSPRuntime.WEB_CONNECTED_TEST_JS_TIMEOUT_MS;
+		// do an asynchronous test, returning TRUE or FALSE 
+		/** @j2sNative
+		 * 
+		 *  J2S.$ajax({
+		 *    url:url, 
+		 *    success:function(){System.out.println("ResourceLoader.webTestOK = " + (C$.webTestOK = Boolean.TRUE))},
+		 *    error:function(xhr,status){System.err.println("ResourceLoader.webTestOK = " + (C$.webTestOK = Boolean.FALSE))},
+		 *    timeout:ms
+		 *    });
+		 *  
+		 */ 		
+		{
+		  new Thread(() -> { webConnected = isWebConnected(); }).start();
+		}
+	}
 	/**
 	 * Private constructor to prevent instantiation.
 	 */
@@ -983,9 +1012,10 @@ public class ResourceLoader {
 		File target = getOSPCacheFile(urlPath, fileName);
 		File file = download(urlPath, target, alwaysOverwrite);
 		if (file == null && webConnected) {
+			clearWebTest();
 			webConnected = isWebConnected(); // $NON-NLS-1$
 			if (!webConnected) {
-				if (ResourceLoader.showWebConnectionDialog() == ResourceLoader.WEB_CONNECTION_RETRY) {
+				if (showWebConnectionDialog() == WEB_CONNECTION_RETRY) {
 					return downloadToOSPCache(urlPath, fileName, alwaysOverwrite);
 				}
 //				JOptionPane.showMessageDialog(null,
@@ -1552,26 +1582,6 @@ public class ResourceLoader {
 		}
 	}
 	
-	static int showWebConnectionDialog() {
-		if (ignoreMissingWebConnection)
-			return 0;
-		Object[] buttonTitles = { ToolsRes.getString("Button.OK"),
-				ToolsRes.getString("LibraryBrowser.WebConnectionDialog.Button.Retry"), 
-				ToolsRes.getString("LibraryBrowser.WebConnectionDialog.Button.Ignore") };
-		int n = JOptionPane.showOptionDialog(null,
-				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"),
-				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"),
-				JOptionPane.YES_NO_CANCEL_OPTION,
-				JOptionPane.WARNING_MESSAGE,
-				null,     // no custom Icon
-				buttonTitles,
-				buttonTitles[0]); // title of the default button
-		if (n == 2) {
-			ignoreMissingWebConnection = true;
-		}
-		return n;
-	}
-
 	/**
 	 * Downloads a file from the web to a target File.
 	 * 
@@ -1587,10 +1597,12 @@ public class ResourceLoader {
 			return null;
 		// compare urlPath with previous attempt and, if identical, check web connection
 		if (!webConnected || downloadURL.equals(urlPath)) {
+			clearWebTest();
 			webConnected = isWebConnected();
 		}
 		if (!webConnected) {
-			if (ResourceLoader.showWebConnectionDialog() == WEB_CONNECTION_RETRY) {
+			if (showWebConnectionDialog() == WEB_CONNECTION_RETRY) {
+				clearWebTest();
 				return download(urlPath, target, alwaysOverwrite);
 			}
 
@@ -1825,23 +1837,54 @@ public class ResourceLoader {
 
 	/**
 	 * Determines if a url path is available (ie both valid and connected).
+	 * 
+	 * Guarded by webTestOK == FALSE; to overrided, use ResourceLoader.clearWebTest();
 	 *
 	 * @param urlPath the path in URI form
 	 * @return true if available
 	 */
 	public static boolean isURLAvailable(String urlPath) {
+		if (webTestOK == Boolean.FALSE) {
+			OSPLog.debug("ResourceLoader skipping URLAvailable, since webTestOK == FALSE for " + urlPath);
+			return false;
+		}
+		OSPLog.debug("ResourceLoader checking for " + urlPath);
 		URL url = null;
 		try {
 			// make a URL, open a connection, get content
 			url = new URL(urlPath);
-			OSPLog.debug("ResourceLoader checking for " + url);
 			HttpURLConnection urlConnect = (HttpURLConnection) url.openConnection();
 			urlConnect.getContent();
+			webTestOK = Boolean.TRUE;
 		} catch (Exception ex) {
 			OSPLog.debug("ResourceLoader failed to read " + url + " " + ex);
+			if (urlPath == OSPRuntime.WEB_CONNECTED_TEST_URL)
+				webTestOK = Boolean.FALSE;
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * Used by LibraryLoader, LibraryBrowser, and ResourceLoader.download() 
+	 * 
+	 * @return
+	 */
+	static int showWebConnectionDialog() {
+		if (ignoreMissingWebConnection)
+			return JOptionPane.OK_OPTION;
+		Object[] buttonTitles = { ToolsRes.getString("Button.OK"),
+				ToolsRes.getString("LibraryBrowser.WebConnectionDialog.Button.Retry"),
+				ToolsRes.getString("LibraryBrowser.WebConnectionDialog.Button.Ignore") };
+		int ret = JOptionPane.showOptionDialog(null,
+				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"),
+				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), JOptionPane.YES_NO_CANCEL_OPTION,
+				JOptionPane.WARNING_MESSAGE, null, // no custom Icon
+				buttonTitles, buttonTitles[0]); // title of the default button
+		if (ret == 2) {
+			ignoreMissingWebConnection = true;
+		}
+		return ret;
 	}
 
 	/**
@@ -2561,7 +2604,7 @@ public class ResourceLoader {
 					parent.mkdirs();
 				}
 				fos = new FileOutputStream(target);
-				ResourceLoader.getLimitedStreamBytes(zis, ze.getSize(), fos, false);
+				getLimitedStreamBytes(zis, ze.getSize(), fos, false);
 				fos.close();
 				System.out.println("RL extracted " + targetName + " " + target.length());
 			}
@@ -3033,7 +3076,7 @@ public class ResourceLoader {
 				// Java 9! return new String(url.openStream().readAllBytes());
 				return OSPRuntime.jsutil.readAllBytes(url.openStream());
 			}
-			return ResourceLoader.getLimitedStreamBytes(url.openStream(), -1, null, true);
+			return getLimitedStreamBytes(url.openStream(), -1, null, true);
 		} catch (IOException e) {
 			if (showErr)
 				e.printStackTrace();
@@ -3056,7 +3099,7 @@ public class ResourceLoader {
 				OSPRuntime.getURLBytesAsync(url, whenDone);
 				return;
 			}
-			whenDone.apply(ResourceLoader.getLimitedStreamBytes(url.openStream(), -1, null, true));
+			whenDone.apply(getLimitedStreamBytes(url.openStream(), -1, null, true));
 			return;
 		} catch (IOException e) {
 			e.printStackTrace();
