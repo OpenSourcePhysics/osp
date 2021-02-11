@@ -239,6 +239,23 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
 	public String toString() {
 		return "KnownPolynomial: " + getExpression("<x>"); 
 	}
+
+	@Override
+	public UserFunction newUserFunction(String var) {
+		UserFunction uf = new UserFunction(getName());
+		int n = getParameterCount();
+			String[] params = new String[n];
+			double[] values = new double[n];
+			String[] desc = new String[n];
+			for (int i = 0; i < n; i++) {
+				params[i] = getParameterName(i);
+				values[i] = getParameterValue(i);
+				desc[i] = getParameterDescription(i);
+			}
+			uf.setParameters(params, values, desc);
+			uf.setExpression(getExpression(var), new String[] { var });
+		return uf;
+	}
 }
 
 /*

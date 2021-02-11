@@ -203,12 +203,12 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	/**
 	 * Sets the expression.
 	 *
-	 * @param exp      a parsable expression of the parameters and variables
+	 * @param exp  a parsable expression of the parameters and variables
 	 * @param vars the names of the independent variables
 	 * @return true if successfully parsed
 	 */
 	public boolean setExpression(String exp, String[] vars) {
-		
+
 		this.vars = vars;
 		String[] names = new String[vars.length + paramNames.length + references.length];
 		for (int i = 0; i < vars.length; i++) {
@@ -221,15 +221,15 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 			names[i + vars.length + paramNames.length] = references[i].getName();
 		}
 
-		exp = exp.replaceAll(" ", "");
-		clearInput = exp;
-		
+		clearInput = exp = exp.replaceAll(" ", "");
+
 		// add padding around all names -- disallowing <number or .>E as in "5E0"
 		exp = padNames(exp);
 
 		// replace dependents
-		
+		boolean hasDummy = false;
 		for (int i = 0; i < vars.length; i++) {
+			hasDummy = (hasDummy || exp.indexOf(dummyVars[i]) >= 0);
 			exp = exp.replaceAll(" " + vars[i] + " ", " " + dummyVars[i] + " ");
 		}
 		dummyInputString = exp; // for cloning only
@@ -238,12 +238,17 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 			myFunction = new ParsedMultiVarFunction(exp, names, false);
 			// successful, so save expression unless it contains "="
 			if (exp.indexOf("=") < 0) { //$NON-NLS-1$
+				if (hasDummy) {
+					// clarify expression
+					// maybe just from a clone?
+					// user can use ` for y if they desire, I guess
+					for (int i = 0; i < vars.length; i++) {
+						exp = exp.replaceAll(dummyVars[i], vars[i]);
+					}
+					clearInput = exp.replaceAll(" ", "");
+				}
+				// being equal is the test for isValid()
 				clearExpr = clearInput;
-//				for (int i = 0; i < vars.length; i++) {
-//					exp = exp.replaceAll(dummyVars[i], vars[i]);
-//				}
-//				exp = exp.replaceAll(" ", "");
-//				clearExpr = clearInput = exp;
 				return true;
 			}
 		} catch (ParserException ex) {
@@ -498,7 +503,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 		}
 		f.setReferences(refs);
 		f.setExpression(dummyInputString, vars);
-		f.polynomial = polynomial == null ? null : polynomial.clone();
+		f.polynomial = (polynomial == null ? null : polynomial.clone());
 		return f;
 	}
 
@@ -657,6 +662,11 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 
 	public boolean isValid() {
 		return clearExpr == clearInput;
+	}
+
+	@Override
+	public UserFunction newUserFunction(String var) {
+		return clone();
 	}
 }
 

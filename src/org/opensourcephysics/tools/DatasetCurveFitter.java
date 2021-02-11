@@ -1048,29 +1048,14 @@ public class DatasetCurveFitter extends JPanel {
 	protected UserFunction createClone(KnownFunction f, String name) {
 		String var = (dataset == null) ? "x" : //$NON-NLS-1$
 				TeXParser.removeSubscripting(dataset.getColumnName(0));
-		f.getExpression(var);
-		UserFunction uf = null;
-		if (f instanceof UserFunction)
-			uf = ((UserFunction) f).clone();
-		else {
-			uf = new UserFunction(f.getName());
-			String[] params = new String[f.getParameterCount()];
-			double[] values = new double[f.getParameterCount()];
-			String[] desc = new String[f.getParameterCount()];
-			for (int i = 0; i < params.length; i++) {
-				params[i] = f.getParameterName(i);
-				values[i] = f.getParameterValue(i);
-				desc[i] = f.getParameterDescription(i);
-			}
-			uf.setParameters(params, values, desc);
-			uf.setExpression(f.getExpression(var), new String[] { var });
-		}
+		UserFunction uf = f.newUserFunction(var);
 		// add digit to end of name
 		int n = 1;
 		try {
-			String number = name.substring(name.length() - 1);
+			int len = name.length() - 1;
+			String number = name.substring(len);
 			n = Integer.parseInt(number) + 1;
-			name = name.substring(0, name.length() - 1);
+			name = name.substring(0, len);
 		} catch (Exception ex) {
 		}
 		// make a set of existing fit names

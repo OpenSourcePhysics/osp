@@ -114,6 +114,8 @@ public interface KnownFunction extends Function {
 	@Override
 	public boolean equals(Object f);
 
+	public UserFunction newUserFunction(String var);
+
 }
 
 /*
