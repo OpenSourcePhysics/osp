@@ -204,14 +204,14 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	 * Sets the expression.
 	 *
 	 * @param exp      a parsable expression of the parameters and variables
-	 * @param varNames the names of the independent variables
+	 * @param vars the names of the independent variables
 	 * @return true if successfully parsed
 	 */
-	public boolean setExpression(String exp, String[] varNames) {
+	public boolean setExpression(String exp, String[] vars) {
 		
-		vars = varNames;
+		this.vars = vars;
 		String[] names = new String[vars.length + paramNames.length + references.length];
-		for (int i = 0; i < varNames.length; i++) {
+		for (int i = 0; i < vars.length; i++) {
 			names[i] = dummyVars[i];
 		}
 		for (int i = 0; i < paramNames.length; i++) {
@@ -222,12 +222,12 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 		}
 
 		exp = exp.replaceAll(" ", "");
+		clearInput = exp;
+		
 		// add padding around all names -- disallowing <number or .>E as in "5E0"
 		exp = padNames(exp);
 
 		// replace dependents
-
-		clearInput = exp;
 		
 		for (int i = 0; i < vars.length; i++) {
 			exp = exp.replaceAll(" " + vars[i] + " ", " " + dummyVars[i] + " ");
@@ -238,11 +238,12 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 			myFunction = new ParsedMultiVarFunction(exp, names, false);
 			// successful, so save expression unless it contains "="
 			if (exp.indexOf("=") < 0) { //$NON-NLS-1$
-				for (int i = 0; i < vars.length; i++) {
-					exp = exp.replaceAll(dummyVars[i], vars[i]);
-				}
-				exp = exp.replaceAll(" ", "");
-				clearExpr = clearInput = exp;
+				clearExpr = clearInput;
+//				for (int i = 0; i < vars.length; i++) {
+//					exp = exp.replaceAll(dummyVars[i], vars[i]);
+//				}
+//				exp = exp.replaceAll(" ", "");
+//				clearExpr = clearInput = exp;
 				return true;
 			}
 		} catch (ParserException ex) {
