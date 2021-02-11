@@ -405,8 +405,7 @@ public class UserFunctionEditor extends FunctionEditor {
 	 */
 	@Override
 	protected boolean isInvalidExpression(FObject obj) {
-		UserFunction f = (UserFunction) obj;
-		return !f.getExpression().equals(f.getInputString());
+		return !((UserFunction) obj).isValid();
 	}
 
 	/**

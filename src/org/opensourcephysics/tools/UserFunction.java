@@ -30,15 +30,17 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	protected double[] paramValues = new double[0];
 	protected String[] paramDescriptions = new String[0];
 	protected String[] functionNames = new String[0];
-	protected String expression = "0"; //$NON-NLS-1$
-	protected String inputString = "0"; //$NON-NLS-1$
 	protected ParsedMultiVarFunction myFunction = null;
 	protected String[] vars = { "x" }; //$NON-NLS-1$
 	protected UserFunction[] references = new UserFunction[0];
 	protected boolean nameEditable = true;
 	protected String description;
 	protected KnownPolynomial polynomial;
+	
 	private double myval = Double.NaN;
+	private String dummyInputString = "0"; //$NON-NLS-1$
+	private String clearExpr;
+	private String clearInput;
 
 	/**
 	 * Constructor.
@@ -78,7 +80,6 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 		}
 		setParameters(params, paramValues, desc);
 
-		// set expression
 		setExpression(poly.getExpression("x"), new String[] { "x" }); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
@@ -147,25 +148,19 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	 * @return the expression
 	 */
 	public String getInputString() {
-		return removeDummyVars(inputString);
+		return clearInput;
 	}
 
+
 	/**
-	 * Gets the expression using the current variables, removing all dummy variables
+	 * Gets the expression using the current variables, without dummy variables
 	 *
 	 * @return the expression
 	 */
 	public String getExpression() {
-		return removeDummyVars(expression);
+		return clearExpr;
 	}
-
-	public String removeDummyVars(String s) {
-		for (int i = 0; i < vars.length; i++) {
-			s = s.replaceAll(dummyVars[i], vars[i]);
-		}
-		return s;
-	}
-
+	
 	/**
 	 * Gets the expression and sets the independent variable.
 	 *
@@ -175,7 +170,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	@Override
 	public String getExpression(String indepVarName) {
 		vars = new String[] { indepVarName };
-		return getExpression();
+		return clearExpr;
 	}
 
 	/**
@@ -186,7 +181,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	 */
 	public String getExpression(String[] varNames) {
 		vars = varNames;
-		return getExpression();
+		return clearExpr;
 	}
 
 	/**
@@ -213,6 +208,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	 * @return true if successfully parsed
 	 */
 	public boolean setExpression(String exp, String[] varNames) {
+		
 		vars = varNames;
 		String[] names = new String[vars.length + paramNames.length + references.length];
 		for (int i = 0; i < varNames.length; i++) {
@@ -226,21 +222,27 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 		}
 
 		exp = exp.replaceAll(" ", "");
-		// add padding around all names
-		exp = exp.replaceAll("([A-Za-z_]\\w*)", " $1 ");
+		// add padding around all names -- disallowing <number or .>E as in "5E0"
+		exp = padNames(exp);
 
 		// replace dependents
 
+		clearInput = exp;
+		
 		for (int i = 0; i < vars.length; i++) {
 			exp = exp.replaceAll(" " + vars[i] + " ", " " + dummyVars[i] + " ");
 		}
-		inputString = exp;
+		dummyInputString = exp; // for cloning only
 		// try to parse expression
 		try {
 			myFunction = new ParsedMultiVarFunction(exp, names, false);
 			// successful, so save expression unless it contains "="
-			if (exp.indexOf("=") == -1) { //$NON-NLS-1$
-				expression = exp;
+			if (exp.indexOf("=") < 0) { //$NON-NLS-1$
+				for (int i = 0; i < vars.length; i++) {
+					exp = exp.replaceAll(dummyVars[i], vars[i]);
+				}
+				exp = exp.replaceAll(" ", "");
+				clearExpr = clearInput = exp;
 				return true;
 			}
 		} catch (ParserException ex) {
@@ -250,7 +252,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 			} catch (ParserException ex2) {
 				/** empty block */
 			}
-			expression = "0"; //$NON-NLS-1$
+			clearExpr = "0"; //$NON-NLS-1$
 		}
 		return false;
 	}
@@ -425,14 +427,13 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 		if (myFunction == null) {
 			return Double.NaN;
 		}
-//			OSPLog.debug("UserFunction.evaluate " + name + " = " + myFunction);
-			ensureBufferLength(x.length);
-			System.arraycopy(x, 0, temp, 0, x.length);
-			System.arraycopy(paramValues, 0, temp, x.length, paramValues.length);
-			for (int pt = x.length + paramValues.length, n = references.length, i = 0; i < n;) {
-				temp[pt++] = references[i++].evaluate(x);
-			}
-			return myFunction.evaluate(temp);
+		ensureBufferLength(x.length);
+		System.arraycopy(x, 0, temp, 0, x.length);
+		System.arraycopy(paramValues, 0, temp, x.length, paramValues.length);
+		for (int pt = x.length + paramValues.length, n = references.length, i = 0; i < n;) {
+			temp[pt++] = references[i++].evaluate(x);
+		}
+		return myFunction.evaluate(temp);
 	}
 
 	public double evaluateMyVal(double[] x) {
@@ -495,7 +496,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 			refs[i] = references[i].clone();
 		}
 		f.setReferences(refs);
-		f.setExpression(inputString, vars);
+		f.setExpression(dummyInputString, vars);
 		f.polynomial = polynomial == null ? null : polynomial.clone();
 		return f;
 	}
@@ -560,12 +561,8 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	}
 
 	static String padNames(String exp) {
-		return exp.replaceAll("([A-Za-z_]\\w*)", " $1 ");
-
-	}
-
-	static String unpadNames(String paddedExp) {
-		return paddedExp.replaceAll(" ", "");
+		// but not 5.0E3
+		return exp.replaceAll("([A-Za-z_]\\w*)", " $1 ").replaceAll("([0123456789\\.]) ([eE])", "$1$2");
 	}
 
 	/**
@@ -655,6 +652,10 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	@Override
 	public String toString() {
 		return "[UserFunction " + name + " = " + myFunction.toString() + "]";
+	}
+
+	public boolean isValid() {
+		return clearExpr == clearInput;
 	}
 }
 
