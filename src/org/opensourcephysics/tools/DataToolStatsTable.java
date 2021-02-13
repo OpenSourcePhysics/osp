@@ -165,15 +165,16 @@ public class DataToolStatsTable extends JTable {
 		double sum = 0.0;
 		double squareSum = 0.0;
 		int count = 0;
-		for (int i = 0; i < data.length; i++) {
-			if (Double.isNaN(data[i])) {
+		for (int i = data.length; --i >= 0;) {
+			double d = data[i];
+			if (Double.isNaN(d)) {
 				continue;
 			}
 			count++;
-			max = Math.max(max, data[i]);
-			min = Math.min(min, data[i]);
-			sum += data[i];
-			squareSum += data[i] * data[i];
+			max = Math.max(max, d);
+			min = Math.min(min, d);
+			sum += d;
+			squareSum += d * d;
 		}
 		double mean = sum / count;
 		double sd = (count < 2) ? Double.NaN : Math.sqrt((squareSum - count * mean * mean) / (count - 1));
