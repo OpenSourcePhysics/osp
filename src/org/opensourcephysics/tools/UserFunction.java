@@ -41,6 +41,8 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	private String dummyInputString = "0"; //$NON-NLS-1$
 	private String clearExpr;
 	private String clearInput;
+	private String paddedExpr;
+	private String paddedInput;
 
 	/**
 	 * Constructor.
@@ -158,7 +160,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	 * @return the expression
 	 */
 	public String getExpression() {
-		return clearExpr;
+		return (clearExpr == null ? generateExpressionForVars() : clearExpr);
 	}
 	
 	/**
@@ -169,8 +171,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	 */
 	@Override
 	public String getExpression(String indepVarName) {
-		vars = new String[] { indepVarName };
-		return clearExpr;
+		return getExpression(new String[] { indepVarName });
 	}
 
 	/**
@@ -181,7 +182,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	 */
 	public String getExpression(String[] varNames) {
 		vars = varNames;
-		return clearExpr;
+		return generateExpressionForVars();
 	}
 
 	/**
@@ -192,12 +193,13 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	 * @return the expression
 	 */
 	public String getFullExpression(String[] varNames) {
-		String s = padNames(getExpression(varNames));
+		getExpression(varNames);
+		String s = paddedExpr;
 		for (int i = 0, n = references.length; i < n; i++) {
 			UserFunction f = references[i];
 			s = replaceAllWords(s, f.getName(), "(" + f.getFullExpression(varNames) + ")"); //$NON-NLS-1$//$NON-NLS-2$
 		}
-		return s;
+		return s.replaceAll(" ", "");
 	}
 
 	/**
@@ -209,23 +211,13 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	 */
 	public boolean setExpression(String exp, String[] vars) {
 
-		this.vars = vars;
-		String[] names = new String[vars.length + paramNames.length + references.length];
-		for (int i = 0; i < vars.length; i++) {
-			names[i] = dummyVars[i];
-		}
-		for (int i = 0; i < paramNames.length; i++) {
-			names[i + vars.length] = paramNames[i];
-		}
-		for (int i = 0; i < references.length; i++) {
-			names[i + vars.length + paramNames.length] = references[i].getName();
-		}
-
+		paddedInput = exp;
 		clearInput = exp = exp.replaceAll(" ", "");
+		
+		String[] names = setVariables(vars);
 
 		// add padding around all names -- disallowing <number or .>E as in "5E0"
 		exp = padNames(exp);
-
 		// replace dependents
 		boolean hasDummy = false;
 		for (int i = 0; i < vars.length; i++) {
@@ -239,16 +231,11 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 			// successful, so save expression unless it contains "="
 			if (exp.indexOf("=") < 0) { //$NON-NLS-1$
 				if (hasDummy) {
-					// clarify expression
-					// maybe just from a clone?
-					// user can use ` for y if they desire, I guess
-					for (int i = 0; i < vars.length; i++) {
-						exp = exp.replaceAll(dummyVars[i], vars[i]);
-					}
-					clearInput = exp.replaceAll(" ", "");
+					generateExpressionForVars();
+				} else {
+					// being equal is the test for isValid()
+					clearExpr = clearInput;
 				}
-				// being equal is the test for isValid()
-				clearExpr = clearInput;
 				return true;
 			}
 		} catch (ParserException ex) {
@@ -261,6 +248,34 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 			clearExpr = "0"; //$NON-NLS-1$
 		}
 		return false;
+	}
+
+	private String[] setVariables(String[] vars) {
+		this.vars = vars;
+		String[] names = new String[vars.length + paramNames.length + references.length];
+		for (int i = 0; i < vars.length; i++) {
+			names[i] = dummyVars[i];
+		}
+		for (int i = 0; i < paramNames.length; i++) {
+			names[i + vars.length] = paramNames[i];
+		}
+		for (int i = 0; i < references.length; i++) {
+			names[i + vars.length + paramNames.length] = references[i].getName();
+		}
+		return names;
+	}
+
+	private String generateExpressionForVars() {
+		String exp = dummyInputString;
+		// clarify expression
+		// maybe just from a clone?
+		// user can use ` for y if they desire, I guess
+		for (int i = 0; i < vars.length; i++) {
+			exp = exp.replaceAll(dummyVars[i], vars[i]);
+		}
+		paddedExpr = exp;
+		// being equal is the test for isValid()
+		return clearInput = clearExpr = exp.replaceAll(" ", "");
 	}
 
 	/**
@@ -562,7 +577,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	 * @return the modified expression, or null if failed
 	 */
 	protected String replaceParameterNameInExpression(String oldName, String newName) {
-		String exp = replaceAllWords(padNames(getInputString()), oldName, newName);
+		String exp = replaceAllWords(paddedInput, oldName, newName);
 		return (exp != null && setExpression(exp, getIndependentVariables()) ? exp : null);
 	}
 
@@ -661,6 +676,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	}
 
 	public boolean isValid() {
+		// BH Q: should isValid be any expression that has no dummy variables?
 		return clearExpr == clearInput;
 	}
 

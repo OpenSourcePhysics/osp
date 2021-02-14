@@ -340,7 +340,7 @@ public class DatasetCurveFitter extends JPanel {
 				eqnField.setText("y = " + //$NON-NLS-1$
 						((UserFunction) fit).getFullExpression(new String[] { "x" })); //$NON-NLS-1$
 			} else {
-				eqnField.setText("y = " + fit.getExpression("x")); //$NON-NLS-1$ //$NON-NLS-2$
+				eqnField.setText("y = " + fit.getExpression("x").replace(" ", "")); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 			setAutoFit(false);
 			autofitCheckBox.setEnabled(false);
@@ -1032,7 +1032,7 @@ public class DatasetCurveFitter extends JPanel {
 				eqnField.setText(depVar + " = " + //$NON-NLS-1$
 						((UserFunction) fit).getFullExpression(new String[] { indepVar }));
 			} else {
-				eqnField.setText(depVar + " = " + fit.getExpression(indepVar)); //$NON-NLS-1$
+				eqnField.setText(depVar + " = " + fit.getExpression(indepVar).replace(" ", "")); //$NON-NLS-1$
 			}
 			firePropertyChange(PROPERTY_DATASETCURVEFITTER_DRAWER, prev, drawer); // $NON-NLS-1$
 			if (isActive)

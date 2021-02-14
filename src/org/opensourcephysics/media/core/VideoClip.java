@@ -789,7 +789,7 @@ public class VideoClip implements PropertyChangeListener {
 					invalid = true;
 					String codec = (exists ? VideoIO.getVideoCodec(res.getAbsolutePath()) : null);
 					String reason = (exists ? "VideoClip null video" : "VideoClip not supported");
-					VideoIO.handleUnsupportedVideo(path, XML.getExtension(path), codec, null, reason); // runs async
+					VideoIO.handleUnsupportedVideo(base + "/" + path, XML.getExtension(path), codec, null, reason); // runs async
 				} else {
 					String message = "\"" + fullPath + "\" " //$NON-NLS-1$ //$NON-NLS-2$
 							+ MediaRes.getString("VideoClip.Dialog.VideoNotFound.Message"); //$NON-NLS-1$
