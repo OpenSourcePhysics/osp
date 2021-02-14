@@ -45,6 +45,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.function.Consumer;
@@ -619,8 +620,13 @@ public class VideoIO {
 		return codec;
 	}
 	
-	public static void handleUnsupportedVideo(String path, String ext, String codec, VideoPanel vidPanel, String why) {
-		
+	private static HashSet<String> unsupportedPaths = new HashSet<>();
+
+	public static void handleUnsupportedVideo(String path0, String ext, String codec, VideoPanel vidPanel, String why) {
+		String path = (path0.startsWith("jar:file:/") ? path0.substring(9) : path0);
+		if (unsupportedPaths.contains(path))
+			return;
+		unsupportedPaths.add(path);
 		OSPLog.warning("VideoIO.handleUnsupportedVideo " + path + " from " + why);
 		String message = //why + " " + path + "\n\n" + 
 				(codec != null
@@ -688,8 +694,7 @@ public class VideoIO {
 	}
 	public static Video getVideo(String path, String basePath, VideoType vidType) {
 		// BH! 2020.04.20 from TrackerIO, but equally useful here.
-		if (path.startsWith("file:")) //$NON-NLS-1$
-			path = ResourceLoader.getNonURIPath(path);
+		path = fixVideoPath(path);
 		String fullPath = XML.getResolvedPath(path, basePath);
 		OSPLog.fine("Path: " + fullPath + "    Type: " + (vidType == null? null: vidType.getTypeName())); //$NON-NLS-1$ //$NON-NLS-2$		
 		// for Xuggle videos, download web files to cache
@@ -735,6 +740,10 @@ public class VideoIO {
 				return video;
 		}
 		return null;
+	}
+
+private static String fixVideoPath(String path) {
+		return (path.startsWith("file:") ? ResourceLoader.getNonURIPath(path): path);
 	}
 
 //	/**
