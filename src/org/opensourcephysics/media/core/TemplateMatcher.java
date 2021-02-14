@@ -351,7 +351,9 @@ public class TemplateMatcher {
    *  			fits should be exact.
    *  6. The final best match (sub-pixel) is the position of the peak of the Gaussian fit.
    *  7. Note that the width of the Gaussian fit is probably correlated with the uncertainty of 
-   *  			the match position, but it is not used to explicitly estimate this uncertainty.
+   *  			the match position, but it is not used to explicitly estimate this uncertainty
+   *        except that if the width > 1 pixel then the peak height is divided by that width.
+   *        This assures that very wide fits are not treated as good fits.
    *
    * @param target the image to search
    * @param searchRect the rectangle to search within the target image
@@ -395,10 +397,11 @@ public class TemplateMatcher {
     double avgDiff = 0;
   	for (int x = 0; x <= searchRect.width; x++) {
   		for (int y = 0; y <= searchRect.height; y++) {
+  			
     		double diff = getDifferenceAtTestPoint(x, y);
     		avgDiff += diff;
     		if (diff < matchDiff) {
-    			matchDiff = diff;
+   				matchDiff = diff;
     			xMatch = x;
     			yMatch = y;
     		}
@@ -476,7 +479,11 @@ public class TemplateMatcher {
     		if (rmsDev > 0.01)
     			peakWidth = Double.NaN;
   		}
+  		if (!Double.isNaN(peakWidth) && peakWidth > 1) {
+  			peakHeight /= peakWidth;
+  		}
 		}
+		
 		xMatch = xMatch+searchRect.x-left-trimLeft;
 		yMatch = yMatch+searchRect.y-top-trimTop;
 		refreshMatchImage(target, xMatch, yMatch);
