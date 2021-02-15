@@ -407,7 +407,7 @@ public class OSPRuntime {
 					.getDecimalFormatSymbols().getDecimalSeparator();
 		}
 
-		dfs.setDecimalSeparator(defaultDecimalSeparator);
+		dfs.setDecimalSeparator(currentDecimalSeparator = defaultDecimalSeparator);
 
 //	try {
 //	  Class.forName("com.sun.j3d.utils.universe.SimpleUniverse"); //$NON-NLS-1$
@@ -425,6 +425,7 @@ public class OSPRuntime {
 			false); // no fractional metrics
 
 	public static LaunchNode activeNode;
+	private static char currentDecimalSeparator;
 
 	/**
 	 * Private constructor to prevent instantiation.
@@ -1117,7 +1118,7 @@ public class OSPRuntime {
 	public static void setDefaultDecimalSeparator(char c) {
 		defaultDecimalSeparator = c;
 		if (preferredDecimalSeparator == null)
-			dfs.setDecimalSeparator(c);
+			dfs.setDecimalSeparator(currentDecimalSeparator = c);
 	}
 
 	/**
@@ -1133,9 +1134,13 @@ public class OSPRuntime {
 		if (separator != null && separator.length() == 0)
 			separator = null;
 		preferredDecimalSeparator = separator;
-		dfs.setDecimalSeparator(separator == null ? defaultDecimalSeparator : separator.charAt(0));
+		dfs.setDecimalSeparator(currentDecimalSeparator = (separator == null ? defaultDecimalSeparator : separator.charAt(0)));
 	}
 
+	public static char getCurrrentDecimalSeparator() {
+		return currentDecimalSeparator;
+	}
+	
 	/**
 	 * Gets the preferred decimal separator. May return null.
 	 * 

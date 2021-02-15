@@ -1716,13 +1716,13 @@ public class DataTable extends JTable {
 			numberField.setValue((Double) value);
 			setText(numberField.getText());
 		}
-
-		/**
-		 * Gets the number format
-		 */
-		DecimalFormat getFormat() {
-			return numberField.getFormat();
-		}
+//
+//		/**
+//		 * Gets the number format
+//		 */
+//		DecimalFormat getFormat() {
+//			return numberField.getFormat();
+//		}
 
 	}
 
@@ -2288,7 +2288,7 @@ public class DataTable extends JTable {
 				PrecisionRenderer renderer = precisionRenderersByColumnName.get(key);
 				renderer.numberFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
 			}
-			defaultDoubleRenderer.getFormat().setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+			//unnecessary defaultDoubleRenderer.getFormat().setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
 		} catch (Exception e) {
 		}
 	}

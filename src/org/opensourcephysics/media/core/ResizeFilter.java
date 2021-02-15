@@ -204,9 +204,9 @@ public class ResizeFilter extends Filter {
 			widthLabel = new JLabel();
 			widthInField = new IntegerField(4);
 			widthInField.setEditable(false);
-			widthInField.format.applyPattern("0"); //$NON-NLS-1$
+			widthInField.applyPattern("0"); //$NON-NLS-1$
 			widthOutField = new IntegerField(4);
-			widthOutField.format.applyPattern("0"); //$NON-NLS-1$
+			widthOutField.applyPattern("0"); //$NON-NLS-1$
 //      widthOutField.setMaxValue(2000);
 //      widthOutField.setMinValue(10);
 			widthOutField.addActionListener(new ActionListener() {
@@ -234,9 +234,9 @@ public class ResizeFilter extends Filter {
 			heightLabel = new JLabel();
 			heightInField = new IntegerField(4);
 			heightInField.setEditable(false);
-			heightInField.format.applyPattern("0"); //$NON-NLS-1$
+			heightInField.applyPattern("0"); //$NON-NLS-1$
 			heightOutField = new IntegerField(4);
-			heightOutField.format.applyPattern("0"); //$NON-NLS-1$
+			heightOutField.applyPattern("0"); //$NON-NLS-1$
 //      heightOutField.setMaxValue(1000);
 //      heightOutField.setMinValue(100);
 			heightOutField.addActionListener(new ActionListener() {

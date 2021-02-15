@@ -64,7 +64,7 @@ public class ScientificField extends NumberField {
     for(int i = 0; i<this.sigfigs-1; i++) {
       s += "0"; //$NON-NLS-1$
     }
-    format.applyPattern("0"+d+s+"E0"); //$NON-NLS-1$ //$NON-NLS-2$
+    applyPattern("0"+d+s+"E0"); //$NON-NLS-1$ //$NON-NLS-2$
   }
 
   /**

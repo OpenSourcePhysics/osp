@@ -42,6 +42,8 @@ import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.Hashtable;
+import java.util.Map;
 
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -64,9 +66,10 @@ public class NumberField extends JTextField {
 	public static final String DECIMAL_1_PATTERN = "0.0"; //$NON-NLS-1$
 	public static final String DECIMAL_2_PATTERN = "0.00"; //$NON-NLS-1$
 	public static final String DECIMAL_3_PATTERN = "0.000"; //$NON-NLS-1$
-
+	
 	// instance fields
-	protected DecimalFormat format = (DecimalFormat) NumberFormat.getInstance();
+	// BH 2021 making format private to allow bypassing it for simple formats
+	private DecimalFormat format;
 	protected double prevValue;
 	protected Double maxValue;
 	protected Double minValue;
@@ -78,6 +81,7 @@ public class NumberField extends JTextField {
 	protected double conversionFactor = 1.0;
 	protected String userPattern = ""; //$NON-NLS-1$
 	protected boolean fixedPatternByDefault;
+	private char decimalSeparator;
 
 	/**
 	 * Constructs a NumberField with default sigfigs (4)
@@ -160,7 +164,7 @@ public class NumberField extends JTextField {
 	 */
 	public double getValue() {
 		String s = getText().trim().toUpperCase();
-		if ("".equals(s)) //$NON-NLS-1$
+		if (s.length() == 0) 
 			return prevValue;
 
 		// strip units, if any
@@ -169,12 +173,12 @@ public class NumberField extends JTextField {
 			if (n > 0)
 				s = s.substring(0, n);
 		}
-		if (s.equals(format.format(prevValue * conversionFactor))) {
+		if (s.equals(format(prevValue * conversionFactor))) {
 			return prevValue;
 		}
 		double retValue;
 		try {
-			retValue = format.parse(s).doubleValue() / conversionFactor;
+			retValue = (s.equals("0") ? 0 : parse(s).doubleValue() / conversionFactor);
 			if (minValue != null && retValue < minValue) {
 				setValue(minValue);
 				return minValue;
@@ -189,6 +193,58 @@ public class NumberField extends JTextField {
 			return prevValue;
 		}
 		return retValue;
+	}
+
+	private Number parse(String s) throws ParseException {
+		if (format == null) {
+			String p = currentPattern;
+			applyPattern("0E0");
+			applyPattern(p);
+		}
+		return format.parse(s);
+	}
+
+	public String format(double d) {
+		if (Double.isNaN(d)) {
+			return "";
+		}
+		if (currentPattern == null)
+			setFormatFor(d);
+		int i = 0, f = 0;
+		switch (currentPattern) {
+		case "0":
+			return "" + (int) d;
+		case "0.0":
+			f = 10;
+			i = 1;
+			break;
+		case "0.00":
+			f = 100;
+			i = 2;
+			break;
+		case "0.000":
+			f = 1000;
+			i = 3;
+			break;
+		}
+		String s;
+		if (i == 0) {
+			s = format.format(d);
+		} else if (d == 0) {
+			s = currentPattern;
+		} else {
+			String neg = (d < 0 ? "-" : "");
+			s = "" + (int) (Math.abs(d) * f);
+			int j = s.length() - i;
+			if (j < 1) {
+				i = 1;
+				s = "000".substring(0, 1-j) + s;
+			} else {
+				i = j;
+			}
+			s = neg + s.substring(0, i) + decimalSeparator + s.substring(i);
+		}
+		return s;
 	}
 
 	/**
@@ -212,7 +268,7 @@ public class NumberField extends JTextField {
 		// display value: include factor, format, units
 		value = conversionFactor * value;
 		setFormatFor(value);
-		String s = getFormat().format(value);
+		String s = format(value);
 		if (units != null) {
 			s += units;
 		}
@@ -229,6 +285,7 @@ public class NumberField extends JTextField {
 	 * @param upper the upper end of the range
 	 */
 	public void setExpectedRange(double lower, double upper) {
+		// never called?
 		fixedPattern = fixedPatternByDefault = true;
 		double range = Math.max(Math.abs(lower), Math.abs(upper));
 		if ((range < 0.1) || (range >= 1000)) { // scientific format
@@ -236,7 +293,7 @@ public class NumberField extends JTextField {
 			for (int i = 0; i < sigfigs - 1; i++) {
 				s += "0"; //$NON-NLS-1$
 			}
-			format.applyPattern("0." + s + "E0"); //$NON-NLS-1$ //$NON-NLS-2$
+			applyPattern("0." + s + "E0"); //$NON-NLS-1$ //$NON-NLS-2$
 		} else { // decimal format
 			int n;
 			if (range < 1) {
@@ -253,9 +310,9 @@ public class NumberField extends JTextField {
 				s += "0"; //$NON-NLS-1$
 			}
 			if (s.equals("")) { //$NON-NLS-1$
-				format.applyPattern("0"); //$NON-NLS-1$
+				applyPattern("0"); //$NON-NLS-1$
 			} else {
-				format.applyPattern("0." + s); //$NON-NLS-1$
+				applyPattern("0." + s); //$NON-NLS-1$
 			}
 		}
 	}
@@ -356,16 +413,8 @@ public class NumberField extends JTextField {
 		return conversionFactor;
 	}
 
-	/**
-	 * Gets the format for this field.
-	 *
-	 * @return the format
-	 */
-	public DecimalFormat getFormat() {
-		format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
-		return format;
-	}
-
+	private String currentPattern;
+	
 	/**
 	 * Sets the format for a specified value.
 	 *
@@ -376,26 +425,65 @@ public class NumberField extends JTextField {
 			return;
 		}
 		value = Math.abs(value);
+		String p = null;
 		if (value == 0) {
 			if (sigfigs == 1) {
-				format.applyPattern(INTEGER_PATTERN);
+				p = INTEGER_PATTERN;
 			} else if (sigfigs == 2) {
-				format.applyPattern(DECIMAL_1_PATTERN);
+				p = DECIMAL_1_PATTERN;
 			} else if (sigfigs == 3) {
-				format.applyPattern(DECIMAL_2_PATTERN);
+				p = DECIMAL_2_PATTERN;
 			} else {
-				format.applyPattern(DECIMAL_3_PATTERN);
+				p = DECIMAL_3_PATTERN;
 			}
 		} else if (value < ranges[0]) {
-			format.applyPattern(patterns[0]);
+			p = patterns[0];
 		} else if (value < ranges[1]) {
-			format.applyPattern(patterns[1]);
+			p = patterns[1];
 		} else if (value < ranges[2]) {
-			format.applyPattern(patterns[2]);
+			p = patterns[2];
 		} else if (value < ranges[3]) {
-			format.applyPattern(patterns[3]);
+			p = patterns[3];
 		} else {
-			format.applyPattern(patterns[4]);
+			p = patterns[4];
+		}
+		applyPattern(p);
+	}
+
+	private final Map<String, DecimalFormat> formatCache = new Hashtable<>();
+	private boolean isIntegerOnly;
+   //private static int test, test1;
+   
+	/**
+	 * Apply the specified pattern, retrieving the appropriate formatter
+	 * @param p
+	 */
+	public void applyPattern(String p) {
+		//System.out.println ("NumberField ApplyPattern " + p + " " + ++test  + " " + test1);
+		if (p != currentPattern) {
+			char sep = OSPRuntime.getCurrrentDecimalSeparator();
+			if (decimalSeparator != sep) {
+				decimalSeparator = sep;
+				formatCache.clear();
+			}
+			currentPattern = p;
+			switch (p) {
+			case "0":
+			case "0.0":
+			case "0.00":
+			case "0.000":
+				return;
+			}
+			format = formatCache.get(p);
+			if (format == null) {
+				//test1++;
+				format = (DecimalFormat) NumberFormat.getInstance();
+				formatCache.put(p, format);
+				format.applyPattern(p);
+				format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+				if (isIntegerOnly)
+					format.setParseIntegerOnly(true);
+			}
 		}
 	}
 
@@ -438,12 +526,13 @@ public class NumberField extends JTextField {
 		if (pattern.equals(userPattern))
 			return;
 		userPattern = pattern;
+		currentPattern = null; // reset format for this pattern
 		if (userPattern.equals("")) { //$NON-NLS-1$
 			fixedPattern = fixedPatternByDefault;
 			setFormatFor(getValue());
 		} else {
 			fixedPattern = true;
-			format.applyPattern(userPattern);
+			applyPattern(userPattern);
 		}
 		setValue(prevValue);
 	}
@@ -455,6 +544,11 @@ public class NumberField extends JTextField {
 	 */
 	public String getFixedPattern() {
 		return userPattern;
+	}
+
+	public void setParseIntegerOnly() {
+		isIntegerOnly = true;
+		applyPattern("0");
 	}
 
 }
