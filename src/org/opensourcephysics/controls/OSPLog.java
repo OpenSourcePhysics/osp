@@ -222,6 +222,7 @@ public class OSPLog extends JFrame {
 				if (logPane == null) {
 					logPane = getTextPane();
 					postAllRecords();
+					FontSizer.setFonts(this, FontSizer.getLevel());
 					pack();
 				}
 			}
