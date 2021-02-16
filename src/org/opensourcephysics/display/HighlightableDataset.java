@@ -204,7 +204,7 @@ public class HighlightableDataset extends Dataset implements Interactive {
 			return null;
 		}
 		hitIndex = -1;
-		for (int i = 0; i < index; i++) {
+		for (int i = 0, n = Math.min(hitShapes.length,  index); i < n; i++) {
 			if (hitShapes[i] != null && hitShapes[i].contains(xpix, ypix)) {
 				hitIndex = i;
 				return this;

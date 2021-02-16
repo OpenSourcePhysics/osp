@@ -47,7 +47,7 @@ public class IntegerField extends NumberField {
   public IntegerField(int columns) {
     super(columns);
     fixedPattern = fixedPatternByDefault = true;
-    format.setParseIntegerOnly(true);
+    super.setParseIntegerOnly();
     setIntValue((int) prevValue);
   }
 
@@ -67,7 +67,7 @@ public class IntegerField extends NumberField {
         n = s.indexOf(units);
       }
     }
-    if(s.equals(format.format(prevValue))) {
+    if(s.equals(format(prevValue))) {
       return(int) prevValue;
     }
     try {
@@ -101,7 +101,7 @@ public class IntegerField extends NumberField {
     if(maxValue!=null) {
       value = Math.min(value, maxValue.intValue());
     }
-    String s = format.format(value);
+    String s = format(value);
     if(units!=null) {
       s += units;
     }

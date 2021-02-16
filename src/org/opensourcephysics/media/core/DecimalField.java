@@ -70,7 +70,7 @@ public class DecimalField extends NumberField {
     }
     defaultPattern = pattern;
     if (userPattern.equals("")) { //$NON-NLS-1$
-      format.applyPattern(pattern);
+      applyPattern(pattern);
     }
   }
 
@@ -81,20 +81,21 @@ public void setSigFigs(int sigfigs) {}
   @Override
   public void setExpectedRange(double lower, double upper) {}
 
-  @Override
-  public void setFixedPattern(String pattern) {
-  	if (pattern==null) pattern = ""; //$NON-NLS-1$
-    pattern = pattern.trim();
-    if (pattern.equals(userPattern)) return;
-    userPattern = pattern;
-    if (userPattern.equals("")) { //$NON-NLS-1$
-      format.applyPattern(defaultPattern);
-    }
-    else {
-      format.applyPattern(userPattern);
-    }
-    setValue(prevValue);
-  }
+	@Override
+	public void setFixedPattern(String pattern) {
+		if (pattern == null)
+			pattern = ""; //$NON-NLS-1$
+		pattern = pattern.trim();
+		if (pattern.equals(userPattern))
+			return;
+		userPattern = pattern;
+		if (userPattern.equals("")) { //$NON-NLS-1$
+			applyPattern(defaultPattern);
+		} else {
+			applyPattern(userPattern);
+		}
+		setValue(prevValue);
+	}
 
 }
 
