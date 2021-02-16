@@ -93,6 +93,7 @@ import javax.swing.event.MouseInputAdapter;
 
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.GUIUtils;
+import org.opensourcephysics.display.OSPButton;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ResourceLoader;
@@ -193,14 +194,10 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	protected int height = 54;
 	// GUI elements
 	private JToolBar toolbar;
-	protected JButton readout;
-	private JButton playButton, resetButton;
+	protected OSPButton readout, playButton, resetButton;
 	private JSpinner rateSpinner;
-	private JButton stepButton;
-	private JButton stepSizeButton;
-	private JButton backButton;
-	private JButton loopButton;
-	private JButton inspectorButton;
+	private OSPButton stepButton, stepSizeButton, backButton, loopButton;
+	private OSPButton inspectorButton;
 	private JSlider slider;
 	private Hashtable<Integer, JLabel> sliderLabels;
 	private JLabel inLabel, outLabel;
@@ -712,7 +709,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		toolbar.setFloatable(false);
 		add(toolbar, BorderLayout.SOUTH);
 		setBorder(BorderFactory.createEtchedBorder());
-		playButton = new PlayerButton(playIcon, pauseIcon);
+		playButton = new OSPButton(playIcon, pauseIcon);
 		playButton.setDisabledIcon(grayPlayIcon);
 		playButton.addMouseListener(new MouseAdapter() {
 			@Override
@@ -730,7 +727,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 
 		});
 		// resetButton
-		resetButton = new PlayerButton(resetIcon);
+		resetButton = new OSPButton(resetIcon);
 		resetButton.setPressedIcon(resetIcon);
 		resetButton.addMouseListener(new MouseAdapter() {
 			@Override
@@ -804,13 +801,13 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		});
 
 		// create step button
-		stepButton = new PlayerButton(stepIcon);
+		stepButton = new OSPButton(stepIcon);
 		stepButton.setDisabledIcon(grayStepIcon);
 		stepButton.addActionListener((e) ->  {
 				doStepButton((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1);
 		});
 		// create back button
-		backButton = new PlayerButton(backIcon);
+		backButton = new OSPButton(backIcon);
 		backButton.setDisabledIcon(grayBackIcon);
 		backButton.addActionListener((e) -> {
 			doBackButton((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1);
@@ -948,30 +945,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 
 		});
 		// create readout
-		readout = new PlayerButton() {
-			// override size methods so has same height as other buttons
-			@Override
-			public Dimension getPreferredSize() {
-				Dimension dim = super.getPreferredSize();
-				dim.height = rateSpinner.getPreferredSize().height;
-				return dim;
-			}
-
-			@Override
-			public Dimension getMinimumSize() {
-				Dimension dim = super.getMinimumSize();
-				dim.height = rateSpinner.getPreferredSize().height;
-				return dim;
-			}
-
-			@Override
-			public Dimension getMaximumSize() {
-				Dimension dim = super.getMaximumSize();
-				dim.height = rateSpinner.getPreferredSize().height;
-				return dim;
-			}
-
-		};
+		readout = new OSPButton();
+		readout.setHeightComponent(rateSpinner);
 		readout.setText("0.00");
 		readout.setForeground(new Color(204, 51, 51));
 		readout.addActionListener((e) -> {
@@ -985,30 +960,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 			}
 		});
 		// create stepSize button
-		stepSizeButton = new PlayerButton() {
-			// override size methods so has same height as other buttons
-			@Override
-			public Dimension getPreferredSize() {
-				Dimension dim = super.getPreferredSize();
-				dim.height = rateSpinner.getPreferredSize().height;
-				return dim;
-			}
-
-			@Override
-			public Dimension getMinimumSize() {
-				Dimension dim = super.getMinimumSize();
-				dim.height = rateSpinner.getPreferredSize().height;
-				return dim;
-			}
-
-			@Override
-			public Dimension getMaximumSize() {
-				Dimension dim = super.getMaximumSize();
-				dim.height = rateSpinner.getPreferredSize().height;
-				return dim;
-			}
-
-		};
+		stepSizeButton = new OSPButton();
+		stepSizeButton.setHeightComponent(rateSpinner);
 		stepSizeButton.setText("1");
 		stepSizeButton.setForeground(new Color(204, 51, 51));
 		stepSizeButton.addActionListener((e) -> {
@@ -1022,12 +975,12 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 			}
 		});
 		// create inspector button
-		inspectorButton = new PlayerButton(videoClipIcon);
+		inspectorButton = new OSPButton(videoClipIcon);
 		inspectorButton.addActionListener((e) ->  {
 			doInspector();
 		});
 		// create loop button
-		loopButton = new PlayerButton(noloopIcon, loopIcon);
+		loopButton = new OSPButton(noloopIcon, loopIcon);
 		loopButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -1746,55 +1699,6 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 			goToDialog.setPlayer(this);
 		}
 		goToDialog.setVisible(true);
-
-	}
-
-	/**
-	 * PlayerButton inner class
-	 */
-	protected class PlayerButton extends JButton {
-
-		/**
-		 * Constructs a PlayerButton.
-		 */
-		public PlayerButton() {
-			setOpaque(false);
-			setBorderPainted(false);
-			addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseEntered(MouseEvent e) {
-					setBorderPainted(true);
-				}
-
-				@Override
-				public void mouseExited(MouseEvent e) {
-					setBorderPainted(false);
-				}
-
-			});
-		}
-
-		/**
-		 * Constructs a PlayerButton with an icon.
-		 *
-		 * @param icon the icon
-		 */
-		public PlayerButton(Icon icon) {
-			this();
-			setIcon(icon);
-		}
-
-		/**
-		 * Constructs a PlayerButton with icons for selected and unselected states.
-		 *
-		 * @param off the unselected state icon
-		 * @param on  the selected state icon
-		 */
-		public PlayerButton(Icon off, Icon on) {
-			this();
-			setIcon(off);
-			setSelectedIcon(on);
-		}
 
 	}
 

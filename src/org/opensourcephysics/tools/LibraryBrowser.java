@@ -85,6 +85,7 @@ import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.desktop.OSPDesktop;
 import org.opensourcephysics.display.GUIUtils;
+import org.opensourcephysics.display.OSPButton;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.display.TextFrame;
@@ -321,11 +322,26 @@ public class LibraryBrowser extends JPanel {
 		if (myFontLevel == level)
 			return;
 		myFontLevel = FontSizer.setFonts(frame);
+		
+		// resize LibraryResource stylesheet font sizes
+		LibraryResource.bodyFont = FontSizer.getResizedFont(LibraryResource.bodyFont, myFontLevel);
+		LibraryResource.h1Font = FontSizer.getResizedFont(LibraryResource.h1Font, myFontLevel);
+		LibraryResource.h2Font = FontSizer.getResizedFont(LibraryResource.h2Font, myFontLevel);
+		LibraryResource.h3Font = FontSizer.getResizedFont(LibraryResource.h3Font, myFontLevel);
+		// clear LibraryTreePanel htmlPane maps to force new HTML code with new stylesheets
+		LibraryTreePanel.clearMaps();
+
+
 		Font font = tabbedPane.getFont();
-		tabbedPane.setFont(FontSizer.getResizedFont(font, level));
+		tabbedPane.setFont(FontSizer.getResizedFont(font, level));		
 		for (int i = 0; i < tabbedPane.getTabCount(); i++) {
 			LibraryTreePanel treePanel = getTreePanel(i);
 			treePanel.setFontLevel(level);
+			// special handling for ComPADRE tab
+			Object c = tabbedPane.getTabComponentAt(i);
+			if (c != null && c instanceof TabTitle) {
+				((TabTitle) c).refreshFontSize();
+			}
 		}
 		if (libraryManager != null) {
 			libraryManager.setFontLevel(level);
@@ -506,6 +522,7 @@ public class LibraryBrowser extends JPanel {
 	 */
 	@Override
 	public void setVisible(boolean vis) {
+		setFontLevel(FontSizer.getLevel());
 		super.setVisible(vis);
 		Window c = (Window) getTopLevelAncestor();
 		if (c != null) {
@@ -1084,7 +1101,7 @@ public class LibraryBrowser extends JPanel {
 			Icon icon = primary ? expandIcon : contractIcon;
 			Icon heavyIcon = primary ? heavyExpandIcon : heavyContractIcon;
 			TabTitle tabTitle = new TabTitle(icon, heavyIcon);
-			FontSizer.setFont(tabTitle);
+			tabTitle.refreshFontSize();
 			tabTitle.iconLabel.setToolTipText(primary ? ToolsRes.getString("LibraryBrowser.Tooltip.Expand") : //$NON-NLS-1$
 					ToolsRes.getString("LibraryBrowser.Tooltip.Contract")); //$NON-NLS-1$
 			tabbedPane.setTabComponentAt(n, tabTitle);
@@ -1109,7 +1126,8 @@ public class LibraryBrowser extends JPanel {
 	 * Creates the visible components of this panel.
 	 */
 	protected void createGUI() {
-		double factor = 1 + FontSizer.getLevel() * 0.25;
+//		double factor = 1 + FontSizer.getLevel() * 0.25;
+		double factor = 1 + (FontSizer.getFactor() - 1) * 0.5;
 		int w = (int) (factor * wide);
 		int h = (int) (factor * high);
 		setPreferredSize(new Dimension(w, h));
@@ -1216,16 +1234,11 @@ public class LibraryBrowser extends JPanel {
 			}
 		});
 
-		commandButton = new JButton(commandAction);
-		commandButton.setOpaque(false);
-		commandButton.setBorder(buttonBorder);
+		commandButton = new OSPButton(commandAction);
 		
-		downloadButton = new JButton(downloadAction);
+		downloadButton = new OSPButton(downloadAction);
 		downloadButton.setIcon(downloadIcon);
 		downloadButton.setDisabledIcon(downloadDisabledIcon);
-		downloadButton.setOpaque(true);
-		downloadButton.setBorder(buttonBorder);
-//		downloadButton.setEnabled(true);
 
 		// create search action, label, field and button
 		searchAction = new AbstractAction() {
@@ -1236,36 +1249,32 @@ public class LibraryBrowser extends JPanel {
 		};
 		searchLabel = new JLabel();
 		searchLabel.setAlignmentX(CENTER_ALIGNMENT);
-		searchLabel.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 2));
+		searchLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 3));
 		searchField = new LibraryTreePanel.EntryField() {
 			@Override
 			public Dimension getMaximumSize() {
 				Dimension dim = super.getMaximumSize();
-				dim.width = (int) (120 * (1 + FontSizer.getLevel() * 0.25));
+				dim.width = (int) (120 * FontSizer.getFactor());
 				return dim;
 			}
 
 			@Override
 			public Dimension getPreferredSize() {
 				Dimension dim = super.getPreferredSize();
-				dim.width = (int) (120 * (1 + FontSizer.getLevel() * 0.25));
+				dim.width = (int) (120 * FontSizer.getFactor());
 				return dim;
 			}
 
 		};
 		searchField.addActionListener(searchAction);
-		searchTargetButton = new JButton();
+		searchTargetButton = new OSPButton(searchTargetIcon);
 		searchTargetButton.addActionListener((e) -> {
 			chooseSearchTargets();
 		});
-		searchTargetButton.setIcon(searchTargetIcon);
-		searchTargetButton.setOpaque(true);
-		searchTargetButton.setBorder(buttonBorder);
 		searchTargetButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Dialog.SearchTargets.Text"));
 		searchTargetButton.setEnabled(false); // set true when Library is fully loaded
 
-		refreshButton = new JButton(refreshIcon);
-		refreshButton.setBorder(buttonBorder);
+		refreshButton = new OSPButton(refreshIcon);
 		refreshButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -1438,9 +1447,7 @@ public class LibraryBrowser extends JPanel {
 		};
 
 		// create edit button
-		editButton = new JButton();
-		editButton.setOpaque(false);
-		editButton.setBorder(buttonBorder);
+		editButton = new OSPButton();
 		editButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -1494,9 +1501,9 @@ public class LibraryBrowser extends JPanel {
 		toolbar.add(commandButton);
 		toolbar.add(downloadButton);
 		toolbar.addSeparator();
+		toolbar.add(searchTargetButton);
 		toolbar.add(searchLabel);
 		toolbar.add(searchField);
-		toolbar.add(searchTargetButton);
 		toolbar.addSeparator();
 		toolbar.add(editButton);
 		toolbar.addSeparator();
@@ -2017,7 +2024,7 @@ public class LibraryBrowser extends JPanel {
 			commandLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.Target")); //$NON-NLS-1$
 			commandButton.setText(ToolsRes.getString("LibraryTreePanel.Button.Load")); //$NON-NLS-1$
 			commandField.setToolTipText(ToolsRes.getString("LibraryBrowser.Field.Command.Tooltip")); //$NON-NLS-1$
-			searchLabel.setText(ToolsRes.getString("LibraryBrowser.Label.Search")); //$NON-NLS-1$
+			searchLabel.setText(ToolsRes.getString("LibraryBrowser.Label.Search")+":"); //$NON-NLS-1$
 			searchField.setToolTipText(ToolsRes.getString("LibraryBrowser.Field.Search.Tooltip")); //$NON-NLS-1$
 			saveAsItem.setEnabled(true);
 			refreshRecentMenu();
@@ -2549,6 +2556,8 @@ public class LibraryBrowser extends JPanel {
 
 		treePanel.scrollToPath(((LibraryTreeNode) resultsNode.getLastChild()).getTreePath(), false);
 		treePanel.isChanged = false;
+		FontSizer.setFonts(treePanel);
+		treePanel.setSelectedNode(resultsNode);
 		return resultsNode;
 	}
 	
@@ -3037,6 +3046,10 @@ public class LibraryBrowser extends JPanel {
 			boldIcon = heavyIcon;
 			iconLabel.setIcon(normalIcon);
 		}
+		
+		void refreshFontSize() {
+			FontSizer.setFont(titleLabel);
+		}
 	}
 
 	/**
@@ -3422,8 +3435,6 @@ public class LibraryBrowser extends JPanel {
   	}
   	return ospPath;
   }  
-	
-
 
 	/**
 	 * A FileFilter that accepts trk, pdf, html, trz and zip (if trk found inside) files

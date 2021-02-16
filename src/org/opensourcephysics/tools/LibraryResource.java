@@ -91,6 +91,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	protected static Font bodyFont = new JButton().getFont().deriveFont(12f);
 	protected static Font h1Font = bodyFont.deriveFont(24f);
 	protected static Font h2Font = bodyFont.deriveFont(16f);
+	protected static Font h3Font = bodyFont.deriveFont(14f);
 
 	static {
 		allResourceTypes.add(COLLECTION_TYPE);
@@ -848,6 +849,40 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	}
 
 	/**
+	 * Returns the H3 heading style for a stylesheet.
+	 * 
+	 * @return the H3 heading style
+	 */
+	protected static String getH3Style() {
+		return "h3 {\n" + //$NON-NLS-1$
+				"  font-size: " + h3Font.getSize() + "pt;\n" + //$NON-NLS-1$ //$NON-NLS-2$
+				"}\n"; //$NON-NLS-1$
+	}
+
+	/**
+	 * Returns the P heading style for a stylesheet.
+	 * 
+	 * @return the P heading style
+	 */
+	protected static String getPStyle() {
+		return "p, li, h4, h5 {\n" + //$NON-NLS-1$
+					"  font-family: Verdana, Arial, Helvetica, sans-serif;\n" + //$NON-NLS-1$
+					"  font-size: " + bodyFont.getSize() + "pt;\n" + //$NON-NLS-1$ //$NON-NLS-2$
+					"  color: #405050;\n" + //$NON-NLS-1$
+					"  background-color: #FFFFFF;\n" + //$NON-NLS-1$
+					"}\n"; //$NON-NLS-1$
+	}
+	
+	/**
+	 * Returns all HTML styles for a stylesheet.
+	 * 
+	 * @return the styles
+	 */
+	protected static String getHTMLStyles() {
+		return getBodyStyle() + getH1Style() + getH2Style() + getH3Style() + getPStyle();
+	}
+
+	/**
 	 * Returns the H2 heading style for a stylesheet.
 	 * 
 	 * @return the H2 heading style
@@ -855,7 +890,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	protected static String getStyleSheetCode() {
 		return "<style TYPE=\"text/css\">\n" + //$NON-NLS-1$
 				"<!--\n" + //$NON-NLS-1$
-				getBodyStyle() + getH1Style() + getH2Style() + "-->\n" + //$NON-NLS-1$
+				getHTMLStyles() + "-->\n" + //$NON-NLS-1$
 				"</style>\n"; //$NON-NLS-1$
 	}
 

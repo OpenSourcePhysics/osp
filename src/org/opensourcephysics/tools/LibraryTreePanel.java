@@ -237,6 +237,7 @@ public class LibraryTreePanel extends JPanel {
 			isChanged = false;
 			ignoreChanges = false;
 			refreshGUI(false);
+			FontSizer.setFonts(tree);
 		}
 	}
 
@@ -306,14 +307,6 @@ public class LibraryTreePanel extends JPanel {
 
 		FontSizer.setFonts(toSize, level);
 		EntryField.font = authorField.getFont();
-
-		// resize LibraryResource stylesheet font sizes
-		LibraryResource.bodyFont = FontSizer.getResizedFont(LibraryResource.bodyFont, level);
-		LibraryResource.h1Font = FontSizer.getResizedFont(LibraryResource.h1Font, level);
-		LibraryResource.h2Font = FontSizer.getResizedFont(LibraryResource.h2Font, level);
-
-		// clear htmlPanesByNode to force new HTML code with new stylesheets
-		htmlPanesByNode.clear();
 
 		// refresh the tree structure
 		TreeModel model = tree.getModel();
@@ -390,7 +383,7 @@ public class LibraryTreePanel extends JPanel {
 		LibraryTreePanel selected = browser.getSelectedTreePanel();
 		showHTMLPane(node);
 
-		if (selected == this && !isRoot && !browser.commandField.getText().equals(path)) {
+		if (selected == this && !browser.commandField.getText().equals(path)) {
 			setCommandField(node, path, isCollection);
 		}
 		// show editor data if editing
@@ -429,9 +422,9 @@ public class LibraryTreePanel extends JPanel {
 
 	private void setCommandField(LibraryTreeNode node, String path, boolean isCollection) {
 		browser.commandField.setText(path);
-		// check to see if resource is available
-		boolean available = false;
-		if (path != null) {
+		// if not the root, check to see if resource is available
+		boolean available = node.isRoot();
+		if (path != null && !available) {
 			if (ResourceLoader.isHTTP(path)) {
 				available = browser.isWebConnected(null);
 				if (!available) {
@@ -779,31 +772,20 @@ public class LibraryTreePanel extends JPanel {
 			}
 		};
 		// create toolbar and buttons
-		addCollectionButton = new JButton();
-		addCollectionButton.setOpaque(false);
-		addCollectionButton.setBorder(LibraryBrowser.buttonBorder);
-		addCollectionButton.addActionListener(addCollectionAction);
+		addCollectionButton = new JButton(addCollectionAction);
 		addResourceButton = new JButton(addResourceAction);
-		addResourceButton.setOpaque(false);
-		addResourceButton.setBorder(LibraryBrowser.buttonBorder);
 		copyButton = new JButton(copyAction);
-		copyButton.setOpaque(false);
-		copyButton.setBorder(LibraryBrowser.buttonBorder);
 		cutButton = new JButton(cutAction);
-		cutButton.setOpaque(false);
-		cutButton.setBorder(LibraryBrowser.buttonBorder);
 		pasteButton = new JButton(pasteAction);
-		pasteButton.setOpaque(false);
-		pasteButton.setBorder(LibraryBrowser.buttonBorder);
 		moveUpButton = new JButton(moveUpAction);
-		moveUpButton.setOpaque(false);
-		moveUpButton.setBorder(LibraryBrowser.buttonBorder);
 		moveDownButton = new JButton(moveDownAction);
-		moveDownButton.setOpaque(false);
-		moveDownButton.setBorder(LibraryBrowser.buttonBorder);
 		metadataButton = new JButton(metadataAction);
-		metadataButton.setOpaque(false);
-		metadataButton.setBorder(LibraryBrowser.buttonBorder);
+		JButton[] buttons = new JButton[] {addCollectionButton, addResourceButton, copyButton,				
+				cutButton, pasteButton, moveUpButton, moveDownButton, metadataButton};
+		for (JButton next: buttons) {
+			next.setOpaque(false);
+			next.setBorder(LibraryBrowser.buttonBorder);			
+		}
 
 		editorbar = new JToolBar();
 		editorbar.setFloatable(false);
@@ -1778,10 +1760,15 @@ public class LibraryTreePanel extends JPanel {
 			setFocusable(false);
 			setContentType("text/html; charset=UTF-8"); //$NON-NLS-1$
 			addHyperlinkListener(hyperlinkListener);
-			HTMLDocument document = (HTMLDocument) getDocument();
-			document.getStyleSheet().addRule(LibraryResource.getBodyStyle());
-			document.getStyleSheet().addRule(LibraryResource.getH1Style());
-			document.getStyleSheet().addRule(LibraryResource.getH2Style());
+			addPropertyChangeListener((e) -> {
+				if (e.getPropertyName().equals("page")) {
+					HTMLDocument document = (HTMLDocument) getDocument();
+					document.getStyleSheet().addRule(LibraryResource.getHTMLStyles());
+//					document.getStyleSheet().addRule(LibraryResource.getBodyStyle());
+//					document.getStyleSheet().addRule(LibraryResource.getH1Style());
+//					document.getStyleSheet().addRule(LibraryResource.getH2Style());
+				}
+			});									
 		}
 
 		@Override
@@ -2383,7 +2370,6 @@ public class LibraryTreePanel extends JPanel {
 
 		@Override
 		public HTMLPane doInBackground() {
-
 			try {
 				
 			HTMLPane htmlPane = htmlPanesByNode.get(node);
@@ -2462,6 +2448,7 @@ public class LibraryTreePanel extends JPanel {
 				htmlPanesByNode.put(node, htmlPane);
 				htmlPane.setCaretPosition(0);
 			}
+
 			whenDone(htmlPane);
 			
 
@@ -2513,11 +2500,10 @@ public class LibraryTreePanel extends JPanel {
 		HTMLDocument document = (HTMLDocument) htmlPane.getDocument();
 		document.setBase(url);
 		htmlPane.setText(ResourceLoader.fixHTTPS(htmlStr, url));
-		if (htmlPane.getDocument() instanceof HTMLDocument) {
-			document.getStyleSheet().addRule(LibraryResource.getBodyStyle());
-			document.getStyleSheet().addRule(LibraryResource.getH1Style());
-			document.getStyleSheet().addRule(LibraryResource.getH2Style());
-		}
+		document.getStyleSheet().addRule(LibraryResource.getHTMLStyles());
+//		document.getStyleSheet().addRule(LibraryResource.getBodyStyle());
+//		document.getStyleSheet().addRule(LibraryResource.getH1Style());
+//		document.getStyleSheet().addRule(LibraryResource.getH2Style());
 	}
 
 	/**
