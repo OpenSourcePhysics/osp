@@ -165,6 +165,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	protected MouseInputAdapter mouseController = new CMController(); // handles the coordinate display on mouse actions
 	protected boolean showCoordinates = false; // set to true when mouse listener is added
 	protected MouseInputAdapter optionController = new OptionController() {
+		@Override
 		public void mousePressed(MouseEvent e) {
 			super.mousePressed(e);
 			requestFocus();
@@ -2651,7 +2652,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 */
 	public boolean setMessage(String msg, int location) {
 		
-		if (true)return false;
+//		if (true)return false; // DB why?
 		
 		if (msg != null && msg.length() == 0)
 			msg = null;
@@ -2729,8 +2730,17 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 			glassPane.repaint();
 	}
 
+	/**
+	 * Returns true if mouse coordinates are displayed
+	 *
+	 * @return <code>true</code> if mouse coordinates are displayed
+	 */
+	public boolean isShowCoordinates() {
+		return showCoordinates;
+	}
+
 	public void displayCoordinates(MouseEvent e) {
-		if (showCoordinates) {
+		if (isShowCoordinates()) {
 			String s = (e == null ? null : coordinateStrBuilder.getCoordinateString(this, e));
 			messages.setMessage(s, MessageDrawable.BOTTOM_LEFT); // BL message box
 			repaintIfNecessary();

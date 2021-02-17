@@ -104,7 +104,6 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	protected Map<String, Class<? extends Filter>> filterClasses = new TreeMap<String, Class<? extends Filter>>(); 
 
 	protected FinalizableLoader loader; // for asynchronous loading
-	private int lastFrame = -1;
 
 	/**
 	 * Constructs a blank VideoPanel with a player.
@@ -558,15 +557,6 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	}
 
 	/**
-	 * Returns true if mouse coordinates are displayed
-	 *
-	 * @return <code>true</code> if mouse coordinates are displayed
-	 */
-	public boolean isShowCoordinates() {
-		return showCoordinates;
-	}
-
-	/**
 	 * Hides the mouse box
 	 */
 	public void hideMouseBox() {
@@ -885,6 +875,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		// TrackerPanel only
 	}
 	
+	@Override
 	protected void dispose() {
 		if (video != null) {
 			video.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY, this);
