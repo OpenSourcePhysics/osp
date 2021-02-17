@@ -151,6 +151,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	protected BitSet circularErrors = new BitSet();
 	protected BitSet errors = new BitSet();
 	protected List<FObject> evaluate = new ArrayList<FObject>();
+	protected HashSet<String> referencesChecked = new HashSet<String>();
 
 	protected boolean anglesInDegrees;
 	protected boolean usePopupEditor = true;
@@ -179,7 +180,6 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 
 	private int selectedRow;
 	private int selectedCol;
-	protected HashSet<String> referencesChecked;
 
 	/**
 	 * No-arg constructor
@@ -825,7 +825,6 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	 * Creates the GUI.
 	 */
 	protected void createGUI() {
-		referencesChecked = new HashSet<String>();
 		titledBorder = BorderFactory.createTitledBorder(""); //$NON-NLS-1$
 		setBorder(titledBorder);
 		// create table and scroller
