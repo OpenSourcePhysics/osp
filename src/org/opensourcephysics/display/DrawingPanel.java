@@ -2652,8 +2652,6 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	 */
 	public boolean setMessage(String msg, int location) {
 		
-//		if (true)return false; // DB why?
-		
 		if (msg != null && msg.length() == 0)
 			msg = null;
 		messages.setMessage(msg, location);
