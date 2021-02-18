@@ -49,8 +49,7 @@ import org.opensourcephysics.controls.XML;
 public class StepperClipControl extends ClipControl {
 	// instance fields
 	private javax.swing.Timer timer;
-	private double frameDuration = /** @j2sNative 1 ? 10 : */
-			100; // milliseconds
+	private double frameDuration = 100; // milliseconds
 	private boolean playing = false;
 	private boolean readyToStep = true;
 	private boolean stepDisplayed = true;
