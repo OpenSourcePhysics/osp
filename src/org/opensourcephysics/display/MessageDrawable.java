@@ -24,16 +24,9 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
 import javax.swing.JLabel;
 import javax.swing.JViewport;
-import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.tools.FontSizer;
 
 /**

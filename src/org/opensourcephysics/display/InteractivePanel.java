@@ -340,7 +340,7 @@ public void setShowCoordinates(boolean show) {
           }
         }
       }
-      if(showCoordinates) {
+      if(isShowCoordinates()) {
         String s = coordinateStrBuilder.getCoordinateString(InteractivePanel.this, e);
         messages.setMessage(s, MessageDrawable.BOTTOM_LEFT);
         if (!messagesAsJLabels)
@@ -360,7 +360,7 @@ public void setShowCoordinates(boolean show) {
         interactive.handleMouseAction(InteractivePanel.this, e);
       }
       iaDraggable = null;
-      if(showCoordinates) {
+      if(isShowCoordinates()) {
         messages.setMessage(null, MessageDrawable.BOTTOM_LEFT);
         if (!messagesAsJLabels)
         	repaint();
@@ -374,7 +374,7 @@ public void setShowCoordinates(boolean show) {
      */
     @Override
 	public void mouseEntered(MouseEvent e) {
-      if(showCoordinates) {
+      if(isShowCoordinates()) {
         setMouseCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
       }
       mouseEvent = e;
@@ -423,7 +423,7 @@ public void setShowCoordinates(boolean show) {
       if(interactive!=null) {
         interactive.handleMouseAction(InteractivePanel.this, e);
       }
-      if(showCoordinates) {
+      if(isShowCoordinates()) {
         String s = coordinateStrBuilder.getCoordinateString(InteractivePanel.this, e);
         messages.setMessage(s, 0);
         if (!messagesAsJLabels)
