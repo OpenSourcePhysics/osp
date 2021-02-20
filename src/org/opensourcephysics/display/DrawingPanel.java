@@ -2967,6 +2967,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 			} else if (cmd.equals(DisplayRes.getString("DrawingFrame.Autoscale_menu_item"))) { //$NON-NLS-1$
 				double nan = Double.NaN;
 				setPreferredMinMax(nan, nan, nan, nan);
+				repaint();
 			} else if (cmd.equals(DisplayRes.getString("DrawingFrame.Scale_menu_item"))) { //$NON-NLS-1$
 				ScaleInspector plotInspector = new ScaleInspector(DrawingPanel.this);
 				plotInspector.setLocationRelativeTo(DrawingPanel.this);

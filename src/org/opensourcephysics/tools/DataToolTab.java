@@ -135,7 +135,15 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 	public final static String SHIFTED = "'"; //$NON-NLS-1$
 	protected static DecimalFormat correlationFormat = (DecimalFormat) NumberFormat.getInstance();
-	private static final Cursor SELECT_CURSOR, SELECT_REMOVE_CURSOR, SELECT_ZOOM_CURSOR;
+	private static final Cursor SELECT_CURSOR, SELECT_ZOOM_CURSOR;
+	private static final Cursor SELECT_REMOVE_CURSOR, SELECT_ADD_CURSOR;
+	// mouse states	
+	private final static int STATE_INACTIVE = 0;
+	private final static int STATE_SELECT = 1;
+	private final static int STATE_SELECT_ADD = 2;
+	private final static int STATE_SELECT_REMOVE = 3;
+	private final static int STATE_MOVE = 4;
+	private final static int STATE_ZOOM = 5;
 
 	static {
 		if (correlationFormat instanceof DecimalFormat) {
@@ -145,10 +153,14 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		// create cursors
 		String imageFile = "/org/opensourcephysics/resources/tools/images/selectcursor.gif"; //$NON-NLS-1$
 		Image im = ResourceLoader.getImage(imageFile);
-		SELECT_CURSOR = GUIUtils.createCustomCursor(im, new Point(0, 0), "Add points", Cursor.CROSSHAIR_CURSOR); //$NON-NLS-1$
+		SELECT_CURSOR = GUIUtils.createCustomCursor(im, new Point(0, 0), "Select points", Cursor.CROSSHAIR_CURSOR); //$NON-NLS-1$
 		imageFile = "/org/opensourcephysics/resources/tools/images/selectremovecursor.gif"; //$NON-NLS-1$
 		im = ResourceLoader.getImage(imageFile);
 		SELECT_REMOVE_CURSOR = GUIUtils.createCustomCursor(im, new Point(0, 0), "Remove points", //$NON-NLS-1$
+				Cursor.CROSSHAIR_CURSOR);
+		imageFile = "/org/opensourcephysics/resources/tools/images/selectaddcursor.gif"; //$NON-NLS-1$
+		im = ResourceLoader.getImage(imageFile);
+		SELECT_ADD_CURSOR = GUIUtils.createCustomCursor(im, new Point(0, 0), "Add points", //$NON-NLS-1$
 				Cursor.CROSSHAIR_CURSOR);
 		imageFile = "/org/opensourcephysics/resources/tools/images/selectzoomcursor.gif"; //$NON-NLS-1$
 		im = ResourceLoader.getImage(imageFile);
@@ -193,7 +205,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	protected FunctionTool dataBuilder;
 	protected JobManager jobManager = new JobManager(this);
 	protected JLabel statusLabel, editableLabel;
-	protected CartesianInteractive plotAxes;
+	protected DataToolAxes plotAxes;
 	protected boolean positionVisible = false;
 	protected boolean slopeVisible = false;
 	protected boolean areaVisible = false;
@@ -212,24 +224,13 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	protected ShiftEditListener shiftEditListener;
 	protected JLabel shiftXLabel, shiftYLabel, selectedXLabel, selectedYLabel;
 	protected int selectedDataIndex = -1;
-	protected boolean toggleMeasurement, freezeMeasurement;
-
-
-	// drag box action
-	
-	private final static int BOX_STATE_INACTIVE = 0;
-	private final static int BOX_STATE_ARMED = 1;
-	private final static int BOX_STATE_ACTIVE   = 2;
-	
-	private int boxState = BOX_STATE_INACTIVE;
-	
+	protected boolean toggleMeasurement, freezeMeasurement;	
+	private int mouseState = STATE_INACTIVE;
 	private BitSet rowsInside = new BitSet(); // points inside selectionBox
 	private BitSet recent = new BitSet(); // points recently added or removed
 	private boolean selectionChanged, readyToFindHits, selectionBoxChanged;
 	private Interactive mouseDrawable;
 	private Timer timerToFindHits;
-	private boolean removeHits;
-
 
 	/**
 	 * Constructs a DataToolTab for the specified Data.
@@ -1653,30 +1654,59 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		plot.stringBuilder = plot.new PlotCoordinateStringBuilder();
 		plot.setCoordinateStringBuilder(plot.stringBuilder);
 
-		// create mouse listener for selecting data points in plot
+		// create mouse listener to manage states/cursors and select data points in plot
 		MouseInputListener mouseSelector = new MouseInputAdapter() {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-				if (OSPRuntime.isPopupTrigger(e)) {
-					boxState = BOX_STATE_INACTIVE;
+				mouseState = getMouseState(e);
+				switch (mouseState) {
+				case STATE_ZOOM:
 					plot.setMouseCursor(SELECT_ZOOM_CURSOR);
-					return;
+				case STATE_MOVE: // cursor set by axes
+					return;					
+				case STATE_SELECT:
+					if (plot.interactive == null) {
+						plot.setMouseCursor(SELECT_CURSOR);
+					}
+					break;
+				case STATE_SELECT_ADD:
+					if (plot.interactive == null) {
+						plot.setMouseCursor(SELECT_ADD_CURSOR);
+					}
+					break;
+				case STATE_SELECT_REMOVE:
+					if (plot.interactive == null) {
+						plot.setMouseCursor(SELECT_REMOVE_CURSOR);
+					}
 				}
-				boxState = BOX_STATE_ARMED;
-				mousePressedAction(e.getPoint(), e.isControlDown(), e.isShiftDown());
+				mousePressedAction(e, e.isControlDown(), e.isShiftDown());
 			}
 
 			@Override
 			public void mouseDragged(MouseEvent e) {
-				boxState = BOX_STATE_ACTIVE;
-				mouseDraggedAction(e.getPoint(), e.isControlDown(), e.isShiftDown());
+				boolean add = e.isShiftDown();
+				boolean remove = OSPRuntime.isMac()? add && e.isControlDown(): e.isControlDown();
+				switch (mouseState) {
+				case STATE_ZOOM:
+					plot.setMouseCursor(SELECT_ZOOM_CURSOR);
+				case STATE_MOVE:
+					return;					
+				case STATE_SELECT:
+				case STATE_SELECT_ADD:
+				case STATE_SELECT_REMOVE:
+					mouseState = remove ? STATE_SELECT_REMOVE: 
+						add? STATE_SELECT_ADD: STATE_SELECT;
+					plot.setMouseCursor(remove ? SELECT_REMOVE_CURSOR : 
+						add? SELECT_ADD_CURSOR: SELECT_CURSOR);
+				}
+				mouseDraggedAction(e, e.isControlDown(), add);
 			}
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				boxState = BOX_STATE_INACTIVE;
-				mouseReleasedAction(e.getPoint(), e.isControlDown(), e.isShiftDown());
+				mouseState = STATE_INACTIVE;
+				mouseReleasedAction(e, e.isControlDown(), e.isShiftDown());
 			}
 
 			@Override
@@ -2053,8 +2083,22 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		plot.repaint();
 		prevShiftY = refreshShiftFields();		 
 	}
+	
+	private int getMouseState(MouseEvent e) {
+		boolean button3 = (e.getModifiersEx() & MouseEvent.BUTTON3_DOWN_MASK) == MouseEvent.BUTTON3_DOWN_MASK;
+		boolean shift = e.isShiftDown();
+		boolean ctrl = e.isControlDown();
+		boolean zoom = button3 || OSPRuntime.isPopupTrigger(e);
+		boolean remove = OSPRuntime.isMac()? shift && ctrl: ctrl;
+		return zoom? STATE_ZOOM: 
+			e.isAltDown()? STATE_MOVE: 
+			remove? STATE_SELECT_REMOVE:
+			shift? 	STATE_SELECT_ADD: 
+							STATE_SELECT;
+	}
 
-	protected void mouseDraggedAction(Point point, boolean controlDown, boolean shiftDown) {
+	protected void mouseDraggedAction(MouseEvent e, boolean controlDown, boolean shiftDown) {
+		Point point = e.getPoint();
 		selectionChanged = true;
 		if (mouseDrawable == plot.origin) {
 			plot.selectionBox.visible = false;
@@ -2103,7 +2147,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			return;
 		}
 
-		if (boxState == BOX_STATE_INACTIVE) {
+		if (mouseState == STATE_INACTIVE) {
 			return;
 		}
 		Dataset data = getWorkingData();
@@ -2111,8 +2155,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			return;
 		}
 		
-		// don't show selection box if adjusting an area limit line
-		boolean isSelectionBoxActive = 
+		// don't show selection box if adjusting an area limit line or zooming
+		boolean isSelectionBoxActive = mouseState != STATE_ZOOM &&
 				mouseDrawable != plot.areaLimits[0] && 
 				mouseDrawable != plot.areaLimits[1];
 		plot.selectionBox.visible = isSelectionBoxActive;
@@ -2121,13 +2165,12 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		int dy = point.y - plot.selectionBox.ystart;
 		plot.selectionBox.setSize(dx, dy);
 		selectionBoxChanged = true;
-		removeHits = shiftDown && controlDown;
-		plot.setMouseCursor(removeHits ? SELECT_REMOVE_CURSOR : SELECT_CURSOR);
 		refreshFit();
 		plot.repaint();
 	}
 
-	protected void mouseReleasedAction(Point point, boolean controlDown, boolean shiftDown) {
+	protected void mouseReleasedAction(MouseEvent e, boolean controlDown, boolean shiftDown) {
+		Point point = e.getPoint();
 		if (!selectionChanged && freezeMeasurement) {
 			freezeMeasurement = false;
 			plot.measurementX = point.x;
@@ -2175,13 +2218,14 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			timerToFindHits = null; // BH 2020.02.14
 		}
 		if (selectionBoxChanged) {
-			findHits(removeHits, true);
+			findHits(true);
 			selectionBoxChanged = false;
 		}
 
 	}
 
-	protected void mousePressedAction(Point point, boolean controlDown, boolean shiftDown) {
+	protected void mousePressedAction(MouseEvent e, boolean controlDown, boolean shiftDown) {
+		Point point = e.getPoint();
 		mouseDrawable = plot.getInteractive();
 		
 		if (mouseDrawable == plot.origin) {
@@ -2220,9 +2264,12 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					break;
 				}
 			}
-			if (controlDown) {
+			if (controlDown || shiftDown) {
 				BitSet rows = dataTable.getSelectedModelRowsBS();
-				if (rows.get(index)) {
+				if (shiftDown) {
+					rows.set(index);					
+				}
+				else if (rows.get(index)) {
 					rows.clear(index);
 				} else {
 					rows.set(index);
@@ -2235,7 +2282,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				dataTable.selectModelRows(new int[] { index });
 			}
 			dataTable.getSelectedData();
-			boxState = BOX_STATE_INACTIVE;
+			mouseState = STATE_INACTIVE;
 			selectionChanged = true;
 			if (curveFitter.isAutoFit())
 				refreshFit();
@@ -2243,14 +2290,14 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			return;
 		}
 		if (mouseDrawable != null) {
-			boxState = BOX_STATE_INACTIVE;
+			mouseState = STATE_INACTIVE;
 			return;
 		}
 		if (timerToFindHits == null && !OSPRuntime.isJS) { // BH 2020.02.14
 			timerToFindHits = new Timer(200, new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					findHits(removeHits, !OSPRuntime.isJS);
+					findHits(!OSPRuntime.isJS);
 					timerToFindHits.restart();
 				}
 			});
@@ -2267,10 +2314,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		plot.selectionBox.xstart = point.x;
 		plot.selectionBox.ystart = point.y;
 		readyToFindHits = true;
-		removeHits = shiftDown && controlDown;
 		if (timerToFindHits != null)
 			timerToFindHits.start();
-		plot.setMouseCursor(removeHits ? SELECT_REMOVE_CURSOR : SELECT_CURSOR);
 	}
 	
 	private boolean isFitterVisible() {
@@ -2278,14 +2323,14 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		return curveFitter != null && splitPanes[1].getBottomComponent() == curveFitter;
 	}
 
-	private void findHits(final boolean subtract, boolean showInTable) {
+	private void findHits(boolean showInTable) {
 		if (!readyToFindHits || showInTable && !selectionBoxChanged)
 			return;
 		selectionBoxChanged = false;
 		Runnable runner = new Runnable() {
 			@Override
 			public void run() {
-				findHitsRun(subtract, showInTable);
+				findHitsRun(showInTable);
 			}
 		};
 		// should this be in separate thread?
@@ -2293,11 +2338,15 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 //	new Thread(runner).start();
 	}
 
-	private void findHitsRun(boolean subtract, boolean showInTable) {
+	private void findHitsRun(boolean showInTable) {
 		if (dataTable.workingData == null || dataTable.workingRowToModelRow == null)
 			return;
 		double[][] screenPoints = dataTable.workingData.getScreenCoordinates();
 		ListSelectionModel columnSelectionModel = dataTable.getColumnModel().getSelectionModel();
+		if (mouseState == STATE_SELECT) {
+			rowsInside.clear();
+			recent.clear();
+		}
 		for (int i = 0; i < screenPoints[0].length; i++) {
 			Integer row = dataTable.workingRowToModelRow.get(i);
 			if (row == null) {
@@ -2311,15 +2360,18 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				if (rowsInside.isEmpty()) {
 					columnSelectionModel.setSelectionInterval(1, 2);
 				}
-				if (subtract) {
+				if (mouseState == STATE_SELECT_REMOVE) {
+					if (rowsInside.get(irow))
+						recent.set(irow);
 					rowsInside.clear(irow);
 				} else {
+					if (!rowsInside.get(irow))
+						recent.set(irow);
 					rowsInside.set(irow);
 				}
-				recent.set(irow);
 			} else if (recent.get(irow)) {
-				// if a recently added data point is outside the box, remove it
-				if (subtract) {
+				// if a recently added/removed data point is outside the box, remove/add it back
+				if (mouseState == STATE_SELECT_REMOVE) {
 					rowsInside.set(irow);
 				} else {
 					rowsInside.clear(irow);
@@ -3121,7 +3173,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			}
 			return varPopup;
 		}
-
+		
 	} // end DataToolAxes class
 
 	/**
@@ -3143,6 +3195,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		double lockedXMin, lockedXMax, lockedYMin, lockedYMax;
 		double mouseDownXMin, mouseDownXMax, mouseDownYMin, mouseDownYMax;
 		int measurementIndex = -1, measurementX = -1;
+		Interactive interactive;
 
 		/**
 		 * Constructor
@@ -3169,13 +3222,56 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 			// create key listener to move origin, fix measurements and extend slope line
 			addKeyListener(new KeyAdapter() {
+				
+				private BitSet keyBits = new BitSet(256);
 
 				@Override
 				public void keyPressed(KeyEvent e) {
-					if (plot.getCursor() == SELECT_CURSOR && e.isControlDown() && e.isShiftDown()) {
-						plot.setMouseCursor(SELECT_REMOVE_CURSOR);
+					// only handle the first event, ignore repeated keys
+	        int keyCode = e.getKeyCode();
+	        if (keyBits.get(keyCode))
+	        	return;
+					
+					keyBits.set(keyCode);	        
+					if (e.getKeyCode() == KeyEvent.VK_ALT) {
+						mouseState = STATE_MOVE;
+						if (plot.selectionBox.visible) {
+							plot.selectionBox.visible = false;
+							plot.repaint();
+						}
+						return;
 					}
-					if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
+					if (keyCode == KeyEvent.VK_SHIFT) {
+						if (interactive != null)
+							return;
+						boolean remove = e.isControlDown(); // we know that shift is down
+						switch (mouseState) {
+						case STATE_ZOOM:
+						case STATE_MOVE:
+							return;					
+						case STATE_SELECT:
+						case STATE_SELECT_ADD:
+						case STATE_SELECT_REMOVE:
+							mouseState = remove ? STATE_SELECT_REMOVE: STATE_SELECT_ADD;
+						case STATE_INACTIVE:
+							plot.setMouseCursor(remove ? SELECT_REMOVE_CURSOR : SELECT_ADD_CURSOR);
+						}
+						return;
+					}
+					if (keyCode == KeyEvent.VK_CONTROL) {
+						if (interactive != null)
+							return;
+						switch (mouseState) {
+						case STATE_ZOOM:
+						case STATE_MOVE:
+							return;					
+						case STATE_SELECT:
+						case STATE_SELECT_ADD:
+						case STATE_SELECT_REMOVE:
+							mouseState = STATE_SELECT_REMOVE;
+						case STATE_INACTIVE:
+							plot.setMouseCursor(SELECT_REMOVE_CURSOR);
+						}
 						if (toggleMeasurement)
 							return;
 						toggleMeasurement = true;
@@ -3183,7 +3279,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 						refreshArea();
 						return;
 					}
-					if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+					if (keyCode == KeyEvent.VK_SPACE) {
 						if (!freezeMeasurement && e.isShiftDown()) {
 							freezeMeasurement = true;
 						} else {
@@ -3197,7 +3293,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 						}
 						return;
 					}
-					if (e.getKeyCode() == KeyEvent.VK_S && e.isShiftDown()) {
+					if (keyCode == KeyEvent.VK_S && e.isShiftDown()) {
 						dataTool.slopeExtended = !dataTool.slopeExtended;
 						plot.refreshMeasurements();
 						return;
@@ -3263,10 +3359,48 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 				@Override
 				public void keyReleased(KeyEvent e) {
-					if (plot.getCursor() == SELECT_REMOVE_CURSOR && (!e.isControlDown() || !e.isShiftDown())) {
-						plot.setMouseCursor(SELECT_CURSOR);
+	        keyBits.clear(e.getKeyCode());
+					if (e.getKeyCode() == KeyEvent.VK_ALT) {
+						plot.setMouseCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+						return;
+					}
+					if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+						if (interactive != null)
+							return;
+						switch (mouseState) {
+						case STATE_INACTIVE:
+							plot.setMouseCursor(e.isControlDown() && !OSPRuntime.isMac()? 
+									SELECT_REMOVE_CURSOR:
+									Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+						case STATE_ZOOM:
+						case STATE_MOVE:
+							return;
+						case STATE_SELECT:
+						case STATE_SELECT_ADD:
+						case STATE_SELECT_REMOVE:
+							boolean remove = e.isControlDown(); // we know that shift is up
+							mouseState = remove ? STATE_SELECT_REMOVE: STATE_SELECT;
+							plot.setMouseCursor(remove ? SELECT_REMOVE_CURSOR : SELECT_CURSOR);
+						}
+						return;
 					}
 					if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
+						if (interactive != null)
+							return;
+						switch (mouseState) {
+						case STATE_INACTIVE:
+							plot.setMouseCursor(e.isShiftDown()? 
+									SELECT_ADD_CURSOR:
+									Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+						case STATE_ZOOM:
+						case STATE_MOVE:
+							return;
+						case STATE_SELECT:
+						case STATE_SELECT_ADD:
+						case STATE_SELECT_REMOVE:
+							mouseState = e.isShiftDown()? STATE_SELECT_ADD: STATE_SELECT;
+							plot.setMouseCursor(e.isShiftDown()? SELECT_ADD_CURSOR: SELECT_CURSOR);
+						}
 						if (!toggleMeasurement)
 							return;
 						toggleMeasurement = false;
@@ -3288,10 +3422,10 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 	  @Override
 	  public Interactive getInteractive() {
-      Interactive iad = origin.findInteractive(this, mouseEvent.getX(), mouseEvent.getY());
-      if (iad == null)
-      	iad = super.getInteractive();
-	    return iad;
+	  	interactive = origin.findInteractive(this, mouseEvent.getX(), mouseEvent.getY());
+      if (interactive == null)
+      	interactive = super.getInteractive();
+	    return interactive;
 	  }
 
 		@Override
@@ -3328,13 +3462,13 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				super.scale(tempList);
 			}
 		}
-
+		
 		@Override
 		protected void paintDrawableList(Graphics g, ArrayList<Drawable> tempList) {
 			String s = message;
 			if (tempList.contains(curveFitter.getDrawer())) {
 				boolean auto = curveFitter.isAutoFit();
-				boolean inactive = (boxState == BOX_STATE_INACTIVE);
+				boolean inactive = (mouseState == STATE_INACTIVE);
 				curveFitter.setFitVisible(!auto || dataTable.isFitFittable(curveFitter.fit, inactive));
 				double[] ylimits = curveFitter.getDrawer().getYRange();
 				if (ylimits[0] != ylimits[1] && (ylimits[0] >= this.getYMax() || ylimits[1] <= this.getYMin())) {
