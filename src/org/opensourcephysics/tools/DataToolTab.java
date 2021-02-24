@@ -1686,7 +1686,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			@Override
 			public void mouseDragged(MouseEvent e) {
 				boolean add = e.isShiftDown();
-				boolean remove = OSPRuntime.isMac()? add && e.isControlDown(): e.isControlDown();
+				boolean remove = e.isControlDown();
 				switch (mouseState) {
 				case STATE_ZOOM:
 					plot.setMouseCursor(SELECT_ZOOM_CURSOR);
@@ -3253,8 +3253,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 						case STATE_SELECT_ADD:
 						case STATE_SELECT_REMOVE:
 							mouseState = remove ? STATE_SELECT_REMOVE: STATE_SELECT_ADD;
-						case STATE_INACTIVE:
 							plot.setMouseCursor(remove ? SELECT_REMOVE_CURSOR : SELECT_ADD_CURSOR);
+						case STATE_INACTIVE:
 						}
 						return;
 					}
@@ -3269,8 +3269,10 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 						case STATE_SELECT_ADD:
 						case STATE_SELECT_REMOVE:
 							mouseState = STATE_SELECT_REMOVE;
-						case STATE_INACTIVE:
 							plot.setMouseCursor(SELECT_REMOVE_CURSOR);
+						case STATE_INACTIVE:
+							if (!OSPRuntime.isMac())
+								plot.setMouseCursor(SELECT_REMOVE_CURSOR);
 						}
 						if (toggleMeasurement)
 							return;
@@ -3418,6 +3420,14 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				}
 
 			});
+		}
+		
+		@Override
+		public boolean isZoomEvent(MouseEvent e) {
+			return OSPRuntime.isPopupTrigger(e) && 
+					!(mouseState == STATE_SELECT || 
+					mouseState == STATE_SELECT_ADD || 
+					mouseState == STATE_SELECT_REMOVE);
 		}
 
 	  @Override
