@@ -47,7 +47,7 @@ import org.opensourcephysics.controls.XML;
  */
 public class StepperClipControl extends ClipControl {
 	
-	private static final int DIVIDER = 5;
+	private static final double DELAY_STABILITY = 8;
 	
 	// instance fields
 	private javax.swing.Timer timer;
@@ -60,6 +60,7 @@ public class StepperClipControl extends ClipControl {
 	private int maxDelay = 2000; // milliseconds
 	private long startTime;
 	private int timerDelay; // adjusted on the fly
+	private double processingTime = 10; // adjusted on the fly
 	private int playStepCount;
 	private double playDuration;
 
@@ -151,9 +152,10 @@ public class StepperClipControl extends ClipControl {
 				playDuration += dt;
 				playStepCount++;
 				startTime += dt; // = currentTime
-				timerDelay -= Math.round(Math.round((dt - stepDuration) / DIVIDER));
+				timerDelay -= Math.round(Math.round((dt - stepDuration) / DELAY_STABILITY));
 				timerDelay = Math.min(maxDelay, Math.max(minDelay, timerDelay));
 				timer.setInitialDelay(timerDelay);
+				processingTime = stepDuration - timerDelay;
 				readyToStep = false;
 				timer.restart();
 			}
@@ -226,12 +228,9 @@ public class StepperClipControl extends ClipControl {
 			return;
 		}
 		rate = Math.abs(newRate);
-//    if (video==null) {
-//	    int delay = (int) (getMeanFrameDuration()*clip.getStepSize()/rate);
-//	    delay = Math.min(delay, maxDelay);
-//	    delay = Math.max(delay, minDelay);
 		timer.setInitialDelay(getTimerDelay());
-//    }
+		playDuration = 0;
+		playStepCount = 0;		
 		support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_RATE, null, new Double(rate));
 	}
 
@@ -390,10 +389,10 @@ public class StepperClipControl extends ClipControl {
 				duration = video.getDuration() / video.getFrameCount();
 		}
 		stepDuration = duration * clip.getStepSize() / rate;
-		int delay = (int)stepDuration;
+		int delay = Math.round(Math.round(stepDuration - processingTime));
 		delay = Math.max(minDelay, Math.min(delay, maxDelay));
 		timerDelay = delay;
-		return delay;
+		return timerDelay;
 	}
 	
   @Override
