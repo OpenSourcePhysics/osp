@@ -37,7 +37,6 @@ import java.beans.PropertyChangeEvent;
 
 import javax.swing.SwingUtilities;
 
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 
 /**
@@ -47,14 +46,22 @@ import org.opensourcephysics.controls.XML;
  * @version 1.0
  */
 public class StepperClipControl extends ClipControl {
+	
+	private static final int DIVIDER = 5;
+	
 	// instance fields
 	private javax.swing.Timer timer;
 	private double frameDuration = 100; // milliseconds
+	private double stepDuration; // milliseconds, with stepSize & rate adjustment
 	private boolean playing = false;
 	private boolean readyToStep = true;
 	private boolean stepDisplayed = true;
-	private int minDelay = 10; // milliseconds
-	private int maxDelay = 5000; // milliseconds
+	private int minDelay = 0; // milliseconds
+	private int maxDelay = 2000; // milliseconds
+	private long startTime;
+	private int timerDelay; // adjusted on the fly
+	private int playStepCount;
+	private double playDuration;
 
 	/**
 	 * Constructs a StepperClipControl object.
@@ -74,9 +81,6 @@ public class StepperClipControl extends ClipControl {
 				}
 			}
 		}
-//    int delay = (int) (frameDuration*clip.getStepSize());
-//    delay = Math.min(delay, maxDelay);
-//    delay = Math.max(delay, minDelay);
 		timer = new javax.swing.Timer(getTimerDelay(), new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -98,12 +102,16 @@ public class StepperClipControl extends ClipControl {
 		if (clip.getStepCount() == 1) {
 			return;
 		}
+		startTime = System.currentTimeMillis();
+		playDuration = 0;
+		playStepCount = 0;
 		playing = true;
 		readyToStep = true;
 		if (stepNumber == clip.getStepCount() - 1) {
 			setStepNumber(0);
 		} else {
-			step();
+//			step();
+			timer.restart();
 		}
 		SwingUtilities.invokeLater(()->{
 			support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_PLAYING, null, Boolean.TRUE);
@@ -139,6 +147,13 @@ public class StepperClipControl extends ClipControl {
 				setStepNumber(0);
 			}
 			if (playing) {
+				long dt = System.currentTimeMillis() - startTime;
+				playDuration += dt;
+				playStepCount++;
+				startTime += dt; // = currentTime
+				timerDelay -= Math.round(Math.round((dt - stepDuration) / DIVIDER));
+				timerDelay = Math.min(maxDelay, Math.max(minDelay, timerDelay));
+				timer.setInitialDelay(timerDelay);
 				readyToStep = false;
 				timer.restart();
 			}
@@ -294,7 +309,7 @@ public class StepperClipControl extends ClipControl {
 	}
 
 	/**
-	 * Gets the current time in milliseconds measured from step 0.
+	 * Gets the current video time in milliseconds measured from step 0.
 	 *
 	 * @return the current time
 	 */
@@ -374,11 +389,21 @@ public class StepperClipControl extends ClipControl {
 			} else
 				duration = video.getDuration() / video.getFrameCount();
 		}
-		int delay = (int) (duration * clip.getStepSize() / rate);
+		stepDuration = duration * clip.getStepSize() / rate;
+		int delay = (int)stepDuration;
 		delay = Math.max(minDelay, Math.min(delay, maxDelay));
-		OSPLog.debug("StepperClipControl.delay = " + delay);
+		timerDelay = delay;
 		return delay;
 	}
+	
+  @Override
+	public double getMeasuredRate() {
+  	if (playStepCount > 0) {
+  		double measuredStepDuration = playDuration / playStepCount;
+  		return rate * stepDuration / measuredStepDuration;
+  	}
+    return rate;
+  }
 
 	/**
 	 * Returns an XML.ObjectLoader to save and load data for this class.

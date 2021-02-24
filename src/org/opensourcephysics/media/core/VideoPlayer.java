@@ -209,8 +209,13 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	private int maxEndFrame;
 	private int sliderInset;
 	private ActionListener popupItemListener;
-
-
+	// for measuring 
+	private boolean playStarted, ignoreRateSpinner;
+	private javax.swing.Timer slowRateTimer;
+	private Color defaultSpinnerColor;
+	private static Color slowSpinnerColor = Color.red;
+	private static Color cautionSpinnerColor = new Color(200, 80, 60);
+	private double measuredRate;
 	static private int ntest;
 
 	/**
@@ -430,6 +435,9 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	 * @param rate the desired rate
 	 */
 	public void setRate(double rate) {
+		JSpinner.NumberEditor editor = (JSpinner.NumberEditor)rateSpinner.getEditor();
+		boolean caution = measuredRate < rate * 0.9 && measuredRate > 0;
+		editor.getTextField().setForeground(caution? cautionSpinnerColor: defaultSpinnerColor);		
 		clipControl.setRate(rate);
 	}
 
@@ -587,7 +595,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		else
 			SwingUtilities.invokeLater(runner);
 	}
-
+	
 	/**
 	 * Responds to property change events.
 	 *
@@ -596,8 +604,6 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	@Override
 	public void propertyChange(PropertyChangeEvent e) {
 		switch (e.getPropertyName()) {
-		
-		// fire new changes
 		
 		case ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER:
 			updateValueAndPlayButtons();
@@ -610,6 +616,21 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 			// pass to VideoPanel
 			return;
 		case ClipControl.PROPERTY_CLIPCONTROL_PLAYING:
+			if (!(Boolean)e.getNewValue() && playStarted) { // stopped playing
+				playStarted = false;
+				measuredRate = clipControl.getMeasuredRate();
+				JSpinner.NumberEditor editor = (JSpinner.NumberEditor)rateSpinner.getEditor();
+				if (measuredRate / getRate() < 0.9) {
+					ignoreRateSpinner = true;
+					rateSpinner.setValue(measuredRate);
+					editor.getTextField().setForeground(slowSpinnerColor);
+					slowRateTimer.restart();
+				}
+				else {
+					measuredRate = 0;
+					editor.getTextField().setForeground(defaultSpinnerColor);					
+				}
+			}
 			updatePlayButtonsLater((Boolean) e.getNewValue());
 			firePropertyChange(PROPERTY_VIDEOPLAYER_PLAYING, null, e.getNewValue()); 
 			// to TrackerPanel
@@ -737,7 +758,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		});
 
 		// create rate spinner
-		final double minRate = 0.01, maxRate = 10;
+		final double minRate = 0.1, maxRate = 4;
 		final SpinnerNumberModel model = new SpinnerNumberModel(1, minRate, maxRate, 0.1);
 		rateSpinner = new JSpinner(model) {
 			// override size methods so has same height as buttons
@@ -762,13 +783,16 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		final JSpinner.NumberEditor editor = new JSpinner.NumberEditor(rateSpinner, "0%"); //$NON-NLS-1$
 		editor.getTextField().setHorizontalAlignment(SwingConstants.LEFT);
 		editor.getTextField().setFont(new Font("Dialog", Font.PLAIN, 12)); //$NON-NLS-1$
+		defaultSpinnerColor = editor.getTextField().getForeground();
 		rateSpinner.setEditor(editor);
 		rateSpinner.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
+				if (ignoreRateSpinner)
+					return;
 				Double rate = (Double) rateSpinner.getValue();
 				setRate(rate);
-				model.setStepSize(rate >= 2 ? 0.5 : rate >= 0.2 ? 0.1 : 0.01);
+//				model.setStepSize(rate >= 2 ? 0.5 : rate >= 0.2 ? 0.1 : 0.01);
 			}
 		});
 		editor.getTextField().addKeyListener(new java.awt.event.KeyAdapter() {
@@ -1010,6 +1034,18 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		if (inspectorButtonVisible) {
 			toolbar.add(inspectorButton);
 		}
+		
+		slowRateTimer = new javax.swing.Timer(1000, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JSpinner.NumberEditor editor = (JSpinner.NumberEditor)rateSpinner.getEditor();
+				editor.getTextField().setForeground(cautionSpinnerColor);
+				rateSpinner.setValue(getRate());
+				ignoreRateSpinner = false;
+			}
+		});
+		slowRateTimer.setRepeats(false);
+
 	}
 
 	protected void doSliderKey(int keyCode) {
@@ -1031,6 +1067,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		if (playButton.isSelected()) {
 			stop();
 		} else {
+			playStarted = true;
 			play();
 		}
 	}
@@ -1619,7 +1656,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		}
 		readout.setText(display);
 		// update rate spinner
-		rateSpinner.setValue(getRate());
+		if (!ignoreRateSpinner)
+			rateSpinner.setValue(getRate());
 		// update stepSizeButton
 		stepSizeButton.setText("" + getVideoClip().getStepSize()); //$NON-NLS-1$
 		// set font sizes
@@ -1666,6 +1704,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		slider.repaint();
 		switch (option) {
 		case SLIDER_NEWCLIP:
+			measuredRate = 0;
 			firePropertyChange(PROPERTY_VIDEOPLAYER_VIDEOCLIP, (VideoClip) o, clip);
 			System.gc();
 			break;

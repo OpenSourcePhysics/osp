@@ -185,6 +185,16 @@ public abstract class ClipControl implements PropertyChangeListener {
   }
 
   /**
+   * Gets the measured play rate. Default is the set rate.
+   * StepperClipControl overrides to report true measured rate.
+   *
+   * @return the measured rate
+   */
+  public double getMeasuredRate() {
+    return rate;
+  }
+
+  /**
    * Turns on/off looping.
    *
    * @param loops <code>true</code> to turn looping on
