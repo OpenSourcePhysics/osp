@@ -405,7 +405,9 @@ public class JREFinder {
 			if (!OSPRuntime.isMac() && !dir.getParent().contains("jre")) //$NON-NLS-1$
 				return false;
 			// reject older versions
-			if (dir.getPath().contains("1.5.") || dir.getPath().contains("-5-") //$NON-NLS-1$ //$NON-NLS-2$
+			if (dir.getPath().contains("1.7.") || dir.getPath().contains("jre7") //$NON-NLS-1$ //$NON-NLS-2$
+					|| dir.getPath().contains("1.6.") || dir.getPath().contains("jre6") //$NON-NLS-1$ //$NON-NLS-2$
+					|| dir.getPath().contains("1.5.") || dir.getPath().contains("-5-") //$NON-NLS-1$ //$NON-NLS-2$
 					|| dir.getPath().contains("1.4.") || dir.getPath().contains("1.3.") //$NON-NLS-1$ //$NON-NLS-2$
 					|| dir.getPath().contains("1.2.")) //$NON-NLS-1$
 				return false;
