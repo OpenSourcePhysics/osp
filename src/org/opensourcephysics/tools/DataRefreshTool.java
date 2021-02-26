@@ -238,7 +238,7 @@ public class DataRefreshTool implements Tool {
 			newYArray[k] = valueMap.keySet().contains(x) ? valueMap.get(x) : Double.NaN;
 		}
 		dataset.clear();
-		dataset.append(newXArray, newYArray);
+		dataset.append(newXArray, newYArray, len);
 	}
 
 }
