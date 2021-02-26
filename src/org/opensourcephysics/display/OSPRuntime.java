@@ -120,7 +120,7 @@ public class OSPRuntime {
 	}
 
 	static {
-		if(!isJS) try {  // only load default assets if running in JavaScript
+		if(isJS) try {  // only load default assets if running in JavaScript
 			Object val = (isJS ? jsutil.getAppletInfo("assets") : null);
 			if (val == null)
 				val = "DEFAULT";
