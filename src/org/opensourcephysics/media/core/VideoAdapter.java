@@ -429,8 +429,8 @@ public abstract class VideoAdapter implements Video {
 	}
 
 	protected void setFrameCount(int n) {
-		if (frameCount != n)
-			OSPLog.finer("Video.setFramecount " + n);
+//		if (frameCount != n)
+//			OSPLog.finer("Video.setFramecount " + n);
 		frameCount = n;
 	}
 

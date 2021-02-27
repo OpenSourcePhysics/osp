@@ -2734,7 +2734,7 @@ public class DataToolTable extends DataTable {
 			this.target = target;
 			this.value = value;
 			String name = (colName == null) ? null : ": column \"" + colName + "\""; //$NON-NLS-1$ //$NON-NLS-2$
-			OSPLog.finer(editTypes[type] + name);
+			//OSPLog.finer(editTypes[type] + name);
 		}
 
 		// undoes the change
@@ -2742,7 +2742,7 @@ public class DataToolTable extends DataTable {
 		@SuppressWarnings("unchecked")
 		public void undo() throws CannotUndoException {
 			super.undo();
-			OSPLog.finer("undoing " + editTypes[editType]); //$NON-NLS-1$
+			//OSPLog.finer("undoing " + editTypes[editType]); //$NON-NLS-1$
 			switch (editType) {
 			case DELIMITED_TEXT_EDIT: {
 				// target is old data, value is new data
@@ -2815,7 +2815,7 @@ public class DataToolTable extends DataTable {
 		@SuppressWarnings("unchecked")
 		public void redo() throws CannotUndoException {
 			super.redo();
-			OSPLog.finer("redoing " + editTypes[editType]); //$NON-NLS-1$
+			//OSPLog.finer("redoing " + editTypes[editType]); //$NON-NLS-1$
 			switch (editType) {
 			case DELIMITED_TEXT_EDIT: {
 				// target is undo data, value is redo data

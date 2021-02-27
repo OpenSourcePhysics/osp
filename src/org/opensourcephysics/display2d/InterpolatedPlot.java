@@ -410,7 +410,7 @@ public synchronized void update() {
       image = null;
       return;
     }
-    OSPLog.finer("InterpolatedPlot image created with row="+height+" and col="+width); //$NON-NLS-1$ //$NON-NLS-2$
+    //OSPLog.finer("InterpolatedPlot image created with row="+height+" and col="+width); //$NON-NLS-1$ //$NON-NLS-2$
     imageType = 
     		(OSPRuntime.isJS ? JSUtilI.TYPE_4BYTE_HTML5
     				: BufferedImage.TYPE_4BYTE_ABGR);

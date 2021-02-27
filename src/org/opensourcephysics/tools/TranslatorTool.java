@@ -903,7 +903,7 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
 				res = ResourceLoader.getResource(path + ".properties"); //$NON-NLS-1$
 			}
 			if (res != null) {
-				OSPLog.finer(res.getAbsolutePath());
+				//OSPLog.finer(res.getAbsolutePath());
 				readProperties(res.openReader(), properties);
 			} else {
 				// load properties with default values
@@ -1074,7 +1074,7 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
 						Map<String, String> properties = new TreeMap<String, String>();
 						locales.put(languages[i], properties);
 						// fill properties from resource
-						OSPLog.finer(res.getAbsolutePath());
+						//OSPLog.finer(res.getAbsolutePath());
 						readProperties(res.openReader(), properties);
 					}
 				}

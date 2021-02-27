@@ -535,7 +535,7 @@ public void loadDatasetURI(String relpath) {
 			getFitBuilder().curveFitters.remove(tab.getCurveFitter());
 			tab.getCurveFitter().notifyTabRemoved();
 			String title = tabbedPane.getTitleAt(index);
-			OSPLog.finer("removing tab " + title); //$NON-NLS-1$
+			//OSPLog.finer("removing tab " + title); //$NON-NLS-1$
 			tabbedPane.removeTabAt(index);
 			refreshTabTitles();
 			refreshMenubar();
@@ -1953,7 +1953,7 @@ public void loadDatasetURI(String relpath) {
 		tab.dataTool = this;
 		// assign a unique name (also traps for null name)
 		tab.setName(getUniqueTabName(tab.getName()));
-		OSPLog.finer("adding tab " + tab.getName()); //$NON-NLS-1$
+		//OSPLog.finer("adding tab " + tab.getName()); //$NON-NLS-1$
 		tabbedPane.addTab("", tab); //$NON-NLS-1$
 		tab.setFontLevel(FontSizer.getLevel());
 		tabbedPane.setSelectedComponent(tab);
@@ -2331,7 +2331,7 @@ public void loadDatasetURI(String relpath) {
 				return false;
 			}
 			String title = tabbedPane.getTitleAt(i);
-			OSPLog.finer("removing tab " + title); //$NON-NLS-1$
+			//OSPLog.finer("removing tab " + title); //$NON-NLS-1$
 			DataToolTab tab = getTab(i);
 			getFitBuilder().curveFitters.remove(tab.getCurveFitter());
 			tab.getCurveFitter().notifyTabRemoved();
@@ -2353,7 +2353,7 @@ public void loadDatasetURI(String relpath) {
 				return false;
 			}
 			String title = tabbedPane.getTitleAt(i);
-			OSPLog.finer("removing tab " + title); //$NON-NLS-1$
+			//OSPLog.finer("removing tab " + title); //$NON-NLS-1$
 			DataToolTab tab = getTab(i);
 			getFitBuilder().curveFitters.remove(tab.getCurveFitter());
 			tab.getCurveFitter().notifyTabRemoved();
