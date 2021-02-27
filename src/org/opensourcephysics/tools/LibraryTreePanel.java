@@ -375,7 +375,7 @@ public class LibraryTreePanel extends JPanel {
 			initGUI();
 			return;
 		}
-		OSPLog.debug("LibraryTreePanel.showInfo " + why + " " + node.getDisplayString() + " " + Thread.currentThread());
+		//OSPLog.debug("LibraryTreePanel.showInfo " + why + " " + node.getDisplayString() + " " + Thread.currentThread());
 		// show node data
 		boolean isCollection = node.record instanceof LibraryCollection;
 		boolean isRoot = node.isRoot();
@@ -2364,7 +2364,7 @@ public class LibraryTreePanel extends JPanel {
 		boolean hasNewChildren = false;
 
 		HTMLDisplayer(LibraryTreeNode treeNode) {
-			OSPLog.debug("LibraryTreePanel.HTMLDisplayer " + treeNode.getDisplayString());
+			//OSPLog.debug("LibraryTreePanel.HTMLDisplayer " + treeNode.getDisplayString());
 			node = treeNode;
 		}
 

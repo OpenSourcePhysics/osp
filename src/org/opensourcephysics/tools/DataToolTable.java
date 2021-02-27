@@ -751,7 +751,7 @@ public class DataToolTable extends DataTable {
 			copyRowsItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					OSPLog.debug("copying table data from " + getName()); //$NON-NLS-1$
+					//OSPLog.debug("copying table data from " + getName()); //$NON-NLS-1$
 					OSPLog.finest("copying rows"); //$NON-NLS-1$
 					OSPRuntime.copy(dataToolTab.getSelectedTableData(), null);
 				}

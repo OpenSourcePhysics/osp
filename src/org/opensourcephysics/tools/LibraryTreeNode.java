@@ -831,7 +831,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 			}
 			// images only
 			ResourceLoader.copyURLtoFileAsync(sourcePath, thumbPath, (File t) -> {
-				OSPLog.debug("LibraryTreeNode.saveThumbnail\n " + sourcePath + "\n " + thumbPath + "\n " + t);
+				//OSPLog.debug("LibraryTreeNode.saveThumbnail\n " + sourcePath + "\n " + thumbPath + "\n " + t);
 				doneAsync(t);
 				return null;
 			});

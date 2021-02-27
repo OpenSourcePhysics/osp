@@ -636,12 +636,12 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent e) {
-		switch (e.getPropertyName()) {
-		default:
-			OSPLog.debug("!!!!!!!!!FunctionTool.propertychange " + e.getPropertyName() + " "
-					+ e.getSource().getClass().getName());
-			break;
-		}
+//		switch (e.getPropertyName()) {
+//		default:
+//			OSPLog.debug("!!!!!!!!!FunctionTool.propertychange " + e.getPropertyName() + " "
+//					+ e.getSource().getClass().getName());
+//			break;
+//		}
 		if (!haveGUI())
 			return;
 		refreshGUI();

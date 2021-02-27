@@ -1033,7 +1033,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 			res.setBasePath(control.getString("base_path")); //$NON-NLS-1$
 			String target = control.getString("target"); //$NON-NLS-1$
 			if (target != null) {
-				OSPLog.debug("LibraryResource.loadObject " + res.name + " target=" + target);
+				//OSPLog.debug("LibraryResource.loadObject " + res.name + " target=" + target);
 				res.target = target;
 			}
 			res.setHTMLPath(control.getString("html_path")); //$NON-NLS-1$

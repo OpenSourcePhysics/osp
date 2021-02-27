@@ -82,7 +82,6 @@ public class FourierPanel extends JPanel {
 		FourierSinCosAnalysis fourierData = createFourierData(data);
 		if (fourierData == null)
 			return;
-		OSPLog.debug("FourierPanel.refresh");
 		ArrayList<Dataset> datasets = fourierData.getDatasets();
 		createButtons(datasets);
 		for (Dataset next : datasets) {

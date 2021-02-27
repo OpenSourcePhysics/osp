@@ -150,7 +150,7 @@ public class LibraryComPADRE {
 	protected static void loadResources(LibraryTreeNode treeNode, Runnable onSuccess, Runnable onFailure) {
 		if (!(treeNode.record instanceof LibraryCollection))
 			return;
-		OSPLog.debug("LibraryComPADRE loading resources for "+treeNode.record.getName());
+		//OSPLog.debug("LibraryComPADRE loading resources for "+treeNode.record.getName());
 		LibraryCollection collection = (LibraryCollection) treeNode.record;
 		boolean[] success = new boolean[1];
 		int[] index = new int[1];

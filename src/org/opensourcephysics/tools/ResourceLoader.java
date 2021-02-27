@@ -1847,10 +1847,10 @@ public class ResourceLoader {
 	 */
 	public static boolean isURLAvailable(String urlPath) {
 		if (webTestOK == Boolean.FALSE) {
-			OSPLog.debug("ResourceLoader skipping URLAvailable, since webTestOK == FALSE for " + urlPath);
+			//OSPLog.debug("ResourceLoader skipping URLAvailable, since webTestOK == FALSE for " + urlPath);
 			return false;
 		}
-		OSPLog.debug("ResourceLoader checking for " + urlPath);
+		//OSPLog.debug("ResourceLoader checking for " + urlPath);
 		URL url = null;
 		try {
 			// make a URL, open a connection, get content

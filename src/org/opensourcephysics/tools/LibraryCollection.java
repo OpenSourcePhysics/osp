@@ -64,7 +64,7 @@ public class LibraryCollection extends LibraryResource {
 		path = (path == null ? "" : path.trim()); //$NON-NLS-1$
 		if (path.equals(target))
 			return false;
-		OSPLog.debug("LibraryCollection.setTarget " + getName() + " " + target + ">" + path);
+		//OSPLog.debug("LibraryCollection.setTarget " + getName() + " " + target + ">" + path);
 		target = path;
 		return true;
 	}
