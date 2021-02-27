@@ -50,8 +50,7 @@ public class DecimalField extends NumberField {
    * @param places the number of decimal places to display
    */
   public DecimalField(int columns, int places) {
-    super(columns);
-    fixedPattern = fixedPatternByDefault = true;
+    super(columns, 4, true);
     setDecimalPlaces(places);
   }
 
@@ -69,7 +68,7 @@ public class DecimalField extends NumberField {
       pattern += "0"; //$NON-NLS-1$
     }
     defaultPattern = pattern;
-    if (userPattern.equals("")) { //$NON-NLS-1$
+    if (nf.userPattern.equals("")) { //$NON-NLS-1$
       applyPattern(pattern);
     }
   }
@@ -86,13 +85,13 @@ public void setSigFigs(int sigfigs) {}
 		if (pattern == null)
 			pattern = ""; //$NON-NLS-1$
 		pattern = pattern.trim();
-		if (pattern.equals(userPattern))
+		if (pattern.equals(nf.userPattern))
 			return;
-		userPattern = pattern;
-		if (userPattern.equals("")) { //$NON-NLS-1$
+		nf.userPattern = pattern;
+		if (nf.userPattern.equals("")) { //$NON-NLS-1$
 			applyPattern(defaultPattern);
 		} else {
-			applyPattern(userPattern);
+			applyPattern(nf.userPattern);
 		}
 		setValue(prevValue);
 	}
