@@ -516,7 +516,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 
 	public void readAsync(String name, Function<String, Void> whenDone) {
 		synchronized (sync) {
-			OSPLog.finest("reading " + name); //$NON-NLS-1$
+			//OSPLog.finest("reading " + name); //$NON-NLS-1$
 			Resource res = ResourceLoader.getResource(name);
 			if (res == null) {
 				processReader(name, null, null, whenDone);

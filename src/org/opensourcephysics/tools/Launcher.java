@@ -4011,6 +4011,11 @@ public class Launcher {
 
 	}
 
+	protected static void log(String key) {
+		OSPLog.finest(LaunchRes.getString(key));
+	}
+
+
 }
 
 /*

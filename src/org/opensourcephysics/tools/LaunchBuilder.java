@@ -569,7 +569,7 @@ public class LaunchBuilder extends Launcher {
 		boolean changed = false;
 		if (node != null) {
 			if (node.isSingleVM() != singleVMCheckBox.isSelected()) {
-				OSPLog.finest(LaunchRes.getString("Log.Message.ChangeNodeVM")); //$NON-NLS-1$
+				log(("Log.Message.ChangeNodeVM")); //$NON-NLS-1$
 				LaunchNode parent = (LaunchNode) node.getParent();
 				if ((parent != null) && parent.isSingleVM()) {
 					node.singleVM = false;
@@ -588,17 +588,17 @@ public class LaunchBuilder extends Launcher {
 				changed = true;
 			}
 			if (node.isSingleVM() && (node.showLog != showLogCheckBox.isSelected())) {
-				OSPLog.finest(LaunchRes.getString("Log.Message.ChangeNodeShowLog")); //$NON-NLS-1$
+				log(("Log.Message.ChangeNodeShowLog")); //$NON-NLS-1$
 				node.showLog = showLogCheckBox.isSelected();
 				changed = true;
 			}
 			if (node.isSingleVM() && node.isShowLog() && (node.clearLog != clearLogCheckBox.isSelected())) {
-				OSPLog.finest(LaunchRes.getString("Log.Message.ChangeNodeClearLog")); //$NON-NLS-1$
+				log(("Log.Message.ChangeNodeClearLog")); //$NON-NLS-1$
 				node.clearLog = clearLogCheckBox.isSelected();
 				changed = true;
 			}
 			if (node.isSingleVM() && (node.isSingleApp() != singleAppCheckBox.isSelected())) {
-				OSPLog.finest(LaunchRes.getString("Log.Message.ChangeNodeSingleApp")); //$NON-NLS-1$
+				log(("Log.Message.ChangeNodeSingleApp")); //$NON-NLS-1$
 				LaunchNode parent = (LaunchNode) node.getParent();
 				if ((parent != null) && parent.isSingleApp()) {
 					node.singleApp = false;
@@ -610,32 +610,32 @@ public class LaunchBuilder extends Launcher {
 				changed = true;
 			}
 			if (node.singleton != singletonCheckBox.isSelected()) {
-				OSPLog.finest(LaunchRes.getString("Log.Message.ChangeNodeSingleton")); //$NON-NLS-1$
+				log(("Log.Message.ChangeNodeSingleton")); //$NON-NLS-1$
 				node.singleton = singletonCheckBox.isSelected();
 				changed = true;
 			}
 			if (node.hiddenInLauncher != hiddenCheckBox.isSelected()) {
-				OSPLog.finest(LaunchRes.getString("Log.Message.ChangeNodeHidden")); //$NON-NLS-1$
+				log(("Log.Message.ChangeNodeHidden")); //$NON-NLS-1$
 				node.hiddenInLauncher = hiddenCheckBox.isSelected();
 				changed = true;
 			}
 			if (node.isButtonView() != buttonViewCheckBox.isSelected()) {
-				OSPLog.finest(LaunchRes.getString("Log.Message.ChangeButtonView")); //$NON-NLS-1$
+				log(("Log.Message.ChangeButtonView")); //$NON-NLS-1$
 				node.setButtonView(buttonViewCheckBox.isSelected());
 				changed = true;
 			}
 			if (!node.name.equals(nameField.getText())) {
-				OSPLog.finest(LaunchRes.getString("Log.Message.ChangeNodeName")); //$NON-NLS-1$
+				log(("Log.Message.ChangeNodeName")); //$NON-NLS-1$
 				node.name = nameField.getText();
 				changed = true;
 			}
 			if (!node.tooltip.equals(tooltipField.getText())) {
-				OSPLog.finest(LaunchRes.getString("Log.Message.ChangeTooltip")); //$NON-NLS-1$
+				log(("Log.Message.ChangeTooltip")); //$NON-NLS-1$
 				node.tooltip = tooltipField.getText();
 				changed = true;
 			}
 			if (!node.description.equals(descriptionPane.getText())) {
-				OSPLog.finest(LaunchRes.getString("Log.Message.ChangeNodeDesc")); //$NON-NLS-1$
+				log(("Log.Message.ChangeNodeDesc")); //$NON-NLS-1$
 				node.description = descriptionPane.getText();
 				changed = true;
 			}
@@ -645,7 +645,7 @@ public class LaunchBuilder extends Launcher {
 				node.setMinimumArgLength(n + 1);
 			}
 			if ((node.args.length > n) && !arg.equals(node.args[n])) {
-				OSPLog.finest(LaunchRes.getString("Log.Message.ChangeNodeArgs") + " " + n); //$NON-NLS-1$//$NON-NLS-2$
+				log(("Log.Message.ChangeNodeArgs") + " " + n); //$NON-NLS-1$//$NON-NLS-2$
 				node.args[n] = arg;
 				if (arg.equals("")) { //$NON-NLS-1$
 					node.setMinimumArgLength(1);
@@ -655,7 +655,7 @@ public class LaunchBuilder extends Launcher {
 			String jarPath = jarField.getText();
 			if ((jarPath.equals("") && (node.classPath != null)) //$NON-NLS-1$
 					|| (!jarPath.equals("") && !jarPath.equals(node.classPath))) { //$NON-NLS-1$
-				OSPLog.finest(LaunchRes.getString("Log.Message.ChangeNodePath")); //$NON-NLS-1$
+				log(("Log.Message.ChangeNodePath")); //$NON-NLS-1$
 				node.setClassPath(jarPath.equals("") //$NON-NLS-1$
 						? null
 						: jarPath);
@@ -669,7 +669,7 @@ public class LaunchBuilder extends Launcher {
 				String title = (displayTab == null) ? null : displayTab.title;
 				String[] args = (displayTab == null) ? null : displayTab.getModelArgs();
 				node.setDisplayTab(n, title, input, args);
-				OSPLog.finest(LaunchRes.getString("Log.Message.ChangeNodeURL")); //$NON-NLS-1$
+				log(("Log.Message.ChangeNodeURL")); //$NON-NLS-1$
 				changed = true;
 			}
 			if (displayTab != null && displayTab.modelClass != null && modelArgsDialog.isVisible()) {
@@ -680,7 +680,7 @@ public class LaunchBuilder extends Launcher {
 				}
 				String[] args = displayTab.getModelArgs();
 				if (args.length > n && !arg.equals(args[n])) {
-					OSPLog.finest(LaunchRes.getString("Log.Message.ChangeModelArgs") + " " + n); //$NON-NLS-1$//$NON-NLS-2$
+					log(("Log.Message.ChangeModelArgs") + " " + n); //$NON-NLS-1$//$NON-NLS-2$
 					args[n] = arg.equals("") ? null : arg; //$NON-NLS-1$
 					displayTab.setModelArgs(args);
 					if (arg.equals("")) { //$NON-NLS-1$
@@ -695,7 +695,7 @@ public class LaunchBuilder extends Launcher {
 			}
 			if (displayTab != null && ((displayTab.title != null && !displayTab.title.equals(input))
 					|| (input != null && !input.equals(displayTab.title)))) {
-				OSPLog.finest(LaunchRes.getString("Log.Message.ChangeNodeHTMLTabTitle")); //$NON-NLS-1$
+				log(("Log.Message.ChangeNodeHTMLTabTitle")); //$NON-NLS-1$
 				node.setDisplayTab(n, input, displayTab.path, displayTab.getModelArgs());
 				changed = true;
 			}
@@ -705,39 +705,39 @@ public class LaunchBuilder extends Launcher {
 					node.launchClassName = null;
 					node.launchClass = null;
 					node.launchModelScroller = null;
-					OSPLog.finest(LaunchRes.getString("Log.Message.ChangeNodeLaunchClass")); //$NON-NLS-1$
+					log(("Log.Message.ChangeNodeLaunchClass")); //$NON-NLS-1$
 					changed = true;
 				}
 			} else if (!className.equals(node.launchClassName)
 					|| (!className.equals("") && (node.getLaunchClass() == null))) { //$NON-NLS-1$
 				boolean change = node.setLaunchClass(className);
 				if (change) {
-					OSPLog.finest(LaunchRes.getString("Log.Message.ChangeNodeLaunchClass")); //$NON-NLS-1$
+					log(("Log.Message.ChangeNodeLaunchClass")); //$NON-NLS-1$
 					changed = true;
 				}
 			}
 			if (!node.getAuthor().equals(authorField.getText())) {
-				OSPLog.finest(LaunchRes.getString("Log.Message.ChangeNodeAuthor")); //$NON-NLS-1$
+				log(("Log.Message.ChangeNodeAuthor")); //$NON-NLS-1$
 				node.author = authorField.getText();
 				changed = true;
 			}
 			if (!node.keywords.equals(keywordField.getText())) {
-				OSPLog.finest(LaunchRes.getString("Log.Message.ChangeNodeKeywords")); //$NON-NLS-1$
+				log(("Log.Message.ChangeNodeKeywords")); //$NON-NLS-1$
 				node.keywords = keywordField.getText();
 				changed = true;
 			}
 			if (!node.level.equals(levelField.getText())) {
-				OSPLog.finest(LaunchRes.getString("Log.Message.ChangeNodeLevel")); //$NON-NLS-1$
+				log(("Log.Message.ChangeNodeLevel")); //$NON-NLS-1$
 				node.level = levelField.getText();
 				changed = true;
 			}
 			if (!node.languages.equals(languagesField.getText())) {
-				OSPLog.finest(LaunchRes.getString("Log.Message.ChangeNodeLanguages")); //$NON-NLS-1$
+				log(("Log.Message.ChangeNodeLanguages")); //$NON-NLS-1$
 				node.languages = languagesField.getText();
 				changed = true;
 			}
 			if (!node.comment.equals(commentPane.getText())) {
-				OSPLog.finest(LaunchRes.getString("Log.Message.ChangeNodeComment")); //$NON-NLS-1$
+				log(("Log.Message.ChangeNodeComment")); //$NON-NLS-1$
 				node.comment = commentPane.getText();
 				changed = true;
 			}
@@ -746,13 +746,13 @@ public class LaunchBuilder extends Launcher {
 				boolean hide = hideRootCheckBox.isSelected();
 				if (hide != root.hiddenWhenRoot) {
 					root.hiddenWhenRoot = hide;
-					OSPLog.finest(LaunchRes.getString("Log.Message.ChangeNodeRootHidden")); //$NON-NLS-1$
+					log(("Log.Message.ChangeNodeRootHidden")); //$NON-NLS-1$
 					changed = true;
 				}
 				boolean edit = editorEnabledCheckBox.isSelected();
 				if (edit != editorEnabled) {
 					editorEnabled = edit;
-					OSPLog.finest(LaunchRes.getString("Log.Message.ChangeNodeEditorEnabled")); //$NON-NLS-1$
+					log(("Log.Message.ChangeNodeEditorEnabled")); //$NON-NLS-1$
 					if (tabSetName != null) {
 						changedFiles.add(tabSetName);
 					}
@@ -1938,7 +1938,7 @@ public class LaunchBuilder extends Launcher {
 				} else if (!encryptCheckBox.isSelected()) {
 					password = null;
 				}
-				OSPLog.finest(LaunchRes.getString("Log.Message.ChangeEncrypted")); //$NON-NLS-1$
+				log(("Log.Message.ChangeEncrypted")); //$NON-NLS-1$
 				if (tabSetName != null) {
 					changedFiles.add(tabSetName);
 				}
@@ -1985,7 +1985,7 @@ public class LaunchBuilder extends Launcher {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				pwRequiredToLoad = onLoadCheckBox.isSelected();
-				OSPLog.finest(LaunchRes.getString("Log.Message.ChangePWRequirement")); //$NON-NLS-1$
+				log(("Log.Message.ChangePWRequirement")); //$NON-NLS-1$
 				if (tabSetName != null) {
 					changedFiles.add(tabSetName);
 				}

@@ -2938,7 +2938,7 @@ public void loadDatasetURI(String relpath) {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String language = e.getActionCommand();
-				OSPLog.finest("setting language to " + language); //$NON-NLS-1$
+				//OSPLog.finest("setting language to " + language); //$NON-NLS-1$
 				for (int i = 0; i < locales.length; i++) {
 					if (language.equals(locales[i].toString())) {
 						ToolsRes.setLocale(locales[i]);
@@ -3097,7 +3097,7 @@ public void loadDatasetURI(String relpath) {
 				Data importedData = parseData(dataString, null);
 				if (importedData != null) {
 					if (isTabItem) {
-						OSPLog.finest("pasting imported clipboard data into new tab"); //$NON-NLS-1$
+						//OSPLog.finest("pasting imported clipboard data into new tab"); //$NON-NLS-1$
 						DataToolTab tab = createTab(importedData);
 						tab.userEditable = true;
 						addTab(tab);
@@ -3118,7 +3118,7 @@ public void loadDatasetURI(String relpath) {
 			}
 			// we now have a valid XMLControl
 			if (!failed) {
-				OSPLog.finest("pasting clipboard XML into new tabs"); //$NON-NLS-1$
+				//OSPLog.finest("pasting clipboard XML into new tabs"); //$NON-NLS-1$
 				if (Data.class.isAssignableFrom(control.getObjectClass())) {
 					Data data = (Data) control.loadObject(null, true, true);
 					if (data == null) {
@@ -3165,7 +3165,7 @@ public void loadDatasetURI(String relpath) {
 	protected void addColumnsFromPaste() {
 		if (addableData != null) {
 			DataToolTab tab = getSelectedTab();
-			OSPLog.finest("pasting columns into " + tab.getName()); //$NON-NLS-1$
+			//OSPLog.finest("pasting columns into " + tab.getName()); //$NON-NLS-1$
 			tab.addColumns(addableData, true, true, true);
 		}
 	}

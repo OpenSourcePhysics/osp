@@ -585,7 +585,7 @@ public class ResourceLoader {
 		if (!extension.startsWith(".")) { //$NON-NLS-1$
 			extension = "." + extension; //$NON-NLS-1$
 		}
-		OSPLog.finest("Added extension: " + extension); //$NON-NLS-1$
+		//OSPLog.finest("Added extension: " + extension); //$NON-NLS-1$
 		synchronized (extractExtensions) {
 			extractExtensions.add(extension);
 		}
