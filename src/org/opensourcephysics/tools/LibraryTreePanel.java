@@ -722,7 +722,7 @@ public class LibraryTreePanel extends JPanel {
 		treeSelectionListener = new TreeSelectionListener() {
 			@Override
 			public void valueChanged(TreeSelectionEvent e) {
-				System.out.println("LibraryTreePanel.selection listener " + e);
+				//System.out.println("LibraryTreePanel.selection listener " + e);
 				emptyMetadata.clearData();
 				metadataModel.dataChanged();
 				LibraryTreeNode node = getSelectedNode();
@@ -738,7 +738,7 @@ public class LibraryTreePanel extends JPanel {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				// select node and show popup menu
-				System.out.println("LibraryTreePanel.mouseClicked " + e);
+				//System.out.println("LibraryTreePanel.mouseClicked " + e);
 				TreePath path = tree.getPathForLocation(e.getX(), e.getY());
 				if (path == null) {
 					return;
@@ -1507,7 +1507,7 @@ public class LibraryTreePanel extends JPanel {
 	protected boolean insertChildAt(LibraryTreeNode child, LibraryTreeNode parent, int index) {
 		if (tree == null || parent.getChildCount() < index)
 			return false;
-		System.out.println("LibraryTreePanel.insertChild " + index + " " + child.getDisplayString());
+		//System.out.println("LibraryTreePanel.insertChild " + index + " " + child.getDisplayString());
 		DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
 		model.insertNodeInto(child, parent, index);
 		return true;
@@ -2178,7 +2178,7 @@ public class LibraryTreePanel extends JPanel {
 		}
 
 		private void loadZipPathAsync(String htmlPath, String target, String targetURLPath) {
-			System.out.println("LoadZipNodeAsync " + htmlPath + " -> " + target);
+			//System.out.println("LoadZipNodeAsync " + htmlPath + " -> " + target);
 			ResourceLoader.getZipContentsAsync(targetURLPath, (files) -> {
 				if (files == null)
 					return null;
@@ -2219,7 +2219,7 @@ public class LibraryTreePanel extends JPanel {
 		}
 
 		private void loadPathAsync(String htmlPath, String target) {
-			System.out.println("LoadNodeAsync " + htmlPath + " -> " + target);
+			//System.out.println("LoadNodeAsync " + htmlPath + " -> " + target);
 
 			if (!LibraryComPADRE.isComPADREPath(target)) {
 				processNode(htmlPath);
