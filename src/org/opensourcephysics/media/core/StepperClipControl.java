@@ -47,7 +47,7 @@ import org.opensourcephysics.controls.XML;
  */
 public class StepperClipControl extends ClipControl {
 	
-	private static final double DELAY_STABILITY = 8;
+	private static final double DELAY_STABILITY = 5;
 	
 	// instance fields
 	private javax.swing.Timer timer;
