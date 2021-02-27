@@ -168,7 +168,7 @@ public double step() {
         }
         if(maxMessages>0) {
           maxMessages--;
-          System.out.println(err_msg);
+          System.out.println("ODEMultistepSolver " + err_msg);
           //OSPLog.warning(err_msg);
         }
         break;
@@ -213,7 +213,7 @@ public double step() {
         }
         if(maxMessages>0) {
           maxMessages--;
-          System.out.println(err_msg);
+          System.out.println("ODEMultistepSolver " + err_msg);
           //OSPLog.warning(err_msg);
         }
       }

@@ -257,7 +257,7 @@ public class Root {
     }
     switch(iflag) {
        case 1 :
-         System.out.println("No solution possible"); //$NON-NLS-1$
+         System.out.println("Root: No solution possible"); //$NON-NLS-1$
          break;
     }
     if(Math.abs(fleft)<=Math.abs(fright)) {

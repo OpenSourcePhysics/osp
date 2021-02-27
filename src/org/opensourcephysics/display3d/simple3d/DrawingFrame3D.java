@@ -208,7 +208,7 @@ public class DrawingFrame3D extends OSPFrame
 						while (it.hasNext()) {
 							XMLControl prop = (XMLControl) it.next();
 							Element element = (Element) prop.loadObject(null);
-							System.out.println("Adding element " + element); //$NON-NLS-1$
+							//System.out.println("Adding element " + element); //$NON-NLS-1$
 							drawingPanel.addElement(element);
 						}
 					}

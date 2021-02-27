@@ -2586,7 +2586,7 @@ public class ResourceLoader {
 	 */
 	static private File extract2(File source, String fileName, File target) {
 		String targetName = target.toString();
-		System.out.println("RL extracting " + fileName + " " + targetName + " from " + source);
+		//System.out.println("RL extracting " + fileName + " " + targetName + " from " + source);
 		int flen = (fileName.endsWith("/") ? fileName.length() : 0);
 		FileOutputStream fos = null;
 		try (FileInputStream fis = new FileInputStream(source); ZipInputStream zis = new ZipInputStream(fis);) {

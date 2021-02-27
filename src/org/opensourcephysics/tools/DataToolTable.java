@@ -2646,8 +2646,7 @@ public class DataToolTable extends DataTable {
 			int row = (isEnd ? getModelRow(focusRow) + 1 : focusRow);
 			if (isEnd) {
 				stopCellEditing();
-				System.out.println(
-						"DataToolTable.editAction frow=" + focusRow + " row=" + row + " rowCount=" + getRowCount());
+				//System.out.println("DataToolTable.editAction frow=" + focusRow + " row=" + row + " rowCount=" + getRowCount());
 				// add empty row if needed
 				if (row == getRowCount()) {
 					insertRows(new int[] { row }, null);

@@ -2454,7 +2454,7 @@ public class LibraryTreePanel extends JPanel {
 
 			} catch (Exception e)  {
 				e.printStackTrace();
-				System.out.println("LibraryTreePanel exc " + e);
+				System.out.println("LibraryTreePanel exception " + e);
 			}
 			return null;
 		}

@@ -37,7 +37,7 @@ public class Legendre {
     Polynomial p1 = getPolynomial(n-1).multiply(part1);
     Polynomial p2 = getPolynomial(n-2).multiply(n-1);
     Polynomial p = p1.subtract(p2).multiply(1.0/n);
-    System.out.println("n="+n); //$NON-NLS-1$
+    //System.out.println("n="+n); //$NON-NLS-1$
     legendreList.add(p);
     return p;
   }
