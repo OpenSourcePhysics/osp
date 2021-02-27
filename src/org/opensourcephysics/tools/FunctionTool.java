@@ -523,7 +523,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	public FunctionPanel removePanel(String name) {
 		FunctionPanel panel = trackFunctionPanels.get(name);
 		if (panel != null) {
-			OSPLog.finest("removing panel " + name); //$NON-NLS-1$
+			//OSPLog.finest("removing panel " + name); //$NON-NLS-1$
 			trackFunctionPanels.remove(name);
 			panel.dispose();
 			refreshDropdown(null);
@@ -544,7 +544,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		if ((panel == null) || prevName.equals(newName)) {
 			return panel;
 		}
-		OSPLog.finest("renaming panel " + prevName + " to " + newName); //$NON-NLS-1$ //$NON-NLS-2$
+		//OSPLog.finest("renaming panel " + prevName + " to " + newName); //$NON-NLS-1$ //$NON-NLS-2$
 		trackFunctionPanels.remove(prevName);
 		trackFunctionPanels.put(newName, panel);
 		panel.prevName = prevName;
@@ -624,7 +624,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	 * Clears all FunctionPanels.
 	 */
 	public void clearPanels() {
-		OSPLog.finest("clearing panels"); //$NON-NLS-1$
+		//OSPLog.finest("clearing panels"); //$NON-NLS-1$
 		trackFunctionPanels.clear();
 		refreshDropdown(null);
 	}
@@ -636,12 +636,12 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent e) {
-		switch (e.getPropertyName()) {
-		default:
-			OSPLog.debug("!!!!!!!!!FunctionTool.propertychange " + e.getPropertyName() + " "
-					+ e.getSource().getClass().getName());
-			break;
-		}
+//		switch (e.getPropertyName()) {
+//		default:
+//			OSPLog.debug("!!!!!!!!!FunctionTool.propertychange " + e.getPropertyName() + " "
+//					+ e.getSource().getClass().getName());
+//			break;
+//		}
 		if (!haveGUI())
 			return;
 		refreshGUI();

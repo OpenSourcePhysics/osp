@@ -468,11 +468,11 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 		if (scaleSetter == null) {
 			scaleSetter = new ScaleSetter();
 			plot.getGlassPane().add(scaleSetter);
-			// BH opted to dispense with scaleSetterPanel, since 
+			// BH opted to dispense with scaleSetterPanel, since
 			// scaleSetter itself is a panel, and the added panel adds nothing
 			// I have left it borderless opaque for now; we can revise that
 			// in ScaleSetter if desired.
-			
+
 			// create transparent scaleSetterPanel with no LayoutManager
 			// scaleSetterPanel = new JPanel(null);
 			// scaleSetterPanel.setOpaque(false);
@@ -500,7 +500,13 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 		private String constraint;
 		private Dimension size;
 
-		ScientificField scaleField=new ScientificField(6,3){@Override public Dimension getPreferredSize(){Dimension dim=super.getPreferredSize();dim.width-=4;return dim;}
+		ScientificField scaleField = new ScientificField(6, 3) {
+			@Override
+			public Dimension getPreferredSize() {
+				Dimension dim = super.getPreferredSize();
+				dim.width -= 4;
+				return dim;
+			}
 
 		};
 		Dimension fieldDim = scaleField.getPreferredSize();
@@ -578,7 +584,8 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 			add(scaleField, BorderLayout.CENTER);
 		}
 
-		public int findRegion(Point p, Rectangle hitRect, Dimension plotDim, int offset, int l, int r, int t, int b, boolean isPress) {
+		public int findRegion(Point p, Rectangle hitRect, Dimension plotDim, int offset, int l, int r, int t, int b,
+				boolean isPress) {
 			hitRect.setLocation(l - 12, plotDim.height - b + 6 + offset);
 			double xmin = drawingPanel.getXMin();
 			double xmax = drawingPanel.getXMax();
@@ -586,32 +593,32 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 			double ymax = drawingPanel.getYMax();
 			hitRect.setSize(fieldDim);
 			if (hitRect.contains(p)) {
-			if (isPress) 
-				scaleField.setExpectedRange(xmin, xmax);
+				if (isPress)
+					scaleField.setExpectedRange(xmin, xmax);
 				set(offset, BorderLayout.NORTH, HORZ_MIN);
 				return HORZ_MIN;
 			}
 			// horizontal max
 			hitRect.setLocation(plotDim.width - r - fieldDim.width + 12, plotDim.height - b + 6 + offset);
 			if (hitRect.contains(p)) {
-				if (isPress) 
-				scaleField.setExpectedRange(xmin, xmax);
+				if (isPress)
+					scaleField.setExpectedRange(xmin, xmax);
 				set(offset, BorderLayout.NORTH, HORZ_MAX);
 				return HORZ_MAX;
 			}
 			// vertical min
 			hitRect.setLocation(l - fieldDim.width - 1 - offset, plotDim.height - b - fieldDim.height + 8);
 			if (hitRect.contains(p)) {
-				if (isPress) 
-				scaleField.setExpectedRange(ymin, ymax);
+				if (isPress)
+					scaleField.setExpectedRange(ymin, ymax);
 				set(offset, BorderLayout.EAST, VERT_MIN);
 				return VERT_MIN;
 			}
 			// vertical max
 			hitRect.setLocation(l - fieldDim.width - 1 - offset, t - 8);
 			if (hitRect.contains(p)) {
-				if (isPress) 
-				scaleField.setExpectedRange(ymin, ymax);
+				if (isPress)
+					scaleField.setExpectedRange(ymin, ymax);
 				set(offset, BorderLayout.EAST, VERT_MAX);
 				return VERT_MAX;
 			}

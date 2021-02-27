@@ -133,10 +133,11 @@ public class HighlightableDataset extends Dataset implements Interactive {
 		super.drawData(drawingPanel, g2);
 		g2.setColor(highlightColor);
 		for (int i = highlighted.nextSetBit(0); i >= 0; i = highlighted.nextSetBit(i + 1)) {
-			if (i >= hitShapes.length)
-				System.out.println("HighlightableDataset.draw Danger, Will Robinson!");
-			else if (hitShapes[i] != null)
+			if (i >= hitShapes.length) {
+				//System.out.println("HighlightableDataset.draw Danger, Will Robinson!");
+			} else if (hitShapes[i] != null) {
 				g2.fill(hitShapes[i]);
+			}
 		}
 		g2.dispose();
 	}

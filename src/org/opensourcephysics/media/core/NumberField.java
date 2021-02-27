@@ -60,28 +60,273 @@ import org.opensourcephysics.display.OSPRuntime;
  */
 public class NumberField extends JTextField {
 
+	/**
+	 * A helper class specifically for NumberFieldRenderer to not have to have any
+	 * association with an actual JTextField.
+	 * 
+	 * @author hansonr
+	 *
+	 */
+	public static class NumberFormatter {
+
+		private DecimalFormat format;
+		private char decimalSeparator;
+		private String[] patterns = new String[5];
+		private double[] ranges = { 0.1, 10, 100, 1000 };
+		private String currentPattern;
+		private final Map<String, DecimalFormat> formatCache = new Hashtable<>();
+		private boolean isIntegerOnly;
+		private boolean fixedPattern;
+		private boolean fixedPatternByDefault;
+		
+		int sigfigs;
+		String userPattern = ""; //$NON-NLS-1$
+
+		public NumberFormatter(boolean fixed) {
+			fixedPattern = fixedPatternByDefault = fixed;
+		}
+
+		public void setSigFigs(int sigfigs) {
+			if (this.sigfigs == sigfigs) {
+				return;
+			}
+			ranges = new double[] { 0.1, 10, 100, 1000 };
+			sigfigs = Math.max(sigfigs, 2);
+			this.sigfigs = Math.min(sigfigs, 6);
+			char d = '.';
+			if (sigfigs == 2) {
+				patterns[0] = "0" + d + "0E0"; // value < 1 //$NON-NLS-1$ //$NON-NLS-2$
+				patterns[1] = "0" + d + "0"; // value < 10 //$NON-NLS-1$ //$NON-NLS-2$
+				patterns[2] = "0"; // value < 100 //$NON-NLS-1$
+				patterns[3] = "0" + d + "0E0"; // value < 1000 //$NON-NLS-1$ //$NON-NLS-2$
+				patterns[4] = "0" + d + "0E0"; // value > 1000 //$NON-NLS-1$ //$NON-NLS-2$
+			} else if (sigfigs == 3) {
+				patterns[0] = "0" + d + "00E0"; // value < 1 //$NON-NLS-1$ //$NON-NLS-2$
+				patterns[1] = "0" + d + "00"; // value < 10 //$NON-NLS-1$ //$NON-NLS-2$
+				patterns[2] = "0" + d + "0"; // value < 100 //$NON-NLS-1$ //$NON-NLS-2$
+				patterns[3] = "0"; // value < 1000 //$NON-NLS-1$
+				patterns[4] = "0" + d + "00E0"; // value > 1000 //$NON-NLS-1$ //$NON-NLS-2$
+			} else if (sigfigs >= 4) {
+				patterns[0] = "0" + d + "000E0"; // value < 1 //$NON-NLS-1$ //$NON-NLS-2$
+				patterns[1] = "0" + d + "000"; // value < 10 //$NON-NLS-1$ //$NON-NLS-2$
+				patterns[2] = "0" + d + "00"; // value < 100 //$NON-NLS-1$ //$NON-NLS-2$
+				patterns[3] = "0" + d + "0"; // value < 1000 //$NON-NLS-1$ //$NON-NLS-2$
+				patterns[4] = "0" + d + "000E0"; // value > 1000 //$NON-NLS-1$ //$NON-NLS-2$
+				int n = sigfigs - 4;
+				for (int i = 0; i < n; i++) {
+					for (int j = 0; j < patterns.length; j++) {
+						patterns[j] = "0" + d + "0" + patterns[j].substring(2); //$NON-NLS-1$ //$NON-NLS-2$
+					}
+				}
+			}
+		}
+
+		/**
+		 * Sets the format for a specified value.
+		 *
+		 * @param value the value to be displayed
+		 */
+		public void setFormatFor(double value) {
+			if (fixedPattern) {
+				return;
+			}
+			value = Math.abs(value);
+			String p = null;
+			if (value == 0) {
+				if (sigfigs == 1) {
+					p = INTEGER_PATTERN;
+				} else if (sigfigs == 2) {
+					p = DECIMAL_1_PATTERN;
+				} else if (sigfigs == 3) {
+					p = DECIMAL_2_PATTERN;
+				} else {
+					p = DECIMAL_3_PATTERN;
+				}
+			} else if (value < ranges[0]) {
+				p = patterns[0];
+			} else if (value < ranges[1]) {
+				p = patterns[1];
+			} else if (value < ranges[2]) {
+				p = patterns[2];
+			} else if (value < ranges[3]) {
+				p = patterns[3];
+			} else {
+				p = patterns[4];
+			}
+			applyPattern(p);
+		}
+
+		/**
+		 * 
+		 * @param d
+		 * @return
+		 */
+		public String getText(double d) {
+			setFormatFor(d);
+			return format(d);
+		}
+
+		public String format(double d) {
+			if (Double.isNaN(d)) {
+				return "";
+			}
+			if (currentPattern == null)
+				setFormatFor(d);
+			int i = 0, f = 0;
+			switch (currentPattern) {
+			case "0":
+				return "" + (int) d;
+			case "0.0":
+				f = 10;
+				i = 1;
+				break;
+			case "0.00":
+				f = 100;
+				i = 2;
+				break;
+			case "0.000":
+				f = 1000;
+				i = 3;
+				break;
+			}
+			String s;
+			if (i == 0) {
+				s = format.format(d);
+			} else if (d == 0) {
+				s = currentPattern;
+			} else {
+				String neg = (d < 0 ? "-" : "");
+				s = "" + (int) (Math.abs(d) * f);
+				int j = s.length() - i;
+				if (j < 1) {
+					i = 1;
+					s = "000".substring(0, 1 - j) + s;
+				} else {
+					i = j;
+				}
+				s = neg + s.substring(0, i) + decimalSeparator + s.substring(i);
+			}
+			return s;
+		}
+
+		Number parse(String s) throws ParseException {
+
+			if (format == null) {
+				String p = currentPattern;
+				applyPattern("0E0");
+				applyPattern(p);
+			}
+			return format.parse(s);
+		}
+
+		public void applyPattern(String p) {
+			// System.out.println ("NumberField ApplyPattern " + p + " " + ++test + " " +
+			// test1);
+			if (p != currentPattern) {
+				char sep = OSPRuntime.getCurrrentDecimalSeparator();
+				if (decimalSeparator != sep) {
+					decimalSeparator = sep;
+					formatCache.clear();
+				}
+				currentPattern = p;
+				switch (p) {
+				case "0":
+				case "0.0":
+				case "0.00":
+				case "0.000":
+					return;
+				}
+				format = formatCache.get(p);
+				if (format == null) {
+					// test1++;
+					format = (DecimalFormat) NumberFormat.getInstance();
+					formatCache.put(p, format);
+					format.applyPattern(p);
+					format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+					if (isIntegerOnly)
+						format.setParseIntegerOnly(true);
+				}
+			}
+		}
+
+		public void setExpectedRange(double lower, double upper) {
+			// never called?
+			fixedPattern = fixedPatternByDefault = true;
+			double range = Math.max(Math.abs(lower), Math.abs(upper));
+			if ((range < 0.1) || (range >= 1000)) { // scientific format
+				String s = ""; //$NON-NLS-1$
+				for (int i = 0; i < sigfigs - 1; i++) {
+					s += "0"; //$NON-NLS-1$
+				}
+				applyPattern("0." + s + "E0"); //$NON-NLS-1$ //$NON-NLS-2$
+			} else { // decimal format
+				int n;
+				if (range < 1) {
+					n = sigfigs;
+				} else if (range < 10) {
+					n = sigfigs - 1;
+				} else if (range < 100) {
+					n = sigfigs - 2;
+				} else {
+					n = sigfigs - 3;
+				}
+				String s = ""; //$NON-NLS-1$
+				for (int i = 0; i < n; i++) {
+					s += "0"; //$NON-NLS-1$
+				}
+				if (s.equals("")) { //$NON-NLS-1$
+					applyPattern("0"); //$NON-NLS-1$
+				} else {
+					applyPattern("0." + s); //$NON-NLS-1$
+				}
+			}
+		}
+
+		public void setPatterns(String[] patterns, double[] ranges) {
+			if (patterns.length > 4 && ranges.length > 3) {
+				this.patterns = patterns;
+				this.ranges = ranges;
+			}
+		}
+
+		public void setFixedPattern(String pattern, double value) {
+			if (pattern == null)
+				pattern = ""; //$NON-NLS-1$
+			pattern = pattern.trim();
+			if (pattern.equals(userPattern))
+				return;
+			userPattern = pattern;
+			currentPattern = null; // reset format for this pattern
+			if (userPattern.equals("")) { //$NON-NLS-1$
+				fixedPattern = fixedPatternByDefault;
+				setFormatFor(value);
+			} else {
+				fixedPattern = true;
+				applyPattern(userPattern);
+			}
+		}
+
+		public void setParseIntegerOnly() {
+			isIntegerOnly = true;
+			applyPattern("0");
+		}
+	}
+
 	// constants
 	public static final Color DISABLED_COLOR = new Color(120, 120, 120);
 	public static final String INTEGER_PATTERN = "0"; //$NON-NLS-1$
 	public static final String DECIMAL_1_PATTERN = "0.0"; //$NON-NLS-1$
 	public static final String DECIMAL_2_PATTERN = "0.00"; //$NON-NLS-1$
 	public static final String DECIMAL_3_PATTERN = "0.000"; //$NON-NLS-1$
-	
+
 	// instance fields
 	// BH 2021 making format private to allow bypassing it for simple formats
-	private DecimalFormat format;
 	protected double prevValue;
 	protected Double maxValue;
 	protected Double minValue;
-	protected int sigfigs;
-	protected boolean fixedPattern = false;
-	protected String[] patterns = new String[5];
-	protected double[] ranges = { 0.1, 10, 100, 1000 };
 	protected String units;
 	protected double conversionFactor = 1.0;
-	protected String userPattern = ""; //$NON-NLS-1$
-	protected boolean fixedPatternByDefault;
-	private char decimalSeparator;
+	protected NumberFormatter nf;
 
 	/**
 	 * Constructs a NumberField with default sigfigs (4)
@@ -89,7 +334,7 @@ public class NumberField extends JTextField {
 	 * @param columns the number of character columns
 	 */
 	public NumberField(int columns) {
-		this(columns, 4);
+		this(columns, 4, false);
 	}
 
 	/**
@@ -99,7 +344,12 @@ public class NumberField extends JTextField {
 	 * @param sigfigs the number of significant figures
 	 */
 	public NumberField(int columns, int sigfigs) {
+		this(columns, sigfigs, false);
+	}
+
+	public NumberField(int columns, int sigfigs, boolean fixed) {
 		super(columns);
+		nf = new NumberFormatter(fixed);
 		setBackground(Color.white);
 		setDisabledTextColor(DISABLED_COLOR);
 		setText("0"); //$NON-NLS-1$
@@ -154,7 +404,7 @@ public class NumberField extends JTextField {
 			}
 
 		});
-		setSigFigs(sigfigs);
+		nf.setSigFigs(sigfigs);
 	}
 
 	/**
@@ -164,7 +414,7 @@ public class NumberField extends JTextField {
 	 */
 	public double getValue() {
 		String s = getText().trim().toUpperCase();
-		if (s.length() == 0) 
+		if (s.length() == 0)
 			return prevValue;
 
 		// strip units, if any
@@ -173,12 +423,12 @@ public class NumberField extends JTextField {
 			if (n > 0)
 				s = s.substring(0, n);
 		}
-		if (s.equals(format(prevValue * conversionFactor))) {
+		if (s.equals(nf.format(prevValue * conversionFactor))) {
 			return prevValue;
 		}
 		double retValue;
 		try {
-			retValue = (s.equals("0") ? 0 : parse(s).doubleValue() / conversionFactor);
+			retValue = (s.equals("0") ? 0 : nf.parse(s).doubleValue() / conversionFactor);
 			if (minValue != null && retValue < minValue) {
 				setValue(minValue);
 				return minValue;
@@ -195,56 +445,8 @@ public class NumberField extends JTextField {
 		return retValue;
 	}
 
-	private Number parse(String s) throws ParseException {
-		if (format == null) {
-			String p = currentPattern;
-			applyPattern("0E0");
-			applyPattern(p);
-		}
-		return format.parse(s);
-	}
-
-	public String format(double d) {
-		if (Double.isNaN(d)) {
-			return "";
-		}
-		if (currentPattern == null)
-			setFormatFor(d);
-		int i = 0, f = 0;
-		switch (currentPattern) {
-		case "0":
-			return "" + (int) d;
-		case "0.0":
-			f = 10;
-			i = 1;
-			break;
-		case "0.00":
-			f = 100;
-			i = 2;
-			break;
-		case "0.000":
-			f = 1000;
-			i = 3;
-			break;
-		}
-		String s;
-		if (i == 0) {
-			s = format.format(d);
-		} else if (d == 0) {
-			s = currentPattern;
-		} else {
-			String neg = (d < 0 ? "-" : "");
-			s = "" + (int) (Math.abs(d) * f);
-			int j = s.length() - i;
-			if (j < 1) {
-				i = 1;
-				s = "000".substring(0, 1-j) + s;
-			} else {
-				i = j;
-			}
-			s = neg + s.substring(0, i) + decimalSeparator + s.substring(i);
-		}
-		return s;
+	final public String format(double d) {
+		return nf.format(d);
 	}
 
 	/**
@@ -266,9 +468,7 @@ public class NumberField extends JTextField {
 		prevValue = value;
 
 		// display value: include factor, format, units
-		value = conversionFactor * value;
-		setFormatFor(value);
-		String s = format(value);
+		String s = nf.getText(conversionFactor * value);
 		if (units != null) {
 			s += units;
 		}
@@ -285,36 +485,7 @@ public class NumberField extends JTextField {
 	 * @param upper the upper end of the range
 	 */
 	public void setExpectedRange(double lower, double upper) {
-		// never called?
-		fixedPattern = fixedPatternByDefault = true;
-		double range = Math.max(Math.abs(lower), Math.abs(upper));
-		if ((range < 0.1) || (range >= 1000)) { // scientific format
-			String s = ""; //$NON-NLS-1$
-			for (int i = 0; i < sigfigs - 1; i++) {
-				s += "0"; //$NON-NLS-1$
-			}
-			applyPattern("0." + s + "E0"); //$NON-NLS-1$ //$NON-NLS-2$
-		} else { // decimal format
-			int n;
-			if (range < 1) {
-				n = sigfigs;
-			} else if (range < 10) {
-				n = sigfigs - 1;
-			} else if (range < 100) {
-				n = sigfigs - 2;
-			} else {
-				n = sigfigs - 3;
-			}
-			String s = ""; //$NON-NLS-1$
-			for (int i = 0; i < n; i++) {
-				s += "0"; //$NON-NLS-1$
-			}
-			if (s.equals("")) { //$NON-NLS-1$
-				applyPattern("0"); //$NON-NLS-1$
-			} else {
-				applyPattern("0." + s); //$NON-NLS-1$
-			}
-		}
+		nf.setExpectedRange(lower, upper);
 	}
 
 	/**
@@ -323,38 +494,7 @@ public class NumberField extends JTextField {
 	 * @param sigfigs the number of significant figures (between 2 and 6)
 	 */
 	public void setSigFigs(int sigfigs) {
-		if (this.sigfigs == sigfigs) {
-			return;
-		}
-		ranges = new double[] { 0.1, 10, 100, 1000 };
-		sigfigs = Math.max(sigfigs, 2);
-		this.sigfigs = Math.min(sigfigs, 6);
-		char d = '.';
-		if (sigfigs == 2) {
-			patterns[0] = "0" + d + "0E0"; // value < 1 //$NON-NLS-1$ //$NON-NLS-2$
-			patterns[1] = "0" + d + "0"; // value < 10 //$NON-NLS-1$ //$NON-NLS-2$
-			patterns[2] = "0"; // value < 100 //$NON-NLS-1$
-			patterns[3] = "0" + d + "0E0"; // value < 1000 //$NON-NLS-1$ //$NON-NLS-2$
-			patterns[4] = "0" + d + "0E0"; // value > 1000 //$NON-NLS-1$ //$NON-NLS-2$
-		} else if (sigfigs == 3) {
-			patterns[0] = "0" + d + "00E0"; // value < 1 //$NON-NLS-1$ //$NON-NLS-2$
-			patterns[1] = "0" + d + "00"; // value < 10 //$NON-NLS-1$ //$NON-NLS-2$
-			patterns[2] = "0" + d + "0"; // value < 100 //$NON-NLS-1$ //$NON-NLS-2$
-			patterns[3] = "0"; // value < 1000 //$NON-NLS-1$
-			patterns[4] = "0" + d + "00E0"; // value > 1000 //$NON-NLS-1$ //$NON-NLS-2$
-		} else if (sigfigs >= 4) {
-			patterns[0] = "0" + d + "000E0"; // value < 1 //$NON-NLS-1$ //$NON-NLS-2$
-			patterns[1] = "0" + d + "000"; // value < 10 //$NON-NLS-1$ //$NON-NLS-2$
-			patterns[2] = "0" + d + "00"; // value < 100 //$NON-NLS-1$ //$NON-NLS-2$
-			patterns[3] = "0" + d + "0"; // value < 1000 //$NON-NLS-1$ //$NON-NLS-2$
-			patterns[4] = "0" + d + "000E0"; // value > 1000 //$NON-NLS-1$ //$NON-NLS-2$
-			int n = sigfigs - 4;
-			for (int i = 0; i < n; i++) {
-				for (int j = 0; j < patterns.length; j++) {
-					patterns[j] = "0" + d + "0" + patterns[j].substring(2); //$NON-NLS-1$ //$NON-NLS-2$
-				}
-			}
-		}
+		nf.setSigFigs(sigfigs);
 	}
 
 	/**
@@ -413,78 +553,15 @@ public class NumberField extends JTextField {
 		return conversionFactor;
 	}
 
-	private String currentPattern;
-	
-	/**
-	 * Sets the format for a specified value.
-	 *
-	 * @param value the value to be displayed
-	 */
-	public void setFormatFor(double value) {
-		if (fixedPattern) {
-			return;
-		}
-		value = Math.abs(value);
-		String p = null;
-		if (value == 0) {
-			if (sigfigs == 1) {
-				p = INTEGER_PATTERN;
-			} else if (sigfigs == 2) {
-				p = DECIMAL_1_PATTERN;
-			} else if (sigfigs == 3) {
-				p = DECIMAL_2_PATTERN;
-			} else {
-				p = DECIMAL_3_PATTERN;
-			}
-		} else if (value < ranges[0]) {
-			p = patterns[0];
-		} else if (value < ranges[1]) {
-			p = patterns[1];
-		} else if (value < ranges[2]) {
-			p = patterns[2];
-		} else if (value < ranges[3]) {
-			p = patterns[3];
-		} else {
-			p = patterns[4];
-		}
-		applyPattern(p);
-	}
+	// private static int test, test1;
 
-	private final Map<String, DecimalFormat> formatCache = new Hashtable<>();
-	private boolean isIntegerOnly;
-   //private static int test, test1;
-   
 	/**
 	 * Apply the specified pattern, retrieving the appropriate formatter
+	 * 
 	 * @param p
 	 */
 	public void applyPattern(String p) {
-		//System.out.println ("NumberField ApplyPattern " + p + " " + ++test  + " " + test1);
-		if (p != currentPattern) {
-			char sep = OSPRuntime.getCurrrentDecimalSeparator();
-			if (decimalSeparator != sep) {
-				decimalSeparator = sep;
-				formatCache.clear();
-			}
-			currentPattern = p;
-			switch (p) {
-			case "0":
-			case "0.0":
-			case "0.00":
-			case "0.000":
-				return;
-			}
-			format = formatCache.get(p);
-			if (format == null) {
-				//test1++;
-				format = (DecimalFormat) NumberFormat.getInstance();
-				formatCache.put(p, format);
-				format.applyPattern(p);
-				format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
-				if (isIntegerOnly)
-					format.setParseIntegerOnly(true);
-			}
-		}
+		nf.applyPattern(p);
 	}
 
 	/**
@@ -508,10 +585,7 @@ public class NumberField extends JTextField {
 	 * @param limits   the limits that determine which pattern to use
 	 */
 	public void setPatterns(String[] patterns, double[] limits) {
-		if (patterns.length > 4 && limits.length > 3) {
-			this.patterns = patterns;
-			ranges = limits;
-		}
+		nf.setPatterns(patterns, limits);
 	}
 
 	/**
@@ -520,20 +594,7 @@ public class NumberField extends JTextField {
 	 * @param pattern the desired pattern (may be null)
 	 */
 	public void setFixedPattern(String pattern) {
-		if (pattern == null)
-			pattern = ""; //$NON-NLS-1$
-		pattern = pattern.trim();
-		if (pattern.equals(userPattern))
-			return;
-		userPattern = pattern;
-		currentPattern = null; // reset format for this pattern
-		if (userPattern.equals("")) { //$NON-NLS-1$
-			fixedPattern = fixedPatternByDefault;
-			setFormatFor(getValue());
-		} else {
-			fixedPattern = true;
-			applyPattern(userPattern);
-		}
+		nf.setFixedPattern(pattern, getValue());
 		setValue(prevValue);
 	}
 
@@ -543,12 +604,15 @@ public class NumberField extends JTextField {
 	 * @return the pattern
 	 */
 	public String getFixedPattern() {
-		return userPattern;
+		return nf.userPattern;
 	}
 
 	public void setParseIntegerOnly() {
-		isIntegerOnly = true;
-		applyPattern("0");
+		nf.setParseIntegerOnly();
+	}
+
+	public void setFormatFor(double d) {
+		nf.setFormatFor(d);
 	}
 
 }

@@ -49,23 +49,22 @@ public class ScientificField extends NumberField {
     this(columns, 4);
   }
 
-  /**
-   * Constructs a ScientificField with specified sigfigs.
-   *
-   * @param columns the number of character columns
-   * @param sigfigs the significant figures
-   */
-  public ScientificField(int columns, int sigfigs) {
-    super(columns, sigfigs);
+	/**
+	 * Constructs a ScientificField with specified sigfigs.
+	 *
+	 * @param columns the number of character columns
+	 * @param sigfigs the significant figures
+	 */
+	public ScientificField(int columns, int sigfigs) {
+		super(columns, sigfigs, true);
 //    char d = format.getDecimalFormatSymbols().getDecimalSeparator();
-    char d = '.';
-    fixedPattern = fixedPatternByDefault = true;
-    String s = ""; //$NON-NLS-1$
-    for(int i = 0; i<this.sigfigs-1; i++) {
-      s += "0"; //$NON-NLS-1$
-    }
-    applyPattern("0"+d+s+"E0"); //$NON-NLS-1$ //$NON-NLS-2$
-  }
+		char d = '.';
+		String s = ""; //$NON-NLS-1$
+		for (int i = 0; i < nf.sigfigs - 1; i++) {
+			s += "0"; //$NON-NLS-1$
+		}
+		applyPattern("0" + d + s + "E0"); //$NON-NLS-1$ //$NON-NLS-2$
+	}
 
   /**
    * Overrides NumberField setValue method.
@@ -83,11 +82,11 @@ public void setValue(double value) {
   // Override NumberField methods so pattern cannot change
   @Override
 public void setSigFigs(int sigfigs) {
-    if(this.sigfigs==sigfigs) {
+    if(nf.sigfigs==sigfigs) {
       return;
     }
     sigfigs = Math.max(sigfigs, 2);
-    this.sigfigs = Math.min(sigfigs, 6);
+    nf.sigfigs = Math.min(sigfigs, 6);
   }
 
   @Override

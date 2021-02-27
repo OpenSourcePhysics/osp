@@ -1399,7 +1399,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					String colName = ToolsRes.getString("DataToolTab.NewColumn.Name"); //$NON-NLS-1$
 					newName = dataManager.uniquifyColumnName(column, colName);
 				}
-				OSPLog.debug("adding new column \"" + newName + "\""); //$NON-NLS-1$ //$NON-NLS-2$
 				column.setXYColumnNames("row", newName); //$NON-NLS-1$
 				ArrayList<DataColumn> loadedColumns = loadData(column, false);
 				if (!loadedColumns.isEmpty()) {

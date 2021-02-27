@@ -2746,9 +2746,9 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	}
 
 	public void repaintForZoom() {
-		if (popupmenu == null) // BH could not ever happen
-			OSPLog.debug("DrawingPanel.repaintForZoom ignored - Bob??");
-		else
+//		if (popupmenu == null) // BH could not ever happen
+//			OSPLog.debug("DrawingPanel.repaintForZoom ignored - Bob??");
+//		else
 			// DB repaint required to zoom to zoombox
 			repaint();
 	}

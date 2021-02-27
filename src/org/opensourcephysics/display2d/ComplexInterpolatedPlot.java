@@ -412,7 +412,7 @@ public void setExpandedZ(boolean expanded, double expansionFactor) {
       image = null;
       return;
     }
-    OSPLog.finer("ComplexInterpolatedPlot image created with width="+width+" and height="+height); //$NON-NLS-1$ //$NON-NLS-2$
+    //OSPLog.finer("ComplexInterpolatedPlot image created with width="+width+" and height="+height); //$NON-NLS-1$ //$NON-NLS-2$
 
 
     // BH: While this does work, there is a much simpler way:

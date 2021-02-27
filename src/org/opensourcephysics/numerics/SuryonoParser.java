@@ -166,7 +166,7 @@ public final class SuryonoParser extends MathExpParser {
 		protected double evaluate(double[] v) {
 			// added by Wolfgang Christian to make it easier to call parser with an array.
 			if (var_value.length != v.length) {
-				System.out.println("JEParser Error: incorrect number of variables."); //$NON-NLS-1$
+				System.out.println("SuryonoParser.Func Error: incorrect number of variables."); //$NON-NLS-1$
 				return 0;
 			}
 			System.arraycopy(v, 0, var_value, 0, v.length);

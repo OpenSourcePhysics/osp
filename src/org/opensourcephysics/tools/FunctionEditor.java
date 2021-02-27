@@ -2356,9 +2356,9 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			undoRow = prevRow;
 			undoCol = prevCol;
 			this.name = name;
-			OSPLog.finer(editTypes[type] + ": \"" + name + "\"" //$NON-NLS-1$ //$NON-NLS-2$
-					+ "\nold value: " + prevVal //$NON-NLS-1$
-					+ "\nnew value: " + newVal); //$NON-NLS-1$
+//			OSPLog.finer(editTypes[type] + ": \"" + name + "\"" //$NON-NLS-1$ //$NON-NLS-2$
+//					+ "\nold value: " + prevVal //$NON-NLS-1$
+//					+ "\nnew value: " + newVal); //$NON-NLS-1$
 		}
 
 		// undoes the change

@@ -657,14 +657,14 @@ public TableCellEditor getCellEditor(int row, int column) {
 	// refreshes the table BY RECREATING IT ENTIRELY
 	public void refresh() {
 		SwingUtilities.invokeLater(() -> {
-			System.out.println("XMLTable total rewrite");
+			//System.out.println("XMLTable total rewrite");
 			tableChanged(new TableModelEvent(tableModel, TableModelEvent.HEADER_ROW));
 		});
 	}
 
   @Override
 public void tableChanged(TableModelEvent e) {
-	  System.out.println("XMLTable.tableChanged " + e);
+	 // System.out.println("XMLTable.tableChanged " + e);
     // pass the tablemodel event to property change listeners
     firePropertyChange("tableData", null, e); //$NON-NLS-1$
     super.tableChanged(e);
@@ -761,7 +761,7 @@ public void tableChanged(TableModelEvent e) {
      };
      getActionMap().put(key, tabAction);
     } else {
-    	System.out.println("No previous tab action");
+    	System.out.println("XMLTable No previous tab action");
     }
 
     // enter key starts editing

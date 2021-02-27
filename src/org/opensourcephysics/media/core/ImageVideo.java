@@ -494,9 +494,9 @@ public class ImageVideo extends VideoAdapter {
 		if (readOnly && frameNumber < paths.length) {
 			if (!paths[frameNumber].equals("")) {//$NON-NLS-1$
 				
-				OSPLog.debug(Performance.timeCheckStr("ImageVideo.getImageAtFrame0 " + frameNumber,
-						Performance.TIME_MARK));
-
+//				OSPLog.debug(Performance.timeCheckStr("ImageVideo.getImageAtFrame0 " + frameNumber,
+//						Performance.TIME_MARK));
+//
 				Image image = ResourceLoader.getVideoImage(getAbsolutePath(paths[frameNumber]));
 
 //				OSPLog.debug(Performance.timeCheckStr("ImageVideo.getImageAtFrame1 " + frameNumber,

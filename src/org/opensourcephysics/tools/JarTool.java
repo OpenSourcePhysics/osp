@@ -447,7 +447,7 @@ public class JarTool implements Tool, Runnable {
 		if ((source.exists() == false) || (filename == null) || (filename.trim().length() < 1) || (target == null)) {
 			return null;
 		}
-		System.out.println("extracting " + filename + " " + target + " from " + source);
+		//System.out.println("extracting " + filename + " " + target + " from " + source);
 		boolean isDirectory = filename.endsWith("/"); //$NON-NLS-1$
 		try {
 
@@ -501,7 +501,7 @@ public class JarTool implements Tool, Runnable {
 			}
 			output.close();
 			input.close();
-			System.out.println("extracted " + target + " " + target.length());
+			//System.out.println("extracted " + target + " " + target.length());
 			return target;
 		} catch (Exception ex) {
 			ex.printStackTrace();

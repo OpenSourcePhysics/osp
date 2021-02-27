@@ -731,8 +731,8 @@ public class VideoIO {
 //			allowedTypes.add(allTypes.get(i));
 //		}
 		for (VideoType next : allTypes) {
-			OSPLog.finest("trying type " + next.getClass().getSimpleName() //$NON-NLS-1$
-					+ " " + next.getDescription()); //$NON-NLS-1$
+//			OSPLog.finest("trying type " + next.getClass().getSimpleName() //$NON-NLS-1$
+//					+ " " + next.getDescription()); //$NON-NLS-1$
 			video = next.getVideo(path, basePath);
 			if (VideoIO.isCanceled())
 				return null;

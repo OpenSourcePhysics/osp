@@ -585,7 +585,7 @@ public class ResourceLoader {
 		if (!extension.startsWith(".")) { //$NON-NLS-1$
 			extension = "." + extension; //$NON-NLS-1$
 		}
-		OSPLog.finest("Added extension: " + extension); //$NON-NLS-1$
+		//OSPLog.finest("Added extension: " + extension); //$NON-NLS-1$
 		synchronized (extractExtensions) {
 			extractExtensions.add(extension);
 		}
@@ -1847,10 +1847,10 @@ public class ResourceLoader {
 	 */
 	public static boolean isURLAvailable(String urlPath) {
 		if (webTestOK == Boolean.FALSE) {
-			OSPLog.debug("ResourceLoader skipping URLAvailable, since webTestOK == FALSE for " + urlPath);
+			//OSPLog.debug("ResourceLoader skipping URLAvailable, since webTestOK == FALSE for " + urlPath);
 			return false;
 		}
-		OSPLog.debug("ResourceLoader checking for " + urlPath);
+		//OSPLog.debug("ResourceLoader checking for " + urlPath);
 		URL url = null;
 		try {
 			// make a URL, open a connection, get content
@@ -2033,7 +2033,7 @@ public class ResourceLoader {
 				if (file.getName().endsWith("xset")) { //$NON-NLS-1$
 					xsetZipLoader = null;
 				}
-				OSPLog.finer("loaded file resource " + XML.forwardSlash(res.getAbsolutePath())); //$NON-NLS-1$
+				//OSPLog.finer("loaded file resource " + XML.forwardSlash(res.getAbsolutePath())); //$NON-NLS-1$
 				return res;
 			}
 		} catch (Exception ex) {
@@ -2109,7 +2109,7 @@ public class ResourceLoader {
 			if (path.endsWith(".xset")) { //$NON-NLS-1$
 				xsetZipLoader = null;
 			}
-			OSPLog.finer("loaded URL resource " + XML.forwardSlash(res.getAbsolutePath())); //$NON-NLS-1$
+			//OSPLog.finer("loaded URL resource " + XML.forwardSlash(res.getAbsolutePath())); //$NON-NLS-1$
 		}
 		return res;
 	}
@@ -2232,7 +2232,7 @@ public class ResourceLoader {
 				if ((res == null) || (res.getAbsolutePath().indexOf(path) == -1)) {
 					return null;
 				}
-				OSPLog.finer("loaded zip resource " + XML.forwardSlash(res.getAbsolutePath())); //$NON-NLS-1$
+				//OSPLog.finer("loaded zip resource " + XML.forwardSlash(res.getAbsolutePath())); //$NON-NLS-1$
 				return res;
 			} catch (IOException ex) {
 				/** empty block */
@@ -2354,7 +2354,7 @@ public class ResourceLoader {
 			if (name.endsWith("xset")) { //$NON-NLS-1$
 				xsetZipLoader = null;
 			}
-			OSPLog.finer("loaded class resource: " + path); //$NON-NLS-1$
+			//OSPLog.finer("loaded class resource: " + path); //$NON-NLS-1$
 			OSPRuntime.setLaunchJarPath(path);
 		}
 		return res; // may be null
@@ -2586,7 +2586,7 @@ public class ResourceLoader {
 	 */
 	static private File extract2(File source, String fileName, File target) {
 		String targetName = target.toString();
-		System.out.println("RL extracting " + fileName + " " + targetName + " from " + source);
+		//System.out.println("RL extracting " + fileName + " " + targetName + " from " + source);
 		int flen = (fileName.endsWith("/") ? fileName.length() : 0);
 		FileOutputStream fos = null;
 		try (FileInputStream fis = new FileInputStream(source); ZipInputStream zis = new ZipInputStream(fis);) {

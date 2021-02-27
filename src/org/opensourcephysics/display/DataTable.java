@@ -340,12 +340,6 @@ public class DataTable extends JTable {
 			TableCellRenderer renderer = precisionRenderersByColumnName.get(columnName);
 			if (renderer == null)
 				renderer = getDefaultRenderer(Double.class);
-//			TableCellRenderer renderer = getDefaultRenderer(Double.class);
-//      for (String next: precisionRenderersByColumnName.keySet()) {
-//        if(next.equals(columnName)) {
-//          renderer = precisionRenderersByColumnName.get(columnName);
-//        }
-//      }
 			UnitRenderer unitRenderer = new UnitRenderer(renderer, units, tooltip);
 			unitRenderersByColumnName.put(columnName, unitRenderer);
 		}
@@ -524,64 +518,38 @@ public class DataTable extends JTable {
 	 */
 	@Override
 	public TableCellRenderer getCellRenderer(int row, int column) {
-		int i = convertColumnIndexToModel(column);
-		if ((i == 0) && dataTableModel.isRowNumberVisible()) {
-			return rowNumberRenderer;
-		}
 		UnitRenderer unitRenderer = null;
 		TableCellRenderer baseRenderer = null;
 		try {
+			TableColumn tableColumn = getColumnModel().getColumn(column);
+//			int i = convertColumnIndexToModel(column);
+			if (tableColumn.getModelIndex() == 0 && dataTableModel.isRowNumberVisible()) {
+				return rowNumberRenderer;
+			}
 			// find units renderer
 			// BH 2020.02.14 efficiencies -- needs doublechecking
-			TableColumn tableColumn = getColumnModel().getColumn(column);
-			unitRenderer = unitRenderersByColumnName.get(tableColumn.getHeaderValue());
-//      Iterator<String> keys = unitRenderersByColumnName.keySet().iterator();
-//      while(keys.hasNext()) {
-//        String columnName = keys.next();
-//        if(tableColumn.getHeaderValue().equals(columnName)) {
-//          unitRenderer = unitRenderersByColumnName.get(columnName);
-//          break;
-//        }
-//      }
+			String key = (String) tableColumn.getHeaderValue();
+			unitRenderer = unitRenderersByColumnName.get(key);
 			// find base renderer
 			baseRenderer = tableColumn.getCellRenderer();
 			if (baseRenderer == null) {
-				String key = (String) tableColumn.getHeaderValue();
 				baseRenderer = precisionRenderersByColumnName.get(key);
 				if (baseRenderer == null && key.endsWith(DataToolTab.SHIFTED)) {
 					baseRenderer = precisionRenderersByColumnName.get(key.substring(0, key.length() - 1));
 				}
 			}
-//      if (baseRenderer==null) {
-//	      keys = precisionRenderersByColumnName.keySet().iterator();
-//	      while(keys.hasNext()) {
-//	        String columnName = keys.next();
-//	        if(tableColumn.getHeaderValue().equals(columnName)) {
-//	        	baseRenderer = precisionRenderersByColumnName.get(columnName);
-//	        	break;
-//	        }
-//	        else if(tableColumn.getHeaderValue().equals(columnName+DataToolTab.SHIFTED)) {
-//	        	baseRenderer = precisionRenderersByColumnName.get(columnName);
-//	        	break;
-//	        }
-//	      }
-//      }
 		} catch (Exception ex) {
 		}
 		// if no precision base renderer, use default
 		if (baseRenderer == null) {
-			if (getColumnClass(column).equals(Double.class)) {
-				baseRenderer = defaultDoubleRenderer;
-			} else {
-				baseRenderer = getDefaultRenderer(getColumnClass(column));
-			}
+			baseRenderer = (getColumnClass(column) == Double.class ? defaultDoubleRenderer
+					: getDefaultRenderer(getColumnClass(column)));
 		}
 		// return unit renderer if defined
-		if (unitRenderer != null) {
-			unitRenderer.setBaseRenderer(baseRenderer);
-			return unitRenderer;
-		}
-		return baseRenderer;
+		if (unitRenderer == null)
+			return baseRenderer;
+		unitRenderer.setBaseRenderer(baseRenderer);
+		return unitRenderer;
 	}
 
 	/**
@@ -1579,7 +1547,6 @@ public class DataTable extends JTable {
 		public int convertColumnIndexToModel(int viewIndex) {
 			if (dataTableModel.getColumnCount() != tableColumns.size())
 				updateColumnModel();
-				
 			return getColumn(viewIndex).getModelIndex();
 		}
 
@@ -1822,6 +1789,8 @@ public class DataTable extends JTable {
 
 	}
 
+	static int test = 0;
+	
 	/**
 	 * A cell renderer that adds units to displayed values. Added by D Brown Dec
 	 * 2010

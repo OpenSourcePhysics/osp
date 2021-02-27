@@ -281,7 +281,7 @@ public class ExportTool implements Tool, PropertyChangeListener {
 		}
 		XMLControlElement control = new XMLControlElement();
 		control.readXML(job.getXML());
-		OSPLog.finest(control.toXML());
+		//OSPLog.finest(control.toXML());
 		// Load all data objects into 'data'
 		List<Object> data = getDataObjects(control);
 		// Set export dialog to list appropriate data objects

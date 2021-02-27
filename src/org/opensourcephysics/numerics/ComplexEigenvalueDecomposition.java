@@ -46,18 +46,18 @@ public class ComplexEigenvalueDecomposition implements java.io.Serializable {
     //System.out.println("Eigen.eigen(A, lambda, vec, fail)");
     // driver for computing eigenvalues and eigenvectors
     if((A==null)||(lambda==null)||(vec==null)) {
-      System.out.println("Error in Eigen.eigen,"+" null or inconsistent array sizes."); //$NON-NLS-1$ //$NON-NLS-2$
+      err("null or inconsistent array sizes."); //$NON-NLS-1$ //$NON-NLS-2$
       return;
     }
     int n = A.length;
     if((A[0].length!=n)||(vec.length!=n)||(vec[0].length!=n)||(lambda.length!=n)) {
-      System.out.println("Error in Eigen.eigen,"+" inconsistent array sizes."); //$NON-NLS-1$ //$NON-NLS-2$
+      err("inconsistent array sizes."); //$NON-NLS-1$ //$NON-NLS-2$
       return;
     }
     fail[0] = false;
     // special cases
     if(n<1) {
-      System.out.println("zero size matrix"); //$NON-NLS-1$
+      err("zero size matrix"); //$NON-NLS-1$
       return;
     }
     int rowcol[] = new int[n];
@@ -81,7 +81,11 @@ public class ComplexEigenvalueDecomposition implements java.io.Serializable {
     cxeig2c(B, lambda, vec, rowcol, fail);
   } // end eigen
 
-  private static void twobytwo(Complex A[][], Complex lambda[], Complex vec[][]) {
+  private static void err(String msg) {
+	  System.out.println("ComplexEigenvalue: "+msg); 
+  }
+
+private static void twobytwo(Complex A[][], Complex lambda[], Complex vec[][]) {
     Complex b, c, rad, l1, l2;
     Complex Z[] = new Complex[2];
     double t;

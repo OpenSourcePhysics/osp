@@ -516,7 +516,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 
 	public void readAsync(String name, Function<String, Void> whenDone) {
 		synchronized (sync) {
-			OSPLog.finest("reading " + name); //$NON-NLS-1$
+			//OSPLog.finest("reading " + name); //$NON-NLS-1$
 			Resource res = ResourceLoader.getResource(name);
 			if (res == null) {
 				processReader(name, null, null, whenDone);
@@ -583,7 +583,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	@Override
 	public String read(String fileName) {
 		synchronized (sync) {
-			OSPLog.debug("XMLControlElement.reading " + fileName); //$NON-NLS-1$
+			//OSPLog.debug("XMLControlElement.reading " + fileName); //$NON-NLS-1$
 			Resource res = ResourceLoader.getResource(fileName);
 			if (res != null) {
 				try {
@@ -1621,7 +1621,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			theClass = null;
 			return readXML(xml, null);
 		}
-		OSPLog.debug("!!! " + Performance.now(t0) + " XMLControlElement.readData " + className);
+		//OSPLog.debug("!!! " + Performance.now(t0) + " XMLControlElement.readData " + className);
 		return !readFailed;
 	}
 
