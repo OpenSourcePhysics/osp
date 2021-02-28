@@ -2299,7 +2299,7 @@ public class ResourceLoader {
 	 * @param type the class providing the classloader
 	 * @return the resource, if any
 	 */
-	static private Resource createClassResource(String name, Class<?> type) {
+	static public Resource createClassResource(String name, Class<?> type) {
 		// ignore any name that has a protocol
 		if (name.indexOf(":/") != -1) { //$NON-NLS-1$
 			return null;
