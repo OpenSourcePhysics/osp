@@ -126,8 +126,7 @@ public class LibraryTreePanel extends JPanel {
 	protected static HashMap<LibraryTreeNode, HTMLPane> htmlPanesByNode = new HashMap<LibraryTreeNode, HTMLPane>();
 
 	static {
-		String imageFile = "/org/opensourcephysics/resources/tools/images/open.gif"; //$NON-NLS-1$
-		openFileIcon = new ImageIcon(ResourceLoader.getAssetURL(imageFile));
+		openFileIcon = ResourceLoader.getImageIcon("resources/tools/images/open.gif");
 		hyperlinkListener = new HyperlinkListener() {
 			@Override
 			public void hyperlinkUpdate(HyperlinkEvent e) {

@@ -73,6 +73,7 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.ResizableIcon;
+import org.opensourcephysics.resources.README;
 import org.opensourcephysics.tools.LibraryBrowser.XMLFilter;
 
 import javajs.async.Assets;
@@ -675,20 +676,16 @@ public class ResourceLoader {
 	 * @param path the path
 	 * @return the icon. May return null.
 	 */
-	public static ImageIcon getImageIcon(String path) { 
-		ImageIcon icon=null;
-		if(!OSPRuntime.isJS) try {  // look for images in bin or in jar when running in Java
-			icon = new ImageIcon(ResourceLoader.class.getResource(path));
-			if(icon!=null) return icon; // image found
-		}catch (Exception e) {}
-		
-		URL url = null;
-		try {  // look for images in assets archive if it exists
-			url = Assets.getURLFromPath(path, false);
-			icon = url == null ? 
-			new ImageIcon(path) : 
-			new ImageIcon(url);
-			return icon.getIconWidth() > 0? icon: null;
+	public static ImageIcon getImageIcon(String path) {
+		ImageIcon icon = null;
+		URL url = getAssetURL(path);
+		if (!OSPRuntime.isJS) {
+			return new ImageIcon(url);
+		}
+		// JavaScript only
+		try { // look for images in assets archive if it exists
+			icon = (url == null ? new ImageIcon(path) : new ImageIcon(url));
+			return icon.getIconWidth() > 0 ? icon : null;
 		} catch (Exception e) {
 			OSPLog.warning("ResourceLoader could not find " + url + "\nEclipse not pointing to correct project?");
 			return null;
@@ -2817,7 +2814,7 @@ public class ResourceLoader {
 			try {
 				p.load(Assets.getAssetStream(name));
 				OSPLog.debug("ResourceLoader found " + p.size() + " properties in\n"
-						+ Assets.getURLFromPath(name).toString());
+						+ getAssetURL(name).toString());
 				return new Bundle(p);
 
 			} catch (Exception e) {
@@ -3046,18 +3043,16 @@ public class ResourceLoader {
 	 * @param assetPath
 	 * @return
 	 */
-	public static URL getAssetURL(String assetPath) {
-		return Assets.getURLFromPath(assetPath);
-	}
-
-	/**
-	 * Same as getAssetURL now.
-	 * 
-	 * @param imagePath
-	 * @return
-	 */
-	public static URL getImageZipResource(String imagePath) {
-		return Assets.getURLFromPath(imagePath);
+	private static URL getAssetURL(String path) {
+		if (path.indexOf("org/open") < 0) {
+			path = "org/opensourcephysics/" + path;
+		}
+		if (!path.startsWith("/"))
+			path = "/" + path;
+		if (OSPRuntime.isJS)
+			return Assets.getURLFromPath(path);
+		path = path.substring(path.indexOf("resources/") + 10);
+		return README.class.getResource(path);
 	}
 
 	/**
@@ -3246,6 +3241,16 @@ public class ResourceLoader {
 			}
 		}
 		return (res == null ? getImage(path) : res.getImage());
+	}
+
+	/**
+	 * retrieve an asset using Assets or a class loader
+	 * @param path full asset path org/... or relative to the class
+	 * @param cl the class - only used for Java
+	 * @return
+	 */
+	public static URL getClassResource(String path, Class<?> cl) {
+		return (OSPRuntime.isJS ? getAssetURL(path) : cl.getResource(path));
 	}
 }
 
