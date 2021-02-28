@@ -73,7 +73,6 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.ResizableIcon;
-import org.opensourcephysics.resources.README;
 import org.opensourcephysics.tools.LibraryBrowser.XMLFilter;
 
 import javajs.async.Assets;
@@ -2812,19 +2811,22 @@ public class ResourceLoader {
 		if (resourceLocale.getLanguage() == "en" && !Assets.notFound(name = bundleName.replaceAll("\\.", "/") + ".properties") ) {
 			Properties p = new Properties();
 			try {
-				p.load(Assets.getAssetStream(name));
+				p.load(getAssetStream(name));
 				OSPLog.debug("ResourceLoader found " + p.size() + " properties in\n"
 						+ getAssetURL(name).toString());
 				return new Bundle(p);
-
 			} catch (Exception e) {
+				OSPLog.debug("Asset not found for resource " + name);
+				OSPLog.warning("Asset not found for resource " + name);
+				Assets.setNotFound(name);
 			}
-			OSPLog.debug("Asset not found for resource " + name);
-			OSPLog.warning("Asset not found for resource " + name);
-			Assets.setNotFound(name);
 		}
 		return new Bundle(ResourceBundle.getBundle(bundleName, resourceLocale,
 				ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES)));
+	}
+
+	private static InputStream getAssetStream(String name) throws IOException {
+		return (OSPRuntime.useZipAssets ? Assets.getAssetStream(name) : (InputStream) getAssetURL(name).openStream());
 	}
 
 	private final static String latinChars = "á\u00e1Á\u00c1é\u00e9É\u00c9í\u00edÍ\u00cdó\u00f3Ó\u00d3ú\u00faÚ\u00dañ\u00f1Ñ\u00d1ü\u00fcÜ\u00dc¡\u00a1¿\u00bf"; 
@@ -3044,15 +3046,16 @@ public class ResourceLoader {
 	 * @return
 	 */
 	private static URL getAssetURL(String path) {
-		if (path.indexOf("org/open") < 0) {
+		if (path.indexOf("resources") == 0) {
 			path = "org/opensourcephysics/" + path;
 		}
-		if (!path.startsWith("/"))
-			path = "/" + path;
-		if (OSPRuntime.isJS)
-			return Assets.getURLFromPath(path);
-		path = path.substring(path.indexOf("resources/") + 10);
-		return README.class.getResource(path);
+		if (path.startsWith("/org"))
+			path = path.substring(1);
+		// BH note:
+		// Tracker.class.getResource(path);  // only relative path found
+		// Tracker.class.getClassLoader().getResource(path); // absolute path also found
+		// Assets.getURLFromPath also adds the jar protocol for !/
+		return (OSPRuntime.useZipAssets || path.indexOf("/resources/") < 0 ? Assets.getURLFromPath(path) : ResourceLoader.class.getClassLoader().getResource(path));
 	}
 
 	/**
@@ -3250,7 +3253,8 @@ public class ResourceLoader {
 	 * @return
 	 */
 	public static URL getClassResource(String path, Class<?> cl) {
-		return (OSPRuntime.isJS ? getAssetURL(path) : cl.getResource(path));
+		// Note! Must use cl.getClassLoader(), not just cl here, for absolute paths
+		return (OSPRuntime.useZipAssets ? getAssetURL(path) : cl.getClassLoader().getResource(path));
 	}
 }
 

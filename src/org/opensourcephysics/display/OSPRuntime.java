@@ -119,35 +119,6 @@ public class OSPRuntime {
 		}
 	}
 
-	static {
-		if(isJS) try {  // only load default assets if running in JavaScript
-			Object val = (isJS ? jsutil.getAppletInfo("assets") : null);
-			if (val == null)
-				val = "DEFAULT";
-			if ((val instanceof String)) {
-				// assets String parameter defined - JavaScript only
-				switch (((String) val).toUpperCase()) {
-				case "DEFAULT":
-					// Java and JavaScript; Eclipse DEFINITELY needs these
-					Assets.add(new Assets.Asset("osp", "osp-assets.zip", "org/opensourcephysics/resources"));
-					break;
-				case "NONE":
-					// JavaScript only
-					break;
-				default:
-					// JavaScript only
-					Assets.add(val);
-					break;
-				}
-			} else {
-				Assets.add(val);
-			}
-		} catch (Throwable e) {
-			OSPLog.warning("Error reading assets path. ");
-			System.err.println("Error reading assets path.");
-		}
-	}
-
 	private static String browser = (isJS ? null : "JAVA"); 
 
 	public static String getBrowserName() {
@@ -240,9 +211,39 @@ public class OSPRuntime {
 
 	public static boolean embedVideoAsObject = isJS;
 
+	public static boolean useZipAssets = isJS;
+	
 	public static boolean unzipFiles = !isJS; // for TrackerIO
 
 	static {
+		if (useZipAssets) {
+			try { // only load default assets if running in JavaScript
+				Object val = (isJS ? jsutil.getAppletInfo("assets") : null);
+				if (val == null)
+					val = "DEFAULT";
+				if ((val instanceof String)) {
+					// assets String parameter defined - JavaScript only
+					switch (((String) val).toUpperCase()) {
+					case "DEFAULT":
+						// Java and JavaScript; Eclipse DEFINITELY needs these
+						Assets.add(new Assets.Asset("osp", "osp-assets.zip", "org/opensourcephysics/resources"));
+						break;
+					case "NONE":
+						// JavaScript only
+						break;
+					default:
+						// JavaScript only
+						Assets.add(val);
+						break;
+					}
+				} else {
+					Assets.add(val);
+				}
+			} catch (Throwable e) {
+				OSPLog.warning("Error reading assets path. ");
+				System.err.println("Error reading assets path.");
+			}
+		}
 		if (!isJS && !unzipFiles)
 			OSPLog.warning("OSPRuntime.unzipFiles setting is false for BH testing");
 		if (skipDisplayOfPDF)
