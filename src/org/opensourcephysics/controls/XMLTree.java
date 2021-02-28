@@ -140,7 +140,7 @@ public class XMLTree {
   protected void createGUI() {
     // create icons
     String imageFile = "/org/opensourcephysics/resources/controls/images/hilite.gif"; //$NON-NLS-1$
-    hiliteIcon = ResourceLoader.getResizableIcon(imageFile);
+    hiliteIcon = ResourceLoader.getImageIcon(imageFile);
     // create root and tree
     root = new XMLTreeNode(control);
     tree = new JTree(root);

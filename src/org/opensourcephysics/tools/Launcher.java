@@ -2885,8 +2885,7 @@ public class Launcher {
 		private LauncherFrame() {
 			setName("LauncherTool"); //$NON-NLS-1$
 			try {
-				ImageIcon icon = ResourceLoader.getImageIcon(OSPRuntime.OSP_ICON_FILE);
-				setIconImage(icon.getImage());
+				setIconImage(ResourceLoader.getImageIcon(OSPRuntime.OSP_ICON_FILE).getImage());
 			} catch (Exception ex) {
 				// image not found
 			}

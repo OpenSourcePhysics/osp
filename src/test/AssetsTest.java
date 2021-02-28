@@ -32,14 +32,17 @@ public class AssetsTest extends Test_ {
 		
 		// This declaration ensures OSPRuntime has been run, as
 		// it is where the assets are defined.
-		if (OSPRuntime.isJS) {}
+		if (OSPRuntime.isJS) {
+			OSPLog.debug("assets=" + Assets.getInstance().toString());			
+		}
 		
-		OSPLog.debug("assets=" + Assets.getInstance().toString());
-
 	}
 
 	AssetsTest() {
-
+		if (!OSPRuntime.isJS) {
+			System.out.println("Assets are JavaScript only now.");
+			System.exit(0);
+		}
 		// test that an image that is NOT in the zip file can be loaded directly.
 		String imageName = "org/opensourcephysics/resources/cover.gif";
 		URL url = Assets.getURLFromPath(imageName, true);

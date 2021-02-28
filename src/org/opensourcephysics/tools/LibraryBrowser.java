@@ -291,8 +291,7 @@ public class LibraryBrowser extends JPanel {
 				}
 			});
 			try {
-				ImageIcon icon = ResourceLoader.getImageIcon(OSPRuntime.OSP_ICON_FILE);
-				frame.setIconImage(icon.getImage());
+				frame.setIconImage(ResourceLoader.getImageIcon(OSPRuntime.OSP_ICON_FILE).getImage());
 			} catch (Exception ex) {
 			}
 			frame.pack();

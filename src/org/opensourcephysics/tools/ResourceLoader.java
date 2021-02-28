@@ -677,17 +677,9 @@ public class ResourceLoader {
 	 */
 	public static ImageIcon getImageIcon(String path) { 
 		ImageIcon icon=null;
-		if(!OSPRuntime.isJS) try {  // look for images in bin or in jar when running in Java
-			icon = new ImageIcon(ResourceLoader.class.getResource(path));
-			if(icon!=null) return icon; // image found
-		}catch (Exception e) {}
-		
-		URL url = null;
-		try {  // look for images in assets archive if it exists
-			url = Assets.getURLFromPath(path, false);
-			icon = url == null ? 
-			new ImageIcon(path) : 
-			new ImageIcon(url);
+		URL url = getAssetURL(path);
+		try {
+			icon = (url == null ? new ImageIcon(path) : new ImageIcon(url));
 			return icon.getIconWidth() > 0? icon: null;
 		} catch (Exception e) {
 			OSPLog.warning("ResourceLoader could not find " + url + "\nEclipse not pointing to correct project?");

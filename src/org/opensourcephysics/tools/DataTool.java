@@ -2928,11 +2928,7 @@ public void loadDatasetURI(String relpath) {
 		menubar.add(displayMenu);
 		languageMenu = new JMenu();
 		// get jar resource before installed locales so that launch jar is not null
-		String imagePath = "/org/opensourcephysics/resources/tools/images/open.gif"; //$NON-NLS-1$
-		if (OSPRuntime.isJS)
-			ResourceLoader.getAssetURL(imagePath);
-		else
-			ResourceLoader.getResource(imagePath);
+		ResourceLoader.getImageIcon("resources/tools/images/open.gif");
 		final Locale[] locales = OSPRuntime.getInstalledLocales();
 		Action languageAction = new AbstractAction() {
 			@Override

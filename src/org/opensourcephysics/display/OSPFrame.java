@@ -126,9 +126,7 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
 		});
 		if (!OSPRuntime.isJS)
 			try {
-				ImageIcon icon = ResourceLoader.getImageIcon(OSP_ICON_FILE);
-				setIconImage(icon.getImage());
-				// setIconImage(ResourceLoader.getImage(OSPRuntime.OSP_ICON_FILE));
+				setIconImage(ResourceLoader.getImageIcon(OSP_ICON_FILE).getImage());
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				// image not found
