@@ -3051,16 +3051,6 @@ public class ResourceLoader {
 	}
 
 	/**
-	 * Same as getAssetURL now.
-	 * 
-	 * @param imagePath
-	 * @return
-	 */
-	public static URL getImageZipResource(String imagePath) {
-		return Assets.getURLFromPath(imagePath);
-	}
-
-	/**
 	 * Just get the URL contents as a byte array
 	 * 
 	 * @param url
