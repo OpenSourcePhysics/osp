@@ -678,11 +678,7 @@ public class ResourceLoader {
 	public static ImageIcon getImageIcon(String path) {
 		ImageIcon icon = null;
 		URL url = getAssetURL(path);
-		if (!OSPRuntime.isJS) {
-			return new ImageIcon(url);
-		}
-		// JavaScript only
-		try { // look for images in assets archive if it exists
+		try {
 			icon = (url == null ? new ImageIcon(path) : new ImageIcon(url));
 			return icon.getIconWidth() > 0 ? icon : null;
 		} catch (Exception e) {
