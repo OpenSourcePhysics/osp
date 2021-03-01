@@ -172,14 +172,12 @@ public class LibraryComPADRE {
 		};
 
 		try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			String urlPath = treeNode.getAbsoluteTarget();
 			URL url = new URL(urlPath);
 
-			ResourceLoader.getURLContentsAsync(url, new Function<byte[], Void>() {
-
-				@Override
-				public Void apply(byte[] bytes) {
+			ResourceLoader.getURLContentsAsync(url, (bytes) -> {
+				
+				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 					int n = 0;
 					Document doc;
 					NodeList list = null;
@@ -235,8 +233,6 @@ public class LibraryComPADRE {
 
 					start(nextIndex[0]);
 					return null;
-				}
-
 			});
 
 		} catch (Exception e) {

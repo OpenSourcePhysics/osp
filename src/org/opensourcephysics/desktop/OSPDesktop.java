@@ -9,7 +9,6 @@ package org.opensourcephysics.desktop;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.OSPRuntime;
@@ -48,14 +47,11 @@ public class OSPDesktop {
 	 * @return true if successful
 	 */
 	public static boolean displayURL(String url) {
-
 		try {
-
 			if (OSPRuntime.isJS) {
 				if (url.startsWith("file") || url.startsWith("/")) {
 					// allow for data from a JAR file
-					byte[] bytes = (url.indexOf("!/") >= 0 ? ResourceLoader.getZipEntryBytes(url, null)
-							: OSPRuntime.getCachedBytes(url));
+					byte[] bytes = ResourceLoader.getURLBytes(url);
 					if (bytes == null) {
 						OSPLog.warning("OSPDDesktop could not display " + url);
 					} else {
@@ -66,12 +62,12 @@ public class OSPDesktop {
 						fos.write(bytes);
 						fos.close(); // ... and off it goes!!
 					}
-				} else {
-					OSPRuntime.displayURL(url);
+					return true;
 				}
-			} else if (!OSPDesktop.browse(url)) {
-				OSPRuntime.displayURL(url);
+			} else if (OSPDesktop.browse(url)) {
+				return true;
 			}
+			OSPRuntime.displayURL(url);
 			return true;
 		} catch (Exception e1) {
 			return false;

@@ -1392,7 +1392,7 @@ public class ResourceLoader {
 	 *                   around
 	 * @return the ZipEntry for this file, possibly cached.
 	 */
-	public static ZipEntry findZipEntry(String zipFile, String fileName, boolean isContains) {
+	private static ZipEntry findZipEntry(String zipFile, String fileName, boolean isContains) {
 		Map<String, ZipEntry> contents = getZipContents(zipFile);
 		if (contents == null)
 			return null;
@@ -1410,7 +1410,7 @@ public class ResourceLoader {
 		return null;
 	}
 
-	public static void findZipEntryAsync(String zipFile, String fileName, boolean isContains,
+	private static void findZipEntryAsync(String zipFile, String fileName, boolean isContains,
 			Function<ZipEntry, Void> whenDone) {
 		getZipContentsAsync(zipFile, new Function<Map<String, ZipEntry>, Void>() {
 
@@ -1439,18 +1439,14 @@ public class ResourceLoader {
 			whenDone.apply(fnames);
 			return;
 		}
-		getURLContentsAsync(url, new Function<byte[], Void>() {
-
-			@Override
-			public Void apply(byte[] bytes) {
-				try {
-					whenDone.apply(readZipContents(new ByteArrayInputStream(bytes), url));
-				} catch (Exception ex) {
-					whenDone.apply(null);
-				}
-				return null;
+		getURLContentsAsync(url, (byte[] bytes) -> {
+			Map<String, ZipEntry> contents = null;
+			try {
+				contents = readZipContents(new ByteArrayInputStream(bytes), url);
+			} catch (Exception ex) {
 			}
-
+			whenDone.apply(contents);
+			return null;
 		});
 	}
 
@@ -1683,7 +1679,7 @@ public class ResourceLoader {
 	 * 
 	 * @throws IOException
 	 */
-	public static byte[] getZipEntryBytes(String jarSource, File target) throws IOException {
+	private static byte[] getZipEntryBytes(String jarSource, File target) throws IOException {
 		String[] parts = getJarURLParts(jarSource);
 		return (parts == null ? null : getZipEntryBytes(parts[0], parts[1], target));
 	}
@@ -1710,23 +1706,19 @@ public class ResourceLoader {
 		if (isContains) {
 			entryPath = entryPath.substring(1);
 		}
-		findZipEntryAsync(zipFile, entryPath, isContains, new Function<ZipEntry, Void>() {
-
-			@Override
-			public Void apply(ZipEntry ze) {
-				if (ze == null) {
-					whenDone.apply(null);
-				} else {
-					byte[] bytes = OSPRuntime.jsutil.getZipBytes(ze);
-					if (bytes != null && target != null) {
-						// Note that this will NOT download to the user, as we are not
-						// creating a FileOutputStream.
-						OSPRuntime.jsutil.setFileBytes(target, bytes);
-					}
-					whenDone.apply(bytes);
+		findZipEntryAsync(zipFile, entryPath, isContains, (ze) -> {
+			if (ze == null) {
+				whenDone.apply(null);
+			} else {
+				byte[] bytes = OSPRuntime.jsutil.getZipBytes(ze);
+				if (bytes != null && target != null) {
+					// Note that this will NOT download to the user, as we are not
+					// creating a FileOutputStream.
+					OSPRuntime.jsutil.setFileBytes(target, bytes);
 				}
-				return null;
+				whenDone.apply(bytes);
 			}
+			return null;
 		});
 	}
 
@@ -3081,6 +3073,19 @@ public class ResourceLoader {
 	}
 
 	/**
+	 * Used only in OSPDesktop
+	 * 
+	 * @param url
+	 * @return
+	 * @throws IOException
+	 */
+	public static byte[] getURLBytes(String url) throws IOException {
+		return (url.indexOf("!/") >= 0 ? getZipEntryBytes(url, null)
+				: OSPRuntime.getCachedBytes(url));
+	}
+
+
+	/**
 	 * Ret the URL contents as a string
 	 * 
 	 * @param url
@@ -3174,33 +3179,26 @@ public class ResourceLoader {
 	}
 
 	public static void copyURLtoFileAsync(String webPath, String filePath, Function<File, Void> whenDone) {
-
 		File f = new File(filePath);
-
 		try {
 			if (OSPRuntime.isJS) {
-				getURLContentsAsync(new URL(webPath), new Function<byte[], Void>() {
-
-					@Override
-					public Void apply(byte[] bytes) {
-						FileOutputStream fos;
-						try {
-							fos = new FileOutputStream(f);
-							OSPRuntime.jsutil.transferTo(new ByteArrayInputStream(bytes), fos);
-							fos.close();
-							whenDone.apply(f);
-						} catch (IOException e) {
-						}
-						return null;
+				getURLContentsAsync(new URL(webPath), (byte[] bytes) -> {
+					FileOutputStream fos;
+					try {
+						fos = new FileOutputStream(f);
+						OSPRuntime.jsutil.transferTo(new ByteArrayInputStream(bytes), fos);
+						fos.close();
+						whenDone.apply(f);
+					} catch (IOException e) {
+						//BH I would have thought this here: whenDone.apply(null);
 					}
-
+					return null;
 				});
 				return;
-			} else {
-				Path path = f.toPath();
-				Files.createDirectories(path.getParent());
-				Files.write(path, getURLContents(new URL(getURIPath(webPath))));
 			}
+			Path path = f.toPath();
+			Files.createDirectories(path.getParent());
+			Files.write(path, getURLContents(new URL(getURIPath(webPath))));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -3252,6 +3250,7 @@ public class ResourceLoader {
 		// Note! Must use cl.getClassLoader(), not just cl here, for absolute paths
 		return (OSPRuntime.useZipAssets ? getAssetURL(path) : cl.getClassLoader().getResource(path));
 	}
+
 }
 
 /*

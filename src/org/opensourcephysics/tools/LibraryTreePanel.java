@@ -2421,10 +2421,7 @@ public class LibraryTreePanel extends JPanel {
 					HTMLPane pane = htmlPane;
 					if (htmlStr == "") {
 						if (OSPRuntime.allowAsyncURL) {
-							ResourceLoader.getURLContentsAsync(url, new Function<byte[], Void>() {
-
-								@Override
-								public Void apply(byte[] bytes) {
+							ResourceLoader.getURLContentsAsync(url, (bytes) -> {
 									String s;
 									if (bytes == null)
 										s = ("<h2>" + node + "</h2>"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -2435,8 +2432,6 @@ public class LibraryTreePanel extends JPanel {
 									pane.setCaretPosition(0);
 									whenDone(pane);
 									return null;
-								}
-
 							});
 							return null;
 						}

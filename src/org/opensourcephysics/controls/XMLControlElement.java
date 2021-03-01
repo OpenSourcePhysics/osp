@@ -516,7 +516,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 
 	public void readAsync(String name, Function<String, Void> whenDone) {
 		synchronized (sync) {
-			//OSPLog.finest("reading " + name); //$NON-NLS-1$
+			// OSPLog.finest("reading " + name); //$NON-NLS-1$
 			Resource res = ResourceLoader.getResource(name);
 			if (res == null) {
 				processReader(name, null, null, whenDone);
@@ -524,20 +524,14 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 				// synchronous for file
 				processReader(name, res, res.openReader(), whenDone);
 			} else {
-				ResourceLoader.getURLContentsAsync(res.getURL(), new Function<byte[], Void>() {
-	
-					@Override
-					public Void apply(byte[] bytes) {
-	
-						if (bytes == null) {
-							processReader(name, null, null, whenDone);
-						} else {
-							processReader(name, res, ResourceLoader.readerForStream(new ByteArrayInputStream(bytes), null),
-									whenDone);
-						}
-						return null;
+				ResourceLoader.getURLContentsAsync(res.getURL(), (bytes) -> {
+					if (bytes == null) {
+						processReader(name, null, null, whenDone);
+					} else {
+						processReader(name, res, ResourceLoader.readerForStream(new ByteArrayInputStream(bytes), null),
+								whenDone);
 					}
-	
+					return null;
 				});
 			}
 		}
