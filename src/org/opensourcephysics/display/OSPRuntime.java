@@ -1725,9 +1725,6 @@ public class OSPRuntime {
 					// assets String parameter defined - JavaScript only
 					switch (((String) val).toUpperCase()) {
 					case "DEFAULT":
-						// Java and JavaScript; Eclipse DEFINITELY needs these
-						// Assets.add(new Assets.Asset("tracker", "cabrillo-assets.zip",
-						// "org/opensourcephysics/cabrillo"));
 						if (!isJS) {
 							zipPath = OSPRuntime.class.getClassLoader().getResource(zipPath).toString();
 						}
