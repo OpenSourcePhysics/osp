@@ -675,12 +675,12 @@ public class ResourceLoader {
 	 * @param path the path
 	 * @return the icon. May return null.
 	 */
-	public static ImageIcon getImageIcon(String path) { 
-		ImageIcon icon=null;
+	public static ImageIcon getImageIcon(String path) {
+		ImageIcon icon = null;
 		URL url = getAssetURL(path);
-		try {
+		try { // look for images in assets archive if it exists
 			icon = (url == null ? new ImageIcon(path) : new ImageIcon(url));
-			return icon.getIconWidth() > 0? icon: null;
+			return icon.getIconWidth() > 0 ? icon : null;
 		} catch (Exception e) {
 			OSPLog.warning("ResourceLoader could not find " + url + "\nEclipse not pointing to correct project?");
 			return null;
@@ -2299,7 +2299,7 @@ public class ResourceLoader {
 	 * @param type the class providing the classloader
 	 * @return the resource, if any
 	 */
-	static public Resource createClassResource(String name, Class<?> type) {
+	static private Resource createClassResource(String name, Class<?> type) {
 		// ignore any name that has a protocol
 		if (name.indexOf(":/") != -1) { //$NON-NLS-1$
 			return null;
@@ -2807,19 +2807,22 @@ public class ResourceLoader {
 		if (resourceLocale.getLanguage() == "en" && !Assets.notFound(name = bundleName.replaceAll("\\.", "/") + ".properties") ) {
 			Properties p = new Properties();
 			try {
-				p.load(Assets.getAssetStream(name));
+				p.load(getAssetStream(name));
 				OSPLog.debug("ResourceLoader found " + p.size() + " properties in\n"
-						+ Assets.getURLFromPath(name).toString());
+						+ getAssetURL(name).toString());
 				return new Bundle(p);
-
 			} catch (Exception e) {
+				OSPLog.debug("Asset not found for resource " + name);
+				OSPLog.warning("Asset not found for resource " + name);
+				Assets.setNotFound(name);
 			}
-			OSPLog.debug("Asset not found for resource " + name);
-			OSPLog.warning("Asset not found for resource " + name);
-			Assets.setNotFound(name);
 		}
 		return new Bundle(ResourceBundle.getBundle(bundleName, resourceLocale,
 				ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES)));
+	}
+
+	private static InputStream getAssetStream(String name) throws IOException {
+		return (OSPRuntime.useZipAssets ? Assets.getAssetStream(name) : (InputStream) getAssetURL(name).openStream());
 	}
 
 	private final static String latinChars = "á\u00e1Á\u00c1é\u00e9É\u00c9í\u00edÍ\u00cdó\u00f3Ó\u00d3ú\u00faÚ\u00dañ\u00f1Ñ\u00d1ü\u00fcÜ\u00dc¡\u00a1¿\u00bf"; 
@@ -3038,8 +3041,17 @@ public class ResourceLoader {
 	 * @param assetPath
 	 * @return
 	 */
-	public static URL getAssetURL(String assetPath) {
-		return Assets.getURLFromPath(assetPath);
+	private static URL getAssetURL(String path) {
+		if (path.indexOf("resources") == 0) {
+			path = "org/opensourcephysics/" + path;
+		}
+		if (path.startsWith("/org"))
+			path = path.substring(1);
+		// BH note:
+		// Tracker.class.getResource(path);  // only relative path found
+		// Tracker.class.getClassLoader().getResource(path); // absolute path also found
+		// Assets.getURLFromPath also adds the jar protocol for !/
+		return (OSPRuntime.useZipAssets || path.indexOf("/resources/") < 0 ? Assets.getURLFromPath(path) : ResourceLoader.class.getClassLoader().getResource(path));
 	}
 
 	/**
@@ -3228,6 +3240,17 @@ public class ResourceLoader {
 			}
 		}
 		return (res == null ? getImage(path) : res.getImage());
+	}
+
+	/**
+	 * retrieve an asset using Assets or a class loader
+	 * @param path full asset path org/... or relative to the class
+	 * @param cl the class - only used for Java
+	 * @return
+	 */
+	public static URL getClassResource(String path, Class<?> cl) {
+		// Note! Must use cl.getClassLoader(), not just cl here, for absolute paths
+		return (OSPRuntime.useZipAssets ? getAssetURL(path) : cl.getClassLoader().getResource(path));
 	}
 }
 
