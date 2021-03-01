@@ -209,12 +209,12 @@ public class OSPRuntime {
 
 	public static boolean embedVideoAsObject = isJS;
 
-	public static boolean useZipAssets = true;//isJS;
+	public static boolean useZipAssets = isJS;
 	
 	public static boolean unzipFiles = !isJS; // for TrackerIO
 
 	static {
-		addAssets("tracker", "osp-assets.zip", "org/opensourcephysics/resources");
+		addAssets("osp", "osp-assets.zip", "org/opensourcephysics/resources");
 		if (!isJS && !unzipFiles)
 			OSPLog.warning("OSPRuntime.unzipFiles setting is false for BH testing");
 		if (skipDisplayOfPDF)
