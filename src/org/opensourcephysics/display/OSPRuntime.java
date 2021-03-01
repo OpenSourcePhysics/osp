@@ -214,6 +214,7 @@ public class OSPRuntime {
 	public static boolean unzipFiles = !isJS; // for TrackerIO
 
 	static {
+		//Assets.setDebugging(true);
 		addAssets("osp", "osp-assets.zip", "org/opensourcephysics/resources");
 		if (!isJS && !unzipFiles)
 			OSPLog.warning("OSPRuntime.unzipFiles setting is false for BH testing");
