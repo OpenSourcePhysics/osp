@@ -20,7 +20,6 @@ import java.awt.font.FontRenderContext;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -54,7 +53,6 @@ import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
-import org.opensourcephysics.controls.XMLTable;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.LaunchNode;
 import org.opensourcephysics.tools.ResourceLoader;
@@ -216,38 +214,7 @@ public class OSPRuntime {
 	public static boolean unzipFiles = !isJS; // for TrackerIO
 
 	static {
-		if (useZipAssets) {
-			try { // only load default assets if running in JavaScript
-				Object val = (isJS ? jsutil.getAppletInfo("assets") : null);
-				if (val == null)
-					val = "DEFAULT";
-				if ((val instanceof String)) {
-					// assets String parameter defined - JavaScript only
-					switch (((String) val).toUpperCase()) {
-					case "DEFAULT":
-						// Java and JavaScript; Eclipse DEFINITELY needs these
-						String zipPath = "osp-assets.zip";
-						if (!isJS) {
-							zipPath = OSPRuntime.class.getClassLoader().getResource(zipPath).toString();
-						}
-						Assets.add(new Assets.Asset("osp", zipPath, "org/opensourcephysics/resources"));
-						break;
-					case "NONE":
-						// JavaScript only
-						break;
-					default:
-						// JavaScript only
-						Assets.add(val);
-						break;
-					}
-				} else {
-					Assets.add(val);
-				}
-			} catch (Throwable e) {
-				OSPLog.warning("Error reading assets path. ");
-				System.err.println("Error reading assets path.");
-			}
-		}
+		addAssets("osp", "osp-assets.zip", "org/opensourcephysics/resources");
 		if (!isJS && !unzipFiles)
 			OSPLog.warning("OSPRuntime.unzipFiles setting is false for BH testing");
 		if (skipDisplayOfPDF)
@@ -1747,6 +1714,43 @@ public class OSPRuntime {
 	public static void setJSClipboardPasteListener(Component c, TransferHandler handler) {
 		jsutil.setPasteListener(c, handler);
 	}
+
+	public static void addAssets(String name, String zipPath, String path) {
+		if (useZipAssets) {
+			try {
+				Object val = (isJS ? jsutil.getAppletInfo("assets") : null);
+				if (val == null)
+					val = "DEFAULT";
+				if ((val instanceof String)) {
+					// assets String parameter defined - JavaScript only
+					switch (((String) val).toUpperCase()) {
+					case "DEFAULT":
+						// Java and JavaScript; Eclipse DEFINITELY needs these
+						// Assets.add(new Assets.Asset("tracker", "cabrillo-assets.zip",
+						// "org/opensourcephysics/cabrillo"));
+						if (!isJS) {
+							zipPath = OSPRuntime.class.getClassLoader().getResource(zipPath).toString();
+						}
+						Assets.add(new Assets.Asset(name, zipPath, path));
+						break;
+					case "NONE":
+						// JavaScript only
+						break;
+					default:
+						// JavaScript only
+						Assets.add(val);
+						break;
+					}
+				} else {
+					Assets.add(val);
+				}
+			} catch (Throwable e) {
+				OSPLog.warning("Error reading assets path. ");
+				System.err.println("Error reading assets path.");
+			}
+		}
+	}
+
 
 }
 /*
