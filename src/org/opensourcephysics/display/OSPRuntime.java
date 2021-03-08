@@ -73,7 +73,7 @@ import swingjs.api.JSUtilI;
  */
 public class OSPRuntime {
 
-	public static final String VERSION = "5.9.20200919"; //$NON-NLS-1$
+	public static final String VERSION = "5.9.20210308"; //$NON-NLS-1$
 	private static boolean isMac;
 
 	public static int macOffset; // shifts LR message box on Mac to avoid drag hot spot.
@@ -1534,6 +1534,78 @@ public class OSPRuntime {
 			return false;
 		}
 
+	}
+
+	/**
+	 * A class to compare version strings.
+	 */
+	public static class Version implements Comparable<Version> {
+		String ver;
+
+		/**
+		 * Constructor
+		 * 
+		 * @param version the version string
+		 */
+		public Version(String version) {
+			ver = version;
+		}
+		
+		@Override
+		public String toString() {
+			return ver;
+		}
+
+		public boolean isValid() {
+			String[] v = this.ver.trim().split("\\."); //$NON-NLS-1$
+			if (v.length >= 2 && v.length <= 4) {
+				for (int i = 0; i < v.length; i++) {
+					try {
+						Integer.parseInt(v[i].trim());
+					} catch (Exception ex) {
+						return false;
+					}
+				}
+				return true;
+			}
+			return false;
+		}
+
+		@Override
+		public int compareTo(Version o) {
+			// typical newer semantic version "4.9.10" or "5.0.7.190518"
+			// typical older version "4.97"
+
+			// split at decimal points
+			String[] v1 = this.ver.trim().split("\\."); //$NON-NLS-1$
+			String[] v2 = o.ver.trim().split("\\."); //$NON-NLS-1$
+			// newer semantic version arrays have length 3 or 4--truncate to 3
+			// older version arrays have length 2
+			if (v1.length == 4) {
+				v1 = new String[] { v1[0], v1[1], v1[2] };
+			}
+			if (v2.length == 4) {
+				v2 = new String[] { v2[0], v2[1], v2[2] };
+			}
+
+			if (v2.length > v1.length) {
+				// v1 is older version, v2 is newer
+				return -1;
+			}
+			if (v1.length > v2.length) {
+				// v2 is older version, v1 is newer
+				return 1;
+			}
+			// both arrays have the same length
+			for (int i = 0; i < v1.length; i++) {
+				if (Integer.parseInt(v1[i]) < Integer.parseInt(v2[i])) {
+					return -1;
+				} else if (Integer.parseInt(v1[i]) > Integer.parseInt(v2[i])) {
+					return 1;
+				}
+			}
+			return 0;
+		}
 	}
 
 	/**
