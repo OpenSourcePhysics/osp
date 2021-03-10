@@ -199,6 +199,8 @@ public class DataTable extends JTable {
 	
 	protected int mode;
 
+	public boolean tainted;
+
 	/**
 	 * Constructs a DataTable with a default data model
 	 */
@@ -705,7 +707,10 @@ public class DataTable extends JTable {
 			columnsChanged = false;
 			break;
 		}
-
+		if (tainted) {
+			columnsChanged = rowsChanged = true;
+			tainted = false;
+		}
 		//OSPLog.debug(">>>>DataTable.refreshTableNow:  mode" + Integer.toHexString(mode) + " cols changed?" + columnsChanged +" rows changed?"+rowsChanged);
 
 		dataTableModel.refresh(mask);
@@ -871,6 +876,7 @@ public class DataTable extends JTable {
 		 */
 		protected void setTainted() {
 			columnCount = rowCount = -1;
+			tainted = true;
 		}
 
 		public void setColumnSelectionFromJTable() {
