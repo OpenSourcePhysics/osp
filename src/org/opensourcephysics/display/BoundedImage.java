@@ -78,7 +78,6 @@ public void draw(DrawingPanel panel, Graphics g) {
 /**
    * Draws the bounds around the image.
    *
-   * @param panel the drawing panel
    * @param g  the graphics context
    */
   private void drawFixedBounds(Graphics g) {

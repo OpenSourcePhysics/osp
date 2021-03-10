@@ -484,7 +484,6 @@ public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
 	/**
 	 * Draws the shape.
 	 *
-	 * @param panel the drawing panel
 	 * @param g     the graphics context
 	 */
 	private void drawScaledBounds(Graphics g) {
@@ -529,7 +528,6 @@ public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
 /**
    * Draws the shape.
    *
-   * @param panel the drawing panel
    * @param g  the graphics context
    */
   private void drawFixedBounds(Graphics g) {
