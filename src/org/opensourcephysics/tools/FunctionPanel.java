@@ -255,8 +255,12 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 				functionTool.setButtonBar(new Object[] {
 						"help", undoButton, redoButton, "font", "close"});
 			}
-			paramEditor.refreshGUI();
-			functionEditor.refreshGUI();
+
+			System.out.println("FunctionPanel.refreshGUI -- ignored");
+			//paramEditor.refreshGUI();
+			//functionEditor.refreshGUI();
+			
+			
 		}
 //    refreshInstructions(null, false, -1);
 	}

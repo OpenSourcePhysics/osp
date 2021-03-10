@@ -154,7 +154,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	protected HashSet<String> referencesChecked = new HashSet<String>();
 
 	protected boolean anglesInDegrees;
-	protected boolean usePopupEditor = true;
+	protected boolean usePopupEditor = false;//OSPRuntime.useFunctionEditorPopup;
 	protected boolean confirmChanges = true;
 
 	/**
@@ -893,13 +893,22 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	public void refreshGUI() {
 		if (!haveGUI)
 			return;
+		if (true) {
+		System.out.println("FunctionEditor.refreshGUI - ignored");
+		return;
+		}
 		setTitles();
 		sciFormat0000.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
 		decimalFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
 		int[] rows = table.getSelectedRows();
 		int col = table.getSelectedColumn();
-		tableModel.fireTableStructureChanged(); // refreshes table header strings
-		revalidate();
+//		discards any table columns that it had and reallocates
+//	    default columns in the order they appear in the model. This is the
+//	    same as calling setModel(TableModel) on the JTable.
+		table.getTableHeader().revalidate();
+		table.getTableHeader().repaint();
+		//tableModel.fireTableStructureChanged(); // refreshes table header strings
+	//	revalidate();
 		for (int i = 0; i < rows.length; i++) {
 			table.addRowSelectionInterval(rows[i], rows[i]);
 		}
@@ -1813,22 +1822,18 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		// Determines when editing starts.
 		@Override
 		public boolean isCellEditable(EventObject e) {
+			if ((e == null) || (e instanceof ActionEvent)) {
+				return true;
+			}
 			if (e instanceof MouseEvent) {
 				firePropertyChange(PROPERTY_FUNCTIONEDITOR_FOCUS, null, null); // $NON-NLS-1$
-				MouseEvent me = (MouseEvent) e;
-				if (me.getClickCount() == 2) {
+				if (((MouseEvent) e).getClickCount() == 2) {
 					mouseClicked = true;
-					Runnable runner = new Runnable() {
-						@Override
-						public synchronized void run() {
-							field.selectAll();
-						}
-					};
-					SwingUtilities.invokeLater(runner);
+					SwingUtilities.invokeLater(()-> {
+						field.selectAll();
+					});
 					return true;
 				}
-			} else if ((e == null) || (e instanceof ActionEvent)) {
-				return true;
 			}
 			return false;
 		}

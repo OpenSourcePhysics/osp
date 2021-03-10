@@ -209,6 +209,8 @@ public class OSPRuntime {
 
 	public static boolean embedVideoAsObject = isJS;
 
+	public static boolean useFunctionEditorPopup = !isJS; // the cool slidy thing
+
 	public static boolean useZipAssets = isJS;
 	
 	public static boolean unzipFiles = !isJS; // for TrackerIO
