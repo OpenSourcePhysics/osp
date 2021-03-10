@@ -82,12 +82,17 @@ public class JREFinder {
 	 * @return true if 32-bit
 	 */
 	public boolean is32BitVM(String jrePath) {
+		if (jrePath == null)
+			return false;
 		if (OSPRuntime.isWindows()) {
+			// this will identify bundled 64bit jre
+			if (jrePath.contains("64"))
+				return false;
 			String x86 = System.getenv("ProgramFiles(x86)"); //$NON-NLS-1$
 			if (x86 != null) {
 				return jrePath.contains(x86) ? true : false;
 			}
-			// if x86 not defined, must be a 32-bit OS and VM?
+			// must be 32-bit?
 			return true;
 		}
 		if (OSPRuntime.isMac()) {
@@ -347,8 +352,7 @@ public class JREFinder {
 		String[] fileNames = dir.list();
 		if (fileNames != null && fileNames.length > 0) {
 			for (String next : fileNames) {
-				// if javaFilter accepts next then dir is "/bin" so add parent unless it is a
-				// jdk
+				// if javaFilter accepts next then dir is "/bin" so add parent unless jdk
 				if (javaFilter.accept(dir, next)) {
 					synchronized (jreSet) {
 						jreSet.add(new JavaFile(parent));
@@ -406,7 +410,8 @@ public class JREFinder {
 				return false;
 			// reject older versions
 			if (dir.getPath().contains("1.7.") || dir.getPath().contains("jre7") //$NON-NLS-1$ //$NON-NLS-2$
-					|| dir.getPath().contains("1.6.") || dir.getPath().contains("jre6") //$NON-NLS-1$ //$NON-NLS-2$
+					|| dir.getPath().contains("1.6.") 
+					|| (dir.getPath().contains("jre6") && !dir.getPath().contains("jre64")) //$NON-NLS-1$ //$NON-NLS-2$
 					|| dir.getPath().contains("1.5.") || dir.getPath().contains("-5-") //$NON-NLS-1$ //$NON-NLS-2$
 					|| dir.getPath().contains("1.4.") || dir.getPath().contains("1.3.") //$NON-NLS-1$ //$NON-NLS-2$
 					|| dir.getPath().contains("1.2.")) //$NON-NLS-1$
