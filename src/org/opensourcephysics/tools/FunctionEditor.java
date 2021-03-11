@@ -915,6 +915,8 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		decimalFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());		
 		for (int i = 2; --i >= 0;)
 			table.getColumnModel().getColumn(i).setHeaderValue(tableModel.getColumnName(i));
+ 		//might as well just repaint the whole thing, for decimal separations
+ 		//table.getTableHeader().repaint();
  		repaint();
 // original
 //		discards any table columns that it had and reallocates
