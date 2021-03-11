@@ -154,7 +154,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	protected HashSet<String> referencesChecked = new HashSet<String>();
 
 	protected boolean anglesInDegrees;
-	protected boolean usePopupEditor = false;//OSPRuntime.useFunctionEditorPopup;
+	protected boolean usePopupEditor = OSPRuntime.useFunctionEditorPopup;
 	protected boolean confirmChanges = true;
 
 	/**
@@ -887,35 +887,17 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		haveGUI = true;
 	}
 
+	String lang;
 	/**
 	 * Refreshes the GUI.
 	 */
 	public void refreshGUI() {
 		if (!haveGUI)
 			return;
-		if (true) {
-		System.out.println("FunctionEditor.refreshGUI - ignored");
-		return;
-		}
+		if (lang == ToolsRes.getLanguage())
+			return;
+		lang = ToolsRes.getLanguage();
 		setTitles();
-		sciFormat0000.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
-		decimalFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
-		int[] rows = table.getSelectedRows();
-		int col = table.getSelectedColumn();
-//		discards any table columns that it had and reallocates
-//	    default columns in the order they appear in the model. This is the
-//	    same as calling setModel(TableModel) on the JTable.
-		table.getTableHeader().revalidate();
-		table.getTableHeader().repaint();
-		//tableModel.fireTableStructureChanged(); // refreshes table header strings
-	//	revalidate();
-		for (int i = 0; i < rows.length; i++) {
-			table.addRowSelectionInterval(rows[i], rows[i]);
-		}
-		if (rows.length > 0) {
-			table.setColumnSelectionInterval(col, col);
-			table.requestFocusInWindow();
-		}
 		titledBorder.setTitle(
 				titledBorderText == null ? ToolsRes.getString("FunctionEditor.Border.Title") : titledBorderText); //$NON-NLS-1$
 		if (addButtonPanel) {
@@ -929,6 +911,26 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			newButton.setToolTipText(newButtonTipText == null ? ToolsRes.getString("FunctionEditor.Button.New.Tooltip") //$NON-NLS-1$
 					: newButtonTipText);
 		}
+		sciFormat0000.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+		decimalFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());		
+		for (int i = 2; --i >= 0;)
+			table.getColumnModel().getColumn(i).setHeaderValue(tableModel.getColumnName(i));
+ 		repaint();
+// original
+//		discards any table columns that it had and reallocates
+//	    default columns in the order they appear in the model. This is the
+//	    same as calling setModel(TableModel) on the JTable.
+//		int[] rows = table.getSelectedRows();
+//		int col = table.getSelectedColumn();
+//		tableModel.fireTableStructureChanged(); // refreshes table header strings
+//	    revalidate();
+//		for (int i = 0; i < rows.length; i++) {
+//			table.addRowSelectionInterval(rows[i], rows[i]);
+//		}
+//		if (rows.length > 0) {
+//			table.setColumnSelectionInterval(col, col);
+//			table.requestFocusInWindow();
+//		}
 	}
 
 	/**
@@ -1682,6 +1684,8 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 
 		// Constructor.
 		CellEditor() {
+			// BH necessary for SwingJS
+			panel.setFocusable(false);
 			panel.add(field, BorderLayout.CENTER);
 			panel.setOpaque(false);
 			panel.setBorder(BorderFactory.createEmptyBorder(0, 1, 1, 2));
