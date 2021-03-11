@@ -72,8 +72,8 @@ public class ToolsRes {
 	 * @param loc the locale
 	 */
 	public static void setLocale(Locale loc) {
-		if (OSPRuntime.isJS)
-			return;
+//		if (OSPRuntime.isJS)
+//			return;
 		if (resourceLocale == loc) {
 			return;
 		}
