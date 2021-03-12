@@ -238,12 +238,17 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 		clearSelection();
 	}
 
+	private String lang = null;
+	private Object lastInstruction;
 	/**
 	 * Refreshes the GUI.
 	 */
 	protected void refreshGUI() {
 		if (!haveGUI)
 			return;
+		if (lang == ToolsRes.getLanguage())
+			return;
+		lang = ToolsRes.getLanguage();
 		undoButton.setText(ToolsRes.getString("DataFunctionPanel.Button.Undo")); //$NON-NLS-1$
 		undoButton.setToolTipText(ToolsRes.getString("DataFunctionPanel.Button.Undo.Tooltip")); //$NON-NLS-1$
 		redoButton.setText(ToolsRes.getString("DataFunctionPanel.Button.Redo")); //$NON-NLS-1$
@@ -256,13 +261,12 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 						"help", undoButton, redoButton, "font", "close"});
 			}
 
-			System.out.println("FunctionPanel.refreshGUI -- ignored");
-			//paramEditor.refreshGUI();
-			//functionEditor.refreshGUI();
-			
+			paramEditor.refreshGUI();
+			functionEditor.refreshGUI();
 			
 		}
-//    refreshInstructions(null, false, -1);
+		lastInstruction = null;
+		refreshInstructions(null, false, -1);
 	}
 
 	/**
@@ -410,6 +414,7 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 	 * @param level the level
 	 */
 	protected void setFontLevel(int level) {
+		lastInstruction = null;
 		FontSizer.setFonts(this);
 //    FontSizer.setFonts(undoButton, level);
 //    FontSizer.setFonts(redoButton, level);
@@ -519,6 +524,9 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 				}
 			}
 		}
+		if (s.equals(lastInstruction))
+				return;
+		lastInstruction = s;
 		instructions.setText(s);
 		int len = instructions.getText().length();
 		doc.setCharacterAttributes(0, len, style, false);

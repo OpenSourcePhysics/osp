@@ -154,7 +154,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	protected HashSet<String> referencesChecked = new HashSet<String>();
 
 	protected boolean anglesInDegrees;
-	protected boolean usePopupEditor = false;//OSPRuntime.useFunctionEditorPopup;
+	protected boolean usePopupEditor = OSPRuntime.useFunctionEditorPopup;
 	protected boolean confirmChanges = true;
 
 	/**
@@ -550,7 +550,8 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	 * @param popup true to use the popup editor.
 	 */
 	public void setUsePopupEditor(boolean popup) {
-		usePopupEditor = popup;
+		if (OSPRuntime.useFunctionEditorPopup)
+			usePopupEditor = popup;
 	}
 
 	/**
@@ -887,35 +888,17 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		haveGUI = true;
 	}
 
+	String lang;
 	/**
 	 * Refreshes the GUI.
 	 */
 	public void refreshGUI() {
 		if (!haveGUI)
 			return;
-		if (true) {
-		System.out.println("FunctionEditor.refreshGUI - ignored");
-		return;
-		}
+		if (lang == ToolsRes.getLanguage())
+			return;
+		lang = ToolsRes.getLanguage();
 		setTitles();
-		sciFormat0000.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
-		decimalFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
-		int[] rows = table.getSelectedRows();
-		int col = table.getSelectedColumn();
-//		discards any table columns that it had and reallocates
-//	    default columns in the order they appear in the model. This is the
-//	    same as calling setModel(TableModel) on the JTable.
-		table.getTableHeader().revalidate();
-		table.getTableHeader().repaint();
-		//tableModel.fireTableStructureChanged(); // refreshes table header strings
-	//	revalidate();
-		for (int i = 0; i < rows.length; i++) {
-			table.addRowSelectionInterval(rows[i], rows[i]);
-		}
-		if (rows.length > 0) {
-			table.setColumnSelectionInterval(col, col);
-			table.requestFocusInWindow();
-		}
 		titledBorder.setTitle(
 				titledBorderText == null ? ToolsRes.getString("FunctionEditor.Border.Title") : titledBorderText); //$NON-NLS-1$
 		if (addButtonPanel) {
@@ -929,6 +912,35 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			newButton.setToolTipText(newButtonTipText == null ? ToolsRes.getString("FunctionEditor.Button.New.Tooltip") //$NON-NLS-1$
 					: newButtonTipText);
 		}
+		sciFormat0000.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+		decimalFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());		
+		for (int i = 2; --i >= 0;)
+			table.getColumnModel().getColumn(i).setHeaderValue(tableModel.getColumnName(i));
+ 		//might as well just repaint the whole thing, for decimal separations
+ 		//table.getTableHeader().repaint();
+ 		repaint();
+// original
+//		discards any table columns that it had and reallocates
+//	    default columns in the order they appear in the model. This is the
+//	    same as calling setModel(TableModel) on the JTable.
+//		int[] rows = table.getSelectedRows();
+//		int col = table.getSelectedColumn();
+//		tableModel.fireTableStructureChanged(); // refreshes table header strings
+//	    revalidate();
+//		for (int i = 0; i < rows.length; i++) {
+//			table.addRowSelectionInterval(rows[i], rows[i]);
+//		}
+//		if (rows.length > 0) {
+//			table.setColumnSelectionInterval(col, col);
+//			table.requestFocusInWindow();
+//		}
+ 		
+ 		// BH must recreate the popupEditor?
+ 		if (usePopupEditor && popupEditor != null && popupEditor.isVisible()) {
+ 			// should not be possible for a modal dialog, but covering this.
+			tableCellEditor.stopCellEditing();
+ 		}
+		popupEditor = null;
 	}
 
 	/**
@@ -1664,12 +1676,13 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 
 	}
 
+	JDialog popupEditor;
+
 	private class CellEditor extends AbstractCellEditor implements TableCellEditor {
 		JPanel panel = new JPanel(new BorderLayout());
 		JTextField field = new JTextField();
 		boolean keyPressed = false;
 		boolean mouseClicked = false;
-		JDialog popupEditor;
 		JPanel editorPane;
 		JPanel dragPane;
 		JTextField popupField = new JTextField();
@@ -1682,6 +1695,8 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 
 		// Constructor.
 		CellEditor() {
+			// BH necessary for SwingJS
+			panel.setFocusable(false);
 			panel.add(field, BorderLayout.CENTER);
 			panel.setOpaque(false);
 			panel.setBorder(BorderFactory.createEmptyBorder(0, 1, 1, 2));
@@ -1747,6 +1762,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 					prevExpression = getExpression(prevObject);
 				}
 
+				// BH bug here after language change, this can popup with "4,000" not "4.000"
 				String val = value.toString();
 				if (prevObject != null && column > 0) {
 					if (val.endsWith(DEGREES)) {
@@ -1880,189 +1896,153 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 
 		// Gets the popup editor
 		private JDialog getPopupEditor() {
-			if (popupEditor == null) {
-				popupField.setEditable(true);
-				Font font = popupField.getFont().deriveFont(24f);
-				int level = functionPanel.functionTool.getFontLevel();
-				font = FontSizer.getResizedFont(font, level);
-				popupField.setFont(font);
-				popupField.addKeyListener(new KeyAdapter() {
-					@Override
-					public void keyPressed(KeyEvent e) {
-						if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-							String text = popupField.getText().trim();
-							char separator = sciFormat0000.getDecimalFormatSymbols().getDecimalSeparator();
-							// warn of if statements that fail if user expects comma separator to work
-							if (separator == ',') {
-								if (!isValidExpression(text)) {
-									// warn that if statements can use only periods for separators
-									JOptionPane.showMessageDialog(FunctionEditor.this,
-											ToolsRes.getString("FunctionEditor.Dialog.IfStatementError.Message1") //$NON-NLS-1$
-													+ "\n" //$NON-NLS-1$
-													+ ToolsRes.getString(
-															"FunctionEditor.Dialog.IfStatementError.Message2"), //$NON-NLS-1$
-											ToolsRes.getString("FunctionEditor.Dialog.IfStatementError.Title"), //$NON-NLS-1$
-											JOptionPane.ERROR_MESSAGE);
-									return;
-								}
-							}
-
-							// restore previous name and expression for undoable edit
-							// in case they were changed with mouse
-							int row = table.rowToSelect;
-							objects.remove(row);
-							objects.add(row, prevObject);
-							if (table.columnToSelect == 1) {
-//	          		setExpression(prevName, prevExpression, false);
-								table.setValueAt(prevExpression, row, 1);
-							}
-							// be sure editor field has correct text
-							field.setText(text);
-
-							undoEditsEnabled = true;
-							keyPressed = true;
-							popupEditor.setVisible(false);
-							if (table.columnToSelect == 1) {
-								// explicitly set value in case focus listener not triggered!
-								table.setValueAt(text, row, 1);
-							}
-							field.requestFocusInWindow(); // triggers call to stopCellEditing()
-							field.selectAll();
-						} else {
-							popupField.setBackground(Color.yellow);
-							resizePopupEditor();
-						}
-					}
-
-					@Override
-					public void keyReleased(KeyEvent e) {
-						if (e.getKeyCode() == KeyEvent.VK_ENTER)
-							return;
-						setInitialValue(popupField.getText());
-					}
-				});
-
-				// create variables pane
-				variablesPane = GUIUtils.newJTextPane();
-				variablesPane.setEditable(false);
-				variablesPane.setFocusable(false);
-				variablesPane.setBorder(popupField.getBorder());
-				font = popupField.getFont().deriveFont(14f);
-				font = FontSizer.getResizedFont(font, level);
-				variablesPane.setFont(font);
-				StyledDocument doc = variablesPane.getStyledDocument();
-				Style def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
-				StyleConstants.setFontFamily(def, "SansSerif"); //$NON-NLS-1$
-				Style blue = doc.addStyle("blue", def); //$NON-NLS-1$
-				StyleConstants.setBold(blue, false);
-				StyleConstants.setForeground(blue, Color.blue);
-				Style red = doc.addStyle("red", blue); //$NON-NLS-1$
-				StyleConstants.setBold(red, true);
-				StyleConstants.setForeground(red, Color.red);
-				varBegin = varEnd = 0;
-				variablesPane.addMouseListener(new MouseAdapter() {
-					@Override
-					public void mousePressed(MouseEvent e) {
-						if (varEnd == 0) {
-							return;
-						}
-						variablesPane.setCaretPosition(varBegin);
-						variablesPane.moveCaretPosition(varEnd);
-						popupField.replaceSelection(variablesPane.getSelectedText());
+			if (popupEditor != null)
+				return popupEditor;
+			popupField.setEditable(true);
+			Font font = popupField.getFont().deriveFont(24f);
+			int level = functionPanel.functionTool.getFontLevel();
+			font = FontSizer.getResizedFont(font, level);
+			popupField.setFont(font);
+			popupField.addKeyListener(new KeyAdapter() {
+				@Override
+				public void keyPressed(KeyEvent e) {
+					if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+						getPopupValue();
+					} else {
 						popupField.setBackground(Color.yellow);
-						setInitialValue(popupField.getText());
+						resizePopupEditor();
 					}
+				}
 
-					@Override
-					public void mouseExited(MouseEvent e) {
-						StyledDocument doc = variablesPane.getStyledDocument();
-						Style blue = doc.getStyle("blue"); //$NON-NLS-1$
-						doc.setCharacterAttributes(0, variablesPane.getText().length(), blue, false);
-						varBegin = varEnd = 0;
+				@Override
+				public void keyReleased(KeyEvent e) {
+					if (e.getKeyCode() == KeyEvent.VK_ENTER)
+						return;
+					setInitialValue(popupField.getText());
+				}
+			});
+
+			// create variables pane
+			variablesPane = GUIUtils.newJTextPane();
+			variablesPane.setEditable(false);
+			variablesPane.setFocusable(false);
+			variablesPane.setBorder(popupField.getBorder());
+			font = popupField.getFont().deriveFont(14f);
+			font = FontSizer.getResizedFont(font, level);
+			variablesPane.setFont(font);
+			StyledDocument doc = variablesPane.getStyledDocument();
+			Style def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
+			StyleConstants.setFontFamily(def, "SansSerif"); //$NON-NLS-1$
+			Style blue = doc.addStyle("blue", def); //$NON-NLS-1$
+			StyleConstants.setBold(blue, false);
+			StyleConstants.setForeground(blue, Color.blue);
+			Style red = doc.addStyle("red", blue); //$NON-NLS-1$
+			StyleConstants.setBold(red, true);
+			StyleConstants.setForeground(red, Color.red);
+			varBegin = varEnd = 0;
+			variablesPane.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(MouseEvent e) {
+					if (varEnd == 0) {
+						return;
 					}
+					variablesPane.setCaretPosition(varBegin);
+					variablesPane.moveCaretPosition(varEnd);
+					popupField.replaceSelection(variablesPane.getSelectedText());
+					popupField.setBackground(Color.yellow);
+					setInitialValue(popupField.getText());
+				}
 
-				});
-				variablesPane.addMouseMotionListener(new MouseMotionAdapter() {
-					@Override
-					public void mouseMoved(MouseEvent e) {
-						varBegin = varEnd = 0;
-						// select and highlight the variable under mouse
-						String text = variablesPane.getText();
-						// first separate the instructions from the variables
-						int startVars = text.indexOf(":\n"); //$NON-NLS-1$
-						if (startVars == -1) {
-							return;
-						}
-						startVars += 2;
-						String vars = text.substring(startVars);
-						StyledDocument doc = variablesPane.getStyledDocument();
-						Style blue = doc.getStyle("blue"); //$NON-NLS-1$
-						Style red = doc.getStyle("red"); //$NON-NLS-1$
-						int beginVar = variablesPane.viewToModel(e.getPoint()) - startVars;
-						if (beginVar < 0) { // mouse is over instructions
-							doc.setCharacterAttributes(0, text.length(), blue, false);
-							return;
-						}
-						while (beginVar > 0) {
-							// back up to preceding space
-							String s = vars.substring(0, beginVar);
-							if (s.endsWith(" ")) //$NON-NLS-1$
-								break;
-							beginVar--;
-						}
-						varBegin = beginVar + startVars;
-						// find following comma, space or end
-						String s = vars.substring(beginVar);
-						int len = s.indexOf(","); //$NON-NLS-1$
-						if (len == -1)
-							len = s.indexOf(" "); //$NON-NLS-1$
-						if (len == -1)
-							len = s.length();
-						// set variable bounds and character style
-						varEnd = varBegin + len;
-						doc.setCharacterAttributes(0, varBegin, blue, false);
-						doc.setCharacterAttributes(varBegin, len, red, false);
-						doc.setCharacterAttributes(varEnd, text.length() - varEnd, blue, false);
+				@Override
+				public void mouseExited(MouseEvent e) {
+					StyledDocument doc = variablesPane.getStyledDocument();
+					Style blue = doc.getStyle("blue"); //$NON-NLS-1$
+					doc.setCharacterAttributes(0, variablesPane.getText().length(), blue, false);
+					varBegin = varEnd = 0;
+				}
+
+			});
+			variablesPane.addMouseMotionListener(new MouseMotionAdapter() {
+				@Override
+				public void mouseMoved(MouseEvent e) {
+					varBegin = varEnd = 0;
+					// select and highlight the variable under mouse
+					String text = variablesPane.getText();
+					// first separate the instructions from the variables
+					int startVars = text.indexOf(":\n"); //$NON-NLS-1$
+					if (startVars == -1) {
+						return;
 					}
-				});
+					startVars += 2;
+					String vars = text.substring(startVars);
+					StyledDocument doc = variablesPane.getStyledDocument();
+					Style blue = doc.getStyle("blue"); //$NON-NLS-1$
+					Style red = doc.getStyle("red"); //$NON-NLS-1$
+					int beginVar = variablesPane.viewToModel(e.getPoint()) - startVars;
+					if (beginVar < 0) { // mouse is over instructions
+						doc.setCharacterAttributes(0, text.length(), blue, false);
+						return;
+					}
+					while (beginVar > 0) {
+						// back up to preceding space
+						String s = vars.substring(0, beginVar);
+						if (s.endsWith(" ")) //$NON-NLS-1$
+							break;
+						beginVar--;
+					}
+					varBegin = beginVar + startVars;
+					// find following comma, space or end
+					String s = vars.substring(beginVar);
+					int len = s.indexOf(","); //$NON-NLS-1$
+					if (len == -1)
+						len = s.indexOf(" "); //$NON-NLS-1$
+					if (len == -1)
+						len = s.length();
+					// set variable bounds and character style
+					varEnd = varBegin + len;
+					doc.setCharacterAttributes(0, varBegin, blue, false);
+					doc.setCharacterAttributes(varBegin, len, red, false);
+					doc.setCharacterAttributes(varEnd, text.length() - varEnd, blue, false);
+				}
+			});
 
-				// create drag pane
-				dragPane = new JPanel(new BorderLayout());
-				dragPane.setBackground(new Color(240, 255, 240)); // very light green
-				dragLabel = new JLabel();
-				dragLabel.setHorizontalAlignment(JLabel.CENTER);
-				Border line = BorderFactory.createLineBorder(LIGHT_BLUE);
-				Border space = BorderFactory.createEmptyBorder(2, 3, 2, 3);
-				dragLabel.setBorder(BorderFactory.createCompoundBorder(line, space));
-				font = popupField.getFont().deriveFont(12f);
-				font = FontSizer.getResizedFont(font, level);
-				dragLabel.setFont(font);
-				dragLabel.setForeground(Color.green.darker().darker());
-				dragPane.add(dragLabel, BorderLayout.CENTER);
+			// create drag pane
+			dragPane = new JPanel(new BorderLayout());
+			dragPane.setBackground(new Color(240, 255, 240)); // very light green
+			dragLabel = new JLabel();
+			dragLabel.setHorizontalAlignment(JLabel.CENTER);
+			Border line = BorderFactory.createLineBorder(LIGHT_BLUE);
+			Border space = BorderFactory.createEmptyBorder(2, 3, 2, 3);
+			dragLabel.setBorder(BorderFactory.createCompoundBorder(line, space));
+			font = popupField.getFont().deriveFont(12f);
+			font = FontSizer.getResizedFont(font, level);
+			dragLabel.setFont(font);
+			dragLabel.setForeground(Color.green.darker().darker());
+			dragPane.add(dragLabel, BorderLayout.CENTER);
 
-				valueMouseController = new ValueMouseControl(tableCellEditor);
-				dragLabel.addMouseListener(valueMouseController);
-				dragLabel.addMouseMotionListener(valueMouseController);
+			valueMouseController = new ValueMouseControl(tableCellEditor);
+			dragLabel.addMouseListener(valueMouseController);
+			dragLabel.addMouseMotionListener(valueMouseController);
 
-				// make revert button
-				String imageFile = "/org/opensourcephysics/resources/tools/images/close.gif"; //$NON-NLS-1$
-				Icon icon = ResourceLoader.getImageIcon(imageFile);
-				revertButton = new JButton(icon);
-				line = BorderFactory.createLineBorder(Color.LIGHT_GRAY);
-				space = BorderFactory.createEmptyBorder(0, 2, 0, 2);
-				revertButton.setBorder(BorderFactory.createCompoundBorder(line, space));
-				revertButton.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						if (prevObject != null) {
-							// restore original value
-							if (table.columnToSelect == 1) {
-								table.setValueAt(prevExpression, table.rowToSelect, 1);
-								field.setText(prevExpression);
-							} else {
-								table.setValueAt(prevName, table.rowToSelect, 0);
-								field.setText(prevName);
-							}
+			// make revert button
+			String imageFile = "/org/opensourcephysics/resources/tools/images/close.gif"; //$NON-NLS-1$
+			Icon icon = ResourceLoader.getImageIcon(imageFile);
+			revertButton = new JButton(icon);
+			line = BorderFactory.createLineBorder(Color.LIGHT_GRAY);
+			space = BorderFactory.createEmptyBorder(0, 2, 0, 2);
+			revertButton.setBorder(BorderFactory.createCompoundBorder(line, space));
+			revertButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if (prevObject != null) {
+						// restore original value
+						if (table.columnToSelect == 1) {
+							table.setValueAt(prevExpression, table.rowToSelect, 1);
+							field.setText(prevExpression);
+						} else {
+							table.setValueAt(prevName, table.rowToSelect, 0);
+							field.setText(prevName);
+						}
 
 //	            objects.remove(row);
 //	            objects.add(row, prevObject);
@@ -2070,28 +2050,67 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 //	          		setExpression(prevName, prevExpression, false);
 //	          		field.setText(prevExpression);
 //	            }
-							stopCellEditing();
-							undoEditsEnabled = true;
-						}
-						popupField.setBackground(Color.WHITE);
-						popupEditor.setVisible(false);
+						stopCellEditing();
+						undoEditsEnabled = true;
 					}
-				});
-				// assemble components
-				Frame frame = JOptionPane.getFrameForComponent(FunctionEditor.this);
-				popupEditor = new JDialog(frame, true);
-				popupEditor.setUndecorated(true);
-				popupEditor.getRootPane().setWindowDecorationStyle(JRootPane.NONE);
-				JPanel contentPane = new JPanel(new BorderLayout());
-				popupEditor.setContentPane(contentPane);
-				editorPane = new JPanel(new BorderLayout());
-				editorPane.setBackground(Color.WHITE);
-				editorPane.add(popupField, BorderLayout.CENTER);
-				editorPane.add(revertButton, BorderLayout.EAST);
-				contentPane.add(editorPane, BorderLayout.NORTH);
-				// variablesPane and dragPane are added/removed from contentPane as needed
-			}
+					popupField.setBackground(Color.WHITE);
+					popupEditor.setVisible(false);
+				}
+			});
+			// assemble components
+			Frame frame = JOptionPane.getFrameForComponent(FunctionEditor.this);
+			popupEditor = new JDialog(frame, true);
+			popupEditor.setUndecorated(true);
+			popupEditor.getRootPane().setWindowDecorationStyle(JRootPane.NONE);
+			JPanel contentPane = new JPanel(new BorderLayout());
+			popupEditor.setContentPane(contentPane);
+			editorPane = new JPanel(new BorderLayout());
+			editorPane.setBackground(Color.WHITE);
+			editorPane.add(popupField, BorderLayout.CENTER);
+			editorPane.add(revertButton, BorderLayout.EAST);
+			contentPane.add(editorPane, BorderLayout.NORTH);
+			// variablesPane and dragPane are added/removed from contentPane as needed
 			return popupEditor;
+		}
+
+		protected void getPopupValue() {
+			String text = popupField.getText().trim();
+			char separator = sciFormat0000.getDecimalFormatSymbols().getDecimalSeparator();
+			// warn of if statements that fail if user expects comma separator to work
+			if (separator == ',') {
+				if (!isValidExpression(text)) {
+					// warn that if statements can use only periods for separators
+					JOptionPane.showMessageDialog(FunctionEditor.this,
+							ToolsRes.getString("FunctionEditor.Dialog.IfStatementError.Message1") //$NON-NLS-1$
+									+ "\n" //$NON-NLS-1$
+									+ ToolsRes.getString("FunctionEditor.Dialog.IfStatementError.Message2"), //$NON-NLS-1$
+							ToolsRes.getString("FunctionEditor.Dialog.IfStatementError.Title"), //$NON-NLS-1$
+							JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+			}
+
+			// restore previous name and expression for undoable edit
+			// in case they were changed with mouse
+			int row = table.rowToSelect;
+			objects.remove(row);
+			objects.add(row, prevObject);
+			if (table.columnToSelect == 1) {
+//  		setExpression(prevName, prevExpression, false);
+				table.setValueAt(prevExpression, row, 1);
+			}
+			// be sure editor field has correct text
+			field.setText(text);
+
+			undoEditsEnabled = true;
+			keyPressed = true;
+			popupEditor.setVisible(false);
+			if (table.columnToSelect == 1) {
+				// explicitly set value in case focus listener not triggered!
+				table.setValueAt(text, row, 1);
+			}
+			field.requestFocusInWindow(); // triggers call to stopCellEditing()
+			field.selectAll();
 		}
 
 	}
