@@ -1743,7 +1743,7 @@ public class DataTable extends JTable {
 
 		@Override
 		public void setValue(Object value) {
-			setText((value == null) ? "" : numberFormat.format(value)); //$NON-NLS-1$
+			setText((value == null || value.toString().equals("NaN")) ? "" : numberFormat.format(value)); //$NON-NLS-1$
 		}
 
 	}
