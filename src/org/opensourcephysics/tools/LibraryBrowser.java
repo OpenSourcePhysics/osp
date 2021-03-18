@@ -1172,7 +1172,7 @@ public class LibraryBrowser extends JPanel {
 				String text = commandField.getText();
 				boolean enable = !"".equals(text);
 				commandButton.setEnabled(enable); //$NON-NLS-1$
-				downloadButton.setEnabled(enable); //$NON-NLS-1$
+				downloadButton.setEnabled(enable && ResourceLoader.isHTTP(text)); //$NON-NLS-1$
 				textChanged = keyPressed;
 				LibraryTreePanel treePanel = getSelectedTreePanel();
 				if (treePanel != null) {
@@ -1597,16 +1597,6 @@ public class LibraryBrowser extends JPanel {
 				manager.setVisible(true);
 			}
 		});
-		searchItem = new JMenuItem();
-//		manageMenu.add(searchItem);
-		searchItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				LibraryManager manager = browser.getManager();
-				manager.tabbedPane.setSelectedComponent(manager.searchPanel);
-				manager.setVisible(true);
-			}
-		});
 		cacheItem = new JMenuItem();
 		manageMenu.add(cacheItem);
 		cacheItem.addActionListener(new ActionListener() {
@@ -1614,6 +1604,16 @@ public class LibraryBrowser extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				LibraryManager manager = browser.getManager();
 				manager.tabbedPane.setSelectedComponent(manager.cachePanel);
+				manager.setVisible(true);
+			}
+		});
+		searchItem = new JMenuItem();
+		manageMenu.add(searchItem);
+		searchItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				LibraryManager manager = browser.getManager();
+				manager.tabbedPane.setSelectedComponent(manager.searchPanel);
 				manager.setVisible(true);
 			}
 		});
@@ -1842,9 +1842,8 @@ public class LibraryBrowser extends JPanel {
 
 	protected void doDownload() {
 		String urlPath = commandField.getText().trim();
-		if (urlPath == null)
+		if (urlPath == null || !ResourceLoader.isHTTP(urlPath))
 			return;
-		System.err.println("LibraryBrowser.doDownload() urlPath="+urlPath);
 		// special handling for ComPADRE
 		LibraryTreePanel treePanel = getSelectedTreePanel();
 		LibraryTreeNode node = (treePanel == null ? null : treePanel.getSelectedNode());
@@ -1863,7 +1862,7 @@ public class LibraryBrowser extends JPanel {
 						File file = ResourceLoader.copyURLtoFile(urlPath, filePath);
 						LibraryBrowser.this.firePropertyChange(PROPERTY_LIBRARY_TARGET, HINT_DOWNLOAD_RESOURCE, file); // $NON-NLS-1$
 					} catch (IOException e1) {
-						System.err.println("Failed to download urlPath="+urlPath);
+						OSPLog.warning("Failed to download urlPath="+urlPath);
 						e1.printStackTrace();
 					}
 					return null;

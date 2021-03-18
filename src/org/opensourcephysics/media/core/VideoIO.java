@@ -665,7 +665,7 @@ public class VideoIO {
 										try {
 											ResourceLoader.copyURLtoFile(path, filePath);
 										} catch (IOException e1) {
-											System.err.println("Failed to download " + path);
+											OSPLog.warning("Failed to download " + path);
 											e1.printStackTrace();
 										}
 										return null;

@@ -591,8 +591,9 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 			}
 			if (buf.length() == 0) {
 				String path = record.getHTMLPath();
-				if (path == null || path.length() == 0)
-					path = record.getBasePath() + "/" + record.target;
+				if (path == null || path.length() == 0) {
+					path = record.target == null || record.target.equals("")? "": record.getBasePath() + "/" + record.target;
+				}
 				buf.append(path);
 			}
 			tooltip = buf.toString();

@@ -73,7 +73,7 @@ import swingjs.api.JSUtilI;
  */
 public class OSPRuntime {
 
-	public static final String VERSION = "5.9.20210312"; //$NON-NLS-1$
+	public static final String VERSION = "5.9.20210316"; //$NON-NLS-1$
 	private static boolean isMac;
 
 	public static int macOffset; // shifts LR message box on Mac to avoid drag hot spot.
