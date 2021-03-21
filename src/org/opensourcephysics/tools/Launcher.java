@@ -53,7 +53,6 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -167,7 +166,7 @@ public class Launcher {
 	@SuppressWarnings("javadoc")
 	public boolean popupEnabled = true;
 	protected boolean postEdits = true;
-	protected JComponent contentPane;
+	protected JPanel contentPane;
 	protected JTabbedPane tabbedPane;
 	protected boolean navigationVisible = true;
 	protected JToolBar navbar;
@@ -235,7 +234,6 @@ public class Launcher {
 	protected String selectedPath;
 	protected JButton memoryButton;
 	protected int xsetMemorySize;
-	private JDialog dialog;
 
 	static {
 		OSPRuntime.setAuthorMode(false);
@@ -344,8 +342,8 @@ public class Launcher {
 	 * @param fileName the name of the xml file
 	 * @param splash   true to show the splash screen
 	 */
-	public Launcher(String fileName, boolean splash, JDialog helpDialog) {
-		dialog = helpDialog;
+	public Launcher(String fileName, boolean splash, JPanel contentPane) {
+		this.contentPane = contentPane;
 		createGUI(splash);
 		XML.setLoader(LaunchSet.class, new LaunchSet());
 		String path = null;
@@ -1423,7 +1421,7 @@ public class Launcher {
 		undoSupport = new UndoableEditSupport();
 		undoSupport.addUndoableEditListener(undoManager);
 		// create the frame
-		if (dialog == null) {
+		if (contentPane == null) {
 			frame = new LauncherFrame();
 			existingFrames.add(frame);
 			if (splash && !OSPRuntime.isApplet) {
@@ -1444,8 +1442,6 @@ public class Launcher {
 			contentPane.setPreferredSize(new Dimension(wInit, hInit));
 			frame.setContentPane(contentPane);
 			frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-		} else {
-			contentPane = (JComponent) dialog.getContentPane();
 		}
 		// create xml inspector
 		// create navigation bar
@@ -1607,7 +1603,7 @@ public class Launcher {
 		tabListener = new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				if (contentPane.getTopLevelAncestor() != frame) {
+				if (frame == null) {
 					return;
 				}
 				if (OSPRuntime.isPopupTrigger(e)) {
