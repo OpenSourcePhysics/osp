@@ -3241,7 +3241,9 @@ public class ResourceLoader {
 	}
 
 	/**
-	 * retrieve an asset using Assets or a class loader
+	 * Retrieve an asset using Assets or a class loader. 
+	 * ResourceLoader.class.getClassLoader() might be used first.
+	 * Used in Tracker only.
 	 * @param path full asset path org/... or relative to the class
 	 * @param cl the class - only used for Java
 	 * @return
@@ -3251,7 +3253,7 @@ public class ResourceLoader {
 		// the wrong class loader might be used (osp rather than tracker)
 		// and url will return null from getAssetURL. That is fine, since
 		// we fall back to the desired class loader here.
-		URL url = (OSPRuntime.useZipAssets ? getAssetURL(path) : null);
+		URL url = getAssetURL(path);
 		// Note! Must use cl.getClassLoader(), not just cl here, for absolute paths
 		return (url == null ? cl.getClassLoader().getResource(path) : url);
 	}
