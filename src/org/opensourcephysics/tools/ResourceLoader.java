@@ -3247,8 +3247,10 @@ public class ResourceLoader {
 	 * @return
 	 */
 	public static URL getClassResource(String path, Class<?> cl) {
+		URL url = (OSPRuntime.useZipAssets ? getAssetURL(path) : null);
+		// fallback to class loader
 		// Note! Must use cl.getClassLoader(), not just cl here, for absolute paths
-		return (OSPRuntime.useZipAssets ? getAssetURL(path) : cl.getClassLoader().getResource(path));
+		return (url == null ? cl.getClassLoader().getResource(path) : url);
 	}
 
 }
