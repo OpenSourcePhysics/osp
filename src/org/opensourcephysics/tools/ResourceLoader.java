@@ -3247,8 +3247,11 @@ public class ResourceLoader {
 	 * @return
 	 */
 	public static URL getClassResource(String path, Class<?> cl) {
+		// Note that in Java, if we allow useZipAssets, 
+		// the wrong class loader might be used (osp rather than tracker)
+		// and url will return null from getAssetURL. That is fine, since
+		// we fall back to the desired class loader here.
 		URL url = (OSPRuntime.useZipAssets ? getAssetURL(path) : null);
-		// fallback to class loader
 		// Note! Must use cl.getClassLoader(), not just cl here, for absolute paths
 		return (url == null ? cl.getClassLoader().getResource(path) : url);
 	}
