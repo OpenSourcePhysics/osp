@@ -2298,7 +2298,7 @@ public class Launcher {
 	 * @return <code>true</code> if the node has an EJS model
 	 */
 	protected boolean hasEJSModel(LaunchNode node) {
-		if ((node == null) || !node.isLeaf()) {
+		if (!OSPRuntime.launcherAllowEJSModel || (node == null) || !node.isLeaf()) {
 			return false;
 		}
 		return EjsTool.hasEjsModel(node.getLaunchClass());
