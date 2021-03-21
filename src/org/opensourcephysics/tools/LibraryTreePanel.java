@@ -953,6 +953,7 @@ public class LibraryTreePanel extends JPanel {
 						setChanged();
 					}
 				}
+				basePathField.setForeground(lightGreen); // pig
 			}
 		});
 		basePathField.addFocusListener(new FocusAdapter() {
@@ -962,6 +963,17 @@ public class LibraryTreePanel extends JPanel {
 				if ("".equals(node.record.getBasePath())) { //$NON-NLS-1$
 					basePathField.setText(null);
 					basePathField.setForeground(htmlField.getForeground());
+					basePathField.setBackground(Color.white);
+				}
+			}
+			@Override
+			public void focusLost(FocusEvent e) {
+				LibraryTreeNode node = getSelectedNode();
+				String base = node.getBasePath();
+				if (!basePathField.getText().equals(base)) {
+					basePathField.setText(base);
+					basePathField.setCaretPosition(0);
+					basePathField.setForeground(node.record.getBasePath().equals(base) ? defaultForeground : lightGreen);
 					basePathField.setBackground(Color.white);
 				}
 			}

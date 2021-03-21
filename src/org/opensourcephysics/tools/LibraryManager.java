@@ -541,8 +541,9 @@ public class LibraryManager extends JDialog {
 		tabbedPane = new JTabbedPane();
 		tabbedPane.addTab("", collectionsPanel); //$NON-NLS-1$
 //		tabbedPane.addTab("", importsPanel); //$NON-NLS-1$
-//		tabbedPane.addTab("", searchPanel); //$NON-NLS-1$
 		tabbedPane.addTab("", cachePanel); //$NON-NLS-1$
+		if (!OSPRuntime.isJS)
+			tabbedPane.addTab("", searchPanel); //$NON-NLS-1$
 
 		// add change listener last
 		tabbedPane.addChangeListener(new ChangeListener() {
