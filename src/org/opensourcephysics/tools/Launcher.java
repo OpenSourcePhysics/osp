@@ -341,6 +341,7 @@ public class Launcher {
 	 *
 	 * @param fileName the name of the xml file
 	 * @param splash   true to show the splash screen
+	 * @param contentPane for frameless externalization of contents 
 	 */
 	public Launcher(String fileName, boolean splash, JPanel contentPane) {
 		this.contentPane = contentPane;
