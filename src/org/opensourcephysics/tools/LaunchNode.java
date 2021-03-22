@@ -98,10 +98,19 @@ public class LaunchNode extends DefaultMutableTreeNode {
 	// following used for undoable NavEdits
 	int tabNumber = -1; // current tab number, or -1 if no tabs
 	int prevTabNumber = -1; // previous tab number
-	URL htmlURL; // current URL--may be null
+	private URL htmlURL; // current URL--may be null
 	URL prevURL; // previous URL
 	JScrollPane launchModelScroller;
+	boolean isDisplayable;
 
+	public void setURL(URL url) {
+		htmlURL = url;
+		isDisplayable = (url != null && Launcher.isDisplayable(url.toString()));
+	}
+	
+	public URL getURL() {
+		return htmlURL;
+	}
 	/**
 	 * Constructs a node with the specified name.
 	 *
@@ -1712,6 +1721,7 @@ public class LaunchNode extends DefaultMutableTreeNode {
 		JComponent modelPane;
 		JScrollPane modelScroller;
 		String[] modelArgs = new String[0];
+		public boolean isDisplayable;
 
 		/**
 		 * Constructor.
@@ -1889,6 +1899,7 @@ public class LaunchNode extends DefaultMutableTreeNode {
 		 */
 		private boolean setURL(String path) {
 			url = null;
+			isDisplayable = false;
 			Resource res = ResourceLoader.getResource(path);
 			if ((res != null) && (res.getURL() != null)) {
 				url = res.getURL();
@@ -1900,7 +1911,10 @@ public class LaunchNode extends DefaultMutableTreeNode {
 					url = null;
 				}
 			}
-			return url != null;
+			if (url == null)
+				return false;
+			isDisplayable = Launcher.isDisplayable(path);
+			return true;
 		}
 
 		/**

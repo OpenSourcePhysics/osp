@@ -401,6 +401,7 @@ public class OSPRuntime {
 
 	public static LaunchNode activeNode;
 	private static char currentDecimalSeparator;
+	public static boolean launcherAllowEJSModel = true;
 
 	/**
 	 * Private constructor to prevent instantiation.

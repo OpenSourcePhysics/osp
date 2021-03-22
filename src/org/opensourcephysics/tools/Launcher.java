@@ -53,7 +53,6 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -333,13 +332,19 @@ public class Launcher {
 		this(fileName, (fileName == null) || !fileName.startsWith("<?xml")); //$NON-NLS-1$
 	}
 
+	public Launcher(String help_path, boolean splash) {
+		this(help_path, splash, null);
+	}
+
 	/**
 	 * Constructs a Launcher and opens the specified xml file.
 	 *
 	 * @param fileName the name of the xml file
 	 * @param splash   true to show the splash screen
+	 * @param contentPane for frameless externalization of contents 
 	 */
-	public Launcher(String fileName, boolean splash) {
+	public Launcher(String fileName, boolean splash, JPanel contentPane) {
+		this.contentPane = contentPane;
 		createGUI(splash);
 		XML.setLoader(LaunchSet.class, new LaunchSet());
 		String path = null;
@@ -366,11 +371,15 @@ public class Launcher {
 			refreshStringResources();
 			refreshGUI();
 		}
-		// center frame on the screen
-		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-		int x = (dim.width - frame.getBounds().width) / 2;
-		int y = (dim.height - frame.getBounds().height) / 2;
-		frame.setLocation(x, y);
+		if (frame == null) {
+		
+		} else {
+			// center frame on the screen
+			Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+			int x = (dim.width - frame.getBounds().width) / 2;
+			int y = (dim.height - frame.getBounds().height) / 2;
+			frame.setLocation(x, y);
+		}
 	}
 
 	/**
@@ -397,7 +406,7 @@ public class Launcher {
 	 * @return the size Dimension object
 	 */
 	public Dimension getSize() {
-		return contentPane.getSize();
+		return (frame == null ? contentPane.getPreferredSize() : contentPane.getSize());
 	}
 
 	/**
@@ -407,7 +416,10 @@ public class Launcher {
 	 */
 	public void setSize(Dimension dim) {
 		contentPane.setPreferredSize(dim);
-		frame.pack();
+		if (frame == null) {
+		} else {
+			frame.pack();
+		}
 	}
 
 	/**
@@ -1124,6 +1136,9 @@ public class Launcher {
 			contentPane.add(navbar, BorderLayout.NORTH);
 		}
 		contentPane.add(tabbedPane, BorderLayout.CENTER);
+		if (frame == null) {
+			return;
+		}
 		frame.validate();
 		refreshGUI();
 		frame.repaint();
@@ -1210,6 +1225,8 @@ public class Launcher {
 	 * Refreshes string resources.
 	 */
 	protected void refreshStringResources() {
+		if (frame == null)
+			return;
 		fileMenu.setText(LaunchRes.getString("Menu.File")); //$NON-NLS-1$
 		displayMenu.setText(LaunchRes.getString("Menu.Display")); //$NON-NLS-1$
 		openItem.setText(LaunchRes.getString("Menu.File.Open")); //$NON-NLS-1$
@@ -1264,17 +1281,6 @@ public class Launcher {
 		// set tab properties
 		LaunchPanel tab = getSelectedTab();
 		boolean rootDisabled = tab != null && !tab.getRootNode().enabled;
-		// set frame title
-		String name = (title == null) ? tabSetName : title;
-		if (name == null) {
-			name = LaunchRes.getString("Frame.Title"); //$NON-NLS-1$
-		} else {
-			name = LaunchRes.getString("Frame.Title") + ": " + name; //$NON-NLS-1$//$NON-NLS-2$
-		}
-		if (rootDisabled) {
-			name += " " + LaunchRes.getString("Launcher.Title.NeedsPassword"); //$NON-NLS-1$//$NON-NLS-2$
-		}
-		frame.setTitle(name);
 		if (tab != null) {
 			tab.tree.setEnabled(tab.getRootNode().enabled);
 			tabbedPane.setEnabled(tab.getRootNode().enabled);
@@ -1283,88 +1289,102 @@ public class Launcher {
 		// update undo/redo buttons
 		backButton.setEnabled(undoManager.canUndo());
 		forwardButton.setEnabled(undoManager.canRedo());
-		// rebuild file menu
-		fileMenu.removeAll();
-		if (undoManager.canReload()) {
-			fileMenu.add(backItem);
-		}
-		if (!OSPRuntime.isApplet) {
-			if (fileMenu.getItemCount() > 0) {
-				fileMenu.addSeparator();
-			}
-			fileMenu.add(openItem);
-		}
-		if (openFromJarMenu != null) {
-			fileMenu.add(openFromJarMenu);
-		}
-		if (rootDisabled) {
-			fileMenu.add(passwordItem);
-		}
-		if (OSPRuntime.isApplet) { // added by W. Christian
-			fileMenu.add(hideItem);
-			return;
-		}
-		if (tab != null) {
-			if (fileMenu.getItemCount() > 0) {
-				fileMenu.addSeparator();
-			}
-			boolean showCloseTab = true;
-			if (getClass() == Launcher.class) {
-				if (tab.getRootNode().isButtonView()) {
-					showCloseTab = false;
-					name = LaunchRes.getString("Frame.Title") + ": " + //$NON-NLS-1$//$NON-NLS-2$
-							tab.getRootNode().name;
-				} else if (tabbedPane.getTabCount() == 1) {
-					showCloseTab = false;
-				}
-			}
-			if (showCloseTab) {
-				fileMenu.add(closeTabItem);
-				closeAllItem.setText(LaunchRes.getString("Menu.File.CloseAll")); //$NON-NLS-1$
+		String name;
+		if (frame != null) {
+			// set frame title
+			name = (title == null) ? tabSetName : title;
+			if (name == null) {
+				name = LaunchRes.getString("Frame.Title"); //$NON-NLS-1$
 			} else {
-				closeAllItem.setText(LaunchRes.getString("MenuItem.Close")); //$NON-NLS-1$
+				name = LaunchRes.getString("Frame.Title") + ": " + name; //$NON-NLS-1$//$NON-NLS-2$
 			}
-			fileMenu.add(closeAllItem);
-		}
-		if (editorEnabled && !OSPRuntime.isWebStart() && !rootDisabled) {
-			fileMenu.addSeparator();
-			fileMenu.add(editItem);
-		}
-		// added by W. Christian to capture screen
-		JMenu printMenu = new JMenu(DisplayRes.getString("DrawingFrame.Print_menu_title")); //$NON-NLS-1$
-		JMenuItem printFrameItem = new JMenuItem(DisplayRes.getString("DrawingFrame.PrintFrame_menu_item")); //$NON-NLS-1$
-		JMenuItem saveFrameAsEPSItem = new JMenuItem(DisplayRes.getString("DrawingFrame.SaveFrameAsEPS_menu_item")); //$NON-NLS-1$
-		printMenu.add(printFrameItem);
-		printMenu.add(saveFrameAsEPSItem);
-		fileMenu.add(printMenu);
-		// print action
-		printFrameItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				PrintUtils.printComponent(frame);
+			if (rootDisabled) {
+				name += " " + LaunchRes.getString("Launcher.Title.NeedsPassword"); //$NON-NLS-1$//$NON-NLS-2$
 			}
-
-		});
-		// save as EPS action
-		saveFrameAsEPSItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					PrintUtils.saveComponentAsEPS(frame);
-				} catch (IOException ex) {
-					/** empty block */
+			frame.setTitle(name);
+			// rebuild file menu
+			fileMenu.removeAll();
+			if (undoManager.canReload()) {
+				fileMenu.add(backItem);
+			}
+			if (!OSPRuntime.isApplet) {
+				if (fileMenu.getItemCount() > 0) {
+					fileMenu.addSeparator();
 				}
+				fileMenu.add(openItem);
 			}
+			if (openFromJarMenu != null) {
+				fileMenu.add(openFromJarMenu);
+			}
+			if (rootDisabled) {
+				fileMenu.add(passwordItem);
+			}
+			if (OSPRuntime.isApplet) { // added by W. Christian
+				fileMenu.add(hideItem);
+				return;
+			}
+			if (tab != null) {
+				if (fileMenu.getItemCount() > 0) {
+					fileMenu.addSeparator();
+				}
+				boolean showCloseTab = true;
+				if (getClass() == Launcher.class) {
+					if (tab.getRootNode().isButtonView()) {
+						showCloseTab = false;
+						name = LaunchRes.getString("Frame.Title") + ": " + //$NON-NLS-1$//$NON-NLS-2$
+								tab.getRootNode().name;
+					} else if (tabbedPane.getTabCount() == 1) {
+						showCloseTab = false;
+					}
+				}
+				if (showCloseTab) {
+					fileMenu.add(closeTabItem);
+					closeAllItem.setText(LaunchRes.getString("Menu.File.CloseAll")); //$NON-NLS-1$
+				} else {
+					closeAllItem.setText(LaunchRes.getString("MenuItem.Close")); //$NON-NLS-1$
+				}
+				fileMenu.add(closeAllItem);
+			}
+			if (editorEnabled && !OSPRuntime.isWebStart() && !rootDisabled) {
+				fileMenu.addSeparator();
+				fileMenu.add(editItem);
+			}
+			// added by W. Christian to capture screen
+			JMenu printMenu = new JMenu(DisplayRes.getString("DrawingFrame.Print_menu_title")); //$NON-NLS-1$
+			JMenuItem printFrameItem = new JMenuItem(DisplayRes.getString("DrawingFrame.PrintFrame_menu_item")); //$NON-NLS-1$
+			JMenuItem saveFrameAsEPSItem = new JMenuItem(DisplayRes.getString("DrawingFrame.SaveFrameAsEPS_menu_item")); //$NON-NLS-1$
+			printMenu.add(printFrameItem);
+			printMenu.add(saveFrameAsEPSItem);
+			fileMenu.add(printMenu);
+			// print action
+			printFrameItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					PrintUtils.printComponent(frame);
+				}
 
-		});
-		// end W. Christian code
-		fileMenu.addSeparator();
-		if (exitItem != null) {
-			fileMenu.add(exitItem);
+			});
+			// save as EPS action
+			saveFrameAsEPSItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						PrintUtils.saveComponentAsEPS(frame);
+					} catch (IOException ex) {
+						/** empty block */
+					}
+				}
+
+			});
+			// end W. Christian code
+			fileMenu.addSeparator();
+			if (exitItem != null) {
+				fileMenu.add(exitItem);
+			}
+			boolean rootEnabled = getRootNode() != null && getRootNode().enabled;
+			inspectItem.setEnabled(rootEnabled && (password == null || (this instanceof LaunchBuilder)));
+			sizeDownItem.setEnabled(fileMenu.getFont().getSize() > baseMenuFontSize);
 		}
-		boolean rootEnabled = getRootNode() != null && getRootNode().enabled;
-		inspectItem.setEnabled(rootEnabled && (password == null || (this instanceof LaunchBuilder)));
-		sizeDownItem.setEnabled(fileMenu.getFont().getSize() > baseMenuFontSize);
 	}
 
 	/**
@@ -1402,27 +1422,29 @@ public class Launcher {
 		undoSupport = new UndoableEditSupport();
 		undoSupport.addUndoableEditListener(undoManager);
 		// create the frame
-		frame = new LauncherFrame();
-		existingFrames.add(frame);
-		if (splash && !OSPRuntime.isApplet) {
-			splash();
+		if (contentPane == null) {
+			frame = new LauncherFrame();
+			existingFrames.add(frame);
+			if (splash && !OSPRuntime.isApplet) {
+				splash();
+			}
+			xmlInspector = new JDialog(frame, false);
+			xmlInspector.setSize(new java.awt.Dimension(600, 300));
+			tableInspector = new XMLTableInspector(true, false);
+			// center inspectors on screen
+			Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+			int x = (dim.width - xmlInspector.getBounds().width) / 2;
+			int y = (dim.height - xmlInspector.getBounds().height) / 2;
+			xmlInspector.setLocation(x, y);
+			x = (dim.width - tableInspector.getBounds().width) / 2;
+			y = (dim.height - tableInspector.getBounds().height) / 2;
+			tableInspector.setLocation(x, y);
+			contentPane = new JPanel(new BorderLayout());
+			contentPane.setPreferredSize(new Dimension(wInit, hInit));
+			frame.setContentPane(contentPane);
+			frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		}
 		// create xml inspector
-		xmlInspector = new JDialog(frame, false);
-		xmlInspector.setSize(new java.awt.Dimension(600, 300));
-		tableInspector = new XMLTableInspector(true, false);
-		// center inspectors on screen
-		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-		int x = (dim.width - xmlInspector.getBounds().width) / 2;
-		int y = (dim.height - xmlInspector.getBounds().height) / 2;
-		xmlInspector.setLocation(x, y);
-		x = (dim.width - tableInspector.getBounds().width) / 2;
-		y = (dim.height - tableInspector.getBounds().height) / 2;
-		tableInspector.setLocation(x, y);
-		contentPane = new JPanel(new BorderLayout());
-		contentPane.setPreferredSize(new Dimension(wInit, hInit));
-		frame.setContentPane(contentPane);
-		frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		// create navigation bar
 		navbar = new JToolBar();
 		navbar.setFloatable(false);
@@ -1561,10 +1583,10 @@ public class Launcher {
 				refreshSelectedTab();
 				if ((previousNode != null) && (selectedNode != null)) {
 					// set html properties of newly selected node
-					if ((selectedNode.htmlURL == null) && !selectedNode.tabData.isEmpty()) {
+					if ((selectedNode.getURL() == null) && !selectedNode.tabData.isEmpty()) {
 						int page = Math.max(0, selectedNode.tabNumber);
 						LaunchNode.DisplayTab htmlData = selectedNode.tabData.get(page);
-						selectedNode.htmlURL = htmlData.url;
+						selectedNode.setURL(htmlData.url);
 						selectedNode.tabNumber = page;
 //            OSPLog.info("set selected node "+selectedNode+" to "+selectedNode.htmlURL //$NON-NLS-1$
 //                +"and tabnumber "+selectedNode.tabNumber);  //$NON-NLS-1$
@@ -1582,7 +1604,7 @@ public class Launcher {
 		tabListener = new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				if (contentPane.getTopLevelAncestor() != frame) {
+				if (frame == null) {
 					return;
 				}
 				if (OSPRuntime.isPopupTrigger(e)) {
@@ -1604,481 +1626,483 @@ public class Launcher {
 		};
 		tabbedPane.addMouseListener(tabListener);
 		// create the menu bar
-		final JMenuBar menubar = new JMenuBar();
-		fileMenu = new JMenu();
-		fileMenu.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent e) {
-				if (splashDialog != null) {
-					splashDialog.dispose();
-				}
-				fileMenu.removeMouseListener(this);
-			}
-
-		});
-		menubar.add(fileMenu);
-		openItem = new JMenuItem();
-		int mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
-		openItem.setAccelerator(KeyStroke.getKeyStroke('O', mask));
-		openItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String[] prevArgs = undoManager.getLauncherState();
-				if (prevArgs != null) {
-					String fileName = open();
-					if (fileName != null) {
-						String[] args = new String[] { fileName };
-						LauncherUndo.LoadEdit edit = undoManager.new LoadEdit(args, prevArgs);
-						undoSupport.postEdit(edit);
-						refreshGUI();
-					}
-				} else {
-					open();
-					refreshGUI();
-				}
-			}
-
-		});
-		passwordItem = new JMenuItem();
-		passwordItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (Password.verify(password, tabSetName)) {
-					passwords.add(password);
-					getRootNode().enabled = true;
-					if (expansions != null) {
-						for (int i = 0; i < expansions.length; i++) {
-							getTab(i).setExpandedNodes(expansions[i]);
-						}
-					}
-					if (selectedPath != null)
-						setSelectedNode(selectedPath);
-					changedFiles.clear();
-					refreshSelectedTab();
-					frame.validate();
-				}
-			}
-		});
-		closeTabItem = new JMenuItem();
-		closeTabItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				removeSelectedTab();
-			}
-
-		});
-		closeAllItem = new JMenuItem();
-		closeAllItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String[] prevArgs = undoManager.getLauncherState();
-				if (removeAllTabs() && (prevArgs != null)) {
-					// null new args indicate not redoable
-					LauncherUndo.LoadEdit edit = undoManager.new LoadEdit(null, prevArgs);
-					undoSupport.postEdit(edit);
-				}
-				refreshGUI();
-			}
-
-		});
-		editItem = new JMenuItem();
-		editItem.setAccelerator(KeyStroke.getKeyStroke('E', mask));
-		if (OSPRuntime.isWebStart()) {
-			editItem.setEnabled(false);
-		}
-		editItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if ((password != null) && !pwRequiredToLoad && !Password.verify(password, tabSetName)) {
-					return;
-				}
-				if (previewing) {
-					previewing = false;
-					if (Launcher.this.spawner != null) {
-						LaunchNode node = Launcher.this.getSelectedNode();
-						if (node != null) {
-							Launcher.this.spawner.setSelectedNode(node.getPathString());
-						}
-					}
-					exit(); // edit previews by exiting to builder
-				} else {
-					LaunchBuilder builder;
-					if (tabSetName == null) {
-						builder = new LaunchBuilder(false);
-						builder.newItem.doClick();
-					} else {
-						LaunchSet tabset = new LaunchSet(Launcher.this, tabSetName);
-						XMLControlElement control = new XMLControlElement(tabset);
-						// set null password so LaunchBuilder opens without verification
-						control.setPassword(null);
-						builder = new LaunchBuilder(control.toXML());
-						LaunchNode node = Launcher.this.getSelectedNode();
-						if (node != null) {
-							builder.setSelectedNode(node.getPathString());
-						}
-						builder.tabSetName = tabSetName;
-						builder.password = password;
-					}
-					builder.spawner = Launcher.this;
-					builder.jarBasePath = jarBasePath;
-					Point p = Launcher.this.frame.getLocation();
-					builder.frame.setLocation(p.x + 24, p.y + 24);
-					builder.frame.setVisible(true);
-					builder.frame.pack();
-					builder.frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-				}
-			}
-
-		});
-		backItem = new JMenuItem();
-		backItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, mask));
-		backItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				undoManager.undo();
-				refreshGUI();
-			}
-
-		});
-		displayMenu = new JMenu();
-		menubar.add(displayMenu);
-		// language menu
-		LaunchRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
-			@Override
-			public void propertyChange(PropertyChangeEvent e) {
-				refreshStringResources();
-				refreshGUI();
-			}
-
-		});
-		languageMenu = new JMenu();
-		final Locale[] locales = OSPRuntime.getInstalledLocales();
-		Action languageAction = new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String language = e.getActionCommand();
-				OSPLog.finest("setting language to " + language); //$NON-NLS-1$
-				for (int i = 0; i < locales.length; i++) {
-					if (language.equals(locales[i].getDisplayName())) {
-						LaunchRes.setLocale(locales[i]);
-						return;
-					}
-				}
-			}
-
-		};
-		ButtonGroup languageGroup = new ButtonGroup();
-		languageItems = new JMenuItem[locales.length];
-		for (int i = 0; i < locales.length; i++) {
-			languageItems[i] = new JRadioButtonMenuItem(OSPRuntime.getDisplayLanguage(locales[i]));
-			languageItems[i].setActionCommand(locales[i].getDisplayName());
-			languageItems[i].addActionListener(languageAction);
-			languageMenu.add(languageItems[i]);
-			languageGroup.add(languageItems[i]);
-		}
-		displayMenu.add(languageMenu);
-		displayMenu.addSeparator();
-		// font size listener
-		FontSizer.addPropertyChangeListener(FontSizer.PROPERTY_LEVEL, new PropertyChangeListener() { // $NON-NLS-1$
-			@Override
-			public void propertyChange(PropertyChangeEvent e) {
-				int level = ((Integer) e.getNewValue()).intValue();
-				setFontLevel(level);
-			}
-
-		});
-		sizeUpItem = new JMenuItem();
-		sizeUpItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				FontSizer.levelUp();
-			}
-
-		});
-		displayMenu.add(sizeUpItem);
-		sizeDownItem = new JMenuItem();
-		sizeDownItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				FontSizer.levelDown();
-			}
-
-		});
-		displayMenu.add(sizeDownItem);
-		displayMenu.addSeparator();
-		// create look and feel menu
-		lookFeelMenu = new JMenu();
-		displayMenu.add(lookFeelMenu);
-		Action lfAction = new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setLookAndFeel(e.getActionCommand(), false);
-			}
-
-		};
-		String currentLF = UIManager.getLookAndFeel().getClass().getName();
-		// create specific LF menu items and select current LF
-		specificLFGroup = new ButtonGroup();
-		LookAndFeelInfo[] lfInfo = UIManager.getInstalledLookAndFeels();
-		for (int i = 0; i < lfInfo.length; i++) {
-			String next = lfInfo[i].getClassName();
-			String command = (next.indexOf("Nimbus") > -1) //$NON-NLS-1$
-					? OSPRuntime.NIMBUS_LF
-					: (next.indexOf("GTK") > -1) //$NON-NLS-1$
-							? OSPRuntime.GTK_LF
-							: (next.indexOf("Motif") > -1) //$NON-NLS-1$
-									? OSPRuntime.MOTIF_LF
-									: (next.indexOf("WindowsClassic") > -1) //$NON-NLS-1$
-											? null
-											: (next.indexOf("Windows") > -1) //$NON-NLS-1$
-													? OSPRuntime.WINDOWS_LF
-													: (next.indexOf("Metal") > -1) //$NON-NLS-1$
-															? OSPRuntime.METAL_LF
-															: null;
-			if (command == null) {
-				continue;
-			}
-			String name = XML.getName(lfInfo[i].getName());
-			JRadioButtonMenuItem item = new JRadioButtonMenuItem(name);
-			specificLFGroup.add(item);
-			item.setActionCommand(command);
-			item.addActionListener(lfAction);
-			lookFeelMenu.add(item);
-			if (currentLF.equals(next)) {
-				item.setSelected(true);
-			}
-		}
-		// create generic LF items and select current LF
-		genericLFGroup = new ButtonGroup();
-		defaultLFItem = new JRadioButtonMenuItem();
-		defaultLFItem.setSelected(true);
-		defaultLFItem.setActionCommand(OSPRuntime.DEFAULT_LF);
-		defaultLFItem.addActionListener(lfAction);
-		genericLFGroup.add(defaultLFItem);
-		javaLFItem = new JRadioButtonMenuItem();
-		javaLFItem.setActionCommand(OSPRuntime.CROSS_PLATFORM_LF);
-		javaLFItem.addActionListener(lfAction);
-		genericLFGroup.add(javaLFItem);
-		systemLFItem = new JRadioButtonMenuItem();
-		systemLFItem.setActionCommand(OSPRuntime.SYSTEM_LF);
-		systemLFItem.addActionListener(lfAction);
-		genericLFGroup.add(systemLFItem);
-		lookFeelMenu.addSeparator();
-		lookFeelMenu.add(javaLFItem);
-		lookFeelMenu.add(systemLFItem);
-		lookFeelMenu.add(defaultLFItem);
-		helpMenu = new JMenu();
-		helpMenu.addMouseListener(new MouseAdapter() {
-			// hide splash dialog if visible
-			@Override
-			public void mousePressed(MouseEvent e) {
-				if (splashDialog != null) {
-					splashDialog.dispose();
-				}
-				helpMenu.removeMouseListener(this);
-			}
-
-		});
-		helpMenu.addMouseListener(new MouseAdapter() {
-			// refresh authorInfo item
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				mousePressed(e);
-			}
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-				LaunchNode node = getSelectedNode();
-				if (node != null) {
-					helpMenu.add(authorInfoItem);
-				} else {
-					helpMenu.remove(authorInfoItem);
-				}
-			}
-
-		});
-		menubar.add(helpMenu);
-		logItem = new JMenuItem();
-		logItem.setAccelerator(KeyStroke.getKeyStroke('L', mask));
-		logItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (!OSPRuntime.isApplet) { // not running as applet so create and position the log.
-					Point p0 = new Frame().getLocation();
-					OSPLog log = OSPLog.getOSPLog();
-					if ((log.getLocation().x == p0.x) && (log.getLocation().y == p0.y)) {
-						Point p = frame.getLocation();
-						log.setLocation(p.x + 28, p.y + 28);
-					}
-				}
-				OSPLog.showLog();
-			}
-
-		});
-		helpMenu.add(logItem);
-		inspectItem = new JMenuItem();
-		helpMenu.add(inspectItem);
-		inspectItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				LaunchSet tabSet = new LaunchSet(Launcher.this, tabSetName);
-				tabSet.showHiddenNodes = Launcher.this instanceof LaunchBuilder;
-				XMLControl xml = new XMLControlElement(tabSet);
-				XMLTreePanel treePanel = new XMLTreePanel(xml, false);
-				xmlInspector.setContentPane(treePanel);
-				xmlInspector.setTitle(
-						LaunchRes.getString("Inspector.Title.TabSet") + " \"" + getDisplayName(tabSetName) + "\""); //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
-				xmlInspector.setVisible(true);
-			}
-
-		});
-		// diagnostics menu
-		diagnosticMenu = new JMenu();
-		helpMenu.add(diagnosticMenu);
-		JMenuItem jarItem = new JMenuItem("Jar"); //$NON-NLS-1$
-		jarItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Diagnostics.aboutLaunchJar();
-			}
-
-		});
-		diagnosticMenu.add(jarItem);
-		JMenuItem vmItem = new JMenuItem("Java VM"); //$NON-NLS-1$
-		vmItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Diagnostics.aboutJava();
-			}
-
-		});
-		diagnosticMenu.add(vmItem);
-		JMenuItem OSItem = new JMenuItem("OS"); //$NON-NLS-1$
-		OSItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Diagnostics.aboutOS();
-			}
-
-		});
-		diagnosticMenu.add(OSItem);
-		JMenuItem j3dItem = new JMenuItem("Java 3D"); //$NON-NLS-1$
-		j3dItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Diagnostics.aboutJava3D();
-			}
-
-		});
-		diagnosticMenu.add(j3dItem);
-		JMenuItem joglItem = new JMenuItem("JOGL"); //$NON-NLS-1$
-		joglItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Diagnostics.aboutJOGL();
-			}
-
-		});
-		diagnosticMenu.add(joglItem);
-		helpMenu.addSeparator();
-		aboutItem = new JMenuItem();
-		aboutItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				showAboutDialog();
-			}
-
-		});
-		helpMenu.add(aboutItem);
-		authorInfoItem = new JMenuItem();
-		authorInfoItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				showAuthorInformation();
-			}
-
-		});
-		helpMenu.add(authorInfoItem);
-		if (!OSPRuntime.isApplet) {
-			// add window listener to exit
-			frame.addWindowListener(new WindowAdapter() {
+		if (frame != null) {
+			final JMenuBar menubar = new JMenuBar();
+			fileMenu = new JMenu();
+			fileMenu.addMouseListener(new MouseAdapter() {
 				@Override
-				public void windowClosing(WindowEvent e) {
-					exit();
-				}
-
-				// Added by W. Christian to disable the Language menu
-				@Override
-				public void windowGainedFocus(WindowEvent e) {
-					OSPRuntime.setAuthorMode(false);
-				}
-
-				@Override
-				public void windowActivated(WindowEvent e) {
-					OSPRuntime.setAuthorMode(false);
+				public void mousePressed(MouseEvent e) {
+					if (splashDialog != null) {
+						splashDialog.dispose();
+					}
+					fileMenu.removeMouseListener(this);
 				}
 
 			});
-			// add exit menu item
-			fileMenu.addSeparator();
-			exitItem = new JMenuItem();
-			exitItem.setAccelerator(KeyStroke.getKeyStroke('Q', mask));
-			exitItem.addActionListener(new ActionListener() {
+			menubar.add(fileMenu);
+			openItem = new JMenuItem();
+			int mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+			openItem.setAccelerator(KeyStroke.getKeyStroke('O', mask));
+			openItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					exit();
-				}
-
-			});
-		}
-		// if launch jar not yet found, load class file as last attempt
-		if (!OSPRuntime.isJS && OSPRuntime.getLaunchJarPath() == null) {
-			ResourceLoader.getResource("/org/opensourcephysics/tools/Launcher.class"); //$NON-NLS-1$
-		}
-		// create and populate the internal xset menu
-		if (!OSPRuntime.isJS && OSPRuntime.getLaunchJarPath() != null) {
-			JarFile jar = OSPRuntime.getLaunchJar();
-			if (jar != null) {
-				Action action = new AbstractAction() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						// get name of file to open
-						String fileName = ((JMenuItem) e.getSource()).getText();
-						fileName = OSPRuntime.getLaunchJarName() + "!/" + fileName; //$NON-NLS-1$
-						String[] prevArgs = undoManager.getLauncherState();
-						if ((prevArgs != null) && (open(fileName) != null)) {
+					String[] prevArgs = undoManager.getLauncherState();
+					if (prevArgs != null) {
+						String fileName = open();
+						if (fileName != null) {
 							String[] args = new String[] { fileName };
 							LauncherUndo.LoadEdit edit = undoManager.new LoadEdit(args, prevArgs);
 							undoSupport.postEdit(edit);
 							refreshGUI();
+						}
+					} else {
+						open();
+						refreshGUI();
+					}
+				}
+
+			});
+			passwordItem = new JMenuItem();
+			passwordItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if (Password.verify(password, tabSetName)) {
+						passwords.add(password);
+						getRootNode().enabled = true;
+						if (expansions != null) {
+							for (int i = 0; i < expansions.length; i++) {
+								getTab(i).setExpandedNodes(expansions[i]);
+							}
+						}
+						if (selectedPath != null)
+							setSelectedNode(selectedPath);
+						changedFiles.clear();
+						refreshSelectedTab();
+						frame.validate();
+					}
+				}
+			});
+			closeTabItem = new JMenuItem();
+			closeTabItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					removeSelectedTab();
+				}
+
+			});
+			closeAllItem = new JMenuItem();
+			closeAllItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					String[] prevArgs = undoManager.getLauncherState();
+					if (removeAllTabs() && (prevArgs != null)) {
+						// null new args indicate not redoable
+						LauncherUndo.LoadEdit edit = undoManager.new LoadEdit(null, prevArgs);
+						undoSupport.postEdit(edit);
+					}
+					refreshGUI();
+				}
+
+			});
+			editItem = new JMenuItem();
+			editItem.setAccelerator(KeyStroke.getKeyStroke('E', mask));
+			if (OSPRuntime.isWebStart()) {
+				editItem.setEnabled(false);
+			}
+			editItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if ((password != null) && !pwRequiredToLoad && !Password.verify(password, tabSetName)) {
+						return;
+					}
+					if (previewing) {
+						previewing = false;
+						if (Launcher.this.spawner != null) {
+							LaunchNode node = Launcher.this.getSelectedNode();
+							if (node != null) {
+								Launcher.this.spawner.setSelectedNode(node.getPathString());
+							}
+						}
+						exit(); // edit previews by exiting to builder
+					} else {
+						LaunchBuilder builder;
+						if (tabSetName == null) {
+							builder = new LaunchBuilder(false);
+							builder.newItem.doClick();
 						} else {
-							open(fileName);
-							refreshGUI();
+							LaunchSet tabset = new LaunchSet(Launcher.this, tabSetName);
+							XMLControlElement control = new XMLControlElement(tabset);
+							// set null password so LaunchBuilder opens without verification
+							control.setPassword(null);
+							builder = new LaunchBuilder(control.toXML());
+							LaunchNode node = Launcher.this.getSelectedNode();
+							if (node != null) {
+								builder.setSelectedNode(node.getPathString());
+							}
+							builder.tabSetName = tabSetName;
+							builder.password = password;
+						}
+						builder.spawner = Launcher.this;
+						builder.jarBasePath = jarBasePath;
+						Point p = Launcher.this.frame.getLocation();
+						builder.frame.setLocation(p.x + 24, p.y + 24);
+						builder.frame.setVisible(true);
+						builder.frame.pack();
+						builder.frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+					}
+				}
+
+			});
+			backItem = new JMenuItem();
+			backItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, mask));
+			backItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					undoManager.undo();
+					refreshGUI();
+				}
+
+			});
+			displayMenu = new JMenu();
+			menubar.add(displayMenu);
+			// language menu
+			LaunchRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
+				@Override
+				public void propertyChange(PropertyChangeEvent e) {
+					refreshStringResources();
+					refreshGUI();
+				}
+
+			});
+			languageMenu = new JMenu();
+			final Locale[] locales = OSPRuntime.getInstalledLocales();
+			Action languageAction = new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					String language = e.getActionCommand();
+					OSPLog.finest("setting language to " + language); //$NON-NLS-1$
+					for (int i = 0; i < locales.length; i++) {
+						if (language.equals(locales[i].getDisplayName())) {
+							LaunchRes.setLocale(locales[i]);
+							return;
 						}
 					}
+				}
 
-				};
-				// iterate thru JarFile entries and add menu items
-				for (Enumeration<?> e = jar.entries(); e.hasMoreElements();) {
-					JarEntry entry = (JarEntry) e.nextElement();
-					String name = entry.getName();
-					if (name.endsWith(".xset") && !name.startsWith(resourcesPath.substring(1))) { //$NON-NLS-1$
-						if (name.startsWith(defaultFileName)) {
-							continue;
+			};
+			ButtonGroup languageGroup = new ButtonGroup();
+			languageItems = new JMenuItem[locales.length];
+			for (int i = 0; i < locales.length; i++) {
+				languageItems[i] = new JRadioButtonMenuItem(OSPRuntime.getDisplayLanguage(locales[i]));
+				languageItems[i].setActionCommand(locales[i].getDisplayName());
+				languageItems[i].addActionListener(languageAction);
+				languageMenu.add(languageItems[i]);
+				languageGroup.add(languageItems[i]);
+			}
+			displayMenu.add(languageMenu);
+			displayMenu.addSeparator();
+			// font size listener
+			FontSizer.addPropertyChangeListener(FontSizer.PROPERTY_LEVEL, new PropertyChangeListener() { // $NON-NLS-1$
+				@Override
+				public void propertyChange(PropertyChangeEvent e) {
+					int level = ((Integer) e.getNewValue()).intValue();
+					setFontLevel(level);
+				}
+
+			});
+			sizeUpItem = new JMenuItem();
+			sizeUpItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					FontSizer.levelUp();
+				}
+
+			});
+			displayMenu.add(sizeUpItem);
+			sizeDownItem = new JMenuItem();
+			sizeDownItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					FontSizer.levelDown();
+				}
+
+			});
+			displayMenu.add(sizeDownItem);
+			displayMenu.addSeparator();
+			// create look and feel menu
+			lookFeelMenu = new JMenu();
+			displayMenu.add(lookFeelMenu);
+			Action lfAction = new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					setLookAndFeel(e.getActionCommand(), false);
+				}
+
+			};
+			String currentLF = UIManager.getLookAndFeel().getClass().getName();
+			// create specific LF menu items and select current LF
+			specificLFGroup = new ButtonGroup();
+			LookAndFeelInfo[] lfInfo = UIManager.getInstalledLookAndFeels();
+			for (int i = 0; i < lfInfo.length; i++) {
+				String next = lfInfo[i].getClassName();
+				String command = (next.indexOf("Nimbus") > -1) //$NON-NLS-1$
+						? OSPRuntime.NIMBUS_LF
+						: (next.indexOf("GTK") > -1) //$NON-NLS-1$
+								? OSPRuntime.GTK_LF
+								: (next.indexOf("Motif") > -1) //$NON-NLS-1$
+										? OSPRuntime.MOTIF_LF
+										: (next.indexOf("WindowsClassic") > -1) //$NON-NLS-1$
+												? null
+												: (next.indexOf("Windows") > -1) //$NON-NLS-1$
+														? OSPRuntime.WINDOWS_LF
+														: (next.indexOf("Metal") > -1) //$NON-NLS-1$
+																? OSPRuntime.METAL_LF
+																: null;
+				if (command == null) {
+					continue;
+				}
+				String name = XML.getName(lfInfo[i].getName());
+				JRadioButtonMenuItem item = new JRadioButtonMenuItem(name);
+				specificLFGroup.add(item);
+				item.setActionCommand(command);
+				item.addActionListener(lfAction);
+				lookFeelMenu.add(item);
+				if (currentLF.equals(next)) {
+					item.setSelected(true);
+				}
+			}
+			// create generic LF items and select current LF
+			genericLFGroup = new ButtonGroup();
+			defaultLFItem = new JRadioButtonMenuItem();
+			defaultLFItem.setSelected(true);
+			defaultLFItem.setActionCommand(OSPRuntime.DEFAULT_LF);
+			defaultLFItem.addActionListener(lfAction);
+			genericLFGroup.add(defaultLFItem);
+			javaLFItem = new JRadioButtonMenuItem();
+			javaLFItem.setActionCommand(OSPRuntime.CROSS_PLATFORM_LF);
+			javaLFItem.addActionListener(lfAction);
+			genericLFGroup.add(javaLFItem);
+			systemLFItem = new JRadioButtonMenuItem();
+			systemLFItem.setActionCommand(OSPRuntime.SYSTEM_LF);
+			systemLFItem.addActionListener(lfAction);
+			genericLFGroup.add(systemLFItem);
+			lookFeelMenu.addSeparator();
+			lookFeelMenu.add(javaLFItem);
+			lookFeelMenu.add(systemLFItem);
+			lookFeelMenu.add(defaultLFItem);
+			helpMenu = new JMenu();
+			helpMenu.addMouseListener(new MouseAdapter() {
+				// hide splash dialog if visible
+				@Override
+				public void mousePressed(MouseEvent e) {
+					if (splashDialog != null) {
+						splashDialog.dispose();
+					}
+					helpMenu.removeMouseListener(this);
+				}
+
+			});
+			helpMenu.addMouseListener(new MouseAdapter() {
+				// refresh authorInfo item
+				@Override
+				public void mouseEntered(MouseEvent e) {
+					mousePressed(e);
+				}
+
+				@Override
+				public void mousePressed(MouseEvent e) {
+					LaunchNode node = getSelectedNode();
+					if (node != null) {
+						helpMenu.add(authorInfoItem);
+					} else {
+						helpMenu.remove(authorInfoItem);
+					}
+				}
+
+			});
+			menubar.add(helpMenu);
+			logItem = new JMenuItem();
+			logItem.setAccelerator(KeyStroke.getKeyStroke('L', mask));
+			logItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if (!OSPRuntime.isApplet) { // not running as applet so create and position the log.
+						Point p0 = new Frame().getLocation();
+						OSPLog log = OSPLog.getOSPLog();
+						if ((log.getLocation().x == p0.x) && (log.getLocation().y == p0.y)) {
+							Point p = frame.getLocation();
+							log.setLocation(p.x + 28, p.y + 28);
 						}
-						if (openFromJarMenu == null) {
-							openFromJarMenu = new JMenu();
+					}
+					OSPLog.showLog();
+				}
+
+			});
+			helpMenu.add(logItem);
+			inspectItem = new JMenuItem();
+			helpMenu.add(inspectItem);
+			inspectItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					LaunchSet tabSet = new LaunchSet(Launcher.this, tabSetName);
+					tabSet.showHiddenNodes = Launcher.this instanceof LaunchBuilder;
+					XMLControl xml = new XMLControlElement(tabSet);
+					XMLTreePanel treePanel = new XMLTreePanel(xml, false);
+					xmlInspector.setContentPane(treePanel);
+					xmlInspector.setTitle(
+							LaunchRes.getString("Inspector.Title.TabSet") + " \"" + getDisplayName(tabSetName) + "\""); //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
+					xmlInspector.setVisible(true);
+				}
+
+			});
+			// diagnostics menu
+			diagnosticMenu = new JMenu();
+			helpMenu.add(diagnosticMenu);
+			JMenuItem jarItem = new JMenuItem("Jar"); //$NON-NLS-1$
+			jarItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					Diagnostics.aboutLaunchJar();
+				}
+
+			});
+			diagnosticMenu.add(jarItem);
+			JMenuItem vmItem = new JMenuItem("Java VM"); //$NON-NLS-1$
+			vmItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					Diagnostics.aboutJava();
+				}
+
+			});
+			diagnosticMenu.add(vmItem);
+			JMenuItem OSItem = new JMenuItem("OS"); //$NON-NLS-1$
+			OSItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					Diagnostics.aboutOS();
+				}
+
+			});
+			diagnosticMenu.add(OSItem);
+			JMenuItem j3dItem = new JMenuItem("Java 3D"); //$NON-NLS-1$
+			j3dItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					Diagnostics.aboutJava3D();
+				}
+
+			});
+			diagnosticMenu.add(j3dItem);
+			JMenuItem joglItem = new JMenuItem("JOGL"); //$NON-NLS-1$
+			joglItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					Diagnostics.aboutJOGL();
+				}
+
+			});
+			diagnosticMenu.add(joglItem);
+			helpMenu.addSeparator();
+			aboutItem = new JMenuItem();
+			aboutItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					showAboutDialog();
+				}
+
+			});
+			helpMenu.add(aboutItem);
+			authorInfoItem = new JMenuItem();
+			authorInfoItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					showAuthorInformation();
+				}
+
+			});
+			helpMenu.add(authorInfoItem);
+			if (frame != null && !OSPRuntime.isApplet) {
+				// add window listener to exit
+				frame.addWindowListener(new WindowAdapter() {
+					@Override
+					public void windowClosing(WindowEvent e) {
+						exit();
+					}
+
+					// Added by W. Christian to disable the Language menu
+					@Override
+					public void windowGainedFocus(WindowEvent e) {
+						OSPRuntime.setAuthorMode(false);
+					}
+
+					@Override
+					public void windowActivated(WindowEvent e) {
+						OSPRuntime.setAuthorMode(false);
+					}
+
+				});
+				// add exit menu item
+				fileMenu.addSeparator();
+				exitItem = new JMenuItem();
+				exitItem.setAccelerator(KeyStroke.getKeyStroke('Q', mask));
+				exitItem.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						exit();
+					}
+
+				});
+			}
+			// if launch jar not yet found, load class file as last attempt
+			if (!OSPRuntime.isJS && OSPRuntime.getLaunchJarPath() == null) {
+				ResourceLoader.getResource("/org/opensourcephysics/tools/Launcher.class"); //$NON-NLS-1$
+			}
+			// create and populate the internal xset menu
+			if (!OSPRuntime.isJS && OSPRuntime.getLaunchJarPath() != null) {
+				JarFile jar = OSPRuntime.getLaunchJar();
+				if (jar != null) {
+					Action action = new AbstractAction() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							// get name of file to open
+							String fileName = ((JMenuItem) e.getSource()).getText();
+							fileName = OSPRuntime.getLaunchJarName() + "!/" + fileName; //$NON-NLS-1$
+							String[] prevArgs = undoManager.getLauncherState();
+							if ((prevArgs != null) && (open(fileName) != null)) {
+								String[] args = new String[] { fileName };
+								LauncherUndo.LoadEdit edit = undoManager.new LoadEdit(args, prevArgs);
+								undoSupport.postEdit(edit);
+								refreshGUI();
+							} else {
+								open(fileName);
+								refreshGUI();
+							}
 						}
-						JMenuItem item = new JMenuItem(name);
-						item.addActionListener(action);
-						openFromJarMenu.add(item);
+
+					};
+					// iterate thru JarFile entries and add menu items
+					for (Enumeration<?> e = jar.entries(); e.hasMoreElements();) {
+						JarEntry entry = (JarEntry) e.nextElement();
+						String name = entry.getName();
+						if (name.endsWith(".xset") && !name.startsWith(resourcesPath.substring(1))) { //$NON-NLS-1$
+							if (name.startsWith(defaultFileName)) {
+								continue;
+							}
+							if (openFromJarMenu == null) {
+								openFromJarMenu = new JMenu();
+							}
+							JMenuItem item = new JMenuItem(name);
+							item.addActionListener(action);
+							openFromJarMenu.add(item);
+						}
 					}
 				}
 			}
+			baseMenuFontSize = fileMenu.getFont().getSize();
+			frame.setJMenuBar(menubar);
+			frame.pack();
 		}
-		baseMenuFontSize = fileMenu.getFont().getSize();
-		frame.setJMenuBar(menubar);
-		frame.pack();
 	} // end createGUI
 
 	/**
@@ -2298,7 +2322,7 @@ public class Launcher {
 	 * @return <code>true</code> if the node has an EJS model
 	 */
 	protected boolean hasEJSModel(LaunchNode node) {
-		if ((node == null) || !node.isLeaf()) {
+		if (!OSPRuntime.launcherAllowEJSModel || (node == null) || !node.isLeaf()) {
 			return false;
 		}
 		return EjsTool.hasEjsModel(node.getLaunchClass());
@@ -2337,77 +2361,7 @@ public class Launcher {
 						}
 						event = e;
 						URL url = e.getURL();
-						String path = url.toString();
-						// browse web-hosted links and extracted files externally
-						boolean extracted = false;
-						for (String ext : extractExtensions) {
-							extracted = extracted || path.endsWith(ext);
-						}
-						boolean browseExternally = !url.getHost().equals("") || extracted; //$NON-NLS-1$
-						if (browseExternally) {
-							if (extracted && (path.indexOf("jar!") > -1)) { //$NON-NLS-1$
-								// look to see if file already exists outside jar
-								int j = path.indexOf("jar!/"); //$NON-NLS-1$
-								String fileName = path.substring(j + 5);
-								File target = new File(fileName);
-								if (target.exists()) {
-									path = target.toURI().toString();
-								} else {
-									// get resource to extract file from jar
-									Resource res = ResourceLoader.getResource(path);
-									if (res != null) {
-										path = res.getURL().toString();
-										// add shutdown hook to dispose of extracted file
-										final File tempFile = res.getFile();
-										Thread shutdownHook = new Thread() {
-											@Override
-											public void run() {
-												tempFile.deleteOnExit();
-											}
-
-										};
-										Runtime.getRuntime().addShutdownHook(shutdownHook);
-									}
-								}
-							}
-							// open link in external browser
-							if (!org.opensourcephysics.desktop.OSPDesktop.displayURL(path)) {
-								OSPLog.warning("unable to open in browser: " + path); //$NON-NLS-1$
-							}
-						} else { // browse internally and post undoable edit
-							URL prev = selectedNode.htmlURL;
-							if (prev != url) {
-								String undoPath = selectedNode.getPathString();
-								Integer undoPage = Integer.valueOf(selectedNode.tabNumber);
-								Object[] undoData = new Object[] { null, undoPath, undoPage, prev };
-								Object[] redoData = null;
-								// check to see if link is an anchor in same page
-								if ((prev != null) && prev.getPath().equals(url.getPath())) {
-									redoData = new Object[] { null, undoPath, undoPage, url };
-								} else {
-									Object[] nodeData = getNodeAndPage(url);
-									if (nodeData != null) {
-										redoData = new Object[] { null, nodeData[0], nodeData[1], url };
-									}
-									// no redo node found, so redo = undo node
-									else {
-										redoData = new Object[] { null, undoPath, undoPage, url };
-									}
-								}
-								// post undoable edit
-								if (postEdits) {
-									UndoableEdit edit = undoManager.new NavEdit(undoData, redoData);
-									undoSupport.postEdit(edit);
-								}
-								// select new node
-								// prevent duplicate NavEdit while selecting node
-								postEdits = false;
-								String nodePath = (String) redoData[1];
-								int page = ((Integer) redoData[2]).intValue();
-								setSelectedNode(nodePath, page, url);
-								postEdits = true;
-							}
-						}
+						handleHyperLink(url);
 					}
 				}
 
@@ -2418,6 +2372,87 @@ public class Launcher {
 		} else {
 			textPane.removeHyperlinkListener(linkListener);
 		}
+	}
+
+	protected void handleHyperLink(URL url) {
+		String path = url.toString();
+		// browse web-hosted links and extracted files externally
+		boolean extracted = !isDisplayable(path);
+		boolean browseExternally = !url.getHost().equals("") || extracted; //$NON-NLS-1$
+		if (browseExternally) {
+			if (extracted && (path.indexOf("jar!") > -1)) { //$NON-NLS-1$
+				// look to see if file already exists outside jar
+				int j = path.indexOf("jar!/"); //$NON-NLS-1$
+				String fileName = path.substring(j + 5);
+				File target = new File(fileName);
+				if (target.exists()) {
+					path = target.toURI().toString();
+				} else {
+					// get resource to extract file from jar
+					Resource res = ResourceLoader.getResource(path);
+					if (res != null) {
+						path = res.getURL().toString();
+						// add shutdown hook to dispose of extracted file
+						final File tempFile = res.getFile();
+						Thread shutdownHook = new Thread() {
+							@Override
+							public void run() {
+								tempFile.deleteOnExit();
+							}
+
+						};
+						Runtime.getRuntime().addShutdownHook(shutdownHook);
+					}
+				}
+			}
+			// open link in external browser
+			if (!org.opensourcephysics.desktop.OSPDesktop.displayURL(path)) {
+				OSPLog.warning("unable to open in browser: " + path); //$NON-NLS-1$
+			}
+		} else { // browse internally and post undoable edit
+			URL prev = selectedNode.getURL();
+			if (prev != url) {
+				String undoPath = selectedNode.getPathString();
+				Integer undoPage = Integer.valueOf(selectedNode.tabNumber);
+				Object[] undoData = new Object[] { null, undoPath, undoPage, prev };
+				Object[] redoData = null;
+				// check to see if link is an anchor in same page
+				if ((prev != null) && prev.getPath().equals(url.getPath())) {
+					redoData = new Object[] { null, undoPath, undoPage, url };
+				} else {
+					Object[] nodeData = getNodeAndPage(url);
+					if (nodeData != null) {
+						redoData = new Object[] { null, nodeData[0], nodeData[1], url };
+					}
+					// no redo node found, so redo = undo node
+					else {
+						redoData = new Object[] { null, undoPath, undoPage, url };
+					}
+				}
+				// post undoable edit
+				if (postEdits) {
+					UndoableEdit edit = undoManager.new NavEdit(undoData, redoData);
+					undoSupport.postEdit(edit);
+				}
+				// select new node
+				// prevent duplicate NavEdit while selecting node
+				postEdits = false;
+				String nodePath = (String) redoData[1];
+				int page = ((Integer) redoData[2]).intValue();
+				setSelectedNode(nodePath, page, url);
+				postEdits = true;
+			}
+		}
+	}
+
+	public static boolean isDisplayable(String path) {
+		if (path.indexOf("#") < 0) {
+			for (String ext : extractExtensions) {
+				if (path.endsWith(ext))
+					return false;
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -2889,6 +2924,14 @@ public class Launcher {
 			} catch (Exception ex) {
 				// image not found
 			}
+		}
+		
+		public void setJMenuBar(JMenuBar mb) {
+			super.setJMenuBar(mb);
+		}
+
+		public void setTitle(String title) {
+			super.setTitle(title);
 		}
 
 	}

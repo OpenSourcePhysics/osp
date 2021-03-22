@@ -124,7 +124,7 @@ public class LaunchPanel extends JPanel {
 		}
 		if (url != null) {
 			// set url to include anchor, if any
-			node.htmlURL = url;
+			node.setURL(url);
 			if (htmlData != null) {
 				htmlData.url = url;
 			}
@@ -233,104 +233,96 @@ public class LaunchPanel extends JPanel {
 	 * @param node the LaunchNode
 	 */
 	protected void displayTabs(LaunchNode node) {
-		if (node != null) {
-			OSPLog.finer(LaunchRes.getString("Log.Message.NodeSelected") //$NON-NLS-1$
-					+ " " + node); //$NON-NLS-1$
-			boolean isBuilder = launcher instanceof LaunchBuilder;
-			String noTitle = LaunchRes.getString("HTMLTab.Title.Untitled"); //$NON-NLS-1$
-			java.net.URL url = node.htmlURL; // what URL to display
-			// don't display PDF files in Launcher
-			if (url != null && url.getPath().toLowerCase().endsWith("pdf")) //$NON-NLS-1$
-				url = null;
-			int tabNumber = node.tabNumber; // which tab to display it in
-			boolean hasModel = false;
-			if (url == null && node.getDisplayTabCount() > 0) {
-				// skip display tabs with PDFs
-				int k = 0;
-				for (int i = tabNumber; i < node.getDisplayTabCount(); i++) {
-					DisplayTab next = node.getDisplayTab(i);
-					// next!=null condiiton added by W. Christian
-					if (next != null && next.url != null && next.url.getPath().toLowerCase().endsWith(".pdf")) { //$NON-NLS-1$
-						k++;
-					} else
-						break;
-				}
-				// node has multiple URLs so pick the tab-associated one
-				tabNumber = Math.max(0, tabNumber);
-				DisplayTab displayTab = node.getDisplayTab(tabNumber + k);
-				if (displayTab == null) { // null check added by W.Chrisitan
-					// do nothing
-				} else if (displayTab.url != null) {
-					url = displayTab.url;
-				} else {
-					hasModel = displayTab.getModelClass() != null;
-				}
+		if (node == null)
+			return;
+		OSPLog.finer(LaunchRes.getString("Log.Message.NodeSelected") //$NON-NLS-1$
+				+ " " + node); //$NON-NLS-1$
+		boolean isBuilder = launcher instanceof LaunchBuilder;
+		String noTitle = LaunchRes.getString("HTMLTab.Title.Untitled"); //$NON-NLS-1$
+		URL url = (node.isDisplayable ? node.getURL() : null); // what URL to display
+		// don't display PDF files in Launcher
+		int tabNumber = node.tabNumber; // which tab to display it in
+		boolean hasModel = false;
+		if (url == null && node.getDisplayTabCount() > 0) {
+			// skip display tabs with PDFs
+			int k = 0;
+			for (int i = tabNumber; i < node.getDisplayTabCount(); i++, k++) {
+				DisplayTab next = node.getDisplayTab(i);
+				// next!=null condiiton added by W. Christian
+				if (next == null || next.isDisplayable)
+					break;
 			}
-
-			// don't display PDF files in Launcher
-			if (url != null && url.getPath().toLowerCase().endsWith("pdf")) //$NON-NLS-1$
-				url = null;
-
-			// rebuild tabs
-			rebuildingTabs = true;
-			int tabCount = 0;
-			if (!isBuilder) {
-				tabbedPane.removeAll();
+			// node has multiple URLs so pick the tab-associated one
+			tabNumber = Math.max(0, tabNumber);
+			DisplayTab displayTab = node.getDisplayTab(tabNumber + k);
+			if (displayTab == null) { // null check added by W.Chrisitan
+				// do nothing
+			} else if (displayTab.url == null) {
+				hasModel = displayTab.getModelClass() != null;
+			} else if (displayTab.isDisplayable) {
+				// don't display PDF files in Launcher
+				url = displayTab.url;
 			}
-			Iterator<?> it = node.tabData.iterator();
-			while (it.hasNext()) {
-				LaunchNode.DisplayTab displayTab = (LaunchNode.DisplayTab) it.next();
-				if (displayTab.url != null && !displayTab.url.getPath().toLowerCase().endsWith(".pdf")) { //$NON-NLS-1$
-					try {
-						if (displayTab.url.getContent() != null) {
-							Launcher.HTMLPane html = launcher.getHTMLTab(tabCount);
-							java.net.URL theURL = ((tabNumber == tabCount) && (url != null)) ? url : displayTab.url;
-							SwingUtilities.invokeLater(() -> {
-								launchHtml(html, theURL, displayTab.hyperlinksEnabled && node.enabled);
-							});
-							if (!isBuilder) {
-								String title = (displayTab.title == null) ? noTitle : displayTab.title;
-
-								tabbedPane.addTab(title, html.scroller);
-								tabCount++;
-							}
-						}
-					} catch (IOException ex) {
-						OSPLog.fine(LaunchRes.getString("Log.Message.BadURL") //$NON-NLS-1$
-								+ " " + displayTab.url); //$NON-NLS-1$
-					}
-				} else if (displayTab.getModelScroller() != null) {
-					if (!isBuilder) {
-						String title = (displayTab.title == null) ? noTitle : displayTab.title;
-						tabbedPane.addTab(title, displayTab.getModelScroller());
-						tabCount++;
-					}
-				}
-			}
-			// display appropriate tabs
-			if (!isBuilder) {
-				if (url != null || hasModel) {
-					if ((tabbedPane.getTabCount() == 1) && tabbedPane.getTitleAt(0).equals(noTitle)) {
-						splitPane.setRightComponent(tabbedPane.getComponentAt(0));
-					} else if (tabbedPane.getTabCount() > 0) {
-						splitPane.setRightComponent(tabbedPane);
-						if (tabbedPane.getTabCount() > tabNumber) {
-							tabbedPane.setSelectedIndex(tabNumber);
-						}
-					}
-				} else {
-					JScrollPane launchPane = node.getLaunchModelScroller();
-					if (launchPane != null) {
-						splitPane.setRightComponent(launchPane);
-					} else {
-						descriptionPane.setText(node.description);
-						splitPane.setRightComponent(descriptionScroller);
-					}
-				}
-			}
-			rebuildingTabs = false;
-			launcher.refreshGUI();
 		}
+		// rebuild tabs
+		rebuildingTabs = true;
+		int tabCount = 0;
+		if (!isBuilder) {
+			tabbedPane.removeAll();
+		}
+		Iterator<?> it = node.tabData.iterator();
+		while (it.hasNext()) {
+			LaunchNode.DisplayTab displayTab = (LaunchNode.DisplayTab) it.next();
+			if (displayTab.isDisplayable) {
+				try {
+					if (displayTab.url.getContent() != null) {
+						Launcher.HTMLPane html = launcher.getHTMLTab(tabCount);
+						java.net.URL theURL = ((tabNumber == tabCount) && (url != null)) ? url : displayTab.url;
+						SwingUtilities.invokeLater(() -> {
+							launchHtml(html, theURL, displayTab.hyperlinksEnabled && node.enabled);
+						});
+						if (!isBuilder) {
+							String title = (displayTab.title == null) ? noTitle : displayTab.title;
+
+							tabbedPane.addTab(title, html.scroller);
+							tabCount++;
+						}
+					}
+				} catch (IOException ex) {
+					OSPLog.fine(LaunchRes.getString("Log.Message.BadURL") //$NON-NLS-1$
+							+ " " + displayTab.url); //$NON-NLS-1$
+				}
+			} else if (displayTab.getModelScroller() != null) {
+				if (!isBuilder) {
+					String title = (displayTab.title == null) ? noTitle : displayTab.title;
+					tabbedPane.addTab(title, displayTab.getModelScroller());
+					tabCount++;
+				}
+			}
+		}
+		// display appropriate tabs
+		if (!isBuilder) {
+			if (url != null || hasModel) {
+				if ((tabbedPane.getTabCount() == 1) && tabbedPane.getTitleAt(0).equals(noTitle)) {
+					splitPane.setRightComponent(tabbedPane.getComponentAt(0));
+				} else if (tabbedPane.getTabCount() > 0) {
+					splitPane.setRightComponent(tabbedPane);
+					if (tabbedPane.getTabCount() > tabNumber) {
+						tabbedPane.setSelectedIndex(tabNumber);
+					}
+				}
+			} else {
+				JScrollPane launchPane = node.getLaunchModelScroller();
+				if (launchPane != null) {
+					splitPane.setRightComponent(launchPane);
+				} else {
+					descriptionPane.setText(node.description);
+					splitPane.setRightComponent(descriptionScroller);
+				}
+			}
+		}
+		rebuildingTabs = false;
+		launcher.refreshGUI();
 	}
 
 	protected void launchHtml(HTMLPane html, URL theURL, boolean nodeEnabled) {
@@ -395,22 +387,23 @@ public class LaunchPanel extends JPanel {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				LaunchNode node = getSelectedNode();
-				if ((node != null) && (node == launcher.selectedNode)) {
-					if (rebuildingTabs && node.htmlURL != null)
+				if (node != null && node == launcher.selectedNode) {
+					URL htmlURL = node.getURL();
+					if (rebuildingTabs && htmlURL != null)
 						return;
 					// save prev html properties
 					node.prevTabNumber = node.tabNumber;
-					node.prevURL = node.htmlURL;
+					node.prevURL = htmlURL;
 					// set new html properties
 					int n = Math.max(0, tabbedPane.getSelectedIndex());
 					node.tabNumber = node.tabData.isEmpty() ? -1 : n;
 					if (node.tabNumber > -1) {
 						DisplayTab displayTab = node.getDisplayTab(node.tabNumber);
 						if (displayTab.url != null) {
-							node.htmlURL = displayTab.url;
+							node.setURL(displayTab.url);
 						} else {
 							Launcher.HTMLPane tab = launcher.getHTMLTab(node.tabNumber);
-							node.htmlURL = tab.editorPane.getPage();
+							node.setURL(tab.editorPane.getPage());
 						}
 //            OSPLog.info("set node "+node+" to "+node.htmlURL //$NON-NLS-1$
 //                +"and tabnumber "+node.tabNumber);  //$NON-NLS-1$
@@ -428,7 +421,7 @@ public class LaunchPanel extends JPanel {
 					Integer undoPage = Integer.valueOf(node.prevTabNumber);
 					Integer redoPage = Integer.valueOf(node.tabNumber);
 					Object[] undoData = new Object[] { null, nodePath, undoPage, node.prevURL };
-					Object[] redoData = new Object[] { null, nodePath, redoPage, node.htmlURL };
+					Object[] redoData = new Object[] { null, nodePath, redoPage, node.getURL() };
 					LauncherUndo.NavEdit edit = launcher.undoManager.new NavEdit(undoData, redoData);
 					launcher.undoSupport.postEdit(edit);
 				}
@@ -472,7 +465,7 @@ public class LaunchPanel extends JPanel {
 						if (!node.tabData.isEmpty()) {
 							int page = Math.max(0, node.tabNumber);
 							LaunchNode.DisplayTab htmlData = node.tabData.get(page);
-							node.htmlURL = htmlData.url;
+							node.setURL(htmlData.url);
 							node.tabNumber = page;
 						}
 						LauncherUndo.NavEdit edit = launcher.undoManager.new NavEdit(prevNode, node);

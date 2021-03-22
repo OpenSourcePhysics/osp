@@ -167,12 +167,12 @@ public class LauncherUndo extends UndoManager {
 		public NavEdit(LaunchNode prev, LaunchNode node) {
 			if (prev != null) {
 				undoNode = prev.getPathString();
-				undoURL = prev.htmlURL;
+				undoURL = prev.getURL();
 				undoPage = Integer.valueOf(prev.tabNumber);
 			}
 			if (node != null) {
 				redoNode = node.getPathString();
-				redoURL = node.htmlURL;
+				redoURL = node.getURL();
 				redoPage = Integer.valueOf(node.tabNumber);
 			}
 		}
