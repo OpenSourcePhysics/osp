@@ -1583,10 +1583,10 @@ public class Launcher {
 				refreshSelectedTab();
 				if ((previousNode != null) && (selectedNode != null)) {
 					// set html properties of newly selected node
-					if ((selectedNode.htmlURL == null) && !selectedNode.tabData.isEmpty()) {
+					if ((selectedNode.getURL() == null) && !selectedNode.tabData.isEmpty()) {
 						int page = Math.max(0, selectedNode.tabNumber);
 						LaunchNode.DisplayTab htmlData = selectedNode.tabData.get(page);
-						selectedNode.htmlURL = htmlData.url;
+						selectedNode.setURL(htmlData.url);
 						selectedNode.tabNumber = page;
 //            OSPLog.info("set selected node "+selectedNode+" to "+selectedNode.htmlURL //$NON-NLS-1$
 //                +"and tabnumber "+selectedNode.tabNumber);  //$NON-NLS-1$
@@ -2361,77 +2361,7 @@ public class Launcher {
 						}
 						event = e;
 						URL url = e.getURL();
-						String path = url.toString();
-						// browse web-hosted links and extracted files externally
-						boolean extracted = false;
-						for (String ext : extractExtensions) {
-							extracted = extracted || path.endsWith(ext);
-						}
-						boolean browseExternally = !url.getHost().equals("") || extracted; //$NON-NLS-1$
-						if (browseExternally) {
-							if (extracted && (path.indexOf("jar!") > -1)) { //$NON-NLS-1$
-								// look to see if file already exists outside jar
-								int j = path.indexOf("jar!/"); //$NON-NLS-1$
-								String fileName = path.substring(j + 5);
-								File target = new File(fileName);
-								if (target.exists()) {
-									path = target.toURI().toString();
-								} else {
-									// get resource to extract file from jar
-									Resource res = ResourceLoader.getResource(path);
-									if (res != null) {
-										path = res.getURL().toString();
-										// add shutdown hook to dispose of extracted file
-										final File tempFile = res.getFile();
-										Thread shutdownHook = new Thread() {
-											@Override
-											public void run() {
-												tempFile.deleteOnExit();
-											}
-
-										};
-										Runtime.getRuntime().addShutdownHook(shutdownHook);
-									}
-								}
-							}
-							// open link in external browser
-							if (!org.opensourcephysics.desktop.OSPDesktop.displayURL(path)) {
-								OSPLog.warning("unable to open in browser: " + path); //$NON-NLS-1$
-							}
-						} else { // browse internally and post undoable edit
-							URL prev = selectedNode.htmlURL;
-							if (prev != url) {
-								String undoPath = selectedNode.getPathString();
-								Integer undoPage = Integer.valueOf(selectedNode.tabNumber);
-								Object[] undoData = new Object[] { null, undoPath, undoPage, prev };
-								Object[] redoData = null;
-								// check to see if link is an anchor in same page
-								if ((prev != null) && prev.getPath().equals(url.getPath())) {
-									redoData = new Object[] { null, undoPath, undoPage, url };
-								} else {
-									Object[] nodeData = getNodeAndPage(url);
-									if (nodeData != null) {
-										redoData = new Object[] { null, nodeData[0], nodeData[1], url };
-									}
-									// no redo node found, so redo = undo node
-									else {
-										redoData = new Object[] { null, undoPath, undoPage, url };
-									}
-								}
-								// post undoable edit
-								if (postEdits) {
-									UndoableEdit edit = undoManager.new NavEdit(undoData, redoData);
-									undoSupport.postEdit(edit);
-								}
-								// select new node
-								// prevent duplicate NavEdit while selecting node
-								postEdits = false;
-								String nodePath = (String) redoData[1];
-								int page = ((Integer) redoData[2]).intValue();
-								setSelectedNode(nodePath, page, url);
-								postEdits = true;
-							}
-						}
+						handleHyperLink(url);
 					}
 				}
 
@@ -2442,6 +2372,87 @@ public class Launcher {
 		} else {
 			textPane.removeHyperlinkListener(linkListener);
 		}
+	}
+
+	protected void handleHyperLink(URL url) {
+		String path = url.toString();
+		// browse web-hosted links and extracted files externally
+		boolean extracted = !isDisplayable(path);
+		boolean browseExternally = !url.getHost().equals("") || extracted; //$NON-NLS-1$
+		if (browseExternally) {
+			if (extracted && (path.indexOf("jar!") > -1)) { //$NON-NLS-1$
+				// look to see if file already exists outside jar
+				int j = path.indexOf("jar!/"); //$NON-NLS-1$
+				String fileName = path.substring(j + 5);
+				File target = new File(fileName);
+				if (target.exists()) {
+					path = target.toURI().toString();
+				} else {
+					// get resource to extract file from jar
+					Resource res = ResourceLoader.getResource(path);
+					if (res != null) {
+						path = res.getURL().toString();
+						// add shutdown hook to dispose of extracted file
+						final File tempFile = res.getFile();
+						Thread shutdownHook = new Thread() {
+							@Override
+							public void run() {
+								tempFile.deleteOnExit();
+							}
+
+						};
+						Runtime.getRuntime().addShutdownHook(shutdownHook);
+					}
+				}
+			}
+			// open link in external browser
+			if (!org.opensourcephysics.desktop.OSPDesktop.displayURL(path)) {
+				OSPLog.warning("unable to open in browser: " + path); //$NON-NLS-1$
+			}
+		} else { // browse internally and post undoable edit
+			URL prev = selectedNode.getURL();
+			if (prev != url) {
+				String undoPath = selectedNode.getPathString();
+				Integer undoPage = Integer.valueOf(selectedNode.tabNumber);
+				Object[] undoData = new Object[] { null, undoPath, undoPage, prev };
+				Object[] redoData = null;
+				// check to see if link is an anchor in same page
+				if ((prev != null) && prev.getPath().equals(url.getPath())) {
+					redoData = new Object[] { null, undoPath, undoPage, url };
+				} else {
+					Object[] nodeData = getNodeAndPage(url);
+					if (nodeData != null) {
+						redoData = new Object[] { null, nodeData[0], nodeData[1], url };
+					}
+					// no redo node found, so redo = undo node
+					else {
+						redoData = new Object[] { null, undoPath, undoPage, url };
+					}
+				}
+				// post undoable edit
+				if (postEdits) {
+					UndoableEdit edit = undoManager.new NavEdit(undoData, redoData);
+					undoSupport.postEdit(edit);
+				}
+				// select new node
+				// prevent duplicate NavEdit while selecting node
+				postEdits = false;
+				String nodePath = (String) redoData[1];
+				int page = ((Integer) redoData[2]).intValue();
+				setSelectedNode(nodePath, page, url);
+				postEdits = true;
+			}
+		}
+	}
+
+	public static boolean isDisplayable(String path) {
+		if (path.indexOf("#") < 0) {
+			for (String ext : extractExtensions) {
+				if (path.endsWith(ext))
+					return false;
+			}
+		}
+		return true;
 	}
 
 	/**
