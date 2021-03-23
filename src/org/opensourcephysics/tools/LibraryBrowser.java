@@ -526,13 +526,8 @@ public class LibraryBrowser extends JPanel {
 		if (c != null) {
 			c.setVisible(vis);
 			if (vis) {
-				SwingUtilities.invokeLater(new Runnable() {
-
-					@Override
-					public void run() {
-						c.toFront();
-					}
-
+				SwingUtilities.invokeLater(() -> {
+					c.toFront();
 				});
 			}
 		}

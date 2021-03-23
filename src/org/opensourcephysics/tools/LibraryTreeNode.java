@@ -839,23 +839,17 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 		}
 
 		protected void doneAsync(File thumbFile) {
-			SwingUtilities.invokeLater(new Runnable() {
+			SwingUtilities.invokeLater(() -> {
+				try {
+					// File thumbFile = get();
+					record.setThumbnail(thumbFile == null || !thumbFile.exists() ? null : thumbFile.getAbsolutePath());
 
-				@Override
-				public void run() {
-					try {
-						// File thumbFile = get();
-						record.setThumbnail(
-								thumbFile == null || !thumbFile.exists() ? null : thumbFile.getAbsolutePath());
-
-						if (record.getThumbnail() != null) {
-							LibraryTreePanel.htmlPanesByNode.remove(LibraryTreeNode.this);
-							treePanel.showInfo(treePanel.getSelectedNode(), "LibraryTreeNode.ThumbnailDone");
-						}
-					} catch (Exception ignore) {
+					if (record.getThumbnail() != null) {
+						LibraryTreePanel.htmlPanesByNode.remove(LibraryTreeNode.this);
+						treePanel.showInfo(treePanel.getSelectedNode(), "LibraryTreeNode.ThumbnailDone");
 					}
+				} catch (Exception ignore) {
 				}
-
 			});
 		}
 

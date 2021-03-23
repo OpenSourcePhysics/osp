@@ -2301,26 +2301,21 @@ public class LibraryTreePanel extends JPanel {
 		}
 
 		protected void doneAsync() {
-			SwingUtilities.invokeLater(new Runnable() {
-
-				@Override
-				public void run() {
-					LibraryTreePanel.htmlPanesByNode.remove(node);
-					LibraryTreePanel.htmlPanesByURL.remove(node.getHTMLURL());
-					if (hasNewChildren) {
-						node.createChildNodes();
-						treeModel.nodeStructureChanged(node);
-					} else {
-						treeModel.nodeChanged(node);
-					}
-					if (node == getSelectedNode()) {
-						showInfo(node, "LibraryTreePanel.NodeLoader.run");
-					}
-					if (node == rootNode) {
-						browser.refreshTabTitle(pathToRoot, rootResource);
-					}
+			SwingUtilities.invokeLater(() -> {
+				LibraryTreePanel.htmlPanesByNode.remove(node);
+				LibraryTreePanel.htmlPanesByURL.remove(node.getHTMLURL());
+				if (hasNewChildren) {
+					node.createChildNodes();
+					treeModel.nodeStructureChanged(node);
+				} else {
+					treeModel.nodeChanged(node);
 				}
-
+				if (node == getSelectedNode()) {
+					showInfo(node, "LibraryTreePanel.NodeLoader.run");
+				}
+				if (node == rootNode) {
+					browser.refreshTabTitle(pathToRoot, rootResource);
+				}
 			});
 		}
 
@@ -2478,20 +2473,15 @@ public class LibraryTreePanel extends JPanel {
 		 * @param htmlPane
 		 */
 		protected void whenDone(HTMLPane htmlPane) {
-			SwingUtilities.invokeLater(new Runnable() {
-
-				@Override
-				public void run() {
-					if (htmlPane != null && node == getSelectedNode()) {
-						htmlScroller.setViewportView(htmlPane);
-						browser.setMessage(node.getToolTip(), null);
-						if (node == rootNode) {
-							browser.refreshButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Tooltip.Reload")); //$NON-NLS-1$
-						} else
-							browser.refreshButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Tooltip.Refresh")); //$NON-NLS-1$
-					}
+			SwingUtilities.invokeLater(() -> {
+				if (htmlPane != null && node == getSelectedNode()) {
+					htmlScroller.setViewportView(htmlPane);
+					browser.setMessage(node.getToolTip(), null);
+					if (node == rootNode) {
+						browser.refreshButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Tooltip.Reload")); //$NON-NLS-1$
+					} else
+						browser.refreshButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Tooltip.Refresh")); //$NON-NLS-1$
 				}
-
 			});
 
 		}
