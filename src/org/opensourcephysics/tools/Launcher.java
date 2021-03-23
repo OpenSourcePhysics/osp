@@ -2376,7 +2376,7 @@ public class Launcher {
 	protected void handleHyperLink(URL url) {
 		String path = url.toString();
 		// browse web-hosted links and extracted files externally
-		boolean extracted = !isDisplayable(path); // was pdf, doc, txt
+		boolean extracted = !isDisplayable(path); // unchanged - was pdf, doc, txt
 		boolean browseExternally = !url.getHost().equals("") || extracted; //$NON-NLS-1$
 		if (browseExternally) {
 			if (extracted && path.indexOf("jar!") >= 0) { //$NON-NLS-1$
@@ -2440,6 +2440,14 @@ public class Launcher {
 		}
 	}
 
+	/**
+	 * Check to see if a path is displayable using HTMLEditorKit. 
+	 * This will be the case if the path has a hash-tag reference or
+	 * does not end in ".pdf", ".doc", or ".txt".
+	 * 
+	 * @param path
+	 * @return true if displayable using HTMLEditorKit
+	 */
 	public static boolean isDisplayable(String path) {
 		if (path.indexOf("#") < 0) {
 			for (String ext : extractExtensions) {

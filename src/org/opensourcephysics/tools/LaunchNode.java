@@ -102,11 +102,14 @@ public class LaunchNode extends DefaultMutableTreeNode {
 	private URL htmlURL; // current URL--may be null
 	URL prevURL; // previous URL
 	JScrollPane launchModelScroller;
+	/**
+	 * not .pdf, .doc, or .txt
+	 */
 	boolean isDisplayable;
 
 	public void setURL(URL url) {
 		htmlURL = url;
-		isDisplayable = (url != null && Launcher.isDisplayable(url.toString())); // pdf, doc, txt
+		isDisplayable = (url != null && Launcher.isDisplayable(url.toString()));
 	}
 	
 	public URL getURL() {
@@ -1722,7 +1725,11 @@ public class LaunchNode extends DefaultMutableTreeNode {
 		JComponent modelPane;
 		JScrollPane modelScroller;
 		String[] modelArgs = new String[0];
-		public boolean isDisplayable;
+		
+		/**
+		 * not .pdf, .doc, or .txt 
+		 */
+		boolean isDisplayable;
 
 		/**
 		 * Constructor.
