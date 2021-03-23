@@ -1101,13 +1101,13 @@ public class LaunchBuilder extends Launcher {
 			pathField.setBackground(badURL ? RED : Color.white);
 			displaySpinnerModel.setMaximum(Integer.valueOf(node.getDisplayTabCount()));
 			displaySpinner.setVisible(node.getDisplayTab(0) != null);
-			boolean hasHTML = (displayTab != null && isDisplayable(displayTab.path));
+			boolean hasHTML = (displayTab != null && isDisplayable(displayTab.path)); // was just PDF
 			tabTitleLabel.setVisible(hasHTML);
 			tabTitleField.setVisible(hasHTML);
 			tabTitleField.setText((displayTab != null) ? displayTab.title : null);
 			tabTitleField.setBackground(Color.white);
 			displayBar.remove(showModelArgsButton);
-			if (displayTab != null && (displayTab.url != null && isDisplayable(displayTab.url.getPath())
+			if (displayTab != null && (displayTab.url != null && isDisplayable(displayTab.url.getPath()) // was just PDF
 					|| displayTab.getModelScroller() != null)) {
 				if (displayTab.url != null) {
 					displaySplitPane.setTopComponent(htmlScroller);

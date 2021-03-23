@@ -106,7 +106,7 @@ public class LaunchNode extends DefaultMutableTreeNode {
 
 	public void setURL(URL url) {
 		htmlURL = url;
-		isDisplayable = (url != null && Launcher.isDisplayable(url.toString()));
+		isDisplayable = (url != null && Launcher.isDisplayable(url.toString())); // pdf, doc, txt
 	}
 	
 	public URL getURL() {
@@ -1915,7 +1915,7 @@ public class LaunchNode extends DefaultMutableTreeNode {
 			}
 			if (url == null)
 				return false;
-			isDisplayable = Launcher.isDisplayable(path);
+			isDisplayable = Launcher.isDisplayable(path); // pdf, doc, or txt
 			return true;
 		}
 

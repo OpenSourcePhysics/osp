@@ -2376,7 +2376,7 @@ public class Launcher {
 	protected void handleHyperLink(URL url) {
 		String path = url.toString();
 		// browse web-hosted links and extracted files externally
-		boolean extracted = !isDisplayable(path);
+		boolean extracted = !isDisplayable(path); // was pdf, doc, txt
 		boolean browseExternally = !url.getHost().equals("") || extracted; //$NON-NLS-1$
 		if (browseExternally) {
 			if (extracted && path.indexOf("jar!") >= 0) { //$NON-NLS-1$
