@@ -33,6 +33,7 @@ import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -1049,27 +1050,25 @@ public class Launcher {
 	 * @param node the node
 	 */
 	protected void showButtonView(final LaunchNode node) {
-		LaunchNode.DisplayTab html = node.getDisplayTab(0);
-		if ((html != null) && (html.url != null)) {
-			setLinksEnabled(textPane, node.enabled && html.hyperlinksEnabled);
-			try {
-				if (html.url.getContent() != null) {
-					final java.net.URL url = html.url;
-					Runnable runner = new Runnable() {
-						@Override
-						public void run() {
-							try {
-								textPane.setPage(url);
-							} catch (IOException ex) {
-								OSPLog.fine(LaunchRes.getString("Log.Message.BadURL") + " " + url); //$NON-NLS-1$//$NON-NLS-2$
-							}
+		LaunchNode.DisplayTab tab = node.getDisplayTab(0);
+		if ((tab != null) && (tab.url != null)) {
+			setLinksEnabled(textPane, node.enabled && tab.hyperlinksEnabled);
+			if (tab.urlExists()) {
+				final URL url = tab.url;
+				Runnable runner = new Runnable() {
+					@Override
+					public void run() {
+						try {
+							textPane.setPage(url);
+						} catch (IOException ex) {
+							OSPLog.fine(LaunchRes.getString("Log.Message.BadURL") + " " + url); //$NON-NLS-1$//$NON-NLS-2$
 						}
+					}
 
-					};
-					SwingUtilities.invokeLater(runner);
-				}
-			} catch (IOException ex) {
-				OSPLog.finest(LaunchRes.getString("Log.Message.BadURL") + " " + html.url); //$NON-NLS-1$//$NON-NLS-2$
+				};
+				SwingUtilities.invokeLater(runner);
+			} else {
+				OSPLog.finest(LaunchRes.getString("Log.Message.BadURL") + " " + tab.url); //$NON-NLS-1$//$NON-NLS-2$
 				if (showText) {
 					textPane.setContentType(LaunchPanel.TEXT_TYPE);
 					textPane.setText(node.description);
@@ -2377,10 +2376,10 @@ public class Launcher {
 	protected void handleHyperLink(URL url) {
 		String path = url.toString();
 		// browse web-hosted links and extracted files externally
-		boolean extracted = !isDisplayable(path);
+		boolean extracted = !isDisplayable(path); // unchanged - was pdf, doc, txt
 		boolean browseExternally = !url.getHost().equals("") || extracted; //$NON-NLS-1$
 		if (browseExternally) {
-			if (extracted && (path.indexOf("jar!") > -1)) { //$NON-NLS-1$
+			if (extracted && path.indexOf("jar!") >= 0) { //$NON-NLS-1$
 				// look to see if file already exists outside jar
 				int j = path.indexOf("jar!/"); //$NON-NLS-1$
 				String fileName = path.substring(j + 5);
@@ -2410,41 +2409,45 @@ public class Launcher {
 				OSPLog.warning("unable to open in browser: " + path); //$NON-NLS-1$
 			}
 		} else { // browse internally and post undoable edit
+			String undoPath = selectedNode.getPathString();
+			Integer undoPage = Integer.valueOf(selectedNode.tabNumber);
 			URL prev = selectedNode.getURL();
-			if (prev != url) {
-				String undoPath = selectedNode.getPathString();
-				Integer undoPage = Integer.valueOf(selectedNode.tabNumber);
-				Object[] undoData = new Object[] { null, undoPath, undoPage, prev };
-				Object[] redoData = null;
-				// check to see if link is an anchor in same page
-				if ((prev != null) && prev.getPath().equals(url.getPath())) {
-					redoData = new Object[] { null, undoPath, undoPage, url };
-				} else {
-					Object[] nodeData = getNodeAndPage(url);
-					if (nodeData != null) {
-						redoData = new Object[] { null, nodeData[0], nodeData[1], url };
-					}
-					// no redo node found, so redo = undo node
-					else {
-						redoData = new Object[] { null, undoPath, undoPage, url };
-					}
+			if (prev.equals(url)) {
+				if (url.getRef() != null) {
+					setSelectedNode(undoPath, undoPage, url);
 				}
-				// post undoable edit
-				if (postEdits) {
-					UndoableEdit edit = undoManager.new NavEdit(undoData, redoData);
-					undoSupport.postEdit(edit);
-				}
-				// select new node
-				// prevent duplicate NavEdit while selecting node
-				postEdits = false;
-				String nodePath = (String) redoData[1];
-				int page = ((Integer) redoData[2]).intValue();
-				setSelectedNode(nodePath, page, url);
-				postEdits = true;
+				return;
 			}
+			Object[] undoData = new Object[] { null, undoPath, undoPage, prev };
+			Object[] redoData = null;
+			// check to see if link is an anchor in same page
+			Object[] nodeData = (prev != null && prev.getPath().equals(url.getPath()) ? null : getNodeAndPage(url));
+			if (nodeData != null) {
+				undoPath = (String) nodeData[0];
+				undoPage = ((Integer) nodeData[1]).intValue();
+			}
+			redoData = new Object[] { null, undoPath, undoPage, url };
+			// post undoable edit
+			if (postEdits) {
+				UndoableEdit edit = undoManager.new NavEdit(undoData, redoData);
+				undoSupport.postEdit(edit);
+			}
+			// select new node
+			// prevent duplicate NavEdit while selecting node
+			postEdits = false;
+			setSelectedNode(undoPath, undoPage, url);
+			postEdits = true;
 		}
 	}
 
+	/**
+	 * Check to see if a path is displayable using HTMLEditorKit. 
+	 * This will be the case if the path has a hash-tag reference or
+	 * does not end in ".pdf", ".doc", or ".txt".
+	 * 
+	 * @param path
+	 * @return true if displayable using HTMLEditorKit
+	 */
 	public static boolean isDisplayable(String path) {
 		if (path.indexOf("#") < 0) {
 			for (String ext : extractExtensions) {
@@ -4054,6 +4057,24 @@ public class Launcher {
 
 	protected static void log(String key) {
 		OSPLog.finest(LaunchRes.getString(key));
+	}
+
+	/**
+	 * Check URL for content, being sure to close the stream
+	 * @param url
+	 * @return true if content is readable
+	 */
+	public static boolean urlExists(URL url) {		
+		try {
+			InputStream stream;
+			stream = (InputStream) url.getContent();
+			if (stream != null) {
+				stream.close();
+				return true;
+			}
+		} catch (IOException e) {
+		}
+		return false;
 	}
 
 
