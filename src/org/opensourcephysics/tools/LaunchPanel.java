@@ -106,17 +106,19 @@ public class LaunchPanel extends JPanel {
 	}
 
 	/**
-	 * Sets the selected node and displays a URL.
+	 * Sets the selected node and displays a URL. Detects if the url is a reference
+	 * change only, as from a hyperlink on a page and, if so, just scrolls to that
+	 * position on the page. Otherwise rebuilds the full tab system.
 	 *
 	 * @param node      the node to select
 	 * @param tabNumber the tab to display
 	 * @param url       the URL to display in the tab
 	 */
 	public void setSelectedNode(LaunchNode node, int tabNumber, java.net.URL url) {
-		node.tabNumber = ((url == null) && (node.getDisplayTabCount() == 0)) ? -1 : tabNumber;
+		node.tabNumber = (url == null && node.getDisplayTabCount() == 0 ? -1 : tabNumber);
 		LaunchNode.DisplayTab htmlData = null;
 		URL prevURL = null;
-		if (node.tabNumber > -1) {
+		if (node.tabNumber >= 0) {
 			htmlData = node.tabData.get(node.tabNumber);
 		}
 		if (htmlData != null) {
@@ -129,7 +131,13 @@ public class LaunchPanel extends JPanel {
 				htmlData.url = url;
 			}
 		}
-		setSelectedNode(node);
+		String scrollRef = (url != null && prevURL != null && url.getPath().equals(prevURL.getPath()) ? url.getRef() : null);
+		if (scrollRef == null) {
+			setSelectedNode(node);
+		} else {
+			Launcher.HTMLPane html = launcher.getHTMLTab(node.tabNumber);
+			html.editorPane.scrollToReference(scrollRef);
+		}
 		// restore previous URL
 		if (htmlData != null) {
 			htmlData.url = prevURL;
@@ -228,7 +236,8 @@ public class LaunchPanel extends JPanel {
 	}
 
 	/**
-	 * Displays all tabs for the specified node.
+	 * Rebuilds the tabs from scratch in order to displays all tabs for the
+	 * specified node.
 	 *
 	 * @param node the LaunchNode
 	 */
@@ -243,13 +252,14 @@ public class LaunchPanel extends JPanel {
 		// don't display PDF files in Launcher
 		int tabNumber = node.tabNumber; // which tab to display it in
 		boolean hasModel = false;
+		// find the first displayable tab if the url is null
 		if (url == null && node.getDisplayTabCount() > 0) {
-			// skip display tabs with PDFs
 			int k = 0;
 			for (int i = tabNumber; i < node.getDisplayTabCount(); i++, k++) {
-				DisplayTab next = node.getDisplayTab(i);
-				// next!=null condiiton added by W. Christian
-				if (next == null || next.isDisplayable)
+				DisplayTab tab = node.getDisplayTab(i);
+				// next!=null condition added by W. Christian
+				// skip display tabs with PDFs
+				if (tab == null || tab.isDisplayable)
 					break;
 			}
 			// node has multiple URLs so pick the tab-associated one
@@ -274,21 +284,19 @@ public class LaunchPanel extends JPanel {
 		while (it.hasNext()) {
 			LaunchNode.DisplayTab displayTab = (LaunchNode.DisplayTab) it.next();
 			if (displayTab.isDisplayable) {
-				try {
-					if (displayTab.url.getContent() != null) {
-						Launcher.HTMLPane html = launcher.getHTMLTab(tabCount);
-						java.net.URL theURL = ((tabNumber == tabCount) && (url != null)) ? url : displayTab.url;
-						SwingUtilities.invokeLater(() -> {
-							launchHtml(html, theURL, displayTab.hyperlinksEnabled && node.enabled);
-						});
-						if (!isBuilder) {
-							String title = (displayTab.title == null) ? noTitle : displayTab.title;
+				if (displayTab.urlExists()) {
+					Launcher.HTMLPane html = launcher.getHTMLTab(tabCount);
+					URL theURL = (tabNumber == tabCount && url != null ? url : displayTab.url);
+					SwingUtilities.invokeLater(() -> {
+						launchHtml(html, theURL, displayTab.hyperlinksEnabled && node.enabled);
+					});
+					if (!isBuilder) {
+						String title = (displayTab.title == null) ? noTitle : displayTab.title;
 
-							tabbedPane.addTab(title, html.scroller);
-							tabCount++;
-						}
+						tabbedPane.addTab(title, html.scroller);
+						tabCount++;
 					}
-				} catch (IOException ex) {
+				} else {
 					OSPLog.fine(LaunchRes.getString("Log.Message.BadURL") //$NON-NLS-1$
 							+ " " + displayTab.url); //$NON-NLS-1$
 				}

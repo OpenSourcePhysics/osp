@@ -14,6 +14,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowListener;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
@@ -1900,6 +1901,7 @@ public class LaunchNode extends DefaultMutableTreeNode {
 		private boolean setURL(String path) {
 			url = null;
 			isDisplayable = false;
+			urlExists = null;
 			Resource res = ResourceLoader.getResource(path);
 			if ((res != null) && (res.getURL() != null)) {
 				url = res.getURL();
@@ -1916,6 +1918,18 @@ public class LaunchNode extends DefaultMutableTreeNode {
 			isDisplayable = Launcher.isDisplayable(path);
 			return true;
 		}
+
+		private Boolean urlExists;
+		
+		/**
+		 * A single check for existence.
+		 * 
+		 * @return true if url exists
+		 */
+		public boolean urlExists() {
+			return (urlExists == null ? (urlExists = Launcher.urlExists(url)) : urlExists);
+		}
+
 
 		/**
 		 * Sets the model class. The model class must either descend from JPanel or
@@ -1937,6 +1951,7 @@ public class LaunchNode extends DefaultMutableTreeNode {
 			modelClass = LaunchClassChooser.getModelClass(getClassPath(), className);
 			return modelClass != null;
 		}
+
 
 	}
 
@@ -2006,6 +2021,12 @@ public class LaunchNode extends DefaultMutableTreeNode {
 	@SuppressWarnings("javadoc")
 	public DisplayTab setHTML(int n, String title, String path) {
 		return setDisplayTab(n, title, path, null);
+	}
+
+	public void scrollToRef(String scrollRef) {
+		
+		// TODO Auto-generated method stub
+		
 	}
 
 }

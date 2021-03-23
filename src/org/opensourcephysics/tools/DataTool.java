@@ -360,37 +360,37 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * 
 	 * @param path
 	 */
-public void loadDatasetURI(String relpath) {
-	if (getTabCount() > 0)
-		removeAllTabs();
+	public void loadDatasetURI(String relpath) {
+		if (getTabCount() > 0)
+			removeAllTabs();
 
-	String baseURI = (/** @j2sNative document.body.baseURI || */ null); // html page that has script
-	String rootpath = (baseURI == null)? "":
-			baseURI.substring(0, baseURI.lastIndexOf('/') + 1);
-	String path = rootpath + relpath;
+		String baseURI = (/** @j2sNative document.body.baseURI || */
+		null); // html page that has script
+		String rootpath = (baseURI == null) ? "" : baseURI.substring(0, baseURI.lastIndexOf('/') + 1);
+		String path = rootpath + relpath;
 
-	try {
-		System.err.println("Debugging: reading path=" + path);
-		URL url=new URL(path);
-    Object content = url.getContent();
-    if(content instanceof InputStream) {
-    	InputStream is = (InputStream) content;;
-      BufferedReader reader = new BufferedReader(new InputStreamReader((InputStream) content));
-      StringBuffer buffer = new StringBuffer(0);
-      String line;
-      while((line = reader.readLine())!=null) {
-        buffer.append(line+NEW_LINE);
-      }
-      String dataset = buffer.toString();
- 		  System.out.print(dataset);  // for testing to see what was read
- 		  System.err.println("Debugging: Close stream \n");
- 		  loadDataset(dataset, path);
- 		  is.close();
-    }			
-	} catch ( IOException e) {
-		  e.printStackTrace();
+		try {
+			System.err.println("Debugging: reading path=" + path);
+			URL url = new URL(path);
+			Object content = url.getContent();
+			if (content instanceof InputStream) {
+				InputStream is = (InputStream) content;
+				BufferedReader reader = new BufferedReader(new InputStreamReader((InputStream) content));
+				StringBuffer buffer = new StringBuffer(0);
+				String line;
+				while ((line = reader.readLine()) != null) {
+					buffer.append(line + NEW_LINE);
+				}
+				String dataset = buffer.toString();
+				System.out.print(dataset); // for testing to see what was read
+				System.err.println("Debugging: Close stream \n");
+				loadDataset(dataset, path);
+				is.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
-}
 
 
 	/**

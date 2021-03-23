@@ -23,6 +23,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
 
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
@@ -533,26 +534,53 @@ public class GUIUtils {
 		return (OSPRuntime.antiAliasText ? new JTextPane() {
 			@Override
 			public void paintComponent(Graphics g) {
-				{
-					Graphics2D g2 = (Graphics2D) g;
-					RenderingHints rh = g2.getRenderingHints();
-					rh.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-					rh.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-				}
+				Graphics2D g2 = (Graphics2D) g;
+				RenderingHints rh = g2.getRenderingHints();
+				rh.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+				rh.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 				super.paintComponent(g);
 			}
+			
+			@Override
+			public void setPage(URL url) throws IOException {
+				if (!checkScrollPage(this, url))
+					super.setPage(url);
+			}
+		} : new JTextPane() {
+			// BH 2020.04.04 only problem here is that with the override, we get the wrong
+			// background color. SwingJS detects that the
+			// JTextPane has overridden paintComponent, which is not generally a problem,
+			// but
+			// in this case it is, because we can't paint the background via the graphics,
+			// or so it seeems. Anyway, the solution is to move the check for antialiasing
+			// text
+			// outside the override.
 
-		} : new JTextPane()
+			@Override
+			public void setPage(URL url) throws IOException {
+				if (!checkScrollPage(this, url))
+					super.setPage(url);
+			}
+		});
+	}
 
-		// BH 2020.04.04 only problem here is that with the override, we get the wrong
-		// background color. SwingJS detects that the
-		// JTextPane has overridden paintComponent, which is not generally a problem,
-		// but
-		// in this case it is, because we can't paint the background via the graphics,
-		// or so it seeems. Anyway, the solution is to move the check for antialiasing
-		// text
-		// outside the override.
-		);
+	/**
+	 * Don't reload the page if local and we are just scrolling
+	 * @param pane
+	 * @param url
+	 * @return
+	 */
+	protected static boolean checkScrollPage(JTextPane pane, URL url) {
+		URL stream = (URL) pane.getDocument().getProperty("stream");
+		if (stream == null || url == null || !stream.getPath().equals(url.getPath())
+				|| !"file".equals(stream.getProtocol())) {
+			return false;
+		}
+		String reference = url.getRef();
+		if (reference != null) {
+			pane.scrollToReference(reference);
+		}
+		return true;
 	}
 
 	public static JTextArea newJTextArea() {

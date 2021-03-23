@@ -33,6 +33,7 @@ import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -1100,36 +1101,27 @@ public class LaunchBuilder extends Launcher {
 			pathField.setBackground(badURL ? RED : Color.white);
 			displaySpinnerModel.setMaximum(Integer.valueOf(node.getDisplayTabCount()));
 			displaySpinner.setVisible(node.getDisplayTab(0) != null);
-			boolean hasHTML = displayTab != null && displayTab.path != null
-					&& !displayTab.path.toLowerCase().endsWith("pdf"); //$NON-NLS-1$
+			boolean hasHTML = (displayTab != null && isDisplayable(displayTab.path));
 			tabTitleLabel.setVisible(hasHTML);
 			tabTitleField.setVisible(hasHTML);
 			tabTitleField.setText((displayTab != null) ? displayTab.title : null);
 			tabTitleField.setBackground(Color.white);
 			displayBar.remove(showModelArgsButton);
-			if (displayTab != null
-					&& ((displayTab.url != null && !displayTab.url.getPath().toLowerCase().endsWith("pdf")) //$NON-NLS-1$
-							|| displayTab.getModelScroller() != null)) {
+			if (displayTab != null && (displayTab.url != null && isDisplayable(displayTab.url.getPath())
+					|| displayTab.getModelScroller() != null)) {
 				if (displayTab.url != null) {
 					displaySplitPane.setTopComponent(htmlScroller);
-					if (htmlPane.getPage() != displayTab.url) {
-						try {
-							if (displayTab.url.getContent() != null) {
-								final java.net.URL url = displayTab.url;
-								Runnable runner = new Runnable() {
-									@Override
-									public void run() {
-										try {
-											htmlPane.setPage(url);
-										} catch (IOException ex) {
-											OSPLog.fine(LaunchRes.getString("Log.Message.BadURL") + " " + url); //$NON-NLS-1$//$NON-NLS-2$
-										}
-									}
-
-								};
-								SwingUtilities.invokeLater(runner);
-							}
-						} catch (IOException ex) {
+					if (!displayTab.url.equals(htmlPane.getPage())) {
+						if (displayTab.urlExists()) {
+							URL url = displayTab.url;
+							SwingUtilities.invokeLater(() -> {
+								try {
+									htmlPane.setPage(url);
+								} catch (IOException ex) {
+									OSPLog.fine(LaunchRes.getString("Log.Message.BadURL") + " " + url); //$NON-NLS-1$//$NON-NLS-2$
+								}
+							});
+						} else {
 							htmlPane.setText(null);
 						}
 					}
@@ -1140,30 +1132,18 @@ public class LaunchBuilder extends Launcher {
 					// add modelArgsButton at end
 					displayBar.add(showModelArgsButton);
 					n = ((Integer) modelArgSpinner.getValue()).intValue();
-					if (displayTab.modelArgs.length > n) {
-						modelArgField.setText(displayTab.modelArgs[n]);
-					} else {
-						modelArgField.setText(""); //$NON-NLS-1$
-					}
-					boolean xmlArg = modelArgField.getText().endsWith(".xml"); //$NON-NLS-1$
-					Resource res = null;
-					if (xmlArg) {
-						res = ResourceLoader.getResource(modelArgField.getText());
-						modelArgField.setBackground((res == null) ? RED : Color.white);
-					} else {
-						modelArgField.setBackground(Color.white);
-					}
+					modelArgField.setText(displayTab.modelArgs.length > n ? displayTab.modelArgs[n] : ""); //$NON-NLS-1$
+					modelArgField.setBackground(modelArgField.getText().endsWith(".xml")
+							&& ResourceLoader.getResource(modelArgField.getText()) == null ? RED : Color.WHITE);
 				}
+			} else if (n == 0 && node.getLaunchModelScroller() != null) {
+				JScrollPane scroller = node.getLaunchModelScroller();
+				scroller.setBorder(displayTitle);
+				displaySplitPane.setTopComponent(scroller);
 			} else {
-				if (n == 0 && node.getLaunchModelScroller() != null) {
-					JScrollPane scroller = node.getLaunchModelScroller();
-					scroller.setBorder(displayTitle);
-					displaySplitPane.setTopComponent(scroller);
-				} else {
-					displaySplitPane.setTopComponent(htmlScroller);
-					htmlPane.setContentType(LaunchPanel.TEXT_TYPE);
-					htmlPane.setText(null);
-				}
+				displaySplitPane.setTopComponent(htmlScroller);
+				htmlPane.setContentType(LaunchPanel.TEXT_TYPE);
+				htmlPane.setText(null);
 			}
 			displayBar.validate();
 			// refresh launch node
@@ -2911,9 +2891,7 @@ public class LaunchBuilder extends Launcher {
 					if (f.isDirectory())
 						return true;
 					String extension = XML.getExtension(f.getName());
-					if (extension != null && extension.equals("pdf")) //$NON-NLS-1$
-						return true;
-					return false;
+					return (extension != null && extension.equals("pdf")); //$NON-NLS-1$
 				}
 
 				// the description of this filter
