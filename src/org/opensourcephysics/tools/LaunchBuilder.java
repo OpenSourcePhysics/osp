@@ -1572,14 +1572,10 @@ public class LaunchBuilder extends Launcher {
 					loc = Math.min(1.0, loc);
 					setDividerLocation(loc);
 					setLastDividerLocation(prev);
-					Runnable runner = new Runnable() {
-						@Override
-						public void run() {
-							JViewport view = descriptionScroller.getViewport();
-							view.setViewPosition(new Point(0, 0));
-						}
-					};
-					SwingUtilities.invokeLater(runner);
+					SwingUtilities.invokeLater(() -> {
+						JViewport view = descriptionScroller.getViewport();
+						view.setViewPosition(new Point(0, 0));
+					});
 				}
 			}
 
@@ -2169,18 +2165,13 @@ public class LaunchBuilder extends Launcher {
 		FontSizer.setFonts(securityTitle, level);
 		super.setFontLevel(level);
 		if (divider != null) {
-			Runnable runner = new Runnable() {
-				@Override
-				public void run() {
-					double loc = Double.parseDouble(divider);
-					loc = Math.max(0.0, loc);
-					loc = Math.min(1.0, loc);
-					displaySplitPane.setDividerLocation(loc);
-					displaySplitPane.setLastDividerLocation(prev);
-				}
-
-			};
-			SwingUtilities.invokeLater(runner);
+			SwingUtilities.invokeLater(() -> {
+				double loc = Double.parseDouble(divider);
+				loc = Math.max(0.0, loc);
+				loc = Math.min(1.0, loc);
+				displaySplitPane.setDividerLocation(loc);
+				displaySplitPane.setLastDividerLocation(prev);
+			});
 		}
 	}
 
@@ -2986,14 +2977,9 @@ public class LaunchBuilder extends Launcher {
 			final int op = frame.getDefaultCloseOperation();
 			frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 			// restore default close operation
-			Runnable runner = new Runnable() {
-				@Override
-				public void run() {
+			SwingUtilities.invokeLater(() -> {
 					frame.setDefaultCloseOperation(op);
-				}
-
-			};
-			SwingUtilities.invokeLater(runner);
+			});
 			return;
 		}
 		super.exit();

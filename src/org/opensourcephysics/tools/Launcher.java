@@ -1055,18 +1055,13 @@ public class Launcher {
 			setLinksEnabled(textPane, node.enabled && tab.hyperlinksEnabled);
 			if (tab.urlExists()) {
 				final URL url = tab.url;
-				Runnable runner = new Runnable() {
-					@Override
-					public void run() {
-						try {
-							textPane.setPage(url);
-						} catch (IOException ex) {
-							OSPLog.fine(LaunchRes.getString("Log.Message.BadURL") + " " + url); //$NON-NLS-1$//$NON-NLS-2$
-						}
+				SwingUtilities.invokeLater(() -> {
+					try {
+						textPane.setPage(url);
+					} catch (IOException ex) {
+						OSPLog.fine(LaunchRes.getString("Log.Message.BadURL") + " " + url); //$NON-NLS-1$//$NON-NLS-2$
 					}
-
-				};
-				SwingUtilities.invokeLater(runner);
+				});
 			} else {
 				OSPLog.finest(LaunchRes.getString("Log.Message.BadURL") + " " + tab.url); //$NON-NLS-1$//$NON-NLS-2$
 				if (showText) {
@@ -2823,14 +2818,9 @@ public class Launcher {
 			final int op = frame.getDefaultCloseOperation();
 			frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 			// restore default close operation later
-			Runnable runner = new Runnable() {
-				@Override
-				public void run() {
-					frame.setDefaultCloseOperation(op);
-				}
-
-			};
-			SwingUtilities.invokeLater(runner);
+			SwingUtilities.invokeLater(() -> {
+				frame.setDefaultCloseOperation(op);
+			});
 			return;
 		}
 		// HIDE_ON_CLOSE apps should exit
@@ -3131,14 +3121,9 @@ public class Launcher {
 			}
 			final String lookAndFeel = control.getString("look_and_feel"); //$NON-NLS-1$
 			if (lookAndFeel != null) {
-				Runnable runner = new Runnable() {
-					@Override
-					public void run() {
-						launcher.setLookAndFeel(lookAndFeel, false);
-					}
-
-				};
-				SwingUtilities.invokeLater(runner);
+				SwingUtilities.invokeLater(() -> {
+					launcher.setLookAndFeel(lookAndFeel, false);
+				});
 			}
 			// read memory size
 			if (control.getPropertyNamesRaw().contains("memory_size")) //$NON-NLS-1$
@@ -3244,14 +3229,9 @@ public class Launcher {
 			}
 			if (launcher.getRootNode() != null && !launcher.getRootNode().enabled) {
 				final Launcher launchr = launcher;
-				Runnable runner = new Runnable() {
-
-					@Override
-					public void run() {
-						launchr.passwordItem.doClick(0);
-					}
-				};
-				SwingUtilities.invokeLater(runner);
+				SwingUtilities.invokeLater(() -> {
+					launchr.passwordItem.doClick(0);
+				});
 
 			}
 			return obj;
