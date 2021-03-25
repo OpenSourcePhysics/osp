@@ -26,10 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -37,23 +34,17 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.ListCellRenderer;
-import javax.swing.MenuElement;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.DataTable;
-import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.display.TextFrame;
 import org.opensourcephysics.media.core.Trackable;
 import org.opensourcephysics.numerics.SuryonoParser;
@@ -147,7 +138,8 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	private JComboBox<FTObject> dropdown;
 	
 	private JPanel buttonbar = new JPanel(new FlowLayout());
-	private JButton helpButton, closeButton, fontButton, undoButton, redoButton;
+//	private JButton helpButton, closeButton, fontButton, undoButton, redoButton;
+	private JButton helpButton, closeButton, undoButton, redoButton;
 
 	private JPanel north = new JPanel(new BorderLayout());
 	private JScrollPane selectedPanelScroller;
@@ -164,11 +156,11 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 
 	// popup
 
-	private JPopupMenu popup;
-	private JPopupMenu getPopup() {
-		return (popup == null ? (popup = createPopup()) : popup);
-	}
-	private JMenuItem defaultFontSizeItem;
+//	private JPopupMenu popup;
+//	private JPopupMenu getPopup() {
+//		return (popup == null ? (popup = createPopup()) : popup);
+//	}
+//	private JMenuItem defaultFontSizeItem;
 
 	
 	/**
@@ -363,22 +355,22 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		helpButton.addActionListener(helpAction);
 		undoButton = new JButton(ToolsRes.getString("DataFunctionPanel.Button.Undo")); //$NON-NLS-1$
 		redoButton = new JButton(ToolsRes.getString("DataFunctionPanel.Button.Redo")); //$NON-NLS-1$
-		// create font sizer button and popup
-		fontButton = new JButton(ToolsRes.getString("Tool.Menu.FontSize")); //$NON-NLS-1$
-
-		fontButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				getPopup().show(fontButton, 0, fontButton.getHeight());
-			}
-
-		});
+//		// create font sizer button and popup
+//		fontButton = new JButton(ToolsRes.getString("Tool.Menu.FontSize")); //$NON-NLS-1$
+//
+//		fontButton.addActionListener(new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				getPopup().show(fontButton, 0, fontButton.getHeight());
+//			}
+//
+//		});
 		// prepare button bar
 		buttonbar.setBorder(BorderFactory.createEtchedBorder());
 		buttonbar.add(helpButton);
 		buttonbar.add(undoButton);
 		buttonbar.add(redoButton);
-		buttonbar.add(fontButton);
+//		buttonbar.add(fontButton);
 		buttonbar.add(closeButton);
 		myContentPane.add(north, BorderLayout.NORTH);
 		myContentPane.add(noData, BorderLayout.CENTER);
@@ -389,7 +381,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		pack();
 		buttonbar.remove(undoButton);
 		buttonbar.remove(redoButton);
-		buttonbar.remove(fontButton);
+//		buttonbar.remove(fontButton);
 		dropdown.setEnabled(false);
 		dropdownLabel.setEnabled(false);
 		// center this on the screen
@@ -399,34 +391,34 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		setLocation(x, y);
 	}
 
-	private JPopupMenu createPopup() {
-		popup = new JPopupMenu();
-		FontSizer.setFonts(popup); // BH needs testing
-		ButtonGroup group = new ButtonGroup();
-		Action fontSizeAction = new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				int i = Integer.parseInt(e.getActionCommand());
-				setFontLevel(i);
-			}
-
-		};
-		for (int i = 0; i < 4; i++) {
-			JMenuItem item = new JRadioButtonMenuItem("+" + i); //$NON-NLS-1$
-			if (i == 0) {
-				defaultFontSizeItem = item;
-			}
-			item.addActionListener(fontSizeAction);
-			item.setActionCommand("" + i); //$NON-NLS-1$
-			popup.add(item);
-			group.add(item);
-			if (i == fontLevel) {
-				item.setSelected(true);
-			}
-		}
-		defaultFontSizeItem.setText(ToolsRes.getString("Tool.MenuItem.DefaultFontSize")); //$NON-NLS-1$
-		return popup;
-	}
+//	private JPopupMenu createPopup() {
+//		popup = new JPopupMenu();
+//		FontSizer.setFonts(popup); // BH needs testing
+//		ButtonGroup group = new ButtonGroup();
+//		Action fontSizeAction = new AbstractAction() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				int i = Integer.parseInt(e.getActionCommand());
+//				setFontLevel(i);
+//			}
+//
+//		};
+//		for (int i = 0; i < 4; i++) {
+//			JMenuItem item = new JRadioButtonMenuItem("+" + i); //$NON-NLS-1$
+//			if (i == 0) {
+//				defaultFontSizeItem = item;
+//			}
+//			item.addActionListener(fontSizeAction);
+//			item.setActionCommand("" + i); //$NON-NLS-1$
+//			popup.add(item);
+//			group.add(item);
+//			if (i == fontLevel) {
+//				item.setSelected(true);
+//			}
+//		}
+//		defaultFontSizeItem.setText(ToolsRes.getString("Tool.MenuItem.DefaultFontSize")); //$NON-NLS-1$
+//		return popup;
+//	}
 
 	protected void setTitles() {
 		// subclasses only will do this
@@ -462,8 +454,8 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		closeButton.setToolTipText(ToolsRes.getString("Tool.Button.Close.ToolTip")); //$NON-NLS-1$
 		helpButton.setText(ToolsRes.getString("Tool.Button.Help")); //$NON-NLS-1$
 		helpButton.setToolTipText(ToolsRes.getString("Tool.Button.Help.ToolTip")); //$NON-NLS-1$
-		fontButton.setText(ToolsRes.getString("Tool.Menu.FontSize")); //$NON-NLS-1$
-		fontButton.setToolTipText(ToolsRes.getString("FunctionTool.Button.Display.Tooltip")); //$NON-NLS-1$
+//		fontButton.setText(ToolsRes.getString("Tool.Menu.FontSize")); //$NON-NLS-1$
+//		fontButton.setToolTipText(ToolsRes.getString("FunctionTool.Button.Display.Tooltip")); //$NON-NLS-1$
 		Iterator<FunctionPanel> it = trackFunctionPanels.values().iterator();
 		while (it.hasNext()) {
 			FunctionPanel panel = it.next();
@@ -739,7 +731,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		setVisible(false);
 		FontSizer.setFonts(this, level);
 		FontSizer.setFonts(myContentPane, level);
-		FontSizer.setFonts(fontButton, level);
+//		FontSizer.setFonts(fontButton, level);
 		for (Iterator<FunctionPanel> it = trackFunctionPanels.values().iterator(); it.hasNext();) {
 			FunctionPanel next = it.next();
 			if (next == getSelectedPanel()) {
@@ -747,11 +739,11 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 			}
 			next.setFontLevel(level);
 		}
-		if (popup != null && level < popup.getSubElements().length) {
-			MenuElement[] e = popup.getSubElements();
-			JRadioButtonMenuItem item = (JRadioButtonMenuItem) e[level];
-			item.setSelected(true);
-		}
+//		if (popup != null && level < popup.getSubElements().length) {
+//			MenuElement[] e = popup.getSubElements();
+//			JRadioButtonMenuItem item = (JRadioButtonMenuItem) e[level];
+//			item.setSelected(true);
+//		}
 
 		int n = dropdown.getSelectedIndex();
 		FTObject[] items = new FTObject[dropdown.getItemCount()];
@@ -1018,9 +1010,9 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 				case "close":
 					btn = closeButton;
 					break;
-				case "font":
-					btn = fontButton;
-					break;
+//				case "font":
+//					btn = fontButton;
+//					break;
 				}
 			}
 			buttonbar.add((Component) btn);

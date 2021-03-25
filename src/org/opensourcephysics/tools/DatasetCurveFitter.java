@@ -448,7 +448,7 @@ public class DatasetCurveFitter extends JPanel {
 			f.setName(fitBuilder.getUniqueName(f.getName()));
 		}
 
-		String selectedFitName = (fit == null ? getLineFitName() : fit.getName());
+		String selectedFitName = (fit == null ? getPolyFitNameOfDegree(1) : fit.getName());
 		fitBuilder.addFitFunction(f);
 		fitDropDown.setSelectedItem(selectedFitName);
 	}
@@ -578,10 +578,13 @@ public class DatasetCurveFitter extends JPanel {
 			}
 
 			// override addItem method so items are in alphabetical order
+			// except line & parabola are first
 			@Override
 			public void addItem(String obj) {
 				if (obj == null)
 					return;
+				String line = getPolyFitNameOfDegree(1);
+				String parabola = getPolyFitNameOfDegree(2);
 				String name = FitBuilder.localize((String) obj);
 				int count = getItemCount();
 				// add in alphabetical order, ignoring case
@@ -599,6 +602,15 @@ public class DatasetCurveFitter extends JPanel {
 					// add at end
 					super.addItem(obj);
 				}
+				if (obj.equals(line)) {
+					removeItem(obj);
+					insertItemAt(obj, 0);
+				}
+				else if (obj.equals(parabola)) {
+					removeItem(obj);
+					insertItemAt(obj, 0);
+				}
+
 			}
 		};
 
@@ -611,7 +623,7 @@ public class DatasetCurveFitter extends JPanel {
 		for (String next : fitMap.keySet()) {
 			fitDropDown.addItem(next);
 		}
-		fitDropDown.setSelectedItem(getLineFitName());
+		fitDropDown.setSelectedItem(getPolyFitNameOfDegree(1));
 
 		fitDropDown.addActionListener(new ActionListener() {
 			@Override	
@@ -930,7 +942,9 @@ public class DatasetCurveFitter extends JPanel {
 			public synchronized void run() {
 
 				refreshFitMap();
-				fitBuilder.defaultFitName = getLineFitName();
+				String line = getPolyFitNameOfDegree(1);
+				String parabola = getPolyFitNameOfDegree(2);
+				fitBuilder.defaultFitName = line;
 				String toSelect = fitBuilder.defaultFitName;
 
 				refreshing = true;
@@ -939,8 +953,11 @@ public class DatasetCurveFitter extends JPanel {
 					if (fit != null && name.equals(fit.getName())) {
 						toSelect = name;
 					}
-					fitDropDown.addItem(name);
+					if (!name.equals(line) && !name.equals(parabola))
+						fitDropDown.addItem(name);
 				}
+				fitDropDown.addItem(parabola); // placed at top
+				fitDropDown.addItem(line); // placed at top, pushes parabola to second
 				fitDropDown.setSelectedItem(toSelect);
 				refreshing = false;
 			}
@@ -962,16 +979,16 @@ public class DatasetCurveFitter extends JPanel {
 	}
 
 	/**
-	 * Gets the name of the line fit function.
+	 * Gets the name of a fit function for specified polynomial degree
 	 * 
-	 * @return the name of the line function (polynomial degree 1)
+	 * @return the name of the function
 	 */
-	protected String getLineFitName() {
+	protected String getPolyFitNameOfDegree(int degree) {
 		for (String key : fitMap.keySet()) {
 			KnownFunction f = fitMap.get(key);
 			if (f instanceof KnownPolynomial) {
 				KnownPolynomial poly = (KnownPolynomial) f;
-				if (poly.getParameterCount() == 2)
+				if (poly.getParameterCount() == degree + 1)
 					return key;
 			}
 		}
@@ -1016,7 +1033,7 @@ public class DatasetCurveFitter extends JPanel {
 			return;
 		
 		if (name == null)
-			name = getLineFitName();
+			name = getPolyFitNameOfDegree(1);
 		fit = fitMap.get(name);
 		if (fit != null) {
 			FunctionDrawer prev = drawer;

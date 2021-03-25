@@ -246,6 +246,17 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 	protected void refreshGUI() {
 		if (!haveGUI)
 			return;
+		if (functionTool != null && functionTool.getSelectedPanel() == this) {
+			if (!functionTool.hasButton(undoButton)) {
+				functionTool.setButtonBar(new Object[] {
+						"help", undoButton, redoButton, "close"});
+			}
+		}
+		undoButton.setEnabled(undoManager.canUndo());
+		redoButton.setEnabled(undoManager.canRedo());
+		lastInstruction = null;
+		refreshInstructions(null, false, -1);
+		
 		if (lang == ToolsRes.getLanguage())
 			return;
 		lang = ToolsRes.getLanguage();
@@ -253,20 +264,8 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 		undoButton.setToolTipText(ToolsRes.getString("DataFunctionPanel.Button.Undo.Tooltip")); //$NON-NLS-1$
 		redoButton.setText(ToolsRes.getString("DataFunctionPanel.Button.Redo")); //$NON-NLS-1$
 		redoButton.setToolTipText(ToolsRes.getString("DataFunctionPanel.Button.Redo.Tooltip")); //$NON-NLS-1$
-		undoButton.setEnabled(undoManager.canUndo());
-		redoButton.setEnabled(undoManager.canRedo());
-		if (functionTool != null && functionTool.getSelectedPanel() == this) {
-			if (!functionTool.hasButton(undoButton)) {
-				functionTool.setButtonBar(new Object[] {
-						"help", undoButton, redoButton, "font", "close"});
-			}
-
-			paramEditor.refreshGUI();
-			functionEditor.refreshGUI();
-			
-		}
-		lastInstruction = null;
-		refreshInstructions(null, false, -1);
+		paramEditor.refreshGUI();
+		functionEditor.refreshGUI();			
 	}
 
 	/**
