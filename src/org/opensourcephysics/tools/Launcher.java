@@ -3761,12 +3761,7 @@ public class Launcher {
 			showTabbedPaneView();
 			LaunchPanel tab = getSelectedTab();
 			if (tab != null && !tab.isSelectingNode) {
-				if (getSelectedNode() != null) {
-					System.out.println("Launcher.refreshSelectedTab " + selectedNode);
-					tab.rebuildAndDisplayTabs(selectedNode);
-				} else {
-					tab.rebuildAndDisplayTabs(root);
-				}
+				tab.rebuildAndDisplayTabs(getSelectedNode() == null ? root : selectedNode);
 			}
 		}
 	}
