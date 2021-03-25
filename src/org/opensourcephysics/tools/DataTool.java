@@ -358,7 +358,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * 
 	 * @j2sAlias loadDatasetURI
 	 * 
-	 * @param path
+	 * @param relpath
 	 */
 	public void loadDatasetURI(String relpath) {
 		if (getTabCount() > 0)

@@ -2007,7 +2007,7 @@ public class ResourceLoader {
 	 * Creates a Resource from a file. Checks that this is appropriate are assumed
 	 * to have already been done.
 	 *
-	 * @param path the file path
+	 * @param file
 	 * @return the resource, if any
 	 */
 	private static Resource createFileResource(File file) {
@@ -2233,7 +2233,7 @@ public class ResourceLoader {
 	 * jar:file:C:/temp/car.trz!/Car in a loop with friction.trk
 	 * 
 	 * 
-	 * @param path
+	 * @param fileName
 	 * @return jar URL
 	 */
 	public static URL getJarURLForFile(String fileName) {
