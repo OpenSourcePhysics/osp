@@ -14,7 +14,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowListener;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
@@ -27,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
@@ -36,6 +36,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
+
 import org.opensourcephysics.controls.ConsoleLevel;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
@@ -768,7 +769,7 @@ public class LaunchNode extends DefaultMutableTreeNode {
 		if (tab != null) {
 			tabData.remove(tab);
 			OSPLog.finest("tab " + n + " removed: [\"" + //$NON-NLS-1$ //$NON-NLS-2$
-					tab.title + "\", \"" + tab.path + "\"]"); //$NON-NLS-1$ //$NON-NLS-2$
+					tab.title + "\", \"" + tab.urlOrModel + "\"]"); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		return tab;
 	}
@@ -1627,7 +1628,7 @@ public class LaunchNode extends DefaultMutableTreeNode {
 		String[][] data = new String[tabData.size()][2];
 		for (int i = 0; i < tabData.size(); i++) {
 			DisplayTab tab = tabData.get(i);
-			data[i] = new String[] { tab.title, tab.path };
+			data[i] = new String[] { tab.title, tab.urlOrModel };
 		}
 		return data;
 	}
@@ -1717,9 +1718,12 @@ public class LaunchNode extends DefaultMutableTreeNode {
 	 * A class to hold display tab data.
 	 */
 	public class DisplayTab {
-		String title;
+		private String title;
 		boolean hyperlinksEnabled = true;
-		String path; // url path or model class name
+		/**
+		 * url or model class name
+		 */
+		private String urlOrModel;
 		URL url;
 		Class<?> modelClass;
 		JComponent modelPane;
@@ -1748,7 +1752,7 @@ public class LaunchNode extends DefaultMutableTreeNode {
 		 * @return the path
 		 */
 		public String getPath() {
-			return path;
+			return urlOrModel;
 		}
 
 		/**
@@ -1757,7 +1761,7 @@ public class LaunchNode extends DefaultMutableTreeNode {
 		 * @param path the path
 		 */
 		public void setPath(String path) {
-			this.path = path;
+			this.urlOrModel = path;
 			if (!setURL(path)) {
 				setModelClass(path);
 			}
@@ -1787,8 +1791,10 @@ public class LaunchNode extends DefaultMutableTreeNode {
 		 * @return the URL
 		 */
 		public URL getURL() {
-			if ((url == null) && (modelClass == null) && (path != null) && !"".equals(path)) { //$NON-NLS-1$
-				setURL(path);
+			if (url == null 
+					&& modelClass == null 
+					&& !"".equals(urlOrModel)) { //$NON-NLS-1$
+				setURL(urlOrModel);
 			}
 			return url;
 		}
@@ -1799,8 +1805,8 @@ public class LaunchNode extends DefaultMutableTreeNode {
 		 * @return the model class
 		 */
 		public Class<?> getModelClass() {
-			if ((url == null) && (modelClass == null) && (path != null) && !path.equals("")) { //$NON-NLS-1$
-				setModelClass(path);
+			if ((url == null) && (modelClass == null) && (urlOrModel != null) && !urlOrModel.equals("")) { //$NON-NLS-1$
+				setModelClass(urlOrModel);
 			}
 			return modelClass;
 		}
@@ -1910,7 +1916,7 @@ public class LaunchNode extends DefaultMutableTreeNode {
 			isDisplayable = false;
 			urlExists = null;
 			Resource res = ResourceLoader.getResource(path);
-			if ((res != null) && (res.getURL() != null)) {
+			if (res != null && res.getURL() != null) {
 				url = res.getURL();
 				try {
 					InputStream in = url.openStream();
@@ -1946,7 +1952,7 @@ public class LaunchNode extends DefaultMutableTreeNode {
 		 * @return true if the class was successfully loaded for the first time
 		 */
 		private boolean setModelClass(String className) {
-			path = className;
+			urlOrModel = className;
 			if (className == null) {
 				return false;
 			}
@@ -1959,6 +1965,10 @@ public class LaunchNode extends DefaultMutableTreeNode {
 			return modelClass != null;
 		}
 
+		@Override
+		public String toString() {
+			return "[LaunchNode.DisplayTab " + title + " " + urlOrModel + "]";
+		}
 
 	}
 

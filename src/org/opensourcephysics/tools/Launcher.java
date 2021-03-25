@@ -553,7 +553,9 @@ public class Launcher {
 			LaunchPanel tab = getTab(i);
 //      if(path.startsWith(tab.getRootNode().name)) {
 			if (rootName.equals(tab.getRootNode().name)) {
+				tab.isSelectingNode = true;
 				tabbedPane.setSelectedComponent(tab);
+				tab.isSelectingNode = false;
 				return tab;
 			}
 		}
@@ -1030,7 +1032,7 @@ public class Launcher {
 		});
 		tabbedPane.addTab(root.toString(), tab);
 		tabbedPane.setSelectedComponent(tab);
-		tab.setSelectedNode(root);
+		tab.setTreeSelectionPath(root);
 		if (!root.tooltip.equals("")) { //$NON-NLS-1$
 			tabbedPane.setToolTipTextAt(tabbedPane.getSelectedIndex(), root.tooltip);
 		}
@@ -2919,13 +2921,15 @@ public class Launcher {
 			}
 		}
 		
-		public void setJMenuBar(JMenuBar mb) {
-			super.setJMenuBar(mb);
-		}
-
-		public void setTitle(String title) {
-			super.setTitle(title);
-		}
+//		@Override
+//		public void setJMenuBar(JMenuBar mb) {
+//			super.setJMenuBar(mb);
+//		}
+//
+//		@Override
+//		public void setTitle(String title) {
+//			super.setTitle(title);
+//		}
 
 	}
 
@@ -3756,11 +3760,12 @@ public class Launcher {
 		} else {
 			showTabbedPaneView();
 			LaunchPanel tab = getSelectedTab();
-			if (tab != null) {
+			if (tab != null && !tab.isSelectingNode) {
 				if (getSelectedNode() != null) {
-					tab.displayTabs(selectedNode);
+					System.out.println("Launcher.refreshSelectedTab " + selectedNode);
+					tab.rebuildAndDisplayTabs(selectedNode);
 				} else {
-					tab.displayTabs(root);
+					tab.rebuildAndDisplayTabs(root);
 				}
 			}
 		}

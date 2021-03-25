@@ -665,10 +665,12 @@ public class LaunchBuilder extends Launcher {
 			n = ((Integer) displaySpinner.getValue()).intValue();
 			LaunchNode.DisplayTab displayTab = node.getDisplayTab(n);
 			String input = pathField.getText();
-			if (displayTab == null || ((displayTab.path != null && !displayTab.path.equals(input))
-					|| (input != null && !input.equals(displayTab.path)))) {
-				String title = (displayTab == null) ? null : displayTab.title;
-				String[] args = (displayTab == null) ? null : displayTab.getModelArgs();
+			String path = (displayTab == null ? null : displayTab.getPath());
+			if (displayTab == null || 
+					(path != null ? !path.equals(input) : input != null ? !input.equals(path) : false)
+				) {
+				String title = (displayTab == null ? null : displayTab.getTitle());
+				String[] args = (displayTab == null ? null : displayTab.getModelArgs());
 				node.setDisplayTab(n, title, input, args);
 				log(("Log.Message.ChangeNodeURL")); //$NON-NLS-1$
 				changed = true;
@@ -694,10 +696,12 @@ public class LaunchBuilder extends Launcher {
 			if (input.equals("")) { //$NON-NLS-1$
 				input = null;
 			}
-			if (displayTab != null && ((displayTab.title != null && !displayTab.title.equals(input))
-					|| (input != null && !input.equals(displayTab.title)))) {
+			String title = (displayTab == null ? null : displayTab.getTitle());
+			if (displayTab != null 
+					&& (title != null ? !title.equals(input) : input != null ? !input.equals(title) : false)
+					) {
 				log(("Log.Message.ChangeNodeHTMLTabTitle")); //$NON-NLS-1$
-				node.setDisplayTab(n, input, displayTab.path, displayTab.getModelArgs());
+				node.setDisplayTab(n, input, displayTab.getPath(), displayTab.getModelArgs());
 				changed = true;
 			}
 			String className = classField.getText();
@@ -1095,16 +1099,16 @@ public class LaunchBuilder extends Launcher {
 			descriptionPane.setBackground(Color.white);
 			int n = ((Integer) displaySpinner.getValue()).intValue();
 			LaunchNode.DisplayTab displayTab = node.getDisplayTab(n);
-			String urlPath = (displayTab != null) ? displayTab.path : null;
+			String urlPath = (displayTab != null ? displayTab.getPath() : null);
 			boolean badURL = (urlPath != null && displayTab.url == null && displayTab.modelClass == null);
 			pathField.setText(urlPath);
 			pathField.setBackground(badURL ? RED : Color.white);
 			displaySpinnerModel.setMaximum(Integer.valueOf(node.getDisplayTabCount()));
 			displaySpinner.setVisible(node.getDisplayTab(0) != null);
-			boolean hasHTML = (displayTab != null && isDisplayable(displayTab.path)); // was just PDF
+			boolean hasHTML = (displayTab != null && isDisplayable(displayTab.getPath())); // was just PDF
 			tabTitleLabel.setVisible(hasHTML);
 			tabTitleField.setVisible(hasHTML);
-			tabTitleField.setText((displayTab != null) ? displayTab.title : null);
+			tabTitleField.setText((displayTab != null) ? displayTab.getTitle() : null);
 			tabTitleField.setBackground(Color.white);
 			displayBar.remove(showModelArgsButton);
 			if (displayTab != null && (displayTab.url != null && isDisplayable(displayTab.url.getPath()) // was just PDF
@@ -1311,7 +1315,7 @@ public class LaunchBuilder extends Launcher {
 			hideRootCheckBox.setSelected(!rootVisible);
 			tab.tree.setRootVisible(rootVisible);
 			if ((getSelectedNode() == null) && !rootVisible) {
-				tab.setSelectedNode((LaunchNode) getRootNode().getChildAt(0));
+				tab.setTreeSelectionPath((LaunchNode) getRootNode().getChildAt(0));
 			}
 			// button view
 			buttonViewCheckBox.setSelected((node != null) && node.isButtonView());
@@ -2558,7 +2562,7 @@ public class LaunchBuilder extends Launcher {
 						}
 					}
 				}
-				getSelectedTab().setSelectedNodes(nodes);
+				getSelectedTab().setTreeSelectionPaths(nodes);
 				refreshGUI();
 			}
 
@@ -2588,7 +2592,7 @@ public class LaunchBuilder extends Launcher {
 						}
 					}
 				}
-				getSelectedTab().setSelectedNodes(nodes);
+				getSelectedTab().setTreeSelectionPaths(nodes);
 				refreshGUI();
 			}
 
@@ -2629,7 +2633,7 @@ public class LaunchBuilder extends Launcher {
 		}
 		LaunchNode parent = (LaunchNode) node.getParent();
 		getSelectedTab().treeModel.removeNodeFromParent(node);
-		getSelectedTab().setSelectedNode(parent);
+		getSelectedTab().setTreeSelectionPath(parent);
 		if (parent.getOwner() != null) {
 			changedFiles.add(parent.getOwner().getFileName());
 		} else {
@@ -2665,7 +2669,7 @@ public class LaunchBuilder extends Launcher {
 			refreshClones(parent);
 		}
 		if (toSelect != null) {
-			getSelectedTab().setSelectedNode(toSelect);
+			getSelectedTab().setTreeSelectionPath(toSelect);
 			refreshGUI();
 		}
 	}
@@ -2682,7 +2686,7 @@ public class LaunchBuilder extends Launcher {
 			for (int i = 0; i < nodes.length; i++) {
 				LaunchNode node = getSelectedTab().getClone(nodes[i]);
 				if (node != null) {
-					getSelectedTab().setSelectedNode(node);
+					getSelectedTab().setTreeSelectionPath(node);
 					JOptionPane.showMessageDialog(frame,
 							LaunchRes.getString("Dialog.DuplicateNode.Message") + " \"" + node + "\"", //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
 							LaunchRes.getString("Dialog.DuplicateNode.Title"), //$NON-NLS-1$

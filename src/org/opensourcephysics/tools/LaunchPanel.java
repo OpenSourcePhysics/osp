@@ -7,21 +7,45 @@
 
 package org.opensourcephysics.tools;
 
-import java.io.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.net.URL;
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.TreeMap;
 
-import javax.swing.*;
+import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTree;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import javax.swing.event.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.text.html.HTMLDocument;
-import javax.swing.tree.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
-import org.opensourcephysics.controls.*;
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.GUIUtils;
-import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.LaunchNode.DisplayTab;
 import org.opensourcephysics.tools.Launcher.HTMLPane;
 
@@ -48,6 +72,7 @@ public class LaunchPanel extends JPanel {
 	protected boolean rebuildingTabs;
 	protected Map<String, String> htmlSubstitutions = new TreeMap<String, String>();
 	private String noTitle;
+	public boolean isSelectingNode;
 
 	/**
 	 * Constructor.
@@ -60,7 +85,7 @@ public class LaunchPanel extends JPanel {
 		this.launcher = launcher;
 		createGUI();
 		createTree(rootNode);
-		setSelectedNode(rootNode);
+		setTreeSelectionPath(rootNode);
 	}
 
 	/**
@@ -68,12 +93,12 @@ public class LaunchPanel extends JPanel {
 	 *
 	 * @param node the node to select
 	 */
-	public void setSelectedNode(LaunchNode node) {
+	public void setTreeSelectionPath(LaunchNode node) {
 		if (node == null) {
 			return;
 		}
 		if (node == getSelectedNode()) {
-			displayTabs(node);
+			rebuildAndDisplayTabs(node);
 		} else {
 			tree.setSelectionPath(new TreePath(node.getPath()));
 		}
@@ -84,7 +109,7 @@ public class LaunchPanel extends JPanel {
 	 *
 	 * @param nodes the nodes to select
 	 */
-	public void setSelectedNodes(ArrayList<LaunchNode> nodes) {
+	public void setTreeSelectionPaths(ArrayList<LaunchNode> nodes) {
 		if (nodes == null || nodes.size() == 0) {
 			return;
 		}
@@ -119,6 +144,7 @@ public class LaunchPanel extends JPanel {
 		node.tabNumber = (url == null && node.getDisplayTabCount() == 0 ? -1 : tabNumber);
 		LaunchNode.DisplayTab htmlData = null;
 		URL prevURL = null;
+		LaunchNode node0 = getSelectedNode();
 		if (node.tabNumber >= 0) {
 			htmlData = node.tabData.get(node.tabNumber);
 		}
@@ -132,13 +158,20 @@ public class LaunchPanel extends JPanel {
 				htmlData.url = url;
 			}
 		}
-		String scrollRef = (url != null && prevURL != null && url.getPath().equals(prevURL.getPath()) ? url.getRef()
+		String scrollRef = (node0 == node && url != null
+				&& prevURL != null && url.getPath().equals(prevURL.getPath()) ? 
+						"#"
 				: null);
 		if (scrollRef == null) {
-			setSelectedNode(node);
+			setTreeSelectionPath(node);
 		} else {
+			scrollRef = url.getRef();
+			// a null scrollRef means TOP -- scroll to [0,0], not to #xxx
 			Launcher.HTMLPane html = launcher.getHTMLTab(node.tabNumber);
-			html.editorPane.scrollToReference(scrollRef);
+			if (scrollRef == null)
+				html.editorPane.scrollRectToVisible(new Rectangle());
+			else
+				html.editorPane.scrollToReference(scrollRef);
 		}
 		// restore previous URL
 		if (htmlData != null) {
@@ -243,7 +276,7 @@ public class LaunchPanel extends JPanel {
 	 *
 	 * @param node the LaunchNode
 	 */
-	protected void displayTabs(LaunchNode node) {
+	protected void rebuildAndDisplayTabs(LaunchNode node) {
 		if (node == null)
 			return;
 		OSPLog.finer(LaunchRes.getString("Log.Message.NodeSelected") //$NON-NLS-1$
@@ -278,7 +311,7 @@ public class LaunchPanel extends JPanel {
 		// rebuild tabs
 		rebuildingTabs = true;
 		// BH 2021.03.23 prevents repaint of previous tab contents
-		tabbedPane.setVisible(false);
+		//tabbedPane.setVisible(false);
 		int tabCount = 0;
 		if (!isBuilder) {
 			tabbedPane.removeAll();
@@ -337,7 +370,7 @@ public class LaunchPanel extends JPanel {
 	}
 
 	private void addTab(DisplayTab displayTab, JScrollPane scroller) {
-		String title = (displayTab.title == null) ? noTitle : displayTab.title;
+		String title = (displayTab.getTitle() == null) ? noTitle : displayTab.getTitle();
 		tabbedPane.addTab(title, scroller);
 	}
 
@@ -488,7 +521,7 @@ public class LaunchPanel extends JPanel {
 						launcher.undoSupport.postEdit(edit);
 					}
 				}
-				displayTabs(node);
+				rebuildAndDisplayTabs(node);
 			}
 
 		});
