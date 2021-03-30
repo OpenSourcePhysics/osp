@@ -189,8 +189,12 @@ public class Parameter implements FObject {
 		try {
 			String express = expression;
 			// Suryono parser accepts only periods as decimal separators
-			// but don't make substitutions in "if" statements since they use commas
-			if (express.indexOf("if") == -1) { //$NON-NLS-1$
+			// but don't change for "if" statements and math functions that require commas
+			String[] temp = new String[] {"if", "atan2", "min", "max", "mod"};
+			boolean replace = true;
+			for (int i = 0; i < temp.length; i++)
+				replace = replace && express.indexOf(temp[i]) == -1;
+			if (replace) { //$NON-NLS-1$
 				express = express.replaceAll(",", "."); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 			MultiVarFunction f = new ParsedMultiVarFunction(express, names, false);

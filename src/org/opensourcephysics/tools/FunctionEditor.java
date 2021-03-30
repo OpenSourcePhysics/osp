@@ -77,7 +77,6 @@ import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.controls.XMLProperty;
@@ -681,7 +680,8 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				for (int i = 0; i < nObj; i++) {
 					if (hasReference(i, j)) {
 						errors.set(i);
-						break;
+						// DB commented out break since need to set ALL errors, not just first found
+//						break;
 					}
 				}
 			}

@@ -953,7 +953,7 @@ public class LibraryTreePanel extends JPanel {
 						setChanged();
 					}
 				}
-				basePathField.setForeground(lightGreen); // pig
+				basePathField.setForeground(lightGreen);
 			}
 		});
 		basePathField.addFocusListener(new FocusAdapter() {

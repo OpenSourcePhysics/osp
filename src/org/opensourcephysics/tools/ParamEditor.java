@@ -419,7 +419,7 @@ public class ParamEditor extends FunctionEditor {
 	}
 
 	@Override
-	protected void setReferences(FObject obj, BitSet directRefrences) {
+	protected void setReferences(FObject obj, BitSet directReferences) {
 	}
 
 }
