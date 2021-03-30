@@ -2784,6 +2784,8 @@ public class ResourceLoader {
 
 	// ---- Localization
 
+	private final static Map<String, Bundle>bundleCache = new Hashtable<>();
+	
 	/**
 	 * Get a bundle form org.opensourcePhysics.reosurces, for example
 	 * @param bundleName  defaults to org.opensourcephysics.resources.tools.tools
@@ -2795,22 +2797,30 @@ public class ResourceLoader {
 			bundleName = "org.opensourcephysics.resources.tools.tools";
 		if (resourceLocale == null)
 			resourceLocale = Locale.getDefault();
-		String name;
-		if (resourceLocale.getLanguage() == "en" && !Assets.notFound(name = bundleName.replaceAll("\\.", "/") + ".properties") ) {
+		String name = bundleName.replaceAll("\\.", "/") + ".properties";
+		String key = name + "/" + resourceLocale;
+		Bundle b = bundleCache.get(key);
+		if (b != null)
+			return b;
+		if (resourceLocale.getLanguage() == "en" && !Assets.notFound(name) ) {
 			Properties p = new Properties();
 			try {
 				p.load(getAssetStream(name));
 				OSPLog.debug("ResourceLoader found " + p.size() + " properties in\n"
 						+ getAssetURL(name).toString());
-				return new Bundle(p);
+				b = new Bundle(p);
 			} catch (Exception e) {
 				OSPLog.debug("Asset not found for resource " + name);
 				OSPLog.warning("Asset not found for resource " + name);
 				Assets.setNotFound(name);
 			}
 		}
-		return new Bundle(ResourceBundle.getBundle(bundleName, resourceLocale,
+		if (b == null)
+			b = new Bundle(ResourceBundle.getBundle(bundleName, resourceLocale,
 				ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES)));
+		bundleCache.put(key, b);
+		return b;
+
 	}
 
 	private static InputStream getAssetStream(String name) throws IOException {
