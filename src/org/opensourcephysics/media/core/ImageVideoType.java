@@ -33,6 +33,7 @@ package org.opensourcephysics.media.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
@@ -145,7 +146,7 @@ public class ImageVideoType implements VideoType {
 	 */
 	@Override
 	public String getDescription() {
-			return fileFilters[0].getDescription();
+			return getFileFilters()[0].getDescription();
 	}
 
 	/**
@@ -155,7 +156,7 @@ public class ImageVideoType implements VideoType {
 	 */
 	@Override
 	public String getDefaultExtension() {
-			return fileFilters[0].getDefaultExtension();
+			return getFileFilters()[0].getDefaultExtension();
 	}
 
 	/**
@@ -165,6 +166,17 @@ public class ImageVideoType implements VideoType {
 	 */
 	@Override
 	public VideoFileFilter[] getFileFilters() {
+		if (fileFilters == null) {
+			ArrayList<VideoType> types = VideoIO.getVideoTypes(true);
+			ArrayList<VideoFileFilter> filters = new ArrayList<VideoFileFilter>();
+			for (VideoType next: types) {
+				if (next instanceof ImageVideoType) {
+					ImageVideoType imageType = (ImageVideoType) next;
+					filters.add(imageType.getDefaultFileFilter());
+				}
+			}
+			fileFilters = filters.toArray(new VideoFileFilter[filters.size()]);
+		}
 		return fileFilters;
 	}
 
@@ -175,7 +187,7 @@ public class ImageVideoType implements VideoType {
 	 */
 	@Override
 	public VideoFileFilter getDefaultFileFilter() {
-		return fileFilters[0];
+		return getFileFilters()[0];
 	}
 
 	/**
