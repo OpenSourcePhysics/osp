@@ -3028,7 +3028,9 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 					zoomBox.visible = true;
 					repaintForZoom();
 				}
-//				getPopupMenu().show(e.getComponent(), e.getX(), e.getY());
+				JPopupMenu popup = getPopupMenu();
+				if (popup != null)
+					popup.show(e.getComponent(), e.getX(), e.getY());
 				return;
 			} else if (OSPRuntime.isPopupTrigger(e) && !popupmenuIsEnabled && (customInspector != null)) {
 				customInspector.setVisible(true);
