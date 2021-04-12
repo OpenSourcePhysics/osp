@@ -1077,6 +1077,10 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		}
 		
 		if (asFormatted) {
+			// if no rows selected, select all
+			if (dataTable.getSelectedRows().length == 0) {
+				dataTable.selectAllCells();
+			}
 			buf.append(dataTable.getData(true));
 			return buf.toString();
 		}
