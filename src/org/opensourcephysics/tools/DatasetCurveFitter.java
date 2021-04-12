@@ -209,7 +209,7 @@ public class DatasetCurveFitter extends JPanel {
 	private JComboBox<String> fitDropDown;
 	private JTextField eqnField;
 	private NumberField rmsField;
-	private JTable paramTable;
+	private ParamTable paramTable;
 	private ParamCellRenderer cellRenderer;
 	private SpinCellEditor spinCellEditor; // uses number-crawler spinner
 	private JButton fitBuilderButton;
@@ -769,6 +769,12 @@ public class DatasetCurveFitter extends JPanel {
 				return dim;
 			}
 		};
+		scroller.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				paramTable.copyParameters(e);
+			}
+		});
 		splitPane.setRightComponent(scroller);
 		add(getSplitPane(), BorderLayout.CENTER);
 		// create fit builder button
@@ -1272,6 +1278,29 @@ public class DatasetCurveFitter extends JPanel {
 			setGridColor(Color.blue);
 			JTableHeader header = getTableHeader();
 			header.setForeground(Color.blue);
+			MouseAdapter listener = new MouseAdapter() {
+				@Override
+				public void mousePressed(MouseEvent e) {
+						copyParameters(e);
+				}
+			};
+			this.addMouseListener(listener);
+			header.addMouseListener(listener);
+		}
+		
+		public void copyParameters(MouseEvent e) {
+			if (OSPRuntime.isPopupTrigger(e)) {
+				JPopupMenu popup = new JPopupMenu();
+				JMenuItem item = new JMenuItem(ToolsRes.getString("DatasetCurveFitter.Menuitem.CopyParameters")); //$NON-NLS-1$
+				item.addActionListener((ev) -> {
+					selectAll();
+					ActionEvent event = new ActionEvent(paramTable, ActionEvent.ACTION_PERFORMED, null);
+					getActionMap().get("copy").actionPerformed(event);					
+				});
+				popup.add(item);
+				FontSizer.setFonts(popup);				
+				popup.show(e.getComponent(), e.getX(), e.getY() - popup.getPreferredSize().height);
+			}
 		}
 
 		@Override
