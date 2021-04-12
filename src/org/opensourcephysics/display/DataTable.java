@@ -14,6 +14,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -59,10 +61,10 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
+import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.media.core.NumberField;
+import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.tools.DataToolTab;
-
-import javajs.async.SwingJSUtils.Performance;
 
 /**
  * DataTable displays multiple TableModels in a table. The first TableModel
@@ -176,7 +178,7 @@ public class DataTable extends JTable {
 	protected static final String NO_PATTERN = DisplayRes.getString("DataTable.FormatDialog.NoFormat"); //$NON-NLS-1$
 	public static final String rowName = DisplayRes.getString("DataTable.Header.Row"); //$NON-NLS-1$
 
-	private static final DoubleRenderer defaultDoubleRenderer = new DoubleRenderer();
+	protected static final DoubleRenderer defaultDoubleRenderer = new DoubleRenderer();
 
 	private HashMap<String, PrecisionRenderer> precisionRenderersByColumnName = new HashMap<String, PrecisionRenderer>();
 	private HashMap<String, UnitRenderer> unitRenderersByColumnName = new HashMap<String, UnitRenderer>();
@@ -380,7 +382,7 @@ public class DataTable extends JTable {
 		if (value == null)
 			return null;
 		TableCellRenderer renderer = getCellRenderer(row, col);
-		Component c = renderer.getTableCellRendererComponent(DataTable.this, value, false, false, 0, 0);
+		Component c = renderer.getTableCellRendererComponent(DataTable.this, value, false, false, 0, col);
 		if (c instanceof JLabel) {
 			String s = ((JLabel) c).getText().trim();
 			// strip units, if any
@@ -2496,6 +2498,99 @@ public class DataTable extends JTable {
 
 	public void scrollRowToVisible(int row) {
 		scrollRectToVisible(getCellRect(row, 0, true));
+	}
+
+	/**
+	 * Gets the data selected by the user in this datatable. This method is modified
+	 * from the org.opensourcephysics.display.DataTableFrame getSelectedData method.
+	 *
+	 * @param asFormatted true to retain table formatting
+	 * @return a StringBuffer containing the data.
+	 */
+	public StringBuffer getData(boolean asFormatted) {
+		StringBuffer buf = new StringBuffer();
+		// get selected data
+		int[] selectedRows = getSelectedRows();
+		int[] selectedColumns = getSelectedColumns();
+		// if no data is selected, select all
+		int[] restoreRows = null;
+		int[] restoreColumns = null;
+		if (selectedRows.length == 0) {
+			selectAll();
+			restoreRows = selectedRows;
+			restoreColumns = selectedColumns;
+			selectedRows = getSelectedRows();
+			selectedColumns = getSelectedColumns();
+		}
+		// copy column headings
+		for (int j = 0; j < selectedColumns.length; j++) {
+			// ignore row heading
+			if (isRowNumberVisible() && selectedColumns[j] == 0)
+				continue;
+			buf.append(getColumnName(selectedColumns[j]));
+			if (j < selectedColumns.length - 1)
+				buf.append(VideoIO.getDelimiter()); // add delimiter after each column except the last
+		}
+		buf.append(XML.NEW_LINE);
+		java.text.DecimalFormat nf = (DecimalFormat) NumberFormat.getInstance();
+		nf.applyPattern("0.000000000E0"); //$NON-NLS-1$
+		nf.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+		java.text.DateFormat df = java.text.DateFormat.getInstance();
+		for (int i = 0; i < selectedRows.length; i++) {
+			for (int j = 0; j < selectedColumns.length; j++) {
+				int temp = convertColumnIndexToModel(selectedColumns[j]);
+				if (isRowNumberVisible()) {
+					if (temp == 0) { // don't copy row numbers
+						continue;
+					}
+				}
+				Object value = null;
+				if (asFormatted) {
+					value = getFormattedValueAt(selectedRows[i], selectedColumns[j]);
+				} else {
+					value = getValueAt(selectedRows[i], selectedColumns[j]);
+					if (value != null) {
+						if (value instanceof Number) {
+//							value = nf.format(value);
+						} else if (value instanceof java.util.Date) {
+							value = df.format(value);
+						}
+					}
+				}
+				if (value != null) {
+					buf.append(value);
+				}
+				if (j < selectedColumns.length - 1)
+					buf.append(VideoIO.getDelimiter()); // add delimiter after each column except the last
+			}
+			buf.append(XML.NEW_LINE); // new line after each row
+		}
+		if (restoreRows != null) {
+			// restore previous selection state
+			clearSelection();
+			for (int row : restoreRows)
+				addRowSelectionInterval(row, row);
+			for (int col : restoreColumns)
+				addColumnSelectionInterval(col, col);
+		}
+		return buf;
+	}
+
+	/**
+	 * Copies data from this table to the system clipboard.
+	 *
+	 * @param asFormatted true to retain table formatting
+	 * @param header      the table header
+	 */
+	public void copyTable(boolean asFormatted, String header) {
+		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		StringBuffer buf = getData(asFormatted);
+		// replace spaces with underscores in header (must be single string)
+		header = header.replace(' ', '_');
+		if (!header.endsWith(XML.NEW_LINE))
+			header += XML.NEW_LINE;
+		StringSelection stringSelection = new StringSelection(header + buf.toString());
+		clipboard.setContents(stringSelection, stringSelection);
 	}
 
 

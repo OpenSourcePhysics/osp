@@ -41,21 +41,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.zip.ZipEntry;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
@@ -97,6 +95,22 @@ public class VideoIO {
 		{"mov", "flv", "mp4", "wmv", "avi", "mts",
 			"m2ts", "mpg", "mod", "ogg", "dv" };
 	public static final String VIDEO_CONVERSION_HELP_PATH = "https://physlets.org/tracker/converting_videos.html";
+	
+	/**
+	 * delimiters TAB, SPACE, COMMA, SEMICOLON
+	 */
+	public static final String TAB = "\t", SPACE = " ", //$NON-NLS-1$ //$NON-NLS-2$
+			COMMA = ",", SEMICOLON = ";"; //$NON-NLS-1$ //$NON-NLS-2$
+	protected static String defaultDelimiter = TAB; // tab delimiter by default
+	public static Map<String, String> delimiters = new TreeMap<String, String>();
+	protected static String delimiter = defaultDelimiter;
+	public static Map<String, String> customDelimiters = new TreeMap<String, String>();
+
+
+	public static SingleExtFileFilter zipFileFilter, trkFileFilter, trzFileFilter;
+	public static SingleExtFileFilter videoAndTrkFileFilter, txtFileFilter, jarFileFilter;
+	public static SingleExtFileFilter delimitedTextFileFilter;
+	protected static boolean dataCopiedToClipboard;
 
 	public interface FinalizableLoader extends XML.NonStaticLoader {
 		
@@ -227,6 +241,40 @@ public class VideoIO {
 	 */
 	public static String getExtension(File file) {
 		return XML.getExtension(file.getName());
+	}
+	
+	/**
+	 * Gets the delimiter for copied or exported data
+	 *
+	 * @return the delimiter
+	 */
+	public static String getDelimiter() {
+		return delimiter;
+	}
+
+	/**
+	 * Sets the delimiter for copied or exported data
+	 *
+	 * @param d the delimiter
+	 */
+	public static void setDelimiter(String d) {
+		if (d != null)
+			delimiter = d;
+	}
+
+	/**
+	 * Gets the delimiters for copied or exported data
+	 *
+	 * @return the delimiter map
+	 */
+	public static Map<String, String> getDelimiters() {
+		if (VideoIO.delimiters.isEmpty()) {
+			VideoIO.delimiters.put(MediaRes.getString("VideoIO.Delimiter.Tab"), TAB); //$NON-NLS-1$
+			VideoIO.delimiters.put(MediaRes.getString("VideoIO.Delimiter.Space"), SPACE); //$NON-NLS-1$
+			VideoIO.delimiters.put(MediaRes.getString("VideoIO.Delimiter.Comma"), COMMA); //$NON-NLS-1$
+			VideoIO.delimiters.put(MediaRes.getString("VideoIO.Delimiter.Semicolon"), SEMICOLON); //$NON-NLS-1$
+		}
+		return VideoIO.delimiters;
 	}
 
 	/**

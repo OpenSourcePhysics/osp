@@ -41,6 +41,7 @@ import javax.swing.BorderFactory;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
@@ -52,6 +53,8 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableCellEditor;
@@ -71,6 +74,7 @@ import org.opensourcephysics.display.HighlightableDataset;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.display.TextLine;
+import org.opensourcephysics.media.core.VideoIO;
 
 /**
  * This is a DataTable that displays DataColumns and constructs
@@ -130,13 +134,17 @@ public class DataToolTable extends DataTable {
 		return (popup == null ? (popup = new JPopupMenu()) : popup);	
 	}
 	
-	JMenuItem renameColumnItem, copyColumnsItem, cutColumnsItem, pasteColumnsItem, cloneColumnsItem, numberFormatItem;
+	JMenuItem renameColumnItem, copyColumnsItem, cutColumnsItem;
+	JMenuItem pasteColumnsItem, cloneColumnsItem, numberFormatItem;
 	JMenuItem insertRowItem, pasteRowsItem, copyRowsItem, cutRowsItem;
-	JMenuItem insertCellsItem, deleteCellsItem, copyCellsItem, cutCellsItem, pasteInsertCellsItem, pasteCellsItem;
+	JMenuItem insertCellsItem, deleteCellsItem;
+	JMenu copyCellsMenu, setDelimiterMenu;
+	JMenuItem copyCellsAsFormattedItem, copyCellsRawItem;
+	JMenuItem cutCellsItem, pasteInsertCellsItem, pasteCellsItem;
 	JMenuItem addEndRowItem, trimRowsItem;
 	JMenuItem selectAllItem, selectNoneItem, clearContentsItem;
-	Action clearCellsAction, pasteCellsAction, pasteInsertCellsAction, cantPasteCellsAction, cantPasteRowsAction,
-			getPasteDataAction;
+	Action clearCellsAction, pasteCellsAction, pasteInsertCellsAction;
+	Action cantPasteCellsAction, cantPasteRowsAction, getPasteDataAction;
 	MouseAdapter tableMouseListener;
 	Color selectedBG, selectedFG, unselectedBG, selectedHeaderFG, selectedHeaderBG, rowBG;
 	int focusRow, focusCol, mouseRow, mouseCol;
@@ -145,7 +153,8 @@ public class DataToolTable extends DataTable {
 	HashMap<String, double[]> pasteValues = new HashMap<String, double[]>();
 	DatasetManager pasteData = null;
 	HashMap<Integer, Integer> workingRowToModelRow = new HashMap<Integer, Integer>(); // maps working row to model row
-    @Override
+
+	@Override
 	protected OSPDataTableModel createTableModel() {
     	return new DataToolTableModel();
 	}
@@ -372,6 +381,7 @@ public class DataToolTable extends DataTable {
 						Object obj = getValueAt(row, col);
 						String name = getColumnName(col);
 						setToolTipText(name + " = " + obj); //$NON-NLS-1$
+						defaultDoubleRenderer.setToolTipText(name + " = " + obj); //$NON-NLS-1$
 					}
 				}
 				requestFocusInWindow();
@@ -437,7 +447,7 @@ public class DataToolTable extends DataTable {
 		OSPRuntime.setOSPAction(im, copy, "copy", am, new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				dataToolTab.copyTableDataToClipboard();
+				dataToolTab.copyTableDataToClipboard(true); // copy formatted data
 			}
 		});
 		// override default paste action
@@ -637,18 +647,52 @@ public class DataToolTable extends DataTable {
 					popup.addSeparator();
 				}
 				if (!isEmptyCells) {
-					// copy cells item
+					// copy cells menu
 					text = ToolsRes.getString("DataToolTable.Popup.MenuItem.CopyCells"); //$NON-NLS-1$
-					copyCellsItem = new JMenuItem(text);
-					copyCellsItem.setActionCommand(String.valueOf(col));
-					copyCellsItem.addActionListener(new ActionListener() {
+					copyCellsMenu = new JMenu(text);
+					popup.add(copyCellsMenu);
+					
+					copyCellsAsFormattedItem = new JMenuItem(ToolsRes.getString("DataTool.MenuItem.Formatted"));
+					copyCellsAsFormattedItem.setActionCommand(String.valueOf(col));
+					copyCellsAsFormattedItem.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							dataToolTab.copyTableDataToClipboard();
+							dataToolTab.copyTableDataToClipboard(true);
 						}
 
 					});
-					popup.add(copyCellsItem);
+					copyCellsMenu.add(copyCellsAsFormattedItem);
+					copyCellsRawItem = new JMenuItem(ToolsRes.getString("DataTool.MenuItem.Unformatted"));
+					copyCellsRawItem.setActionCommand(String.valueOf(col));
+					copyCellsRawItem.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							dataToolTab.copyTableDataToClipboard(false);
+						}
+
+					});
+					copyCellsMenu.add(copyCellsRawItem);
+					setDelimiterMenu = new JMenu(ToolsRes.getString("DataTool.Menu.SetDelimiter")); //$NON-NLS-1$
+					setDelimiterMenu.addMenuListener(new MenuListener() {
+
+						@Override
+						public void menuSelected(MenuEvent e) {
+							if (DataToolTable.this.dataToolTab.dataTool != null)
+								DataToolTable.this.dataToolTab.dataTool.setupDelimiterMenu(setDelimiterMenu);
+						}
+
+						@Override
+						public void menuDeselected(MenuEvent e) {
+						}
+
+						@Override
+						public void menuCanceled(MenuEvent e) {
+						}
+
+					});
+					copyCellsMenu.addSeparator();
+					copyCellsMenu.add(setDelimiterMenu);
+					
 					if (dataToolTab.isUserEditable() && !(data instanceof DataFunction)) {
 						// cut cells item
 						text = ToolsRes.getString("DataToolTable.Popup.MenuItem.CutCells"); //$NON-NLS-1$
@@ -657,7 +701,7 @@ public class DataToolTable extends DataTable {
 						cutCellsItem.addActionListener(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								copyCellsItem.doClick();
+								copyCellsAsFormattedItem.doClick();
 								clearCellsAction.actionPerformed(e);
 							}
 
@@ -753,7 +797,7 @@ public class DataToolTable extends DataTable {
 				public void actionPerformed(ActionEvent e) {
 					//OSPLog.debug("copying table data from " + getName()); //$NON-NLS-1$
 					OSPLog.finest("copying rows"); //$NON-NLS-1$
-					OSPRuntime.copy(dataToolTab.getSelectedTableData(), null);
+					OSPRuntime.copy(dataToolTab.getSelectedTableData(false, VideoIO.getDelimiter()), null);  
 				}
 
 			});
@@ -930,7 +974,7 @@ public class DataToolTable extends DataTable {
 		copyColumnsItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				dataToolTab.copyTableDataToClipboard();
+				dataToolTab.copyTableDataToClipboard(false); // raw data
 			}
 
 		});
@@ -1921,6 +1965,9 @@ public class DataToolTable extends DataTable {
 	 */
 	public void selectAllCells() {
 		selectAll();
+		if (getSelectedRows().length == 0) {
+			selectAll(); // DB 2021 selectAll no longer works first time--why???
+		}
 		requestFocusInWindow();
 	}
 
@@ -2438,6 +2485,7 @@ public class DataToolTable extends DataTable {
 			if (!isSelected) {
 				c.setBackground(dataToolTab.isDeletable(data) ? unlockedBG : lockedBG);
 			}
+
 			return c;
 		}
 
@@ -2678,6 +2726,8 @@ public class DataToolTable extends DataTable {
 			}
 			focusRow = row;
 			focusCol = col;
+			if (value instanceof Double && Double.isNaN(((Double)value).doubleValue()))
+				value = null;
 			field.setText((value == null) ? "" : String.valueOf(value)); //$NON-NLS-1$
 			field.setFont(DataToolTable.this.getFont());
 			return field;
@@ -2732,7 +2782,7 @@ public class DataToolTable extends DataTable {
 			columnName = colName;
 			this.target = target;
 			this.value = value;
-			String name = (colName == null) ? null : ": column \"" + colName + "\""; //$NON-NLS-1$ //$NON-NLS-2$
+//			String name = (colName == null) ? null : ": column \"" + colName + "\""; //$NON-NLS-1$ //$NON-NLS-2$
 			//OSPLog.finer(editTypes[type] + name);
 		}
 

@@ -96,6 +96,7 @@ import org.opensourcephysics.display.OSPFrame;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.display.TextFrame;
+import org.opensourcephysics.media.core.VideoIO;
 
 /**
  * This provides a GUI for analyzing OSP Data objects.
@@ -156,7 +157,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	protected JMenu copyMenu;
 	protected JMenuItem copyImageItem;
 	protected JMenuItem copyTabItem;
-	protected JMenuItem copyDataItem;
+	protected JMenu copyDataMenu, setDelimiterMenu;
+	protected JMenuItem copyDataAsFormattedItem, copyDataRawItem;
 	protected JMenu pasteMenu;
 	protected JMenuItem pasteTabItem;
 	protected JMenuItem pasteColumnsItem;
@@ -198,7 +200,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			copyMenu.removeAll();
 			if (tab != null) {
 				boolean isEmpty = tab.dataManager.getDatasetsRaw().isEmpty();
-				copyDataItem.setEnabled(!isEmpty);
+				copyDataMenu.setEnabled(!isEmpty);
 				if (!isEmpty) {
 					copyTabItem.setText(ToolsRes.getString("DataTool.MenuItem.CopyTab")); //$NON-NLS-1$
 					copyMenu.add(copyTabItem);
@@ -211,8 +213,17 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 					if ((selectedRows.length > 0) && !emptySelection) {
 						s = ToolsRes.getString("DataTool.MenuItem.CopySelectedData"); //$NON-NLS-1$
 					}
-					copyDataItem.setText(s);
-					copyMenu.add(copyDataItem);
+					copyDataMenu.setText(s);
+					copyDataMenu.removeAll();
+					copyDataRawItem.setText(ToolsRes.getString("DataTool.MenuItem.Unformatted"));
+					copyDataAsFormattedItem.setText(ToolsRes.getString("DataTool.MenuItem.Formatted"));
+					setDelimiterMenu.setText(ToolsRes.getString("DataTool.Menu.SetDelimiter")); //$NON-NLS-1$
+					copyDataMenu.add(copyDataAsFormattedItem);
+					copyDataMenu.add(copyDataRawItem);
+					copyDataMenu.addSeparator();
+					copyDataMenu.add(setDelimiterMenu);
+
+					copyMenu.add(copyDataMenu);
 					copyMenu.addSeparator();
 				}
 			}
@@ -534,7 +545,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			DataToolTab tab = getTab(index);
 			getFitBuilder().curveFitters.remove(tab.getCurveFitter());
 			tab.getCurveFitter().notifyTabRemoved();
-			String title = tabbedPane.getTitleAt(index);
+//			String title = tabbedPane.getTitleAt(index);
 			//OSPLog.finer("removing tab " + title); //$NON-NLS-1$
 			tabbedPane.removeTabAt(index);
 			refreshTabTitles();
@@ -1337,6 +1348,31 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		}
 		return openingLine;
 	}
+
+	protected void setupDelimiterMenu(JMenu menu) {
+		Action setDelimiterAction = new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				VideoIO.setDelimiter(e.getActionCommand());
+				refreshGUI();
+			}
+		};
+		ButtonGroup delimiterButtonGroup = new ButtonGroup();
+		menu.removeAll();
+		String delimiter = VideoIO.getDelimiter();
+
+		for (String key : VideoIO.getDelimiters().keySet()) {
+			String nextDelimiter = VideoIO.getDelimiters().get(key);
+			JMenuItem item = new JRadioButtonMenuItem(key);
+			item.setActionCommand(nextDelimiter);
+			item.addActionListener(setDelimiterAction);
+			delimiterButtonGroup.add(item);
+			menu.add(item);
+			if (delimiter.equals(nextDelimiter))
+				item.setSelected(true);
+		}
+	}
+
 
 	/**
 	 * Gets a unique name.
@@ -2330,7 +2366,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			if (!saveChangesAt(i)) {
 				return false;
 			}
-			String title = tabbedPane.getTitleAt(i);
+//			String title = tabbedPane.getTitleAt(i);
 			//OSPLog.finer("removing tab " + title); //$NON-NLS-1$
 			DataToolTab tab = getTab(i);
 			getFitBuilder().curveFitters.remove(tab.getCurveFitter());
@@ -2352,7 +2388,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			if (!saveChangesAt(i)) {
 				return false;
 			}
-			String title = tabbedPane.getTitleAt(i);
+//			String title = tabbedPane.getTitleAt(i);
 			//OSPLog.finer("removing tab " + title); //$NON-NLS-1$
 			DataToolTab tab = getTab(i);
 			getFitBuilder().curveFitters.remove(tab.getCurveFitter());
@@ -2734,7 +2770,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			exportItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					getSelectedTab().saveTableDataToFile();
+					getSelectedTab().saveTableDataToFile(false); // raw data
 				}
 
 			});
@@ -2838,12 +2874,38 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			}
 
 		});
-		copyDataItem = new JMenuItem();
-		copyDataItem.setAccelerator(KeyStroke.getKeyStroke('C', keyMask));
-		copyDataItem.addActionListener(new ActionListener() {
+		copyDataMenu = new JMenu();
+		copyDataAsFormattedItem = new JMenuItem();
+		copyDataAsFormattedItem.setAccelerator(KeyStroke.getKeyStroke('C', keyMask));
+		copyDataAsFormattedItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				getSelectedTab().copyTableDataToClipboard();
+				getSelectedTab().copyTableDataToClipboard(true);
+			}
+
+		});
+		copyDataRawItem = new JMenuItem();
+		copyDataRawItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				getSelectedTab().copyTableDataToClipboard(false);
+			}
+
+		});
+		setDelimiterMenu = new JMenu();
+		setDelimiterMenu.addMenuListener(new MenuListener() {
+
+			@Override
+			public void menuSelected(MenuEvent e) {
+				setupDelimiterMenu(setDelimiterMenu);
+			}
+
+			@Override
+			public void menuDeselected(MenuEvent e) {
+			}
+
+			@Override
+			public void menuCanceled(MenuEvent e) {
 			}
 
 		});
@@ -3489,7 +3551,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		 */
 		void refreshDataTextFromTable(boolean init) {
 			getSelectedTab().dataTable.selectAll();
-			String data = getSelectedTab().getSelectedTableData();
+			String data = getSelectedTab().getSelectedTableData(false, VideoIO.COMMA); // always show raw data
 			getSelectedTab().dataTable.clearSelection();
 			data = data.substring(data.indexOf("\n") + 1); // eliminates tab name			
 			if (data.length() == 0) { // no data

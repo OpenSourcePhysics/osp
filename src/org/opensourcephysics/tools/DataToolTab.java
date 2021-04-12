@@ -118,6 +118,7 @@ import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.display.axes.CartesianCoordinateStringBuilder;
 import org.opensourcephysics.display.axes.CartesianInteractive;
 import org.opensourcephysics.media.core.TPoint;
+import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.tools.DataToolTable.TableEdit;
 import org.opensourcephysics.tools.DataToolTable.WorkingDataset;
 import org.opensourcephysics.tools.DatasetCurveFitter.NumberField;
@@ -1036,7 +1037,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 *
 	 * @return the path of the saved file or null if failed
 	 */
-	protected String saveTableDataToFile() {
+	protected String saveTableDataToFile(boolean asFormatted) {
 		String tabName = getName();
 		OSPLog.finest("saving table data from " + tabName); //$NON-NLS-1$
 		JFileChooser chooser = OSPRuntime.getChooser();
@@ -1047,7 +1048,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			OSPRuntime.chooserDir = chooser.getCurrentDirectory().toString();
 			String fileName = chooser.getSelectedFile().getAbsolutePath();
 			fileName = XML.getRelativePath(fileName);
-			String data = getSelectedTableData();
+			String data = getSelectedTableData(asFormatted, VideoIO.getDelimiter());
 			return DataTool.write(data, fileName);
 		}
 		return null;
@@ -1056,8 +1057,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	/**
 	 * Copies the selected table data to the clipboard.
 	 */
-	protected void copyTableDataToClipboard() {
-		OSPRuntime.copy(getSelectedTableData(), null);
+	protected void copyTableDataToClipboard(boolean asFormatted) {
+		OSPRuntime.copy(getSelectedTableData(asFormatted, VideoIO.getDelimiter()), null);
 	}
 
 	/**
@@ -1065,13 +1066,21 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 * precede the data. Data rows are delimited by new lines ("\n"), columns by
 	 * tabs.
 	 *
+	 * @param asFormatted true to return formatted data
+	 * @param delimiter the columns delimiter to use
 	 * @return a String containing the data.
 	 */
-	protected String getSelectedTableData() {
+	protected String getSelectedTableData(boolean asFormatted, String delimiter) {
 		StringBuffer buf = new StringBuffer();
 		if (getName() != null) {
 			buf.append(getName() + "\n"); //$NON-NLS-1$
 		}
+		
+		if (asFormatted) {
+			buf.append(dataTable.getData(true));
+			return buf.toString();
+		}
+		
 		int[] columns = null;
 		if (dataTable.getRowCount() == 0) {
 			columns = new int[dataTable.getColumnCount() - 1];
@@ -1101,9 +1110,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				continue;
 			}
 			buf.append(dataTable.getColumnName(col));
-			buf.append("\t"); // tab after each column //$NON-NLS-1$
+			buf.append(delimiter); // delimiter after each column //$NON-NLS-1$
 		}
-		buf.setLength(buf.length() - 1); // remove last tab
+		buf.setLength(buf.length() - 1); // remove last delimiter
 		buf.append("\n"); //$NON-NLS-1$
 		java.text.DateFormat df = java.text.DateFormat.getInstance();
 		for (int i = 0; i < rows.length; i++) {
@@ -1115,15 +1124,17 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					continue;
 				}
 				Object value = dataTable.getValueAt(rows[i], col);
+				if (value instanceof Double && Double.isNaN(((Double)value).doubleValue()))
+					value = null;
 				if (value != null) {
 					if (value instanceof java.util.Date) {
 						value = df.format(value);
 					}
 					buf.append(value);
 				}
-				buf.append("\t"); // tab after each column //$NON-NLS-1$
+				buf.append(delimiter); // delimiter after each column //$NON-NLS-1$
 			}
-			buf.setLength(buf.length() - 1); // remove last tab
+			buf.setLength(buf.length() - 1); // remove last delimiter
 			buf.append("\n"); // new line after each row //$NON-NLS-1$
 		}
 		return buf.toString();
@@ -1370,6 +1381,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				refreshAll(DataTable.MODE_VALUES);
 				prevShiftX = -shiftXField.getValue();
 				prevShiftY = -shiftYField.getValue();
+				refreshGUI();
 			}
 		});
 		measureFitCheckbox = new JCheckBoxMenuItem();
@@ -1440,8 +1452,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		
 		
 		// create edit data button
-		editDataButton = DataTool.createButton("Edit Table as Text..."); 
-		editDataButton.setToolTipText("Edit data as comma-delimited text"); 
+		editDataButton = DataTool.createButton(ToolsRes.getString("DataToolTab.Button.EditAsText.Text")); 
+		editDataButton.setToolTipText(ToolsRes.getString("DataToolTab.Button.EditAsText.Tooltip")); 
 		editDataButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -2457,9 +2469,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		selectedYLabel.setText(plot.yVar);
 
 		toolbar.remove(newColumnButton);
-		if (userEditable) {
+		toolbar.remove(editDataButton);
+		if (isUserEditable()) {
 			int n = toolbar.getComponentIndex(helpButton);
 			toolbar.add(newColumnButton, n);
+			toolbar.add(editDataButton, n);			
 			toolbar.validate();
 		}
 		toolbar.remove(refreshDataButton);
@@ -3270,8 +3284,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 							mouseState = STATE_SELECT_REMOVE;
 							plot.setMouseCursor(SELECT_REMOVE_CURSOR);
 						case STATE_INACTIVE:
-							if (!OSPRuntime.isMac())
-								plot.setMouseCursor(SELECT_REMOVE_CURSOR);
+//							if (!OSPRuntime.isMac())
+//								plot.setMouseCursor(SELECT_REMOVE_CURSOR);
 						}
 						if (toggleMeasurement)
 							return;
