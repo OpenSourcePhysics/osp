@@ -73,7 +73,7 @@ import swingjs.api.JSUtilI;
  */
 public class OSPRuntime {
 
-	public static final String VERSION = "5.9.20210510"; //$NON-NLS-1$
+	public static final String VERSION = "6.0.0"; //$NON-NLS-1$
 	private static boolean isMac;
 
 	public static int macOffset; // shifts LR message box on Mac to avoid drag hot spot.
@@ -847,23 +847,29 @@ public class OSPRuntime {
 	}
 
 	/**
+	 * Gets a manifest attribute.
+	 * 
+	 * @return the String value or "" if not known
+	 */
+	public static String getManifestAttribute(JarFile jarFile, String attribute) {
+		try {
+			java.util.jar.Attributes att = jarFile.getManifest().getMainAttributes();
+			return att.getValue(attribute);
+		}
+		catch(Exception e) {			
+		}
+		return "";
+	}
+
+	/**
 	 * Gets the launch jar build date.
 	 * 
 	 * @return the build date, or "" if not launched from a jar or date not known
 	 */
 	public static String getLaunchJarBuildDate() {
 		if (buildDate == null) {
-			try {
 				JarFile jarfile = getLaunchJar();
-				if (jarfile == null) {
-//					buildDate = "<unknown>";
-					buildDate = "";
-				} else {
-					java.util.jar.Attributes att = jarfile.getManifest().getMainAttributes();
-					buildDate = att.getValue("Build-Date"); //$NON-NLS-1$
-				}
-			} catch (Exception ex) {
-			}
+				buildDate = getManifestAttribute(jarfile, "Build-Date");
 		}
 		return buildDate;
 	}
