@@ -24,6 +24,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.font.TextAttribute;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -2173,18 +2174,25 @@ public class DataTable extends JTable {
 			Font font = comp.getFont();
 //			if (OSPRuntime.isMac()) {
 				// textline doesn't work on OSX
-				comp.setFont((sortCol != convertColumnIndexToModel(col)) ? font.deriveFont(Font.PLAIN)
-						: font.deriveFont(Font.BOLD));
-				if (comp instanceof JLabel) {
-					JLabel label = (JLabel) comp;
-					label.setHorizontalAlignment(SwingConstants.CENTER);
-					if (label.getText().indexOf("{") >= 0) {
-						String s = TeXParser.toHTML(label.getText());
-						label.setText(s);
-					}
+			boolean isSortedCol = sortCol == convertColumnIndexToModel(col);
+			comp.setFont(!isSortedCol? font.deriveFont(Font.PLAIN)
+					: font.deriveFont(Font.BOLD));
+			if (comp instanceof JLabel) {
+				JLabel label = (JLabel) comp;
+				label.setHorizontalAlignment(SwingConstants.CENTER);
+				if (label.getText().indexOf("{") >= 0) {
+					String s = TeXParser.toHTML(label.getText());
+					label.setText(s);
 				}
-				return comp;
+				if (isSortedCol) {
+					font = label.getFont();
+					Map<TextAttribute, Object> attributes = new HashMap<>(font.getAttributes());
+					attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+					label.setFont(font.deriveFont(attributes));					
+				}
 			}
+			return comp;
+		}
 //			java.awt.Dimension dim = comp.getPreferredSize();
 //			dim.height += 1;
 //			panel.setPreferredSize(dim);
