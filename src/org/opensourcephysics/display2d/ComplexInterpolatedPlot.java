@@ -13,7 +13,6 @@ import java.awt.image.DataBufferByte;
 
 import javax.swing.JFrame;
 
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.DrawingPanel;

@@ -47,7 +47,6 @@ import java.util.function.Function;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.OSPRuntime;
@@ -55,7 +54,6 @@ import org.opensourcephysics.tools.Resource;
 import org.opensourcephysics.tools.ResourceLoader;
 
 import javajs.async.AsyncDialog;
-import javajs.async.SwingJSUtils.Performance;
 
 /**
  * This is a Video assembled from one or more still images.

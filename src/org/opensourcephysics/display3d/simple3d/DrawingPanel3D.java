@@ -33,11 +33,11 @@ import java.util.List;
 
 import javax.swing.JViewport;
 import javax.swing.event.MouseInputAdapter;
+
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.MessageDrawable;
 import org.opensourcephysics.display.OSPRuntime;
-import org.opensourcephysics.display.TextPanel;
 import org.opensourcephysics.display3d.core.interaction.InteractionEvent;
 import org.opensourcephysics.display3d.core.interaction.InteractionListener;
 import org.opensourcephysics.tools.VideoTool;
@@ -307,7 +307,8 @@ public void invalidate() {
 public BufferedImage render(BufferedImage image) {
     Graphics g = image.getGraphics();
     paintEverything(g, image.getWidth(null), image.getHeight(null));
-    Rectangle viewRect = this.viewRect; // reference for thread safety
+    @SuppressWarnings("unused")
+	Rectangle viewRect = this.viewRect; // reference for thread safety
     g.dispose(); // Disposes of the graphics context and releases any system resources that it is using.
     return image;
   }

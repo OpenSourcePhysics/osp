@@ -15,8 +15,6 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -24,7 +22,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 import javax.swing.BoxLayout;
@@ -42,7 +39,6 @@ import javax.swing.Timer;
 import javax.swing.TransferHandler;
 import javax.swing.WindowConstants;
 
-import javajs.async.SwingJSUtils.StateHelper;
 import javajs.util.VideoReader;
 import swingjs.api.JSUtilI;
 import swingjs.api.js.HTML5Video;
@@ -102,6 +98,7 @@ public class Test_Video {
 				return true;
 			}
 
+			@SuppressWarnings("unchecked")
 			@Override
 			public boolean importData(TransferHandler.TransferSupport support) {
 				try {
@@ -223,9 +220,9 @@ public class Test_Video {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String event = e.getActionCommand();
-				Object[] sources = (Object[]) e.getSource();
-				HTML5Video target = (HTML5Video) sources[0];
-				Object jsevent = sources[1];
+//				Object[] sources = (Object[]) e.getSource();
+//				HTML5Video target = (HTML5Video) sources[0];
+//				Object jsevent = sources[1];
 				System.out.println(event + " " + HTML5Video.getCurrentTime(jsvideo));
 				if (cbCapture != null && cbCapture.isSelected() && event.equals("canplaythrough")) {
 					grabImage();
@@ -258,9 +255,10 @@ public class Test_Video {
 
 	}
 
+	@SuppressWarnings("unused")
 	private void describeVideo(String resource, String name) throws IOException {
 		VideoReader vr = new VideoReader(resource);
-		List<Map<String, Object>> contents = vr.getContents(true);
+		//List<Map<String, Object>> contents = vr.getContents(true);
 		System.out.println("codec = " + vr.getCodec());
 		main.setTitle(name + " " + vr.getFileType() + "|" + vr.getCodec());
 	}
@@ -389,7 +387,7 @@ public class Test_Video {
 	private JCheckBox cbCapture;
 
 	private JCheckBox cbDiscrete;
-	private StateHelper helper;
+	//private StateHelper helper;
 
 	private JPanel getLayerPane(Dimension dim) {
 		lockDim(label, dim);

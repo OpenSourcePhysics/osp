@@ -41,7 +41,6 @@ import javax.swing.SwingUtilities;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
-import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.core.AsyncVideoI;
 import org.opensourcephysics.media.core.DoubleArray;
 import org.opensourcephysics.media.core.ImageCoordSystem;
@@ -625,6 +624,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 			if (canSeek) {
 				try {
 					
+					@SuppressWarnings("unused")
 					Runnable next = new Runnable() {
 
 						@Override

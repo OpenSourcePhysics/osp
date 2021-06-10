@@ -13,12 +13,11 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Iterator;
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -30,18 +29,15 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 import org.opensourcephysics.display.GUIUtils;
-import org.opensourcephysics.display.Hidable;
 import org.opensourcephysics.display.OSPFrame;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.numerics.DoubleArray;
 import org.opensourcephysics.numerics.IntegerArray;
 import org.opensourcephysics.tools.ToolsRes;
-import org.opensourcephysics.tools.Translator;
 
 /**
  * A Control that shows its parameters in a JTable. Custom buttons can be added.

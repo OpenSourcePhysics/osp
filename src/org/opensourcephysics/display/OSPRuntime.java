@@ -117,7 +117,7 @@ public class OSPRuntime {
 		}
 	}
 
-	private static String browser = (isJS ? null : "JAVA"); 
+//	private static String browser = (isJS ? null : "JAVA"); 
 
 	public static String getBrowserName() {
 		String sUsrAg = /** @j2sNative navigator.userAgent ||*/"";

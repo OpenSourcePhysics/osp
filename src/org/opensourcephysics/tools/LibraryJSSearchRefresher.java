@@ -40,8 +40,8 @@ public class LibraryJSSearchRefresher implements PropertyChangeListener {
 	private TreeMap<String, String> nameToPathMap = new TreeMap<String, String>();
 	private int currentIndex = 0;
 	private String usernameAndPW;
-	private long t0 = System.currentTimeMillis();
-	private long t;
+//	private long t0 = System.currentTimeMillis();
+//	private long t;
 
 	public static void main(String[] args) {
 		new LibraryJSSearchRefresher().refreshSearchData();
@@ -159,7 +159,7 @@ public class LibraryJSSearchRefresher implements PropertyChangeListener {
 	@Override
 	public void propertyChange(PropertyChangeEvent e) {
 		File file = (File) e.getNewValue();
-		long now = System.currentTimeMillis();
+		//long now = System.currentTimeMillis();
 		if (file.exists())
 			uploadToWeb(file.getAbsolutePath());
 		browser.closeTab(0);

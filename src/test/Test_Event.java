@@ -45,6 +45,7 @@ import javax.swing.Timer;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 
+@SuppressWarnings("unused")
 public class Test_Event extends JFrame {
 
 	static boolean logging = true;
@@ -366,6 +367,7 @@ public class Test_Event extends JFrame {
 
 	};
 
+	@Override
 	public boolean action(Event ae, Object s) {
 		if(logging)System.out.println("AWT action " + s + " " +ae);
 		return false;
@@ -544,6 +546,7 @@ public class Test_Event extends JFrame {
 		ptop.setOpaque(true);
 		
 		tarea = new TextArea(2,15) {
+			@Override
 			public boolean getFocusTraversalKeysEnabled() {
 				if(logging)System.out.println("checking textarea traversalkeys " + super.getFocusTraversalKeysEnabled());
 				return super.getFocusTraversalKeysEnabled();

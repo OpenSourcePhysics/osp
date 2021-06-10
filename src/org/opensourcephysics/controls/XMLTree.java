@@ -9,8 +9,8 @@ package org.opensourcephysics.controls;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.util.Enumeration;
+
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;

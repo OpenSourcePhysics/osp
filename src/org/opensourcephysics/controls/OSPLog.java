@@ -1035,6 +1035,7 @@ public class OSPLog extends JFrame {
 	 * @param name
 	 * @param resourceBundleName
 	 */
+	@SuppressWarnings("resource")
 	private OSPLog(String name, String resourceBundleName) {
 		super(ControlsRes.getString("OSPLog.DefaultTitle")); //$NON-NLS-1$
 		this.setName("LogTool"); // identify this as a tool //$NON-NLS-1$

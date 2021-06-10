@@ -43,7 +43,7 @@ public class Resource {
 	private String string;
 	private AudioClip clip;
 	private BufferedImage image;
-	private String zipContent;
+	//private String zipContent;
 	private URL contentURL;
 	private boolean isBytes;
 
@@ -86,7 +86,7 @@ public class Resource {
 	 */
 	protected Resource(URL zipURL, String content) {
 		this.url = zipURL; // url!/
-		zipContent = content; // !/content
+		//zipContent = content; // !/content
 		if (content != null)
 			try {
 				String path = zipURL.toExternalForm() + "!/" + content; //$NON-NLS-1$

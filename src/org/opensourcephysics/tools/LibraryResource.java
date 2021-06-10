@@ -23,7 +23,6 @@ import java.util.TreeSet;
 import javax.swing.Icon;
 import javax.swing.JButton;
 
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.OSPRuntime;

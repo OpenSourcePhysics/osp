@@ -31,6 +31,12 @@
 
 package test;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
 import javax.swing.DefaultCellEditor;
 
 /*
@@ -42,14 +48,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.EventObject;
 
 public class SimpleTableDemo extends JPanel {
     private boolean DEBUG = false;
@@ -81,7 +79,7 @@ public class SimpleTableDemo extends JPanel {
 	     "Pool", Integer.valueOf(10), Boolean.FALSE}
         };
         
-        Class<?>[] classes = {String.class, String.class, Integer.class, Boolean.class};
+        //Class<?>[] classes = {String.class, String.class, Integer.class, Boolean.class};
         
         final JTable table = new JTable(data, columnNames);
         System.out.println(table.getDefaultRenderer(Boolean.class));

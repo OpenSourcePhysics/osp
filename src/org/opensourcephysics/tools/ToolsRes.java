@@ -17,7 +17,6 @@ import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.opensourcephysics.controls.ControlsRes;
 import org.opensourcephysics.display.DisplayRes;
-import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.dialogs.DialogsRes;
 
 /**

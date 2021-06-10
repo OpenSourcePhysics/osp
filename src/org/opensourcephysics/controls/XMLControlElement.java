@@ -35,8 +35,6 @@ import javax.swing.JOptionPane;
 import org.opensourcephysics.tools.Resource;
 import org.opensourcephysics.tools.ResourceLoader;
 
-import javajs.async.SwingJSUtils.Performance;
-
 /**
  * This is a basic xml control for storing data.
  *
@@ -1551,7 +1549,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			readFailed = true;
 			return false;
 		}
-		long t0 = Performance.now(0);
+		//long t0 = Performance.now(0);
 		this.input = in;
 		readFailed = false;
 		try {

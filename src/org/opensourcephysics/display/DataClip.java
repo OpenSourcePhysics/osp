@@ -33,11 +33,11 @@ package org.opensourcephysics.display;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+
 import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
-import org.opensourcephysics.media.core.Trackable;
 
 /**
  * This defines a subset of data elements called steps. The steps are the

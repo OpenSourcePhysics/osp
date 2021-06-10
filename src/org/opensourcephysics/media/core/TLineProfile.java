@@ -33,8 +33,8 @@ package org.opensourcephysics.media.core;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+
 import org.opensourcephysics.display.DrawingPanel;
-import org.opensourcephysics.display.OSPRuntime;
 
 /**
  * This obtains line profile data from a video image.
