@@ -337,13 +337,10 @@ public class EncryptionTool extends JFrame implements Tool {
 	 * @return the name of the opened file, or null if none opened
 	 */
 	private String open() {
-		int result = OSPRuntime.getChooser().showOpenDialog(this);
-		if (result == JFileChooser.APPROVE_OPTION) {
+		OSPRuntime.getChooser().showOpenDialog(this, () -> {
 			OSPRuntime.chooserDir = OSPRuntime.getChooser().getCurrentDirectory().toString();
-			String fileName = OSPRuntime.getChooser().getSelectedFile().getAbsolutePath();
-			fileName = XML.getRelativePath(fileName);
-			return open(fileName);
-		}
+			open(XML.getRelativePath(OSPRuntime.getChooser().getSelectedFile().getAbsolutePath()));
+		}, null);
 		return null;
 	}
 
