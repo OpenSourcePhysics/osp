@@ -278,6 +278,7 @@ public class Resource {
 				image = new BufferedImage(im.getWidth(null), im.getHeight(null), bufferedImageType);
 				Graphics2D g2 = image.createGraphics();
 				g2.drawImage(im, 0, 0, null);
+				g2.dispose();
 			}
 		}
 		return image;
