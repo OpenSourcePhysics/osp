@@ -24,10 +24,13 @@
  */
 package org.opensourcephysics.media.core;
 
-import java.awt.*;
+import java.awt.AlphaComposite;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
