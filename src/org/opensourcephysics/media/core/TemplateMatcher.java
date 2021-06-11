@@ -31,8 +31,8 @@ import java.awt.Shape;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.awt.image.DataBufferInt;
+import java.util.BitSet;
 import java.util.TreeMap;
 
 import org.opensourcephysics.display.Dataset;
@@ -58,11 +58,10 @@ public class TemplateMatcher {
 	private Shape mask;
 	private int[] pixels, templateR, templateG, templateB;
 	private boolean[] isPixelTransparent;
-	private int[] targetPixels, matchPixels;
+	private int[] targetPixels;
 	private int wTemplate, hTemplate; // width and height of the template image
 	private int wTarget, hTarget; // width and height of the target image
 	private int wTest, hTest; // width and height of the tested image (in search rect)
-	private TPoint p = new TPoint(); // for general use in methods
 	private double largeNumber = 1.0E20; // bigger than any expected difference
 	private DatasetCurveFitter fitter; // used for Gaussian fit
 	private Dataset dataset; // used for Gaussian fit
@@ -103,27 +102,32 @@ public class TemplateMatcher {
 	 * @param image the template image
 	 */
 	public void setTemplate(BufferedImage image) {
-		if (template != null && image.getType() == BufferedImage.TYPE_INT_ARGB && wTemplate == image.getWidth()
-				&& hTemplate == image.getHeight()) {
-			template = image;
-			template.getRaster().getDataElements(0, 0, wTemplate, hTemplate, pixels);
-			// set up rgb and transparency arrays for fast matching
-			for (int i = 0; i < pixels.length; i++) {
-				int val = pixels[i];
-				templateR[i] = getRed(val); // red
-				templateG[i] = getGreen(val); // green
-				templateB[i] = getBlue(val); // blue
-				isPixelTransparent[i] = getAlpha(val) == 0; // alpha
-			}
-		} else {
-			if (image.getType() != BufferedImage.TYPE_INT_ARGB) {
-				original = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-				original.createGraphics().drawImage(image, 0, 0, null);
-			} else
-				original = image;
-			template = buildTemplate(original, 255, 0); // builds from scratch
-			setTemplate(template);
+		boolean isARGB = (image.getType() == BufferedImage.TYPE_INT_ARGB);
+		boolean isOK = (template != null && wTemplate == image.getWidth() && hTemplate == image.getHeight());
+		if (!isARGB || !isOK) {
+			original = ensureType(image, image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			image = buildTemplate(original, 255, 0); // builds from scratch
 		}
+		template = image;
+		pixels = getPixels(template);
+		// set up rgb and transparency arrays for fast matching
+		for (int i = pixels.length; --i >= 0;) {
+			int val = pixels[i];
+			templateR[i] = getRed(val); // red
+			templateG[i] = getGreen(val); // green
+			templateB[i] = getBlue(val); // blue
+			isPixelTransparent[i] = getAlpha(val) == 0; // alpha
+		}
+	}
+
+	/**
+	 * Gets the working image pixels used to generate the template.
+	 *
+	 * @param pixels int[] of pixels. If null, it will be created
+	 * @return the filled pixels array
+	 */
+	public int[] getWorkingPixels() {
+		return getPixels(working);
 	}
 
 	/**
@@ -155,6 +159,7 @@ public class TemplateMatcher {
 	public BufferedImage buildTemplate(BufferedImage image, int alphaInput, int alphaOriginal) {
 		int w = image.getWidth();
 		int h = image.getHeight();
+		int nPixels = w * h;
 		// return if image dimensions do not match original image
 		if (original.getWidth() != w || original.getHeight() != h)
 			return null;
@@ -165,31 +170,12 @@ public class TemplateMatcher {
 		alphas[0] = alphaInput;
 		alphas[1] = alphaOriginal;
 		// set up argb input image
-		BufferedImage input;
-		if (image.getType() == BufferedImage.TYPE_INT_ARGB)
-			input = image;
-		else {
-			input = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-			input.createGraphics().drawImage(image, 0, 0, null);
-		}
+		BufferedImage input = ensureType(image, w, h, BufferedImage.TYPE_INT_ARGB);
 		// create working image if needed
-		if (working == null) {
-			working = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-		}
-		// reset template dimensions and create new template if needed
-		if (template == null || w != wTemplate || h != hTemplate) {
-			wTemplate = w;
-			hTemplate = h;
-			int len = w * h;
-			template = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-			pixels = new int[len];
-			templateR = new int[len];
-			templateG = new int[len];
-			templateB = new int[len];
-			isPixelTransparent = new boolean[len];
-			matchPixels = new int[len];
-		}
+		working = ensureType(working, w, h, BufferedImage.TYPE_INT_ARGB);
+		
 		// set alpha of input and draw onto working
+		
 		Graphics2D gWorking = working.createGraphics();
 		alphaInput = Math.max(0, Math.min(255, alphaInput));
 		if (alphaInput > 0) { // overlay only if not transparent
@@ -202,86 +188,73 @@ public class TemplateMatcher {
 			gWorking.setComposite(getComposite(alphaOriginal));
 			gWorking.drawImage(original, 0, 0, null);
 		}
-		// read pixels from working raster
-		working.getRaster().getDataElements(0, 0, wTemplate, hTemplate, pixels);
+
+		pixels = getWorkingPixels();
+
+		// ensure template matches working
+		if (template == null || w != wTemplate || h != hTemplate) {
+			wTemplate = w;
+			hTemplate = h;
+			template = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+			templateR = new int[nPixels];
+			templateG = new int[nPixels];
+			templateB = new int[nPixels];
+			isPixelTransparent = new boolean[nPixels];
+		}
+
 		if (mask != null) {
 			// set pixels outside mask to transparent
-			for (int i = 0; i < pixels.length; i++) {
+			for (int i = nPixels; --i >= 0;) {
 				boolean inside = true;
 				// pixel is inside only if all corners are inside
 				int x = i % wTemplate, y = i / wTemplate;
 				for (int j = 0; j < 2; j++) {
 					for (int k = 0; k < 2; k++) {
-						p.setLocation(x + j, y + k);
-						inside = inside && mask.contains(p);
+						inside = inside && mask.contains(x + j, y + k);
 					}
 				}
 				if (!inside)
-					pixels[i] = pixels[i] & (0 << 24); // set alpha to zero (transparent)
+					pixels[i] = 0; // set alpha to zero (transparent)
 			}
 		}
-		// write pixels to template raster
-		template.getRaster().setDataElements(0, 0, wTemplate, hTemplate, pixels);
 		// trim transparent edges from template
-		int trimRight = 0, trimBottom = 0;
-		trimLeft = trimTop = 0;
+		BitSet bsOpaque = getOpaqueBS(pixels, wTemplate, hTemplate);
+		trimTop = bsOpaque.nextSetBit(0) / wTemplate;
+		int trimBottom = hTemplate - 1 - (bsOpaque.length() - 1) / wTemplate;
+		int trimRight = trimLeft = 0;
 		// left edge
-		boolean transparentEdge = true;
-		while (transparentEdge && trimLeft < wTemplate) {
-			for (int line = 0; line < hTemplate; line++) {
-				int i = line * wTemplate + trimLeft;
-				transparentEdge = transparentEdge && getAlpha(pixels[i]) == 0;
+		outl: while (trimLeft < wTemplate) {
+			for (int line = trimTop, wT = wTemplate, i = trimTop * wT + trimLeft; line < hTemplate; line++, i += wT) {
+				if (bsOpaque.get(i))
+					break outl;
 			}
-			if (transparentEdge)
-				trimLeft++;
+			trimLeft++;
 		}
 		// right edge
-		transparentEdge = true;
-		while (transparentEdge && (trimLeft + trimRight) < wTemplate) {
-			for (int line = 0; line < hTemplate; line++) {
-				int i = (line + 1) * wTemplate - 1 - trimRight;
-				transparentEdge = transparentEdge && getAlpha(pixels[i]) == 0;
+		outr: while ((trimLeft + trimRight) < wTemplate) {
+			for (int line = 0, wT = wTemplate, i = wT - 1 - trimRight; line < hTemplate; line++, i += wT) {
+				if (bsOpaque.get(i))
+					break outr;
 			}
-			if (transparentEdge)
-				trimRight++;
-		}
-		// top edge
-		transparentEdge = true;
-		while (transparentEdge && trimTop < hTemplate) {
-			for (int col = 0; col < wTemplate; col++) {
-				int i = trimTop * wTemplate + col;
-				transparentEdge = transparentEdge && getAlpha(pixels[i]) == 0;
-			}
-			if (transparentEdge)
-				trimTop++;
-		}
-		// bottom edge
-		transparentEdge = true;
-		while (transparentEdge && (trimTop + trimBottom) < hTemplate) {
-			for (int col = 0; col < wTemplate; col++) {
-				int i = (hTemplate - 1 - trimBottom) * wTemplate + col;
-				transparentEdge = transparentEdge && getAlpha(pixels[i]) == 0;
-			}
-			if (transparentEdge)
-				trimBottom++;
+			trimRight++;
 		}
 		// reduce size of template if needed
-		if (trimLeft + trimRight + trimTop + trimBottom > 0) {
+		if (trimLeft + trimRight + trimTop + trimBottom == 0) {
+			System.arraycopy(pixels, 0, getPixels(template), 0, nPixels);
+		} else {
+			int w0 = wTemplate;
 			wTemplate -= (trimLeft + trimRight);
 			hTemplate -= (trimTop + trimBottom);
 			wTemplate = Math.max(wTemplate, 1);
 			hTemplate = Math.max(hTemplate, 1);
 			int len = wTemplate * hTemplate;
-			pixels = new int[len];
 			templateR = new int[len];
 			templateG = new int[len];
 			templateB = new int[len];
 			isPixelTransparent = new boolean[len];
-			matchPixels = new int[len];
-			BufferedImage bi = new BufferedImage(wTemplate, hTemplate, BufferedImage.TYPE_INT_ARGB);
-			bi.createGraphics().drawImage(template, -trimLeft, -trimTop, null);
-			template = bi;
-			template.getRaster().getDataElements(0, 0, wTemplate, hTemplate, pixels);
+			template = new BufferedImage(wTemplate, hTemplate, BufferedImage.TYPE_INT_ARGB);
+			transferPixels(pixels, trimLeft, trimTop, w0, getPixels(template), wTemplate);
+			pixels = new int[len];
 		}
 		return template;
 	}
@@ -315,50 +288,50 @@ public class TemplateMatcher {
 	}
 
 	/**
-	 * Gets the working image pixels used to generate the template.
-	 *
-	 * @param pixels int[] of pixels. If null, it will be created
-	 * @return the filled pixels array
-	 */
-	public int[] getWorkingPixels(int[] pixels) {
-		if (pixels == null || pixels.length != wTemplate * hTemplate) {
-			pixels = new int[wTemplate * hTemplate];
-		}
-		working.getRaster().getDataElements(0, 0, wTemplate, hTemplate, pixels);
-		return pixels;
-	}
-
-	/**
 	 * Sets the working image pixels used to generate the template.
 	 *
 	 * @param pixels int[] of pixels
 	 */
 	public void setWorkingPixels(int[] pixels) {
-		if (pixels != null && pixels.length == wTemplate * hTemplate)
-			working.getRaster().setDataElements(0, 0, wTemplate, hTemplate, pixels);
+		if (pixels != null && pixels.length == wTemplate * hTemplate) {
+			int[] p = getWorkingPixels();
+			if (p != pixels)
+				System.arraycopy(pixels, 0, p, 0, p.length);
+		}
 	}
 
 	/**
 	 * Gets the template location at which the best match occurs in a rectangle. May
 	 * return null.
 	 * 
-	 * Template matching process: 1. At each test position in the search area, find
-	 * the RGB square deviation ("RGBSqD": sum of squares of rgb differences of all
-	 * pixels) between the template and video image. Note that the RGBSqD is zero
-	 * for a perfect match and larger for poorer matches. 2. Determine the average
-	 * RGBSqD for all test positions. 3. Define the position for which the RGBSqD is
-	 * minimum as the "working" best match. Define the peak height ("PH") of this
-	 * match to be PH = (avgRGBSqD/matchRGBSqD)-1. Note that the PH may vary from
-	 * zero to infinity. 4. If the PH exceeds the "Automark" setting, the match is
-	 * deemed to be a good one (i.e., significantly better than average). 5. For
-	 * sub-pixel accuracy, fit a Gaussian curve to the PHs of the working best match
-	 * and its immediate vertical and horizontal neighbors. Note that the 3-point
-	 * Gaussian fits should be exact. 6. The final best match (sub-pixel) is the
-	 * position of the peak of the Gaussian fit. 7. Note that the width of the
-	 * Gaussian fit is probably correlated with the uncertainty of the match
-	 * position, but it is not used to explicitly estimate this uncertainty except
-	 * that if the width > 1 pixel then the peak height is divided by that width.
-	 * This assures that very wide fits are not treated as good fits.
+	 * Template matching process:
+	 * 
+	 * 1. At each test position in the search area, find the RGB square deviation
+	 * ("RGBSqD": sum of squares of rgb differences of all pixels) between the
+	 * template and video image. Note that the RGBSqD is zero for a perfect match
+	 * and larger for poorer matches.
+	 * 
+	 * 2. Determine the average RGBSqD for all test positions.
+	 * 
+	 * 3. Define the position for which the RGBSqD is minimum as the "working" best
+	 * match. Define the peak height ("PH") of this match to be PH =
+	 * (avgRGBSqD/matchRGBSqD)-1. Note that the PH may vary from zero to infinity.
+	 * 
+	 * 4. If the PH exceeds the "Automark" setting, the match is deemed to be a good
+	 * one (i.e., significantly better than average).
+	 * 
+	 * 5. For sub-pixel accuracy, fit a Gaussian curve to the PHs of the working
+	 * best match and its immediate vertical and horizontal neighbors. Note that the
+	 * 3-point Gaussian fits should be exact.
+	 * 
+	 * 6. The final best match (sub-pixel) is the position of the peak of the
+	 * Gaussian fit.
+	 * 
+	 * 7. Note that the width of the Gaussian fit is probably correlated with the
+	 * uncertainty of the match position, but it is not used to explicitly estimate
+	 * this uncertainty except that if the width > 1 pixel then the peak height is
+	 * divided by that width. This assures that very wide fits are not treated as
+	 * good fits.
 	 *
 	 * @param target     the image to search
 	 * @param searchRect the rectangle to search within the target image
@@ -369,42 +342,37 @@ public class TemplateMatcher {
 		wTarget = target.getWidth();
 		hTarget = target.getHeight();
 		// determine insets needed to accommodate template
-		int left = wTemplate / 2, right = left;
-		if (wTemplate % 2 > 0)
-			right++;
-		int top = hTemplate / 2, bottom = top;
-		if (hTemplate % 2 > 0)
-			bottom++;
+		int left = wTemplate / 2;
+		int top = hTemplate / 2;
+		int right = left + (wTemplate % 2);
+		int bottom = top + (hTemplate % 2);
 		// trim search rectangle if necessary
-		searchRect.x = Math.max(left, Math.min(wTarget - right, searchRect.x));
-		searchRect.y = Math.max(top, Math.min(hTarget - bottom, searchRect.y));
-		searchRect.width = Math.min(wTarget - searchRect.x - right, searchRect.width);
-		searchRect.height = Math.min(hTarget - searchRect.y - bottom, searchRect.height);
-		if (searchRect.width <= 0 || searchRect.height <= 0) {
+		int sx = searchRect.x = Math.max(left, Math.min(wTarget - right, searchRect.x));
+		int sy = searchRect.y = Math.max(top, Math.min(hTarget - bottom, searchRect.y));
+		int sw = searchRect.width = Math.min(wTarget - sx - right, searchRect.width);
+		int sh = searchRect.height = Math.min(hTarget - sy - bottom, searchRect.height);
+		if (sw <= 0 || sh <= 0) {
 			peakHeight = Double.NaN;
 			peakWidth = Double.NaN;
 			return null;
 		}
 		// set up test pixels to search (rectangle plus template)
-		int xMin = Math.max(0, searchRect.x - left);
-		int xMax = Math.min(wTarget, searchRect.x + searchRect.width + right);
-		int yMin = Math.max(0, searchRect.y - top);
-		int yMax = Math.min(hTarget, searchRect.y + searchRect.height + bottom);
+		int xMin = Math.max(0, sx - left);
+		int xMax = Math.min(wTarget, sx + sw + right);
+		int yMin = Math.max(0, sy - top);
+		int yMax = Math.min(hTarget, sy + sh + bottom);
 		wTest = xMax - xMin;
 		hTest = yMax - yMin;
-		if (target.getType() != BufferedImage.TYPE_INT_RGB) {
-			BufferedImage image = new BufferedImage(wTarget, hTarget, BufferedImage.TYPE_INT_RGB);
-			image.createGraphics().drawImage(target, 0, 0, null);
-			target = image;
-		}
+		target = ensureType(target, wTarget, hTarget, BufferedImage.TYPE_INT_RGB);
 		targetPixels = new int[wTest * hTest];
-		target.getRaster().getDataElements(xMin, yMin, wTest, hTest, targetPixels);
+		// target.getRaster().getDataElements(xMin, yMin, wTest, hTest, targetPixels);
+		transferPixels(getPixels(target), xMin, yMin, wTarget, targetPixels, wTest);
 		// find the rectangle point with the minimum difference
 		double matchDiff = largeNumber; // larger than typical differences
 		int xMatch = 0, yMatch = 0;
 		double avgDiff = 0;
-		for (int x = 0; x <= searchRect.width; x++) {
-			for (int y = 0; y <= searchRect.height; y++) {
+		for (int x = 0; x < sw; x++) { // BH this was <=, but then we are checking past the edge
+			for (int y = 0; y < sh; y++) { // BH same here.
 
 				double diff = getDifferenceAtTestPoint(x, y);
 				avgDiff += diff;
@@ -415,7 +383,7 @@ public class TemplateMatcher {
 				}
 			}
 		}
-		avgDiff /= (searchRect.width * searchRect.height);
+		avgDiff /= (sw * sh);
 		peakHeight = avgDiff / matchDiff - 1;
 		peakWidth = Double.NaN;
 		double dx = 0, dy = 0;
@@ -497,33 +465,10 @@ public class TemplateMatcher {
 			}
 		}
 
-		xMatch = xMatch + searchRect.x - left - trimLeft;
-		yMatch = yMatch + searchRect.y - top - trimTop;
+		xMatch += sx - left - trimLeft;
+		yMatch += sy - top - trimTop;
 		refreshMatchImage(target, xMatch, yMatch);
 		return new TPoint(xMatch + dx, yMatch + dy);
-	}
-
-	/**
-	 * Refreshes the match image.
-	 *
-	 * @param target the matched image
-	 * @param x      the match x-position
-	 * @param y      the match y-position
-	 */
-	private void refreshMatchImage(BufferedImage target, int x, int y) {
-		target.getRaster().getDataElements(x + 1, y + 1, wTemplate, hTemplate, matchPixels);
-		for (int i = 0; i < matchPixels.length; i++) {
-			matchPixels[i] = getValue(isPixelTransparent[i] ? 0 : 255, matchPixels[i]);
-//    	if (!isPixelTransparent[i])
-//    		matchPixels[i] = getValue(255, matchPixels[i]);
-//    	else {
-//    		matchPixels[i] = getValue(0, matchPixels[i]);
-//    	}
-		}
-		if (match == null || match.getWidth() != wTemplate || match.getHeight() != hTemplate) {
-			match = new BufferedImage(wTemplate, hTemplate, BufferedImage.TYPE_INT_ARGB);
-		}
-		match.getRaster().setDataElements(0, 0, wTemplate, hTemplate, matchPixels);
 	}
 
 	/**
@@ -543,82 +488,80 @@ public class TemplateMatcher {
 		wTarget = target.getWidth();
 		hTarget = target.getHeight();
 		// determine insets needed to accommodate template
-		int left = wTemplate / 2, right = left;
-		if (wTemplate % 2 > 0)
-			right++;
-		int top = hTemplate / 2, bottom = top;
-		if (hTemplate % 2 > 0)
-			bottom++;
+		int left = wTemplate / 2;
+		int right = left + (wTemplate % 2);
+		int top = hTemplate / 2;
+		int bottom = top + (hTemplate % 2);
 
 		// trim search rectangle if necessary
-		searchRect.x = Math.max(left, Math.min(wTarget - right, searchRect.x));
-		searchRect.y = Math.max(top, Math.min(hTarget - bottom, searchRect.y));
-		searchRect.width = Math.min(wTarget - searchRect.x - right, searchRect.width);
-		searchRect.height = Math.min(hTarget - searchRect.y - bottom, searchRect.height);
-		if (searchRect.width <= 0 || searchRect.height <= 0) { // not able to search
+		int sx = searchRect.x = Math.max(left, Math.min(wTarget - right, searchRect.x));
+		int sy = searchRect.y = Math.max(top, Math.min(hTarget - bottom, searchRect.y));
+		int sw = searchRect.width = Math.min(wTarget - sx - right, searchRect.width);
+		int sh = searchRect.height = Math.min(hTarget - sy - bottom, searchRect.height);
+		if (sw <= 0 || sh <= 0) { // not able to search
 			peakHeight = Double.NaN;
 			peakWidth = Double.NaN;
 			return null;
 		}
 		// set up test pixels to search (rectangle plus template)
-		int xMin = Math.max(0, searchRect.x - left);
-		int xMax = Math.min(wTarget, searchRect.x + searchRect.width + right);
-		int yMin = Math.max(0, searchRect.y - top);
-		int yMax = Math.min(hTarget, searchRect.y + searchRect.height + bottom);
+		int xMin = Math.max(0, sx - left);
+		int xMax = Math.min(wTarget, sx + sw + right);
+		int yMin = Math.max(0, sy - top);
+		int yMax = Math.min(hTarget, sy + sh + bottom);
 		wTest = xMax - xMin;
 		hTest = yMax - yMin;
-		if (target.getType() != BufferedImage.TYPE_INT_RGB) {
-			BufferedImage image = new BufferedImage(wTarget, hTarget, BufferedImage.TYPE_INT_RGB);
-			image.createGraphics().drawImage(target, 0, 0, null);
-			target = image;
-		}
-		targetPixels = new int[wTest * hTest];
-		target.getRaster().getDataElements(xMin, yMin, wTest, hTest, targetPixels);
+		target = ensureType(target, wTarget, hTarget, BufferedImage.TYPE_INT_RGB);
+		targetPixels = getPixels(target);
+		//new int[wTest * hTest];
+		//target.getRaster().getDataElements(xMin, yMin, wTest, hTest, targetPixels);
 		// get the points to search along the line
-		ArrayList<Point2D> searchPts = getSearchPoints(searchRect, x0, y0, theta);
+		int[][] searchPts = getSearchPoints(searchRect, x0, y0, theta);
 		if (searchPts == null) { // not able to search
 			peakHeight = Double.NaN;
 			peakWidth = -1;
 			return null;
 		}
 		// collect differences in a map as they are measured
-		HashMap<Point2D, Double> diffs = new HashMap<Point2D, Double>();
+		double[] diffs = new double[searchPts.length];
 		// find the point with the minimum difference from template
 		double matchDiff = largeNumber; // larger than typical differences
 		int xMatch = 0, yMatch = 0;
 		double avgDiff = 0;
-		Point2D matchPt = null;
-		for (Point2D pt : searchPts) {
-			int x = (int) pt.getX();
-			int y = (int) pt.getY();
+		int[] matchPt = null;
+		int matchIndex = -1;
+		for (int i = searchPts.length; --i >= 0;) {
+			int[] pt = searchPts[i];
+			int x = pt[0];
+			int y = pt[1];
 			double diff = getDifferenceAtTestPoint(x, y);
-			diffs.put(pt, diff);
+			diffs[i] = diff;
 			avgDiff += diff;
 			if (diff < matchDiff) {
 				matchDiff = diff;
 				xMatch = x;
 				yMatch = y;
 				matchPt = pt;
+				matchIndex = i;
 			}
 		}
-		avgDiff /= searchPts.size();
+		avgDiff /= searchPts.length;
 		peakHeight = avgDiff / matchDiff - 1;
 		peakWidth = Double.NaN;
 		double dl = 0;
-		int matchIndex = searchPts.indexOf(matchPt);
 
 		// if match is not exact, fit a Gaussian and find peak
-		if (!Double.isInfinite(peakHeight) && matchIndex > 0 && matchIndex < searchPts.size() - 1) {
+		if (!Double.isInfinite(peakHeight) && matchIndex > 0 && matchIndex < searchPts.length - 1) {
 			// fill data arrays
-			Point2D pt = searchPts.get(matchIndex - 1);
-			double diff = diffs.get(pt);
-			xValues[0] = -pt.distance(matchPt);
+			int[] pt = searchPts[matchIndex - 1];
+			double diff = diffs[matchIndex - 1];
+			int dx;
+			xValues[0] = -Math.sqrt((dx = pt[0] - matchPt[0]) * dx + (dx = pt[1] - matchPt[1]) * dx);
 			yValues[0] = avgDiff / diff - 1;
 			xValues[1] = 0;
 			yValues[1] = peakHeight;
-			pt = searchPts.get(matchIndex + 1);
-			diff = diffs.get(pt);
-			xValues[2] = pt.distance(matchPt);
+			pt = searchPts[matchIndex + 1];
+			diff = diffs[matchIndex + 1];
+			xValues[2] = Math.sqrt((dx = pt[0] - matchPt[0]) * dx + (dx = pt[1] - matchPt[1]) * dx);
 			yValues[2] = avgDiff / diff - 1;
 
 			// determine approximate offset (dl) and width (w) values
@@ -652,8 +595,8 @@ public class TemplateMatcher {
 		}
 		double dx = dl * Math.cos(theta);
 		double dy = dl * Math.sin(theta);
-		xMatch = xMatch + searchRect.x - left - trimLeft;
-		yMatch = yMatch + searchRect.y - top - trimTop;
+		xMatch = xMatch + sx - left - trimLeft;
+		yMatch = yMatch + sy - top - trimTop;
 		refreshMatchImage(target, xMatch, yMatch);
 		return new TPoint(xMatch + dx, yMatch + dy);
 	}
@@ -674,13 +617,18 @@ public class TemplateMatcher {
 	 * used to determine whether a match is acceptable. A peak height greater than 5
 	 * is a reasonable standard for acceptability.
 	 * 
-	 * Special cases: 1. If the match is perfect, then the height is infinite and
-	 * the width NaN. 2. If the searchRect fell outside the target image, then no
-	 * match was possible and both the width and height are NaN. 3. If there were no
-	 * points to search along the 1D x-axis path, then the height is NaN and the
-	 * width is negative. 4. If the Gaussian fit optimization was not successful
-	 * (either horizontally or vertically) then the height is finite and the width
-	 * is NaN.
+	 * Special cases:
+	 * 
+	 * 1. If the match is perfect, then the height is infinite and the width NaN.
+	 * 
+	 * 2. If the searchRect fell outside the target image, then no match was
+	 * possible and both the width and height are NaN.
+	 * 
+	 * 3. If there were no points to search along the 1D x-axis path, then the
+	 * height is NaN and the width is negative.
+	 * 
+	 * 4. If the Gaussian fit optimization was not successful (either horizontally
+	 * or vertically) then the height is finite and the width is NaN.
 	 *
 	 * @return double[2] {mean Gaussian width, height}
 	 */
@@ -696,10 +644,11 @@ public class TemplateMatcher {
 	 * @return the integer value
 	 */
 	public static int getValue(int a, int argb) {
-		int r = getRed(argb);
-		int g = getGreen(argb);
-		int b = getBlue(argb);
-		return getValue(a, r, g, b);
+		return argb & 0xFFFFFF | (a << 24);
+//		int r = getRed(argb);
+//		int g = getGreen(argb);
+//		int b = getBlue(argb);
+//		return getValue(a, r, g, b);
 	}
 
 	/**
@@ -712,8 +661,7 @@ public class TemplateMatcher {
 	 * @return the integer value
 	 */
 	public static int getValue(int a, int r, int g, int b) {
-		int value = (a << 24) + (r << 16) + (g << 8) + b;
-		return value;
+		return (a << 24) + (r << 16) + (g << 8) + b;
 	}
 
 	/**
@@ -763,164 +711,21 @@ public class TemplateMatcher {
 //_____________________________ private methods _______________________
 
 	/**
-	 * Gets a list of Point2D objects that lie within pixels in a rectangle and
-	 * along a line.
-	 * 
-	 * @param searchRect the rectangle
-	 * @param x0         the x-component of a point on the line
-	 * @param y0         the y-component of a point on the line
-	 * @param theta      the angle of the line
-	 * @return a list of Point2D
+	 * Refreshes the match image.
+	 *
+	 * @param target the matched image
+	 * @param x      the match x-position
+	 * @param y      the match y-position
 	 */
-	public ArrayList<Point2D> getSearchPoints(Rectangle searchRect, double x0, double y0, double theta) {
-		double slope = -Math.tan(theta);
-		// create line to search along
-		Line2D line = new Line2D.Double();
-		if (Math.abs(slope) > LARGE_NUMBER) { // vertical axis
-			line.setLine(x0, y0, x0, y0 + 1);
-		} else if (Math.abs(slope) < 1 / LARGE_NUMBER) { // horizontal axis
-			line.setLine(x0, y0, x0 + 1, y0);
-		} else {
-			line.setLine(x0, y0, x0 + 1, y0 + slope);
+	private void refreshMatchImage(BufferedImage target, int x, int y) {
+		if (match == null || match.getWidth() != wTemplate || match.getHeight() != hTemplate) {
+			match = new BufferedImage(wTemplate, hTemplate, BufferedImage.TYPE_INT_ARGB);
 		}
-		// create intersection points (to set line ends)
-		Point2D p1 = new Point2D.Double();
-		Point2D p2 = new Point2D.Double(Double.NaN, Double.NaN);
-		Point2D p = p1;
-		boolean foundBoth = false;
-		double d = searchRect.x;
-		Object[] data = getDistanceAndPointAtX(line, d);
-		if (data != null) {
-			p.setLocation((Point2D) data[1]);
-			if (p.getY() >= searchRect.y && p.getY() <= searchRect.y + searchRect.height) {
-				// line end is left edge
-				p = p2;
-			}
+		int[] matchPixels = getPixels(match);
+		transferPixels(getPixels(target), x + 1, y + 1, wTarget, matchPixels, wTemplate);
+		for (int i = matchPixels.length; --i >= 0;) {
+			matchPixels[i] = getValue(isPixelTransparent[i] ? 0 : 255, matchPixels[i]);
 		}
-		d += searchRect.width;
-		data = getDistanceAndPointAtX(line, d);
-		if (data != null) {
-			p.setLocation((Point2D) data[1]);
-			if (p.getY() >= searchRect.y && p.getY() <= searchRect.y + searchRect.height) {
-				// line end is right edge
-				if (p == p1)
-					p = p2;
-				else
-					foundBoth = true;
-			}
-		}
-		if (!foundBoth) {
-			d = searchRect.y;
-			data = getDistanceAndPointAtY(line, d);
-			if (data != null) {
-				p.setLocation((Point2D) data[1]);
-				if (p.getX() >= searchRect.x && p.getX() <= searchRect.x + searchRect.width) {
-					// line end is top edge
-					if (p == p1)
-						p = p2;
-					else if (!p1.equals(p2))
-						foundBoth = true;
-				}
-			}
-		}
-		if (!foundBoth) {
-			d += searchRect.height;
-			data = getDistanceAndPointAtY(line, d);
-			if (data != null) {
-				p.setLocation((Point2D) data[1]);
-				if (p.getX() >= searchRect.x && p.getX() <= searchRect.x + searchRect.width) {
-					// line end is bottom edge
-					if (p == p2 && !p1.equals(p2))
-						foundBoth = true;
-				}
-			}
-		}
-		// if both line ends have been found, use line to find pixels to search
-		if (foundBoth) {
-			// set line ends to intersections
-			line.setLine(p1, p2);
-			if (p1.getX() > p2.getX()) {
-				line.setLine(p2, p1);
-			}
-			// find pixel intersections that fall along the line
-			int xMin = (int) Math.ceil(Math.min(p1.getX(), p2.getX()));
-			int xMax = (int) Math.floor(Math.max(p1.getX(), p2.getX()));
-			int yMin = (int) Math.ceil(Math.min(p1.getY(), p2.getY()));
-			int yMax = (int) Math.floor(Math.max(p1.getY(), p2.getY()));
-			// collect intersections in TreeMap sorted by position along line
-			TreeMap<Double, Point2D> intersections = new TreeMap<Double, Point2D>();
-			for (int x = xMin; x <= xMax; x++) {
-				Object[] next = getDistanceAndPointAtX(line, x);
-				if (next == null)
-					continue;
-				intersections.put((Double) next[0], (Point2D) next[1]);
-			}
-			for (int y = yMin; y <= yMax; y++) {
-				Object[] next = getDistanceAndPointAtY(line, y);
-				if (next == null)
-					continue;
-				intersections.put((Double) next[0], (Point2D) next[1]);
-			}
-			p = null;
-			// create array of search points that are midway between intersections
-			ArrayList<Point2D> searchPts = new ArrayList<Point2D>();
-			for (Double key : intersections.keySet()) {
-				Point2D next = intersections.get(key);
-				if (p != null) {
-					double x = (p.getX() + next.getX()) / 2 - searchRect.x;
-					double y = (p.getY() + next.getY()) / 2 - searchRect.y;
-					p.setLocation(x, y);
-					searchPts.add(p);
-				}
-				p = next;
-			}
-			return searchPts;
-		}
-		return null;
-	}
-
-	/**
-	 * Gets the distance and point along a Line2D at a specified x. If the Line2D is
-	 * vertical this returns null.
-	 * 
-	 * Based on a simplification of algorithm described by Paul Burke at
-	 * http://local.wasp.uwa.edu.au/~pbourke/geometry/lineline2d/ (April 1986)
-	 * 
-	 * @param line the line
-	 * @param x    the value of x
-	 * @return Object[] {fractional distance from line end, Point2D}
-	 */
-	private Object[] getDistanceAndPointAtX(Line2D line, double x) {
-		double dx = line.getX2() - line.getX1();
-		// if line is vertical, return null
-		if (dx == 0)
-			return null;
-		// parametric eqn of line: P = P1 + u(P2 - P1)
-		double u = (x - line.getX1()) / dx;
-		double y = line.getY1() + u * (line.getY2() - line.getY1());
-		return new Object[] { u, new Point2D.Double(x, y) };
-	}
-
-	/**
-	 * Gets the distance and point along a Line2D at a specified y. If the Line2D is
-	 * horizontal this returns null.
-	 * 
-	 * Based on a simplification of algorithm described by Paul Burke at
-	 * http://local.wasp.uwa.edu.au/~pbourke/geometry/lineline2d/ (April 1986)
-	 * 
-	 * @param line the line
-	 * @param y    the value of y
-	 * @return Object[] {fractional distance from line end, Point2D}
-	 */
-	private Object[] getDistanceAndPointAtY(Line2D line, double y) {
-		double dy = line.getY2() - line.getY1();
-		// if line is horizontal, return null
-		if (dy == 0)
-			return null;
-		// parametric eqn of line: P = P1 + u(P2 - P1)
-		double u = (y - line.getY1()) / dy;
-		double x = line.getX1() + u * (line.getX2() - line.getX1());
-		return new Object[] { u, new Point2D.Double(x, y) };
 	}
 
 	/**
@@ -935,16 +740,19 @@ public class TemplateMatcher {
 		// for each pixel in template, get difference from corresponding test pixel
 		// return sum of these differences
 		double diff = 0;
-		for (int i = 0; i < wTemplate; i++) {
-			for (int j = 0; j < hTemplate; j++) {
-				int templateIndex = j * wTemplate + i;
-				int testIndex = (y + j) * wTest + x + i;
-				if (testIndex < 0 || testIndex >= targetPixels.length)
+		int xyoff = y * wTest + x;
+		// last point on target is the first point plus the target width times one less
+		// than the number of lines in the template plus the width of the template.
+		int pmax = xyoff + (hTemplate - 1) * wTest + wTemplate;
+		if (xyoff < 0 || pmax >= targetPixels.length)
+			return Double.NaN;
+		for (int j = 0, tpt = 0, targetIndex = xyoff, dw = wTest - wTemplate; j < hTemplate; j++, targetIndex += dw) {
+			for (int i = 0; i < wTemplate; i++, tpt++, targetIndex++) {
+				if (targetIndex >= targetPixels.length)
 					return Double.NaN; // may occur when doing Gaussian fit
-				if (!isPixelTransparent[templateIndex]) { // include only non-transparent pixels
-					int pixel = targetPixels[testIndex];
-					diff += getRGBDifference(pixel, templateR[templateIndex], templateG[templateIndex],
-							templateB[templateIndex]);
+				if (!isPixelTransparent[tpt]) { // include only non-transparent pixels
+					int pixel = targetPixels[targetIndex];
+					diff += getRGBDiffSquared(pixel, templateR[tpt], templateG[tpt], templateB[tpt]);
 				}
 			}
 		}
@@ -952,24 +760,245 @@ public class TemplateMatcher {
 	}
 
 	/**
-	 * Gets the difference between a pixel and a comparison set of rgb components.
+	 * Gets a list of Point2D objects that lie within pixels in a rectangle and
+	 * along a line.
+	 * 
+	 * @param searchRect the rectangle
+	 * @param x0         the x-component of a point on the line
+	 * @param y0         the y-component of a point on the line
+	 * @param theta      the angle of the line
+	 * @return a list of Point2D
 	 */
-	private double getRGBDifference(int pixel, int r, int g, int b) {
-		int rPix = (pixel >> 16) & 0xff; // red
-		int gPix = (pixel >> 8) & 0xff; // green
-		int bPix = (pixel) & 0xff; // blue
-		int dr = r - rPix;
-		int dg = g - gPix;
-		int db = b - bPix;
-		return dr * dr + dg * dg + db * db; // sum of squares of rgb differences
+	private int[][] getSearchPoints(Rectangle searchRect, double x0, double y0, double theta) {
+		int sx = searchRect.x;
+		int sy = searchRect.y;
+		int sh = searchRect.height;
+		int sw = searchRect.width;
+		double slope = -Math.tan(theta);
+		// create line to search along
+		Line2D.Double line = new Line2D.Double();
+		if (Math.abs(slope) > LARGE_NUMBER) { // vertical axis
+			line.setLine(x0, y0, x0, y0 + 1);
+		} else if (Math.abs(slope) < 1 / LARGE_NUMBER) { // horizontal axis
+			line.setLine(x0, y0, x0 + 1, y0);
+		} else {
+			line.setLine(x0, y0, x0 + 1, y0 + slope);
+		}
+		double[] uxy = new double[3];
+		// create intersection points (to set line ends)
+		double[] p1 = new double[2];
+		double[] p2 = new double[] { Double.NaN, Double.NaN };
+		double[] p = p1;
+//		Point2D.Double p1 = new Point2D.Double();
+//		Point2D.Double p2 = new Point2D.Double(Double.NaN, Double.NaN);
+//		Point2D.Double p = p1;
+		boolean foundBoth = false;
+		double d = sx;
+		if (getDistanceAndPointAtX(line, d, uxy)) {
+			p[0] = uxy[1];
+			p[1] = uxy[2];// .setLocation(uxy[1], uxy[2]);
+			if (p[1] >= sy && p[1] <= sy + sh) {
+				// line end is left edge
+				// first found is p1, set for p2
+				p = p2;
+			}
+		}
+		d += sw;
+		if (getDistanceAndPointAtX(line, d, uxy)) {
+			p[0] = uxy[1];
+			p[1] = uxy[2];// .setLocation(uxy[1], uxy[2]);
+			if (p[1] >= sy && p[1] <= sy + sh) {
+				if (p == p1) {
+					// nothing was found in the first round, above
+					// line end is right edge
+					p = p2;
+				} else {
+					foundBoth = true;
+				}
+			}
+		}
+		if (!foundBoth) {
+			d = sy;
+			if (getDistanceAndPointAtY(line, d, uxy)) {
+				p[0] = uxy[1];
+				p[1] = uxy[2];// .setLocation(uxy[1], uxy[2]);
+				if (p[0] >= sx && p[0] <= sx + sw) {
+					// line end is top edge
+					if (p == p1) {
+						p = p2;
+					} else if (p1[0] != p2[0] || p1[1] != p2[1]) { // !p1.equals(p2)
+						foundBoth = true;
+					}
+				}
+			}
+		}
+		if (!foundBoth) {
+			d += sh;
+			if (getDistanceAndPointAtY(line, d, uxy)) {
+				p[0] = uxy[1];
+				p[1] = uxy[2];// .setLocation(uxy[1], uxy[2]);
+				if (p[0] >= sx && p[0] <= sx + sw) {
+					// line end is bottom edge
+					if (p == p2 && (p1[0] != p2[0] || p1[1] != p2[1])) { // !p1.equals(p2))
+						foundBoth = true;
+					}
+				}
+			}
+		}
+		// if both line ends have been found, use line to find pixels to search
+		if (!foundBoth)
+			return null;
+		// set line ends to intersections
+		if (p1[0] <= p2[0]) {
+			line.setLine(p1[0], p1[1], p2[0], p2[1]);
+		} else {
+			line.setLine(p2[0], p2[1], p1[0], p1[1]);
+		}
+		// find pixel intersections that fall along the line
+		int xMin = (int) Math.ceil(Math.min(p1[0], p2[0]));
+		int xMax = (int) Math.floor(Math.max(p1[0], p2[0]));
+		int yMin = (int) Math.ceil(Math.min(p1[1], p2[1]));
+		int yMax = (int) Math.floor(Math.max(p1[1], p2[1]));
+		// collect intersections in TreeMap sorted by position along line
+		TreeMap<Double, double[]> intersections = new TreeMap<>();
+		for (int x = xMin; x <= xMax; x++) {
+			if (getDistanceAndPointAtX(line, x, uxy))
+				intersections.put(uxy[0], new double[] { uxy[1], uxy[2] });
+		}
+		for (int y = yMin; y <= yMax; y++) {
+			if (getDistanceAndPointAtY(line, y, uxy))
+				intersections.put(uxy[0], new double[] { uxy[1], uxy[2] });
+		}
+		// create array of search points that are midway between intersections
+
+		int[][] pts = new int[intersections.size() - 1][2];
+		int i = -1;
+		double[] pxy = null;
+		for (double[] next : intersections.values()) {
+			if (i >= 0) {
+				pts[i][0] = (int) ((pxy[0] + next[0]) / 2) - sx;
+				pts[i][1] = (int) ((pxy[1] + next[1]) / 2) - sy;
+			}
+			pxy = next;
+			i++;
+		}
+		return pts;
+	}
+
+	/**
+	 * Gets the distance and point along a Line2D at a specified x. If the Line2D is
+	 * vertical this returns null.
+	 * 
+	 * Based on a simplification of algorithm described by Paul Burke at
+	 * http://local.wasp.uwa.edu.au/~pbourke/geometry/lineline2d/ (April 1986)
+	 * 
+	 * @param line the line
+	 * @param x    the value of x
+	 * @return Object[] {fractional distance from line end, Point2D}
+	 */
+	private static boolean getDistanceAndPointAtX(Line2D.Double line, double x, double[] uxy) {
+		double dx = line.x2 - line.x1;
+		// if line is vertical, return null
+		if (dx == 0)
+			return false;
+		// parametric eqn of line: P = P1 + u(P2 - P1)
+		uxy[0] = (x - line.x1) / dx;
+		uxy[1] = x;
+		uxy[2] = line.y1 + uxy[0] * (line.y2 - line.y1);
+		return true;
+	}
+
+	/**
+	 * Gets the distance and point along a Line2D at a specified y. If the Line2D is
+	 * horizontal this returns null.
+	 * 
+	 * Based on a simplification of algorithm described by Paul Burke at
+	 * http://local.wasp.uwa.edu.au/~pbourke/geometry/lineline2d/ (April 1986)
+	 * 
+	 * @param line the line
+	 * @param y    the value of y
+	 * @return Object[] {fractional distance from line end, Point2D}
+	 */
+	private static boolean getDistanceAndPointAtY(Line2D.Double line, double y, double[] uxy) {
+		double dy = line.y2 - line.y1;
+		// if line is horizontal, return null
+		if (dy == 0)
+			return false;
+		// parametric eqn of line: P = P1 + u(P2 - P1)
+		uxy[0] = (y - line.y1) / dy;
+		uxy[1] = line.x1 + uxy[0] * (line.x2 - line.x1);
+		uxy[2] = y;
+		return true;
+	}
+
+	/**
+	 * Gets the difference between a pixel and a comparison set of rgb components.
+	 * @return sum of squares of rgb differences
+	 */
+	private static double getRGBDiffSquared(int pixel, int r, int g, int b) {
+		int dr = r - ((pixel >> 16) & 0xff);
+		int dg = g - ((pixel >> 8) & 0xff);
+		int db = b - ((pixel) & 0xff);
+		return dr * dr + dg * dg + db * db; 
 	}
 
 	/**
 	 * Gets an AlphaComposite object with a specified alpha value.
 	 */
-	private AlphaComposite getComposite(int alpha) {
+	private static AlphaComposite getComposite(int alpha) {
 		float a = 1.0f * alpha / 255;
 		return AlphaComposite.getInstance(AlphaComposite.SRC_OVER, a);
 	}
+
+	/**
+	 * Ensures that an image is of a given type, particularly ARGB or RGB.
+	 * 
+	 * @param image
+	 * @param w
+	 * @param h
+	 * @param type
+	 * @return
+	 */
+	private static BufferedImage ensureType(BufferedImage image, int w, int h, int type) {
+		if (image != null && image.getType() == type)
+			return image;
+		BufferedImage bi = new BufferedImage(w, h, type);
+		Graphics2D g = bi.createGraphics();
+		g.drawImage(image, 0, 0, null);
+		g.dispose();
+		return bi;
+	}
+
+	private static int[] getPixels(BufferedImage img) {
+		return ((DataBufferInt) img.getRaster().getDataBuffer()).getData();
+	}
+
+	private static void transferPixels(int[] p0, int x, int y, int w0, int[] p1, int w1) {
+		for (int tpt = 0, len = p1.length, dw = w0 - w1, pt = y * w0 + x; tpt < len; pt += dw) {
+			for (int j = 0; j < w1; j++, pt++, tpt++)
+				p1[tpt] = p0[pt];
+		}
+	}
+
+	private static BitSet getOpaqueBS(int[] pixels, int w, int h) {
+		int nPixels = w * h;
+		BitSet bs = new BitSet(nPixels);
+		for (int i = nPixels; --i >= 0;) {
+			if ((pixels[i] & 0xFF000000) == 0xFF000000)
+				bs.set(i);
+		}
+//		for (int i = 0, pt = 0; i < h; i++) {
+//			for (int j = 0; j < w; j++, pt++) {
+//				System.out.print(bs.get(pt) ? "1" : "0");
+//			}
+//			System.out.println( " " + pt);
+//		}
+//		System.out.println(" ");
+//		System.out.println(bs.nextSetBit(0));
+//		System.out.println(bs.length() - 1);
+		return bs;
+	}
+
+
 
 }
