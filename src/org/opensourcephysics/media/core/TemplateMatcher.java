@@ -29,7 +29,6 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.util.BitSet;
@@ -963,9 +962,11 @@ public class TemplateMatcher {
 		if (image != null && image.getType() == type)
 			return image;
 		BufferedImage bi = new BufferedImage(w, h, type);
-		Graphics2D g = bi.createGraphics();
-		g.drawImage(image, 0, 0, null);
-		g.dispose();
+		if (image != null) {
+			Graphics2D g = bi.createGraphics();
+			g.drawImage(image, 0, 0, null);
+			g.dispose();
+		}
 		return bi;
 	}
 
