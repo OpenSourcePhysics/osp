@@ -791,9 +791,7 @@ public class TemplateMatcher {
 //		Point2D.Double p1 = new Point2D.Double();
 //		Point2D.Double p2 = new Point2D.Double(Double.NaN, Double.NaN);
 //		Point2D.Double p = p1;
-		boolean foundBoth = false;
-		double d = sx;
-		if (getDistanceAndPointAtX(line, d, uxy)) {
+		if (getDistanceAndPointAtX(line, sx, uxy)) {
 			p[0] = uxy[1];
 			p[1] = uxy[2];// .setLocation(uxy[1], uxy[2]);
 			if (p[1] >= sy && p[1] <= sy + sh) {
@@ -802,8 +800,7 @@ public class TemplateMatcher {
 				p = p2;
 			}
 		}
-		d += sw;
-		if (getDistanceAndPointAtX(line, d, uxy)) {
+		if (getDistanceAndPointAtX(line, sx + sw, uxy)) {
 			p[0] = uxy[1];
 			p[1] = uxy[2];// .setLocation(uxy[1], uxy[2]);
 			if (p[1] >= sy && p[1] <= sy + sh) {
@@ -812,13 +809,13 @@ public class TemplateMatcher {
 					// line end is right edge
 					p = p2;
 				} else {
-					foundBoth = true;
+					p = null;
 				}
 			}
 		}
-		if (!foundBoth) {
-			d = sy;
-			if (getDistanceAndPointAtY(line, d, uxy)) {
+		// p now could be p1 (none found) or p2 (one found) or null (both found)
+		if (p != null) {
+			if (getDistanceAndPointAtY(line, sy, uxy)) {
 				p[0] = uxy[1];
 				p[1] = uxy[2];// .setLocation(uxy[1], uxy[2]);
 				if (p[0] >= sx && p[0] <= sx + sw) {
@@ -826,27 +823,26 @@ public class TemplateMatcher {
 					if (p == p1) {
 						p = p2;
 					} else if (p1[0] != p2[0] || p1[1] != p2[1]) { // !p1.equals(p2)
-						foundBoth = true;
+						p = null; // p1 and p2 are now both defined.
+					}
+				}
+			}
+			if (p == p2) {
+				if (getDistanceAndPointAtY(line, sy + sh, uxy)) {
+					p[0] = uxy[1];
+					p[1] = uxy[2];// .setLocation(uxy[1], uxy[2]);
+					if (p[0] >= sx && p[0] <= sx + sw) {
+						// line end is bottom edge
+						if (p == p2 && (p1[0] != p2[0] || p1[1] != p2[1])) { // !p1.equals(p2))
+							p = null;
+						}
 					}
 				}
 			}
 		}
-		if (!foundBoth) {
-			d += sh;
-			if (getDistanceAndPointAtY(line, d, uxy)) {
-				p[0] = uxy[1];
-				p[1] = uxy[2];// .setLocation(uxy[1], uxy[2]);
-				if (p[0] >= sx && p[0] <= sx + sw) {
-					// line end is bottom edge
-					if (p == p2 && (p1[0] != p2[0] || p1[1] != p2[1])) { // !p1.equals(p2))
-						foundBoth = true;
-					}
-				}
-			}
-		}
-		// if both line ends have been found, use line to find pixels to search
-		if (!foundBoth)
+		if (p != null)
 			return null;
+		// if both line ends have been found, use line to find pixels to search
 		// set line ends to intersections
 		if (p1[0] <= p2[0]) {
 			line.setLine(p1[0], p1[1], p2[0], p2[1]);
