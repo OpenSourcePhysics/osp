@@ -8,8 +8,8 @@
 package org.opensourcephysics.controls;
 import java.util.Collection;
 import java.util.HashSet;
+
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableModel;
 
 import org.opensourcephysics.tools.ArrayInspector;
 

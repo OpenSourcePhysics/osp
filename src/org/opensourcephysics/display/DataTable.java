@@ -1426,6 +1426,7 @@ public class DataTable extends JTable {
 		}
 
 		protected void refresh(int mask) {
+			@SuppressWarnings("unused")
 			String type;
 			switch (mask) {
 			default:

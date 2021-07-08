@@ -15,14 +15,13 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
-import javax.swing.table.AbstractTableModel;
+
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
-import org.opensourcephysics.display.DataTable.OSPTableModel;
-import org.opensourcephysics.display.Dataset.Model;
 import org.opensourcephysics.display.axes.XAxis;
 import org.opensourcephysics.display.axes.XYAxis;
 

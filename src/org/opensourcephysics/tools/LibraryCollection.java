@@ -9,7 +9,6 @@ package org.opensourcephysics.tools;
 
 import java.util.ArrayList;
 
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 

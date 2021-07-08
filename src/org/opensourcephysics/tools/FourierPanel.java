@@ -13,9 +13,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
 import org.opensourcephysics.analysis.FourierSinCosAnalysis;
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.ColorIcon;
-import org.opensourcephysics.display.Data;
 import org.opensourcephysics.display.DataTable;
 import org.opensourcephysics.display.Dataset;
 import org.opensourcephysics.display.DatasetManager;

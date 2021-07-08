@@ -31,6 +31,7 @@ public interface Interactive extends Measurable {
 
   public double getY();
   
+  @Override
   public default boolean isInteractive() {
 	  return true;
   }

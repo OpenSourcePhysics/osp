@@ -9,7 +9,6 @@ package org.opensourcephysics.display.axes;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -28,12 +27,10 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.Interactive;
@@ -701,6 +698,7 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 //			scaleSetterPanel.setVisible(true);
 		}
 
+		@Override
 		public void setVisible(boolean b) {
 			if (!b) {
 				setVisible(null);

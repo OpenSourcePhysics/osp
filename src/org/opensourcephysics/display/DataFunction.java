@@ -9,7 +9,6 @@ package org.opensourcephysics.display;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.opensourcephysics.controls.XML;
@@ -17,8 +16,8 @@ import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
 import org.opensourcephysics.numerics.ParsedMultiVarFunction;
 import org.opensourcephysics.numerics.ParserException;
-import org.opensourcephysics.tools.ToolsRes;
 import org.opensourcephysics.tools.FunctionEditor.FObject;
+import org.opensourcephysics.tools.ToolsRes;
 
 /**
  * This is a dataset whose values are determined by a multivariable function
@@ -27,10 +26,6 @@ import org.opensourcephysics.tools.FunctionEditor.FObject;
  * @author Douglas Brown
  */
 public class DataFunction extends Dataset implements FObject {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
 // instance fields
 	DatasetManager datasetManager;
 	ParsedMultiVarFunction myFunction;

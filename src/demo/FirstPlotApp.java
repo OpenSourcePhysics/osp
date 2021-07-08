@@ -7,7 +7,6 @@
 
 package demo;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.OSPRuntime;

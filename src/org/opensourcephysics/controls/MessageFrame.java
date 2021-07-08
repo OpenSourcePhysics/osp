@@ -16,6 +16,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.logging.Level;
+
 import javax.swing.ButtonGroup;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -25,7 +26,6 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -58,8 +58,6 @@ public class MessageFrame extends JFrame {
   private static ArrayList<JRadioButtonMenuItem> buttonList = new ArrayList<JRadioButtonMenuItem>();
   private JTextPane textPane = new JTextPane();
 
-  private int myFontLevel = 0;
-  
   private MessageFrame() {
     // create the panel, text pane and scroller
     setTitle(ControlsRes.getString("MessageFrame.DefaultTitle")); //$NON-NLS-1$

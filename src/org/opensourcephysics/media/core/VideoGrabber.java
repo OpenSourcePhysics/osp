@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Box;
@@ -33,9 +34,9 @@ import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.display.Drawable;
-import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.gif.GifVideoRecorder;
 import org.opensourcephysics.tools.VideoCaptureTool;
 

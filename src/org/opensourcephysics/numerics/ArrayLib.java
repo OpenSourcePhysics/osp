@@ -3,7 +3,6 @@ package org.opensourcephysics.numerics;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.Comparator;
-import java.util.Random;
 import java.util.StringTokenizer;
 
 /**

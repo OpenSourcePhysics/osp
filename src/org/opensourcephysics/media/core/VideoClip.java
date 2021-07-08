@@ -779,14 +779,14 @@ public class VideoClip implements PropertyChangeListener {
 				video = VideoIO.getVideo(path, base, null);
 				break;
 			}
-			boolean invalid = false;
+			//boolean invalid = false;
 			if (video == null && !VideoIO.isCanceled()) {
 				Resource res = ResourceLoader.getResource(XML.getResolvedPath(path, base));
 				boolean exists = (res != null); // resource exists
 				boolean supported = (types.size() > 0); // extension is supported, VideoType available
 				OSPLog.info("\"" + fullPath + "\" could not be opened. Found? " + exists + " Supported? " + supported); //$NON-NLS-1$ //$NON-NLS-2$
 				if (!supported || exists) {
-					invalid = true;
+					//invalid = true;
 					String codec = (exists ? VideoIO.getVideoCodec(res.getAbsolutePath()) : null);
 					String reason = (exists ? "VideoClip null video" : "VideoClip not supported");
 					VideoIO.handleUnsupportedVideo(base + "/" + path, XML.getExtension(path), codec, null, reason); // runs async

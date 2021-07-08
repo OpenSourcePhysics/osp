@@ -10,8 +10,6 @@ package org.opensourcephysics.display;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.opensourcephysics.controls.OSPLog;
-
 public class TeXParser {
 	public static Map<String, String> charMap = new HashMap<String, String>();
 

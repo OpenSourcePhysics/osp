@@ -176,7 +176,8 @@ public class Ising2d implements Drawable {
     M2_acc += M*M;
   }
 
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(lattice==null) {
       return;
     }

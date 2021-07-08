@@ -1,19 +1,31 @@
 package davidson.qm;
-import org.opensourcephysics.controls.*;
-import org.opensourcephysics.display.*;
-import org.opensourcephysics.numerics.*;
-import java.beans.PropertyChangeListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
-import org.opensourcephysics.ejs.control.EjsControlFrame;
+import java.beans.PropertyChangeListener;
+
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.WindowListener;
+
+import org.opensourcephysics.controls.AbstractAnimation;
+import org.opensourcephysics.controls.AnimationControl;
+import org.opensourcephysics.controls.ControlFrame;
+import org.opensourcephysics.controls.XML;
+import org.opensourcephysics.controls.XMLControlElement;
+import org.opensourcephysics.display.ComplexDataset;
+import org.opensourcephysics.display.DrawingFrame;
+import org.opensourcephysics.display.GUIUtils;
+import org.opensourcephysics.display.OSPFrame;
+import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.display.PlottingPanel;
+import org.opensourcephysics.ejs.control.EjsControlFrame;
+import org.opensourcephysics.numerics.DoubleArray;
+import org.opensourcephysics.numerics.Function;
+import org.opensourcephysics.numerics.ParsedFunction;
+import org.opensourcephysics.numerics.ParserException;
+import org.opensourcephysics.numerics.Util;
 
 /**
  * QMSuperpositionApp creates a linear superposition of quantum eigenstates.

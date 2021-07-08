@@ -9,8 +9,6 @@ package org.opensourcephysics.controls;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;

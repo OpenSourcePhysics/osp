@@ -7,8 +7,6 @@
 
 package org.opensourcephysics.numerics;
 
-import org.opensourcephysics.controls.OSPLog;
-
 /**
  * Polynomial least square fit without any error estimation.
  *

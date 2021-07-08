@@ -42,8 +42,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import org.opensourcephysics.controls.OSPLog;
-
 /**
  * The class <code>Parser</code> is a mathematical expression parser.
  * <p>
@@ -76,6 +74,7 @@ public final class SuryonoParser extends MathExpParser {
 	 */
 	private class Func {
 		
+		@Override
 		public String toString() {
 			if (var_count < 0) {
 				return super.toString();

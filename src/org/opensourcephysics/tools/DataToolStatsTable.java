@@ -13,7 +13,6 @@ import java.awt.Font;
 import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.BitSet;
 
 import javax.swing.JLabel;

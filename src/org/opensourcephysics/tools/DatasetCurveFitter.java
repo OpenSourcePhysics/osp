@@ -322,7 +322,7 @@ public class DatasetCurveFitter extends JPanel {
 		}
 	}
 
-	private static int nfit = 0;
+	//private static int nfit = 0;
 	/**
 	 * Fits a fit function to the current data.
 	 *

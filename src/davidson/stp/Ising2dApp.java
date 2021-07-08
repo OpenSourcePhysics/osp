@@ -6,19 +6,16 @@
  */
 
 package davidson.stp;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowListener;
 import java.text.NumberFormat;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import org.opensourcephysics.controls.*;
+
+import org.opensourcephysics.controls.AbstractSimulation;
+import org.opensourcephysics.controls.OSPCombo;
+import org.opensourcephysics.controls.SimulationControl;
 import org.opensourcephysics.display.DrawingPanel;
-import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPFrame;
 import org.opensourcephysics.display.OSPRuntime;
-import org.opensourcephysics.frames.*;
+import org.opensourcephysics.frames.DisplayFrame;
+import org.opensourcephysics.frames.PlotFrame;
 
 public class Ising2dApp extends AbstractSimulation {
   Ising2d ising;
@@ -44,7 +41,8 @@ public class Ising2dApp extends AbstractSimulation {
     displayPanel = displayFrame.getDrawingPanel();
   }
 
-  public void initialize() {
+  @Override
+public void initialize() {
     ising.initialize(control.getInt("Length"), control.getDouble("Temperature"), control.getDouble("External field"));
     this.bondProbability = bondProbability(ising.J, ising.T);
     if(control.getString("Dynamics").equals("Metropolis")) {
@@ -62,7 +60,8 @@ public class Ising2dApp extends AbstractSimulation {
     return 1-Math.exp(-2*J/T);
   }
 
-  public void doStep() {
+  @Override
+public void doStep() {
     if(metropolis) {
       ising.doOneMCStep();
     } else {
@@ -72,12 +71,14 @@ public class Ising2dApp extends AbstractSimulation {
     plotFrame.append(1, ising.mcs, (double) ising.E/ising.N);
   }
   
-  public void startRunning() {
+  @Override
+public void startRunning() {
 	 ising.setTemperature(control.getDouble("Temperature"));
 	 ising.setExternalField(control.getDouble("External field"));
   }
 
-  public void stopRunning() {
+  @Override
+public void stopRunning() {
     double norm = (ising.mcs==0)
                   ? 1
                   : 1.0/(ising.mcs*ising.N);
@@ -93,7 +94,8 @@ public class Ising2dApp extends AbstractSimulation {
     control.println();
   }
 
-  public void reset() {
+  @Override
+public void reset() {
     control.setValue("Length", 32);
     control.setAdjustableValue("Temperature", nf.format(Ising2d.criticalTemperature));
     control.setAdjustableValue("External field", 0);
@@ -117,14 +119,14 @@ public class Ising2dApp extends AbstractSimulation {
     if((f==null)||!f.isDisplayable()) {
       return;
     }
-    JMenu menu = f.getMenu("Display");
-    JMenuItem item = new JMenuItem("Switch GUI");
-    item.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        //switchGUI();
-      }
-
-    });
+//    JMenu menu = f.getMenu("Display");
+//    JMenuItem item = new JMenuItem("Switch GUI");
+//    item.addActionListener(new ActionListener() {
+//      public void actionPerformed(ActionEvent e) {
+//        //switchGUI();
+//      }
+//
+//    });
     //menu.add(item); //not supported in stpbook
     addChildFrame(displayFrame);
     addChildFrame(plotFrame);
