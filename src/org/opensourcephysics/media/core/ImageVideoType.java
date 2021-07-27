@@ -103,7 +103,7 @@ public class ImageVideoType implements VideoType {
 		// duration
 		String xmlName = XML.stripExtension(basePath == null ? name : basePath + File.separator + name) + ".xml"; //$NON-NLS-1$
 		XMLControl control = new XMLControlElement(new File(xmlName));
-		control.setBasepath(basePath);
+		control.setBasepath(basePath == null? XML.getDirectoryPath(name): basePath);
 		if (!control.failedToRead() && control.getObjectClass() == ImageVideo.class) {
 			video = (Video) control.loadObject(null);
 		} else {
