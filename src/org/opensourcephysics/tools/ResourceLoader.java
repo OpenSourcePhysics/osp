@@ -2190,7 +2190,7 @@ public class ResourceLoader {
 		if (url != null) { // successfully found url
 			// extract file if extension is flagged for extraction
 			String ext = "." + XML.getExtension(url.toString());
-			if (extractExtensions.contains(ext)) {
+			if (extractExtensions.contains(ext.toLowerCase())) {
 				String targetPath = fileName;
 				File zip = new File(base);
 				String parent = zip.getParent();
