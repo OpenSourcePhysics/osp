@@ -200,6 +200,8 @@ public class VideoIO {
 	protected static String defaultXMLExt = "xml"; //$NON-NLS-1$
 	private static boolean canceled;
 	protected static String preferredExportExtension = DEFAULT_PREFERRED_EXPORT_EXTENSION;
+	public static boolean loadIncrementally;
+	public static int incrementToLoad = 10;
 
 	static {
 		videoTypes = new ArrayList<VideoType>();
@@ -740,6 +742,7 @@ public class VideoIO {
 	public static Video getVideo(String path, VideoType vidType) {
 		return getVideo(path, null, vidType);
 	}
+	
 	public static Video getVideo(String path, String basePath, VideoType vidType) {
 		// BH! 2020.04.20 from TrackerIO, but equally useful here.
 		path = fixVideoPath(path);

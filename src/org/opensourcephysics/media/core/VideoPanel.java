@@ -40,6 +40,7 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -88,6 +89,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 
 	/** default file name used for initial saveAs */
 	public String defaultFileName;
+	/** progress and framesLoaded used to keep track of loading process */
+	public int progress, framesLoaded;
 	protected VideoPlayer player;
 	protected Video video = null;
 	protected boolean playerVisible = true;
@@ -782,8 +785,9 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			this.control = control;
 			videoPanel = (VideoPanel) obj;
 			// load the video clip
-			if (getClip(control))
+			if (videoPanel.progress >= 70 || getClip(control)) {
 				finalizeLoading();
+			}
 			return videoPanel;
 
 		}
@@ -797,6 +801,28 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		 */
 		public boolean getClip(XMLControl control) {
 			clip = (VideoClip) control.getObject("videoclip"); //$NON-NLS-1$
+			// check for partially loaded videos
+			if (clip != null && clip.getVideo() != null 
+					&& clip.getVideo() instanceof IncrementallyLoadable) {
+				IncrementallyLoadable iVideo = (IncrementallyLoadable)clip.getVideo();
+				try {
+					if (iVideo.loadMoreFrames(VideoIO.incrementToLoad)) {
+						videoPanel.framesLoaded = iVideo.getLoadedFrameCount();
+						int progress = iVideo.getLoadedFrameCount() / VideoIO.incrementToLoad;
+						videoPanel.progress = 10 + (progress % 60);
+						return false;					
+					}
+					else {
+						if (VideoIO.loadIncrementally)
+							// clip requires one last load to finalize
+							control.getObject("videoclip"); //$NON-NLS-1$
+						videoPanel.progress = 70;
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			
 			XMLControl child = control.getChildControl("videoclip"); //$NON-NLS-1$
 //			String path = child.getString("unsupported_video_path");
 //			if (path != null) {

@@ -720,6 +720,14 @@ public class VideoClip implements PropertyChangeListener {
 		 */
 		@Override
 		public Object loadObject(XMLControl control, Object obj) {
+			clip = (VideoClip) obj;
+			video = clip.getVideo();
+			
+			if (video != null && video instanceof IncrementallyLoadable
+					&& !((IncrementallyLoadable)video).isFullyLoaded()) {
+				return clip;					
+			}
+			
 			// load values common to all clips w or w/o video
 			start = control.getInt("startframe"); //$NON-NLS-1$
 			stepSize = control.getInt("stepsize"); //$NON-NLS-1$
@@ -738,14 +746,19 @@ public class VideoClip implements PropertyChangeListener {
 				frameCount = start + stepCount * stepSize;
 			}
 
+			if (video != null && video instanceof IncrementallyLoadable
+					&& ((IncrementallyLoadable)video).isFullyLoaded()) {
+				finalizeLoading();
+				return clip;					
+			}
+
 			// if no video, load clip passed in
 			boolean hasVideo = control.getPropertyNamesRaw().contains("video"); //$NON-NLS-1$
 			if (!hasVideo) {
-				clip = (VideoClip) obj;
 				finalizeLoading();
 				return obj;
 			}
-
+			
 			// otherwise try to open the video and make a new clip with it
 			base = control.getString("basepath"); //$NON-NLS-1$ ;
 			ResourceLoader.addSearchPath(base);
@@ -842,12 +855,11 @@ public class VideoClip implements PropertyChangeListener {
 				}
 				clip.videoPath = path;
 			}
-			if ((video instanceof AsyncVideoI)) {
+			if (video instanceof AsyncVideoI) {
 				clip.loader = this;
 			} else {
 				finalizeLoading();
 			}
-
 			return clip;
 		}
 
