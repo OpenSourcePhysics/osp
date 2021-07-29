@@ -51,6 +51,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
@@ -101,7 +102,7 @@ public class RadialDistortionFilter extends Filter {
 	// instance fields
 	private double[] xOut, yOut, xIn, yIn; // pixel positions on input and output images
 	private double pixelsToCorner; // half image diagonal in pixels
-	private boolean isValidTransform = false, updatingDisplay = false;
+	private boolean isValidTransform = false, updatingDisplay = false, dimensionsChanged = false;
 	private double outputFOV;
 	private boolean hasLowerLimit;
 	private int lowerRadiusLimit = (int) (100 * minRadius);
@@ -300,6 +301,13 @@ public class RadialDistortionFilter extends Filter {
 		isValidTransform = false;
 	}
 
+	@Override
+	protected void initializeSource(BufferedImage image) {
+		int prevW = w, prevH = h;
+		super.initializeSource(image);
+		dimensionsChanged = (w != prevW || h != prevH);
+	}
+	
 	/**
 	 * Sets the output image pixels to a transformed version of the input pixels.
 	 *
@@ -309,26 +317,31 @@ public class RadialDistortionFilter extends Filter {
 	protected void setOutputPixels() {
 		getPixelsIn();
 		getPixelsOut();
-		xIn = new double[w * h];
-		yIn = new double[w * h];
-		// output positions are integer pixel positions
-		xOut = new double[w * h];
-		yOut = new double[w * h];
-		for (int i = 0; i < w; i++) {
-			for (int j = 0; j < h; j++) {
-				xOut[j * w + i] = i;
-				yOut[j * w + i] = j;
+		// output positions are integer pixel positions--recreate when  dimensions change
+		if (dimensionsChanged) {
+			xOut = new double[w * h];
+			yOut = new double[w * h];
+			for (int i = 0; i < w; i++) {
+				for (int j = 0; j < h; j++) {
+					xOut[j * w + i] = i;
+					yOut[j * w + i] = j;
+				}
 			}
 		}
 		// if needed, map the output (corrected) pixel positions to input pixel
 		// positions
-		if (!isValidTransform)
+		if (!isValidTransform || xIn == null || dimensionsChanged) {
+			xIn = new double[w * h];
+			yIn = new double[w * h];
 			transform(xOut, yOut, xIn, yIn);
+		}
 
 		// find output pixel color values by interpolating input pixel colors
 		for (int i = 0; i < nPixelsIn; i++) {
 			pixelsOut[i] = getColor(xIn[i], yIn[i], w, h, pixelsIn);
 		}
+		
+		dimensionsChanged = false;
 	}
 
 	/**
