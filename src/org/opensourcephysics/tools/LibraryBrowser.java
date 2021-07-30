@@ -587,8 +587,8 @@ public class LibraryBrowser extends JPanel {
 	
 	public void cancelLoading() {
 		VideoIO.setCanceled(true);
-		setMessage("Loading canceled", Color.PINK);
-		Timer timer = new Timer(2000, (ev) -> {
+		setMessage("Loading canceled", Color.YELLOW);
+		Timer timer = new Timer(1000, (ev) -> {
 			doneLoading();
 		});
 		timer.setRepeats(false);

@@ -77,6 +77,7 @@ import org.opensourcephysics.tools.ResourceLoader;
 
 import javajs.async.AsyncDialog;
 import javajs.async.AsyncFileChooser;
+import javajs.async.AsyncSwingWorker;
 import javajs.util.VideoReader;
 
 /**
@@ -202,6 +203,7 @@ public class VideoIO {
 	protected static String preferredExportExtension = DEFAULT_PREFERRED_EXPORT_EXTENSION;
 	public static boolean loadIncrementally;
 	public static int incrementToLoad = 10;
+	public static AsyncSwingWorker loader;
 
 	static {
 		videoTypes = new ArrayList<VideoType>();
@@ -622,7 +624,13 @@ public class VideoIO {
 	 * @param cancel true to cancel
 	 */
 	public static void setCanceled(boolean cancel) {
+		if (canceled == cancel)
+			return;
 		canceled = cancel;
+		if (loader != null && cancel) {
+			loader.cancelAsync();
+			loader = null;			
+		}
 	}
 
 	/**
