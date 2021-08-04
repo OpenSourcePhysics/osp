@@ -802,24 +802,29 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		public boolean getClip(XMLControl control) {
 			clip = (VideoClip) control.getObject("videoclip"); //$NON-NLS-1$
 			// check for partially loaded videos
-			if (clip != null && clip.getVideo() != null 
+			if (clip != null) {
+				if (clip.getVideo() != null 
 					&& clip.getVideo() instanceof IncrementallyLoadable) {
-				IncrementallyLoadable iVideo = (IncrementallyLoadable)clip.getVideo();
-				try {
-					if (iVideo.loadMoreFrames(VideoIO.incrementToLoad)) {
-						videoPanel.framesLoaded = iVideo.getLoadedFrameCount();
-						int progress = iVideo.getLoadedFrameCount() / VideoIO.incrementToLoad;
-						videoPanel.progress = 10 + (progress % 60);
-						return false;					
+					IncrementallyLoadable iVideo = (IncrementallyLoadable)clip.getVideo();
+					try {
+						if (iVideo.loadMoreFrames(VideoIO.incrementToLoad)) {
+							videoPanel.framesLoaded = iVideo.getLoadedFrameCount();
+							int progress = iVideo.getLoadedFrameCount() / VideoIO.incrementToLoad;
+							videoPanel.progress = 10 + (progress % 60);
+							return false;					
+						}
+						else {
+							if (VideoIO.loadIncrementally)
+								// clip requires one last load to finalize
+								control.getObject("videoclip"); //$NON-NLS-1$
+							videoPanel.progress = 70;
+						}
+					} catch (IOException e) {
+						e.printStackTrace();
 					}
-					else {
-						if (VideoIO.loadIncrementally)
-							// clip requires one last load to finalize
-							control.getObject("videoclip"); //$NON-NLS-1$
-						videoPanel.progress = 70;
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
+				}
+				else {
+					videoPanel.progress = 70;					
 				}
 			}
 			
