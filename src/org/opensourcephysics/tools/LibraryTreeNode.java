@@ -288,38 +288,44 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 		StringBuffer buffer = new StringBuffer();
 		String collection = " " + ToolsRes.getString("LibraryResource.Type.Collection.Description"); //$NON-NLS-1$ //$NON-NLS-2$
 		String title = record.getName();
-		if ("".equals(title) && this.isRoot()) //$NON-NLS-1$
+		if ("".equals(title) && isRoot()) //$NON-NLS-1$
 			title = record.getTitle(treePanel.pathToRoot);
 		for (String type : LibraryResource.allResourceTypes) {
-			if (type.equals(LibraryResource.UNKNOWN_TYPE))
+			String[] types;
+			switch (type) {
+			case LibraryResource.UNKNOWN_TYPE:
+			case LibraryResource.PDF_TYPE:
 				continue;
-			if (type.equals(LibraryResource.PDF_TYPE))
-				continue;
-			String[] types = new String[] { type };
-			if (type.equals(LibraryResource.HTML_TYPE)) {
+			case LibraryResource.HTML_TYPE:
 				type = "Other"; //$NON-NLS-1$
 				types = new String[] { LibraryResource.HTML_TYPE, LibraryResource.PDF_TYPE,
 						LibraryResource.UNKNOWN_TYPE };
+				break;
+			default:
+				types = new String[] { type };
+				break;
 			}
 			ArrayList<LibraryResource> children = getChildResources(types);
-			if (!children.isEmpty()) { // node has children
-				String s = "LibraryResource.Type." + type + ".List"; //$NON-NLS-1$ //$NON-NLS-2$
-				buffer.append("<p>" + ToolsRes.getString(s) //$NON-NLS-1$
-						+ " " + title + collection + ":</p>\n"); //$NON-NLS-1$//$NON-NLS-2$
-				buffer.append("<ol>\n"); //$NON-NLS-1$
-				for (LibraryResource next : children) {
-					String name = next.getName();
-					if (name.equals("")) //$NON-NLS-1$
-						name = ToolsRes.getString("LibraryResource.Name.Default"); //$NON-NLS-1$
-					buffer.append("<li>" + name + "</li>\n"); //$NON-NLS-1$ //$NON-NLS-2$
-				}
-				buffer.append("</ol>\n"); //$NON-NLS-1$
+			if (children.isEmpty())
+				continue;
+			// node has children
+			String s = "LibraryResource.Type." + type + ".List"; //$NON-NLS-1$ //$NON-NLS-2$
+			buffer.append("<p>" + ToolsRes.getString(s) //$NON-NLS-1$
+					+ " " + title + collection + ":</p>\n"); //$NON-NLS-1$//$NON-NLS-2$
+			buffer.append("<ol>\n"); //$NON-NLS-1$
+			for (LibraryResource next : children) {
+				String name = next.getName();
+				if (name.equals("")) //$NON-NLS-1$
+					name = ToolsRes.getString("LibraryResource.Name.Default"); //$NON-NLS-1$
+				buffer.append("<li>" + name + "</li>\n"); //$NON-NLS-1$ //$NON-NLS-2
 			}
+			buffer.append("</ol>\n"); //$NON-NLS-1$
 		}
 
 		String description = buffer.toString();
 		String htmlCode = LibraryResource.getHTMLBody(title, record.getType(), thumb, description, null, null, null,
 				null);
+		System.err.println("LibraryTreeNode getHTMLString1 " + target + " desc=" + description);
 		return htmlCode;
 	}
 
