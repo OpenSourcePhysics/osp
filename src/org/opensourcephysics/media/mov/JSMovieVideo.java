@@ -106,6 +106,9 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	private JDialog videoDialog;
 	private String fileName;
 	private URL url;
+
+
+	public boolean ready;
 	
 	
 	public JSMovieVideo(String path) throws IOException {
@@ -775,6 +778,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					v.initializeMovie(frameTimes, duration);
 					frameTimes = null;
 					thisFrame = -1;
+					ready = true;
 					continue;
 				case STATE_GET_IMAGE_INIT:
 					helper.setState(STATE_GET_IMAGE_READY);
@@ -900,6 +904,11 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	public static File createThumbnailFile(Dimension defaultThumbnailDimension, String sourcePath, String thumbPath) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public boolean isReady() {
+		return ready;
 	}
 
 
