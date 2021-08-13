@@ -30,6 +30,7 @@ import java.util.Map;
  */
 public class XML {
   public interface NonStaticLoader {
+	  // VideoPanel and VideoClip
 
 	}
 
