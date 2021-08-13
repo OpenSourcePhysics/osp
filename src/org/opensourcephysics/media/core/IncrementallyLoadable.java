@@ -13,17 +13,24 @@ public interface IncrementallyLoadable {
 	public boolean loadMoreFrames(int n) throws IOException;
 	
 	/**
-	 * Get the total number of frames loaded
+	 * Get the total number of frames loaded.
 	 * 
 	 * @return the number of frames loaded
 	 */
 	public int getLoadedFrameCount();
 	
 	/**
-	 * Determines if the video is fully loaded
+	 * Get the total number of frames expected.
+	 * 
+	 * @return
+	 */
+	public int getLoadableFrameCount();
+	
+	/**
+	 * Determines if the video is fully loaded.
 	 * 
 	 * @return true if fully loaded
 	 */
 	public boolean isFullyLoaded();
-	
+
 }

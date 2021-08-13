@@ -9,6 +9,8 @@ public interface AsyncVideoI {
 	String PROPERTY_ASYNCVIDEOI_READY = "asyncVideoReady";
 	String PROPERTY_ASYNCVIDEOI_IMAGEREADY = "asyncImageReady";
 	
-	boolean isReady();
+	int getProgress();
+
+	int getLoadedFrameCount();
 
 }

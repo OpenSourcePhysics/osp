@@ -47,6 +47,7 @@ import org.opensourcephysics.media.core.ImageCoordSystem;
 import org.opensourcephysics.media.core.VideoAdapter;
 import org.opensourcephysics.media.core.VideoFileFilter;
 import org.opensourcephysics.media.core.VideoIO;
+import org.opensourcephysics.media.core.VideoPanel;
 import org.opensourcephysics.media.core.VideoType;
 import org.opensourcephysics.tools.Resource;
 import org.opensourcephysics.tools.ResourceLoader;
@@ -107,9 +108,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	private String fileName;
 	private URL url;
 
-
-	public boolean ready;
-	
+	protected int progress;
 	
 	public JSMovieVideo(String path) throws IOException {
 		this(path, (String) null);
@@ -763,6 +762,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 						v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, null);
 						dispose();
 						v.err = "Canceled by user"; //$NON-NLS-1$
+						progress = VideoPanel.PROGRESS_VIDEO_CANCELED;
 						return false;
 					}
 					t = HTML5Video.getCurrentTime(v.jsvideo);
@@ -770,6 +770,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 						lastT = t;
 						frameTimes.add(t);
 						v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, v.frame++);
+						progress = VideoPanel.progressForFraction(v.frame, v.frameCount);
 					}
 					helper.setState(STATE_FIND_FRAMES_LOOP);
 					continue;
@@ -778,7 +779,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					v.initializeMovie(frameTimes, duration);
 					frameTimes = null;
 					thisFrame = -1;
-					ready = true;
+					progress = VideoPanel.PROGRESS_VIDEO_READY;
 					continue;
 				case STATE_GET_IMAGE_INIT:
 					helper.setState(STATE_GET_IMAGE_READY);
@@ -870,8 +871,8 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 }
 
 	public void cantRead() {
-		VideoIO.setCanceled(true);
 		JOptionPane.showMessageDialog(null, "Video file format or compression method could not be read.");
+		VideoIO.setCanceled(true);
 	}
 
 	/**
@@ -902,13 +903,17 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	}
 
 	public static File createThumbnailFile(Dimension defaultThumbnailDimension, String sourcePath, String thumbPath) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public boolean isReady() {
-		return ready;
+	public int getProgress() {
+		return progress;
+	}
+
+	@Override
+	public int getLoadedFrameCount() {
+		return frame;
 	}
 
 

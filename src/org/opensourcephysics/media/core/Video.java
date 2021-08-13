@@ -242,7 +242,6 @@ public interface Video extends InteractiveImage, Playable, Trackable, PropertyCh
 	default public boolean isValid() {
 		return getDuration() > 0;
 	}
-
 }
 
 /*
