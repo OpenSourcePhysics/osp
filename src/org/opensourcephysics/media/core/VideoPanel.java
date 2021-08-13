@@ -81,6 +81,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 
 	public static final String PROPERTY_VIDEOPANEL_DATAFILE = "datafile";
 	public static final String PROPERTY_VIDEOPANEL_IMAGESPACE = "imagespace";
+
 	public static final int PROGRESS_VIDEO_LOADING    = 10;
 	public static final int PROGRESS_VIDEO_PROCESSING = 20;
 	public static final int PROGRESS_VIDEO_READY      = 70;
