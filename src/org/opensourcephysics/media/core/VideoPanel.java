@@ -107,6 +107,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	protected Map<String, Class<? extends Filter>> filterClasses = new TreeMap<String, Class<? extends Filter>>(); 
 
 	protected FinalizableLoader loader; // for asynchronous loading
+	private Video videoLoading;
 
 	/**
 	 * Constructs a blank VideoPanel with a player.
@@ -170,6 +171,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		if (newVideo == video) {
 			return;
 		}
+		if (videoLoading == video)
+			videoLoading = null;
 		initializePlayer(video, newVideo, playAllSteps);
 	}
 
@@ -808,6 +811,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 					IncrementallyLoadable iVideo = (IncrementallyLoadable)clip.getVideo();
 					try {
 						if (iVideo.loadMoreFrames(VideoIO.incrementToLoad)) {
+							videoPanel.setResourceLoading(clip.getVideo());
+							
 							videoPanel.framesLoaded = iVideo.getLoadedFrameCount();
 							int progress = iVideo.getLoadedFrameCount() / VideoIO.incrementToLoad;
 							videoPanel.progress = 10 + (progress % 60);
@@ -900,6 +905,18 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 
 	public void setLoader(FinalizableLoader loader) {
 		this.loader = loader;
+	}
+
+	public void setResourceLoading(Video video) {
+		this.videoLoading = video;
+	}
+
+	public void releaseResources() {
+		if (videoLoading != null && videoLoading != video)
+			videoLoading.dispose();		
+		if (video != null)
+			video.dispose();
+		videoLoading = video = null;
 	}
 
 	protected void offerReloadVM(String ext, String message) {
