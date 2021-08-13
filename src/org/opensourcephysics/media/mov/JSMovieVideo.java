@@ -681,7 +681,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 				case STATE_IDLE:
 					return false;
 				case STATE_LOAD_VIDEO_INIT:
-					v.videoDialog = HTML5Video.createDialog(null, v.url, 500, new Function<HTML5Video, Void>() {
+					v.videoDialog = HTML5Video.createDialog(null, v.url, 500, false, new Function<HTML5Video, Void>() {
 
 						@Override
 						public Void apply(HTML5Video video) {

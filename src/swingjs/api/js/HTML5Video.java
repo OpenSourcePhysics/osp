@@ -143,12 +143,14 @@ public interface HTML5Video extends DOMNode {
 	 * 
 	 * @param v
 	 * @param imageType  if Integer.MIN_VALUE, swingjs.api.JSUtilI.TYPE_4BYTE_HTML5
-	 * @return
+	 * @return an image, or null if width or height == 0 
 	 */
 	public static BufferedImage getImage(HTML5Video v, int imageType) {
 		Dimension d = HTML5Video.getSize(v);
 		BufferedImage image = (BufferedImage) HTML5Video.getProperty(v, "_image");
 		if (image == null || image.getWidth() != d.width || image.getHeight() != d.height) {
+			if (d.width == 0 || d.height == 0)
+				return null;
 			image = new BufferedImage(d.width, d.height, imageType == Integer.MIN_VALUE ? JSUtilI.TYPE_4BYTE_HTML5 : imageType);
 			HTML5Video.setProperty(v, "_image", image);
 		}
@@ -225,7 +227,7 @@ public interface HTML5Video extends DOMNode {
 			public Void apply(Object jsevent) {
 				String name = (/** @j2sNative jsevent.type || */
 				"?");
-				System.out.println("HTML5Video " + (/** @j2sNative jsevent.target.id || */null) + " " + name);
+				//System.out.println("HTML5Video " + (/** @j2sNative jsevent.target.id || */null) + " " + name);
 				ActionEvent e = new ActionEvent(new Object[] { jsvideo, jsevent }, 12345, name,
 						System.currentTimeMillis(), 0);
 				listener.actionPerformed(e);
@@ -312,6 +314,11 @@ public interface HTML5Video extends DOMNode {
 	 */
 	public static JDialog createDialog(Frame parent, Object source, int maxWidth,
 			Function<HTML5Video, Void> whenReady) {
+		return createDialog(parent, source, maxWidth, true, whenReady);
+	}
+	
+	public static JDialog createDialog(Frame parent, Object source, int maxWidth, boolean addControls,
+			Function<HTML5Video, Void> whenReady) {
 		JDialog dialog = new JDialog(parent);
 		Container p = dialog.getContentPane();
 		p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
@@ -320,7 +327,8 @@ public interface HTML5Video extends DOMNode {
 		// not in Java! dialog.putClientProperty("jsvideo", label);
 		p.add(label);
 		label.setVisible(false);
-		p.add(getControls(label));
+		if (addControls)
+			p.add(getControls(label));
 		dialog.setModal(false);
 		dialog.pack();
 		dialog.setVisible(true);
