@@ -31,6 +31,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;
@@ -1518,6 +1519,7 @@ public class ResourceLoader {
 	 * @param alwaysOverwrite true to overwrite existing files, if any
 	 * @return the Set of extracted files
 	 */
+	@SuppressWarnings("deprecation")
 	public static Set<File> unzip(String zipPath, File targetDir, boolean alwaysOverwrite) {
 		if (targetDir == null)
 			targetDir = new File(OSPRuntime.tempDir); // $NON-NLS-1$
@@ -1539,11 +1541,19 @@ public class ResourceLoader {
 				}
 				String filename = zipEntry.getName();
 				File file = new File(targetDir, filename);
+				String fullName = null;
 				if (!alwaysOverwrite && file.exists()) {
 					fileSet.add(file);
 					continue;
 				}
 				file.getParentFile().mkdirs();
+				boolean isPDF = (filename.endsWith(".pdf"));
+				if (isPDF) {
+					// deprecated, but important here, because toURI().toURL() 
+					// replaces " " with "%20", and we do not want that.
+					fullName = file.toURL().toString();
+					openPDFs.remove(fullName);
+				}
 				try {
 					if (OSPRuntime.isJS) {
 						OSPRuntime.jsutil.streamToFile(input, file);
@@ -1554,14 +1564,19 @@ public class ResourceLoader {
 							output.write(buffer, 0, bytesRead);
 						output.close();
 					}
-					input.closeEntry();
-					fileSet.add(file);
 				} catch (Throwable e) {
-					OSPLog.debug("ResourceLoader.unzip could not open for write " + filename);
-					// BH 2020.11.14 If hte PDF file is already open, it will not be added
-					if (filename.indexOf("pdf") >= 0)
+					// BH 2020.11.14 If the PDF file is already open, it will not be added
+					if (isPDF) {
+						if (openPDFs.indexOf(fullName) < 0)
+							openPDFs.add(fullName);
+					} else {
+						OSPLog.debug("ResourceLoader.unzip could not open for write " + filename);
+						file = null;
+					}
+				} finally {
+					if (file != null)
 						fileSet.add(file);
-					continue;
+					input.closeEntry();
 				}
 			}
 			input.close();
@@ -1570,6 +1585,12 @@ public class ResourceLoader {
 			ex.printStackTrace();
 			return null;
 		}
+	}
+
+	private static List<String> openPDFs = new ArrayList<String>();
+
+	public static boolean wasPDFOpen(String filename) {
+		return (openPDFs.contains(filename));
 	}
 	
 	/**
