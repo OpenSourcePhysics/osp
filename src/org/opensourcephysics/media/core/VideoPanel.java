@@ -81,6 +81,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 
 	public static final String PROPERTY_VIDEOPANEL_DATAFILE = "datafile";
 	public static final String PROPERTY_VIDEOPANEL_IMAGESPACE = "imagespace";
+	public static final int PROGRESS_VIDEO_READY = 70;
 
 	// instance fields
 
@@ -790,7 +791,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			this.control = control;
 			videoPanel = (VideoPanel) obj;
 			// load the video clip
-			if (videoPanel.progress >= 70 || getClip(control)) {
+			if (videoPanel.progress >= PROGRESS_VIDEO_READY || getClip(control)) {
 				finalizeLoading();
 			}
 			return videoPanel;
@@ -810,6 +811,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			if (clip != null) {
 				if (clip.getVideo() != null 
 					&& clip.getVideo() instanceof IncrementallyLoadable) {
+					// Xuggle video only
 					IncrementallyLoadable iVideo = (IncrementallyLoadable)clip.getVideo();
 					try {
 						if (iVideo.loadMoreFrames(VideoIO.incrementToLoad)) {
@@ -824,14 +826,13 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 							if (VideoIO.loadIncrementally)
 								// clip requires one last load to finalize
 								control.getObject("videoclip"); //$NON-NLS-1$
-							videoPanel.progress = 70;
+							videoPanel.progress = PROGRESS_VIDEO_READY;
 						}
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
-				}
-				else {
-					videoPanel.progress = 70;					
+				} else {
+					videoPanel.progress = PROGRESS_VIDEO_READY;					
 				}
 			}
 			
