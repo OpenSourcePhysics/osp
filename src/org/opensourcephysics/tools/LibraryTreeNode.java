@@ -325,7 +325,6 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 		String description = buffer.toString();
 		String htmlCode = LibraryResource.getHTMLBody(title, record.getType(), thumb, description, null, null, null,
 				null);
-		System.err.println("LibraryTreeNode getHTMLString1 " + target + " desc=" + description);
 		return htmlCode;
 	}
 
