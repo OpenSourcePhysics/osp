@@ -81,7 +81,9 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 
 	public static final String PROPERTY_VIDEOPANEL_DATAFILE = "datafile";
 	public static final String PROPERTY_VIDEOPANEL_IMAGESPACE = "imagespace";
-	public static final int PROGRESS_VIDEO_READY = 70;
+	public static final int PROGRESS_VIDEO_LOADING    = 10;
+	public static final int PROGRESS_VIDEO_PROCESSING = 20;
+	public static final int PROGRESS_VIDEO_READY      = 70;
 
 	// instance fields
 
@@ -806,11 +808,12 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		 * @return false if deferring finalization (TrackerPanel AsyncVideo)
 		 */
 		public boolean getClip(XMLControl control) {
-			clip = (VideoClip) control.getObject("videoclip"); //$NON-NLS-1$
+			if (clip == null)
+				clip = (VideoClip) control.getObject("videoclip"); //$NON-NLS-1$
 			// check for partially loaded videos
 			if (clip != null) {
-				if (clip.getVideo() != null 
-					&& clip.getVideo() instanceof IncrementallyLoadable) {
+				Video video = clip.getVideo();
+				if (video instanceof IncrementallyLoadable) {
 					// Xuggle video only
 					IncrementallyLoadable iVideo = (IncrementallyLoadable)clip.getVideo();
 					try {
@@ -819,10 +822,9 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 							
 							videoPanel.framesLoaded = iVideo.getLoadedFrameCount();
 							int progress = iVideo.getLoadedFrameCount() / VideoIO.incrementToLoad;
-							videoPanel.progress = 10 + (progress % 60);
+							videoPanel.progress = PROGRESS_VIDEO_PROCESSING + 1 + (progress % (PROGRESS_VIDEO_READY - 10));
 							return false;					
-						}
-						else {
+						} else {
 							if (VideoIO.loadIncrementally)
 								// clip requires one last load to finalize
 								control.getObject("videoclip"); //$NON-NLS-1$
@@ -831,6 +833,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
+				} else if (video instanceof AsyncVideoI) {
+					videoPanel.progress = (((AsyncVideoI) video).isReady() ? PROGRESS_VIDEO_READY : PROGRESS_VIDEO_PROCESSING);	
 				} else {
 					videoPanel.progress = PROGRESS_VIDEO_READY;					
 				}
