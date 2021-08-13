@@ -82,10 +82,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	public static final String PROPERTY_VIDEOPANEL_DATAFILE = "datafile";
 	public static final String PROPERTY_VIDEOPANEL_IMAGESPACE = "imagespace";
 
-	public static final int PROGRESS_VIDEO_LOADING    = 10;
-	public static final int PROGRESS_VIDEO_PROCESSING = 20;
-	public static final int PROGRESS_VIDEO_READY      = 80;
-	public static final int PROGRESS_VIDEO_CANCELED = -999;
+	
 
 	// instance fields
 
@@ -795,7 +792,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			this.control = control;
 			videoPanel = (VideoPanel) obj;
 			// load the video clip
-			if (videoPanel.progress >= PROGRESS_VIDEO_READY || getClip(control)) {
+			if (videoPanel.progress >= VideoIO.PROGRESS_VIDEO_READY || getClip(control)) {
 				finalizeLoading();
 			}
 			return videoPanel;
@@ -822,13 +819,13 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 						if (iVideo.loadMoreFrames(VideoIO.incrementToLoad)) {
 							videoPanel.setResourceLoading(clip.getVideo());
 							videoPanel.framesLoaded = iVideo.getLoadedFrameCount();
-							videoPanel.progress = progressForFraction(iVideo.getLoadedFrameCount(), iVideo.getLoadableFrameCount());
+							videoPanel.progress = VideoIO.progressForFraction(iVideo.getLoadedFrameCount(), iVideo.getLoadableFrameCount());
 							return false;					
 						} else {
 							if (VideoIO.loadIncrementally)
 								// clip requires one last load to finalize
 								control.getObject("videoclip"); //$NON-NLS-1$
-							videoPanel.progress = PROGRESS_VIDEO_READY;
+							videoPanel.progress = VideoIO.PROGRESS_VIDEO_READY;
 						}
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -837,7 +834,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 					videoPanel.framesLoaded = ((AsyncVideoI) video).getLoadedFrameCount();
 					videoPanel.progress = ((AsyncVideoI) video).getProgress();	
 				} else {
-					videoPanel.progress = PROGRESS_VIDEO_READY;					
+					videoPanel.progress = VideoIO.PROGRESS_VIDEO_READY;					
 				}
 			}
 			
@@ -938,10 +935,6 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			video.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, this);
 		}
 		super.dispose();
-	}
-
-	public static int progressForFraction(double iFrame, double nFrames) {	
-		return (int) Math.min(PROGRESS_VIDEO_PROCESSING + (iFrame/nFrames % 1) * (PROGRESS_VIDEO_READY - PROGRESS_VIDEO_PROCESSING), PROGRESS_VIDEO_READY - 1);
 	}
 
 }

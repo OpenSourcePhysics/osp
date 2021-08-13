@@ -88,6 +88,13 @@ import javajs.util.VideoReader;
  */
 public class VideoIO {
 
+	public static final int PROGRESS_LOAD_INIT        = 0;
+	public static final int PROGRESS_VIDEO_LOADING    = 10;
+	public static final int PROGRESS_VIDEO_PROCESSING = 20;
+	public static final int PROGRESS_VIDEO_READY      = 80;
+	public static final int PROGRESS_COMPLETE         = 100;
+	public static final int PROGRESS_VIDEO_CANCELED   = -999;
+
 	// static constants
 	public static final String[] JS_VIDEO_EXTENSIONS = { "ogg", "mov", "mp4" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	public static final String DEFAULT_PREFERRED_EXPORT_EXTENSION = "mp4"; //$NON-NLS-1$
@@ -1262,6 +1269,12 @@ private static String fixVideoPath(String path) {
 			return true;
 		VideoIO.handleUnsupportedVideo(path, ext, codec, panel, "VideoIO");
 		return false;
+	}
+
+	public static int progressForFraction(double iFrame, double nFrames) {
+		return (int) Math.min(
+				PROGRESS_VIDEO_PROCESSING + (iFrame / nFrames % 1) * (PROGRESS_VIDEO_READY - PROGRESS_VIDEO_PROCESSING),
+				PROGRESS_VIDEO_READY - 1);
 	}
 
 }
