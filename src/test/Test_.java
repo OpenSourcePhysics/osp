@@ -1,5 +1,9 @@
 package test;
 
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.spi.TimeZoneNameProvider;
 class Testx {
 	// example of a second independent top-level class.
 	// It will get its own .js file.
@@ -16,6 +20,7 @@ public class Test_ {
 	}
 	
 	public static void main(String[] args) {
+	    System.out.println(new Date().toGMTString());
 
 //		Test_Zipout.main(args);
 		System.out.println("Test_ all tests completed successfully.");
