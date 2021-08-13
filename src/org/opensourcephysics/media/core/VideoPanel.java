@@ -171,7 +171,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		if (newVideo == video) {
 			return;
 		}
-		if (videoLoading == video)
+		if (videoLoading != null && videoLoading == newVideo)
 			videoLoading = null;
 		initializePlayer(video, newVideo, playAllSteps);
 	}
@@ -624,6 +624,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			}
 			video = clip.getVideo();
 			if (video != null) {
+				// general place where video is defined
+				videoLoading = null;
 				video.addListener(this);
 				// synchronize coords
 				if (video.isMeasured()) {
