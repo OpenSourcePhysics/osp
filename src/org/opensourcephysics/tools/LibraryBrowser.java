@@ -350,17 +350,15 @@ public class LibraryBrowser extends JPanel {
 	/**
 	 * Imports a library with a specified path.
 	 * 
+	 * (no references to this method?)
+	 * 
 	 * @param path the path to the Library xml file
 	 */
 	public void importLibrary(final String path) {
-		Runnable runner = new Runnable() {
-			@Override
-			public void run() {
-				library.importLibrary(path);
-				refreshCollectionsMenu();
-			}
-		};
-		new Thread(runner).start();
+		SwingUtilities.invokeLater(()->{
+			library.importLibrary(path);
+			refreshCollectionsMenu();
+		});
 	}
 
 	/**

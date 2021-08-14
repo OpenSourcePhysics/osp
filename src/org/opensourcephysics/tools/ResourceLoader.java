@@ -68,6 +68,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
@@ -167,7 +168,7 @@ public class ResourceLoader {
 		 *  
 		 */ 		
 		{
-		  new Thread(() -> { webConnected = isWebConnected(); }).start();
+		  SwingUtilities.invokeLater(() -> { webConnected = isWebConnected(); });
 		}
 	}
 	/**

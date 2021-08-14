@@ -25,6 +25,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 /**
  * This modal dialog lets the user choose items from a tree view of an XMLControl.
@@ -55,7 +56,7 @@ public class XMLTreeChooser extends JDialog {
 		if (!b) {
 			dispose(); // BH 2020.02.13 -- Java bug -- need to dispose of this.
 			if (whenClosed != null)
-				new Thread(whenClosed).start();
+				SwingUtilities.invokeLater(whenClosed);
 		}
 	}
   /**
