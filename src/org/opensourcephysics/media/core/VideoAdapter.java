@@ -1103,7 +1103,7 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 		case Filter.PROPERTY_FILTER_IMAGE:
 		case Filter.PROPERTY_FILTER_TAB:
 			isValidFilteredImage = false;
-			firePropertyChange(e);
+			firePropertyChange(e); // to StepperClipControl
 			break;
 		}
 	}
