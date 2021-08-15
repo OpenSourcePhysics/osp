@@ -147,6 +147,17 @@ public class OSPRuntime {
 			support.removePropertyChangeListener(property, listener);
 		}
 
+		public static void addListeners(Supported c, String[] names, PropertyChangeListener listener) {
+			for (int i = names.length; --i >= 0;)
+				c.addPropertyChangeListener(names[i], listener);
+		}
+
+		public static void removeListeners(Supported c, String[] names, PropertyChangeListener listener) {
+			for (int i = names.length; --i >= 0;)
+				c.removePropertyChangeListener(names[i], listener);
+		}
+
+
 	}
 	public static final String VERSION = "6.0.0210810"; //$NON-NLS-1$
 	private static boolean isMac;
