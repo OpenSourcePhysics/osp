@@ -88,7 +88,7 @@ public class GhostFilter extends Filter {
 	public void setFade(double fade) {
 		Double prev = new Double(this.fade);
 		this.fade = Math.min(Math.abs(fade), 1);
-		support.firePropertyChange("fade", prev, new Double(fade)); //$NON-NLS-1$
+		firePropertyChange("fade", prev, new Double(fade)); //$NON-NLS-1$
 	}
 
 	/**
@@ -133,7 +133,7 @@ public class GhostFilter extends Filter {
 	@Override
 	public void clear() {
 		source = null;
-		support.firePropertyChange("image", null, null); //$NON-NLS-1$
+		firePropertyChange("image", null, null); //$NON-NLS-1$
 	}
 
 	/**

@@ -34,14 +34,12 @@ package org.opensourcephysics.media.core;
 import java.awt.Frame;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
 import javax.swing.JOptionPane;
-import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
@@ -59,7 +57,7 @@ import javajs.async.AsyncDialog;
  * @author Douglas Brown
  * @version 1.0
  */
-public class VideoClip implements PropertyChangeListener {
+public class VideoClip extends OSPRuntime.Supported implements PropertyChangeListener {
 
 	public final static String PROPERTY_VIDEOCLIP_FRAMECOUNT = "framecount";//$NON-NLS-1$
 	public final static String PROPERTY_VIDEOCLIP_STARTFRAME = "startframe";//$NON-NLS-1$
@@ -105,7 +103,6 @@ public class VideoClip implements PropertyChangeListener {
 	protected Video video = null;
 	private int[] stepFrames;
 	ClipInspector inspector;
-	private PropertyChangeSupport support;
 	private boolean playAllSteps = true;
 	private boolean isDefaultState;
 	private boolean isAdjusting = false;
@@ -122,7 +119,6 @@ public class VideoClip implements PropertyChangeListener {
 	 * @param video the video
 	 */
 	public VideoClip(Video video) {
-		support = new SwingPropertyChangeSupport(this);
 		this.video = video;
 		if (video != null) {
 			video.setProperty("videoclip", this); //$NON-NLS-1$
@@ -211,7 +207,7 @@ public class VideoClip implements PropertyChangeListener {
 
 		if (prevStart != start) {
 			isDefaultState = false;
-			support.firePropertyChange(PROPERTY_VIDEOCLIP_STARTFRAME, null, Integer.valueOf(start));
+			firePropertyChange(PROPERTY_VIDEOCLIP_STARTFRAME, null, Integer.valueOf(start));
 		}
 		return prevStart != start;
 	}
@@ -251,7 +247,7 @@ public class VideoClip implements PropertyChangeListener {
 		// set stepCount to near value
 		stepCount = 1 + (endFrame - getStartFrameNumber()) / stepSize;
 		updateArray();
-		support.firePropertyChange(PROPERTY_VIDEOCLIP_STEPSIZE, null, Integer.valueOf(size));
+		firePropertyChange(PROPERTY_VIDEOCLIP_STEPSIZE, null, Integer.valueOf(size));
 
 		// reset end frame
 		setEndFrameNumber(endFrame);
@@ -299,7 +295,7 @@ public class VideoClip implements PropertyChangeListener {
 		Integer prev = Integer.valueOf(stepCount);
 		stepCount = count;
 		updateArray();
-		support.firePropertyChange(PROPERTY_VIDEOCLIP_STEPCOUNT, prev, Integer.valueOf(stepCount));
+		firePropertyChange(PROPERTY_VIDEOCLIP_STEPCOUNT, prev, Integer.valueOf(stepCount));
 	}
 
 	/**
@@ -360,7 +356,7 @@ public class VideoClip implements PropertyChangeListener {
 		}
 		isDefaultStartTime = Double.isNaN(t0);
 		startTime = Double.isNaN(t0) ? 0.0 : t0;
-		support.firePropertyChange(PROPERTY_VIDEOCLIP_STARTTIME, null, new Double(startTime));
+		firePropertyChange(PROPERTY_VIDEOCLIP_STARTTIME, null, new Double(startTime));
 	}
 
 	/**
@@ -529,7 +525,7 @@ public class VideoClip implements PropertyChangeListener {
 		if (isAdjusting == adjusting)
 			return;
 		isAdjusting = adjusting;
-		support.firePropertyChange(Trackable.PROPERTY_ADJUSTING, this, adjusting);
+		firePropertyChange(Trackable.PROPERTY_ADJUSTING, this, adjusting);
 	}
 
 	/**
@@ -560,50 +556,12 @@ public class VideoClip implements PropertyChangeListener {
 	}
 
 	/**
-	 * Adds a PropertyChangeListener to this video clip.
-	 *
-	 * @param listener the object requesting property change notification
-	 */
-	public void addPropertyChangeListener(PropertyChangeListener listener) {
-		support.addPropertyChangeListener(listener);
-	}
-
-	/**
-	 * Adds a PropertyChangeListener to this video clip.
-	 *
-	 * @param property the name of the property of interest to the listener
-	 * @param listener the object requesting property change notification
-	 */
-	public void addPropertyChangeListener(String property, PropertyChangeListener listener) {
-		support.addPropertyChangeListener(property, listener);
-	}
-
-	/**
-	 * Removes a PropertyChangeListener from this video clip.
-	 *
-	 * @param listener the listener requesting removal
-	 */
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		support.removePropertyChangeListener(listener);
-	}
-
-	/**
-	 * Removes a PropertyChangeListener for a specified property.
-	 *
-	 * @param property the name of the property
-	 * @param listener the listener to remove
-	 */
-	public void removePropertyChangeListener(String property, PropertyChangeListener listener) {
-		support.removePropertyChangeListener(property, listener);
-	}
-
-	/**
 	 * Trims unneeded frames after end frame (null videos only).
 	 */
 	protected void trimFrameCount() {
 		if (video == null || video.getFrameCount() == 1) {
 			nullVideoFrameCount = getEndFrameNumber() + 1;
-			support.firePropertyChange(VideoClip.PROPERTY_VIDEOCLIP_FRAMECOUNT, null,
+			firePropertyChange(VideoClip.PROPERTY_VIDEOCLIP_FRAMECOUNT, null,
 					Integer.valueOf(nullVideoFrameCount));
 		}
 	}

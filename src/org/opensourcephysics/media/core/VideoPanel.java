@@ -839,10 +839,6 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			}
 			
 			XMLControl child = control.getChildControl("videoclip"); //$NON-NLS-1$
-//			String path = child.getString("unsupported_video_path");
-//			if (path != null) {
-//				VideoIO.handleUnsupportedVideo(path, XML.getExtension(path), null, videoPanel);				
-//			}
 			if (child != null) {
 				if (!OSPRuntime.unzipFiles) {
 					child.setBasepath(control.getBasepath());

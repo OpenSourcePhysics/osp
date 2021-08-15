@@ -179,7 +179,7 @@ public class RadialDistortionFilter extends Filter {
 			if (inspector != null)
 				inspector.updateDisplay();
 			isValidTransform = false;
-			support.firePropertyChange("image", null, null); //$NON-NLS-1$
+			firePropertyChange("image", null, null); //$NON-NLS-1$
 		}
 	}
 
@@ -209,7 +209,7 @@ public class RadialDistortionFilter extends Filter {
 			if (inspector != null)
 				inspector.updateDisplay();
 			isValidTransform = false;
-			support.firePropertyChange("image", null, null); //$NON-NLS-1$
+			firePropertyChange("image", null, null); //$NON-NLS-1$
 		}
 	}
 
@@ -235,7 +235,7 @@ public class RadialDistortionFilter extends Filter {
 			isValidTransform = false;
 			if (inspector != null)
 				inspector.updateDisplay();
-			support.firePropertyChange("image", null, null); //$NON-NLS-1$
+			firePropertyChange("image", null, null); //$NON-NLS-1$
 		}
 	}
 
@@ -261,7 +261,7 @@ public class RadialDistortionFilter extends Filter {
 			isValidTransform = false;
 			if (inspector != null)
 				inspector.updateDisplay();
-			support.firePropertyChange("image", null, null); //$NON-NLS-1$
+			firePropertyChange("image", null, null); //$NON-NLS-1$
 		}
 	}
 
@@ -667,7 +667,7 @@ public class RadialDistortionFilter extends Filter {
 							color);
 					if (newColor != null) {
 						color = newColor;
-						support.firePropertyChange(PROPERTY_FILTER_COLOR, null, newColor);
+						firePropertyChange(PROPERTY_FILTER_COLOR, null, newColor);
 					}
 				}
 			});
@@ -947,15 +947,15 @@ public class RadialDistortionFilter extends Filter {
 			if (vidPanel != null) {
 				if (vis) {
 					vidPanel.addDrawable(circle);
-					support.firePropertyChange(PROPERTY_FILTER_VISIBLE, null, null);
+					firePropertyChange(PROPERTY_FILTER_VISIBLE, null, null);
 					RadialDistortionFilter.this.addPropertyChangeListener(PROPERTY_FILTER_VISIBLE, vidPanel);
 				} else {
 					vidPanel.removeDrawable(circle);
-					support.firePropertyChange(PROPERTY_FILTER_VISIBLE, null, null);
+					firePropertyChange(PROPERTY_FILTER_VISIBLE, null, null);
 					RadialDistortionFilter.this.removePropertyChangeListener(PROPERTY_FILTER_VISIBLE, vidPanel);
 				}
 			}
-			support.firePropertyChange("image", null, null); //$NON-NLS-1$
+			firePropertyChange("image", null, null); //$NON-NLS-1$
 		}
 
 	}

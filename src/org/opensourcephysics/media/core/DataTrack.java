@@ -73,7 +73,7 @@ public interface DataTrack extends Trackable {
 	 * 
 	 * @param listener the PropertyChangeListener
 	 */
-	public void addPropertyChangeListener(PropertyChangeListener listener);
+	public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener);
 	
 	/**
 	 * Determines if time is defined by the Data.

@@ -221,7 +221,7 @@ public void setFrameDuration(double duration) {
     if(count!=0) {
       timeStretch = duration*count/(tf-ti);
     }
-    support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_FRAMEDURATION, null, new Double(duration)); 
+    firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_FRAMEDURATION, null, new Double(duration)); 
   }
 
   /**
@@ -256,12 +256,12 @@ public double getMeanFrameDuration() {
 //			boolean changed = (n != videoFrameNumber);
 //			super.setFrameNumber(n);
 //			if (changed)
-//				support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, stepNumber); // to VideoPlayer
+//				firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, stepNumber); // to VideoPlayer
 //			break;
 		case Video.PROPERTY_VIDEO_RATE: 
 		case Video.PROPERTY_VIDEO_PLAYING:
 		case Video.PROPERTY_VIDEO_LOOPING:
-			support.firePropertyChange(e); // to VideoPlayer
+			firePropertyChange(e); // to VideoPlayer
 			break;
 		default:
 			super.propertyChange(e);

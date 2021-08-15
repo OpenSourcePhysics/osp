@@ -48,7 +48,7 @@ import java.util.Iterator;
  * @version 1.0
  */
 public class FilterStack extends Filter implements PropertyChangeListener {
-// instance fields
+	// instance fields
 	private ArrayList<Filter> filters = new ArrayList<Filter>();
 	private Filter postFilter;
 	private int indexRemoved = -1;
@@ -70,8 +70,7 @@ public class FilterStack extends Filter implements PropertyChangeListener {
 	public void addFilter(Filter filter) {
 		filters.add(filter);
 		filter.stack = this;
-		filter.removePropertyChangeListener(this);
-		filter.addPropertyChangeListener(this);
+		filter.addPropertyChangeListenerSafely(this);
 		notifyUpdate(null, filter);
 	}
 
@@ -90,8 +89,8 @@ public class FilterStack extends Filter implements PropertyChangeListener {
 	}
 
 	private void notifyUpdate(Filter oldFilter, Filter newFilter) {
-		support.firePropertyChange(PROPERTY_FILTER_IMAGE, null, null); // $NON-NLS-1$
-		support.firePropertyChange(PROPERTY_FILTER_FILTER, oldFilter, newFilter); // $NON-NLS-1$
+		firePropertyChange(PROPERTY_FILTER_IMAGE, null, null); // $NON-NLS-1$
+		firePropertyChange(PROPERTY_FILTER_FILTER, oldFilter, newFilter); // $NON-NLS-1$
 	}
 
 	/**
@@ -302,11 +301,11 @@ public class FilterStack extends Filter implements PropertyChangeListener {
 	@Override
 	public void propertyChange(PropertyChangeEvent e) {
 		switch (e.getPropertyName()) {
-		case "filterChanged":
-			support.firePropertyChange("filterChanged", e.getOldValue(), e.getNewValue()); //$NON-NLS-1$
+		case Video.PROPERTY_VIDEO_FILTERCHANGED:
+			firePropertyChange(Video.PROPERTY_VIDEO_FILTERCHANGED, e.getOldValue(), e.getNewValue()); //$NON-NLS-1$
 			break;
 		default:
-			support.firePropertyChange(PROPERTY_FILTER_IMAGE, null, null); // $NON-NLS-1$
+			firePropertyChange(PROPERTY_FILTER_IMAGE, null, null); // $NON-NLS-1$
 			break;
 		}
 	}

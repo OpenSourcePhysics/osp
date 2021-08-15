@@ -73,7 +73,7 @@ public class DeinterlaceFilter extends Filter {
 	public void setOdd(boolean odd) {
 		boolean prev = isOdd;
 		isOdd = odd;
-		support.firePropertyChange("odd", prev, odd); //$NON-NLS-1$
+		firePropertyChange("odd", prev, odd); //$NON-NLS-1$
 	}
 
 	/**

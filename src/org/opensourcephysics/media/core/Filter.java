@@ -67,7 +67,7 @@ import org.opensourcephysics.tools.FontSizer;
  * @author Douglas Brown
  * @version 1.0
  */
-public abstract class Filter {
+public abstract class Filter extends OSPRuntime.Supported {
 
 
 	protected boolean haveGUI;
@@ -145,7 +145,6 @@ public abstract class Filter {
 	protected boolean changed = false;
 	protected String previousState;
 	protected VideoPanel vidPanel;
-	protected PropertyChangeSupport support;
 	protected Action enabledAction;
 	protected boolean hasInspector;
 
@@ -172,7 +171,6 @@ public abstract class Filter {
 	 */
 	@SuppressWarnings("serial")
 	protected Filter() {
-		support = new SwingPropertyChangeSupport(this);
 		// get the name of this filter from the simple class name
 		name = getClass().getSimpleName();
 		int i = name.indexOf("Filter"); //$NON-NLS-1$
@@ -280,7 +278,7 @@ public abstract class Filter {
 			return;
 		}
 		this.enabled = enabled;
-		support.firePropertyChange(PROPERTY_FILTER_ENABLED, null, Boolean.valueOf(enabled)); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_FILTER_ENABLED, null, Boolean.valueOf(enabled)); //$NON-NLS-1$
 	}
 
 	/**
@@ -318,44 +316,6 @@ public abstract class Filter {
 		if (output != null)
 			output.flush();
 		pixelsIn = pixelsOut = null;
-	}
-
-	/**
-	 * Adds a PropertyChangeListener to this filter.
-	 *
-	 * @param listener the object requesting property change notification
-	 */
-	public void addPropertyChangeListener(PropertyChangeListener listener) {
-		support.addPropertyChangeListener(listener);
-	}
-
-	/**
-	 * Adds a PropertyChangeListener to this filter.
-	 *
-	 * @param property the name of the property of interest to the listener
-	 * @param listener the object requesting property change notification
-	 */
-	public void addPropertyChangeListener(String property, PropertyChangeListener listener) {
-		support.addPropertyChangeListener(property, listener);
-	}
-
-	/**
-	 * Removes a PropertyChangeListener from this filter.
-	 *
-	 * @param listener the listener requesting removal
-	 */
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		support.removePropertyChangeListener(listener);
-	}
-
-	/**
-	 * Removes a PropertyChangeListener for a specified property.
-	 *
-	 * @param property the name of the property
-	 * @param listener the listener to remove
-	 */
-	public void removePropertyChangeListener(String property, PropertyChangeListener listener) {
-		support.removePropertyChangeListener(property, listener);
 	}
 
 	/**
@@ -432,7 +392,7 @@ public abstract class Filter {
 				if (inspector != null) {
 					if (isChanged() && previousState != null) {
 						changed = false;
-						support.firePropertyChange("filterChanged", previousState, Filter.this); //$NON-NLS-1$
+						firePropertyChange(Video.PROPERTY_VIDEO_FILTERCHANGED, previousState, Filter.this); //$NON-NLS-1$
 						previousState = null;
 					}
 					inspector.setVisible(false);

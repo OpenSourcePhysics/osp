@@ -245,7 +245,7 @@ public class PerspectiveFilter extends Filter implements PropertyChangeListener 
 				keyFrames.clear();
 				saveCorners(fixedKey, in); // save input corners
 			}
-			support.firePropertyChange(PROPERTY_PERSPECTIVEFILTER_FIXED, filterState, null); //$NON-NLS-1$
+			firePropertyChange(PROPERTY_PERSPECTIVEFILTER_FIXED, filterState, null); //$NON-NLS-1$
 		}
 	}
 
@@ -762,8 +762,8 @@ public class PerspectiveFilter extends Filter implements PropertyChangeListener 
 					if (disposing)
 						return;
 					refresh();
-					support.firePropertyChange(PROPERTY_FILTER_IMAGE, null, null); // $NON-NLS-1$
-					support.firePropertyChange(PROPERTY_FILTER_TAB, null, null); // $NON-NLS-1$
+					firePropertyChange(PROPERTY_FILTER_IMAGE, null, null); // $NON-NLS-1$
+					firePropertyChange(PROPERTY_FILTER_TAB, null, null); // $NON-NLS-1$
 				}
 			});
 			helpButton = new JButton();
@@ -794,7 +794,7 @@ public class PerspectiveFilter extends Filter implements PropertyChangeListener 
 							quad.color);
 					if (newColor != null) {
 						quad.color = newColor;
-						support.firePropertyChange(PROPERTY_FILTER_COLOR, null, newColor); 
+						firePropertyChange(PROPERTY_FILTER_COLOR, null, newColor); 
 					}
 				}
 			});
@@ -849,13 +849,13 @@ public class PerspectiveFilter extends Filter implements PropertyChangeListener 
 			if (vidPanel != null) {
 				if (vis) {
 					vidPanel.addDrawable(quad);
-					support.firePropertyChange(PROPERTY_FILTER_VISIBLE, null, null);
+					firePropertyChange(PROPERTY_FILTER_VISIBLE, null, null);
 					PerspectiveFilter.this.removePropertyChangeListener(PROPERTY_FILTER_VISIBLE, vidPanel);
 					PerspectiveFilter.this.addPropertyChangeListener(PROPERTY_FILTER_VISIBLE, vidPanel);
 					vidPanel.removePropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 					vidPanel.addPropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 				} else {
-					support.firePropertyChange(PROPERTY_FILTER_VISIBLE, null, null);
+					firePropertyChange(PROPERTY_FILTER_VISIBLE, null, null);
 					PerspectiveFilter.this.removePropertyChangeListener(PROPERTY_FILTER_VISIBLE, vidPanel);
 					vidPanel.removePropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 					vidPanel.removeDrawable(quad);
@@ -869,7 +869,7 @@ public class PerspectiveFilter extends Filter implements PropertyChangeListener 
 			tabbedPane.setEnabled(enable);
 			inputEditor.setEnabled(enable);
 			outputEditor.setEnabled(enable);
-			support.firePropertyChange("image", null, null); //$NON-NLS-1$
+			firePropertyChange("image", null, null); //$NON-NLS-1$
 		}
 	}
 
@@ -905,11 +905,11 @@ public class PerspectiveFilter extends Filter implements PropertyChangeListener 
 			saveCorners(vidPanel == null ? 0 : vidPanel.getFrameNumber(), in);
 			editor.refreshFields();
 			if (editor == outputEditor) {
-				PerspectiveFilter.this.support.firePropertyChange("image", null, null); //$NON-NLS-1$
+				PerspectiveFilter.this.firePropertyChange("image", null, null); //$NON-NLS-1$
 			}
 
 			// fire cornerlocation event
-			PerspectiveFilter.this.support.firePropertyChange(PROPERTY_PERSPECTIVEFILTER_CORNERLOCATION, null, this); //$NON-NLS-1$
+			PerspectiveFilter.this.firePropertyChange(PROPERTY_PERSPECTIVEFILTER_CORNERLOCATION, null, this); //$NON-NLS-1$
 
 			if (vidPanel != null)
 				vidPanel.repaint();
@@ -1178,7 +1178,7 @@ public class PerspectiveFilter extends Filter implements PropertyChangeListener 
 						}
 					}
 					refreshFields();
-					PerspectiveFilter.this.support.firePropertyChange("image", null, null); //$NON-NLS-1$
+					PerspectiveFilter.this.firePropertyChange("image", null, null); //$NON-NLS-1$
 				}
 			};
 			JPanel fieldPanel = new JPanel(new GridLayout(2, 2));

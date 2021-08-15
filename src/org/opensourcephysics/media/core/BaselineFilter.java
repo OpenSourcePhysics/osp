@@ -135,7 +135,7 @@ public class BaselineFilter extends Filter {
 						JOptionPane.INFORMATION_MESSAGE);
 			}
 		}
-		support.firePropertyChange("baseline", null, null); //$NON-NLS-1$
+		firePropertyChange("baseline", null, null); //$NON-NLS-1$
 	}
 
 	/**

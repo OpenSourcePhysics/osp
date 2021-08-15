@@ -31,11 +31,6 @@
  */
 package org.opensourcephysics.display;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-
-import javax.swing.event.SwingPropertyChangeSupport;
-
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 
@@ -48,7 +43,7 @@ import org.opensourcephysics.controls.XMLControl;
  * @author Douglas Brown
  * @version 1.0
  */
-public class DataClip {
+public class DataClip extends OSPRuntime.Supported {
 	public static final String PROPERTY_DATACLIP_CLIPLENGTH = "clip_length";
 	public static final String PROPERTY_DATACLIP_STARTINDEX = "clip_start";
 	public static final String PROPERTY_DATACLIP_CLIPSTRIDE = "clip_stride";
@@ -57,17 +52,7 @@ public class DataClip {
 	private int startIndex = 0;
 	private int clipLength = 0;
 	private int stride = 1;
-	private PropertyChangeSupport support;
 	private boolean isAdjusting = false;
-
-	/**
-	 * Constructs a DataClip.
-	 *
-	 * @param dataLength the number of data elements in the Data object
-	 */
-	public DataClip() {
-		support = new SwingPropertyChangeSupport(this);
-	}
 
 	/**
 	 * Sets the data length (number of data elements in the Data object).
@@ -105,7 +90,7 @@ public class DataClip {
 			length = 0;
 		}
 		clipLength = length;
-		support.firePropertyChange(PROPERTY_DATACLIP_CLIPLENGTH, prev, getClipLength()); // $NON-NLS-1$
+		firePropertyChange(PROPERTY_DATACLIP_CLIPLENGTH, prev, getClipLength()); // $NON-NLS-1$
 		return getClipLength();
 	}
 
@@ -134,7 +119,7 @@ public class DataClip {
 		start = Math.min(start, dataLength - 1);
 
 		startIndex = start;
-		support.firePropertyChange(PROPERTY_DATACLIP_STARTINDEX, prev, start); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_DATACLIP_STARTINDEX, prev, start); //$NON-NLS-1$
 		return getStartIndex();
 	}
 
@@ -160,7 +145,7 @@ public class DataClip {
 		stride = Math.max(stride, 1);
 
 		this.stride = stride;
-		support.firePropertyChange(PROPERTY_DATACLIP_CLIPSTRIDE, prev, stride); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_DATACLIP_CLIPSTRIDE, prev, stride); //$NON-NLS-1$
 		return getStride();
 	}
 
@@ -236,7 +221,7 @@ public class DataClip {
 		if (isAdjusting == adjusting)
 			return;
 		isAdjusting = adjusting;
-		support.firePropertyChange(PROPERTY_DATACLIP_CLIPADJUSTING, this, adjusting); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_DATACLIP_CLIPADJUSTING, this, adjusting); //$NON-NLS-1$
 	}
 
 	/**
@@ -247,45 +232,6 @@ public class DataClip {
 	public boolean isAdjusting() {
 		return isAdjusting;
 	}
-
-	/**
-	 * Adds a PropertyChangeListener to this video clip.
-	 *
-	 * @param listener the object requesting property change notification
-	 */
-	public void addPropertyChangeListener(PropertyChangeListener listener) {
-		support.addPropertyChangeListener(listener);
-	}
-
-	/**
-	 * Adds a PropertyChangeListener to this video clip.
-	 *
-	 * @param property the name of the property of interest to the listener
-	 * @param listener the object requesting property change notification
-	 */
-	public void addPropertyChangeListener(String property, PropertyChangeListener listener) {
-		support.addPropertyChangeListener(property, listener);
-	}
-
-	/**
-	 * Removes a PropertyChangeListener from this video clip.
-	 *
-	 * @param listener the listener requesting removal
-	 */
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		support.removePropertyChangeListener(listener);
-	}
-
-	/**
-	 * Removes a PropertyChangeListener for a specified property.
-	 *
-	 * @param property the name of the property
-	 * @param listener the listener to remove
-	 */
-	public void removePropertyChangeListener(String property, PropertyChangeListener listener) {
-		support.removePropertyChangeListener(property, listener);
-	}
-
 	/**
 	 * Returns an XML.ObjectLoader to save and load data for this class.
 	 *

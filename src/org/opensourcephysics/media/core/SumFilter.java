@@ -89,7 +89,7 @@ public class SumFilter extends Filter {
 	public void setBrightness(double fraction) {
 		if (fraction != brightness) {
 			brightness = Math.abs(fraction);
-			support.firePropertyChange(Filter.PROPERTY_FILTER_BRIGHTNESS, null, null);
+			firePropertyChange(Filter.PROPERTY_FILTER_BRIGHTNESS, null, null);
 		}
 	}
 
@@ -102,7 +102,7 @@ public class SumFilter extends Filter {
 		if (this.mean != mean) {
 			this.mean = mean;
 			refresh();
-			support.firePropertyChange(Filter.PROPERTY_FILTER_MEAN, null, null);
+			firePropertyChange(Filter.PROPERTY_FILTER_MEAN, null, null);
 		}
 	}
 
@@ -137,7 +137,7 @@ public class SumFilter extends Filter {
 			initializeSource(source);
 			brightness = 1;
 			skipSum = true;
-			support.firePropertyChange(Filter.PROPERTY_FILTER_RESET, null, null);
+			firePropertyChange(Filter.PROPERTY_FILTER_RESET, null, null);
 		}
 	}
 

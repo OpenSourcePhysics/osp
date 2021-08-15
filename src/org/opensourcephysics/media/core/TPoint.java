@@ -169,7 +169,7 @@ public class TPoint extends Point2D.Double implements Interactive, Trackable {
 			return;
 		}
 		super.setLocation(x, y);
-		if (support != null) {
+		if (support != null) { // VectorStep
 			support.firePropertyChange("location", null, this); //$NON-NLS-1$
 		}
 	}

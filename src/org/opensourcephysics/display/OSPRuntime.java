@@ -17,6 +17,9 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -47,6 +50,7 @@ import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
+import javax.swing.event.SwingPropertyChangeSupport;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
 import org.opensourcephysics.controls.OSPLog;
@@ -73,6 +77,77 @@ import swingjs.api.JSUtilI;
  */
 public class OSPRuntime {
 
+	public static abstract class Supported {
+		
+		private PropertyChangeSupport support;
+		
+		public Supported() {
+			support = new SwingPropertyChangeSupport(this);
+		}
+		
+
+		/**
+		 * Fires a property change event.
+		 *
+		 */
+		public void firePropertyChange(PropertyChangeEvent e) {
+			support.firePropertyChange(e);
+		}
+		/**
+		 * Fires a property change event.
+		 *
+		 * @param name   the name of the property
+		 * @param oldVal the old value of the property
+		 * @param newVal the new value of the property
+		 */
+		public void firePropertyChange(String name, Object oldVal, Object newVal) {
+			support.firePropertyChange(name, oldVal, newVal);
+		}
+
+
+		/**
+		 * Adds a PropertyChangeListener to this video clip.
+		 *
+		 * @param listener the object requesting property change notification
+		 */
+		public void addPropertyChangeListener(PropertyChangeListener listener) {
+			support.addPropertyChangeListener(listener);
+		}
+
+		public void addPropertyChangeListenerSafely(PropertyChangeListener listener) {
+			support.removePropertyChangeListener(listener);
+			support.addPropertyChangeListener(listener);
+		}
+		/**
+		 * Adds a PropertyChangeListener to this video clip.
+		 *
+		 * @param property the name of the property of interest to the listener
+		 * @param listener the object requesting property change notification
+		 */
+		public void addPropertyChangeListener(String property, PropertyChangeListener listener) {
+			support.addPropertyChangeListener(property, listener);
+		}
+
+		/**
+		 * Removes a PropertyChangeListener from this video clip.
+		 *
+		 * @param listener the listener requesting removal
+		 */
+		public void removePropertyChangeListener(PropertyChangeListener listener) {
+			support.removePropertyChangeListener(listener);
+		}
+
+		/**
+		 * Removes a PropertyChangeListener for a specified property.
+		 *
+		 * @param property the name of the property
+		 * @param listener the listener to remove
+		 */
+		public void removePropertyChangeListener(String property, PropertyChangeListener listener) {
+			support.removePropertyChangeListener(property, listener);
+		}
+
+	}
 	public static final String VERSION = "6.0.0210810"; //$NON-NLS-1$
 	private static boolean isMac;
 

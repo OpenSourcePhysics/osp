@@ -115,7 +115,7 @@ public class StepperClipControl extends ClipControl {
 			timer.restart();
 		}
 		SwingUtilities.invokeLater(()->{
-			support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_PLAYING, null, Boolean.TRUE);
+			firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_PLAYING, null, Boolean.TRUE);
 		});
 	}
 
@@ -128,7 +128,7 @@ public class StepperClipControl extends ClipControl {
 		readyToStep = true;
 		stepDisplayed = true;
 		playing = false;
-		support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_PLAYING, null, Boolean.FALSE); //$NON-NLS-1$
+		firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_PLAYING, null, Boolean.FALSE); //$NON-NLS-1$
 	}
 
 	/**
@@ -188,14 +188,14 @@ public class StepperClipControl extends ClipControl {
 		if (video == null) {
 			super.setStepNumber(step);
 			stepDisplayed = true;
-			support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, Integer.valueOf(step));
+			firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, Integer.valueOf(step));
 		} else {
 			int frame = clip.stepToFrame(step);
 			if (frame > video.getEndFrameNumber()) {
 				super.setStepNumber(step);
 				video.setVisible(false);
 				stepDisplayed = true;
-				support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, Integer.valueOf(step));
+				firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, Integer.valueOf(step));
 			} else {
 				video.setVisible(videoVisible);
 				SwingUtilities.invokeLater(() -> {
@@ -211,7 +211,7 @@ public class StepperClipControl extends ClipControl {
 		} else if (video.getFrameNumber() == frame) { // setting frame number will have no effect
 			super.setStepNumber(step);
 			stepDisplayed = true;
-			support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, Integer.valueOf(step));
+			firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, Integer.valueOf(step));
 		} else {
 			video.setFrameNumber(frame);
 		}
@@ -231,7 +231,7 @@ public class StepperClipControl extends ClipControl {
 		timer.setInitialDelay(getTimerDelay());
 		playDuration = 0;
 		playStepCount = 0;		
-		support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_RATE, null, new Double(rate));
+		firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_RATE, null, new Double(rate));
 	}
 
 	/**
@@ -280,7 +280,7 @@ public class StepperClipControl extends ClipControl {
 			frameDuration = duration;
 			timer.setInitialDelay(getTimerDelay());
 		}
-		support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_FRAMEDURATION, null, new Double(duration));
+		firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_FRAMEDURATION, null, new Double(duration));
 	}
 
 	/**
@@ -294,7 +294,7 @@ public class StepperClipControl extends ClipControl {
 			return;
 		}
 		looping = loops;
-		support.firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_LOOPING, null, Boolean.valueOf(loops));
+		firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_LOOPING, null, Boolean.valueOf(loops));
 	}
 
 	/**

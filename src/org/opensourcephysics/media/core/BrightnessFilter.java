@@ -100,7 +100,7 @@ public class BrightnessFilter extends Filter {
 		Double prev = new Double(this.contrast);
 		this.contrast = contrast;
 		updateFactors();
-		support.firePropertyChange("contrast", prev, new Double(contrast)); //$NON-NLS-1$
+		firePropertyChange("contrast", prev, new Double(contrast)); //$NON-NLS-1$
 	}
 
 	/**
@@ -127,7 +127,7 @@ public class BrightnessFilter extends Filter {
 		Integer prev = Integer.valueOf(this.brightness);
 		this.brightness = brightness;
 		updateFactors();
-		support.firePropertyChange(PROPERTY_FILTER_BRIGHTNESS, prev, Integer.valueOf(brightness)); 
+		firePropertyChange(PROPERTY_FILTER_BRIGHTNESS, prev, Integer.valueOf(brightness)); 
 	}
 
 	/**
@@ -275,7 +275,7 @@ public class BrightnessFilter extends Filter {
 				public void windowLostFocus(java.awt.event.WindowEvent e) {
 					if (isChanged() && previousState != null) {
 						changed = false;
-						support.firePropertyChange("filterChanged", previousState, BrightnessFilter.this); //$NON-NLS-1$
+						firePropertyChange(Video.PROPERTY_VIDEO_FILTERCHANGED, previousState, BrightnessFilter.this); //$NON-NLS-1$
 						previousState = null;
 					}
 				}

@@ -40,8 +40,6 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -49,7 +47,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import javax.swing.SwingUtilities;
-import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
@@ -68,7 +65,7 @@ import org.opensourcephysics.tools.ResourceLoader;
  * @author Douglas Brown
  * @version 1.0
  */
-public abstract class VideoAdapter implements Video {
+public abstract class VideoAdapter extends OSPRuntime.Supported implements Video {
 // instance fields
 	
 	/**
@@ -110,7 +107,6 @@ public abstract class VideoAdapter implements Video {
 	protected boolean isValidFilteredImage = false;
 	protected ImageCoordSystem coords;
 	protected DoubleArray aspects;
-	protected PropertyChangeSupport support;
 	protected HashMap<String, Object> properties = new HashMap<String, Object>();
 	protected FilterStack filterStack = new FilterStack();
 	protected DataBufferInt clearRaster;
@@ -999,10 +995,10 @@ public abstract class VideoAdapter implements Video {
 			return;
 		}
 		if (coords != null) {
-			coords.removePropertyChangeListener(this);
+			coords.removePropertyChangeListener(ImageCoordSystem.PROPERTY_COORDS_TRANSFORM, this);
 		}
-		newCoords.addPropertyChangeListener(ImageCoordSystem.PROPERTY_COORDS_TRANSFORM, this);
 		coords = newCoords;
+		coords.addPropertyChangeListener(ImageCoordSystem.PROPERTY_COORDS_TRANSFORM, this);
 		isMeasured = true;
 		isValidMeasure = false;
 		firePropertyChange(PROPERTY_VIDEO_COORDS, null, newCoords);
@@ -1083,48 +1079,6 @@ public abstract class VideoAdapter implements Video {
 	}
 
 	/**
-	 * Adds a PropertyChangeListener to this video.
-	 *
-	 * @param listener the object requesting property change notification
-	 */
-	@Override
-	public void addPropertyChangeListener(PropertyChangeListener listener) {
-		support.addPropertyChangeListener(listener);
-	}
-
-	/**
-	 * Adds a PropertyChangeListener to this video.
-	 *
-	 * @param property the name of the property of interest to the listener
-	 * @param listener the object requesting property change notification
-	 */
-	@Override
-	public void addPropertyChangeListener(String property, PropertyChangeListener listener) {
-		support.addPropertyChangeListener(property, listener);
-	}
-
-	/**
-	 * Removes a PropertyChangeListener from this video.
-	 *
-	 * @param listener the listener requesting removal
-	 */
-	@Override
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		support.removePropertyChangeListener(listener);
-	}
-
-	/**
-	 * Removes a PropertyChangeListener for a specified property.
-	 *
-	 * @param property the name of the property
-	 * @param listener the listener to remove
-	 */
-	@Override
-	public void removePropertyChangeListener(String property, PropertyChangeListener listener) {
-		support.removePropertyChangeListener(property, listener);
-	}
-
-	/**
 	 * Disposes of this video.
 	 */
 	@Override
@@ -1143,16 +1097,13 @@ public abstract class VideoAdapter implements Video {
 	public void propertyChange(PropertyChangeEvent e) {
 		switch (e.getPropertyName()) {
 		case ImageCoordSystem.PROPERTY_COORDS_TRANSFORM:
-//		}
-//		if (e.getSource() == coords) { // "transform" BH! also "locked" and "adjusting"
 			isMeasured = true;
 			isValidMeasure = false;
 			break;
 		case Filter.PROPERTY_FILTER_IMAGE:
 		case Filter.PROPERTY_FILTER_TAB:
-//		} else if (e.getSource() == filterStack) { // "image" BH! also "visible", "color", and "tab"
 			isValidFilteredImage = false;
-			support.firePropertyChange(e);
+			firePropertyChange(e);
 			break;
 		}
 	}
@@ -1242,18 +1193,6 @@ public abstract class VideoAdapter implements Video {
 
 	// ____________________________ protected methods ____________________________
 
-	/**
-	 * Sends a PropertyChangeEvent to registered listeners. No event is sent if
-	 * oldVal and newVal are equal, unless they are both null.
-	 *
-	 * @param property the name of the property that has changed
-	 * @param oldVal   the value of the property before the change (may be null)
-	 * @param newVal   the value of the property after the change (may be null)
-	 */
-	protected void firePropertyChange(String property, Object oldVal, Object newVal) {
-		support.firePropertyChange(property, oldVal, newVal);
-	}
-
 	@Override
 	protected void finalize() {
 		OSPLog.finer(getClass().getSimpleName() + " resources released by garbage collector"); //$NON-NLS-1$
@@ -1265,7 +1204,6 @@ public abstract class VideoAdapter implements Video {
 	 * Initialize this video.
 	 */
 	protected void initialize() {
-		support = new SwingPropertyChangeSupport(this);
 		filterStack.addPropertyChangeListener(Filter.PROPERTY_FILTER_IMAGE, this);
 		filterStack.addPropertyChangeListener(Filter.PROPERTY_FILTER_TAB, this);
 	}

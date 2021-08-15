@@ -34,13 +34,11 @@ package org.opensourcephysics.media.core;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.TreeSet;
 
-import javax.swing.event.SwingPropertyChangeSupport;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.display.OSPRuntime;
 
 /**
  * This manages point and vector transformations between imagespace and
@@ -56,7 +54,7 @@ import org.opensourcephysics.controls.XMLControl;
  * @author Douglas Brown
  * @version 1.0
  */
-public class ImageCoordSystem {
+public class ImageCoordSystem extends OSPRuntime.Supported {
 
 	// instance fields
 
@@ -64,11 +62,11 @@ public class ImageCoordSystem {
 	public static final String PROPERTY_COORDS_LOCKED = "locked";
 	public static final String PROPERTY_COORDS_FIXEDSCALE = "fixed_scale";
 	public static final String PROPERTY_COORDS_FIXEDORIGIN = "fixed_origin";
+	public static final String PROPERTY_COORDS_FIXEDANGLE = "fixed_angle";
 
 	protected boolean ignoreUpdateRequests;// for tracker ReferenceFrame
 
 	private int length;
-	protected PropertyChangeSupport support; // for ReferenceFrame
 	private Point2D point = new Point2D.Double();
 	private TransformArray toImage, toWorld;
 	private DoubleArray scaleX, scaleY;
@@ -105,7 +103,6 @@ public class ImageCoordSystem {
 		originY = new DoubleArray(length, 0);
 		cosine = new DoubleArray(length, 1);
 		sine = new DoubleArray(length, 0);
-		support = new SwingPropertyChangeSupport(this);
 		updateAllTransforms();
 	}
 
@@ -120,51 +117,13 @@ public class ImageCoordSystem {
 	}
 
 	/**
-	 * Adds a PropertyChangeListener to this coordinate system.
-	 *
-	 * @param listener the object requesting property change notification
-	 */
-	public void addPropertyChangeListener(PropertyChangeListener listener) {
-		support.addPropertyChangeListener(listener);
-	}
-
-	/**
-	 * Adds a PropertyChangeListener to this coordinate system.
-	 *
-	 * @param property the name of the property of interest to the listener
-	 * @param listener the object requesting property change notification
-	 */
-	public void addPropertyChangeListener(String property, PropertyChangeListener listener) {
-		support.addPropertyChangeListener(property, listener);
-	}
-
-	/**
-	 * Removes a PropertyChangeListener from this coordinate system.
-	 *
-	 * @param listener the listener requesting removal
-	 */
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		support.removePropertyChangeListener(listener);
-	}
-
-	/**
-	 * Removes a PropertyChangeListener for a specified property.
-	 *
-	 * @param property the name of the property
-	 * @param listener the listener to remove
-	 */
-	public void removePropertyChangeListener(String property, PropertyChangeListener listener) {
-		support.removePropertyChangeListener(property, listener);
-	}
-
-	/**
 	 * Sets the locked property. When locked, no changes are allowed.
 	 *
 	 * @param locked <code>true</code> to lock the coordinate system
 	 */
 	public void setLocked(boolean locked) {
 		this.locked = locked;
-		support.firePropertyChange(PROPERTY_COORDS_LOCKED, null, Boolean.valueOf(locked)); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_COORDS_LOCKED, null, Boolean.valueOf(locked)); //$NON-NLS-1$
 	}
 
 	/**
@@ -218,7 +177,7 @@ public class ImageCoordSystem {
 		if (fixed) {
 			setAllOriginsXY(getOriginX(n), getOriginY(n));
 		}
-		support.firePropertyChange(PROPERTY_COORDS_FIXEDORIGIN, !fixed, fixed); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_COORDS_FIXEDORIGIN, !fixed, fixed); //$NON-NLS-1$
 	}
 
 	/**
@@ -260,7 +219,7 @@ public class ImageCoordSystem {
 		if (fixed) {
 			setAllCosineSines(getCosine(n), getSine(n));
 		}
-		support.firePropertyChange("fixed_angle", !fixed, fixed); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_COORDS_FIXEDANGLE, !fixed, fixed); //$NON-NLS-1$
 	}
 
 	/**
@@ -302,7 +261,7 @@ public class ImageCoordSystem {
 		if (fixed) {
 			setAllScalesXY(getScaleX(n), getScaleY(n));
 		}
-		support.firePropertyChange(PROPERTY_COORDS_FIXEDSCALE, !fixed, fixed); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_COORDS_FIXEDSCALE, !fixed, fixed); //$NON-NLS-1$
 	}
 
 	/**
@@ -1031,7 +990,7 @@ public class ImageCoordSystem {
 		if (isAdjusting == adjusting)
 			return;
 		isAdjusting = adjusting;
-		support.firePropertyChange(Trackable.PROPERTY_ADJUSTING, this, adjusting); // $NON-NLS-1$
+		firePropertyChange(Trackable.PROPERTY_ADJUSTING, this, adjusting); // $NON-NLS-1$
 	}
 
 	/**
@@ -1158,7 +1117,7 @@ public class ImageCoordSystem {
 			}
 			firePropChange = true;
 			// fire property change for overall updates
-			support.firePropertyChange(PROPERTY_COORDS_TRANSFORM, null, null); //$NON-NLS-1$
+			firePropertyChange(PROPERTY_COORDS_TRANSFORM, null, null); //$NON-NLS-1$
 		} catch (NoninvertibleTransformException ex) {
 			ex.printStackTrace();
 		}
@@ -1187,7 +1146,7 @@ public class ImageCoordSystem {
 		toWorld.get(n).setTransform(at.createInverse());
 		// fire property change
 		if (firePropChange) {
-			support.firePropertyChange(PROPERTY_COORDS_TRANSFORM, null, Integer.valueOf(n)); //$NON-NLS-1$
+			firePropertyChange(PROPERTY_COORDS_TRANSFORM, null, Integer.valueOf(n)); //$NON-NLS-1$
 		}
 	}
 
@@ -1206,7 +1165,7 @@ public class ImageCoordSystem {
 			}
 			firePropChange = true;
 			// fire property change for overall updates
-			support.firePropertyChange(PROPERTY_COORDS_TRANSFORM, null, null); //$NON-NLS-1$
+			firePropertyChange(PROPERTY_COORDS_TRANSFORM, null, null); //$NON-NLS-1$
 		} catch (NoninvertibleTransformException ex) {
 			ex.printStackTrace();
 		}

@@ -87,7 +87,7 @@ public class ResizeFilter extends Filter {
 		Double prev = new Double(widthFactor);
 		widthFactor = Math.min(Math.abs(factor), 10);
 		widthFactor = Math.max(widthFactor, 0.01);
-		support.firePropertyChange("width", prev, new Double(widthFactor)); //$NON-NLS-1$
+		firePropertyChange("width", prev, new Double(widthFactor)); //$NON-NLS-1$
 	}
 
 	/**
@@ -100,7 +100,7 @@ public class ResizeFilter extends Filter {
 		Double prev = new Double(heightFactor);
 		heightFactor = Math.min(Math.abs(factor), 10);
 		heightFactor = Math.max(heightFactor, 0.01);
-		support.firePropertyChange("height", prev, new Double(heightFactor)); //$NON-NLS-1$
+		firePropertyChange("height", prev, new Double(heightFactor)); //$NON-NLS-1$
 	}
 
 	/**

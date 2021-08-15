@@ -96,7 +96,7 @@ public class RotateFilter extends Filter {
 		if (type != rotationType) {
 			rotationType = type;
 			source = null; // forces re-initialization
-			support.firePropertyChange("rotate", null, null); //$NON-NLS-1$
+			firePropertyChange("rotate", null, null); //$NON-NLS-1$
 		}
 	}
 
@@ -261,7 +261,7 @@ public class RotateFilter extends Filter {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					reverse = reverseCheckbox.isSelected();
-					support.firePropertyChange("rotate", null, null); //$NON-NLS-1$
+					firePropertyChange("rotate", null, null); //$NON-NLS-1$
 				}
 			});
 			reversePanel.add(reverseCheckbox);
