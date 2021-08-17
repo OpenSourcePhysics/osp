@@ -549,7 +549,9 @@ public class DataToolTable extends DataTable {
 			leadRow = row;
 		}
 		dorepaint(3);
-		getPasteDataAction.actionPerformed(null);
+		if (!OSPRuntime.isJS) {
+			getPasteDataAction.actionPerformed(null);
+		}
 		final int[] rows = getSelectedModelRows();
 		// determine if selection is all empty cells
 		boolean isEmptyCells = true;

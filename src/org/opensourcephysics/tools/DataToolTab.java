@@ -36,6 +36,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -2502,10 +2503,13 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 * Refreshes the decimal separators.
 	 */
 	protected void refreshDecimalSeparators() {
-		plot.sciFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
-		plot.fixedFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+		DecimalFormatSymbols sym = OSPRuntime.getDecimalFormatSymbols();
+		
+		plot.sciFormat.setDecimalFormatSymbols(sym);
+		plot.fixedFormat.setDecimalFormatSymbols(sym);
+		correlationFormat.setDecimalFormatSymbols(sym);
+
 		plot.stringBuilder.refreshFormats();
-		correlationFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
 		dataTable.refreshTable(DataTable.MODE_FORMAT);
 	}
 

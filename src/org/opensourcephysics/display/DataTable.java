@@ -2592,14 +2592,14 @@ public class DataTable extends JTable {
 	 * @param header      the table header
 	 */
 	public void copyTable(boolean asFormatted, String header) {
-		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 		StringBuffer buf = getData(asFormatted);
 		// replace spaces with underscores in header (must be single string)
 		header = header.replace(' ', '_');
 		if (!header.endsWith(XML.NEW_LINE))
 			header += XML.NEW_LINE;
-		StringSelection stringSelection = new StringSelection(header + buf.toString());
-		clipboard.setContents(stringSelection, stringSelection);
+		OSPRuntime.copy(header + buf, null);
+//		StringSelection stringSelection = new StringSelection(header + buf.toString());
+//		clipboard.setContents(stringSelection, stringSelection);
 	}
 
 
