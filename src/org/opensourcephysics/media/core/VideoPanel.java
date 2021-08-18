@@ -766,7 +766,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	public static class Loader implements XML.ObjectLoader, FinalizableLoader {
 		public VideoClip clip;
 		protected VideoPanel videoPanel;
-		protected XMLControl control;
+		protected XMLControlElement control;
 
 		/**
 		 * Return a new VideoPanel.
@@ -789,7 +789,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		 */
 		@Override
 		public Object loadObject(XMLControl control, Object obj) {	
-			this.control = control;
+			this.control = (XMLControlElement) control;
 			videoPanel = (VideoPanel) obj;
 			// load the video clip
 			if (videoPanel.progress >= VideoIO.PROGRESS_VIDEO_READY || getClip(control)) {
@@ -801,8 +801,12 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 
 		/**
 		 * Common to both VideoPanel and TrackerPanel, this method obtains the VideoClip
-		 * and possibly its basePath, then either finalizes the panel or schedules that 
+		 * and possibly its basePath, then either finalizes the panel or schedules that
 		 * finalization for when an asynchronous video (SwingJS) is ready.
+		 * 
+		 * Note that this method will be called multiple times if the the video is
+		 * IncrementallyLoadable (Xuggle, Java).
+		 * 
 		 * @param control
 		 * @return false if deferring finalization (TrackerPanel AsyncVideo)
 		 */
@@ -814,30 +818,32 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 				Video video = clip.getVideo();
 				if (video instanceof IncrementallyLoadable) {
 					// Xuggle video only
-					IncrementallyLoadable iVideo = (IncrementallyLoadable)clip.getVideo();
+					IncrementallyLoadable iVideo = (IncrementallyLoadable) clip.getVideo();
 					try {
 						if (iVideo.loadMoreFrames(VideoIO.incrementToLoad)) {
 							videoPanel.setResourceLoading(clip.getVideo());
 							videoPanel.framesLoaded = iVideo.getLoadedFrameCount();
-							videoPanel.progress = VideoIO.progressForFraction(iVideo.getLoadedFrameCount(), iVideo.getLoadableFrameCount());
-							return false;					
-						} else {
-							if (VideoIO.loadIncrementally)
-								// clip requires one last load to finalize
-								control.getObject("videoclip"); //$NON-NLS-1$
-							videoPanel.progress = VideoIO.PROGRESS_VIDEO_READY;
+							videoPanel.progress = VideoIO.progressForFraction(iVideo.getLoadedFrameCount(),
+									iVideo.getLoadableFrameCount());
+							return false;
 						}
+						// done loading
+						// clip requires one last load to finalize
+						if (VideoIO.loadIncrementally) {
+							control.getObject("videoclip"); //$NON-NLS-1$
+						}
+						videoPanel.progress = VideoIO.PROGRESS_VIDEO_READY;
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 				} else if (video instanceof AsyncVideoI) {
 					videoPanel.framesLoaded = ((AsyncVideoI) video).getLoadedFrameCount();
-					videoPanel.progress = ((AsyncVideoI) video).getProgress();	
+					videoPanel.progress = ((AsyncVideoI) video).getProgress();
 				} else {
-					videoPanel.progress = VideoIO.PROGRESS_VIDEO_READY;					
+					videoPanel.progress = VideoIO.PROGRESS_VIDEO_READY;
 				}
 			}
-			
+
 			XMLControl child = control.getChildControl("videoclip"); //$NON-NLS-1$
 			if (child != null) {
 				if (!OSPRuntime.unzipFiles) {
@@ -878,6 +884,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 					videoPanel.addDrawable((Drawable) it.next());
 				}
 			}
+			
+			control.loadingComplete();
 		}
 
 

@@ -32,6 +32,8 @@ import java.util.function.Function;
 
 import javax.swing.JOptionPane;
 
+import org.opensourcephysics.controls.XML.ObjectLoader;
+import org.opensourcephysics.media.core.VideoIO.FinalizableLoader;
 import org.opensourcephysics.tools.Resource;
 import org.opensourcephysics.tools.ResourceLoader;
 
@@ -96,6 +98,8 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	private XMLControl[] childControls;
 
 	private Map<String, XMLProperty> propMap;
+
+	public ObjectLoader loader;
 
 	/**
 	 * see TrackerPanel.Loader
@@ -978,7 +982,6 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 */
 	public Object loadObject(Object obj, boolean autoImport, boolean importAll) {
 		Class<?> myType = getObjectClass();
-		XML.ObjectLoader loader = null;
 		Class<?> oclass = (obj == null ? null : obj.getClass());
 		// we must establish relationship between the control's XML type
 		// and the object's Java type
@@ -1008,8 +1011,11 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		} else if (obj == null) {
 			oclass = myType;
 		}
+		boolean needLoader = (object == null || myType != oclass || this.loader == null);
+
+		XML.ObjectLoader loader = null;
 		try {
-			loader = XML.getLoader(myType);
+			loader = (needLoader ? XML.getLoader(myType) : this.loader);
 
 			// BH 2020.02.13 adding check for null obj
 			// type may be
@@ -1045,7 +1051,13 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 				return obj;
 			}
 		}
-		return object = obj = loader.loadObject(this, obj);
+		obj = loader.loadObject(this, obj);
+		if (loader instanceof FinalizableLoader) {
+			// VideoPanels and VideoClips
+			this.loader = loader;
+			this.object = obj;
+		}
+		return obj;
 	}
 
 	/**
@@ -1096,7 +1108,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 */
 	@Override
 	public void clearMessages() {
-
+		System.out.println("XMLControlElment.clearMessages");
 		/** empty block */
 	}
 
@@ -2106,6 +2118,11 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		} catch (Exception e) {
 			return "";
 		}
+	}
+
+	public void loadingComplete() {
+		loader = null;
+	//	object = null;
 	}
 
 }

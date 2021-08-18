@@ -44,6 +44,7 @@ import javax.swing.JOptionPane;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.core.VideoIO.FinalizableLoader;
 import org.opensourcephysics.tools.Resource;
@@ -610,6 +611,10 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 	 */
 	static class Loader implements XML.ObjectLoader, FinalizableLoader {
 		
+		public void finalize() {
+			System.out.println("VideoClip loader finalized for " + path);
+		}
+		
 		private VideoClip clip;
 		private String path;
 		private Collection<?> filters;
@@ -623,6 +628,7 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 		private boolean playAllSteps;
 		private String base;
 		private Video video;
+		private boolean initialized;
 		
 		/**
 		 * Saves object data in an XMLControl.
@@ -680,43 +686,41 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 		public Object loadObject(XMLControl control, Object obj) {
 			clip = (VideoClip) obj;
 			video = clip.getVideo();
-			
-			if (video != null && video instanceof IncrementallyLoadable
-					&& !((IncrementallyLoadable)video).isFullyLoaded()) {
-				return clip;					
-			}
-			
-			// load values common to all clips w or w/o video
-			start = control.getInt("startframe"); //$NON-NLS-1$
-			stepSize = control.getInt("stepsize"); //$NON-NLS-1$
-			stepCount = control.getInt("stepcount"); //$NON-NLS-1$
-			startTime = control.getDouble("starttime"); //$NON-NLS-1$
-			readoutType = control.getString("readout"); //$NON-NLS-1$
-			playAllSteps = true;
-			if (control.getPropertyNamesRaw().contains("playallsteps")) { //$NON-NLS-1$
-				playAllSteps = control.getBoolean("playallsteps"); //$NON-NLS-1$
-			}
-			frameCount = -1;
-			// set total frame count first so start frame will not be limited
-			if (control.getPropertyNamesRaw().contains("video_framecount")) { //$NON-NLS-1$
-				frameCount = control.getInt("video_framecount"); //$NON-NLS-1$
-			} else if (start != Integer.MIN_VALUE && stepSize != Integer.MIN_VALUE && stepCount != Integer.MIN_VALUE) {
-				frameCount = start + stepCount * stepSize;
+			IncrementallyLoadable ivideo = (video == null || !(video instanceof IncrementallyLoadable) ? null : (IncrementallyLoadable) video);
+			if (ivideo != null && !ivideo.isFullyLoaded()) {
+				return clip;
 			}
 
-			if (video != null && video instanceof IncrementallyLoadable
-					&& ((IncrementallyLoadable)video).isFullyLoaded()) {
-				finalizeLoading();
-				return clip;					
+			if (!initialized) {
+				initialized = true;
+				// load values common to all clips w or w/o video
+				start = control.getInt("startframe"); //$NON-NLS-1$
+				stepSize = control.getInt("stepsize"); //$NON-NLS-1$
+				stepCount = control.getInt("stepcount"); //$NON-NLS-1$
+				startTime = control.getDouble("starttime"); //$NON-NLS-1$
+				readoutType = control.getString("readout"); //$NON-NLS-1$
+				playAllSteps = true;
+				if (control.getPropertyNamesRaw().contains("playallsteps")) { //$NON-NLS-1$
+					playAllSteps = control.getBoolean("playallsteps"); //$NON-NLS-1$
+				}
+				frameCount = -1;
+				// set total frame count first so start frame will not be limited
+				if (control.getPropertyNamesRaw().contains("video_framecount")) { //$NON-NLS-1$
+					frameCount = control.getInt("video_framecount"); //$NON-NLS-1$
+				} else if (start != Integer.MIN_VALUE && stepSize != Integer.MIN_VALUE
+						&& stepCount != Integer.MIN_VALUE) {
+					frameCount = start + stepCount * stepSize;
+				}
 			}
 
-			// if no video, load clip passed in
-			boolean hasVideo = control.getPropertyNamesRaw().contains("video"); //$NON-NLS-1$
-			if (!hasVideo) {
-				finalizeLoading();
+			boolean getVideo = (ivideo == null && control.getPropertyNamesRaw().contains("video"));
+			// if no video or incremental and finished loading, load clip passed in
+			if (!getVideo) {
+				finalizeLoading();				
+				((XMLControlElement) control).loadingComplete();
 				return obj;
 			}
-			
+
 			// otherwise try to open the video and make a new clip with it
 			base = control.getString("basepath"); //$NON-NLS-1$ ;
 			ResourceLoader.addSearchPath(base);
@@ -750,17 +754,18 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 				video = VideoIO.getVideo(path, base, null);
 				break;
 			}
-			//boolean invalid = false;
+			// boolean invalid = false;
 			if (video == null && !VideoIO.isCanceled()) {
 				Resource res = ResourceLoader.getResource(XML.getResolvedPath(path, base));
 				boolean exists = (res != null); // resource exists
 				boolean supported = (types.size() > 0); // extension is supported, VideoType available
 				OSPLog.info("\"" + fullPath + "\" could not be opened. Found? " + exists + " Supported? " + supported); //$NON-NLS-1$ //$NON-NLS-2$
 				if (!supported || exists) {
-					//invalid = true;
+					// invalid = true;
 					String codec = (exists ? VideoIO.getVideoCodec(res.getAbsolutePath()) : null);
 					String reason = (exists ? "VideoClip null video" : "VideoClip not supported");
-					VideoIO.handleUnsupportedVideo(base + "/" + path, XML.getExtension(path), codec, null, reason); // runs async
+					VideoIO.handleUnsupportedVideo(base + "/" + path, XML.getExtension(path), codec, null, reason); // runs
+																													// async
 				} else {
 					String message = "\"" + fullPath + "\" " //$NON-NLS-1$ //$NON-NLS-2$
 							+ MediaRes.getString("VideoClip.Dialog.VideoNotFound.Message"); //$NON-NLS-1$
@@ -815,7 +820,7 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 			}
 			if (video instanceof AsyncVideoI) {
 				clip.loader = this;
-			} else {
+			} else if (!(video instanceof IncrementallyLoadable)){
 				finalizeLoading();
 			}
 			return clip;
