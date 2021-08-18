@@ -767,7 +767,8 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 					// supported but not found
 					if (OSPRuntime.isJS) {
 						new AsyncDialog().showMessageDialog(null, message,
-								MediaRes.getString("VideoClip.Dialog.VideoNotFound.Title"), (ev) -> {
+								MediaRes.getString("VideoClip.Dialog.VideoNotFound.Title"), 
+								JOptionPane.WARNING_MESSAGE,(ev) -> {
 								});
 					} else
 					/**
