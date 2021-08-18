@@ -742,7 +742,8 @@ public class VideoIO {
 			message += "<li>" + MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Import") + "</li></ol>";
 			message += helpLink;
 			new AsyncDialog().showMessageDialog(null, new EditorPaneMessage(message),
-					MediaRes.getString("VideoIO.Dialog.UnsupportedVideo.Title"), (ev) -> {
+					MediaRes.getString("VideoIO.Dialog.UnsupportedVideo.Title"), 
+					JOptionPane.INFORMATION_MESSAGE, (ev) -> {
 					});
 		}
 	}

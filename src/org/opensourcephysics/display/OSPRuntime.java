@@ -159,7 +159,7 @@ public class OSPRuntime {
 
 
 	}
-	public static final String VERSION = "6.0.0210810"; //$NON-NLS-1$
+	public static final String VERSION = "6.0.0210817"; //$NON-NLS-1$
 	private static boolean isMac;
 
 	public static int macOffset; // shifts LR message box on Mac to avoid drag hot spot.
