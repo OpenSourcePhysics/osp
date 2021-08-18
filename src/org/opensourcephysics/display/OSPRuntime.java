@@ -426,6 +426,9 @@ public class OSPRuntime {
 																						// change LnF
 	public final static boolean DEFAULT_LOOK_AND_FEEL_DECORATIONS = JFrame.isDefaultLookAndFeelDecorated();
 	public final static HashMap<String, String> LOOK_AND_FEEL_TYPES = new HashMap<String, String>();
+	
+	public static final String PROPERTY_ERROR_OUTOFMEMORY = "error";
+	
 
 	/** Preferences XML control */
 	private static XMLControl prefsControl;
@@ -488,6 +491,9 @@ public class OSPRuntime {
 	public static LaunchNode activeNode;
 	private static char currentDecimalSeparator;
 	public static boolean launcherAllowEJSModel = true;
+	
+	public static final Integer OUT_OF_MEMORY_ERROR = 1; // Integer here, because it will be e.newValue()
+	public static boolean outOfMemory = false;
 
 	/**
 	 * Private constructor to prevent instantiation.
@@ -1914,6 +1920,20 @@ public class OSPRuntime {
 				System.err.println("Error reading assets path.");
 			}
 		}
+	}
+
+	/**
+	 * Get the used and max from jvaa.lang.management.memoryMXBean.
+	 * 
+	 * @return [ used, max ]
+	 */
+	public static long[] getMemory() {
+		if (isJS)
+			return new long[] {0, Long.MAX_VALUE };
+		java.lang.management.MemoryMXBean memory = java.lang.management.ManagementFactory.getMemoryMXBean();
+		return new long[] { 
+				memory.getHeapMemoryUsage().getUsed() / (1024 * 1024),
+				memory.getHeapMemoryUsage().getMax() / (1024 * 1024) };
 	}
 
 
