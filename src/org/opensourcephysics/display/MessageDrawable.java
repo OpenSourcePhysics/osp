@@ -96,7 +96,6 @@ public class MessageDrawable implements Drawable {
 		}
 		font = new Font(fontname, fontstyle, fontsize);
 		FontSizer.addPropertyChangeListener(FontSizer.PROPERTY_LEVEL, (e)-> {
-			System.err.println("Property changed =" + e);
 			if (e.getPropertyName().equals(FontSizer.PROPERTY_LEVEL)) { // $NON-NLS-1$
 				int level = ((Integer) e.getNewValue()).intValue();
 				setFontLevel(level);
@@ -125,7 +124,6 @@ public class MessageDrawable implements Drawable {
 	 */
 	protected void setFontLevel(int level) {
 		font = FontSizer.getResizedFont(font, level);
-		System.err.println("Setting front level =" + level);
 	}
 
 	/**

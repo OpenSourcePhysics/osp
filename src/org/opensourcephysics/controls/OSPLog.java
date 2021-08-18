@@ -123,9 +123,6 @@ public class OSPLog extends JFrame {
 			ConsoleLevel.ERR_CONSOLE, ConsoleLevel.OUT_CONSOLE, Level.CONFIG, Level.FINE, Level.FINER, Level.FINEST,
 			Level.ALL };
 	private static Level defaultLevel = ConsoleLevel.OUT_CONSOLE;
-	public static final int OUT_OF_MEMORY_ERROR = 1;
-
-	
 	protected static boolean logConsole = true;
 
 	// instance fields
@@ -1236,7 +1233,7 @@ public class OSPLog extends JFrame {
 			int val = record.getLevel().intValue();
 			if (val == ConsoleLevel.ERR_CONSOLE.intValue()) {
 				if (msg.indexOf("OutOfMemory") > -1) //$NON-NLS-1$
-					ospLog.firePropertyChange("error", -1, OSPLog.OUT_OF_MEMORY_ERROR); //$NON-NLS-1$
+					ospLog.firePropertyChange(OSPRuntime.PROPERTY_ERROR_OUTOFMEMORY, null, OSPRuntime.OUT_OF_MEMORY_ERROR); //$NON-NLS-1$
 				if (!OSPLog.logConsole)
 					return;
 				style = OSPLog.magenta;
