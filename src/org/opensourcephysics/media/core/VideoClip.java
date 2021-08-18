@@ -717,6 +717,7 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 			// if no video or incremental and finished loading, load clip passed in
 			if (!getVideo) {
 				finalizeLoading();				
+				// discard loader to allow finalization
 				((XMLControlElement) control).loadingComplete();
 				return obj;
 			}
