@@ -105,6 +105,10 @@ public class AsyncDialog implements PropertyChangeListener {
 			process("" + message);
 	}
 
+	public void showMessageDialog(Component frame, Object message, String title, ActionListener a) {
+	   showMessageDialog(frame, message, title, JOptionPane.INFORMATION_MESSAGE, a);
+	}
+
 	public void showMessageDialog(Component frame, Object message, String title, int messageType, ActionListener a) {
 		setListener(a);
 		JOptionPane.showMessageDialog(frame, message, title, messageType);
@@ -212,7 +216,7 @@ public class AsyncDialog implements PropertyChangeListener {
 	private void setListener(ActionListener a) {
 		actionListener = a;
 		@SuppressWarnings("unused")
-		Class<?> c = JOptionPane.class; // loads the class
+		Class c = JOptionPane.class; // loads the class
 		/** @j2sNative c.$clazz$.listener = this */
 	}
 
