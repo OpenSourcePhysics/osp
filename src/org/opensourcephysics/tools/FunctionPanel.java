@@ -563,7 +563,7 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 
 	@Override
 	public void finalize() {
-		OSPLog.finer(getClass().getSimpleName() + " resources released by garbage collector"); //$NON-NLS-1$
+		OSPLog.finalized(this);
 	}
 
 }

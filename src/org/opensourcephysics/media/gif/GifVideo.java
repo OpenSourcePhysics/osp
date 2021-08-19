@@ -85,13 +85,6 @@ public void draw(DrawingPanel panel, Graphics g) {
     super.draw(panel, g);
   }
 
-  /**
-   * Called by the garbage collector when this video is no longer in use.
-   */
-  @Override
-protected void finalize() {
-    //    System.out.println("gif garbage");
-  }
 
   /**
    * Plays the video at the current rate.

@@ -127,6 +127,8 @@ public class FontSizer extends OSPRuntime.Supported {
 	}
 
 	public static int setFonts(Container c) {
+		
+		if (c == null) return 12; //TEST_BH
 		Font f = c.getFont();
 		Font newFont = (f == null ? null : getResizedFont(f, level));
 		if (f != null && newFont != f && !newFont.equals(f))

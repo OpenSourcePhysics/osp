@@ -1084,7 +1084,7 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	@Override
 	public void dispose() {
 		if (coords != null)
-			coords.removePropertyChangeListener(this);
+			coords.removePropertyChangeListener(ImageCoordSystem.PROPERTY_COORDS_TRANSFORM, this);
 		coords = null;
 		getFilterStack().setInspectorsVisible(false);
 		super.dispose();
@@ -1197,7 +1197,7 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 
 	@Override
 	protected void finalize() {
-		OSPLog.finer(getClass().getSimpleName() + " resources released by garbage collector"); //$NON-NLS-1$
+		OSPLog.finalized(this);
 	}
 
 	// _______________________________ protected methods _________________________

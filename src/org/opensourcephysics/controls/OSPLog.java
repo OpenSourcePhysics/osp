@@ -1288,6 +1288,10 @@ public class OSPLog extends JFrame {
 		OSPLog log = getOSPLog();
 		FontSizer.setFonts(log);
 	}
+
+	public static void finalized(Object c) {
+		OSPLog.finer(c.getClass().getSimpleName() + " finalized"); //$NON-NLS-1$
+	}
 }
 
 /**

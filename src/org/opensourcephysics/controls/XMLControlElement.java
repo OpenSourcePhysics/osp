@@ -1052,6 +1052,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			}
 		}
 		obj = loader.loadObject(this, obj);
+		System.out.println("XMLControlElement loading " + data + " " + className);
 		if (loader instanceof FinalizableLoader) {
 			// VideoPanels and VideoClips
 			this.loader = loader;
@@ -2123,11 +2124,16 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	public void loadingComplete() {
 		loader = null;
 		data = null;
-	//	object = null;
 	}
 
 	public void finalize() {
-		System.out.println("XMLControl finalized " + data + " " + this.getClass().getName());
+//		System.out.println("XMLControlElement finalized " + data + " " + className);
+	}
+
+	public void dispose() {
+		object = null;
+		loader = null;
+		data = null;
 	}
 }
 

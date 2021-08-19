@@ -142,6 +142,7 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
 	 */
 	@Override
 	protected void finalize() {
+		//BH !!!! ???
 		reset();
 	}
 

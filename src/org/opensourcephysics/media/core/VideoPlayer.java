@@ -557,6 +557,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		Runnable runner = new Runnable() {
 			@Override
 			public void run() {
+				if (toolbar == null)
+					return;
 				if (visible) {
 					toolbar.add(inspectorButton);
 				} else {
@@ -566,6 +568,10 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 			}
 
 		};
+		
+		
+
+		
 		// this is only done upon TrackerPanel construction;
 		if (OSPRuntime.isJS)
 			runner.run();
@@ -1998,7 +2004,6 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		vidPanel = null;
 		toolbar.removeAll();
 		toolbar = null;
-		System.out.println("VideoPlayer.dispose");
 	}
 }
 

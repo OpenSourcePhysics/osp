@@ -527,6 +527,7 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 	 */
 	@Override
 	protected void finalize() {
+		//BH !!! 
 		deleteTempFiles();
 	}
 
