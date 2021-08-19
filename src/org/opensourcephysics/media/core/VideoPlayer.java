@@ -298,6 +298,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 				video.dispose();
 			}
 			oldClip.video = null;
+			oldClip.removePropertyChangeListener(this);
 			if (clip == null) {
 				clip = new VideoClip(null);
 			}
@@ -305,6 +306,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 			// clean up and replace old clip control
 			clipControl.removePropertyChangeListener(this);
 			clipControl.dispose();
+			// switch to new control
 			clipControl = ClipControl.getControl(clip);
 			clipControl.addPropertyChangeListener(this);
 			// update display

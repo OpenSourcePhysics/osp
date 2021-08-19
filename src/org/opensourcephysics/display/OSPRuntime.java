@@ -230,7 +230,24 @@ public class OSPRuntime {
 			}
 			
 		}
-
+//
+// add these to any class to quickly see what is going on
+//		public void addPropertyChangeListener(PropertyChangeListener l) {
+//			super.addPropertyChangeListener(l);
+//		}
+//
+//		public void addPropertyChangeListener(String prop, PropertyChangeListener l) {
+//			super.addPropertyChangeListener(prop, l);		
+//		}
+//		public void removePropertyChangeListener(PropertyChangeListener l) {
+//			super.removePropertyChangeListener(l);
+//		}		
+//
+//		public void removePropertyChangeListener(String prop, PropertyChangeListener l) {
+//			super.removePropertyChangeListener(prop, l);
+//		
+//		}
+//
 
 	}
 	public static final String VERSION = "6.0.0210817"; //$NON-NLS-1$
