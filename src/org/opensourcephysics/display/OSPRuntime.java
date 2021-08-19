@@ -80,6 +80,8 @@ import swingjs.api.JSUtilI;
 public class OSPRuntime {
 
 	public static abstract class Supported {
+
+		private static boolean debugging = false;
 		
 		private PropertyChangeSupport support;
 		
@@ -110,11 +112,13 @@ public class OSPRuntime {
 
 		private void addPtr(String key) {
 			boolean b = pointers.add(key);
-			System.out.println(this.getClass().getSimpleName() + key + " ADD " + b);
+			if (debugging)
+				System.out.println(this.getClass().getSimpleName() + key + " ADD " + b);
 		}
 
 		private void removePtr(String key) {
 			boolean b = pointers.remove(key);
+			if (debugging)
 			System.out.println(this.getClass().getSimpleName() + key + " REM " 
 			+ b + " "
 			+  pointers.size()
@@ -194,6 +198,7 @@ public class OSPRuntime {
 
 		public void dispose() {
 			PropertyChangeListener[] a = support.getPropertyChangeListeners();
+			if (debugging)
 			System.out.println(this.getClass().getSimpleName() + "------------" + a.length);
 			for (int i = a.length; --i >= 0;) {
 				PropertyChangeListener p = a[i];
@@ -209,15 +214,18 @@ public class OSPRuntime {
 		
 		public static void dispose(Component c) {
 			PropertyChangeListener[] a = c.getPropertyChangeListeners();
+			if (debugging)
 			System.out.println(c.getClass().getSimpleName() + "------------" + a.length);
 			for (int i = a.length; --i >= 0;) {
 				PropertyChangeListener p = a[i];
 				if (p instanceof PropertyChangeListenerProxy) {
 					String prop = ((PropertyChangeListenerProxy) p).getPropertyName();
 					p = ((PropertyChangeListenerProxy) p).getListener();
+					if (debugging)
 					System.out.println(c.getClass().getSimpleName() + "/" + prop + "---remove " + p.getClass().getSimpleName());
 					c.removePropertyChangeListener(prop, p);
 				} else {
+					if (debugging)
 					System.out.println(c.getClass().getSimpleName() + "---remove " + p.getClass().getSimpleName());
 					c.removePropertyChangeListener(p);
 					if (c instanceof PropertyChangeListener) {
