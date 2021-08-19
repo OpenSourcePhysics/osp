@@ -275,6 +275,7 @@ public double getMeanFrameDuration() {
   @Override
 public void dispose() {
     video.removePropertyChangeListener(this);
+    super.dispose();
   }
 
   /**

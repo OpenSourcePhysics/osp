@@ -11,7 +11,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +25,6 @@ import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.ResizableIcon;
@@ -37,7 +35,7 @@ import org.opensourcephysics.display.ResizableIcon;
  * @author dobrown
  * @version 1.0
  */
-public class FontSizer {
+public class FontSizer extends OSPRuntime.Supported {
 
 	public static final String PROPERTY_LEVEL = "level";
 
@@ -62,8 +60,8 @@ public class FontSizer {
 	public static final int MAX_LEVEL = 9;
 
 	// static fields
-	static Object levelObj = new FontSizer();
-	static PropertyChangeSupport support = new SwingPropertyChangeSupport(levelObj);
+	static FontSizer levelObj = new FontSizer();
+	//static PropertyChangeSupport support = new SwingPropertyChangeSupport(levelObj);
 	static int level = MIN_LEVEL, integerFactor = 1;
 	static double levelFactor = 1.25; // size ratio per level
 	static double factor = 1;
@@ -178,7 +176,7 @@ public class FontSizer {
 		font = getResizedFont(BUTTON_FONT, level);
 		UIManager.put("OptionPane.buttonFont", font); //$NON-NLS-1$
 
-		support.firePropertyChange(PROPERTY_LEVEL, null, Integer.valueOf(level)); // $NON-NLS-1$
+		levelObj.firePropertyChange(PROPERTY_LEVEL, null, Integer.valueOf(level)); // $NON-NLS-1$
 	}
 
 	/**
@@ -326,10 +324,8 @@ public class FontSizer {
 	 * @param property the name of the property (only "level" accepted)
 	 * @param listener the object requesting property change notification
 	 */
-	public static void addPropertyChangeListener(String property, PropertyChangeListener listener) {
-		if (property.equals(PROPERTY_LEVEL)) { // $NON-NLS-1$
-			support.addPropertyChangeListener(property, listener);
-		}
+	public static void addListener(String property, PropertyChangeListener listener) {
+			levelObj.addPropertyChangeListener(property, listener);
 	}
 
 	/**
@@ -338,8 +334,8 @@ public class FontSizer {
 	 * @param property the name of the property (only "level" accepted)
 	 * @param listener the listener requesting removal
 	 */
-	public static void removePropertyChangeListener(String property, PropertyChangeListener listener) {
-		support.removePropertyChangeListener(property, listener);
+	public static void removeListener(String property, PropertyChangeListener listener) {
+		levelObj.removePropertyChangeListener(property, listener);
 	}
 
 	// _______________________________ private methods ____________________________

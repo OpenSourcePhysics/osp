@@ -50,7 +50,7 @@ public class FontResizeTest {
 
 		table = new JTable(data, columnNames);
 
-		FontSizer.addPropertyChangeListener(FontSizer.PROPERTY_LEVEL, new PropertyChangeListener() { //$NON-NLS-1$
+		FontSizer.addListener(FontSizer.PROPERTY_LEVEL, new PropertyChangeListener() { //$NON-NLS-1$
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				FontSizer.setFonts(frame);

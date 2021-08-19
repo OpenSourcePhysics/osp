@@ -48,6 +48,7 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
    * Constructs an InteractivePanel with an internal handler.
    */
   public InteractivePanel() {
+	  super();
 	  isInteractive = true;
     // remove the drawing panel mouse controller
     removeMouseListener(mouseController);

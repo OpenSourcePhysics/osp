@@ -1798,7 +1798,7 @@ public class Launcher {
 			displayMenu.add(languageMenu);
 			displayMenu.addSeparator();
 			// font size listener
-			FontSizer.addPropertyChangeListener(FontSizer.PROPERTY_LEVEL, new PropertyChangeListener() { // $NON-NLS-1$
+			FontSizer.addListener(FontSizer.PROPERTY_LEVEL, new PropertyChangeListener() { // $NON-NLS-1$
 				@Override
 				public void propertyChange(PropertyChangeEvent e) {
 					int level = ((Integer) e.getNewValue()).intValue();

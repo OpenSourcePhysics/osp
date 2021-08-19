@@ -413,6 +413,13 @@ public class StepperClipControl extends ClipControl {
 		return new Loader();
 	}
 
+	@Override
+	public void dispose() {
+		if (clip != null)
+			clip.removePropertyChangeListener(this);
+		super.dispose();
+	}
+
 }
 
 /*
