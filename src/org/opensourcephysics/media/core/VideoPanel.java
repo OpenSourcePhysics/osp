@@ -108,6 +108,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	 */
 	protected Map<String, Class<? extends Filter>> filterClasses = new TreeMap<String, Class<? extends Filter>>(); 
 
+	
+	
 	protected FinalizableLoader loader; // for asynchronous loading
 	private Video videoLoading;
 
@@ -124,6 +126,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	 * @param video the video to be drawn
 	 */
 	public VideoPanel(Video video) {
+		super();
 		setName("VideoPanel");
 		setSquareAspect(true);
 		player = new VideoPlayer(this);
@@ -886,6 +889,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			}
 			
 			control.loadingComplete();
+			control = null;
 		}
 
 
@@ -920,6 +924,9 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		this.videoLoading = video;
 	}
 
+	/**
+	 * Video loading has failed. 
+	 */
 	public void releaseResources() {
 		if (videoLoading != null && videoLoading != video)
 			videoLoading.dispose();		
@@ -938,9 +945,13 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			video.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY, this);
 			video.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, this);
 		}
+		video = null;
+		if (coords != null)
+			coords.dispose();
+		coords = null;
 		super.dispose();
 	}
-
+	
 }
 
 /*

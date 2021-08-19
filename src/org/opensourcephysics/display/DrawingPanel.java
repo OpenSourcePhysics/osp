@@ -196,9 +196,18 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	private int myFontLevel;
 
 	protected void dispose() {
-		// FontSizer.removePropertyChangeListener(FontSizer.PROPERTY_LEVEL,
-		// guiChangeListener); //$NON-NLS-1$
+		if (zoomTimer != null) {
+			zoomTimer.stop();
+			zoomTimer = null;
+		}
+		if (refreshTimer != null) {
+			refreshTimer.stop();
+			refreshTimer = null;
+		}
+
+		messages.dispose();
 		ToolsRes.removePropertyChangeListener("locale", guiChangeListener); //$NON-NLS-1$
+		OSPRuntime.Supported.dispose(this);
 	}
 
 	/**

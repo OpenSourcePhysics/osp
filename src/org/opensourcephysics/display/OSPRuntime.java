@@ -19,6 +19,7 @@ import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeListenerProxy;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +32,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -104,6 +106,22 @@ public class OSPRuntime {
 			support.firePropertyChange(name, oldVal, newVal);
 		}
 
+		HashSet<String> pointers = new HashSet<String>();
+
+		private void addPtr(String key) {
+			boolean b = pointers.add(key);
+			System.out.println(this.getClass().getSimpleName() + key + " ADD " + b);
+		}
+
+		private void removePtr(String key) {
+			boolean b = pointers.remove(key);
+			System.out.println(this.getClass().getSimpleName() + key + " REM " 
+			+ b + " "
+			+  pointers.size()
+			+ (pointers.size() == 1 ? pointers.toString() : "")); 
+		}
+
+
 
 		/**
 		 * Adds a PropertyChangeListener to this video clip.
@@ -111,11 +129,15 @@ public class OSPRuntime {
 		 * @param listener the object requesting property change notification
 		 */
 		public void addPropertyChangeListener(PropertyChangeListener listener) {
+			String key = "<-" + listener.getClass().getSimpleName();
+			if (pointers.contains(key))
+				return;
+			addPtr(key);
 			support.addPropertyChangeListener(listener);
 		}
 
 		public void addPropertyChangeListenerSafely(PropertyChangeListener listener) {
-			support.removePropertyChangeListener(listener);
+//			support.removePropertyChangeListener(listener);
 			support.addPropertyChangeListener(listener);
 		}
 		/**
@@ -125,6 +147,10 @@ public class OSPRuntime {
 		 * @param listener the object requesting property change notification
 		 */
 		public void addPropertyChangeListener(String property, PropertyChangeListener listener) {
+			String key = "/" + property + "<-" + listener.getClass().getSimpleName();
+			if (pointers.contains(key))
+				return;
+			addPtr(key);		
 			support.addPropertyChangeListener(property, listener);
 		}
 
@@ -134,6 +160,10 @@ public class OSPRuntime {
 		 * @param listener the listener requesting removal
 		 */
 		public void removePropertyChangeListener(PropertyChangeListener listener) {
+			String key =  "<-" + listener.getClass().getSimpleName();
+			if (!pointers.contains(key))
+				return;
+			removePtr(key);		
 			support.removePropertyChangeListener(listener);
 		}
 
@@ -144,6 +174,10 @@ public class OSPRuntime {
 		 * @param listener the listener to remove
 		 */
 		public void removePropertyChangeListener(String property, PropertyChangeListener listener) {
+			String key = "/" + property + "<-" + listener.getClass().getSimpleName();
+			if (!pointers.contains(key))
+				return;
+			removePtr(key);		
 			support.removePropertyChangeListener(property, listener);
 		}
 
@@ -155,6 +189,46 @@ public class OSPRuntime {
 		public static void removeListeners(Supported c, String[] names, PropertyChangeListener listener) {
 			for (int i = names.length; --i >= 0;)
 				c.removePropertyChangeListener(names[i], listener);
+		}
+
+
+		public void dispose() {
+			PropertyChangeListener[] a = support.getPropertyChangeListeners();
+			System.out.println(this.getClass().getSimpleName() + "------------" + a.length);
+			for (int i = a.length; --i >= 0;) {
+				PropertyChangeListener p = a[i];
+				if (p instanceof PropertyChangeListenerProxy) {
+					String prop = ((PropertyChangeListenerProxy) p).getPropertyName();
+					p = ((PropertyChangeListenerProxy) p).getListener();
+					removePropertyChangeListener(prop, p);
+				} else {
+					removePropertyChangeListener(p);
+				}
+			}
+		}
+		
+		public static void dispose(Component c) {
+			PropertyChangeListener[] a = c.getPropertyChangeListeners();
+			System.out.println(c.getClass().getSimpleName() + "------------" + a.length);
+			for (int i = a.length; --i >= 0;) {
+				PropertyChangeListener p = a[i];
+				if (p instanceof PropertyChangeListenerProxy) {
+					String prop = ((PropertyChangeListenerProxy) p).getPropertyName();
+					p = ((PropertyChangeListenerProxy) p).getListener();
+					System.out.println(c.getClass().getSimpleName() + "/" + prop + "---remove " + p.getClass().getSimpleName());
+					c.removePropertyChangeListener(prop, p);
+				} else {
+					System.out.println(c.getClass().getSimpleName() + "---remove " + p.getClass().getSimpleName());
+					c.removePropertyChangeListener(p);
+					if (c instanceof PropertyChangeListener) {
+					if (p instanceof Component)
+						((Component) p).removePropertyChangeListener((PropertyChangeListener)c);
+					else if (p instanceof Supported)
+						((Supported) p).removePropertyChangeListener((PropertyChangeListener)c);
+					}
+				}
+			}
+			
 		}
 
 

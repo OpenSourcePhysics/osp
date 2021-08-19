@@ -2122,9 +2122,13 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 
 	public void loadingComplete() {
 		loader = null;
+		data = null;
 	//	object = null;
 	}
 
+	public void finalize() {
+		System.out.println("XMLControl finalized " + data + " " + this.getClass().getName());
+	}
 }
 
 /*

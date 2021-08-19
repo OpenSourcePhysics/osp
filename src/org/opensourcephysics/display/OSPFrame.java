@@ -108,7 +108,7 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
 		topy = Math.min(topy + 20, (int) d.getHeight() - 100);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		// Changes font size to current level
-		FontSizer.addPropertyChangeListener(FontSizer.PROPERTY_LEVEL, new PropertyChangeListener() { // $NON-NLS-1$
+		FontSizer.addListener(FontSizer.PROPERTY_LEVEL, new PropertyChangeListener() { // $NON-NLS-1$
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				setFontLevel(FontSizer.getLevel());

@@ -55,6 +55,7 @@ public class MessageDrawable implements Drawable {
 	 */
 	private JLabel[] labels;
 	private DrawingPanel panel;
+	private ComponentListener listener;
 
 	/**
 	 * Constructs a MessageDrawable using graphics
@@ -73,7 +74,7 @@ public class MessageDrawable implements Drawable {
 		this.panel = panel;
 		if (panel != null) {
 			labels = new JLabel[4];
-			panel.addComponentListener(new ComponentListener() {
+			panel.addComponentListener(listener = new ComponentListener() {
 
 				@Override
 				public void componentResized(ComponentEvent e) {
@@ -95,7 +96,7 @@ public class MessageDrawable implements Drawable {
 			});
 		}
 		font = new Font(fontname, fontstyle, fontsize);
-		FontSizer.addPropertyChangeListener(FontSizer.PROPERTY_LEVEL, (e)-> {
+		FontSizer.addListener(FontSizer.PROPERTY_LEVEL, (e)-> {
 			if (e.getPropertyName().equals(FontSizer.PROPERTY_LEVEL)) { // $NON-NLS-1$
 				int level = ((Integer) e.getNewValue()).intValue();
 				setFontLevel(level);
@@ -379,6 +380,12 @@ public class MessageDrawable implements Drawable {
 		g.setFont(oldFont);
 		g.dispose();
 
+	}
+
+	public void dispose() {
+		panel.removeComponentListener(listener);
+		listener = null;
+		panel = null;
 	}
 
 }

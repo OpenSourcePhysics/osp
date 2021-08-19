@@ -297,8 +297,10 @@ public abstract class Filter extends OSPRuntime.Supported {
 	/**
 	 * Disposes of this filter.
 	 */
+	@Override
 	public void dispose() {
-		removePropertyChangeListener(stack);
+		if (stack != null)	
+			removePropertyChangeListener(stack);
 		stack = null;
 		JDialog inspector = getInspector();
 		if (inspector != null) {
@@ -313,6 +315,7 @@ public abstract class Filter extends OSPRuntime.Supported {
 		if (output != null)
 			output.flush();
 		pixelsIn = pixelsOut = null;
+		super.dispose();
 	}
 
 	/**

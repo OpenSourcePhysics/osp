@@ -41,7 +41,7 @@ import java.beans.PropertyChangeListener;
  * @author Douglas Brown
  * @version 1.0
  */
-public interface Video extends InteractiveImage, Playable, Trackable, PropertyChangeListener {
+public interface Video extends InteractiveImage, Trackable, PropertyChangeListener {
 	
 	public final static String PROPERTY_VIDEO_COORDS = "coords";//$NON-NLS-1$
 	public static final String PROPERTY_VIDEO_FILTERCHANGED = "filterChanged"; //$NON-NLS-1$
@@ -242,6 +242,160 @@ public interface Video extends InteractiveImage, Playable, Trackable, PropertyCh
 	default public boolean isValid() {
 		return getDuration() > 0;
 	}
+	
+	  /**
+	   * Adds a PropertyChangeListener to this object.
+	   *
+	   * @param listener the listener requesting property change notification
+	   */
+	  void addPropertyChangeListener(PropertyChangeListener listener);
+
+	  /**
+	   * Adds a PropertyChangeListener to this object.
+	   *
+	   * @param property the name of the property of interest to the listener
+	   * @param listener the listener requesting property change notification
+	   */
+	  void addPropertyChangeListener(String property, PropertyChangeListener listener);
+
+	  /**
+	   * Removes a PropertyChangeListener from this object.
+	   *
+	   * @param listener the listener requesting removal
+	   */
+	  void removePropertyChangeListener(PropertyChangeListener listener);
+
+	  /**
+	   * Removes a PropertyChangeListener from this object.
+	   *
+	   * @param property the name of the property of interest to the listener
+	   * @param listener the listener requesting removal
+	   */
+	  void removePropertyChangeListener(String property, PropertyChangeListener listener);
+
+	  
+	  // was Playable
+	  
+	  /**
+	   * Plays the media.
+	   */
+	  public void play();
+
+	  /**
+	   * Stops the media.
+	   */
+	  public void stop();
+
+	  /**
+	   * Resets the media.
+	   */
+	  public void reset();
+
+	  /**
+	   * Gets the current media time in milliseconds.
+	   *
+	   * @return the current time in milliseconds
+	   */
+	  public double getTime();
+
+	  /**
+	   * Sets the media time in milliseconds.
+	   *
+	   * @param millis the desired time in milliseconds
+	   */
+	  public void setTime(double millis);
+
+	  /**
+	   * Gets the start time in milliseconds.
+	   *
+	   * @return the start time in milliseconds
+	   */
+	  public double getStartTime();
+
+	  /**
+	   * Sets the start time in milliseconds.
+	   *
+	   * @param millis the desired start time in milliseconds
+	   */
+	  public void setStartTime(double millis);
+
+	  /**
+	   * Gets the end time in milliseconds.
+	   *
+	   * @return the end time in milliseconds
+	   */
+	  public double getEndTime();
+
+	  /**
+	   * Sets the end time in milliseconds.
+	   *
+	   * @param millis the desired end time in milliseconds
+	   */
+	  public void setEndTime(double millis);
+
+	  /**
+	   * Sets the time to the start time.
+	   */
+	  public void goToStart();
+
+	  /**
+	   * Sets the time to the end time.
+	   */
+	  public void goToEnd();
+
+	  /**
+	   * Gets the duration of the media.
+	   *
+	   * @return the duration of the media in milliseconds
+	   */
+	  public double getDuration();
+
+	  /**
+	   * Gets the rate at which the media plays relative to its normal rate.
+	   *
+	   * @return the relative play rate. A rate of 1.0 plays at the normal rate.
+	   */
+	  public double getRate();
+
+	  /**
+	   * Sets the rate at which the media plays relative to its normal rate.
+	   *
+	   * @param rate the relative play rate. A rate of 1.0 plays at the normal rate.
+	   */
+	  public void setRate(double rate);
+
+	  /**
+	   * Starts and stops the media.
+	   *
+	   * @param playing <code>true</code> starts the media, and
+	   * <code>false</code> stops it
+	   */
+	  public void setPlaying(boolean playing);
+
+	  /**
+	   * Gets whether the media is playing.
+	   *
+	   * @return <code>true</code> if the media is playing
+	   */
+	  public boolean isPlaying();
+
+	  /**
+	   * Sets the looping behavior of the media.
+	   * When true, the media restarts when reaching the end.
+	   *
+	   * @param looping <code>true</code> if the media is looping
+	   */
+	  public void setLooping(boolean looping);
+
+	  /**
+	   * Gets the looping behavior of the media.
+	   * When true, the video restarts when reaching the end.
+	   *
+	   * @return <code>true</code> if the media is looping
+	   */
+	  public boolean isLooping();
+
+
 }
 
 /*

@@ -310,8 +310,11 @@ public abstract class ClipControl extends OSPRuntime.Supported implements Proper
 	/**
 	 * Empty dispose method.
 	 */
+	@Override
 	public void dispose() {
-		/** implemented by subclasses */
+		if (clip != null)
+			clip.dispose();
+		super.dispose();
 	}
 
 	/**

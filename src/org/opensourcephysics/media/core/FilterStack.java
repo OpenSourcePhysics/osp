@@ -176,6 +176,10 @@ public class FilterStack extends Filter implements PropertyChangeListener {
 		System.gc();
 	}
 
+	public void dispose() {
+		clear();
+		super.dispose();
+	}
 	/**
 	 * Clears the filter stack.
 	 */

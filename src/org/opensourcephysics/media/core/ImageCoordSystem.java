@@ -34,6 +34,7 @@ package org.opensourcephysics.media.core;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
+import java.beans.PropertyChangeListener;
 import java.util.TreeSet;
 
 import org.opensourcephysics.controls.XML;
@@ -1223,7 +1224,18 @@ public class ImageCoordSystem extends OSPRuntime.Supported {
 		}
 
 	}
+	
+	public void addPropertyChangeListenerSafely(PropertyChangeListener listener) {
+		
+		super.addPropertyChangeListener(listener);
+		
+	}
 
+
+	@Override
+	public void dispose() {
+		super.dispose();
+	}
 }
 
 /*

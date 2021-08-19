@@ -869,6 +869,10 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 	}
 	
 
+	@Override
+	public void dispose() {
+		super.dispose();
+	}
 
 }
 

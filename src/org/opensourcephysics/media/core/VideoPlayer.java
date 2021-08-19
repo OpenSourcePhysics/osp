@@ -291,6 +291,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 			VideoClip oldClip = getVideoClip();
 			oldClip.removePropertyChangeListener(this);
 			oldClip.hideClipInspector();
+			oldClip.dispose();
 			// dispose of old video, if any
 			Video video = oldClip.getVideo();
 			if (video != null) {
@@ -1988,6 +1989,14 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 			super.setVisible(vis);
 		}
 
+	}
+
+	public void dispose() {
+		clipControl.dispose();
+		vidPanel = null;
+		toolbar.removeAll();
+		toolbar = null;
+		System.out.println("VideoPlayer.dispose");
 	}
 }
 
