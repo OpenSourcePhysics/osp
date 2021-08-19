@@ -1274,7 +1274,7 @@ private static String fixVideoPath(String path) {
 
 	public static int progressForFraction(double iFrame, double nFrames) {
 		return (int) Math.min(
-				PROGRESS_VIDEO_PROCESSING + (iFrame / nFrames % 1) * (PROGRESS_VIDEO_READY - PROGRESS_VIDEO_PROCESSING),
+				PROGRESS_VIDEO_PROCESSING + (iFrame / nFrames % 1.00001) * (PROGRESS_VIDEO_READY - PROGRESS_VIDEO_PROCESSING),
 				PROGRESS_VIDEO_READY - 1);
 	}
 

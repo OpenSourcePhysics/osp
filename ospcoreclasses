@@ -687,7 +687,6 @@ org/opensourcephysics/media/core/IntegerField.js
 org/opensourcephysics/media/core/InteractiveImage.js
 org/opensourcephysics/media/core/MediaRes.js
 org/opensourcephysics/media/core/NumberField.js
-org/opensourcephysics/media/core/Playable.js
 org/opensourcephysics/media/core/ScientificField.js
 org/opensourcephysics/media/core/StepperClipControl.js
 org/opensourcephysics/media/core/TPoint.js
