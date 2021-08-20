@@ -163,6 +163,8 @@ java/io/BufferedWriter.js
 java/io/ByteArrayInputStream.js
 java/io/ByteArrayOutputStream.js
 java/io/Closeable.js
+java/io/DataInput.js
+java/io/DataInputStream.js
 java/io/File.js
 java/io/FileDescriptor.js
 java/io/FileFilter.js
@@ -825,6 +827,7 @@ sun/util/calendar/CalendarSystem.js
 sun/util/calendar/CalendarUtils.js
 sun/util/calendar/Gregorian.js
 sun/util/calendar/ZoneInfo.js
+sun/util/calendar/ZoneInfoFile.js
 sun/util/locale/LanguageTag.js
 sun/util/locale/provider/AuxLocaleProviderAdapter.js
 sun/util/locale/provider/AvailableLanguageTags.js
