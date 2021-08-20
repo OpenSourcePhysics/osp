@@ -1083,10 +1083,16 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	 */
 	@Override
 	public void dispose() {
+		System.out.println("VideoAdapter.dispose");
 		if (coords != null)
 			coords.removePropertyChangeListener(ImageCoordSystem.PROPERTY_COORDS_TRANSFORM, this);
 		coords = null;
-		getFilterStack().setInspectorsVisible(false);
+		if (filterStack != null) {
+			filterStack.setInspectorsVisible(false);
+			filterStack = null;
+		}
+		bufferedImage = filteredImage = null;
+
 		super.dispose();
 	}
 

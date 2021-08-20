@@ -91,6 +91,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
 
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPButton;
@@ -314,6 +315,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 			updateLoopButton(clipControl.isLooping());
 			updateValueAndPlayButtons();
 			updateSlider(SLIDER_NEWCLIP, oldClip);
+			System.gc();
 		}
 	}
 
@@ -2000,11 +2002,20 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	}
 
 	public void dispose() {
+		System.out.println("VideoPlayer.dispose");
 		clipControl.dispose();
 		vidPanel = null;
 		toolbar.removeAll();
 		toolbar = null;
 	}
+
+	@Override
+	public void finalize() {
+		OSPLog.finalized(this);
+	}
+
+
+
 }
 
 /*
