@@ -27,6 +27,8 @@ import java.awt.event.ComponentListener;
 import javax.swing.JLabel;
 import javax.swing.JViewport;
 import javax.swing.border.EmptyBorder;
+
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.tools.FontSizer;
 
 /**
@@ -387,5 +389,12 @@ public class MessageDrawable implements Drawable {
 		listener = null;
 		panel = null;
 	}
+	
+	
+	@Override
+	public void finalize() {
+		OSPLog.finalized(this);
+	}
+
 
 }

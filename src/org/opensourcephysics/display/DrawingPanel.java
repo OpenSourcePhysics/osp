@@ -3165,7 +3165,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	}
 
 	public DrawingPanel dref(Object o) {
-		System.out.println("DrawingPanel ref " + (o instanceof String ? o.toString() : o.getClass().getSimpleName())); 
+		System.out.println("DP ref " + (o instanceof String ? o.toString() : o.getClass().getSimpleName())); 
 		return this;
 	}
 
