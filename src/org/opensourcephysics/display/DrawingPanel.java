@@ -3164,6 +3164,12 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		return pixelTransform.createTransformedShape(s);
 	}
 
+	public DrawingPanel dref(Object o) {
+		System.out.println("DrawingPanel ref " + (o instanceof String ? o.toString() : o.getClass().getSimpleName())); 
+		return this;
+	}
+
+
 }
 
 /*

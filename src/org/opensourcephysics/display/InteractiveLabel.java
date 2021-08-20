@@ -178,7 +178,7 @@ public boolean isEnabled() {
      */
     @Override
 	public void draw(DrawingPanel panel, Graphics g) {
-      this.panel = panel;
+      this.panel = panel.dref(this);
       String tempText = text; // local reference for thread safety
       if(tempText==null) {
         return;

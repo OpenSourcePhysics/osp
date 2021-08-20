@@ -44,7 +44,7 @@ public abstract class AbstractAxes implements DrawableAxes {
    * @param drawingPanel DrawingPanel
    */
   public AbstractAxes(DrawingPanel drawingPanel) {
-    this.drawingPanel = drawingPanel;
+    this.drawingPanel = drawingPanel.dref(this);
     resizeFonts(FontSizer.getFactor(FontSizer.getLevel()), drawingPanel);
     // Changes font size
     FontSizer.addListener(FontSizer.PROPERTY_LEVEL, new PropertyChangeListener() { //$NON-NLS-1$

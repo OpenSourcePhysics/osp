@@ -71,7 +71,7 @@ public class MessageDrawable implements Drawable {
 	 * @param panel
 	 */
 	public MessageDrawable(DrawingPanel panel) {
-		this.panel = panel;
+		this.panel = panel.dref(this);
 		if (panel != null) {
 			labels = new JLabel[4];
 			panel.addComponentListener(listener = new ComponentListener() {
