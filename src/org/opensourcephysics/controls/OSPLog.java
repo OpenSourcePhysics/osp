@@ -445,6 +445,7 @@ public class OSPLog extends JFrame {
 	 * @param msg the message
 	 */
 	public static void finer(String msg) {
+		System.gc();
 		System.out.println("OSPLog.finer " + msg);
 		if (useMessageFrame()) {
 			org.opensourcephysics.controls.MessageFrame.finer(msg);

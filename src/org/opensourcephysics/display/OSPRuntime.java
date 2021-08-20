@@ -2035,6 +2035,10 @@ public class OSPRuntime {
 				memory.getHeapMemoryUsage().getMax() / (1024 * 1024) };
 	}
 
+	public static String getMemoryStr() {
+		long[] m = getMemory();
+		return m[0] + "/" + m[1];
+	}
 
 }
 /*
