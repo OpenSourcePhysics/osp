@@ -195,7 +195,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	protected PropertyChangeListener guiChangeListener;
 	private int myFontLevel;
 
-	protected void dispose() {
+	public void dispose() {
 		if (zoomTimer != null) {
 			zoomTimer.stop();
 			zoomTimer = null;

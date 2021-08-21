@@ -940,7 +940,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	}
 	
 	@Override
-	protected void dispose() {
+	public void dispose() {
 		if (video != null) {
 			video.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY, this);
 			video.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, this);
