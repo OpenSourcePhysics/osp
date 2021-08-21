@@ -385,7 +385,8 @@ public class MessageDrawable implements Drawable {
 	}
 
 	public void dispose() {
-		panel.removeComponentListener(listener);
+		if (panel != null)
+			panel.removeComponentListener(listener);
 		listener = null;
 		panel = null;
 	}
