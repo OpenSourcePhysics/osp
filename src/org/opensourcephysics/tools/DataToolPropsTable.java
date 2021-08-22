@@ -705,7 +705,7 @@ final public class DataToolPropsTable extends JTable {
 					panel.setBorder(new CellBorder(new Color(240, 240, 240)));
 					panel.setBackground((row != axisRow) ? Color.white : color);
 
-					plot = new DrawingPanel();
+					plot = new DrawingPanel().dref(this);
 					plot.setBackground(Color.white);
 					plot.setAntialiasShapeOn(true);
 					// BH ensure dimension same w/ and w/o line
@@ -760,6 +760,12 @@ final public class DataToolPropsTable extends JTable {
 //			checkbox[row].setOpaque(false);
 //			return checkbox[row];
 //		}
+
+		public void dispose() {
+			if (plot != null)
+				plot.dispose();
+			plot = null;
+		}
 	}
 
 	/**
@@ -838,6 +844,12 @@ final public class DataToolPropsTable extends JTable {
 
 	}
 
+	public void dispose() {
+		for (PropsRenderer r : htCellRenderers.values()) {
+			if (r != null)
+				r.dispose();
+		}
+	}
 }
 
 /*

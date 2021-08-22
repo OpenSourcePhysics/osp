@@ -1088,6 +1088,10 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 			coords.removePropertyChangeListener(ImageCoordSystem.PROPERTY_COORDS_TRANSFORM, this);
 		coords = null;
 		if (filterStack != null) {
+			// WAS MEMORY LEAK!
+			filterStack.removePropertyChangeListener(Filter.PROPERTY_FILTER_IMAGE, this);
+			filterStack.removePropertyChangeListener(Filter.PROPERTY_FILTER_TAB, this);
+
 			filterStack.setInspectorsVisible(false);
 			filterStack = null;
 		}

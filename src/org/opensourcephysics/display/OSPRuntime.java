@@ -30,10 +30,14 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.jar.JarEntry;
@@ -79,16 +83,105 @@ import swingjs.api.JSUtilI;
  */
 public class OSPRuntime {
 
+	/**
+	 * An interface with static methods that track implmentinng classes, adding them
+	 * to array to "allocate" them, and running their dispose() method when
+	 * "deallocation" is requested.
+	 * 
+	 * @author hansonr
+	 *
+	 */
+	public interface Disposable {
+
+		public void dispose();
+
+		static List<Object> allocated = new ArrayList<>();
+
+		static void allocate(Disposable obj) {
+			if (allocated.contains(obj))
+				return;
+			allocated.add(obj);
+			OSPLog.notify(obj, "allocated");
+		}
+
+		static void allocate(Disposable[] objs, String name) {
+			allocated.add(objs);
+			OSPLog.notify(name + "[]", "allocated");
+		}
+
+		static void deallocate(Disposable[] objs) {
+			for (Disposable o : (Disposable[]) objs) {
+				if (o != null)
+					deallocate(o);
+			}
+		}
+
+		static void deallocate(Disposable[] objs, int i) {
+			Disposable o = objs[i];
+			if (o != null) {
+				deallocate(o);
+				objs[i] = null;
+			}
+		}
+
+		static void deallocate(Disposable[] objs, BitSet bs) {
+			for (int i = bs.nextSetBit(0); i >= 0; i++) {
+				deallocate(objs, i);
+			}
+		}
+
+		static void deallocate(Disposable obj) {
+			if (obj == null)
+				return;
+			obj.dispose();
+			allocated.remove(obj);
+			OSPLog.notify(obj, " deallocated ");
+		}
+
+		public static void deallocateAll() {
+			for (Object o : allocated) {
+				if (o instanceof Disposable) {
+					((Disposable) o).dispose();
+					OSPLog.notify(o, " deallocated ");
+				} else if (o instanceof Disposable[]){
+					for (Disposable ao : (Disposable[]) o) {
+						if (ao != null)
+							deallocate(ao);
+					}
+				} else {
+					OSPLog.notify(o, "deallocated");
+				}
+			}
+			allocated.clear();
+		}
+
+		static void dump() {
+			int n = 0;
+			for (Object o : allocated) {
+				if (o instanceof Disposable[]){
+					for (Disposable ao : (Disposable[]) o) {
+						if (ao != null && ++n > 0)
+							OSPLog.notify(ao, " still allocated!");
+					}
+				} else {
+					++n;
+					OSPLog.notify(o, "still allocated!");
+				}
+			}
+			OSPLog.notify("" + n, "objects still allocated");
+		}
+
+	}
+
 	public static abstract class Supported {
 
 		private static boolean debugging = false;
-		
+
 		private PropertyChangeSupport support;
-		
+
 		public Supported() {
 			support = new SwingPropertyChangeSupport(this);
 		}
-		
 
 		/**
 		 * Fires a property change event.
@@ -97,6 +190,7 @@ public class OSPRuntime {
 		public void firePropertyChange(PropertyChangeEvent e) {
 			support.firePropertyChange(e);
 		}
+
 		/**
 		 * Fires a property change event.
 		 *
@@ -119,13 +213,9 @@ public class OSPRuntime {
 		private void removePtr(String key) {
 			boolean b = pointers.remove(key);
 			if (debugging)
-			System.out.println(this.getClass().getSimpleName() + key + " REM " 
-			+ b + " "
-			+  pointers.size()
-			+ (pointers.size() == 1 ? pointers.toString() : "")); 
+				System.out.println(this.getClass().getSimpleName() + key + " REM " + b + " " + pointers.size()
+						+ (pointers.size() == 1 ? pointers.toString() : ""));
 		}
-
-
 
 		/**
 		 * Adds a PropertyChangeListener to this video clip.
@@ -144,6 +234,7 @@ public class OSPRuntime {
 //			support.removePropertyChangeListener(listener);
 			support.addPropertyChangeListener(listener);
 		}
+
 		/**
 		 * Adds a PropertyChangeListener to this video clip.
 		 *
@@ -154,7 +245,7 @@ public class OSPRuntime {
 			String key = "/" + property + "<-" + listener.getClass().getSimpleName();
 			if (pointers.contains(key))
 				return;
-			addPtr(key);		
+			addPtr(key);
 			support.addPropertyChangeListener(property, listener);
 		}
 
@@ -164,10 +255,10 @@ public class OSPRuntime {
 		 * @param listener the listener requesting removal
 		 */
 		public void removePropertyChangeListener(PropertyChangeListener listener) {
-			String key =  "<-" + listener.getClass().getSimpleName();
+			String key = "<-" + listener.getClass().getSimpleName();
 			if (!pointers.contains(key))
 				return;
-			removePtr(key);		
+			removePtr(key);
 			support.removePropertyChangeListener(listener);
 		}
 
@@ -181,7 +272,7 @@ public class OSPRuntime {
 			String key = "/" + property + "<-" + listener.getClass().getSimpleName();
 			if (!pointers.contains(key))
 				return;
-			removePtr(key);		
+			removePtr(key);
 			support.removePropertyChangeListener(property, listener);
 		}
 
@@ -195,11 +286,10 @@ public class OSPRuntime {
 				c.removePropertyChangeListener(names[i], listener);
 		}
 
-
 		public void dispose() {
 			PropertyChangeListener[] a = support.getPropertyChangeListeners();
 			if (debugging)
-			System.out.println(this.getClass().getSimpleName() + "------------" + a.length);
+				System.out.println(this.getClass().getSimpleName() + "------------" + a.length);
 			for (int i = a.length; --i >= 0;) {
 				PropertyChangeListener p = a[i];
 				if (p instanceof PropertyChangeListenerProxy) {
@@ -211,32 +301,33 @@ public class OSPRuntime {
 				}
 			}
 		}
-		
+
 		public static void dispose(Component c) {
 			PropertyChangeListener[] a = c.getPropertyChangeListeners();
 			if (debugging)
-			System.out.println(c.getClass().getSimpleName() + "------------" + a.length);
+				System.out.println(c.getClass().getSimpleName() + "------------" + a.length);
 			for (int i = a.length; --i >= 0;) {
 				PropertyChangeListener p = a[i];
 				if (p instanceof PropertyChangeListenerProxy) {
 					String prop = ((PropertyChangeListenerProxy) p).getPropertyName();
 					p = ((PropertyChangeListenerProxy) p).getListener();
 					if (debugging)
-					System.out.println(c.getClass().getSimpleName() + "/" + prop + "---remove " + p.getClass().getSimpleName());
+						System.out.println(c.getClass().getSimpleName() + "/" + prop + "---remove "
+								+ p.getClass().getSimpleName());
 					c.removePropertyChangeListener(prop, p);
 				} else {
 					if (debugging)
-					System.out.println(c.getClass().getSimpleName() + "---remove " + p.getClass().getSimpleName());
+						System.out.println(c.getClass().getSimpleName() + "---remove " + p.getClass().getSimpleName());
 					c.removePropertyChangeListener(p);
 					if (c instanceof PropertyChangeListener) {
-					if (p instanceof Component)
-						((Component) p).removePropertyChangeListener((PropertyChangeListener)c);
-					else if (p instanceof Supported)
-						((Supported) p).removePropertyChangeListener((PropertyChangeListener)c);
+						if (p instanceof Component)
+							((Component) p).removePropertyChangeListener((PropertyChangeListener) c);
+						else if (p instanceof Supported)
+							((Supported) p).removePropertyChangeListener((PropertyChangeListener) c);
 					}
 				}
 			}
-			
+
 		}
 //
 // add these to any class to quickly see what is going on
@@ -258,6 +349,79 @@ public class OSPRuntime {
 //
 
 	}
+
+	/**
+	 * A class to compare version strings.
+	 */
+	public static class Version implements Comparable<Version> {
+		String ver;
+
+		/**
+		 * Constructor
+		 * 
+		 * @param version the version string
+		 */
+		public Version(String version) {
+			ver = version;
+		}
+
+		@Override
+		public String toString() {
+			return ver;
+		}
+
+		public boolean isValid() {
+			String[] v = this.ver.trim().split("\\."); //$NON-NLS-1$
+			if (v.length >= 2 && v.length <= 4) {
+				for (int i = 0; i < v.length; i++) {
+					try {
+						Integer.parseInt(v[i].trim());
+					} catch (Exception ex) {
+						return false;
+					}
+				}
+				return true;
+			}
+			return false;
+		}
+
+		@Override
+		public int compareTo(Version o) {
+			// typical newer semantic version "4.9.10" or "5.0.7.190518"
+			// typical older version "4.97"
+
+			// split at decimal points
+			String[] v1 = this.ver.trim().split("\\."); //$NON-NLS-1$
+			String[] v2 = o.ver.trim().split("\\."); //$NON-NLS-1$
+			// newer semantic version arrays have length 3 or 4--truncate to 3
+			// older version arrays have length 2
+			if (v1.length == 4) {
+				v1 = new String[] { v1[0], v1[1], v1[2] };
+			}
+			if (v2.length == 4) {
+				v2 = new String[] { v2[0], v2[1], v2[2] };
+			}
+
+			if (v2.length > v1.length) {
+				// v1 is older version, v2 is newer
+				return -1;
+			}
+			if (v1.length > v2.length) {
+				// v2 is older version, v1 is newer
+				return 1;
+			}
+			// both arrays have the same length
+			for (int i = 0; i < v1.length; i++) {
+				if (Integer.parseInt(v1[i]) < Integer.parseInt(v2[i])) {
+					return -1;
+				} else if (Integer.parseInt(v1[i]) > Integer.parseInt(v2[i])) {
+					return 1;
+				}
+			}
+			return 0;
+		}
+	}
+
 	public static final String VERSION = "6.0.0210819"; //$NON-NLS-1$
 	private static boolean isMac;
 
@@ -305,40 +469,49 @@ public class OSPRuntime {
 //	private static String browser = (isJS ? null : "JAVA"); 
 
 	public static String getBrowserName() {
-		String sUsrAg = /** @j2sNative navigator.userAgent ||*/"";
+		String sUsrAg = /** @j2sNative navigator.userAgent || */
+				"";
 		String sBrowser;
 		// from https://developer.mozilla.org/en-US/docs/Web/API/Window/navigator
-		
-		// The order matters here, and this may report false positives for unlisted browsers.
+
+		// The order matters here, and this may report false positives for unlisted
+		// browsers.
 
 		if (sUsrAg.indexOf("Firefox") > -1) {
-		  sBrowser = "Mozilla Firefox";
-		  // "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:61.0) Gecko/20100101 Firefox/61.0"
+			sBrowser = "Mozilla Firefox";
+			// "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:61.0) Gecko/20100101
+			// Firefox/61.0"
 		} else if (sUsrAg.indexOf("SamsungBrowser") > -1) {
-		  sBrowser = "Samsung Internet";
-		  // "Mozilla/5.0 (Linux; Android 9; SAMSUNG SM-G955F Build/PPR1.180610.011) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/9.4 Chrome/67.0.3396.87 Mobile Safari/537.36
+			sBrowser = "Samsung Internet";
+			// "Mozilla/5.0 (Linux; Android 9; SAMSUNG SM-G955F Build/PPR1.180610.011)
+			// AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/9.4 Chrome/67.0.3396.87
+			// Mobile Safari/537.36
 		} else if (sUsrAg.indexOf("Opera") > -1 || sUsrAg.indexOf("OPR") > -1) {
-		  sBrowser = "Opera";
-		  // "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36 OPR/57.0.3098.106"
+			sBrowser = "Opera";
+			// "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) AppleWebKit/537.36 (KHTML,
+			// like Gecko) Chrome/70.0.3538.102 Safari/537.36 OPR/57.0.3098.106"
 		} else if (sUsrAg.indexOf("Trident") > -1) {
-		  sBrowser = "Microsoft Internet Explorer";
-		  // "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; .NET4.0C; .NET4.0E; Zoom 3.6.0; wbx 1.0.0; rv:11.0) like Gecko"
+			sBrowser = "Microsoft Internet Explorer";
+			// "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; .NET4.0C; .NET4.0E; Zoom
+			// 3.6.0; wbx 1.0.0; rv:11.0) like Gecko"
 		} else if (sUsrAg.indexOf("Edge") > -1) {
-		  sBrowser = "Microsoft Edge";
-		  // "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 Edge/16.16299"
+			sBrowser = "Microsoft Edge";
+			// "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like
+			// Gecko) Chrome/58.0.3029.110 Safari/537.36 Edge/16.16299"
 		} else if (sUsrAg.indexOf("Chrome") > -1) {
-		  sBrowser = "Google Chrome or Chromium";
-		  // "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/66.0.3359.181 Chrome/66.0.3359.181 Safari/537.36"
+			sBrowser = "Google Chrome or Chromium";
+			// "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)
+			// Ubuntu Chromium/66.0.3359.181 Chrome/66.0.3359.181 Safari/537.36"
 		} else if (sUsrAg.indexOf("Safari") > -1) {
-		  sBrowser = "Apple Safari";
-		  // "Mozilla/5.0 (iPhone; CPU iPhone OS 11_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.0 Mobile/15E148 Safari/604.1 980x1306"
+			sBrowser = "Apple Safari";
+			// "Mozilla/5.0 (iPhone; CPU iPhone OS 11_4 like Mac OS X) AppleWebKit/605.1.15
+			// (KHTML, like Gecko) Version/11.0 Mobile/15E148 Safari/604.1 980x1306"
 		} else {
-		  sBrowser = "unknown";
+			sBrowser = "unknown";
 		}
 		return sBrowser;
 	}
-	
-	
+
 	public static boolean isApplet = false;
 
 //	public static boolean useSearchMap = isJS; // does not cache 
@@ -352,10 +525,11 @@ public class OSPRuntime {
 	public static boolean allowAutopaste = !isJS; // for TFrame and TToolbar
 
 	/**
-	 *  HighlightDataSet -- Firefox has problems with canvas clip/unclip getting slower and slower and slower
+	 * HighlightDataSet -- Firefox has problems with canvas clip/unclip getting
+	 * slower and slower and slower
 	 */
-	public static boolean allowDatasetClip = (getBrowserName() != "Mozilla Firefox"); 
-	
+	public static boolean allowDatasetClip = (getBrowserName() != "Mozilla Firefox");
+
 	public static boolean allowLibClipboardPasteCheck = !isJS;
 
 	public static boolean allowSetFonts = true;// !isBHTest; // for testing
@@ -390,18 +564,18 @@ public class OSPRuntime {
 
 	public static boolean setRenderingHints = (!isJS && !isMac);
 
-	public static boolean skipDisplayOfPDF = false;//true;// isJS; // for TrackerIO, for now.
+	public static boolean skipDisplayOfPDF = false;// true;// isJS; // for TrackerIO, for now.
 
 	public static boolean embedVideoAsObject = isJS;
 
 	public static boolean useFunctionEditorPopup = !isJS; // the cool slidy thing
 
 	public static boolean useZipAssets = isJS;
-	
+
 	public static boolean unzipFiles = !isJS; // for TrackerIO
 
 	static {
-		//Assets.setDebugging(true);
+		// Assets.setDebugging(true);
 		addAssets("osp", "osp-assets.zip", "org/opensourcephysics/resources");
 		if (!isJS && !unzipFiles)
 			OSPLog.warning("OSPRuntime.unzipFiles setting is false for BH testing");
@@ -421,7 +595,8 @@ public class OSPRuntime {
 	public final static int WEB_CONNECTED_TEST_JS_TIMEOUT_MS = 1000;
 	public final static String WEB_CONNECTED_TEST_URL = "https://www.compadre.org/osp/services/REST/osp_tracker.cfm?verb=Identify&OSPType=none";
 
-	//BH test option 	public final static String WEB_CONNECTED_TEST_URL = "https://cactus.nci.nih.gov/chemical/structure/caffeine/file?format=sdf&get3d=true";
+	// BH test option public final static String WEB_CONNECTED_TEST_URL =
+	// "https://cactus.nci.nih.gov/chemical/structure/caffeine/file?format=sdf&get3d=true";
 
 	/**
 	 * Disables drawing for faster start-up and to avoid screen flash in Drawing
@@ -525,9 +700,8 @@ public class OSPRuntime {
 																						// change LnF
 	public final static boolean DEFAULT_LOOK_AND_FEEL_DECORATIONS = JFrame.isDefaultLookAndFeelDecorated();
 	public final static HashMap<String, String> LOOK_AND_FEEL_TYPES = new HashMap<String, String>();
-	
+
 	public static final String PROPERTY_ERROR_OUTOFMEMORY = "error";
-	
 
 	/** Preferences XML control */
 	private static XMLControl prefsControl;
@@ -590,7 +764,7 @@ public class OSPRuntime {
 	public static LaunchNode activeNode;
 	private static char currentDecimalSeparator;
 	public static boolean launcherAllowEJSModel = true;
-	
+
 	public static final Integer OUT_OF_MEMORY_ERROR = 1; // Integer here, because it will be e.newValue()
 	public static boolean outOfMemory = false;
 
@@ -669,7 +843,9 @@ public class OSPRuntime {
 		if (date != null) {
 			vers += "\njar manifest date " + date; //$NON-NLS-1$
 		}
-		if(isJS) vers += "\n\nJavaScript transcription created using the\n" + "java2script/SwingJS framework developed at\n St. Olaf College.\n";
+		if (isJS)
+			vers += "\n\nJavaScript transcription created using the\n"
+					+ "java2script/SwingJS framework developed at\n St. Olaf College.\n";
 		String aboutString = vers + "\n" //$NON-NLS-1$
 				+ "Open Source Physics Project \n" + "www.opensourcephysics.org"; //$NON-NLS-1$ //$NON-NLS-2$
 		JOptionPane.showMessageDialog(parent, aboutString, "About Open Source Physics", //$NON-NLS-1$
@@ -932,7 +1108,7 @@ public class OSPRuntime {
 		}
 		if (path.startsWith("file:/")) { //$NON-NLS-1$
 			path = path.substring(5, path.length());
-			if (path.contains(":")) { //$NON-NLS-1$  // windows drive eg C:/
+			if (path.contains(":")) { //$NON-NLS-1$ // windows drive eg C:/
 				path = path.substring(1, path.length());
 			}
 		}
@@ -966,23 +1142,26 @@ public class OSPRuntime {
 	public static String getLaunchJarPath() {
 		return launchJarPath;
 	}
-	
+
 	/**
-	 * Gets the window.location.href when JavaScript code is running in an html page.
+	 * Gets the window.location.href when JavaScript code is running in an html
+	 * page.
 	 * 
 	 * @return window.location.href
 	 */
 	public static String getDocbase() {
-		String base="";
-		if(!isJS) return null;
-		/** @j2sNative console.log("href="+window.location.href); 
-		 *  base=""+window.location.href;
-		 * */
-		int last=base.lastIndexOf('/');  // look for path/document.html
-		if(last<1) {
+		String base = "";
+		if (!isJS)
+			return null;
+		/**
+		 * @j2sNative console.log("href="+window.location.href);
+		 *            base=""+window.location.href;
+		 */
+		int last = base.lastIndexOf('/'); // look for path/document.html
+		if (last < 1) {
 			return base;
 		}
-		base=base.substring(0, last+1); // strip document from url
+		base = base.substring(0, last + 1); // strip document from url
 		return base;
 	}
 
@@ -1046,8 +1225,7 @@ public class OSPRuntime {
 		try {
 			java.util.jar.Attributes att = jarFile.getManifest().getMainAttributes();
 			return att.getValue(attribute);
-		}
-		catch(Exception e) {			
+		} catch (Exception e) {
 		}
 		return "";
 	}
@@ -1059,8 +1237,8 @@ public class OSPRuntime {
 	 */
 	public static String getLaunchJarBuildDate() {
 		if (buildDate == null) {
-				JarFile jarfile = getLaunchJar();
-				buildDate = getManifestAttribute(jarfile, "Build-Date");
+			JarFile jarfile = getLaunchJar();
+			buildDate = getManifestAttribute(jarfile, "Build-Date");
 		}
 		return buildDate;
 	}
@@ -1307,13 +1485,14 @@ public class OSPRuntime {
 		if (separator != null && separator.length() == 0)
 			separator = null;
 		preferredDecimalSeparator = separator;
-		dfs.setDecimalSeparator(currentDecimalSeparator = (separator == null ? defaultDecimalSeparator : separator.charAt(0)));
+		dfs.setDecimalSeparator(
+				currentDecimalSeparator = (separator == null ? defaultDecimalSeparator : separator.charAt(0)));
 	}
 
 	public static char getCurrrentDecimalSeparator() {
 		return currentDecimalSeparator;
 	}
-	
+
 	/**
 	 * Gets the preferred decimal separator. May return null.
 	 * 
@@ -1737,78 +1916,6 @@ public class OSPRuntime {
 	}
 
 	/**
-	 * A class to compare version strings.
-	 */
-	public static class Version implements Comparable<Version> {
-		String ver;
-
-		/**
-		 * Constructor
-		 * 
-		 * @param version the version string
-		 */
-		public Version(String version) {
-			ver = version;
-		}
-		
-		@Override
-		public String toString() {
-			return ver;
-		}
-
-		public boolean isValid() {
-			String[] v = this.ver.trim().split("\\."); //$NON-NLS-1$
-			if (v.length >= 2 && v.length <= 4) {
-				for (int i = 0; i < v.length; i++) {
-					try {
-						Integer.parseInt(v[i].trim());
-					} catch (Exception ex) {
-						return false;
-					}
-				}
-				return true;
-			}
-			return false;
-		}
-
-		@Override
-		public int compareTo(Version o) {
-			// typical newer semantic version "4.9.10" or "5.0.7.190518"
-			// typical older version "4.97"
-
-			// split at decimal points
-			String[] v1 = this.ver.trim().split("\\."); //$NON-NLS-1$
-			String[] v2 = o.ver.trim().split("\\."); //$NON-NLS-1$
-			// newer semantic version arrays have length 3 or 4--truncate to 3
-			// older version arrays have length 2
-			if (v1.length == 4) {
-				v1 = new String[] { v1[0], v1[1], v1[2] };
-			}
-			if (v2.length == 4) {
-				v2 = new String[] { v2[0], v2[1], v2[2] };
-			}
-
-			if (v2.length > v1.length) {
-				// v1 is older version, v2 is newer
-				return -1;
-			}
-			if (v1.length > v2.length) {
-				// v2 is older version, v1 is newer
-				return 1;
-			}
-			// both arrays have the same length
-			for (int i = 0; i < v1.length; i++) {
-				if (Integer.parseInt(v1[i]) < Integer.parseInt(v2[i])) {
-					return -1;
-				} else if (Integer.parseInt(v1[i]) > Integer.parseInt(v2[i])) {
-					return 1;
-				}
-			}
-			return 0;
-		}
-	}
-
-	/**
 	 * Cache (or clear) J2S._javaFileCache for this file.
 	 * 
 	 * @param file
@@ -1869,9 +1976,9 @@ public class OSPRuntime {
 	}
 
 	/**
-	 * BH created this to consolidate all the isEventDispatchThread calls, but 
-	 * those were all using runner.run() directly, and he has had no issues with
-	 * other programs. It is Swing, after all....
+	 * BH created this to consolidate all the isEventDispatchThread calls, but those
+	 * were all using runner.run() directly, and he has had no issues with other
+	 * programs. It is Swing, after all....
 	 * 
 	 * @param runner
 	 */
@@ -1882,7 +1989,7 @@ public class OSPRuntime {
 			runner.run();
 		} else {
 			SwingUtilities.invokeLater(runner);
-			
+
 		}
 	}
 
@@ -1936,8 +2043,7 @@ public class OSPRuntime {
 	 * @param am
 	 * @param pasteAction
 	 */
-	public static void setOSPAction(InputMap im, KeyStroke ks, String actionKey, ActionMap am,
-			Action pasteAction) {
+	public static void setOSPAction(InputMap im, KeyStroke ks, String actionKey, ActionMap am, Action pasteAction) {
 		Object key = im.get(ks);
 		if (key == null) {
 			im.put(ks, key = actionKey);
@@ -1977,9 +2083,9 @@ public class OSPRuntime {
 	}
 
 	/**
-	 * Register a TransferHandler for the onpaste event for this component. 
-	 * This registration will consume the jQuery paste event. 
-	 * The returned MimeType is text/plain and will match DataFlavor.plainTextFlavor
+	 * Register a TransferHandler for the onpaste event for this component. This
+	 * registration will consume the jQuery paste event. The returned MimeType is
+	 * text/plain and will match DataFlavor.plainTextFlavor
 	 * 
 	 * @param c
 	 * @param handler
@@ -2028,10 +2134,9 @@ public class OSPRuntime {
 	 */
 	public static long[] getMemory() {
 		if (isJS)
-			return new long[] {0, Long.MAX_VALUE };
+			return new long[] { 0, Long.MAX_VALUE };
 		java.lang.management.MemoryMXBean memory = java.lang.management.ManagementFactory.getMemoryMXBean();
-		return new long[] { 
-				memory.getHeapMemoryUsage().getUsed() / (1024 * 1024),
+		return new long[] { memory.getHeapMemoryUsage().getUsed() / (1024 * 1024),
 				memory.getHeapMemoryUsage().getMax() / (1024 * 1024) };
 	}
 

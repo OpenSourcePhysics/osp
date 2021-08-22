@@ -4919,6 +4919,31 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 	} // end Loader class
 
+	
+
+	/**
+	 * This Component has been detacched from its parent. 
+	 * Presumption here is that it can be disposed. 
+	 */
+    @Override
+	public void removeNotify() {
+    	super.removeNotify();
+    	dispose();
+    }
+
+	public void dispose() {
+		Component c;
+		System.out.println("DataToolTab.dispose");
+		if (propsTable != null)
+			propsTable.dispose();
+		propsTable = null;
+	}
+	
+	@Override
+	public void finalize() {
+		OSPLog.finalized(this);
+	}
+
 }
 
 /*

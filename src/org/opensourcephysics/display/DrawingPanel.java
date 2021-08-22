@@ -52,6 +52,7 @@ import javax.swing.text.JTextComponent;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.display.OSPRuntime.Disposable;
 import org.opensourcephysics.display.axes.CoordinateStringBuilder;
 import org.opensourcephysics.display.dialogs.DrawingPanelInspector;
 import org.opensourcephysics.display.dialogs.ScaleInspector;
@@ -79,7 +80,7 @@ import javajs.async.SwingJSUtils.Performance;
  * @version 1.0
  */
 @SuppressWarnings("serial")
-public class DrawingPanel extends JPanel implements ActionListener, Renderable {
+public class DrawingPanel extends JPanel implements Disposable, ActionListener, Renderable {
 
 	static int ntest;
 
