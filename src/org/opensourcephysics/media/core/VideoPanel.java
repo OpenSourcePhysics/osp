@@ -571,7 +571,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	 * Hides the mouse box
 	 */
 	public void hideMouseBox() {
-			messages.setMessage(null, MessageDrawable.BOTTOM_LEFT);  // BL message box
+			setMessage(null, MessageDrawable.BOTTOM_LEFT);  // BL message box
 	}
 
 	/**
