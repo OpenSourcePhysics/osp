@@ -45,6 +45,7 @@ import javax.swing.WindowConstants;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.DataTable;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TextFrame;
 import org.opensourcephysics.media.core.Trackable;
 import org.opensourcephysics.numerics.SuryonoParser;
@@ -215,7 +216,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	protected void createGUI() {
 		haveGUI = true;
 		// listen to ToolsRes for locale changes
-		ToolsRes.addPropertyChangeListener("locale", this); //$NON-NLS-1$
+		ToolsRes.addPropertyChangeListener(ToolsRes.OSP_PROPERTY_LOCALE, this); //$NON-NLS-1$
 		// configure the dialog
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		// create the noData panel

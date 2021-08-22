@@ -1762,7 +1762,7 @@ public class Launcher {
 			displayMenu = new JMenu();
 			menubar.add(displayMenu);
 			// language menu
-			LaunchRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
+			LaunchRes.addPropertyChangeListener(ToolsRes.OSP_PROPERTY_LOCALE, new PropertyChangeListener() { //$NON-NLS-1$
 				@Override
 				public void propertyChange(PropertyChangeEvent e) {
 					refreshStringResources();

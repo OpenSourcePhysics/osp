@@ -211,7 +211,7 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 
 		if (messages != null)
 			messages.dispose();
-		ToolsRes.removePropertyChangeListener(OSPRuntime.OSP_PROPERTY_LOCALE, guiChangeListener); //$NON-NLS-1$
+		ToolsRes.removePropertyChangeListener(ToolsRes.OSP_PROPERTY_LOCALE, guiChangeListener); //$NON-NLS-1$
 		OSPRuntime.Supported.dispose(this);
 	}
 
@@ -271,7 +271,7 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 				if (e.getPropertyName().equals(FontSizer.PROPERTY_LEVEL)) { // $NON-NLS-1$
 					int level = ((Integer) e.getNewValue()).intValue();
 					setFontLevel(level);
-				} else if (e.getPropertyName().equals(OSPRuntime.OSP_PROPERTY_LOCALE)) { //$NON-NLS-1$
+				} else if (e.getPropertyName().equals(ToolsRes.OSP_PROPERTY_LOCALE)) { //$NON-NLS-1$
 					// set the default decimal separator
 					Locale locale = (Locale) e.getNewValue();
 					DecimalFormat format = (DecimalFormat) NumberFormat.getInstance(locale);
@@ -282,7 +282,7 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 			}
 		};
 //		FontSizer.addPropertyChangeListener(FontSizer.PROPERTY_LEVEL, guiChangeListener); //$NON-NLS-1$
-		ToolsRes.addPropertyChangeListener(OSPRuntime.OSP_PROPERTY_LOCALE, guiChangeListener); //$NON-NLS-1$
+		ToolsRes.addPropertyChangeListener(ToolsRes.OSP_PROPERTY_LOCALE, guiChangeListener); //$NON-NLS-1$
 	}
 
 //	private void addGlassPane() {

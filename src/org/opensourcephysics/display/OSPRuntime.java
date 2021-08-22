@@ -83,7 +83,7 @@ import swingjs.api.JSUtilI;
  */
 public class OSPRuntime {
 
-	public static final String OSP_PROPERTY_LOCALE = "locale";
+	public static final String OSP_PROPERTY_LROCALE = "locale";
 
 	/**
 	 * An interface with static methods that track implmentinng classes, adding them

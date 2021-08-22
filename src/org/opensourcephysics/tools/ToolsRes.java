@@ -17,6 +17,7 @@ import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.opensourcephysics.controls.ControlsRes;
 import org.opensourcephysics.display.DisplayRes;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.dialogs.DialogsRes;
 
 /**
@@ -27,6 +28,7 @@ import org.opensourcephysics.display.dialogs.DialogsRes;
  * @version 1.0
  */
 public class ToolsRes {
+	public static final String OSP_PROPERTY_LOCALE = "locale";
 	// static fields
 	static Locale resourceLocale = Locale.getDefault();
 	static org.opensourcephysics.tools.ResourceLoader.Bundle res = org.opensourcephysics.tools.ResourceLoader
@@ -91,7 +93,7 @@ public class ToolsRes {
 			method.invoke(null, new Object[] { resourceLocale });
 		} catch (Exception ex) {
 		}
-		support.firePropertyChange("locale", prev, resourceLocale); //$NON-NLS-1$
+		support.firePropertyChange(OSP_PROPERTY_LOCALE, prev, resourceLocale); //$NON-NLS-1$
 	}
 
 	/**
@@ -101,7 +103,7 @@ public class ToolsRes {
 	 * @param listener the object requesting property change notification
 	 */
 	public static void addPropertyChangeListener(String property, PropertyChangeListener listener) {
-		if (property.equals("locale")) { //$NON-NLS-1$
+		if (property.equals(OSP_PROPERTY_LOCALE)) { //$NON-NLS-1$
 			support.addPropertyChangeListener(property, listener);
 		}
 	}

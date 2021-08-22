@@ -567,7 +567,7 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 			});
 		aliasMenu.add(shapeAliasItem);
 		menuBar.add(displayMenu);
-		ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
+		ToolsRes.addPropertyChangeListener(ToolsRes.OSP_PROPERTY_LOCALE, new PropertyChangeListener() { //$NON-NLS-1$
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				refreshGUI();

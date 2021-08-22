@@ -116,7 +116,7 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
 			}
 
 		});
-		ToolsRes.addPropertyChangeListener(OSPRuntime.OSP_PROPERTY_LOCALE, new PropertyChangeListener() { //$NON-NLS-1$
+		ToolsRes.addPropertyChangeListener(ToolsRes.OSP_PROPERTY_LOCALE, new PropertyChangeListener() { //$NON-NLS-1$
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				refreshGUI();

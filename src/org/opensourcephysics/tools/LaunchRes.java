@@ -52,7 +52,7 @@ public class LaunchRes {
 		resourceLocale = loc;
 		// get the new resource bundle
 		res = ResourceLoader.getBundle(BUNDLE_NAME, resourceLocale);
-		support.firePropertyChange("locale", prev, resourceLocale); //$NON-NLS-1$
+		support.firePropertyChange(ToolsRes.OSP_PROPERTY_LOCALE, prev, resourceLocale); //$NON-NLS-1$
 		ToolsRes.setLocale(loc);
 	}
 
@@ -84,7 +84,7 @@ public class LaunchRes {
 	 * @param listener the object requesting property change notification
 	 */
 	public static void addPropertyChangeListener(String property, PropertyChangeListener listener) {
-		if (property.equals("locale")) { //$NON-NLS-1$
+		if (property.equals(ToolsRes.OSP_PROPERTY_LOCALE)) { //$NON-NLS-1$
 			support.addPropertyChangeListener(property, listener);
 		}
 	}

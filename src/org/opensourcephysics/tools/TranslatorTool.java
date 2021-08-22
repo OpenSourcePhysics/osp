@@ -211,7 +211,7 @@ public class TranslatorTool extends JFrame implements Tool, Hidable, Translator 
 		String name = "TranslatorTool"; //$NON-NLS-1$
 		setName(name);
 		setLocale(ToolsRes.resourceLocale);
-		ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
+		ToolsRes.addPropertyChangeListener(ToolsRes.OSP_PROPERTY_LOCALE, new PropertyChangeListener() { //$NON-NLS-1$
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				Locale locale = (Locale) e.getNewValue();

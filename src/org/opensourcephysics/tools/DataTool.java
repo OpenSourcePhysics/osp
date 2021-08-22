@@ -2340,7 +2340,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		setName(name);
 		createGUI();
 		Toolbox.addTool(name, this);
-		ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
+		ToolsRes.addPropertyChangeListener(ToolsRes.OSP_PROPERTY_LOCALE, new PropertyChangeListener() { //$NON-NLS-1$
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				refreshGUI();
