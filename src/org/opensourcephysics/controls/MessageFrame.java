@@ -145,7 +145,7 @@ public class MessageFrame extends JFrame {
 		}
 
 	});
-    ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() {           //$NON-NLS-1$
+    ToolsRes.addPropertyChangeListener(OSPRuntime.OSP_PROPERTY_LOCALE, new PropertyChangeListener() {           //$NON-NLS-1$
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				APPLET_MESSAGEFRAME.setTitle(ControlsRes.getString("MessageFrame.DefaultTitle")); //$NON-NLS-1$

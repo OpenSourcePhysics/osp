@@ -46,6 +46,7 @@ import org.opensourcephysics.tools.ToolsRes;
  * @version 1.1
  */
 public class OSPFrame extends JFrame implements Hidable, AppFrame {
+	
 	/** Location of OSP icon. */
 	static final String OSP_ICON_FILE = "/org/opensourcephysics/resources/controls/images/osp_icon.gif"; //$NON-NLS-1$
 	// value is set in static block
@@ -115,7 +116,7 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
 			}
 
 		});
-		ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() { //$NON-NLS-1$
+		ToolsRes.addPropertyChangeListener(OSPRuntime.OSP_PROPERTY_LOCALE, new PropertyChangeListener() { //$NON-NLS-1$
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				refreshGUI();

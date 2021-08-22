@@ -112,7 +112,7 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 		setLocation((d.width - getSize().width) / 2, (d.height - getSize().height) / 2); // center the frame
 		init();
-		ToolsRes.addPropertyChangeListener("locale", this); //$NON-NLS-1$
+		ToolsRes.addPropertyChangeListener(OSPRuntime.OSP_PROPERTY_LOCALE, this); //$NON-NLS-1$
 	}
 
 	/**
@@ -177,7 +177,7 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
 	@Override
 	public void propertyChange(PropertyChangeEvent e) {
 		String name = e.getPropertyName();
-		if (name.equals("translation") || name.equals("locale")) {//$NON-NLS-1$ //$NON-NLS-2$
+		if (name.equals("translation") || name.equals(OSPRuntime.OSP_PROPERTY_LOCALE)) {//$NON-NLS-1$ //$NON-NLS-2$
 			refreshGUI();
 			// forward event to other listeners
 		} else {
