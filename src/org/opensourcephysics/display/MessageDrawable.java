@@ -67,14 +67,21 @@ public class MessageDrawable implements Drawable {
 		this(null);
 	}
 
+	static int mcount;
+
+	int index;
+	
 	/**
 	 * Constructs a MessageDrawable optionally creating JLabels 
 	 * correctly positioned on a DrawingPanel
 	 * @param panel
 	 */
 	public MessageDrawable(DrawingPanel panel) {
-		this.panel = panel.dref(this);
+	
+		index = ++mcount;
+		
 		if (panel != null) {
+			this.panel = panel.dref(this);
 			labels = new JLabel[4];
 			panel.addComponentListener(listener = new ComponentListener() {
 
@@ -384,16 +391,19 @@ public class MessageDrawable implements Drawable {
 
 	}
 
+	
 	public void dispose() {
 		if (panel != null)
 			panel.removeComponentListener(listener);
 		listener = null;
 		panel = null;
+		labels = null;
 	}
 	
 	
 	@Override
 	public void finalize() {
+		System.out.println("MessageDrawable" + index + " finalized " + --mcount);
 		OSPLog.finalized(this);
 	}
 

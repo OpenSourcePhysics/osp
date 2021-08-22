@@ -571,7 +571,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	 * Hides the mouse box
 	 */
 	public void hideMouseBox() {
-			messages.setMessage(null, MessageDrawable.BOTTOM_LEFT);  // BL message box
+			setMessage(null, MessageDrawable.BOTTOM_LEFT);  // BL message box
 	}
 
 	/**
@@ -947,7 +947,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	}
 	
 	@Override
-	protected void dispose() {
+	public void dispose() {
 		if (video != null) {
 			video.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY, this);
 			video.removePropertyChangeListener(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, this);

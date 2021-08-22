@@ -52,6 +52,7 @@ import javax.swing.text.JTextComponent;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.display.OSPRuntime.Disposable;
 import org.opensourcephysics.display.axes.CoordinateStringBuilder;
 import org.opensourcephysics.display.dialogs.DrawingPanelInspector;
 import org.opensourcephysics.display.dialogs.ScaleInspector;
@@ -79,7 +80,7 @@ import javajs.async.SwingJSUtils.Performance;
  * @version 1.0
  */
 @SuppressWarnings("serial")
-public class DrawingPanel extends JPanel implements ActionListener, Renderable {
+public class DrawingPanel extends JPanel implements Disposable, ActionListener, Renderable {
 
 	static int ntest;
 
@@ -98,6 +99,9 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	public static final int TOP_LEFT = MessageDrawable.TOP_LEFT;
 
 	public boolean isInteractive;
+	
+	protected boolean isDisposed;
+	
 	/**
 	 * BH experimental -- not needed.
 	 */
@@ -148,7 +152,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	protected BufferedImage offscreenImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
 	protected BufferedImage workingImage = offscreenImage;
 	private boolean buffered = false; // true will draw this component using an off-screen image
-	protected MessageDrawable messages = new MessageDrawable(messagesAsJLabels ? this : null);
+	private MessageDrawable messages;
 
 	protected DecimalFormat scientificFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.###E0"); // coordinate //$NON-NLS-1$
 																												// display
@@ -195,7 +199,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	protected PropertyChangeListener guiChangeListener;
 	private int myFontLevel;
 
-	protected void dispose() {
+	public void dispose() {
 		if (zoomTimer != null) {
 			zoomTimer.stop();
 			zoomTimer = null;
@@ -205,7 +209,8 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 			refreshTimer = null;
 		}
 
-		messages.dispose();
+		if (messages != null)
+			messages.dispose();
 		ToolsRes.removePropertyChangeListener("locale", guiChangeListener); //$NON-NLS-1$
 		OSPRuntime.Supported.dispose(this);
 	}
@@ -2271,7 +2276,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 			}
 		}
 		if (!messagesAsJLabels)
-			messages.draw(this, g2);
+			getMessages().draw(this, g2);
 		g2.dispose(); // BH 2020.02.26
 	}
 
@@ -2651,25 +2656,31 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	public boolean displayCoordsOnMouseMoved;
 
 	/**
-	 * Shows a message in a yellow text box.
+	 * Shows a message in a yellow text box. Check for the last message being the same
+	 * at this location. 
 	 *
 	 * location 0=bottom left location 1=bottom right location 2=top right location
 	 * 3=top left
 	 *
 	 * @param msg
 	 * @param location
+	 * @return true if the message changed; false if display was skipped
 	 */
 	public boolean setMessage(String msg, int location) {
 		
 		if (msg != null && msg.length() == 0)
 			msg = null;
-		messages.setMessage(msg, location);
+		getMessages().setMessage(msg, location);
 		if (msg == null ? lastMessage[location] == null : msg.equals(lastMessage[location])) {
 			return false;
 		}
 		lastMessage[location] = msg;
 //		OSPLog.debug("DrawingPanel not repainting for message " + msg + " " + location);
 		return true;
+	}
+
+	private MessageDrawable getMessages() {
+		return (messages == null ? (messages = new MessageDrawable(messagesAsJLabels ? this : null)) : messages);
 	}
 
 	/**
@@ -2749,7 +2760,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 	public void displayCoordinates(MouseEvent e) {
 		if (isShowCoordinates()) {
 			String s = (e == null ? null : coordinateStrBuilder.getCoordinateString(this, e));
-			messages.setMessage(s, MessageDrawable.BOTTOM_LEFT); // BL message box
+			setMessage(s, MessageDrawable.BOTTOM_LEFT); // BL message box
 			repaintIfNecessary();
 		}
 	}
@@ -2777,7 +2788,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 			String s = coordinateStrBuilder.getCoordinateString(DrawingPanel.this, e);
 			//System.err.println(" pressed coortd==" + s);  // for debugging
 			invalidateImage(); // validImage = false;
-			messages.setMessage(s, MessageDrawable.BOTTOM_LEFT);
+			setMessage(s, MessageDrawable.BOTTOM_LEFT);
 		}
 
 		/**
@@ -2787,7 +2798,7 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		 */
 		@Override
 		public void mouseReleased(MouseEvent e) {
-			messages.setMessage(null, MessageDrawable.BOTTOM_LEFT);
+			setMessage(null, MessageDrawable.BOTTOM_LEFT);
 		}
 
 		/**
@@ -3169,6 +3180,11 @@ public class DrawingPanel extends JPanel implements ActionListener, Renderable {
 		return this;
 	}
 
+    protected void firePropertyChange(String propertyName,
+            Object oldValue, Object newValue) {
+    	if (!isDisposed)
+    		super.firePropertyChange(propertyName, oldValue, newValue);
+    }
 
 }
 
