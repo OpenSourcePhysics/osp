@@ -822,6 +822,13 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 				if (video instanceof IncrementallyLoadable) {
 					// Xuggle video only
 					IncrementallyLoadable iVideo = (IncrementallyLoadable) clip.getVideo();
+					if (iVideo.getLoadableFrameCount() <= 1) {
+						XMLControl child = control.getChildControl("videoclip"); //$NON-NLS-1$
+						if (child != null && child.getPropertyNamesRaw().contains("video_framecount")) {
+							int frameCount = child.getInt("video_framecount");
+							iVideo.setLoadableFrameCount(frameCount);
+						}
+					}
 					try {
 						if (iVideo.loadMoreFrames(VideoIO.incrementToLoad)) {
 							videoPanel.setResourceLoading(clip.getVideo());

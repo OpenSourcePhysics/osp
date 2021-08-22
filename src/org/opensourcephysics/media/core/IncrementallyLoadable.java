@@ -27,6 +27,13 @@ public interface IncrementallyLoadable {
 	public int getLoadableFrameCount();
 	
 	/**
+	 * Set the total number of frames expected.
+	 * 
+	 * @param n the number of frames expected
+	 */
+	public void setLoadableFrameCount(int n);
+	
+	/**
 	 * Determines if the video is fully loaded.
 	 * 
 	 * @return true if fully loaded
