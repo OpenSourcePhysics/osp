@@ -82,7 +82,7 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	 * for debugging, 0, meaning "just the incomplete frames";
 	 * for general purposes, up to CACHE_MAX images.
 	 */
-	protected static final int CACHE_MAX = 20;
+	protected static final int CACHE_MAX = 0;
 
 
 	protected Image rawImage; // raw image from video source
