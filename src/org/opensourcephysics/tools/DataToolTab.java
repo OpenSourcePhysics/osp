@@ -4932,7 +4932,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
     }
 
 	public void dispose() {
-		Component c;
 		System.out.println("DataToolTab.dispose");
 		if (propsTable != null)
 			propsTable.dispose();

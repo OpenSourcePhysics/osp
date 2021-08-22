@@ -125,7 +125,7 @@ public class OSPRuntime {
 		}
 
 		static void deallocate(Disposable[] objs, BitSet bs) {
-			for (int i = bs.nextSetBit(0); i >= 0; i++) {
+			for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1)) {
 				deallocate(objs, i);
 			}
 		}
@@ -134,6 +134,13 @@ public class OSPRuntime {
 			if (obj == null)
 				return;
 			obj.dispose();
+			allocated.remove(obj);
+			OSPLog.notify(obj, " deallocated ");
+		}
+
+		static void clearAllocation(Disposable obj) {
+			if (obj == null)
+				return;
 			allocated.remove(obj);
 			OSPLog.notify(obj, " deallocated ");
 		}
@@ -168,7 +175,7 @@ public class OSPRuntime {
 					OSPLog.notify(o, "still allocated!");
 				}
 			}
-			OSPLog.notify("" + n, "objects still allocated");
+			OSPLog.notify("" + n, "objects still allocated" + (n == 0 ? ""  : "!!!!!!!!!!!!"));
 		}
 
 	}

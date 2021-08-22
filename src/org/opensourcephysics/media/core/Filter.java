@@ -220,7 +220,8 @@ public abstract class Filter extends OSPRuntime.Supported {
 	}
 
 	/**
-	 * Sets the video panel.
+	 * Sets the video panel. Note that this call will ultimately initialize a new
+	 * TMenuBar if it does not exit.
 	 * 
 	 * @param panel the video panel
 	 */
