@@ -99,6 +99,9 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 	public static final int TOP_LEFT = MessageDrawable.TOP_LEFT;
 
 	public boolean isInteractive;
+	
+	protected boolean isDisposed;
+	
 	/**
 	 * BH experimental -- not needed.
 	 */
@@ -3177,6 +3180,11 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 		return this;
 	}
 
+    protected void firePropertyChange(String propertyName,
+            Object oldValue, Object newValue) {
+    	if (!isDisposed)
+    		super.firePropertyChange(propertyName, oldValue, newValue);
+    }
 
 }
 
