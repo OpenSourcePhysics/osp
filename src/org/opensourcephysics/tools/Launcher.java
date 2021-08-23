@@ -3546,14 +3546,9 @@ public class Launcher {
 			}
 		}
 		// create a timer to exit the system after 500 ms
-		final Timer timer = new Timer(500, new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+		Timer timer = OSPRuntime.trigger(500, (e) -> {
 				System.exit(0);
-			}
 		});
-		timer.setRepeats(false);
-		timer.start();
 		// create a thread to launch in separate VM
 		Runnable launchRunner = new Runnable() {
 			@Override

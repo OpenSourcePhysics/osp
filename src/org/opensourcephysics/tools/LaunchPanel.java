@@ -46,6 +46,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.GUIUtils;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.LaunchNode.DisplayTab;
 import org.opensourcephysics.tools.Launcher.HTMLPane;
 
@@ -404,14 +405,9 @@ public class LaunchPanel extends JPanel {
 			html.editorPane.scrollToReference(theURL.getRef());
 			if (FontSizer.getLevel() > 0) {
 				// invoke scrollToReference again later at high font levels
-				Timer timer = new Timer(100, new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
+				OSPRuntime.trigger(100, (e) -> {
 						html.editorPane.scrollToReference(theURL.getRef());
-					}
 				});
-				timer.setRepeats(false);
-				timer.start();
 			}
 		}
 		launcher.setLinksEnabled(html.editorPane, nodeEnabled);

@@ -953,14 +953,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		// kludge to display tables correctly: do propsAndStatsAction now, again after a
 		// millisecond!
 		propsAndStatsAction.actionPerformed(null);
-		Timer timer = new Timer(1, new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+		OSPRuntime.trigger(1, (e) -> {
 				propsAndStatsAction.actionPerformed(null);
-			}
 		});
-		timer.setRepeats(false);
-		timer.start();
 	}
 
 	/**
@@ -3090,9 +3085,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 	void refreshFit() {
 		if (fitTimer == null) {
-			fitTimer = new Timer(fitDelayMS, fitTimerAction);
-			fitTimer.setRepeats(false);
-			fitTimer.start();
+			fitTimer = OSPRuntime.trigger(fitDelayMS, fitTimerAction);
 		} else {
 			fitTimer.restart();
 		}

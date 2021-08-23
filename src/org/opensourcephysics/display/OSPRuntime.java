@@ -14,6 +14,7 @@ import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
@@ -54,6 +55,7 @@ import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.event.SwingPropertyChangeSupport;
@@ -2152,6 +2154,19 @@ public class OSPRuntime {
 	public static String getMemoryStr() {
 		long[] m = getMemory();
 		return m[0] + "/" + m[1];
+	}
+
+	/**
+	 * Create a simple one-time Timer and start it. 
+	 * @param ms
+	 * @param a
+	 * @return
+	 */
+	public static Timer trigger(int ms, ActionListener a) {
+		Timer timer = new Timer(ms, a);
+		timer.setRepeats(false);
+		timer.start();
+		return timer;
 	}
 
 }

@@ -586,11 +586,9 @@ public class LibraryBrowser extends JPanel {
 	public void cancelLoading() {
 		VideoIO.setCanceled(true);
 		setMessage("Loading canceled", Color.YELLOW);
-		Timer timer = new Timer(1000, (ev) -> {
+		OSPRuntime.trigger(1000, (e) -> {
 			doneLoading();
 		});
-		timer.setRepeats(false);
-		timer.start();
 	}
 	
 	public void doneLoading() {
@@ -1798,17 +1796,12 @@ public class LibraryBrowser extends JPanel {
 					searchField.setForeground(Color.RED);
 					searchField.setBackground(Color.white);
 					if (searchTimer == null) {
-						searchTimer = new Timer(1000, new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
+						searchTimer = OSPRuntime.trigger(1000, (e) -> {
 								searchField.setText(searchTerm);
 								searchField.setForeground(color);
 								searchField.selectAll();
 								searchField.setBackground(Color.white);
-							}
 						});
-						searchTimer.setRepeats(false);
-						searchTimer.start();
 					} else {
 						searchTimer.restart();
 					}
