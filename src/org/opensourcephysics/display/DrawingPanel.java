@@ -102,15 +102,15 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 	
 	protected boolean isDisposed;
 	
-	/**
-	 * BH experimental -- not needed.
-	 */
-	private JPanel glassPane;
-	
-	public JPanel getGlassPane() {
-		return (glassPane == null ? this : glassPane);
-	}
-
+//	/**
+//	 * BH experimental -- not needed.
+//	 */
+//	private JPanel glassPane;
+//	
+//	public JPanel getGlassPane() {
+//		return (glassPane == null ? this : glassPane);
+//	}
+//
 	protected JPopupMenu popupmenu; // right mouse click popup menu
 	/**
 	 * 
@@ -321,10 +321,10 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 //	}
 
 	public void addMessageLabel(JLabel l) {
-		if (glassPane == null)
+//		if (glassPane == null)
 			add(l);
-		else
-			glassPane.add(l);
+//		else
+//			glassPane.add(l);
 	}
 
 	/**
@@ -2742,10 +2742,10 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 	}
 
 	private void repaintGlassPane() {
-		if (glassPane == null)
+//		if (glassPane == null)
 			repaint();
-		else
-			glassPane.repaint();
+//		else
+//			glassPane.repaint();
 	}
 
 	/**
