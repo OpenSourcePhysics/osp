@@ -199,6 +199,7 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 	protected PropertyChangeListener guiChangeListener;
 	private int myFontLevel;
 
+	@Override
 	public void dispose() {
 		if (zoomTimer != null) {
 			zoomTimer.stop();
@@ -3180,11 +3181,15 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 		return this;
 	}
 
-    protected void firePropertyChange(String propertyName,
+    @Override
+	protected void firePropertyChange(String propertyName,
             Object oldValue, Object newValue) {
     	// TODO -- but what about all the primitives?
-    	if (!isDisposed)
+    	if (isDisposed) {
+    		System.err.println("DrawingPanel " + this + " firing after disposed : " + propertyName + " " + oldValue + " " + newValue);
+    	} else {	
     		super.firePropertyChange(propertyName, oldValue, newValue);
+    	}
     }
 
 }
