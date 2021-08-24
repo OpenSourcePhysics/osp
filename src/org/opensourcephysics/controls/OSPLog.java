@@ -1296,7 +1296,7 @@ public class OSPLog extends JFrame {
 	}
 
 	public static void notify(Object c, String msg) {
-		OSPLog.finer((c instanceof String ? c : c.getClass().getSimpleName()) + " " + msg);		
+		//TEST_BH OSPLog.finer((c instanceof String ? c : c.getClass().getSimpleName()) + " " + msg);		
 	}
 }
 
