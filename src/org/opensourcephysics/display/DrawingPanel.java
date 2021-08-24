@@ -166,15 +166,9 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 																											// for
 																											// message
 																											// box.
-	protected MouseInputAdapter mouseController = new CMController(); // handles the coordinate display on mouse actions
+	protected MouseInputAdapter mouseController; // handles the coordinate display on mouse actions
 	protected boolean showCoordinates = false; // set to true when mouse listener is added
-	protected MouseInputAdapter optionController = new OptionController() {
-		@Override
-		public void mousePressed(MouseEvent e) {
-			super.mousePressed(e);
-			requestFocus();
-		}
-	}; // handles optional mouse actions
+	protected MouseInputAdapter optionController; // handles optional mouse actions
 	protected ZoomBox zoomBox = new ZoomBox();
 	protected boolean enableZoom = true; // scale can be set via a mouse drag
 	protected boolean fixedScale = false; // scale is fixed (not user-settable)
@@ -228,9 +222,7 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 		setBackground(bgColor);
 		setPreferredSize(new Dimension(300, 300));
 		showCoordinates = true; // show coordinates by default
-		addMouseListener(mouseController);
-		addMouseMotionListener(mouseController);
-		addOptionController();
+		setMouseListeners();
 		// invalidate the buffered image if the size changes
 		addComponentListener(new java.awt.event.ComponentAdapter() {
 			@Override
@@ -286,6 +278,13 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 		};
 //		FontSizer.addPropertyChangeListener(FontSizer.PROPERTY_LEVEL, guiChangeListener); //$NON-NLS-1$
 		ToolsRes.addPropertyChangeListener(ToolsRes.OSP_PROPERTY_LOCALE, guiChangeListener); //$NON-NLS-1$
+	}
+
+	protected void setMouseListeners() {
+		mouseController = new CMController();
+		addMouseListener(mouseController);
+		addMouseMotionListener(mouseController);
+		addOptionController();
 	}
 
 //	private void addGlassPane() {
@@ -391,23 +390,29 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 		if (!isFixedScale()) {
 			autoscaleItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Autoscale_menu_item")); //$NON-NLS-1$
 			autoscaleItem.addActionListener(listener);
-			autoscaleItem.setText(DisplayRes.getString("DrawingFrame.Autoscale_menu_item")); //$NON-NLS-1$
+//			autoscaleItem.setText(DisplayRes.getString("DrawingFrame.Autoscale_menu_item")); //$NON-NLS-1$
 			popupmenu.add(autoscaleItem);
 			scaleItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Scale_menu_item")); //$NON-NLS-1$
 			scaleItem.addActionListener(listener);
-			scaleItem.setText(DisplayRes.getString("DrawingFrame.Scale_menu_item")); //$NON-NLS-1$
+//			scaleItem.setText(DisplayRes.getString("DrawingFrame.Scale_menu_item")); //$NON-NLS-1$
 			popupmenu.add(scaleItem);
 			popupmenu.addSeparator();
 		}
-		snapshotItem = new JMenuItem(DisplayRes.getString("DisplayPanel.Snapshot_menu_item")); //$NON-NLS-1$
-		snapshotItem.addActionListener(listener);
-		snapshotItem.setText(DisplayRes.getString("DisplayPanel.Snapshot_menu_item")); //$NON-NLS-1$
-		popupmenu.add(snapshotItem);
+		popupmenu.add(getSnapshotItem(listener));
 		popupmenu.addSeparator();
 		propertiesItem = new JMenuItem(DisplayRes.getString("DrawingFrame.InspectMenuItem")); //$NON-NLS-1$
 		propertiesItem.addActionListener(listener);
-		propertiesItem.setText(DisplayRes.getString("DrawingFrame.InspectMenuItem")); //$NON-NLS-1$
+//		propertiesItem.setText(DisplayRes.getString("DrawingFrame.InspectMenuItem")); //$NON-NLS-1$
 		popupmenu.add(propertiesItem);
+	}
+
+	protected JMenuItem getSnapshotItem(ActionListener listener) {
+		String s = DisplayRes.getString("DisplayPanel.Snapshot_menu_item");
+		snapshotItem = new JMenuItem(s); //$NON-NLS-1$
+//		snapshotItem.setText(DisplayRes.getString("DisplayPanel.Snapshot_menu_item")); //$NON-NLS-1$
+		if (listener != null)
+			snapshotItem.addActionListener(listener);
+		return snapshotItem;
 	}
 
 	/**
@@ -2438,6 +2443,13 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 	 * The option controller may interfere with other mouse actions
 	 */
 	public void addOptionController() {
+		optionController = new OptionController() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				super.mousePressed(e);
+				requestFocus();
+			}
+		};
 		addMouseListener(optionController);
 		addMouseMotionListener(optionController);
 	}
@@ -2975,7 +2987,7 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 
 	}
 
-	class PopupmenuListener implements ActionListener {
+    public class PopupmenuListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent evt) {
 			zoomBox.visible = false;

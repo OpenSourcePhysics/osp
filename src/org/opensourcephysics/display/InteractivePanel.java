@@ -44,21 +44,24 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
     interactive = in;
   }
 
-  /**
-   * Constructs an InteractivePanel with an internal handler.
-   */
-  public InteractivePanel() {
-	  super();
-	  isInteractive = true;
-    // remove the drawing panel mouse controller
-    removeMouseListener(mouseController);
-    removeMouseMotionListener(mouseController);
-    // create and add a new mouse controller for interactive drawing
-    mouseController = new IADMouseController();
-    addMouseListener(mouseController);
-    addMouseMotionListener(mouseController);
-    interactive = this; // this panel is the default handler
-  }
+	/**
+	 * Constructs an InteractivePanel with an internal handler.
+	 */
+	public InteractivePanel() {
+		super();
+		isInteractive = true;
+		interactive = this; // this panel is the default handler
+	}
+
+	@Override
+	protected void setMouseListeners() {
+		// create and add a new mouse controller for interactive drawing
+		mouseController = new IADMouseController();
+		addMouseListener(mouseController);
+		addMouseMotionListener(mouseController);
+		addOptionController();
+	}
+
 
   /**
    * Adds a drawable object to the drawable list.
@@ -325,7 +328,8 @@ public void setShowCoordinates(boolean show) {
      * Handle the mouse pressed event.
      * @param e
      */
-    @Override
+    @SuppressWarnings("unused")
+	@Override
 	public void mousePressed(MouseEvent e) {
       mouseEvent = e;
       mouseAction = MOUSE_PRESSED;
@@ -352,7 +356,8 @@ public void setShowCoordinates(boolean show) {
      * Handles the mouse released event.
      * @param e
      */
-    @Override
+    @SuppressWarnings("unused")
+	@Override
 	public void mouseReleased(MouseEvent e) {
       mouseEvent = e;
       mouseAction = MOUSE_RELEASED;
@@ -415,7 +420,8 @@ public void setShowCoordinates(boolean show) {
      * Handles the mouse dragged event.
      * @param e
      */
-    @Override
+    @SuppressWarnings("unused")
+	@Override
 	public void mouseDragged(MouseEvent e) {
       mouseEvent = e;
       mouseAction = MOUSE_DRAGGED;
@@ -455,6 +461,21 @@ public void setShowCoordinates(boolean show) {
 
   }
 
+	@Override
+	public void dispose() {
+		if (mouseController != null) {
+			removeMouseListener(mouseController);
+			removeMouseMotionListener(mouseController);
+			mouseController = null;
+		}
+		if (optionController != null) {
+			removeMouseListener(optionController);
+			removeMouseMotionListener(optionController);
+			optionController = null;
+		}
+		super.dispose();
+	}
+  
 }
 
 /*

@@ -128,12 +128,9 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	public VideoPanel(Video video) {
 		super();
 		setName("VideoPanel");
-		setSquareAspect(true);
-		player = new VideoPlayer(this);
-		player.addFrameListener(this);
-		add(player, BorderLayout.SOUTH);
-		VideoClip clip = player.getVideoClip();
-		clip.addListener(this);
+		squareAspect = true;
+		//setSquareAspect(true);
+		addVideoPlayer();
 		// define mousePanel and messagePanel
 		// make new CoordinateStringBuilder
 		setCoordinateStringBuilder(new VidCartesianCoordinateStringBuilder());
@@ -142,6 +139,17 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		setVideo(video);
 		setImageSize(video, true);
 		// put origin at center of image
+	}
+
+	protected void addVideoPlayer() {
+		player = new VideoPlayer(this);
+		player.addFrameListener(this);
+		add(player, BorderLayout.SOUTH);
+		VideoClip clip = player.getVideoClip();
+		clip.addListener(this);
+
+		// TODO Auto-generated method stub
+		
 	}
 
 	private void setImageSize(Video video, boolean isConstructor) {
