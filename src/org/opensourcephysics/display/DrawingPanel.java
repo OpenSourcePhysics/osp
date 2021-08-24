@@ -3186,10 +3186,9 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
             Object oldValue, Object newValue) {
     	// TODO -- but what about all the primitives?
     	if (isDisposed) {
-    		System.err.println("DrawingPanel " + this + " firing after disposed : " + propertyName + " " + oldValue + " " + newValue);
-    	} else {	
-    		super.firePropertyChange(propertyName, oldValue, newValue);
+    		//System.err.println("DrawingPanel " + this + " firing after disposed : " + propertyName + " " + oldValue + " " + newValue);
     	}
+    	super.firePropertyChange(propertyName, oldValue, newValue);
     }
 
 }
