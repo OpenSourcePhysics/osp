@@ -1052,7 +1052,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			}
 		}
 		obj = loader.loadObject(this, obj);
-		System.out.println("XMLControlElement loading " + data + " " + className);
+		//System.out.println("XMLControlElement loading " + data + " " + className);
 		if (loader instanceof FinalizableLoader) {
 			// VideoPanels and VideoClips
 			this.loader = loader;
