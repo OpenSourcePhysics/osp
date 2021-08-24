@@ -706,7 +706,7 @@ public int getAxesMode() {
    * @param msg
    */
   public void setMessage(String msg) {
-    messages.setMessage(msg, 1);  // BR message box
+    messages.setMessage(null, msg, 1);  // BR message box
   }
 
   /**
@@ -724,17 +724,17 @@ public int getAxesMode() {
   public void setMessage(String msg, int location) {
     switch(location) {
        case BOTTOM_LEFT :
-         messages.setMessage(msg, 0); // BL message box
+         messages.setMessage(null, msg, 0); // BL message box
          break;
        default :
        case BOTTOM_RIGHT :
-      	 messages.setMessage(msg, 1);  // BR message box
+      	 messages.setMessage(null, msg, 1);  // BR message box
          break;
        case TOP_RIGHT :
-      	 messages.setMessage(msg, 2);  // TR message box
+      	 messages.setMessage(null, msg, 2);  // TR message box
          break;
        case TOP_LEFT :
-      	 messages.setMessage(msg, 3);  // TL message box
+      	 messages.setMessage(null, msg, 3);  // TL message box
          break;
     }
   }

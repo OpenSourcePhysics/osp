@@ -891,7 +891,6 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 
 	@Override
 	public void dispose() {
-		System.out.println("VideoClip.dispose");
 		if (inspector != null) {
 			inspector.dispose();
 			inspector = null;

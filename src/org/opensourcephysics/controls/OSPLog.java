@@ -9,7 +9,6 @@ package org.opensourcephysics.controls;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -1296,7 +1295,7 @@ public class OSPLog extends JFrame {
 	}
 
 	public static void notify(Object c, String msg) {
-		//TEST_BH OSPLog.finer((c instanceof String ? c : c.getClass().getSimpleName()) + " " + msg);		
+		//OSPLog.finer((c instanceof String ? c : c.getClass().getSimpleName()) + " " + msg);		
 	}
 }
 

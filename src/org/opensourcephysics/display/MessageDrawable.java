@@ -56,7 +56,6 @@ public class MessageDrawable implements Drawable {
 	 * JLabel mode uses a panel reference
 	 */
 	private JLabel[] labels;
-	private DrawingPanel panel;
 	private ComponentListener listener;
 
 	/**
@@ -79,9 +78,10 @@ public class MessageDrawable implements Drawable {
 	public MessageDrawable(DrawingPanel panel) {
 	
 		index = ++mcount;
-		
+
+//		System.out.println("MessageDrawable" + index + " for " + panel + " created");
 		if (panel != null) {
-			this.panel = panel.dref(this);
+			panelStr = panel.toString();
 			labels = new JLabel[4];
 			panel.addComponentListener(listener = new ComponentListener() {
 
@@ -153,15 +153,6 @@ public class MessageDrawable implements Drawable {
 	}
 
 	/**
-	 * Shows a message in a yellow text box in the lower right hand corner.
-	 *
-	 * @param msg
-	 */
-	public void setMessage(String msg) {
-		setMessage(msg, BOTTOM_RIGHT);
-	}
-
-	/**
 	 * Shows a message in a yellow text box.
 	 *
 	 * location 0=bottom left location 1=bottom right location 2=top right location
@@ -170,7 +161,7 @@ public class MessageDrawable implements Drawable {
 	 * @param msg
 	 * @param location
 	 */
-	public void setMessage(String msg, int location) {
+	public void setMessage(DrawingPanel panel, String msg, int location) {
 		//OSPLog.debug("MessageDrawable.setMessage " + location + " " + msg);
 		if (msg != null) {
 			if (msg.length() == 0)
@@ -262,7 +253,7 @@ public class MessageDrawable implements Drawable {
 	 */
 	@Override
 	public void draw(DrawingPanel panel, Graphics g) {
-		if (ignoreRepaint || this.panel != null)
+		if (ignoreRepaint)
 			return;
 		Rectangle port = panel.findViewRect();
 		g = g.create();
@@ -392,18 +383,22 @@ public class MessageDrawable implements Drawable {
 	}
 
 	
-	public void dispose() {
-		if (panel != null)
+	String panelStr;
+	
+	public void dispose(DrawingPanel panel) {
+		if (panel != null) {
 			panel.removeComponentListener(listener);
+		}
 		listener = null;
-		panel = null;
 		labels = null;
+		font = null;
 	}
 	
 	
 	@Override
 	public void finalize() {
-		System.out.println("MessageDrawable" + index + " finalized " + --mcount);
+//		System.out.println("MessageDrawable" + index + " for " + panelStr + " finalized");
+//		System.out.println("MessageDrawable" + index + " finalized " + --mcount);
 		OSPLog.finalized(this);
 	}
 

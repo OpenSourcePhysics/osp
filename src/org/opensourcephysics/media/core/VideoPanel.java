@@ -770,7 +770,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		public VideoClip clip;
 		protected VideoPanel videoPanel;
 		protected XMLControlElement control;
-		private boolean finalized;
+		protected boolean finalized;
 
 		/**
 		 * Return a new VideoPanel.
@@ -898,12 +898,18 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			
 			control.loadingComplete();
 			control = null;
+			videoPanel = null;
 			finalized = true;
 		}
 
 		@Override
 		public boolean isFinalized() {
 			return finalized;
+		}
+
+		@Override
+		public void finalize() {
+			OSPLog.finalized(this);
 		}
 
 

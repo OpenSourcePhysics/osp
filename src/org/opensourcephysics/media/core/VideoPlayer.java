@@ -2002,12 +2002,13 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	}
 
 	public void dispose() {
-		System.out.println("VideoPlayer.dispose");
+	//	System.out.println("VideoPlayer.dispose");
 		clipControl.dispose();
-		vidPanel = null;
+		clipControl = null;
 		if (toolbar != null)
 			toolbar.removeAll();
 		toolbar = null;
+		vidPanel = null;
 	}
 
 	@Override

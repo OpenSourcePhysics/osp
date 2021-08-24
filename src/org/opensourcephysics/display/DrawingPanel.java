@@ -210,8 +210,10 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 			refreshTimer = null;
 		}
 
-		if (messages != null)
-			messages.dispose();
+		if (messages != null) {
+			messages.dispose(this);
+			messages = null;
+		}
 		ToolsRes.removePropertyChangeListener(ToolsRes.OSP_PROPERTY_LOCALE, guiChangeListener); //$NON-NLS-1$
 		OSPRuntime.Supported.dispose(this);
 	}
@@ -2671,7 +2673,13 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 		
 		if (msg != null && msg.length() == 0)
 			msg = null;
-		getMessages().setMessage(msg, location);
+
+//		if (msg != null)
+//			System.out.println("drawingPanel message ignored ");
+//		if (true)
+//			return false;//TEST_BH
+		
+		getMessages().setMessage(this, msg, location);
 		if (msg == null ? lastMessage[location] == null : msg.equals(lastMessage[location])) {
 			return false;
 		}
@@ -3177,7 +3185,7 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 	}
 
 	public DrawingPanel dref(Object o) {
-		System.out.println("DP ref " + (o instanceof String ? o.toString() : o.getClass().getSimpleName())); 
+		//System.out.println("DP ref " + (o instanceof String ? o.toString() : o.getClass().getSimpleName())); 
 		return this;
 	}
 
