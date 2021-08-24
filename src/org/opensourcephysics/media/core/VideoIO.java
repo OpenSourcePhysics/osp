@@ -120,9 +120,17 @@ public class VideoIO {
 	public static SingleExtFileFilter delimitedTextFileFilter;
 	protected static boolean dataCopiedToClipboard;
 
+	/**
+	 * VideoClip and VideoRecorder need persistent loaders that must later be asynchronously finalized.
+	 * 
+	 * @author hansonr
+	 *
+	 */
 	public interface FinalizableLoader extends XML.NonStaticLoader {
 		
 		public void finalizeLoading();
+		
+		public boolean isFinalized();
 
 	}
 

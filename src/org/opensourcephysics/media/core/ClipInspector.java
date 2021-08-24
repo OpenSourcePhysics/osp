@@ -59,6 +59,7 @@ public class ClipInspector extends JDialog {
   // instance fields
   protected VideoClip clip;
   protected ClipControl clipControl;
+
   protected JLabel startLabel, stepSizeLabel, t0Label;
   protected JLabel endLabel, dtLabel, fpsLabel;
   protected IntegerField startField, stepSizeField, endField;
@@ -74,12 +75,11 @@ public class ClipInspector extends JDialog {
 
   /**
    * Constructs a non-modal ClipInspector with access to the clip control.
-   *
-   * @param videoClip the video clip
-   * @param control the clip control
-   * @param frame the owner
+ * @param frame the owner
+ * @param videoClip the video clip
+ * @param control the clip control
    */
-  public ClipInspector(VideoClip videoClip, ClipControl control, Frame frame) {
+  public ClipInspector(Frame frame, VideoClip videoClip, ClipControl control) {
     super(frame, false); // non-modal dialog
     setResizable(false);
     clip = videoClip;
@@ -511,6 +511,13 @@ public class ClipInspector extends JDialog {
     clipControl.setStepNumber(clip.frameToStep(prevFrame));
   }
 
+	@Override
+	public void dispose() {
+		super.dispose();
+		clip = null;
+		clipControl = null;
+
+	}
 }
 
 /*

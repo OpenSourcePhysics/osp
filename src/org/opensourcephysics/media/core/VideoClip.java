@@ -94,6 +94,9 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 		return !invalid;
 	}
 	
+	Video video = null;
+	ClipInspector inspector;
+	
 	private int startFrame = 0;
 	private int stepSize = 1;
 	private int stepCount = 10; // default stepCount is 10 if video is null
@@ -101,9 +104,7 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 	private int maxFrameCount = 300000; // approx 2h45m at 30fps
 	private double startTime = 0; // start time in milliseconds
 	protected boolean isDefaultStartTime = true;
-	protected Video video = null;
 	private int[] stepFrames;
-	ClipInspector inspector;
 	private boolean playAllSteps = true;
 	private boolean isDefaultState;
 	private boolean isAdjusting = false;
@@ -494,7 +495,7 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 	 */
 	public ClipInspector getClipInspector(ClipControl control, Frame frame) {
 		if (inspector == null) {
-			inspector = new ClipInspector(this, control, frame);
+			inspector = new ClipInspector(frame, this, control);
 		}
 		return inspector;
 	}
@@ -611,25 +612,30 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 	 */
 	static class Loader implements XML.ObjectLoader, FinalizableLoader {
 		
+		@Override
 		public void finalize() {
-			System.out.println("VideoClip loader finalized for " + path);
+			System.out.println("VideoClip loader finalized for " + name);
 		}
 		
+		private Video video;
 		private VideoClip clip;
-		private String path;
 		private Collection<?> filters;
-		private double dt;
+
 		private int start;
 		private int stepSize;
 		private int stepCount;
 		private int frameCount;
-		private double startTime;
-		private String readoutType;
-		private boolean playAllSteps;
 		private String base;
-		private Video video;
+		private String path;
+		private String readoutType;
+		private double dt;
+		private double startTime;
+		private String name;
+
+		private boolean playAllSteps;
 		private boolean initialized;
-		
+		private boolean finalized;
+
 		/**
 		 * Saves object data in an XMLControl.
 		 *
@@ -684,8 +690,14 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 		 */
 		@Override
 		public Object loadObject(XMLControl control, Object obj) {
+			base = control.getString("basepath"); //$NON-NLS-1$ ;
+			System.gc();
 			clip = (VideoClip) obj;
+			System.gc();
 			video = clip.getVideo();
+			System.gc();
+			name = (video == null ? base : (String) video.getProperty("name"));
+			System.out.println("VideoClipLoader.loadObject " + name);
 			IncrementallyLoadable ivideo = (video == null || !(video instanceof IncrementallyLoadable) ? null : (IncrementallyLoadable) video);
 			if (ivideo != null && !ivideo.isFullyLoaded()) {
 				return clip;
@@ -723,7 +735,6 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 			}
 
 			// otherwise try to open the video and make a new clip with it
-			base = control.getString("basepath"); //$NON-NLS-1$ ;
 			ResourceLoader.addSearchPath(base);
 
 			XMLControl child = control.getChildControl("video"); //$NON-NLS-1$
@@ -854,6 +865,15 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 			}
 			clip.readoutType = readoutType;
 			clip.playAllSteps = playAllSteps; // by default
+			clip = null;
+			video = null;
+			filters = null;
+			finalized = true;
+		}
+
+		@Override
+		public boolean isFinalized() {
+			return finalized;
 		}
 
 	}
@@ -872,6 +892,10 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 	@Override
 	public void dispose() {
 		System.out.println("VideoClip.dispose");
+		if (inspector != null) {
+			inspector.dispose();
+			inspector = null;
+		}
 		super.dispose();
 	}
 
