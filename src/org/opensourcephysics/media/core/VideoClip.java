@@ -691,11 +691,8 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 		@Override
 		public Object loadObject(XMLControl control, Object obj) {
 			base = control.getString("basepath"); //$NON-NLS-1$ ;
-			System.gc();
 			clip = (VideoClip) obj;
-			System.gc();
 			video = clip.getVideo();
-			System.gc();
 			name = (video == null ? base : (String) video.getProperty("name"));
 			System.out.println("VideoClipLoader.loadObject " + name);
 			IncrementallyLoadable ivideo = (video == null || !(video instanceof IncrementallyLoadable) ? null : (IncrementallyLoadable) video);
@@ -833,10 +830,14 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 			}
 			if (video instanceof AsyncVideoI) {
 				clip.loader = this;
-			} else if (!(video instanceof IncrementallyLoadable)){
-				finalizeLoading();
+				return clip;
+			} 
+			if ((video instanceof IncrementallyLoadable)){
+				return clip;
 			}
-			return clip;
+			VideoClip c = clip;
+			finalizeLoading();
+			return c;
 		}
 
 

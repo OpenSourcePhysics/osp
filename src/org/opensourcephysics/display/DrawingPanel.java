@@ -380,11 +380,11 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 		if (isZoom()) {
 			zoomInItem = new JMenuItem(DisplayRes.getString("DisplayPanel.Zoom_in_menu_item")); //$NON-NLS-1$
 			zoomInItem.addActionListener(listener);
-			zoomInItem.setText(DisplayRes.getString("DisplayPanel.Zoom_in_menu_item")); //$NON-NLS-1$
+//			zoomInItem.setText(DisplayRes.getString("DisplayPanel.Zoom_in_menu_item")); //$NON-NLS-1$
 			popupmenu.add(zoomInItem);
 			zoomOutItem = new JMenuItem(DisplayRes.getString("DisplayPanel.Zoom_out_menu_item")); //$NON-NLS-1$
 			zoomOutItem.addActionListener(listener);
-			zoomOutItem.setText(DisplayRes.getString("DisplayPanel.Zoom_out_menu_item")); //$NON-NLS-1$
+//			zoomOutItem.setText(DisplayRes.getString("DisplayPanel.Zoom_out_menu_item")); //$NON-NLS-1$
 			popupmenu.add(zoomOutItem);
 		}
 		if (!isFixedScale()) {

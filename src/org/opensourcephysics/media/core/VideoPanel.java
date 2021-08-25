@@ -92,7 +92,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	/** default file name used for initial saveAs */
 	public String defaultFileName;
 	/** progress and framesLoaded used to keep track of loading process */
-	public int progress, framesLoaded;
+	protected int progress;
+	public int framesLoaded;
 	protected VideoPlayer player;
 	protected Video video = null;
 	protected boolean playerVisible = true;
@@ -952,6 +953,14 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		this.videoLoading = video;
 	}
 
+	public void setProgress(int p) {
+		progress = p;
+	}
+	
+	public int getProgress() {
+		return progress;
+	}
+	
 	/**
 	 * Video loading has failed. 
 	 */
