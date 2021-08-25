@@ -776,9 +776,9 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	 * A class to save and load data for this object.
 	 */
 	public static class Loader implements XML.ObjectLoader, FinalizableLoader {
+		public XMLControlElement control;
 		public VideoClip clip;
 		protected VideoPanel videoPanel;
-		protected XMLControlElement control;
 		protected boolean finalized;
 
 		/**
@@ -904,11 +904,6 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 					videoPanel.addDrawable((Drawable) it.next());
 				}
 			}
-			
-			control.loadingComplete();
-			control = null;
-			videoPanel = null;
-			finalized = true;
 		}
 
 		@Override
@@ -940,6 +935,13 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			if (!list.isEmpty()) {
 				control.setValue("drawables", list); //$NON-NLS-1$
 			}
+		}
+
+		public void dispose() {
+			control.dispose();
+			control = null;
+			videoPanel = null;
+			finalized = true;
 		}
 
 

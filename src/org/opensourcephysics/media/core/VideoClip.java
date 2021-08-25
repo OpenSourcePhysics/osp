@@ -727,7 +727,7 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 			if (!getVideo) {
 				finalizeLoading();				
 				// discard loader to allow finalization
-				((XMLControlElement) control).loadingComplete();
+				((XMLControlElement) control).dispose();
 				return obj;
 			}
 
@@ -866,6 +866,10 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 			}
 			clip.readoutType = readoutType;
 			clip.playAllSteps = playAllSteps; // by default
+			dispose();
+		}
+		
+		private void dispose() {
 			clip = null;
 			video = null;
 			filters = null;
