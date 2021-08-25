@@ -380,21 +380,17 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 		if (isZoom()) {
 			zoomInItem = new JMenuItem(DisplayRes.getString("DisplayPanel.Zoom_in_menu_item")); //$NON-NLS-1$
 			zoomInItem.addActionListener(listener);
-			zoomInItem.setText(DisplayRes.getString("DisplayPanel.Zoom_in_menu_item")); //$NON-NLS-1$
 			popupmenu.add(zoomInItem);
 			zoomOutItem = new JMenuItem(DisplayRes.getString("DisplayPanel.Zoom_out_menu_item")); //$NON-NLS-1$
 			zoomOutItem.addActionListener(listener);
-			zoomOutItem.setText(DisplayRes.getString("DisplayPanel.Zoom_out_menu_item")); //$NON-NLS-1$
 			popupmenu.add(zoomOutItem);
 		}
 		if (!isFixedScale()) {
 			autoscaleItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Autoscale_menu_item")); //$NON-NLS-1$
 			autoscaleItem.addActionListener(listener);
-//			autoscaleItem.setText(DisplayRes.getString("DrawingFrame.Autoscale_menu_item")); //$NON-NLS-1$
 			popupmenu.add(autoscaleItem);
 			scaleItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Scale_menu_item")); //$NON-NLS-1$
 			scaleItem.addActionListener(listener);
-//			scaleItem.setText(DisplayRes.getString("DrawingFrame.Scale_menu_item")); //$NON-NLS-1$
 			popupmenu.add(scaleItem);
 			popupmenu.addSeparator();
 		}
@@ -402,14 +398,12 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 		popupmenu.addSeparator();
 		propertiesItem = new JMenuItem(DisplayRes.getString("DrawingFrame.InspectMenuItem")); //$NON-NLS-1$
 		propertiesItem.addActionListener(listener);
-//		propertiesItem.setText(DisplayRes.getString("DrawingFrame.InspectMenuItem")); //$NON-NLS-1$
 		popupmenu.add(propertiesItem);
 	}
 
 	protected JMenuItem getSnapshotItem(ActionListener listener) {
 		String s = DisplayRes.getString("DisplayPanel.Snapshot_menu_item");
 		snapshotItem = new JMenuItem(s); //$NON-NLS-1$
-//		snapshotItem.setText(DisplayRes.getString("DisplayPanel.Snapshot_menu_item")); //$NON-NLS-1$
 		if (listener != null)
 			snapshotItem.addActionListener(listener);
 		return snapshotItem;
