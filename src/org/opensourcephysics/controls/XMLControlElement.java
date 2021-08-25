@@ -101,6 +101,8 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 
 	public ObjectLoader loader;
 
+	private boolean isFinalizable;
+
 	/**
 	 * see TrackerPanel.Loader
 	 * 
@@ -1055,7 +1057,8 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		}
 		obj = loader.loadObject(this, obj);
 		//System.out.println("XMLControlElement loading " + data + " " + className);
-		if (loader instanceof FinalizableLoader) {
+		if (isFinalizable || loader instanceof FinalizableLoader) {
+			isFinalizable = true;
 			if (!((FinalizableLoader) loader).isFinalized()) {
 			// VideoPanels and VideoClips
 				this.loader = loader;
@@ -2125,13 +2128,10 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		}
 	}
 
-	public void loadingComplete() {
-		dispose();
-	}
-
 	@Override
 	public void finalize() {
-//		System.out.println("XMLControlElement finalized " + data + " " + className);
+		if (isFinalizable)
+			OSPLog.finalized("XMLControlElement finalized " + className);
 	}
 
 	public void dispose() {

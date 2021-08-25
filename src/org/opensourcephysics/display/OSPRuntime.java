@@ -2150,6 +2150,8 @@ public class OSPRuntime {
 	}
 
 	public static String getMemoryStr() {
+		if (isJS)
+			return "";
 		long[] m = getMemory();
 		return m[0] + "/" + m[1];
 	}

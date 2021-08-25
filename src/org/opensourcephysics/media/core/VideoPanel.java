@@ -92,7 +92,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	/** default file name used for initial saveAs */
 	public String defaultFileName;
 	/** progress and framesLoaded used to keep track of loading process */
-	public int progress, framesLoaded;
+	protected int progress;
+	public int framesLoaded;
 	protected VideoPlayer player;
 	protected Video video = null;
 	protected boolean playerVisible = true;
@@ -775,9 +776,9 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	 * A class to save and load data for this object.
 	 */
 	public static class Loader implements XML.ObjectLoader, FinalizableLoader {
+		public XMLControlElement control;
 		public VideoClip clip;
 		protected VideoPanel videoPanel;
-		protected XMLControlElement control;
 		protected boolean finalized;
 
 		/**
@@ -903,11 +904,6 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 					videoPanel.addDrawable((Drawable) it.next());
 				}
 			}
-			
-			control.loadingComplete();
-			control = null;
-			videoPanel = null;
-			finalized = true;
 		}
 
 		@Override
@@ -941,6 +937,13 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			}
 		}
 
+		public void dispose() {
+			control.dispose();
+			control = null;
+			videoPanel = null;
+			finalized = true;
+		}
+
 
 	}
 
@@ -952,6 +955,14 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		this.videoLoading = video;
 	}
 
+	public void setProgress(int p) {
+		progress = p;
+	}
+	
+	public int getProgress() {
+		return progress;
+	}
+	
 	/**
 	 * Video loading has failed. 
 	 */

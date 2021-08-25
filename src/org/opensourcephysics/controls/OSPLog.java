@@ -74,6 +74,11 @@ import org.opensourcephysics.tools.FontSizer;
 @SuppressWarnings("serial")
 public class OSPLog extends JFrame {
 
+	/**
+	 * Set true to enable OSPLog.notify   (finalization)
+	 */
+	private static final boolean doNotify = false;
+	
 
 	/**
 	 * set to false to use standard System.out in Eclipse testing
@@ -89,6 +94,7 @@ public class OSPLog extends JFrame {
 
 	public static class LoggerPrintStream extends PrintStream {
 
+		
 		protected boolean isErr;
 
 		public LoggerPrintStream(LoggerOutputStream out, boolean isErr) {
@@ -122,6 +128,8 @@ public class OSPLog extends JFrame {
 	public static final Level[] levels = new Level[] { Level.OFF, Level.SEVERE, Level.WARNING, Level.INFO,
 			ConsoleLevel.ERR_CONSOLE, ConsoleLevel.OUT_CONSOLE, Level.CONFIG, Level.FINE, Level.FINER, Level.FINEST,
 			Level.ALL };
+
+
 	private static Level defaultLevel = ConsoleLevel.OUT_CONSOLE;
 	protected static boolean logConsole = true;
 
@@ -1295,7 +1303,8 @@ public class OSPLog extends JFrame {
 	}
 
 	public static void notify(Object c, String msg) {
-		//OSPLog.finer((c instanceof String ? c : c.getClass().getSimpleName()) + " " + msg);		
+		if (doNotify)
+			OSPLog.finer((c instanceof String ? c : c.getClass().getSimpleName()) + " " + msg);		
 	}
 }
 
