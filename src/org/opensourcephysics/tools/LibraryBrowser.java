@@ -1753,6 +1753,52 @@ public class LibraryBrowser extends JPanel {
 		}
 		// fire the event to TFrame and other listeners
 		firePropertyChange(PROPERTY_LIBRARY_TARGET, hint, record); // $NON-NLS-1$
+
+		// if loading a local file from the recent collection, move the record to top (most recent)
+		if (hint == HINT_LOAD_RESOURCE) {
+			String recentCollectionPath = getOSPPath() + RECENT_COLLECTION_NAME;
+			int index = getTabIndexFromPath(recentCollectionPath);
+			boolean isLocalTRZ = (!ResourceLoader.isHTTP(record.getAbsoluteTarget())
+					&& ResourceLoader.isJarZipTrz(record.getAbsoluteTarget().toLowerCase(), false));
+	
+			if (isLocalTRZ && index >= 0) {	
+				LibraryCollection collection = getRecentCollection();
+				LibraryResource child = loadResource(record.getAbsoluteTarget());
+				if (child != null) {
+					// does collection already have resource with same target?
+					LibraryResource duplicate = null;
+					LibraryResource[] resArray = collection.getResources();
+					for (int i = 0; i < resArray.length; i++) {
+						LibraryResource next = resArray[i];
+						if (next.getAbsoluteTarget().equals(child.getAbsoluteTarget())) {
+							duplicate = next;
+							break;
+						}
+					}
+					if (duplicate != null) {
+						collection.removeResource(duplicate);
+					}
+					collection.insertResource(child, 0);
+					
+					// name child before getting tree path??
+					String prevName = child.getName();
+					List<String> treePath = child.getTreePath(null);
+					child.setName(prevName);
+					
+					LibraryTreePanel treePanel = getTreePanel(index);
+					treePanel.setRootResource(collection, treePanel.pathToRoot, false, true);
+					treePanel.setSelectionPath(treePath);
+					
+					// start background SwingWorker to load metadata and set up search database
+					if (treePanel.metadataLoader != null) {
+						treePanel.metadataLoader.cancel();
+					}
+					treePanel.metadataLoader = treePanel.new MetadataLoader(treePath);
+					treePanel.metadataLoader.execute();
+				}
+			}
+		}
+
 	}
 
 	protected void doSearch() {
@@ -3175,7 +3221,20 @@ public class LibraryBrowser extends JPanel {
 					LibraryCollection collection = getRecentCollection();
 					LibraryResource child = loadResource(realPath);
 					if (child != null) {
+						// does collection already have resource with same target?
+						LibraryResource duplicate = null;
+						LibraryResource[] resArray = collection.getResources();
+						for (int i = 0; i < resArray.length; i++) {
+							LibraryResource next = resArray[i];
+							if (next.getTarget().equals(child.getTarget())) {
+								duplicate = next;
+								break;
+							}
+						}
 						if (collection.insertResource(child, 0)) {
+							if (duplicate != null) {
+								collection.removeResource(duplicate);
+							}
 							// remove excess nodes from recent collection
 							LibraryResource[] resources = collection.getResources();
 							int n = resources.length - maxRecentCollectionSize;
