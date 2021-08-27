@@ -752,7 +752,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		}
 		DefaultComboBoxModel<FTObject> model = new DefaultComboBoxModel<>(items);
 		dropdown.setModel(model);
-		dropdown.setSelectedItem(n);
+		dropdown.setSelectedIndex(n);
 
 		java.awt.Container c = myContentPane.getTopLevelAncestor();
 		Dimension dim = c.getSize();
