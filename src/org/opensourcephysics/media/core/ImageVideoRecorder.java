@@ -335,7 +335,7 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
 		return fileNames;
 	}
 
-	protected static String[] getFileNames(String fileName, int length) {
+	public static String[] getFileNames(String fileName, int length) {
 		if (length == 1)
 			return new String[] { fileName };
 		// determine number of digits to append to file names

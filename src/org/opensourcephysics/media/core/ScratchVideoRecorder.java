@@ -394,7 +394,7 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 	/**
 	 * Sets the extension used in the chooser.
 	 */
-	private static void setChooserExtension(String extension) {
+	public static void setChooserExtension(String extension) {
 		if (extension != null) {
 			ext = extension;
 		}
