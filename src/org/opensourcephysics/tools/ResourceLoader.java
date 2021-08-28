@@ -1229,9 +1229,10 @@ public class ResourceLoader {
 			}
 			return success;
 		}
-		if (isZipEntry(toUnix(inFile.getAbsolutePath()), false) >= 0) {
+		String path = toUnix(inFile.getPath());
+		if (isZipEntry(path, false) >= 0) {
 			try {
-				getZipEntryBytes(inFile.getAbsolutePath(), outFile);
+				getZipEntryBytes(path, outFile);
 				return true;
 			} catch (IOException e) {
 				return false;
