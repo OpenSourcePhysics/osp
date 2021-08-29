@@ -196,7 +196,7 @@ public class NumberField extends JTextField {
 				s = currentPattern;
 			} else {
 				String neg = (d < 0 ? "-" : "");
-				s = "" + (int) (Math.abs(d) * f);
+				s = "" + Math.round(Math.abs(d) * f);
 				int j = s.length() - i;
 				if (j < 1) {
 					i = 1;

@@ -14,8 +14,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -326,7 +324,12 @@ public class DataTable extends JTable {
 		if ((pattern == null) || pattern.equals("")) { //$NON-NLS-1$
 			precisionRenderersByColumnName.remove(columnName);
 		} else {
-			precisionRenderersByColumnName.put(columnName, new PrecisionRenderer(pattern));
+			PrecisionRenderer renderer = precisionRenderersByColumnName.get(columnName);
+			if (renderer == null || !pattern.equals(renderer.pattern)) {
+				precisionRenderersByColumnName.put(columnName, new PrecisionRenderer(pattern));
+			}
+			else 
+				return;
 		}
 		firePropertyChange(PROPERTY_DATATABLE_FORMAT, null, columnName); // $NON-NLS-1$
 	}

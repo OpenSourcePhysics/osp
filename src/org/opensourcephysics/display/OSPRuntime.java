@@ -83,6 +83,7 @@ import swingjs.api.JSUtilI;
  */
 public class OSPRuntime {
 
+	public static final String VERSION = "6.0.0210829"; //$NON-NLS-1$
 	public static final String OSP_PROPERTY_LROCALE = "locale";
 
 	/**
@@ -278,6 +279,8 @@ public class OSPRuntime {
 		 * @param listener the listener to remove
 		 */
 		public void removePropertyChangeListener(String property, PropertyChangeListener listener) {
+			if (listener == null)
+				return;
 			String key = "/" + property + "<-" + listener.getClass().getSimpleName();
 			if (!pointers.contains(key))
 				return;
@@ -431,7 +434,6 @@ public class OSPRuntime {
 		}
 	}
 
-	public static final String VERSION = "6.0.0210827"; //$NON-NLS-1$
 	private static boolean isMac;
 
 	public static int macOffset; // shifts LR message box on Mac to avoid drag hot spot.
