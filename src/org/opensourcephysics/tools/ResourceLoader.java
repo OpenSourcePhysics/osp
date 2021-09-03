@@ -1629,9 +1629,10 @@ public class ResourceLoader {
 		if (alwaysOverwrite || !target.exists()) {
 			OSPLog.finer("downloading " + urlPath + " to " + target); //$NON-NLS-1$ //$NON-NLS-2$
 			downloadURL = urlPath;
+			InputStream is = null;
 			try {
 				Resource res = getResourceZipURLsOK(urlPath);
-				InputStream is = (res == null ? new URL(urlPath).openStream() : res.openInputStream());
+				is = (res == null ? new URL(urlPath).openStream() : res.openInputStream());
 				if (OSPRuntime.isJS) {
 					OSPRuntime.jsutil.streamToFile(is, target);
 				} else {
@@ -1645,12 +1646,16 @@ public class ResourceLoader {
 //					}
 //					writer.close();
 				}
-				is.close();
 			} catch (Exception ex) {
-			}
+				target = null;
+			} 
+			if (is != null) try {
+				is.close();
+			} catch (IOException e) {
+			}				
 			downloadURL = ""; //$NON-NLS-1$
 		}
-		if (target.exists()) {
+		if (target != null && target.exists()) {
 			return target;
 		}
 		return null;
