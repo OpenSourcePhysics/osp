@@ -594,13 +594,13 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 					buf.append(key + ": " + value);  //$NON-NLS-1$
 				}
 			}
-			if (buf.length() == 0) {
-				String path = record.getHTMLPath();
-				if (path == null || path.length() == 0) {
-					path = record.target == null || record.target.equals("")? "": record.getBasePath() + "/" + record.target;
-				}
-				buf.append(path);
-			}
+//			if (buf.length() == 0) {
+//				String path = record.getHTMLPath();
+//				if (path == null || path.length() == 0) {
+//					path = record.target == null || record.target.equals("")? "": record.getBasePath() + "/" + record.target;
+//				}
+//				buf.append(path);
+//			}
 			tooltip = buf.toString();
 		}
 		return tooltip.length() > 0 ? tooltip : ToolsRes.getString("LibraryTreeNode.Tooltip.None"); //$NON-NLS-1$
