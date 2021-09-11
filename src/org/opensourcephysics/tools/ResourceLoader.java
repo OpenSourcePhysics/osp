@@ -961,12 +961,16 @@ public class ResourceLoader {
 			path = getNonURIPath(url.getPath());
 
 			int n = path.indexOf(cachePath);
-			if (n > -1) {
+			if (n >= 0) {
+				if (OSPRuntime.isJS && path.indexOf("!/") < 0) {
+					return new File(path);
+				}
+				
 				path = path.substring(n + cachePath.length());
 			}
 			// if path is local, strip drive letter
 			n = path.lastIndexOf(":"); //$NON-NLS-1$
-			if (n > -1) {
+			if (n >= 0) {
 				path = path.substring(n + 1);
 			}
 			// strip leading slash
@@ -978,10 +982,9 @@ public class ResourceLoader {
 				path = XML.getDirectoryPath(path);
 			}
 			path = path.replace('.', '_').replace("!", ""); //$NON-NLS-1$ //$NON-NLS-2$
-			filename = name == null ? pathname : name;
+			filename = (name == null ? pathname : name);
 		} catch (MalformedURLException e) {
 		}
-
 		if ("".equals(host)) //$NON-NLS-1$
 			host = "local_machine"; //$NON-NLS-1$
 		if (!path.startsWith("osp-")) //$NON-NLS-1$
@@ -1233,31 +1236,12 @@ public class ResourceLoader {
 		if (isZipEntry(path, false) >= 0) {
 			try {
 				getZipEntryBytes(path, outFile);
-				return true;
 			} catch (IOException e) {
 				return false;
 			}
+			return true;
 		}
-		byte[] buffer = new byte[16384]; // 2^14
-		try {
-			InputStream in = new FileInputStream(inFile);
-			OutputStream out = new FileOutputStream(outFile);
-			while (true) {
-				synchronized (buffer) {
-					int amountRead = in.read(buffer);
-					if (amountRead == -1) {
-						break;
-					}
-					out.write(buffer, 0, amountRead);
-				}
-			}
-			in.close();
-			out.close();
-		} catch (IOException ex) {
-			ex.printStackTrace();
-			return false;
-		}
-		return true;
+		return copyFile(inFile, outFile);
 	}
 
 	private static String toUnix(String path) {
@@ -3301,6 +3285,65 @@ public class ResourceLoader {
 		URL url = getAssetURL(path);
 		// Note! Must use cl.getClassLoader(), not just cl here, for absolute paths
 		return (url == null ? cl.getClassLoader().getResource(path) : url);
+	}
+
+	public static boolean copyFile(File inFile, File outFile) {
+		return copyFile(inFile, outFile, 16384);
+	}
+	/**
+	 * Copies a source file to a target file.
+	 *
+	 * @param inFile  the source
+	 * @param outFile the target
+	 * @param bufLen buffer length
+	 * @return true if successfully copied
+	 */
+	public static boolean copyFile(File inFile, File outFile, int bufLen) {
+		if (OSPRuntime.isJS) {
+			inFile.exists(); // sets the bytes if not already set.
+			OSPRuntime.jsutil.setFileBytes(outFile,  OSPRuntime.jsutil.getBytes(inFile));
+			return true;
+		}
+		byte[] buffer = new byte[bufLen]; // 2^14
+		try {
+			InputStream in = new FileInputStream(inFile);
+			OutputStream out = new FileOutputStream(outFile);
+			while (true) {
+				synchronized (buffer) {
+					int amountRead = in.read(buffer);
+					if (amountRead == -1) {
+						break;
+					}
+					out.write(buffer, 0, amountRead);
+				}
+			}
+			in.close();
+			out.close();
+		} catch (IOException ex) {
+			ex.printStackTrace();
+			return false;
+		}
+//
+//		byte[] buffer = new byte[100000];
+//		try {
+//			InputStream in = new FileInputStream(inFile);
+//			OutputStream out = new FileOutputStream(outFile);
+//			while (true) {
+//				synchronized (buffer) {
+//					int amountRead = in.read(buffer);
+//					if (amountRead == -1) {
+//						break;
+//					}
+//					out.write(buffer, 0, amountRead);
+//				}
+//			}
+//			in.close();
+//			out.close();
+//		} catch (IOException ex) {
+//			return false;
+//		}
+		outFile.setLastModified(inFile.lastModified());
+		return true;
 	}
 
 }
