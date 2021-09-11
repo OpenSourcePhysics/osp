@@ -174,7 +174,7 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
 				if (ext == tempFileType) {
 					// copy images
 					File targetFile = new File(path);
-					VideoIO.copyFile(tempFile, targetFile);
+					ResourceLoader.copyFile(tempFile, targetFile, 100000);
 				} else {
 					// open and encode images in desired format
 					BufferedImage image = ResourceLoader.getBufferedImage(tempFile.getAbsolutePath());

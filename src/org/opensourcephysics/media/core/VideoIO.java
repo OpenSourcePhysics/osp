@@ -36,8 +36,6 @@ import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -456,40 +454,6 @@ public class VideoIO {
 				e.printStackTrace();
 			}
 		}
-	}
-
-	/**
-	 * Copies a source file to a target file.
-	 *
-	 * @param inFile  the source
-	 * @param outFile the target
-	 * @return true if successfully copied
-	 */
-	public static boolean copyFile(File inFile, File outFile) {
-		if (OSPRuntime.isJS) {
-			OSPRuntime.jsutil.setFileBytes(outFile,  OSPRuntime.jsutil.getBytes(inFile));
-			return true;
-		}
-		byte[] buffer = new byte[100000];
-		try {
-			InputStream in = new FileInputStream(inFile);
-			OutputStream out = new FileOutputStream(outFile);
-			while (true) {
-				synchronized (buffer) {
-					int amountRead = in.read(buffer);
-					if (amountRead == -1) {
-						break;
-					}
-					out.write(buffer, 0, amountRead);
-				}
-			}
-			in.close();
-			out.close();
-			outFile.setLastModified(inFile.lastModified());
-		} catch (IOException ex) {
-			return false;
-		}
-		return true;
 	}
 
 	/**
