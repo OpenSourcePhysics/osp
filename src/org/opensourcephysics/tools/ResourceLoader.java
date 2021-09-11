@@ -1356,8 +1356,7 @@ public class ResourceLoader {
 	 */
 	public static void removeFromZipCache(String zipPath) {
 		URL url = getURLWithCachedBytes(zipPath);
-		Object removed = htZipContents.remove(url.toString());
-		System.out.println("pig removed "+removed);
+		htZipContents.remove(url.toString());
 	}
 
 	public static boolean checkExists(String path) {
