@@ -594,7 +594,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 				} catch (Exception e) {
 				}
 			}
-			OSPLog.warning("Could not open " + res);
+			OSPLog.warning("Could not open " + fileName);
 			readFailed = true;
 		}
 		return null;
