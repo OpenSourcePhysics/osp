@@ -1354,10 +1354,17 @@ public class ResourceLoader {
 
 	/**
 	 * zip contents caching can save time in complex loading.
-	 * 
 	 */
 	public static void clearZipCache() {
 		htZipContents.clear();
+	}
+	
+	/**
+	 * Remove zip contents from the cache.
+	 */
+	public static void removeFromZipCache(String zipPath) {
+		URL url = getURLWithCachedBytes(zipPath);
+		htZipContents.remove(url.toString());
 	}
 
 	public static boolean checkExists(String path) {
