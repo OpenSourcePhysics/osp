@@ -381,7 +381,7 @@ public class OSPRuntime {
 		public String toString() {
 			return ver;
 		}
-
+		
 		public boolean isValid() {
 			String[] v = this.ver.trim().split("\\."); //$NON-NLS-1$
 			if (v.length >= 2 && v.length <= 4) {
@@ -1344,6 +1344,20 @@ public class OSPRuntime {
 		if (file != null && file.exists())
 			return file;
 		return null;
+	}
+	
+	/**
+	 * Gets the major version number. For VERSION 6.0.1, the major is 6.
+	 * 
+	 * @return the major version, or 0 if fails
+	 */
+	public static int getMajorVersion() {
+		String[] v = VERSION.trim().split("\\."); //$NON-NLS-1$
+		try {
+			return Integer.parseInt(v[0]);
+		} catch (Exception ex) {
+			return 0;
+		}		
 	}
 
 	/**
