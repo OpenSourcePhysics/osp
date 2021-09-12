@@ -375,6 +375,7 @@ public class AnimatedGifEncoder {
       BufferedImage temp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
       Graphics2D g = temp.createGraphics();
       g.drawImage(image, 0, 0, null);
+      g.dispose();
       image = temp;
     }
     pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
@@ -494,9 +495,11 @@ public class AnimatedGifEncoder {
    * Writes string to output stream
    */
   protected void writeString(String s) throws IOException {
-    for(int i = 0; i<s.length(); i++) {
-      out.write((byte) s.charAt(i));
-    }
+	byte[] b = s.getBytes();
+	out.write(b, 0, b.length);
+//    for(int i = 0; i<s.length(); i++) {
+//      out.write((byte) s.charAt(i));
+//    }
   }
 
 }

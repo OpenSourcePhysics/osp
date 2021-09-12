@@ -121,6 +121,7 @@ protected boolean append(Image image) {
       bi = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB);
       Graphics2D g = bi.createGraphics();
       g.drawImage(image, 0, 0, null);
+      g.dispose();
     }
     encoder.addFrame(bi);
     return true;
