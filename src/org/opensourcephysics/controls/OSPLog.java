@@ -1027,10 +1027,11 @@ public class OSPLog extends JFrame {
 				line = in.readLine();
 			}
 			in.close();
+			return buffer.toString();
 		} catch (IOException ex) {
 			logger.warning(ex.toString());
+			return "";
 		}
-		return buffer.toString();
 	}
 
 	/**

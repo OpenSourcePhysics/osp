@@ -261,6 +261,7 @@ public interface HTML5Video extends DOMNode {
 			for (int i = 0; i < eventTypes.length; i++) {
 				jsvideo.removeEventListener(eventTypes[i]);
 			}
+			return;
 		}
 		
 		for (int i = 0; i < listeners.length; i += 2) {

@@ -138,15 +138,6 @@ public class Library {
 		return getName();
 	}
 
-	/**
-	 * Sets the cache path.
-	 * 
-	 * @param cachePath the cache path
-	 */
-	protected void setCache(String cachePath) {
-		File cacheDir = cachePath == null ? ResourceLoader.getDefaultOSPCache() : new File(cachePath);
-		ResourceLoader.setOSPCache(cacheDir);
-	}
 
 //_____________________ protected and private methods _________________________
 
@@ -443,8 +434,8 @@ public class Library {
 				String[] paths = library.noSearchSet.toArray(new String[0]);
 				control.setValue("no_search_paths", paths); //$NON-NLS-1$
 			}
-			if (ResourceLoader.getOSPCache() != null) {
-				File cache = ResourceLoader.getOSPCache();
+			File cache = ResourceLoader.getOSPCache();
+			if (cache != null) {
 				control.setValue("cache", cache.getPath()); //$NON-NLS-1$
 			}
 		}
@@ -518,7 +509,7 @@ public class Library {
 			library.chooserDir = control.getString("chooser_directory"); //$NON-NLS-1$
 			// set cache only if it has not yet been set
 			if (ResourceLoader.getOSPCache() == null) {
-				library.setCache(control.getString("cache")); //$NON-NLS-1$
+				ResourceLoader.setOSPCache(control.getString("cache")); //$NON-NLS-1$
 			}
 			return obj;
 		}

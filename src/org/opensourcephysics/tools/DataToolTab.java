@@ -373,13 +373,13 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			}
 		}
 		// indepVarPts cannot contain duplicates
-		indepVar = ((indepVarPts == null) || DataTool.containsDuplicateValues(indepVarPts)) ? null : indepVar;
+		indepVar = (indepVarPts == null || DataTool.containsDuplicateValues(indepVarPts) ? null : indepVar);
 		ArrayList<DataColumn> inputColumns = DataTool.getDataColumns(source);
 		Dataset duplicate = null; // duplicate input column
-		if (indepVar != null) {
+		if (indepVar != null && indepVarPts != null) {
 			String indepVarName = indepVar.getYColumnName();
 			for (DataColumn next : inputColumns) {
-				if ((duplicate == null) && next.getYColumnName().equals(indepVarName)) {
+				if (duplicate == null && next.getYColumnName().equals(indepVarName)) {
 					// found matching column name, now compare their points
 					double[] inputPts = next.getYPoints();
 					// remove Double.NaN from end of inputPts
@@ -1672,10 +1672,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			public void mousePressed(MouseEvent e) {
 				mouseState = getMouseState(e);
 				switch (mouseState) {
+				case STATE_MOVE: // cursor set by axes
+					return;
 				case STATE_ZOOM:
 					plot.setMouseCursor(SELECT_ZOOM_CURSOR);
-				case STATE_MOVE: // cursor set by axes
-					return;					
+					return;
 				case STATE_SELECT:
 					if (plot.interactive == null) {
 						plot.setMouseCursor(SELECT_CURSOR);
@@ -3242,11 +3243,10 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				@Override
 				public void keyPressed(KeyEvent e) {
 					// only handle the first event, ignore repeated keys
-	        int keyCode = e.getKeyCode();
-	        if (keyBits.get(keyCode))
-	        	return;
-					
-					keyBits.set(keyCode);	        
+					int keyCode = e.getKeyCode();
+					if (keyBits.get(keyCode))
+						return;
+					keyBits.set(keyCode);
 					if (e.getKeyCode() == KeyEvent.VK_ALT) {
 						mouseState = STATE_MOVE;
 						if (plot.selectionBox.visible) {
@@ -3262,13 +3262,15 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 						switch (mouseState) {
 						case STATE_ZOOM:
 						case STATE_MOVE:
-							return;					
+							return;
 						case STATE_SELECT:
 						case STATE_SELECT_ADD:
 						case STATE_SELECT_REMOVE:
-							mouseState = remove ? STATE_SELECT_REMOVE: STATE_SELECT_ADD;
+							mouseState = remove ? STATE_SELECT_REMOVE : STATE_SELECT_ADD;
 							plot.setMouseCursor(remove ? SELECT_REMOVE_CURSOR : SELECT_ADD_CURSOR);
+							return;
 						case STATE_INACTIVE:
+							return;
 						}
 						return;
 					}
@@ -3278,15 +3280,17 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 						switch (mouseState) {
 						case STATE_ZOOM:
 						case STATE_MOVE:
-							return;					
+							return;
 						case STATE_SELECT:
 						case STATE_SELECT_ADD:
 						case STATE_SELECT_REMOVE:
 							mouseState = STATE_SELECT_REMOVE;
 							plot.setMouseCursor(SELECT_REMOVE_CURSOR);
+							break;
 						case STATE_INACTIVE:
 //							if (!OSPRuntime.isMac())
 //								plot.setMouseCursor(SELECT_REMOVE_CURSOR);
+							break;
 						}
 						if (toggleMeasurement)
 							return;
@@ -3388,6 +3392,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 							plot.setMouseCursor(e.isControlDown() && !OSPRuntime.isMac()? 
 									SELECT_REMOVE_CURSOR:
 									Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+							return;
 						case STATE_ZOOM:
 						case STATE_MOVE:
 							return;
@@ -3408,6 +3413,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 							plot.setMouseCursor(e.isShiftDown()? 
 									SELECT_ADD_CURSOR:
 									Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+							return;
 						case STATE_ZOOM:
 						case STATE_MOVE:
 							return;

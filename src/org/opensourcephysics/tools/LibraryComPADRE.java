@@ -222,7 +222,7 @@ public class LibraryComPADRE {
 						public void run() {
 							if (index[0] >= ni) {
 								whenDone.run();
-							} else {
+							} else if (l != null) {
 								loadNode(l.item(index[0]++), collection, treeNode, urlPath, onFound, onNothingNew);
 							}
 
@@ -267,18 +267,16 @@ public class LibraryComPADRE {
 				return;
 			}
 			// ignore if there is no associated attachment
-			if (attachment != null) {
 
-				// create and add a new record to this node's collection
-				String name = getChildValue(node, "title"); //$NON-NLS-1$
-				LibraryResource record = new LibraryResource(name);
-				collection.addResource(record);
+			// create and add a new record to this node's collection
+			String name = getChildValue(node, "title"); //$NON-NLS-1$
+			LibraryResource record = new LibraryResource(name);
+			collection.addResource(record);
 
-				if (setRecord(record, node, attachment, treeNode)) {
-					found = true;
-					OSPRuntime.showStatus(name);
-					record.setProperty("reload_url", urlPath); //$NON-NLS-1$
-				}
+			if (setRecord(record, node, attachment, treeNode)) {
+				found = true;
+				OSPRuntime.showStatus(name);
+				record.setProperty("reload_url", urlPath); //$NON-NLS-1$
 			}
 			if (found) {
 				onFound.run();

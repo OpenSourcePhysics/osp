@@ -97,39 +97,41 @@ public void doStep() {
     control.setValue("time", time);
   }
 
-  /**
-   * Starts the program and loads an optional XML file.
-   * @param args String[]
-   */
-  public static void main(String[] args) {
-	  int val = 1;
-	  if (args.length == 0) {
-		  // BH 2020.03.04 "_dav" here to indicate to use davison, not org.opersourcephysics.davidson
-		  switch (val) {
-		  //default:
-		  case 1:
-			  args = new String[] {"wigner/isw_wigner_p0_10pi.xml"};
-			  break;
-		  case 2:
-			  args = new String[] {"wigner/sho_wigner_dav.xml"};
-			  break;
-		  case 3:
-			  args = new String[] {"wigner/isw_wigner_5_dav.xml"};
-			  break;
-		  }
-		  
-	  }
+	/**
+	 * Starts the program and loads an optional XML file.
+	 * 
+	 * @param args String[]
+	 */
+	public static void main(String[] args) {
+		int val = 1;
+		if (args == null || args.length == 0) {
+			// BH 2020.03.04 "_dav" here to indicate to use davison, not
+			// org.opersourcephysics.davidson
+			switch (val) {
+			// default:
+			case 1:
+				args = new String[] { "wigner/isw_wigner_p0_10pi.xml" };
+				break;
+			case 2:
+				args = new String[] { "wigner/sho_wigner_dav.xml" };
+				break;
+			case 3:
+				args = new String[] { "wigner/isw_wigner_5_dav.xml" };
+				break;
+			}
 
-    OSPRuntime.disableAllDrawing = true;
-    QMSuperpositionWignerWRApp app = new QMSuperpositionWignerWRApp();
-    QMWignerControl c = new QMWignerControl(app, args);
-    frame=c.cont;
-    app.customize();
-    if((args==null)||(args.length==0)) { 
-      c.loadXML("/davidson/qm/wigner_default.xml");
-    }
-    OSPRuntime.disableAllDrawing = false;
-    GUIUtils.repaintOSPFrames();
-  }
+		}
+
+		OSPRuntime.disableAllDrawing = true;
+		QMSuperpositionWignerWRApp app = new QMSuperpositionWignerWRApp();
+		QMWignerControl c = new QMWignerControl(app, args);
+		frame = c.cont;
+		app.customize();
+		if (args == null || args.length == 0) {
+			c.loadXML("/davidson/qm/wigner_default.xml");
+		}
+		OSPRuntime.disableAllDrawing = false;
+		GUIUtils.repaintOSPFrames();
+	}
 
 }

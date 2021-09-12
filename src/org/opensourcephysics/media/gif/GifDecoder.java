@@ -279,34 +279,34 @@ public class GifDecoder {
     return new Dimension(width, height);
   }
 
-  /**
-   * Reads GIF image from stream
-   *
-   * @param input the BufferedInputStream containing GIF file.
-   * @return read status code (0 = no errors)
-   */
-  public int read(BufferedInputStream input) {
-    init();
-    if(input!=null) {
-      in = input;
-      readHeader();
-      if(!err()) {
-        readContents();
-        if(frameCount<0) {
-          status = STATUS_FORMAT_ERROR;
-        }
-      }
-    } else {
-      status = STATUS_OPEN_ERROR;
-    }
-    try {
-      input.close();
-    } catch(IOException ex) {
+	/**
+	 * Reads GIF image from stream
+	 *
+	 * @param input the BufferedInputStream containing GIF file.
+	 * @return read status code (0 = no errors)
+	 */
+	public int read(BufferedInputStream input) {
+		init();
+		if (input != null) {
+			in = input;
+			readHeader();
+			if (!err()) {
+				readContents();
+				if (frameCount < 0) {
+					status = STATUS_FORMAT_ERROR;
+				}
+			}
+			try { // BH 2021.09.11 was on input == null
+				input.close();
+			} catch (IOException ex) {
 
-    /** empty block */
-    }
-    return status;
-  }
+				/** empty block */
+			}
+		} else {
+			status = STATUS_OPEN_ERROR;
+		}
+		return status;
+	}
 
   /**
    * Reads GIF file from specified file/URL source

@@ -28,6 +28,7 @@ import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
 import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
 import javax.swing.Action;
@@ -47,6 +48,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+
 import org.opensourcephysics.display.CellBorder;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.ArrayInspector;
@@ -293,97 +295,92 @@ public TableCellEditor getCellEditor(int row, int column) {
       setFont(font);
     }
 
-    // Returns a label for the specified cell.
-    @Override
-	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-      setForeground(Color.BLACK);
-      if(value==null) {
-        value = ""; // changed by W. Christian to trap for null values //$NON-NLS-1$
-      }
-      String propName = (String) tableModel.getValueAt(row, 0);
-      Class<?> childClass = null;
-      Object childObj = null;
-      if(column==0) { // property name
-        if(isSelected) {
-          //setBackground(new Color(255, 192, 255));
-          setBackground(LIGHT_BLUE);
-        } else {
-          setBackground(lightGray);
-        }
-        setHorizontalAlignment(SwingConstants.LEFT);
-        String text = value.toString();
-        if(OSPRuntime.loadTranslatorTool) {
-          text = OSPRuntime.getTranslator().getProperty(XMLTable.this, text);
-        }
-        setText(text);
-        //setBorder(BorderFactory.createLineBorder(new Color(224, 224, 224),1));
-        setBorder(BorderFactory.createEmptyBorder(2, 1, 2, 2));
-        return this;
-      }
-      if(value instanceof XMLProperty) {                // object, array or collection type
-        XMLProperty prop = (XMLProperty) value;
-        XMLProperty parent = prop.getParentProperty();
-        childClass = parent.getPropertyClass();
-        String className = XML.getSimpleClassName(childClass);
-        XMLControl control = (XMLControl) parent.getParentProperty();
-        childObj = control.getObject(parent.getPropertyName());
-        // array type
-        if(parent.getPropertyType() == XMLProperty.TYPE_ARRAY) {  //$NON-NLS-1$
-          Object array = childObj;
-          // determine if base component type is primitive and count array elements
-          Class<?> baseType = array.getClass().getComponentType();
-          int count = Array.getLength(array);
-          int insert = className.indexOf("[]")+1;       //$NON-NLS-1$
-          className = className.substring(0, insert)+count+className.substring(insert);
-          while(baseType.getComponentType()!=null) {
-            baseType = baseType.getComponentType();
-            array = Array.get(array, 0);
-            if(array==null) {
-              break;
-            }
-            count = Array.getLength(array);
-            insert = className.indexOf("[]", insert)+1; //$NON-NLS-1$
-            className = className.substring(0, insert)+count+className.substring(insert);
-          }
-        }
-        // general object types
-        if((childClass!=OSPCombo.class                  // OSPCombo handled below
-          )&&(childClass!=Boolean.class                 // Boolean handled below
-            )&&(childClass!=Character.class)) {         // Char handled below
-          setText(className);
-          setBackground(isInspectable(parent) ? lightGreen : lightGray);
-          //setBorder(BorderFactory.createEmptyBorder(2, 1, 2, 2));
-          //setBorder(BorderFactory.createLineBorder(new Color(240, 240, 240)));
-          setBorder(new CellBorder(new Color(240, 240, 240)));
-          setHorizontalAlignment(SwingConstants.CENTER);
-          if(isSelected&&isInspectable(parent)) {
-            setBackground(getSelectedColor(propName));
-            setForeground(Color.RED);
-          }
-          return this;
-        }
-      }
-      // int, double, boolean, string and special object types
-      if(isSelected) {
-        setBackground(getSelectedColor(propName));
-        setForeground(Color.RED);
-      } else {
-        setBackground(getBackgroundColor(propName));
-      }
-      setHorizontalAlignment(SwingConstants.LEFT);
-      if((childClass==OSPCombo.class)||(childClass==Boolean.class)||(childClass==Character.class)) {
-        setText(childObj.toString());
-      } else {
-        setText(value.toString());
-      }
-      //setBorder(BorderFactory.createLineBorder(new Color(240, 240, 240)));
-      setBorder(new CellBorder(new Color(240, 240, 240)));
-      //setBorder(BorderFactory.createEmptyBorder(2, 1, 2, 2));
-      if(!tableModel.editable||tableModel.uneditablePropNames.contains(propName)) {
-        setForeground(Color.GRAY); // override all other color settings
-      }
-      return this;
-    }
+		// Returns a label for the specified cell.
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+				int row, int column) {
+			setForeground(Color.BLACK);
+			if (value == null) {
+				value = ""; // changed by W. Christian to trap for null values //$NON-NLS-1$
+			}
+			String propName = (String) tableModel.getValueAt(row, 0);
+			if (column == 0) { // property name
+				if (isSelected) {
+					// setBackground(new Color(255, 192, 255));
+					setBackground(LIGHT_BLUE);
+				} else {
+					setBackground(lightGray);
+				}
+				setHorizontalAlignment(SwingConstants.LEFT);
+				String text = value.toString();
+				if (OSPRuntime.loadTranslatorTool) {
+					text = OSPRuntime.getTranslator().getProperty(XMLTable.this, text);
+				}
+				setText(text);
+				// setBorder(BorderFactory.createLineBorder(new Color(224, 224, 224),1));
+				setBorder(BorderFactory.createEmptyBorder(2, 1, 2, 2));
+				return this;
+			}
+			String childValue = null;
+			if (value instanceof XMLProperty) { // object, array or collection type
+				XMLProperty prop = (XMLProperty) value;
+				XMLProperty parent = prop.getParentProperty();
+				Class<?> childClass = parent.getPropertyClass();
+				String className = XML.getSimpleClassName(childClass);
+				XMLControl control = (XMLControl) parent.getParentProperty();
+				Object childObj = control.getObject(parent.getPropertyName());
+				// array type
+				if (parent.getPropertyType() == XMLProperty.TYPE_ARRAY) { // $NON-NLS-1$
+					Object array = childObj;
+					// determine if base component type is primitive and count array elements
+					Class<?> baseType = array.getClass().getComponentType();
+					int count = Array.getLength(array);
+					int insert = className.indexOf("[]") + 1; //$NON-NLS-1$
+					className = className.substring(0, insert) + count + className.substring(insert);
+					while (baseType.getComponentType() != null) {
+						baseType = baseType.getComponentType();
+						array = Array.get(array, 0);
+						if (array == null) {
+							break;
+						}
+						count = Array.getLength(array);
+						insert = className.indexOf("[]", insert) + 1; //$NON-NLS-1$
+						className = className.substring(0, insert) + count + className.substring(insert);
+					}
+				}
+				// general object types
+				if (childClass != OSPCombo.class && childClass != Boolean.class && childClass != Character.class) {
+					setText(className);
+					setBackground(isInspectable(parent) ? lightGreen : lightGray);
+					// setBorder(BorderFactory.createEmptyBorder(2, 1, 2, 2));
+					// setBorder(BorderFactory.createLineBorder(new Color(240, 240, 240)));
+					setBorder(new CellBorder(new Color(240, 240, 240)));
+					setHorizontalAlignment(SwingConstants.CENTER);
+					if (isSelected && isInspectable(parent)) {
+						setBackground(getSelectedColor(propName));
+						setForeground(Color.RED);
+					}
+					return this;
+				}
+				childValue = childObj.toString();
+			}
+			// int, double, boolean, string and special object types
+			if (isSelected) {
+				setBackground(getSelectedColor(propName));
+				setForeground(Color.RED);
+			} else {
+				setBackground(getBackgroundColor(propName));
+			}
+			setHorizontalAlignment(SwingConstants.LEFT);
+			setText(childValue == null ? value.toString() : childValue); // BH 2021.09.11
+			// setBorder(BorderFactory.createLineBorder(new Color(240, 240, 240)));
+			setBorder(new CellBorder(new Color(240, 240, 240)));
+			// setBorder(BorderFactory.createEmptyBorder(2, 1, 2, 2));
+			if (!tableModel.editable || tableModel.uneditablePropNames.contains(propName)) {
+				setForeground(Color.GRAY); // override all other color settings
+			}
+			return this;
+		}
 
   }
 

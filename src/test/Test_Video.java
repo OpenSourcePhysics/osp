@@ -186,9 +186,8 @@ public class Test_Video {
 	JLabel label = new JLabel((String) null);
 
 	private void createVideoLabel(File file, URL videoURL, String video) {
-		boolean asBytes = (file != null);
 		ImageIcon icon;
-		if (!isJS) {
+		if (!isJS && file != null) {
 			icon = new ImageIcon("test/video_image.png");
 			if (!(file.toString().equals(file.getAbsolutePath()))) {
 				file = new File("site/swingjs/j2s/" + file.toString());
@@ -196,7 +195,7 @@ public class Test_Video {
 			System.out.println(file.getAbsolutePath());
 			System.out.println(getMP4Codec(file.getAbsolutePath(), file.getName()));
 			return;
-		} else if (asBytes) {
+		} else if (file != null) {
 			try {
 				byte[] bytes;
 //				if (testRemote) {

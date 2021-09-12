@@ -152,28 +152,29 @@ public class MethodWithOneParameter {
 			Object val = methodToCall.invoke(targetObject, parameterList);
 			if (val == null) {
 				ret = Value.VALUE_NULL;
-			} else if (ret == null) {
-				ret = inferType(val);
-			}
-			switch (ret.getType()) {
-			default:
-			case Value.TYPE_OBJECT:
-				((ObjectValue) ret).value = val;
-				break;
-			case Value.TYPE_BOOLEAN:
-				ret = (((Boolean) val).booleanValue() ? Value.VALUE_TRUE : Value.VALUE_FALSE);
-				break;
-			case Value.TYPE_DOUBLE:
-				((DoubleValue) ret).value = ((Double) val).doubleValue();
-				break;
-			case Value.TYPE_EXPRESSION:
-				break;
-			case Value.TYPE_INTEGER:
-				((IntegerValue) ret).value = ((Integer) val).intValue();
-				break;
-			case Value.TYPE_STRING:
-				((StringValue) ret).value = val.toString();
-				break;
+			} else {
+				if (ret == null)
+					ret = inferType(val);
+				switch (ret.getType()) {
+				default:
+				case Value.TYPE_OBJECT:
+					((ObjectValue) ret).value = val;
+					break;
+				case Value.TYPE_BOOLEAN:
+					ret = (((Boolean) val).booleanValue() ? Value.VALUE_TRUE : Value.VALUE_FALSE);
+					break;
+				case Value.TYPE_DOUBLE:
+					((DoubleValue) ret).value = ((Double) val).doubleValue();
+					break;
+				case Value.TYPE_EXPRESSION:
+					break;
+				case Value.TYPE_INTEGER:
+					((IntegerValue) ret).value = ((Integer) val).intValue();
+					break;
+				case Value.TYPE_STRING:
+					((StringValue) ret).value = val.toString();
+					break;
+				}
 			}
 			if (secondMethod != null) {
 				secondMethod.invoke(_type, _callingObject);

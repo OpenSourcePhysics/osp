@@ -732,7 +732,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	/**
 	 * Loads content into DataDataTool.
 	 *
-	 * @param content  the xml or CVS dataset
+	 * @param content the xml or CVS dataset
 	 */
 	public void loadDataset(String content, String title) {
 		// if xml, read the file into an XML control and add tab
@@ -758,17 +758,15 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			});
 			return;
 		}
-		if (content != null) {
-			// if not xml, attempt to import data and add tab
-			Data data = parseData(content,title);
-			if (data != null) {
-				DataToolTab tab = createTab(data);
-				addTab(tab);
-				refreshDataBuilder();
-				tab.fileName = title;
-				tab.tabChanged(false);
-				return;
-			}
+		// if not xml, attempt to import data and add tab
+		Data data = parseData(content, title);
+		if (data != null) {
+			DataToolTab tab = createTab(data);
+			addTab(tab);
+			refreshDataBuilder();
+			tab.fileName = title;
+			tab.tabChanged(false);
+			return;
 		}
 		OSPLog.finest("no data found"); //$NON-NLS-1$
 	}
@@ -3306,30 +3304,27 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 
 	private boolean isPastableData(String dataString) {
 		controlContainsData = false;
-		boolean hasData = dataString != null;
-		if (hasData) {
-			if (!dataString.startsWith("<?xml")) { //$NON-NLS-1$
-				addableData = parseData(dataString, null);
-				hasData = addableData != null;
-			} else {
-				control = new XMLControlElement();
-				control.readXML(dataString);
-				Class<?> type = control.getObjectClass();
-				if (Data.class.isAssignableFrom(type)) {
-					addableData = (Data) control.loadObject(null);
-				} else if (!DataToolTab.class.isAssignableFrom(type)) {
-					// find all Data objects in the control
-					XMLTree tree = new XMLTree(control);
-					tree.setHighlightedClass(Data.class);
-					tree.selectHighlightedProperties();
-					if (!tree.getSelectedProperties().isEmpty()) {
-						controlContainsData = true;
-					}
-				}
-				hasData = (addableData != null) || DataToolTab.class.isAssignableFrom(type) || controlContainsData;
+		if (dataString == null)
+			return false;
+		if (!dataString.startsWith("<?xml")) { //$NON-NLS-1$
+			addableData = parseData(dataString, null);
+			return (addableData != null);
+		}
+		control = new XMLControlElement();
+		control.readXML(dataString);
+		Class<?> type = control.getObjectClass();
+		if (Data.class.isAssignableFrom(type)) {
+			addableData = (Data) control.loadObject(null);
+		} else if (!DataToolTab.class.isAssignableFrom(type)) {
+			// find all Data objects in the control
+			XMLTree tree = new XMLTree(control);
+			tree.setHighlightedClass(Data.class);
+			tree.selectHighlightedProperties();
+			if (!tree.getSelectedProperties().isEmpty()) {
+				controlContainsData = true;
 			}
 		}
-		return hasData;
+		return (addableData != null) || DataToolTab.class.isAssignableFrom(type) || controlContainsData;
 	}
 
 	/**

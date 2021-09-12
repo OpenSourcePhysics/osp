@@ -771,7 +771,7 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 				OSPLog.info("\"" + fullPath + "\" could not be opened. Found? " + exists + " Supported? " + supported); //$NON-NLS-1$ //$NON-NLS-2$
 				if (!supported || exists) {
 					// invalid = true;
-					String codec = (exists ? VideoIO.getVideoCodec(res.getAbsolutePath()) : null);
+					String codec = (res == null ? null : VideoIO.getVideoCodec(res.getAbsolutePath()));
 					String reason = (exists ? "VideoClip null video" : "VideoClip not supported");
 					VideoIO.handleUnsupportedVideo(base + "/" + path, XML.getExtension(path), codec, null, reason); // runs
 																													// async

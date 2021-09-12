@@ -447,8 +447,7 @@ public class LibraryManager extends JDialog {
 		setCacheButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				File newCache = ResourceLoader.chooseOSPCache(browser);
-				ResourceLoader.setOSPCache(newCache);
+				ResourceLoader.setOSPCache(ResourceLoader.chooseOSPCache(browser));
 				refreshCacheTab();
 			}
 		});
@@ -729,7 +728,7 @@ public class LibraryManager extends JDialog {
 		cacheBox.removeAll();
 		ArrayList<JLabel> labels = new ArrayList<JLabel>();
 		File cache = ResourceLoader.getOSPCache();
-		File[] hosts = cache == null ? new File[0] : cache.listFiles(ResourceLoader.OSP_CACHE_FILTER);
+		File[] hosts = (cache == null ? new File[0] : cache.listFiles(ResourceLoader.OSP_CACHE_FILTER));
 		clearCacheButton.setEnabled(hosts.length > 0);
 
 		if (hosts.length == 0) {
