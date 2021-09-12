@@ -371,6 +371,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
+					if (finalDatasetToolClass == null)
+						return;
 					Method m = finalDatasetToolClass.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
 					Tool tool = (Tool) m.invoke(null, (Object[]) null);
 					tool.send(new LocalJob(defaultDrawingPanel), reply);

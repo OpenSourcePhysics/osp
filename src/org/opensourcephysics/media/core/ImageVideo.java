@@ -132,7 +132,10 @@ public class ImageVideo extends VideoAdapter {
 	public ImageVideo(ImageVideo video) {
 		readOnly = false;
 		BufferedImage[] images = video.images;
-		if ((images != null && images.length > 0 && images[0] != null)) {
+		if (images == null)
+			return;
+		// BH 2021.09.11 was on images == null
+		if (images.length > 0 && images[0] != null) {
 			insert(images, 0, null);
 		}
 		rawImage = images[0];
@@ -815,7 +818,7 @@ public class ImageVideo extends VideoAdapter {
 			}
 			// pre-2007 code
 			boolean[] sequences = (boolean[]) control.getObject("sequences"); //$NON-NLS-1$
-			if (sequences != null) {
+			if (sequences != null && paths != null) {
 				try {
 					ImageVideo vid = new ImageVideo(paths[0], null, sequences[0]);
 					for (int i = 1; i < paths.length; i++) {
@@ -824,11 +827,11 @@ public class ImageVideo extends VideoAdapter {
 					return vid;
 				} catch (Exception ex) {
 					ex.printStackTrace();
-					return null;
 				}
+				return null;
 			}
 			// 2007+ code
-			if (paths.length == 0) {
+			if (paths == null || paths.length == 0) {
 				return null;
 			}
 			ImageVideo vid = null;

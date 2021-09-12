@@ -550,14 +550,14 @@ public class LibraryBrowser extends JPanel {
 		LibraryTreePanel selected = getSelectedTreePanel();
 		if (selected != null)
 			selected.refreshEntryFields();
-		String recentCollectionPath = OSPRuntime.isJS? null:
-			LibraryBrowser.getOSPPath()+LibraryBrowser.RECENT_COLLECTION_NAME;
+		String recentCollectionPath = (OSPRuntime.isJS ? null
+				: LibraryBrowser.getOSPPath() + LibraryBrowser.RECENT_COLLECTION_NAME);
 		for (int i = 0; i < tabbedPane.getTabCount(); i++) {
 			LibraryTreePanel treePanel = getTreePanel(i);
 			if (!treePanel.saveChanges(getTabTitle(i)))
 				return false; // true unless the user cancels
-			if (!OSPRuntime.isJS && recentCollectionPath.equals(treePanel.rootResource.collectionPath)) {
-	  		treePanel.save();
+			if (recentCollectionPath != null && recentCollectionPath.equals(treePanel.rootResource.collectionPath)) {
+				treePanel.save();
 			}
 		}
 		// determine which open tabs to save
@@ -1024,7 +1024,7 @@ public class LibraryBrowser extends JPanel {
 		// insert unmatched HTML files at top of the collection
 		int i = 0;
 		for (File html : htmlFiles) {
-			if (matchedNames.contains(html) || !filter.accept(html))
+			if (matchedNames.contains(html) || filter != null && !filter.accept(html))
 				continue;
 			String fileName = html.getName();
 			LibraryResource record = new LibraryResource(fileName);
@@ -2340,11 +2340,9 @@ public class LibraryBrowser extends JPanel {
 		if (isSearchMapLoaded)
 			return;
 		isSearchMapLoaded = true;
-		
-		List<File> temp = null;
-		if (!OSPRuntime.isJS)
-			temp = new ArrayList<File>();
-		
+
+		List<File> temp = (OSPRuntime.isJS ? null : new ArrayList<File>());
+
 		if (searchPathMap == null)
 			searchPathMap = new TreeMap<String, String>();
 		searchPathMap.clear();
@@ -2352,16 +2350,16 @@ public class LibraryBrowser extends JPanel {
 		for (String path : paths) {
 			if (path.contains("EJS") || !ResourceLoader.isHTTP(path))
 				continue;
-			
+
 			String name = library.getNameMap().get(path);
 			if (LibraryComPADRE.isComPADREPath(path))
-				name = "ComPADRE "+name;
-  		searchPathMap.put(name, path);
-  		if (!OSPRuntime.isJS)
-  			temp.add(ResourceLoader.getSearchCacheFile(path));
+				name = "ComPADRE " + name;
+			searchPathMap.put(name, path);
+			if (temp != null)
+				temp.add(ResourceLoader.getSearchCacheFile(path));
 		}
-		
-		if (!OSPRuntime.isJS) {
+
+		if (temp != null) {
 			// in Java, add local cached files if not included above
 			List<File> files = ResourceLoader.getSearchFileList();
 			for (int i = 0; i < files.size(); i++) {
@@ -2371,15 +2369,15 @@ public class LibraryBrowser extends JPanel {
 					String name = control.getString("name");
 					if (name != null) {
 						String realPath = control.getString("real_path");
-			  		searchPathMap.put(name, realPath == null? next.getPath(): realPath);
+						searchPathMap.put(name, realPath == null ? next.getPath() : realPath);
 					}
 				}
 			}
 		}
-		
-		searchTargetPaths	= new ArrayList<String>();
-		searchTargetNames	= new ArrayList<String>();
-		for (String name: searchPathMap.keySet()) {
+
+		searchTargetPaths = new ArrayList<String>();
+		searchTargetNames = new ArrayList<String>();
+		for (String name : searchPathMap.keySet()) {
 			String path = searchPathMap.get(name);
 			searchTargetNames.add(name);
 			searchTargetPaths.add(path);
@@ -2857,6 +2855,8 @@ public class LibraryBrowser extends JPanel {
 			if (collection != null)
 				proposed = collection.getName();
 		}
+		if (proposed == null)
+			return;
 		if (proposed.equals("")) { //$NON-NLS-1$
 			proposed = XML.getName(path); // filename
 		}
@@ -3606,7 +3606,7 @@ public class LibraryBrowser extends JPanel {
 	}
 
 	public static void clearCache() {
-		ResourceLoader.clearOSPCache(ResourceLoader.getOSPCache(), false);
+		ResourceLoader.clearOSPCache(null, false);
 		LibraryTreePanel.clearMaps();
 	}
 

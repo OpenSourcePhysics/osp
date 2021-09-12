@@ -91,6 +91,9 @@ public class ResourceLoader {
 			// ensures that OSPRuntime has initialized Assets
 		}
 	}
+
+	public static File tempDirFile = new File(OSPRuntime.tempDir);
+	
 	private final static String encoding = "UTF-8"; //$NON-NLS-1$
 	final static Charset defaultCharset = Charset.forName(encoding);
 
@@ -733,6 +736,11 @@ public class ResourceLoader {
 		return (res == null) ? null : res.getAudioClip();
 	}
 
+	public static void setOSPCache(String cachePath) {
+		setOSPCache(cachePath == null  || cachePath.trim().equals("")
+				? getDefaultOSPCache() : new File(cachePath));
+	}
+
 	/**
 	 * Sets the directory for cached files.
 	 * 
@@ -790,31 +798,34 @@ public class ResourceLoader {
 		return ospCache;
 	}
 
+	private static File defaultOSPCache;
+
 	/**
 	 * Gets the default directory for cached files.
 	 * 
-	 * @return the default OSP cache
+	 * @return the default OSP cache or null, conceivably
 	 */
 	public static File getDefaultOSPCache() {
-		String cacheDir = OSPRuntime.tempDir;
-		String userHome = OSPRuntime.getUserHome();
-		if (!OSPRuntime.isJS && userHome != null) {
-			userHome += "/"; //$NON-NLS-1$
-			if (OSPRuntime.isMac()) {
-				cacheDir = userHome + OSX_DEFAULT_CACHE;
-			} else if (OSPRuntime.isLinux()) {
-				cacheDir = userHome + LINUX_DEFAULT_CACHE;
-			} else if (OSPRuntime.isWindows()) {
-				String os = System.getProperty("os.name", "").toLowerCase(); //$NON-NLS-1$ //$NON-NLS-2$
-				if (os.indexOf("xp") > -1) //$NON-NLS-1$
-					cacheDir = userHome + WIN_XP_DEFAULT_CACHE;
-				else
-					cacheDir = userHome + WINDOWS_DEFAULT_CACHE;
+		if (defaultOSPCache == null) {
+			String cacheDir = null;
+			String userHome = (OSPRuntime.isJS ? null : OSPRuntime.getUserHome());
+			if (userHome != null) {
+				userHome += "/"; //$NON-NLS-1$
+				if (OSPRuntime.isMac()) {
+					cacheDir = userHome + OSX_DEFAULT_CACHE;
+				} else if (OSPRuntime.isLinux()) {
+					cacheDir = userHome + LINUX_DEFAULT_CACHE;
+				} else if (OSPRuntime.isWindows()) {
+					String os = System.getProperty("os.name", "").toLowerCase(); //$NON-NLS-1$ //$NON-NLS-2$
+					if (os.indexOf("xp") > -1) //$NON-NLS-1$
+						cacheDir = userHome + WIN_XP_DEFAULT_CACHE;
+					else
+						cacheDir = userHome + WINDOWS_DEFAULT_CACHE;
+				}
 			}
+			defaultOSPCache = new File(cacheDir == null ? OSPRuntime.tempDir : cacheDir);
 		}
-		if (cacheDir == null)
-			return null;
-		return new File(cacheDir);
+		return defaultOSPCache;
 	}
 
 	/**
@@ -824,7 +835,7 @@ public class ResourceLoader {
 	 * @return the chosen file
 	 */
 	public static File chooseOSPCache(Component parent) {
-		JFileChooser chooser = new JFileChooser(getOSPCache());
+		JFileChooser chooser = new JFileChooser(ospCache);
 		if (OSPRuntime.isMac())
 			chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 		else
@@ -861,14 +872,10 @@ public class ResourceLoader {
 	 * @param path the path
 	 * @return true if path is in the OSP cache
 	 */
-	public static boolean isOSPCachePath(String path) {
-		File cacheDir = getOSPCache();
-		if (cacheDir == null)
-			cacheDir = new File(OSPRuntime.tempDir);
-		String cachePath = XML.forwardSlash(cacheDir.getAbsolutePath()) + "/osp-"; //$NON-NLS-1$
-		if (XML.forwardSlash(path).contains(cachePath))
-			return true;
-		return false;
+	private static boolean isOSPCachePath(String path) {
+		File dir = (ospCache == null ? tempDirFile : ospCache);
+		String cachePath = XML.forwardSlash(dir.getAbsolutePath()) + "/osp-"; //$NON-NLS-1$
+		return (XML.forwardSlash(path).contains(cachePath));
 	}
 
 	/**
@@ -881,6 +888,7 @@ public class ResourceLoader {
 		return getOSPCacheFile(urlPath, null);
 	}
 
+	
 	/**
 	 * Gets the cache file associated with a URL path.
 	 * 
@@ -890,12 +898,13 @@ public class ResourceLoader {
 	 */
 	public static File getOSPCacheFile(String urlPath, String name) {
 		File cacheDir = getOSPCache();
-		return getCacheFile(cacheDir == null ? new File(OSPRuntime.tempDir) : cacheDir, urlPath, name);
+		return getCacheFile(cacheDir == null ? tempDirFile : cacheDir, urlPath, name);
 	}
 
 
 	public static boolean isSearchPath(String path) {
-		return XML.forwardSlash(path).startsWith(XML.forwardSlash(getSearchCache().getPath()));
+		File spath = getSearchCache();
+		return (spath != null && XML.forwardSlash(path).startsWith(XML.forwardSlash(spath.getPath())));
 	}
 
 	public static List<File> getSearchFileList() {
@@ -908,13 +917,8 @@ public class ResourceLoader {
 	 * @return the search cache
 	 */
 	private static File getSearchCache() {
-		if (OSPRuntime.isJS) 
-			return new File("/TEMP/Search");
 		File ospCache = getOSPCache();
-		if (ospCache == null) {
-			ospCache = getDefaultOSPCache();
-		}
-		if (ospCache == null)
+		if (ospCache == null && (ospCache = getDefaultOSPCache()) == null)
 			return null;
 		File searchCache = new File(ospCache, SEARCH_CACHE_SUBDIRECTORY);
 		searchCache.mkdirs();
@@ -1257,6 +1261,8 @@ public class ResourceLoader {
 	 * @return true if successfully cleared
 	 */
 	public static boolean clearOSPCache(File cache, boolean clearSearchCache) {
+		if (cache == null)
+			cache = ospCache;
 		if (cache == null || !cache.canWrite())
 			return false;
 		boolean success = true;
@@ -1326,6 +1332,8 @@ public class ResourceLoader {
 	 */
 	public static List<File> getFiles(File directory, FileFilter filter) {
 		List<File> results = new ArrayList<File>();
+		if (directory == null)
+			return results;
 		if (directory.isFile()) {
 			results.add(directory);
 			return results;
@@ -1507,14 +1515,14 @@ public class ResourceLoader {
 	 * warn of possible overwrites.
 	 * 
 	 * @param zipPath         the (url) path to the zip file
-	 * @param targetDir       target directory to save the extracted files
-	 * @param alwaysOverwrite true to overwrite existing files, if any
 	 * @return the Set of extracted files
 	 */
 	@SuppressWarnings("deprecation")
-	public static Set<File> unzip(String zipPath, File targetDir, boolean alwaysOverwrite) {
+	public static Set<File> unzip(String zipPath) {
+		File targetDir = tempDirFile;
+		boolean alwaysOverwrite = true;
 		if (targetDir == null)
-			targetDir = new File(OSPRuntime.tempDir); // $NON-NLS-1$
+			targetDir = tempDirFile;
 		OSPLog.finer("unzipping " + zipPath + " to " + targetDir); //$NON-NLS-1$ //$NON-NLS-2$
 		try {
 			URL url = getURLWithCachedBytes(zipPath);
@@ -2056,62 +2064,22 @@ public class ResourceLoader {
 			return null;
 		}
 		Resource res = null;
-		// following added by Doug Brown 2009/11/14
-//		if (OSPRuntime.isApplet) {
-//			try { // let applet class try to get it first
-//				URL url = getAppletResourceURL(path);
-//				res = createResource(url);
-//			} catch (Exception ex) {
-//				/** empty block */
-//			}
-//		} // end code added by Doug Brown 2009/11/14
-		if (res == null) {
-			// if path includes protocol, use it directly
-			if (path.indexOf(":/") > -1) { //$NON-NLS-1$
-				try {
+		// if path includes protocol, use it directly
+		if (path.indexOf(":/") > -1) { //$NON-NLS-1$
+			try {
 //          URL url = new URL(path); // changed to use URI path 2011/09/11 DB
-					URL url = getURLWithCachedBytes(path);
-					res = createResource(url);
-				} catch (Exception ex) {
-					/** empty block */
-				}
-//			} else if (OSPRuntime.isApplet && !path.startsWith("/")) { //$NON-NLS-1$
-//				// else if applet mode and relative path, search document and code base
-//				// first check document base
-//				URL docBase = OSPRuntime.applet.getDocumentBase();
-//				try {
-//					// following added by Doug Brown 2009/11/14
-//					String basePath = docBase.toString();
-//					// strip query, if any, from document base
-//					int n = basePath.indexOf("?"); //$NON-NLS-1$
-//					if (n > -1) {
-//						docBase = new URL(basePath.substring(0, n));
-//					}
-//					// end code added by Doug Brown 2009/11/14
-//					URL url = new URL(docBase, path);
-//					res = createResource(url);
-//				} catch (Exception ex) {
-//					/** empty block */
-//				}
-//				if (res == null) {
-//					URL codeBase = OSPRuntime.applet.getCodeBase();
-//					String s = XML.getDirectoryPath(docBase.toExternalForm()) + "/"; //$NON-NLS-1$
-//					if (!codeBase.toExternalForm().equals(s)) {
-//						try {
-//							URL url = new URL(codeBase, path);
-//							res = createResource(url);
-//						} catch (Exception ex) {
-//							/** empty block */
-//						}
-//					}
-//				}
+				URL url = getURLWithCachedBytes(path);
+				res = createResource(url);
+			} catch (Exception ex) {
+				/** empty block */
 			}
 		}
 		if (res != null) {
 			if (path.endsWith(".xset")) { //$NON-NLS-1$
 				xsetZipLoader = null;
 			}
-			//OSPLog.finer("loaded URL resource " + XML.forwardSlash(res.getAbsolutePath())); //$NON-NLS-1$
+			// OSPLog.finer("loaded URL resource " +
+			// XML.forwardSlash(res.getAbsolutePath())); //$NON-NLS-1$
 		}
 		return res;
 	}

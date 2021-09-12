@@ -104,7 +104,7 @@ public class FontSizer extends OSPRuntime.Supported {
 			Font newFont = (f == null ? null : getResizedFont(f, level));
 			// DB need to look at all menu components to see if any are unsized
 			// since refreshing menu may add new components
-			if (f != null && newFont != f) {
+			if (newFont != null && newFont != f && !newFont.equals(f)) {// BH 2021.09.11 missing .equals here
 				for (int i = 0; i < c.getMenuComponentCount(); i++) {
 					if (newFont.getSize() != c.getMenuComponent(i).getFont().getSize()) {
 						setFonts(c, level);
@@ -121,7 +121,7 @@ public class FontSizer extends OSPRuntime.Supported {
 	public static int setFonts(Object[] objectsToSize) {
 		Font f = ((Component) objectsToSize[0]).getFont();
 		Font newFont = (f == null ? null : getResizedFont(f, level));
-		if (f != null && newFont != f && !newFont.equals(f))
+		if (newFont != null && newFont != f && !newFont.equals(f))
 			setFonts(objectsToSize, level);
 		return level;
 	}
@@ -131,7 +131,7 @@ public class FontSizer extends OSPRuntime.Supported {
 		if (c == null) return 12; //TEST_BH
 		Font f = c.getFont();
 		Font newFont = (f == null ? null : getResizedFont(f, level));
-		if (f != null && newFont != f && !newFont.equals(f))
+		if (newFont != null && newFont != f && !newFont.equals(f))
 			setFonts(c, level);
 		return level;
 	}
@@ -139,7 +139,7 @@ public class FontSizer extends OSPRuntime.Supported {
 	public static int setFont(Component c) {
 		Font f = c.getFont();
 		Font newFont = (f == null ? null : getResizedFont(f, level));
-		if (f != null && newFont != f && !newFont.equals(f))
+		if (newFont != null && newFont != f && !newFont.equals(f))
 			c.setFont(newFont);
 		return level;
 	}
@@ -147,7 +147,7 @@ public class FontSizer extends OSPRuntime.Supported {
 	public static int setFont(AbstractButton button) {
 		Font f = button.getFont();
 		Font newFont = (f == null ? null : getResizedFont(f, level));
-		if (f != null && newFont != f && !newFont.equals(f)) {
+		if (newFont != null && newFont != f && !newFont.equals(f)) {
 			button.setFont(newFont);
 		}
 		return level;

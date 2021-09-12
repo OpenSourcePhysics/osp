@@ -155,7 +155,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 
 	private void setImageSize(Video video, boolean isConstructor) {
 		Dimension d;
-		if ((video != null) && ((d = video.getImageSize()).width > 0)) {
+		if (video != null && (d = video.getImageSize()).width > 0) {
 			setImageWidth(d.width);
 			setImageHeight(d.height);
 		} else {
@@ -163,7 +163,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			setImageHeight(defaultHeight);
 		}
 		if (!isConstructor)
-			coords.setAllOriginsXY(0,0);
+			coords.setAllOriginsXY(0, 0);
 		if (isConstructor) {
 			int w = (int) getImageWidth();
 			int h = (int) getImageHeight();
@@ -171,7 +171,8 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			coords.setAllOriginsXY(imageWidth / 2, imageHeight / 2);
 		} else {
 			coords.setAllOriginsXY(imageWidth / 2, imageHeight / 2);
-			video.setProperty("measure", "invalidate");
+			if (video != null)
+				video.setProperty("measure", "invalidate");
 		}
 	}
 

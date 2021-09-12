@@ -675,32 +675,34 @@ public void setBackground(Color color){ // Added by Paco
     createGUI();
   }
 
-  // The following methods were added to implement the Data interface for double[][] arrays.
+	// The following methods were added to implement the Data interface for
+	// double[][] arrays.
 
-  /**
-   * Gets column names from Table Model.
-   * Implementation of Data interface.
-   */
-  @Override
-public String[] getColumnNames() {
-    double[][] data = getData2D();
-    if(data==null) {
-      return null; // no data
-    }
-    int n = data.length;
-    if((colNames==null)||(n!=colNames.length)) { // every array columns should have a name
-      colNames = new String[n];
-    }
-    String[] modelNames = tables[0].tableModel.columnNames;
-    int stop = (modelNames==null) ? 0 : Math.min(n, modelNames.length-1);
-    for(int i = 0; i<stop; i++) {    // assign model names to Data columns
-      colNames[i] = modelNames[i+1]; // skip zero column name because it is the row index
-    }
-    for(int i = stop; i<n; i++) { // assign default column names
-      colNames[i] = "C"+(i+1);    //$NON-NLS-1$
-    }
-    return colNames;
-  }
+	/**
+	 * Gets column names from Table Model. Implementation of Data interface.
+	 */
+	@Override
+	public String[] getColumnNames() {
+		double[][] data = getData2D();
+		if (data == null) {
+			return null; // no data
+		}
+		int n = data.length;
+		if ((colNames == null) || (n != colNames.length)) { // every array columns should have a name
+			colNames = new String[n];
+		}
+		String[] modelNames = tables[0].tableModel.columnNames;
+		if (modelNames != null) {
+			int stop = Math.min(n, modelNames.length - 1);
+			for (int i = 0; i < stop; i++) { // assign model names to Data columns
+				colNames[i] = modelNames[i + 1]; // skip zero column name because it is the row index
+			}
+			for (int i = stop; i < n; i++) { // assign default column names
+				colNames[i] = "C" + (i + 1); //$NON-NLS-1$
+			}
+		}
+		return colNames;
+	}
 
   /**
    * Gets double[][] data from the Table Model and transposes this array if necessary.

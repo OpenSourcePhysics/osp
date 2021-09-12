@@ -128,7 +128,9 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	 */
 	@Override
 	public void draw(DrawingPanel panel, Graphics g) {
-		if (rawImage == null || !visible) {
+		if (rawImage == null || !visible 
+				|| filterStack == null  // BH 2021.09.11 disposed
+				) {
 			return;
 		}
 		int xoffset = 0, yoffset = 0;
@@ -153,6 +155,7 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 				at = coords.getToWorldTransform(frameNumber);
 				g2.transform(at);
 			}
+			g = g2;
 		} else { // center image in panel if not measured
 			double centerX = (panel.getXMax() + panel.getXMin()) / 2;
 			double centerY = (panel.getYMax() + panel.getYMin()) / 2;
@@ -163,11 +166,7 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 //		OSPLog.debug(Performance.timeCheckStr("Video draw video " + ++ntest2, Performance.TIME_MARK));
 		// draw the video or filtered image
 		//System.out.println("Video g2 transform " + g2.getTransform());
-		if (filterStack.isEmpty() || !filterStack.isEnabled()) {
-			g2.drawImage(rawImage, xoffset, yoffset, panel);
-		} else {
-			g2.drawImage(getImage(), xoffset, yoffset, panel);
-		}
+		g.drawImage(filterStack.isEmpty() || !filterStack.isEnabled() ? rawImage : getImage(), xoffset, yoffset, panel);
 		if (g2 != null)
 			g2.dispose();
 //		OSPLog.debug(Performance.timeCheckStr("Video draw video done", Performance.TIME_MARK));

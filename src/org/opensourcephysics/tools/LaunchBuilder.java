@@ -1099,8 +1099,9 @@ public class LaunchBuilder extends Launcher {
 			descriptionPane.setBackground(Color.white);
 			int n = ((Integer) displaySpinner.getValue()).intValue();
 			LaunchNode.DisplayTab displayTab = node.getDisplayTab(n);
-			String urlPath = (displayTab != null ? displayTab.getPath() : null);
-			boolean badURL = (urlPath != null && displayTab.url == null && displayTab.modelClass == null);
+			String urlPath = (displayTab == null ? null : displayTab.getPath());
+			boolean badURL = (urlPath != null && displayTab != null && displayTab.url == null
+					&& displayTab.modelClass == null);
 			pathField.setText(urlPath);
 			pathField.setBackground(badURL ? RED : Color.white);
 			displaySpinnerModel.setMaximum(Integer.valueOf(node.getDisplayTabCount()));
@@ -1204,12 +1205,12 @@ public class LaunchBuilder extends Launcher {
 			clearLogCheckBox.setVisible(node.isShowLog());
 			// refresh the level dropdown if visible
 			if (levelDropDown.isVisible()) {
-				boolean useAll = ((parent == null) || !parent.isShowLog());
+				boolean useAll = (parent == null || !parent.isShowLog());
 				// disable during refresh to prevent triggering events
 				levelDropDown.setEnabled(false);
 				levelDropDown.removeAllItems();
 				for (int i = 0; i < OSPLog.levels.length; i++) {
-					if (useAll || (OSPLog.levels[i].intValue() <= parent.getLogLevel().intValue())) {
+					if (useAll || parent != null && (OSPLog.levels[i].intValue() <= parent.getLogLevel().intValue())) {
 						levelDropDown.addItem(OSPLog.levels[i]);
 					}
 				}

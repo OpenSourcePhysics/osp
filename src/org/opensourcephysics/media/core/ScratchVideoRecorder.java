@@ -96,10 +96,6 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 	protected String chosenExtension;
 	protected String baseDir;
 
-	static {
-		tempDirectory = OSPRuntime.tempDir;
-	}
-
 	/**
 	 * Constructs a ScratchVideoRecorder for the specified video type.
 	 *
@@ -432,9 +428,7 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 				fileName += "-" + scratchNumber++; //$NON-NLS-1$
 			}
 			reset();
-			fileName += getScratchExtension();
-			if (tempDirectory != null)
-				fileName = tempDirectory + "/" + fileName; //$NON-NLS-1$
+			fileName = OSPRuntime.tempDir + "/" + fileName + getScratchExtension(); //$NON-NLS-1$
 			scratchFile = new File(fileName);
 			hasContent = false;
 			canRecord = false;

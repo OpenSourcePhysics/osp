@@ -2577,7 +2577,7 @@ public class DataTable extends JTable {
 			}
 			buf.append(XML.NEW_LINE); // new line after each row
 		}
-		if (restoreRows != null) {
+		if (restoreRows != null && restoreColumns != null) {
 			// restore previous selection state
 			clearSelection();
 			for (int row : restoreRows)

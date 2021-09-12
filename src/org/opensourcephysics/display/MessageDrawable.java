@@ -235,7 +235,9 @@ public class MessageDrawable implements Drawable {
 			FontSizer.setFont(l);
 		}
 		if (msg != null) {
-			l.setText(msg);
+			if (l != null) {
+				l.setText(msg);
+			}
 			return l;
 		} 
 		if (l != null) {

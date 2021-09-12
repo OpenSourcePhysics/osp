@@ -741,6 +741,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 		final Class<?> tool = exportTool;
 		exportItem.addActionListener((e) -> {
 				try {
+					if (tool == null)
+						return;
 					Method m = tool.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
 					Tool t = (Tool) m.invoke(null, (Object[]) null);
 					t.send(new LocalJob(drawingPanel), reply);
@@ -943,6 +945,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
+					if (finalDatasetToolClass == null)
+						return;
 					Method m = finalDatasetToolClass.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
 					Tool tool = (Tool) m.invoke(null, (Object[]) null);
 					tool.send(new LocalJob(drawingPanel), reply);

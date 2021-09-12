@@ -145,38 +145,44 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
 	protected String action=null;
 	private ComponentAdapter adapter=null;
 	
-  /**
-   * Sets the window resize action for JavaScript implementation. 
-   * 
-   * @j2sAlias setResizeAction
-   * 
-   */
-		public void setResizeAction(String o) {
-			if(o==null && adapter!=null){ // remove existing adapter if o=null
-				this.removeComponentListener(adapter);
-				action = o;
-				return;
+	/**
+	 * Sets the window resize action for JavaScript implementation.
+	 * 
+	 * @j2sAlias setResizeAction
+	 * 
+	 */
+	public void setResizeAction(String o) {
+		if (o == null) { // remove existing adapter if o=null
+			if (adapter != null) {
+				removeComponentListener(adapter);
 			}
-			if(o.equals(action)) return;  // no change in action
-			this.removeComponentListener(adapter); //action changed so remove old adapter
-			action =o;
-			this.addComponentListener(adapter=new ComponentAdapter() {
-				@Override
-				public void componentResized(ComponentEvent e) {
-					// This is called when the user resized the main frame
-					//  changeSize(); // direct call works
-					/**
-					* @j2sNative
-					*
-					* // find object
-					* var fn = window[o];
-					* // is object a function?
-					* if (typeof fn === "function") fn();
-					*/
-					//System.out.println("componentResized action="+action);  // for debugging
-				}
-			});
+			action = o;
+			return;
 		}
+		// BH 2021.09.11 could fail if o == null and adapter == null
+		if (o.equals(action))
+			return; // no change in action
+		removeComponentListener(adapter); // action changed so remove old adapter
+		action = o;
+		addComponentListener(adapter = new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				// This is called when the user resized the main frame
+				// changeSize(); // direct call works
+				/**
+				 * @j2sNative
+				 *
+				 * 			// find object
+				 * 
+				 *            var fn = window[o];
+				 * 
+				 *            // is object a function?
+				 * 
+				 *            if (typeof fn === "function") fn();
+				 */
+			}
+		});
+	}
 
 	void disposeChildWindows() {
 		// if(OSPRuntime.applet!=null) return; // applets do not have a main window so

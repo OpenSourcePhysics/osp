@@ -549,7 +549,7 @@ public class TemplateMatcher {
 		double dl = 0;
 
 		// if match is not exact, fit a Gaussian and find peak
-		if (!Double.isInfinite(peakHeight) && matchIndex > 0 && matchIndex < searchPts.length - 1) {
+		if (matchPt != null && !Double.isInfinite(peakHeight) && matchIndex > 0 && matchIndex < searchPts.length - 1) {
 			// fill data arrays
 			int[] pt = searchPts[matchIndex - 1];
 			double diff = diffs[matchIndex - 1];
@@ -870,7 +870,7 @@ public class TemplateMatcher {
 		int i = -1;
 		double[] pxy = null;
 		for (double[] next : intersections.values()) {
-			if (i >= 0) {
+			if (pxy != null) {
 				pts[i][0] = (int) ((pxy[0] + next[0]) / 2) - sx;
 				pts[i][1] = (int) ((pxy[1] + next[1]) / 2) - sy;
 			}

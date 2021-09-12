@@ -159,50 +159,48 @@ public double[] getImCoef() {
     return imcoef;
   }
 
-  /**
-   * Sets the coefficients.
-   *
-   * @param re double[]
-   * @param im double[]
-   * @return boolean
-   */
-  @Override
-public boolean setCoef(double[] re, double[] im) {
-    if (re != null && im == null)
-      im = new double[re.length];
-    if (im != null && re == null)
-      re = new double[im.length];
-    if (re == null && im == null) {
-      re = new double[1];
-      im = new double[1];
-    }
-    if (re.length < im.length) {
-      double[] temp = re;
-      re = new double[im.length];
-      System.arraycopy(temp, 0, re, 0, temp.length);
-    }
-    if (im.length < re.length) {
-      double[] temp = im;
-      im = new double[re.length];
-      System.arraycopy(temp, 0, im, 0, temp.length);
-    }
-    int n=re.length;
-    int numpts=x.length;
-    recoef= new double[n];
-    imcoef= new double[n];
-    System.arraycopy(re,0,recoef,0,n);
-    System.arraycopy(im,0,imcoef,0,n);
-    eigenstates= new double[n][numpts];
-    for(int i=0; i<n; i++){
-      double[] stateArray = eigenstates[i];
-      double kx=0, delta=Math.PI*(i+1)/(x.length-1);
-      for(int j=0; j<numpts; j++){
-        stateArray[j]=Math.sqrt(2.0/L)*Math.sin(kx);
-        kx+=delta;  // increment the phase by delta
-      }
-    }
-    return true;
-  }
+	/**
+	 * Sets the coefficients.
+	 *
+	 * @param re double[]
+	 * @param im double[]
+	 * @return boolean
+	 */
+	@Override
+	public boolean setCoef(double[] re, double[] im) {
+		if (re == null) {
+			re = (im == null ? new double[1] : new double[im.length]);
+		}
+		if (im == null) {
+			im = new double[re.length];
+		}
+		if (re.length < im.length) {
+			double[] temp = re;
+			re = new double[im.length];
+			System.arraycopy(temp, 0, re, 0, temp.length);
+		}
+		if (im.length < re.length) {
+			double[] temp = im;
+			im = new double[re.length];
+			System.arraycopy(temp, 0, im, 0, temp.length);
+		}
+		int n = re.length;
+		int numpts = x.length;
+		recoef = new double[n];
+		imcoef = new double[n];
+		System.arraycopy(re, 0, recoef, 0, n);
+		System.arraycopy(im, 0, imcoef, 0, n);
+		eigenstates = new double[n][numpts];
+		for (int i = 0; i < n; i++) {
+			double[] stateArray = eigenstates[i];
+			double kx = 0, delta = Math.PI * (i + 1) / (x.length - 1);
+			for (int j = 0; j < numpts; j++) {
+				stateArray[j] = Math.sqrt(2.0 / L) * Math.sin(kx);
+				kx += delta; // increment the phase by delta
+			}
+		}
+		return true;
+	}
 
   /**
    * Gets the energy eigenvalue for the i-th eigenstate.

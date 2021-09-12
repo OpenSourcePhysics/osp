@@ -272,7 +272,7 @@ public class SnapshotTool implements Tool {
 			result = false;
 		}
 		// Undo possible resizing
-		if (componentResized != null) {
+		if (componentResized != null && originalSize != null) {
 			componentResized.setSize(originalSize.width, originalSize.height);
 			componentResized.validate();
 		}

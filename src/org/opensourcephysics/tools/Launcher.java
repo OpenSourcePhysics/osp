@@ -2418,7 +2418,7 @@ public class Launcher {
 			Object[] undoData = new Object[] { null, undoPath, undoPage, prev };
 			Object[] redoData = null;
 			// check to see if link is an anchor in same page
-			Object[] nodeData = (prev != null && prev.getPath().equals(url.getPath()) ? null : getNodeAndPage(url));
+			Object[] nodeData = (prev.getPath().equals(url.getPath()) ? null : getNodeAndPage(url));
 			if (nodeData != null) {
 				undoPath = (String) nodeData[0];
 				undoPage = ((Integer) nodeData[1]).intValue();

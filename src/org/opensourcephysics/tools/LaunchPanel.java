@@ -159,13 +159,12 @@ public class LaunchPanel extends JPanel {
 				htmlData.url = url;
 			}
 		}
-		String scrollRef = (node0 == node && url != null
-				&& prevURL != null && url.getPath().equals(prevURL.getPath()) ? 
-						"#"
+		String scrollRef = (node0 == node && url != null && prevURL != null && url.getPath().equals(prevURL.getPath())
+				? "#"
 				: null);
 		if (scrollRef == null) {
 			setTreeSelectionPath(node);
-		} else {
+		} else if (url != null) {
 			scrollRef = url.getRef();
 			// a null scrollRef means TOP -- scroll to [0,0], not to #xxx
 			Launcher.HTMLPane html = launcher.getHTMLTab(node.tabNumber);

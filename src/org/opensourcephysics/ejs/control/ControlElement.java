@@ -353,11 +353,8 @@ public abstract class ControlElement {
       // System.out.println ("property = "+_property+" = "+_value+" of the element "+this.toString()+"  is a constant!");
       if((constantValue instanceof StringValue)&&propertyIsTypeOf(_property, "TRANSLATABLE") // Apply Translator //$NON-NLS-1$
         &&(OSPRuntime.loadTranslatorTool)) {    // added by D Brown 2007-10-17
-        Object target = null;
-        if(myGroup!=null) {
-          target = myGroup.getTarget("_default_"); //$NON-NLS-1$
-        }
-        String translated = OSPRuntime.getTranslator().getProperty(target.getClass(), constantValue.getString());
+        Object target = (myGroup == null ? null :  myGroup.getTarget("_default_")); //$NON-NLS-1$
+        String translated = (target == null ? null : OSPRuntime.getTranslator().getProperty(target.getClass(), constantValue.getString()));
         if(!constantValue.getString().equals(translated)) {
           constantValue = new StringValue(translated);
         }

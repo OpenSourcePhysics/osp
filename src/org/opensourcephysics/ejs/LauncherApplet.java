@@ -8,7 +8,10 @@
 package org.opensourcephysics.ejs;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Frame;
 import java.lang.reflect.Constructor;
+import java.net.URL;
+
 import javax.swing.JApplet;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -159,36 +162,39 @@ public String[][] getParameterInfo() {
     return null;
   }
 
-  // ------ Common stuff
-  static Model createModel(String simClass, String _ownerName, java.awt.Frame _ownerFrame, java.net.URL _codebase) {
-    Model aModel = null;
-    if((_ownerName!=null)||(_codebase!=null)) {
-      try { // Instantiate a model with the given name and three parameters
-        Class<?> c = Class.forName(simClass);
-        Constructor<?>[] constructors = c.getConstructors();
-        for(int i = 0; i<constructors.length; i++) {
-          Class<?>[] parameters = constructors[i].getParameterTypes();
-          if((parameters.length==3)&&parameters[0].isAssignableFrom(_ownerName.getClass())&&parameters[1].isAssignableFrom(_ownerFrame.getClass())&&parameters[2].isAssignableFrom(_codebase.getClass())) {
-            aModel = (Model) constructors[i].newInstance(new Object[] {_ownerName, _ownerFrame, _codebase});
-            break;
-          }
-        }
-      } catch(Exception exc) {
-        exc.printStackTrace();
-        aModel = null;
-      }
-    }
-    if(aModel==null) {
-      try { // Now try a simple constructor
-        Class<?> aClass = Class.forName(simClass);
-        aModel = (Model) aClass.newInstance();
-      } catch(Exception exc) {
-        exc.printStackTrace();
-        return null;
-      }
-    }
-    return aModel;
-  }
+	// ------ Common stuff
+	static Model createModel(String simClass, String _ownerName, Frame _ownerFrame, URL _codebase) {
+		Model aModel = null;
+		if (_ownerName != null || _codebase != null) {
+			try { // Instantiate a model with the given name and three parameters
+				Class<?> c = Class.forName(simClass);
+				Constructor<?>[] constructors = c.getConstructors();
+				for (int i = 0; i < constructors.length; i++) {
+					Class<?>[] parameters = constructors[i].getParameterTypes();
+					if ((parameters.length == 3) && parameters[0].isAssignableFrom(String.class)
+							&& parameters[1].isAssignableFrom(_ownerFrame.getClass())
+							&& parameters[2].isAssignableFrom(URL.class)) {
+						aModel = (Model) constructors[i]
+								.newInstance(new Object[] { _ownerName, _ownerFrame, _codebase });
+						break;
+					}
+				}
+			} catch (Exception exc) {
+				exc.printStackTrace();
+				aModel = null;
+			}
+		}
+		if (aModel == null) {
+			try { // Now try a simple constructor
+				Class<?> aClass = Class.forName(simClass);
+				aModel = (Model) aClass.newInstance();
+			} catch (Exception exc) {
+				exc.printStackTrace();
+				return null;
+			}
+		}
+		return aModel;
+	}
 
   private void captureWindow(View _aView, String _aWindow) {
     if(_aWindow==null) {

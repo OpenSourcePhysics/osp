@@ -98,14 +98,12 @@ public boolean setCoef(double[] re, double[] im) {
         "The number of engenstates cannot be larger than "+MAX_STATES+". You are obviously a theorist who needs help.",
                                   "Input Error.",
                                       JOptionPane.ERROR_MESSAGE);
-    if (re != null && im == null)
-      im = new double[re.length];
-    if (im != null && re == null)
-      re = new double[im.length];
-    if (re == null && im == null) {
-      re = new double[1];
-      im = new double[1];
-    }
+	if (re == null) {
+		re = (im == null ? new double[1] : new double[im.length]);
+	}
+	if (im == null) {
+		im = new double[re.length];
+	}
     if(re.length<im.length){
       double[] temp = re;
       re=new double[im.length];
