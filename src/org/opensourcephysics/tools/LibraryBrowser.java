@@ -3116,12 +3116,18 @@ public class LibraryBrowser extends JPanel {
 				// but NOT when refreshing DL search data (non-null metadataLoaderListener)
 				if (library.openTabPaths != null && metadataLoaderListener == null) {
 					ArrayList<String> unopenedTabs = new ArrayList<String>();
+					ArrayList<String> openedTabs = new ArrayList<String>();
 					String[] paths = library.openTabPaths;
 					for (String path : paths) {
+						// is path already open?
+						if (openedTabs.contains(path)) {
+							continue;
+						}
 						// first check cache
 						File cachedFile = ResourceLoader.getSearchCacheFile(path); // 
 						if (cachedFile.exists()) {
 							addTabAndExecute(path, null, null);
+							openedTabs.add(path);
 						} else {
 							unopenedTabs.add(path);
 						}
