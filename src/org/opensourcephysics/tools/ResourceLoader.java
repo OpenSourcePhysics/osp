@@ -3257,58 +3257,42 @@ public class ResourceLoader {
 	public static boolean copyFile(File inFile, File outFile) {
 		return copyFile(inFile, outFile, 16384);
 	}
+
 	/**
 	 * Copies a source file to a target file.
 	 *
 	 * @param inFile  the source
 	 * @param outFile the target
-	 * @param bufLen buffer length
+	 * @param bufLen  buffer length
 	 * @return true if successfully copied
 	 */
 	public static boolean copyFile(File inFile, File outFile, int bufLen) {
-		if (OSPRuntime.isJS) {
-			inFile.exists(); // sets the bytes if not already set.
-			OSPRuntime.jsutil.setFileBytes(outFile,  OSPRuntime.jsutil.getBytes(inFile));
-			return true;
-		}
-		byte[] buffer = new byte[bufLen]; // 2^14
 		try {
-			InputStream in = new FileInputStream(inFile);
+			byte[] buffer;
 			OutputStream out = new FileOutputStream(outFile);
-			while (true) {
-				synchronized (buffer) {
-					int amountRead = in.read(buffer);
-					if (amountRead == -1) {
-						break;
+			if (OSPRuntime.isJS) {
+				inFile.exists(); // sets the bytes if not already set.
+				buffer = OSPRuntime.jsutil.getBytes(inFile);
+				out.write(buffer, 0, buffer.length);
+			} else {
+				buffer = new byte[bufLen]; // 2^14
+				InputStream in = new FileInputStream(inFile);
+				while (true) {
+					synchronized (buffer) {
+						int amountRead = in.read(buffer);
+						if (amountRead == -1) {
+							break;
+						}
+						out.write(buffer, 0, amountRead);
 					}
-					out.write(buffer, 0, amountRead);
 				}
+				in.close();
 			}
-			in.close();
 			out.close();
 		} catch (IOException ex) {
 			ex.printStackTrace();
 			return false;
 		}
-//
-//		byte[] buffer = new byte[100000];
-//		try {
-//			InputStream in = new FileInputStream(inFile);
-//			OutputStream out = new FileOutputStream(outFile);
-//			while (true) {
-//				synchronized (buffer) {
-//					int amountRead = in.read(buffer);
-//					if (amountRead == -1) {
-//						break;
-//					}
-//					out.write(buffer, 0, amountRead);
-//				}
-//			}
-//			in.close();
-//			out.close();
-//		} catch (IOException ex) {
-//			return false;
-//		}
 		outFile.setLastModified(inFile.lastModified());
 		return true;
 	}
