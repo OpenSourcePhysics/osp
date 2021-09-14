@@ -379,6 +379,7 @@ public class AnimatedGifEncoder {
       image = temp;
     }
     pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+    image.flush(); // required for SwingJS
   }
 
   /**
