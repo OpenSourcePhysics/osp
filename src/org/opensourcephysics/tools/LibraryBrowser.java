@@ -3120,7 +3120,8 @@ public class LibraryBrowser extends JPanel {
 					String[] paths = library.openTabPaths;
 					for (String path : paths) {
 						// is path already open?
-						if (openedTabs.contains(path)) {
+						int k = getTabIndexFromPath(path);
+						if (k > -1 || openedTabs.contains(path)) {
 							continue;
 						}
 						// first check cache
