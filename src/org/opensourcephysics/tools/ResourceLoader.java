@@ -2380,19 +2380,24 @@ public class ResourceLoader {
 	 * @return
 	 */
 	private static boolean streamExists(URL working) {
-		InputStream stream = null;
-		try {
-			stream = working.openStream(); 
+		try (InputStream stream = working.openStream()){
 			return (stream.read() > -1);
 		} catch (IOException e) {
 			return false;
-		} finally {
-			if (stream != null)
-				try {
-					stream.close();
-				} catch (IOException e) {
-				}
-		}
+		} 
+//		InputStream stream = null;
+//		try {
+//			stream = working.openStream(); 
+//			return (stream.read() > -1);
+//		} catch (IOException e) {
+//			return false;
+//		} finally {
+//			if (stream != null)
+//				try {
+//					stream.close();
+//				} catch (IOException e) {
+//				}
+//		}
 	}
 
 	private static Resource findResource(String path, Class<?> type, 
