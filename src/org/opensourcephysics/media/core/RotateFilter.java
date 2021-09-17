@@ -261,7 +261,7 @@ public class RotateFilter extends Filter {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					reverse = reverseCheckbox.isSelected();
-					firePropertyChange("rotate", null, null); //$NON-NLS-1$
+					RotateFilter.this.firePropertyChange("rotate", null, null); //$NON-NLS-1$
 				}
 			});
 			reversePanel.add(reverseCheckbox);
