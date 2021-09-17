@@ -250,9 +250,13 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	 * @param w the width
 	 */
 	public void setImageWidth(double w) {
-		// don't allow widths smaller than the video
+		// don't allow widths smaller than the video image
+		// NOTE video image may not be same size as raw video when filters applied
 		if (video != null) {
-			w = Math.max(w, video.getImageSize().width);
+      BufferedImage vidImage = video.getImage();
+      if(vidImage!=null) {
+        w = Math.max(w, vidImage.getWidth());
+      }
 		}
 		imageWidth = w;
 	}
@@ -272,9 +276,13 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	 * @param h the height
 	 */
 	public void setImageHeight(double h) {
-		// don't allow heights smaller than the video
+		// don't allow heights smaller than the video image
+		// NOTE video image may not be same size as raw video when filters applied
 		if (video != null) {
-			h = Math.max(h, video.getImageSize().height);
+      BufferedImage vidImage = video.getImage();
+      if(vidImage!=null) {
+        h = Math.max(h, vidImage.getHeight());
+      }
 		}
 		imageHeight = h;
 	}
