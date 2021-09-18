@@ -202,12 +202,6 @@ public class BrightnessFilter extends Filter {
 
 	@Override
 	public void dispose() {
-		if (source != null)
-			source.flush();
-		if (input != null)
-			input.flush();
-		if (output != null)
-			output.flush();
 		super.dispose();
 		inspector = null;
 	}

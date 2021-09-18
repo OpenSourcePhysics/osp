@@ -31,22 +31,27 @@
  */
 package org.opensourcephysics.media.core;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
-
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
 
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
-import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.ResourceLoader;
-
-import javajs.async.AsyncFileChooser;
 
 /**
  * This is a Filter that subtracts a baseline image from the source image.
@@ -56,13 +61,16 @@ import javajs.async.AsyncFileChooser;
  */
 public class BaselineFilter extends Filter {
 	// instance fields
-	private BufferedImage baseline;
+	private BufferedImage baseline, baselineCopy, thumbnail;
 
 	private int[] baselinePixels;
 	private Inspector inspector;
 	private String imagePath;
-	private JButton loadButton;
-	private JButton captureButton;
+	private JButton loadButton, captureButton, saveButton;
+	private JLabel imageLabel;
+	private JPanel contentPane;
+	private Border imageBorder, emptyBorder;
+	private JPanel nullBaselinePanel;
 
 	/**
 	 * Constructs a default BaselineFilter.
@@ -79,8 +87,31 @@ public class BaselineFilter extends Filter {
 			return;
 		}
 		setBaselineImage(vidPanel.getVideo().getImage());
+		imagePath = null;
 	}
 
+	/**
+	 * Saves the current baseline image.
+	 */
+	public void save() {
+		if (baseline == null) {
+			return;
+		}
+		VideoIO.getChooserFilesAsync("save image", (File[] f) -> {
+			if (f != null && f[0] != null && f[0].getParent() != null) {
+				String path = f[0].getPath();
+				if (!VideoIO.JPGFileFilter.accept(f[0])) {
+					path = XML.stripExtension(path) + ".png";
+				}
+				File file = VideoIO.writeImageFile(baselineCopy, path);
+				if (file != null) {
+					imagePath = file.getPath();
+				}
+			}
+			return null;
+		});
+	}
+	
 	/**
 	 * Loads a baseline image from the specified path.
 	 *
@@ -103,15 +134,13 @@ public class BaselineFilter extends Filter {
 	 * Loads an image with a file chooser.
 	 */
 	public void load() {
-		AsyncFileChooser chooser = OSPRuntime.getChooser();
-//		FontSizer.setFonts(chooser, FontSizer.getLevel());
-		chooser.showOpenDialog(null, new Runnable() {
-			@Override
-			public void run() {
-				File file = chooser.getSelectedFile();
-				load(file.getAbsolutePath());
+		VideoIO.getChooserFilesAsync("open image", (File[] f) -> {
+			if (f != null && f[0] != null && VideoIO.imageFileFilter.accept(f[0])) {
+				String path = f[0].getPath();
+				load(path);
 			}
-		}, null);
+			return null;
+		});
 	}
 
 	/**
@@ -121,9 +150,17 @@ public class BaselineFilter extends Filter {
 	 */
 	public void setBaselineImage(BufferedImage image) {
 		baseline = image;
+		baselineCopy = null;
 		if (image != null) {
 			int wi = image.getWidth();
 			int ht = image.getHeight();
+			
+			// create copy for saving
+			baselineCopy = new BufferedImage(wi, ht, baseline.getType());
+			Graphics2D g2 = baselineCopy.createGraphics();
+			g2.drawImage(baseline, 0, 0, null);
+			g2.dispose();
+			
 			if ((wi >= w) && (ht >= h)) {
 				getRaster(image).getDataElements(0, 0, w, h, baselinePixels);
 			} else {
@@ -135,7 +172,25 @@ public class BaselineFilter extends Filter {
 						JOptionPane.INFORMATION_MESSAGE);
 			}
 		}
-		firePropertyChange("baseline", null, null); //$NON-NLS-1$
+		// add thumbnail iamge of baseline to inspector if it exists
+		if (inspector != null) {
+			thumbnail = getThumbnailImage();
+			imageLabel.setIcon(thumbnail == null? null: new ImageIcon(thumbnail));
+			String none = "(" + MediaRes.getString("Filter.Baseline.Message.NoImage") + ")"; //$NON-NLS-1$
+			imageLabel.setText(thumbnail == null? none: null);
+			imageLabel.setBorder(thumbnail == null? emptyBorder: imageBorder);
+			if (thumbnail == null) {
+				contentPane.remove(nullBaselinePanel);
+				contentPane.add(imageLabel, BorderLayout.NORTH);
+			}
+			else {
+				nullBaselinePanel.add(imageLabel);
+				contentPane.add(nullBaselinePanel, BorderLayout.NORTH);			
+			}
+			saveButton.setEnabled(baseline != null);
+			inspector.pack();
+			firePropertyChange("baseline", null, null); //$NON-NLS-1$
+		}
 	}
 
 	/**
@@ -144,9 +199,44 @@ public class BaselineFilter extends Filter {
 	 * @return the image
 	 */
 	public BufferedImage getBaselineImage() {
-		return baseline;
+		return baselineCopy;
+	}
+	
+	private BufferedImage getThumbnailImage() {
+		if (baseline == null)
+			return null;
+		int imageW = baseline.getWidth();
+		int imageH = baseline.getHeight();
+		int w, h;
+		if (imageW > imageH) {
+			w = Math.min(9 * contentPane.getWidth() / 10, imageW);
+			h = Math.min(w * imageH / imageW, imageH);			
+		}
+		else {
+			h = Math.min(9 * contentPane.getWidth() / 10, imageH);
+			w = Math.min(h * imageW / imageH, imageW);						
+		}
+		if (thumbnail == null || thumbnail.getWidth() != w || thumbnail.getHeight() != h) {
+			thumbnail = new BufferedImage(w, h, baseline.getType());
+		}
+		Graphics2D g2 = thumbnail.createGraphics();
+//    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);  
+		g2.drawImage(baseline, 0, 0, w, h, 0, 0, baseline.getWidth(), baseline.getHeight(), null);
+		g2.dispose();
+		return thumbnail;
 	}
 
+	public void resizeThumbnail() {
+		if (thumbnail == null) {
+			contentPane.remove(imageLabel);
+		}
+		else {
+			contentPane.remove(nullBaselinePanel);
+		}		
+		inspector.pack();
+		setBaselineImage(baselineCopy);
+	}
+	
 	/**
 	 * Implements abstract Filter method.
 	 *
@@ -169,6 +259,7 @@ public class BaselineFilter extends Filter {
 	@Override
 	public void clear() {
 		setBaselineImage(null);
+		imagePath = null;
 	}
 
 	/**
@@ -181,9 +272,10 @@ public class BaselineFilter extends Filter {
 		super.refresh();
 		loadButton.setText(MediaRes.getString("Filter.Baseline.Button.Load")); //$NON-NLS-1$
 		captureButton.setText(MediaRes.getString("Filter.Baseline.Button.Capture")); //$NON-NLS-1$
-		captureButton.setText(MediaRes.getString("Filter.Baseline.Button.Capture")); //$NON-NLS-1$
+		saveButton.setText(MediaRes.getString("Dialog.Button.Save")); //$NON-NLS-1$
 		loadButton.setEnabled(isEnabled());
 		captureButton.setEnabled(isEnabled());
+		saveButton.setEnabled(baseline != null);
 		inspector.setTitle(MediaRes.getString("Filter.Baseline.Title")); //$NON-NLS-1$
 		inspector.pack();
 	}
@@ -224,6 +316,9 @@ public class BaselineFilter extends Filter {
 				pixelsOut[i] = (r << 16) | (g << 8) | b;
 			}
 		}
+		else {
+			System.arraycopy(pixelsIn, 0, pixelsOut, 0, nPixelsIn);
+		}
 	}
 
 	/**
@@ -251,30 +346,53 @@ public class BaselineFilter extends Filter {
 				}
 
 			});
-			// create buttons
 			captureButton = new JButton();
 			captureButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					capture();
+					refresh();
 				}
 
 			});
+			saveButton = new JButton();
+			saveButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					save();
+				}
+
+			});
+			imageLabel = new JLabel();
+			imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+			Border line = BorderFactory.createLineBorder(Color.black);
+			emptyBorder = BorderFactory.createEmptyBorder(4, 4, 0, 4);
+			imageBorder = BorderFactory.createCompoundBorder(emptyBorder, line);
+			nullBaselinePanel = new JPanel();
+			
 			// add components to content pane
+			contentPane = new JPanel(new BorderLayout());
+			setContentPane(contentPane);
+			
 			JPanel buttonbar = new JPanel(new FlowLayout());
-			setContentPane(buttonbar);
+			contentPane.add(buttonbar, BorderLayout.SOUTH);
 			buttonbar.add(ableButton);
 			buttonbar.add(loadButton);
 			buttonbar.add(captureButton);
+			buttonbar.add(saveButton);
 			buttonbar.add(clearButton);
 			buttonbar.add(closeButton);
+			
 		}
 
 		/**
 		 * Initializes this inspector
 		 */
 		void initialize() {
-			refresh();
+			SwingUtilities.invokeLater(() -> {
+				setBaselineImage(baseline); // may be null
+			});			
+//			refresh();
 		}
 
 	}
@@ -301,6 +419,15 @@ public class BaselineFilter extends Filter {
 		@Override
 		public void saveObject(XMLControl control, Object obj) {
 			BaselineFilter filter = (BaselineFilter) obj;
+			if (filter.baseline != null && filter.imagePath == null) {
+				int n = JOptionPane.showConfirmDialog(null, 
+						MediaRes.getString("Filter.Baseline.Dialog.SaveImage.Text"), //$NON-NLS-1$
+						MediaRes.getString("Filter.Baseline.Dialog.SaveImage.Title"), //$NON-NLS-1$ 
+						JOptionPane.YES_NO_OPTION); //$NON-NLS-1$
+				if (n == JOptionPane.YES_OPTION) {
+					filter.save();
+				}
+			}
 			if (filter.imagePath != null) {
 				control.setValue("imagepath", filter.imagePath); //$NON-NLS-1$
 			}
