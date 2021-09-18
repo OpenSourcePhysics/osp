@@ -207,7 +207,7 @@ public class VideoIO {
 
 	// static fields
 	protected static AsyncFileChooser chooser;
-	protected static FileFilter imageFileFilter;
+	protected static FileFilter imageFileFilter, JPGFileFilter;
 	protected static ArrayList<VideoType> videoTypes;
 	protected static VideoFileFilter videoFileFilter;
 	protected static Collection<VideoFileFilter> singleVideoTypeFilters = new TreeSet<VideoFileFilter>();
@@ -236,7 +236,19 @@ public class VideoIO {
 				String ext = VideoIO.getExtension(f); 
 				return (checkDir && f.isDirectory()
 						|| "jpg".equalsIgnoreCase(ext) //$NON-NLS-1$
+						|| "jpeg".equalsIgnoreCase(ext) //$NON-NLS-1$
+						|| "png".equalsIgnoreCase(ext) //$NON-NLS-1$
 						|| "gif".equalsIgnoreCase(ext));  //$NON-NLS-1$
+			}
+
+		};
+		JPGFileFilter = new SingleExtFileFilter(null, MediaRes.getString("ImageVideoType.JPGFileFilter.Description")) { //$NON-NLS-1$
+			@Override
+			public boolean accept(File f, boolean checkDir) {
+				String ext = VideoIO.getExtension(f); 
+				return (checkDir && f.isDirectory()
+						|| "jpeg".equalsIgnoreCase(ext) //$NON-NLS-1$
+						|| "jpg".equalsIgnoreCase(ext));  //$NON-NLS-1$
 			}
 
 		};
@@ -900,9 +912,11 @@ private static String fixVideoPath(String path) {
 //	}
 
 	/**
-	 * Displays a file chooser and returns the chosen files.
+	 * Displays a file chooser and returns the chosen files. The parameter "type"
+	 * can be "open", "save video", "save resource", "save image", "open image".
+	 * There are more types defined in TrackerIO.getChooserFilesAsync
 	 *
-	 * @param type        only "open"; all others are in TrackerIO.getChooserFilesAsync
+	 * @param type String
 	 * @param processFiles asynchronous follower method
 	 * @return the files, or null if no files chosen or asynchronous
 	 */
@@ -921,6 +935,8 @@ private static String fixVideoPath(String path) {
 		Runnable okOpen = () -> {
 				File file = chooser.getSelectedFile();
 				resetChooser.run();
+				if (chooser.getSelectedOption() != JFileChooser.APPROVE_OPTION)
+					return;
 				if (processFiles != null)
 					processFiles.apply(new File[] { file });
 		};
@@ -928,6 +944,8 @@ private static String fixVideoPath(String path) {
 		Runnable okSave = () -> {
 			File file = chooser.getSelectedFile();
 			resetChooser.run();
+			if (chooser.getSelectedOption() != JFileChooser.APPROVE_OPTION)
+				return;
 			if (processFiles != null && canWrite(file))
 				processFiles.apply(new File[] { file });
 		};
@@ -950,6 +968,13 @@ private static String fixVideoPath(String path) {
 			chooser.setFileFilter(chooser.getAcceptAllFileFilter());
 			chooser.showOpenDialog(null, okOpen, resetChooser);
 			break;
+		case "open image": // open any file //$NON-NLS-1$
+			chooser.setAcceptAllFileFilterUsed(false);
+			chooser.resetChoosableFileFilters();
+			chooser.addChoosableFileFilter(imageFileFilter);
+			chooser.setFileFilter(imageFileFilter);
+			chooser.showOpenDialog(null, okOpen, resetChooser);
+			break;
 		case "save video": // save video file //$NON-NLS-1$
 			chooser.resetChoosableFileFilters();
 			chooser.setDialogTitle(MediaRes.getString("VideoIO.Dialog.SaveVideoAs.Title")); //$NON-NLS-1$
@@ -957,13 +982,22 @@ private static String fixVideoPath(String path) {
 			chooser.setSelectedFile(new File(originalFileName));
 			chooser.showSaveDialog(null, okSave, resetChooser);
 			break;
-		case "save resource": // save video file //$NON-NLS-1$
-		chooser.resetChoosableFileFilters();
-		chooser.setDialogTitle(MediaRes.getString("VideoIO.Dialog.SaveAs.Title")); //$NON-NLS-1$
-		chooser.setFileFilter(chooser.getAcceptAllFileFilter());
-		chooser.setSelectedFile(new File(originalFileName));
-		chooser.showSaveDialog(null, okSave, resetChooser);
-		break;
+		case "save image": // save image file //$NON-NLS-1$
+			chooser.setAcceptAllFileFilterUsed(false);
+			chooser.resetChoosableFileFilters();
+			chooser.setDialogTitle(MediaRes.getString("VideoIO.Dialog.SaveAs.Title")); //$NON-NLS-1$
+			chooser.addChoosableFileFilter(JPGFileFilter);
+			chooser.setFileFilter(JPGFileFilter);
+			chooser.setSelectedFile(new File(originalFileName));
+			chooser.showSaveDialog(null, okSave, resetChooser);
+			break;
+		case "save resource": // save resource file //$NON-NLS-1$
+			chooser.resetChoosableFileFilters();
+			chooser.setDialogTitle(MediaRes.getString("VideoIO.Dialog.SaveAs.Title")); //$NON-NLS-1$
+			chooser.setFileFilter(chooser.getAcceptAllFileFilter());
+			chooser.setSelectedFile(new File(originalFileName));
+			chooser.showSaveDialog(null, okSave, resetChooser);
+			break;
 		default:
 			return null;
 		}
