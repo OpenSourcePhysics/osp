@@ -261,6 +261,7 @@ public class RotateFilter extends Filter {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					reverse = reverseCheckbox.isSelected();
+					// no need to set source = null here since dimensions not changed
 					RotateFilter.this.firePropertyChange("rotate", null, null); //$NON-NLS-1$
 				}
 			});

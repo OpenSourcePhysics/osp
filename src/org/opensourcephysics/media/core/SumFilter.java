@@ -134,7 +134,7 @@ public class SumFilter extends Filter {
 	@Override
 	public void clear() {
 		if (source != null) {
-			initializeSource(source);
+			initializeSubclass();
 			brightness = 1;
 			skipSum = true;
 			firePropertyChange(Filter.PROPERTY_FILTER_RESET, null, null);

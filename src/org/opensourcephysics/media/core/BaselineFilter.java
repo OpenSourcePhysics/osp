@@ -120,8 +120,11 @@ public class BaselineFilter extends Filter {
 	public void load(String path) {
 		BufferedImage image = ResourceLoader.getBufferedImage(path);
 		if (image != null) {
+			String prevPath = imagePath;
 			imagePath = path;
-			setBaselineImage(image);
+			if (!setBaselineImage(image)) {
+				imagePath = prevPath;
+			}
 		} else {
 			JOptionPane.showMessageDialog(vidPanel, "\"" + path + "\" " + //$NON-NLS-1$ //$NON-NLS-2$
 					MediaRes.getString("Filter.Baseline.Dialog.NotImage.Message"), //$NON-NLS-1$
@@ -147,32 +150,41 @@ public class BaselineFilter extends Filter {
 	 * Sets the baseline image.
 	 *
 	 * @param image the image
+	 * @return true if the image was accepted
 	 */
-	public void setBaselineImage(BufferedImage image) {
-		baseline = image;
-		baselineCopy = null;
+	public boolean setBaselineImage(BufferedImage image) {
 		if (image != null) {
 			int wi = image.getWidth();
 			int ht = image.getHeight();
 			
-			// create copy for saving
-			baselineCopy = new BufferedImage(wi, ht, baseline.getType());
-			Graphics2D g2 = baselineCopy.createGraphics();
-			g2.drawImage(baseline, 0, 0, null);
-			g2.dispose();
-			
-			if ((wi >= w) && (ht >= h)) {
-				getRaster(image).getDataElements(0, 0, w, h, baselinePixels);
+			if ((wi >= w) && (ht >= h)) { // acceptable dimensions
+				// create copy for saving
+				baselineCopy = new BufferedImage(wi, ht, image.getType());
+				Graphics2D g2 = baselineCopy.createGraphics();
+				g2.drawImage(image, 0, 0, null);
+				g2.dispose();
+				
+				baseline = image;
+				getRaster(baseline).getDataElements(0, 0, w, h, baselinePixels);
+				
 			} else {
-				JOptionPane.showMessageDialog(vidPanel,
+				JOptionPane.showMessageDialog(vidPanel.getTopLevelAncestor(),
 						MediaRes.getString("Filter.Baseline.Dialog.SmallImage.Message1") + " (" + wi + "x" + ht + ") " + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-								MediaRes.getString("Filter.Baseline.Dialog.SmallImage.Message2") + " (" + w + "x" + h //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+								MediaRes.getString("Filter.Baseline.Dialog.SmallImage.Message2a") + "\n" + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+								MediaRes.getString("Filter.Baseline.Dialog.SmallImage.Message2b") + " (" + w + "x" + h //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 								+ ").", //$NON-NLS-1$
 						MediaRes.getString("Filter.Baseline.Dialog.SmallImage.Title"), //$NON-NLS-1$
 						JOptionPane.INFORMATION_MESSAGE);
+				return false;
 			}
 		}
-		// add thumbnail iamge of baseline to inspector if it exists
+		else {
+			baseline = null;
+			baselineCopy = null;
+			imagePath = null;
+		}
+		
+		// add thumbnail image to inspector if it exists
 		if (inspector != null) {
 			thumbnail = getThumbnailImage();
 			imageLabel.setIcon(thumbnail == null? null: new ImageIcon(thumbnail));
@@ -191,6 +203,8 @@ public class BaselineFilter extends Filter {
 			inspector.pack();
 			firePropertyChange("baseline", null, null); //$NON-NLS-1$
 		}
+		
+		return true;
 	}
 
 	/**
@@ -226,6 +240,9 @@ public class BaselineFilter extends Filter {
 		return thumbnail;
 	}
 
+	/**
+	 * Used to resize thumbnanil image when font size is changed.
+	 */
 	public void resizeThumbnail() {
 		if (thumbnail == null) {
 			contentPane.remove(imageLabel);
@@ -290,6 +307,9 @@ public class BaselineFilter extends Filter {
 	@Override
 	protected void initializeSubclass() {
 		baselinePixels = new int[nPixelsIn];
+		if (!setBaselineImage(baselineCopy)) {
+			setBaselineImage(null);			
+		}
 	}
 
 	/**
@@ -390,7 +410,7 @@ public class BaselineFilter extends Filter {
 		 */
 		void initialize() {
 			SwingUtilities.invokeLater(() -> {
-				setBaselineImage(baseline); // may be null
+				setBaselineImage(baselineCopy); // may be null
 			});			
 //			refresh();
 		}
