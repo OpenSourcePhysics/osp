@@ -87,7 +87,7 @@ public class OSPRuntime {
 	public static final String OSP_PROPERTY_LOCALE = "locale";
 
 	/**
-	 * An interface with static methods that track implmentinng classes, adding them
+	 * An interface with static methods that track implementing classes, adding them
 	 * to array to "allocate" them, and running their dispose() method when
 	 * "deallocation" is requested.
 	 * 
