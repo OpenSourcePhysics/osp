@@ -1587,8 +1587,9 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				if (Double.isNaN(value))
 					return expression;
 				String s = format(value * 180 / Math.PI, 0.0001);
-				if (name.indexOf(THETA) > -1)
-					s += DEGREES;
+				boolean isOmega = (name.indexOf(OMEGA) >= 0);
+				if (isOmega || name.indexOf(THETA) >= 0)
+					s += DEGREES + (isOmega ? "/s" : "");
 				return s;
 			}
 			// for other names, return expression with appropriate decimal separator
@@ -1613,7 +1614,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			if (value instanceof String) {
 				String val = (String) value;
 				int n = val.indexOf(DEGREES);
-				if (n > -1)
+				if (n >= 0)
 					val = val.substring(0, n);
 				// get previous state for undoable edit
 				String prev = null;
