@@ -1576,7 +1576,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				return name;
 			String expression = getExpression(obj);
 			// for angles in degrees, convert
-			if (anglesInDegrees && (name.indexOf(THETA) > -1 || name.indexOf(OMEGA) > -1)) {
+			if (anglesInDegrees && (name.indexOf(THETA) >= 0 || name.indexOf(OMEGA) >= 0)) {
 				// use periods as decimal separators for parsing
 				// but don't make substitutions in "if" statements since they use commas
 				String express = expression;
@@ -1647,7 +1647,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 						val = SuryonoParser.NULL;
 					}
 					String name = getName(obj);
-					if (anglesInDegrees && (name.indexOf(THETA) > -1 || name.indexOf(OMEGA) > -1)) {
+					if (anglesInDegrees && (name.indexOf(THETA) >= 0 || name.indexOf(OMEGA) >= 0)) {
 						double d = getNumber(val);
 						if (!Double.isNaN(d))
 							val = String.valueOf(d * Math.PI / 180);
@@ -1767,8 +1767,9 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				// BH bug here after language change, this can popup with "4,000" not "4.000"
 				String val = value.toString();
 				if (prevObject != null && column > 0) {
-					if (val.endsWith(DEGREES)) {
-						val = val.substring(0, val.length() - 1);
+					int n = val.indexOf(DEGREES);
+					if (n >= 0) {
+						val = val.substring(0, n);
 					} else {
 						val = prevExpression;
 					}
