@@ -13,6 +13,7 @@ import org.opensourcephysics.controls.XMLLoader;
 import org.opensourcephysics.numerics.MultiVarFunction;
 import org.opensourcephysics.numerics.ParsedMultiVarFunction;
 import org.opensourcephysics.numerics.ParserException;
+import org.opensourcephysics.numerics.SuryonoParser;
 import org.opensourcephysics.tools.FunctionEditor.FObject;
 
 /**
@@ -22,6 +23,7 @@ import org.opensourcephysics.tools.FunctionEditor.FObject;
  */
 public class UserFunction implements FObject, KnownFunction, MultiVarFunction, Cloneable {
 	// static constants
+	
 	protected final static String[] dummyVars = { "'", "@", //$NON-NLS-1$ //$NON-NLS-2$
 			"`", "~", "#" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	// instance fields
@@ -38,11 +40,15 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	protected KnownPolynomial polynomial;
 	
 	private double myval = Double.NaN;
-	private String dummyInputString = "0"; //$NON-NLS-1$
+	private String dummyInputString = SuryonoParser.NULL; //$NON-NLS-1$
 	private String clearExpr;
 	private String clearInput;
 	private String paddedExpr;
 	private String paddedInput;
+	/**
+	 * the "0" expression
+	 */
+	private boolean isNull; 
 
 	/**
 	 * Constructor.
@@ -52,7 +58,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	public UserFunction(String name) {
 		setName(name);
 		try {
-			myFunction = new ParsedMultiVarFunction("0", new String[0], false); //$NON-NLS-1$
+			myFunction = new ParsedMultiVarFunction(SuryonoParser.NULL, new String[0], false); //$NON-NLS-1$
 			functionNames = myFunction.getFunctionNames();
 		} catch (ParserException ex) {
 			/** empty block */
@@ -213,23 +219,26 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 
 		paddedInput = exp;
 		clearInput = exp = exp.replaceAll(" ", "");
-		
+		isNull = (exp.equals(SuryonoParser.NULL));
+
 		String[] names = setVariables(vars);
 
 		// add padding around all names -- disallowing <number or .>E as in "5E0"
-		exp = padNames(exp);
-		// replace dependents
 		boolean hasDummy = false;
-		for (int i = 0; i < vars.length; i++) {
-			hasDummy = (hasDummy || exp.indexOf(dummyVars[i]) >= 0);
-			exp = exp.replaceAll(" " + vars[i] + " ", " " + dummyVars[i] + " ");
+		if (!isNull) {
+			exp = padNames(exp);
+			// replace dependents
+			for (int i = 0; i < vars.length; i++) {
+				hasDummy = (hasDummy || exp.indexOf(dummyVars[i]) >= 0);
+				exp = exp.replaceAll(" " + vars[i] + " ", " " + dummyVars[i] + " ");
+			}
 		}
 		dummyInputString = exp; // for cloning only
 		// try to parse expression
 		try {
 			myFunction = new ParsedMultiVarFunction(exp, names, false);
 			// successful, so save expression unless it contains "="
-			if (exp.indexOf("=") < 0) { //$NON-NLS-1$
+			if (isNull || exp.indexOf("=") < 0) { //$NON-NLS-1$
 				if (hasDummy) {
 					generateExpressionForVars();
 				} else {
@@ -241,11 +250,11 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 		} catch (ParserException ex) {
 			try {
 				// Note that any constants or unidentified variables will cause this condition.
-				myFunction = new ParsedMultiVarFunction("0", names, false); //$NON-NLS-1$
+				myFunction = new ParsedMultiVarFunction(SuryonoParser.NULL, names, false); //$NON-NLS-1$
 			} catch (ParserException ex2) {
 				/** empty block */
 			}
-			clearExpr = "0"; //$NON-NLS-1$
+			clearExpr = SuryonoParser.NULL; //$NON-NLS-1$
 		}
 		return false;
 	}
@@ -462,6 +471,8 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 		if (myFunction == null) {
 			return Double.NaN;
 		}
+		if (isNull)
+			return 0;
 		// BH 2020.06.24 allow for precalculated value. 
 		if (Double.isNaN(myval)) {
 //			OSPLog.debug("UserFunction.evaluate " + name + " = " + myFunction);
@@ -498,7 +509,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	 * @return true if result was converted from NaN to zero
 	 */
 	public boolean evaluatedToNaN() {
-		return myFunction == null ? false : myFunction.evaluatedToNaN();
+		return (!isNull && myFunction != null && myFunction.evaluatedToNaN());
 	}
 
 	/**
@@ -583,7 +594,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 
 	static String padNames(String exp) {
 		// but not 5.0E3
-		return exp.replaceAll("([A-Za-z_]\\w*)", " $1 ").replaceAll("([0123456789\\.]) ([eE])", "$1$2");
+		return exp.replaceAll("([A-Za-z_θω]\\w*)", " $1 ").replaceAll("([0123456789\\.]) ([eE])", "$1$2");
 	}
 
 	/**

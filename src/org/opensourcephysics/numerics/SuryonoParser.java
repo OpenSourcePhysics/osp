@@ -154,8 +154,10 @@ public final class SuryonoParser extends MathExpParser {
 			switch (n) {
 			case 3:
 				var_value[2] = z;
+				//$FALL-THROUGH$
 			case 2:
 				var_value[1] = y;
+				//$FALL-THROUGH$
 			case 1:
 				var_value[0] = x;
 			}
@@ -270,7 +272,7 @@ public final class SuryonoParser extends MathExpParser {
 							cpt++;
 							break;
 						}
-						// fall through
+						//$FALL-THROUGH$
 					case JUMP_CODE:
 						// BH note that "destination" here is 
 						// the code point PRIOR to the 
@@ -691,12 +693,15 @@ public final class SuryonoParser extends MathExpParser {
 	 */
 	public void setToZero() {
 		try {
-			setFunction("0"); //$NON-NLS-1$
+			setFunction(SuryonoParser.NULL); //$NON-NLS-1$
 		} catch (ParserException ex) {
 		}
 	}
 
 	boolean appendVariables = false;
+
+	public final static String NULL = "0";
+	public final static String NULL_D = "0.0";
 
 	/**
 	 * Sets the angle unit to radian. Default upon construction.
@@ -721,11 +726,11 @@ public final class SuryonoParser extends MathExpParser {
 	 * @return the new function
 	 */
 	private String removeEscapeCharacter(String str) {
-		if ((str == null) || (str.length() < 1)) {
+		if (str == null || str.length() < 1) {
 			return str;
 		}
 		StringBuffer sb = new StringBuffer(str.length());
-		for (int i = 0; i < str.length(); i++) {
+		for (int i = 0, n = str.length(); i < n; i++) {
 			if (str.charAt(i) != '\\') {
 				sb.append(str.charAt(i));
 			}
@@ -769,12 +774,11 @@ public final class SuryonoParser extends MathExpParser {
 	/**
 	 * Defines a function. Current postfix code becomes invalid.
 	 *
-	 * @param definition the function definition
+	 * @param def the function definition
 	 */
-	public void define(String definition) {
-		function = definition;
-		function.toLowerCase();
-		function = removeEscapeCharacter(function); // added by W. Christian
+	public void define(String def) {
+		def.toLowerCase(); // BH does nothing
+		function = (def.equals(SuryonoParser.NULL) ? def : removeEscapeCharacter(def)); // added by W. Christian
 		valid = false;
 	}
 
@@ -851,8 +855,8 @@ public final class SuryonoParser extends MathExpParser {
 			error = EXPRESSION_EXPECTED;
 			valid = false;
 			return;
-		case "0":
-		case "0.0":
+		case NULL:
+		case NULL_D:
 			addNum(0);
 			valid = true;
 			return;
@@ -1631,6 +1635,11 @@ public final class SuryonoParser extends MathExpParser {
 		}
 	}
 
+	@Override
+	public String toString() {
+		return function;
+		
+	}
 }
 
 /*

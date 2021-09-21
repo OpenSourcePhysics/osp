@@ -83,6 +83,7 @@ import org.opensourcephysics.controls.XMLProperty;
 import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
+import org.opensourcephysics.numerics.SuryonoParser;
 import org.opensourcephysics.numerics.Util;
 
 /**
@@ -1336,7 +1337,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			}
 			name = proposedName = input;
 		}
-		String expression = (obj == null) ? "0" : getExpression(obj); //$NON-NLS-1$
+		String expression = (obj == null) ? SuryonoParser.NULL : getExpression(obj); //$NON-NLS-1$
 		return createObject(name, expression, obj);
 	}
 
@@ -1586,8 +1587,9 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				if (Double.isNaN(value))
 					return expression;
 				String s = format(value * 180 / Math.PI, 0.0001);
-				if (name.indexOf(THETA) > -1)
-					s += DEGREES;
+				boolean isOmega = (name.indexOf(OMEGA) >= 0);
+				if (isOmega || name.indexOf(THETA) >= 0)
+					s += DEGREES + (isOmega ? "/s" : "");
 				return s;
 			}
 			// for other names, return expression with appropriate decimal separator
@@ -1612,7 +1614,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			if (value instanceof String) {
 				String val = (String) value;
 				int n = val.indexOf(DEGREES);
-				if (n > -1)
+				if (n >= 0)
 					val = val.substring(0, n);
 				// get previous state for undoable edit
 				String prev = null;
@@ -1642,7 +1644,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 						return;
 					}
 					if (val.equals("")) { //$NON-NLS-1$
-						val = "0"; //$NON-NLS-1$
+						val = SuryonoParser.NULL;
 					}
 					String name = getName(obj);
 					if (anglesInDegrees && (name.indexOf(THETA) > -1 || name.indexOf(OMEGA) > -1)) {
@@ -1813,7 +1815,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			JDialog editor = getPopupEditor();
 			String val = stringValue.replaceAll(",", "."); //$NON-NLS-1$ //$NON-NLS-2$
 			if ("".equals(val)) //$NON-NLS-1$
-				val = "0"; //$NON-NLS-1$
+				val = SuryonoParser.NULL;
 			double value = getNumber(val);
 			if (Double.isNaN(value)) {
 				editor.getContentPane().remove(dragPane);
