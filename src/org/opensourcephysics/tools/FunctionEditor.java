@@ -83,6 +83,7 @@ import org.opensourcephysics.controls.XMLProperty;
 import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
+import org.opensourcephysics.numerics.SuryonoParser;
 import org.opensourcephysics.numerics.Util;
 
 /**
@@ -1336,7 +1337,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			}
 			name = proposedName = input;
 		}
-		String expression = (obj == null) ? "0" : getExpression(obj); //$NON-NLS-1$
+		String expression = (obj == null) ? SuryonoParser.NULL : getExpression(obj); //$NON-NLS-1$
 		return createObject(name, expression, obj);
 	}
 
@@ -1642,7 +1643,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 						return;
 					}
 					if (val.equals("")) { //$NON-NLS-1$
-						val = "0"; //$NON-NLS-1$
+						val = SuryonoParser.NULL;
 					}
 					String name = getName(obj);
 					if (anglesInDegrees && (name.indexOf(THETA) > -1 || name.indexOf(OMEGA) > -1)) {
@@ -1813,7 +1814,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			JDialog editor = getPopupEditor();
 			String val = stringValue.replaceAll(",", "."); //$NON-NLS-1$ //$NON-NLS-2$
 			if ("".equals(val)) //$NON-NLS-1$
-				val = "0"; //$NON-NLS-1$
+				val = SuryonoParser.NULL;
 			double value = getNumber(val);
 			if (Double.isNaN(value)) {
 				editor.getContentPane().remove(dragPane);

@@ -35,6 +35,7 @@ import org.opensourcephysics.controls.XMLProperty;
 import org.opensourcephysics.display.Dataset;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
+import org.opensourcephysics.numerics.SuryonoParser;
 
 import javajs.async.AsyncFileChooser;
 
@@ -126,7 +127,7 @@ public class FitBuilder extends FunctionTool {
 				String var = (dataset == null) ? "x" : //$NON-NLS-1$
 				TeXParser.removeSubscripting(dataset.getColumnName(0));
 
-				f.setExpression("0", new String[] { var }); //$NON-NLS-1$
+				f.setExpression(SuryonoParser.NULL, new String[] { var }); //$NON-NLS-1$
 				addFitFunctionPanel(f);
 			}
 		});

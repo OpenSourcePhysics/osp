@@ -21,6 +21,7 @@ public final class ParsedMultiVarFunction implements MultiVarFunction {
   private final String fStr;
   private final MultiVarFunction myFunction;
   private final String[] myFunctionNames;
+  public boolean isNull;
 
   /**
    * Constructs a ParsedFunction from the given string and independent variable.
@@ -32,6 +33,7 @@ public final class ParsedMultiVarFunction implements MultiVarFunction {
    */
   public ParsedMultiVarFunction(String _fStr, String[] var, boolean allowUnkownIdentifiers) throws ParserException {
     fStr = _fStr;
+    isNull = (fStr.equals(SuryonoParser.NULL) || fStr.equals(SuryonoParser.NULL_D));
     SuryonoParser parser = new SuryonoParser(fStr, var, allowUnkownIdentifiers);
     myFunction = parser;
     myFunctionNames = parser.getFunctionNames();
@@ -46,7 +48,8 @@ public final class ParsedMultiVarFunction implements MultiVarFunction {
    */
   @Override
   public double evaluate(double[] x) {
-    return myFunction.evaluate(x);
+    return (isNull ? 0 : 
+    	myFunction.evaluate(x));
   }
 
   /**
@@ -75,10 +78,7 @@ public final class ParsedMultiVarFunction implements MultiVarFunction {
    * @return true if result was converted from NaN to zero
    */
   public boolean evaluatedToNaN() {
-  	if (myFunction instanceof SuryonoParser) {
-  		return ((SuryonoParser)myFunction).evaluatedToNaN();
-  	}
-  	return false;
+  	return !isNull && myFunction instanceof SuryonoParser && ((SuryonoParser)myFunction).evaluatedToNaN();
   }
 
 }
