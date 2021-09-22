@@ -7,6 +7,7 @@
 
 package org.opensourcephysics.display;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -14,6 +15,7 @@ import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
@@ -46,6 +48,7 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JApplet;
+import javax.swing.JColorChooser;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -2183,6 +2186,31 @@ public class OSPRuntime {
 		timer.setRepeats(false);
 		timer.start();
 		return timer;
+	}
+
+	/**
+	 * Displays a JColorChooser and returns the selected color.
+	 *
+	 * @param color the initial color to select
+	 * @param title the title for the dialog
+	 * @param whenDone TODO
+	 * @return the newly selected color. or initial color if cancelled
+	 */
+	public static void chooseColor(final Color color, String title, Consumer<Color> whenDone) {
+		final JColorChooser chooser = new JColorChooser();
+		chooser.setColor(color);
+		ActionListener cancelListener = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				chooser.setColor(color);
+			}
+		};
+		ActionListener okListener = (e) -> {
+			whenDone.accept(chooser.getColor());
+		};
+		JDialog dialog = JColorChooser.createDialog(null, title, true, chooser, okListener, cancelListener);
+		FontSizer.setFonts(dialog, FontSizer.getLevel());
+		dialog.setVisible(true);
 	}
 
 }

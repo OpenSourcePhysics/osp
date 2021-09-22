@@ -662,13 +662,13 @@ public class RadialDistortionFilter extends Filter {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					// show color chooser dialog with color of this track
-					Color newColor = JColorChooser.showDialog(null,
-							MediaRes.getString("PerspectiveFilter.Dialog.Color.Title"), //$NON-NLS-1$
-							color);
-					if (newColor != null) {
-						color = newColor;
-						firePropertyChange(PROPERTY_FILTER_COLOR, null, newColor);
-					}
+					OSPRuntime.chooseColor(color, MediaRes.getString("PerspectiveFilter.Dialog.Color.Title"), //$NON-NLS-1$
+							(newColor) -> {
+								if (newColor != null) {
+									color = newColor;
+									firePropertyChange(PROPERTY_FILTER_COLOR, null, newColor);
+								}
+							});
 				}
 			});
 

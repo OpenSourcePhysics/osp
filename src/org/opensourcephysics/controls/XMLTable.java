@@ -463,154 +463,156 @@ public TableCellEditor getCellEditor(int row, int column) {
           }
 	}
 
-	// Gets the component to be displayed while editing.
-    @Override
-	public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-      combo = null;
-      String propName = (String) tableModel.getValueAt(row, 0);
-      field.setBackground(defaultBackgroundColor);
-      field.setSelectionColor(getEditingColor(propName));
-      final int rowNumber = row;
-      final int colNumber = column;
-      if(value instanceof XMLControl) {                                           // object type
-        final XMLControl childControl = (XMLControl) value;
-        // Color case
-        if(childControl.getObjectClass()==Color.class) {
-          Color color = (Color) childControl.loadObject(null);
-          String title = ControlsRes.getString("XMLTable.ColorChooser.Title");    //$NON-NLS-1$
-          Color newColor = JColorChooser.showDialog(null, title, color);
-          if((newColor!=null)&&!color.equals(newColor)) {
-            childControl.saveObject(newColor);
-            tableModel.fireTableCellUpdated(row, column);
-          }
-          return null;
-        }
-        // Character case
-        if(childControl.getObjectClass()==Character.class) {
-          Character c = (Character) childControl.loadObject(null);
-          field.setEditable(true);
-          field.setText(c.toString());
-          return panel;
-        }
-        // OSPCombo case
-        if(childControl.getObjectClass()==OSPCombo.class) {
-          combo = (OSPCombo) childControl.loadObject(null);
-          combo.row = row;
-          combo.column = column;
-          field.setText(combo.toString());
-          field.setEditable(false);
-          return panel;
-        }
-        // Boolean case
-        if(childControl.getObjectClass()==Boolean.class) {
-          Boolean bool = (Boolean) childControl.loadObject(null);
-          int n = bool.booleanValue() ? 0 : 1;
-          combo = new OSPCombo(new String[] {"true", "false"}, n);                //$NON-NLS-1$//$NON-NLS-2$
-          combo.row = row;
-          combo.column = column;
-          field.setText(bool.toString());
-          field.setEditable(false);
-          combo.addPropertyChangeListener("value", new PropertyChangeListener() { //$NON-NLS-1$
-            @Override
-			public void propertyChange(PropertyChangeEvent e) {
-              OSPCombo combo = (OSPCombo) e.getSource();
-              Boolean bool = Boolean.valueOf(combo.getSelectedIndex()==0);
-              childControl.saveObject(bool);
-            }
+		// Gets the component to be displayed while editing.
+		@Override
+		public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row,
+				int column) {
+			combo = null;
+			String propName = (String) tableModel.getValueAt(row, 0);
+			field.setBackground(defaultBackgroundColor);
+			field.setSelectionColor(getEditingColor(propName));
+			final int rowNumber = row;
+			final int colNumber = column;
+			if (value instanceof XMLControl) { // object type
+				final XMLControl childControl = (XMLControl) value;
+				// Color case
+				if (childControl.getObjectClass() == Color.class) {
+					Color color = (Color) childControl.loadObject(null);
+					String title = ControlsRes.getString("XMLTable.ColorChooser.Title"); //$NON-NLS-1$
+					OSPRuntime.chooseColor(color, title, (newColor) -> {
+						if (newColor != null && !color.equals(newColor)) {
+							childControl.saveObject(newColor);
+							tableModel.fireTableCellUpdated(row, column);
+						}
+					});
+					return null;
+				}
+				// Character case
+				if (childControl.getObjectClass() == Character.class) {
+					Character c = (Character) childControl.loadObject(null);
+					field.setEditable(true);
+					field.setText(c.toString());
+					return panel;
+				}
+				// OSPCombo case
+				if (childControl.getObjectClass() == OSPCombo.class) {
+					combo = (OSPCombo) childControl.loadObject(null);
+					combo.row = row;
+					combo.column = column;
+					field.setText(combo.toString());
+					field.setEditable(false);
+					return panel;
+				}
+				// Boolean case
+				if (childControl.getObjectClass() == Boolean.class) {
+					Boolean bool = (Boolean) childControl.loadObject(null);
+					int n = bool.booleanValue() ? 0 : 1;
+					combo = new OSPCombo(new String[] { "true", "false" }, n); //$NON-NLS-1$//$NON-NLS-2$
+					combo.row = row;
+					combo.column = column;
+					field.setText(bool.toString());
+					field.setEditable(false);
+					combo.addPropertyChangeListener("value", new PropertyChangeListener() { //$NON-NLS-1$
+						@Override
+						public void propertyChange(PropertyChangeEvent e) {
+							OSPCombo combo = (OSPCombo) e.getSource();
+							Boolean bool = Boolean.valueOf(combo.getSelectedIndex() == 0);
+							childControl.saveObject(bool);
+						}
 
-          });
-          return panel;
-        }
-        XMLTableInspector inspector = new XMLTableInspector(childControl, isEditable());
-        // listen for "xmlData" changes in inspector
-        inspector.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-          @Override
-		public void propertyChange(PropertyChangeEvent e) {
-            // signal listeners when inspector closes and xml data is changed
-            if(e.getPropertyName().equals("xmlData")) { //$NON-NLS-1$
-              tableModel.fireTableCellUpdated(rowNumber, colNumber);
-            }
-          }
+					});
+					return panel;
+				}
+				XMLTableInspector inspector = new XMLTableInspector(childControl, isEditable());
+				// listen for "xmlData" changes in inspector
+				inspector.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+					@Override
+					public void propertyChange(PropertyChangeEvent e) {
+						// signal listeners when inspector closes and xml data is changed
+						if (e.getPropertyName().equals("xmlData")) { //$NON-NLS-1$
+							tableModel.fireTableCellUpdated(rowNumber, colNumber);
+						}
+					}
 
-        });
-        // offset new inspector relative to parent container
-        Container cont = XMLTable.this.getTopLevelAncestor();
-        Point p = cont.getLocationOnScreen();
-        inspector.setLocation(p.x+30, p.y+30);
-        inspector.setVisible(true);
-        return null;	
-      } else if(value instanceof XMLProperty) {                                              // collection or array type
-        XMLProperty prop = (XMLProperty) value;
-        XMLProperty parent = prop.getParentProperty();
-        if(parent.getPropertyType() == XMLProperty.TYPE_COLLECTION) {                                  //$NON-NLS-1$
-          String name = parent.getPropertyName();
-          parent = parent.getParentProperty();
-          if(parent instanceof XMLControl) {
-            XMLControl cControl = new XMLControlElement();
-            Collection<?> c = (Collection<?>) ((XMLControl) parent).getObject(name);
-            Iterator<?> it = c.iterator();
-            int i = 0;
-            while(it.hasNext()) {
-              Object next = it.next();
-              cControl.setValue("item_"+i, next);                                            //$NON-NLS-1$
-              i++;
-            }
-            XMLTableInspector inspector = new XMLTableInspector(cControl);
-            inspector.setTitle(ControlsRes.getString("XMLTable.Inspector.Title")+name+"\""); //$NON-NLS-1$//$NON-NLS-2$
-            // offset new inspector relative to parent container
-            Container cont = XMLTable.this.getTopLevelAncestor();
-            Point p = cont.getLocationOnScreen();
-            inspector.setLocation(p.x+30, p.y+30);
-            inspector.setVisible(true);
-            cont.transferFocus();
-          }
-        }
-        // display an array inspector if available
-        XMLProperty arrayProp = prop.getParentProperty();
-        ArrayInspector arrayInspector = ArrayInspector.getInspector(arrayProp);
-        if(arrayInspector!=null) {
-          String name = arrayProp.getPropertyName();
-          parent = arrayProp.getParentProperty();
-          while(!(parent instanceof XMLControl)) {
-            name = parent.getPropertyName();
-            arrayProp = parent;
-            parent = parent.getParentProperty();
-          }
-          final XMLControl arrayControl = (XMLControl) parent;
-          final String arrayName = name;
-          final Object arrayObj = arrayInspector.getArray();
-          arrayInspector.setEditable(tableModel.editable);
-          // listen for "cell" and "arrayData" changes in the array inspector
-          arrayInspector.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            @Override
-			public void propertyChange(PropertyChangeEvent e) {
-              if(e.getPropertyName().equals("cell")) {                                       //$NON-NLS-1$
-                // set new value in array control
-                arrayControl.setValue(arrayName, arrayObj);
-              }
-              // signal listeners when inspector closes and array data is changed
-              else if(e.getPropertyName().equals("arrayData")) {                             //$NON-NLS-1$
-                tableModel.fireTableCellUpdated(rowNumber, colNumber);
-              }
-            }
+				});
+				// offset new inspector relative to parent container
+				Container cont = XMLTable.this.getTopLevelAncestor();
+				Point p = cont.getLocationOnScreen();
+				inspector.setLocation(p.x + 30, p.y + 30);
+				inspector.setVisible(true);
+				return null;
+			} else if (value instanceof XMLProperty) { // collection or array type
+				XMLProperty prop = (XMLProperty) value;
+				XMLProperty parent = prop.getParentProperty();
+				if (parent.getPropertyType() == XMLProperty.TYPE_COLLECTION) { // $NON-NLS-1$
+					String name = parent.getPropertyName();
+					parent = parent.getParentProperty();
+					if (parent instanceof XMLControl) {
+						XMLControl cControl = new XMLControlElement();
+						Collection<?> c = (Collection<?>) ((XMLControl) parent).getObject(name);
+						Iterator<?> it = c.iterator();
+						int i = 0;
+						while (it.hasNext()) {
+							Object next = it.next();
+							cControl.setValue("item_" + i, next); //$NON-NLS-1$
+							i++;
+						}
+						XMLTableInspector inspector = new XMLTableInspector(cControl);
+						inspector.setTitle(ControlsRes.getString("XMLTable.Inspector.Title") + name + "\""); //$NON-NLS-1$//$NON-NLS-2$
+						// offset new inspector relative to parent container
+						Container cont = XMLTable.this.getTopLevelAncestor();
+						Point p = cont.getLocationOnScreen();
+						inspector.setLocation(p.x + 30, p.y + 30);
+						inspector.setVisible(true);
+						cont.transferFocus();
+					}
+				}
+				// display an array inspector if available
+				XMLProperty arrayProp = prop.getParentProperty();
+				ArrayInspector arrayInspector = ArrayInspector.getInspector(arrayProp);
+				if (arrayInspector != null) {
+					String name = arrayProp.getPropertyName();
+					parent = arrayProp.getParentProperty();
+					while (!(parent instanceof XMLControl)) {
+						name = parent.getPropertyName();
+						arrayProp = parent;
+						parent = parent.getParentProperty();
+					}
+					final XMLControl arrayControl = (XMLControl) parent;
+					final String arrayName = name;
+					final Object arrayObj = arrayInspector.getArray();
+					arrayInspector.setEditable(tableModel.editable);
+					// listen for "cell" and "arrayData" changes in the array inspector
+					arrayInspector.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+						@Override
+						public void propertyChange(PropertyChangeEvent e) {
+							if (e.getPropertyName().equals("cell")) { //$NON-NLS-1$
+								// set new value in array control
+								arrayControl.setValue(arrayName, arrayObj);
+							}
+							// signal listeners when inspector closes and array data is changed
+							else if (e.getPropertyName().equals("arrayData")) { //$NON-NLS-1$
+								tableModel.fireTableCellUpdated(rowNumber, colNumber);
+							}
+						}
 
-          });
-          // offset new arrayInspector relative to parent container
-          Container cont = XMLTable.this.getTopLevelAncestor();
-          Point p = cont.getLocationOnScreen();
-          arrayInspector.setLocation(p.x+30, p.y+30);
-          arrayInspector.setVisible(true);
-          cont.transferFocus();
-        }
-        return null;
-      } // end XMLProperty case
-      // value is string
-      field.setEditable(true);
-      if(value!=null) {
-        field.setText(value.toString());
-      }
-      return panel;
-    }
+					});
+					// offset new arrayInspector relative to parent container
+					Container cont = XMLTable.this.getTopLevelAncestor();
+					Point p = cont.getLocationOnScreen();
+					arrayInspector.setLocation(p.x + 30, p.y + 30);
+					arrayInspector.setVisible(true);
+					cont.transferFocus();
+				}
+				return null;
+			} // end XMLProperty case
+				// value is string
+			field.setEditable(true);
+			if (value != null) {
+				field.setText(value.toString());
+			}
+			return panel;
+		}
 
     // Determines when editing starts.
     @Override

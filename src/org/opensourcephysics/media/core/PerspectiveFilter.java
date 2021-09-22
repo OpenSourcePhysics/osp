@@ -61,7 +61,6 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -789,13 +788,13 @@ public class PerspectiveFilter extends Filter implements PropertyChangeListener 
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					// show color chooser dialog with color of this filter's quad
-					Color newColor = JColorChooser.showDialog(null,
-							MediaRes.getString("PerspectiveFilter.Dialog.Color.Title"), //$NON-NLS-1$
-							quad.color);
-					if (newColor != null) {
-						quad.color = newColor;
-						firePropertyChange(PROPERTY_FILTER_COLOR, null, newColor); 
-					}
+					OSPRuntime.chooseColor(quad.color, MediaRes.getString("PerspectiveFilter.Dialog.Color.Title"), //$NON-NLS-1$
+							(newColor) -> {
+								if (newColor != null) {
+									quad.color = newColor;
+									firePropertyChange(PROPERTY_FILTER_COLOR, null, newColor);
+								}
+							});
 				}
 			});
 			// ableButton already has action listener to enable/disable this filter
