@@ -1919,7 +1919,7 @@ public class LaunchNode extends DefaultMutableTreeNode {
 			if (res != null && res.getURL() != null) {
 				url = res.getURL();
 				try {
-					InputStream in = url.openStream();
+					InputStream in = ResourceLoader.openStream(url);
 					in.close();
 					OSPLog.finer(LaunchRes.getString("Log.Message.URL") + " " + url); //$NON-NLS-1$ //$NON-NLS-2$
 				} catch (Exception ex) {

@@ -47,7 +47,7 @@ public class Utils {
     } else {
       try {
         java.net.URL url = new java.net.URL(_codebase+_filename);
-        java.io.InputStream stream = url.openStream();
+        java.io.InputStream stream = ResourceLoader.openStream(url);
         stream.close();
         return true;
       } catch(Exception exc) {
@@ -68,7 +68,7 @@ public class Utils {
         jis = new java.util.jar.JarInputStream(inputStream);
       } else {
         java.net.URL url = new java.net.URL(_codebase+_jarFile);
-        inputStream = url.openStream();
+        inputStream = ResourceLoader.openStream(url);
         jis = new java.util.jar.JarInputStream(inputStream);
       }
       
@@ -171,7 +171,7 @@ public class Utils {
         jis = new java.util.jar.JarInputStream(inputStream);
       } else {
         java.net.URL url = new java.net.URL(_codebase+_jarFile);
-        inputStream = url.openStream();
+        inputStream = ResourceLoader.openStream(url);
         jis = new java.util.jar.JarInputStream(inputStream);
       }
       boolean done = false;

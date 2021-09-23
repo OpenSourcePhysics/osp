@@ -2321,7 +2321,7 @@ public class Launcher {
 		if (!OSPRuntime.launcherAllowEJSModel || (node == null) || !node.isLeaf()) {
 			return false;
 		}
-		return EjsTool.hasEjsModel(node.getLaunchClass());
+		return node.getLaunchClass() == null? false: EjsTool.hasEjsModel(node.getLaunchClass());
 	}
 
 	/**

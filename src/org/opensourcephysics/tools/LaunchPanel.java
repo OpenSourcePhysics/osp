@@ -381,7 +381,7 @@ public class LaunchPanel extends JPanel {
 				html.editorPane.setPage(theURL);
 			} else {
 				// read url into a string
-				Scanner scanner = new Scanner(theURL.openStream(), "UTF-8"); //$NON-NLS-1$
+				Scanner scanner = new Scanner(ResourceLoader.openStream(theURL), "UTF-8"); //$NON-NLS-1$
 				String text = scanner.useDelimiter("\\A").next(); //$NON-NLS-1$
 				scanner.close();
 				// make html substitutions

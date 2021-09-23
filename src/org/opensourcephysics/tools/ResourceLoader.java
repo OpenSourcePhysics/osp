@@ -33,6 +33,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -1464,11 +1465,29 @@ public class ResourceLoader {
 			return fileNames;
 		try {
 			// Scan URL zip stream for files.
-			return readZipContents(url.openStream(), url);
+			boolean cacheConnection = isHTTP(url.getPath());
+			return readZipContents(openInputStreamAndCache(url, cacheConnection), url);
 		} catch (Exception ex) {
 			return null;
 		}
 	}
+	
+	/**
+	 * Opens an InputStream for a URL and caches the URLConnection ONLY if true.
+	 * 
+	 * @param url the URL
+	 * @param cacheConnection true to cache the URLConnection
+	 * @return the InputStream
+	 * @throws IOException
+	 */
+	private static InputStream openInputStreamAndCache(URL url, boolean cacheConnection) throws IOException {
+		// this works for Jar
+		URLConnection c = url.openConnection();
+    c.setUseCaches(cacheConnection);
+		return c.getInputStream();
+	}
+
+
 
 	private static Map<String, ZipEntry> readZipContents(InputStream is, URL url) throws IOException {
 		Map<String, ZipEntry> fileNames = new LinkedHashMap<String, ZipEntry>();
@@ -1526,8 +1545,7 @@ public class ResourceLoader {
 		OSPLog.finer("unzipping " + zipPath + " to " + targetDir); //$NON-NLS-1$ //$NON-NLS-2$
 		try {
 			URL url = getURLWithCachedBytes(zipPath);
-			BufferedInputStream bufIn = new BufferedInputStream(url.openStream());
-			ZipInputStream input = new ZipInputStream(bufIn);
+			ZipInputStream input = new ZipInputStream(ResourceLoader.openStream(url));
 			ZipEntry zipEntry = null;
 			Set<File> fileSet = new HashSet<File>();
 			byte[] buffer = new byte[1024];
@@ -1631,7 +1649,7 @@ public class ResourceLoader {
 			InputStream is = null;
 			try {
 				Resource res = getResourceZipURLsOK(urlPath);
-				is = (res == null ? new URL(urlPath).openStream() : res.openInputStream());
+				is = (res == null ? ResourceLoader.openStream(new URL(urlPath)) : res.openInputStream());
 				if (OSPRuntime.isJS) {
 					OSPRuntime.jsutil.streamToFile(is, target);
 				} else {
@@ -1789,7 +1807,7 @@ public class ResourceLoader {
 			// Java Only -- none of this is necessary in SwingJS, since we can
 			// directly access the ZipEntry data.
 			URL url = getURLWithCachedBytes(zipFile);
-			ZipInputStream input = new ZipInputStream(url.openStream());
+			ZipInputStream input = new ZipInputStream(ResourceLoader.openStream(url));
 			ZipEntry zipEntry = null;
 			while ((zipEntry = input.getNextEntry()) != null) {
 				// BH 2020.04.25 allow both a in b and b in a
@@ -2380,7 +2398,7 @@ public class ResourceLoader {
 	 * @return
 	 */
 	private static boolean streamExists(URL working) {
-		try (InputStream stream = working.openStream()){
+		try (InputStream stream = ResourceLoader.openStream(working)){
 			return (stream.read() > -1);
 		} catch (IOException e) {
 			return false;
@@ -2815,7 +2833,7 @@ public class ResourceLoader {
 	}
 
 	private static InputStream getAssetStream(String name) throws IOException {
-		return (OSPRuntime.useZipAssets ? Assets.getAssetStream(name) : (InputStream) getAssetURL(name).openStream());
+		return (OSPRuntime.useZipAssets ? Assets.getAssetStream(name) : ResourceLoader.openStream(getAssetURL(name)));
 	}
 
 	private final static String latinChars = "á\u00e1Á\u00c1é\u00e9É\u00c9í\u00edÍ\u00cdó\u00f3Ó\u00d3ú\u00faÚ\u00dañ\u00f1Ñ\u00d1ü\u00fcÜ\u00dc¡\u00a1¿\u00bf"; 
@@ -2973,8 +2991,8 @@ public class ResourceLoader {
 		if (n > -1) {
 			URL toOpen = (zipURL == null ? new URL(entryPath.substring(4, n)) : zipURL);
 			entryPath = entryPath.substring(n + 2);
-			BufferedInputStream bufIn = new BufferedInputStream(toOpen.openStream());
-			ZipInputStream input = new ZipInputStream(bufIn);
+//			BufferedInputStream bufIn = new BufferedInputStream(toOpen.openStream());
+			ZipInputStream input = new ZipInputStream(ResourceLoader.openStream(toOpen));
 			ZipEntry zipEntry = null;
 			while ((zipEntry = input.getNextEntry()) != null) {
 				if (zipEntry.isDirectory())
@@ -3005,7 +3023,9 @@ public class ResourceLoader {
 
 	public static InputStream openStream(URL url) throws IOException {
 		// TODO SwingJS
-		return url.openStream();
+		boolean cacheConnection = isHTTP(url.getPath());
+		return openInputStreamAndCache(url, cacheConnection);
+//		return url.openStream();
 	}
 
 	/**
@@ -3063,9 +3083,9 @@ public class ResourceLoader {
 		try {
 			if (OSPRuntime.isJS) {
 				// Java 9! return new String(url.openStream().readAllBytes());
-				return OSPRuntime.jsutil.readAllBytes(url.openStream());
+				return OSPRuntime.jsutil.readAllBytes(openStream(url));
 			}
-			return getLimitedStreamBytes(url.openStream(), -1, null, true);
+			return getLimitedStreamBytes(openStream(url), -1, null, true);
 		} catch (IOException e) {
 			if (showErr)
 				e.printStackTrace();
@@ -3101,7 +3121,7 @@ public class ResourceLoader {
 				OSPRuntime.getURLBytesAsync(url, whenDone);
 				return;
 			}
-			whenDone.apply(getLimitedStreamBytes(url.openStream(), -1, null, true));
+			whenDone.apply(getLimitedStreamBytes(openStream(url), -1, null, true));
 			return;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -3131,10 +3151,10 @@ public class ResourceLoader {
 			if (toOut) {
 				out.write(buf, 0, len);
 			} else {
-				if (totalLen > bytes.length)
+				if (bytes != null && totalLen > bytes.length)
 					bytes = Arrays.copyOf(bytes, totalLen * 2);
 				System.arraycopy(buf, 0, bytes, totalLen - len, len);
-				if (n != Integer.MAX_VALUE && totalLen + buflen > bytes.length)
+				if (bytes != null && n != Integer.MAX_VALUE && totalLen + buflen > bytes.length)
 					buflen = bytes.length - totalLen;
 			}
 		}
@@ -3147,7 +3167,7 @@ public class ResourceLoader {
 		}
 		if (toOut)
 			return null;
-		if (totalLen == bytes.length)
+		if (bytes != null && totalLen == bytes.length)
 			return bytes;
 		buf = new byte[totalLen];
 		System.arraycopy(bytes, 0, buf, 0, totalLen);
@@ -3158,10 +3178,10 @@ public class ResourceLoader {
 		File f = new File(filePath);
 		if (OSPRuntime.isJS) {
 			FileOutputStream fos = new FileOutputStream(f);
-			OSPRuntime.jsutil.transferTo(new URL(urlPath).openStream(), fos);
+			OSPRuntime.jsutil.transferTo(openStream(new URL(urlPath)), fos);
 			fos.close();
 		} else {
-			InputStream is = new URL(urlPath).openStream();
+			InputStream is = openStream(new URL(urlPath));
 			try {
 			Path path = f.toPath();
 			Files.createDirectories(path.getParent());
