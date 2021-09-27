@@ -100,7 +100,7 @@ public class BaselineFilter extends Filter {
 		VideoIO.getChooserFilesAsync("save image", (File[] f) -> {
 			if (f != null && f[0] != null && f[0].getParent() != null) {
 				String path = f[0].getPath();
-				if (!VideoIO.JPGFileFilter.accept(f[0])) {
+				if (!VideoIO.jpgFileFilter.accept(f[0])) {
 					path = XML.stripExtension(path) + ".png";
 				}
 				File file = VideoIO.writeImageFile(baselineCopy, path);

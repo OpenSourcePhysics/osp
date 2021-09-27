@@ -44,6 +44,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
@@ -172,6 +173,63 @@ public class VideoIO {
 
 	}
 
+	public static class ImageSequenceFileFilter extends VideoFileFilter {
+
+		private String[] imagePaths;
+
+		public ImageSequenceFileFilter() {
+			super("zip", new String[] {"zip"} );
+		}
+
+		/**
+		 * Accepts zip files containing numbered image sequences
+		 * 
+		 * @param f the file
+		 * @return true if accepted
+		 */
+		@Override
+		public boolean accept(File f) {
+			String path = XML.forwardSlash(f.getPath());
+			return accept(path);
+		}
+		
+		/**
+		 * Accepts paths to local or remote zip files containing numbered image sequences.
+		 * If accepted, this saves the image paths for use during loading, etc
+		 * 
+		 * @param path the path
+		 * @return true if accepted
+		 */
+		public boolean accept(String path) {
+			String ext = XML.getExtension(path);
+			if ("zip".equalsIgnoreCase(ext)) {  //$NON-NLS-1$
+				Map<String, ZipEntry>  map = ResourceLoader.getZipContents(path);
+				if (map == null)
+					return false;
+				for (String next: map.keySet()) {
+					if (next.contains("/") || next.contains("\\") || !imageFileFilter.accept(new File(next)))
+						continue;
+					String imagePath = path + "!/" + next;
+					imagePaths = getImageSequencePaths(imagePath, map.keySet());
+					desc = null;
+					// accept only if 2 or more images are found
+					return imagePaths != null && imagePaths.length > 1;				
+				}
+			}
+			return false;
+		}
+		
+	  @Override
+		public String[] getExtensions() {
+			return new String[] {"zip"};
+	  }
+	  
+		public String[] getImagePaths() {
+			return imagePaths;
+		}
+
+	}
+
 	public static MovieVideoType getMovieType(String extension) {
 		if (!MovieFactory.hasVideoEngine())
 			return null;
@@ -207,7 +265,8 @@ public class VideoIO {
 
 	// static fields
 	protected static AsyncFileChooser chooser;
-	protected static FileFilter imageFileFilter, JPGFileFilter;
+	protected static SingleExtFileFilter imageFileFilter, jpgFileFilter;
+	protected static ImageSequenceFileFilter zippedImageFileFilter;
 	protected static ArrayList<VideoType> videoTypes;
 	protected static VideoFileFilter videoFileFilter;
 	protected static Collection<VideoFileFilter> singleVideoTypeFilters = new TreeSet<VideoFileFilter>();
@@ -242,7 +301,7 @@ public class VideoIO {
 			}
 
 		};
-		JPGFileFilter = new SingleExtFileFilter(null, MediaRes.getString("ImageVideoType.JPGFileFilter.Description")) { //$NON-NLS-1$
+		jpgFileFilter = new SingleExtFileFilter(null, MediaRes.getString("ImageVideoType.JPGFileFilter.Description")) { //$NON-NLS-1$
 			@Override
 			public boolean accept(File f, boolean checkDir) {
 				String ext = VideoIO.getExtension(f); 
@@ -252,6 +311,8 @@ public class VideoIO {
 			}
 
 		};
+		zippedImageFileFilter = new ImageSequenceFileFilter();
+		addVideoType(new ImageVideoType(zippedImageFileFilter));
 	}
 
 	/**
@@ -270,6 +331,19 @@ public class VideoIO {
 	 */
 	public static String getExtension(File file) {
 		return XML.getExtension(file.getName());
+	}
+	
+	/**
+	 * Gets an array of image paths inside a zip file.
+	 *
+	 * @param path the path to the zip file
+	 * @return String[] with image paths in numerical order
+	 */
+	public static String[] getZippedImagePaths(String path) {
+		if (path != null && zippedImageFileFilter.accept(path)) {
+			return zippedImageFileFilter.getImagePaths();
+		}
+		return null;
 	}
 	
 	/**
@@ -986,8 +1060,8 @@ private static String fixVideoPath(String path) {
 			chooser.setAcceptAllFileFilterUsed(false);
 			chooser.resetChoosableFileFilters();
 			chooser.setDialogTitle(MediaRes.getString("VideoIO.Dialog.SaveAs.Title")); //$NON-NLS-1$
-			chooser.addChoosableFileFilter(JPGFileFilter);
-			chooser.setFileFilter(JPGFileFilter);
+			chooser.addChoosableFileFilter(jpgFileFilter);
+			chooser.setFileFilter(jpgFileFilter);
 			chooser.setSelectedFile(new File(originalFileName));
 			chooser.showSaveDialog(null, okSave, resetChooser);
 			break;
@@ -1219,6 +1293,52 @@ private static String fixVideoPath(String path) {
 		return null;
 	}
 	
+	/**
+	 * Gets the paths that make up an image sequence.
+	 * 
+	 * @param imagePath the path to the first image
+	 * @param names a set of names of available numbered images
+	 * @return array of full paths to all images in sequence
+	 */
+	public static String[] getImageSequencePaths(String imagePath, Set<String> names) {
+		ArrayList<String> imagePaths = new ArrayList<String>();
+		// look for numbered image names with pattern nameXXX.ext
+		String extension = ""; //$NON-NLS-1$
+		int i = imagePath.lastIndexOf('.');
+		if (i > 0 && i < imagePath.length() - 1) {
+			extension = imagePath.substring(i).toLowerCase();
+			imagePath = imagePath.substring(0, i); // now free of extension
+		}
+		int len = imagePath.length();
+		int digits = 0;
+		while (digits <= 4 && --len >= 0 && Character.isDigit(imagePath.charAt(len))) {
+			digits++;
+		}
+		int limit = (int) Math.pow(10, digits);
+		
+		String root = imagePath.substring(0, ++len);
+		String name = XML.getName(root);
+		root = XML.getDirectoryPath(root) + "/";
+		String startNumber = imagePath.substring(len);
+		int n = Integer.parseInt(startNumber) - 1;
+		try {			
+			while (++n < limit) {
+				// fill with leading zeros if nec
+				String num = "000" + n;
+				String imageName = name + (num.substring(num.length() - digits)) + extension;
+				if (names.contains(imageName)) {
+					imagePaths.add(root + imageName);					
+					continue;
+				}
+				break;
+			}
+		} catch (NumberFormatException ex) {
+			ex.printStackTrace();
+		}
+
+		return imagePaths.toArray(new String[imagePaths.size()]);
+	}
+		
 	// class to show message in JEditorPane and respond to hyperlinks
 	public static class EditorPaneMessage extends JEditorPane {
 

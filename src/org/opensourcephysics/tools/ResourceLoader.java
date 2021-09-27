@@ -1473,7 +1473,7 @@ public class ResourceLoader {
 	}
 	
 	/**
-	 * Opens an InputStream for a URL and caches the URLConnection ONLY if true.
+	 * Opens an InputStream for a URL and caches the URLConnection ONLY if requested.
 	 * 
 	 * @param url the URL
 	 * @param cacheConnection true to cache the URLConnection
@@ -1529,7 +1529,7 @@ public class ResourceLoader {
 	}
 
 	/**
-	 * Unzips a ZIP file into the given directory. ZIP file may be on a server. Can
+	 * Unzips a ZIP file into the temp directory. ZIP file may be on a server. Can
 	 * be canceled using the static setCanceled(boolean) method. Note this does not
 	 * warn of possible overwrites.
 	 * 

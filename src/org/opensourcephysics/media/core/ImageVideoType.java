@@ -97,6 +97,12 @@ public class ImageVideoType implements VideoType {
 
 	@Override
 	public Video getVideo(String name, String basePath) {
+		
+		if (getDefaultFileFilter() == VideoIO.zippedImageFileFilter &&
+				VideoIO.zippedImageFileFilter.accept(new File(basePath, name))) {
+			name = VideoIO.zippedImageFileFilter.getImagePaths()[0];
+			basePath = null;
+		}
 
 		Video video;
 		// if an XML file with the image name is found, load it in order to get frame

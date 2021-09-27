@@ -11,6 +11,7 @@ import java.util.ArrayList;
 
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.media.core.VideoIO;
 
 /**
  * This represents a collection of library resources.
@@ -79,6 +80,12 @@ public class LibraryCollection extends LibraryResource {
 		if (!resources.contains(resource)) {
 			resources.add(resource);
 			resource.parent = this;
+			// check for zip files that are videos, not tracker projects 
+			String target = resource.getAbsoluteTarget();
+			if (resource.getType().equals(TRACKER_TYPE) &&
+					VideoIO.getZippedImagePaths(target) != null) {
+				resource.setType(VIDEO_TYPE);
+			}
 		}
 	}
 

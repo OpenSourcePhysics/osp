@@ -522,14 +522,19 @@ public class ImageVideo extends VideoAdapter {
 	 * Loads an image or image sequence specified by name. This returns an Object[]
 	 * containing an Image[] at index 0 and a String[] at index 1.
 	 *
-	 * @param imagePath the image path
+	 * @param imagePath the path to the first image in the sequence
 	 * @param sequence  true to automatically load sequences (if whenDone is not null, TRUE signals that we have already asked)
 	 * @param whenDone Aynchronous option, indicating that we want to ask about this
 	 * @return an array of loaded images and their corresponding paths
 	 * @throws IOException
 	 */
 	private Object[] loadImages(String imagePath, boolean sequence, Function<Object[], Void> whenDone) throws IOException {
-		String path0 = imagePath;
+		String[] zipPaths = VideoIO.zippedImageFileFilter.getImagePaths();
+		if (zipPaths != null && zipPaths[0].equals(imagePath)) {
+			return loadImages(zipPaths, sequence, whenDone);
+		}
+		
+		String path0 = imagePath;		
 		Resource res = ResourceLoader.getResource(getAbsolutePath(imagePath));
 		if (res == null) {
 			throw new IOException("Image " + imagePath + " not found"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -552,7 +557,8 @@ public class ImageVideo extends VideoAdapter {
 		}
 		ArrayList<String> pathList = new ArrayList<String>();
 		pathList.add(imagePath);
-		// look for image sequence (numbered image names)
+
+		// look for image sequence (numbered image names)		
 		String name = XML.getName(imagePath);
 		String extension = ""; //$NON-NLS-1$
 		int i = imagePath.lastIndexOf('.');
@@ -656,6 +662,55 @@ public class ImageVideo extends VideoAdapter {
 	}
 
 	/**
+	 * Loads an image sequence. This returns an Object[]
+	 * containing an Image[] at index 0 and a String[] at index 1.
+	 *
+	 * @param imagePaths array of paths
+	 * @param sequence  true to automatically load sequences (if whenDone is not null, TRUE signals that we have already asked)
+	 * @param whenDone Aynchronous option, indicating that we want to ask about this
+	 * @return an array of loaded images and their corresponding paths
+	 * @throws IOException
+	 */
+	private Object[] loadImages(String[] imagePaths, boolean sequence, Function<Object[], Void> whenDone) throws IOException {
+		String path0 = imagePaths[0];
+
+		Resource res = ResourceLoader.getResource(getAbsolutePath(path0));
+		if (res == null) {
+			throw new IOException("Image " + path0 + " not found"); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+		Image image = res.getImage();
+		if (image == null) {
+			throw new IOException("\"" + path0 + "\" is not an image"); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+		if (getProperty("name") == null) { //$NON-NLS-1$
+			int n = path0.indexOf("!/");
+			String path = n > 0? path0.substring(0, n): path0;
+			setProperty("ext", XML.getExtension(path0));
+			setProperty("name", XML.getName(path)); //$NON-NLS-1$
+			setProperty("path", path); //$NON-NLS-1$
+			setProperty("absolutePath", n > 0? path: res.getAbsolutePath()); //$NON-NLS-1$
+		}
+
+		ArrayList<Image> imageList = new ArrayList<Image>();
+		imageList.add(image);
+		
+		boolean precacheImage = !readOnly && false;
+		if (precacheImage) {
+			for (int i = 0; i < imagePaths.length; i++) {
+				image = ResourceLoader.getImage(getAbsolutePath(imagePaths[i]));
+				if (image != null) {
+					imageList.add(image);
+				}
+			}
+		}
+		Image[] images = imageList.toArray(new Image[0]);
+		Object[] ret = new Object[] { images, imagePaths };
+		if (whenDone != null)
+			whenDone.apply(ret);
+		return ret;
+	}
+
+	/**
 	 * Returns the valid paths (i.e., those that are not ""). Invalid paths are
 	 * associated with pasted images rather than files.
 	 *
@@ -672,7 +727,7 @@ public class ImageVideo extends VideoAdapter {
 	}
 
 	/**
-	 * Returns the valid paths (i.e., those that are not "") relative to a bae path.
+	 * Returns the valid paths (i.e., those that are not "") relative to a base path.
 	 * Invalid paths are associated with pasted images rather than files.
 	 * 
 	 * @param base a base path
@@ -780,6 +835,11 @@ public class ImageVideo extends VideoAdapter {
 			ImageVideo video = (ImageVideo) obj;
 			String base = video.baseDir; //$NON-NLS-1$
 			String[] paths = video.getValidPathsRelativeTo(base);
+			if (base.endsWith("!")) { // zipped images--just save the zip file path
+				String s = base.substring(0, base.indexOf("!"));
+				paths = new String[] {XML.getName(s)};
+				base = null;
+			}
 			if (paths.length > 0) {
 				control.setValue("paths", paths); //$NON-NLS-1$
 				control.setValue("path", paths[0]); //$NON-NLS-1$
