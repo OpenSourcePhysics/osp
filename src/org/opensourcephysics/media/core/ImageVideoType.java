@@ -98,10 +98,12 @@ public class ImageVideoType implements VideoType {
 	@Override
 	public Video getVideo(String name, String basePath) {
 		
-		if (getDefaultFileFilter() == VideoIO.zippedImageFileFilter &&
-				VideoIO.zippedImageFileFilter.accept(new File(basePath, name))) {
-			name = VideoIO.zippedImageFileFilter.getImagePaths()[0];
-			basePath = null;
+		if (getDefaultFileFilter() == VideoIO.zippedImageFileFilter) {
+			String fullPath = basePath == null? name: basePath + "/" + name;
+			if (VideoIO.zippedImageFileFilter.accept(fullPath)) {
+				name = VideoIO.zippedImageFileFilter.getImagePaths()[0];
+				basePath = null;
+			}
 		}
 
 		Video video;
