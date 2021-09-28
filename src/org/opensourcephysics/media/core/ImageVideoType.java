@@ -144,7 +144,7 @@ public class ImageVideoType implements VideoType {
 	 */
 	@Override
 	public boolean canRecord() {
-		return true;
+		return getDefaultFileFilter() != VideoIO.zippedImageFileFilter;
 	}
 
 	/**
