@@ -63,7 +63,6 @@ import javax.swing.table.TableModel;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.media.core.NumberField;
 import org.opensourcephysics.media.core.VideoIO;
-import org.opensourcephysics.tools.DataToolTab;
 
 /**
  * DataTable displays multiple TableModels in a table. The first TableModel
@@ -202,6 +201,20 @@ public class DataTable extends JTable {
 
 	public boolean tainted;
 
+	public final static char SHIFTED = '\''; //$NON-NLS-1$
+
+	/**
+	 * Trim "'" from name
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public static String unshiftName(String name) {
+		int pt = name.length() - 1;
+		return (pt >= 0 && name.charAt(pt) == SHIFTED ? name.substring(0, pt) : name);
+	}
+
+	
 	/**
 	 * Constructs a DataTable with a default data model
 	 */
@@ -542,16 +555,16 @@ public class DataTable extends JTable {
 			baseRenderer = tableColumn.getCellRenderer();
 			if (baseRenderer == null) {
 				baseRenderer = precisionRenderersByColumnName.get(key);
-				if (baseRenderer == null && key.endsWith(DataToolTab.SHIFTED)) {
-					baseRenderer = precisionRenderersByColumnName.get(key.substring(0, key.length() - 1));
+				if (baseRenderer == null) {
+					baseRenderer = precisionRenderersByColumnName.get(unshiftName(key));
 				}
 			}
 		} catch (Exception ex) {
 		}
 		// if no precision base renderer, use default
 		if (baseRenderer == null) {
-			baseRenderer = (getColumnClass(column) == Double.class ? defaultDoubleRenderer
-					: getDefaultRenderer(getColumnClass(column)));
+			Class<?> c = getColumnClass(column);
+			baseRenderer = (c == Double.class ? defaultDoubleRenderer : getDefaultRenderer(c));
 		}
 		// return unit renderer if defined
 		if (unitRenderer == null)
@@ -653,6 +666,7 @@ public class DataTable extends JTable {
 		case MODE_UPDATE_ROWS: // 0x2400;
 			dataTableModel.resetSort();
 			// fall through
+			//$FALL-THROUGH$
 		case MODE_CREATE: // 0x01;
 		case MODE_CLEAR: // 0x02;
 		case MODE_MODEL: // 0x03;
@@ -681,6 +695,7 @@ public class DataTable extends JTable {
 		// DB: MODE_TRACK_DATA must trigger row update for step size changes 
 		case MODE_TRACK_DATA: // 0x1C00;
 			rowsChanged = true;
+			//$FALL-THROUGH$
 		case MODE_COL_SETVISIBLE: // 0x1700;
 		case MODE_TRACK_SELECTEDPOINT: // 0x1400;
 		case MODE_TRACK_TRANSFORM: // 0x1B00;
@@ -1844,8 +1859,9 @@ public class DataTable extends JTable {
 			Component c = baseRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			if (c instanceof JLabel && units != null) {
 				JLabel label = (JLabel) c;
-				if (label.getText() != null && !label.getText().equals("")) //$NON-NLS-1$
-					label.setText(label.getText() + units);
+				String s = label.getText();
+				if (s != null && !s.equals("")) //$NON-NLS-1$
+					label.setText(s + units);
 				label.setToolTipText(tooltip);
 			}
 			return c;
@@ -2604,6 +2620,7 @@ public class DataTable extends JTable {
 //		StringSelection stringSelection = new StringSelection(header + buf.toString());
 //		clipboard.setContents(stringSelection, stringSelection);
 	}
+
 
 
 }

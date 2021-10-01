@@ -52,6 +52,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 import org.opensourcephysics.display.CellBorder;
+import org.opensourcephysics.display.DataTable;
 import org.opensourcephysics.display.Dataset;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.TeXParser;
@@ -554,11 +555,7 @@ final public class DataToolPropsTable extends JTable {
 	class PropsTableModel extends AbstractTableModel {
 		@Override
 		public String getColumnName(int col) {
-			String name = dataTable.getColumnName(col);
-			if (name.endsWith(DataToolTab.SHIFTED)) {
-				name = name.substring(0, name.length() - DataToolTab.SHIFTED.length());
-			}
-			return name;
+			return DataTable.unshiftName(dataTable.getColumnName(col));
 		}
 
 		@Override

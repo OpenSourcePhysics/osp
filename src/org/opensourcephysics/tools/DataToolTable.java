@@ -1120,7 +1120,10 @@ public class DataToolTable extends DataTable {
 		// find or create working data
 		WorkingDataset working = workingMap.get(colName);
 		if (working == null && dataToolTab.originShiftEnabled) {
-			working = workingMap.get(colName.substring(0, colName.length() - DataToolTab.SHIFTED.length()));
+			String unshifted = unshiftName(colName);
+			if (unshifted != colName)
+				working = workingMap.get(unshifted);
+//			working = workingMap.get(colName.substring(0, colName.length() - 1));
 		}
 		if (working == null) {
 			Dataset ySource = getDataset(colName);
@@ -1234,21 +1237,17 @@ public class DataToolTable extends DataTable {
 		if (colName == null)
 			return null;
 		int index = dataManager.getDatasetIndex(colName);
-		if (index == -1 && colName.endsWith(DataToolTab.SHIFTED)) {
-			index = dataManager.getDatasetIndex(colName.substring(0, colName.length() - DataToolTab.SHIFTED.length()));
-		}
-		if (index > -1) {
+		String unshifted;	
+		if (index >= 0 || (unshifted = unshiftName(colName)) != colName
+				&& (index = dataManager.getDatasetIndex(unshifted)) >= 0) {
 			return dataManager.getDataset(index);
 		}
 		// check all datasets in dataManager to see if subscripting removed
 		ArrayList<Dataset> datasets = dataManager.getDatasetsRaw();
 		for (int i = 0, n = datasets.size(); i < n; i++) {
 			Dataset next = datasets.get(i);
-			if (next.getYColumnName().equals(colName)) {
-				return next;
-			}
-			if (colName.endsWith(DataToolTab.SHIFTED) && next.getYColumnName()
-					.equals(colName.substring(0, colName.length() - DataToolTab.SHIFTED.length()))) {
+			if (next.getYColumnName().equals(colName)
+					|| unshifted != colName && next.getYColumnName().equals(unshifted)) {
 				return next;
 			}
 		}
@@ -2054,9 +2053,7 @@ public class DataToolTable extends DataTable {
 	@Override
 	public NumberFormatDialog getFormatDialog(String[] names, String[] selected) {
 		for (int i = 0; i < names.length; i++) {
-			if (names[i].endsWith(DataToolTab.SHIFTED)) {
-				names[i] = names[i].substring(0, names[i].length() - DataToolTab.SHIFTED.length());
-			}
+			names[i] = unshiftName(names[i]);
 		}
 		return super.getFormatDialog(names, selected);
 	}
@@ -2579,7 +2576,7 @@ public class DataToolTable extends DataTable {
 			}
 			String name = tab.dataManager.getColumnName(col - 1);
 			if (tab.originShiftEnabled && tab.plot != null) {
-				name = name + DataToolTab.SHIFTED;
+				name = name + DataTable.SHIFTED;
 			}
 			return name;
 		}
