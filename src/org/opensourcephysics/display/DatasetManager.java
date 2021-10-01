@@ -970,8 +970,7 @@ public class DatasetManager extends DataTable.DataModel implements Measurable, L
 	 */
 	public int getDatasetIndex(String yColumnName) {
 		for (int i = 0; i < datasets.size(); i++) {
-			String name = datasets.get(i).getYColumnName();
-			if (name.equals(yColumnName)) {
+			if (datasets.get(i).getYColumnName().equals(yColumnName)) {
 				return i;
 			}
 		}

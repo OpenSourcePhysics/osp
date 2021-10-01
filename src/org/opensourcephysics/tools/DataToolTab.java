@@ -135,7 +135,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 	// static fields
 
-	public final static String SHIFTED = "'"; //$NON-NLS-1$
 	protected static DecimalFormat correlationFormat = (DecimalFormat) NumberFormat.getInstance();
 	private static final Cursor SELECT_CURSOR, SELECT_ZOOM_CURSOR;
 	private static final Cursor SELECT_REMOVE_CURSOR, SELECT_ADD_CURSOR;
@@ -2872,7 +2871,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				next.setXSource(workingData.getXSource());
 				String colName = next.getYColumnName();
 				if (next == workingData || colName.equals(xName)
-						|| (originShiftEnabled && (colName + SHIFTED).equals(xName))) {
+						|| (originShiftEnabled && (colName + DataTable.SHIFTED).equals(xName))) {
 					continue;
 				}
 				if (next.isMarkersVisible() || next.isConnected()) {
@@ -2909,8 +2908,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				String depVar = TeXParser.removeSubscripting(workingData.getColumnName(1));
 				String indepVar = TeXParser.removeSubscripting(workingData.getColumnName(0));
 				if (originShiftEnabled) {
-					depVar += DataToolTab.SHIFTED;
-					indepVar += DataToolTab.SHIFTED;
+					depVar += DataTable.SHIFTED;
+					indepVar += DataTable.SHIFTED;
 				}
 				curveFitter.setText(depVar + " = " + //$NON-NLS-1$
 						(curveFitter.fit instanceof UserFunction
@@ -3767,8 +3766,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		protected String createMessage() {
 			String xAxis = xVar, yAxis = yVar;
 			if (originShiftEnabled) {
-				xAxis += DataToolTab.SHIFTED;
-				yAxis += DataToolTab.SHIFTED;
+				xAxis += DataTable.SHIFTED;
+				yAxis += DataTable.SHIFTED;
 			}
 
 			StringBuffer buf = new StringBuffer();
@@ -3832,8 +3831,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			yAxis = TeXParser.removeSubscripting(yAxis);
 
 			if (originShiftEnabled) {
-				xAxis = xAxis + DataToolTab.SHIFTED;
-				yAxis = yAxis + DataToolTab.SHIFTED;
+				xAxis = xAxis + DataTable.SHIFTED;
+				yAxis = yAxis + DataTable.SHIFTED;
 			}
 
 			// set axis labels

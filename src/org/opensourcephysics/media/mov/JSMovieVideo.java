@@ -800,7 +800,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		protected void setTimes(double[] times) {
 			if (times == null) {
 				// format was read, but probably image size was (0,0) meaning
-				// codex wasn't read. (Have duration, just not actual images.)
+				// codec wasn't read. (Have duration, just not actual images.)
 				cantRead();
 				next(STATE_FIND_FRAMES_DONE);
 			} else {
