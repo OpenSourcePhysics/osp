@@ -35,6 +35,7 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.InputEvent;
+import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
@@ -585,8 +586,9 @@ public class TPoint extends Point2D.Double implements Interactive, Trackable {
 	 * point is dragged or stops being dragged.
 	 *
 	 * @param adjusting true if being dragged
+	 * @param e a MouseEvent, may be null
 	 */
-	public void setAdjusting(boolean adjusting) {
+	public void setAdjusting(boolean adjusting, MouseEvent e) {
 		if (!isAdjusting && adjusting) {
 			prevX = x;
 			prevY = y;
