@@ -201,7 +201,7 @@ public class DataTable extends JTable {
 
 	public boolean tainted;
 
-	public final static char SHIFTED = '\''; //$NON-NLS-1$
+	public final static char SHIFTED = '`'; //$NON-NLS-1$
 
 	/**
 	 * Trim "'" from name

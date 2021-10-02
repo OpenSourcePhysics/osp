@@ -25,6 +25,7 @@ import org.opensourcephysics.display.Dataset;
 public class DataColumn extends Dataset {
 	boolean deletable = false;
 	boolean shifted = false;
+	double prevShift;
 
 	/**
 	 * Constructs a DataColumn.
@@ -126,6 +127,9 @@ public class DataColumn extends Dataset {
 	public boolean setShift(double shift) {
 		if (this.shift == shift)
 			return false;
+		if (shift != new Double("-0") && shift != new Double("0")) {
+			prevShift = shift;
+		}
 		this.shift = shift;
 		return true;
 	}
@@ -138,6 +142,15 @@ public class DataColumn extends Dataset {
 	@Override
 	public double getShift() {
 		return shifted ? shift : 0;
+	}
+
+	/**
+	 * Gets the previous shift.
+	 *
+	 * @return the previous shift
+	 */
+	public double getPreviousShift() {
+		return prevShift;
 	}
 
 	@Override

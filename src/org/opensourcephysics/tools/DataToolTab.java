@@ -210,7 +210,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	protected boolean positionVisible = false;
 	protected boolean slopeVisible = false;
 	protected boolean areaVisible = false;
-	protected boolean originShiftEnabled = false;
+	protected boolean originShiftEnabled = false, originShiftJustEnabled = false;
 	protected boolean measureFit = false;
 	protected JPopupMenu varPopup;
 	protected boolean isHorzVarPopup;
@@ -1325,6 +1325,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			public void actionPerformed(ActionEvent e) {
 				boolean previouslyEnabled = originShiftEnabled;
 				originShiftEnabled = originShiftCheckbox.isSelected();
+				originShiftJustEnabled = originShiftEnabled && !previouslyEnabled;
 				double shiftX = 0;
 				// set all columns except row column to shifted
 				for (int i = 1; i < dataTable.getColumnCount(); i++) {
@@ -1380,6 +1381,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				refreshAll(DataTable.MODE_VALUES);
 				prevShiftX = -shiftXField.getValue();
 				prevShiftY = -shiftYField.getValue();
+				originShiftJustEnabled = false;
 				refreshGUI();
 			}
 		});
@@ -1924,6 +1926,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					DataColumn col = (DataColumn) data;
 					double prevX = col.getShift();
 					double shiftX = -(Double) shiftXSpinner.getValue();
+					if (originShiftJustEnabled) {
+						shiftX = col.getPreviousShift();
+					}
 					if (col.setShift(shiftX)) {
 						tabChanged(true);
 						// shift area limits
@@ -2002,6 +2007,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				if (data != null && data instanceof DataColumn) {
 					DataColumn col = (DataColumn) data;
 					double shiftY = -(Double) shiftYSpinner.getValue();
+					if (originShiftJustEnabled) {
+						shiftY = col.getPreviousShift();
+					}
 					if (col.setShift(shiftY)) {
 						tabChanged(true);
 						refreshAll(DataTable.MODE_VALUES);
