@@ -47,14 +47,6 @@ public abstract class MovieVideoType implements VideoType, MovieVideoI {
 
 	protected boolean recordable = true;
 
-	protected boolean invalid;
-	
-	@Override
-	public boolean isValid() {
-		return !invalid;
-	}
-
-
 
 	protected VideoFileFilter singleTypeFilter; // null for general type
 

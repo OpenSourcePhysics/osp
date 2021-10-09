@@ -102,7 +102,6 @@ public boolean isType(Video video) {
 			}
 			e.printStackTrace();
 		}
-		invalid = (video != null);
 		return video;
 	}
 

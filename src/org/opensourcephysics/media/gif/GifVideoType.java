@@ -50,8 +50,6 @@ public class GifVideoType implements VideoType {
   protected static VideoFileFilter gifFilter
   	= new VideoFileFilter("gif", new String[] {"gif"}); //$NON-NLS-1$ //$NON-NLS-2$
 
-  boolean invalid;
-  
   /**
    * Opens a named gif image as a GifVideo.
    *
@@ -73,7 +71,6 @@ public Video getVideo(String name) {
 			OSPLog.fine(ex.getMessage());
 			video = null;
 		}
-		invalid = (video == null);
 		return video;
 	}
 
@@ -151,11 +148,6 @@ public boolean isType(Video video) {
 	@Override
 	public String getTypeName() {
 		return TYPE_GIF;
-	}
-
-	@Override
-	public boolean isValid() {
-		return !invalid;
 	}
 
 }
