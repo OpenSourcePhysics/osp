@@ -1371,7 +1371,7 @@ public class ResourceLoader {
 	public static boolean checkExists(String path) {
 		String[] parts = getJarURLParts(path);
 		if (parts != null) {
-			Map<String, ZipEntry> map = getZipContents(parts[0]);
+			Map<String, ZipEntry> map = getZipContents(parts[0], true);
 			return (map != null && map.containsKey(parts[1]));
 		}
 		return getResource(path) != null;
@@ -1395,7 +1395,7 @@ public class ResourceLoader {
 	 * @return the ZipEntry for this file, possibly cached.
 	 */
 	private static ZipEntry findZipEntry(String zipFile, String fileName, boolean isContains) {
-		Map<String, ZipEntry> contents = getZipContents(zipFile);
+		Map<String, ZipEntry> contents = getZipContents(zipFile, true);
 		if (contents == null)
 			return null;
 		if (!isContains) {
@@ -1456,13 +1456,16 @@ public class ResourceLoader {
 	 * Gets the contents of a zip file.
 	 * 
 	 * @param zipPath the path to the zip file
+	 * @param useCache true to used cached bytes if available
 	 * @return a set of file names in alphabetical order
 	 */
-	public static Map<String, ZipEntry> getZipContents(String zipPath) {
+	public static Map<String, ZipEntry> getZipContents(String zipPath, boolean useCached) {
 		URL url = getURLWithCachedBytes(zipPath); // BH carry over bytes if we have them already
-		Map<String, ZipEntry> fileNames = htZipContents.get(url.toString());
-		if (fileNames != null)
-			return fileNames;
+		if (useCached) {
+			Map<String, ZipEntry> fileNames = htZipContents.get(url.toString());
+			if (fileNames != null)
+				return fileNames;
+		}
 		try {
 			// Scan URL zip stream for files.
 			boolean cacheConnection = isHTTP(url.getPath());

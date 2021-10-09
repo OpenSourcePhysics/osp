@@ -74,6 +74,7 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 	protected static boolean ignoreChooser;
 	protected static String tempDirectory;
 	protected static String tempFilePrefix = "osp_"; //$NON-NLS-1$
+	
 
 	// instance fields
 	protected VideoType videoType; // type of video being recorded
@@ -243,6 +244,15 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 			hasContent = true;
 			frameCount++;
 		}
+	}
+	
+	/**
+	 * Gets the VideoType.
+	 *
+	 * @return the video type
+	 */
+	public VideoType getVideoType() {
+		return videoType;
 	}
 
 	/**
@@ -453,27 +463,34 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 	protected File selectFile() {
 		ignoreChooser = true;
 		File file = null;
+		String chooserExt = null;
 		chooser.setDialogTitle(MediaRes.getString("VideoIO.Dialog.SaveVideoAs.Title")); //$NON-NLS-1$
 		chooser.resetChoosableFileFilters();
 		VideoFileFilter[] filters = videoType.getFileFilters();
+		boolean isZipType = videoType instanceof VideoIO.ZipImageVideoType;
 		if (filters != null && filters.length > 0) {
 			VideoFileFilter preferred = videoType.getDefaultFileFilter();
 			if (preferred == null)
 				preferred = filters[0];
+			ext = preferred.getDefaultExtension();
+			chooserExt = ext;
+			if (isZipType) {
+				VideoIO.ZipImageVideoType z = (VideoIO.ZipImageVideoType) videoType;
+				ext = z.getImageExtension();
+			}
 			chooser.setAcceptAllFileFilterUsed(false);
 			for (int i = 0; i < filters.length; i++) {
 				chooser.addChoosableFileFilter(filters[i]);
 			}
-			chooser.setFileFilter(preferred);
-			ext = preferred.getDefaultExtension();
+			chooser.setFileFilter(preferred);	
 		} else {
 			chooser.setAcceptAllFileFilterUsed(true);
 		}
 		String filename = suggestedFileName;
 		if (filename == null)
 			filename = MediaRes.getString("VideoIO.FileName.Untitled"); //$NON-NLS-1$
-		if (ext != null) {
-			filename += "." + ext; //$NON-NLS-1$
+		if (chooserExt != null) {
+			filename += "." + chooserExt; //$NON-NLS-1$
 		}
 		chooser.setSelectedFile(new File(filename));
 		if (chooserField != null)
@@ -492,6 +509,8 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 							JOptionPane.YES_NO_CANCEL_OPTION);
 					if (selected != JOptionPane.YES_OPTION) {
 						file = null;
+					} else {
+						VideoIO.requiresReload(file.getPath());
 					}
 				} else {
 					JOptionPane.showMessageDialog(null, ControlsRes.getString("Dialog.ReadOnly.Message"), //$NON-NLS-1$
@@ -529,15 +548,23 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 	 * Deletes the temporary files.
 	 */
 	protected void deleteTempFiles() {
-		if (tempFiles == null)
+		deleteFiles(tempFiles);
+	}
+	
+	/**
+	 * Deletes files.
+	 */
+	protected void deleteFiles(ArrayList<File> files) {
+		if (files == null)
 			return;
-		synchronized (tempFiles) {
-			for (File next : tempFiles) {
+		synchronized (files) {
+			for (File next : files) {
 				next.delete();
 			}
-			tempFiles.clear();
+			files.clear();
 		}
 	}
+
 
 	private JTextComponent getTextComponent(Container c, String toMatch) {
 		Component[] comps = c.getComponents();

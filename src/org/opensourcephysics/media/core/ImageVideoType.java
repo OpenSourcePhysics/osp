@@ -48,7 +48,6 @@ import org.opensourcephysics.controls.XMLControlElement;
 public class ImageVideoType implements VideoType {
 
 	private VideoFileFilter[] fileFilters;
-	private boolean invalid;
 
 	/**
 	 * Default constructor uses all available file types.
@@ -98,14 +97,6 @@ public class ImageVideoType implements VideoType {
 	@Override
 	public Video getVideo(String name, String basePath) {
 		
-		if (getDefaultFileFilter() == VideoIO.zippedImageFileFilter) {
-			String fullPath = basePath == null? name: basePath + "/" + name;
-			if (VideoIO.zippedImageFileFilter.accept(fullPath)) {
-				name = VideoIO.zippedImageFileFilter.getImagePaths()[0];
-				basePath = null;
-			}
-		}
-
 		Video video;
 		// if an XML file with the image name is found, load it in order to get frame
 		// duration
@@ -123,7 +114,6 @@ public class ImageVideoType implements VideoType {
 				video = null;
 			}
 		}
-		invalid = (video == null);
 		return video;
 	}
 
@@ -144,7 +134,7 @@ public class ImageVideoType implements VideoType {
 	 */
 	@Override
 	public boolean canRecord() {
-		return getDefaultFileFilter() != VideoIO.zippedImageFileFilter;
+		return true;
 	}
 
 	/**
@@ -154,7 +144,7 @@ public class ImageVideoType implements VideoType {
 	 */
 	@Override
 	public String getDescription() {
-			return getFileFilters()[0].getDescription();
+		return getFileFilters()[0].getDescription();
 	}
 
 	/**
@@ -178,7 +168,7 @@ public class ImageVideoType implements VideoType {
 			ArrayList<VideoType> types = VideoIO.getVideoTypes(true);
 			ArrayList<VideoFileFilter> filters = new ArrayList<VideoFileFilter>();
 			for (VideoType next: types) {
-				if (next instanceof ImageVideoType) {
+				if (next instanceof ImageVideoType && next != this) {
 					ImageVideoType imageType = (ImageVideoType) next;
 					filters.add(imageType.getDefaultFileFilter());
 				}
@@ -217,11 +207,6 @@ public class ImageVideoType implements VideoType {
 	@Override
 	public String toString() {
 		return _toString();
-	}
-
-	@Override
-	public boolean isValid() {
-		return !invalid;
 	}
 
 }

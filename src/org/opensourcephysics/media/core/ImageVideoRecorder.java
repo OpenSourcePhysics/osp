@@ -44,6 +44,7 @@ import javax.imageio.ImageIO;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
+import org.opensourcephysics.tools.JarTool;
 import org.opensourcephysics.tools.ResourceLoader;
 
 /**
@@ -53,6 +54,7 @@ import org.opensourcephysics.tools.ResourceLoader;
  * @version 1.0
  */
 public class ImageVideoRecorder extends ScratchVideoRecorder {
+	
 	// instance fields
 	protected int frameCount;
 	private String tempFileBasePath;
@@ -74,6 +76,9 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
 	public ImageVideoRecorder(ImageVideoType type) {
 		super(type);
 		String ext = type.getDefaultExtension();
+		if (videoType instanceof VideoIO.ZipImageVideoType) {
+			ext = ((VideoIO.ZipImageVideoType) videoType).getImageExtension();
+		}
 		if (ext != null)
 			tempFileType = ext;
 	}
@@ -150,7 +155,7 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
 	// _________________________________
 
 	/**
-	 * Required by ScratchVideoRecorder, but unused.
+	 * Saves the scratch images
 	 */
 	@Override
 	protected void saveScratch() throws IOException {
@@ -160,10 +165,12 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
 		if (chosenExtension != null && !(chooser.getFileFilter() instanceof VideoFileFilter))
 			return;
 
+		boolean isZipType = videoType instanceof VideoIO.ZipImageVideoType;
 		// copy temp files or open and re-encode if needed
 		synchronized (tempFiles) {
-			String fileName = saveFile.getAbsolutePath();
+			String fileName = saveFile.getAbsolutePath();			
 			savedFilePaths = getFileNames(fileName, tempFiles.size());
+			
 			for (int i = 0; i < tempFiles.size(); i++) {
 				String path = savedFilePaths[i];
 				File tempFile = tempFiles.get(i);
@@ -184,13 +191,22 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
 					javax.imageio.ImageIO.write(image, ext, new BufferedOutputStream(new FileOutputStream(path)));
 				}
 			}
+			if (isZipType) {
+				ArrayList<File> zipList = new ArrayList<File>();
+				for (int i = 0; i < savedFilePaths.length; i++)
+					zipList.add(new File(savedFilePaths[i]));
+				if (JarTool.compress(zipList, saveFile, null)) {
+					savedFilePaths = new String[] {saveFile.getAbsolutePath()};
+				}
+				deleteFiles(zipList);
+			}
 		}
 		deleteTempFiles();
 		isSaved = true;
 		hasContent = false;
 		canRecord = false;
 
-		if (savedFilePaths != null && savedFilePaths.length > 0) {
+		if (!isZipType && savedFilePaths != null && savedFilePaths.length > 0) {
 			// save xml description of the video (for frame duration)
 			Video video = getVideo();
 			XMLControl control = new XMLControlElement(video);
@@ -288,6 +304,11 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
 	 */
 	@Override
 	protected File getFileToBeSaved(File file) {
+		if (videoType instanceof VideoIO.ZipImageVideoType) {
+			String path = XML.stripExtension(file.getAbsolutePath());
+			return new File(path + ".zip");			
+		}
+
 		// determine number of digits to append to file names
 		int n = frameCount > 0 ? frameCount : tempFiles.size();
 		// if single or no image, return file itself

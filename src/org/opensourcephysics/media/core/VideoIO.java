@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+//import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -118,6 +119,8 @@ public class VideoIO {
 	public static SingleExtFileFilter videoAndTrkFileFilter, txtFileFilter, jarFileFilter;
 	public static SingleExtFileFilter delimitedTextFileFilter;
 	protected static boolean dataCopiedToClipboard;
+	private static ArrayList<String> filenamesToReload = new ArrayList<String>();
+
 
 	/**
 	 * VideoClip and VideoRecorder need persistent loaders that must later be asynchronously finalized.
@@ -173,61 +176,49 @@ public class VideoIO {
 
 	}
 
-	public static class ImageSequenceFileFilter extends VideoFileFilter {
+	public static class ZipImageVideoType extends ImageVideoType {
 
-		private String[] imagePaths;
-
-		public ImageSequenceFileFilter() {
-			super("zip", new String[] {"zip"} );
-		}
-
-		/**
-		 * Accepts zip files containing numbered image sequences
-		 * 
-		 * @param f the file
-		 * @return true if accepted
-		 */
-		@Override
-		public boolean accept(File f) {
-			String path = XML.forwardSlash(f.getPath());
-			return accept(path);
-		}
+		// the image file filter
+		private ImageVideoType imageVideoType;
+		private static final String ZIP = "zip";
 		
-		/**
-		 * Accepts paths to local or remote zip files containing numbered image sequences.
-		 * If accepted, this saves the image paths for use during loading, etc
-		 * 
-		 * @param path the path
-		 * @return true if accepted
-		 */
-		public boolean accept(String path) {
-			String ext = XML.getExtension(path);
-			if ("zip".equalsIgnoreCase(ext)) {  //$NON-NLS-1$
-				Map<String, ZipEntry>  map = ResourceLoader.getZipContents(path);
-				if (map == null)
-					return false;
-				for (String next: map.keySet()) {
-					if (next.contains("/") || next.contains("\\") || !imageFileFilter.accept(new File(next)))
-						continue;
-					String imagePath = path + "!/" + next;
-					imagePaths = getImageSequencePaths(imagePath, map.keySet());
-					desc = null;
-					// accept only if 2 or more images are found
-					return imagePaths != null && imagePaths.length > 1;				
-				}
-			}
-			return false;
+		public ZipImageVideoType(ImageVideoType type) {
+			super(new VideoFileFilter(ZIP, new String[] { ZIP }));
+			imageVideoType = type;
 		}
-		
+
 	  @Override
-		public String[] getExtensions() {
-			return new String[] {"zip"};
+	  public String getDescription() {
+	  	String zipped = MediaRes.getString("ZipImageVideoType.Description.Zipped");
+			String desc = zipped + " " + imageVideoType.getDescription(); //$NON-NLS-1$
+			// substitute ".zip" for image extensions
+			desc = desc.substring(0, desc.indexOf("(") + 1) + "." + ZIP + ")";
+	  	return desc;
 	  }
 	  
-		public String[] getImagePaths() {
-			return imagePaths;
+		@Override
+		public Video getVideo(String name, String basePath) {
+			String fullPath = basePath == null? name: basePath + "/" + name;
+			if (VideoIO.zipFileFilter.accept(new File(fullPath))) {
+				String[] imagePaths = VideoIO.getZippedImagePaths(fullPath);
+				if (imagePaths == null) {
+					return null;
+				}
+				name = imagePaths[0];
+				basePath = null;
+				return super.getVideo(name, basePath);
+			}
+			return null;
 		}
-
+		
+	  public String getImageExtension() {
+	  	return imageVideoType.getDefaultExtension();
+	  }
+	  
+	  public ImageVideoType getImageVideoType() {
+	  	return imageVideoType;
+	  }
+	  
 	}
 
 	public static MovieVideoType getMovieType(String extension) {
@@ -266,7 +257,6 @@ public class VideoIO {
 	// static fields
 	protected static AsyncFileChooser chooser;
 	protected static SingleExtFileFilter imageFileFilter, jpgFileFilter;
-	protected static ImageSequenceFileFilter zippedImageFileFilter;
 	protected static ArrayList<VideoType> videoTypes;
 	protected static VideoFileFilter videoFileFilter;
 	protected static Collection<VideoFileFilter> singleVideoTypeFilters = new TreeSet<VideoFileFilter>();
@@ -284,11 +274,18 @@ public class VideoIO {
 		MovieFactory.hasVideoEngine();
 		// add other video types
 		addVideoType(new GifVideoType());
+		
 		VideoFileFilter filter = new VideoFileFilter("jpg", //$NON-NLS-1$
-				new String[] { "jpg", "jpeg" }); //$NON-NLS-1$ //$NON-NLS-2$
-		addVideoType(new ImageVideoType(filter));
+				new String[] { "jpg", "jpeg" }); //$NON-NLS-1$ //$NON-NLS-2$	
+		ImageVideoType vidType = new ImageVideoType(filter);
+		addVideoType(vidType);
+		addVideoType(new ZipImageVideoType(vidType));
+		
 		filter = new VideoFileFilter("png", new String[] { "png" }); //$NON-NLS-1$ //$NON-NLS-2$
-		addVideoType(new ImageVideoType(filter));
+		vidType = new ImageVideoType(filter);
+		addVideoType(vidType);
+		addVideoType(new ZipImageVideoType(vidType));
+		
 		imageFileFilter = new SingleExtFileFilter(null, MediaRes.getString("VideoIO.ImageFileFilter.Description")) { //$NON-NLS-1$
 			@Override
 			public boolean accept(File f, boolean checkDir) {
@@ -311,8 +308,6 @@ public class VideoIO {
 			}
 
 		};
-		zippedImageFileFilter = new ImageSequenceFileFilter();
-		addVideoType(new ImageVideoType(zippedImageFileFilter));
 	}
 
 	/**
@@ -336,14 +331,40 @@ public class VideoIO {
 	/**
 	 * Gets an array of image paths inside a zip file.
 	 *
-	 * @param path the path to the zip file
+	 * @param path the path to the zip file OR to an image inside the zip file
 	 * @return String[] with image paths in numerical order
 	 */
-	public static String[] getZippedImagePaths(String path) {
-		if (path != null && zippedImageFileFilter.accept(path)) {
-			return zippedImageFileFilter.getImagePaths();
+	public static String[] getZippedImagePaths(String zipPath) {
+		if (zipPath == null)
+			return null;
+		// keep only zip filepath if an image path is included
+		int n = zipPath.indexOf("!");
+		if (n > 0) {
+			zipPath = zipPath.substring(0, n);
 		}
-		return null;
+		if (!zipFileFilter.accept(new File(zipPath)))
+			return null;
+		
+		// check if name requires reload
+		String name = XML.getName(zipPath);
+		boolean useCache = !filenamesToReload.remove(name);
+		
+		// get the map and look for images
+		Map<String, ZipEntry>  map = ResourceLoader.getZipContents(zipPath, useCache);
+		if (map == null)
+			return null;
+		String[] imagePaths = null;
+		for (String next: map.keySet()) {
+			if (next.contains("/") || next.contains("\\") || !imageFileFilter.accept(new File(next)))
+				continue;
+			String imagePath = zipPath + "!/" + next;
+			imagePaths = getImageSequencePaths(imagePath, map.keySet());
+			if (imagePaths != null && imagePaths.length > 1)
+				break;
+		}
+		// return image paths only if 2 or more images are found
+		boolean ret = imagePaths != null && imagePaths.length > 1;
+		return ret? imagePaths: null;
 	}
 	
 	/**
@@ -683,6 +704,16 @@ public class VideoIO {
 		return available;
 	}
 	
+	/**
+	 * Adds a zip image file path to those requiring a reload rather than cached bytes.
+	 * This is required when a zip file is overwritten, for example
+	 *
+	 * @param zipPath
+	 */
+  public static void requiresReload(String zipPath) {
+  	filenamesToReload.add(XML.getName(zipPath));	
+  }
+    
 	/**
 	 * Cancels the current operation when true.
 	 *
@@ -1180,7 +1211,7 @@ private static String fixVideoPath(String path) {
 	}
 
 	private static String getEmbeddedMovie(String path) {
-		Map<String, ZipEntry> map = ResourceLoader.getZipContents(path);
+		Map<String, ZipEntry> map = ResourceLoader.getZipContents(path, true);
 		for (String key : map.keySet()) {
 			if (videoFileFilter.accept(new File(key), true)) { // load video
 				return path + "!/" + key;

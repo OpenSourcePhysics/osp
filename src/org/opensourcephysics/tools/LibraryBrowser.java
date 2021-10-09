@@ -3507,7 +3507,7 @@ public class LibraryBrowser extends JPanel {
 				if (ResourceLoader.isHTTP(path)) {
 					return true;
 				}
-				Map<String, ZipEntry> files = ResourceLoader.getZipContents(path);
+				Map<String, ZipEntry> files = ResourceLoader.getZipContents(path, true);
 				for (String next : files.keySet()) {
 					if (next.toLowerCase().endsWith(".trk")) //$NON-NLS-1$
 						return true;

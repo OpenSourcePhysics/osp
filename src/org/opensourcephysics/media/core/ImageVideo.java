@@ -529,7 +529,7 @@ public class ImageVideo extends VideoAdapter {
 	 * @throws IOException
 	 */
 	private Object[] loadImages(String imagePath, boolean sequence, Function<Object[], Void> whenDone) throws IOException {
-		String[] zipPaths = VideoIO.zippedImageFileFilter.getImagePaths();
+		String[] zipPaths = VideoIO.getZippedImagePaths(imagePath);
 		if (zipPaths != null && zipPaths[0].equals(imagePath)) {
 			return loadImages(zipPaths, sequence, whenDone);
 		}

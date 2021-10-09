@@ -56,19 +56,19 @@ public class VideoFileFilter extends VideoIO.SingleExtFileFilter implements Comp
 		super(null, null);
 	}
 		
-	  /**
-	   * Constructor with container type and accepted file extensions.
-	   * 
-	   * @param containerType the container type (eg "mov" or "jpg")
-	   * @param extensions array of accepted extensions
-	   */
-		public VideoFileFilter(String containerType, String[] extensions) {
-			this();
-			if (containerType!=null && extensions!=null && extensions.length>0) {
-				type = containerType;
-				this.extensions = extensions;
-			}
+  /**
+   * Constructor with container type and accepted file extensions.
+   * 
+   * @param containerType the container type (eg "mov" or "jpg")
+   * @param extensions array of accepted extensions
+   */
+	public VideoFileFilter(String containerType, String[] extensions) {
+		this();
+		if (containerType!=null && extensions!=null && extensions.length>0) {
+			type = containerType;
+			this.extensions = extensions;
 		}
+	}
 		
 	/**
 	 * BH fix for no need to check directories if a remote path or SwingJS temp file
@@ -111,76 +111,77 @@ public class VideoFileFilter extends VideoIO.SingleExtFileFilter implements Comp
 		if (desc != null)
 			return desc;
 		String desc = MediaRes.getString(type.toUpperCase()+"FileFilter.Description"); //$NON-NLS-1$
-	  	if (extensions!=null) {
-	  		desc += " ("; //$NON-NLS-1$
-	  		for (int i = 0; i < extensions.length; i++) {
-	  			if (i>0) desc += ", "; //$NON-NLS-1$
-	  			desc += "."+extensions[i]; //$NON-NLS-1$
-	  		}
-	  		desc += ")"; //$NON-NLS-1$
-	  	}
-	  	return this.desc = desc;
-	  }
-	  
-	  /**
-	   * Gets the default extension to suggest when saving.  
-	   * 
-	   * @return the default extension
-	   */
-	  public String getDefaultExtension() {
-	  	if (extensions!=null)
-	  		return extensions[0];
-	  	for (VideoFileFilter next: VideoIO.singleVideoTypeFilters) {
-	  		String ext = next.getDefaultExtension();
-	  		if (ext!=null) return ext;
-	  	}
-			return null;
-	  }
+  	String[] exts = getExtensions();
+  	if (exts!=null) {
+  		desc += " ("; //$NON-NLS-1$
+  		for (int i = 0; i < exts.length; i++) {
+  			if (i>0) desc += ", "; //$NON-NLS-1$
+  			desc += "."+exts[i]; //$NON-NLS-1$
+  		}
+  		desc += ")"; //$NON-NLS-1$
+  	}
+  	return this.desc = desc;
+  }
+  
+  /**
+   * Gets the default extension to suggest when saving.  
+   * 
+   * @return the default extension
+   */
+  public String getDefaultExtension() {
+  	String[] exts = getExtensions();
+  	if (exts!=null)
+  		return exts[0];
+  	for (VideoFileFilter next: VideoIO.singleVideoTypeFilters) {
+  		String ext = next.getDefaultExtension();
+  		if (ext!=null) return ext;
+  	}
+		return null;
+  }
 
-	  /**
-	   * Gets all extensions accepted by this filter.  
-	   * 
-	   * @return array of extensions
-	   */
-	  public String[] getExtensions() {
-	  	if (extensions!=null)
-	  		return extensions;
-	  	TreeSet<String> set = new TreeSet<String>();
-	  	for (VideoFileFilter next: VideoIO.singleVideoTypeFilters) {
-	  		String[] exts = next.getExtensions();
-	  		for (String ext: exts)
-	  			set.add(ext);
-	  	}
-			return set.toArray(new String[set.size()]);
-	  }
+  /**
+   * Gets all extensions accepted by this filter.  
+   * 
+   * @return array of extensions
+   */
+  public String[] getExtensions() {
+  	if (extensions!=null)
+  		return extensions;
+  	TreeSet<String> set = new TreeSet<String>();
+  	for (VideoFileFilter next: VideoIO.singleVideoTypeFilters) {
+  		String[] exts = next.getExtensions();
+  		for (String ext: exts)
+  			set.add(ext);
+  	}
+		return set.toArray(new String[set.size()]);
+  }
 
-	  /**
-	   * Gets the container type.
-	   * 
-	   * @return the container type
-	   */
-	  public String getContainerType() {
-	  	return type;
-	  }
-	  
-	  /**
-	   * Compares this filter to another. Implements Comparable.
-	   * This compares them alphabetically by description.
-	   * 
-	   * @param filter the filter to compare
-	   * @return the comparison of their descriptions
-	   */
-	  @Override
+  /**
+   * Gets the container type.
+   * 
+   * @return the container type
+   */
+  public String getContainerType() {
+  	return type;
+  }
+  
+  /**
+   * Compares this filter to another. Implements Comparable.
+   * This compares them alphabetically by description.
+   * 
+   * @param filter the filter to compare
+   * @return the comparison of their descriptions
+   */
+  @Override
 	public int compareTo(VideoFileFilter filter) {  	
 	  	return getDescription().compareTo(filter.getDescription());
-	  }
-	  
-	  
-	  @Override
-	  public String toString() {
-		  String s = Arrays.toString(extensions);
-		  return s.substring(1, s.length() - 1);
-	  }
+  }
+  
+  @Override
+  public String toString() {
+	  String s = Arrays.toString(extensions);
+	  return s.substring(1, s.length() - 1);
+  }
 
 }
 
