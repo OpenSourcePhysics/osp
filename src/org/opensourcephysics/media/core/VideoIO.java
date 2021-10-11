@@ -183,7 +183,15 @@ public class VideoIO {
 		private static final String ZIP = "zip";
 		
 		public ZipImageVideoType(ImageVideoType type) {
-			super(new VideoFileFilter(ZIP, new String[] { ZIP }));
+			super(new VideoFileFilter(ZIP, new String[] { ZIP }) {
+				@Override
+				public boolean accept(File f, boolean checkIfDir) {
+					if (!super.accept(f, checkIfDir))
+						return false;
+					String[] imagePaths = VideoIO.getZippedImagePaths(f.getAbsolutePath());
+					return imagePaths != null;
+				}
+			});
 			imageVideoType = type;
 		}
 
