@@ -350,7 +350,7 @@ public class VideoIO {
 		if (n > 0) {
 			zipPath = zipPath.substring(0, n);
 		}
-		if (!zipFileFilter.accept(new File(zipPath)))
+		if (zipFileFilter != null && !zipFileFilter.accept(new File(zipPath)))
 			return null;
 		
 		// check if name requires reload

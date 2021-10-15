@@ -65,7 +65,7 @@ public class ReleaseZipFileTest {
 						OSPRuntime.setPreference("file_chooser_directory", file.getParent());
 						OSPRuntime.savePreferences();
 
-						Map<String, ZipEntry> map = ResourceLoader.getZipContents(path);
+						Map<String, ZipEntry> map = ResourceLoader.getZipContents(path, false);
 
 						for (String next : map.keySet()) {
 							if (next.contains(".htm")) {
