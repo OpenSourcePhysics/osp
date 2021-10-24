@@ -155,22 +155,15 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 				at = coords.getToWorldTransform(frameNumber);
 				g2.transform(at);
 			}
-			g = g2;
+			g2.drawImage(filterStack.isEmpty() || !filterStack.isEnabled() ? rawImage : getImage(), xoffset, yoffset, panel);
+			g2.dispose();
 		} else { // center image in panel if not measured
 			double centerX = (panel.getXMax() + panel.getXMin()) / 2;
 			double centerY = (panel.getYMax() + panel.getYMin()) / 2;
 			xoffset = panel.xToPix(centerX) - size.width / 2;
 			yoffset = panel.yToPix(centerY) - size.height / 2;
+			g.drawImage(filterStack.isEmpty() || !filterStack.isEnabled() ? rawImage : getImage(), xoffset, yoffset, panel);
 		}
-
-//		OSPLog.debug(Performance.timeCheckStr("Video draw video " + ++ntest2, Performance.TIME_MARK));
-		// draw the video or filtered image
-		//System.out.println("Video g2 transform " + g2.getTransform());
-		g.drawImage(filterStack.isEmpty() || !filterStack.isEnabled() ? rawImage : getImage(), xoffset, yoffset, panel);
-		if (g2 != null)
-			g2.dispose();
-//		OSPLog.debug(Performance.timeCheckStr("Video draw video done", Performance.TIME_MARK));
-
 	}
 
 	/**
@@ -1082,7 +1075,6 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	 */
 	@Override
 	public void dispose() {
-		//System.out.println("VideoAdapter.dispose");
 		if (coords != null)
 			coords.removePropertyChangeListener(ImageCoordSystem.PROPERTY_COORDS_TRANSFORM, this);
 		coords = null;

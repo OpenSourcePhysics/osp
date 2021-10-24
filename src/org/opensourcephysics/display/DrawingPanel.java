@@ -800,7 +800,6 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 	 */
 	@Override
 	public void paintComponent(Graphics g) {
-		//System.out.println(Performance.timeCheckStr("DrawingPanel.paintc00 ", Performance.TIME_MARK));
 		viewRect = findViewRect(); // find the clipping rectangle within a scroll pane viewport
 		if (!paintDrawables) {
 			// message from MessageDrawable that this is just a message drawing
@@ -837,7 +836,6 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 			// }
 		}
 		super.paintComponents(g);
-		//System.out.println(Performance.timeCheckStr("DrawingPanel.paintc01 ", Performance.TIME_MARK));
 	}
 
 	/**
@@ -866,8 +864,9 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 			Dimension interiorDimension = dimensionSetter.getInterior(this);
 			if (interiorDimension != null) {
 				squareAspect = false;
-				leftGutter = rightGutter = Math.max(0, getWidth() - interiorDimension.width) / 2;
-				topGutter = bottomGutter = Math.max(0, getHeight() - interiorDimension.height) / 2;
+				int gx = Math.max(0, getWidth() - interiorDimension.width) / 2;
+				int gy = Math.max(0, getHeight() - interiorDimension.height) / 2;
+				setGutters(gx, gy, gx, gy);
 			}
 		}
 	}
@@ -1835,10 +1834,7 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 		xmax = xmaxPreferred;
 		ymin = yminPreferred;
 		ymax = ymaxPreferred;
-		leftGutter = leftGutterPreferred; // start with default gutter values
-		topGutter = topGutterPreferred;
-		rightGutter = rightGutterPreferred;
-		bottomGutter = bottomGutterPreferred;
+		resetGutters();
 		lastWidth = getWidth();
 		lastHeight = getHeight();
 		if (fixedPixelPerUnit) { // the user has specified a fixed pixel scale
@@ -1872,8 +1868,9 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 				}
 			}
 		}
+		double y = ymax * yPixPerUnit + topGutter;
 		pixelTransform.setTransform(xPixPerUnit, 0, 0, -yPixPerUnit, -xmin * xPixPerUnit + leftGutter,
-				ymax * yPixPerUnit + topGutter);
+				y);		
 		pixelTransform.getMatrix(pixelMatrix); // puts the transformation into the pixel matrix
 	}
 
@@ -2268,13 +2265,7 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 					break; // abort drawing
 				}
 				Drawable d = tempList.get(i);
-//				System.out.println(Performance.timeCheckStr("DrawingPanel.draw1 " +i + " "+
-//				 d.getClass().getName(), Performance.TIME_MARK));
 				d.draw(this, g2);
-				
-//				System.out.println(Performance.timeCheckStr("DrawingPanel.draw2 " +
-//						 d.getClass().getName(), Performance.TIME_MARK));
-//
 			}
 		}
 		if (!messagesAsJLabels)
@@ -2569,10 +2560,7 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 	 * @param gutters int[]
 	 */
 	public void setGutters(int[] gutters) {
-		leftGutter = gutters[0];
-		topGutter = gutters[1];
-		rightGutter = gutters[2];
-		bottomGutter = gutters[3];
+		setGutters(gutters[0], gutters[1], gutters[2], gutters[3]);
 	}
 
 	/**
@@ -2599,20 +2587,18 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 	 * @param bottom
 	 */
 	public void setPreferredGutters(int left, int top, int right, int bottom) {
-		leftGutterPreferred = leftGutter = left;
-		topGutterPreferred = topGutter = top;
-		rightGutterPreferred = rightGutter = right;
-		bottomGutterPreferred = bottomGutter = bottom;
+		setGutters(leftGutterPreferred = left, topGutterPreferred = top, rightGutterPreferred = right,
+				bottomGutterPreferred = bottom);
 	}
 
 	/**
 	 * Resets the gutters to their preferred values.
 	 */
 	public void resetGutters() {
-		leftGutter = leftGutterPreferred;
-		topGutter = topGutterPreferred;
-		rightGutter = rightGutterPreferred;
-		bottomGutter = bottomGutterPreferred;
+		setGutters(leftGutterPreferred,
+		topGutterPreferred,
+		rightGutterPreferred,
+		bottomGutterPreferred);
 	}
 
 	/**
@@ -2679,12 +2665,6 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 		
 		if (msg != null && msg.length() == 0)
 			msg = null;
-
-//		if (msg != null)
-//			System.out.println("drawingPanel message ignored ");
-//		if (true)
-//			return false;//TEST_BH
-		
 		getMessages().setMessage(this, msg, location);
 		if (msg == null ? lastMessage[location] == null : msg.equals(lastMessage[location])) {
 			return false;
@@ -3191,7 +3171,6 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 	}
 
 	public DrawingPanel dref(Object o) {
-		//System.out.println("DP ref " + (o instanceof String ? o.toString() : o.getClass().getSimpleName())); 
 		return this;
 	}
 
