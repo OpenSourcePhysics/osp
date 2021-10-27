@@ -451,7 +451,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		/**
 		 * A class to calculate a specified number of discrete frame times for a video. 
 		 * An expanding/contracting simplex method is used to find the point in time where
-		 * the image has changed. 
+		 * the image has changed. For browsers that do not allow seekToNextFrame() -- Chrome and Safari).
 		 * 
 		 * @author hansonr
 		 *
@@ -487,6 +487,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				//System.out.println("currentTime=" + curTime + " " + HTML5Video.getCurrentTime(jsvideo));
 				BufferedImage img = HTML5Video.getImage(jsvideo, Integer.MIN_VALUE);
 				if (img == null) {
 					whenDone.apply(null);
