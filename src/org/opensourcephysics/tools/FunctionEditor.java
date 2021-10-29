@@ -1520,6 +1520,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		// gets the cell editor
 		@Override
 		public TableCellEditor getCellEditor(int row, int column) {
+			tableCellEditor.isExpression = column == 1;
 			return tableCellEditor;
 		}
 
@@ -1694,6 +1695,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		int minPopupWidth, varBegin, varEnd;
 		FObject prevObject;
 		String prevName, prevExpression;
+		boolean isExpression;
 
 		// Constructor.
 		CellEditor() {
@@ -2080,16 +2082,18 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			String text = popupField.getText().trim();
 			char separator = sciFormat0000.getDecimalFormatSymbols().getDecimalSeparator();
 			// warn of if statements that fail if user expects comma separator to work
-			if (separator == ',') {
+			if (separator == ',' && tableCellEditor.isExpression) {
 				if (!isValidExpression(text)) {
-					// warn that if statements can use only periods for separators
-					JOptionPane.showMessageDialog(FunctionEditor.this,
-							ToolsRes.getString("FunctionEditor.Dialog.IfStatementError.Message1") //$NON-NLS-1$
-									+ "\n" //$NON-NLS-1$
-									+ ToolsRes.getString("FunctionEditor.Dialog.IfStatementError.Message2"), //$NON-NLS-1$
-							ToolsRes.getString("FunctionEditor.Dialog.IfStatementError.Title"), //$NON-NLS-1$
-							JOptionPane.ERROR_MESSAGE);
-					return;
+					if (text.contains("if(") || text.contains("if (")) {
+						// warn that if statements can use only periods for separators
+						JOptionPane.showMessageDialog(FunctionEditor.this,
+								ToolsRes.getString("FunctionEditor.Dialog.IfStatementError.Message1") //$NON-NLS-1$
+										+ "\n" //$NON-NLS-1$
+										+ ToolsRes.getString("FunctionEditor.Dialog.IfStatementError.Message2"), //$NON-NLS-1$
+								ToolsRes.getString("FunctionEditor.Dialog.IfStatementError.Title"), //$NON-NLS-1$
+								JOptionPane.ERROR_MESSAGE);
+						return;
+					}
 				}
 			}
 
