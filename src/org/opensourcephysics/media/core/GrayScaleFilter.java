@@ -266,7 +266,7 @@ public class GrayScaleFilter extends Filter {
 					}
 					refresh();
 					updateDisplay();
-					firePropertyChange("weight", null, null); //$NON-NLS-1$
+					GrayScaleFilter.this.firePropertyChange("weight", null, null); //$NON-NLS-1$
 				}
 
 			};
@@ -296,7 +296,7 @@ public class GrayScaleFilter extends Filter {
 			}
 			setWeights(rgb);
 			updateDisplay();
-			firePropertyChange("weight", null, null); //$NON-NLS-1$
+			GrayScaleFilter.this.firePropertyChange("weight", null, null); //$NON-NLS-1$
 			source.selectAll();
 		}
 

@@ -32,15 +32,13 @@
 package org.opensourcephysics.media.core;
 
 import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-
 import javax.swing.BorderFactory;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
@@ -51,68 +49,30 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 
 /**
- * This is a Filter that produces fading ghost images of bright objects on a
- * dark background.
+ * This is a Filter that applies a log transform to the source.
  *
  * @author Douglas Brown
  * @version 1.0
  */
-public class GhostFilter extends Filter {
+public class LogFilter extends Filter {
 	// instance fields
-	protected double fade;
-	protected double defaultFade = 0.05;
+	private int level;
+	private int[] lookup = new int[256];
+	private boolean grayscale = false;
+	
 	// inspector fields
-	protected Inspector inspector;
-	protected JLabel fadeLabel;
-	protected NumberField fadeField;
-	protected JSlider fadeSlider;
-	protected int[] values;
-
-	String prefix = "Filter.Ghost";
+	private Inspector inspector;
+	private JLabel levelLabel, highlightLabel, shadowLabel;
+	private IntegerField field;
+	private JSlider slider;
+	private JCheckBox grayCheckbox;
 
 	/**
-	 * Constructs a GhostFilter object with default fade.
+	 * Constructs a LogFilter object.
 	 */
-	public GhostFilter() {
-		setFade(defaultFade);
+	public LogFilter() {
 		hasInspector = true;
-	}
-
-	/**
-	 * Sets the fade.
-	 *
-	 * @param fade the fraction by which a ghost image fades each time it is
-	 *             rendered. A fade of 0 never fades, while a fade of 1 fades
-	 *             completely and so is never seen.
-	 */
-	public void setFade(double fade) {
-		Double prev = new Double(this.fade);
-		this.fade = Math.min(Math.abs(fade), 1);
-		firePropertyChange("fade", prev, new Double(fade)); //$NON-NLS-1$
-	}
-
-	/**
-	 * Gets the fade.
-	 *
-	 * @return the fade.
-	 * @see #setFade
-	 */
-	public double getFade() {
-		return fade;
-	}
-
-	/**
-	 * Overrides the setEnabled method to force reinitialization.
-	 *
-	 * @param enabled <code>true</code> if this is enabled.
-	 */
-	@Override
-	public void setEnabled(boolean enabled) {
-		if (isEnabled() == enabled) {
-			return;
-		}
-		source = null;
-		super.setEnabled(enabled);
+		setLevel(0);
 	}
 
 	@Override
@@ -127,16 +87,6 @@ public class GhostFilter extends Filter {
 	}
 
 	/**
-	 * 
-	 * Clears ghosts.
-	 */
-	@Override
-	public void clear() {
-		source = null;
-		firePropertyChange("image", null, null); //$NON-NLS-1$
-	}
-
-	/**
 	 * Refreshes this filter's GUI
 	 */
 	@Override
@@ -144,35 +94,34 @@ public class GhostFilter extends Filter {
 		if (inspector == null || !haveGUI)
 			return;
 		super.refresh();
-		fadeLabel.setText(MediaRes.getString(prefix + ".Label.Fade")); //$NON-NLS-1$
-		fadeSlider.setToolTipText(MediaRes.getString(prefix + ".ToolTip.Fade")); //$NON-NLS-1$
-		boolean enabled = isEnabled();
-		fadeLabel.setEnabled(enabled);
-		fadeSlider.setEnabled(enabled);
-		fadeField.setEnabled(enabled);
-		inspector.setTitle(MediaRes.getString(prefix + ".Title")); //$NON-NLS-1$
+		levelLabel.setText(MediaRes.getString("Filter.Log.Label.Level")); //$NON-NLS-1$
+		highlightLabel.setText(MediaRes.getString("Filter.Log.Label.Highlights")); //$NON-NLS-1$
+		shadowLabel.setText(MediaRes.getString("Filter.Log.Label.Shadows")); //$NON-NLS-1$
+		slider.setToolTipText(MediaRes.getString("Filter.Log.ToolTip.Level")); //$NON-NLS-1$
+		field.setToolTipText(MediaRes.getString("Filter.Log.ToolTip.Level")); //$NON-NLS-1$
+		grayCheckbox.setText(MediaRes.getString("Filter.Log.Checkbox.Grayscale")); //$NON-NLS-1$
+//		levelLabel.setEnabled(isEnabled());
+		field.setEnabled(isEnabled());
+		slider.setEnabled(isEnabled());
+		grayCheckbox.setEnabled(isEnabled());
+		inspector.setTitle(MediaRes.getString("Filter.Log.Title")); //$NON-NLS-1$
 		inspector.pack();
 	}
 
-	// _____________________________ protected methods _______________________
+	// _____________________________ private methods _______________________
 
 	/**
-	 * Creates and initializes the input and output images.
+	 * Creates the input and output images.
 	 *
-	 * @param image a new source image
+	 * @param image a new input image
 	 */
 	@Override
 	protected void initializeSubclass() {
-		getPixelsIn();
-		values = new int[nPixelsIn];
-		for (int i = 0; i < nPixelsIn; i++) {
-			int pixel = pixelsIn[i];
-			values[i] = (((pixel >> 16) & 0xff) + ((pixel >> 8) & 0xff) + (pixel & 0xff)) / 3; // value
-		}
+		// nothing to do
 	}
 
 	/**
-	 * Sets the output image pixels to a ghost of the input pixels.
+	 * Sets the output image pixels.
 	 */
 	@Override
 	protected void setOutputPixels() {
@@ -180,28 +129,82 @@ public class GhostFilter extends Filter {
 		getPixelsOut();
 		for (int i = 0; i < nPixelsIn; i++) {
 			int pixel = pixelsIn[i];
-			// value of current input pixel
-			int v = (((pixel >> 16) & 0xff) + ((pixel >> 8) & 0xff) + (pixel & 0xff)) / 3;
-			int ghost = (int) ((1 - fade) * values[i]); // faded value of prev input
-			if (ghost > v) {
-				pixelsOut[i] = (ghost << 16) | (ghost << 8) | ghost; // grey
-				values[i] = ghost;
-			} else {
-				pixelsOut[i] = pixel;
-				values[i] = v;
+			int r = (pixel >> 16) & 0xff;
+			int g = (pixel >> 8) & 0xff;
+			int b = pixel & 0xff;
+			if (grayscale) {
+				// this is fast
+				int gray = getGray(r, g, b);
+				gray = lookup[gray];
+				pixelsOut[i] = (gray << 16) | (gray << 8) | gray;
+			}
+			else {
+				// much slower
+				float[] hsb = Color.RGBtoHSB(r, g, b, null);
+				int gray = (int)(hsb[2]*255);
+				gray = lookup[gray];
+				pixelsOut[i] = Color.HSBtoRGB(hsb[0], hsb[1], (float)(gray/255.0));
 			}
 		}
 	}
 
 	/**
+	 * Returns the grayscale brightness.
+	 *
+	 * @return the brightness
+	 */
+	private int getGray(int r, int g, int b) {
+		double gray = (r + g + b) / 3;
+		return (int) gray;
+	}
+
+	/**
+	 * Sets the level
+	 * 
+	 * @param level integer between +/-100
+	 */
+	private void setLevel(int level) {
+		if (level != 0 && this.level == level)
+			return;
+		this.level = level;
+		double lim = Math.abs(0.01 * level);
+		double a = Math.min(1, 5 * lim);
+		lim = a * Math.exp(6 * lim);
+		double b = lim / Math.log10(lim + 1);
+		double c = level == 0? 1: 255 / lim;
+		for (int i = 0; i < lookup.length; i++) {
+			lookup[i] = level == 0? i: (int) Math.round(c * b * Math.log10(1 + i/c));
+		}
+		if (level < 0) {
+			int[] newLookup = new int[256];
+			for (int i = 0; i < 256; i++) {
+				newLookup[i] = 255 - lookup[255 - i];
+			}
+			lookup = newLookup;
+		}
+		firePropertyChange("level", null, null);
+	}
+	
+	private int getLevel() {
+		return level;
+	}
+	
+	private void setGrayscale(boolean gray) {
+		if (grayscale == gray)
+			return;
+		grayscale = gray;
+		firePropertyChange("grayscale", null, null);
+	}
+
+	/**
 	 * Inner Inspector class to control filter parameters
 	 */
-	protected class Inspector extends InspectorDlg {
+	private class Inspector extends InspectorDlg {
 		/**
 		 * Constructs the Inspector.
 		 */
 		public Inspector() {
-			super(prefix + ".Title"); //$NON-NLS-1$
+			super("Filter.GrayScale.Title"); //$NON-NLS-1$
 		}
 
 		/**
@@ -210,79 +213,79 @@ public class GhostFilter extends Filter {
 		@Override
 		void createGUI() {
 			// create components
-			fadeLabel = new JLabel();
-			fadeLabel.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 0));
-			fadeField = new DecimalField(4, 2);
-			fadeField.setMaxValue(0.5);
-			fadeField.setMinValue(0);
-			fadeField.addActionListener(new ActionListener() {
+			levelLabel = new JLabel();
+			levelLabel.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 0));
+			highlightLabel = new JLabel();
+			highlightLabel.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 0));
+			shadowLabel = new JLabel();
+			shadowLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 4));
+			field = new IntegerField(3);
+			field.setMaxValue(100);
+			field.setMinValue(-100);
+			field.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					setFade(fadeField.getValue());
+					setLevel(field.getIntValue());
 					updateDisplay();
-					fadeField.selectAll();
+					field.selectAll();
 				}
 
 			});
-			fadeField.addFocusListener(new FocusListener() {
+			field.addFocusListener(new FocusListener() {
 				@Override
 				public void focusGained(FocusEvent e) {
-					fadeField.selectAll();
+					field.selectAll();
 				}
 
 				@Override
 				public void focusLost(FocusEvent e) {
-					setFade(fadeField.getValue());
+					setLevel(field.getIntValue());
 					updateDisplay();
 				}
 
 			});
-			fadeSlider = new JSlider(0, 0, 0);
-			fadeSlider.setMaximum(50);
-			fadeSlider.setMinimum(0);
-			fadeSlider.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
-			fadeSlider.addChangeListener(new ChangeListener() {
+			slider = new JSlider(0, 0, 0);
+			slider.setMaximum(100);
+			slider.setMinimum(-100);
+			slider.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
+			slider.addChangeListener(new ChangeListener() {
 				@Override
 				public void stateChanged(ChangeEvent e) {
-					int i = fadeSlider.getValue();
-					if (i != (int) (getFade() * 100)) {
-						setFade(i / 100.0);
+					int i = slider.getValue();
+					if (i != getLevel()) {
+						setLevel(i);
 						updateDisplay();
 					}
 				}
 
 			});
-			// add components to content pane
-			GridBagLayout gridbag = new GridBagLayout();
-			JPanel panel = new JPanel(gridbag);
-//			setContentPane(panel);
-			GridBagConstraints c = new GridBagConstraints();
-			c.anchor = GridBagConstraints.EAST;
-			c.fill = GridBagConstraints.NONE;
-			c.weightx = 0.0;
-			c.gridx = 0;
-			c.insets = new Insets(5, 5, 0, 2);
-			gridbag.setConstraints(fadeLabel, c);
-			panel.add(fadeLabel);
-			c.fill = GridBagConstraints.HORIZONTAL;
-			c.gridx = 1;
-			c.insets = new Insets(5, 0, 0, 0);
-			gridbag.setConstraints(fadeField, c);
-			panel.add(fadeField);
-			c.gridx = 2;
-			c.insets = new Insets(5, 0, 0, 0);
-			c.weightx = 1.0;
-			gridbag.setConstraints(fadeSlider, c);
-			panel.add(fadeSlider);
+			grayCheckbox = new JCheckBox();
+			grayCheckbox.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					setGrayscale(grayCheckbox.isSelected());
+				}
+			});
+
 			
+			// add components to content pane
+			JPanel contentPane = new JPanel(new BorderLayout());
+			setContentPane(contentPane);
+			JPanel panel = new JPanel();
+			panel.add(highlightLabel);
+			panel.add(slider);
+			panel.add(shadowLabel);
+			contentPane.add(panel, BorderLayout.NORTH);
+			
+			panel = new JPanel();
+			panel.add(levelLabel);
+			panel.add(field);
+			panel.add(grayCheckbox);
+			contentPane.add(panel, BorderLayout.CENTER);
+
 			JPanel buttonbar = new JPanel();
 			buttonbar.add(ableButton);
-			buttonbar.add(clearButton);
 			buttonbar.add(closeButton);
-			
-			JPanel contentPane = new JPanel(new BorderLayout());
-			contentPane.add(panel, BorderLayout.NORTH);
-			setContentPane(contentPane);
 			contentPane.add(buttonbar, BorderLayout.SOUTH);
 		}
 
@@ -290,16 +293,16 @@ public class GhostFilter extends Filter {
 		 * Initializes this inspector
 		 */
 		void initialize() {
-			updateDisplay();
 			refresh();
+			updateDisplay();
 		}
 
 		/**
 		 * Updates this inspector to reflect the current filter settings.
 		 */
 		void updateDisplay() {
-			fadeField.setValue(getFade());
-			fadeSlider.setValue((int) (100 * getFade()));
+			field.setIntValue(getLevel());
+			slider.setValue(getLevel());
 		}
 
 	}
@@ -325,8 +328,8 @@ public class GhostFilter extends Filter {
 		 */
 		@Override
 		public void saveObject(XMLControl control, Object obj) {
-			GhostFilter filter = (GhostFilter) obj;
-			control.setValue("fade", filter.getFade()); //$NON-NLS-1$
+			LogFilter filter = (LogFilter) obj;
+			control.setValue("level", filter.getLevel()); //$NON-NLS-1$
 			filter.addLocation(control);
 		}
 
@@ -338,7 +341,7 @@ public class GhostFilter extends Filter {
 		 */
 		@Override
 		public Object createObject(XMLControl control) {
-			return new GhostFilter();
+			return new LogFilter();
 		}
 
 		/**
@@ -350,9 +353,9 @@ public class GhostFilter extends Filter {
 		 */
 		@Override
 		public Object loadObject(XMLControl control, Object obj) {
-			final GhostFilter filter = (GhostFilter) obj;
-			if (control.getPropertyNamesRaw().contains("fade")) { //$NON-NLS-1$
-				filter.setFade(control.getDouble("fade")); //$NON-NLS-1$
+			final LogFilter filter = (LogFilter) obj;
+			if (control.getPropertyNamesRaw().contains("level")) { //$NON-NLS-1$
+				filter.setLevel(control.getInt("level")); //$NON-NLS-1$
 			}
 			filter.inspectorX = control.getInt("inspector_x"); //$NON-NLS-1$
 			filter.inspectorY = control.getInt("inspector_y"); //$NON-NLS-1$

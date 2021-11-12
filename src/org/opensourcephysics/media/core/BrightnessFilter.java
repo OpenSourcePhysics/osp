@@ -31,7 +31,7 @@
  */
 package org.opensourcephysics.media.core;
 
-import java.awt.FlowLayout;
+import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -277,6 +277,7 @@ public class BrightnessFilter extends Filter {
 
 			// create brightness components
 			brightnessLabel = new JLabel();
+			brightnessLabel.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 0));
 			brightnessField = new IntegerField(3);
 			brightnessField.setMaxValue(128);
 			brightnessField.setMinValue(-128);
@@ -358,13 +359,13 @@ public class BrightnessFilter extends Filter {
 				}
 
 			});
-			// add components to content pane
+			// add components to JPanel with GridBag layout
 			JLabel[] labels = new JLabel[] { brightnessLabel, contrastLabel };
 			JTextField[] fields = new JTextField[] { brightnessField, contrastField };
 			JSlider[] sliders = new JSlider[] { brightnessSlider, contrastSlider };
 			GridBagLayout gridbag = new GridBagLayout();
 			JPanel panel = new JPanel(gridbag);
-			setContentPane(panel);
+//			setContentPane(panel);
 			GridBagConstraints c = new GridBagConstraints();
 			c.anchor = GridBagConstraints.EAST;
 			int i = 0;
@@ -387,14 +388,16 @@ public class BrightnessFilter extends Filter {
 				gridbag.setConstraints(sliders[i], c);
 				panel.add(sliders[i]);
 			}
-			JPanel buttonbar = new JPanel(new FlowLayout());
+			
+			JPanel buttonbar = new JPanel();
 			buttonbar.add(ableButton);
 			buttonbar.add(clearButton);
 			buttonbar.add(closeButton);
-			c.gridx = 2;
-			c.gridy = i + 1;
-			gridbag.setConstraints(buttonbar, c);
-			panel.add(buttonbar);
+			
+			JPanel contentPane = new JPanel(new BorderLayout());
+			contentPane.add(panel, BorderLayout.NORTH);
+			setContentPane(contentPane);
+			contentPane.add(buttonbar, BorderLayout.SOUTH);
 		}
 
 		/**
