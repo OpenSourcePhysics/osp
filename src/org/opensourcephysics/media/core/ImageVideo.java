@@ -833,12 +833,12 @@ public class ImageVideo extends VideoAdapter {
 		@Override
 		public void saveObject(XMLControl control, Object obj) {
 			ImageVideo video = (ImageVideo) obj;
-			String base = video.baseDir; //$NON-NLS-1$
+			String base = (String) video.getProperty("base"); //$NON-NLS-1$
 			String[] paths = video.getValidPathsRelativeTo(base);
-			if (base.endsWith("!")) { // zipped images--just save the zip file path
-				String s = base.substring(0, base.indexOf("!"));
-				paths = new String[] {XML.getName(s)};
-				base = null;
+			String vidBase = video.baseDir; //$NON-NLS-1$
+			if (vidBase != null && vidBase.endsWith("!")) { // zipped images--just save the zip file path
+				String s = vidBase.substring(0, vidBase.indexOf("!"));
+				paths = new String[] {XML.getPathRelativeTo(s, base)};
 			}
 			if (paths.length > 0) {
 				control.setValue("paths", paths); //$NON-NLS-1$
