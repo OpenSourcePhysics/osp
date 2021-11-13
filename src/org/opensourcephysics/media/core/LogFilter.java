@@ -58,7 +58,7 @@ public class LogFilter extends Filter {
 	// instance fields
 	private int level;
 	private int[] lookup = new int[256];
-	private boolean grayscale = false;
+	private boolean grayscale;
 	
 	// inspector fields
 	private Inspector inspector;
@@ -104,6 +104,7 @@ public class LogFilter extends Filter {
 		field.setEnabled(isEnabled());
 		slider.setEnabled(isEnabled());
 		grayCheckbox.setEnabled(isEnabled());
+		grayCheckbox.setSelected(grayscale);
 		inspector.setTitle(MediaRes.getString("Filter.Log.Title")); //$NON-NLS-1$
 		inspector.pack();
 	}
@@ -330,6 +331,7 @@ public class LogFilter extends Filter {
 		public void saveObject(XMLControl control, Object obj) {
 			LogFilter filter = (LogFilter) obj;
 			control.setValue("level", filter.getLevel()); //$NON-NLS-1$
+			control.setValue("grayscale", filter.grayscale); //$NON-NLS-1$
 			filter.addLocation(control);
 		}
 
@@ -357,6 +359,7 @@ public class LogFilter extends Filter {
 			if (control.getPropertyNamesRaw().contains("level")) { //$NON-NLS-1$
 				filter.setLevel(control.getInt("level")); //$NON-NLS-1$
 			}
+			filter.grayscale = control.getBoolean("grayscale");
 			filter.inspectorX = control.getInt("inspector_x"); //$NON-NLS-1$
 			filter.inspectorY = control.getInt("inspector_y"); //$NON-NLS-1$
 			return obj;
