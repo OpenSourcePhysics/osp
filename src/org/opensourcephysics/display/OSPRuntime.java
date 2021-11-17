@@ -86,7 +86,7 @@ import swingjs.api.JSUtilI;
  */
 public class OSPRuntime {
 
-	public static final String VERSION = "6.0.3"; //$NON-NLS-1$
+	public static final String VERSION = "6.0.3211117"; //$NON-NLS-1$
 	public static final String OSP_PROPERTY_LOCALE = "locale";
 
 	/**
@@ -236,7 +236,7 @@ public class OSPRuntime {
 		 * @param listener the object requesting property change notification
 		 */
 		public void addPropertyChangeListener(PropertyChangeListener listener) {
-			String key = "<-" + listener.getClass().getSimpleName();
+			String key = "<-" + listener.getClass().getSimpleName() + listener.hashCode();
 			if (pointers.contains(key))
 				return;
 			addPtr(key);
@@ -255,7 +255,7 @@ public class OSPRuntime {
 		 * @param listener the object requesting property change notification
 		 */
 		public void addPropertyChangeListener(String property, PropertyChangeListener listener) {
-			String key = "/" + property + "<-" + listener.getClass().getSimpleName();
+			String key = "/" + property + "<-" + listener.getClass().getSimpleName() + listener.hashCode();
 			if (pointers.contains(key))
 				return;
 			addPtr(key);
@@ -268,7 +268,7 @@ public class OSPRuntime {
 		 * @param listener the listener requesting removal
 		 */
 		public void removePropertyChangeListener(PropertyChangeListener listener) {
-			String key = "<-" + listener.getClass().getSimpleName();
+			String key = "<-" + listener.getClass().getSimpleName() + listener.hashCode();
 			if (!pointers.contains(key))
 				return;
 			removePtr(key);
@@ -284,7 +284,7 @@ public class OSPRuntime {
 		public void removePropertyChangeListener(String property, PropertyChangeListener listener) {
 			if (listener == null)
 				return;
-			String key = "/" + property + "<-" + listener.getClass().getSimpleName();
+			String key = "/" + property + "<-" + listener.getClass().getSimpleName() + listener.hashCode();
 			if (!pointers.contains(key))
 				return;
 			removePtr(key);
