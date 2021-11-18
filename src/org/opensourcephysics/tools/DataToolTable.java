@@ -2457,7 +2457,8 @@ public class DataToolTable extends DataTable {
 		TableCellRenderer renderer;
 		boolean showFocus = false;
 		Color unlockedBG = Color.WHITE, lockedBG = new Color(255, 220, 0, 30);
-
+		private final float[] hsb = new float[3];
+		
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 				int row, int col) {
@@ -2471,9 +2472,8 @@ public class DataToolTable extends DataTable {
 				selectedBG = c.getBackground();
 				selectedFG = c.getForeground();
 				selectedHeaderFG = selectedFG.darker();
-				float[] hsb = Color.RGBtoHSB(selectedBG.getRed(), selectedBG.getGreen(), selectedBG.getBlue(), null);
-				hsb[2] *= 0.85f;
-				int darker = Color.HSBtoRGB(hsb[0], hsb[1], hsb[2]);
+				Color.RGBtoHSB(selectedBG.getRed(), selectedBG.getGreen(), selectedBG.getBlue(), hsb);
+				int darker = Color.HSBtoRGB(hsb[0], hsb[1], hsb[2] * 0.85f);
 				selectedHeaderBG = new Color(darker);
 			}
 			if (!showFocus) {

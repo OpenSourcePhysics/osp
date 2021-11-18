@@ -123,6 +123,7 @@ public class LogFilter extends Filter {
 		// nothing to do
 	}
 
+	final static float[] hsb = new float[3];
 	/**
 	 * Sets the output image pixels.
 	 */
@@ -143,7 +144,7 @@ public class LogFilter extends Filter {
 			}
 			else {
 				// much slower
-				float[] hsb = Color.RGBtoHSB(r, g, b, null);
+				Color.RGBtoHSB(r, g, b, hsb);
 				int gray = (int)(hsb[2]*255);
 				gray = lookup[gray];
 				pixelsOut[i] = Color.HSBtoRGB(hsb[0], hsb[1], (float)(gray/255.0));

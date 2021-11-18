@@ -34,12 +34,14 @@ public class VectorColorMapper {
   private VectorPlot legendPlot;
   private InteractivePanel legendPanel;
 
+  private final static float[] hsb = new float[3];
+  
   static {
-    float[] hsb = Color.RGBtoHSB(255, 0, 0, null);
+    Color.RGBtoHSB(255, 0, 0, hsb);
     RED_COMP = Color.getHSBColor((hsb[0]+0.5f)%1, hsb[1], hsb[2]);   // complement red hue
-    hsb = Color.RGBtoHSB(0, 255, 0, null);
+    Color.RGBtoHSB(0, 255, 0, hsb);
     GREEN_COMP = Color.getHSBColor((hsb[0]+0.5f)%1, hsb[1], hsb[2]); // complement green hue
-    hsb = Color.RGBtoHSB(0, 255, 0, null);
+    Color.RGBtoHSB(0, 255, 0, hsb);
     BLUE_COMP = Color.getHSBColor((hsb[0]+0.5f)%1, hsb[1], hsb[2]);  // complement blue hue
   }
 
@@ -146,50 +148,51 @@ public class VectorColorMapper {
     floor = (numColors<2) ? 0 : ceil/(numColors-1);
   }
 
-  /**
-   * Converts a double to a the complementary color.
-   * @param mag
-   * @return the color
-   */
-  public Color doubleToCompColor(double mag) {
-    if(mag<=floor) { // magnitudes less than floor are clear
-      return background;
-    }
-    int index;
-    switch(paletteType) {
-       case RED :
-         if(mag>=ceil) {
-           return RED_COMP;
-         }
-         index = (int) ((numColors-1)*(mag/ceil));
-         return compColors[index];                                               // shade of red
-       case BLUE :
-         if(mag>=ceil) {
-           return BLUE_COMP;
-         }
-         index = (int) ((numColors-1)*(mag/ceil));
-         return compColors[index];                                               // shade of blue
-       case GREEN :
-         if(mag>=ceil) {
-           return GREEN_COMP;
-         }
-         index = (int) ((numColors-1)*(mag/ceil));
-         return compColors[index];                                               // shade of green
-       case BLACK :                                                              // complement of BLACK is WHITE
-         return Color.WHITE;
-       case GRAY :                                                               // cannot complement gray
-         if(mag>=ceil) {
-           return Color.black;
-         }
-         index = (int) ((numColors-1)*(mag/ceil));
-         return colors[index];                                                   // shade of gray from white
-       default :                                                                 // spectrum of colors from light blue toward blue toward red toward black
-         Color c = getSpectrumColor(mag);
-         float[] hsb = Color.RGBtoHSB(c.getRed(), c.getGreen(), c.getBlue(), null);
-         float[] hsbBack = Color.RGBtoHSB(background.getRed(), background.getGreen(), background.getBlue(), null);
-         return Color.getHSBColor((2*hsbBack[0]-hsb[0]+0.5f)%1, hsb[1], hsb[2]); // complementary hue
-    }
-  }
+	/**
+	 * Converts a double to a the complementary color.
+	 * 
+	 * @param mag
+	 * @return the color
+	 */
+	public Color doubleToCompColor(double mag) {
+		if (mag <= floor) { // magnitudes less than floor are clear
+			return background;
+		}
+		int index;
+		switch (paletteType) {
+		case RED:
+			if (mag >= ceil) {
+				return RED_COMP;
+			}
+			index = (int) ((numColors - 1) * (mag / ceil));
+			return compColors[index]; // shade of red
+		case BLUE:
+			if (mag >= ceil) {
+				return BLUE_COMP;
+			}
+			index = (int) ((numColors - 1) * (mag / ceil));
+			return compColors[index]; // shade of blue
+		case GREEN:
+			if (mag >= ceil) {
+				return GREEN_COMP;
+			}
+			index = (int) ((numColors - 1) * (mag / ceil));
+			return compColors[index]; // shade of green
+		case BLACK: // complement of BLACK is WHITE
+			return Color.WHITE;
+		case GRAY: // cannot complement gray
+			if (mag >= ceil) {
+				return Color.black;
+			}
+			index = (int) ((numColors - 1) * (mag / ceil));
+			return colors[index]; // shade of gray from white
+		default: // spectrum of colors from light blue toward blue toward red toward black
+			Color c = getSpectrumColor(mag);
+			float hsbBack_0 = Color.RGBtoHSB(background.getRed(), background.getGreen(), background.getBlue(), hsb)[0];
+			Color.RGBtoHSB(c.getRed(), c.getGreen(), c.getBlue(), hsb);
+			return Color.getHSBColor((2 * hsbBack_0 - hsb[0] + 0.5f) % 1, hsb[1], hsb[2]); // complementary hue
+		}
+	}
 
   /**
    * Converts a double to a color.
@@ -255,7 +258,7 @@ public class VectorColorMapper {
       int tg = bgg-bgg*i/numColors;                                 // decrease the green
       int tb = bgb-bgb*i/numColors;                                 // decrease the blue
       colors[i] = new Color(tr, tg, tb);
-      float[] hsb = Color.RGBtoHSB(tr, tg, tb, null);
+      Color.RGBtoHSB(tr, tg, tb, hsb);
       Color c = Color.getHSBColor((hsb[0]+0.5f)%1, hsb[1], hsb[2]); // complementary hue
       tr = bgr+(c.getRed()-bgr)*i/numColors;
       tg = bgg+(c.getGreen()-bgg)*i/numColors;
@@ -275,7 +278,7 @@ public class VectorColorMapper {
       int tg = bgg+(255-bgg)*i/numColors;                           // increase the green
       int tb = bgb-bgb*i/numColors;                                 // decrease the blue
       colors[i] = new Color(tr, tg, tb);
-      float[] hsb = Color.RGBtoHSB(tr, tg, tb, null);
+      Color.RGBtoHSB(tr, tg, tb, hsb);
       Color c = Color.getHSBColor((hsb[0]+0.5f)%1, hsb[1], hsb[2]); // complementary hue
       tr = bgr+(c.getRed()-bgr)*i/numColors;
       tg = bgg+(c.getGreen()-bgg)*i/numColors;
@@ -295,7 +298,7 @@ public class VectorColorMapper {
       int tg = bgg-bgg*i/numColors;                                 // decrease the green
       int tb = bgb+(255-bgb)*i/numColors;                           // increase the blue
       colors[i] = new Color(tr, tg, tb);
-      float[] hsb = Color.RGBtoHSB(tr, tg, tb, null);
+      Color.RGBtoHSB(tr, tg, tb, hsb);
       Color c = Color.getHSBColor((hsb[0]+0.5f)%1, hsb[1], hsb[2]); // complementary hue
       tr = bgr+(c.getRed()-bgr)*i/numColors;
       tg = bgg+(c.getGreen()-bgg)*i/numColors;
