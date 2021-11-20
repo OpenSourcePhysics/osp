@@ -1413,7 +1413,7 @@ public class Dataset extends DataTable.DataModel implements Measurable, LogMeasu
 	@Override
 	public String toString() {
 		
-		String name =  "(" + xColumnName + "," +  yColumnName + ") " + bsColVis + " " ;
+		String name =  "(" + xColumnName + "," +  getYColumnName() + ") " + bsColVis + " " ;
 
 		if (index == 0) {
 			return name + "No data in dataset."; //$NON-NLS-1$

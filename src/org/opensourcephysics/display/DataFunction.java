@@ -168,15 +168,7 @@ public class DataFunction extends Dataset implements FObject {
 	}
 
 	/**
-	 * @return the name of this DataFunction
-	 */
-	@Override
-	public String toString() {
-		return getYColumnName();
-	}
-
-	/**
-	 * Overrides Dataset methods. DatasetFunction manages its own data.
+	 * Overrides Dataset methods. DataFunction manages its own data.
 	 */
 	@Override
 	public void append(double x, double y) {
