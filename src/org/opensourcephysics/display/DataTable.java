@@ -361,8 +361,16 @@ public class DataTable extends JTable {
 			TableCellRenderer renderer = precisionRenderersByColumnName.get(columnName);
 			if (renderer == null)
 				renderer = getDefaultRenderer(Double.class);
-			UnitRenderer unitRenderer = new UnitRenderer(renderer, units, tooltip);
-			unitRenderersByColumnName.put(columnName, unitRenderer);
+			UnitRenderer unitRenderer = unitRenderersByColumnName.get(columnName);
+			if (unitRenderer == null) {
+				unitRenderer = new UnitRenderer(renderer, units, tooltip);
+				unitRenderersByColumnName.put(columnName, unitRenderer);
+			}
+			else {
+				unitRenderer.units = units;
+				unitRenderer.tooltip = tooltip;
+				unitRenderer.baseRenderer = renderer;
+			}
 		}
 	}
 
@@ -550,6 +558,13 @@ public class DataTable extends JTable {
 			// find units renderer
 			// BH 2020.02.14 efficiencies -- needs doublechecking
 			String key = (String) tableColumn.getHeaderValue();
+			
+			// remove subscripts with leading space (eg time-based RGB data from LineProfile)
+			int k = key.indexOf("_{ "); // note space
+			if (k > 0) {
+				key = key.substring(0, k);
+			}
+			
 			unitRenderer = unitRenderersByColumnName.get(key);
 			// find base renderer
 			baseRenderer = tableColumn.getCellRenderer();
