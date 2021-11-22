@@ -37,6 +37,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.util.Arrays;
+
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -56,7 +58,7 @@ import org.opensourcephysics.controls.XMLControl;
  */
 public class LogFilter extends Filter {
 	// instance fields
-	private int level;
+	private int level = Integer.MAX_VALUE;
 	private int[] lookup = new int[256];
 	private boolean grayscale;
 	
@@ -121,6 +123,7 @@ public class LogFilter extends Filter {
 		// nothing to do
 	}
 
+	final static float[] hsb = new float[3];
 	/**
 	 * Sets the output image pixels.
 	 */
@@ -141,7 +144,7 @@ public class LogFilter extends Filter {
 			}
 			else {
 				// much slower
-				float[] hsb = Color.RGBtoHSB(r, g, b, null);
+				Color.RGBtoHSB(r, g, b, hsb);
 				int gray = (int)(hsb[2]*255);
 				gray = lookup[gray];
 				pixelsOut[i] = Color.HSBtoRGB(hsb[0], hsb[1], (float)(gray/255.0));
@@ -154,9 +157,8 @@ public class LogFilter extends Filter {
 	 *
 	 * @return the brightness
 	 */
-	private int getGray(int r, int g, int b) {
-		double gray = (r + g + b) / 3;
-		return (int) gray;
+	private final static int getGray(int r, int g, int b) {
+		return (int) ((r + g + b) / 3);
 	}
 
 	/**
@@ -164,7 +166,7 @@ public class LogFilter extends Filter {
 	 * 
 	 * @param level integer between +/-100
 	 */
-	private void setLevel(int level) {
+	private void setLevelOrig(int level) {
 		if (level != 0 && this.level == level)
 			return;
 		this.level = level;
@@ -173,8 +175,8 @@ public class LogFilter extends Filter {
 		lim = a * Math.exp(6 * lim);
 		double b = lim / Math.log10(lim + 1);
 		double c = level == 0? 1: 255 / lim;
-		for (int i = 0; i < lookup.length; i++) {
-			lookup[i] = level == 0? i: (int) Math.round(c * b * Math.log10(1 + i/c));
+		for (int i = 0; i < 256; i++) {
+			lookup[i] = (level == 0 ? i: (int) Math.round(c * b * Math.log10(1 + i/c)));
 		}
 		if (level < 0) {
 			int[] newLookup = new int[256];
@@ -185,6 +187,38 @@ public class LogFilter extends Filter {
 		}
 		firePropertyChange("level", null, null);
 	}
+
+	/**
+	 * Sets the level
+	 * 
+	 * @param level integer between +/-100
+	 */
+	private void setLevel(int level) {
+		if (this.level == level)
+			return;
+		this.level = level;
+		if (level == 0) {
+			for (int i = 0; i < 256; i++) {
+				lookup[i] = i;
+			}
+			return;
+		} 
+		double lim = Math.abs(0.01 * level);
+		lim = Math.min(1, 5 * lim) * Math.exp(6 * lim);
+		double c = 255 / lim;
+		double bc = 255 / Math.log10(lim + 1);
+		if (level > 0) {
+			for (int i = 0; i < 256; i++) {
+				lookup[i] = (int) Math.round(bc * Math.log10(1 + i / c));
+			}
+		} else {
+			for (int i = 0; i < 256; i++) {
+				lookup[i] = 255 - ((int) Math.round(bc * Math.log10(1 + (255 - i) / c)));
+			}
+		}
+		firePropertyChange("level", null, null);
+	}
+
 	
 	private int getLevel() {
 		return level;
@@ -365,6 +399,24 @@ public class LogFilter extends Filter {
 			return obj;
 		}
 
+	}
+	
+	public static void main(String[] args) {
+		LogFilter f;
+		int[] l;
+		for (int i = -100; i <= 100; i++) {
+			f = new LogFilter();
+			f.setLevelOrig(i);
+			l = f.lookup;
+			f = new LogFilter();
+			f.setLevel(i);
+			if (!Arrays.equals(l, f.lookup)) {
+				System.out.println(Arrays.toString(l));
+				System.out.println(Arrays.toString(f.lookup));
+				throw new NumberFormatException("oops");
+			}
+		}
+		System.out.println("OK");
 	}
 
 }
