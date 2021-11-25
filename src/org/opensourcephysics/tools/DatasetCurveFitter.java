@@ -83,6 +83,7 @@ import org.opensourcephysics.display.FunctionDrawer;
 import org.opensourcephysics.display.MessageDrawable;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
+import org.opensourcephysics.display.UncertainFunctionDrawer;
 import org.opensourcephysics.numerics.Function;
 import org.opensourcephysics.numerics.HessianMinimize;
 import org.opensourcephysics.numerics.LevenbergMarquardt;
@@ -157,7 +158,7 @@ public class DatasetCurveFitter extends JPanel {
 	private Dataset dataset; // the data to be fit
 	private HessianMinimize hessian = new HessianMinimize();
 	private LevenbergMarquardt levmar = new LevenbergMarquardt();
-	private FunctionDrawer drawer;
+	private UncertainFunctionDrawer drawer;
 	private Map<String, KnownFunction> fitMap = new TreeMap<String, KnownFunction>();
 
 	int fitNumber = 1;
@@ -242,7 +243,7 @@ public class DatasetCurveFitter extends JPanel {
 	 *
 	 * @return the drawer
 	 */
-	public FunctionDrawer getDrawer() {
+	public UncertainFunctionDrawer getDrawer() {
 		return drawer;
 	}
 
@@ -304,8 +305,7 @@ public class DatasetCurveFitter extends JPanel {
 	}
 
 	/**
-	 * Sets the active flag if not already this flag and does a fit if setting it to
-	 * true
+	 * Sets the active flag if not already set and does a fit if setting it to true.
 	 *
 	 * @param active true
 	 */
@@ -322,7 +322,6 @@ public class DatasetCurveFitter extends JPanel {
 		}
 	}
 
-	//private static int nfit = 0;
 	/**
 	 * Fits a fit function to the current data.
 	 *
@@ -352,7 +351,6 @@ public class DatasetCurveFitter extends JPanel {
 		}
 		autofitCheckBox.setEnabled(true);
 		paramTable.setEnabled(true);
-
 
 		double[] x = dataset.getValidXPoints();
 		double[] y = dataset.getValidYPoints();
@@ -989,7 +987,7 @@ public class DatasetCurveFitter extends JPanel {
 	 * 
 	 * @return the name of the function
 	 */
-	protected String getPolyFitNameOfDegree(int degree) {
+	public String getPolyFitNameOfDegree(int degree) {
 		for (String key : fitMap.keySet()) {
 			KnownFunction f = fitMap.get(key);
 			if (f instanceof KnownPolynomial) {
@@ -1043,7 +1041,7 @@ public class DatasetCurveFitter extends JPanel {
 		fit = fitMap.get(name);
 		if (fit != null) {
 			FunctionDrawer prev = drawer;
-			drawer = new FunctionDrawer(fit);
+			drawer = new UncertainFunctionDrawer(fit);
 			drawer.setColor(color);
 			paramTable.tableChanged(null);
 			// construct equation string
@@ -1187,6 +1185,11 @@ public class DatasetCurveFitter extends JPanel {
 			double meanSqErr = sumSqErr / (n - 2);
 			uncertainties[0] = Math.sqrt(meanSqErr / sum_sq_x); // slope SE
 			uncertainties[1] = Math.sqrt(meanSqErr * ((1.0 / n) + (mean_x * mean_x) / sum_sq_x)); // intercept SE
+			drawer.setUncertainty(0, uncertainties[0]);
+			drawer.setUncertainty(1, uncertainties[1]);
+		}
+		else {
+			drawer.clearUncertainties();
 		}
 	}
 
@@ -1436,7 +1439,7 @@ public class DatasetCurveFitter extends JPanel {
 				setForeground(isSelected ? Color.red : table.isEnabled() ? Color.black : Color.gray);
 				DecimalFormat format = spinCellEditor.field.format;
 				format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
-				setText(isApplicable() ? format.format(value) :  "     ---------------");
+				String uncert = null;
 				if (Double.isNaN((Double)value)) {
 					tooltip = ToolsRes.getString("DatasetCurveFitter.InsufficientData.ToolTip"); //$NON-NLS-1$//$NON-NLS-2$
 				}
@@ -1446,13 +1449,17 @@ public class DatasetCurveFitter extends JPanel {
 					tooltip += " " + ToolsRes.getString("DatasetCurveFitter.SE.Unknown"); //$NON-NLS-1$//$NON-NLS-2$
 					KnownPolynomial poly = (KnownPolynomial) fit;
 					if (poly.degree() == 1) {
-						String uncert = getUncertaintyString(row);
+						uncert = getUncertaintyString(row);
 						if (uncert != null)
 							tooltip = uncert + " (" + ToolsRes.getString("DatasetCurveFitter.SE.Name") + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 					}
 				} else {
 					tooltip += " " + ToolsRes.getString("DatasetCurveFitter.SE.Unknown"); //$NON-NLS-1$//$NON-NLS-2$
 				}
+				setText(isApplicable() ? 
+						uncert != null? format.format(value)+" "+uncert:  
+						format.format(value):  
+						"     ---------------");
 			}
 			setToolTipText(tooltip);
 			return this;

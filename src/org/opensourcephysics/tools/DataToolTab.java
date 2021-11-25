@@ -116,6 +116,7 @@ import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.PlottingPanel;
 import org.opensourcephysics.display.Selectable;
 import org.opensourcephysics.display.TeXParser;
+import org.opensourcephysics.display.UncertainFunctionDrawer;
 import org.opensourcephysics.display.axes.CartesianCoordinateStringBuilder;
 import org.opensourcephysics.display.axes.CartesianInteractive;
 import org.opensourcephysics.media.core.TPoint;
@@ -172,7 +173,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 	private DatasetCurveFitter curveFitter;
 
-	DatasetCurveFitter getCurveFitter() {
+	public DatasetCurveFitter getCurveFitter() {
 		checkGUI();
 		return curveFitter;
 	}
@@ -1506,6 +1507,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				positionVisible = valueCheckbox.isSelected();
 				plot.setMessage(plot.createMessage());
 				refreshStatusBar(null);
+				refreshFitDrawer();
 			}
 
 		});
@@ -1520,6 +1522,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				slopeVisible = slopeCheckbox.isSelected();
 				plot.setMessage(plot.createMessage());
 				refreshStatusBar(null);
+				refreshFitDrawer();
 			}
 		});
 		// create areaCheckbox
@@ -1530,6 +1533,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				plot.setAreaVisible(areaCheckbox.isSelected());
+				refreshFitDrawer();
 			}
 
 		});
@@ -1703,6 +1707,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				switch (mouseState) {
 				case STATE_ZOOM:
 					plot.setMouseCursor(SELECT_ZOOM_CURSOR);
+					//$FALL-THROUGH$
 				case STATE_MOVE:
 					return;					
 				case STATE_SELECT:
@@ -2840,7 +2845,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	protected void refreshPlot() {
 		refreshPlot(false);
 	}
-
+	
 	/**
 	 * Refreshes the plot.
 	 */
@@ -3104,6 +3109,15 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			fitTimer.stop();
 			fitTimer = null;
 		}
+	}
+
+	/**
+	 * Refreshes the DatasetCurveFitter function drawer.
+	 */
+	void refreshFitDrawer() {
+		UncertainFunctionDrawer drawer = curveFitter.getDrawer();
+		boolean measuring = positionVisible || slopeVisible || areaVisible;
+		drawer.setUncertain(!measuring);
 	}
 
 	/**

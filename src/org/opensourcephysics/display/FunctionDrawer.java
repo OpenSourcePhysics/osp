@@ -33,13 +33,13 @@ public class FunctionDrawer implements Drawable, Measurable, Function {
   protected boolean measured = false; // set to true if function has been initialized.
   public Color color = Color.black;
   public boolean functionChanged = false;
-  private boolean enabled = true;
+  protected boolean enabled = true;
 
   public void setEnabled(boolean b) {
 	  enabled = b;
   }
   /**
-   * Contstucts a FunctionDrawer with optimum resolution.
+   * Constructs a FunctionDrawer with optimum resolution.
    *
    * @param   f the function that will be drawn.
    */
@@ -61,12 +61,12 @@ public class FunctionDrawer implements Drawable, Measurable, Function {
   }
 
   /**
-   * Evalutes the function.
+   * Evaluates the function.
    * @param x
    * @return value of the function
    */
   @Override
-public double evaluate(double x) {
+  public double evaluate(double x) {
     return function.evaluate(x);
   }
 
@@ -194,7 +194,7 @@ public double evaluate(double x) {
    * @param g      the graphics context
    */
   @Override
-public void draw(DrawingPanel panel, Graphics g) {
+  public void draw(DrawingPanel panel, Graphics g) {
 	  if (!enabled )
 		  return;
     if(!measured) {
@@ -230,27 +230,27 @@ public void draw(DrawingPanel panel, Graphics g) {
 
   // Implementation of measured interface.
   @Override
-public boolean isMeasured() {
+  public boolean isMeasured() {
     return measured;
   }
 
   @Override
-public double getXMin() {
+  public double getXMin() {
     return xrange[0];
   }
 
   @Override
-public double getXMax() {
+  public double getXMax() {
     return xrange[1];
   }
 
   @Override
-public double getYMin() {
+  public double getYMin() {
     return yrange[0];
   }
 
   @Override
-public double getYMax() {
+  public double getYMax() {
     return yrange[1];
   }
 
