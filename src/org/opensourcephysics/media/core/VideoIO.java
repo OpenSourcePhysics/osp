@@ -1341,6 +1341,7 @@ private static String fixVideoPath(String path) {
 	 */
 	public static String[] getImageSequencePaths(String imagePath, Set<String> names) {
 		ArrayList<String> imagePaths = new ArrayList<String>();
+		String originalPath = imagePath;
 		// look for numbered image names with pattern nameXXX.ext
 		String extension = ""; //$NON-NLS-1$
 		int i = imagePath.lastIndexOf('.');
@@ -1353,6 +1354,9 @@ private static String fixVideoPath(String path) {
 		while (digits <= 4 && --len >= 0 && Character.isDigit(imagePath.charAt(len))) {
 			digits++;
 		}
+		if (digits == 0)
+			return new String[] {originalPath};
+		
 		int limit = (int) Math.pow(10, digits);
 		
 		String root = imagePath.substring(0, ++len);
