@@ -9,9 +9,6 @@ package org.opensourcephysics.tools;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -33,7 +30,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -165,13 +161,15 @@ public class LaunchPanel extends JPanel {
 		if (scrollRef == null) {
 			setTreeSelectionPath(node);
 		} else if (url != null) {
-			scrollRef = url.getRef();
-			// a null scrollRef means TOP -- scroll to [0,0], not to #xxx
-			Launcher.HTMLPane html = launcher.getHTMLTab(node.tabNumber);
-			if (scrollRef == null)
-				html.editorPane.scrollRectToVisible(new Rectangle());
-			else
-				html.editorPane.scrollToReference(scrollRef);
+			setTreeSelectionPath(node); // added by DB Dec 2021
+			// DB code below leaves html.editorPane blank!
+//			scrollRef = url.getRef();
+//			// a null scrollRef means TOP -- scroll to [0,0], not to #xxx
+//			Launcher.HTMLPane html = launcher.getHTMLTab(node.tabNumber);
+//			if (scrollRef == null)
+//				html.editorPane.scrollRectToVisible(new Rectangle());
+//			else
+//				html.editorPane.scrollToReference(scrollRef);
 		}
 		// restore previous URL
 		if (htmlData != null) {
