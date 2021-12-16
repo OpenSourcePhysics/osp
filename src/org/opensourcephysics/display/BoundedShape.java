@@ -237,26 +237,30 @@ public boolean isSelected() {
     return heightDrag;
   }
 
-  @Override
-public java.awt.Cursor getPreferredCursor() {
-    if(xyDrag&&(hotspot==CENTER)) {
-      return java.awt.Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
-    } else if(rotateDrag&&(hotspot==CORNER)) { // need better cursors!
-      return java.awt.Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
-    } else if(widthDrag&&(hotspot==LEFT)) {
-      return(theta==0) ? java.awt.Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR) : java.awt.Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
-    } else if(widthDrag&&(hotspot==RIGHT)) {
-      return(theta==0) ? java.awt.Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR) : java.awt.Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
-    } else if(heightDrag&&(hotspot==TOP)) {
-      return(theta==0) ? java.awt.Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR) : java.awt.Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
-    } else if(heightDrag&&(hotspot==BOTTOM)) {
-      return(theta==0) ? java.awt.Cursor.getPredefinedCursor(Cursor.S_RESIZE_CURSOR) : java.awt.Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
-    } else if(selected) {
-      return java.awt.Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
-    } else {
-      return java.awt.Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
-    }
-  }
+	@Override
+	public java.awt.Cursor getPreferredCursor() {
+		int c = Cursor.HAND_CURSOR;
+		if (xyDrag && (hotspot == CENTER)) {
+			c = Cursor.MOVE_CURSOR;
+		} else if (rotateDrag && (hotspot == CORNER)) { // need better cursors!
+			// hand
+		} else if (widthDrag && (hotspot == LEFT)) {
+			if (theta == 0)
+				c = Cursor.W_RESIZE_CURSOR;
+		} else if (widthDrag && (hotspot == RIGHT)) {
+			if (theta == 0)
+				c = Cursor.E_RESIZE_CURSOR;
+		} else if (heightDrag && (hotspot == TOP)) {
+			if (theta == 0)
+				c = Cursor.N_RESIZE_CURSOR;
+		} else if (heightDrag && (hotspot == BOTTOM)) {
+			if (theta == 0)
+				c = Cursor.S_RESIZE_CURSOR;
+		} else if (selected) {
+			c = Cursor.CROSSHAIR_CURSOR;
+		}
+		return Cursor.getPredefinedCursor(c);
+	}
 
   @Override
 public void toggleSelected() {

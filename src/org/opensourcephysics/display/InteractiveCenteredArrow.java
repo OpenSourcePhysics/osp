@@ -195,23 +195,23 @@ public void draw(DrawingPanel panel, Graphics g) {
 		return trIC.createTransformedShape(rect);
 	}
 
-  /**
-   * Gets the cursor depending on the current hot spot.
-   *
-   * @return Cursor
-   */
-  @Override
-public java.awt.Cursor getPreferredCursor() {
-    if(xyDrag&&(hotspot==CENTER)) {
-      return java.awt.Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
-    } else if(rotateDrag&&(hotspot==HEAD)) {
-      return java.awt.Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
-    } else if(selected) {
-      return java.awt.Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
-    } else {
-      return java.awt.Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
-    }
-  }
+	/**
+	 * Gets the cursor depending on the current hot spot.
+	 *
+	 * @return Cursor
+	 */
+	@Override
+	public java.awt.Cursor getPreferredCursor() {
+		int c = Cursor.HAND_CURSOR;
+		if (xyDrag && (hotspot == CENTER)) {
+			c = Cursor.MOVE_CURSOR;
+		} else if (rotateDrag && (hotspot == HEAD)) {
+			// hand
+		} else if (selected) {
+			c = Cursor.CROSSHAIR_CURSOR;
+		}
+		return Cursor.getPredefinedCursor(c);		
+	}
 
   private Shape getHead(double theta) {
     float size = 4+2*stroke.getLineWidth();

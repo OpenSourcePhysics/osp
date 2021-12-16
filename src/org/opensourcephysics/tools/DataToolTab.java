@@ -2215,12 +2215,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				plot.areaLimits[0].isAdjusting = false;
 			else if (mouseDrawable == plot.areaLimits[1])
 				plot.areaLimits[1].isAdjusting = false;
-			
-			if (mouseDrawable instanceof Selectable) {
-				plot.setMouseCursor(((Selectable) mouseDrawable).getPreferredCursor());
-			} else {
-				plot.setMouseCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-			}
+			plot.setMouseCursor(mouseDrawable instanceof Selectable 
+					? ((Selectable) mouseDrawable).getPreferredCursor()
+					: Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 			if (mouseDrawable instanceof HighlightableDataset) {
 				HighlightableDataset data = (HighlightableDataset) mouseDrawable;
 				TableModel tableModel = dataTable.getModel();
