@@ -395,6 +395,13 @@ public interface Video extends InteractiveImage, Trackable, PropertyChangeListen
 	   */
 	  public boolean isLooping();
 
+	/**
+	 * Invalidate the video and its filter so that it can be refreshed and so that
+	 * data can be rebuilt.
+	 * 
+	 */
+	  public void invalidateVideoAndFilter();
+
 
 }
 

@@ -675,7 +675,8 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 		firePropertyChange(PROPERTY_VIDEO_NEXTFRAME, null, frameNumber);
 	}
 
-	protected void invalidateVideoAndFilter() {
+	@Override
+	public void invalidateVideoAndFilter() {
 		isValidImage = isValidFilteredImage = false;
 	}
 

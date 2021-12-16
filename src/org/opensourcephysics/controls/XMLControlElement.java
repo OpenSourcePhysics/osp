@@ -950,8 +950,6 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 
 	public Object loadObject(Object obj, Object data) {
 		this.data = data;
-		if (data != null)
-			System.out.println("XMLCE data =" + data);
 		return loadObject(obj, false, false);
 	}
 
