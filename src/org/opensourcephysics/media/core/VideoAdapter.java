@@ -87,6 +87,7 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 
 	protected Image rawImage; // raw image from video source
 	protected Dimension size = new Dimension(); // image pixel dimensions
+	protected Dimension displayedSize = new Dimension(); // image pixel dimensions with filters
 	protected BufferedImage bufferedImage; // offscreen buffered image copy
 	protected BufferedImage filteredImage; // filtered image
 	protected String baseDir;
@@ -576,7 +577,12 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	}
 
 	@Override
-	public Dimension getImageSize() {
+	public Dimension getImageSize(boolean withFilters) {
+		if (withFilters) {
+			BufferedImage img = getImage();
+			displayedSize.setSize(img.getWidth(), img.getHeight());
+			return displayedSize;
+		}
 		return size;
 	}
 

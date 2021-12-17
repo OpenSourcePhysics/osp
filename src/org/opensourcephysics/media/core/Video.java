@@ -76,7 +76,11 @@ public interface Video extends InteractiveImage, Trackable, PropertyChangeListen
 	public final static String PROPERTY_VIDEO_RATE = "rate"; //$NON-NLS-1$
 
 	
-	public Dimension getImageSize();
+	/**
+	 * Gets the image size as a Dimension
+	 * @param withFilters true to return size displayed after filters are applied
+	 */
+	public Dimension getImageSize(boolean withFilters);
 
 
 	/**

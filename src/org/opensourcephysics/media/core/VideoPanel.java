@@ -155,7 +155,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 
 	private void setImageSize(Video video, boolean isConstructor) {
 		Dimension d;
-		if (video != null && (d = video.getImageSize()).width > 0) {
+		if (video != null && (d = video.getImageSize(false)).width > 0) {
 			setImageWidth(d.width);
 			setImageHeight(d.height);
 		} else {
@@ -659,7 +659,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 				synchronized (drawableList) {
 					drawableList.add(0, video); // put video at back
 				}
-				Dimension d = video.getImageSize();
+				Dimension d = video.getImageSize(true);
 				if (d.width > 0) {
 					setImageWidth(d.width);
 					setImageHeight(d.height);
