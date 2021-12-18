@@ -120,9 +120,11 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 		haveGUI = true;
 		// create textpane and color styles for instructions
 		instructions = GUIUtils.newJTextPane();
+		instructions.setMinimumSize(new Dimension(300,60));
 		instructions.setEditable(false);
 		instructions.setOpaque(false);
 		instructions.setFocusable(false);
+		instructions.setBackground(Color.yellow);
 		instructions.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
 		StyledDocument doc = instructions.getStyledDocument();
 		Style def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
@@ -202,7 +204,6 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 		});
 		// create box and function editors
 		box = Box.createVerticalBox();
-		add(box, BorderLayout.CENTER);
 		box.add(paramEditor);
 		box.add(functionEditor);
 		box.add(new JScrollPane(instructions) {
@@ -236,6 +237,7 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 
 		});
 		clearSelection();
+		add(box, BorderLayout.CENTER);
 	}
 
 	private String lang = null;
@@ -389,6 +391,7 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 				functionTool.refreshGUI();
 				functionTool.firePropertyChange(FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION, null, null); // $NON-NLS-1$
 			}
+			break;
 		case FunctionEditor.PROPERTY_FUNCTIONEDITOR_DESCRIPTION:
 			if (functionTool != null) {
 				functionTool.firePropertyChange(FunctionEditor.PROPERTY_FUNCTIONEDITOR_DESCRIPTION, null, null); // $NON-NLS-1$
@@ -495,8 +498,8 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 	 * @param selectedColumn the selected table column, or -1 if none
 	 */
 	protected void refreshInstructions(FunctionEditor source, boolean editing, int selectedColumn) {
-		  if (instructions == null) 
-			  return;
+		if (instructions == null)
+			return;
 		StyledDocument doc = instructions.getStyledDocument();
 		Style style = doc.getStyle("blue"); //$NON-NLS-1$
 		String s = isEmpty() ? ToolsRes.getString("FunctionPanel.Instructions.GetStarted") //$NON-NLS-1$
@@ -524,12 +527,13 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 			}
 		}
 		if (s.equals(lastInstruction))
-				return;
+			return;
 		lastInstruction = s;
 		instructions.setText(s);
 		int len = instructions.getText().length();
 		doc.setCharacterAttributes(0, len, style, false);
-		revalidate();
+//		revalidate();
+//		repaint();
 	}
 
 	protected boolean isEmpty() {

@@ -561,6 +561,24 @@ public class GUIUtils {
 				if (!checkScrollPage(this, url))
 					super.setPage(url);
 			}
+			
+			public void paintComponent(Graphics g) {
+				super.paintComponent(g);
+			}
+			
+//			public void removeNotify() {
+//				System.err.println("GUIUTILS pane removed " + getText());
+//				super.removeNotify();
+//			}
+//			public void addNotify() {
+//				System.err.println("GUIUTILS pane added " + getText());
+//				super.addNotify();
+//			}
+//			public void setText(String text) {
+//			System.out.println("GUIUTILS setting text to " + text);
+//			super.setText(text);
+//		}
+
 		});
 	}
 

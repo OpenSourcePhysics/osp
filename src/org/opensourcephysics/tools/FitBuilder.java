@@ -694,7 +694,8 @@ public class FitBuilder extends FunctionTool {
 		UserFunctionEditor editor = new UserFunctionEditor();
 		editor.setMainFunctions(new UserFunction[] { f });
 		FitFunctionPanel panel = new FitFunctionPanel(editor);
-		return (FitFunctionPanel) addPanel(f.getName(), panel);
+		addPanel(f.getName(), panel);
+		return panel; 
 	}
 
 	/**

@@ -493,7 +493,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	 * @param panel the FunctionPanel
 	 * @return the added panel
 	 */
-	public FunctionPanel addPanel(String name, FunctionPanel panel) {
+	public void addPanel(String name, FunctionPanel panel) {
 		//System.out.println("FunctionTool.addPanel " + name); //$NON-NLS-1$
 		panel.setFontLevel(fontLevel);
 		panel.setName(name);
@@ -503,7 +503,6 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		panel.clearSelection();
 		if (this.isVisible())
 			refreshDropdown(name);
-		return panel;
 	}
 
 	/**
@@ -628,12 +627,6 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent e) {
-//		switch (e.getPropertyName()) {
-//		default:
-//			OSPLog.debug("!!!!!!!!!FunctionTool.propertychange " + e.getPropertyName() + " "
-//					+ e.getSource().getClass().getName());
-//			break;
-//		}
 		if (!haveGUI())
 			return;
 		refreshGUI();
@@ -661,12 +654,14 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	 */
 	@Override
 	public void setVisible(boolean vis) {
-		if (!vis && !haveGUI())
+		if (vis == isVisible())
 			return;
 		if (vis) {
 			checkGUI();
 			setFontLevel(FontSizer.getLevel());
 			refreshDropdown(null);
+		} else if (!haveGUI()) {
+			return;
 		}
 		Container top = myContentPane.getTopLevelAncestor();
 		if (top == null || top == this)
@@ -795,6 +790,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	 */
 	@Override
 	protected void firePropertyChange(String name, Object oldObj, Object newObj) {
+		//System.out.println("FunctionTool firing " + name);
 		super.firePropertyChange(name, oldObj, newObj);
 	}
 
@@ -1056,6 +1052,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		return (DataTable.rowName.equals(name) || FunctionTool.arrayContains(parserNames, name)
 				|| FunctionTool.arrayContains(UserFunction.dummyVars, name) || !Double.isNaN(SuryonoParser.getNumber(name)));
 	}
+
 }
 
 /*

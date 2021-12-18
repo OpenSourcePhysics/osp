@@ -1779,9 +1779,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 
 				popupField.setText(val);
 				popupField.requestFocusInWindow();
-				String s = popupField.getText();
-				setInitialValue(s);
-
+				setInitialValues();
 				popupField.selectAll();
 				popupField.setBackground(Color.WHITE);
 				if (column == 1) {
@@ -1795,7 +1793,10 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				}
 				Rectangle cell = table.getCellRect(row, column, true);
 				minPopupWidth = cell.width + 2;
+				boolean b = dragPane.isVisible();
+				dragPane.setVisible(true);
 				Dimension dim = resizePopupEditor();
+				dragPane.setVisible(b);
 				Point p = table.getLocationOnScreen();
 				popup.setLocation(p.x + cell.x + cell.width / 2 - dim.width / 2,
 						p.y + cell.y + cell.height / 2 - dim.height / 2);
@@ -1808,20 +1809,21 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			return panel;
 		}
 
-		void setInitialValue(final String stringValue) {
+		void setInitialValueAsync() {
 			SwingUtilities.invokeLater(() -> {
-				setInitialValuesAsync(stringValue);
+				setInitialValues();
 			});
 		}
 
-		protected void setInitialValuesAsync(String stringValue) {
+		protected void setInitialValues() {
 			JDialog editor = getPopupEditor();
-			String val = stringValue.replaceAll(",", "."); //$NON-NLS-1$ //$NON-NLS-2$
+			String val = popupField.getText().replaceAll(",", "."); //$NON-NLS-1$ //$NON-NLS-2$
 			if ("".equals(val)) //$NON-NLS-1$
 				val = SuryonoParser.NULL;
 			double value = getNumber(val);
 			if (Double.isNaN(value)) {
-				editor.getContentPane().remove(dragPane);
+				dragPane.setVisible(false);
+//				editor.getContentPane().remove(dragPane);
 			} else {
 				valueMouseController.prevValue = value;
 				popupField.setToolTipText(ToolsRes.getString("FunctionEditor.PopupField.Tooltip")); //$NON-NLS-1$
@@ -1832,12 +1834,12 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				dragLabel.setToolTipText(tooltip);
 				String name = (String) table.getValueAt(row, 0);
 				if (!name.equals("t")) { //$NON-NLS-1$
-					editor.getContentPane().add(dragPane, BorderLayout.SOUTH);
+					dragPane.setVisible(true);
 				} else {
-					editor.getContentPane().remove(dragPane);
+					dragPane.setVisible(false);
+//					editor.getContentPane().remove(dragPane);
 				}
 			}
-			editor.pack();
 		}
 
 		// Determines when editing starts.
@@ -1911,10 +1913,12 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			popupField.addKeyListener(new KeyAdapter() {
 				@Override
 				public void keyPressed(KeyEvent e) {
+					//System.out.println("FE key " + variablesPane.getText() + " " + variablesPane.isVisible());
 					if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 						getPopupValue();
 					} else {
 						popupField.setBackground(Color.yellow);
+						// !BH editor is resizing even when SHIFT key is released?
 						resizePopupEditor();
 					}
 				}
@@ -1923,7 +1927,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				public void keyReleased(KeyEvent e) {
 					if (e.getKeyCode() == KeyEvent.VK_ENTER)
 						return;
-					setInitialValue(popupField.getText());
+					setInitialValueAsync();
 				}
 			});
 
@@ -1955,7 +1959,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 					variablesPane.moveCaretPosition(varEnd);
 					popupField.replaceSelection(variablesPane.getSelectedText());
 					popupField.setBackground(Color.yellow);
-					setInitialValue(popupField.getText());
+					setInitialValueAsync();
 				}
 
 				@Override
@@ -2074,6 +2078,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			editorPane.add(popupField, BorderLayout.CENTER);
 			editorPane.add(revertButton, BorderLayout.EAST);
 			contentPane.add(editorPane, BorderLayout.NORTH);
+			contentPane.add(dragPane, BorderLayout.SOUTH);
 			// variablesPane and dragPane are added/removed from contentPane as needed
 			return popupEditor;
 		}
@@ -2149,8 +2154,8 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			FObject obj = objects.get(row);
 			String tooltip = getTooltip(obj);
 			String tooltipText = (col == 0 && tooltip != null) ? tooltip
-					: (col == 0) ? ToolsRes.getString("FunctionEditor.Table.Cell.Name.Tooltip") : //$NON-NLS-1$
-							ToolsRes.getString("FunctionEditor.Table.Cell.Value.Tooltip"); //$NON-NLS-1$
+			: (col == 0) ? ToolsRes.getString("FunctionEditor.Table.Cell.Name.Tooltip") : //$NON-NLS-1$
+					ToolsRes.getString("FunctionEditor.Table.Cell.Value.Tooltip"); //$NON-NLS-1$
 			if (tooltip == null && col == 0) {
 				tooltipText += " (" + ToolsRes.getString("FunctionEditor.Tooltip.HowToEdit") + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			}
