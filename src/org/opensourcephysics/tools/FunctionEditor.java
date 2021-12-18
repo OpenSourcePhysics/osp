@@ -121,6 +121,9 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	final static Color LIGHT_RED = new Color(255, 180, 200);
 	final static Color LIGHT_GRAY = javax.swing.UIManager.getColor("Panel.background"); //$NON-NLS-1$
 	final static Color DARK_RED = new Color(220, 0, 0);
+	
+	public static final boolean allowPopopFieldTooltip = !OSPRuntime.isJS;
+	
 	// static fields
 	static DecimalFormat decimalFormat;
 	static DecimalFormat sciFormat0000;
@@ -1739,7 +1742,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 						keyPressed = false;
 						table.requestFocusInWindow();
 					}
-				}
+					}
 
 			});
 		}
@@ -1919,7 +1922,8 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 					} else {
 						popupField.setBackground(Color.yellow);
 						// !BH editor is resizing even when SHIFT key is released?
-						resizePopupEditor();
+						// this causes the field to lose focus and stops entry
+						//resizePopupEditor();
 					}
 				}
 
