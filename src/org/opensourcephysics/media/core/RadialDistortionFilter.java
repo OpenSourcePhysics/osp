@@ -974,7 +974,7 @@ public class RadialDistortionFilter extends Filter {
 			if (!superIsEnabled())
 				return;
 			VideoPanel vidPanel = (VideoPanel) panel;
-			Dimension d = vidPanel.getVideo().getImageSize();
+			Dimension d = vidPanel.getVideo().getImageSize(true);
 			double x = d.width / 2, y = d.height / 2;
 			double r = fixedRadius * pixelsToCorner;
 			center.setLocation(x, y);
