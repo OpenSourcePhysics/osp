@@ -144,41 +144,6 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 		Style red = doc.addStyle("red", blue); //$NON-NLS-1$
 		StyleConstants.setBold(red, true);
 		StyleConstants.setForeground(red, Color.red);
-//		instructions.addMouseListener(new MouseAdapter() {
-//			@Override
-//			public void mousePressed(MouseEvent e) {
-//				if (varEnd == 0) {
-//					return;
-//				}
-//				instructions.setCaretPosition(varBegin);
-//				instructions.moveCaretPosition(varEnd);
-//				tableEditorField.replaceSelection(instructions.getSelectedText());
-//				tableEditorField.setBackground(Color.yellow);
-//			}
-//
-//			@Override
-//			public void mouseExited(MouseEvent e) {
-//				if (!hasCircularErrors() && !hasInvalidExpressions()) {
-//					StyledDocument doc = instructions.getStyledDocument();
-//					Style blue = doc.getStyle("blue"); //$NON-NLS-1$
-//					doc.setCharacterAttributes(0, instructions.getText().length(), blue, false);
-//					varBegin = varEnd = 0;
-//				}
-//			}
-//
-//		});
-//		instructions.addMouseMotionListener(new MouseMotionAdapter() {
-//			@Override
-//			public void mouseMoved(MouseEvent e) {
-//				varBegin = varEnd = 0;
-//				int[] ret = FunctionEditor.tempRange;
-//				if (FunctionEditor.getVariablePoints(instructions, e.getPoint(), ret)) {
-//					varBegin = ret[0];
-//					varEnd = ret[1];
-//				}
-//			}
-//
-//		});
 		// create box and function editors
 		box = Box.createVerticalBox();
 		box.add(paramEditor);
