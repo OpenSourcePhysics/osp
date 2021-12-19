@@ -98,10 +98,6 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 		functionEditor = editor;
 		editor.functionPanel = this;
 		init();
-		// createGUI();
-		// refreshGUI();
-//		OSPLog.debug("???Temp FunctionPanel.checkGUI");
-//		checkGUI();
 	}
 
 	protected void init() {
@@ -238,7 +234,7 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 		undoButton.setEnabled(undoManager.canUndo());
 		redoButton.setEnabled(undoManager.canRedo());
 		lastInstruction = null;
-		refreshInstructions(null, false, -1);
+		refreshInstructions(null, -1);
 
 		if (lang == ToolsRes.getLanguage())
 			return;
@@ -389,7 +385,7 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 			return;
 		getFunctionTable().clearSelection();
 		getParamTable().clearSelection();
-		refreshInstructions(null, false, -1);
+		refreshInstructions(null, -1);
 	}
 
 	/**
@@ -476,37 +472,22 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 	 * Refreshes the instructions based on selected cell.
 	 *
 	 * @param source         the function editor (may be null)
-	 * @param editing        true if the table is editing
 	 * @param selectedColumn the selected table column, or -1 if none
 	 */
-	protected void refreshInstructions(FunctionEditor source, boolean editing, int selectedColumn) {
+	final protected void refreshInstructions(FunctionEditor source, int selectedColumn) {
+		// BH 2021.12.19 removed "editing" parameter; always false. This was for the JavaScript hack
 		if (instructions == null)
 			return;
 		boolean isError = false;
 		String s;
-		if (!editing && hasCircularErrors()) { // error condition
+		if (hasCircularErrors()) { // error condition
 			s = ToolsRes.getString("FunctionPanel.Instructions.CircularErrors"); //$NON-NLS-1$
 			isError = true;
-		} else if (!editing && hasInvalidExpressions()) { // error condition
+		} else if (hasInvalidExpressions()) { // error condition
 			s = ToolsRes.getString("FunctionPanel.Instructions.BadCell"); //$NON-NLS-1$
 			isError = true;
-		} else if (source != null && selectedColumn >= 0) {
-			if (editing) {
-				s = (selectedColumn == 0 ? ToolsRes.getString("FunctionPanel.Instructions.NameCell") //$NON-NLS-1$
-						: source.getVariablesString(": ")); //$NON-NLS-1$
-			} else {
-				s = ToolsRes.getString("FunctionPanel.Instructions.EditCell"); //$NON-NLS-1$
-				if (selectedColumn == 0) {
-					s += "  " + ToolsRes.getString("FunctionPanel.Instructions.NameCell"); //$NON-NLS-1$//$NON-NLS-2$
-					s += "\n" + ToolsRes.getString("FunctionPanel.Instructions.EditDescription"); //$NON-NLS-1$//$NON-NLS-2$
-				} else {
-					s += " " + ToolsRes.getString("FunctionPanel.Instructions.Help"); //$NON-NLS-1$//$NON-NLS-2$
-				}
-			}
 		} else {
-			s = (isEmpty() ? ToolsRes.getString("FunctionPanel.Instructions.GetStarted") //$NON-NLS-1$
-					: ToolsRes.getString("FunctionPanel.Instructions.General") //$NON-NLS-1$
-							+ "  " + ToolsRes.getString("FunctionPanel.Instructions.EditDescription")); //$NON-NLS-1$ //$NON-NLS-2$
+			s = getCustomInstructions(source, selectedColumn);
 		}
 		if (s.equals(lastInstruction))
 			return;
@@ -514,8 +495,33 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 		instructions.setText(s);
 		StyledDocument doc = instructions.getStyledDocument();
 		doc.setCharacterAttributes(0, s.length(), doc.getStyle(isError ? "red" : "blue"), false);
-// BH: this next is not necessary and causes unnecessary full layout of the FunctionPanel
+		// BH: this next is not necessary and causes unnecessary full layout of the FunctionPanel
 		// revalidate();
+	}
+
+	/**
+	 * Overwritten in ParticleDataTrack
+	 * 
+	 * @param source
+	 * @param selectedColumn
+	 * @return
+	 */
+	protected String getCustomInstructions(FunctionEditor source, int selectedColumn) {
+		String s;
+		if (source != null && selectedColumn >= 0) {
+			s = ToolsRes.getString("FunctionPanel.Instructions.EditCell"); //$NON-NLS-1$
+			if (selectedColumn == 0) {
+				s += "  " + ToolsRes.getString("FunctionPanel.Instructions.NameCell"); //$NON-NLS-1$//$NON-NLS-2$
+				s += "\n" + ToolsRes.getString("FunctionPanel.Instructions.EditDescription"); //$NON-NLS-1$//$NON-NLS-2$
+			} else {
+				s += " " + ToolsRes.getString("FunctionPanel.Instructions.Help"); //$NON-NLS-1$//$NON-NLS-2$
+			}
+		} else {
+			s = (isEmpty() ? ToolsRes.getString("FunctionPanel.Instructions.GetStarted") //$NON-NLS-1$
+					: ToolsRes.getString("FunctionPanel.Instructions.General") //$NON-NLS-1$
+							+ "  " + ToolsRes.getString("FunctionPanel.Instructions.EditDescription")); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+		return s;
 	}
 
 	protected boolean isEmpty() {

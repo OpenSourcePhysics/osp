@@ -174,7 +174,6 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	protected HashSet<String> referencesChecked = new HashSet<String>();
 
 	protected boolean anglesInDegrees;
-	protected boolean usePopupEditor = OSPRuntime.useFunctionEditorPopup;
 	protected boolean confirmChanges = true;
 
 	final static int[] tempRange = new int[2];
@@ -567,16 +566,6 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	}
 
 	/**
-	 * sets the usePopupEditor flag.
-	 * 
-	 * @param popup true to use the popup editor.
-	 */
-	public void setUsePopupEditor(boolean popup) {
-		if (OSPRuntime.useFunctionEditorPopup)
-			usePopupEditor = popup;
-	}
-
-	/**
 	 * Gets an undoable edit.
 	 *
 	 * @param type    may be ADD_EDIT, REMOVE_EDIT, NAME_EDIT, or EXPRESSION_EDIT
@@ -959,7 +948,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 //		}
  		
  		// BH must recreate the popupEditor?
- 		if (usePopupEditor && popupEditor != null && popupEditor.isVisible()) {
+ 		if (popupEditor != null && popupEditor.isVisible()) {
  			// should not be possible for a modal dialog, but covering this.
 			tableCellEditor.stopCellEditing();
  		}
@@ -1409,7 +1398,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 						functionPanel.clearSelection();
 						selectOnFocus = false;
 					} else if (e.getClickCount() == 1) {
-						functionPanel.refreshInstructions(FunctionEditor.this, false, col);
+						functionPanel.refreshInstructions(FunctionEditor.this, col);
 						selectOnFocus = table.hasFocus();
 					}
 				}
@@ -1451,7 +1440,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 					if (selectOnFocus && (getRowCount() > 0)) {
 						selectCell(rowToSelect, columnToSelect);
 						int col = table.getSelectedColumn();
-						functionPanel.refreshInstructions(FunctionEditor.this, false, col);
+						functionPanel.refreshInstructions(FunctionEditor.this, col);
 					}
 					selectOnFocus = true;
 				}
@@ -1503,7 +1492,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 					} else {
 						table.requestFocusInWindow();
 						selectCell(row, col);
-						functionPanel.refreshInstructions(FunctionEditor.this, false, col);
+						functionPanel.refreshInstructions(FunctionEditor.this, col);
 					}
 				}
 
@@ -1654,7 +1643,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 					}
 					settingValue = false;
 					if (obj == null || val.equals(prev)) {
-						functionPanel.refreshInstructions(FunctionEditor.this, false, 0);
+						functionPanel.refreshInstructions(FunctionEditor.this, 0);
 						return;
 					}
 					objects.remove(row);
@@ -1663,7 +1652,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 					prev = getExpression(obj);
 					type = EXPRESSION_EDIT;
 					if (val.equals(prev)) {
-						functionPanel.refreshInstructions(FunctionEditor.this, false, 1);
+						functionPanel.refreshInstructions(FunctionEditor.this, 1);
 						return;
 					}
 					if (val.equals("")) { //$NON-NLS-1$
@@ -1688,7 +1677,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				}
 				// inform listeners
 				firePropertyChange("edit", getName(obj), edit); //$NON-NLS-1$
-				functionPanel.refreshInstructions(FunctionEditor.this, false, col);
+				functionPanel.refreshInstructions(FunctionEditor.this, col);
 			}
 		}
 
@@ -1744,10 +1733,8 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			field.addFocusListener(new FocusAdapter() {
 				@Override
 				public void focusGained(FocusEvent e) {
-					if (usePopupEditor) {
-						stopCellEditing();
-						undoEditsEnabled = true;
-					}
+					stopCellEditing();
+					undoEditsEnabled = true;
 					mouseClicked = false;
 					table.clearSelection();
 				}
@@ -1772,62 +1759,56 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				int column) {
 			table.rowToSelect = row;
 			table.columnToSelect = column;
-			if (usePopupEditor) {
-				undoEditsEnabled = false;
-				JDialog popup = getPopupEditor();
-				if (functionPanel.functionTool != null) {
-					// set font level of popup editor
-					int level = functionPanel.functionTool.getFontLevel();
-					FontSizer.setFonts(popup, level);
-				}
-				dragLabel.setText(ToolsRes.getString("FunctionEditor.DragLabel.Text")); //$NON-NLS-1$
-
-				prevObject = objects.get(row);
-				if (prevObject != null) {
-					prevName = getName(prevObject);
-					prevExpression = getExpression(prevObject);
-				}
-
-				// BH bug here after language change, this can popup with "4,000" not "4.000"
-				String val = value.toString();
-				if (prevObject != null && column > 0) {
-					int n = val.indexOf(DEGREES);
-					if (n >= 0) {
-						val = val.substring(0, n);
-					} else {
-						val = prevExpression;
-					}
-				}
-
-				popupField.setText(val);
-				popupField.requestFocusInWindow();
-				setInitialValues();
-				popupField.selectAll();
-				popupField.setBackground(Color.WHITE);
-				if (column == 1) {
-					variablesPane.setText(getVariablesString(":\n")); //$NON-NLS-1$
-					StyledDocument doc = variablesPane.getStyledDocument();
-					Style blue = doc.getStyle("blue"); //$NON-NLS-1$
-					doc.setCharacterAttributes(0, variablesPane.getText().length(), blue, false);
-					popup.getContentPane().add(variablesPane, BorderLayout.CENTER);
-				} else {
-					popup.getContentPane().remove(variablesPane);
-				}
-				Rectangle cell = table.getCellRect(row, column, true);
-				minPopupWidth = cell.width + 2;
-				boolean b = dragPane.isVisible();
-				dragPane.setVisible(true);
-				Dimension dim = resizePopupEditor();
-				dragPane.setVisible(b);
-				Point p = table.getLocationOnScreen();
-				popup.setLocation(p.x + cell.x + cell.width / 2 - dim.width / 2,
-						p.y + cell.y + cell.height / 2 - dim.height / 2);
-				popup.setVisible(true);
-			} else {
-				field.setText(value.toString());
-				functionPanel.refreshInstructions(FunctionEditor.this, true, column);
-				functionPanel.tableEditorField = field;
+			undoEditsEnabled = false;
+			JDialog popup = getPopupEditor();
+			if (functionPanel.functionTool != null) {
+				// set font level of popup editor
+				int level = functionPanel.functionTool.getFontLevel();
+				FontSizer.setFonts(popup, level);
 			}
+			dragLabel.setText(ToolsRes.getString("FunctionEditor.DragLabel.Text")); //$NON-NLS-1$
+
+			prevObject = objects.get(row);
+			if (prevObject != null) {
+				prevName = getName(prevObject);
+				prevExpression = getExpression(prevObject);
+			}
+
+			// BH bug here after language change, this can popup with "4,000" not "4.000"
+			String val = value.toString();
+			if (prevObject != null && column > 0) {
+				int n = val.indexOf(DEGREES);
+				if (n >= 0) {
+					val = val.substring(0, n);
+				} else {
+					val = prevExpression;
+				}
+			}
+
+			popupField.setText(val);
+			popupField.requestFocusInWindow();
+			setInitialValues();
+			popupField.selectAll();
+			popupField.setBackground(Color.WHITE);
+			if (column == 1) {
+				variablesPane.setText(getVariablesString(":\n")); //$NON-NLS-1$
+				StyledDocument doc = variablesPane.getStyledDocument();
+				Style blue = doc.getStyle("blue"); //$NON-NLS-1$
+				doc.setCharacterAttributes(0, variablesPane.getText().length(), blue, false);
+				popup.getContentPane().add(variablesPane, BorderLayout.CENTER);
+			} else {
+				popup.getContentPane().remove(variablesPane);
+			}
+			Rectangle cell = table.getCellRect(row, column, true);
+			minPopupWidth = cell.width + 2;
+			boolean b = dragPane.isVisible();
+			dragPane.setVisible(true);
+			Dimension dim = resizePopupEditor();
+			dragPane.setVisible(b);
+			Point p = table.getLocationOnScreen();
+			popup.setLocation(p.x + cell.x + cell.width / 2 - dim.width / 2,
+					p.y + cell.y + cell.height / 2 - dim.height / 2);
+			popup.setVisible(true);
 			return panel;
 		}
 
@@ -1885,18 +1866,12 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		// Called when editing is completed.
 		@Override
 		public Object getCellEditorValue() {
-			if (usePopupEditor) {
-				popupField.setBackground(Color.WHITE);
-			}
+			popupField.setBackground(Color.WHITE);
 			field.setBackground(Color.WHITE);
 			// revalidate table to keep cell widths correct (workaround)
-			Runnable runner = new Runnable() {
-				@Override
-				public synchronized void run() {
-					table.revalidate();
-				}
-			};
-			SwingUtilities.invokeLater(runner);
+			SwingUtilities.invokeLater(() -> {
+				table.revalidate();
+			});
 			return field.getText();
 		}
 

@@ -371,6 +371,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * 
 	 * @param relpath
 	 */
+	@SuppressWarnings("null")
 	public void loadDatasetURI(String relpath) {
 		if (getTabCount() > 0)
 			removeAllTabs();
