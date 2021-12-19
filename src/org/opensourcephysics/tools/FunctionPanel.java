@@ -14,9 +14,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -42,8 +39,22 @@ import org.opensourcephysics.display.GUIUtils;
 /**
  * This is a JPanel for managing Functions and supporting Parameters.
  *
- * subclassed as DataFunctionPanel, FitFunctionPanel, and ModelFunctionPanel (as AnalyticFunctionPanel, 
- * DynamicFunctionPanel, and ParticleDataTrackFunctionPanel
+ * subclassed as DataFunctionPanel, FitFunctionPanel, and ModelFunctionPanel (as
+ * AnalyticFunctionPanel, DynamicFunctionPanel, and
+ * ParticleDataTrackFunctionPanel
+ * 
+ * 
+ * <code>
+  FunctionPanel
+     DataFunctionPanel
+     FitFunctionPanel
+     ModelFunctionPanel
+        AnalyticFunctionPanel
+        DynamicFunctionPanel
+        ParticleDataTrackFunctionPanel
+ </code>
+ * 
+ * 
  * 
  * @author Douglas Brown
  */
@@ -59,17 +70,16 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 	protected String prevName, description;
 
 	// GUI
-	
+
 	protected Container box;
 	protected JTextPane instructions;
 	protected JTextField tableEditorField;
 
 	private JButton undoButton;
 	private JButton redoButton;
-	private int varBegin, varEnd;
 	private Icon icon;
 	private boolean haveGUI;
-	
+
 	protected boolean haveGUI() {
 		return haveGUI;
 	}
@@ -84,10 +94,6 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 		functionEditor = editor;
 		editor.functionPanel = this;
 		init();
-		//createGUI();
-		//refreshGUI();
-//		OSPLog.debug("???Temp FunctionPanel.checkGUI");
-//		checkGUI();
 	}
 
 	protected void init() {
@@ -111,7 +117,6 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 			refreshGUI();
 		}
 	}
-	
 
 	/**
 	 * Creates the GUI.
@@ -120,7 +125,7 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 		haveGUI = true;
 		// create textpane and color styles for instructions
 		instructions = GUIUtils.newJTextPane();
-		instructions.setMinimumSize(new Dimension(300,60));
+		instructions.setMinimumSize(new Dimension(300, 60));
 		instructions.setEditable(false);
 		instructions.setOpaque(false);
 		instructions.setFocusable(false);
@@ -135,73 +140,6 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 		Style red = doc.addStyle("red", blue); //$NON-NLS-1$
 		StyleConstants.setBold(red, true);
 		StyleConstants.setForeground(red, Color.red);
-		instructions.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent e) {
-				if (varEnd == 0) {
-					return;
-				}
-				instructions.setCaretPosition(varBegin);
-				instructions.moveCaretPosition(varEnd);
-				tableEditorField.replaceSelection(instructions.getSelectedText());
-				tableEditorField.setBackground(Color.yellow);
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-				if (!hasCircularErrors() && !hasInvalidExpressions()) {
-					StyledDocument doc = instructions.getStyledDocument();
-					Style blue = doc.getStyle("blue"); //$NON-NLS-1$
-					doc.setCharacterAttributes(0, instructions.getText().length(), blue, false);
-					varBegin = varEnd = 0;
-				}
-			}
-
-		});
-		instructions.addMouseMotionListener(new MouseMotionAdapter() {
-			@Override
-			public void mouseMoved(MouseEvent e) {
-				varBegin = varEnd = 0;
-				// select and highlight the variable under mouse
-				String text = instructions.getText();
-				// first separate the instructions from the variables
-				int startVars = text.indexOf(": "); //$NON-NLS-1$
-				if (startVars == -1) {
-					return;
-				}
-				startVars += 2;
-				String vars = text.substring(startVars);
-				StyledDocument doc = instructions.getStyledDocument();
-				Style blue = doc.getStyle("blue"); //$NON-NLS-1$
-				Style red = doc.getStyle("red"); //$NON-NLS-1$
-				int beginVar = instructions.viewToModel(e.getPoint()) - startVars;
-				if (beginVar < 0) { // mouse is over instructions
-					doc.setCharacterAttributes(0, text.length(), blue, false);
-					return;
-				}
-				while (beginVar > 0) {
-					// back up to preceding space
-					String s = vars.substring(0, beginVar);
-					if (s.endsWith(" ")) //$NON-NLS-1$
-						break;
-					beginVar--;
-				}
-				varBegin = beginVar + startVars;
-				// find following comma, space or end
-				String s = vars.substring(beginVar);
-				int len = s.indexOf(","); //$NON-NLS-1$
-				if (len == -1)
-					len = s.indexOf(" "); //$NON-NLS-1$
-				if (len == -1)
-					len = s.length();
-				// set variable bounds and character style
-				varEnd = varBegin + len;
-				doc.setCharacterAttributes(0, varBegin, blue, false);
-				doc.setCharacterAttributes(varBegin, len, red, false);
-				doc.setCharacterAttributes(varEnd, text.length() - varEnd, blue, false);
-			}
-
-		});
 		// create box and function editors
 		box = Box.createVerticalBox();
 		box.add(paramEditor);
@@ -242,6 +180,7 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 
 	private String lang = null;
 	private Object lastInstruction;
+
 	/**
 	 * Refreshes the GUI.
 	 */
@@ -250,15 +189,14 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 			return;
 		if (functionTool != null && functionTool.getSelectedPanel() == this) {
 			if (!functionTool.hasButton(undoButton)) {
-				functionTool.setButtonBar(new Object[] {
-						"help", undoButton, redoButton, "close"});
+				functionTool.setButtonBar(new Object[] { "help", undoButton, redoButton, "close" });
 			}
 		}
 		undoButton.setEnabled(undoManager.canUndo());
 		redoButton.setEnabled(undoManager.canRedo());
 		lastInstruction = null;
-		refreshInstructions(null, false, -1);
-		
+		refreshInstructions(null, -1);
+
 		if (lang == ToolsRes.getLanguage())
 			return;
 		lang = ToolsRes.getLanguage();
@@ -267,7 +205,7 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 		redoButton.setText(ToolsRes.getString("DataFunctionPanel.Button.Redo")); //$NON-NLS-1$
 		redoButton.setToolTipText(ToolsRes.getString("DataFunctionPanel.Button.Redo.Tooltip")); //$NON-NLS-1$
 		paramEditor.refreshGUI();
-		functionEditor.refreshGUI();			
+		functionEditor.refreshGUI();
 	}
 
 	/**
@@ -380,7 +318,8 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 					prevName = e.getNewValue().toString();
 				}
 				if (functionTool != null)
-					functionTool.firePropertyChange(FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION, prevName, functionName); // $NON-NLS-1$
+					functionTool.firePropertyChange(FunctionTool.PROPERTY_FUNCTIONTOOL_FUNCTION, prevName,
+							functionName); // $NON-NLS-1$
 			}
 			break;
 		case DataFunctionEditor.PROPERTY_DATAFUNCTIONEDITOR_FUNCTION:
@@ -407,7 +346,7 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 			return;
 		getFunctionTable().clearSelection();
 		getParamTable().clearSelection();
-		refreshInstructions(null, false, -1);
+		refreshInstructions(null, -1);
 	}
 
 	/**
@@ -494,46 +433,56 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 	 * Refreshes the instructions based on selected cell.
 	 *
 	 * @param source         the function editor (may be null)
-	 * @param editing        true if the table is editing
 	 * @param selectedColumn the selected table column, or -1 if none
 	 */
-	protected void refreshInstructions(FunctionEditor source, boolean editing, int selectedColumn) {
+	final protected void refreshInstructions(FunctionEditor source, int selectedColumn) {
+		// BH 2021.12.19 removed "editing" parameter; always false. This was for the JavaScript hack
 		if (instructions == null)
 			return;
-		StyledDocument doc = instructions.getStyledDocument();
-		Style style = doc.getStyle("blue"); //$NON-NLS-1$
-		String s = isEmpty() ? ToolsRes.getString("FunctionPanel.Instructions.GetStarted") //$NON-NLS-1$
-				: ToolsRes.getString("FunctionPanel.Instructions.General") //$NON-NLS-1$
-						+ "  " + ToolsRes.getString("FunctionPanel.Instructions.EditDescription"); //$NON-NLS-1$ //$NON-NLS-2$
-		if (!editing && hasCircularErrors()) { // error condition
+		boolean isError = false;
+		String s;
+		if (hasCircularErrors()) { // error condition
 			s = ToolsRes.getString("FunctionPanel.Instructions.CircularErrors"); //$NON-NLS-1$
-			style = doc.getStyle("red"); //$NON-NLS-1$
-		} else if (!editing && hasInvalidExpressions()) { // error condition
+			isError = true;
+		} else if (hasInvalidExpressions()) { // error condition
 			s = ToolsRes.getString("FunctionPanel.Instructions.BadCell"); //$NON-NLS-1$
-			style = doc.getStyle("red"); //$NON-NLS-1$
-		} else if (source != null) {
-			if ((selectedColumn == 0) && editing) { // editing name
-				s = ToolsRes.getString("FunctionPanel.Instructions.NameCell"); //$NON-NLS-1$
-			} else if ((selectedColumn == 1) && editing) { // editing expression
-				s = source.getVariablesString(": "); //$NON-NLS-1$
-			} else if (selectedColumn > -1) {
-				s = ToolsRes.getString("FunctionPanel.Instructions.EditCell"); //$NON-NLS-1$
-				if (selectedColumn == 0) {
-					s += "  " + ToolsRes.getString("FunctionPanel.Instructions.NameCell"); //$NON-NLS-1$//$NON-NLS-2$
-					s += "\n" + ToolsRes.getString("FunctionPanel.Instructions.EditDescription"); //$NON-NLS-1$//$NON-NLS-2$
-				} else {
-					s += " " + ToolsRes.getString("FunctionPanel.Instructions.Help"); //$NON-NLS-1$//$NON-NLS-2$
-				}
-			}
+			isError = true;
+		} else {
+			s = getCustomInstructions(source, selectedColumn);
 		}
 		if (s.equals(lastInstruction))
 			return;
 		lastInstruction = s;
 		instructions.setText(s);
-		int len = instructions.getText().length();
-		doc.setCharacterAttributes(0, len, style, false);
-//		revalidate();
-//		repaint();
+		StyledDocument doc = instructions.getStyledDocument();
+		doc.setCharacterAttributes(0, s.length(), doc.getStyle(isError ? "red" : "blue"), false);
+		// BH: this next is not necessary and causes unnecessary full layout of the FunctionPanel
+		// revalidate();
+	}
+
+	/**
+	 * Overridden in ParticleDataTrack
+	 * 
+	 * @param source
+	 * @param selectedColumn
+	 * @return
+	 */
+	protected String getCustomInstructions(FunctionEditor source, int selectedColumn) {
+		String s;
+		if (source != null && selectedColumn >= 0) {
+			s = ToolsRes.getString("FunctionPanel.Instructions.EditCell"); //$NON-NLS-1$
+			if (selectedColumn == 0) {
+				s += "  " + ToolsRes.getString("FunctionPanel.Instructions.NameCell"); //$NON-NLS-1$//$NON-NLS-2$
+				s += "\n" + ToolsRes.getString("FunctionPanel.Instructions.EditDescription"); //$NON-NLS-1$//$NON-NLS-2$
+			} else {
+				s += " " + ToolsRes.getString("FunctionPanel.Instructions.Help"); //$NON-NLS-1$//$NON-NLS-2$
+			}
+		} else {
+			s = (isEmpty() ? ToolsRes.getString("FunctionPanel.Instructions.GetStarted") //$NON-NLS-1$
+					: ToolsRes.getString("FunctionPanel.Instructions.General") //$NON-NLS-1$
+							+ "  " + ToolsRes.getString("FunctionPanel.Instructions.EditDescription")); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+		return s;
 	}
 
 	protected boolean isEmpty() {

@@ -66,6 +66,20 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	}
 
 	/**
+	 * A function with non-editable name and initial "0" expression for all particle models.
+	 * 
+	 * @param name
+	 * @param funcVars
+	 * @param description
+	 */
+	public UserFunction(String name, String[] funcVars, String description) {
+		this(name);
+		setNameEditable(false);
+		setExpression(SuryonoParser.NULL, funcVars);
+		setDescription(description);		
+	}
+	
+	/**
 	 * Constructor that copies a KnownPolynomial.
 	 *
 	 * @param poly the KnownPolynomial
@@ -124,7 +138,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	}
 
 	/**
-	 * Sets the name editable property.
+	 * Sets the name editable property -- only for clone and createObject.
 	 *
 	 * @param editable true if editable
 	 */
