@@ -94,6 +94,17 @@ import org.opensourcephysics.numerics.Util;
  * subclassed as DataFunctionEditor, ParamEditor (incl. InitialValueEditor), and
  * UserFunctionEditor
  * 
+ * 
+ * <code>
+  FunctionEditor
+     DataFunctionEditor
+     ParamEditor
+        InitialValueEditor
+     UserFunctionEditor
+ </code>
+ * 
+ * 
+ * 
  * @author Douglas Brown
  */
 public abstract class FunctionEditor extends JPanel implements PropertyChangeListener {
@@ -105,6 +116,12 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	public static final String PROPERTY_FUNCTIONEDITOR_FOCUS = "focus";
 	public static final String PROPERTY_FUNCTIONEDITOR_ANGLESINRADIANS = "angles_in_radians";
 
+	/**
+	 * implemented by DataFunction, UserFunction, and Parameter 
+	 * 
+	 * @author hansonr
+	 *
+	 */
 	public interface FObject {
 	}
 
@@ -1679,7 +1696,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		@Override
 		public boolean isCellEditable(int row, int col) {
 			FObject obj = objects.get(row);
-			return ((col == 0) && isNameEditable(obj)) || ((col == 1) && isExpressionEditable(obj));
+			return (col == 0 ? isNameEditable(obj) : isExpressionEditable(obj));
 		}
 
 	}

@@ -117,6 +117,7 @@ public class DataColumn extends Dataset {
 		return shifted;
 	}
 
+	private final static Double ZERO = Double.valueOf(0);
 	/**
 	 * Sets the shift used to shift the values of all elements.
 	 *
@@ -127,7 +128,7 @@ public class DataColumn extends Dataset {
 	public boolean setShift(double shift) {
 		if (this.shift == shift)
 			return false;
-		if (shift != new Double("-0") && shift != new Double("0")) {
+		if (shift != new Double("-0") && shift != ZERO) {
 			prevShift = shift;
 		}
 		this.shift = shift;
