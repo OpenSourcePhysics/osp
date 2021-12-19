@@ -465,7 +465,7 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 	}
 
 	/**
-	 * Overwritten in ParticleDataTrack
+	 * Overridden in ParticleDataTrack
 	 * 
 	 * @param source
 	 * @param selectedColumn
