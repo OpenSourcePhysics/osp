@@ -1982,40 +1982,39 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 					// select and highlight the variable under mouse
 					String text = variablesPane.getText();
 					// first separate the instructions from the variables
-					int startVars = text.indexOf(":\n"); //$NON-NLS-1$
-					if (startVars == -1) {
+					int startVars = text.indexOf(":\n") + 2; //$NON-NLS-1$
+					if (startVars < 2) {
 						return;
 					}
-					startVars += 2;
-					String vars = text.substring(startVars);
 					StyledDocument doc = variablesPane.getStyledDocument();
 					Style blue = doc.getStyle("blue"); //$NON-NLS-1$
 					Style red = doc.getStyle("red"); //$NON-NLS-1$
-					int beginVar = variablesPane.viewToModel(e.getPoint()) - startVars;
-					if (beginVar < 0) { // mouse is over instructions
-						doc.setCharacterAttributes(0, text.length(), blue, false);
+					int ptvar = variablesPane.viewToModel(e.getPoint());
+					doc.setCharacterAttributes(0, text.length(), blue, false);
+					if (ptvar < startVars || ptvar == text.length()) {
+						// mouse is over instructions
+						// BH adds check for past the length as well
 						return;
 					}
-					while (beginVar > 0) {
+					int beginVar = ptvar - startVars;
+					while (ptvar > startVars) {
 						// back up to preceding space
-						String s = vars.substring(0, beginVar);
+						String s = text.substring(startVars, ptvar);
 						if (s.endsWith(" ")) //$NON-NLS-1$
 							break;
-						beginVar--;
+						ptvar--;
 					}
-					varBegin = beginVar + startVars;
+					varBegin = ptvar;
 					// find following comma, space or end
-					String s = vars.substring(beginVar);
+					String s = text.substring(ptvar);
 					int len = s.indexOf(","); //$NON-NLS-1$
-					if (len == -1)
+					if (len < 0)
 						len = s.indexOf(" "); //$NON-NLS-1$
-					if (len == -1)
+					if (len < 0)
 						len = s.length();
+					varEnd = ptvar + len;
 					// set variable bounds and character style
-					varEnd = varBegin + len;
-					doc.setCharacterAttributes(0, varBegin, blue, false);
-					doc.setCharacterAttributes(varBegin, len, red, false);
-					doc.setCharacterAttributes(varEnd, text.length() - varEnd, blue, false);
+					doc.setCharacterAttributes(ptvar, len, red, false);
 				}
 			});
 
