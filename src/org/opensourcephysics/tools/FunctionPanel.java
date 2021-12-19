@@ -14,9 +14,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -80,7 +77,6 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 
 	private JButton undoButton;
 	private JButton redoButton;
-	private int varBegin, varEnd;
 	private Icon icon;
 	private boolean haveGUI;
 
