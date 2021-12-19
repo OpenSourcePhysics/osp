@@ -1921,7 +1921,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 						getPopupValue();
 					} else {
 						popupField.setBackground(Color.yellow);
-						// !BH editor is resizing even when SHIFT key is released?
+						// !BH editor is resizing even when SHIFT key is pressed?
 						// this causes the field to lose focus and stops entry
 						//resizePopupEditor();
 					}
