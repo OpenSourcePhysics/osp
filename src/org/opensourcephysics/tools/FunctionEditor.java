@@ -160,6 +160,8 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	protected boolean usePopupEditor = OSPRuntime.useFunctionEditorPopup;
 	protected boolean confirmChanges = true;
 
+	final static int[] tempRange = new int[2];
+
 	/**
 	 * set to "t" in InitialValueEditor for getVariablesString
 	 */
@@ -1819,7 +1821,6 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		}
 
 		protected void setInitialValues() {
-			JDialog editor = getPopupEditor();
 			String val = popupField.getText().replaceAll(",", "."); //$NON-NLS-1$ //$NON-NLS-2$
 			if ("".equals(val)) //$NON-NLS-1$
 				val = SuryonoParser.NULL;
@@ -1956,21 +1957,19 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			variablesPane.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mousePressed(MouseEvent e) {
-					if (varEnd == 0) {
-						return;
+					if (varEnd > 0) {
+						variablesPane.setCaretPosition(varBegin);
+						variablesPane.moveCaretPosition(varEnd);
+						popupField.replaceSelection(variablesPane.getSelectedText());
+						popupField.setBackground(Color.yellow);
+						setInitialValueAsync();
 					}
-					variablesPane.setCaretPosition(varBegin);
-					variablesPane.moveCaretPosition(varEnd);
-					popupField.replaceSelection(variablesPane.getSelectedText());
-					popupField.setBackground(Color.yellow);
-					setInitialValueAsync();
 				}
 
 				@Override
 				public void mouseExited(MouseEvent e) {
 					StyledDocument doc = variablesPane.getStyledDocument();
-					Style blue = doc.getStyle("blue"); //$NON-NLS-1$
-					doc.setCharacterAttributes(0, variablesPane.getText().length(), blue, false);
+					doc.setCharacterAttributes(0, variablesPane.getText().length(), doc.getStyle("blue"), false); //$NON-NLS-1$
 					varBegin = varEnd = 0;
 				}
 
@@ -1979,42 +1978,11 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				@Override
 				public void mouseMoved(MouseEvent e) {
 					varBegin = varEnd = 0;
-					// select and highlight the variable under mouse
-					String text = variablesPane.getText();
-					// first separate the instructions from the variables
-					int startVars = text.indexOf(":\n") + 2; //$NON-NLS-1$
-					if (startVars < 2) {
-						return;
+					int[] ret = FunctionEditor.tempRange;
+					if (getVariablePoints(variablesPane, e.getPoint(), ret)) {
+						varBegin = ret[0];
+						varEnd = ret[1];
 					}
-					StyledDocument doc = variablesPane.getStyledDocument();
-					Style blue = doc.getStyle("blue"); //$NON-NLS-1$
-					Style red = doc.getStyle("red"); //$NON-NLS-1$
-					int ptvar = variablesPane.viewToModel(e.getPoint());
-					doc.setCharacterAttributes(0, text.length(), blue, false);
-					if (ptvar < startVars || ptvar == text.length()) {
-						// mouse is over instructions
-						// BH adds check for past the length as well
-						return;
-					}
-					int beginVar = ptvar - startVars;
-					while (ptvar > startVars) {
-						// back up to preceding space
-						String s = text.substring(startVars, ptvar);
-						if (s.endsWith(" ")) //$NON-NLS-1$
-							break;
-						ptvar--;
-					}
-					varBegin = ptvar;
-					// find following comma, space or end
-					String s = text.substring(ptvar);
-					int len = s.indexOf(","); //$NON-NLS-1$
-					if (len < 0)
-						len = s.indexOf(" "); //$NON-NLS-1$
-					if (len < 0)
-						len = s.length();
-					varEnd = ptvar + len;
-					// set variable bounds and character style
-					doc.setCharacterAttributes(ptvar, len, red, false);
 				}
 			});
 
@@ -2128,6 +2096,58 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			field.selectAll();
 		}
 
+	}
+
+	/**
+	 * Scan a JTextPane entry such as 
+	 * 
+	 * blah blah blah:
+	 * vr fr x y t
+	 * 
+	 * for the mouse being over one of these. 
+	 * 
+	 * Turn it red and return the character positions in the ret array.
+	 * 
+	 * @param variablesPane
+	 * @param pt
+	 * @param ret [pt, pt+len]
+	 * @return true if variable was found
+	 */
+	protected static boolean getVariablePoints(JTextPane variablesPane, Point pt, int[] ret) {
+		// select and highlight the variable under mouse
+		String text = variablesPane.getText();
+		// first separate the instructions from the variables
+		int pt0 = text.indexOf(":\n") + 2; //$NON-NLS-1$
+		if (pt0 < 2) {
+			return false;
+		}
+		StyledDocument doc = variablesPane.getStyledDocument();
+		doc.setCharacterAttributes(0, text.length(), doc.getStyle("blue"), false); //$NON-NLS-1$
+		int ptvar = variablesPane.viewToModel(pt);
+		if (ptvar < pt0 || ptvar == text.length()) {
+			// mouse is over instructions
+			// BH adds check for past the length as well
+			return false;
+		}
+		while (ptvar > pt0) {
+			// back up to preceding space
+			String s = text.substring(pt0, ptvar);
+			if (s.endsWith(" ")) //$NON-NLS-1$
+				break;
+			ptvar--;
+		}
+		// find following comma, space or end
+		String s = text.substring(ptvar);
+		int len = s.indexOf(","); //$NON-NLS-1$
+		if (len < 0)
+			len = s.indexOf(" "); //$NON-NLS-1$
+		if (len < 0)
+			len = s.length();
+		// set variable bounds and character style
+		doc.setCharacterAttributes(ptvar, len, doc.getStyle("red"), false); //$NON-NLS-1$
+		ret[0] = ptvar;
+		ret[1] = ptvar + len;
+		return true;
 	}
 
 	private class CellRenderer extends DefaultTableCellRenderer {

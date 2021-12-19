@@ -162,43 +162,11 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 			@Override
 			public void mouseMoved(MouseEvent e) {
 				varBegin = varEnd = 0;
-				// select and highlight the variable under mouse
-				String text = instructions.getText();
-				// first separate the instructions from the variables
-				int startVars = text.indexOf(": "); //$NON-NLS-1$
-				if (startVars == -1) {
-					return;
+				int[] ret = FunctionEditor.tempRange;
+				if (FunctionEditor.getVariablePoints(instructions, e.getPoint(), ret)) {
+					varBegin = ret[0];
+					varEnd = ret[1];
 				}
-				startVars += 2;
-				String vars = text.substring(startVars);
-				StyledDocument doc = instructions.getStyledDocument();
-				Style blue = doc.getStyle("blue"); //$NON-NLS-1$
-				Style red = doc.getStyle("red"); //$NON-NLS-1$
-				int beginVar = instructions.viewToModel(e.getPoint()) - startVars;
-				if (beginVar < 0) { // mouse is over instructions
-					doc.setCharacterAttributes(0, text.length(), blue, false);
-					return;
-				}
-				while (beginVar > 0) {
-					// back up to preceding space
-					String s = vars.substring(0, beginVar);
-					if (s.endsWith(" ")) //$NON-NLS-1$
-						break;
-					beginVar--;
-				}
-				varBegin = beginVar + startVars;
-				// find following comma, space or end
-				String s = vars.substring(beginVar);
-				int len = s.indexOf(","); //$NON-NLS-1$
-				if (len == -1)
-					len = s.indexOf(" "); //$NON-NLS-1$
-				if (len == -1)
-					len = s.length();
-				// set variable bounds and character style
-				varEnd = varBegin + len;
-				doc.setCharacterAttributes(0, varBegin, blue, false);
-				doc.setCharacterAttributes(varBegin, len, red, false);
-				doc.setCharacterAttributes(varEnd, text.length() - varEnd, blue, false);
 			}
 
 		});
@@ -500,23 +468,19 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 	protected void refreshInstructions(FunctionEditor source, boolean editing, int selectedColumn) {
 		if (instructions == null)
 			return;
-		StyledDocument doc = instructions.getStyledDocument();
-		Style style = doc.getStyle("blue"); //$NON-NLS-1$
-		String s = isEmpty() ? ToolsRes.getString("FunctionPanel.Instructions.GetStarted") //$NON-NLS-1$
-				: ToolsRes.getString("FunctionPanel.Instructions.General") //$NON-NLS-1$
-						+ "  " + ToolsRes.getString("FunctionPanel.Instructions.EditDescription"); //$NON-NLS-1$ //$NON-NLS-2$
+		boolean isError = false;
+		String s;		
 		if (!editing && hasCircularErrors()) { // error condition
 			s = ToolsRes.getString("FunctionPanel.Instructions.CircularErrors"); //$NON-NLS-1$
-			style = doc.getStyle("red"); //$NON-NLS-1$
+			isError = true;
 		} else if (!editing && hasInvalidExpressions()) { // error condition
 			s = ToolsRes.getString("FunctionPanel.Instructions.BadCell"); //$NON-NLS-1$
-			style = doc.getStyle("red"); //$NON-NLS-1$
-		} else if (source != null) {
-			if ((selectedColumn == 0) && editing) { // editing name
-				s = ToolsRes.getString("FunctionPanel.Instructions.NameCell"); //$NON-NLS-1$
-			} else if ((selectedColumn == 1) && editing) { // editing expression
-				s = source.getVariablesString(": "); //$NON-NLS-1$
-			} else if (selectedColumn > -1) {
+			isError = true;
+		} else if (source != null && selectedColumn >= 0) {
+			if (editing) {
+				s = (selectedColumn == 0 ? ToolsRes.getString("FunctionPanel.Instructions.NameCell") //$NON-NLS-1$
+				: source.getVariablesString(": ")); //$NON-NLS-1$
+			} else {
 				s = ToolsRes.getString("FunctionPanel.Instructions.EditCell"); //$NON-NLS-1$
 				if (selectedColumn == 0) {
 					s += "  " + ToolsRes.getString("FunctionPanel.Instructions.NameCell"); //$NON-NLS-1$//$NON-NLS-2$
@@ -525,15 +489,19 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 					s += " " + ToolsRes.getString("FunctionPanel.Instructions.Help"); //$NON-NLS-1$//$NON-NLS-2$
 				}
 			}
+		} else {
+			s = (isEmpty() ? ToolsRes.getString("FunctionPanel.Instructions.GetStarted") //$NON-NLS-1$
+					: ToolsRes.getString("FunctionPanel.Instructions.General") //$NON-NLS-1$
+							+ "  " + ToolsRes.getString("FunctionPanel.Instructions.EditDescription")); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		if (s.equals(lastInstruction))
 			return;
 		lastInstruction = s;
 		instructions.setText(s);
-		int len = instructions.getText().length();
-		doc.setCharacterAttributes(0, len, style, false);
-//		revalidate();
-//		repaint();
+		StyledDocument doc = instructions.getStyledDocument();
+		doc.setCharacterAttributes(0, s.length(), doc.getStyle(isError ? "red" : "blue"), false);
+// BH: this next is not necessary and causes unnecessary full layout of the FunctionPanel
+		// revalidate();
 	}
 
 	protected boolean isEmpty() {
