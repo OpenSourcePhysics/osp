@@ -211,6 +211,8 @@ public class DataToolTable extends DataTable {
 		clearCellsAction = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				if (!dataToolTab.isUserEditable())
+					return;
 				// clear selected cells by replacing with NaN
 				HashMap<String, double[]> values = new HashMap<String, double[]>();
 				Iterator<String> it = getSelectedColumnNames().iterator();
@@ -2716,6 +2718,7 @@ public class DataToolTable extends DataTable {
 		}
 
 		// Gets the component to be displayed while editing.
+		@SuppressWarnings("null")
 		@Override
 		public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int col) {
 			// if editing a function, simply show function builder
