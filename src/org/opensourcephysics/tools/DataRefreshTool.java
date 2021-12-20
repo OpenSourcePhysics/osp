@@ -82,17 +82,13 @@ public class DataRefreshTool implements Tool {
 		Data request = (Data) control.loadObject(null, true, true);
 		// check for matching ID with localData
 		if (request.getID() == data.getID()) {
-			control = new XMLControlElement(data);
-			job.setXML(control.toXML());
-			replyTo.send(job, this);
+			Tool.reply(replyTo, job, this, data);
 			return;
 		}
 		// check for matching ID with DataTool.getSelfContainedData(localData)
 		for (Data next : DataTool.getSelfContainedData(data)) {
 			if (request.getID() == next.getID()) {
-				control = new XMLControlElement(next);
-				job.setXML(control.toXML());
-				replyTo.send(job, this);
+				Tool.reply(replyTo, job, this, next);
 				return;
 			}
 		}
@@ -100,9 +96,7 @@ public class DataRefreshTool implements Tool {
 		ArrayList<Dataset> localDatasets = DataTool.getDatasets(data);
 		for (Dataset next : localDatasets) {
 			if (request.getID() == next.getID()) {
-				control = new XMLControlElement(next);
-				job.setXML(control.toXML());
-				replyTo.send(job, this);
+				Tool.reply(replyTo, job, this, next);
 				return;
 			}
 		}
@@ -123,9 +117,7 @@ public class DataRefreshTool implements Tool {
 		}
 		// send datasets to requesting tool
 		if (!reply.getDatasetsRaw().isEmpty()) {
-			control = new XMLControlElement(reply);
-			job.setXML(control.toXML());
-			replyTo.send(job, this);
+			Tool.reply(replyTo, job, this, reply);
 		}
 
 	}
@@ -174,42 +166,30 @@ public class DataRefreshTool implements Tool {
 	}
 
 	private void findDatasets(ArrayList<Dataset> requestedDatasets, ArrayList<Dataset> datasetsToSearch,
-			DatasetManager reply, boolean isMore) {
+			DatasetManager manager, boolean isMore) {
 		for (Dataset next : requestedDatasets) {
 			if (next == null)
 				continue;
-			Dataset match = getMatch(next.getID(), datasetsToSearch);
-			if (match != null) {
-				Dataset toSend = ids.get(match.getID());
+			Dataset ds = Dataset.findDataSet(datasetsToSearch, next);
+			if (ds != null) {
+				Dataset toSend = ids.get(ds.getID());
 				if (toSend == null) {
-					toSend = DataTool.copyDataset(match, null, true);
+					toSend = DataTool.copyDataset(ds, null, true);
 					if (isMore) {
-						toSend.setXYColumnNames(match.getXColumnName(), next.getYColumnName());
+						toSend.setXYColumnNames(ds.getXColumnName(), next.getYColumnName());
 					}
 					toSend.setXColumnVisible(toSend.getXColumnName().equals(next.getYColumnName()));
 					toSend.setYColumnVisible(toSend.getYColumnName().equals(next.getYColumnName()));
-					ids.put(match.getID(), toSend);
+					ids.put(ds.getID(), toSend);
 				} else {
 					if (toSend.getXColumnName().equals(next.getYColumnName()))
 						toSend.setXColumnVisible(true);
 					if (toSend.getYColumnName().equals(next.getYColumnName()))
 						toSend.setYColumnVisible(true);
 				}
-				reply.addDataset(toSend);
+				manager.addDataset(toSend);
 			}
 		}
-	}
-
-	private Dataset getMatch(int id, ArrayList<Dataset> datasets) {
-		for (Dataset next : datasets) {
-			if (next == null) {
-				continue;
-			}
-			if (id == next.getID()) {
-				return next;
-			}
-		}
-		return null;
 	}
 
 	/**

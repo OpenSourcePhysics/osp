@@ -32,7 +32,6 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -40,7 +39,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Locale;
 
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -54,14 +52,14 @@ import javax.swing.text.JTextComponent;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.display.OSPRuntime.Disposable;
 import org.opensourcephysics.display.axes.CoordinateStringBuilder;
 import org.opensourcephysics.display.dialogs.DrawingPanelInspector;
 import org.opensourcephysics.display.dialogs.ScaleInspector;
 import org.opensourcephysics.display.dialogs.XMLDrawingPanelInspector;
 import org.opensourcephysics.tools.FontSizer;
-import org.opensourcephysics.tools.LocalJob;
-import org.opensourcephysics.tools.Tool;
+import org.opensourcephysics.tools.Job;
 import org.opensourcephysics.tools.ToolsRes;
 import org.opensourcephysics.tools.VideoTool;
 
@@ -156,7 +154,7 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 	protected BufferedImage offscreenImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
 	protected BufferedImage workingImage = offscreenImage;
 	private boolean buffered = false; // true will draw this component using an off-screen image
-	private MessageDrawable messages;
+	protected MessageDrawable messages;
 
 	protected DecimalFormat scientificFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.###E0"); // coordinate //$NON-NLS-1$
 																												// display
@@ -3188,37 +3186,10 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
     	super.firePropertyChange(propertyName, oldValue, newValue);
     }
 
-	/**
-	 * 
-	 * @param item
-	 * @param toolClass
-	 * @param reply
-	 * @param andDisplay
-	 */
-	public boolean setSendAction(JMenuItem item, String toolName, Tool reply, boolean andDisplay) {
-		try {
-			Class<?> toolClass = Class.forName("org.opensourcephysics.tools." + toolName); //$NON-NLS-1$
-			item.addActionListener((e) -> {
-				try {
-					Method m = toolClass.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
-					Tool tool = (Tool) m.invoke(null, (Object[]) null);
-					tool.send(new LocalJob(this), reply);
-					if (andDisplay) {
-						if (tool instanceof OSPFrame) {
-							((OSPFrame) tool).setKeepHidden(false);
-						}
-						((JFrame) tool).setVisible(true);
-					}
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			});
-			return true;
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			OSPLog.finest("Cannot instantiate " + toolName + ":\n" + ex.getMessage()); //$NON-NLS-1$
-			return false;
-		}
+	public void receiveToolReply(Job job) {
+		XMLControlElement control = new XMLControlElement();
+		control.readXML(job.getXML());
+		Dataset.loadDatasets(getObjectOfClass(Dataset.class), control.getObjects(Dataset.class).iterator());
 	}
 }
 

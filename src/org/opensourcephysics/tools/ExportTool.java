@@ -274,7 +274,7 @@ public class ExportTool implements Tool, PropertyChangeListener {
 	 * Displays the export dialog with a given XML file.
 	 */
 	@Override
-	public void send(Job job, Tool replyTo) {
+	public void send(Job job, Tool noReply) {
 		if (OSPRuntime.isJS) {
 			exportJS(job);
 			return;

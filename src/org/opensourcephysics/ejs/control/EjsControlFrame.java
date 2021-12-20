@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Locale;
 
 import javax.swing.AbstractAction;
@@ -129,26 +128,11 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 		// responds to data from the DatasetTool
 		reply = new Tool() {
 			@Override
-			public void send(Job job, Tool replyTo) {
-				if (defaultDrawingPanel == null) {
-					return;
+			public void send(Job job, Tool noReply) {
+				if (defaultDrawingPanel != null) {
+					defaultDrawingPanel.receiveToolReply(job);
+					defaultDrawingPanel.repaint();
 				}
-				XMLControlElement control = new XMLControlElement();
-				control.readXML(job.getXML());
-				ArrayList<?> datasets = defaultDrawingPanel.getObjectOfClass(Dataset.class);
-				Iterator<?> it = control.getObjects(Dataset.class).iterator();
-				while (it.hasNext()) {
-					Dataset newData = (Dataset) it.next();
-					int id = newData.getID();
-					for (int i = 0, n = datasets.size(); i < n; i++) {
-						if (((Dataset) datasets.get(i)).getID() == id) {
-							XMLControl xml = new XMLControlElement(newData); // convert the source to xml
-							Dataset.getLoader().loadObject(xml, datasets.get(i)); // copy the data to the destination
-							break;
-						}
-					}
-				}
-				defaultDrawingPanel.repaint();
 			}
 
 		};
@@ -355,7 +339,7 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 		JMenuItem datasetItem = new JMenuItem(DisplayRes.getString("DrawingFrame.DatasetTool_menu_item")); //$NON-NLS-1$
 		toolsMenu.add(datasetItem);
 		if (OSPRuntime.loadDataTool) {
-			if (!defaultDrawingPanel.setSendAction(datasetItem, "DataTool", reply, true)) {
+			if (!Tool.setSendAction(datasetItem, "DataTool", defaultDrawingPanel, reply, true)) {
 				OSPRuntime.loadDataTool = false;
 				datasetItem.setEnabled(false);
 			}

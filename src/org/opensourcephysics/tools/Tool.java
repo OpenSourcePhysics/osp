@@ -7,6 +7,16 @@
 
 package org.opensourcephysics.tools;
 
+import java.lang.reflect.Method;
+
+import javax.swing.JFrame;
+import javax.swing.JMenuItem;
+
+import org.opensourcephysics.controls.OSPLog;
+import org.opensourcephysics.controls.XMLControlElement;
+import org.opensourcephysics.display.Data;
+import org.opensourcephysics.display.OSPFrame;
+
 /**
  * This is a Tool interface for osp data transfers via XML.
  *
@@ -21,6 +31,45 @@ public interface Tool {
 	 * @param replyTo the tool to notify when the job is complete (may be null)
 	 */
 	public void send(Job job, Tool replyTo);
+
+	/**
+	 * 
+	 * @param item
+	 * @param data 
+	 * @param replyTo
+	 * @param andDisplay
+	 * @param toolClass
+	 */
+	static boolean setSendAction(JMenuItem item, String toolName, Object data, Tool replyTo, boolean andDisplay) {
+		try {
+			Class<?> toolClass = Class.forName("org.opensourcephysics.tools." + toolName); //$NON-NLS-1$
+			item.addActionListener((e) -> {
+				try {
+					Method m = toolClass.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
+					Tool tool = (Tool) m.invoke(null, (Object[]) null);
+					tool.send(new LocalJob(data), replyTo);
+					if (andDisplay) {
+						if (tool instanceof OSPFrame) {
+							((OSPFrame) tool).setKeepHidden(false);
+						}
+						((JFrame) tool).setVisible(true);
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			});
+			return true;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			OSPLog.finest("Cannot instantiate " + toolName + ":\n" + ex.getMessage()); //$NON-NLS-1$
+			return false;
+		}
+	}
+
+	public static void reply(Tool replyTo, Job job, Tool from, Data reply) {
+		job.setXML(new XMLControlElement(reply).toXML());
+		replyTo.send(job, from);
+	}
 
 }
 

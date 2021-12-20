@@ -127,15 +127,14 @@ public class VideoCaptureTool implements Tool, VideoTool {
 	 * Adds frame specified by image file path.
 	 *
 	 * @param job     the job
-	 * @param replyTo the tool to reply to
+	 * @param noReply  ignored
 	 */
 	@Override
-	public void send(Job job, Tool replyTo) {
+	public void send(Job job, Tool noReply) {
 		if (job == null) {
 			return;
 		}
-		XMLControl control = new XMLControlElement(job.getXML());
-		String path = control.getString("imagepath"); //$NON-NLS-1$
+		String path = new XMLControlElement(job.getXML()).getString("imagepath"); //$NON-NLS-1$
 		if (path != null) {
 			BufferedImage image = ResourceLoader.getBufferedImage(path);
 			if (image != null) {
