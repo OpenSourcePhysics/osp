@@ -516,9 +516,10 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		if (panel != null) {
 			//OSPLog.finest("removing panel " + name); //$NON-NLS-1$
 			trackFunctionPanels.remove(name);
-			panel.dispose();
 			refreshDropdown(null);
 			firePropertyChange(PROPERTY_FUNCTIONTOOL_PANEL, panel, null); // $NON-NLS-1$
+			// dispose of panel AFTER firing property change
+			panel.dispose();
 		}
 		return panel;
 	}
@@ -807,6 +808,18 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 			if (itemName.equals(name))
 				return item;
 		}
+		return null;
+	}
+
+	/**
+	 * Gets the selected dropdown item name.
+	 * 
+	 * @return the selected name
+	 */
+	protected String getSelectedDropdownName() {
+		FTObject item = (FTObject) dropdown.getSelectedItem();
+		if (item != null)
+			return item.name;
 		return null;
 	}
 

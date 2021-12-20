@@ -36,7 +36,6 @@ import org.opensourcephysics.display.Dataset;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.numerics.SuryonoParser;
-
 import javajs.async.AsyncFileChooser;
 
 /**
@@ -763,10 +762,14 @@ public class FitBuilder extends FunctionTool {
 		public void setVisible(boolean vis) {
 			super.setVisible(vis);
 			if (!vis) {
-				// reload fits
+				// get name of currently selected fit
+				String name = getSelectedDropdownName();
+				// reload fits--will leave last loaded fit selected
 				for (String dir : getSearchPaths()) {
 					autoloadFits(dir);
 				}
+				// restore previously selected fit
+				refreshDropdown(name);
 				// save non-default search paths in preferredAutoloadSearchPaths
 				Collection<String> searchPaths = getSearchPaths();
 				Collection<String> defaultPaths = OSPRuntime.getDefaultSearchPaths();
