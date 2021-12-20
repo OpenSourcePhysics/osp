@@ -647,6 +647,17 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		if (control.failedToRead() || (control.getObjectClass() == Object.class)) {
 			return;
 		}
+		receiveJobControl(job, replyTo, control);
+	}
+
+	/**
+	 * We already have the control; no need to recreate it.
+	 * 
+	 * @param job
+	 * @param replyTo
+	 * @param control
+	 */
+	void receiveJobControl(Job job, Tool replyTo, XMLControlElement control) {
 		// log the job in
 		jobManager.log(job, replyTo);
 		// if control is for a Data object, load it into this tab
@@ -655,9 +666,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			loadData(data, replaceColumnsWithMatchingNames);
 			jobManager.associate(job, dataManager);
 			refreshGUI();
-		}
-		// if control is for DataToolTab class, load this tab from control
-		else if (DataToolTab.class.isAssignableFrom(control.getObjectClass())) {
+		} else if (DataToolTab.class.isAssignableFrom(control.getObjectClass())) {
+			// if control is for DataToolTab class, load this tab from control
 			control.loadObject(this);
 			refreshGUI();
 		}

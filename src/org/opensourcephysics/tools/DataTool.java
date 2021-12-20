@@ -845,11 +845,10 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 				} else {
 					setSelectedTab(tab);
 				}
-				tab.send(job, replyTo);
-			}
-			// if data is a container, then send a new job to an existing tab
-			// or create a new tab
-			else {
+				tab.receiveJobControl(job, replyTo, control);
+			} else {
+				// if data is a container, then send a new job to an existing tab
+				// or create a new tab
 				for (Data next : getSelfContainedData(data)) {
 					DataToolTab tab = getTab(next); // may be null
 					if (tab == null) {
@@ -863,11 +862,11 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 					tab.send(new LocalJob(next), replyTo);
 				}
 			}
-		}
-		// else add tabs based on child Data objects, if any, within the control
-		else {
+		} else {
+			// else add tabs based on child Data objects, if any, within the control
 			addTabs(control, null); // adds Data objects found in XMLControl
 		}
+		toFront();
 	}
 
 	/**
