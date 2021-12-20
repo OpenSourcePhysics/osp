@@ -8,6 +8,7 @@
 package org.opensourcephysics.ejs.control.swing;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
+
 import org.opensourcephysics.ejs.control.ControlElement;
 import org.opensourcephysics.ejs.control.value.BooleanValue;
 import org.opensourcephysics.ejs.control.value.Value;
@@ -17,6 +18,10 @@ import org.opensourcephysics.ejs.control.value.Value;
  * any action.
  */
 public class ControlFrame extends ControlWindow {
+  static private final int MODE_TITLE = 0;
+  static private final int MODE_SET_RESIZE = 1;
+  static private final int MODE_EXIT = 2;
+  static private final int MODE_ONEXIT = 3;
   static private final int NAME = ControlWindow.NAME+4; // shadows superclass field
   protected JFrame frame;
 
@@ -110,7 +115,7 @@ public String getPropertyInfo(String _property) {
   @Override
 public void setValue(int _index, Value _value) {
     switch(_index) {
-       case 0 :                                                      // title
+       case MODE_TITLE:                                                      // title
          String ejsWindow = getProperty("_ejs_window_");             //$NON-NLS-1$
          if(ejsWindow!=null) {
            frame.setTitle(_value.getString()+" "+ejsWindow);         //$NON-NLS-1$
@@ -118,10 +123,10 @@ public void setValue(int _index, Value _value) {
            frame.setTitle(_value.getString());
          }
          break;
-       case 1 :
+       case MODE_SET_RESIZE:
          frame.setResizable(_value.getBoolean());
          break;
-       case 2 :                                                      // exit
+       case MODE_EXIT:                                                      // exit
          if(getProperty("_ejs_")==null) {                            //$NON-NLS-1$
            if(_value.getBoolean()) {
              frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -134,7 +139,7 @@ public void setValue(int _index, Value _value) {
          removeAction(ControlElement.ACTION, getProperty("onExit")); //$NON-NLS-1$
          addAction(ControlElement.ACTION, _value.getString());
          break;
-       case NAME :                                                   // Overrides ControlElement's 'name'
+       case NAME:                                                   // Overrides ControlElement's 'name'
          super.setValue(ControlWindow.NAME, _value);
          if((getGroup()!=null)&&(getGroup().getOwnerFrame()==getComponent())) {
            String replacement = getGroup().getReplaceOwnerName();
@@ -154,7 +159,7 @@ public void setValue(int _index, Value _value) {
   @Override
 public void setDefaultValue(int _index) {
     switch(_index) {
-       case 0 :                                                      // title
+       case MODE_TITLE:                                                      // title
          String ejsWindow = getProperty("_ejs_window_");             //$NON-NLS-1$
          if(ejsWindow!=null) {
            frame.setTitle(ejsWindow);
@@ -162,40 +167,44 @@ public void setDefaultValue(int _index) {
            frame.setTitle("");                                       //$NON-NLS-1$
          }
          break;
-       case 1 :
+       case MODE_SET_RESIZE:
          frame.setResizable(true);
          break;
-       case 2 :                                                      // exit
+       case MODE_EXIT:                                                      // exit
          if(getProperty("_ejs_")==null) {                            //$NON-NLS-1$
            frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
          }
          break;
-       case 3 :
+       case MODE_ONEXIT:
          removeAction(ControlElement.ACTION, getProperty("onExit")); //$NON-NLS-1$
          break;
-       case NAME :                                                   // Overrides ControlElement's 'name'
+       case NAME:
+    	   // Overrides ControlElement's 'name'
          super.setDefaultValue(ControlWindow.NAME);
          if((getGroup()!=null)&&(getGroup().getOwnerFrame()==getComponent())) {
            getGroup().setOwnerFrame(frame);
          }
+         // BH! break missing here. 
+         break;
+		//$FALL-THROUGH$
        default :
          super.setDefaultValue(_index-4);
          break;
     }
   }
 
-  @Override
-public Value getValue(int _index) {
-    switch(_index) {
-       case 0 :
-       case 1 :
-       case 2 :
-       case 3 :
-         return null;
-       default :
-         return super.getValue(_index-4);
-    }
-  }
+	@Override
+	public Value getValue(int _index) {
+		switch (_index) {
+		case MODE_TITLE:
+		case MODE_SET_RESIZE:
+		case MODE_EXIT:
+		case MODE_ONEXIT:
+			return null;
+		default:
+			return super.getValue(_index - 4);
+		}
+	}
 
 } // End of 2class
 
