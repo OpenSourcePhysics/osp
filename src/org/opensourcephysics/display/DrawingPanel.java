@@ -52,12 +52,14 @@ import javax.swing.text.JTextComponent;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.display.OSPRuntime.Disposable;
 import org.opensourcephysics.display.axes.CoordinateStringBuilder;
 import org.opensourcephysics.display.dialogs.DrawingPanelInspector;
 import org.opensourcephysics.display.dialogs.ScaleInspector;
 import org.opensourcephysics.display.dialogs.XMLDrawingPanelInspector;
 import org.opensourcephysics.tools.FontSizer;
+import org.opensourcephysics.tools.Job;
 import org.opensourcephysics.tools.ToolsRes;
 import org.opensourcephysics.tools.VideoTool;
 
@@ -3183,6 +3185,12 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
     	}
     	super.firePropertyChange(propertyName, oldValue, newValue);
     }
+
+	public void receiveToolReply(Job job) {
+		XMLControlElement control = new XMLControlElement();
+		control.readXML(job.getXML());
+		Dataset.loadDatasets(getObjectOfClass(Dataset.class), control.getObjects(Dataset.class).iterator());
+	}
 }
 
 /*

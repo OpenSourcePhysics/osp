@@ -112,22 +112,8 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 		// responds to data from the Data Tool
 		reply = new Tool() {
 			@Override
-			public void send(Job job, Tool replyTo) {
-				XMLControlElement control = new XMLControlElement();
-				control.readXML(job.getXML());
-				ArrayList<?> datasets = drawingPanel.getObjectOfClass(Dataset.class);
-				Iterator<?> it = control.getObjects(Dataset.class).iterator();
-				while (it.hasNext()) {
-					Dataset newData = (Dataset) it.next();
-					int id = newData.getID();
-					for (int i = 0, n = datasets.size(); i < n; i++) {
-						if (((Dataset) datasets.get(i)).getID() == id) {
-							XMLControl xml = new XMLControlElement(newData); // convert the source to xml
-							Dataset.getLoader().loadObject(xml, datasets.get(i)); // copy the data to the destination
-							break;
-						}
-					}
-				}
+			public void send(Job job, Tool noReply) {
+				drawingPanel.receiveToolReply(job);
 				drawingPanel.repaint();
 			}
 

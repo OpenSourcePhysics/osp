@@ -13,6 +13,8 @@ import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 
 import org.opensourcephysics.controls.OSPLog;
+import org.opensourcephysics.controls.XMLControlElement;
+import org.opensourcephysics.display.Data;
 import org.opensourcephysics.display.OSPFrame;
 
 /**
@@ -34,18 +36,18 @@ public interface Tool {
 	 * 
 	 * @param item
 	 * @param data 
-	 * @param reply
+	 * @param replyTo
 	 * @param andDisplay
 	 * @param toolClass
 	 */
-	static boolean setSendAction(JMenuItem item, String toolName, Object data, Tool reply, boolean andDisplay) {
+	static boolean setSendAction(JMenuItem item, String toolName, Object data, Tool replyTo, boolean andDisplay) {
 		try {
 			Class<?> toolClass = Class.forName("org.opensourcephysics.tools." + toolName); //$NON-NLS-1$
 			item.addActionListener((e) -> {
 				try {
 					Method m = toolClass.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
 					Tool tool = (Tool) m.invoke(null, (Object[]) null);
-					tool.send(new LocalJob(data), reply);
+					tool.send(new LocalJob(data), replyTo);
 					if (andDisplay) {
 						if (tool instanceof OSPFrame) {
 							((OSPFrame) tool).setKeepHidden(false);
@@ -62,6 +64,11 @@ public interface Tool {
 			OSPLog.finest("Cannot instantiate " + toolName + ":\n" + ex.getMessage()); //$NON-NLS-1$
 			return false;
 		}
+	}
+
+	public static void reply(Tool replyTo, Job job, Tool from, Data reply) {
+		job.setXML(new XMLControlElement(reply).toXML());
+		replyTo.send(job, from);
 	}
 
 }

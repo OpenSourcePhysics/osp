@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -32,6 +33,7 @@ import javax.swing.event.TableModelEvent;
 
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.controls.XMLLoader;
 
 /**
@@ -1759,6 +1761,17 @@ public class Dataset extends DataTable.DataModel implements Measurable, LogMeasu
 		return temp;
 	}
 
+	public static Dataset findDataSet(ArrayList<Dataset> datasets, Data newData) {
+		int id = newData.getID();
+		for (int i = 0, n = datasets.size(); i < n; i++) {
+			Dataset ds = datasets.get(i); 
+			if (ds.getID() == id) {
+				return ds;
+			}
+		}
+		return null;
+	}
+
 	protected static int getNaNCount(double[] pts, int index) {
 		int nans = 0;
 		for (int i = 0; i < index; i++) {
@@ -1990,6 +2003,18 @@ public class Dataset extends DataTable.DataModel implements Measurable, LogMeasu
 //			return 0;
 //		}
 //		return columnIndex;
+	}
+
+	public static void loadDatasets(ArrayList<Dataset> datasets, Iterator<Dataset> it) {
+		while (it.hasNext()) {
+			Dataset newData = it.next();
+			Dataset ds = findDataSet(datasets, newData);
+			if (ds != null) {
+				// convert the source to xml
+				// and copy the data to the destination
+				getLoader().loadObject(new XMLControlElement(newData), ds); 
+			}
+		}
 	}
 
 }
