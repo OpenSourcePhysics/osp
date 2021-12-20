@@ -182,8 +182,9 @@ public class DataFunctionPanel extends FunctionPanel {
 				String[] function = (String[]) next;
 				for (Object f : existingFunctions) {
 					DataFunction dataFunction = (DataFunction) f;
+					// if identical function already exists, don't add again
 					if (dataFunction.getYColumnName().equals(function[0])
-							&& dataFunction.getExpression().equals(function[1])) {
+							&& dataFunction.getInputString().equals(function[1])) {
 						continue outer;
 					}
 				}
