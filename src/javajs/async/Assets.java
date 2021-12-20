@@ -610,6 +610,7 @@ public class Assets {
 	 * @return
 	 * @throws IOException
 	 */
+	@SuppressWarnings("null")
 	private static byte[] getLimitedStreamBytes(InputStream is, int n, OutputStream out) throws IOException {
 
 		// Note: You cannot use InputStream.available() to reliably read
@@ -618,7 +619,7 @@ public class Assets {
 		boolean toOut = (out != null);
 		int buflen = (n > 0 && n < 1024 ? (int) n : 1024);
 		byte[] buf = new byte[buflen];
-		byte[] bytes = (out == null ? new byte[n < 0 ? 4096 : (int) n] : null);
+		byte[] bytes = (toOut ? null : new byte[n < 0 ? 4096 : (int) n]);
 		int len = 0;
 		int totalLen = 0;
 		if (n < 0)

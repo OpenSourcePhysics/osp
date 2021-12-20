@@ -3136,6 +3136,7 @@ public class ResourceLoader {
 	 * From javajs.Rdr
 	 * 
 	 */
+	@SuppressWarnings("null")
 	public static byte[] getLimitedStreamBytes(InputStream is, long n, OutputStream out, boolean andCloseInput) throws IOException {
 
 		// Note: You cannot use InputStream.available() to reliably read

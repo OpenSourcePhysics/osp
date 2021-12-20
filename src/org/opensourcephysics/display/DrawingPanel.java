@@ -32,6 +32,7 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Locale;
 
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -58,6 +60,8 @@ import org.opensourcephysics.display.dialogs.DrawingPanelInspector;
 import org.opensourcephysics.display.dialogs.ScaleInspector;
 import org.opensourcephysics.display.dialogs.XMLDrawingPanelInspector;
 import org.opensourcephysics.tools.FontSizer;
+import org.opensourcephysics.tools.LocalJob;
+import org.opensourcephysics.tools.Tool;
 import org.opensourcephysics.tools.ToolsRes;
 import org.opensourcephysics.tools.VideoTool;
 
@@ -3184,6 +3188,38 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
     	super.firePropertyChange(propertyName, oldValue, newValue);
     }
 
+	/**
+	 * 
+	 * @param item
+	 * @param toolClass
+	 * @param reply
+	 * @param andDisplay
+	 */
+	public boolean setSendAction(JMenuItem item, String toolName, Tool reply, boolean andDisplay) {
+		try {
+			Class<?> toolClass = Class.forName("org.opensourcephysics.tools." + toolName); //$NON-NLS-1$
+			item.addActionListener((e) -> {
+				try {
+					Method m = toolClass.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
+					Tool tool = (Tool) m.invoke(null, (Object[]) null);
+					tool.send(new LocalJob(this), reply);
+					if (andDisplay) {
+						if (tool instanceof OSPFrame) {
+							((OSPFrame) tool).setKeepHidden(false);
+						}
+						((JFrame) tool).setVisible(true);
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			});
+			return true;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			OSPLog.finest("Cannot instantiate " + toolName + ":\n" + ex.getMessage()); //$NON-NLS-1$
+			return false;
+		}
+	}
 }
 
 /*

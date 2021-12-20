@@ -28,7 +28,6 @@ import java.util.List;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -47,7 +46,6 @@ import org.opensourcephysics.controls.XMLTreePanel;
 import org.opensourcephysics.display.axes.DrawableAxes;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.Job;
-import org.opensourcephysics.tools.LocalJob;
 import org.opensourcephysics.tools.SnapshotTool;
 import org.opensourcephysics.tools.Tool;
 
@@ -702,18 +700,18 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 			printMenu.add(printItem);
 			printItem.setAccelerator(KeyStroke.getKeyStroke('P', MENU_SHORTCUT_KEY_MASK));
 			printItem.addActionListener((e) -> {
-					PrintUtils.printComponent(drawingPanel);
+				PrintUtils.printComponent(drawingPanel);
 			});
 			JMenuItem printFrameItem = new JMenuItem(DisplayRes.getString("DrawingFrame.PrintFrame_menu_item")); //$NON-NLS-1$
 			printMenu.add(printFrameItem);
 			printFrameItem.addActionListener((e) -> {
-					PrintUtils.printComponent(DrawingFrame.this);
+				PrintUtils.printComponent(DrawingFrame.this);
 			});
 		}
 		JMenuItem saveXMLItem = new JMenuItem(DisplayRes.getString("DrawingFrame.SaveXML_menu_item")); //$NON-NLS-1$
 		saveXMLItem.setAccelerator(KeyStroke.getKeyStroke('S', MENU_SHORTCUT_KEY_MASK));
 		saveXMLItem.addActionListener((e) -> {
-				saveXML();
+			saveXML();
 		});
 		// ExportTool menu item
 		/*
@@ -727,29 +725,13 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 		// create export tool menu item if the tool exists in classpath
 		JMenuItem exportItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Export_menu_item")); //$NON-NLS-1$
 		exportItem.setAccelerator(KeyStroke.getKeyStroke('E', MENU_SHORTCUT_KEY_MASK));
-		Class<?> exportTool = null;
 		if (OSPRuntime.loadExportTool) {
 			OSPLog.fine("Loading ExportTool");
-			try {
-				exportTool = Class.forName("org.opensourcephysics.tools.ExportTool"); //$NON-NLS-1$
-			} catch (Exception ex) {
+			if (!drawingPanel.setSendAction(exportItem, "ExportTool", reply, false)) {
 				OSPRuntime.loadExportTool = false;
-				OSPLog.finest("Cannot instantiate data export tool class:\n" + ex.toString()); //$NON-NLS-1$
 				exportItem.setEnabled(false);
 			}
 		}
-		final Class<?> tool = exportTool;
-		exportItem.addActionListener((e) -> {
-				try {
-					if (tool == null)
-						return;
-					Method m = tool.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
-					Tool t = (Tool) m.invoke(null, (Object[]) null);
-					t.send(new LocalJob(drawingPanel), reply);
-				} catch (Exception ex) {
-					System.err.println("Error creating ExportTool.");
-				}
-		});
 		OSPLog.info("Done with Export Tool");
 		// Save menu item
 		JMenu saveImage = new JMenu(DisplayRes.getString("DrawingFrame.SaveImage_menu_title")); //$NON-NLS-1$
@@ -845,18 +827,18 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 		menuBar.add(helpMenu);
 		JMenuItem aboutItem = new JMenuItem(DisplayRes.getString("DrawingFrame.AboutOSP_menu_item")); //$NON-NLS-1$
 		aboutItem.addActionListener((e) -> {
-				OSPRuntime.showAboutDialog(DrawingFrame.this);
+			OSPRuntime.showAboutDialog(DrawingFrame.this);
 		});
 		helpMenu.add(aboutItem);
 		JMenuItem sysItem = new JMenuItem(ControlsRes.getString("ControlFrame.System")); //$NON-NLS-1$
 		sysItem.addActionListener((e) -> {
-				ControlUtils.showSystemProperties(true);
+			ControlUtils.showSystemProperties(true);
 		});
 		helpMenu.add(sysItem);
 		helpMenu.addSeparator();
 		JMenuItem logItem = new JMenuItem(ControlsRes.getString("ControlFrame.Message_Log")); //$NON-NLS-1$
 		logItem.addActionListener((e) -> {
-				OSPLog.showLog();
+			OSPLog.showLog();
 		});
 		helpMenu.add(logItem);
 	}
@@ -930,70 +912,17 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 		// create Data Tool menu item if the tool exists in the classpath
 		JMenuItem datasetItem = new JMenuItem(DisplayRes.getString("DrawingFrame.DatasetTool_menu_item")); //$NON-NLS-1$
 		toolsMenu.add(datasetItem);
-		Class<?> datasetToolClass = null;
 		if (OSPRuntime.loadDataTool) {
-			try {
-				datasetToolClass = Class.forName("org.opensourcephysics.tools.DataTool"); //$NON-NLS-1$
-			} catch (Exception ex) {
-				OSPLog.finest("Cannot instantiate data analysis tool class:\n" + ex.toString()); //$NON-NLS-1$
+			if (!drawingPanel.setSendAction(datasetItem, "DataTool", reply, true)) {
 				OSPRuntime.loadDataTool = false;
 				datasetItem.setEnabled(false);
 			}
 		}
-		final Class<?> finalDatasetToolClass = datasetToolClass; // class must be final for action listener
-		datasetItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					if (finalDatasetToolClass == null)
-						return;
-					Method m = finalDatasetToolClass.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
-					Tool tool = (Tool) m.invoke(null, (Object[]) null);
-					tool.send(new LocalJob(drawingPanel), reply);
-					if (tool instanceof OSPFrame) {
-						((OSPFrame) tool).setKeepHidden(false);
-					}
-					((JFrame) tool).setVisible(true);
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			}
-
-		});
 		// create Fourier Tool menu item if the tool exists in the classpath
 		JMenuItem fourierToolItem = new JMenuItem(DisplayRes.getString("DrawingFrame.FourierTool_menu_item")); //$NON-NLS-1$
-		//if (!JSUtil.isJS)
-			toolsMenu.add(fourierToolItem);
-//		Class<?> fourierToolClass = null;
-		if (OSPRuntime.loadFourierTool) {
-//			try {
-//				fourierToolClass = Class.forName("org.opensourcephysics.tools.FourierTool");
-//			} catch (Exception ex) {
-//				OSPLog.finest("Cannot instantiate Fourier analysis tool class:\n" + ex.toString()); //$NON-NLS-1$
-//				OSPRuntime.loadFourierTool = false;
-//				fourierToolItem.setEnabled(false);
-//			}
-		}
+		toolsMenu.add(fourierToolItem);
 		// there is no Fourier tool
 		fourierToolItem.setVisible(false);
-//		final Class<?> finalFourierToolClass = fourierToolClass; // class must be final for action listener
-//		fourierToolItem.addActionListener(new ActionListener() {
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				try {
-//					Method m = finalFourierToolClass.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
-//					Tool tool = (Tool) m.invoke(null, (Object[]) null);
-//					tool.send(new LocalJob(drawingPanel), reply);
-//					if (tool instanceof OSPFrame) {
-//						((OSPFrame) tool).setKeepHidden(false);
-//					}
-//					((JFrame) tool).setVisible(true);
-//				} catch (Exception ex) {
-//					fourierToolItem.setEnabled(false);
-//				}
-//			}
-//
-//		});
 		// create snapshot menu item
 		JMenuItem snapshotItem = new JMenuItem(DisplayRes.getString("DisplayPanel.Snapshot_menu_item")); //$NON-NLS-1$
 		if (!OSPRuntime.isApplet && !OSPRuntime.isJS) {
@@ -1012,40 +941,6 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 				}
 
 			});
-		// create video capture menu item
-//    JMenuItem videoItem = new JMenuItem(DisplayRes.getString("DrawingFrame.MenuItem.Capture")); //$NON-NLS-1$
-//    if(OSPRuntime.applet==null && false) { // video capture no longer supported.
-//      toolsMenu.add(videoItem);
-//g    }
-//    Class<?> videoToolClass = null;
-//    if(false&& OSPRuntime.loadVideoTool) {  // video capture no longer supported.
-//      try {
-//        videoToolClass = Class.forName("org.opensourcephysics.tools.VideoCaptureTool"); //$NON-NLS-1$
-//      } catch(Exception ex) {
-//        OSPRuntime.loadVideoTool = false;
-//        OSPLog.finest("Cannot instantiate video capture tool class:\n"+ex.toString());  //$NON-NLS-1$
-//        videoItem.setEnabled(false);
-//      }
-//    }
-//    final Class<?> finalVideoToolClass = videoToolClass; // class must be final for action listener
-//    videoItem.addActionListener(new ActionListener() {
-//      public void actionPerformed(ActionEvent e) {
-//        if(drawingPanel.getVideoTool()==null) {
-//          try {
-//            Method m = finalVideoToolClass.getMethod("getTool", (Class[]) null);             //$NON-NLS-1$
-//            Tool tool = (Tool) m.invoke(null, (Object[]) null);                              // tool is a VideoTool
-//            drawingPanel.setVideoTool((VideoTool) tool);
-//            ((VideoTool) tool).setVisible(true);
-//            ((VideoTool) tool).clear();
-//          } catch(Exception ex) {
-//            OSPLog.finest("Cannot perform action to get video tool class:\n"+ex.toString()); //$NON-NLS-1$
-//          }
-//        } else {
-//          drawingPanel.getVideoTool().setVisible(true);
-//        }
-//      }
-//
-//    });
 		return toolsMenu;
 	}
 

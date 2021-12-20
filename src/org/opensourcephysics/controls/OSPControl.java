@@ -469,6 +469,7 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
 	 *
 	 * @param s
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	public void print(final String s) {
 	    OSPRuntime.postEvent(() -> {
@@ -479,6 +480,7 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
 	/**
 	 * Remove all text from the message area.
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	public void clearMessages() {
 		OSPRuntime.postEvent(() -> {
@@ -658,7 +660,7 @@ public class OSPControl extends ControlFrame implements PropertyChangeListener, 
 						cf.model = control.getChildControl("model").loadObject(cf.model);
 						break;
 					}
-					// fall through
+					//$FALL-THROUGH$
 				default:
 					cf.setValue(name, control.getObject(name));
 					break;

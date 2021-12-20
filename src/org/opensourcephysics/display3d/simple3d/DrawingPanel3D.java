@@ -866,7 +866,7 @@ public int print(Graphics g, PageFormat pageFormat, int pageIndex) throws Printe
          zText.setText(labels[2]);
          setCursorMode();
        }
-       // do not break!
+		//$FALL-THROUGH$
        case VisualizationHints.HINT_DECORATION_TYPE :
          switch(visHints.getDecorationType()) {
             case org.opensourcephysics.display3d.core.VisualizationHints.DECORATION_NONE :

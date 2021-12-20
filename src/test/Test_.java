@@ -16,6 +16,7 @@ public class Test_ {
 		System.out.println("\n\n==============\nTesting " + getClass().getName());
 	}
 	
+	@SuppressWarnings("deprecation")
 	public static void main(String[] args) {
 	    System.out.println(new Date().toGMTString());
 

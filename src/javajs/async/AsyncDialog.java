@@ -216,7 +216,7 @@ public class AsyncDialog implements PropertyChangeListener {
 	private void setListener(ActionListener a) {
 		actionListener = a;
 		@SuppressWarnings("unused")
-		Class c = JOptionPane.class; // loads the class
+		Class<?> c = JOptionPane.class; // loads the class
 		/** @j2sNative c.$clazz$.listener = this */
 	}
 

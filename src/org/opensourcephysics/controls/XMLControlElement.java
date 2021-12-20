@@ -315,7 +315,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		case XMLProperty.TYPE_INT:
 		case XMLProperty.TYPE_DOUBLE:
 			obj = obj.toString();
-			// fall through
+			//$FALL-THROUGH$
 		default:
 			setXMLProperty(name, type, obj, writeNullFinalElement);
 			break;			
@@ -348,16 +348,17 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	@Override
 	public double getDouble(String name) {
 		XMLProperty prop = getXMLProperty(name);
-		switch (prop == null ? XMLProperty.TYPE_UNKNOWN : prop.getPropertyType()) {
-		case XMLProperty.TYPE_DOUBLE:
-		case XMLProperty.TYPE_INT:
-		case XMLProperty.TYPE_STRING:
-			try {
-				return Double.parseDouble((String) prop.getPropertyContent().get(0));
-			} catch (Exception ex) {
+		if (prop != null)
+			switch (prop.getPropertyType()) {
+			case XMLProperty.TYPE_DOUBLE:
+			case XMLProperty.TYPE_INT:
+			case XMLProperty.TYPE_STRING:
+				try {
+					return Double.parseDouble((String) prop.getPropertyContent().get(0));
+				} catch (Exception ex) {
+				}
+				break;
 			}
-			break;
-		}
 		return Double.NaN;
 	}
 
@@ -370,22 +371,23 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	@Override
 	public int getInt(String name) {
 		XMLProperty prop = getXMLProperty(name);
-		switch (prop == null ? XMLProperty.TYPE_UNKNOWN : prop.getPropertyType()) {
-		case XMLProperty.TYPE_INT:
-		case XMLProperty.TYPE_STRING:
-			try {
-				return Integer.parseInt((String) prop.getPropertyContent().get(0));
-			} catch (Exception ex) {
+		if (prop != null)
+			switch (prop.getPropertyType()) {
+			case XMLProperty.TYPE_INT:
+			case XMLProperty.TYPE_STRING:
+				try {
+					return Integer.parseInt((String) prop.getPropertyContent().get(0));
+				} catch (Exception ex) {
+				}
+				break;
+			case XMLProperty.TYPE_OBJECT:
+				XMLControl control = (XMLControl) prop.getPropertyContent().get(0);
+				if (control.getObjectClass() == OSPCombo.class) {
+					OSPCombo combo = (OSPCombo) control.loadObject(null);
+					return combo.getSelectedIndex();
+				}
+				break;
 			}
-			break;
-		case XMLProperty.TYPE_OBJECT:
-			XMLControl control = (XMLControl) prop.getPropertyContent().get(0);
-			if (control.getObjectClass() == OSPCombo.class) {
-				OSPCombo combo = (OSPCombo) control.loadObject(null);
-				return combo.getSelectedIndex();
-			}
-			break;
-		}
 		return Integer.MIN_VALUE;
 	}
 
@@ -395,11 +397,11 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @param name the name
 	 * @return the string value, or null if none found
 	 */
+	@SuppressWarnings("null")
 	@Override
 	public String getString(String name) {
 		XMLProperty prop = getXMLProperty(name);
-		int type = (prop == null ? XMLProperty.TYPE_UNKNOWN : prop.getPropertyType());
-		
+		int type = (prop == null ? XMLProperty.TYPE_UNKNOWN : prop.getPropertyType());		
 		if (type == XMLProperty.TYPE_STRING) {
 			return XML.removeCDATA((String) prop.getPropertyContent().get(0));
 		} 
@@ -982,6 +984,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @param importAll  true to import all importable data
 	 * @return the loaded object
 	 */
+	@SuppressWarnings("null")
 	public Object loadObject(Object obj, boolean autoImport, boolean importAll) {
 		Class<?> myType = getObjectClass();
 		Class<?> oclass = (obj == null ? null : obj.getClass());
@@ -1764,7 +1767,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 				prop.content.add(s.substring(0, pt));
 				break;
 			}
-			// fall through
+			//$FALL-THROUGH$
 		default:			
 			// int, double, boolean or string types
 			// BH 2020.11.21 was 

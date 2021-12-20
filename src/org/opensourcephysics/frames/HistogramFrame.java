@@ -9,16 +9,15 @@ package org.opensourcephysics.frames;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
+
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
-import org.opensourcephysics.controls.OSPLog;
+
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.DataTable;
@@ -28,12 +27,9 @@ import org.opensourcephysics.display.Drawable;
 import org.opensourcephysics.display.DrawingFrame;
 import org.opensourcephysics.display.Histogram;
 import org.opensourcephysics.display.HistogramDataset;
-import org.opensourcephysics.display.OSPFrame;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.PlottingPanel;
 import org.opensourcephysics.tools.DataTool;
-import org.opensourcephysics.tools.LocalJob;
-import org.opensourcephysics.tools.Tool;
 
 /**
  * HistogramFrame displays a histogram using a dedicated Histogram object.
@@ -132,68 +128,33 @@ protected void addMenuItems() {
     }
   }
 
-  /**
-   * Adds launchable tools to the specified menu.
-   *
-   */
-  @Override
-protected JMenu loadToolsMenu() {
-	if(OSPRuntime.isJS) {  // external tools not supported in JavaScript.
-		  return null;
+	/**
+	 * Adds launchable tools to the specified menu.
+	 *
+	 */
+	@Override
+	protected JMenu loadToolsMenu() {
+		if (OSPRuntime.isJS) { // external tools not supported in JavaScript.
+			return null;
+		}
+		JMenuBar menuBar = getJMenuBar();
+		if (menuBar == null) {
+			return null;
+		}
+		// add menu item
+		JMenu toolsMenu = new JMenu(DisplayRes.getString("DrawingFrame.Tools_menu_title")); //$NON-NLS-1$
+		menuBar.add(toolsMenu);
+		// test dataset tool
+		JMenuItem datasetItem = new JMenuItem(DisplayRes.getString("DrawingFrame.DatasetTool_menu_item")); //$NON-NLS-1$
+		toolsMenu.add(datasetItem);
+ 		if (OSPRuntime.loadDataTool) {
+			if (!drawingPanel.setSendAction(datasetItem, "DataTool", reply, true)) {
+				OSPRuntime.loadDataTool = false;
+				datasetItem.setEnabled(false);
+			}
+		}
+		return toolsMenu;
 	}
-    JMenuBar menuBar = getJMenuBar();
-    if(menuBar==null) {
-      return null;
-    }
-    // add menu item
-    JMenu toolsMenu = new JMenu(DisplayRes.getString("DrawingFrame.Tools_menu_title")); //$NON-NLS-1$
-    menuBar.add(toolsMenu);
-    // test dataset tool
-    JMenuItem datasetItem = new JMenuItem(DisplayRes.getString("DrawingFrame.DatasetTool_menu_item")); //$NON-NLS-1$
-    toolsMenu.add(datasetItem);
-    /*
-     * datasetItem.addActionListener(new ActionListener() {
-     *  public void actionPerformed(ActionEvent e) {
-     *      tool=DataTool.getTool();
-     *      if(tool==null || !tool.isDisplayable()){
-     *        tool = new DataTool(histogram, histogram.getName());
-     *      }else{
-     *        tool.addTab(histogram, histogram.getName());
-     *      }
-     *      tool.setVisible(true);
-     *    }
-     *    });
-     */
-    Class<?> datasetToolClass = null;
-    if(OSPRuntime.loadDataTool) {
-      try {
-        datasetToolClass = Class.forName("org.opensourcephysics.tools.DataTool");      //$NON-NLS-1$
-      } catch(Exception ex) {
-        OSPRuntime.loadDataTool = false;
-        datasetItem.setEnabled(false);
-        OSPLog.finest("Cannot instantiate data analysis tool class:\n"+ex.toString()); //$NON-NLS-1$
-      }
-    }
-    final Class<?> finalDatasetToolClass = datasetToolClass; // class must be final for action listener
-    datasetItem.addActionListener(new ActionListener() {
-      @Override
-	public void actionPerformed(ActionEvent e) {
-        try {
-        	if (finalDatasetToolClass == null)
-        		return;
-          Method m = finalDatasetToolClass.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
-          Tool tool = (Tool) m.invoke(null, (Object[]) null);
-          tool.send(new LocalJob(drawingPanel), reply);
-          if(tool instanceof OSPFrame) {
-            ((OSPFrame) tool).setKeepHidden(false);
-          }
-          ((JFrame) tool).setVisible(true);
-        } catch(Exception ex) {}
-      }
-
-    });
-    return toolsMenu;
-  }
 
   /**
    *  Gets an array containing the bin centers.

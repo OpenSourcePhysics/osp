@@ -625,9 +625,6 @@ public class OSPRuntime {
 	/** Load Data Tool, if available. */
 	public static boolean loadDataTool = true;
 
-	/** Load Fourier Tool, if available. */
-	public static boolean loadFourierTool = true; // but the item is hidden, so no difference
-
 	/** Load OSP Log, if available. */
 	public static boolean loadOSPLog = true;
 

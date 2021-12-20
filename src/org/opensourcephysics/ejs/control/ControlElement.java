@@ -233,257 +233,268 @@ public abstract class ControlElement {
     return null;
   }
 
-  // -------------------------------------------
-  // Methods that deal with properties
-  // -------------------------------------------
+	// -------------------------------------------
+	// Methods that deal with properties
+	// -------------------------------------------
 
-  /**
-   * Sets a property for this <code>ControlElement</code>. Implementing
-   * classes are responsible of deciding (by declaring them in the
-   * getPropertyList() method) what properties turn into visual
-   * changes, or different behaviour, of the ControlElement.
-   * <p>
-   * However, every propery is accepted, even if it is not meaningful for a
-   * particular implementation of this interface. This can serve as a
-   * repository of information for future use.
-   * <p>
-   * Implementing classes should make sure that the following
-   * requirements are met:
-   * <ll>
-   *   <li> Properties can be set in any order. The final result
-   *        should not depend on the order. Exceptions must be
-   *        explicitly documented.
-   *   <li> Any property can be modified. If so, the old value,
-   *        and whatever meaning it had, is superseded by the
-   *        new one. If the new one is null, the old one is simply removed
-   *        and setDefaultValue(index) is called in case a precise default
-   *        value should be used.
-   *   <li> When the element is part of a GroupControl, final users should
-   *        not use this setProperty method directly, but go through the
-   *        corresponding method of the group.
-   * </ll>
-   * @return    This same element. This is useful to nest more
-   *            than one call to <code>setProperty</code>
-   * @param     String _property The property name
-   * @param     String _value    The value desired for the property
-   * @see       GroupControl
-   */
-  // This one is not final because a few of the subclasses
-  // (f. i. ControlContainer and ControlTrace) need to overwrite it
-  public ControlElement setProperty(String _property, String _value) {
-    _property = _property.trim();
-    if(_property.equals("_ejs_")) { //$NON-NLS-1$
-      isUnderEjs = true;
-    }
-    // Let's see if the proposed property is registered as a real property
-    int index = propertyIndex(_property);
-    if(index<0) {
-      // It is not a registered property. Store the value but do not call setValue()
-      if(_value==null) {
-        myPropertiesTable.remove(_property);
-      } else {
-        myPropertiesTable.put(_property, _value);
-      }
-      return this;
-    }
-    // The property is registered. Unregister and call setValue
-    myMethodsForProperties[index] = null;     // AMAVP
-    myExpressionsForProperties[index] = null; // AMAVP
-    if(myProperties[index]!=null) { // remove from the list of listeners for this GroupVariable
-      myProperties[index].removeElementListener(this, index);
-      myProperties[index] = null;
-    }
-    if(_value==null) {                     // Treat the easy case separately, so that to avoid a lot of 'if (null)' checks
-      if(myProperties[index]!=null) {      // remove from the list of listeners for this GroupVariable
-        myProperties[index].removeElementListener(this, index);
-        myProperties[index] = null;
-      }
-      setDefaultValue(index);              // use a default value
-      myPropertiesTable.remove(_property); // remove the property
-      return this;
-    }
-    // From now on, the value is, necessarily, not null
-    // Some properties should not be trimmed ('text', for instance)
-    if(!propertyIsTypeOf(_property, "NotTrimmed")) { //$NON-NLS-1$
-      _value = _value.trim();
-    }
-    String originalValue = _value;
-    // Because of backwards compatibility with version 3.01 or earlier
-    // There might be confusion with constant strings versus variable names
-    // This is the reason for most of the following block
-    // From this version on, it is recommended that constant strings should be
-    // delimited by either ' or "
-    Value constantValue = null;
-    if(_value.startsWith("%")&&_value.endsWith("%")&&(_value.length()>2)) {        //$NON-NLS-1$ //$NON-NLS-2$
-      _value = _value.substring(1, _value.length()-1);                             // Force a variable or method
-    } else if(_value.startsWith("@")&&_value.endsWith("@")&&(_value.length()>2)) { //$NON-NLS-1$ //$NON-NLS-2$
-      // empty                                                                                                     // Do nothing for parsed expressions
-    } else if(_value.startsWith("#")&&_value.endsWith("#")&&(_value.length()>2)) { //$NON-NLS-1$ //$NON-NLS-2$
-      // empty                                                                                                     // Do nothing for variables such as f()
-    } else {
-      if(_value.startsWith("\"")||_value.startsWith("'")) { //$NON-NLS-1$ //$NON-NLS-2$
-        // empty                                                                                                   // It IS a constant String, don't try anything else
-      } else {
-        // First look for a CONSTANT property that can not be associated to GroupVariables
-        if(propertyIsTypeOf(_property, "CONSTANT")) {                                                       //$NON-NLS-1$
-          constantValue = new StringValue(_value);
-        }
-        // Check for String properties
-        if(constantValue==null) {
-          if(propertyType(_property).equals("String")&&!propertyIsTypeOf(_property, "VARIABLE_EXPECTED")) { // See TextField f.i. //$NON-NLS-1$ //$NON-NLS-2$
-            constantValue = new StringValue(_value);
-          }
-        }
-      }
-      //
-      // End of the compatibility block
-      //
-      // Now try the particular parser
-      // The particular parser comes first because it can discriminate between
-      // a real String and a File, f.i.
-      if(constantValue==null) {
-        constantValue = parseConstant(propertyType(_property), _value);
-      }
-      // Finally the standard parser
-      if(constantValue==null) {
-        constantValue = Value.parseConstantOrArray(_value, true); // silentMode
-      }
-    }
-    if(constantValue!=null) { // Just set the value for this property
-      // System.out.println ("property = "+_property+" = "+_value+" of the element "+this.toString()+"  is a constant!");
-      if((constantValue instanceof StringValue)&&propertyIsTypeOf(_property, "TRANSLATABLE") // Apply Translator //$NON-NLS-1$
-        &&(OSPRuntime.loadTranslatorTool)) {    // added by D Brown 2007-10-17
-        Object target = (myGroup == null ? null :  myGroup.getTarget("_default_")); //$NON-NLS-1$
-        String translated = (target == null ? null : OSPRuntime.getTranslator().getProperty(target.getClass(), constantValue.getString()));
-        if(!constantValue.getString().equals(translated)) {
-          constantValue = new StringValue(translated);
-        }
-      }
-      setValue(index, constantValue);
-    } else {                                       // Associate the property with a GroupVariable or Method for later use
-      // System.out.println (_value+" for the property "+_property+" of the element "+this.toString()+"  is a variable!: "+originalValue);
-      // if (myProperties[index]!=null) { // remove from the list of listeners for this GroupVariable
-      // myProperties[index].removeElementListener(this,index);
-      // myProperties[index] = null;
-      // }
-      if(myGroup!=null) {
-        boolean isNormalVariable = true, isExpression = false;
-        if(_value.startsWith("#")&&_value.endsWith("#")&&(_value.length()>2)) {                   //$NON-NLS-1$ //$NON-NLS-2$
-          _value = _value.substring(1, _value.length()-1);
-          isNormalVariable = true;
-        } else if(_value.startsWith("@")&&_value.endsWith("@")&&(_value.length()>2)) {            //$NON-NLS-1$ //$NON-NLS-2$
-          _value = _value.substring(1, _value.length()-1);
-          originalValue = _value;
-          isNormalVariable = false;
-          isExpression = true;
-        } else if(_value.indexOf('(')>=0) {
-          isNormalVariable = false;                                                               // It mist be a method
-        }
-        // Begin --- AMAVP
-        if(isNormalVariable) {                                                                    // Connect a variable property with a normal variable name
-          // This is what would normally happen under Ejs with expressions
-          Value newValue = null;
-          // If not under Ejs, get the actual value and use it when you register
-          // to the group. This is arguable...
-          if(getProperty("_ejs_")==null) {                                                        //$NON-NLS-1$
-            newValue = getValue(index);
-          }
-          if(newValue==null) {
-            // if      (propertyIsTypeOf(_property,"[]"))      newValue = new ObjectValue(null);
-            // else
-            if(propertyIsTypeOf(_property, "double")) {                                           //$NON-NLS-1$
-              newValue = new DoubleValue(0.0);
-            } else if(propertyIsTypeOf(_property, "boolean")) {                                   //$NON-NLS-1$
-              newValue = new BooleanValue(false);
-            } else if(propertyIsTypeOf(_property, "int")) {                                       //$NON-NLS-1$
-              newValue = new IntegerValue(0);
-            } else if(propertyIsTypeOf(_property, "String")) {                                    //$NON-NLS-1$
-              newValue = new StringValue(_value);
-            } else {
-              newValue = new ObjectValue(null);
-            }
-          }
-          myProperties[index] = myGroup.registerVariable(_value, this, index, newValue);
-        } else if(isExpression) {                                                                 // Connect a variable property to an expression
-          String returnType = null;
-          if(propertyIsTypeOf(_property, "double")) {                                             //$NON-NLS-1$
-            returnType = "double";                                                                //$NON-NLS-1$
-          } else if(propertyIsTypeOf(_property, "boolean")) {                                     //$NON-NLS-1$
-            returnType = "boolean";                                                               //$NON-NLS-1$
-          } else if(propertyIsTypeOf(_property, "int")) {                                         //$NON-NLS-1$
-            returnType = "int";                                                                   //$NON-NLS-1$
-          } else if(propertyIsTypeOf(_property, "String")) {                                      //$NON-NLS-1$
-            returnType = "String";                                                                //$NON-NLS-1$
-          } else if(propertyIsTypeOf(_property, "Action")) {                                      //$NON-NLS-1$
-            returnType = "Action";                                                                //$NON-NLS-1$
-          } else {
-            System.out.println("Error for property "+_property+" of the element "+this.toString() //$NON-NLS-1$ //$NON-NLS-2$
-                               +". Cannot be set to : "+originalValue); //$NON-NLS-1$
-            myPropertiesTable.put(_property, originalValue);
-            return this;
-          }
-          if(!returnType.equals("Action")) {                            //$NON-NLS-1$
-            myExpressionsForProperties[index] = new ExpressionValue(_value, myGroup);
-            myGroup.methodTriggerVariable.addElementListener(this, index);
-            myProperties[index] = myGroup.methodTriggerVariable;
-          }
-        } else {                                                        // Connect a variable property to a method
-          // System.out.println ("Connecting property "+_property+" to method '"+_value+"' for the element "+this.toString());
-          // Under Ejs do something reasonable.
-          // For instance Labels need a string to size themselves properly
-          if(getProperty("_ejs_")!=null) {                                                          // Do nothing in Ejs //$NON-NLS-1$
-            // System.out.println ("Under ejs");
-          } else {
-            String returnType = null;
-            if(propertyIsTypeOf(_property, "double")) {                                             //$NON-NLS-1$
-              returnType = "double";                                                                //$NON-NLS-1$
-            } else if(propertyIsTypeOf(_property, "boolean")) {                                     //$NON-NLS-1$
-              returnType = "boolean";                                                               //$NON-NLS-1$
-            } else if(propertyIsTypeOf(_property, "int")) {                                         //$NON-NLS-1$
-              returnType = "int";                                                                   //$NON-NLS-1$
-              // else if (propertyIsTypeOf(_property,"byte"))    returnType = "byte";
-            } else if(propertyIsTypeOf(_property, "String")) {                                      //$NON-NLS-1$
-              returnType = "String";                                                                //$NON-NLS-1$
-            } else {
-              System.out.println("Error for property "+_property+" of the element "+this.toString() //$NON-NLS-1$ //$NON-NLS-2$
-                                 +". Cannot be set to : "+originalValue);                                //$NON-NLS-1$
-              myPropertiesTable.put(_property, originalValue);
-              return this;
-            }
-            // Resolve for non-default target
-            String[] parts = MethodWithOneParameter.splitMethodName(_value);
-            if(parts==null) {
-              System.err.println(getClass().getName()+" : Error! method <"+originalValue+"> not found"); //$NON-NLS-1$ //$NON-NLS-2$
-              myPropertiesTable.put(_property, originalValue);
-              return this;
-            }
-            if(parts[0]==null) {
-              parts[0] = "_default_";                                                                  //$NON-NLS-1$
-            }
-            Object target = myGroup.getTarget(parts[0]);
-            if(target==null) {
-              System.err.println(getClass().getName()+" : Error! Target <"+parts[0]+"> not assigned"); //$NON-NLS-1$ //$NON-NLS-2$
-              myPropertiesTable.put(_property, originalValue);
-              return this;
-            }
-            if(parts[2]==null) {
-              _value = parts[1]+"()";                                                                                                //$NON-NLS-1$
-            } else {
-              _value = parts[1]+"("+parts[2]+")";                                                                                    //$NON-NLS-1$ //$NON-NLS-2$
-            }
-            myMethodsForProperties[index] = new MethodWithOneParameter(METHOD_FOR_VARIABLE, target, _value, returnType, null, this); // Pass the element itself Jan 31st 2004 Paco
-            // Register the property of this element to a standard boolean (why not?) variable
-            // myGroup.update() will take care of triggering the method
-            myGroup.methodTriggerVariable.addElementListener(this, index);
-            myProperties[index] = myGroup.methodTriggerVariable;
-            // myProperties[index] = myGroup.registerVariable (METHOD_TRIGGER,this,index,new BooleanValue(false));
-          } // End of the real part, i.e. not under Ejs
-        }   // End --- AMAVP
-      }
-    }
-    myPropertiesTable.put(_property, originalValue);
-    return this;
-  }
+	/**
+	 * Sets a property for this <code>ControlElement</code>. Implementing classes
+	 * are responsible of deciding (by declaring them in the getPropertyList()
+	 * method) what properties turn into visual changes, or different behaviour, of
+	 * the ControlElement.
+	 * <p>
+	 * However, every propery is accepted, even if it is not meaningful for a
+	 * particular implementation of this interface. This can serve as a repository
+	 * of information for future use.
+	 * <p>
+	 * Implementing classes should make sure that the following requirements are
+	 * met: <ll>
+	 * <li>Properties can be set in any order. The final result should not depend on
+	 * the order. Exceptions must be explicitly documented.
+	 * <li>Any property can be modified. If so, the old value, and whatever meaning
+	 * it had, is superseded by the new one. If the new one is null, the old one is
+	 * simply removed and setDefaultValue(index) is called in case a precise default
+	 * value should be used.
+	 * <li>When the element is part of a GroupControl, final users should not use
+	 * this setProperty method directly, but go through the corresponding method of
+	 * the group. </ll>
+	 * 
+	 * @return This same element. This is useful to nest more than one call to
+	 *         <code>setProperty</code>
+	 * @param String _property The property name
+	 * @param String _value The value desired for the property
+	 * @see GroupControl
+	 */
+	// This one is not final because a few of the subclasses
+	// (f. i. ControlContainer and ControlTrace) need to overwrite it
+	public ControlElement setProperty(String _property, String _value) {
+		_property = _property.trim();
+		if (_property.equals("_ejs_")) { //$NON-NLS-1$
+			isUnderEjs = true;
+		}
+		// Let's see if the proposed property is registered as a real property
+		int index = propertyIndex(_property);
+		if (index < 0) {
+			// It is not a registered property. Store the value but do not call setValue()
+			if (_value == null) {
+				myPropertiesTable.remove(_property);
+			} else {
+				myPropertiesTable.put(_property, _value);
+			}
+			return this;
+		}
+		// The property is registered. Unregister and call setValue
+		myMethodsForProperties[index] = null; // AMAVP
+		myExpressionsForProperties[index] = null; // AMAVP
+		if (myProperties[index] != null) { // remove from the list of listeners for this GroupVariable
+			myProperties[index].removeElementListener(this, index);
+			myProperties[index] = null;
+		}
+		if (_value == null) { // Treat the easy case separately, so that to avoid a lot of 'if (null)' checks
+			if (myProperties[index] != null) { // remove from the list of listeners for this GroupVariable
+				myProperties[index].removeElementListener(this, index);
+				myProperties[index] = null;
+			}
+			setDefaultValue(index); // use a default value
+			myPropertiesTable.remove(_property); // remove the property
+			return this;
+		}
+		// From now on, the value is, necessarily, not null
+		// Some properties should not be trimmed ('text', for instance)
+		if (!propertyIsTypeOf(_property, "NotTrimmed")) { //$NON-NLS-1$
+			_value = _value.trim();
+		}
+		String originalValue = _value;
+		// Because of backwards compatibility with version 3.01 or earlier
+		// There might be confusion with constant strings versus variable names
+		// This is the reason for most of the following block
+		// From this version on, it is recommended that constant strings should be
+		// delimited by either ' or "
+		Value constantValue = null;
+		if (_value.startsWith("%") && _value.endsWith("%") && (_value.length() > 2)) { //$NON-NLS-1$ //$NON-NLS-2$
+			_value = _value.substring(1, _value.length() - 1); // Force a variable or method
+		} else if (_value.startsWith("@") && _value.endsWith("@") && (_value.length() > 2)) { //$NON-NLS-1$ //$NON-NLS-2$
+			// empty // Do nothing for parsed expressions
+		} else if (_value.startsWith("#") && _value.endsWith("#") && (_value.length() > 2)) { //$NON-NLS-1$ //$NON-NLS-2$
+			// empty // Do nothing for variables such as f()
+		} else {
+			if (_value.startsWith("\"") || _value.startsWith("'")) { //$NON-NLS-1$ //$NON-NLS-2$
+				// empty // It IS a constant String, don't try anything else
+			} else {
+				// First look for a CONSTANT property that can not be associated to
+				// GroupVariables
+				if (propertyIsTypeOf(_property, "CONSTANT")) { //$NON-NLS-1$
+					constantValue = new StringValue(_value);
+				}
+				// Check for String properties
+				if (constantValue == null) {
+					if (propertyType(_property).equals("String") && !propertyIsTypeOf(_property, "VARIABLE_EXPECTED")) { // See //$NON-NLS-1$ //$NON-NLS-2$
+																															// TextField
+																															// f.i.
+						constantValue = new StringValue(_value);
+					}
+				}
+			}
+			//
+			// End of the compatibility block
+			//
+			// Now try the particular parser
+			// The particular parser comes first because it can discriminate between
+			// a real String and a File, f.i.
+			if (constantValue == null) {
+				constantValue = parseConstant(propertyType(_property), _value);
+			}
+			// Finally the standard parser
+			if (constantValue == null) {
+				constantValue = Value.parseConstantOrArray(_value, true); // silentMode
+			}
+		}
+		if (constantValue != null) { // Just set the value for this property
+			// System.out.println ("property = "+_property+" = "+_value+" of the element
+			// "+this.toString()+" is a constant!");
+			if ((constantValue instanceof StringValue) && propertyIsTypeOf(_property, "TRANSLATABLE") // Apply //$NON-NLS-1$
+																										// Translator
+					&& (OSPRuntime.loadTranslatorTool)) { // added by D Brown 2007-10-17
+				Object target = (myGroup == null ? null : myGroup.getTarget("_default_")); //$NON-NLS-1$
+				String translated = (target == null ? null
+						: OSPRuntime.getTranslator().getProperty(target.getClass(), constantValue.getString()));
+				if (!constantValue.getString().equals(translated)) {
+					constantValue = new StringValue(translated);
+				}
+			}
+			setValue(index, constantValue);
+		} else { // Associate the property with a GroupVariable or Method for later use
+			// System.out.println (_value+" for the property "+_property+" of the element
+			// "+this.toString()+" is a variable!: "+originalValue);
+			// if (myProperties[index]!=null) { // remove from the list of listeners for
+			// this GroupVariable
+			// myProperties[index].removeElementListener(this,index);
+			// myProperties[index] = null;
+			// }
+			if (myGroup != null) {
+				boolean isNormalVariable = true, isExpression = false;
+				if (_value.startsWith("#") && _value.endsWith("#") && (_value.length() > 2)) { //$NON-NLS-1$ //$NON-NLS-2$
+					_value = _value.substring(1, _value.length() - 1);
+					isNormalVariable = true;
+				} else if (_value.startsWith("@") && _value.endsWith("@") && (_value.length() > 2)) { //$NON-NLS-1$ //$NON-NLS-2$
+					_value = _value.substring(1, _value.length() - 1);
+					originalValue = _value;
+					isNormalVariable = false;
+					isExpression = true;
+				} else if (_value.indexOf('(') >= 0) {
+					isNormalVariable = false; // It mist be a method
+				}
+				// Begin --- AMAVP
+				if (isNormalVariable) { // Connect a variable property with a normal variable name
+					// This is what would normally happen under Ejs with expressions
+					Value newValue = null;
+					// If not under Ejs, get the actual value and use it when you register
+					// to the group. This is arguable...
+					if (getProperty("_ejs_") == null) { //$NON-NLS-1$
+						newValue = getValue(index);
+					}
+					if (newValue == null) {
+						// if (propertyIsTypeOf(_property,"[]")) newValue = new ObjectValue(null);
+						// else
+						if (propertyIsTypeOf(_property, "double")) { //$NON-NLS-1$
+							newValue = new DoubleValue(0.0);
+						} else if (propertyIsTypeOf(_property, "boolean")) { //$NON-NLS-1$
+							newValue = new BooleanValue(false);
+						} else if (propertyIsTypeOf(_property, "int")) { //$NON-NLS-1$
+							newValue = new IntegerValue(0);
+						} else if (propertyIsTypeOf(_property, "String")) { //$NON-NLS-1$
+							newValue = new StringValue(_value);
+						} else {
+							newValue = new ObjectValue(null);
+						}
+					}
+					myProperties[index] = myGroup.registerVariable(_value, this, index, newValue);
+				} else if (isExpression) { // Connect a variable property to an expression
+					String returnType = null;
+					if (propertyIsTypeOf(_property, "double")) { //$NON-NLS-1$
+						returnType = "double"; //$NON-NLS-1$
+					} else if (propertyIsTypeOf(_property, "boolean")) { //$NON-NLS-1$
+						returnType = "boolean"; //$NON-NLS-1$
+					} else if (propertyIsTypeOf(_property, "int")) { //$NON-NLS-1$
+						returnType = "int"; //$NON-NLS-1$
+					} else if (propertyIsTypeOf(_property, "String")) { //$NON-NLS-1$
+						returnType = "String"; //$NON-NLS-1$
+					} else if (propertyIsTypeOf(_property, "Action")) { //$NON-NLS-1$
+						returnType = "Action"; //$NON-NLS-1$
+					} else {
+						System.out.println("Error for property " + _property + " of the element " + this.toString() //$NON-NLS-1$ //$NON-NLS-2$
+								+ ". Cannot be set to : " + originalValue); //$NON-NLS-1$
+						myPropertiesTable.put(_property, originalValue);
+						return this;
+					}
+					if (!returnType.equals("Action")) { //$NON-NLS-1$
+						myExpressionsForProperties[index] = new ExpressionValue(_value, myGroup);
+						myGroup.methodTriggerVariable.addElementListener(this, index);
+						myProperties[index] = myGroup.methodTriggerVariable;
+					}
+				} else { // Connect a variable property to a method
+					// System.out.println ("Connecting property "+_property+" to method '"+_value+"'
+					// for the element "+this.toString());
+					// Under Ejs do something reasonable.
+					// For instance Labels need a string to size themselves properly
+					if (getProperty("_ejs_") != null) { // Do nothing in Ejs //$NON-NLS-1$
+						// System.out.println ("Under ejs");
+					} else {
+						String returnType = null;
+						if (propertyIsTypeOf(_property, "double")) { //$NON-NLS-1$
+							returnType = "double"; //$NON-NLS-1$
+						} else if (propertyIsTypeOf(_property, "boolean")) { //$NON-NLS-1$
+							returnType = "boolean"; //$NON-NLS-1$
+						} else if (propertyIsTypeOf(_property, "int")) { //$NON-NLS-1$
+							returnType = "int"; //$NON-NLS-1$
+							// else if (propertyIsTypeOf(_property,"byte")) returnType = "byte";
+						} else if (propertyIsTypeOf(_property, "String")) { //$NON-NLS-1$
+							returnType = "String"; //$NON-NLS-1$
+						} else {
+							System.out.println("Error for property " + _property + " of the element " + this.toString() //$NON-NLS-1$ //$NON-NLS-2$
+									+ ". Cannot be set to : " + originalValue); //$NON-NLS-1$
+							myPropertiesTable.put(_property, originalValue);
+							return this;
+						}
+						// Resolve for non-default target
+						String[] parts = MethodWithOneParameter.splitMethodName(_value);
+						if (parts == null) {
+							System.err.println(
+									getClass().getName() + " : Error! method <" + originalValue + "> not found"); //$NON-NLS-1$ //$NON-NLS-2$
+							myPropertiesTable.put(_property, originalValue);
+							return this;
+						}
+						if (parts[0] == null) {
+							parts[0] = "_default_"; //$NON-NLS-1$
+						}
+						Object target = myGroup.getTarget(parts[0]);
+						if (target == null) {
+							System.err
+									.println(getClass().getName() + " : Error! Target <" + parts[0] + "> not assigned"); //$NON-NLS-1$ //$NON-NLS-2$
+							myPropertiesTable.put(_property, originalValue);
+							return this;
+						}
+						if (parts[2] == null) {
+							_value = parts[1] + "()"; //$NON-NLS-1$
+						} else {
+							_value = parts[1] + "(" + parts[2] + ")"; //$NON-NLS-1$ //$NON-NLS-2$
+						}
+						myMethodsForProperties[index] = new MethodWithOneParameter(METHOD_FOR_VARIABLE, target, _value,
+								returnType, null, this); // Pass the element itself Jan 31st 2004 Paco
+						// Register the property of this element to a standard boolean (why not?)
+						// variable
+						// myGroup.update() will take care of triggering the method
+						myGroup.methodTriggerVariable.addElementListener(this, index);
+						myProperties[index] = myGroup.methodTriggerVariable;
+						// myProperties[index] = myGroup.registerVariable (METHOD_TRIGGER,this,index,new
+						// BooleanValue(false));
+					} // End of the real part, i.e. not under Ejs
+				} // End --- AMAVP
+			}
+		}
+		myPropertiesTable.put(_property, originalValue);
+		return this;
+	}
 
   /**
    * Sets more than one property at once. The pairs

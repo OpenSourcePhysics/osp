@@ -562,10 +562,10 @@ public class GUIUtils {
 					super.setPage(url);
 			}
 			
-			public void paintComponent(Graphics g) {
-				super.paintComponent(g);
-			}
-			
+//			public void paintComponent(Graphics g) {
+//				super.paintComponent(g);
+//			}
+//			
 //			public void removeNotify() {
 //				System.err.println("GUIUTILS pane removed " + getText());
 //				super.removeNotify();

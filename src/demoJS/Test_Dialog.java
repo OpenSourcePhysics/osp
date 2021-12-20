@@ -37,6 +37,7 @@ public class Test_Dialog extends JFrame implements PropertyChangeListener {
 	public static Object o = new Object();
 	public static Color c = new Color(1, 2, 3);
 
+	@SuppressWarnings("null")
 	@Override
 	public void propertyChange(PropertyChangeEvent event) {
 		Object val = event.getNewValue();

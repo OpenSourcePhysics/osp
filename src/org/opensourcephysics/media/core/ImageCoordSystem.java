@@ -1225,6 +1225,7 @@ public class ImageCoordSystem extends OSPRuntime.Supported {
 
 	}
 	
+	@Override
 	public void addPropertyChangeListenerSafely(PropertyChangeListener listener) {
 		
 		super.addPropertyChangeListener(listener);

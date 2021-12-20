@@ -261,7 +261,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 			case MovieFactory.ENGINE_JS:
 				return LibraryResource.VIDEO_TYPE;
 			}
-			// fall through //
+			//$FALL-THROUGH$
 		case "":
 			return LibraryResource.UNKNOWN_TYPE;
 		}

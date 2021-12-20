@@ -10,6 +10,7 @@ public class ReadZipHTMLTest {
 	public static void main(String[] args) {
 		Resource res = ResourceLoader.getResource(path);
 		if (res != null) {
+			@SuppressWarnings("unused")
 			String htmlCode = res.getString();
 		}
 		System.exit(0);

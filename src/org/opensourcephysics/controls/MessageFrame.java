@@ -269,7 +269,8 @@ public class MessageFrame extends JFrame {
     }
   }
 
-  private static void appletLog(final String msg, final Style style) {
+  @SuppressWarnings("deprecation")
+private static void appletLog(final String msg, final Style style) {
     if((APPLET_MESSAGEFRAME==null)||!APPLET_MESSAGEFRAME.isDisplayable()) {
       createAppletMessageFrame();
     }

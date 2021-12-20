@@ -139,7 +139,7 @@ public class VideoReader {
 		case "smhd":
 		case "vmhd":
 			thisTrackMap.put("_trackType", (blockType.equals("smhd") ? "sound" : "video"));
-			// fall through;
+			//$FALL-THROUGH$
 		default:
 			skip(len);
 			len = 0;

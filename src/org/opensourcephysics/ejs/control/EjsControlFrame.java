@@ -24,7 +24,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -72,7 +71,6 @@ import org.opensourcephysics.display.PrintUtils;
 import org.opensourcephysics.ejs.EjsRes;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.Job;
-import org.opensourcephysics.tools.LocalJob;
 import org.opensourcephysics.tools.SnapshotTool;
 import org.opensourcephysics.tools.Tool;
 import org.opensourcephysics.tools.ToolsRes;
@@ -356,36 +354,12 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 		// create dataset tool menu item if the tool exists in classpath
 		JMenuItem datasetItem = new JMenuItem(DisplayRes.getString("DrawingFrame.DatasetTool_menu_item")); //$NON-NLS-1$
 		toolsMenu.add(datasetItem);
-		Class<?> datasetToolClass = null;
 		if (OSPRuntime.loadDataTool) {
-			try {
-				datasetToolClass = Class.forName("org.opensourcephysics.tools.DataTool"); //$NON-NLS-1$
-			} catch (ClassNotFoundException ex) {
+			if (!defaultDrawingPanel.setSendAction(datasetItem, "DataTool", reply, true)) {
 				OSPRuntime.loadDataTool = false;
-				OSPLog.finest("Cannot instantiate data analysis tool class:\n" + ex.toString()); //$NON-NLS-1$
 				datasetItem.setEnabled(false);
 			}
 		}
-		final Class<?> finalDatasetToolClass = datasetToolClass; // class must be final for action listener
-		datasetItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					if (finalDatasetToolClass == null)
-						return;
-					Method m = finalDatasetToolClass.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
-					Tool tool = (Tool) m.invoke(null, (Object[]) null);
-					tool.send(new LocalJob(defaultDrawingPanel), reply);
-					if (tool instanceof OSPFrame) {
-						((OSPFrame) tool).setKeepHidden(false);
-					}
-					((JFrame) tool).setVisible(true);
-				} catch (Exception ex) {
-					System.out.println(ex);
-				}
-			}
-
-		});
 		// create snapshot menu item
 		snapshotItem = new JMenuItem(DisplayRes.getString("DisplayPanel.Snapshot_menu_item")); //$NON-NLS-1$
 		snapshotItem.setEnabled(false);
@@ -404,40 +378,6 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 			}
 
 		});
-		// create video capture menu item
-//    JMenuItem videoItem = new JMenuItem(DisplayRes.getString("DrawingFrame.MenuItem.Capture")); //$NON-NLS-1$
-//    if(false && OSPRuntime.applet==null) { // video capture not supported
-//      toolsMenu.add(videoItem);
-//    }
-//    Class<?> videoToolClass = null;
-//    if(OSPRuntime.loadVideoTool) {
-//      try {
-//        videoToolClass = Class.forName("org.opensourcephysics.tools.VideoCaptureTool"); //$NON-NLS-1$
-//      } catch(ClassNotFoundException ex) {
-//        OSPRuntime.loadVideoTool = false;
-//        OSPLog.finest("Cannot instantiate video capture tool class:\n"+ex.toString());  //$NON-NLS-1$
-//        videoItem.setEnabled(false);
-//      }
-//    }
-//    final Class<?> finalVideoToolClass = videoToolClass; // class must be final for action listener
-//    videoItem.addActionListener(new ActionListener() {
-//      public void actionPerformed(ActionEvent e) {
-//        if(defaultDrawingPanel.getVideoTool()==null) {
-//          try {
-//            Method m = finalVideoToolClass.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
-//            Tool tool = (Tool) m.invoke(null, (Object[]) null);                  // tool is a VideoTool
-//            defaultDrawingPanel.setVideoTool((VideoTool) tool);
-//            ((VideoTool) tool).setVisible(true);
-//            ((VideoTool) tool).clear();
-//          } catch(Exception ex) {
-//        	  OSPLog.warning("Video Capature not supported.");
-//          }
-//        } else {
-//          defaultDrawingPanel.getVideoTool().setVisible(true);
-//        }
-//      }
-//
-//    });
 		return toolsMenu;
 	}
 
@@ -654,6 +594,7 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 	 *
 	 * @param s
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	public void print(final String s) {
 		if (s == null) {
@@ -668,6 +609,7 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 	/**
 	 * Remove all text from the message area.
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	public void clearMessages() {
 		OSPRuntime.postEvent(() -> {
@@ -1077,7 +1019,6 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 		}
 	}
 
-	@SuppressWarnings("serial")
 	class EjsFrame extends OSPFrame implements MainFrame {
 		@Override
 		public OSPFrame getMainFrame() {

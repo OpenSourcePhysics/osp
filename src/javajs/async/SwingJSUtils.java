@@ -62,6 +62,7 @@ public class SwingJSUtils {
 	public static Dimension setDim(int w, int h) {
 		String baseURI = (/** @j2sNative document.body.baseURI || */
 		null);
+		@SuppressWarnings("null")
 		boolean isTest = (baseURI == null || baseURI.indexOf("_applet.html") >= 0);
 		if (!isTest)
 			return null;
@@ -781,6 +782,7 @@ public class SwingJSUtils {
 		public final static int CANCELED = 4;
 
 		private int id;
+		@SuppressWarnings("unused")
 		private int delay;
 		private int state;
 
@@ -888,6 +890,7 @@ public class SwingJSUtils {
 			if (state != PENDING)
 				return;
 			//System.out.println("Timeout starting " + id + " "+  this);
+			@SuppressWarnings("unused")
 			Timeout me = this;
 			addActionListener((e) -> {
 				//System.out.println("Timeout action " + this);

@@ -412,7 +412,7 @@ class BrowserCommandLexer {
          }
          case 4 :
            break;
-         case 2 : {}
+         case 2 :
          case 5 :
            break;
          case 1 : {
