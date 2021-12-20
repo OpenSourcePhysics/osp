@@ -355,7 +355,7 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 		JMenuItem datasetItem = new JMenuItem(DisplayRes.getString("DrawingFrame.DatasetTool_menu_item")); //$NON-NLS-1$
 		toolsMenu.add(datasetItem);
 		if (OSPRuntime.loadDataTool) {
-			if (!defaultDrawingPanel.setSendAction(datasetItem, "DataTool", reply, true)) {
+			if (!Tool.setSendAction(datasetItem, "DataTool", defaultDrawingPanel, reply, true)) {
 				OSPRuntime.loadDataTool = false;
 				datasetItem.setEnabled(false);
 			}

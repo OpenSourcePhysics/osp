@@ -30,6 +30,7 @@ import org.opensourcephysics.display.HistogramDataset;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.PlottingPanel;
 import org.opensourcephysics.tools.DataTool;
+import org.opensourcephysics.tools.Tool;
 
 /**
  * HistogramFrame displays a histogram using a dedicated Histogram object.
@@ -148,7 +149,7 @@ protected void addMenuItems() {
 		JMenuItem datasetItem = new JMenuItem(DisplayRes.getString("DrawingFrame.DatasetTool_menu_item")); //$NON-NLS-1$
 		toolsMenu.add(datasetItem);
  		if (OSPRuntime.loadDataTool) {
-			if (!drawingPanel.setSendAction(datasetItem, "DataTool", reply, true)) {
+			if (!Tool.setSendAction(datasetItem, "DataTool", drawingPanel, reply, true)) {
 				OSPRuntime.loadDataTool = false;
 				datasetItem.setEnabled(false);
 			}

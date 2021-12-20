@@ -727,7 +727,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 		exportItem.setAccelerator(KeyStroke.getKeyStroke('E', MENU_SHORTCUT_KEY_MASK));
 		if (OSPRuntime.loadExportTool) {
 			OSPLog.fine("Loading ExportTool");
-			if (!drawingPanel.setSendAction(exportItem, "ExportTool", reply, false)) {
+			if (!Tool.setSendAction(exportItem, "ExportTool", drawingPanel, reply, false)) {
 				OSPRuntime.loadExportTool = false;
 				exportItem.setEnabled(false);
 			}
@@ -913,7 +913,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 		JMenuItem datasetItem = new JMenuItem(DisplayRes.getString("DrawingFrame.DatasetTool_menu_item")); //$NON-NLS-1$
 		toolsMenu.add(datasetItem);
 		if (OSPRuntime.loadDataTool) {
-			if (!drawingPanel.setSendAction(datasetItem, "DataTool", reply, true)) {
+			if (!Tool.setSendAction(datasetItem, "DataTool", drawingPanel, reply, true)) {
 				OSPRuntime.loadDataTool = false;
 				datasetItem.setEnabled(false);
 			}
