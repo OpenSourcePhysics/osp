@@ -777,7 +777,7 @@ public final class SuryonoParser extends MathExpParser {
 	 * @param def the function definition
 	 */
 	public void define(String def) {
-		def.toLowerCase(); // BH does nothing
+		//def.toLowerCase(); // BH does nothing
 		function = (def.equals(SuryonoParser.NULL) ? def : removeEscapeCharacter(def)); // added by W. Christian
 		valid = false;
 	}
