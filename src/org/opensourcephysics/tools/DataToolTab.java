@@ -1282,6 +1282,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					curveFitter.setSelectedItem(e.getActionCommand());
 					refreshPlot();
 				}
+				curveFitter.splitPane.setDividerLocation(curveFitter.splitPane.getMaximumDividerLocation());
 			}
 
 		};

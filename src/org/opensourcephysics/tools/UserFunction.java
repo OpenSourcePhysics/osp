@@ -369,6 +369,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 		if (descriptions != null) {
 			paramDescriptions = descriptions;
 		}
+		temp = new double[values.length];
 	}
 
 	/**

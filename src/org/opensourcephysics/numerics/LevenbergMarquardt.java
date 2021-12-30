@@ -34,7 +34,7 @@ public class LevenbergMarquardt {
    *   tol - the tolerance level
    *
    */
-  public double minimize(MultiVarFunction Veq, double[] x, int max, double tol) {
+  public boolean minimize(MultiVarFunction Veq, double[] x, int max, double tol) {
     int m = x.length;
     H = new double[m][m];
     double[] xxn = new double[m];
@@ -92,11 +92,16 @@ public class LevenbergMarquardt {
         System.arraycopy(xtmp1, 0, x, 0, m);
         Lambda = 10.*Lambda;
       }
+
       err = Math.sqrt(err);   //the error
       relerr = err/(relerr+tol);
     }
+    if (err > tol*1.e-6 && relerr > tol*1.e-6) {
+    	// failed to find fit after max iterations
+    	return false;
+    }
     check_rmsd(Veq, xtmp, x, m); //check if x is better, else keep old one
-    return err;
+    return true;
   }
 
   void check_rmsd(MultiVarFunction Veq, double[] xtmp, double[] xx, int mx) {

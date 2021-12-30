@@ -149,6 +149,8 @@ public class DatasetCurveFitter extends JPanel {
 	private DataToolTab tab;
 
 	KnownFunction fit; // the function to fit to the data
+	double sigma_y_squared; // an estimate of the SD in the y deviations from the fit
+	UserFunction testFunction;
 	/** fitMap maps localized names to all available fits */
 	Color color = Color.MAGENTA;
 	ParamTableModel paramModel;
@@ -199,6 +201,8 @@ public class DatasetCurveFitter extends JPanel {
 	public void setAutoFit(boolean autofit) {
 		this.autofit = autofit;
 		autofitCheckBox.setSelected(autofit);
+		if (!autofit)
+			drawer.setUncertainties(null);
 	}
 
 	// GUI
@@ -215,7 +219,7 @@ public class DatasetCurveFitter extends JPanel {
 	private SpinCellEditor spinCellEditor; // uses number-crawler spinner
 	private JButton fitBuilderButton;
 
-	private JSplitPane splitPane;
+	protected JSplitPane splitPane;
 
 	public JSplitPane getSplitPane() {
 		return splitPane;
@@ -235,6 +239,7 @@ public class DatasetCurveFitter extends JPanel {
 		createGUI();
 		fitBuilder.removePropertyChangeListener(fitListener);
 		fitBuilder.addPropertyChangeListener(fitListener);
+		testFunction = new UserFunction("test");
 //    fit(fit);
 	}
 
@@ -274,7 +279,7 @@ public class DatasetCurveFitter extends JPanel {
 				// if active, regression done in fit method
 				double[] x = dataset.getValidXPoints();
 				double[] y = dataset.getValidYPoints();
-				doLinearRegression(x, y, false);
+				doLinearRegression(x, y);
 				refreshStatusBar();
 			}
 		}
@@ -361,13 +366,11 @@ public class DatasetCurveFitter extends JPanel {
 		double[] prevParams = null;
 		// get deviation before fitting
 		double prevDevSq = getDevSquared(fit, x, y);
-		boolean isLinearFit = false;
 		// autofit if checkbox is selected
 		if (autofit && !Double.isNaN(prevDevSq)) {
 			if (fit instanceof KnownPolynomial) {
 				KnownPolynomial poly = (KnownPolynomial) fit;
 				poly.fitData(x, y);
-				isLinearFit = poly.degree() == 1;
 			} else if (fit instanceof UserFunction) {
 				// use HessianMinimize to autofit user function
 				UserFunction f = (UserFunction) fit;
@@ -385,29 +388,42 @@ public class DatasetCurveFitter extends JPanel {
 					// get deviation after minimizing
 					devSq = getDevSquared(fit, x, y);
 					// restore parameters and try Levenberg-Marquardt if Hessian fit is worse
+					boolean success = true;
 					if (devSq > prevDevSq) {
 						for (int i = 0; i < prevParams.length; i++) {
 							f.setParameterValue(i, prevParams[i]);
 						}
-						levmar.minimize(minFunc, params, iterations, tol);
+						success = levmar.minimize(minFunc, params, iterations, tol);
 						// get deviation after minimizing
 						devSq = getDevSquared(fit, x, y);
 					}
 					// restore parameters and deviation if new fit is worse
-					if (devSq > prevDevSq) {
+					if (!success || devSq > prevDevSq) {
 						for (int i = 0; i < prevParams.length; i++) {
 							f.setParameterValue(i, prevParams[i]);
 						}
 						devSq = prevDevSq;
 						setAutoFit(false);
-//            Toolkit.getDefaultToolkit().beep();
+            Toolkit.getDefaultToolkit().beep();
 					}
 				}
 			}
+			if (fit != testFunction) {
+				if (autofit) {
+					double[][] sigmas = getUncertainties(fit, x, y);
+					setUncertainties(sigmas);
+				}
+				else {
+					setUncertainties(null);
+				}
+				tab.refreshPlot();
+			}
+
 			drawer.functionChanged = true;
 			paramTable.repaint();
 		}
-		doLinearRegression(x, y, isLinearFit);
+		doLinearRegression(x, y);
+//		doLinearRegression(x, y, false);
 		if (devSq == 0) {
 			devSq = getDevSquared(fit, x, y);
 		}
@@ -467,7 +483,7 @@ public class DatasetCurveFitter extends JPanel {
 	 * @return the estimated uncertainty in the parameter
 	 */
 	public double getUncertainty(int paramIndex) {
-		if (paramIndex < uncertainties.length && autofit) {
+		if (uncertainties != null && paramIndex < uncertainties.length && autofit) {
 			return uncertainties[paramIndex];
 		}
 		return Double.NaN;
@@ -540,7 +556,7 @@ public class DatasetCurveFitter extends JPanel {
 	protected void createGUI() {
 		setLayout(new BorderLayout());
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-		splitPane.setResizeWeight(0.8);
+		splitPane.setResizeWeight(0.7);
 		splitPane.setDividerSize(6);
 		// create autofit checkbox
 		autofitCheckBox = new JCheckBox("", autofit = true); //$NON-NLS-1$
@@ -556,6 +572,8 @@ public class DatasetCurveFitter extends JPanel {
 				// BH check
 				paramTable.repaint();
 				tab.repaint();
+				if (!autofit)
+					drawer.setUncertainties(null);
 			}
 
 		});
@@ -1112,6 +1130,10 @@ public class DatasetCurveFitter extends JPanel {
 //  
 	/**
 	 * Gets the total deviation squared between function and data
+	 * @param f a Function
+	 * @param x the x data
+	 * @param y the y data 
+	 * @return sum of squares of deviations
 	 */
 	private double getDevSquared(Function f, double[] x, double[] y) {
 		fitEvaluatedToNaN = false;
@@ -1131,6 +1153,148 @@ public class DatasetCurveFitter extends JPanel {
 	}
 
 	/**
+	 * Calibrates chi squared to (x.length - paramCount) for a function & data.
+	 * @param f a KnownFunction
+	 * @param x the x data
+	 * @param y the y data
+	 * 
+	 * @return calibrated chi squared = x.length - paramCount
+	 */
+  private double calibrateChiSquared(KnownFunction f, double[] x, double[] y) {
+  	int paramCount = f.getParameterCount();
+ 	// set sigma so that chi squared is x.length - paramCount
+    sigma_y_squared = getDevSquared(f, x, y) / (x.length - paramCount); 
+    return x.length - paramCount;
+  }
+
+	/**
+	 * Gets chi squared between function and data based on existing calibration
+	 * @param f a Function
+	 * @param x the x data
+	 * @param y the y data
+	 * @return chi squared
+	 */
+	private double getChiSquared(Function f, double[] x, double[] y) {
+    return getDevSquared(f, x, y)/sigma_y_squared;    
+	}
+	
+	/**
+	 * Gets uncertainties in the parameters of a function.
+	 * The function's parameters must have best fit values.
+	 * @param f a KnownFunction
+	 * @param x the x data
+	 * @param y the y data
+	 * 
+	 * @return double[][] {{param uncertainties}, {fit params 1}, {fit params 2}, ...}
+	 */
+	private double[][] getUncertainties(KnownFunction f, double[] x, double[] y) {
+		// calibrate (set sigma_y_squared) and get min chi squared (= x.length-f.paramCount)
+		int paramCount = f.getParameterCount();
+		if (paramCount == 0 || x.length - paramCount <= 0)
+			return null;
+		
+		double minChiSquared = calibrateChiSquared(f, x, y);
+		
+		double[] params = new double[paramCount];
+		String[] paramNames = new String[paramCount];
+		for (int i = 0; i < paramCount; i++) {
+			params[i] = f.getParameterValue(i);
+			paramNames[i] = f.getParameterName(i);
+		}
+		
+		ArrayList<double[]> results = new ArrayList<double[]>();
+		
+		// for each parameter, measure curvature of chi squared to get sigma
+    double defaultDelta = 1;
+		double[] sigmas = new double[paramCount];
+    
+    for (int i = 0; i < paramCount; i++) {
+    	double delta = defaultDelta;
+    	double chiSq = 0; // sum of both shifted-parameter chi squared values
+    	double twiceDeltaChiSq = 0;
+			double[][] testParams = new double[2][];
+			String fixedParamName = paramNames[i];
+    	while (twiceDeltaChiSq < 0.001 || twiceDeltaChiSq > 2) {
+    		// adjust delta if needed
+    		if (twiceDeltaChiSq < 0.001 && twiceDeltaChiSq != 0)
+    			delta *= 10;
+    		else if (twiceDeltaChiSq > 2)
+    			delta /= 10;
+    		chiSq = 0;
+	    	for (int j = 0; j < 2; j++) {
+		     	double paramVal = j == 0? params[i] - delta: params[i] + delta;
+					// get test function with a fixed parameter
+					UserFunction test = getTestFunction(f, fixedParamName, paramVal);
+					// fit the test function to minimize its chi squared
+					fit(test);
+					// add chi squared of test function
+					chiSq += getChiSquared(test, x, y);
+	    	}
+				twiceDeltaChiSq = chiSq - 2 * minChiSquared;
+    	}
+    	if (twiceDeltaChiSq > 0) { // success: positive curvature so can determine sigma
+				// use eqn 8.13 in Data Reduction and Error Analysis For the Physical Sciences
+    		sigmas[i] = delta * Math.sqrt(2 / twiceDeltaChiSq);
+    		
+    		// offset fixed parameter by +/- sigma and save test parameters for drawer
+	    	for (int j = 0; j < 2; j++) {
+		     	double paramVal = j == 0? params[i] - sigmas[i]: params[i] + sigmas[i];
+					// get test function with the fixed parameter
+					UserFunction test = getTestFunction(f, fixedParamName, paramVal);
+					// fit the test function to minimize its chi squared
+					fit(test);
+					// save array of test fit parameters for drawer
+					testParams[j] = new double[paramCount];
+			    int testParamNum = 0;
+					for (int k = 0; k < paramCount; k++) {
+			    	if (f.getParameterName(k).equals(fixedParamName)) {
+			    		testParams[j][k] = paramVal;
+			    	}
+			    	else if (f.getParameterName(k).equals(test.getParameterName(testParamNum))) {			    		
+			    		testParams[j][k] = test.getParameterValue(testParamNum++);
+			    	}
+					}
+					results.add(testParams[j]);
+	    	}
+    	}
+    }
+		results.add(0, sigmas);
+		return results.toArray(new double[results.size()][]);
+	}
+	
+	/**
+	 * Gets a test function that mimics an input function but fixes one of the parameters.
+	 * @param f a KnownFunction
+	 * @param paramName name of the fixed parameter
+	 * @param paramVal value of the fixed parameter
+	 * @return the test function
+	 */
+	private UserFunction getTestFunction(KnownFunction f, String paramName, double paramVal) {
+    // set up parameters
+		int len = f.getParameterCount();
+    String[] paramNames = new String[len - 1];
+    double[] paramValues = new double[len - 1];
+    String[] desc = new String[len - 1];
+    int j = 0;
+    for (int i = 0; i < len; i++) {
+    	if (f.getParameterName(i).equals(paramName))
+    		continue;
+     	paramNames[j] = f.getParameterName(i);
+    	paramValues[j] = f.getParameterValue(i);
+    	desc[j] = f.getParameterDescription(i);
+    	j++;
+    }
+  	
+  	// set up expression
+  	String expression = f.getExpression("x");
+    expression = expression.replace(paramName, "("+String.valueOf(paramVal)+")");
+    
+  	testFunction.setParameters(paramNames, paramValues, desc);
+    testFunction.setExpression(expression, new String[] {"x"}); //$NON-NLS-1$ //$NON-NLS-2$
+    return testFunction;
+	}
+
+	/**
 	 * Determines the Pearson correlation and linear fit parameter SEs.
 	 *
 	 * @param xd          double[]
@@ -1138,12 +1302,12 @@ public class DatasetCurveFitter extends JPanel {
 	 * @param isLinearFit true if linear fit (sets uncertainties to slope and
 	 *                    intercept SE)
 	 */
-	public void doLinearRegression(double[] xd, double[] yd, boolean isLinearFit) {
+	public void doLinearRegression(double[] xd, double[] yd) {
 		int n = xd.length;
 		// set Double.NaN defaults
 		correlation = Double.NaN;
-		for (int i = 0; i < uncertainties.length; i++)
-			uncertainties[i] = Double.NaN;
+//		for (int i = 0; i < uncertainties.length; i++)
+//			uncertainties[i] = Double.NaN;
 
 		// return if less than 3 data points
 		if (n < 3)
@@ -1170,8 +1334,7 @@ public class DatasetCurveFitter extends JPanel {
 		}
 		if (sum_sq_x == 0 || sum_sq_y == 0) {
 			correlation = Double.NaN;
-			for (int i = 0; i < uncertainties.length; i++)
-				uncertainties[i] = Double.NaN;
+			uncertainties = null;
 			return;
 		}
 
@@ -1180,17 +1343,34 @@ public class DatasetCurveFitter extends JPanel {
 		double cov_x_y = sum_coproduct / n;
 		correlation = cov_x_y * cov_x_y / (pop_sd_x * pop_sd_y);
 
-		if (isLinearFit) {
-			double sumSqErr = Math.max(0.0, sum_sq_y - sum_coproduct * sum_coproduct / sum_sq_x);
-			double meanSqErr = sumSqErr / (n - 2);
-			uncertainties[0] = Math.sqrt(meanSqErr / sum_sq_x); // slope SE
-			uncertainties[1] = Math.sqrt(meanSqErr * ((1.0 / n) + (mean_x * mean_x) / sum_sq_x)); // intercept SE
-			drawer.setUncertainty(0, uncertainties[0]);
-			drawer.setUncertainty(1, uncertainties[1]);
-		}
-		else {
-			drawer.clearUncertainties();
-		}
+//		if (isLinearFit) {
+//			double sumSqErr = Math.max(0.0, sum_sq_y - sum_coproduct * sum_coproduct / sum_sq_x);
+//			double meanSqErr = sumSqErr / (n - 2);
+//			double[] sigmas = new double[2];
+//			sigmas[0] = Math.sqrt(meanSqErr / sum_sq_x); // slope
+//			sigmas[1] = Math.sqrt(meanSqErr * ((1.0 / n) + (mean_x * mean_x) / sum_sq_x)); // intercept
+//			setUncertainties(sigmas);
+			
+			
+//			uncertainties[0] = Math.sqrt(meanSqErr / sum_sq_x); // slope SE
+//			uncertainties[1] = Math.sqrt(meanSqErr * ((1.0 / n) + (mean_x * mean_x) / sum_sq_x)); // intercept SE
+//			drawer.setUncertainty(0, uncertainties[0]);
+//			drawer.setUncertainty(1, uncertainties[1]);
+//		}
+//		else {
+//			drawer.clearUncertainties();
+//		}
+		
+	}
+	
+	/**
+	 * Sets the uncertainties and uncertainParameters.
+	 * 
+	 * @param sigmas double[][] see getUncertainties(), may be null
+	 */
+	private void setUncertainties(double[][] sigmas) {		
+		uncertainties = sigmas == null? null: sigmas[0];
+		drawer.setUncertainties(sigmas);
 	}
 
 	private KnownFunction getFitFunction(FitFunctionPanel panel) {
@@ -1424,7 +1604,9 @@ public class DatasetCurveFitter extends JPanel {
 				int row, int col) {
 			setHorizontalAlignment(SwingConstants.LEFT);
 			setBorder(new CellBorder(new Color(240, 240, 240)));
-			String tooltip = (col == 1 ? ToolsRes.getString("DatasetCurveFitter.SE.Description") : null); //$NON-NLS-1$
+			String tooltip = (col == 1 ? 
+					ToolsRes.getString("DatasetCurveFitter.SE.Description") + " " : 
+					null); //$NON-NLS-1$
 			if (value instanceof String) { // parameter name string
 				setFont(labelFont);
 				setBackground(isSelected ? Color.LIGHT_GRAY : lightGray);
@@ -1444,17 +1626,23 @@ public class DatasetCurveFitter extends JPanel {
 					tooltip = ToolsRes.getString("DatasetCurveFitter.InsufficientData.ToolTip"); //$NON-NLS-1$//$NON-NLS-2$
 				}
 				else if (!autofit) {
-					tooltip += " " + ToolsRes.getString("DatasetCurveFitter.SE.Autofit"); //$NON-NLS-1$//$NON-NLS-2$
-				} else if (fit instanceof KnownPolynomial) {
-					tooltip += " " + ToolsRes.getString("DatasetCurveFitter.SE.Unknown"); //$NON-NLS-1$//$NON-NLS-2$
-					KnownPolynomial poly = (KnownPolynomial) fit;
-					if (poly.degree() == 1) {
-						uncert = getUncertaintyString(row);
-						if (uncert != null)
-							tooltip = uncert + " (" + ToolsRes.getString("DatasetCurveFitter.SE.Name") + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-					}
-				} else {
-					tooltip += " " + ToolsRes.getString("DatasetCurveFitter.SE.Unknown"); //$NON-NLS-1$//$NON-NLS-2$
+					tooltip += ToolsRes.getString("DatasetCurveFitter.SE.Autofit"); //$NON-NLS-1$//$NON-NLS-2$
+				} 
+//				else if (fit instanceof KnownPolynomial) {
+//					tooltip += " " + ToolsRes.getString("DatasetCurveFitter.SE.Unknown"); //$NON-NLS-1$//$NON-NLS-2$
+//					KnownPolynomial poly = (KnownPolynomial) fit;
+//					if (poly.degree() == 1) {
+//						uncert = getUncertaintyString(row);
+//						if (uncert != null)
+//							tooltip = uncert + " (" + ToolsRes.getString("DatasetCurveFitter.SE.Name") + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+//					}
+//				} 
+				else {
+					uncert = getUncertaintyString(row);
+					if (uncert != null)
+						tooltip += uncert + " (" + ToolsRes.getString("DatasetCurveFitter.SE.Name") + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$					
+					else
+						tooltip += ToolsRes.getString("DatasetCurveFitter.SE.Unknown"); //$NON-NLS-1$//$NON-NLS-2$
 				}
 				setText(isApplicable() ? 
 						uncert != null? format.format(value)+" "+uncert:  

@@ -34,6 +34,7 @@ public class UncertainFunctionDrawer extends FunctionDrawer {
   protected KnownFunction knownFunction;
   protected boolean uncertain = true;
   protected double[] uncertainties, paramValues;
+  protected double[][] uncertainParams;
   protected double[] multiplier = {-1, 1, 0}; // 0 is last to reset parameters to original values
   protected AlphaComposite composite = AlphaComposite.getInstance(
   		AlphaComposite.SRC_OVER, (float) 0.1);
@@ -52,31 +53,35 @@ public class UncertainFunctionDrawer extends FunctionDrawer {
   }
 
   /**
-   * Evaluates the function and determines min/max values based on current uncertainties.
-   * Min/max values are determined by evaluating the function with all combinations
-   * of parameters +/- their uncertainties.
+   * Evaluates the function and determines min/max values 
+   * by evaluating the function with uncertainParameter sets.
    * 
    * @param x
-   * @param results double[3] {min, value, max}
-   * @param paramIndex the parameter index
+   * @param results double[3] {min, value, max}, may be null
+   * @return results
    */
-  public void evaluate(double x, double[] results, int paramIndex) {
+  public double[] evaluateMinMax(double x, double[] results) {
     int n = paramValues.length;
-    if (paramIndex == 0) {
-    	results[0] = results[1] = results[2] = function.evaluate(x);
-    }
-    for (int i = 0; i < 3; i++) {
-    	knownFunction.setParameterValue(paramIndex, paramValues[paramIndex] + multiplier[i]*uncertainties[paramIndex]);
-    	if (paramIndex < n-1)
-    		evaluate(x, results, paramIndex+1);
-    	else {
-    		double y = knownFunction.evaluate(x);
-    		results[0] = Math.min(results[0], y);
-    		results[2] = Math.max(results[2], y);
+    if (results == null)
+    	results = new double[3];
+    results[0] = results[1] = results[2] = knownFunction.evaluate(x);
+    if (uncertainParams == null)
+    	return results;
+    for (int i = 0; i < uncertainParams.length; i++) {
+    	for (int j = 0; j < n; j++) {
+    		knownFunction.setParameterValue(j, uncertainParams[i][j]);
     	}
+  		double y = knownFunction.evaluate(x);
+  		results[0] = Math.min(results[0], y);
+  		results[2] = Math.max(results[2], y);
     }
+    // restore original parameters
+  	for (int j = 0; j < n; j++) {
+  		knownFunction.setParameterValue(j, paramValues[j]);
+  	}
+    return results;
   }
-
+ 
 	@Override
 	protected void checkRange(DrawingPanel panel) {
 		// check to see if the range or function has changed
@@ -102,7 +107,7 @@ public class UncertainFunctionDrawer extends FunctionDrawer {
 		for (int i = 0; i < paramValues.length; i++) {
 			paramValues[i] = knownFunction.getParameterValue(i);		
 		}
-    evaluate(xrange[0], vals, 0);
+		evaluateMinMax(xrange[0], vals);
     yrange[0] = vals[0];
     yrange[1] = vals[2]; // starting values for ymin and ymax
     lowerPath.moveTo((float) xrange[0], (float) vals[0]);
@@ -112,8 +117,7 @@ public class UncertainFunctionDrawer extends FunctionDrawer {
 		double dx = (xrange[1] - xrange[0]) / (numpts);
 		for (int i = 0; i < numpts; i++) {
 			x = x + dx;
-      vals = new double[3];
-      evaluate(x, vals, 0);
+      evaluateMinMax(x, vals);
       double y = vals[1];
 			if (!Double.isNaN(x) && !Double.isNaN(y)) {
 				y = Math.min(y, 1.0e+12);
@@ -190,15 +194,22 @@ public class UncertainFunctionDrawer extends FunctionDrawer {
 	}
 	
   /**
-   * Sets the uncertainty of a parameter.
-   * @param paramNum the parameter index
-   * @param value the uncertainty
+   * Sets the uncertainties of all parameters.
+   * @param sigmasAndParams array of uncertainties and uncertain limit parameters
    */
-	public void setUncertainty(int paramNum, double value) {
-		if (paramNum >= 0 && paramNum < uncertainties.length) {
-			uncertainties[paramNum] = value;
-			functionChanged = true;
+	public void setUncertainties(double[][] sigmasAndParams) {
+		int n = uncertainties.length;
+		if (sigmasAndParams == null || 
+				sigmasAndParams.length < 1 + 2 * n ||
+				sigmasAndParams[0].length != n) {
+			uncertainParams = null;
 		}
+		else {
+			uncertainties = sigmasAndParams[0];
+			uncertainParams = new double[sigmasAndParams.length - 1][];
+			System.arraycopy(sigmasAndParams, 1, uncertainParams, 0, uncertainParams.length);
+		}
+		functionChanged = true;
 	}
   
   /**
