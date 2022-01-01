@@ -2173,6 +2173,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			}
 
 			refreshAll(DataTable.MODE_VALUES);
+
 			plot.lockedXMin = plot.mouseDownXMin + deltaX;
 			plot.lockedXMax = plot.mouseDownXMax + deltaX;
 			plot.lockedYMin = plot.mouseDownYMin + deltaY;
@@ -3102,7 +3103,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 	};
 
-	private static final int fitDelayMS = (OSPRuntime.isJS ? 250 : 25);
+	private static final int fitDelayMS = (OSPRuntime.isJS ? 250 : 100);
 
 	void refreshFit() {
 		if (fitTimer == null) {
@@ -3378,6 +3379,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					if (!Double.isNaN(dx) || !Double.isNaN(dy)) {
 						if (!Double.isNaN(dx)) {
 							Dataset data = dataTable.getDataset(plot.xVar);
+							
+							
 							if (data != null && data instanceof DataColumn) {
 								DataColumn col = (DataColumn) data;
 								col.setShift(col.getShift() - dx);
@@ -3399,7 +3402,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 								tabChanged(true);
 							}
 						}
+						
 						refreshAll(DataTable.MODE_VALUES);
+
 						((CrawlerSpinnerModel) shiftXSpinner.getModel()).refreshDelta();
 						((CrawlerSpinnerModel) shiftYSpinner.getModel()).refreshDelta();
 						dataTable.dorepaint(5);
