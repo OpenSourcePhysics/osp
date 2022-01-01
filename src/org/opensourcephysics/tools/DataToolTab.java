@@ -3095,8 +3095,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		public void actionPerformed(ActionEvent e) {
 			if (fitTimer != null) {
 				curveFitter.fit(curveFitter.fit);
-				plot.refreshArea();
-				plot.refreshMeasurements();
+//				plot.refreshArea();
+//				plot.refreshMeasurements();
 				plot.repaint();
 			}
 		}
@@ -3755,7 +3755,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				areaDataset.append(xpoints, ypoints);
 				areaDataset.append(xpoints[n - 1], 0);
 				if (n > 1) {
-					plot.addDrawable(areaDataset);
+					plot.addDrawableAtIndex(0, areaDataset);
 					// determine area under the curve
 					area = ypoints[0] * (xpoints[1] - xpoints[0]);
 					area += ypoints[n - 1] * (xpoints[n - 1] - xpoints[n - 2]);

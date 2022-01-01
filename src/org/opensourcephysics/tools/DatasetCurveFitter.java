@@ -442,6 +442,8 @@ public class DatasetCurveFitter extends JPanel {
 		}
 		refreshStatusBar();
 		firePropertyChange(PROPERTY_DATASETCURVEFITTER_FIT, null, null);
+		if (tab.areaVisible && tab.measureFit)
+			tab.plot.refreshArea();
 		return rmsDev;
 	}
 
