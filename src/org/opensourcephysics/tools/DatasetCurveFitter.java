@@ -1645,7 +1645,8 @@ public class DatasetCurveFitter extends JPanel {
 						tooltip += ToolsRes.getString("DatasetCurveFitter.SE.Unknown"); //$NON-NLS-1$//$NON-NLS-2$
 				}
 				setText(isApplicable() ? 
-						uncert != null? format.format(value)+" "+uncert:  
+						// use same number format for value and uncertainty
+						uncert != null? SEFormat.format(value)+" "+uncert:  
 						format.format(value):  
 						"     ---------------");
 			}
