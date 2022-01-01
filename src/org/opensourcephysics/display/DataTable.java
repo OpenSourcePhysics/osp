@@ -1553,11 +1553,11 @@ public class DataTable extends JTable {
 			int[] modelOrder = getModelColumnOrder();
 
 			// determine which of the model column order indices are valid
-			int validUpToIndex = modelOrder.length;
+			int maxValidIndex = modelOrder.length - 1;
 			BitSet bs = new BitSet();
 			for (int i = 0; i < modelOrder.length; i++) {
 				if (bs.get(modelOrder[i])) {
-					validUpToIndex = i;
+					maxValidIndex = i - 1;
 					break;
 				}
 				bs.set(modelOrder[i]);	
@@ -1576,7 +1576,7 @@ public class DataTable extends JTable {
 
 			int n = dataTableModel.getColumnCount();
 			for (int i = 0; i < n; i++) {
-				int modelIndex = i < validUpToIndex? modelOrder[i]: i;
+				int modelIndex = i <= maxValidIndex? modelOrder[i]: i;
 //				String name = dataTableModel.getColumnName(i);
 				String name = dataTableModel.getColumnName(modelIndex);
 
