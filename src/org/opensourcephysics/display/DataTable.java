@@ -1549,8 +1549,21 @@ public class DataTable extends JTable {
 		 */
 		private void updateColumnModel() {
 			
-			// create a map of the current column set (actually displayed)
+			// get the current model column order
+			int[] modelOrder = getModelColumnOrder();
 
+			// determine which of the model column order indices are valid
+			int validUpToIndex = modelOrder.length;
+			BitSet bs = new BitSet();
+			for (int i = 0; i < modelOrder.length; i++) {
+				if (bs.get(modelOrder[i])) {
+					validUpToIndex = i;
+					break;
+				}
+				bs.set(modelOrder[i]);	
+			}
+
+			// create a map of the current column set (actually displayed)
 			Vector<TableColumn> newColumns = new Vector<>();
 			Map<String, DataTableColumn> map = new HashMap<>();
 			for (int i = tableColumns.size(); --i >= 0;) {
@@ -1563,14 +1576,19 @@ public class DataTable extends JTable {
 
 			int n = dataTableModel.getColumnCount();
 			for (int i = 0; i < n; i++) {
-				String name = dataTableModel.getColumnName(i);
+				int modelIndex = i < validUpToIndex? modelOrder[i]: i;
+//				String name = dataTableModel.getColumnName(i);
+				String name = dataTableModel.getColumnName(modelIndex);
+
 				DataTableColumn tc = map.get(name);
 				if (tc == null) {
-					tc = new DataTableColumn(i);
+//					tc = new DataTableColumn(i);
+					tc = new DataTableColumn(modelIndex);
 					tc.addPropertyChangeListener(this);
 					totalColumnWidth = -1;
 				} else {
-					tc.setModelIndex(i);
+//					tc.setModelIndex(i);
+					tc.setModelIndex(modelIndex);
 					tableColumns.remove(tc);
 				}
 				tc.isSizeSet = false;
@@ -1585,6 +1603,7 @@ public class DataTable extends JTable {
 			}
 			tableColumns = newColumns;
 			selectionModel.clearSelection();
+			
 		}
 
 		public int convertColumnIndexToModel(int viewIndex) {
