@@ -105,7 +105,6 @@ public class DatasetCurveFitter extends JPanel {
 	// static fields
 	/** defaultFits are available in every instance */
 	static ArrayList<KnownFunction> defaultFits = new ArrayList<KnownFunction>();
-	private static NumberFormat SEFormat = NumberFormat.getInstance();
 	private final static Border labelBorder = BorderFactory.createEmptyBorder(0, 2, 0, 2);
 
 	static {
@@ -492,31 +491,40 @@ public class DatasetCurveFitter extends JPanel {
 	}
 
 	/**
-	 * Returns a string of the uncertainty with appropriate formatting.
+	 * Returns the format for a parameter uncertainty. These are used to get 
+	 * identically formatted values for both the parameter and its uncertainty.
 	 *
 	 * @param paramIndex the parameter index
-	 * @return the uncertainty string
+	 * @return the format values {decimal places, format} or null if uncert unknown or zero
 	 */
-	public String getUncertaintyString(int paramIndex) {
+	public int[] getUncertaintyFormat(int paramIndex) {
 		double uncertainty = getUncertainty(paramIndex);
-		if (Double.isNaN(uncertainty))
+		if (Double.isNaN(uncertainty) || uncertainty == 0) {
 			return null;
-		if (SEFormat instanceof DecimalFormat) {
-			DecimalFormat format = (DecimalFormat) SEFormat;
-			format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
-			if (uncertainty < 0.1)
-				format.applyPattern("0.0E0"); //$NON-NLS-1$
-			else if (uncertainty < 1)
-				format.applyPattern("0.00"); //$NON-NLS-1$
-			else if (uncertainty < 10)
-				format.applyPattern("0.0"); //$NON-NLS-1$
-			else if (uncertainty < 100)
-				format.applyPattern("0"); //$NON-NLS-1$
-			else
-				format.applyPattern("0.0E0"); //$NON-NLS-1$
 		}
-		return "\u00B1 " + SEFormat.format(uncertainty); //$NON-NLS-1$
+		int[] format = new int[2];
+		double log10 = Math.log10(Math.abs(uncertainty));
+	  int exp = (int) Math.floor(log10);	
+	  format[0] = exp==1? 0: exp == -1? 2: 1;
+	  format[1] = exp==1? 0: exp==-1? 0: exp;
+		return format;
 	}
+	
+	/**
+	 * Returns a value as a string with specified format.
+	 *
+	 * @param val the value
+	 * @param format {decimal places, exponent}
+	 * @return the formatted value
+	 */
+	public String format(double val, int[] format) {
+		if (format[1] == 0)
+		  return String.format("%." + format[0] + "f", val);
+	  val /= Math.pow(10, format[1]);
+	  return String.format("%." + format[0] + "fE%d", val, format[1]);
+	}
+	
+
 
 	/**
 	 * Gets a fit function by name.
@@ -1207,16 +1215,16 @@ public class DatasetCurveFitter extends JPanel {
 		ArrayList<double[]> results = new ArrayList<double[]>();
 		
 		// for each parameter, measure curvature of chi squared to get sigma
-    double defaultDelta = 1;
 		double[] sigmas = new double[paramCount];
     
     for (int i = 0; i < paramCount; i++) {
-    	double delta = defaultDelta;
+    	double delta = (Math.abs(params[i])+1.0)/1e5; //step sizes for the finite differences
     	double chiSq = 0; // sum of both shifted-parameter chi squared values
     	double twiceDeltaChiSq = 0;
 			double[][] testParams = new double[2][];
 			String fixedParamName = paramNames[i];
-    	while (twiceDeltaChiSq < 0.001 || twiceDeltaChiSq > 2) {
+			int tries = 0;
+    	while ((twiceDeltaChiSq < 0.001 || twiceDeltaChiSq > 2) && tries < 10) {
     		// adjust delta if needed
     		if (twiceDeltaChiSq < 0.001 && twiceDeltaChiSq != 0)
     			delta *= 10;
@@ -1233,6 +1241,7 @@ public class DatasetCurveFitter extends JPanel {
 					chiSq += getChiSquared(test, x, y);
 	    	}
 				twiceDeltaChiSq = chiSq - 2 * minChiSquared;
+				tries ++;
     	}
     	if (twiceDeltaChiSq > 0) { // success: positive curvature so can determine sigma
 				// use eqn 8.13 in Data Reduction and Error Analysis For the Physical Sciences
@@ -1624,31 +1633,25 @@ public class DatasetCurveFitter extends JPanel {
 				DecimalFormat format = spinCellEditor.field.format;
 				format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
 				String uncert = null;
+				int[] formatting = getUncertaintyFormat(row);
 				if (Double.isNaN((Double)value)) {
 					tooltip = ToolsRes.getString("DatasetCurveFitter.InsufficientData.ToolTip"); //$NON-NLS-1$//$NON-NLS-2$
 				}
 				else if (!autofit) {
 					tooltip += ToolsRes.getString("DatasetCurveFitter.SE.Autofit"); //$NON-NLS-1$//$NON-NLS-2$
 				} 
-//				else if (fit instanceof KnownPolynomial) {
-//					tooltip += " " + ToolsRes.getString("DatasetCurveFitter.SE.Unknown"); //$NON-NLS-1$//$NON-NLS-2$
-//					KnownPolynomial poly = (KnownPolynomial) fit;
-//					if (poly.degree() == 1) {
-//						uncert = getUncertaintyString(row);
-//						if (uncert != null)
-//							tooltip = uncert + " (" + ToolsRes.getString("DatasetCurveFitter.SE.Name") + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-//					}
-//				} 
 				else {
-					uncert = getUncertaintyString(row);
-					if (uncert != null)
+					if (formatting != null) {
+						double uncertainty = getUncertainty(row);
+						uncert = "\u00B1" + format(uncertainty, formatting);
 						tooltip += uncert + " (" + ToolsRes.getString("DatasetCurveFitter.SE.Name") + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$					
+					}
 					else
 						tooltip += ToolsRes.getString("DatasetCurveFitter.SE.Unknown"); //$NON-NLS-1$//$NON-NLS-2$
 				}
 				setText(isApplicable() ? 
 						// use same number format for value and uncertainty
-						uncert != null? SEFormat.format(value)+" "+uncert:  
+						uncert != null? format((double)value, formatting)+" "+uncert:  
 						format.format(value):  
 						"     ---------------");
 			}
