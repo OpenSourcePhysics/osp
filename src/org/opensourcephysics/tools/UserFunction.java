@@ -239,7 +239,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 
 		// add padding around all names -- disallowing <number or .>E as in "5E0"
 		boolean hasDummy = false;
-		if (!isNull) {
+		if (!isNull) {				
 			exp = padNames(exp);
 			// replace dependents
 			for (int i = 0; i < vars.length; i++) {
@@ -607,9 +607,12 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 		return (exp != null && setExpression(exp, getIndependentVariables()) ? exp : null);
 	}
 
-	static String padNames(String exp) {
-		// but not 5.0E3
-		return exp.replaceAll("([A-Za-z_θω]\\w*)", " $1 ").replaceAll("([0123456789\\.]) ([eE])", "$1$2");
+	public static String padNames(String exp) {
+		// but not 5.0E3 or 5.0E-3
+//		return exp.replaceAll("([A-Za-z_θω]\\w*)", " $1 ").replaceAll("([0123456789\\.]) ([eE])", "$1$2");
+		return exp.replaceAll("([A-Za-z_θω]\\w*)", " $1 ")
+				.replaceAll("([0123456789\\.]) ([eE])", "$1$2")
+				.replaceAll("([eE]) ([-])", "$1$2");
 	}
 
 	/**
