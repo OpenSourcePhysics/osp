@@ -148,7 +148,7 @@ public class DatasetCurveFitter extends JPanel {
 	private DataToolTab tab;
 
 	KnownFunction fit; // the function to fit to the data
-	double sigma_y_squared; // an estimate of the SD in the y deviations from the fit
+	double sigma_y_squared = 1; // an estimate of the SD in the y deviations from the fit
 	UserFunction testFunction;
 	/** fitMap maps localized names to all available fits */
 	Color color = Color.MAGENTA;
@@ -359,8 +359,9 @@ public class DatasetCurveFitter extends JPanel {
 		double[] x = dataset.getValidXPoints();
 		double[] y = dataset.getValidYPoints();
 		
-//		OSPLog.debug("DatasetCurveFit " + ++nfit + " " + fit + " " + x.length + " " + y.length + " " + autofit);
-
+//		if (fit != testFunction)
+//			scan(fit, x, y);
+		
 		double devSq = 0;
 		double[] prevParams = null;
 		// get deviation before fitting
@@ -1235,6 +1236,8 @@ public class DatasetCurveFitter extends JPanel {
 		     	double paramVal = j == 0? params[i] - delta: params[i] + delta;
 					// get test function with a fixed parameter
 					UserFunction test = getTestFunction(f, fixedParamName, paramVal);
+					if (test == null)
+						break;
 					// fit the test function to minimize its chi squared
 					fit(test);
 					// add chi squared of test function
@@ -1274,6 +1277,89 @@ public class DatasetCurveFitter extends JPanel {
 	}
 	
 	/**
+	 * Scans the parameters of a function.
+	 * @param f a KnownFunction
+	 * @param x the x data
+	 * @param y the y data
+	 * 
+	 */
+	private void scan(KnownFunction f, double[] x, double[] y) {
+		int paramCount = f.getParameterCount();
+		if (paramCount == 0 || x.length - paramCount <= 0)
+			return;
+		
+//		double minChiSquared = calibrateChiSquared(f, x, y);
+		
+		double[] params = new double[paramCount];
+		String[] paramNames = new String[paramCount];
+		for (int i = 0; i < paramCount; i++) {
+			params[i] = f.getParameterValue(i);
+			paramNames[i] = f.getParameterName(i);
+		}
+		
+		ArrayList<double[]> results = new ArrayList<double[]>();
+		
+    double ymin=0, ymax=0;
+    for (int i = 0; i < y.length; i++) {
+    	ymin = Math.min(ymin, y[i]);
+    	ymax = Math.max(ymax, y[i]);
+    }
+    int steps = 10;
+  	double delta = (ymax-ymin) / steps; //step sizes for the scan
+		// for each parameter, scan values and check chi squared values
+
+  	double[][] best = new double[paramCount][paramCount-1];
+    for (int i = 0; i < paramCount; i++) {
+			String fixedParamName = paramNames[i];
+			UserFunction test = getTestFunction(f, fixedParamName, f.getParameterValue(i));
+			// scan test parameters
+			for (int k = 0; k < test.getParameterCount(); k++) {
+				best[i][k] = scan(test, 0, k, delta, x, y); // pig not right
+				System.out.println("pig best for "+i+" and "+k+ " = "+best[i][k]);
+			}
+  	}
+    for (int i = 0; i < paramCount; i++) {
+    	f.setParameterValue(i, best[i][0]);
+    }
+    delta /= steps;
+    for (int i = 0; i < paramCount; i++) {
+			String fixedParamName = paramNames[i];
+			UserFunction test = getTestFunction(f, fixedParamName, best[i][0]);
+			for (int k = 0; k < test.getParameterCount(); k++) {
+				best[i][k] = scan(test, best[i][k], k, delta, x, y); // pig not right
+				System.out.println("pig2 best for "+i+" and "+k+ " = "+best[i][k]);
+			}
+  	}
+    
+	}
+	
+	// scans the test function over a value range for a single parameter, returns the best
+	private double scan(UserFunction test, double paramValue, int paramIndex, 
+			double delta, double[] x, double[] y) {
+		double chiSq0 = getChiSquared(test, x, y);
+		System.out.println("pig initial chisq "+chiSq0 +" for function "+test);
+		int best = 0;
+  	for (int k = -10; k < 11; k++) {
+  		if (k==0) continue;
+     	double paramVal = paramValue + k * delta;
+			// get test function with a fixed parameter
+			test.setParameterValue(paramIndex, paramVal);
+			// fit the test function to minimize its chi squared
+			fit(test);
+			// get chi squared of test function
+			double chiSq = getChiSquared(test, x, y);
+			System.out.println("pig chisq for "+paramIndex+" at "+paramVal+ " = "+chiSq+"  for "+test);
+			if (chiSq < chiSq0) {
+				best = k;
+				chiSq0 = chiSq;
+			}
+  	}
+  	// reset test function to original state
+		test.setParameterValue(paramIndex, paramValue);
+  	return paramValue + best * delta;
+	}
+	
+	/**
 	 * Gets a test function that mimics an input function but fixes one of the parameters.
 	 * @param f a KnownFunction
 	 * @param paramName name of the fixed parameter
@@ -1283,6 +1369,8 @@ public class DatasetCurveFitter extends JPanel {
 	private UserFunction getTestFunction(KnownFunction f, String paramName, double paramVal) {
     // set up parameters
 		int len = f.getParameterCount();
+		if (len < 2) 
+			return null;
     String[] paramNames = new String[len - 1];
     double[] paramValues = new double[len - 1];
     String[] desc = new String[len - 1];
