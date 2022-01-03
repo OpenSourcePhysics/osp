@@ -1581,16 +1581,13 @@ public class DataTable extends JTable {
 				String name = (String) tc.getHeaderValue();
 				if (names != null)
 					names.append(name).append(",");
-				if (n != nTableCols) {
-					int modelIndex = dataTableModel.findColumn(name);
-					if (modelIndex < 0) {
-						tc.removePropertyChangeListener(this);
-						tableColumns.remove(i);
-						nTableCols--;
-					} else {
-						tc.setModelIndex(modelIndex);
-					}
-					totalColumnWidth = -1;
+				int modelIndex = dataTableModel.findColumn(name);
+				if (modelIndex >= 0) {
+					tc.setModelIndex(modelIndex);
+				} else {
+					tc.removePropertyChangeListener(this);
+					tableColumns.remove(i);
+					nTableCols--;
 				}
 			}
 
@@ -1608,6 +1605,7 @@ public class DataTable extends JTable {
 			
 			// finally, clear all selections and invalidate widths
 
+			totalColumnWidth = -1;
 			selectionModel.clearSelection();
 			invalidateWidths();
 		}
