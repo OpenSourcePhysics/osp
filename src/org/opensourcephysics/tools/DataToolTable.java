@@ -2027,7 +2027,7 @@ public class DataToolTable extends DataTable {
 		
 		// DB: without this the table loses the column order	
 		// save model column order
-		int[] modelColumns = getModelColumnOrder();
+		//int[] modelColumns = getModelColumnOrder();
 				
 		// save selected rows and columns
 		int[] rows = getSelectedModelRows();
@@ -2036,7 +2036,7 @@ public class DataToolTable extends DataTable {
 	// restore column order--but keep "tabChanged" unchanged
 		boolean changed = dataToolTab.tabChanged;
 		
-		setModelColumnOrder(modelColumns);
+		//setModelColumnOrder(modelColumns);
 		
 		dataToolTab.tabChanged(changed);
 		// re-sort to restore row order

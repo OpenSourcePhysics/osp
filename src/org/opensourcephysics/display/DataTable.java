@@ -61,6 +61,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 import org.opensourcephysics.controls.XML;
+import org.opensourcephysics.display.DataTable.DataTableColumnModel.DataTableColumn;
 import org.opensourcephysics.media.core.NumberField;
 import org.opensourcephysics.media.core.VideoIO;
 
@@ -1515,6 +1516,11 @@ public class DataTable extends JTable {
 			super();
 		}
 		
+//		public void removeColumn(TableColumn col) {
+//	    	super.removeColumn(col);
+//	    	updateColumnModel();
+//	    }
+//
 		public class DataTableColumn extends TableColumn {
 
 			private boolean isSizeSet;
@@ -1522,6 +1528,11 @@ public class DataTable extends JTable {
 			private DataTableColumn(int modelIndex) {
 				super(modelIndex);
 				setHeaderValue(getModel().getColumnName(modelIndex));
+			}
+			
+			@Override
+			public String toString() {
+				return "[DT column " + headerValue + " " + modelIndex + "]";
 			}
 
 		}
@@ -1534,7 +1545,7 @@ public class DataTable extends JTable {
 				((DataTableColumn) tableColumns.get(i)).isSizeSet = false;
 			}
 		}
-
+		
 		/**
 		 * Read DataTableModel.dataElements into DataTableColumnModel.tableColumns.
 		 * 
@@ -1548,62 +1559,55 @@ public class DataTable extends JTable {
 		 * @author hansonr
 		 */
 		private void updateColumnModel() {
-			
-			// get the current model column order
-			int[] modelOrder = getModelColumnOrder();
 
-			// determine which of the model column order indices are valid
-			int maxValidIndex = modelOrder.length - 1;
-			BitSet bs = new BitSet();
-			for (int i = 0; i < modelOrder.length; i++) {
-				if (bs.get(modelOrder[i])) {
-					maxValidIndex = i - 1;
-					break;
-				}
-				bs.set(modelOrder[i]);	
-			}
-
-			// create a map of the current column set (actually displayed)
-			Vector<TableColumn> newColumns = new Vector<>();
-			Map<String, DataTableColumn> map = new HashMap<>();
-			for (int i = tableColumns.size(); --i >= 0;) {
-				DataTableColumn tc = (DataTableColumn) tableColumns.get(i);
-				map.put((String) tc.getHeaderValue(), tc);
-			}
-
-			// run through the updated TableModel, creating new columns
-			// only when necessary. No events are fired.
-
+			int nTableCols = tableColumns.size();
 			int n = dataTableModel.getColumnCount();
-			for (int i = 0; i < n; i++) {
-				int modelIndex = i <= maxValidIndex? modelOrder[i]: i;
-//				String name = dataTableModel.getColumnName(i);
-				String name = dataTableModel.getColumnName(modelIndex);
 
-				DataTableColumn tc = map.get(name);
-				if (tc == null) {
-//					tc = new DataTableColumn(i);
-					tc = new DataTableColumn(modelIndex);
-					tc.addPropertyChangeListener(this);
-					totalColumnWidth = -1;
-				} else {
-//					tc.setModelIndex(i);
+			// we do not have to continue unless there have been additions or deletions,
+			// as moving columns around does not affect their model references.
+
+			if (n == nTableCols)
+				return;
+
+			// Create a map of the current column set (actually displayed),
+			// updating all model indexes by name and removing ones that are gone.
+			// We remove any deleted columns here as well.
+			// We create a name list for reference only in the case of addition,
+			// so that we can match the missing name with a dataset.
+
+			StringBuffer names = (n > nTableCols ? new StringBuffer(",") : null);
+			for (int i = nTableCols; --i >= 0;) {
+				DataTableColumn tc = (DataTableColumn) tableColumns.get(i);
+				String name = (String) tc.getHeaderValue();
+				if (names != null)
+					names.append(name).append(",");
+				int modelIndex = dataTableModel.findColumn(name);
+				if (modelIndex >= 0) {
 					tc.setModelIndex(modelIndex);
-					tableColumns.remove(tc);
+				} else {
+					tc.removePropertyChangeListener(this);
+					tableColumns.remove(i);
+					nTableCols--;
 				}
-				tc.isSizeSet = false;
-				newColumns.add(tc);
 			}
-			// any columns remaining in tableColumns are disposable
-			// because they are no longer being shown.
-			for (int i = tableColumns.size(); --i >= 0;) {
-				TableColumn tc = tableColumns.get(i);
-				tc.removePropertyChangeListener(this);
-				totalColumnWidth = -1;
+
+			// For a new column, find or assign a modelIndex and add it to tableColumns
+
+			for (int i = nTableCols; i < n; i++) {
+				// Find or assign the model number. If it is not found, then just assign
+				// it sequentially. The findLast method works only when only one column
+				// has been added.
+				int modelIndex = (nTableCols == 0 ? -1 : findLastAddedModelIndex(names));
+				DataTableColumn tc = new DataTableColumn(modelIndex < 0 ? i : modelIndex);
+				tc.addPropertyChangeListener(this);
+				tableColumns.add(tc);
 			}
-			tableColumns = newColumns;
-			selectionModel.clearSelection();
 			
+			// finally, clear all selections and invalidate widths
+
+			totalColumnWidth = -1;
+			selectionModel.clearSelection();
+			invalidateWidths();
 		}
 
 		public int convertColumnIndexToModel(int viewIndex) {
@@ -1697,10 +1701,20 @@ public class DataTable extends JTable {
 				map[current[i]] = i + 1; // so 0 is undefined
 			}
 			Vector<TableColumn> newCols = new Vector<>();
-			for (int i = 0, n = modelColumns.length; i < n; i++) {
-				int j = (modelColumns[i] > max ? 0 : map[modelColumns[i]]);
-				if (j > 0)
-					newCols.add(tableColumns.get(j - 1));
+			BitSet mapped = new BitSet(max);
+			for (int i = 0, pt = 0, n = modelColumns.length; i < n; i++) {
+				int mi = modelColumns[i];
+				int j = (mi > max ? -1 : map[mi] - 1);
+				if (j >= 0) {
+					DataTableColumn tc = (DataTableColumn) tableColumns.get(j);
+					tc.setModelIndex(mi);
+					newCols.add(tc);
+					mapped.set(j);
+				}
+			}
+			for (int i = mapped.nextClearBit(0), n = tableColumns.size(); i < n; i = mapped.nextClearBit(i + 1)) {
+				tableColumns.get(i).removePropertyChangeListener(this);
+
 			}
 			tableColumns = newCols;
 		}
@@ -1711,11 +1725,21 @@ public class DataTable extends JTable {
 		 * @return
 		 */
 		private int[] getModelColumnOrder() {
-			int[] modelColumns = new int[getModel().getColumnCount()];
-			for (int i = modelColumns.length; --i >= 0;) {
-				modelColumns[i] = getColumn(i).getModelIndex();
+			int n = getModel().getColumnCount();
+			int[] modelColumns = new int[n];
+			for (int i = 0; i < n; i++) {
+				int d = getColumn(i).getModelIndex();
+				modelColumns[i] = (d == 0 ? i : d);
 			}
 			return modelColumns;
+		}
+
+		@Override
+		public String toString() {
+			String s = "[DT columnModel ";
+			for (int i = 0; i < this.getColumnCount(); i++)
+				s += this.getColumn(i).toString() + " " + "]";
+			return s;
 		}
 
 	}
@@ -2269,6 +2293,7 @@ public class DataTable extends JTable {
 		dataTableModel.sort(col);
 	}
 
+
 	/**
 	 * from DataToolTable Sets the model column order -- for DataToolTab Loader only
 	 *
@@ -2418,6 +2443,7 @@ public class DataTable extends JTable {
 	}
 
 	public void updateColumnModel(int[] modelColumns) {
+		// modelColumns is always null here
 		dataTableModel.setTainted();
 		((DataTableColumnModel) getColumnModel()).updateColumnModel();
 	}
@@ -2653,6 +2679,16 @@ public class DataTable extends JTable {
 		OSPRuntime.copy(header + buf, null);
 //		StringSelection stringSelection = new StringSelection(header + buf.toString());
 //		clipboard.setContents(stringSelection, stringSelection);
+	}
+
+
+	public int getNewModelIndex(Map<String, DataTableColumn> map) {
+		return -1;
+	}
+
+
+	public int findLastAddedModelIndex(StringBuffer names) {
+		return -1;
 	}
 
 
