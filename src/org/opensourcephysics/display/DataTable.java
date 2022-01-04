@@ -61,7 +61,6 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 import org.opensourcephysics.controls.XML;
-import org.opensourcephysics.display.DataTable.DataTableColumnModel.DataTableColumn;
 import org.opensourcephysics.media.core.NumberField;
 import org.opensourcephysics.media.core.VideoIO;
 
@@ -1496,7 +1495,7 @@ public class DataTable extends JTable {
 				break;
 			}
 			updateFormats();
-			updateColumnModel(null);
+			updateColumnModel();
 //			OSPLog.debug("OSPDataTableModel rebuild " + type);
 		}
 
@@ -1561,12 +1560,13 @@ public class DataTable extends JTable {
 		private void updateColumnModel() {
 
 			int nTableCols = tableColumns.size();
-			int n = dataTableModel.getColumnCount();
+			int nModelCols = dataTableModel.getColumnCount();
 
 			// we do not have to continue unless there have been additions or deletions,
-			// as moving columns around does not affect their model references.
+			// as moving columns around does not affect their model references, and after
+			// loading, this method might be run unnecessarily as part of a refresh().
 
-			if (n == nTableCols)
+			if (nModelCols == nTableCols)
 				return;
 
 			// Create a map of the current column set (actually displayed),
@@ -1575,9 +1575,9 @@ public class DataTable extends JTable {
 			// We create a name list for reference only in the case of addition,
 			// so that we can match the missing name with a dataset.
 
-			StringBuffer names = (n > nTableCols ? new StringBuffer(",") : null);
+			StringBuffer names = (nModelCols > nTableCols ? new StringBuffer(",") : null);
 			for (int i = nTableCols; --i >= 0;) {
-				DataTableColumn tc = (DataTableColumn) tableColumns.get(i);
+				DataTableColumn tc = getTableColumn(i);
 				String name = (String) tc.getHeaderValue();
 				if (names != null)
 					names.append(name).append(",");
@@ -1593,11 +1593,11 @@ public class DataTable extends JTable {
 
 			// For a new column, find or assign a modelIndex and add it to tableColumns
 
-			for (int i = nTableCols; i < n; i++) {
+			for (int i = nTableCols; i < nModelCols; i++) {
 				// Find or assign the model number. If it is not found, then just assign
 				// it sequentially. The findLast method works only when only one column
 				// has been added.
-				int modelIndex = (nTableCols == 0 ? -1 : findLastAddedModelIndex(names));
+				int modelIndex = findLastAddedModelIndex(names);
 				DataTableColumn tc = new DataTableColumn(modelIndex < 0 ? i : modelIndex);
 				tc.addPropertyChangeListener(this);
 				tableColumns.add(tc);
@@ -1610,10 +1610,15 @@ public class DataTable extends JTable {
 			invalidateWidths();
 		}
 
+		/**
+		 * 
+		 * @param viewIndex
+		 * @return
+		 */
 		public int convertColumnIndexToModel(int viewIndex) {
 			if (dataTableModel.getColumnCount() != tableColumns.size())
 				updateColumnModel();
-			return getColumn(viewIndex).getModelIndex();
+			return getTableColumn(viewIndex).getModelIndex();
 		}
 
 //		public void createDefaultColumns() {
@@ -1643,48 +1648,45 @@ public class DataTable extends JTable {
 	    }
 	    
 		/**
-		 * Method getColumn
+		 * Return a DataTableColumn, finalizing its size calculation and creating a new
+		 * tableColumn, if necessary due to an out-of-bounds calculation.
 		 *
 		 * @param columnIndex
 		 * @return
 		 */
 		@Override
 		public TableColumn getColumn(int columnIndex) {
-			if (columnIndex < 0 || columnIndex >= tableColumns.size())
-				return new TableColumn(0);
-			DataTableColumn tableColumn = (DataTableColumn) tableColumns.elementAt(columnIndex);
-			if (tableColumn.isSizeSet)
-				return tableColumn;
-			tableColumn.isSizeSet = true;
-			String headerValue = (String) tableColumn.getHeaderValue();
-			if (headerValue != null) {
-				if (headerValue.equals(rowName) && (tableColumn.getModelIndex() == 0)) {
-					tableColumn.setMaxWidth(labelColumnWidth);
-					tableColumn.setMinWidth(labelColumnWidth);
-					tableColumn.setResizable(false);
-				} else {
-					tableColumn.setMinWidth(minimumDataColumnWidth);
+			return (columnIndex >= 0 && columnIndex < tableColumns.size() ? updateTableColumnSize(columnIndex)
+					: new TableColumn(0));
+		}
+
+		private TableColumn updateTableColumnSize(int index) {
+			DataTableColumn tableColumn = getTableColumn(index);
+			if (!tableColumn.isSizeSet) {
+				tableColumn.isSizeSet = true;
+				String headerValue = (String) tableColumn.getHeaderValue();
+				if (headerValue != null) {
+					if (headerValue.equals(rowName) && (tableColumn.getModelIndex() == 0)) {
+						tableColumn.setMaxWidth(labelColumnWidth);
+						tableColumn.setMinWidth(labelColumnWidth);
+						tableColumn.setResizable(false);
+					} else {
+						tableColumn.setMinWidth(minimumDataColumnWidth);
+					}
 				}
 			}
 			return tableColumn;
 		}
 
-//		public void moveColumnQuietly(int oldI, int newI) {
-//			if (oldI == newI) {
-//				return;
-//			}
-//			TableColumn aColumn = tableColumns.elementAt(oldI);
-//			tableColumns.removeElementAt(oldI);
-//			tableColumns.insertElementAt(aColumn, newI);
-//			boolean selected = selectionModel.isSelectedIndex(oldI);
-//			selectionModel.removeIndexInterval(oldI, oldI);
-//			selectionModel.insertIndexInterval(newI, 1, true);
-//			if (selected) {
-//				selectionModel.addSelectionInterval(newI, newI);
-//			} else {
-//				selectionModel.removeSelectionInterval(newI, newI);
-//			}
-//		}
+		/**
+		 * Do not add a new column and do not check for sizing.
+		 * 
+		 * @param columnIndex
+		 * @return the indicated column
+		 */
+		public DataTableColumn getTableColumn(int columnIndex) {
+			return (DataTableColumn) super.getColumn(columnIndex);
+		}
 
 		private void setModelColumnOrder(int[] modelColumns) {
 			selectionModel.clearSelection();
@@ -1702,7 +1704,7 @@ public class DataTable extends JTable {
 			}
 			Vector<TableColumn> newCols = new Vector<>();
 			BitSet mapped = new BitSet(max);
-			for (int i = 0, pt = 0, n = modelColumns.length; i < n; i++) {
+			for (int i = 0, n = modelColumns.length; i < n; i++) {
 				int mi = modelColumns[i];
 				int j = (mi > max ? -1 : map[mi] - 1);
 				if (j >= 0) {
@@ -1712,6 +1714,9 @@ public class DataTable extends JTable {
 					mapped.set(j);
 				}
 			}
+			// Now remove the property listener for any removed columns.
+			// Current DataTableColumnModel subclasses and superclasses do not implement any
+			// listeners, actually.
 			for (int i = mapped.nextClearBit(0), n = tableColumns.size(); i < n; i = mapped.nextClearBit(i + 1)) {
 				tableColumns.get(i).removePropertyChangeListener(this);
 
@@ -1728,7 +1733,7 @@ public class DataTable extends JTable {
 			int n = getModel().getColumnCount();
 			int[] modelColumns = new int[n];
 			for (int i = 0; i < n; i++) {
-				int d = getColumn(i).getModelIndex();
+				int d = getTableColumn(i).getModelIndex();
 				modelColumns[i] = (d == 0 ? i : d);
 			}
 			return modelColumns;
@@ -1737,8 +1742,8 @@ public class DataTable extends JTable {
 		@Override
 		public String toString() {
 			String s = "[DT columnModel ";
-			for (int i = 0; i < this.getColumnCount(); i++)
-				s += this.getColumn(i).toString() + " " + "]";
+			for (int i = 0; i < tableColumns.size(); i++)
+				s += getTableColumn(i).toString() + " " + "]";
 			return s;
 		}
 
@@ -2442,7 +2447,7 @@ public class DataTable extends JTable {
 		}
 	}
 
-	public void updateColumnModel(int[] modelColumns) {
+	public void updateColumnModel() {
 		// modelColumns is always null here
 		dataTableModel.setTainted();
 		((DataTableColumnModel) getColumnModel()).updateColumnModel();
@@ -2681,13 +2686,15 @@ public class DataTable extends JTable {
 //		clipboard.setContents(stringSelection, stringSelection);
 	}
 
-
-	public int getNewModelIndex(Map<String, DataTableColumn> map) {
-		return -1;
-	}
-
-
-	public int findLastAddedModelIndex(StringBuffer names) {
+	/**
+	 * subclass should return the modelIndex of the first column name (comma-quoted
+	 * key) not found in names and, if that exists, add that key to name in case this needs to 
+	 * be run more than once. 
+	 * 
+	 * @param names a simple comma-quoted listing of known column names 
+	 * @return the modelIndex and append to names the new comma-quoted name found
+	 */
+	protected int findLastAddedModelIndex(StringBuffer names) {
 		return -1;
 	}
 

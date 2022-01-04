@@ -1110,7 +1110,7 @@ public class DataToolTable extends DataTable {
 
 	/**
 	 * Gets the working data for a specified column name. The working y-data is the
-	 * named table column The working x-data is the x (yellow) table column
+	 * named table column. The working x-data is the x (yellow) table column
 	 *
 	 * @param colName the name of the data column
 	 * @return the working dataset
@@ -1125,7 +1125,6 @@ public class DataToolTable extends DataTable {
 			String unshifted = unshiftName(colName);
 			if (unshifted != colName)
 				working = workingMap.get(unshifted);
-//			working = workingMap.get(colName.substring(0, colName.length() - 1));
 		}
 		if (working == null) {
 			Dataset ySource = getDataset(colName);
@@ -1141,8 +1140,8 @@ public class DataToolTable extends DataTable {
 		}
 		// set x-column source of working data
 		int labelCol = convertColumnIndexToView(0);
-		String xName = getColumnName((labelCol == 0) ? 1 : 0);
-		Dataset xSource = getDataset(xName);
+		int col = (labelCol == 0 ? 1 : 0);
+		Dataset xSource = getDataset(col < getColumnCount() ? getColumnName(col) : null);
 		if (xSource == null) {
 			return null;
 		}
@@ -1426,7 +1425,7 @@ public class DataToolTable extends DataTable {
 		}
 		// refresh table and set column order
 		
-		updateColumnModel(null);
+		updateColumnModel();
 		// restore selected rows or select all rows if none selected
 		if (rows.cardinality() == 0) {
 			setRowSelectionInterval(0, getRowCount() - 1);
@@ -1500,7 +1499,7 @@ public class DataToolTable extends DataTable {
 			dataToolTab.refreshGUI();
 		} else {
 			// refresh table and set column order
-			updateColumnModel(null);
+			updateColumnModel();
 			// restore selection unless deleted column was only one selected
 			if (!((cols.size() == 1) && cols.contains(colName))) {
 				setSelectedModelRowsBS(rows);
@@ -2011,7 +2010,7 @@ public class DataToolTable extends DataTable {
 	public void refreshTable(int mode) {
 		if (mode == DataTable.MODE_CELLS) {
 			super.refreshTable(mode);
-			updateColumnModel(null);
+			updateColumnModel();
 			return;
 		}
 //		if (mode == DataTable.MODE_SET_TAINTED) {
@@ -2021,7 +2020,7 @@ public class DataToolTable extends DataTable {
 //		}
 		boolean noView = convertColumnIndexToView(0) == -1;
 		if (noView) {
-			updateColumnModel(null);
+			updateColumnModel();
 			return;
 		}
 		
@@ -2032,7 +2031,7 @@ public class DataToolTable extends DataTable {
 		// save selected rows and columns
 		int[] rows = getSelectedModelRows();
 		ArrayList<String> cols = getSelectedColumnNames();
-		updateColumnModel(null);
+		updateColumnModel();
 	// restore column order--but keep "tabChanged" unchanged
 		boolean changed = dataToolTab.tabChanged;
 		
@@ -2718,7 +2717,6 @@ public class DataToolTable extends DataTable {
 		}
 
 		// Gets the component to be displayed while editing.
-		@SuppressWarnings("null")
 		@Override
 		public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int col) {
 			// if editing a function, simply show function builder

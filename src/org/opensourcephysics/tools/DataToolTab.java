@@ -286,6 +286,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			return loadedColumns;
 		}
 		boolean updatedColumns = false;
+		int[] order = null;
 		// case 1: tab contains no data
 		if (dataManager.getDatasetsRaw().isEmpty()) {
 			originatorID = data.getID();
@@ -293,6 +294,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				addColumn(next);
 				loadedColumns.add(next);
 			}
+//			if (data instanceof DatasetManager) {
+//				order = ((DatasetManager) data).getjobColumnOrder();
+//			}
 		}
 		// case 2: tab already contains data
 		else {
@@ -341,6 +345,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		}
 		if (haveGUI && (updatedColumns || !loadedColumns.isEmpty())) {
 			dataTable.refreshTable(DataTable.MODE_COLUMN);
+			if (order != null)
+				dataTable.setModelColumnOrder(order);				
 			statsTable.refreshStatistics();
 			refreshPlot();
 			refreshGUI();

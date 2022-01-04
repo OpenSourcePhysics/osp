@@ -110,7 +110,24 @@ public class DatasetManager extends DataTable.DataModel implements Measurable, L
 	 * used by TableTrackView
 	 */
 	private Dataset frameDataset;
-
+	
+//	/**
+//	 * used in sending order to DataTool from TableTrackView
+//	 */
+//	private int[] jobColumnOrder;
+//
+//	/**
+//	 * A one-time read, by the DataTool job loader. (unimplemented)
+//	 * 
+//	 * @return
+//	 */
+//	public int[] getjobColumnOrder() {
+//		 // unimplemented
+//		int[] order = jobColumnOrder;
+//		jobColumnOrder = null;
+//		return order;
+//	}
+	
 	/**
 	 *
 	 * DatasetManager constructor.
@@ -1144,6 +1161,8 @@ public class DatasetManager extends DataTable.DataModel implements Measurable, L
 			control.setValue("data_name", dsm.name); //$NON-NLS-1$
 			control.setValue("datasets", dsm.datasets); //$NON-NLS-1$
 			control.setValue("id", dsm.datasetID); //$NON-NLS-1$
+//			if (dsm.jobColumnOrder != null)
+//				control.setValue("column_order", dsm.jobColumnOrder);
 		}
 
 		@Override
@@ -1161,6 +1180,7 @@ public class DatasetManager extends DataTable.DataModel implements Measurable, L
 			dsm.linked = control.getBoolean("linked"); //$NON-NLS-1$
 			dsm.xColumnName = control.getString("x_column_name"); //$NON-NLS-1$
 			dsm.yColumnName = control.getString("y_column_name"); //$NON-NLS-1$
+//			dsm.jobColumnOrder = (int[]) control.getObject("column_order");
 			dsm.setName(control.getString("data_name")); //$NON-NLS-1$
 			if (control.getPropertyNamesRaw().contains("id")) { //$NON-NLS-1$
 				dsm.setID(control.getInt("id")); //$NON-NLS-1$
@@ -1292,6 +1312,10 @@ public class DatasetManager extends DataTable.DataModel implements Measurable, L
 	public double get(String var, int row, int col) {
 		return getDataset(getDatasetIndex(var)).getValueAt(row, col);
 	}
+
+//	public void setJobColumnOrder(int[] modelColumnOrder) {
+//		jobColumnOrder = modelColumnOrder;
+//	}
 
 }
 
