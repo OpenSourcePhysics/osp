@@ -7,7 +7,6 @@
 
 package org.opensourcephysics.tools;
 
-import java.applet.Applet;
 import java.applet.AudioClip;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -21,7 +20,9 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+
 import javax.swing.ImageIcon;
+import javax.swing.JApplet;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
@@ -359,7 +360,7 @@ public class Resource {
 	 */
 	public AudioClip getAudioClip() {
 		if ((clip == null) && (getURL() != null)) {
-			clip = Applet.newAudioClip(getURL());
+			clip = JApplet.newAudioClip(getURL());
 		}
 		return clip;
 	}
