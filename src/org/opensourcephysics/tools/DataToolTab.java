@@ -233,6 +233,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	private boolean selectionChanged, readyToFindHits, selectionBoxChanged;
 	private Interactive mouseDrawable;
 	private Timer timerToFindHits;
+	private boolean fitterWasVisible;
 
 	/**
 	 * Constructs a DataToolTab for the specified Data.
@@ -833,6 +834,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		// set dataManager name to tab name so reply will be recognized
 		dataManager.setName(getName());
 		jobManager.sendReplies(dataManager);
+		curveFitter.fitFromScratch();		
 	}
 
 	// _______________________ protected & private methods
@@ -1283,6 +1285,10 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					refreshPlot();
 				}
 				curveFitter.splitPane.setDividerLocation(curveFitter.splitPane.getMaximumDividerLocation());
+				if (!fitterWasVisible) {
+					fitterWasVisible = true;
+					curveFitter.setAutofit(true);
+				}
 			}
 
 		};
