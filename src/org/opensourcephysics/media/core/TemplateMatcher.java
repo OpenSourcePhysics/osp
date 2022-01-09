@@ -34,10 +34,7 @@ import java.awt.image.DataBufferInt;
 import java.util.BitSet;
 import java.util.TreeMap;
 
-import org.opensourcephysics.display.Dataset;
-import org.opensourcephysics.tools.DatasetCurveFitter;
-import org.opensourcephysics.tools.FitBuilder;
-import org.opensourcephysics.tools.UserFunction;
+import org.opensourcephysics.tools.KnownPolynomial;
 
 /**
  * A class to find the best match of a template image in a target image. The
@@ -62,16 +59,13 @@ public class TemplateMatcher {
 	private int wTarget, hTarget; // width and height of the target image
 	private int wTest, hTest; // width and height of the tested image (in search rect)
 	private double largeNumber = 1.0E20; // bigger than any expected difference
-	private DatasetCurveFitter fitter; // used for Gaussian fit
-	private Dataset dataset; // used for Gaussian fit
-	private UserFunction f; // used for Gaussian fit
-	private double[] pixelOffsets = { -1, 0, 1 }; // used for Gaussian fit
-	private double[] xValues = new double[3]; // used for Gaussian fit
-	private double[] yValues = new double[3]; // used for Gaussian fit
+	private double[] xValues = new double[3]; // used for parabolic fit
+	private double[] yValues = new double[3]; // used for parabolic fit
 	private double peakHeight, peakWidth; // peak height and width of most recent match
 	private int trimLeft, trimTop;
 	private int[] alphas = new int[2]; // most recent alphas {input, original}
 	private int index; // for AutoTracker--not used internally
+	private KnownPolynomial parabola; // for parabolic fit
 
 	/**
 	 * Constructs a TemplateMatcher object. If a mask shape is specified, then only
@@ -83,15 +77,7 @@ public class TemplateMatcher {
 	public TemplateMatcher(BufferedImage image, Shape maskShape) {
 		mask = maskShape;
 		setTemplate(image);
-		// set up the Gaussian curve fitter
-		dataset = new Dataset();
-		fitter = new DatasetCurveFitter(dataset, new FitBuilder(null));
-		fitter.setActiveNoFit(true);
-		f = new UserFunction("gaussian"); //$NON-NLS-1$
-		f.setParameters(new String[] { "a", "b", "c" }, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				new double[] { 1, 0, 1 });
-		f.setExpression("a*exp(-(x-b)^2/c)", new String[] { "x" }); //$NON-NLS-1$ //$NON-NLS-2$
-		fitter.setAutofit(true); //
+		parabola = new KnownPolynomial(new double[3]);
 	}
 
 	/**
@@ -319,25 +305,24 @@ public class TemplateMatcher {
 	 * 4. If the PH exceeds the "Automark" setting, the match is deemed to be a good
 	 * one (i.e., significantly better than average).
 	 * 
-	 * 5. For sub-pixel accuracy, fit a Gaussian curve to the PHs of the working
-	 * best match and its immediate vertical and horizontal neighbors. Note that the
-	 * 3-point Gaussian fits should be exact.
+	 * 5. For sub-pixel accuracy, fit a parabola to the RGBSqD of the
+	 * best match and its immediate vertical and horizontal neighbors.
 	 * 
-	 * 6. The final best match (sub-pixel) is the position of the peak of the
-	 * Gaussian fit.
+	 * 6. The final best match (sub-pixel) is the position of the minimum of the
+	 * polynomial fit.
 	 * 
-	 * 7. Note that the width of the Gaussian fit is probably correlated with the
-	 * uncertainty of the match position, but it is not used to explicitly estimate
-	 * this uncertainty except that if the width > 1 pixel then the peak height is
-	 * divided by that width. This assures that very wide fits are not treated as
+	 * 7. The curvature of the parabolic fit is used to explicitly estimate
+	 * the uncertainty of the fit. If uncertainty > 1 pixel then the peak height is
+	 * divided by that uncertainty. This assures that very wide fits are not treated as
 	 * good fits.
 	 *
 	 * @param target     the image to search
 	 * @param searchRect the rectangle to search within the target image
-	 * @return the optimized template location at which the best match, if any, is
-	 *         found
+	 * @param searchPts optional [x, y] points to search within the rectangle (may be null)
+	 * @return the optimized template location at which the best match, if any, is found
 	 */
-	public TPoint getMatchLocation(BufferedImage target, Rectangle searchRect) {
+	public TPoint getMatchLocation(BufferedImage target, Rectangle searchRect, int[][] searchPts) {
+
 		wTarget = target.getWidth();
 		hTarget = target.getHeight();
 		// determine insets needed to accommodate template
@@ -364,238 +349,72 @@ public class TemplateMatcher {
 		hTest = yMax - yMin;
 		target = ensureType(target, wTarget, hTarget, BufferedImage.TYPE_INT_RGB);
 		targetPixels = new int[wTest * hTest];
-		// target.getRaster().getDataElements(xMin, yMin, wTest, hTest, targetPixels);
 		transferPixels(getPixels(target), xMin, yMin, wTarget, targetPixels, wTest);
-		// find the rectangle point with the minimum difference
-		double matchDiff = largeNumber; // larger than typical differences
+		// find the rectangle point with the minimum difference squared
+		double minDiffSq = largeNumber; // larger than typical differences
 		int xMatch = 0, yMatch = 0;
-		double avgDiff = 0;
-		for (int x = 0; x < sw; x++) { // BH this was <=, but then we are checking past the edge
-			for (int y = 0; y < sh; y++) { // BH same here.
-
-				double diff = getDifferenceAtTestPoint(x, y);
-				avgDiff += diff;
-				if (diff < matchDiff) {
-					matchDiff = diff;
-					xMatch = x;
-					yMatch = y;
+		double avgDiffSq = 0;
+		if (searchPts == null) {
+			searchPts = new int[sw * sh][2];
+			int index = 0;
+			for (int x = 0; x < sw; x++) { // BH this was <=, but then we are checking past the edge
+				for (int y = 0; y < sh; y++) { // BH same here.
+					searchPts[index][0] = x;
+					searchPts[index][1] = y;
+					index++;
 				}
+			}			
+		}
+		int n = 0;
+		for (int i = 0; i < searchPts.length; i++) {
+			if (searchPts[i][0] >= sw || searchPts[i][1] >= sh || searchPts[i][0] < 0 || searchPts[i][1] < 0)
+				continue;
+			
+			double diffSq = getRGBDiffSquaredAtTestPoint(searchPts[i][0], searchPts[i][1]);
+			avgDiffSq += diffSq;
+			n++;
+			if (diffSq < minDiffSq) {
+				minDiffSq = diffSq;
+				xMatch = searchPts[i][0];
+				yMatch = searchPts[i][1];
 			}
 		}
-		avgDiff /= (sw * sh);
-		peakHeight = avgDiff / matchDiff - 1;
+		avgDiffSq /= n;
+		peakHeight = avgDiffSq / minDiffSq - 1;
 		peakWidth = Double.NaN;
 		double dx = 0, dy = 0;
-		// if match is not exact, fit a Gaussian and find peak
+		
 		if (!Double.isInfinite(peakHeight)) {
+			// if match is not exact, fit a parabola to diffs
+			double[] pixels = new double[] {-1, 0, 1};
 			// fill data arrays
-			xValues[1] = yValues[1] = peakHeight;
+			xValues[1] = yValues[1] = minDiffSq;
 			for (int i = -1; i < 2; i++) {
 				if (i == 0)
 					continue;
-				double diff = getDifferenceAtTestPoint(xMatch + i, yMatch);
-				xValues[i + 1] = avgDiff / diff - 1;
-				diff = getDifferenceAtTestPoint(xMatch, yMatch + i);
-				yValues[i + 1] = avgDiff / diff - 1;
+				double diff = getRGBDiffSquaredAtTestPoint(xMatch + i, yMatch);
+				xValues[i + 1] = diff;
+				diff = getRGBDiffSquaredAtTestPoint(xMatch, yMatch + i);
+				yValues[i + 1] = diff;
 			}
-			// estimate peakHeight = peak of gaussian
-			// estimate offset dx of gaussian
-			double pull = 1 / (xValues[1] - xValues[0]);
-			double push = 1 / (xValues[1] - xValues[2]);
-			if (Double.isNaN(pull))
-				pull = LARGE_NUMBER;
-			if (Double.isNaN(push))
-				push = LARGE_NUMBER;
-			dx = 0.6 * (push - pull) / (push + pull);
-			// estimate width wx of gaussian
-			double ratio = dx > 0 ? peakHeight / xValues[0] : peakHeight / xValues[2];
-			double wx = dx > 0 ? dx + 1 : dx - 1;
-			wx = wx * wx / Math.log(ratio);
-			// estimate offset dy of gaussian
-			pull = 1 / (yValues[1] - yValues[0]);
-			push = 1 / (yValues[1] - yValues[2]);
-			if (Double.isNaN(pull))
-				pull = LARGE_NUMBER;
-			if (Double.isNaN(push))
-				push = LARGE_NUMBER;
-			dy = 0.6 * (push - pull) / (push + pull);
-			// estimate width wy of gaussian
-			ratio = dy > 0 ? peakHeight / yValues[0] : peakHeight / yValues[2];
-			double wy = dy > 0 ? dy + 1 : dy - 1;
-			wy = wy * wy / Math.log(ratio);
+			// fit parabola
+			parabola.fitData(pixels, xValues);
+			double[] c = parabola.getCoefficients();		
+			dx = -c[1] / (2 * c[0]);
+			peakWidth = Math.sqrt(2*c[0]/c[2]);
+			parabola.fitData(pixels, yValues);
+			c = parabola.getCoefficients();		
+			dy = -c[1] / (2 * c[0]);
 
-			// set x parameters and fit to x data
-			dataset.clear();
-			dataset.append(pixelOffsets, xValues);
-			double rmsDev = 1;
-			for (int k = 0; k < 3; k++) {
-				double c = k == 0 ? wx : k == 1 ? wx / 3 : wx * 3;
-				f.setParameterValue(0, peakHeight);
-				f.setParameterValue(1, dx);
-				f.setParameterValue(2, c);
-				rmsDev = fitter.fit(f);
-				if (rmsDev < 0.01) { // fitter succeeded (3-point fit should be exact)
-					dx = f.getParameterValue(1);
-					peakWidth = f.getParameterValue(2);
-					break;
-				}
-			}
-			if (!Double.isNaN(peakWidth)) {
-				// set y parameters and fit to y data
-				dataset.clear();
-				dataset.append(pixelOffsets, yValues);
-				for (int k = 0; k < 3; k++) {
-					double c = k == 0 ? wy : k == 1 ? wy / 3 : wy * 3;
-					f.setParameterValue(0, peakHeight);
-					f.setParameterValue(1, dy);
-					f.setParameterValue(2, c);
-					rmsDev = fitter.fit(f);
-					if (rmsDev < 0.01) { // fitter succeeded (3-point fit should be exact)
-						dy = f.getParameterValue(1);
-						peakWidth = (peakWidth + f.getParameterValue(2)) / 2;
-						break;
-					}
-				}
-				if (rmsDev > 0.01)
-					peakWidth = Double.NaN;
-			}
-			if (!Double.isNaN(peakWidth) && peakWidth > 1) {
-				peakHeight /= peakWidth;
-			}
+			peakWidth = 0.5 * (peakWidth + Math.sqrt(2 * c[0] / c[2]));
+		}
+
+		if (!Double.isNaN(peakWidth) && peakWidth > 1) {
+			peakHeight /= peakWidth;
 		}
 
 		xMatch += sx - left - trimLeft;
 		yMatch += sy - top - trimTop;
-		refreshMatchImage(target, xMatch, yMatch);
-		return new TPoint(xMatch + dx, yMatch + dy);
-	}
-
-	/**
-	 * Gets the template location at which the best match occurs in a rectangle and
-	 * along a line. May return null.
-	 *
-	 * @param target     the image to search
-	 * @param searchRect the rectangle to search within the target image
-	 * @param x0         the x-component of a point on the line
-	 * @param y0         the y-component of a point on the line
-	 * @param theta      the angle of the line
-	 * @param spread     the spread of the line (line width = 1+2*spread)
-	 * @return the optimized template location of the best match, if any
-	 */
-	public TPoint getMatchLocation(BufferedImage target, Rectangle searchRect, double x0, double y0, double theta,
-			int spread) {
-		wTarget = target.getWidth();
-		hTarget = target.getHeight();
-		// determine insets needed to accommodate template
-		int left = wTemplate / 2;
-		int right = left + (wTemplate % 2);
-		int top = hTemplate / 2;
-		int bottom = top + (hTemplate % 2);
-
-		// trim search rectangle if necessary
-		int sx = searchRect.x = Math.max(left, Math.min(wTarget - right, searchRect.x));
-		int sy = searchRect.y = Math.max(top, Math.min(hTarget - bottom, searchRect.y));
-		int sw = searchRect.width = Math.min(wTarget - sx - right, searchRect.width);
-		int sh = searchRect.height = Math.min(hTarget - sy - bottom, searchRect.height);
-		if (sw <= 0 || sh <= 0) { // not able to search
-			peakHeight = Double.NaN;
-			peakWidth = Double.NaN;
-			return null;
-		}
-		// set up test pixels to search (rectangle plus template)
-		int xMin = Math.max(0, sx - left);
-		int xMax = Math.min(wTarget, sx + sw + right);
-		int yMin = Math.max(0, sy - top);
-		int yMax = Math.min(hTarget, sy + sh + bottom);
-		wTest = xMax - xMin;
-		hTest = yMax - yMin;
-		target = ensureType(target, wTarget, hTarget, BufferedImage.TYPE_INT_RGB);
-		targetPixels = getPixels(target);
-		//new int[wTest * hTest];
-		//target.getRaster().getDataElements(xMin, yMin, wTest, hTest, targetPixels);
-		// get the points to search along the line
-		int[][] searchPts = getSearchPoints(searchRect, x0, y0, theta);
-		if (searchPts == null) { // not able to search
-			peakHeight = Double.NaN;
-			peakWidth = -1;
-			return null;
-		}
-		// collect differences in a map as they are measured
-		double[] diffs = new double[searchPts.length];
-		// find the point with the minimum difference from template
-		double matchDiff = largeNumber; // larger than typical differences
-		int xMatch = 0, yMatch = 0;
-		double avgDiff = 0;
-		int[] matchPt = null;
-		int matchIndex = -1;
-		for (int i = searchPts.length; --i >= 0;) {
-			int[] pt = searchPts[i];
-			int x = pt[0];
-			int y = pt[1];
-			double diff = getDifferenceAtTestPoint(x, y);
-			diffs[i] = diff;
-			avgDiff += diff;
-			if (diff < matchDiff) {
-				matchDiff = diff;
-				xMatch = x;
-				yMatch = y;
-				matchPt = pt;
-				matchIndex = i;
-			}
-		}
-		avgDiff /= searchPts.length;
-		peakHeight = avgDiff / matchDiff - 1;
-		peakWidth = Double.NaN;
-		double dl = 0;
-
-		// if match is not exact, fit a Gaussian and find peak
-		if (matchPt != null && !Double.isInfinite(peakHeight) && matchIndex > 0 && matchIndex < searchPts.length - 1) {
-			// fill data arrays
-			int[] pt = searchPts[matchIndex - 1];
-			double diff = diffs[matchIndex - 1];
-			int dx;
-			xValues[0] = -Math.sqrt((dx = pt[0] - matchPt[0]) * dx + (dx = pt[1] - matchPt[1]) * dx);
-			yValues[0] = avgDiff / diff - 1;
-			xValues[1] = 0;
-			yValues[1] = peakHeight;
-			pt = searchPts[matchIndex + 1];
-			diff = diffs[matchIndex + 1];
-			xValues[2] = Math.sqrt((dx = pt[0] - matchPt[0]) * dx + (dx = pt[1] - matchPt[1]) * dx);
-			yValues[2] = avgDiff / diff - 1;
-
-			// determine approximate offset (dl) and width (w) values
-			double pull = -xValues[0] / (yValues[1] - yValues[0]);
-			double push = xValues[2] / (yValues[1] - yValues[2]);
-			if (Double.isNaN(pull))
-				pull = LARGE_NUMBER;
-			if (Double.isNaN(push))
-				push = LARGE_NUMBER;
-			dl = 0.3 * (xValues[2] - xValues[0]) * (push - pull) / (push + pull);
-			double ratio = dl > 0 ? peakHeight / yValues[0] : peakHeight / yValues[2];
-			double w = dl > 0 ? dl - xValues[0] : dl - xValues[2];
-			w = w * w / Math.log(ratio);
-
-			// set parameters and fit to x data
-			dataset.clear();
-			dataset.append(xValues, yValues);
-			double rmsDev = 1;
-			for (int k = 0; k < 3; k++) {
-				double c = k == 0 ? w : k == 1 ? w / 3 : w * 3;
-				f.setParameterValue(0, peakHeight);
-				f.setParameterValue(1, dl);
-				f.setParameterValue(2, c);
-				rmsDev = fitter.fit(f);
-				if (rmsDev < 0.01) { // fitter succeeded (3-point fit should be exact)
-					dl = f.getParameterValue(1);
-					peakWidth = f.getParameterValue(2);
-					break;
-				}
-			}
-		}
-		double dx = dl * Math.cos(theta);
-		double dy = dl * Math.sin(theta);
-		xMatch = xMatch + sx - left - trimLeft;
-		yMatch = yMatch + sy - top - trimTop;
 		refreshMatchImage(target, xMatch, yMatch);
 		return new TPoint(xMatch + dx, yMatch + dy);
 	}
@@ -728,14 +547,14 @@ public class TemplateMatcher {
 	}
 
 	/**
-	 * Gets the total difference between the template and test pixels at a specified
-	 * test point. The test point is the point on the test image where the top left
-	 * corner of the template is located.
+	 * Gets the total RGB difference squared between the template and test pixels
+	 * at a specified test point. The test point is the point on the test image
+	 * where the top left corner of the template is located.
 	 * 
 	 * @param x the test point x-component
 	 * @param y the test point y-component
 	 */
-	private double getDifferenceAtTestPoint(int x, int y) {
+	private double getRGBDiffSquaredAtTestPoint(int x, int y) {
 		// for each pixel in template, get difference from corresponding test pixel
 		// return sum of these differences
 		double diff = 0;
@@ -759,16 +578,17 @@ public class TemplateMatcher {
 	}
 
 	/**
-	 * Gets a list of Point2D objects that lie within pixels in a rectangle and
+	 * Gets an array of points [x, y] that lie within pixels in a rectangle and
 	 * along a line.
 	 * 
 	 * @param searchRect the rectangle
 	 * @param x0         the x-component of a point on the line
 	 * @param y0         the y-component of a point on the line
 	 * @param theta      the angle of the line
-	 * @return a list of Point2D
+	 * @param lineSpread ignored, not yet implemented
+	 * @return array of search points [x, y] 
 	 */
-	private int[][] getSearchPoints(Rectangle searchRect, double x0, double y0, double theta) {
+	public int[][] getSearchPoints(Rectangle searchRect, double x0, double y0, double theta, int lineSpread) {
 		int sx = searchRect.x;
 		int sy = searchRect.y;
 		int sh = searchRect.height;
@@ -864,7 +684,7 @@ public class TemplateMatcher {
 			if (getDistanceAndPointAtY(line, y, uxy))
 				intersections.put(uxy[0], new double[] { uxy[1], uxy[2] });
 		}
-		// create array of search points that are midway between intersections
+		// create array of search points [x, y] that are midway between intersections
 
 		int[][] pts = new int[intersections.size() - 1][2];
 		int i = -1;
