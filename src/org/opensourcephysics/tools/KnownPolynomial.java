@@ -23,7 +23,7 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
 		super(xdata, ydata, degree);
 	}
 
-	KnownPolynomial(double[] coeffs) {
+	public KnownPolynomial(double[] coeffs) {
 		super(coeffs);
 	}
 
