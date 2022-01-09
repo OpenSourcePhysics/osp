@@ -13,6 +13,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -31,6 +32,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EventObject;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -63,6 +65,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -123,19 +126,22 @@ public class DatasetCurveFitter extends JPanel {
 		defaultFits.add(f);
 
 		f = new UserFunction("Exponential"); //$NON-NLS-1$
-		f.setParameters(new String[] { "A", "B" }, //$NON-NLS-1$ //$NON-NLS-2$
-				new double[] { 1, 1 }, new String[] { ToolsRes.getString("Function.Parameter.Intercept.Description"), //$NON-NLS-1$
-						ToolsRes.getString("Function.Parameter.ExponentialMultiplier.Description") }); //$NON-NLS-1$
-		f.setExpression("A*exp(-x*B)", new String[] { "x" }); //$NON-NLS-1$ //$NON-NLS-2$
+		f.setParameters(new String[] { "A", "B", "C" }, //$NON-NLS-1$ //$NON-NLS-2$
+				new double[] { 1, -1, 0 }, new String[] { 
+						ToolsRes.getString("Function.Parameter.Intercept.Description"), //$NON-NLS-1$
+						ToolsRes.getString("Function.Parameter.ExponentialMultiplier.Description"), //$NON-NLS-1$
+						ToolsRes.getString("Function.Parameter.Offset.Description") }); //$NON-NLS-1$
+		f.setExpression("A*exp(B*x) + C", new String[] { "x" }); //$NON-NLS-1$ //$NON-NLS-2$
 		f.setDescription(ToolsRes.getString("Function.Exponential.Description")); //$NON-NLS-1$
 		defaultFits.add(f);
 
 		f = new UserFunction("Sinusoid"); //$NON-NLS-1$
-		f.setParameters(new String[] { "A", "B", "C" }, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				new double[] { 1, 1, 0 }, new String[] { ToolsRes.getString("Function.Parameter.Amplitude.Description"), //$NON-NLS-1$
+		f.setParameters(new String[] { "A", "B", "C", "D" }, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				new double[] { 1, 1, 0, 0 }, new String[] { ToolsRes.getString("Function.Parameter.Amplitude.Description"), //$NON-NLS-1$
 						ToolsRes.getString("Function.Parameter.Omega.Description"), //$NON-NLS-1$
-						ToolsRes.getString("Function.Parameter.Phase.Description") }); //$NON-NLS-1$
-		f.setExpression("A*sin(B*x+C)", new String[] { "x" }); //$NON-NLS-1$ //$NON-NLS-2$
+						ToolsRes.getString("Function.Parameter.Phase.Description"), //$NON-NLS-1$
+						ToolsRes.getString("Function.Parameter.Offset.Description") }); //$NON-NLS-1$
+		f.setExpression("A*sin(B*x+C)+D", new String[] { "x" }); //$NON-NLS-1$ //$NON-NLS-2$
 		f.setDescription(ToolsRes.getString("Function.Sinusoid.Description")); //$NON-NLS-1$
 		defaultFits.add(f);
 	}
@@ -149,7 +155,7 @@ public class DatasetCurveFitter extends JPanel {
 
 	KnownFunction fit; // the function to fit to the data
 	double sigma_y_squared = 1; // an estimate of the SD in the y deviations from the fit
-	UserFunction testFunction;
+	ArrayList<UserFunction> testFunctions = new ArrayList<UserFunction>();;
 	/** fitMap maps localized names to all available fits */
 	Color color = Color.MAGENTA;
 	ParamTableModel paramModel;
@@ -161,6 +167,7 @@ public class DatasetCurveFitter extends JPanel {
 	private LevenbergMarquardt levmar = new LevenbergMarquardt();
 	private UncertainFunctionDrawer drawer;
 	private Map<String, KnownFunction> fitMap = new TreeMap<String, KnownFunction>();
+	private Map<KnownFunction, boolean[]> fixedParams = new HashMap<KnownFunction, boolean[]>();
 
 	int fitNumber = 1;
 	boolean refreshing = false;
@@ -238,7 +245,6 @@ public class DatasetCurveFitter extends JPanel {
 		createGUI();
 		fitBuilder.removePropertyChangeListener(fitListener);
 		fitBuilder.addPropertyChangeListener(fitListener);
-		testFunction = new UserFunction("test");
 //    fit(fit);
 	}
 
@@ -325,6 +331,11 @@ public class DatasetCurveFitter extends JPanel {
 			fit(fit);
 		}
 	}
+	
+	public void fitFromScratch() {
+		fixedParams.put(fit, null); // forces unfixing all and resetting parameters from scratch
+		fit(fit);
+	}
 
 	/**
 	 * Fits a fit function to the current data.
@@ -353,75 +364,130 @@ public class DatasetCurveFitter extends JPanel {
 			rmsField.setForeground(Color.RED);
 			return Double.NaN;
 		}
-		autofitCheckBox.setEnabled(true);
-		paramTable.setEnabled(true);
-
+		
+		double devSq = 0;
 		double[] x = dataset.getValidXPoints();
 		double[] y = dataset.getValidYPoints();
 		
-//		if (fit != testFunction)
-//			scan(fit, x, y);
 		
-		double devSq = 0;
-		double[] prevParams = null;
-		// get deviation before fitting
-		double prevDevSq = getDevSquared(fit, x, y);
-		// autofit if checkbox is selected
-		if (autofit && !Double.isNaN(prevDevSq)) {
-			if (fit instanceof KnownPolynomial) {
-				KnownPolynomial poly = (KnownPolynomial) fit;
-				poly.fitData(x, y);
-			} else if (fit instanceof UserFunction) {
-				// use HessianMinimize to autofit user function
-				UserFunction f = (UserFunction) fit;
-				double[] params = new double[f.getParameterCount()];
-				// can't autofit if no parameters or data length < parameter count
-				if (params.length > 0 && params.length <= x.length && params.length <= y.length) {
-					MinimizeUserFunction minFunc = new MinimizeUserFunction(f, x, y);
-					prevParams = new double[params.length];
-					for (int i = 0; i < params.length; i++) {
-						params[i] = prevParams[i] = f.getParameterValue(i);
-					}
-					double tol = 1.0E-6;
-					int iterations = 20;
-					hessian.minimize(minFunc, params, iterations, tol);
-					// get deviation after minimizing
-					devSq = getDevSquared(fit, x, y);
-					// restore parameters and try Levenberg-Marquardt if Hessian fit is worse
-					boolean success = true;
-					if (devSq > prevDevSq) {
-						for (int i = 0; i < prevParams.length; i++) {
-							f.setParameterValue(i, prevParams[i]);
-						}
-						success = levmar.minimize(minFunc, params, iterations, tol);
-						// get deviation after minimizing
-						devSq = getDevSquared(fit, x, y);
-					}
-					// restore parameters and deviation if new fit is worse
-					if (!success || devSq > prevDevSq) {
-						for (int i = 0; i < prevParams.length; i++) {
-							f.setParameterValue(i, prevParams[i]);
-						}
-						devSq = prevDevSq;
-						setAutoFit(false);
-            Toolkit.getDefaultToolkit().beep();
-					}
+		autofitCheckBox.setEnabled(true);
+		paramTable.setEnabled(true);
+		
+		if (!testFunctions.contains(fit) && fixedParams.get(fit) == null) {
+			// this is a top level function seen for the first time
+			fixedParams.put(fit, new boolean[fit.getParameterCount()]);
+			double[] stab = getScratchParams(fit, x, y);
+			if (stab != null) {
+				for (int i = 0; i < stab.length; i++) {
+					fit.setParameterValue(i, stab[i]);
 				}
 			}
-			if (fit != testFunction) {
-				if (autofit) {
-					double[][] sigmas = getUncertainties(fit, x, y);
-					setUncertainties(sigmas);
-				}
-				else {
-					setUncertainties(null);
-				}
-				tab.refreshPlot();
-			}
-
-			drawer.functionChanged = true;
-			paramTable.repaint();
 		}
+		boolean[] fix = fixedParams.get(fit);
+		KnownFunction testFit = getTestFunction(fit, fix);
+		
+		// see if all parameters are fixed--no fitting possible!
+		boolean nothingToTest = (fix != null);
+		if (fix != null) {
+			for (int i = 0; i < fix.length; i++) {
+				nothingToTest = nothingToTest && fix[i];
+			}
+		}
+		
+		if (nothingToTest) {
+			setUncertainties(null);
+			tab.refreshPlot();
+			drawer.functionChanged = true;
+			paramTable.repaint();		
+		}		
+		else {
+	//		if (fit != testFunction)
+	//			scan(fit, x, y);
+			
+			double[] prevParams = null;
+			// get deviation before fitting
+			double prevDevSq = getDevSquared(fit, x, y);
+			// autofit if checkbox is selected
+			if (autofit && !Double.isNaN(prevDevSq)) {
+				// if any parameters are fixed
+				if (testFit instanceof KnownPolynomial) {
+					KnownPolynomial poly = (KnownPolynomial) testFit;
+					poly.fitData(x, y);
+				} else if (testFit instanceof UserFunction) {
+					// use HessianMinimize to autofit user function
+					UserFunction f = (UserFunction) testFit;
+					double[] params = new double[f.getParameterCount()];
+					// can't autofit if no parameters or data length < parameter count
+					if (params.length > 0 && params.length <= x.length && params.length <= y.length) {
+						MinimizeUserFunction minFunc = new MinimizeUserFunction(f, x, y);
+						prevParams = new double[params.length];
+						for (int i = 0; i < params.length; i++) {
+							params[i] = prevParams[i] = f.getParameterValue(i);
+						}
+						double tol = 1.0E-6;
+						int iterations = 20;
+						hessian.minimize(minFunc, params, iterations, tol);
+						// get deviation after minimizing
+						devSq = getDevSquared(testFit, x, y);
+						// restore parameters and try Levenberg-Marquardt if Hessian fit is worse
+						boolean success = true;
+						if (devSq > prevDevSq) {
+							for (int i = 0; i < prevParams.length; i++) {
+								f.setParameterValue(i, prevParams[i]);
+							}
+							success = levmar.minimize(minFunc, params, iterations, tol);
+							// get deviation after minimizing
+							devSq = getDevSquared(testFit, x, y);
+						}
+						if (!success) {
+						}
+						// restore parameters and deviation if new fit is worse
+						if (!success || devSq > prevDevSq) {
+							double[] stab = getScratchParams(f, x, y);
+							if (stab != null) {
+								for (int i = 0; i < stab.length; i++) {
+									f.setParameterValue(i, stab[i]);
+								}
+							}
+//							for (int i = 0; i < prevParams.length; i++) {
+//								f.setParameterValue(i, prevParams[i]);
+//							}
+							devSq = prevDevSq;
+							setAutoFit(false);
+	            Toolkit.getDefaultToolkit().beep();
+						}
+					}
+				}
+				if (!testFunctions.contains(fit)) {
+					// fit is the top-level function, not a test
+					if (autofit) {
+						double[][] sigmas = getUncertainties(fit, testFit, x, y);
+						setUncertainties(sigmas);
+					}
+					else {
+						setUncertainties(null);
+					}
+					if (tab != null)
+						tab.refreshPlot();
+				}
+	
+				drawer.functionChanged = true;
+				paramTable.repaint();
+			}
+			// set the parameter values of original fit to those of testFit
+			if (fit != testFit) {
+				for (int i = 0; i < fit.getParameterCount(); i++) {
+					String next = fit.getParameterName(i);
+					for (int j = 0; j < testFit.getParameterCount(); j++) {
+						if (testFit.getParameterName(j).equals(next)) {
+							fit.setParameterValue(i, testFit.getParameterValue(j));
+						}
+					}
+				}
+			}
+			
+		} // end of fitting
+		
 		doLinearRegression(x, y);
 //		doLinearRegression(x, y, false);
 		if (devSq == 0) {
@@ -442,7 +508,7 @@ public class DatasetCurveFitter extends JPanel {
 		}
 		refreshStatusBar();
 		firePropertyChange(PROPERTY_DATASETCURVEFITTER_FIT, null, null);
-		if (tab.areaVisible && tab.measureFit)
+		if (tab != null && tab.areaVisible && tab.measureFit)
 			tab.plot.refreshArea();
 		return rmsDev;
 	}
@@ -492,41 +558,39 @@ public class DatasetCurveFitter extends JPanel {
 	}
 
 	/**
-	 * Returns the format for a parameter uncertainty. These are used to get 
-	 * identically formatted values for both the parameter and its uncertainty.
+	 * Returns two strings describing a parameter and its uncertainty.
+	 * One for display, other with more sig figs for tooltip
 	 *
-	 * @param paramIndex the parameter index
+	 * @param value the parameter value
+	 * @param sigma the uncertainty (may be null)
 	 * @return the format values {decimal places, format} or null if uncert unknown or zero
 	 */
-	public int[] getUncertaintyFormat(int paramIndex) {
-		double uncertainty = getUncertainty(paramIndex);
-		if (Double.isNaN(uncertainty) || uncertainty == 0) {
+	public String[] formatUncertainParameter(double value, double sigma, int extraPlaces, NumberFormat format) {
+		if (Double.isNaN(sigma) || sigma <= 0) {
 			return null;
 		}
-		int[] format = new int[2];
-		double log10 = Math.log10(Math.abs(uncertainty));
-	  int exp = (int) Math.floor(log10);	
-	  format[0] = exp==1? 0: exp == -1? 2: 1;
-	  format[1] = exp==1? 0: exp==-1? 0: exp;
-		return format;
+		
+	  int exp = value == 0? 0: (int) Math.floor(Math.log10(Math.abs(value)));
+	  int expSig = sigma == 0? 0: (int) Math.floor(Math.log10(Math.abs(sigma)));
+	  if (expSig > exp)
+	  	exp = expSig;
+	  int shift = exp - expSig;
+	  double multiplier = Math.pow(10, -exp);
+	  int places = Math.max(0, shift) + extraPlaces;
+	  
+	  String val = String.format("%." + places + "f", value*multiplier);
+	  String sig = String.format("%." + places + "f", sigma*multiplier);
+		String formatted = val + " \u00B1 " + sig;
+		if (exp != 0)
+			formatted = "(" + formatted +") " + String.format("E%d", exp);
+		
+		val = format.format(value);
+		sig = format.format(sigma);
+		String tooltip = val + " \u00B1 " + sig;
+		
+		return new String[] {formatted, tooltip};
 	}
 	
-	/**
-	 * Returns a value as a string with specified format.
-	 *
-	 * @param val the value
-	 * @param format {decimal places, exponent}
-	 * @return the formatted value
-	 */
-	public String format(double val, int[] format) {
-		if (format[1] == 0)
-		  return String.format("%." + format[0] + "f", val);
-	  val /= Math.pow(10, format[1]);
-	  return String.format("%." + format[0] + "fE%d", val, format[1]);
-	}
-	
-
-
 	/**
 	 * Gets a fit function by name.
 	 * 
@@ -1090,9 +1154,18 @@ public class DatasetCurveFitter extends JPanel {
 			if (fitBuilder.isVisible()) {
 				fitBuilder.setSelectedPanel(fit.getName());
 			}
+			paramTable.getColumnModel().getColumn(1).setMaxWidth(getMinCheckboxColumnWidth() + 10);
+			
 			revalidate();
 		}
 		setActiveAndFit(true);
+	}
+	
+	private int getMinCheckboxColumnWidth() {
+		String s = ToolsRes.getString("DatasetCurveFitter.Table.Heading.FixedParam");
+		Font font = paramTable.getTableHeader().getFont();
+		FontMetrics fm = paramTable.getTableHeader().getFontMetrics(font);
+		return SwingUtilities.computeStringWidth(fm, s);
 	}
 
 	protected UserFunction createClone(KnownFunction f, String name) {
@@ -1191,39 +1264,58 @@ public class DatasetCurveFitter extends JPanel {
 	
 	/**
 	 * Gets uncertainties in the parameters of a function.
-	 * The function's parameters must have best fit values.
-	 * @param f a KnownFunction
+	 * The fitted function's parameters must have best fit values.
+	 * @param original the original fit function with all parameters
+	 * @param fitted the function to determine uncertainties
 	 * @param x the x data
 	 * @param y the y data
 	 * 
 	 * @return double[][] {{param uncertainties}, {fit params 1}, {fit params 2}, ...}
 	 */
-	private double[][] getUncertainties(KnownFunction f, double[] x, double[] y) {
+	private double[][] getUncertainties(KnownFunction original, KnownFunction fitted, double[] x, double[] y) {
 		// calibrate (set sigma_y_squared) and get min chi squared (= x.length-f.paramCount)
-		int paramCount = f.getParameterCount();
-		if (paramCount == 0 || x.length - paramCount <= 0)
+		int fitCount = fitted.getParameterCount();
+		if (fitCount == 0 || x.length - fitCount <= 0)
 			return null;
 		
-		double minChiSquared = calibrateChiSquared(f, x, y);
-		
+		double minChiSquared = calibrateChiSquared(fitted, x, y);
+				
+		int paramCount = original.getParameterCount();
 		double[] params = new double[paramCount];
 		String[] paramNames = new String[paramCount];
 		for (int i = 0; i < paramCount; i++) {
-			params[i] = f.getParameterValue(i);
-			paramNames[i] = f.getParameterName(i);
+			params[i] = original.getParameterValue(i);
+			paramNames[i] = original.getParameterName(i);
+		}
+		
+		int[] fittedParamIndex = new int[paramCount];
+		for (int i = 0; i < paramCount; i++) {
+			fittedParamIndex[i] = -1; // unknown
+			String name = original.getParameterName(i);
+			for (int k = 0; k < fitCount; k++) {
+				if (fitted.getParameterName(k).equals(name)) {
+					fittedParamIndex[i] = k;
+				}
+			}
 		}
 		
 		ArrayList<double[]> results = new ArrayList<double[]>();
 		
-		// for each parameter, measure curvature of chi squared to get sigma
-		double[] sigmas = new double[paramCount];
-    
+		// for each parameter in fitted function, measure curvature of chi squared to get sigma
+		double[] sigmas = new double[paramCount];    
     for (int i = 0; i < paramCount; i++) {
-    	double delta = (Math.abs(params[i])+1.0)/1e5; //step sizes for the finite differences
+    	
+    	if (fittedParamIndex[i] < 0) {
+    		sigmas[i] = Double.NaN;
+    		continue;
+    	}
+    	
+    	String paramName = fitted.getParameterName(fittedParamIndex[i]);
+    	double val = fitted.getParameterValue(fittedParamIndex[i]);
+    	double delta = (Math.abs(val)+1.0)/1e5; //step sizes for the finite differences
     	double chiSq = 0; // sum of both shifted-parameter chi squared values
     	double twiceDeltaChiSq = 0;
 			double[][] testParams = new double[2][];
-			String fixedParamName = paramNames[i];
 			int tries = 0;
     	while ((twiceDeltaChiSq < 0.001 || twiceDeltaChiSq > 2) && tries < 10) {
     		// adjust delta if needed
@@ -1233,9 +1325,9 @@ public class DatasetCurveFitter extends JPanel {
     			delta /= 10;
     		chiSq = 0;
 	    	for (int j = 0; j < 2; j++) {
-		     	double paramVal = j == 0? params[i] - delta: params[i] + delta;
+		     	double paramVal = j == 0? val - delta: val + delta;
 					// get test function with a fixed parameter
-					UserFunction test = getTestFunction(f, fixedParamName, paramVal);
+					UserFunction test = getTestFunction(fitted, paramName, paramVal);
 					if (test == null)
 						break;
 					// fit the test function to minimize its chi squared
@@ -1252,21 +1344,28 @@ public class DatasetCurveFitter extends JPanel {
     		
     		// offset fixed parameter by +/- sigma and save test parameters for drawer
 	    	for (int j = 0; j < 2; j++) {
-		     	double paramVal = j == 0? params[i] - sigmas[i]: params[i] + sigmas[i];
-					// get test function with the fixed parameter
-					UserFunction test = getTestFunction(f, fixedParamName, paramVal);
+		     	double paramVal = j == 0? val - sigmas[i]: val + sigmas[i];
+					// get test function from fitted function with fixed parameter
+					UserFunction test = getTestFunction(fitted, paramName, paramVal);
 					// fit the test function to minimize its chi squared
 					fit(test);
 					// save array of test fit parameters for drawer
 					testParams[j] = new double[paramCount];
-			    int testParamNum = 0;
 					for (int k = 0; k < paramCount; k++) {
-			    	if (f.getParameterName(k).equals(fixedParamName)) {
+						String next = original.getParameterName(k);
+			    	if (next.equals(paramName)) {
 			    		testParams[j][k] = paramVal;
+			    		continue;
 			    	}
-			    	else if (f.getParameterName(k).equals(test.getParameterName(testParamNum))) {			    		
-			    		testParams[j][k] = test.getParameterValue(testParamNum++);
-			    	}
+			    	
+			    	for (int m = 0; m < test.getParameterCount(); m++) {
+			    		String testName = test.getParameterName(m);
+			    		if (next.equals(testName)) {			    		
+				    		testParams[j][k] = test.getParameterValue(m);
+				    		continue;
+				    	}			    			
+		    		}
+			    	testParams[j][k] = original.getParameterValue(k);
 					}
 					results.add(testParams[j]);
 	    	}
@@ -1297,8 +1396,6 @@ public class DatasetCurveFitter extends JPanel {
 			paramNames[i] = f.getParameterName(i);
 		}
 		
-		ArrayList<double[]> results = new ArrayList<double[]>();
-		
     double ymin=0, ymax=0;
     for (int i = 0; i < y.length; i++) {
     	ymin = Math.min(ymin, y[i]);
@@ -1314,8 +1411,7 @@ public class DatasetCurveFitter extends JPanel {
 			UserFunction test = getTestFunction(f, fixedParamName, f.getParameterValue(i));
 			// scan test parameters
 			for (int k = 0; k < test.getParameterCount(); k++) {
-				best[i][k] = scan(test, 0, k, delta, x, y); // pig not right
-				System.out.println("pig best for "+i+" and "+k+ " = "+best[i][k]);
+				best[i][k] = scan(test, 0, k, delta, x, y); // not right
 			}
   	}
     for (int i = 0; i < paramCount; i++) {
@@ -1326,8 +1422,7 @@ public class DatasetCurveFitter extends JPanel {
 			String fixedParamName = paramNames[i];
 			UserFunction test = getTestFunction(f, fixedParamName, best[i][0]);
 			for (int k = 0; k < test.getParameterCount(); k++) {
-				best[i][k] = scan(test, best[i][k], k, delta, x, y); // pig not right
-				System.out.println("pig2 best for "+i+" and "+k+ " = "+best[i][k]);
+				best[i][k] = scan(test, best[i][k], k, delta, x, y); // not right
 			}
   	}
     
@@ -1337,7 +1432,6 @@ public class DatasetCurveFitter extends JPanel {
 	private double scan(UserFunction test, double paramValue, int paramIndex, 
 			double delta, double[] x, double[] y) {
 		double chiSq0 = getChiSquared(test, x, y);
-		System.out.println("pig initial chisq "+chiSq0 +" for function "+test);
 		int best = 0;
   	for (int k = -10; k < 11; k++) {
   		if (k==0) continue;
@@ -1348,7 +1442,6 @@ public class DatasetCurveFitter extends JPanel {
 			fit(test);
 			// get chi squared of test function
 			double chiSq = getChiSquared(test, x, y);
-			System.out.println("pig chisq for "+paramIndex+" at "+paramVal+ " = "+chiSq+"  for "+test);
 			if (chiSq < chiSq0) {
 				best = k;
 				chiSq0 = chiSq;
@@ -1359,6 +1452,96 @@ public class DatasetCurveFitter extends JPanel {
   	return paramValue + best * delta;
 	}
 	
+	private double[] getScratchParams(KnownFunction f, double[] x, double[] y) {
+		double[] params = new double[f.getParameterCount()];
+		if (params.length == 0 || x == null || x.length < params.length)
+			return null;
+		
+		double xmax = -Double.MAX_VALUE,  ymax = -Double.MAX_VALUE;
+		double xmin = Double.MAX_VALUE,  ymin = Double.MAX_VALUE;		
+		for (int i = 0; i < x.length; i++) {
+			xmax = Math.max(x[i], xmax);
+			xmin = Math.min(x[i], xmin);
+			ymax = Math.max(y[i], ymax);
+			ymin = Math.min(y[i], ymin);
+		}
+
+		String exp = f.getExpression("x");
+		String name = f.getName();
+		if (name.contains("Sinusoid")) {
+			// A * sin(B*x + C) + D
+			// guess vertical offset D and amplitude A from data range
+			if (exp.contains("+D"))  // distinguish from damped sine
+				params[3] = (ymin + ymax) /2; // offset D
+			params[0] = (ymax - ymin) / 2; // amplitude A
+			int crossings = 0;
+			double firstCrossing = Double.MAX_VALUE, lastCrossing = Double.MAX_VALUE;
+			double prevX = Double.MAX_VALUE, prevY = Double.MAX_VALUE;
+			// count zero crossings and measure first crossing
+			boolean posSlope = true;
+			for (int i = 0; i < x.length; i++) {
+				double yshifted = y[i] - params[3];
+				if (i==0) {
+					prevX = x[i];
+					prevY = yshifted;
+				}
+				boolean crossed = prevY > 0? yshifted <= 0: yshifted > 0;
+				if (crossed) {
+					crossings++;
+					// save crossing position
+					lastCrossing = x[i] - (yshifted / (yshifted - prevY)) * (x[i] - prevX);
+					if (crossings ==1) {
+						firstCrossing = lastCrossing;
+						posSlope = yshifted > 0;
+					}
+				}
+				prevX = x[i];
+				prevY = yshifted;
+			}
+			boolean success = firstCrossing != Double.MAX_VALUE;
+			
+			if (crossings > 1)
+				params[1] = Math.PI * (crossings-1) / (lastCrossing - firstCrossing);
+			else {
+				params[1] = Math.PI * Math.max(1,crossings) / (xmax - xmin);
+			}
+			
+			double phaseToFirstCrossing = success? params[1] * firstCrossing: 0;
+			params[2] = posSlope? - phaseToFirstCrossing: Math.PI - phaseToFirstCrossing;
+			return params;
+		}
+		else if (name.equals("Exponential")) {
+			// y = A * exp(B*x) + C, must have at least 3 data points
+			// note this assumes data range x is monotonic increase
+			// find three x-points equally spaced across range
+			double range = (x[x.length - 1] - x[0]);
+			int mid = (x.length - 1) / 2;
+			while (x[mid] - x[0] < range/2 && mid < x.length-1)
+				mid++;
+			while (x[mid] - x[0] > range/2 && mid > 0)
+				mid--;
+			int tail = Math.min(x.length-1, 2*mid);
+			while (x[tail] - x[0] < 2 * (x[mid] - x[0]) && tail < x.length-1)
+				tail++;
+			while (x[tail] - x[0] > 2 * (x[mid] - x[0]) && tail > 0)
+				tail--;
+			
+			params[2] = (y[mid] * y[mid] - y[0] * y[tail]) / (2 * y[mid] - y[0] - y[tail]);
+			params[1] = Math.log((y[tail] - params[2]) / (y[0] - params[2])) / (x[tail] - x[0]);
+			params[0] = (y[mid] - params[2]) / Math.exp(params[1] * x[mid]);
+			
+		}
+		return null;
+	}
+	
+	private UserFunction getTestFunction(int level) {
+		while (testFunctions.size() <= level) {
+			UserFunction test = new UserFunction("Test");
+			testFunctions.add(test);
+		}
+		return testFunctions.get(level);		
+	}
+	
 	/**
 	 * Gets a test function that mimics an input function but fixes one of the parameters.
 	 * @param f a KnownFunction
@@ -1367,9 +1550,19 @@ public class DatasetCurveFitter extends JPanel {
 	 * @return the test function
 	 */
 	private UserFunction getTestFunction(KnownFunction f, String paramName, double paramVal) {
+		
+		int level = 0;
+		for (int i = 0; i < testFunctions.size(); i++) {
+			if (testFunctions.get(i) == f) {
+				level = i + 1;
+				break;
+			}
+		}
+		UserFunction testFunction = getTestFunction(level);
+		
     // set up parameters
 		int len = f.getParameterCount();
-		if (len < 2) 
+		if (len < 1) 
 			return null;
     String[] paramNames = new String[len - 1];
     double[] paramValues = new double[len - 1];
@@ -1391,6 +1584,26 @@ public class DatasetCurveFitter extends JPanel {
   	testFunction.setParameters(paramNames, paramValues, desc);
     testFunction.setExpression(expression, new String[] {"x"}); //$NON-NLS-1$ //$NON-NLS-2$
     return testFunction;
+	}
+
+	/**
+	 * Gets a test function that mimics an input function but fixes some parameters.
+	 * @param f a KnownFunction
+	 * @param fixedParams boolean[] of fixed indices, may be null
+	 * @return the test function
+	 */
+	private KnownFunction getTestFunction(KnownFunction f, boolean[] fixedParams) {
+		if (fixedParams == null)
+			return f;
+		KnownFunction test = f;
+		for (int i = 0; i < fixedParams.length; i++) {
+			if (!fixedParams[i])
+				continue;
+			String paramName = f.getParameterName(i);
+			double paramVal = f.getParameterValue(i);
+			test = getTestFunction(test, paramName, paramVal);
+		}
+		return test;
 	}
 
 	/**
@@ -1587,14 +1800,26 @@ public class DatasetCurveFitter extends JPanel {
 
 		@Override
 		public TableCellRenderer getCellRenderer(int row, int column) {
+			if (column == 1) {
+				return getDefaultRenderer(getColumnClass(column));
+			}
 			return cellRenderer;
 		}
 
 		@Override
 		public TableCellEditor getCellEditor(int row, int column) {
-			if (Double.isNaN((Double)getValueAt(row, 1)))
+			if (column == 1) {
+				return getDefaultEditor(getColumnClass(column));
+			}
+			if (Double.isNaN((Double)getValueAt(row, 2)))
 				return null;
 			spinCellEditor.rowNumber = row;
+			
+			Timer timer = new Timer(10, (e) -> {
+				spinCellEditor.field.selectAll();					
+			});
+			timer.setRepeats(false);
+			timer.start();
 			return spinCellEditor;
 		}
 
@@ -1624,11 +1849,13 @@ public class DatasetCurveFitter extends JPanel {
 
 	/**
 	 * A class to provide model data for the parameters table.
+	 * Table columns: name, fixed checkbox, value with uncert 
 	 */
 	class ParamTableModel extends AbstractTableModel {
 		@Override
 		public String getColumnName(int col) {
 			return (col == 0) ? ToolsRes.getString("Table.Heading.Parameter") : //$NON-NLS-1$
+					(col == 1) ? ToolsRes.getString("DatasetCurveFitter.Table.Heading.FixedParam") : //$NON-NLS-1$
 					ToolsRes.getString("Table.Heading.Value"); //$NON-NLS-1$
 		}
 
@@ -1639,13 +1866,17 @@ public class DatasetCurveFitter extends JPanel {
 
 		@Override
 		public int getColumnCount() {
-			return 2;
+			return 3;
 		}
 
 		@Override
 		public Object getValueAt(int row, int col) {
 			if (col == 0) {
 				return fit.getParameterName(row);
+			}
+			else if (col == 1) {
+				boolean[] fixed = fixedParams.get(fit);
+				return fixed == null || fixed.length < row + 1? false: fixed[row];
 			}
 			
 			// if insufficient points to do fit return NaN
@@ -1655,15 +1886,31 @@ public class DatasetCurveFitter extends JPanel {
 
 			return new Double(fit.getParameterValue(row));
 		}
+		
+		@Override
+		public void setValueAt(Object value, int row, int col) {
+			if (col == 1) {
+				boolean[] fixed = fixedParams.get(fit);
+				if (fixed != null && fixed.length > row) {
+					fixed[row] = (Boolean)value;
+				}
+			}
+		}
 
 		@Override
 		public boolean isCellEditable(int row, int col) {
-			return col == 1;
+			return col > 0;
 		}
 
 		@Override
 		public Class<?> getColumnClass(int c) {
-			return getValueAt(0, c).getClass();
+			switch(c) {
+				case 0:
+					return String.class;
+				case 1:
+					return Boolean.class;
+			}
+			return Double.class;
 		}
 
 	}
@@ -1703,9 +1950,7 @@ public class DatasetCurveFitter extends JPanel {
 				int row, int col) {
 			setHorizontalAlignment(SwingConstants.LEFT);
 			setBorder(new CellBorder(new Color(240, 240, 240)));
-			String tooltip = (col == 1 ? 
-					ToolsRes.getString("DatasetCurveFitter.SE.Description") + " " : 
-					null); //$NON-NLS-1$
+			String tooltip = ""; //$NON-NLS-1$
 			if (value instanceof String) { // parameter name string
 				setFont(labelFont);
 				setBackground(isSelected ? Color.LIGHT_GRAY : lightGray);
@@ -1714,32 +1959,33 @@ public class DatasetCurveFitter extends JPanel {
 				if (col == 0) { // parameter name: tooltip is description
 					tooltip = fit.getParameterDescription(row);
 				}
-			} else { // Double value
+			} else if (value instanceof Double) { // Double value
 				setFont(fieldFont);
 				setBackground(!isApplicable() ? Color.YELLOW : isSelected ? lightBlue : Color.white);
 				setForeground(isSelected ? Color.red : table.isEnabled() ? Color.black : Color.gray);
 				DecimalFormat format = spinCellEditor.field.format;
 				format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
-				String uncert = null;
-				int[] formatting = getUncertaintyFormat(row);
+				double uncertainty = getUncertainty(row);
+				String[] uncert = formatUncertainParameter((double)value, uncertainty, 0, format);
 				if (Double.isNaN((Double)value)) {
 					tooltip = ToolsRes.getString("DatasetCurveFitter.InsufficientData.ToolTip"); //$NON-NLS-1$//$NON-NLS-2$
 				}
 				else if (!autofit) {
-					tooltip += ToolsRes.getString("DatasetCurveFitter.SE.Autofit"); //$NON-NLS-1$//$NON-NLS-2$
+					tooltip = ToolsRes.getString("DatasetCurveFitter.SE.Name") + " " +
+							ToolsRes.getString("DatasetCurveFitter.SE.Autofit"); //$NON-NLS-1$//$NON-NLS-2$
 				} 
 				else {
-					if (formatting != null) {
-						double uncertainty = getUncertainty(row);
-						uncert = "\u00B1" + format(uncertainty, formatting);
-						tooltip += uncert + " (" + ToolsRes.getString("DatasetCurveFitter.SE.Name") + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$					
+					if (uncert != null) {
+						String desc = fit.getParameterDescription(row);
+						String val = fit.getParameterName(row) + " = " + uncert[1];
+						tooltip = desc == null? val: desc + " " + val;
 					}
 					else
-						tooltip += ToolsRes.getString("DatasetCurveFitter.SE.Unknown"); //$NON-NLS-1$//$NON-NLS-2$
+						tooltip = ToolsRes.getString("DatasetCurveFitter.SE.Name") + " " +
+								ToolsRes.getString("DatasetCurveFitter.SE.Unknown"); //$NON-NLS-1$//$NON-NLS-2$
 				}
 				setText(isApplicable() ? 
-						// use same number format for value and uncertainty
-						uncert != null? format((double)value, formatting)+" "+uncert:  
+						uncert != null? uncert[0]:  
 						format.format(value):  
 						"     ---------------");
 			}
@@ -1768,7 +2014,9 @@ public class DatasetCurveFitter extends JPanel {
 			spinner.addChangeListener(new ChangeListener() {
 				@Override
 				public void stateChanged(ChangeEvent e) {
-					setAutoFit(false);
+					boolean[] fixed = fixedParams.get(fit);
+					if (!fixed[rowNumber])
+						setAutoFit(false);
 					double val = ((Double) spinner.getValue()).doubleValue();
 					field.setValue(val);
 					fit.setParameterValue(rowNumber, val);
@@ -2085,6 +2333,7 @@ public class DatasetCurveFitter extends JPanel {
 			dim.width = Math.max(dim.width, preferredWidth);
 			return dim;
 		}
+		
 	}
 
 //_______________________________ static methods _________________________________

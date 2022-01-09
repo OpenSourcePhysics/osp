@@ -200,7 +200,7 @@ public class UncertainFunctionDrawer extends FunctionDrawer {
 	public void setUncertainties(double[][] sigmasAndParams) {
 		int n = uncertainties.length;
 		if (sigmasAndParams == null || 
-				sigmasAndParams.length < 1 + 2 * n ||
+				sigmasAndParams.length < 1 ||
 				sigmasAndParams[0].length != n) {
 			uncertainParams = null;
 		}
