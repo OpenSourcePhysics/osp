@@ -6,8 +6,10 @@
  */
 
 package org.opensourcephysics.ejs.control.swing;
-import java.applet.Applet;
 import java.applet.AudioClip;
+
+import javax.swing.JApplet;
+
 import org.opensourcephysics.ejs.control.value.Value;
 
 /**
@@ -60,7 +62,7 @@ public class ControlSound extends ControlCheckBox {
       }
       String filename = prefix+_audioFile;
       java.net.URL url = new java.net.URL(filename);
-      clip = Applet.newAudioClip(url);
+      clip = JApplet.newAudioClip(url);
     } catch(Exception ex) {
       ex.printStackTrace();
       clip = null;

@@ -580,8 +580,10 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	public Dimension getImageSize(boolean withFilters) {
 		if (withFilters) {
 			BufferedImage img = getImage();
-			displayedSize.setSize(img.getWidth(), img.getHeight());
-			return displayedSize;
+			if (img != null) {
+				displayedSize.setSize(img.getWidth(), img.getHeight());
+				return displayedSize;
+			}
 		}
 		return size;
 	}

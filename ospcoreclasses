@@ -115,6 +115,7 @@ java/awt/event/WindowFocusListener.js
 java/awt/event/WindowListener.js
 java/awt/event/WindowStateListener.js
 java/awt/font/FontRenderContext.js
+java/awt/font/TextAttribute.js
 java/awt/geom/AffineTransform.js
 java/awt/geom/Dimension2D.js
 java/awt/geom/Ellipse2D.js
@@ -217,6 +218,7 @@ java/net/URL.js
 java/net/URLConnection.js
 java/net/URLStreamHandler.js
 java/net/URLStreamHandlerFactory.js
+java/net/UnknownHostException.js
 java/nio/Bits.js
 java/nio/Buffer.js
 java/nio/ByteBuffer.js
@@ -797,6 +799,9 @@ sun/awt/image/DataStealer.js
 sun/awt/image/IntegerComponentRaster.js
 sun/awt/image/IntegerInterleavedRaster.js
 sun/awt/image/SunWritableRaster.js
+sun/font/AttributeMap.js
+sun/font/AttributeValues.js
+sun/font/EAttribute.js
 sun/font/FontDesignMetrics.js
 sun/java2d/StateTrackable.js
 sun/java2d/StateTrackableDelegate.js
