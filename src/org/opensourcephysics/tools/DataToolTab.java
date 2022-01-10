@@ -218,7 +218,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	protected Action setVarAction;
 	protected boolean isInitialized = false;
 	protected Object[][] constantsLoadedFromXML;
-	protected boolean replaceColumnsWithMatchingNames = true;
+	protected boolean replaceColumnsWithMatchingNames = false;
 	protected JCheckBoxMenuItem measureFitCheckbox, originShiftCheckbox;
 	protected double prevShiftX, prevShiftY;
 	protected NumberField shiftXField, shiftYField, selectedXField, selectedYField;
