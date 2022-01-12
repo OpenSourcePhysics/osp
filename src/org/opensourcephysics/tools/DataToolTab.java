@@ -840,7 +840,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		// set dataManager name to tab name so reply will be recognized
 		dataManager.setName(getName());
 		jobManager.sendReplies(dataManager);
-		curveFitter.fitFromScratch();		
 	}
 
 	// _______________________ protected & private methods
@@ -1284,7 +1283,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				splitPanes[1].setBottomComponent(curveFitter);
 				splitPanes[1].setDividerSize(splitPanes[0].getDividerSize());
 				splitPanes[1].setDividerLocation(-1);
-				plot.addDrawable(curveFitter.getDrawer());
+				if (curveFitter.getDrawer() != null)
+					plot.addDrawable(curveFitter.getDrawer());
 //				curveFitter.setActiveAndFit(true);
 				if (e != null) {
 					curveFitter.setSelectedItem(e.getActionCommand());
@@ -3105,7 +3105,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (fitTimer != null) {
+			if (fitTimer != null && isFitterVisible()) {
 				curveFitter.fit(curveFitter.fit);
 //				plot.refreshArea();
 //				plot.refreshMeasurements();
@@ -4764,7 +4764,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 //      if (!tab.curveFitter.autofitCheckBox.isSelected()) {
 			double[] params = new double[tab.curveFitter.paramModel.getRowCount()];
 			for (int i = 0; i < params.length; i++) {
-				Double val = (Double) tab.curveFitter.paramModel.getValueAt(i, 1);
+				Double val = (Double) tab.curveFitter.paramModel.getValueAt(i, 2);
 				params[i] = val.doubleValue();
 			}
 			control.setValue("fit_parameters", params); //$NON-NLS-1$

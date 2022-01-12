@@ -89,6 +89,7 @@ import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.display.UncertainFunctionDrawer;
 import org.opensourcephysics.numerics.Function;
 import org.opensourcephysics.numerics.HessianMinimize;
+import org.opensourcephysics.numerics.LUPDecomposition;
 import org.opensourcephysics.numerics.LevenbergMarquardt;
 import org.opensourcephysics.numerics.MultiVarFunction;
 
@@ -107,6 +108,13 @@ public class DatasetCurveFitter extends JPanel {
 
 	// static fields
 	/** defaultFits are available in every instance */
+	static final String FIT_EXP = "Exponential";
+	static final String FIT_LOG = "Log";
+	static final String FIT_SIN = "Sinusoid";
+	static final String FIT_DAMPED = "DampedSine";
+	static final String FIT_GAUSS = "Gaussian";
+	static final String FIT_POWER = "Power";
+	static final String FIT_TEST = "TestFunction";
 	static ArrayList<KnownFunction> defaultFits = new ArrayList<KnownFunction>();
 	private final static Border labelBorder = BorderFactory.createEmptyBorder(0, 2, 0, 2);
 
@@ -115,35 +123,67 @@ public class DatasetCurveFitter extends JPanel {
 		defaultFits.add(new KnownPolynomial(new double[3]));
 		defaultFits.add(new KnownPolynomial(new double[4]));
 
-		UserFunction f = new UserFunction("Gaussian"); //$NON-NLS-1$
+		UserFunction f = new UserFunction(FIT_GAUSS); //$NON-NLS-1$
 		f.setParameters(new String[] { "A", "B", "C" }, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				new double[] { 1, 0, 1 },
 				new String[] { ToolsRes.getString("Function.Parameter.PeakHeight.Description"), //$NON-NLS-1$
 						ToolsRes.getString("Function.Parameter.PeakPosition.Description"), //$NON-NLS-1$
-						ToolsRes.getString("Function.Parameter.GaussianRMSWidth.Description") }); //$NON-NLS-1$
-		f.setExpression("A*exp(-(x-B)^2/(2*C^2))", new String[] { "x" }); //$NON-NLS-1$ //$NON-NLS-2$
+						ToolsRes.getString("Function.Parameter.GaussianRMSWidth.Description")}); //$NON-NLS-1$
+		f.setExpression("A * exp(-(x-B)^2 / (2*C^2))", new String[] { "x" }); //$NON-NLS-1$ //$NON-NLS-2$
 		f.setDescription(ToolsRes.getString("Function.Gaussian.Description")); //$NON-NLS-1$
 		defaultFits.add(f);
 
-		f = new UserFunction("Exponential"); //$NON-NLS-1$
+		f = new UserFunction(FIT_EXP); //$NON-NLS-1$
 		f.setParameters(new String[] { "A", "B", "C" }, //$NON-NLS-1$ //$NON-NLS-2$
 				new double[] { 1, -1, 0 }, new String[] { 
-						ToolsRes.getString("Function.Parameter.Intercept.Description"), //$NON-NLS-1$
+						ToolsRes.getString("Function.Parameter.Magnitude.Description"), //$NON-NLS-1$
 						ToolsRes.getString("Function.Parameter.ExponentialMultiplier.Description"), //$NON-NLS-1$
 						ToolsRes.getString("Function.Parameter.Offset.Description") }); //$NON-NLS-1$
-		f.setExpression("A*exp(B*x) + C", new String[] { "x" }); //$NON-NLS-1$ //$NON-NLS-2$
+		f.setExpression("A * exp(B*x) + C", new String[] { "x" }); //$NON-NLS-1$ //$NON-NLS-2$
 		f.setDescription(ToolsRes.getString("Function.Exponential.Description")); //$NON-NLS-1$
 		defaultFits.add(f);
 
-		f = new UserFunction("Sinusoid"); //$NON-NLS-1$
+		f = new UserFunction(FIT_SIN); //$NON-NLS-1$
 		f.setParameters(new String[] { "A", "B", "C", "D" }, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				new double[] { 1, 1, 0, 0 }, new String[] { ToolsRes.getString("Function.Parameter.Amplitude.Description"), //$NON-NLS-1$
+				new double[] { 1, 1, 0, 0 }, new String[] { 
+						ToolsRes.getString("Function.Parameter.Amplitude.Description"), //$NON-NLS-1$
 						ToolsRes.getString("Function.Parameter.Omega.Description"), //$NON-NLS-1$
 						ToolsRes.getString("Function.Parameter.Phase.Description"), //$NON-NLS-1$
 						ToolsRes.getString("Function.Parameter.Offset.Description") }); //$NON-NLS-1$
-		f.setExpression("A*sin(B*x+C)+D", new String[] { "x" }); //$NON-NLS-1$ //$NON-NLS-2$
+		f.setExpression("A * sin(B*x+C) + D", new String[] { "x" }); //$NON-NLS-1$ //$NON-NLS-2$
 		f.setDescription(ToolsRes.getString("Function.Sinusoid.Description")); //$NON-NLS-1$
 		defaultFits.add(f);
+		
+		f = new UserFunction(FIT_DAMPED); //$NON-NLS-1$
+		f.setParameters(new String[] { "A", "B", "C", "D", "E" }, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				new double[] { 1, 1, 0, 0, 0 }, new String[] { 
+						ToolsRes.getString("Function.Parameter.Intercept.Description"), //$NON-NLS-1$
+						ToolsRes.getString("Function.Parameter.Omega.Description"), //$NON-NLS-1$
+						ToolsRes.getString("Function.Parameter.Phase.Description"), //$NON-NLS-1$
+						ToolsRes.getString("Function.Parameter.Offset.Description"), //$NON-NLS-1$
+						ToolsRes.getString("Function.Parameter.ExponentialMultiplier.Description") }); //$NON-NLS-1$
+		f.setExpression("A * exp(E*x) * sin(B*x + C) + D", new String[] { "x" }); //$NON-NLS-1$ //$NON-NLS-2$
+		f.setDescription(ToolsRes.getString("Function.DampedSine.Description")); //$NON-NLS-1$
+		defaultFits.add(f);
+
+		f = new UserFunction(FIT_POWER); //$NON-NLS-1$
+		f.setParameters(new String[] { "A", "B" }, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				new double[] { 1, 1 }, new String[] { 
+						ToolsRes.getString("Function.Parameter.Coeff.Description"), //$NON-NLS-1$
+						ToolsRes.getString("Function.Parameter.Power.Description") }); //$NON-NLS-1$
+		f.setExpression("A * x ^ B", new String[] { "x" }); //$NON-NLS-1$ //$NON-NLS-2$
+		f.setDescription(ToolsRes.getString("Function.Power.Description")); //$NON-NLS-1$
+		defaultFits.add(f);
+
+		f = new UserFunction(FIT_LOG); //$NON-NLS-1$
+		f.setParameters(new String[] { "A", "B" }, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				new double[] { 1, 0 }, new String[] { 
+						ToolsRes.getString("Function.Parameter.Scale.Description"), //$NON-NLS-1$
+						ToolsRes.getString("Function.Parameter.Offset.Description") }); //$NON-NLS-1$
+		f.setExpression("A * ln(x) + B", new String[] { "x" }); //$NON-NLS-1$ //$NON-NLS-2$
+		f.setDescription(ToolsRes.getString("Function.Log.Description")); //$NON-NLS-1$
+		defaultFits.add(f);
+
 	}
 
 	// instance fields
@@ -156,7 +196,6 @@ public class DatasetCurveFitter extends JPanel {
 	KnownFunction fit; // the function to fit to the data
 	double sigma_y_squared = 1; // an estimate of the SD in the y deviations from the fit
 	ArrayList<UserFunction> testFunctions = new ArrayList<UserFunction>();;
-	/** fitMap maps localized names to all available fits */
 	Color color = Color.MAGENTA;
 	ParamTableModel paramModel;
 
@@ -166,12 +205,15 @@ public class DatasetCurveFitter extends JPanel {
 	private HessianMinimize hessian = new HessianMinimize();
 	private LevenbergMarquardt levmar = new LevenbergMarquardt();
 	private UncertainFunctionDrawer drawer;
+	/** fitMap maps localized names to all available fits */
 	private Map<String, KnownFunction> fitMap = new TreeMap<String, KnownFunction>();
 	private Map<KnownFunction, boolean[]> fixedParams = new HashMap<KnownFunction, boolean[]>();
+	private Map<KnownFunction, double[]> initialParams = new HashMap<KnownFunction, double[]>();
 
 	int fitNumber = 1;
 	boolean refreshing = false;
 	private boolean isActive;
+	boolean failedToFit;
 
 	public void setActiveNoFit(boolean b) {
 		isActive = b;
@@ -332,11 +374,6 @@ public class DatasetCurveFitter extends JPanel {
 		}
 	}
 	
-	public void fitFromScratch() {
-		fixedParams.put(fit, null); // forces unfixing all and resetting parameters from scratch
-		fit(fit);
-	}
-
 	/**
 	 * Fits a fit function to the current data.
 	 *
@@ -344,6 +381,17 @@ public class DatasetCurveFitter extends JPanel {
 	 * @return the rms deviation
 	 */
 	public double fit(KnownFunction fit) {
+		return fit(fit, false);
+	}
+
+
+	/**
+	 * Fits a fit function to the current data.
+	 *
+	 * @param fit the function to fit
+	 * @return the rms deviation
+	 */
+	public double fit(KnownFunction fit, boolean fromScratch) {
 		if (drawer == null) {
 			selectFit((String) fitDropDown.getSelectedItem());
 		}
@@ -373,13 +421,26 @@ public class DatasetCurveFitter extends JPanel {
 		autofitCheckBox.setEnabled(true);
 		paramTable.setEnabled(true);
 		
-		if (!testFunctions.contains(fit) && fixedParams.get(fit) == null) {
-			// this is a top level function seen for the first time
-			fixedParams.put(fit, new boolean[fit.getParameterCount()]);
-			double[] stab = getScratchParams(fit, x, y);
-			if (stab != null) {
-				for (int i = 0; i < stab.length; i++) {
-					fit.setParameterValue(i, stab[i]);
+		fromScratch = !fit.getName().equals(FIT_TEST) && (fromScratch || fixedParams.get(fit) == null);
+		if (fromScratch) {
+			// this is a non-test function being fit from scratch
+			if (initialParams.get(fit) == null) {
+				double[] p = new double[fit.getParameterCount()];
+				for (int i = 0 ; i < fit.getParameterCount(); i++) {
+					p[i] = fit.getParameterValue(i);
+				}
+				initialParams.put(fit, p);
+			}
+			if (fixedParams.get(fit) == null)
+				fixedParams.put(fit, new boolean[fit.getParameterCount()]);
+			
+			double[] scratchParams = getScratchParams(fit, x, y);
+			
+			if (scratchParams != null) {
+				boolean[] fix = fixedParams.get(fit);
+				for (int i = 0; i < scratchParams.length; i++) {
+					if (!fix[i])
+						fit.setParameterValue(i, scratchParams[i]);
 				}
 			}
 		}
@@ -439,27 +500,19 @@ public class DatasetCurveFitter extends JPanel {
 							// get deviation after minimizing
 							devSq = getDevSquared(testFit, x, y);
 						}
-						if (!success) {
-						}
+
 						// restore parameters and deviation if new fit is worse
 						if (!success || devSq > prevDevSq) {
-							double[] stab = getScratchParams(f, x, y);
-							if (stab != null) {
-								for (int i = 0; i < stab.length; i++) {
-									f.setParameterValue(i, stab[i]);
-								}
+							for (int i = 0; i < prevParams.length; i++) {
+								f.setParameterValue(i, prevParams[i]);
 							}
-//							for (int i = 0; i < prevParams.length; i++) {
-//								f.setParameterValue(i, prevParams[i]);
-//							}
 							devSq = prevDevSq;
-							setAutoFit(false);
-	            Toolkit.getDefaultToolkit().beep();
+	            failedToFit = true;
 						}
 					}
 				}
 				if (!testFunctions.contains(fit)) {
-					// fit is the top-level function, not a test
+					// fit is not a test function
 					if (autofit) {
 						double[][] sigmas = getUncertainties(fit, testFit, x, y);
 						setUncertainties(sigmas);
@@ -510,6 +563,15 @@ public class DatasetCurveFitter extends JPanel {
 		firePropertyChange(PROPERTY_DATASETCURVEFITTER_FIT, null, null);
 		if (tab != null && tab.areaVisible && tab.measureFit)
 			tab.plot.refreshArea();
+		
+		if (Double.isNaN(rmsDev))
+      failedToFit = failedToFit || Double.isNaN(rmsDev);
+
+		if (failedToFit && !fit.getName().equals(FIT_TEST)) {
+			setAutoFit(false);
+      Toolkit.getDefaultToolkit().beep();
+		}
+		
 		return rmsDev;
 	}
 
@@ -642,7 +704,12 @@ public class DatasetCurveFitter extends JPanel {
 				autofit = autofitCheckBox.isSelected();
 				spinCellEditor.stopCellEditing();
 				paramTable.clearSelection();
-				fit(fit);
+				if (autofit && failedToFit) {
+					failedToFit = false;
+					fit(fit, true);
+				}
+				else
+					fit(fit);
 				firePropertyChange(PROPERTY_DATASETCURVEFITTER_CHANGED, null, null); // $NON-NLS-1$
 				// BH check
 				paramTable.repaint();
@@ -1050,8 +1117,11 @@ public class DatasetCurveFitter extends JPanel {
 					if (fit != null && name.equals(fit.getName())) {
 						toSelect = name;
 					}
-					if (!name.equals(line) && !name.equals(parabola))
+					if (!name.equals(line) && !name.equals(parabola)) {
+						if (toSelect == name)
+							toSelect = name = ToolsRes.getString("Function." + name + ".Name");
 						fitDropDown.addItem(name);
+					}
 				}
 				fitDropDown.addItem(parabola); // placed at top
 				fitDropDown.addItem(line); // placed at top, pushes parabola to second
@@ -1376,167 +1446,207 @@ public class DatasetCurveFitter extends JPanel {
 	}
 	
 	/**
-	 * Scans the parameters of a function.
-	 * @param f a KnownFunction
-	 * @param x the x data
-	 * @param y the y data
+	 * Gets parameter estimates from scratch based on the fit function and data.
+	 * May return null.
 	 * 
+	 * @param f the function
+	 * @param x
+	 * @param y
+	 * @return array of parameter values, or null if unable to estimate
 	 */
-	private void scan(KnownFunction f, double[] x, double[] y) {
-		int paramCount = f.getParameterCount();
-		if (paramCount == 0 || x.length - paramCount <= 0)
-			return;
-		
-//		double minChiSquared = calibrateChiSquared(f, x, y);
-		
-		double[] params = new double[paramCount];
-		String[] paramNames = new String[paramCount];
-		for (int i = 0; i < paramCount; i++) {
-			params[i] = f.getParameterValue(i);
-			paramNames[i] = f.getParameterName(i);
-		}
-		
-    double ymin=0, ymax=0;
-    for (int i = 0; i < y.length; i++) {
-    	ymin = Math.min(ymin, y[i]);
-    	ymax = Math.max(ymax, y[i]);
-    }
-    int steps = 10;
-  	double delta = (ymax-ymin) / steps; //step sizes for the scan
-		// for each parameter, scan values and check chi squared values
-
-  	double[][] best = new double[paramCount][paramCount-1];
-    for (int i = 0; i < paramCount; i++) {
-			String fixedParamName = paramNames[i];
-			UserFunction test = getTestFunction(f, fixedParamName, f.getParameterValue(i));
-			// scan test parameters
-			for (int k = 0; k < test.getParameterCount(); k++) {
-				best[i][k] = scan(test, 0, k, delta, x, y); // not right
-			}
-  	}
-    for (int i = 0; i < paramCount; i++) {
-    	f.setParameterValue(i, best[i][0]);
-    }
-    delta /= steps;
-    for (int i = 0; i < paramCount; i++) {
-			String fixedParamName = paramNames[i];
-			UserFunction test = getTestFunction(f, fixedParamName, best[i][0]);
-			for (int k = 0; k < test.getParameterCount(); k++) {
-				best[i][k] = scan(test, best[i][k], k, delta, x, y); // not right
-			}
-  	}
-    
-	}
-	
-	// scans the test function over a value range for a single parameter, returns the best
-	private double scan(UserFunction test, double paramValue, int paramIndex, 
-			double delta, double[] x, double[] y) {
-		double chiSq0 = getChiSquared(test, x, y);
-		int best = 0;
-  	for (int k = -10; k < 11; k++) {
-  		if (k==0) continue;
-     	double paramVal = paramValue + k * delta;
-			// get test function with a fixed parameter
-			test.setParameterValue(paramIndex, paramVal);
-			// fit the test function to minimize its chi squared
-			fit(test);
-			// get chi squared of test function
-			double chiSq = getChiSquared(test, x, y);
-			if (chiSq < chiSq0) {
-				best = k;
-				chiSq0 = chiSq;
-			}
-  	}
-  	// reset test function to original state
-		test.setParameterValue(paramIndex, paramValue);
-  	return paramValue + best * delta;
-	}
-	
 	private double[] getScratchParams(KnownFunction f, double[] x, double[] y) {
+		if (f instanceof KnownPolynomial)
+			return null;
 		double[] params = new double[f.getParameterCount()];
 		if (params.length == 0 || x == null || x.length < params.length)
 			return null;
+		// use initial parameters as fallback
+		double [] initParams = initialParams.get(f);
+		if (initParams != null)
+			params = initParams;
 		
-		double xmax = -Double.MAX_VALUE,  ymax = -Double.MAX_VALUE;
-		double xmin = Double.MAX_VALUE,  ymin = Double.MAX_VALUE;		
-		for (int i = 0; i < x.length; i++) {
-			xmax = Math.max(x[i], xmax);
-			xmin = Math.min(x[i], xmin);
-			ymax = Math.max(y[i], ymax);
-			ymin = Math.min(y[i], ymin);
+		int dataLen = x.length;
+		
+		// make arrays of sorted data and find min/max
+		double ymax = -Double.MAX_VALUE;
+		double ymin = Double.MAX_VALUE;		
+		double[] sortedX = new double[dataLen];
+		double[] sortedY = new double[dataLen];
+		TreeMap<Double, Double> sorted = new TreeMap<Double, Double>();
+		for (int i = 0; i < dataLen; i++) {
+			sorted.put(x[i], y[i]);
 		}
+		int index = 0;
+		for (double d: sorted.keySet()) {
+			sortedX[index] = d;
+			index++;
+		}		
+		index = 0;
+		for (double d: sorted.values()) {
+			sortedY[index] = d;
+			ymax = Math.max(d, ymax);
+			ymin = Math.min(d, ymin);
+			index++;
+		}
+		double xmax = sortedX[dataLen - 1], xmin = sortedX[0];
 
+		// line for making linear fits
+		KnownPolynomial line = (KnownPolynomial)getFitFunction(getPolyFitNameOfDegree(1));
+		
 		String exp = f.getExpression("x");
 		String name = f.getName();
-		if (name.contains("Sinusoid")) {
-			// A * sin(B*x + C) + D
-			// guess vertical offset D and amplitude A from data range
-			if (exp.contains("+D"))  // distinguish from damped sine
-				params[3] = (ymin + ymax) /2; // offset D
-			params[0] = (ymax - ymin) / 2; // amplitude A
-			int crossings = 0;
-			double firstCrossing = Double.MAX_VALUE, lastCrossing = Double.MAX_VALUE;
-			double prevX = Double.MAX_VALUE, prevY = Double.MAX_VALUE;
-			// count zero crossings and measure first crossing
-			boolean posSlope = true;
-			for (int i = 0; i < x.length; i++) {
-				double yshifted = y[i] - params[3];
-				if (i==0) {
-					prevX = x[i];
+		
+		switch(name) {
+			case FIT_SIN:
+				// A * sin(B*x + C) + D
+			case FIT_DAMPED:
+				// A * exp(E*x) * sin(B*x + C) + D
+				// set vertical offset D and amplitude A from data range
+				if (exp.contains("+D"))  // distinguish from damped sine
+					params[3] = (ymin + ymax) /2; // offset D midway between max and min
+				params[0] = (ymax - ymin) / 2; // amplitude A half of range
+				int crossings = 0;
+				double firstCrossing = Double.MAX_VALUE, lastCrossing = Double.MAX_VALUE;
+				double prevX = Double.MAX_VALUE, prevY = Double.MAX_VALUE;
+				// count zero crossings and measure first crossing
+				boolean posSlope = true;
+				for (int i = 0; i < sortedX.length; i++) {
+					double yshifted = sortedY[i] - params[3];
+					if (i==0) {
+						prevX = sortedX[i];
+						prevY = yshifted;
+					}
+					boolean crossed = prevY > 0? yshifted <= 0: yshifted > 0;
+					if (crossed) {
+						crossings++;
+						// save crossing position
+						lastCrossing = sortedX[i] - (yshifted / (yshifted - prevY)) * (sortedX[i] - prevX);
+						if (crossings ==1) {
+							firstCrossing = lastCrossing;
+							posSlope = yshifted > 0;
+						}
+					}
+					prevX = sortedX[i];
 					prevY = yshifted;
 				}
-				boolean crossed = prevY > 0? yshifted <= 0: yshifted > 0;
-				if (crossed) {
-					crossings++;
-					// save crossing position
-					lastCrossing = x[i] - (yshifted / (yshifted - prevY)) * (x[i] - prevX);
-					if (crossings ==1) {
-						firstCrossing = lastCrossing;
-						posSlope = yshifted > 0;
-					}
+				boolean success = firstCrossing != Double.MAX_VALUE;
+				
+				if (crossings > 1)
+					params[1] = Math.PI * (crossings-1) / (lastCrossing - firstCrossing);
+				else {
+					params[1] = Math.PI * Math.max(1,crossings) / (xmax - xmin);
 				}
-				prevX = x[i];
-				prevY = yshifted;
-			}
-			boolean success = firstCrossing != Double.MAX_VALUE;
-			
-			if (crossings > 1)
-				params[1] = Math.PI * (crossings-1) / (lastCrossing - firstCrossing);
-			else {
-				params[1] = Math.PI * Math.max(1,crossings) / (xmax - xmin);
-			}
-			
-			double phaseToFirstCrossing = success? params[1] * firstCrossing: 0;
-			params[2] = posSlope? - phaseToFirstCrossing: Math.PI - phaseToFirstCrossing;
-			return params;
-		}
-		else if (name.equals("Exponential")) {
-			// y = A * exp(B*x) + C, must have at least 3 data points
-			// note this assumes data range x is monotonic increase
-			// find three x-points equally spaced across range
-			double range = (x[x.length - 1] - x[0]);
-			int mid = (x.length - 1) / 2;
-			while (x[mid] - x[0] < range/2 && mid < x.length-1)
-				mid++;
-			while (x[mid] - x[0] > range/2 && mid > 0)
-				mid--;
-			int tail = Math.min(x.length-1, 2*mid);
-			while (x[tail] - x[0] < 2 * (x[mid] - x[0]) && tail < x.length-1)
-				tail++;
-			while (x[tail] - x[0] > 2 * (x[mid] - x[0]) && tail > 0)
-				tail--;
-			
-			params[2] = (y[mid] * y[mid] - y[0] * y[tail]) / (2 * y[mid] - y[0] - y[tail]);
-			params[1] = Math.log((y[tail] - params[2]) / (y[0] - params[2])) / (x[tail] - x[0]);
-			params[0] = (y[mid] - params[2]) / Math.exp(params[1] * x[mid]);
-			
+				
+				double phaseToFirstCrossing = success? params[1] * firstCrossing: 0;
+				params[2] = posSlope? - phaseToFirstCrossing: Math.PI - phaseToFirstCrossing;
+				return params;
+			case FIT_EXP:
+				// y = A * exp(B*x) + C				
+				// find three x-points equally spaced across range to find vertical offset C
+				double range = (sortedX[dataLen - 1] - sortedX[0]);
+				int mid = (dataLen - 1) / 2;
+				while (sortedX[mid] - sortedX[0] < range/2 && mid < dataLen-1)
+					mid++;
+				while (sortedX[mid] - sortedX[0] > range/2 && mid > 0)
+					mid--;
+				int tail = Math.min(dataLen-1, 2*mid);
+				while (sortedX[tail] - sortedX[0] < 2 * (sortedX[mid] - sortedX[0]) && tail < dataLen-1)
+					tail++;
+				while (sortedX[tail] - sortedX[0] > 2 * (sortedX[mid] - sortedX[0]) && tail > 0)
+					tail--;
+				
+				// set offset
+				params[2] = (sortedY[mid] * sortedY[mid] - sortedY[0] * sortedY[tail])
+						/ (2 * sortedY[mid] - sortedY[0] - sortedY[tail]);
+				// be sure offset doesn't exceed ymin so y - offset > 0 for logs
+				params[2] = Math.min(ymin - (0.001 * range), params[2]);
+				
+				params[1] = Math.log((sortedY[tail] - params[2]) / (sortedY[0] - params[2])) / (sortedX[tail] - sortedX[0]);
+				params[0] = (sortedY[mid] - params[2]) / Math.exp(params[1] * sortedX[mid]);
+				
+//				// make array of ln(y-C), fit line to x - ln(y) data, use line parameters
+//				for (int i = 0; i < y.length; i++) {
+//					ln[i] = Math.log(y[i] - params[2]);
+//				}
+//				line.fitData(x, ln);
+//				params[0] = Math.exp(line.getParameterValue(0));
+//				params[1] = line.getParameterValue(1);						
+				
+				return params;
+			case FIT_GAUSS:
+				// A * exp(-(x-B)^2 / (2*C^2))
+				
+				// this method described on page 7 in Régressions Et Équations Intégrales
+				// posted online by Jean Jacquelin
+				// https://www.scribd.com/doc/14674814/Regressions-et-equations-integrales
+				double[] S = new double[dataLen];
+				double[] T = new double[dataLen];
+				double sumSSq = 0, sumTSq = 0, sumST = 0, sumSy = 0, sumTy = 0;
+				double sumy = sortedY[0];
+				S[0] = T[0] = 0;
+				for (int i = 1; i < dataLen; i++) {
+					S[i] = S[i-1] + 0.5 * (sortedY[i] + sortedY[i-1]) * (sortedX[i] - sortedX[i-1]);
+					T[i] = T[i-1] + 0.5 * (sortedX[i]*sortedY[i] + sortedX[i-1]*sortedY[i-1]) * (sortedX[i] - sortedX[i-1]);
+					sumSSq += S[i] * S[i];
+					sumST += S[i] * T[i];
+					sumTSq += T[i] * T[i];
+					sumSy += S[i] * (sortedY[i] - sortedY[0]);
+					sumTy += T[i] * (sortedY[i] - sortedY[0]);
+					sumy += sortedY[i];
+				}
+				double[][] matrix = new double[][] {{sumSSq, sumST}, {sumST, sumTSq}};
+		    LUPDecomposition lupSystem = new LUPDecomposition(matrix);
+		    double[][] inverse = lupSystem.inverseMatrixComponents();
+		    if (inverse == null)
+		    	return null;
+		    double[] constants = new double[] {sumSy, sumTy};
+		    double[] results = lupSystem.solve(constants);
+		    double a = -results[0] / results[1];
+		    double b = -2 / results[1];
+		    double sumExp = 0;
+		    for (int i = 1; i < dataLen; i++) {
+		    	sumExp += Math.exp(-((sortedX[i] - a) * (sortedX[i] - a)) / b);
+		    }
+				params[0] = sumy / sumExp; // A
+				params[1] = a;
+				params[2] = Math.sqrt(b / 2);
+				return params;
+			case FIT_LOG:
+				// A * ln(x) + B
+				if (xmin <= 0)
+					return null;
+				// make array of ln(x), fit linear fit to ln(x) & y data, use fit A and B
+				double[] ln = new double[dataLen];
+				for (int i = 0; i < dataLen; i++) {
+					ln[i] = Math.log(sortedX[i]);
+				}
+				line.fitData(ln, sortedY);
+				params[0] = line.getParameterValue(0);
+				params[1] = line.getParameterValue(1);						
+				return params;
+			case FIT_POWER:
+				// A * x ^ B
+				if (xmin <= 0 || ymin <= 0)
+					return null;
+								
+				// make arrays of ln x and ln y, fit line, use fit A and B
+				double[] lnx = new double[dataLen];
+				double[] lny = new double[dataLen];
+				for (int i = 0; i < dataLen; i++) {
+					lnx[i] = Math.log(sortedX[i]);
+					lny[i] = Math.log(sortedY[i]);
+				}
+				line.fitData(lnx, lny);
+				params[0] = Math.exp(line.getParameterValue(1));
+				params[1] = line.getParameterValue(0);						
+				return params;
 		}
 		return null;
 	}
 	
 	private UserFunction getTestFunction(int level) {
 		while (testFunctions.size() <= level) {
-			UserFunction test = new UserFunction("Test");
+			UserFunction test = new UserFunction(FIT_TEST);
 			testFunctions.add(test);
 		}
 		return testFunctions.get(level);		
