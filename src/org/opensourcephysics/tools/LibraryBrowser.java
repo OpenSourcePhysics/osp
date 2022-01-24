@@ -1836,6 +1836,7 @@ public class LibraryBrowser extends JPanel {
 				LibraryTreeNode resultsTreeNode = get();
 				if (resultsTreeNode == null) {
 					Toolkit.getDefaultToolkit().beep();
+					OSPLog.finer(searchTerm + "not found");
 					// give visual cue, too
 					final Color color = searchField.getForeground();
 					searchField.setText(ToolsRes.getString("LibraryBrowser.Search.NotFound")); //$NON-NLS-1$

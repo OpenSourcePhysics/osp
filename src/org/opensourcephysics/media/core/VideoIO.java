@@ -1177,7 +1177,6 @@ private static String fixVideoPath(String path) {
 		if (videoFileFilter.accept(file, true)) { // load video
 			ArrayList<VideoType> types = getVideoTypes(false);
 			Video video = null;
-			Toolkit.getDefaultToolkit().beep();
 			for (int i = 0; i < types.size(); i++) {
 				VideoType type = types.get(i);
 				if (type.accepts(file)) {

@@ -79,6 +79,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.CellBorder;
 import org.opensourcephysics.display.ColorIcon;
 import org.opensourcephysics.display.Dataset;
@@ -564,12 +565,12 @@ public class DatasetCurveFitter extends JPanel {
 		if (tab != null && tab.areaVisible && tab.measureFit)
 			tab.plot.refreshArea();
 		
-		if (Double.isNaN(rmsDev))
-      failedToFit = failedToFit || Double.isNaN(rmsDev);
+		failedToFit = failedToFit || Double.isNaN(rmsDev);
 
-		if (failedToFit && !fit.getName().equals(FIT_TEST)) {
+		if (autofit && failedToFit && !fit.getName().equals(FIT_TEST)) {
 			setAutoFit(false);
       Toolkit.getDefaultToolkit().beep();
+			OSPLog.finer("Failed to autofit function \"" + fit.getName() + "\"");
 		}
 		
 		return rmsDev;

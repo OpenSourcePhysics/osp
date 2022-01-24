@@ -9,6 +9,7 @@
 package org.opensourcephysics.tools;
 
 import java.applet.AudioClip;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Image;
@@ -752,16 +753,19 @@ public class ResourceLoader {
 			// reject new cache if it is a subdirectory of the current cache!
 			if (ospCache != null && newCache.getAbsolutePath().contains(ospCache.getAbsolutePath())) {
 				Toolkit.getDefaultToolkit().beep();
+				OSPLog.finer("cache cannot be a subfolder of "+ospCache.getAbsolutePath());
 				return;
 			}
 			if (!newCache.exists() || !newCache.isDirectory()) {
 				if (!newCache.mkdirs()) {
 					Toolkit.getDefaultToolkit().beep();
+					OSPLog.finer("unable to create cache at "+newCache);
 					return;
 				}
 			}
 			if (!newCache.canWrite()) {
 				Toolkit.getDefaultToolkit().beep();
+				OSPLog.finer("unable to write to cache at "+newCache);
 				return;
 			}
 			if (ospCache != null) {
