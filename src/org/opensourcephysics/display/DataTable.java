@@ -2644,7 +2644,7 @@ public class DataTable extends JTable {
 					value = getValueAt(selectedRows[i], selectedColumns[j]);
 					if (value != null) {
 						if (value instanceof Number) {
-//							value = nf.format(value);
+							value = nf.format(value);
 						} else if (value instanceof java.util.Date) {
 							value = df.format(value);
 						}
