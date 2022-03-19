@@ -33,6 +33,7 @@ import java.util.function.Function;
 import javax.swing.JOptionPane;
 
 import org.opensourcephysics.controls.XML.ObjectLoader;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.core.VideoIO.FinalizableLoader;
 import org.opensourcephysics.tools.Resource;
 import org.opensourcephysics.tools.ResourceLoader;
@@ -701,10 +702,14 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		}
 		if (n > 0) {
 			String dir = fileName.substring(0, n + 1);
-			File file = new File(dir);
-			if (!file.exists() && !file.mkdirs()) {
-				canWrite = false;
-				return null;
+			if (OSPRuntime.isJS) { // BH 2022.03.19 added -- in case this is TEMP
+				fileName = fileName.substring(n + 1);
+			} else {
+				File file = new File(dir);
+				if (!file.exists() && !file.mkdirs()) {
+					canWrite = false;
+					return null;
+				}
 			}
 		}
 		try {

@@ -325,7 +325,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	 * @return the video clip
 	 */
 	public VideoClip getVideoClip() {
-		return clipControl.getVideoClip();
+		return (clipControl == null ? null : clipControl.getVideoClip());
 	}
 
 	/**
