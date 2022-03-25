@@ -24,6 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Iterator;
 import java.util.List;
@@ -1743,6 +1744,7 @@ public class Dataset extends DataTable.DataModel implements Measurable, LogMeasu
 	 * @return valid points
 	 */
 	private double[] getValidPoints(double[] pts) {
+		pts = Arrays.copyOf(pts, pts.length);
 		// eliminate NaN values, if any
 		int nans = 0;
 		for (int i = 0; i < index; i++) {
