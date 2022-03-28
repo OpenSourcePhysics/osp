@@ -2661,6 +2661,8 @@ public class DataTable extends JTable {
 							value = df.format(value);
 						}
 					}
+					if ("NaN".equals(value))
+						value = "";
 				}
 				if (value != null) {
 					// remove degrees sign, if any
