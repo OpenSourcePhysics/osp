@@ -38,6 +38,7 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -49,11 +50,14 @@ import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -98,6 +102,8 @@ import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.display.TextFrame;
 import org.opensourcephysics.media.core.VideoIO;
 
+import javajs.async.AsyncDialog;
+
 /**
  * This provides a GUI for analyzing OSP Data objects.
  *
@@ -122,6 +128,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	protected static String helpName = "datatool/datatool_help.html"; //$NON-NLS-1$
 	protected static String helpBase = "https://www.compadre.org/osp/online_help/tools/"; //$NON-NLS-1$
 	private static ArrayList<Data> processedData = new ArrayList<Data>();
+	protected static boolean loadMultipleTracksInSingleTab = false;
+	protected static boolean askToLoadMultipleTracksInSingleTab = true;
 
 	// instance fields
 	protected JTabbedPane tabbedPane;
@@ -716,14 +724,21 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			return;
 		}
 		if (res.getString() != null) {
-			// if not xml, attempt to import data and add tab
-			Data data = parseData(res.getString(), file.toString());
+			// if not xml, attempt to import data and add tab(s)
+			setMultipleTabPolicy(res.getString());
+			Data[] data = parseData(res.getString(), file.toString());
 			if (data != null) {
-				DataToolTab tab = createTab(data);
-				addTab(tab);
+				DataToolTab first = null;
+				for (int i = 0; i < data.length; i++) {
+					DataToolTab tab = createTab(data[i]);
+					first = first == null? tab: first;
+					addTab(tab);
+					if (data.length == 1)
+						tab.fileName = file.getAbsolutePath();
+					tab.tabChanged(false);
+				}
+				setSelectedTab(first);
 				refreshDataBuilder();
-				tab.fileName = file.getAbsolutePath();
-				tab.tabChanged(false);
 				return;
 			}
 		}
@@ -760,15 +775,29 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			return;
 		}
 		// if not xml, attempt to import data and add tab
-		Data data = parseData(content, title);
+		setMultipleTabPolicy(content);
+		Data[] data = parseData(content, title);
 		if (data != null) {
-			DataToolTab tab = createTab(data);
-			addTab(tab);
-			refreshDataBuilder();
-			tab.fileName = title;
-			tab.tabChanged(false);
+			DataToolTab first = null;
+			for (int i = 0; i < data.length; i++) {
+				DataToolTab tab = createTab(data[i]);
+				first = first == null? tab: first;
+				addTab(tab);
+				if (data.length == 1)
+					tab.fileName = title;
+				tab.tabChanged(false);
+			}
+			setSelectedTab(first);
 			return;
 		}
+//		if (data != null) {
+//			DataToolTab tab = createTab(data[0]);
+//			addTab(tab);
+//			refreshDataBuilder();
+//			tab.fileName = title;
+//			tab.tabChanged(false);
+//			return;
+//		}
 		OSPLog.finest("no data found"); //$NON-NLS-1$
 	}
 
@@ -808,9 +837,9 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		}
 		if (res.getString() != null) {
 			// if not xml, attempt to import data and add tab
-			Data data = parseData(res.getString(), file.toString());
+			Data[] data = parseData(res.getString(), file.toString());
 			if (data != null) {
-				tab.addColumns(data, true, true, true);
+				tab.addColumns(data[0], true, true, true);
 				return;
 			}
 		}
@@ -1148,9 +1177,9 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 *
 	 * @param dataString the data string
 	 * @param fileName   name of file containing the data string (may be null)
-	 * @return DatasetManager with parsed data, or null if none found
+	 * @return DatasetManager[] with parsed data, or null if none found
 	 */
-	public static DatasetManager parseData(String dataString, String fileName) {
+	public static DatasetManager[] parseData(String dataString, String fileName) {
 		final String gnuPlotComment = "#"; //$NON-NLS-1$
 		BufferedReader input = null;
 		try {
@@ -1161,7 +1190,10 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 				int columns = Integer.MAX_VALUE;
 				String[] columnNames = null;
 				String title = null;
+				ArrayList<String> titles = new ArrayList<String>();
+				boolean isMulti = false;
 				int lineCount = 0;
+				int columnStride = -1;
 				while (textLine != null) {
 					// process each line of text
 					if (textLine.startsWith("//")) { //$NON-NLS-1$
@@ -1174,6 +1206,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 						textLine = textLine.trim(); // added by W. Christian
 					}
 					// look for gnuPlot-commented name and/or columnNames
+					// or multitrack hint
 					if (textLine.startsWith(gnuPlotComment)) {
 						int k = textLine.indexOf("name:"); //$NON-NLS-1$
 						if (k > -1) {
@@ -1182,7 +1215,17 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 						k = textLine.indexOf("columnNames:"); //$NON-NLS-1$
 						if (k > -1) {
 							textLine = textLine.substring(k + 12).trim();
-						} else {
+						} 
+						k = textLine.indexOf("multi:"); //$NON-NLS-1$
+						if (k > -1) {
+							textLine = textLine.substring(k + 6).trim();
+							isMulti = true;
+							if (textLine.length() == 0) {
+								textLine = input.readLine();
+								continue;
+							}								
+						} 
+						else {
 							textLine = input.readLine();
 							continue;
 						}
@@ -1195,28 +1238,48 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 					}
 					String[] strings = DataTool.parseStrings(textLine, DataTool.delimiters[i]);
 					double[] rowData = DataTool.parseDoubles(strings, DataTool.delimiters[i]);
-					// set title if not yet set (null), String[] length > 0, all entries
-					// are NaN, only one entry is not "" and contains no other delimiters
+					// set title if:
+					//	--not yet set (null)
+					//	--String[] length > 0
+					//	--all values are NaN
+					//	--if isMulti, use all non-"" String entries
+					//	--else must find only one non-"" String entry
+					//	--none can contains another delimiter
 					if (rows.isEmpty() && (strings.length > 0) && (title == null)) {
-						String s = ""; //$NON-NLS-1$
 						for (int k = 0; k < strings.length; k++) {
 							if (Double.isNaN(rowData[k]) && !strings[k].equals("")) { //$NON-NLS-1$
-								if (s.equals("")) { //$NON-NLS-1$
-									s = strings[k];
-								} else {
-									s = ""; //$NON-NLS-1$
-									break;
-								}
+								titles.add(strings[k]);
+								if (columnStride == -1)
+									columnStride = k;
+								else
+									columnStride = k - columnStride;
 							}
 						}
+						String s = "";
+						switch (titles.size()) {
+						case 0:
+							break;
+						case 1:
+							s = titles.get(0);
+							break;
+						default: // 2 or more
+							if (!isMulti)
+								break;
+							s = titles.get(0) + "+" + (titles.size() - 1);
+						}
+
 						if (!s.equals("") && !containsDelimeter(s)) { //$NON-NLS-1$
 							title = s;
 							textLine = input.readLine();
 							continue;
 						}
 					}
-					// set column names if not yet set (null), String[] length > 0,
-					// all entries are NaN, and no data yet loaded
+					
+					// set column names if:
+					//	--not yet set (null)
+					//	--String[] length > 0
+					//	--all entries are NaN
+					//	--no data yet loaded
 					if (rows.isEmpty() && (strings.length > 0) && (columnNames == null)) {
 						boolean valid = true;
 						for (int k = 0; k < strings.length; k++) {
@@ -1291,16 +1354,78 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 						}
 					}
 					// then append data to datasets
-					DatasetManager data = new DatasetManager();
-					data.setName((title == null) ? XML.getName(fileName) : title);
+					DatasetManager[] data = null;
 					double[] rowColumn = DataTool.getRowArray(rows.size());
-					for (int j = 0; j < columns; j++) {
-						Dataset dataset = data.getDataset(j);
-						String yColName = ((columnNames != null) && (columnNames.length > j)) ? columnNames[j]
-								: (columns == 1 && title != null) ? title : "?"; //$NON-NLS-1$
-						dataset.setXYColumnNames("row", yColName); //$NON-NLS-1$
-						dataset.setXColumnVisible(false);
-						dataset.append(rowColumn, dataArray[j]);
+					if (!isMulti || loadMultipleTracksInSingleTab) {
+						data = new DatasetManager[1];
+						data[0] = new DatasetManager();
+						data[0].setName((title == null) ? XML.getName(fileName) : title);
+						int droppedCols = 0;
+						outer: for (int j = 0; j < columns; j++) {
+							Dataset dataset = data[0].getDataset(j - droppedCols);
+							String yColName = ((columnNames != null) && (columnNames.length > j)) ? columnNames[j]
+									: (columns == 1 && title != null) ? title : "?"; //$NON-NLS-1$
+							dataset.setXYColumnNames("row", yColName); //$NON-NLS-1$
+							dataset.setXColumnVisible(false);
+							if (yColName.equals("?")) {
+								// if data array is all NaN, ignore it
+								boolean allNaN = true;
+								for (int k = 0; k < dataArray[j].length; k++) {
+									allNaN = allNaN && Double.isNaN(dataArray[j][k]);
+									if (!allNaN)
+										break;
+								}
+								if (allNaN) {
+									data[0].removeDataset(j - droppedCols);
+									droppedCols++;
+									continue outer;
+								}
+							}	
+							dataset.append(rowColumn, dataArray[j]);
+						}
+					}
+					else {
+						data = new DatasetManager[titles.size()];
+						for (int tab = 0; tab < titles.size(); tab++) {
+							data[tab] = new DatasetManager();
+							data[tab].setName(titles.get(tab));
+							// add t column first to every datasetManager
+							Dataset dataset = data[tab].getDataset(0);
+							String yColName = columnNames[0];
+							dataset.setXYColumnNames("row", yColName); //$NON-NLS-1$
+							dataset.setXColumnVisible(false);
+
+							// trim NaN values from start and end of data array
+							double[] values = dataArray[1 + (tab * columnStride)];
+							double[] rowNums = rowColumn;
+							int startIndex = 0, endIndex = values.length - 1;
+							for (int k = 0; k < values.length; k++) {
+								if (!Double.isNaN(values[k]))
+									break;
+								startIndex++;
+							}
+							for (int k = values.length - 1; k >= 0; k--) {
+								if (!Double.isNaN(values[k]))
+									break;
+								endIndex--;
+							}
+							if (startIndex > 0 || endIndex < values.length - 1) {
+								values = Arrays.copyOfRange(dataArray[0], startIndex, endIndex+1);
+								rowNums = DataTool.getRowArray(endIndex - startIndex + 1);								
+							}
+
+							dataset.append(rowNums, values);
+							// now add other columns
+							for (int j = 0; j < columnStride; j++) {
+								int index = 1 + (tab * columnStride) + j;
+								dataset = data[tab].getDataset(1 + j);
+								yColName = columnNames[index];
+								dataset.setXYColumnNames("row", yColName); //$NON-NLS-1$
+								dataset.setXColumnVisible(false);
+								values = Arrays.copyOfRange(dataArray[index], startIndex, endIndex+1);
+								dataset.append(rowNums, values);
+							}							
+						}
 					}
 					OSPLog.finest("data found using delimiter \"" //$NON-NLS-1$
 							+ DataTool.delimiters[i] + "\""); //$NON-NLS-1$
@@ -3150,14 +3275,25 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		if (dataString != null) {
 			if (!dataString.startsWith("<?xml")) { //$NON-NLS-1$
 				// pasted string is not xml, so parse to import Data //$NON-NLS-1$
-				Data importedData = parseData(dataString, null);
+				setMultipleTabPolicy(dataString);
+				Data[] importedData = parseData(dataString, null);
 				if (importedData != null) {
 					if (isTabItem) {
-						//OSPLog.finest("pasting imported clipboard data into new tab"); //$NON-NLS-1$
-						DataToolTab tab = createTab(importedData);
-						tab.userEditable = true;
-						addTab(tab);
-						tab.refreshGUI();
+						DataToolTab first = null;
+						for (int i = 0; i < importedData.length; i++) {
+							DataToolTab tab = createTab(importedData[i]);
+							first = first == null? tab: first;
+							addTab(tab);
+							tab.userEditable = true;
+							tab.refreshGUI();
+							tab.tabChanged(false);
+						}
+						setSelectedTab(first);
+//						//OSPLog.finest("pasting imported clipboard data into new tab"); //$NON-NLS-1$
+//						DataToolTab tab = createTab(importedData[0]);
+//						tab.userEditable = true;
+//						addTab(tab);
+//						tab.refreshGUI();
 					}
 					refreshDataBuilder();
 					return;
@@ -3307,7 +3443,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		if (dataString == null)
 			return false;
 		if (!dataString.startsWith("<?xml")) { //$NON-NLS-1$
-			addableData = parseData(dataString, null);
+			Data[] temp = parseData(dataString, null);
+			addableData = temp == null? null: temp[0];
 			return (addableData != null);
 		}
 		control = new XMLControlElement();
@@ -3359,6 +3496,33 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 				+ "www.opensourcephysics.org"; //$NON-NLS-1$
 		JOptionPane.showMessageDialog(this, aboutString, ToolsRes.getString("Dialog.About.Title") + " " + getName(), //$NON-NLS-1$ //$NON-NLS-2$
 				JOptionPane.INFORMATION_MESSAGE);
+	}
+	
+	protected void setMultipleTabPolicy(String dataString) {
+		if (askToLoadMultipleTracksInSingleTab &&
+				dataString.startsWith("#multi:")) {
+			JPanel panel = new JPanel(new BorderLayout());
+			JLabel label1 = new JLabel(ToolsRes.getString("DataTool.Dialog.Multitab.Message1"));
+			JLabel label2 = new JLabel(ToolsRes.getString("DataTool.Dialog.Multitab.Message2"));
+			JCheckBox checkbox = new JCheckBox(ToolsRes.getString("DataTool.Dialog.Multitab.Checkbox.Text"));
+			checkbox.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
+			Box box = Box.createVerticalBox();
+			box.add(label1);
+			box.add(label2);
+			panel.add(box, BorderLayout.NORTH);
+			panel.add(checkbox, BorderLayout.SOUTH);
+			boolean[] multipleTabs = new boolean[] {true};
+			new AsyncDialog().showConfirmDialog(null, 
+					panel,
+					ToolsRes.getString("DataTool.Dialog.Multitab.Title"), 
+					JOptionPane.YES_NO_OPTION, 
+					(ev) -> {
+						if (ev.getID() == JOptionPane.NO_OPTION)
+							multipleTabs[0] = false;
+					});
+			loadMultipleTracksInSingleTab = !multipleTabs[0];
+			askToLoadMultipleTracksInSingleTab = !checkbox.isSelected();
+		}
 	}
 
 	/**

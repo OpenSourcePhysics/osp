@@ -2803,10 +2803,10 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			return false;
 		}
 		String parsableData = dataString.replace(" ", "").replace(",", "\t");
-		Data data = DataTool.parseData(parsableData, "edited");
+		Data[] data = DataTool.parseData(parsableData, "edited");
 		clearData(false); // do not post edits
 		if (data != null) {
-			loadData(data, false);
+			loadData(data[0], false);
 			tabChanged(true);
 			if (prevString != null) {
 				// post edit: target is prev data, value is new data

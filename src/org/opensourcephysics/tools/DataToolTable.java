@@ -322,7 +322,8 @@ public class DataToolTable extends DataTable {
 				OSPRuntime.paste((dataString) -> {
 					if (dataString != null) {
 						ArrayList<String> colNames = getSelectedColumnNames();
-						pasteData = DataTool.parseData(dataString, null);
+						DatasetManager[] temp = DataTool.parseData(dataString, null);
+						pasteData = temp == null? null: temp[0];
 						if (pasteData != null) {
 							pasteW = pasteData.getDatasetsRaw().size();
 							if ((pasteW > 0) && (pasteW == colNames.size())) {

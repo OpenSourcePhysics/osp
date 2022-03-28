@@ -63,6 +63,7 @@ import javax.swing.table.TableModel;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.media.core.NumberField;
 import org.opensourcephysics.media.core.VideoIO;
+import org.opensourcephysics.tools.FunctionEditor;
 
 /**
  * DataTable displays multiple TableModels in a table. The first TableModel
@@ -2620,13 +2621,24 @@ public class DataTable extends JTable {
 			// ignore row heading
 			if (isRowNumberVisible() && selectedColumns[j] == 0)
 				continue;
-			buf.append(getColumnName(selectedColumns[j]));
+			String name = getColumnName(selectedColumns[j]);
+			name = TeXParser.removeSubscripting(name);
+			if (name.startsWith(FunctionEditor.THETA)) {
+				for (int i = 0; i < selectedRows.length; i++) {
+					Object val = getFormattedValueAt(selectedRows[i], selectedColumns[j]);
+//					if (val != null && val.toString().contains(FunctionEditor.DEGREES)) {
+//						name += "(" + FunctionEditor.DEGREES + ")";
+//						break;
+//					}				
+				}
+			}
+			buf.append(name);
 			if (j < selectedColumns.length - 1)
 				buf.append(VideoIO.getDelimiter()); // add delimiter after each column except the last
 		}
 		buf.append(XML.NEW_LINE);
 		java.text.DecimalFormat nf = (DecimalFormat) NumberFormat.getInstance();
-		nf.applyPattern("0.000000000E0"); //$NON-NLS-1$
+		nf.applyPattern("0.000000E0"); //$NON-NLS-1$
 		nf.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
 		java.text.DateFormat df = java.text.DateFormat.getInstance();
 		for (int i = 0; i < selectedRows.length; i++) {
@@ -2651,6 +2663,10 @@ public class DataTable extends JTable {
 					}
 				}
 				if (value != null) {
+					// remove degrees sign, if any
+					int n = value.toString().indexOf(FunctionEditor.DEGREES);
+					if (n > 0)
+						value = value.toString().substring(0, n);
 					buf.append(value);
 				}
 				if (j < selectedColumns.length - 1)
