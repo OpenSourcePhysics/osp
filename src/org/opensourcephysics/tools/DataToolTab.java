@@ -4747,7 +4747,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			// note: as of Dec 2014, no longer save ALL fitBuilder panels since most
 			// are for default or autoloaded functions
 			tab.getCurveFitter();
-			if (tab.dataTool.fitBuilder != null) {
+			if (tab.dataTool.fitBuilder != null && tab.curveFitter.fit != null) {
 				String fitName = tab.curveFitter.fit.getName();
 				FitFunctionPanel panel = (FitFunctionPanel) tab.dataTool.fitBuilder.getPanel(fitName);
 				if (panel != null) {
@@ -4755,9 +4755,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					fits.add(panel);
 					control.setValue("fits", fits); //$NON-NLS-1$
 				}
+				// save selected fit name
+				control.setValue("selected_fit", tab.curveFitter.fit.getName()); //$NON-NLS-1$
 			}
-			// save selected fit name
-			control.setValue("selected_fit", tab.curveFitter.fit.getName()); //$NON-NLS-1$
 			// save autofit status
 			control.setValue("autofit", tab.curveFitter.isAutoFit()); //$NON-NLS-1$
 			// save fit parameters
