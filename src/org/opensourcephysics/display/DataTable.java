@@ -1563,6 +1563,16 @@ public class DataTable extends JTable {
 			int nTableCols = tableColumns.size();
 			int nModelCols = dataTableModel.getColumnCount();
 
+			// check that headers show correct columns names
+			// DB! added May 2022 for LineProfile multiple frame data
+			for (int i = nTableCols; --i >= 0;) {
+				DataTableColumn tc = getTableColumn(i);
+				String colName = getModel().getColumnName(i);
+				if (!colName.equals(tc.getHeaderValue())) {
+					tc.setHeaderValue(colName);
+				}
+			}
+
 			// we do not have to continue unless there have been additions or deletions,
 			// as moving columns around does not affect their model references, and after
 			// loading, this method might be run unnecessarily as part of a refresh().
@@ -2592,6 +2602,10 @@ public class DataTable extends JTable {
 
 	public void scrollRowToVisible(int row) {
 		scrollRectToVisible(getCellRect(row, 0, true));
+	}
+
+	public void scrollColumnToVisible(int col) {
+		scrollRectToVisible(getCellRect(0, col, true));
 	}
 
 	/**
