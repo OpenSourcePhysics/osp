@@ -1182,6 +1182,9 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	public static DatasetManager[] parseData(String dataString, String fileName) {
 		final String gnuPlotComment = "#"; //$NON-NLS-1$
 		BufferedReader input = null;
+		// if dataString is a file path then return null
+		if (new File(dataString).exists())
+			return null;
 		try {
 			for (int i = 0; i < DataTool.delimiters.length; i++) {
 				input = new BufferedReader(new StringReader(dataString));
