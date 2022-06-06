@@ -32,6 +32,20 @@ public interface DataTrack extends Trackable {
 	public int getStartFrame();
 	
 	/**
+	 * Sets the step in the videoclip at which the first data point is displayed.
+	 * 
+	 * @param start the start step number
+	 */
+	public void setStartStep(int start);
+
+	/**
+	 * Gets the step in the videoclip at which the first data point is displayed.
+	 * 
+	 * @return the start step number
+	 */
+	public int getStartStep();
+	
+	/**
 	 * Sets the Data for the track. Data must define "x" and "y" positions,
 	 * and may define "t". Optional source may be a JPanel control panel.
 	 * 

@@ -661,8 +661,9 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		default:
 			return;
 			
-		// only the next three, using break, pass to updateSlider
+		// only the next four, using break, pass to updateSlider
 			
+		case VideoClip.PROPERTY_VIDEOCLIP_STARTFRAME:
 		case VideoClip.PROPERTY_VIDEOCLIP_FRAMECOUNT:
 			break;
 		case VideoClip.PROPERTY_VIDEOCLIP_STEPSIZE:
