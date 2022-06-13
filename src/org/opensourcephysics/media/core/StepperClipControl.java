@@ -81,6 +81,10 @@ public class StepperClipControl extends ClipControl {
 					frameDuration = (int) (tf - ti) / count;
 				}
 			}
+			else if (video instanceof ImageVideo) {
+				ImageVideo imgVid = (ImageVideo)video;
+				frameDuration = imgVid.getFrameDuration(0);
+			}
 		}
 		timer = new javax.swing.Timer(getTimerDelay(), new ActionListener() {
 			@Override
