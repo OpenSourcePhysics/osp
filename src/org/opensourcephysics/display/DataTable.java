@@ -1567,7 +1567,7 @@ public class DataTable extends JTable {
 			// DB! added May 2022 for LineProfile multiple frame data
 			for (int i = nTableCols; --i >= 0;) {
 				DataTableColumn tc = getTableColumn(i);
-				String colName = getModel().getColumnName(i);
+				String colName = getModel().getColumnName(tc.getModelIndex());
 				if (!colName.equals(tc.getHeaderValue())) {
 					tc.setHeaderValue(colName);
 				}
