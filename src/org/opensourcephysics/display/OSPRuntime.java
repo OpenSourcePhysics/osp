@@ -86,7 +86,7 @@ import swingjs.api.JSUtilI;
  */
 public class OSPRuntime {
 
-	public static final String VERSION = "6.0.8220529"; //$NON-NLS-1$
+	public static final String VERSION = "6.0.8220619"; //$NON-NLS-1$
 	public static final String OSP_PROPERTY_LOCALE = "locale";
 
 	/**
@@ -680,6 +680,9 @@ public class OSPRuntime {
 
 	/** The preferred decimal separator, if any */
 	private static String preferredDecimalSeparator = null;
+	
+	/** Minus sign, may be used instead of default hyphen-minus */
+	public static final char MINUS = '\u2212'; //$NON-NLS-1$
 
 	/** File Chooser starting directory. */
 	public static String chooserDir;
@@ -754,6 +757,7 @@ public class OSPRuntime {
 		}
 
 		dfs.setDecimalSeparator(currentDecimalSeparator = defaultDecimalSeparator);
+//		dfs.setMinusSign(MINUS);
 
 //	try {
 //	  Class.forName("com.sun.j3d.utils.universe.SimpleUniverse"); //$NON-NLS-1$
