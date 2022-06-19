@@ -57,6 +57,7 @@ public abstract class ClipControl extends OSPRuntime.Supported implements Proper
 	protected DataTrack timeSource;
 	protected double savedFrameDuration;
 	public boolean videoVisible = true;
+	public int loadedStepNumber = -1;
 	
 	public final static String PROPERTY_CLIPCONTROL_LOOPING = "looping"; //$NON-NLS-1$
 	public final static String PROPERTY_CLIPCONTROL_PLAYING = "playing"; //$NON-NLS-1$
@@ -386,6 +387,7 @@ public abstract class ClipControl extends OSPRuntime.Supported implements Proper
 				int n = control.getInt("frame"); //$NON-NLS-1$
 				n = clipControl.getVideoClip().frameToStep(n);
 				clipControl.setStepNumber(n);
+				clipControl.loadedStepNumber = n;
 			}
 			return obj;
 		}
