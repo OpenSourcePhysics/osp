@@ -1326,6 +1326,13 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 								&& (columnNames == null || columnNames.length != 1)) {
 							validData = false;
 						}
+						// ignore if column count is 1 and string contains comma 
+						// which may be a delimiter interpreted as decimal separator
+						// unless a single column name is non-null
+						if (rowData.length == 1 && strings[0].contains(",")
+								&& (columnNames == null || columnNames.length != 1)) {
+							validData = false;
+						}
 						// add valid data
 						if (validData) {
 							rows.add(rowData);
