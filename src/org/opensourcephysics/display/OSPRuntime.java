@@ -82,11 +82,12 @@ import swingjs.api.JSUtilI;
  *
  * @author Douglas Brown
  * @author Wolfgang Christian
+ * @author Robert M. Hanson
  * @version 1.0
  */
 public class OSPRuntime {
 
-	public static final String VERSION = "6.0.8220619"; //$NON-NLS-1$
+	public static final String VERSION = "6.0.9"; //$NON-NLS-1$
 	public static final String OSP_PROPERTY_LOCALE = "locale";
 
 	/**
