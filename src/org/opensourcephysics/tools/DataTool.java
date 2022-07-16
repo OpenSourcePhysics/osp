@@ -3498,8 +3498,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 */
 	protected void showAboutDialog() {
 		String date = OSPRuntime.getLaunchJarBuildDate();
-		if (date == null)
-			date = "unknown"; //$NON-NLS-1$
+		if ("".equals(date))
+			date = OSPRuntime.RELEASE_DATE;
 		
 		String aboutString = getName() + " " + OSPRuntime.VERSION + "\nCompile date " + date + "\n" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				+ "Open Source Physics Project\n" //$NON-NLS-1$

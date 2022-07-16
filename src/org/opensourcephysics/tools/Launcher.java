@@ -2237,8 +2237,9 @@ public class Launcher {
 		String newline = XML.NEW_LINE;
 		String vers = OSPRuntime.VERSION;
 		String date = OSPRuntime.getLaunchJarBuildDate();
-		if (date != null)
-			vers = vers + "   " + date; //$NON-NLS-1$
+		if ("".equals(date))
+			date = OSPRuntime.RELEASE_DATE;
+		vers = vers + "   " + date; //$NON-NLS-1$
 		String name = getClass().getSimpleName();
 		String aboutString = name + " " + vers + newline //$NON-NLS-1$
 				+ "Copyright (c) 2017 Wolfgang Christian" + newline //$NON-NLS-1$

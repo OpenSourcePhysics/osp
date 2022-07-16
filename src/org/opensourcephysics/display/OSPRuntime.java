@@ -88,6 +88,7 @@ import swingjs.api.JSUtilI;
 public class OSPRuntime {
 
 	public static final String VERSION = "6.0.9"; //$NON-NLS-1$
+	public static final String RELEASE_DATE = "8 Jul 2022"; //$NON-NLS-1$
 	public static final String OSP_PROPERTY_LOCALE = "locale";
 
 	/**
@@ -852,6 +853,8 @@ public class OSPRuntime {
 	 */
 	public static void showAboutDialog(Component parent) {
 		String date = getLaunchJarBuildDate();
+		if ("".equals(date))
+			date = RELEASE_DATE;
 
 		String vers = "OSP Library " + VERSION; //$NON-NLS-1$
 		if (date != null) {
