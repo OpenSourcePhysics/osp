@@ -102,9 +102,10 @@ public class FontSizer extends OSPRuntime.Supported {
 		if (c.getMenuComponentCount() > 0) {
 			Font f = c.getMenuComponent(0).getFont();
 			Font newFont = (f == null ? null : getResizedFont(f, level));
-			// DB need to look at all menu components to see if any are unsized
+//			if (newFont != null && newFont != f && !newFont.equals(f)) {// BH 2021.09.11 missing .equals here
+			// DB 2022.08.01 look at all menu components to see if any are unsized
 			// since refreshing menu may add new components
-			if (newFont != null && newFont != f && !newFont.equals(f)) {// BH 2021.09.11 missing .equals here
+			if (newFont != null) {
 				for (int i = 0; i < c.getMenuComponentCount(); i++) {
 					if (newFont.getSize() != c.getMenuComponent(i).getFont().getSize()) {
 						setFonts(c, level);
