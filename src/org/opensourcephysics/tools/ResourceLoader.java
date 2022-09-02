@@ -9,7 +9,6 @@
 package org.opensourcephysics.tools;
 
 import java.applet.AudioClip;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Image;

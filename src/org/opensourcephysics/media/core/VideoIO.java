@@ -804,7 +804,7 @@ public class VideoIO {
 		message += "<br><br>" + MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Fix") + ":";
 		message += "<ol>";
 
-		if (ResourceLoader.isHTTP(path)) {
+		if (ResourceLoader.isHTTP(path) || OSPRuntime.isJSTemp(path)) {
 			message += "<li>" + MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Download") + "</li>";
 			message += "<li>" + MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.ConvertDownload") + "</li>";
 			message += "<li>" + MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Import") + "</li></ol>";

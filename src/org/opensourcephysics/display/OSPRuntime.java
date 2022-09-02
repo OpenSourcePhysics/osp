@@ -1972,6 +1972,10 @@ public class OSPRuntime {
 		return (isJS ? jsutil.addJSCachedBytes(URLorURIorFile) : null);
 	}
 
+	public static boolean isJSTemp(String path) {
+		return isJS && path.startsWith("/TEMP/");
+	}
+	
 	public static void displayURL(String url) throws IOException {
 
 		if (isJS) {
