@@ -1616,7 +1616,27 @@ public class ResourceLoader {
 	public static boolean wasPDFOpen(String filename) {
 		return (openPDFs.contains(filename));
 	}
-	
+
+	/**
+	 * Download a resource via LibraryBrowser "Download" button or VideoIO "failed
+	 * to read CODEX" events after user approval.
+	 * 
+	 * @param urlPath
+	 * @param file
+	 * @return the copied file or null if there is any problem
+	 */
+	public static File downloadResourceFromDialog(String urlPath, File file) {
+		String filePath = file.getAbsolutePath();
+		try {
+			file = copyURLtoFile(urlPath, filePath);
+		} catch (IOException e1) {
+			urlPath += " " + e1.getMessage();
+		}
+		if (file == null)
+			OSPLog.warning("Failed to download " + urlPath + " to " + filePath);
+		return file;
+	}
+
 	/**
 	 * Downloads a file from the web to a target File.
 	 * 
@@ -3183,26 +3203,30 @@ public class ResourceLoader {
 
 	public static File copyURLtoFile(String urlPath, String filePath) throws IOException {
 		File f = new File(filePath);
+		InputStream is = null;
 		if (OSPRuntime.isJS) {
+			is = (isJarZipTrz(urlPath, true) ? new ByteArrayInputStream(getZipEntryBytes(urlPath, null))
+					: isHTTP(urlPath) ? openStream(new URL(urlPath)) : new FileInputStream(urlPath));
 			FileOutputStream fos = new FileOutputStream(f);
-			OSPRuntime.jsutil.transferTo(openStream(new URL(urlPath)), fos);
+			OSPRuntime.jsutil.transferTo(is, fos);
 			fos.close();
 		} else {
-			InputStream is = openStream(new URL(urlPath));
 			try {
-			Path path = f.toPath();
-			Files.createDirectories(path.getParent());
-			Files.copy(is, new File(filePath).toPath(), StandardCopyOption.REPLACE_EXISTING);
+				is = openStream(new URL(urlPath));
+				Path path = f.toPath();
+				Files.createDirectories(path.getParent());
+				Files.copy(is, new File(filePath).toPath(), StandardCopyOption.REPLACE_EXISTING);
 //			Files.copy(in, target, options)
 //			Files.write(path, getURLContents();
 			} catch (IOException e) {
+				f = null;
 				try {
-					is.close();
+					if (is != null)
+						is.close();
 				} catch (IOException ee) {
-					
 				}
 			}
-		} 
+		}
 		return f;
 	}
 
