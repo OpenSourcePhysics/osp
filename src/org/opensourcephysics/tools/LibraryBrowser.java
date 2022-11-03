@@ -30,7 +30,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -1880,23 +1879,18 @@ public class LibraryBrowser extends JPanel {
 		// special handling for ComPADRE
 		LibraryTreePanel treePanel = getSelectedTreePanel();
 		LibraryTreeNode node = (treePanel == null ? null : treePanel.getSelectedNode());
-		LibraryResource record = node == null? null: node.record;
-		String name = getDownloadName(urlPath, record);		
-		
+		LibraryResource record = node == null ? null : node.record;
+		String name = getDownloadName(urlPath, record);
+
 		// choose file and save resource
-		VideoIO.getChooserFilesAsync("save resource "+name, //$NON-NLS-1$
+		VideoIO.getChooserFilesAsync("save resource " + name, //$NON-NLS-1$
 				(files) -> {
-					if (VideoIO.getChooser().getSelectedOption() != AsyncFileChooser.APPROVE_OPTION
-							|| files == null) {
-						return null;
-					}
-					String filePath = files[0].getAbsolutePath();
-					try {
-						File file = ResourceLoader.copyURLtoFile(urlPath, filePath);
-						LibraryBrowser.this.firePropertyChange(PROPERTY_LIBRARY_TARGET, HINT_DOWNLOAD_RESOURCE, file); // $NON-NLS-1$
-					} catch (IOException e1) {
-						OSPLog.warning("Failed to download urlPath="+urlPath);
-						e1.printStackTrace();
+					if (VideoIO.getChooser().getSelectedOption() == AsyncFileChooser.APPROVE_OPTION && files != null) {
+						File file = ResourceLoader.downloadResourceFromDialog(urlPath, files[0]);
+						if (file != null) {
+							LibraryBrowser.this.firePropertyChange(PROPERTY_LIBRARY_TARGET, HINT_DOWNLOAD_RESOURCE,
+									file);
+						}
 					}
 					return null;
 				});

@@ -33,7 +33,6 @@ package org.opensourcephysics.media.core;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -52,13 +51,13 @@ import java.util.function.Function;
 import java.util.zip.ZipEntry;
 
 import javax.imageio.ImageIO;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.JEditorPane;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.filechooser.FileFilter;
 
 import org.opensourcephysics.controls.ControlsRes;
 import org.opensourcephysics.controls.OSPLog;
@@ -804,7 +803,7 @@ public class VideoIO {
 		message += "<br><br>" + MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Fix") + ":";
 		message += "<ol>";
 
-		if (ResourceLoader.isHTTP(path)) {
+		if (ResourceLoader.isHTTP(path) || OSPRuntime.isJSTemp(path)) {
 			message += "<li>" + MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Download") + "</li>";
 			message += "<li>" + MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.ConvertDownload") + "</li>";
 			message += "<li>" + MediaRes.getString("VideoIO.Dialog.ConvertVideo.Message.Import") + "</li></ol>";
@@ -819,16 +818,9 @@ public class VideoIO {
 							String name = XML.getName(path);
 							VideoIO.getChooserFilesAsync("save video " + name, //$NON-NLS-1$
 									(files) -> {
-										if (VideoIO.getChooser().getSelectedOption() != AsyncFileChooser.APPROVE_OPTION
-												|| files == null) {
-											return null;
-										}
-										String filePath = files[0].getAbsolutePath();
-										try {
-											ResourceLoader.copyURLtoFile(path, filePath);
-										} catch (IOException e1) {
-											OSPLog.warning("Failed to download " + path);
-											e1.printStackTrace();
+										if (VideoIO.getChooser().getSelectedOption() == AsyncFileChooser.APPROVE_OPTION
+												&& files != null) {
+											ResourceLoader.downloadResourceFromDialog(path, files[0]);
 										}
 										return null;
 									});
