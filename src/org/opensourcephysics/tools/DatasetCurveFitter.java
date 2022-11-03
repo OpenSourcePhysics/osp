@@ -941,7 +941,7 @@ public class DatasetCurveFitter extends JPanel {
 		fitBuilderButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				setAutoFit(false);
+//				setAutoFit(false);
 				String fitName = fit.getName();
 				if (fitName != null && fitBuilder.getPanelNames().contains(fitName)) {
 					fitBuilder.setSelectedPanel(fitName);
@@ -1119,8 +1119,11 @@ public class DatasetCurveFitter extends JPanel {
 						toSelect = name;
 					}
 					if (!name.equals(line) && !name.equals(parabola)) {
-						if (toSelect == name)
-							toSelect = name = ToolsRes.getString("Function." + name + ".Name");
+						if (toSelect == name) {
+							String localized = ToolsRes.getString("Function." + name + ".Name");
+							if (!localized.startsWith("!"))
+								toSelect = name = localized;
+						}
 						fitDropDown.addItem(name);
 					}
 				}

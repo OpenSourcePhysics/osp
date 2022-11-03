@@ -95,6 +95,12 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 					&& (displayName == null ? fto.displayName == null : displayName.equals(fto.displayName))
 					&& (icon == null ? fto.icon == null : icon.equals(fto.icon));
 		}
+		
+		@Override
+		public String toString() {
+			return displayName;
+		}
+
 	}
 
 	public static String[] parserNames = new String[] { "e", "pi", "min", "mod", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
@@ -553,7 +559,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	public void setSelectedPanel(String name) {
 		if (!haveGUI())
 			return;
-		//System.out.println("FunctionTool.setSelectedPanel " + name + " " + dropdown.getSelectedItem());
+		System.out.println("FunctionTool.setSelectedPanel " + name + " " + dropdown.getSelectedItem());
 		FTObject item = getDropdownItem(name);
 		if (item != null)
 			dropdown.setSelectedItem(item);
@@ -660,7 +666,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		if (vis) {
 			checkGUI();
 			setFontLevel(FontSizer.getLevel());
-			refreshDropdown(null);
+			refreshDropdown(getSelectedName());
 		} else if (!haveGUI()) {
 			return;
 		}
