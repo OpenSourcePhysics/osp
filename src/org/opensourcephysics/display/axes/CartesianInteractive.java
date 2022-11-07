@@ -34,6 +34,7 @@ import javax.swing.SwingConstants;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.Interactive;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.PlottingPanel;
 import org.opensourcephysics.display.Selectable;
 import org.opensourcephysics.display.dialogs.DialogsRes;
@@ -419,7 +420,8 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 				reg = VERT_AXIS_MIN;
 				break;
 			}
-			int offset = 8; // approx distance from axis to hitRect for scale setter
+//			int offset = 8; // approx distance from axis to hitRect for scale setter
+			int offset = 0; // approx distance from axis to hitRect for scale setter
 			// horizontal variable
 			Graphics g = drawingPanel.getGraphics();
 			int xw = xLine.getWidth(g) + offset;
@@ -484,6 +486,18 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 		return scaleSetter;
 	}
 
+  /**
+   * Clears the format cache, called when decimal separator changed
+   */
+  public void clearFormats() {
+  	htFormats.clear();
+  	if (scaleSetter != null) {
+  		scaleSetter.scaleField.setDecimalSeparator(
+  				OSPRuntime.getCurrentDecimalSeparator());
+  		scaleSetter.updateValues();
+  	}
+  }
+  
 	/**
 	 * A dialog with value field and autoscale checkbox.
 	 */
@@ -542,6 +556,7 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 						drawingPanel.setPreferredMinMaxY(min, max);
 					}
 					drawingPanel.paintImmediately(0, 0, drawingPanel.getWidth(), drawingPanel.getHeight());
+					updateValues();
 				}
 
 			};
@@ -576,9 +591,24 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 						scaleField.selectAll();
 					}
 				}
+				@Override
+				public void mouseExited(MouseEvent e) {
+					if (pinned)
+						return;
+					Point p = e.getPoint();
+					Point loc = scaleField.getLocation();
+					p.x += loc.x;
+					p.y += loc.y;
+					
+					Rectangle rect = new Rectangle(scaleSetter.getSize());
+					if (!rect.contains(p)) {
+						hideIfInactive();
+					}
+				}
 
 			});
 			add(scaleField, BorderLayout.CENTER);
+			updateFont();
 		}
 
 		public int findRegion(Point p, Rectangle hitRect, Dimension plotDim, int offset, int l, int r, int t, int b,
@@ -625,6 +655,7 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 		public void updateFont() {
 			constraint = text = null;
 			FontSizer.setFont(this);
+			FontSizer.setFont(autoscaleCheckbox);
 		}
 
 		public void updateValues() {
@@ -683,27 +714,28 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 				break;
 			}
 		}
-
+		
 		public void setVisible(Point p) {
 			// JPanel gp = plot.getGlassPane();
 			if (p == null) {
 				super.setVisible(false);
 				return;
 			}
-			super.setVisible(true);
+			setVisible(true);
 //			if (scaleSetterPanel.getParent() != gp) {
 //				gp.add(scaleSetterPanel);
 //			}
 //			OSPLog.debug("CartInter.scaleSetter" + scaleSetterPanel);
 //			scaleSetterPanel.setVisible(true);
 		}
-
+		
 		@Override
 		public void setVisible(boolean b) {
 			if (!b) {
 				setVisible(null);
 				return;
 			}
+			updateValues();
 			super.setVisible(b);
 		}
 
@@ -874,7 +906,8 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 				return; // Paco
 			Point p = e.getPoint();
 			// BH should not be necessary to convert modifiers to text.
-			if (!new Rectangle(plot.getSize()).contains(p) && (scaleSetter != null)
+			Rectangle rect = new Rectangle(plot.getSize());
+			if (!rect.contains(p) && (scaleSetter != null)
 					&& "".equals(InputEvent.getModifiersExText(e.getModifiersEx()))) { //$NON-NLS-1$
 				hideScaleSetter();
 			}
