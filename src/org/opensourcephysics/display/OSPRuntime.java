@@ -527,6 +527,9 @@ public class OSPRuntime {
 		}
 		return sBrowser;
 	}
+	
+	public static final char DECIMAL_SEPARATOR_COMMA = ',';
+	public static final char DECIMAL_SEPARATOR_PERIOD = '.';
 
 	public static boolean isApplet = false;
 
@@ -752,13 +755,13 @@ public class OSPRuntime {
 
 		NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
 		if (format instanceof DecimalFormat) {
-			defaultDecimalSeparator = ((DecimalFormat) format).getDecimalFormatSymbols().getDecimalSeparator();
+			setDefaultDecimalSeparator(((DecimalFormat) format).getDecimalFormatSymbols().getDecimalSeparator());
 		} else {
-			defaultDecimalSeparator = org.opensourcephysics.numerics.Util.newDecimalFormat("0")
-					.getDecimalFormatSymbols().getDecimalSeparator();
+			setDefaultDecimalSeparator(org.opensourcephysics.numerics.Util.newDecimalFormat("0")
+					.getDecimalFormatSymbols().getDecimalSeparator());
 		}
 
-		dfs.setDecimalSeparator(currentDecimalSeparator = defaultDecimalSeparator);
+//		dfs.setDecimalSeparator(currentDecimalSeparator = defaultDecimalSeparator);
 //		dfs.setMinusSign(MINUS);
 
 //	try {
@@ -1498,14 +1501,18 @@ public class OSPRuntime {
 	 * @param c a decimal separator
 	 */
 	public static void setDefaultDecimalSeparator(char c) {
-		defaultDecimalSeparator = c;
+		if (c == DECIMAL_SEPARATOR_PERIOD || c == DECIMAL_SEPARATOR_COMMA)
+			defaultDecimalSeparator = c;
+		else
+			defaultDecimalSeparator = DECIMAL_SEPARATOR_PERIOD;
 		if (preferredDecimalSeparator == null)
-			dfs.setDecimalSeparator(currentDecimalSeparator = c);
+			dfs.setDecimalSeparator(currentDecimalSeparator = defaultDecimalSeparator);
 	}
 
 	/**
 	 * 
-	 * Sets the preferred decimal separator.
+	 * Sets the preferred decimal separator. 
+	 * Must be DECIMAL_SEPARATOR_PERIOD or DECIMAL_SEPARATOR_COMMA.
 	 * 
 	 * @param separator If non-null, assigns the given value to the current
 	 *                  DecimalFormatSymbols value; if null, resets the
@@ -1513,14 +1520,17 @@ public class OSPRuntime {
 	 * 
 	 */
 	public static void setPreferredDecimalSeparator(String separator) {
-		if (separator != null && separator.length() == 0)
+		// only allow comma and period
+		if (separator != null 
+				&& separator.charAt(0) != DECIMAL_SEPARATOR_PERIOD
+				&& separator.charAt(0) != DECIMAL_SEPARATOR_COMMA)
 			separator = null;
 		preferredDecimalSeparator = separator;
 		dfs.setDecimalSeparator(
 				currentDecimalSeparator = (separator == null ? defaultDecimalSeparator : separator.charAt(0)));
 	}
 
-	public static char getCurrrentDecimalSeparator() {
+	public static char getCurrentDecimalSeparator() {
 		return currentDecimalSeparator;
 	}
 
