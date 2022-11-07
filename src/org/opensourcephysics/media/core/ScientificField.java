@@ -31,6 +31,8 @@
  */
 package org.opensourcephysics.media.core;
 
+import org.opensourcephysics.display.OSPRuntime;
+
 /**
  * This NumberField displays numbers in scientific format.
  *
@@ -55,10 +57,10 @@ public class ScientificField extends NumberField {
 	 * @param columns the number of character columns
 	 * @param sigfigs the significant figures
 	 */
-	public ScientificField(int columns, int sigfigs) {
+  public ScientificField(int columns, int sigfigs) {
 		super(columns, sigfigs, true);
 //    char d = format.getDecimalFormatSymbols().getDecimalSeparator();
-		char d = '.';
+		char d = OSPRuntime.getCurrentDecimalSeparator();
 		String s = ""; //$NON-NLS-1$
 		for (int i = 0; i < nf.sigfigs - 1; i++) {
 			s += "0"; //$NON-NLS-1$
@@ -72,7 +74,7 @@ public class ScientificField extends NumberField {
    * @param value the value to be entered
    */
   @Override
-public void setValue(double value) {
+  public void setValue(double value) {
     if(Math.abs(value)<zeroLimit) {
       value = 0;
     }
@@ -81,7 +83,7 @@ public void setValue(double value) {
 
   // Override NumberField methods so pattern cannot change
   @Override
-public void setSigFigs(int sigfigs) {
+  public void setSigFigs(int sigfigs) {
     if(nf.sigfigs==sigfigs) {
       return;
     }
@@ -90,8 +92,8 @@ public void setSigFigs(int sigfigs) {
   }
 
   @Override
-public void setExpectedRange(double lower, double upper) {}
-
+  public void setExpectedRange(double lower, double upper) {}
+  
 }
 
 /*

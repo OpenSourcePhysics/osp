@@ -2540,6 +2540,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 		plot.stringBuilder.refreshFormats();
 		dataTable.refreshTable(DataTable.MODE_FORMAT);
+		plotAxes.clearFormats();
+		plot.repaint();
 	}
 
 	/**
@@ -4366,8 +4368,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			}
 
 			void refreshFormats() {
-				scientificFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
-				decimalFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+				DecimalFormatSymbols symbols = OSPRuntime.getDecimalFormatSymbols();
+				scientificFormat.setDecimalFormatSymbols(symbols);
+				decimalFormat.setDecimalFormatSymbols(symbols);
+				sciFormat.setDecimalFormatSymbols(symbols);
+				fixedFormat.setDecimalFormatSymbols(symbols);
 			}
 
 			/**

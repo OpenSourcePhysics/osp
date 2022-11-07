@@ -70,7 +70,7 @@ public class NumberField extends JTextField {
 	public static class NumberFormatter {
 
 		private DecimalFormat format;
-		private char decimalSeparator;
+		char decimalSeparator;
 		private String[] patterns = new String[5];
 		private double[] ranges = { 0.1, 10, 100, 1000 };
 		private String currentPattern;
@@ -171,7 +171,7 @@ public class NumberField extends JTextField {
 				return "";
 			}
 			if (currentPattern == null)
-				setFormatFor(d);
+				setFormatFor(d); // sets non-null currentPattern
 			int i = 0, f = 0;
 			switch (currentPattern) {
 			case "0":
@@ -223,7 +223,7 @@ public class NumberField extends JTextField {
 			// System.out.println ("NumberField ApplyPattern " + p + " " + ++test + " " +
 			// test1);
 			if (p != currentPattern) {
-				char sep = OSPRuntime.getCurrrentDecimalSeparator();
+				char sep = OSPRuntime.getCurrentDecimalSeparator();
 				if (decimalSeparator != sep) {
 					decimalSeparator = sep;
 					formatCache.clear();
@@ -613,6 +613,19 @@ public class NumberField extends JTextField {
 
 	public void setFormatFor(double d) {
 		nf.setFormatFor(d);
+	}
+	
+	public void setDecimalSeparator(char c) {
+		if (Character.valueOf(c).equals(Character.valueOf(OSPRuntime.DECIMAL_SEPARATOR_PERIOD))
+				|| Character.valueOf(c).equals(Character.valueOf(OSPRuntime.DECIMAL_SEPARATOR_COMMA))) {
+			nf.decimalSeparator = c;
+			
+			DecimalFormat format = nf.format;
+			if (format != null) {
+				format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+			}
+			setValue(getValue());
+		}
 	}
 
 }

@@ -1606,7 +1606,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 			}
 			// for other names, return expression with appropriate decimal separator
 			if (expression.indexOf("if") == -1) { //$NON-NLS-1$
-				boolean isComma = ',' == sciFormat0000.getDecimalFormatSymbols().getDecimalSeparator();
+				boolean isComma = OSPRuntime.getCurrentDecimalSeparator() == OSPRuntime.DECIMAL_SEPARATOR_COMMA;
 				String express = expression;
 				if (isComma)
 					express = express.replaceAll("\\.", ","); //$NON-NLS-1$ //$NON-NLS-2$
