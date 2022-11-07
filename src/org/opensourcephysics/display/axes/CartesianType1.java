@@ -962,7 +962,7 @@ public void resizeFonts(double factor, DrawingPanel panel) {
     return results;
   }
 
-  Hashtable<String,String> htFormats = new Hashtable<>();
+  protected Hashtable<String,String> htFormats = new Hashtable<>();
   
   /**
    *  Return a string for displaying the specified number using the specified
@@ -993,6 +993,14 @@ public void resizeFonts(double factor, DrawingPanel panel) {
       numberFormat.setMinimumFractionDigits(numfracdigits);
       numberFormat.setMaximumFractionDigits(numfracdigits);
     }
+    // check that DecimalSeparator is current
+    DecimalFormat df = (DecimalFormat)numberFormat;
+  	char c = OSPRuntime.getCurrentDecimalSeparator();
+  	char cc = df.getDecimalFormatSymbols().getDecimalSeparator();
+  	if (!Character.valueOf(c).equals(Character.valueOf(cc))) {
+  		df.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+  	}
+		
     htFormats.put(key, val = numberFormat.format(num));
     return val;
   }
