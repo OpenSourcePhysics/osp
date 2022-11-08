@@ -170,6 +170,8 @@ public class NumberField extends JTextField {
 			if (Double.isNaN(d)) {
 				return "";
 			}
+			if (d == 0)
+				d = 0;
 			if (decimalSeparator != OSPRuntime.getCurrentDecimalSeparator()) {
 				decimalSeparator = OSPRuntime.getCurrentDecimalSeparator();
 				formatCache.clear();
@@ -210,6 +212,7 @@ public class NumberField extends JTextField {
 				}
 				s = neg + s.substring(0, i) + decimalSeparator + s.substring(i);
 			}
+			s = s.replace(".", String.valueOf(decimalSeparator));
 			return s;
 		}
 
