@@ -214,7 +214,6 @@ public class DatasetCurveFitter extends JPanel {
 	int fitNumber = 1;
 	boolean refreshing = false;
 	private boolean isActive;
-	boolean failedToFit;
 
 	public void setActiveNoFit(boolean b) {
 		isActive = b;
@@ -508,7 +507,6 @@ public class DatasetCurveFitter extends JPanel {
 								f.setParameterValue(i, prevParams[i]);
 							}
 							devSq = prevDevSq;
-	            failedToFit = true;
 						}
 					}
 				}
@@ -564,14 +562,6 @@ public class DatasetCurveFitter extends JPanel {
 		firePropertyChange(PROPERTY_DATASETCURVEFITTER_FIT, null, null);
 		if (tab != null && tab.areaVisible && tab.measureFit)
 			tab.plot.refreshArea();
-		
-		failedToFit = failedToFit || Double.isNaN(rmsDev);
-
-		if (autofit && failedToFit && !fit.getName().equals(FIT_TEST)) {
-			setAutoFit(false);
-      Toolkit.getDefaultToolkit().beep();
-			OSPLog.finer("Failed to autofit function \"" + fit.getName() + "\"");
-		}
 		
 		return rmsDev;
 	}
@@ -644,6 +634,8 @@ public class DatasetCurveFitter extends JPanel {
 	  String val = String.format("%." + places + "f", value*multiplier);
 	  String sig = String.format("%." + places + "f", sigma*multiplier);
 		String formatted = val + " \u00B1 " + sig;
+		String separator = String.valueOf(OSPRuntime.getCurrentDecimalSeparator());
+		formatted = formatted.replace(".", separator);
 		if (exp != 0)
 			formatted = "(" + formatted +") " + String.format("E%d", exp);
 		
@@ -705,8 +697,7 @@ public class DatasetCurveFitter extends JPanel {
 				autofit = autofitCheckBox.isSelected();
 				spinCellEditor.stopCellEditing();
 				paramTable.clearSelection();
-				if (autofit && failedToFit) {
-					failedToFit = false;
+				if (autofit) {
 					fit(fit, true);
 				}
 				else
@@ -943,6 +934,7 @@ public class DatasetCurveFitter extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 //				setAutoFit(false);
 				String fitName = fit.getName();
+				fitBuilder.refreshDropdown(fitName);
 				if (fitName != null && fitBuilder.getPanelNames().contains(fitName)) {
 					fitBuilder.setSelectedPanel(fitName);
 				} else if (fitBuilder.getSelectedName() != null) {
@@ -1096,6 +1088,14 @@ public class DatasetCurveFitter extends JPanel {
 		eqnLabel.setText(ToolsRes.getString("DatasetCurveFitter.Label.Equation")); //$NON-NLS-1$
 		updateColorButton();
 		refreshFitDropDown();
+	}
+	
+	/**
+	 * Refreshes the decimal separators.
+	 */
+	protected void refreshDecimalSeparators() {
+		repaint();
+		spinCellEditor.field.setValue(spinCellEditor.field.getValue());
 	}
 
 	/**
