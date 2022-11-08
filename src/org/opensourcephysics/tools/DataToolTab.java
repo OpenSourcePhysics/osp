@@ -1684,7 +1684,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		// create plotting panel and axes
 		plot = new DataToolPlotter(getWorkingData());
 		plotAxes = new DataToolAxes(plot);
-		plot.setAxes(plotAxes);
 		if (getWorkingData() != null) {
 			plot.addDrawable(getWorkingData());
 			plot.setTitle(getWorkingData().getName());
@@ -2540,8 +2539,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 		plot.stringBuilder.refreshFormats();
 		dataTable.refreshTable(DataTable.MODE_FORMAT);
-		plotAxes.clearFormats();
+		plotAxes.refreshDecimalSeparators();
 		plot.repaint();
+		getCurveFitter().refreshDecimalSeparators();
 	}
 
 	/**
@@ -3107,17 +3107,22 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (fitTimer != null && isFitterVisible()) {
-				curveFitter.fit(curveFitter.fit);
+			if (fitTimer != null) {
+				if (isFitterVisible() && !plotAxes.getScaleSetter().isVisible()
+						&& curveFitter.isAutoFit() && DataToolTab.this.dataTool.isVisible()) {
+					curveFitter.fit(curveFitter.fit);
 //				plot.refreshArea();
 //				plot.refreshMeasurements();
-				plot.repaint();
-			}
+//				plot.repaint();
+				}
+				else 
+					plot.repaint();
+			}					
 		}
 
 	};
 
-	private static final int fitDelayMS = (OSPRuntime.isJS ? 250 : 100);
+	private static final int fitDelayMS = (OSPRuntime.isJS ? 250 : 200);
 
 	void refreshFit() {
 		if (fitTimer == null) {
@@ -3682,7 +3687,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				plot.slope = plot.value = Double.NaN;				
 			}
 		}
-
+		
 		/**
 		 * Fills the areaDataset with points whose x values are between the limit lines.
 		 */

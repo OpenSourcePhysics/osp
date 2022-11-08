@@ -559,7 +559,6 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	public void setSelectedPanel(String name) {
 		if (!haveGUI())
 			return;
-		System.out.println("FunctionTool.setSelectedPanel " + name + " " + dropdown.getSelectedItem());
 		FTObject item = getDropdownItem(name);
 		if (item != null)
 			dropdown.setSelectedItem(item);
