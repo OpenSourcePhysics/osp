@@ -20,6 +20,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyAdapter;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -56,6 +57,7 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 	boolean drawHitRect;
 
 	AxisMouseListener axisListener;
+	KeyAdapter keyListener;
 	int mouseRegion;
 	Point mouseLoc;
 	double mouseX, mouseY;
@@ -80,7 +82,7 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 		axisListener = new AxisMouseListener();
 		panel.addMouseListener(axisListener);
 		panel.addMouseMotionListener(axisListener);
-		panel.addKeyListener(new java.awt.event.KeyAdapter() {
+		keyListener = new KeyAdapter() {
 			@Override
 			public void keyPressed(java.awt.event.KeyEvent e) {
 				if (!enabled)
@@ -102,7 +104,8 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 				}
 			}
 
-		});
+		};
+		panel.addKeyListener(keyListener);
 //		scaleSetter = new ScaleSetter();
 //		// create transparent scaleSetterPanel with no LayoutManager
 //		scaleSetterPanel = new JPanel(null);
@@ -139,13 +142,13 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 	// overrides CartesianType1 method
 	@Override
 	public double getX() {
-		return Double.isNaN(mouseX) ? plot.pixToX(plot.getMouseIntX()) : mouseX;
+		return plot != null && Double.isNaN(mouseX) ? plot.pixToX(plot.getMouseIntX()) : mouseX;
 	}
 
 	// overrides CartesianType1 method
 	@Override
 	public double getY() {
-		return Double.isNaN(mouseY) ? plot.pixToY(plot.getMouseIntY()) : mouseY;
+		return plot != null && Double.isNaN(mouseY) ? plot.pixToY(plot.getMouseIntY()) : mouseY;
 	}
 
 	// implements Selectable
@@ -307,10 +310,10 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 	 * Hides the scale setter.
 	 */
 	public void hideScaleSetter() {
-		if (scaleSetter != null) {
-//			scaleSetter.autoscaleCheckbox.requestFocusInWindow();
-			scaleSetter.setVisible(null);
-			plot.repaint();
+		if (scaleSetter != null && scaleSetter.isVisible()) {
+			scaleSetter.setVisible(false);
+			if (plot != null)
+				plot.repaint();
 		}
 	}
 
@@ -326,6 +329,13 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 		if (scaleSetter != null) {
 			scaleSetter.updateFont();
 		}
+	}
+	
+	public void dispose() {
+		plot.removeMouseListener(axisListener);
+		plot.removeMouseMotionListener(axisListener);
+		plot.removeKeyListener(keyListener);
+		plot = null;
 	}
 
 	/**
@@ -453,7 +463,8 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 			}
 			// scale setter regions 1 - 4
 			// horizontal min
-			return getScaleSetter().findRegion(p, hitRect, plotDim, offset, l, r, t, b, isPress);
+			reg = getScaleSetter().findRegion(p, hitRect, plotDim, offset, l, r, t, b, isPress);
+			return reg;
 		}
 		return reg;
 	}
@@ -463,10 +474,11 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 	 *
 	 * @return the ScaleSetter dialog
 	 */
-	protected ScaleSetter getScaleSetter() {
+	public ScaleSetter getScaleSetter() {
 		if (scaleSetter == null) {
 			scaleSetter = new ScaleSetter();
-			plot.getGlassPane().add(scaleSetter);
+			if (plot != null)
+				plot.getGlassPane().add(scaleSetter);
 			// BH opted to dispense with scaleSetterPanel, since
 			// scaleSetter itself is a panel, and the added panel adds nothing
 			// I have left it borderless opaque for now; we can revise that
@@ -487,13 +499,11 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 	}
 
   /**
-   * Clears the format cache, called when decimal separator changed
+   * Refreshes the format cache and decimal separator
    */
-  public void clearFormats() {
+  public void refreshDecimalSeparators() {
   	htFormats.clear();
   	if (scaleSetter != null) {
-  		scaleSetter.scaleField.setDecimalSeparator(
-  				OSPRuntime.getCurrentDecimalSeparator());
   		scaleSetter.updateValues();
   	}
   }
@@ -507,9 +517,10 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 		int region; // determines which axis and end are active
 		boolean pinned = false; // prevents hiding this when true
 		private String text;
-		private int loc;
+//		private int loc;
 		private String constraint;
 		private Dimension size;
+		private boolean paintDisabled;
 
 		ScientificField scaleField = new ScientificField(6, 3) {
 			@Override
@@ -613,12 +624,12 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 
 		public int findRegion(Point p, Rectangle hitRect, Dimension plotDim, int offset, int l, int r, int t, int b,
 				boolean isPress) {
-			hitRect.setLocation(l - 12, plotDim.height - b + 6 + offset);
 			double xmin = drawingPanel.getXMin();
 			double xmax = drawingPanel.getXMax();
 			double ymin = drawingPanel.getYMin();
 			double ymax = drawingPanel.getYMax();
 			hitRect.setSize(fieldDim);
+			hitRect.setLocation(l - 12, plotDim.height - b + 6 + offset);
 			if (hitRect.contains(p)) {
 				if (isPress)
 					scaleField.setExpectedRange(xmin, xmax);
@@ -661,6 +672,7 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 		public void updateValues() {
 			if (scaleField.getBackground() == Color.yellow)
 				return;
+			scaleField.refreshDecimalSeparators(false);
 			switch (region) {
 			case HORZ_MIN:
 				scaleField.setValue(drawingPanel.getXMin());
@@ -678,12 +690,14 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 				scaleField.setValue(drawingPanel.getYMax());
 				autoscaleCheckbox.setSelected(drawingPanel.isAutoscaleYMax());
 			}
+			scaleField.select(20, 20); // clears selection and places caret at end
+			scaleField.requestFocusInWindow();
 		}
 
-		public void set(int offset, String constraint, int loc) {
+		public void set(int offset, String constraint, int region) {
 			String text = scaleField.getText();
-			if (this.loc == loc && this.constraint == constraint && text.equals(this.text))
-				return;
+//			if (this.loc == region && this.constraint == constraint && text.equals(this.text))
+//				return;
 			boolean doValidate = false;
 			if (this.constraint != constraint) {
 				add(autoscaleCheckbox, constraint);
@@ -691,15 +705,16 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 			} else if (!text.equals(this.text)) {
 				doValidate = true;
 			}
-			if (doValidate)
+			if (doValidate) {
 				size = getPreferredSize();
-			validate();
+				validate();
+			}
 			this.text = text;
 			this.constraint = constraint;
-			this.loc = loc;
+//			this.loc = region;
 			Point fieldLoc = scaleField.getLocation(); // relative to scaleSetter
 			Point hitLoc = hitRect.getLocation(); // relative to plotPanel
-			switch (loc) {
+			switch (region) {
 			case HORZ_MIN:
 				setBounds(hitLoc.x - fieldLoc.x, hitLoc.y - fieldLoc.y - offset, size.width, size.height);
 				break;
@@ -715,27 +730,11 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 			}
 		}
 		
-		public void setVisible(Point p) {
-			// JPanel gp = plot.getGlassPane();
-			if (p == null) {
-				super.setVisible(false);
-				return;
-			}
-			setVisible(true);
-//			if (scaleSetterPanel.getParent() != gp) {
-//				gp.add(scaleSetterPanel);
-//			}
-//			OSPLog.debug("CartInter.scaleSetter" + scaleSetterPanel);
-//			scaleSetterPanel.setVisible(true);
-		}
-		
 		@Override
 		public void setVisible(boolean b) {
-			if (!b) {
-				setVisible(null);
-				return;
-			}
-			updateValues();
+			paintDisabled = false;
+			if (b)
+				updateValues();
 			super.setVisible(b);
 		}
 
@@ -754,12 +753,12 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 				}
 				region = mouseRegion;
 				pinned = false;
-				updateValues();
-				scaleField.select(20, 20); // clears selection and places caret at end
-				scaleField.requestFocusInWindow();
+//				updateValues();
+//				scaleField.select(20, 20); // clears selection and places caret at end
+//				scaleField.requestFocusInWindow();
 			}
 		}
-
+		
 	}
 
 	/**
@@ -781,7 +780,7 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 			case VERT_MAX:
 				if (!drawingPanel.isFixedScale() && scaleSetter != null) {
 					getScaleSetter().setRegion(mouseRegion);
-					scaleSetter.setVisible(p);
+					scaleSetter.setVisible(true);
 				}
 				return;
 			case HORZ_VAR:

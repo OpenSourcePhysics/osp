@@ -124,7 +124,7 @@ public class PlottingPanel extends InteractivePanel {
 	 * Override to specify a different kind of axes.
 	 */
 	protected void initAxes() {
-		axes = new CartesianInteractive(this);
+		new CartesianInteractive(this); // constructor calls setAxes(_axes) below
 	}
 
 	/**
@@ -133,6 +133,9 @@ public class PlottingPanel extends InteractivePanel {
 	 * @param _axes the new axes
 	 */
 	public void setAxes(DrawableAxes _axes) {
+		if (axes != null && axes != _axes && axes instanceof CartesianInteractive) {
+			((CartesianInteractive)axes).dispose();
+		}
 		axes = _axes;
 		if (axes == null) {
 			axes = new CustomAxes(this);
