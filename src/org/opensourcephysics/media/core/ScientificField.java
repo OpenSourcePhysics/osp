@@ -60,12 +60,11 @@ public class ScientificField extends NumberField {
   public ScientificField(int columns, int sigfigs) {
 		super(columns, sigfigs, true);
 //    char d = format.getDecimalFormatSymbols().getDecimalSeparator();
-		char d = OSPRuntime.getCurrentDecimalSeparator();
 		String s = ""; //$NON-NLS-1$
 		for (int i = 0; i < nf.sigfigs - 1; i++) {
 			s += "0"; //$NON-NLS-1$
 		}
-		applyPattern("0" + d + s + "E0"); //$NON-NLS-1$ //$NON-NLS-2$
+		applyPattern("0." + s + "E0"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
   /**

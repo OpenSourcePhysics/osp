@@ -73,7 +73,7 @@ public class NumberField extends JTextField {
 		char decimalSeparator;
 		private String[] patterns = new String[5];
 		private double[] ranges = { 0.1, 10, 100, 1000 };
-		private String currentPattern;
+		protected String currentPattern;
 		private final Map<String, DecimalFormat> formatCache = new Hashtable<>();
 		private boolean isIntegerOnly;
 		private boolean fixedPattern;
@@ -170,6 +170,10 @@ public class NumberField extends JTextField {
 			if (Double.isNaN(d)) {
 				return "";
 			}
+			if (decimalSeparator != OSPRuntime.getCurrentDecimalSeparator()) {
+				decimalSeparator = OSPRuntime.getCurrentDecimalSeparator();
+				formatCache.clear();
+			}
 			if (currentPattern == null)
 				setFormatFor(d); // sets non-null currentPattern
 			int i = 0, f = 0;
@@ -223,9 +227,8 @@ public class NumberField extends JTextField {
 			// System.out.println ("NumberField ApplyPattern " + p + " " + ++test + " " +
 			// test1);
 			if (p != currentPattern) {
-				char sep = OSPRuntime.getCurrentDecimalSeparator();
-				if (decimalSeparator != sep) {
-					decimalSeparator = sep;
+				if (decimalSeparator != OSPRuntime.getCurrentDecimalSeparator()) {
+					decimalSeparator = OSPRuntime.getCurrentDecimalSeparator();
 					formatCache.clear();
 				}
 				currentPattern = p;
@@ -615,17 +618,12 @@ public class NumberField extends JTextField {
 		nf.setFormatFor(d);
 	}
 	
-	public void setDecimalSeparator(char c) {
-		if (Character.valueOf(c).equals(Character.valueOf(OSPRuntime.DECIMAL_SEPARATOR_PERIOD))
-				|| Character.valueOf(c).equals(Character.valueOf(OSPRuntime.DECIMAL_SEPARATOR_COMMA))) {
-			nf.decimalSeparator = c;
-			
-			DecimalFormat format = nf.format;
-			if (format != null) {
-				format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
-			}
-			setValue(getValue());
+	public void refreshDecimalSeparators(boolean redraw) {
+		if (nf.format != null) {
+			nf.format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
 		}
+		if (redraw)
+			setValue(getValue());
 	}
 
 }
