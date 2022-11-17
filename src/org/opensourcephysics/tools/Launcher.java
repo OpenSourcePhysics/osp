@@ -2107,9 +2107,13 @@ public class Launcher {
 	 * @param level the level
 	 */
 	public void setFontLevel(int level) {
-		// set font levels of menubar and content pane
-		FontSizer.setFonts(frame.getJMenuBar(), level);
-		FontSizer.setFonts(frame.getContentPane(), level);
+		if (frame != null) {
+			// set font levels of menubar and content pane
+			FontSizer.setFonts(frame.getJMenuBar(), level);
+		}
+		FontSizer.setFonts(contentPane, level);
+		LaunchPanel lp = getSelectedTab();
+		FontSizer.setFonts(lp.splitPane, level);
 		// refresh string resources to adjust label sizes
 		refreshStringResources();
 		// refresh all trees to adjust node sizes
