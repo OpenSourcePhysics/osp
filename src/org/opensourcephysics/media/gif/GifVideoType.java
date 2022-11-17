@@ -34,6 +34,7 @@ import java.io.IOException;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
+import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.media.core.VideoFileFilter;
 import org.opensourcephysics.media.core.Video;
 import org.opensourcephysics.media.core.VideoRecorder;
@@ -58,11 +59,11 @@ public class GifVideoType implements VideoType {
    */
   @Override
 public Video getVideo(String name) {
-	  return getVideo(name, null);
+	  return getVideo(name, null, null);
   }
 
 	@Override
-	public Video getVideo(String name, String basePath) {
+	public Video getVideo(String name, String basePath, XMLControl control) {
 		Video video;
 		try {
 			video = new GifVideo(XML.getResolvedPath(name, basePath));

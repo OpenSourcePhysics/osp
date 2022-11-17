@@ -26,6 +26,7 @@ package org.opensourcephysics.media.mov;
 import java.io.File;
 
 import org.opensourcephysics.controls.OSPLog;
+import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.media.core.MediaRes;
 import org.opensourcephysics.media.core.Video;
 import org.opensourcephysics.media.core.VideoFileFilter;
@@ -83,11 +84,11 @@ public boolean isType(Video video) {
 
   @Override
   public Video getVideo(String name) { 
-	  return getVideo(name, null);
+	  return getVideo(name, null, null);
   }
 
 	@Override
-	public Video getVideo(String name, String basePath) {
+	public Video getVideo(String name, String basePath, XMLControl control) {
 		Video video = null;
 		try {
 			video = new JSMovieVideo(name, basePath);

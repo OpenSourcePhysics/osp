@@ -33,6 +33,8 @@ package org.opensourcephysics.media.core;
 
 import java.io.File;
 
+import org.opensourcephysics.controls.XMLControl;
+
 /**
  * This defines methods common to all video types.
  *
@@ -53,7 +55,7 @@ public interface VideoType {
    */
   public Video getVideo(String path);
   
-  public Video getVideo(String path, String basePath);
+  public Video getVideo(String path, String basePath, XMLControl control);
 
   /**
    * Return true if the specified video is this type.

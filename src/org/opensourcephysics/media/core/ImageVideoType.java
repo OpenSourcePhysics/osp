@@ -91,17 +91,19 @@ public class ImageVideoType implements VideoType {
 	 */
 	@Override
 	public Video getVideo(String name) {
-		return getVideo(name, null);
+		return getVideo(name, null, null);
 	}
 
 	@Override
-	public Video getVideo(String name, String basePath) {
+	public Video getVideo(String name, String basePath, XMLControl control) {
 		
 		Video video;
-		// if an XML file with the image name is found, load it in order to get frame
-		// duration
-		String xmlName = XML.stripExtension(basePath == null ? name : basePath + File.separator + name) + ".xml"; //$NON-NLS-1$
-		XMLControl control = new XMLControlElement(new File(xmlName));
+		if (control == null) {
+			// if an XML file with the image name is found, load it in order to get frame
+			// duration
+			String xmlName = XML.stripExtension(basePath == null ? name : basePath + File.separator + name) + ".xml"; //$NON-NLS-1$
+			control = new XMLControlElement(new File(xmlName));
+		}
 		control.setBasepath(basePath == null? XML.getDirectoryPath(name): basePath);
 		if (!control.failedToRead() && control.getObjectClass() == ImageVideo.class) {
 			video = (Video) control.loadObject(null);
