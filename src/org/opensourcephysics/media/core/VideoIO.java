@@ -204,7 +204,7 @@ public class VideoIO {
 	  }
 	  
 		@Override
-		public Video getVideo(String name, String basePath) {
+		public Video getVideo(String name, String basePath, XMLControl control) {
 			String fullPath = basePath == null? name: basePath + "/" + name;
 			if (VideoIO.zipFileFilter.accept(new File(fullPath))) {
 				String[] imagePaths = VideoIO.getZippedImagePaths(fullPath);
@@ -213,7 +213,7 @@ public class VideoIO {
 				}
 				name = imagePaths[0];
 				basePath = null;
-				return super.getVideo(name, basePath);
+				return super.getVideo(name, basePath, control);
 			}
 			return null;
 		}
@@ -845,10 +845,11 @@ public class VideoIO {
 	 * @return the video
 	 */
 	public static Video getVideo(String path, VideoType vidType) {
-		return getVideo(path, null, vidType);
+		return getVideo(path, null, vidType, null);
 	}
 	
-	public static Video getVideo(String path, String basePath, VideoType vidType) {
+	public static Video getVideo(String path, String basePath, 
+			VideoType vidType, XMLControl control) {
 		// BH! 2020.04.20 from TrackerIO, but equally useful here.
 		path = fixVideoPath(path);
 		String fullPath = XML.getResolvedPath(path, basePath);
@@ -870,7 +871,7 @@ public class VideoIO {
 		if (vidType != null) {
 			OSPLog.finest("preferred type " + vidType.getClass().getSimpleName() //$NON-NLS-1$
 					+ " " + vidType.getDescription()); //$NON-NLS-1$
-			video = vidType.getVideo(path, basePath);
+			video = vidType.getVideo(path, basePath, control);
 			if (video != null)
 				return video;
 		}
@@ -889,7 +890,7 @@ public class VideoIO {
 		for (VideoType next : allTypes) {
 //			OSPLog.finest("trying type " + next.getClass().getSimpleName() //$NON-NLS-1$
 //					+ " " + next.getDescription()); //$NON-NLS-1$
-			video = next.getVideo(path, basePath);
+			video = next.getVideo(path, basePath, control);
 			if (VideoIO.isCanceled())
 				return null;
 			if (video != null)
@@ -1172,7 +1173,7 @@ private static String fixVideoPath(String path) {
 			for (int i = 0; i < types.size(); i++) {
 				VideoType type = types.get(i);
 				if (type.accepts(file)) {
-					video = type.getVideo(path, null);
+					video = type.getVideo(path, null, null);
 					if (video != null) {
 						OSPLog.info(file.getName() + " opened as type " + type.getDescription()); //$NON-NLS-1$
 						break;

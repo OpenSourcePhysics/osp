@@ -31,13 +31,16 @@
  */
 package org.opensourcephysics.media.core;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,9 +68,11 @@ public class ImageVideo extends VideoAdapter {
 // instance fields
 	protected Component observer = new JPanel(); // image observer
 	protected BufferedImage[] images = new BufferedImage[0]; // image array
+	protected BufferedImage rgbImage; // used when RGBSize < bufferedImage size
 	protected String[] paths = new String[0]; // relative image paths
 	protected boolean readOnly; // true if images are only loaded from files as needed
 	protected double deltaT = 100; // frame duration in milliseconds
+	protected Dimension rgbSize = new Dimension();
 
 	/**
 	 * Creates a read-only ImageVideo and loads a named image or image sequence.
@@ -295,7 +300,7 @@ public class ImageVideo extends VideoAdapter {
 			public Void apply(Object[] array) {
 				if (array != null) {
 					Image[] images = (Image[]) array[0];
-					if (images.length > 0) {
+					if (images == null || images.length > 0) {
 						String[] paths = (String[]) array[1];
 						insert(images, index, paths);
 					}
@@ -318,7 +323,7 @@ public class ImageVideo extends VideoAdapter {
 		Object[] images_paths = loadImages(imageName, sequence, null);
 		// from a TRZ file
 		Image[] images = (Image[]) images_paths[0];
-		if (images.length > 0) {
+		if (images == null || images.length > 0) {
 			String[] paths = (String[]) images_paths[1];
 			insert(images, index, paths);
 		}
@@ -379,10 +384,16 @@ public class ImageVideo extends VideoAdapter {
 		int w = images[0].getWidth(observer);
 		int h = images[0].getHeight(observer);
 		for (int i = 1; i < images.length; i++) {
+			if (images[i] == null)
+				continue;
 			w = Math.max(w, images[i].getWidth(observer));
 			h = Math.max(h, images[i].getHeight(observer));
 		}
 		return new Dimension(w, h);
+	}
+
+	public Dimension getRGBSize() {
+		return rgbSize;
 	}
 
 	/**
@@ -414,15 +425,23 @@ public class ImageVideo extends VideoAdapter {
 			return; // already editable
 		if (!edit && !isEditable())
 			return; // already uneditable
-		// get path to first image
-		String imagePath = paths[0];
+		if (!edit) {
+			saveInvalidImages();
+		}
 		readOnly = !edit;
 		// reset arrays
-		if (readOnly)
-			paths = new String[0];
+		String[] thePaths = paths;
+		paths = new String[0];
 		images = new BufferedImage[0];
 		System.gc();
-		append(imagePath, true);
+		for (int i = 0; i < thePaths.length; i++) {
+			if (thePaths[i] != null && thePaths[i].trim().length() > 0)
+				append(thePaths[i], false);
+		}
+		if (frameCount < thePaths.length) {
+			// setting end frame too high set it to (frameCount - 1)
+			setEndFrameNumber(endFrameNumber + 1);
+		}
 	}
 
 	/**
@@ -493,6 +512,9 @@ public class ImageVideo extends VideoAdapter {
 	private Image getImageAtFrame(int frameNumber, Image defaultImage) {
 
 		if (readOnly && frameNumber < paths.length) {
+			if (frameNumber < images.length && images[frameNumber] != null) {
+				return images[frameNumber];
+			}
 			if (!paths[frameNumber].equals("")) {//$NON-NLS-1$
 				
 //				OSPLog.debug(Performance.timeCheckStr("ImageVideo.getImageAtFrame0 " + frameNumber,
@@ -551,9 +573,9 @@ public class ImageVideo extends VideoAdapter {
 		// if whenDone != null, then sequence is TRUE, but when whenDone is null, sequence may be true or false.
 		// and if numbers are found, sequence is ignored.
 		if (whenDone == null && !sequence) {
-			Image[] images = new Image[] { image };
+			Image[] imges = readOnly && images.length > 0? null: new Image[] { image };
 			String[] paths = new String[] { imagePath };
-			return new Object[] { images, paths };
+			return new Object[] { imges, paths };
 		}
 		ArrayList<String> pathList = new ArrayList<String>();
 		pathList.add(imagePath);
@@ -575,9 +597,9 @@ public class ImageVideo extends VideoAdapter {
 		switch (digits) {
 		case 0:
 			// no number found, so load single image
-			Image[] images = new Image[] { image };
+			Image[] imges = readOnly && images.length > 0? null: new Image[] { image };
 			String[] paths = new String[] { imagePath + extension };
-			Object[] ret = new Object[] { images, paths };
+			Object[] ret = new Object[] { imges, paths };
 			if (whenDone != null)
 				whenDone.apply(ret);
 			return ret;
@@ -604,9 +626,9 @@ public class ImageVideo extends VideoAdapter {
 							int sel = ((AsyncDialog) e.getSource()).getOption();
 							switch (sel) {
 							case JOptionPane.YES_OPTION:
-								Image[] images = imageList.toArray(new Image[0]);
+								Image[] imges = readOnly && images.length > 0? null: imageList.toArray(new Image[0]);
 								String[] paths = pathList.toArray(new String[0]);
-								whenDone.apply(new Object[] { images, paths });
+								whenDone.apply(new Object[] { imges, paths });
 								return;
 							case JOptionPane.CANCEL_OPTION:
 								whenDone.apply(new Object[] { new Image[0], new String[0] });
@@ -653,9 +675,9 @@ public class ImageVideo extends VideoAdapter {
 		} catch (NumberFormatException ex) {
 			ex.printStackTrace();
 		}
-		Image[] images = imageList.toArray(new Image[0]);
+		Image[] imges = readOnly && images.length > 0? null: imageList.toArray(new Image[0]);
 		String[] paths = pathList.toArray(new String[0]);
-		Object[] ret = new Object[] { images, paths };
+		Object[] ret = new Object[] { imges, paths };
 		if (whenDone != null)
 			whenDone.apply(ret);
 		return ret;
@@ -747,39 +769,43 @@ public class ImageVideo extends VideoAdapter {
 	/**
 	 * Inserts images starting at the specified index.
 	 *
-	 * @param newImages  an array of images
+	 * @param newImages  an array of images. May be null if readOnly
 	 * @param index      the insertion index
 	 * @param imagePaths array of image file paths.
 	 */
 	protected void insert(Image[] newImages, int index, String[] imagePaths) {
 		if (readOnly && imagePaths == null)
 			return;
+		if (newImages == null && imagePaths == null)
+			return;
 		int len = length();
 		index = Math.min(index, len); // in case some prev images not successfully loaded
-		int n = newImages.length;
+		int n = readOnly? imagePaths.length: newImages.length;
 		// convert new images to BufferedImage if nec
-		BufferedImage[] buf = new BufferedImage[n];
-		for (int i = 0; i < newImages.length; i++) {
-			Image im = newImages[i];
-			if (im instanceof BufferedImage) {
-				buf[i] = (BufferedImage) im;
-			} else {
-				int w = im.getWidth(null);
-				int h = im.getHeight(null);
-				buf[i] = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-				Graphics2D g = buf[i].createGraphics();
-				g.drawImage(im, 0, 0, null);
-				g.dispose();
+		if (newImages != null) {
+			BufferedImage[] buf = new BufferedImage[n];
+			for (int i = 0; i < newImages.length; i++) {
+				Image im = newImages[i];
+				if (im instanceof BufferedImage) {
+					buf[i] = (BufferedImage) im;
+				} else {
+					int w = im.getWidth(null);
+					int h = im.getHeight(null);
+					buf[i] = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+					Graphics2D g = buf[i].createGraphics();
+					g.drawImage(im, 0, 0, null);
+					g.dispose();
+				}
 			}
+			// insert new images
+			BufferedImage[] newArray = new BufferedImage[len + n];
+			System.arraycopy(images, 0, newArray, 0, index);
+			System.arraycopy(buf, 0, newArray, index, n);
+			System.arraycopy(images, index, newArray, index + n, len - index);
+			images = newArray;
 		}
-		// insert new images
-		BufferedImage[] newArray = new BufferedImage[len + n];
-		System.arraycopy(images, 0, newArray, 0, index);
-		System.arraycopy(buf, 0, newArray, index, n);
-		System.arraycopy(images, index, newArray, index + n, len - index);
-		images = newArray;
 		// create empty paths if null
-		if (imagePaths == null) {
+		if (imagePaths == null && newImages != null) {
 			imagePaths = new String[newImages.length];
 			for (int i = 0; i < imagePaths.length; i++) {
 				imagePaths[i] = ""; //$NON-NLS-1$
@@ -807,6 +833,67 @@ public class ImageVideo extends VideoAdapter {
 			aspects.setLength(frameCount);
 		}
 		notifySize(getSize()); // NOP if loading.
+	}
+
+	@Override
+	protected void updateBufferedImage() {
+		refreshBufferedImage();
+		if (!isValidImage) { // bufferedImage needs refreshing
+			isValidImage = true;
+			Graphics g = bufferedImage.createGraphics();
+			
+			// bufferedImage.setData(clearRaster);
+			if (rawImage.getWidth(null) < bufferedImage.getWidth()
+					|| rawImage.getHeight(null) < bufferedImage.getHeight()) {
+				g.setColor(new Color(255, 255, 255, 255));
+				g.fillRect(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight());
+				rgbSize.width = rawImage.getWidth(null);
+				rgbSize.height = rawImage.getHeight(null);
+			}
+			else {
+				rgbSize.width = bufferedImage.getWidth();
+				rgbSize.height = bufferedImage.getHeight();
+			}
+			g.drawImage(rawImage, 0, 0, null);
+			g.dispose();
+		}
+	}
+
+	/**
+	 * Gets the current video image after applying enabled filters.
+	 *
+	 * @return the current video image with filters applied
+	 */
+	@Override
+	public BufferedImage getImage() {
+		updateBufferedImage();
+		if (filterStack.isEmpty() || !filterStack.isEnabled()) {
+			return bufferedImage;
+		} else if (!isValidFilteredImage) { // filteredImage needs refreshing
+			isValidFilteredImage = true;
+			if (rgbSize.width == bufferedImage.getWidth() &&
+					rgbSize.height == bufferedImage.getHeight()) {
+				filteredImage = filterStack.getFilteredImage(bufferedImage);
+			}
+			else {
+				if (rgbImage == null 
+						|| rgbImage.getWidth() != rgbSize.width 
+						|| rgbImage.getHeight() != rgbSize.height)
+					rgbImage = new BufferedImage(rgbSize.width, rgbSize.height, BufferedImage.TYPE_INT_RGB);
+				Graphics g = rgbImage.createGraphics();
+				g.drawImage(rawImage, 0, 0, null);
+				rgbImage = filterStack.getFilteredImage(rgbImage);
+				if (filteredImage == null 
+						|| filteredImage.getWidth() != bufferedImage.getWidth() 
+						|| filteredImage.getHeight() != bufferedImage.getHeight())
+					filteredImage = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_RGB);
+				g = filteredImage.createGraphics();
+				g.setColor(new Color(255, 255, 255, 255));
+				g.fillRect(0, 0, filteredImage.getWidth(), filteredImage.getHeight());
+				g.drawImage(rgbImage, 0, 0, null);	
+			}
+		}
+		return filteredImage;
 	}
 
 	// ______________________________ static XML.Loader_________________________

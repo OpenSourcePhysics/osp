@@ -140,6 +140,8 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 		if (video.getFrameCount() > 1) {
 			setStepCount(video.getEndFrameNumber() - startFrame + 1);
 		}
+		if (video instanceof ImageVideo)
+			video.addPropertyChangeListener(Video.PROPERTY_VIDEO_ENDFRAME, this);
 	}
 
 
@@ -757,10 +759,10 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 //				control.setValue("unsupported_video_path", path);
 				break;
 			case 1:
-				video = VideoIO.getVideo(path, base, types.get(0));
+				video = VideoIO.getVideo(path, base, types.get(0), child);
 				break;
 			default:
-				video = VideoIO.getVideo(path, base, null);
+				video = VideoIO.getVideo(path, base, null, child);
 				break;
 			}
 			// boolean invalid = false;
@@ -889,6 +891,9 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 		case AsyncVideoI.PROPERTY_ASYNCVIDEOI_HAVEFRAMES:
 			initVideo();
 			updateArray();
+			break;
+		case Video.PROPERTY_VIDEO_ENDFRAME:
+			setEndFrameNumber(video.getEndFrameNumber());
 			break;
 		}		
 	}
