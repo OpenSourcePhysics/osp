@@ -390,6 +390,8 @@ public class LaunchPanel extends JPanel {
 				// set document base for relative paths
 				HTMLDocument doc = (HTMLDocument) html.editorPane.getDocument();
 				doc.setBase(theURL);
+				// ignore charset to prevent charset exception when fontLevel > 0
+				doc.putProperty("IgnoreCharsetDirective", Boolean.TRUE);
 				// set editorPane text
 				html.editorPane.setText(text);
 				// scroll to top
