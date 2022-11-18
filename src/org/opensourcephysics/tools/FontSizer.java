@@ -132,8 +132,18 @@ public class FontSizer extends OSPRuntime.Supported {
 		if (c == null) return 12; //TEST_BH
 		Font f = c.getFont();
 		Font newFont = (f == null ? null : getResizedFont(f, level));
-		if (newFont != null && newFont != f && !newFont.equals(f))
+		if (newFont != null && newFont != f && !newFont.equals(f)) {
 			setFonts(c, level);
+		}
+		else {
+			// added DB Nov 2022 to find inner containers that need resizing
+			for (int i = 0; i < c.getComponentCount(); i++) {
+				Component comp = c.getComponent(i);
+				if (comp instanceof Container) {
+					setFonts((Container) comp);
+				}
+			}
+		}
 		return level;
 	}
 

@@ -493,6 +493,15 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	}
 
 	/**
+	 * Gets the toolbar.
+	 *
+	 * @return the toolbar
+	 */
+	public JToolBar getToolbar() {
+		return toolbar;
+	}
+
+	/**
 	 * Adds a FunctionPanel.
 	 *
 	 * @param name  a descriptive name
@@ -724,7 +733,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 	 */
 	public void setFontLevel(int level) {
 		level = Math.max(0, level);
-		if (level == fontLevel) {
+		if (level == fontLevel || dropdown == null) {
 			return;
 		}
 		fontLevel = level;
@@ -735,9 +744,9 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 //		FontSizer.setFonts(fontButton, level);
 		for (Iterator<FunctionPanel> it = trackFunctionPanels.values().iterator(); it.hasNext();) {
 			FunctionPanel next = it.next();
-			if (next == getSelectedPanel()) {
-				continue;
-			}
+//			if (next == getSelectedPanel()) {
+//				continue;
+//			}
 			next.setFontLevel(level);
 		}
 //		if (popup != null && level < popup.getSubElements().length) {
