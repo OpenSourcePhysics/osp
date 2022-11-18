@@ -955,7 +955,8 @@ public class ImageVideo extends VideoAdapter {
 					if (path != null) {
 						if (OSPRuntime.checkTempDirCache)
 							path = OSPRuntime.tempDir + path;
-						boolean seq = control.getBoolean("sequence"); //$NON-NLS-1$
+						boolean known = control.getPropertyNamesRaw().contains("sequence");
+						boolean seq = control.getBoolean("sequence") || !known; //$NON-NLS-1$
 						return new ImageVideo(path, null, seq);
 					}
 				} catch (IOException ex) {
