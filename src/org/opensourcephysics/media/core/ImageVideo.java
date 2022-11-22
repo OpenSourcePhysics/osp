@@ -90,7 +90,7 @@ public class ImageVideo extends VideoAdapter {
 		}
 
 		if (basePath != null) {
-			baseDir = basePath; // could be .....trz!
+			baseDir = basePath; // could be .....trz! or could be relative
 			setProperty("absolutePath", (imageName.startsWith(basePath) ? imageName : basePath + "/" + imageName));
 		}
 		append(imageName, sequence);
@@ -759,8 +759,9 @@ public class ImageVideo extends VideoAdapter {
 		ArrayList<String> pathList = new ArrayList<String>();
 		for (int i = 0; i < paths.length; i++) {
 			if (!paths[i].equals("")) { //$NON-NLS-1$
-
-				pathList.add(XML.getPathRelativeTo(paths[i], base));
+				// be sure paths are absolute
+				String absolutePath = getAbsolutePath(paths[i]);
+				pathList.add(XML.getPathRelativeTo(absolutePath, base));
 			}
 		}
 		return pathList.toArray(new String[0]);
@@ -923,13 +924,24 @@ public class ImageVideo extends VideoAdapter {
 			String base = (String) video.getProperty("base"); //$NON-NLS-1$
 			String[] paths = video.getValidPathsRelativeTo(base);
 			String vidBase = video.baseDir; //$NON-NLS-1$
+			String path = null;
 			if (vidBase != null && vidBase.endsWith("!")) { // zipped images--just save the zip file path
 				String s = vidBase.substring(0, vidBase.indexOf("!"));
 				paths = new String[] {XML.getPathRelativeTo(s, base)};
+				path = paths[0];
+			}
+			else if (paths.length > 0) {
+				// path is relative to the trk, but paths are 
+				// relative to the first image, so just names
+				// this might fail for images in separate directories?
+				path = paths[0];
+				for (int i = 0; i < paths.length; i++) {
+					paths[i] = XML.getName(paths[i]);
+				}
 			}
 			if (paths.length > 0) {
 				control.setValue("paths", paths); //$NON-NLS-1$
-				control.setValue("path", paths[0]); //$NON-NLS-1$
+				control.setValue("path", path); //$NON-NLS-1$
 				control.setBasepath(base);
 			}
 			if (!video.filterStack.isEmpty()) {
@@ -1000,8 +1012,13 @@ public class ImageVideo extends VideoAdapter {
 			}
 			if (badPaths != null) {
 				String s = badPaths.get(0);
+				int len = s.length();
 				for (int i = 1; i < badPaths.size(); i++) {
 					s += ", " + badPaths.get(i); //$NON-NLS-1$
+				}
+				int maxLen = len + 100;
+				if (s.length() > maxLen) {
+					s = s.substring(0, len) + " ...";
 				}
 				JOptionPane.showMessageDialog(null, MediaRes.getString("ImageVideo.Dialog.MissingImages.Message") //$NON-NLS-1$
 						+ ":\n" + s, //$NON-NLS-1$

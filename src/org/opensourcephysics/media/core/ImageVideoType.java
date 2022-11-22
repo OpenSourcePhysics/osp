@@ -97,7 +97,7 @@ public class ImageVideoType implements VideoType {
 	@Override
 	public Video getVideo(String name, String basePath, XMLControl control) {
 		
-		Video video;
+		ImageVideo video;
 		if (control == null) {
 			// if an XML file with the image name is found, load it in order to get frame
 			// duration
@@ -106,7 +106,34 @@ public class ImageVideoType implements VideoType {
 		}
 		control.setBasepath(basePath == null? XML.getDirectoryPath(name): basePath);
 		if (!control.failedToRead() && control.getObjectClass() == ImageVideo.class) {
-			video = (Video) control.loadObject(null);
+			video = (ImageVideo) control.loadObject(null);
+			if (video != null) {
+				String[] paths = video.getValidPaths();
+				// correct absolutePath if not absolute
+		    String absolutePath = (String)video.getProperty("absolutePath");
+		    boolean absInvalid = absolutePath == null
+		    		|| (!absolutePath.startsWith("/") && absolutePath.indexOf(":")==-1);
+		    String theName = (String)video.getProperty("name");
+		    if (theName == null)
+		    	theName = name;
+		    if (absInvalid){
+		      video.setProperty("absolutePath", XML.getResolvedPath(theName, basePath));
+		    }
+		    // correct baseDir if not absolute
+		    boolean baseInvalid = video.baseDir == null
+		    		|| (!video.baseDir.startsWith("/") && video.baseDir.indexOf(":")==-1);
+		    if (baseInvalid && basePath != null && paths.length > 0) {
+			    absolutePath = (String)video.getProperty("absolutePath");
+			    int n = absolutePath.indexOf(paths[0]);
+			    if (n > -1) {
+			    	video.baseDir = absolutePath.substring(0, n);		    	
+			    }
+			    else {
+			    	video.baseDir = basePath;
+			    }
+		    }
+			}
+
 		} else {
 			// else load image(s) directly
 			try {
