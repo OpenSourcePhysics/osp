@@ -1010,6 +1010,18 @@ public class ImageVideo extends VideoAdapter {
 					badPaths.add("\"" + paths[i] + "\""); //$NON-NLS-1$ //$NON-NLS-2$
 				}
 			}
+			if (vid == null) {
+				// failed with paths array, but may still open with "path"?
+				try {
+					String path = control.getString("path"); //$NON-NLS-1$
+					if (path != null) {
+						if (OSPRuntime.checkTempDirCache)
+							path = OSPRuntime.tempDir + path;
+						return new ImageVideo(path, null, true);
+					}
+				} catch (IOException ex) {
+				}				
+			}
 			if (badPaths != null) {
 				String s = badPaths.get(0);
 				int len = s.length();
