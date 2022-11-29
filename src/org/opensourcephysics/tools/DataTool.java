@@ -1185,6 +1185,12 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		// if dataString is a file path then return null
 		if (new File(dataString).exists())
 			return null;
+		// if datastring is XML, return null
+		if (dataString.trim().startsWith("<?xml"))
+			return null;
+		// if datastring is XMLControl code, return null
+		if (dataString.trim().startsWith("<object class="))
+			return null;
 		try {
 			for (int i = 0; i < DataTool.delimiters.length; i++) {
 				input = new BufferedReader(new StringReader(dataString));
