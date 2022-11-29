@@ -703,7 +703,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		if (n > 0) {
 			String dir = fileName.substring(0, n + 1);
 			if (OSPRuntime.isJS) { // BH 2022.03.19 added -- in case this is TEMP
-				fileName = fileName.substring(n + 1);
+				//fileName = fileName.substring(n + 1);
 			} else {
 				File file = new File(dir);
 				if (!file.exists() && !file.mkdirs()) {
