@@ -696,15 +696,13 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	@Override
 	public String write(String fileName) {
 		canWrite = true;
-		int n = fileName.lastIndexOf("/"); //$NON-NLS-1$
-		if (n < 0) {
-			n = fileName.lastIndexOf("\\"); //$NON-NLS-1$
-		}
-		if (n > 0) {
-			String dir = fileName.substring(0, n + 1);
-			if (OSPRuntime.isJS) { // BH 2022.03.19 added -- in case this is TEMP
-				fileName = fileName.substring(n + 1);
-			} else {
+		if (!OSPRuntime.isJS) { // BH 2022.03.19 skip checks in JS
+			int n = fileName.lastIndexOf("/"); //$NON-NLS-1$
+			if (n < 0) {
+				n = fileName.lastIndexOf("\\"); //$NON-NLS-1$
+			}
+			if (n > 0) {
+				String dir = fileName.substring(0, n + 1);
 				File file = new File(dir);
 				if (!file.exists() && !file.mkdirs()) {
 					canWrite = false;
@@ -714,7 +712,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		}
 		try {
 			File file = new File(fileName);
-			if (file.exists() && !file.canWrite()) {
+			if (file.exists() && !file.canWrite()) { // canWrite always true in JS
 				JOptionPane.showMessageDialog(null,
 						ControlsRes.getString("Dialog.ReadOnly.Message") + ": " + file.getPath(), //$NON-NLS-1$ //$NON-NLS-2$
 						ControlsRes.getString("Dialog.ReadOnly.Title"), //$NON-NLS-1$
