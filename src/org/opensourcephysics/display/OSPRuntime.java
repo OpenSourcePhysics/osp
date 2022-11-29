@@ -2107,8 +2107,12 @@ public class OSPRuntime {
 				jsutil.getClipboardText(whenDone);
 			return null;
 		}
-		Clipboard clipboard = getClipboard();
-		Transferable data = clipboard.getContents(null);
+		Transferable data = null;
+		try {
+			Clipboard clipboard = getClipboard();
+			data = clipboard.getContents(null);
+		} catch (Exception e) {
+		}
 		if ((data != null) && data.isDataFlavorSupported(DataFlavor.stringFlavor)) {
 			try {
 				String s = (String) data.getTransferData(DataFlavor.stringFlavor);
