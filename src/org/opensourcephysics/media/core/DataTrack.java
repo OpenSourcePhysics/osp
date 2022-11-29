@@ -109,5 +109,13 @@ public interface DataTrack extends Trackable {
 	 * @return the frame duration, or Double.NaN if undefined
 	 */
   public double getFrameDuration();
+  
+	/**
+	 * Determines if autopaste is enabled for this DataTrack.
+	 * 
+	 * @return true if autopaste is enabled
+	 */
+	public boolean isAutoPasteEnabled();
+
 
 }
