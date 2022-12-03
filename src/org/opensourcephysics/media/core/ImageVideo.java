@@ -40,7 +40,6 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -67,7 +66,7 @@ import javajs.async.AsyncDialog;
 public class ImageVideo extends VideoAdapter {
 // instance fields
 	protected Component observer = new JPanel(); // image observer
-	protected BufferedImage[] images = new BufferedImage[0]; // image array
+	protected Image[] images = new Image[0]; // image array
 	protected BufferedImage rgbImage; // used when RGBSize < bufferedImage size
 	protected String[] paths = new String[0]; // relative image paths
 	protected boolean readOnly; // true if images are only loaded from files as needed
@@ -136,7 +135,7 @@ public class ImageVideo extends VideoAdapter {
 	 */
 	public ImageVideo(ImageVideo video) {
 		readOnly = false;
-		BufferedImage[] images = video.images;
+		Image[] images = video.images;
 		if (images == null)
 			return;
 		// BH 2021.09.11 was on images == null
@@ -158,7 +157,7 @@ public class ImageVideo extends VideoAdapter {
 		rawImage = getImageAtFrame(getFrameNumber(), rawImage);
 		updateBufferedImage(); // For SwingJS
 		invalidateVideoAndFilter();
-		notifyFrame(n, true); // only this subsclass does this asynchronously
+		notifyFrame(n, false); // only this subsclass does this asynchronously
 	}
 
 	/**
@@ -356,7 +355,7 @@ public class ImageVideo extends VideoAdapter {
 			return null; // don't remove the only image
 		}
 		String removed = paths[index];
-		BufferedImage[] newArray = new BufferedImage[len - 1];
+		Image[] newArray = new Image[len - 1];
 		System.arraycopy(images, 0, newArray, 0, index);
 		System.arraycopy(images, index + 1, newArray, index, len - 1 - index);
 		images = newArray;
@@ -432,7 +431,7 @@ public class ImageVideo extends VideoAdapter {
 		// reset arrays
 		String[] thePaths = paths;
 		paths = new String[0];
-		images = new BufferedImage[0];
+		images = new Image[0];
 		System.gc();
 		for (int i = 0; i < thePaths.length; i++) {
 			if (thePaths[i] != null && thePaths[i].trim().length() > 0)
@@ -452,7 +451,7 @@ public class ImageVideo extends VideoAdapter {
 	public boolean saveInvalidImages() {
 		// collect invalid paths and images
 		ArrayList<String> pathList = new ArrayList<String>();
-		ArrayList<BufferedImage> imageList = new ArrayList<BufferedImage>();
+		ArrayList<Image> imageList = new ArrayList<Image>();
 		for (int i = 0; i < paths.length; i++) {
 			if (paths[i].equals("")) { //$NON-NLS-1$
 				pathList.add(paths[i]);
@@ -511,6 +510,9 @@ public class ImageVideo extends VideoAdapter {
 	 */
 	private Image getImageAtFrame(int frameNumber, Image defaultImage) {
 
+		// It is not necessary to maintain images[]. ResourceLoader will cache
+		// these easily enough as Resource objects.
+		
 		if (readOnly && frameNumber < paths.length) {
 			if (frameNumber < images.length && images[frameNumber] != null) {
 				return images[frameNumber];
@@ -525,8 +527,10 @@ public class ImageVideo extends VideoAdapter {
 //				OSPLog.debug(Performance.timeCheckStr("ImageVideo.getImageAtFrame1 " + frameNumber,
 //						Performance.TIME_MARK));
 
-				if (image != null)
+				if (image != null) {
+//not necessary					images[frameNumber] = image;
 					return image;
+				}
 			}
 		} else if (frameNumber < images.length && images[frameNumber] != null) {
 			return images[frameNumber];
@@ -725,7 +729,7 @@ public class ImageVideo extends VideoAdapter {
 				}
 			}
 		}
-		Image[] images = imageList.toArray(new Image[0]);
+		Image[] images = imageList.toArray(new Image[imageList.size()]);
 		Object[] ret = new Object[] { images, imagePaths };
 		if (whenDone != null)
 			whenDone.apply(ret);
@@ -774,10 +778,9 @@ public class ImageVideo extends VideoAdapter {
 	 * @param index      the insertion index
 	 * @param imagePaths array of image file paths.
 	 */
+	@SuppressWarnings("null")
 	protected void insert(Image[] newImages, int index, String[] imagePaths) {
-		if (readOnly && imagePaths == null)
-			return;
-		if (newImages == null && imagePaths == null)
+		if (imagePaths == null && (readOnly || newImages == null))
 			return;
 		int len = length();
 		index = Math.min(index, len); // in case some prev images not successfully loaded
@@ -799,14 +802,15 @@ public class ImageVideo extends VideoAdapter {
 				}
 			}
 			// insert new images
-			BufferedImage[] newArray = new BufferedImage[len + n];
+			Image[] newArray = new Image[len + n];
 			System.arraycopy(images, 0, newArray, 0, index);
 			System.arraycopy(buf, 0, newArray, index, n);
 			System.arraycopy(images, index, newArray, index + n, len - index);
 			images = newArray;
 		}
 		// create empty paths if null
-		if (imagePaths == null && newImages != null) {
+		if (imagePaths == null) {
+			// newImages must be non-null
 			imagePaths = new String[newImages.length];
 			for (int i = 0; i < imagePaths.length; i++) {
 				imagePaths[i] = ""; //$NON-NLS-1$
