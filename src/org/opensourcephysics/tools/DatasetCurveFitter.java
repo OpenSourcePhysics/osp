@@ -1239,7 +1239,7 @@ public class DatasetCurveFitter extends JPanel {
 		String s = ToolsRes.getString("DatasetCurveFitter.Table.Heading.FixedParam");
 		Font font = paramTable.getTableHeader().getFont();
 		FontMetrics fm = paramTable.getTableHeader().getFontMetrics(font);
-		return SwingUtilities.computeStringWidth(fm, s);
+		return fm.stringWidth(s);
 	}
 
 	protected UserFunction createClone(KnownFunction f, String name) {
