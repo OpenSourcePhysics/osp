@@ -763,7 +763,10 @@ public class LibraryTreePanel extends JPanel {
 					return false;
 				if (LibraryComPADRE.isComPADREPath(target))
 					return true;
-				return (/** @j2sNative e.bdata.jqevent.target.id.indexOf("icon")>=0 || */
+				// BH 2022.12.02 but #143 was looking at target.id with wrong id
+				// Note that JavaScript has trouble detecting the double-click in this case. 
+				// I don't remember why that is. 
+				return (/** @j2sNative e.bdata.jqevent.target.tagName == "CANVAS" || */
 					e.getClickCount() == 2);
 			}
 		};

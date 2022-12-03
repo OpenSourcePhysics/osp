@@ -965,11 +965,12 @@ public class ImageVideo extends VideoAdapter {
 				try {
 					String path = control.getString("path"); //$NON-NLS-1$
 					if (path != null) {
-						if (OSPRuntime.checkTempDirCache)
+						String basepath = control.getBasepath();
+						if (OSPRuntime.checkTempDirCache && basepath == null)
 							path = OSPRuntime.tempDir + path;
 						boolean known = control.getPropertyNamesRaw().contains("sequence");
 						boolean seq = control.getBoolean("sequence") || !known; //$NON-NLS-1$
-						return new ImageVideo(path, null, seq);
+						return new ImageVideo(path, basepath, seq);
 					}
 				} catch (IOException ex) {
 					ex.printStackTrace();

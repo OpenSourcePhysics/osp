@@ -1778,7 +1778,7 @@ public class DataTable extends JTable {
 
 		@Override
 		public void setValue(Object value) {
-			if (value == null) {
+			if (value == null || Double.isNaN((Double) value)) {
 				setText(""); //$NON-NLS-1$
 				return;
 			}

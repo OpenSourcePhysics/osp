@@ -1722,21 +1722,21 @@ public class DataToolTable extends DataTable {
 	 * @return true if all named columns are NaN at row index
 	 */
 	protected boolean isEmptyCells(int row, ArrayList<String> columnNames) {
-		boolean empty = true;
 		ArrayList<Dataset> datasets = dataManager.getDatasetsRaw();
 		for (int i = 0, n = datasets.size(); i < n; i++) {
 			Dataset data = datasets.get(i);
-			String name = data.getYColumnName();
-			if ((data instanceof DataFunction) || !columnNames.contains(name)) {
+			if ((data instanceof DataFunction) || !columnNames.contains(data.getYColumnName())) {
 				continue;
 			}
 			double[] y = data.getYPoints();
 			if (row >= y.length) {
 				return false;
 			}
-			empty = empty && Double.isNaN(y[row]);
+			if (Double.isNaN(y[row])) {
+				return true;
+			}
 		}
-		return empty;
+		return false;
 	}
 
 	/**
@@ -2604,15 +2604,18 @@ public class DataToolTable extends DataTable {
 			Dataset data = dataManager.getDataset(col - 1);
 			double[] y = data.getYPoints();
 			double val = Double.NaN;
-			try {
-				val = Double.parseDouble(value.toString());
-				if (y[row] == val) {
-					return; // no change
+			if (value != "") {
+				// BH 2022.12.03 no need to parse value and throw exception if ""
+				try {
+					val = Double.parseDouble(value.toString());
+					if (y[row] == val) {
+						return; // no change
+					}
+				} catch (NumberFormatException e) {
 				}
-			} catch (NumberFormatException e) {
-				if (Double.isNaN(y[row])) {
-					return; // no change
-				}
+			}
+			if (Double.isNaN(val) && Double.isNaN(y[row])) {
+				return; // no change
 			}
 			String name = data.getYColumnName();
 			int[] rows = new int[] { row };
@@ -2695,7 +2698,6 @@ public class DataToolTable extends DataTable {
 			int row = (isEnd ? getModelRow(focusRow) + 1 : focusRow);
 			if (isEnd) {
 				stopCellEditing();
-				//System.out.println("DataToolTable.editAction frow=" + focusRow + " row=" + row + " rowCount=" + getRowCount());
 				// add empty row if needed
 				if (row == getRowCount()) {
 					insertRows(new int[] { row }, null);
