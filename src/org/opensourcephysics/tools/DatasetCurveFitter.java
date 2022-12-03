@@ -1499,7 +1499,7 @@ public class DatasetCurveFitter extends JPanel {
 		
 		String exp = f.getExpression("x");
 		String name = f.getName();
-		
+		boolean isDefault = defaultFits.contains(f);
 		switch(name) {
 			case FIT_SIN:
 				// A * sin(B*x + C) + D
@@ -1515,7 +1515,7 @@ public class DatasetCurveFitter extends JPanel {
 				// count zero crossings and measure first crossing
 				boolean posSlope = true;
 				for (int i = 0; i < sortedX.length; i++) {
-					double yshifted = sortedY[i] - params[3];
+					double yshifted = sortedY[i] - (params.length>3? params[3]: 0);
 					if (i==0) {
 						prevX = sortedX[i];
 						prevY = yshifted;
@@ -1559,14 +1559,16 @@ public class DatasetCurveFitter extends JPanel {
 				while (sortedX[tail] - sortedX[0] > 2 * (sortedX[mid] - sortedX[0]) && tail > 0)
 					tail--;
 				
-				// set offset
-				params[2] = (sortedY[mid] * sortedY[mid] - sortedY[0] * sortedY[tail])
-						/ (2 * sortedY[mid] - sortedY[0] - sortedY[tail]);
-				// be sure offset doesn't exceed ymin so y - offset > 0 for logs
-				params[2] = Math.min(ymin - (0.001 * range), params[2]);
-				
-				params[1] = Math.log((sortedY[tail] - params[2]) / (sortedY[0] - params[2])) / (sortedX[tail] - sortedX[0]);
-				params[0] = (sortedY[mid] - params[2]) / Math.exp(params[1] * sortedX[mid]);
+				if (exp.contains("+C")) {
+					// set offset
+					params[2] = (sortedY[mid] * sortedY[mid] - sortedY[0] * sortedY[tail])
+							/ (2 * sortedY[mid] - sortedY[0] - sortedY[tail]);
+					// be sure offset doesn't exceed ymin so y - offset > 0 for logs
+					params[2] = Math.min(ymin - (0.001 * range), params[2]);
+				}
+				double offset = params.length > 2? params[2]: 0;
+				params[1] = Math.log((sortedY[tail] - offset) / (sortedY[0] - offset)) / (sortedX[tail] - sortedX[0]);
+				params[0] = (sortedY[mid] - offset) / Math.exp(params[1] * sortedX[mid]);
 				
 //				// make array of ln(y-C), fit line to x - ln(y) data, use line parameters
 //				for (int i = 0; i < y.length; i++) {
