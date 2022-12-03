@@ -1243,7 +1243,11 @@ public class ResourceLoader {
 		String path = toUnix(inFile.getPath());
 		if (isZipEntry(path, false) >= 0) {
 			try {
-				getZipEntryBytes(path, outFile);
+				if (OSPRuntime.isJS) {
+					copyURLtoFile(path, outFile.getAbsolutePath());					
+				} else {
+					getZipEntryBytes(path, outFile);
+				}
 			} catch (IOException e) {
 				return false;
 			}
