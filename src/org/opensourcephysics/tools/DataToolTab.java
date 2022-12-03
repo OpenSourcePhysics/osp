@@ -287,9 +287,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			return loadedColumns;
 		}
 		boolean updatedColumns = false;
-		int[] order = null;
-		// case 1: tab contains no data
+//		int[] order = null;
 		if (dataManager.getDatasetsRaw().isEmpty()) {
+			// case 1: tab contains no data
 			originatorID = data.getID();
 			for (DataColumn next : inputColumns) {
 				addColumn(next);
@@ -298,9 +298,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 //			if (data instanceof DatasetManager) {
 //				order = ((DatasetManager) data).getjobColumnOrder();
 //			}
-		}
-		// case 2: tab already contains data
-		else {
+		} else {
+			// case 2: tab already contains data
 			// for each local column, find matching input column
 			for (Dataset local : dataManager.getDatasetsRaw()) {
 				DataColumn match = getIDMatch(local, inputColumns);
@@ -346,8 +345,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		}
 		if (haveGUI && (updatedColumns || !loadedColumns.isEmpty())) {
 			dataTable.refreshTable(DataTable.MODE_COLUMN);
-			if (order != null)
-				dataTable.setModelColumnOrder(order);				
+//			if (order != null)
+//				dataTable.setModelColumnOrder(order);
 			statsTable.refreshStatistics();
 			refreshPlot();
 			refreshGUI();
@@ -1452,7 +1451,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 					int col = dataTable.getColumnCount() - 1;
 					dataTable.changeSelection(0, col, false, false);
 					dataTable.editCellAt(0, col, e);
-					dataTable.editor.field.requestFocus();
+					SwingUtilities.invokeLater(() -> {
+						dataTable.editor.field.requestFocus();
+					});
 				});
 			}
 
