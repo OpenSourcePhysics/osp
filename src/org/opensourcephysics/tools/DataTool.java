@@ -3159,7 +3159,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Point p0 = new Frame().getLocation();
-				JFrame frame = OSPLog.getOSPLog();
+				JFrame frame = OSPLog.getFrame();
 				if ((frame.getLocation().x == p0.x) && (frame.getLocation().y == p0.y)) {
 					Point p = getLocation();
 					frame.setLocation(p.x + 28, p.y + 28);

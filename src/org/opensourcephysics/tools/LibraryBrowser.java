@@ -343,7 +343,7 @@ public class LibraryBrowser extends JPanel {
 		if (libraryManager != null) {
 			libraryManager.setFontLevel(level);
 		}
-		FontSizer.setFonts(OSPLog.getOSPLog());
+		OSPLog.setFonts(level);
 	}
 
 	/**
@@ -1626,7 +1626,7 @@ public class LibraryBrowser extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Point p0 = new Frame().getLocation();
-				JFrame frame = OSPLog.getOSPLog();
+				JFrame frame = OSPLog.getFrame();
 				if ((frame.getLocation().x == p0.x) && (frame.getLocation().y == p0.y)) {
 					frame.setLocationRelativeTo(LibraryBrowser.this);
 				}

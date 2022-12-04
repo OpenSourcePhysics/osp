@@ -15,6 +15,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -72,8 +73,22 @@ import org.opensourcephysics.tools.FontSizer;
  * @version 1.0
  */
 @SuppressWarnings("serial")
-public class OSPLog extends JFrame {
+public class OSPLog  {
 
+	class OSPFrame extends JFrame {
+		public OSPFrame(String string) {
+			super(string);
+		}
+		
+		@Override
+		protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+			super.firePropertyChange(propertyName, oldValue, newValue);
+		}
+
+	}
+	
+	OSPFrame frame;
+	
 	/**
 	 * Set true to enable OSPLog.notify   (finalization)
 	 */
@@ -156,6 +171,8 @@ public class OSPLog extends JFrame {
 	static String logdir = "."; //$NON-NLS-1$
 	static String slash = "/"; //$NON-NLS-1$
 
+	private static boolean useFrame = true;
+
 	private static boolean useMessageFrame() {
 		return (OSPRuntime.appletMode || OSPRuntime.isApplet);
 	}
@@ -180,6 +197,11 @@ public class OSPLog extends JFrame {
 			OSPLOG = new OSPLog("org.opensourcephysics", null); //$NON-NLS-1$
 		}
 		return OSPLOG;
+	}
+
+	public static void getOSPLog(boolean useFrame) {
+		OSPLog.useFrame  = useFrame;
+		getOSPLog();
 	}
 
 	/**
@@ -219,7 +241,6 @@ public class OSPLog extends JFrame {
 	 *
 	 * @param true to set visible
 	 */
-	@Override
 	public void setVisible(boolean visible) {
 		try {
 			if (visible) {
@@ -228,13 +249,13 @@ public class OSPLog extends JFrame {
 					logPane = getTextPane();
 					postAllRecords();
 					FontSizer.setFonts(this, FontSizer.getLevel());
-					pack();
+					frame.pack();
 				}
 			}
 			if (useMessageFrame()) {
 				org.opensourcephysics.controls.MessageFrame.showLog(visible);
 			} else {
-				super.setVisible(visible);
+				frame.setVisible(visible);
 			}
 		} catch (Throwable t) {
 			realSysout.println("OSPLog???" + t);
@@ -254,12 +275,11 @@ public class OSPLog extends JFrame {
 	 *
 	 * @return true if visible
 	 */
-	@Override
 	public boolean isVisible() {
 		if (useMessageFrame()) {
 			return org.opensourcephysics.controls.MessageFrame.isLogVisible();
 		}
-		return super.isVisible();
+		return frame.isVisible();
 	}
 
 	/**
@@ -278,7 +298,7 @@ public class OSPLog extends JFrame {
 			}
 		}
 		messageIndex = 0;
-		return getOSPLog();
+		return getOSPLog().frame;
 	}
 
 	/**
@@ -592,7 +612,7 @@ public class OSPLog extends JFrame {
 			File file = getChooser().getSelectedFile();
 			// check to see if file already exists
 			if (file.exists()) {
-				int selected = JOptionPane.showConfirmDialog(this,
+				int selected = JOptionPane.showConfirmDialog(frame,
 						ControlsRes.getString("OSPLog.ReplaceExisting_dialog_message") + file.getName() //$NON-NLS-1$
 								+ ControlsRes.getString("OSPLog.question_mark"), //$NON-NLS-1$
 						ControlsRes.getString("OSPLog.ReplaceFile_dialog_title"), //$NON-NLS-1$
@@ -650,7 +670,7 @@ public class OSPLog extends JFrame {
 			File file = getChooser().getSelectedFile();
 			// check to see if file already exists
 			if (file.exists()) {
-				int selected = JOptionPane.showConfirmDialog(this,
+				int selected = JOptionPane.showConfirmDialog(frame,
 						ControlsRes.getString("OSPLog.ReplaceExisting_dialog_message") + file.getName() //$NON-NLS-1$
 								+ ControlsRes.getString("OSPLog.question_mark"), //$NON-NLS-1$
 						ControlsRes.getString("OSPLog.ReplaceFile_dialog_title"), //$NON-NLS-1$
@@ -757,24 +777,23 @@ public class OSPLog extends JFrame {
 	/**
 	 * Fires a property change event. Needed to expose protected method.
 	 */
-	@Override
 	protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-		super.firePropertyChange(propertyName, oldValue, newValue);
+		frame.firePropertyChange(propertyName, oldValue, newValue);
 	}
 
 	/**
 	 * Creates the GUI.
 	 */
 	protected void createGUI() {
-		if (logPanel != null)
+		if (logPanel != null || frame == null)
 			return;
 		// create the panel, text pane and scroller
 		logPanel = new JPanel(new BorderLayout());
 		logPanel.setPreferredSize(new Dimension(480, 240));
-		setContentPane(logPanel);
+		frame.setContentPane(logPanel);
 		// create the menus
 		createMenus();
-		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+		frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 	}
 
 	private JTextPane getTextPane() {
@@ -885,7 +904,7 @@ public class OSPLog extends JFrame {
 	 * Creates the popup menu.
 	 */
 	protected void createMenus() {
-		if (!hasPermission) {
+		if (!hasPermission || frame == null) {
 			return;
 		}
 		popup = new JPopupMenu();
@@ -924,6 +943,7 @@ public class OSPLog extends JFrame {
 			}
 
 		};
+
 		openAction.setEnabled(!useMessageFrame());
 		popup.add(openAction);
 		Action saveAsAction = new AbstractAction(ControlsRes.getString("OSPLog.SaveAs_popup")) { //$NON-NLS-1$
@@ -946,7 +966,7 @@ public class OSPLog extends JFrame {
 		popup.add(clearAction);
 		// create menubar
 		JMenuBar menubar = new JMenuBar();
-		setJMenuBar(menubar);
+		frame.setJMenuBar(menubar);
 		menu = new JMenu(ControlsRes.getString("OSPLog.File_menu")); //$NON-NLS-1$
 		menubar.add(menu);
 		menu.add(openAction);
@@ -1045,8 +1065,10 @@ public class OSPLog extends JFrame {
 	 */
 	@SuppressWarnings("resource")
 	private OSPLog(String name, String resourceBundleName) {
-		super(ControlsRes.getString("OSPLog.DefaultTitle")); //$NON-NLS-1$
-		this.setName("LogTool"); // identify this as a tool //$NON-NLS-1$
+		if (useFrame) {
+			frame = new OSPFrame(ControlsRes.getString("OSPLog.DefaultTitle")); 
+			frame.setName("LogTool"); // identify this as a tool //$NON-NLS-1$
+		}
 		bundleName = resourceBundleName;
 		pkgName = name;
 		ConsoleLevel.class.getName(); // force ConsoleLevel to load static constants
@@ -1296,7 +1318,7 @@ public class OSPLog extends JFrame {
 
 	public static void setFonts(int level) {
 		OSPLog log = getOSPLog();
-		FontSizer.setFonts(log);
+		FontSizer.setFonts(log.frame);
 	}
 
 	public static void finalized(Object c) {
@@ -1307,6 +1329,27 @@ public class OSPLog extends JFrame {
 		if (doNotify)
 			OSPLog.finer((c instanceof String ? c : c.getClass().getSimpleName()) + " " + msg);		
 	}
+
+	public static JFrame getFrame() {
+		return getOSPLog().frame;
+	}
+
+	public static void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {
+		if (getFrame() != null)
+			getFrame().addPropertyChangeListener(propertyChangeListener);
+	}
+
+	public static void removePropertyChangeListener(PropertyChangeListener propertyChangeListener) {
+		if (getFrame() != null)
+			getFrame().removePropertyChangeListener(propertyChangeListener);
+	}
+
+	public static void addPropertyChangeListener(String name,
+			PropertyChangeListener propertyChangeListener) {
+		if (getFrame() != null)
+			getFrame().addPropertyChangeListener(name, propertyChangeListener);
+	}
+
 }
 
 /**

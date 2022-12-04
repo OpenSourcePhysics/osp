@@ -260,7 +260,7 @@ public void destroy() {
       Iterator<Frame> it = newFrames.iterator();
       while(it.hasNext()) {
         Frame frame = (it.next());
-        if(frame.isDisplayable()&&!(frame instanceof OSPLog)&&!(frame instanceof MessageFrame)&&!(frame instanceof Translator)) {
+        if(frame.isDisplayable()&& frame != OSPLog.getFrame() &&!(frame instanceof MessageFrame)&&!(frame instanceof Translator)) {
           frame.setVisible(true);
         }
       }

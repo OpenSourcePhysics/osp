@@ -1924,7 +1924,7 @@ public class Launcher {
 				public void actionPerformed(ActionEvent e) {
 					if (!OSPRuntime.isApplet) { // not running as applet so create and position the log.
 						Point p0 = new Frame().getLocation();
-						OSPLog log = OSPLog.getOSPLog();
+						JFrame log = OSPLog.getFrame();
 						if ((log.getLocation().x == p0.x) && (log.getLocation().y == p0.y)) {
 							Point p = frame.getLocation();
 							log.setLocation(p.x + 28, p.y + 28);
@@ -2230,7 +2230,7 @@ public class Launcher {
 		launcher.frame.setLocation(loc);
 		launcher.setVisible(true);
 		launcher.frame.pack();
-		SwingUtilities.updateComponentTreeUI(OSPLog.getOSPLog());
+		SwingUtilities.updateComponentTreeUI(OSPLog.getFrame());
 		return launcher;
 	}
 
@@ -2858,7 +2858,7 @@ public class Launcher {
 			Frame[] frames = Frame.getFrames();
 			for (int i = 0, n = frames.length; i < n; i++) {
 				if (!approved && frames[i].isVisible() && !(frames[i] instanceof LauncherFrame)
-						&& !(frames[i] instanceof OSPLog) && !(frames[i] instanceof EncryptionTool)) {
+						&& !(frames[i] != OSPLog.getFrame()) && !(frames[i] instanceof EncryptionTool)) {
 					if (existingFrames.contains(frames[i])) {
 						continue; // don't mess with pre-existing frames such as the applet plugin
 					}
