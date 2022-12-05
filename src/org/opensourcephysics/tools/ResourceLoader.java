@@ -58,6 +58,7 @@ import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
@@ -1229,28 +1230,40 @@ public class ResourceLoader {
 	 * @param outFile the target
 	 * @return true if all files successfully copied
 	 */
-	public static boolean copyAllFiles(File inFile, File outFile) {
+	public static boolean copyAllFiles(File inFile, Object fileOrZipStream) {
+		ZipOutputStream zos = (fileOrZipStream instanceof ZipOutputStream ? (ZipOutputStream) fileOrZipStream : null);
+		File outFile = (zos == null ? (File) fileOrZipStream : null);
 		if (inFile.isDirectory()) {
-			outFile.mkdir();
+			if (outFile != null)
+				outFile.mkdir();
 			boolean success = true;
 			for (File in : inFile.listFiles()) {
-				String filename = in.getName();
-				File out = new File(outFile, filename);
-				success = success && copyAllFiles(in, out);
+				success = copyAllFiles(in, zos == null ? new File(outFile, in.getName()) : zos);
+				if (!success)
+					return false;
 			}
 			return success;
 		}
 		String path = toUnix(inFile.getPath());
 		if (isZipEntry(path, false) >= 0) {
 			try {
-				if (OSPRuntime.isJS) {
-					copyURLtoFile(path, outFile.getAbsolutePath());					
-				} else {
-					getZipEntryBytes(path, outFile);
+				if (zos != null) {
+					byte[] bytes = getZipEntryBytes(path, null);
+					ZipEntry e = new ZipEntry(inFile.getName());
+					zos.putNextEntry(e);
+					zos.write(bytes);
+					zos.closeEntry();
+				} else if (outFile != null) {
+					if (OSPRuntime.isJS) {
+						copyURLtoFile(path, outFile.getAbsolutePath());
+					} else {
+						getZipEntryBytes(path, outFile);
+					}
 				}
 			} catch (IOException e) {
 				return false;
 			}
+
 			return true;
 		}
 		return copyFile(inFile, outFile);
@@ -2533,9 +2546,8 @@ public class ResourceLoader {
 	 * @return
 	 */
 	public static boolean isJarZipTrz(String path, boolean asEntry) {
-		return (path == null ? false : asEntry ? 
-				path.indexOf(".zip!") >= 0 || path.indexOf(".jar!") >= 0 //$NON-NLS-1$ //$NON-NLS-2$
-						|| path.indexOf(".trz!") >= 0 //$NON-NLS-1$				
+		return (path == null ? false 
+				: asEntry ? path.indexOf("!/") >= 0 //$NON-NLS-1$				
 				: path.endsWith(".jar") || path.endsWith(".zip") || path.endsWith(".trz")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
 
@@ -3209,7 +3221,9 @@ public class ResourceLoader {
 		File f = new File(filePath);
 		InputStream is = null;
 		if (OSPRuntime.isJS) {
-			is = (isJarZipTrz(urlPath, true) ? new ByteArrayInputStream(getZipEntryBytes(urlPath, null))
+			boolean isjar = isJarZipTrz(urlPath, true);
+			byte[] bytes = (isjar ? getZipEntryBytes(urlPath, null) : null);
+			is = (isjar ? new ByteArrayInputStream(bytes)
 					: isHTTP(urlPath) ? openStream(new URL(urlPath)) : new FileInputStream(urlPath));
 			FileOutputStream fos = new FileOutputStream(f);
 			OSPRuntime.jsutil.transferTo(is, fos);

@@ -169,7 +169,7 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
 		// copy temp files or open and re-encode if needed
 		synchronized (tempFiles) {
 			String fileName = saveFile.getAbsolutePath();			
-			savedFilePaths = getFileNames(fileName, tempFiles.size());
+			savedFilePaths = getFileNames(fileName, tempFiles.size(), null);
 			
 			for (int i = 0; i < tempFiles.size(); i++) {
 				String path = savedFilePaths[i];
@@ -348,7 +348,7 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
 	 * @throws IOException
 	 */
 	protected static String[] saveImages(String fileName, BufferedImage[] images) throws IOException {
-		String[] fileNames = getFileNames(fileName, images.length);
+		String[] fileNames = getFileNames(fileName, images.length, null);
 		for (int i = 0; i < images.length; i++) {
 			String next = fileNames[i];
 			javax.imageio.ImageIO.write(images[i], ext, new BufferedOutputStream(new FileOutputStream(next)));
@@ -356,9 +356,11 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
 		return fileNames;
 	}
 
-	public static String[] getFileNames(String fileName, int length) {
+	public static String[] getFileNames(String fileName, int length, String ext) {
 		if (length == 1)
 			return new String[] { fileName };
+		if (ext == null)
+			ext = ImageVideoRecorder.ext;
 		// determine number of digits to append to file names
 		int k = getAppendedNumber(fileName);
 		ArrayList<String> paths = new ArrayList<String>();

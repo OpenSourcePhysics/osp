@@ -80,7 +80,7 @@ public class MovieFactory {
 				if (e.getPropertyName().equals("xuggle_error")) { //$NON-NLS-1$
 					hadXuggleError = true;
 					// so noted; remove errorListener
-					OSPLog.getOSPLog().removePropertyChangeListener(errorListener[0]);
+					OSPLog.removePropertyChangeListener(errorListener[0]);
 					errorListener[0] = null;
 				}
 			}
@@ -88,7 +88,7 @@ public class MovieFactory {
 	};
 
 	static {
-	  OSPLog.getOSPLog().addPropertyChangeListener(errorListener[0]);
+	  OSPLog.addPropertyChangeListener(errorListener[0]);
 	}
 	
 	/**

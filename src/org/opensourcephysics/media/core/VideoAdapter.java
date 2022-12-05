@@ -112,6 +112,13 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	protected FilterStack filterStack = new FilterStack();
 	protected DataBufferInt clearRaster;
 
+	private boolean doNotify = true;
+
+	public void setNotify(boolean b) {
+		doNotify = b;
+	}
+
+
 	private final static Point2D.Double corner = new Point2D.Double(0, 0);
 
 	/**
@@ -251,6 +258,11 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	}
 
 	static int ntest = 0, ntest1 = 0, ntest2 = 0;
+
+	public BufferedImage getRawBufferedImage() {
+		updateBufferedImage();
+		return bufferedImage;
+	}
 
 	/**
 	 * Gets the current video image after applying enabled filters.
@@ -680,7 +692,8 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 		}
 		frameNumber = Math.min(Math.max(n, startFrameNumber), endFrameNumber);
 		// for PerspectiveFilter only
-		firePropertyChange(PROPERTY_VIDEO_NEXTFRAME, null, frameNumber);
+		if (doNotify)
+			firePropertyChange(PROPERTY_VIDEO_NEXTFRAME, null, frameNumber);
 	}
 
 	@Override
@@ -689,6 +702,8 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	}
 
 	protected void notifyFrame(int n, boolean isAsync) {
+		if (!doNotify)
+			return;
 		// after subclass setFrameNumber(n) - asynchronous -- ImageVideo only??
 		Runnable r = new Runnable() {
 
@@ -1287,6 +1302,8 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	}
 
 	protected void notifySize(Dimension newDim) {
+		if (!doNotify)
+			return;
 		if ((newDim.height != size.height) || (newDim.width != size.width)) {
 			Dimension oldSize = new Dimension(size);
 			size.width = newDim.width;
