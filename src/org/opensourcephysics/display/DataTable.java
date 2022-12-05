@@ -2532,6 +2532,9 @@ public class DataTable extends JTable {
 		BitSet bs = new BitSet();
 		for (int i = 0; i < modelRows.length; i++) {
 			int row =  modelRows[i];
+			// DB edit 4 Dec 2022
+			if (row >= n)
+				break;
 			for (int j = 0; j <= n; j++) {
 				if (row == ((Integer) dataTableModel.getValueAt(convertRowIndexToModel(j),0)).intValue()) {
 					bs.set(j);
