@@ -995,7 +995,8 @@ public class ImageVideo extends VideoAdapter {
 				}
 				return null;
 			}
-			// 2007+ code
+			
+			// current (2007+) code
 			if (paths == null || paths.length == 0) {
 				return null;
 			}
@@ -1027,7 +1028,7 @@ public class ImageVideo extends VideoAdapter {
 				} catch (IOException ex) {
 				}				
 			}
-			if (badPaths != null) {
+			if (vid == null && badPaths != null) {
 				String s = badPaths.get(0);
 				int len = s.length();
 				for (int i = 1; i < badPaths.size(); i++) {

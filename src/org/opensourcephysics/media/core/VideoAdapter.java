@@ -1184,6 +1184,9 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 		@Override
 		public Object createObject(XMLControl control) {
 			try {
+				String fullpath = control.getString("absolutePath");
+				if (fullpath != null)
+					return createVideo(fullpath);
 				String path = control.getString("path"); //$NON-NLS-1$
 				if (OSPRuntime.checkTempDirCache)
 					path = OSPRuntime.tempDir + path;

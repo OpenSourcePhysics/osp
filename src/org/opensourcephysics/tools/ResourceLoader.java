@@ -1682,7 +1682,11 @@ public class ResourceLoader {
 //					ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
 //					JOptionPane.WARNING_MESSAGE);
 			return null;
-		}
+		} 
+//		// if not web connected and same urlPath as previous attempt, abort
+//		else if (downloadURL.equals(urlPath)) {
+//			return null;
+//		}
 
 		urlPath = getURIPath(urlPath);
 		target.getParentFile().mkdirs();

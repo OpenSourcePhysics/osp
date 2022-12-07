@@ -742,11 +742,14 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 			dt = child.getDouble("delta_t"); //$NON-NLS-1$
 			String childPath = child.getString("path");
 			path = XML.getResolvedPath(childPath, base);
+//			if (child.getString("absolutePath") != null) {
+//				path = child.getString("absolutePath");
+//			}
 			String fullPath = path;
 			// above is critical for TrackerSampler Mechanics (FreeFall, MotionDiagram,
 			// video)
 
-			if (base.endsWith("!")) { // zip or trz
+			if (base != null && base.endsWith("!")) { // zip or trz
 				path = childPath; // base unchanged
 			} else {
 				base = XML.getDirectoryPath(path);
