@@ -636,6 +636,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 			repaint();
 			break;
 		case VideoPlayer.PROPERTY_VIDEOPLAYER_VIDEOCLIP: // from VideoPlayer
+			// set video field
 			// update property change listeners
 			((VideoClip) e.getOldValue()).removeListener(this);
 			VideoClip clip = (VideoClip) e.getNewValue();

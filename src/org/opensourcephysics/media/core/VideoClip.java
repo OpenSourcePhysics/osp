@@ -619,9 +619,9 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 			System.out.println("VideoClip loader finalized for " + name);
 		}
 		
-		private Video video;
-		private VideoClip clip;
-		private Collection<?> filters;
+		private Video loadedVideo;
+		private VideoClip loadedClip;
+		private Collection<?> loadedFilters;
 
 		private int start;
 		private int stepSize;
@@ -693,13 +693,13 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 		@Override
 		public Object loadObject(XMLControl control, Object obj) {
 			base = control.getString("basepath"); //$NON-NLS-1$ ;
-			clip = (VideoClip) obj;
-			video = clip.getVideo();
-			name = (video == null ? base : (String) video.getProperty("name"));
+			loadedClip = (VideoClip) obj;
+			loadedVideo = loadedClip.getVideo();
+			name = (loadedVideo == null ? base : (String) loadedVideo.getProperty("name"));
 			System.out.println("VideoClipLoader.loadObject " + name);
-			IncrementallyLoadable ivideo = (video == null || !(video instanceof IncrementallyLoadable) ? null : (IncrementallyLoadable) video);
+			IncrementallyLoadable ivideo = (loadedVideo == null || !(loadedVideo instanceof IncrementallyLoadable) ? null : (IncrementallyLoadable) loadedVideo);
 			if (ivideo != null && !ivideo.isFullyLoaded()) {
-				return clip;
+				return loadedClip;
 			}
 
 			if (!initialized) {
@@ -738,7 +738,7 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 
 			XMLControl child = control.getChildControl("video"); //$NON-NLS-1$
 
-			filters = (Collection<?>) child.getObject("filters"); //$NON-NLS-1$
+			loadedFilters = (Collection<?>) child.getObject("filters"); //$NON-NLS-1$
 			dt = child.getDouble("delta_t"); //$NON-NLS-1$
 			String childPath = child.getString("path");
 			path = XML.getResolvedPath(childPath, base);
@@ -759,14 +759,14 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 //				control.setValue("unsupported_video_path", path);
 				break;
 			case 1:
-				video = VideoIO.getVideo(path, base, types.get(0), child);
+				loadedVideo = VideoIO.getVideo(path, base, types.get(0), child);
 				break;
 			default:
-				video = VideoIO.getVideo(path, base, null, child);
+				loadedVideo = VideoIO.getVideo(path, base, null, child);
 				break;
 			}
 			// boolean invalid = false;
-			if (video == null && !VideoIO.isCanceled()) {
+			if (loadedVideo == null && !VideoIO.isCanceled()) {
 				Resource res = ResourceLoader.getResource(XML.getResolvedPath(path, base));
 				boolean exists = (res != null); // resource exists
 				boolean supported = (types.size() > 0); // extension is supported, VideoType available
@@ -799,7 +799,7 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 								JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION) {
 							File[] files = VideoIO.getChooserFilesAsync("open", null);
 							if (files != null && files.length > 0) {
-								video = VideoIO.getVideo(XML.getAbsolutePath(files[0]), null);
+								loadedVideo = VideoIO.getVideo(XML.getAbsolutePath(files[0]), null);
 							}
 						}
 					}
@@ -807,37 +807,37 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 
 			} // done handling null video
 
-			if (video != null) {
-				if (filters != null) {
-					video.getFilterStack().clear();
-					Iterator<?> it = filters.iterator();
+			if (loadedVideo != null) {
+				if (loadedFilters != null) {
+					loadedVideo.getFilterStack().clear();
+					Iterator<?> it = loadedFilters.iterator();
 					while (it.hasNext()) {
 						Filter filter = (Filter) it.next();
-						video.getFilterStack().addFilter(filter);
+						loadedVideo.getFilterStack().addFilter(filter);
 					}
 				}
-				if (video instanceof ImageVideo) {
+				if (loadedVideo instanceof ImageVideo) {
 					if (!Double.isNaN(dt)) {
-						((ImageVideo) video).setFrameDuration(dt);
+						((ImageVideo) loadedVideo).setFrameDuration(dt);
 					}
 				}
 			}
-			clip = new VideoClip(video);
+			loadedClip = new VideoClip(loadedVideo);
 			if (path != null) {
 				if (!path.startsWith("/") && path.indexOf(":") == -1) { //$NON-NLS-1$ //$NON-NLS-2$
 					// convert path to absolute
 					path = XML.getResolvedPath(path, base);
 				}
-				clip.videoPath = path;
+				loadedClip.videoPath = path;
 			}
-			if (video instanceof AsyncVideoI) {
-				clip.loader = this;
-				return clip;
+			if (loadedVideo instanceof AsyncVideoI) {
+				loadedClip.loader = this;
+				return loadedClip;
 			} 
-			if ((video instanceof IncrementallyLoadable)){
-				return clip;
+			if ((loadedVideo instanceof IncrementallyLoadable)){
+				return loadedClip;
 			}
-			VideoClip c = clip;
+			VideoClip c = loadedClip;
 			finalizeLoading();
 			return c;
 		}
@@ -845,36 +845,36 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 
 		@Override
 		public void finalizeLoading() {
-			clip.loader = null;
+			loadedClip.loader = null;
 			if (frameCount == -1) 
-				frameCount = clip.getFrameCount();
-			clip.setStepCount(frameCount); // this should equal or exceed the actual frameCount
+				frameCount = loadedClip.getFrameCount();
+			loadedClip.setStepCount(frameCount); // this should equal or exceed the actual frameCount
 
 			// set start frame
 			if (start != Integer.MIN_VALUE) {
-				clip.setStartFrameNumber(start);
+				loadedClip.setStartFrameNumber(start);
 			}
 			// set step size
 			if (stepSize != Integer.MIN_VALUE) {
-				clip.setStepSize(stepSize);
+				loadedClip.setStepSize(stepSize);
 			}
 			// set step count
 			if (stepCount != Integer.MIN_VALUE) {
-				clip.setStepCount(stepCount);
+				loadedClip.setStepCount(stepCount);
 			}
 			// set start time
 			if (!Double.isNaN(startTime)) {
-				clip.startTime = startTime;
+				loadedClip.startTime = startTime;
 			}
-			clip.readoutType = readoutType;
-			clip.playAllSteps = playAllSteps; // by default
+			loadedClip.readoutType = readoutType;
+			loadedClip.playAllSteps = playAllSteps; // by default
 			dispose();
 		}
 		
 		private void dispose() {
-			clip = null;
-			video = null;
-			filters = null;
+			loadedClip = null;
+			loadedVideo = null;
+			loadedFilters = null;
 			finalized = true;
 		}
 
