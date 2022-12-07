@@ -372,11 +372,13 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		double[] indepVarPts = (indepVar == null) ? null : indepVar.getYPoints();
 		// remove Double.NaN from end of indepVarPts
 		if (indepVarPts != null) {
-			while ((indepVarPts.length > 0) && Double.isNaN(indepVarPts[indepVarPts.length - 1])) {
-				double[] newVals = new double[indepVarPts.length - 1];
-				System.arraycopy(indepVarPts, 0, newVals, 0, newVals.length);
-				indepVarPts = newVals;
+			int n = indepVarPts.length;
+			while (--n >= 0 && Double.isNaN(indepVarPts[n])) {
+				// continue
 			}
+			double[] newVals = new double[++n];
+			System.arraycopy(indepVarPts, 0, newVals, 0, n);
+			indepVarPts = newVals;
 		}
 		// indepVarPts cannot contain duplicates
 		indepVar = (indepVarPts == null || DataTool.containsDuplicateValues(indepVarPts) ? null : indepVar);
@@ -2655,6 +2657,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	/**
 	 * Returns true if the name and data duplicate an existing column.
 	 *
+	 *
+	 * Never called.
+	 * 
 	 * @param name the name
 	 * @param data the data array
 	 * @return true if a duplicate is found
@@ -2663,8 +2668,8 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		ArrayList<Dataset> datasets = dataManager.getDatasetsRaw();
 		for (int i = 0, n = datasets.size(); i < n; i++) {
 			Dataset next = datasets.get(i);
-			double[] y = next.getYPoints();
-			if (name.equals(next.getYColumnName()) && isDuplicate(data, next.getYPoints())) {
+			double[] y = next.getYPointsRaw();
+			if (name.equals(next.getYColumnName()) && isDuplicate(data, y, next.getIndex())) {
 				// next is duplicate column: add new points if any
 				if (data.length > y.length) {
 					next.set(data, data);
@@ -2680,10 +2685,11 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 *
 	 * @param data0 data array 0
 	 * @param data1 data array 1
+	 * @param len1
 	 * @return true if identical
 	 */
-	private boolean isDuplicate(double[] data0, double[] data1) {
-		int len = Math.min(data0.length, data1.length);
+	private static boolean isDuplicate(double[] data0, double[] data1, int len1) {
+		int len = Math.min(data0.length, len1);
 		for (int i = 0; i < len; i++) {
 			if (Double.isNaN(data0[i]) && Double.isNaN(data1[i])) {
 				continue;
@@ -2844,9 +2850,9 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				toolbar.add(selectedXField, 7);
 				toolbar.add(selectedYLabel, 8);
 				toolbar.add(selectedYField, 9);
-				selectedXField.setValue(selectedData.getXPointsRaw()[0]);
+				selectedXField.setValue(selectedData.getX(0));
 				selectedXField.refreshPreferredWidth();
-				selectedYField.setValue(selectedData.getY(0));
+				selectedYField.setValue(selectedData.getY(0)); // no shift here ??
 				selectedYField.refreshPreferredWidth();
 				toolbar.revalidate();
 			} else {
@@ -3722,7 +3728,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			if (measureData) {
 				numpts = data.getIndex();
 				xp = data.getXPointsRaw();
-				yp = data.isShifted() ? data.getYPoints() : data.getYPointsRaw();
+				yp = data.getYPointsRaw(); // Y will be shifted if appropriate
 			} else {
 				numpts = plot.xToPix(upper) - plot.xToPix(lower);
 				double delta = (upper - lower) / numpts;
@@ -4088,7 +4094,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				if (mouseEvent != null && mouseEvent.isShiftDown()) {
 					pointIndex = findIndexNearestX(x, data);
 				}
-				this.x = (pointIndex == -1) ? x : data.getXPointsRaw()[pointIndex];
+				this.x = (pointIndex == -1) ? x : data.getX(pointIndex);
 				refreshArea();
 				createMessage();
 				plot.setMessage(message);

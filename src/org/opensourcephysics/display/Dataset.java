@@ -856,6 +856,9 @@ public class Dataset extends DataTable.DataModel implements Measurable, LogMeasu
 		return xpoints;
 	}
 
+	public double getYShifted(int i) {
+		return (isShifted() ? ypoints[i] + shift : ypoints[i]);
+	}
 	/**
 	 * Gets a copy of the ypoints array, with shift added if shifted.
 	 *
@@ -880,7 +883,7 @@ public class Dataset extends DataTable.DataModel implements Measurable, LogMeasu
 	 * @return uncloned ypoints
 	 */
 	public final double[] getYPointsRaw() {
-			return ypoints;
+			return (isShifted() ? getYPoints() : ypoints);
 	}
 
 	public double getY(int i) {
@@ -1337,7 +1340,7 @@ public class Dataset extends DataTable.DataModel implements Measurable, LogMeasu
 		int width = markerSize * 2 + 1;
 		for (int i = 0; i < index; i++) {
 			double x = xpoints[i];
-			double y = getY(i);
+			double y = getY(i); // no shift here
 			if (Double.isNaN(y) || x <= 0 && drawingPanel.isLogScaleX() || y <= 0 && drawingPanel.isLogScaleY()) {
 				continue;
 			}
@@ -2017,6 +2020,30 @@ public class Dataset extends DataTable.DataModel implements Measurable, LogMeasu
 				getLoader().loadObject(new XMLControlElement(newData), ds); 
 			}
 		}
+	}
+
+	/**
+	 * Get the mean value of either the x or y points.
+	 * 
+	 * @param xcol  1 for y, 0 for x
+	 * @return sum(values)/count(values)
+	 */
+	public double getMean(int xcol) {
+		double[] data = (xcol == 1 ? ypoints : xpoints);
+		double sum = 0.0;
+		int count = 0;
+		for (int i = index; --i >= 0;) {
+			if (Double.isNaN(data[i])) {
+				continue;
+			}
+			count++;
+			sum += data[i];
+		}
+		return sum / count;
+	}
+
+	public double getX(int i) {
+		return xpoints[i];
 	}
 
 }

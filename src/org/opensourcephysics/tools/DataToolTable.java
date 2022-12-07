@@ -1728,11 +1728,10 @@ public class DataToolTable extends DataTable {
 			if ((data instanceof DataFunction) || !columnNames.contains(data.getYColumnName())) {
 				continue;
 			}
-			double[] y = data.getYPoints();
-			if (row >= y.length) {
+			if (row >= data.getIndex()) {
 				return false;
 			}
-			if (Double.isNaN(y[row])) {
+			if (Double.isNaN(data.getYShifted(row))) {
 				return true;
 			}
 		}
