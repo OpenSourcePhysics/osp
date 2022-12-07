@@ -342,9 +342,10 @@ public class StepperClipControl extends ClipControl {
 		if (video != null && video.isValid()) {
 			int n = clip.stepToFrame(stepNumber);
 			double videoTime = video.getFrameTime(n);
-			if (n > video.getFrameCount() - 1) {
-				int extra = n - video.getFrameCount() + 1;
-				videoTime = video.getFrameTime(video.getFrameCount() - 1) + extra * frameDuration;
+			int nframes = video.getFrameCount();
+			if (n > nframes - 1) {
+				int extra = n - nframes + 1;
+				videoTime = video.getFrameTime(nframes - 1) + extra * frameDuration;
 			}
 			return (videoTime - video.getStartTime()) * timeStretch;
 		}
