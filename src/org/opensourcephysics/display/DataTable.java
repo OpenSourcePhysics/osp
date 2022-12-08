@@ -2640,15 +2640,15 @@ public class DataTable extends JTable {
 				continue;
 			String name = getColumnName(selectedColumns[j]);
 			name = TeXParser.removeSubscripting(name);
-			if (name.startsWith(FunctionEditor.THETA)) {
-				for (int i = 0; i < selectedRows.length; i++) {
-					Object val = getFormattedValueAt(selectedRows[i], selectedColumns[j]);
+//			if (name.startsWith(FunctionEditor.THETA)) {
+//				for (int i = 0; i < selectedRows.length; i++) {
+//					Object val = getFormattedValueAt(selectedRows[i], selectedColumns[j]);
 //					if (val != null && val.toString().contains(FunctionEditor.DEGREES)) {
-//						name += "(" + FunctionEditor.DEGREES + ")";
-//						break;
-//					}				
-				}
-			}
+	//						name += "(" + FunctionEditor.DEGREES + ")";
+	//						break;
+	//					}				
+	//				}
+//			}
 			buf.append(name);
 			if (j < selectedColumns.length - 1)
 				buf.append(VideoIO.getDelimiter()); // add delimiter after each column except the last
