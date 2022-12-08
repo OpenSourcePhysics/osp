@@ -148,6 +148,22 @@ public class ImageVideo extends VideoAdapter {
 	}
 	
 	/**
+	 * Plays the video at the current rate.
+	 */
+	@Override
+	public void play() {
+		playing = true;
+	}
+
+	/**
+	 * Stops the video.
+	 */
+	@Override
+	public void stop() {
+		playing = false;
+	}
+
+	/**
 	 *
 	 * @param n the desired frame number
 	 */
@@ -158,16 +174,6 @@ public class ImageVideo extends VideoAdapter {
 		updateBufferedImage(); // For SwingJS
 		invalidateVideoAndFilter();
 		notifyFrame(n, false); // only this subsclass does this asynchronously
-	}
-
-	/**
-	 * Gets the current video time in milliseconds.
-	 *
-	 * @return the current time in milliseconds, or -1 if not known
-	 */
-	@Override
-	public double getTime() {
-		return getFrameNumber() * deltaT;
 	}
 
 	/**

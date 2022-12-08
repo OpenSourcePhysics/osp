@@ -32,7 +32,6 @@
 package org.opensourcephysics.media.core;
 
 import java.awt.Dimension;
-import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 
 /**
@@ -369,6 +368,9 @@ public interface Video extends InteractiveImage, Trackable, PropertyChangeListen
 	   */
 	  public void setRate(double rate);
 
+	  
+	  ////////////// common for all adapters -- in VideoAdapter only
+	  
 	  /**
 	   * Starts and stops the media.
 	   *
