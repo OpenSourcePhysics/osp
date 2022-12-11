@@ -1000,6 +1000,7 @@ public class ImageVideo extends VideoAdapter {
 				return null;
 			}
 			ImageVideo vid = null;
+			boolean sequenceLoaded = false;
 			
 			// "absolutePath" used by undo/redo
 			if (control.getPropertyNamesRaw().contains("absolutePath")) {
@@ -1009,6 +1010,7 @@ public class ImageVideo extends VideoAdapter {
 						String[] imagePaths = VideoIO.getZippedImagePaths(path); // all absolute
 						if (imagePaths != null && imagePaths.length > 0) {
 							vid = new ImageVideo(imagePaths[0], null, true);
+							sequenceLoaded = true;
 						}
 					}
 					else {
@@ -1020,15 +1022,14 @@ public class ImageVideo extends VideoAdapter {
 
 			ArrayList<String> badPaths = null;
 			for (int i = 0; i < paths.length; i++) {
-				if (paths[i].toLowerCase().endsWith(".zip"))
-					break;
-				if (paths[i].toLowerCase().contains(".zip!"))
+				if (paths[i].toLowerCase().endsWith(".zip")
+						|| paths[i].toLowerCase().contains(".zip!"))
 					break;
 				try {
 					if (vid == null) {
 						// will fail for zip images
 						vid = new ImageVideo(paths[i], control.getBasepath(), false);
-					} else {
+					} else if (!sequenceLoaded) {
 						vid.append(paths[i], false);
 					}
 				} catch (Exception ex) {
