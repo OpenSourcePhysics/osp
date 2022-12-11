@@ -697,7 +697,10 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 			loadedVideo = loadedClip.getVideo();
 			name = (loadedVideo == null ? base : (String) loadedVideo.getProperty("name"));
 			System.out.println("VideoClipLoader.loadObject " + name);
-			IncrementallyLoadable ivideo = (loadedVideo == null || !(loadedVideo instanceof IncrementallyLoadable) ? null : (IncrementallyLoadable) loadedVideo);
+			IncrementallyLoadable ivideo = (loadedVideo == null 
+					|| !(loadedVideo instanceof IncrementallyLoadable) ? 
+							null : 
+							(IncrementallyLoadable) loadedVideo);
 			if (ivideo != null && !ivideo.isFullyLoaded()) {
 				return loadedClip;
 			}
@@ -741,16 +744,22 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 			loadedFilters = (Collection<?>) child.getObject("filters"); //$NON-NLS-1$
 			dt = child.getDouble("delta_t"); //$NON-NLS-1$
 			String childPath = child.getString("path");
-			path = XML.getResolvedPath(childPath, base);
-//			if (child.getString("absolutePath") != null) {
-//				path = child.getString("absolutePath");
-//			}
+			
+			if (child.getPropertyNamesRaw().contains("absolutePath")) {
+				path = child.getString("absolutePath");
+				base = null;
+			}
+			else{
+				path = XML.getResolvedPath(childPath, base);
+			}
 			String fullPath = path;
 			// above is critical for TrackerSampler Mechanics (FreeFall, MotionDiagram,
 			// video)
 
 			if (base != null && base.endsWith("!")) { // zip or trz
 				path = childPath; // base unchanged
+			} else if (fullPath.equals(XML.getResolvedPath(childPath, base))){
+				path = childPath;
 			} else {
 				base = XML.getDirectoryPath(path);
 				path = XML.getName(path);

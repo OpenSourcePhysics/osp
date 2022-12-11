@@ -33,7 +33,6 @@ package org.opensourcephysics.media.core;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -208,13 +207,19 @@ public class VideoIO {
 		public Video getVideo(String name, String basePath, XMLControl control) {
 			String fullPath = basePath == null? name: basePath + "/" + name;
 			if (VideoIO.zipFileFilter.accept(new File(fullPath))) {
-				String[] imagePaths = VideoIO.getZippedImagePaths(fullPath);
+				String[] imagePaths = VideoIO.getZippedImagePaths(fullPath); // all absolute
 				if (imagePaths == null) {
 					return null;
 				}
 				name = imagePaths[0];
-				basePath = null;
-				return super.getVideo(name, basePath, control);
+				if (!getImageVideoType().accepts(new File(XML.getName(name)))) {
+					return null;
+				}
+				basePath = null;				
+				Video video = super.getVideo(name, basePath, control);
+				if (video != null)
+					video.setProperty("video_type", this); //$NON-NLS-1$
+				return video;
 			}
 			return null;
 		}
@@ -349,6 +354,9 @@ public class VideoIO {
 		int n = zipPath.indexOf("!");
 		if (n > 0) {
 			zipPath = zipPath.substring(0, n);
+			if (zipPath.startsWith("jar:")) {
+				zipPath = zipPath.substring(4, zipPath.length());
+			}
 		}
 		if (zipFileFilter != null && !zipFileFilter.accept(new File(zipPath)))
 			return null;
@@ -894,8 +902,30 @@ public class VideoIO {
 			video = next.getVideo(path, basePath, control);
 			if (VideoIO.isCanceled())
 				return null;
-			if (video != null)
+			if (video != null) {
+				// for zipped image video make sure the VideoType is ZipImageVideoType
+				// since non-zip ImageVideoTypes can also open zip images
+				int n = fullPath.indexOf("zip!");
+				n = n > 0? n: fullPath.indexOf("trz!");
+				if (n > 0) {
+					fullPath = fullPath.substring(0, n+3);					
+				}
+				if (fullPath.endsWith(".zip") || fullPath.endsWith(".trz")) {
+					if (!(next instanceof ZipImageVideoType)) {
+						ArrayList<VideoType> types = VideoIO.getVideoTypesForPath(fullPath);
+						for (int i = 0; i < types.size(); i++) {
+							if (types.get(i) instanceof  ZipImageVideoType) {
+								ZipImageVideoType zipType = (ZipImageVideoType)types.get(i);
+								if (zipType.getImageVideoType().getDefaultExtension().equals(next.getDefaultExtension())) {
+									video.setProperty("video_type", types.get(i)); //$NON-NLS-1$
+									break;
+								}
+							}								
+						}
+					}
+				}
 				return video;
+			}
 		}
 		return null;
 	}
