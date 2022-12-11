@@ -1296,9 +1296,18 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	protected String getAbsolutePath(String path) {
 		if (baseDir == null)
 			baseDir = XML.getDirectoryPath((String) getProperty("absolutePath"));
-		if (baseDir != "" && !path.replace('\\', '/').startsWith(baseDir)) {
-			path = baseDir + "/" + path;
-			if (!ResourceLoader.isHTTP(baseDir))
+		
+		String base = baseDir;
+		// trim "file:" and "jar:file:" protocols from base
+		int n = base.indexOf("file:");
+		if (n > -1) {
+			base = base.substring(n+5, base.length());
+			if (OSPRuntime.isWindows() && base.startsWith("/"))
+				base = base.substring(1, base.length());
+		}
+		if (base != "" && !path.replace('\\', '/').startsWith(base)) {
+			path = base + "/" + path;
+			if (!ResourceLoader.isHTTP(base))
 				path = XML.getAbsolutePath(new File(path));
 		}
 		return path;
