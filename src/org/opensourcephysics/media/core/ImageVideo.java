@@ -476,9 +476,9 @@ public class ImageVideo extends VideoAdapter {
 				if (file == null) {
 					return false;
 				}
-				String fileName = file.getAbsolutePath();
+				String filePath = file.getAbsolutePath();
 				BufferedImage[] imagesToSave = imageList.toArray(new BufferedImage[0]);
-				String[] pathArray = ImageVideoRecorder.saveImages(fileName, imagesToSave);
+				String[] pathArray = ImageVideoRecorder.saveImages(filePath, imagesToSave);
 				int j = 0;
 				for (int i = 0; i < paths.length; i++) {
 					if (paths[i].equals("")) { //$NON-NLS-1$
@@ -486,9 +486,9 @@ public class ImageVideo extends VideoAdapter {
 					}
 				}
 				if (getProperty("name") == null) { //$NON-NLS-1$
-					setProperty("name", XML.getName(fileName)); //$NON-NLS-1$
-					setProperty("path", fileName); //$NON-NLS-1$
-					setProperty("absolutePath", fileName); //$NON-NLS-1$
+					setProperty("name", XML.getName(filePath)); //$NON-NLS-1$
+					setProperty("path", filePath); //$NON-NLS-1$ // path is absolute here
+					setProperty("absolutePath", filePath); //$NON-NLS-1$
 				}
 				return true;
 			} catch (IOException ex) {
@@ -925,28 +925,27 @@ public class ImageVideo extends VideoAdapter {
 		@Override
 		public void saveObject(XMLControl control, Object obj) {
 			ImageVideo video = (ImageVideo) obj;
-			String base = (String) video.getProperty("base"); //$NON-NLS-1$
-			String[] paths = video.getValidPathsRelativeTo(base);
 			String vidBase = video.baseDir; //$NON-NLS-1$
+			String trkBase = (String) video.getProperty("base"); //$NON-NLS-1$
+			if (trkBase == null) {
+				trkBase = vidBase;
+			}
+			String[] paths = video.getValidPathsRelativeTo(trkBase);
 			String path = null;
-			if (vidBase != null && vidBase.endsWith("!")) { // zipped images--just save the zip file path
+			if (vidBase != null && vidBase.endsWith("zip!")) { 
+				// zipped images--just save the zip file path
 				String s = vidBase.substring(0, vidBase.indexOf("!"));
-				paths = new String[] {XML.getPathRelativeTo(s, base)};
-				path = paths[0];
+				s = XML.getPathRelativeTo(s, trkBase);
+//				paths = new String[] {s};
+				path = s;
 			}
 			else if (paths.length > 0) {
-				// path is relative to the trk, but paths are 
-				// relative to the first image, so just names
-				// this might fail for images in separate directories?
 				path = paths[0];
-				for (int i = 0; i < paths.length; i++) {
-					paths[i] = XML.getName(paths[i]);
-				}
 			}
 			if (paths.length > 0) {
 				control.setValue("paths", paths); //$NON-NLS-1$
 				control.setValue("path", path); //$NON-NLS-1$
-				control.setBasepath(base);
+				control.setBasepath(trkBase);
 			}
 			if (!video.filterStack.isEmpty()) {
 				control.setValue("filters", video.filterStack.getFilters()); //$NON-NLS-1$
@@ -1001,10 +1000,33 @@ public class ImageVideo extends VideoAdapter {
 				return null;
 			}
 			ImageVideo vid = null;
+			
+			// "absolutePath" used by undo/redo
+			if (control.getPropertyNamesRaw().contains("absolutePath")) {
+				try {
+					String path = control.getString("absolutePath"); //$NON-NLS-1$
+					if (VideoIO.zipFileFilter.accept(new File(path))) {
+						String[] imagePaths = VideoIO.getZippedImagePaths(path); // all absolute
+						if (imagePaths != null && imagePaths.length > 0) {
+							vid = new ImageVideo(imagePaths[0], null, true);
+						}
+					}
+					else {
+						vid = new ImageVideo(path, null, false);
+					}
+				} catch (Exception ex) {
+				}				
+			}
+
 			ArrayList<String> badPaths = null;
 			for (int i = 0; i < paths.length; i++) {
+				if (paths[i].toLowerCase().endsWith(".zip"))
+					break;
+				if (paths[i].toLowerCase().contains(".zip!"))
+					break;
 				try {
 					if (vid == null) {
+						// will fail for zip images
 						vid = new ImageVideo(paths[i], control.getBasepath(), false);
 					} else {
 						vid.append(paths[i], false);
@@ -1020,7 +1042,9 @@ public class ImageVideo extends VideoAdapter {
 				// failed with paths array, but may still open with "path"?
 				try {
 					String path = control.getString("path"); //$NON-NLS-1$
-					if (path != null) {
+					if (path != null 
+							&& !path.toLowerCase().endsWith(".zip")
+							&& !path.toLowerCase().contains(".zip!")) {
 						if (OSPRuntime.checkTempDirCache)
 							path = OSPRuntime.tempDir + path;
 						return new ImageVideo(path, null, true);
