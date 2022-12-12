@@ -131,14 +131,14 @@ public class VideoFrame extends DrawingFrame {
   }
 
   protected void createActions() {
-    openAction = new AbstractAction(MediaRes.getString("VideoFrame.MenuItem.Open"), null) { //$NON-NLS-1$
+    openAction = new AbstractAction(MediaRes.getString("VideoFrame.MenuItem.Open")) { //$NON-NLS-1$
       @Override
 	public void actionPerformed(ActionEvent e) {
         VideoIO.openVideoPanelFileAsync(null, (VideoPanel) drawingPanel);
       }
 
     };
-    saveAction = new AbstractAction(MediaRes.getString("VideoFrame.MenuItem.Save"), null) { //$NON-NLS-1$
+    saveAction = new AbstractAction(MediaRes.getString("VideoFrame.MenuItem.Save")) { //$NON-NLS-1$
       @Override
 	public void actionPerformed(ActionEvent e) {
         VideoPanel vidPanel = (VideoPanel) drawingPanel;

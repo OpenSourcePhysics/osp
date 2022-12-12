@@ -97,8 +97,6 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		return super.getProperty(name);
 	}
 
-	// array of frame start times in milliseconds
-	private double[] frameTimesMillis;
 	private int frame;
 
 	private HTML5Video jsvideo;
@@ -196,108 +194,6 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 			SwingUtilities.invokeLater(() -> {
 				continuePlaying();
 			});
-		}
-	}
-
-
-	/**
-	 * Gets the start time of the specified frame in milliseconds.
-	 *
-	 * @param n the frame number
-	 * @return the start time of the frame in milliseconds, or -1 if not known
-	 */
-	@Override
-	public double getFrameTime(int n) {
-		if ((n >= frameTimesMillis.length) || (n < 0)) {
-			return -1;
-		}
-		return frameTimesMillis[n];
-	}
-
-	/**
-	 * Gets the current frame time in milliseconds.
-	 *
-	 * @return the current time in milliseconds, or -1 if not known
-	 */
-	@Override
-	public double getTime() {
-		return getFrameTime(getFrameNumber());
-	}
-
-	/**
-	 * not called
-	 * 
-	 * Sets the frame number to (nearly) a desired time in milliseconds.
-	 *
-	 * @param millis the desired time in milliseconds
-	 */
-	@Override
-	public void setTime(double millis) {
-		millis = Math.abs(millis);
-		for (int i = 0; i < frameTimesMillis.length; i++) {
-			double t = frameTimesMillis[i];
-			if (millis < t) { // find first frame with later start time
-				setFrameNumber(i - 1);
-				break;
-			}
-		}
-	}
-
-	/**
-	 * Gets the start frame time in milliseconds.
-	 *
-	 * @return the start time in milliseconds, or -1 if not known
-	 */
-	@Override
-	public double getStartTime() {
-		return getFrameTime(getStartFrameNumber());
-	}
-
-	/**
-	 * Sets the start frame to (nearly) a desired time in milliseconds.
-	 *
-	 * @param millis the desired start time in milliseconds
-	 */
-	@Override
-	public void setStartTime(double millis) {
-		millis = Math.abs(millis);
-		for (int i = 0; i < frameTimesMillis.length; i++) {
-			double t = frameTimesMillis[i];
-			if (millis < t) { // find first frame with later start time
-				setStartFrameNumber(i - 1);
-				break;
-			}
-		}
-	}
-
-	/**
-	 * Gets the end frame time in milliseconds.
-	 *
-	 * @return the end time in milliseconds, or -1 if not known
-	 */
-	@Override
-	public double getEndTime() {
-		int n = getEndFrameNumber();
-		if (n < getFrameCount() - 1)
-			return getFrameTime(n + 1);
-		return getDuration();
-	}
-
-	/**
-	 * Sets the end frame to (nearly) a desired time in milliseconds.
-	 *
-	 * @param millis the desired end time in milliseconds
-	 */
-	@Override
-	public void setEndTime(double millis) {
-		millis = Math.abs(millis);
-		millis = Math.min(getDuration(), millis);
-		for (int i = 0; i < frameTimesMillis.length; i++) {
-			double t = frameTimesMillis[i];
-			if (millis < t) { // find first frame with later start time
-				setEndFrameNumber(i - 1);
-				break;
-			}
 		}
 	}
 
@@ -855,11 +751,11 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		startFrameNumber = 0;
 		endFrameNumber = frameCount - 1;
 		// create startTimes array
-		frameTimesMillis = new double[frameCount];
+		startTimes = new double[frameCount];
 		// BH 2020.09.11 note: this was i=1, but then mp4 initial frame was double
 		// length
-		for (int i = 0; i < frameTimesMillis.length; i++) {
-			frameTimesMillis[i] = frameTimes.get(i).doubleValue() * 1000;
+		for (int i = 0; i < startTimes.length; i++) {
+			startTimes[i] = frameTimes.get(i).doubleValue() * 1000;
 		}
 		firePropertyChange(PROPERTY_VIDEO_PROGRESS, fileName, frame); // to TFrame
 		frameNumber = -1;
