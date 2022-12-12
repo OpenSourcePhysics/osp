@@ -616,7 +616,7 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 		
 		@Override
 		public void finalize() {
-			System.out.println("VideoClip loader finalized for " + name);
+//			System.out.println("VideoClip loader finalized for " + name);
 		}
 		
 		private Video loadedVideo;
@@ -696,7 +696,6 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 			loadedClip = (VideoClip) obj;
 			loadedVideo = loadedClip.getVideo();
 			name = (loadedVideo == null ? base : (String) loadedVideo.getProperty("name"));
-			System.out.println("VideoClipLoader.loadObject " + name);
 			IncrementallyLoadable ivideo = (loadedVideo == null 
 					|| !(loadedVideo instanceof IncrementallyLoadable) ? 
 							null : 
