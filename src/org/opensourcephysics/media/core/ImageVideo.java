@@ -331,6 +331,8 @@ public class ImageVideo extends VideoAdapter {
 		if (images == null || images.length > 0) {
 			String[] paths = (String[]) images_paths[1];
 			insert(images, index, paths);
+			if (paths.length > 1)
+				size = getMaximumSize();
 		}
 	}
 
@@ -376,27 +378,33 @@ public class ImageVideo extends VideoAdapter {
 		}
 		setFrameCount(images.length);
 		endFrameNumber = frameCount - 1;
-		notifySize(getSize());
+		size = getMaximumSize();
 		return removed;
 	}
 
 	/**
-	 * Gets the size of this video.
+	 * Gets the maximum size of the images in this video.
 	 *
 	 * @return the maximum size of the images
 	 */
-	public Dimension getSize() {
+	private Dimension getMaximumSize() {
 		int w = images[0].getWidth(observer);
 		int h = images[0].getHeight(observer);
-		for (int i = 1; i < images.length; i++) {
-			if (images[i] == null)
+		for (int i = 1; i < paths.length; i++) {
+			Image img = getImageAtFrame(i, null);
+			if (img == null)
 				continue;
-			w = Math.max(w, images[i].getWidth(observer));
-			h = Math.max(h, images[i].getHeight(observer));
+			w = Math.max(w, img.getWidth(observer));
+			h = Math.max(h, img.getHeight(observer));
 		}
 		return new Dimension(w, h);
 	}
 
+	/**
+	 * Gets the RGB size of this image video.
+	 *
+	 * @return the RGB size of the current image
+	 */
 	public Dimension getRGBSize() {
 		return rgbSize;
 	}
@@ -488,7 +496,9 @@ public class ImageVideo extends VideoAdapter {
 				int j = 0;
 				for (int i = 0; i < paths.length; i++) {
 					if (paths[i].equals("")) { //$NON-NLS-1$
-						paths[i] = pathArray[j++];
+						String relativePath = XML.getPathRelativeTo(pathArray[j++], baseDir);
+						paths[i] = XML.forwardSlash(relativePath);
+//						paths[i] = pathArray[j++];
 					}
 				}
 				if (getProperty("name") == null) { //$NON-NLS-1$
@@ -692,7 +702,7 @@ public class ImageVideo extends VideoAdapter {
 			whenDone.apply(ret);
 		return ret;
 	}
-
+	
 	/**
 	 * Loads an image sequence. This returns an Object[]
 	 * containing an Image[] at index 0 and a String[] at index 1.
@@ -806,6 +816,8 @@ public class ImageVideo extends VideoAdapter {
 					g.drawImage(im, 0, 0, null);
 					g.dispose();
 				}
+				size.width = Math.max(size.width, buf[i].getWidth());
+				size.height = Math.max(size.height, buf[i].getHeight());				
 			}
 			// insert new images
 			Image[] newArray = new Image[len + n];
@@ -840,10 +852,12 @@ public class ImageVideo extends VideoAdapter {
 			coords = new ImageCoordSystem(frameCount, this);
 			aspects = new DoubleArray(frameCount, 1);
 		} else {
+			size.width = Math.max(size.width, rawImage.getWidth(observer));
+			size.height = Math.max(size.height, rawImage.getHeight(observer));
 			coords.setLength(frameCount);
 			aspects.setLength(frameCount);
 		}
-		notifySize(getSize()); // NOP if loading.
+//		notifySize(getSize()); // NOP if loading.
 	}
 
 	@Override
@@ -905,6 +919,25 @@ public class ImageVideo extends VideoAdapter {
 			}
 		}
 		return filteredImage;
+	}
+	
+	public static String getNextImagePathInSequence(String imagePath) {
+		String ext = XML.getExtension(imagePath);
+		ext = ext==null? "": "."+ext;
+		String raw = XML.stripExtension(imagePath);
+		int len = raw.length();
+		if (len == 0)
+			return imagePath;
+		if (Character.isDigit(raw.charAt(len - 1))) {
+			int i = Integer.parseInt(raw.substring(len-1));
+			if (i < 9) {
+				return raw.substring(0, len-1) + ++i + ext;
+			}
+			// rolling over from 9, so increment prev digit and add "0"
+			String sub = getNextImagePathInSequence(raw.substring(0, len-1));
+			return sub + "0" + ext;
+		}
+		return imagePath;
 	}
 
 	// ______________________________ static XML.Loader_________________________
