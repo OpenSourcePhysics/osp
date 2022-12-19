@@ -1667,6 +1667,9 @@ public class ResourceLoader {
 			target = getOSPCacheFile(urlPath);
 		if (target.getParentFile() == null)
 			return null;
+		if (target.exists() && !alwaysOverwrite) {
+			return target;
+		}
 		// compare urlPath with previous attempt and, if identical, check web connection
 		if (!webConnected || downloadURL.equals(urlPath)) {
 			clearWebTest();

@@ -2178,7 +2178,10 @@ public class LibraryTreePanel extends JPanel {
 
 			if (isZip) {
 				// if target is ZIP, look for html info file inside ZIP
-				if (node.getTargetURL() != null) {
+				// but don't attempt to load web files unless web connected
+				boolean loadzip = ResourceLoader.isWebConnected()
+						|| !ResourceLoader.isHTTP(target);
+				if (loadzip && node.getTargetURL() != null) {
 					// returns cached target URL, if any
 					loadZipPathAsync(htmlPath, target, node.getTargetURL().toExternalForm());
 				}

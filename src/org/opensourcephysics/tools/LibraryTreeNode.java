@@ -233,13 +233,18 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 				workingPath = cachedFile.toURI().toString();
 			}
 			// first try to get URL with raw path
-			Resource res = ResourceLoader.getResourceZipURLsOK(workingPath);
+			Resource res = null;
+			boolean loadable = ResourceLoader.isWebConnected()
+					|| !ResourceLoader.isHTTP(workingPath);
+			if (loadable)
+				res = ResourceLoader.getResourceZipURLsOK(workingPath);
 			if (res != null) {
 				url = res.getURL();
 			} else {
 				// try with URI form of path
 				workingPath = ResourceLoader.getURIPath(workingPath);
-				res = ResourceLoader.getResourceZipURLsOK(workingPath);
+				if (loadable)
+					res = ResourceLoader.getResourceZipURLsOK(workingPath);
 				if (res != null) {
 					url = res.getURL();
 				}
