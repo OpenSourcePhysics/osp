@@ -477,6 +477,7 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 			if (isZipType) {
 				VideoIO.ZipImageVideoType z = (VideoIO.ZipImageVideoType) videoType;
 				ext = z.getImageExtension();
+				VideoIO.ZipImageVideoType.checkZipContents = false;
 			}
 			chooser.setAcceptAllFileFilterUsed(false);
 			for (int i = 0; i < filters.length; i++) {
@@ -497,6 +498,7 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 			chooserField.setText(filename); // just in case line above not enough!
 		ignoreChooser = false;
 		int result = chooser.showSaveDialog(null);
+		VideoIO.ZipImageVideoType.checkZipContents = true;
 		if (result == JFileChooser.APPROVE_OPTION) {
 			file = chooser.getSelectedFile();
 			file = getFileToBeSaved(file);

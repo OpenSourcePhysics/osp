@@ -180,6 +180,7 @@ public class VideoIO {
 		// the image file filter
 		private ImageVideoType imageVideoType;
 		private static final String ZIP = "zip";
+		public static boolean checkZipContents = true;
 		
 		public ZipImageVideoType(ImageVideoType type) {
 			super(new VideoFileFilter(ZIP, new String[] { ZIP }) {
@@ -187,6 +188,8 @@ public class VideoIO {
 				public boolean accept(File f, boolean checkIfDir) {
 					if (!super.accept(f, checkIfDir))
 						return false;
+					if (f.isDirectory() || !checkZipContents)
+						return true;
 					String[] imagePaths = VideoIO.getZippedImagePaths(f.getAbsolutePath());
 					return imagePaths != null;
 				}
