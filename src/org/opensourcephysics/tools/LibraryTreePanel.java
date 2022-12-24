@@ -1775,9 +1775,6 @@ public class LibraryTreePanel extends JPanel {
 				if (e.getPropertyName().equals("page")) {
 					HTMLDocument document = (HTMLDocument) getDocument();
 					document.getStyleSheet().addRule(LibraryResource.getHTMLStyles());
-//					document.getStyleSheet().addRule(LibraryResource.getBodyStyle());
-//					document.getStyleSheet().addRule(LibraryResource.getH1Style());
-//					document.getStyleSheet().addRule(LibraryResource.getH2Style());
 				}
 			});									
 		}
