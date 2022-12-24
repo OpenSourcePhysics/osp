@@ -285,6 +285,9 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 				}
 			}
 			if (thumb != null) {
+				// if thumb is relative, convert to absolute
+				// this call will not modify absolute paths
+				thumb = XML.getResolvedPath(thumb, record.getInheritedBasePath());
 				thumb = XML.forwardSlash(thumb);
 				thumb = ResourceLoader.getURIPath(thumb);
 			}
