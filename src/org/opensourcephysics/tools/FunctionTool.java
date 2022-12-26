@@ -454,6 +454,7 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		}
 		if (dropdownTipText != null)
 			dropdown.setToolTipText(dropdownTipText);
+		setTitles();
 		if (titleText != null)
 			setTitle(titleText);
 		closeButton.setText(ToolsRes.getString("Tool.Button.Close")); //$NON-NLS-1$
