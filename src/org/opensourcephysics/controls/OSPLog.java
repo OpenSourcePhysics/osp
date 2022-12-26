@@ -10,7 +10,9 @@ package org.opensourcephysics.controls;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -53,6 +55,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -83,6 +86,12 @@ public class OSPLog  {
 		@Override
 		protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
 			super.firePropertyChange(propertyName, oldValue, newValue);
+		}
+		
+		@Override
+		public void setVisible(boolean vis) {
+			FontSizer.setFonts(this, FontSizer.getLevel());
+			super.setVisible(vis);
 		}
 
 	}
@@ -242,6 +251,21 @@ public class OSPLog  {
 	 * @param true to set visible
 	 */
 	public void setVisible(boolean visible) {
+		if (visible) {
+			Point p = new JFrame().getLocation(); // default location of new frame or dialog
+			JFrame log = OSPLog.getFrame();
+			if (log.getLocation().x == p.x && log.getLocation().y == p.y) {
+				// center on screen AFTER setting visible so GUI will be complete
+				SwingUtilities.invokeLater(() -> {
+					// center on screen
+					Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+					int x = (dim.width - log.getBounds().width) / 2;
+					int y = (dim.height - log.getBounds().height) / 2;
+					log.setLocation(x, y);
+				});
+			}
+		}
+		
 		try {
 			if (visible) {
 				createGUI();
