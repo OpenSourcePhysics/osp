@@ -1628,12 +1628,7 @@ public class LibraryBrowser extends JPanel {
 		logItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Point p0 = new Frame().getLocation();
-				JFrame frame = OSPLog.getFrame();
-				if ((frame.getLocation().x == p0.x) && (frame.getLocation().y == p0.y)) {
-					frame.setLocationRelativeTo(LibraryBrowser.this);
-				}
-				frame.setVisible(true);
+				OSPLog.showLogInvokeLater();
 			}
 		});
 		helpMenu.add(logItem);
