@@ -300,9 +300,12 @@ public class FunctionPanel extends JPanel implements PropertyChangeListener {
 		switch (e.getPropertyName()) {
 		case FunctionEditor.PROPERTY_FUNCTIONEDITOR_EDIT:
 			// Parameter or Function has been edited
-			if ((e.getNewValue() instanceof UndoableEdit)) {
-				// post undo edit
-				undoSupport.postEdit((UndoableEdit) e.getNewValue());
+			if (e.getNewValue() instanceof UndoableEdit) {
+				UndoableEdit edit = (UndoableEdit) e.getNewValue();
+				// post undo edit if it is new
+				if (!(edit instanceof FunctionEditor.DefaultEdit)
+					|| ((FunctionEditor.DefaultEdit)edit).isNew())
+				undoSupport.postEdit(edit);
 			}
 			refreshFunctions();
 			refreshGUI();
