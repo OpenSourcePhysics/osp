@@ -2380,10 +2380,11 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 	/**
 	 * A class to undo/redo edits.
 	 */
-	protected class DefaultEdit extends AbstractUndoableEdit {
+	public class DefaultEdit extends AbstractUndoableEdit {
 		Object redoObj, undoObj;
 		int redoRow, redoCol, undoRow, undoCol, editType;
 		String name;
+		boolean isNew = true;
 
 		/**
 		 * A class to undo/redo edits.
@@ -2415,6 +2416,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		// undoes the change
 		@Override
 		public void undo() throws CannotUndoException {
+			isNew = false;
 			super.undo();
 			undoEditsEnabled = false;
 			switch (editType) {
@@ -2445,7 +2447,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				objects.remove(undoRow);
 				objects.add(undoRow, obj);
 				evaluateAll();
-				firePropertyChange("edit", name, null); //$NON-NLS-1$
+				firePropertyChange("edit", name, this); //$NON-NLS-1$
 			}
 			}
 			// select cell and request keyboard focus
@@ -2460,6 +2462,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		// redoes the change
 		@Override
 		public void redo() throws CannotUndoException {
+			isNew = false;
 			super.redo();
 			undoEditsEnabled = false;
 			switch (editType) {
@@ -2497,7 +2500,7 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				objects.remove(redoRow);
 				objects.add(redoRow, obj);
 				evaluateAll();
-				firePropertyChange("edit", name, null); //$NON-NLS-1$
+				firePropertyChange("edit", name, this); //$NON-NLS-1$
 			}
 			}
 			// select cell and request keyboard focus
@@ -2516,6 +2519,24 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				return "Deletion"; //$NON-NLS-1$
 			}
 			return "Edit"; //$NON-NLS-1$
+		}
+		
+		/**
+		 * Return true if this is a new undoable edit.
+		 *
+		 * @return true if new
+		 */
+		public boolean isNew() {
+			return isNew;
+		}
+
+		/**
+		 * Gets the edit type 
+		 *
+		 * @return ADD_EDIT, REMOVE_EDIT, NAME_EDIT or EXPRESSION_EDIT
+		 */
+		public int getEditType() {
+			return editType;
 		}
 
 	}
