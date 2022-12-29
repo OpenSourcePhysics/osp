@@ -11,7 +11,10 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
+import javax.swing.JCheckBox;
+
 import org.opensourcephysics.display.DatasetManager;
+import org.opensourcephysics.tools.FunctionEditor.FObject;
 
 /**
  * A FunctionEditor for Parameters.
@@ -19,10 +22,13 @@ import org.opensourcephysics.display.DatasetManager;
  * @author Douglas Brown
  */
 public class ParamEditor extends FunctionEditor {
+	
 	protected double[] paramValues = new double[0];
 	private DatasetManager data;
 	private FunctionEditor[] functionEditors;
 	protected String[] paramDescriptions = new String[0];
+	protected JCheckBox syncedCheckbox;
+	protected boolean syncing = false;
 
 	/**
 	 * Default constructor
@@ -42,6 +48,55 @@ public class ParamEditor extends FunctionEditor {
 		data = input;
 		loadParametersFromData();
 	}
+	
+	@Override
+	protected void createGUI() {
+		super.createGUI();
+		if (syncedCheckbox == null) {
+			syncedCheckbox = new JCheckBox();
+			syncedCheckbox.addActionListener((e) -> {
+				doSyncAction();
+			});
+		}
+	}
+	
+	@Override
+	public void refreshGUI() {
+		super.refreshGUI();
+		if (syncedCheckbox != null) {
+			syncedCheckbox.setText(ToolsRes.getString("ParamEditor.Checkbox.Synced.Text"));
+		}
+	}
+	
+	@Override
+	protected void enableMenuButtons() {
+		super.enableMenuButtons();
+		if (syncedCheckbox != null) {
+			Parameter param = (Parameter)getSelectedObject();
+			syncedCheckbox.setEnabled(param != null && param.isNameEditable());
+			syncedCheckbox.setSelected(param != null && param.isSynced());
+			String tooltip = ToolsRes.getString("ParamEditor.Checkbox.Synced.Tooltip");
+			if (param != null && param.isNameEditable()) {
+				tooltip += " \"" +param.getName() + "\"";
+			}
+			syncedCheckbox.setToolTipText(tooltip);
+		}
+	}
+	
+	/**
+	 * Sets the synced property of a Parameter.
+	 * @param synced boolean
+	 * @param param the Parameter
+	 */
+	protected void doSyncAction() {
+		boolean sync = syncedCheckbox.isSelected();
+		Parameter param = (Parameter)getSelectedObject();
+		if (param == null || !param.isNameEditable()
+				|| sync == param.isSynced())
+			return;
+		param.setSynced(sync);
+		firePropertyChange(Parameter.PROPERTY_PARAMETER_SYNCED, null, param); // $NON-NLS-1$
+	}
 
 	/**
 	 * Gets an array containing copies of the current parameters.
@@ -57,6 +112,7 @@ public class ParamEditor extends FunctionEditor {
 			params[i].setNameEditable(next.isNameEditable());
 			params[i].setDescription(next.getDescription());
 			params[i].value = next.value;
+			params[i].synced = next.synced;
 		}
 		return params;
 	}
@@ -177,6 +233,22 @@ public class ParamEditor extends FunctionEditor {
 				break;
 			}
 		}
+	}
+	
+	/**
+	 * Turns on syncing, used by ModelBuilder to sync Parameters
+	 *
+	 * @param obj the object
+	 * @return the tooltip
+	 */
+	public void setSyncing(boolean sync) {
+		syncing = sync;
+		if (getButtonPanel() == null)
+			return;
+		if (syncing )
+			getButtonPanel().add(syncedCheckbox);
+		else
+			getButtonPanel().remove(syncedCheckbox);
 	}
 
 	/**
@@ -353,6 +425,7 @@ public class ParamEditor extends FunctionEditor {
 			p.setExpressionEditable(original.isExpressionEditable());
 			p.setNameEditable(original.isNameEditable());
 			p.setDescription(original.getDescription());
+			p.setSynced(original.isSynced());
 		}
 		return p;
 	}

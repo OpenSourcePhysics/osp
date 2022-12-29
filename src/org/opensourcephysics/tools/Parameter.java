@@ -24,12 +24,15 @@ import org.opensourcephysics.tools.FunctionEditor.FObject;
  * @author Douglas Brown
  */
 public class Parameter implements FObject {
+	public static final String PROPERTY_PARAMETER_SYNCED = "synced";
+	
 	final String paramName; // name of this parameter
 	final String expression; // Suryono parser expression
 	String description; // optional description of this parameter
 	double value = Double.NaN; // current value of this parameter
 	boolean expressionEditable = true;
 	boolean nameEditable = true;
+	boolean synced = false;
 
 	/**
 	 * Constructor with name and function.
@@ -136,6 +139,24 @@ public class Parameter implements FObject {
 	}
 
 	/**
+	 * Returns true if this parameter is synced.
+	 *
+	 * @return true if synced
+	 */
+	public boolean isSynced() {
+		return synced;
+	}
+
+	/**
+	 * Sets the synced property.
+	 *
+	 * @param sync true to sync
+	 */
+	public void setSynced(boolean sync) {
+		synced = sync;
+	}
+
+	/**
 	 * Determines if this is equal to another parameter.
 	 *
 	 * @param obj another object
@@ -232,6 +253,7 @@ public class Parameter implements FObject {
 			control.setValue("editable", p.isExpressionEditable()); //$NON-NLS-1$
 			control.setValue("name_editable", p.isNameEditable()); //$NON-NLS-1$
 			control.setValue("description", p.getDescription()); //$NON-NLS-1$
+			control.setValue("synced", p.isSynced()); //$NON-NLS-1$
 		}
 
 		/**
@@ -262,6 +284,9 @@ public class Parameter implements FObject {
 			}
 			if (control.getPropertyNamesRaw().contains("name_editable")) { //$NON-NLS-1$
 				p.setNameEditable(control.getBoolean("name_editable")); //$NON-NLS-1$
+			}
+			if (control.getPropertyNamesRaw().contains("synced")) { //$NON-NLS-1$
+				p.setSynced(control.getBoolean("synced")); //$NON-NLS-1$
 			}
 			p.setDescription(control.getString("description")); //$NON-NLS-1$
 			return obj;
