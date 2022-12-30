@@ -1937,6 +1937,7 @@ public class LibraryBrowser extends JPanel {
 			return;
 		path = XML.forwardSlash(path);
 		Resource res = null;
+		ResourceLoader.warningShown = false;
 		// BH 2020.11.12 presumes file not https here
 		String xmlPath = ResourceLoader.getNonURIPath(path);
 		if (ResourceLoader.isHTTP(path)) {
