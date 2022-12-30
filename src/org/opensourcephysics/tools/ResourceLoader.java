@@ -120,6 +120,7 @@ public class ResourceLoader {
 	protected static Set<String> extractExtensions = new TreeSet<String>();
 	protected static ArrayList<String> pathsNotFound = new ArrayList<String>();
 	protected static File ospCache;
+	public static boolean warningShown = false;
 	
 	public static final FileFilter OSP_CACHE_FILTER;
 
@@ -1029,7 +1030,8 @@ public class ResourceLoader {
 //						ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
 //						ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
 //						JOptionPane.WARNING_MESSAGE);
-			} else {
+			} else if (!warningShown) {
+				warningShown = true;
 				JOptionPane.showMessageDialog(null,
 						ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Message1") //$NON-NLS-1$
 								+ "\n" + ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Message2") //$NON-NLS-1$ //$NON-NLS-2$
@@ -1672,6 +1674,10 @@ public class ResourceLoader {
 		}
 		// compare urlPath with previous attempt and, if identical, check web connection
 		if (!webConnected || downloadURL.equals(urlPath)) {
+			// if webConnected then this is the second identical urlPath
+			// so return null to stop possible endless loop
+			if (webConnected)
+				return null;
 			clearWebTest();
 			webConnected = isWebConnected();
 		}
