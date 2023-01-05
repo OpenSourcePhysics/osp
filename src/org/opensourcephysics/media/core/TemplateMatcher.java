@@ -400,11 +400,12 @@ public class TemplateMatcher {
 			// fit parabola
 			parabola.fitData(pixels, xValues);
 			double[] c = parabola.getCoefficients();		
-			dx = -c[1] / (2 * c[0]);
-			peakWidth = Math.sqrt(2*c[0]/c[2]);
+			dx = -c[1] / (2 * c[2]); // -b/2a
+			peakWidth = Math.sqrt(2*c[0]/c[2]); // 2c/a
+			
 			parabola.fitData(pixels, yValues);
 			c = parabola.getCoefficients();		
-			dy = -c[1] / (2 * c[0]);
+			dy = -c[1] / (2 * c[2]); // -b/2a
 
 			peakWidth = 0.5 * (peakWidth + Math.sqrt(2 * c[0] / c[2]));
 		}
