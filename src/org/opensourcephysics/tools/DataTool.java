@@ -3603,6 +3603,38 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		}
 
 	}
+	
+	/**
+	 * A class to find an exponential moving average (weighting for
+	 * previous values fall off by factor exp(-alpha)).
+	 */
+	public static class ExpMovingAvg {
+    private double alpha;
+    private Double oldValue;
+    
+  	/**
+  	 * Constructor. 
+  	 * @param alpha exponential constant 
+  	 */
+    public ExpMovingAvg(double alpha) {
+      this.alpha = alpha;
+    }
+
+  	/**
+  	 * Returns the moving average 
+  	 * @param value the raw value 
+  	 */
+    public double average(double value) {
+      if (oldValue == null) {
+          oldValue = value;
+          return value;
+      }
+      double newValue = oldValue + alpha * (value - oldValue);
+      oldValue = newValue;
+      return newValue;
+    }
+    
+ }
 
 	/**
 	 * A dialog to edit table data using delimited text.
