@@ -221,7 +221,7 @@ public void setFrameDuration(double duration) {
     if(count!=0) {
       timeStretch = duration*count/(tf-ti);
     }
-    firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_FRAMEDURATION, null, new Double(duration)); 
+    firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_FRAMEDURATION, null, Double.valueOf(duration)); 
   }
 
   /**

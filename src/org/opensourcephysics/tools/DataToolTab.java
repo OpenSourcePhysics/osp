@@ -4499,17 +4499,17 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 		@Override
 		public Object getValue() {
-			return new Double(val);
+			return Double.valueOf(val);
 		}
 
 		@Override
 		public Object getNextValue() {
-			return new Double(val + delta);
+			return Double.valueOf(val + delta);
 		}
 
 		@Override
 		public Object getPreviousValue() {
-			return new Double(val - delta);
+			return Double.valueOf(val - delta);
 		}
 
 		@Override
@@ -4610,7 +4610,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 //				continue;
 //			valid.add(xpoints[i]);
 //		}
-//		Double[] sorted = valid.toArray(new Double[valid.size()]);
+//		Double[] sorted = valid.toArray(Double.valueOf[valid.size()]);
 //		java.util.Arrays.sort(sorted);
 //		int last = sorted.length - 1;
 //

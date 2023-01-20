@@ -653,7 +653,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 			updateLoopButton((Boolean) e.getNewValue());
 			return;
 		case ClipControl.PROPERTY_CLIPCONTROL_RATE:
-			rateSpinner.setValue(new Double(getRate()));
+			rateSpinner.setValue(Double.valueOf(getRate()));
 			return;
 		case VideoClip.PROPERTY_VIDEOCLIP_STARTTIME:
 			updateValue();
@@ -821,7 +821,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 						double rate = Math.max(i / 100.0, minRate);
 						rate = Math.min(rate, maxRate);
 						if (rate != prev)
-							rateSpinner.setValue(new Double(rate));
+							rateSpinner.setValue(Double.valueOf(rate));
 						else {
 							int r = (int) (prev * 100);
 							editor.getTextField().setText(String.valueOf(r) + "%"); //$NON-NLS-1$

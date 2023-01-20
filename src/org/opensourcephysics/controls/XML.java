@@ -594,7 +594,7 @@ public class XML {
       @Override
 	public Object createObject(XMLControl control) {
         double val = control.getDouble("value"); //$NON-NLS-1$
-        return new Double(val);
+        return Double.valueOf(val);
       }
       @Override
 	public Object loadObject(XMLControl control, Object obj) {
@@ -603,7 +603,7 @@ public class XML {
         if(dbl.doubleValue()==val) {
           return dbl;
         }
-        return new Double(val);
+        return Double.valueOf(val);
       }
     });
     setLoader(Integer.class, new XML.ObjectLoader() {

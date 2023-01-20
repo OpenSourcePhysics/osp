@@ -360,7 +360,7 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 		}
 		isDefaultStartTime = Double.isNaN(t0);
 		startTime = Double.isNaN(t0) ? 0.0 : t0;
-		firePropertyChange(PROPERTY_VIDEOCLIP_STARTTIME, null, new Double(startTime));
+		firePropertyChange(PROPERTY_VIDEOCLIP_STARTTIME, null, Double.valueOf(startTime));
 	}
 
 	/**

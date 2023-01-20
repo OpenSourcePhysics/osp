@@ -2000,7 +2000,7 @@ public class DatasetCurveFitter extends JPanel {
 					(autofit && fit.getParameterCount() > dataset.getValidXPoints().length))
 				return Double.NaN;				
 
-			return new Double(fit.getParameterValue(row));
+			return Double.valueOf(fit.getParameterValue(row));
 		}
 		
 		@Override
@@ -2204,7 +2204,7 @@ public class DatasetCurveFitter extends JPanel {
 				public void keyPressed(KeyEvent e) {
 					JComponent comp = (JComponent) e.getSource();
 					if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-						spinner.setValue(new Double(field.getValue()));
+						spinner.setValue(Double.valueOf(field.getValue()));
 						comp.setBackground(Color.white);
 						crawlerModel.refreshDelta();
 					} else {
@@ -2267,17 +2267,17 @@ public class DatasetCurveFitter extends JPanel {
 
 		@Override
 		public Object getValue() {
-			return new Double(val);
+			return Double.valueOf(val);
 		}
 
 		@Override
 		public Object getNextValue() {
-			return new Double(val + delta);
+			return Double.valueOf(val + delta);
 		}
 
 		@Override
 		public Object getPreviousValue() {
-			return new Double(val - delta);
+			return Double.valueOf(val - delta);
 		}
 
 		@Override

@@ -128,7 +128,7 @@ public class DataColumn extends Dataset {
 	public boolean setShift(double shift) {
 		if (this.shift == shift)
 			return false;
-		if (shift != new Double("-0") && shift != ZERO) {
+		if (shift != Double.valueOf("-0") && shift != ZERO) {
 			prevShift = shift;
 		}
 		this.shift = shift;
