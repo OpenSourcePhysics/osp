@@ -512,7 +512,7 @@ public class NumberField extends JTextField {
 		if (Double.isNaN(min)) {
 			minValue = null;
 		} else {
-			minValue = new Double(min);
+			minValue = Double.valueOf(min);
 		}
 	}
 
@@ -525,7 +525,7 @@ public class NumberField extends JTextField {
 		if (Double.isNaN(max)) {
 			maxValue = null;
 		} else {
-			maxValue = new Double(max);
+			maxValue = Double.valueOf(max);
 		}
 	}
 

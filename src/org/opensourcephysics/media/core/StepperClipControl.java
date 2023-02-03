@@ -235,7 +235,7 @@ public class StepperClipControl extends ClipControl {
 		timer.setInitialDelay(getTimerDelay());
 		playDuration = 0;
 		playStepCount = 0;		
-		firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_RATE, null, new Double(rate));
+		firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_RATE, null, Double.valueOf(rate));
 	}
 
 	/**
@@ -284,7 +284,7 @@ public class StepperClipControl extends ClipControl {
 			frameDuration = duration;
 			timer.setInitialDelay(getTimerDelay());
 		}
-		firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_FRAMEDURATION, null, new Double(duration));
+		firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_FRAMEDURATION, null, Double.valueOf(duration));
 	}
 
 	/**

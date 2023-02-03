@@ -97,10 +97,10 @@ public class BrightnessFilter extends Filter {
 			previousContrast = contrast;
 		}
 		changed = changed || this.contrast != contrast;
-		Double prev = new Double(this.contrast);
+		Double prev = Double.valueOf(this.contrast);
 		this.contrast = contrast;
 		updateFactors();
-		firePropertyChange("contrast", prev, new Double(contrast)); //$NON-NLS-1$
+		firePropertyChange("contrast", prev, Double.valueOf(contrast)); //$NON-NLS-1$
 	}
 
 	/**

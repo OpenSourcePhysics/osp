@@ -86,9 +86,9 @@ public class GhostFilter extends Filter {
 	 *             completely and so is never seen.
 	 */
 	public void setFade(double fade) {
-		Double prev = new Double(this.fade);
+		Double prev = Double.valueOf(this.fade);
 		this.fade = Math.min(Math.abs(fade), 1);
-		firePropertyChange("fade", prev, new Double(fade)); //$NON-NLS-1$
+		firePropertyChange("fade", prev, Double.valueOf(fade)); //$NON-NLS-1$
 	}
 
 	/**

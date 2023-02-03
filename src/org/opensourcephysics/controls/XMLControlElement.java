@@ -439,7 +439,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			case XMLProperty.TYPE_INT: //$NON-NLS-1$
 				return Integer.valueOf(intValue(prop));
 			case XMLProperty.TYPE_DOUBLE: //$NON-NLS-1$
-				return new Double(doubleValue(prop));
+				return Double.valueOf(doubleValue(prop));
 			case XMLProperty.TYPE_BOOLEAN: //$NON-NLS-1$
 				return Boolean.valueOf(booleanValue(prop));
 			case XMLProperty.TYPE_STRING: //$NON-NLS-1$
@@ -1921,7 +1921,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			case XMLProperty.TYPE_DOUBLE:
 				double d = doubleValue(next);
 				if (Object.class.isAssignableFrom(componentType)) {
-					Array.set(array, n, new Double(d));
+					Array.set(array, n, Double.valueOf(d));
 				} else {
 					Array.setDouble(array, n, d);
 				}
