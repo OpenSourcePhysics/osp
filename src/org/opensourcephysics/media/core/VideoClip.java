@@ -742,7 +742,16 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 
 			loadedFilters = (Collection<?>) child.getObject("filters"); //$NON-NLS-1$
 			dt = child.getDouble("delta_t"); //$NON-NLS-1$
-			String childPath = child.getString("path");
+			String childPath = child.getString("path"); // may be null
+			// deal with null childPath
+			if (childPath == null) {
+				String[] paths = (String[]) child.getObject("paths");
+				if (paths != null) {
+					childPath = paths[0];
+				}
+				else 
+					path = "";
+			}
 			
 			if (child.getPropertyNamesRaw().contains("absolutePath")) {
 				path = child.getString("absolutePath");
