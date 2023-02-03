@@ -634,6 +634,14 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 		if (metaData == null) {
 			metaData = new TreeSet<Metadata>();
 			record.setMetadata(metaData);
+			// reload loaderMetadata, if any
+			if (record.loaderMetadata != null) {
+				for (int i = 0; i < record.loaderMetadata.length; i++) {
+					String[] next = record.loaderMetadata[i];
+					record.addMetadata(new Metadata(next[0], next[1]));
+				}
+			}
+			
 			// look for metadata in HTML code
 			String metaSource = getMetadataSource();
 			if (metaSource != null) {

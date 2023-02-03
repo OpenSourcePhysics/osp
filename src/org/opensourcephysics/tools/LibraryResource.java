@@ -129,6 +129,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	private String thumbnail;
 	private Map<String, String> properties = new TreeMap<String, String>();
 	private TreeSet<Metadata> metadata;
+	protected String[][] loaderMetadata;
 	protected LibraryCollection parent;
 	protected String collectionPath; // used to open source collection of resources found in searches
 	protected List<String> treePath; // used to define tree paths of resources found in searches
@@ -401,6 +402,15 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	 * @param data the Metadata
 	 */
 	public void addMetadata(Metadata data) {
+		// don't add meta tags commonly included by web page builders
+		String key = data.data[0].toLowerCase();
+		String[] exclude = new String[] {"generator", "progid", "originator",
+				"referrer", "theme-color", "color-scheme", "viewport", "googlebot",
+				"robots"};
+		for (int i = 0; i < exclude.length; i++) {
+			if (key.equals(exclude[i]))
+				return;
+		}
 		if (metadata == null)
 			metadata = new TreeSet<Metadata>();
 		// standardize display of predefined metadata types
@@ -1040,6 +1050,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 			res.setThumbnail(control.getString("thumbnail")); //$NON-NLS-1$
 			String[][] data = (String[][]) control.getObject("metadata"); //$NON-NLS-1$
 			if (data != null) {
+				res.loaderMetadata = data;
 				if (res.getMetadata() != null)
 					res.getMetadata().clear();
 				for (int i = 0; i < data.length; i++) {
