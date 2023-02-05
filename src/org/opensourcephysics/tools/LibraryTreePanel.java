@@ -2231,6 +2231,10 @@ public class LibraryTreePanel extends JPanel {
 
 		private void loadPathAsync(String htmlPath, String target) {
 			//System.out.println("LoadNodeAsync " + htmlPath + " -> " + target);
+			
+			String reloadUrlPath = node.record.getProperty("reload_url"); //$NON-NLS-1$
+			if (reloadUrlPath != null)
+				target = reloadUrlPath;
 
 			if (!LibraryComPADRE.isComPADREPath(target)) {
 				processNode(htmlPath);
@@ -2238,38 +2242,37 @@ public class LibraryTreePanel extends JPanel {
 			}
 
 			// load ComPADRE nodes
-				// get reload url (non-null for some ComPADRE nodes)
-				String reloadUrlPath = node.record.getProperty("reload_url"); //$NON-NLS-1$
-				if (node.record instanceof LibraryCollection) {
-					hasNewChildren = false;
-					// make runnable to set hasNewChildren if found by ComPADRE
-					Runnable onSuccess = new Runnable() {
-						@Override
-						public void run() {
-							hasNewChildren = true;
-							processNode(htmlPath);
-						}
-					};
-
-					// make runnable to report failure
-					Runnable onFailure = new Runnable() {
-						@Override
-						public void run() {
-							browser.setCursor(Cursor.getDefaultCursor());
-							String s = "\""+node.getName() + "\"";	 //$NON-NLS-1$			
-							JOptionPane.showMessageDialog(browser,
-									ToolsRes.getString("LibraryBrowser.Dialog.NoResources.Message"), //$NON-NLS-1$
-									s,
-									JOptionPane.PLAIN_MESSAGE);
-						}
-					};
-
-					LibraryComPADRE.loadResources(node, onSuccess, onFailure);
-				} else if ("".equals(node.record.getDescription()) && reloadUrlPath != null) { //$NON-NLS-1$
-					LibraryComPADRE.reloadResource(node, reloadUrlPath, () -> {
+			// get reload url (non-null for some ComPADRE nodes)
+			if (node.record instanceof LibraryCollection) {
+				hasNewChildren = false;
+				// make runnable to set hasNewChildren if found by ComPADRE
+				Runnable onSuccess = new Runnable() {
+					@Override
+					public void run() {
+						hasNewChildren = true;
 						processNode(htmlPath);
-					});
-				}
+					}
+				};
+
+				// make runnable to report failure
+				Runnable onFailure = new Runnable() {
+					@Override
+					public void run() {
+						browser.setCursor(Cursor.getDefaultCursor());
+						String s = "\""+node.getName() + "\"";	 //$NON-NLS-1$			
+						JOptionPane.showMessageDialog(browser,
+								ToolsRes.getString("LibraryBrowser.Dialog.NoResources.Message"), //$NON-NLS-1$
+								s,
+								JOptionPane.PLAIN_MESSAGE);
+					}
+				};
+
+				LibraryComPADRE.loadResources(node, onSuccess, onFailure);
+			} else if ("".equals(node.record.getDescription()) && reloadUrlPath != null) { //$NON-NLS-1$
+				LibraryComPADRE.reloadResource(node, reloadUrlPath, () -> {
+					processNode(htmlPath);
+				});
+			}
 
 		}
 
