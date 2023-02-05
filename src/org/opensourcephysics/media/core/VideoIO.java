@@ -774,7 +774,11 @@ public class VideoIO {
 		return false;
 	}
 
-	public static String getVideoCodec(String path) {
+	public static String getVideoCodec(String path0) {
+		if (codecMap.containsKey(path0)) {
+			return codecMap.get(path0);
+		} 
+		String path = path0;
 		String codec = null;
 		// can only test local files?
 		File localFile = ResourceLoader.download(path, null, false);
@@ -790,6 +794,7 @@ public class VideoIO {
 		} catch (IOException e) {
 		}
 		codecMap.put(path, codec);
+		codecMap.put(path0, codec);
 		return codec;
 	}
 	

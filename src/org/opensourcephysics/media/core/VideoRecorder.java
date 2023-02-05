@@ -130,6 +130,8 @@ public interface VideoRecorder {
    */
   public void reset();
 
+  public String getCodec();
+
 }
 
 /*

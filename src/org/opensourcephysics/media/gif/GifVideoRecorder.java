@@ -127,6 +127,11 @@ protected boolean append(Image image) {
     return true;
   }
 
+	@Override
+	public String getCodec() {
+		return null;
+	}
+
 }
 
 /*
