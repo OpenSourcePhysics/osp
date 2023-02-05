@@ -424,6 +424,11 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
 		return n;
 	}
 
+	@Override
+	public String getCodec() {
+		return null;
+	}
+
 }
 
 /*

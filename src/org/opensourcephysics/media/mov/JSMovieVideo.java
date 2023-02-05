@@ -609,11 +609,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					continue;
 				case STATE_PLAY_ALL_INIT:
 					setReadyListener("ended");
-					try {
-						v.jsvideo.play();
-					} catch (Throwable e) {
-						e.printStackTrace();
-					}
+					HTML5Video.startVideo(v.jsvideo);
 					return false;
 				case STATE_PLAY_ALL_DONE:
 					removeReadyListener();

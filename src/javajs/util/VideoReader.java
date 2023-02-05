@@ -64,7 +64,7 @@ public class VideoReader {
 
 	public List<Map<String, Object>> getContents(boolean verbose) {
 		contents = new ArrayList<>();
-		this.verbose = verbose;
+		this.verbose = true;//verbose;
 		while (isAvail()) {
 			try {
 				readBlock(contents);
