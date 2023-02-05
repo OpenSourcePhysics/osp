@@ -240,6 +240,8 @@ public class LibraryResource implements Comparable<LibraryResource> {
 		if (path == null)
 			path = "";
 		String ext = (path.length() >= 4 ? XML.getExtension(path).toLowerCase() : htmlPath == null ? "" : "html");
+		if (ext.contains("&trackerset"))
+			ext = "trk";
 		switch (ext) {
 		case "html":
 			return LibraryResource.HTML_TYPE;

@@ -154,7 +154,10 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 		if (record instanceof LibraryCollection) {
 			LibraryCollection collection = (LibraryCollection) record;
 			for (LibraryResource next : collection.getResources()) {
-				if (next != null && !children.contains(next.getName())) {
+				String name = next == null? "": next.getName();
+				if ("".equals(name))
+					name = ToolsRes.getString("LibraryResource.Name.Default");
+				if (next != null && !children.contains(name)) {
 					LibraryTreeNode newNode = new LibraryTreeNode(next, treePanel);
 					if (treePanel.insertChildAt(newNode, this, getChildCount())) {
 						changed = true;

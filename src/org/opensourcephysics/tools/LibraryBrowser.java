@@ -1283,8 +1283,9 @@ public class LibraryBrowser extends JPanel {
 					// reload the root resource or directory
 					LibraryResource resource = loadResource(treePanel.pathToRoot);
 					if (resource != null) {
+						boolean isXML = treePanel.pathToRoot.toLowerCase().endsWith(".xml");
 						treePanel.setRootResource(resource, treePanel.pathToRoot, treePanel.rootNode.isEditable(),
-								false);
+								isXML);
 						refreshTabTitle(treePanel.pathToRoot, treePanel.rootResource);
 						// start background SwingWorker to load metadata and set up search database
 						if (treePanel.metadataLoader != null) {
@@ -1292,6 +1293,7 @@ public class LibraryBrowser extends JPanel {
 						}
 						treePanel.metadataLoader = treePanel.new MetadataLoader(null);
 						treePanel.metadataLoader.execute();
+						refreshGUI(false);
 						return;
 					}
 				} else if (node != null) {
@@ -1725,9 +1727,10 @@ public class LibraryBrowser extends JPanel {
 			@Override
 			public void run() {
 				setCursor(Cursor.getDefaultCursor());
-				JOptionPane.showMessageDialog(LibraryBrowser.this,
+				String s = "\""+node.getName() + "\""; //$NON-NLS-1$				
+				JOptionPane.showMessageDialog(browser,
 						ToolsRes.getString("LibraryBrowser.Dialog.NoResources.Message"), //$NON-NLS-1$
-						ToolsRes.getString("LibraryBrowser.Dialog.NoResources.Title"), //$NON-NLS-1$
+						s,
 						JOptionPane.PLAIN_MESSAGE);
 			}
 
@@ -2051,7 +2054,6 @@ public class LibraryBrowser extends JPanel {
 			commandField.setToolTipText(ToolsRes.getString("LibraryBrowser.Field.Command.Tooltip")); //$NON-NLS-1$
 			searchLabel.setText(ToolsRes.getString("LibraryBrowser.Label.Search")+":"); //$NON-NLS-1$
 			searchField.setToolTipText(ToolsRes.getString("LibraryBrowser.Field.Search.Tooltip")); //$NON-NLS-1$
-			saveAsItem.setEnabled(true);
 			refreshRecentMenu();
 			// rebuild file menu
 			fileMenu.removeAll();
@@ -2077,6 +2079,7 @@ public class LibraryBrowser extends JPanel {
 			closeItem.setEnabled(true);
 			closeAllItem.setEnabled(true);
 			saveItem.setEnabled(treePanel.isChanged());
+			saveAsItem.setEnabled(true);
 			int i = tabbedPane.getSelectedIndex();
 			String title = tabbedPane.getTitleAt(i);
 			if (treePanel.isChanged() && !title.endsWith("*")) { //$NON-NLS-1$

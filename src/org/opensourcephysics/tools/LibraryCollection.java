@@ -76,10 +76,12 @@ public class LibraryCollection extends LibraryResource {
 	public void addResource(LibraryResource resource) {
 		if (resource == null)
 			return;
-		if (!resources.contains(resource)) {
-			resources.add(resource);
-			resource.parent = this;
-		}
+		resources.add(resource);
+		resource.parent = this;
+//		if (!resources.contains(resource)) {
+//			resources.add(resource);
+//			resource.parent = this;
+//		}
 	}
 
 	/**
