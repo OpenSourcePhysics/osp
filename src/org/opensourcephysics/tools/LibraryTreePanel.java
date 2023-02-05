@@ -2256,9 +2256,10 @@ public class LibraryTreePanel extends JPanel {
 						@Override
 						public void run() {
 							browser.setCursor(Cursor.getDefaultCursor());
+							String s = "\""+node.getName() + "\"";	 //$NON-NLS-1$			
 							JOptionPane.showMessageDialog(browser,
 									ToolsRes.getString("LibraryBrowser.Dialog.NoResources.Message"), //$NON-NLS-1$
-									ToolsRes.getString("LibraryBrowser.Dialog.NoResources.Title"), //$NON-NLS-1$
+									s,
 									JOptionPane.PLAIN_MESSAGE);
 						}
 					};

@@ -951,7 +951,8 @@ public class LibraryResource implements Comparable<LibraryResource> {
 		@Override
 		public int compareTo(Metadata meta) {
 			int result = data[0].compareTo(meta.data[0]);
-			return result == 0 ? data[1].compareTo(meta.data[1]) : result;
+			return result; // can't have multiple metadata with the same key
+//			return result == 0 ? data[1].compareTo(meta.data[1]) : result;
 		}
 
 		@Override
