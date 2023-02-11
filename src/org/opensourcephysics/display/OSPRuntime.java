@@ -87,8 +87,8 @@ import swingjs.api.JSUtilI;
  */
 public class OSPRuntime {
 
-	public static final String VERSION = "6.1.1"; //$NON-NLS-1$
-	public static final String RELEASE_DATE = "4 Feb 2023"; //$NON-NLS-1$
+	public static final String VERSION = "6.1.1.230211"; //$NON-NLS-1$
+	public static final String RELEASE_DATE = "11 Feb 2023"; //$NON-NLS-1$
 	public static final String OSP_PROPERTY_LOCALE = "locale";
 
 	/**
@@ -404,30 +404,24 @@ public class OSPRuntime {
 
 		@Override
 		public int compareTo(Version o) {
-			// typical newer semantic version "4.9.10" or "5.0.7.190518"
-			// typical older version "4.97"
+			// typical current versions (length 3-4): "6.1.2" or "6.1.2.220213"
+			// typical older version (length 2): "4.97"
 
 			// split at decimal points
 			String[] v1 = this.ver.trim().split("\\."); //$NON-NLS-1$
 			String[] v2 = o.ver.trim().split("\\."); //$NON-NLS-1$
-			// newer semantic version arrays have length 3 or 4--truncate to 3
-			// older version arrays have length 2
-			if (v1.length == 4) {
-				v1 = new String[] { v1[0], v1[1], v1[2] };
-			}
-			if (v2.length == 4) {
-				v2 = new String[] { v2[0], v2[1], v2[2] };
-			}
-
-			if (v2.length > v1.length) {
-				// v1 is older version, v2 is newer
-				return -1;
-			}
-			if (v1.length > v2.length) {
-				// v2 is older version, v1 is newer
-				return 1;
-			}
-			// both arrays have the same length
+			
+			// pad versions to length 4	
+			if (v1.length == 2)
+				v1 = new String[] { v1[0], v1[1], "0", "0" };
+			else if (v1.length == 3)
+				v1 = new String[] { v1[0], v1[1], v1[2], "0" };
+			
+			if (v2.length == 2)
+				v2 = new String[] { v2[0], v2[1], "0", "0" };
+			else if (v2.length == 3)
+				v2 = new String[] { v2[0], v2[1], v2[2], "0" };
+			
 			for (int i = 0; i < v1.length; i++) {
 				if (Integer.parseInt(v1[i]) < Integer.parseInt(v2[i])) {
 					return -1;
