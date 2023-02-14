@@ -260,10 +260,10 @@ public final double[] getFlatMatrix(double[] mat) {
    * @param q Quaternion
    */
   public final void add(Quaternion q) {
-    q0 += this.q0;
-    q1 += this.q1;
-    q2 += this.q2;
-    q3 += this.q3;
+    q0 += q.q0;
+    q1 += q.q1;
+    q2 += q.q2;
+    q3 += q.q3;
   }
 
   /**
@@ -272,10 +272,10 @@ public final double[] getFlatMatrix(double[] mat) {
    * @param q Quaternion
    */
   public final void subtract(Quaternion q) {
-    q0 -= this.q0;
-    q1 -= this.q1;
-    q2 -= this.q2;
-    q3 -= this.q3;
+    q0 -= q.q0;
+    q1 -= q.q1;
+    q2 -= q.q2;
+    q3 -= q.q3;
   }
 
   /**
