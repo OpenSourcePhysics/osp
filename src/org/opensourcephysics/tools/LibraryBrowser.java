@@ -12,8 +12,6 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Frame;
-import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -76,8 +74,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.html.HTMLDocument;
-
 import org.opensourcephysics.controls.ListChooser;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
@@ -345,8 +341,8 @@ public class LibraryBrowser extends JPanel {
 			libraryManager.setFontLevel(level);
 		}
 		OSPLog.setFonts(level);
-		HTMLDocument document = (HTMLDocument) htmlAboutPane.getDocument();
-		document.getStyleSheet().addRule(LibraryResource.getHTMLStyles());
+//		HTMLDocument document = (HTMLDocument) htmlAboutPane.getDocument();
+//		document.getStyleSheet().addRule(LibraryResource.getHTMLStyles());
 	}
 
 	/**
@@ -1649,8 +1645,8 @@ public class LibraryBrowser extends JPanel {
 		htmlAboutPane = new LibraryTreePanel.HTMLPane();
 		htmlScroller = new JScrollPane(htmlAboutPane);
 		htmlAboutPane.setText(getAboutLibraryBrowserText());
-		HTMLDocument document = (HTMLDocument) htmlAboutPane.getDocument();
-		document.getStyleSheet().addRule(LibraryResource.getHTMLStyles());
+//		HTMLDocument document = (HTMLDocument) htmlAboutPane.getDocument();
+//		document.getStyleSheet().addRule(LibraryResource.getHTMLStyles());
 		htmlAboutPane.setCaretPosition(0);
 
 		if (externalDialog != null) {
