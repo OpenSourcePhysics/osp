@@ -1601,7 +1601,8 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 				String s = format(value * 180 / Math.PI, 0.0001);
 				boolean isOmega = (name.indexOf(OMEGA) >= 0);
 				if (isOmega || name.indexOf(THETA) >= 0)
-					s += DEGREES + (isOmega ? "/s" : "");
+//					s += DEGREES + (isOmega ? "/s" : "");
+					s += DEGREES;
 				return s;
 			}
 			// for other names, return expression with appropriate decimal separator

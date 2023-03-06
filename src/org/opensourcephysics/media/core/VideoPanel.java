@@ -80,12 +80,9 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	protected final static int defaultHeight = 480;
 
 	public static final String PROPERTY_VIDEOPANEL_DATAFILE = "datafile";
-	public static final String PROPERTY_VIDEOPANEL_IMAGESPACE = "imagespace";
-
-	
+	public static final String PROPERTY_VIDEOPANEL_IMAGESPACE = "imagespace";	
 
 	// instance fields
-
 	/** set to true when this panel has been changed, false when saved */
 	public boolean changed = false;
 
@@ -104,6 +101,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	protected ImageCoordSystem coords; // image <--> world transforms
 	protected Point2D pt = new Point2D.Double();
 	protected File dataFile;
+	protected String timeUnit = "s"; //$NON-NLS-1$
 	/**
 	 * map filter names to classes
 	 */
@@ -304,6 +302,40 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 	public void setImageBorder(double borderFraction) {
 //    imageBorder = Math.max(borderFraction, 0);
 		imageBorder = borderFraction;
+	}
+
+	/**
+	 * Gets the time unit
+	 *
+	 * @return unit the desired unit
+	 */
+	public String getTimeUnit() {
+		return timeUnit;
+	}
+
+	/**
+	 * Sets the time unit.
+	 *
+	 * @param unit the time unit
+	 * @return true if unit was changed
+	 */
+	public boolean setTimeUnit(String unit) {
+		if ("".equals(unit)) //$NON-NLS-1$
+			unit = null;
+		if (unit == null)
+			return false;
+		unit = unit.trim();
+		if (timeUnit.equals(unit))
+			return false;
+		// prevent numbers being set as units
+		try {
+			Double.parseDouble(unit);
+			return false;
+		} catch (Exception e) {
+		}
+		timeUnit = unit;
+
+		return true;
 	}
 
 	/**
