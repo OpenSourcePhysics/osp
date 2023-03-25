@@ -173,7 +173,7 @@ public class ResourceLoader {
 		 *  
 		 */ 		
 		{
-		  SwingUtilities.invokeLater(() -> { webConnected = isWebConnected(); });
+		  new Thread(()->{webConnected = isWebConnected();}).start();
 		}
 	}
 	/**
