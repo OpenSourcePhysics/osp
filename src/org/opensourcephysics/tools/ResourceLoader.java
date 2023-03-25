@@ -173,7 +173,7 @@ public class ResourceLoader {
 		 *  
 		 */ 		
 		{
-		  new Thread(()->{webConnected = isWebConnected();}).start();
+		  new Thread(()->{webConnected = isWebConnected();}, "ResourceLoader.isWebConnected").start();
 		}
 	}
 	/**
@@ -1930,25 +1930,36 @@ public class ResourceLoader {
 	 * @return true if available
 	 */
 	public static boolean isURLAvailable(String urlPath) {
-		if (webTestOK == Boolean.FALSE) {
+		boolean isWebTest = (urlPath == OSPRuntime.WEB_CONNECTED_TEST_URL);
+		if (webTestOK == Boolean.FALSE
+			//new:
+				|| isWebTest && webTestOK == Boolean.TRUE) {
+			// BH: Suggesting we should allow TRUE to also be valid return here
+			// otherwise library will repeatedly call this.
 			//OSPLog.debug("ResourceLoader skipping URLAvailable, since webTestOK == FALSE for " + urlPath);
-			return false;
+			return webTestOK.booleanValue();
 		}
 		//OSPLog.debug("ResourceLoader checking for " + urlPath);
 		URL url = null;
+		HttpURLConnection urlConnect = null;
 		try {
 			// make a URL, open a connection, get content
 			url = new URL(urlPath);
-			HttpURLConnection urlConnect = (HttpURLConnection) url.openConnection();
+			urlConnect = (HttpURLConnection) url.openConnection();
+			urlConnect.setConnectTimeout(OSPRuntime.WEB_CONNECTED_TEST_JAVA_TIMEOUT_MS);
 			urlConnect.getContent();
-			webTestOK = Boolean.TRUE;
+			if (isWebTest)
+				webTestOK = Boolean.TRUE;
+			urlConnect.disconnect();
+			return true;
 		} catch (Exception ex) {
 			OSPLog.debug("ResourceLoader failed to read " + url + " " + ex);
-			if (urlPath == OSPRuntime.WEB_CONNECTED_TEST_URL)
+			if (isWebTest)
 				webTestOK = Boolean.FALSE;
+			if (urlConnect != null)
+				urlConnect.disconnect();
 			return false;
 		}
-		return true;
 	}
 
 	/**
