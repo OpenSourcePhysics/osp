@@ -197,27 +197,6 @@ public class ImageVideo extends VideoAdapter {
 	}
 
 	/**
-	 * Gets the start time in milliseconds.
-	 *
-	 * @return the start time in milliseconds, or -1 if not known
-	 */
-	@Override
-	public double getStartTime() {
-		return 0;
-	}
-
-	/**
-	 * Sets the start time in milliseconds. NOTE: the actual start time is normally
-	 * set to the beginning of a frame.
-	 *
-	 * @param millis the desired start time in milliseconds
-	 */
-	@Override
-	public void setStartTime(double millis) {
-		/** not implemented */
-	}
-
-	/**
 	 * Gets the end time in milliseconds.
 	 *
 	 * @return the end time in milliseconds, or -1 if not known
