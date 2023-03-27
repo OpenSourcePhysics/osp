@@ -761,8 +761,9 @@ public class PerspectiveFilter extends Filter implements PropertyChangeListener 
 					if (disposing)
 						return;
 					refresh();
-					firePropertyChange(PROPERTY_FILTER_IMAGE, null, null); // $NON-NLS-1$
-					firePropertyChange(PROPERTY_FILTER_TAB, null, null); // $NON-NLS-1$
+					Filter filter = PerspectiveFilter.this;
+					filter.firePropertyChange(PROPERTY_FILTER_IMAGE, null, null); // $NON-NLS-1$
+					filter.firePropertyChange(PROPERTY_FILTER_TAB, null, null); // $NON-NLS-1$
 				}
 			});
 			helpButton = new JButton();
@@ -833,8 +834,11 @@ public class PerspectiveFilter extends Filter implements PropertyChangeListener 
 		@Override
 		public void dispose() {
 			disposing = true;
-			contentPane.remove(tabbedPane);
-			tabbedPane.removeAll();
+			if (tabbedPane != null) {
+				tabbedPane.removeAll();
+				if (contentPane != null)
+					contentPane.remove(tabbedPane);				
+			}
 			super.dispose();
 			disposing = false;
 		}
@@ -846,16 +850,17 @@ public class PerspectiveFilter extends Filter implements PropertyChangeListener 
 			super.setVisible(vis);
 
 			if (vidPanel != null) {
+				Filter filter = PerspectiveFilter.this;
 				if (vis) {
 					vidPanel.addDrawable(quad);
-					firePropertyChange(PROPERTY_FILTER_VISIBLE, null, null);
-					PerspectiveFilter.this.removePropertyChangeListener(PROPERTY_FILTER_VISIBLE, vidPanel);
-					PerspectiveFilter.this.addPropertyChangeListener(PROPERTY_FILTER_VISIBLE, vidPanel);
+					filter.firePropertyChange(PROPERTY_FILTER_VISIBLE, null, null);
+					filter.removePropertyChangeListener(PROPERTY_FILTER_VISIBLE, vidPanel);
+					filter.addPropertyChangeListener(PROPERTY_FILTER_VISIBLE, vidPanel);
 					vidPanel.removePropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 					vidPanel.addPropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 				} else {
-					firePropertyChange(PROPERTY_FILTER_VISIBLE, null, null);
-					PerspectiveFilter.this.removePropertyChangeListener(PROPERTY_FILTER_VISIBLE, vidPanel);
+					filter.firePropertyChange(PROPERTY_FILTER_VISIBLE, null, null);
+					filter.removePropertyChangeListener(PROPERTY_FILTER_VISIBLE, vidPanel);
 					vidPanel.removePropertyChangeListener("selectedpoint", quad); //$NON-NLS-1$
 					vidPanel.removeDrawable(quad);
 					// fire MOUSE_RELEASED event to ensure full deselection in Tracker
