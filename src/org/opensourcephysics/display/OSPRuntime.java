@@ -603,6 +603,7 @@ public class OSPRuntime {
 	 */
 	private static AsyncFileChooser chooser;
 
+	public final static int WEB_CONNECTED_TEST_JAVA_TIMEOUT_MS = 1000;
 	public final static int WEB_CONNECTED_TEST_JS_TIMEOUT_MS = 1000;
 	public final static String WEB_CONNECTED_TEST_URL = "https://www.compadre.org/osp/services/REST/osp_tracker.cfm?verb=Identify&OSPType=none";
 
