@@ -3372,14 +3372,15 @@ public class LibraryBrowser extends JPanel {
 	}
 
 	/**
-	 * Returns true if connected to the web.
+	 * Returns true if connected to the web OR if JavaScript.
 	 * 
 	 * @return true if web connected
 	 */
 	protected boolean isWebConnected(boolean[] isDialogShown) {
-		if (!checkedWebConnection) {
+		if (!checkedWebConnection) { // checkedWebConnection == OSPRuntime.isJS by default
+			// Java only
 			checkedWebConnection = true;
-			webConnected = ResourceLoader.isWebConnected();
+			webConnected = ResourceLoader.isWebConnected(); // can block for 1 second
 			if (!webConnected) {
 				if (isDialogShown != null)
 					isDialogShown[0] = true;
@@ -3393,6 +3394,7 @@ public class LibraryBrowser extends JPanel {
 //		ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
 //		JOptionPane.WARNING_MESSAGE);
 		}
+		// webConnected == OSPRuntime.isJS by default
 		return webConnected;
 	}
 
