@@ -71,10 +71,11 @@ public class ClipInspector extends JDialog {
   protected int currentStart, currentCount;
   protected Box frameBox, timeBox;
   protected double dtMin = 1.0E-18, fpsMin = 1.0E-18;
+  protected String timeUnit = "s";
   public boolean isPositioned = false;
 
   /**
-   * Constructs a non-modal ClipInspector with access to the clip control.
+ * Constructs a non-modal ClipInspector with access to the clip control.
  * @param frame the owner
  * @param videoClip the video clip
  * @param control the clip control
@@ -126,6 +127,16 @@ public class ClipInspector extends JDialog {
     		MediaRes.getString("ClipInspector.Title.FrameTimes"))); //$NON-NLS-1$
     pack();
   }
+  
+  public void setTimeUnit(String unit) {
+  	if (unit != null) {
+  		timeUnit = unit;
+      t0Field.setUnits(" " + timeUnit); //$NON-NLS-1$
+      dtField.setUnits(" " + timeUnit); //$NON-NLS-1$
+      fpsField.setUnits(" /" + timeUnit); //$NON-NLS-1$
+      updateDisplay();
+  	}
+  }
 
   //_____________________________ private methods ____________________________
 
@@ -146,7 +157,7 @@ public class ClipInspector extends JDialog {
     startField.setMaximumSize(startField.getPreferredSize());
     final ActionListener startListener = new ActionListener() {
       @Override
-	public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(ActionEvent e) {
   			int prevStart = clip.getStartFrameNumber();
         if (!clip.setStartFrameNumber(startField.getIntValue(), clip.getEndFrameNumber())) {
           updateDisplay();
@@ -170,11 +181,11 @@ public class ClipInspector extends JDialog {
     startField.addActionListener(startListener);
     startField.addFocusListener(new FocusListener() {
       @Override
-	public void focusGained(FocusEvent e) {
+      public void focusGained(FocusEvent e) {
         startField.selectAll();
       }
       @Override
-	public void focusLost(FocusEvent e) {
+      public void focusLost(FocusEvent e) {
         startListener.actionPerformed(null);
       }
 
@@ -189,7 +200,7 @@ public class ClipInspector extends JDialog {
     stepSizeField.setMaximumSize(stepSizeField.getPreferredSize());
     stepSizeField.addActionListener(new ActionListener() {
       @Override
-	public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(ActionEvent e) {
       	int frameNumber = clipControl.getFrameNumber();
         if (!clip.setStepSize(stepSizeField.getIntValue())) {
           updateDisplay();
@@ -205,11 +216,11 @@ public class ClipInspector extends JDialog {
     });
     stepSizeField.addFocusListener(new FocusListener() {
       @Override
-	public void focusGained(FocusEvent e) {
+      public void focusGained(FocusEvent e) {
         stepSizeField.selectAll();
       }
       @Override
-	public void focusLost(FocusEvent e) {
+      public void focusLost(FocusEvent e) {
       	int frameNumber = clipControl.getFrameNumber();
         if (!clip.setStepSize(stepSizeField.getIntValue())) {
           updateDisplay();
@@ -232,7 +243,7 @@ public class ClipInspector extends JDialog {
     endField.setMaximumSize(endField.getPreferredSize());
     endField.addActionListener(new ActionListener() {
       @Override
-	public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(ActionEvent e) {
         if (!clip.setEndFrameNumber(endField.getIntValue())) {
           updateDisplay();
         	endField.selectAll();
@@ -249,11 +260,11 @@ public class ClipInspector extends JDialog {
     });
     endField.addFocusListener(new FocusListener() {
       @Override
-	public void focusGained(FocusEvent e) {
+      public void focusGained(FocusEvent e) {
         endField.selectAll();
       }
       @Override
-	public void focusLost(FocusEvent e) {
+      public void focusLost(FocusEvent e) {
         if (!clip.setEndFrameNumber(endField.getIntValue())) {
           updateDisplay();
         	endField.selectAll();
@@ -277,11 +288,11 @@ public class ClipInspector extends JDialog {
     String fixed = "0.000"; //$NON-NLS-1$
     double[] limits = new double[] {.01, .1, 1, 10};
     t0Field.setPatterns(new String[] {fixed, fixed, fixed, fixed, exp}, limits);
-    t0Field.setUnits(" s"); //$NON-NLS-1$
+    t0Field.setUnits(" "+timeUnit); //$NON-NLS-1$
     t0Field.setMaximumSize(t0Field.getPreferredSize());
     t0Field.addActionListener(new ActionListener() {
       @Override
-	public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(ActionEvent e) {
       	if (t0Field.getText().equals("")) //$NON-NLS-1$
           clip.setStartTime(Double.NaN);
       	else
@@ -293,11 +304,11 @@ public class ClipInspector extends JDialog {
     });
     t0Field.addFocusListener(new FocusListener() {
       @Override
-	public void focusGained(FocusEvent e) {
+      public void focusGained(FocusEvent e) {
         t0Field.selectAll();
       }
       @Override
-	public void focusLost(FocusEvent e) {
+      public void focusLost(FocusEvent e) {
       	if (t0Field.getText().equals("")) //$NON-NLS-1$
           clip.setStartTime(Double.NaN);
       	else
@@ -316,10 +327,10 @@ public class ClipInspector extends JDialog {
     dtField.setPatterns(new String[] {exp, fixed, fixed, fixed, exp}, limits);
     dtField.setMaxValue(1/fpsMin);
     dtField.setMinValue(dtMin);
-    dtField.setUnits(" s"); //$NON-NLS-1$
+    dtField.setUnits(" " + timeUnit); //$NON-NLS-1$
     dtField.addActionListener(new ActionListener() {
       @Override
-	public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(ActionEvent e) {
         clipControl.setFrameDuration(dtField.getValue()*1000);
         updateDisplay();
         dtField.selectAll();
@@ -328,11 +339,11 @@ public class ClipInspector extends JDialog {
     });
     dtField.addFocusListener(new FocusListener() {
       @Override
-	public void focusGained(FocusEvent e) {
+      public void focusGained(FocusEvent e) {
         dtField.selectAll();
       }
       @Override
-	public void focusLost(FocusEvent e) {
+      public void focusLost(FocusEvent e) {
       	clipControl.setFrameDuration(dtField.getValue()*1000);
         updateDisplay();
       }
@@ -350,11 +361,11 @@ public class ClipInspector extends JDialog {
     fpsField.setPatterns(new String[] {exp, fixed, fixed, fixed, exp});
     fpsField.setMaxValue(1/dtMin);
     fpsField.setMinValue(fpsMin);
-    fpsField.setUnits(" /s"); //$NON-NLS-1$
+    fpsField.setUnits(" /" + timeUnit); //$NON-NLS-1$
     fpsField.setMaximumSize(fpsField.getPreferredSize());
     fpsField.addActionListener(new ActionListener() {
       @Override
-	public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(ActionEvent e) {
         clipControl.setFrameDuration(1000/fpsField.getValue());
         updateDisplay();
         fpsField.selectAll();
@@ -363,11 +374,11 @@ public class ClipInspector extends JDialog {
     });
     fpsField.addFocusListener(new FocusListener() {
       @Override
-	public void focusGained(FocusEvent e) {
+      public void focusGained(FocusEvent e) {
         fpsField.selectAll();
       }
       @Override
-	public void focusLost(FocusEvent e) {
+      public void focusLost(FocusEvent e) {
         clipControl.setFrameDuration(1000/fpsField.getValue());
         updateDisplay();
       }
@@ -452,7 +463,7 @@ public class ClipInspector extends JDialog {
     cancelButton.setForeground(new Color(0, 0, 102));
     cancelButton.addActionListener(new ActionListener() {
       @Override
-	public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(ActionEvent e) {
         revert();
         setVisible(false);
       }
@@ -463,7 +474,7 @@ public class ClipInspector extends JDialog {
     okButton.setForeground(new Color(0, 0, 102));
     okButton.addActionListener(new ActionListener() {
       @Override
-	public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(ActionEvent e) {
         setVisible(false);
       }
 

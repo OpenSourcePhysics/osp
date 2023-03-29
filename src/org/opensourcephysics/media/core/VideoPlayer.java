@@ -379,7 +379,9 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		String tip = " " + MediaRes.getString("VideoPlayer.Readout.ToolTip"); //$NON-NLS-1$ //$NON-NLS-2$
 		if (name.indexOf("time") >= 0) { //$NON-NLS-1$
 			readoutType = "time"; //$NON-NLS-1$
-			readout.setToolTipText(MediaRes.getString("VideoPlayer.Readout.ToolTip.Time") + tip); //$NON-NLS-1$
+			String t = vidPanel.getTimeUnit();
+			t = MediaRes.getString("VideoPlayer.Readout.ToolTip.Time") + " " +t;
+			readout.setToolTipText(t + tip); //$NON-NLS-1$
 		} else if (name.indexOf("step") >= 0) { //$NON-NLS-1$
 			readoutType = "step"; //$NON-NLS-1$
 			readout.setToolTipText(MediaRes.getString("VideoPlayer.Readout.ToolTip.Step") + tip); //$NON-NLS-1$
@@ -885,8 +887,9 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				VideoClip clip = getVideoClip();
+				String time = " (" + vidPanel.getTimeUnit() + "):";
 				String response = GUIUtils.showInputDialog(vidPanel,
-						MediaRes.getString("VideoPlayer.Dialog.SetTime.Message"), //$NON-NLS-1$
+						MediaRes.getString("VideoPlayer.Dialog.SetTime.Message")+time, //$NON-NLS-1$
 						MediaRes.getString("VideoPlayer.Dialog.SetTime.Title") + " " + getFrameNumber(), //$NON-NLS-1$ //$NON-NLS-2$
 						JOptionPane.PLAIN_MESSAGE, "" + (getTime() / 1000));
 				if (response != null) {
@@ -1870,8 +1873,10 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 			okButton.setText(DisplayRes.getString("GUIUtils.Ok")); //$NON-NLS-1$
 			cancelButton.setText(DisplayRes.getString("GUIUtils.Cancel")); //$NON-NLS-1$
 			frameLabel.setText(MediaRes.getString("VideoPlayer.Readout.MenuItem.Frame") + ":"); //$NON-NLS-1$ //$NON-NLS-2$
-			timeLabel.setText(MediaRes.getString("VideoPlayer.Readout.MenuItem.Time") + " (s):"); //$NON-NLS-1$ //$NON-NLS-2$
+			String t = player.vidPanel.getTimeUnit();
+			timeLabel.setText(MediaRes.getString("VideoPlayer.Readout.MenuItem.Time") + " ("+t+"):"); //$NON-NLS-1$ //$NON-NLS-2$
 			stepLabel.setText(MediaRes.getString("VideoPlayer.Readout.MenuItem.Step") + ":"); //$NON-NLS-1$ //$NON-NLS-2$
+			
 			// set label sizes
 			ArrayList<JLabel> labels = new ArrayList<JLabel>();
 			labels.add(frameLabel);
