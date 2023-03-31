@@ -443,6 +443,14 @@ public class OSPRuntime {
 			false;
 
 	static {
+		/** @j2sNative
+		 * window.addEventListener("online", function(){alert("Internet reconnected.")});
+		 * window.addEventListener("offline", function(){alert("Internet Disconnected.")})
+		 *  
+		 */
+	}
+	
+	static {
 
 		try {
 			// system properties may not be readable in some environments

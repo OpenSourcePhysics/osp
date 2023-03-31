@@ -167,7 +167,7 @@ public class ResourceLoader {
 		 *    async:true,
 		 *    url:url, 
 		 *    success:function(){System.out.println("ResourceLoader.webTestOK = " + (C$.webTestOK = Boolean.TRUE))},
-		 *    error:function(xhr,status){System.err.println("ResourceLoader.webTestOK = " + (C$.webTestOK = Boolean.FALSE));alert("It appears that you are not connected to the internet, or at least COMPadre could not be reached.");},
+		 *    error:function(xhr,status){System.err.println("ResourceLoader.webTestOK = " + (C$.webTestOK = Boolean.FALSE));alert("The ComPADRE server could not be reached.  You may not be connected to the internet.");},
 		 *    timeout:ms
 		 *    });
 		 *  
@@ -1918,6 +1918,11 @@ public class ResourceLoader {
 	 * @return
 	 */
 	public static boolean isWebConnected() {
+		if (OSPRuntime.isJS) {
+			String onlineStr="not set";
+			/** @j2sNative onlineStr=window.navigator.onLine; */;
+			return onlineStr.toString().equalsIgnoreCase("true");
+		}
 		return isURLAvailable(OSPRuntime.WEB_CONNECTED_TEST_URL);
 	}
 
