@@ -19,12 +19,12 @@ import java.util.zip.ZipEntry;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
-import javax.swing.JScrollPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.filechooser.FileFilter;
 
 import org.opensourcephysics.controls.XML;
@@ -37,6 +37,7 @@ import org.opensourcephysics.tools.LibraryResource;
 import org.opensourcephysics.tools.ResourceLoader;
 
 import javajs.async.AsyncFileChooser;
+import javajs.async.AsyncSwingWorker;
 
 public class LoaderTest {
 	
@@ -53,6 +54,8 @@ public class LoaderTest {
 	AsyncFileChooser fileChooser;
 	String zipFilePath;
 	String editedFilePath;
+	
+	int progressInit = 0, progress_done = 100;
 	
 	public LoaderTest(){
 		panel.setLayout(new BorderLayout());
@@ -192,8 +195,8 @@ public class LoaderTest {
 		 		  		JOptionPane.WARNING_MESSAGE);
 		 		  return;
 				}
-				libraryBrowser.setVisible(false);
-				loadIntoEditor(target);
+//				loadIntoEditor(target);
+				new AsyncLoader(target).executeAsync();
 				return;
 			}
 		} finally {
@@ -208,7 +211,9 @@ public class LoaderTest {
 		otherFiles.clear();
 		for (String next : contents.keySet()) {
 			String s = ResourceLoader.getURIPath(path + "!/" + next);
-			if (next.endsWith(".trk") || next.endsWith(".xml")) {
+			if (next.endsWith(".trk") 
+					|| next.endsWith(".xml")
+					|| next.endsWith(".ejss")) {
 				xmlFiles.add(s);
 			} else {
 				otherFiles.add(s);					
@@ -225,6 +230,7 @@ public class LoaderTest {
 		editedFilePath = xmlFiles.remove(0);
 		String text = ResourceLoader.getString(editedFilePath);
 		setEditorText(text);
+		libraryBrowser.setVisible(false);
 		return true;
 	}
 	
@@ -408,6 +414,56 @@ public class LoaderTest {
 
 	public static void main(String[] args) {
 		new LoaderTest();
+	}
+	
+	class AsyncLoader extends AsyncSwingWorker {
+		
+		String path;
+		
+		AsyncLoader(String path) {
+			super(frame, "Loading " + XML.getName(path), 10,
+					progressInit, progress_done);
+			this.path = path;
+		}
+
+		@Override
+		public void initAsync() {
+		}
+
+		@Override
+		public int doInBackgroundAsync(int progress) {
+			Map<String, ZipEntry> contents = ResourceLoader.getZipContents(path, true);
+			// extract the zip file contents
+			xmlFiles.clear();
+			otherFiles.clear();
+			for (String next : contents.keySet()) {
+				String s = ResourceLoader.getURIPath(path + "!/" + next);
+				if (next.endsWith(".trk") 
+						|| next.endsWith(".xml")
+						|| next.endsWith(".ejss")) {
+					xmlFiles.add(s);
+				} else {
+					otherFiles.add(s);					
+				}
+			}
+			contents = null;
+			if (xmlFiles.isEmpty()) {
+	 			String msg = XML.getName(path)+ " contains no editable xml files.";
+	 		  JOptionPane.showMessageDialog(frame, msg, "No Editable Content", JOptionPane.WARNING_MESSAGE);  
+				return progress_done;
+			}
+			// remove file that will be edited so the original 
+			// will not be included in the output zip
+			editedFilePath = xmlFiles.remove(0);
+			String text = ResourceLoader.getString(editedFilePath);
+			setEditorText(text);
+			return progress_done;
+		}
+
+		@Override
+		public void doneAsync() {
+			libraryBrowser.setVisible(false);
+		}
 	}
 	
 }
