@@ -3,12 +3,20 @@ package test;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,6 +33,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.filechooser.FileFilter;
 
 import org.opensourcephysics.controls.XML;
@@ -45,8 +54,8 @@ public class LoaderTest {
 	JFrame frame = new JFrame("JFrame Example");
 	JPanel panel = new JPanel();
 	JPanel topPanel = new JPanel();
-	JEditorPane pane = new JEditorPane();
-	JScrollPane scrollPane= new JScrollPane(pane);
+	JTextArea textArea = new JTextArea();
+	JScrollPane scrollPane= new JScrollPane(textArea);
 	
 	String tempDir;
 	ArrayList<String> xmlFiles = new ArrayList<String>();
@@ -60,7 +69,8 @@ public class LoaderTest {
 	public LoaderTest(){
 		panel.setLayout(new BorderLayout());
 		topPanel.setLayout(new FlowLayout());
-		pane.setEditable(true);
+		enableDragAndDrop(textArea);
+		textArea.setEditable(true);
 
 		JLabel label = new JLabel("ComPADRE");
 		label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 20));
@@ -100,7 +110,7 @@ public class LoaderTest {
 	}
 	
 	private void setEditorText(String text) {
-		pane.setText(text);
+		textArea.setText(text);
 	}
 	
 	
@@ -149,6 +159,82 @@ public class LoaderTest {
 			}
 		}
 		return libraryBrowser;
+	}
+	
+  private void enableDragAndDrop(JTextArea jt){
+    DropTarget dropTarget=new DropTarget(jt,new DropTargetListener(){
+        public void dragEnter(DropTargetDragEvent e){}
+        
+        public void dragExit(DropTargetEvent e){}
+        
+        public void dragOver(DropTargetDragEvent e){}
+        
+        public void dropActionChanged(DropTargetDragEvent e){}
+        
+        public void drop(DropTargetDropEvent e){
+            try{
+                // Accept the drop first, important!
+                e.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
+                
+                // Get the files that are dropped as java.util.List
+                java.util.List list=(java.util.List) e.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+                
+                // Now get the first file from the list,
+                File file=(File)list.get(0);
+                String path=file.getAbsolutePath();
+                //jt.read(new FileReader(file),null);
+                loadIntoEditor(path);
+                
+            }catch(Exception ex){}
+        }
+    });
+  }
+	
+	private void openDnDResource(String target, String fileName) {
+		boolean loadFailed = false;
+		try {
+			// download target to osp cache
+			if (target.indexOf("document/ServeFile.cfm?") >= 0) {
+				try {
+					target = ResourceLoader.downloadToOSPCache(target, fileName, false).toURI().toString();
+				} catch (Exception ex) {
+					loadFailed = true;
+				}
+			}
+			if (target == null) {
+				loadFailed = true;
+			}
+			if (loadFailed) {
+				String name = fileName;
+				if (name == null || "".equals(name))
+					name = "Unknown";
+				String s = "No resource could be downloaded for node " + name;
+				JOptionPane.showMessageDialog(libraryBrowser, s, "Error",
+						JOptionPane.WARNING_MESSAGE);
+				return;
+			}
+			if (!isZip(target)) {
+	 			String msg = XML.getName(target)+ " is not a zip file.";
+	 		  JOptionPane.showMessageDialog(frame, msg, "Wrong File Type", 
+	 		  		JOptionPane.WARNING_MESSAGE);  
+	 		  return;
+			}
+			else {
+				// check target to make sure it is a readable zip file
+				Map<String, ZipEntry> contents = ResourceLoader.getZipContents(target, true);
+				if (contents.isEmpty()) {
+		 			String msg = XML.getName(target)+ " is empty.";
+		 		  JOptionPane.showMessageDialog(frame, msg, "Empty File", 
+		 		  		JOptionPane.WARNING_MESSAGE);
+		 		  return;
+				}
+//				loadIntoEditor(target);
+				new AsyncLoader(target).executeAsync();
+				return;
+			}
+		} finally {
+			libraryBrowser.setCursor(Cursor.getDefaultCursor());
+		}
 	}
 	
 	private void openLibraryResource(LibraryResource record) {
@@ -275,7 +361,7 @@ public class LoaderTest {
 		String path = target.getAbsolutePath();
 		try {
 			BufferedWriter out = new BufferedWriter(new FileWriter(path));
-			out.write(pane.getText());
+			out.write(textArea.getText());
 			out.flush();
 			out.close();
 			return target;
