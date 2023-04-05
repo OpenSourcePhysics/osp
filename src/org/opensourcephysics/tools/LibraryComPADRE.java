@@ -209,6 +209,7 @@ public class LibraryComPADRE {
 
 						@Override
 						public void run() {
+							success[0] = true;
 							org.opensourcephysics.tools.LibraryComPADRE.start(nextIndex[0]);
 						}
 
