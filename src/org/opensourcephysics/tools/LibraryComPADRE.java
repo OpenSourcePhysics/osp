@@ -78,7 +78,7 @@ public class LibraryComPADRE {
 			}
 			return success;
 		} catch (Exception e) {
-			OSPLog.warning("failed to load ComPADRE collection " + query); //$NON-NLS-1$
+			OSPLog.warning("failed to load ComPADRE collection " + query + " " + e); //$NON-NLS-1$
 		}
 		return false;
 	}
@@ -257,7 +257,7 @@ public class LibraryComPADRE {
 			boolean found = false;
 			Attachment attachment = null;
 			if (isDesiredOSPType(node)) {
-				if ("EJS".equals(desiredOSPType)) { //$NON-NLS-1$
+				if ("EJS".equals(desiredOSPType) && !isTrackerType(node)) { //$NON-NLS-1$
 					attachment = getAttachment(node, "Source Code"); //$NON-NLS-1$
 				} else {
 					attachment = getAttachment(node, "Main"); //$NON-NLS-1$
@@ -313,8 +313,9 @@ public class LibraryComPADRE {
 			for (int i = 0; i < n; i++) { // process nodes
 				Node node = list.item(i);
 				Attachment attachment = null;
+				System.out.println(node.getNodeName());
 				if (isDesiredOSPType(node)) {
-					if ("EJS".equals(desiredOSPType)) { //$NON-NLS-1$
+					if ("EJS".equals(desiredOSPType) && !isTrackerType(node)) { //$NON-NLS-1$
 						attachment = getAttachment(node, "Source Code"); //$NON-NLS-1$
 					} else {
 						attachment = getAttachment(node, "Main"); //$NON-NLS-1$
@@ -355,7 +356,7 @@ public class LibraryComPADRE {
 			record.setProperty("download_filename", attachment.filename); //$NON-NLS-1$
 			String type = getChildValue(node, "osp-type"); //$NON-NLS-1$
 			if (isDesiredOSPType(node)) {
-				if ("EJS".equals(desiredOSPType)) { //$NON-NLS-1$
+				if ("EJS".equals(desiredOSPType) && !isTrackerType(node)) { //$NON-NLS-1$
 					type = LibraryResource.EJS_TYPE;
 					record.setType(type);
 				} else if ("Tracker".equals(desiredOSPType)) { //$NON-NLS-1$
@@ -663,12 +664,27 @@ public class LibraryComPADRE {
 	 */
 	protected static boolean isDesiredOSPType(Node node) {
 		List<Node> nodes = getAllChildren(node, "osp-type"); //$NON-NLS-1$
+		String s;
 		for (Node next : nodes) {
 			// if desiredOSPType has not been specified then all osp-types are valid
-			if (desiredOSPType == null || getNodeValue(next).contains(desiredOSPType))
+			if (desiredOSPType == null
+					|| (s = getNodeValue(next)).contains(desiredOSPType)
+					|| s.contains("Tracker")
+					)
 				return true;
 		}
 		return false;
 	}
+	
+	protected static boolean isTrackerType(Node node) {
+		List<Node> nodes = getAllChildren(node, "osp-type"); //$NON-NLS-1$
+		for (Node next : nodes) {
+			// if desiredOSPType has not been specified then all osp-types are valid
+			if (getNodeValue(next).contains("Tracker"))
+				return true;
+		}
+		return false;
+	}
+
 
 }

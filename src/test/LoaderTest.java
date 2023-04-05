@@ -131,7 +131,7 @@ public class LoaderTest {
 		if (libraryBrowser == null) {
 			try {
 // BH this disallows Tracker lib in JS
-//				LibraryComPADRE.desiredOSPType = "EJS";
+				LibraryComPADRE.desiredOSPType = "EJS";
 				libraryBrowser = LibraryBrowser.getBrowser(null);
 				libraryBrowser.addComPADRECollection(
 						LibraryComPADRE.TRACKER_SERVER_TREE + LibraryComPADRE.PRIMARY_ONLY);

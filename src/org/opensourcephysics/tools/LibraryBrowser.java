@@ -3120,6 +3120,7 @@ public class LibraryBrowser extends JPanel {
 							continue;
 						}
 						// first check cache
+						
 						File cachedFile = ResourceLoader.getSearchCacheFile(path); // 
 						if (cachedFile.exists()) {
 							addTabAndExecute(path, null, null);
@@ -3202,7 +3203,7 @@ public class LibraryBrowser extends JPanel {
 				realPath = cachedFile.getAbsolutePath();
 //				saveToCache = false;
 			}
-
+System.out.println("???");
 			// BH 2020.04.14 added to speed up zip file checking
 			boolean doCache = OSPRuntime.doCacheZipContents;
 			OSPRuntime.doCacheZipContents = true;
@@ -3304,10 +3305,7 @@ public class LibraryBrowser extends JPanel {
 					treePanel.metadataLoader.execute();
 					setProgress(index);
 				} else {
-					String s = ToolsRes.getString("LibraryBrowser.Dialog.CollectionNotFound.Message"); //$NON-NLS-1$
-					JOptionPane.showMessageDialog(LibraryBrowser.this, s + ":\n" + path, //$NON-NLS-1$
-							ToolsRes.getString("LibraryBrowser.Dialog.CollectionNotFound.Title"), //$NON-NLS-1$
-							JOptionPane.WARNING_MESSAGE);
+					warnNotLoaded(path);
 					library.removeRecent(path);
 					refreshRecentMenu();
 					setProgress(-1);
@@ -3369,6 +3367,14 @@ public class LibraryBrowser extends JPanel {
 		int y = (dim.height - browser.getBounds().height) / 2;
 		browser.setLocation(x, y);
 		browser.setVisible(true);
+	}
+
+	public void warnNotLoaded(String path) {
+		String s = ToolsRes.getString("LibraryBrowser.Dialog.CollectionNotFound.Message") + ":\n" + path; //$NON-NLS-1$
+		System.out.println("WARN - LibraryBrowser " + s);
+//		JOptionPane.showMessageDialog(LibraryBrowser.this, s, //$NON-NLS-1$
+//				ToolsRes.getString("LibraryBrowser.Dialog.CollectionNotFound.Title"), //$NON-NLS-1$
+//				JOptionPane.WARNING_MESSAGE);
 	}
 
 	/**

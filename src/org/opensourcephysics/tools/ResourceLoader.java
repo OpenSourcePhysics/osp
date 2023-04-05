@@ -945,7 +945,7 @@ public class ResourceLoader {
 			basename += "_" + ext; //$NON-NLS-1$
 		// following line needed to clean up long extensions associated with ComPADRE
 		// query paths
-		filename = basename.replace('&', '_').replace('?', '_').replace('=', '_') + ".xml"; //$NON-NLS-1$
+		filename = getNonURIPath(basename).replace('=', '_') + ".xml"; //$NON-NLS-1$
 		return getCacheFile(getSearchCache(), urlPath, filename);
 	}
 
