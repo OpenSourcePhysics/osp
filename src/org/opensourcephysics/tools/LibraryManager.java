@@ -341,6 +341,7 @@ public class LibraryManager extends JDialog {
 						}
 					}
 					if (isResource) {
+						System.out.println("LM OK " + path);
 						browser.addToCollections(path);
 						ListModel<String> model = collectionList.getModel();
 						collectionList.setModel(model);
@@ -373,11 +374,7 @@ public class LibraryManager extends JDialog {
 					}
 				}
 
-				String s = ToolsRes.getString("LibraryBrowser.Dialog.CollectionNotFound.Message"); //$NON-NLS-1$
-				JOptionPane.showMessageDialog(LibraryManager.this, s + ":\n" + path, //$NON-NLS-1$
-						ToolsRes.getString("LibraryBrowser.Dialog.CollectionNotFound.Title"), //$NON-NLS-1$
-						JOptionPane.WARNING_MESSAGE);
-
+				warnNotFound(path);
 			}
 		});
 		removeButton = new JButton();
@@ -570,6 +567,16 @@ public class LibraryManager extends JDialog {
 		JPanel south = new JPanel();
 		south.add(okButton);
 		contentPane.add(south, BorderLayout.SOUTH);
+	}
+
+	protected void warnNotFound(String path) {
+		String s = ToolsRes.getString("LibraryBrowser.Dialog.CollectionNotFound.Message"); //$NON-NLS-1$
+		
+		System.out.println("WARN - LibraryManager " + s + " "+ path);
+//		
+//		JOptionPane.showMessageDialog(this, s + ":\n" + path, //$NON-NLS-1$
+//				ToolsRes.getString("LibraryBrowser.Dialog.CollectionNotFound.Title"), //$NON-NLS-1$
+//				JOptionPane.WARNING_MESSAGE);
 	}
 
 	/**
