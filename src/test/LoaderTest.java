@@ -34,6 +34,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileFilter;
 
 import org.opensourcephysics.controls.XML;
@@ -67,6 +68,7 @@ public class LoaderTest {
 	int progressInit = 0, progress_done = 100;
 	
 	public LoaderTest(){
+		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		panel.setLayout(new BorderLayout());
 		topPanel.setLayout(new FlowLayout());
 		enableDragAndDrop(textArea);
@@ -128,7 +130,8 @@ public class LoaderTest {
 	private LibraryBrowser getLibraryBrowser() {
 		if (libraryBrowser == null) {
 			try {
-				LibraryComPADRE.desiredOSPType = "EJS";
+// BH this disallows Tracker lib in JS
+//				LibraryComPADRE.desiredOSPType = "EJS";
 				libraryBrowser = LibraryBrowser.getBrowser(null);
 				libraryBrowser.addComPADRECollection(
 						LibraryComPADRE.TRACKER_SERVER_TREE + LibraryComPADRE.PRIMARY_ONLY);
