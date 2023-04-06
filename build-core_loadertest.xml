@@ -16,7 +16,7 @@
    	<echo>creating and compressing core files - warnings are OK; "does not exist" is trouble</echo>
    	<echo>reading core class list from file coreclasses</echo>   	
    	<loadresource property="coreclasses">
-       <file file="ospcoreclasses"/>
+       <file file="loadertestclasses"/>
     </loadresource>
  
     <antcall target="call-core">
