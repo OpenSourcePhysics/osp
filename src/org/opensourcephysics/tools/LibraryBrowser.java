@@ -3203,7 +3203,6 @@ public class LibraryBrowser extends JPanel {
 				realPath = cachedFile.getAbsolutePath();
 //				saveToCache = false;
 			}
-System.out.println("???");
 			// BH 2020.04.14 added to speed up zip file checking
 			boolean doCache = OSPRuntime.doCacheZipContents;
 			OSPRuntime.doCacheZipContents = true;

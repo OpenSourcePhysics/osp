@@ -253,6 +253,7 @@ public class ResourceLoader {
 	 * @return the Resource, or null if none found
 	 */
 	private static Resource getResource(String name, boolean searchFiles, boolean zipURLsOK) {
+		System.out.println("RL getting  " + name);
 //		try {
 //			URL url = getAppletResourceURL(name); // added by W. Christian
 //			if (url != null) {
@@ -945,7 +946,7 @@ public class ResourceLoader {
 			basename += "_" + ext; //$NON-NLS-1$
 		// following line needed to clean up long extensions associated with ComPADRE
 		// query paths
-		filename = getNonURIPath(basename) + ".xml"; //$NON-NLS-1$
+		filename = getNonURIPath(basename).replace('=', '_') + ".xml"; //$NON-NLS-1$
 		return getCacheFile(getSearchCache(), urlPath, filename);
 	}
 
@@ -2023,7 +2024,7 @@ public class ResourceLoader {
 			path = path.substring(1);
 		}
 		// replace "%20" with space, & and ? with _
-		return path.replaceAll("%20", " ").replace('&','_').replace('?','_').replace('=', '_'); //$NON-NLS-1$
+		return path.replaceAll("%20", " ").replace('&','_').replace('?','_'); //$NON-NLS-1$
 	}
 
 	/**
