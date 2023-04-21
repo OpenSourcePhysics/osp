@@ -20,6 +20,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -125,6 +126,53 @@ public class XMLTreePanel extends JPanel {
         tree.setSelectionPath(path);
         tree.scrollPathToVisible(path);
         showInspector(node);
+        return node;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Selects and returns the node with the specified TreePath.
+   * This uses only the names of the nodes in the path so
+   * it can be used after creating a new similar Tree.
+   *
+   * @param treePath the TreePath
+   * @return the selected node, or null if none found
+   */
+  public XMLTreeNode setSelectedNode(TreePath treePath) {
+  	Object[] elements = treePath.getPath();
+    XMLTreeNode root = (XMLTreeNode) tree.getModel().getRoot();
+    XMLTreeNode node = null;
+    for (int i = 0; i < elements.length; i++) {
+    	node = getChildNode(root, elements[i].toString());
+    	if (node == null)
+    		break;
+    	root = node;
+    }
+    if (node != null) {
+      TreePath path = new TreePath(node.getPath());
+      tree.setSelectionPath(path);
+      tree.scrollPathToVisible(path);
+      showInspector(node);
+      return node;
+    }
+    return null;
+  }
+
+  /**
+   * Returns the first child of a specified root node
+   * that has a given name.
+   *
+   * @param root the node to search
+   * @param name the name
+   * @return the node, or null if none found
+   */
+  public XMLTreeNode getChildNode(XMLTreeNode root, String name) {
+    Enumeration<?> e = root.breadthFirstEnumeration();
+    while(e.hasMoreElements()) {
+      XMLTreeNode node = (XMLTreeNode) e.nextElement();
+      if (node.toString().equals(name)) {
         return node;
       }
     }
@@ -310,9 +358,16 @@ public class XMLTreePanel extends JPanel {
 
     });
     // listen for mouse events to display array tables
-    tree.addMouseListener(new MouseAdapter() {
+    tree.addMouseListener(getMouseListener());
+    // put tree in scroller
+    treeScroller.setViewportView(tree);
+    return root;
+  }
+  
+  protected MouseListener getMouseListener() {
+  	return new MouseAdapter() {
       @Override
-	public void mouseClicked(MouseEvent e) {
+      public void mouseClicked(MouseEvent e) {
         if(OSPRuntime.isPopupTrigger(e)) {
           // select node and show popup menu
           TreePath path = tree.getPathForLocation(e.getX(), e.getY());
@@ -326,11 +381,7 @@ public class XMLTreePanel extends JPanel {
           }
         }
       }
-
-    });
-    // put tree in scroller
-    treeScroller.setViewportView(tree);
-    return root;
+    };
   }
 
   private void showInspector(XMLTreeNode node) {
