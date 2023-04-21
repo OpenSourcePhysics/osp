@@ -2248,11 +2248,14 @@ public class LibraryTreePanel extends JPanel {
 			if (node.record instanceof LibraryCollection) {
 				hasNewChildren = false;
 				// make runnable to set hasNewChildren if found by ComPADRE
+				LibraryTreeNode n = node;
 				Runnable onSuccess = new Runnable() {
 					@Override
 					public void run() {
 						hasNewChildren = true;
 						processNode(htmlPath);
+						String s = "\""+n.getName() + "\"";	 //$NON-NLS-1$
+						System.out.println("OK - LTP " + s);
 					}
 				};
 
@@ -2261,21 +2264,24 @@ public class LibraryTreePanel extends JPanel {
 					@Override
 					public void run() {
 						browser.setCursor(Cursor.getDefaultCursor());
-						String s = "\""+node.getName() + "\"";	 //$NON-NLS-1$			
-						JOptionPane.showMessageDialog(browser,
-								ToolsRes.getString("LibraryBrowser.Dialog.NoResources.Message"), //$NON-NLS-1$
-								s,
-								JOptionPane.PLAIN_MESSAGE);
+						String s = "\""+n.getName() + "\"";	 //$NON-NLS-1$
+						warnNoResource(s);
 					}
 				};
 
-				LibraryComPADRE.loadResources(node, onSuccess, onFailure);
+				LibraryComPADRE.loadResources(n, onSuccess, onFailure);
 			} else if ("".equals(node.record.getDescription()) && reloadUrlPath != null) { //$NON-NLS-1$
 				LibraryComPADRE.reloadResource(node, reloadUrlPath, () -> {
 					processNode(htmlPath);
 				});
 			}
 
+		}
+
+		protected void warnNoResource(String s) {
+			System.out.println("WARN - LibraryTreePanel " + s);
+//			JOptionPane.showMessageDialog(browser, ToolsRes.getString("LibraryBrowser.Dialog.NoResources.Message"), //$NON-NLS-1$
+//					s, JOptionPane.PLAIN_MESSAGE);
 		}
 
 		protected void processNode(String htmlPath) {

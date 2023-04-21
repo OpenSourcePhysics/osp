@@ -1,5 +1,5 @@
 /*
- * Open Source Physics software is free software as described near the bottom of this code file.
+load * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
  * <https://www.opensourcephysics.org/>
@@ -78,7 +78,7 @@ public class LibraryComPADRE {
 			}
 			return success;
 		} catch (Exception e) {
-			OSPLog.warning("failed to load ComPADRE collection " + query); //$NON-NLS-1$
+			OSPLog.warning("failed to load ComPADRE collection " + query + " " + e); //$NON-NLS-1$
 		}
 		return false;
 	}
@@ -185,6 +185,7 @@ public class LibraryComPADRE {
 						list = doc.getElementsByTagName("record"); //$NON-NLS-1$
 						n = list.getLength();
 					} catch (SAXException | IOException | ParserConfigurationException e) {
+						e.printStackTrace();
 					}
 					if (n == 0) {
 						collection.setDescription(null);
@@ -200,7 +201,7 @@ public class LibraryComPADRE {
 						@Override
 						public void run() {
 							success[0] = true;
-							start(nextIndex[0]);
+							org.opensourcephysics.tools.LibraryComPADRE.start(nextIndex[0]);
 						}
 
 					};
@@ -208,7 +209,8 @@ public class LibraryComPADRE {
 
 						@Override
 						public void run() {
-							start(nextIndex[0]);
+							success[0] = true;
+							org.opensourcephysics.tools.LibraryComPADRE.start(nextIndex[0]);
 						}
 
 					};
@@ -223,14 +225,16 @@ public class LibraryComPADRE {
 							if (index[0] >= ni) {
 								whenDone.run();
 							} else if (l != null) {
-								loadNode(l.item(index[0]++), collection, treeNode, urlPath, onFound, onNothingNew);
+								// BH 2023.03.29 there was a bug in the transpiler requiring
+								// explicit calling of static methods from lambda functions. 
+								// no longer necessary, but this also fixes it.
+								org.opensourcephysics.tools.LibraryComPADRE.loadNode(l.item(index[0]++), collection, treeNode, urlPath, onFound, onNothingNew);
 							}
 
 						}
 
 					};
-
-					start(nextIndex[0]);
+					org.opensourcephysics.tools.LibraryComPADRE.start(nextIndex[0]);
 					return null;
 			});
 
@@ -241,19 +245,19 @@ public class LibraryComPADRE {
 
 	}
 
-	private static void start(Runnable runnable) {
+	protected static void start(Runnable runnable) {
 		// DB 11.13.20 Bob, why run this runnable in a separate thread?
  		runnable.run();
 		//new Thread(runnable).start();
 	}
 	
-	private static void loadNode(Node node, LibraryCollection collection, LibraryTreeNode treeNode, String urlPath,
+	protected static void loadNode(Node node, LibraryCollection collection, LibraryTreeNode treeNode, String urlPath,
 			Runnable onFound, Runnable onNothingNew) {
 		try {
 			boolean found = false;
 			Attachment attachment = null;
 			if (isDesiredOSPType(node)) {
-				if ("EJS".equals(desiredOSPType)) { //$NON-NLS-1$
+				if ("EJS".equals(desiredOSPType) && !isTrackerType(node)) { //$NON-NLS-1$
 					attachment = getAttachment(node, "Source Code"); //$NON-NLS-1$
 				} else {
 					attachment = getAttachment(node, "Main"); //$NON-NLS-1$
@@ -309,8 +313,9 @@ public class LibraryComPADRE {
 			for (int i = 0; i < n; i++) { // process nodes
 				Node node = list.item(i);
 				Attachment attachment = null;
+				System.out.println(node.getNodeName());
 				if (isDesiredOSPType(node)) {
-					if ("EJS".equals(desiredOSPType)) { //$NON-NLS-1$
+					if ("EJS".equals(desiredOSPType) && !isTrackerType(node)) { //$NON-NLS-1$
 						attachment = getAttachment(node, "Source Code"); //$NON-NLS-1$
 					} else {
 						attachment = getAttachment(node, "Main"); //$NON-NLS-1$
@@ -351,7 +356,7 @@ public class LibraryComPADRE {
 			record.setProperty("download_filename", attachment.filename); //$NON-NLS-1$
 			String type = getChildValue(node, "osp-type"); //$NON-NLS-1$
 			if (isDesiredOSPType(node)) {
-				if ("EJS".equals(desiredOSPType)) { //$NON-NLS-1$
+				if ("EJS".equals(desiredOSPType) && !isTrackerType(node)) { //$NON-NLS-1$
 					type = LibraryResource.EJS_TYPE;
 					record.setType(type);
 				} else if ("Tracker".equals(desiredOSPType)) { //$NON-NLS-1$
@@ -659,12 +664,27 @@ public class LibraryComPADRE {
 	 */
 	protected static boolean isDesiredOSPType(Node node) {
 		List<Node> nodes = getAllChildren(node, "osp-type"); //$NON-NLS-1$
+		String s;
 		for (Node next : nodes) {
 			// if desiredOSPType has not been specified then all osp-types are valid
-			if (desiredOSPType == null || getNodeValue(next).contains(desiredOSPType))
+			if (desiredOSPType == null
+					|| (s = getNodeValue(next)).contains(desiredOSPType)
+					|| s.contains("Tracker")
+					)
 				return true;
 		}
 		return false;
 	}
+	
+	protected static boolean isTrackerType(Node node) {
+		List<Node> nodes = getAllChildren(node, "osp-type"); //$NON-NLS-1$
+		for (Node next : nodes) {
+			// if desiredOSPType has not been specified then all osp-types are valid
+			if (getNodeValue(next).contains("Tracker"))
+				return true;
+		}
+		return false;
+	}
+
 
 }

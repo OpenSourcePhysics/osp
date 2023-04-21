@@ -3120,6 +3120,7 @@ public class LibraryBrowser extends JPanel {
 							continue;
 						}
 						// first check cache
+						
 						File cachedFile = ResourceLoader.getSearchCacheFile(path); // 
 						if (cachedFile.exists()) {
 							addTabAndExecute(path, null, null);
@@ -3202,7 +3203,6 @@ public class LibraryBrowser extends JPanel {
 				realPath = cachedFile.getAbsolutePath();
 //				saveToCache = false;
 			}
-
 			// BH 2020.04.14 added to speed up zip file checking
 			boolean doCache = OSPRuntime.doCacheZipContents;
 			OSPRuntime.doCacheZipContents = true;
@@ -3304,10 +3304,7 @@ public class LibraryBrowser extends JPanel {
 					treePanel.metadataLoader.execute();
 					setProgress(index);
 				} else {
-					String s = ToolsRes.getString("LibraryBrowser.Dialog.CollectionNotFound.Message"); //$NON-NLS-1$
-					JOptionPane.showMessageDialog(LibraryBrowser.this, s + ":\n" + path, //$NON-NLS-1$
-							ToolsRes.getString("LibraryBrowser.Dialog.CollectionNotFound.Title"), //$NON-NLS-1$
-							JOptionPane.WARNING_MESSAGE);
+					warnNotLoaded(path);
 					library.removeRecent(path);
 					refreshRecentMenu();
 					setProgress(-1);
@@ -3371,15 +3368,24 @@ public class LibraryBrowser extends JPanel {
 		browser.setVisible(true);
 	}
 
+	public void warnNotLoaded(String path) {
+		String s = ToolsRes.getString("LibraryBrowser.Dialog.CollectionNotFound.Message") + ":\n" + path; //$NON-NLS-1$
+		System.out.println("WARN - LibraryBrowser " + s);
+//		JOptionPane.showMessageDialog(LibraryBrowser.this, s, //$NON-NLS-1$
+//				ToolsRes.getString("LibraryBrowser.Dialog.CollectionNotFound.Title"), //$NON-NLS-1$
+//				JOptionPane.WARNING_MESSAGE);
+	}
+
 	/**
-	 * Returns true if connected to the web.
+	 * Returns true if connected to the web OR if JavaScript.
 	 * 
 	 * @return true if web connected
 	 */
 	protected boolean isWebConnected(boolean[] isDialogShown) {
-		if (!checkedWebConnection) {
+		if (!checkedWebConnection) { // checkedWebConnection == OSPRuntime.isJS by default
+			// Java only
 			checkedWebConnection = true;
-			webConnected = ResourceLoader.isWebConnected();
+			webConnected = ResourceLoader.isWebConnected(); // can block for 1 second
 			if (!webConnected) {
 				if (isDialogShown != null)
 					isDialogShown[0] = true;
@@ -3393,6 +3399,7 @@ public class LibraryBrowser extends JPanel {
 //		ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
 //		JOptionPane.WARNING_MESSAGE);
 		}
+		// webConnected == OSPRuntime.isJS by default
 		return webConnected;
 	}
 

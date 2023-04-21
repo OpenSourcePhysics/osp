@@ -167,7 +167,7 @@ public class ResourceLoader {
 		 *    async:true,
 		 *    url:url, 
 		 *    success:function(){System.out.println("ResourceLoader.webTestOK = " + (C$.webTestOK = Boolean.TRUE))},
-		 *    error:function(xhr,status){System.err.println("ResourceLoader.webTestOK = " + (C$.webTestOK = Boolean.FALSE));alert("It appears that you are not connected to the internet, or at least COMPadre could not be reached.");},
+		 *    error:function(xhr,status){System.err.println("ResourceLoader.webTestOK = " + (C$.webTestOK = Boolean.FALSE));alert("The ComPADRE server could not be reached.  You may not be connected to the internet.");},
 		 *    timeout:ms
 		 *    });
 		 *  
@@ -253,6 +253,7 @@ public class ResourceLoader {
 	 * @return the Resource, or null if none found
 	 */
 	private static Resource getResource(String name, boolean searchFiles, boolean zipURLsOK) {
+		System.out.println("RL getting  " + name);
 //		try {
 //			URL url = getAppletResourceURL(name); // added by W. Christian
 //			if (url != null) {
@@ -945,7 +946,7 @@ public class ResourceLoader {
 			basename += "_" + ext; //$NON-NLS-1$
 		// following line needed to clean up long extensions associated with ComPADRE
 		// query paths
-		filename = basename.replace('&', '_').replace('?', '_').replace('=', '_') + ".xml"; //$NON-NLS-1$
+		filename = getNonURIPath(basename).replace('=', '_') + ".xml"; //$NON-NLS-1$
 		return getCacheFile(getSearchCache(), urlPath, filename);
 	}
 
@@ -1918,6 +1919,11 @@ public class ResourceLoader {
 	 * @return
 	 */
 	public static boolean isWebConnected() {
+		if (OSPRuntime.isJS) {
+			String onlineStr="not set";
+			/** @j2sNative onlineStr=window.navigator.onLine; */;
+			return onlineStr.toString().equalsIgnoreCase("true");
+		}
 		return isURLAvailable(OSPRuntime.WEB_CONNECTED_TEST_URL);
 	}
 
