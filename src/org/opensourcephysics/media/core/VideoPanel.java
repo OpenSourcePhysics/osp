@@ -866,6 +866,10 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		 * @return false if deferring finalization (TrackerPanel AsyncVideo)
 		 */
 		public boolean getClip(XMLControl control) {
+			if (!control.getPropertyNamesRaw().contains("videoclip")) {
+				videoPanel.progress = VideoIO.PROGRESS_VIDEO_READY;
+				return true;
+			}
 			if (clip == null)
 				clip = (VideoClip) control.getObject("videoclip"); //$NON-NLS-1$
 			// check for partially loaded videos
