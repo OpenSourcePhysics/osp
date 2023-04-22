@@ -424,7 +424,11 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	}
 
 	/**
-	 * Gets the object value of the specified named profperty.
+	 * Gets the object value of the specified named property.
+	 * 
+	 * "framedata" arrays will be adjusted only during loading, not export, 
+	 * and only if needed. In that case, this.data will be TrackerIO.AsyncLoader
+	 * 
 	 *
 	 * @param name the name
 	 * @return the object, or null if not found
@@ -432,7 +436,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	@Override
 	public Object getObject(String name) {
 		Object o = getObjectImpl(name);
-		return (name.equals("framedata") ? getAdjustedFrameData(o) : o);
+		return (data != null && name.equals("framedata") ? getAdjustedFrameData(o) : o);
 	}
 	
 	private Object getObjectImpl(String name) {
