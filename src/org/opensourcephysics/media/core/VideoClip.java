@@ -146,6 +146,7 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 
 
 	public FinalizableLoader loader;
+	public int frameShift;
 
 	/**
 	 * Gets the video.
@@ -724,6 +725,12 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 						&& stepCount != Integer.MIN_VALUE) {
 					frameCount = start + stepCount * stepSize;
 				}
+				int frameShift = control.getInt("frameshift"); //$NON-NLS-1$
+				if (frameShift != 0) {
+					loadedClip.frameShift = frameShift;
+					start -= frameShift;
+					frameCount -= frameShift;
+				}
 			}
 
 			boolean getVideo = (ivideo == null && control.getPropertyNamesRaw().contains("video"));
@@ -842,7 +849,9 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 					}
 				}
 			}
+			int frameShift = loadedClip.frameShift;
 			loadedClip = new VideoClip(loadedVideo);
+			loadedClip.frameShift = frameShift;
 			if (path != null) {
 				if (!path.startsWith("/") && path.indexOf(":") == -1) { //$NON-NLS-1$ //$NON-NLS-2$
 					// convert path to absolute

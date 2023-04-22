@@ -385,7 +385,8 @@ public abstract class ClipControl extends OSPRuntime.Supported implements Proper
 			// set frame number
 			if (control.getPropertyNamesRaw().contains("frame")) { //$NON-NLS-1$
 				int n = control.getInt("frame"); //$NON-NLS-1$
-				n = clipControl.getVideoClip().frameToStep(n);
+				VideoClip vclip = clipControl.getVideoClip();
+				n = vclip.frameToStep(n - vclip.frameShift);
 				clipControl.setStepNumber(n);
 				clipControl.loadedStepNumber = n;
 			}

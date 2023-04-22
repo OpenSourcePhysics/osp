@@ -111,6 +111,8 @@ public interface XMLControl extends Control, XMLProperty {
 	public void setBasepath(String basepath);
 
 	List<XMLProperty> getPropsRaw();
+
+	Object loadObject(Object obj, Object data);
 	
 }
 

@@ -953,6 +953,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		return loadObject(obj, false, false);
 	}
 
+	@Override
 	public Object loadObject(Object obj, Object data) {
 		this.data = data;
 		return loadObject(obj, false, false);
@@ -1817,7 +1818,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		if (!(content instanceof XMLControl))
 			return null;
 		XMLControl control = (XMLControl) content;
-		return control.loadObject(null);
+		return control.loadObject(null, data);
 	}
 
 	/**
