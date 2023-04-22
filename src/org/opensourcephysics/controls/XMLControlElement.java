@@ -47,6 +47,10 @@ import org.opensourcephysics.tools.ResourceLoader;
 public final class XMLControlElement extends XMLNode implements XMLControl {
 	// static constants
 
+	public interface FrameDataAdjusterI {
+		Object[] adjustFrameData(Object[] data);
+	}
+
 	public static final int ALWAYS_DECRYPT = 0;
 
 	public static final int PASSWORD_DECRYPT = 3;
@@ -107,7 +111,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	/**
 	 * see TrackerPanel.Loader
 	 * 
-	 * @return
+	 * @return the TrackerIO.AsyncLoader if a Tracker object
 	 */
 	public Object getData() {
 		return data;
@@ -427,6 +431,11 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 */
 	@Override
 	public Object getObject(String name) {
+		Object o = getObjectImpl(name);
+		return (name.equals("framedata") ? getAdjustedFrameData(o) : o);
+	}
+	
+	private Object getObjectImpl(String name) {
 		XMLProperty prop = getXMLProperty(name);
 		if (prop != null) {
 			switch (prop.getPropertyType()) {
@@ -2060,6 +2069,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		Class<?> classType = prop.getPropertyClass();
 		try {
 			// create the collection
+			@SuppressWarnings("deprecation")
 			Collection<Object> c = (Collection<Object>) classType.newInstance();
 			List<Object> content = prop.getPropertyContent();
 			// populate the array
@@ -2143,6 +2153,22 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		object = null;
 		loader = null;
 		data = null;
+	}
+
+	/**
+	 * For Tracker, tap into TrackerIO.asyncLoader to check to see if 
+	 * this FrameData needs so be adjusted based on the 
+	 * VideoControl property "frameshift". 
+	 * 
+	 * @param o
+	 * @return
+	 */
+    public Object getAdjustedFrameData(Object o) {
+		if (!(o instanceof Object[]))
+			return o;
+		Object[] data = (Object[]) o;
+		return (data.length <= 1 || !(this.data instanceof FrameDataAdjusterI)
+				 ? data : ((FrameDataAdjusterI) this.data).adjustFrameData(data));
 	}
 }
 
