@@ -435,33 +435,13 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 */
 	@Override
 	public Object getObject(String name) {
-		Object o = getObjectImpl(name);
-		return (data != null && name.equals("framedata") ? getAdjustedFrameData(o) : o);
+		XMLProperty prop = getXMLProperty(name);
+		if (prop == null)
+			return null;
+		Object o = getPropValue(prop, data);
+		return (data != null && name.equals("framedata") ? getAdjustedFrameData(o, data) : o);
 	}
 	
-	private Object getObjectImpl(String name) {
-		XMLProperty prop = getXMLProperty(name);
-		if (prop != null) {
-			switch (prop.getPropertyType()) {
-			case XMLProperty.TYPE_OBJECT: //$NON-NLS-1$
-				return objectValue(prop);
-			case XMLProperty.TYPE_ARRAY: //$NON-NLS-1$
-				return arrayValue(prop);
-			case XMLProperty.TYPE_COLLECTION: //$NON-NLS-1$
-				return collectionValue(prop);
-			case XMLProperty.TYPE_INT: //$NON-NLS-1$
-				return Integer.valueOf(intValue(prop));
-			case XMLProperty.TYPE_DOUBLE: //$NON-NLS-1$
-				return Double.valueOf(doubleValue(prop));
-			case XMLProperty.TYPE_BOOLEAN: //$NON-NLS-1$
-				return Boolean.valueOf(booleanValue(prop));
-			case XMLProperty.TYPE_STRING: //$NON-NLS-1$
-				return stringValue(prop);
-			}
-		}
-		return null;
-	}
-
 	/**
 	 * Gets the set of property names.
 	 *
@@ -1807,7 +1787,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @param level the indent level
 	 * @return the space
 	 */
-	private String indent(int level) {
+	private static String indent(int level) {
 		String space = ""; //$NON-NLS-1$
 		for (int i = 0; i < XML.INDENT * level; i++) {
 			space += " "; //$NON-NLS-1$
@@ -1816,12 +1796,49 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	}
 
 	/**
+	 * For Tracker, tap into TrackerIO.asyncLoader to check to see if 
+	 * this FrameData needs so be adjusted based on the 
+	 * VideoControl property "frameshift". 
+	 * 
+	 * @param o
+	 * @param data
+	 * @return
+	 */
+    public static Object getAdjustedFrameData(Object o, Object data) {
+		if (!(o instanceof Object[]))
+			return o;
+		Object[] a = (Object[]) o;
+		return (a.length <= 1 || !(data instanceof FrameDataAdjusterI)
+				 ? a : ((FrameDataAdjusterI) data).adjustFrameData(a));
+	}
+
+    private static Object getPropValue(XMLProperty prop, Object data) {
+		switch (prop.getPropertyType()) {
+		case XMLProperty.TYPE_OBJECT: // $NON-NLS-1$
+			return objectValue(prop, data);
+		case XMLProperty.TYPE_ARRAY: // $NON-NLS-1$
+			return arrayValue(prop, data);
+		case XMLProperty.TYPE_COLLECTION: // $NON-NLS-1$
+			return collectionValue(prop, data);
+		case XMLProperty.TYPE_INT: // $NON-NLS-1$
+			return Integer.valueOf(intValue(prop));
+		case XMLProperty.TYPE_DOUBLE: // $NON-NLS-1$
+			return Double.valueOf(doubleValue(prop));
+		case XMLProperty.TYPE_BOOLEAN: // $NON-NLS-1$
+			return Boolean.valueOf(booleanValue(prop));
+		case XMLProperty.TYPE_STRING: // $NON-NLS-1$
+			return stringValue(prop);
+		}
+		return null;
+	}
+
+	/**
 	 * Returns the object value of the specified property. May return null.
 	 *
 	 * @param prop the property
 	 * @return the array
 	 */
-	private Object objectValue(XMLProperty prop) {
+	private static Object objectValue(XMLProperty prop, Object data) {
 		if (prop.getPropertyType() != XMLProperty.TYPE_OBJECT) { //$NON-NLS-1$
 			return null;
 		}
@@ -1840,7 +1857,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @param prop the property
 	 * @return the value
 	 */
-	private double doubleValue(XMLProperty prop) {
+	private static double doubleValue(XMLProperty prop) {
 		if (prop.getPropertyType() != XMLProperty.TYPE_DOUBLE) { //$NON-NLS-1$
 			return Double.NaN;
 		}
@@ -1853,7 +1870,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @param prop the property
 	 * @return the value
 	 */
-	private int intValue(XMLProperty prop) {
+	private static int intValue(XMLProperty prop) {
 		if (prop.getPropertyType() != XMLProperty.TYPE_INT) { //$NON-NLS-1$
 			return Integer.MIN_VALUE;
 		}
@@ -1866,7 +1883,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @param prop the property
 	 * @return the value
 	 */
-	private boolean booleanValue(XMLProperty prop) {
+	private static boolean booleanValue(XMLProperty prop) {
 		return prop.getPropertyContent().get(0).equals("true"); //$NON-NLS-1$
 	}
 
@@ -1876,7 +1893,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @param prop the property
 	 * @return the value
 	 */
-	private String stringValue(XMLProperty prop) {
+	private static String stringValue(XMLProperty prop) {
 		return (prop.getPropertyType() == XMLProperty.TYPE_STRING ? //$NON-NLS-1$
 				XML.removeCDATA((String) prop.getPropertyContent().get(0)) : null);
 	}
@@ -1887,7 +1904,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @param prop the property
 	 * @return the array
 	 */
-	private Object arrayValue(XMLProperty prop) {
+	private static Object arrayValue(XMLProperty prop, Object data) {
 		if (prop.getPropertyType() != XMLProperty.TYPE_ARRAY) { //$NON-NLS-1$
 			return null;
 		}
@@ -1922,7 +1939,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			n = Integer.parseInt(index.substring(1, index.indexOf("]"))); //$NON-NLS-1$
 			switch (next.getPropertyType()) {
 			case XMLProperty.TYPE_OBJECT:
-				Array.set(array, n, objectValue(next));
+				Array.set(array, n, objectValue(next, data));
 				break;
 			case XMLProperty.TYPE_INT:
 				int val = intValue(next);
@@ -1952,10 +1969,10 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 				Array.set(array, n, stringValue(next));
 				break;
 			case XMLProperty.TYPE_ARRAY:
-				Array.set(array, n, arrayValue(next));
+				Array.set(array, n, arrayValue(next, data));
 				break;
 			case XMLProperty.TYPE_COLLECTION:
-				Array.set(array, n, collectionValue(next));
+				Array.set(array, n, collectionValue(next, data));
 				break;
 			}
 		}
@@ -1971,7 +1988,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @param componentType the component type of the array
 	 * @return the array
 	 */
-	private Object arrayValue(String arrayString, Class<?> componentType) {
+	private static Object arrayValue(String arrayString, Class<?> componentType) {
 		if (!(arrayString.startsWith("{") && arrayString.endsWith("}"))) { //$NON-NLS-1$ //$NON-NLS-2$
 			return null;
 		}
@@ -2066,7 +2083,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @return the array
 	 */
 	@SuppressWarnings("unchecked")
-	private Object collectionValue(XMLProperty prop) {
+	private static Object collectionValue(XMLProperty prop, Object data) {
 		if (prop.getPropertyType() != XMLProperty.TYPE_COLLECTION) { //$NON-NLS-1$
 			return null;
 		}
@@ -2082,16 +2099,16 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 				XMLProperty next = (XMLProperty) it.next();
 				switch (next.getPropertyType()) {
 				case XMLProperty.TYPE_OBJECT:
-					c.add(objectValue(next));
+					c.add(objectValue(next, data));
 					break;
 				case XMLProperty.TYPE_STRING: //$NON-NLS-1$
 					c.add(stringValue(next));
 					break;
 				case XMLProperty.TYPE_ARRAY: //$NON-NLS-1$
-					c.add(arrayValue(next));
+					c.add(arrayValue(next, data));
 					break;
 				case XMLProperty.TYPE_COLLECTION: //$NON-NLS-1$
-					c.add(collectionValue(next));
+					c.add(collectionValue(next, data));
 					break;
 				}
 			}
@@ -2110,7 +2127,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @param indexOfOpeningBrace the index of the opening brace
 	 * @return the index of the closing brace
 	 */
-	private int indexOfClosingBrace(String arrayString, int indexOfOpeningBrace) {
+	private static int indexOfClosingBrace(String arrayString, int indexOfOpeningBrace) {
 		int pointer = indexOfOpeningBrace + 1;
 		int n = 1; // count up/down for opening/closing braces
 		int opening = arrayString.indexOf("{", pointer); //$NON-NLS-1$
@@ -2159,21 +2176,6 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		data = null;
 	}
 
-	/**
-	 * For Tracker, tap into TrackerIO.asyncLoader to check to see if 
-	 * this FrameData needs so be adjusted based on the 
-	 * VideoControl property "frameshift". 
-	 * 
-	 * @param o
-	 * @return
-	 */
-    public Object getAdjustedFrameData(Object o) {
-		if (!(o instanceof Object[]))
-			return o;
-		Object[] data = (Object[]) o;
-		return (data.length <= 1 || !(this.data instanceof FrameDataAdjusterI)
-				 ? data : ((FrameDataAdjusterI) this.data).adjustFrameData(data));
-	}
 }
 
 /*
