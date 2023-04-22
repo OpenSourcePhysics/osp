@@ -726,7 +726,7 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 					frameCount = start + stepCount * stepSize;
 				}
 				int frameShift = control.getInt("frameshift"); //$NON-NLS-1$
-				if (frameShift != 0) {
+				if (frameShift != Integer.MIN_VALUE) {
 					loadedClip.frameShift = frameShift;
 					start -= frameShift;
 					frameCount -= frameShift;
