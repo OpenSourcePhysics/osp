@@ -1709,6 +1709,11 @@ public class ResourceLoader {
 				is = (res == null ? ResourceLoader.openStream(new URL(urlPath)) : res.openInputStream());
 				if (OSPRuntime.isJS) {
 					OSPRuntime.jsutil.streamToFile(is, target);
+					if (res != null && cacheEnabled) {
+						// also save non-URI path for search
+						resources.put(getNonURIPath(target.toString()), res);
+					}
+
 				} else {
 					Files.copy(is, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
 //
@@ -2496,7 +2501,8 @@ public class ResourceLoader {
 			boolean zipURLsOK) {
 
 		// createOnly parameter here was always false; only used in commented out section below
-		if (!isHTTP(path)) {
+		boolean isHTTP = isHTTP(path);
+		if (!isHTTP) {
 			// BH 2020.04.23 don't do this for https://./xxxx
 			path = path.replaceAll("/\\./", "/"); // This eliminates any embedded /./ //$NON-NLS-1$ //$NON-NLS-2$
 		}
@@ -2508,6 +2514,9 @@ public class ResourceLoader {
 		// look for cached resource
 		if (cacheEnabled) {
 			res = resources.get(path);
+			// check for non-URI path as well (search)
+			if (res == null && !isHTTP)
+				res = resources.get(getNonURIPath(path));
 			if ((res != null) && (searchFiles || (res.getFile() == null))) {
 				OSPLog.finest("Found in cache: " + path); //$NON-NLS-1$
 				return res;
