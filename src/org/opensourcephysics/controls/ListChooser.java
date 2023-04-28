@@ -28,11 +28,15 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 
+import org.opensourcephysics.media.core.MediaRes;
 import org.opensourcephysics.tools.FontSizer;
+import org.opensourcephysics.tools.ToolsRes;
 
 /**
  * This modal dialog lets the user choose any number of items from a supplied
@@ -107,7 +111,7 @@ public class ListChooser extends JDialog {
 		// create the buttons
 		cancelButton = new JButton(ControlsRes.getString("Chooser.Button.Cancel")); //$NON-NLS-1$
 		JButton okButton = new JButton(ControlsRes.getString("Chooser.Button.OK")); //$NON-NLS-1$
-		JButton selectAllButton = new JButton(ControlsRes.getString("Chooser.Button.SelectAll")); //$NON-NLS-1$
+		JButton selectButton = new JButton(ToolsRes.getString("LibraryTreePanel.FileChooser.Button.Select")); //$NON-NLS-1$
 		cancelButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -127,12 +131,27 @@ public class ListChooser extends JDialog {
 			}
 
 		});
-		selectAllButton.addActionListener(new ActionListener() {
+		selectButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				for (int i = 0; i < checkBoxes.length; i++) {
-					checkBoxes[i].setSelected(true);
-				}
+				JPopupMenu popup = new JPopupMenu();
+				JMenuItem item = new JMenuItem(ControlsRes.getString("Chooser.Button.Select.All")); //$NON-NLS-1$
+				item.addActionListener((ev) -> {
+					for (int i = 0; i < checkBoxes.length; i++) {
+						checkBoxes[i].setSelected(true);
+					}
+				});
+				popup.add(item);
+				item = new JMenuItem(MediaRes.getString("Filter.Rotate.Button.None")); //$NON-NLS-1$
+				item.addActionListener((ev) -> {
+					for (int i = 0; i < checkBoxes.length; i++) {
+						checkBoxes[i].setSelected(false);
+					}
+				});
+				popup.add(item);
+				// show popup menu
+				FontSizer.setFonts(popup);
+				popup.show(selectButton, 0, selectButton.getHeight());
 			}
 
 		});
@@ -142,7 +161,7 @@ public class ListChooser extends JDialog {
 		headerPane.setLayout(new BoxLayout(headerPane, BoxLayout.X_AXIS));
 		headerPane.add(instructions);
 		headerPane.add(Box.createHorizontalGlue());
-		headerPane.add(selectAllButton);
+		headerPane.add(selectButton);
 		headerPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
 		// lay out the scroll pane
 		checkPane.setLayout(new BoxLayout(checkPane, BoxLayout.Y_AXIS));
