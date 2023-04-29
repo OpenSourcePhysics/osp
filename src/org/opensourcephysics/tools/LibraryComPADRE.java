@@ -258,11 +258,11 @@ public class LibraryComPADRE {
 			Attachment attachment = null;
 			if (isDesiredOSPType(node)) {
 				if ("EJS".equals(desiredOSPType) && !isTrackerType(node)) { //$NON-NLS-1$
-					attachment = getAttachment(node, "Source Code"); //$NON-NLS-1$
+					attachment = getAttachment(node, new String[] {"Source Code"}); //$NON-NLS-1$
 				} else {
-					attachment = getAttachment(node, "Main"); //$NON-NLS-1$
+					attachment = getAttachment(node, new String[] {"Main", "Primary"}); //$NON-NLS-1$
 					if (attachment == null) {
-						attachment = getAttachment(node, "Supplemental"); //$NON-NLS-1$
+						attachment = getAttachment(node, new String[] {"Supplemental"}); //$NON-NLS-1$
 					}
 				}
 			}
@@ -316,11 +316,11 @@ public class LibraryComPADRE {
 				System.out.println(node.getNodeName());
 				if (isDesiredOSPType(node)) {
 					if ("EJS".equals(desiredOSPType) && !isTrackerType(node)) { //$NON-NLS-1$
-						attachment = getAttachment(node, "Source Code"); //$NON-NLS-1$
+						attachment = getAttachment(node, new String[] {"Source Code"}); //$NON-NLS-1$
 					} else {
-						attachment = getAttachment(node, "Main"); //$NON-NLS-1$
+						attachment = getAttachment(node, new String[] {"Main", "Primary"}); //$NON-NLS-1$
 						if (attachment == null) {
-							attachment = getAttachment(node, "Supplemental"); //$NON-NLS-1$
+							attachment = getAttachment(node, new String[] {"Supplemental"}); //$NON-NLS-1$
 						}
 					}
 				}
@@ -440,7 +440,7 @@ public class LibraryComPADRE {
 	 * @param attachmentType the attachment type
 	 * @return Attachment, or null if no attachment found
 	 */
-	protected static Attachment getAttachment(Node node, String attachmentType) {
+	protected static Attachment getAttachment(Node node, String[] attachmentTypes) {
 		String id = getChildValue(node, "file-identifier"); //$NON-NLS-1$
 		NodeList childList = node.getChildNodes();
 		Attachment attachment = null;
@@ -448,18 +448,22 @@ public class LibraryComPADRE {
 			Node child = childList.item(i);
 			if (!child.getNodeName().equals("attached-document")) //$NON-NLS-1$
 				continue;
+			boolean matchID = id.equals(getChildValue(child, "file-identifier"));
 			Node fileTypeNode = getFirstChild(child, "file-type"); //$NON-NLS-1$
-			if (fileTypeNode != null && attachmentType.equals(getNodeValue(fileTypeNode))) {
-				Node urlNode = getFirstChild(child, "download-url"); //$NON-NLS-1$
-				if (urlNode != null) { // found downloadable attachment
-					// keep first attachment or (preferred) attachment with the same id as the node
-					if (attachment == null || id.equals(getChildValue(child, "file-identifier"))) { //$NON-NLS-1$
-						String attachmentURL = getNodeValue(urlNode);
-						Element fileNode = (Element) getFirstChild(child, "file-name"); //$NON-NLS-1$
-						attachment = new Attachment(node, attachmentType, attachmentURL, getNodeValue(fileNode),
-								fileNode == null ? 0 : Integer.parseInt(fileNode.getAttribute("file-size"))); //$NON-NLS-1$
+			for (int j = 0; j < attachmentTypes.length; j++) {
+				if (fileTypeNode != null 
+						&& attachmentTypes[j].equals(getNodeValue(fileTypeNode))) {
+					Node urlNode = getFirstChild(child, "download-url"); //$NON-NLS-1$
+					if (urlNode != null) { // found downloadable attachment
+						// create attachment if null, replace if matching file-ID found
+						if (attachment == null || matchID) { //$NON-NLS-1$
+							String attachmentURL = getNodeValue(urlNode);
+							Element fileNode = (Element) getFirstChild(child, "file-name"); //$NON-NLS-1$
+							attachment = new Attachment(node, attachmentTypes[j], attachmentURL, getNodeValue(fileNode),
+									fileNode == null ? 0 : Integer.parseInt(fileNode.getAttribute("file-size"))); //$NON-NLS-1$
+						}
 					}
-				}
+				}				
 			}
 		}
 		return attachment;
