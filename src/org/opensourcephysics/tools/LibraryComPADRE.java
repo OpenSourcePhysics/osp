@@ -313,7 +313,6 @@ public class LibraryComPADRE {
 			for (int i = 0; i < n; i++) { // process nodes
 				Node node = list.item(i);
 				Attachment attachment = null;
-				System.out.println(node.getNodeName());
 				if (isDesiredOSPType(node)) {
 					if ("EJS".equals(desiredOSPType) && !isTrackerType(node)) { //$NON-NLS-1$
 						attachment = getAttachment(node, new String[] {"Source Code"}); //$NON-NLS-1$
