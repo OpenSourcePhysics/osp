@@ -253,7 +253,7 @@ public class ResourceLoader {
 	 * @return the Resource, or null if none found
 	 */
 	private static Resource getResource(String name, boolean searchFiles, boolean zipURLsOK) {
-		System.out.println("RL getting  " + name);
+//		System.out.println("RL getting  " + name);
 //		try {
 //			URL url = getAppletResourceURL(name); // added by W. Christian
 //			if (url != null) {
