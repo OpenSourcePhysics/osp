@@ -2987,7 +2987,11 @@ public class LibraryBrowser extends JPanel {
 
 		String path = "/org/opensourcephysics/resources/tools/images/compadre_banner.jpg"; //$NON-NLS-1$
 		Resource res = ResourceLoader.getResource(path);
-		String imageCode = "<p align=\"center\"><img src=\"" + res.getURL() + "\"></p>"; //$NON-NLS-1$ //$NON-NLS-2$
+		String imageCode="";
+		if(res!=null) {
+			 imageCode = "<p align=\"center\"><img src=\"" + res.getURL() + "\"></p>"; //$NON-NLS-1$ //$NON-NLS-2$
+		}
+		//String imageCode = "<p align=\"center\"><img src=\"" + res.getURL() + "\"></p>"; //$NON-NLS-1$ //$NON-NLS-2$
 		String code = imageCode + "<h1>Open Source Physics Digital Library Browser</h1>" + //$NON-NLS-1$
 				"<p>The OSP Digital Library Browser enables you to browse, organize and access collections of digital library resources " //$NON-NLS-1$
 				+ "such as EJS models and Tracker experiments. Collections and resources may be on a local drive or remote server.</p>"
