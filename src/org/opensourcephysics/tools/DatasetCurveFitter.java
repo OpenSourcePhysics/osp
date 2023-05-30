@@ -45,6 +45,7 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -108,6 +109,8 @@ public class DatasetCurveFitter extends JPanel {
 	public static final String PROPERTY_DATASETCURVEFITTER_FIT = "fit";
 
 	// static fields
+	public static boolean isSciNotation = true;
+	
 	/** defaultFits are available in every instance */
 	static final String FIT_EXP = "Exponential";
 	static final String FIT_LOG = "Log";
@@ -922,7 +925,8 @@ public class DatasetCurveFitter extends JPanel {
 		scroller.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				paramTable.copyParameters(e);
+				if (OSPRuntime.isPopupTrigger(e))
+					paramTable.showPopup(e);
 			}
 		});
 		splitPane.setRightComponent(scroller);
@@ -1892,26 +1896,35 @@ public class DatasetCurveFitter extends JPanel {
 			MouseAdapter listener = new MouseAdapter() {
 				@Override
 				public void mousePressed(MouseEvent e) {
-						copyParameters(e);
+					if (OSPRuntime.isPopupTrigger(e))
+						showPopup(e);
 				}
 			};
 			this.addMouseListener(listener);
 			header.addMouseListener(listener);
 		}
 		
-		public void copyParameters(MouseEvent e) {
-			if (OSPRuntime.isPopupTrigger(e)) {
-				JPopupMenu popup = new JPopupMenu();
-				JMenuItem item = new JMenuItem(ToolsRes.getString("DatasetCurveFitter.Menuitem.CopyParameters")); //$NON-NLS-1$
-				item.addActionListener((ev) -> {
-					selectAll();
-					ActionEvent event = new ActionEvent(paramTable, ActionEvent.ACTION_PERFORMED, null);
-					getActionMap().get("copy").actionPerformed(event);					
-				});
-				popup.add(item);
-				FontSizer.setFonts(popup);				
-				popup.show(e.getComponent(), e.getX(), e.getY() - popup.getPreferredSize().height);
-			}
+		public void showPopup(MouseEvent e) {
+			JPopupMenu popup = new JPopupMenu();
+			JMenuItem item = new JMenuItem(ToolsRes.getString("DatasetCurveFitter.Menuitem.CopyParameters")); //$NON-NLS-1$
+			item.addActionListener((ev) -> {
+				selectAll();
+				ActionEvent event = new ActionEvent(paramTable, ActionEvent.ACTION_PERFORMED, null);
+				getActionMap().get("copy").actionPerformed(event);					
+			});
+			popup.add(item);
+			popup.addSeparator();
+			JCheckBoxMenuItem sciNotItem = new JCheckBoxMenuItem("Scientific notation"); //$NON-NLS-1$
+			sciNotItem.setSelected(isSciNotation);
+			spinCellEditor.field.applyDefaultPattern(isSciNotation); //$NON-NLS-1$			
+			sciNotItem.addActionListener((ev) -> {
+				isSciNotation = sciNotItem.isSelected();	
+				spinCellEditor.field.applyDefaultPattern(isSciNotation); //$NON-NLS-1$					
+				repaint();
+			});
+			popup.add(sciNotItem);
+			FontSizer.setFonts(popup);				
+			popup.show(e.getComponent(), e.getX(), e.getY() - popup.getPreferredSize().height);
 		}
 
 		@Override
@@ -2168,7 +2181,7 @@ public class DatasetCurveFitter extends JPanel {
 
 			});
 			field = new NumberField(10);
-			field.applyPattern("0.000E0"); //$NON-NLS-1$
+			field.applyDefaultPattern(isSciNotation); //$NON-NLS-1$					
 			field.setBorder(BorderFactory.createEmptyBorder(1, 1, 0, 0));
 			spinner.setBorder(BorderFactory.createEmptyBorder(0, 1, 1, 0));
 			spinner.setEditor(field);
@@ -2427,6 +2440,13 @@ public class DatasetCurveFitter extends JPanel {
 				} catch (Exception e) {
 				}
 			}
+		}
+
+		public void applyDefaultPattern(boolean sciNotation) {
+			if (sciNotation)
+				applyPattern("0.000E0"); //$NON-NLS-1$
+			else
+				applyPattern("0.###"); //$NON-NLS-1$					
 		}
 
 		public String getPattern() {
