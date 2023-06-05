@@ -584,8 +584,8 @@ public class OSPRuntime {
 	public static boolean resCacheEnabled = isJS; // for ResourceLoader
 
 	public static boolean setRenderingHints = (!isJS && !isMac);
-
-	public static boolean skipDisplayOfPDF = false;// true;// isJS; // for TrackerIO, for now.
+// skip loading for testing mobile devices
+	public static boolean skipDisplayOfPDF = isJS;// true;// isJS; // for TrackerIO, for now.
 
 	public static boolean embedVideoAsObject = isJS;
 
