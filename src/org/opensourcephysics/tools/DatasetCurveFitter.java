@@ -80,7 +80,6 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
-import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.display.CellBorder;
 import org.opensourcephysics.display.ColorIcon;
 import org.opensourcephysics.display.Dataset;
