@@ -1398,7 +1398,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 							data[tab].setName(titles.get(tab));
 							// add t column first to every datasetManager
 							Dataset dataset = data[tab].getDataset(0);
-							String yColName = columnNames[0];
+							String yColName = columnNames != null && columnNames.length > 0 ? 
+									columnNames[0]: "?"; //$NON-NLS-1$							
 							dataset.setXYColumnNames("row", yColName); //$NON-NLS-1$
 							dataset.setXColumnVisible(false);
 
@@ -1426,7 +1427,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 							for (int j = 0; j < columnStride; j++) {
 								int index = 1 + (tab * columnStride) + j;
 								dataset = data[tab].getDataset(1 + j);
-								yColName = columnNames[index];
+								yColName = columnNames != null && columnNames.length > index ? 
+										columnNames[index]: "?"; //$NON-NLS-1$	
 								dataset.setXYColumnNames("row", yColName); //$NON-NLS-1$
 								dataset.setXColumnVisible(false);
 								values = Arrays.copyOfRange(dataArray[index], startIndex, endIndex + 1);

@@ -633,7 +633,6 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 		private String readoutType;
 		private double dt;
 		private double startTime;
-		private String name;
 
 		private boolean playAllSteps;
 		private boolean initialized;
@@ -696,7 +695,6 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 			base = control.getString("basepath"); //$NON-NLS-1$ ;
 			loadedClip = (VideoClip) obj;
 			loadedVideo = loadedClip.getVideo();
-			name = (loadedVideo == null ? base : (String) loadedVideo.getProperty("name"));
 			IncrementallyLoadable ivideo = (loadedVideo == null 
 					|| !(loadedVideo instanceof IncrementallyLoadable) ? 
 							null : 

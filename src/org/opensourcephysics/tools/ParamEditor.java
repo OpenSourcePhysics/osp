@@ -14,7 +14,6 @@ import java.util.List;
 import javax.swing.JCheckBox;
 
 import org.opensourcephysics.display.DatasetManager;
-import org.opensourcephysics.tools.FunctionEditor.FObject;
 
 /**
  * A FunctionEditor for Parameters.

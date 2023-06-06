@@ -2090,7 +2090,6 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		Class<?> classType = prop.getPropertyClass();
 		try {
 			// create the collection
-			@SuppressWarnings("deprecation")
 			Collection<Object> c = (Collection<Object>) classType.newInstance();
 			List<Object> content = prop.getPropertyContent();
 			// populate the array

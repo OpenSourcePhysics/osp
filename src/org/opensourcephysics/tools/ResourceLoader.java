@@ -69,8 +69,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.display.DisplayRes;
@@ -1256,6 +1254,7 @@ public class ResourceLoader {
 					zos.putNextEntry(e);
 					zos.write(bytes);
 					zos.closeEntry();
+					zos.close();
 				} else if (outFile != null) {
 					if (OSPRuntime.isJS) {
 						copyURLtoFile(path, outFile.getAbsolutePath());
@@ -1268,6 +1267,12 @@ public class ResourceLoader {
 			}
 
 			return true;
+		}
+		if (zos != null) {
+			try {
+				zos.close();
+			} catch (IOException e) {
+			}
 		}
 		return copyFile(inFile, outFile);
 	}

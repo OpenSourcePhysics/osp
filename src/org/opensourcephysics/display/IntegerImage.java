@@ -22,10 +22,6 @@ import java.awt.image.DataBuffer;
 import java.awt.image.IndexColorModel;
 import java.awt.image.MemoryImageSource;
 
-import org.opensourcephysics.display.DisplayRes;
-import org.opensourcephysics.display.DrawingPanel;
-import org.opensourcephysics.display.OSPRuntime;
-
 /**
  * A IntegerImage contains an array of integers int[row][col] 
  * where each integer represents an image pixel.  The row index determines the y-location

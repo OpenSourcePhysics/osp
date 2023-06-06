@@ -18,10 +18,6 @@ import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 import java.awt.image.MemoryImageSource;
 
-import org.opensourcephysics.display.DisplayRes;
-import org.opensourcephysics.display.DrawingPanel;
-import org.opensourcephysics.display.OSPRuntime;
-
 /**
  * A ByteImage contains an array of bytes int[row][col] 
  * where each integer represents an image pixel.  The row index determines the y-location

@@ -35,7 +35,6 @@ import javax.swing.SwingConstants;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.Interactive;
-import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.PlottingPanel;
 import org.opensourcephysics.display.Selectable;
 import org.opensourcephysics.display.dialogs.DialogsRes;

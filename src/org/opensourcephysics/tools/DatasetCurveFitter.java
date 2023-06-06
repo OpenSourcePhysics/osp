@@ -1502,7 +1502,6 @@ public class DatasetCurveFitter extends JPanel {
 		
 		String exp = f.getExpression("x");
 		String name = f.getName();
-		boolean isDefault = defaultFits.contains(f);
 		switch(name) {
 			case FIT_SIN:
 				// A * sin(B*x + C) + D

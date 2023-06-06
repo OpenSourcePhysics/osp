@@ -31,8 +31,6 @@
  */
 package org.opensourcephysics.media.core;
 
-import org.opensourcephysics.display.OSPRuntime;
-
 /**
  * This NumberField displays numbers in scientific format.
  *

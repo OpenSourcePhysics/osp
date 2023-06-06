@@ -8,7 +8,6 @@
 package org.opensourcephysics.tools;
 
 import java.awt.image.BufferedImage;
-import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.media.core.VideoGrabber;
 import org.opensourcephysics.media.core.VideoType;
