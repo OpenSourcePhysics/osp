@@ -449,6 +449,9 @@ public class OSPRuntime {
 	private static boolean isiPad=false;
 	private static boolean isAndroid=false;	
   public static boolean isMobile=false;	
+  //skip loading for testing mobile devices
+	public static boolean skipDisplayOfPDF = isMobile;// true;// isJS; // for TrackerIO, for now.
+
 	
 	public static void setMobileParam(){
 		/** @j2sNative
@@ -461,6 +464,7 @@ public class OSPRuntime {
 		 * this.isiPad =  isiPad || isiPadPro;
 		 * this.isAndroid= nav.match('Android')!=null;
 		 * this.isMobile=isiOS||isiPad||isAndroid;
+		 * this.skipDisplayOfPDF=this.isMobile;
 		 */
 	}	
 
@@ -604,8 +608,6 @@ public class OSPRuntime {
 	public static boolean resCacheEnabled = isJS; // for ResourceLoader
 
 	public static boolean setRenderingHints = (!isJS && !isMac);
-// skip loading for testing mobile devices
-	public static boolean skipDisplayOfPDF = isMobile;// true;// isJS; // for TrackerIO, for now.
 
 	public static boolean embedVideoAsObject = isJS;
 
