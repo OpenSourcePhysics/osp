@@ -434,6 +434,7 @@ public class OSPRuntime {
 	}
 
 	private static boolean isMac;
+	
 
 	public static int macOffset; // shifts LR message box on Mac to avoid drag hot spot.
 
@@ -441,6 +442,28 @@ public class OSPRuntime {
 	// the transpiler ever sees it.
 	public static boolean isJS = /** @j2sNative true || */
 			false;
+	
+	// added by WC browser Navigator parameters
+	private static boolean isOSX=false;
+	private static boolean isiOS=false;
+	private static boolean isiPad=false;
+	private static boolean isAndroid=false;	
+  public static boolean isMobile=false;	
+	
+	static {
+		/** @j2sNative
+		 * var nav=navigator.userAgent;
+		 * isOSX=nav.match('OS X')!=null;
+		 * isiOS= nav.match('iOS')!=null;
+		 * isiPad= nav.match('iPad')!=null;
+		 * var touchpoints= navigator.maxTouchPoints;
+		 * isiPadPro= (touchpoints>2 && isOSX);
+		 * isiPad =  isiPad || isiPadPro;
+		 * isAndroid= nav.match('Android')!=null;
+		 * isMobile=isiOS||isiPad||isAndroid;
+		 */
+		 System.err.println("is mobile device?  "+isMobile);  // for debugging
+	}	
 
 	static {
 		/** @j2sNative
@@ -451,7 +474,6 @@ public class OSPRuntime {
 	}
 	
 	static {
-
 		try {
 			// system properties may not be readable in some environments
 			isMac = (/** @j2sNative 1 ? false : */
@@ -459,7 +481,6 @@ public class OSPRuntime {
 			macOffset = (isMac && !isJS) ? 16 : 0;
 		} catch (SecurityException ex) {
 		}
-
 	}
 
 	public static JSUtilI jsutil;
@@ -585,7 +606,7 @@ public class OSPRuntime {
 
 	public static boolean setRenderingHints = (!isJS && !isMac);
 // skip loading for testing mobile devices
-	public static boolean skipDisplayOfPDF = isJS;// true;// isJS; // for TrackerIO, for now.
+	public static boolean skipDisplayOfPDF = isMobile;// true;// isJS; // for TrackerIO, for now.
 
 	public static boolean embedVideoAsObject = isJS;
 
