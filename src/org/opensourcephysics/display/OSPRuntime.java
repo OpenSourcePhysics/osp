@@ -96,7 +96,7 @@ public class OSPRuntime {
 	 * to array to "allocate" them, and running their dispose() method when
 	 * "deallocation" is requested.
 	 * 
-	 * @author hansonr
+	 * @author hanson
 	 *
 	 */
 	public interface Disposable {
@@ -444,25 +444,24 @@ public class OSPRuntime {
 			false;
 	
 	// added by WC browser Navigator parameters
-	private static boolean isOSX=false;
+	public static boolean isOSX=false;
 	private static boolean isiOS=false;
 	private static boolean isiPad=false;
 	private static boolean isAndroid=false;	
   public static boolean isMobile=false;	
 	
-	static {
+	public static void setMobileParam(){
 		/** @j2sNative
 		 * var nav=navigator.userAgent;
-		 * isOSX=nav.match('OS X')!=null;
-		 * isiOS= nav.match('iOS')!=null;
-		 * isiPad= nav.match('iPad')!=null;
+		 * this.isOSX=nav.match('OS X')!=null;
+		 * this.isiOS= nav.match('iOS')!=null;
+		 * this.isiPad= nav.match('iPad')!=null;
 		 * var touchpoints= navigator.maxTouchPoints;
-		 * isiPadPro= (touchpoints>2 && isOSX);
-		 * isiPad =  isiPad || isiPadPro;
-		 * isAndroid= nav.match('Android')!=null;
-		 * isMobile=isiOS||isiPad||isAndroid;
+		 * var isiPadPro= (touchpoints>2 && isOSX);
+		 * this.isiPad =  isiPad || isiPadPro;
+		 * this.isAndroid= nav.match('Android')!=null;
+		 * this.isMobile=isiOS||isiPad||isAndroid;
 		 */
-		 System.err.println("is mobile device?  "+isMobile);  // for debugging
 	}	
 
 	static {
