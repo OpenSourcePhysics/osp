@@ -444,29 +444,35 @@ public class OSPRuntime {
 			false;
 	
 	// added by WC browser Navigator parameters
-	public static boolean isOSX=false;
+	private static boolean isOSX=false;
 	private static boolean isiOS=false;
 	private static boolean isiPad=false;
 	private static boolean isAndroid=false;	
   public static boolean isMobile=false;	
   //skip loading for testing mobile devices
-	public static boolean skipDisplayOfPDF = isMobile;// true;// isJS; // for TrackerIO, for now.
+	private static boolean skipDisplayOfPDF = false;// isMobile;// true;// isJS; // for TrackerIO, for now.
 
 	
-	public static void setMobileParam(){
+	private static void readMobileParam(){
 		/** @j2sNative
 		 * var nav=navigator.userAgent;
 		 * this.isOSX=nav.match('OS X')!=null;
 		 * this.isiOS= nav.match('iOS')!=null;
 		 * this.isiPad= nav.match('iPad')!=null;
 		 * var touchpoints= navigator.maxTouchPoints;
-		 * var isiPadPro= (touchpoints>2 && isOSX);
-		 * this.isiPad =  isiPad || isiPadPro;
+		 * var isiPadPro= (touchpoints>2 && this.isOSX);
+		 * this.isiPad =  this.isiPad || isiPadPro;
 		 * this.isAndroid= nav.match('Android')!=null;
-		 * this.isMobile=isiOS||isiPad||isAndroid;
+		 * this.isMobile=this.isiOS||this.isiPad||this.isAndroid;
 		 * this.skipDisplayOfPDF=this.isMobile;
 		 */
-	}	
+	 }
+	
+	public static boolean getSkipDisplayOfPDF() {
+		if(isJS)readMobileParam();
+		//System.err.println("RunTime Line 473 "+skipDisplayOfPDF);  // debug  WC
+		return skipDisplayOfPDF;
+	}
 
 	static {
 		/** @j2sNative
@@ -620,8 +626,9 @@ public class OSPRuntime {
 		addAssets("osp", "osp-assets.zip", "org/opensourcephysics/resources");
 		if (!isJS && !unzipFiles)
 			OSPLog.warning("OSPRuntime.unzipFiles setting is false for BH testing");
-		if (skipDisplayOfPDF)
+		if (OSPRuntime.skipDisplayOfPDF) {
 			OSPLog.warning("OSPRuntime.skipDisplayOfPDF true for BH testing");
+		}
 	}
 	public static final String tempDir = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$ // BH centralized
 
