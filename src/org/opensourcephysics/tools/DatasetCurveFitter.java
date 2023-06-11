@@ -108,7 +108,7 @@ public class DatasetCurveFitter extends JPanel {
 	public static final String PROPERTY_DATASETCURVEFITTER_FIT = "fit";
 
 	// static fields
-	public static boolean isSciNotation = true;
+	public static boolean isFixedDecimalFormat = false;
 	
 	/** defaultFits are available in every instance */
 	static final String FIT_EXP = "Exponential";
@@ -1912,15 +1912,15 @@ public class DatasetCurveFitter extends JPanel {
 			});
 			popup.add(item);
 			popup.addSeparator();
-			JCheckBoxMenuItem sciNotItem = new JCheckBoxMenuItem("Scientific notation"); //$NON-NLS-1$
-			sciNotItem.setSelected(isSciNotation);
-			spinCellEditor.field.applyDefaultPattern(isSciNotation); //$NON-NLS-1$			
-			sciNotItem.addActionListener((ev) -> {
-				isSciNotation = sciNotItem.isSelected();	
-				spinCellEditor.field.applyDefaultPattern(isSciNotation); //$NON-NLS-1$					
+			JCheckBoxMenuItem scientificNotationItem = new JCheckBoxMenuItem("Scientific notation"); //$NON-NLS-1$
+			scientificNotationItem.setSelected(!isFixedDecimalFormat);
+			spinCellEditor.field.applyDefaultPattern(!isFixedDecimalFormat); //$NON-NLS-1$			
+			scientificNotationItem.addActionListener((ev) -> {
+				isFixedDecimalFormat = !scientificNotationItem.isSelected();	
+				spinCellEditor.field.applyDefaultPattern(!isFixedDecimalFormat); //$NON-NLS-1$					
 				repaint();
 			});
-			popup.add(sciNotItem);
+			popup.add(scientificNotationItem);
 			FontSizer.setFonts(popup);				
 			popup.show(e.getComponent(), e.getX(), e.getY() - popup.getPreferredSize().height);
 		}
@@ -2179,7 +2179,7 @@ public class DatasetCurveFitter extends JPanel {
 
 			});
 			field = new NumberField(10);
-			field.applyDefaultPattern(isSciNotation); //$NON-NLS-1$					
+			field.applyDefaultPattern(!isFixedDecimalFormat); //$NON-NLS-1$					
 			field.setBorder(BorderFactory.createEmptyBorder(1, 1, 0, 0));
 			spinner.setBorder(BorderFactory.createEmptyBorder(0, 1, 1, 0));
 			spinner.setEditor(field);
