@@ -443,26 +443,27 @@ public class OSPRuntime {
 	public static boolean isJS = /** @j2sNative true || */
 			false;
 	
-	// added by WC browser Navigator parameters
+	// browser Navigator parameters added by WC
 	private static boolean isOSX=false;
 	private static boolean isiOS=false;
 	private static boolean isiPad=false;
 	private static boolean isAndroid=false;	
-  public static boolean isMobile=false;	
+  private static boolean isMobile=false;
+  private static String userAgent="";	//navigator user agent
   //skip loading for testing mobile devices
 	private static boolean skipDisplayOfPDF = false;// isMobile;// true;// isJS; // for TrackerIO, for now.
 
 	
 	private static void readMobileParam(){
 		/** @j2sNative
-		 * var nav=navigator.userAgent;
-		 * this.isOSX=nav.match('OS X')!=null;
-		 * this.isiOS= nav.match('iOS')!=null;
-		 * this.isiPad= nav.match('iPad')!=null;
+		 * this.userAgent=navigator.userAgent;
+		 * this.isOSX=this.userAgent.match('OS X')!=null;
+		 * this.isiOS= this.userAgent.match('iOS')!=null;
+		 * this.isiPad= this.userAgent.match('iPad')!=null;
 		 * var touchpoints= navigator.maxTouchPoints;
 		 * var isiPadPro= (touchpoints>2 && this.isOSX);
 		 * this.isiPad =  this.isiPad || isiPadPro;
-		 * this.isAndroid= nav.match('Android')!=null;
+		 * this.isAndroid= this.userAgent.match('Android')!=null;
 		 * this.isMobile=this.isiOS||this.isiPad||this.isAndroid;
 		 * this.skipDisplayOfPDF=this.isMobile;
 		 */
@@ -470,8 +471,12 @@ public class OSPRuntime {
 	
 	public static boolean getSkipDisplayOfPDF() {
 		if(isJS)readMobileParam();
-		//System.err.println("RunTime Line 473 "+skipDisplayOfPDF);  // debug  WC
 		return skipDisplayOfPDF;
+	}
+	
+	public static String getUserAgent() {
+		if(isJS)readMobileParam();	
+		return userAgent;  // user agent should already be set.
 	}
 
 	static {
