@@ -53,7 +53,7 @@ public class OSPDesktop {
 					// allow for data from a JAR file
 					byte[] bytes = ResourceLoader.getURLBytes(url);
 					if (bytes == null) {
-						OSPLog.warning("OSPDDesktop could not display " + url);
+						OSPLog.warning("OSP Desktop could not display " + url);
 					} else {
 						String name = url.toString();
 						name = name.substring(name.lastIndexOf("/") + 1);

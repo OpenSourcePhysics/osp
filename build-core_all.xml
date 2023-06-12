@@ -1,4 +1,4 @@
-<project name="Build Tracker core using SwingJS branch " default="toJs" basedir=".">
+<project name="Build OSP core using SwingJS branch " default="toJs" basedir=".">
  
    <property name="site.path" value="site/swingjs" />
    <property name="j2s.dir" value="${site.path}/swingjs/j2s" />
