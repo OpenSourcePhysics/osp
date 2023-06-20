@@ -179,6 +179,7 @@ public class DataTable extends JTable {
 
 	protected static final DoubleRenderer defaultDoubleRenderer = new DoubleRenderer();
 
+	
 	private HashMap<String, PrecisionRenderer> precisionRenderersByColumnName = new HashMap<String, PrecisionRenderer>();
 	private HashMap<String, UnitRenderer> unitRenderersByColumnName = new HashMap<String, UnitRenderer>();
 
@@ -201,6 +202,7 @@ public class DataTable extends JTable {
 	protected int mode;
 
 	public boolean tainted;
+	public boolean includeHeadersInCopiedData = true;
 
 	public final static char SHIFTED = '`'; //$NON-NLS-1$
 
@@ -2633,27 +2635,29 @@ public class DataTable extends JTable {
 			selectedRows = getSelectedRows();
 			selectedColumns = getSelectedColumns();
 		}
-		// copy column headings
-		for (int j = 0; j < selectedColumns.length; j++) {
-			// ignore row heading
-			if (isRowNumberVisible() && selectedColumns[j] == 0)
-				continue;
-			String name = getColumnName(selectedColumns[j]);
-			name = TeXParser.removeSubscripting(name);
-//			if (name.startsWith(FunctionEditor.THETA)) {
-//				for (int i = 0; i < selectedRows.length; i++) {
-//					Object val = getFormattedValueAt(selectedRows[i], selectedColumns[j]);
-//					if (val != null && val.toString().contains(FunctionEditor.DEGREES)) {
-	//						name += "(" + FunctionEditor.DEGREES + ")";
-	//						break;
-	//					}				
-	//				}
-//			}
-			buf.append(name);
-			if (j < selectedColumns.length - 1)
-				buf.append(VideoIO.getDelimiter()); // add delimiter after each column except the last
+		if (includeHeadersInCopiedData) {
+			// copy column headings
+			for (int j = 0; j < selectedColumns.length; j++) {
+				// ignore row heading
+				if (isRowNumberVisible() && selectedColumns[j] == 0)
+					continue;
+				String name = getColumnName(selectedColumns[j]);
+				name = TeXParser.removeSubscripting(name);
+	//			if (name.startsWith(FunctionEditor.THETA)) {
+	//				for (int i = 0; i < selectedRows.length; i++) {
+	//					Object val = getFormattedValueAt(selectedRows[i], selectedColumns[j]);
+	//					if (val != null && val.toString().contains(FunctionEditor.DEGREES)) {
+		//						name += "(" + FunctionEditor.DEGREES + ")";
+		//						break;
+		//					}				
+		//				}
+	//			}
+				buf.append(name);
+				if (j < selectedColumns.length - 1)
+					buf.append(VideoIO.getDelimiter()); // add delimiter after each column except the last
+			}
+			buf.append(XML.NEW_LINE);
 		}
-		buf.append(XML.NEW_LINE);
 		java.text.DecimalFormat nf = (DecimalFormat) NumberFormat.getInstance();
 		nf.applyPattern("0.000000E0"); //$NON-NLS-1$
 		nf.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
@@ -2716,9 +2720,10 @@ public class DataTable extends JTable {
 		header = header.replace(' ', '_');
 		if (!header.endsWith(XML.NEW_LINE))
 			header += XML.NEW_LINE;
-		OSPRuntime.copy(header + buf, null);
-//		StringSelection stringSelection = new StringSelection(header + buf.toString());
-//		clipboard.setContents(stringSelection, stringSelection);
+		if (includeHeadersInCopiedData)
+			OSPRuntime.copy(header + buf, null);
+		else
+			OSPRuntime.copy(buf.toString(), null);
 	}
 
 	/**
