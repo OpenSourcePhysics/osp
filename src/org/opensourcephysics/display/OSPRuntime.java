@@ -443,30 +443,41 @@ public class OSPRuntime {
 	public static boolean isJS = /** @j2sNative true || */
 			false;
 	
-	// added by WC browser Navigator parameters
-	public static boolean isOSX=false;
+	// browser Navigator parameters added by WC
+	private static boolean isOSX=false;
 	private static boolean isiOS=false;
 	private static boolean isiPad=false;
 	private static boolean isAndroid=false;	
-  public static boolean isMobile=false;	
+  private static boolean isMobile=false;
+  private static String userAgent="";	//navigator user agent
   //skip loading for testing mobile devices
-	public static boolean skipDisplayOfPDF = isMobile;// true;// isJS; // for TrackerIO, for now.
+	private static boolean skipDisplayOfPDF = false;// isMobile;// true;// isJS; // for TrackerIO, for now.
 
 	
-	public static void setMobileParam(){
+	private static void readMobileParam(){
 		/** @j2sNative
-		 * var nav=navigator.userAgent;
-		 * this.isOSX=nav.match('OS X')!=null;
-		 * this.isiOS= nav.match('iOS')!=null;
-		 * this.isiPad= nav.match('iPad')!=null;
+		 * this.userAgent=navigator.userAgent;
+		 * this.isOSX=this.userAgent.match('OS X')!=null;
+		 * this.isiOS= this.userAgent.match('iOS')!=null;
+		 * this.isiPad= this.userAgent.match('iPad')!=null;
 		 * var touchpoints= navigator.maxTouchPoints;
-		 * var isiPadPro= (touchpoints>2 && isOSX);
-		 * this.isiPad =  isiPad || isiPadPro;
-		 * this.isAndroid= nav.match('Android')!=null;
-		 * this.isMobile=isiOS||isiPad||isAndroid;
+		 * var isiPadPro= (touchpoints>2 && this.isOSX);
+		 * this.isiPad =  this.isiPad || isiPadPro;
+		 * this.isAndroid= this.userAgent.match('Android')!=null;
+		 * this.isMobile=this.isiOS||this.isiPad||this.isAndroid;
 		 * this.skipDisplayOfPDF=this.isMobile;
 		 */
-	}	
+	 }
+	
+	public static boolean getSkipDisplayOfPDF() {
+		if(isJS)readMobileParam();
+		return skipDisplayOfPDF;
+	}
+	
+	public static String getUserAgent() {
+		if(isJS)readMobileParam();	
+		return userAgent;  // user agent should already be set.
+	}
 
 	static {
 		/** @j2sNative
@@ -620,8 +631,9 @@ public class OSPRuntime {
 		addAssets("osp", "osp-assets.zip", "org/opensourcephysics/resources");
 		if (!isJS && !unzipFiles)
 			OSPLog.warning("OSPRuntime.unzipFiles setting is false for BH testing");
-		if (skipDisplayOfPDF)
+		if (OSPRuntime.skipDisplayOfPDF) {
 			OSPLog.warning("OSPRuntime.skipDisplayOfPDF true for BH testing");
+		}
 	}
 	public static final String tempDir = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$ // BH centralized
 
