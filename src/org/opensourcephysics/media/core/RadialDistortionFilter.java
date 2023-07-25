@@ -942,7 +942,8 @@ public class RadialDistortionFilter extends Filter {
 		@Override
 		public void setVisible(boolean vis) {
 			super.setVisible(vis);
-			refreshGUI();
+			if (vis)
+				refreshGUI();
 			if (vidPanel != null) {
 				if (vis) {
 					vidPanel.addDrawable(circle);
