@@ -365,10 +365,10 @@ java/util/zip/ZipConstants.js
 java/util/zip/ZipEntry.js
 java/util/zip/ZipInputStream.js
 javajs/api/GenericLineReader.js
-javajs/api/GenericZipInputStream.js
+
 javajs/api/JSFunction.js
 javajs/api/JSONEncodable.js
-javajs/api/ZInputStream.js
+
 javajs/async/Assets.js
 javajs/async/Async.js
 javajs/async/AsyncFileChooser.js
