@@ -18,21 +18,34 @@
   	<property name="j2s.dir" value="${site.dir}/swingjs/j2s"/>
   	<property name="libjs.dir" value="libjs"/>
 
-	<target name="zipall" depends="ziposp,zipxuggle">
+
+ 
+<target name="zipall" depends="ziposp,zipxuggle"> 
 		
 		
   </target>
-
     <target name="ziposp">
-	    <property name="osp.zip" value="${libjs.dir}/osp.zip" />	  	  	
+
+    	<!--
+    	BH - Don't put files in libjs! Check the readme there.
+    	   - These will be unzipped into site/ not site/swingjs/j2s
+
+    	<property name="osp.zip" value="${libjs.dir}/osp.zip" />	  	  	
 	  	<echo> Zipping up ${osp.zip} </echo>
 	  	<zip destfile="${osp.zip}" basedir="${j2s.dir}" includes="org/opensourcephysics/**" excludes="org/opensourcephysics/cabrillo/**" />
+	  	
+	  	-->
 	</target>
 
 	<target name="zipxuggle">
+    	<!--
+    	BH - Don't put files in libjs! Check the readme there.
+    	   - These will be unzipped into site/ not site/swingjs/j2s
+
 		    <property name="xuggle.zip" value="${libjs.dir}/xuggle.zip" />	  	  	
 		  	<echo> Zipping up ${xuggle.zip} </echo>
 		  	<zip destfile="${xuggle.zip}" basedir="${j2s.dir}" includes="com/xuggle/**" />
+	  	-->
 	</target>
-
+		  		
 </project>

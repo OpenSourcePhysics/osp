@@ -209,6 +209,9 @@ public class MessageDrawable implements Drawable {
 			d = l.getPreferredSize();
 			l.setBounds(port.x, port.y + port.height - d.height, d.width, d.height);
 			l.setVisible(true);
+			if (OSPRuntime.isJS)
+				l.setEnabled(false); 
+			// disables touch to select text
 		}
 		l = getLabel(panel, BOTTOM_RIGHT, brStr);
 		if (l != null) {
