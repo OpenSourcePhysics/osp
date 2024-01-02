@@ -1027,6 +1027,15 @@ private static String fixVideoPath(String path) {
 	public static boolean canWrite(File file) {
 		if (OSPRuntime.isJS)
 			return true;
+		// refuse filenames containing "&"
+		if (file.getName().contains("&")) {
+			new AsyncDialog().showMessageDialog(null, 
+					MediaRes.getString("VideoIO.Dialog.BadFileName.Message") + " \n\"&\"" , //$NON-NLS-1$ //$NON-NLS-2$
+					MediaRes.getString("VideoIO.Dialog.BadFileName.Title"), //$NON-NLS-1$
+					JOptionPane.WARNING_MESSAGE, (ev) -> {
+					});
+			return false;
+		}
 		if (file.exists() && !file.canWrite()) {
 			JOptionPane.showMessageDialog(null, ControlsRes.getString("Dialog.ReadOnly.Message"), //$NON-NLS-1$
 					ControlsRes.getString("Dialog.ReadOnly.Title"), //$NON-NLS-1$
@@ -1311,15 +1320,8 @@ private static String fixVideoPath(String path) {
 					filename = XML.stripExtension(file.getPath());
 					file = new File(filename + "." + defaultXMLExt); //$NON-NLS-1$
 				}
-				if (file.exists()) {
-					int selected = JOptionPane.showConfirmDialog(vidPanel, " \"" + file.getName() + "\" " //$NON-NLS-1$ //$NON-NLS-2$
-							+ MediaRes.getString("VideoIO.Dialog.FileExists.Message"), //$NON-NLS-1$
-							MediaRes.getString("VideoIO.Dialog.FileExists.Title"), //$NON-NLS-1$
-							JOptionPane.OK_CANCEL_OPTION);
-					if (selected != JOptionPane.OK_OPTION) {
-						return null;
-					}
-				}
+				if (!canWrite(file))
+					return null;
 				vidPanel.setDataFile(file);
 			} else {
 				return null;
