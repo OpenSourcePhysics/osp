@@ -994,7 +994,8 @@ public class DataTable extends JTable {
 					// have undercounted by the number of hidden columns in this element
 					// up to this column
 					for (int j = ncol; j < icol; j++) {
-						if (!bs.get(j)) {
+//						if (!bs.get(j)) {
+						if (!bs.get(j-ncol)) {
 							i++;
 						}
 					}
