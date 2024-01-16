@@ -15,7 +15,7 @@
 
   method instead of the inverse to get the new guesses
 
-  @Copyright (c) 2017
+  @Copyright (c) 2024
 
   This software is to support the Open Source Physics library
 
@@ -120,7 +120,7 @@ public class HessianMinimize {
 
         Ref: Computational Physics by P. L. Devries (J. Wiley, 1993)
 
-        @Copyright (c) 2017
+        @Copyright (c) 2024
 
         This software is to support the Open Source Physics library
 
@@ -315,6 +315,6 @@ public class HessianMinimize {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017  The Open Source Physics project
+ * Copyright (c) 2024  The Open Source Physics project
  *                     http://www.opensourcephysics.org
  */

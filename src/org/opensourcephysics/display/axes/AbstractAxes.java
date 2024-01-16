@@ -17,7 +17,7 @@ import org.opensourcephysics.tools.FontSizer;
 
 /**
  * An abstract class for axes that defines font and title accessor methods.
- * <p>Copyright (c) 2017</p>
+ * <p>Copyright (c) 2024</p>
  *
  * @author Wolfgang Christian
  * @version 1.0
@@ -176,6 +176,6 @@ public void setTitle(String s, String font_name) {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017  The Open Source Physics project
+ * Copyright (c) 2024  The Open Source Physics project
  *                     http://www.opensourcephysics.org
  */

@@ -2,7 +2,7 @@
  * The org.opensourcephysics.media.mov package provides movie video services
  * and JavaScript implementations of Video and VideoType.
  *
- * Copyright (c) 2017  Robert M. Hanson, Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2024  Robert M. Hanson, Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -140,6 +140,6 @@ public boolean isType(Video video) {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017  The Open Source Physics project
+ * Copyright (c) 2024  The Open Source Physics project
  *                     https://www.compadre.org/osp
  */

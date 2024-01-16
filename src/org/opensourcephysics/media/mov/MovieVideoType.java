@@ -3,7 +3,7 @@
  * frame services including implementations of the Video and VideoRecorder interfaces
  * using Xuggle (Java) and JS (JavaScript -- our minimal implementation).
  *
- * Copyright (c) 2017  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2024  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -157,6 +157,6 @@ public abstract class MovieVideoType implements VideoType, MovieVideoI {
  * Suite 330, Boston MA 02111-1307 USA or view the license online at
  * http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017 The Open Source Physics project
+ * Copyright (c) 2024 The Open Source Physics project
  * https://www.compadre.org/osp
  */
