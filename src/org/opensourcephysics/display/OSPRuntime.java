@@ -9,6 +9,9 @@ package org.opensourcephysics.display;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
@@ -20,6 +23,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
+import java.awt.font.LineMetrics;
+import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeListenerProxy;
@@ -811,6 +816,73 @@ public class OSPRuntime {
 //	}
 	}
 
+	public static class TextLayout {
+
+		class JSTL  {
+
+			private LineMetrics lm;
+
+			JSTL() {
+			   lm = font.getLineMetrics(text, frc);	
+			}
+			
+			void draw(Graphics2D g, float x, float y) {
+				boolean testing = false;
+
+				g.drawString(text, x, y);
+				if (testing) {
+					java.awt.font.TextLayout t0 = new java.awt.font.TextLayout(text, font, frc);
+					g.setColor(Color.red);
+					int w = (int) t0.getBounds().getWidth();
+					t0.draw(g, x + w, y);
+					t0.draw(g, x - w, y);
+				}
+
+			}
+
+			Rectangle2D getBounds() {
+				return font.getStringBounds(text, frc);
+			}
+
+		}
+
+		private String text;
+		private Font font;
+		
+		private java.awt.font.TextLayout tl;
+
+		public TextLayout(String text, Font font) {
+			System.out.println("TextLayout for " + text);
+			this.text = text;
+			this.font = font;
+		}
+
+		public void draw(Graphics g, float x, float y) {
+			getTL();
+			System.out.println("TextLayout draw " + text + " " + x + " " + y);
+			tl.draw((Graphics2D) g, x, y);
+		}
+
+		public Rectangle2D getBounds() {
+			getTL();
+			System.out.println("TextLayout bounds " + text + " " + tl.getBounds());
+			return tl.getBounds();
+		}
+		
+		private java.awt.font.TextLayout getTL() {
+			if (tl == null) {
+				if (isJS) {
+					tl = (java.awt.font.TextLayout) (Object) new JSTL();
+				} else {
+					tl = new java.awt.font.TextLayout(text, font, frc);
+				}
+			}
+			return tl;
+		}
+
+
+	}
+	
 	public static FontRenderContext frc = new FontRenderContext(//
 			null, // no AffineTransform
 			false, // no antialiasing

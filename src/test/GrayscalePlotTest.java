@@ -1,14 +1,22 @@
 package test;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
+
+import javax.swing.JTextField;
 
 import org.opensourcephysics.display.DrawingFrame;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.PlottingPanel;
+import org.opensourcephysics.display.OSPRuntime.TextLayout;
 import org.opensourcephysics.display2d.ArrayData;
 import org.opensourcephysics.display2d.GrayscalePlot;
 
 public class GrayscalePlotTest {
+
+	public static Font textLayoutFont = new JTextField().getFont();
+
 	int numpts=128;
 	ArrayData griddata = new ArrayData(numpts, numpts, 3);
 	GrayscalePlot grayscalePlot = new GrayscalePlot(griddata) {
