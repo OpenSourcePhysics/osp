@@ -3,6 +3,7 @@ package test;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 import javax.swing.JTextField;
 
@@ -15,7 +16,7 @@ import org.opensourcephysics.display2d.GrayscalePlot;
 
 public class TextLayoutTest {
 
-	public static Font textLayoutFont = new JTextField().getFont();
+	public static Font textLayoutFont = new JTextField().getFont().deriveFont(0, 16);
 
 	int numpts=128;
 	ArrayData griddata = new ArrayData(numpts, numpts, 3);
@@ -26,12 +27,15 @@ public class TextLayoutTest {
 			setRandomVals();
 			super.draw(panel, g);
 			g.setColor(Color.blue);
-			g.fillRect(103, 113,  1,  1);
-			TextLayout tl = new TextLayout("XtestX", textLayoutFont);
-			TextLayout t2 = new TextLayout("X", textLayoutFont);
-			double w1 = tl.getBounds().getWidth();
-			double w2 = t2.getBounds().getWidth();
-			tl.draw(g, (int) (103-w1/2 + w2/2) , 112);
+			String str = "" + textLayoutFont.getSize2D();
+			TextLayout tl = new TextLayout(str, textLayoutFont);
+			System.out.println("TLT.tl " + tl.getBounds());
+			System.out.println("TLT.fs " + textLayoutFont.getStringBounds(str, ((Graphics2D)g).getFontRenderContext()));
+			float w = (float) tl.getBounds().getWidth();
+			float h = (float) tl.getBounds().getHeight();
+			h = 0;
+			System.out.println("TLT.draw w=" + w + " h=" + h);
+			tl.draw(g, (103-w/2) , (112 - h/2));
 
 		}
 	};
@@ -65,6 +69,7 @@ public class TextLayoutTest {
 
 
 	public static void main(String[] args) {
+		//textLayoutFont = textLayoutFont.deriveFont(Font.PLAIN, 12f);
 		new TextLayoutTest();
 	}
 

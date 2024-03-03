@@ -820,15 +820,15 @@ public class OSPRuntime {
 
 		class JSTL  {
 
-			private LineMetrics lm;
+			//private LineMetrics lm;
 
 			JSTL() {
-			   lm = font.getLineMetrics(text, frc);	
+			   // not necessary; could implement if needed? lm = font.getLineMetrics(text, frc);	
 			}
 			
 			void draw(Graphics2D g, float x, float y) {
 				boolean testing = false;
-
+				g.setFont(font);
 				g.drawString(text, x, y);
 				if (testing) {
 					java.awt.font.TextLayout t0 = new java.awt.font.TextLayout(text, font, frc);
@@ -842,6 +842,18 @@ public class OSPRuntime {
 
 			Rectangle2D getBounds() {
 				return font.getStringBounds(text, frc);
+			}
+
+			float getAscent() {
+				return font.getLineMetrics(text, frc).getAscent();
+			}
+
+			float getDescent() {
+				return font.getLineMetrics(text, frc).getDescent();
+			}
+
+			float getLeading() {
+				return font.getLineMetrics(text, frc).getLeading();
 			}
 
 		}
@@ -865,7 +877,7 @@ public class OSPRuntime {
 
 		public Rectangle2D getBounds() {
 			getTL();
-			System.out.println("TextLayout bounds " + text + " " + tl.getBounds());
+			System.out.println("TextLayout bounds " + text + " " + tl.getBounds() + " A=" + tl.getAscent() + " D=" + tl.getDescent() + " L=" + tl.getLeading());
 			return tl.getBounds();
 		}
 		
