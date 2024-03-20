@@ -23,7 +23,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
-import java.awt.font.LineMetrics;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -449,11 +448,11 @@ public class OSPRuntime {
 			false;
 	
 	// browser Navigator parameters added by WC
-	private static boolean isOSX=false;
-	private static boolean isiOS=false;
-	private static boolean isiPad=false;
-	private static boolean isAndroid=false;	
-  private static boolean isMobile=false;
+//	private static boolean isOSX=false;
+//	private static boolean isiOS=false;
+//	private static boolean isiPad=false;
+//	private static boolean isAndroid=false;	
+//  private static boolean isMobile=false;
   private static String userAgent="";	//navigator user agent
   //skip loading for testing mobile devices
 	private static boolean skipDisplayOfPDF = false;// isMobile;// true;// isJS; // for TrackerIO, for now.
