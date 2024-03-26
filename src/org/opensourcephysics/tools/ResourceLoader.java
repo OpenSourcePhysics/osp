@@ -3045,7 +3045,12 @@ public class ResourceLoader {
 	}
 
 	public static boolean isHTTP(String path) {
-		return path.startsWith("http:") || path.startsWith("https:");
+		if (path.indexOf("http")> 1)
+			System.out.println("???" + path);
+		boolean tf = path.startsWith("http:") || path.startsWith("https:");
+		if (tf)
+			System.out.println("isHTTP"  + path);
+		return tf;
 	}
 
 	/**
@@ -3413,6 +3418,27 @@ public class ResourceLoader {
 		}
 		outFile.setLastModified(inFile.lastModified());
 		return true;
+	}
+
+	/**
+	 * A little class just for VideoFileType that 
+	 * @author hanso
+	 *
+	 */
+	public static class RemoteFile extends File {
+
+		private String remotePath;
+
+		public RemoteFile(String path) {
+			super(path);
+	          this.remotePath = (isHTTP(path) ? path : null);
+		}
+		
+		@Override
+		public String getAbsolutePath() {
+			return remotePath == null ? super.getAbsolutePath() : remotePath;
+		}
+		
 	}
 
 }

@@ -188,6 +188,7 @@ public class VideoIO {
 				public boolean accept(File f, boolean checkIfDir) {
 					if (!super.accept(f, checkIfDir))
 						return false;
+					
 					if (f.isDirectory() || !checkZipContents)
 						return true;
 					String[] imagePaths = VideoIO.getZippedImagePaths(f.getAbsolutePath());
