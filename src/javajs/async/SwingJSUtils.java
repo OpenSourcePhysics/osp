@@ -501,8 +501,6 @@ public class SwingJSUtils {
 		 *                  synchronously
 		 * @param id        id for this event, possibly ACTION_PERFORMED (1001), but not
 		 *                  necessarily
-		 * @param command   key for ActionEvent.getCommand()
-		 * @param listener  ActionListener to be called.
 		 * @param stateNext state to run after the event is processed by the listener,
 		 *                  or UNCHANGED (Integer.MIN_VALUE) to allow listener to handle
 		 *                  this.
