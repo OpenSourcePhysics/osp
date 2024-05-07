@@ -687,7 +687,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 				case STATE_FIND_FRAMES_INIT:
 					v.err = null;
 					duration = HTML5Video.getDuration(v.jsvideo);
-					t = 0.0;
+					lastT = t = 0.0;
 					dt = 0;
 					frameTimes = new ArrayList<Double>();
 					frameTimes.add(t);
