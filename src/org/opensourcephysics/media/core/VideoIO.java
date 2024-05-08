@@ -856,6 +856,8 @@ public class VideoIO {
 	}
 
 	/**
+	 * Open a video from a video file opening or dropping.
+	 * 
 	 * Returns a video from a specified path. May return null.
 	 *
 	 * @param path    the path
@@ -866,6 +868,15 @@ public class VideoIO {
 		return getVideo(path, null, vidType, null);
 	}
 	
+	/**
+	 * Open a video from a TRK or TRZ file.
+	 * 
+	 * @param path
+	 * @param basePath
+	 * @param vidType
+	 * @param control
+	 * @return
+	 */
 	public static Video getVideo(String path, String basePath, 
 			VideoType vidType, XMLControl control) {
 		// BH! 2020.04.20 from TrackerIO, but equally useful here.
@@ -1222,7 +1233,7 @@ private static String fixVideoPath(String path) {
 			for (int i = 0; i < types.size(); i++) {
 				VideoType type = types.get(i);
 				if (type.accepts(file)) {
-					video = type.getVideo(path, null, null);
+					video = type.getVideo(path);
 					if (video != null) {
 						OSPLog.info(file.getName() + " opened as type " + type.getDescription()); //$NON-NLS-1$
 						break;

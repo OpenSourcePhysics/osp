@@ -185,16 +185,16 @@ public class ImageVideo extends VideoAdapter {
 		deltaT = millis;
 	}
 
-	/**
-	 * not called
-	 * Sets the video time in milliseconds.
-	 *
-	 * @param millis the desired time in milliseconds
-	 */
-	@Override
-	public void setTime(double millis) {
-		setFrameNumber(Math.min(Math.max((int) (millis / deltaT), 0), getFrameCount() - 1));
-	}
+//	/**
+//	 * not called
+//	 * Sets the video time in milliseconds.
+//	 *
+//	 * @param millis the desired time in milliseconds
+//	 */
+//	@Override
+//	public void setTime(double millis) {
+//		setFrameNumber(Math.min(Math.max((int) (millis / deltaT), 0), getFrameCount() - 1));
+//	}
 
 	/**
 	 * Gets the end time in milliseconds.

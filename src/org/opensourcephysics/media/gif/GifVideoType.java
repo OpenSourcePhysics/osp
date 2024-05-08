@@ -47,20 +47,8 @@ import org.opensourcephysics.media.core.VideoType;
  * @version 1.0
  */
 public class GifVideoType implements VideoType {
-	
-  protected static VideoFileFilter gifFilter
-  	= new VideoFileFilter("gif", new String[] {"gif"}); //$NON-NLS-1$ //$NON-NLS-2$
 
-  /**
-   * Opens a named gif image as a GifVideo.
-   *
-   * @param name the name of the image
-   * @return a new image video
-   */
-  @Override
-public Video getVideo(String name) {
-	  return getVideo(name, null, null);
-  }
+	protected static VideoFileFilter gifFilter = new VideoFileFilter("gif", new String[] { "gif" }); //$NON-NLS-1$ //$NON-NLS-2$
 
 	@Override
 	public Video getVideo(String name, String basePath, XMLControl control) {
@@ -75,77 +63,77 @@ public Video getVideo(String name) {
 		return video;
 	}
 
-  /**
-   * Gets a gif video recorder.
-   *
-   * @return the video recorder
-   */
-  @Override
-public VideoRecorder getRecorder() {
-    return new GifVideoRecorder();
-  }
+	/**
+	 * Gets a gif video recorder.
+	 *
+	 * @return the video recorder
+	 */
+	@Override
+	public VideoRecorder getRecorder() {
+		return new GifVideoRecorder();
+	}
 
-  /**
-   * Reports whether this type can record videos
-   *
-   * @return true if this can record videos
-   */
-  @Override
-public boolean canRecord() {
-    return true;
-  }
+	/**
+	 * Reports whether this type can record videos
+	 *
+	 * @return true if this can record videos
+	 */
+	@Override
+	public boolean canRecord() {
+		return true;
+	}
 
-  /**
-   * Gets the name and/or description of this type.
-   *
-   * @return a description
-   */
-  @Override
-public String getDescription() {
-    return gifFilter.getDescription();
-  }
+	/**
+	 * Gets the name and/or description of this type.
+	 *
+	 * @return a description
+	 */
+	@Override
+	public String getDescription() {
+		return gifFilter.getDescription();
+	}
 
-  /**
-   * Gets the name and/or description of this type.
-   *
-   * @return a description
-   */
-  @Override
-public String getDefaultExtension() {
-    return gifFilter.getDefaultExtension();
-  }
+	/**
+	 * Gets the name and/or description of this type.
+	 *
+	 * @return a description
+	 */
+	@Override
+	public String getDefaultExtension() {
+		return gifFilter.getDefaultExtension();
+	}
 
-  /**
-   * Gets the file filter for this type.
-   *
-   * @return a file filter
-   */
-  @Override
-public VideoFileFilter[] getFileFilters() {
-    return new VideoFileFilter[] {gifFilter};
-  }
+	/**
+	 * Gets the file filter for this type.
+	 *
+	 * @return a file filter
+	 */
+	@Override
+	public VideoFileFilter[] getFileFilters() {
+		return new VideoFileFilter[] { gifFilter };
+	}
 
-  /**
-   * Gets the default file filter for this type. May return null.
-   *
-   * @return the default file filter
-   */
-  @Override
-public VideoFileFilter getDefaultFileFilter() {
-  	return gifFilter;
-  }
+	/**
+	 * Gets the default file filter for this type. May return null.
+	 *
+	 * @return the default file filter
+	 */
+	@Override
+	public VideoFileFilter getDefaultFileFilter() {
+		return gifFilter;
+	}
 
-  /**
-   * Return true if the specified video is this type.
-   *
-   * @param video the video
-   * @return true if the video is this type
-   */
-  @Override
-public boolean isType(Video video) {
-    return video instanceof GifVideo;
-  }
-  
+	/**
+	 * Return true if the specified video is this type.
+	 *
+	 * @param video the video
+	 * @return true if the video is this type
+	 */
+	@Override
+	public boolean isType(Video video) {
+		return video instanceof GifVideo;
+	}
+
 	@Override
 	public String getTypeName() {
 		return TYPE_GIF;

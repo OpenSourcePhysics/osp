@@ -239,34 +239,6 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	}
 
 	/**
-	   * Gets the current video time in milliseconds.
-	   *
-	   * @return the current time in milliseconds, or -1 if not known
-	   */
-	  @Override
-	  public final double getTime() {
-	    return getFrameTime(getFrameNumber());
-	  }
-
-
-	/**
-	 * Gets the duration of the specified frame in milliseconds.
-	 *
-	 * @param n the frame number
-	 * @return the duration of the frame in milliseconds
-	 */
-	@Override
-	public final double getFrameDuration(int n) {
-		if (frameCount == 1) {
-			return getDuration();
-		}
-		if (n == frameCount - 1) {
-			return getDuration() - getFrameTime(n);
-		}
-		return getFrameTime(n + 1) - getFrameTime(n);
-	}
-
-	/**
 	 * Stops the video and resets it to the start time.
 	 */
 	@Override
@@ -961,35 +933,97 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	/**
 	 * Gets the start time of the specified frame in milliseconds.
 	 *
-	 * @param n the frame number
+	 * @param i the frame number
 	 * @return the start time of the frame in milliseconds, or -1 if not known
 	 */
 	@Override
-	public double getFrameTime(int n) {
-		if ((n >= startTimes.length) || (n < 0)) {
+	public double getFrameTime(int i) {
+		if ((i >= startTimes.length) || (i < 0)) {
 			return -1;
 		}
-		return startTimes[n];
+		return startTimes[i];
 	}
 
 	/**
-	 * not called
-	 * 
-	 * Sets the frame number to (nearly) a desired time in milliseconds.
+	 * Gets the duration of the specified frame in milliseconds.
 	 *
-	 * @param millis the desired time in milliseconds
+	 * @param n the frame number
+	 * @return the duration of the frame in milliseconds
 	 */
 	@Override
-	public void setTime(double millis) {
-		millis = Math.abs(millis);
-		for (int i = 0; i < startTimes.length; i++) {
-			double t = startTimes[i];
-			if (millis < t) { // find first frame with later start time
-				setFrameNumber(i - 1);
-				break;
-			}
+	public final double getFrameDuration(int n) {
+		if (frameCount == 1) {
+			return getDuration();
 		}
+		if (n == frameCount - 1) {
+			return getDuration() - getFrameTime(n);
+		}
+		return getFrameTime(n + 1) - getFrameTime(n);
 	}
+
+	/**
+	 * Gets the duration of the media, including a time for the last frame
+	 * 
+	 * From XuggleVideo code, now also for JSMovieVideo
+	 * 
+	 * <pre>
+	 * 
+	 * // ....[0][1][2]...[startFrame][i]...[j][endFrame]...[frameCount-1]
+	 * // ....|-----------------duration---------------------------------]
+	 * // ....^..^..^..^..^...........^..^..^..^.........^..^ startTimes[i]
+	 * // ............................|--| frameDuration[i]
+	 * // ..................................................|------------|
+	 * // frameDuration[fraeeCoumt=1]
+	 * // (note that final frame duration is defined as
+	 * // frameDuration[frameCount-2])
+	 * 
+	 * </pre>
+	 *
+	 * @return the duration of the media in milliseconds or -1 if no video, or 100
+	 *         if one frame
+	 */
+	@Override
+	public double getDuration() {
+		int n = getFrameCount();
+		if (n == 1)
+			return 100; // arbitrary duration for single-frame video!
+		// assume last and next-to-last frames have same duration
+		// getFrameTime(n-1) + (getFrameTime(n-1) - getFrameTime(n-2));
+		return 2 * getFrameTime(--n) - getFrameTime(--n);
+	}
+
+//	/**
+//	 * Gets the current video time in milliseconds.
+//	 * 
+//	 * never called
+//	 *
+//	 * @return the current time in milliseconds, or -1 if not known
+//	 */
+//	  @Override
+//	  public final double getTime() {
+//	    return getFrameTime(getFrameNumber());
+//	  }
+//
+//
+//  
+//	/**
+//	 * never called
+//	 * 
+//	 * Sets the frame number to (nearly) a desired time in milliseconds.
+//	 *
+//	 * @param millis the desired time in milliseconds
+//	 */
+//	@Override
+//	public void setTime(double millis) {
+//		millis = Math.abs(millis);
+//		for (int i = 0; i < startTimes.length; i++) {
+//			double t = startTimes[i];
+//			if (millis < t) { // find first frame with later start time
+//				setFrameNumber(i - 1);
+//				break;
+//			}
+//		}
+//	}
 
 	/**
 	 * Gets the start frame time in milliseconds.

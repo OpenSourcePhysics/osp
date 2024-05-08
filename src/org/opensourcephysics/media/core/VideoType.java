@@ -33,6 +33,7 @@ package org.opensourcephysics.media.core;
 
 import java.io.File;
 
+import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 
 /**
@@ -47,14 +48,33 @@ public interface VideoType {
 	public static final String TYPE_IMAGE = "Image"; //$NON-NLS-1$
 
   /**
-   * Opens a new video with the specified name.
+   * Opens a new video with the specified name from a video file opening or dropping.
    *
    * @param path the path to the video
  * @param basePath 
    * @return the new video
    */
-  public Video getVideo(String path);
+  public default Video getVideo(String path) {
+	  return getVideo(path, null, null);
+  }
   
+	public default XMLControl getVideoControlForExportOnly(String videoTarget, String vidDir,
+			XMLControl clipXMLControl) {
+		Video video = getVideo(XML.getName(videoTarget), vidDir, null);
+		clipXMLControl.setValue("video", video);
+		return clipXMLControl.getChildControl("video"); //$NON-NLS-1$
+	}
+
+  /**
+   * Create a Video object from a file drop, file open, or TRK or TRZ file.
+   * 
+   * Also called with non-null basePath from ExportZipDialog.Export.modifyControlForClip
+   * 
+   * @param path
+   * @param basePath
+   * @param control
+   * @return
+   */
   public Video getVideo(String path, String basePath, XMLControl control);
 
   /**
@@ -135,7 +155,6 @@ public interface VideoType {
 	  }
 		return "[" + getTypeName() + " "  + s + "]";
 	}
-
 
 }
 

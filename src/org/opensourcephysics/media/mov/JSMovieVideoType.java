@@ -82,16 +82,11 @@ public boolean isType(Video video) {
   	return singleTypeFilter.accept(new File(name));
   }
 
-  @Override
-  public Video getVideo(String name) { 
-	  return getVideo(name, null, null);
-  }
-
 	@Override
 	public Video getVideo(String name, String basePath, XMLControl control) {
 		Video video = null;
 		try {
-			video = new JSMovieVideo(name, basePath);
+			video = new JSMovieVideo(name, basePath, control);
 			if (video.getFrameNumber() == Integer.MIN_VALUE) {
 				video = null;
 			} else {

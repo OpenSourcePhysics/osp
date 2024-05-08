@@ -393,21 +393,18 @@ public interface HTML5Video extends DOMNode {
 	}
 	
 	@SuppressWarnings("unused")
-	public static int requestVideoFrameCallback(HTML5Video jsvideo, ActionListener a) {
+	public static int requestVideoFrameCallback(HTML5Video jsvideo, double[] result) {
 		Object[] f = null;
 		/**
 		 * @j2sNative
 		 * 			if (jsvideo.requestVideoFrameCallback) {
 		 *           jsvideo._cancelVFCallback = false;
-		 * 			 var ff = function(now,metadata){
-		 * 					a.actionPerformed$java_awt_event_ActionEvent(
-		 * 					[jsvideo,now,metadata]);
-		 * 			 };
 		 * 			 f = [];
 		 * 			 f[0] = function(now, metadata) {
 		 * 					if (jsvideo._cancelVFCallback) {
 		 * 						jsvideo._cancelVFCallback = false;
 		 * 					} else {
+		 * 						result[++result[0]] = now;
 		 *	 					ff(now, metadata);
 		 *          			jsvideo.requestVideoFrameCallback(f[0]);
 		 *          		}

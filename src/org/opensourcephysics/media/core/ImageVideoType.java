@@ -83,17 +83,6 @@ public class ImageVideoType implements VideoType {
 		}
 	}
 
-	/**
-	 * Opens a named image as an ImageVideo.
-	 *
-	 * @param name the name of the image
-	 * @return a new image video
-	 */
-	@Override
-	public Video getVideo(String name) {
-		return getVideo(name, null, null);
-	}
-
 	@Override
 	public Video getVideo(String name, String basePath, XMLControl control) {
 

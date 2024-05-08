@@ -863,20 +863,20 @@ public class OSPRuntime {
 		private java.awt.font.TextLayout tl;
 
 		public TextLayout(String text, Font font) {
-			System.out.println("TextLayout for " + text);
+			//System.out.println("TextLayout for " + text);
 			this.text = text;
 			this.font = font;
 		}
 
 		public void draw(Graphics g, float x, float y) {
 			getTL();
-			System.out.println("TextLayout draw " + text + " " + x + " " + y);
+			//System.out.println("TextLayout draw " + text + " " + x + " " + y);
 			tl.draw((Graphics2D) g, x, y);
 		}
 
 		public Rectangle2D getBounds() {
 			getTL();
-			System.out.println("TextLayout bounds " + text + " " + tl.getBounds() + " A=" + tl.getAscent() + " D=" + tl.getDescent() + " L=" + tl.getLeading());
+			//System.out.println("TextLayout bounds " + text + " " + tl.getBounds() + " A=" + tl.getAscent() + " D=" + tl.getDescent() + " L=" + tl.getLeading());
 			return tl.getBounds();
 		}
 		

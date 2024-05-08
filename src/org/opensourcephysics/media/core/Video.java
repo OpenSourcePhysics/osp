@@ -295,19 +295,19 @@ public interface Video extends InteractiveImage, Trackable, PropertyChangeListen
 	   */
 	  public void reset();
 
-	  /**
-	   * Gets the current media time in milliseconds.
-	   *
-	   * @return the current time in milliseconds
-	   */
-	  public double getTime();
-
-	  /**
-	   * Sets the media time in milliseconds.
-	   *
-	   * @param millis the desired time in milliseconds
-	   */
-	  public void setTime(double millis);
+//	  /**
+//	   * Gets the current media time in milliseconds.
+//	   *
+//	   * @return the current time in milliseconds
+//	   */
+//	  public double getTime();
+//
+//	  /**
+//	   * Sets the media time in milliseconds.
+//	   *
+//	   * @param millis the desired time in milliseconds
+//	   */
+//	  public void setTime(double millis);
 
 	  /**
 	   * Gets the start time in milliseconds.
@@ -348,12 +348,12 @@ public interface Video extends InteractiveImage, Trackable, PropertyChangeListen
 	  public void goToEnd();
 
 	  /**
-	   * Gets the duration of the media.
+	   * Gets the duration of the media, including a time for the last frame
 	   *
-	   * @return the duration of the media in milliseconds
+	   * @return the duration of the media in milliseconds or -1
 	   */
 	  public double getDuration();
-
+	  
 	  /**
 	   * Gets the rate at which the media plays relative to its normal rate.
 	   *
