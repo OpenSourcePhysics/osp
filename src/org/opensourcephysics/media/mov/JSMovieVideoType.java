@@ -30,7 +30,9 @@ import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.media.core.MediaRes;
 import org.opensourcephysics.media.core.Video;
 import org.opensourcephysics.media.core.VideoFileFilter;
+import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.media.core.VideoRecorder;
+import org.opensourcephysics.tools.ResourceLoader;
 
 /**
  * This implements the VideoType interface with a JS type.
@@ -39,6 +41,18 @@ import org.opensourcephysics.media.core.VideoRecorder;
  */
 public class JSMovieVideoType extends MovieVideoType {
   
+	public static boolean register() {
+		// add common video types 
+		String[] JS_VIDEO_EXTENSIONS = {
+				"mov", "mp4", "ogg" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		for (String ext : JS_VIDEO_EXTENSIONS) {
+			VideoFileFilter filter = new VideoFileFilter(ext, new String[] { ext });
+			VideoIO.addVideoType(new JSMovieVideoType(filter));
+			ResourceLoader.addExtractExtension(ext);
+		}
+		return true;
+	}
+
 	/**
 	 * No-arg constructor.
 	 */

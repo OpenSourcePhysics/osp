@@ -43,10 +43,7 @@ import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.media.core.AsyncVideoI;
 import org.opensourcephysics.media.core.DoubleArray;
 import org.opensourcephysics.media.core.ImageCoordSystem;
-import org.opensourcephysics.media.core.VideoAdapter;
-import org.opensourcephysics.media.core.VideoFileFilter;
 import org.opensourcephysics.media.core.VideoIO;
-import org.opensourcephysics.media.core.VideoType;
 import org.opensourcephysics.tools.Resource;
 import org.opensourcephysics.tools.ResourceLoader;
 
@@ -85,13 +82,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 	 * see https://en.wikipedia.org/wiki/HTML5_video#Browser_support
 	 */
 	static {
-		// add common video types 
-		for (String ext : VideoIO.JS_VIDEO_EXTENSIONS) { // {"mov", "ogg", "mp4"}
-			VideoFileFilter filter = new VideoFileFilter(ext, new String[] { ext });
-			VideoIO.addVideoType(new JSMovieVideoType(filter));
-			ResourceLoader.addExtractExtension(ext);
-		}
-		registered = true;
+	   registered = JSMovieVideoType.register();
 	}
   
 	
@@ -715,17 +706,14 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 	/**
 	 * A class to save and load JSMovieVideo data.
 	 */
-	static public class Loader extends VideoAdapter.Loader {
+	static public class Loader extends MovieVideo.Loader {
 
 		@Override
 		protected JSMovieVideo createVideo(String path) throws IOException {
 			JSMovieVideo video = new JSMovieVideo(path, null, null);
 			if (video.getFrameNumber() < 0)
 				return null;
-			String ext = XML.getExtension(path);
-			VideoType VideoType = VideoIO.getMovieType(ext);
-			if (VideoType != null)
-				video.setProperty("video_type", VideoType); //$NON-NLS-1$
+			setVideo(path, video, MovieFactory.ENGINE_JS);
 			return video;
 		}
 	}

@@ -1239,7 +1239,7 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 		protected abstract Video createVideo(String path) throws IOException;
 
 		/**
-		 * Saves video data to an XMLControl.
+		 * Saves video data to an XMLControl. GIFVideo and MovieVideo only
 		 *
 		 * @param control the control to save to
 		 * @param obj     the Video object to save

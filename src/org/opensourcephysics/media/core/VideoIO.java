@@ -95,7 +95,6 @@ public class VideoIO {
 	public static final int PROGRESS_VIDEO_CANCELED   = -999;
 
 	// static constants
-	public static final String[] JS_VIDEO_EXTENSIONS = { "ogg", "mov", "mp4" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	public static final String DEFAULT_PREFERRED_EXPORT_EXTENSION = "mp4"; //$NON-NLS-1$
 	public static final String DEFAULT_VIDEO_EXTENSION = "jpg"; //$NON-NLS-1$
 	public static final String[] KNOWN_VIDEO_EXTENSIONS = 
@@ -236,27 +235,6 @@ public class VideoIO {
 	  	return imageVideoType;
 	  }
 	  
-	}
-
-	public static MovieVideoType getMovieType(String extension) {
-		if (!MovieFactory.hasVideoEngine())
-			return null;
-		MovieVideoType mtype = null;
-		synchronized (videoTypes) {
-			for (VideoType next : videoTypes) {
-				if (next instanceof MovieVideo) {
-					mtype = (MovieVideoType) next;
-					break;
-				}
-			}
-			if (extension == null || mtype == null) {
-				return mtype;
-			}
-			String id = mtype.getDefaultExtension();
-			if (id != null && id.indexOf(extension) > -1)
-				return mtype;
-			return (MovieVideoType) checkVideoFilter(mtype, extension);
-		}
 	}
 
 	private static VideoType checkVideoFilter(VideoType mtype, String extension) {
@@ -617,20 +595,45 @@ public class VideoIO {
 	 * @param type the video type
 	 */
 	public static void addVideoType(VideoType type) {
-		if (type != null) {
-			boolean hasType = false;
+		if (type == null)
+			return;
+		boolean hasType = false;
+		for (VideoType next : videoTypes) {
+			System.out.println(next.getDescription());
+			System.out.println(type.getDescription());
+			System.out.println(next.getClass().getName());
+			System.out.println(type.getClass().getName());
+			if (next.getDescription().equals(type.getDescription()) && next.getClass() == type.getClass()) {
+				hasType = true;
+			}
+		}
+		if (!hasType) {
+			videoTypes.add(type);
+			VideoFileFilter filter = type.getDefaultFileFilter();
+			if (filter != null && filter.extensions != null) {
+				singleVideoTypeFilters.add(filter);
+			}
+		}
+	}
+
+	public static MovieVideoType getMovieType(String extension) {
+		if (!MovieFactory.hasVideoEngine())
+			return null;
+		MovieVideoType mtype = null;
+		synchronized (videoTypes) {
 			for (VideoType next : videoTypes) {
-				if (next.getDescription().equals(type.getDescription()) && next.getClass() == type.getClass()) {
-					hasType = true;
+				if (next instanceof MovieVideo) {
+					mtype = (MovieVideoType) next;
+					break;
 				}
 			}
-			if (!hasType) {
-				videoTypes.add(type);
-				VideoFileFilter filter = type.getDefaultFileFilter();
-				if (filter != null && filter.extensions != null) {
-					singleVideoTypeFilters.add(filter);
-				}
+			if (extension == null || mtype == null) {
+				return mtype;
 			}
+			String id = mtype.getDefaultExtension();
+			if (id != null && id.indexOf(extension) > -1)
+				return mtype;
+			return (MovieVideoType) checkVideoFilter(mtype, extension);
 		}
 	}
 
@@ -645,6 +648,9 @@ public class VideoIO {
 	public static VideoType getVideoType(String typeName, String extension) {
 		if (typeName == null && extension == null)
 			return null;
+		// BH I don't know what this is about.
+		if (MovieFactory.ENGINE_JS == typeName)
+			return getMovieType(extension);
 		ArrayList<VideoType> candidates = new ArrayList<VideoType>();
 		synchronized (videoTypes) {
 			// first pass: check type names
