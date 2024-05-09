@@ -215,13 +215,11 @@ public void setFrameDuration(double duration) {
       return;
     }
     duration = Math.abs(duration);
-    double ti = video.getFrameTime(video.getStartFrameNumber());
-    double tf = video.getFrameTime(video.getEndFrameNumber());
-    int count = video.getEndFrameNumber()-video.getStartFrameNumber();
-    if(count!=0) {
-      timeStretch = duration*count/(tf-ti);
+    double t = video.getAverageFrameDuration(false);
+    if (t != 0) {
+    	timeStretch = duration / t;
+    	firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_FRAMEDURATION, null, Double.valueOf(duration)); 
     }
-    firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_FRAMEDURATION, null, Double.valueOf(duration)); 
   }
 
   /**
@@ -229,15 +227,9 @@ public void setFrameDuration(double duration) {
    *
    * @return the frame duration in milliseconds
    */
-  @Override
-public double getMeanFrameDuration() {
-    int count = video.getEndFrameNumber()-video.getStartFrameNumber();
-    if(count!=0) {
-      double ti = video.getFrameTime(video.getStartFrameNumber());
-      double tf = video.getFrameTime(video.getEndFrameNumber());
-      return timeStretch*(tf-ti)/count;
-    }
-    return timeStretch*video.getDuration()/video.getFrameCount();
+  @Override	
+  public double getMeanFrameDuration() {
+	  return timeStretch * video.getAverageFrameDuration(true);
   }
 
 	/**

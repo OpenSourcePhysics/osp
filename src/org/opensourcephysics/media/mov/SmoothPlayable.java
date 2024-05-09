@@ -7,7 +7,7 @@ package org.opensourcephysics.media.mov;
  *
  */
 
-public interface SmoothPlayable extends MovieVideoI {
+public interface SmoothPlayable {
 
 	boolean isSmoothPlay();
 

@@ -33,6 +33,7 @@ package org.opensourcephysics.media.core;
 
 import java.awt.Dimension;
 import java.beans.PropertyChangeListener;
+import java.util.BitSet;
 
 /**
  * This defines methods to control a video image sequence. Individual images
@@ -347,13 +348,60 @@ public interface Video extends InteractiveImage, Trackable, PropertyChangeListen
 	   */
 	  public void goToEnd();
 
-	  /**
-	   * Gets the duration of the media, including a time for the last frame
-	   *
-	   * @return the duration of the media in milliseconds or -1
-	   */
-	  public double getDuration();
+		/**
+		 * Gets the duration of the media, including a time for the last frame
+		 * 
+		 * From XuggleVideo code, now also for JSMovieVideo
+		 * 
+		 * <pre>
+		 * 
+		 * // ....[0][1][2]...[startFrame][i]...[j][endFrame]...[frameCount-1]
+		 * // ....|-----------------duration---------------------------------]
+		 * // ....^..^..^..^..^...........^..^..^..^.........^..^ startTimes[i]
+		 * // ............................|--| frameDuration[i]
+		 * // ..................................................|------------|
+		 * // ..................................................frameDuration[frameCoumt-1]
+		 * 
+		 * </pre>
+		 *
+		 * @return the duration of the media in milliseconds or -1 if no video, or 100
+		 *         if one frame
+		 */
+	    public double getDuration();
+
 	  
+	    /**
+	     * Calculate (last frame start time - first frame start time)/(final frame number - first frame number)
+	     * when there is more than one frame. If there is just one frame and we allow just one frame,
+	     * then return the 1/(average frame rate), which is the movie duration divided by the frame count.
+	     * 
+	     * Note that this does not account for the length of the final frame, should it have one. 
+	     * (Xuggle, for instance, assigns the last frame time as the second-to-last frame time, 
+	     * and JSMovieVideo assigns the remainder of the duration to the final frame time. 
+	     * 
+	     * In addition, since first and last frame are set by the user and may not be the video itself, 
+	     * when there is just one frame selected, this method still returns the average frame duration
+	     * for the whole video, not the duration of this selected frame. 
+	     * 
+	     * None of this particularly matters for a single frame, because the play button in the Tracker control
+	     * panel is disabled in that case.
+	     * 
+	     * @param allowOneFrame
+	     * @return
+	     */
+	    public default double getAverageFrameDuration(boolean allowOneFrame) {		
+			int lastFrame = getEndFrameNumber();
+			int firstFrame = getStartFrameNumber();
+			int count = lastFrame - firstFrame;
+			if (count == 0)
+				return allowOneFrame ? 1/getAverageFrameRate() : 0;
+			double ti = getFrameTime(firstFrame);
+			double tf = getFrameTime(lastFrame);
+			//BH Q: was not always calculated? just left as is if 0 here?
+			return (tf - ti) / count;
+		}
+
+
 	  /**
 	   * Gets the rate at which the media plays relative to its normal rate.
 	   *
@@ -408,6 +456,32 @@ public interface Video extends InteractiveImage, Trackable, PropertyChangeListen
 	 * 
 	 */
 	  public void invalidateVideoAndFilter();
+
+	public default double getAverageFrameRate() {
+		return getFrameCount() / getDuration();
+	}
+
+	public default BitSet getOutliers(double tolerance) {
+		BitSet outliers = new BitSet();
+		double videoDurMS = getDuration();
+		double frameDur = 0;
+		int nFrames = getFrameCount();
+		for (int i = 0; i < nFrames; i++) {
+			if (i == 0)
+				frameDur = videoDurMS / (nFrames - outliers.cardinality());
+			if (outliers.get(i))
+				continue;
+			double durMS = getFrameDuration(i);
+			double err = Math.abs(frameDur - durMS) / frameDur;
+			if (err > tolerance) {
+				videoDurMS -= durMS;
+				outliers.set(i);
+				i = -1;
+			}
+		}
+		outliers.clear(nFrames - 1);
+		return outliers;
+	}
 
 }
 

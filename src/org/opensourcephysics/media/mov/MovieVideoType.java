@@ -37,7 +37,7 @@ import org.opensourcephysics.media.core.VideoType;
  * @author Douglas Brown
  * @version 1.0
  */
-public abstract class MovieVideoType implements VideoType, MovieVideoI {
+public abstract class MovieVideoType implements VideoType {
 
 	protected static TreeSet<VideoFileFilter> movieFileFilters = new TreeSet<VideoFileFilter>();
 

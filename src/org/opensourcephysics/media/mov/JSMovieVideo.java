@@ -63,7 +63,7 @@ import swingjs.api.js.JSFunction;
  * 
  * @author rhanson
  */
-public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVideoI {
+public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 	
 	private static final int FORCE_TO_START = -99;
 
@@ -185,8 +185,8 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		}
 		int n = getFrameNumber() + 1;
 		playing = true;
-		firePropertyChange(PROPERTY_VIDEO_PLAYING, null, Boolean.valueOf(true)); //$NON-NLS-1$
-		startPlayingAtFrame(n);
+		firePropertyChange(PROPERTY_VIDEO_PLAYING, null, Boolean.TRUE); //$NON-NLS-1$
+		setFrameNumber(n);
 	}
 
 	/**
@@ -195,7 +195,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	@Override
 	public void stop() {
 		playing = false;
-		firePropertyChange(PROPERTY_VIDEO_PLAYING, null, Boolean.valueOf(false)); //$NON-NLS-1$
+		firePropertyChange(PROPERTY_VIDEO_PLAYING, null, Boolean.FALSE); //$NON-NLS-1$
 	}
 
 
@@ -229,7 +229,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		// just repaints VideoPanel
 		//System.out.println("JSMV imageready for " + n + " t=" + t);
 		notifyFrame(n, false);
-		firePropertyChange(AsyncVideoI.PROPERTY_ASYNCVIDEOI_IMAGEREADY, null, n);
+		firePropertyChange(PROPERTY_ASYNCVIDEOI_IMAGEREADY, null, n);
 		if (isPlaying()) {
 			SwingUtilities.invokeLater(() -> {
 				continuePlaying();
@@ -243,14 +243,6 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	}
 	
 	/**
-	 * check the getDuration() > 0, but might have to tweak this?
-	 */
-	@Override
-	public boolean isValid() {
-		return super.isValid();
-	}
-
-	/**
 	 * Sets the relative play rate. Overrides VideoAdapter method.
 	 *
 	 * @param rate the relative play rate.
@@ -259,7 +251,7 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 	public void setRate(double rate) {
 		super.setRate(rate);
 		if (isPlaying()) {
-			startPlayingAtFrame(getFrameNumber());
+			setFrameNumber(getFrameNumber());
 		}
 	}
 
@@ -276,63 +268,18 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 //______________________________  private methods _________________________
 
 	/**
-	 * Sets the system and frame start times.
-	 * 
-	 * @param frameNumber the frame number at which playing will start
-	 */
-	private void startPlayingAtFrame(int frameNumber) {
-		// systemStartPlayTime is the system time when play starts
-//		systemStartPlayTime = System.currentTimeMillis();
-//		// frameStartPlayTime is the frame time where play starts
-//		frameStartPlayTime = getFrameTime(frameNumber);
-		setFrameNumber(frameNumber);
-	}
-
-	/**
 	 * Plays the next time-appropriate frame at the current rate.
 	 */
 	protected void continuePlaying() {
 		int n = getFrameNumber();
 		if (n < getEndFrameNumber()) {
-//			
-//			long elapsedTime = System.currentTimeMillis() - systemStartPlayTime;
-//			double frameTime = frameStartPlayTime + getRate() * elapsedTime;
-//			int frameToPlay = getFrameNumberBefore(frameTime);
-//			while (frameToPlay > -1 && frameToPlay <= n) {
-//				elapsedTime = System.currentTimeMillis() - systemStartPlayTime;
-//				frameTime = frameStartPlayTime + getRate() * elapsedTime;
-//				frameToPlay = getFrameNumberBefore(frameTime);
-//			}
-//			if (frameToPlay == -1) {
-//				frameToPlay = getEndFrameNumber();
-//			}
 			setFrameNumber(++n);
 		} else if (looping) {
-			startPlayingAtFrame(getStartFrameNumber());
+			setFrameNumber(getStartFrameNumber());
 		} else {
 			stop();
 		}
 	}
-
-//	/**
-//	 * Gets the number of the last frame before the specified time.
-//	 *
-//	 * @param time the time in milliseconds
-//	 * @return the frame number, or -1 if not found
-//	 */
-//	private int getFrameNumberBefore(double time) {
-//		for (int i = 0; i < frameTimesMillis.length; i++) {
-//			if (time < frameTimesMillis[i])
-//				return i - 1;
-//		}
-//		// if not found, see if specified time falls in last frame
-//		int n = frameTimesMillis.length - 1;
-//		// assume last and next-to-last frames have same duration
-//		double endTime = 2 * frameTimesMillis[n] - frameTimesMillis[n - 1];
-//		if (time < endTime)
-//			return n;
-//		return -1;
-//	}
 
 	@Override
 	public String getTypeName() {
@@ -341,121 +288,6 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 
 	private class State implements StateMachine {
 				
-//		/**
-//		 * A class to calculate a specified number of discrete frame times for a video. 
-//		 * An expanding/contracting simplex method is used to find the point in time where
-//		 * the image has changed. For browsers that do not allow seekToNextFrame() -- Chrome and Safari.
-//		 * 
-//		 * @author hansonr
-//		 *
-//		 */
-//		class RateCalc implements ActionListener {
-//
-//			private double curTime0 = 0, curTime = 0, ds = 0.01, tolerance = 0.0001, frameDur = 0;
-//			private boolean expanding = true;
-//			private double[] results;
-//			private int pt;
-//			private Function<double[], Void> whenDone;
-//			private byte[] buffer, buffer0;			
-//			private Object[] listener;
-//
-//		
-//			protected void getRate(int n, Function<double[], Void> whenDone) {
-//				results = new double[n];
-//				this.whenDone = whenDone;
-//				pt = 0;
-//				buffer = null;
-//				expanding = true;
-//				curTime0 = curTime = HTML5Video.getCurrentTime(jsvideo);
-//				ds = frameDur / 2 + 0.001;
-//				frameDur = 0;
-//				listener = HTML5Video.addActionListener(jsvideo, this, playThroughOrSeeked);
-//				setCurrentTime(jsvideo, curTime);
-//			}
-//
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				SwingUtilities.invokeLater(()->{checkImage();});
-//			}
-//
-//			private void checkImage() {
-//				BufferedImage img = HTML5Video.getImage(jsvideo, Integer.MIN_VALUE);
-//				if (img == null) {
-//					whenDone.apply(null);
-//					return;
-//				}
-//				byte[] b = ((DataBufferByte) img.getRaster().getDataBuffer()).getData();
-//				if (buffer == null) {
-//					buffer = new byte[b.length];
-//				}
-//				System.arraycopy(b, 0, buffer, 0, b.length);
-//				if (buffer0 == null) {
-//					buffer0 = new byte[b.length];
-//					System.arraycopy(buffer, 0, buffer0, 0, b.length);
-//				} else {
-//					boolean isSame = Arrays.equals(buffer, buffer0);
-//					System.out.println(this.curTime + " " + this.ds + " " + isSame);
-//					if (isSame) {
-//						// too early
-//						// time 0 0.1 0.24 0.44
-//						// ds 0.1 0.14 0.2
-//						if (expanding) {
-//							ds *= 1.4;
-//						} else if (ds < 0) {
-//							ds *= -0.5;
-//						}
-//						System.out.println("same ds set to " + ds);
-//					} else if (ds < 0 || Math.abs(ds) >= tolerance) {
-//						// too late
-//						System.out.println("contracting ds=" + ds);
-//						expanding = false;
-//						if (ds > 0)
-//							ds *= -0.4;
-//					} else {
-//						// found it, or perhaps just over!
-//						buffer = buffer0 = null;
-//						frameDur = curTime - curTime0;
-//						curTime0 = curTime;
-//						results[pt++] = frameDur;
-//						System.out.println("adding frame " + pt + " " + frameDur);
-//						if (pt < results.length) {
-//							ds = frameDur / 2;
-//						} else {
-//							HTML5Video.removeActionListener(jsvideo, listener);
-//							whenDone.apply(results);
-//							// JOptionPane.showMessageDialog(null, "frame Duration is " +
-//							// Arrays.toString(results));
-//							// rc = null;
-//							return;
-//						}
-//					}
-//				}
-//				curTime += ds;
-//				/**
-//				 * @j2sNative if (this.curTime < 0) { debugger; return } System.out.println("ct
-//				 *            ds " + this.curTime + " " + this.ds + " fd=" + this.frameDur);
-//				 * 
-//				 */
-//				setCurrentTime(jsvideo, curTime);
-//
-//			}
-//
-//			private int arrayDiff(byte[] a, byte[] b, int max) {
-//				int n = 0;
-//				for (int i = a.length; --i >= 0;) {
-//					if (Math.abs(a[i] - b[i]) > 2) {
-//						n++;
-//						if (n < 100)
-//							System.out.println("?? " + i + " " + a[i] + " " + b[i]);
-//						if (n >= max)
-//							return n;
-//					}
-//				}
-//				return n;
-//			}
-//
-//		}
-		
 		ArrayList<Double> frameTimes;
 
 		static final int STATE_ERROR              = -99;
@@ -516,8 +348,6 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		private int thisFrame = -1;
 		
 		private double[] htmlFrameTimings;
-		private int htmlFrameCount = -1;
-
 
 		private Object[] debugListeners;
 
@@ -679,8 +509,12 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 					} else {
 						if (control != null)
 							control = setFromControl();
-						helper.next(control != null || canSeek ? STATE_FIND_FRAMES_INIT : STATE_PLAY_WITH_CALLBACK);
+						helper.next(control != null ? STATE_SET_FROM_CONTROL : canSeek ? STATE_FIND_FRAMES_INIT : STATE_PLAY_WITH_CALLBACK);
 					}
+					continue;
+				case STATE_SET_FROM_CONTROL:
+					setFromControl();
+					helper.next(STATE_FIND_FRAMES_INIT);
 					continue;
 				case STATE_PLAY_WITH_CALLBACK:
 					htmlFrameTimings = new double[4000];
@@ -858,9 +692,9 @@ public class JSMovieVideo extends VideoAdapter implements MovieVideoI, AsyncVide
 		firePropertyChange(PROPERTY_VIDEO_PROGRESS, fileName, frame); // to TFrame
 		frameNumber = -1;
 		// to VideoClip: time to initArray()
-		firePropertyChange(AsyncVideoI.PROPERTY_ASYNCVIDEOI_HAVEFRAMES, null, this); 
+		firePropertyChange(PROPERTY_ASYNCVIDEOI_HAVEFRAMES, null, this); 
 		// to VideoPanel aka TrackerPanel: all set!
-		firePropertyChange(AsyncVideoI.PROPERTY_ASYNCVIDEOI_READY, fileName, this); 
+		firePropertyChange(PROPERTY_ASYNCVIDEOI_READY, fileName, this); 
 		setFrameNumber(FORCE_TO_START);
 }
 

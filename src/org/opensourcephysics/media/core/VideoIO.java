@@ -68,7 +68,7 @@ import org.opensourcephysics.desktop.OSPDesktop;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.gif.GifVideoType;
 import org.opensourcephysics.media.mov.MovieFactory;
-import org.opensourcephysics.media.mov.MovieVideoI;
+import org.opensourcephysics.media.mov.MovieVideo;
 import org.opensourcephysics.media.mov.MovieVideoType;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.LibraryBrowser;
@@ -244,7 +244,7 @@ public class VideoIO {
 		MovieVideoType mtype = null;
 		synchronized (videoTypes) {
 			for (VideoType next : videoTypes) {
-				if (next instanceof MovieVideoI) {
+				if (next instanceof MovieVideo) {
 					mtype = (MovieVideoType) next;
 					break;
 				}

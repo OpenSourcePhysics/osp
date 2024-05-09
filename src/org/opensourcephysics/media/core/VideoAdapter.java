@@ -429,10 +429,7 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	 */
 	@Override
 	public final Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
-		if (!mouseEnabled) {
-			return null;
-		}
-		return this;
+		return (mouseEnabled ? this : null);
 	}
 
 	/**
@@ -803,13 +800,6 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	}
 
 
-	/**
-	 * Sets the relative play rate. Relative play rate is the ratio of a video's
-	 * play rate to its preferred ("normal") play rate.
-	 *
-	 * @param rate the relative play rate.
-	 */
-	
 	@Override
 	protected final void finalize() {
 		OSPLog.finalized(this);
@@ -959,37 +949,6 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 			return getDuration() - getFrameTime(n);
 		}
 		return getFrameTime(n + 1) - getFrameTime(n);
-	}
-
-	/**
-	 * Gets the duration of the media, including a time for the last frame
-	 * 
-	 * From XuggleVideo code, now also for JSMovieVideo
-	 * 
-	 * <pre>
-	 * 
-	 * // ....[0][1][2]...[startFrame][i]...[j][endFrame]...[frameCount-1]
-	 * // ....|-----------------duration---------------------------------]
-	 * // ....^..^..^..^..^...........^..^..^..^.........^..^ startTimes[i]
-	 * // ............................|--| frameDuration[i]
-	 * // ..................................................|------------|
-	 * // frameDuration[fraeeCoumt=1]
-	 * // (note that final frame duration is defined as
-	 * // frameDuration[frameCount-2])
-	 * 
-	 * </pre>
-	 *
-	 * @return the duration of the media in milliseconds or -1 if no video, or 100
-	 *         if one frame
-	 */
-	@Override
-	public double getDuration() {
-		int n = getFrameCount();
-		if (n == 1)
-			return 100; // arbitrary duration for single-frame video!
-		// assume last and next-to-last frames have same duration
-		// getFrameTime(n-1) + (getFrameTime(n-1) - getFrameTime(n-2));
-		return 2 * getFrameTime(--n) - getFrameTime(--n);
 	}
 
 //	/**

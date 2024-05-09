@@ -74,16 +74,9 @@ public class StepperClipControl extends ClipControl {
 		videoClip.addPropertyChangeListener(this);
 		if (video != null) {
 			if (video.getFrameCount() > 1 && video.isValid()) {
-				double ti = video.getFrameTime(video.getStartFrameNumber());
-				double tf = video.getFrameTime(video.getEndFrameNumber());
-				int count = video.getEndFrameNumber() - video.getStartFrameNumber();
-				if (count != 0 && (tf - ti) > 0) {
-					frameDuration = (int) (tf - ti) / count;
-				}
-			}
-			else if (video instanceof ImageVideo) {
-				ImageVideo imgVid = (ImageVideo)video;
-				frameDuration = imgVid.getFrameDuration(0);
+				frameDuration = video.getAverageFrameDuration(true);
+			} else if (video instanceof ImageVideo) {
+				frameDuration = ((ImageVideo)video).getFrameDuration(0);
 			}
 		}
 		timer = new javax.swing.Timer(getTimerDelay(), new ActionListener() {
@@ -246,13 +239,7 @@ public class StepperClipControl extends ClipControl {
 	@Override
 	public double getMeanFrameDuration() {
 		if (video != null && video.isValid()) {
-			int count = video.getEndFrameNumber() - video.getStartFrameNumber();
-			if (count != 0) {
-				double ti = video.getFrameTime(video.getStartFrameNumber());
-				double tf = video.getFrameTime(video.getEndFrameNumber());
-				return timeStretch * (tf - ti) / count;
-			}
-			return timeStretch * video.getDuration() / video.getFrameCount();
+			return timeStretch * video.getAverageFrameDuration(true);
 		}
 		return frameDuration;
 	}
@@ -274,11 +261,9 @@ public class StepperClipControl extends ClipControl {
 			frameDuration = duration;
 			timer.setInitialDelay(getTimerDelay());
 		} else if (video != null && video.isValid()) {
-			double ti = video.getFrameTime(video.getStartFrameNumber());
-			double tf = video.getFrameTime(video.getEndFrameNumber());
-			int count = video.getEndFrameNumber() - video.getStartFrameNumber();
-			if (count != 0) {
-				timeStretch = duration * count / (tf - ti);
+			double ave = video.getAverageFrameDuration(false);
+			if (ave > 0) {
+				timeStretch = duration / ave;
 			}
 		} else {
 			frameDuration = duration;
@@ -385,13 +370,7 @@ public class StepperClipControl extends ClipControl {
 	private int getTimerDelay() {
 		double duration = frameDuration;
 		if (video != null && video.isValid()) {
-			int count = video.getEndFrameNumber() - video.getStartFrameNumber();
-			if (count != 0) {
-				double ti = video.getFrameTime(video.getStartFrameNumber());
-				double tf = video.getFrameTime(video.getEndFrameNumber());
-				duration = (tf - ti) / count;
-			} else
-				duration = video.getDuration() / video.getFrameCount();
+			duration = video.getAverageFrameDuration(true);
 		}
 		stepDuration = duration * clip.getStepSize() / rate;
 		int delay = Math.round(Math.round(stepDuration - processingTime));
