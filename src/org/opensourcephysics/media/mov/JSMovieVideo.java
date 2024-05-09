@@ -64,10 +64,6 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 	
 	private static final int FORCE_TO_START = -99;
 
-
-	public static boolean registered;
-
-
 	boolean debugHTMLVideo = false; // voluminous event information
 
 	boolean allowControlData = false; // false to not read control data and instead scan video
@@ -82,10 +78,9 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 	 * see https://en.wikipedia.org/wiki/HTML5_video#Browser_support
 	 */
 	static {
-	   registered = JSMovieVideoType.register();
+	   JSMovieVideoType.register();
 	}
-  
-	
+  	
 	@Override
 	public Object getProperty(String name) {
 		return super.getProperty(name);

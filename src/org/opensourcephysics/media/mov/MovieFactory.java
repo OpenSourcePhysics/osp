@@ -42,7 +42,7 @@ public class MovieFactory {
 		int code = -1;
 		try {
 			if (OSPRuntime.isJS) {
-				if (JSMovieVideo.registered) {
+				if (JSMovieVideoType.registered) {
 					// mere request does the job
 					movieEngineName = ENGINE_JS;
 					xuggleIsPresent = false;

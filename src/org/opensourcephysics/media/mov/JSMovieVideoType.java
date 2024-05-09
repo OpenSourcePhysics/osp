@@ -41,7 +41,9 @@ import org.opensourcephysics.tools.ResourceLoader;
  */
 public class JSMovieVideoType extends MovieVideoType {
   
-	public static boolean register() {
+	static boolean registered;
+
+	public static void register() {
 		// add common video types 
 		String[] JS_VIDEO_EXTENSIONS = {
 				"mov", "mp4", "ogg" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -50,7 +52,7 @@ public class JSMovieVideoType extends MovieVideoType {
 			VideoIO.addVideoType(new JSMovieVideoType(filter));
 			ResourceLoader.addExtractExtension(ext);
 		}
-		return true;
+		registered = true;
 	}
 
 	/**
