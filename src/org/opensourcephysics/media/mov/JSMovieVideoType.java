@@ -56,6 +56,15 @@ public class JSMovieVideoType extends MovieVideoType {
 	}
 
 	/**
+	 * Registers HTML5 video types with VideoIO class for file reading
+	 *
+	 * see https://en.wikipedia.org/wiki/HTML5_video#Browser_support
+	 */
+	static {
+	   register();
+	}
+  	
+	/**
 	 * No-arg constructor.
 	 */
 	public JSMovieVideoType() {

@@ -70,15 +70,6 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 	public String err;
 
 	
-	/**
-	 * Registers HTML5 video types with VideoIO class for file reading
-	 *
-	 * see https://en.wikipedia.org/wiki/HTML5_video#Browser_support
-	 */
-	static {
-	   JSMovieVideoType.register();
-	}
-  	
 	@Override
 	public Object getProperty(String name) {
 		return super.getProperty(name);
@@ -249,8 +240,6 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 	public String getTypeName() {
 		return MovieFactory.ENGINE_JS;
 	}
-
-	protected ArrayList<Double> frameTimes;
 
 	private class State implements StateMachine {
 				
