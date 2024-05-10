@@ -187,12 +187,17 @@ public class GifVideo extends VideoAdapter {
 		startFrameNumber = 0;
 		endFrameNumber = frameCount - 1;
 		// create startTimes array
+		setStartTimes();
+		setImage(decoder.getFrame(0));
+	}
+
+	@Override
+	protected void setStartTimes() {
 		startTimes = new double[frameCount];
 		startTimes[0] = 0;
 		for (int i = 1; i < startTimes.length; i++) {
 			startTimes[i] = startTimes[i - 1] + decoder.getDelay(i - 1);
 		}
-		setImage(decoder.getFrame(0));
 	}
 
 	/**

@@ -994,6 +994,8 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 		return getFrameTime(getStartFrameNumber());
 	}
 
+	abstract protected void setStartTimes();
+
 	/**
 	 * Sets the start time in milliseconds. NOTE: the actual start time is normally
 	 * set to the beginning of a frame.

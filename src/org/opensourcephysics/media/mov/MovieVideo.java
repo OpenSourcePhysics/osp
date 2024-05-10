@@ -3,6 +3,7 @@ package org.opensourcephysics.media.mov;
 import java.awt.Frame;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
@@ -26,6 +27,9 @@ public abstract class MovieVideo extends VideoAdapter {
 	
 	public final static String PROPERTY_VIDEO_PROGRESS = "progress"; //$NON-NLS-1$ // see TFrame
 	public final static String PROPERTY_VIDEO_STALLED  = "stalled"; //$NON-NLS-1$  // see TFrame
+
+	protected ArrayList<Double> frameTimes;
+
 
 	// load,save for video frames would be here
 	
@@ -60,6 +64,16 @@ public abstract class MovieVideo extends VideoAdapter {
 
 	}
 
+	@Override
+	protected void setStartTimes() {
+		startTimes = new double[frameCount];
+		startTimes[0] = 0;
+		for (int i = 1; i < startTimes.length; i++) {
+			startTimes[i] = frameTimes.get(i) * 1000;
+			System.out.println("startTimes["+i+"]=" + startTimes[i] + "\tdt=" + (startTimes[i] - startTimes[i-1]));
+		}
+	}
+	
 	static public abstract class Loader extends VideoAdapter.Loader {
 
 		@Override
@@ -91,7 +105,7 @@ public abstract class MovieVideo extends VideoAdapter {
 		}
 
 		@Override
-		protected Video createVideo(String path) {
+		protected Video createVideo(String path) throws IOException {
 			// not used.
 			return null;
 		}

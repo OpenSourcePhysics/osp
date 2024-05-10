@@ -1124,6 +1124,11 @@ public class ImageVideo extends VideoAdapter {
 		return this.getTypeName() + " " + this.frameCount;
 	}
 
+	@Override
+	protected void setStartTimes() {
+		// n/a for image stack videos
+	}
+
 }
 
 /*

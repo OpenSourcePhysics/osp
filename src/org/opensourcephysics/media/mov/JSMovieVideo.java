@@ -250,10 +250,10 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 		return MovieFactory.ENGINE_JS;
 	}
 
+	protected ArrayList<Double> frameTimes;
+
 	private class State implements StateMachine {
 				
-		ArrayList<Double> frameTimes;
-
 		static final int STATE_ERROR              = -99;
 
 		static final int STATE_IDLE               = -1;
@@ -547,7 +547,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 					continue;
 				case STATE_FIND_FRAMES_DONE:
 					helper.setState(STATE_IDLE);
-					v.initializeMovie(frameTimes, duration);
+					v.initializeMovie(duration);
 					frameTimes = null;
 					thisFrame = -1;
 					progress = VideoIO.PROGRESS_VIDEO_READY;
@@ -627,7 +627,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 
 	}
 
-	void initializeMovie(ArrayList<Double> frameTimes, double duration) {
+	void initializeMovie(double duration) {
 		videoDialog.setVisible(false);
 		// clean up temporary objects
 		// throw IOException if no frames were loaded
@@ -644,15 +644,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 		startFrameNumber = 0;
 		endFrameNumber = frameCount - 1;
 		// create startTimes array
-		startTimes = new double[frameCount];
-		// BH 2020.09.11 note: this was i=1, but then mp4 initial frame was double
-		// length
-		for (int i = 0; i < frameCount; i++) {
-			startTimes[i] = frameTimes.get(i).doubleValue() * 1000;
-			System.out.println("startTimes[" + i + "]=" + startTimes[i]);
-		}
-		// set the duration to exactly what xuggle sets it as:
-		// 
+		setStartTimes();
 		firePropertyChange(PROPERTY_VIDEO_PROGRESS, fileName, frame); // to TFrame
 		frameNumber = -1;
 		// to VideoClip: time to initArray()
@@ -660,7 +652,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 		// to VideoPanel aka TrackerPanel: all set!
 		firePropertyChange(PROPERTY_ASYNCVIDEOI_READY, fileName, this); 
 		setFrameNumber(FORCE_TO_START);
-}
+	}
 
 	public void cantRead() {
 		JOptionPane.showMessageDialog(null, "Video file format or compression method could not be read.");
