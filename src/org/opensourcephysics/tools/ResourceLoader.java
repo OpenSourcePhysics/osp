@@ -1031,10 +1031,13 @@ public class ResourceLoader {
 //						JOptionPane.WARNING_MESSAGE);
 			} else if (!warningShown) {
 				warningShown = true;
+				String message = ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Message1") //$NON-NLS-1$
+						+ "\n" + ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Message2") //$NON-NLS-1$ //$NON-NLS-2$
+						+ "\n" + ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Message3"); //$NON-NLS-1$ //$NON-NLS-2$
+				
+				message += "\n\n" + ToolsRes.getString("LibraryResource.Description.Resource") + ": " + urlPath;
 				JOptionPane.showMessageDialog(null,
-						ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Message1") //$NON-NLS-1$
-								+ "\n" + ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Message2") //$NON-NLS-1$ //$NON-NLS-2$
-								+ "\n" + ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Message3"), //$NON-NLS-1$ //$NON-NLS-2$
+						message,
 						ToolsRes.getString("ResourceLoader.Dialog.FailedToDownload.Title"), //$NON-NLS-1$
 						JOptionPane.ERROR_MESSAGE);
 			}
