@@ -53,6 +53,8 @@ import swingjs.api.js.HTML5Video;
  */
 public class Test_Video {
 
+	protected static final double CHROME_FRAME_DURATION = 0.01;//0.03334;
+
 	public static void main(String[] args) {
 		if (args.length > 0) {
 			System.out.println(getMP4Codec(args[0], null));
@@ -184,6 +186,7 @@ public class Test_Video {
 	}
 
 	JLabel label = new JLabel((String) null);
+	private double[] htmlFrameTimings = new double[3000];
 
 	private void createVideoLabel(File file, URL videoURL, String video) {
 		ImageIcon icon;
@@ -214,6 +217,7 @@ public class Test_Video {
 		}
 		label.setIcon(icon);
 		jsvideo = (HTML5Video) label.getClientProperty("jsvideo");
+
 		HTML5Video.addActionListener(jsvideo, new ActionListener() {
 
 			@Override
@@ -263,6 +267,8 @@ public class Test_Video {
 	}
 
 	private void showProperty(String key) {
+		/** @j2sNative xxv = this.jsvideo */
+		
 		System.out.println(key + "=" + HTML5Video.getProperty(jsvideo, key));
 	}
 
@@ -270,8 +276,32 @@ public class Test_Video {
 		if (!isJS)
 			return;
 		for (int i = 0; i < allprops.length; i++)
-			showProperty(allprops[i]);
+			showProperty(allprops[i]);				
 	}
+	
+	protected void setTimes(double[] htmlRequstTimes) {
+		// Chrome only
+		int n = (int) htmlRequstTimes[0] + 1;
+		htmlRequstTimes[0] = htmlRequstTimes[1];
+		if (n < 2) {
+			return;
+		}
+			
+			double t0 = 0, dt;
+			int nFrames = 1;
+			for (int i = 1; i < n; i++) {
+				  dt = htmlRequstTimes[i] - htmlRequstTimes[i - 1];
+				  if (dt > 0) {
+					  if (t0 == 0)
+						  t0 = htmlRequstTimes[i - 1];
+					  System.out.println("htmlTime["+nFrames+"]\t" + (htmlRequstTimes[i]-t0) + "\t" + dt);
+					  nFrames++;
+				  }
+			}
+			dt = duration / (nFrames + 1); // Chrome adds in last frame length
+			  System.out.println("duration " + duration + " for " + nFrames + " frames; ave dt = " + dt + " for nframes + 1 or " + (duration / nFrames) + " for nframes");
+	}
+
 
 	private static String[] allprops = { "audioTracks", //
 			"autoplay", //
@@ -327,7 +357,6 @@ public class Test_Video {
 	private void playVideoDiscretely(HTML5Video v) {
 		vt0 = vt = HTML5Video.getCurrentTime(v);
 		t0 = System.currentTimeMillis() - (int) (vt * 1000);
-		duration = ((Double) HTML5Video.getProperty(v, "duration")).doubleValue();
 		if (vt >= duration) {
 			vt = 0;
 			playing = false;
@@ -463,12 +492,14 @@ public class Test_Video {
 			public void actionPerformed(ActionEvent e) {
 				if (playing || jsvideo == null)
 					return;
+				duration = ((Double) HTML5Video.getProperty(jsvideo, "duration")).doubleValue();
 				isDiscrete = cbDiscrete.isSelected();
 				try {
 					playing = true;
 					if (isDiscrete) {
 						playVideoDiscretely(jsvideo);
 					} else {
+						HTML5Video.requestVideoFrameCallback(jsvideo, htmlFrameTimings );
 						jsvideo.play();
 					}
 				} catch (Throwable e1) {
@@ -512,7 +543,7 @@ public class Test_Video {
 				double t = HTML5Video.getCurrentTime(jsvideo);
 				System.out.println(t + "  " + (t - vt0));
 				vt0 = t;
-				HTML5Video.nextFrame(jsvideo, 0.03334);
+				HTML5Video.nextFrame(jsvideo, CHROME_FRAME_DURATION);
 			}
 
 		});
@@ -564,6 +595,8 @@ public class Test_Video {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				showAllProperties();
+				HTML5Video.cancelVideoFrameCallback(jsvideo);
+				setTimes(htmlFrameTimings);
 			}
 
 		});

@@ -297,7 +297,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 			
 		};
 		private Object[] readyListener;
-		private double duration;
+		private double htmlDuration;
 		private int thisFrame = -1;
 		
 		private double[] htmlFrameTimings;
@@ -415,7 +415,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 			}
 			htmlFrameTimings = new double[frameCount];
 			double controlDuration = dt * frameCount;
-			dt = dt * duration / controlDuration;
+			dt = dt * htmlDuration / controlDuration;
 			for (int i = 1; i < frameCount; i++) {
 				htmlFrameTimings[i] = dt * i;
 			}
@@ -451,11 +451,11 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 					Dimension d = HTML5Video.getSize(v.jsvideo);
 					v.size.width = d.width;
 					v.size.height = d.height;
-					duration = HTML5Video.getDuration(v.jsvideo);
-					int estimatedFrameCount = (int) (duration / 0.033334);
+					htmlDuration = HTML5Video.getDuration(v.jsvideo);
+					int estimatedFrameCount = (int) (htmlDuration / 0.033334);
 					//this is all this does: HTML5Video.getFrameCount(v.jsvideo);
 					v.setFrameCount(estimatedFrameCount);
-					OSPLog.finer("JSMovieVideo LOAD_VIDEO_READY " + v.size + "\n duration:" + duration + " est. frameCount:" + estimatedFrameCount);
+					OSPLog.finer("JSMovieVideo LOAD_VIDEO_READY " + v.size + "\n duration:" + htmlDuration + " est. frameCount:" + estimatedFrameCount);
 					if (v.size.width == 0) {
 						cantRead();
 						helper.next(STATE_FIND_FRAMES_READY);
@@ -490,8 +490,8 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 					continue;
 				case STATE_FIND_FRAMES_INIT:
 					v.err = null;
-					if (duration == 0)
-						duration = HTML5Video.getDuration(v.jsvideo);
+					if (htmlDuration == 0)
+						htmlDuration = HTML5Video.getDuration(v.jsvideo);
 					lastT = t = 0.0;
 					dt = 0;
 					frameTimes = new ArrayList<Double>();
@@ -508,7 +508,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 					helper.setState(STATE_FIND_FRAMES_DONE);
 					return false;
 				case STATE_FIND_FRAMES_LOOP:
-					if (t >= duration) {
+					if (t >= htmlDuration) {
 						helper.setState(STATE_FIND_FRAMES_DONE);
 						continue;
 					}
@@ -526,7 +526,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 						return false;
 					}
 					t = HTML5Video.getCurrentTime(v.jsvideo);
-					if (t > lastT && t < duration) {
+					if (t > lastT && t < htmlDuration) {
 						lastT = t;
 						frameTimes.add(t);
 						v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, v.frame++);
@@ -536,7 +536,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 					continue;
 				case STATE_FIND_FRAMES_DONE:
 					helper.setState(STATE_IDLE);
-					v.initializeMovie(duration);
+					v.initializeMovie(htmlDuration);
 					frameTimes = null;
 					thisFrame = -1;
 					progress = VideoIO.PROGRESS_VIDEO_READY;
@@ -566,25 +566,29 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 			HTML5Video.setCurrentTime(v.jsvideo, t);		
 		}
 
-		protected void setTimes(double[] times) {
-			int n = (int) times[0] + 1;
-			times[0] = times[1];
+		protected void setTimes(double[] htmlRequstTimes) {
+			// Chrome only
+			int n = (int) htmlRequstTimes[0] + 1;
+			htmlRequstTimes[0] = htmlRequstTimes[1];
 			if (n < 2) {
 				// format was read, but probably image size was (0,0) meaning
 				// codec wasn't read. (Have duration, just not actual images.)
 				cantRead();
 				next(STATE_FIND_FRAMES_DONE);
 			} else {
+				double t0 = 0;
 				int nFrames = 1;
 				for (int i = 1; i < n; i++) {
-					  dt = times[i] - times[i - 1];
+					  dt = htmlRequstTimes[i] - htmlRequstTimes[i - 1];
 					  if (dt > 0) {
+						  if (t0 == 0)
+							  t0 = htmlRequstTimes[i - 1];
+						  System.out.println("htmlTime["+nFrames+"]\t" + (htmlRequstTimes[i]-t0) + "\t" + dt);
 						  nFrames++;
-						  System.out.println("dt " + nFrames + "\t" + dt);
 					  }
 				}
-				dt = duration / (nFrames + 1); // you might think this should be nFrames
-				  System.out.println("dt finally " + dt);
+				dt = htmlDuration / (nFrames + 1); // Chrome adds in last frame length
+				  System.out.println("duration " + htmlDuration + " for " + nFrames + " frames; ave dt = " + dt + " for nframes + 1 or " + (htmlDuration / nFrames) + " for nframes");
 				offset = dt/2;
 				t = 0;
 				for (int i = 1; i < nFrames; i++) {

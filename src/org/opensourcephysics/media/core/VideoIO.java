@@ -599,10 +599,6 @@ public class VideoIO {
 			return;
 		boolean hasType = false;
 		for (VideoType next : videoTypes) {
-			System.out.println(next.getDescription());
-			System.out.println(type.getDescription());
-			System.out.println(next.getClass().getName());
-			System.out.println(type.getClass().getName());
 			if (next.getDescription().equals(type.getDescription()) && next.getClass() == type.getClass()) {
 				hasType = true;
 			}
