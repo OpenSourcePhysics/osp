@@ -22,11 +22,9 @@
 package org.opensourcephysics.media.mov;
 
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -105,28 +103,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 	 */
 	public JSMovieVideo(String fileName, String basePath, XMLControl control) throws IOException {
 		boolean isExport = (control != null && !"video".equals(control.getPropertyName()));
-		boolean loadFully = (control == null || !isExport);
-		if (loadFully) {
-			Frame[] frames = Frame.getFrames();
-			for (int i = 0, n = frames.length; i < n; i++) {
-				if (frames[i].getName().equals("Tracker")) { //$NON-NLS-1$
-					addPropertyChangeListener(PROPERTY_VIDEO_PROGRESS, (PropertyChangeListener) frames[i]);
-					addPropertyChangeListener(PROPERTY_VIDEO_STALLED, (PropertyChangeListener) frames[i]);
-					break;
-				}
-			}
-		}
-		// timer to detect failures
-//		failDetectTimer = new Timer(6000, new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				if (frame == prevFrame) {
-//					firePropertyChange("stalled", null, path); //$NON-NLS-1$
-//					failDetectTimer.stop();
-//				}
-//				prevFrame = frame;
-//			}
-//		});
-//		failDetectTimer.setRepeats(true);
+		addFramePropertyListeners();
 		this.baseDir = basePath;
 		this.fileName = fileName;
 		String path = getAbsolutePath(fileName);
@@ -150,11 +127,12 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 			setProperty("path", XML.getRelativePath(fileName)); //$NON-NLS-1$
 		}
 		if (isExport) {
+			// no need to actually load anthing?
 			return;
 		}
 		firePropertyChange(PROPERTY_VIDEO_PROGRESS, fileName, 0);
 		frame = 0;
-		// failDetectTimer.start();
+		//startFailDetection();
 		if (state == null)
 			state = new State(allowControlData ? control : null);
 		state.load(path);
@@ -698,21 +676,6 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 		return new Loader();
 	}
 
-	/**
-	 * A class to save and load JSMovieVideo data.
-	 */
-	static public class Loader extends MovieVideo.Loader {
-
-		@Override
-		protected JSMovieVideo createVideo(String path) throws IOException {
-			JSMovieVideo video = new JSMovieVideo(path, null, null);
-			if (video.getFrameNumber() < 0)
-				return null;
-			setVideo(path, video, MovieFactory.ENGINE_JS);
-			return video;
-		}
-	}
-
 	public static File createThumbnailFile(Dimension defaultThumbnailDimension, String sourcePath, String thumbPath) {
 		return null;
 	}
@@ -727,6 +690,20 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 		return frame;
 	}
 
+	/**
+	 * A class to save and load JSMovieVideo data.
+	 */
+	static public class Loader extends MovieVideo.Loader {
+
+		@Override
+		protected JSMovieVideo createVideo(XMLControl control, String path) throws IOException {
+			JSMovieVideo video = new JSMovieVideo(path, null, control);
+			if (video.getFrameNumber() < 0)
+				return null;
+			setVideo(path, video, MovieFactory.ENGINE_JS);
+			return video;
+		}
+	}
 
 }
 
