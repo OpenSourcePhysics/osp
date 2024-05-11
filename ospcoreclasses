@@ -761,6 +761,7 @@ org/opensourcephysics/tools/ExportFormat.js
 org/opensourcephysics/tools/ExportGnuplotFormat.js
 org/opensourcephysics/tools/ExportTool.js
 org/opensourcephysics/tools/ExportXMLFormat.js
+org/opensourcephysics/tools/FileDropHandler.js
 org/opensourcephysics/tools/FitBuilder.js
 org/opensourcephysics/tools/FitFunctionPanel.js
 org/opensourcephysics/tools/FontSizer.js
