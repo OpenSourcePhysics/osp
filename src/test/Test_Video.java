@@ -2,6 +2,7 @@ package test;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -36,8 +37,9 @@ import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
-import javax.swing.TransferHandler;
 import javax.swing.WindowConstants;
+
+import org.opensourcephysics.tools.FileDropHandler;
 
 import javajs.util.VideoReader;
 import swingjs.api.JSUtilI;
@@ -87,32 +89,24 @@ public class Test_Video {
 			false;
 
 	JDialog dialog;
-	private JFrame main;
+	
+	public class VideoFrame extends JFrame implements FileDropHandler.FileImporter {
+
+		@Override
+		public boolean importData(List<File> fileList, Component component) {
+			loadVideo(fileList.get(0));
+			return true;
+		}
+		
+	}
+	private VideoFrame main;
 
 	@SuppressWarnings("unused")
 	public Test_Video() {
-		main = new JFrame();
+		main = new VideoFrame();
 		main.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		main.setTransferHandler(new FileDropHandler(main));
 
-		main.setTransferHandler(new TransferHandler() {
-			@Override
-			public boolean canImport(TransferHandler.TransferSupport support) {
-				return true;
-			}
-
-			@SuppressWarnings("unchecked")
-			@Override
-			public boolean importData(TransferHandler.TransferSupport support) {
-				try {
-					loadVideo(((List<File>) support.getTransferable().getTransferData(DataFlavor.javaFileListFlavor))
-							.get(0));
-				} catch (Exception e) {
-					return false;
-				}
-				return true;
-			}
-
-		});
 		boolean testRemote = false;// setting this true requires Java 9
 		isDiscrete = true;
 

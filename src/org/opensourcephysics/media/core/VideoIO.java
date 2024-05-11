@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 //import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -792,7 +793,7 @@ public class VideoIO {
 		} 
 		try {
 			VideoReader vr = new VideoReader(path);
-			vr.getContents(false);
+			List<Map<String, Object>> contents = vr.getContents(false);
 			codec = (vr.getCodec() == null? "unknown": vr.getCodec());
 		} catch (IOException e) {
 		}
@@ -1478,11 +1479,11 @@ private static String fixVideoPath(String path) {
 	 */
 	public static boolean checkMP4(String path, LibraryBrowser libraryBrowser, VideoPanel panel) {
 		String ext = XML.getExtension(path);
-		if (!OSPRuntime.isJS || !"mp4".equals(ext) && !"mov".equals(ext))
+		if (!"mp4".equals(ext) && !"mov".equals(ext))
 			return true;
 		String codec = getVideoCodec(path);
 		OSPLog.fine("VideoIO: " + ext + " codec = " + codec);
-		if (codec != null && codec.contains("avc1"))
+		if (!OSPRuntime.isJS || codec != null && codec.contains("avc1"))
 			return true;
 		VideoIO.handleUnsupportedVideo(path, ext, codec, panel, "VideoIO");
 		return false;

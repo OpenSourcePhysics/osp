@@ -1,5 +1,6 @@
 package javajs.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -183,7 +184,8 @@ public class VideoReader {
 		map.put("timeScale", timeScale);
 		map.put("duration", dur);
 		map.put("_duration(sec)", 1.0 * dur / timeScale);
-		map.put("preferredRate", readInt());
+		float rate = readInt();
+		map.put("preferredRate", rate); // this is bogus typically byte[]{0,1,0,0}
 		map.put("preferredVolume", readShort());
 		if (verbose)
 			dumpMap(map, "mvhd");
@@ -222,6 +224,7 @@ public class VideoReader {
 		if (verbose)
 			System.out.println("codec=" + codec);
 		skip(len - 16);
+		map.put("codec", codec);
 		return 0;
 	}
 
