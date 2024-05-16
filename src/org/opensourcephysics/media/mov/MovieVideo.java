@@ -79,6 +79,17 @@ public abstract class MovieVideo extends VideoAdapter {
 		@Override
 		public void saveObject(XMLControl control, Object obj) {
 			super.saveObject(control, obj);
+			MovieVideo vid = (MovieVideo)obj;
+			double[] times = new double[vid.frameTimes.size()];
+			for (int i = 0; i < vid.frameTimes.size(); i++) {
+				times[i] = vid.frameTimes.get(i);
+			}
+			control.setValue("frame_times", times); // in seconds
+			double dur = vid.getDuration() / 1000.0; // convert to seconds
+			control.setValue("duration", dur); // convert to seconds
+			control.setValue("frame_count", vid.getFrameCount());
+			double fps = vid.getFrameCount() / dur;
+			control.setValue("frame_rate", Math.round((float)fps));
 		}
 
 		public void setVideo(String path, MovieVideo video, String engine) {
