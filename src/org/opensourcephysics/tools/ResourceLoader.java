@@ -3048,11 +3048,11 @@ public class ResourceLoader {
 	}
 
 	public static boolean isHTTP(String path) {
-		if (path.indexOf("http")> 1)
-			System.out.println("???" + path);
+//		if (path.indexOf("http")> 1)
+//			System.out.println("???" + path);
 		boolean tf = path.startsWith("http:") || path.startsWith("https:");
-		if (tf)
-			System.out.println("isHTTP"  + path);
+//		if (tf)
+//			System.out.println("isHTTP"  + path);
 		return tf;
 	}
 
@@ -3223,6 +3223,10 @@ public class ResourceLoader {
 		}
 	}
 
+	public static String readAllAsString(InputStream is) throws IOException {
+		return new String(getLimitedStreamBytes(is, -1, null, true));
+		
+	}
 	/**
 	 * From javajs.Rdr
 	 * 

@@ -28,6 +28,8 @@ import java.awt.Component;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.io.File;
+import java.io.FileInputStream;
+import java.net.URL;
 import java.util.List;
 
 import javax.swing.TransferHandler;
@@ -47,10 +49,9 @@ public class FileDropHandler extends TransferHandler {
 
 	public interface FileImporter {
 
-		boolean importData(List<File> fileList, Component component);
+		boolean importData(Object data, Component component);
 		
 	}
-	static final String URI_LIST_MIME_TYPE = "text/uri-list;class=java.lang.String"; //$NON-NLS-1$
 
 	FileImporter frame;
 	DataFlavor uriListFlavor; // for Linux
@@ -62,11 +63,6 @@ public class FileDropHandler extends TransferHandler {
 	 */
 	public FileDropHandler(FileImporter frame) {
 		this.frame = frame;
-		try {
-			uriListFlavor = new DataFlavor(URI_LIST_MIME_TYPE);
-		} catch (ClassNotFoundException e) {
-			// not possible - it's java.lang.String
-		}
 	}
 
 	Boolean isDropOK = null;
@@ -77,14 +73,39 @@ public class FileDropHandler extends TransferHandler {
 	 * 
 	 */
 	@Override
-	public boolean canImport(TransferHandler.TransferSupport support) {
+	public boolean canImport(TransferSupport support) {
+
 		return (support.isDataFlavorSupported(DataFlavor.javaFileListFlavor));
 	}
 
 	@Override
 	public boolean importData(TransferHandler.TransferSupport support) {
-		return (canImport(support) 
-				&& frame.importData(getFileList(support.getTransferable()), support.getComponent()));
+		if (!canImport(support))
+			return false;
+		List<File> fileList = getFileList(support.getTransferable());
+		Object ret = fileList;
+		try {
+			if (fileList != null) {
+				File f = fileList.get(0);
+				if (f.getName().endsWith(".url")) {
+					// handles file drop into 
+//					[InternetShortcut]
+//					URL=https://physlets.org/tracker/TestVideo/videos/collision-pucks.mp4
+//					IDList=
+//					HotKey=0
+//					IconFile=C:\Users\hanso\AppData\Local\Mozilla\Firefox\Profiles\61sxx8ak.default-release\shortcutCache\idpQAUtmcsLXC4k0vaZC15FSd9nQt_sQb3DsXffBqxo=.ico
+//					IconIndex=0
+
+					String s = ResourceLoader.readAllAsString(new FileInputStream(f));
+					s = s.substring(s.indexOf("URL=") + 4);
+					ret = new URL(s.substring(0, s.indexOf("\n")).trim());
+				}
+				return frame.importData(ret, support.getComponent());
+			}
+		} catch (Exception e) {
+			// ignore
+		}
+		return false;
 	}
 
 	/**
@@ -101,7 +122,4 @@ public class FileDropHandler extends TransferHandler {
 			return null;
 		}
 	}
-
-
-
 }
