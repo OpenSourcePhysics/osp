@@ -62,7 +62,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 	
 	private static final int FORCE_TO_START = -99;
 
-	boolean debugHTMLVideo = false; // voluminous event information
+	boolean debugHTMLVideo = true;//false; // voluminous event information
 
 	State state;
 	public String err;
@@ -558,9 +558,11 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 					  if (dt > 0) {
 						  if (t0 == 0)
 							  t0 = htmlRequstTimes[i - 1];
-						  System.out.println("htmlTime["+nFrames+"]\t" + (htmlRequstTimes[i]-t0) + "\t" + dt);
-						  nFrames++;
-						  dttot += dt;
+						  if (i > 3) {
+							  System.out.println("htmlTime["+nFrames+"]\t" + (htmlRequstTimes[i]-t0) + "\t" + dt);
+							  nFrames++;
+							  dttot += dt;
+						  }
 					  } else {
 						  System.out.println("JSMoveVideo.setTimes??");
 					  }
