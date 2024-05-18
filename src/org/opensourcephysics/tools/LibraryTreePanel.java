@@ -2181,8 +2181,9 @@ public class LibraryTreePanel extends JPanel {
 				boolean loadzip = ResourceLoader.isWebConnected()
 						|| !ResourceLoader.isHTTP(target);
 				if (loadzip && node.getTargetURL() != null) {
+					String base = node.getBasePath();
 					// returns cached target URL, if any
-					loadZipPathAsync(htmlPath, target, node.getTargetURL().toExternalForm());
+					loadZipPathAsync(htmlPath, target, node.getTargetURL().toExternalForm(), base);
 				}
 			} else {
 				// file is NOT zip or trz
@@ -2190,12 +2191,14 @@ public class LibraryTreePanel extends JPanel {
 			}
 		}
 
-		private void loadZipPathAsync(String htmlPath, String target, String targetURLPath) {
+		private void loadZipPathAsync(String htmlPath, String target, String targetURLPath, String base) {
 			//System.out.println("LoadZipNodeAsync " + htmlPath + " -> " + target);
 			ResourceLoader.getZipContentsAsync(targetURLPath, (files) -> {
 				if (files == null)
 					return null;
-				String targetName = XML.stripExtension(XML.getName(targetURLPath));
+//				String targetName = XML.stripExtension(XML.getName(targetURLPath));
+				String targetRelativePath = XML.getPathRelativeTo(targetURLPath, base);
+				String targetName = XML.stripExtension(targetRelativePath);
 				// look for base name shared by thumbnail and html info files
 				// by default the target filename is the base name but filenames
 				// may be changed so ALWAYS look for thumbnail
