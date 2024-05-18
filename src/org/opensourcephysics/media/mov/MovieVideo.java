@@ -108,6 +108,8 @@ public abstract class MovieVideo extends VideoAdapter {
 		startTimes = (double[]) control.getObject("start_times");
 		rawDuration = control.getDouble("duration");
 		frameRate = control.getInt("frame_rate");
+		String platform = control.getString("platform");
+		System.out.println("MovieVideo.setFromControl from " + platform + " " + rawDuration + " " + frameCount + " " + frameRate);
 		return control;
 	}
 
@@ -115,18 +117,21 @@ public abstract class MovieVideo extends VideoAdapter {
 	
 	static public abstract class Loader extends VideoAdapter.Loader {
 
+
 		@Override
 		public void saveObject(XMLControl control, Object obj) {
 			super.saveObject(control, obj);
 			MovieVideo vid = (MovieVideo)obj;
 			control.setValue("start_times", vid.startTimes); // in milliseconds
-			double dur = vid.rawDuration; // in seconds
-			control.setValue("duration", dur); // convert to seconds
-			int fc = vid.getFrameCount();
+			double rawDuration = vid.rawDuration; // in seconds
+			control.setValue("duration", rawDuration); // convert to seconds
+			int fc = vid.frameCount;
 			control.setValue("frame_count", fc);
-			int fps = (int) Math.round(vid.getFrameCount() / dur + 0.01);
+			int fps = (int) Math.round(fc / rawDuration);
 			control.setValue("frame_rate", fps);
-			System.out.println("MovieVideo.save " + dur + " " + fc + " " + fps);
+			String platform = /** @j2sNative navigator.userAgent || "?" ||*/"Java";
+			control.setValue("platform", platform);
+			System.out.println("MovieVideo.save " + platform + " " + rawDuration + " " + fc + " " + fps);
 		}
 
 		public void setVideo(String path, MovieVideo video, String engine) {

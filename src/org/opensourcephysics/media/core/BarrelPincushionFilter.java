@@ -134,7 +134,7 @@ public class BarrelPincushionFilter extends Filter {
 //		if (fixedRadius != fraction) {
 			fixedRadius = fraction;
 			scaleFactor = 1 / getStretchFactor(fixedRadius * pixelsToCorner);
-			System.out.println("pig scaleFactor "+scaleFactor);
+			//System.out.println("pig scaleFactor "+scaleFactor);
 			if (inspector != null)
 				inspector.updateDisplay();
 			isValidTransform = false;

@@ -551,7 +551,8 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 				next(STATE_FIND_FRAMES_DONE);
 			} else {
 				double t0 = 0;
-				int nFrames = 1;
+				int nFrames = 0;
+				double dttot = 0;
 				for (int i = 1; i < n; i++) {
 					  dt = htmlRequstTimes[i] - htmlRequstTimes[i - 1];
 					  if (dt > 0) {
@@ -559,10 +560,17 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 							  t0 = htmlRequstTimes[i - 1];
 						  System.out.println("htmlTime["+nFrames+"]\t" + (htmlRequstTimes[i]-t0) + "\t" + dt);
 						  nFrames++;
+						  dttot += dt;
+					  } else {
+						  System.out.println("JSMoveVideo.setTimes??");
 					  }
 				}
-				dt = v.rawDuration / (nFrames + 1); // Chrome adds in last frame length
-				  System.out.println("duration " + v.rawDuration + " for " + nFrames + " frames; ave dt = " + dt + " for nframes + 1 or " + (v.rawDuration / nFrames) + " for nframes");
+				// base the calculation on average dt
+				dt = dttot / nFrames;
+				double fps = Math.round(1000 / dt);
+				dt = 1 / fps;
+				nFrames = (int) Math.round(v.rawDuration * fps);
+				System.out.println("duration " + v.rawDuration + " for " + nFrames + "/" + n + " frame_rate=" + fps);
 				offset = dt/2;
 				t = 0;
 				for (int i = 1; i < nFrames; i++) {
