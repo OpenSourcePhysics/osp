@@ -28,7 +28,22 @@ public abstract class MovieVideo extends VideoAdapter {
 	public final static String PROPERTY_VIDEO_PROGRESS = "progress"; //$NON-NLS-1$ // see TFrame
 	public final static String PROPERTY_VIDEO_STALLED  = "stalled"; //$NON-NLS-1$  // see TFrame
 
+	/**
+	 * These are temporary only, during loading. see startTimes
+	 */
 	protected ArrayList<Double> frameTimes;
+
+	/**
+	 * set true to read control data start_times, duration (for rawDuration), and
+	 * frame_count; false to instead scan video again
+	 * 
+	 */
+	protected boolean allowControlData;
+	
+	/**
+	 * the duration reported by the video, possibly longer for Xuggle than this.getDuration().
+	 */
+	protected double rawDuration;
 
 
 	// load,save for video frames would be here
@@ -66,13 +81,35 @@ public abstract class MovieVideo extends VideoAdapter {
 
 	@Override
 	protected void setStartTimes() {
-		startTimes = new double[frameCount];
-		startTimes[0] = 0;
-		for (int i = 1; i < startTimes.length; i++) {
-			startTimes[i] = frameTimes.get(i) * 1000;
-			System.out.println("startTimes["+i+"]=" + startTimes[i] + "\tdt=" + (startTimes[i] - startTimes[i-1]));
+		if (startTimes == null) {
+			startTimes = new double[frameCount];
+			startTimes[0] = 0;
+			for (int i = 1; i < startTimes.length; i++) {
+				startTimes[i] = frameTimes.get(i) * 1000;
+				System.out.println(
+						"startTimes[" + i + "]=" + startTimes[i] + "\tdt=" + (startTimes[i] - startTimes[i - 1]));
+			}
 		}
+		System.out.println("MovieVideo.setStartTimes rawDuration=" + rawDuration + " frameCount=" + frameCount);
 	}
+	
+	/**
+	 * Set frameCount, startTimes, and rawDuration if available from the control.
+	 * 
+	 * @param control
+	 * @return null if cannot be set (older versions)
+	 */
+	public XMLControl setFromControl(XMLControl control) {			
+		int count = control.getInt("frame_count");
+		if (count == Integer.MIN_VALUE)
+			return null;
+		frameCount = count;
+		startTimes = (double[]) control.getObject("start_times");
+		rawDuration = control.getDouble("duration");
+		return control;
+	}
+
+
 	
 	static public abstract class Loader extends VideoAdapter.Loader {
 
@@ -80,12 +117,8 @@ public abstract class MovieVideo extends VideoAdapter {
 		public void saveObject(XMLControl control, Object obj) {
 			super.saveObject(control, obj);
 			MovieVideo vid = (MovieVideo)obj;
-			double[] times = new double[vid.frameTimes.size()];
-			for (int i = 0; i < vid.frameTimes.size(); i++) {
-				times[i] = vid.frameTimes.get(i);
-			}
-			control.setValue("frame_times", times); // in seconds
-			double dur = vid.getDuration() / 1000.0; // convert to seconds
+			control.setValue("start_times", vid.startTimes); // in milliseconds
+			double dur = vid.rawDuration; // in seconds
 			control.setValue("duration", dur); // convert to seconds
 			control.setValue("frame_count", vid.getFrameCount());
 			double fps = vid.getFrameCount() / dur;
@@ -108,7 +141,7 @@ public abstract class MovieVideo extends VideoAdapter {
 				String path = control.getString("path"); //$NON-NLS-1$
 				if (OSPRuntime.checkTempDirCache)
 					path = OSPRuntime.tempDir + path;
-				return createVideo(path);
+				return createVideo(control, path);
 			} catch (IOException ex) {
 				OSPLog.fine(ex.getMessage());
 				return null;

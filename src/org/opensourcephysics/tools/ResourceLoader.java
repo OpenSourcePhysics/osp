@@ -3223,6 +3223,10 @@ public class ResourceLoader {
 		}
 	}
 
+	public static String readAllAsString(InputStream is) throws IOException {
+		return new String(getLimitedStreamBytes(is, -1, null, true));
+		
+	}
 	/**
 	 * From javajs.Rdr
 	 * 

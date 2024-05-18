@@ -92,10 +92,18 @@ public class Test_Video {
 	
 	public class VideoFrame extends JFrame implements FileDropHandler.FileImporter {
 
+		@SuppressWarnings("unchecked")
 		@Override
-		public boolean importData(List<File> fileList, Component component) {
-			loadVideo(fileList.get(0));
-			return true;
+		public boolean importData(Object data, Component component) {
+			if (data instanceof List) {
+				loadVideo(((List<File>) data).get(0));
+				return true;
+			}
+			if (data instanceof URL) {
+				
+				return true;
+			}
+			return false;
 		}
 		
 	}
@@ -238,6 +246,19 @@ public class Test_Video {
 
 	}
 
+	protected void loadVideo(URL url) {
+		Rectangle bounds = label.getBounds();
+		layerPane.remove(label);
+		createVideoLabel(null, url, null);
+		if (!isJS) {
+			return;
+		}
+		createDialog();
+		layerPane.add(label, JLayeredPane.DEFAULT_LAYER);
+		label.setBounds(bounds);
+		label.setVisible(true);
+	}
+
 	protected void loadVideo(File file) {
 		Rectangle bounds = label.getBounds();
 		layerPane.remove(label);
@@ -344,12 +365,15 @@ public class Test_Video {
 	long t0 = 0;
 	double duration;
 	int totalTime;
+	int frameCount = 0;
 	int delay = 33334;
 	Timer timer;
 	Object[] playListener;
 
 	private void playVideoDiscretely(HTML5Video v) {
 		vt0 = vt = HTML5Video.getCurrentTime(v);
+		if (vt0 == 0)
+			frameCount = 0;
 		t0 = System.currentTimeMillis() - (int) (vt * 1000);
 		if (vt >= duration) {
 			vt = 0;
@@ -370,7 +394,7 @@ public class Test_Video {
 				long dt = System.currentTimeMillis() - t0;
 				double dtv = vt - vt0;
 				System.out.println((dtv - dt / 1000.) + " " + HTML5Video.getProperty(jsvideo, "paused") + " "
-						+ HTML5Video.getProperty(jsvideo, "seeking"));
+						+ HTML5Video.getProperty(jsvideo, "seeking") + " " + ++frameCount);
 				if (vt >= duration) {
 					playing = false;
 					removePlayListener(v);
