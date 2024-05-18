@@ -506,6 +506,8 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 					helper.setState(STATE_FIND_FRAMES_LOOP);
 					continue;
 				case STATE_SET_FROM_CONTROL:
+					offset = 0.5 / v.frameRate;
+					//$FALL-THROUGH$
 				case STATE_FIND_FRAMES_DONE:
 					helper.setState(STATE_IDLE);
 					v.initializeMovie(v.rawDuration);

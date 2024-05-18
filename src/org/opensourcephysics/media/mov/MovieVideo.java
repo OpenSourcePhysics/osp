@@ -44,6 +44,7 @@ public abstract class MovieVideo extends VideoAdapter {
 	 * the duration reported by the video, possibly longer for Xuggle than this.getDuration().
 	 */
 	protected double rawDuration;
+	protected int frameRate;
 
 
 	// load,save for video frames would be here
@@ -106,6 +107,7 @@ public abstract class MovieVideo extends VideoAdapter {
 		frameCount = count;
 		startTimes = (double[]) control.getObject("start_times");
 		rawDuration = control.getDouble("duration");
+		frameRate = control.getInt("frame_rate");
 		return control;
 	}
 
@@ -120,9 +122,11 @@ public abstract class MovieVideo extends VideoAdapter {
 			control.setValue("start_times", vid.startTimes); // in milliseconds
 			double dur = vid.rawDuration; // in seconds
 			control.setValue("duration", dur); // convert to seconds
-			control.setValue("frame_count", vid.getFrameCount());
-			double fps = vid.getFrameCount() / dur;
-			control.setValue("frame_rate", Math.round((float)fps));
+			int fc = vid.getFrameCount();
+			control.setValue("frame_count", fc);
+			int fps = (int) Math.round(vid.getFrameCount() / dur + 0.01);
+			control.setValue("frame_rate", fps);
+			System.out.println("MovieVideo.save " + dur + " " + fc + " " + fps);
 		}
 
 		public void setVideo(String path, MovieVideo video, String engine) {

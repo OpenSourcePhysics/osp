@@ -1991,66 +1991,64 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * An array string must start and end with braces and contain only int, double,
 	 * or boolean
 	 *
-	 * @param arrayString   the array string
+	 * @param s   the array string
 	 * @param componentType the component type of the array
 	 * @return the array
 	 */
-	private static Object arrayValue(String arrayString, Class<?> componentType) {
-		if (!(arrayString.startsWith("{") && arrayString.endsWith("}"))) { //$NON-NLS-1$ //$NON-NLS-2$
+	private static Object arrayValue(String s, Class<?> componentType) {
+		System.out.println(s);
+		if (!(s.startsWith("{") && s.endsWith("}"))) { //$NON-NLS-1$ //$NON-NLS-2$
 			return null;
 		}
-		// trim the outer braces
-		String trimmed = arrayString.substring(1, arrayString.length() - 1);
 		if (componentType.isArray()) {
 			// array of arrays
 			// create and collect the array elements from substrings
 			ArrayList<Object> list = new ArrayList<Object>();
-			BitSet bsNotNull = new BitSet();
 			Class<?> arrayType = componentType.getComponentType();
-			// last , will be removed in loop; count it now
-			boolean commaLast= (trimmed.lastIndexOf(",") == trimmed.length() - 1);
-			int n = 0;
-			int i,j,k;
-			while ((k = trimmed.indexOf(",")) >= -1
-					&& (i = trimmed.indexOf("{")) >= -1
-					&& (j = indexOfClosingBrace(trimmed, i)) > 0) {
-				if (k > -1 && k < i) { // first comma is before opening brace
-					trimmed = trimmed.substring(k + 1);
-				} else {
-					bsNotNull.set(n);
-					list.add(arrayValue(trimmed.substring(i, j + 1), arrayType));
-					trimmed = trimmed.substring(j + 1);
-					if (trimmed.startsWith(",")) // comma following closing brace //$NON-NLS-1$
-						trimmed = trimmed.substring(1);
+			// if intent is to allow trailing comma to represents a final null value, 
+			// then set this true
+			boolean allowTrailingNull = false;
+			int n = s.length() - (allowTrailingNull ? 0 : 1);
+			boolean wasArray = false;
+			for (int pt = 1; pt < n; pt++) {
+				switch (s.charAt(pt)) {
+				case ',':
+				case '}':
+					if (wasArray) {
+						wasArray = false;
+					} else {
+						list.add(null);
+					}
+					break;
+				case '{':
+					int pt1 = indexOfClosingBrace(s, pt, n);
+					list.add(arrayValue(s.substring(pt, pt1 + 1), arrayType));
+					pt = pt1;
+					wasArray = true;
+					break;
 				}
-				n++;
-			}
-			// look for all null elements
-			while (k > -1) {
-				n++;
-				trimmed = trimmed.substring(k + 1);
-				k = trimmed.indexOf(","); //$NON-NLS-1$
-			}
-			if (commaLast) {
-				n++;
 			}
 			// create the array
+			n = list.size();
 			Object array = Array.newInstance(componentType, n);
 			// populate the array
-			for (int pt = 0, p = 0; p < n; p++) {
-				if (bsNotNull.get(p)) 
-					Array.set(array, p, list.get(pt++));
+			for (int p = 0; p < n; p++) {
+				Object v = list.get(p);
+				if (v != null) 
+					Array.set(array, p, v);
 			}
 			return array;
 		}
+		// int, double, or boolean values separated by comma
 		// wiil not be null, but may be empty
 		// collect element substrings separated by commas
-		String[] list = (trimmed.length() == 0 ? new String[0] : trimmed.split(","));
+		String[] list = (s.length() == 0 ? new String[0] : s.substring(1, s.length() - 1).split(","));
 		// create the array and populate it
 		Object array = Array.newInstance(componentType, list.length);
 		if (componentType == Integer.TYPE) {
 			for (int pt = list.length; --pt >= 0;)
 				((int[]) array)[pt] = Integer.parseInt(list[pt]);
+			System.out.println(Arrays.toString((int[]) array));
 		} else if (componentType == Double.TYPE) {
 			for (int pt = list.length; --pt >= 0;)
 				((double[]) array)[pt] = Double.parseDouble(list[pt]);
@@ -2061,15 +2059,41 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		return array;
 	}
 
-//	static {
-//		System.out.println(Arrays.toString((int[][]) arrayValue("{,,,,}", new int[0].getClass())));
-//		System.out.println(Arrays.toString((int[][]) arrayValue("{{1}}", new int[0].getClass())));
-//		System.out.println(Arrays.toString((int[][]) arrayValue("{,,{1,2,3},,{4,5,6},,}", new int[0].getClass())));
-//		System.out.println(Arrays.toString((int[][]) arrayValue("{,,,{1,2,3},,,{4,5,6},,,}", new int[0].getClass())));
-//		System.out.println(Arrays.toString((int[][]) arrayValue("{,{1,2,3},{4,5,6},}", new int[0].getClass())));
-//		System.out.println("OK");
-//		
-//	}
+	static {
+		System.out.println(Arrays.toString((int[][]) arrayValue("{,,,,}", new int[0].getClass())));
+		System.out.println(Arrays.toString((int[][]) arrayValue("{{1}}", new int[0].getClass())));
+		System.out.println(Arrays.toString((int[][]) arrayValue("{,,{1,2,3},,{4,5,6},,}", new int[0].getClass())));
+		System.out.println(Arrays.toString((int[][]) arrayValue("{,,,{1,2,3},,,{4,5,6},,,}", new int[0].getClass())));
+		System.out.println(Arrays.toString((int[][]) arrayValue("{,{1,2,3},{4,5,6},}", new int[0].getClass())));
+		System.out.println("OK");
+		
+	}
+	
+	/**
+	 * Returns the index of the closing brace corresponding to the opening brace at
+	 * the given index in an array string.
+	 *
+	 * @param s         the array string
+	 * @param pt the index of the opening brace
+	 * @param n termination index
+	 * @return the index of the closing brace
+	 */
+	private static int indexOfClosingBrace(String s, int pt, int n) {
+		for (int c = 0, i = pt; i < n; i++) {
+			switch (s.charAt(i)) {
+			case '{':
+				c++;
+				break;
+			case '}':
+				c--;
+				if (c == 0)
+					return i;
+			}
+		}
+		return -1;
+	}
+
+
 	/**
 	 * Returns the collection value of the specified property. May return null.
 	 *
@@ -2110,34 +2134,6 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			ex.printStackTrace();
 		}
 		return null;
-	}
-
-	/**
-	 * Returns the index of the closing brace corresponding to the opening brace at
-	 * the given index in an array string.
-	 *
-	 * @param arrayString         the array string
-	 * @param indexOfOpeningBrace the index of the opening brace
-	 * @return the index of the closing brace
-	 */
-	private static int indexOfClosingBrace(String arrayString, int indexOfOpeningBrace) {
-		int pointer = indexOfOpeningBrace + 1;
-		int n = 1; // count up/down for opening/closing braces
-		int opening = arrayString.indexOf("{", pointer); //$NON-NLS-1$
-		int closing = arrayString.indexOf("}", pointer); //$NON-NLS-1$
-		while (n > 0) {
-			if (opening > -1 && opening < closing) {
-				n++;
-				pointer = opening + 1;
-				opening = arrayString.indexOf("{", pointer); //$NON-NLS-1$
-			} else if (closing > -1) {
-				n--;
-				pointer = closing + 1;
-				closing = arrayString.indexOf("}", pointer); //$NON-NLS-1$
-			} else
-				return -1;
-		}
-		return pointer - 1;
 	}
 
 	public static String getClassName(String xml) {

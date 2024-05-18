@@ -85,7 +85,6 @@ public void setXY(double _x, double _y) {
 
   /**
    * Gets the label's offset in the x direction.
-   * @param offset int
    */
   public int getOffsetX() {
     return box.xoffset;
@@ -101,7 +100,6 @@ public void setXY(double _x, double _y) {
 
   /**
    * Gets the label's offset in the y direction.
-   * @param offset int
    */
   public int getOffsetY() {
     return box.yoffset;
