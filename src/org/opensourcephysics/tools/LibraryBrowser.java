@@ -1738,11 +1738,11 @@ public class LibraryBrowser extends JPanel {
 	protected void processTargetSelection(LibraryResource record, Object hint) {
 		if (record == null)
 			return;
-		String target = record.getTarget();
+		String target = record.getAbsoluteTarget();
 		if (target != null && (target.toLowerCase().endsWith(".pdf") //$NON-NLS-1$
 				|| target.toLowerCase().endsWith(".html") //$NON-NLS-1$
 				|| target.toLowerCase().endsWith(".htm"))) { //$NON-NLS-1$
-			target = XML.getResolvedPath(target, record.getBasePath());
+//			target = XML.getResolvedPath(target, record.getBasePath());
 			target = ResourceLoader.getURIPath(target);
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			OSPDesktop.displayURL(target);
@@ -1875,6 +1875,8 @@ public class LibraryBrowser extends JPanel {
 		String urlPath = commandField.getText().trim();
 		if (urlPath == null || !ResourceLoader.isHTTP(urlPath))
 			return;
+		String uriPath = ResourceLoader.getURIPath(urlPath);
+
 		// special handling for ComPADRE
 		LibraryTreePanel treePanel = getSelectedTreePanel();
 		LibraryTreeNode node = (treePanel == null ? null : treePanel.getSelectedNode());
@@ -1885,7 +1887,7 @@ public class LibraryBrowser extends JPanel {
 		VideoIO.getChooserFilesAsync("save resource " + name, //$NON-NLS-1$
 				(files) -> {
 					if (VideoIO.getChooser().getSelectedOption() == AsyncFileChooser.APPROVE_OPTION && files != null) {
-						File file = ResourceLoader.downloadResourceFromDialog(urlPath, files[0]);
+						File file = ResourceLoader.downloadResourceFromDialog(uriPath, files[0]);
 						if (file != null) {
 							LibraryBrowser.this.firePropertyChange(PROPERTY_LIBRARY_TARGET, HINT_DOWNLOAD_RESOURCE,
 									file);
@@ -1928,7 +1930,10 @@ public class LibraryBrowser extends JPanel {
 		String path = commandField.getText().trim();
 		LibraryTreePanel tpanel = getSelectedTreePanel();
 		LibraryTreeNode node = (tpanel == null ? null : tpanel.getSelectedNode());
-		if (node != null && path.equals(node.record.getAbsoluteTarget())) {
+		if (node != null && path.equals(node.getAbsoluteTarget())) {
+			if (node.record != null && !path.equals(node.record.getAbsoluteTarget())) {
+				node.record.setBasePath(node.getBasePath());
+			}
 			processTargetSelection(node.record, HINT_LOAD_RESOURCE);
 			return;
 		}

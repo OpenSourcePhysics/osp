@@ -277,6 +277,8 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 		String thumb = null;
 		if (isThumbnailType) {
 			thumb = record.getThumbnail();
+			if (thumb != null && !getThumbnailFile().exists())
+				thumb = null;
 			if (thumb == null && OSPRuntime.doCacheThumbnail) {
 				String source = getAbsoluteTarget();
 				File thumbFile = getThumbnailFile();
