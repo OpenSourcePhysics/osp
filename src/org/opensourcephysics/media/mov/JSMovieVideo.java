@@ -647,7 +647,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 
 	@Override
 	protected boolean seekMS(double timeMS) {
-		HTML5Video.setCurrentTime(jsvideo, timeMS * 1000);		
+		HTML5Video.setCurrentTime(jsvideo, timeMS / 1000);		
 		return true;
 	}
 
