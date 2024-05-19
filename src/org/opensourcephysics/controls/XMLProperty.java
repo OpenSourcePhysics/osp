@@ -18,6 +18,41 @@ import java.util.List;
  */
 public interface XMLProperty {
 
+	static class WrappedArray {
+
+		private double[] val;
+		private int decimalPlaces;
+
+		public WrappedArray(double[] val, int decimalPlaces) {
+			this.val = val;
+			this.decimalPlaces = decimalPlaces;
+		}
+		
+		@Override
+		public String toString() {
+			StringBuffer sb = new StringBuffer();
+			sb.append("{");
+			String zeros = ".00000000000".substring(0, decimalPlaces + 1);
+			for (int i = 0, n = val.length; i < n; i++) {
+				if (i > 0)
+					sb.append(',');
+				String s = Double.toString(val[i] == 0 || decimalPlaces > 5 ? val[i] : val[i] + 1e-6);
+				if (s.indexOf("E") < 0) {
+					int pt = s.indexOf('.') + 1 + decimalPlaces;
+					if (s.length() > pt) {
+						s = s.substring(0, pt);
+						if (s.endsWith(zeros))
+							s = s.substring(0, pt - zeros.length());
+					}
+				}
+				sb.append(s);
+			}
+			sb.append("}");
+			return sb.toString();
+		}
+
+	}
+
 	public final int TYPE_UNKNOWN = -1;	
 	public final int TYPE_INT = 0;
 	public final int TYPE_DOUBLE = 1;
@@ -26,6 +61,7 @@ public interface XMLProperty {
 	public final int TYPE_ARRAY = 4;
 	public final int TYPE_COLLECTION = 5;
 	public final int TYPE_OBJECT = 6;
+	public final int TYPE_WRAPPED_ARRAY = 7;
 
 	public final static String[] types = { 
 			"int", // 0
@@ -34,7 +70,8 @@ public interface XMLProperty {
 			"string", // 3
 			"array", // 4
 			"collection", // 5
-			"object" // 6
+			"object",
+			"array" // 7
 	};
 
 	public static String getTypeName(int type) {
@@ -76,6 +113,8 @@ public interface XMLProperty {
 			return TYPE_STRING; //$NON-NLS-1$
 		} else if (obj instanceof Collection<?>) {
 			return TYPE_COLLECTION; //$NON-NLS-1$
+		} else if (obj instanceof WrappedArray) {
+			return TYPE_WRAPPED_ARRAY;
 		} else if (obj.getClass().isArray()) {
 			// make sure ultimate component class is acceptable
 			Class<?> componentType = obj.getClass().getComponentType();

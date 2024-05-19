@@ -27,7 +27,6 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.function.Function;
 
@@ -42,8 +41,6 @@ import org.opensourcephysics.media.core.AsyncVideoI;
 import org.opensourcephysics.media.core.DoubleArray;
 import org.opensourcephysics.media.core.ImageCoordSystem;
 import org.opensourcephysics.media.core.VideoIO;
-import org.opensourcephysics.tools.Resource;
-import org.opensourcephysics.tools.ResourceLoader;
 
 import javajs.async.SwingJSUtils.StateHelper;
 import javajs.async.SwingJSUtils.StateMachine;
@@ -168,7 +165,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 	}
 
 	@Override
-	public double getDuration() {
+	public double getFrameCountDurationMS() {
 		return jsvideo == null ? -1 : HTML5Video.getDuration(jsvideo) * 1000;
 	}
 	
@@ -376,7 +373,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 
 		@Override
 		public boolean stateLoop() {
-			System.out.println("JSMovieVideo.stateLoop " + helper.getState());
+			//System.out.println("JSMovieVideo.stateLoop " + helper.getState());
 			while (helper.isAlive()) {
 				switch (v.err == null ? helper.getState() : STATE_ERROR) {
 				case STATE_IDLE:
@@ -414,6 +411,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 						if (control != null)
 							control = v.setFromControl(control);
 						helper.next(control != null ? STATE_SET_FROM_CONTROL : canSeek ? STATE_FIND_FRAMES_INIT : STATE_PLAY_WITH_CALLBACK);
+						control = null;
 					}
 					continue;
 				case STATE_PLAY_WITH_CALLBACK:
@@ -444,7 +442,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 					v.frameTimes = new ArrayList<Double>();
 					v.frameTimes.add(t);
 					if (canSeek) {
-						setCurrentTime(0);
+						v.seekMS(0);
 						setReadyListener(playThroughOrSeeked);
 						helper.setState(STATE_FIND_FRAMES_LOOP);
 						continue;
@@ -486,7 +484,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 					//$FALL-THROUGH$
 				case STATE_FIND_FRAMES_DONE:
 					helper.setState(STATE_IDLE);
-					v.initializeMovie(v.rawDuration);
+					v.finalizeLoading();
 					v.frameTimes = null;
 					thisFrame = -1;
 					v.progress = VideoIO.PROGRESS_VIDEO_READY;
@@ -497,7 +495,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 					// animation of the frames in Tracker. 
 					helper.setState(STATE_GET_IMAGE_READY);
 					setReadyListener(playThroughOrSeeked );
-					setCurrentTime(offset + t);
+					v.seekMS((offset + t) * 1000);
 					return true;
 				case STATE_GET_IMAGE_READY:
 					//about 0.1 sec to seek OSPLog.debug(Performance.timeCheckStr("JSMovieVideo.getImage ready", Performance.TIME_MARK));
@@ -509,11 +507,6 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 			}
 			return false;
 
-		}
-
-		private void setCurrentTime(double t) {
-			System.out.println("setting ct " + t);
-			HTML5Video.setCurrentTime(v.jsvideo, t);		
 		}
 
 		protected void setTimes(double[] htmlRequstTimes) {
@@ -580,7 +573,8 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 
 	}
 
-	void initializeMovie(double duration) {
+	@Override
+	protected void finalizeLoading() {
 		videoDialog.setVisible(false);
 		// clean up temporary objects
 		// throw IOException if no frames were loaded
@@ -594,7 +588,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 			// set initial video clip properties
 			setFrameCount(frameTimes.size());
 		}
-		OSPLog.debug("JSMovieVideo " + size + "\n duration:" + duration + " act. frameCount:" + frameCount);
+		OSPLog.debug("JSMovieVideo " + size + "\n duration:" + rawDuration + " act. frameCount:" + frameCount);
 		startFrameNumber = 0;
 		endFrameNumber = frameCount - 1;
 		// create startTimes array
@@ -649,6 +643,27 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 			setVideo(path, video, MovieFactory.ENGINE_JS);
 			return video;
 		}
+	}
+
+	@Override
+	protected boolean seekMS(double timeMS) {
+		HTML5Video.setCurrentTime(jsvideo, timeMS * 1000);		
+		return true;
+	}
+
+	@Override
+	protected BufferedImage getImageForMSTimePoint(double timeMS) {
+		seekMS(timeMS);
+		BufferedImage bi = HTML5Video.getImage(jsvideo, BufferedImage.TYPE_INT_RGB);
+		if (bi == null)
+			return null;
+		rawImage = bi;
+		return bi;
+	}
+
+	@Override
+	protected String getPlatform() {
+		return /** @j2sNative navigator.userAgent ||*/"?";
 	}
 
 }

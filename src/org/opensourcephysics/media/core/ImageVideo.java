@@ -203,7 +203,7 @@ public class ImageVideo extends VideoAdapter {
 	 */
 	@Override
 	public double getEndTime() {
-		return getDuration();
+		return getFrameCountDurationMS();
 	}
 
 	/**
@@ -223,7 +223,7 @@ public class ImageVideo extends VideoAdapter {
 	 * @return the duration of the video in milliseconds, or -1 if not known
 	 */
 	@Override
-	public double getDuration() {
+	public double getFrameCountDurationMS() {
 		return length() * deltaT;
 	}
 

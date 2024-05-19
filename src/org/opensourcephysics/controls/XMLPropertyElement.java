@@ -68,19 +68,19 @@ public final class XMLPropertyElement extends XMLNode implements XMLProperty {
 		type = propertyType;
 		writeNullFinalElement = writeNullFinalArrayElement;
 		switch (type) {
-		case XMLProperty.TYPE_STRING: //$NON-NLS-1$
+		case TYPE_STRING: //$NON-NLS-1$
 			if (XML.requiresCDATA((String) value)) {
 				content.add(XML.CDATA_PRE + value + XML.CDATA_POST);
 			} else {
 				content.add(value.toString());
 			}
 			break;
-		case XMLProperty.TYPE_INT:
-		case XMLProperty.TYPE_DOUBLE:
-		case XMLProperty.TYPE_BOOLEAN:
+		case TYPE_INT:
+		case TYPE_DOUBLE:
+		case TYPE_BOOLEAN:
 			content.add(value.toString());
 			break;
-		case XMLProperty.TYPE_OBJECT:
+		case TYPE_OBJECT:
 			if (value == null) {
 				content.add("null"); //$NON-NLS-1$
 			} else {
@@ -90,18 +90,22 @@ public final class XMLPropertyElement extends XMLNode implements XMLProperty {
 				content.add(control);
 			}
 			break;
-		case XMLProperty.TYPE_COLLECTION: //$NON-NLS-1$
+		case TYPE_COLLECTION: //$NON-NLS-1$
 			className = value.getClass().getName();
 			Iterator<?> it = ((Collection<?>) value).iterator();
 			while (it.hasNext()) {
 				Object next = it.next();
 				int type = XMLProperty.getDataType(next);
-				if (type != XMLProperty.TYPE_UNKNOWN) {
+				if (type != TYPE_UNKNOWN) {
 					content.add(new XMLPropertyElement(this, "item", type, next, writeNullFinalElement)); //$NON-NLS-1$
 				}
 			}
 			break;
-		case XMLProperty.TYPE_ARRAY: //$NON-NLS-1$
+		case TYPE_WRAPPED_ARRAY:
+			className = "[D";
+			content.add(new XMLPropertyElement(this, "array", TYPE_STRING, ((WrappedArray) value).toString(), writeNullFinalElement)); //$NON-NLS-1$ //$NON-NLS-2$
+			break;
+		case TYPE_ARRAY: //$NON-NLS-1$
 			className = value.getClass().getName();
 			// determine if base component type is primitive and count array elements
 			Class<?> baseType = value.getClass().getComponentType();
@@ -118,18 +122,17 @@ public final class XMLPropertyElement extends XMLNode implements XMLProperty {
 			boolean primitive = (baseType == Integer.TYPE || baseType == Double.TYPE || baseType == Boolean.TYPE);
 			if (primitive && (count > XMLControlElement.compactArraySize)) {
 				// write array as string if base type is primitive
-				String s = getArrayString(value);
-				content.add(new XMLPropertyElement(this, "array", XMLProperty.TYPE_STRING, s, writeNullFinalElement)); //$NON-NLS-1$ //$NON-NLS-2$
+				content.add(new XMLPropertyElement(this, "array", TYPE_STRING, getArrayString(value), writeNullFinalElement)); //$NON-NLS-1$ //$NON-NLS-2$
 			} else {
 				int length = Array.getLength(value);
 				int last = writeNullFinalElement ? length - 1 : length;
 				for (int j = 0; j < length; j++) {
 					Object next = Array.get(value, j);
 					int type = XMLProperty.getDataType(next);
-					if (type == XMLProperty.TYPE_UNKNOWN) {
+					if (type == TYPE_UNKNOWN) {
 						if (j < last)
 							continue;
-						type = XMLProperty.TYPE_OBJECT; //$NON-NLS-1$
+						type = TYPE_OBJECT; //$NON-NLS-1$
 					}
 					content.add(new XMLPropertyElement(this, "[" + j + "]", type, next, writeNullFinalElement)); //$NON-NLS-1$ //$NON-NLS-2$
 				}
@@ -157,13 +160,13 @@ public final class XMLPropertyElement extends XMLNode implements XMLProperty {
 	@Override
 	public Class<?> getPropertyClass() {
 		switch (type) {
-		case XMLProperty.TYPE_INT:
+		case TYPE_INT:
 			return Integer.TYPE;
-		case XMLProperty.TYPE_DOUBLE:
+		case TYPE_DOUBLE:
 			return Double.TYPE;
-		case XMLProperty.TYPE_BOOLEAN:
+		case TYPE_BOOLEAN:
 			return Boolean.TYPE;
-		case XMLProperty.TYPE_STRING:
+		case TYPE_STRING:
 			return String.class;
 		default:
 			try {
@@ -222,18 +225,18 @@ public final class XMLPropertyElement extends XMLNode implements XMLProperty {
 	@Override
 	public XMLControl[] getChildControls() {
 		switch (type) {
-		case XMLProperty.TYPE_OBJECT:
+		case TYPE_OBJECT:
 			if (!content.isEmpty()) {
 				return new XMLControl[] { (XMLControl) content.get(0) };				
 			}
 			break;
-		case XMLProperty.TYPE_ARRAY:
-		case XMLProperty.TYPE_COLLECTION:
+		case TYPE_ARRAY:
+		case TYPE_COLLECTION:
 			ArrayList<XMLControl> list = new ArrayList<XMLControl>();
 			Iterator<Object> it = content.iterator();
 			while (it.hasNext()) {
 				XMLProperty prop = (XMLProperty) it.next();
-				if (prop.getPropertyType() == XMLProperty.TYPE_OBJECT 
+				if (prop.getPropertyType() == TYPE_OBJECT 
 						&& !prop.getPropertyContent().isEmpty()) { //$NON-NLS-1$
 					list.add((XMLControl) prop.getPropertyContent().get(0));
 				}
@@ -253,21 +256,21 @@ public final class XMLPropertyElement extends XMLNode implements XMLProperty {
 	public void setValue(String stringValue) {
 		try {
 			switch (type) {
-			case XMLProperty.TYPE_INT:
+			case TYPE_INT:
 				Integer.parseInt(stringValue);
 				break;
-			case XMLProperty.TYPE_DOUBLE:
+			case TYPE_DOUBLE:
 				Double.parseDouble(stringValue);
 				break;
-			case XMLProperty.TYPE_BOOLEAN:
+			case TYPE_BOOLEAN:
 				stringValue = stringValue.equals("true") ? "true" : "false"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				break;
-			case XMLProperty.TYPE_STRING:
+			case TYPE_STRING:
 				stringValue = XML.CDATA_PRE + stringValue + XML.CDATA_POST;
 				break;
-			case XMLProperty.TYPE_OBJECT:
-			case XMLProperty.TYPE_ARRAY:
-			case XMLProperty.TYPE_COLLECTION:
+			case TYPE_OBJECT:
+			case TYPE_ARRAY:
+			case TYPE_COLLECTION:
 				return;
 			}
 		} catch (NumberFormatException ex) {
@@ -287,14 +290,17 @@ public final class XMLPropertyElement extends XMLNode implements XMLProperty {
 		// write the opening tag with attributes
 		StringBuffer xml = new StringBuffer(
 				XML.NEW_LINE + indent(getLevel()) + "<property name=\"" + name + "\" type=\"" + XMLProperty.getTypeName(type) + "\""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		if (type == XMLProperty.TYPE_ARRAY 
-				|| type == XMLProperty.TYPE_COLLECTION) { 
+		switch(type) {
+		case TYPE_ARRAY:
+		case TYPE_WRAPPED_ARRAY:
+		case TYPE_COLLECTION: 
 			xml.append(" class=\"" + className + "\""); //$NON-NLS-1$ //$NON-NLS-2$
+			break;
 		}
 		// write the content
 		List<Object> c = content;
 		// special case: null object
-		if (type == XMLProperty.TYPE_OBJECT && c.isEmpty()) { //$NON-NLS-1$
+		if (type == TYPE_OBJECT && c.isEmpty()) { //$NON-NLS-1$
 			// BH! Q this was getPropertyContents(), but that is NOT a clone!
 			c = new ArrayList<>();
 			c.add("null"); //$NON-NLS-1$

@@ -276,6 +276,10 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		setValue(name, obj, XMLPropertyElement.defaultWriteNullFinalArrayElements);
 	}
 
+	@Override
+	public void setValue(String name, double[] val, int decimalPlaces) {
+		  setValue(name, new WrappedArray(val, decimalPlaces));
+	}
 	/**
 	 * Sets a property with the specified name and object value.
 	 *
@@ -2059,15 +2063,15 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		return array;
 	}
 
-	static {
-		System.out.println(Arrays.toString((int[][]) arrayValue("{,,,,}", new int[0].getClass())));
-		System.out.println(Arrays.toString((int[][]) arrayValue("{{1}}", new int[0].getClass())));
-		System.out.println(Arrays.toString((int[][]) arrayValue("{,,{1,2,3},,{4,5,6},,}", new int[0].getClass())));
-		System.out.println(Arrays.toString((int[][]) arrayValue("{,,,{1,2,3},,,{4,5,6},,,}", new int[0].getClass())));
-		System.out.println(Arrays.toString((int[][]) arrayValue("{,{1,2,3},{4,5,6},}", new int[0].getClass())));
-		System.out.println("OK");
-		
-	}
+//	static {
+//		System.out.println(Arrays.toString((int[][]) arrayValue("{,,,,}", new int[0].getClass())));
+//		System.out.println(Arrays.toString((int[][]) arrayValue("{{1}}", new int[0].getClass())));
+//		System.out.println(Arrays.toString((int[][]) arrayValue("{,,{1,2,3},,{4,5,6},,}", new int[0].getClass())));
+//		System.out.println(Arrays.toString((int[][]) arrayValue("{,,,{1,2,3},,,{4,5,6},,,}", new int[0].getClass())));
+//		System.out.println(Arrays.toString((int[][]) arrayValue("{,{1,2,3},{4,5,6},}", new int[0].getClass())));
+//		System.out.println("OK");
+//		
+//	}
 	
 	/**
 	 * Returns the index of the closing brace corresponding to the opening brace at

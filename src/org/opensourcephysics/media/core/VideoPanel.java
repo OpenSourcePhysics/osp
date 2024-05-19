@@ -838,7 +838,7 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		 * Loads an object with data from an XMLControl.
 		 *
 		 * @param control the control
-		 * @param obj     the VideoPanel from createObject
+		 * @param obj     the VideoPanel from createObject 
 		 * 
 		 * @return the final VideoPanel (not necessarily obj)
 		 */

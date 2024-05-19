@@ -151,7 +151,7 @@ public class GifVideo extends VideoAdapter {
 	 * @return the duration of the video in milliseconds, or -1 if not known
 	 */
 	@Override
-	public double getDuration() {
+	public double getFrameCountDurationMS() {
 		int n = getFrameCount() - 1;
 		return getFrameTime(n) + decoder.getDelay(n);
 	}

@@ -95,8 +95,26 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	protected FilterStack filterStack = new FilterStack();
 	protected DataBufferInt clearRaster;
 
+	/**
+	 * startTimes are exact for Firefox and Xuggle, and approximate
+	 * in Chrome based on number of frames and overall raw duration;
+	 * passed through XMLControl "video" in TRK/TRZ to other platforms
+	 * 
+	 * used in:
+	 * 
+	 * VideoAdapter.getEndTime(), .setEndTime(), .getFrameDuration()
+	 * 
+	 * Video.getAverageFrameRate(), .getOutliers(), isValid()
+	 * 
+	 * MovieVideo.getFrameNumberBefore(), .setFromControl(), .setStartTimes(), .finalizeLoading()
+	 * 
+	 *  
+	 */
 	protected double[] startTimes;
 
+	/**
+	 * set to false by TrackerIO.getImageBytes()
+	 */
 	private boolean doNotify = true;
 
 	public void setNotify(boolean b) {
@@ -942,10 +960,10 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	@Override
 	public final double getFrameDuration(int n) {
 		if (frameCount == 1) {
-			return getDuration();
+			return getFrameCountDurationMS();
 		}
 		if (n == frameCount - 1) {
-			return getDuration() - getFrameTime(n);
+			return getFrameCountDurationMS() - getFrameTime(n);
 		}
 		return getFrameTime(n + 1) - getFrameTime(n);
 	}
@@ -996,12 +1014,15 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	abstract protected void setStartTimes();
 
 	/**
+	 * never called
+	 * 
 	 * Sets the start time in milliseconds. NOTE: the actual start time is normally
 	 * set to the beginning of a frame.
 	 *
 	 * @param millis the desired start time in milliseconds
 	 */
 	@Override
+	@Deprecated
 	public void setStartTime(double millis) {
 		millis = Math.abs(millis);
 		for (int i = 0; i < startTimes.length; i++) {
@@ -1023,7 +1044,7 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 		int n = getEndFrameNumber();
 		if (n < getFrameCount() - 1)
 			return getFrameTime(n + 1);
-		return getDuration();
+		return getFrameCountDurationMS();
 	}
 
 	/**
@@ -1034,7 +1055,7 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	@Override
 	public void setEndTime(double millis) {
 		millis = Math.abs(millis);
-		millis = Math.min(getDuration(), millis);
+		millis = Math.min(getFrameCountDurationMS(), millis);
 		for (int i = 0; i < startTimes.length; i++) {
 			double t = startTimes[i];
 			if (millis < t) { // find first frame with later start time
