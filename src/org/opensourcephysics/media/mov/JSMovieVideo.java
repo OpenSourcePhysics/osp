@@ -655,9 +655,8 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 	protected BufferedImage getImageForMSTimePoint(double timeMS) {
 		seekMS(timeMS);
 		BufferedImage bi = HTML5Video.getImage(jsvideo, BufferedImage.TYPE_INT_RGB);
-		if (bi == null)
-			return null;
-		rawImage = bi;
+		if (bi != null)
+			rawImage = bi;
 		return bi;
 	}
 
