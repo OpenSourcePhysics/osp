@@ -78,8 +78,6 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 	private HTML5Video jsvideo;	
 	
 	private JDialog videoDialog;
-	private String fileName;
-	private URL url;
 
 	protected int progress;
 
@@ -90,43 +88,21 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 	 * @param control  if going or from control
 	 * @throws IOException
 	 */
-	public JSMovieVideo(String fileName, String basePath, XMLControl control) throws IOException {
-		allowControlData = true;
-		boolean isExport = (control != null && !"video".equals(control.getPropertyName()));
-		addFramePropertyListeners();
-		this.baseDir = basePath;
-		this.fileName = fileName;
-		String path = getAbsolutePath(fileName);
-		Resource res = (ResourceLoader.isHTTP(path) ? new Resource(new URL(path)) : new Resource(new File(path)));
-		url = res.getURL();
-		boolean isLocal = (url.getProtocol().toLowerCase().indexOf("file") >= 0); //$NON-NLS-1$
-		path = isLocal ? res.getAbsolutePath() : url.toExternalForm();
+	JSMovieVideo(String fileName, String basePath, XMLControl control) throws IOException {
+		super(fileName, basePath, control);
 		OSPLog.finest("JSMovieVideo loading " + path + " local?: " + isLocal); //$NON-NLS-1$ //$NON-NLS-2$
 		if (!VideoIO.checkMP4(path, null, null)) {
 			frameNumber = Integer.MIN_VALUE;
 			return;
-		}
-		// set properties
-		setProperty("name", XML.getName(fileName)); //$NON-NLS-1$
-		setProperty("absolutePath", res.getAbsolutePath()); //$NON-NLS-1$
-		if (fileName.indexOf(":") < 0) { //$NON-NLS-1$
-			// if name is relative, path is name
-			setProperty("path", XML.forwardSlash(fileName)); //$NON-NLS-1$
-		} else {
-			// else path is relative to user directory
-			setProperty("path", XML.getRelativePath(fileName)); //$NON-NLS-1$
 		}
 		if (isExport) {
 			// no need to actually load anthing?
 			return;
 		}
 		firePropertyChange(PROPERTY_VIDEO_PROGRESS, fileName, 0);
-		frame = 0;
-		//startFailDetection();
 		if (state == null)
 			state = new State(this, allowControlData ? control : null);
 		state.load(path);
-
 	}
 
 	/**

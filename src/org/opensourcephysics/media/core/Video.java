@@ -420,11 +420,13 @@ public interface Video extends InteractiveImage, Trackable, PropertyChangeListen
 	  ////////////// common for all adapters -- in VideoAdapter only
 	  
 	  /**
+	   * Never called 
 	   * Starts and stops the media.
 	   *
 	   * @param playing <code>true</code> starts the media, and
 	   * <code>false</code> stops it
 	   */
+	  @Deprecated
 	  public void setPlaying(boolean playing);
 
 	  /**

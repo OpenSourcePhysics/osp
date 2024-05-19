@@ -251,14 +251,6 @@ public class ResourceLoader {
 	 * @return the Resource, or null if none found
 	 */
 	private static Resource getResource(String name, boolean searchFiles, boolean zipURLsOK) {
-//		System.out.println("RL getting  " + name);
-//		try {
-//			URL url = getAppletResourceURL(name); // added by W. Christian
-//			if (url != null) {
-//				return new Resource(url);
-//			}
-//		} catch (Exception ex) {
-//		}
 		return getResource(name, Resource.class, searchFiles, zipURLsOK);
 	}
 
@@ -287,53 +279,6 @@ public class ResourceLoader {
 		while (name.startsWith("./")) { //$NON-NLS-1$
 			name = name.substring(2);
 		}
-
-//		if (OSPRuntime.isJS) {
-//			// could be file:/TEMP; could be what?
-//			//System.out.println("RL " + name);
-//			if (!isHTTP(name) && !name.startsWith("/") && name.indexOf(OSPRuntime.tempDir) < 0) {
-//				if (false)//
-//				name = OSPRuntime.tempDir + name;
-//			}
-//		} else
-		
-//		/**
-//		 * not applicable -- Tracker Java applet only
-//		 * 
-//		 * @j2sNative
-//		 * 
-//		 */
-//		{
-//			// removed by Transpiler
-//			if (OSPRuntime.isAppletMode() || (OSPRuntime.applet != null)) {
-//				// added by Paco
-//				Resource appletRes = null;
-//				// following code added by Doug Brown 2009/11/14
-//				if (type == OSPRuntime.applet.getClass()) {
-//					try {
-//						URL url = getTypeResource(type, name);
-//						appletRes = createResource(url);
-//						if (appletRes != null) {
-//							return appletRes;
-//						}
-//					} catch (Exception ex) {
-//						// url was not found
-//					}
-//				} // end code added by Doug Brown 2009/11/14
-//				for (Iterator<String> it = searchPaths.iterator(); it.hasNext();) {
-//					String path = getPath(it.next(), name);
-//					appletRes = findResourceInClass(path, type, searchFiles);
-//					if (appletRes != null) {
-//						return appletRes;
-//					}
-//				}
-//				appletRes = findResourceInClass(name, type, searchFiles);
-//				if (appletRes != null) {
-//					return appletRes;
-//				}
-//			}
-//		}
-
 		// look for resource with name only
 		Resource res = findResource(name, type, searchFiles, zipURLsOK);
 		if (res != null) {
