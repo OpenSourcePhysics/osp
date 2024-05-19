@@ -59,7 +59,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 	
 	private static final int FORCE_TO_START = -99;
 
-	boolean debugHTMLVideo = true;//false; // voluminous event information
+	boolean debugHTMLVideo = false; // voluminous event information
 
 	State state;
 	public String err;
