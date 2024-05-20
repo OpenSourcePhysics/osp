@@ -995,8 +995,8 @@ public class LibraryResource implements Comparable<LibraryResource> {
 				control.setValue("base_path", res.basePath); //$NON-NLS-1$
 			if (!"".equals(res.target)) //$NON-NLS-1$
 				control.setValue("target", res.getTarget()); //$NON-NLS-1$
-			if (res.thumbnail != null)
-				control.setValue("thumbnail", res.getThumbnail()); //$NON-NLS-1$
+//			if (res.thumbnail != null)
+//				control.setValue("thumbnail", res.getThumbnail()); //$NON-NLS-1$
 			if (!UNKNOWN_TYPE.equals(res.type))
 				control.setValue("type", res.type); //$NON-NLS-1$
 			if (res.metadata != null && res.metadata.size() > 0) {
@@ -1050,7 +1050,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 			}
 			res.setHTMLPath(control.getString("html_path")); //$NON-NLS-1$
 			res.setType(control.getString("type")); //$NON-NLS-1$
-			res.setThumbnail(control.getString("thumbnail")); //$NON-NLS-1$
+//			res.setThumbnail(control.getString("thumbnail")); //$NON-NLS-1$
 			String[][] data = (String[][]) control.getObject("metadata"); //$NON-NLS-1$
 			if (data != null) {
 				res.loaderMetadata = data;

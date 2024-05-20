@@ -2196,8 +2196,14 @@ public class LibraryTreePanel extends JPanel {
 			ResourceLoader.getZipContentsAsync(targetURLPath, (files) -> {
 				if (files == null)
 					return null;
+				String target_urlPath = XML.forwardSlash(targetURLPath);
 //				String targetName = XML.stripExtension(XML.getName(targetURLPath));
-				String targetRelativePath = XML.getPathRelativeTo(targetURLPath, base);
+				if (target_urlPath.startsWith("file:/")) {
+					target_urlPath = target_urlPath.substring(6, target_urlPath.length());
+				} else if (target_urlPath.startsWith("file::/")) {
+						target_urlPath = target_urlPath.substring(7, target_urlPath.length());
+				}
+				String targetRelativePath = XML.getPathRelativeTo(target_urlPath, base);
 				String targetName = XML.stripExtension(targetRelativePath);
 				// look for base name shared by thumbnail and html info files
 				// by default the target filename is the base name but filenames
