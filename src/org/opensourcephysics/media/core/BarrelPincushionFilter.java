@@ -9,7 +9,7 @@
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2017  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2024  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,12 +33,14 @@ package org.opensourcephysics.media.core;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -62,7 +64,8 @@ import org.opensourcephysics.controls.XMLControl;
 public class BarrelPincushionFilter extends Filter {
 
 	// static fields
-	protected static double minAlpha = -0.3, maxAlpha = 0.3;
+	protected static double minAlpha = -1.5, maxAlpha = 0.5;
+	protected static double minScale = 0.5, maxScale = 2.0;
 
 	// instance fields
 	private double[] xOut, yOut, xIn, yIn; // pixel positions on input and output images
@@ -71,9 +74,8 @@ public class BarrelPincushionFilter extends Filter {
 
 	// parameters
 	private int interpolation = 1; // neighborhood size for color interpolation
-	private double alpha = 0.2;
-	private double fixedRadius = 0.7;
-	private double scaleFactor= 1;
+	private double alpha = 0;
+	private double scaleFactor = 1;
 
 	// inspector and circle
 	private Inspector inspector;
@@ -115,31 +117,13 @@ public class BarrelPincushionFilter extends Filter {
 	public void setAlpha(double a) {
 		alpha = Math.max(minAlpha, Math.min(maxAlpha, a));
 		isValidTransform = false;
-		setFixedRadius(0.5);
 		firePropertyChange(PROPERTY_FILTER_IMAGE, null, null); //$NON-NLS-1$
 	}
 
-	/**
-	 * Sets the fixed radius fraction. Pixels at this distance from the image center
-	 * remain fixed.
-	 * 
-	 * @param fraction the fixed radius as a fraction of the corner radius
-	 */
-	public void setFixedRadius(double fraction) {
-		if (Double.isNaN(fraction))
-			return;
-		fraction = Math.abs(fraction);
-		fraction = Math.min(fraction, 1);
-		fraction = Math.max(fraction, 0.2);
-//		if (fixedRadius != fraction) {
-			fixedRadius = fraction;
-			scaleFactor = 1 / getStretchFactor(fixedRadius * pixelsToCorner);
-			System.out.println("pig scaleFactor "+scaleFactor);
-			if (inspector != null)
-				inspector.updateDisplay();
-			isValidTransform = false;
-			firePropertyChange(PROPERTY_FILTER_IMAGE, null, null); //$NON-NLS-1$
-//		}
+	public void setScale(double scale) {
+		scaleFactor = scale;
+		isValidTransform = false;
+		firePropertyChange(PROPERTY_FILTER_IMAGE, null, null); //$NON-NLS-1$
 	}
 
 	// _____________________________ private methods _______________________
@@ -211,17 +195,29 @@ public class BarrelPincushionFilter extends Filter {
 	private void transform(double[] xSource, double[] ySource, double[] xTrans, double[] yTrans) {
 
 		double xCenter = w / 2.0, yCenter = h / 2.0;
-
+		
+		double str = getStretchFactor(0.9*xCenter);
+		scaleFactor = 1/str; // pig
+		
 		int n = xSource.length;
 		for (int i = 0; i < n; i++) {
+//			Point2D pin = new Point2D.Double(xSource[i], ySource[i]);
+//			Point2D pout = getTransformedPoint(pin, w, h, alpha, false);
+//			Point2D pout = getSourcePoint(pin, xCenter, yCenter, 10*alpha, scaleFactor);
+			
 			double dx = xSource[i] - xCenter;
 			double dy = ySource[i] - yCenter;
 			double r = Math.sqrt(dx * dx + dy * dy);
 
-			double stretch = getStretchFactor(r) * scaleFactor;
-			double extra = 0.0001;
+			double stretch = getStretchFactor(r);
+			double extra = 0.000001;
 			xTrans[i] = xCenter + stretch * dx + extra;
 			yTrans[i] = yCenter + stretch * dy + extra;
+			
+//			xTrans[i] = pout.getX();
+//			yTrans[i] = pout.getY();
+//			if (i < 20)
+//			System.out.println("pig i "+i+" r "+(r/pixelsToCorner)+":  ("+xTrans[i]+", "+yTrans[i]+")   "+stretch);
 		}
 
 		isValidTransform = true;
@@ -245,21 +241,25 @@ public class BarrelPincushionFilter extends Filter {
 	  int n = 0;
 	  double rnPrev = rn;
 	  double rnNext = transform(rn, rnPrev);
-	  // iterate until change is less than 0.1 pixel
-	  while (n < 10 && Math.abs(rnPrev - rnNext) > 0.1/pixelsToCorner) {
+	  // iterate twice or until change is less than 0.1 pixel
+	  while (n < 1 && Math.abs(rnPrev - rnNext) > 0.1/pixelsToCorner) {
 	  	n++;
 	  	rnPrev = rnNext;
 	  	rnNext = transform(rn, rnPrev);
 	  }
+
 	  // restore original range
 	  double rIn = rnNext * pixelsToCorner;
 	
 		double ratio = rIn / rOut;
+//		return ratio * scaleFactor;
 		return ratio;
-		// adjust so stretch = 1 when rFixed = rOut
 	}
 	
 	private double transform(double rOrig, double rPrev) {
+//		double a = Math.abs(alpha);
+//		double d = rOrig / (1.0 + a * rPrev*rPrev);
+//		return d;
 		return rOrig / (1.0 - alpha * rPrev*rPrev);
 	}
 	
@@ -303,7 +303,135 @@ public class BarrelPincushionFilter extends Filter {
 //	  else
 //	    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
 //	}	
+	
+	
+	float getRadialX(float x,float y,float cx,float cy,float k){
+		// pig for testing
+		float xscale = 1, xshift = 1;
+		float yscale = 1, yshift = 1;
+	  x = (x*xscale+xshift);
+	  y = (y*yscale+yshift);
+	  float res = x+((x-cx)*k*((x-cx)*(x-cx)+(y-cy)*(y-cy)));
+	  return res;
+	}
 
+	float getRadialY(float x,float y,float cx,float cy,float k){
+		// pig for testing
+		float xscale = 1, xshift = 1;
+		float yscale = 1, yshift = 1;
+	  x = (x*xscale+xshift);
+	  y = (y*yscale+yshift);
+	  float res = y+((y-cy)*k*((x-cx)*(x-cx)+(y-cy)*(y-cy)));
+	  return res;
+	}
+	
+	// pig more pseudocode from web
+//	input:
+//    strength as floating point >= 0.  0 = no change, high numbers equal stronger correction.
+//    zoom as floating point >= 1.  (1 = no change in zoom)
+//
+//algorithm:
+//
+//    set halfWidth = imageWidth / 2
+//    set halfHeight = imageHeight / 2
+//    
+//    if strength = 0 then strength = 0.00001
+//    set correctionRadius = squareroot(imageWidth ^ 2 + imageHeight ^ 2) / strength
+//
+//    for each pixel (x,y) in destinationImage
+//        set newX = x - halfWidth
+//        set newY = y - halfHeight
+//
+//        set distance = squareroot(newX ^ 2 + newY ^ 2)
+//        set r = distance / correctionRadius
+//        
+//        if r = 0 then
+//            set theta = 1
+//        else
+//            set theta = arctangent(r) / r
+//
+//        set sourceX = halfWidth + theta * newX * zoom
+//        set sourceY = halfHeight + theta * newY * zoom
+//
+//        set color of pixel (x, y) to color of source image pixel at (sourceX, sourceY)
+	private static Point2D getSourcePoint(Point2D p, double halfW, double halfH, double a, double zoom){
+		 
+//	input:
+//    a is floating point >= 0.  0 = no change, high numbers equal stronger correction.
+//    zoom as floating point >= 1.  (1 = no change in zoom)
+//
+//  algorithm:
+//
+//    if strength = 0 then strength = 0.00001
+		if (a == 0)
+			a = 0.00001;
+//    set correctionRadius = squareroot(imageWidth ^ 2 + imageHeight ^ 2) / strength
+		double correctionR = Math.sqrt(halfW*halfW + halfH*halfH) / a;
+		double newX = p.getX() - halfW;
+		double newY = p.getY() - halfH;
+		double d = Math.sqrt(newX*newX + newY*newY);
+		double r = d / correctionR;
+		
+		double theta = 1;
+		if (r > 0)
+			theta = Math.atan(r) / r;
+		else if (r < 0)
+			theta = r / Math.atan(r);
+		System.out.println("pig theta "+theta+"     r "+r);
+		
+		double x = halfW + theta*newX*zoom;
+		double y = halfH + theta*newY*zoom;
+//
+//    for each pixel (x,y) in destinationImage		
+//        set newX = x - halfWidth
+//        set newY = y - halfHeight
+//
+//        set distance = squareroot(newX ^ 2 + newY ^ 2)
+//        set r = distance / correctionRadius
+//        
+//        if r = 0 then
+//            set theta = 1
+//        else
+//            set theta = arctangent(r) / r
+//
+//        set sourceX = halfWidth + theta * newX * zoom
+//        set sourceY = halfHeight + theta * newY * zoom
+		
+//
+//        set color of pixel (x, y) to color of source image pixel at (sourceX, sourceY)
+		return new Point2D.Double(x, y);
+	 
+	}
+	
+	// pig try this?
+	private static Point2D getTransformedPoint(Point2D p, double w, double h, double a, boolean inverse){
+	 
+		double aY, aX;
+		 
+		aY = aX = 0;
+		double thetaW = Math.PI;
+		double thetaH = thetaW * h / w;
+		 
+		double angX = thetaW * p.getX() / w;
+		double caX = 2 * a * (h/2 - p.getY()) / h;
+		 
+		double angY = thetaH * p.getY() / h;
+		double caY = 2 * a * (w/2 - p.getX()) / w;
+		 
+		if (inverse) {
+		  double iAng = Math.PI * -1 * 0.5;
+		  aX = (caX * Math.sin(iAng));
+		  aY = (caY * Math.sin(iAng));
+		}
+		 
+		double pX = p.getX() + aY + caY * Math.sin(angY);
+		double pY = p.getY() + aX + caX * Math.sin(angX);
+		 
+		return new Point2D.Double(pX, pY);
+	 
+	}
+
+	
 	/**
 	 * Get the interpolated color at a non-integer position (between pixels points).
 	 * 
@@ -314,6 +442,12 @@ public class BarrelPincushionFilter extends Filter {
 	 * @param pixelValues the color values of the pixels in the image
 	 */
 	private int getColor(double x, double y, int w, int h, int[] pixelValues) {
+		double dx = x-w/2;
+		double dy = y-h/2;
+		x = w/2 + dx * scaleFactor;
+		y = h/2 + dy * scaleFactor;
+//		x = w/2 + dx;
+//		y = h/2 + dy;
 		// get base pixel position
 		int col = (int) Math.floor(x);
 		int row = (int) Math.floor(y);
@@ -374,9 +508,9 @@ public class BarrelPincushionFilter extends Filter {
 
 		JButton helpButton;
 		JPanel contentPane;
-		JSlider alphaSlider;
-		JLabel alphaLabel;
-		NumberField alphaField;
+		JSlider alphaSlider, scaleSlider;
+		JLabel alphaLabel, scaleLabel;
+		NumberField alphaField, scaleField;
 
 		/**
 		 * Constructs the Inspector.
@@ -434,23 +568,27 @@ public class BarrelPincushionFilter extends Filter {
 				public void stateChanged(ChangeEvent e) {
 					int i = alphaSlider.getValue();
 					setAlpha(i / 300.0);
-				}
-			});
-			alphaSlider.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseReleased(MouseEvent e) {
+					setAlpha(i / 100.0);
 					updateDisplay();
 				}
 			});
+//			alphaSlider.addMouseListener(new MouseAdapter() {
+//				@Override
+//				public void mouseReleased(MouseEvent e) {
+//					updateDisplay();
+//				}
+//			});
 
 			space = BorderFactory.createEmptyBorder(2, 4, 2, 2);
 			alphaLabel = new JLabel();
 			alphaLabel.setBorder(space);
+			scaleLabel = new JLabel();
+			scaleLabel.setBorder(space);
 
-			alphaField = new NumberField(3);
+			alphaField = new NumberField(4);
 			alphaField.setMaxValue(maxAlpha);
 			alphaField.setMinValue(minAlpha);
-			alphaField.setUnits("%"); //$NON-NLS-1$
+			alphaField.setFixedPattern("0.000");
 			alphaField.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -473,7 +611,49 @@ public class BarrelPincushionFilter extends Filter {
 				}
 
 			});
+			
+			int sMax = (int) (100 * maxScale);
+			int sMin = (int) (100 * minScale);
+			int s = (int) (100 * scaleFactor);
 
+			scaleSlider = new JSlider(sMin, sMax, s);
+			scaleSlider.setBorder(space);
+			scaleSlider.addChangeListener(new ChangeListener() {
+				@Override
+				public void stateChanged(ChangeEvent e) {
+					int i = scaleSlider.getValue();
+					setScale(i / 100.0);
+					updateDisplay();
+				}
+			});
+
+			scaleField = new NumberField(4);
+			scaleField.setMaxValue(maxScale);
+			scaleField.setMinValue(minScale);
+			scaleField.setFixedPattern("0.00");
+			scaleField.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					scaleFactor = scaleField.getValue();
+					updateDisplay();
+					scaleField.selectAll();
+				}
+
+			});
+			scaleField.addFocusListener(new FocusListener() {
+				@Override
+				public void focusGained(FocusEvent e) {
+					scaleField.selectAll();
+				}
+
+				@Override
+				public void focusLost(FocusEvent e) {
+					scaleFactor = scaleField.getValue();
+					updateDisplay();
+				}
+
+			});
+			
 			// add components to content pane
 			contentPane = new JPanel(new BorderLayout());
 			setContentPane(contentPane);
@@ -486,18 +666,23 @@ public class BarrelPincushionFilter extends Filter {
 
 			space = BorderFactory.createEmptyBorder(2, 2, 2, 4);
 
-//			Box controlPanel = Box.createVerticalBox();
-//			contentPane.add(controlPanel, BorderLayout.CENTER);
-//
-//			Box sourceStack = Box.createVerticalBox();
-//			controlPanel.add(sourceStack);
+			Box vbox = Box.createVerticalBox();
+			vbox.setBorder(space);
+			contentPane.add(vbox, BorderLayout.CENTER);
 
 			Box box = Box.createHorizontalBox();
 			box.setBorder(space);
 			box.add(alphaLabel);
 			box.add(alphaField);
 			box.add(alphaSlider);
-			contentPane.add(box, BorderLayout.CENTER);
+			vbox.add(box);
+			
+			box = Box.createHorizontalBox();
+			box.setBorder(space);
+			box.add(scaleLabel);
+			box.add(scaleField);
+			box.add(scaleSlider);
+			vbox.add(box);
 		}
 
 		/**
@@ -505,12 +690,18 @@ public class BarrelPincushionFilter extends Filter {
 		 */
 		void refreshGUI() {
 			setTitle(MediaRes.getString("RadialDistortionFilter.Inspector.Title")); //$NON-NLS-1$
+			setTitle("Barrel/Pincushion Correction"); //$NON-NLS-1$
 			alphaLabel.setText(MediaRes.getString("RadialDistortionFilter.Label.Diameter") + ":"); //$NON-NLS-1$ //$NON-NLS-2$
+			alphaLabel.setText("alpha:"); //$NON-NLS-1$ //$NON-NLS-2$
+			scaleLabel.setText("scale:"); //$NON-NLS-1$ //$NON-NLS-2$
 			helpButton.setText(MediaRes.getString("PerspectiveFilter.Button.Help")); //$NON-NLS-1$
 			boolean enabled = BarrelPincushionFilter.this.isEnabled();
 			alphaLabel.setEnabled(enabled);
 			alphaField.setEnabled(enabled);
 			alphaSlider.setEnabled(enabled);
+			scaleLabel.setEnabled(enabled);
+			scaleField.setEnabled(enabled);
+			scaleSlider.setEnabled(enabled);
 			repaint();
 		}
 
@@ -528,6 +719,8 @@ public class BarrelPincushionFilter extends Filter {
 			if (updatingDisplay)
 				return;
 			updatingDisplay = true;
+			alphaField.setValue(alpha);
+			alphaSlider.setValue((int)(alpha*300));
 //			refreshScale();
 //			int n = (int) Math.round(180 * sourceFOV / Math.PI);
 //			sourceAngleField.setIntValue(n);
@@ -652,6 +845,6 @@ public class BarrelPincushionFilter extends Filter {
  * Suite 330, Boston MA 02111-1307 USA or view the license online at
  * http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2017 The Open Source Physics project
+ * Copyright (c) 2024 The Open Source Physics project
  * http://www.opensourcephysics.org
  */
