@@ -245,7 +245,7 @@ public interface Video extends InteractiveImage, Trackable, PropertyChangeListen
 	public String getTypeName();
 
 	default public boolean isValid() {
-		return getDuration() > 0;
+		return getFrameCountDurationMS() > 0;
 	}
 	
 	  /**
@@ -354,20 +354,20 @@ public interface Video extends InteractiveImage, Trackable, PropertyChangeListen
 		 * From XuggleVideo code, now also for JSMovieVideo
 		 * 
 		 * <pre>
-		 * 
+		 *
 		 * // ....[0][1][2]...[startFrame][i]...[j][endFrame]...[frameCount-1]
-		 * // ....|-----------------duration---------------------------------]
+		 * // ....|--------frameCountDurationMS--(nframes * aveDuration)-----|
 		 * // ....^..^..^..^..^...........^..^..^..^.........^..^ startTimes[i]
 		 * // ............................|--| frameDuration[i]
 		 * // ..................................................|------------|
 		 * // ..................................................frameDuration[frameCoumt-1]
-		 * 
+		 * // ....|-------------video-specified rawDuration------------------|
 		 * </pre>
 		 *
 		 * @return the duration of the media in milliseconds or -1 if no video, or 100
 		 *         if one frame
 		 */
-	    public double getDuration();
+	    public double getFrameCountDurationMS();
 
 	  
 	    /**
@@ -420,11 +420,13 @@ public interface Video extends InteractiveImage, Trackable, PropertyChangeListen
 	  ////////////// common for all adapters -- in VideoAdapter only
 	  
 	  /**
+	   * Never called 
 	   * Starts and stops the media.
 	   *
 	   * @param playing <code>true</code> starts the media, and
 	   * <code>false</code> stops it
 	   */
+	  @Deprecated
 	  public void setPlaying(boolean playing);
 
 	  /**
@@ -458,12 +460,12 @@ public interface Video extends InteractiveImage, Trackable, PropertyChangeListen
 	  public void invalidateVideoAndFilter();
 
 	public default double getAverageFrameRate() {
-		return getFrameCount() / getDuration();
+		return getFrameCount() / getFrameCountDurationMS();
 	}
 
 	public default BitSet getOutliers(double tolerance) {
 		BitSet outliers = new BitSet();
-		double videoDurMS = getDuration();
+		double videoDurMS = getFrameCountDurationMS();
 		double frameDur = 0;
 		int nFrames = getFrameCount();
 		for (int i = 0; i < nFrames; i++) {

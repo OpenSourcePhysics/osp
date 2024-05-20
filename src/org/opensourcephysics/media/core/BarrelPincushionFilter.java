@@ -126,6 +126,29 @@ public class BarrelPincushionFilter extends Filter {
 		firePropertyChange(PROPERTY_FILTER_IMAGE, null, null); //$NON-NLS-1$
 	}
 
+//	/**
+//	 * Sets the fixed radius fraction. Pixels at this distance from the image center
+//	 * remain fixed.
+//	 * 
+//	 * @param fraction the fixed radius as a fraction of the corner radius
+//	 */
+//	public void setFixedRadius(double fraction) {
+//		if (Double.isNaN(fraction))
+//			return;
+//		fraction = Math.abs(fraction);
+//		fraction = Math.min(fraction, 1);
+//		fraction = Math.max(fraction, 0.2);
+////		if (fixedRadius != fraction) {
+//			fixedRadius = fraction;
+//			scaleFactor = 1 / getStretchFactor(fixedRadius * pixelsToCorner);
+//			//System.out.println("pig scaleFactor "+scaleFactor);
+//			if (inspector != null)
+//				inspector.updateDisplay();
+//			isValidTransform = false;
+//			firePropertyChange(PROPERTY_FILTER_IMAGE, null, null); //$NON-NLS-1$
+////		}
+//	}
+
 	// _____________________________ private methods _______________________
 
 	/**

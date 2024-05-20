@@ -120,6 +120,7 @@ public boolean isType(Video video) {
 		} catch (Exception e) {
 			if (name != null) {
 				OSPLog.fine(getDescription() + ": " + e.getMessage()); //$NON-NLS-1$
+				video = null;
 			}
 			e.printStackTrace();
 		}

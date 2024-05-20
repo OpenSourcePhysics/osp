@@ -259,6 +259,9 @@ public class VideoIO {
 	protected static String defaultXMLExt = "xml"; //$NON-NLS-1$
 	private static boolean canceled;
 	protected static String preferredExportExtension = DEFAULT_PREFERRED_EXPORT_EXTENSION;
+	/*
+	 * finalize videoClip true for AsyncLoader
+	 */
 	public static boolean loadIncrementally;
 	public static int incrementToLoad = 10;
 	public static AsyncSwingWorker loader;

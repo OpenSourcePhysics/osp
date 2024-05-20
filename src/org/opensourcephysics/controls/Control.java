@@ -36,6 +36,10 @@ public interface Control {
    */
   public void setValue(String name, Object val);
 
+  default public void setValue(String name, double[] val, int decimalPlaces) {
+	  setValue(name, val);
+  }
+
   /**
    * Stores a name and a double value in the control.  GUI controls will usually display
    * the name followed by an equal sign followed by the  <code>toString<\code> representation

@@ -27,7 +27,6 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.function.Function;
 
@@ -42,8 +41,6 @@ import org.opensourcephysics.media.core.AsyncVideoI;
 import org.opensourcephysics.media.core.DoubleArray;
 import org.opensourcephysics.media.core.ImageCoordSystem;
 import org.opensourcephysics.media.core.VideoIO;
-import org.opensourcephysics.tools.Resource;
-import org.opensourcephysics.tools.ResourceLoader;
 
 import javajs.async.SwingJSUtils.StateHelper;
 import javajs.async.SwingJSUtils.StateMachine;
@@ -78,8 +75,6 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 	private HTML5Video jsvideo;	
 	
 	private JDialog videoDialog;
-	private String fileName;
-	private URL url;
 
 	protected int progress;
 
@@ -90,43 +85,21 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 	 * @param control  if going or from control
 	 * @throws IOException
 	 */
-	public JSMovieVideo(String fileName, String basePath, XMLControl control) throws IOException {
-		allowControlData = true;
-		boolean isExport = (control != null && !"video".equals(control.getPropertyName()));
-		addFramePropertyListeners();
-		this.baseDir = basePath;
-		this.fileName = fileName;
-		String path = getAbsolutePath(fileName);
-		Resource res = (ResourceLoader.isHTTP(path) ? new Resource(new URL(path)) : new Resource(new File(path)));
-		url = res.getURL();
-		boolean isLocal = (url.getProtocol().toLowerCase().indexOf("file") >= 0); //$NON-NLS-1$
-		path = isLocal ? res.getAbsolutePath() : url.toExternalForm();
+	JSMovieVideo(String fileName, String basePath, XMLControl control) throws IOException {
+		super(fileName, basePath, control);
 		OSPLog.finest("JSMovieVideo loading " + path + " local?: " + isLocal); //$NON-NLS-1$ //$NON-NLS-2$
 		if (!VideoIO.checkMP4(path, null, null)) {
 			frameNumber = Integer.MIN_VALUE;
 			return;
-		}
-		// set properties
-		setProperty("name", XML.getName(fileName)); //$NON-NLS-1$
-		setProperty("absolutePath", res.getAbsolutePath()); //$NON-NLS-1$
-		if (fileName.indexOf(":") < 0) { //$NON-NLS-1$
-			// if name is relative, path is name
-			setProperty("path", XML.forwardSlash(fileName)); //$NON-NLS-1$
-		} else {
-			// else path is relative to user directory
-			setProperty("path", XML.getRelativePath(fileName)); //$NON-NLS-1$
 		}
 		if (isExport) {
 			// no need to actually load anthing?
 			return;
 		}
 		firePropertyChange(PROPERTY_VIDEO_PROGRESS, fileName, 0);
-		frame = 0;
-		//startFailDetection();
 		if (state == null)
 			state = new State(this, allowControlData ? control : null);
 		state.load(path);
-
 	}
 
 	/**
@@ -192,7 +165,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 	}
 
 	@Override
-	public double getDuration() {
+	public double getFrameCountDurationMS() {
 		return jsvideo == null ? -1 : HTML5Video.getDuration(jsvideo) * 1000;
 	}
 	
@@ -400,7 +373,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 
 		@Override
 		public boolean stateLoop() {
-			System.out.println("JSMovieVideo.stateLoop " + helper.getState());
+			//System.out.println("JSMovieVideo.stateLoop " + helper.getState());
 			while (helper.isAlive()) {
 				switch (v.err == null ? helper.getState() : STATE_ERROR) {
 				case STATE_IDLE:
@@ -438,6 +411,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 						if (control != null)
 							control = v.setFromControl(control);
 						helper.next(control != null ? STATE_SET_FROM_CONTROL : canSeek ? STATE_FIND_FRAMES_INIT : STATE_PLAY_WITH_CALLBACK);
+						control = null;
 					}
 					continue;
 				case STATE_PLAY_WITH_CALLBACK:
@@ -468,7 +442,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 					v.frameTimes = new ArrayList<Double>();
 					v.frameTimes.add(t);
 					if (canSeek) {
-						setCurrentTime(0);
+						v.seekMS(0);
 						setReadyListener(playThroughOrSeeked);
 						helper.setState(STATE_FIND_FRAMES_LOOP);
 						continue;
@@ -510,7 +484,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 					//$FALL-THROUGH$
 				case STATE_FIND_FRAMES_DONE:
 					helper.setState(STATE_IDLE);
-					v.initializeMovie(v.rawDuration);
+					v.finalizeLoading();
 					v.frameTimes = null;
 					thisFrame = -1;
 					v.progress = VideoIO.PROGRESS_VIDEO_READY;
@@ -521,7 +495,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 					// animation of the frames in Tracker. 
 					helper.setState(STATE_GET_IMAGE_READY);
 					setReadyListener(playThroughOrSeeked );
-					setCurrentTime(offset + t);
+					v.seekMS((offset + t) * 1000);
 					return true;
 				case STATE_GET_IMAGE_READY:
 					//about 0.1 sec to seek OSPLog.debug(Performance.timeCheckStr("JSMovieVideo.getImage ready", Performance.TIME_MARK));
@@ -535,11 +509,6 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 
 		}
 
-		private void setCurrentTime(double t) {
-			System.out.println("setting ct " + t);
-			HTML5Video.setCurrentTime(v.jsvideo, t);		
-		}
-
 		protected void setTimes(double[] htmlRequstTimes) {
 			// Chrome only
 			int n = (int) htmlRequstTimes[0] + 1;
@@ -551,18 +520,28 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 				next(STATE_FIND_FRAMES_DONE);
 			} else {
 				double t0 = 0;
-				int nFrames = 1;
+				int nFrames = 0;
+				double dttot = 0;
 				for (int i = 1; i < n; i++) {
 					  dt = htmlRequstTimes[i] - htmlRequstTimes[i - 1];
 					  if (dt > 0) {
 						  if (t0 == 0)
 							  t0 = htmlRequstTimes[i - 1];
-						  System.out.println("htmlTime["+nFrames+"]\t" + (htmlRequstTimes[i]-t0) + "\t" + dt);
-						  nFrames++;
+						  if (i > 3) {
+							  System.out.println("htmlTime["+nFrames+"]\t" + (htmlRequstTimes[i]-t0) + "\t" + dt);
+							  nFrames++;
+							  dttot += dt;
+						  }
+					  } else {
+						  System.out.println("JSMoveVideo.setTimes??");
 					  }
 				}
-				dt = v.rawDuration / (nFrames + 1); // Chrome adds in last frame length
-				  System.out.println("duration " + v.rawDuration + " for " + nFrames + " frames; ave dt = " + dt + " for nframes + 1 or " + (v.rawDuration / nFrames) + " for nframes");
+				// base the calculation on average dt
+				dt = dttot / nFrames;
+				double fps = Math.round(1 / dt);
+				dt = 1 / fps;
+				nFrames = (int) Math.round(v.rawDuration * fps);
+				System.out.println("duration " + v.rawDuration + " for " + nFrames + "/" + n + " frame_rate=" + fps);
 				offset = dt/2;
 				t = 0;
 				for (int i = 1; i < nFrames; i++) {
@@ -594,7 +573,8 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 
 	}
 
-	void initializeMovie(double duration) {
+	@Override
+	protected void finalizeLoading() {
 		videoDialog.setVisible(false);
 		// clean up temporary objects
 		// throw IOException if no frames were loaded
@@ -608,7 +588,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 			// set initial video clip properties
 			setFrameCount(frameTimes.size());
 		}
-		OSPLog.debug("JSMovieVideo " + size + "\n duration:" + duration + " act. frameCount:" + frameCount);
+		OSPLog.debug("JSMovieVideo " + size + "\n duration:" + rawDuration + " act. frameCount:" + frameCount);
 		startFrameNumber = 0;
 		endFrameNumber = frameCount - 1;
 		// create startTimes array
@@ -663,6 +643,26 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 			setVideo(path, video, MovieFactory.ENGINE_JS);
 			return video;
 		}
+	}
+
+	@Override
+	protected boolean seekMS(double timeMS) {
+		HTML5Video.setCurrentTime(jsvideo, timeMS / 1000);		
+		return true;
+	}
+
+	@Override
+	protected BufferedImage getImageForMSTimePoint(double timeMS) {
+		seekMS(timeMS);
+		BufferedImage bi = HTML5Video.getImage(jsvideo, BufferedImage.TYPE_INT_RGB);
+		if (bi != null)
+			rawImage = bi;
+		return bi;
+	}
+
+	@Override
+	protected String getPlatform() {
+		return /** @j2sNative navigator.userAgent ||*/"?";
 	}
 
 }
