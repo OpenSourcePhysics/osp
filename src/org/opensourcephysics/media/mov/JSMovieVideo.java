@@ -538,7 +538,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 				}
 				// base the calculation on average dt
 				dt = dttot / nFrames;
-				double fps = Math.round(1000 / dt);
+				double fps = Math.round(1 / dt);
 				dt = 1 / fps;
 				nFrames = (int) Math.round(v.rawDuration * fps);
 				System.out.println("duration " + v.rawDuration + " for " + nFrames + "/" + n + " frame_rate=" + fps);

@@ -392,6 +392,18 @@ public interface HTML5Video extends DOMNode {
 		 */		
 	}
 	
+	/**
+	 * capture frame metadata while playing. Specifically, grab the metadata.mediaTime values, 
+	 * reporting these to the provided results array as 
+	 * 
+	 * results[0] = frameCount
+	 * 
+	 * resutls[n] = frame-n startTime (seconds)
+	 * 
+	 * @param jsvideo
+	 * @param result array to load
+	 * @return
+	 */
 	@SuppressWarnings("unused")
 	public static int requestVideoFrameCallback(HTML5Video jsvideo, double[] result) {
 		Object[] f = null;
@@ -404,8 +416,7 @@ public interface HTML5Video extends DOMNode {
 		 * 					if (jsvideo._cancelVFCallback) {
 		 * 						jsvideo._cancelVFCallback = false;
 		 * 					} else {
-		 * 						result[++result[0]] = now;
-		 *	 					ff(now, metadata);
+		 * 						result[++result[0]] = metadata.mediaTime;
 		 *          			jsvideo.requestVideoFrameCallback(f[0]);
 		 *          		}
 		 *           };
