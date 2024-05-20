@@ -448,7 +448,8 @@ public class LibraryTreePanel extends JPanel {
 			basePathField.setCaretPosition(0);
 		}
 		if (!htmlField.getText().equals(node.record.getHTMLPath())) {
-			htmlField.setText(node.record.getHTMLPath());
+			htmlField.setText(node.record.hasExternalHTML()?
+					node.record.getHTMLPath(): null);
 			htmlField.setCaretPosition(0);
 		}
 		boolean isValidHTML = true;
@@ -537,7 +538,7 @@ public class LibraryTreePanel extends JPanel {
 		} else
 			targetField.setToolTipText(null);
 	}
-
+	
 	/**
 	 * Displays the HTMLPane for a given tree node.
 	 * 

@@ -309,6 +309,21 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	private String getAbsoluteHTMLPath() {
 		return ("".equals(htmlPath) ? "" : XML.getResolvedPath(htmlPath, getInheritedBasePath())); //$NON-NLS-1$
 	}
+	
+	/**
+	 * Determines if the HTML is external or inside a target TRZ/ZIP
+	 *
+	 * @return true if external
+	 */
+	boolean hasExternalHTML() {
+		if (getTarget() != null) {
+			String s = getTarget().toLowerCase();
+			String html = getHTMLPath();
+			if (html.startsWith(s + "!"))
+				return false;
+		}
+		return true;
+	}
 
 	/**
 	 * Gets the description, which must be in html code.
@@ -989,7 +1004,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 			control.setValue("name", res.name); //$NON-NLS-1$
 			if (!"".equals(res.description)) //$NON-NLS-1$
 				control.setValue("description", res.description); //$NON-NLS-1$
-			if (!"".equals(res.htmlPath)) //$NON-NLS-1$
+			if (!"".equals(res.htmlPath) && res.hasExternalHTML()) //$NON-NLS-1$
 				control.setValue("html_path", res.htmlPath); //$NON-NLS-1$
 			if (!"".equals(res.basePath)) //$NON-NLS-1$
 				control.setValue("base_path", res.basePath); //$NON-NLS-1$
