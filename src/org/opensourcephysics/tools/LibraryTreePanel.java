@@ -2177,6 +2177,10 @@ public class LibraryTreePanel extends JPanel {
 					&& (target.toLowerCase().endsWith(".zip") || target.toLowerCase().endsWith(".trz")); //$NON-NLS-1$ //$NON-NLS-2$
 
 			if (isZip) {
+				if (node.record != null && node.record.hasExternalHTML()) {
+					loadPathAsync(htmlPath, target);
+					return;
+				}
 				// if target is ZIP, look for html info file inside ZIP
 				// but don't attempt to load web files unless web connected
 				boolean loadzip = ResourceLoader.isWebConnected()
