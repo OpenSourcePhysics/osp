@@ -28,7 +28,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeListenerProxy;
 import java.beans.PropertyChangeSupport;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.JarURLConnection;
@@ -1362,7 +1364,11 @@ public class OSPRuntime {
 	 * @return the String value or "" if not known
 	 */
 	public static String getManifestAttribute(JarFile jarFile, String attribute) {
-		if(OSPRuntime.isJS) return "";
+		//System.out.println("reading attribute="+attribute);
+		if(OSPRuntime.isJS) {
+			System.err.println("getManifestAttribute from jar not allowed in JavaScript");
+			return "";
+		}
 		try {
 			java.util.jar.Attributes att = jarFile.getManifest().getMainAttributes();
 			return att.getValue(attribute);
@@ -1377,7 +1383,25 @@ public class OSPRuntime {
 	 * @return the build date, or "" if not launched from a jar or date not known
 	 */
 	public static String getLaunchJarBuildDate() {
-		if(OSPRuntime.isJS) return "";
+		if(OSPRuntime.isJS) {
+			try {
+        BufferedReader inFile = new BufferedReader(new FileReader("MANIFEST.MF"));
+        String nextLine = inFile.readLine();
+        while(nextLine!=null) {
+          //System.out.println(nextLine);
+          if(nextLine.startsWith("Build-Date:")) {
+          	String date = nextLine.substring(11);
+          	return date;
+          	//return(nextLine+"  from JS");
+          }
+          nextLine = inFile.readLine();
+        }
+        inFile.close();
+      } catch(Exception ex) {
+        System.err.println(ex.getMessage());
+      }		
+			return "";
+		}
 		if (buildDate == null) {
 			JarFile jarfile = getLaunchJar();
 			buildDate = getManifestAttribute(jarfile, "Build-Date");
