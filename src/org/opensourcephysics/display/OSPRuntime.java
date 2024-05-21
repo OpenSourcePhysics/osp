@@ -1362,6 +1362,7 @@ public class OSPRuntime {
 	 * @return the String value or "" if not known
 	 */
 	public static String getManifestAttribute(JarFile jarFile, String attribute) {
+		if(OSPRuntime.isJS) return "";
 		try {
 			java.util.jar.Attributes att = jarFile.getManifest().getMainAttributes();
 			return att.getValue(attribute);
@@ -1376,6 +1377,7 @@ public class OSPRuntime {
 	 * @return the build date, or "" if not launched from a jar or date not known
 	 */
 	public static String getLaunchJarBuildDate() {
+		if(OSPRuntime.isJS) return "";
 		if (buildDate == null) {
 			JarFile jarfile = getLaunchJar();
 			buildDate = getManifestAttribute(jarfile, "Build-Date");
