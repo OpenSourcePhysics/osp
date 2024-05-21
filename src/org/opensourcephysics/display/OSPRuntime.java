@@ -1391,6 +1391,7 @@ public class OSPRuntime {
           //System.out.println(nextLine);
           if(nextLine.startsWith("Build-Date:")) {
           	String date = nextLine.substring(11);
+          	inFile.close();
           	return date;
           	//return(nextLine+"  from JS");
           }
