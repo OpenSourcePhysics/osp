@@ -91,8 +91,8 @@ import swingjs.api.JSUtilI;
  */
 public class OSPRuntime {
 
-	public static final String VERSION = "6.1.6.240516"; //$NON-NLS-1$
-	public static final String RELEASE_DATE = "16 May 2024"; //$NON-NLS-1$
+	public static final String VERSION = "6.1.6.240521"; //$NON-NLS-1$
+	public static final String RELEASE_DATE = "21 May 2024"; //$NON-NLS-1$
 	public static final String OSP_PROPERTY_LOCALE = "locale";
 
 	/**
@@ -580,7 +580,7 @@ public class OSPRuntime {
 
 	public static boolean dontLog = isJS; // for OSPLog
 
-	public static boolean allowBackgroundNodeLoading = true; // LibraryTreePanel - do background node loading
+	public static boolean allowBackgroundNodeLoading = false; // LibraryTreePanel - do background node loading
 
 	public static boolean allowAutopaste = !isJS; // for TFrame and TToolbar
 
