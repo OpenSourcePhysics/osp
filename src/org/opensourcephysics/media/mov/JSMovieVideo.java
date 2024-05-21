@@ -28,6 +28,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.swing.JDialog;
@@ -271,8 +272,6 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 		private Object[] readyListener;
 		private int thisFrame = -1;
 		
-		private double[] htmlFrameTimings;
-
 		private Object[] debugListeners;
 
 		private boolean canSeek = true;
@@ -403,6 +402,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 					int estimatedFrameCount = (int) (v.rawDuration / 0.033334);
 					//this is all this does: HTML5Video.getFrameCount(v.jsvideo);
 					v.setFrameCount(estimatedFrameCount);
+					v.frameTimes = new ArrayList<Double>();
 					OSPLog.finer("JSMovieVideo LOAD_VIDEO_READY " + v.size + "\n duration:" + v.rawDuration + " est. frameCount:" + estimatedFrameCount);
 					if (v.size.width == 0) {
 						v.cantRead();
@@ -415,8 +415,14 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 					}
 					continue;
 				case STATE_PLAY_WITH_CALLBACK:
-					htmlFrameTimings = new double[4000];
-					HTML5Video.requestVideoFrameCallback(v.jsvideo, htmlFrameTimings);
+					HTML5Video.requestVideoFrameCallback(v.jsvideo, new Consumer<Object>() {
+
+						@Override
+						public void accept(Object metadata) {
+							processVideoFrameCallback(metadata);
+						}
+						
+					});
 					helper.next(STATE_PLAY_ALL_INIT);
 					continue;
 				case STATE_PLAY_ALL_INIT:
@@ -439,19 +445,17 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 						v.rawDuration = HTML5Video.getDuration(v.jsvideo);
 					lastT = t = 0.0;
 					dt = 0;
-					v.frameTimes = new ArrayList<Double>();
-					v.frameTimes.add(t);
 					if (canSeek) {
+						v.frameTimes.add(t);
 						v.seekMS(0);
 						setReadyListener(playThroughOrSeeked);
 						helper.setState(STATE_FIND_FRAMES_LOOP);
 						continue;
 					}
 					HTML5Video.cancelVideoFrameCallback(v.jsvideo);
-					double[] timings = (double[]) (Object) htmlFrameTimings;
-					setTimes(timings);
+//					setTimes(timings);
 					helper.setState(STATE_FIND_FRAMES_DONE);
-					return false;
+					continue;
 				case STATE_FIND_FRAMES_LOOP:
 					if (t >= v.rawDuration) {
 						helper.setState(STATE_FIND_FRAMES_DONE);
@@ -509,49 +513,66 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 
 		}
 
-		protected void setTimes(double[] htmlRequstTimes) {
-			// Chrome only
-			int n = (int) htmlRequstTimes[0] + 1;
-			htmlRequstTimes[0] = htmlRequstTimes[1];
-			if (n < 2) {
-				// format was read, but probably image size was (0,0) meaning
-				// codec wasn't read. (Have duration, just not actual images.)
-				v.cantRead();
-				next(STATE_FIND_FRAMES_DONE);
-			} else {
-				double t0 = 0;
-				int nFrames = 0;
-				double dttot = 0;
-				for (int i = 1; i < n; i++) {
-					  dt = htmlRequstTimes[i] - htmlRequstTimes[i - 1];
-					  if (dt > 0) {
-						  if (t0 == 0)
-							  t0 = htmlRequstTimes[i - 1];
-						  if (i > 3) {
-							  System.out.println("htmlTime["+nFrames+"]\t" + (htmlRequstTimes[i]-t0) + "\t" + dt);
-							  nFrames++;
-							  dttot += dt;
-						  }
-					  } else {
-						  System.out.println("JSMoveVideo.setTimes??");
-					  }
-				}
-				// base the calculation on average dt
-				dt = dttot / nFrames;
-				double fps = Math.round(1 / dt);
-				dt = 1 / fps;
-				nFrames = (int) Math.round(v.rawDuration * fps);
-				System.out.println("duration " + v.rawDuration + " for " + nFrames + "/" + n + " frame_rate=" + fps);
-				offset = dt/2;
-				t = 0;
-				for (int i = 1; i < nFrames; i++) {
-					t += dt;
-					v.frameTimes.add(Double.valueOf(t));
-				}
-				next(STATE_FIND_FRAMES_DONE);
-				v.frame = nFrames;
-			}
+		protected void processVideoFrameCallback(Object metadata) {
+			double t = /** @j2sNative metadata.mediaTime || */ 0;
+			v.frameTimes.add(t);
+			v.frame++;
+			System.out.println("JSMovieVideo callback " + v.frameTimes.size() + " " + t);
+			v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, v.frame++);
+			v.progress = VideoIO.progressForFraction(v.frame, v.frameCount);
 		}
+
+//		/**
+//		 * abandoned
+//		 * Chrome only; processing of htmlRequestTimes.
+//		 * @param htmlRequstTimes
+//		 */
+//		protected void setTimes(double[] htmlRequstTimes) {
+//			
+//			// Chrome only
+//			int n = (int) htmlRequstTimes[0] + 1;
+//			htmlRequstTimes[0] = htmlRequstTimes[1];
+//			if (n < 2) {
+//				// format was read, but probably image size was (0,0) meaning
+//				// codec wasn't read. (Have duration, just not actual images.)
+//				v.cantRead();
+//				next(STATE_FIND_FRAMES_DONE);
+//			} else {
+//				double t0 = 0;
+//				int nFrames = 0;
+//				double dttot = 0;
+//				v.frameTimes.clear();
+//				for (int i = 1; i < n; i++) {
+//					v.frameTimes.add(Double.valueOf(t));
+//					  dt = htmlRequstTimes[i] - htmlRequstTimes[i - 1];
+//					  if (dt > 0) {
+//						  if (t0 == 0)
+//							  t0 = htmlRequstTimes[i - 1];
+//						  if (i > 3) {
+//							  System.out.println("htmlTime["+nFrames+"]\t" + (htmlRequstTimes[i]-t0) + "\t" + dt);
+//							  nFrames++;
+//							  dttot += dt;
+//						  }
+//					  } else {
+//						  System.out.println("JSMoveVideo.setTimes??");
+//					  }
+//				}
+//				// base the calculation on average dt
+//				dt = dttot / nFrames;
+//				double fps = Math.round(1 / dt);
+//				dt = 1 / fps;
+//				nFrames = (int) Math.round(v.rawDuration * fps);
+//				System.out.println("duration " + v.rawDuration + " for " + nFrames + "/" + n + " frame_rate=" + fps);
+//				offset = dt/2;
+//				t = 0;
+//				for (int i = 1; i < nFrames; i++) {
+//					t += dt;
+//					v.frameTimes.add(Double.valueOf(t));
+//				}
+//				next(STATE_FIND_FRAMES_DONE);
+//				v.frame = nFrames;
+//			}
+//		}
 	}	
 //	/**
 //	 * Sets the initial image.

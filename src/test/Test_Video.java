@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.swing.BoxLayout;
@@ -517,7 +518,14 @@ public class Test_Video {
 					if (isDiscrete) {
 						playVideoDiscretely(jsvideo);
 					} else {
-						HTML5Video.requestVideoFrameCallback(jsvideo, htmlFrameTimings );
+						HTML5Video.requestVideoFrameCallback(jsvideo, new Consumer<Object>() {
+
+							@Override
+							public void accept(Object metadata) {
+								System.out.println("metata=" + (/** @j2sNative JSON.stringify(metadata) || */0));
+							}
+							
+						});
 						jsvideo.play();
 					}
 				} catch (Throwable e1) {
@@ -614,7 +622,7 @@ public class Test_Video {
 			public void actionPerformed(ActionEvent e) {
 				showAllProperties();
 				HTML5Video.cancelVideoFrameCallback(jsvideo);
-				setTimes(htmlFrameTimings);
+				//setTimes(htmlFrameTimings);
 			}
 
 		});
