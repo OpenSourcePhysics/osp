@@ -431,57 +431,7 @@ public final class SuryonoParser extends MathExpParser {
 			}
 		}
 
-<<<<<<< HEAD
-  /**
-   * Referenced name could not be found.
-   */
-  public static final int REF_NAME_EXPECTED = 15;
-  // postfix codes
-  private static final int FUNC_OFFSET = 1000;
-  private static final int EXT_FUNC_OFFSET = FUNC_OFFSET+NO_FUNCS;
-  private static final int VAR_OFFSET = 2000;
-  private static final int REF_OFFSET = 3000;
-  private static final char PI_CODE = (char) 253;
-  private static final char E_CODE = (char) 254;
-  private static final char NUMERIC = (char) 255;
-  // Jump, followed by n : Displacement
-  private static final char JUMP_CODE = (char) 1;
-  // Relation less than (<)
-  private static final char LESS_THAN = (char) 2;
-  // Relation greater than (>)
-  private static final char GREATER_THAN = (char) 3;
-  // Relation less than or equal (<=)
-  private static final char LESS_EQUAL = (char) 4;
-  // Relation greater than or equal (>=)
-  private static final char GREATER_EQUAL = (char) 5;
-  // Relation not equal (<>)
-  private static final char NOT_EQUAL = (char) 6;
-  // Relation equal (=)
-  private static final char EQUAL = (char) 7;
-  // Conditional statement IF, followed by a conditional block :
-  // * Displacement (Used to jump to condition FALSE code)
-  // * Condition TRUE code
-  // * Jump to next code outside conditional block
-  // * Condition FALSE code
-  // * ENDIF
-  private static final char IF_CODE = (char) 8;
-  private static final char ENDIF = (char) 9;
-  private static final char AND_CODE = (char) 10;  // Boolean AND
-  private static final char OR_CODE = (char) 11;   // Boolean OR
-  private static final char NOT_CODE = (char) 12;  // Boolean NOT
-  // built in functions
-  private String funcname[] = {
-		  "sin", "cos", "tan", "ln", "log", "abs", "int", "frac", "asin", "acos", "atan", "sinh", "cosh", "tanh", "asinh", "acosh", "atanh", "ceil", "floor", "round", "exp", "sqr", "sqrt", "sign", "step","random"                                       //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$ //$NON-NLS-12$ //$NON-NLS-13$ //$NON-NLS-14$ //$NON-NLS-15$ //$NON-NLS-16$ //$NON-NLS-17$ //$NON-NLS-18$ //$NON-NLS-19$ //$NON-NLS-20$ //$NON-NLS-21$ //$NON-NLS-22$ //$NON-NLS-23$ //$NON-NLS-24$ //$NON-NLS-25$ //$NON-NLS-26$
-  };
-  // extended functions
-  private String extfunc[] = {"min", "max", "mod", "atan2"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-  // set when evaluate() method converts NaN to zero--added by D Brown 15 Sep 2010
-  private boolean isNaN;
-  
-  private boolean allowUnknown; // always false
-=======
 	}
->>>>>>> refs/remotes/origin/swingJS
 
 	private Func f;
 	
@@ -499,54 +449,6 @@ public final class SuryonoParser extends MathExpParser {
 	private int num; // number of numeric constants
 	private char ch; // current character
 
-<<<<<<< HEAD
-  /**
-   * The constructor of <code>Parser</code>.
-   *
-   * Added by W. Christian to make it easy to construct a parser for with multiple variables.
-   *
-   * @param f the function
-   * @param v variables
-   * @throws ParserException
-   */
-  public SuryonoParser(String f, String[] v) throws ParserException {
-    this(v.length);
-    for(int i = 0; i<v.length; i++) {
-      defineVariable(i+1, v[i]);
-    }
-    define(f); // defines function: f
-    parse();   // parses the function
-    if(getErrorCode()!=NO_ERROR) {
-      String msg = "Error in function string: "+f;    //$NON-NLS-1$
-      msg = msg+'\n'+"Error: "+getErrorString();      //$NON-NLS-1$
-      msg = msg+'\n'+"Position: "+getErrorPosition(); //$NON-NLS-1$
-      throw new ParserException(msg);
-    }
-  }
-  
-	 /**
-	  * 
-	  * @param funcStr
-	  * @param vars
-	  * @param allowUnkownIdentifiers always false
-	  * @throws ParserException
-	  */
-	 public SuryonoParser(String funcStr, String[] vars, boolean allowUnkownIdentifiers) throws ParserException {
-		this(vars.length);
-		for (int i = 0; i < vars.length; i++) {
-			defineVariable(i + 1, vars[i]);
-		}
-		allowUnknown = allowUnkownIdentifiers; // always false
-		define(funcStr);
-		parse();
-		if (getErrorCode() != NO_ERROR) {
-			String msg = "Error in function string: " + funcStr; //$NON-NLS-1$
-			msg = msg + '\n' + "Error: " + getErrorString(); //$NON-NLS-1$
-			msg = msg + '\n' + "Position: " + getErrorPosition(); //$NON-NLS-1$
-			throw new ParserException(msg);
-		}
-	}
-=======
 	// private static final int MAX_NUM = 100; // max numeric constants // changed
 	// by W. Christian
 	private static final int MAX_NUM = 200; // max numeric constants
@@ -563,7 +465,6 @@ public final class SuryonoParser extends MathExpParser {
 	 * Parentheses expected.
 	 */
 	public static final int PAREN_EXPECTED = 2;
->>>>>>> refs/remotes/origin/swingJS
 
 	/**
 	 * Attempt to evaluate an uncompiled function.

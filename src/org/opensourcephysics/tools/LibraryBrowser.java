@@ -3022,48 +3022,12 @@ public class LibraryBrowser extends JPanel {
 
 //______________________________ inner classes _________________________________
 
-<<<<<<< HEAD
-  /**
-   * A SwingWorker class to load the Library at startup.
-   */
-  class LibraryLoader extends SwingWorker<Library, Object> {
-  	
-    @Override
-    public Library doInBackground() {
- 	  	Runnable runner = new Runnable() {
- 	  		public void run() {
-		  		webConnected = ResourceLoader.isURLAvailable(ResourceLoader.OSP_TEST_URL)
-		  				|| ResourceLoader.isURLAvailable(ResourceLoader.TRACKER_TEST_URL);
-		    	if (!webConnected) {
-		    		JOptionPane.showMessageDialog(LibraryBrowser.this, 
-		    				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
-		    				ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Title"), //$NON-NLS-1$
-		    				JOptionPane.WARNING_MESSAGE);  		
-		    	}
- 	  		}
- 	  	};
-    	if (!libraryPath.startsWith("http")) { //$NON-NLS-1$
-		    // load library
-	    	library.load(libraryPath);
-	    	// add my collection and recent collection
-	  		String ospPath = getOSPPath();
-	    	String myCollectionPath = ospPath+MY_COLLECTION_NAME;      	
-        String name = ToolsRes.getString("LibraryCollection.Name.Local"); //$NON-NLS-1$
-        // add my collection
-        library.addCollection(myCollectionPath, name);
-	    	String recentCollectionPath = ospPath+RECENT_COLLECTION_NAME;      	
-        name = ToolsRes.getString("LibraryCollection.Name.Recent"); //$NON-NLS-1$
-        // add my collection
-        library.addCollection(recentCollectionPath, name);
-=======
 	/**
 	 * A class to display and handle actions for a ComPADRE tab title.
 	 */
 	class TabTitle extends JPanel {
 		private JLabel titleLabel, iconLabel;
 		private Icon normalIcon, boldIcon;
->>>>>>> refs/remotes/origin/swingJS
-
 		TabTitle(Icon lightIcon, Icon heavyIcon) {
 			super(new BorderLayout());
 			this.setOpaque(false);
@@ -3083,92 +3047,11 @@ public class LibraryBrowser extends JPanel {
 						String path = LibraryComPADRE.getCollectionPath(treePanel.pathToRoot, primaryOnly);
 						loadTabAsync(path, index, null, null);
 
-<<<<<<< HEAD
-    @Override
-    protected void done() {
-      try {
-     	  Library library = get();
-     	  // add previously open tabs not available for loading in doInBackground method
-	 	  	if (library.openTabPaths!=null) {  	  		
-		  		for (final String path: library.openTabPaths) {
-		  			boolean available = isWebConnected() && path.startsWith("http"); //$NON-NLS-1$
-		  			if (available) {
-		    			TabLoader tabAdder = addTab(path, null);
-		    			if (tabAdder!=null) tabAdder.execute();  	
-		  			}
-		  		}
-		  	}
-      } catch (Exception ignore) {
-      }
-      refreshCollectionsMenu();
-  		refreshRecentMenu();
-    }
-  }
-  
-  /**
-   * A SwingWorker class to load tabs.
-   */
-  class TabLoader extends SwingWorker<LibraryTreePanel, Object> {
-  	
-  	String path;
-  	int index;
-  	List<String> treePath;
-  	boolean saveToCache = true;
-  	
-  	TabLoader(String pathToAdd, int tabIndex, List<String> treePath) {
-  		path = pathToAdd;
-  		index = tabIndex;
-  		this.treePath = treePath;
-  	}
-  	
-    @Override
-    public LibraryTreePanel doInBackground() {
-    	setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-    	String realPath = path;
-  		File cachedFile = ResourceLoader.getSearchCacheFile(path);
-  		if (cachedFile.exists() && path.startsWith("http")) {  			 //$NON-NLS-1$
-  			boolean validCachedFile = true;
-  			String cachePath = cachedFile.getAbsolutePath();
-  			// replace any cached tracker library files with obsolete http protocols
-  			if (XML.forwardSlash(cachePath).contains("osp-physlets_org/tracker/library")) { //$NON-NLS-1$
-  				String content = ResourceLoader.getString(cachePath);
-  				if (content.contains("http://physlets.org")) { //$NON-NLS-1$
-  					validCachedFile = false;
-  				}
-  			}
-  			if (validCachedFile) {
-	  			realPath = cachePath;
-	  			saveToCache = false;
-  			}
-  		}
-  		
-    	LibraryResource resource = null;
-    	
-  		// open local files in the recentCollection instead of in their own tab
-    	String ext = XML.getExtension(path.toLowerCase());
-    	boolean isRecognizedType = ext.equals("trk")  //$NON-NLS-1$
-					|| ext.equals("trz") //$NON-NLS-1$
-					|| ext.equals("jpg") //$NON-NLS-1$
-					|| ext.equals("png") //$NON-NLS-1$
-					|| ext.equals("jpeg") //$NON-NLS-1$
-					|| ext.equals("pdf") //$NON-NLS-1$
-					|| ext.equals("htm") //$NON-NLS-1$
-					|| ext.equals("html") //$NON-NLS-1$
-					|| ext.equals("ejs") //$NON-NLS-1$
-					|| ext.equals("zip"); //$NON-NLS-1$
-    	if (!isRecognizedType) {
-	  		for (String vidExt: VideoIO.getVideoExtensions()) {
-					if (ext.equals(vidExt.toLowerCase())) {
-						isRecognizedType = true;
-						break;
-		  		}
-=======
 						setIcons(primaryOnly ? expandIcon : contractIcon,
 								primaryOnly ? heavyExpandIcon : heavyContractIcon);
 						iconLabel.setToolTipText(primaryOnly ? ToolsRes.getString("LibraryBrowser.Tooltip.Expand") : //$NON-NLS-1$
 						ToolsRes.getString("LibraryBrowser.Tooltip.Contract")); //$NON-NLS-1$
 					}
->>>>>>> refs/remotes/origin/swingJS
 				}
 
 				@Override

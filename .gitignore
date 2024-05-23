@@ -1,14 +1,4 @@
 .gitignore
-<<<<<<< HEAD
-.classpath
-.project
-swingjs-copy.xml
-src/org/opensourcephysics/controls/*.txt
-/bin/
-/site/
-/src/testing/
-.DS_Store
-=======
 *.old
 swingjs-copy.xml
 build-ospcore.xml
@@ -21,4 +11,3 @@ ospcoreclasses
 src/org/opensourcephysics/controls/OSPLog_template.txt
 *.prefs
 .classpath
->>>>>>> refs/remotes/origin/swingJS

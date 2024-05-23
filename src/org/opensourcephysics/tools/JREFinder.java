@@ -401,24 +401,6 @@ public class JREFinder {
 	/**
 	 * JavaFilter class identifies java executable files.
 	 */
-<<<<<<< HEAD
-  public static class JavaFilter implements FilenameFilter { 
-  	@Override
-    public boolean accept(File dir, String name) {
-      if (!dir.getPath().endsWith("bin")) return false; //$NON-NLS-1$
-//      if (!OSPRuntime.isMac() && !dir.getParent().contains("jre")) return false; //$NON-NLS-1$
-      // reject older versions
-    	if (dir.getPath().contains("1.6.") || dir.getPath().contains("jre6")  //$NON-NLS-1$ //$NON-NLS-2$
-    			|| dir.getPath().contains("-6-") //$NON-NLS-1$
-    			|| dir.getPath().contains("1.5.") || dir.getPath().contains("-5-") //$NON-NLS-1$ //$NON-NLS-2$
-    			|| dir.getPath().contains("1.4.") || dir.getPath().contains("1.3.") //$NON-NLS-1$ //$NON-NLS-2$
-    			|| dir.getPath().contains("1.2.")) return false; //$NON-NLS-1$
-    	if (name.equals("java.exe")) return true; //$NON-NLS-1$  // windows
-    	if (name.equals("java")) return true; //$NON-NLS-1$ // OSX
-      return false;
-    }
-  }
-=======
 	private static class JavaFilter implements FilenameFilter {
 		@Override
 		public boolean accept(File dir, String name) {
@@ -441,7 +423,6 @@ public class JREFinder {
 			return false;
 		}
 	}
->>>>>>> refs/remotes/origin/swingJS
 
 	/**
 	 * JavaFile class is a File that sorts by Java version.

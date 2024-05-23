@@ -2341,53 +2341,13 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		// BH changed return String to void
 		OSPRuntime.getChooser().showOpenDialog(null, new Runnable() {
 
-<<<<<<< HEAD
-  /**
-   * Opens an xml or data file selected with a chooser.
-   *
-   * @return the name of the opened file
-   */
-  protected String open() {
-    @SuppressWarnings("deprecation")
-	int result = OSPRuntime.getChooser().showOpenDialog(null);
-    if(result==JFileChooser.APPROVE_OPTION) {
-      OSPRuntime.chooserDir = OSPRuntime.getChooser().getCurrentDirectory().toString();
-      String fileName = OSPRuntime.getChooser().getSelectedFile().getAbsolutePath();
-      fileName = XML.getRelativePath(fileName);
-      return open(fileName);
-    }
-    return null;
-  }
-=======
 			@Override
 			public void run() {
 				OSPRuntime.chooserDir = OSPRuntime.getChooser().getCurrentDirectory().toString();
 				open(OSPRuntime.getChooser().getSelectedFile());
 			}
->>>>>>> refs/remotes/origin/swingJS
-
-<<<<<<< HEAD
-  /**
-   * Imports an xml or data file selected with a chooser into a specified tab.
-   *
-   * @param tab the tab to import into
-   * @return the name of the imported file
-   */
-  protected String importFileIntoTab(DataToolTab tab) {
-    @SuppressWarnings("deprecation")
-	int result = OSPRuntime.getChooser().showOpenDialog(tab);
-    if(result==JFileChooser.APPROVE_OPTION) {
-      OSPRuntime.chooserDir = OSPRuntime.getChooser().getCurrentDirectory().toString();
-      String fileName = OSPRuntime.getChooser().getSelectedFile().getAbsolutePath();
-      fileName = XML.getRelativePath(fileName);
-      return importFileIntoTab(tab, fileName);
-    }
-    return null;
-  }
-=======
 		}, null);
 	}
->>>>>>> refs/remotes/origin/swingJS
 
 	/**
 	 * Imports an xml or data file selected with a chooser into a specified tab.

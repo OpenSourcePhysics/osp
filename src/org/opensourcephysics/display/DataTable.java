@@ -92,39 +92,8 @@ public class DataTable extends JTable {
 		
 		public abstract double getValueAt(int row, int column);
 	
-<<<<<<< HEAD
-	//WC: Added static varibales for compatibility with swingJS branch of the osp library.
-	private static final int MODE_MASK_NEW = 0xF;
-	public static final int MODE_CREATE = 0x01;
-	public static final int MODE_CLEAR = 0x02;
-	public static final int MODE_MODEL = 0x03;
-	public static final int MODE_TAB = 0x04;
-	// end of swingJS additions
-	
-  static final Color PANEL_BACKGROUND = javax.swing.UIManager.getColor("Panel.background"); //$NON-NLS-1$
-  final static Color LIGHT_BLUE = new Color(204, 204, 255);
-  static final String NO_PATTERN 
-  		= DisplayRes.getString("DataTable.FormatDialog.NoFormat"); //$NON-NLS-1$
-  public static String rowName = DisplayRes.getString("DataTable.Header.Row");              //$NON-NLS-1$
-  private static DoubleRenderer defaultDoubleRenderer = new DoubleRenderer();
-  
-  private final SortDecorator decorator;
-  protected HashMap<String, PrecisionRenderer> precisionRenderersByColumnName 
-  		= new HashMap<String, PrecisionRenderer>();
-  protected HashMap<String, UnitRenderer> unitRenderersByColumnName 
-			= new HashMap<String, UnitRenderer>();
-  DataTableModel dataTableModel;
-  protected RowNumberRenderer rowNumberRenderer;
-  int maximumFractionDigits = 3;
-  int refreshDelay = 0;                                                                     // time in ms to delay refresh events
-  javax.swing.Timer refreshTimer = new javax.swing.Timer(refreshDelay, this);               // delay for refreshTable
-  protected int labelColumnWidth=40, minimumDataColumnWidth=24;
-  protected NumberFormatDialog formatDialog;
-  protected int clickCountToSort = 1;
-=======
 	}
->>>>>>> refs/remotes/origin/swingJS
-
+	
 	/**
 	 * A marker type for TableModels that are associated with DataTable. including
 	 * ComplexDataSet, DataSet, DataSetManager, Histogram, and 
@@ -498,32 +467,6 @@ public class DataTable extends JTable {
 		return maximumFractionDigits;
 	}
 
-<<<<<<< HEAD
-  /**
-   *  Sets the delay time for table refresh timer.
-   *
-   * @param  delay  the delay in millisecond
-   */
-  public void setRefreshDelay(int delay) {
-    if(delay>0) {
-      refreshTimer.setDelay(delay);
-      refreshTimer.setInitialDelay(delay);
-    } else if(delay<=0) {
-      refreshTimer.stop();
-    }
-    refreshDelay = delay;
-  }
-  
-  
-	/**
-	 * RefreshTable implemented for compatibility with swingJS branch of the osp library.
-	 * 
-	 * @param mode
-	 */
-  public void refreshTable(int mode) {
-  	refreshTable();
-  }
-=======
 	/**
 	 * Returns the minimum table width.
 	 * 
@@ -534,7 +477,6 @@ public class DataTable extends JTable {
 		return (dataTableModel.rowNumberVisible ? labelColumnWidth - minimumDataColumnWidth : 0)
 				+ n * minimumDataColumnWidth;
 	}
->>>>>>> refs/remotes/origin/swingJS
 
 	/**
 	 * Sets the label column width

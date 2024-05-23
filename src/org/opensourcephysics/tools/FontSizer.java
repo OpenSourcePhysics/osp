@@ -113,27 +113,8 @@ public class FontSizer extends OSPRuntime.Supported {
 					}
 				}
 			}
-<<<<<<< HEAD
-    	for (int i=0; i< menu.getItemCount(); i++) {
-    		JMenuItem item = menu.getItem(i);
-    		if (item!=null) {
-    			setFontFactor(item, factor);
-    		}
-    	}
-    }
-    else try {
-			Method m = c.getClass().getMethod("getIcon", (Class<?>[])null); //$NON-NLS-1$
-			if (m != null) {
-				Icon icon = (Icon)m.invoke(c, (Object[])null);
-				if (icon!=null && icon instanceof ResizableIcon) {
-					((ResizableIcon)icon).resize(getIntegerFactor());
-				}
-			}
-		} catch (Exception e) {
-=======
 //			if (f != null && newFont != f && !newFont.equals(f))
 //				setFonts(c, level);
->>>>>>> refs/remotes/origin/swingJS
 		}
 		return level;
 	}
@@ -479,11 +460,6 @@ public class FontSizer extends OSPRuntime.Supported {
  * Suite 330, Boston MA 02111-1307 USA or view the license online at
  * http://www.gnu.org/copyleft/gpl.html
  *
-<<<<<<< HEAD
- * Copyright (c) 2017  The Open Source Physics project
- *                     http://www.opensourcephysics.org
-=======
  * Copyright (c) 2024 The Open Source Physics project
  * http://www.opensourcephysics.org
->>>>>>> refs/remotes/origin/swingJS
  */

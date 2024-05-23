@@ -408,61 +408,6 @@ public String toString() {
     return new Complex(scalar*Math.cos(temp2Im), scalar*Math.sin(temp2Im));
   }
   
-<<<<<<< HEAD
-  /**
-   * Returns the base raised to the power of the <tt>Complex</tt> exponent.
-   **/
-
-   public static Complex pow (double base, Complex exponent) {
-       // return  real(base).log().mul(exponent).exp();
-
-       double re =  Math.log(Math.abs(base));
-       double im =  Math.atan2(0.0, base);
-
-       double re2 =  (re*exponent.re) - (im*exponent.im);
-       double im2 =  (re*exponent.im) + (im*exponent.re);
-
-       double scalar =  Math.exp(re2);
-
-       return cart(scalar * Math.cos(im2), scalar * Math.sin(im2));
-   }//end pow(double,Complex)
-   
-   /**
-   * Returns the <tt>Complex</tt> base raised to the power of the <tt>Complex</tt> exponent.
-   **/
-
-   public static Complex pow (Complex base, Complex exponent) {
-       // return  base.log().mul(exponent).exp();
-
-       double re =  Math.log(base.abs());
-       double im =  base.arg();
-
-       double re2 =  (re*exponent.re) - (im*exponent.im);
-       double im2 =  (re*exponent.im) + (im*exponent.re);
-
-       double scalar =  Math.exp(re2);
-
-       return  cart( scalar * Math.cos(im2), scalar * Math.sin(im2) );
-   }//end pow(Complex,Complex)
-   
-   public static Complex pow (Complex base, double exponent) {
-     // return  base.log().scale(exponent).exp();
-
-     double re =  exponent * Math.log(base.abs());
-     double im =  exponent * base.arg();
-
-     double scalar =  Math.exp(re);
-
-     return cart( scalar * Math.cos(im), scalar * Math.sin(im) );
- }//end pow(Complex,double)
-   
-   /**
-    * Returns a <tt>Complex</tt> from real and imaginary parts.
-    **/
-    public static Complex cart (double re, double im) {
-        return  new Complex(re, im);
-    }//end cart(double,double)
-=======
   public static Complex pow (Complex base, double exponent) {
       // return  base.log().scale(exponent).exp();
 
@@ -510,7 +455,6 @@ public String toString() {
 
       return  cart( scalar * Math.cos(im2), scalar * Math.sin(im2) );
   }//end pow(Complex,Complex)
->>>>>>> refs/remotes/origin/swingJS
 
   /**
    * Returns e to the power of the complex number

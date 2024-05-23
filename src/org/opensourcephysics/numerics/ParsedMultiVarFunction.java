@@ -38,21 +38,6 @@ public final class ParsedMultiVarFunction implements MultiVarFunction {
     myFunction = parser;
     myFunctionNames = parser.getFunctionNames();
   }
-  
-  /**
-   * Constructs a ParsedFunction from the given string and independent variable.
-   *
-   * @param _fStr the function
-   * @param var the independent variable
-   * @param allowUnknownIdentifiers   always false
-   * @throws ParserException
-   */
-  public ParsedMultiVarFunction(String _fStr, String[] var, boolean allowUnkownIdentifiers) throws ParserException {
-    fStr = _fStr;
-    SuryonoParser parser = new SuryonoParser(fStr, var, allowUnkownIdentifiers);
-    function = parser;
-    functionNames = parser.getFunctionNames();
-  }
 
   /**
    * Evaluates the function, f.

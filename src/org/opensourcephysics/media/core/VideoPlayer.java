@@ -702,16 +702,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		timeFormat = NumberFormat.getNumberInstance(locale);
 	}
 
-<<<<<<< HEAD
-    });
-    timeFormat.setMinimumIntegerDigits(1);
-    timeFormat.setMaximumFractionDigits(3);
-    timeFormat.setMinimumFractionDigits(3);
-  	if (timeFormat instanceof DecimalFormat) {
-  		((DecimalFormat)timeFormat).setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
-  	}
-=======
-	/**
+/**
 	 * Enables and disables this component.
 	 * 
 	 * @param enabled true to enable
@@ -721,7 +712,6 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		super.setEnabled(enabled);
 		disabled = !enabled;
 	}
->>>>>>> refs/remotes/origin/swingJS
 
 	// _________________ private methods and inner classes __________________
 

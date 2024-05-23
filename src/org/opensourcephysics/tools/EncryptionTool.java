@@ -331,24 +331,6 @@ public class EncryptionTool extends JFrame implements Tool {
 		return decrypted;
 	}
 
-<<<<<<< HEAD
-  /**
-   * Opens an xml file selected with a chooser.
-   *
-   * @return the name of the opened file, or null if none opened
-   */
-  private String open() {
-    @SuppressWarnings("deprecation")
-	int result = OSPRuntime.getChooser().showOpenDialog(this);
-    if(result==JFileChooser.APPROVE_OPTION) {
-      OSPRuntime.chooserDir = OSPRuntime.getChooser().getCurrentDirectory().toString();
-      String fileName = OSPRuntime.getChooser().getSelectedFile().getAbsolutePath();
-      fileName = XML.getRelativePath(fileName);
-      return open(fileName);
-    }
-    return null;
-  }
-=======
 	/**
 	 * Opens an xml file selected with a chooser.
 	 *
@@ -361,7 +343,6 @@ public class EncryptionTool extends JFrame implements Tool {
 		}, null);
 		return null;
 	}
->>>>>>> refs/remotes/origin/swingJS
 
 	/**
 	 * Saves the current xml control to the specified file.
